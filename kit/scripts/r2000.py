@@ -13,6 +13,9 @@ Usage:
   r2000.py --game games/c64/<slug> <tool> '<json>'
 
 Requires `regenerator2000 --mcp-server <file>` listening on :3000.
+
+Calls that come back as an error are not logged, so a replay does not
+reproduce your mistakes. A batch is logged as a whole, so check its result.
 """
 import json, os, sys, urllib.request
 
@@ -47,7 +50,10 @@ def make_client():
             return None
         lines = [l[len("data:"):].strip() for l in txt.splitlines()
                  if l.startswith("data:") and len(l.strip()) > 5]
-        return json.loads(lines[-1]) if lines else None
+        if lines:                       # server-sent events
+            return json.loads(lines[-1])
+        txt = txt.strip()               # or a plain JSON body
+        return json.loads(txt) if txt else None
 
     rpc("initialize", {"protocolVersion": "2024-11-05", "capabilities": {},
                         "clientInfo": {"name": "kit", "version": "0"}})
@@ -61,6 +67,11 @@ def call(rpc, name, arguments):
         return res["result"]["content"][0]["text"]
     except Exception:
         return json.dumps(res, indent=2)
+
+
+def failed(out):
+    """True when a tool call came back as an error rather than a result."""
+    return out.lstrip().startswith("{") and '"error"' in out
 
 
 def game_dir(explicit=None):
@@ -113,7 +124,8 @@ def main():
     name = argv[0]
     args = json.loads(argv[1]) if len(argv) > 1 else {}
     out = call(rpc, name, args)
-    log_call(game_dir(explicit), name, args)
+    if not failed(out):
+        log_call(game_dir(explicit), name, args)   # a failed call must not enter the replay log
     print(out)
 
 

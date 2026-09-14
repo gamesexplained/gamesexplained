@@ -91,6 +91,14 @@ tempo, lifetime and duration derived from a tick count inherits this.
 **Count in the unit of the loop that decrements.** A timer decremented once
 per player move lasts moves, not ticks.
 
+**Some games have no tick at all.** A game whose only `cli` is in its
+attract loop runs with interrupts masked while you play, times itself with a
+counting loop, and is synchronised to nothing. Count the `cli` and `sei`
+instructions before assuming the interrupt you found drives the game: a
+breakpoint on the handler with a hit count of zero during play settles it.
+Timing derived from a counting loop follows the CPU clock, so such a game
+runs about four per cent faster on NTSC than on PAL.
+
 ## Keyboard and joystick
 
 CIA1 port A selects keyboard rows (and reads joystick port 2); port B
@@ -128,10 +136,33 @@ may use neither (see `re-text`).
 - **Hardware sprites may be a minimap or a cursor, not the characters.**
   Work the X/Y formula through to screen coordinates before calling
   sprites unused.
+- **The character set and the sprite shapes can share one 2 KB block.** A
+  character base of `$3800` covers `$3800`–`$3FFF`, and sprite pointers
+  `$F0`–`$FF` resolve into `$3C00`–`$3FFF`. A game that uses only 128 glyphs
+  gets its sprites for free in the upper half, and rendering the glyph table
+  shows the sprite bitmaps as 8×8 noise from glyph `$80` up. That noise is
+  not a second alphabet.
+- **Several sprites at one position are one picture.** Sprites sharing X and
+  Y with different colours are a multi-coloured object built out of hires
+  layers, and a sprite that is only switched on some of the time is a part
+  of the object that is only sometimes present, such as an exhaust flame.
+  Catching it live is hard; reading `$D015` from the code that writes it is
+  not.
 - Colour RAM in a VICE snapshot is not at `$D800` in the RAM image; it is
-  in the VIC-II module. A ~1000-byte run where every byte is ≤ 15 is it.
-- The RAM image in a VICE `.vsf` starts at file offset 209; confirm by
-  reading two known bytes before relying on it.
+  in the VIC-II module. Loading the snapshot back and reading `$D800`
+  through the emulator is quicker than finding it in the file, as long as
+  you stop the machine the instant it loads.
+- The RAM image in a VICE `.vsf` saved **without ROMs** starts at file
+  offset 209; confirm by reading two known bytes before relying on it.
+  Choose those two bytes carefully. `$0000` and `$0001` are the worst
+  possible choice: they are the processor port, stored separately in the
+  `C64MEM` module header, and the RAM underneath them holds unrelated
+  values. Screen memory is the second worst, because a running game has
+  moved on since the save. Pick two bytes of the game's own code.
+- **A string found in a snapshot file is not necessarily the screen.** A
+  game keeps its own copy of the status line to stamp onto the screen, and
+  finding that copy while hunting for the RAM offset gives an offset that is
+  wrong by the distance between the two.
 - An unread twin of a table can exist after a relocating loader. Check
   which copy the code reads.
 - PAL vs NTSC changes the clock and so every derived rate; state which one

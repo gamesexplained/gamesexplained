@@ -39,6 +39,31 @@ tested. Typical tests:
   platform's clock; count in the unit of the loop that decrements the
   counter before converting anything to seconds.
 
+## Measuring without fooling yourself
+
+The emulator is a second opinion, not an oracle. Three ways a live test
+lies, all of which have cost real time:
+
+- **The machine never stopped.** A pause that reports success but does not
+  halt the CPU turns every poke into a value the game immediately overwrites
+  and every read into a sample of a different moment. Prove the machine is
+  stopped before believing anything you write: read the program counter
+  twice and see that it is the same.
+- **Something ran between the poke and the read.** Set a variable and read
+  back a value derived from it, and the game's own per-frame update may have
+  been applied in between. A measurement that is consistently one step away
+  from the arithmetic is this, not a flaw in your reading of the code.
+  Break after the update, or subtract it and check the whole series again.
+- **The tool did not do what it said.** An input tool that changes no
+  hardware register, a stopwatch quantised to the frame. Validate any
+  instrument against a quantity you can compute independently before you
+  quote a number from it.
+
+**When the code and a measurement disagree, neither wins automatically.**
+Work out what would have to be true for both, and test that. A model that
+reproduces every point of a series once one known effect is accounted for
+is verified; a model that matches half the points is not.
+
 Mark what was verified this way as **live** in `features.md` and in the
 comment on the routine. Keep a short list of what was tested and how in
 `facts.md`; it is evidence for the article.

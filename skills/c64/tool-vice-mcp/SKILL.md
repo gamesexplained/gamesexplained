@@ -6,9 +6,14 @@ description: How to drive VICE through the vice-mcp server, the recommended emul
 # VICE through vice-mcp
 
 Registered in `.mcp.json` as the `vice` server (HTTP, `127.0.0.1:6510`).
-If it was not running when your session started, its tools are not
-available; start it (`kit/INSTALL.md`) and reconnect or restart the
-session. The scripts do not depend on it; only the interactive tools do.
+The transport is plain HTTP, so a server started or restarted *after* your
+session began is picked up on the next call without restarting the session.
+If the tools are missing entirely, start it (`kit/INSTALL.md`) and try again.
+
+`kit/scripts/vice.py` is a client for the same server. Anything repetitive
+(halt, poke, run N passes, read back) belongs in a script, not in a string
+of one-off tool calls: each call costs a round trip and each read restarts
+the machine.
 
 ## The sequence that works
 
@@ -42,9 +47,19 @@ you are unsure of.
 
 ## Behaviours that waste time
 
-- **Reads and writes can leave the machine paused.** Check the execution
-  state in `vice_ping` and `vice_execution_run` before sending input or
-  expecting the screen to change.
+- **`vice_execution_pause` may report success without stopping the CPU.**
+  Read the program counter twice: if it changes, the machine is still
+  running and every write you make is being overwritten. The reliable way
+  to stop is a checkpoint with `stop` set. Make this the first thing you
+  check on a new build; several hours of "the game does not do that" turned
+  out to be a machine that never stopped.
+- **After a checkpoint stops the machine, the reported program counter is
+  not the checkpoint address.** Do not use it to decide whether the break
+  happened; a claim like "it never reaches that routine" founded on the PC
+  can be flatly wrong. Use `vice_checkpoint_list` and read the hit count.
+- **Reads and writes restart the machine.** A sequence of reads taken while
+  a key is held samples a game that has run several frames between them,
+  which is why input experiments give answers that look random.
 - **A loaded snapshot can come back without its timer interrupt.** The
   CPU sits in the tick-wait loop and nothing moves. Autostart the image
   again; if the emulator itself misbehaves, restart its process.
@@ -53,5 +68,24 @@ you are unsure of.
   variables that prove it happened.
 - **Memory reads honour banking.** Use the bank argument
   (`vice_memory_banks` lists them) when you need RAM under I/O or ROM.
+- **Poke, then read a derived value, and a whole update may have run in
+  between.** Break at a point *after* the update and before the code you are
+  testing, or expect the game's own per-frame change to be added to whatever
+  you wrote. Numbers that are consistently one step out are this.
+- **Not every tool in the list does something.** The joystick tools may
+  report success and change nothing at `$DC00`/`$DC01`; the cycle stopwatch
+  may return frame-quantised numbers. Validate any measuring tool against a
+  known quantity (a timer latch you can compute, a loop you can count)
+  before you trust a figure from it, and record in `features.md` when an
+  input path could not be exercised rather than calling it confirmed.
+- **A snapshot save name cannot be reused**, and a loaded snapshot starts
+  running at once: pause it with a checkpoint in the same breath or the
+  state you wanted has already moved on. Save **without** ROMs so the RAM
+  image lands where the platform reference says it does.
+- **Keys a game polls rarely can be missed by a short press.** Where
+  `vice_keyboard_matrix` with a long `hold_ms` still does nothing, try
+  `vice_keyboard_type`, which goes through the KERNAL buffer instead.
+- Some tools can take the server down. If a call returns a closed socket,
+  check the port before assuming the answer meant anything.
 - The emulator needs a pseudo-terminal and dies with the session that
   started it.

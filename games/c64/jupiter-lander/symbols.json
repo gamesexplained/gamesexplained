@@ -3090,7 +3090,7 @@
   {
    "address": 57399,
    "type": "line",
-   "text": "Cold start, and the target of all three hardware vectors at $FFFA. Copies vic_init_table to $D011-$D02E and sid_init_table to $D400-$D418, stops both CIA1 timers, sets the processor port to $05 so RAM shows through at $A000 and $E000 with I/O still visible, arms CIA1 timer A with a latch of $411B for an interrupt about 59 times a second, clears the high score, draws the status rows and falls into the attract loop. The KERNAL is switched out for good here: from this point the game owns the machine."
+   "text": "Cold start, and the target of all three hardware vectors at $FFFA. Copies vic_init_table to $D011-$D02E and sid_init_table to $D400-$D418, stops both CIA1 timers, sets the processor port to $05 so RAM shows through at $A000 and $E000 with I/O still visible, arms CIA1 timer A with a latch of $411B for an interrupt about 59 times a second, clears the high score, draws the status rows and falls into the attract loop. The KERNAL is switched out here and never comes back, so from this point the game owns the machine and its own code occupies the addresses the KERNAL used to."
   },
   {
    "address": 57488,
@@ -3125,7 +3125,7 @@
   {
    "address": 57644,
    "type": "line",
-   "text": "One pass of the flight. Decides whether the ship is close enough to the ground for the hardware collision bit to be believed, tests sprite 1 against the background and branches to explode if it has touched rock, updates the view and the sprites, jumps to touchdown if the ship is standing on a pad, reads the controls and moves the ship, redraws the fuel bar, ends the flight with OUT OF SKY if the ship has climbed above world Y $003A, waits three delay units and goes round again. The pass takes roughly 30 milliseconds, so the whole game runs at about 33 updates a second."
+   "text": "One pass of the flight. Decides whether the ship is inside the visible area, where the hardware collision bit can be believed, tests sprite 1 against the background and branches to explode if it has touched rock, updates the view and the sprites, jumps to touchdown if the ship is standing on a pad, reads the controls and moves the ship, redraws the fuel bar, ends the flight with OUT OF SKY if the ship has climbed above world Y $003A, waits three delay units and goes round again. Three delay units is about 31 milliseconds, so the whole game updates about 33 times a second, measured live at 3.03 delay units per pass."
   },
   {
    "address": 57715,
@@ -3185,7 +3185,7 @@
   {
    "address": 58059,
    "type": "line",
-   "text": "One tick of physics. A side thruster adds 6 or subtracts 6 from the X velocity and costs 30 fuel; the main thruster subtracts 12 from the Y velocity and costs 111 fuel, roughly four times as much. Gravity is then added to the Y velocity unconditionally, and both 16-bit velocities are added into the 24-bit positions with sign extension. Thrusting also opens the noise voices: voice 2 for the side jets, voice 3 for the main engine. Nothing damps either velocity, so the ship keeps whatever sideways speed it is given."
+   "text": "One tick of physics, and the place the empty tank is enforced. If the fuel high byte is zero both thrust flags are cleared straight away, so the last 255 units in the low byte can never be spent and a pilot with an empty tank has no engine at all. Otherwise a side thruster adds 6 or subtracts 6 from the X velocity and costs 30 fuel, and the main thruster subtracts 12 from the Y velocity and costs 111, nearly four times as much. Gravity is then added to the Y velocity unconditionally and both 16-bit velocities are added into the 24-bit positions with sign extension. Thrusting also opens the noise voices: voice 2 for the side jets, voice 3 for the main engine. Nothing damps either velocity, so the ship keeps whatever sideways speed it is given."
   },
   {
    "address": 58253,
@@ -3200,7 +3200,7 @@
   {
    "address": 58293,
    "type": "line",
-   "text": "Tests all three pads and sets on_pad if the ship is standing on one. The Y test is an exact match against pad_y_lo and pad_y_hi, not a range, so a pad is a single line in the world and a ship moving faster than one unit per tick can step straight over it. The X test is an ordinary range check against pad_x_min and pad_x_max."
+   "text": "Tests all three pads and sets on_pad if the ship is standing on one. The Y test is an exact match against pad_y_lo and pad_y_hi, not a range, so a pad is a single line in the world and a ship moving faster than one unit per tick can step straight over it. The X test is an ordinary range check against pad_x_min and pad_x_max. All three lines are placed to the pixel: running the video chip's own sprite-against-character test at a pad's Y leaves the lander clear by a hair, and one world unit lower puts its legs inside the rock."
   },
   {
    "address": 58343,
@@ -3275,7 +3275,7 @@
   {
    "address": 58716,
    "type": "line",
-   "text": "Handles a ship standing on a pad. The test is the Y velocity alone: climbing is always accepted, and descending is accepted only while the velocity is below $0048. Anything faster goes to landing_too_fast. A good landing scores 80 minus the velocity low byte, doubled for the x2 and x10 pads and multiplied by five again for the x5 and x10 pads, which is where the on-screen multipliers come from. The total is then counted out one point at a time, each point adding 1 to the BCD score, 70 to the fuel and one click to the sound, which is why a good landing both scores and refuels. Fuel stops at $FFFF rather than wrapping."
+   "text": "Handles a ship standing on a pad. The test is the Y velocity alone: climbing is always accepted, and descending is accepted only while the velocity is below $0048. Anything faster goes to landing_too_fast. A good landing scores 80 minus the velocity low byte, doubled for the x2 and x10 pads and multiplied by five again for the x5 and x10 pads, which is where the on-screen multipliers come from. Because the subtraction is an ordinary 8-bit one, a ship that arrives climbing scores more than a perfect stop: at a velocity of minus 16 the base is 96 rather than 80. The total is then counted out one point at a time, each point adding 1 to the BCD score, 70 to the fuel and one click to the sound, which is why a good landing both scores and refuels. Fuel stops at $FFFF rather than wrapping."
   },
   {
    "address": 58916,
@@ -3420,7 +3420,7 @@
   {
    "address": 60217,
    "type": "line",
-   "text": "The only interrupt the game runs, from CIA1 timer A about 59 times a second. It does two things: every twentieth tick it steps the colour of the 18 fuel bar cells at $DBCA, which is the slow colour crawl along the bar, and on every tick it selects keyboard row 0 and tests bit 4 of $DC01. That bit is F1 and the port 1 fire button at the same time, so either one starts a game: the handler resets the stack pointer and jumps straight into start_game without returning."
+   "text": "The only interrupt the game runs, from CIA1 timer A about 59 times a second, and it runs **only during the attract sequence**: the single cli in the whole game is in attract_entry and start_game begins with sei. It does two things. Every twentieth tick it steps the colour of the 18 colour cells at $DBCA, which is exactly the 18 characters of PUSH <F1> TO START on screen row 24, so the prompt cycles through the palette. On every tick it selects keyboard row 0 and tests bit 4 of $DC01, which is F1 and the port 1 fire button at the same time; either one resets the stack pointer and jumps into start_game without ever returning from the interrupt."
   },
   {
    "address": 60271,
@@ -3445,7 +3445,7 @@
   {
    "address": 60417,
    "type": "line",
-   "text": "Draws the marker on the vertical speed gauge in screen column 39. It gives up unless the Y velocity is inside -2 to +1 in high-byte terms, so a very fast ship has no marker at all. Otherwise it shifts the velocity right by two, adds 128 and halves it to get a number from 0 to 127, clears the sixteen gauge cells, then picks row value>>3 from gauge_row_addr and writes glyph $18 plus the bottom three bits, which places the marker to one eighth of a character. Zero velocity sits in the single yellow cell on row 12."
+   "text": "Draws the marker on the vertical speed gauge in screen column 39. It gives up unless the Y velocity is inside -2 to +1 in high-byte terms, so a very fast ship has no marker at all. Otherwise it shifts the velocity right by two, adds 128 and halves it to get a gauge value from 0 to 127, clears the sixteen gauge cells, then picks row value>>3 from gauge_row_addr and writes glyph $18 plus the bottom three bits, which places the marker to one eighth of a character. One step of the marker is eight units of velocity. The single yellow cell on row 12 covers velocities 0 to 63, while touchdown accepts up to 71, so the last speed that lands sits one step below the yellow and one step above the first speed that does not."
   },
   {
    "address": 60498,
@@ -3490,7 +3490,7 @@
   {
    "address": 60990,
    "type": "line",
-   "text": "Busy-waits for X delay units by calling delay_one_unit X times. This is the game's only clock: the CIA interrupt is never waited on."
+   "text": "Busy-waits for X delay units by calling delay_one_unit X times, with X of zero meaning 256. This is the game's only clock. The CIA interrupt is masked during play and is never waited on, and no raster interrupt is enabled, so nothing in the game is synchronised to the video at all."
   },
   {
    "address": 60997,
@@ -3520,7 +3520,7 @@
   {
    "address": 61072,
    "type": "line",
-   "text": "Stamps OUT OF FUEL at screen $07CE in light red the first time the fuel high byte reaches zero. The game does not end here: the ship keeps falling with no way to slow down, and it ends when it hits something."
+   "text": "Stamps OUT OF FUEL at screen $07CE in light red the first time the fuel high byte reaches zero. That same condition is what move_ship uses to cut the engines, so the message and the loss of control arrive together. The game does not end here: the ship keeps falling with no way to slow down, and it ends when it hits something."
   },
   {
    "address": 61101,

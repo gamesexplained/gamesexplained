@@ -34,7 +34,7 @@ the game folder, or pass `--game`, so the log lands in the right place.
 | `r2000_read_region` `{start_address, end_address}` | show a region; **disassembles as a side effect**, which the log does not capture unless you also log a disassemble |
 | `r2000_set_label_name` `{address, name}` | name a routine, variable or table |
 | `r2000_set_comment` `{address, type: "line"|"side", comment}` | a line comment on the entry is the description that coverage counts |
-| `r2000_set_data_type` `{start_address, end_address, data_type}` | type a data block (byte, word, address, text, undefined) |
+| `r2000_set_data_type` `{start_address, end_address, data_type}` | type a data block. The values are **lower case**: `code`, `byte`, `word`, `address`, `petscii`, `screencode`, `lo_hi_address`, `hi_lo_address`, `lo_hi_word`, `hi_lo_word`, `external_file`, `undefined` |
 | `r2000_get_cross_references` `{address}` | who reads, writes, calls or jumps to an address; the fastest way to attribute a table |
 | `r2000_get_address_details` `{address}` | semantics, xrefs, labels and comments at one address |
 | `r2000_search_memory`, `r2000_search_disassembly` | bytes or text in memory; a string or regex over the listing (register census in one call) |
@@ -46,6 +46,19 @@ the game folder, or pass `--game`, so the log lands in the right place.
 
 ## Traps
 
+- **The type names going in are not the type names coming out.**
+  `set_data_type` takes `byte` and `lo_hi_address`; `get_blocks` reports
+  `Byte` and `Lo/Hi Address`. The export script maps between them. A
+  capitalised value is rejected with "Unknown data_type".
+- **`address` is for interleaved pointers, `lo_hi_address` for split
+  tables.** A table of low-byte-then-high-byte pairs is `address`. Typing it
+  as `lo_hi_address` reads the first half as low bytes and the second half as
+  high bytes, invents addresses that are not there, and mints auto symbols
+  all over the image. The tell is symbols appearing in regions the game never
+  touches.
+- **A custom alphabet has no data type.** `petscii` and `screencode` are the
+  only text types; a game whose character set is in its own order has to be
+  typed `byte` with the decoded text in the comment.
 - **Never bulk-disassemble every labelled address** to recover coverage.
   Labels sit on data tables too; disassembling them corrupts the display.
   Undo with `r2000_set_data_type` to `undefined`.

@@ -16,7 +16,11 @@ annotate it byte by byte.
    Screenshot. If a trainer or cracktro menu appears, note the options,
    choose the plain game (no cheats) unless the contributor says
    otherwise, and record the choice in `orientation.md`.
-2. **Reach real gameplay, not the title screen.** A title or attract
+2. **Reach real gameplay, not the title screen.** If a key press seems not
+   to register, hold it far longer than feels sensible before concluding
+   anything: a game that only samples input from a timer interrupt, or only
+   between long waits, drops short taps. Where the key matrix fails
+   entirely, the system's own keyboard buffer may work. A title or attract
    screen may run on default system housekeeping with none of the game's
    own code installed; checking state there is misleading. Press whatever
    starts the game (a function key, fire) and confirm with a screenshot
@@ -52,6 +56,16 @@ annotate it byte by byte.
 - A loaded snapshot can come back without its timer interrupt running.
   Symptom: the CPU sits in a wait loop and nothing moves. Autostart the
   image again rather than fighting it.
+- A loaded snapshot **starts running immediately**. If you want the state
+  you saved, stop the machine in the same breath as the load; otherwise the
+  screen you compare against has already moved on and every check fails for
+  the wrong reason.
+- Save snapshots **without** ROMs. The offsets in the platform reference
+  assume it, the file is smaller, and a game that banks the ROMs out does
+  not need them.
+- Take the snapshot at a moment you have *looked at*. A frame captured
+  during an explosion or a transition looks like steady-state play in the
+  variables and will have you describing the wrong thing for an hour.
 - Autostart may leave the emulator in warp mode; turn it off before
   timing anything.
 
