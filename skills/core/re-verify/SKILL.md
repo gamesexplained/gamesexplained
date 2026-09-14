@@ -44,11 +44,11 @@ tested. Typical tests:
 The emulator is a second opinion, not an oracle. Three ways a live test
 lies, all of which have cost real time:
 
-- **The machine never stopped.** A pause that reports success but does not
-  halt the CPU turns every poke into a value the game immediately overwrites
-  and every read into a sample of a different moment. Prove the machine is
-  stopped before believing anything you write: read the program counter
-  twice and see that it is the same.
+- **The machine never stopped.** If the pause did not take, every poke is
+  a value the game immediately overwrites and every read is a sample of a
+  different moment. Prove the machine is stopped before believing anything
+  you write: read the program counter twice and see that it is the same,
+  and ask the emulator for its execution state.
 - **Something ran between the poke and the read.** Set a variable and read
   back a value derived from it, and the game's own per-frame update may have
   been applied in between. A measurement that is consistently one step away

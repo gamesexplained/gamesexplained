@@ -47,19 +47,23 @@ you are unsure of.
 
 ## Behaviours that waste time
 
-- **`vice_execution_pause` may report success without stopping the CPU.**
-  Read the program counter twice: if it changes, the machine is still
-  running and every write you make is being overwritten. The reliable way
-  to stop is a checkpoint with `stop` set. Make this the first thing you
-  check on a new build; several hours of "the game does not do that" turned
-  out to be a machine that never stopped.
+- **Prove the machine is stopped before you poke it.** Read the program
+  counter twice; if it changes, it is running and every write you make is
+  being overwritten. `vice_execution_pause` held the CPU in one run and
+  appeared not to in another (that run lost hours to "the game does not do
+  that"); the cause is not established. A checkpoint with `stop` set halts
+  it in every run so far, and `vice_ping` reports the execution state.
 - **After a checkpoint stops the machine, the reported program counter is
   not the checkpoint address.** Do not use it to decide whether the break
   happened; a claim like "it never reaches that routine" founded on the PC
   can be flatly wrong. Use `vice_checkpoint_list` and read the hit count.
-- **Reads and writes restart the machine.** A sequence of reads taken while
-  a key is held samples a game that has run several frames between them,
-  which is why input experiments give answers that look random.
+- **Check the execution state after reads and writes, in both directions.**
+  One run saw reads and writes leave the machine paused; another saw a
+  paused machine running again between reads (a direct test afterwards
+  showed `vice_memory_read` leaving it paused). Either way, a sequence of
+  reads taken while a key is held may sample a game that has run several
+  frames between them, which is why input experiments give answers that
+  look random. `vice_ping` tells you which state you are in.
 - **A loaded snapshot can come back without its timer interrupt.** The
   CPU sits in the tick-wait loop and nothing moves. Autostart the image
   again; if the emulator itself misbehaves, restart its process.
