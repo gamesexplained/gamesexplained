@@ -1,0 +1,127 @@
+# How agents work in this repository
+
+This repository is the source of a site that explains how games actually
+work, code first, one folder per game, written by contributors and their
+agents. Read this file completely before doing anything else. It is short
+on purpose: the detail lives in `kit/` and `skills/`, and you are expected
+to open those files when the workflow points at them rather than working
+from memory.
+
+## What you are here to do
+
+A contributor has a game they own (a disk image or program file) and wants
+a complete, verified, published explanation of how it works. The workflow,
+in order:
+
+1. **Set up the tools.** Follow `kit/INSTALL.md`. Confirm the emulator and
+   the disassembler answer before going further.
+2. **Create the game folder.** `python3 kit/scripts/new_game.py <platform> <slug>`
+   creates `games/<platform>/<slug>/` from the template. Copy the
+   contributor's image into its `work/` folder; `work/` is gitignored.
+3. **Run the skills in this order.** Each is a folder under `skills/` with a
+   `SKILL.md`; open the file when you reach that step.
+
+   | Step | Skill | Produces |
+   |---|---|---|
+   | orient | `skills/core/re-orient` | boots, reaches steady-state play, snapshot, `orientation.md`, disassembler running |
+   | features | `skills/core/re-features` | `features.md` and `reference/` before any code is read |
+   | text | `skills/core/re-text` | the game's alphabets decoded, when it has a custom charset |
+   | sweep | `skills/core/re-sweep` | register census and string sweep |
+   | annotate and measure | `skills/core/re-coverage` | the burn-down loop until coverage is where the tier needs it |
+   | verify | `skills/core/re-verify` | every fact traced or observed live; `facts.md` |
+   | article | `skills/core/re-article` | `index.html`, the interactive article |
+   | retrospective | `skills/core/re-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
+
+   Platform knowledge is in `skills/<platform>/`. For the C64:
+   `skills/c64/c64-reference` (facts about the machine — consult it, do not
+   recall from training), `skills/c64/tool-vice-mcp` and
+   `skills/c64/tool-regen2000` (how to drive the recommended tools).
+4. **Export the symbol map** after every annotation session:
+   `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`. This
+   file, `symbols.json`, is the canonical technical result. Disassembler
+   project files and snapshots stay in `work/`.
+5. **Check, then commit on a branch** named `game/<platform>/<slug>`. Never
+   commit to `main`. Before every commit run:
+
+   ```
+   python3 kit/scripts/check_binaries.py
+   python3 kit/scripts/check_docs.py
+   python3 kit/scripts/check_copy.py games/<platform>/<slug>
+   ```
+
+   If a remote exists, open a pull request. If not, leave the branch.
+
+## Rules that are not negotiable
+
+- **Model.** Reverse-engineering work runs on an Opus-class model or
+  better. On a weaker model, stop and say so. The failures are silent:
+  address arithmetic goes wrong in ways that read as confident.
+- **No binaries, ever.** Disk images, program files, cartridge dumps,
+  emulator snapshots and disassembler project files that embed the memory
+  image are never committed and never uploaded anywhere. `work/` is
+  gitignored for this reason. `check_binaries.py` must pass.
+- **Prefer "unknown" to a plausible guess.** An admitted gap costs nothing.
+  A wrong claim is copied into every downstream document.
+- **Distrust your own negative results.** "It isn't there" is a claim about
+  your search, not about the game. Before reporting absence, ask what
+  encoding, indirection or aliasing could hide it.
+- **Verify before publishing.** Anything that reaches a reader rests on
+  something checked. When a claim can be tested cheaply, test it.
+- **Correct in place.** Reference files (`facts.md`, `features.md`,
+  `symbols.json`) state what is true now. The story of how understanding
+  developed goes in `agent-history.md`, nowhere else.
+- **Consult the platform reference, don't recall it.** Register addresses,
+  timing constants and memory maps come from `skills/<platform>/`.
+- **Copy is not analysis.** Article text follows `kit/style.md` and passes
+  `check_copy.py`. Write it as a separate, final pass.
+- **Record what you used.** `game.json` names the tools, the model and the
+  kit version. It is honest and it makes the work reproducible.
+- **Ask before downloading anything.** Reference screenshots and manuals
+  from the web are welcome; confirm with the contributor first.
+
+## Where knowledge lives
+
+| Path | Contents |
+|---|---|
+| `AGENTS.md` | this file: agent operating rules only |
+| `kit/START.md` | what a contributor is told to point their agent at |
+| `kit/INSTALL.md` | tools per operating system, how to start and check them |
+| `kit/style.md` | house style for article copy |
+| `kit/scripts/` | shared tooling; every script prints usage with `-h` |
+| `kit/template/` | the game folder, stubbed and commented |
+| `skills/core/` | the method, platform-independent |
+| `skills/<platform>/` | platform facts and tool notes |
+| `games/<platform>/<slug>/` | one game: article, symbols, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
+
+Nothing about a particular game belongs in `AGENTS.md` or `skills/`.
+`check_docs.py` enforces that.
+
+## Definition of done
+
+| Tier | Requires |
+|---|---|
+| Bronze | boots; `orientation.md` recipe; `features.md` drafted from external documentation; reference screenshots |
+| Silver | coverage ≥ 80 % (`coverage.py`); `facts.md`; every feature confirmed or explicitly open; `symbols.json` exported |
+| Gold | 100 % coverage; interactive article; at least one finding beyond the documentation verified live; copy passes the style check and a human read |
+| Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
+
+Stop where you like. Set `tier` in `game.json` to the highest tier every
+requirement of which is met, and list what is missing for the next one in
+`TODO.md`.
+
+## Subagents
+
+Bounded, mechanical work parallelises well: annotating disjoint address
+ranges, sweeping data regions. Judgement does not. When you spawn agents:
+force the model explicitly; give each a disjoint address range and say so
+in the prompt; give each its own output file; brief them cold with the
+facts established so far and the rules above; spot-check one substantive
+claim per agent against the source before believing the report.
+
+## Finishing
+
+The last step of every run is `skills/core/re-retro`: where did the skills
+fall short, and what is the diff that would have saved the next
+contributor the trouble. Make the edits to `skills/` and `kit/` in the same
+branch and describe them in `games/<platform>/<slug>/kit-feedback.md`.
+That is how the kit improves.

@@ -1,0 +1,138 @@
+---
+name: c64-reference
+description: Commodore 64 facts for reverse engineering, memory map, banking, video, sound, timers, interrupt vectors, and the mistakes that bite. Consult this instead of recalling from training.
+---
+
+# C64 reference for reverse engineering
+
+Consult this file. If a fact you need is not here, say so in the game's
+`kit-feedback.md` and derive it from the emulator, not from memory.
+
+## Memory map (default configuration)
+
+| Range | What |
+|---|---|
+| `$0000`–`$0001` | 6510 processor port: `$00` data direction, `$01` the port. Bits 0–2 select banking (below) |
+| `$0002`–`$00FF` | zero page. Games use it heavily for variables and pointers |
+| `$0100`–`$01FF` | stack |
+| `$0200`–`$03FF` | system work area; `$0314/$0315` IRQ vector, `$0316/$0317` BRK, `$0318/$0319` NMI (RAM vectors used by the KERNAL) |
+| `$0400`–`$07E7` | default screen RAM (1000 bytes); sprite pointers at screen base + `$03F8`–`$03FF` |
+| `$0800`–`$9FFF` | BASIC program area / free RAM; most games load here |
+| `$A000`–`$BFFF` | BASIC ROM, or RAM underneath |
+| `$C000`–`$CFFF` | free RAM, always |
+| `$D000`–`$DFFF` | I/O when banked in: VIC-II `$D000`, SID `$D400`, colour RAM `$D800`–`$DBE7`, CIA1 `$DC00`, CIA2 `$DD00`. Character ROM or RAM otherwise |
+| `$E000`–`$FFFF` | KERNAL ROM, or RAM underneath. Hardware vectors `$FFFA` NMI, `$FFFC` RESET, `$FFFE` IRQ |
+
+## Banking via `$01`
+
+| `$01` low bits | `$A000` | `$D000` | `$E000` |
+|---|---|---|---|
+| `$37` (default, `%111`) | BASIC ROM | I/O | KERNAL ROM |
+| `$36` (`%110`) | RAM | I/O | KERNAL ROM |
+| `$35` (`%101`) | RAM | I/O | RAM |
+| `$34` (`%100`) | RAM | RAM | RAM |
+| `$33` (`%011`) | BASIC ROM | character ROM | KERNAL ROM |
+
+Games that run under the ROMs use `$35` and install their own handlers at
+the hardware vectors `$FFFA`–`$FFFF`. When you see `LDA #$35 / STA $01`,
+expect that. The snapshot's RAM image always holds the RAM underneath;
+what the CPU *saw* depends on `$01` at that moment.
+
+## VIC-II essentials (`$D000`)
+
+| Register | Meaning |
+|---|---|
+| `$D000`–`$D00F` | sprite 0–7 X, Y; `$D010` X high bits |
+| `$D011` | control 1: bit 4 screen on, bit 5 bitmap mode, bit 3 25/24 rows, bits 0–2 vertical scroll, bit 7 raster high bit |
+| `$D012` | raster line |
+| `$D015` | sprite enable |
+| `$D016` | control 2: bit 4 multicolour, bit 3 40/38 columns, bits 0–2 horizontal scroll |
+| `$D018` | memory pointers: high nibble × `$0400` = screen base, bits 3–1 × `$0800` = character base, both within the VIC bank |
+| `$D019`/`$D01A` | interrupt status / enable |
+| `$D01C` | sprite multicolour; `$D01D`/`$D017` X/Y expand; `$D01B` priority |
+| `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
+| `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |
+
+VIC bank: CIA2 port A (`$DD00`) bits 0–1, **inverted**: `%11` = `$0000`,
+`%10` = `$4000`, `%01` = `$8000`, `%00` = `$C000`. The character ROM is
+visible to the VIC at `$1000`–`$1FFF` in banks 0 and 2 only.
+
+Sprite screen coordinates: sprite (24, 50) is the top-left of the visible
+text area, so text column *c*, row *r* is sprite X = 24 + 8*c*, Y = 50 +
+8*r*. Sprite pointers are at screen base + `$03F8` and are **multiplied by
+64**, not 256, within the VIC bank. Each sprite is 63 bytes, 24×21 pixels.
+
+Character set: 8 bytes per glyph, 256 glyphs, 2 KB. Colour RAM holds one
+nibble per cell. Multicolour character mode uses bit 3 of the colour nibble
+to select it per cell.
+
+## SID essentials (`$D400`)
+
+Three voices, 7 registers each from `$D400`, `$D407`, `$D40E`: frequency
+lo/hi, pulse width lo/hi, control (bit 0 gate, bits 4–7 waveform:
+triangle/saw/pulse/noise), attack/decay, sustain/release. `$D415`–`$D418`:
+filter and volume (`$D418` low nibble = master volume). Frequency to Hz:
+f = value × clock / 16777216 (PAL clock 985,248 Hz; NTSC 1,022,727 Hz).
+
+A game that never writes control or envelope registers is playing by
+frequency writes alone; frequency 0 is silence.
+
+## CIA timers and the tick
+
+CIA1 `$DC00`–`$DC0F`: port A `$DC00`, port B `$DC01`, timer A latch
+`$DC04/$DC05`, control `$DC0E`, interrupt control `$DC0D`. CIA2
+`$DD00`–`$DD0F` likewise, NMI instead of IRQ.
+
+**The tick is not the frame.** Games often clock themselves from a CIA
+timer rather than the raster. Compute the rate from the latch: clock /
+(latch + 1). A latch of `$411B` is about 59 Hz on PAL, not 50. Every
+tempo, lifetime and duration derived from a tick count inherits this.
+
+**Count in the unit of the loop that decrements.** A timer decremented once
+per player move lasts moves, not ticks.
+
+## Keyboard and joystick
+
+CIA1 port A selects keyboard rows (and reads joystick port 2); port B
+`$DC01` reads keyboard columns **and joystick port 1**. A game polling a
+key on `$DC01` also sees the port-1 joystick. Bits, active low: 0 up, 1
+down, 2 left, 3 right, 4 fire. The KERNAL's own scan leaves the last key
+in `$C5`/`$CB` and the buffer at `$0277`.
+
+## Interrupts
+
+KERNAL IRQ path: `$FFFE` → `$FF48` → jumps through `$0314`. Default
+`$0314` = `$EA31`. A game running under ROM hooks `$0314`; a game with
+KERNAL banked out owns `$FFFE` directly. NMI similarly through `$0318`
+(default `$FE47`) or `$FFFA`. RESTORE triggers NMI.
+
+## Screen codes and PETSCII
+
+Screen codes: `@`=0, A–Z=1–26, space=32, digits `0`–`9`=48–57, symbols
+follow. Bit 7 inverts. PETSCII (used by the KERNAL's print routine and in
+files) is a different encoding: A–Z at `$41`–`$5A` (or `$C1`–`$DA`),
+digits `$30`–`$39`, `$0D` is return. A string block that reads as garbage
+in one encoding may be perfect in the other, and a custom character set
+may use neither (see `re-text`).
+
+## Mistakes that bite
+
+- Sprite pointers × 64, not × 256. Getting this wrong yields an address in
+  code and a false "the sprites don't resolve".
+- **Moving characters are very often character graphics, not sprites.** A
+  2×2 block of glyphs stamped at screen offsets 0, 1, 40, 41 is a
+  standard animated actor; four such blocks give four facings. Render
+  candidate glyphs as images; a shape is instantly recognisable.
+- The same glyphs are often reused for player and enemy, distinguished by
+  colour RAM only. Finding "only one" actor graphic is expected.
+- **Hardware sprites may be a minimap or a cursor, not the characters.**
+  Work the X/Y formula through to screen coordinates before calling
+  sprites unused.
+- Colour RAM in a VICE snapshot is not at `$D800` in the RAM image; it is
+  in the VIC-II module. A ~1000-byte run where every byte is ≤ 15 is it.
+- The RAM image in a VICE `.vsf` starts at file offset 209; confirm by
+  reading two known bytes before relying on it.
+- An unread twin of a table can exist after a relocating loader. Check
+  which copy the code reads.
+- PAL vs NTSC changes the clock and so every derived rate; state which one
+  the emulator was set to.

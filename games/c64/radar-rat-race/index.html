@@ -1,0 +1,880 @@
+<title>Radar Rat Race</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0a0b18; --surface:#12142c; --surface-2:#1a1d40; --line:#292c58; --line-soft:#1d1f3b;
+  --ink:#e9e7f7; --ink-soft:#a5a1cb; --ink-mute:#6e6b99;
+  --amber:#e8a33d; --cyan:#6fc7d4; --coral:#d97f6e; --green:#8fd17a; --violet:#8f7fe0;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Press Start 2P',monospace; --fb:'IBM Plex Sans',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.65;padding:0 0 5rem}
+h1,h2,h3{font-weight:600;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+.hero{padding:60px 24px 44px;text-align:center;border-bottom:1px solid var(--line-soft);
+ background:radial-gradient(ellipse 900px 380px at 50% -12%,rgba(143,127,224,.13),transparent 70%)}
+.eyebrow{font-family:var(--fm);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--violet);margin:0 0 20px}
+.hero h1{font-family:var(--fd);font-size:23px;line-height:1.65;margin-bottom:22px}
+.hero .sub{max-width:560px;margin:0 auto;color:var(--ink-soft);font-size:15.5px}
+section{padding:56px 0;border-bottom:1px solid var(--line-soft)}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+h2.t{font-size:21px;margin-bottom:14px}
+.lede{color:var(--ink-soft);max-width:64ch;margin:0 0 30px;font-size:15.5px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+.cap{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin-top:14px;line-height:1.65}
+.cap b{color:var(--ink-soft);font-weight:500}
+code{font-family:var(--fm);font-size:.92em;color:var(--cyan)}
+
+/* screen render */
+.screenwrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+#screenCv{image-rendering:pixelated;width:100%;max-width:620px;height:auto;aspect-ratio:8/5;
+ border-radius:6px;border:1px solid var(--line);flex:1 1 400px;display:block;background:#000}
+.stats{flex:0 0 168px;display:flex;flex-direction:column;gap:9px;font-family:var(--fm)}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+.stat .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mute)}
+.stat .v{font-size:18px;color:var(--amber);font-variant-numeric:tabular-nums;margin-top:1px}
+
+/* cast */
+.castgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px}
+.castcard{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center}
+.castcard canvas{image-rendering:pixelated;width:96px;height:96px;background:#000;border-radius:6px;display:block;margin:0 auto 12px}
+.castcard h3{font-size:13.5px;margin-bottom:5px}
+.castcard p{font-size:12.5px;color:var(--ink-soft);margin:0}
+.castcard .codes{font-family:var(--fm);font-size:11px;color:var(--ink-mute);margin-top:8px}
+
+/* rat player */
+.ratbox{display:flex;gap:26px;flex-wrap:wrap;align-items:center;justify-content:center}
+#ratCv{image-rendering:pixelated;width:180px;height:180px;background:#000;border-radius:10px;border:1px solid var(--line)}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:6px}
+.dpad button{font-family:var(--fm);font-size:16px;background:var(--surface-2);color:var(--ink-soft);
+ border:1px solid var(--line);border-radius:8px;cursor:pointer;transition:.15s}
+.dpad button:hover{border-color:var(--violet);color:var(--violet)}
+.dpad button[aria-pressed="true"]{background:var(--violet);color:#14122b;border-color:var(--violet)}
+.dpad button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.dpad .sp{visibility:hidden}
+.ratmeta{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);text-align:center;min-width:150px}
+.ratmeta b{display:block;color:var(--amber);font-size:15px;margin-bottom:4px}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:13px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left;color:var(--ink-mute)}
+th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;font-size:10.5px;letter-spacing:.06em}
+tr.bonus td{color:var(--amber)}
+.tw{overflow-x:auto}
+.bar{display:inline-block;height:9px;border-radius:2px;background:var(--violet);vertical-align:middle;margin-right:7px}
+.bar.h{background:var(--coral)}
+
+/* charset */
+#charGrid{display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+#charGrid canvas{width:100%;image-rendering:pixelated;background:#000;border-radius:2px;cursor:pointer;border:1px solid transparent}
+#charGrid canvas:hover,#charGrid canvas.sel{border-color:var(--cyan)}
+#charInfo{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin-top:12px;min-height:20px}
+
+/* sound */
+.playerow{display:flex;gap:10px;flex-wrap:wrap}
+button.play{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:9px;padding:11px 16px;cursor:pointer;transition:.15s;text-align:left}
+button.play:hover{border-color:var(--cyan);color:var(--cyan)}
+button.play:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+button.play small{display:block;color:var(--ink-mute);font-size:10.5px;margin-top:3px}
+.notes{display:flex;gap:3px;margin-top:14px;flex-wrap:wrap}
+.note{font-family:var(--fm);font-size:10px;color:var(--ink-mute);background:var(--surface-2);
+ border:1px solid var(--line-soft);border-radius:4px;padding:3px 6px}
+.note.on{background:var(--cyan);color:#0b2b30;border-color:var(--cyan)}
+
+/* maze */
+.mazewrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+#mazeCv{image-rendering:pixelated;width:100%;max-width:420px;height:auto;aspect-ratio:32/56;
+ border-radius:6px;border:1px solid var(--line);background:#000;flex:1 1 280px;display:block}
+.mazemeta{flex:1 1 220px;font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);line-height:1.75}
+.mazemeta b{color:var(--amber)}
+.mazekey{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.mazekey span{display:inline-flex;align-items:center;gap:6px}
+.mazekey i{width:11px;height:11px;border-radius:2px;display:inline-block}
+
+/* placement */
+.placewrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+#placeCv{image-rendering:pixelated;width:100%;max-width:420px;height:auto;aspect-ratio:32/56;
+ border-radius:6px;border:1px solid var(--line);flex:1 1 240px;display:block;background:#fff}
+.placectl{flex:1 1 260px;display:flex;flex-direction:column;gap:16px;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.placectl label{display:flex;flex-direction:column;gap:7px}
+.placectl label.inline{flex-direction:row;align-items:center;gap:9px}
+.placectl select{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.placectl input[type=range]{accent-color:var(--violet);width:100%}
+.placectl input[type=checkbox]{accent-color:var(--violet)}
+.placectl output{color:var(--amber)}
+.placestats{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:11px 13px;line-height:1.7}
+.placestats b{color:var(--amber);font-weight:500}
+.placekey{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
+.placekey span{display:inline-flex;align-items:center;gap:8px}
+.placekey i{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid var(--line)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:22px}
+.rule{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:16px 17px}
+.rule h3{font-size:14px;margin-bottom:6px}
+.rule p{font-size:13.5px;color:var(--ink-soft);margin:0}
+
+/* secrets */
+.secrets{list-style:none;counter-reset:s;padding:0;margin:0;display:flex;flex-direction:column;gap:26px}
+.secrets li{counter-increment:s;padding-left:46px;position:relative}
+.secrets li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:1px;
+ font-family:var(--fm);font-size:12px;color:var(--amber);border:1px solid var(--line);
+ border-radius:6px;padding:3px 7px;background:var(--surface-2)}
+.secrets h3{font-size:15px;margin-bottom:7px;color:var(--ink)}
+.secrets p{margin:0 0 9px;color:var(--ink-soft);font-size:14.5px;max-width:62ch}
+.secrets code{display:inline-block;font-family:var(--fm);font-size:11.5px;color:var(--cyan);
+ background:var(--surface-2);border:1px solid var(--line-soft);border-radius:5px;padding:3px 8px}
+footer{padding:48px 0 0;color:var(--ink-mute);font-size:13.5px}
+footer ul{padding-left:1.1em}
+footer li{margin-bottom:9px}
+@media (prefers-reduced-motion:no-preference){.plate{animation:r .45s ease both}}
+@keyframes r{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="hero">
+  <p class="eyebrow">Radar Rat Race &middot; Commodore 64 &middot; 1982</p>
+  <h1>The Rat Is<br>A Character</h1>
+  <p class="sub">This game has no sprites for its cast. The rat, the cat, the cheese and the
+  death squeak are all letters &mdash; entries in a custom font, stamped onto the screen two
+  characters wide and two tall. Everything below is read straight out of a paused
+  snapshot of the running machine.</p>
+</div>
+
+<div class="wrap">
+
+<section>
+  <p class="fig">01 &middot; The screen, as captured</p>
+  <h2 class="t">One frame, rebuilt from memory</h2>
+  <p class="lede">Not a screenshot &mdash; a reconstruction. Every pixel here is computed from
+  three separate regions of the snapshot: the 1,000 bytes of screen RAM holding character codes,
+  the 1,000 bytes of colour RAM (which lives with the video chip, not in the CPU's address
+  space), and the 2KB custom font. Put them together and the frame reassembles itself.</p>
+  <div class="plate">
+    <div class="screenwrap">
+      <canvas id="screenCv" width="320" height="200"></canvas>
+      <div class="stats" id="stats"></div>
+    </div>
+    <p class="cap"><b>320&times;200</b> &mdash; 40 columns by 25 rows of 8&times;8 characters,
+    the C64's native text resolution, upscaled with no smoothing. The grey blocks are walls and
+    the white gaps between them are the corridors; the rat and a cheese are both visible in there,
+    drawn as characters like everything else. The black rectangle at right is the radar panel:
+    its white dots are cheese blips, drawn as characters. The cyan square and the purple X's
+    are the game's only hardware sprites: one for the rat and one for each red rat, drawn here
+    from the sprite positions in the snapshot. Stars and cats are never shown on the radar.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">02 &middot; The cast</p>
+  <h2 class="t">Every character is a character</h2>
+  <p class="lede">Using the font for graphics is a classic C64 move &mdash; it costs almost no
+  memory and the hardware draws it for free. Here is the entire cast, pulled from font entries
+  <code>$40</code> through <code>$5F</code>. These are the real pixels, not illustrations.</p>
+  <div class="plate">
+    <div class="castgrid" id="castGrid"></div>
+    <p class="cap">Each one occupies four consecutive font entries, stamped as a 2&times;2 block
+    at screen offsets <code>0, 1, 40, 41</code> &mdash; the <code>40</code> being one screen row.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">03 &middot; Four frames of animation</p>
+  <h2 class="t">Turn the rat</h2>
+  <p class="lede">The entire animation budget for the player is four tiles. The game picks one
+  based on the rat's committed direction, then stamps it. That's the whole renderer &mdash;
+  there is no interpolation, no sprite multiplexing, no in-between frames. Press a direction.</p>
+  <div class="plate">
+    <div class="ratbox">
+      <canvas id="ratCv" width="16" height="16"></canvas>
+      <div class="dpad">
+        <button class="sp"></button>
+        <button data-dir="rat_up" aria-label="Face up">&#9650;</button>
+        <button class="sp"></button>
+        <button data-dir="rat_left" aria-label="Face left">&#9664;</button>
+        <button id="autoBtn" aria-label="Cycle directions">&#8635;</button>
+        <button data-dir="rat_right" aria-label="Face right">&#9654;</button>
+        <button class="sp"></button>
+        <button data-dir="rat_down" aria-label="Face down">&#9660;</button>
+        <button class="sp"></button>
+      </div>
+      <div class="ratmeta" id="ratMeta"></div>
+    </div>
+    <p class="cap">Four routines in the code, one per direction, each differing only in which
+    four font entries it reads. The middle button cycles them.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">04 &middot; The level format</p>
+  <h2 class="t">The maze is a bitmap</h2>
+  <p class="lede">The whole maze is 224 bytes. One bit per cell, 32 cells across by 56 down,
+  four bytes to a row &mdash; a 1 means wall. What you see on screen is a nine-by-nine window
+  onto it, redrawn every time the rat moves, always centred on it. Here is the entire level, with the
+  visible window marked.</p>
+  <div class="plate">
+    <div class="mazewrap">
+      <canvas id="mazeCv" width="32" height="56"></canvas>
+      <div class="mazemeta" id="mazeMeta"></div>
+    </div>
+    <p class="cap">Two of these exist in the whole game, at <code>$F370</code> and
+    <code>$F450</code>: one for rounds 1&ndash;3 and 8&ndash;11, the other for rounds 4&ndash;7 and 12&ndash;15. Scrolling is done in single-character
+    steps, so when the rat sits on an odd cell the renderer draws half-tile slivers along the
+    edges to keep the motion smooth.</p>
+  </div>
+  <p class="lede" style="margin-top:30px">Here is the odd part. The red rats consult that bitmap to
+  decide where they can walk. The player does not. The player's own collision reads back the
+  <em>characters already drawn on screen</em> and checks them against two codes &mdash;
+  <code>$7F</code> for an interior wall, <code>$2A</code> for the border beyond the map's edge.
+  Two sources of truth for one maze: the bitmap the level is authored in, and the picture
+  rendered from it.</p>
+  <div class="plate">
+    <div class="castgrid" id="tileGrid"></div>
+    <p class="cap">The player's test is a blacklist &mdash; those two codes block, everything
+    else is walkable. Which is why a cheese needs no special handling when eaten: remove it from
+    the ten-slot table and the next redraw simply doesn't draw it.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">05 &middot; Placement</p>
+  <h2 class="t">Who goes where, and why</h2>
+  <p class="lede">Three kinds of thing share the maze with you, and the game places each one a
+  different way. The red rats always start from the same spots. The cats come from a hand-made list
+  that the game thins out at random. The cheese is rolled fresh every round and thrown back
+  until it lands somewhere legal. Pick a round below and watch the game's own placement code
+  lay it out.</p>
+  <div class="plate">
+    <div class="placewrap">
+      <canvas id="placeCv" width="512" height="896"></canvas>
+      <div class="placectl">
+        <label>Round
+          <select id="placeRound"></select></label>
+        <label>Seconds on the title screen before pressing F1
+          <input type="range" id="placeWait" min="0" max="30" step="1" value="0">
+          <output id="placeWaitOut">0 seconds</output></label>
+        <label class="inline"><input type="checkbox" id="placeGrid" checked>Show the radar's cells</label>
+        <div class="placestats" id="placeStats"></div>
+        <div class="placekey">
+          <span><i style="background:#686868"></i>wall</span>
+          <span><i style="background:#000"></i>black cat</span>
+          <span><i style="background:#fff;opacity:.35"></i>cat left out</span>
+          <span><i style="background:#883932"></i>red rat spawn</span>
+          <span><i style="background:#bfce72"></i>cheese (red: the 2&times; one)</span>
+          <span><i style="background:#40318d"></i>rat start</span>
+        </div>
+      </div>
+    </div>
+    <p class="cap">The whole maze at the game's own scale, one cell per 16 pixels &mdash; the view in
+    play only ever shows nine cells of it at a time. <b>This is the game's placement code</b>,
+    ported line for line from the routines at <code>$EE57</code> and <code>$EEA8</code>, random
+    number generator included. Starting from the state the game is in when it loads, it
+    reproduces exactly the cats and cheese found in the captured round 1.</p>
+  </div>
+  <div class="rules">
+    <div class="rule"><h3>Red rats</h3><p>Seven fixed spawn points: five in a row near the
+      bottom of the maze and two near the top. A round uses the first 3 to 7 of them. After every
+      lost life the red rats go back to their spawn points and wait about 1.3 seconds before setting
+      off. The rat always starts in the same cell, two rows above the bottom spawns.</p></div>
+    <div class="rule"><h3>Black cats</h3><p>Each maze has a hand-made list of 16 cat positions.
+      A normal round deletes 8 of them at random and keeps the rest, in list order; a SPEED RUN
+      keeps all 16. Cats never move, and they never appear on the radar.</p></div>
+    <div class="rule"><h3>Cheese</h3><p>Ten per round, rolled once when the round is set up, not
+      again after a lost life. The game draws a random cell and throws it back if it is inside a
+      wall, in the same radar cell as a cheese it has already placed, exactly on a cat, or in the
+      radar cell of a red rat spawn point. The last one placed is the 2&times; cheese.</p></div>
+    <div class="rule"><h3>The dice</h3><p>One 16-bit shift register. The game sets it when it
+      loads and only ever advances it while placing cats and cheese, and once per tick while the
+      title screen waits for F1 &mdash; never during play. That is why the slider above changes
+      every round except the first.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">06 &middot; Difficulty</p>
+  <h2 class="t">Every fourth round is a SPEED RUN</h2>
+  <p class="lede">A handful of tables indexed by one round counter set the whole difficulty curve.
+  The chasing red rats grow from 3 to 7 and get faster from round 8. On rounds 3, 7, 11 and 15 the
+  rules change: the SPEED RUN banner plays, all 16 black cats appear, the red rats are frozen at
+  their spawn points until the clock runs out, you can't drop stars, the rat moves faster and
+  the clock drains twice as fast. After round 15 the counter wraps, and round 16 plays exactly
+  like round 1.</p>
+  <div class="plate">
+    <div class="tw"><table id="progTable"></table></div>
+    <p class="cap">Cat positions come from two fixed 16-cat layouts: a normal round keeps a random 8,
+    a SPEED RUN keeps all 16. The ten cheeses are placed randomly every round, re-rolled if they
+    land in a wall, on a cat, near a red rat spawn point, or in the same radar cell as another
+    cheese. The first round after loading always gets the same layout, because the random
+    generator's state is set before the title screen ever waits for you.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">07 &middot; The font</p>
+  <h2 class="t">All 256 entries</h2>
+  <p class="lede">The complete custom character set. Letters and digits are stored inverted &mdash;
+  drawn as holes punched in a solid block &mdash; which is why the game's text reads as white
+  letters on blue panels: the solid part takes the text colour and the holes show the white background. Past the text you can find the cast, the maze blocks, and the
+  radar dots. Click anything.</p>
+  <div class="plate">
+    <div id="charGrid"></div>
+    <div id="charInfo">Hover a tile to inspect it</div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">08 &middot; Sound</p>
+  <h2 class="t">Every tune, from the stored bytes</h2>
+  <p class="lede">The game stores its music as bare frequency bytes, one per note, written
+  straight into the SID chip's registers. No envelopes, no pattern data, no player routine worth
+  the name &mdash; just a list of numbers and a countdown. These are those exact numbers,
+  converted to real frequencies with the formula the chip uses.</p>
+  <div class="plate" style="margin-bottom:14px">
+    <div class="playerow">
+      <button class="play" id="bgmBtn" style="border-color:var(--violet);color:var(--violet)">Play the background music
+        <small>loops forever, exactly as the interrupt drives it</small></button>
+    </div>
+    <div class="notes" id="bgmStrip"></div>
+    <p class="cap">It's <b>Three Blind Mice</b>. Convert the stored bytes to pitches and phrase A
+    comes out as G, C, C, B, A, B, C, G, G &mdash; note for note, "they all ran after the
+    farmer's wife" &mdash; while phrase B is the descending tail. The interrupt advances one note
+    every fifth tick, walks each 16-note phrase <em>backwards</em>, and plays A three times then
+    B once: a 5.4-second loop, running under the entire game.
+    <br><br>Listen to the last note: it's held twice as long as the rest. That isn't in the data
+    as a long note &mdash; it's two ordinary entries at the same pitch. Because the engine
+    <b>never touches the chip's gate</b>, repeating a pitch doesn't restart the note, so the two
+    entries simply run together. The tune's phrasing is a side effect of what the code
+    <em>doesn't</em> do.</p>
+  </div>
+  <div class="plate">
+    <div class="playerow">
+      <button class="play" data-tune="game_start_tune" data-wave="square" data-step="0.1015">Game start
+        <small>47 steps &middot; one per 6 ticks</small></button>
+      <button class="play" data-tune="speed_run_tune" data-wave="square" data-step="0.1692">SPEED RUN
+        <small>16 notes &middot; one per 10 ticks</small></button>
+      <button class="play" data-tune="round_complete_tune" data-wave="square" data-step="0.2030">Round complete
+        <small>7 notes &middot; one per 12 ticks</small></button>
+      <button class="play" data-tune="cheese_tune" data-wave="square" data-step="0.0677">Cheese
+        <small>3 notes &middot; one per 4 ticks</small></button>
+      <button class="play" data-tune="bonus_2x_tune" data-wave="square" data-step="0.0169">2&times; cheese
+        <small>33 steps &middot; one per tick</small></button>
+    </div>
+    <div class="notes" id="noteStrip"></div>
+    <p class="cap">Frequency = stored byte &times; 256, then &times; 985248 &divide; 16777216
+    (the PAL clock divided by the chip's 24-bit accumulator). A stored 0 is a rest.
+    <b>The tempos are the game's own</b>. The game's clock is not the video frame: it is a timer
+    chip programmed for 16,667 cycles, which on a PAL machine ticks about 59 times a second. The
+    SPEED RUN tune advances every tenth tick, so each note lasts about a sixth of a second. Tunes
+    stored backwards are played here in the order you hear them. The game start fanfare is the
+    opening of Three Blind Mice.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">09 &middot; Secrets</p>
+  <h2 class="t">Things the manual never told you</h2>
+  <p class="lede">None of these are in the instructions, and several contradict what has been
+  published about the game. Every one came out of the code; the ones marked as confirmed were
+  then tested in an emulator. Each ends with where to look.</p>
+  <div class="plate">
+    <ol class="secrets">
+      <li>
+        <h3>The black cats are lethal</h3>
+        <p>Published descriptions say the cats only slow you down. In this build they kill the rat
+        exactly like a red rat does: one routine checks the rat's position against both, and
+        both set the same "caught" flag. It's only the red rats that cats slow down. And since cats
+        never show on the radar, the first you see of one is when it scrolls into view.</p>
+        <code>player_collision_check at $F344 &middot; confirmed by putting the rat on a cat</code>
+      </li>
+      <li>
+        <h3>There is exactly one bonus rat</h3>
+        <p>The title screen says BONUS RAT FOR 20000 PTS, and published descriptions turn that into
+        an extra life every 20,000 points. The code gives one per game. It checks whether the
+        middle two digits of the score are exactly "20", and a flag stops it paying out again. That
+        flag is only cleared when the game ends. Every instruction that could write to it has been
+        checked, including the indexed writes that could reach it indirectly: nothing else does.</p>
+        <code>add_score at $F02A &middot; the flag at $99 is reset only by game_over_reset</code>
+      </li>
+      <li>
+        <h3>Your whole game is decided on the title screen</h3>
+        <p>The first round's cats and cheese are placed before the title screen appears, so the
+        first game after loading always gets the same round 1. After that the random number
+        generator is only moved on once per tick while the title screen waits for F1, never during
+        play. How long you wait before pressing F1 decides the layout of every later round in the
+        game, and nothing you do in the maze changes it. Try it in the Placement section above.</p>
+        <code>prng_next at $EE2E is called from placement and the title loop only &middot; round 1 confirmed across two loads</code>
+      </li>
+      <li>
+        <h3>Round 16 is round 1 again</h3>
+        <p>The ROUND counter on screen keeps going up, but the table index behind it wraps after
+        15. Round 16 has round 1's red rats, cats, speed and maze. Once you have survived 15 rounds the
+        game never gets any harder.</p>
+        <code>next_round at $F2BF resets the index when it reaches 15</code>
+      </li>
+      <li>
+        <h3>The 2&times; cheese doubles everything after it, until you die</h3>
+        <p>One cheese has a small red "2x" in its corner. It doesn't just double the next slice:
+        from that one on, every slice scores double and X2 flashes on the panel, until you lose a
+        life. Losing a life also resets the slice value to 100. Slices are worth 100, 200,
+        300&hellip; the tenth is worth 1,000, and each unit of TIME left at the end of a round is
+        worth 60 more.</p>
+        <code>check_meal_eaten at $F0CA &middot; score_doubler at $C0, cleared when a life starts</code>
+      </li>
+      <li>
+        <h3>In a SPEED RUN the red rats wait for the clock</h3>
+        <p>In rounds 3, 7, 11 and 15 the red rats sit frozen on their spawn points and only start
+        chasing when TIME runs out. There's a catch in the other direction too: if you're caught
+        during a SPEED RUN, it's over. You lose the life and go straight on to the next round.</p>
+        <code>red_rat_move_countdown = $FF &middot; timeout_handler at $EAC0 &middot; confirmed in the emulator</code>
+      </li>
+      <li>
+        <h3>Running out of time never kills you</h3>
+        <p>When the TIME bar empties nothing dramatic happens. You can't drop stars any more, and
+        every two-thirds of a second the rat gets a little slower, until it moves at a third of its
+        normal speed. The rat never stops, either: with no input it keeps going, and at a wall it
+        turns right by itself, or left if right is blocked.</p>
+        <code>timeout_handler at $EAC0 &middot; move_player at $E78C</code>
+      </li>
+      <li>
+        <h3>The red rats don't know where the walls are</h3>
+        <p>No red rat ever plans a route. At each cell it compares its position with yours along one
+        axis and steps toward you if that cell is open; once it is level with you it switches axis.
+        If the way toward you is a wall, it carries straight on, or turns right, or turns left,
+        and only tries again at the next cell. It has no idea that the way round is the other way.</p>
+        <code>red_rat_chase_direction at $E23C &middot; move_all_red_rats at $E088</code>
+      </li>
+      <li>
+        <h3>The red rats and the rat read different maps</h3>
+        <p>The red rats test their next step against the 224-byte maze bitmap. The rat's own movement
+        never touches it: it reads back the characters already painted on screen. The same wall is
+        stored twice, in two formats, and each reader uses the one it can check more cheaply.</p>
+        <code>red_rat_can_step reads the bitmap &middot; read_screen_in_direction reads screen RAM</code>
+      </li>
+      <li>
+        <h3>The game notices a new high score, then forgets</h3>
+        <p>When your score passes the high score, the game sets a flag saying so. Nothing ever
+        reads that flag. Whatever it was meant to trigger never made it into this build.</p>
+        <code>new_hiscore_flag at $0217 &middot; set at $F090, cleared at game over, never read</code>
+      </li>
+      <li>
+        <h3>The music is stored backwards</h3>
+        <p>Three Blind Mice runs continuously under the whole game, and the melody table is read
+        from the last entry to the first. Every tune in the game is stored that way except the
+        round-complete jingle. Counting an index down until it goes negative is a common 6502
+        idiom: the end test is a single branch on the sign flag.</p>
+        <code>music_tick at $EA2B &middot; index counts 15 down to 0, reloads, repeats</code>
+      </li>
+      <li>
+        <h3>The build signs its own name</h3>
+        <p>Tucked in the string table is <b>COMMODORE V.02</b>. The game keeps its text in two
+        alphabets: ordinary labels use standard screen codes, while the banners &mdash; GAME OVER,
+        SPEED RUN &mdash; use a private set of bright glyphs where S is <code>$1B</code> instead of
+        <code>$13</code>. Four of them, P, L, semicolon and full stop, double as the key diagram on
+        the title screen.</p>
+        <code>str_speed_run at $FD33 &middot; str_version at $FD7C</code>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <p class="fig">What we're still unsure of</p>
+  <ul>
+    <li>Whether other releases behave differently: the published "cats only delay you" description
+      doesn't match this V.02 build, and may describe another version.</li>
+    <li>Two stray bytes, <code>$08</code> and <code>$F1</code>, sit in the filler at the top of
+      memory. Nothing reads them.</li>
+  </ul>
+</footer>
+</div>
+
+<script>
+const DATA = {"charset":[[0,0,0,0,0,0,0,0],[199,147,57,57,1,57,57,255],[3,153,153,131,153,153,3,255],[195,153,63,63,63,153,195,255],[7,155,153,153,153,155,7,255],[1,159,159,131,159,159,1,255],[1,159,159,131,159,159,15,255],[195,153,63,33,57,153,195,255],[57,57,57,1,57,57,57,255],[195,231,231,231,231,231,195,255],[225,243,243,243,51,51,135,255],[57,51,39,15,39,51,57,255],[15,159,159,159,159,159,1,255],[57,17,1,41,57,57,57,255],[57,25,9,33,49,57,57,255],[131,57,57,57,57,57,131,255],[3,153,153,131,159,159,15,255],[199,155,61,61,53,155,197,255],[3,57,57,3,39,51,57,255],[131,57,63,131,249,57,131,255],[129,165,231,231,231,231,195,255],[57,57,57,57,57,57,131,255],[57,57,57,147,147,199,199,255],[57,57,57,41,1,131,187,255],[57,57,147,199,147,57,57,255],[57,57,147,131,199,199,199,255],[1,57,243,199,159,57,1,255],[124,198,192,124,6,198,124,0],[252,102,102,124,96,96,240,0],[240,96,96,96,96,96,254,0],[0,24,24,0,24,24,32,0],[0,0,0,0,0,24,24,0],[255,255,255,255,255,255,255,255],[60,102,192,192,192,102,60,0],[254,96,96,124,96,96,254,0],[248,100,102,102,102,100,248,0],[252,198,198,252,216,204,198,0],[198,198,198,198,198,198,124,0],[198,230,246,222,206,198,198,0],[243,231,207,255,255,255,255,255],[249,243,231,231,231,243,249,255],[159,207,231,231,231,207,159,255],[16,84,56,254,56,84,16,0],[124,238,198,198,198,238,124,0],[255,255,255,255,231,231,207,159],[255,255,255,129,129,255,255,255],[255,255,255,255,255,231,231,255],[255,249,243,231,207,159,63,255],[131,57,57,57,57,57,131,255],[231,199,231,231,231,231,195,255],[131,57,57,243,199,31,1,255],[131,57,249,227,249,57,131,255],[243,227,211,179,1,243,243,255],[1,63,63,3,249,57,131,255],[227,207,159,3,57,57,131,255],[129,57,243,231,231,231,231,255],[131,57,57,131,57,57,131,255],[131,57,57,129,249,243,199,255],[255,231,231,255,231,231,255,255],[255,231,231,255,231,231,223,255],[60,102,192,222,198,102,60,0],[56,108,198,198,254,198,134,0],[198,238,254,214,198,198,198,0],[198,198,198,108,108,56,56,0],[1,13,31,31,31,15,3,3],[128,176,248,248,248,240,192,192],[7,7,7,3,1,1,0,0],[224,224,224,192,0,0,192,0],[0,0,0,0,0,7,15,127],[0,0,0,28,62,62,252,255],[143,143,7,0,0,0,0,0],[255,252,62,62,28,0,0,0],[0,0,1,1,3,7,7,7],[0,192,0,0,192,224,224,224],[3,3,15,31,31,31,13,1],[192,192,240,248,248,248,176,128],[0,0,0,56,124,124,63,255],[0,0,0,0,0,224,240,254],[255,63,124,124,56,0,0,0],[241,241,224,0,0,0,0,0],[2,7,13,31,63,91,255,255],[0,0,128,192,224,176,248,252],[247,156,254,248,220,254,244,254],[0,0,96,149,34,69,240,0],[0,0,16,16,56,254,56,16],[64,224,64,0,0,2,7,130],[17,64,224,64,0,8,28,8],[192,144,16,56,254,56,16,16],[4,6,7,5,7,7,3,3],[32,96,224,160,224,224,192,192],[7,7,7,31,31,95,143,127],[224,224,224,248,248,248,240,224],[0,128,66,59,0,238,136,238],[0,1,70,216,0,233,138,236],[136,238,0,31,36,72,128,0],[138,233,0,248,36,18,1,0],[15,15,15,15,255,255,255,255],[240,240,240,240,255,255,255,255],[255,255,255,255,15,15,15,15],[255,255,255,255,240,240,240,240],[254,242,224,224,224,240,252,252],[127,79,7,7,7,15,63,63],[248,248,248,252,254,254,255,255],[31,31,31,63,255,255,63,255],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[255,0,0,0,0,0,0,255],[255,127,127,127,127,127,127,255],[255,63,63,63,63,63,63,255],[255,31,31,31,31,31,31,255],[255,15,15,15,15,15,15,255],[255,7,7,7,7,7,7,255],[255,3,3,3,3,3,3,255],[255,1,1,1,1,1,1,255],[255,255,255,255,255,255,255,255],[240,0,0,240,0,0,240,0],[0,240,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[144,0,0,96,0,0,96,0],[0,144,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[123,163,203,243,27,67,107,147],[187,227,11,51,91,131,171,211],[251,35,4,4,4,4,5,5],[5,5,5,5,6,6,6,6],[6,6,6,7,216,216,216,216],[217,217,217,217,217,217,218,218],[218,218,218,218,218,219,87,127],[167,207,247,31,71,111,151,191],[231,15,55,95,5,5,5,5],[5,6,6,6,6,6,6,7],[7,7,128,64,32,16,8,4],[2,1,8,9,45,19,3,15],[18,5,19,3,15,18,5,32],[32,32,20,9,13,5,32,58],[32,119,119,119,119,119,119,119],[119,119,126,40,3,41,32,49],[57,56,50,32,3,15,13,13],[15,4,15,18,5,32,5,12],[5,3,20,18,15,14,9,3],[19,32,12,20,4,46,14,5],[24,20,13,5,1,12,18,15],[21,14,4,60,61,62,34,43],[63,34,36,0,0,0,0,27],[28,34,34,35,0,0,36,37],[38,0,0,0,0,32,32,38],[43,31,0,1,2,3,40,41],[42,43,16,21,19,8,39,6],[49,39,32,20,15,32,18,21],[14,32,32,2,15,14,21,19],[32,18,1,20,32,32,32,6],[15,18,32,50,48,48,48,48],[32,16,20,19,3,15,13,13],[15,4,15,18,5,32,22,46],[48,50,19,20,1,18,32,19],[3,18,5,5,14,13,15,22],[5,32,18,1,20,32,32,32],[0,1,2,3,4,40,41,42],[43,44,45,0,1,40,41,64],[65,66,67,68,69,70,71,72],[73,74,75,76,77,78,79,92],[93,94,95,155,197,19,194,5],[5,6,5,66,70,74,78,67],[71,75,79,64,68,72,76,65],[69,73,77,65,69,73,77,67],[71,75,79,64,68,72,76,66],[70,74,78,0,2,0,254,254],[0,2,0,26,30,34,38,22],[30,38,104,104,104,104,104,6],[6,0,1,0,1,0,1,1],[22,46,2,40,10,48,12,60],[40,34,2,22,2,14,56,12],[12,12,30,30,32,36,42,44],[46,56,60,66,72,86,88,106],[48,44,62,12,40,42,30,44],[62,24,16,38,52,6,46,58],[6,22,22,30,32,48,58,64],[64,72,80,80,80,84,96,100],[8,40,254,254,24,56,254,254],[30,32,35,35,32,27,24,0],[54,60,68,0,25,0,25,0],[33,0,31,28,31,0,33,0],[33,0,25,0,0,0,0,17],[17,0,19,0,19,0,21,0],[21,0,25,0,33,37,41,45],[49,65,95,125,33,37,41,45],[49,65,95,125,33,37,41,45],[49,65,95,125,33,37,41,45],[49,65,95,125,0,36,34,32],[30,38,36,34,32,30,40,38],[36,34,32,30,0,0,0,0],[21,22,0,22,0,0,25,0],[0,0,0,0,21,22,0,22],[0,0,25,0,0,0,0,0],[17,0,0,19,0,0,21,0],[0,0,0,0,17,0,0,19],[0,0,21,2,3,6,3,4],[5,6,4,5,6,6,6,6],[6,6,6,6,6,6,6,6],[6,5,5,5,5,5,5,5],[5,7,7,15,7,7,7,15],[7,7,7,15,7,7,7,15],[0,0,255,0,0,0,255,0],[0,0,255,0,0,0,255,0],[0,0,1,1,1,1,0,0],[0,0,1,1,1,1,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,0,255,0],[255,0,255,0,255,8,255,241],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,0,255,0,255,0,255],[0,255,33,238,55,224,16,238]],"screen":[32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,20,9,13,5,32,58,32,119,119,119,119,119,119,119,119,119,125,32,32,32,8,9,45,19,3,15,18,5,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,50,48,48,48,48,32,32,32,32,32,32,32,32,32,32,32,32,127,127,127,127,0,0,127,127,127,127,0,0,0,0,127,127,127,127,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,127,127,127,127,0,0,127,127,127,127,0,0,0,0,127,127,127,127,32,32,19,3,15,18,5,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,127,127,127,127,0,0,127,127,127,127,0,0,0,0,127,127,127,127,32,32,32,32,32,32,32,32,48,48,32,32,32,32,32,32,32,32,32,32,32,32,127,127,127,127,0,0,127,127,127,127,0,0,0,0,127,127,127,127,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,32,32,97,96,32,32,32,32,99,32,14,5,24,20,32,32,32,32,32,32,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32,32,32,32,13,5,1,12,32,32,32,32,32,32,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32,32,32,32,32,49,48,48,32,32,32,32,32,32,32,127,127,0,0,127,127,127,127,64,65,127,127,127,127,127,127,0,0,32,32,32,32,97,32,96,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,127,127,0,0,127,127,127,127,66,67,127,127,127,127,127,127,0,0,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,127,127,0,0,127,127,127,127,0,0,127,127,127,127,127,127,0,0,32,32,32,32,32,32,32,98,32,32,32,100,101,32,32,32,32,32,32,32,32,32,127,127,0,0,127,127,127,127,0,0,127,127,127,127,127,127,0,0,32,32,32,32,98,32,32,96,32,99,32,102,103,32,32,32,32,32,32,32,32,32,127,127,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,127,127,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,127,127,80,81,127,127,127,127,0,0,127,127,127,127,127,127,0,0,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,127,127,82,0,127,127,127,127,0,0,127,127,127,127,127,127,0,0,32,32,32,32,32,98,32,32,32,32,32,18,15,21,14,4,32,32,32,32,32,32,0,0,0,0,127,127,127,127,0,0,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,49,32,32,32,32,32,32,0,0,0,0,127,127,127,127,0,0,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,40,3,41,32,49,57,56,50,32,3,15,13,13,15,4,15,18,5,32,5,12,5,3,20,18,15,14,9,3,19,32,12,20,4,46,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32],"colorram":[6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,0,0,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,6,6,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,6,6,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,7,7,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,7,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,0,0,0,0,0,0,0,0,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6],"state":{"rat_x":30,"rat_y":78,"round_number":1,"lives":2,"meals_remaining":9,"enemy_count":2,"enemy_x":[28,30,32,38,22,30,38,104],"enemy_y":[98,95,98,104,104,6,6,1]},"tables":{"meal_x_table":[62,60,14,20,16,18,24,42,32,40],"meal_y_table":[4,54,0,26,52,2,84,50,24,44],"hazard_x_table":[46,2,12,34,2,14,56,12,12,12,12,12,12,12,12,12],"hazard_y_table":[12,30,42,56,72,86,88,106,106,106,106,106,106,106,106,106],"round_to_enemy_count":[2,3,6,3,4,5,6,4,5,6,6,6,6,6,6],"round_to_hazard_count":[7,7,15,7,7,7,15,7,7,7,15,7,7,7,15],"round_to_paramset_flags":[0,0,-1,0,0,0,-1,0,0,0,-1,0,0,0,-1]},"music":{"speed_run_tune":[30,32,34,36,38,40,30,32,34,36,38,30,32,34,36,0],"round_complete_tune":[30,32,35,35,32,27,24,24,24,0],"cheese_tune":[68,60,54,0],"bonus_2x_tune":[125,95,65,49,45,41,37,33,125,95,65,49,45,41,37,33,125,95,65,49,45,41,37,33,125,95,65,49,45,41,37,33,0],"game_start_tune":[21,0,0,19,0,0,17,0,0,0,0,0,21,0,0,19,0,0,17,0,0,0,0,0,25,0,0,22,0,22,21,0,0,0,0,0,25,0,0,22,0,22,21,0,0,0,0]},"cast":{"rat_up":[64,65,66,67],"rat_right":[68,69,70,71],"rat_down":[72,73,74,75],"rat_left":[76,77,78,79],"cheese_2x":[80,81,82,83],"sparkle":[84,85,86,87],"cat":[88,89,90,91],"eeek":[92,93,94,95]},"bgm":{"melodyA":[0,25,0,25,0,33,0,31,28,31,0,33,0,33,0,25],"melodyB":[0,0,0,0,17,17,0,19,0,19,0,21,0,21,0,25],"noteTicks":5,"phrases":4,"tickHz":59.114},"maze":{"a":[0,1,254,0,0,1,254,0,119,216,30,254,119,216,30,0,0,0,0,238,126,248,30,238,0,1,222,0,15,215,222,254,160,87,0,0,175,87,119,253,168,87,116,5,171,87,116,5,43,80,117,245,104,87,117,245,107,208,4,5,8,23,103,61,107,247,103,61,96,7,103,60,127,247,0,0,3,0,0,59,123,127,63,59,120,7,63,3,123,119,3,57,3,112,51,57,191,127,51,61,128,0,48,1,191,127,63,61,191,127,63,61,128,0,0,0,187,123,59,61,187,123,59,61,187,96,3,49,187,107,59,53,128,3,56,53,183,123,3,4,55,123,59,62,0,27,59,62,61,192,0,0,61,192,0,54,0,118,239,54,55,118,239,54,55,112,15,48,55,118,224,54,48,6,11,54,55,222,235,54,55,222,235,54,0,0,8,6,221,190,235,54,221,190,235,54,192,0,3,54,221,170,171,0,221,170,171,62,12,42,168,62,97,170,171,6,111,170,171,54,0,0,0,0],"b":[255,248,0,0,255,250,175,158,128,10,175,158,189,234,160,2,160,42,174,218,173,170,174,218,168,168,0,0,168,170,219,250,170,170,218,2,138,130,218,250,170,170,218,130,168,168,0,186,168,170,218,130,173,170,218,250,160,42,218,2,189,234,219,250,128,8,0,0,191,250,219,122,128,2,219,122,253,238,192,2,128,14,251,218,173,238,251,218,45,238,251,218,40,0,3,218,171,247,224,0,171,1,0,0,131,125,123,190,184,125,123,190,187,124,123,190,187,0,113,176,184,60,117,182,129,188,117,182,189,188,0,6,189,188,117,182,189,188,117,182,129,188,113,176,0,0,123,190,51,236,123,190,48,236,120,0,48,236,123,254,48,0,3,0,127,174,219,118,0,14,24,6,109,174,251,254,109,160,0,0,0,46,239,187,109,174,239,187,109,160,3,187,0,0,0,0,239,106,171,190,239,42,168,0,239,170,171,246,1,170,170,6,108,0,2,246,109,190,250,246,0,0,0,240],"w":32,"h":56,"rat_cell":[15,39],"view":9}};
+const PAL=["#000000","#ffffff","#883932","#67b6bd","#8b3f96","#55a049","#40318d","#bfce72",
+"#8b5429","#574200","#b86962","#505050","#686868","#9ad284","#6c5eb5","#959595"];
+
+function glyphRows(code){
+  if(code<128) return DATA.charset[code];
+  return DATA.charset[code-128].map(r=>r^0xFF);
+}
+function drawGlyph(ctx,code,px,py,s,col){
+  const rows=glyphRows(code); ctx.fillStyle=col;
+  for(let y=0;y<8;y++){const r=rows[y];
+    for(let x=0;x<8;x++) if(r&(1<<(7-x))) ctx.fillRect(px+x*s,py+y*s,s,s);}
+}
+function drawTile2x2(ctx,codes,s,col){
+  ctx.fillStyle="#000"; ctx.fillRect(0,0,16*s,16*s);
+  const pos=[[0,0],[1,0],[0,1],[1,1]];
+  codes.forEach((c,i)=>{const[cx,cy]=pos[i]; drawGlyph(ctx,c,cx*8*s,cy*8*s,s,col);});
+}
+
+function renderScreen(){
+  const ctx=document.getElementById('screenCv').getContext('2d');
+  ctx.fillStyle=PAL[1]; ctx.fillRect(0,0,320,200);   // background colour 1, white
+  for(let r=0;r<25;r++) for(let c=0;c<40;c++){
+    const i=r*40+c;
+    drawGlyph(ctx,DATA.screen[i],c*8,r*8,1,PAL[DATA.colorram[i]&15]);
+  }
+  // Hardware sprites: the radar's moving dots. Register = (position AND $FC) + $D0 / $72,
+  // and sprite (24,50) is the top-left pixel of the screen. Sprite 0 = the rat, a 4x4
+  // square in cyan; sprites 1-7 = the red rats, a 4x4 X in purple.
+  const st=DATA.state, sq=[0xF0,0xF0,0xF0,0xF0], ex=[0x90,0x60,0x60,0x90];
+  const sprite=(wx,wy,rows,col)=>{
+    const sx=(wx&0xFC)+0xD0-24, sy=(wy&0xFC)+0x72-50;
+    ctx.fillStyle=col;
+    rows.forEach((bits,y)=>{ for(let x=0;x<8;x++) if(bits&(0x80>>x)) ctx.fillRect(sx+x,sy+y,1,1); });
+  };
+  for(let i=0;i<=st.enemy_count;i++) sprite(st.enemy_x[i],st.enemy_y[i],ex,PAL[4]);
+  sprite(st.rat_x,st.rat_y,sq,PAL[3]);
+}
+function renderStats(){
+  const s=DATA.state;
+  const items=[["Round",s.round_number],["Lives",s.lives],
+    ["Cheese left",(s.meals_remaining+1)+" / 10"],["Red rats chasing",s.enemy_count+1],
+    ["Rat position",s.rat_x+", "+s.rat_y]];
+  document.getElementById('stats').innerHTML=items.map(([k,v])=>
+    `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+}
+
+const CAST=[
+  ["rat_up","Rat","Facing up. One of four.","#6c5eb5"],
+  ["rat_right","Rat","Same tiles, recoloured red, become the enemy.","#b86962"],
+  ["cat","Black cat","Never moves. Kills the rat, stuns a red rat.","#505050"],
+  ["cheese_2x","Cheese","The red 2x corner marks the one that doubles your score.","#e8a33d"],
+  ["sparkle","Star","Your weapon. Fire drops three behind you.","#ffffff"],
+  ["eeek","EEEK","Drawn when the rat is caught.","#67b6bd"],
+];
+function renderCast(){
+  const g=document.getElementById('castGrid');
+  g.innerHTML=CAST.map(([key,name,desc])=>
+    `<div class="castcard"><canvas data-cast="${key}" width="64" height="64"></canvas>
+     <h3>${name}</h3><p>${desc}</p>
+     <div class="codes">$${DATA.cast[key][0].toString(16).toUpperCase()}&ndash;$${DATA.cast[key][3].toString(16).toUpperCase()}</div></div>`).join('');
+  CAST.forEach(([key,,,col])=>{
+    const cv=g.querySelector(`canvas[data-cast="${key}"]`);
+    drawTile2x2(cv.getContext('2d'),DATA.cast[key],4,col);
+  });
+}
+
+function renderMaze(){
+  const M=DATA.maze, cv=document.getElementById('mazeCv'), ctx=cv.getContext('2d');
+  const bit=(bm,cx,cy)=> (bm[cy*4+(cx>>3)] >> (7-(cx&7))) & 1;
+  ctx.fillStyle='#0a0b18'; ctx.fillRect(0,0,M.w,M.h);
+  for(let y=0;y<M.h;y++) for(let x=0;x<M.w;x++){
+    if(bit(M.a,x,y)){ ctx.fillStyle='#686868'; ctx.fillRect(x,y,1,1); }
+  }
+  // the 9x9 window currently on screen, centred on the rat
+  const [rx,ry]=M.rat_cell, h=(M.view-1)/2;
+  ctx.fillStyle='rgba(143,127,224,0.30)';
+  ctx.fillRect(rx-h,ry-h,M.view,M.view);
+  ctx.fillStyle='#e8a33d'; ctx.fillRect(rx,ry,1,1);
+  document.getElementById('mazeMeta').innerHTML=
+    `<b>224 bytes</b><br>${M.w} x ${M.h} cells, 1 bit each<br>4 bytes per row`+
+    `<br><br>rat at cell <b>${rx}, ${ry}</b><br>visible window ${M.view} x ${M.view} cells`+
+    `<div class="mazekey"><span><i style="background:#686868"></i>wall</span>`+
+    `<span><i style="background:#8f7fe0"></i>on screen now</span>`+
+    `<span><i style="background:#e8a33d"></i>the rat</span></div>`;
+}
+
+const TILES=[
+  [0x7F,"Interior wall","A wall inside the maze. Blocks the player.","#686868"],
+  [0x2A,"Border","Fills everything beyond the map's edge with little yellow stars. Also blocks.","#bfce72"],
+  [0x00,"Open floor","Anything that isn't one of the two wall codes is walkable.","#40318d"],
+];
+function renderTiles(){
+  const g=document.getElementById('tileGrid');
+  g.innerHTML=TILES.map(([code,name,desc])=>
+    `<div class="castcard"><canvas data-tile="${code}" width="64" height="64"></canvas>
+     <h3>${name}</h3><p>${desc}</p>
+     <div class="codes">$${code.toString(16).toUpperCase().padStart(2,'0')}</div></div>`).join('');
+  TILES.forEach(([code,,,col])=>{
+    const cv=g.querySelector(`canvas[data-tile="${code}"]`);
+    const ctx=cv.getContext('2d');
+    ctx.fillStyle="#000"; ctx.fillRect(0,0,64,64);
+    drawGlyph(ctx,code,16,16,4,col);
+  });
+}
+
+const DIRS=["rat_up","rat_right","rat_down","rat_left"];
+const DIRNAME={rat_up:"Up",rat_right:"Right",rat_down:"Down",rat_left:"Left"};
+let curDir="rat_down", autoTimer=null;
+function showRat(dir){
+  curDir=dir;
+  const cv=document.getElementById('ratCv');
+  drawTile2x2(cv.getContext('2d'),DATA.cast[dir],1,"#bfce72");
+  const codes=DATA.cast[dir].map(c=>"$"+c.toString(16).toUpperCase()).join(" ");
+  document.getElementById('ratMeta').innerHTML=`<b>${DIRNAME[dir]}</b>font entries<br>${codes}`;
+  document.querySelectorAll('.dpad button[data-dir]').forEach(b=>
+    b.setAttribute('aria-pressed', b.dataset.dir===dir ? "true":"false"));
+}
+function wireRat(){
+  document.querySelectorAll('.dpad button[data-dir]').forEach(b=>
+    b.addEventListener('click',()=>{stopAuto(); showRat(b.dataset.dir);}));
+  document.getElementById('autoBtn').addEventListener('click',()=>{
+    if(autoTimer) return stopAuto();
+    let i=DIRS.indexOf(curDir);
+    autoTimer=setInterval(()=>{i=(i+1)%4; showRat(DIRS[i]);},420);
+    document.getElementById('autoBtn').setAttribute('aria-pressed',"true");
+  });
+  showRat(curDir);
+}
+function stopAuto(){
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
+  document.getElementById('autoBtn').setAttribute('aria-pressed',"false");
+}
+
+function renderProg(){
+  // round_index 0-14; the counter wraps after 15 rounds
+  const redRats=[3,4,7,4,5,6,7,5,6,7,7,7,7,7,7], cats=[8,8,16,8,8,8,16,8,8,8,16,8,8,8,16],
+        speed=[6,6,6,6,6,6,6,5,5,5,5,5,5,5,5], maze="AAABBBBAAAABBBB";
+  let html='<tr><th>Round</th><th>Red rats</th><th>Cats</th><th>Red rat move</th><th>Maze</th><th>Mode</th></tr>';
+  for(let i=0;i<15;i++){
+    const sr=(i%4)===2;
+    html+=`<tr class="${sr?'bonus':''}"><td>${i+1}</td>`+
+      `<td><span class="bar" style="width:${redRats[i]*9}px"></span>${redRats[i]}</td>`+
+      `<td><span class="bar h" style="width:${cats[i]*4}px"></span>${cats[i]}</td>`+
+      `<td>every ${speed[i]} ticks</td><td>${maze[i]}</td><td>${sr?'SPEED RUN':'normal'}</td></tr>`;
+  }
+  document.getElementById('progTable').innerHTML=html;
+}
+
+function renderCharGrid(){
+  const grid=document.getElementById('charGrid'), info=document.getElementById('charInfo');
+  for(let code=0;code<256;code++){
+    const cv=document.createElement('canvas');
+    cv.width=8;cv.height=8;
+    drawGlyph(cv.getContext('2d'),code,0,0,1,"#9ad284");
+    const hex="$"+code.toString(16).toUpperCase().padStart(2,'0');
+    cv.title=hex;
+    const show=()=>{
+      grid.querySelectorAll('canvas').forEach(x=>x.classList.remove('sel'));
+      cv.classList.add('sel');
+      const addr=(0x3800+code*8).toString(16).toUpperCase();
+      info.textContent=`${hex} (${code})  ->  font data at $${addr}`;
+    };
+    cv.addEventListener('mouseenter',show);
+    cv.addEventListener('click',show);
+    grid.appendChild(cv);
+  }
+}
+
+let actx, playTimers=[];
+function freqOf(b){return b*256*985248/16777216;}
+
+// The engine never writes a SID control register, so the gate is never
+// retriggered: a voice is one continuously-running oscillator whose pitch
+// changes, and a stored 0 simply stops it oscillating. Modelling it that way
+// means two adjacent entries at the same pitch become ONE sustained note,
+// exactly as the hardware does it -- not two re-articulated beeps.
+function renderVoice(freqs,wave,step,gainLevel,onStep){
+  const RAMP=0.004, lead=0.05;
+  const t0=actx.currentTime+lead;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type=wave; g.gain.setValueAtTime(0,t0);
+  let prev=null;
+  freqs.forEach((f,i)=>{
+    const t=t0+i*step;
+    if(f>0){
+      o.frequency.setValueAtTime(f,t);
+      if(prev===null||prev===0){            // coming out of silence: open the gain
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(gainLevel,t+RAMP);
+      }
+    }else if(prev!==null&&prev>0){          // entering silence: close it
+      g.gain.setValueAtTime(gainLevel,t);
+      g.gain.linearRampToValueAtTime(0,t+RAMP);
+    }
+    if(onStep) playTimers.push(setTimeout(()=>onStep(i),(lead+i*step)*1000));
+    prev=f;
+  });
+  const end=t0+freqs.length*step;
+  g.gain.setValueAtTime(g.gain.value,end);
+  g.gain.linearRampToValueAtTime(0,end+RAMP);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t0); o.stop(end+0.05);
+  return {osc:o,end};
+}
+
+function playTune(bytes,wave,step){
+  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state==='suspended') actx.resume();
+  playTimers.forEach(clearTimeout); playTimers=[];
+  const strip=document.getElementById('noteStrip');
+  strip.innerHTML=bytes.map(b=>`<span class="note">${b===0?'rest':Math.round(freqOf(b))+' Hz'}</span>`).join('');
+  const els=strip.querySelectorAll('.note');
+  renderVoice(bytes.map(freqOf),wave,step,0.17,i=>{
+    els.forEach(e=>e.classList.remove('on'));
+    if(els[i]) els[i].classList.add('on');
+  });
+  playTimers.push(setTimeout(()=>els.forEach(e=>e.classList.remove('on')),
+    (0.05+bytes.length*step)*1000+300));
+}
+document.querySelectorAll('button.play[data-tune]').forEach(b=>
+  b.addEventListener('click',()=>
+    playTune(DATA.music[b.dataset.tune], b.dataset.wave, parseFloat(b.dataset.step))));
+
+// --- background music: faithful to the interrupt's own structure ---
+// phrase counter runs 4,3,2,1; note index runs 15 down to 0; one note per 5 ticks.
+// sfx_voice1_trigger: phrase>=2 -> melodyA[y]; phrase==1 -> melodyB[y],
+// except y of 4 or 5 which forces freq hi=$10 / lo=$C4.
+function bgmNotes(){
+  const B=DATA.bgm, out=[];
+  for(let phrase=B.phrases; phrase>=1; phrase--){
+    for(let y=15;y>=0;y--){
+      let hi, lo=0;
+      if(phrase>=2){ hi=B.melodyA[y]; }
+      else if(y===4||y===5){ hi=0x10; lo=0xC4; }
+      else { hi=B.melodyB[y]; }
+      out.push(hi*256+lo);
+    }
+  }
+  return out;
+}
+let bgmOn=false, bgmTimers=[], bgmNodes=[];
+function stopBgm(){
+  bgmOn=false;
+  bgmTimers.forEach(clearTimeout); bgmTimers=[];
+  bgmNodes.forEach(n=>{try{n.stop();}catch(e){}}); bgmNodes=[];
+  document.getElementById('bgmBtn').innerHTML='Play the background music<small>loops forever, exactly as the interrupt drives it</small>';
+  document.querySelectorAll('#bgmStrip .note').forEach(e=>e.classList.remove('on'));
+}
+function startBgm(){
+  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state==='suspended') actx.resume();
+  bgmOn=true;
+  document.getElementById('bgmBtn').innerHTML='Stop<small>playing &mdash; 5.4 second loop</small>';
+  const notes=bgmNotes(), step=DATA.bgm.noteTicks/DATA.bgm.tickHz;
+  const strip=document.getElementById('bgmStrip');
+  strip.innerHTML=notes.map(f=>`<span class="note">${f===0?'-':Math.round(f*985248/16777216)}</span>`).join('');
+  const els=strip.querySelectorAll('.note');
+  const hz=notes.map(f=>f>0?f*985248/16777216:0);
+  const loop=()=>{
+    if(!bgmOn) return;
+    const saved=playTimers; playTimers=bgmTimers;
+    const v=renderVoice(hz,'square',step,0.11,i=>{
+      els.forEach(e=>e.classList.remove('on'));
+      if(els[i]) els[i].classList.add('on');
+    });
+    playTimers=saved;
+    bgmNodes.push(v.osc); bgmNodes=bgmNodes.slice(-4);
+    bgmTimers.push(setTimeout(loop,notes.length*step*1000));
+  };
+  loop();
+}
+document.getElementById('bgmBtn').addEventListener('click',()=>bgmOn?stopBgm():startBgm());
+
+const PLACE={"mazeA":[0,1,254,0,0,1,254,0,119,216,30,254,119,216,30,0,0,0,0,238,126,248,30,238,0,1,222,0,15,215,222,254,160,87,0,0,175,87,119,253,168,87,116,5,171,87,116,5,43,80,117,245,104,87,117,245,107,208,4,5,8,23,103,61,107,247,103,61,96,7,103,60,127,247,0,0,3,0,0,59,123,127,63,59,120,7,63,3,123,119,3,57,3,112,51,57,191,127,51,61,128,0,48,1,191,127,63,61,191,127,63,61,128,0,0,0,187,123,59,61,187,123,59,61,187,96,3,49,187,107,59,53,128,3,56,53,183,123,3,4,55,123,59,62,0,27,59,62,61,192,0,0,61,192,0,54,0,118,239,54,55,118,239,54,55,112,15,48,55,118,224,54,48,6,11,54,55,222,235,54,55,222,235,54,0,0,8,6,221,190,235,54,221,190,235,54,192,0,3,54,221,170,171,0,221,170,171,62,12,42,168,62,97,170,171,6,111,170,171,54,0,0,0,0],"mazeB":[255,248,0,0,255,250,175,158,128,10,175,158,189,234,160,2,160,42,174,218,173,170,174,218,168,168,0,0,168,170,219,250,170,170,218,2,138,130,218,250,170,170,218,130,168,168,0,186,168,170,218,130,173,170,218,250,160,42,218,2,189,234,219,250,128,8,0,0,191,250,219,122,128,2,219,122,253,238,192,2,128,14,251,218,173,238,251,218,45,238,251,218,40,0,3,218,171,247,224,0,171,1,0,0,131,125,123,190,184,125,123,190,187,124,123,190,187,0,113,176,184,60,117,182,129,188,117,182,189,188,0,6,189,188,117,182,189,188,117,182,129,188,113,176,0,0,123,190,51,236,123,190,48,236,120,0,48,236,123,254,48,0,3,0,127,174,219,118,0,14,24,6,109,174,251,254,109,160,0,0,0,46,239,187,109,174,239,187,109,160,3,187,0,0,0,0,239,106,171,190,239,42,168,0,239,170,171,246,1,170,170,6,108,0,2,246,109,190,250,246,0,0,0,240],"catX":[[22,46,2,40,10,48,12,60,40,34,2,22,2,14,56,12],[48,44,62,12,40,42,30,44,62,24,16,38,52,6,46,58]],"catY":[[12,12,30,30,32,36,42,44,46,56,60,66,72,86,88,106],[6,22,22,30,32,48,58,64,64,72,80,80,80,84,96,100]],"spawnX":[26,30,34,38,22,30,38],"spawnY":[104,104,104,104,104,6,6],"paramset":[0,0,0,1,1,1,1,0,0,0,0,1,1,1,1],"speedRun":[0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],"redRatsMinus1":[2,3,6,3,4,5,6,4,5,6,6,6,6,6,6],"catsMinus1":[7,7,15,7,7,7,15,7,7,7,15,7,7,7,15]};
+
+// --- placement: a line-for-line port of setup_cats ($EE57) and place_meal_items ($EEA8) ---
+function Prng(state){ this.r=state; this.calls=0; }
+Prng.prototype.shift=function(){           // 11 steps of the shift register
+  let r=this.r;
+  for(let i=0;i<11;i++){ const fb=1^(((r>>15)^(r>>1)^r)&1); r=((r<<1)|fb)&0xFFFF; }
+  this.r=r;
+};
+Prng.prototype.next=function(n){           // prng_next: shift, then subtract n until below n, then double
+  this.calls++; this.shift();
+  let a=this.r&0xFF;
+  do{ a=(a-n)&0xFF; }while(a>=n);
+  return (a<<1)&0xFF;
+};
+function setupRound(p,idx){
+  const ps=PLACE.paramset[idx], maze=ps?PLACE.mazeB:PLACE.mazeA;
+  const hx=PLACE.catX[ps].slice(), hy=PLACE.catY[ps].slice(), keep=[...Array(16).keys()];
+  const rej={wall:0,radar:0,cat:0,spawn:0}, c0=p.calls;
+  if(!PLACE.speedRun[idx]){                 // normal round: delete 8 of the 16 cats at random
+    for(let n=16;n>8;n--){
+      let y=p.next(n)>>1;
+      while(++y<16){ hy[y-1]=hy[y]; hx[y-1]=hx[y]; keep[y-1]=keep[y]; }
+    }
+  }
+  const wall=(x,y)=>maze[(y>>1)*4+(x>>4)]&(0x80>>((x>>1)&7));
+  const mx=Array(10).fill(0), my=Array(10).fill(0);
+  for(let x=9;x>=0;x--){                    // ten cheeses, slot 9 first, slot 0 (the 2x) last
+    for(;;){
+      const cx=p.next(0x20), cy=p.next(0x38);
+      if(wall(cx,cy)){ rej.wall++; continue; }
+      let hit=false;
+      for(let y=x+1;y<10;y++) if((mx[y]>>3)===(cx>>3)&&(my[y]>>3)===(cy>>3)) hit=true;
+      if(hit){ rej.radar++; continue; }
+      for(let y=0;y<16;y++) if(hx[y]===cx&&hy[y]===cy) hit=true;
+      if(hit){ rej.cat++; continue; }
+      for(let y=0;y<7;y++) if((PLACE.spawnX[y]>>3)===(cx>>3)&&(PLACE.spawnY[y]>>3)===(cy>>3)) hit=true;
+      if(hit){ rej.spawn++; continue; }
+      mx[x]=cx; my[x]=cy; break;
+    }
+  }
+  return {round:idx+1, cats_kept:keep.slice(0,PLACE.catsMinus1[idx]+1),
+          cheese_x:mx, cheese_y:my, rejected:rej, calls:p.calls-c0};
+}
+// the first game after loading: round 1 is placed at load time, then the title screen stirs
+// the generator once per tick, then rounds 2-15 are placed as they are reached
+function placeRounds(ticks){
+  const p=new Prng(0x0011), out=[setupRound(p,0)];
+  for(let i=0;i<ticks;i++) p.shift();
+  for(let idx=1;idx<15;idx++) out.push(setupRound(p,idx));
+  return out;
+}
+const TICK_HZ=59.114;
+function renderPlacement(){
+  const r=+document.getElementById('placeRound').value, secs=+document.getElementById('placeWait').value;
+  const ticks=Math.round(secs*TICK_HZ), idx=r-1, res=placeRounds(ticks)[idx];
+  const ps=PLACE.paramset[idx], maze=ps?PLACE.mazeB:PLACE.mazeA, speed=PLACE.speedRun[idx];
+  document.getElementById('placeWaitOut').textContent=`${secs} second${secs===1?'':'s'} (${ticks} ticks)`;
+  const ctx=document.getElementById('placeCv').getContext('2d');
+  ctx.globalAlpha=1; ctx.fillStyle=PAL[1]; ctx.fillRect(0,0,512,896);
+  ctx.fillStyle=PAL[12];
+  for(let cy=0;cy<56;cy++) for(let cx=0;cx<32;cx++)
+    if(maze[cy*4+(cx>>3)]&(0x80>>(cx&7))) ctx.fillRect(cx*16,cy*16,16,16);
+  if(document.getElementById('placeGrid').checked){
+    ctx.fillStyle='rgba(143,127,224,.55)';
+    for(let x=64;x<512;x+=64) ctx.fillRect(x,0,1,896);
+    for(let y=64;y<896;y+=64) ctx.fillRect(0,y,512,1);
+  }
+  const halo=(wx,wy,col)=>{                 // a soft marker so small tiles read at display size
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(wx*8+8,wy*8+8,15,0,Math.PI*2); ctx.fill();
+  };
+  const tile=(codes,wx,wy,col,alpha)=>{
+    ctx.globalAlpha=alpha;
+    codes.forEach((c,i)=>drawGlyph(ctx,c,wx*8+(i%2)*8,wy*8+(i>>1)*8,1,col));
+    ctx.globalAlpha=1;
+  };
+  const kept=new Set(res.cats_kept), redRats=PLACE.redRatsMinus1[idx]+1;
+  for(let i=0;i<10;i++) halo(res.cheese_x[i],res.cheese_y[i],i===0?'rgba(214,72,60,.55)':'rgba(232,163,61,.6)');
+  for(let i=0;i<16;i++) if(kept.has(i)) halo(PLACE.catX[ps][i],PLACE.catY[ps][i],'rgba(143,127,224,.45)');
+  for(let i=0;i<redRats;i++) halo(PLACE.spawnX[i],PLACE.spawnY[i],'rgba(214,72,60,.35)');
+  halo(0x1E,0x64,'rgba(111,199,212,.55)');
+  for(let i=0;i<16;i++) tile([0x58,0x59,0x5A,0x5B],PLACE.catX[ps][i],PLACE.catY[ps][i],PAL[0],kept.has(i)?1:0.16);
+  for(let i=0;i<7;i++) tile([0x40,0x41,0x42,0x43],PLACE.spawnX[i],PLACE.spawnY[i],PAL[2],i<redRats?1:0.16);
+  tile([0x40,0x41,0x42,0x43],0x1E,0x64,PAL[6],1);
+  for(let i=0;i<10;i++){
+    tile([0x50,0x51,0x52,0x00],res.cheese_x[i],res.cheese_y[i],PAL[7],1);
+    if(i===0) tile([0x00,0x00,0x00,0x53],res.cheese_x[i],res.cheese_y[i],PAL[2],1);
+  }
+  const j=res.rejected, thrown=j.wall+j.radar+j.cat+j.spawn;
+  document.getElementById('placeStats').innerHTML=
+    `<b>Round ${r}</b> &middot; maze ${ps?'B':'A'} &middot; ${redRats} red rats &middot; `+
+    (speed?`<b>SPEED RUN</b>: all 16 cats kept`:`8 of the 16 cats kept`)+
+    `<br>Random numbers drawn: <b>${res.calls}</b><br>Cheese spots thrown back: <b>${thrown}</b>`+
+    ` &mdash; ${j.wall} in a wall, ${j.radar} sharing a radar cell, ${j.cat} on a cat, ${j.spawn} near a spawn point`+
+    (r===1?`<br>Round 1 is placed before the title screen appears, so the wait makes no difference: every first game after loading gets this layout.`:'');
+}
+function wirePlacement(){
+  const sel=document.getElementById('placeRound');
+  for(let i=0;i<15;i++){
+    const o=document.createElement('option'); o.value=i+1;
+    o.textContent=`Round ${i+1}`+(PLACE.speedRun[i]?' (SPEED RUN)':'');
+    sel.appendChild(o);
+  }
+  ['placeRound','placeWait','placeGrid'].forEach(id=>
+    document.getElementById(id).addEventListener('input',renderPlacement));
+  document.getElementById('placeGrid').addEventListener('change',renderPlacement);
+  renderPlacement();
+}
+
+renderScreen(); renderStats(); renderCast(); renderMaze(); renderTiles(); wireRat(); renderProg(); renderCharGrid(); wirePlacement();
+
+</script>
