@@ -31,8 +31,9 @@ Every row in `features.md` carries one:
 | Status | Meaning |
 |---|---|
 | **open** | documented, not yet found in the code |
-| **confirmed** | traced in the code |
-| **live** | also observed in the emulator |
+| **traced** | found in the code, but could not be exercised in the emulator (an input the tools cannot deliver, a state that cannot be reached); say what was tried |
+| **confirmed** | traced in the code and consistent with what the emulator shows |
+| **live** | observed directly in the emulator |
 | **differs** | the code does something other than the documentation says |
 
 "Absent" is not a status. If you believe a feature is not there, write

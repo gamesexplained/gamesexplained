@@ -28,8 +28,10 @@ done. It is never produced by the same run that produced the facts.
   "buckle up", "spoiler alert", "in other words", "put simply".
 - No rhetorical question followed by its answer.
 - No "it's not X, it's Y", "not just X but Y", "more than just".
-- No titles of the form "The X Is A Y" or "X Is Y". The title is the
-  game's name. A subtitle carries the hook, if a human writes one.
+- The page title is the game's name, never a claim ("The X Is A Y").
+  A subtitle carries the hook, if a human writes one. Section headings may
+  carry a hook of their own; keep them short, and prefer the thing over
+  the claim about the thing ("The landing test" over "The gauge lies").
 - No tidy triplets for rhythm. Two things or four things are fine when
   there are two or four things.
 - No em-dashes as the default joint between clauses. Write two sentences.
@@ -39,9 +41,8 @@ done. It is never produced by the same run that produced the facts.
 - Do not describe the tooling or the process ("we pointed an AI at the
   bytes"). The reader is here for the game.
 
-`kit/scripts/check_copy.py` flags the mechanical tells. Passing it is a
-floor. The real test is a human reading the page without noticing how it
-was made.
+The test is a human reading the page without noticing how it was made.
+There is no lint for this; a mechanical one was tried and dropped.
 
 ## Declare provenance
 

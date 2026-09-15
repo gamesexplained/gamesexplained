@@ -29,7 +29,7 @@ Sources:
 | Main thruster lifts the ship (F1 or fire) | **live** | `read_controls` `$EB9C`, `move_ship` `$E328` |
 | Left manoeuvring thruster on A, moves the ship right | **live** | `read_controls` `$EBC9`; world X rose with A held |
 | Right manoeuvring thruster on D, moves the ship left | **live** | `read_controls` `$EBC9`; world X fell with D held |
-| Joystick in port 1: left, right and fire | **confirmed** | `read_controls` `$EB7A`–`$EB99`. Not observed live: see "Open questions" |
+| Joystick in port 1: left, right and fire | **traced** | `read_controls` `$EB7A`–`$EB99`. Could not be exercised: see "Open questions" |
 | The ship is destroyed by touching the rock | **live** | `main_loop` `$E144` reads `$D01F`, sprite-to-background collision |
 | The ship is destroyed by landing too fast | **live** | `landing_too_fast` `$E624`, prints SORRY NO BONUS |
 | A velocity gauge in m/s on the right of the screen | **live** | `draw_velocity_gauge` `$EC01`, `draw_hud` `$ED7C` |

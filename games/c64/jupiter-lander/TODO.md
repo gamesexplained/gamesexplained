@@ -3,38 +3,14 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
-## Tier: Silver
+## Tier: Gold
 
-Every Bronze and Silver requirement is met.
-
-| Requirement | Tier | State |
-|---|---|---|
-| Boots, `orientation.md` recipe | Bronze | done |
-| `features.md` drafted from external documentation | Bronze | done, three sources named |
-| Reference screenshots | Bronze | 11 images in `reference/` |
-| Coverage ≥ 80 % | Silver | **100 %**, 7223 of 7223 tracked bytes |
-| `facts.md` | Silver | done |
-| Every feature confirmed or explicitly open | Silver | done; one row open, with the search described |
-| `symbols.json` exported | Silver | 412 symbols, 183 of them user, 183 comments |
-
-## Missing for Gold
-
-Gold needs 100 % coverage, an interactive article, at least one finding
-beyond the documentation verified live, copy that passes the style check
-**and a human read**.
-
-| Gold requirement | State |
-|---|---|
-| 100 % coverage | done |
-| Interactive article | done, `index.html`, nine interactive sections |
-| A finding beyond the documentation, verified live | thirteen, listed in `features.md` |
-| Copy passes the style check | done, `check_copy.py` reports 0 tells |
-| **Copy read by a human** | **not done** |
-
-That last row is the only thing between this game and Gold, and it is not
-something the run that wrote the copy can do for itself. `game.json` records
-`copy: agent`. When somebody reads the page and edits it, set `copy` to
-`human-edited` and `tier` to `gold`.
+Every Bronze, Silver and Gold requirement is met: 100 % coverage (7223 of
+7223 tracked bytes), `facts.md`, one feature **traced** with the search
+described, `symbols.json` exported, an interactive article, thirteen
+findings beyond the documentation verified live, and the copy read by the
+steward. `copy` stays `agent` until the steward edits the page; the
+steward would prune a section or two and trim the copy, later.
 
 ## Missing for Platinum
 

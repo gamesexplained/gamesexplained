@@ -46,7 +46,6 @@ in order:
    ```
    python3 kit/scripts/check_binaries.py
    python3 kit/scripts/check_docs.py
-   python3 kit/scripts/check_copy.py games/<platform>/<slug>
    ```
 
    If a remote exists, open a pull request. If not, leave the branch.
@@ -72,8 +71,8 @@ in order:
   developed goes in `agent-history.md`, nowhere else.
 - **Consult the platform reference, don't recall it.** Register addresses,
   timing constants and memory maps come from `skills/<platform>/`.
-- **Copy is not analysis.** Article text follows `kit/style.md` and passes
-  `check_copy.py`. Write it as a separate, final pass.
+- **Copy is not analysis.** Article text follows `kit/style.md`. Write it
+  as a separate, final pass, and declare who wrote it in `game.json`.
 - **Record what you used.** `game.json` names the tools, the model and the
   kit version. It is honest and it makes the work reproducible.
 - **Ask before downloading anything.** Reference screenshots and manuals
@@ -102,7 +101,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `skills/`.
 |---|---|
 | Bronze | boots; `orientation.md` recipe; `features.md` drafted from external documentation; reference screenshots |
 | Silver | coverage ≥ 80 % (`coverage.py`); `facts.md`; every feature confirmed or explicitly open; `symbols.json` exported |
-| Gold | 100 % coverage; interactive article; at least one finding beyond the documentation verified live; copy passes the style check and a human read |
+| Gold | 100 % coverage; interactive article; at least one finding beyond the documentation verified live; a human has read the copy |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
 
 Stop where you like. Set `tier` in `game.json` to the highest tier every

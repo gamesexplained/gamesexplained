@@ -8,9 +8,12 @@ Usage:
   symbols_export.py <game dir>                      from the live server
   symbols_export.py <game dir> --project <file>     from a project file
 
-Coverage regions (runtime state to exclude, authored data without symbols
-to include) come from game.json's "coverage" object, with platform
-defaults. Addresses there are hex strings like "$0400".
+Coverage regions come from game.json. The platform rule is the same for
+every game: "video" names the screen base (excluded: it is output) and the
+character-set base (included: authored data the video chip reads through a
+register, so nothing references it by address); the stack and I/O are
+always excluded. "coverage" adds per-game exclusions and extra authored
+blocks on top. Addresses are hex strings like "$0400".
 """
 import json, os, sys
 
@@ -18,9 +21,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 PLATFORM_DEFAULTS = {
     "c64": {
-        "exclude": [["$0100", "$01FF", "stack"], ["$0400", "$07FF", "screen RAM"],
-                    ["$D000", "$DFFF", "I/O and colour RAM"]],
+        "exclude": [["$0100", "$01FF", "stack"], ["$D000", "$DFFF", "I/O and colour RAM"]],
         "extra": [],
+        "screen_size": 0x400,      # 1000 cells plus the sprite pointers
+        "charset_size": 0x800,
     }
 }
 
@@ -39,10 +43,18 @@ def hexint(s):
 
 def regions(game):
     plat = game.get("platform", "c64")
-    cov = dict(PLATFORM_DEFAULTS.get(plat, {"exclude": [], "extra": []}))
-    cov.update(game.get("coverage", {}))
-    return {k: [[hexint(a), hexint(b), n] for a, b, n in cov.get(k, [])]
-            for k in ("exclude", "extra")}
+    d = PLATFORM_DEFAULTS.get(plat, {"exclude": [], "extra": []})
+    exclude = [[hexint(a), hexint(b), n] for a, b, n in d["exclude"]]
+    extra = [[hexint(a), hexint(b), n] for a, b, n in d["extra"]]
+    video = game.get("video") or {}
+    if video.get("screen"):
+        a = hexint(video["screen"]); exclude.append([a, a + d.get("screen_size", 0x400) - 1, "screen RAM"])
+    if video.get("charset"):
+        a = hexint(video["charset"]); extra.append([a, a + d.get("charset_size", 0x800) - 1, "character set"])
+    cov = game.get("coverage", {})
+    exclude += [[hexint(a), hexint(b), n] for a, b, n in cov.get("exclude", [])]
+    extra += [[hexint(a), hexint(b), n] for a, b, n in cov.get("extra", [])]
+    return {"exclude": exclude, "extra": extra}
 
 
 def from_live():

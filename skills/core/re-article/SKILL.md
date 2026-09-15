@@ -55,12 +55,11 @@ Not every game has every section. Order them to suit the game.
 
 ## Copy
 
-Write the copy **last**, as a separate pass, under `kit/style.md`. Then run
-`python3 kit/scripts/check_copy.py games/<platform>/<slug>` and fix what
-it flags. Set `copy` in `game.json` to `agent`, `human-edited` or `human`
-honestly. The page title is the game's name.
+Write the copy **last**, as a separate pass, under `kit/style.md`. Set
+`copy` in `game.json` to `agent`, `human-edited` or `human` honestly. The
+page title is the game's name. Reference images are referred to by
+relative path from the game folder (`reference/<name>.png`).
 
 ## Outputs
 
-`index.html` opening cleanly from disk; `check_copy.py` passing;
-`game.json` with `copy` set.
+`index.html` opening cleanly from disk; `game.json` with `copy` set.

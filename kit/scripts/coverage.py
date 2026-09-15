@@ -13,7 +13,14 @@ state is excluded: stack, screen RAM, I/O, and anything else listed under
 NUMERATOR: a byte is explained when the symbol whose span owns it carries a
 non-blank line comment. A description belongs to a routine, not to every
 branch target inside it, so only real boundaries (subroutines, data
-symbols, commented symbols) start a span.
+symbols, commented symbols) start a span. An identical description pasted
+onto several symbols counts once, at its first address: thirty-two copies
+of "character set" explain nothing about glyphs 32 to 63. Say which glyphs
+a block holds and what they draw, and each description is its own.
+
+REGIONS come from game.json: "video" (screen and character-set bases, which
+give the platform's standard exclude/extra blocks) and "coverage" (extra
+exclusions and authored data), so every game is scored by the same rule.
 
 Usage:
   coverage.py <game dir>                 from symbols.json
@@ -21,7 +28,7 @@ Usage:
   coverage.py <game dir> --top 40        longer work queue
   coverage.py <game dir> --code | --data queue only that side
 """
-import bisect, json, os, sys
+import bisect, json, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -31,14 +38,14 @@ BOUNDARY_TYPES = {"Subroutine", "UserDefined", "Field", "ZeroPageField",
 
 
 def load(gdir, live):
+    from symbols_export import from_live, regions
+    game = json.load(open(os.path.join(gdir, "game.json")))
+    reg = regions(game)
     if live:
-        from symbols_export import from_live, regions
         blocks, syms, comments = from_live()
-        game = json.load(open(os.path.join(gdir, "game.json")))
-        reg = regions(game)
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
-        blocks, syms, comments, reg = s["blocks"], s["symbols"], s["comments"], s["regions"]
+        blocks, syms, comments = s["blocks"], s["symbols"], s["comments"]
     return blocks, syms, comments, reg
 
 
@@ -56,7 +63,16 @@ def main():
     def excluded(a):
         return any(lo <= a <= hi for lo, hi, _ in exclude)
 
-    commented = {c["address"] for c in comments if c["type"] == "line" and c["text"].strip()}
+    seen, commented, dups = {}, set(), []
+    for c in sorted(comments, key=lambda c: c["address"]):
+        if c["type"] != "line" or not c["text"].strip():
+            continue
+        key = re.sub(r"\s+", " ", c["text"].strip().lower())
+        if key in seen:
+            dups.append((c["address"], seen[key]))
+        else:
+            seen[key] = c["address"]
+            commented.add(c["address"])
     code = bytearray(0x10000)
     for b in blocks:
         if b["type"] == "Code":
@@ -101,6 +117,9 @@ def main():
     ccount = sum(1 for a in tracked if code[a]); cexpl = sum(1 for a in tracked if code[a] and state[a] == 2)
     dcount = len(tracked) - ccount; dexpl = expl - cexpl
     print("GAME IMAGE LEDGER  (denominator = bytes the game actually uses)")
+    if dups:
+        print(f"  duplicate descriptions ignored: {len(dups)} "
+              f"(e.g. ${dups[0][0]:04X} repeats ${dups[0][1]:04X}); describe each block on its own")
     print(f"  tracked bytes : {len(tracked)}")
     print(f"  explained     : {expl}  ({100*expl/len(tracked):.1f}%)")
     print(f"  bare          : {len(tracked)-expl}  ({100*(len(tracked)-expl)/len(tracked):.1f}%)\n")
