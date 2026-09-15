@@ -1,0 +1,49 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # contributors are read from git history
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: No game binaries
+        run: python3 kit/scripts/check_binaries.py
+      - name: Knowledge in its place
+        run: python3 kit/scripts/check_docs.py
+      - name: Listings match their symbols
+        run: python3 kit/scripts/check_listing.py
+      - name: Coverage figures reproduce
+        run: |
+          for g in games/*/*/; do
+            echo "== $g"; python3 kit/scripts/coverage.py "$g" | head -3
+          done
+      - name: Build the site
+        run: python3 kit/scripts/build.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  # Deploy to GitHub Pages. Off until the repository is public (Pages on a
+  # private repo needs a paid plan): set the repository variable
+  # DEPLOY_PAGES to "true" to turn it on.
+  deploy:
+    needs: check-and-build
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_PAGES == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
