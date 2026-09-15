@@ -1,0 +1,380 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jupiter Lander — maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../lib/site.css">
+<style>
+/* Page-local additions. Tokens and the base look come from site.css. */
+.site .hero{padding:52px 24px 30px;background:radial-gradient(ellipse 900px 340px at 50% -14%,rgba(143,127,224,.13),transparent 70%)}
+.site .hero .eyebrow{margin-bottom:18px}
+.site section{padding:44px 0;border-bottom:1px solid var(--line-soft)}
+.site section:last-of-type{border-bottom:none}
+.site .fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+.site h2{font-size:21px;margin:0 0 12px}
+.site .lede{color:var(--ink-soft);max-width:64ch;margin:0 0 26px}
+.site p{max-width:70ch}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 22px}
+.screenwrap{background:#000;border-radius:6px;display:block;width:fit-content;max-width:100%;line-height:0;overflow:hidden}
+canvas{image-rendering:pixelated;display:block;max-width:100%;height:auto}
+.cap{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);line-height:1.7;margin:12px 0 0;max-width:none}
+.cap b{color:var(--ink-soft);font-weight:500}
+.cap code{font-size:1em}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px}
+button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--violet)}
+button.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+.legend{font-family:var(--fm);font-size:12px;color:var(--ink-soft);display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 0}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.site table td.g{padding-top:3px;padding-bottom:3px}
+.site table canvas{display:inline-block;vertical-align:middle}
+.warn{border-left:3px solid var(--amber);padding:2px 0 2px 16px;color:var(--ink-soft);margin:18px 0}
+</style>
+<body class="site">
+<!-- tabs -->
+
+<header class="hero">
+  <p class="eyebrow">Commodore 64 &middot; maps</p>
+  <h1>Jupiter Lander</h1>
+  <p class="sub">Four screens of canyon, three landing pads, and 924 bytes of run-length data.</p>
+</header>
+
+<main class="wrap">
+
+<section>
+  <p class="fig">01 &middot; The screens</p>
+  <h2>The four screens</h2>
+  <p class="lede">The game holds four pictures of the same canyon. <code>$E1C4</code> decides which one
+  is on screen from where the lander is. Each picture is 38 cells across and 23 rows deep, and each is
+  drawn here from its own stream of bytes, in the game's own character set, at two screen pixels to one.</p>
+
+  <div class="ctl">
+    <button id="tPads" class="on">Pad markers</button>
+    <button id="tBadge">Commodore badge</button>
+  </div>
+
+  <div id="screens"></div>
+  <div id="loadErr"></div>
+</section>
+
+<section>
+  <p class="fig">02 &middot; The pads</p>
+  <h2>The pads</h2>
+  <p class="lede">Three places in the world accept a landing. Each one is a single line of world Y and a
+  range of world X, and each carries a painted multiplier that the bonus is counted through.</p>
+
+  <div class="tablewrap">
+    <table id="padTable">
+      <tr><th>Pad</th><th>World Y</th><th>World X range</th><th>Multiplier</th><th>Label glyphs</th><th>Drawn in</th></tr>
+    </table>
+  </div>
+  <p class="cap">From <code>$E3E7</code>: three bytes of Y low, three of Y high, then the X minimum and
+  maximum the same way. <code>$E3B5</code> wants the Y to match exactly, and the X to be at or above the
+  minimum and below the maximum. Each range is 48 world units wide, which is the lander sprite with
+  doubling switched on.</p>
+  <p class="cap">The marker in each picture is that world Y turned into a screen row. The sprite's top
+  edge sits at the world Y less 50, the lander's lowest pixels are in its 21st row, so its feet are 21
+  pixels lower in the wide view and 42 in a close-up. All six markers land on the top edge of a run of
+  character <code>$07</code>, the flat ledge glyph.</p>
+</section>
+
+<section>
+  <p class="fig">03 &middot; Compression</p>
+  <h2>Every run in a stream</h2>
+  <p class="lede">One block per pair, in the order the painter reads them, each block as wide as the run
+  is long. The whole strip is 874 cells.</p>
+
+  <div class="ctl" id="runBtns"></div>
+  <div class="plate">
+    <canvas id="strip" height="46"></canvas>
+    <div class="legend">
+      <span><i style="background:#171a33;outline:1px solid #292c58"></i>blank <code>$00</code></span>
+      <span><i style="background:#813338"></i>rock <code>$01</code></span>
+      <span><i style="background:#edf171"></i>flat ledge <code>$07</code></span>
+      <span><i style="background:#706deb"></i>multiplier label</span>
+      <span><i style="background:#75cec8"></i>badge</span>
+      <span><i style="background:#c46c71"></i>slope edge</span>
+    </div>
+    <p class="cap" id="stripStat">&nbsp;</p>
+  </div>
+
+  <div class="tablewrap">
+    <table id="runTable">
+      <tr><th>Stream</th><th>Address</th><th>Bytes</th><th>Runs</th><th>Longest run</th><th>Mean run</th><th>Blank cells</th></tr>
+    </table>
+  </div>
+  <p class="cap">The x2 plateau stands in open sky and its rock is a single wedge, so half its screen is
+  one blank character repeated and its runs are the longest of the four. That is the whole of why its
+  stream is the smallest.</p>
+</section>
+
+<section>
+  <p class="fig">04 &middot; How it works</p>
+  <h2>The zoom</h2>
+  <p>Flying between zones swaps which picture is painted. The terrain itself is never scaled. All four
+  screens were drawn separately and stored separately, and each close-up has its own rock, its own
+  ledges and its own Commodore badge cut out of the cliff. What the zoom changes is how the lander is
+  placed on top. In the wide view the world coordinates are halved and the sprite is drawn at its
+  ordinary 24 by 21 pixels. In a close-up the view's origin, from the table at <code>$E1BB</code>, is
+  subtracted at full scale, and <code>$D017</code> and <code>$D01D</code> double the sprite in both
+  directions. The same sprite data serves both sizes.</p>
+
+  <h2>The format</h2>
+  <p>Each stream is a list of pairs. The first byte of a pair is a count, the second is a character
+  code, and the painter at <code>$EC72</code> writes that character that many times before reading the
+  next pair. A count of zero ends the stream. Cells run left to right and row by row, 38 to a row for
+  23 rows, which leaves the last two columns of the 40-column screen for the speed gauge. Colour is
+  decided by the character code alone, so the data carries none of its own. The four streams lie end to
+  end from <code>$EEB8</code> to <code>$F253</code>: 924 bytes for 3,496 cells.</p>
+</section>
+
+</main>
+
+<!--
+  Sources. Terrain streams, pad table, view origins and glyph roles are from
+  games/c64/jupiter-lander/facts.md; the decode is ported from the article's
+  decodeView / runsOf / paintCells (index.html, around line 680). facts.md and
+  index.html were compared byte for byte and agree: the four base64 terrain blobs
+  embedded in index.html are identical to listing.json at $EEB8, $F00D, $F0D2 and
+  $F17B, and its VIEW_ORIGIN matches the bytes at $E1BB. No disagreement found.
+
+  Two facts on this page are not in facts.md and were read off the listing here:
+  check_on_pad's X test is inclusive at the minimum and exclusive at the maximum
+  (bcc then bcs at $E3CF / $E3DB), and the lander sprite's lowest set pixels are in
+  its 21st row, which is what puts the pad markers on the ledge tops.
+-->
+
+<script src="../../lib/c64.js"></script>
+<script>
+(async function () {
+  const COLS = 38, ROWS = 23, S = 2, CW = COLS * 8 * S, CH = ROWS * 8 * S;
+
+  // Which stream draws which screen, from facts.md.
+  const VIEWS = [
+    { n: 0, addr: 0xEEB8, name: 'wide',         title: 'View 0, the wide view',  what: 'the whole canyon pulled back' },
+    { n: 1, addr: 0xF00D, name: 'x5 close-up',  title: 'View 1, the x5 close-up', what: 'the left pad' },
+    { n: 2, addr: 0xF0D2, name: 'x2 close-up',  title: 'View 2, the x2 close-up', what: 'the middle plateau' },
+    { n: 3, addr: 0xF17B, name: 'x10 close-up', title: 'View 3, the x10 close-up', what: 'the right pad' }
+  ];
+  // view_origin_x_lo/_hi and view_origin_y at $E1BB. The wide view has none; it halves instead.
+  const VIEW_ORIGIN = [null, { x: 0x0038, y: 0xE2 }, { x: 0x00E8, y: 0x42 }, { x: 0x0148, y: 0xE2 }];
+  // pad_y, pad_x_min, pad_x_max at $E3E7, with the glyphs of the painted label.
+  const PADS = [
+    { id: 'x5',  y: 0x016A, x0: 0x00B0, x1: 0x00E0, m: 5,  view: 1, label: [0x02, 0x04], where: 'left' },
+    { id: 'x2',  y: 0x009A, x0: 0x0160, x1: 0x0190, m: 2,  view: 2, label: [0x02, 0x03], where: 'middle plateau' },
+    { id: 'x10', y: 0x017A, x0: 0x01E0, x1: 0x0200, m: 10, view: 3, label: [0x02, 0x05, 0x06], where: 'right' }
+  ];
+  const hex = C64.hex;
+
+  let G, charset;
+  try {
+    G = await C64.load('listing.json');
+    charset = G.ram.subarray(0x3800, 0x4000);
+  } catch (e) {
+    document.getElementById('loadErr').innerHTML =
+      '<p class="warn">The pictures are drawn from <code>listing.json</code> and it did not load. ' +
+      'Open this page from a web server rather than from disk.</p>';
+    return;
+  }
+
+  // ---- the decode, ported from the article -------------------------------
+  // Pairs of (count, glyph); a zero count ends the stream.
+  function runsOf(addr) {
+    const r = [], ram = G.ram;
+    let p = addr;
+    while (ram[p]) { r.push([ram[p], ram[p + 1]]); p += 2; }
+    return r;
+  }
+  function endOf(addr) { let p = addr; while (G.ram[p]) p += 2; return p + 1; }
+  function decodeRuns(runs) {
+    const cells = new Uint8Array(COLS * ROWS);
+    let i = 0;
+    for (const [n, ch] of runs) for (let k = 0; k < n; k++) { if (i < cells.length) cells[i] = ch; i++; }
+    return { cells, painted: i };
+  }
+  function paintCells(ctx, cells) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, CW, CH);
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const g = cells[r * COLS + c];
+      if (g) C64.drawGlyph(ctx, charset, g, c * 8 * S, r * 8 * S, S, C64.PAL[2]);
+    }
+  }
+
+  // Where a pad sits on a given screen, in screen pixels. The lander's world position
+  // is its VIC sprite position, so 24 comes off X and 50 off Y; its feet are 21 rows
+  // below its top, doubled in a close-up.
+  function padOnScreen(view, pad) {
+    if (view === 0) return { x0: (pad.x0 >> 1) - 24, x1: (pad.x1 >> 1) - 24, y: (pad.y >> 1) - 50 + 21 };
+    const o = VIEW_ORIGIN[view];
+    return { x0: (pad.x0 - o.x) - 24, x1: (pad.x1 - o.x) - 24, y: (pad.y - o.y) - 50 + 42 };
+  }
+  function padsOn(view) { return view === 0 ? PADS : PADS.filter(p => p.view === view); }
+
+  // The two-by-two badge, wherever it is on this screen.
+  function badgeAt(cells) {
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+      if (cells[r * COLS + c] === 0x0C) return { r, c };
+    return null;
+  }
+
+  // ---- 01: the four screens ----------------------------------------------
+  const show = { pads: true, badge: false };
+  const built = [];
+  const host = document.getElementById('screens');
+
+  for (const v of VIEWS) {
+    const runs = runsOf(v.addr), { cells, painted } = decodeRuns(runs);
+    const bytes = endOf(v.addr) - v.addr;
+
+    const box = document.createElement('div'); box.className = 'plate';
+    const wrap = document.createElement('div'); wrap.className = 'screenwrap';
+    const cv = document.createElement('canvas'); wrap.appendChild(cv);
+    const ctx = C64.canvas(cv, CW, CH);
+    const cap = document.createElement('p'); cap.className = 'cap';
+    cap.innerHTML = '<b>' + v.title + '</b>, ' + v.what + '. Stream <code>' + hex(v.addr) +
+      '</code>&ndash;<code>' + hex(endOf(v.addr) - 1) + '</code>: <b>' + bytes + '</b> bytes, <b>' +
+      runs.length + '</b> runs, <b>' + painted + '</b> cells drawn into <b>' + (COLS * ROWS) +
+      '</b>' + (painted === COLS * ROWS ? '' : ' (overrun)') + '.';
+    box.appendChild(wrap); box.appendChild(cap);
+    if (v.n === 3) {
+      const n = document.createElement('p'); n.className = 'cap';
+      n.innerHTML = 'The &times; and the 10 of this screen’s label have a rock cell between them. ' +
+        'In the wide view the same three characters are adjacent.';
+      box.appendChild(n);
+    }
+    host.appendChild(box);
+    built.push({ v, ctx, cells, runs });
+  }
+
+  function drawScreen(b) {
+    const { v, ctx, cells } = b;
+    paintCells(ctx, cells);
+    if (show.badge) {
+      const p = badgeAt(cells);
+      if (p) {
+        ctx.strokeStyle = C64.PAL[3]; ctx.lineWidth = 2;
+        ctx.strokeRect(p.c * 8 * S - 1, p.r * 8 * S - 1, 16 * S + 2, 16 * S + 2);
+      }
+    }
+    if (!show.pads) return;
+    ctx.font = '600 13px "IBM Plex Mono", ui-monospace, monospace';
+    ctx.textBaseline = 'alphabetic';
+    for (const pad of padsOn(v.n)) {
+      const r = padOnScreen(v.n, pad), y = r.y * S, x0 = r.x0 * S, x1 = r.x1 * S;
+      ctx.strokeStyle = C64.PAL[7]; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x0, y - 1); ctx.lineTo(x1, y - 1); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x0 + 1, y - 8); ctx.lineTo(x0 + 1, y - 1);
+      ctx.moveTo(x1 - 1, y - 8); ctx.lineTo(x1 - 1, y - 1);
+      ctx.stroke();
+      const t = '×' + pad.m, w = ctx.measureText(t).width;
+      let tx = x0, ty = y - 13;
+      if (ty < 14) { ty = y + 22; }
+      if (tx + w + 8 > CW) tx = CW - w - 8;
+      ctx.fillStyle = 'rgba(10,11,24,.85)';
+      ctx.fillRect(tx - 3, ty - 12, w + 6, 16);
+      ctx.fillStyle = C64.PAL[7];
+      ctx.fillText(t, tx, ty);
+    }
+  }
+  function drawAll() { built.forEach(drawScreen); }
+
+  function toggle(id, key) {
+    const b = document.getElementById(id);
+    b.classList.toggle('on', show[key]);
+    b.onclick = () => { show[key] = !show[key]; b.classList.toggle('on', show[key]); drawAll(); };
+  }
+  toggle('tPads', 'pads'); toggle('tBadge', 'badge');
+  drawAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+
+  // ---- 02: the pad table -------------------------------------------------
+  (function () {
+    const t = document.getElementById('padTable');
+    for (const p of PADS) {
+      const tr = document.createElement('tr');
+      const seen = 'wide, ' + VIEWS[p.view].name;
+      tr.innerHTML = '<td>' + p.id + ' (' + p.where + ')</td><td><code>' + hex(p.y) + '</code></td>' +
+        '<td><code>' + hex(p.x0) + '</code>&ndash;<code>' + hex(p.x1) + '</code></td>' +
+        '<td>&times;' + p.m + '</td><td class="g"></td><td>' + seen + '</td>';
+      const cell = tr.querySelector('td.g');
+      const cv = document.createElement('canvas');
+      const ctx = C64.canvas(cv, p.label.length * 8 * 2, 8 * 2);
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+      p.label.forEach((g, i) => C64.drawGlyph(ctx, charset, g, i * 8 * 2, 0, 2, C64.PAL[2]));
+      cell.appendChild(cv);
+      const s = document.createElement('span');
+      s.className = 'mute';
+      s.style.cssText = 'font-family:var(--fm);font-size:11.5px;margin-left:8px';
+      s.textContent = p.label.map(g => hex(g, 2)).join(' ');
+      cell.appendChild(s);
+      t.appendChild(tr);
+    }
+  })();
+
+  // ---- 03: the run strip -------------------------------------------------
+  (function () {
+    const cv = document.getElementById('strip'), stat = document.getElementById('stripStat');
+    let sel = 0;
+
+    function colour(g) {
+      if (g === 0x00) return '#171a33';
+      if (g === 0x01) return C64.PAL[2];
+      if (g === 0x07) return C64.PAL[7];
+      if (g >= 0x02 && g <= 0x06) return C64.PAL[14];
+      if (g >= 0x0C && g <= 0x0F) return C64.PAL[3];
+      return C64.PAL[10];
+    }
+    function draw() {
+      const p = cv.parentNode, cs = getComputedStyle(p);
+      const inner = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const w = Math.max(280, Math.round(inner)), h = 46;
+      const ctx = C64.canvas(cv, w, h);
+      cv.style.imageRendering = 'auto';
+      const runs = built[sel].runs, total = runs.reduce((a, r) => a + r[0], 0);
+      ctx.fillStyle = '#0a0b18'; ctx.fillRect(0, 0, w, h);
+      let x = 0;
+      for (const [n, g] of runs) {
+        const bw = n / total * w;
+        ctx.fillStyle = colour(g);
+        ctx.fillRect(x, 0, Math.max(bw - (bw > 2.5 ? 1 : 0), 0.7), h);
+        x += bw;
+      }
+      const v = VIEWS[sel], bytes = endOf(v.addr) - v.addr;
+      stat.innerHTML = 'View ' + v.n + ', ' + v.name + ': <b>' + runs.length + '</b> runs in <b>' +
+        bytes + '</b> bytes, longest <b>' + Math.max.apply(null, runs.map(r => r[0])) +
+        '</b> cells, mean <b>' + (total / runs.length).toFixed(1) + '</b>.';
+    }
+    const btns = document.getElementById('runBtns');
+    VIEWS.forEach(v => {
+      const b = document.createElement('button');
+      b.textContent = 'View ' + v.n + ' · ' + v.name;
+      b.onclick = () => {
+        sel = v.n;
+        btns.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+        b.classList.add('on'); draw();
+      };
+      if (v.n === 0) b.classList.add('on');
+      btns.appendChild(b);
+    });
+    addEventListener('resize', draw);
+    draw();
+
+    const t = document.getElementById('runTable');
+    for (const b of built) {
+      const runs = b.runs, total = runs.reduce((a, r) => a + r[0], 0);
+      const blank = b.cells.reduce((a, g) => a + (g === 0 ? 1 : 0), 0);
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td>View ' + b.v.n + ', ' + b.v.name + '</td>' +
+        '<td><code>' + hex(b.v.addr) + '</code></td>' +
+        '<td>' + (endOf(b.v.addr) - b.v.addr) + '</td>' +
+        '<td>' + runs.length + '</td>' +
+        '<td>' + Math.max.apply(null, runs.map(r => r[0])) + '</td>' +
+        '<td>' + (total / runs.length).toFixed(1) + '</td>' +
+        '<td>' + blank + '</td>';
+      t.appendChild(tr);
+    }
+  })();
+})();
+</script>
