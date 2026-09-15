@@ -1,0 +1,104 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Rat Race — maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../lib/site.css">
+<style>
+.mazes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin:20px 0}
+.maze{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.maze canvas{width:100%;height:auto;display:block;border-radius:6px;border:1px solid var(--line);background:#fff}
+.maze .cap{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin-top:10px;line-height:1.6}
+.maze .cap b{color:var(--ink-soft);font-weight:500}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin:6px 0 4px}
+.ctl label{cursor:pointer}
+.rt td.sr{color:var(--amber)}
+.bar{display:inline-block;height:9px;border-radius:2px;background:var(--violet);vertical-align:middle;margin-right:7px}
+.bar.h{background:var(--coral)}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin:8px 0 0}
+.key i{width:11px;height:11px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
+</style>
+<body class="site">
+<!-- tabs -->
+<div class="wrap">
+  <p class="eyebrow" style="margin-top:36px">Commodore 64 · 1982 · Commodore</p>
+  <h1 style="margin-top:0">Radar Rat Race: the mazes</h1>
+  <p class="mute">Two mazes, two sets of cat positions, and fifteen rounds that pick between them. Everything on this page is drawn from the bytes in the Source tab: the maze bitmaps at <code>$F370</code> and <code>$F450</code>, the cat templates at <code>$FE08</code>, and the round tables at <code>$FEDB</code>.</p>
+
+  <h2>The two mazes</h2>
+  <p>Each maze is 224 bytes: 32 cells across, 56 cells down, one bit per cell, four bytes per row, a set bit is a wall. The game paints a 9 by 9 cell window centred on the rat, two characters per cell, so the pictures below show the mazes as the game would draw them if the screen were big enough: wall cells as the grey <code>$7F</code> glyph on the white play background. Nothing beyond the edge is stored; the game fills it with the yellow star glyph <code>$2A</code>.</p>
+  <div class="ctl">
+    <label><input type="checkbox" id="cats" checked> cat templates</label>
+    <label><input type="checkbox" id="bits"> as bits, one pixel per cell</label>
+  </div>
+  <div class="mazes">
+    <div class="maze"><canvas id="mazeA"></canvas><div class="cap" id="capA"></div></div>
+    <div class="maze"><canvas id="mazeB"></canvas><div class="cap" id="capB"></div></div>
+  </div>
+  <div class="key"><span><i style="background:#7b7b7b"></i>wall</span><span><i style="background:#fff;border:1px solid #888"></i>floor</span><span><i style="background:#000"></i>cat position in the template</span></div>
+
+  <h2>Cats</h2>
+  <p>Each maze has a template of sixteen cat positions, <code>$FE08</code> and <code>$FE18</code> for maze A, <code>$FE28</code> and <code>$FE38</code> for maze B, stored in character units, two per cell. A normal round keeps a random eight of the sixteen; a SPEED RUN keeps all sixteen. Cats never move, and they are only ever drawn in the maze window, never on the radar. Cheese is placed at random each round and is not part of the map.</p>
+
+  <h2>Fifteen rounds</h2>
+  <p>The round counter runs 0 to 14 and wraps, so round 16 plays exactly like round 1. Five fifteen-byte tables decide each round: how many red rats, how often they move, how many cats, whether it is a SPEED RUN, and which maze. The table below is read from those bytes.</p>
+  <div class="tablewrap"><table class="rt" id="rounds"></table></div>
+  <p class="mute">Red rat and cat counts are stored minus one; the values shown are what you meet. A SPEED RUN freezes the red rats at their spawn points, gives the round all sixteen cats, and drains TIME twice as fast.</p>
+</div>
+<script src="../../lib/c64.js"></script>
+<script>
+(async function(){
+  const G = await C64.load('listing.json');
+  const ram = G.ram, charset = ram.subarray(0x3800, 0x4000);
+  const A = G.sym('maze_bitmap_a'), B = G.sym('maze_bitmap_b');
+  const W = 32, H = 56, S = 1;             // cells; each cell is 2x2 glyphs of 8 px
+  const bit = (base, x, y) => (ram[base + y*4 + (x>>3)] >> (7 - (x&7))) & 1;
+  const catsOf = (xs, ys) => Array.from({length:16}, (_, i) => [ram[xs+i], ram[ys+i]]);
+  const CATS = { A: catsOf(G.sym('cat_template0_x'), G.sym('cat_template0_y')),
+                 B: catsOf(G.sym('cat_template1_x'), G.sym('cat_template1_y')) };
+  const GREY = C64.PAL[12], WHITE = C64.PAL[1];
+  function walls(base){ let n=0; for(let y=0;y<H;y++) for(let x=0;x<W;x++) n+=bit(base,x,y); return n; }
+  function draw(id, base, cats, cap){
+    const cv = document.getElementById(id);
+    const asBits = document.getElementById('bits').checked, showCats = document.getElementById('cats').checked;
+    if (asBits) {
+      const ctx = C64.canvas(cv, W, H);
+      ctx.fillStyle = WHITE; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = GREY;
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(bit(base,x,y)) ctx.fillRect(x,y,1,1);
+      if (showCats) { ctx.fillStyle='#000'; for(const [cx,cy] of cats) ctx.fillRect(cx>>1, cy>>1, 1, 1); }
+    } else {
+      const ctx = C64.canvas(cv, W*16*S, H*16*S);
+      ctx.fillStyle = WHITE; ctx.fillRect(0,0,cv.width,cv.height);
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(bit(base,x,y))
+        for(let dy=0;dy<2;dy++) for(let dx=0;dx<2;dx++)
+          C64.drawGlyph(ctx, charset, 0x7F, (x*2+dx)*8*S, (y*2+dy)*8*S, S, GREY);
+      if (showCats) for(const [cx,cy] of cats) {
+        // the cat is a 2x2 tile of glyphs $58-$5B, stamped at its character position
+        [[0x58,0,0],[0x59,1,0],[0x5A,0,1],[0x5B,1,1]].forEach(([g,dx,dy]) =>
+          C64.drawGlyph(ctx, charset, g, (cx+dx)*8*S, (cy+dy)*8*S, S, '#000'));
+      }
+    }
+    document.getElementById(cap).innerHTML = cap === 'capA'
+      ? `<b>Maze A</b> · <code>${C64.hex(base)}</code> · 224 bytes · ${walls(base)} of ${W*H} cells are wall · rounds 1–3 and 8–11`
+      : `<b>Maze B</b> · <code>${C64.hex(base)}</code> · 224 bytes · ${walls(base)} of ${W*H} cells are wall · rounds 4–7 and 12–15`;
+  }
+  function redraw(){ draw('mazeA', A, CATS.A, 'capA'); draw('mazeB', B, CATS.B, 'capB'); }
+  document.getElementById('cats').addEventListener('change', redraw);
+  document.getElementById('bits').addEventListener('change', redraw);
+  redraw();
+
+  // round tables, straight from the bytes
+  const t = n => ram.subarray(G.sym(n), G.sym(n) + 15);
+  const rats = t('round_to_red_rat_count_minus1'), ticks = t('round_to_red_rat_move_ticks'),
+        cats = t('round_to_cat_count_minus1'), sr = t('round_is_speed_run'), ps = t('round_to_paramset');
+  let html = '<tr><th>Round</th><th>Red rats</th><th>Red rat move</th><th>Cats</th><th>Maze</th><th>Mode</th></tr>';
+  for (let i = 0; i < 15; i++) {
+    const s = sr[i] ? ' class="sr"' : '';
+    html += `<tr><td${s}>${i+1}</td><td><span class="bar" style="width:${(rats[i]+1)*9}px"></span>${rats[i]+1}</td>`
+          + `<td>every ${ticks[i]} ticks</td><td><span class="bar h" style="width:${(cats[i]+1)*4}px"></span>${cats[i]+1}</td>`
+          + `<td>${ps[i] ? 'B' : 'A'}</td><td${s}>${sr[i] ? 'SPEED RUN' : 'normal'}</td></tr>`;
+  }
+  document.getElementById('rounds').innerHTML = html;
+})();
+</script>

@@ -55,7 +55,7 @@ def compute(blocks, syms, comments, regions):
         a = s["address"]
         if excluded(a) or a >= 0x10000:
             continue
-        nxt = baddrs[i + 1] if i + 1 < len(bounds) else a + 1
+        nxt = baddrs[i + 1] if i + 1 < len(bounds) else 0x10000   # the last symbol spans to its cap, not one byte
         routine = s["type"] in ("Subroutine", "UserDefined") or code[a]
         end = min(nxt, a + (0x400 if routine else MAX_SPAN), wall_after(a))
         val = 2 if a in commented else 1
