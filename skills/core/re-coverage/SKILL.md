@@ -23,7 +23,9 @@ same way, so tiers mean the same thing everywhere.
    side effects, which tables it reads.
 3. Update `features.md` statuses and `facts.md` as facts firm up.
 4. Every 30 minutes or so, and at the end of every session:
-   `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`.
+   `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
+   `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.vsf`
+   so the committed listing never drifts from the symbols.
 5. Repeat until the tier you are aiming for is met.
 
 ## Rules that keep the number honest

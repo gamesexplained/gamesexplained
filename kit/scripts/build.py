@@ -1,0 +1,209 @@
+#!/usr/bin/env python3
+"""Build the static site into _site/.
+
+For every games/<platform>/<slug>/game.json:
+  index.html   copied through, tab bar injected  (How it works)
+  source.html  from site/source.html + facts.md + cheats.md   (Source code)
+  levels.html  copied through if authored          (Maps / levels)
+  play.html    copied through if authored          (Play)
+  about.html   from site/about.html + game.json + features.md + orientation.md + git log
+  listing.json, symbols.json, reference/           copied
+Plus a home page with the catalogue and site/lib/.
+
+Usage: build.py [--out _site]
+Preview: python3 -m http.server -d _site 8000
+No dependencies. The markdown converter handles the subset the templates use.
+"""
+import glob, html, json, os, re, shutil, subprocess, sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SITE = os.path.join(ROOT, "site")
+PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES", "amiga": "Amiga"}
+TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
+        ("play.html", "Play"), ("about.html", "About")]
+
+
+# --- markdown (the subset our files use) ------------------------------------
+def inline(s):
+    s = html.escape(s, quote=False)
+    s = re.sub(r"`([^`]+)`", lambda m: "<code>" + addr_link(m.group(1)) + "</code>", s)
+    s = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", s)
+    s = re.sub(r"(?<![\w*])\*([^*\n]+)\*(?!\w)", r"<i>\1</i>", s)
+    s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', s)
+    return s
+
+
+def addr_link(s):
+    return re.sub(r"\$([0-9A-Fa-f]{4})\b", lambda m: f'<a href="source.html#{m.group(1).upper()}">${m.group(1).upper()}</a>', s)
+
+
+def markdown(text, drop_h1=True):
+    out, lines, i = [], text.splitlines(), 0
+    para = []
+
+    def flush():
+        if para:
+            out.append("<p>" + inline(" ".join(para)) + "</p>"); para.clear()
+    while i < len(lines):
+        ln = lines[i]
+        if ln.startswith("```"):
+            flush(); j = i + 1; buf = []
+            while j < len(lines) and not lines[j].startswith("```"):
+                buf.append(lines[j]); j += 1
+            out.append("<pre>" + html.escape("\n".join(buf)) + "</pre>"); i = j + 1; continue
+        m = re.match(r"^(#{1,4})\s+(.*)", ln)
+        if m:
+            flush(); lvl = len(m.group(1))
+            if not (lvl == 1 and drop_h1):
+                out.append(f"<h{lvl}>{inline(m.group(2))}</h{lvl}>")
+            i += 1; continue
+        if ln.startswith("|"):
+            flush(); rows = []
+            while i < len(lines) and lines[i].startswith("|"):
+                rows.append([c.strip() for c in lines[i].strip().strip("|").split("|")]); i += 1
+            rows = [r for r in rows if not all(re.fullmatch(r":?-+:?", c) for c in r)]
+            if rows:
+                t = "<div class='tablewrap'><table><tr>" + "".join(f"<th>{inline(c)}</th>" for c in rows[0]) + "</tr>"
+                t += "".join("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in r) + "</tr>" for r in rows[1:]) + "</table></div>"
+                out.append(t)
+            continue
+        m = re.match(r"^(\s*)([-*]|\d+\.)\s+(.*)", ln)
+        if m:
+            flush(); tag = "ol" if m.group(2)[0].isdigit() else "ul"; items = []
+            while i < len(lines):
+                m2 = re.match(r"^(\s*)([-*]|\d+\.)\s+(.*)", lines[i])
+                if m2:
+                    items.append(m2.group(3)); i += 1
+                elif lines[i].startswith("  ") and items and lines[i].strip():
+                    items[-1] += " " + lines[i].strip(); i += 1
+                else:
+                    break
+            out.append(f"<{tag}>" + "".join(f"<li>{inline(x)}</li>" for x in items) + f"</{tag}>"); continue
+        if not ln.strip():
+            flush(); i += 1; continue
+        para.append(ln.strip()); i += 1
+    flush()
+    return "\n".join(out)
+
+
+# --- pieces -----------------------------------------------------------------
+def read(p):
+    return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
+
+
+def tabbar(game, present, lib):
+    tabs = "".join(f'<a class="tab" href="{f}">{n}</a>' for f, n in TABS if f in present)
+    tier = game.get("tier", "none")
+    return (f'<nav class="gametabs"><div class="in"><span class="crumb"><a href="{lib}/../index.html">All games</a> / '
+            f'{PLATFORM_NAMES.get(game.get("platform"), game.get("platform"))} / {html.escape(game.get("title", ""))}</span>'
+            f'{tabs}<span class="tier">tier <b>{tier}</b></span></div></nav>')
+
+
+def inject(page, nav, lib):
+    """Put the tab bar into an authored page and hook the shared css/js."""
+    hook = f'<link rel="stylesheet" href="{lib}/site.css">'
+    if "<!-- tabs -->" in page:
+        page = page.replace("<!-- tabs -->", nav, 1)
+    elif "</style>" in page:
+        page = page.replace("</style>", "</style>\n" + nav, 1)
+    else:
+        page = nav + page
+    if "site.css" not in page:
+        page = page.replace("<style>", hook + "\n<style>", 1) if "<style>" in page else hook + "\n" + page
+    if "<meta charset" not in page:
+        page = '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' + page
+    if "site.js" not in page:
+        page += f'\n<script src="{lib}/site.js"></script>\n'
+    return page
+
+
+def contributors(gdir):
+    try:
+        out = subprocess.run(["git", "shortlog", "-sn", "--no-merges", "HEAD", "--", gdir],
+                             cwd=ROOT, capture_output=True, text=True).stdout
+    except Exception:
+        out = ""
+    rows = [ln.strip().split("\t") for ln in out.splitlines() if "\t" in ln]
+    return rows
+
+
+def fill(tpl, **kw):
+    for k, v in kw.items():
+        tpl = tpl.replace("{{" + k + "}}", str(v))
+    return tpl
+
+
+def build_game(gdir, out_root):
+    game = json.load(open(os.path.join(gdir, "game.json")))
+    plat, slug = game["platform"], game["slug"]
+    out = os.path.join(out_root, plat, slug)
+    os.makedirs(out, exist_ok=True)
+    lib = "../../lib"
+    present = {"index.html", "source.html", "about.html"}
+    for f in ("levels.html", "play.html"):
+        if os.path.exists(os.path.join(gdir, f)):
+            present.add(f)
+    nav = tabbar(game, present, lib)
+    common = dict(title=html.escape(game.get("title", slug)), lib=lib, build=html.escape(game.get("build") or ""),
+                  platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
+                  publisher=html.escape(game.get("publisher") or ""))
+    # authored tabs
+    for f in ("index.html", "levels.html", "play.html"):
+        if f in present:
+            open(os.path.join(out, f), "w").write(inject(read(os.path.join(gdir, f)), nav, lib))
+    # source
+    facts = markdown(read(os.path.join(gdir, "facts.md")))
+    cheats = read(os.path.join(gdir, "cheats.md"))
+    if cheats.strip():
+        facts += "<h2>Cheats</h2>" + markdown(cheats)
+    src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
+    open(os.path.join(out, "source.html"), "w").write(src)
+    # about
+    cons = contributors(gdir)
+    cred = game.get("credits") or []
+    con_html = "<ul>" + "".join(f"<li>{html.escape(n)} <span class='mute'>({c} commits)</span></li>" for c, n in cons) + \
+               "".join(f"<li>{html.escape(c.get('by',''))} <span class='mute'>— {html.escape(c.get('role',''))}</span></li>" for c in cred) + "</ul>"
+    links = game.get("links") or {}
+    link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
+    tools = game.get("tools") or {}
+    about = fill(read(os.path.join(SITE, "about.html")), **common,
+                 tier=game.get("tier", "none"), coverage=f"{game.get('coverage_percent') or 0:g} %",
+                 copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
+                 model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
+                 contributors=con_html, links=link_html,
+                 features=markdown(read(os.path.join(gdir, "features.md"))),
+                 orientation=markdown(read(os.path.join(gdir, "orientation.md")))).replace("<!-- tabs -->", nav)
+    open(os.path.join(out, "about.html"), "w").write(about)
+    for f in ("listing.json", "symbols.json"):
+        if os.path.exists(os.path.join(gdir, f)):
+            shutil.copy(os.path.join(gdir, f), out)
+    ref = os.path.join(gdir, "reference")
+    if os.path.isdir(ref):
+        shutil.copytree(ref, os.path.join(out, "reference"), dirs_exist_ok=True)
+    return game
+
+
+def main():
+    argv = sys.argv[1:]
+    if argv and argv[0] in ("-h", "--help"):
+        print(__doc__); return
+    out_root = os.path.join(ROOT, argv[argv.index("--out") + 1] if "--out" in argv else "_site")
+    if os.path.isdir(out_root):
+        shutil.rmtree(out_root)
+    os.makedirs(out_root)
+    shutil.copytree(os.path.join(SITE, "lib"), os.path.join(out_root, "lib"))
+    games = []
+    for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
+        games.append(build_game(os.path.dirname(gj), out_root))
+    cards = "".join(
+        f'<a class="card" href="{g["platform"]}/{g["slug"]}/index.html"><p class="t">{html.escape(g.get("title",""))}</p>'
+        f'<p class="m">{PLATFORM_NAMES.get(g["platform"], g["platform"])} · {g.get("year") or ""} · {html.escape(g.get("publisher") or "")}</p>'
+        f'<span class="tierb">{g.get("tier","none")} · {g.get("coverage_percent") or 0:g}%</span></a>' for g in games)
+    home = fill(read(os.path.join(SITE, "index.html")), site_title="How every game actually works", lib="lib", cards=cards)
+    open(os.path.join(out_root, "index.html"), "w").write(home)
+    open(os.path.join(out_root, ".nojekyll"), "w").write("")
+    print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/")
+
+
+if __name__ == "__main__":
+    main()

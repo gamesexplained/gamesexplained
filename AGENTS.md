@@ -29,7 +29,7 @@ in order:
    | sweep | `skills/core/re-sweep` | register census and string sweep |
    | annotate and measure | `skills/core/re-coverage` | the burn-down loop until coverage is where the tier needs it |
    | verify | `skills/core/re-verify` | every fact traced or observed live; `facts.md` |
-   | article | `skills/core/re-article` | `index.html`, the interactive article |
+   | minisite | `skills/core/re-article` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
    | retrospective | `skills/core/re-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
 
    Platform knowledge is in `skills/<platform>/`. For the C64:
@@ -38,14 +38,19 @@ in order:
    `skills/c64/tool-regen2000` (how to drive the recommended tools).
 4. **Export the symbol map** after every annotation session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`. This
-   file, `symbols.json`, is the canonical technical result. Disassembler
-   project files and snapshots stay in `work/`.
+   file, `symbols.json`, is the canonical technical result. Then build the
+   listing the Source tab renders from it and your snapshot:
+   `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot.vsf>`.
+   Both are committed; the snapshot and disassembler project stay in
+   `work/`. Preview the whole minisite with `python3 kit/scripts/build.py`
+   and `python3 -m http.server -d _site 8000`.
 5. **Check, then commit on a branch** named `game/<platform>/<slug>`. Never
    commit to `main`. Before every commit run:
 
    ```
    python3 kit/scripts/check_binaries.py
    python3 kit/scripts/check_docs.py
+   python3 kit/scripts/check_listing.py
    ```
 
    If a remote exists, open a pull request. If not, leave the branch.
@@ -90,7 +95,8 @@ in order:
 | `kit/template/` | the game folder, stubbed and commented |
 | `skills/core/` | the method, platform-independent |
 | `skills/<platform>/` | platform facts and tool notes |
-| `games/<platform>/<slug>/` | one game: article, symbols, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
+| `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
+| `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
 Nothing about a particular game belongs in `AGENTS.md` or `skills/`.
 `check_docs.py` enforces that.
@@ -100,7 +106,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `skills/`.
 | Tier | Requires |
 |---|---|
 | Bronze | boots; `orientation.md` recipe; `features.md` drafted from external documentation; reference screenshots |
-| Silver | coverage ≥ 80 % (`coverage.py`); `facts.md`; every feature confirmed or explicitly open; `symbols.json` exported |
+| Silver | coverage ≥ 80 % (`coverage.py`); `facts.md`; every feature confirmed or explicitly open; `symbols.json` exported and `listing.json` built from it |
 | Gold | 100 % coverage; interactive article; at least one finding beyond the documentation verified live; a human has read the copy |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
 

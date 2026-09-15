@@ -1,7 +1,20 @@
 ---
 name: re-article
-description: Build the interactive article, index.html, from symbols.json, facts.md and the reference images. The only page most readers will open. Interactivity first, evidence beside every claim, copy written last under the house style.
+description: Build the game's minisite. The article (index.html, "How it works") from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first, evidence beside every claim, copy written last under the house style.
 ---
+
+# The minisite
+
+Every game is a small site with the same tabs in the same order: **How it
+works** (`index.html`, authored), **Source code** (`source.html`, generated
+from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
+(`levels.html`, authored, only when the game has level data worth a page),
+**Play** (`play.html`, authored, only when a JavaScript version exists),
+**About** (generated from `game.json`, `features.md`, `orientation.md`, git).
+`kit/scripts/build.py` assembles them; you write the authored ones.
+
+Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
+Source tab, so write addresses in code spans and the evidence links itself.
 
 # The article
 
@@ -43,6 +56,7 @@ Not every game has every section. Order them to suit the game.
 - One self-contained `index.html`. Inline CSS and JavaScript; no
   build step; external resources only for fonts. It must open from disk.
 - Start from `kit/template/index.html` for the design tokens and layout.
+  Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
   A finished example to borrow patterns from is any Gold game in `games/`:
   canvas renderers for character sets and screens, Web Audio note
   players, table explorers.
@@ -60,6 +74,21 @@ Write the copy **last**, as a separate pass, under `kit/style.md`. Set
 page title is the game's name. Reference images are referred to by
 relative path from the game folder (`reference/<name>.png`).
 
+## Maps / levels, when there is one
+
+Render the level data the article only excerpts: every maze, screen or
+room as a picture drawn from the extracted bytes, with the per-level
+parameter tables beside them. Reuse the article's renderers. Omit the page
+rather than pad it.
+
+## Play, when there is one
+
+A behavioural port in JavaScript, built from the documented mechanics and
+the extracted data, not a transpile. The article's mechanic widgets are
+usually the seed. Optional; most games will not have it at first.
+
 ## Outputs
 
-`index.html` opening cleanly from disk; `game.json` with `copy` set.
+`index.html` opening cleanly from disk; `listing.json` built and passing
+`check_listing.py`; `game.json` with `copy` set; `build.py` producing the
+minisite without errors.

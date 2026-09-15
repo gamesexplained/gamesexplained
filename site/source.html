@@ -1,0 +1,116 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — source code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="{{lib}}/site.css">
+<body class="site" data-nolink="1">
+<!-- tabs -->
+<div class="facts">
+  <p class="eyebrow">{{platform_name}} · {{build}}</p>
+  <h1 style="margin-top:0">{{title}}: the source</h1>
+  <p class="mute">Every routine, table and variable the game uses, with the names and descriptions given to them. Click an operand to follow it; the counter beside a label lists what refers to it. The reference below the fold is rendered from the game's facts file.</p>
+  <details class="factsbox"><summary>Technical reference: memory map, timing, tables, cheats</summary>
+  <!-- facts -->
+  </details>
+</div>
+<div class="src" id="src">
+  <div class="side">
+    <input type="text" id="q" placeholder="filter names… or $E56E" autocomplete="off">
+    <div class="chips" id="chips">
+      <span class="chip on" data-k="routine">routines</span>
+      <span class="chip on" data-k="table">tables</span>
+      <span class="chip on" data-k="variable">variables</span>
+      <span class="chip on" data-k="string">strings</span>
+      <span class="chip" data-k="branch">branch labels</span>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="explained" checked> explained only</label>
+      <label><input type="checkbox" id="bytes"> bytes</label>
+    </div>
+    <div class="idx" id="idx"></div>
+  </div>
+  <div class="main" id="main"><p class="mute">Loading listing…</p></div>
+</div>
+<script>
+(async function(){
+  const L = await fetch('listing.json').then(r=>r.json()).catch(()=>null);
+  const main=document.getElementById('main'), idx=document.getElementById('idx');
+  if(!L){ main.innerHTML='<p class="mute">listing.json could not be loaded. Serve the site over http (python3 -m http.server) rather than opening the file directly.</p>'; return; }
+  const hex4=a=>'$'+a.toString(16).toUpperCase().padStart(4,'0');
+  const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const byAddr=new Map(L.records.filter(r=>r.t!=='gap').map(r=>[r.a,r]));
+  const names=new Map(L.records.filter(r=>r.l).map(r=>[r.a,r.l]));
+  // owner of each record: the nearest index entry whose span covers it
+  const index=L.index.slice().sort((x,y)=>x.a-y.a);
+  const commentedOwner=a=>{ let lo=0,hi=index.length-1,best=null; while(lo<=hi){const m=(lo+hi)>>1; if(index[m].a<=a){best=index[m];lo=m+1;}else hi=m-1;} return best && a<best.a+best.len ? best.c : false; };
+  const link=(oa,txt)=> oa!==undefined && byAddr.has(oa) ? `<a href="#${oa.toString(16).toUpperCase().padStart(4,'0')}">${esc(txt)}</a>` : esc(txt);
+  const bytes=b=>b?b.map(x=>x.toString(16).toUpperCase().padStart(2,'0')).join(' '):'';
+  const rows=[];
+  for(const r of L.records){
+    if(r.t==='gap'){ rows.push(`<div class="gap" data-a="${r.a}">… ${r.n} bytes not used by the game (${hex4(r.a)}–${hex4(r.a+r.n-1)})</div>`); continue; }
+    const id=r.a.toString(16).toUpperCase().padStart(4,'0');
+    const own=commentedOwner(r.a);
+    if(r.c) rows.push(`<div class="cmt" data-a="${r.a}" data-own="1">${esc(r.c)}</div>`);
+    let instr='', cls=r.t;
+    if(r.t==='code') instr=`<span class="m">${r.m}</span> <span class="o">${link(r.oa,r.o||'')}</span>`;
+    else if(r.t==='byte') instr=`<span class="m">.byte</span> <span class="o">${bytes(r.b).split(' ').map(x=>'$'+x).join(',')}</span>${r.note?` <span class="note">${esc(r.note)}${r.d?': '+r.d.map(esc).join(', '):''}</span>`:''}`;
+    else if(r.t==='word') instr=`<span class="m">.word</span> <span class="o">${r.d.map(hex4).join(',')}</span>`;
+    else if(r.t==='addr') instr=`<span class="m">.addr</span> <span class="o">${link(r.oa,r.o)}</span>`;
+    else if(r.t==='text') instr=`<span class="m">.text</span> <span class="o">"${esc(r.d)}"</span> <span class="note">${r.enc}</span>`;
+    else if(r.t==='note') instr=`<span class="note">${esc(r.note||'')}</span>`;
+    if(r.s) instr+=`<span class="s">; ${esc(r.s)}</span>`;
+    const xr=r.x?`<span class="xr" data-x="${r.x.join(',')}" title="referenced by">${r.x.length}</span>`:'';
+    rows.push(`<div class="row ${cls}${r.t!=='code'?' data':''}" id="${id}" data-a="${r.a}" data-own="${own?1:0}"><span class="a"><a href="#${id}">${id}</a></span><span class="b">${bytes(r.b)}</span><span class="l">${r.l?esc(r.l):''}${xr}</span><span class="i">${instr}</span></div>`);
+  }
+  main.innerHTML=rows.join('');
+  // index pane
+  const kinds=new Set(['routine','table','variable','string']);
+  function renderIdx(){
+    const q=(document.getElementById('q').value||'').trim().toLowerCase();
+    const expl=document.getElementById('explained').checked;
+    idx.innerHTML=index.filter(e=>kinds.has(e.k)&&(!expl||e.c)&&(!q||e.n.toLowerCase().includes(q)||hex4(e.a).toLowerCase().includes(q)))
+      .map(e=>`<a href="#${e.a.toString(16).toUpperCase().padStart(4,'0')}" class="${e.c?'':'unc'}"><span class="a">${e.a.toString(16).toUpperCase().padStart(4,'0')}</span><span>${esc(e.n)}</span><span class="k">${e.k}</span></a>`).join('');
+  }
+  function applyOpts(){
+    const expl=document.getElementById('explained').checked;
+    main.classList.toggle('explained',expl);
+    main.querySelectorAll('[data-own]').forEach(el=>el.classList.toggle('hidden',expl&&el.dataset.own==='0'));
+    main.querySelectorAll('.gap').forEach(el=>el.classList.toggle('hidden',expl));
+    main.querySelectorAll('.row').forEach(el=>el.classList.toggle('nobytes',!document.getElementById('bytes').checked));
+    renderIdx();
+  }
+  document.getElementById('chips').addEventListener('click',e=>{const c=e.target.closest('.chip'); if(!c)return; c.classList.toggle('on'); c.classList.contains('on')?kinds.add(c.dataset.k):kinds.delete(c.dataset.k); renderIdx();});
+  document.getElementById('q').addEventListener('input',renderIdx);
+  document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const m=/^\$?([0-9a-f]{1,4})$/i.exec(e.target.value.trim()); if(m) location.hash=m[1].toUpperCase().padStart(4,'0'); }});
+  document.getElementById('explained').addEventListener('change',applyOpts);
+  document.getElementById('bytes').addEventListener('change',applyOpts);
+  // xref popovers
+  let pop=null;
+  main.addEventListener('click',e=>{
+    const x=e.target.closest('.xr');
+    if(pop){pop.remove();pop=null;}
+    if(!x) return;
+    pop=document.createElement('div'); pop.className='xlist';
+    pop.innerHTML='<div class="note">referenced by</div>'+x.dataset.x.split(',').map(a=>{const n=+a; const id=n.toString(16).toUpperCase().padStart(4,'0'); return `<a href="#${id}">${id} ${esc(names.get(n)||'')}</a>`;}).join('');
+    x.parentElement.style.position='relative'; x.parentElement.appendChild(pop);
+    e.stopPropagation();
+  });
+  document.addEventListener('click',()=>{if(pop){pop.remove();pop=null;}});
+  // permalinks: reveal hidden rows and highlight
+  function goHash(){
+    const id=(location.hash||'').slice(1).toUpperCase(); if(!id) return;
+    let el=document.getElementById(id);
+    if(!el){ // nearest record at or before the address
+      const a=parseInt(id,16); let best=null; for(const r of byAddr.keys()) if(r<=a&&(best===null||r>best)) best=r;
+      if(best!==null) el=document.getElementById(best.toString(16).toUpperCase().padStart(4,'0'));
+    }
+    if(!el) return;
+    if(el.classList.contains('hidden')){ document.getElementById('explained').checked=false; applyOpts(); }
+    main.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl')); el.classList.add('hl');
+    el.scrollIntoView({block:'center'});
+  }
+  window.addEventListener('hashchange',goHash);
+  applyOpts(); goHash();
+})();
+</script>

@@ -28,14 +28,9 @@ Usage:
   coverage.py <game dir> --top 40        longer work queue
   coverage.py <game dir> --code | --data queue only that side
 """
-import bisect, json, os, re, sys
+import json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-MAX_SPAN = 64
-BOUNDARY_TYPES = {"Subroutine", "UserDefined", "Field", "ZeroPageField",
-                  "ZeroPagePointer", "AbsoluteAddress", "ZeroPageAbsoluteAddress"}
-
 
 def load(gdir, live):
     from symbols_export import from_live, regions
@@ -63,53 +58,9 @@ def main():
     def excluded(a):
         return any(lo <= a <= hi for lo, hi, _ in exclude)
 
-    seen, commented, dups = {}, set(), []
-    for c in sorted(comments, key=lambda c: c["address"]):
-        if c["type"] != "line" or not c["text"].strip():
-            continue
-        key = re.sub(r"\s+", " ", c["text"].strip().lower())
-        if key in seen:
-            dups.append((c["address"], seen[key]))
-        else:
-            seen[key] = c["address"]
-            commented.add(c["address"])
-    code = bytearray(0x10000)
-    for b in blocks:
-        if b["type"] == "Code":
-            for a in range(b["start"], b["end"] + 1):
-                code[a] = 1
-    edges = {0x0000, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x4000, 0x8000, 0xA000, 0xC000, 0xD000, 0xE000}
-    for b in blocks:
-        edges.add(b["start"]); edges.add(b["end"] + 1)
-    edges = sorted(edges)
-
-    def wall_after(a):
-        i = bisect.bisect_right(edges, a)
-        return edges[i] if i < len(edges) else 0x10000
-
-    syms = sorted(syms, key=lambda s: s["address"])
-    bounds = [s for s in syms if s["type"] in BOUNDARY_TYPES or s["address"] in commented]
-    baddrs = [s["address"] for s in bounds]
-    state = bytearray(0x10000)
-    owner = {}
-    for i, s in enumerate(bounds):
-        a = s["address"]
-        if excluded(a) or a >= 0x10000:
-            continue
-        nxt = baddrs[i + 1] if i + 1 < len(bounds) else a + 1
-        routine = s["type"] in ("Subroutine", "UserDefined") or code[a]
-        end = min(nxt, a + (0x400 if routine else MAX_SPAN), wall_after(a))
-        val = 2 if a in commented else 1
-        for x in range(a, max(end, a + 1)):
-            if not excluded(x) and state[x] < val:
-                state[x] = val
-            owner.setdefault(x, (s["name"], a))
-    for a in range(0x10000):
-        if excluded(a):
-            state[a] = 0
-        elif state[a] == 0 and (code[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
-            state[a] = 1
-
+    from ledger import compute
+    L = compute(blocks, syms, comments, reg)
+    state, code, owner, dups = L["state"], L["code"], L["owner"], L["dups"]
     tracked = [a for a in range(0x10000) if state[a]]
     if not tracked:
         print("nothing tracked: no code blocks or symbols yet"); return
