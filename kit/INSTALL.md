@@ -27,9 +27,16 @@ read it; you do, with `source .tools.env`.
   ```
 
   It serves MCP over HTTP on `127.0.0.1:6510`; `.mcp.json` registers it as
-  the `vice` server. Check with `nc -z 127.0.0.1 6510`. If your agent
-  session started before VICE did, the `vice` tools will not be available
-  until the session restarts or reconnects; start VICE first next time.
+  the `vice` server. Check with `nc -z 127.0.0.1 6510`. Because the
+  transport is plain HTTP, a server started or **restarted** after your
+  session began is picked up on the next call; you do not have to restart
+  the agent session. VICE can and does die mid-session, sometimes on a
+  single tool call, so check the port before concluding that the emulator
+  is telling you something surprising, and start it again from here.
+
+  `kit/scripts/vice.py` speaks to the same server from a script, which is
+  how live tests should be written: one round trip per tool call adds up
+  fast, and a test that halts, pokes, runs and reads is a dozen calls.
 - **regenerator2000.** Installed with cargo to `~/.cargo/bin`. It needs a
   pseudo-terminal even in MCP mode, binds port 3000 with no option to
   change it, and only one instance can run at a time:
@@ -41,6 +48,10 @@ read it; you do, with `source .tools.env`.
   Drive it with `python3 kit/scripts/r2000.py <tool> '<json args>'`, which
   also logs every mutating call to the game's `work/annotations.jsonl`.
   Check with `nc -z 127.0.0.1 3000`.
+
+  The two servers do not answer the same way: regenerator2000 replies with
+  server-sent events and vice-mcp with a plain JSON body. Both kit clients
+  handle either.
 - **Sandbox PATH.** Some agent shells run with a narrower `PATH` than your
   login shell, so cargo and Homebrew binaries report "command not found"
   although they are installed. Prefix commands with
@@ -61,6 +72,11 @@ VICE has official Windows binaries; whether the vice-mcp fork builds there
 is not known. regenerator2000 installs with cargo. The `script` wrapper
 above does not exist on Windows; the tools may need a different way to get
 a terminal. Report what you find.
+
+## When the sandbox has no `timeout`
+
+macOS ships no `timeout` command. A long-running probe needs a guard inside
+the script, or a background run you poll, rather than `timeout 60 ...`.
 
 ## Health check
 

@@ -1,0 +1,1077 @@
+<title>Jupiter Lander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0a0b18; --surface:#12142c; --surface-2:#1a1d40; --line:#292c58; --line-soft:#1d1f3b;
+  --ink:#e9e7f7; --ink-soft:#a5a1cb; --ink-mute:#6e6b99;
+  --amber:#e8a33d; --cyan:#6fc7d4; --coral:#d97f6e; --green:#8fd17a; --violet:#8f7fe0;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Press Start 2P',monospace; --fb:'IBM Plex Sans',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.65;padding:0 0 5rem;margin:0}
+h1,h2,h3{font-weight:600;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+.hero{padding:60px 24px 44px;text-align:center;border-bottom:1px solid var(--line-soft);
+ background:radial-gradient(ellipse 900px 380px at 50% -12%,rgba(143,127,224,.13),transparent 70%)}
+.eyebrow{font-family:var(--fm);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--violet);margin:0 0 20px}
+.hero h1{font-family:var(--fd);font-size:23px;line-height:1.65;margin-bottom:22px}
+.hero .sub{max-width:600px;margin:0 auto;color:var(--ink-soft);font-size:15.5px}
+section{padding:56px 0;border-bottom:1px solid var(--line-soft)}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+h2.t{font-size:21px;margin-bottom:14px}
+h3{font-size:16px;margin:26px 0 8px}
+.lede{color:var(--ink-soft);max-width:64ch;margin:0 0 30px;font-size:15.5px}
+p{max-width:70ch}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+.cap{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin-top:14px;line-height:1.65;max-width:none}
+.cap b{color:var(--ink-soft);font-weight:500}
+code{font-family:var(--fm);font-size:.92em;color:var(--cyan)}
+canvas{image-rendering:pixelated;display:block;max-width:100%}
+.screenwrap{background:#000;border-radius:6px;padding:0;display:inline-block;line-height:0;max-width:100%}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.col{flex:1 1 280px;min-width:0}
+button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:7px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--violet)}
+button.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+button:disabled{opacity:.4;cursor:default}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0}
+label.inline{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;gap:7px;align-items:center;cursor:pointer}
+input[type=range]{accent-color:var(--violet);width:190px;max-width:100%}
+table{border-collapse:collapse;font-family:var(--fm);font-size:12.5px;width:100%}
+th,td{border-bottom:1px solid var(--line-soft);padding:6px 9px;text-align:left}
+th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+td.n{text-align:right}
+.tablewrap{overflow-x:auto}
+.stat{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);line-height:1.8}
+.stat b{color:var(--amber);font-weight:500}
+.asm{font-family:var(--fm);font-size:12.5px;background:#090a16;border:1px solid var(--line-soft);
+ border-radius:8px;padding:14px 16px;overflow-x:auto;color:var(--ink-soft);line-height:1.7;margin:16px 0 0;white-space:pre}
+.asm .a{color:var(--ink-mute)} .asm .k{color:var(--violet)} .asm .c{color:var(--green)}
+.dpad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,40px);gap:6px}
+.key{font-family:var(--fm);font-size:12px;display:flex;align-items:center;justify-content:center;
+ border:1px solid var(--line);border-radius:7px;background:var(--surface-2);color:var(--ink-soft);cursor:pointer;user-select:none}
+.key.on{background:var(--amber);border-color:var(--amber);color:#0a0b18;font-weight:600}
+.key.wide{grid-column:span 3}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.note{border-left:3px solid var(--amber);padding:2px 0 2px 16px;color:var(--ink-soft);margin:22px 0;font-size:15px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h3{margin-top:0;font-size:15px;color:var(--amber)}
+.card p{font-size:14.5px;color:var(--ink-soft);margin:0}
+img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:block}
+.legend{font-family:var(--fm);font-size:12px;color:var(--ink-soft);display:flex;gap:16px;flex-wrap:wrap;margin-top:12px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+@media(max-width:560px){.hero h1{font-size:17px}.wrap{padding:0 16px}}
+</style>
+<header class="hero">
+  <p class="eyebrow">Commodore 64 &middot; 1982 &middot; Commodore and HAL Laboratory</p>
+  <h1>Jupiter Lander</h1>
+  <p class="sub">Five kilobytes of code, and a landing test that does not agree with the gauge
+  it asks you to read.</p>
+</header>
+
+<main class="wrap">
+
+<section>
+  <p class="fig">01 &middot; The screen</p>
+  <h2 class="t">One frame, rebuilt from memory</h2>
+  <p class="lede">Not a screenshot. Every pixel below is computed from three pieces of memory:
+  the 1000 bytes of screen, the 1000 nibbles of colour, and the character set the game installs
+  at <code>$3800</code>. The lander over it is sprite 1, drawn from its own 63 bytes.</p>
+  <div class="plate">
+    <div class="row">
+      <div>
+        <div class="screenwrap"><canvas id="scr" width="640" height="400"></canvas></div>
+        <div class="ctl">
+          <button id="ovCells">Cell grid</button>
+          <button id="ovTerrain">Terrain area</button>
+          <button id="ovHud">Gauge and status</button>
+          <button id="ovSprite" class="on">Sprite</button>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat" id="scrStats"></div>
+        <div class="legend">
+          <span><i style="background:#813338"></i>rock, colour 2</span>
+          <span><i style="background:#56ac4d"></i>gauge, colour 5</span>
+          <span><i style="background:#edf171"></i>safe speed, colour 7</span>
+          <span><i style="background:#75cec8"></i>lander sprite, colour 3</span>
+        </div>
+      </div>
+    </div>
+    <p class="cap"><b>320&times;200</b> &middot; 40 columns by 25 rows of 8&times;8 characters. The
+    terrain painter writes 38 of those columns. The last two belong to the speed gauge, and the
+    bottom two rows to the score and the fuel bar.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">02 &middot; The cast</p>
+  <h2 class="t">Sixteen sprite shapes, and one of them is the game</h2>
+  <p class="lede">The character set is 2 KB, which is 256 glyphs. This game uses 128. The other
+  half of the block holds the sixteen sprite shapes, addressed through the sprite pointers
+  instead of through <code>$D018</code>, and the two never collide because no screen cell ever
+  selects a code above <code>$7F</code>.</p>
+  <div class="plate">
+    <div id="spriteGrid" class="row" style="gap:10px"></div>
+    <p class="cap">Click any shape to see it large. Slots <code>$FC</code> to <code>$FF</code> are
+    empty; they are the tail of the 2 KB block and cost nothing.</p>
+  </div>
+
+  <h3>Seven frames from one pointer</h3>
+  <p>Hitting rock does not swap the ship for an explosion. It adds one to the sprite pointer,
+  seven times, and cycles the sprite colour between frames.</p>
+  <div class="plate">
+    <div class="row">
+      <div><div class="screenwrap"><canvas id="boomCv" width="192" height="168"></canvas></div></div>
+      <div class="col">
+        <div class="ctl"><button id="boomPlay">Play the explosion</button><button id="boomStep">Step</button></div>
+        <div class="stat" id="boomStat"></div>
+        <div class="asm"><span class="a">$E46F</span>  <span class="k">lda</span> #$07
+<span class="a">$E471</span>  <span class="k">sta</span> boom_frame
+<span class="a">$E473</span>  <span class="k">inc</span> $07F9      <span class="c">; the sprite pointer</span>
+<span class="a">$E481</span>  <span class="k">jsr</span> flash_explosion_colour
+<span class="a">$E484</span>  <span class="k">dec</span> boom_frame
+<span class="a">$E486</span>  <span class="k">bne</span> $E473</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Three sprites in the same place</h3>
+  <p>The flames are not drawn into the hull. They are sprites 2 and 3, sitting at exactly the
+  same coordinates as sprite 1 and switched on only while a thruster is held. Sprite 2 alternates
+  between two shapes on every update, which is what makes the main engine flicker.</p>
+  <div class="plate">
+    <div class="row">
+      <div><div class="screenwrap"><canvas id="stackCv" width="240" height="210"></canvas></div></div>
+      <div class="col">
+        <div class="ctl">
+          <button id="stMain">Main thruster</button>
+          <button id="stSideL">Left jet</button>
+          <button id="stSideR">Right jet</button>
+          <button id="stBig">Double size</button>
+        </div>
+        <div class="stat" id="stackStat"></div>
+      </div>
+    </div>
+    <p class="cap">Sprite&nbsp;1 is cyan, sprite&nbsp;2 red, sprite&nbsp;3 orange, and none of
+    those colours is ever changed except during an explosion. <b>Double size</b> is the whole of
+    the game's zoom: <code>$D017</code> and <code>$D01D</code> both get <code>$0E</code>.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">03 &middot; Controls</p>
+  <h2 class="t">Three keys, and A does not mean left</h2>
+  <p class="lede">The instruction screen prints <code>LEFT-A</code> and <code>D-RIGHT</code>.
+  Those labels name the thruster that fires, not the direction you travel. Firing the left
+  thruster pushes you right.</p>
+  <div class="plate">
+    <div class="row">
+      <div>
+        <div class="dpad">
+          <div class="key" id="kA">A</div><div class="key" id="kF1">F1</div><div class="key" id="kD">D</div>
+          <div class="key wide" id="kFire">joystick 1: left &nbsp;&middot;&nbsp; fire &nbsp;&middot;&nbsp; right</div>
+        </div>
+        <div class="ctl"><span class="stat">Hold a key, or use the arrow keys and space.</span></div>
+      </div>
+      <div class="col">
+        <div class="screenwrap"><canvas id="ctlCv" width="240" height="140"></canvas></div>
+        <div class="stat" id="ctlStat"></div>
+      </div>
+    </div>
+    <p class="cap">The arrow shows the acceleration the held key applies to the ship this pass.
+    Gravity is left out here; it is added separately and always.</p>
+  </div>
+
+  <h3>One bit for two devices</h3>
+  <p>F1 and the port 1 fire button are the same bit of the same register. Keyboard row 0 is
+  selected by writing <code>$FE</code> to <code>$DC00</code>, and F1 then reads as bit 4 of
+  <code>$DC01</code> . That bit is also where the joystick's fire button lands. The game never
+  has to choose between them.</p>
+  <div class="asm"><span class="a">$EB9E</span>  <span class="k">lda</span> #$fe
+<span class="a">$EBA0</span>  <span class="k">sta</span> $dc00      <span class="c">; select keyboard row 0</span>
+<span class="a">$EBA3</span>  <span class="k">lda</span> $dc01      <span class="c">; read it back</span>
+<span class="a">$EBA6</span>  <span class="k">cmp</span> $dc01      <span class="c">; twice, until two reads agree</span>
+<span class="a">$EBA9</span>  <span class="k">bne</span> $EBA3
+<span class="a">$EBAB</span>  <span class="k">and</span> #$10      <span class="c">; bit 4: F1, and fire</span></div>
+  <p>The joystick is read first, with every keyboard row driven high so no key can show through.
+  Only if the stick is completely idle does the keyboard get scanned, and then only for A, D and
+  F1. D is tested last, so holding A and D together thrusts right.</p>
+</section>
+
+<section>
+  <p class="fig">04 &middot; The world</p>
+  <h2 class="t">Four hand-drawn screens</h2>
+  <p class="lede">Fly near a landing site and the view snaps to a close-up. Nothing about the
+  terrain is scaled. The game holds four separate pictures and flying between zones swaps which
+  one is painted. The only thing that changes size is the lander, doubled by the video chip.</p>
+  <div class="plate">
+    <div class="row">
+      <div>
+        <div class="ctl" style="margin:0 0 12px">
+          <button class="viewBtn on" data-v="0">Wide</button>
+          <button class="viewBtn" data-v="1">x5 close-up</button>
+          <button class="viewBtn" data-v="2">x2 close-up</button>
+          <button class="viewBtn" data-v="3">x10 close-up</button>
+        </div>
+        <div class="screenwrap"><canvas id="terrCv" width="608" height="368"></canvas></div>
+      </div>
+      <div class="col">
+        <div class="stat" id="terrStat"></div>
+        <div class="ctl">
+          <button id="rleStep">Paint one run</button>
+          <button id="rleAll">Paint it all</button>
+          <button id="rleReset">Clear</button>
+        </div>
+        <div class="stat" id="rleStat"></div>
+      </div>
+    </div>
+    <p class="cap">Every view is a run-length stream of count-and-character pairs, laid out 38
+    cells to a row and stopping on a count of zero. <b>924 bytes for 3496 cells.</b></p>
+  </div>
+
+  <h3>The badge in the rock</h3>
+  <p>All four streams carry the same four glyphs, <code>$0C</code> to <code>$0F</code>, arranged
+  as a two-by-two block. It is a Commodore badge cut into the cliff, and it is terrain data
+  rather than an overlay: the painter has no idea it is drawing a logo.</p>
+
+  <h3>Where the pads are</h3>
+  <p>A pad is one line in the world. The test for standing on one compares both bytes of the
+  ship's Y position for equality, and the X range is an ordinary bounds check.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Pad</th><th>World Y</th><th>World X</th><th>Multiplier</th></tr>
+    <tr><td>Left</td><td class="n">$016A</td><td class="n">$00B0 &ndash; $00E0</td><td class="n">5</td></tr>
+    <tr><td>Middle plateau</td><td class="n">$009A</td><td class="n">$0160 &ndash; $0190</td><td class="n">2</td></tr>
+    <tr><td>Right</td><td class="n">$017A</td><td class="n">$01E0 &ndash; $0200</td><td class="n">10</td></tr>
+  </table></div>
+  <p>Descend faster than one world unit per pass and the ship's Y can step over that line
+  without ever equalling it. The game never sees a landing at all, and the ship dies on the rock
+  a moment later.</p>
+
+  <p>All three numbers are placed to the pixel. Put the lander on a pad's line and run the same
+  sprite-against-character test the video chip runs, and it is clear by a hair. Move it one world
+  unit lower and the legs are inside the rock, on all three pads.</p>
+  <div class="tablewrap"><table>
+    <tr><th>World Y relative to the pad</th><th>x5 pad</th><th>x2 pad</th><th>x10 pad</th></tr>
+    <tr><td>4 below</td><td>in rock</td><td>in rock</td><td>in rock</td></tr>
+    <tr><td>1 below</td><td>in rock</td><td>in rock</td><td>in rock</td></tr>
+    <tr><td><b>the pad's own line</b></td><td>clear</td><td>clear</td><td>clear</td></tr>
+    <tr><td>1 above</td><td>clear</td><td>clear</td><td>clear</td></tr>
+  </table></div>
+  <p class="cap">Run in this page against the decoded terrain and the sprite bitmap, not measured
+  in the emulator. The pad line is the lowest position at which the lander does not touch.</p>
+</section>
+
+<section>
+  <p class="fig">05 &middot; The flight model</p>
+  <h2 class="t">Fly it</h2>
+  <p class="lede">The physics is a handful of additions. What follows is the same arithmetic at
+  the same rate with the same constants, over the terrain decoded from the game and against the
+  same sprite-and-character collision test the video chip performs. Land inside a pad with a
+  downward speed under 72 and it scores. Starting where the game starts you is as hard here as it
+  is there, so three buttons will drop you in above a pad instead.</p>
+  <div class="plate">
+    <div class="row">
+      <div>
+        <div class="screenwrap"><canvas id="simCv" width="608" height="368"></canvas></div>
+        <div class="ctl">
+          <button id="simStart">Drop a lander</button>
+          <button id="simStep">One pass</button>
+          <button id="simPause">Pause</button>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat" id="simStat"></div>
+        <div class="ctl">
+          <label class="inline">Gravity <input type="range" id="simGrav" min="4" max="9" value="4"><span id="simGravV">4</span></label>
+        </div>
+        <div class="ctl"><span class="stat">A and D for the side jets, space or F for the main engine. Or use the buttons.</span></div>
+        <div class="ctl">
+          <button id="simA">A</button><button id="simUp">thrust</button><button id="simD">D</button>
+        </div>
+        <div class="ctl">
+          <button class="simPad" data-p="0">Start above the x5 pad</button>
+          <button class="simPad" data-p="1">x2</button>
+          <button class="simPad" data-p="2">x10</button>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Each pass: a side jet moves the X velocity by <b>6</b> and costs <b>30</b>
+    fuel; the main engine moves the Y velocity by <b>&minus;12</b> and costs <b>111</b>; then
+    gravity is added whatever you did. Velocities are in 256ths of a world unit.</p>
+  </div>
+  <div class="asm"><span class="a">$E328</span>  <span class="k">lda</span> #$0c      <span class="c">; main thruster: 12</span>
+<span class="a">$E32A</span>  <span class="k">pha</span>
+<span class="a">$E32B</span>  <span class="k">asl</span> a         <span class="c">; x2</span>
+<span class="a">$E32C</span>  <span class="k">asl</span> a         <span class="c">; x4</span>
+<span class="a">$E32D</span>  <span class="k">asl</span> a         <span class="c">; x8 = 96</span>
+<span class="a">$E32E</span>  <span class="k">adc</span> #$0f      <span class="c">; + 15 = 111, the fuel cost</span>
+<span class="a">$E330</span>  <span class="k">sta</span> scratch
+<span class="a">$E332</span>  <span class="k">lda</span> fuel_lo   <span class="c">; tank -= 111</span>
+<span class="a">$E33F</span>  <span class="k">pla</span>             <span class="c">; back to 12</span>
+<span class="a">$E342</span>  <span class="k">lda</span> ship_vy_lo <span class="c">; velocity -= 12</span></div>
+  <p>The fuel cost and the thrust come out of the same constant. Twelve is shifted three places
+  to make ninety-six, fifteen is added, and the original twelve is pulled back off the stack to
+  use as the acceleration.</p>
+</section>
+
+<section>
+  <p class="fig">06 &middot; The gauge</p>
+  <h2 class="t">The needle cannot tell you whether you are about to land</h2>
+  <p class="lede">The instructions say the vertical velocity has to be inside the yellow area of
+  the scale. There is one yellow cell. It covers downward speeds 0 to 63. The landing test
+  accepts everything up to 71, and accepts every upward speed there is.</p>
+  <div class="plate">
+    <div class="row">
+      <div>
+        <div class="screenwrap"><canvas id="gaugeCv" width="160" height="400"></canvas></div>
+      </div>
+      <div class="col">
+        <div class="ctl">
+          <label class="inline" style="width:100%">Y velocity
+            <input type="range" id="gv" min="-300" max="300" value="0">
+          </label>
+        </div>
+        <div class="stat" id="gaugeStat"></div>
+        <div class="ctl">
+          <button class="gpre" data-v="-16">-16, climbing</button>
+          <button class="gpre" data-v="0">0</button>
+          <button class="gpre" data-v="63">63</button>
+          <button class="gpre" data-v="71">71</button>
+          <button class="gpre" data-v="72">72</button>
+        </div>
+      </div>
+    </div>
+      <p class="cap">Sixteen character rows, eight marker glyphs inside each, so 128 needle
+    positions over the whole scale. The marker code is <code>$18</code> plus the bottom three
+    bits of the gauge value, and one step is eight units of velocity.</p>
+  </div>
+  <div class="note">Set it to 63, then 64. The needle drops out of the yellow, and the landing
+  still works: 64 through 71 all land. Then compare 71 with 72. They are one marker step apart,
+  an eighth of a character, and one of them scores nine hundred points while the other prints
+  SORRY NO BONUS and destroys the ship. Nothing on the scale marks that line.</div>
+</section>
+
+<section>
+  <p class="fig">07 &middot; Scoring</p>
+  <h2 class="t">Eighty minus your speed, and a zero that is always there</h2>
+  <p class="lede">The bonus for a landing is a subtraction and at most two multiplications.
+  Everything on screen is then shown ten times larger than the number the game is holding,
+  because the status line has a <code>0</code> painted on the end of it.</p>
+  <div class="plate">
+    <div class="row">
+      <div class="col">
+        <div class="ctl">
+          <label class="inline">Landing speed <input type="range" id="scv" min="-60" max="90" value="0"><span id="scvV"></span></label>
+        </div>
+        <div class="ctl">
+          <button class="padBtn" data-p="1">x5 pad</button>
+          <button class="padBtn on" data-p="3">x10 pad</button>
+          <button class="padBtn" data-p="2">x2 pad</button>
+        </div>
+        <div class="stat" id="scoreStat" style="margin-top:14px"></div>
+      </div>
+      <div class="col">
+        <div class="screenwrap"><canvas id="bonusCv" width="608" height="48"></canvas></div>
+        <p class="cap">The bonus line the game draws on screen row 2, rendered from the same
+        character set.</p>
+      </div>
+    </div>
+  </div>
+  <div class="note">Push the speed below zero. A ship that arrives climbing scores more than a
+  ship that arrives stopped, because <code>80 &minus; velocity</code> is an ordinary eight-bit
+  subtraction and a climbing ship has <code>$F0</code> in the low byte. 960 points is the highest
+  single landing the scoring can produce. A perfect stop gives 800.</div>
+  <p>Every point counted out also puts 70 units back in the tank, one point and 70 units at a
+  time, at about 21 milliseconds each. A good landing on the x10 pad therefore takes roughly
+  seventeen seconds to pay out, and you watch the fuel bar grow the whole time.</p>
+</section>
+
+<section>
+  <p class="fig">08 &middot; Progression</p>
+  <h2 class="t">Sixteen numbers and then it stops</h2>
+  <p class="lede">Nothing else changes as the game goes on. The pads stay where they are, the
+  fuel costs stay the same, the landing limit stays at 72. The only thing that gets harder is
+  how fast you fall, and it is a sixteen-byte table.</p>
+  <div class="plate">
+    <canvas id="gravCv" width="880" height="220"></canvas>
+    <p class="cap">Gravity at <code>$E0DE</code>, in 256ths of a world unit per pass per pass.
+    The counter stops at sixteen, so the sixteenth landing is as hard as the game ever gets, and
+    a pilot who survives fifty is flying the same game as one who survived sixteen.</p>
+  </div>
+  <p>The table does not climb steadily. It goes 4, 5, 4, 5, 6, 5, so the second landing is
+  harder than the third, and the eleventh is harder than the twelfth. The difficulty steps back
+  four times on its way up.</p>
+</section>
+
+<section>
+  <p class="fig">09 &middot; Sound</p>
+  <h2 class="t">Three tunes, stored as chip registers</h2>
+  <p class="lede">There is no music driver. Each tune is a list of raw SID frequency words and a
+  fixed gap between them, played by a loop that writes two registers and counts. The gate is
+  opened once at the start and closed at the end, so a repeated note runs into the one before it
+  instead of being struck again.</p>
+  <div class="plate">
+    <div class="row">
+      <div class="col">
+        <div class="ctl">
+          <button class="tuneBtn" data-t="intro">Opening</button>
+          <button class="tuneBtn" data-t="landing">Landing</button>
+          <button class="tuneBtn" data-t="crash">Too fast</button>
+          <button id="tuneStop">Stop</button>
+        </div>
+        <div class="stat" id="tuneStat"></div>
+      </div>
+      <div class="col">
+        <div class="screenwrap" style="background:var(--surface-2);padding:8px;border-radius:8px">
+          <canvas id="tuneCv" width="560" height="150"></canvas>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Frequency in hertz against time, from the stored words. A SID frequency of
+    <code>n</code> is <code>n &times; 985248 / 16777216</code> hertz on a PAL machine. Zero is a
+    rest.</p>
+  </div>
+  <p>The thrusters and the explosion do not use this path at all. They gate voices 2 and 3 to
+  noise directly, and the only difference between the main engine and a crash is the frequency:
+  <code>$0900</code> for the engine, <code>$0700</code> for the bang.</p>
+</section>
+
+<section>
+  <p class="fig">10 &middot; Quirks</p>
+  <h2 class="t">Things a pilot would not know</h2>
+  <div class="grid2">
+    <div class="card"><h3>Nothing is synchronised to the screen</h3><p>No raster interrupt is
+    enabled, and the timer interrupt is masked for the whole of a game. The game times itself by
+    counting down a register ten times two hundred, which is about 10.3 milliseconds, and waits
+    three of those per update. On an NTSC machine, with a faster clock, the whole game runs about
+    four per cent quicker.</p></div>
+
+    <div class="card"><h3>The interrupt exists to flash one line of text</h3><p>It runs only
+    during the attract sequence. Every twentieth tick it steps the colour of eighteen cells at
+    <code>$DBCA</code>, which is exactly the eighteen characters of PUSH F1 TO START, and on
+    every tick it checks whether F1 is down. That is all it does.</p></div>
+
+    <div class="card"><h3>The last 255 units of fuel are unspendable</h3><p>The tank is called
+    empty when its high byte reaches zero, and that same test clears both thrust flags. Up to 255
+    units are still sitting in the low byte, and no thruster will ever touch them. It also means
+    the counter can never underflow, which is presumably the point.</p></div>
+
+    <div class="card"><h3>Running dry does not end the game</h3><p>OUT OF FUEL appears, the
+    engines stop, and the ship keeps falling. The game ends at the next impact, when the crash
+    handler finds the tank at zero and there is nothing to charge the crash to.</p></div>
+
+    <div class="card"><h3>A crash costs fuel, and the bill is capped</h3><p>The impact speed
+    shifted right by four comes off the fuel high byte. Above a speed of <code>$01FF</code> the
+    calculation is clamped, so every very fast crash costs the same 7936 units. Hitting the
+    ground at speed 512 and at speed 768 cost exactly the same.</p></div>
+
+    <div class="card"><h3>What the counter actually holds</h3><p>Four packed BCD
+    digits, printed followed by a <code>0</code> that is part of the static template. The counter
+    tops out at 9999, which reads as 99990, and a single point is worth ten on screen.</p></div>
+
+    <div class="card"><h3>Landing while climbing pays best</h3><p>The bonus is
+    <code>80 &minus; velocity</code> done in eight bits. A ship arriving at minus 16 has
+    <code>$F0</code> in the velocity's low byte, and <code>$50 &minus; $F0</code> is 96. On the
+    x10 pad that is 9600 on screen, against 8000 for a perfect stop.</p></div>
+
+    <div class="card"><h3>The whole game is 49 bytes of state</h3><p>Everything the game knows
+    about itself lives in <code>$02</code> to <code>$32</code>: two positions, two velocities, a
+    tank, a score, a high score, a view number and a handful of flags. Nothing else in memory
+    changes while you fly.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">11 &middot; The screens</p>
+  <h2 class="t">Everything it can put in front of you</h2>
+  <p class="lede">The thruster flames in two of these were forced on by patching two bytes.
+  They are otherwise almost impossible to catch, because they are only lit while a key is down.</p>
+  <div class="grid2">
+    <div><img class="ref" src="reference/boot-title-logo.png" alt="Title screen"><p class="cap">The
+    title, unpacked from a bitmap of two screen cells per byte. The wordmark under it is 21
+    one-off glyphs rather than letters.</p></div>
+    <div><img class="ref" src="reference/instructions-screen.png" alt="Instruction screen"><p class="cap">The
+    instruction screen. All 382 characters of it sit in one block at <code>$E874</code>.</p></div>
+    <div><img class="ref" src="reference/play-wide-view.png" alt="Wide view"><p class="cap">The
+    pulled-back view, with all three pads and the badge in the rock.</p></div>
+    <div><img class="ref" src="reference/closeup-x2-thrusters.png" alt="Close-up of the middle pad"><p class="cap">The
+    middle plateau at full size, with both flames lit and the sprite doubled.</p></div>
+    <div><img class="ref" src="reference/landing-bonus-x10.png" alt="Landing bonus"><p class="cap">A
+    perfect landing on the x10 pad. 800 points, shown as 8000.</p></div>
+    <div><img class="ref" src="reference/out-of-fuel.png" alt="Out of fuel"><p class="cap">The tank
+    empty. The engines are already dead; the flight ends at the next impact.</p></div>
+    <div><img class="ref" src="reference/attract-control-demo.png" alt="Attract control demo"><p class="cap">The
+    attract sequence lighting each thruster in turn beside its label.</p></div>
+    <div><img class="ref" src="reference/game-over.png" alt="Game over"><p class="cap">Game over,
+    with a score of 3600 poked in as four BCD digits and a painted zero.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">12 &middot; Where it lives</p>
+  <h2 class="t">Five kilobytes under the KERNAL</h2>
+  <p>Reset switches the ROMs out through the processor port and never switches them back, so the
+  game's own code occupies the addresses the KERNAL used to. All three hardware vectors point
+  into it.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Range</th><th>Bytes</th><th>What</th></tr>
+    <tr><td>$0002 &ndash; $0032</td><td class="n">49</td><td>every variable the game has</td></tr>
+    <tr><td>$0400 &ndash; $07E7</td><td class="n">1000</td><td>screen, sprite pointers at $07F8</td></tr>
+    <tr><td>$3800 &ndash; $3BFF</td><td class="n">1024</td><td>128 character glyphs</td></tr>
+    <tr><td>$3C00 &ndash; $3FFF</td><td class="n">1024</td><td>16 sprite shapes</td></tr>
+    <tr><td>$E000 &ndash; $E036</td><td class="n">55</td><td>the video and sound chips' opening state</td></tr>
+    <tr><td>$E037 &ndash; $E873</td><td class="n">2109</td><td>flight, scoring, explosion, attract</td></tr>
+    <tr><td>$E874 &ndash; $E9F1</td><td class="n">382</td><td>the instruction screen, as text</td></tr>
+    <tr><td>$E9F2 &ndash; $EEB7</td><td class="n">1222</td><td>attract demo, interrupt, input, the panel, OUT OF FUEL</td></tr>
+    <tr><td>$EEB8 &ndash; $F253</td><td class="n">924</td><td>four views, run-length encoded</td></tr>
+    <tr><td>$F254 &ndash; $F450</td><td class="n">509</td><td>noise, and the title screen</td></tr>
+    <tr><td>$FFFA &ndash; $FFFF</td><td class="n">6</td><td>NMI $E037, RESET $E037, IRQ $EB39</td></tr>
+  </table></div>
+  <p class="cap" style="margin-top:18px">Addresses are from the Remember release of the
+  cartridge, with both trainer options declined. The symbol map, the verified facts and the
+  feature checklist sit beside this page.</p>
+</section>
+
+</main>
+<script>
+const DATA={"charset":"AAAAAAAAAAD///////////+92+fn273/w73988+/gf+Bv4f7/bvH//fn1/f398H/w725pZ29w/9VqlWq/////wB+KiorAgQIECBAnCIYRDgAAAAAAAD/////AAAAAAAA/+DAgAcPDw//Pz8/wMHD/w8PDweAwOD/w8HAvz8/f/8AAAAAAAAAAICAgICAgICAwMDAwMDAwMDg4ODg4ODg4PDw8PDw8PDw+Pj4+Pj4+Pj8/Pz8/Pz8/P7+/v7+/v7+AP//////////AP//////////AP//////////AP//////////AP//////////AP//////////AP//////////AIDA4OD4/v7/gMDAwODA4PDw8Pj4/P7+///+/v7+/v7/AQMHBx9/f/8BAwMDBwMHDw8PHx8/f3//8ODg4ODg4PD//v744ODAgPDgwODAwMCA//7+/Pj48PAPBwcHBwcHD/9/fx8HBwMBDwcDBwMDAwH/f38/Hx8PD/9/f39/f3//AHzGztbmxnwAGDgYGBgYPAB8xsYMOOD+AHzGBhwGxnwADBwsTP4MDAD+wMD8BsZ8ABwwYPzGxnwAfsYMGBgYGAB8xsZ8xsZ8AHzGxn4GDDgAABgYABgYAAAAAAAAROpKCuoEAAAAAAAAAAB+AH4AAAAAEhUVFRIAAAASFdUVEgAAAAAAAAAAAAA4bMbG/sbGAPxmZnxmZvwAPGbAwMBmPAD4ZGZmZmT4AP5gYHxgYP4A/mBgfGBg8AA8ZsDexmY8AMbGxv7GxsYAPBgYGBgYPAAeDAwMzMx4AMbM2PDYzMYA8GBgYGBg/gDG7v7WxsbGAMbm9t7OxsYAfO7GxsbufAD8ZmZ8YGDwADhkwsLKZDoA/MbG/NjMxgB8xsB8BsZ8AH5aGBgYGDwAxsbGxsbGfADGxsZsbDg4AMbGxtb+fEQAxsZsOGzGxgDGxmx8ODg4AP7GDDhgxv4ABgwYMBgMBgAAAAAYGDBgAMBgMBgwYMAAAAAAABgYAAAAAH5+AAAAAQMHDx8/f/+AwODw+Pz+///+/Pjw4MCA/38/Hw8HAwF//8DAwMD/fw+fmBgYmJ8P4fkZGRkZ+eGc/8ODg4ODg3j8BgYGBgYGZ39wYGBgYGAe/+HBwcHBwQ+fmJiYmJ+P8PkZGRkZ+fD//4GBgYH//4+fmJiYmJ+P8fkZGRkZ+fG8/sKAgICAgD9/YH9/YH8/wOBg4OAA4MAAAAABAQEBAQAAAICAgICAqqigAFBUVQAAAAADBw8fHj48PDw8PD4eAAD8////AwAD/////AAAAB8PBwMAAAAAAAAAYM7YzmAAAADNbW1szAAAAPe29zY3AAAA3sPG2N8AAABgz8zPYA==","sprites":"EAASCH4cBf/MBhA2D5/wCJIQCPPwCPIQCPQIH/4YIAH0IACkJ4C8J8CkH//8DTywGcOYMQCMMAAMeAAe/AA/ADj+PBWB6goANwnvyxBgDxdt6BcMCBcB6Bcd9GA+5F++Cl/dWlhjQlg/WiAAAhLDZiY8ZErDUkkA0oQAIfwAPwBHAc4qfhUV/8s2EDUvn/EokhcowPQoPhTodwqe75qg+7WgfyWnPj2nwKVf//0tPJlZw5q1PK22wy17AN4CAEAAuP49VYHqKgA3SH8LUf/PU//oV+3zz/b6D6P5XUK9X8j8T6N6T+r6V7/yo//iUf/Gpn8lSoBSSTzShMMh/QC/AMD/gqP/5c//8J/9+D+C/H6QLngBXvwAD/oAH/AAB/wAF/iAD/oAL/0AH36Jnn+k/j/3/J//+a//9XP/zgD/AAAgu4Ej/+CPNXIOiFg4gLQyAA5wAAroAAdoAAHAAAfQAARoAAXwAAK0AAtwAAY6gFoukqwLKHlH29AB/0CgvQoAAAAAAPhQBoEwFACEBAEeAAAEEAAAJAAVYAABYAAFIAAIIAAAQAAKKAAEAAAGIAAACAAMDIA4AAAAAM3AAAcAAAAAAAAMAAEAEAAAACAAAAAAAgAAAQAAAAAAAgAAAgAAAIAAAAAAAkAAAAAABAAAAAAAAAAAACAAEAgAJADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAB/4AA/wAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeeAAP8AAH4AADwAAAAAAAAAAAAAAAAAAAAAADAAAMAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAMAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","screen":"IQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACUAACIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmCAkjAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlAQAAASEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJgEACgEiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAEBAAEBASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAEBAQABAQEBIAAAAAAAAAAAAAAAAAAAJAcHBwcHByAAAAAAAAAAJQEBAQEAAQEBAQEgAAAAAAAAAAAAAAAAJAEBAQIDAQEBIAAAAAAAACsBAQEBAAEBAQEBASAAAAAAAAAAAAAAJAEBAQEBAQEBAQEgAAAAAAArAQEBAQABAQEBAQEBIAAAAAAAAAAAJAEBAQEBAQEBAQEBASAAAAAALQEBAQEAAQEBAQEBAQEgAAAAAAAAJAEBAQEBAQEBAQEBAQEBIQAAAAAvAQEBAAEBAQEBAQEBASEAAAAAJQEBAQEBAQEBAQEBAQEBASIAAAAALwEBATsBAQEBAQEBAQEiAAAAACsBAQEBAQEBAQEBAQEBAQEjAAAAAC8BAQE8AQEBAQEBAQEBIwAAAAAtAQEBAQEBAQEBAQEBAQEBKgAAACUBAQEBAAEBAQEBAQEBASoAAAAAACwBAQEBAQEBAQEBAQEBASkAAAArAQEBAQABAQEBAQEBAQEpAAAAAAAALwEBAQEBAQEBAQEBASgAAAAAKwEBAQEAAQEBAQEBAQEjAAAAAAAAAC8BAQEBDA0BAQEBASgAAAAAACYBAQEBAAEBAQEBAQEBIwAAAAAAACUBAQEBAQ4PAQEBASMAAAAAACUBAQEBAQABAQEBAQEBASMAAAAAAAAmAQEBAQEBAQEBAQEjAAAAAAArAQEBAQEAAQEBAQEBAQEBBwcHBwcHAQEBAQEBAQEBAQEBIwAAAAAAJgEBAQEBPxwBAQEBAQEBAQEBAgQBAQEBAQEBAQEBAQEBAQEHBwcHBwEBAQEBAQALAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQIFBgEBAQEBAQEAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAAU0NPUkUAOgAAAAAAMAAAAABISV9TQ09SRQA6AAAAAAAwAAAAAAAAAEZVRUwAOgABAQEBAQEBAQEBAQEBAQEBAQEBARIAAAAAAAAAAAAAAA==","colour":"AgMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIGBgIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCAQECAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCAgAFAgIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAgIABQICAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAgICAQUCAgIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAgICAgAFAgICAgMDAwMDAwMDAwMDAwMDAgICAgICAgIDAwMDAwMDAgICAgIABQICAgICAwMDAwMDAwMDAwMDAgICAgICAgICAgMDAwMDAwICAgICAAUCAgICAgIDAwMDAwMDAwMDAgICAgICAgICAgICAwMDAwMCAgICAgAFAgICAgICAgMDAwMDAwMDAgICAgICAgICAgICAgIDAwMDAgICAgIABQICAgICAgICAwMDAwMDAgICAgICAgICAgICAgICAgMDAwMCAgICAAUCAgICAgICAgIDAwMDAgICAgICAgICAgICAgICAgIDAwMDAgICAgEFAgICAgICAgICAwMDAwICAgICAgICAgICAgICAgICAwMDAwICAgIBBwICAgICAgICAgMDAwMCAgICAgICAgICAgICAgICAgMDAwICAgICAAUCAgICAgICAgIDAwMDAwICAgICAgICAgICAgICAgIDAwMCAgICAgAFAgICAgICAgICAwMDAwMDAgICAgICAgICAgICAgIDAwMDAgICAgIABQICAgICAgICAwMDAwMDAwICAgICAgICAgICAgIDAwMDAwICAgICAAUCAgICAgICAgMDAwMDAwICAgICAgICAgICAgIDAwMDAwICAgICAgAFAgICAgICAgIDAwMDAwMCAgICAgICAgICAgICAwMDAwMCAgICAgIABQICAgICAgICAgICAgICAgICAgICAgICAgICAgMDAwMDAgICAgICAQUCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAFAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYFBQUFBQUFBQEBAQEBAQEBAQQEBAQEBAQEBAQBAQEBAQEBAQEBAQEBBwcHBwcHBwYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBg==","sprState":{"ptr":[128,240,249,251],"x":99,"y":108},"terrain":{"0":"ASEkAAElASIkAAEmASMjAAElAQEBAQEhIgABJgEBAQEBIiEAASQCAQIBASAfAAEkAwEDAQEgDgABJAYHASAHAAElBAEEAQEgDAABJAMBAQIBAwMBASAGAAErBAEFAQEgCgABJAoBASAFAAErBAEGAQEgCAABJAwBASAEAAEtBAEHAQEgBgABJA4BASEEAAEvAwEIAQEhBAABJQ8BASIEAAEvAwEIAQEiBAABKw8BASMEAAEvAwEIAQEjBAABLQ8BASoDAAElBAEIAQEqBQABLA4BASkDAAErBAEIAQEpBgABLwwBASgEAAErBAEHAQEjBwABLwQBAQwBDQUBASgFAAEmBAEHAQEjBgABJQUBAQ4BDwQBASMFAAElBQEHAQEjBgABJgsBASMFAAErBQEIAQYHDAEBIwUAASYFAQoBAQIBBA8BBQcGARwBAQIBBQEGBwEmAQA=","1":"DAEBIQoAASUOAQwBASIKAAEmDgENAQEhCQABLw4BDQEBIgkAAS8OAQ0BASMJAAEuDgENAQEjCQABLQ4BDQEBKgoAASwNAQ0BASkLAAEsDAEMAQEqDQABLwsBDAEBKQ0AAS8LAQsBASMOAAEvCwELAQEjDgABLwsBCwEBIw0AASUMAQsBASMNAAEmDAELAQEjDAABJQ0BCwEBIwwAASYNAQwBDAcOASYBEQEBAgEEEwEdAQEMAQ0HAR0BAQ4BDwcBJgEmAQA=","2":"JgAmACYAJgAmACYAJgAmACYAJgALAAEkDAcBIA0ACgABJA4BASAMAAkAASQHAQECAQMHAQEgCwAIAAEkEgEBIAoABwABJBQBASAJAAYAASQWAQEgCAAFAAEkGAEBIAcABAABJBoBASAGAAMAASQcAQEhBQACAAEkCgEBDAENEQEBIgUAAQABJQsBAQ4BDxIBASEEAAEAASYfAQEiBAABAAEvHwEBIwQAAA==","3":"FQEBIQgAAS8HARUBASIIAAEvBwEVAQEjCAABLwcBFQEBIwgAAS8HARUBASoHAAElCAEVAQEpBwABJggBFAEBKggAAS8IAQYBAQwBDQwBASkIAAEvCAEGAQEOAQ8LAQEoCQABLwgBEgEBKAoAAS8IAREBASgKAAElCQEQAQEoCwABJgkBDwEBIwsAASUKAQ8BASMLAAEmCgEPAQEjCwABLwoBDwEBIwsAAS8KAQ8BASMKAAElCwEPAQEjCgABJgsBEAEKBwwBJgETAQECAQEBBQEGDwEmASYBAA=="},"gravity":[4,5,4,5,6,5,6,6,6,7,8,7,7,8,9,9],"tunes":{"intro":"Bz8TB9YcBwAAB9YcYn4mB8YtB34mB8Ytaaw5DgAABz8TB9YcBwAAB9YcYn4mB8YtB34mB8Ytaaw5DgAAB/xMKgAAB/xMIwAAB/xMHAAAB/xMFQAAB/xMDgAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAAB/xMBwAA","landing":"fiYAAH4mfzCsOX8wrDl/MDQrAAA0K2EzvEC8QLxAqUisOX8wqUisOX8wqUisOfxMAACpSPxM/Ez8TPxM/Ew=","crash":"rDkAAPxMrDl/MAAArDl/MH4mAAB/MH4m1hzWHAAAchw4G9YcjR5eII0eXiBLIlUkfiYAAAAA1hw4G9YcjR6NHo0e1hzWHAAAAAAAAFUkAAAAAAAAfiY="}};
+// ---- decoding -------------------------------------------------------------
+function un64(s){const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+const CHARSET=un64(DATA.charset), SPRITES=un64(DATA.sprites);
+const SCREEN=un64(DATA.screen),  COLOUR=un64(DATA.colour);
+const TERR=[0,1,2,3].map(i=>un64(DATA.terrain[i]));
+const TUNES={intro:un64(DATA.tunes.intro),landing:un64(DATA.tunes.landing),crash:un64(DATA.tunes.crash)};
+const PAL=['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171',
+           '#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+const hex=(n,w=2)=>'$'+n.toString(16).toUpperCase().padStart(w,'0');
+
+// ---- glyph + sprite drawing ----------------------------------------------
+function glyphPix(code,x,y){ return (CHARSET[((code&0x7f)*8)+y]>>(7-x))&1; }
+function drawGlyph(ctx,code,px,py,s,colour){
+  ctx.fillStyle=colour;
+  for(let y=0;y<8;y++){const b=CHARSET[((code&0x7f)*8)+y];
+    for(let x=0;x<8;x++) if(b&(0x80>>x)) ctx.fillRect(px+x*s,py+y*s,s,s);}
+}
+function drawSprite(ctx,slot,px,py,s,colour){
+  const base=(slot-0xF0)*64; ctx.fillStyle=colour;
+  for(let y=0;y<21;y++) for(let bx=0;bx<3;bx++){const b=SPRITES[base+y*3+bx];
+    for(let x=0;x<8;x++) if(b&(0x80>>x)) ctx.fillRect(px+(bx*8+x)*s,py+y*s,s,s);}
+}
+function spritePix(slot,x,y){ // x 0..23, y 0..20
+  const base=(slot-0xF0)*64; return (SPRITES[base+y*3+(x>>3)]>>(7-(x&7)))&1;
+}
+
+// ---- 01: the screen, rebuilt ---------------------------------------------
+(function(){
+  const cv=document.getElementById('scr'), ctx=cv.getContext('2d'), S=2;
+  const ov={cells:false,terrain:false,hud:false,sprite:true};
+  function draw(){
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    for(let r=0;r<25;r++) for(let c=0;c<40;c++){
+      const code=SCREEN[r*40+c]; if(!code) continue;
+      drawGlyph(ctx,code,c*8*S,r*8*S,S,PAL[COLOUR[r*40+c]&15]);
+    }
+    if(ov.sprite){
+      const st=DATA.sprState;
+      drawSprite(ctx,st.ptr[1],(st.x-24)*S,(st.y-50)*S,S,PAL[3]);
+    }
+    if(ov.terrain){ ctx.strokeStyle='rgba(143,127,224,.85)'; ctx.lineWidth=2;
+      ctx.strokeRect(0,0,38*8*S,23*8*S); }
+    if(ov.hud){ ctx.strokeStyle='rgba(232,163,61,.9)'; ctx.lineWidth=2;
+      ctx.strokeRect(38*8*S,0,2*8*S,23*8*S); ctx.strokeRect(0,23*8*S,40*8*S,2*8*S); }
+    if(ov.cells){ ctx.strokeStyle='rgba(255,255,255,.11)'; ctx.lineWidth=1;
+      for(let c=0;c<=40;c++){ctx.beginPath();ctx.moveTo(c*8*S+.5,0);ctx.lineTo(c*8*S+.5,cv.height);ctx.stroke();}
+      for(let r=0;r<=25;r++){ctx.beginPath();ctx.moveTo(0,r*8*S+.5);ctx.lineTo(cv.width,r*8*S+.5);ctx.stroke();}}
+  }
+  function bind(id,key){const b=document.getElementById(id);
+    b.onclick=()=>{ov[key]=!ov[key];b.classList.toggle('on',ov[key]);draw();};}
+  bind('ovCells','cells');bind('ovTerrain','terrain');bind('ovHud','hud');bind('ovSprite','sprite');
+  let used=new Set(); for(const c of SCREEN) used.add(c);
+  document.getElementById('scrStats').innerHTML=
+    'screen memory <b>$0400</b>, 1000 bytes<br>'+
+    'colour memory <b>$D800</b>, 1000 nibbles<br>'+
+    'character set <b>$3800</b>, 128 glyphs<br>'+
+    'distinct codes on this screen: <b>'+used.size+'</b><br>'+
+    'sprite 1 at <b>'+DATA.sprState.x+', '+DATA.sprState.y+'</b>, pointer <b>'+hex(DATA.sprState.ptr[1])+'</b>';
+  draw();
+})();
+
+// ---- 02a: sprite grid ----------------------------------------------------
+(function(){
+  const host=document.getElementById('spriteGrid');
+  const names={0xF0:'lander',0xF1:'boom 1',0xF2:'boom 2',0xF3:'boom 3',0xF4:'boom 4',
+    0xF5:'boom 5',0xF6:'boom 6',0xF7:'boom 7',0xF8:'flame a',0xF9:'flame b',
+    0xFA:'left jet',0xFB:'right jet',0xFC:'unused',0xFD:'unused',0xFE:'unused',0xFF:'unused'};
+  const big=document.createElement('div'); big.className='col';
+  const bigCv=document.createElement('canvas'); bigCv.width=24*6; bigCv.height=21*6;
+  const bigTxt=document.createElement('div'); bigTxt.className='stat';
+  const wrap=document.createElement('div'); wrap.className='screenwrap'; wrap.appendChild(bigCv);
+  big.appendChild(wrap); big.appendChild(bigTxt);
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1 1 300px';
+  function showBig(slot){
+    const c=bigCv.getContext('2d'); c.fillStyle='#000'; c.fillRect(0,0,bigCv.width,bigCv.height);
+    drawSprite(c,slot,0,0,6,slot>=0xF8&&slot<=0xF9?PAL[2]:(slot>=0xFA&&slot<=0xFB?PAL[8]:PAL[3]));
+    let on=0; for(let y=0;y<21;y++)for(let x=0;x<24;x++) on+=spritePix(slot,x,y);
+    bigTxt.innerHTML='slot <b>'+hex(slot)+'</b> at <b>'+hex(0x3C00+(slot-0xF0)*64,4)+'</b><br>'+
+      names[slot]+'<br><b>'+on+'</b> of 504 pixels set';
+  }
+  for(let s=0xF0;s<=0xFF;s++){
+    const d=document.createElement('div');
+    d.style.cssText='background:#000;border:1px solid var(--line);border-radius:6px;padding:5px;cursor:pointer;line-height:0';
+    const cv=document.createElement('canvas'); cv.width=24*2; cv.height=21*2;
+    const c=cv.getContext('2d');
+    drawSprite(c,s,0,0,2,s>=0xF8&&s<=0xF9?PAL[2]:(s>=0xFA&&s<=0xFB?PAL[8]:PAL[3]));
+    d.appendChild(cv); d.onclick=()=>showBig(s); grid.appendChild(d);
+  }
+  host.appendChild(grid); host.appendChild(big); showBig(0xF0);
+})();
+
+// ---- 02b: explosion ------------------------------------------------------
+(function(){
+  const cv=document.getElementById('boomCv'), ctx=cv.getContext('2d');
+  let f=0, timer=null;
+  function draw(){
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    drawSprite(ctx,0xF0+f,0,0,8,PAL[(3+f*2)%16]);
+    document.getElementById('boomStat').innerHTML=
+      'frame <b>'+f+'</b> of 7<br>sprite pointer <b>'+hex(0xF0+f)+'</b><br>sprite colour <b>'+((3+f*2)%16)+'</b>';
+  }
+  document.getElementById('boomStep').onclick=()=>{f=(f+1)%8;draw();};
+  document.getElementById('boomPlay').onclick=()=>{
+    if(timer){clearInterval(timer);timer=null;return;}
+    f=0;draw(); timer=setInterval(()=>{f++; if(f>7){clearInterval(timer);timer=null;f=7;} draw();},260);
+  };
+  draw();
+})();
+
+// ---- 02c: the three-sprite stack ----------------------------------------
+(function(){
+  const cv=document.getElementById('stackCv'), ctx=cv.getContext('2d');
+  const st={main:false,left:false,right:false,big:false};
+  let phase=0;
+  function draw(){
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const s=st.big?4:2, ox=(cv.width-24*s)/2, oy=(cv.height-21*s)/2;
+    if(st.main) drawSprite(ctx,0xF8+phase,ox,oy,s,PAL[2]);
+    if(st.left) drawSprite(ctx,0xFA,ox,oy,s,PAL[8]);
+    if(st.right) drawSprite(ctx,0xFB,ox,oy,s,PAL[8]);
+    drawSprite(ctx,0xF0,ox,oy,s,PAL[3]);
+    let x=1; if(st.left||st.right) x+=4; if(st.main) x+=2;
+    document.getElementById('stackStat').innerHTML=
+      'X counted up to <b>'+x+'</b><br>$D015 = <b>'+hex(x*2)+'</b><br>'+
+      'sprites on: <b>'+[1,st.main?2:0,(st.left||st.right)?3:0].filter(Boolean).join(', ')+'</b><br>'+
+      '$D017 / $D01D = <b>'+(st.big?'$0E':'$00')+'</b>';
+  }
+  function bind(id,k,excl){const b=document.getElementById(id);
+    b.onclick=()=>{st[k]=!st[k]; if(st[k]&&excl){st[excl]=false;document.getElementById(excl==='left'?'stSideL':'stSideR').classList.remove('on');}
+      b.classList.toggle('on',st[k]);draw();};}
+  bind('stMain','main'); bind('stSideL','left','right'); bind('stSideR','right','left'); bind('stBig','big');
+  setInterval(()=>{if(st.main){phase^=1;draw();}},310);
+  draw();
+})();
+// ---- shared world model --------------------------------------------------
+const VIEW_ORIGIN=[null,{x:0x0038,y:0xE2},{x:0x00E8,y:0x42},{x:0x0148,y:0xE2}];
+const PADS=[{y:0x016A,x0:0x00B0,x1:0x00E0,m:5,view:1},
+            {y:0x009A,x0:0x0160,x1:0x0190,m:2,view:2},
+            {y:0x017A,x0:0x01E0,x1:0x0200,m:10,view:3}];
+function zoneFor(x,y){
+  if(y>=0x0114 && x<0x0140) return 1;
+  if(x>=0x0110 && x<0x01D8 && y>=0x0074) return 2;
+  if(x>=0x0140 && y>=0x0114) return 3;
+  return 0;
+}
+function decodeView(v){
+  const s=TERR[v], cells=new Uint8Array(38*23);
+  let p=0,i=0;
+  while(p<s.length && s[p]){const n=s[p],ch=s[p+1];p+=2;
+    for(let k=0;k<n;k++){ if(i<cells.length) cells[i]=ch; i++; }}
+  return cells;
+}
+const VIEWCELLS=[0,1,2,3].map(decodeView);
+function runsOf(v){const s=TERR[v],r=[];let p=0;
+  while(p<s.length&&s[p]){r.push([s[p],s[p+1]]);p+=2;} return r;}
+function paintCells(ctx,cells,S){
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,38*8*S,23*8*S);
+  for(let r=0;r<23;r++)for(let c=0;c<38;c++){
+    const g=cells[r*38+c]; if(!g) continue;
+    drawGlyph(ctx,g,c*8*S,r*8*S,S,PAL[2]);
+  }
+}
+function shipScreen(view,x,y){
+  if(view===0) return {sx:(x>>1)-24, sy:(y>>1)-50, s:1};
+  const o=VIEW_ORIGIN[view];
+  return {sx:(x-o.x)-24, sy:(y-o.y)-50, s:2};
+}
+function hitsRock(cells,sx,sy,s){
+  for(let py=0;py<21;py++)for(let px=0;px<24;px++){
+    if(!spritePix(0xF0,px,py)) continue;
+    for(let dy=0;dy<s;dy++)for(let dx=0;dx<s;dx++){
+      const X=sx+px*s+dx, Y=sy+py*s+dy;
+      if(X<0||Y<0||X>=38*8||Y>=23*8) continue;
+      const g=cells[(Y>>3)*38+(X>>3)];
+      if(g && glyphPix(g,X&7,Y&7)) return true;
+    }
+  }
+  return false;
+}
+
+// ---- 03: controls --------------------------------------------------------
+(function(){
+  const cv=document.getElementById('ctlCv'), ctx=cv.getContext('2d');
+  const held={A:false,D:false,F1:false};
+  function draw(){
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const cx=cv.width/2, cy=cv.height/2+10;
+    drawSprite(ctx,0xF0,cx-24,cy-21,2,PAL[3]);
+    if(held.F1) drawSprite(ctx,0xF9,cx-24,cy-21,2,PAL[2]);
+    if(held.A) drawSprite(ctx,0xFA,cx-24,cy-21,2,PAL[8]);
+    if(held.D) drawSprite(ctx,0xFB,cx-24,cy-21,2,PAL[8]);
+    let ax=0, ay=0;
+    if(held.A) ax+=6; if(held.D) ax-=6; if(held.F1) ay-=12;
+    if(ax||ay){
+      ctx.strokeStyle=PAL[7]; ctx.fillStyle=PAL[7]; ctx.lineWidth=3;
+      const ex=cx+ax*4, ey=cy+ay*3;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke();
+      const a=Math.atan2(ey-cy,ex-cx);
+      ctx.beginPath(); ctx.moveTo(ex,ey);
+      ctx.lineTo(ex-9*Math.cos(a-0.5),ey-9*Math.sin(a-0.5));
+      ctx.lineTo(ex-9*Math.cos(a+0.5),ey-9*Math.sin(a+0.5));
+      ctx.closePath(); ctx.fill();
+    }
+    const side=held.D?2:(held.A?1:0);
+    document.getElementById('ctlStat').innerHTML=
+      'thrust_side <b>'+side+'</b>&nbsp; thrust_up <b>'+(held.F1?1:0)+'</b><br>'+
+      'X velocity <b>'+(ax>=0?'+':'')+ax+'</b> per pass<br>'+
+      'Y velocity <b>'+(ay>=0?'+':'')+ay+'</b> per pass<br>'+
+      'fuel <b>&minus;'+((held.A||held.D?30:0)+(held.F1?111:0))+'</b> per pass'+
+      (ax>0?'<br><span style="color:var(--amber)">the left thruster is pushing you right</span>':
+       (ax<0?'<br><span style="color:var(--amber)">the right thruster is pushing you left</span>':''));
+  }
+  function set(k,v){held[k]=v;
+    document.getElementById(k==='F1'?'kF1':(k==='A'?'kA':'kD')).classList.toggle('on',v);
+    document.getElementById('kFire').classList.toggle('on',held.A||held.D||held.F1);
+    draw();}
+  [['kA','A'],['kD','D'],['kF1','F1']].forEach(([id,k])=>{
+    const e=document.getElementById(id);
+    e.addEventListener('mousedown',()=>set(k,true));
+    e.addEventListener('touchstart',ev=>{ev.preventDefault();set(k,true)},{passive:false});
+    ['mouseup','mouseleave','touchend'].forEach(t=>e.addEventListener(t,()=>set(k,false)));
+  });
+  addEventListener('keydown',e=>{const k=map(e.key); if(k){set(k,true);}});
+  addEventListener('keyup',  e=>{const k=map(e.key); if(k){set(k,false);}});
+  function map(key){ if(key==='ArrowLeft'||key==='a'||key==='A')return 'A';
+    if(key==='ArrowRight'||key==='d'||key==='D')return 'D';
+    if(key===' '||key==='ArrowUp'||key==='f'||key==='F')return 'F1'; return null; }
+  draw();
+})();
+
+// ---- 04: terrain viewer --------------------------------------------------
+(function(){
+  const cv=document.getElementById('terrCv'), ctx=cv.getContext('2d'), S=2;
+  let view=0, painted=0;
+  function stats(){
+    const runs=runsOf(view), bytes=runs.length*2+1;
+    document.getElementById('terrStat').innerHTML=
+      'stream <b>'+['$EEB8','$F00D','$F0D2','$F17B'][view]+'</b><br>'+
+      '<b>'+bytes+'</b> bytes, <b>'+runs.length+'</b> runs<br>'+
+      'covering <b>'+(38*23)+'</b> cells<br>'+
+      'longest run <b>'+Math.max(...runs.map(r=>r[0]))+'</b> cells';
+  }
+  function render(){
+    const runs=runsOf(view), cells=new Uint8Array(38*23);
+    let i=0;
+    for(let k=0;k<painted;k++){const [n,ch]=runs[k];
+      for(let j=0;j<n;j++){ if(i<cells.length) cells[i]=ch; i++; }}
+    paintCells(ctx,cells,S);
+    if(painted<runs.length && painted>0){
+      const r=Math.floor(i/38), c=i%38;
+      ctx.strokeStyle=PAL[7]; ctx.lineWidth=2;
+      ctx.strokeRect(c*8*S,r*8*S,8*S,8*S);
+    }
+    const last=painted>0?runs[painted-1]:null;
+    document.getElementById('rleStat').innerHTML=
+      'runs painted <b>'+painted+'</b> / '+runs.length+'<br>'+
+      'cells <b>'+Math.min(i,38*23)+'</b><br>'+
+      (last?('last run: <b>'+last[0]+'</b> &times; code <b>'+hex(last[1])+'</b>'):'&nbsp;');
+  }
+  document.querySelectorAll('.viewBtn').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.viewBtn').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); view=+b.dataset.v; painted=runsOf(view).length; stats(); render();
+  });
+  document.getElementById('rleStep').onclick=()=>{painted=Math.min(painted+1,runsOf(view).length);render();};
+  document.getElementById('rleAll').onclick =()=>{painted=runsOf(view).length;render();};
+  document.getElementById('rleReset').onclick=()=>{painted=0;render();};
+  painted=runsOf(0).length; stats(); render();
+})();
+// ---- 05: the flight model ------------------------------------------------
+(function(){
+  const cv=document.getElementById('simCv'), ctx=cv.getContext('2d'), S=2;
+  let st=null, timer=null, grav=4;
+  const key={A:false,D:false,UP:false};
+  const START={x:0x0050,y:0x006A};
+  function reset(at){
+    const p=at||START;
+    st={x:p.x*256, y:p.y*256, vx:0, vy:0, fuel:0xFFFF, view:zoneFor(p.x,p.y), msg:null, passes:0};
+    draw();
+  }
+  const wx=()=>st.x>>8, wy=()=>st.y>>8;
+  const u16=v=>((v%65536)+65536)%65536;      // the game's 16-bit velocity word
+  function step(){
+    if(!st||st.msg) return;
+    let up=key.UP, side=key.D?2:(key.A?1:0);
+    if((st.fuel>>8)===0){ up=false; side=0; }        // move_ship clears both flags on an empty tank
+    if(side){ st.vx += (side===1? 6 : -6); st.fuel-=30; }
+    if(up)  { st.vy -= 12; st.fuel-=111; }
+    st.vy += grav;
+    st.x += st.vx; st.y += st.vy; st.passes++;
+    if(st.x<0) st.x=0; if(st.x>0x0220*256) st.x=0x0220*256;
+    const X=wx(), Y=wy();
+    if(Y<0x003A){ st.msg='OUT OF SKY'; draw(); return; }
+    st.view=zoneFor(X,Y);
+    for(const p of PADS){
+      if(Y===p.y && X>=p.x0 && X<p.x1){
+        if(st.vy<0 || st.vy<0x48){
+          const base=(0x50-(u16(st.vy)&0xFF))&0xFF;
+          st.msg=(base*10)+' X '+p.m+' = '+(base*p.m*10);
+          st.fuel=Math.min(0xFFFF, st.fuel + base*p.m*70);
+        } else st.msg='SORRY NO BONUS';
+        draw(); return;
+      }
+    }
+    const sp=shipScreen(st.view,X,Y);
+    if(sp.sy>=0 && hitsRock(VIEWCELLS[st.view],sp.sx,sp.sy,sp.s)) st.msg='CRASHED';
+    draw();
+  }
+  function draw(){
+    const view=st.view;
+    paintCells(ctx,VIEWCELLS[view],S);
+    const sp=shipScreen(view,wx(),wy()), s=sp.s*S, live=!st.msg&&(st.fuel>>8)>0;
+    if(sp.sy>-42 && sp.sy<23*8){
+      if(key.UP&&live) drawSprite(ctx,0xF9,sp.sx*S,sp.sy*S,s,PAL[2]);
+      if((key.A||key.D)&&live) drawSprite(ctx,key.A?0xFA:0xFB,sp.sx*S,sp.sy*S,s,PAL[8]);
+      drawSprite(ctx,0xF0,sp.sx*S,sp.sy*S,s,PAL[3]);
+    }
+    if(st.msg){
+      ctx.fillStyle='rgba(0,0,0,.72)'; ctx.fillRect(0,23*8*S/2-26,38*8*S,52);
+      ctx.fillStyle=PAL[1]; ctx.font='17px IBM Plex Mono, monospace'; ctx.textAlign='center';
+      ctx.fillText(st.msg,38*8*S/2,23*8*S/2+6); ctx.textAlign='left';
+    }
+    document.getElementById('simStat').innerHTML=
+      'world X <b>'+wx()+'</b>&nbsp; Y <b>'+wy()+'</b><br>'+
+      'X velocity <b>'+st.vx+'</b><br>'+
+      'Y velocity <b>'+st.vy+'</b> '+
+        (st.vy<0?'<span style="color:var(--green)">climbing</span>':
+         (st.vy<0x48?'<span style="color:var(--green)">slow enough to land</span>':
+                     '<span style="color:var(--coral)">too fast to land</span>'))+'<br>'+
+      'fuel <b>'+Math.max(0,st.fuel)+'</b>'+((st.fuel>>8)===0?' <span style="color:var(--coral)">OUT OF FUEL, engines dead</span>':'')+'<br>'+
+      'view <b>'+view+'</b>'+(view>0?' (close-up, sprite doubled)':' (wide, coordinates halved)')+'<br>'+
+      'passes <b>'+st.passes+'</b>';
+  }
+  function run(){ if(timer) return; timer=setInterval(()=>{ if(st.msg){stop();return;} step(); },31); }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} }
+  document.getElementById('simStart').onclick=()=>{stop();reset();run();};
+  document.getElementById('simStep').onclick =()=>{stop(); if(st.msg) reset(); else step();};
+  document.getElementById('simPause').onclick=()=>{ timer?stop():run(); };
+  document.querySelectorAll('.simPad').forEach(b=>b.onclick=()=>{
+    stop(); const p=PADS[+b.dataset.p];
+    reset({x:(p.x0+p.x1)>>1, y:p.y-24}); run();
+  });
+  const gr=document.getElementById('simGrav');
+  gr.oninput=()=>{grav=+gr.value;document.getElementById('simGravV').textContent=grav;};
+  function press(k,v){key[k]=v;
+    const b=document.getElementById(k==='UP'?'simUp':(k==='A'?'simA':'simD'));
+    if(b) b.classList.toggle('on',v); if(!timer&&st) draw();}
+  [['simA','A'],['simD','D'],['simUp','UP']].forEach(([id,k])=>{
+    const e=document.getElementById(id);
+    e.addEventListener('mousedown',()=>press(k,true));
+    e.addEventListener('touchstart',ev=>{ev.preventDefault();press(k,true)},{passive:false});
+    ['mouseup','mouseleave','touchend'].forEach(t=>e.addEventListener(t,()=>press(k,false)));
+  });
+  const inView=()=>{const r=cv.getBoundingClientRect();
+    return r.top<innerHeight-80 && r.bottom>80;};
+  addEventListener('keydown',e=>{if(!inView())return;const k=m(e.key); if(k){e.preventDefault();press(k,true);} });
+  addEventListener('keyup',  e=>{const k=m(e.key); if(k) press(k,false); });
+  function m(key){ if(key==='a'||key==='A'||key==='ArrowLeft')return 'A';
+    if(key==='d'||key==='D'||key==='ArrowRight')return 'D';
+    if(key===' '||key==='f'||key==='F'||key==='ArrowUp')return 'UP'; return null; }
+  reset();
+})();
+
+// ---- 06: the gauge -------------------------------------------------------
+(function(){
+  const cv=document.getElementById('gaugeCv'), ctx=cv.getContext('2d'), S=2;
+  const sl=document.getElementById('gv');
+  function markerFor(vy){
+    const v=vy<0?vy+65536:vy;
+    const hi=(v>>8)&0xFF;
+    if(!(hi<2 || hi>=0xFE)) return null;
+    let a=((v>>2)&0xFF);
+    a=(a+0x80)&0xFF; a=a>>1;
+    return {row:4+((a>>2)&0xFE)/2, sub:a&7, value:a};
+  }
+  function draw(){
+    const vy=+sl.value, m=markerFor(vy);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const colX=2*8*S;
+    drawGlyph(ctx,0x08,1*8*S,1*8*S,S,PAL[1]); drawGlyph(ctx,0x09,2*8*S,1*8*S,S,PAL[1]);
+    for(let r=2;r<=20;r++) drawGlyph(ctx,0x01,colX,r*8*S,S,r===12?PAL[7]:PAL[5]);
+    drawGlyph(ctx,0x0A,colX,3*8*S,S,PAL[5]); drawGlyph(ctx,0x0B,colX,20*8*S,S,PAL[5]);
+    drawGlyph(ctx,0x3E,1*8*S,4*8*S,S,PAL[1]);
+    drawGlyph(ctx,0x3B,1*8*S,11*8*S,S,PAL[1]); drawGlyph(ctx,0x3C,1*8*S,12*8*S,S,PAL[1]);
+    drawGlyph(ctx,0x3F,1*8*S,19*8*S,S,PAL[1]);
+    if(m) drawGlyph(ctx,0x18+m.sub,colX,m.row*8*S,S,PAL[0]==='#000000'?'#000':'#000');
+    if(m){ ctx.globalCompositeOperation='destination-out';
+      drawGlyph(ctx,0x18+m.sub,colX,m.row*8*S,S,'#000');
+      ctx.globalCompositeOperation='source-over';
+      drawGlyph(ctx,0x18+m.sub,colX,m.row*8*S,S,PAL[1]); }
+    const lands = vy<0 ? true : vy<0x48;
+    document.getElementById('gaugeStat').innerHTML=
+      'Y velocity <b>'+vy+'</b><br>'+
+      (m? ('gauge value <b>'+m.value+'</b> of 127<br>screen row <b>'+m.row+'</b>'+(m.row===12?' <span style="color:var(--amber)">the yellow cell</span>':'')+', marker glyph <b>'+hex(0x18+m.sub)+'</b>')
+        : '<span style="color:var(--coral)">off the scale: no marker is drawn at all</span>')+
+      '<br>landing test: '+(lands?'<span style="color:var(--green)">lands</span>':'<span style="color:var(--coral)">SORRY NO BONUS</span>');
+  }
+  sl.oninput=draw;
+  document.querySelectorAll('.gpre').forEach(b=>b.onclick=()=>{sl.value=b.dataset.v;draw();});
+  draw();
+})();
+// ---- 07: scoring ---------------------------------------------------------
+(function(){
+  const sl=document.getElementById('scv'), cv=document.getElementById('bonusCv'), ctx=cv.getContext('2d'), S=2;
+  let pad=3;
+  const MULT={1:5,2:2,3:10};
+  function calc(v){
+    const lo=((v%256)+256)%256;          // the low byte of a 16-bit velocity
+    const base=(0x50-lo)&0xFF;           // eight-bit subtraction, exactly as the game does it
+    return {lo, base, total:base*MULT[pad]};
+  }
+  function text(v){
+    const r=calc(v);
+    const b=String(r.base).padStart(2,' ')+'0';
+    const m=MULT[pad]===10?'10':(' '+MULT[pad]);
+    const t=String(r.total).padStart(3,' ')+'0';
+    return {line:' '+b+' X '+m+'= '+t, r};
+  }
+  function draw(){
+    const v=+sl.value, lands = v<0 ? true : v<0x48;
+    const {line,r}=text(v);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const s=lands?line:' SORRY NO BONUS';
+    const start=11;
+    for(let i=0;i<s.length;i++){
+      const ch=s[i]; let code=0;
+      if(ch===' ')code=0; else if(ch>='0'&&ch<='9')code=0x30+(ch.charCodeAt(0)-48);
+      else if(ch>='A'&&ch<='Z')code=ch.charCodeAt(0);
+      else if(ch==='=')code=0x3D;
+      drawGlyph(ctx,code,(start+i)*8*S,8*S,S,PAL[1]);
+    }
+    document.getElementById('scvV').textContent=v;
+    document.getElementById('scoreStat').innerHTML= lands
+      ? ('velocity low byte <b>'+hex(r.lo)+'</b><br>'+
+         '$50 &minus; '+hex(r.lo)+' = <b>'+r.base+'</b> points<br>'+
+         '&times; <b>'+MULT[pad]+'</b> = <b>'+r.total+'</b> points<br>'+
+         'shown on screen as <b>'+(r.total*10)+'</b><br>'+
+         'refuel <b>'+(r.total*70)+'</b> units, over <b>'+(r.total*0.021).toFixed(1)+'</b> seconds'
+         + (v<0 ? '<br><span style="color:var(--amber)">arriving upward: the base beats a perfect stop</span>':''))
+      : '<span style="color:var(--coral)">faster than $0048. SORRY NO BONUS, and the ship is destroyed.</span>';
+  }
+  sl.oninput=draw;
+  document.querySelectorAll('.padBtn').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.padBtn').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); pad=+b.dataset.p; draw();});
+  draw();
+})();
+
+// ---- 08: gravity ---------------------------------------------------------
+(function(){
+  const cv=document.getElementById('gravCv'), ctx=cv.getContext('2d');
+  const g=DATA.gravity, W=cv.width, H=cv.height, pad=34;
+  ctx.clearRect(0,0,W,H);
+  const bw=(W-pad*2)/16;
+  ctx.font='11px IBM Plex Mono, monospace';
+  for(let v=4;v<=9;v++){
+    const y=H-pad-((v-3)/7)*(H-pad*2);
+    ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.beginPath();
+    ctx.moveTo(pad,y); ctx.lineTo(W-pad,y); ctx.stroke();
+    ctx.fillStyle='#6e6b99'; ctx.fillText(v,10,y+4);
+  }
+  for(let i=0;i<16;i++){
+    const v=g[i], x=pad+i*bw, y=H-pad-((v-3)/7)*(H-pad*2);
+    ctx.fillStyle=i===15?'#e8a33d':'#8f7fe0';
+    ctx.fillRect(x+4,y,bw-8,H-pad-y);
+    ctx.fillStyle='#e9e7f7'; ctx.textAlign='center';
+    ctx.fillText(v,x+bw/2,y-6);
+    ctx.fillStyle='#6e6b99'; ctx.fillText(i+1,x+bw/2,H-pad+15);
+    ctx.textAlign='left';
+  }
+  ctx.fillStyle='#6e6b99'; ctx.fillText('landing number',pad,H-8);
+  ctx.textAlign='right'; ctx.fillStyle='#e8a33d';
+  ctx.fillText('16 and after',W-pad,H-8); ctx.textAlign='left';
+})();
+
+// ---- 09: the tunes -------------------------------------------------------
+(function(){
+  const UNIT=0.0103;                       // one delay unit, seconds, PAL
+  const CLK=985248, HZ=n=>n*CLK/16777216;
+  function parse(name){
+    const b=TUNES[name], out=[];
+    if(name==='intro'){ for(let i=0;i+2<b.length;i+=3) out.push({d:b[i]*UNIT,f:b[i+1]|(b[i+2]<<8)}); }
+    else { const d=(name==='landing'?14:8)*UNIT; for(let i=0;i+1<b.length;i+=2) out.push({d,f:b[i]|(b[i+1]<<8)}); }
+    return out;
+  }
+  let ac=null, stopAt=0, nodes=[];
+  function stop(){ nodes.forEach(n=>{try{n.stop()}catch(e){}}); nodes=[]; }
+  function play(name){
+    stop();
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended') ac.resume();
+    const notes=parse(name), t0=ac.currentTime+0.05;
+    const osc=ac.createOscillator(), gain=ac.createGain();
+    osc.type='square'; gain.gain.value=0.11;
+    osc.connect(gain); gain.connect(ac.destination);
+    let t=t0;
+    for(const n of notes){
+      const hz=HZ(n.f);
+      gain.gain.setValueAtTime(n.f===0?0:0.11,t);
+      if(n.f>0) osc.frequency.setValueAtTime(Math.max(20,hz),t);
+      t+=n.d;
+    }
+    gain.gain.setValueAtTime(0,t);
+    osc.start(t0); osc.stop(t+0.05); nodes=[osc];
+    plot(name,notes,t-t0);
+    document.getElementById('tuneStat').innerHTML=
+      '<b>'+notes.length+'</b> entries, <b>'+(t-t0).toFixed(1)+'</b> seconds<br>'+
+      'stored at <b>'+({intro:'$E216',landing:'$E6BE',crash:'$E658'}[name])+'</b><br>'+
+      'lowest <b>'+Math.round(Math.min(...notes.filter(n=>n.f).map(n=>HZ(n.f))))+' Hz</b>, '+
+      'highest <b>'+Math.round(Math.max(...notes.map(n=>HZ(n.f))))+' Hz</b><br>'+
+      'rests (frequency zero): <b>'+notes.filter(n=>!n.f).length+'</b>';
+  }
+  function plot(name,notes,total){
+    const cv=document.getElementById('tuneCv'), ctx=cv.getContext('2d');
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const maxHz=Math.max(...notes.map(n=>HZ(n.f)))||1;
+    let t=0;
+    for(const n of notes){
+      const x=(t/total)*(cv.width-8)+4, w=Math.max(2,(n.d/total)*(cv.width-8));
+      if(n.f){ const y=cv.height-6-(HZ(n.f)/maxHz)*(cv.height-18);
+        ctx.fillStyle='#6fc7d4'; ctx.fillRect(x,y,w-1,4); }
+      t+=n.d;
+    }
+    ctx.fillStyle='#6e6b99'; ctx.font='10px IBM Plex Mono, monospace';
+    ctx.fillText(Math.round(maxHz)+' Hz',6,12);
+  }
+  document.querySelectorAll('.tuneBtn').forEach(b=>b.onclick=()=>play(b.dataset.t));
+  document.getElementById('tuneStop').onclick=stop;
+  const n=parse('intro');
+  document.getElementById('tuneStat').innerHTML=
+    '<b>'+n.length+'</b> entries in the opening tune. Press a button to hear one.';
+  plot('intro',n,n.reduce((a,x)=>a+x.d,0));
+})();
+</script>
