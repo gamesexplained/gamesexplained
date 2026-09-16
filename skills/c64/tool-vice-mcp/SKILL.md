@@ -102,7 +102,7 @@ you are unsure of.
   cannot be driven with this tool at all, and `vice_keyboard_matrix`,
   `vice_keyboard_chord` and the row/column form all report success and
   leave `$DC01` at `$FF` as well. A fix is proposed upstream
-  (barryw/vice-mcp#13); once it lands, port numbers mean what they say and
+  (barryw/vice-mcp#6); once it lands, port numbers mean what they say and
   "ask for 1 to get 2" stops working.
 
   The way in is to stop treating `$DC01` as an input. CIA1 port B is an

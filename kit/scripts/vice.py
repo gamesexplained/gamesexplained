@@ -111,7 +111,7 @@ def stick_arm(rpc, ddr=0x1F):
 
     vice_joystick_set is off by one: port 1 reaches CIA1 port A ($DC00,
     control port 2) and port 2 reaches nothing (fix proposed upstream as
-    barryw/vice-mcp#13). Most C64 games read control port 2, so asking for
+    barryw/vice-mcp#6). Most C64 games read control port 2, so asking for
     port 1 usually works by accident. A game that reads control port 1 at
     $DC01, as the early Commodore titles do, cannot be driven that way:
     port B is an input and nothing the emulator offers pulls its lines low. Setting DDRB ($DC03) makes those bits
