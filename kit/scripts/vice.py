@@ -15,6 +15,8 @@ Usage:
   poke(rpc, 0x0010, [0x00, 0x00])
   release(rpc, cp)
 
+  stick_arm(rpc); stick(rpc, FIRE)     # joystick input a game reads at $DC01
+
 Two behaviours this wraps because they cost a day if you meet them cold:
 
   * vice_execution_pause reports success without stopping the CPU. A
@@ -99,6 +101,35 @@ def release(rpc, n, run=True):
     call(rpc, "vice_checkpoint_delete", {"checkpoint_num": n})
     if run:
         call(rpc, "vice_execution_run", {})
+
+
+UP, DOWN, LEFT, RIGHT, FIRE = 1, 2, 4, 8, 16
+
+
+def stick_arm(rpc, ddr=0x1F):
+    """Make CIA1 port B drive the control-port-1 lines, so stick() works.
+
+    vice_joystick_set reaches CIA1 port A ($DC00, control port 2) only; a call
+    for the other port reports success and changes nothing. Most games read
+    control port 1 at $DC01, where port B is an input and nothing the emulator
+    offers can pull its lines low. Setting DDRB ($DC03) makes those bits
+    outputs, and then a plain write to $DC01 is what the game reads. Bits left
+    as inputs still read the keyboard columns, so a mask of $1F keeps the three
+    top columns (which carry keys some games poll in the same read) working.
+    """
+    poke(rpc, 0xDC03, [ddr])
+    poke(rpc, 0xDC01, [0xFF])
+
+
+def stick(rpc, bits=0):
+    """Hold a joystick state set from UP/DOWN/LEFT/RIGHT/FIRE; 0 releases."""
+    poke(rpc, 0xDC01, [0xFF & ~bits])
+
+
+def stick_release(rpc):
+    """Give CIA1 port B back to the keyboard."""
+    poke(rpc, 0xDC01, [0xFF])
+    poke(rpc, 0xDC03, [0x00])
 
 
 def clear_checkpoints(rpc):

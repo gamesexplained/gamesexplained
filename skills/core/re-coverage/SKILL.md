@@ -52,6 +52,37 @@ same way, so tiers mean the same thing everywhere.
 - **Reading a region may disassemble it as a side effect** in some
   disassemblers. Log an explicit disassemble entry for every new code
   region you explore, or a replay under-restores.
+- **Know how far a description reaches.** In `kit/scripts/ledger.py` a
+  symbol owns the bytes from itself to the next boundary symbol, capped at
+  1024 bytes for code and for symbols you create yourself, and at 64 bytes
+  for any other data symbol. Block boundaries cut a span too. A data table
+  of a few hundred bytes therefore needs a named symbol every 64 bytes or
+  less, each with its own description, or most of it stays bare however
+  well you have explained the whole.
+
+## Inline parameters: the reason a flow disassembler stalls
+
+When control-flow disassembly reaches a few thousand bytes and stops, and a
+scan of every `jsr`/`jmp` target inside the code it did find turns up
+nothing new, the rest is not all data. Look for a routine that pulls its
+own return address off the stack:
+
+```
+    pla / sta ptr / pla / sta ptr+1     ; the return address
+    ... read a word through (ptr) ...
+    inc ptr / inc ptr                   ; step past it
+    jmp (ptr)                           ; resume after the argument
+```
+
+A call to that routine is followed by an **argument**, not an instruction,
+and the disassembler walks straight into it, decodes it as code and shifts
+everything after it. Find every call site of every such routine, type the
+argument bytes as data, and restart the disassembly at the resume point.
+One pass of this can double the tracked image.
+
+The same shape hides more than one routine: look for a family of wrappers
+built on one or two stack-unwinding primitives, and check each for the
+number of inline bytes it eats, which need not be the same.
 
 **Reaching 100 % is a correctness pass, not a formality.** Writing a
 precise description of every routine forces re-reading code that was

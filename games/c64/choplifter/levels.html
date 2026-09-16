@@ -1,0 +1,291 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choplifter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0a0b18; --surface:#12142c; --surface-2:#1a1d40; --line:#292c58; --line-soft:#1d1f3b;
+  --ink:#e9e7f7; --ink-soft:#a5a1cb; --ink-mute:#6e6b99;
+  --amber:#e8a33d; --cyan:#6fc7d4; --coral:#d97f6e; --green:#8fd17a; --violet:#8f7fe0;
+  --fd:'Press Start 2P',monospace; --fb:'IBM Plex Sans',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.65;padding:0 0 5rem}
+h1,h2,h3{font-weight:600;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+.hero{padding:52px 24px 36px;text-align:center;border-bottom:1px solid var(--line-soft);
+ background:radial-gradient(ellipse 900px 380px at 50% -12%,rgba(143,127,224,.13),transparent 70%)}
+.eyebrow{font-family:var(--fm);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--violet);margin:0 0 20px}
+.hero h1{font-family:var(--fd);font-size:21px;line-height:1.65;margin-bottom:20px}
+.hero .sub{max-width:600px;margin:0 auto;color:var(--ink-soft);font-size:15.5px}
+section{padding:48px 0;border-bottom:1px solid var(--line-soft)}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+h2.t{font-size:21px;margin-bottom:14px}
+.lede{color:var(--ink-soft);max-width:64ch;margin:0 0 26px;font-size:15.5px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+.cap{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin-top:14px;line-height:1.65}
+.cap b{color:var(--ink-soft);font-weight:500}
+code{font-family:var(--fm);font-size:.92em;color:var(--cyan)}
+canvas{image-rendering:pixelated;max-width:100%;display:block;border-radius:6px;background:#000}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px}
+button.k{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer}
+button.k:hover{border-color:var(--violet)}
+input[type=range]{flex:1;min-width:200px;accent-color:var(--violet)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line-soft);padding:6px 10px;text-align:left}
+th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.tablewrap{overflow-x:auto}
+.mono{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 &middot; 1982 &middot; Br&oslash;derbund Software</p>
+  <h1>Choplifter</h1>
+  <p class="sub">There is one world, it is 4,888 bitmap bits wide, and every coordinate in it is written into the code.</p>
+</header>
+
+<main class="wrap">
+
+<section>
+  <p class="fig">The whole world</p>
+  <h2 class="t">Four sheds at one end, the base at the other</h2>
+  <p class="lede">Choplifter has no level table. The four sheds stand at world X <code>$037D</code>,
+  <code>$047D</code>, <code>$057D</code> and <code>$067D</code>, written as immediate operands in
+  <code>$B8AE</code>; the base is at <code>$1254</code> in <code>$BA3F</code>; the camera is clamped
+  between <code>$02B0</code> and <code>$11D8</code> in <code>$BD9C</code>. Nothing reads any of those
+  from a table, and the second and third sorties use the same numbers as the first.</p>
+  <div class="plate">
+    <canvas id="ribbon" width="860" height="120"></canvas>
+    <div class="ctl" style="margin-top:14px">
+      <span class="mono">camera</span>
+      <input type="range" id="cam" min="688" max="4568" value="4568">
+      <span class="mono" id="camLbl"></span>
+    </div>
+    <canvas id="view" width="640" height="336"></canvas>
+    <p class="cap" id="viewCap"></p>
+    <img src="reference/shed-and-tank-near-the-left-end.png"
+         alt="A shed and a tank near the left-hand end of the world"
+         style="width:100%;max-width:640px;margin-top:18px;border-radius:6px;image-rendering:pixelated">
+    <p class="cap">The same end of the world in the emulator, with a shed and a tank on the
+    ground. The helicopter is at the camera's left limit, world X <code>$02D0</code>.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">What is in it</p>
+  <h2 class="t">Every fixed object, and the routine that places it</h2>
+  <div class="plate">
+    <div class="tablewrap"><table>
+      <tr><th>Object</th><th>World X</th><th>Bitmap row</th><th>Shape</th><th>Placed by</th></tr>
+      <tr><td>Shed 1</td><td><code>$037D</code></td><td>36 body, 25 plinth</td><td>71 shut / 72 open, 73 plinth</td><td><code>$B8AE</code></td></tr>
+      <tr><td>Shed 2</td><td><code>$047D</code></td><td>36 body, 25 plinth</td><td>71 / 72, 73</td><td><code>$B8AE</code></td></tr>
+      <tr><td>Shed 3</td><td><code>$057D</code></td><td>36 body, 25 plinth</td><td>71 / 72, 73</td><td><code>$B8AE</code></td></tr>
+      <tr><td>Shed 4</td><td><code>$067D</code></td><td>36 body, 25 plinth</td><td>71 / 72, 73</td><td><code>$B8AE</code></td></tr>
+      <tr><td>Figure in an open doorway</td><td>shed X + 6</td><td>28</td><td>74</td><td><code>$B94A</code></td></tr>
+      <tr><td>Base apron</td><td><code>$1254</code> + <code>$0F</code></td><td>25</td><td>fill record at <code>$BB25</code>, 15 columns by 5 rows of <code>$AA</code></td><td><code>$BA6C</code></td></tr>
+      <tr><td>Base wedge, left</td><td><code>$1254</code> &minus; 1</td><td>25</td><td>66, mirrored</td><td><code>$BA83</code></td></tr>
+      <tr><td>Base wedge, right</td><td><code>$1254</code> + <code>$7F</code></td><td>25</td><td>66</td><td><code>$BA9D</code></td></tr>
+      <tr><td>Bunker, left half</td><td><code>$1254</code> + <code>$48</code></td><td>34</td><td>65</td><td><code>$BAB5</code></td></tr>
+      <tr><td>Bunker, right half</td><td><code>$1254</code> + <code>$62</code></td><td>34</td><td>65, mirrored</td><td><code>$BAB5</code></td></tr>
+      <tr><td>Flagpole</td><td><code>$1254</code> + <code>$71</code></td><td>46</td><td>67</td><td><code>$BAF0</code></td></tr>
+      <tr><td>Flag</td><td><code>$1254</code> + <code>$73</code></td><td>46</td><td>68 or 69, by bit 0 of the pass counter <code>$89</code></td><td><code>$BB07</code></td></tr>
+      <tr><td>Hills</td><td>three copies, stepped</td><td>29</td><td>64</td><td><code>$AA80</code></td></tr>
+      <tr><td>Parallax blobs</td><td>four copies around <code>$1174</code></td><td>16, 23, 26, 28</td><td>70</td><td><code>$B971</code></td></tr>
+    </table></div>
+    <p class="cap">Rows count <b>upward from the bottom of the play area</b>, which is how the
+    bitmap row tables at <code>$0A00</code> are indexed. Row 26 is where the background register
+    turns grey, so anything below row 26 is standing on the ground.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">The only thing that changes</p>
+  <h2 class="t">Where the eight loose hostages stand</h2>
+  <p class="lede">Every sortie starts the same way. Sheds 1 to 3 are shut with 16 people inside each,
+  shed 4 is already open with 8 left inside, and 8 are standing outside. That is 64.
+  <code>$BE52</code> sets all of it. The one number it does not hard-code is the gap between the
+  eight who are already outside: <code>$20</code> plus a sample of CIA1 timer A masked with
+  <code>$7E</code>, so an even gap somewhere between 32 and 158 units.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button class="k" id="roll">Take another timer sample</button>
+      <span class="mono" id="gapLbl"></span>
+    </div>
+    <canvas id="people" width="860" height="70"></canvas>
+    <p class="cap">Eight figures, laid out from the same starting point with the gap the sample
+    produced. The spread between the tightest and the loosest sortie is about 880 units, roughly
+    two and three quarter screens.</p>
+  </div>
+</section>
+
+<section>
+  <p class="fig">Counting</p>
+  <h2 class="t">Sixty-four, split four ways</h2>
+  <div class="plate">
+    <div class="tablewrap"><table>
+      <tr><th>Variable</th><th>Start of a sortie</th><th>Meaning</th></tr>
+      <tr><td><code>$0CF4</code>-<code>$0CF7</code></td><td>0, 0, 0, 1</td><td>shed state: 0 shut, 1 blown open</td></tr>
+      <tr><td><code>$0CF8</code>-<code>$0CFB</code></td><td>16, 16, 16, 8</td><td>people still inside each shed</td></tr>
+      <tr><td><code>$0CED</code></td><td>56</td><td>people indoors</td></tr>
+      <tr><td><code>$0CF0</code></td><td>8</td><td>people outside</td></tr>
+      <tr><td><code>$0CEE</code></td><td>0</td><td>delivered; compared with <code>$40</code> at <code>$967C</code> to end the game</td></tr>
+      <tr><td><code>$0CFF</code></td><td>0</td><td>sortie number, 0 to 2</td></tr>
+    </table></div>
+    <p class="cap">The manual says eighteen to a barracks. The code says sixteen, and the shed
+    that is already open at the start is where the eight loose ones came from.</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+const PAL=['#000000','#ffffff','#813329','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171',
+           '#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+</script>
+<script>
+const D={"shapeMeta":[[32929,32,18,0],[33003,32,16,72],[33069,33,15,136],[33146,34,14,211],[33218,35,14,281],[33290,35,13,351],[33357,35,13,416],[33424,35,13,481],[33491,34,14,546],[33563,35,15,616],[33640,34,16,691],[33722,12,13,771],[33750,12,13,797],[33778,26,13,823],[33832,35,12,875],[33894,12,12,935],[33920,23,1,959],[33925,33,1,962],[33932,38,1,967],[33939,7,6,972],[33947,6,6,978],[33955,7,4,984],[33961,4,7,988],[33970,21,5,995],[33987,25,11,1010],[34033,23,13,1054],[34074,17,15,1093],[34121,15,16,1138],[34155,17,17,1170],[34208,25,16,1221],[34274,31,16,1285],[34340,21,11,1349],[34375,23,14,1382],[34419,29,10,1424],[34461,33,8,1464],[34503,35,11,1504],[34560,35,18,1559],[34652,29,15,1649],[34714,27,13,1709],[34768,15,3,1761],[34776,31,6,1767],[34802,7,5,1791],[34809,7,4,1796],[34815,3,4,1800],[34821,7,4,1804],[34827,7,5,1808],[34834,4,3,1813],[34839,3,3,1816],[34844,11,3,1819],[34852,8,1,1825],[34855,13,10,1826],[34877,20,9,1846],[34906,24,12,1873],[34944,24,12,1909],[34982,19,8,1945],[35008,9,11,1969],[35032,9,11,1991],[35056,9,11,2013],[35080,9,11,2035],[35104,9,11,2057],[35128,9,11,2079],[35152,9,11,2101],[35176,9,11,2123],[35200,9,9,2145],[35220,37,4,2163],[35242,27,11,2183],[35288,15,5,2227],[35300,2,12,2237],[35314,11,8,2249],[35332,11,8,2265],[35350,7,5,2281],[35357,27,11,2286],[35403,27,11,2330],[35449,27,2,2374],[35459,15,3,2382]],"shapeData":"QAAAAOAAQADgAPgA8Bv4APwf+AB/j/wAP///AA///OAD//wYAH/4BAdv/gQH4f+CAfz/8gA/x/8AB/D+AAD+AAAAH/wAAAPgQABAAOAA+ADgG/gA8B/4AP8P/AB///+AH//8eAP//AwA//wEAG//AgPg//MD/m//AD/g+AAD/gAAAD/+AAAD8EAAcAAA4AD8AADgG/wAAPAf/gAAf4f/wAB///58AB///gYAA//+AgAAf/+BAAAz//2AA/A//4AD/7B8AAAf/AEAAAD/5wAAAAf8AAAAfAAAQAH8AADgD/4AAPAP/8AAfwP+fgB///4DAB///gEAA///wYAAP///wAAZ///AAfgY/gAB//gAgAAP//uAAAAD/gAAADwAAAAAfAAAQAH8AADgD/8AAPAP//8Af4P/AYA///8AwB///4BgAf///+AAH///gAAGB/4AAP/+AGAA////wAAAA/+AAAHwAAAAAfAAAAAD+AAAQA///wDgD/8BgPAD/wDAf///gGA/////4B////+AAf///gAABgYAYAB////AAH///4AAAfAAAAAB+AAAAAP9/wAAD/8BgEAP/wDA4AP/gGD4f///4H////+AP////gAH//4AYAAGBv/AAD///4AAP/8AAAAB8AAAAAH4fAAAA//jAAAP/gDAAA//AGBAA/+PwPA///+A/////gB///8AYB//A3/AAAN//wAAP/8AAAA/AAAAAABAAAAAA+A+AAAD/+GAAAP+AEAAD/8AwAAf/5+AQBv//wDgD//8QPx//8DAf//7H4Af/4P+AAOB/+AAAD/8AAAAH4AAAAAAwBwAAAfh44AAB/4AQAAH/wDAAA//j4AAH///AAAb//4gQAf/+GDwP/+DwH//+b+AP//D/AAH+P/AAAAD/AAAAB/AAAAADAAAAAAAADgAAAHBxwAAD+4AgAAH/gGAAAf/DwAAD//+AAAf//xAABv/+MAAB//DgEAf/5+A8P/x/AB//8fgAD/8/wAAB8H4AAAAD8AAAAAGAAAADwAPAA8AP8BgYEAgwDD/8H/gH4Bw4OBw4HAPAA8ADwDfwPhgcCBwED/wP+AfgDng8PDw8AAfAAAAHwAAgD+AAGB//gBwf4MAeD8BgD//AMAf///AD///gAP//gAAcHbAAf//gAH//wAAAfAAAAAB8AAAAAP4AABAD///AOAP/wGA8AP/AMB///+AYD/////gH////4AB///+YAB////AAH///4APAA8ADwA/wGBgQCDAMP/wf+B/4PDw4HAH//4AAf//gP/////8AAQIACBAAEAgAAgEAAAA7hAQEAAQEBCAAACgAqCqqqhq+oBqgAAA4AAAAKAAAACoKgAgKoKAKKqqAKqqoABqqgAAagoAACgKAAAoCgAAAAcAAAOAAAKAAAKgAACgqACqCoKqKKqqoKqqAKqoAGgoACgoACAoAAAcAAOAAAKAAAKAAAKAAAKAACKqACqCgCqCgKqqACqgACCgACCgAACgAACgAADgAADgAKAAoACgCKAKoAKoKooCigqoCKAAoACgAKAAoADgAMAAAKAAAKAAAKAAAKCAAKKAAKoACqsAKrsAquoAKqqAAKCAAKAAAKAAAKAAAKAAAGAAAB8AAAAKAAAACgAAAAoAAAAqAIAAKgKACqqqACqqqwCqv6sAKqqqAAAqAoAAKgCAACoAAAAKAAAACgAAAB8AAAAB8AAAAKAAAACgAAACoAAAAqACAAKgCgCqqqgqqqqsqqv6rCqqqqwAqqqoAAKgCgACoAIAAKAAAACgAAAB8AAA8AAAoACAoACgqAAqqqBqqggqqqCgqACAoAAAoAAA8AAA8AAAoAAAoACAqACgqAAqqqBqqohqqooqqqigqACAqAAAoAAAoAAA8AAAPAAAgCgAAKAqAACqqqqAqqqgoGqqqqhqqqqAoCoAAIAqAAAAPgAAgAAAAACgAAAAAKgAAqAAqqqoCgCqqqqqgGqv6qoAaqqqgABqD/AAAAAH4AAAgAKgAACgAqgAAKqqqqgAqqqqqoBqqqqqoGqqqqqAaq/6gACoAqAAAKACgAAAAAfAAAAAB+AAAAACgAAAAAKAAAAAAqAAAIACoAAAoAKoAACoAqgAACqqqqAAaqqqqoBqqqqqoGqv+qqAKqqqoACoAqgAAKACoAAAgAKgAAAAAoAAAAACgAAAAAfgAAAAfAAAACgAAAAoAAAAKgAAgCoAAKAqgAAqqqqAaqqqoGqqqqgqv6qAoCqAAIAqAAAAKAAAACgAAAB8AAAAfAAAACgAAAAoAACAKgAAoCoqACqqqoBqqqqgaq+qACr6gACgKgAAgCoAAAAoAAAAPAAAKqiqqqqqN3d3cKqqqq7qqqqqqqqqruqqqqod3d3YAKCoKgqgqCgqoKCgoAoqKKgACiqooGDwYEDgQBAA1+AQAP+ACEAQJSAVQDVgVVAREBEQVVAVQAFQAA1zQBdFYFEUQHXWUJFRUE1NABRUgAEUAAN+AAfXYDxBLDGEHvFXTGRxBsRTS0B0DmABGDeV4A5/YAA4AAGMAAGYkBAAEGAYAACCAwwAQsEQA0EDAGAQDAAASAZEwAEEADCGAAAAAAgIAAAAQMBAAAAAABABgADAAAQADgAOADwATgCZgBgAHAD2AAIAAgAIABwAHAAYADgAeAA2ADgAOAB4ABgACAAcABwAGAA4AHwAewA8ADwAeAAwAAQADgAOAPwAj4AYABgAPgB2AOIAgACIANwAnADIAH4AHQAdgBwAHAAcADYASAB8AFwAaAA+AB0AHYAcABwAHAA2ABgAHAA8AHgAPgAdAB2AHAAcABwANgACAAcABgAPgA+AGAAeABsAGAAYABgAAAAAAAAAAYADgAeABwADgAQAAAcDAAADHo6nABqqqqqgqqqqqqgf///gf///4FVVVUBVVVVAX/f9AFAUBQBQFAUAX/f9AFVVVQBVVVUAf///4FYAVYBVYFVYVVbAwMDAwMDAwMDAwMBCIFbgV6De4Lug7uC7oKiAUIBXoFbgd6Du4Lug7uCiIMZ8fGxsUD+AAFDq4ABToLgAHqCuADqgq4DqqKrgqqCqoKqgqqCq/6qgq7uqoK67qqBQP4AAUOrgAFOguAAeoK4AOqCrgOogyuCrABqgqAACoK4ADqCoAAKgrAAGoP///+D////gJMA0UE1U"};
+</script>
+<script>
+function u8(s){const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+const SD=u8(D.shapeData);
+
+const CAM_MIN=0x02B0, CAM_MAX=0x11D8, SCREEN=320, WORLD_END=CAM_MAX+SCREEN;
+const SHEDS=[0x037D,0x047D,0x057D,0x067D], BASE=0x1254, GREY_ROW=26, ROWS=168;
+/* The play area is 168 bitmap rows counted upward from the bottom of the
+   screen. Row 26 and below sit in the band where the raster handler has
+   already turned the background grey. */
+
+/* Colours as the play area actually uses them: the video matrix byte is $2E
+   for the sky rows and $26 for the ground rows, and colour RAM is 1. */
+function penFor(row){ return row<=GREY_ROW ? ['#4a4a4a','#813329','#706deb','#ffffff']
+                                           : ['#000000','#813329','#2e2c9b','#ffffff']; }
+
+/* Draw one shape into a pixel buffer, honouring the bit offset it lands on,
+   optionally mirrored, exactly as $8FD3 and $903E do. */
+function blit(px,W,H,idx,xbit,rowTop,mirror){
+  const [a,w,h,off]=D.shapeMeta[idx], bpr=(w+7)>>3;
+  for(let r=0;r<h;r++){
+    const row=rowTop-r, y=ROWS-1-row;
+    if(y<0||y>=H) continue;
+    const pens=penFor(row);
+    for(let b=0;b<w;b+=2){
+      const src=mirror? (w-2-b) : b;
+      const g=(i)=>(i>=0&&i<w)?((SD[off+r*bpr+(i>>3)]>>(7-(i&7)))&1):0;
+      let v= mirror ? (g(src+1)*2+g(src)) : (g(src)*2+g(src+1));
+      if(!v) continue;
+      const x=(xbit+b)>>1;
+      if(x>=0&&x<W) px[y*W+x]=pens[v];
+    }
+  }
+}
+function fillRect(px,W,H,xbit,rowTop,cols,rows,pen){
+  for(let r=0;r<rows;r++){
+    const row=rowTop-r, y=ROWS-1-row;
+    if(y<0||y>=H) continue;
+    for(let c=0;c<cols*4;c++){
+      const x=(xbit>>1)+c;
+      if(x>=0&&x<W) px[y*W+x]=pen;
+    }
+  }
+}
+
+function renderWorld(cam,W){
+  /* W is in multicolour pixels; the camera is in bitmap bits, two per pixel. */
+  const H=ROWS, px=new Array(W*H).fill(null);
+  SHEDS.forEach((sx,i)=>{
+    const x=sx-cam;
+    blit(px,W,H,i===3?72:71,x,36,false);
+    blit(px,W,H,73,x,25,false);
+    if(i===3) blit(px,W,H,74,x+6,28,false);
+  });
+  const bx=BASE-cam;
+  fillRect(px,W,H,bx+0x0F,25,15,5,'#813329');
+  blit(px,W,H,66,bx-1,25,true);
+  blit(px,W,H,66,bx+0x7F,25,false);
+  blit(px,W,H,65,bx+0x48,34,false);
+  blit(px,W,H,65,bx+0x62,34,true);
+  blit(px,W,H,67,bx+0x71,46,false);
+  blit(px,W,H,68,bx+0x73,46,false);
+  return px;
+}
+
+function drawView(){
+  const cam=+document.getElementById('cam').value;
+  const cv=document.getElementById('view'), g=cv.getContext('2d');
+  const W=160, H=ROWS;
+  const px=renderWorld(cam,W);
+  const t=document.createElement('canvas');t.width=W;t.height=H;
+  const tg=t.getContext('2d');
+  for(let y=0;y<H;y++){
+    const row=ROWS-1-y;
+    tg.fillStyle = row<=GREY_ROW ? '#4a4a4a' : '#000000';
+    tg.fillRect(0,y,W,1);
+  }
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const c=px[y*W+x]; if(c){tg.fillStyle=c;tg.fillRect(x,y,1,1);}
+  }
+  cv.width=640;cv.height=H*2;g.imageSmoothingEnabled=false;g.drawImage(t,0,0,640,H*2);
+  document.getElementById('camLbl').textContent='$'+cam.toString(16).toUpperCase().padStart(4,'0');
+  const near=[];
+  SHEDS.forEach((s,i)=>{ if(s>cam-40&&s<cam+SCREEN) near.push('shed '+(i+1)); });
+  if(BASE>cam-40&&BASE<cam+SCREEN+128) near.push('the base');
+  document.getElementById('viewCap').innerHTML='The window is 320 bitmap bits wide, 160 multicolour pixels. '
+    + (near.length? '<b>In view: '+near.join(', ')+'.</b>' : '<b>Empty sky.</b>')
+    + ' The hills, the parallax blobs, the helicopter and everything that moves are drawn on top of this by other routines and are left out here.';
+  drawRibbon(cam);
+}
+
+function drawRibbon(cam){
+  const cv=document.getElementById('ribbon'), g=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  g.clearRect(0,0,W,H);
+  const x0=CAM_MIN-40, x1=WORLD_END+40, sc=W/(x1-x0);
+  const px=v=>(v-x0)*sc;
+  g.fillStyle='#0d0f22';g.fillRect(0,30,W,54);
+  g.fillStyle='#4a4a4a';g.fillRect(0,68,W,16);
+  g.strokeStyle='#292c58';g.lineWidth=1;g.strokeRect(.5,30.5,W-1,53);
+  /* camera window */
+  g.fillStyle='rgba(143,127,224,.22)';g.fillRect(px(cam),30,SCREEN*sc,54);
+  g.strokeStyle='#8f7fe0';g.lineWidth=2;g.strokeRect(px(cam),30,SCREEN*sc,54);
+  g.font='10px ui-monospace,monospace';g.textBaseline='alphabetic';
+  SHEDS.forEach((s,i)=>{
+    g.fillStyle='#e8a33d';g.fillRect(px(s)-2,58,5,10);
+    g.fillStyle='#a5a1cb';g.fillText('shed '+(i+1),px(s)-14,52-((i%2)*12));
+  });
+  g.fillStyle='#8fd17a';g.fillRect(px(BASE)-2,54,5,14);
+  g.fillStyle='#a5a1cb';g.fillText('base',px(BASE)-10,48);
+  g.fillStyle='#6e6b99';
+  g.fillText('$02B0',px(CAM_MIN)-14,100);
+  g.fillText('$11D8',px(CAM_MAX)-14,100);
+  g.fillText('camera range',W/2-32,100);
+  g.strokeStyle='#292c58';g.beginPath();
+  g.moveTo(px(CAM_MIN),88);g.lineTo(px(CAM_MAX),88);g.stroke();
+}
+
+document.getElementById('cam').addEventListener('input',drawView);
+drawView();
+
+/* --- the eight loose hostages --- */
+function drawPeople(gap){
+  const cv=document.getElementById('people'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const span=gap*7+40, sc=Math.min(1,(cv.width-40)/span);
+  g.fillStyle='#4a4a4a';g.fillRect(0,52,cv.width,18);
+  for(let i=0;i<8;i++){
+    const x=20+i*gap*sc;
+    const [a,w,h,off]=D.shapeMeta[55], bpr=(w+7)>>3;
+    for(let r=0;r<h;r++)for(let b=0;b<w;b+=2){
+      const gbit=(k)=>(k<w)?((SD[off+r*bpr+(k>>3)]>>(7-(k&7)))&1):0;
+      const v=gbit(b)*2+gbit(b+1);
+      if(v){g.fillStyle=['#000','#813329','#2e2c9b','#fff'][v];g.fillRect(x+b,52-(h-r)*2,2,2);}
+    }
+  }
+  document.getElementById('gapLbl').textContent='gap '+gap+' units, eight of them spanning '+(gap*7)+' units';
+}
+function roll(){ drawPeople(0x20 + ((Math.floor(Math.random()*256)) & 0x7E)); }
+document.getElementById('roll').addEventListener('click',roll);
+roll();
+</script>
