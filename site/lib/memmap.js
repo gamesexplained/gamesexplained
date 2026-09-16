@@ -11,20 +11,25 @@ window.C64Map = (function () {
     const W = 512, H = 128, s = opts.scale || 1, mini = !!opts.mini;
     el.innerHTML = '';
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    if (!mini && opts.compare) { const note = document.createElement('p'); note.className = 'mute'; note.style.cssText = 'font-family:var(--fm);font-size:12px;margin:0 0 6px'; note.textContent = opts.compare; el.appendChild(note); }
     cv.style.width = '100%'; cv.style.height = 'auto'; cv.style.imageRendering = 'pixelated';
     cv.style.display = 'block'; cv.style.borderRadius = '6px'; cv.style.border = '1px solid #292c58';
     el.appendChild(cv);
     const ctx = cv.getContext('2d');
-    ctx.fillStyle = COLOURS.unused; ctx.fillRect(0, 0, W, H);
-    for (const [a, n, k] of M.runs) {
-      ctx.fillStyle = COLOURS[k] || '#fff';
-      let p = a, left = n;
-      while (left > 0) { const x = p % W, y = (p / W) | 0, run = Math.min(left, W - x); ctx.fillRect(x, y, run, 1); p += run; left -= run; }
-    }
+    // Vertical fill by default: each column is 128 bytes, so the picture reads as a
+    // ruler from $0000 on the left to $FFFF on the right and the axis labels are true.
+    // opts.orient = 'h' gives the row-major layout (512 bytes per row) instead.
+    const vertical = opts.orient !== 'h';
+    const img = ctx.createImageData(W, H), px = img.data;
+    const rgb = {}; for (const k in COLOURS) { const c = COLOURS[k]; rgb[k] = [parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)]; }
+    const paint = (a, k) => { const x = vertical ? (a >> 7) : (a & 511), y = vertical ? (a & 127) : (a >> 9); const i = (y * W + x) * 4; px[i] = rgb[k][0]; px[i+1] = rgb[k][1]; px[i+2] = rgb[k][2]; px[i+3] = 255; };
+    for (let a = 0; a < 0x10000; a++) paint(a, 'unused');
+    for (const [a, n, k] of M.runs) for (let i = 0; i < n; i++) paint(a + i, COLOURS[k] ? k : 'unused');
+    ctx.putImageData(img, 0, 0);
     if (mini) return M;
     // 4 KB gridlines and labels
-    ctx.fillStyle = 'rgba(233,231,247,.10)';
-    for (let a = 0x1000; a < 0x10000; a += 0x1000) ctx.fillRect(0, a / W, W, 1);
+    ctx.fillStyle = 'rgba(233,231,247,.12)';
+    for (let a = 0x1000; a < 0x10000; a += 0x1000) { if (vertical) ctx.fillRect(a >> 7, 0, 1, H); else ctx.fillRect(0, a / W, W, 1); }
     const axis = document.createElement('div');
     axis.style.cssText = 'display:flex;justify-content:space-between;font-family:var(--fm);font-size:10.5px;color:var(--ink-mute);margin:4px 0 10px';
     axis.innerHTML = ['$0000', '$2000', '$4000', '$6000', '$8000', '$A000', '$C000', '$E000', '$FFFF'].map(x => `<span>${x}</span>`).join('');
@@ -41,7 +46,7 @@ window.C64Map = (function () {
     el.appendChild(tip);
     const at = a => { for (const r of M.runs) if (a >= r[0] && a < r[0] + r[1]) return r; return null; };
     const symAt = a => { let best = null; for (const [sa, n] of M.symbols) { if (sa <= a) best = [sa, n]; else break; } return best; };
-    const addrOf = e => { const b = cv.getBoundingClientRect(); const x = Math.floor((e.clientX - b.left) / b.width * W), y = Math.floor((e.clientY - b.top) / b.height * H); return Math.max(0, Math.min(0xFFFF, y * W + x)); };
+    const addrOf = e => { const b = cv.getBoundingClientRect(); const x = Math.floor((e.clientX - b.left) / b.width * W), y = Math.floor((e.clientY - b.top) / b.height * H); return Math.max(0, Math.min(0xFFFF, vertical ? x * H + y : y * W + x)); };
     cv.addEventListener('mousemove', e => {
       const a = addrOf(e), r = at(a), sy = symAt(a);
       const what = r ? (LABELS[r[2]] + (r[3] ? ' · ' + r[3] : '')) : 'unused';
