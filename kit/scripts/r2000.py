@@ -11,6 +11,11 @@ Usage:
   r2000.py --list                             list tools
   r2000.py --replay <annotations.jsonl>       replay a log into a fresh session
   r2000.py --game games/c64/<slug> <tool> '<json>'
+  r2000.py --log annotations-3.jsonl <tool> '<json>'   write to that log instead
+
+Parallel agents share one disassembler but must not share one log: appends
+from several processes interleave and the replay is then unusable. Give each
+agent its own --log (or set ANNOTATION_LOG) and merge the files afterwards.
 
 Requires `regenerator2000 --mcp-server <file>` listening on :3000.
 
@@ -81,11 +86,16 @@ def game_dir(explicit=None):
     return None
 
 
-def log_call(gdir, name, arguments):
+def log_path(gdir, explicit=None):
+    name = explicit or os.environ.get("ANNOTATION_LOG") or "annotations.jsonl"
+    return os.path.join(gdir, "work", os.path.basename(name))
+
+
+def log_call(gdir, name, arguments, log=None):
     if not gdir or name not in MUTATING:
         return
     os.makedirs(os.path.join(gdir, "work"), exist_ok=True)
-    with open(os.path.join(gdir, "work", "annotations.jsonl"), "a") as f:
+    with open(log_path(gdir, log), "a") as f:
         if name == "r2000_batch_execute":
             for c in arguments.get("calls", []):
                 f.write(json.dumps({"kind": "call", "name": c["name"], "arguments": c["arguments"]}) + "\n")
@@ -111,9 +121,12 @@ def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__); return
-    explicit = None
-    if argv[0] == "--game":
-        explicit, argv = argv[1], argv[2:]
+    explicit, log = None, None
+    while argv and argv[0] in ("--game", "--log"):
+        if argv[0] == "--game":
+            explicit, argv = argv[1], argv[2:]
+        else:
+            log, argv = argv[1], argv[2:]
     if argv[0] == "--replay":
         replay(argv[1]); return
     rpc = make_client()
@@ -125,7 +138,7 @@ def main():
     args = json.loads(argv[1]) if len(argv) > 1 else {}
     out = call(rpc, name, args)
     if not failed(out):
-        log_call(game_dir(explicit), name, args)   # a failed call must not enter the replay log
+        log_call(game_dir(explicit), name, args, log)   # a failed call must not enter the replay log
     print(out)
 
 
