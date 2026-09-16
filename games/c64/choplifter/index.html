@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}}</title>
+<title>Choplifter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -31,55 +31,546 @@ h2.t{font-size:21px;margin-bottom:14px}
 code{font-family:var(--fm);font-size:.92em;color:var(--cyan)}
 
 </style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. Sections are a
-  floor, not a ceiling; drop the ones the game has no use for. Every
-  section should have something the reader can press. Copy follows
-  kit/style.md and is written last.
--->
+<style>
+.grid2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+button.k{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);
+ border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer}
+button.k:hover{border-color:var(--violet)}
+button.k[aria-pressed=true]{background:var(--violet);border-color:var(--violet);color:#0b0b18}
+canvas{image-rendering:pixelated;max-width:100%;display:block;border-radius:6px;background:#000}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line-soft);padding:6px 10px;text-align:left;vertical-align:top}
+th{font-family:var(--fm);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.tablewrap{overflow-x:auto}
+.shapes{display:flex;flex-wrap:wrap;gap:6px}
+.shapes canvas{background:#05050f;border:1px solid var(--line-soft);cursor:pointer;padding:3px}
+.shapes canvas[aria-pressed=true]{border-color:var(--amber)}
+.mono{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.note{border-left:2px solid var(--amber);padding-left:14px;color:var(--ink-soft);font-size:15px}
+</style>
+
 <!-- tabs -->
 <header class="hero">
-  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
-  <h1>{{title}}</h1>
-  <p class="sub">One sentence a human wrote about what is interesting inside this game.</p>
+  <p class="eyebrow">Commodore 64 &middot; 1982 &middot; Br&oslash;derbund Software</p>
+  <h1>Choplifter</h1>
+  <p class="sub">A 16 KB cartridge that draws every frame twice over in software
+  and never switches on a sprite.</p>
 </header>
 <main class="wrap">
-<section>
-  <p class="fig">01 · One frame, rebuilt from memory</p>
-  <h2 class="t">The play screen, drawn from the snapshot</h2>
-  <p class="lede">Render screen memory, colour memory and the character set with your own code. Toggle overlays here.</p>
-  <div class="plate"><canvas id="screenCv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
+
+<section id="s1">
+  <p class="fig">01 &middot; One frame, rebuilt from memory</p>
+  <h2 class="t">The picture is drawn one pixel at a time</h2>
+  <p class="lede">The C64 has eight hardware sprites and Choplifter uses none of them. The
+  game never writes <code>$D015</code>, the register that switches them on, and the register
+  reads zero all the way through a game. The helicopter, the tanks, the jets, the people and
+  the buildings are all plotted into a multicolour bitmap by the routine at <code>$8FD3</code>,
+  a byte at a time.</p>
+  <p class="lede">What the screen costs in colour, it gets back in freedom. A multicolour
+  bitmap pixel is two bits wide and can take one of four colours, and three of those four are
+  fixed per character cell. Choplifter sets the play area to the same two values everywhere:
+  the video matrix holds <code>$2E</code> for the sixteen sky rows and <code>$26</code> for the
+  five rows of ground, and colour memory holds 1 in all 840 cells of the play area. Red, light
+  blue and white, on a background the raster interrupt changes on the way down the screen.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button class="k" data-buf="0" aria-pressed="true">Buffer A &middot; $2000</button>
+      <button class="k" data-buf="1" aria-pressed="false">Buffer B &middot; $6000</button>
+      <button class="k" data-mode="normal" aria-pressed="true">Colours</button>
+      <button class="k" data-mode="source" aria-pressed="false">Where each colour comes from</button>
+      <button class="k" data-mode="bands" aria-pressed="false">Raster bands</button>
+      <button class="k" data-mode="stars" aria-pressed="false">The 24 stars</button>
+      <button class="k" data-mode="cells" aria-pressed="false">Character cells</button>
+    </div>
+    <canvas id="frameCv" width="640" height="400"></canvas>
+    <p class="cap" id="frameCap"></p>
+  </div>
 </section>
-<section>
-  <p class="fig">02 · The player and the enemies</p>
-  <h2 class="t">What they are drawn with, how they move</h2>
+
+<section id="s2">
+  <p class="fig">02 &middot; The shape table</p>
+  <h2 class="t">Seventy-five bitmaps and no sprites</h2>
+  <p class="lede">Everything the game can draw is in one table. <code>$8009</code> holds 75
+  pointers and <code>$80A1</code> to <code>$8A8A</code> holds the bitmaps. A shape is a width
+  in bits, a height in rows, and then the rows, top first.</p>
+  <p class="lede">The width is in <i>bits</i>, not pixels, and thirty of the seventy-five are
+  an odd number of bits wide. A shape is a run of bits that gets plotted wherever the object's
+  X puts it, so which bit pairs with which is decided at draw time. The same bytes give
+  different colours at an odd and an even offset. The two buttons below read the same data both
+  ways.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button class="k" data-align="0" aria-pressed="true">Even bit offset</button>
+      <button class="k" data-align="1" aria-pressed="false">Odd bit offset</button>
+    </div>
+    <div class="shapes" id="shapeStrip"></div>
+    <div class="grid2" style="margin-top:18px">
+      <div><canvas id="shapeBig" width="320" height="200"></canvas></div>
+      <div class="mono" id="shapeInfo"></div>
+    </div>
+  </div>
 </section>
-<section>
-  <p class="fig">03 · Controls</p>
-  <h2 class="t">What the game reads</h2>
+
+
+<section id="s3">
+  <p class="fig">03 &middot; Two screens</p>
+  <h2 class="t">Nothing is cleared, only un-drawn</h2>
+  <p class="lede">There are two complete displays. VIC bank 0 has its bitmap at <code>$2000</code>
+  and its colour matrix at <code>$0400</code>; bank 1 has them at <code>$6000</code> and
+  <code>$4400</code>. One is shown while the other is drawn. <code>$8D16</code> flips bit 6 of
+  <code>$0F</code>, which is exclusive-ored into the high byte of every bitmap address, and
+  <code>$8D1F</code> writes the matching bank into <code>$DD00</code>. One set of row tables
+  serves both buffers because <code>$40</code> is the whole difference between them.</p>
+  <p class="lede">Clearing a 8,000-byte bitmap twice a frame is not affordable, so the game
+  never clears one. Every object that is drawn files a rectangle in a list, and next time that
+  buffer comes round the list is replayed to paint those rectangles out. The sizes come from a
+  table of 26 classes at <code>$94AF</code>, the lists live at <code>$0D03</code> and
+  <code>$0DA3</code> with room for forty rectangles each, and <code>$BBE6</code> swaps them.</p>
+  <div class="plate">
+    <div class="tablewrap"><table id="eraseTbl"><tr><th>class</th><th>columns</th><th>rows</th><th>bytes rubbed out</th></tr></table></div>
+    <p class="cap">The table at <code>$94AF</code>, 26 entries. <code>$AA38</code> pushes a class and a position onto the list for the buffer being drawn; <code>$BBE6</code> swaps the two lists and replays the other one to rub the previous frame out.</p>
+  </div>
 </section>
-<section>
-  <p class="fig">04 · Levels and data</p>
-  <h2 class="t">Where the level lives</h2>
+
+<section id="s4">
+  <p class="fig">04 &middot; Controls</p>
+  <h2 class="t">One button, three meanings, decided by a count</h2>
+  <p class="lede">The manual describes a short press, a medium press and a long press. In the
+  code there is one threshold. The raster interrupt counts frames into <code>$96</code> while
+  the button is held; on release, <code>$9774</code> compares that count with 15. Under 15 a
+  shot leaves the helicopter. At 15 or more the machine starts turning, and it keeps turning
+  while the button stays down, which is what makes a long hold come all the way round.</p>
+  <p class="lede">The direction is decided once, on the frame the count crosses 15, and the
+  stick is only consulted when the helicopter is already near nose-on. At a full left or right
+  facing the stick is ignored and the hold simply flips the machine to face the other way.
+  Holding fire while landed does nothing at all.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button class="k" id="holdBtn">Hold the fire button</button>
+      <span class="mono" id="holdLbl"></span>
+    </div>
+    <canvas id="holdCv" width="640" height="120"></canvas>
+    <p class="cap">The raster interrupt counts frames into <code>$96</code> while the button is
+    down. <code>$9774</code> reads the release: under 15 it calls <code>$97D2</code> and a shot
+    leaves the helicopter; 15 or more it calls <code>$97F1</code> and the machine turns.</p>
+  </div>
 </section>
-<section>
-  <p class="fig">05 · Enemy movement</p>
-  <h2 class="t">The decision rule</h2>
+
+<section id="s5">
+  <p class="fig">05 &middot; The tank</p>
+  <h2 class="t">Five gun angles and a bearing window</h2>
+  <p class="lede">A tank has three pieces, and each one is filed in the frame's object list on
+  its own, so the hull, the turret and the barrel can be hit separately. The aiming is a table
+  lookup. <code>$A249</code> divides the bearing to the helicopter into five windows, one per
+  gun position, and the tank moves its gun one position per fire-timer expiry towards the window
+  the helicopter is in. It only fires on a tick when the gun is already pointing the right
+  way, which is why a tank that has just been flown over takes several seconds to answer.</p>
+  <div class="plate">
+    <div class="ctl">
+      <span class="mono">helicopter bearing</span>
+      <input type="range" id="bearing" min="0" max="255" value="128">
+      <span class="mono" id="bearLbl"></span>
+    </div>
+    <canvas id="tankCv" width="640" height="220"></canvas>
+    <p class="cap">The gun has five positions. <code>$A249</code> holds the bearing each one
+    covers and <code>$A244</code> the X offset the barrel is drawn at. The tank steps one
+    position per fire-timer expiry towards the window the helicopter is in, and fires only once
+    it is already pointing there.</p>
+  </div>
 </section>
-<section>
-  <p class="fig">06 · Progression</p>
+
+<section id="s6">
+  <p class="fig">06 &middot; The jet</p>
+  <h2 class="t">Four canned manoeuvres, stepped one record a frame</h2>
+  <p class="lede">The jet does not steer. It has five states, four of which are lists of
+  four-byte records read one per frame: a shape number, a step in X, and two vertical
+  deltas. State 0 is not a list at all, it is the cruise, one shape held indefinitely. The
+  reversal that makes the jet look as though it has thought about it is eighteen records that
+  decelerate from +9 through +2 to &minus;12 and flip the facing byte at the end.</p>
+  <div class="plate">
+    <div class="ctl" id="jetBtns"></div>
+    <canvas id="jetCv" width="640" height="260"></canvas>
+    <p class="cap" id="jetCap"></p>
+  </div>
+</section>
+
+<section id="s7">
+  <p class="fig">07 &middot; Progression</p>
   <h2 class="t">What gets harder, and by how much</h2>
+  <div class="plate">
+    <div class="tablewrap"><table id="diffTbl">
+      <tr><th>difficulty <code>$8D</code></th><th>live tanks allowed</th><th>type-9 aircraft allowed</th></tr>
+    </table></div>
+    <p class="cap">Difficulty is not the sortie number. It is <code>$8D</code>, raised at
+    <code>$9EBA</code> the first time the player unloads after a pickup, so it tracks how well the
+    player is doing rather than how long the game has run. At 0 only tanks can appear.</p>
+  </div>
 </section>
-<section>
-  <p class="fig">07 · The sound</p>
-  <h2 class="t">Every tune, from the stored bytes</h2>
+
+
+<section id="s7b">
+  <p class="fig">08 &middot; The sound</p>
+  <h2 class="t">Both engine voices are noise</h2>
+  <p class="lede">Two of the SID's three voices carry the helicopter and both are set to the
+  noise waveform. <code>$9975</code> writes <code>$81</code> to <code>$D404</code>: bit 7
+  selects noise, bit 0 opens the gate, and it stays open. Voice 1 is the rumble, and its
+  frequency low byte is a variable the game walks: <code>$0B5E</code> climbs towards
+  <code>$C0</code> in steps of <code>$10</code> while the machine is off the ground and falls
+  back towards <code>$30</code> when it lands. Voice 2 is the chop, fixed at <code>$041A</code>
+  with a short envelope, re-gated every <code>$94</code> frames, and <code>$94</code> shortens
+  from 17 to 8 as the rumble rises. The blades speed up because the engine does.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button class="k" id="engBtn">Sweep the engine, $30 to $C0</button>
+      <span class="mono" id="engLbl"></span>
+    </div>
+    <canvas id="engCv" width="640" height="150"></canvas>
+    <p class="cap">The line is the SID noise rate the value produces, <code>f = value &times;
+    985248 / 16777216</code> on PAL. The sound is a browser approximation of filtered noise at
+    that rate, not a SID emulation.</p>
+  </div>
 </section>
-<section>
-  <p class="fig">08 · Secrets, quirks and bugs</p>
-  <h2 class="t">Things the manual never told you</h2>
+
+<section id="s8">
+  <p class="fig">09 &middot; Quirks and bugs</p>
+  <h2 class="t">Things a player who finished it would not know</h2>
+  <p class="lede">Seven of them, each traced to the bytes that produce it.</p>
+  <div class="plate" id="quirks">
+    <h3 style="font-size:16px;margin-bottom:6px">A shot fired while turning cannot hit anything</h3>
+    <p style="color:var(--ink-soft);margin:0 0 20px">Objects carry two vertical numbers: a
+    height and a base row, which stand in for depth. Everything that can be hit sits on the
+    player's base row, <code>$58</code>, and the first thing the collision code at
+    <code>$B344</code> does is check that a shot is still on it. When the helicopter fires,
+    <code>$AD24</code> gives the shot a per-frame base-row step from the table at
+    <code>$AD86</code>, indexed by how far round the machine has turned: <code>-2, -2, -1,
+    0</code>. Only a shot fired from a full side-on facing gets zero and stays on the player's
+    row. Every other shot walks off it within a frame or two and is refused for the rest of its
+    life. It still flies, it still looks right, and it passes through everything.</p>
+
+    <h3 style="font-size:16px;margin-bottom:6px">The free list is built four links too long</h3>
+    <p style="color:var(--ink-soft);margin:0 0 20px">Actors are 10-byte records chained through
+    a free list. <code>$AA11</code> builds that chain with <code>ldy #$1E</code> and three
+    <code>dey</code>s, which gives 27 passes where 23 would do. The first 24 links are correct.
+    The 25th wraps the index register and writes a link of 4 into the last record, and the three
+    after it land in the middle of slots 1, 2 and 3. Nothing goes wrong, because the game has
+    never had more than 24 actors alive at once; if it ever did, the 25th would be handed a
+    record straddling the list head.</p>
+
+    <h3 style="font-size:16px;margin-bottom:6px">Half the tanks are born outside the world</h3>
+    <p style="color:var(--ink-soft);margin:0 0 20px">A tank spawns on whichever side of the
+    helicopter the code picks. The left-hand branch at <code>$9F3D</code> does a proper 16-bit
+    subtraction, <code>$55/$56</code> minus <code>$01B0</code>, into the actor's world X. The
+    right-hand branch at <code>$9F54</code> adds <code>$B0</code> to the low byte with no carry
+    and then stores <code>$00</code> into <code>$0B79</code>, the high byte. The tank's world X
+    is <code>$00xx</code> whatever the helicopter's is, which is off the left-hand end of a
+    world that starts at <code>$02B0</code>, and <code>$A16B</code> deletes it on its first
+    update. Nothing leaks and nothing crashes. The tank simply never arrives.</p>
+
+    <h3 style="font-size:16px;margin-bottom:6px">RESTORE is defused with a borrowed instruction</h3>
+    <p style="color:var(--ink-soft);margin:0 0 20px">Pressing RESTORE raises an NMI, which the
+    KERNAL sends through the vector at <code>$0318</code>. Choplifter points that vector at
+    <code>$9AAB</code>, which is not a routine. It is the <code>rti</code> that ends the raster
+    interrupt handler, one byte past the <code>pla</code> before it. The NMI arrives, returns
+    immediately, and costs the game nothing.</p>
+
+    <h3 style="font-size:16px;margin-bottom:6px">The ground is not drawn</h3>
+    <p style="color:var(--ink-soft);margin:0 0 20px">At raster <code>$E0</code> the interrupt
+    writes colour <code>$0C</code> to both <code>$D020</code> and <code>$D021</code>. Below that
+    line the bitmap is almost entirely zero, so what fills the bottom quarter of the screen is
+    the background register showing through. The blue strip along the top of it is the only
+    part anybody draws.</p>
+
+    <h3 style="font-size:16px;margin-bottom:6px">The game and the screen run on different clocks</h3>
+    <p style="color:var(--ink-soft);margin:0 0 20px">The raster interrupt fires 51 times a
+    second; the main loop completed 83 passes in 201 of those frames, about 21 a second, and the
+    figure moves with how much is on screen. Some counters are stepped by the interrupt (the
+    trigger hold <code>$96</code>, the rotor beat <code>$95</code>) and some by the loop (the
+    pass counter <code>$89</code>, the message timers), so a busy frame stretches one and not
+    the other.</p>
+
+    <h3 style="font-size:16px;margin-bottom:6px">Sixteen to a shed, not eighteen</h3>
+    <p style="color:var(--ink-soft);margin:0 0 6px">The manual says the hostages are locked in
+    barracks, eighteen per barracks. <code>$BE52</code> puts 16 in each of the first three sheds
+    and 8 in the fourth, which starts a sortie already open, with its other 8 walking about
+    outside. That is 64, the number the game ends on when <code>$0CEE</code> reaches
+    <code>$40</code>.</p>
+  </div>
 </section>
 </main>
+
 <script>
-// Inline everything. Data extracted from the snapshot goes here as arrays.
+const D={"shapeMeta":[[32929,32,18,0],[33003,32,16,72],[33069,33,15,136],[33146,34,14,211],[33218,35,14,281],[33290,35,13,351],[33357,35,13,416],[33424,35,13,481],[33491,34,14,546],[33563,35,15,616],[33640,34,16,691],[33722,12,13,771],[33750,12,13,797],[33778,26,13,823],[33832,35,12,875],[33894,12,12,935],[33920,23,1,959],[33925,33,1,962],[33932,38,1,967],[33939,7,6,972],[33947,6,6,978],[33955,7,4,984],[33961,4,7,988],[33970,21,5,995],[33987,25,11,1010],[34033,23,13,1054],[34074,17,15,1093],[34121,15,16,1138],[34155,17,17,1170],[34208,25,16,1221],[34274,31,16,1285],[34340,21,11,1349],[34375,23,14,1382],[34419,29,10,1424],[34461,33,8,1464],[34503,35,11,1504],[34560,35,18,1559],[34652,29,15,1649],[34714,27,13,1709],[34768,15,3,1761],[34776,31,6,1767],[34802,7,5,1791],[34809,7,4,1796],[34815,3,4,1800],[34821,7,4,1804],[34827,7,5,1808],[34834,4,3,1813],[34839,3,3,1816],[34844,11,3,1819],[34852,8,1,1825],[34855,13,10,1826],[34877,20,9,1846],[34906,24,12,1873],[34944,24,12,1909],[34982,19,8,1945],[35008,9,11,1969],[35032,9,11,1991],[35056,9,11,2013],[35080,9,11,2035],[35104,9,11,2057],[35128,9,11,2079],[35152,9,11,2101],[35176,9,11,2123],[35200,9,9,2145],[35220,37,4,2163],[35242,27,11,2183],[35288,15,5,2227],[35300,2,12,2237],[35314,11,8,2249],[35332,11,8,2265],[35350,7,5,2281],[35357,27,11,2286],[35403,27,11,2330],[35449,27,2,2374],[35459,15,3,2382]],"shapeData":"QAAAAOAAQADgAPgA8Bv4APwf+AB/j/wAP///AA///OAD//wYAH/4BAdv/gQH4f+CAfz/8gA/x/8AB/D+AAD+AAAAH/wAAAPgQABAAOAA+ADgG/gA8B/4AP8P/AB///+AH//8eAP//AwA//wEAG//AgPg//MD/m//AD/g+AAD/gAAAD/+AAAD8EAAcAAA4AD8AADgG/wAAPAf/gAAf4f/wAB///58AB///gYAA//+AgAAf/+BAAAz//2AA/A//4AD/7B8AAAf/AEAAAD/5wAAAAf8AAAAfAAAQAH8AADgD/4AAPAP/8AAfwP+fgB///4DAB///gEAA///wYAAP///wAAZ///AAfgY/gAB//gAgAAP//uAAAAD/gAAADwAAAAAfAAAQAH8AADgD/8AAPAP//8Af4P/AYA///8AwB///4BgAf///+AAH///gAAGB/4AAP/+AGAA////wAAAA/+AAAHwAAAAAfAAAAAD+AAAQA///wDgD/8BgPAD/wDAf///gGA/////4B////+AAf///gAABgYAYAB////AAH///4AAAfAAAAAB+AAAAAP9/wAAD/8BgEAP/wDA4AP/gGD4f///4H////+AP////gAH//4AYAAGBv/AAD///4AAP/8AAAAB8AAAAAH4fAAAA//jAAAP/gDAAA//AGBAA/+PwPA///+A/////gB///8AYB//A3/AAAN//wAAP/8AAAA/AAAAAABAAAAAA+A+AAAD/+GAAAP+AEAAD/8AwAAf/5+AQBv//wDgD//8QPx//8DAf//7H4Af/4P+AAOB/+AAAD/8AAAAH4AAAAAAwBwAAAfh44AAB/4AQAAH/wDAAA//j4AAH///AAAb//4gQAf/+GDwP/+DwH//+b+AP//D/AAH+P/AAAAD/AAAAB/AAAAADAAAAAAAADgAAAHBxwAAD+4AgAAH/gGAAAf/DwAAD//+AAAf//xAABv/+MAAB//DgEAf/5+A8P/x/AB//8fgAD/8/wAAB8H4AAAAD8AAAAAGAAAADwAPAA8AP8BgYEAgwDD/8H/gH4Bw4OBw4HAPAA8ADwDfwPhgcCBwED/wP+AfgDng8PDw8AAfAAAAHwAAgD+AAGB//gBwf4MAeD8BgD//AMAf///AD///gAP//gAAcHbAAf//gAH//wAAAfAAAAAB8AAAAAP4AABAD///AOAP/wGA8AP/AMB///+AYD/////gH////4AB///+YAB////AAH///4APAA8ADwA/wGBgQCDAMP/wf+B/4PDw4HAH//4AAf//gP/////8AAQIACBAAEAgAAgEAAAA7hAQEAAQEBCAAACgAqCqqqhq+oBqgAAA4AAAAKAAAACoKgAgKoKAKKqqAKqqoABqqgAAagoAACgKAAAoCgAAAAcAAAOAAAKAAAKgAACgqACqCoKqKKqqoKqqAKqoAGgoACgoACAoAAAcAAOAAAKAAAKAAAKAAAKAACKqACqCgCqCgKqqACqgACCgACCgAACgAACgAADgAADgAKAAoACgCKAKoAKoKooCigqoCKAAoACgAKAAoADgAMAAAKAAAKAAAKAAAKCAAKKAAKoACqsAKrsAquoAKqqAAKCAAKAAAKAAAKAAAKAAAGAAAB8AAAAKAAAACgAAAAoAAAAqAIAAKgKACqqqACqqqwCqv6sAKqqqAAAqAoAAKgCAACoAAAAKAAAACgAAAB8AAAAB8AAAAKAAAACgAAACoAAAAqACAAKgCgCqqqgqqqqsqqv6rCqqqqwAqqqoAAKgCgACoAIAAKAAAACgAAAB8AAA8AAAoACAoACgqAAqqqBqqggqqqCgqACAoAAAoAAA8AAA8AAAoAAAoACAqACgqAAqqqBqqohqqooqqqigqACAqAAAoAAAoAAA8AAAPAAAgCgAAKAqAACqqqqAqqqgoGqqqqhqqqqAoCoAAIAqAAAAPgAAgAAAAACgAAAAAKgAAqAAqqqoCgCqqqqqgGqv6qoAaqqqgABqD/AAAAAH4AAAgAKgAACgAqgAAKqqqqgAqqqqqoBqqqqqoGqqqqqAaq/6gACoAqAAAKACgAAAAAfAAAAAB+AAAAACgAAAAAKAAAAAAqAAAIACoAAAoAKoAACoAqgAACqqqqAAaqqqqoBqqqqqoGqv+qqAKqqqoACoAqgAAKACoAAAgAKgAAAAAoAAAAACgAAAAAfgAAAAfAAAACgAAAAoAAAAKgAAgCoAAKAqgAAqqqqAaqqqoGqqqqgqv6qAoCqAAIAqAAAAKAAAACgAAAB8AAAAfAAAACgAAAAoAACAKgAAoCoqACqqqoBqqqqgaq+qACr6gACgKgAAgCoAAAAoAAAAPAAAKqiqqqqqN3d3cKqqqq7qqqqqqqqqruqqqqod3d3YAKCoKgqgqCgqoKCgoAoqKKgACiqooGDwYEDgQBAA1+AQAP+ACEAQJSAVQDVgVVAREBEQVVAVQAFQAA1zQBdFYFEUQHXWUJFRUE1NABRUgAEUAAN+AAfXYDxBLDGEHvFXTGRxBsRTS0B0DmABGDeV4A5/YAA4AAGMAAGYkBAAEGAYAACCAwwAQsEQA0EDAGAQDAAASAZEwAEEADCGAAAAAAgIAAAAQMBAAAAAABABgADAAAQADgAOADwATgCZgBgAHAD2AAIAAgAIABwAHAAYADgAeAA2ADgAOAB4ABgACAAcABwAGAA4AHwAewA8ADwAeAAwAAQADgAOAPwAj4AYABgAPgB2AOIAgACIANwAnADIAH4AHQAdgBwAHAAcADYASAB8AFwAaAA+AB0AHYAcABwAHAA2ABgAHAA8AHgAPgAdAB2AHAAcABwANgACAAcABgAPgA+AGAAeABsAGAAYABgAAAAAAAAAAYADgAeABwADgAQAAAcDAAADHo6nABqqqqqgqqqqqqgf///gf///4FVVVUBVVVVAX/f9AFAUBQBQFAUAX/f9AFVVVQBVVVUAf///4FYAVYBVYFVYVVbAwMDAwMDAwMDAwMBCIFbgV6De4Lug7uC7oKiAUIBXoFbgd6Du4Lug7uCiIMZ8fGxsUD+AAFDq4ABToLgAHqCuADqgq4DqqKrgqqCqoKqgqqCq/6qgq7uqoK67qqBQP4AAUOrgAFOguAAeoK4AOqCrgOogyuCrABqgqAACoK4ADqCoAAKgrAAGoP///+D////gJMA0UE1U","frameMatrix":"ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFVERERERERERERERERERERERERERERERERERERERERERERERERERElU5aCgoKCgoEEwMOWgoKCgoKCgWjAw5aCgoKCgoKBTMDDloKCgoOdZSkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGSy4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4mJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJg==","frameColour":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHAgICAgICAgEBAQICAgICAgICAQEBAgICAgICAgIBAQECAgICAgIHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==","frameBitmap":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGBwAAAP8AAAAAAAAA/w8ff38AAADAgMD/+AAAAAAAAPgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcDAQAAAAAAgP///w8AAwMf/////zD///j8////MP//BgP//PAD/vwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAAAAAAAAAAAAAADGfHxsbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABioAAAAAAceqqgAAAADAo6qqAAAAAMCpqqoAAAAAAMCoqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGGgAAAAAAAKqqAAAAAAAAqqoAAAAAAACqqgAAAAAAAKqqAAAAAAAAqqoAAAAAAACqqgAAAAAAAKqqAQEBAQEBq6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQYAAAAAAGqqqgAAAAAAqqqqAAAAAACqqqoAAAAAAKqqqgAAAAAAqqqqAAAAAACqqqoAAAAAAKqqqgAAAAAAqqqqAAAAAACqqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=","frameMatrixB":"ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFVERERERERERERERERERERERERERERERERERERERERERERERERERElU5aCgoKCgoEEwMOWgoKCgoKCgWjAw5aCgoKCgoKBTMDDloKCgoOdZSkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGSy4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4mJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJg==","frameBitmapB":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMaqgAAAAAHHqqqAAAAAAOOqqoAAAAAAKeqqgAAAAAAAKCoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAaqoAAAAAAACqqgAAAAAAAKqqAAAAAAAAqqoAAAAAAACqqgAAAAAAAKqqAAAAAAAAqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhpqAAAAAACqqqoAAAAAAKqqqgAAAAAAqqqqAAAAAACqqqoAAAAAAKqqqgAAAAAAqqqqAAAAAACqqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=","charset":"PGZubmBiPAAYPGZ+ZmZmAHxmZnxmZnwAPGZgYGBmPAB4bGZmZmx4AH5gYHhgYH4AfmBgeGBgYAA8ZmBuZmY8AGZmZn5mZmYAPBgYGBgYPAAeDAwMDGw4AGZseHB4bGYAYGBgYGBgfgBjd39rY2NjAGZ2fn5uZmYAPGZmZmZmPAB8ZmZ8YGBgADxmZmZmPA4AfGZmfHhsZgA8ZmA8BmY8AH4YGBgYGBgAZmZmZmZmPABmZmZmZjwYAGNjY2t/d2MAZmY8GDxmZgBmZmY8GBgYAH4GDBgwYH4APDAwMDAwPAAMEjB8MGL8ADwMDAwMDDwAABg8fhgYGBgAEDB/fzAQAAAAAAAAAAAAGBgYGAAAGABmZmYAAAAAAGZm/2b/ZmYAGD5gPAZ8GABiZgwYMGZGADxmPDhnZj8ABgwYAAAAAAAMGDAwMBgMADAYDAwMGDAAAGY8/zxmAAAAGBh+GBgAAAAAAAAAGBgwAAAAfgAAAAAAAAAAABgYAAADBgwYMGAAPGZudmZmPAAYGDgYGBh+ADxmBgwwYH4APGYGHAZmPAAGDh5mfwYGAH5gfAYGZjwAPGZgfGZmPAB+ZgwYGBgYADxmZjxmZjwAPGZmPgZmPAAAABgAABgAAAAAGAAAGBgwDhgwYDAYDgAAAH4AfgAAAHAYDAYMGHAAPGYGDBgAGAAAAAD//wAAAAgcPn9/HD4AGBgYGBgYGBgAAAD//wAAAAAA//8AAAAAAP//AAAAAAAAAAAA//8AADAwMDAwMDAwDAwMDAwMDAwAAADg8DgYGBgYHA8HAAAAGBg48OAAAADAwMDAwMD//8DgcDgcDgcDAwcOHDhw4MD//8DAwMDAwP//AwMDAwMDADx+fn5+PAAAAAAAAP//ADZ/f38+HAgAYGBgYGBgYGAAAAAHDxwYGMPnfjw8fufDADx+ZmZ+PAAYGGZmGBg8AAYGBgYGBgYGCBw+fz4cCAAYGBj//xgYGMDAMDDAwDAwGBgYGBgYGBgAAAM+djY2AP9/Px8PBwMBAAAAAAAAAADw8PDw8PDw8AAAAAD//////wAAAAAAAAAAAAAAAAAA/8DAwMDAwMDAzMwzM8zMMzMDAwMDAwMDAwAAAADMzDMz//78+PDgwIADAwMDAwMDAxgYGB8fGBgYAAAAAA8PDw8YGBgfHwAAAAAAAPj4GBgYAAAAAAAA//8AAAAfHxgYGBgYGP//AAAAAAAA//8YGBgYGBj4+BgYGMDAwMDAwMDA4ODg4ODg4OAHBwcHBwcHB///AAAAAAAA////AAAAAAAAAAAAAP///wMDAwMDA///AAAAAPDw8PAPDw8PAAAAABgYGPj4AAAA8PDw8AAAAADw8PDwDw8PD8OZkZGfmcP/58OZgZmZmf+DmZmDmZmD/8OZn5+fmcP/h5OZmZmTh/+Bn5+Hn5+B/4Gfn4efn5//w5mfkZmZw/+ZmZmBmZmZ/8Pn5+fn58P/4fPz8/OTx/+Zk4ePh5OZ/5+fn5+fn4H/nIiAlJycnP+ZiYGBkZmZ/8OZmZmZmcP/g5mZg5+fn//DmZmZmcPx/4OZmYOHk5n/w5mfw/mZw/+B5+fn5+fn/5mZmZmZmcP/mZmZmZnD5/+cnJyUgIic/5mZw+fDmZn/mZmZw+fn5/+B+fPnz5+B/8PPz8/Pz8P/8+3Pg8+dA//D8/Pz8/PD///nw4Hn5+fn/+/PgIDP7////////////+fn5+f//+f/mZmZ//////+ZmQCZAJmZ/+fBn8P5g+f/nZnz58+Zuf/DmcPHmJnA//nz5///////8+fPz8/n8//P5/Pz8+fP//+ZwwDDmf///+fngefn/////////+fnz////4H////////////n5////Pnz58+f/8OZkYmZmcP/5+fH5+fngf/Dmfnzz5+B/8OZ+eP5mcP/+fHhmYD5+f+Bn4P5+ZnD/8OZn4OZmcP/gZnz5+fn5//DmZnDmZnD/8OZmcH5mcP////n///n/////+f//+fnz/Hnz5/P5/H///+B/4H///+P5/P58+eP/8OZ+fPn/+f/////AAD////348GAgOPB/+fn5+fn5+fn////AAD//////wAA//////8AAP///////////wAA///Pz8/Pz8/Pz/Pz8/Pz8/Pz////Hw/H5+fn5+Pw+P///+fnxw8f////Pz8/Pz8/AAA/H4/H4/H4/Pz48ePHjx8/AAA/Pz8/Pz8AAPz8/Pz8/P/DgYGBgcP///////8AAP/JgICAweP3/5+fn5+fn5+f////+PDj5+c8GIHDw4EYPP/DgZmZgcP/5+eZmefnw//5+fn5+fn5+ffjwYDB4/f/5+fnAADn5+c/P8/PPz/Pz+fn5+fn5+fn///8wYnJyf8AgMDg8Pj8/v//////////Dw8PDw8PDw//////AAAAAAD//////////////////wA/Pz8/Pz8/PzMzzMwzM8zM/Pz8/Pz8/Pz/////MzPMzAABAwcPHz9//Pz8/Pz8/Pzn5+fg4Ofn5//////w8PDw5+fn4OD///////8HB+fn5////////wAA////4ODn5+fn5+cAAP///////wAA5+fn5+fnBwfn5+c/Pz8/Pz8/Px8fHx8fHx8f+Pj4+Pj4+PgAAP///////wAAAP////////////8AAAD8/Pz8/PwAAP////8PDw8P8PDw8P/////n5+cHB////w8PDw//////Dw8PD/Dw8PA=","stars":[14865,12547,9478,14082,13248,10003,13546,11838,9537,13436,10186,10258,9787,10627,12092,10463,13642,11289,14456,11674,13685,10402,14609,13884],"eraseBox":[[7,23],[6,4],[6,6],[3,3],[2,4],[5,12],[0,0],[4,5],[5,13],[5,17],[6,16],[7,18],[0,0],[2,3],[2,3],[3,3],[2,1],[3,11],[0,0],[22,5],[9,9],[3,12],[2,5],[5,13],[3,2],[3,10]],"shear":[[-1,3],[-1,4],[-1,5],[-1,10],[-1,13],[0,0],[1,13],[1,10],[1,5],[1,4],[1,3]],"tankGunX":[11,7,1,-1,-5],"tankAim":[0,64,112,144,192],"maxTanks":[1,2,1,1],"maxJets":[0,1,2,2],"jetPaths":{"0":{"ptr":38115,"recs":[],"base":23,"baseAddr":32823},"1":{"ptr":38119,"recs":[[0,6,1,-1],[0,6,0,-1],[0,6,0,-1],[0,7,0,-2],[0,7,0,-2],[1,8,-1,-2],[1,9,-1,-2],[1,9,-1,-2],[1,9,-1,-2],[2,8,-1,-2],[2,8,-1,-2],[2,5,-1,-2],[3,2,-1,-2],[4,-4,-1,-2],[4,-8,-1,-2],[5,-10,-1,-2],[6,-12,0,-2],[6,-12,-1,0]],"base":24,"baseAddr":32825},"2":{"ptr":38191,"recs":[[0,4,1,-1],[0,4,0,-1],[0,3,0,-1],[0,2,0,-2],[0,1,-1,-2],[0,1,-1,-2],[0,1,-1,-3],[1,1,-1,-3],[1,1,-1,-3],[1,1,-1,-3],[1,2,-1,-3],[1,3,-1,-3],[2,5,-1,-3],[3,8,-1,-1],[4,11,-1,0]],"base":31,"baseAddr":32839},"3":{"ptr":38251,"recs":[[0,12,0,0],[0,12,0,0],[0,12,0,0],[0,12,0,0],[0,12,0,0],[1,12,0,1],[1,12,0,1],[1,12,1,1],[1,13,1,2],[2,13,2,2]],"base":36,"baseAddr":32849},"4":{"ptr":38251,"recs":[[0,12,0,0],[0,12,0,0],[0,12,0,0],[0,12,0,0],[0,12,0,0],[1,12,0,1],[1,12,0,1],[1,12,1,1],[1,13,1,2],[2,13,2,2]],"base":36,"baseAddr":32849}}};
+const PAL=['#000000','#ffffff','#813329','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171',
+           '#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+function u8(s){const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+const MAT=[u8(D.frameMatrix),u8(D.frameMatrixB)], BMP=[u8(D.frameBitmap),u8(D.frameBitmapB)];
+const COL=u8(D.frameColour), CSET=u8(D.charset), SD=u8(D.shapeData);
+function rgb(i){const h=PAL[i&15];return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];}
+
+/* ---- section 1: the frame, rebuilt ---- */
+/* The display is not one mode. The raster handler at $99F2 puts character
+   rows 0-3 in text mode and rows 4-24 in multicolour bitmap, and from
+   raster $E0 (display line 173) the border and background registers both
+   hold grey, which is the ground. */
+const frame={buf:0,mode:'normal'};
+const TEXTROWS=4, GREYLINE=173, GREY=12;
+function put(im,x,y,c){const o=(y*320+x)*4,q=rgb(c);im.data[o]=q[0];im.data[o+1]=q[1];im.data[o+2]=q[2];im.data[o+3]=255;}
+function drawFrame(){
+  const cv=document.getElementById('frameCv'), g=cv.getContext('2d');
+  const im=g.createImageData(320,200), mat=MAT[frame.buf], bm=BMP[frame.buf];
+  for(let cy=0;cy<25;cy++)for(let cx=0;cx<40;cx++){
+    const m=mat[cy*40+cx], c=COL[cy*40+cx]&15;
+    for(let r=0;r<8;r++){
+      const line=cy*8+r, bg=(line>=GREYLINE)?GREY:0;
+      if(cy<TEXTROWS){                      /* character mode: the status bar */
+        const gl=CSET[(m&0xff)*8+r];
+        for(let p=0;p<8;p++) put(im,cx*8+p,line,(gl&(128>>p))?c:bg);
+      }else{                                /* multicolour bitmap */
+        let cols=[bg,m>>4,m&15,c];
+        if(frame.mode==='source') cols=[9,1,10,14];
+        const b=bm[cy*320+cx*8+r];
+        for(let p=0;p<4;p++){
+          const v=(b>>(6-2*p))&3;
+          put(im,cx*8+p*2,line,cols[v]); put(im,cx*8+p*2+1,line,cols[v]);
+        }
+      }
+    }
+  }
+  const t=document.createElement('canvas');t.width=320;t.height=200;
+  t.getContext('2d').putImageData(im,0,0);
+  cv.width=640;cv.height=400;g.imageSmoothingEnabled=false;g.drawImage(t,0,0,640,400);
+  if(frame.mode==='bands'){
+    const bands=[[0,32,'raster $1E: character mode, black'],
+                 [32,173,'raster $51: multicolour bitmap'],
+                 [173,200,'raster $E0: border and background grey']];
+    g.strokeStyle='rgba(232,163,61,.9)';g.lineWidth=2;g.font='11px monospace';g.fillStyle='rgba(232,163,61,.95)';
+    bands.forEach(([a,b,label])=>{g.beginPath();g.moveTo(0,a*2+1);g.lineTo(640,a*2+1);g.stroke();
+      g.fillText(label,6,a*2+14);});
+  }
+  if(frame.mode==='stars'){
+    g.strokeStyle='rgba(232,163,61,.95)';g.lineWidth=2;
+    D.stars.forEach(a=>{const off=a-0x2000,cy=(off/320)|0,rem=off%320,cx=(rem/8)|0,r=rem%8;
+      g.strokeRect(cx*16-3,(cy*8+r)*2-3,22,8);});
+  }
+  if(frame.mode==='cells'){
+    g.strokeStyle='rgba(143,127,224,.4)';g.lineWidth=1;
+    for(let cx=0;cx<=40;cx++){g.beginPath();g.moveTo(cx*16+.5,0);g.lineTo(cx*16+.5,400);g.stroke();}
+    for(let cy=0;cy<=25;cy++){g.beginPath();g.moveTo(0,cy*16+.5);g.lineTo(640,cy*16+.5);g.stroke();}
+  }
+}
+
+/* ---- section 2: the shape table ---- */
+function shapeCanvas(i,scale){
+  const [a,w,h,off]=D.shapeMeta[i], bpr=(w+7)>>3, pw=w>>1;
+  const cv=document.createElement('canvas');
+  cv.width=pw*2*scale;cv.height=h*scale;
+  const g=cv.getContext('2d');
+  for(let y=0;y<h;y++)for(let x=0;x<pw;x++){
+    const b=SD[off+y*bpr+((x*2)>>3)], v=(b>>(6-((x*2)&7)))&3;
+    if(v){g.fillStyle=PAL[[0,1,2,14][v]];g.fillRect(x*2*scale,y*scale,2*scale,scale);}
+  }
+  return cv;
+}
+
+/* ---- section 4: the fire button ---- */
+let holdFrames=0, holdTimer=null;
+function drawHold(){
+  const cv=document.getElementById('holdCv'), g=cv.getContext('2d');
+  cv.width=640;cv.height=120;
+  g.clearRect(0,0,640,120);
+  const W=600, x0=20, span=30;
+  g.strokeStyle='#292c58';g.lineWidth=1;
+  for(let i=0;i<=span;i++){const x=x0+i*(W/span);g.beginPath();g.moveTo(x,30);g.lineTo(x,70);g.stroke();}
+  g.fillStyle='rgba(143,127,224,.35)';
+  g.fillRect(x0,30,Math.min(holdFrames,span)*(W/span),40);
+  const th=x0+15*(W/span);
+  g.strokeStyle='#e8a33d';g.lineWidth=2;g.beginPath();g.moveTo(th,22);g.lineTo(th,78);g.stroke();
+  g.font='11px ui-monospace,monospace';g.fillStyle='#e8a33d';g.fillText('15',th-6,16);
+  g.fillStyle='#a5a1cb';g.fillText('raster frames held',x0,96);
+  g.fillStyle=holdFrames>=15?'#8fd17a':'#d97f6e';
+  g.fillText(holdFrames>=15?'release now: the helicopter turns':'release now: a shot is fired',x0+180,96);
+  document.getElementById('holdLbl').textContent='$96 = '+holdFrames;
+}
+
+/* ---- section 5: the tank gun ---- */
+function drawTank(){
+  const cv=document.getElementById('tankCv'), g=cv.getContext('2d');
+  const bear=+document.getElementById('bearing').value;
+  let want=0; for(let i=0;i<5;i++) if(bear>=D.tankAim[i]) want=i;
+  cv.width=640;cv.height=220;g.clearRect(0,0,640,220);
+  g.font='11px ui-monospace,monospace';
+  for(let i=0;i<5;i++){
+    const x=30+i*120, sel=(i===want);
+    g.fillStyle=sel?'rgba(143,127,224,.2)':'rgba(255,255,255,.03)';
+    g.fillRect(x-14,20,108,150);
+    const hull=shapeCanvas(40,3,0), turret=shapeCanvas(39,3,0), gun=shapeCanvas(41+i,3,0);
+    g.drawImage(hull,x,120);
+    g.drawImage(turret,x+10,120-turret.height);
+    g.drawImage(gun,x+10+D.tankGunX[i]*3,120-turret.height-gun.height);
+    g.fillStyle=sel?'#8f7fe0':'#6e6b99';
+    g.fillText('position '+i,x,186);
+    g.fillText('bearing >= $'+D.tankAim[i].toString(16).toUpperCase().padStart(2,'0'),x,200);
+    g.fillText('shape '+(41+i)+', x '+(D.tankGunX[i]>0?'+':'')+D.tankGunX[i],x,214);
+  }
+  document.getElementById('bearLbl').textContent='$'+bear.toString(16).toUpperCase().padStart(2,'0')+' - gun wants position '+want;
+}
+
+/* ---- section 6: the jet's canned paths ---- */
+let jetMode=1, jetStep=0, jetTimer=null;
+function drawJet(){
+  const cv=document.getElementById('jetCv'), g=cv.getContext('2d');
+  const p=D.jetPaths[jetMode], recs=p.recs;
+  cv.width=640;cv.height=260;g.clearRect(0,0,640,260);
+  if(!recs.length){
+    g.fillStyle='#a5a1cb';g.font='13px ui-monospace,monospace';
+    g.fillText('State 0 has no step records: the jet just cruises on shape 23.',20,40);
+    const c=shapeCanvas(p.base,4,0); g.drawImage(c,20,70);
+    document.getElementById('jetCap').textContent='Path pointer $'+p.ptr.toString(16).toUpperCase()+', 0 records.';
+    return;
+  }
+  /* plot the whole path, then mark where the step counter is */
+  let x=40,y=150;
+  const pts=[[x,y]];
+  recs.forEach(r=>{x+=r[1]*2.2;y-=(r[2]+r[3])*2.2;pts.push([x,y]);});
+  g.strokeStyle='#292c58';g.lineWidth=1;g.beginPath();
+  pts.forEach((q,i)=>i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]));g.stroke();
+  pts.forEach((q,i)=>{g.fillStyle=i===jetStep?'#e8a33d':'#4a4a4a';g.beginPath();g.arc(q[0],q[1],i===jetStep?4:2,0,7);g.fill();});
+  const r=recs[Math.min(jetStep,recs.length-1)];
+  const c=shapeCanvas(p.base+r[0],4,0);
+  g.drawImage(c,pts[jetStep][0]-c.width/2,pts[jetStep][1]-c.height-10);
+  document.getElementById('jetCap').innerHTML='Path pointer <code>$'+p.ptr.toString(16).toUpperCase()+
+    '</code>, '+recs.length+' records of four bytes, frames counted from shape '+p.base+
+    ' (table entry <code>$'+p.baseAddr.toString(16).toUpperCase()+'</code>). Step '+jetStep+
+    ': frame '+r[0]+' = shape '+(p.base+r[0])+
+    ', x step '+(r[1]>0?'+':'')+r[1]+', field +6 '+(r[2]>0?'+':'')+r[2]+
+    ', field +7 '+(r[3]>0?'+':'')+r[3]+'.';
+}
+
+/* ---- the engine sweep ---- */
+const PAL_CLOCK=985248;
+function sidHz(v){ return v*PAL_CLOCK/16777216; }
+function drawEngine(mark){
+  const cv=document.getElementById('engCv'), g=cv.getContext('2d');
+  cv.width=640;cv.height=150;g.clearRect(0,0,640,150);
+  const lo=0x30, hi=0xC0;
+  g.strokeStyle='#8f7fe0';g.lineWidth=2;g.beginPath();
+  for(let v=lo;v<=hi;v+=0x10){
+    const x=40+((v-lo)/(hi-lo))*560, y=120-(sidHz(0x100+v)-17)*6;
+    v===lo?g.moveTo(x,y):g.lineTo(x,y);
+  }
+  g.stroke();
+  g.font='11px ui-monospace,monospace';
+  for(let v=lo;v<=hi;v+=0x10){
+    const x=40+((v-lo)/(hi-lo))*560, y=120-(sidHz(0x100+v)-17)*6;
+    g.fillStyle=(mark===v)?'#e8a33d':'#4a4a4a';g.beginPath();g.arc(x,y,mark===v?5:3,0,7);g.fill();
+    g.fillStyle='#6e6b99';g.fillText('$'+v.toString(16).toUpperCase(),x-9,138);
+  }
+  g.fillStyle='#a5a1cb';g.fillText('noise rate, Hz',6,20);
+  g.fillText(sidHz(0x1C0).toFixed(1),6,36);
+  g.fillText(sidHz(0x130).toFixed(1),6,122);
+}
+let engCtx=null;
+function sweepEngine(){
+  if(!engCtx) engCtx=new (window.AudioContext||window.webkitAudioContext)();
+  const ctx=engCtx, n=ctx.sampleRate*2, buf=ctx.createBuffer(1,n,ctx.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
+  const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+  const flt=ctx.createBiquadFilter(); flt.type='bandpass'; flt.Q.value=1.2;
+  const gain=ctx.createGain(); gain.gain.value=.18;
+  src.connect(flt);flt.connect(gain);gain.connect(ctx.destination);
+  const steps=[];for(let v=0x30;v<=0xC0;v+=0x10)steps.push(v);
+  let i=0;
+  flt.frequency.setValueAtTime(sidHz(0x100+steps[0])*18,ctx.currentTime);
+  src.start();
+  const iv=setInterval(()=>{
+    const v=steps[i];
+    flt.frequency.setTargetAtTime(sidHz(0x100+v)*18,ctx.currentTime,.05);
+    drawEngine(v);
+    document.getElementById('engLbl').textContent='$0B5E = $'+v.toString(16).toUpperCase()+
+      '  -  '+sidHz(0x100+v).toFixed(1)+' Hz';
+    if(++i>=steps.length){clearInterval(iv);setTimeout(()=>{src.stop();},400);}
+  },180);
+}
+
+/* wire up */
+document.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{
+  frame.buf=+b.dataset.buf;
+  document.querySelectorAll('[data-buf]').forEach(o=>o.setAttribute('aria-pressed',o===b));
+  drawFrame();cap();});
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
+  frame.mode=b.dataset.mode;
+  document.querySelectorAll('[data-mode]').forEach(o=>o.setAttribute('aria-pressed',o===b));
+  drawFrame();cap();});
+function cap(){
+  const c=document.getElementById('frameCap');
+  const where=frame.buf?'bank 1: matrix $4400, bitmap $6000':'bank 0: matrix $0400, bitmap $2000';
+  const m={normal:'As the VIC-II shows it.',
+           source:'Where each bit pair takes its colour from: white the video matrix high nibble, red the low nibble, violet colour RAM, brown the background register.',
+           bands:'What the raster interrupt does on the way down the screen.',
+           stars:'The 24 addresses the starfield is stamped into, from the table at $924E.',
+           cells:'Character cells. Colour can only change at these boundaries.'}[frame.mode];
+  c.innerHTML='<b>'+where+'</b>. '+m;
+}
+drawFrame();cap();
+const strip=document.getElementById('shapeStrip');
+let curShape=0;
+function buildStrip(){
+  D.shapeMeta.forEach((m,i)=>{const cv=shapeCanvas(i,2);cv.setAttribute('aria-pressed',i===curShape);
+    cv.onclick=()=>{curShape=i;strip.querySelectorAll('canvas').forEach(o=>o.setAttribute('aria-pressed',o===cv));showShape(i);};
+    strip.appendChild(cv);});
+}
+buildStrip();
+function showShape(i){
+  curShape=i;
+  const [a,w,h]=D.shapeMeta[i], big=shapeCanvas(i,6);
+  const host=document.getElementById('shapeBig');
+  host.width=big.width;host.height=big.height;
+  host.getContext('2d').drawImage(big,0,0);
+  document.getElementById('shapeInfo').innerHTML=
+    'shape '+i+'<br>pointer at $'+(0x8009+i*2).toString(16).toUpperCase()+
+    '<br>bitmap at $'+a.toString(16).toUpperCase()+
+    '<br>'+w+' bits &times; '+h+' rows'+(w&1?' (odd width)':'')+
+    '<br>'+(((w+7)>>3)*h+2)+' bytes';
+}
+document.querySelectorAll('[data-align]').forEach(b=>b.onclick=()=>{
+  shapeAlign=+b.dataset.align;
+  document.querySelectorAll('[data-align]').forEach(o=>o.setAttribute('aria-pressed',o===b));
+  strip.innerHTML='';buildStrip();showShape(curShape);});
+showShape(0);
+{const t=document.getElementById('eraseTbl');
+ D.eraseBox.forEach(([w,h],i)=>{const tr=document.createElement('tr');
+   tr.innerHTML='<td>'+i+'</td><td>'+w+'</td><td>'+h+'</td><td>'+(w*h)+'</td>';
+   t.appendChild(tr);});}
+
+/* section 4 */
+document.getElementById('holdBtn').onmousedown=()=>{holdFrames=0;drawHold();
+  holdTimer=setInterval(()=>{holdFrames=Math.min(holdFrames+1,30);drawHold();},60);};
+['mouseup','mouseleave'].forEach(e=>document.getElementById('holdBtn').addEventListener(e,()=>{
+  clearInterval(holdTimer);}));
+drawHold();
+/* section 5 */
+document.getElementById('bearing').addEventListener('input',drawTank);
+drawTank();
+/* section 6 */
+{const box=document.getElementById('jetBtns');
+ [0,1,2,3,4].forEach(m=>{const b=document.createElement('button');b.className='k';
+   b.textContent='state '+m+' ('+D.jetPaths[m].recs.length+')';
+   b.setAttribute('aria-pressed',m===1);
+   b.onclick=()=>{jetMode=m;jetStep=0;
+     box.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed',o===b));drawJet();};
+   box.appendChild(b);});
+ const step=document.createElement('button');step.className='k';step.textContent='step';
+ step.onclick=()=>{jetStep=(jetStep+1)%(D.jetPaths[jetMode].recs.length||1);drawJet();};
+ box.appendChild(step);}
+drawJet();
+/* section 7 */
+{const t=document.getElementById('diffTbl');
+ for(let i=0;i<4;i++){const tr=document.createElement('tr');
+  tr.innerHTML='<td>'+i+'</td><td>'+D.maxTanks[i]+'</td><td>'+D.maxJets[i]+'</td>';
+  t.appendChild(tr);}}
+
+document.getElementById('engBtn').onclick=sweepEngine;
+drawEngine(null);
+
 </script>

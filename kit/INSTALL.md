@@ -36,7 +36,11 @@ read it; you do, with `source .tools.env`.
 
   `kit/scripts/vice.py` speaks to the same server from a script, which is
   how live tests should be written: one round trip per tool call adds up
-  fast, and a test that halts, pokes, runs and reads is a dozen calls.
+  fast, and a test that halts, pokes, runs and reads is a dozen calls. It
+  also carries the joystick workaround: the server's own joystick tool only
+  reaches one control port, so `stick_arm`/`stick` drive the other one
+  through the CIA's data direction register instead. See
+  `skills/c64/tool-vice-mcp`.
 - **regenerator2000.** Installed with cargo to `~/.cargo/bin`. It needs a
   pseudo-terminal even in MCP mode, binds port 3000 with no option to
   change it, and only one instance can run at a time:

@@ -71,17 +71,43 @@ you are unsure of.
   the game into the state just before it and poll, or read the state
   variables that prove it happened.
 - **Memory reads honour banking.** Use the bank argument
-  (`vice_memory_banks` lists them) when you need RAM under I/O or ROM.
+  (`vice_memory_banks` lists them) when you need RAM under I/O or ROM. The
+  banks are `default`, `cpu`, `ram`, `rom`, `io` and `cart`; reading a
+  character or KERNAL ROM through `rom` and diffing it against a copy the
+  game made in RAM is a one-call way to settle what that copy is.
+- **Registers a raster interrupt rewrites cannot be sampled.** Reading
+  `$D011`, `$D016`, `$D018` or `$DD00` from a script gives whichever value
+  the handler last wrote, and consecutive reads disagree. It looks like a
+  flaky tool and it is not. Read the interrupt handler instead and work out
+  what each band does.
 - **Poke, then read a derived value, and a whole update may have run in
   between.** Break at a point *after* the update and before the code you are
   testing, or expect the game's own per-frame change to be added to whatever
   you wrote. Numbers that are consistently one step out are this.
-- **Not every tool in the list does something.** The joystick tools may
-  report success and change nothing at `$DC00`/`$DC01`; the cycle stopwatch
-  may return frame-quantised numbers. Validate any measuring tool against a
+- **Not every tool in the list does something.** The cycle stopwatch may
+  return frame-quantised numbers. Validate any measuring tool against a
   known quantity (a timer latch you can compute, a loop you can count)
   before you trust a figure from it, and record in `features.md` when an
   input path could not be exercised rather than calling it confirmed.
+- **`vice_joystick_set` reaches one control port, and it is port 2.**
+  `{"port": 1}` pulls bits on `$DC00`, which is control port **2** on the
+  hardware. `{"port": 2}` returns `{"status":"ok"}` and changes nothing at
+  all; `port` 0 and 3 are rejected. So a game that reads control port 1 at
+  `$DC01` — which is most of them — cannot be driven with this tool, and
+  `vice_keyboard_matrix`, `vice_keyboard_chord` and the row/column form all
+  report success and leave `$DC01` at `$FF` as well.
+
+  The way in is to stop treating `$DC01` as an input. CIA1 port B is an
+  input only because DDRB says so. Write `$1F` to `$DC03` and bits 0 to 4
+  become outputs, and from then on a plain memory write to `$DC01` is
+  exactly what the game reads. `kit/scripts/vice.py` wraps this as
+  `stick_arm`, `stick` and `stick_release`. Leaving bits 5 to 7 as inputs
+  keeps the keyboard columns working for a game that reads a key out of the
+  same port. Undo it with `stick_release` before handing the machine back.
+- **`vice_machine_config_set` has a six-entry whitelist**:
+  `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
+  `CIA2Model`. Joystick port assignment is not among them, so the mapping
+  above cannot be fixed with a resource.
 - **A snapshot save name cannot be reused**, and a loaded snapshot starts
   running at once: pause it with a checkpoint in the same breath or the
   state you wanted has already moved on. Save **without** ROMs so the RAM

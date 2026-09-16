@@ -114,6 +114,31 @@ KERNAL IRQ path: `$FFFE` → `$FF48` → jumps through `$0314`. Default
 KERNAL banked out owns `$FFFE` directly. NMI similarly through `$0318`
 (default `$FE47`) or `$FFFA`. RESTORE triggers NMI.
 
+## Cartridge images
+
+A 16 KB program that loads at `$8000` and begins
+`<word> <word> $C3 $C2 $CD $38 $30` is a **cartridge dump**. The two words
+are the cold and warm start vectors and `$C3 $C2 $CD $38 $30` is `CBM80`
+with bit 7 set, the signature the KERNAL's reset looks for at `$8000`. A
+disk version of such a game is the cartridge with a loader bolted on the
+front, and the loader's entry point is usually a few bytes past the
+cartridge's own cold start: the cold start has to do `IOINIT` (`$FF84`),
+`RAMTAS` (`$FF87`) and `CINT` (`$E518`) itself, because the KERNAL jumps
+through `$8000` before doing them, and the loader runs under a KERNAL that
+has already booted. Annotate the cartridge entry as well as the loader's;
+the difference between them says what the machine state is on arrival.
+
+## RAM the VIC cannot see
+
+In VIC banks 0 and 2 the video chip sees the character ROM at `$1000`-`$1FFF`
+within the bank, so the RAM underneath is invisible to it and free for the
+CPU even while the screen is on. A game using bank 0 can keep 4 KB of
+tables there and lose nothing. The same applies to `$9000`-`$9FFF` in bank
+2. The corollary is that a game which also wants a character set in the
+*other* bank has to copy the ROM into RAM there, which is the usual reason
+for a byte-for-byte copy of `$D000`-`$D7FF` appearing somewhere in a bank
+1 or 3 layout.
+
 ## Screen codes and PETSCII
 
 Screen codes: `@`=0, A–Z=1–26, space=32, digits `0`–`9`=48–57, symbols
@@ -151,7 +176,15 @@ may use neither (see `re-text`).
 - Colour RAM in a VICE snapshot is not at `$D800` in the RAM image; it is
   in the VIC-II module. Loading the snapshot back and reading `$D800`
   through the emulator is quicker than finding it in the file, as long as
-  you stop the machine the instant it loads.
+  you stop the machine the instant it loads. To find it in the file
+  instead, scan for a run of 1024 bytes that are all less than 16: in a
+  snapshot saved without ROMs there is usually exactly one, and it is the
+  colour RAM.
+- **Uninitialised RAM is not data.** VICE fills unwritten RAM with a
+  repeating pattern of `$00` and `$FF` in runs of four bytes. A region of
+  a snapshot that reads `FF FF 00 00 00 00 FF FF` over and over has never
+  been written by anything; do not go looking for the table that produced
+  it.
 - The RAM image in a VICE `.vsf` saved **without ROMs** starts at file
   offset 209; confirm by reading two known bytes before relying on it.
   Choose those two bytes carefully. `$0000` and `$0001` are the worst
