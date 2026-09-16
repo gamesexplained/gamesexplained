@@ -8,6 +8,7 @@ labelled as candidates.
 |---|---|---|
 | Open all four sheds at once | `POKE 3316,1 : POKE 3317,1 : POKE 3318,1 : POKE 3319,1` (`$0CF4`-`$0CF7`) | live: the shed bodies switch to shape 72 and their people start coming out |
 | Start on the second or third sortie | `POKE 3327,1` or `POKE 3327,2` (`$0CFF`) | candidate |
+| Unlimited helicopters | `POKE 3327,0` (`$0CFF`) after each crash; the counter is the life count and 3 ends the game | candidate |
 | Raise the difficulty, which lets jets and mines appear | `POKE 141,3` (`$8D`) | candidate; the caps at `$A3B2`/`$A3B6` are read every spawn |
 | Fill the helicopter | `POKE 3313,16` (`$0CF1`) | candidate |
 | Count hostages as delivered | `POKE 3310,n` (`$0CEE`); the game ends when `$0CEE + $0CEF` reaches 64 | candidate |

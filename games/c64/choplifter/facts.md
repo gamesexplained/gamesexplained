@@ -228,6 +228,18 @@ gap between those 8: `$20` plus a CIA1 timer sample masked with `$7E`, an
 even gap between 32 and 158. `$0CA0` holds sixteen four-byte records (walk
 phase, direction, 16-bit world X), walked and drawn by `$9B7D`.
 
+**Lives.** There is no separate life counter. `sortie_number` (`$0CFF`)
+counts helicopters: it starts at 0, advances only at `$964B` after a sortie
+message, and a sortie message is reached only from the destroyed path
+(`$A875` runs the settle counter `$62` to 6, sets `sortie_end_delay`
+(`$63`) to 1, the main loop at `$968E` adds 3 a pass until the byte goes
+negative and jumps to `sortie_start`). Landing at the base never ends a
+sortie. `sortie_start` compares `$0CFF` with 3 and prints THE END, so the
+third destroyed helicopter ends the game: three helicopters, as documented.
+*Live:* with `$0CFF` = 2, a full-speed crash into the ground set `$61`,
+counted `$62` to 6, drove `$63` from 4 to 130 in ten passes, reset the
+helicopter to base and stepped `$0CFF` to 3, and the game ended.
+
 With the helicopter on the ground and motionless (`$5E`), a hostage at
 signed distance −9 to +7 is **killed**; at +8/+9 or −11/−10 he is at the
 door and climbs in, unless `$0CF1` already holds 16.

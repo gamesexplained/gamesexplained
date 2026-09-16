@@ -32,7 +32,7 @@ the emulator during this run.
 | Tanks attack from the far side of the border | live | actor type 3, handler `$A0BB`, five gun elevations |
 | Jets appear after the first sortie | confirmed | the type-9 cap at `$A3B6` is 0 at difficulty 0 and rises to 1 and 2 |
 | Drones appear on the third sortie | traced | actor type 10, handler `$B73D`, released from sortie 2 on, one at a time, homing on the helicopter. The shared emulator stayed on sortie 0 for the whole watch, so this rests on the code and the shape, not on seeing one |
-| Three helicopters per game | open | the life count was not located; `$61` marks the machine destroyed and `$96E4`/`$96E8` end the game, but the counter itself was not identified |
+| Three helicopters per game | live | the life count is `sortie_number` (`$0CFF`). A sortie ends only when the helicopter is destroyed: the settle counter `$62` runs to 6 (`$A875`), sets `sortie_end_delay` (`$63`), the main loop adds 3 a pass until it goes negative (`$968E`) and jumps to `sortie_start`, which increments `$0CFF` (`$964B`) after the message. `$0CFF` = 3 at `$9621` is THE END. Live: a full-speed crash with `$0CFF` = 2 ran the whole chain and ended the game |
 | No points are scored, only hostages counted | confirmed | there is no score variable; the only counters are the three on the bar |
 | Sorties are announced as FIRST / SECOND / THIRD SORTIE | live | message table at `$8AD7`, drawn into a raster text window by `$8A8B` |
 | THE END and MAGNIFICENT! end messages | confirmed | same table, shown from `$96E4` and `$96E8` |
@@ -58,8 +58,6 @@ the emulator during this run.
 
 ## Open questions
 
-- The life count. Three helicopters per game is documented and the game
-  plainly ends, but the variable holding the count was not identified.
 - The Q key. Documented as "ends the game" and not found; the search is
   described in the table above.
 - What the parallax blob, shape 70, is meant to depict.

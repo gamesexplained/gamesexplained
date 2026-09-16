@@ -68,6 +68,16 @@ Mark what was verified this way as **live** in `features.md` and in the
 comment on the routine. Keep a short list of what was tested and how in
 `facts.md`; it is evidence for the article.
 
+## A documented counter you cannot find
+
+When the manual promises a number (three lives, five levels, a timer) and
+no variable holds it, look for what the game *does* count. A life counter
+is often another counter under another name: a sortie, round, attempt or
+wave number that only advances when the player is destroyed, compared
+against the documented number at the point where the game ends. Trace the
+path from the destruction flag to the next start of play before declaring
+the counter absent; the answer is usually one `inc` on that path.
+
 ## Writing facts.md
 
 `facts.md` is current truth for this game: memory layout, timing,

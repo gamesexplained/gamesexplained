@@ -92,7 +92,13 @@ you are unsure of.
 - **`vice_joystick_set` reaches one control port, and it is port 2.**
   `{"port": 1}` pulls bits on `$DC00`, which is control port **2** on the
   hardware. `{"port": 2}` returns `{"status":"ok"}` and changes nothing at
-  all; `port` 0 and 3 are rejected. So a game that reads control port 1 at
+  all; `port` 0 and 3 are rejected. The cause is in the server's source
+  (`src/mcp/mcp_tools_input.c`): it validates `port` as 1 or 2 and passes
+  it straight to VICE's `joystick_set_value_absolute()`, whose first
+  argument is a **zero-based** joyport index. So 1 lands on the second
+  port and 2 on a port that does not exist. A one-line fix upstream
+  (`port - 1`) would make both ports work; until then, the workaround
+  below. So a game that reads control port 1 at
   `$DC01` — which is most of them — cannot be driven with this tool, and
   `vice_keyboard_matrix`, `vice_keyboard_chord` and the row/column form all
   report success and leave `$DC01` at `$FF` as well.

@@ -40,9 +40,6 @@ on one reading.
 
 ## Left open
 
-- The life count. Documented as three helicopters; the variable was not
-  identified. `$61` marks the machine destroyed and `$96E4`/`$96E8` end the
-  game.
 - The Q key, documented as "ends the game". No read of it was found; the
   search is recorded in `features.md`.
 - What shape 70, the parallax blob, depicts.
