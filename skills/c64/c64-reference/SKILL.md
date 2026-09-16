@@ -181,10 +181,10 @@ may use neither (see `re-text`).
   snapshot saved without ROMs there is usually exactly one, and it is the
   colour RAM.
 - **Uninitialised RAM is not data.** VICE fills unwritten RAM with a
-  repeating pattern of `$00` and `$FF` in runs of four bytes. A region of
-  a snapshot that reads `FF FF 00 00 00 00 FF FF` over and over has never
-  been written by anything; do not go looking for the table that produced
-  it.
+  repeating pattern of `$00` and `$FF` runs (the run length depends on its
+  RAM-init settings; one build showed `FF FF 00 00 00 00 FF FF`). A region
+  of a snapshot that reads like that over and over has never been written
+  by anything; do not go looking for the table that produced it.
 - The RAM image in a VICE `.vsf` saved **without ROMs** starts at file
   offset 209; confirm by reading two known bytes before relying on it.
   Choose those two bytes carefully. `$0000` and `$0001` are the worst
