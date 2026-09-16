@@ -18,9 +18,12 @@ absent.
 
 **The emulator's joystick tool drives the wrong port.** It passes the
 port number straight to an API that counts from zero, so asking for port
-1 moves port 2 and asking for port 2 moves nothing. The cause is now in
-the tool notes with the one-line fix, sent upstream; the kit's scripted
-client carries a workaround through the CIA's data-direction register.
+1 moves port 2 and asking for port 2 moves nothing. Most C64 games read
+port 2, so the bug hides behind "ask for port 1 and it works"; the early
+Commodore games here read port 1 and could not be driven at all. The
+cause is in the tool notes with the one-line fix, sent upstream; the
+kit's scripted client carries a workaround through the CIA's
+data-direction register.
 
 **The footprint.** Every game's About tab shows all 64 KB of the machine,
 one pixel per byte, with its code, graphics, level data, sound, text,

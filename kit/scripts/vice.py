@@ -109,10 +109,12 @@ UP, DOWN, LEFT, RIGHT, FIRE = 1, 2, 4, 8, 16
 def stick_arm(rpc, ddr=0x1F):
     """Make CIA1 port B drive the control-port-1 lines, so stick() works.
 
-    vice_joystick_set reaches CIA1 port A ($DC00, control port 2) only; a call
-    for the other port reports success and changes nothing. Most games read
-    control port 1 at $DC01, where port B is an input and nothing the emulator
-    offers can pull its lines low. Setting DDRB ($DC03) makes those bits
+    vice_joystick_set is off by one: port 1 reaches CIA1 port A ($DC00,
+    control port 2) and port 2 reaches nothing (fix proposed upstream as
+    barryw/vice-mcp#13). Most C64 games read control port 2, so asking for
+    port 1 usually works by accident. A game that reads control port 1 at
+    $DC01, as the early Commodore titles do, cannot be driven that way:
+    port B is an input and nothing the emulator offers pulls its lines low. Setting DDRB ($DC03) makes those bits
     outputs, and then a plain write to $DC01 is what the game reads. Bits left
     as inputs still read the keyboard columns, so a mask of $1F keeps the three
     top columns (which carry keys some games poll in the same read) working.
