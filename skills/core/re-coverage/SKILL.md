@@ -107,6 +107,23 @@ Routines are independent, so the burn-down parallelises. What matters:
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
 
+## Declare what the bytes are
+
+The About tab draws the game's footprint in the 64 KB space and counts
+code, graphics, level data, sound, text, tables and variables. The build
+classifies from the listing (code, text, data), the video bases in
+`game.json` (the character set) and symbol-name hints (`str_`, `tune_`,
+`sprite`, `maze`, and the like). Anything larger than a few bytes that
+those cannot see, declare in `game.json` under `regions`:
+
+```
+"regions": [["$80A1", "$8A8A", "graphics", "seventy-five shape bitmaps"],
+            ["$EEB8", "$F253", "levels", "the four terrain streams"]]
+```
+
+Kinds: `code`, `graphics`, `levels`, `sound`, `text`, `tables`,
+`variables`. Declared regions win over every other rule.
+
 ## Outputs
 
 `symbols.json` current; `facts.md` and `features.md` current; the coverage

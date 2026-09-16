@@ -86,6 +86,94 @@ def markdown(text, drop_h1=True):
     return "\n".join(out)
 
 
+# --- footprint: every byte of the 64 KB space in one of ten categories --------
+CATS = ["code", "graphics", "levels", "sound", "text", "tables", "variables", "runtime", "rom", "unused"]
+NAME_HINTS = [  # symbol-name fallbacks for small things nobody declares as a region
+    (("str_", "text_", "msg_", "string"), "text"),
+    (("tune_", "music_", "sfx_", "sound_", "note_", "melody"), "sound"),
+    (("logo", "sprite", "shape", "glyph", "charset", "font"), "graphics"),
+    (("maze", "level", "terrain", "world_map", "room_"), "levels"),
+]
+
+
+def hexint(v):
+    return int(v[1:], 16) if isinstance(v, str) and v.startswith("$") else int(v)
+
+
+def footprint(gdir, game):
+    """Classify all 65536 bytes. Returns (runs, totals, symbols)."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from symbols_export import regions as cov_regions
+    L = json.load(open(os.path.join(gdir, "listing.json")))
+    cat = ["unused"] * 0x10000
+    why = [""] * 0x10000
+    # listing records: what the bytes are
+    for r in L["records"]:
+        if not r.get("b"):
+            continue
+        k = "code" if r["t"] == "code" else ("text" if r["t"] == "text" else "tables")
+        for i in range(len(r["b"])):
+            cat[r["a"] + i] = k
+    # index spans: variables and strings
+    for e in L["index"]:
+        k = {"variable": "variables", "string": "text"}.get(e["k"])
+        hint = None
+        n = e["n"].lower()
+        for keys, kk in NAME_HINTS:
+            if any(x in n for x in keys) and not n.startswith("bitmap_row"):
+                hint = kk
+        k = hint or k
+        if k:
+            for a in range(e["a"], min(e["a"] + e["len"], 0x10000)):
+                if cat[a] not in ("unused", "code"):
+                    cat[a] = k; why[a] = e["n"]
+    # coverage regions from game.json: runtime and ROM
+    for lo, hi, name in cov_regions(game)["exclude"]:
+        k = "rom" if "rom" in name.lower() else "runtime"
+        for a in range(lo, hi + 1):
+            cat[a] = k; why[a] = name
+    # video charset: graphics
+    v = game.get("video") or {}
+    if v.get("charset"):
+        a0 = hexint(v["charset"])
+        for a in range(a0, a0 + 0x800):
+            if cat[a] != "unused":
+                cat[a] = "graphics"; why[a] = "character set"
+    # declared regions win
+    for lo, hi, k, name in game.get("regions", []):
+        for a in range(hexint(lo), hexint(hi) + 1):
+            if cat[a] != "unused":
+                cat[a] = k; why[a] = name
+    runs, totals = [], {k: 0 for k in CATS}
+    a = 0
+    while a < 0x10000:
+        b = a
+        while b < 0x10000 and cat[b] == cat[a] and why[b] == why[a]:
+            b += 1
+        totals[cat[a]] += b - a
+        if cat[a] != "unused":
+            runs.append([a, b - a, cat[a], why[a]])
+        a = b
+    symbols = [[e["a"], e["n"]] for e in L["index"] if e["k"] != "branch"]
+    return runs, totals, symbols
+
+
+def footprint_table(totals):
+    program = sum(totals[k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
+    rows = [("Program", program)] + [(html.escape({"code": "Code", "graphics": "Graphics", "levels": "Level data", "sound": "Sound",
+             "text": "Text", "tables": "Tables", "variables": "Variables"}[k]), totals[k]) for k in
+             ("code", "graphics", "levels", "sound", "text", "tables", "variables") if totals[k]]
+    rows += [("Screen, bitmap, colour, stack, I/O", totals["runtime"])]
+    if totals["rom"]:
+        rows += [("ROM the game runs under", totals["rom"])]
+    rows += [("Unused", totals["unused"])]
+    out = "<div class='tablewrap'><table><tr><th>What</th><th>Bytes</th><th>Of 64 KB</th></tr>"
+    for i, (name, n) in enumerate(rows):
+        b = "<b>" if i == 0 else ""; e = "</b>" if i == 0 else ""
+        out += f"<tr><td>{b}{name}{e}</td><td>{b}{n:,}{e}</td><td>{b}{100*n/65536:.1f} %{e}</td></tr>"
+    return out + "</table></div>"
+
+
 # --- pieces -----------------------------------------------------------------
 def read(p):
     return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
@@ -166,7 +254,10 @@ def build_game(gdir, out_root):
     links = game.get("links") or {}
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
-    about = fill(read(os.path.join(SITE, "about.html")), **common,
+    runs, totals, symbols = footprint(gdir, game)
+    json.dump({"runs": runs, "totals": totals, "symbols": symbols}, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
+    game["_totals"] = totals
+    about = fill(read(os.path.join(SITE, "about.html")), **common, footprint=footprint_table(totals),
                  tier=game.get("tier", "none"), coverage=f"{game.get('coverage_percent') or 0:g} %",
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
@@ -198,7 +289,8 @@ def main():
     cards = "".join(
         f'<a class="card" href="{g["platform"]}/{g["slug"]}/index.html"><p class="t">{html.escape(g.get("title",""))}</p>'
         f'<p class="m">{PLATFORM_NAMES.get(g["platform"], g["platform"])} · {g.get("year") or ""} · {html.escape(g.get("publisher") or "")}</p>'
-        f'<span class="tierb">{g.get("tier","none")} · {g.get("coverage_percent") or 0:g}%</span></a>' for g in games)
+        f'<span class="tierb">{g.get("tier","none")} · {g.get("coverage_percent") or 0:g}%</span>'
+        f'<div class="mini" data-map="{g["platform"]}/{g["slug"]}/memmap.json" title="{sum(g["_totals"][k] for k in ("code","graphics","levels","sound","text","tables","variables")):,} bytes of program"></div></a>' for g in games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="How every game actually works", lib="lib", cards=cards)
     open(os.path.join(out_root, "index.html"), "w").write(home)
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
