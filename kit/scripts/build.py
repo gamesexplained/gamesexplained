@@ -182,7 +182,7 @@ def read(p):
 def tabbar(game, present, lib):
     tabs = "".join(f'<a class="tab" href="{f}">{n}</a>' for f, n in TABS if f in present)
     tier = game.get("tier", "none")
-    return (f'<nav class="gametabs"><div class="in"><span class="crumb"><a href="{lib}/../index.html">All games</a> / '
+    return (f'<nav class="gametabs"><div class="in"><span class="crumb"><a href="{lib}/../index.html">Games Explained</a> / '
             f'{PLATFORM_NAMES.get(game.get("platform"), game.get("platform"))} / {html.escape(game.get("title", ""))}</span>'
             f'{tabs}<span class="tier">tier <b>{tier}</b></span></div></nav>')
 
@@ -291,7 +291,7 @@ def main():
         f'<p class="m">{PLATFORM_NAMES.get(g["platform"], g["platform"])} · {g.get("year") or ""} · {html.escape(g.get("publisher") or "")}</p>'
         f'<span class="tierb">{g.get("tier","none")} · {g.get("coverage_percent") or 0:g}%</span>'
         f'<div class="mini" data-map="{g["platform"]}/{g["slug"]}/memmap.json" title="{sum(g["_totals"][k] for k in ("code","graphics","levels","sound","text","tables","variables")):,} bytes of program"></div></a>' for g in games)
-    home = fill(read(os.path.join(SITE, "index.html")), site_title="How every game actually works", lib="lib", cards=cards)
+    home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib", cards=cards)
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # the kit changelog: how the method has changed, game by game
     log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False)
@@ -299,6 +299,7 @@ def main():
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "method.html"), "w").write(page)
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
+    open(os.path.join(out_root, "CNAME"), "w").write("gamesexplained.com\n")
     print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/")
 
 

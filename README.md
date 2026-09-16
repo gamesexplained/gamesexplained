@@ -1,7 +1,8 @@
-# How every game actually works
+# Games Explained
 
-Code-first explanations of classic games, one folder per game, built by
-contributors and their agents. Working name pending.
+How every game actually works. Code-first explanations of classic games,
+one folder per game, built by contributors and their agents.
+https://gamesexplained.com
 
 **Contribute a game:** clone this repository, open your agent in it, and
 tell it to read `kit/START.md`. You need a copy of the game you own; we
