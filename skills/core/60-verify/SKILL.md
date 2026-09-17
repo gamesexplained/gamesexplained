@@ -1,5 +1,5 @@
 ---
-name: re-verify
+name: 60-verify
 description: Turn traced claims into verified facts. Test cheaply testable claims live in the emulator, hunt down the negative results you are relying on, and write facts.md as current truth with evidence.
 ---
 

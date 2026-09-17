@@ -1,5 +1,5 @@
 ---
-name: re-sweep
+name: 40-sweep
 description: Two cheap mechanical sweeps that convert large regions from unknown to understood in one pass, a hardware register census and a string sweep. Run early, and again whenever the burn-down stalls.
 ---
 
@@ -26,7 +26,7 @@ Decode the whole image as screen codes (and again as the system's text
 encoding) and print runs of five or more printable characters. This finds
 attract text, control legends, version markers, build identifiers and
 credits in seconds. If the game has a custom character set, follow with
-`re-text`.
+`30-text`.
 
 ## Twin-copy check
 

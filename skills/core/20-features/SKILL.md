@@ -1,5 +1,5 @@
 ---
-name: re-features
+name: 20-features
 description: Before reading any code, write down everything the game is documented to do and collect reference screenshots. Turns "what am I looking at" into a checklist and stops the commonest misreadings.
 ---
 
@@ -19,10 +19,10 @@ ways it goes wrong:
   naming a player ability. Miss the ability and its whole mechanic gets
   labelled as cosmetic, and everything downstream inherits that.
 - A documented feature looks absent after an exhaustive byte search. It is
-  present in a different alphabet (see `re-text`).
+  present in a different alphabet (see `30-text`).
 
 The game's own instruction text is itself a feature list. Find it early
-(the string sweep in `re-sweep` does this in seconds).
+(the string sweep in `40-sweep` does this in seconds).
 
 ## Status words
 

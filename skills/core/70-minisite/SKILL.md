@@ -1,5 +1,5 @@
 ---
-name: re-minisite
+name: 70-minisite
 description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first, evidence beside every claim, copy written last under the house style.
 ---
 

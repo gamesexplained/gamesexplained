@@ -146,7 +146,7 @@ follow. Bit 7 inverts. PETSCII (used by the KERNAL's print routine and in
 files) is a different encoding: A–Z at `$41`–`$5A` (or `$C1`–`$DA`),
 digits `$30`–`$39`, `$0D` is return. A string block that reads as garbage
 in one encoding may be perfect in the other, and a custom character set
-may use neither (see `re-text`).
+may use neither (see `30-text`).
 
 ## Mistakes that bite
 

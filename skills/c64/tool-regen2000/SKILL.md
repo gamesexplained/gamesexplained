@@ -7,7 +7,7 @@ description: How to drive regenerator2000, the recommended disassembler, through
 
 An interactive 6502 disassembler with an MCP server. It loads `.vsf`
 snapshots directly, which is how it is used here: start it on the
-steady-state snapshot from `re-orient`.
+steady-state snapshot from `10-orient`.
 
 ## Start and drive
 

@@ -1,5 +1,5 @@
 ---
-name: re-coverage
+name: 50-coverage
 description: The annotation loop. Measure comprehension with the shared coverage metric, work the burn-down queue of largest undescribed runs, export symbols.json after every session. Includes how to split the work across subagents safely.
 ---
 

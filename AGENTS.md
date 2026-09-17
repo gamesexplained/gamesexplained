@@ -23,14 +23,14 @@ in order:
 
    | Step | Skill | Produces |
    |---|---|---|
-   | orient | `skills/core/re-orient` | boots, reaches steady-state play, snapshot, `orientation.md`, disassembler running |
-   | features | `skills/core/re-features` | `features.md` and `reference/` before any code is read |
-   | text | `skills/core/re-text` | the game's alphabets decoded, when it has a custom charset |
-   | sweep | `skills/core/re-sweep` | register census and string sweep |
-   | annotate and measure | `skills/core/re-coverage` | the burn-down loop until coverage is where the tier needs it |
-   | verify | `skills/core/re-verify` | every fact traced or observed live; `facts.md` |
-   | minisite | `skills/core/re-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
-   | retrospective | `skills/core/re-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
+   | orient | `skills/core/10-orient` | boots, reaches steady-state play, snapshot, `orientation.md`, disassembler running |
+   | features | `skills/core/20-features` | `features.md` and `reference/` before any code is read |
+   | text | `skills/core/30-text` | the game's alphabets decoded, when it has a custom charset |
+   | sweep | `skills/core/40-sweep` | register census and string sweep |
+   | annotate and measure | `skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
+   | verify | `skills/core/60-verify` | every fact traced or observed live; `facts.md` |
+   | minisite | `skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
+   | retrospective | `skills/core/80-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
 
    Platform knowledge is in `skills/<platform>/`. For the C64:
    `skills/c64/c64-reference` (facts about the machine — consult it, do not
@@ -136,7 +136,7 @@ claim per agent against the source before believing the report.
 
 ## Finishing
 
-The last step of every run is `skills/core/re-retro`: where did the skills
+The last step of every run is `skills/core/80-retro`: where did the skills
 fall short, and what is the diff that would have saved the next
 contributor the trouble. Make the edits to `skills/` and `kit/` in the same
 branch and describe them in `games/<platform>/<slug>/kit-feedback.md`.

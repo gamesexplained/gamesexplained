@@ -22,7 +22,7 @@ step needs something only they have.
    image into its `work/` directory.
 6. **Follow the skills** in the order `AGENTS.md` gives, opening each
    `SKILL.md` as you reach it.
-7. **Finish with the retrospective** (`skills/core/re-retro`) and leave the
+7. **Finish with the retrospective** (`skills/core/80-retro`) and leave the
    work on a branch, with a pull request if the repository has a remote.
 
 Two rules worth repeating before you start: prefer "unknown" to a
