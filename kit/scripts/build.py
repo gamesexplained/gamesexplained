@@ -274,6 +274,45 @@ def build_game(gdir, out_root):
     return game
 
 
+ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a local preview; skipped for
+     visitors who send Global Privacy Control or Do Not Track; advertising signals off. -->
+<script>
+(function(){
+  if (location.hostname !== "%(domain)s" && location.hostname !== "www.%(domain)s") return;
+  if (navigator.globalPrivacyControl || navigator.doNotTrack === "1" || window.doNotTrack === "1") return;
+  var s = document.createElement("script"); s.async = true;
+  s.src = "https://www.googletagmanager.com/gtag/js?id=%(id)s"; document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  gtag("js", new Date());
+  gtag("config", "%(id)s", { allow_google_signals: false, allow_ad_personalization_signals: false });
+})();
+</script>
+"""
+
+
+def add_analytics(out_root):
+    """Put the analytics snippet on every built page, if site/config.json has a measurement id."""
+    cfg = json.load(open(os.path.join(SITE, "config.json")))
+    mid = (cfg.get("ga_measurement_id") or "").strip()
+    if not mid:
+        return 0
+    if not re.fullmatch(r"G-[A-Z0-9]{6,}", mid):
+        sys.exit(f"site/config.json: ga_measurement_id {mid!r} does not look like a GA4 id (G-XXXXXXXXXX)")
+    snippet = ANALYTICS % {"id": mid, "domain": cfg.get("domain", "")}
+    n = 0
+    for d, _, files in os.walk(out_root):
+        for f in files:
+            if f.endswith(".html"):
+                p = os.path.join(d, f); page = open(p, encoding="utf-8").read()
+                if "googletagmanager.com" in page:
+                    continue
+                marker = '<meta charset="utf-8">'
+                page = page.replace(marker, marker + "\n" + snippet, 1) if marker in page else snippet + page
+                open(p, "w", encoding="utf-8").write(page); n += 1
+    return n
+
+
 def main():
     argv = sys.argv[1:]
     if argv and argv[0] in ("-h", "--help"):
@@ -299,8 +338,9 @@ def main():
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "method.html"), "w").write(page)
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
-    open(os.path.join(out_root, "CNAME"), "w").write("gamesexplained.com\n")
-    print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/")
+    open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
+    tagged = add_analytics(out_root)
+    print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/" + (f"; analytics on {tagged} pages" if tagged else "; analytics off (no id in site/config.json)"))
 
 
 if __name__ == "__main__":
