@@ -3,6 +3,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   check-and-build:
@@ -31,9 +32,9 @@ jobs:
         with:
           path: _site
 
-  # Deploy to GitHub Pages. Off until the repository is public (Pages on a
-  # private repo needs a paid plan): set the repository variable
-  # DEPLOY_PAGES to "true" to turn it on.
+  # Deploy to GitHub Pages at https://gamesexplained.com. Runs on main when the
+  # repository variable DEPLOY_PAGES is "true" (it is). The CNAME file is
+  # written by kit/scripts/build.py.
   deploy:
     needs: check-and-build
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_PAGES == 'true'
