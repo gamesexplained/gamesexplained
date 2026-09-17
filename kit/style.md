@@ -6,7 +6,10 @@ not the deliverable. The tone is Hacker News, not Buzzfeed: quiet,
 precise, generous with the interesting detail, never breathless.
 
 Article copy is written as a separate, final pass, after the analysis is
-done. It is never produced by the same run that produced the facts.
+done. It is never produced by the same run that produced the facts. The
+final pass has two steps: the draft, then a rewrite pass that applies the
+rules below mechanically, paragraph by paragraph, as described in
+`skills/core/re-article`.
 
 ## What copy is for
 
@@ -46,6 +49,8 @@ There is no lint for this; a mechanical one was tried and dropped.
 
 ## Declare provenance
 
-`game.json` records who wrote the copy: `human`, `human-edited`, or
-`agent`. Human copy is preferred and always wins a disagreement. Writers
-who are good at this are welcome to show it.
+`game.json` records who wrote the copy: `agent-draft` (agent-written, no
+human has read it yet), `agent` (agent-written, read by a human, for
+example at the gold-tier read), `human-edited`, or `human`. Human copy is
+preferred and always wins a disagreement. Writers who are good at this are
+welcome to show it.

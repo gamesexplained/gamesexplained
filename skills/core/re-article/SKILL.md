@@ -69,10 +69,50 @@ Not every game has every section. Order them to suit the game.
 
 ## Copy
 
-Write the copy **last**, as a separate pass, under `kit/style.md`. Set
-`copy` in `game.json` to `agent`, `human-edited` or `human` honestly. The
-page title is the game's name. Reference images are referred to by
-relative path from the game folder (`reference/<name>.png`).
+Write the copy **last**, as a separate pass, under `kit/style.md`. Then do
+a **rewrite pass** as its own step, with the draft in front of you. An
+agent reads a rule list once and then reverts to its default voice; the
+rewrite pass is where the house style actually lands. Work through this
+checklist mechanically, paragraph by paragraph:
+
+1. Search the draft for em-dashes. Every one that joins two clauses becomes
+   two sentences, a colon, or parentheses. Parenthetical asides may stay if
+   they are rare.
+2. Delete any sentence that only announces the next sentence ("Here is the
+   odd part", "And here's the kicker"). The next sentence does the work.
+3. Cut imperatives addressed to the reader ("Listen to the last note",
+   "Notice how") unless the thing is interactive, in which case point at
+   the control ("Press a direction").
+4. Headings name the thing, never a tautology ("Every character is a
+   character") and never a claim the section still has to prove. Prefer the
+   thing over the claim about the thing.
+5. Collapse triplets written for rhythm into a plain list or two sentences.
+   Three genuine items are fine; three arranged for a drumbeat are not.
+6. State it positively. A one-beat correction is fine when the reader would
+   genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
+   but never "it's not X, it's Y" as the sentence's whole move.
+
+Before/after, from real drafts:
+
+- "Using the font for graphics is a classic C64 move — it costs almost no
+  memory and the hardware draws it for free."
+  → "Using the font for graphics costs almost no memory, and the hardware
+  draws it for free."
+- "Not a screenshot — a reconstruction."
+  → "A reconstruction, not a screenshot."
+- "That's the whole renderer — there is no interpolation, no sprite
+  multiplexing, no in-between frames."
+  → "That's the whole renderer. There is no interpolation, no sprite
+  multiplexing and no in-between frames."
+- "Listen to the last note: it's held twice as long as the rest."
+  → "The last note is held twice as long as the rest."
+
+Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
+and no human has read it yet, `agent` once a human has read it (for
+example the gold-tier read), `human-edited` when a human changed it,
+`human` when a human wrote it. The page title is the game's name.
+Reference images are referred to by relative path from the game folder
+(`reference/<name>.png`).
 
 ## Maps / levels, when there is one
 
