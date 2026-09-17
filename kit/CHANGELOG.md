@@ -25,6 +25,13 @@ cause is in the tool notes with the one-line fix, sent upstream; the
 kit's scripted client carries a workaround through the CIA's
 data-direction register.
 
+**The footprint principle.** The kit leaves the cleanest footprint we can
+manage, so a contributor can trust it with their computer. It is now a
+rule for agents, a section of the install notes with a checklist for
+whoever is first on Linux or Windows, and a command,
+`tools.py verify-footprint`, that runs a whole launch, use and exit and
+lists anything written outside the repository.
+
 **Everything installs inside the repository.** The emulator build, its
 settings and snapshots, and the disassembler binary all live under a
 gitignored `tools/` folder, and one launcher starts them with the

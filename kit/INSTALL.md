@@ -14,6 +14,43 @@ tools are the ones we recommend because they are known to work.
 them decide whether to install Rust; it is the one thing here that lives
 outside this folder.
 
+## The footprint principle
+
+**The kit leaves the cleanest footprint we can reasonably manage, so that a
+contributor can trust it with their computer.** In practice:
+
+1. Everything installed lives inside this repository, under `tools/`.
+2. Everything the tools write while running (settings, logs, snapshots,
+   caches) lives there too, by pointing each tool's paths inside.
+3. Uninstalling is deleting the folder. Whatever cannot be contained is
+   listed, completely, under "Uninstall" below, and the contributor is told
+   before anything is installed.
+4. It is verified, not assumed: `python3 kit/scripts/tools.py verify-footprint`
+   runs a whole launch, use and exit and lists anything written outside the
+   repository. An empty list is the pass.
+5. Nothing outside the repository is changed without asking first: no
+   shell profiles, no system settings, no global package installs.
+
+**If you are the first on an operating system** (Linux and Windows are
+untested), the macOS setup is the standard to match, and matching it is
+part of your run:
+
+- Unpack the emulator into `tools/vice-mcp/` and install the disassembler
+  with `cargo install --root tools/cargo`, as on macOS.
+- Make `tools.py` contain the emulator's state on your system. On macOS and
+  Linux that is the XDG variables it already sets. On Windows find the
+  equivalent (VICE's own `-config` and directory options, or environment
+  variables such as `APPDATA`) and add it to the launcher for that
+  platform; do not leave it to each contributor to remember.
+- Run `verify-footprint`. Fix what it finds, or, if something cannot be
+  contained, add it to the Uninstall list with its exact path and size.
+- Add the locations your system's tools habitually use to
+  `home_candidates()` in `tools.py`, so the check looks in the right
+  places next time.
+- Write the section for your operating system below, change "untested" to
+  what you verified, and record it in your game's `kit-feedback.md` and in
+  `kit/CHANGELOG.md`.
+
 ## Everything goes in `tools/`, and uninstalling is deleting the folder
 
 The kit installs nothing outside this repository. Tell the contributor this
@@ -36,9 +73,10 @@ is the complete list:
 - Rust itself, if the contributor installed it for this (`rustup self
   uninstall` removes it).
 
-Verified on macOS: with the launcher below, VICE wrote its log, settings
-and snapshots under `tools/vice-home/` and nothing under the home
-directory, at launch, in use and on exit.
+Verified on macOS with `tools.py verify-footprint`: the emulator wrote its
+log, settings and snapshots under `tools/vice-home/` and nothing under the
+home directory, at launch, in use and on exit. Not yet verified on Linux or
+Windows.
 
 ## Get the emulator
 

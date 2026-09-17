@@ -80,6 +80,17 @@ in order:
   as a separate, final pass, and declare who wrote it in `game.json`.
 - **Record what you used.** `game.json` names the tools, the model and the
   kit version. It is honest and it makes the work reproducible.
+- **Leave the cleanest footprint you can.** A contributor is trusting this
+  repository with their computer. Everything the kit installs goes under
+  the gitignored `tools/` folder, tools are started only through
+  `kit/scripts/tools.py` so that their settings, logs and saved state stay
+  there too, and uninstalling is deleting the folder. Before installing
+  anything, tell the contributor what will be installed, where, how big,
+  and the complete list of anything that can end up outside the folder.
+  Never change system settings, shell profiles, global package managers or
+  anything else outside the repository without asking first and saying
+  why. On an operating system nobody has run the kit on yet, matching this
+  is part of the job: see "The footprint principle" in `kit/INSTALL.md`.
 - **Ask before downloading anything.** Reference screenshots and manuals
   from the web are welcome; confirm with the contributor first.
 

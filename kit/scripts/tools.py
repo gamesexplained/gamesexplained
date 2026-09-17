@@ -14,6 +14,12 @@ Usage:
   tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
   tools.py stop [vice|r2000|all]
   tools.py snapshots               where emulator snapshots are, and what is there
+  tools.py verify-footprint        prove the tools write nothing outside this repository
+
+verify-footprint is how the clean-footprint principle (AGENTS.md, kit/INSTALL.md) is
+checked on any operating system: it starts the emulator, makes it write a snapshot,
+stops it, and then lists every file outside the repository that changed meanwhile and
+looks like it belongs to one of the tools. An empty list is the pass.
 """
 import os, shutil, socket, subprocess, sys, time
 
@@ -93,6 +99,82 @@ def status():
     print(f"disassembler  :3000  {'up' if up(3000) else 'down'}   binary: {where}")
 
 
+def home_candidates():
+    """Where tools habitually leave things, per operating system."""
+    h = os.path.expanduser("~")
+    if sys.platform == "darwin":
+        return [os.path.join(h, d) for d in (".config", ".local", ".cache", "Library/Preferences", "Library/Caches",
+                                             "Library/Application Support", "Library/Saved Application State", "Library/Logs")]
+    if sys.platform.startswith("win"):
+        return [p for p in (os.environ.get("APPDATA"), os.environ.get("LOCALAPPDATA"),
+                            os.path.join(h, ".config"), os.path.join(h, "Documents")) if p]
+    return [os.path.join(h, d) for d in (".config", ".local", ".cache")] + [h]
+
+
+# Leftovers we know about and list under "Uninstall" in kit/INSTALL.md. Anything else is a failure.
+KNOWN_RESIDUE = ("Library/Application Support/regenerator2000/",   # macOS
+                 ".config/regenerator2000/",                        # Linux, expected; unverified
+                 "regenerator2000\\config")                         # Windows, expected; unverified
+
+
+def verify_footprint():
+    import json
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    t0 = time.time() - 1
+    was_up = up(6510)
+    if was_up:
+        sys.exit("stop the emulator first (tools.py stop vice): the check has to see a whole launch-to-exit cycle")
+    vice()
+    from vice import connect, call
+    rpc = connect()
+    name = f"footprint_check_{int(t0)}"
+    out = call(rpc, "vice_snapshot_save", {"name": name, "description": "verify-footprint"})
+    try:
+        where = json.loads(out).get("path", "")
+    except Exception:
+        where = out[:200]
+    print("snapshot written to:", where)
+    if where and os.path.exists(where) and not up(3000):
+        r2000(where)                       # exercise the disassembler too
+        stop("r2000")
+    stop("vice")
+    inside = os.path.realpath(ROOT)
+    words = ("vice", "x64", "regenerator", "r2000")
+    hits = []
+    for base in home_candidates():
+        depth0 = base.rstrip(os.sep).count(os.sep)
+        for d, dirs, files in os.walk(base):
+            if os.path.realpath(d).startswith(inside):
+                dirs[:] = []; continue
+            if d.count(os.sep) - depth0 >= 4:
+                dirs[:] = []
+            for f in files:
+                p = os.path.join(d, f)
+                if any(w in p.lower() for w in words):
+                    try:
+                        if os.path.getmtime(p) >= t0:
+                            hits.append(p)
+                    except OSError:
+                        pass
+    ok_inside = os.path.realpath(where).startswith(inside) if where else False
+    print("snapshot inside the repository:", "yes" if ok_inside else "NO")
+    known = [p for p in hits if any(k in p.replace(os.sep, "/") or k in p for k in KNOWN_RESIDUE)]
+    hits = [p for p in hits if p not in known]
+    for p in known:
+        print("known leftover (listed under Uninstall):", p)
+    if hits:
+        print("files written OUTSIDE the repository during the run, not on the Uninstall list:")
+        for p in hits: print("  ", p)
+    else:
+        print("unexpected files written outside the repository: none")
+    for f in (name + ".vsf", name + ".json"):
+        try: os.remove(os.path.join(SNAPSHOTS, f))
+        except OSError: pass
+    if hits or not ok_inside:
+        sys.exit("FOOTPRINT NOT CLEAN - contain it (see kit/INSTALL.md, 'The footprint principle') or add it to the Uninstall list")
+    print("OK - the footprint is clean on this machine")
+
+
 def main():
     a = sys.argv[1:]
     if not a or a[0] in ("-h", "--help"):
@@ -103,6 +185,7 @@ def main():
         if len(a) < 2: sys.exit("usage: tools.py r2000 <file>")
         r2000(a[1])
     elif a[0] == "stop": stop(a[1] if len(a) > 1 else "all")
+    elif a[0] == "verify-footprint": verify_footprint()
     elif a[0] == "snapshots":
         print(os.path.relpath(SNAPSHOTS, ROOT))
         for f in sorted(os.listdir(SNAPSHOTS)) if os.path.isdir(SNAPSHOTS) else []:
