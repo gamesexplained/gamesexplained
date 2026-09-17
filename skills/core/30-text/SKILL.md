@@ -1,5 +1,5 @@
 ---
-name: re-text
+name: 30-text
 description: Decode the game's text when it uses a custom character set. Render the glyphs and read them; byte-pattern search cannot find text stored in a private alphabet.
 ---
 

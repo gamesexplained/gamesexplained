@@ -1,5 +1,5 @@
 ---
-name: re-orient
+name: 10-orient
 description: First step for any game. Boot it in the emulator, get past the loader with the least effort that works, reach real gameplay, save the steady-state snapshot, write orientation.md and start the disassembler on the snapshot.
 ---
 

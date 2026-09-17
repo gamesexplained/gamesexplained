@@ -1,5 +1,5 @@
 ---
-name: re-retro
+name: 80-retro
 description: The last step of every run. Record where the skills and kit fell short and fix them in the same branch, so the next contributor starts from a better kit. Complete game.json.
 ---
 
