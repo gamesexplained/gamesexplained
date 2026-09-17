@@ -1,9 +1,15 @@
 ---
-name: re-article
-description: Build the game's minisite. The article (index.html, "How it works") from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first, evidence beside every claim, copy written last under the house style.
+name: re-minisite
+description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first, evidence beside every claim, copy written last under the house style.
 ---
 
 # The minisite
+
+The minisite is the deliverable: a small site that explains the game, where
+the writing is the spine but anything can live. Interactivity is the point,
+and the minisite can hold anything that explains the game — widgets, level
+browsers, tune players, even a full JavaScript port of the game itself. If
+you can build it, build it.
 
 Every game is a small site with the same tabs in the same order: **How it
 works** (`index.html`, authored), **Source code** (`source.html`, generated
@@ -16,7 +22,7 @@ from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
 
-# The article
+# The How it works page
 
 Audience: technical gamers who love game design and want to know how the
 game works, and who do not read assembly. Assembly is evidence, shown
@@ -116,16 +122,19 @@ Reference images are referred to by relative path from the game folder
 
 ## Maps / levels, when there is one
 
-Render the level data the article only excerpts: every maze, screen or
+Render the level data the How it works page only excerpts: every maze, screen or
 room as a picture drawn from the extracted bytes, with the per-level
-parameter tables beside them. Reuse the article's renderers. Omit the page
+parameter tables beside them. Reuse the page's renderers. Omit the page
 rather than pad it.
 
-## Play, when there is one
+## Play
 
-A behavioural port in JavaScript, built from the documented mechanics and
-the extracted data, not a transpile. The article's mechanic widgets are
-usually the seed. Optional; most games will not have it at first.
+A behavioural port of the full game in JavaScript, built from the
+documented mechanics and the extracted data, not a transpile. This is a
+first-class part of the minisite, not an extra: a reader who can play the
+game while reading how it works understands it better than one who only
+reads. The page's mechanic widgets are usually the seed. Omit the tab only
+if there is genuinely nothing playable to put on it.
 
 ## Outputs
 

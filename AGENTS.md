@@ -29,7 +29,7 @@ in order:
    | sweep | `skills/core/re-sweep` | register census and string sweep |
    | annotate and measure | `skills/core/re-coverage` | the burn-down loop until coverage is where the tier needs it |
    | verify | `skills/core/re-verify` | every fact traced or observed live; `facts.md` |
-   | minisite | `skills/core/re-article` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
+   | minisite | `skills/core/re-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
    | retrospective | `skills/core/re-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
 
    Platform knowledge is in `skills/<platform>/`. For the C64:
@@ -101,7 +101,7 @@ in order:
 | `AGENTS.md` | this file: agent operating rules only |
 | `kit/START.md` | what a contributor is told to point their agent at |
 | `kit/INSTALL.md` | tools per operating system, how to start and check them |
-| `kit/style.md` | house style for article copy |
+| `kit/style.md` | house style for minisite copy |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
 | `kit/template/` | the game folder, stubbed and commented |
 | `skills/core/` | the method, platform-independent |

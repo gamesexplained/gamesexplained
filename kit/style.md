@@ -1,4 +1,4 @@
-# House style for article copy
+# House style for minisite copy
 
 The audience is technical gamers who love game design and want to know how
 a game works, and who are not assembly programmers. Assembly is evidence,
@@ -9,7 +9,7 @@ Article copy is written as a separate, final pass, after the analysis is
 done. It is never produced by the same run that produced the facts. The
 final pass has two steps: the draft, then a rewrite pass that applies the
 rules below mechanically, paragraph by paragraph, as described in
-`skills/core/re-article`.
+`skills/core/re-minisite`.
 
 ## What copy is for
 
