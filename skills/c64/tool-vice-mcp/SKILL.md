@@ -28,8 +28,10 @@ the machine.
    the keyboard themselves (short presses may not register),
    `vice_joystick_set` / `vice_joystick_tap` for the stick.
 4. Confirm play with a screenshot, then `vice_snapshot_save` with a name
-   that describes the state. Snapshots are written under the emulator's
-   config directory; copy the `.vsf` into the game's `work/`.
+   that describes the state. Snapshots are written to
+   `tools/vice-home/config/vice/mcp_snapshots/`
+   (`python3 kit/scripts/tools.py snapshots` lists them); copy the `.vsf`
+   into the game's `work/`.
 5. `vice_memory_read` (hex encoding, any size), `vice_memory_write`,
    `vice_memory_search`, `vice_disassemble` for live inspection.
    `vice_registers_get` for the PC. `vice_backtrace` for who called this.

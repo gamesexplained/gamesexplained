@@ -6,8 +6,39 @@ tools are the ones we recommend because they are known to work.
 | Need | Capability | Recommended tool |
 |---|---|---|
 | Emulator with an agent interface | attach a disk, autostart, pause, read and write memory, breakpoints, screenshots, save and load snapshots | VICE with the `vice-mcp` server (https://github.com/barryw/vice-mcp) |
-| Disassembler with an agent interface | load a snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 (https://github.com/RetroStaff/regenerator2000 or as installed with cargo) |
+| Disassembler with an agent interface | load a snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 (on crates.io) |
 | Scripting | run `kit/scripts/` | Python 3.9 or later, no packages required |
+
+**Prerequisites the kit does not install:** Python 3 and Rust's `cargo`
+(https://rustup.rs). If the contributor has no `cargo`, tell them, and let
+them decide whether to install Rust; it is the one thing here that lives
+outside this folder.
+
+## Everything goes in `tools/`, and uninstalling is deleting the folder
+
+The kit installs nothing outside this repository. Tell the contributor this
+before installing anything:
+
+| What | Where | Size |
+|---|---|---|
+| Emulator build | `tools/vice-mcp/` | about 100 MB |
+| Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
+| Disassembler binary | `tools/cargo/` | about 20 MB |
+| Logs | `tools/logs/` | small |
+
+`tools/` is gitignored and the binary scan skips it. **To uninstall, delete
+the repository folder.** Two small things can be left outside it, and that
+is the complete list:
+
+- regenerator2000 writes a settings file of a few hundred bytes to its own
+  config folder (`~/Library/Application Support/regenerator2000` on macOS).
+  Delete it if you want no trace.
+- Rust itself, if the contributor installed it for this (`rustup self
+  uninstall` removes it).
+
+Verified on macOS: with the launcher below, VICE wrote its log, settings
+and snapshots under `tools/vice-home/` and nothing under the home
+directory, at launch, in use and on exit.
 
 ## Get the emulator
 
@@ -16,7 +47,7 @@ releases page, https://github.com/barryw/vice-mcp/releases. As of v3.11.0:
 
 | Operating system | Asset | Notes |
 |---|---|---|
-| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) to a folder outside this repository |
+| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) into `tools/vice-mcp/` |
 | macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; untested by us |
 | Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us |
 | Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only; untested by us |
@@ -30,53 +61,52 @@ contributor clears it in System Settings, Privacy & Security, or with
 Linux build; those contributors would have to build from source, which
 nobody here has done.
 
-The disassembler installs with `cargo install regenerator2000` (it is on
-crates.io); Rust's `cargo` comes from https://rustup.rs.
+Unpack every build into `tools/vice-mcp/` so that `tools/vice-mcp/bin/x64sc`
+exists.
 
-## Local paths
+## Get the disassembler
 
-Copy `kit/tools.env.example` to `.tools.env` in the repository root (it is
-gitignored) and set `VICE_MCP_DIR` to the folder you unpacked the emulator
-into. Keep that folder outside the repository. Scripts do not read
-`.tools.env`; you do, with `source .tools.env`.
+```
+cargo install --root tools/cargo regenerator2000
+```
+
+That compiles it (about a minute on a recent machine) and puts the binary at
+`tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
+
+## Start, check, stop
+
+```
+python3 kit/scripts/tools.py status
+python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510
+python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000
+python3 kit/scripts/tools.py snapshots            # where emulator snapshots land
+python3 kit/scripts/tools.py stop
+```
+
+The launcher points the emulator's XDG config, state and cache paths into
+`tools/vice-home/`, gives both tools the pseudo-terminal they need, and
+writes their logs to `tools/logs/`. Do not start the tools by hand; the
+containment is in the launcher.
 
 ## macOS — known to work
 
-- **VICE with vice-mcp.** A self-contained GUI build with its own ROMs
-  lives in the folder `VICE_MCP_DIR` points at. Start it from that folder
-  through the `bin/` wrapper (running the binary inside `VICE.app` directly
-  fails with a GSettings error) and give it a pseudo-terminal:
-
-  ```
-  cd "$VICE_MCP_DIR" && script -q /tmp/vice.log ./bin/x64sc -mcpserver &
-  ```
-
-  It serves MCP over HTTP on `127.0.0.1:6510`; `.mcp.json` registers it as
-  the `vice` server. Check with `nc -z 127.0.0.1 6510`. Because the
-  transport is plain HTTP, a server started or **restarted** after your
-  session began is picked up on the next call; you do not have to restart
-  the agent session. VICE can and does die mid-session, sometimes on a
-  single tool call, so check the port before concluding that the emulator
-  is telling you something surprising, and start it again from here.
+- **The emulator** serves MCP over HTTP; `.mcp.json` registers it as the
+  `vice` server. Because the transport is plain HTTP, a server started or
+  **restarted** after your session began is picked up on the next call.
+  VICE can and does die mid-session, sometimes on a single tool call, so
+  check `tools.py status` before concluding that the emulator is telling
+  you something surprising. Snapshots saved through MCP land in
+  `tools/vice-home/config/vice/mcp_snapshots/`; copy the `.vsf` into the
+  game's `work/`.
 
   `kit/scripts/vice.py` speaks to the same server from a script, which is
   how live tests should be written: one round trip per tool call adds up
   fast, and a test that halts, pokes, runs and reads is a dozen calls. It
-  also carries the joystick workaround: the server's own joystick tool only
-  reaches one control port, so `stick_arm`/`stick` drive the other one
-  through the CIA's data direction register instead. See
-  `skills/c64/tool-vice-mcp`.
-- **regenerator2000.** Installed with cargo to `~/.cargo/bin`. It needs a
-  pseudo-terminal even in MCP mode, binds port 3000 with no option to
-  change it, and only one instance can run at a time:
-
-  ```
-  script -q /tmp/r2000.log regenerator2000 --mcp-server <snapshot.vsf or project.regen2000proj> &
-  ```
-
-  Drive it with `python3 kit/scripts/r2000.py <tool> '<json args>'`, which
-  also logs every mutating call to the game's `work/annotations.jsonl`.
-  Check with `nc -z 127.0.0.1 3000`.
+  also carries the joystick workaround; see `skills/c64/tool-vice-mcp`.
+- **The disassembler** binds port 3000 with no option to change it, and
+  only one instance can run at a time. Drive it with
+  `python3 kit/scripts/r2000.py <tool> '<json args>'`, which also logs
+  every mutating call to the game's `work/annotations.jsonl`.
 
   The two servers do not answer the same way: regenerator2000 replies with
   server-sent events and vice-mcp with a plain JSON body. Both kit clients
@@ -85,7 +115,7 @@ into. Keep that folder outside the repository. Scripts do not read
   login shell, so cargo and Homebrew binaries report "command not found"
   although they are installed. Prefix commands with
   `export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"` before
-  concluding a tool is missing.
+  concluding `cargo` is missing.
 - **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
 ## Linux — untested
@@ -108,11 +138,5 @@ the script, or a background run you poll, rather than `timeout 60 ...`.
 
 ## Health check
 
-Both servers answering:
-
-```
-nc -z 127.0.0.1 6510 && echo emulator up
-nc -z 127.0.0.1 3000 && echo disassembler up
-```
-
-Both die with the session that started them; start them again next time.
+`python3 kit/scripts/tools.py status`. Both tools die with the session
+that started them; start them again next time.

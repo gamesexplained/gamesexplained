@@ -17,7 +17,7 @@ EXT = {".d64", ".d71", ".d81", ".g64", ".prg", ".p00", ".t64", ".tap", ".crt", "
 SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 349696: "d71", 819200: "d81"}
 MAGIC = [(b"VICE Snapshot File", "VICE snapshot"), (b"C64 CARTRIDGE", "cartridge image"),
          (b"C64File", "P00 file"), (b"C64S tape image file", "T64 image"), (b"NES\x1a", "NES ROM")]
-SKIP_DIRS = {".git", "__pycache__", "node_modules"}
+SKIP_DIRS = {".git", "__pycache__", "node_modules", "tools", "_site"}
 
 
 def check(path):

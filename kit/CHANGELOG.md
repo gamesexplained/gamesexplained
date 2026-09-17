@@ -25,6 +25,14 @@ cause is in the tool notes with the one-line fix, sent upstream; the
 kit's scripted client carries a workaround through the CIA's
 data-direction register.
 
+**Everything installs inside the repository.** The emulator build, its
+settings and snapshots, and the disassembler binary all live under a
+gitignored `tools/` folder, and one launcher starts them with the
+emulator's paths pointed there. Uninstalling is deleting the folder; the
+install notes list the two small things that can be left outside it, and
+say so before anything is installed. Tested: the emulator wrote nothing
+under the home directory at launch, in use or on exit.
+
 **How to get the emulator.** The install notes said where the emulator
 lives and never how to get it. Upstream publishes builds for macOS, Linux
 and Windows; the notes now say which file, that only the macOS GUI build

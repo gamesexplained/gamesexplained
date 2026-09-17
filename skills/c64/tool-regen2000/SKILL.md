@@ -12,7 +12,7 @@ steady-state snapshot from `re-orient`.
 ## Start and drive
 
 ```
-script -q /tmp/r2000.log regenerator2000 --mcp-server games/<platform>/<slug>/work/<state>.vsf &
+python3 kit/scripts/tools.py r2000 games/<platform>/<slug>/work/<state>.vsf
 python3 kit/scripts/r2000.py --list
 python3 kit/scripts/r2000.py --game games/<platform>/<slug> r2000_disassemble '{"address": 57399}'
 ```
