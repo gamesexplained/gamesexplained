@@ -25,6 +25,11 @@ cause is in the tool notes with the one-line fix, sent upstream; the
 kit's scripted client carries a workaround through the CIA's
 data-direction register.
 
+**How to get the emulator.** The install notes said where the emulator
+lives and never how to get it. Upstream publishes builds for macOS, Linux
+and Windows; the notes now say which file, that only the macOS GUI build
+has been used, and to ask before downloading.
+
 **The footprint.** Every game's About tab shows all 64 KB of the machine,
 one pixel per byte, with its code, graphics, level data, sound, text,
 tables and variables coloured where they sit, and the byte counts beside

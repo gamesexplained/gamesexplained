@@ -9,11 +9,36 @@ tools are the ones we recommend because they are known to work.
 | Disassembler with an agent interface | load a snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 (https://github.com/RetroStaff/regenerator2000 or as installed with cargo) |
 | Scripting | run `kit/scripts/` | Python 3.9 or later, no packages required |
 
+## Get the emulator
+
+Nobody needs to compile VICE. The vice-mcp project publishes builds on its
+releases page, https://github.com/barryw/vice-mcp/releases. As of v3.11.0:
+
+| Operating system | Asset | Notes |
+|---|---|---|
+| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) to a folder outside this repository |
+| macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; untested by us |
+| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us |
+| Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only; untested by us |
+
+The method only talks to the emulator over MCP, so a headless build should
+be enough; the GUI build lets the contributor watch. **Ask the contributor
+before downloading**, tell them the file name and size, and let them fetch
+it if they prefer. macOS may refuse to open an unsigned download; if so the
+contributor clears it in System Settings, Privacy & Security, or with
+`xattr -dr com.apple.quarantine <folder>`. There is no Intel macOS or ARM
+Linux build; those contributors would have to build from source, which
+nobody here has done.
+
+The disassembler installs with `cargo install regenerator2000` (it is on
+crates.io); Rust's `cargo` comes from https://rustup.rs.
+
 ## Local paths
 
 Copy `kit/tools.env.example` to `.tools.env` in the repository root (it is
-gitignored) and fill in where the tools are on this machine. Scripts do not
-read it; you do, with `source .tools.env`.
+gitignored) and set `VICE_MCP_DIR` to the folder you unpacked the emulator
+into. Keep that folder outside the repository. Scripts do not read
+`.tools.env`; you do, with `source .tools.env`.
 
 ## macOS — known to work
 
@@ -65,15 +90,14 @@ read it; you do, with `source .tools.env`.
 
 ## Linux — untested
 
-VICE builds from source on most distributions and the vice-mcp fork should
-build the same way; regenerator2000 installs with cargo. Nobody has run the
-full workflow on Linux yet. If you do, please record what happened in your
+Release builds exist (above); regenerator2000 installs with cargo. Nobody
+has run the full workflow on Linux yet. If you do, please record what happened in your
 game's `kit-feedback.md` so this section can be written properly.
 
-## Windows — unknown
+## Windows — untested
 
-VICE has official Windows binaries; whether the vice-mcp fork builds there
-is not known. regenerator2000 installs with cargo. The `script` wrapper
+A headless release build exists (above). regenerator2000 installs with
+cargo. The `script` wrapper
 above does not exist on Windows; the tools may need a different way to get
 a terminal. Report what you find.
 
