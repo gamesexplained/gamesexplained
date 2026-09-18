@@ -53,6 +53,10 @@ decoration, a banner nobody knew existed. Before annotating:
   reach. Name them by state in `reference/`.
 - Poke your way into states that are hard to reach by playing (set the
   level counter, empty the collectables) and screenshot those too.
+- **Designate the title screen**: set `title_image` in `game.json` to the
+  `reference/` file showing the game's title screen — the first thing a
+  player sees on boot or attract. The index card renders it beside the
+  memory map; `build.py` warns when it is missing.
 
 Use the set in both directions: every region of a reference image should
 end up attributed to a routine, and every drawing routine should be
@@ -63,4 +67,5 @@ element with no routine is an open question.
 ## Outputs
 
 `features.md` with a status per row; `reference/` with named screenshots;
-a note in `features.md` of the sources used.
+`title_image` set in `game.json` to the title-screen shot; a note in
+`features.md` of the sources used.
