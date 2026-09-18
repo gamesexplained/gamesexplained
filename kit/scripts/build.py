@@ -313,6 +313,26 @@ def add_analytics(out_root):
     return n
 
 
+def card_html(g):
+    plat, slug = g["platform"], g["slug"]
+    ti = g.get("title_image") or ""
+    tip = os.path.join(ROOT, "games", plat, slug, ti) if ti else ""
+    if ti and os.path.isfile(tip):
+        shot = (f'<img class="shot" src="{plat}/{slug}/{ti}" '
+                f'alt="{html.escape(g.get("title", slug))} title screen" loading="lazy">')
+    else:
+        print(f"warning: {plat}/{slug} has no title_image "
+              f"(set it in game.json to a file under reference/)", file=sys.stderr)
+        shot = '<div class="shot missing" aria-hidden="true"></div>'
+    total = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
+    return (
+        f'<a class="card" href="{plat}/{slug}/index.html">{shot}'
+        f'<p class="t">{html.escape(g.get("title", ""))}</p>'
+        f'<p class="m">{PLATFORM_NAMES.get(plat, plat)} · {g.get("year") or ""} · {html.escape(g.get("publisher") or "")}</p>'
+        f'<span class="tierb">{g.get("tier", "none")} · {g.get("coverage_percent") or 0:g}%</span>'
+        f'<div class="mini" data-map="{plat}/{slug}/memmap.json" title="{total:,} bytes of program"></div></a>')
+
+
 def main():
     argv = sys.argv[1:]
     if argv and argv[0] in ("-h", "--help"):
@@ -325,11 +345,7 @@ def main():
     games = []
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
         games.append(build_game(os.path.dirname(gj), out_root))
-    cards = "".join(
-        f'<a class="card" href="{g["platform"]}/{g["slug"]}/index.html"><p class="t">{html.escape(g.get("title",""))}</p>'
-        f'<p class="m">{PLATFORM_NAMES.get(g["platform"], g["platform"])} · {g.get("year") or ""} · {html.escape(g.get("publisher") or "")}</p>'
-        f'<span class="tierb">{g.get("tier","none")} · {g.get("coverage_percent") or 0:g}%</span>'
-        f'<div class="mini" data-map="{g["platform"]}/{g["slug"]}/memmap.json" title="{sum(g["_totals"][k] for k in ("code","graphics","levels","sound","text","tables","variables")):,} bytes of program"></div></a>' for g in games)
+    cards = "".join(card_html(g) for g in games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib", cards=cards)
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # the kit changelog: how the method has changed, game by game
