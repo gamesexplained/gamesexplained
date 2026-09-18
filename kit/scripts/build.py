@@ -316,9 +316,12 @@ def add_analytics(out_root):
 def card_html(g):
     plat, slug = g["platform"], g["slug"]
     ti = g.get("title_image") or ""
-    tip = os.path.join(ROOT, "games", plat, slug, ti) if ti else ""
-    if ti and os.path.isfile(tip):
-        shot = (f'<img class="shot" src="{plat}/{slug}/{ti}" '
+    # title_image stays inside the game folder: no absolute paths, no parent climbs
+    safe = bool(ti) and not os.path.isabs(ti) and os.path.normpath(ti) == ti \
+        and ".." not in ti.split(os.sep)
+    tip = os.path.join(ROOT, "games", plat, slug, ti) if safe else ""
+    if tip and os.path.isfile(tip):
+        shot = (f'<img class="shot" src="{plat}/{slug}/{html.escape(ti, quote=True)}" '
                 f'alt="{html.escape(g.get("title", slug))} title screen" loading="lazy">')
     else:
         print(f"warning: {plat}/{slug} has no title_image "
