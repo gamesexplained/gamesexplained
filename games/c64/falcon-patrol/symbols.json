@@ -20,6 +20,16 @@
     1024,
     2047,
     "screen RAM"
+   ],
+   [
+    40960,
+    49151,
+    "BASIC ROM: $01 stays at $37, so the RAM underneath is never visible to the CPU"
+   ],
+   [
+    57344,
+    65535,
+    "KERNAL ROM: every symbol here is a KERNAL entry point the game calls, not the game's own bytes"
    ]
   ],
   "extra": [
@@ -1134,9 +1144,9 @@
   },
   {
    "address": 29,
-   "name": "zpa_1D",
+   "name": "life_phase",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 30,
@@ -2172,7 +2182,13 @@
   },
   {
    "address": 12288,
-   "name": "charset",
+   "name": "charset_digits_aircraft",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12544,
+   "name": "charset_town",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2189,10 +2205,40 @@
    "kind": "auto"
   },
   {
+   "address": 12800,
+   "name": "charset_dither_a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 13056,
+   "name": "charset_dither_b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 13312,
+   "name": "charset_alphabet",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 13568,
+   "name": "charset_runway",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 13728,
    "name": "f_35A0",
    "type": "Field",
    "kind": "auto"
+  },
+  {
+   "address": 13824,
+   "name": "charset_strokes",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 13952,
@@ -2205,6 +2251,12 @@
    "name": "f_36B7",
    "type": "Field",
    "kind": "auto"
+  },
+  {
+   "address": 14080,
+   "name": "charset_fill_animated",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 14136,
@@ -2226,9 +2278,9 @@
   },
   {
    "address": 16640,
-   "name": "j_4100",
+   "name": "cold_start",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 16645,
@@ -2244,15 +2296,15 @@
   },
   {
    "address": 16704,
-   "name": "j_4140",
+   "name": "start_life",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 16708,
-   "name": "j_4144",
+   "name": "life_sequence",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 16755,
@@ -2262,9 +2314,9 @@
   },
   {
    "address": 16773,
-   "name": "b_4185",
+   "name": "frame_loop",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 16832,
@@ -2280,9 +2332,9 @@
   },
   {
    "address": 16862,
-   "name": "j_41DE",
+   "name": "rebuild_display",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 16896,
@@ -5958,6 +6010,11 @@
    "text": "Joystick/keyboard byte after the game has forged it. Not the raw port: altitude limits, take-off and touchdown all rewrite it, and everything downstream believes it."
   },
   {
+   "address": 29,
+   "type": "line",
+   "text": "Counts down the phases of a life in life_sequence; reaching 3 is what lets the end-of-game path at $53E3 run."
+  },
+  {
    "address": 34,
    "type": "line",
    "text": "Flight state. bit1 = forced climb (take-off), bit3 = forced descent/touchdown, bit7 = ground contact path."
@@ -5995,12 +6052,72 @@
   {
    "address": 12288,
    "type": "line",
-   "text": "Character generator, 256 glyphs. Digits 0-9 are glyphs $00-$09; the alphabet is A-Z at $81-$9A, '.' at $80, '_' at $9B and the copyright sign at $9D. Landscape and status-panel tiles fill the rest. Moving objects are animated by rewriting glyphs here, not by changing screen RAM."
+   "text": "Glyphs $00-$1F. $00-$09 are the digits 0-9, stored so that a glyph's index IS its digit, which is why the score and AAM readouts can be written straight from a binary value. $0A is a rosette, $0B a vertical-stripe dither. $0C-$11 are wing and fuselage fragments: aircraft drawn as characters rather than sprites. $12-$15 are thin horizontal rules, the ruled lines of the radar panel. $16-$1D are coarse dithers and wall textures; $1E is blank."
+  },
+  {
+   "address": 12544,
+   "type": "line",
+   "text": "Glyphs $20-$3F. $20 is the space. $25 and $26 are small four-pointed sparks. $27 is a solid half-height block. $28-$36 are the multicolour tiles the desert town is built from - flat-roofed buildings, their shadowed sides, and the roadway - and $2E, $2F and $37 are solid fills used to close them off. This block also holds glyphs the game rewrites while it runs: during play the only character data that changed was inside this page and page $3700."
+  },
+  {
+   "address": 12800,
+   "type": "line",
+   "text": "Glyphs $40-$5F. Almost entirely two-pixel dither patterns in multicolour pairs, the shading that gives the town its depth: solid walls, half-lit walls, and the speckled sand between the buildings. $44 is a solid block with a lighter lower half, $4F and $53 are full-height verticals used as building edges."
+  },
+  {
+   "address": 13056,
+   "type": "line",
+   "text": "Glyphs $60-$7F. $60-$6F continue the town shading and include the palm-tree crowns ($63, $6F). $70-$7C are recognisably letter shapes in a second, narrower face - a P, R, S and A can be read straight off the bitmaps - but NO screen in the analysed state uses any code in $70-$7F, so what draws with them is not established. $7D and $7E are solid fills."
+  },
+  {
+   "address": 13312,
+   "type": "line",
+   "text": "Glyphs $80-$9F, the game's own alphabet and the reason a byte search in screen codes or PETSCII finds no text at all. $80 is a full stop, $81-$9A are A to Z in order, $9B is the underscore that ends the name-entry strip, and $9D is the copyright sign used by the credit line. A letter's code is its C64 screen code plus $80. $9E is a dither; $9F an arrow."
+  },
+  {
+   "address": 13568,
+   "type": "line",
+   "text": "Glyphs $A0-$BF. $A0 and $B4 are solid fills. $A8-$AD are vertical rules and half-tone columns. $AE and $AF are rounded and diagonal caps, and $B0-$B3 and $B5-$BF are diagonal and stepped shapes - the sloped ends of the landing strips and the angled roof lines of the town."
+  },
+  {
+   "address": 13824,
+   "type": "line",
+   "text": "Glyphs $C0-$DF. $C0-$CF are thick angled strokes that read as digits and letters in a heavy face, drawn with the same two-pixel multicolour pairs as the town. $D0-$DF are a single repeating vertical dither, one column lit and one dark, used as flat fill."
+  },
+  {
+   "address": 14080,
+   "type": "line",
+   "text": "Glyphs $E0-$FF. $E0-$EF are a vertical dither whose top half and bottom half use opposite phases, so a run of them tiles into a continuous texture; small breaks in individual glyphs ($E5, $EB, $ED, $EE, $EF) are where the game pokes moving detail into otherwise uniform fill. $F0-$FF are sixteen identical solid blocks. This page is the second of the two the game rewrites while it runs."
+  },
+  {
+   "address": 16640,
+   "type": "line",
+   "text": "Cold start, entered from $2938. Clears zero page $02-$72, points sprites 5 and 6 at block $9E, calls $502B, silences CIA1 interrupts ($DC0D = $7F), starts both CIA2 timers, seeds $62 = $0A and $66 = $04, decrements the eight bytes at $3B-$43, then sets up sound ($564E), installs the raster split and calls $4420 before entering the display setup at $41DE."
+  },
+  {
+   "address": 16704,
+   "type": "line",
+   "text": "Start of a life: sets the counter at $1D to 3 and falls into the per-life sequence."
+  },
+  {
+   "address": 16708,
+   "type": "line",
+   "text": "Runs once per life, before the flying loop: nine routines in order ($5080, $5030, $4E70, $5220, $52A0, $51B0, $51C0, $5260, $52F0) that build the display and the wave. If $67 is clear and the counter at $1D has reached 3 it also runs $53E3 and checks $B1, which is the path that ends the game rather than starting another life."
+  },
+  {
+   "address": 16773,
+   "type": "line",
+   "text": "The per-frame loop, and the reason the game's tempo is not the frame rate. It loads CIA2 Timer B's high byte with $7F and restarts the timer one-shot ($DD0F = $09), runs the whole frame's work as a fixed list of calls - terrain, input, the aircraft, the radar, collisions - and then spins at wait_for_tick until that timer has run out. The frame therefore takes a fixed number of CIA cycles, about $7Fxx, regardless of how long the work took or what the raster is doing."
   },
   {
    "address": 16832,
    "type": "line",
    "text": "Frame pace. Spins until CIA2 Timer B's high byte reads $7F: the game's tick is this timer, NOT the raster interrupt, which only paints the colour split. A snapshot restored into VICE comes back with this timer stopped, so the loop never exits and the game appears frozen."
+  },
+  {
+   "address": 16862,
+   "type": "line",
+   "text": "Rebuilds the display with the raster interrupt masked off: clears $D01A, calls $46A0, re-enables the interrupt, clears $67 and drops into start_life."
   },
   {
    "address": 16896,

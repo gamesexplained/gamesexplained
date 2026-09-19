@@ -37,7 +37,7 @@ def load(gdir, live):
     game = json.load(open(os.path.join(gdir, "game.json")))
     reg = regions(game)
     if live:
-        blocks, syms, comments = from_live()
+        blocks, syms, comments = from_live(game.get("platform", "c64"))
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms, comments = s["blocks"], s["symbols"], s["comments"]

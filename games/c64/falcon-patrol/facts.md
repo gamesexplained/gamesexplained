@@ -37,11 +37,23 @@ The game's whole footprint is about 12.5 KB of tracked bytes spread over
 
 ## Timing
 
-**The tick is CIA2 Timer B, not the raster and not the frame.** The main
-loop at `$41C0` spins on `lda $DD07 / cmp #$7F` until the timer's high
-byte matches. The raster interrupt does nothing but repaint the colour
-split. Any rate derived from "one frame" would be wrong. *(live: sampled
-the program counter repeatedly and found it parked at `$41C5`)*
+**The tick is CIA2 Timer B, not the raster and not the frame, and it runs
+at about 30 Hz.** Each pass of the frame loop at `$4185` writes `$7F` to
+`$DD07` and restarts Timer B one-shot (`$DD0F` = `$09`), does the frame's
+work, then spins at `$41C0` until the timer has run down. The game never
+writes the latch's low byte, so the latch is `$7F` over whatever the low
+byte holds — `$7FFF` after a reset. Timer B is counting φ2 cycles
+(`control_b` = `$09`, input mode 00), so the period is about 32,768
+cycles, which on PAL's 985,248 Hz is 33.3 ms, or **30.1 ticks a second**.
+
+Sampling the counter 150 times found values spread evenly from `$0104` to
+a maximum of `$7E90`, consistent with a countdown from `$7FFF` and never
+catching the very top. *(live)*
+
+So the game's logic rate is roughly 30 a second against a 50 Hz display.
+Every tempo, lifetime and duration counted in ticks inherits that, and
+anything derived from "one frame" would be out by two thirds. The raster
+interrupt does nothing but repaint the colour split.
 
 The raster interrupt at `$4AC0` fires **three times per frame**, measured
 live at 151 Hz on PAL by a non-stopping checkpoint (302 hits in 2 s, 604
@@ -207,8 +219,11 @@ analysed further.
 
 - Checkpoint hit count on `$4AC0`: 302 hits in 2 s, 604 in 4 s — three per
   PAL frame, so the raster split is real and running.
-- Program counter sampled twelve times: always `$41C5`, the CIA2 Timer B
-  spin — which is how the tick was identified.
+- Program counter sampled repeatedly: this is the quickest test of whether
+  the game is actually running. A live machine returns a scatter of
+  addresses (`$41C3`, `$58CC`, `$5314`, `$51D7`); one that returns the
+  same address every time is parked in a sync loop, or is not executing at
+  all. It is how the frame pace at `$41C0` was identified.
 - Load watchpoint on `$DC01` stopped at `$5703`, with a backtrace showing
   the call came from `$419A`. That is how the in-game input reader was
   found, after a byte search for `lda $DC01` had produced twelve
@@ -218,7 +233,15 @@ analysed further.
   reached so far has the input overridden.
 - `$00A0`–`$00A2` watched over 3 s: `$0010` → `$000D`, counting **down**,
   proving it is not the KERNAL clock.
-- A snapshot restored into VICE comes back with CIA2 Timer B frozen
-  (`$DD06/$DD07` stuck at `$31C4`), so the main loop never passes `$41C0`
-  and the game appears to run — the raster interrupt still fires — while
-  nothing at all advances. Live tests must boot from the disk.
+- A restored snapshot runs: after `vice_snapshot_load` with no stopping
+  checkpoint in place, the program counter scatters and CIA2 Timer B
+  counts down `$3059` → `$2989` → `$2604` → `$20D9`. Snapshots are a sound
+  basis for live tests.
+- A checkpoint with `stop` set opens VICE's **monitor**, and while the
+  monitor is open the emulation is paused — `vice_execution_run`,
+  `vice_machine_reset` and `vice_autostart` all report success and change
+  nothing until it is closed. A paused machine reports
+  `"execution": "running"`, screenshots its last frame, returns steady
+  plausible memory values and gives every checkpoint a hit count of zero.
+  No negative result from this game is worth anything until the program
+  counter has been sampled a few times and seen to move.
