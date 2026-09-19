@@ -84,8 +84,13 @@ joystick; it is what the game has decided the pilot did:
 | `$5718` | sprite 0 Y ≥ `$BF` | down bit set: dive reads as released. A floor |
 | `$5724` | sprite 0 Y ≥ `$7C` | fire bit set: **firing is disabled at low altitude** |
 | `$5731` | `flight_flags` bit 1 | `$FE` — up held, nothing else. Automatic take-off |
-| `$573D` | `flight_flags` bit 3 or 7 | `$FD` — down held. Automatic descent — and because bit 7 means the tank is empty, this same gate is the out-of-fuel glide |
-| `$5754` | bit 3 **and** `$07F8` ≥ `$88` | `$FF`, and both velocities zeroed. Touchdown |
+| `$573D` | `flight_flags` bit 3 or 7 | `$FD` — down held. Bit 3 is **destroyed**, bit 7 is **out of fuel**: one gate, two ways to stop flying |
+| `$5754` | bit 3 **and** `$07F8` ≥ `$88` | `$FF`, and both velocities zeroed — the wreck coming to rest |
+
+Bit 3 is set by `player_hit` at `$4400` (`lda $22 / and #$10 / ora #$08`),
+which is reached from either collision register. It means **the aircraft
+has been destroyed**, and the forced dive at `$573D` is the wreck falling,
+not a landing.
 
 `flight_flags` bits 6 and 7 are recomputed from the fuel every frame at
 `$5570`: `and #$3F` clears both, then bit 7 is set when all three fuel
@@ -111,12 +116,14 @@ Zero-page variables named so far:
 
 ## Graphics
 
-**Screen RAM does not change during play.** Over a second and a half of
-gameplay the only bytes that moved were in zero page, the stack, two bytes
-of the status line and **inside the character generator**. What moves in
-the character-graphics layer — the radar blips, and whatever the landscape
-does — is drawn by rewriting glyph bitmaps at `$3000`, not by writing
-screen codes. *(live)*
+**The landscape and the status panel are static; what moves in the
+character layer is drawn two different ways.** The scrolling world and the
+radar are animated by rewriting glyph bitmaps at `$3000`, so screen RAM
+holds still for them. But screen RAM is written every frame by five
+routines — `$5840` and `$58A0` erase and redraw the player's missiles,
+`$5960` and `$59C0` do the same for enemy shots, and `$5F60` stamps blast
+craters. A 1.5-second sample of quiet flight shows no screen writes only
+because nothing had been fired, hit or destroyed in it.
 
 The player's aircraft is **sprite 0**, fixed at screen X = 172; the world
 moves around it. The sprite 0 pointer at `$07F8` selects the aircraft's
@@ -129,9 +136,19 @@ eight sites. Sprite Y-expand, X-expand and priority are never written at
 all, so every aircraft is unexpanded and drawn in front of the scenery.
 The scenery and the radar are characters, not sprites.
 
-Screen layout, decoded from the snapshot: rows 0–10 sky, rows 11–20
-landscape, rows 21–24 the status panel — `SCORE` and `HI` on the left, the
-radar in the centre, `GAS` and `AAM` on the right.
+Screen layout, from the routines that draw it: rows 0-10 sky; row 11 alone
+is the horizon strip, 40 cells of glyph `$9E` written by `$4E50`; rows
+12-19 are the landscape, which `$50D0` points at `$05E0` with a row count
+of 8; rows 20-24 are the status panel, 200 bytes copied from a template at
+`$2E00` by `$4E70`, with `SCORE` and `HI` on the left, the radar in the
+centre and `GAS` and `AAM` on the right.
+
+The **terrain map** is `$3800`-`$3FFF`: 256 world columns by 8 landscape
+rows, one 256-byte page per row, walked by `$509F` through the pointer at
+`$0E/$0F`. Its top page `$3800` carries the **six bases**, each written as
+`$16 $17 $16 $17`, at columns 4, 40, 84, 136, 172 and 200. A destroyed
+base becomes `$6F`/`$70` and is restored to `$16`/`$17` by `$5FD0`, which
+is called from exactly one place: the life-lost reset at `$564E`.
 
 ### The alphabet
 
@@ -158,9 +175,44 @@ Strings recovered with this table include `SCORE`, `GAS`, `AAM`, `HI`,
 
 ## Mechanics
 
+**Shooting an aircraft down is character collision, not sprite collision,
+and that is why the game has a reputation for missing.** The player's AAMs
+are drawn into screen RAM as glyphs `$12`/`$13` by `$58A0`; they are not
+sprites, so they can never raise a sprite-to-sprite collision. A kill is
+registered from the other side: when an **enemy** sprite reports a
+sprite-to-background collision, `$4262` works out the character cell under
+it, reads three cells through `($05),y` and tests each for a glyph in the
+range `$0C`-`$13`. If a missile glyph is in one of those three cells the
+aircraft dies; if the missile is a cell away, or the latched collision is
+read for a different pair first, nothing happens and the shot appears to
+pass straight through.
+
+Enemy shots work the same way in reverse: `$5B00` draws a white streak in
+glyphs `$25`/`$26`, and it reaches the player through the sprite-0
+background collision bit at `$4241`.
+
 The flight envelope is enforced entirely by rewriting the input byte, so
 there is no separate "am I allowed to climb" test anywhere downstream.
-Take-off, landing and the altitude limits are all the same mechanism.
+Take-off, the altitude limits, being shot down and running out of fuel are
+all the same mechanism.
+
+**Landing** is a separate path and does not go through the forced dive.
+`$559A` tests that the aircraft is at sprite Y exactly `$84`, that `vel_x`
+is zero, and that the terrain map holds a base tile (`$16`) under both
+`$3800[$0D+$12]` and `$3800[$0D+$14]`. That is the documented "land
+vertically on a base": you must be stopped, at the right height, over a
+base. It then refuels at double rate and sets the auto take-off bit.
+`$5000` is the visible wind-up at the start of a life, looping `$5420`
+until the tank is full.
+
+**Being destroyed** runs the other way. `$4400` sets bit 3; `$5690`
+flickers sprite 0 through frames `$88`-`$8F` in white multicolour with a
+smoke puff on sprite 7; `$4800` sweeps the SID filter down and switches
+all three voices to noise; `$5640` ends the life once the frame reaches
+`$90`. Rendering those sprite blocks settles what they are: `$83` is the
+jet, `$88` and `$89` are scattered debris, `$8F` is the debris thinning
+out and `$90` is empty. The sequence is an explosion dispersing to
+nothing.
 
 ## Hardware register census
 
@@ -173,7 +225,8 @@ checked against the disassembly.
 | Register | What the game does with it | Where |
 |---|---|---|
 | `$D000`/`$D001` | player sprite X and Y. X is fixed at 172; Y is the altitude the flight envelope tests | `$5705`, `$4408`, `$5060` |
-| `$D008`/`$D009`, `$D00E`/`$D00F` | sprites 4 and 7 positioned | `$5D6E`, `$505A` |
+| `$D008`-`$D00D` | enemy **bombs** as sprites 5 and 6: `$5D6E`/`$5D73` write `$D008,x` and `$D009,x` with x = 2 or 4, so they reach `$D00A`/`$D00B` and `$D00C`/`$D00D`. Sprite 4 is not touched here | `$5D6E` |
+| `$D00E`/`$D00F` | sprite 7, the smoke puff that follows a falling wreck | `$505A` |
 | `$D010` | sprite X high bits, read as well as written: the world is wider than 256 pixels | `$4761`, `$5D31` |
 | `$D011` | written from 20 sites, three of them the raster split | `$4AD6`, `$4AEE`, `$4B03` |
 | `$D012` | raster compare, set per band; also polled at `$4B44` to sync the install | `$4ADB`, `$4AF3`, `$4B08` |
@@ -213,8 +266,26 @@ Two rows earn their own note:
 
 ## Data tables
 
-Not yet surveyed. The largest undescribed run is `$3150`, 1776 bytes,
-inside the character generator.
+| Where | What |
+|---|---|
+| `$3800`-`$3FFF` | the terrain map: 256 world columns by 8 landscape rows, one 256-byte page per row, walked by `$509F` through `$0E`/`$0F`. The world is 256 columns round |
+| `$3800` | its top row, which carries the bases. `$0B` is desert, `$69` a second terrain tile (42 cells), and each base is `$16 $17 $16 $17` |
+| `$4000` | a 256-entry glyph-to-colour table; `$509F` and `$4E70` colour a cell by looking its glyph up here |
+| `$2E00` | 200-byte status-panel template, copied to rows 20-24 by `$4E70`; `$FF` means leave the cell alone |
+| `$2A00`-`$2AE0` | six note tables, a base SID register image and the note lengths for the title tune |
+| `$4F00`-`$4F5F` | SID register images: three 25-byte sets for `$D400`-`$D418` and four 7-byte sets for one voice |
+| `$5B80`/`$5B90` | the FALCON PATROL logo, two rows of 16 glyphs, copied into the title page |
+| `$3150`-`$315F` | glyphs `$2A`/`$2B`, the bomb crater, re-randomised every pass by `$5E45` from `$DD04`; `$3160` is their silhouette mask |
+
+Zero-page object records:
+
+| Where | What |
+|---|---|
+| `$48`, `$4C`, `$50`, `$54`, `$58` | enemy aircraft, four slots, sprites 1-4: row, world column, fine Y, fine X, state (`$00` empty, below `$D0` flying, `$D0` and up exploding or leaving) |
+| `$30`, `$33`, `$36`, `$39` | the player's AAMs, three bytes each: column, row, direction (`$00` free, `$01` left, `$FF` right) |
+| `$3C`-`$3F` / `$40`-`$43` | enemy shots: row (negative means free) and column |
+| `$9F`-`$A8` | enemy bombs, sprites 5 and 6: row, column, fine Y, fine X, busy |
+| `$12`-`$16` | five score digits, `$16` the units; `$17`-`$19` fuel; `$1A`-`$1C` AAM count; `$1D` lives; `$0D` world offset; `$AA` the current kill award |
 
 ## Sound
 
