@@ -4,9 +4,19 @@ How every game actually works. Code-first explanations of classic games,
 one folder per game, built by contributors and their agents.
 https://gamesexplained.com
 
-**Contribute a game:** clone this repository, open your agent in it, and
-tell it to read `kit/START.md`. You need a copy of the game you own; we
-never host or accept game binaries.
+**Contribute a game.** You need a copy of a game you own; we never host
+or accept game binaries. Then paste one line into your agent:
+
+```
+Clone https://github.com/gamesexplained/gamesexplained and follow kit/START.md.
+```
+
+If you would rather see what the agent will do before it does it, clone
+the repository yourself and read three short files: `kit/START.md` is what
+the agent will do, `AGENTS.md` is the rules it works under, and
+`kit/INSTALL.md` is what gets installed and where (everything goes inside
+the repository folder; deleting it uninstalls). Then open your agent in
+the clone and tell it to follow `kit/START.md`.
 
 **Layout**
 

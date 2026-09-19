@@ -7,8 +7,8 @@ how it works on this site.
 Do these things, in order, and stop to talk to the contributor whenever a
 step needs something only they have.
 
-1. **Make sure you are inside a clone of this repository.** If you are
-   reading this from a URL and have no clone, clone the repository first
+1. **Make sure you are inside a clone of this repository.** If you have
+   none yet, `git clone https://github.com/gamesexplained/gamesexplained`
    and continue inside it.
 2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
@@ -23,8 +23,10 @@ step needs something only they have.
 6. **Follow the skills** in the order `AGENTS.md` gives, opening each
    `SKILL.md` as you reach it.
 7. **Finish with the retrospective** (`kit/skills/core/80-retro`) and open a
-   pull request from the branch, as `AGENTS.md` says. Nothing
-   goes to `main` directly.
+   pull request from the branch, as `AGENTS.md` says. Nothing goes to
+   `main` directly. This step needs the contributor's GitHub login in the
+   shell, to fork and to open the pull request; ask for it when you get
+   here, not before.
 
 Two rules worth repeating before you start: prefer "unknown" to a
 plausible guess, and never commit or upload a game binary.
