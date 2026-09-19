@@ -23,7 +23,7 @@ game plays no banking tricks. *(live)*
 |---|---|
 | Screen RAM | `$0400`–`$07E7`, VIC bank 0 (`$DD00` = `$C7`, `$D018` = `$1D`) |
 | Sprite pointers | `$07F8`–`$07FF` |
-| Stored copy of the title screen | `$0843`, 1000 bytes, stamped onto `$0400` when the title is shown |
+| Title screen page | `$0800`-`$0BE7`, a **second screen page**. The title is shown by pointing the VIC at it (`$D018` = `$2C` at `$46C5`) and play by pointing it back (`$D018` = `$1C` at `$4717`). Nothing is copied |
 | High-score name buffer | `$0AB4`, up to 12 characters |
 | Player sprite frames | `$20C0` upwards (sprite block `$83`+) |
 | Character generator | `$3000`–`$37FF`, 256 glyphs |
@@ -84,8 +84,15 @@ joystick; it is what the game has decided the pilot did:
 | `$5718` | sprite 0 Y ≥ `$BF` | down bit set: dive reads as released. A floor |
 | `$5724` | sprite 0 Y ≥ `$7C` | fire bit set: **firing is disabled at low altitude** |
 | `$5731` | `flight_flags` bit 1 | `$FE` — up held, nothing else. Automatic take-off |
-| `$573D` | `flight_flags` bit 3 or 7 | `$FD` — down held. Automatic descent |
+| `$573D` | `flight_flags` bit 3 or 7 | `$FD` — down held. Automatic descent — and because bit 7 means the tank is empty, this same gate is the out-of-fuel glide |
 | `$5754` | bit 3 **and** `$07F8` ≥ `$88` | `$FF`, and both velocities zeroed. Touchdown |
+
+`flight_flags` bits 6 and 7 are recomputed from the fuel every frame at
+`$5570`: `and #$3F` clears both, then bit 7 is set when all three fuel
+digits `$17`/`$18`/`$19` are zero, and bit 6 when only the units digit
+`$17` is zero. So the input gate at `$573D` does double duty — it is the
+landing path and the out-of-fuel path, and an aircraft that runs dry is
+flown into the ground by the same three instructions that land it.
 
 Turning: `$54A8` steps the horizontal velocity `$2A` by one per press,
 clamped to `$FD`…`$03` (−3…+3), and only on one pass in eight of the
@@ -96,7 +103,7 @@ Zero-page variables named so far:
 | Address | Name | Meaning |
 |---|---|---|
 | `$0C` | `input_byte` | the forged input byte |
-| `$22` | `flight_flags` | bit 1 take-off, bit 3 landing, bit 7 ground contact |
+| `$22` | `flight_flags` | bit 1 take-off, bit 3 landing, bit 6 low fuel, bit 7 tank empty |
 | `$2A` | `vel_x` | horizontal velocity, −3…+3 |
 | `$2B` | `vel_y` | vertical velocity |
 | `$2D` | `tick_counter` | free-running; low bits select which update runs |
@@ -135,7 +142,7 @@ codes or PETSCII finds nothing:
 |---|---|
 | `$00`–`$09` | digits `0`–`9`, index equal to the digit |
 | `$20` | space |
-| `$80` | `.` |
+| `$80`, `$9C` | `.` — two glyphs with the same full-stop bitmap; `$9C` is the one the title page uses for the rank separators |
 | `$81`–`$9A` | `A`–`Z` |
 | `$9B` | `_` |
 | `$9D` | `©` |

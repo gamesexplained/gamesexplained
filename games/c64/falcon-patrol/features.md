@@ -34,18 +34,20 @@ Sources:
 | Automatic descent, and touchdown that stops the aircraft dead | confirmed | `$573D`–`$575F`: when `$22` has bit 3 or 7 set, `$0C` is forced to `$FD` (down only). Then, if bit 3 is set and the sprite 0 **pointer** at `$07F8` has reached `$88`, `$0C` becomes `$FF` (no input at all) and both velocities `$2A` and `$2B` are zeroed |
 | Landing must be vertical, onto a base | open | Documented. The touchdown path above is very likely it, but the condition that decides a *successful* landing has not been traced |
 | Refuel and rearm by landing | open | Documented; the status panel has GAS and AAM readouts |
-| Limited fuel | open | "GAS" bar, bottom right of the status panel |
+| Limited fuel | confirmed | Three decimal digits at `$17`/`$18`/`$19`, drawn as a nine-cell bar at row 22 by `$4EA0` |
+| Low fuel warns you, visibly and audibly | confirmed | Not in any documentation found. `$4900` toggles `$2E` between `$01` and `$02` for the alarm, and `$4EA0` uses `$2E` as the colour of the GAS bar, so the gauge flashes in time with the sound |
 | 100 air-to-air missiles at the start | live | The instruction screen says 100; the AAM readout reads 100 at the start of a life |
 | Radar showing enemies and surviving bases | live | The black panel in the centre of the status area; blips appear and move during play |
 | Six airfields / oil installations and refuelling bases | open | Wiki says six. Not counted in the code yet |
 | Destroyed bases return only when a life is lost | open | Wiki |
-| Enemy jets attack in waves; wave size grows | open | Wiki: one extra attacker every six waves, reaching three, then four |
+| Enemy jets attack in waves | confirmed | `$4540` drip-feeds four slots at spacing `$62`; `$4730` places them as sprites 1-4 |
+| Wave size grows with progress | **differs** | The wiki says one extra attacker every six waves. The code has no wave counter: `$4A80` reads the **score** digits `$13`/`$14` — under 400 points 2 aircraft, 400-1499 three, 1500 or more four. The ten-thousands digit `$12` is never tested, so a score of 10000-10399 drops the wave back to two |
 | Enemy aircraft are drawn in randomly chosen attitudes | confirmed | `$43BC` reads SID oscillator 3 (`$D41B`), masks it to 0-3, adds `$88` and stores it as that sprite's pointer |
 | Collisions are detected in hardware | confirmed | `$4200` reads `$D01E` (sprite to sprite) and `$D01F` (sprite to background); bit 0 of either is the player and calls `player_hit` at `$4400` |
 | Enemies bomb the bases, and bomb the player while landed | open | Wiki and the instruction screen |
-| Enemies veer off if not shot down in time | open | Wiki |
-| Scoring 25 / 50 / 100 / 200 for the 1st–4th jet of a wave | open | Wiki. No points for collisions |
-| Extra life at 3,000 points, once | open | Wiki |
+| Enemies veer off if not shot down in time | confirmed | `$460E` ages each slot at `$57+x`; past `$80` the aircraft climbs, past `$D0` it sinks, past `$E0` it flies level and is frozen by both movement routines |
+| Scoring 25 / 50 / 100 / 200 for the 1st–4th jet of a wave | confirmed | `$4500` seeds `$AA` = `$19` (25) at the start of each wave; the adder at `$5E10` adds `$AA` to the score and then does `asl $AA`, so each kill within a wave is worth double the last |
+| Extra life at 3,000 points, once | confirmed | `$55DF`: if `$67` is zero and the thousands digit `$13` has reached 3, `$67` becomes `$30` and a life is added. `$67` is never cleared again, so it is awarded once; `$4FA0` plays the fanfare |
 | Three lives | open | Wiki. This release is "+5" when trainers are chosen; we chose `H`, no trainers |
 | High-score table with name entry | live | Title screen shows five rows and the alphabet strip `.ABCDEFGHIJKLMNOPQRSTUVWXYZ_`; entry routine at `$4CE2` walks an index 0–`$1B` with left/right and accepts with fire, building a name in a buffer at `$0AB4` |
 | High-score saving to disk | traced | Part of the Remember crack, not the original game. The disk carries `f.patrol hi /rem` for it |
