@@ -77,7 +77,7 @@ platform follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable
 
-- **Model.** Reverse-engineering work runs on an Opus-class model or
+- **Model.** Reverse-engineering work runs on an Opus- or Sol- class model or
   better. On a weaker model, stop and say so. The failures are silent:
   address arithmetic goes wrong in ways that read as confident.
 - **No binaries, ever.** Disk images, program files, cartridge dumps,
