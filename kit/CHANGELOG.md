@@ -1,63 +1,18 @@
 # How the kit has changed
 
-The kit is what an agent is given to reverse engineer a game: the rules,
-the workflow it follows, the scripts, the platform reference. Every
-game run through it comes back with a list of where it was wrong or
-silent, and the fixes go in before the next game starts. This is the
-record of that, in plain words, newest first. Each entry names the game
-that taught it.
+The kit is what an agent is given to reverse engineer a game. Every game
+run through it comes back with a list of where the kit was wrong or
+silent, and the fixes go in before the next game starts. This page is the
+part of that record worth reading: what the kit learned about reverse
+engineering, from which game, and who was working it. Newest first.
 
-## 0.0.5 · 19 September 2026 · the copy pass, and Fable's review
+An entry earns its place by changing what the next contributor's agent
+does when it opens a game: how it reads, traces, measures or verifies.
+Changes to the site, the folder layout, the delivery process, the prose
+style or the install mechanics are in the pull requests, not here.
+Versions that taught nothing of the kind do not appear.
 
-**The copy step is a draft plus a rewrite pass.** An agent reads a rule
-list once and then reverts to its default voice, so the house style never
-lands in the draft. `70-minisite` now ends with a mechanical rewrite
-pass — em-dash clause joints, announcing sentences, reader imperatives,
-tautology headings, rhythm triplets — worked paragraph by paragraph, with
-four before/after pairs from the Radar Rat Race deslop as calibration.
-
-**Provenance states what actually happened.** `agent-draft` is
-agent-written with no human read yet; `agent` is agent-written and read
-by a human, for example at the gold-tier read; `human-edited` and
-`human` are what they say. New games start at `agent-draft`, and the
-skill says to set it honestly.
-
-**The skills are numbered.** `re-orient` through `re-retro` are now
-`10-orient` through `80-retro`, so the pipeline order reads off the
-folder listing.
-
-**Catalogue cards show the game.** Each card carries the title screen
-next to the memory map — the maps are most interesting when games are
-compared, and the card should show something of the game itself.
-
-**The Play tab is first-class but never required.** A reader who can play
-along understands more, so the tab is built by default and omitted only
-when there is genuinely nothing playable. No tier requires it, so it
-never blocks Silver or Gold.
-
-**Everything arrives as a pull request.** The delivery rule briefly said
-"commit to `main`", which only one person can do and which stops working
-the day there is a second maintainer. It now says the same thing to
-everyone: branch, run the checks, open a pull request. `AGENTS.md` also
-gains a short section for work on the kit or the site itself, which the
-workflow had never described, so an agent asked to change a script had
-nothing to follow but the game rules.
-
-**`kit/` is split by platform, like `skills/`.** The C64's emulator and
-disassembler clients, its launcher and its install notes now live in
-`kit/c64/`; `kit/scripts/` keeps what every platform shares, and
-`kit/scripts/tools.py` hands each command to the platform's launcher.
-`kit/PLATFORMS.md` says what a platform owns, where the shared scripts
-still assume the C64, and the order of work for adding a machine.
-
-**The kit is one folder, and one word.** The skills moved from `skills/`
-to `kit/skills/`, so the folder called kit holds everything a contributor
-is given: rules, tools, scripts, platform notes and the workflow. "Method"
-meant the kit in some places and the workflow in others; it now means
-neither. The kit is the whole; the workflow is the numbered steps inside
-it. The site's changelog page is `kit.html`.
-
-## 0.0.4 · 16 September 2026 · after Choplifter, and a second look
+## 0.0.4 · 16 September 2026 · Choplifter, a second look · air with Claude Opus 5
 
 **A counter you cannot find is usually another counter.** Choplifter
 promises three helicopters and holds no life counter. It counts sorties,
@@ -75,32 +30,7 @@ cause is in the tool notes with the one-line fix, sent upstream; the
 kit's scripted client carries a workaround through the CIA's
 data-direction register.
 
-**The footprint principle.** The kit leaves the cleanest footprint we can
-manage, so a contributor can trust it with their computer. It is now a
-rule for agents, a section of the install notes with a checklist for
-whoever is first on Linux or Windows, and a command,
-`tools.py verify-footprint`, that runs a whole launch, use and exit and
-lists anything written outside the repository.
-
-**Everything installs inside the repository.** The emulator build, its
-settings and snapshots, and the disassembler binary all live under a
-gitignored `tools/` folder, and one launcher starts them with the
-emulator's paths pointed there. Uninstalling is deleting the folder; the
-install notes list the two small things that can be left outside it, and
-say so before anything is installed. Tested: the emulator wrote nothing
-under the home directory at launch, in use or on exit.
-
-**How to get the emulator.** The install notes said where the emulator
-lives and never how to get it. Upstream publishes builds for macOS, Linux
-and Windows; the notes now say which file, that only the macOS GUI build
-has been used, and to ask before downloading.
-
-**The footprint.** Every game's About tab shows all 64 KB of the machine,
-one pixel per byte, with its code, graphics, level data, sound, text,
-tables and variables coloured where they sit, and the byte counts beside
-it. Contributors declare the regions the rules cannot see.
-
-## 0.0.3 · 15 September 2026 · after Choplifter
+## 0.0.3 · 15 September 2026 · Choplifter · air with Claude Opus 5 and nine subagents
 
 Choplifter is a 16 KB cartridge with a double-buffered bitmap and no
 sprites, three times the size of either earlier game, and it exposed four
@@ -129,22 +59,18 @@ is not data.
 
 **The last symbol.** The ledger gave the last symbol in an image a span
 of one byte, so a fifteen-byte table at the end of Radar Rat Race was one
-byte tracked. Found while building the maps tab; fixed.
+byte tracked. Found while building the memory maps; fixed.
 
-## 0.0.2 · 14 September 2026 · after Jupiter Lander
+## 0.0.2 · 14 September 2026 · Jupiter Lander · air with Claude Opus 5
 
 The first game run through the kit by an agent that had only the kit.
-Silver at 100 % in 93 minutes, and a page of corrections.
-
-**Wrong data-type names.** The disassembler skill listed types the tool
-does not accept. Every call in the first typing pass was rejected.
+Silver at 100 % in 93 minutes, and a page of corrections, most of them
+places where a skill had described a tool from memory instead of from
+the tool.
 
 **No scripted emulator client.** Live verification is a loop of halt,
 poke, run, read, and doing it through one tool call at a time is slow and
 lets the machine run between steps. `vice.py` was written during the run.
-
-**Failed calls in the replay log.** Rejected annotation calls were logged
-anyway, so a replay reproduced the mistakes. Fixed.
 
 **Measuring without fooling yourself.** Poke a variable and read a derived
 value, and a whole game update may have run in between; numbers that are
@@ -159,11 +85,7 @@ snapshot loads.
 exercise with the tools at hand; "traced" is now a status, distinct from
 "confirmed" and "live".
 
-**The copy lint** was tried on the first two games and dropped: it caught
-nothing a reader would not, and flagged ordinary words. A human read is
-the check.
-
-## 0.0.1 · 13 September 2026 · from Radar Rat Race
+## 0.0.1 · 13 September 2026 · Radar Rat Race · air with Claude Opus 4.1 and Fable 5.1
 
 The kit was written from the first game, which was analysed before any of
 it existed. The rules (prefer unknown to a guess; a negative result is a

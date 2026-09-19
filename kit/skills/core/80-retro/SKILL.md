@@ -25,12 +25,18 @@ into the diff that saves the next contributor the trouble.
    why, what you would change but did not (needs a maintainer's call),
    what took longest, and anything about your operating system or tool
    versions that the install notes should say.
-4. **Complete `game.json`**: tier reached (only if every requirement is
+4. **Add to `kit/CHANGELOG.md` only what the next game will do
+   differently.** That file is the record of what the kit learned about
+   reverse engineering, from which game and whom, not of what changed. If
+   a lesson from this game changes how an agent reads, traces, measures
+   or verifies, write it there in plain words, under a heading that names
+   the game and who worked it. A fix to a script, a path, the site or the
+   prose style goes in `kit-feedback.md` and the pull request instead.
+5. **Complete `game.json`**: tier reached (only if every requirement is
    met), tools and versions, model, copy provenance, kit version,
    coverage figure.
-5. **Update `TODO.md`** with what is missing for the next tier.
-
-6. **If you were the first on your operating system**, the install notes
+6. **Update `TODO.md`** with what is missing for the next tier.
+7. **If you were the first on your operating system**, the install notes
    are part of your retrospective: run
    `python3 kit/scripts/tools.py verify-footprint`, contain or list
    whatever it finds, and write your platform's section in

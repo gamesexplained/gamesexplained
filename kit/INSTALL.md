@@ -53,7 +53,7 @@ part of your run:
   places next time.
 - Write the section for your operating system in the platform's notes,
   change "untested" to what you verified, and record it in your game's
-  `kit-feedback.md` and in `kit/CHANGELOG.md`.
+  `kit-feedback.md`.
 
 ## Everything goes in `tools/`, and uninstalling is deleting the folder
 

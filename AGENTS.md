@@ -68,8 +68,11 @@ apply unchanged, and so does the delivery: branch as `kit/<topic>` or
 `site/<topic>`, run the three checks, run `python3 kit/scripts/build.py`
 to confirm every existing game still builds, and open a pull request. A
 change under `kit/` or `site/` reaches every page on the site, so it gets
-the same review a game does, not less. Record what changed in
-`kit/CHANGELOG.md`, and bump `kit/VERSION` when the method changes. A new
+the same review a game does, not less. Describe the change in the pull
+request. `kit/CHANGELOG.md` is not a list of changes: it records what the
+kit learned about reverse engineering, from which game and whom, and a
+change that does not alter what the next agent does when it opens a game
+stays out of it. Bump `kit/VERSION` when the workflow changes. A new
 platform follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable

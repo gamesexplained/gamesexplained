@@ -5,6 +5,7 @@
   kit/skills/core/       workflow only: no game names
   kit/skills/<platform>/ platform facts only: no game names
   games/*/*/facts.md, features.md   current truth, no narration of past mistakes
+  kit/CHANGELOG.md   lessons only: every entry names the game that taught it
 
 Usage: check_docs.py      exit 1 on failure
 """
@@ -51,6 +52,11 @@ def main():
     if titles:
         for sk in glob.glob(os.path.join(ROOT, "kit", "skills", "*", "*", "*.md")):
             fails += scan(sk, titles, "a specific game named in a reusable skill")
+        for n, line in enumerate(open(os.path.join(ROOT, "kit", "CHANGELOG.md"), encoding="utf-8"), 1):
+            if line.startswith("## ") and not any(re.search(t, line) for t in titles):
+                print(f"  x  kit/CHANGELOG.md:{n}  a changelog entry that names no game: every lesson comes from one")
+                print(f"        {line.strip()[:88]}")
+                fails += 1
     for f in glob.glob(os.path.join(ROOT, "games", "*", "*", "facts.md")) + \
              glob.glob(os.path.join(ROOT, "games", "*", "*", "features.md")):
         fails += scan(f, NARRATION, "narrating a past mistake (belongs in agent-history.md)")

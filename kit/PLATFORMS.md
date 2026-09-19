@@ -64,8 +64,10 @@ then rather than copy the code:
 6. Run one game through the whole workflow to Silver. The retrospective on
    that game (`kit/skills/core/80-retro`) is where the seams you missed show
    up; fix them in the same pull request.
-7. Record it in `kit/CHANGELOG.md`, bump `kit/VERSION`, open the pull
-   request as `AGENTS.md` says.
+7. Bump `kit/VERSION` and open the pull request as `AGENTS.md` says. The
+   entry in `kit/CHANGELOG.md` is not "added the platform" but what the
+   first game on the new platform taught the kit about reverse engineering that the
+   earlier machines did not.
 
 ## Two rules
 
