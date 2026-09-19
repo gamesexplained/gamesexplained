@@ -55,7 +55,7 @@ stick(rpc, FIRE); time.sleep(0.2); stick(rpc, 0)
 PY
 ```
 
-`stick_arm`, `stick` and `stick_release` are in `kit/scripts/vice.py`. Bits
+`stick_arm`, `stick` and `stick_release` are in `kit/c64/vice.py`. Bits
 are the standard ones, active low: 1 up, 2 down, 4 left, 8 right, 16 fire.
 Leaving bits 5-7 as inputs keeps the keyboard columns the game shares that
 read with.

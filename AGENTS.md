@@ -69,7 +69,8 @@ apply unchanged, and so does the delivery: branch as `kit/<topic>` or
 to confirm every existing game still builds, and open a pull request. A
 change under `kit/` or `site/` reaches every page on the site, so it gets
 the same review a game does, not less. Record what changed in
-`kit/CHANGELOG.md`, and bump `kit/VERSION` when the method changes.
+`kit/CHANGELOG.md`, and bump `kit/VERSION` when the method changes. A new
+platform follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable
 
@@ -119,6 +120,8 @@ the same review a game does, not less. Record what changed in
 | `kit/INSTALL.md` | tools per operating system, how to start and check them |
 | `kit/style.md` | house style for minisite copy |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
+| `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |
+| `kit/PLATFORMS.md` | what a platform owns, and how to add one |
 | `kit/template/` | the game folder, stubbed and commented |
 | `skills/core/` | the method, platform-independent |
 | `skills/<platform>/` | platform facts and tool notes |

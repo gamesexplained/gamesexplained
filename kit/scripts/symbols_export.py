@@ -17,7 +17,7 @@ blocks on top. Addresses are hex strings like "$0400".
 """
 import json, os, sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PLATFORM_DEFAULTS = {
     "c64": {
@@ -57,7 +57,8 @@ def regions(game):
     return {"exclude": exclude, "extra": extra}
 
 
-def from_live():
+def from_live(plat):
+    sys.path.insert(0, os.path.join(KIT, plat))   # kit/<platform>/r2000.py, the disassembler client
     from r2000 import make_client, call
     rpc = make_client()
     blocks = json.loads(call(rpc, "r2000_get_blocks", {}))
@@ -91,7 +92,7 @@ def main():
         blocks, syms, comments = from_project(argv[argv.index("--project") + 1])
         source = "regen2000proj"
     else:
-        blocks, syms, comments = from_live()
+        blocks, syms, comments = from_live(game.get("platform", "c64"))
         source = "regenerator2000 live"
     syms.sort(key=lambda s: s["address"])
     comments.sort(key=lambda c: (c["address"], c["type"]))

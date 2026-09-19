@@ -43,6 +43,13 @@ gains a short section for work on the kit or the site itself, which the
 workflow had never described, so an agent asked to change a script had
 nothing to follow but the game rules.
 
+**`kit/` is split by platform, like `skills/`.** The C64's emulator and
+disassembler clients, its launcher and its install notes now live in
+`kit/c64/`; `kit/scripts/` keeps what every platform shares, and
+`kit/scripts/tools.py` hands each command to the platform's launcher.
+`kit/PLATFORMS.md` says what a platform owns, where the shared scripts
+still assume the C64, and the order of work for adding a machine.
+
 ## 0.0.4 · 16 September 2026 · after Choplifter, and a second look
 
 **A counter you cannot find is usually another counter.** Choplifter

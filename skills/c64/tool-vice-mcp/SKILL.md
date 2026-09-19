@@ -10,7 +10,7 @@ The transport is plain HTTP, so a server started or restarted *after* your
 session began is picked up on the next call without restarting the session.
 If the tools are missing entirely, start it (`kit/INSTALL.md`) and try again.
 
-`kit/scripts/vice.py` is a client for the same server. Anything repetitive
+`kit/c64/vice.py` is a client for the same server. Anything repetitive
 (halt, poke, run N passes, read back) belongs in a script, not in a string
 of one-off tool calls: each call costs a round trip and each read restarts
 the machine.
@@ -110,7 +110,7 @@ you are unsure of.
   The way in is to stop treating `$DC01` as an input. CIA1 port B is an
   input only because DDRB says so. Write `$1F` to `$DC03` and bits 0 to 4
   become outputs, and from then on a plain memory write to `$DC01` is
-  exactly what the game reads. `kit/scripts/vice.py` wraps this as
+  exactly what the game reads. `kit/c64/vice.py` wraps this as
   `stick_arm`, `stick` and `stick_release`. Leaving bits 5 to 7 as inputs
   keeps the keyboard columns working for a game that reads a key out of the
   same port. Undo it with `stick_release` before handing the machine back.

@@ -12,7 +12,7 @@ never host or accept game binaries.
 
 ```
 AGENTS.md        rules for agents (CLAUDE.md just points here)
-kit/             the contributor kit: start here, install, style, scripts, template
+kit/             the contributor kit: start here, install, style, scripts, template; <platform>/ is one machine's tools
 skills/          the method as agent skills: core/ is shared, <platform>/ is per machine
 games/           one folder per game under its platform
 ```

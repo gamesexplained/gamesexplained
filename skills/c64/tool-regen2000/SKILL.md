@@ -13,8 +13,8 @@ steady-state snapshot from `10-orient`.
 
 ```
 python3 kit/scripts/tools.py r2000 games/<platform>/<slug>/work/<state>.vsf
-python3 kit/scripts/r2000.py --list
-python3 kit/scripts/r2000.py --game games/<platform>/<slug> r2000_disassemble '{"address": 57399}'
+python3 kit/c64/r2000.py --list
+python3 kit/c64/r2000.py --game games/<platform>/<slug> r2000_disassemble '{"address": 57399}'
 ```
 
 It binds port 3000 with no option to change it; one instance at a time;
