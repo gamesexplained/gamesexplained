@@ -44,16 +44,13 @@ in order:
    Both are committed; the snapshot and disassembler project stay in
    `work/`. Preview the whole minisite with `python3 kit/scripts/build.py`
    and `python3 -m http.server -d _site 8000`.
-5. **Check, then commit on a branch** named `game/<platform>/<slug>`. Never
-   commit to `main`. Before every commit run:
+5. **Check, then commit to `main` and push.** Before every commit run:
 
    ```
    python3 kit/scripts/check_binaries.py
    python3 kit/scripts/check_docs.py
    python3 kit/scripts/check_listing.py
    ```
-
-   If a remote exists, open a pull request. If not, leave the branch.
 
 ## Rules that are not negotiable
 

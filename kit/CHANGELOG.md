@@ -7,6 +7,34 @@ silent, and the fixes go in before the next game starts. This is the
 record of that, in plain words, newest first. Each entry names the game
 that taught it.
 
+## 0.0.5 · 19 September 2026 · the copy pass, and Fable's review
+
+**The copy step is a draft plus a rewrite pass.** An agent reads a rule
+list once and then reverts to its default voice, so the house style never
+lands in the draft. `70-minisite` now ends with a mechanical rewrite
+pass — em-dash clause joints, announcing sentences, reader imperatives,
+tautology headings, rhythm triplets — worked paragraph by paragraph, with
+four before/after pairs from the Radar Rat Race deslop as calibration.
+
+**Provenance states what actually happened.** `agent-draft` is
+agent-written with no human read yet; `agent` is agent-written and read
+by a human, for example at the gold-tier read; `human-edited` and
+`human` are what they say. New games start at `agent-draft`, and the
+skill says to set it honestly.
+
+**The skills are numbered.** `re-orient` through `re-retro` are now
+`10-orient` through `80-retro`, so the pipeline order reads off the
+folder listing.
+
+**Catalogue cards show the game.** Each card carries the title screen
+next to the memory map — the maps are most interesting when games are
+compared, and the card should show something of the game itself.
+
+**The Play tab is first-class but never required.** A reader who can play
+along understands more, so the tab is built by default and omitted only
+when there is genuinely nothing playable. No tier requires it, so it
+never blocks Silver or Gold.
+
 ## 0.0.4 · 16 September 2026 · after Choplifter, and a second look
 
 **A counter you cannot find is usually another counter.** Choplifter
