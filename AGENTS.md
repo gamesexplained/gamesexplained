@@ -44,13 +44,32 @@ in order:
    Both are committed; the snapshot and disassembler project stay in
    `work/`. Preview the whole minisite with `python3 kit/scripts/build.py`
    and `python3 -m http.server -d _site 8000`.
-5. **Check, then commit to `main` and push.** Before every commit run:
+5. **Check, commit on a branch, open a pull request.** Name the branch
+   `game/<platform>/<slug>`. Never commit to `main`, whatever access you
+   have: every change to this repository arrives as a pull request, so
+   the checks run once more on a clean checkout and a maintainer sees
+   what changed before it reaches readers. Before every commit run:
 
    ```
    python3 kit/scripts/check_binaries.py
    python3 kit/scripts/check_docs.py
    python3 kit/scripts/check_listing.py
    ```
+
+   Push the branch and open the pull request. If you cannot push to this
+   repository, push to the contributor's fork and open it from there. If
+   there is no remote at all, leave the branch and say so.
+
+## Working on the kit or the site
+
+Not every task is a game. A maintainer's agent may be asked to change
+the kit, the skills, the scripts or the site templates. The rules below
+apply unchanged, and so does the delivery: branch as `kit/<topic>` or
+`site/<topic>`, run the three checks, run `python3 kit/scripts/build.py`
+to confirm every existing game still builds, and open a pull request. A
+change under `kit/` or `site/` reaches every page on the site, so it gets
+the same review a game does, not less. Record what changed in
+`kit/CHANGELOG.md`, and bump `kit/VERSION` when the method changes.
 
 ## Rules that are not negotiable
 

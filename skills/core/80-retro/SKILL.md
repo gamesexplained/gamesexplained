@@ -15,8 +15,9 @@ into the diff that saves the next contributor the trouble.
    work something out yourself.** Include platform facts you needed and
    had to derive, tool behaviour that surprised you, and steps in the
    workflow that were in the wrong order.
-2. **Make the edits** to `skills/` and `kit/` on the same branch. Keep
-   them general: a skill describes the method for every game, a platform
+2. **Make the edits** to `skills/` and `kit/` on the same branch, so
+   they arrive in the same pull request as the game and are reviewed
+   together. Keep them general: a skill describes the method for every game, a platform
    skill describes the machine, never this one game. If a fact is about
    this game, it belongs in the game's `facts.md`, not in a skill.
    `check_docs.py` enforces the separation.
@@ -44,5 +45,5 @@ into the diff that saves the next contributor the trouble.
 
 ## Outputs
 
-Skill and kit edits committed on the branch; `kit-feedback.md`; `game.json`
-complete; `TODO.md` current.
+Skill and kit edits committed on the branch and included in the pull
+request; `kit-feedback.md`; `game.json` complete; `TODO.md` current.

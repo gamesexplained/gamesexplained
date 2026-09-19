@@ -22,8 +22,9 @@ step needs something only they have.
    image into its `work/` directory.
 6. **Follow the skills** in the order `AGENTS.md` gives, opening each
    `SKILL.md` as you reach it.
-7. **Finish with the retrospective** (`skills/core/80-retro`) and leave the
-   work on a branch, with a pull request if the repository has a remote.
+7. **Finish with the retrospective** (`skills/core/80-retro`) and open a
+   pull request from the branch, as `AGENTS.md` says. Nothing
+   goes to `main` directly.
 
 Two rules worth repeating before you start: prefer "unknown" to a
 plausible guess, and never commit or upload a game binary.

@@ -35,6 +35,14 @@ along understands more, so the tab is built by default and omitted only
 when there is genuinely nothing playable. No tier requires it, so it
 never blocks Silver or Gold.
 
+**Everything arrives as a pull request.** The delivery rule briefly said
+"commit to `main`", which only one person can do and which stops working
+the day there is a second maintainer. It now says the same thing to
+everyone: branch, run the checks, open a pull request. `AGENTS.md` also
+gains a short section for work on the kit or the site itself, which the
+workflow had never described, so an agent asked to change a script had
+nothing to follow but the game rules.
+
 ## 0.0.4 · 16 September 2026 · after Choplifter, and a second look
 
 **A counter you cannot find is usually another counter.** Choplifter
