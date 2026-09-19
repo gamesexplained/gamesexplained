@@ -1,7 +1,7 @@
 # Adding a platform
 
-`skills/` and `kit/` are split the same way. `skills/core/` and
-`kit/scripts/` are shared by every machine; `skills/<platform>/` and
+The kit is split by platform in two places. `kit/skills/core/` and
+`kit/scripts/` are shared by every machine; `kit/skills/<platform>/` and
 `kit/<platform>/` are one machine. The Commodore 64 is the only platform
 so far, and it is the worked example for the next one.
 
@@ -9,8 +9,8 @@ so far, and it is the worked example for the next one.
 
 | Path | Contents | The C64 today |
 |---|---|---|
-| `skills/<platform>/<machine>-reference/` | facts about the machine, consulted rather than recalled: memory map, registers, timing | `skills/c64/c64-reference` |
-| `skills/<platform>/tool-<name>/` | one skill per tool: how to drive it, what it gets wrong | `tool-vice-mcp`, `tool-regen2000` |
+| `kit/skills/<platform>/<machine>-reference/` | facts about the machine, consulted rather than recalled: memory map, registers, timing | `kit/skills/c64/c64-reference` |
+| `kit/skills/<platform>/tool-<name>/` | one skill per tool: how to drive it, what it gets wrong | `tool-vice-mcp`, `tool-regen2000` |
 | `kit/<platform>/INSTALL.md` | the tools, how to get them, sizes, what they leave behind, what is known to work per operating system | `kit/c64/INSTALL.md` |
 | `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it | `kit/c64/tools.py` |
 | `kit/<platform>/<tool>.py` | a scripting client per tool, for the loops that are too slow as single calls | `vice.py`, `r2000.py` |
@@ -53,7 +53,7 @@ then rather than copy the code:
 
 ## The order of work
 
-1. `skills/<platform>/`: the machine reference and a skill per tool,
+1. `kit/skills/<platform>/`: the machine reference and a skill per tool,
    written from documentation before any game is opened.
 2. `kit/<platform>/`: install notes, launcher, clients. Run
    `verify-footprint` on your operating system and make it pass, as
@@ -61,8 +61,8 @@ then rather than copy the code:
 3. The entries in the shared scripts, above.
 4. Lift the seams in `listing.py` and the symbols scripts.
 5. `site/lib/<platform>.js`, and whatever the memory map needs.
-6. Run one game through the whole method to Silver. The retrospective on
-   that game (`skills/core/80-retro`) is where the seams you missed show
+6. Run one game through the whole workflow to Silver. The retrospective on
+   that game (`kit/skills/core/80-retro`) is where the seams you missed show
    up; fix them in the same pull request.
 7. Record it in `kit/CHANGELOG.md`, bump `kit/VERSION`, open the pull
    request as `AGENTS.md` says.
@@ -72,6 +72,6 @@ then rather than copy the code:
 - Do not refactor a seam ahead of its second consumer. With one platform
   the interface is a guess; the second platform tells you where the seam
   actually is.
-- Platform facts go in `skills/<platform>/` and platform code in
-  `kit/<platform>/`, never in `skills/core/` or `kit/scripts/`.
+- Platform facts go in `kit/skills/<platform>/` and platform code in
+  `kit/<platform>/`, never in `kit/skills/core/` or `kit/scripts/`.
   `check_docs.py` enforces the first half.

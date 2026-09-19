@@ -1,7 +1,7 @@
-# How the method has changed
+# How the kit has changed
 
-The kit is the site's method for reverse engineering a game: the rules,
-the skills an agent follows, the scripts, the platform reference. Every
+The kit is what an agent is given to reverse engineer a game: the rules,
+the workflow it follows, the scripts, the platform reference. Every
 game run through it comes back with a list of where it was wrong or
 silent, and the fixes go in before the next game starts. This is the
 record of that, in plain words, newest first. Each entry names the game
@@ -49,6 +49,13 @@ disassembler clients, its launcher and its install notes now live in
 `kit/scripts/tools.py` hands each command to the platform's launcher.
 `kit/PLATFORMS.md` says what a platform owns, where the shared scripts
 still assume the C64, and the order of work for adding a machine.
+
+**The kit is one folder, and one word.** The skills moved from `skills/`
+to `kit/skills/`, so the folder called kit holds everything a contributor
+is given: rules, tools, scripts, platform notes and the workflow. "Method"
+meant the kit in some places and the workflow in others; it now means
+neither. The kit is the whole; the workflow is the numbered steps inside
+it. The site's changelog page is `kit.html`.
 
 ## 0.0.4 · 16 September 2026 · after Choplifter, and a second look
 

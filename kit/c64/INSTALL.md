@@ -52,7 +52,7 @@ releases page, https://github.com/barryw/vice-mcp/releases. As of v3.11.0:
 | Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us |
 | Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only; untested by us |
 
-The method only talks to the emulator over MCP, so a headless build should
+The kit only talks to the emulator over MCP, so a headless build should
 be enough; the GUI build lets the contributor watch. **Ask the contributor
 before downloading**, tell them the file name and size, and let them fetch
 it if they prefer. macOS may refuse to open an unsigned download; if so the
@@ -102,7 +102,7 @@ start the tools by hand; the containment is in the launcher.
   `kit/c64/vice.py` speaks to the same server from a script, which is
   how live tests should be written: one round trip per tool call adds up
   fast, and a test that halts, pokes, runs and reads is a dozen calls. It
-  also carries the joystick workaround; see `skills/c64/tool-vice-mcp`.
+  also carries the joystick workaround; see `kit/skills/c64/tool-vice-mcp`.
 - **The disassembler** binds port 3000 with no option to change it, and
   only one instance can run at a time. Drive it with
   `python3 kit/c64/r2000.py <tool> '<json args>'`, which also logs

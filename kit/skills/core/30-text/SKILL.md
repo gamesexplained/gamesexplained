@@ -10,7 +10,7 @@ glyph order has nothing to do with the system's screen codes. Byte-pattern
 search, including every constant offset and XOR, finds nothing and tells
 you nothing.
 
-The reliable method:
+What works:
 
 1. Locate the character set in memory (the video chip's base-address
    register says where; the platform reference explains the encoding).

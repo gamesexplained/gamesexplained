@@ -1,6 +1,6 @@
 # Jupiter Lander — verified technical facts
 
-Current truth for this game. Method lives in `skills/`; how this
+Current truth for this game. The workflow lives in `kit/skills/`; how this
 understanding developed lives in `agent-history.md`. Every fact names
 the routine or table it comes from. Unless marked *live*, a fact comes
 from reading the code in `work/play-inflight.vsf`, the snapshot named in

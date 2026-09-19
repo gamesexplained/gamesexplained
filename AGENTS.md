@@ -3,7 +3,7 @@
 This repository is the source of a site that explains how games actually
 work, code first, one folder per game, written by contributors and their
 agents. Read this file completely before doing anything else. It is short
-on purpose: the detail lives in `kit/` and `skills/`, and you are expected
+on purpose: the detail lives in `kit/`, and you are expected
 to open those files when the workflow points at them rather than working
 from memory.
 
@@ -18,24 +18,24 @@ in order:
 2. **Create the game folder.** `python3 kit/scripts/new_game.py <platform> <slug>`
    creates `games/<platform>/<slug>/` from the template. Copy the
    contributor's image into its `work/` folder; `work/` is gitignored.
-3. **Run the skills in this order.** Each is a folder under `skills/` with a
+3. **Run the skills in this order.** Each is a folder under `kit/skills/` with a
    `SKILL.md`; open the file when you reach that step.
 
    | Step | Skill | Produces |
    |---|---|---|
-   | orient | `skills/core/10-orient` | boots, reaches steady-state play, snapshot, `orientation.md`, disassembler running |
-   | features | `skills/core/20-features` | `features.md` and `reference/` before any code is read |
-   | text | `skills/core/30-text` | the game's alphabets decoded, when it has a custom charset |
-   | sweep | `skills/core/40-sweep` | register census and string sweep |
-   | annotate and measure | `skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
-   | verify | `skills/core/60-verify` | every fact traced or observed live; `facts.md` |
-   | minisite | `skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
-   | retrospective | `skills/core/80-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
+   | orient | `kit/skills/core/10-orient` | boots, reaches steady-state play, snapshot, `orientation.md`, disassembler running |
+   | features | `kit/skills/core/20-features` | `features.md` and `reference/` before any code is read |
+   | text | `kit/skills/core/30-text` | the game's alphabets decoded, when it has a custom charset |
+   | sweep | `kit/skills/core/40-sweep` | register census and string sweep |
+   | annotate and measure | `kit/skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
+   | verify | `kit/skills/core/60-verify` | every fact traced or observed live; `facts.md` |
+   | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
+   | retrospective | `kit/skills/core/80-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
 
-   Platform knowledge is in `skills/<platform>/`. For the C64:
-   `skills/c64/c64-reference` (facts about the machine — consult it, do not
-   recall from training), `skills/c64/tool-vice-mcp` and
-   `skills/c64/tool-regen2000` (how to drive the recommended tools).
+   Platform knowledge is in `kit/skills/<platform>/`. For the C64:
+   `kit/skills/c64/c64-reference` (facts about the machine — consult it, do not
+   recall from training), `kit/skills/c64/tool-vice-mcp` and
+   `kit/skills/c64/tool-regen2000` (how to drive the recommended tools).
 4. **Export the symbol map** after every annotation session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`. This
    file, `symbols.json`, is the canonical technical result. Then build the
@@ -92,7 +92,7 @@ platform follows `kit/PLATFORMS.md`.
   `symbols.json`) state what is true now. The story of how understanding
   developed goes in `agent-history.md`, nowhere else.
 - **Consult the platform reference, don't recall it.** Register addresses,
-  timing constants and memory maps come from `skills/<platform>/`.
+  timing constants and memory maps come from `kit/skills/<platform>/`.
 - **Copy is not analysis.** Article text follows `kit/style.md`. Write it
   as a separate, final pass, and declare who wrote it in `game.json`.
 - **Record what you used.** `game.json` names the tools, the model and the
@@ -123,12 +123,12 @@ platform follows `kit/PLATFORMS.md`.
 | `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |
 | `kit/PLATFORMS.md` | what a platform owns, and how to add one |
 | `kit/template/` | the game folder, stubbed and commented |
-| `skills/core/` | the method, platform-independent |
-| `skills/<platform>/` | platform facts and tool notes |
+| `kit/skills/core/` | the workflow, platform-independent |
+| `kit/skills/<platform>/` | platform facts and tool notes |
 | `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
 | `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
-Nothing about a particular game belongs in `AGENTS.md` or `skills/`.
+Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 `check_docs.py` enforces that.
 
 ## Definition of done
@@ -155,8 +155,8 @@ claim per agent against the source before believing the report.
 
 ## Finishing
 
-The last step of every run is `skills/core/80-retro`: where did the skills
+The last step of every run is `kit/skills/core/80-retro`: where did the skills
 fall short, and what is the diff that would have saved the next
-contributor the trouble. Make the edits to `skills/` and `kit/` in the same
+contributor the trouble. Make the edits to `kit/` in the same
 branch and describe them in `games/<platform>/<slug>/kit-feedback.md`.
 That is how the kit improves.

@@ -9,7 +9,7 @@ Article copy is written as a separate, final pass, after the analysis is
 done. It is never produced by the same run that produced the facts. The
 final pass has two steps: the draft, then a rewrite pass that applies the
 rules below mechanically, paragraph by paragraph, as described in
-`skills/core/70-minisite`.
+`kit/skills/core/70-minisite`.
 
 ## What copy is for
 

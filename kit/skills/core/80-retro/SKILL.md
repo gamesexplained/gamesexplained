@@ -15,10 +15,10 @@ into the diff that saves the next contributor the trouble.
    work something out yourself.** Include platform facts you needed and
    had to derive, tool behaviour that surprised you, and steps in the
    workflow that were in the wrong order.
-2. **Make the edits** to `skills/` and `kit/` on the same branch, so
+2. **Make the edits** to `kit/` on the same branch, so
    they arrive in the same pull request as the game and are reviewed
-   together. Keep them general: a skill describes the method for every game, a platform
-   skill describes the machine, never this one game. If a fact is about
+   together. Keep them general: a core skill describes a step of the workflow for every game,
+   a platform skill describes the machine, never this one game. If a fact is about
    this game, it belongs in the game's `facts.md`, not in a skill.
    `check_docs.py` enforces the separation.
 3. **Write `kit-feedback.md`** in the game folder: what you changed and

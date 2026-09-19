@@ -37,7 +37,7 @@ def main():
             s = open(p).read().replace("{{title}}", title).replace("{{slug}}", slug).replace("{{platform}}", platform)
             open(p, "w").write(s)
     print(f"created {dest}")
-    print("next: copy the contributor's image into work/, then follow skills/core/10-orient")
+    print("next: copy the contributor's image into work/, then follow kit/skills/core/10-orient")
 
 
 if __name__ == "__main__":

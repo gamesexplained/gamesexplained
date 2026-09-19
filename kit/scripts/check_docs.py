@@ -2,8 +2,8 @@
 """Keep knowledge in its place.
 
   AGENTS.md          agent rules only: no platform or game subject matter
-  skills/core/       method only: no game names
-  skills/<platform>/ platform facts only: no game names
+  kit/skills/core/       workflow only: no game names
+  kit/skills/<platform>/ platform facts only: no game names
   games/*/*/facts.md, features.md   current truth, no narration of past mistakes
 
 Usage: check_docs.py      exit 1 on failure
@@ -49,13 +49,13 @@ def main():
         except Exception:
             pass
     if titles:
-        for sk in glob.glob(os.path.join(ROOT, "skills", "*", "*", "*.md")):
+        for sk in glob.glob(os.path.join(ROOT, "kit", "skills", "*", "*", "*.md")):
             fails += scan(sk, titles, "a specific game named in a reusable skill")
     for f in glob.glob(os.path.join(ROOT, "games", "*", "*", "facts.md")) + \
              glob.glob(os.path.join(ROOT, "games", "*", "*", "features.md")):
         fails += scan(f, NARRATION, "narrating a past mistake (belongs in agent-history.md)")
     if fails:
-        print(f"\nFAILED - {fails} issue(s). Rules in AGENTS.md; method in skills/core; platform in skills/<platform>; game facts in games/.")
+        print(f"\nFAILED - {fails} issue(s). Rules in AGENTS.md; workflow in kit/skills/core; platform in kit/skills/<platform>; game facts in games/.")
         sys.exit(1)
     print("OK - knowledge is where it belongs")
 

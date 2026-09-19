@@ -1,6 +1,6 @@
 # Tools
 
-The method needs three things: an emulator with an agent interface, a
+The kit needs three things: an emulator with an agent interface, a
 disassembler with an agent interface, and Python 3.9 or later to run
 `kit/scripts/` (no packages required). Which emulator and disassembler
 depends on the machine the game runs on, so the tools themselves, how to
