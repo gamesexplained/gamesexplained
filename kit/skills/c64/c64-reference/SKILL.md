@@ -8,6 +8,32 @@ description: Commodore 64 facts for reverse engineering, memory map, banking, vi
 Consult this file. If a fact you need is not here, say so in the game's
 `kit-feedback.md` and derive it from the emulator, not from memory.
 
+## Where to read about a game first
+
+Before any code, and before the emulator: the game's page on C64-Wiki,
+`https://www.c64-wiki.com/wiki/<Title_With_Underscores>` (search the wiki
+if the guessed address misses). Nearly every commercial C64 game has one,
+and the pages are built the same way, so read it as a form:
+
+- **Infobox**: developer, publisher, year, genre, controls (which joystick
+  port, or keys), media. Fills `game.json`, and says which port to drive.
+- **Description and Hints**: what the game does, the scoring, the
+  controls. The first rows of `features.md`.
+- **Cheats**: often POKEs, which are addresses with their meaning already
+  attached: a lives counter, a level number, a timer. The most useful
+  steer the page can give; take each one to the disassembler as a symbol
+  candidate.
+- **Screenshots**: a few, of states worth naming in `reference/`.
+- **Links**: Lemon64, GameBase64, CSDb, and often a manual scan. The
+  manual, when one exists, outranks the wiki as a source.
+
+It is a fan wiki: what it says is documented, not true. One of the first
+games' pages states a bonus the code never awards, which is what the
+`differs` status in `features.md` is for. Record it under Sources in
+`features.md` with the address and the date you read it, and as
+`links.wiki` in `game.json`. Its text is under the GNU Free Documentation
+License: cite it, and write your own words.
+
 ## Memory map (default configuration)
 
 | Range | What |

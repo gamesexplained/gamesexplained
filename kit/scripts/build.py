@@ -251,7 +251,7 @@ def build_game(gdir, out_root):
     cred = game.get("credits") or []
     con_html = "<ul>" + "".join(f"<li>{html.escape(n)} <span class='mute'>({c} commits)</span></li>" for c, n in cons) + \
                "".join(f"<li>{html.escape(c.get('by',''))} <span class='mute'>— {html.escape(c.get('role',''))}</span></li>" for c in cred) + "</ul>"
-    links = game.get("links") or {}
+    links = {k: u for k, u in (game.get("links") or {}).items() if u}   # empty slots from the template are not links
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
     runs, totals, symbols = footprint(gdir, game)

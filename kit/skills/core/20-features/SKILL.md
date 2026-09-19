@@ -24,6 +24,12 @@ ways it goes wrong:
 The game's own instruction text is itself a feature list. Find it early
 (the string sweep in `40-sweep` does this in seconds).
 
+The platform skill says where to look first; for the C64 that is the
+game's C64-Wiki page, read as a form. Whatever you read, record it under
+Sources in `features.md` with its address and the date, and put the wiki
+page and the manual in `links` in `game.json`, where the About tab shows
+them.
+
 ## Status words
 
 Every row in `features.md` carries one:

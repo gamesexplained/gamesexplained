@@ -9,6 +9,8 @@ was tried), **confirmed** (in the code, consistent with the emulator),
 
 Sources:
 
+- <site or document>, <address>, read <date>
+
 ## Features
 
 | Feature | Status | Where |
