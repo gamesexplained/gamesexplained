@@ -1392,15 +1392,15 @@
   },
   {
    "address": 139,
-   "name": "zpa_8B",
+   "name": "collide_sprite",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 140,
-   "name": "zpa_8C",
+   "name": "collide_background",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 144,
@@ -1434,9 +1434,9 @@
   },
   {
    "address": 156,
-   "name": "zpa_9C",
+   "name": "music_index",
    "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 157,
@@ -2286,9 +2286,9 @@
   },
   {
    "address": 16896,
-   "name": "s_4200",
+   "name": "check_collisions",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 16923,
@@ -2562,9 +2562,9 @@
   },
   {
    "address": 17408,
-   "name": "s_4400",
+   "name": "player_hit",
    "type": "Subroutine",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 17429,
@@ -6001,6 +6001,31 @@
    "address": 16832,
    "type": "line",
    "text": "Frame pace. Spins until CIA2 Timer B's high byte reads $7F: the game's tick is this timer, NOT the raster interrupt, which only paints the colour split. A snapshot restored into VICE comes back with this timer stopped, so the loop never exits and the game appears frozen."
+  },
+  {
+   "address": 16896,
+   "type": "line",
+   "text": "Collision handling, both kinds, straight from the VIC's own registers. Reading them clears them, so each is read exactly once per pass and kept in zero page."
+  },
+  {
+   "address": 16900,
+   "type": "line",
+   "text": "Sprite-to-sprite collisions into $8B. Bit 0 is the player: that calls player_hit. Bits 1-4 and 5-6 are the other aircraft."
+  },
+  {
+   "address": 16961,
+   "type": "line",
+   "text": "Sprite-to-background collisions into $8C. Bit 0 again means the player touched the scenery, and calls the same player_hit. Bits 1-4 are enemy aircraft meeting the ground."
+  },
+  {
+   "address": 17340,
+   "type": "line",
+   "text": "Random shape for an aircraft: SID oscillator 3 ($D41B) masked to 0-3 and added to $88, written to that sprite's pointer. The game's randomness comes from the sound chip."
+  },
+  {
+   "address": 17408,
+   "type": "line",
+   "text": "Reached when the player's sprite collides with another sprite or with the background."
   },
   {
    "address": 19136,

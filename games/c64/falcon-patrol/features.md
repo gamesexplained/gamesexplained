@@ -40,6 +40,8 @@ Sources:
 | Six airfields / oil installations and refuelling bases | open | Wiki says six. Not counted in the code yet |
 | Destroyed bases return only when a life is lost | open | Wiki |
 | Enemy jets attack in waves; wave size grows | open | Wiki: one extra attacker every six waves, reaching three, then four |
+| Enemy aircraft are drawn in randomly chosen attitudes | confirmed | `$43BC` reads SID oscillator 3 (`$D41B`), masks it to 0-3, adds `$88` and stores it as that sprite's pointer |
+| Collisions are detected in hardware | confirmed | `$4200` reads `$D01E` (sprite to sprite) and `$D01F` (sprite to background); bit 0 of either is the player and calls `player_hit` at `$4400` |
 | Enemies bomb the bases, and bomb the player while landed | open | Wiki and the instruction screen |
 | Enemies veer off if not shot down in time | open | Wiki |
 | Scoring 25 / 50 / 100 / 200 for the 1st–4th jet of a wave | open | Wiki. No points for collisions |
@@ -59,10 +61,12 @@ Found in the code, not in the manual.
   zero page, the stack, two bytes of the status line, and **bytes inside
   the character generator at `$3000`–`$37FF`**. Moving objects are drawn
   by rewriting glyph bitmaps in place.
-- **The player is the only hardware sprite most of the time.** `$D015`
-  reads `$01` during ordinary flight, briefly `$07` when something else
-  happens. Everything else on screen — enemies, scenery, radar blips — is
-  character graphics.
+- **Enemy aircraft are hardware sprites; the scenery and radar are
+  characters.** `$D015` reads `$01` in the analysed snapshot, but that is
+  a moment before the first wave arrives, not a general truth: the
+  collision code at `$4200` handles sprites 1-6, and `$D015` is written
+  from eight sites. An earlier draft of this file concluded from that
+  single `$01` that enemies were character graphics. They are not.
 - **The main loop is paced by CIA2 Timer B, not the raster.** `$41C0`
   spins on `lda $DD07 / cmp #$7F` until the timer's high byte matches.
   The raster interrupt at `$4AC0` only repaints the three-band colour
@@ -93,7 +97,11 @@ Found in the code, not in the manual.
 - Whether the keyboard controls documented by the wiki are in this build
   at all, and which bits of the same `$DC01` read they use.
 - The wiki reports a collision-detection weakness, where the player's
-  missiles pass through enemy sprites without effect. Enemies are not
-  sprites in this build, so whatever the effect is, that description of it
-  cannot be right. Worth testing once the collision code is found.
+  missiles pass through enemy aircraft without effect. The collision code
+  is now found (`$4200`) and rests entirely on the VIC's `$D01E`/`$D01F`
+  registers, which latch and are cleared by the read. Two candidate
+  explanations, neither tested: the player's missile may not be a sprite
+  at all, in which case it can never raise a sprite-to-sprite collision;
+  or a pass that reads the register for one pair loses a second collision
+  that latched in the same frame.
 - How many bases there are, and where the map that places them lives.

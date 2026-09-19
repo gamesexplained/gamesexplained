@@ -94,15 +94,21 @@ Zero-page variables named so far:
 
 **Screen RAM does not change during play.** Over a second and a half of
 gameplay the only bytes that moved were in zero page, the stack, two bytes
-of the status line and **inside the character generator**. Moving objects —
-enemy aircraft, radar blips — are drawn by rewriting glyph bitmaps at
-`$3000`, not by writing screen codes. *(live)*
+of the status line and **inside the character generator**. What moves in
+the character-graphics layer — the radar blips, and whatever the landscape
+does — is drawn by rewriting glyph bitmaps at `$3000`, not by writing
+screen codes. *(live)*
 
-Only **one hardware sprite** is normally on: `$D015` reads `$01` during
-ordinary flight, briefly `$07`. The player's aircraft is sprite 0, fixed
-at screen X = 172; the world moves around it. The sprite 0 pointer at
-`$07F8` selects the aircraft's attitude frame and is itself read as state
-by the touchdown test. *(live)*
+The player's aircraft is **sprite 0**, fixed at screen X = 172; the world
+moves around it. The sprite 0 pointer at `$07F8` selects the aircraft's
+attitude frame and is itself read as state by the touchdown test. *(live)*
+
+Enemy aircraft are sprites too. `$D015` reads `$01` in the analysed
+snapshot, but that is a moment before the first wave arrives: the
+collision code at `$4200` handles sprites 1–6 and `$D015` is written from
+eight sites. Sprite Y-expand, X-expand and priority are never written at
+all, so every aircraft is unexpanded and drawn in front of the scenery.
+The scenery and the radar are characters, not sprites.
 
 Screen layout, decoded from the snapshot: rows 0–10 sky, rows 11–20
 landscape, rows 21–24 the status panel — `SCORE` and `HI` on the left, the
@@ -136,6 +142,55 @@ Strings recovered with this table include `SCORE`, `GAS`, `AAM`, `HI`,
 The flight envelope is enforced entirely by rewriting the input byte, so
 there is no separate "am I allowed to climb" test anywhere downstream.
 Take-off, landing and the altitude limits are all the same mechanism.
+
+## Hardware register census
+
+Extracted from the snapshot image by decoding absolute-mode accesses to
+`$D000`–`$DFFF`. The scan is linear, so it reads some data as code: rows
+with an implausible register (`$D0C9`, `$D4CF`, `$DDB0`, `$DDDD`) are
+that, not real accesses, and are left out here. Everything listed was
+checked against the disassembly.
+
+| Register | What the game does with it | Where |
+|---|---|---|
+| `$D000`/`$D001` | player sprite X and Y. X is fixed at 172; Y is the altitude the flight envelope tests | `$5705`, `$4408`, `$5060` |
+| `$D008`/`$D009`, `$D00E`/`$D00F` | sprites 4 and 7 positioned | `$5D6E`, `$505A` |
+| `$D010` | sprite X high bits, read as well as written: the world is wider than 256 pixels | `$4761`, `$5D31` |
+| `$D011` | written from 20 sites, three of them the raster split | `$4AD6`, `$4AEE`, `$4B03` |
+| `$D012` | raster compare, set per band; also polled at `$4B44` to sync the install | `$4ADB`, `$4AF3`, `$4B08` |
+| `$D015` | sprite enable, eight write sites — aircraft appear and vanish | `$473D`, `$56AC` |
+| `$D016` | control 2; multicolour on, 40 columns, horizontal scroll left at 0 | `$46CA`, `$4720` |
+| `$D018` | screen and charset base; rewritten when the display changes between title and play | `$1905`, `$46C7` |
+| `$D019`/`$D01A` | interrupt acknowledge and enable | `$4B0D`, `$4B2D`, `$41E0` |
+| `$D01C`, `$D027` | sprite multicolour select and sprite colours | `$435C`, `$4364` |
+| **`$D01E`** | **sprite-to-sprite collision**, read once per pass into `$8B` | `$4204` |
+| **`$D01F`** | **sprite-to-background collision**, read once per pass into `$8C` | `$4241` |
+| `$D020`/`$D021`/`$D023` | border and backgrounds; the raster split writes `$D021` and `$D023` per band | `$4AC8`, `$4AE2` |
+| `$D400`–`$D412` | SID voices 1–3: frequency, control and envelope all written, so the music is a conventional three-voice engine, not frequency-only | `$4975`, `$49F5`, `$4B8E` |
+| `$D416`, `$D417`, `$D418` | filter cutoff, resonance and volume — the filter is used, including a sweep during name entry | `$4D4B`, `$4DEF`, `$4E1C` |
+| **`$D41B`** | **oscillator 3 output read as the random number source** | `$43BC`, `$4513`, `$4650` |
+| `$D800` | colour RAM written from five sites only | `$191C`, `$44C4` |
+| `$DC01` | control port 1 and keyboard row 7, twelve read sites | `$5700` in play |
+| `$DC02`/`$DC03` | CIA1 data direction registers, written once each at `$5AE2`/`$5AE7` |
+| `$DC0D` | CIA1 interrupt control; `$4B32` writes `$7F`, disabling the KERNAL's timer interrupt | `$4B32` |
+| `$DD06`/`$DD07` | CIA2 Timer B: the game's tick | `$41C0`, `$466A` |
+| `$DD0E`/`$DD0F` | CIA2 control, starting that timer | `$411D`, `$4120` |
+
+Registers the game never touches are informative too. It writes no sprite
+Y-expand (`$D017`), no sprite X-expand (`$D01D`) and no sprite priority
+(`$D01B`): the aircraft are all unexpanded and all in front of the
+scenery.
+
+Two rows earn their own note:
+
+- **Randomness comes from the sound chip.** `$43BC` reads `$D41B`, the
+  output of SID voice 3's oscillator, masks it to 0–3, adds `$88` and
+  writes the result as an aircraft's sprite pointer. Enemy attitudes are
+  chosen by the noise the SID happens to be making.
+- **Collision detection is entirely the VIC's.** `$4200` reads `$D01E`
+  and `$D01F` once each and keeps them, because reading those registers
+  clears them. Bit 0 of either is the player, and both paths call the same
+  `player_hit` at `$4400`.
 
 ## Data tables
 
