@@ -4,6 +4,15 @@
   document.querySelectorAll('.gametabs a.tab').forEach(function(a){
     if((a.getAttribute('href')||'')===here) a.classList.add('on');
   });
+  document.querySelectorAll('button[data-copy]').forEach(function(b){
+    var src=document.querySelector(b.dataset.copy); if(!src) return;
+    b.addEventListener('click',function(){
+      var text=src.textContent.trim(), done=function(){ b.textContent='Copied'; b.classList.add('did'); setTimeout(function(){ b.textContent='Copy'; b.classList.remove('did'); },1600); };
+      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done,function(){ select(); });
+      else select();
+      function select(){ var r=document.createRange(); r.selectNodeContents(src); var s=getSelection(); s.removeAllRanges(); s.addRange(r); try{ if(document.execCommand('copy')) done(); }catch(e){} }
+    });
+  });
   if(document.body.dataset.nolink) return;
   document.querySelectorAll('code').forEach(function(c){
     if(c.closest('a')||c.closest('pre')||c.children.length) return;
