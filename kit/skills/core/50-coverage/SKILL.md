@@ -43,6 +43,13 @@ same way, so tiers mean the same thing everywhere.
   used to skip the next instruction) makes the disassembler mint a symbol
   for an "address" that is really an operand. Explain it as such rather
   than inventing a meaning for the address.
+- **Resolve every pointer table before excluding a region.** A relocating
+  init can leave a block that looks like a stale copy of somewhere else;
+  one run excluded 8 KB as "the leftover of the copy at $3E00" and it held
+  all 224 shape scripts, which the pointer tables at $9600/$9700 named
+  byte for byte. Before a region goes in `exclude`, take every table the
+  code indexes as an address (lo/hi pairs, split lo/hi tables) and check
+  where its entries land. If any land in the region, it is data.
 - **Runtime state is excluded** from the denominator: stack, screen
   memory, I/O. Authored data nothing references by address (a character
   set, a packed string block) is **added** through the `coverage` object

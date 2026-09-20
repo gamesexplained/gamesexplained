@@ -56,7 +56,10 @@ annotate it byte by byte.
 - Chip state (video, sound, timers) lives in named modules inside the
   snapshot; the names are readable text, so a string search finds them.
 - A loaded snapshot can come back without its timer interrupt running.
-  Symptom: the CPU sits in a wait loop and nothing moves. Autostart the
+  Symptom: the CPU sits in a wait loop and nothing moves. It can also
+  come back with the processor port `$01` at a different value and the
+  CPU somewhere in the KERNAL with a garbage screen; the file is still
+  good for the disassembler. Autostart the
   image again rather than fighting it. **Before believing that, sample the
   program counter several times.** A live machine returns a scatter of
   addresses; one that returns the same address every time is parked in a
