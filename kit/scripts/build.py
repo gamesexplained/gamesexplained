@@ -205,13 +205,43 @@ def inject(page, nav, lib):
     return page
 
 
+# agents and bots, by the addresses their commit trailers or authorship carry
+BOT_EMAILS = ("noreply@anthropic.com",      # Claude Code
+              "noreply@openai.com",         # Codex, and ChatGPT's cloud Codex
+              "noreply@meta.ai",            # Muse
+              "+Copilot@users.noreply.github.com",   # GitHub Copilot's coding agent, which can be the commit author
+              "[bot]@users.noreply.github.com")
+GITHUB_NOREPLY = re.compile(r"^(?:\d+\+)?([A-Za-z0-9-]+)@users\.noreply\.github\.com$")
+
+
 def contributors(gdir):
+    """(commits, name, github login or None) per human author of this game folder.
+
+    Git authors only, through .mailmap, so every alias a person has committed under
+    collapses to one GitHub account. Agents are co-authors in trailers, never authors,
+    so they do not appear. The login comes from the canonical
+    <login>@users.noreply.github.com address; an author with another address is shown
+    unlinked and the build says so, so a .mailmap line can be added.
+    """
     try:
-        out = subprocess.run(["git", "shortlog", "-sn", "--no-merges", "HEAD", "--", gdir],
+        out = subprocess.run(["git", "log", "--no-merges", "--format=%aN\t%aE", "HEAD", "--", gdir],
                              cwd=ROOT, capture_output=True, text=True).stdout
     except Exception:
         out = ""
-    rows = [ln.strip().split("\t") for ln in out.splitlines() if "\t" in ln]
+    counts = {}
+    for ln in out.splitlines():
+        if "\t" not in ln:
+            continue
+        name, email = ln.split("\t", 1)
+        if any(email.endswith(b) for b in BOT_EMAILS):
+            continue
+        counts[(name, email)] = counts.get((name, email), 0) + 1
+    rows = []
+    for (name, email), n in sorted(counts.items(), key=lambda kv: -kv[1]):
+        m = GITHUB_NOREPLY.match(email)
+        if not m:
+            print(f"warning: contributor {name} <{email}> has no GitHub login; add a .mailmap line mapping them to <login>@users.noreply.github.com", file=sys.stderr)
+        rows.append((n, name, m.group(1) if m else None))
     return rows
 
 
@@ -248,9 +278,11 @@ def build_game(gdir, out_root):
     open(os.path.join(out, "source.html"), "w").write(src)
     # about
     cons = contributors(gdir)
-    cred = game.get("credits") or []
-    con_html = "<ul>" + "".join(f"<li>{html.escape(n)} <span class='mute'>({c} commits)</span></li>" for c, n in cons) + \
-               "".join(f"<li>{html.escape(c.get('by',''))} <span class='mute'>— {html.escape(c.get('role',''))}</span></li>" for c in cred) + "</ul>"
+    cred = [c for c in (game.get("credits") or []) if (c.get("by") or c.get("name", "")).strip()]   # the game's makers; agents live in "model"
+    con_html = "<ul>" + "".join(
+        (f'<li><a href="https://github.com/{html.escape(login)}">{html.escape(login)}</a>' if login else f"<li>{html.escape(n)}")
+        + f" <span class='mute'>({c} commit{'s' if c != 1 else ''})</span></li>" for c, n, login in cons) + \
+               "".join(f"<li>{html.escape(c.get('by') or c.get('name', ''))} <span class='mute'>— {html.escape(c.get('role',''))}</span></li>" for c in cred) + "</ul>"
     links = {k: u for k, u in (game.get("links") or {}).items() if u}   # empty slots from the template are not links
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}

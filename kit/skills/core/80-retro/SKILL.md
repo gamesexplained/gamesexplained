@@ -43,7 +43,9 @@ into the diff that saves the next contributor the trouble.
 5. **Complete `game.json`**: tier reached (only if every requirement is
    met; an unattended run stops at Silver, since Gold is human curation), tools and versions, model (every model that appears in
    `timings.json`, and the subagents' model if different), copy
-   provenance, kit version, coverage figure.
+   provenance, kit version, coverage figure. `credits` is for the game's
+   original makers, each as `by` and `role`; never put yourself or your
+   model there. The site's contributor list comes from git, humans only.
 6. **Update `TODO.md`** with what is missing for the next tier.
 7. **If you were the first on your operating system**, the install notes
    are part of your retrospective: run
