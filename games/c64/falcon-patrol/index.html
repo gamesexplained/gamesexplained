@@ -1,0 +1,486 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Falcon Patrol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0a0b18; --surface:#12142c; --surface-2:#1a1d40; --line:#292c58; --line-soft:#1d1f3b;
+  --ink:#e9e7f7; --ink-soft:#a5a1cb; --ink-mute:#6e6b99;
+  --amber:#e8a33d; --cyan:#6fc7d4; --coral:#d97f6e; --green:#8fd17a; --violet:#8f7fe0;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Press Start 2P',monospace; --fb:'IBM Plex Sans',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.65;padding:0 0 5rem}
+h1,h2,h3{font-weight:600;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+.hero{padding:60px 24px 44px;text-align:center;border-bottom:1px solid var(--line-soft);
+ background:radial-gradient(ellipse 900px 380px at 50% -12%,rgba(143,127,224,.13),transparent 70%)}
+.eyebrow{font-family:var(--fm);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--violet);margin:0 0 20px}
+.hero h1{font-family:var(--fd);font-size:23px;line-height:1.65;margin-bottom:22px}
+.hero .sub{max-width:560px;margin:0 auto;color:var(--ink-soft);font-size:15.5px}
+section{padding:56px 0;border-bottom:1px solid var(--line-soft)}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+h2.t{font-size:21px;margin-bottom:14px}
+.lede{color:var(--ink-soft);max-width:64ch;margin:0 0 30px;font-size:15.5px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+.cap{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin-top:14px;line-height:1.65}
+.cap b{color:var(--ink-soft);font-weight:500}
+code{font-family:var(--fm);font-size:.92em;color:var(--cyan)}
+p{max-width:64ch}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+button,.tog{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink-soft);
+ border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;user-select:none}
+button:hover,.tog:hover{border-color:var(--violet);color:var(--ink)}
+button.on,.tog.on{background:var(--violet);border-color:var(--violet);color:#0a0b18;font-weight:500}
+canvas{display:block;image-rendering:pixelated;max-width:100%;border-radius:6px}
+table{border-collapse:collapse;font-family:var(--fm);font-size:13px;margin:6px 0 0;width:100%}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line-soft)}
+th{color:var(--ink-mute);font-weight:500;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
+td.n{color:var(--amber)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.byte{font-family:var(--fm);font-size:20px;letter-spacing:.14em;color:var(--amber)}
+.bits{display:flex;gap:5px;margin:10px 0 0;flex-wrap:wrap}
+.bit{font-family:var(--fm);font-size:11px;width:58px;text-align:center;padding:6px 0;border-radius:6px;
+ border:1px solid var(--line);background:var(--surface-2);color:var(--ink-mute)}
+.bit.set{background:#2a1f10;border-color:var(--amber);color:var(--amber)}
+.bit.forced{background:#3a1520;border-color:var(--coral);color:var(--coral)}
+.note{font-size:14px;color:var(--ink-soft);margin-top:14px}
+.tag{font-family:var(--fm);font-size:11px;padding:2px 7px;border-radius:5px;background:var(--surface-2);
+ border:1px solid var(--line);color:var(--ink-mute);margin-left:6px}
+.glyphcv{cursor:crosshair}
+ul{color:var(--ink-soft);max-width:64ch;font-size:15.5px}
+li{margin:0 0 10px}
+.q{border-left:2px solid var(--violet);padding:2px 0 2px 16px;margin:18px 0;color:var(--ink-soft);font-style:normal}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1983 · Virgin Games</p>
+  <h1>Falcon Patrol</h1>
+  <p class="sub">A jump jet, six desert airstrips and a horizon that wraps. Almost nothing on the screen is what it appears to be made of.</p>
+</header>
+<main class="wrap">
+<section>
+  <p class="fig">01 · One frame, rebuilt from memory</p>
+  <h2 class="t">The play screen, drawn from the snapshot</h2>
+  <p class="lede">A reconstruction, not a screenshot. Screen memory, colour memory and the character set are read out of a saved machine state and drawn here by hand, so every pixel below has a byte behind it.</p>
+  <div class="plate">
+    <canvas id="scr" width="320" height="200" style="width:100%;max-width:640px"></canvas>
+    <div class="ctl">
+      <button class="tog on" data-o="bands">Raster bands</button>
+      <button class="tog" data-o="grid">Character grid</button>
+      <button class="tog" data-o="sprites">Sprites</button>
+      <button class="tog" data-o="panel">Status panel</button>
+    </div>
+    <p class="cap">Screen memory at <code>$0400</code>, colour memory at <code>$D800</code>, characters at <code>$3000</code>. The background colour is not one value: the interrupt at <code>$4AC0</code> changes it twice on the way down the screen.</p>
+  </div>
+  <p class="note">The three bands are the whole of what the interrupt does. It fires at raster lines <code>$01</code>, <code>$8A</code> and <code>$D2</code>, writes a background colour, points itself at the next line and leaves. Sky, ground and panel are one screen wearing three different backgrounds.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The character set</p>
+  <h2 class="t">256 glyphs doing six jobs</h2>
+  <p class="lede">The font holds the digits, an alphabet, the town, the runway, the radar canvas and the blast crater. Click any glyph to see its bytes and where it is used.</p>
+  <div class="plate">
+    <canvas id="chars" class="glyphcv" width="544" height="272" style="width:100%;max-width:680px"></canvas>
+    <div class="ctl">
+      <button class="tog" data-c="alpha">Alphabet</button>
+      <button class="tog" data-c="digits">Digits</button>
+      <button class="tog" data-c="anim">Rewritten while running</button>
+    </div>
+    <p class="cap" id="glyphinfo">Glyph <b>$00</b> · digit 0 · bytes at <code>$3000</code></p>
+  </div>
+  <p class="note">The digits sit at <code>$00</code> to <code>$09</code>, so a glyph's index is the digit it draws and the score can be written straight from a counter. The letters run <code>$81</code> to <code>$9A</code>, which is the C64 screen code for a letter plus <code>$80</code>. A search for text in the usual encodings finds nothing at all in this game.</p>
+</section>
+
+<section>
+  <p class="fig">03 · Controls</p>
+  <h2 class="t">The input byte the game writes for you</h2>
+  <p class="lede">The joystick is read once a frame into <code>$0C</code>. Before anything uses it, the game rewrites it. Ceilings, floors, take-off and dying are all the same mechanism: forge the byte, and every routine downstream believes the pilot did it.</p>
+  <div class="plate">
+    <div class="grid2">
+      <div>
+        <p class="cap" style="margin:0 0 10px"><b>What the player is holding</b></p>
+        <div class="ctl" id="stick">
+          <button class="tog" data-b="0">Up</button>
+          <button class="tog" data-b="1">Down</button>
+          <button class="tog" data-b="2">Left</button>
+          <button class="tog" data-b="3">Right</button>
+          <button class="tog" data-b="4">Fire</button>
+        </div>
+        <p class="cap" style="margin:16px 0 10px"><b>What the aircraft is doing</b></p>
+        <div class="ctl" id="state">
+          <button class="tog" data-s="high">Above the ceiling</button>
+          <button class="tog" data-s="low">Below the floor</button>
+          <button class="tog" data-s="nofire">Below firing height</button>
+          <button class="tog" data-s="takeoff">Taking off</button>
+          <button class="tog" data-s="dead">Destroyed</button>
+        </div>
+      </div>
+      <div>
+        <p class="cap" style="margin:0 0 10px"><b>The byte the game acts on</b></p>
+        <p class="byte" id="ib">$FF</p>
+        <div class="bits" id="ibbits"></div>
+        <p class="cap" id="ibwhy">Nothing held, nothing forced.</p>
+      </div>
+    </div>
+    <p class="cap">Bits are active low: a clear bit means held. Rules at <code>$5705</code>, <code>$5718</code>, <code>$5724</code>, <code>$5731</code> and <code>$573D</code>.</p>
+  </div>
+  <p class="note">Two of these are restrictions a player feels without being told. Below sprite Y <code>$7C</code> the fire bit is forced high, so the guns stop working near the ground. And a stationary aircraft cannot shoot at all: <code>$5790</code> returns early when the horizontal velocity is zero.</p>
+  <p class="note">Take-off and death look alike and are one instruction apart. Taking off runs <code>ora #$FE</code>, which sets every bit except the climb, so the only control still connected is up. Dying runs <code>lda #$FD</code>, which sets the byte outright to down-held. The first waits for the player. The second does not.</p>
+</section>
+
+<section>
+  <p class="fig">04 · The world</p>
+  <h2 class="t">256 columns, six airstrips, no edges</h2>
+  <p class="lede">The map is one byte per column in a table at <code>$3800</code>. The index wraps in eight bits, so flying far enough in either direction brings the same airstrip back around.</p>
+  <div class="plate">
+    <canvas id="map" width="1024" height="120" style="width:100%"></canvas>
+    <div class="ctl">
+      <button id="mapPrev">&larr; fly left</button>
+      <button id="mapNext">fly right &rarr;</button>
+      <span class="tag" id="mapPos">world_x $00</span>
+    </div>
+    <p class="cap">Each mark is one map column. The six airstrips are written <code>$16 $17 $16 $17</code> at columns 4, 40, 84, 136, 172 and 200. A bombed strip becomes <code>$6F $70</code> and only comes back when a life is lost.</p>
+  </div>
+  <p class="note">Landing wants three things at once, tested at <code>$559A</code>: the aircraft stopped, at sprite Y exactly <code>$84</code>, with an intact strip under both of the two columns it samples. Getting two of the three gives nothing.</p>
+</section>
+
+<section>
+  <p class="fig">05 · Difficulty</p>
+  <h2 class="t">The wave size reads your score, not your progress</h2>
+  <p class="lede">Every write-up of this game says the waves grow as you survive them. The code at <code>$4A80</code> never counts waves. It reads two digits of the score.</p>
+  <div class="plate">
+    <label class="cap" for="sc" style="display:block;margin:0 0 10px"><b>Score</b></label>
+    <input id="sc" type="range" min="0" max="19999" step="25" value="0" style="width:100%">
+    <p class="byte" id="scv" style="margin-top:14px">0 points &rarr; 2 aircraft</p>
+    <table>
+      <tr><th>Score</th><th>Aircraft in a wave</th></tr>
+      <tr><td class="n">0 – 399</td><td>2</td></tr>
+      <tr><td class="n">400 – 1499</td><td>3</td></tr>
+      <tr><td class="n">1500 – 9999</td><td>4</td></tr>
+      <tr><td class="n">10000 – 10399</td><td>2</td></tr>
+    </table>
+    <p class="cap">The routine tests the thousands digit <code>$13</code> and the hundreds digit <code>$14</code>. It never looks at the ten-thousands digit <code>$12</code>.</p>
+  </div>
+  <p class="note">Score ten thousand and the difficulty resets to the opening wave, because the digit that rolled over is the one nobody tests. Kills are worth 25, 50, 100 and 200 within a wave: the award starts at 25 and <code>$5E10</code> shifts it left after each one.</p>
+</section>
+
+<section>
+  <p class="fig">06 · Collision</p>
+  <h2 class="t">Why the missiles go through</h2>
+  <p class="lede">The game has a long-standing reputation for shots that pass through an enemy without effect. The reason is in how a hit is detected: the missile and the aircraft are different kinds of object, and only one of them can raise a collision.</p>
+  <div class="plate">
+    <canvas id="coll" width="560" height="180" style="width:100%;max-width:700px"></canvas>
+    <div class="ctl">
+      <button id="collStep">Move the missile</button>
+      <span class="tag" id="collVerdict">no collision</span>
+    </div>
+    <p class="cap">The aircraft is a hardware sprite. The missile is a character, glyph <code>$12</code>, written into screen memory. Two things of different kinds cannot raise a sprite-to-sprite collision, so the hit is found from the other side.</p>
+  </div>
+  <p class="note">When an enemy sprite reports that it overlaps the character layer, <code>$4262</code> works out the cell under it and reads three cells. If one of them holds a glyph between <code>$0C</code> and <code>$13</code>, the aircraft dies. The missile has to be inside that three-cell window at the moment the register is read. A shot that is one cell early or late overlaps on screen and counts for nothing.</p>
+</section>
+
+<section>
+  <p class="fig">07 · Sound</p>
+  <h2 class="t">The title tune, from six tables</h2>
+  <p class="lede">Twenty-nine notes, stored as raw SID frequency values in six tables at <code>$2A00</code>, with the note lengths in a seventh at <code>$2AE0</code>. The player below reads those bytes.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button id="play">Play</button>
+      <button id="stop">Stop</button>
+      <span class="tag" id="noteNow">note 0 / 29</span>
+    </div>
+    <canvas id="tune" width="880" height="120" style="width:100%;margin-top:16px"></canvas>
+    <p class="cap">Each column is one note: the three bars are voices 1, 2 and 3, and the width is how long it is held. Frequency to pitch uses the PAL clock, 985248 Hz divided by 16777216.</p>
+  </div>
+  <p class="note">The random numbers come from the same chip. Voice 3's oscillator output at <code>$D41B</code> is read whenever the game needs a number: which way a wave arrives, where it spawns, and which frame of the debris cloud a wreck shows.</p>
+</section>
+
+<section>
+  <p class="fig">08 · Quirks</p>
+  <h2 class="t">Things the manual does not mention</h2>
+  <ul>
+    <li><b>The guns stop near the ground.</b> Below sprite Y <code>$7C</code> the fire bit is forced high. A player reads this as the aircraft refusing to shoot while low, and nothing on screen says why.</li>
+    <li><b>A stationary aircraft cannot fire.</b> <code>$5790</code> returns immediately when horizontal velocity is zero, so hovering leaves the missiles unavailable.</li>
+    <li><b>Running out of fuel uses the same three instructions as being shot down.</b> One gate at <code>$573D</code> opens for either, forces the byte to down-held, and flies the aircraft into the ground.</li>
+    <li><b>The AAM counter stops dead at 100.</b> Refuelling tops up fuel and missiles together, but the missile count is only refilled while its hundreds digit is zero.</li>
+    <li><b>Scoring ten thousand makes the game easier.</b> The wave size reads the thousands and hundreds digits and never the ten-thousands one.</li>
+    <li><b>The radar is drawn inside the font.</b> Blips are pixels set directly in the character bitmaps at <code>$3680</code>, so the whole 256-column world fits in sixteen characters at four columns to the pixel.</li>
+    <li><b>Sixteen identical solid glyphs sit at <code>$F0</code> to <code>$FF</code>.</b> A colour table at <code>$4000</code> gives each cell its colour from its glyph, so sixteen copies of one solid block is sixteen colours of fill for the price of one bitmap.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="fig">09 · The copy on the disk</p>
+  <h2 class="t">What the crack changed</h2>
+  <p class="lede">The image analysed here is not the original release. It is a 1997 crack, and the group left their working notes in memory where the game never reads them.</p>
+  <div class="plate">
+    <p class="q">first the game fucked up sometimes, I just changed something in the IRQ</p>
+    <p class="q">in the game was no routine which sets the places downwards when you entered your name in the highscorelist, so I coded a routine</p>
+    <p class="cap">From a scroll text at <code>$0E80</code>, signed Back Alien / Remember, October 1997. Nothing in the running game reads it.</p>
+  </div>
+  <p class="note">So the interrupt and the high-score table are theirs, and anything said here about how names are entered describes the crack rather than the 1983 game. Their trainers are single-byte pokes, and each one identifies a variable: turning <code>DEC $1D</code> into <code>LDA $1D</code> at <code>$417C</code> gives unlimited lives, which is as good a proof as exists that <code>$1D</code> holds the life count.</p>
+</section>
+</main>
+<script>
+const D={"screen":"ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAeHh4eHiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICCenp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eCwsLCwsLCwsLCwsLCwsLCwsLFhcWF2lpaWlpaWgLCwsLCwsLCwsLC2lpaDQ5OTULCwsLCwsLCwsLCwsLCwsLCwtXWFk0OTk1CwsLCwsLCwtYWQs6Njo7CwsLCws8PT4LCwsLPD0+C1dYWQsLOjY6Ows8PT4LCwsLYFVVVVVVYWJVVVVVVWZVVVVfYFVmVVVVVVVVVVVVVVVVVWZVVVVVVQsLPD0+NDY4OTU8PT5ANGVkOTULXgsLNDk5NQsLCwtXWFleNDULCwsLCws/CzY2NjY3Cz9XWDY2NjY3Czw9PjY6NjsLC1dYWQs0OTY4OTULCwsLQAs6Njo2O1djWQs6Nlo2OwsLPwsLCwsLV1hZCwsLOlo2Njo7CwsLCwsLCwsLV1hZCwsLCwsLCwsLC14LCwtXWFkLCwsLCwsLCwsLCwuhoaGhoaGhoaGkoKqmpqampqampqampqampqamq6CloaGhoaGhoaGhk4OPkoUgIK4goqCo0NHS09TV1tfY2drb3N3e36mgoyAgIIeBkyAgIAAAAAAAIK8BsKKgqODh4uPk5ebn6Onq6+zt7u+poKOgoKCgoKCgoKAgiIkgICCxsrOioKjw8fLz9PX29/j5+vv8/f7/qaCjICAggYGNICAgAAAAAAAgICAgoqCsp6enp6enp6enp6enp6enp62goyAgIAEAACAgIA==","colour":"BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwEBAQEBAQEBAQEBAQEBAQEBAQEBAQUFBQUFBQUFBQUFBQUFBQUFBQUBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQQEBAQBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NCQkJCQgICAgICAgNDQ0NDQ0NDQ0NDQgICAoKCgoNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0JCQkKCgoKDQ0NDQ0NDQ0JCQ0JCQkJDQ0NDQ0NDQ0NDQ0NDQ0NDQkJCQ0NCQkJCQ0NDQ0NDQ0NCAkJCQkJCgoJCQkJCQkJCQkICAkJCQkJCQkJCQkJCQkJCQkJCQkJCQ0NDQ0NCgkKCgoNDQ0KCgoKCgoNCg0NCgoKCg0NDQ0JCQkKCgoNDQ0NDQ0NDQkJCQkJDQ0JCQkJCQkJDQ0NDQkJCQkNDQkJCQ0KCgkKCgoNDQ0NCg0JCQkJCQkJCQ0JCQkJCQ0NDQ0NDQ0NCQkJDQ0NCQkJCQkJDQ0NDQ0NDQ0NCQkJDQ0NDQ0NDQ0NDQoNDQ0JCQkNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NBQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQUNDQ0NDQ0NDQ0NAwMDAwMEBAMEDQUNCQkJCQkJCQkJCQkJCQkJCQ0FDQAAAAMDAwAAAAEBAQEBBAMCAw0FDQkJCQkJCQkJCQkJCQkJCQkNBQ0CAgICAgICAgIAAwMAAAQDAwMNBQ0HBwcHBwcHBwcHBwcHBwcHDQUNAAAAAwMDAAAABgYGBgYPDw8PDQUNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0FDQAAAAcHBwAAAA==","charset":"fkJCQkJCfgAICAgICAgcAH4CAn5AQH4AfgICPgICfgBASEh+CAgIAH5AQH4CAn4AfkBAfkJCfgB+AgIECAgIAH5CQn5CQn4AfkJCfgICfgAAOFSS/pJUOFVVVVVVVVVVAAEBAz8mIwUAAP+AQHxkxCAg/wD/AP8AAIDA+P7/wIAAAQMff/8DAQLmzv7//sbgAAAAAABAfkAAAAAAAAJ9AgAAAAAAAG40AAAAAP//////7v97e3//Vf+7/+3t/f9VAChcbdw6GiBIalC0OGmEUUAUAlBFKEIIRIUAUAlAIYkkQgAhAEAEIQEUFzqdgGNGAAAAAAAAAABddX3d/9/3/wAAAAAAAAAAYHd7f/8/Bw8A4ID4/v+A4AAHAR9//wEHBu7e/v/84PAAAAAQfhAAAAAAAAh+CAAAAAAAAAA8PAAAAAAA/+vr////////6+v/f1/31/fXf199Xdf3339dfS+v/////68v+Pj/////+Pj/////////////////////f/rq+v/6+vr6+vr6+vp6X/2vq6//r6+vr6+vr6+vrfVVVVVVV19//1VVVVX//PDA/+vr///r6/8AAAAAAAAAAAAAAAAAAw8/VVVVVf//////6+v/6+vr6wAAAAAAAQUVV19/9VVffdVV1/f/ff/tZX3/1VX1/V9VZWVlZWVlZWVlZWVlZWVlqaqqqqqqKnV1hbWAgIAAXV1VVV96en9+fn5+fn5fVVVVVVX1ra39vb29vb299VVVVVVXXFxfXl5eXl5eXldVVVXV9c0N+ampqampqa31VVVVVV9wcH96enp6enp6enp6X9X1zQ35qampqampqamprfVVVVVVVVVV/1VVVVVVVVXV+vrODvqqqqtVX3Bwf3p6/9X1zQ35qan/VFRQUEBAAAAAAAAUAAAAAAAAAQEFBRUVVVVVVVRQQABUUEAAAQUVVQEFFVVVVVVV/+vr//8AAADe/s4O+6mpqVVXXFxfXl7/1fXNDfmpqf9lZWVlZalVVQBVf39/VT8wAHB0f39//wwAAAAUAAMPPwAAAAD//PDAZGBgICElJakBBRVV/////1RQQAD/////ICAgJCAgICAAAAAA/////1VVVVUBBRVVVVVVVQAAAAABBRVVAAAAAFRQQAAAAAAAqqqqqP///6qqqqqq////qqqqqor///+qcxi2lkWG/1WIQoysMv3/VXxCQnxAQEAAfEJCfEhEQgD/vyAgvCAgv4Ce/wDPAP8A/wD/AP8A/wD/AP8A/wAcCAgICAgcAD4ICAgICAgAGCRCQkIkGAAYJEJ+QkJCADxCQDwCQjwAQkRIcEhEQgD///////////////////////+AgIAA/PwAAAAAAAAAGBgAGDxmfmZmZgB8ZmZ8ZmZ8ADxmYGBgZjwAeGxmZmZseAB+YGB4YGB+AH5gYHhgYGAAPGZgbmZmPABmZmZ+ZmZmADwYGBgYGDwAHgwMDAxsOABmbHhweGxmAGBgYGBgYH4AY3d/a2NjYwBmdn5+bmZmADxmZmZmZjwAfGZmfGBgYAA8ZmZmZjwOAHxmZnx4bGYAPGZgPAZmPAB+GBgYGBgYAGZmZmZmZjwAZmZmZmY8GABjY2Nrf3djAGZmPBg8ZmYAZmZmPBgYGAB+BgwYMGB+AAAAAAAAAP//AAAAAAAYGAA8QrmiorlCPAAAAFVVVVVVABAwf38wEAD//////////////////6qqv7+/v7+/v7/+/v7+/v7+/v///////7+//////////v7/////qqoAAAAAqqr/////gICAgICAgIACAgICAgICAv////+qqoCA/////6qqAgKAgKqq/////wICqqr/////ABgYPDw8fv8BAQMHDx8/P4CAwODw+Pz8PwAAAAABAwD/PDx+////GPwAAAAAgMAA//////////8AAB8fGDAwPwAA398YMDA/AADs7GzY2NgAAA8PDBgYGAAA7+8MGBgYAAD7+xs3NzcAAAwMjJiYmH9gYMDAwAAAf2Fhw8PDAACwsLBgf38AADAwMGB/fwAAMDAwYH9/AABtbW3Z2NgAALCwsODgYAAAAAAfHxgxMT8AAN/fmLCwPwAA7+9hw8PDAAD394YMDA8AAPDwMGFh4QAA/v7GjIyMAABgYGDAwMB/YGDAwMAAAH9hYcPDwwAAhoaGDAwMAAAfGBgwMDAAAMPD42ZnNwAAGRkZM/PzAACqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqurq6urq6urqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrqqqqqqqqqqqqqqqqqpVVVVVqqqqqlVVVVWqqqqrVVVVVaqqqqpVVVVVqqqqqlVVVVWqqqrqVVVVVaqqqqpVVVVVq6urq1dVVVWqqqqqVVVVVaqqqqpVVVVVqqqqqlVVVVWqqqrqVVVVVaqqqqpVVVVVqqqqulVVVVWq6qqqVVVVVaqqqupVVVVV//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=","sprites":"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","terrain":"CwsLCxYXFhcLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCxYXFhcLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLFhcWF2lpaWlpaWgLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLC1dpaWlpaWlpaWlpaWlpaRYXFhcLCwsLCwsLCwsLCwsLCwsLV2lpaWlpaWlpaWlpaWlpaRYXFhdpaWlpaWlpaAsLCwsLCwsLCwsLCwsLCwsWFxYXCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCz4LCwtXWFkLS01LTQsLCwsLNDk5NTw9PgtDRUNFCwsLCwsLV2lpaWlpa2ppaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaDQ5OTULCwsLCwsLCwsLCwsLCwsLCwtXWFk0OTk1CwsLCwsLCws0OTk5NQsLCws8PT4LV1hZCws0OTk5NQs8PT4LCwtXWFkLCwsLCwsLCzQ5OTULCwtXWFkLNDk5OTULCwtPT09QCwsLQUILCwsLC1dYWQsLC0FCC0FCT09PUAs8PT4LV2tqaWlpaWlpaWlpaWlpaWlpaWlpaWg8PT4LCwsLCzQ1CwsLC0NFQ0ULCwsLCzQ5NQsLCwsLPD0LC1dYWQsLC0xOTE4LCws0OTY2NjcLPwsLREZERktNCwtXWFkLQUILCwsLCwsLQ0ULCwsLCwsLCwsLCwtDRUNFC1dYWQs6Njo7CwsLCws8PT4LCwsLPD0+C1dYWQsLOjY6Ows8PT4LCwsLNlpaNjsLPD0+C0BXWFkLCwsLNlpaNjsLC0ALC1dYWUFCCws8PT4LCws6Njo7C1dYWQsLCzZaWjY7CwtLTQtLTQsLCwsLC0FCV1hZCwsLNDk5OTULS00LS00LCz9XWFkLCwsLPD0+Q0VDRUNFCzw9PgtXWFlBQj8LCwsLNDk2ODk1CwtERkRGCwsLCzQ2Njg5NQsLCws/V1hZNDk5NQsLCws8PT4LOjZaWjY7C140OTk1CwtMTldYWQtBQgtPT09QCzw9PkRGCzQ5OTULNDk5NQsLREZERlRfYFVVVVVVYWJVVVVVVWZVVVVfYFVmVVVVVVVVVVVVVVVVVWZVVVVVVVVfYFVVX2BmVVVhZ2JVVVVVVVVVX2BVVVVVVVVVVVVVYWdnYmZVVVVVVVVVVV9gVVYLT09PUAs8PT4LTE4LTE48PT4LQUJXWFkLPD0+NDY2NjY4NUxOC0xOC1djWU9PT09PT1A/C0RGREZERgsLP1dYWTQ5NQteCwsLCzo2WjY6Ows0OTk1PD0+Cws2Ojo2Njs8PT4LXmFnZzo6OjdVX2BVVWZfYFVVVVVVVVVVNjY2OGdiVVVVVkFCCwtSU09SU09QPws8PT42NjY4OTY2NjcLS00LS00LCwsLPD0+NDY4OTU8PT5ANGVkOTULXgsLNDk5NQsLCwtXWFleNDULCwsLPD0+PD0+Xgs0NjY4OTk5NTw9PgtXWFlBQjw9PjQ5OTY2NjdAPD0+CwsLV1hZPD0+UlNPUlNPUD8LCwsLCwsLCz8LC1dYWQsLQUI/CzY2NjY2Njc8PT4LV1hZC1JTT1JTT0tNQENFQ0VDRQtUVWZVVWE2NjhnZ2diVVVVVVVfYGFnNjY2N1VmVVVVVVVVX2BVVWZVVVU2NjY2NjY4OTk1CwtAV1hZS00LS00LCzY6OjY2Nzw9Pgs8PT5LUU5LUU5LTV4LCz8LNjY2Ojo2NjY3S1FOS1FOS00LCws/CzY2NjY3Cz9XWDY2NjY3Czw9PjY6NjsLC1dYWQs0OTY4OTULCws/Cws/CwsLNjo6NjY2NjcLP1dYWUFCCwsLPws2OlpaWjo7Cws/CwtXWFkLCws/S1FOS1FOS01eCzAyCzAyCwtAV1hZCwtBQgsLQAs6NlpaNjo7Cz9XWFkLC0tRTktRTktRTgtERkRGREZXWFk8PT42Ojo2NjY2NwtLTUtNCws2Njo6NjcLQFdYWTw9PgsLCwtACwsLNjY2Olo6Wlo6OwtXWFkLS1FOS1FOCws2Wlo2OjsLPwtBQj8LTE4LTE4LTE5BQgtACzY6NlpaNjo2O0xOC0xOC0xOCwsLQAs6Njo2O1djWQs6Nlo2OwsLPwsLCwsLV1hZCwsLOlo2Njo7CwsLQAsLXgsLCzpaWjo2NjY7V2NZQUILCwsLC14LCwsLCwsLCwsLQFdYWQsLCwsLQExOC0xOC0xOCwsxMwsxMwtXa2ppaWlpaWlpaWlpaWlpaWlpaWljWQsLCwtMTgtMTgtMTgsLQUILC1dYWUFCCz8LOlpaOjY2NjsLTE5MTgsLOjZaWjY7V1hZQUILPwtDRUNFC0FCCwsLCwsLCwsLC1dYWQsLC0xOC0xOCwsLCwsLCwsLC14LCwteCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLV1hZCwsLCwsLCwsLC14LCwtXWFkLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwtXWFkLCwsLCwsLCwsLCwsLCwsLCwsLV1hZCwsLCwsLCwsLCwsLCwsLCwsLCwsLC1dYWQsLCwsLCwsLCwsLCwsLCwsLV1hZCwsLCwsLCwsLCwsLCwsLCwsLV1hZCwsLCwteCwsLCwsLCwsLCwsLCwsLCwsLCwtXWFkLCwsLC14LREZERgsLCws=","glyphcol":"AQEBAQEBAQEBAQQNBgYGBgYGAgIBBQkJAgIHAQcHBwcAAgICAgEBAAgIDw8PDwEBCgoKCgoKCQkKCgkJDQ0NDQoKCgoKCgoKCgoKCgoKCgoKCgoKCQkJCQkJCQoKCgoICAoKCQoKCQoICAgICAgIAAABAQgICAgICAgICAcHAQEAAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMAAAAAAAUNDQ0NDQ0NDQ0NDQ0NAwMDAwMDCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","tune":"EBYVEBkAFh0cFiEAEBYVEBkAFh0cFiEAJyUhHSHq6urDYB/DLgBg3zFghwDDYB/DLgBg3zFghwDfooffh+rq6gAAAAAMDAwMDAwLCwsLCwsMDAwMDAwLCxMWEA4Q6urqAAAAAI+Pj4+PjzAwMDAwMI+Pj4+PjzAw72DD78Pq6uoAAAAACAgICAgIEBAQEBAQCAgICAgIEBAODgsLDOrq6gAAAABhYWFhYWHDw8PDw8NhYWFhYWHDw+/vMDCP6urqAAD/ACBY6wAA8AIgWHwAAP8FEFh8AE/wH9rq6urq6uqvf3+v/6+vf3+v/6+vf3+v/6+vf3+v/6/v7+/v/+rq6g==","sptr":[131,150,148,150,150,158,158,144],"vic":[5,14,7,0,1,2,4,6,2,2,2,2,0,0,1],"spritexy":[172,119,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
+</script>
+<script>
+const PAL=["#000000","#ffffff","#880000","#aaffee","#cc44cc","#00cc55","#0000aa","#eeee77",
+           "#dd8855","#664400","#ff7777","#333333","#777777","#aaff66","#0088ff","#bbbbbb"];
+const b64=s=>{const r=atob(s),a=new Uint8Array(r.length);for(let i=0;i<r.length;i++)a[i]=r.charCodeAt(i);return a;};
+const SCR=b64(D.screen), COL=b64(D.colour), CHR=b64(D.charset),
+      SPR=b64(D.sprites), TER=b64(D.terrain), GCOL=b64(D.glyphcol), TUNE=b64(D.tune);
+const hex=(n,w=2)=>"$"+n.toString(16).toUpperCase().padStart(w,"0");
+
+/* The raster interrupt sets a different background for each band.
+   Rows 0-10 get $0E, rows 11-19 $0C with bg2 $08, rows 20-24 $0C with bg2 $00. */
+function bandFor(row){
+  if(row<=10) return {bg0:14,bg2:0};
+  if(row<=19) return {bg0:12,bg2:8};
+  return {bg0:12,bg2:0};
+}
+const BG1=D.vic[2]&15;
+
+/* ---------- 01 the screen ---------- */
+const scrCv=document.getElementById("scr"), sx=scrCv.getContext("2d");
+const opts={bands:true,grid:false,sprites:false,panel:false};
+function drawScreen(){
+  const img=sx.createImageData(320,200), px=img.data;
+  const put=(x,y,c)=>{if(x<0||x>=320||y<0||y>=200)return;const i=(y*320+x)*4,p=PAL[c];
+    px[i]=parseInt(p.substr(1,2),16);px[i+1]=parseInt(p.substr(3,2),16);px[i+2]=parseInt(p.substr(5,2),16);px[i+3]=255;};
+  for(let row=0;row<25;row++){
+    const band=bandFor(row);
+    for(let col=0;col<40;col++){
+      const cell=row*40+col, g=SCR[cell], c=COL[cell]&15;
+      for(let y=0;y<8;y++){
+        const bits=CHR[g*8+y];
+        if(c&8){                       /* multicolour: bit pairs pick a source */
+          for(let p=0;p<4;p++){
+            const v=(bits>>(6-p*2))&3;
+            const colr=v===0?band.bg0:v===1?BG1:v===2?band.bg2:(c&7);
+            put(col*8+p*2,row*8+y,colr); put(col*8+p*2+1,row*8+y,colr);
+          }
+        }else{
+          for(let b=0;b<8;b++) put(col*8+b,row*8+y,(bits>>(7-b))&1?c:band.bg0);
+        }
+      }
+    }
+  }
+  sx.putImageData(img,0,0);
+  if(opts.bands){
+    const marks=[[0,11,"raster $01 · bg $0E"],[11,20,"raster $8A · bg $0C"],[20,25,"raster $D2 · bg $0C"]];
+    sx.save(); sx.globalAlpha=.9;
+    marks.forEach(([a,b],i)=>{ sx.strokeStyle=["#8f7fe0","#e8a33d","#6fc7d4"][i]; sx.lineWidth=1;
+      sx.strokeRect(.5,a*8+.5,319,(b-a)*8-1); });
+    sx.restore();
+  }
+  if(opts.grid){ sx.save(); sx.strokeStyle="rgba(255,255,255,.16)"; sx.lineWidth=.5;
+    for(let c=0;c<=40;c++){sx.beginPath();sx.moveTo(c*8,0);sx.lineTo(c*8,200);sx.stroke();}
+    for(let r=0;r<=25;r++){sx.beginPath();sx.moveTo(0,r*8);sx.lineTo(320,r*8);sx.stroke();} sx.restore(); }
+  if(opts.panel){ sx.save(); sx.fillStyle="rgba(10,11,24,.74)"; sx.fillRect(0,0,320,160); sx.restore(); }
+  if(opts.sprites){
+    sx.save(); sx.lineWidth=1;
+    const xy=D.spritexy, en=1;             /* only sprite 0 is on in this frame */
+    for(let s=0;s<8;s++){
+      if(!((en>>s)&1)) continue;
+      const X=xy[s*2]+((xy[16]>>s&1)?256:0)-24, Y=xy[s*2+1]-50;
+      sx.strokeStyle="#8fd17a"; sx.strokeRect(X+.5,Y+.5,24,21);
+      sx.fillStyle="#8fd17a"; sx.font="6px monospace"; sx.fillText("sprite "+s+" · "+hex(D.sptr[s]),X,Y-2);
+    }
+    sx.restore();
+  }
+}
+document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{
+  opts[b.dataset.o]=!opts[b.dataset.o]; b.classList.toggle("on"); drawScreen(); });
+drawScreen();
+
+/* ---------- 02 the character set ---------- */
+const chCv=document.getElementById("chars"), cx=chCv.getContext("2d");
+const CW=17, hi={alpha:false,digits:false,anim:false};
+function drawChars(){
+  cx.fillStyle="#12142c"; cx.fillRect(0,0,544,272);
+  for(let g=0;g<256;g++){
+    const gx=(g%32)*CW, gy=((g/32)|0)*CW;
+    let mark=null;
+    if(hi.alpha && ((g>=0x81&&g<=0x9A)||g===0x80||g===0x9B||g===0x9D)) mark="#8f7fe0";
+    if(hi.digits && g<=9) mark="#e8a33d";
+    if(hi.anim && ((g>=0x2A&&g<=0x2D)||g===0xB4||(g>=0xD0&&g<=0xEF))) mark="#6fc7d4";
+    if(mark){ cx.fillStyle=mark; cx.globalAlpha=.22; cx.fillRect(gx,gy,CW-1,CW-1); cx.globalAlpha=1; }
+    for(let y=0;y<8;y++){ const bits=CHR[g*8+y];
+      for(let b=0;b<8;b++){ if((bits>>(7-b))&1){ cx.fillStyle=mark||"#e9e7f7";
+        cx.fillRect(gx+b*2,gy+y*2,2,2); } } }
+  }
+}
+chCv.onclick=e=>{
+  const r=chCv.getBoundingClientRect(), s=544/r.width;
+  const g=(((e.clientY-r.top)*s/CW)|0)*32 + (((e.clientX-r.left)*s/CW)|0);
+  if(g<0||g>255) return;
+  const bytes=[...CHR.slice(g*8,g*8+8)].map(b=>b.toString(16).toUpperCase().padStart(2,"0")).join(" ");
+  let what="town and runway fill";
+  if(g<=9) what="digit "+g;
+  else if(g>=0x81&&g<=0x9A) what="letter "+String.fromCharCode(g-0x80+64);
+  else if(g===0x80||g===0x9C) what="full stop";
+  else if(g===0x9B) what="underscore";
+  else if(g===0x9D) what="copyright sign";
+  else if(g>=0x2A&&g<=0x2D) what="bomb crater, re-randomised every pass";
+  else if(g===0xB4) what="fuel gauge part-full cell, rewritten as the tank empties";
+  else if(g>=0xD0&&g<=0xEF) what="radar canvas, blips are set as pixels in here";
+  else if(g>=0xF0) what="solid fill, coloured by the table at $4000";
+  else if(g>=0x0C&&g<=0x13) what="missile, the glyph range a kill is tested against";
+  document.getElementById("glyphinfo").innerHTML =
+    "Glyph <b>"+hex(g)+"</b> · "+what+" · colour "+hex(GCOL[g]&15)+" · bytes at <code>"+hex(0x3000+g*8,4)+"</code>: <code>"+bytes+"</code>";
+};
+document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{
+  hi[b.dataset.c]=!hi[b.dataset.c]; b.classList.toggle("on"); drawChars(); });
+drawChars();
+
+/* ---------- 03 the forged input byte ---------- */
+const held=new Set(), st=new Set();
+function forge(){
+  let v=0xFF, why=[];
+  held.forEach(b=>v&=~(1<<b));                       /* active low */
+  const raw=v;
+  if(st.has("high")){ v|=0x01; why.push("above the ceiling, climb cancelled ($5705)"); }
+  if(st.has("low")){ v|=0x02; why.push("below the floor, dive cancelled ($5718)"); }
+  if(st.has("nofire")){ v|=0x10; why.push("too low to fire, trigger cancelled ($5724)"); }
+  if(st.has("takeoff")){ v|=0xFE; why.push("taking off, only the climb still reaches the game ($5731)"); }
+  if(st.has("dead")){ v=0xFD; why.push("destroyed, down forced outright ($573D)"); }
+  document.getElementById("ib").textContent=hex(v);
+  const names=["up","down","left","right","fire"];
+  document.getElementById("ibbits").innerHTML=names.map((n,i)=>{
+    const on=!((v>>i)&1), was=!((raw>>i)&1);
+    const cls=on?"bit set":(was?"bit forced":"bit");
+    return '<div class="'+cls+'">'+n+"<br>"+(on?"held":"—")+"</div>";
+  }).join("");
+  document.getElementById("ibwhy").textContent = why.length? why.join(" · ") : "Nothing forced; the byte is what the port read.";
+}
+document.querySelectorAll("#stick [data-b]").forEach(b=>b.onclick=()=>{
+  const n=+b.dataset.b; held.has(n)?held.delete(n):held.add(n); b.classList.toggle("on"); forge(); });
+document.querySelectorAll("#state [data-s]").forEach(b=>b.onclick=()=>{
+  const n=b.dataset.s; st.has(n)?st.delete(n):st.add(n); b.classList.toggle("on"); forge(); });
+forge();
+
+/* ---------- 04 the world map ---------- */
+const mapCv=document.getElementById("map"), mx=mapCv.getContext("2d");
+let worldX=0;
+function drawMap(){
+  mx.fillStyle="#12142c"; mx.fillRect(0,0,1024,120);
+  for(let i=0;i<256;i++){
+    const t=TER[i], x=i*4;
+    let c="#1d1f3b";
+    if(t===0x0B) c="#3a3560";                     /* open desert */
+    else if(t===0x69||t===0x68||t===0x57) c="#4a4270";
+    else if(t===0x16||t===0x17) c="#8fd17a";      /* intact airstrip */
+    else if(t===0x6F||t===0x70) c="#d97f6e";      /* bombed */
+    mx.fillStyle=c; mx.fillRect(x,40,4,34);
+  }
+  /* the 40-column window the player sees, centred on world_x */
+  mx.strokeStyle="#e8a33d"; mx.lineWidth=2;
+  mx.strokeRect(((worldX)%256)*4+.5,30,40*4,54);
+  mx.fillStyle="#e8a33d"; mx.fillRect((((worldX+20)%256))*4,84,4,10);
+  mx.fillStyle="#6e6b99"; mx.font="11px monospace";
+  [4,40,84,136,172,200].forEach(c=>mx.fillText(c,c*4,32));
+  document.getElementById("mapPos").textContent="world_x "+hex(worldX);
+}
+document.getElementById("mapNext").onclick=()=>{worldX=(worldX+8)&255;drawMap();};
+document.getElementById("mapPrev").onclick=()=>{worldX=(worldX-8)&255;drawMap();};
+drawMap();
+
+/* ---------- 05 difficulty ---------- */
+const sc=document.getElementById("sc");
+function waveFor(score){
+  const d=String(score).padStart(5,"0");
+  const thousands=+d[1], hundreds=+d[2];     /* $13 and $14; $12 never tested */
+  if(thousands>=2) return 4;
+  if(thousands>=1) return 3;
+  return hundreds>=4?3:2;
+}
+sc.oninput=()=>{const v=+sc.value;
+  document.getElementById("scv").textContent=v+" points → "+waveFor(v)+" aircraft";};
+sc.oninput();
+
+/* ---------- 06 collision ---------- */
+const coCv=document.getElementById("coll"), ox=coCv.getContext("2d");
+let missileCell=0;
+function drawColl(){
+  ox.fillStyle="#12142c"; ox.fillRect(0,0,560,180);
+  const cw=56, y0=60;
+  for(let i=0;i<8;i++){
+    ox.strokeStyle="#292c58"; ox.strokeRect(20+i*cw+.5,y0+.5,cw,cw);
+  }
+  /* the enemy sprite straddles cells 3-5; those are the three the code reads */
+  ox.fillStyle="rgba(143,127,224,.18)"; ox.fillRect(20+3*cw,y0,cw*3,cw);
+  ox.strokeStyle="#8f7fe0"; ox.lineWidth=2; ox.strokeRect(20+3*cw+.5,y0+.5,cw*3,cw);
+  ox.fillStyle="#8f7fe0"; ox.font="11px monospace";
+  ox.fillText("the three cells $4262 reads",20+3*cw,y0-10);
+  /* enemy sprite */
+  ox.fillStyle="#6fc7d4"; ox.fillRect(20+3*cw+14,y0+16,cw*3-28,24);
+  ox.fillStyle="#0a0b18"; ox.fillText("enemy sprite",20+3*cw+22,y0+32);
+  /* missile character */
+  const mxp=20+missileCell*cw+16;
+  ox.fillStyle="#e8a33d"; ox.fillRect(mxp,y0+22,22,12);
+  ox.fillStyle="#e8a33d"; ox.fillText("glyph $12",mxp-6,y0+cw+16);
+  const hit=missileCell>=3&&missileCell<=5;
+  document.getElementById("collVerdict").textContent=hit?"kill registered":"passes through";
+  document.getElementById("collVerdict").style.color=hit?"#8fd17a":"#d97f6e";
+}
+document.getElementById("collStep").onclick=()=>{missileCell=(missileCell+1)%8;drawColl();};
+drawColl();
+
+/* ---------- 07 the tune ---------- */
+const NOTES=29;
+const v1=[],v2=[],v3=[],len=[];
+for(let i=0;i<NOTES;i++){
+  v1.push(TUNE[0x20+i]|(TUNE[0x00+i]<<8));   /* $2A20 lo, $2A00 hi */
+  v2.push(TUNE[0x60+i]|(TUNE[0x40+i]<<8));
+  v3.push(TUNE[0xA0+i]|(TUNE[0x80+i]<<8));
+  len.push(TUNE[0xE0+i]);
+}
+const CLK=985248, hz=v=>v*CLK/16777216;
+const tuCv=document.getElementById("tune"), tx=tuCv.getContext("2d");
+function drawTune(cur=-1){
+  tx.fillStyle="#12142c"; tx.fillRect(0,0,880,120);
+  const w=880/NOTES;
+  for(let i=0;i<NOTES;i++){
+    const x=i*w;
+    if(i===cur){ tx.fillStyle="rgba(232,163,61,.18)"; tx.fillRect(x,0,w,120); }
+    [[v1[i],"#8f7fe0",0],[v2[i],"#6fc7d4",1],[v3[i],"#8fd17a",2]].forEach(([v,c,k])=>{
+      if(!v) return;
+      const f=hz(v), h=Math.max(3,Math.min(34,Math.log2(f/80)*12));
+      tx.fillStyle=c; tx.fillRect(x+2,38*k+36-h,w-4,h);
+    });
+    tx.fillStyle="#292c58"; tx.fillRect(x,114,Math.max(1,(len[i]/255)*w-1),4);
+  }
+}
+drawTune();
+let ac=null,timer=null;
+document.getElementById("play").onclick=()=>{
+  if(timer) return;
+  ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+  let i=0;
+  const step=()=>{
+    if(i>=NOTES){ stopTune(); return; }
+    drawTune(i);
+    document.getElementById("noteNow").textContent="note "+(i+1)+" / "+NOTES;
+    [v1[i],v2[i],v3[i]].forEach((v,k)=>{
+      if(!v) return;
+      const o=ac.createOscillator(), g=ac.createGain();
+      o.type=k===2?"triangle":"sawtooth"; o.frequency.value=hz(v);
+      g.gain.setValueAtTime(.0001,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(.09,ac.currentTime+.01);
+      g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+len[i]/255*.5+.05);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+len[i]/255*.5+.08);
+    });
+    const d=len[i]/255*500+40; i++; timer=setTimeout(step,d);
+  };
+  step();
+};
+function stopTune(){ if(timer) clearTimeout(timer); timer=null; drawTune();
+  document.getElementById("noteNow").textContent="note 0 / "+NOTES; }
+document.getElementById("stop").onclick=stopTune;
+</script>

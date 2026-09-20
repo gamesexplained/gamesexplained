@@ -32,6 +32,14 @@ you have found the other.
 space glyph is a solid block and "blank" screen areas are solid colour.
 Set pixels take the foreground colour and holes show the background.
 
+## Once you have the table, use it everywhere
+
+The alphabet is not only for reading stored strings. Anything that polls
+the screen — waiting for a menu, detecting which state the game is in,
+confirming a title screen appeared — has to be written against this table
+too. A state detector that "never fires" is more often using the wrong
+encoding than looking at the wrong screen.
+
 ## Outputs
 
 The alphabet table(s) in `facts.md`; every string region labelled and
