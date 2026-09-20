@@ -21,11 +21,17 @@ game plays no banking tricks. *(live)*
 
 | Thing | Where |
 |---|---|
-| Screen RAM | `$0400`–`$07E7`, VIC bank 0 (`$DD00` = `$C7`, `$D018` = `$1D`) |
+| Screen RAM | `$0400`–`$07E7`, VIC bank 0 (`$DD00` = `$C7`; `$D018` reads back `$1D`, though the code writes `$1C` at `$4718` — bit 0 is unused) |
 | Sprite pointers | `$07F8`–`$07FF` |
 | Title screen page | `$0800`-`$0BE7`, a **second screen page**. The title is shown by pointing the VIC at it (`$D018` = `$2C` at `$46C5`) and play by pointing it back (`$D018` = `$1C` at `$4717`). Nothing is copied |
 | High-score name buffer | `$0AB4`, up to 12 characters |
-| Player sprite frames | `$20C0` upwards (sprite block `$83`+) |
+| Player aircraft frames | blocks `$80`–`$86` (`$2000`–`$21BF`), a seven-frame yaw sequence with `$83` head-on; `$80` and `$86` are live buffers repainted from the attitude bank |
+| Player attitude bank | `$2B00`–`$2D7F`, two sets of five frames, nose-left and nose-right |
+| Explosion frames | blocks `$88`–`$8F` (`$2200`–`$23FF`), a random-dot cloud that grows then fades |
+| Enemy aircraft frames | blocks `$94`–`$98` nose-left, mirrored at `$99`–`$9D` nose-right |
+| Exhaust plume | blocks `$90`–`$93`, drawn on sprite 7; `$90` is blank and doubles as the "life over" sentinel |
+| Crack's front end | `$1900`–`$1A60`, menu text `$1A80`–`$1BE7`, instruction screen `$1C00`–`$1FFF`, unread intro and scroll text `$0C00`–`$123F` |
+| Saved high-score table | `$2800`–`$2854`, five entries of five score digits and twelve name characters |
 | Character generator | `$3000`–`$37FF`, 256 glyphs |
 | Main loop and frame pace | `$41C0` |
 | Raster interrupt and its installer | `$4AC0` and `$4B20` |
@@ -255,10 +261,14 @@ scenery.
 
 Two rows earn their own note:
 
-- **Randomness comes from the sound chip.** `$43BC` reads `$D41B`, the
+- **Randomness comes from the sound chip.** `$43A9` reads `$D41B`, the
   output of SID voice 3's oscillator, masks it to 0–3, adds `$88` and
-  writes the result as an aircraft's sprite pointer. Enemy attitudes are
-  chosen by the noise the SID happens to be making.
+  writes the result as a sprite pointer — but only for an aircraft whose
+  state byte has reached `$E0`, which means destroyed. What the SID's
+  noise chooses is which frame of the debris cloud a wreck shows, not how
+  an aircraft is flying. The player's own wreck uses all eight frames
+  (`$56A1`). Wave direction and spawn position are drawn from the same
+  register at `$4520`.
 - **Collision detection is entirely the VIC's.** `$4200` reads `$D01E`
   and `$D01F` once each and keeps them, because reading those registers
   clears them. Bit 0 of either is the player, and both paths call the same

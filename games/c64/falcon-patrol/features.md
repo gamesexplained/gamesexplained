@@ -42,7 +42,8 @@ Sources:
 | Destroyed bases return only when a life is lost | confirmed | A destroyed base reads `$6F`/`$70`; `$5FD0` turns them back into `$16`/`$17` and is called from one place only, the life-lost reset at `$564E` |
 | Enemy jets attack in waves | confirmed | `$4540` drip-feeds four slots at spacing `$62`; `$4730` places them as sprites 1-4 |
 | Wave size grows with progress | **differs** | The wiki says one extra attacker every six waves. The code has no wave counter: `$4A80` reads the **score** digits `$13`/`$14` — under 400 points 2 aircraft, 400-1499 three, 1500 or more four. The ten-thousands digit `$12` is never tested, so a score of 10000-10399 drops the wave back to two |
-| Enemy aircraft are drawn in randomly chosen attitudes | confirmed | `$43BC` reads SID oscillator 3 (`$D41B`), masks it to 0-3, adds `$88` and stores it as that sprite's pointer |
+| Enemy aircraft bank through five drawn attitudes | confirmed | Blocks `$94`–`$98` nose-left, mirrored at `$99`–`$9D` nose-right, stepped one frame at a time by `$4367`–`$4392` and walked back to the level frame `$96` when the manoeuvre ends |
+| A destroyed aircraft gets a random explosion frame | confirmed | `$4340` branches to `$43A9` only when the slot's state at `$57,x` has reached `$E0`; there `$D41B` (SID oscillator 3) masked to 0–3 plus `$88` picks one of the first four debris frames. The player's own wreck uses all eight (`$56A1`) |
 | Collisions are detected in hardware | confirmed | `$4200` reads `$D01E` (sprite to sprite) and `$D01F` (sprite to background); bit 0 of either is the player and calls `player_hit` at `$4400` |
 | Enemies bomb the bases | confirmed | `$5C00` drops a bomb from the lowest enemy, `$5CB0` makes it fall, `$5D00` draws it as sprite 5 or 6, and `$5F60` wrecks the base |
 | Enemy aircraft shoot at the player | confirmed | `$5B00`, not in any documentation found. One shot per sky row, spawned only from the side that makes it travel toward the player |
@@ -52,7 +53,7 @@ Sources:
 | Extra life at 3,000 points, once | confirmed | `$55DF`: if `$67` is zero and the thousands digit `$13` has reached 3, `$67` becomes `$30` and a life is added. `$67` is never cleared again, so it is awarded once; `$4FA0` plays the fanfare |
 | Three lives | open | Wiki. This release is "+5" when trainers are chosen; we chose `H`, no trainers |
 | High-score table with name entry | live | Title screen shows five rows and the alphabet strip `.ABCDEFGHIJKLMNOPQRSTUVWXYZ_`; entry routine at `$4CE2` walks an index 0–`$1B` with left/right and accepts with fire, building a name in a buffer at `$0AB4` |
-| High-score saving to disk | traced | Part of the Remember crack, not the original game. The disk carries `f.patrol hi /rem` for it |
+| High-score saving to disk | confirmed | The crack's, not the original game's. `$28A0` reads the table back off the screen, restores the KERNAL vectors and SAVEs `$2800`–`$2854` as `@S:F.PATROL HI /REM` |
 | Music / sound effects | live | SID voice control registers written from `$4BD3`–`$4BE1` in the title loop; a filter sweep at `$4D4B` during name entry |
 
 ## Beyond the documentation
@@ -92,12 +93,50 @@ Found in the code, not in the manual.
   it, and both share the flight model from `$5495` on. Whether Virgin or
   Remember cut it is still not established.
 
-## Open questions
+## What belongs to the crack, and what to Steve Lee
 
-- Which of `$5470` and `$5700` is original and which is patched, and what
-  the `NOP` runs replaced. The crack is documented to carry "additional
-  bugfixes" as well as trainers, so this is not idle curiosity: anything
-  described from this image may not be how the game shipped.
+The question mattered because the wiki says this release carries
+"additional bugfixes" as well as trainers, so anything described from this
+image might not be how the game shipped. Remember answered it themselves,
+in the scroll text of their own intro, still sitting unread at
+`$0E80`–`$123F` and signed "Back Alien/Remember in October 1997":
+
+> first the game fucked up sometimes, I just changed something in the IRQ
+
+> in the game was no routine which sets the places downwards when you
+> entered your name in the highscorelist, so I coded a routine
+
+So the raster interrupt was touched, and the high-score place-shifting
+cascade at `$294E` is Remember's code, not Virgin's. Anything this
+analysis says about the high-score table's behaviour is the crack's
+behaviour.
+
+Their front end is `$1900`–`$1A60`, which ends `JMP $4100` into the game's
+cold start, with its menu text at `$1A80`–`$1BE7` and the instruction
+screen copied from `$1C00`–`$1FFF`. It keeps its data at `$1800`–`$1FFF`
+because in VIC bank 0 the video chip sees the character ROM there, so that
+RAM is invisible to it and free.
+
+Every trainer is a single-byte poke, and between them they name six
+variables — the cleanest confirmation in the whole analysis, because the
+cracker had to know what each address was:
+
+| Trainer | Poke | What it proves |
+|---|---|---|
+| Unlimited lives | `$417C` ← `$A5` | `DEC $1D` becomes `LDA $1D`, so **`$1D` is lives** |
+| Unlimited gas | `$555E` ← `$A5` | `DEC $19`, so **`$17`/`$18`/`$19` are the fuel digits** |
+| Unlimited AAMs | `$57DB` ← `$A5` | `DEC $1C`, so **`$1A`/`$1B`/`$1C` are the missile count** |
+| Bases indestructible | `$5F71` ← `$4D` | the branch after `CMP #$16` is redirected, so **`$16` is an intact base** |
+| No collision | `$420F`, `$424C` ← `$AD` | both `JSR $4400` become `LDA`, so **`$4400` is the only way to die** |
+| Choosing trainers at all | `$4D73` ← `$AD` | it disables the high-score saver, so the two features are exclusive |
+
+What is still **open**: whether the `NOP` padding at `$5470`, `$575E` and
+`$577C`, and the `AND #$00` gates at `$5422`, `$5872` and `$5980` that
+make their guard branches dead, are Remember's work or Steve Lee's. They
+look like patches. The scroll text admits to the IRQ and the high-score
+routine and mentions nothing else.
+
+## Open questions
 - The meaning of every bit of `$22`. Bits 1, 3 and 7 are used by the input
   gate; bit 4 survives the rewrite at `$5776`; bit 0 was set in the
   analysed snapshot and its meaning is unknown.
