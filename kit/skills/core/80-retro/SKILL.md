@@ -5,6 +5,8 @@ description: The last step of every run. Record where the skills and kit fell sh
 
 # Retrospective: improve the kit
 
+Start the clock: `python3 kit/scripts/clock.py start 80-retro --model <your model id> games/<platform>/<slug>`.
+
 You have just used the kit on a real game. Nobody knows better than you,
 right now, where it was wrong, missing or unclear. This step turns that
 into the diff that saves the next contributor the trouble.
@@ -24,7 +26,13 @@ into the diff that saves the next contributor the trouble.
 3. **Write `kit-feedback.md`** in the game folder: what you changed and
    why, what you would change but did not (needs a maintainer's call),
    what took longest, and anything about your operating system or tool
-   versions that the install notes should say.
+   versions that the install notes should say. For "what took longest",
+   run `python3 kit/scripts/clock.py stop` and then `clock.py report`, and
+   paste the table. Under it, one sentence naming the single change to
+   the kit that would have saved the most minutes. A run takes hours, so
+   a saved half hour compounds across every game after yours; that
+   sentence is usually a changelog entry, because it changes what the
+   next agent does. `timings.json` is committed with the game.
 4. **Add to `kit/CHANGELOG.md` only what the next game will do
    differently.** That file is the record of what the kit learned about
    reverse engineering, from which game and whom, not of what changed. If
@@ -33,8 +41,9 @@ into the diff that saves the next contributor the trouble.
    the game and who worked it. A fix to a script, a path, the site or the
    prose style goes in `kit-feedback.md` and the pull request instead.
 5. **Complete `game.json`**: tier reached (only if every requirement is
-   met), tools and versions, model, copy provenance, kit version,
-   coverage figure.
+   met), tools and versions, model (every model that appears in
+   `timings.json`, and the subagents' model if different), copy
+   provenance, kit version, coverage figure.
 6. **Update `TODO.md`** with what is missing for the next tier.
 7. **If you were the first on your operating system**, the install notes
    are part of your retrospective: run
@@ -52,4 +61,5 @@ into the diff that saves the next contributor the trouble.
 ## Outputs
 
 Skill and kit edits committed on the branch and included in the pull
-request; `kit-feedback.md`; `game.json` complete; `TODO.md` current.
+request; `kit-feedback.md` with the timings table; `timings.json`;
+`game.json` complete; `TODO.md` current.

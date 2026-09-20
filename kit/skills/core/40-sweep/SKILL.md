@@ -5,6 +5,8 @@ description: Two cheap mechanical sweeps that convert large regions from unknown
 
 # Sweeps that find what code-reading misses
 
+Start the clock: `python3 kit/scripts/clock.py start 40-sweep --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
+
 Both are cheap and mechanical. Run them from the snapshot's RAM image
 directly (Python over the file) or through the disassembler.
 

@@ -313,6 +313,32 @@ def add_analytics(out_root):
     return n
 
 
+def runs_table(games):
+    """Every game with a timings.json, one row each: the figures a run can try to beat."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from clock import summarize
+    rows = []
+    for g in games:
+        gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
+        if not os.path.isfile(os.path.join(gdir, "timings.json")):
+            continue
+        S = summarize(gdir)
+        program = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
+        fmt = lambda v, unit="": (f"{v:g}{unit}" if v is not None else "")
+        rows.append(f'<tr><td><a href="{g["platform"]}/{g["slug"]}/index.html">{html.escape(g.get("title", g["slug"]))}</a></td>'
+                    f'<td>{program // 1024} KB</td><td>{html.escape(g.get("tier", "none"))}</td><td>{fmt(S["hours"])}</td>'
+                    f'<td>{fmt(S["minutes_to_play"])}</td><td>{fmt(S["min_per_kb"])}</td><td>{fmt(S["agents"])}</td>'
+                    f'<td>{html.escape(", ".join(S["models"]))}</td></tr>')
+    if not rows:
+        return ""
+    return ('<h2>Runs</h2><p>How long each run took, in figures that carry across games and machines: '
+            'hours of work in total, minutes from boot to steady-state play, and minutes of the coverage step per kilobyte '
+            'the ledger tracks, each beside the model that took it. Every run starts the clock at each step; the retro reports it. '
+            'These are the numbers to beat.</p>'
+            '<div class="tablewrap"><table><tr><th>Game</th><th>Program</th><th>Tier</th><th>Hours</th><th>To play (min)</th>'
+            '<th>Coverage (min/KB)</th><th>Agents</th><th>Model</th></tr>' + "".join(rows) + '</table></div>')
+
+
 def card_html(g):
     plat, slug = g["platform"], g["slug"]
     ti = g.get("title_image") or ""
@@ -352,7 +378,7 @@ def main():
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib", cards=cards)
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # the kit changelog, game by game
-    log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False)
+    log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False) + runs_table(games)
     page = fill(read(os.path.join(SITE, "page.html")), site_title="How the kit has changed", lib="lib", body=log,
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "kit.html"), "w").write(page)

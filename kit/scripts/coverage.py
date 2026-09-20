@@ -37,11 +37,20 @@ def load(gdir, live):
     game = json.load(open(os.path.join(gdir, "game.json")))
     reg = regions(game)
     if live:
-        blocks, syms, comments = from_live()
+        blocks, syms, comments = from_live(game.get("platform", "c64"))
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms, comments = s["blocks"], s["symbols"], s["comments"]
     return blocks, syms, comments, reg
+
+
+def tracked_count(gdir):
+    """(tracked bytes, explained bytes) from symbols.json, for clock.py and build.py."""
+    blocks, syms, comments, reg = load(gdir, False)
+    from ledger import compute
+    state = compute(blocks, syms, comments, reg)["state"]
+    tracked = sum(1 for a in range(0x10000) if state[a])
+    return tracked, sum(1 for a in range(0x10000) if state[a] == 2)
 
 
 def main():

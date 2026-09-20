@@ -19,7 +19,11 @@ in order:
    creates `games/<platform>/<slug>/` from the template. Copy the
    contributor's image into its `work/` folder; `work/` is gitignored.
 3. **Run the skills in this order.** Each is a folder under `kit/skills/` with a
-   `SKILL.md`; open the file when you reach that step.
+   `SKILL.md`; open the file when you reach that step. Each one begins
+   by starting the clock (`kit/scripts/clock.py start <step> --model
+   <id>`); a run takes hours, and the per-step times, each with the model
+   that took it, are what let the next run be shorter. `timings.json` is
+   committed with the game.
 
    | Step | Skill | Produces |
    |---|---|---|
@@ -131,7 +135,7 @@ platform follows `kit/PLATFORMS.md`.
 | `kit/template/` | the game folder, stubbed and commented |
 | `kit/skills/core/` | the workflow, platform-independent |
 | `kit/skills/<platform>/` | platform facts and tool notes |
-| `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
+| `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, timings, reference images, gitignored `work/` |
 | `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
 Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.

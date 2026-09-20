@@ -5,6 +5,8 @@ description: Decode the game's text when it uses a custom character set. Render 
 
 # Text: render, don't grep
 
+Start the clock: `python3 kit/scripts/clock.py start 30-text --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
+
 Games with a custom character set often use a **private alphabet** whose
 glyph order has nothing to do with the system's screen codes. Byte-pattern
 search, including every constant offset and XOR, finds nothing and tells

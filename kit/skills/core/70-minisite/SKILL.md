@@ -5,6 +5,8 @@ description: Build the game's minisite. The "How it works" page (index.html) fro
 
 # The minisite
 
+Start the clock: `python3 kit/scripts/clock.py start 70-minisite --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
+
 The minisite is the deliverable: a small site that explains the game, where
 the writing is the spine but anything can live. Interactivity is the point,
 and the minisite can hold anything that explains the game — widgets, level
