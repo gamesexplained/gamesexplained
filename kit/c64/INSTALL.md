@@ -45,6 +45,13 @@ Windows.
 Nobody needs to compile VICE. The vice-mcp project publishes builds on its
 releases page, https://github.com/barryw/vice-mcp/releases. As of v3.11.0:
 
+What it is, and say so when you ask: VICE is the long-running open-source
+Commodore emulator, under the GNU General Public License v2. vice-mcp is
+a fork of it by Barry Walker that adds an MCP server, under the same
+licence, with the stated aim of contributing the work back to VICE. The
+builds are produced by the project's own continuous integration and
+published on its GitHub releases page; nothing comes from anywhere else.
+
 | Operating system | Asset | Notes |
 |---|---|---|
 | macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) into `tools/vice-mcp/` |
@@ -72,6 +79,13 @@ cargo install --root tools/cargo regenerator2000
 
 That compiles it (about a minute on a recent machine) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
+
+What it is, and say so when you ask: regenerator2000 is an open-source
+6502 disassembler by Ricardo Quesada, source at
+https://github.com/ricardoquesada/regenerator2000, licensed MIT or
+Apache-2.0, published on crates.io by its author. `cargo install` fetches
+that source from crates.io and compiles it on the contributor's machine;
+no prebuilt binary is downloaded or run.
 
 ## Start, check, stop
 
@@ -116,6 +130,15 @@ start the tools by hand; the containment is in the launcher.
   although they are installed. Prefix commands with
   `export PATH="/opt/homebrew/bin:$HOME/.cargo/bin:$PATH"` before
   concluding `cargo` is missing.
+
+  That line is for a shell, which expands `$PATH`. Never paste it into an
+  agent's settings file, where the value is taken literally. `$PATH` then
+  stays a literal string, the system directories drop off, and every tool
+  the agent shells out to goes missing. Claude Code reaches the macOS
+  keychain through `/usr/bin/security`, so the first symptom is a sign-in
+  that reports success followed by a session that is not there, with no
+  credential stored. If you do set it there, write every directory out in
+  full.
 - **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
 ## Linux — untested

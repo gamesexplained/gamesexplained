@@ -34,6 +34,10 @@ contributor can trust it with their computer.** In practice:
    repository. An empty list is the pass.
 5. Nothing outside the repository is changed without asking first: no
    shell profiles, no system settings, no global package installs.
+6. Everything installed is open source and comes from the project's own
+   release page or package registry, never a third-party download site.
+   The platform notes name each project, its licence and its source, and
+   the contributor hears all three before anything is fetched.
 
 **If you are the first on an operating system** (Linux and Windows are
 untested), the macOS setup is the standard to match, and matching it is

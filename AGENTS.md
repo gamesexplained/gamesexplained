@@ -107,6 +107,9 @@ platform follows `kit/PLATFORMS.md`.
   there too, and uninstalling is deleting the folder. Before installing
   anything, tell the contributor what will be installed, where, how big,
   and the complete list of anything that can end up outside the folder.
+  Say where it comes from, too: the project by name, that it is open
+  source and under which licence, and that the download is the project's
+  own release, not a mirror. The platform notes carry those facts.
   Never change system settings, shell profiles, global package managers or
   anything else outside the repository without asking first and saying
   why. On an operating system nobody has run the kit on yet, matching this
