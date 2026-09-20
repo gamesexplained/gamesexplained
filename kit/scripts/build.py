@@ -187,6 +187,41 @@ def tabbar(game, present, lib):
             f'{tabs}<span class="tier">tier <b>{tier}</b></span></div></nav>')
 
 
+def banner(game, cons):
+    """One line under the tabs: who curated it, or how to take it further.
+
+    Gold and Platinum name the humans (git authors, linked). Silver is agent-generated
+    and asks for a human editor. Bronze, or no tier, is unfinished and asks for a
+    contributor. The prompt behind the button is the one line to paste into an agent.
+    """
+    tier = game.get("tier", "none")
+    repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "")
+    where = f'games/{game["platform"]}/{game["slug"]}'
+    if tier in ("gold", "platinum"):
+        who = ", ".join(f'<a href="https://github.com/{html.escape(l)}">{html.escape(l)}</a>' if l else html.escape(n) for _, n, l in cons)
+        body = f'This minisite was curated by {who}.' if who else 'This minisite was curated by hand.'
+    elif tier == "silver":
+        prompt = f"Clone {repo} and follow kit/START.md to curate {where} with me to Gold."
+        body = ('This minisite is agent-generated and needs a human editor. '
+                f'<span class="prompt" id="prompt">{html.escape(prompt)}</span>'
+                '<button type="button" data-copy="#prompt">Copy the prompt to work on it</button>')
+    else:
+        cov = game.get("coverage_percent") or 0
+        prompt = f"Clone {repo} and follow kit/START.md to continue {where} to Silver."
+        body = (f'This minisite is not complete: {cov:g} % of the program is explained. '
+                f'<span class="prompt" id="prompt">{html.escape(prompt)}</span>'
+                '<button type="button" data-copy="#prompt">Copy the prompt to work on it</button>')
+    return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
+
+
+def under_title(page, ban):
+    """Place the banner after the page's first <h1>, the game's title; after the tabs if there is none."""
+    m = re.search(r"</h1>", page, re.I)
+    if m:
+        return page[:m.end()] + "\n" + ban + page[m.end():]
+    return page.replace("</nav>", "</nav>\n" + ban, 1)
+
+
 def inject(page, nav, lib):
     """Put the tab bar into an authored page and hook the shared css/js."""
     hook = f'<link rel="stylesheet" href="{lib}/site.css">'
@@ -261,23 +296,27 @@ def build_game(gdir, out_root):
     for f in ("levels.html", "play.html"):
         if os.path.exists(os.path.join(gdir, f)):
             present.add(f)
+    cons = contributors(gdir)
     nav = tabbar(game, present, lib)
+    ban = banner(game, cons)
     common = dict(title=html.escape(game.get("title", slug)), lib=lib, build=html.escape(game.get("build") or ""),
                   platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
                   publisher=html.escape(game.get("publisher") or ""))
     # authored tabs
     for f in ("index.html", "levels.html", "play.html"):
         if f in present:
-            open(os.path.join(out, f), "w").write(inject(read(os.path.join(gdir, f)), nav, lib))
+            open(os.path.join(out, f), "w").write(under_title(inject(read(os.path.join(gdir, f)), nav, lib), ban))
     # source
     facts = markdown(read(os.path.join(gdir, "facts.md")))
     cheats = read(os.path.join(gdir, "cheats.md"))
     if cheats.strip():
         facts += "<h2>Cheats</h2>" + markdown(cheats)
     src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
+    src = under_title(src, ban)
+    if "site.js" not in src:
+        src += f'\n<script src="{lib}/site.js"></script>\n'
     open(os.path.join(out, "source.html"), "w").write(src)
     # about
-    cons = contributors(gdir)
     cred = [c for c in (game.get("credits") or []) if (c.get("by") or c.get("name", "")).strip()]   # the game's makers; agents live in "model"
     con_html = "<ul>" + "".join(
         (f'<li><a href="https://github.com/{html.escape(login)}">{html.escape(login)}</a>' if login else f"<li>{html.escape(n)}")
@@ -296,6 +335,7 @@ def build_game(gdir, out_root):
                  contributors=con_html, links=link_html,
                  features=markdown(read(os.path.join(gdir, "features.md"))),
                  orientation=markdown(read(os.path.join(gdir, "orientation.md")))).replace("<!-- tabs -->", nav)
+    about = under_title(about, ban)
     open(os.path.join(out, "about.html"), "w").write(about)
     for f in ("listing.json", "symbols.json"):
         if os.path.exists(os.path.join(gdir, f)):

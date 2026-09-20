@@ -147,7 +147,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 |---|---|
 | Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; some coverage, below 100 %; `symbols.json` and `listing.json` committed for what there is |
 | Silver | 100 % coverage; `facts.md`; every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built; all of it agent-authored, copy `agent-draft` |
-| Gold | a human has curated the Silver: rewritten the clichéd copy, cut what is dull, expanded what is interesting and added what the agent missed, often by prompting the agent for new pieces; copy `human-edited` or `human` |
+| Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
 
 Silver is the default goal and the normal path: the contributor pastes the
@@ -160,7 +160,8 @@ interesting. Time required: a Silver run takes several hours.
 Set `tier` in `game.json` to the highest tier every requirement of which
 is met, and list what is missing for the next one in `TODO.md`. Do not
 round up: an unattended run cannot reach Gold, however good its copy
-reads, because Gold is defined by a human having worked on it.
+reads, because Gold is defined by a human having gone through it. The
+judgement is the requirement, not the diff.
 
 **The contributor's chosen tier is the job.** Once they have named one,
 work to it. Do not stop at a convenient boundary to ask whether to carry

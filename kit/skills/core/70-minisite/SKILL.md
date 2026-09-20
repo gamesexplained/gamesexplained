@@ -123,8 +123,17 @@ Before/after, from real drafts:
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
 and no human has read it yet, `agent` once a human has read it and left it
 as it was, `human-edited` when a human changed it, `human` when a human
-wrote it. An unattended run ends at `agent-draft` and at Silver; a read
-alone does not make Gold, curation does. The page title is the game's name.
+wrote it. An unattended run ends at `agent-draft` and at Silver. Gold is
+a human going through it section by section, whether or not that changes
+anything: `agent` records a pass that found nothing to cut or add.
+
+The page is titled with the game's name and nothing else, in both the
+`<title>` and the `<h1>`, with the platform, year and publisher in the
+eyebrow above it. Readers arrive looking for a game, and a headline in
+place of the name hides it in a tab, a search result and a link. Say the
+interesting thing in the standfirst under the title, where the template
+puts it, and in the section headings.
+
 Reference images are referred to by relative path from the game folder
 (`reference/<name>.png`).
 

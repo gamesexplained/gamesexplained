@@ -51,7 +51,8 @@ There is no lint for this; a mechanical one was tried and dropped.
 
 `game.json` records who wrote the copy: `agent-draft` (agent-written, no
 human has read it yet), `agent` (agent-written, read by a human and left
-as it was), `human-edited`, or `human`. Silver ships as `agent-draft`;
-Gold means a human curated it, so Gold copy is `human-edited` or `human`.
+as it was), `human-edited`, or `human`. Silver ships as `agent-draft`.
+Gold means a human went through it, so Gold copy is anything but
+`agent-draft`: `agent` when they read it and found nothing to change.
 Human copy is preferred and always wins a disagreement. Writers who are good at this are
 welcome to show it.

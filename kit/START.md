@@ -30,6 +30,15 @@ step needs something only they have.
    shell, to fork and to open the pull request; ask for it when you get
    here, not before.
 
+**If the contributor points you at a game folder that already exists**,
+the job is not a new run. A Bronze game is continued to Silver: read its
+`TODO.md`, pick up the workflow at the step it stopped, and everything
+above still applies. A Silver game is curated to Gold, and that is the
+contributor's work with your hands: they say what is dull, what deserves
+more, and what reads like an agent wrote it; you cut, expand, verify
+anything new against the code, and rewrite to `kit/style.md`. Set `copy`
+in `game.json` honestly, and open the pull request as `AGENTS.md` says.
+
 Time expectations: A Silver run can be a few hours of unattended work.
 
 Two rules worth repeating before you start: prefer "unknown" to a
