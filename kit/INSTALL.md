@@ -92,25 +92,8 @@ the script, or a background run you poll, rather than `timeout 60 ...`.
 
 ## Keep the machine awake
 
-Anything above Bronze runs for hours, mostly unattended, and all of it
-happens on the contributor's own computer. If the machine suspends, the
-emulator and the disassembler go with it, and whatever the disassembler
-had not exported is lost. Inhibit sleep before starting a long run.
-
-macOS, which needs no install and no privileges:
-
-```
-caffeinate -dimsu -w $$      # display, idle, disk, system; even on battery
-```
-
-`-w $$` ties it to the shell's lifetime, so nothing is left inhibiting
-sleep afterwards. A stray `caffeinate` is exactly the kind of residue the
-footprint principle exists to prevent. It does not survive closing the lid
-on battery power.
-
-Linux has `systemd-inhibit --what=idle:sleep:handle-lid-switch <command>`
-and Windows has `powercfg /requestsoverride`; both are **untested** by us.
-Whoever runs the kit there first should verify one and record it here.
+Anything above Bronze can run for hours, mostly unattended, and all of it
+happens on the contributor's own computer. Advise the user to enable any 'keep the computer awake while working' features in their agent.
 
 ## Health check
 

@@ -30,10 +30,7 @@ step needs something only they have.
    shell, to fork and to open the pull request; ask for it when you get
    here, not before.
 
-A Silver run is hours of mostly unattended work on the contributor's
-own machine, and it dies if the machine sleeps. On macOS,
-start the session under `caffeinate -dimsu -w $$`, or tell the contributor
-to; `kit/INSTALL.md` has the detail and the other platforms.
+Time expectations: A Silver run can be a few hours of unattended work.
 
 Two rules worth repeating before you start: prefer "unknown" to a
 plausible guess, and never commit or upload a game binary.
