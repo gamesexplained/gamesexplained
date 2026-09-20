@@ -155,8 +155,7 @@ python3 -m http.server -d _site 8000
 
 then open `http://127.0.0.1:8000/<platform>/<slug>/index.html`. The agent
 needs a browser it can screenshot and click: either a browser extension
-that exposes the page to it, or the Claude desktop app, which has one
-built in. Without one you are writing a visual artefact blind.
+that exposes the page to it, or a harness desktop app with a built-in browser. Without one you are writing a visual artefact blind.
 
 Check, at least: every canvas has drawn something; the console has no
 errors; every control does something when clicked; and the rebuilt screen

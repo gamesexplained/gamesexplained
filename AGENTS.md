@@ -150,11 +150,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 | Gold | 100 % coverage; interactive article; at least one finding beyond the documentation verified live; a human has read the copy |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
 
-Roughly, on a machine that runs the emulator comfortably: Bronze is under
-an hour, Silver a few hours, Gold the better part of a day, Platinum
-longer again and mostly spent with an assembler. The annotation burn-down
-dominates everything above Bronze, and it is the part that parallelises
-across subagents; orientation and verification do not.
+Time required: full coverage can take several hours.
 
 Set `tier` in `game.json` to the highest tier every requirement of which
 is met, and list what is missing for the next one in `TODO.md`. Do not
