@@ -158,6 +158,30 @@ showed snapshots restore perfectly.
    should say to run this check before believing it, because the two
    failures look identical and only one of them is the game's fault.
 
+## Checkpoint hit counts stopped recording, silently
+
+Related to the monitor problem above but worth its own line, because it
+bit a second time after the monitor was understood. Part way through the
+session `vice_checkpoint_add` kept returning `{"status":"ok"}` and
+`vice_checkpoint_list` kept showing the checkpoint enabled, while every
+`hit_count` stayed at zero — including one on the raster interrupt, which
+the program counter was simultaneously caught *inside*. On that evidence I
+concluded the game's main loop was not running. It was.
+
+`50-coverage` and `60-verify` both lean on hit counts, and `tool-vice-mcp`
+recommends them ("`vice_checkpoint_list` shows hit counts, which is often
+the fact you wanted"). They are the right instrument and they do work —
+until they don't, and the failure is silent and indistinguishable from a
+true zero.
+
+**Diff:** `60-verify` already says to validate an instrument against a
+quantity you can compute independently. It should name this case, because
+the control is free and obvious once stated: **put a checkpoint on a
+routine you know runs — the interrupt handler — in the same batch as the
+one you are measuring.** If the control reads zero, the instrument is
+dead and no other number in that batch means anything. Say the same in
+`tool-vice-mcp` beside the hit-count advice.
+
 ## The game's own alphabet defeats the screen-scraping the skills imply
 
 `30-text` is right that a custom character set needs rendering rather than

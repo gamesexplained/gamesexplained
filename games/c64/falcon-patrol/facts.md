@@ -89,9 +89,16 @@ joystick; it is what the game has decided the pilot did:
 | `$5705` | sprite 0 Y < `$30` | up bit **set**: climb reads as released. A ceiling |
 | `$5718` | sprite 0 Y ≥ `$BF` | down bit set: dive reads as released. A floor |
 | `$5724` | sprite 0 Y ≥ `$7C` | fire bit set: **firing is disabled at low altitude** |
-| `$5731` | `flight_flags` bit 1 | `$FE` — up held, nothing else. Automatic take-off |
+| `$5731` | `flight_flags` bit 1 | `ora #$FE` — every bit set **except bit 0**, so only the climb survives. A take-off gate, not an automatic climb: the player still has to push up |
 | `$573D` | `flight_flags` bit 3 or 7 | `$FD` — down held. Bit 3 is **destroyed**, bit 7 is **out of fuel**: one gate, two ways to stop flying |
 | `$5754` | bit 3 **and** `$07F8` ≥ `$88` | `$FF`, and both velocities zeroed — the wreck coming to rest |
+
+Bit 1 is the take-off gate. The instruction is `ora #$FE`, which sets bits
+1 to 7 and leaves bit 0 alone, so during take-off the climb is the only
+control that still reaches the game. It is not an automatic climb: left
+alone the aircraft sits on the pad indefinitely, and the bit clears the
+moment it starts to rise. The death and out-of-fuel path at `$573D` uses
+`lda #$FD`, an immediate load, and that one really does force the dive.
 
 Bit 3 is set by `player_hit` at `$4400` (`lda $22 / and #$10 / ora #$08`),
 which is reached from either collision register. It means **the aircraft
@@ -304,6 +311,54 @@ loop, and a filter sweep runs at `$4D4B` during name entry. Not yet
 analysed further.
 
 ## Live tests
+
+Every test below was run on a booted machine, with the program counter
+sampled first to prove it was executing. Checkpoint hit counts stopped
+recording part way through the session — `$4AC0` reported zero hits while
+the program counter was caught inside that very handler — so nothing here
+rests on one.
+
+**The take-off gate, the ceiling and the input byte, in a single run.**
+With the aircraft on the pad and `flight_flags` = `$03`, holding up gave:
+
+| t | `$22` | `$0C` | sprite Y |
+|---|---|---|---|
+| 0.0 s | `$03` | `$FF` | `$84` |
+| 0.5 s | `$01` | `$FE` | `$75` |
+| 1.5 s | `$01` | `$FE` | `$56` |
+| 2.5 s | `$01` | `$FE` | `$37` |
+| 3.0 s | `$01` | **`$FF`** | `$2F` |
+
+The take-off bit cleared as soon as the climb began, the input byte showed
+the forged `$FE`, and at `$2F` — one below the `$30` ceiling — the game set
+the up bit again and the climb stopped.
+
+**Horizontal control**, airborne:
+
+| held | `vel_x` over 3 s | `world_x` |
+|---|---|---|
+| nothing | 0 0 0 0 0 0 | `$42` throughout |
+| right | +2 +3 +3 +3 +3 +3 | `$46` → `$90` |
+| left | +1 −1 −3 −3 −3 −3 | `$96` → `$5C` |
+
+Clamped at exactly −3 and +3, as `$54A8` reads.
+
+**Refuelling, twice.** From the moment the jet touches the pad: `$5390`
+flies it down (`$6E` → `$7A` → `$84`), bit 0 sets, and the fuel digits
+climb `[0,0,0]` → `[9,0,0]` over about nine seconds while the AAM count
+rises to `[1,0,0]` and **sticks at exactly 100**. Bit 1 is set in the same
+half-second that the fuel reaches 9.
+
+**Being destroyed.** Caught live: `$22` = `$08`, `$0C` = **`$FD`** — the
+forced dive — and sprite Y falling `$92` → `$A2` → `$B1` → `$BF`, where
+`$0C` returned to `$FF` as the floor took over. Then a new life, the jet
+lowered onto the pad again, and the refuel cycle repeated.
+
+**Low fuel.** Poking the hundreds digit `$17` to zero with the other two
+non-zero set `flight_flags` bit 6 within one frame, exactly as `$5570`
+reads. **Bit 7 (tank empty) was not observed live**: the aircraft was
+destroyed before the tank emptied on every attempt. It rests on the code
+at `$5582` alone.
 
 - Checkpoint hit count on `$4AC0`: 302 hits in 2 s, 604 in 4 s — three per
   PAL frame, so the raster split is real and running.
