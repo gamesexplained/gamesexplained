@@ -50,7 +50,8 @@ There is no lint for this; a mechanical one was tried and dropped.
 ## Declare provenance
 
 `game.json` records who wrote the copy: `agent-draft` (agent-written, no
-human has read it yet), `agent` (agent-written, read by a human, for
-example at the gold-tier read), `human-edited`, or `human`. Human copy is
-preferred and always wins a disagreement. Writers who are good at this are
+human has read it yet), `agent` (agent-written, read by a human and left
+as it was), `human-edited`, or `human`. Silver ships as `agent-draft`;
+Gold means a human curated it, so Gold copy is `human-edited` or `human`.
+Human copy is preferred and always wins a disagreement. Writers who are good at this are
 welcome to show it.

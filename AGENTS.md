@@ -145,17 +145,22 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 
 | Tier | Requires |
 |---|---|
-| Bronze | boots; `orientation.md` recipe; `features.md` drafted from external documentation; reference screenshots |
-| Silver | coverage ≥ 80 % (`coverage.py`); `facts.md`; every feature confirmed or explicitly open; `symbols.json` exported and `listing.json` built from it |
-| Gold | 100 % coverage; interactive article; at least one finding beyond the documentation verified live; a human has read the copy |
+| Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; some coverage, below 100 %; `symbols.json` and `listing.json` committed for what there is |
+| Silver | 100 % coverage; `facts.md`; every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built; all of it agent-authored, copy `agent-draft` |
+| Gold | a human has curated the Silver: rewritten the clichéd copy, cut what is dull, expanded what is interesting and added what the agent missed, often by prompting the agent for new pieces; copy `human-edited` or `human` |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
 
-Time required: full coverage can take several hours.
+Silver is the default goal and the normal path: the contributor pastes the
+one line, answers a few questions, walks away, and comes back to a Silver
+pull request. No human judgement goes into it, which is why it is not
+regarded as good or finished yet. Gold is where taste enters, and it is
+human work: the agent has no reliable sense of what is actually
+interesting. Time required: a Silver run takes several hours.
 
 Set `tier` in `game.json` to the highest tier every requirement of which
 is met, and list what is missing for the next one in `TODO.md`. Do not
-round up: a tier whose last requirement is a human reading the copy is not
-reached until a human has read the copy.
+round up: an unattended run cannot reach Gold, however good its copy
+reads, because Gold is defined by a human having worked on it.
 
 **The contributor's chosen tier is the job.** Once they have named one,
 work to it. Do not stop at a convenient boundary to ask whether to carry

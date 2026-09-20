@@ -41,7 +41,7 @@ into the diff that saves the next contributor the trouble.
    the game and who worked it. A fix to a script, a path, the site or the
    prose style goes in `kit-feedback.md` and the pull request instead.
 5. **Complete `game.json`**: tier reached (only if every requirement is
-   met), tools and versions, model (every model that appears in
+   met; an unattended run stops at Silver, since Gold is human curation), tools and versions, model (every model that appears in
    `timings.json`, and the subagents' model if different), copy
    provenance, kit version, coverage figure.
 6. **Update `TODO.md`** with what is missing for the next tier.

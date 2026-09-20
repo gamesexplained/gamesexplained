@@ -37,7 +37,12 @@ reconstructed screen.
 
 ## Sections
 
-Not every game has every section. Order them to suit the game.
+Not every game has every section. Order them to suit the game. The list
+is a starting set, not a form: the page is open to any structure that
+works for this game, any number of sections at any depth, and the human
+who takes it to Gold will cut what is dull, expand what is interesting and
+add what the agent did not think of. What stays fixed is the tab bar, the
+address links into the Source tab, and the house style in `kit/style.md`.
 
 1. **One frame, rebuilt from memory.** Render the play screen from the
    snapshot's screen memory, colour memory and character set with your
@@ -116,9 +121,10 @@ Before/after, from real drafts:
   → "The last note is held twice as long as the rest."
 
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
-and no human has read it yet, `agent` once a human has read it (for
-example the gold-tier read), `human-edited` when a human changed it,
-`human` when a human wrote it. The page title is the game's name.
+and no human has read it yet, `agent` once a human has read it and left it
+as it was, `human-edited` when a human changed it, `human` when a human
+wrote it. An unattended run ends at `agent-draft` and at Silver; a read
+alone does not make Gold, curation does. The page title is the game's name.
 Reference images are referred to by relative path from the game folder
 (`reference/<name>.png`).
 
