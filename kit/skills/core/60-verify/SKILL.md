@@ -55,9 +55,15 @@ lies, all of which have cost real time:
   from the arithmetic is this, not a flaw in your reading of the code.
   Break after the update, or subtract it and check the whole series again.
 - **The tool did not do what it said.** An input tool that changes no
-  hardware register, a stopwatch quantised to the frame. Validate any
-  instrument against a quantity you can compute independently before you
-  quote a number from it.
+  hardware register, a stopwatch quantised to the frame, a breakpoint that
+  has quietly stopped counting. Validate any instrument against a quantity
+  you can compute independently before you quote a number from it.
+  **Carry a control.** When you measure with breakpoints, put one on a
+  routine you know runs — the interrupt handler will do — in the same
+  batch as the one you are measuring. A control reading zero means the
+  instrument is dead, and it costs nothing to have. Without it, a dead
+  instrument and a routine that genuinely never runs look identical, and
+  the wrong one of those is a publishable claim.
 
 **When the code and a measurement disagree, neither wins automatically.**
 Work out what would have to be true for both, and test that. A model that

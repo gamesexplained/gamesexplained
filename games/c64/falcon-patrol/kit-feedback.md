@@ -4,6 +4,26 @@ Working notes for `80-retro`. Each item says what went wrong, and the diff
 that would have saved the next contributor the trouble. Items marked
 **done** have been made in this branch.
 
+## What was changed in this branch
+
+| File | Change |
+|---|---|
+| `kit/scripts/coverage.py` | fixed `--live`, which called `from_live()` without the platform argument and died on every invocation |
+| `AGENTS.md` | the contributor's chosen tier is the job: work to it, do not pause to ask whether to continue; rough timings per tier; do not round a tier up |
+| `kit/START.md` | ask for the target tier as a fourth question; point at `caffeinate` for long runs |
+| `kit/INSTALL.md` | new "Keep the machine awake" section |
+| `kit/skills/core/10-orient` | sample the program counter before believing a snapshot came back dead |
+| `kit/skills/core/30-text` | once the alphabet is known, screen-polling helpers must use it |
+| `kit/skills/core/50-coverage` | macOS has no `timeout` |
+| `kit/skills/core/60-verify` | carry a control breakpoint when measuring with breakpoints |
+| `kit/skills/core/70-minisite` | new "Check it in a browser" section, and browser verification added to Outputs |
+| `kit/skills/c64/tool-vice-mcp` | the monitor pauses the machine; prove it is running before believing a negative; hit counts can die silently; an armed stick kills keyboard columns 0-4; `vice_watch_add` ignores `load` |
+| `kit/CHANGELOG.md`, `kit/VERSION` | 0.0.6 |
+
+Nothing here loosens a rule. Two things are left for a maintainer: the
+`vice_watch_add` argument handling and the joystick port numbering are
+both upstream bugs in vice-mcp, worked around rather than fixed.
+
 ## The workflow does not say to keep going
 
 The contributor chose a tier at the start of the run — Gold — and the
@@ -195,6 +215,41 @@ helper against screen codes will conclude the title screen never appeared.
 screen-polling helper must be written against it, and that a state
 detector which "never fires" is more likely to be using the wrong encoding
 than looking at the wrong screen.
+
+## The agent cannot see the page it just built
+
+`70-minisite` asks for an interactive page and says it must open cleanly
+from disk, and `build.py` assembles the site, but nothing in the kit gives
+the agent a way to **look at the result**. A canvas that renders nothing,
+a widget that throws on load, a layout that collapses: all of it passes
+every check the kit has, because the checks read files and never render
+one.
+
+This matters more here than in most steps, because the page's whole value
+is the interactive part, and a reconstruction of the play screen is either
+right or obviously wrong the moment you see it.
+
+What worked in this run: serve the built site and drive a real browser.
+
+```
+python3 kit/scripts/build.py
+python3 -m http.server -d _site 8000
+```
+
+then open `http://127.0.0.1:8000/<platform>/<slug>/index.html` in a browser
+the agent can screenshot and click. Two ways exist today: a browser
+extension that exposes the page to the agent, or the Claude desktop app,
+which has a browser built in. Either is enough; without one the agent is
+writing a visual artefact blind.
+
+**Diff:** a "Check it in a browser" section in `70-minisite`, before
+Outputs, saying that the page must be loaded and looked at before the step
+is done, giving the two commands above, naming the two ways to get a
+browser, and listing what to actually check: that every canvas has drawn,
+that the console is free of errors, that each control does something when
+clicked, and that the reconstruction matches a reference screenshot from
+`reference/`. Add "opened in a browser, every widget exercised" to the
+Outputs list, so it is a step rather than an afterthought.
 
 ## Smaller things
 

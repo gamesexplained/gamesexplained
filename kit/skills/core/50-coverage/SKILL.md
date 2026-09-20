@@ -90,6 +90,10 @@ precise description of every routine forces re-reading code that was
 caught: names kept from a first hypothesis, table lengths read past their
 end, a mechanic adopted from documentation instead of from the code.
 
+macOS has no `timeout` command (`kit/INSTALL.md` says so, and this is
+where the temptation to reach for it is strongest). A long live probe
+needs a guard inside the script or a background run you poll.
+
 ## Splitting the work across subagents
 
 Routines are independent, so the burn-down parallelises. What matters:

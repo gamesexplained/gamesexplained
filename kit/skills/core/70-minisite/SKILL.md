@@ -136,8 +136,35 @@ game while reading how it works understands it better than one who only
 reads. The page's mechanic widgets are usually the seed. Omit the tab only
 if there is genuinely nothing playable to put on it. No tier requires the Play tab, so it never blocks Silver or Gold.
 
+## Check it in a browser
+
+The page is a visual, interactive artefact and none of the kit's checks
+render one. `check_docs.py` and `check_listing.py` read files; `build.py`
+assembles the site without opening it. A canvas that draws nothing, a
+widget that throws on load and a layout that collapses all pass every
+check there is.
+
+So load it and look at it before calling this step done:
+
+```
+python3 kit/scripts/build.py
+python3 -m http.server -d _site 8000
+```
+
+then open `http://127.0.0.1:8000/<platform>/<slug>/index.html`. The agent
+needs a browser it can screenshot and click: either a browser extension
+that exposes the page to it, or the Claude desktop app, which has one
+built in. Without one you are writing a visual artefact blind.
+
+Check, at least: every canvas has drawn something; the console has no
+errors; every control does something when clicked; and the rebuilt screen
+matches a reference screenshot from `reference/`. The reconstruction is
+the one section that is either right or obviously wrong the moment you
+see it, which makes it the best test that the data is understood.
+
 ## Outputs
 
-`index.html` opening cleanly from disk; `listing.json` built and passing
+`index.html` opening cleanly from disk, loaded in a browser with every
+widget exercised; `listing.json` built and passing
 `check_listing.py`; `game.json` with `copy` set; `build.py` producing the
 minisite without errors.

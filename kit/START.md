@@ -12,9 +12,11 @@ step needs something only they have.
    and continue inside it.
 2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
-3. **Ask the contributor three things** if they have not already told you:
-   which game, which platform it is for, and where their copy of it is on
-   disk. We never download game binaries; they supply their own.
+3. **Ask the contributor four things** if they have not already told you:
+   which game, which platform it is for, where their copy of it is on
+   disk, and **which tier they want** (the table is in `AGENTS.md`, with
+   rough timings). We never download game binaries; they supply their own.
+   The tier they pick is what you work to, without stopping to re-ask.
 4. **Set up the tools** with `kit/INSTALL.md` for their operating system.
    Tell them plainly what is known to work and what is untested on their
    platform.
@@ -27,6 +29,11 @@ step needs something only they have.
    `main` directly. This step needs the contributor's GitHub login in the
    shell, to fork and to open the pull request; ask for it when you get
    here, not before.
+
+A Gold or Platinum run is hours of mostly unattended work on the
+contributor's own machine, and it dies if the machine sleeps. On macOS,
+start the session under `caffeinate -dimsu -w $$`, or tell the contributor
+to; `kit/INSTALL.md` has the detail and the other platforms.
 
 Two rules worth repeating before you start: prefer "unknown" to a
 plausible guess, and never commit or upload a game binary.

@@ -55,7 +55,13 @@ annotate it byte by byte.
   snapshot; the names are readable text, so a string search finds them.
 - A loaded snapshot can come back without its timer interrupt running.
   Symptom: the CPU sits in a wait loop and nothing moves. Autostart the
-  image again rather than fighting it.
+  image again rather than fighting it. **Before believing that, sample the
+  program counter several times.** A live machine returns a scatter of
+  addresses; one that returns the same address every time is parked in a
+  sync loop or is not executing at all, and the second of those is usually
+  your test rig rather than the game. A running interrupt does not prove
+  the game is running: the interrupt can fire, the screen can be drawn and
+  every read can look sensible while the main loop has not advanced once.
 - A loaded snapshot **starts running immediately**. If you want the state
   you saved, stop the machine in the same breath as the load; otherwise the
   screen you compare against has already moved on and every check fails for

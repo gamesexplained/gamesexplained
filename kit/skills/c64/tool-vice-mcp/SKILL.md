@@ -49,6 +49,28 @@ you are unsure of.
 
 ## Behaviours that waste time
 
+- **A stopping checkpoint opens the monitor, and an open monitor pauses
+  the machine until it is closed.** This is the most expensive trap here,
+  because a paused machine does not look paused. `vice_ping` still reports
+  `"execution": "running"`. Screenshots still show the last frame, which
+  looks like gameplay. Memory reads return steady, plausible values. Every
+  checkpoint reports `hit_count: 0`, which reads as "that routine is never
+  called". `vice_execution_run` does not bring it back, and neither do
+  `vice_machine_reset` or `vice_autostart`: both report success and change
+  nothing. Close the monitor window to resume, or avoid stopping
+  checkpoints and use `stop: false` with hit counts instead.
+- **Prove the machine is *running* before you believe a negative result.**
+  The converse of the next rule, and the more dangerous direction: an
+  absence measured on a paused machine is indistinguishable from an
+  absence in the game. The test costs one call. Read the program counter
+  several times: a live machine returns a scatter of addresses, a paused
+  or parked one returns the same address every time.
+- **Hit counts can stop recording, silently.** `vice_checkpoint_add` keeps
+  returning ok and `vice_checkpoint_list` keeps showing the checkpoint
+  enabled while every count stays at zero. Always add a **control**: a
+  checkpoint on a routine you know runs, such as the interrupt handler, in
+  the same batch as the one you are measuring. If the control reads zero
+  the instrument is dead, and no other number in that batch means anything.
 - **Prove the machine is stopped before you poke it.** Read the program
   counter twice; if it changes, it is running and every write you make is
   being overwritten. `vice_execution_pause` held the CPU in one run and
@@ -114,6 +136,12 @@ you are unsure of.
   `stick_arm`, `stick` and `stick_release`. Leaving bits 5 to 7 as inputs
   keeps the keyboard columns working for a game that reads a key out of the
   same port. Undo it with `stick_release` before handing the machine back.
+
+  **While the stick is armed, keyboard columns 0 to 4 are dead**, because
+  those bits are outputs. Keys in columns 5 to 7 keep working, which is
+  what makes this confusing: a menu where one key responds and another
+  does nothing looks like a flaky emulator rather than a mask. Call
+  `stick_release` before **every** keyboard press, not only at the end.
 - **`vice_machine_config_set` has a six-entry whitelist**:
   `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
   `CIA2Model`. Joystick port assignment is not among them, so the mapping
@@ -125,6 +153,10 @@ you are unsure of.
 - **Keys a game polls rarely can be missed by a short press.** Where
   `vice_keyboard_matrix` with a long `hold_ms` still does nothing, try
   `vice_keyboard_type`, which goes through the KERNAL buffer instead.
+- **`vice_watch_add` ignores `load: true`** and creates a write watchpoint
+  regardless; its own schema wants `type: "read" | "write" | "both"`. A
+  silently-wrong watchpoint reports zero hits and looks like proof of
+  absence. `vice_checkpoint_add` with `load: true, exec: false` does work.
 - Some tools can take the server down. If a call returns a closed socket,
   check the port before assuming the answer meant anything.
 - The emulator needs a pseudo-terminal and dies with the session that
