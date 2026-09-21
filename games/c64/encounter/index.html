@@ -1,0 +1,462 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encounter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0a0b18; --surface:#12142c; --surface-2:#1a1d40; --line:#292c58; --line-soft:#1d1f3b;
+  --ink:#e9e7f7; --ink-soft:#a5a1cb; --ink-mute:#6e6b99;
+  --amber:#e8a33d; --cyan:#6fc7d4; --coral:#d97f6e; --green:#8fd17a; --violet:#8f7fe0;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Press Start 2P',monospace; --fb:'IBM Plex Sans',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.65;padding:0 0 5rem;margin:0}
+h1,h2,h3{font-weight:600;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+.hero{padding:60px 24px 44px;text-align:center;border-bottom:1px solid var(--line-soft);
+ background:radial-gradient(ellipse 900px 380px at 50% -12%,rgba(143,127,224,.13),transparent 70%)}
+.eyebrow{font-family:var(--fm);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--violet);margin:0 0 20px}
+.hero h1{font-family:var(--fd);font-size:23px;line-height:1.65;margin-bottom:22px}
+.hero .sub{max-width:560px;margin:0 auto;color:var(--ink-soft);font-size:15.5px}
+section{padding:56px 0;border-bottom:1px solid var(--line-soft)}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:11.5px;letter-spacing:.12em;color:var(--ink-mute);text-transform:uppercase;margin:0 0 10px}
+h2.t{font-size:21px;margin-bottom:14px}
+h3{font-size:16px;margin:26px 0 8px}
+.lede{color:var(--ink-soft);max-width:64ch;margin:0 0 30px;font-size:15.5px}
+p{max-width:68ch}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;margin:18px 0}
+.cap{font-family:var(--fm);font-size:12.5px;color:var(--ink-mute);margin-top:14px;line-height:1.65}
+.cap b{color:var(--ink-soft);font-weight:500}
+code{font-family:var(--fm);font-size:.92em;color:var(--cyan)}
+canvas{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.btn{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+.btn.on{color:var(--ink);border-color:var(--violet);background:#241f58}
+.btn:hover{color:var(--ink)}
+label.sl{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
+input[type=range]{width:220px}
+select{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+table{border-collapse:collapse;font-size:14px;width:100%;margin:10px 0}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--fm);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+td.n{font-family:var(--fm);text-align:right}
+td.m{font-family:var(--fm);font-size:13px}
+.sw{display:inline-block;width:18px;height:18px;border-radius:3px;vertical-align:middle;border:1px solid rgba(255,255,255,.15);margin-right:4px}
+.mono{font-family:var(--fm);font-size:13px;white-space:pre-wrap;word-break:break-word;color:var(--ink-soft);line-height:1.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+.tok{display:inline-block;font-family:var(--fm);font-size:12px;padding:1px 6px;border-radius:4px;margin:2px;border:1px solid var(--line)}
+.tok.row{background:#2a2350}.tok.fill{background:#1d3a2a}.tok.edge{background:#3a2a1d}.tok.end{background:#3a1d1d}
+.kbd{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:4px;padding:1px 6px;background:var(--surface-2)}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1984 · Novagen Software</p>
+  <h1>Encounter</h1>
+  <p class="sub">A first-person plain of obelisks and saucers, drawn on a text screen whose characters are rebuilt every frame, with the ground half of the picture supplied by turning the sky upside down.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · One frame, rebuilt from memory</p>
+  <h2 class="t">The play screen, drawn from the snapshot</h2>
+  <p class="lede">Screen memory at <code>$6000</code>, the character buffer at <code>$4000</code> and its reflected copy at <code>$4800</code>, colour memory, the font at <code>$7800</code> and the eight sprite registers, rendered here by the page's own code. A reconstruction, not a screenshot.</p>
+  <div class="plate">
+    <canvas id="scr" width="640" height="400"></canvas>
+    <div class="row">
+      <button class="btn on" id="ovSprites">sprites</button>
+      <button class="btn" id="ovBands">raster bands</button>
+      <button class="btn" id="ovGrid">cell grid</button>
+      <button class="btn" id="ovNoMirror">ground without the mirror</button>
+    </div>
+    <p class="cap" id="scrCap"></p>
+  </div>
+  <p>The picture is character mode from top to bottom. Rows 0 and 1 are the status line in a double-width font. Rows 2 to 17 are the view, shown in multicolour text mode through a character set the game builds every frame. Rows 18 to 24 are the console, drawn once from the same font as the status line. Nothing in the sky or the ground is a pixel: those are background colours changed by a raster interrupt as the beam passes, which is the next section.</p>
+  <p>The eight sprites are the small things. Sprite 1 is the gun sight, fixed in the middle. Sprite 0 is the radar blip. Sprites 2 to 7 are the horizon hills and the clouds, which scroll against the heading so the horizon turns with the player. The yellow shape at the right edge is the flash a saucer arrives through, caught a second after the reference screenshot in <code>reference/</code> was taken.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The horizon</p>
+  <h2 class="t">Seven interrupts and one colour register</h2>
+  <p class="lede">The sky, the horizon gradient and the ground cost no pixels. A chain of raster interrupts rewrites the background colour at seven lines of every frame, each stage pointing the interrupt vector at the next.</p>
+  <div class="plate">
+    <canvas id="bands" width="640" height="312"></canvas>
+    <div class="row"><label class="sl">raster line <input type="range" id="bandLine" min="0" max="311" value="100"><span id="bandVal"></span></label></div>
+    <p class="cap" id="bandCap"></p>
+  </div>
+  <table>
+    <tr><th>Stage</th><th>Line</th><th>Row</th><th>Writes</th></tr>
+    <tr><td class="m">$B2FE</td><td class="n">16</td><td>above the picture</td><td>background $0B (dark grey) for the status rows</td></tr>
+    <tr><td class="m">$B31D</td><td class="n">66</td><td>2</td><td>sky colour from <code>$BB</code>; character set <code>$4000</code> or <code>$5000</code>; multicolour on</td></tr>
+    <tr><td class="m">$B34E</td><td class="n">121</td><td>9, top</td><td>first horizon colour from <code>$BC</code></td></tr>
+    <tr><td class="m">$B374</td><td class="n">125</td><td>9, middle</td><td>second horizon colour from <code>$BD</code></td></tr>
+    <tr><td class="m">$B39A</td><td class="n">128</td><td>9, bottom</td><td>third horizon colour from <code>$BE</code></td></tr>
+    <tr><td class="m">$B3C0</td><td class="n">130</td><td>10</td><td>ground colour from <code>$AD</code>; character set switched to the reflected copy at <code>+$800</code></td></tr>
+    <tr><td class="m">$B3EA</td><td class="n">194</td><td>18</td><td>black; font back to <code>$7800</code>; hi-res; then the per-frame timers, two sound sequencers and the colour flip</td></tr>
+  </table>
+  <p>The last stage also does the game's per-frame housekeeping (<code>$B415</code> to <code>$B4BF</code>): it counts frames, steps two sound loops and flips a bit that picks the low or high nibble of each colour pair. Where a pair has two different nibbles the band flickers between two colours at 25 Hz, which is how the game gets shades the palette does not have. The CIA timers are switched off at game start (<code>$9F16</code>), so this chain is the only interrupt while playing.</p>
+</section>
+
+<section>
+  <p class="fig">03 · The reflection</p>
+  <h2 class="t">The ground is the sky upside down</h2>
+  <p class="lede">After the objects are drawn into rows 2 to 9, <code>$B1EC</code> copies those rows into rows 17 to 10 with every character code inverted, and writes a top-to-bottom reversed copy of the character set into the next 2 KB. The interrupt at line 130 switches to that copy, so the lower half of the view is a mirror image for the cost of a copy loop.</p>
+  <div class="plate">
+    <div class="row"><label class="sl">character code <input type="range" id="mirCode" min="0" max="255" value="1"><span id="mirVal"></span></label></div>
+    <div class="two">
+      <div><canvas id="mirA" width="192" height="192"></canvas><p class="cap" id="mirCapA"></p></div>
+      <div><canvas id="mirB" width="192" height="192"></canvas><p class="cap" id="mirCapB"></p></div>
+    </div>
+    <p class="cap" id="mirRows"></p>
+  </div>
+  <p>Only the characters allocated that frame are reversed; the four fixed fill characters (<code>$00</code>, <code>$20</code>, <code>$40</code>, <code>$60</code>, textures 00, 55, AA and FF) invert into <code>$FF</code>, <code>$DF</code>, <code>$BF</code> and <code>$9F</code>, which the reversed copy leaves as the same textures. The view is double-buffered: odd frames draw into screen <code>$6400</code> with characters at <code>$5000</code> and <code>$5800</code>, even frames into <code>$6000</code> with <code>$4000</code> and <code>$4800</code>, and the line-66 interrupt shows whichever pair finished last.</p>
+</section>
+
+<section>
+  <p class="fig">04 · Objects</p>
+  <h2 class="t">Obelisks, saucers and missiles are recipes for characters</h2>
+  <p class="lede">Every object family has 32 pre-scaled scripts, one per distance step. A script says, row by row, which cells are solid fill and which are edges, and the renderer at <code>$AD76</code> composes each edge cell into a freshly allocated character from a table of two-pixel masks.</p>
+  <div class="plate">
+    <div class="row">
+      <select id="shFam"></select>
+      <label class="sl">size step <input type="range" id="shSize" min="0" max="31" value="20"><span id="shSizeVal"></span></label>
+    </div>
+    <p class="cap" id="shHead"></p>
+    <div id="shTokens" style="margin:10px 0"></div>
+    <p class="mono" id="shBytes"></p>
+    <p class="cap">Scripts live at <code>$1E00</code> to <code>$3EEB</code>; the pointer tables at <code>$9600</code> (low bytes) and <code>$9700</code> (high bytes) are indexed by family × 32 + size step. Token colours: purple starts a new screen row, green is a run of fill cells, orange is one edge cell, red ends the variant.</p>
+  </div>
+  <table>
+    <tr><th>Family</th><th>Drawn as</th><th>Used by</th></tr>
+    <tr><td class="n">0</td><td>obelisk</td><td>the 64 obelisks, objects 32 to 95</td></tr>
+    <tr><td class="n">1</td><td>shot</td><td>player shots, enemy shots, the warp spheres</td></tr>
+    <tr><td class="n">2</td><td>saucer</td><td>the enemy, object 2</td></tr>
+    <tr><td class="n">3</td><td>homing missile</td><td>the enemy when it is a missile</td></tr>
+    <tr><td class="n">4, 5, 6</td><td>explosion fragments</td><td>objects 24 to 31, cycling through the three kinds</td></tr>
+    <tr><td class="n">7</td><td>no script</td><td>the stargate and the arrival flash, drawn as a rectangle by <code>$BA04</code></td></tr>
+  </table>
+  <p>A script's first byte gives the screen row the object starts on, baked into each size step, and whether it carries two or four sub-cell variants for horizontal positions that fall between character cells. Fill cells are written straight into the screen as one of the four fixed characters. Edge cells are built: the renderer takes the cell's existing bitmap, applies an AND mask and an OR pattern from the tables at <code>$BC85</code> and <code>$BD05</code> for each of eight rows, and stores the result in the next free character code from <code>$05</code>, which walks <code>$80, $A0, $C0, $E0, $01, $21</code> and so on, skipping the four fixed fills. Sixteen objects in view can use every dynamic character in the set.</p>
+  <p>Distance to size step goes through <code>$8800</code>, indexed by a logarithmic range code from <code>$B766</code>. The objects are drawn far to near (<code>$B86C</code>) after a selection sort of the view list (<code>$B829</code>), so nearer objects overwrite farther ones.</p>
+</section>
+
+<section>
+  <p class="fig">05 · Controls</p>
+  <h2 class="t">One stick, three keys, and a pause that ignores the pause key</h2>
+  <div class="plate">
+    <table>
+      <tr><th>Input</th><th>Read at</th><th>Does</th></tr>
+      <tr><td>stick up</td><td class="m">$DC00 bit 0</td><td>forward, unless the object ahead is within <code>$43</code> units, in which case a bump (<code>$B53F</code>)</td></tr>
+      <tr><td>stick down</td><td class="m">$DC00 bit 1</td><td>reverse: the heading is flipped by 180°, the same move is made, the heading flipped back (<code>$B56C</code>)</td></tr>
+      <tr><td>stick left / right</td><td class="m">$DC00 bits 2, 3</td><td>turn: 2 units on the first frame, then the skill's turn rate every frame, out of 2048 for a circle (<code>$B4F0</code>, <code>$B4D8</code>)</td></tr>
+      <tr><td>fire</td><td class="m">$DC00 bit 4</td><td>a shot from one of three slots, 24 frames long, with an 8-frame lock (<code>$ACB6</code>)</td></tr>
+      <tr><td><span class="kbd">F1</span></td><td class="m">$DC01 via column 0</td><td>abandon the game and return to the title (<code>$A118</code>)</td></tr>
+      <tr><td><span class="kbd">SPACE</span></td><td class="m">$DC01 via column 7</td><td>pause (<code>$A12A</code>)</td></tr>
+      <tr><td>any stick direction</td><td class="m">$6D</td><td>ends the pause (<code>$A145</code>); pressing SPACE again does nothing</td></tr>
+    </table>
+  </div>
+  <p>The joystick is in control port 2 and is read once per frame by <code>$BC2C</code> with the direction nibble kept in <code>$6D</code> and the fire bit in <code>$6E</code>. The same routine replays a recorded stick script from <code>$7400</code> when the attract demo is running, one record per stick change with a frame count, so the demo is a real game playing a recording.</p>
+  <p>On the title screen the keys go through the KERNAL's own scanner. <span class="kbd">F7</span> or the fire button starts. <span class="kbd">F5</span> cycles the skill through Novice, Advanced and Expert. The number keys 1 to 8 pick a level. The manual says only levels already reached can be picked; in the code the comparison with the highest level reached is still there at <code>$9CE3</code> but the branch after it has been replaced by two <code>NOP</code>s, so any level is available at once.</p>
+</section>
+
+<section>
+  <p class="fig">06 · The plain</p>
+  <h2 class="t">Sixty-four obelisks on a grid</h2>
+  <p class="lede">Every object has a 24-bit X and Z position. The obelisks sit on a 32-unit grid and a 16 × 16 map at <code>$8A00</code> turns any position into the obelisk in that cell, which is how a collision test costs one table read.</p>
+  <div class="plate">
+    <canvas id="plain" width="512" height="512"></canvas>
+    <p class="cap">The map at <code>$8A00</code>: each cell holds 0 or an obelisk number 32 to 95. The white dot is the player in the level-1 snapshot, the yellow dot the saucer. Objects are placed on the map from the high bytes of their positions (<code>$8260</code> and <code>$8320</code>), shifted by 8 so that an obelisk sits in the middle of its cell.</p>
+  </div>
+  <p>Shots and enemy shots ask the map every frame (<code>$AC30</code>): if the cell they moved into holds an obelisk and they are within <code>$4F</code> units of it, their previous position is restored and their heading deflected. The player never asks the map. Instead the visibility scan (<code>$B77F</code>) remembers the nearest object of any kind within four units, and the move routine refuses to advance while that object lies within 45° of the direction of travel. Homing missiles use neither test, which is why the manual warns that obelisks do not stop them.</p>
+</section>
+
+<section>
+  <p class="fig">07 · Enemies</p>
+  <h2 class="t">One enemy at a time, sixteen kinds of saucer</h2>
+  <p class="lede">There is one enemy slot. Between enemies the game waits a random 8 to 39 frames, then decides between a saucer and a homing missile. A saucer's type is random within the range the level has unlocked, and each type has a fire script.</p>
+  <div class="plate">
+    <div class="row"><label class="sl">saucer type <input type="range" id="fsType" min="0" max="15" value="0"><span id="fsVal"></span></label></div>
+    <p class="cap" id="fsInfo"></p>
+    <div id="fsPairs" style="margin-top:8px"></div>
+    <p class="cap">Fire scripts at <code>$8C00</code>: sixteen start offsets, then pairs of (delay in frames before the shot, spread added to the bearing; bit 7 means a random spread within the low bits) ended by <code>$FF</code> and the offset to loop back to (<code>$A97A</code>). A type whose handler ignores the script still has one. Behaviour handlers from the table at <code>$AAB5</code>: types 0 to 4, 6, 8 and 10 use the default handler at <code>$A5D6</code>; 5 and 11 burst fire (<code>$A563</code>); 9, 12, 14 and 15 fire from the script (<code>$A5C7</code>); 7 and 13 fire permanently (<code>$A70D</code>).</p>
+  </div>
+  <table>
+    <tr><th>Rule</th><th>Where</th></tr>
+    <tr><td>Type is random in 0 to 2 × level − 1, so level 1 has two types and level 8 all sixteen</td><td class="m">$A42C</td></tr>
+    <tr><td>The first two saucers after a level-up are the two newly unlocked types</td><td class="m">$A42C, $9E</td></tr>
+    <tr><td>A missile comes when one is pending, when 24 periods of 256 frames pass without a kill or a shot, or one time in four while a saucer flag is set</td><td class="m">$A322</td></tr>
+    <tr><td>A saucer gives up and leaves after the same 24 periods</td><td class="m">$A5F2</td></tr>
+    <tr><td>Saucer speed and heading are rerolled from a difficulty value that ramps from the skill's base to <code>$3F</code></td><td class="m">$A693, $AB70</td></tr>
+    <tr><td>With a chance set per level (<code>$68C8</code>, hidden in the title screen) the saucer's heading is aligned to the player's bearing</td><td class="m">$A6E6</td></tr>
+    <tr><td>Missiles steer toward the player every frame and whine on voices 2 and 3, pitched by range</td><td class="m">$A7F0, $A811</td></tr>
+    <tr><td>An object hits the player when its range is under <code>$80</code>, or between <code>$80</code> and <code>$BF</code> if its bearing jumped by <code>$57</code> or more since last frame (it passed through)</td><td class="m">$AD26</td></tr>
+  </table>
+  <p>The console lamps are five cells of colour memory each, recoloured by <code>$AA70</code>. The middle right lamp turns yellow when a saucer arrives and orange when it goes. The lower right lamp turns light blue for 18 frames when a saucer fires. The upper left lamp alternates red and pink while a missile is live.</p>
+</section>
+
+<section>
+  <p class="fig">08 · Scoring and shields</p>
+  <h2 class="t">Points times level, and a shield count that lives on the screen</h2>
+  <div class="plate">
+    <table id="ptsTable"><tr><th>Saucer type</th><th>Points</th><th>× level 1</th><th>× level 8</th></tr></table>
+    <p class="cap">The table at <code>$8BB0</code>, four bytes per type in BCD; a missile is worth the 500 at <code>$8BAC</code>. <code>$A8B2</code> queues the award and <code>$AAC8</code> pays it level times through the BCD adder at <code>$B8B8</code>.</p>
+  </div>
+  <p>The number of enemies in a level is drawn when the level starts: a random byte masked to 10 to 19 (<code>$AA8F</code>) into <code>$8BA8</code>, which is also what the E counter shows. The score is four BCD bytes at <code>$8BA0</code> with a permanent trailing zero, which is why it always ends in 0.</p>
+  <p>The shield count has no variable. It is the digit on the status line at <code>$6026</code>: the game writes a 4 there at the start, subtracts one character code pair on each death (<code>$ABDC</code>), and adds one, up to 9, when the last enemy of a level dies (<code>$A91D</code>). The check for game over reads the same cell before subtracting, so the game ends on the death that finds the digit already at 0. Four shields are six deaths in the attract demo: four to start, one earned, and one more with S0 showing.</p>
+</section>
+
+<section>
+  <p class="fig">09 · Levels</p>
+  <h2 class="t">Eight scene records, one warp, three skills</h2>
+  <p class="lede">A level is a 16-byte scene record: sprite flags and five colour pairs. The level index counts down, <code>$70</code> for level 1 to <code>$00</code> for level 8, and <code>$80</code> is the warp. Odd levels have a coloured sky, even levels a black one.</p>
+  <div class="plate">
+    <table id="sceneTable"><tr><th>Record</th><th>Level</th><th>Sky</th><th>Horizon 1</th><th>Horizon 2</th><th>Horizon 3</th><th>Ground</th><th>$D022</th><th>sprites</th></tr></table>
+    <p class="cap">Records at <code>$8010</code>, copied to <code>$AB</code> to <code>$BA</code> by <code>$B920</code>. A split swatch is a colour pair whose two nibbles differ: the band flickers between them.</p>
+  </div>
+  <div class="plate">
+    <table id="skillTable"><tr><th>Parameter</th><th>Expert</th><th>Advanced</th><th>Novice</th><th>Demo</th></tr></table>
+    <p class="cap">Eight tables of four bytes at <code>$8F80</code>, one column per skill; the demo plays from the fourth column.</p>
+  </div>
+  <p>When the last enemy dies the stargate (object 3) is placed at that enemy's X for 240 frames and a shield is added at once. Flying into it starts the warp: the scene switches to record 8, speed ramps toward the level's top speed (<code>$A7E8</code>: <span id="warpSpeeds"></span>), and spheres spawn in the enemy-shot slots every three frames. After about four periods of 256 frames the level number goes up (<code>$A798</code>). Missing the gate returns to play with a new enemy count and no penalty (<code>$A552</code>); hitting a sphere is an ordinary death.</p>
+</section>
+
+<section>
+  <p class="fig">10 · Sound</p>
+  <h2 class="t">Two loops and a whine, written straight to the chip</h2>
+  <p class="lede">There is no music player. The interrupt steps two pitch loops, one for voice 1 (the engine) and one for voice 3 (the saucer), and the game code writes the rest of the SID registers as things happen.</p>
+  <div class="plate">
+    <canvas id="snd" width="640" height="160"></canvas>
+    <div class="row">
+      <button class="btn" id="playV1">play voice 1 loop</button>
+      <button class="btn" id="playV3">play voice 3 loop</button>
+      <button class="btn" id="stopSnd">stop</button>
+    </div>
+    <p class="cap">The loops at <code>$80C8</code> (voice 1, noise) and <code>$80A0</code> (voice 3, triangle) hold the high byte of the SID frequency, stepped once per frame by <code>$B415</code> and <code>$B444</code>. Played here through Web Audio at the PAL rate: frequency = byte × 256 × 985248 / 2<sup>24</sup>, about 15 Hz per unit.</p>
+  </div>
+  <p>The bump against an obelisk is a burst of noise on voice 1 at <code>$1414</code> (<code>$B549</code>). The missile whine puts a range-derived pitch on voices 2 and 3 (<code>$A811</code>). The warp has its own rising tone (<code>$A4CD</code>). Volume is set to 15 with the filter mode at <code>$9D9B</code> and left there.</p>
+</section>
+
+<section>
+  <p class="fig">11 · The title screen</p>
+  <h2 class="t">Data hidden in plain sight</h2>
+  <p class="lede">The title screen is a complete 1000-byte screen stored at <code>$6800</code>. Five of its rows are painted in the background colour, and those rows hold the level-key table, a colour table, sprite colours, three variables, seven stub routines and the skill names.</p>
+  <div class="plate">
+    <canvas id="title" width="640" height="400"></canvas>
+    <div class="row"><button class="btn" id="titleReveal">reveal the hidden rows</button></div>
+    <p class="cap">Drawn from <code>$6800</code> with the per-row colour table at <code>$6918</code>, which itself sits in row 7. With the reveal on, rows coloured like the background are shown in white.</p>
+  </div>
+  <table>
+    <tr><th>Row</th><th>Holds</th></tr>
+    <tr><td class="n">5</td><td><code>$68C8</code> the chance a saucer aligns to the player, <code>$68C9</code> its default, <code>$68CB</code> the highest level reached</td></tr>
+    <tr><td class="n">7</td><td><code>$6918</code> 25 row colours; <code>$6931</code> the matrix codes of keys 8 to 1; <code>$6939</code> seven sprite colours</td></tr>
+    <tr><td class="n">13</td><td><code>$6A08</code> seven copies of <code>JMP $6A1D</code> and the <code>RTS</code> they land on; the game calls six of them, every frame in one case, and all do nothing</td></tr>
+    <tr><td class="n">20, 21</td><td>EXPERT, ADVANCED and NOVICE in the wide font, one of which <span class="kbd">F5</span> copies into row 22</td></tr>
+  </table>
+</section>
+
+<section>
+  <p class="fig">12 · Quirks</p>
+  <h2 class="t">Things a pilot would not know</h2>
+  <h3>It refuses to run on an NTSC machine</h3>
+  <p><code>$9DEC</code> reads the raster line through the odd address <code>$CFF9,X</code> with X = 25, which lands on <code>$D012</code>, and spins until the line reads 0. It then looks at the previous non-zero value. On PAL that is <code>$37</code> (line 311 wrapping to 0) and the game continues. On NTSC it is <code>$06</code>, and the code jumps through a pointer that by then holds <code>$DBE8</code>, an address in colour memory. Tested with the emulator set to NTSC: the title screen is drawn and the processor parks at <code>$DBE8</code> for good.</p>
+  <h3>Seven bytes that should not be executed</h3>
+  <p>Between the game-start setup and the level start, <code>$9FF9</code> holds <code>A9 4B 53 54 41 3A 2A</code>. A checkpoint counted one pass through them on every F7. The processor reads them as <code>LDA #$4B</code>, then the undocumented <code>SRE ($54),Y</code>, <code>EOR ($3A,X)</code> and <code>ROL A</code>, none of which matters to what follows. As text they read <code>KSTA:*</code>. Whether this is a patch or original is unknown.</p>
+  <h3>RESET restarts the game</h3>
+  <p><code>$8000</code> holds the vector <code>$9C3E</code> twice and <code>$8004</code> the text <code>CBM80</code>, the signature the KERNAL looks for in a cartridge. A hardware reset or RESTORE therefore lands in the game's own init instead of BASIC.</p>
+  <h3>Any level, any time</h3>
+  <p>The number keys were meant to reopen only levels already reached this session. The comparison is still in the title loop; the branch that acted on it is two <code>NOP</code>s. Pressing 5 on a fresh boot starts level 5.</p>
+  <h3>The pause key cannot unpause</h3>
+  <p>SPACE enters a loop that watches F1 and the joystick. It never looks at SPACE again; any stick direction resumes play.</p>
+  <h3>The shield count is a screen cell</h3>
+  <p>No variable holds the shields. The routines that add and subtract them edit the character code of the digit on the status line.</p>
+  <h3>Calls into the title screen</h3>
+  <p>Six routines, including the once-per-frame wait, call addresses inside row 13 of the title screen, where seven <code>JMP $6A1D</code> lead to an <code>RTS</code>. Something once lived there. What it was, whether a loader hook or a protection check, is unknown.</p>
+</section>
+
+<section>
+  <p class="fig">13 · Where it lives</p>
+  <h2 class="t">Thirty-one kilobytes, most of it tables</h2>
+  <div class="plate"><table>
+    <tr><th>Range</th><th class="n">Bytes</th><th>What</th></tr>
+    <tr><td class="m">$1400 – $17BF</td><td class="n">960</td><td>per-object working tables: view list, bearings, velocities, previous positions</td></tr>
+    <tr><td class="m">$1E00 – $3EEB</td><td class="n">8428</td><td>224 shape scripts, moved here from <code>$3E00</code> by the init</td></tr>
+    <tr><td class="m">$4000 – $5FFF</td><td class="n">8192</td><td>two view character buffers with their reflected copies, rebuilt every frame</td></tr>
+    <tr><td class="m">$6000 – $67FF</td><td class="n">2048</td><td>the two play screens; four sprite frames in the rows of the second that are never drawn</td></tr>
+    <tr><td class="m">$6800 – $6FFF</td><td class="n">2048</td><td>title and game-over screens</td></tr>
+    <tr><td class="m">$7000 – $7FFF</td><td class="n">4096</td><td>sprite frames, then the character set</td></tr>
+    <tr><td class="m">$8000 – $9BFF</td><td class="n">7168</td><td>RESET vectors, scene records, sound loops, object arrays, maths tables, obelisk map, zero-page image, score, fire scripts, skill tables, shape profile rows and pointers</td></tr>
+    <tr><td class="m">$9C00 – $BDFD</td><td class="n">8702</td><td>the game: init and title, main loop and enemy states, renderer, interrupt chain, movement, input</td></tr>
+  </table></div>
+  <p class="cap" style="margin-top:18px">Addresses are from the contributor's own program file, loaded and left at the title screen and then in level 1. The symbol map, the verified facts and the feature checklist sit beside this page.</p>
+</section>
+
+</main>
+<script>
+const DATA={"charset":"fmZmZmZ+fgA8PDw8PDw8AP4G/v7A/v4A/g4cHM7+/gDg4Ozs/v4MAP7A/gbG/v4A/uD+5ub+/gD+Dg4ODg4OAP7G/sbG/v4A/sbG/gb+/gAAAAAAAAAAAAAAAAAAGBgA/wN7Y3sD/wD+5ub+/ubmAP7m/ubm/v4A/ubg4Ob+/gD85ubm5v78AP7g/Pzg/v4A/uD8/ODg4AD+4O7u5v7+AObm/v7m5uYA/jg4ODj+/gD+GBgY2Pj4AObs+Pj87uYA4ODg4OD+/gDG7v7+1sbGAOb2/v7+7uYA/ubm5ub+/gD+5ub+/uDgAP7m5ubu/PYA/ubm/vzu5gD+4P7+Bv7+AP7+ODg4ODgA5ubm5ub+/gDm5ubm/v58AMbG1v7+7sYAxu58OHzuxgDG7nw4ODg4AP4OHDhw/v4ABwcHBwcHBwAAAAAA/wAH/+Acffg8f/w/+vx1r85//f7d3///79/9f////9/c//v/u/9f/357f/47/9w/8/we87gH/+AA/wD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwAAf+AD//wP//8f//+////////f//+H//4B/+AAPgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAVVACqqoFVVVKqqqlVVVSqqqgVVUACqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAcQAA+4AB/8ADvuAFVVAKqqgVVVQqqqpVVVWqqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAABwAAD4AAH8AAP+AAdfAA6qgBVVQCqqoFVVUKqqqVVVVqqqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAgAcBwA6CoBVFUCqqqFVVVKqqqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACAAAHAAAHAAAPgQAPg4AXx8AVyuAqqqAqqqhVVVRVVVSqqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAP4AA+uAC6qgKqqoqqqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAB/AAProBVVVKqqqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYADB8APy6AqqqiqqqoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAA8AAD+DAF3HwVVVUqqqqKT88PDw8Pz8A/Dw8PDz8/AAPDw8PDw8PAPDw8PDw8PAA/wD///D//wD8PPz8APz8AP8AAwPw//8A/Pzw8Pz8/AD8/Pz8//8AAAAA8PD8/PAA//D/APD//wD8APw8PPz8AP/8//z8//8A/AD8PDz8/AD/AAAAAAAAAPz8/Pz8/PwA//D/8PD//wD8PPw8PPz8AP/w8P8A//8A/Dw8/Dz8/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAwAAAAAAAMDAAP8APzw/AP8A/w/PD88P/wD//Pz///z8APw8PPz8PDwA//z//Pz//wD8PPw8PPz8AP/8/Pz8//8A/DwAADz8/AD//Pz8/P//APA8PDw8/PAA//z///z//wD8APDwAPz8AP/8///8/PwA/ADw8AAAAAD//Pz8/P//APwA/Pw8/PwA/Pz///z8/AA8PPz8PDw8AP8PDw8P//8A/MDAwMD8/AD/AwMD8///APzAwMDAwMAA/Pz////8/AA88MDA8Pw8APz8/Pz8//8AAAAAAAD8/ADw/P//8/DwADz8/Pw8PDwA/P/////8/AA8PPz8/Pw8AP/8/Pz8//8A/Dw8PDz8/AD//Pz///z8APw8PPz8AAAA//z8/Pz//wD8PDw8/PA8AP/8/P///PwA/Dw8/PD8PAD//P//AP//APwA/Pw8/PwA//8PDw8PDwD8/MDAwMDAAPz8/Pz8//8APDw8PDz8/AD8/Pz8//8/ADw8PDz8/PAA8PDz///88AA8PDz8/Pw8APD8Pw8//PAAPPzwwPD8PADw/D8PDw8PADz88MDAwMAA/wADDz///wD8/PDAAPz8AAAAAAAAAAAAPz8/Pz8/PwD//////////wAAAAAAAAAA//////78+PDgwIAAAAAAAP////8AAAAA8Pj8/v////8AAAAAAIDA4AAAAAD//////////38/Hw8HAwEAAAAAAA8fP3//////AAAAAAABAweAgIAAAAAAAICAgP+AgICAAAAAAICAgIABAQH/AQEBAQAAAAABAQEBAQEBAAAAAAD4+Pj4+Pj4+B8fHx8fHx8f////////AAAAAP////8AAAAA//////////////////8/Pz8/Pz8/P/z8/Pz8/Pz8/////////vz///////9/P/z+//////78P3//////fz/8/v///////z9/////////gMDg8Pj8/v///vz48ODAgP9/Px8PBwMBAQMHDx8/f/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8=","screen":"gIGAgYCBgIGAgYCBgIHR0dHRsLGCg9HR0dGio4KDgoPR0dHRvr+IidHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABhQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAChgUBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwUBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4UBAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAiQEBAQEAA4AEhAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCQEBAQEBAAGBgQQAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAACgwEBAQEBAQP+fn77//////////////////3//////////////////Xz+/v7+/v7//H/7e//////////////////////////////////////+9v7+/v7+//////////////////////////////////////////////92/v7+/v//////////////////////////////////////////////9v7+/v7//////////////////////////////////////////////Hr+/v7+///////////////////////////////////////////////8+v7+/v///////////////////////////////////////////////Xn6/v7////////////////////////////////////////////////+ev7+/0NDQ0NDQ6uTk5OTk69DQ0NDS1NTU1NjQ0NDQ6uTk5OTk69DQ0NDQ0OjQ6NDo0OLQ0NDQ0OPQ0NDS09HR0dHZ2NDQ0OLQ0NDQ0OPQ6dDp0Ono0OjQ6NDs5eXl5eXt0NDQ09HR4N7R0dnQ0NDs5eXl5eXt0OnQ6dDp6NDo0OjQ4tDQ0NDQ49DQ0NHR0d/d0dHR0NDQ4tDQ0NDQ49Dp0OnQ6ejQ6NDo0Ozl5eXl5e3Q0NDW0dHh3NHR29DQ0Ozl5eXl5e3Q6dDp0Ono0OjQ6NDi0NDQ0NDj0NDQ1dbR0dHR29rQ0NDi0NDQ0NDj0OnQ6dDp0NDQ0NDQ7ubm5ubm79DQ0NDV19fX19rQ0NDQ7ubm5ubm79DQ0NDQ0A==","colourSnap":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwcHBwcHCwsLCwsLCwsLCwsLCwsLCwcHBwcHCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLBgYGBgYLCwsLCwsLCwsLCwsLCwsLBgYGBgYLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","viewChars":"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","viewMirror":"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","title":"0NDQ0dDw0dHQ0dDQ0NHQ0NDR0NHQ0dDw0dHQ0dDQ0NHQ0NDR0NDQ0NDR0dHQ0PDR0NHQ0dHR0NHQ0dDR0NHQ0PDR0NHR0NHR0NHR0dDR0dDQ0NHR0PLQ8NDR0NHR0dDR0NHQ0dDR0PLQ8NDR0dDR0dDQ0dHQ0NDQ0NHR0dDR8tDQ0dDR0dHQ0dDR0NHQ0dDR8tDQ0dHQ0dHQ0dHR0PLQ8NDQ0NHQ0dHy0NHQ0NDR0NDQ0dDQ0NHQ0dHy0NHR0NHR0NDQ0dDR8tAwMKlwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlJSUlJSUnJ3Ky5SUuLmam8LDsLGUlMbHtream66voqO+v5SUlJSUlAEBAQEBAgECAgcCBwICAgMCDQIFAgIEAg4bGBMQCwg7OA8BAQEBAQGUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUzs+YmZSUgoOSk5CRiImUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUtLW2t8TFmpump6KjtLWUlL6/trekpcDBxseam7y9oqOUlJSUCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCkwdakwdakwdakwdakwdakwdakwdamCUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUvr+en7a3vL2io5aXlpeWl5aXlpeWl5aXlpeAgYCBgIGAgYCBgIGAgZSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSwsZqbvr/AwZSUvr+en7a3vL2io5aXlpeWl4CBgIGAgYCBgIGAgYCBlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlKipqqump6iplJS+v56ftre8vaKjlpeWl5aXgIGAgYCBgIGAgYCBgIGUlJSUoqPIybi5oqO8vcDBmpugocTFmpu0tZ6foqOgoZSUlJS0tba3xMWqq56foqOUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlKSliouUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJS0tba3xMWqq56foqOUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUpKWOj5SUlJSUlJSUlJSUlJSUlJScnaKjpqeqq7S1lJSmp5qbsrOiow==","titleColours":[1,1,1,1,1,2,1,2,2,7,2,7,2,2,2,3,2,13,2,5,2,2,4,2,14],"gameover":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHAAAPwAcf4D+/8H//+P//+P//+f//+f///////////f///AAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAACAAAAAAgAAAAAAYAAAAAAAAAAAAAAAAAAAAACAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAACAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgAAAAAAAAAAAAAAIAAAAgAAAAAAAAAAAAAABAgAAAAAAAQAAAAAAAAIAAAAAAAAAAAAAAAAAAIEAAAAAAAAAAACBAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAQAQAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAQAAAAAAAAAAAAAAAAAA0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHRlJSmp5qbsrOio5SUtrfExaKjvL3R0dHR0dHR0dHR0dHR0dHR0dHR0UAAAAAAAAAAAACBAAAAAgAAAAAAAAAAEIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAACAAAAAAEAAAAAAAAAAABAAAAAAAgAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAgAAEAAAQAAAAAAAAAAAAAAAAAAAAAAAABABAEAAAAAAAAAAAAAAIAAAAAAAAAAAABAAAAAAAIEAAAAAAAAIAAAAgAAAACAAAAAAAAAAAAAAIAAAAAAAAAAEAAAAAAAAAAAAAACBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAABAAAgAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAQAAAAAgAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAABAAAAAIAAAkAAAAAAAIEAAAAAAAAAAAAAAEAAAAAAAAAAEAAAAAAAAAAAAAAAAICBAAAAAAAAAAAAAAAAAAAAIAAABAAAAAAAAAAAAAAAAAAEAAAAEAAAAAAAAAEAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==","sprites7000":"AgAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAIAAAAAAAAAAAAgAAAAAAAAIAAAAAAAAAAAAAAAAAAAAIAAAgAAAAAAAAAAAABAAAAAAAAAAgAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAQAAAAAAACAAAAAAAAAAAAAAAEAACAAAAABAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAABAAAAAAAAAAAAAAQAAAAAAAAAAIABAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAIACAAAAAAAAAAAAAAgAAIAAAAAAAAAAAAAAAAAAAAIAAAAAAAAACAAAEAAAAAAAAAAAAAAAAAgAAAAgAAAAAAAAAAAIAAAAAQAAAAACAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAIAgAAAAABAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAQAAABAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAKBAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAACBAAAAAAAAAAAAAAAAAAAAAgAAAAAIAAAAAAAAAAABAAAAIAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gAf/8B///H///v///////3///x///gP/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAH8GAf+fh///7///////////5+f/gYD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AB//wP//+////f//8A//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAYD+D+P/v///3///B//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOAA4fAB8/Bh//jz///7///7///////9///8f//4D//gAAAAAAP8AB//gH//4P//8P//8f//+f//+////////////////////////f//+f//+P//8P//8H//4B//gAP8ADv9G+wn+B/8K90L2Af4G+gL7Cv4K/wH7Av8B7wHrAf8D+wL/Ae8M/wPvAu0F7wj/NPcF9Rz3BfUB9wn2B/4D7gLvAf0B9wT/cfcf9gX+B/YN5gTnAvcG9QT9BP8B+wf6Bf4C9gX3Af8E+Qj7A/oI/hP2BucD/yv3Bv8I+QX9AvkF/S7tAv8Y/l37CPoJ/gf2BP4K9grmBfcD/zP3EvYF9wv2Dv8D+wH5CfsB+QP7D/oM/gHuAuYB9wH1Df0F+QP7BfoD/gr2CvcD5wH/G/4h/wL3GvYQ9wn2A/4E+wL5A/0Q+QL7BPoK6gHrAekB+QH9C/kF/QX1AvcH9gT+A/oN+wf6D/4E7gTmAfYI/gf/PvcH9QX9DvUH/RLtA/0G/wj3BfYB/hj7A/oB/hb/BP0F+QH9AvkE/RH5BPsI+gT7C+8B6QHtAekB/QH5Dv0K+QH7AfoL+wL5Bf0e+QH7D/oC/gb2DOYB7gP6BeoC+wHrAekB/QX5B/0B+QH9Bv8D/gn2Cv4F9gH3AucB5QL1DP0D+QH7BPoF/i3/Bfke+wn6Bv4I9gL3BPUQ9wH1AfcK9Q/3BfYE/gv2BOYC5wL3B/UF/QX5BfsF+gT+A/YH9wXnA+YB/gH3BPUF9wH/UP5K9gH3B/UN9wv1A/cP9gLmBPYG/hH/Af0E/zL9LfUB90T2Cv4T9gf3BucE9wP1Bf0E/zP+C/oE+wL6Af4D9gL/Cf0D/wj3DPUF9wH1AfcT9hD+BvoD/gP3AvUE9wb+BPoE+wPrAukB+Qv9A/cD9gT+CPYG/gX/KfcI/wr7Av8B+wL/B/cC/wT+GP8E/lL/d/sE/wj7B/8d+wX/A/cE/wP3Bf8D+wP/Bvse/wT3Bf8R9yf/Qv0B9yP2A/4I9gT3G/YE/gjmAf8W9wj2A/4b/wH3AvUU9wH1AfcZ9gb+DfsS+hP+DfYD5gPnAfcJ/wL3RP8B/Qb5HvsE+g37AvkC/QH5BfsD+gT+B+4E9gj+EvoD+wb6HO4D9gP/TvkV/RDtAf8u9wr/AP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI0=","sprites6400":"AAADAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB9AH0AAAAAAAAAAAAAAH0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+fn77//////////////////3//////////////////Xz//////////H/7e////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYGAAQCAAQCAAQCAAQCAAQCAAYGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//+P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/4D///////////8AAH0AfQAAAAAAAAAAAAAAfQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH0AAAAAAAAAAAAAAH0AnO3LzM3Mzg==","spritePtrs":[144,156,237,203,204,205,204,206],"sceneRecords":"EaoCCPoC/qiIiAAAAAAAABEADg7+/v4AAAAAAAAAAAARiAkI+gL+qKqqAAAAAAAAEe4MCPoC/u7uZgAAAAAAABEAAgz+/v4AAAAAAAAAAAAR7goIAgL+7u5mAAAAAAAAEQAJDf7+/gAAAAAAAAAAABHuBQj6Av7u7mYAAAAAAADuAAAJAgICAAAAAAAAAAAA","explosionColours":[9,9,9,154,154,154,167,167,167,113,113,113,113,113,17,17],"points":"AAAFAAAAAQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAAJAAAAEAAAABEAAAASAAAAEwAAABQAAAAVAAAAFgA=","skill":"ICAFP4BQQFCvf29/sIBQYFhQTFCYlJKUDgwKCggEAAA=","warpSpeed":[80,88,96,104,112,120,128,160],"obeliskMap":"UABYACAAKAAwADgAQABIAAAAAAAAAAAAAAAAAAAAAABRAFkAIQApADEAOQBBAEkAAAAAAAAAAAAAAAAAAAAAAFIAWgAiACoAMgA6AEIASgAAAAAAAAAAAAAAAAAAAAAAUwBbACMAKwAzADsAQwBLAAAAAAAAAAAAAAAAAAAAAABUAFwAJAAsADQAPABEAEwAAAAAAAAAAAAAAAAAAAAAAFUAXQAlAC0ANQA9AEUATQAAAAAAAAAAAAAAAAAAAAAAVgBeACYALgA2AD4ARgBOAAAAAAAAAAAAAAAAAAAAAABXAF8AJwAvADcAPwBHAE8AAAAAAAAAAAAAAAAAAAAAAA==","quarterSine":"AAIDBQYICQsNDhARExQWGBkbHB4fISIkJicpKiwtLzAyMzU3ODo7PT5AQUNERkdJSkxNT1BSU1VWWFlbXF5fYGJjZWZoaWtsbW9wcnN0dnd5ent9fn+BgoSFhoiJioyNjo+RkpOVlpeYmpucnZ+goaKkpaanqKmrrK2ur7Cys7S1tre4ubq7vL6/wMHCw8TFxsfIycrLy8zNzs/Q0dLT1NXV1tfY2dra29zd3t7f4OHh4uPk5OXm5ufo6Onq6uvr7O3t7u7v7/Dx8fLy8/Pz9PT19fb29/f3+Pj4+fn5+vr6+/v7+/z8/Pz9/f39/f7+/v7+/v7//////////////w==","atan":"AAEDBAUGCAkKCw0ODxESExQWFxgZGxwdHiAhIiQlJicpKissLi8wMTM0NTY3OTo7PD4/QEFDREVGR0lKS0xNT1BRUlNVVldYWVtcXV5fYGJjZGVmZ2hqa2xtbm9wcnN0dXZ3eHl6fH1+f4CBgoOEhYaHiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGxsrO0tba3uLm6u7y8vb6/wMHCw8PExcbHyMnJysvMzc7Oz9DR0tPT1NXW19fY2drb29zd3t7f4OHh4uPk5OXm5+fo6erq6+zs7e7v7/Dx8fLz8/T19fb3+Pj5+vr7+/z9/f7//w==","recip":"///+/fz7+vn49/b19PPy8fDw7+7t7Ovq6uno5+bm5eTj4uLh4N/f3t3c3Nva2dnY19fW1dTU09LS0dDQz87OzczMy8vKycnIx8fGxsXFxMPDwsLBwMC/v76+vb28vLu6urm5uLi3t7a2tbW0tLOzsrKxsbCwr6+vrq6traysq6uqqqqpqaiop6enpqalpaSkpKOjoqKioaGgoKCfn56enp2dnZycm5ubmpqamZmZmJiYl5eWlpaVlZWUlJSTk5OSkpKRkZGRkJCQj4+Pjo6OjY2NjIyMjIuLi4qKioqJiYmIiIiIh4eHhoaGhoWFhYWEhISDg4ODgoKCgoGBgYGAgA==","rangeSize":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAQICAwMEBAUFBQYGBwcICAkJCgoLCwwMDQ0ODg8PEBAQEREREhISExMTFBQUFRUVFhYWFxcXGBgYGRkZGhoaGhsbGxscHBwcHR0dHR4eHh4fHx8fH////////////////////////////////w==","shapePtrLo":"f0MHy49TF9qbWhDEf0IHzpxrPBTsx6iLdmFNQSofCgD8tGgayW8g1pBME9uugFMoBOC+nX5mTzgjFQj85drFuwyrTPiqZCTrs3xNI/rSrI5wVDkdA+rYx7eomo10aFFHp0nsjjDQdBvUhj78wIhXJ/7Rq4ZiPiMJ8NnLvqSYg3m5jV0q+da6lXdcPSkQ++jVv6qXi39yZVlOQzgtIxkPBeGrcj8Q5sSgfV0+Jg3138mynYh6bF5RRDgsIBUKAPbs66FaFtujdUgd88urjG9TNxwC6tjGtaWWiHptYUozKR8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","shapePtrHi":"IyMjIiIiIiEhISEgICAgHx8fHx8eHh4eHh4eHh4eHh4oKCgoJycnJiYmJiUlJSUlJSQkJCQkJCQkJCQjIyMjIy4tLSwsLCwrKysrKyoqKioqKioqKikpKSkpKSkpKSkpNDQzMzMyMjIxMTEwMDAwMC8vLy8vLy8vLi4uLi4uLi43Nzc3NjY2NjY2NjY2NTU1NTU1NTU1NTU1NTU1NTU1NTo6Ojo6OTk5OTk5OTk4ODg4ODg4ODg4ODg4ODg4ODc3Pj4+Pj09PT09PDw8PDw8PDw8Ozs7Ozs7Ozs7Ozs7OzsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","voice3Loop":[0,64,48,32,48,0,0,0,0,0,0,0,0,0,0,0,64,56,48,40,32,40,48,56,0,0,0,0,0,0,0,0],"voice1Loop":[0,8,255,0,0,0,240,240,192,0,0,0,0,0,0,0,128,0,0,0,0,0,0,0,64,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,8,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"voice1Sel":[1,1,1,1,1,0,1,0],"fireScripts":"bw8XMTlNcw9/b02jD48xFxAAEAAQAP8PAwADAAMAAwADAAMAAwADAAMAAwADABAA/xcAAAAIMHj/MQAAAAgOeAAAAAgOeAAAAAgOeP85AEAASABQAFgAYABoAHAAeAAAAAgAEAAYACAAKAAwADj/TTAA/28AAAAIAHgAEDBw/3MDAAMIA3gDEANwAxggaP9/AAAACA54AAAAEA5wAAAAGA5o/48AYABkAGgAbABwAHQAeAB8AAAABAAIAAwAEAAUABgAHP+jAAAREhITFBUWFg4ODg8PEBARERITFBQVFig=","zpImage":"3AcOYQMAoghfYA0Y/gVVATgAABQAAQAAlKgAAAS6sAGgAgIKB+p0yAQOBkAEBADhAAALAAGO/9mVBYAAAw/ACgCQAAAAACAiEEAfJo6UAmwAABIAH1AAAAAEAAEAAAAAAnAAAXAAUAAAAP8PAQEQEAB0GAAAAAAAAhdgAQBPE08TAPD8/AUBAQAGBwb/OF8A4AAgxo0wBXAAAAAAAAAAAA==","vicSnap":[134,232,160,109,70,109,102,84,70,96,102,96,122,96,150,68,12,27,121,0,0,255,24,2,128,0,1,253,0,250,0,8,11,12,1,7,3,4,0,1,15,1,1,1,1,1,1],"spritesSnap":[{"x":134,"y":232,"en":1,"ex":0,"ey":0,"behind":1,"col":1,"ptr":144},{"x":160,"y":109,"en":1,"ex":1,"ey":1,"behind":0,"col":15,"ptr":156},{"x":326,"y":109,"en":1,"ex":0,"ey":0,"behind":1,"col":1,"ptr":237},{"x":358,"y":84,"en":1,"ex":1,"ey":0,"behind":1,"col":1,"ptr":203},{"x":70,"y":96,"en":1,"ex":1,"ey":0,"behind":1,"col":1,"ptr":204},{"x":102,"y":96,"en":1,"ex":1,"ey":0,"behind":1,"col":1,"ptr":205},{"x":122,"y":96,"en":1,"ex":1,"ey":0,"behind":1,"col":1,"ptr":204},{"x":150,"y":68,"en":1,"ex":1,"ey":0,"behind":1,"col":1,"ptr":206}],"keyTable":[27,24,19,16,11,8,59,56],"spriteColours":[15,1,1,1,1,1,1],"shapes":"UAUBIEAAASBBANAPCwcBIEIAASBDAAEgRAACRSBFAFAFASBGAAJHIEgA0BEMCAEgSUoAASBLAAJKIEwAAk0gTQBQBgJOIE8AAlAgUQBGCwJSIFNBAlQhVQACViBXAlghAEYLAlkgWlsCWCFUAAJcIF1FAiJVAEYJAl4hXwIiWAADSmAgYWIDVSJUADwNAmMgZFYDVSMDVSMAA0FlIGZSA1QiWANUIlgAPBEDZ2ggaWprA1QjVQNUI1UAA2xtIGluA1gjA1gjADITAm8gV3ADcSNiA1gjVANYI1QAAnIgc0EDdCJhSgMkVQMkVQAyEwN1diB3eFIDYSN5AyRYAyRYAAN6dyB3e0EEfCR9BFUkVARVJFQAMhIDfm0gaWh/BFUlBFUlBFUlAARrXGkgaWqABFQkWARUJFgEVCRYACgZAm8ggXAEZ4Ijg2sEVCVVBFQlVQRUJVUAAoEggUEEhGAiYYUEWCUEWCUEWCUAKBkDY3Ygd3hWBHElYgRYJVQEWCVUBFglVAAEQWV3IHd7UgR0JGFKBCZVBCZVBCZVACgYBIBqhiCHiFxrBIkligQmWAQmWAQmWAAEf2hPIIdtfgVOJosFVSZUBVUmVAVVJlQAHhsDQVcgU3MFQYxhI2CNBVUnBVUnBVUnBVUnAANwUyBTjgWPgySCkAVUJlgFVCZYBVQmWAVUJlgAHiEEcHt3IF13ekEFkYklkmsFVCdVBVQnVQVUJ1UFVCdVAASOeJMglHaVBZYmlwVYJwVYJwVYJwVYJwAeIAVBfm2HIIdPaJgFcSdiBVgnVAVYJ1QFWCdUBVgnVAAFUlyIhyCHhmp1BXQmYUoFKFUFKFUFKFUFKFUAFB8ElXZaIFpdeI4GQZknmgZVKQZVKQZVKQZVKQZVKQAFQXqTWiBalHtwBo+SJombBlQoWAZUKFgGVChYBlQoWAZUKFgACikEQVdmIGRlcwZrnGElnX4GnimfBlgpVAZYKVQGWClUBlgpVAZYKVQABHBTZCBkoI4GgKEmon8GoylKBipVBipVBipVBipVBipVAAoiBkGkpWAjpqeYB0GoKakHVSsHVSsHVSsHVSsHVSsHVSsABlKqhmEjT6t1B6yJKa0HVCpYB1QqWAdUKlgHVCpYB1QqWAdUKlgACiMHa64prweeK58HWCtUB1grVAdYK1QHWCtUB1grVAdYK1QAB2d0KGFsB6MrSgcsVQcsVQcsVQcsVQcsVQcsVQAKHAhBdCuwCFUtCFUtCFUtCFUtCFUtCFUtCFUtAAixYSuyCFQsWAhULFgIVCxYCFQsWAhULFgIVCxYCFQsWAAKIgiKLYsIWC1UCFgtVAhYLVQIWC1UCFgtVAhYLVQIWC1UAAiJLU4ILlUILlUILlUILlUILlUILlUILlUAChoJVS8JVS8JVS8JVS8JVS8JVS8JVS8JVS8ACVQuWAlULlgJVC5YCVQuWAlULlgJVC5YCVQuWAlULlgAChoKVTEKVTEKVTEKVTEKVTEKVTEKVTEKVTEAClQwWApUMFgKVDBYClQwWApUMFgKVDBYClQwWApUMFgAChoLVTMLVTMLVTMLVTMLVTMLVTMLVTMLVTMAC1QyWAtUMlgLVDJYC1QyWAtUMlgLVDJYC1QyWAtUMlgAChoMVTUMVTUMVTUMVTUMVTUMVTUMVTUMVTUADFQ0WAxUNFgMVDRYDFQ0WAxUNFgMVDRYDFQ0WAxUNFgAChoNVTcNVTcNVTcNVTcNVTcNVTcNVTcNVTcADVQ2WA1UNlgNVDZYDVQ2WA1UNlgNVDZYDVQ2WA1UNlgAChoOVTkOVTkOVTkOVTkOVTkOVTkOVTkOVTkADlQ4WA5UOFgOVDhYDlQ4WA5UOFgOVDhYDlQ4WA5UOFgACiIPVDtVD1Q7VQ9UO1UPVDtVD1Q7VQ9UO1UPVDtVD1Q7VQAPWDsPWDsPWDsPWDsPWDsPWDsPWDsPWDsAUAUBIEAAASBBANAPCwcBILMAASC0AAEgtQACayBrAFAFASC2AAJrIIAA0BEMCAEgt2sAASC4AAJrILkAAmcgZwBQBgJFIHYAAlsgugBQBwK7IG1FAAK8IL0AUAcCviBhvwACwCCdRwBGCgJBIMECwiHDAAJwII4DR2EhxABGDAJ1IGRSA0dhIcIAAnogZkEDxCLDAEYLAn4gWn8DnyNKAANrXCBdgAOeIqMARgwDRacgT5wDniOfAANbpSCGWQOjI0oAPA8BIG8Dm50hoo8DoyOeAAJBIHADmmEhxUEESiSfADwQAlYgU1IDxiJhrQROJIkAAlcgU0EEQcAinawEiySKADwRA0F7IHd6BGuSI5cEiyVOAANSeCB2dQSRiSOWBIokiQA8EwN1aiBpXFIEkWEjdGsEiiWLAAOYaCBtfkEExyTIBIklTgA8EQN+TyBhyX8EyiXLBIkligAEa5ymIGChgATMJIlFBU4miwAyFgJwIIFBBFKhImHNQQTMJcoFfCZhAAJvIIEEzqIinc8FRYklywV9JnkAMhcDQWUgZGMEm50joo8FR2ElwgV9J3wAA1JmIGRWBJphI8VBBcQmwwV5JmEAMhcDdZMgWnZSBIUkYYQFxCZhRwV5J30AA5iUIF2kQQVrwCSdZwXDJsIFYSd8ADIYBHWhYSFgnFIFu2EldEUFoyeeBnwoYQAEmMkign5BBdAm0QZKKJ8GfSh5ACgdA1Z4IHd7UgVSoSRhzUEGQagnqQaLKU4GWClUAANjdiB3ZUEFzqIknc8GrIknrQaKKIkGKlUAKBsEdadPIIeGnFIFryZhbAbSKZEGiSmKB1UrAASYbYcgh4h+QQZrriZ0ZwbTKKNrB04qiwdUKlgAHiMDjmUgZKBwBXWhJGGcUgabYSd0jwdFiSnMB9Qr1QdYK1QAA3NmIGRXQQWYoiSdfkEG1ijRQQfLKsoH1yphQQcsVQAeIgSVlGkgaW2qjgZroSZhzQdrqCnYB8MrxAhBYSvXCFUtAAVBmGppIGlopHAGZ6ImnWwHZ4kphAfCKmFHCNUs1AhULFgAFCUDQXMgU3IFkKFhI2CrjwavKGFsB8orywhHLNkI2i3bCFgtVAADcFcgU28F3MkkgqpBB2uuKHRnB8wqiUUI3SzeCN8tQQguVQAUKAR1dlog4F14UgaAwCeMawebYSl0jwisYSvCQQjhLeIJay7jCVUvAAR6k1og5JR7QQZ/nSZh5QfWKtFBCOYs5wlBoy2xCegu6QlULlgACisEjnt3IOp3ZXAGkKUmYaePB+sqYewI7S3uCcsuiUUJ7y/wCmsw4wpVMQAEc3h3IJN2Y0EG8fImnZxBCGvRKnSACUHMLImPCcouzAprYS/zCugw6QpUMFgACicGmPQmYWp1CGvFKmH1CWuoLdgJzC/KCt0xRwr2MfcLRTL2C1UzAAdBfqImnVxSCICiKp3sCWeJLYQKRYkvywreMNkLRTL4C/gy9wtUMlgACigIgMArjGsJm4ktko8KkWEvdGsLQaMx4Qv5M/oL2TPeDEU09gxVNQAIf50qYeUJmi6ZQQrHMMgLsTLiC/syiUEMRzTdDPg09wxUNFgACiQJmi6JmwqpMa0L/DJhZwxFiTPMDPA18wyjNZ4NRzbZDVU3AApBmS6SjwtBqDCJrAv9MsJrDMs0ygzvNGFrDUo2nw3dNt4NVDZYAAojC2uoMdgMQagzqQzKNcsNSjajDd433Q2jN54ORzjZDlU5AAtniTGEDKyJM60MzDSJRQ2fNp4N2TdHDko4nw7dON4OVDhYAAolDO017g2tNomsDmuJN/4O/zkfAQ6jOZ4PTjqJD587Sg9UO1UADUHMNImPDak2qEEOHwE4/w7+OIlrD0o6nw+LOooPnjqjD1g7AFAFASBAAAEgQQDQEQ0IASAfAgABIB8DAAEgcAACQSBBAFAGASAfBAACQSBSANATDgkBIB8FQQABIB8GAAJBIFYAAlIgUgBQBwJBIB8HAAJSIHUAUAgCUiAfCEEAAnUgmABQCAJ1IB8JUgACmCB+QQBQCAKYIB8KdQADQX4gnFIAUAkDQX4gHwuYAANSnCChdQBQCgNSnCAfDH5BAAN1oSCimABGDAEgbwN1oSBhnFIAAkEgcAOYoiCdfkEARgwBIB8NA5iiIaF1AAJrILUEQX6dIGGcUgBGDgJBIB8OBEF+nSGimAACjyAfDwRSnGEhoXUARg8CjyB2QQRSnGEhnX5BAAKQINwEdaEiopgARg4CziBdUgR1oSJhnFIAAs8gbkEEmKIinX5BAEYOAh8QIG11BJiiI6F1AANB9SC9UgVBfp0iYZxSAEYPA0HlIE+YBUF+nSOimAADUowgg3UFUpxhI6F1ADwUASBAA1IfESF+QQVSnGEjnX5BAAEgQQN1HxIgo5gFdaEkopgAPBQCQSDBA3WuIR8TUgV1oSRhnFIAAnAgjgOYdCBhfkEFmKIknX5BADwVAoAgdmsEQX6dIaKYBkF+nSWimAACfyCkBFKcYSGhdQZSnGEloXUAPBUCbCBtZwR1oSJhnFIGdaEmYZxSAALNIKdrBJiiIp1+QQaYoiadfkEAPBgDQR8UIGEfFQVBfp0jopgHQX6dJ6KYAANSoiCdHxYFUpxhI6F1B1KcYSehdQAyHAJSIFNBA3XCIR8XUgV1oSRhnFIHdaEoYZxSAAJWIFcDmGEhHxhBBZiiJJ1+QQeYoiidfkEAMhsCfyB3gARBfiKjmAZBfp0lopgIQX6dKaKYAAKkIHZrBFIfESIfEnUGUpxhJaF1CFKcYSmhdQAyHALNIGlsBHWhImGcUgZ1oSZhnFIIdaEqYZxSAANrpyBtZwSYoiKdfkEGmKImnX5BCJiiKp1+QQAoIAEgQANrXiEfGQVBfp0jopgHQX6dJ6KYCUF+nSuimAABIEEDkWAgYccFUpxhI6F1B1KcYSehdQlSnGEroXUAKCICpCBdfwRBHxojmAZBfp0lopgIQX6dKaKYCkF+nS2imAADa6oglIAEUh8bItl1BlKcYSWhdQhSnGEpoXUKUpxhLaF1AB4oAkEggQO7YSF0RQVBfp0jopgHQX6dJ6KYCUF+nSuimAtBfp0vopgAAnAgbwPQItEFUpxhI6F1B1KcYSehdQlSnGEroXULUpxhL6F1AB4qA2tcIFp+BEH+Ix8cBkF+nSWimAhBfp0popgKQX6dLaKYDEF+nTGimAADgF0gWn8EUokjHx0GUpxhJaF1CFKcYSmhdQpSnGEtoXUMUpxhMaF1ABQwAnAgV0EDHx4iYR8fBUF+JKOYB0F+nSeimAlBfp0ropgLQX6dL6KYDUF+nTOimAACjiBzA64idEcFUh8RJB8SdQdSnGEnoXUJUpxhK6F1C1KcYS+hdQ1SnGEzoXUAFDEDdWogaVxSBGthI+8GQX6dJaKYCEF+nSmimApBfp0topgMQX6dMaKYDkF+nTWimAADmGggbX5BBPMk8AZSnGEloXUIUpxhKaF1ClKcYS2hdQxSnGExoXUOUpxhNaF1AAo8A0FlIGRjBEV0I9EFUh8gJeVBB1KcYSedfkEJUpxhK51+QQtSnGEvnX5BDVKcYTOdfkEPUpxhN51+QQADUmYgZFYEu2Ej0AV1qCSJmAd1oSiimAl1oSyimAt1oTCimA11oTSimA91oTiimABQBQEgQAABIEEA0A8LBwEgswABILQAASC1AAJrIGsAUAYBIB8hAAJBII8A0BQOCQEgHyJBAAEgHyMAAkEgHyQAAqwgrABQBwJBIB8lAAKPIJsAUAgCgCAfJmsAAuwg6wBGDAEgQAIfJyAfKEQAASBBAh8pINFFAEYNASAfIQIfKSBhHycAAkEgjwNF0SB0RABGDQJBIB8lA0euIR8qAAKPIJsDSHQgYR8rAEYOAo8gHyZBA0h0Ia5HAAKbINYDHythIR8qADwTASBAApsgHyiPAx8sYSF0Hy0AASBBAtYg0UEDHy4iHy9KADwRASAfIQLWIGGbA4giYR8wAAJBII8DQdEgdI8ETvIinR8xADwRAkEgHyUDQdEh1gRO8iOIAAKPIJsDj3QgYZsEHzGdImEfMAA8FQKPIB8mQQOPdCHRQQQfMmAjpnwAApsg1gObYSHWBB8zYSOHADIZASBAApsgHyiPA5thIXSPBB8zYSNgHzIAASBBAtYg0UED1iLRQQSHJKZ8ADITASAfIQLWIGGbA9YiYZsEJlgAAkEgjwNB0SB0jwRB0SJ0jwVVJlQAMhYCQSAfJQNB0SHWBUGB0SPWgQVVJwACjyCbA490IGGbBXAfNHQiYR81bwVUJlgAMhsCjyAfJkEDj3Qh0UEFcB80dCPRgUEFVCdVAAKbINYDm2Eh1gVvHzVhI9aBBVgnACgfASBAApsgHyiPA5thIXSPBR8NHzZhI3SgtQVYJ1QAASBBAtYg0UED1iLRQQVT6yTRU2sFKFUAKBwCQSAfJQNB0SHWBEHRI9YGRWTRJR8pZAZVKQACjyCbA490IGGbBI90ImGbBkRkdCRhHzcfOAZUKFgAHiMBIEACmyAfKI8Dm2EhdI8Em2EjdI8GRpNhJXR3SAZYKVQAASBBAtYg0UED1iLRQQTWJNFBBncfKiaud0cGKlUAHiICQSAfJQNB0SHWBEHRI9YFQdEl1gdKWh8vJx8uWgdVKwACjyCbA490IGGbBI90ImGbBY90JGGbBx8tWnQmYVofLAdUKlgAFCsBIEACmyAfKI8Dm2EhdI8Em2EjdI8Fm2EldI8HHzOHYSdghx8yB1grVAABIEEC1iDRQQPWItFBBNYk0UEF1ibRQQeHhyimh3wHLFUAFCECQSAfJQNB0SHWBEHRI9YFQdEl1gZB0SfWCFUtCFUtAAKPIJsDj3QgYZsEj3QiYZsFj3QkYZsGj3QmYZsIVCxYCFQsWAAKMQEgQAKbIB8ojwObYSF0jwSbYSN0jwWbYSV0jwhvgR81YSd0HzSBcAhYLVQIWC1UAAEgQQLWINFBA9Yi0UEE1iTRQQXWJtFBCIGB1ijRgYFBCC5VCC5VAAoqAkEgHyUDQdEh1gRB0SPWBUHRJdYGQdEn1glrU1PRKetTUwlVLwlVLwACjyCbA490IGGbBI90ImGbBY90JGGbBo90JmGbCbVToHQoYR82Ux8NCVQuWAlULlgACiwDQdEh1gRB0SPWBUHRJdYGQdEn1gdB0SnWCkpaWh8vKx8uWloKVTEKVTEAA490IGGbBI90ImGbBY90JGGbBo90JmGbB490KGGbCh8tWlp0KmFaWh8sClQwWApUMFgACioEQdEj1gVB0SXWBkHRJ9YHQdEp1ghB0SvWC3yHh6Yth4eHC1UzC1UzAASPdCJhmwWPdCRhmwaPdCZhmwePdChhmwiPdCphmwsfMoeHYCxhh4cfMwtUMlgLVDJYAAoqBUHRJdYGQdEn1gdB0SnWCEHRK9YMQYGBgdEt1oGBgQxVNQxVNQxVNQAFj3QkYZsGj3QmYZsHj3QoYZsIj3QqYZsMcIGBHzR0LGEfNYGBbwxUNFgMVDRYDFQ0WAAKKwZB0SfWB0HRKdYIQdEr1glB0S3WDUd3d3euLx8qd3d3DVU3DVU3DVU3AAaPdCZhmwePdChhmwiPdCphmwmPdCxhmw1Id3d3dC5hk3d3Rg1UNlgNVDZYDVQ2WAAKKgdB0SnWCEHRK9YJQdEt1gpB0S/WDk5paWnyMYhpaWkOVTkOVTkOVTkAB490KGGbCI90KmGbCY90LGGbCo90LmGbDh8xaWlpnTBhaWlpHzAOVDhYDlQ4WA5UOFgACjMIj3Qr0UEJj3Qt0UEKj3Qv0UEPcIGBgR80dDHRgYGBgUEPVDtVD1Q7VQ9UO1UPVDtVAAibYSvWCZthLdYKm2Ev1g9vgYGBHzVhMdaBgYGBD1g7D1g7D1g7D1g7AFAFASBAAAEgQQBQBQEgQAABIEEAUAUBIEAAASBBAFAFASBAAAEgQQBQBgEgHzkAASBrAFAGASAfOgABIEUAUAYBIB87AAEgRwBQBgEgHzsAASBHAFAGASAfPAACQSCxAFAGASAfPQACayAfAQBQBgEgHz4AAkUgHz8AUAYBIB9AAAJHIN0AUAYBIB9AAAJHIN0ARgoBIEACQSAfQQABIEECsSDiAEYLASAfOQJrIB9CAAEgawIfASD/AEYLASAfOgJFIB9DAAEgRQIfPyAfRABGCgEgHzsCRyDZAAEgRwLdIN4ARgoBIB87Akcg2QABIEcC3SDeAEYLASAfPAKxIKNBAAJBILEC4iDhAEYMASAfPgIfPyBhRQACRSAfPwIfRCAfRQBGCgEgH0AC3SFHAAJHIN0C3iDZADwQASAfOQJrIB9CAv8hHwEAASBrAh8BIP8C/iCJawA8DgEgHzsCRyDZAt4h3QABIEcC3SDeAtkhRwA8DwEgHzwCsSCjQQLhIeIAAkEgsQLiIOEDQaMhsQA8EgEgHz4CHz8gYUUCH0UhH0QAAkUgHz8CH0QgH0UDRWEhHz8APA4BIB9AAt0hRwLZId4AAkcg3QLeINkDRyLdADISASAfOwJHINkC3iHdA0ci2QABIEcC3SDeAtkhRwPdIt4AMhgBIB8+Ah8/IGFFAh9FIR9EAx8/ImFFAAJFIB8/Ah9EIB9FA0VhIR8/Ax9EIh9FACgaASAfOQJrIB9CAv8hHwEDa4kh/gP/Ix8BAAEgawIfASD/Av4giWsDHwEi/wP+IolrACgYASAfPAKxIKNBAuEh4gOxIqNBA+Ej4gACQSCxAuIg4QNBoyGxA+Ii4QRBoyOxACgWASAfQALdIUcC2SHeA90jRwPZI94AAkcg3QLeINkDRyLdA94i2QRHJN0AHhoBIB87Akcg2QLeId0DRyLZA94j3QRHJNkAASBHAt0g3gLZIUcD3SLeA9kjRwTdJN4AUAUBIEAAASBBAFAFASBAAAEgQQBQBQEgQAABIEEAUAYBIB85AAEgawBQBgEgHzkAASBrAFAGASAfIQACQSCPAFAGASAfRgACayBnAFAGASAfRgACayBnAFAHAkEgHyUAAo8gmwBQBwJrIB9HAAJnIIQAUAgCjyAfJkEAApsg1gBQCAJnIB9IawAChCDYAFAIAmcgH0hrAAKEINgARgsBIEACmyAfKI8AASBBAtYg0UEARgsBIB85AoQgiWcAASBrAtggqGsARgsBIB8hAtYgYZsAAkEgjwNB0SB0jwBGCgEgH0YC2CGEAAJrIGcDa6ggiWcARgoBIB9GAtghhAACayBnA2uoIIlnAEYMAkEgHyUDQdEh1gACjyCbA490IGGbAEYOAo8gHyZBA490IdFBAAKbINYDm2Eh1gBGDgJnIB9IawNniSGoawAChCDYA4Qi2AA8EAEgHzkChCCJZwOEIolnAAEgawLYIKhrA9giqGsAPA4BIB9GAtghhAPYI4QAAmsgZwNrqCCJZwRrqCKJZwA8EQJBIB8lA0HRIdYEQdEj1gACjyCbA490IGGbBI90ImGbADwUAo8gHyZBA490IdFBBI90I9FBAAKbINYDm2Eh1gSbYSPWADwUAmcgH0hrA2eJIahrBGeJI6hrAAKEINgDhCLYBIQk2AAyEgEgH0YC2CGEA9gjhATYJYQAAmsgZwNrqCCJZwRrqCKJZwVrqCSJZwAyGgKPIB8mQQOPdCHRQQSPdCPRQQWPdCXRQQACmyDWA5thIdYEm2Ej1gWbYSXWACgaASAfOQKEIIlnA4QiiWcEhCSJZwWEJolnAAEgawLYIKhrA9giqGsE2CSoawXYJqhrACgbAkEgHyUDQdEh1gRB0SPWBUHRJdYGQdEn1gACjyCbA490IGGbBI90ImGbBY90JGGbBo90JmGbACggAmcgH0hrA2eJIahrBGeJI6hrBWeJJahrBmeJJ6hrAAKEINgDhCLYBIQk2AWEJtgGhCjYAB4aASAfRgLYIYQD2COEBNglhAXYJ4QG2CmEAAJrIGcDa6ggiWcEa6giiWcFa6gkiWcGa6gmiWcHa6goiWcAUAUBIEAAASBBAFAFASBAAAEgQQDQEQ0IASAfAgABIB8DAAEgcAACQSBBANARDQgBIB8CAAEgHwMAASBwAAJBIEEAUAYBIB8EAAJBIFIAUAcCQSAfBwACUiB1AFAIAlIgHwhBAAJ1IJgAUAgCUiAfCEEAAnUgmABQCAJ1IB8JUgACmCB+QQBQCAKYIB8KdQADQX4gnFIAUAkDQX4gHwuYAANSnCChdQBQCgNSnCAfDH5BAAN1oSCimABQCgNSnCAfDH5BAAN1oSCimABGDAEgQAN1oSBhnFIAASBBA5iiIJ1+QQBGDAEgHwQDmKIhoXUAAkEgUgRBfp0gYZxSAEYOAkEgHwcEQX6dIaKYAAJSIHUEUpxhIaF1AEYQAlIgHwhBBFKcYSGdfkEAAnUgmAR1oSKimABGEAJSIB8IQQRSnGEhnX5BAAJ1IJgEdaEiopgARg8CdSAfCVIEdaEiYZxSAAKYIH5BBJiiIp1+QQBGEANBfiAfC5gFQX6dI6KYAANSnCChdQVSnGEjoXUARhIDUpwgHwx+QQVSnGEjnX5BAAN1oSCimAV1oSSimAA8EgEgHwQDmKIhoXUFmKIloXUAAkEgUgRBfp0gYZxSBkF+nSRhnFIAPBgCUiAfCEEEUpxhIZ1+QQZSnGElnX5BAAJ1IJgEdaEiopgGdaEmopgAPBYCdSAfCVIEdaEiYZxSBnWhJmGcUgACmCB+QQSYoiKdfkEGmKImnX5BADwXA0F+IB8LmAVBfp0jopgHQX6dJ6KYAANSnCChdQVSnGEjoXUHUpxhJ6F1ADwaA1KcIB8MfkEFUpxhI51+QQdSnGEnnX5BAAN1oSCimAV1oSSimAd1oSiimAAyIAJSIB8IQQRSnGEhnX5BBlKcYSWdfkEIUpxhKZ1+QQACdSCYBHWhIqKYBnWhJqKYCHWhKqKYADIeA0F+IB8LmAVBfp0jopgHQX6dJ6KYCUF+nSuimAADUpwgoXUFUpxhI6F1B1KcYSehdQlSnGEroXUAKB4BIB8EA5iiIaF1BZiiJaF1B5iiKaF1CZiiLaF1AAJBIFIEQX6dIGGcUgZBfp0kYZxSCEF+nShhnFIKQX6dLGGcUgAoJAJ1IB8JUgR1oSJhnFIGdaEmYZxSCHWhKmGcUgp1oS5hnFIAApggfkEEmKIinX5BBpiiJp1+QQiYoiqdfkEKmKIunX5BACgqA1KcIB8MfkEFUpxhI51+QQdSnGEnnX5BCVKcYSudfkELUpxhL51+QQADdaEgopgFdaEkopgHdaEoopgJdaEsopgLdaEwopgAHg==","shapesBase":7680,"zpSnap":"AAD4AjuAAgDPCmNADdyBBlUB7gAACAABAACAEAAyAADD5VACAgo4AE8AAQgBQAQGAOcAAAtCAY7/DdAFgAADD8AK6JAAAAH/EBcQQAAAjpICbAAAEgAATAUAAAQAAQ0AAAACcAABcABAAAAA/w8BAYAAAHQIAAAAAAAAcXABAE8TTxMA8Pz8BQEBAAYHBqoIX6eoACDGjTAFcAAAUAAAvwD/ANalAFB3cAD/Ee4FDvoC/u7uZgAAAAAAAO7u7mYQCACgAQgDAQADBQMDAQIgAADgBQAAJwwNAISEhISEhISFhYWFhYWGhoaGhoaGh4eHh4eH4NmB6/wokGAARgBUAw==","objPosX":[3,239,89,148,185,225,132,115,2,199,198,86,101,117,132,148,163,170,134,196,100,103,91,109,247,254,251,241,229,222,225,235],"objPosZ":[189,156,185,174,26,9,85,176,188,17,13,194,199,205,210,216,221,45,63,166,219,213,200,204,170,160,148,141,144,154,166,173],"objState":[0,0,255,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"objType":[33,33,66,226,33,33,33,225,34,34,34,34,34,34,34,34,34,34,34,34,35,34,34,34,162,130,162,194,162,130,162,194],"obeliskX":[0,32,64,96,128,160,192,224,0,32,64,96,128,160,192,224,0,32,64,96,128,160,192,224,0,32,64,96,128,160,192,224,0,32,64,96,128,160,192,224,0,32,64,96,128,160,192,224,0,32,64,96,128,160,192,224,0,32,64,96,128,160,192,224],"obeliskZ":[64,64,64,64,64,64,64,64,96,96,96,96,96,96,96,96,128,128,128,128,128,128,128,128,160,160,160,160,160,160,160,160,192,192,192,192,192,192,192,192,224,224,224,224,224,224,224,224,0,0,0,0,0,0,0,0,32,32,32,32,32,32,32,32],"console":"0NDQ0NDQ6uTk5OTk69DQ0NDS1NTU1NjQ0NDQ6uTk5OTk69DQ0NDQ0OjQ6NDo0OLQ0NDQ0OPQ0NDS09HR0dHZ2NDQ0OLQ0NDQ0OPQ6dDp0Ono0OjQ6NDs5eXl5eXt0NDQ09HR4N7R0dnQ0NDs5eXl5eXt0OnQ6dDp6NDo0OjQ4tDQ0NDQ49DQ0NHR0d/d0dHR0NDQ4tDQ0NDQ49Dp0OnQ6ejQ6NDo0Ozl5eXl5e3Q0NDW0dHh3NHR29DQ0Ozl5eXl5e3Q6dDp0Ono0OjQ6NDi0NDQ0NDj0NDQ1dbR0dHR29rQ0NDi0NDQ0NDj0OnQ6dDp0NDQ0NDQ7ubm5ubm79DQ0NDV19fX19rQ0NDQ7ubm5ubm79DQ0NDQ0A=="};
+const un64=s=>{const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;};
+const FONT=un64(DATA.charset), SCREEN=un64(DATA.screen), COLOUR=un64(DATA.colourSnap), CHA=un64(DATA.viewChars), CHM=un64(DATA.viewMirror);
+const TITLE=un64(DATA.title), SPR7=un64(DATA.sprites7000), SPR6=un64(DATA.sprites6400), ZP=un64(DATA.zpSnap), SHAPES=un64(DATA.shapes);
+const PLO=un64(DATA.shapePtrLo), PHI=un64(DATA.shapePtrHi), SCENES=un64(DATA.sceneRecords), POINTS=un64(DATA.points), SKILL=un64(DATA.skill), OMAP=un64(DATA.obeliskMap), FIRE=un64(DATA.fireScripts);
+const PAL=['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171','#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+const hex=(n,w=2)=>'$'+n.toString(16).toUpperCase().padStart(w,'0');
+const V=DATA.vicSnap;
+function spriteData(ptr){ const a=ptr*64; if(a>=0x3000) return SPR7.subarray(a-0x3000,a-0x3000+63); if(a>=0x2400&&a<0x2800) return SPR6.subarray(a-0x2400,a-0x2400+63); return new Uint8Array(63); }
+
+// ---- 01 the screen ------------------------------------------------------------
+(function(){
+  const cv=document.getElementById('scr'), ctx=cv.getContext('2d'), S=2;
+  const ov={sprites:true,bands:false,grid:false,nomirror:false};
+  const sky=ZP[0xBB]&15, h1=ZP[0xBC]&15, ground=ZP[0xAD]&15, d022=ZP[0xAB]&15, d023=ZP[0xA7]&15;
+  function bandColour(r){ return r<2?0x0B:(r<9?sky:(r==9?h1:(r<18?ground:0))); }
+  function draw(){
+    const fg=new Uint8Array(320*200);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    for(let r=0;r<25;r++) for(let c=0;c<40;c++){
+      const code=SCREEN[r*40+c], cr=COLOUR[r*40+c], view=r>=2&&r<=17;
+      const cs=!view?FONT:(r<=9||ov.nomirror?CHA:CHM);
+      const bg=bandColour(r);
+      ctx.fillStyle=PAL[bg]; ctx.fillRect(c*8*S,r*8*S,8*S,8*S);
+      for(let y=0;y<8;y++){ const b=cs[code*8+y];
+        if(view&&(cr&8)){ for(let p=0;p<4;p++){ const v=(b>>(6-2*p))&3; if(!v) continue;
+            ctx.fillStyle=PAL[[bg,d022,d023,cr&7][v]]; ctx.fillRect((c*8+p*2)*S,(r*8+y)*S,2*S,S);
+            if(v>=2){fg[(r*8+y)*320+c*8+p*2]=1;fg[(r*8+y)*320+c*8+p*2+1]=1;} } }
+        else { for(let x=0;x<8;x++) if(b&(0x80>>x)){ ctx.fillStyle=PAL[cr&15]; ctx.fillRect((c*8+x)*S,(r*8+y)*S,S,S); fg[(r*8+y)*320+c*8+x]=1; } }
+      }
+    }
+    if(ov.sprites){ for(const s of DATA.spritesSnap){ if(!s.en) continue; const d=spriteData(s.ptr); ctx.fillStyle=PAL[s.col];
+      for(let sy=0;sy<21;sy++) for(let sx=0;sx<24;sx++) if(d[sy*3+(sx>>3)]&(0x80>>(sx&7))){
+        for(let dy=0;dy<(s.ey?2:1);dy++) for(let dx=0;dx<(s.ex?2:1);dx++){ const px=s.x-24+sx*(s.ex?2:1)+dx, py=s.y-50+sy*(s.ey?2:1)+dy;
+          if(px<0||px>=320||py<0||py>=200) continue; if(s.behind&&fg[py*320+px]) continue; ctx.fillRect(px*S,py*S,S,S);} } } }
+    if(ov.bands){ ctx.strokeStyle='rgba(232,163,61,.95)'; ctx.lineWidth=1; ctx.font='11px IBM Plex Mono'; ctx.fillStyle='#e8a33d';
+      for(const [line,txt] of [[16,'16 status band'],[66,'66 sky'],[121,'121 horizon 1'],[125,'125 horizon 2'],[128,'128 horizon 3'],[130,'130 ground, mirrored charset'],[194,'194 console']]){
+        const y=(line-50)*S+.5; if(y<0) continue; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke(); ctx.fillText(txt,4,y-3); } }
+    if(ov.grid){ ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+      for(let c=0;c<=40;c++){ctx.beginPath();ctx.moveTo(c*8*S+.5,0);ctx.lineTo(c*8*S+.5,cv.height);ctx.stroke();}
+      for(let r=0;r<=25;r++){ctx.beginPath();ctx.moveTo(0,r*8*S+.5);ctx.lineTo(cv.width,r*8*S+.5);ctx.stroke();} }
+  }
+  function bind(id,key){const b=document.getElementById(id); b.onclick=()=>{ov[key]=!ov[key];b.classList.toggle('on',ov[key]);draw();};}
+  bind('ovSprites','sprites');bind('ovBands','bands');bind('ovGrid','grid');bind('ovNoMirror','nomirror');
+  let dyn=new Set(); for(let r=2;r<=9;r++) for(let c=0;c<40;c++){const x=SCREEN[r*40+c]; if(x&0x9F) dyn.add(x);}
+  document.getElementById('scrCap').innerHTML='screen <b>$6000</b>, 1000 bytes · colour memory <b>$D800</b> · view characters <b>$4000</b> and their reflection <b>$4800</b> · font <b>$7800</b><br>band colours from zero page: sky '+hex(sky)+', horizon '+hex(h1)+', ground '+hex(ground)+' · <b>$D022</b> '+hex(d022)+' · <b>$D023</b> '+hex(d023)+'<br>dynamic characters allocated in this frame: <b>'+dyn.size+'</b> · sprites enabled: <b>'+DATA.spritesSnap.filter(s=>s.en).length+'</b>';
+  draw();
+})();
+
+// ---- 02 raster bands -------------------------------------------------------------
+(function(){
+  const cv=document.getElementById('bands'), ctx=cv.getContext('2d');
+  const stages=[[16,0x0B,'$B2FE',"status band, $D021 = $0B"],[66,ZP[0xBB]&15,'$B31D',"sky from $BB, multicolour on, view charset in"],[121,ZP[0xBC]&15,'$B34E',"horizon line 1 from $BC"],[125,ZP[0xBD]&15,'$B374',"horizon line 2 from $BD"],[128,ZP[0xBE]&15,'$B39A',"horizon line 3 from $BE"],[130,ZP[0xAD]&15,'$B3C0',"ground from $AD, reflected charset"],[194,0,'$B3EA',"console, black, font $7800, hi-res; timers and sound loops run here"]];
+  const sl=document.getElementById('bandLine'), val=document.getElementById('bandVal'), cap=document.getElementById('bandCap');
+  function draw(){
+    const line=+sl.value;
+    for(let y=0;y<312;y++){ let col=0x0B; for(const s of stages) if(y>=s[0]) col=s[1]; ctx.fillStyle=PAL[col]; ctx.fillRect(0,y,cv.width,1); }
+    ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,cv.width,50); ctx.fillRect(0,250,cv.width,62);
+    ctx.strokeStyle='#fff'; ctx.beginPath(); ctx.moveTo(0,line+.5); ctx.lineTo(cv.width,line+.5); ctx.stroke();
+    ctx.font='11px IBM Plex Mono'; ctx.fillStyle='#fff';
+    for(const s of stages){ ctx.fillText(s[2]+' at '+s[0],cv.width-160,s[0]+11); }
+    let cur=stages[stages.length-1]; for(const s of stages) if(line>=s[0]) cur=s; if(line<16) cur=stages[stages.length-1];
+    val.textContent=line; cap.innerHTML='line <b>'+line+'</b>: last stage to fire was <b>'+cur[2]+'</b> at line '+cur[0]+' · '+cur[3]+' · background colour <span class="sw" style="background:'+PAL[cur[1]]+'"></span>'+hex(cur[1]);
+  }
+  sl.oninput=draw; draw();
+})();
+
+// ---- 03 mirror -------------------------------------------------------------------
+(function(){
+  const a=document.getElementById('mirA').getContext('2d'), b=document.getElementById('mirB').getContext('2d');
+  const sl=document.getElementById('mirCode'), val=document.getElementById('mirVal');
+  function glyph(ctx,cs,code,label,cap){ ctx.fillStyle='#000'; ctx.fillRect(0,0,192,192);
+    for(let y=0;y<8;y++) for(let p=0;p<4;p++){ const v=(cs[code*8+y]>>(6-2*p))&3; ctx.fillStyle=['#2e2c9b','#ffffff','#edf171','#000'][v]; if(v) ctx.fillRect(p*48,y*24,48,24); }
+    ctx.strokeStyle='rgba(255,255,255,.15)'; for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(0,i*24+.5);ctx.lineTo(192,i*24+.5);ctx.stroke();}
+    document.getElementById(cap).innerHTML=label; }
+  function draw(){ const c=+sl.value; val.textContent=hex(c)+' → '+hex(255-c);
+    glyph(a,CHA,c,'<b>$4000</b> character '+hex(c)+' as drawn in the sky half','mirCapA');
+    glyph(b,CHM,255-c,'<b>$4800</b> character '+hex(255-c)+', the same rows bottom to top, shown in the ground half','mirCapB');
+    let rows=''; for(let r=2;r<=9;r++){ const top=[...SCREEN.subarray(r*40,r*40+40)], bot=[...SCREEN.subarray((19-r)*40,(19-r)*40+40)];
+      const ok=top.every((v,i)=>(v^0xFF)===bot[i]); rows+='row '+r+' vs row '+(19-r)+': '+(ok?'every code inverted':'differs')+'<br>'; }
+    document.getElementById('mirRows').innerHTML='In the snapshot, '+rows; }
+  sl.oninput=draw; (function(){ for(let r=2;r<=9;r++) for(let c=0;c<40;c++){ const x=SCREEN[r*40+c]; if((x&0x9F)&&CHA.subarray(x*8,x*8+8).some(v=>v)){ sl.value=x; return; } } })(); draw();
+})();
+
+// ---- 04 shapes -------------------------------------------------------------------
+(function(){
+  const fam=document.getElementById('shFam'), sl=document.getElementById('shSize'), sv=document.getElementById('shSizeVal');
+  const names=['obelisk','shot / sphere','saucer','homing missile','fragment A','fragment B','fragment C'];
+  names.forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=i+' · '+n;fam.appendChild(o);}); fam.value=2;
+  function draw(){ const f=+fam.value, s=+sl.value, i=f*32+s, p=PLO[i]|(PHI[i]<<8); sv.textContent=s;
+    const base=DATA.shapesBase, a=p-base; const b0=SHAPES[a], four=!!(b0&0x80), start=four?4:2, row0=Math.floor((b0&0x7F)/10)+1;
+    let j=start, toks=[], rows=0; while(a+j<SHAPES.length){ const x=SHAPES[a+j]; if(x===0){toks.push(['end','00']);break;}
+      if(x>=1&&x<=0x1E){rows++;toks.push(['row','row +'+x]);} else if(x===0x1F){toks.push(['edge','edge² '+hex(SHAPES[a+j+1])]);j++;} else if(x<0x40){toks.push(['fill','fill × '+(x&0x1F)]);} else toks.push(['edge','edge '+hex(x)]); j++; }
+    const next=(()=>{let best=0x3EEC; for(let k=0;k<256;k++){const q=PLO[k]|(PHI[k]<<8); if(q>p&&q<best) best=q;} return best;})();
+    document.getElementById('shHead').innerHTML='entry <b>'+i+'</b> → <b>'+hex(p,4)+'</b>, '+(next-p)+' bytes to the next script · header '+hex(b0)+': first screen row <b>'+row0+'</b>, <b>'+(four?4:2)+'</b> sub-cell variants · variant 0 has <b>'+rows+'</b> row steps';
+    document.getElementById('shTokens').innerHTML=toks.map(t=>'<span class="tok '+t[0]+'">'+t[1]+'</span>').join('');
+    document.getElementById('shBytes').textContent=[...SHAPES.subarray(a,Math.min(a+next-p,a+96))].map(v=>v.toString(16).toUpperCase().padStart(2,'0')).join(' ')+(next-p>96?' …':''); }
+  fam.onchange=draw; sl.oninput=draw; draw();
+})();
+
+// ---- 06 the plain ----------------------------------------------------------------
+(function(){
+  const cv=document.getElementById('plain'), ctx=cv.getContext('2d'), C=32;
+  ctx.fillStyle='#0f1a10'; ctx.fillRect(0,0,512,512);
+  for(let z=0;z<16;z++) for(let x=0;x<16;x++){ const v=OMAP[x*16+z]; ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.strokeRect(x*C+.5,(15-z)*C+.5,C,C);
+    if(v){ ctx.fillStyle='#4a4a4a'; ctx.beginPath(); ctx.arc(x*C+C/2,(15-z)*C+C/2,7,0,7); ctx.fill(); ctx.fillStyle='#a5a1cb'; ctx.font='9px IBM Plex Mono'; ctx.fillText(v,x*C+3,(15-z)*C+11); } }
+  function dot(hx,hz,col){ const gx=((hx+8)&0xF0)>>4, gz=((hz+8)&0xF0)>>4; const fx=((hx+8)&15)/16, fz=((hz+8)&15)/16; ctx.fillStyle=col; ctx.beginPath(); ctx.arc(gx*C+fx*C,(15-gz)*C+(1-fz)*C,5,0,7); ctx.fill(); }
+  dot(DATA.objPosX[0],DATA.objPosZ[0],'#fff'); if(DATA.objState[2]) dot(DATA.objPosX[2],DATA.objPosZ[2],'#edf171');
+})();
+
+// ---- 07 fire scripts --------------------------------------------------------------
+(function(){
+  const sl=document.getElementById('fsType'), val=document.getElementById('fsVal');
+  const handler=t=>[5,11].includes(t)?'burst fire ($A563)':([9,12,14,15].includes(t)?'script fire ($A5C7)':([7,13].includes(t)?'permanent fire ($A70D)':'default ($A5D6)'));
+  function draw(){ const t=+sl.value; val.textContent=t; const start=FIRE[t]; let j=start+1, pairs=[], guard=0;
+    while(j+1<FIRE.length&&guard++<40){ if(FIRE[j]===0xFF){ pairs.push('<span class="tok end">$FF: loop to '+hex(0x8C01+FIRE[j+1],4)+'</span>'); break;} const sp=FIRE[j+1]; pairs.push('<span class="tok fill">wait '+FIRE[j]+'</span><span class="tok edge">'+(sp&0x80?'random spread within ±'+(sp&0x7F):'spread '+sp)+'</span>'); j+=2; }
+    document.getElementById('fsInfo').innerHTML='type <b>'+t+'</b>: unlocked from level <b>'+(Math.floor(t/2)+1)+'</b> · points <b>'+((t+1)*100)+'</b> · handler <b>'+handler(t)+'</b> · script pairs from <b>'+hex(0x8C01+start,4)+'</b>';
+    document.getElementById('fsPairs').innerHTML=pairs.join(''); }
+  sl.oninput=draw; draw();
+})();
+
+// ---- 08 points ---------------------------------------------------------------------
+(function(){ const t=document.getElementById('ptsTable');
+  for(let i=0;i<16;i++){ const b=POINTS.subarray(4+i*4,8+i*4); const bcd=[...b].map(v=>v.toString(16).padStart(2,'0')).join(''); const pts=parseInt(bcd,10);
+    t.insertAdjacentHTML('beforeend','<tr><td class="n">'+i+'</td><td class="n">'+pts+'</td><td class="n">'+pts+'</td><td class="n">'+(pts*8)+'</td></tr>'); }
+  t.insertAdjacentHTML('beforeend','<tr><td>missile</td><td class="n">500</td><td class="n">500</td><td class="n">4000</td></tr>');
+})();
+
+// ---- 09 scenes and skills -------------------------------------------------------
+(function(){
+  const sw=v=>{const lo=v&15,hi=v>>4; return lo===hi?'<span class="sw" style="background:'+PAL[lo]+'"></span>'+hex(v):'<span class="sw" style="background:linear-gradient(90deg,'+PAL[lo]+' 50%,'+PAL[hi]+' 50%)"></span>'+hex(v);};
+  const t=document.getElementById('sceneTable');
+  for(let r=0;r<9;r++){ const rec=SCENES.subarray(r*16,r*16+16); const lvl=r<8?(8-r):'warp';
+    t.insertAdjacentHTML('beforeend','<tr><td class="n">'+r+'</td><td class="n">'+lvl+'</td><td>'+sw(rec[1])+'</td><td>'+sw(rec[7])+'</td><td>'+sw(rec[8])+'</td><td>'+sw(rec[9])+'</td><td>'+sw(rec[2])+'</td><td>'+sw(rec[0])+'</td><td class="m">expand X '+hex(rec[4])+' · Y '+hex(rec[5])+' · enable '+hex(rec[6])+'</td></tr>'); }
+  const st=document.getElementById('skillTable'); const names=['difficulty base $3B','player speed $68','enemy speed','enemy-shot speed $A6','hit tolerance $57','obstacle range $4F','turn rate $25','warp bonus $A9'];
+  names.forEach((n,i)=>{ st.insertAdjacentHTML('beforeend','<tr><td>'+n+'</td>'+[0,1,2,3].map(k=>'<td class="n">'+hex(SKILL[i*4+k])+'</td>').join('')+'</tr>'); });
+  document.getElementById('warpSpeeds').textContent=DATA.warpSpeed.map(v=>hex(v)).join(', ');
+})();
+
+// ---- 10 sound ------------------------------------------------------------------------
+(function(){
+  const cv=document.getElementById('snd'), ctx=cv.getContext('2d');
+  const v1=DATA.voice1Loop.slice(0,32), v3=DATA.voice3Loop;
+  function chart(){ ctx.fillStyle='#000'; ctx.fillRect(0,0,640,160); const draw=(arr,col,y0)=>{ ctx.fillStyle=col; arr.forEach((v,i)=>{ const h=Math.max(1,v/2); ctx.fillRect(i*20+2,y0-h,16,h); }); };
+    draw(v1,'#e8a33d',76); draw(v3,'#6fc7d4',156); ctx.fillStyle='#a5a1cb'; ctx.font='11px IBM Plex Mono'; ctx.fillText('voice 1 loop, $80C8',4,12); ctx.fillText('voice 3 loop, $80A0',4,92); }
+  chart();
+  let ac,osc,gain,timer;
+  function play(arr,type){ stop(); ac=ac||new (window.AudioContext||window.webkitAudioContext)(); osc=ac.createOscillator(); gain=ac.createGain(); gain.gain.value=.12; osc.type=type; osc.connect(gain); gain.connect(ac.destination); osc.start();
+    let i=0; const step=()=>{ const hz=arr[i%arr.length]*256*985248/16777216; osc.frequency.setValueAtTime(Math.max(20,hz),ac.currentTime); i++; }; step(); timer=setInterval(step,20); }
+  function stop(){ if(timer) clearInterval(timer); timer=null; if(osc){osc.stop();osc=null;} }
+  document.getElementById('playV1').onclick=()=>play(v1.filter(v=>v),'square');
+  document.getElementById('playV3').onclick=()=>play(v3.filter(v=>v),'triangle');
+  document.getElementById('stopSnd').onclick=stop;
+})();
+
+// ---- 11 title screen ------------------------------------------------------------------
+(function(){
+  const cv=document.getElementById('title'), ctx=cv.getContext('2d'), S=2; let reveal=false;
+  function draw(){ ctx.fillStyle=PAL[2]; ctx.fillRect(0,0,cv.width,cv.height);
+    for(let r=0;r<25;r++){ let col=DATA.titleColours[r]&15; if(reveal&&col===2) col=1;
+      for(let c=0;c<40;c++){ const code=TITLE[r*40+c]; ctx.fillStyle=PAL[col];
+        for(let y=0;y<8;y++){ const b=FONT[code*8+y]; for(let x=0;x<8;x++) if(b&(0x80>>x)) ctx.fillRect((c*8+x)*S,(r*8+y)*S,S,S); } } } }
+  document.getElementById('titleReveal').onclick=function(){ reveal=!reveal; this.classList.toggle('on',reveal); draw(); };
+  draw();
+})();
+</script>
