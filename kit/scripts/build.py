@@ -443,7 +443,10 @@ def runs_table(games):
             '<th>Coverage (min/KB)</th><th>Agents</th><th>Model</th></tr>' + "".join(rows) + '</table></div>')
 
 
-def card_html(g):
+PROGRAM = ("code", "graphics", "levels", "sound", "text", "tables", "variables")
+
+
+def shot_html(g, cls="shot"):
     plat, slug = g["platform"], g["slug"]
     ti = g.get("title_image") or ""
     # title_image stays inside the game folder: no absolute paths, no parent climbs
@@ -451,19 +454,74 @@ def card_html(g):
         and ".." not in ti.split(os.sep)
     tip = os.path.join(ROOT, "games", plat, slug, ti) if safe else ""
     if tip and os.path.isfile(tip):
-        shot = (f'<img class="shot" src="{plat}/{slug}/{html.escape(ti, quote=True)}" '
+        return (f'<img class="{cls}" src="{plat}/{slug}/{html.escape(ti, quote=True)}" '
                 f'alt="{html.escape(g.get("title", slug))} title screen" loading="lazy">')
-    else:
-        print(f"warning: {plat}/{slug} has no title_image "
-              f"(set it in game.json to a file under reference/)", file=sys.stderr)
-        shot = '<div class="shot missing" aria-hidden="true"></div>'
-    total = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
-    return (
-        f'<a class="card" href="{plat}/{slug}/index.html">{shot}'
-        f'<p class="t">{html.escape(g.get("title", ""))}</p>'
-        f'<p class="m">{PLATFORM_NAMES.get(plat, plat)} · {g.get("year") or ""} · {html.escape(g.get("publisher") or "")}</p>'
-        f'<span class="tierb">{g.get("tier", "none")} · {g.get("coverage_percent") or 0:g}%</span>'
-        f'<div class="mini" data-map="{plat}/{slug}/memmap.json" title="{total:,} bytes of program"></div></a>')
+    print(f"warning: {plat}/{slug} has no title_image "
+          f"(set it in game.json to a file under reference/)", file=sys.stderr)
+    return f'<div class="{cls} missing" aria-hidden="true"></div>'
+
+
+def hook(g):
+    """The one line that sells the game: game.json's blurb, else the minisite's opening
+    paragraph, the first <p> after its title."""
+    if g.get("blurb"):
+        return g["blurb"]
+    page = read(os.path.join(ROOT, "games", g["platform"], g["slug"], "index.html"))
+    i = page.find("</h1>")
+    m = re.search(r"<p[^>]*>(.*?)</p>", page[i:i + 8000] if i >= 0 else "", flags=re.S)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
+
+
+def strip_html(g):
+    """The one-dimensional memory map, drawn by C64Map.strip from memmap.json."""
+    total = sum(g["_totals"][k] for k in PROGRAM)
+    return f'<div class="strip" data-strip="{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
+
+
+def stamp_html(g):
+    t = g.get("tier", "none")
+    return f'<span class="stamp {html.escape(t)}">{html.escape(t)}</span>'
+
+
+def featured_html(g):
+    """One game, large: title screen, memory strip, the title and its opening line."""
+    plat, slug = g["platform"], g["slug"]
+    meta = " · ".join(x for x in (PLATFORM_NAMES.get(plat, plat), str(g.get("year") or ""), g.get("publisher") or "") if x)
+    return (f'<a class="show" href="{plat}/{slug}/index.html">{shot_html(g)}{strip_html(g)}'
+            f'<span class="cap"><b>{html.escape(g.get("title", slug))}</b><span class="m">{html.escape(meta)}</span></span>'
+            f'<p class="hook">{html.escape(hook(g))}</p></a>')
+
+
+def card_html(g):
+    """Every game, small: thumbnail, title, a line of facts, the memory strip, the tier."""
+    plat, slug = g["platform"], g["slug"]
+    kb = sum(g["_totals"][k] for k in PROGRAM) / 1024
+    return (f'<a class="tile" href="{plat}/{slug}/index.html" data-platform="{html.escape(plat)}">{shot_html(g, "thumb")}'
+            f'<span class="body"><b>{html.escape(g.get("title", slug))}</b>'
+            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")} · {kb:.0f} KB</span>{strip_html(g)}</span>'
+            f'{stamp_html(g)}</a>')
+
+
+def platforms_html(games):
+    """Chips that filter the catalogue. A platform with no games yet is listed anyway,
+    pointing at Contribute, so the reader knows it is wanted."""
+    counts = {}
+    for g in games:
+        counts[g["platform"]] = counts.get(g["platform"], 0) + 1
+    order = list(PLATFORM_NAMES) + sorted(p for p in counts if p not in PLATFORM_NAMES)
+    items = [f'<a href="#" class="on" data-filter="">All <span class="n">{len(games)}</span></a>']
+    for p in order:
+        name = html.escape(PLATFORM_NAMES.get(p, p))
+        if counts.get(p):
+            items.append(f'<a href="#" data-filter="{html.escape(p)}">{name} <span class="n">{counts[p]}</span></a>')
+        else:
+            items.append(f'<a href="#contribute" class="empty" title="No games yet. Be the first.">{name} <span class="n">none yet</span></a>')
+    return '<nav class="platforms">' + "".join(items) + "</nav>"
+
+
+def featured_game(games):
+    """The game the home page opens with: the first at Gold or better, else the first there is."""
+    return next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None)
 
 
 def main():
@@ -478,8 +536,10 @@ def main():
     games = []
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
         games.append(build_game(os.path.dirname(gj), out_root))
-    cards = "".join(card_html(g) for g in games)
-    home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib", cards=cards)
+    feat = featured_game(games)
+    home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
+                cards="".join(card_html(g) for g in games), featured=featured_html(feat) if feat else "",
+                platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # the kit changelog, game by game
     log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False) + runs_table(games)
