@@ -161,3 +161,30 @@ you are unsure of.
   check the port before assuming the answer meant anything.
 - The emulator needs a pseudo-terminal and dies with the session that
   started it.
+
+## Keys that the matrix tool does not deliver
+
+`vice_keyboard_matrix` with `"key": "SPACE"` reports row 7, column 4 and
+`pressed: true`, and a game that scans column 7 itself never sees it: a
+hit counter on the game's pause loop stayed at zero through four holds,
+by name and by row and column. `vice_keyboard_key_press` with
+`"key": "Space"` (the host-key path) reached the same routine at once.
+When a key "does nothing", try the other tool before concluding anything
+about the game, and keep the hit counter on the routine that should react
+as the instrument. F1, F5, F7 and the digits worked through the matrix
+tool in the same session.
+
+A stopped machine hands back stale registers: at a stopping checkpoint on
+a `cmp` the accumulator read 0 while the game demonstrably saw $FF. Do not
+read register contents at a checkpoint as the values the instruction saw;
+count hits, or read memory the routine wrote.
+
+`vice_joystick_tap` for half a second was not seen by a loop that polls
+the stick every pass; `vice_joystick_set` held for two seconds was. Hold
+the stick when a loop has to notice it.
+
+`vice_snapshot_load` after a hard reset returned a machine with `$01`
+changed ($37 instead of the game's $36), the CPU in the KERNAL screen
+scroller and a garbage screen. The snapshot file itself was fine for the
+disassembler. Re-autostarting the program is the reliable way back to a
+state.
