@@ -13,7 +13,7 @@ window.C64Map = (function () {
     const cv = document.createElement('canvas');
     if (!mini && opts.compare) { const note = document.createElement('p'); note.className = 'mute'; note.style.cssText = 'font-family:var(--fm);font-size:12px;margin:0 0 6px'; note.textContent = opts.compare; el.appendChild(note); }
     cv.style.width = '100%'; cv.style.aspectRatio = W + ' / ' + H;
-    cv.style.display = 'block'; cv.style.borderRadius = '6px'; cv.style.border = '1px solid #292c58';
+    cv.style.display = 'block'; cv.style.borderRadius = '6px'; cv.style.border = '1px solid var(--line)';
     el.appendChild(cv);
     const ctx = cv.getContext('2d');
     // Vertical fill by default: each column is 128 bytes, so the picture reads as a
@@ -63,7 +63,7 @@ window.C64Map = (function () {
     legend.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--fm);font-size:12px;color:var(--ink-soft)';
     const order = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'unused'];
     legend.innerHTML = order.filter(k => M.totals[k]).map(k =>
-      `<span><i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${COLOURS[k]};margin-right:6px;vertical-align:-1px;border:1px solid #292c58"></i>${LABELS[k]} <span style="color:var(--ink-mute)">${M.totals[k].toLocaleString()}</span></span>`).join('');
+      `<span><i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${COLOURS[k]};margin-right:6px;vertical-align:-1px;border:1px solid var(--line)"></i>${LABELS[k]} <span style="color:var(--ink-mute)">${M.totals[k].toLocaleString()}</span></span>`).join('');
     el.appendChild(legend);
     const tip = document.createElement('div');
     tip.style.cssText = 'font-family:var(--fm);font-size:12px;color:var(--ink-mute);min-height:1.6em;margin-top:8px';

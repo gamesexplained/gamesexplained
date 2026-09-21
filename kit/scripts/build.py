@@ -222,8 +222,17 @@ def under_title(page, ban):
     return page.replace("</nav>", "</nav>\n" + ban, 1)
 
 
+FONTS = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900'
+         '&family=IBM+Plex+Mono:wght@400;500&display=swap">')
+
+
 def inject(page, nav, lib):
-    """Put the tab bar into an authored page and hook the shared css/js."""
+    """Put the tab bar into an authored page and hook the shared css/js.
+
+    site.css goes after the page's own <style>, so the site's tokens and article vocabulary
+    win over the copy a page carries for opening from disk. The fonts line is the site's,
+    whatever the page asked for.
+    """
     hook = f'<link rel="stylesheet" href="{lib}/site.css">'
     if "<!-- tabs -->" in page:
         page = page.replace("<!-- tabs -->", nav, 1)
@@ -231,8 +240,10 @@ def inject(page, nav, lib):
         page = page.replace("</style>", "</style>\n" + nav, 1)
     else:
         page = nav + page
+    page = re.sub(r'<link rel="stylesheet" href="https://fonts\.googleapis\.com/[^"]*">', FONTS, page, count=1)
     if "site.css" not in page:
-        page = page.replace("<style>", hook + "\n<style>", 1) if "<style>" in page else hook + "\n" + page
+        i = page.rfind("</style>")
+        page = page[:i + 8] + "\n" + hook + page[i + 8:] if i >= 0 else hook + "\n" + page
     if "<meta charset" not in page:
         page = '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' + page
     if "site.js" not in page:
