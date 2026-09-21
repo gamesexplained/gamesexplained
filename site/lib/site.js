@@ -13,6 +13,14 @@
       function select(){ var r=document.createRange(); r.selectNodeContents(src); var s=getSelection(); s.removeAllRanges(); s.addRange(r); try{ if(document.execCommand('copy')) done(); }catch(e){} }
     });
   });
+  // platform chips on the home page: hide every card whose data-platform is not the chosen one
+  document.querySelectorAll('.platforms a[data-filter]').forEach(function(a){
+    a.addEventListener('click',function(ev){
+      ev.preventDefault(); var f=a.dataset.filter;
+      a.closest('.platforms').querySelectorAll('a').forEach(function(x){ x.classList.toggle('on',x===a); });
+      document.querySelectorAll('[data-platform]').forEach(function(el){ el.classList.toggle('hidden',!!f&&el.dataset.platform!==f); });
+    });
+  });
   if(document.body.dataset.nolink) return;
   document.querySelectorAll('code').forEach(function(c){
     if(c.closest('a')||c.closest('pre')||c.children.length) return;
