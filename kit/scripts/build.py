@@ -374,6 +374,27 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 """
 
 
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js")
+
+
+def version_lib(out_root):
+    """Append ?v=<content hash> to every reference to a lib file, so a redeploy is never
+    paired with a stylesheet or script the browser cached from the previous one."""
+    import hashlib
+    ver = {f: hashlib.sha1(open(os.path.join(out_root, "lib", f), "rb").read()).hexdigest()[:8]
+           for f in LIB_FILES if os.path.isfile(os.path.join(out_root, "lib", f))}
+    pat = re.compile(r'(lib/(' + "|".join(re.escape(f) for f in ver) + r'))(["\'])')
+    n = 0
+    for d, _, files in os.walk(out_root):
+        for f in files:
+            if f.endswith(".html"):
+                p = os.path.join(d, f); page = open(p, encoding="utf-8").read()
+                new = pat.sub(lambda m: f"{m.group(1)}?v={ver[m.group(2)]}{m.group(3)}", page)
+                if new != page:
+                    open(p, "w", encoding="utf-8").write(new); n += 1
+    return n
+
+
 def add_analytics(out_root):
     """Put the analytics snippet on every built page, if site/config.json has a measurement id."""
     cfg = json.load(open(os.path.join(SITE, "config.json")))
@@ -467,6 +488,7 @@ def main():
     open(os.path.join(out_root, "kit.html"), "w").write(page)
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
+    version_lib(out_root)
     tagged = add_analytics(out_root)
     print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/" + (f"; analytics on {tagged} pages" if tagged else "; analytics off (no id in site/config.json)"))
 
