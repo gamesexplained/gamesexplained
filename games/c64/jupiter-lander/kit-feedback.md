@@ -181,3 +181,16 @@ did not need changing later.
 Read the whole engine before you name anything. Then write the live tests as
 scripts, not as tool calls. Then, before you believe any live result, prove
 the machine actually stopped.
+
+## Second session: the sideways landing
+
+Changed in `kit/` while turning a poked result into a flown one:
+
+- `kit/skills/core/60-verify`: a poke proves a routine accepts a state; an
+  input movie from a legitimate state proves a player can reach it. The
+  skill now says which claim each one supports and how to build the movie.
+- `kit/skills/c64/tool-vice-mcp`: the control-read patch as the way to
+  replay inputs deterministically, and three traps met on the way: `run`
+  after a stopping checkpoint not resuming, alternating checkpoints skipping
+  passes, and an attract-mode game swallowing the first input.
+- `kit/CHANGELOG.md`, `kit/VERSION` 0.0.8.

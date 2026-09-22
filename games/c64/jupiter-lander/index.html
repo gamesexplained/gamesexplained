@@ -373,10 +373,53 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
 
 <section>
   <p class="fig">07 &middot; Scoring</p>
-  <h2 class="t">Eighty minus your speed, and a zero that is always there</h2>
-  <p class="lede">The bonus for a landing is a subtraction and at most two multiplications.
-  Everything on screen is then shown ten times larger than the number the game is holding,
-  because the status line has a <code>0</code> painted on the end of it.</p>
+  <h2 class="t">Secret: it's possible to land while going UP</h2>
+  <p class="lede">One pad has open air beside it, which means it's possible to sideslip onto it and even push
+    up into a negative speed.</p>
+  <div class="plate">
+    <div class="row">
+      <div class="col">
+        <div class="screenwrap"><canvas id="tasCv" width="608" height="368"></canvas></div>
+        <p class="cap">The x2 close-up, view 2. The amber line is world Y <code>$009A</code>, the
+        one line on which the pad test can pass, and the amber bracket is the range of X it
+        accepts, <code>$0160</code> to <code>$0190</code>. The whole manoeuvre is eight world units
+        of sideways drift, so the inset shows the lander's feet and the pad's edge at eight times
+        the size. Every pass shown here was replayed in the emulator with the game's control read
+        redirected to this list of inputs; the positions matched to the byte, and the screen
+        printed what the last step shows.</p>
+      </div>
+      <div class="col">
+        <div class="ctl">
+          <button id="tasPrev">&larr; pass</button>
+          <button id="tasNext">pass &rarr;</button>
+          <button id="tasPlay">play</button>
+          <button id="tasReset">reset</button>
+        </div>
+        <div class="ctl">
+          <button class="tasRoute" data-r="5">landing 2, gravity 5: 2540</button>
+          <button class="tasRoute on" data-r="4">landing 1, gravity 4: 2400</button>
+        </div>
+        <div class="stat" id="tasStat" style="margin-top:14px"></div>
+        <div class="screenwrap" style="margin-top:14px"><canvas id="tasBonus" width="608" height="48"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <p>Each pass of the flight loop does four things in a fixed order: it asks the video chip
+  whether the lander has touched rock, it tests the pad, it reads the controls and it moves the
+  ship. The pad test is an exact match on the ship's world Y and a range check on its X, so the
+  velocity that <code>touchdown</code> sees is the one that carried the ship onto the line in the
+  previous pass. Arriving from above, that velocity is positive; a climbing arrival means the ship
+  was <em>below</em> the line the pass before, which on the x5 and x10 pads is inside rock, and the
+  collision test runs first. The x2 plateau is the exception: its flat top is 98 pixels wide with
+  a 45&deg; slope on either side, so a ship hovering on the pad's line just left of it is in clear
+  air, and can drift right onto the pad with any velocity at all.</p>
+  <p>From above, the smallest speed you can land at is not one either. The main thruster changes
+  the velocity by <code>&minus;12</code> and gravity by <code>+4</code> on the first landing, so
+  every velocity the ship can have is a multiple of 4 and the softest arrival is 4, which pays
+  760, shown as 7600. On the landings where gravity is 5 or 7 the steps are coprime with 12 and a
+  speed of 1 is possible, worth 790. Where gravity is 6 the softest arrival is 6 and the best is
+  740. The 800 that a perfect stop would pay exists only on the x2 pad, sideways, at zero speed,
+  where the multiplier turns it into 1600.</p>
   <div class="plate">
     <div class="row">
       <div class="col">
@@ -393,15 +436,13 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
       <div class="col">
         <div class="screenwrap"><canvas id="bonusCv" width="608" height="48"></canvas></div>
         <p class="cap">The bonus line the game draws on screen row 2, rendered from the same
-        character set.</p>
+        character set. Everything on screen is ten times the number the game holds, because the
+        status line has a <code>0</code> painted on the end of it. The doubling for the x2 and x10
+        pads is eight-bit too and loses its carry, which is why a speed of &minus;48 on the x2 pad
+        pays nothing at all.</p>
       </div>
     </div>
   </div>
-  <div class="note">Push the speed below zero and the bonus climbs past 800, because
-  <code>80 &minus; velocity</code> is an ordinary eight-bit subtraction and a climbing ship has
-  <code>$F0</code> or so in the low byte. That is a property of the arithmetic, not a tactic: a pad
-  is a single line reached from above, moving downward, so the perfect stop is the ceiling in
-  play.</div>
   <p>Every point counted out also puts 70 units back in the tank, one point and 70 units at a
   time, at about 21 milliseconds each. A good landing on the x10 pad therefore takes roughly
   seventeen seconds to pay out, and you watch the fuel bar grow the whole time.</p>
@@ -490,10 +531,11 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
     digits, printed followed by a <code>0</code> that is part of the static template. The counter
     tops out at 9999, which reads as 99990, and a single point is worth ten on screen.</p></div>
 
-    <div class="card"><h3>Landing while climbing pays best</h3><p>The bonus is
-    <code>80 &minus; velocity</code> done in eight bits. A ship arriving at minus 16 has
-    <code>$F0</code> in the velocity's low byte, and <code>$50 &minus; $F0</code> is 96. On the
-    x10 pad that is 9600 on screen, against 8000 for a perfect stop.</p></div>
+    <div class="card"><h3>The perfect stop cannot happen</h3><p>A pad is one world line
+    reached from above, so the velocity the bonus subtracts is never zero: the softest arrival is
+    4 on the first landing and 1 where gravity is 5 or 7, for 7600 and 7900 on the x10 pad. The
+    only way to be paid for zero, or for a climb, is sideways onto the x2 plateau, where the
+    eight-bit arithmetic pays up to 2540. Section 07 steps through it.</p></div>
 
     <div class="card"><h3>The whole game is 49 bytes of state</h3><p>Everything the game knows
     about itself lives in <code>$02</code> to <code>$32</code>: two positions, two velocities, a
@@ -519,6 +561,10 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
     middle plateau at full size, with both flames lit and the sprite doubled.</p></div>
     <div><img class="ref" src="reference/landing-bonus-x10.png" alt="Landing bonus"><p class="cap">A
     perfect landing on the x10 pad. 800 points, shown as 8000.</p></div>
+    <div><img class="ref" src="reference/landing-climbing-x2-2540.png" alt="A climbing landing on the x2 pad"><p class="cap">The
+    sideways landing of section 07, as the emulator printed it: a base of 127 whose tens digit
+    is glyph <code>$3C</code>, because the printer expects one tens digit, times 2 in eight bits,
+    2540 on screen.</p></div>
     <div><img class="ref" src="reference/out-of-fuel.png" alt="Out of fuel"><p class="cap">The tank
     empty. The engines are already dead; the flight ends at the next impact.</p></div>
     <div><img class="ref" src="reference/attract-control-demo.png" alt="Attract control demo"><p class="cap">The
@@ -851,11 +897,13 @@ function hitsRock(cells,sx,sy,s){
     if(Y<0x003A){ st.msg='OUT OF SKY'; draw(); return; }
     st.view=zoneFor(X,Y);
     for(const p of PADS){
-      if(Y===p.y && X>=p.x0 && X<p.x1){
+      if(Y===p.y && X>=p.x0 && X<=p.x1){
         if(st.vy<0 || st.vy<0x48){
           const base=(0x50-(u16(st.vy)&0xFF))&0xFF;
-          st.msg=(base*10)+' X '+p.m+' = '+(base*p.m*10);
-          st.fuel=Math.min(0xFFFF, st.fuel + base*p.m*70);
+          const dbl=p.m===5?base:(base*2)&0xFF;            // the x2 and x10 doubling is eight-bit
+          const total=p.m===2?dbl:dbl*5;
+          st.msg=(base*10)+' X '+p.m+' = '+(total*10);
+          st.fuel=Math.min(0xFFFF, st.fuel + total*70);
         } else st.msg='SORRY NO BONUS';
         draw(); return;
       }
@@ -989,7 +1037,121 @@ function hitsRock(cells,sx,sy,s){
   document.querySelectorAll('.gpre').forEach(b=>b.onclick=()=>{sl.value=b.dataset.v;draw();});
   draw();
 })();
-// ---- 07: scoring ---------------------------------------------------------
+// ---- 07: scoring, the sideways landing -----------------------------------
+(function(){
+  // Two input movies, replayed live in the emulator with every pass matching. The start is a
+  // hover on the pad's line, eight world units left of the pad; from there only stick inputs.
+  // L = joystick left (the left jet, which pushes the ship right), F = fire (main thruster).
+  const ROUTES={
+    4:{g:4, x:0x015800, y:0x009A80, fuel:0xFFFF, label:'landing 1, gravity 4',
+       path:'L L L L L L FL FL L FL FL L L FL L L FL - L FL L FL FL FL FL FL'},
+    5:{g:5, x:0x015800, y:0x009AFF, fuel:0xA2CB, label:'landing 2, gravity 5',
+       path:'F - - FL L L FL L FL L FL L L FL L FL L FL L L F L FL FL FL FL FL FL FL'}};
+  const cv=document.getElementById('tasCv'), ctx=cv.getContext('2d'), S=2;
+  const bcv=document.getElementById('tasBonus'), bctx=bcv.getContext('2d');
+  const s16=v=>{v&=0xFFFF; return v&0x8000? v-0x10000 : v;};
+  let route=ROUTES[4], states=[], k=0, timer=null;
+  function build(){
+    const inputs=route.path.split(' ').map(t=>t==='-'?'':t);
+    let st={x:route.x,y:route.y,vx:0,vy:0,fuel:route.fuel}; states=[];
+    for(const inp of inputs){
+      const pad=onPad(st);
+      states.push({...st,inp,pad});
+      if(pad) break;
+      st=move(st,inp);
+    }
+    states.push({...st,inp:'',pad:onPad(st)});
+  }
+  function onPad(st){ return (st.y>>8)===0x009A && (st.x>>8)>=0x0160 && (st.x>>8)<=0x0190; }
+  function move(st,inp){                       // move_ship, $E2CB, exactly
+    let {x,y,vx,vy,fuel}=st;
+    if(inp.includes('L')){ vx=s16(vx+6); fuel-=30; }
+    x=(x+vx)&0xFFFFFF;
+    if(inp.includes('F')){ vy=s16(vy-12); fuel-=111; }
+    vy=s16(vy+route.g);
+    y=(y+vy)&0xFFFFFF;
+    return {x,y,vx,vy,fuel:fuel&0xFFFF};
+  }
+  function bonusOf(vy){                        // touchdown, $E57D, for the x2 pad
+    const lo=vy&0xFF, base=(0x50-lo)&0xFF, dbl=(base*2)&0xFF;
+    return {lo,base,total:dbl};
+  }
+  const O=VIEW_ORIGIN[2];
+  const shipPx=st=>({sx:((st.x>>8)-O.x)-24, sy:((st.y>>8)-O.y)-50});   // close-up: 1 world unit = 1 pixel
+  function scene(g,Z,st,i){                    // draw the view at scale Z into context g
+    g.imageSmoothingEnabled=false;
+    paintCells(g,VIEWCELLS[2],Z);
+    // the pad's line and its X range, in the ship's own coordinates
+    const lineY=(0x9A-O.y-50+42)*Z;            // the lander's feet on the pad line
+    const x0=(0x160-O.x-24)*Z, x1=(0x190-O.x-24+48)*Z;
+    g.fillStyle='rgba(255,176,64,.35)'; g.fillRect(0,lineY-Z,38*8*Z,Z);
+    g.fillStyle='rgba(255,176,64,.95)'; g.fillRect(x0,lineY-Z,x1-x0,Z);
+    g.fillRect(x0,lineY-6*Z,Z,6*Z); g.fillRect(x1-Z,lineY-6*Z,Z,6*Z);
+    // ghosts of the passes so far
+    for(let j=0;j<i;j++){const p=shipPx(states[j]);
+      g.fillStyle='rgba(117,206,200,.35)'; g.fillRect(p.sx*Z,(p.sy+41)*Z,Z,Z);}
+    const p=shipPx(st), s=2*Z;
+    if(st.inp.includes('F')) drawSprite(g,i&1?0xF9:0xF8,p.sx*Z,p.sy*Z,s,PAL[2]);
+    if(st.inp.includes('L')) drawSprite(g,0xFA,p.sx*Z,p.sy*Z,s,PAL[8]);
+    drawSprite(g,0xF0,p.sx*Z,p.sy*Z,s,PAL[3]);
+  }
+  const off=document.createElement('canvas'); off.width=38*8; off.height=23*8;
+  function draw(){
+    const st=states[k];
+    scene(ctx,S,st,k);
+    // inset: the lander's feet and the pad's left edge, eight times
+    scene(off.getContext('2d'),1,st,k);
+    const p=shipPx(st), M=8, w=48, h=22, ix=p.sx+16, iy=p.sy+42-14;
+    const W=w*M, H=h*M, px=6, py=cv.height-H-6;
+    ctx.fillStyle='#000'; ctx.fillRect(px-3,py-3,W+6,H+6);
+    ctx.drawImage(off,ix,iy,w,h,px,py,W,H);
+    ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=1; ctx.strokeRect(px-.5,py-.5,W+1,H+1);
+    ctx.strokeRect(ix*S+.5,iy*S+.5,w*S,h*S);
+    ctx.fillStyle='#fff'; ctx.font='11px IBM Plex Mono, monospace'; ctx.fillText('x8',px+4,py+12);
+    // the stat panel
+    const X=st.x>>8, Y=st.y>>8, last=k===states.length-1;
+    const sideTxt=st.inp.includes('L')?'<span style="color:var(--amber)">left jet</span>':'';
+    const upTxt=st.inp.includes('F')?'<span style="color:var(--amber)">main thruster</span>':'';
+    const inpTxt=(sideTxt||upTxt)?[sideTxt,upTxt].filter(Boolean).join(' + '):'nothing';
+    const yOk=Y===0x9A, xOk=X>=0x160&&X<=0x190;
+    let html='<b>'+route.label+'</b>: pass <b>'+k+'</b> of '+(states.length-1)+'<br>'+
+      'world X <b>'+hex(X,4)+'</b>.'+hex(st.x&255).slice(1)+' &nbsp; Y <b>'+hex(Y,4)+'</b>.'+hex(st.y&255).slice(1)+'<br>'+
+      'X velocity <b>'+st.vx+'</b> &nbsp; Y velocity <b>'+st.vy+'</b> (low byte '+hex(st.vy&255)+') '+
+        (st.vy<0?'<span style="color:var(--green)">climbing</span>':(st.vy>0?'sinking':'still'))+'<br>'+
+      'fuel <b>'+hex(st.fuel,4)+'</b><br>'+
+      'pad test: Y on the line '+(yOk?'<span style="color:var(--green)">yes</span>':'<span style="color:var(--coral)">no</span>')+
+      ', X in range '+(xOk?'<span style="color:var(--green)">yes</span>':'<span style="color:var(--coral)">no, '+(0x160-X)+' to go</span>')+'<br>';
+    if(last){
+      const b=bonusOf(st.vy);
+      html+='<span style="color:var(--amber)">touchdown</span>: $50 &minus; '+hex(b.lo)+' = <b>'+b.base+'</b>, '+
+        '&times;2 in eight bits = <b>'+b.total+'</b>, shown as <b>'+(b.total*10)+'</b><br>'+
+        'refuel <b>'+(b.total*70)+'</b> units';
+    } else html+='input this pass: '+inpTxt;
+    document.getElementById('tasStat').innerHTML=html;
+    // the bonus line as draw_bonus_line prints it
+    bctx.fillStyle='#000'; bctx.fillRect(0,0,bcv.width,bcv.height);
+    if(last){
+      const b=bonusOf(st.vy), tens=Math.floor(b.base/10), units=b.base%10;
+      const codes=[]; codes.push(tens?0x30|tens:0); codes.push(0x30|units); codes.push(0x30); codes.push(0);
+      codes.push(0x58,0,0,0x32,0x3D,0);
+      const t=String(b.total).padStart(3,' ');
+      for(const ch of t) codes.push(ch===' '?0:0x30+(+ch)); codes.push(0x30);
+      codes.forEach((c,i)=>{ if(c) drawGlyph(bctx,c,(12+i)*8*S,8*S,S,PAL[1]); });
+    }
+  }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} }
+  document.getElementById('tasNext').onclick=()=>{stop(); if(k<states.length-1)k++; draw();};
+  document.getElementById('tasPrev').onclick=()=>{stop(); if(k>0)k--; draw();};
+  document.getElementById('tasReset').onclick=()=>{stop(); k=0; draw();};
+  document.getElementById('tasPlay').onclick=()=>{ if(timer){stop();return;} if(k>=states.length-1)k=0;
+    timer=setInterval(()=>{ if(k>=states.length-1){stop();return;} k++; draw(); },250); };
+  document.querySelectorAll('.tasRoute').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.tasRoute').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); route=ROUTES[+b.dataset.r]; stop(); build(); k=0; draw();});
+  build(); draw();
+})();
+
+// ---- 07b: the bonus arithmetic --------------------------------------------
 (function(){
   const sl=document.getElementById('scv'), cv=document.getElementById('bonusCv'), ctx=cv.getContext('2d'), S=2;
   let pad=3;
@@ -1027,7 +1189,8 @@ function hitsRock(cells,sx,sy,s){
          '&times; <b>'+MULT[pad]+'</b> = <b>'+r.total+'</b> points<br>'+
          'shown on screen as <b>'+(r.total*10)+'</b><br>'+
          'refuel <b>'+(r.total*70)+'</b> units, over <b>'+(r.total*0.021).toFixed(1)+'</b> seconds'
-         + (v<0 ? '<br><span style="color:var(--amber)">arriving upward: what the arithmetic would pay, not a landing you can make</span>':''))
+         + (v<0 ? '<br><span style="color:var(--amber)">arriving upward: only the x2 pad can be reached this way</span>':'')
+         + (v===0 ? '<br><span style="color:var(--amber)">a perfect stop: not reachable from above on any pad</span>':''))
       : '<span style="color:var(--coral)">faster than $0048. SORRY NO BONUS, and the ship is destroyed.</span>';
   }
   sl.oninput=draw;

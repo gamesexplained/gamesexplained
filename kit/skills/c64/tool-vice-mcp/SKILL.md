@@ -188,3 +188,41 @@ changed ($37 instead of the game's $36), the CPU in the KERNAL screen
 scroller and a garbage screen. The snapshot file itself was fine for the
 disassembler. Re-autostarting the program is the reliable way back to a
 state.
+
+## Replaying inputs pass by pass: patch the control read
+
+A corner case is only worth publishing if a player could reach it, and
+that means feeding the game a chosen input on every pass of its loop and
+comparing what it does with a model. Stepping the emulator is the wrong
+tool for that here, for three reasons met in one afternoon:
+
+- `vice_execution_run` after a *stopping* checkpoint did not resume the
+  machine; memory reads kept returning the same state and the hit counter
+  on the loop stayed at zero. Deleting the checkpoint and then running
+  does resume, which is what `kit/c64/vice.py`'s `release()` does.
+- Alternating two stopping checkpoints (top of the loop, after the move)
+  to advance one pass at a time ran two passes per step. The stop happens
+  after the tool has already returned, and the loop's own delay is only
+  about 30 ms.
+- A joystick bit written while the game had quietly ended started a new
+  game from the attract screen and parked the CPU in the opening tune.
+  Everything then read as "the input does nothing". Before staging anything,
+  put a non-stopping checkpoint on the game loop for a second and read its
+  hit count; zero means you are not where you think.
+
+What worked was not stepping at all. Find the game's one `jsr` to its
+control reader, and replace it with a `jsr` to a routine in free RAM that
+takes the pass's input from a table, sets the same flags the reader would,
+and copies the state variables into a log, sixteen bytes per pass. Then let
+the game run at its own speed and read the log afterwards. The first game
+to need this carries the routine in its `agent-history.md` (inputs at
+`$C100`, log at `$C200`, counter at `$C0F0`); it is fifty bytes and any
+game gets a variant of it. Restore the original `jsr` as soon as the event
+you wanted has fired, or the counter walks the log into I/O space.
+
+Snapshots do not shortcut this. A snapshot saved by `vice_snapshot_save`
+during play and loaded back a minute later returned the RAM intact and the
+CPU spinning in the game's timer wait (`$EE4E`), with the loop never
+reached again: the existing note about loaded snapshots losing their timer
+holds for the server's own snapshots too. Getting back into play still
+means autostart, the trainer's questions and F1.

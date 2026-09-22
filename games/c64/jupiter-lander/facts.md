@@ -187,23 +187,57 @@ the sum. 800 points displays as 8000.
 | **72** | **SORRY NO BONUS** |
 | −16 (climbing) | lands, `960 X 10= 9600` |
 
-**A ship that arrives climbing would score more than a perfect stop, but
-only when poked.** The subtraction is an ordinary 8-bit one, so a velocity
-of −16 leaves `$F0` in the low byte and `$50 − $F0` is 96, not 80. The
-doubling for the x2 and x10 pads is 8-bit as well: `asl` at `$E58C` drops
-its carry before the ×5, so the routine's ceiling is 1275 on the x5 pad
-(velocity low byte `$51`), 1270 on x10 and 254 on x2. None of that is
-reachable in play. `main_loop` runs `check_on_pad` before `move_ship`, so
-the velocity `touchdown` sees is the one that just carried the ship onto the
-pad's line; arriving there from above means it was positive. Arriving with a
-negative velocity means the ship was below the line, which on the x5 and x10
-pads is inside rock, and the collision test runs first. The one geometric
-loophole is the x2 plateau, which has open air beside it at its own height:
-a ship hovering on exactly world Y `$009A` at `$0110` ≤ X < `$0160`, drifting
-right while its velocity high byte is negative, would meet the test on the
-pass its X reaches `$0160`. *Traced, not observed live;* it is a
-pixel-perfect hover, and even the routine's x2 ceiling of 254 is below a
-perfect stop on x10.
+**The bonus's ceiling is 254 on the x2 pad, 1270 on x10 and 1275 on x5, and
+only the first is reachable.** The subtraction is an ordinary 8-bit one, so
+a climbing ship with `$F0` in the velocity's low byte scores `$50 − $F0` =
+96, not 80. The doubling for the x2 and x10 pads is 8-bit as well: `asl` at
+`$E58C` drops its carry before the ×5, so a low byte of `$D1` (velocity −47)
+gives 127, doubled to 254 on x2; on x10 the doubled byte wraps and 5 × 254 =
+1270 needs a base of 127 too, while x5 skips the doubling and pays 5 × 255 =
+1275 at a low byte of `$51`. These are properties of the routine. Which of
+them a pilot can reach is settled below.
+
+## Reachable landings
+
+`main_loop` runs `check_on_pad` before `read_controls_and_move`, so the
+velocity `touchdown` sees is the one that carried the ship onto the pad's
+line in the previous pass. Three consequences:
+
+- **A perfect stop is impossible from above.** Arriving on the line from
+  the line above means the last move was downward, so the velocity is
+  positive. The `800 X 10= 8000` of the instructions is never printed in
+  play.
+- **The softest arrival is the gravity's step.** From a standing start the
+  velocity changes by `+grav` (coasting) or `grav − 12` (thrusting) each
+  pass, so every velocity is a multiple of gcd(grav, 12): 4 on landings with
+  gravity 4 or 8, 1 with 5 or 7, 6 with 6, 3 with 9. The best descending
+  landing pays 760 on the first landing (`760 X 10= 7600`) and 790 where the
+  gravity is 5 or 7.
+- **Only the x2 pad can be reached sideways.** Its flat top, decoded from
+  the view-2 terrain and measured against `pad_x_min`/`pad_x_max`, is 98
+  pixels wide with the accepted range exactly the positions where the
+  48-pixel lander is wholly on it, and the slope on either side falls at
+  45°. A ship hovering on world Y `$009A` left of `$0160` is in clear air,
+  and drifting right meets the pad test with whatever velocity it has,
+  including zero (800 × 2 = 1600, the only "perfect" bonus in the game) and
+  negative. The x5 and x10 pads are valley floors with walls on both sides.
+
+*Live, twice, with the game's control read redirected to an input table.*
+The ship was placed hovering at X `$0158.00` on the line, velocities zero,
+and from there only stick inputs were applied, one per pass; a routine at
+`$C000` logged the position and velocities at every pass and each matched
+an exact model of `move_ship` to the byte. L is the left jet (stick left),
+F the main thruster (fire):
+
+| Landing | Gravity | Start Y | Inputs | Touchdown | Printed |
+|---|---|---|---|---|---|
+| 1 | 4 | `$009A.80` | `L L L L L L FL FL L FL FL L L FL L L FL - L FL L FL FL FL FL FL` (26 passes) | X `$0160.04`, vy −40 | `1200 X  2= 2400` |
+| 2 | 5 | `$009A.FF` | `F - - FL L L FL L FL L FL L L FL L FL L FL L L F L FL FL FL FL FL FL FL` (29 passes) | X `$0160.04`, vy −47 | `1270 X  2= 2540` |
+
+The second is the routine's ceiling for the pad. The base 127 is printed
+with glyph `$3C` as its tens digit, because `draw_bonus_line` allows for
+one. Screenshots: `reference/landing-climbing-x2-2400.png` and
+`reference/landing-climbing-x2-2540.png`.
 
 Each point counted out adds 70 to the fuel as well as 1 to the score, and
 the addition stops rather than wrapping when it would pass `$FFFF`.
@@ -383,6 +417,7 @@ The strings, all of them:
 | Landing limit | break at `touchdown`, poke Y velocity | 71 lands, 72 prints SORRY NO BONUS |
 | Multipliers | ship placed in each zone, `touchdown` entered | 5, 2 and 10 as painted |
 | Climbing landing | Y velocity −16 at `touchdown` | `960 X 10= 9600`, higher than a perfect stop |
+| Sideways climbing landing, x2 | input movie from a hover at `$0158`, `$009A`; 26 and 29 stick inputs; per-pass log at `$C200` | `1200 X  2= 2400` on landing 1, `1270 X  2= 2540` on landing 2; every pass matched the model |
 | Crash fuel penalty | break at `explode`, poke Y velocity | speed >> 4 off the high byte, clamped at 31 |
 | Empty-tank cut-off | fuel `$00FF` vs `$01FF`, F1 held | no thrust and no spend below a high byte of 1 |
 | Gauge mapping | poke Y velocity, read the marker out of screen column 39 | one yellow cell at row 12, covering 0 to 63; 13 points reproduce the arithmetic |

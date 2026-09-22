@@ -40,6 +40,17 @@ tested. Typical tests:
 - **Time it.** Read the timer latch and compute the tick rate from the
   platform's clock; count in the unit of the loop that decrements the
   counter before converting anything to seconds.
+- **Prove reachability with inputs, not pokes.** Poking a state and
+  watching the routine accept it proves what the *code* does. It does not
+  prove a player can get there: the way the loop orders its tests may make
+  the state unreachable from any legal one, and that is a fact worth more
+  than the poke. When a corner case turns on a state the player has to fly
+  into, write an exact model of the movement routine, search it for an
+  input sequence from a state the player can plainly reach, then replay
+  that sequence in the emulator with the game's control read redirected to
+  a table (see the platform's tool notes) and compare every pass against
+  the model. Publish the sequence with the result; a route someone else can
+  replay is the evidence.
 
 ## Measuring without fooling yourself
 
