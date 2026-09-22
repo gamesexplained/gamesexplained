@@ -228,7 +228,9 @@ The marker position is `((Y velocity >> 2) + 128) >> 1`, a number from 0 to
 127. The top four bits pick one of sixteen rows from `gauge_row_addr`, rows
 4 to 19; the bottom three pick one of eight marker glyphs `$18`–`$1F`, so
 the needle has 128 positions. If the Y velocity leaves the range −512 to
-+511 no marker is drawn at all.
++511 no marker is drawn at all. The routine writes screen memory only, never
+colour memory, so the marker cell keeps its row's colour: the needle is a
+one-pixel black line across a green cell, or across the yellow one.
 
 **There is exactly one yellow cell, at screen row 12.** It covers Y velocities 0
 to 63. The landing test accepts everything up to 71.

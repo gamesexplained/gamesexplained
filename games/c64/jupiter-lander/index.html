@@ -332,6 +332,9 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
       <div>
         <div class="screenwrap"><canvas id="gaugeCv" width="160" height="400"></canvas></div>
       </div>
+      <div>
+        <div class="screenwrap"><canvas id="gaugeZoom" width="420" height="288"></canvas></div>
+      </div>
       <div class="col">
         <div class="ctl">
           <label class="inline" style="width:100%">Y velocity
@@ -343,19 +346,29 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
           <button class="gpre" data-v="-16">-16, climbing</button>
           <button class="gpre" data-v="0">0</button>
           <button class="gpre" data-v="63">63</button>
+          <button class="gpre" data-v="64">64</button>
           <button class="gpre" data-v="71">71</button>
           <button class="gpre" data-v="72">72</button>
         </div>
+        <div class="legend">
+          <span><i style="background:#56ac4d"></i>the scale</span>
+          <span><i style="background:#edf171"></i>the yellow cell</span>
+          <span><i style="background:#a9ff9f"></i>lands</span>
+          <span><i style="background:#d04a3a"></i>SORRY NO BONUS</span>
+        </div>
       </div>
     </div>
-      <p class="cap">Sixteen character rows, eight marker glyphs inside each, so 128 needle
-    positions over the whole scale. The marker code is <code>$18</code> plus the bottom three
-    bits of the gauge value, and one step is eight units of velocity.</p>
+    <p class="cap">Sixteen character rows, eight needle positions inside each: 128 over the whole
+    scale, one for every eight units of velocity. The needle is a black line cut out of the bar,
+    glyph <code>$18</code> plus the bottom three bits of the position, and the cell keeps the
+    colour of its row, green or yellow, because the routine never writes colour memory. The strip
+    beside the scale is not on the C64's screen: it is the landing test's verdict at every needle
+    position. The inset is rows 11 to 13 at twelve times the size.</p>
   </div>
-  <div class="note">Set it to 63, then 64. The needle drops out of the yellow, and the landing
-  still works: 64 through 71 all land. Then compare 71 with 72. They are one marker step apart,
-  an eighth of a character, and one of them scores nine hundred points while the other prints
-  SORRY NO BONUS and destroys the ship. Nothing on the scale marks that line.</div>
+  <div class="note">Set the velocity to 63, then 64. The needle leaves the yellow cell, and the
+  landing still works: 64 through 71 all land. Then 71, then 72. The needle moves one pixel,
+  inside the same cell, and the strip beside it turns from lands to SORRY NO BONUS. That pixel is
+  the line between nine hundred points and a destroyed ship, and nothing on the scale marks it.</div>
 </section>
 
 <section>
@@ -908,7 +921,10 @@ function hitsRock(cells,sx,sy,s){
 // ---- 06: the gauge -------------------------------------------------------
 (function(){
   const cv=document.getElementById('gaugeCv'), ctx=cv.getContext('2d'), S=2;
+  const zc=document.getElementById('gaugeZoom'), zx=zc.getContext('2d'), Z=12;
   const sl=document.getElementById('gv');
+  const LANDS='#a9ff9f', NOBONUS='#d04a3a';
+  // the game's arithmetic, from draw_velocity_gauge at $EC01
   function markerFor(vy){
     const v=vy<0?vy+65536:vy;
     const hi=(v>>8)&0xFF;
@@ -917,25 +933,54 @@ function hitsRock(cells,sx,sy,s){
     a=(a+0x80)&0xFF; a=a>>1;
     return {row:4+((a>>2)&0xFE)/2, sub:a&7, value:a};
   }
+  // the landing test at touchdown: every climb, and descents below 72
+  const landsAt=vy=> vy<0 ? true : vy<0x48;
+  // needle position p covers velocities (2p-128)*4 .. +7; the verdict is the same for all eight
+  const posLands=p=> landsAt((2*p-128)*4);
+  // one cell of the scale, at any magnification: the bar, or the needle cut into it, in the row's colour
+  function cell(c,code,x,y,s,row){ drawGlyph(c,code,x,y,s,row===12?PAL[7]:PAL[5]); }
+  function verdictStrip(c,x,yTop,s,w,p0,p1){
+    for(let p=p0;p<=p1;p++){ c.fillStyle=posLands(p)?LANDS:NOBONUS; c.fillRect(x,yTop+(p-p0)*s,w,s); }
+  }
   function draw(){
     const vy=+sl.value, m=markerFor(vy);
+    // the whole scale, as the game draws it
     ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
     const colX=2*8*S;
     drawGlyph(ctx,0x08,1*8*S,1*8*S,S,PAL[1]); drawGlyph(ctx,0x09,2*8*S,1*8*S,S,PAL[1]);
-    for(let r=2;r<=20;r++) drawGlyph(ctx,0x01,colX,r*8*S,S,r===12?PAL[7]:PAL[5]);
+    for(let r=2;r<=20;r++) cell(ctx,0x01,colX,r*8*S,S,r);
     drawGlyph(ctx,0x0A,colX,3*8*S,S,PAL[5]); drawGlyph(ctx,0x0B,colX,20*8*S,S,PAL[5]);
     drawGlyph(ctx,0x3E,1*8*S,4*8*S,S,PAL[1]);
     drawGlyph(ctx,0x3B,1*8*S,11*8*S,S,PAL[1]); drawGlyph(ctx,0x3C,1*8*S,12*8*S,S,PAL[1]);
     drawGlyph(ctx,0x3F,1*8*S,19*8*S,S,PAL[1]);
-    if(m) drawGlyph(ctx,0x18+m.sub,colX,m.row*8*S,S,PAL[0]==='#000000'?'#000':'#000');
-    if(m){ ctx.globalCompositeOperation='destination-out';
-      drawGlyph(ctx,0x18+m.sub,colX,m.row*8*S,S,'#000');
-      ctx.globalCompositeOperation='source-over';
-      drawGlyph(ctx,0x18+m.sub,colX,m.row*8*S,S,PAL[1]); }
-    const lands = vy<0 ? true : vy<0x48;
+    if(m){ ctx.fillStyle='#000'; ctx.fillRect(colX,m.row*8*S,8*S,8*S); cell(ctx,0x18+m.sub,colX,m.row*8*S,S,m.row); }
+    // beside it, the verdict for all 128 positions: rows 4 to 19, one pixel each
+    verdictStrip(ctx,colX+8*S+2*S,4*8*S,S,4*S,0,127);
+    // the inset: rows 11 to 13
+    zx.fillStyle='#000'; zx.fillRect(0,0,zc.width,zc.height);
+    const bx=Z, top=11;
+    for(let r=top;r<=13;r++){
+      zx.fillStyle='#000'; zx.fillRect(bx,(r-top)*8*Z,8*Z,8*Z);
+      if(m && m.row===r) cell(zx,0x18+m.sub,bx,(r-top)*8*Z,Z,r); else cell(zx,0x01,bx,(r-top)*8*Z,Z,r);
+    }
+    verdictStrip(zx,bx+8*Z+2*Z,0,Z,4*Z,(top-4)*8,(top-4)*8+23);
+    zx.font='11px IBM Plex Mono, monospace'; zx.textBaseline='middle';
+    const tx=bx+14*Z+8;
+    const label=(y,t,c)=>{ zx.fillStyle=c||'#b2b2b2'; zx.fillText(t,tx,y); };
+    label(0.5*8*Z,'row 11: climbing, lands');
+    label(1.5*8*Z,'row 12: 0 to 63, the yellow cell');
+    label(2*8*Z+0.5*Z,'row 13, pixel 0: 64 to 71, lands',LANDS);
+    label(2*8*Z+3*Z,'pixel 1 and below: 72 and up,',NOBONUS);
+    label(2*8*Z+4.2*Z,'SORRY NO BONUS',NOBONUS);
+    zx.strokeStyle='#4a4a4a'; zx.lineWidth=1;
+    for(let r=1;r<3;r++){ zx.beginPath(); zx.moveTo(0,r*8*Z+.5); zx.lineTo(bx+14*Z+2,r*8*Z+.5); zx.stroke(); }
+    // the line the scale does not draw: between pixel 0 and pixel 1 of row 13
+    zx.strokeStyle='#fff'; zx.beginPath(); zx.moveTo(bx+14*Z+2,2*8*Z+Z+.5); zx.lineTo(zc.width-8,2*8*Z+Z+.5); zx.stroke();
+    // the readout
+    const lands=landsAt(vy);
     document.getElementById('gaugeStat').innerHTML=
       'Y velocity <b>'+vy+'</b><br>'+
-      (m? ('gauge value <b>'+m.value+'</b> of 127<br>screen row <b>'+m.row+'</b>'+(m.row===12?' <span style="color:var(--amber)">the yellow cell</span>':'')+', marker glyph <b>'+hex(0x18+m.sub)+'</b>')
+      (m? ('needle position <b>'+m.value+'</b> of 128: row <b>'+m.row+'</b>, pixel <b>'+m.sub+'</b>'+(m.row===12?' <span style="color:var(--amber)">the yellow cell</span>':'')+'<br>marker glyph <b>'+hex(0x18+m.sub)+'</b>')
         : '<span style="color:var(--coral)">off the scale: no marker is drawn at all</span>')+
       '<br>landing test: '+(lands?'<span style="color:var(--green)">lands</span>':'<span style="color:var(--coral)">SORRY NO BONUS</span>');
   }
