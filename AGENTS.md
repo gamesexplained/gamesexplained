@@ -128,6 +128,7 @@ platform follows `kit/PLATFORMS.md`.
 | `AGENTS.md` | this file: agent operating rules only |
 | `kit/START.md` | what a contributor is told to point their agent at |
 | `kit/INSTALL.md` | tools per operating system, how to start and check them |
+| `kit/EMULATOR.md` | what an emulator must do, by phase of use, and the test for each |
 | `kit/style.md` | house style for minisite copy |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
 | `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |

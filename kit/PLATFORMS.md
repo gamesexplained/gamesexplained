@@ -11,7 +11,7 @@ so far, and it is the worked example for the next one.
 |---|---|---|
 | `kit/skills/<platform>/<machine>-reference/` | facts about the machine, consulted rather than recalled: memory map, registers, timing | `kit/skills/c64/c64-reference` |
 | `kit/skills/<platform>/tool-<name>/` | one skill per tool: how to drive it, what it gets wrong | `tool-vice-mcp`, `tool-regen2000` |
-| `kit/<platform>/INSTALL.md` | the tools, how to get them, sizes, what they leave behind, what is known to work per operating system | `kit/c64/INSTALL.md` |
+| `kit/<platform>/INSTALL.md` | the tools, how to get them, sizes, what they leave behind, what is known to work per operating system, and the emulator's pass/fail per phase of `kit/EMULATOR.md` | `kit/c64/INSTALL.md` |
 | `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it | `kit/c64/tools.py` |
 | `kit/<platform>/<tool>.py` | a scripting client per tool, for the loops that are too slow as single calls | `vice.py`, `r2000.py` |
 | `site/lib/<platform>.js` | what the page needs that is specific to the machine | `c64.js`, and the memory map in `memmap.js` |
@@ -57,7 +57,11 @@ then rather than copy the code:
    written from documentation before any game is opened.
 2. `kit/<platform>/`: install notes, launcher, clients. Run
    `verify-footprint` on your operating system and make it pass, as
-   `kit/INSTALL.md` describes.
+   `kit/INSTALL.md` describes. Run the four emulator tests in
+   `kit/EMULATOR.md` and record the pass/fail table in the install
+   notes; a failure in state management or frame stepping with no
+   workaround is the moment to pick another emulator, not after the
+   first game.
 3. The entries in the shared scripts, above.
 4. Lift the seams in `listing.py` and the symbols scripts.
 5. `site/lib/<platform>.js`, and whatever the memory map needs.
