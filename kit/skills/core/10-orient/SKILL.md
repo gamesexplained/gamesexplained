@@ -14,6 +14,14 @@ annotate it byte by byte.
 
 ## Steps
 
+0. **Check the emulator** before the game goes in:
+   `python3 kit/scripts/tools.py status`, then
+   `python3 kit/scripts/tools.py check-emulator`. It resets the machine and
+   takes about a minute. Copy the build line from `status` into
+   `game.json` under `tools.emulator`, and the list of failed checks into
+   `orientation.md`. Then read the emulator's tool skill, and of its
+   `workarounds.md` only the sections for the checks that failed. A
+   workaround you did not need is slower than the tool it replaces.
 1. **Attach and autostart** the contributor's image with the emulator.
    Screenshot. If a trainer or cracktro menu appears, note the options,
    choose the plain game (no cheats) unless the contributor says
@@ -55,6 +63,9 @@ annotate it byte by byte.
   reference), so it can be read directly for sweeps without the emulator.
 - Chip state (video, sound, timers) lives in named modules inside the
   snapshot; the names are readable text, so a string search finds them.
+- On an emulator that fails its check that checkpoints survive a load,
+  a loaded snapshot looks exactly like one that came back without its
+  timer interrupt running; read that workaround first.
 - A loaded snapshot can come back without its timer interrupt running.
   Symptom: the CPU sits in a wait loop and nothing moves. It can also
   come back with the processor port `$01` at a different value and the

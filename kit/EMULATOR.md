@@ -211,8 +211,13 @@ first game rather than after the third. The requirements here are the
 same for a Spectrum, an Amiga or a NES as for a Commodore 64; only the
 chip names change.
 
-Keep the tests as a script, on a game that has a snapshot in its
-`work/`, and name it in the platform notes. Every emulator release, and
-every rebuild, is requalified by running it, in minutes; a table typed
-from memory of the last run is not a measurement. The Commodore 64's is
-`games/c64/jupiter-lander/emulator-spin.py`.
+Keep the tests as a script, and give it a test program of its own, a
+few dozen bytes written into memory and started, rather than a game: it
+then runs on any machine with no image to hand, and every value it
+checks is known in advance. Give each check a short name. The tool skill
+keeps its workarounds in a separate file, one section per failed check,
+so an agent on a build that passes reads none of them, and a section is
+deleted when the release passes its check. Run the script through the
+launcher (`tools.py check-emulator`) after every install, rebuild and
+release; a table typed from memory of the last run is not a measurement.
+The Commodore 64's is `kit/c64/check_emulator.py`.
