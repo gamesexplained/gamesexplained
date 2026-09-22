@@ -187,10 +187,23 @@ the sum. 800 points displays as 8000.
 | **72** | **SORRY NO BONUS** |
 | −16 (climbing) | lands, `960 X 10= 9600` |
 
-**A ship that arrives climbing scores more than a perfect stop.** The
-subtraction is an ordinary 8-bit one, so a velocity of −16 leaves `$F0` in
-the low byte and `$50 − $F0` is 96, not 80. 960 points is the highest single
-landing the scoring can produce.
+**A ship that arrives climbing would score more than a perfect stop, but
+only when poked.** The subtraction is an ordinary 8-bit one, so a velocity
+of −16 leaves `$F0` in the low byte and `$50 − $F0` is 96, not 80. The
+doubling for the x2 and x10 pads is 8-bit as well: `asl` at `$E58C` drops
+its carry before the ×5, so the routine's ceiling is 1275 on the x5 pad
+(velocity low byte `$51`), 1270 on x10 and 254 on x2. None of that is
+reachable in play. `main_loop` runs `check_on_pad` before `move_ship`, so
+the velocity `touchdown` sees is the one that just carried the ship onto the
+pad's line; arriving there from above means it was positive. Arriving with a
+negative velocity means the ship was below the line, which on the x5 and x10
+pads is inside rock, and the collision test runs first. The one geometric
+loophole is the x2 plateau, which has open air beside it at its own height:
+a ship hovering on exactly world Y `$009A` at `$0110` ≤ X < `$0160`, drifting
+right while its velocity high byte is negative, would meet the test on the
+pass its X reaches `$0160`. *Traced, not observed live;* it is a
+pixel-perfect hover, and even the routine's x2 ceiling of 254 is below a
+perfect stop on x10.
 
 Each point counted out adds 70 to the fuel as well as 1 to the score, and
 the addition stops rather than wrapping when it would pass `$FFFF`.

@@ -384,10 +384,11 @@ img.ref{border-radius:8px;border:1px solid var(--line);max-width:100%;display:bl
       </div>
     </div>
   </div>
-  <div class="note">Push the speed below zero. A ship that arrives climbing scores more than a
-  ship that arrives stopped, because <code>80 &minus; velocity</code> is an ordinary eight-bit
-  subtraction and a climbing ship has <code>$F0</code> in the low byte. 960 points is the highest
-  single landing the scoring can produce. A perfect stop gives 800.</div>
+  <div class="note">Push the speed below zero and the bonus climbs past 800, because
+  <code>80 &minus; velocity</code> is an ordinary eight-bit subtraction and a climbing ship has
+  <code>$F0</code> or so in the low byte. That is a property of the arithmetic, not a tactic: a pad
+  is a single line reached from above, moving downward, so the perfect stop is the ceiling in
+  play.</div>
   <p>Every point counted out also puts 70 units back in the tank, one point and 70 units at a
   time, at about 21 milliseconds each. A good landing on the x10 pad therefore takes roughly
   seventeen seconds to pay out, and you watch the fuel bar grow the whole time.</p>
@@ -951,7 +952,8 @@ function hitsRock(cells,sx,sy,s){
   function calc(v){
     const lo=((v%256)+256)%256;          // the low byte of a 16-bit velocity
     const base=(0x50-lo)&0xFF;           // eight-bit subtraction, exactly as the game does it
-    return {lo, base, total:base*MULT[pad]};
+    const dbl=pad===1?base:(base*2)&0xFF; // the x2 and x10 doubling is eight-bit too; its carry is lost
+    return {lo, base, total:pad===2?dbl:dbl*5};
   }
   function text(v){
     const r=calc(v);
@@ -980,7 +982,7 @@ function hitsRock(cells,sx,sy,s){
          '&times; <b>'+MULT[pad]+'</b> = <b>'+r.total+'</b> points<br>'+
          'shown on screen as <b>'+(r.total*10)+'</b><br>'+
          'refuel <b>'+(r.total*70)+'</b> units, over <b>'+(r.total*0.021).toFixed(1)+'</b> seconds'
-         + (v<0 ? '<br><span style="color:var(--amber)">arriving upward: the base beats a perfect stop</span>':''))
+         + (v<0 ? '<br><span style="color:var(--amber)">arriving upward: what the arithmetic would pay, not a landing you can make</span>':''))
       : '<span style="color:var(--coral)">faster than $0048. SORRY NO BONUS, and the ship is destroyed.</span>';
   }
   sl.oninput=draw;
