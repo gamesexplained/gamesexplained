@@ -17,7 +17,9 @@ rules below mechanically, paragraph by paragraph, as described in
   table, the screenshot, the register.
 - Lead with what a player would notice; the implementation is the
   explanation of it.
-- Secrets, quirks and bugs are the best part. Give them room.
+- Secrets, quirks and bugs are the best part. Give them room. The
+  unintended corner case, reachable by a player who knows the code, is
+  the pick of them.
 - Interactivity beats description. If the reader can press it, let them.
 
 ## Rules

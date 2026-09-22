@@ -62,7 +62,16 @@ address links into the Source tab, and the house style in `kit/style.md`.
    the bytes that produce each note.
 8. **Secrets, quirks and bugs.** The best part. Things a player who
    finished the game would not know, each verified live, with the
-   evidence beside it.
+   evidence beside it. One kind deserves a special look: a state the code
+   accepts but the programmer never meant anyone to reach. It shows up as
+   an exact-match test where a range was intended, a comparison that
+   assumes a sign, an eight-bit sum that can wrap, a test run in an order
+   that leaves a gap, and it is classic tool-assisted-speedrun material,
+   invisible in play and plain in the listing. Landing while climbing, and
+   being paid more for it, is one. When you find one, do not stop at the
+   poke: prove a player could get there (`60-verify`, reachability), and
+   build the section around a stepper the reader can walk through. It is
+   one kind of interesting fact among several, not the point of the page.
 
 ## Building it
 

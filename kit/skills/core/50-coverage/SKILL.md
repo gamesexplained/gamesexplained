@@ -22,7 +22,12 @@ same way, so tiers mean the same thing everywhere.
    does in terms of the game (what the player sees, which feature in
    `features.md` it serves). Name it. Write a **line comment on its entry
    address** that describes the whole thing: purpose, inputs, outputs,
-   side effects, which tables it reads.
+   side effects, which tables it reads. While it is in front of you, note
+   anything it would accept that the player was never meant to do: an
+   exact match where a range was meant, a comparison that assumes a sign,
+   an eight-bit sum that can wrap, a test whose order leaves a gap. Put
+   the note in `facts.md` as an open question; `60-verify` says how to
+   settle it and `70-minisite` what to make of it.
 3. Update `features.md` statuses and `facts.md` as facts firm up.
 4. Every 30 minutes or so, and at the end of every session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
