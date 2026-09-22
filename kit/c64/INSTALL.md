@@ -76,12 +76,26 @@ published on its GitHub releases page; nothing comes from anywhere else.
 | Operating system | Asset | Notes |
 |---|---|---|
 | macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) into `tools/vice-mcp/` |
-| macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; untested by us |
-| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us |
-| Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only; untested by us |
+| macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; untested by us |
+| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us; prefer the GUI build, see below |
+| Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only, so **stops do not work on Windows** at all; untested by us |
 
-The kit only talks to the emulator over MCP, so a headless build should
-be enough; the GUI build lets the contributor watch. **Ask the contributor
+**Use the GUI build wherever one exists.** The kit talks to the emulator
+only over MCP, so a headless build looks sufficient, and it is not. In
+VICE's headless port the pause routine is a stub with its body commented
+out, so the server's pause, a completed step and a stopping checkpoint
+all set the "paused" flag and leave the CPU running: `vice_ping` reports
+paused, memory reads race the running game, and every checkpoint that
+should halt the machine silently does not. Keys sent by host key name
+(`vice_keyboard_key_press`) also have no keymap to land in. The GUI
+build stops, late by up to one frame (the pause takes hold at the next
+vertical sync), which is what the tool skill's workarounds are written
+for. On Windows the only release is headless, so a Windows contributor
+today gets a build in which phase 4 of `kit/EMULATOR.md` cannot be done
+and phase 3 must never use a stopping checkpoint; say so before they
+start. The headless build is still the right one for unattended batch
+runs that never need to stop: a cycle limit and an exit screenshot, or a
+replay through the in-game input hook. **Ask the contributor
 before downloading**, tell them the file name and size, and let them fetch
 it if they prefer. macOS may refuse to open an unsigned download; if so the
 contributor clears it in System Settings, Privacy & Security, or with
