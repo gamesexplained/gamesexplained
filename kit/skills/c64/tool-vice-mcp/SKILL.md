@@ -12,8 +12,45 @@ If the tools are missing entirely, start it (`kit/INSTALL.md`) and try again.
 
 `kit/c64/vice.py` is a client for the same server. Anything repetitive
 (halt, poke, run N passes, read back) belongs in a script, not in a string
-of one-off tool calls: each call costs a round trip and each read restarts
-the machine.
+of one-off tool calls: each call costs a round trip.
+
+## Two builds: check which one answers
+
+`python3 kit/scripts/tools.py status` says `release` or `source build at
+...`. The **fixed build** (`kit/c64/INSTALL.md`, "The build from source")
+is the v3.11.0 release plus the upstream pull requests and four more
+fixes, and it changes what the notes below mean:
+
+- A stop is exact. A stopping checkpoint, `vice_execution_pause`,
+  `vice_execution_step` and `vice_frame_advance` all halt the CPU on the
+  instruction they name, with the registers exported, and `vice_ping`
+  reports `paused` only then and `running` otherwise. Nothing opens the
+  monitor window. `vice_execution_run` resumes from any of them.
+- With a stopping checkpoint on the top of the game loop,
+  `vice_execution_run` then wait for `paused` is **one pass, exactly**
+  (110 ms a step from a script: `step_pass` in `vice.py`).
+  `vice_frame_advance` with `frames` runs exactly that many frames from a
+  stop and stops at the frame boundary, one call for any count (80 ms for
+  one frame, `frames` in `vice.py`).
+- Joystick port numbers mean what they say: `port` 1 is control port 1
+  (`$DC01`), 2 is `$DC00`. A value set while stopped is in the register
+  before the call returns and seen by the next instruction, and stays
+  until you release it. `vice_keyboard_matrix` (row and column, or a key
+  name) is the same. `vice_keyboard_key_press` by host key name is not:
+  VICE queues it 1000 cycles plus a random amount up to a frame later, by
+  design, so use the matrix tool for anything timed.
+- `vice_watch_add` takes `load`, `store` and `stop`, like
+  `vice_checkpoint_add`; a stopping watchpoint halts the machine instead
+  of opening the monitor.
+- A snapshot load no longer kills the checkpoints (the cause of "hit
+  counts stop recording silently", below), and a load on a stopped machine
+  leaves it stopped at the loaded state's PC, which is the "load paused"
+  that phase 2 of `kit/EMULATOR.md` asks for.
+- `vice_execution_step` steps and replies with the PC.
+
+Everything under "Behaviours that waste time" was measured on the
+release and is still true of it; the bullets say what the fixed build
+changes. The measurements are `games/c64/jupiter-lander/emulator-spin.py`.
 
 ## The sequence that works
 
@@ -50,7 +87,9 @@ you are unsure of.
 ## Behaviours that waste time
 
 - **A stopping checkpoint opens the monitor, and an open monitor pauses
-  the machine until it is closed.** This is the most expensive trap here,
+  the machine until it is closed.** *Release build; the fixed build holds
+  the CPU without the monitor and `vice_ping` says `paused`.* This is the
+  most expensive trap on the release,
   because a paused machine does not look paused. `vice_ping` still reports
   `"execution": "running"`. Screenshots still show the last frame, which
   looks like gameplay. Memory reads return steady, plausible values. Every
@@ -65,7 +104,12 @@ you are unsure of.
   absence in the game. The test costs one call. Read the program counter
   several times: a live machine returns a scatter of addresses, a paused
   or parked one returns the same address every time.
-- **Hit counts can stop recording, silently.** `vice_checkpoint_add` keeps
+- **Hit counts can stop recording, silently.** *Cause found and fixed in
+  the fixed build: a snapshot load restores the CPU's "check the monitor
+  before each instruction" bit from the file, and a snapshot saved with no
+  checkpoints switches every live checkpoint off until the next checkpoint
+  is added or deleted. On the release, add and delete any checkpoint after
+  every `vice_snapshot_load`.* `vice_checkpoint_add` keeps
   returning ok and `vice_checkpoint_list` keeps showing the checkpoint
   enabled while every count stays at zero. Always add a **control**: a
   checkpoint on a routine you know runs, such as the interrupt handler, in
@@ -73,14 +117,19 @@ you are unsure of.
   the instrument is dead, and no other number in that batch means anything.
 - **Prove the machine is stopped before you poke it.** Read the program
   counter twice; if it changes, it is running and every write you make is
-  being overwritten. `vice_execution_pause` held the CPU in one run and
-  appeared not to in another (that run lost hours to "the game does not do
-  that"); the cause is not established. A checkpoint with `stop` set halts
-  it in every run so far, and `vice_ping` reports the execution state.
+  being overwritten. On the release `vice_execution_pause` only raises a
+  flag that the window honours at the next vertical sync, so the CPU runs
+  up to a frame more while `vice_ping` already says `paused` (that is the
+  run that lost hours to "the game does not do that"); a checkpoint with
+  `stop` set halts it. On the fixed build the pause is exact. Either way,
+  a two-instruction delay loop can return the same PC twice while running:
+  a hit count on the loop is the better test.
 - **After a checkpoint stops the machine, the reported program counter is
-  not the checkpoint address.** Do not use it to decide whether the break
-  happened; a claim like "it never reaches that routine" founded on the PC
-  can be flatly wrong. Use `vice_checkpoint_list` and read the hit count.
+  not the checkpoint address.** *Release only: the stop lands up to a frame
+  late. On the fixed build the PC is the checkpoint address.* Do not use it
+  to decide whether the break happened; a claim like "it never reaches
+  that routine" founded on the PC can be flatly wrong. Use
+  `vice_checkpoint_list` and read the hit count.
 - **Check the execution state after reads and writes, in both directions.**
   One run saw reads and writes leave the machine paused; another saw a
   paused machine running again between reads (a direct test afterwards
@@ -93,7 +142,8 @@ you are unsure of.
   again; if the emulator itself misbehaves, restart its process.
 - **Screenshots are seconds apart.** To catch a short-lived screen, poke
   the game into the state just before it and poll, or read the state
-  variables that prove it happened.
+  variables that prove it happened. On the fixed build, stop and
+  `vice_frame_advance` to the frame you want, then screenshot.
 - **Memory reads honour banking.** Use the bank argument
   (`vice_memory_banks` lists them) when you need RAM under I/O or ROM. The
   banks are `default`, `cpu`, `ram`, `rom`, `io` and `cart`; reading a
@@ -113,7 +163,9 @@ you are unsure of.
   known quantity (a timer latch you can compute, a loop you can count)
   before you trust a figure from it, and record in `features.md` when an
   input path could not be exercised rather than calling it confirmed.
-- **`vice_joystick_set` is off by one.** `{"port": 1}` pulls bits on
+- **`vice_joystick_set` is off by one.** *Release only; fixed upstream in
+  barryw/vice-mcp#6 and in the fixed build, where `joy()` in `vice.py` is
+  the way in and `stick_arm` is not needed.* `{"port": 1}` pulls bits on
   `$DC00`, which is control port **2** on the hardware. `{"port": 2}`
   returns `{"status":"ok"}` and changes nothing at all; `port` 0 and 3 are
   rejected. The cause is in the server's source
@@ -153,7 +205,7 @@ you are unsure of.
 - **Keys a game polls rarely can be missed by a short press.** Where
   `vice_keyboard_matrix` with a long `hold_ms` still does nothing, try
   `vice_keyboard_type`, which goes through the KERNAL buffer instead.
-- **`vice_watch_add` ignores `load: true`** and creates a write watchpoint
+- **`vice_watch_add` ignores `load: true`** (*release only*) and creates a write watchpoint
   regardless; its own schema wants `type: "read" | "write" | "both"`. A
   silently-wrong watchpoint reports zero hits and looks like proof of
   absence. `vice_checkpoint_add` with `load: true, exec: false` does work.
@@ -181,7 +233,10 @@ count hits, or read memory the routine wrote.
 
 `vice_joystick_tap` for half a second was not seen by a loop that polls
 the stick every pass; `vice_joystick_set` held for two seconds was. Hold
-the stick when a loop has to notice it.
+the stick when a loop has to notice it. On the release, a value set
+through either tool lands at a random point within the next frame (VICE
+imitates a human hand), which is why a press set just before a step is
+seen a pass late about half the time; the fixed build latches it at once.
 
 `vice_snapshot_load` after a hard reset returned a machine with `$01`
 changed ($37 instead of the game's $36), the CPU in the KERNAL screen
@@ -193,8 +248,13 @@ state.
 
 A corner case is only worth publishing if a player could reach it, and
 that means feeding the game a chosen input on every pass of its loop and
-comparing what it does with a model. Stepping the emulator is the wrong
-tool for that here, for three reasons met in one afternoon:
+comparing what it does with a model. On the fixed build, stepping does
+this: a stopping checkpoint on the loop top, `joy()` then `step_pass()`
+per pass, reading the variables between, at about nine passes a second
+from a script, and `frames()` where the game is frame-locked. The in-game
+hook below is faster still (the game runs at full speed) and is the only
+way on the release, where stepping is the wrong tool for three reasons
+met in one afternoon:
 
 - `vice_execution_run` after a *stopping* checkpoint did not resume the
   machine; memory reads kept returning the same state and the hit counter
@@ -220,9 +280,11 @@ to need this carries the routine in its `agent-history.md` (inputs at
 game gets a variant of it. Restore the original `jsr` as soon as the event
 you wanted has fired, or the counter walks the log into I/O space.
 
-Snapshots do not shortcut this. A snapshot saved by `vice_snapshot_save`
-during play and loaded back a minute later returned the RAM intact and the
-CPU spinning in the game's timer wait (`$EE4E`), with the loop never
-reached again: the existing note about loaded snapshots losing their timer
-holds for the server's own snapshots too. Getting back into play still
-means autostart, the trainer's questions and F1.
+Snapshots do not shortcut this on the release. A snapshot saved by
+`vice_snapshot_save` during play and loaded back a minute later returned
+the RAM intact and the CPU spinning in the game's delay loop (`$EE4E`),
+with the checkpoint on the game loop never hit again. That was read as a
+lost timer; it was the dead-checkpoint effect above: the loop was running
+and the instrument was off. On the fixed build the same snapshot loads,
+runs and counts, and two loads plus a hundred passes give the same
+machine byte for byte.

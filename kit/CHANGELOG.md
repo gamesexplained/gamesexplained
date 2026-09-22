@@ -12,6 +12,33 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
+## 0.0.10 · 22 September 2026 · Jupiter Lander · air with Claude Fable 5.1
+
+**The emulator is now a build from source, and phase 4 is real.** The
+release stopped the CPU up to a frame after a checkpoint, dropped joystick
+input at a random point in the next frame, sent port 1 to port 2, and
+could not step or advance a frame. A source build with the upstream pull
+requests and four more fixes stops on the instruction, latches input at
+once, steps one pass or one frame per call, and `vice.py` has `joy`,
+`step_pass` and `frames` for it. The tool skill says which of its
+warnings are about the release only.
+
+**"The loop never runs again after a snapshot load" was the instrument,
+not the game.** A snapshot carries the CPU's "check the monitor before
+each instruction" bit, and loading one saved with no checkpoints switched
+every live checkpoint off, silently: hit counts frozen at zero, stops
+never taken, until the next checkpoint change. Two runs had read that as
+a lost timer interrupt. Fixed in the build; on the release, add and
+delete a checkpoint after every load. The rule stands either way: a
+negative result from a counter is a claim about the counter until a
+control checkpoint has counted in the same breath.
+
+**Requalify the emulator, do not trust it.** `kit/EMULATOR.md`'s four
+tests are now a script on a game with a snapshot
+(`games/c64/jupiter-lander/emulator-spin.py`, 63 checks, three minutes),
+and the platform install notes carry its measured table. Run it after any
+rebuild or release.
+
 ## 0.0.8 · 22 September 2026 · Jupiter Lander · air with Claude Fable 5.1
 
 **A poke proves the code, an input movie proves the player.** The scoring

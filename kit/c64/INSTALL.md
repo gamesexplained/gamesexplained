@@ -25,7 +25,50 @@ source and from the runs so far; the details and the workarounds live in
 
 The phase 4 failures are small changes inside the server's own code, and
 the project asks for contributions; fixing them upstream is the path, so
-that contributors keep installing a release rather than compiling.
+that contributors keep installing a release rather than compiling. Until
+they land, the fixes are in a build from source, next.
+
+### The build from source
+
+`barryw/vice-mcp` pull requests #6, #7, #11 and #14 to #20 fix the phase
+2, 3 and 4 failures above, and a test spin of that build found four more
+defects, fixed in the same tree: the step tool did nothing on a stopped
+machine; a request queued while the machine ran could time out if a
+checkpoint stopped it first; joystick input landed at a random point in
+the next frame (VICE imitating a human hand); and **loading a snapshot
+killed every checkpoint** when the snapshot had been saved with none,
+because the CPU's "check the monitor before each instruction" bit is
+saved in the file and restored over the live one. That last one is the
+"hit counts can stop recording silently" trap in the tool skill, and the
+"loaded snapshot spinning in its timer wait with the loop never reached":
+the loop was running, the checkpoint on it was dead.
+
+A tree with all of it merged is kept at `~/dev/vice-mcp-fixed` (branch
+`fixed`, on this machine; the branches are on the `air/vice-mcp` fork).
+`kit/c64/build-vice-mcp.sh <tree> <install dir>` builds it on macOS with
+Homebrew (the packages it needs are listed in the script; they are the
+project's own CI recipe minus audio codecs, ethernet and hardware SID),
+runs the server's unit suite, and installs a plain tree with
+`bin/x64sc` in it. Point the kit at it and check:
+
+```
+ln -sfn <install dir> tools/vice-mcp        # the release stays in tools/vice-mcp-release
+python3 kit/scripts/tools.py status         # says "source build at ..."
+python3 games/c64/jupiter-lander/emulator-spin.py
+```
+
+The last line is `kit/EMULATOR.md`'s four tests, on a game with a
+snapshot in `work/`: 63 checks, about three minutes, and the way to
+requalify the emulator after any rebuild or a new upstream release.
+Measured on that build, 22 September 2026:
+
+| Phase | Passes | Still fails | Workaround |
+|---|---|---|---|
+| 1 static inspection | as above | | |
+| 2 state management | save and load from a running or a stopped machine; a load on a stopped machine leaves it stopped at the loaded PC (that is "load paused"); the same snapshot plus 100 passes gives the same zero page, screen and VIC registers, in the same process and after a restart; warp on and off | a snapshot name cannot be reused | new name each save |
+| 3 live measurement | exec, load and store checkpoints count without stopping, through a snapshot load; `vice_ping` is truthful; the cycle stopwatch is right (0.5 s = 497k PAL cycles) | | keep the control checkpoint anyway; it costs one call |
+| 4 frame stepping | a stop lands on the checkpoint, step or pause instruction, every time; run/stop on a loop checkpoint is one pass per call at 110 ms; `vice_frame_advance` runs exactly N frames from a stop (80 ms per single frame, one call for 50) and stops at raster 311; joystick ports 1 and 2 reach `$DC01` and `$DC00`, set while stopped and seen by the next pass; `vice_keyboard_matrix` the same; `vice_run_until` resumes a stopped machine; 1600 unpaced calls at 670 a second do not disturb it | `vice_keyboard_key_press` (host key names) still lands 1000 cycles plus up to a frame late, by VICE's design | use the matrix tool for timed input |
+
 VICE's own binary monitor (`-binarymonitor`, port 6502) is in the same
 build, stops the CPU exactly, and has memory, checkpoints, snapshots and
 joystick commands; whether it works alongside the MCP server without
@@ -79,6 +122,7 @@ published on its GitHub releases page; nothing comes from anywhere else.
 | macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; untested by us |
 | Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us; prefer the GUI build, see below |
 | Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only, so **stops do not work on Windows** at all; untested by us |
+| any, from source | `kit/c64/build-vice-mcp.sh` | the fixed build, above; macOS recipe, needs Homebrew packages |
 
 **Use the GUI build wherever one exists.** The kit talks to the emulator
 only over MCP, so a headless build looks sufficient, and it is not. In

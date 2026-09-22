@@ -4,7 +4,9 @@
 Reached through `python3 kit/scripts/tools.py`, which picks the platform; do not run this file directly.
 
 Everything the kit installs lives under tools/ (gitignored):
-  tools/vice-mcp/    the emulator build, unpacked from the upstream release
+  tools/vice-mcp/    the emulator build, unpacked from the upstream release, or a
+                     symlink to a source build's install tree (kit/c64/INSTALL.md,
+                     "A build from source")
   tools/vice-home/   the emulator's config, log and snapshots (XDG paths pointed here)
   tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000`
   tools/logs/        terminal logs of both
@@ -95,7 +97,11 @@ def stop(which="all"):
 
 
 def status():
-    print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {'present' if os.path.isdir(VICE_DIR) else 'MISSING'} at tools/vice-mcp")
+    build = "MISSING"
+    if os.path.isdir(VICE_DIR):
+        real = os.path.realpath(VICE_DIR)
+        build = "release" if real == os.path.abspath(VICE_DIR) else f"source build at {real}"
+    print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {build} (tools/vice-mcp)")
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
     where = "tools/cargo/bin" if os.path.exists(local) else (shutil.which("regenerator2000") or "MISSING")
     print(f"disassembler  :3000  {'up' if up(3000) else 'down'}   binary: {where}")

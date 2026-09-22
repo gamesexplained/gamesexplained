@@ -9,21 +9,25 @@ Usage:
   vice.py --list                       list the emulator's tools
   vice.py <tool> '<json arguments>'    call one tool
 
-  from vice import connect, call, read_mem, halt_at, resume, poke
+  from vice import connect, call, read_mem, halt_at, release, poke
   rpc = connect()
-  cp = halt_at(rpc, "$E12C")           # the ONLY reliable way to stop the CPU
+  cp = halt_at(rpc, "$E12C")           # stop at the top of the game loop
   poke(rpc, 0x0010, [0x00, 0x00])
+  joy(rpc, 1, LEFT)                    # hold the stick on the port the game reads
+  step_pass(rpc)                       # run to the next hit of cp: one pass
+  frames(rpc, 3)                       # or run exactly three frames
   release(rpc, cp)
 
-  stick_arm(rpc); stick(rpc, FIRE)     # joystick input a game reads at $DC01
+Which build answers matters (kit/c64/INSTALL.md, "A build from source"):
 
-Two behaviours this wraps because they cost a day if you meet them cold:
-
-  * vice_execution_pause reports success without stopping the CPU. A
-    checkpoint with stop=true does stop it. halt_at uses one.
-  * after a checkpoint stops the machine, vice_registers_get returns a
-    program counter that is not the checkpoint address. Do not test where
-    you stopped with the PC; use the checkpoint's hit count.
+  * the fixed build stops exactly where a checkpoint, step or pause says,
+    vice_ping is truthful, joystick port numbers mean what they say, input
+    set while stopped is seen by the next instruction, and vice_frame_advance
+    exists. step_pass and frames need it.
+  * the v3.11.0 release stops up to a frame late, port 1 reaches control
+    port 2, and vice_execution_pause did not always stop the CPU. On it,
+    halt_at is still the reliable stop, use stick_arm/stick for a game that
+    reads control port 1, and do not trust the PC after a stop.
 """
 import json, sys, time, urllib.request
 
@@ -103,15 +107,53 @@ def release(rpc, n, run=True):
         call(rpc, "vice_execution_run", {})
 
 
+def paused(rpc):
+    return json.loads(call(rpc, "vice_ping"))["execution"] == "paused"
+
+
+def step_pass(rpc, timeout=5.0):
+    """Resume a machine stopped at a checkpoint and wait for the next stop.
+
+    With a stopping checkpoint on the top of the game loop this is one pass
+    per call, exactly (fixed build). Returns the seconds it took, or None.
+    """
+    call(rpc, "vice_execution_run", {})
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        if paused(rpc):
+            return time.time() - t0
+        time.sleep(0.005)
+    return None
+
+
+def frames(rpc, n=1):
+    """Run exactly n frames from a stopped machine and stop again (fixed build only)."""
+    return json.loads(call(rpc, "vice_frame_advance", {"frames": n}))
+
+
 UP, DOWN, LEFT, RIGHT, FIRE = 1, 2, 4, 8, 16
+_DIRS = {UP: "up", DOWN: "down", LEFT: "left", RIGHT: "right"}
+
+
+def joy(rpc, port=1, bits=0):
+    """Hold a joystick state on control port 1 or 2 through vice_joystick_set; 0 releases.
+
+    On the fixed build the port number is the hardware port and the value is
+    seen by the next instruction. On the v3.11.0 release port 1 reaches
+    control port 2, port 2 reaches nothing, and the value lands at a random
+    point within the next frame: use stick_arm/stick there for port 1.
+    """
+    return call(rpc, "vice_joystick_set", {"port": port, "direction": [d for b, d in _DIRS.items() if bits & b],
+                                           "fire": bool(bits & FIRE)})
 
 
 def stick_arm(rpc, ddr=0x1F):
     """Make CIA1 port B drive the control-port-1 lines, so stick() works.
 
-    vice_joystick_set is off by one: port 1 reaches CIA1 port A ($DC00,
-    control port 2) and port 2 reaches nothing (fix proposed upstream as
-    barryw/vice-mcp#6). Most C64 games read control port 2, so asking for
+    For the v3.11.0 release, where vice_joystick_set is off by one: port 1
+    reaches CIA1 port A ($DC00, control port 2) and port 2 reaches nothing
+    (fixed upstream in barryw/vice-mcp#6, and in the fixed build; use joy()
+    there). Most C64 games read control port 2, so asking for
     port 1 usually works by accident. A game that reads control port 1 at
     $DC01, as the early Commodore titles do, cannot be driven that way:
     port B is an input and nothing the emulator offers pulls its lines low. Setting DDRB ($DC03) makes those bits
