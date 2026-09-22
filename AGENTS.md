@@ -49,9 +49,9 @@ in order:
    `work/`. Preview the whole minisite with `python3 kit/scripts/build.py`
    and `python3 -m http.server -d _site 8000`.
 5. **Check, commit on a branch, open a pull request.** Name the branch
-   `game/<platform>/<slug>`. Never commit to `main`, whatever access you
-   have: every change to this repository arrives as a pull request, so
-   the checks run once more on a clean checkout and a maintainer sees
+   `game/<platform>/<slug>`. Contributors never commit to `main`:
+   contributions arrive as a pull request, so
+   the checks run on a clean checkout and a maintainer sees
    what changed before it reaches readers. Before every commit run:
 
    ```
