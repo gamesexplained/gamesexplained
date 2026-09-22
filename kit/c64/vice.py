@@ -9,21 +9,21 @@ Usage:
   vice.py --list                       list the emulator's tools
   vice.py <tool> '<json arguments>'    call one tool
 
-  from vice import connect, call, read_mem, halt_at, resume, poke
+  from vice import connect, call, read_mem, halt_at, release, poke, joy, step_pass, frames, LEFT
   rpc = connect()
-  cp = halt_at(rpc, "$E12C")           # the ONLY reliable way to stop the CPU
+  cp = halt_at(rpc, "$E12C")           # stop at the top of the game loop
   poke(rpc, 0x0010, [0x00, 0x00])
+  joy(rpc, 1, LEFT)                    # hold the stick on the port the game reads
+  step_pass(rpc)                       # run to the next hit of cp: one pass
+  frames(rpc, 3)                       # or run exactly three frames
   release(rpc, cp)
 
-  stick_arm(rpc); stick(rpc, FIRE)     # joystick input a game reads at $DC01
+  stick_arm(rpc); stick(rpc, LEFT)     # joystick input on a build that fails joy-port-1
 
-Two behaviours this wraps because they cost a day if you meet them cold:
-
-  * vice_execution_pause reports success without stopping the CPU. A
-    checkpoint with stop=true does stop it. halt_at uses one.
-  * after a checkpoint stops the machine, vice_registers_get returns a
-    program counter that is not the checkpoint address. Do not test where
-    you stopped with the PC; use the checkpoint's hit count.
+Which of these to use depends on `tools.py check-emulator`: step_pass needs
+stop-exact and step-pass, frames needs the frame-advance- checks, joy needs
+the joy- checks. Where a check fails, kit/skills/c64/tool-vice-mcp/workarounds.md
+says what to use instead (halt_at and release for stops, stick_arm for port 1).
 """
 import json, sys, time, urllib.request
 
@@ -103,15 +103,53 @@ def release(rpc, n, run=True):
         call(rpc, "vice_execution_run", {})
 
 
+def paused(rpc):
+    return json.loads(call(rpc, "vice_ping"))["execution"] == "paused"
+
+
+def step_pass(rpc, timeout=5.0):
+    """Resume a machine stopped at a checkpoint and wait for the next stop.
+
+    With a stopping checkpoint on the top of the game loop this is one pass
+    per call, exactly, on a build that passes step-pass. Returns the seconds
+    it took, or None.
+    """
+    call(rpc, "vice_execution_run", {})
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        if paused(rpc):
+            return time.time() - t0
+        time.sleep(0.005)
+    return None
+
+
+def frames(rpc, n=1):
+    """Run exactly n frames from a stopped machine and stop again (needs the frame-advance- checks)."""
+    return json.loads(call(rpc, "vice_frame_advance", {"frames": n}))
+
+
 UP, DOWN, LEFT, RIGHT, FIRE = 1, 2, 4, 8, 16
+_DIRS = {UP: "up", DOWN: "down", LEFT: "left", RIGHT: "right"}
+
+
+def joy(rpc, port=1, bits=0):
+    """Hold a joystick state on control port 1 or 2 through vice_joystick_set; 0 releases.
+
+    On a build that passes the joy- checks the port number is the hardware
+    port and the value is seen by the next instruction. On one that fails
+    them, see workarounds.md: stick_arm/stick for control port 1.
+    """
+    return call(rpc, "vice_joystick_set", {"port": port, "direction": [d for b, d in _DIRS.items() if bits & b],
+                                           "fire": bool(bits & FIRE)})
 
 
 def stick_arm(rpc, ddr=0x1F):
     """Make CIA1 port B drive the control-port-1 lines, so stick() works.
 
-    vice_joystick_set is off by one: port 1 reaches CIA1 port A ($DC00,
-    control port 2) and port 2 reaches nothing (fix proposed upstream as
-    barryw/vice-mcp#6). Most C64 games read control port 2, so asking for
+    For a build that fails joy-port-1, where vice_joystick_set is off by one:
+    port 1 reaches CIA1 port A ($DC00, control port 2) and port 2 reaches
+    nothing (barryw/vice-mcp#6 fixes it; use joy() on a build that passes).
+    Most C64 games read control port 2, so asking for
     port 1 usually works by accident. A game that reads control port 1 at
     $DC01, as the early Commodore titles do, cannot be driven that way:
     port B is an input and nothing the emulator offers pulls its lines low. Setting DDRB ($DC03) makes those bits

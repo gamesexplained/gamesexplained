@@ -12,24 +12,50 @@ they are known to work.
 
 ## Where the emulator stands, by phase
 
-The phases are `kit/EMULATOR.md`. This is vice-mcp v3.11.0, from its
-source and from the runs so far; the details and the workarounds live in
-`kit/skills/c64/tool-vice-mcp`.
+The phases are `kit/EMULATOR.md`. `python3 kit/scripts/tools.py
+check-emulator` measures them on whatever build answers, with a test
+program of its own (`kit/c64/check_emulator.py`: no game needed, under a
+minute). It names every check it makes, and
+`kit/skills/c64/tool-vice-mcp/workarounds.md` says what to do about each
+one that fails. Run it once after installing, and again after any new
+build or release.
 
-| Phase | Passes | Fails | Workaround |
-|---|---|---|---|
-| 1 static inspection | reads of any size with a bank argument; registers; chip state; snapshot RAM at a fixed offset, which `listing.py` reads | | none needed; read the `.vsf` from Python for anything large |
-| 2 state management | save and load on request to `tools/vice-home/`; warp on and off through the generic config call | a loaded snapshot has come back with its timer stopped, cause not established; a loaded snapshot runs at once; a snapshot name cannot be reused | re-autostart the image; pause with a checkpoint in the same script; new name each save |
-| 3 live measurement | non-stopping checkpoints with hit counts; stopwatch (validate it) | hit counts can stop recording silently; a load or store watchpoint that stops opens the monitor window and freezes the machine | always add a control checkpoint; never stop on a watchpoint, count instead |
-| 4 frame stepping | joystick and key state persist while paused | **the stop is not exact**: a checkpoint hit or a step schedules a pause at the next vertical sync, so the machine runs up to a frame more; no frame-advance tool, although VICE has the primitive; `run_until` does not resume a paused machine; port numbers are off by one | the in-game input hook described in the tool skill; the kit's `stick_arm` for the port |
+The vice-mcp v3.11.0 release, macOS arm64 GUI build, measured 22 September
+2026: 30 of 56 checks pass.
+
+| Phase | Passes | Fails |
+|---|---|---|
+| 1 static inspection | all: reads of any size with a bank argument; registers and chip state; snapshot RAM at a fixed offset, which `listing.py` reads | |
+| 2 state management | save from a running or a stopped machine; warp on and off | a load does not stop where a checkpoint armed before it says; a load kills every checkpoint when the snapshot was saved with none (`checkpoints-survive-load`); determinism cannot be shown at a stop, because the stop is late |
+| 3 live measurement | non-stopping exec checkpoints count, and agree with the program's own counter; the cycle stopwatch | `vice_watch_add` ignores `load`, `store` and `stop` and makes a stopping write watchpoint, which opens the monitor window and freezes the machine |
+| 4 frame stepping | keys by matrix and by host name reach the program | stops land up to a frame late; run after a stop, `run_until` and step do not do what they say; no frame advance; joystick port numbers are off by one and input lands up to a frame late |
+| transport | a call during a stop answers; 1600 unpaced calls | `vice_ping` has reported `paused` on a fresh, running machine |
 
 The phase 4 failures are small changes inside the server's own code, and
-the project asks for contributions; fixing them upstream is the path, so
-that contributors keep installing a release rather than compiling.
-VICE's own binary monitor (`-binarymonitor`, port 6502) is in the same
-build, stops the CPU exactly, and has memory, checkpoints, snapshots and
-joystick commands; whether it works alongside the MCP server without
-opening the monitor window is not yet tested.
+the project asks for contributions: pull requests #6, #7, #11 and #14 to
+#20 on `barryw/vice-mcp` fix most of them. Fixing them upstream is the
+path, so that contributors keep installing a release rather than
+compiling.
+
+### Using a build of your own
+
+A contributor who already has a vice-mcp build that does better, their
+own or one with fixes merged ahead of a release, can point the kit at it
+instead of downloading:
+
+```
+python3 kit/scripts/tools.py use-vice <install dir>    # the folder with bin/x64sc in it
+python3 kit/scripts/tools.py use-vice release          # and back
+```
+
+`tools/vice-mcp` becomes a link to that folder; a release already there
+is kept at `tools/vice-mcp-release`. Nothing outside `tools/` changes, and
+the build itself is the contributor's to manage. `tools.py status` says
+`own build at <dir>`, with its git commit when the folder is inside a git
+tree: record that line in `game.json` under `tools.emulator`, so that the
+game says what it was measured with. Then run `check-emulator` on it; the
+checks, not the build's name, decide which workarounds apply. Ask the
+contributor whether they have one before downloading the release.
 
 **Prerequisite the kit does not install:** Rust's `cargo`
 (https://rustup.rs), for the disassembler. If the contributor has no
@@ -42,7 +68,7 @@ Tell the contributor this before installing anything:
 
 | What | Where | Size |
 |---|---|---|
-| Emulator build | `tools/vice-mcp/` | about 100 MB |
+| Emulator build | `tools/vice-mcp/`, or a link to the contributor's own build | about 100 MB |
 | Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
 | Disassembler binary | `tools/cargo/` | about 20 MB |
 | Logs | `tools/logs/` | small |
@@ -89,8 +115,8 @@ paused, memory reads race the running game, and every checkpoint that
 should halt the machine silently does not. Keys sent by host key name
 (`vice_keyboard_key_press`) also have no keymap to land in. The GUI
 build stops, late by up to one frame (the pause takes hold at the next
-vertical sync), which is what the tool skill's workarounds are written
-for. On Windows the only release is headless, so a Windows contributor
+vertical sync), which is what the tool skill's `workarounds.md` is
+written for. On Windows the only release is headless, so a Windows contributor
 today gets a build in which phase 4 of `kit/EMULATOR.md` cannot be done
 and phase 3 must never use a stopping checkpoint; say so before they
 start. The headless build is still the right one for unattended batch
@@ -151,7 +177,8 @@ start the tools by hand; the containment is in the launcher.
   `kit/c64/vice.py` speaks to the same server from a script, which is
   how live tests should be written: one round trip per tool call adds up
   fast, and a test that halts, pokes, runs and reads is a dozen calls. It
-  also carries the joystick workaround; see `kit/skills/c64/tool-vice-mcp`.
+  also carries the joystick workaround; see
+  `kit/skills/c64/tool-vice-mcp/workarounds.md`.
 - **The disassembler** binds port 3000 with no option to change it, and
   only one instance can run at a time. Drive it with
   `python3 kit/c64/r2000.py <tool> '<json args>'`, which also logs

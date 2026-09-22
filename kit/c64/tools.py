@@ -4,7 +4,8 @@
 Reached through `python3 kit/scripts/tools.py`, which picks the platform; do not run this file directly.
 
 Everything the kit installs lives under tools/ (gitignored):
-  tools/vice-mcp/    the emulator build, unpacked from the upstream release
+  tools/vice-mcp/    the emulator build, unpacked from the upstream release, or a link
+                     to a build of the contributor's own (`tools.py use-vice <dir>`)
   tools/vice-home/   the emulator's config, log and snapshots (XDG paths pointed here)
   tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000`
   tools/logs/        terminal logs of both
@@ -15,6 +16,9 @@ Usage:
   tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
   tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
   tools.py stop [vice|r2000|all]
+  tools.py use-vice <dir>          use a vice-mcp build of your own: link tools/vice-mcp to it
+  tools.py use-vice release        go back to the release (kept at tools/vice-mcp-release)
+  tools.py check-emulator          test the emulator against kit/EMULATOR.md (kit/c64/check_emulator.py)
   tools.py snapshots               where emulator snapshots are, and what is there
   tools.py verify-footprint        prove the tools write nothing outside this repository
 
@@ -28,6 +32,7 @@ import os, shutil, socket, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TOOLS = os.path.join(ROOT, "tools")
 VICE_DIR = os.path.join(TOOLS, "vice-mcp")
+VICE_RELEASE = os.path.join(TOOLS, "vice-mcp-release")
 VICE_HOME = os.path.join(TOOLS, "vice-home")
 LOGS = os.path.join(TOOLS, "logs")
 SNAPSHOTS = os.path.join(VICE_HOME, "config", "vice", "mcp_snapshots")
@@ -94,8 +99,45 @@ def stop(which="all"):
     time.sleep(1); status()
 
 
+def vice_build():
+    """Which emulator build tools/vice-mcp is: the release, or a build of the contributor's own."""
+    if not os.path.isdir(VICE_DIR):
+        return "MISSING"
+    if not os.path.islink(VICE_DIR):
+        return "release"
+    real = os.path.realpath(VICE_DIR)
+    git = lambda *a: subprocess.run(["git", "-C", real, *a], capture_output=True, text=True).stdout.strip()
+    commit, branch = git("rev-parse", "--short", "HEAD"), git("rev-parse", "--abbrev-ref", "HEAD")
+    return f"own build at {real}" + (f" (git {commit} on {branch})" if commit else "")
+
+
+def use_vice(target):
+    """Point tools/vice-mcp at a build of the contributor's own, or back at the release."""
+    if target == "release":
+        if not os.path.islink(VICE_DIR):
+            print("tools/vice-mcp is already the release"); return
+        if not os.path.isdir(VICE_RELEASE):
+            sys.exit("no release kept at tools/vice-mcp-release; download it (kit/c64/INSTALL.md, 'Get the emulator')")
+        os.remove(VICE_DIR); os.rename(VICE_RELEASE, VICE_DIR)
+    else:
+        target = os.path.abspath(os.path.expanduser(target))
+        if not os.path.exists(os.path.join(target, "bin", "x64sc")):
+            sys.exit(f"no bin/x64sc under {target}; point at the build's install folder")
+        if os.path.islink(VICE_DIR):
+            os.remove(VICE_DIR)
+        elif os.path.isdir(VICE_DIR):
+            if os.path.exists(VICE_RELEASE):
+                sys.exit("tools/vice-mcp and tools/vice-mcp-release both exist; remove one first")
+            os.rename(VICE_DIR, VICE_RELEASE)
+            print("the release is kept at tools/vice-mcp-release; `tools.py use-vice release` goes back to it")
+        os.symlink(target, VICE_DIR)
+    if up(6510):
+        print("the emulator is still running the old build: `tools.py stop vice` and `tools.py vice`")
+    print("emulator build:", vice_build())
+
+
 def status():
-    print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {'present' if os.path.isdir(VICE_DIR) else 'MISSING'} at tools/vice-mcp")
+    print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {vice_build()} (tools/vice-mcp)")
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
     where = "tools/cargo/bin" if os.path.exists(local) else (shutil.which("regenerator2000") or "MISSING")
     print(f"disassembler  :3000  {'up' if up(3000) else 'down'}   binary: {where}")
@@ -188,6 +230,11 @@ def main():
         r2000(a[1])
     elif a[0] == "stop": stop(a[1] if len(a) > 1 else "all")
     elif a[0] == "verify-footprint": verify_footprint()
+    elif a[0] == "use-vice":
+        if len(a) < 2: sys.exit("usage: tools.py use-vice <dir> | release")
+        use_vice(a[1])
+    elif a[0] == "check-emulator":
+        sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "check_emulator.py"), *a[1:]]).returncode)
     elif a[0] == "snapshots":
         print(os.path.relpath(SNAPSHOTS, ROOT))
         for f in sorted(os.listdir(SNAPSHOTS)) if os.path.isdir(SNAPSHOTS) else []:

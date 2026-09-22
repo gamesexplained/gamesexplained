@@ -33,6 +33,12 @@ The budget that matters is one frame of the emulated machine, about
 20 ms for most 8-bit systems. A capability that cannot act within a frame
 of when it was asked is not a real-time capability, whatever it is called.
 
+One more thing the transport owes the script: **a call answers whatever
+the machine is doing.** Running, stopped, or stopping in the middle of
+the call; a request that fails because a checkpoint hit while it was in
+flight is indistinguishable, to the script, from a dead emulator, and
+the script will go looking for the wrong fault.
+
 ## Phase 1: static inspection
 
 Paging through memory to decode a table, reading the disassembly of a
@@ -78,17 +84,31 @@ Needs:
 - **Load paused**, or a way to stop the machine in the same call, so the
   state loaded is the state inspected. A loaded snapshot that starts
   running at once has already moved on by the time the next call lands.
+  A load on a stopped machine that leaves it stopped, at the loaded
+  state's program counter, is this.
+- **Checkpoints survive a load.** The breakpoints and watchpoints are the
+  agent's, not the machine's, and a load must not touch them, or their
+  arming. An emulator that stores "there are checkpoints to check" as
+  CPU state, and restores it from the file, switches every live
+  checkpoint off when a snapshot saved without any is loaded, and nothing
+  reports it: counts stay at zero, stops are never taken, and the
+  symptom reads as "the loop never runs after a load".
 - **Warp**, to get through loading, and a way to turn it off again that
   actually works.
 - **Determinism**: the same snapshot plus the same inputs gives the same
   run. Without it the input replay in phase 4 is meaningless.
 
-Test: play into the game; save; play for ten seconds more; load; the
-machine is running (the program counter differs between two reads a
-second apart), the frame counter or timer chip is advancing, and ten
-seconds later the screen matches what it showed ten seconds after the
-save. Do this from both a running and a paused machine. Then quit the
-emulator, start it again, load, and repeat.
+Test: play into the game; put a non-stopping checkpoint on the game
+loop; save; load; the checkpoint counts on (that is the running test,
+and the survival test in one). Then arm a stopping checkpoint on the
+loop with an ignore count of a hundred, load again, and when it stops
+compare the zero page, the screen and the video chip's registers with
+the same stop after a third load: identical, byte for byte. Do this with
+a snapshot saved from a running machine and one saved from a stopped
+one. Then quit the emulator, start it again, load, and compare once
+more. Wall-clock comparisons ("ten seconds later the screen matches")
+are not this test: a sample a few milliseconds late is a pass late, and
+the machine looks nondeterministic when the script is.
 
 ## Phase 3: live measurement
 
@@ -104,7 +124,14 @@ Needs:
   the measurement; the stop is a side effect this phase does not want.
 - A way to **prove the machine is running** in one call, because every
   measurement here is worthless on a machine that has silently paused.
-  Two reads of the program counter that differ is enough.
+  A hit count that grows on a routine known to run is the test; two
+  reads of the program counter are not, because a game that idles in a
+  two-instruction delay loop returns the same address twice while
+  running.
+- **Truthful state.** The call that reports "running" or "paused" says
+  what the CPU is doing now, not what a flag was set to: a "paused" that
+  is honoured at the next vertical sync is a frame of lies, and a
+  "paused" from an unset flag at boot is worse.
 - A cycle counter or stopwatch, validated once against a known quantity
   before it is believed.
 - Chip state that can be read without pausing, with the understanding
@@ -135,12 +162,19 @@ Needs:
   instruction, two checkpoints alternated to step one pass run two.
 - **Advance N frames** from a stopped machine, and stop again exactly at
   the frame boundary. One call, not N.
-- **Input that persists through a stop.** A joystick direction set while
-  paused is still held when the machine advances, and released when the
-  script says, not after a fixed hold the tool chose. The same for keys.
-  Input must be delivered on the port the game actually reads, so a
-  machine with more than one port needs the port number to mean what the
-  hardware manual says.
+- **Input that persists through a stop, and lands at once.** A joystick
+  direction set while paused is in the port register before the call
+  returns, seen by the next instruction, still held when the machine
+  advances, and released when the script says, not after a fixed hold
+  the tool chose. The same for keys. Emulators imitate a human hand by
+  delaying host input a random amount up to a frame; for a script that
+  sets an input and steps, that is an input seen a pass late half the
+  time, and no replay is repeatable. Input must be delivered on the port
+  the game actually reads, so a machine with more than one port needs
+  the port number to mean what the hardware manual says.
+- **A step that returns when it is done.** Single-stepping from a stop
+  is one call, and the reply carries the program counter, so the next
+  read is of the machine after the step and not of a step still armed.
 - **Read between frames**, in the same script, at a cost small enough
   that the loop runs at tens of steps a second. A step that costs a
   second of agent time is not this phase; it is phase 3 done badly.
@@ -155,10 +189,16 @@ per game and is faster than any external stepper, but it needs the
 input routine found first, which is a phase 1 result. The platform notes
 should say which of the two the recommended emulator supports.
 
-Test: stop at the top of the game loop; set the stick left; advance one
-frame; read the player's x coordinate; it has moved one step left and
-the loop checkpoint has hit exactly once. Repeat ten times in a script
-and time it.
+Test: stop at the top of the game loop; set the stick left; read the
+port register, it shows it already; advance one frame; read the player's
+x coordinate; it has moved one step left and the loop checkpoint has hit
+exactly once. Repeat ten times in a script and time it. A game that
+paces itself with a delay loop rather than the frame runs a pass in some
+other time than a frame; there the unit is the pass, and the test is the
+stopping checkpoint on the loop top with run-and-wait, once per pass,
+exactly once, ten times. Then send a hundred calls with no pacing while
+a stopping checkpoint is armed: none may fail, and the machine must be
+where the checkpoint says afterwards.
 
 ## What the platform notes record
 
@@ -170,3 +210,14 @@ different emulator, or at fixing the one you have upstream, before the
 first game rather than after the third. The requirements here are the
 same for a Spectrum, an Amiga or a NES as for a Commodore 64; only the
 chip names change.
+
+Keep the tests as a script, and give it a test program of its own, a
+few dozen bytes written into memory and started, rather than a game: it
+then runs on any machine with no image to hand, and every value it
+checks is known in advance. Give each check a short name. The tool skill
+keeps its workarounds in a separate file, one section per failed check,
+so an agent on a build that passes reads none of them, and a section is
+deleted when the release passes its check. Run the script through the
+launcher (`tools.py check-emulator`) after every install, rebuild and
+release; a table typed from memory of the last run is not a measurement.
+The Commodore 64's is `kit/c64/check_emulator.py`.
