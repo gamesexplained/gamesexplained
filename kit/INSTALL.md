@@ -11,6 +11,10 @@ platform's own notes:
 |---|---|
 | Commodore 64 | `kit/c64/INSTALL.md` |
 
+What "an emulator with an agent interface" has to be able to do, phase
+by phase, and the test for each, is `kit/EMULATOR.md`. Read it before
+choosing or recommending one.
+
 Python 3 is the one prerequisite the kit never installs. A platform's
 notes may name another; if the contributor lacks it, tell them and let
 them decide.

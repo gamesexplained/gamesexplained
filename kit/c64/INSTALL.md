@@ -10,6 +10,27 @@ they are known to work.
 | Emulator with an agent interface | attach a disk, autostart, pause, read and write memory, breakpoints, screenshots, save and load snapshots | VICE with the `vice-mcp` server (https://github.com/barryw/vice-mcp) |
 | Disassembler with an agent interface | load a snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 (on crates.io) |
 
+## Where the emulator stands, by phase
+
+The phases are `kit/EMULATOR.md`. This is vice-mcp v3.11.0, from its
+source and from the runs so far; the details and the workarounds live in
+`kit/skills/c64/tool-vice-mcp`.
+
+| Phase | Passes | Fails | Workaround |
+|---|---|---|---|
+| 1 static inspection | reads of any size with a bank argument; registers; chip state; snapshot RAM at a fixed offset, which `listing.py` reads | | none needed; read the `.vsf` from Python for anything large |
+| 2 state management | save and load on request to `tools/vice-home/`; warp on and off through the generic config call | a loaded snapshot has come back with its timer stopped, cause not established; a loaded snapshot runs at once; a snapshot name cannot be reused | re-autostart the image; pause with a checkpoint in the same script; new name each save |
+| 3 live measurement | non-stopping checkpoints with hit counts; stopwatch (validate it) | hit counts can stop recording silently; a load or store watchpoint that stops opens the monitor window and freezes the machine | always add a control checkpoint; never stop on a watchpoint, count instead |
+| 4 frame stepping | joystick and key state persist while paused | **the stop is not exact**: a checkpoint hit or a step schedules a pause at the next vertical sync, so the machine runs up to a frame more; no frame-advance tool, although VICE has the primitive; `run_until` does not resume a paused machine; port numbers are off by one | the in-game input hook described in the tool skill; the kit's `stick_arm` for the port |
+
+The phase 4 failures are small changes inside the server's own code, and
+the project asks for contributions; fixing them upstream is the path, so
+that contributors keep installing a release rather than compiling.
+VICE's own binary monitor (`-binarymonitor`, port 6502) is in the same
+build, stops the CPU exactly, and has memory, checkpoints, snapshots and
+joystick commands; whether it works alongside the MCP server without
+opening the monitor window is not yet tested.
+
 **Prerequisite the kit does not install:** Rust's `cargo`
 (https://rustup.rs), for the disassembler. If the contributor has no
 `cargo`, tell them, and let them decide whether to install Rust; it is the
@@ -55,12 +76,26 @@ published on its GitHub releases page; nothing comes from anywhere else.
 | Operating system | Asset | Notes |
 |---|---|---|
 | macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) into `tools/vice-mcp/` |
-| macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; untested by us |
-| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us |
-| Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only; untested by us |
+| macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; untested by us |
+| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us; prefer the GUI build, see below |
+| Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only, so **stops do not work on Windows** at all; untested by us |
 
-The kit only talks to the emulator over MCP, so a headless build should
-be enough; the GUI build lets the contributor watch. **Ask the contributor
+**Use the GUI build wherever one exists.** The kit talks to the emulator
+only over MCP, so a headless build looks sufficient, and it is not. In
+VICE's headless port the pause routine is a stub with its body commented
+out, so the server's pause, a completed step and a stopping checkpoint
+all set the "paused" flag and leave the CPU running: `vice_ping` reports
+paused, memory reads race the running game, and every checkpoint that
+should halt the machine silently does not. Keys sent by host key name
+(`vice_keyboard_key_press`) also have no keymap to land in. The GUI
+build stops, late by up to one frame (the pause takes hold at the next
+vertical sync), which is what the tool skill's workarounds are written
+for. On Windows the only release is headless, so a Windows contributor
+today gets a build in which phase 4 of `kit/EMULATOR.md` cannot be done
+and phase 3 must never use a stopping checkpoint; say so before they
+start. The headless build is still the right one for unattended batch
+runs that never need to stop: a cycle limit and an exit screenshot, or a
+replay through the in-game input hook. **Ask the contributor
 before downloading**, tell them the file name and size, and let them fetch
 it if they prefer. macOS may refuse to open an unsigned download; if so the
 contributor clears it in System Settings, Privacy & Security, or with
