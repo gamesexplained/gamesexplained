@@ -30,7 +30,7 @@ particular check, it says which. Put the build line from `status` and the
 list of failed checks in `orientation.md`, and the build line in
 `game.json` under `tools.emulator`.
 
-The v3.11.0 release fails 26 of the 56 checks, most of phase 4 among them.
+The v3.11.0 release fails 28 of the 56 checks, most of phase 4 among them.
 A contributor's own build may pass them all (`kit/c64/INSTALL.md`, "Using
 a build of your own").
 
