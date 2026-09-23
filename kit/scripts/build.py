@@ -191,7 +191,8 @@ def banner(game, cons):
     """One line under the tabs: who curated it, or how to take it further.
 
     Gold and Platinum name the humans (git authors, linked). Silver is agent-generated
-    and asks for a human editor. Bronze, or no tier, is unfinished and asks for a
+    and asks for a human editor, and credits the contributor (git authors, linked).
+    Bronze, or no tier, is unfinished and asks for a
     contributor. The prompt behind the button is the one line to paste into an agent.
     """
     tier = game.get("tier", "none")
@@ -201,8 +202,10 @@ def banner(game, cons):
         who = ", ".join(f'<a href="https://github.com/{html.escape(l)}">{html.escape(l)}</a>' if l else html.escape(n) for _, n, l in cons)
         body = f'This minisite was curated by {who}.' if who else 'This minisite was curated by hand.'
     elif tier == "silver":
+        who = ", ".join(f'<a href="https://github.com/{html.escape(l)}">{html.escape(l)}</a>' if l else html.escape(n) for _, n, l in cons)
+        lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         prompt = f"Clone {repo} and follow kit/START.md to curate {where} with me to Gold."
-        body = ('This minisite is agent-generated and needs a human editor. '
+        body = (lead + 'It\u2019s agent-generated and needs a human editor. '
                 f'<span class="prompt" id="prompt">{html.escape(prompt)}</span>'
                 '<button type="button" data-copy="#prompt">Copy the prompt to work on it</button>')
     else:
