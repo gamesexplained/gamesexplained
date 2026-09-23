@@ -38,8 +38,8 @@ else must be able to follow this exactly.
    loads with warp on and types `RUN`.
 2. The program unpacks itself in a few seconds. Then the crack screen
    appears: raster bars and "CRACKED BY MR Z...", 10 to 17 s after
-   autostart in two boots. It has no trainer and no options. It waits at least seven
-   seconds, or until any key or fire on port 1 is pressed, then hands over
+   autostart in two boots. It has no trainer and no options. It waits at
+   least seven seconds, or until any key or fire on port 1 is pressed, then hands over
    by itself. No input is needed. Snapshot: `work/crack-screen.vsf`.
 3. The game draws the house and asks, on the top line, "Enter time of day
    (HH:MM am/pm)". Snapshot at the prompt, before typing:
@@ -106,7 +106,11 @@ the keyboard and control port 1 for 6 × 65,536 passes of a 19-cycle loop
 (at least 7.6 s on PAL) or until a key or fire is pressed. It then calls
 `CINT` (`$FF81`), `IOINIT` (`$FF84`) and `$E518`, puts `$0314` back to
 `$EA31` and blanks the screen. It copies `$4B40`–`$4BFF` to
-`$0340`–`$03FF`, calls `$4861` twice (with `$044C` and `$D8CC`, a screen
-and a colour-RAM address) and jumps to `$0340`. That is the game's jump
+`$0340`–`$03FF`, calls `$4861` twice to copy four pages each, `$4C00`–`$4FFF`
+back to `$0400`–`$07FF` (the game's own bytes, kept out of the way of the
+crack screen) and `$CC00`–`$CFFF` into colour RAM at `$D800`, and jumps
+to `$0340`. The two copies are confirmed from the data: `$4C00`–`$4FFF`
+before the hand-over equals `$0400`–`$07FF` in play in 1,012 of 1,024 bytes,
+and `$CC00`–`$CFE7` equals the colour RAM in play in 998 of 1,000 cells. That is the game's jump
 table and reset vector, and it leads to the cold start at `$0434`. Not
 annotated further, by policy.

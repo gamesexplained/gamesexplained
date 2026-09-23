@@ -21,7 +21,7 @@ A single-file crack by Mr Z of the 1985 Activision game; see
 | Typed line, and its length | `$0224`…, `$0222` |
 | Text output queue (32 bytes) and its two indexes | `$0202`–`$0221`, `$0200` (in), `$0201` (out) |
 | Keyboard tables | `$0691`–`$06E0` |
-| Font | `$5000`–`$52FF` |
+| Font | `$5000`–`$52D7` |
 | Letter texts | `$5600`–`$56DC` |
 | Colour matrix (VIC bank 1) | `$5C00`–`$5FE7`, sprite pointers `$5FF8`–`$5FFF` |
 | Bitmap (VIC bank 1) | `$6000`–`$7F3F` |
@@ -109,8 +109,9 @@ Rows marked ? are routines not yet read.
   which takes bit 7 of the character as a font number and the low seven
   bits minus `$20` as the glyph (the second font also flips bit 5). The
   font bases are in the tables at `$BDC0` (low) and `$BDC2` (high):
-  `$5000` and `$5800`. `$5000`–`$52FF` is a complete ASCII font, 96
-  glyphs from space to `~`, rendered and read. `$5800` holds no font in
+  `$5000` and `$5800`. `$5000`–`$52D7` is an ASCII font of 91 glyphs,
+  space to `z` (`$20`–`$7A`), rendered and read; the bytes after it are
+  code (`$52D8` is an activity's entry). `$5800` holds no font in
   the steady-state snapshot. Characters below `$20` are control codes.
 - **Output is queued.** `queue_char` (`$BA50`) puts a character into
   the 32-byte ring at `$0202` (index `$0200`); `print_queued` (`$BA5E`),
@@ -190,8 +191,8 @@ Rows marked ? are routines not yet read.
 - **Activities.** The main loop's last stage (`$09D5`) calls `$8DAB`. That
   calls `$BED0` and `$2A6E`, and then, only when the low three bits of
   `$03C4` are zero, loads the current activity from `$8D9B` and switches
-  on it at `$8DC6`. That switch (n in A) has 32 entries, and most
-  of them are other switch sites: `$5825`, `$54E3`, `$9387`, `$BEFF`,
+  on it at `$8DC6`. That switch (n in A) has 128 entries (`$8DC9`–
+  `$8EC8`), and most of them are other switch sites: `$5825`, `$54E3`, `$9387`, `$BEFF`,
   `$2F18`, `$2797`, `$2DFE`, `$37EA`, `$3375`, `$338C`, `$9108`, `$9125`,
   `$91AD`, `$91DB`, `$9224`, `$92A2`, `$9081`, `$90B2`, `$90D8` and
   others. So an activity is a small state machine: `$8D9B` picks the
@@ -199,3 +200,37 @@ Rows marked ? are routines not yet read.
   pass. Handlers shared by many activities include `$8F0E` (the last
   entry of nearly every table), `$8FA7`, `$94CC`, `$293D`, `$2728` and
   `$2759`.
+
+## Live tests
+
+All from `work/play-02.vsf`, with the machine running at normal speed. The
+game is deterministic from a snapshot: with no input the same activities
+come at the same times, so a difference after an input is the input's
+doing. The activity number is `$8D9B`, sampled every quarter second, so an
+activity shorter than that can be missed. After an interruption the next
+activity the person chooses for himself is the same in every run (the same
+random state), which is why 25 follows several unrelated inputs.
+
+| Input | Activities, in order (seconds after the input) |
+|---|---|
+| none | 5; 40 at 18.8; 79 at 23.2 |
+| "please type a letter to me" | 5; 46 at 0.5; 22 at 2.9. The letter is typed into the top band |
+| "please light a fire" | 5; 46 at 0.5; 7 at 6.4; 88 at 50.5 … 5 at 88.7. He walks to the living-room fireplace; logs are in it at 50 s and burning at 80 s (`reference/fire-building.png`, `reference/fire-lit.png`) |
+| "please play the piano" | 5; 121 at 0.3; 79 at 0.5. During 79 SID voice 2 plays a changing pitch |
+| "hello" | 5; 46 at 0.5; 52 at 2.9; 5 at 6.7 |
+| "please dance" | 5; 118 at 0.5; 120 at 4.9; 53 at 5.4 |
+| "please play poker" | 5; 46 at 0.5; 25 at 2.9; 21 at 36.2; 79 at 36.5. No card game started |
+| "lets play a game" | 5; 25 at 0.5; 118 at 36.1 |
+| CTRL F | 5; 0 briefly at 18.3; 40; 79. Nothing reached the door in 60 s |
+| CTRL W, CTRL A | the same as no input |
+| CTRL D | 16 at once; 33 at 0.3; 15 at 45.8 |
+| CTRL C | 16 at once; 25 at 0.3 (he sits in the living-room armchair by the phone, `reference/phone-call.png`); 15 at 31.7 |
+| CTRL P | 16 at once; 6 at 0.3; 15 at 38.6 |
+| CTRL R | 16 at once; 50 at 0.3; 15 at 51.5 |
+| CTRL B | 16 at once; 51 at 0.3; 15 at 46.3 |
+
+The action codes in the parser's rules are activity numbers: the letter
+rule's `$16` is activity 22, the fire rule's `$07` is 7, the greeting
+rule's `$34` is 52, and the dance rule's `$09 $35` ends in 53. The piano
+rule's `$15` (21) was not seen after "please play the piano"; 21 appeared
+later in the poker run, just before 79.

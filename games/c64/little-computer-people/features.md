@@ -47,15 +47,18 @@ Sources:
 | Typed sentences: he answers questions, suggestions and requests, and responds to good manners ("please", "thank you") | live | "please type a letter to me" typed on the top line was carried out (`reference/typed-request.png`) |
 | He may refuse a request, by mood and personality | open | |
 | Letters: he types a letter about his feelings and needs | live | on request: typed into the top band, "Dear Friend, Thank you for keeping me well stocked with food and water. Thank You, Your Friend" (`reference/letter.png`) |
-| The vocabulary the wiki lists (about 150 words, from "add" to "whats") | traced | a word list in ASCII with flag bytes after each word, `$C240` onwards; decoded in `30-text` |
-| Requests the wiki and manual name: type a letter, build or light a fire, play the piano, play another song, dance, "logon please" | open | the letter works; the rest untried |
+| The vocabulary the wiki lists (140 words, from "add" to "whats") | confirmed | two word lists at `$C234`–`$C960`, 156 distinct words, each with five bytes of concept bits (facts.md); requests built from them work live. Every word the wiki lists is there except "quit", and "ored", which reads like a cut-off "stored". The build adds plurals and forms the wiki leaves out ("addition", "fireplace", "liquids", "playing", "you", "would" and others) |
+| He builds a fire in the fireplace on request | live | "please light a fire" starts activity 7: he walks to the living-room fireplace, logs are in it at 50 s and burning at 80 s (`reference/fire-building.png`, `reference/fire-lit.png`) |
+| He plays the piano on request | live | "please play the piano" starts activities 121 then 79; during 79 SID voice 2 plays a changing pitch. He also goes to the piano unprompted |
+| He answers a greeting | live | "hello" starts activity 52 for about four seconds |
+| He dances on request | open | "please dance" starts activities 118, 120 and 53; what they look like not yet checked |
+| Other requests the wiki and manual name: "play another song", "logon please" | open | untried |
 | Games: he knocks on the glass to ask for a game; the player picks one by number | open | |
 | Anagrams: unscramble his word; 8 or 9 guesses; F3 moves one letter to its place; F7 quits | open | "ANAGRAMS" in the word list |
 | Card War: 26 cards each; F1 shows your card; ties go to war (four face down, then a showdown); ends when one side holds all 52 | open | the quit key reads as "F10" in the OCR text, which a C64 does not have |
 | Five-card draw poker: 400 chips each, bets up to 20; F1 ante or draw or see or raise, F3 bet or stay or fold, F5 pass or call, 1 to 5 mark discards | open | |
 | Hangman | open | named in the wiki's vocabulary; "HANGMAN" in the word list; the manual as read gives no rules |
-| He builds a fire in the fireplace on request | open | |
-| Piano: plays pieces from classical to jazz | open | |
+| Piano: plays pieces from classical to jazz | open | the piano is the green instrument in the attic (activity 79); which pieces, not yet known |
 | Records on the stereo; he dances or does aerobics | open | |
 | Music: 17 pieces, seasonal ones such as Jingle Bells at Christmas, some shared with Master of the Lamps (Russell Lieblich) | open | |
 | Every copy is a different person: one of 256 names, looks and personality from the disk's serial number | open | a name, "Billy Bob Binkle", is in RAM at `$03FC` |

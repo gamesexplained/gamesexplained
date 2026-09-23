@@ -46,3 +46,41 @@ The first steady-state snapshot caught the person off screen. The sprite
 registers, sampled once a second, showed the person as a four-sprite
 figure moving between samples, so a second snapshot was taken with the
 person in view.
+
+**Text, sweep and the shape of the code.** The text turned out to be
+plain ASCII drawn with one font, so `30-text` was mostly the parser's two
+word lists and its rule table, which read cleanly once the record format
+was flipped: five flag bytes come before each word, not after it.
+
+The register census showed traced code at `$D000`: the game runs code and
+keeps tables in the RAM under the I/O area, dropping `$01` to `$34` around
+each use. The platform's standard coverage rule excludes all of
+`$D000`–`$DFFF` as I/O, so the kit gained `coverage.include` to give that
+RAM back.
+
+Flow tracing stalled at about 9 KB. The reason was the switch at `$3F0C`,
+`$3F11` and `$3F13`: an "on n go to" with an inline table of handler
+addresses minus one after every call, and no return. The disassembler had
+walked straight into several tables as if the `JSR` returned. A first
+parse stopped every table at the first entry whose handler did not decode
+cleanly for three instructions. That was too strict, because a handler
+can itself open with a switch call and then a table. Accepting a switch
+call as a valid ending let nearly every table run to its `$8F0E` entry.
+Typing the 103 tables as words and disassembling every handler took
+traced code from 9.5 KB to 22 KB.
+
+The activity switch at `$8DC6` was parsed as 32 entries because entry 32
+points at `$52D8`, which the parse treated as font. The emulator then
+showed activities 40, 79 and 121 running. The table has 128 entries, and
+the font is 91 glyphs, not 96: its last five "glyphs" are code, which
+the first rendering showed as noise at the end of the table.
+
+**Coverage, in parallel.** With the switch mapped, the image was split
+into nine disjoint ranges for nine Opus-class agents, each with its own
+annotation log, briefed from `work/BRIEF.md`. They were barred from the
+emulator, so the lead used it meanwhile. With every run starting from the
+same snapshot, the game repeats itself exactly, so an input's effect is
+the difference from a run without it. Live runs showed that the parser's
+action codes are activity numbers (letter, fire, greeting and dance),
+that "please light a fire" really builds one, and what each CTRL key
+starts.
