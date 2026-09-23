@@ -229,6 +229,12 @@ random state), which is why 25 follows several unrelated inputs.
 | CTRL R | 16 at once; 50 at 0.3; 15 at 51.5 |
 | CTRL B | 16 at once; 51 at 0.3; 15 at 46.3 |
 
+Unprompted, nine minutes from `play-02` (`work/probe-free9.json`): 32 changes
+of activity. Time spent: activity 25 116 s, 5 107 s, 79 (the piano) 98 s,
+27 49 s, 16 46 s, 8 29 s, 40 17 s, 38 8 s. Activity 0 appears only for
+a moment between two others. He did not knock on the glass to ask for a
+game in that time.
+
 The action codes in the parser's rules are activity numbers: the letter
 rule's `$16` is activity 22, the fire rule's `$07` is 7, the greeting
 rule's `$34` is 52, and the dance rule's `$09 $35` ends in 53. The piano
