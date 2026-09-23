@@ -21,7 +21,8 @@ one that fails. Run it once after installing, and again after any new
 build or release.
 
 The vice-mcp v3.11.0 release, macOS arm64 GUI build, measured 22 September
-2026: 30 of 56 checks pass.
+2026 on a freshly started emulator: 28 of 56 checks pass. On one that has
+already been driven, `ping-running` passes as well.
 
 | Phase | Passes | Fails |
 |---|---|---|

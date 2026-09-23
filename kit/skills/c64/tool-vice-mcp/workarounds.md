@@ -15,9 +15,12 @@ Measured on the v3.11.0 release (macOS arm64 GUI build), 22 September
 `run-after-stop`, `run-until-resumes`, `load-held`,
 `load-stop-checkpoint`, `load-state`, `ignore-count`, `determinism`,
 `determinism-screenshot`, `determinism-running-save`,
-`determinism-restart`, `checkpoints-survive-load`, the four `joy-` checks
-and every `frame-advance-` check. The headless builds fail more:
-their pause is a stub, so nothing stops at all (`kit/c64/INSTALL.md`).
+`determinism-restart`, `checkpoints-survive-load`, `joy-immediate`,
+`joy-port-1`, `joy-port-2`, `joy-fire` and all six `frame-advance-`
+checks: 28, on a freshly started emulator. It has also crashed partway
+through the check (`no-exception`, at the end of this file). The headless
+builds fail more: their pause is a stub, so nothing stops at all
+(`kit/c64/INSTALL.md`).
 
 ## Stops land late
 
@@ -201,3 +204,22 @@ A call made while a checkpoint is stopping the machine can time out after
 five seconds, and some calls can take the server down. Pace a script's
 calls, check `tools.py status` after a closed socket, and do not read a
 timeout as an answer from the game.
+
+## A phase did not finish
+
+`no-exception`
+
+A phase stopped on an error before its last check, and the script went on
+to the next phase. The checks after that point did not run and are in
+neither the passed nor the failed list; the totals can still add up to 56,
+because `no-exception` is counted in their place. The traceback printed
+under the phase's heading says what went wrong.
+
+Run `tools.py status` first. If the emulator is down, it crashed: the
+v3.11.0 release has died this way during the check, with a segmentation
+fault on a background thread (22 September 2026; cause not established).
+Start it again and rerun `check-emulator` on the freshly started emulator.
+If the same phase stops again, treat the checks it did not reach as
+failed and read their sections: they are the ones after the last result
+printed under its heading, in that phase's function in
+`kit/c64/check_emulator.py`.
