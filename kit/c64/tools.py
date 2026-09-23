@@ -130,6 +130,7 @@ def use_vice(target):
                 sys.exit("tools/vice-mcp and tools/vice-mcp-release both exist; remove one first")
             os.rename(VICE_DIR, VICE_RELEASE)
             print("the release is kept at tools/vice-mcp-release; `tools.py use-vice release` goes back to it")
+        os.makedirs(TOOLS, exist_ok=True)   # a fresh clone with no release downloaded has no tools/ yet
         os.symlink(target, VICE_DIR)
     if up(6510):
         print("the emulator is still running the old build: `tools.py stop vice` and `tools.py vice`")
