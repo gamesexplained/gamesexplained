@@ -16,9 +16,17 @@ step needs something only they have.
    Everything below assumes you have.
 4. **Ask the contributor four things** if they have not already told you:
    which game, which platform it is for, where their copy of it is on
-   disk, and **which tier they want** (the table is in `AGENTS.md`, with
-   rough timings). We never download game binaries; they supply their own.
-   The tier they pick is what you work to, without stopping to re-ask.
+   disk, and **which run they want**, of the two below. We never download
+   game binaries; they supply their own.
+
+   - **Silver** (recommended) aims to explain 100 % of the program and
+     builds the minisite. Recent runs took one to three hours, mostly
+     unattended.
+   - **Bronze** gets the game running, lists its features and sweeps the
+     code, then stops. Most of the code is left unexplained for a later
+     run to pick up. About 20 to 45 minutes.
+
+   The run they pick is what you work to, without stopping to re-ask.
 5. **Set up the tools** with `kit/INSTALL.md` for their operating system.
    Tell them plainly what is known to work and what is untested on their
    platform.
@@ -41,7 +49,8 @@ more, and what reads like an agent wrote it; you cut, expand, verify
 anything new against the code, and rewrite to `kit/style.md`. Set `copy`
 in `game.json` honestly, and open the pull request as `AGENTS.md` says.
 
-Time expectations: A Silver run can be a few hours of unattended work.
+Time expectations: A Silver run takes one to three hours, mostly
+unattended. A Bronze run takes about 20 to 45 minutes.
 
 Two rules worth repeating before you start: prefer "unknown" to a
 plausible guess, and never commit or upload a game binary.

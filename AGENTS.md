@@ -36,6 +36,12 @@ in order:
    | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
    | retrospective | `kit/skills/core/80-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
 
+   A Bronze run stops after `40-sweep`. It exports the symbol map and
+   builds the listing (step 4), cuts `index.html` down to the header plus
+   what it learned (the features, the reference screenshots), then goes
+   to `80-retro`. `build.py` publishes every game folder, so an untouched
+   template would go live with eight empty sections.
+
    Platform knowledge is in `kit/skills/<platform>/`. For the C64:
    `kit/skills/c64/c64-reference` (facts about the machine — consult it, do not
    recall from training), `kit/skills/c64/tool-vice-mcp` and
@@ -149,7 +155,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 
 | Tier | Requires |
 |---|---|
-| Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; some coverage, below 100 %; `symbols.json` and `listing.json` committed for what there is |
+| Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; coverage below 100 %; `symbols.json` and `listing.json` committed for what there is |
 | Silver | 100 % coverage; `facts.md`; every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built; all of it agent-authored, copy `agent-draft` |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
@@ -159,7 +165,7 @@ one line, answers a few questions, walks away, and comes back to a Silver
 pull request. No human judgement goes into it, which is why it is not
 regarded as good or finished yet. Gold is where taste enters, and it is
 human work: the agent has no reliable sense of what is actually
-interesting. Time required: a Silver run takes several hours.
+interesting. Time required: a Silver run takes one to three hours.
 
 Set `tier` in `game.json` to the highest tier every requirement of which
 is met, and list what is missing for the next one in `TODO.md`. Do not
