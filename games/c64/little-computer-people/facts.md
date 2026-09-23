@@ -231,13 +231,14 @@ program touches the disk (`orientation.md`, "Steady state").
   | 24 | the easy chair, with a white object (possibly the newspaper) |
   | 25 | answers the phone |
   | 27 | exercises |
+  | 28 | brushes his teeth (a script) |
   | 29 | drinks a glass of water |
   | 30, 31 | goes to bed; gets up |
   | 32 | eats |
   | 33, 50, 51 | fetches a delivery: dog food, a record, a book |
   | 34 | feeds the dog |
   | 43, 44 | takes food from the cupboard; puts delivered food in it |
-  | 46 | turns to face the player before a request that scored 12 or more |
+  | 46 | turns towards the player and makes a face, before a request that scored 12 or more |
   | 48, 49 | cooks: a pot on the stove, then to the sink |
   | 52 | answers a greeting |
   | 53 | dances (3, 7, 11 or 15 moves) |
@@ -483,9 +484,10 @@ Other tests are described above, beside their facts: the house tick
 not full (controls), manners (parser), illness and bed, the three faces
 (needs), the TV and the turntable (house), the complaint letter (letters),
 the piano pieces and the talking sound (sound). Unprompted, over nine
-minutes from `play-02`, he spent 116 s in activity 25, 107 s in 5, 98 s at
-the piano (79), 49 s exercising (27), 46 s in 16 and 29 s in 8; activity 0
-lasted a moment each time. He did not knock on the glass to ask for a
+minutes from `play-02`, he spent 166 s at the piano (79), 116 s on the
+phone (25), 107 s in the attic armchair (5), 49 s exercising (27), 46 s
+switching the TV (16) and 29 s in 8; activity 0 lasted a moment each
+time. He did not knock on the glass to ask for a
 game.
 
 ## Open questions and oddities
