@@ -53,7 +53,7 @@ in order:
    `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot.vsf>`.
    Both are committed; the snapshot and disassembler project stay in
    `work/`. Preview the whole minisite with `python3 kit/scripts/build.py`
-   and `python3 -m http.server -d _site 8000`.
+   and `python3 -m http.server -d _site 8000` (or any free port).
 5. **Check, commit on a branch, open a pull request.** Name the branch
    `game/<platform>/<slug>`. Contributors never commit to `main`:
    contributions arrive as a pull request, so
@@ -127,8 +127,11 @@ platform follows `kit/PLATFORMS.md`.
   anything else outside the repository without asking first and saying
   why. On an operating system nobody has run the kit on yet, matching this
   is part of the job: see "The footprint principle" in `kit/INSTALL.md`.
-- **Ask before downloading anything.** Reference screenshots and manuals
-  from the web are welcome; confirm with the contributor first.
+- **Ask before downloading anything.** Looking the game up online (its
+  pages, manual and reviews, and reference screenshots saved to its
+  `reference/` folder) is asked once, at the start, as `kit/START.md`
+  says, and recommended: a yes covers the whole run. Anything else, ask
+  when it comes up.
 
 ## Where knowledge lives
 

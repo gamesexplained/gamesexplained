@@ -22,11 +22,10 @@ else must be able to follow this exactly.
 
 ## Emulator
 
-- Build line from `tools.py status`: `own build at
-  /Users/air/dev/vice-mcp-fixed/install (git 8a07b08d5c on fixed)`. That
-  commit is branch `fixed` of https://github.com/air/vice-mcp: VICE 3.10
-  with vice-mcp v3.11.0, plus barryw/vice-mcp pull requests #6, #7, #11
-  and #14 to #24. It is the macOS arm64 GTK3 build.
+- Build line from `tools.py status`: `own build of
+  github.com/air/vice-mcp, branch fixed, commit 8a07b08d5c`. That is VICE
+  3.10 with vice-mcp v3.11.0, plus barryw/vice-mcp pull requests #6, #7,
+  #11 and #14 to #24. It is the macOS arm64 GTK3 build.
 - `tools.py check-emulator`: 56 passed, 0 failed. No failed checks, so
   `workarounds.md` does not apply.
 - The machine was PAL: 6569 VIC-II, 6581 SID, `MachineVideoStandard` 1.

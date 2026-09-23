@@ -127,8 +127,21 @@ def stop(which="all"):
     time.sleep(1); status()
 
 
+def public_url(url):
+    """host/owner/repo for a git remote, credentials dropped; None for a remote on this computer."""
+    if not url or url.startswith(("/", "~", ".", "file:")) or re.match(r"[A-Za-z]:[\\/]", url):
+        return None
+    u = re.sub(r"^[A-Za-z][\w+.-]*://", "", url)     # scheme
+    u = re.sub(r"^[^@/]*@", "", u)                   # user, and a token if one is embedded
+    u = re.sub(r"^([^/:]+):(?!\d+/)", r"\1/", u)     # scp style, host:owner/repo
+    return re.sub(r"\.git$", "", u.rstrip("/"))
+
+
 def vice_build():
-    """Which emulator build tools/vice-mcp is: the release, or a build of the contributor's own."""
+    """Which emulator build tools/vice-mcp is: the release, or a build of the contributor's own.
+
+    An own build is named by where its source can be had, never by its path here: this line
+    goes into game.json and onto the About tab, and a home folder usually names a person."""
     if not os.path.isdir(VICE_DIR):
         return "MISSING"
     if not os.path.islink(VICE_DIR):
@@ -136,7 +149,18 @@ def vice_build():
     real = os.path.realpath(VICE_DIR)
     git = lambda *a: subprocess.run(["git", "-C", real, *a], capture_output=True, text=True).stdout.strip()
     commit, branch = git("rev-parse", "--short", "HEAD"), git("rev-parse", "--abbrev-ref", "HEAD")
-    return f"own build at {real}" + (f" (git {commit} on {branch})" if commit else "")
+    if not commit:
+        return "own build, not in a git tree: say in game.json where its source can be had"
+    for ref in git("branch", "-r", "--contains", "HEAD").splitlines():
+        ref = ref.strip()
+        if " -> " in ref or "/" not in ref:
+            continue
+        remote, rbranch = ref.split("/", 1)
+        url = public_url(git("remote", "get-url", remote))
+        if url:
+            return f"own build of {url}, branch {rbranch}, commit {commit}"
+    return (f"own build, commit {commit} on {branch}, on no public remote: "
+            "push it, or say in game.json where its source can be had")
 
 
 def use_vice(target):

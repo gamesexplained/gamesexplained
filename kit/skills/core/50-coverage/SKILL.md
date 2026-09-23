@@ -158,6 +158,10 @@ Routines are independent, so the burn-down parallelises. What matters:
   merging.
 - Brief them cold: the feature list, `facts.md` so far, the rules above,
   the exact client command, and "prefer unknown to a guess".
+- **A brief carries only what has been checked**: traced to the code or
+  seen live. Anything else goes in as a hypothesis, labelled as one. An
+  agent treats its brief as ground truth, so an unchecked guess there
+  costs every agent that meets it the time to disprove it.
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
 

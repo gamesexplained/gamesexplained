@@ -77,6 +77,15 @@ address links into the Source tab, and the house style in `kit/style.md`.
 
 - One self-contained `index.html`. Inline CSS and JavaScript; no
   build step; external resources only for fonts. It must open from disk.
+- `levels.html` and `play.html` may also use the site's shared scripts:
+  `../../lib/c64.js` draws glyphs, screens and sprites, and rebuilds the
+  game image from `listing.json`, so a page draws from the bytes the
+  Source tab shows. Those work only in the built site, served as in
+  "Check it in a browser" below.
+- The build publishes the authored pages, `listing.json`, `symbols.json`
+  and `reference/`, and nothing else from the game folder. A link to any
+  other file would build and then fail in the reader's browser, so
+  `build.py` stops on one.
 - Start from `kit/template/index.html` for the design tokens and layout.
   Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
   A finished example to borrow patterns from is any Gold game in `games/`:
@@ -87,7 +96,7 @@ address links into the Source tab, and the house style in `kit/style.md`.
 - Every claim shows its evidence: the table, the bytes, the register, the
   screenshot from `reference/`.
 - Reference images go in `reference/`; the page refers to them by
-  relative path.
+  relative path from the game folder (`reference/<name>.png`).
 
 ## Copy
 
@@ -143,9 +152,6 @@ place of the name hides it in a tab, a search result and a link. Say the
 interesting thing in the standfirst under the title, where the template
 puts it, and in the section headings.
 
-Reference images are referred to by relative path from the game folder
-(`reference/<name>.png`).
-
 ## Maps / levels, when there is one
 
 Render the level data the How it works page only excerpts: every maze, screen or
@@ -166,7 +172,7 @@ if there is genuinely nothing playable to put on it. No tier requires the Play t
 
 The page is a visual, interactive artefact and none of the kit's checks
 render one. `check_docs.py` and `check_listing.py` read files; `build.py`
-assembles the site without opening it. A canvas that draws nothing, a
+assembles the site and checks its links without opening a page. A canvas that draws nothing, a
 widget that throws on load and a layout that collapses all pass every
 check there is.
 
@@ -177,7 +183,8 @@ python3 kit/scripts/build.py
 python3 -m http.server -d _site 8000
 ```
 
-then open `http://127.0.0.1:8000/<platform>/<slug>/index.html`. The agent
+then open `http://127.0.0.1:8000/<platform>/<slug>/index.html`; if 8000
+is taken, any free port will do. The agent
 needs a browser it can screenshot and click: either a browser extension
 that exposes the page to it, or a harness desktop app with a built-in browser. Without one you are writing a visual artefact blind.
 

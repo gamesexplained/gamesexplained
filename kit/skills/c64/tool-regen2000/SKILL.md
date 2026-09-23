@@ -32,16 +32,16 @@ the game folder, or pass `--game`, so the log lands in the right place.
 |---|---|
 | `r2000_disassemble` `{address}` | mark and decode code from an address |
 | `r2000_read_region` `{start_address, end_address}` | show a region; **disassembles as a side effect**, which the log does not capture unless you also log a disassemble |
-| `r2000_set_label_name` `{address, name}` | name a routine, variable or table |
+| `r2000_set_label_name` `{address, name}` | name a routine, variable or table; an empty `name` removes the label |
 | `r2000_set_comment` `{address, type: "line"|"side", comment}` | a line comment on the entry is the description that coverage counts |
 | `r2000_set_data_type` `{start_address, end_address, data_type}` | type a data block. The values are **lower case**: `code`, `byte`, `word`, `address`, `petscii`, `screencode`, `lo_hi_address`, `hi_lo_address`, `lo_hi_word`, `hi_lo_word`, `external_file`, `undefined` |
 | `r2000_get_cross_references` `{address}` | who reads, writes, calls or jumps to an address; the fastest way to attribute a table |
-| `r2000_get_address_details` `{address}` | semantics, xrefs, labels and comments at one address |
+| `r2000_get_address_details` `{address}` | semantics, xrefs, labels and comments at one address; not on a snapshot (Traps) |
 | `r2000_search_memory`, `r2000_search_disassembly` | bytes or text in memory; a substring, or a regex with `use_regex: true`, over each field of the listing (register census in one call) |
 | `r2000_get_blocks`, `r2000_get_symbols`, `r2000_get_comments` | state; what the coverage and export scripts read |
 | `r2000_undo` | undo the last operation; note that the log does not record undos |
 | `r2000_unpack_binary` | **destructive**: wipes all annotations. Do not use on an annotated session |
-| `r2000_batch_execute` `{calls: [...]}` | many calls in one round trip |
+| `r2000_batch_execute` `{calls: [{name, arguments}, ...]}` | many calls in one round trip; each entry names its tool as `name`, not `tool` |
 | `r2000_save_project` | only works for sessions loaded from a project file; use `symbols_export.py` instead |
 
 ## Traps
@@ -67,6 +67,12 @@ the game folder, or pass `--game`, so the log lands in the right place.
   indirect jump) and filter the results by mnemonic. Once an address has a
   label the operand shows the label, not the address: search a named
   register by its name, or scan the snapshot for the opcode bytes.
+- **`get_address_details` is no use on a snapshot.** With a whole 64 KB
+  image loaded (a `.vsf`: `get_binary_info` says origin 0, size 65536),
+  0.9.20 answers every address, `$0000` to `$FFFF`, with "Address is
+  outside the loaded binary range", while `read_region` shows the same
+  bytes. Ask `get_cross_references`, `get_symbols`, `get_comments` and
+  `read_region` instead.
 - **Never bulk-disassemble every labelled address** to recover coverage.
   Labels sit on data tables too; disassembling them corrupts the display.
   Undo with `r2000_set_data_type` to `undefined`.

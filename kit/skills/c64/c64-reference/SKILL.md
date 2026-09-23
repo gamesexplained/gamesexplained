@@ -10,10 +10,12 @@ Consult this file. If a fact you need is not here, say so in the game's
 
 ## Where to read about a game first
 
-Before any code, and before the emulator: the game's page on C64-Wiki,
-`https://www.c64-wiki.com/wiki/<Title_With_Underscores>` (search the wiki
-if the guessed address misses). Nearly every commercial C64 game has one,
-and the pages are built the same way, so read it as a form:
+Before any code, and before the emulator, when the contributor has said
+yes to looking the game up online (`kit/START.md`): the game's page on
+C64-Wiki, `https://www.c64-wiki.com/wiki/<Title_With_Underscores>`
+(search the wiki if the guessed address misses). Nearly every commercial
+C64 game has one, and the pages are built the same way, so read it as a
+form:
 
 - **Infobox**: developer, publisher, year, genre, controls (which joystick
   port, or keys), media. Fills `game.json`, and says which port to drive.

@@ -14,10 +14,11 @@ step needs something only they have.
    anonymous form** `<login>@users.noreply.github.com`.
 3. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
-4. **Ask the contributor four things** if they have not already told you:
+4. **Ask the contributor five things** if they have not already told you:
    which game, which platform it is for, where their copy of it is on
-   disk, and **which run they want**, of the two below. We never download
-   game binaries; they supply their own.
+   disk, **which run they want**, of the two below, and **whether you may
+   look the game up online**. We never download game binaries; they
+   supply their own.
 
    - **Silver** (recommended) aims to explain 100 % of the program and
      builds the minisite. Recent runs took one to three hours, mostly
@@ -27,6 +28,15 @@ step needs something only they have.
      run to pick up. About 20 to 45 minutes.
 
    The run they pick is what you work to, without stopping to re-ask.
+
+   **Recommend a yes to the web, strongly**, and say why: knowing what
+   the game is actually about before reading its code is what makes the
+   results good, and a feature nobody told the run about is the one it
+   misreads. Looking it up means reading the game's wiki page, manual and
+   reviews, and saving reference screenshots into the game's `reference/`
+   folder. One yes covers the whole run. With a no, the game's own
+   screens and text are the only documentation, and `features.md` says
+   so.
 5. **Set up the tools** with `kit/INSTALL.md` for their operating system.
    Tell them plainly what is known to work and what is untested on their
    platform.

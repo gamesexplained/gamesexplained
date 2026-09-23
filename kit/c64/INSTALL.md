@@ -51,17 +51,21 @@ python3 kit/scripts/tools.py use-vice release          # and back
 
 `tools/vice-mcp` becomes a link to that folder; a release already there
 is kept at `tools/vice-mcp-release`. Nothing outside `tools/` changes, and
-the build itself is the contributor's to manage. `tools.py status` says
-`own build at <dir>`, with its git commit when the folder is inside a git
-tree: record that line in `game.json` under `tools.emulator`, so that the
-game says what it was measured with. Then run `check-emulator` on it; the
-checks, not the build's name, decide which workarounds apply. Ask the
-contributor whether they have one before downloading the release.
+the build itself is the contributor's to manage. `tools.py status` names
+it by where its source can be had, read from the build's git tree:
+`own build of <host/owner/repo>, branch <b>, commit <c>`. Record that line
+in `game.json` under `tools.emulator`, so that the game says what it was
+measured with. Then run `check-emulator` on it; the checks, not the
+build's name, decide which workarounds apply. Ask the contributor whether
+they have one before downloading the release.
 
-The `status` line names the build by its path on the contributor's
-computer, which nobody else can use. Add where the source is public and
-what it contains, so that the game says how to get the same emulator. One
-such build, measured 22 September 2026 on macOS arm64: branch `fixed` of
+The line never carries the build's path on this computer: it is published
+on the About tab, a home folder usually names a person, and nobody else
+can use it (`check_docs.py` refuses one anywhere in the repository). A
+commit on no public remote is said so; push it, or say in `game.json`
+where the source can be had. Add what the build contains over the
+release, since a commit alone does not say. One such build, measured 22
+September 2026 on macOS arm64: branch `fixed` of
 `github.com/air/vice-mcp`, commit `8a07b08d5c`, which is v3.11.0 with pull
 requests #6, #7, #11 and #14 to #24 of `barryw/vice-mcp` merged. It passes
 56 of 56 checks.

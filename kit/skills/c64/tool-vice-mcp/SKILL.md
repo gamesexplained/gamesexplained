@@ -17,7 +17,7 @@ of one-off tool calls: each call costs a round trip.
 ## Check the emulator before you trust it
 
 ```
-python3 kit/scripts/tools.py status            # which build: release, or own build at ...
+python3 kit/scripts/tools.py status            # which build: release, or own build of <repo>, commit ...
 python3 kit/scripts/tools.py check-emulator    # kit/EMULATOR.md's four phases, under a minute
 ```
 

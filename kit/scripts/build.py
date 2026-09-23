@@ -10,10 +10,11 @@ For every games/<platform>/<slug>/game.json:
   listing.json, symbols.json, reference/           copied
 Plus a home page with the catalogue and site/lib/.
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
-filled from game.json.
+filled from game.json. The build fails on a src or href that points at no
+file it published: a page's own .js beside it would otherwise 404 on the site.
 
 Usage: build.py [--out _site]
-Preview: python3 -m http.server -d _site 8000
+Preview: python3 -m http.server -d _site 8000   (8000, or any free port)
 No dependencies. The markdown converter handles the subset the templates use.
 """
 import glob, html, json, os, re, shutil, subprocess, sys
@@ -26,9 +27,9 @@ TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels
 
 
 # --- markdown (the subset our files use) ------------------------------------
-def inline(s):
+def inline(s, addr=True):
     s = html.escape(s, quote=False)
-    s = re.sub(r"`([^`]+)`", lambda m: "<code>" + addr_link(m.group(1)) + "</code>", s)
+    s = re.sub(r"`([^`]+)`", lambda m: "<code>" + (addr_link(m.group(1)) if addr else m.group(1)) + "</code>", s)
     s = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"(?<![\w*])\*([^*\n]+)\*(?!\w)", r"<i>\1</i>", s)
     s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', s)
@@ -39,13 +40,15 @@ def addr_link(s):
     return re.sub(r"\$([0-9A-Fa-f]{4})\b", lambda m: f'<a href="source.html#{m.group(1).upper()}">${m.group(1).upper()}</a>', s)
 
 
-def markdown(text, drop_h1=True):
+def markdown(text, drop_h1=True, addr=True):
+    """addr=False where the page has no Source tab to link addresses into."""
     out, lines, i = [], text.splitlines(), 0
     para = []
+    inline_ = lambda x: inline(x, addr)
 
     def flush():
         if para:
-            out.append("<p>" + inline(" ".join(para)) + "</p>"); para.clear()
+            out.append("<p>" + inline_(" ".join(para)) + "</p>"); para.clear()
     while i < len(lines):
         ln = lines[i]
         if ln.startswith("```"):
@@ -57,7 +60,7 @@ def markdown(text, drop_h1=True):
         if m:
             flush(); lvl = len(m.group(1))
             if not (lvl == 1 and drop_h1):
-                out.append(f"<h{lvl}>{inline(m.group(2))}</h{lvl}>")
+                out.append(f"<h{lvl}>{inline_(m.group(2))}</h{lvl}>")
             i += 1; continue
         if ln.startswith("|"):
             flush(); rows = []
@@ -65,8 +68,8 @@ def markdown(text, drop_h1=True):
                 rows.append([c.strip() for c in lines[i].strip().strip("|").split("|")]); i += 1
             rows = [r for r in rows if not all(re.fullmatch(r":?-+:?", c) for c in r)]
             if rows:
-                t = "<div class='tablewrap'><table><tr>" + "".join(f"<th>{inline(c)}</th>" for c in rows[0]) + "</tr>"
-                t += "".join("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in r) + "</tr>" for r in rows[1:]) + "</table></div>"
+                t = "<div class='tablewrap'><table><tr>" + "".join(f"<th>{inline_(c)}</th>" for c in rows[0]) + "</tr>"
+                t += "".join("<tr>" + "".join(f"<td>{inline_(c)}</td>" for c in r) + "</tr>" for r in rows[1:]) + "</table></div>"
                 out.append(t)
             continue
         m = re.match(r"^(\s*)([-*]|\d+\.)\s+(.*)", ln)
@@ -80,7 +83,7 @@ def markdown(text, drop_h1=True):
                     items[-1] += " " + lines[i].strip(); i += 1
                 else:
                     break
-            out.append(f"<{tag}>" + "".join(f"<li>{inline(x)}</li>" for x in items) + f"</{tag}>"); continue
+            out.append(f"<{tag}>" + "".join(f"<li>{inline_(x)}</li>" for x in items) + f"</{tag}>"); continue
         if not ln.strip():
             flush(); i += 1; continue
         para.append(ln.strip()); i += 1
@@ -531,6 +534,26 @@ def featured_game(games):
     return next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None)
 
 
+def broken_links(out_root):
+    """Relative src and href on every built page that point at no file the build wrote.
+
+    A page that links a file of its own beside it builds cleanly and then fails in the
+    reader's browser, because a game folder publishes only what build_game copies."""
+    bad = []
+    for page in sorted(glob.glob(os.path.join(out_root, "**", "*.html"), recursive=True)):
+        for m in re.finditer(r'\b(?:src|href)\s*=\s*(["\'])(.*?)\1', open(page, encoding="utf-8").read()):
+            url = m.group(2)
+            if re.search(r"\$\{|\{\{|\s\+|\+\s", url) or re.match(r"[a-z][a-z0-9+.-]*:|//|#", url, re.I):
+                continue   # built by a script at run time, or not a file of ours
+            path = url.split("#")[0].split("?")[0]
+            if not path:
+                continue
+            target = os.path.join(out_root, path.lstrip("/")) if path.startswith("/") else os.path.join(os.path.dirname(page), path)
+            if not os.path.exists(os.path.join(os.path.normpath(target), "index.html") if path.endswith("/") else os.path.normpath(target)):
+                bad.append((os.path.relpath(page, out_root), url))
+    return bad
+
+
 def main():
     argv = sys.argv[1:]
     if argv and argv[0] in ("-h", "--help"):
@@ -549,7 +572,7 @@ def main():
                 platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # the kit changelog, game by game
-    log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False) + runs_table(games)
+    log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False, addr=False) + runs_table(games)
     page = fill(read(os.path.join(SITE, "page.html")), site_title="How the kit has changed", lib="lib", body=log,
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "kit.html"), "w").write(page)
@@ -557,6 +580,12 @@ def main():
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
     version_lib(out_root)
     tagged = add_analytics(out_root)
+    bad = broken_links(out_root)
+    for page, url in bad:
+        print(f"broken link: {page} -> {url}", file=sys.stderr)
+    if bad:
+        sys.exit(f"{len(bad)} link(s) to nothing the build published. A game folder publishes its authored pages, "
+                 "listing.json, symbols.json and reference/, nothing else; site/lib/ is at ../../lib/")
     print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/" + (f"; analytics on {tagged} pages" if tagged else "; analytics off (no id in site/config.json)"))
 
 

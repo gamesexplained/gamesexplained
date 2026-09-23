@@ -26,8 +26,11 @@ ways it goes wrong:
 The game's own instruction text is itself a feature list. Find it early
 (the string sweep in `40-sweep` does this in seconds).
 
-The platform skill says where to look first; for the C64 that is the
-game's C64-Wiki page, read as a form. Whatever you read, record it under
+The web half of this rests on the contributor's answer at the start
+(`kit/START.md`). With a yes, the platform skill says where to look
+first; for the C64 that is the game's C64-Wiki page, read as a form. With
+a no, the game's own instruction screens and stored text are the
+documentation; say so under Sources. Whatever you read, record it under
 Sources in `features.md` with its address and the date, and put the wiki
 page and the manual in `links` in `game.json`, where the About tab shows
 them.
@@ -55,12 +58,17 @@ decoration, a banner nobody knew existed. Before annotating:
 
 - **External screenshots first**: box art, magazine reviews, longplay
   stills, preservation-site galleries. They show states your own session
-  may never reach and they are independent of your setup. **Ask the
-  contributor before downloading anything.**
+  may never reach and they are independent of your setup. The
+  contributor's yes to looking the game up online covers saving them to
+  `reference/`; with a no, go straight to your own.
 - **Then your own**, from the emulator at every distinct state you can
   reach. Name them by state in `reference/`.
 - Poke your way into states that are hard to reach by playing (set the
   level counter, empty the collectables) and screenshot those too.
+- **Look at them together.** `python3 kit/scripts/sheet.py
+  work/sheet.png 4 reference/*.png` tiles a set into one image and prints
+  which tile is which file, so forty states are one read; `--half` fits
+  more in.
 - **Designate the title screen**: set `title_image` in `game.json` to the
   `reference/` file showing the game's title screen — the first thing a
   player sees on boot or attract. The index card renders it beside the

@@ -81,7 +81,8 @@ def main():
     print("GAME IMAGE LEDGER  (denominator = bytes the game actually uses)")
     if dups:
         print(f"  duplicate descriptions ignored: {len(dups)} "
-              f"(e.g. ${dups[0][0]:04X} repeats ${dups[0][1]:04X}); describe each block on its own")
+              f"(e.g. ${dups[0][0]:04X} repeats ${dups[0][1]:04X}); describe each block on its own, "
+              f"or, if they are uninitialised RAM, list them under coverage.exclude in game.json")
     print(f"  tracked bytes : {len(tracked)}")
     print(f"  explained     : {expl}  ({100*expl/len(tracked):.1f}%)")
     print(f"  bare          : {len(tracked)-expl}  ({100*(len(tracked)-expl)/len(tracked):.1f}%)\n")
