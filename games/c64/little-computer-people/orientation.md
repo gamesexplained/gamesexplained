@@ -71,27 +71,32 @@ else must be able to follow this exactly.
     does nothing.
   - RESET: `$FFFC` → `$0340` → `JMP $0434`, the cold start. The cold
     start copies these six bytes from `$46BD`.
-- Measured with non-stopping checkpoints over 2 s of play: `$082B` and
-  `$0713` 285 hits each, about 2.85 a frame. `$0833`, `$082A`, `$EA31`
-  and `$FF48` got 0 hits. The handler tests `$D019` bit 0: raster
-  interrupts go to the sprite work, and any other source calls `$8018`.
+- Measured with non-stopping checkpoints: `$082B` and `$0713` 285 hits in
+  2 s just after the arrival, when a record was playing, and 51 in about
+  a second later in play, when none was.
+  `$0833`, `$082A`, `$EA31` and `$FF48` got 0 hits. The handler takes one
+  raster interrupt a frame, at line `$28`. While the stereo plays it also
+  takes the CIA1 timer interrupts, which it passes to `$8018` (`$D019` bit
+  0 clear).
 - Video: VIC bank 1, `$4000`–`$7FFF` (`$DD00` = `$96`). Bitmap mode
   (`$D011` = `$3B`). `$D018` = `$79`, which puts the bitmap at `$6000`,
   the colour matrix at `$5C00` and the sprite pointers at `$5FF8`. The
-  raster handler multiplexes the sprites: across one-second samples the
-  eight hardware sprites were reassigned among the person (four sprites:
-  two colour layers, top half and bottom half), the dog (two layers) and
-  two sprites at fixed positions low on the screen. `$D011`, `$D016` and
-  `$D018` are rewritten by the raster handler, so a sampled value belongs
-  to whichever band last wrote it.
+  main loop shares the eight hardware sprites out among the figures once
+  per pass, nearest first, writing the registers at raster line `$FA`
+  (`$0FD2`, `$11B6`). The person takes four (two colours and two black
+  outlines), the dog two, and each carried object one. The raster
+  interrupt only switches the top text band to hi-res and borrows one
+  sprite for the text cursor.
 - Memory: the unpacked program uses nearly every page from `$0200` to
   `$FFFF`. The only exceptions in `play-02` are `$4C00`–`$4FFF` and
   `$DE00`–`$DFFF` (zero) and two bitmap pages (`$6000`–`$61FF`) that
   hold nothing but `$55`. `$0340`–`$03FF` is a jump table followed
   by game variables.
-- No overlays. The disk has one file and nothing was loaded after the
-  unpack. Whether the game ever reads or writes the disk later (to save,
-  say) is open. The sweep looks for serial-bus and KERNAL I/O calls.
+- No overlays and no disk access. The disk has one file and nothing is
+  loaded after the unpack. The KERNAL stays banked out, the only writes
+  to CIA2's port are the two that set the VIC bank at the cold start, and
+  six of the ten entries in the driver jump table at `$8000` are `RTS`
+  stubs that nothing calls.
 
 ## The loader, in a paragraph
 
