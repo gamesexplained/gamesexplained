@@ -8,7 +8,9 @@ as code, or in the span of any symbol (the disassembler mints a symbol for
 every referenced address), or in an "extra" region declared in game.json
 (authored data nothing references by address, such as a charset). Runtime
 state is excluded: stack, screen RAM, I/O, and anything else listed under
-"exclude" in game.json. Platform defaults apply when game.json says nothing.
+"exclude" in game.json. Platform defaults apply when game.json says nothing;
+a range under "include" is given back from them (the RAM under I/O, in a
+game that runs code there).
 
 NUMERATOR: a byte is explained when the symbol whose span owns it carries a
 non-blank line comment. A description belongs to a routine, not to every

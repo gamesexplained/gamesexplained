@@ -60,6 +60,17 @@ same way, so tiers mean the same thing everywhere.
   set, a packed string block) is **added** through the `coverage` object
   in `game.json`. Get these two lists right early; they decide what 100 %
   means for this game.
+- **A game can live under its I/O.** A game that banks the I/O chips out
+  can run code and keep tables in the RAM beneath them, which the platform
+  default excludes as I/O. Look for code in a register census of the traced
+  code (instructions *located* in the I/O range) and for the bank switch
+  around them; then give the range back with `coverage.include` in
+  `game.json`. The disassembler will name those addresses after the chips'
+  registers, so say in each comment which meaning is live.
+- **Is the picture loaded or drawn?** Compare a snapshot taken before the
+  game's first instruction (the loader's hand-over) with one in play. A
+  screen or bitmap that is already there before the game runs is authored
+  data, to be described; one the game builds is output, to be excluded.
 - **Never bulk-disassemble every labelled address** to "recover"
   coverage. Many labels sit on data; disassembling them misclassifies the
   bytes as code. Undo by setting the data type back to undefined.
@@ -97,6 +108,31 @@ One pass of this can double the tracked image.
 The same shape hides more than one routine: look for a family of wrappers
 built on one or two stack-unwinding primitives, and check each for the
 number of inline bytes it eats, which need not be the same.
+
+### Inline jump tables that never come back
+
+A variant has no resume point: an "on n go to". The routine pulls its
+return address, picks the n-th word of the table that follows the call,
+pushes it and executes `RTS`, so each word is a handler's address **minus
+one** and control never returns to the call site. A state-machine game
+can have a hundred such tables, one per behaviour, and flow tracing stalls
+at every one of them.
+
+- Find every call to the routine (and to each entry that loads n from a
+  different place first) with a byte scan of the whole image, not just the
+  traced code.
+- The table's length is not stored. It ends where the next call site
+  begins, at a handler that nearly every table ends with, or at the first
+  word whose target (word + 1) is not code. When testing a target, accept
+  a handler that itself opens with a call to the switch: its own table
+  follows at once, so it will not decode as three clean instructions.
+- Type each table as words, then disassemble every target. **Never
+  disassemble a call site afterwards:** the tracer assumes the call
+  returns, walks into the table again and turns it back into code.
+- One of the tables may select the behaviour itself (a behaviour number
+  indexing a long table of other call sites). Check its length against the
+  values the variable takes live; a parse that stopped at the first odd
+  entry can be a quarter of the real table.
 
 **Reaching 100 % is a correctness pass, not a formality.** Writing a
 precise description of every routine forces re-reading code that was

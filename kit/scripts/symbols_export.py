@@ -13,7 +13,10 @@ every game: "video" names the screen base (excluded: it is output) and the
 character-set base (included: authored data the video chip reads through a
 register, so nothing references it by address); the stack and I/O are
 always excluded. "coverage" adds per-game exclusions and extra authored
-blocks on top. Addresses are hex strings like "$0400".
+blocks on top, and "include" gives back part of a default exclusion that
+the game really uses (RAM under the I/O area, in a game that banks the I/O
+out to run code or keep tables there). Addresses are hex strings like
+"$0400".
 """
 import json, os, sys
 
@@ -54,6 +57,16 @@ def regions(game):
     cov = game.get("coverage", {})
     exclude += [[hexint(a), hexint(b), n] for a, b, n in cov.get("exclude", [])]
     extra += [[hexint(a), hexint(b), n] for a, b, n in cov.get("extra", [])]
+    # "include" carves ranges the game really uses back out of the exclusions, such as
+    # the RAM under the C64's I/O area in a game that banks the I/O out to run code there
+    for a, b in [(hexint(a), hexint(b)) for a, b, _ in cov.get("include", [])]:
+        carved = []
+        for lo, hi, n in exclude:
+            if hi < a or lo > b:
+                carved.append([lo, hi, n]); continue
+            if lo < a: carved.append([lo, a - 1, n])
+            if hi > b: carved.append([b + 1, hi, n])
+        exclude = carved
     return {"exclude": exclude, "extra": extra}
 
 
