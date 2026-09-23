@@ -9,6 +9,8 @@ For every games/<platform>/<slug>/game.json:
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
 Plus a home page with the catalogue and site/lib/.
+The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
+filled from game.json.
 
 Usage: build.py [--out _site]
 Preview: python3 -m http.server -d _site 8000
@@ -316,10 +318,12 @@ def build_game(gdir, out_root):
     common = dict(title=html.escape(game.get("title", slug)), lib=lib, build=html.escape(game.get("build") or ""),
                   platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
                   publisher=html.escape(game.get("publisher") or ""))
-    # authored tabs
+    # authored tabs, with the template's placeholders filled (new_game.py fills only the .md files)
+    head = dict(title=common["title"], platform=common["platform_name"], year=common["year"], publisher=common["publisher"])
     for f in ("index.html", "levels.html", "play.html"):
         if f in present:
-            open(os.path.join(out, f), "w").write(under_title(inject(read(os.path.join(gdir, f)), nav, lib), ban))
+            page = fill(read(os.path.join(gdir, f)), **head)
+            open(os.path.join(out, f), "w").write(under_title(inject(page, nav, lib), ban))
     # source
     facts = markdown(read(os.path.join(gdir, "facts.md")))
     cheats = read(os.path.join(gdir, "cheats.md"))
