@@ -11,10 +11,7 @@ step needs something only they have.
    none yet, `git clone https://github.com/gamesexplained/gamesexplained`
    and continue inside it.
 2. **If there is any question over what commit email to use, prefer the
-   anonymous form.** Run inside the clone:
-   `git config user.email "<login>@users.noreply.github.com"`, with the
-   contributor's GitHub login. It keeps their real email out of the public
-   history, and it is what the site's "contributed by" credit reads.
+   anonymous form** `<login>@users.noreply.github.com`.
 3. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
 4. **Ask the contributor four things** if they have not already told you:
