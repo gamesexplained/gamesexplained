@@ -10,12 +10,11 @@ step needs something only they have.
 1. **Make sure you are inside a clone of this repository.** If you have
    none yet, `git clone https://github.com/gamesexplained/gamesexplained`
    and continue inside it.
-2. **Set this repo's commit email to the contributor's GitHub noreply
-   address.** Ask for their GitHub login, then run inside the clone:
-   `git config user.email "<login>@users.noreply.github.com"`.
-   This keeps their real email out of the public history, and it is what
-   the site's "contributed by" credit reads. Do not ask them to commit
-   under their real email.
+2. **If there is any question over what commit email to use, prefer the
+   anonymous form.** Run inside the clone:
+   `git config user.email "<login>@users.noreply.github.com"`, with the
+   contributor's GitHub login. It keeps their real email out of the public
+   history, and it is what the site's "contributed by" credit reads.
 3. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
 4. **Ask the contributor four things** if they have not already told you:
