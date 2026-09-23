@@ -73,7 +73,10 @@ apply unchanged, and so does the delivery: branch as `kit/<topic>` or
 to confirm every existing game still builds, and open a pull request. A
 change under `kit/` or `site/` reaches every page on the site, so it gets
 the same review a game does, not less. Describe the change in the pull
-request. `kit/CHANGELOG.md` is not a list of changes: it records what the
+request.
+Admins of the `gamesexplained` organization can skip the pull request: when
+they ask for a change, commit straight to `main` if they wish.
+`kit/CHANGELOG.md` is not a list of changes: it records what the
 kit learned about reverse engineering, from which game and whom, and a
 change that does not alter what the next agent does when it opens a game
 stays out of it. Bump `kit/VERSION` when the workflow changes. A new
