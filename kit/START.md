@@ -10,21 +10,23 @@ step needs something only they have.
 1. **Make sure you are inside a clone of this repository.** If you have
    none yet, `git clone https://github.com/gamesexplained/gamesexplained`
    and continue inside it.
-2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
+2. **If there is any question over what commit email to use, prefer the
+   anonymous form** `<login>@users.noreply.github.com`.
+3. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
-3. **Ask the contributor four things** if they have not already told you:
+4. **Ask the contributor four things** if they have not already told you:
    which game, which platform it is for, where their copy of it is on
    disk, and **which tier they want** (the table is in `AGENTS.md`, with
    rough timings). We never download game binaries; they supply their own.
    The tier they pick is what you work to, without stopping to re-ask.
-4. **Set up the tools** with `kit/INSTALL.md` for their operating system.
+5. **Set up the tools** with `kit/INSTALL.md` for their operating system.
    Tell them plainly what is known to work and what is untested on their
    platform.
-5. **Create the game folder** with `kit/scripts/new_game.py` and copy their
+6. **Create the game folder** with `kit/scripts/new_game.py` and copy their
    image into its `work/` directory.
-6. **Follow the skills** in the order `AGENTS.md` gives, opening each
+7. **Follow the skills** in the order `AGENTS.md` gives, opening each
    `SKILL.md` as you reach it.
-7. **Finish with the retrospective** (`kit/skills/core/80-retro`) and open a
+8. **Finish with the retrospective** (`kit/skills/core/80-retro`) and open a
    pull request from the branch, as `AGENTS.md` says. Nothing goes to
    `main` directly. This step needs the contributor's GitHub login in the
    shell, to fork and to open the pull request; ask for it when you get
