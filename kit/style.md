@@ -40,14 +40,22 @@ rules below mechanically, paragraph by paragraph, as described in
 - No tidy triplets for rhythm. Two things or four things are fine when
   there are two or four things.
 - No em-dashes as the default joint between clauses. Write two sentences.
-- No "testament to", "tapestry", "delve", "nuanced", "landscape",
-  "journey", "unpack", "at its core", "crucially", "seamlessly", "robust".
 - No summary paragraph that restates the section.
 - Do not describe the tooling or the process ("we pointed an AI at the
   bytes"). The reader is here for the game.
 
 The test is a human reading the page without noticing how it was made.
-There is no lint for this; a mechanical one was tried and dropped.
+
+### Section headings
+
+These are important as hooks for the reader – are they intrigued, do they get an immediate sense of what they can learn or play with?
+Real examples:
+
+| Original bad heading | Improved to | Why is it better? |
+|-|-|-|
+| Eighty minus your speed, and a zero that is always there | Secret: it's possible to land while going UP | Spell out the finding, don't be cryptic |
+| The needle cannot tell you whether you are about to land | Secret: the landing gauge lets you go over - by one pixel | Spell out the finding, don't be cryptic |
+| Sixteen numbers and then it stops | An uneven difficulty curve | Spell out the finding, don't be cryptic |
 
 ## Declare provenance
 
