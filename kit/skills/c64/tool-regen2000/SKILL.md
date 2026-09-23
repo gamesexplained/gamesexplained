@@ -37,7 +37,7 @@ the game folder, or pass `--game`, so the log lands in the right place.
 | `r2000_set_data_type` `{start_address, end_address, data_type}` | type a data block. The values are **lower case**: `code`, `byte`, `word`, `address`, `petscii`, `screencode`, `lo_hi_address`, `hi_lo_address`, `lo_hi_word`, `hi_lo_word`, `external_file`, `undefined` |
 | `r2000_get_cross_references` `{address}` | who reads, writes, calls or jumps to an address; the fastest way to attribute a table |
 | `r2000_get_address_details` `{address}` | semantics, xrefs, labels and comments at one address |
-| `r2000_search_memory`, `r2000_search_disassembly` | bytes or text in memory; a string or regex over the listing (register census in one call) |
+| `r2000_search_memory`, `r2000_search_disassembly` | bytes or text in memory; a substring, or a regex with `use_regex: true`, over each field of the listing (register census in one call) |
 | `r2000_get_blocks`, `r2000_get_symbols`, `r2000_get_comments` | state; what the coverage and export scripts read |
 | `r2000_undo` | undo the last operation; note that the log does not record undos |
 | `r2000_unpack_binary` | **destructive**: wipes all annotations. Do not use on an annotated session |
@@ -59,6 +59,14 @@ the game folder, or pass `--game`, so the log lands in the right place.
 - **A custom alphabet has no data type.** `petscii` and `screencode` are the
   only text types; a game whose character set is in its own order has to be
   typed `byte` with the decoded text in the comment.
+- **`search_disassembly` tests each field on its own.** The mnemonic, the
+  operand, the label and the comments are separate strings, so a query
+  that spans two of them (`jmp (`, `sta $d020`) finds nothing in the code,
+  only comments that happen to quote it. Match the operand's shape with
+  `use_regex: true` and `search_comments: false` (`^\([^,]*\)$` is every
+  indirect jump) and filter the results by mnemonic. Once an address has a
+  label the operand shows the label, not the address: search a named
+  register by its name, or scan the snapshot for the opcode bytes.
 - **Never bulk-disassemble every labelled address** to recover coverage.
   Labels sit on data tables too; disassembling them corrupts the display.
   Undo with `r2000_set_data_type` to `undefined`.

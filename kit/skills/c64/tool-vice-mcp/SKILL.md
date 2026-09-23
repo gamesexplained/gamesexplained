@@ -95,6 +95,16 @@ in-game input hook below does the same job.
   like the stick. `vice_keyboard_key_press` by host key name does not: VICE
   delivers it 1000 cycles plus a random amount up to a frame later, on
   purpose, to imitate a hand. Use the matrix tool for anything timed.
+  `pressed: true` holds a key until a call with `pressed: false`, and
+  `hold_frames` holds it for a count of frames. A key the tool has no name
+  for, such as `:`, takes its `row` and `col` from the matrix in
+  `c64-reference`.
+- **Typing into a game.** A game that scans the keyboard from its main
+  loop misses a press shorter than a pass, and a fixed `hold_frames` is
+  either too short or slow. Put a non-stopping checkpoint on the
+  instruction that stores a new key, hold each key until its hit count
+  grows, release, and wait for the game's last-key variable to clear
+  before the next key; doubled letters need that gap.
 - **Snapshot, load, step.** A load on a stopped machine leaves it stopped
   at the loaded state's program counter, with every checkpoint still armed
   (`load-held`, `checkpoints-survive-load`). The same snapshot plus the
@@ -122,6 +132,30 @@ Before staging anything, put a non-stopping checkpoint on the game loop
 for a second and read its hit count. A stick bit written while the game
 had quietly ended started a new game from the attract screen, parked the
 CPU in the opening tune, and made every input read as "does nothing".
+
+### Recording what the SID plays
+
+Needs the `frame-advance-` checks. To check a music driver against what
+it actually plays, or to give the minisite a tune, record the chip rather
+than modelling the driver. Once the music is under way, stop the machine
+and alternate `vice_frame_advance` of one frame with `vice_sid_get_state`,
+keeping each voice's frequency, gate and waveform: the list of frames is
+the tune, at the video rate. Three things decide whether it is right:
+
+- **Start at the first real note**, not at the call that starts the piece:
+  whatever runs in between (a walk to the instrument, a sound effect) is
+  in the recording otherwise, and a fixed wait can end before the music
+  begins. Wait until a voice is gated on a pitch the lead-in never uses.
+- **One gate is one note.** Vibrato moves the frequency every frame; merge
+  frames under one gate whose pitch stays within a semitone.
+- **Name the notes with the clock the table was built for**
+  (`c64-reference`, "Mistakes that bite"), and say what the machine you
+  recorded on actually sounds.
+
+Two calls per frame run at about 13 frames a second, so a minute of PAL
+music takes four minutes to record; run it in the background. A batch of
+frames per call would be faster and would lose every note shorter than
+the batch.
 
 ## Behaviours that waste time, on any build
 
@@ -172,5 +206,11 @@ CPU in the opening tune, and made every input read as "does nothing".
   RAM image lands where the platform reference says it does.
 - **Some calls can take the server down.** If a call returns a closed
   socket, check `tools.py status` before assuming the answer meant anything.
+- **One emulator answers on :6510, whoever started it.** A second clone of
+  the kit on the same computer, or an emulator left from an earlier run,
+  takes this session's calls, and its snapshots land in its own folder.
+  `tools.py status` warns when the emulator on the port came from another
+  folder, and `tools.py vice` refuses to start beside it; stop it from the
+  clone that started it, or ask the contributor to close it.
 - The emulator needs a pseudo-terminal and dies with the session that
   started it.

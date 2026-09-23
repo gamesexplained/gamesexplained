@@ -54,7 +54,7 @@ tested. Typical tests:
 
 ## Measuring without fooling yourself
 
-The emulator is a second opinion, not an oracle. Three ways a live test
+The emulator is a second opinion, not an oracle. Four ways a live test
 lies, all of which have cost real time:
 
 - **The machine never stopped.** If the pause did not take, every poke is
@@ -77,6 +77,17 @@ lies, all of which have cost real time:
   instrument is dead, and it costs nothing to have. Without it, a dead
   instrument and a routine that genuinely never runs look identical, and
   the wrong one of those is a publishable claim.
+- **It was going to happen anyway.** A game that acts on its own (a
+  character who chooses what to do next, an enemy on a timer) does things
+  whether or not you asked. Run the same snapshot twice, with the input
+  and without it. An emulator that passes the determinism test in
+  `kit/EMULATOR.md` replays a snapshot exactly, the game's random numbers
+  included, so the control run shows what would have happened and any
+  difference is the input's doing. The same exactness
+  cuts the other way: every run from one snapshot makes the same "random"
+  choice, so one result from it is one sample. To see the spread, start
+  from several snapshots, or wait a different number of frames before the
+  input.
 
 **When the code and a measurement disagree, neither wins automatically.**
 Work out what would have to be true for both, and test that. A model that

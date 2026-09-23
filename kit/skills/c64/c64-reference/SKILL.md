@@ -133,6 +133,33 @@ key on `$DC01` also sees the port-1 joystick. Bits, active low: 0 up, 1
 down, 2 left, 3 right, 4 fire. The KERNAL's own scan leaves the last key
 in `$C5`/`$CB` and the buffer at `$0277`.
 
+The matrix. A row is the `$DC00` bit driven low, a column the `$DC01` bit
+that reads low; `vice_keyboard_matrix` takes the same `row` and `col`.
+
+| row \ col | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|---|
+| 0 | DEL | RETURN | CRSR → | F7 | F1 | F3 | F5 | CRSR ↓ |
+| 1 | 3 | W | A | 4 | Z | S | E | left SHIFT |
+| 2 | 5 | R | D | 6 | C | F | T | X |
+| 3 | 7 | Y | G | 8 | B | H | U | V |
+| 4 | 9 | I | J | 0 | M | K | O | N |
+| 5 | + | P | L | - | . | : | @ | , |
+| 6 | £ | * | ; | HOME | right SHIFT | = | ↑ | / |
+| 7 | 1 | ← | CTRL | 2 | SPACE | C= | Q | RUN/STOP |
+
+The KERNAL numbers a key 8 × row + column (A is 10, SPACE 60) and writes
+64 to `$CB` when none is held. A game that scans the matrix itself may
+number the keys the other way round, row + 8 × column; its key table is 64
+bytes in that order, and printing it as an 8 × 8 grid against this one
+settles which.
+
+**A game that scans from its main loop drops short presses.** The scan
+runs once a pass, not once a frame, and a pass can take several frames.
+Most scanners also keep only one of two held keys and ignore a key equal
+to the last one until a scan has seen none, so a doubled letter needs a
+release in between. Hold each key until the game's own key variable
+changes, release it, and wait for the scan to see no key before the next.
+
 ## Interrupts
 
 KERNAL IRQ path: `$FFFE` → `$FF48` → jumps through `$0314`. Default
@@ -226,3 +253,10 @@ may use neither (see `30-text`).
   which copy the code reads.
 - PAL vs NTSC changes the clock and so every derived rate; state which one
   the emulator was set to.
+- **A note table is tuned for one clock.** SID frequencies are clock-
+  relative, so a table computed for NTSC plays about 0.65 of a semitone
+  flat on PAL (985,248 / 1,022,727), and one computed for PAL plays that
+  much sharp on NTSC. Before naming a game's notes, find the clock that
+  makes its table land on equal temperament: one table value against
+  f = value × clock / 16777216 for each clock is enough. Name the notes
+  with that clock, and say what the other machine hears.

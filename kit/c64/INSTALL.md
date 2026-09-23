@@ -58,6 +58,14 @@ game says what it was measured with. Then run `check-emulator` on it; the
 checks, not the build's name, decide which workarounds apply. Ask the
 contributor whether they have one before downloading the release.
 
+The `status` line names the build by its path on the contributor's
+computer, which nobody else can use. Add where the source is public and
+what it contains, so that the game says how to get the same emulator. One
+such build, measured 22 September 2026 on macOS arm64: branch `fixed` of
+`github.com/air/vice-mcp`, commit `8a07b08d5c`, which is v3.11.0 with pull
+requests #6, #7, #11 and #14 to #24 of `barryw/vice-mcp` merged. It passes
+56 of 56 checks.
+
 **Prerequisite the kit does not install:** Rust's `cargo`
 (https://rustup.rs), for the disassembler. If the contributor has no
 `cargo`, tell them, and let them decide whether to install Rust; it is the
