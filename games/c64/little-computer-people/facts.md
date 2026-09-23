@@ -51,10 +51,53 @@ A single-file crack by Mr Z of the 1985 Activision game; see
   on the interrupt handler in the same window; a key has to stay down
   until a scan has seen it, and three frames was often too short.
 
+## Banking
+
+- The main program runs with `$01` = `$35` and drops to `$34` (`AND #$FE`)
+  around each use of the RAM under the I/O area: code at `$D000` onwards
+  (entered by `JMP $D000` at `$B635`) and tables at `$D587`, `$D700`,
+  `$D764` and `$D7AC`–`$D7B1` (for example `$AB21`, `$B26F`, `$B62E`).
+- The IRQ handler saves the low bits of `$01` in `$092D`, forces I/O in
+  (`$x5`) for its own work, and puts them back on the way out (`$0822`).
+  An interrupt can therefore land while the main program has I/O out.
+
+## Hardware register census
+
+From the traced code (`work/census.py`: every absolute-mode operand in
+`$D000`–`$DFFF` in a code block). Registers reached only through an index
+or a pointer are listed under the base the instruction names.
+
+| Register | What the game does with it | Where |
+|---|---|---|
+| `$D000`–`$D010` sprite positions | written by the raster interrupt, which shares the eight sprites among the figures | `irq_handler` `$0713`–`$08D2`; also `$048A`, `$1282` ? |
+| `$D015` sprite enable, `$D01B` priority, `$D01C` multicolour, `$D027`+ colours | likewise | `irq_handler`; also `$1293`–`$12A8` ? |
+| `$D025`, `$D026` sprite multicolours | `$D026` = `$0A` at start; both rewritten elsewhere | cold start `$04F5`; `$0B51`–`$0BA7` ?, `$B9D5`, `$B9EA` ? |
+| `$D011` | set at start; screen blanked and unblanked at `$0589`–`$0598`; rewritten in the interrupt | `$04E6`, `$0589`, `$0598`, `$07F4`, `$07F9` |
+| `$D012` | next raster line for the interrupt | cold start `$049A`, `$049F`; `$07DB`; `$1277` ? |
+| `$D016` | multicolour off for the text band at the top (`AND #$EF`), and the saved value put back at a timed raster position | `$04F0`; `$0732`, `$0759`, `$075E`, `$07E9` |
+| `$D018` | set once | cold start `$04EB` |
+| `$D019`, `$D01A` | raster interrupt enabled at start, acknowledged in the handler | `$0492`, `$0495`; `$0714`, `$07F1` |
+| `$D020`–`$D024` | not named by any traced instruction | |
+| colour RAM `$D800`+ | written when the top text band is cleared, and by drawing code | `$BAF3`; `$2D01`, `$2D6B`, `$2D6E`, `$3E96` ? |
+| SID `$D400`–`$D414` | all 21 voice registers cleared at start | `$3726` |
+| SID voice registers, seven at a time | a voice set up from a 7-byte record in the table at `$B031` | `$B4C0`–`$B4E5` ? |
+| SID voice frequency and control | written from shadow copies at `$7FCD`+ (one set per voice, offset 0, 7, 14) | `$3F3B`–`$3FBF`, `$42DF`–`$43F2`, the eight sound jobs `$4574`–`$4677` |
+| SID `$D415`–`$D418` filter and volume | from a table at `$B05C`; volume also set at start | `$B474`–`$B486`; `$046C`; `$4577`, `$457F` |
+| CIA1 `$DC00`–`$DC03` | keyboard and joysticks | `$059E`–`$060C` |
+| CIA1 timers A and B | set up for the sound interrupts | `$4487`–`$44A5`; control at `$3FFD`–`$401D` |
+| CIA1 `$DC0D` | interrupts off at start; read in the timer interrupt | `$045B`, `$0461`; `timer_irq` `$3959`; `$39B4`, `$4429`, `$442C`, `$44A5` |
+| CIA2 `$DD00` | VIC bank 1 | cold start `$046F`, `$0476` |
+| CIA2 `$DD03`, `$DD0D`–`$DD0F` | set once at start | `$0450`–`$0469` |
+
+Rows marked ? are routines not yet read.
+
 ## Graphics
 
 - Bitmap mode in VIC bank 1: bitmap `$6000`, colour matrix `$5C00`
   (`orientation.md`).
+- `$BAD4`, which clears the text band, copies the row pattern at `$BDD0`
+  into the bitmap at `$62C0`. `$6340`–`$639F` holds the same 96 bytes as
+  `$BE50`; what copies them is not yet read.
 
 ## Text
 
@@ -117,3 +160,19 @@ A single-file crack by Mr Z of the 1985 Activision game; see
   a byte of `$80` or more. How a sentence's bits are matched against a
   rule, and what each action code does, are for the coverage and verify
   steps.
+
+## Data tables
+
+- `driver_jumps` (`$8000`): a jump table, three bytes an entry. Entries
+  `$800C`, `$800F`, `$8012` and `$8018` jump to the sound and timer code at
+  `$394E`–`$39B2`, and each has one caller (`$0812`, `$9256`, `$347E`, the
+  IRQ handler at `$072C`). The other six entries are `RTS` stubs, and
+  nothing in the image calls them.
+
+## Sound
+
+- `timer_irq` (`$3959`) takes the CIA1 interrupts: timer A goes to
+  `$3F3B` and timer B to `$3FBF`, each with interrupts re-enabled first.
+- `sound_dispatch` (`$396E`) calls one of eight routines, `$4574` to
+  `$4677`, for each bit set in `$478D`, through the split address table
+  `sound_jobs` (`$399C`).
