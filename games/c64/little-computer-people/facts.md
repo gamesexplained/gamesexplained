@@ -176,3 +176,26 @@ Rows marked ? are routines not yet read.
 - `sound_dispatch` (`$396E`) calls one of eight routines, `$4574` to
   `$4677`, for each bit set in `$478D`, through the split address table
   `sound_jobs` (`$399C`).
+
+## Control flow: the switch and the activities
+
+- **The switch** (`$3F0C`, `$3F11`, `$3F13`) is an "on n go to". `JSR
+  $3F13` takes n in A; `$3F11` loads it from `$4C` and `$3F0C` from `$68`
+  first. It pulls its own return address, picks the n-th word of the table
+  that follows the `JSR`, pushes it and returns into it. Each word is a
+  handler's address minus one, and control never comes back to the call
+  site. There are 103 call sites (84 with `$4C`, 16 with `$68`, 3 with A).
+  Nearly every table ends with the handler `$8F0E`, and the next site
+  follows directly. The tables are typed as words in the disassembler.
+- **Activities.** The main loop's last stage (`$09D5`) calls `$8DAB`. That
+  calls `$BED0` and `$2A6E`, and then, only when the low three bits of
+  `$03C4` are zero, loads the current activity from `$8D9B` and switches
+  on it at `$8DC6`. That switch (n in A) has 32 entries, and most
+  of them are other switch sites: `$5825`, `$54E3`, `$9387`, `$BEFF`,
+  `$2F18`, `$2797`, `$2DFE`, `$37EA`, `$3375`, `$338C`, `$9108`, `$9125`,
+  `$91AD`, `$91DB`, `$9224`, `$92A2`, `$9081`, `$90B2`, `$90D8` and
+  others. So an activity is a small state machine: `$8D9B` picks the
+  activity, and `$4C` is its phase, which picks the handler for this
+  pass. Handlers shared by many activities include `$8F0E` (the last
+  entry of nearly every table), `$8FA7`, `$94CC`, `$293D`, `$2728` and
+  `$2759`.
