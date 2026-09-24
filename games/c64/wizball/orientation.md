@@ -78,9 +78,10 @@ Measured in play on `play-start.vsf`, one player, level 1.
   one pass per frame (99 passes in 100 frames, PAL). It waits in `$681D`
   for the raster to be between lines `$46` and `$C6`. It ends when `$B1CF`
   is non-zero and `$B1D0` is 1.
-- **The outer cycle** is `$639B`-`$63C7`, `JMP $639B` at its end: title
-  and high-score screen (`$6893`), the play routine (`$63E0`), and what
-  follows it.
+- **The outer cycle** is `$639B`-`$63C7`, `JMP $639B` at its end: the
+  "get ready!" screen of each turn (`$6893`), the play routine (`$63E0`),
+  and what follows it. The title and high-score screens come from the
+  initialisation's continuation at `$8F61`.
 - **Video.** CIA 2 port A reads `$94` in play: VIC bank 3, `$C000`-`$FFFF`.
   `$D018` is rewritten by the raster bands, so a single read of it means
   nothing (`c64-reference`).
@@ -105,8 +106,17 @@ unpacks Yeti's cracktro, which runs under the KERNAL's interrupt until
 SPACE. Then a depacker running in `$0100`-`$03FF` unpacks the game over the
 whole of memory and jumps to the game's entry at `$6389`, which switches
 `$01` to `$35` and jumps to its own initialisation at `$EC00`. That
-initialisation addresses the CIA registers through offsets
-(`STA $DC8E,X` with X = `$7F` is `$DD0D`), sets up CIA 2's timer for the
-NMI and the hardware vectors, clears pages 1 to 3 and continues through
-`JMP ($EC91)`. The cracktro and depacker are not annotated, by policy; the
-initialisation is the game's own and is.
+initialisation copies a 12-byte routine to `$001D` (nothing calls it),
+turns off CIA 1's interrupts and goes on through `JMP ($EC91)`, whose
+pointer is the operand of an instruction further down, to `$EC2C`. From
+there it reaches CIA 2 only through offsets (`STA $DC8E,X` with X = `$7F`
+is `$DD0D`), so a search for the register addresses finds nothing: timer A
+gets `$4CC7`, one PAL frame, and starts at raster line `$1E` as the NMI;
+timer B is left running free, and the random-number routine at `$7533`
+reads it. Then it fills pages 1 to 3 with a running exclusive-OR pattern,
+copies the hardware vectors from `$B62D`, writes `RTS` at `$EC2C` and
+random bytes over `$EC2D`-`$EC8D` (the part of itself that has run),
+selects VIC bank 3, overwrites the pointer at `$EC91` with values read
+from CIA 2, and jumps to the title sequence at `$8F61`. The cracktro and
+depacker are not annotated, by policy; the initialisation is the game's
+own and is.
