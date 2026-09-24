@@ -403,6 +403,13 @@ strength `$4D89`, speed `$4B81`, pursuit `$4D49` AND `$7F`, natural weapon `$4F6
   a shut door it passes (`$2600` → `$1BBF`) and closes it at its next decision
   (`$25F4` → `$1C85`). Hellhounds, bats, spiders and snakes never pass a shut
   door.
+- Every door closed, by the player or a creature anywhere in the dungeon,
+  ends with a full recast of the player's view (`$1CF9`: `$1C50`, then
+  `$0B05`, 30 rays). The recast leaves the shared pointer `$9B`/`$9C` in
+  screen memory, so a door-opener that closes one door and has to open
+  another in the same decision (`$25F4`, then `$2600`) opens nothing: `$1BBF`
+  reads a screen byte, and the creature walks on through the shut door
+  (traced; it did not happen in 300,000 passes of the page's port).
 - **Footsteps**: orcs, the wizard, skeletons, hellhounds, vampires and the
   minotaur (`$59DC`) make a footstep every third sub-step while in sight;
   bats, spiders and snakes are silent.
