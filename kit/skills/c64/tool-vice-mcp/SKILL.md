@@ -6,13 +6,22 @@ description: How to drive VICE through the vice-mcp server, the recommended emul
 # VICE through vice-mcp
 
 Registered in `.mcp.json` as the `vice` server (HTTP, `127.0.0.1:6510`).
-The transport is plain HTTP, so a server started or restarted *after* your
-session began is picked up on the next call without restarting the session.
-If the tools are missing entirely, start it (`kit/INSTALL.md`) and try again.
+Claude Code connects to MCP servers when a session starts, so the
+`vice_*` tools are there only if the emulator was already running then; a
+server started later does not appear by itself. Other harnesses are
+untried. On a first run the tools are therefore missing, and that is
+normal: the emulator is installed partway through the session, and a
+session opened in the folder above the clone never reads `.mcp.json` at
+all. Do not wait for them, or restart the emulator hoping they appear. A
+server that was up at the start and is restarted later does come back on
+the next call.
 
-`kit/c64/vice.py` is a client for the same server. Anything repetitive
-(halt, poke, run N passes, read back) belongs in a script, not in a string
-of one-off tool calls: each call costs a round trip.
+`kit/c64/vice.py` calls the same tools over HTTP and needs no
+registration, so it works either way:
+`python3 kit/c64/vice.py <tool> '<json>'` for one call, `--list` for the
+names, or import it. Anything repetitive (halt, poke, run N passes, read
+back) belongs in a script, not in a string of one-off tool calls: each
+call costs a round trip.
 
 ## Check the emulator before you trust it
 

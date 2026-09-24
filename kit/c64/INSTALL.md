@@ -179,8 +179,13 @@ start the tools by hand; the containment is in the launcher.
 ## macOS — known to work
 
 - **The emulator** serves MCP over HTTP; `.mcp.json` registers it as the
-  `vice` server. Because the transport is plain HTTP, a server started or
-  **restarted** after your session began is picked up on the next call.
+  `vice` server. Claude Code connects to MCP servers when a session
+  starts, so the `vice_*` tools appear only if the emulator was already
+  running then: not on a first run, where it is installed partway
+  through, and not in a session opened in the folder above the clone,
+  which does not read `.mcp.json`. `kit/c64/vice.py`, below, needs no
+  registration and works either way. A server that was up when the
+  session started and is **restarted** comes back on the next call.
   VICE can and does die mid-session, sometimes on a single tool call, so
   check `tools.py status` before concluding that the emulator is telling
   you something surprising. Snapshots saved through MCP land in
