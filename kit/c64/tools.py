@@ -104,10 +104,28 @@ def foreign(owner):
     return bool(owner) and os.path.join(ROOT, "") not in owner and os.path.join(os.path.realpath(ROOT), "") not in owner
 
 
+def missing_libraries(exe):
+    """Shared libraries the dynamic linker cannot find for exe: the release zip bundles none, so a
+    Linux machine may lack some. Empty where there is no ldd to ask (macOS, Windows)."""
+    if not sys.platform.startswith("linux") or not shutil.which("ldd"):
+        return []
+    out = subprocess.run(["ldd", exe], capture_output=True, text=True).stdout
+    return sorted({line.split("=>")[0].strip() for line in out.splitlines() if "not found" in line})
+
+
+def say_missing(libs):
+    return ("the emulator needs shared libraries this machine does not have:\n  " + " ".join(libs) +
+            "\ninstalling them is outside this repository, so ask the contributor first; on Ubuntu 24.04 "
+            "the whole set is one apt-get line in kit/c64/INSTALL.md, 'The release zip'")
+
+
 def vice(machine="x64sc"):
     exe = os.path.join(VICE_DIR, "bin", machine)
     if not os.path.exists(exe):
         sys.exit(f"no emulator at {os.path.relpath(exe, ROOT)}; see kit/c64/INSTALL.md, 'Get the emulator'")
+    libs = missing_libraries(exe)
+    if libs:
+        sys.exit(say_missing(libs))
     owner = port_owner(6510) if up(6510) else None
     if foreign(owner):
         # the MCP server and this clone's scripts would drive that machine, and its snapshots land in its own clone

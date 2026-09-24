@@ -231,6 +231,9 @@ def download(tag=None):
     os.remove(path)
     if sys.platform == "darwin":
         print("if macOS refuses to open it: xattr -dr com.apple.quarantine tools/vice-mcp")
+    libs = tools.missing_libraries(os.path.join(tools.VICE_DIR, "bin", "x64sc"))
+    if libs:
+        print(tools.say_missing(libs))
     print("emulator build:", tools.vice_build())
     print("next: python3 kit/scripts/tools.py vice, then check-emulator")
 

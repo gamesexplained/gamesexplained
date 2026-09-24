@@ -337,7 +337,11 @@ through. The first run took that for "no release downloads" and built from
 source. `get-vice` now reads the tags with `git ls-remote` when the API does
 not answer, and finds a release's file by the name the project's CI gives
 it (`<tag>-<machine>-gui.zip`, or `.dmg` on a Mac), so the plain command
-still says what this machine can have.
+still says what this machine can have. From nothing installed, `get-vice`,
+`get-vice download` (20 MB in two seconds), `vice` and `check-emulator`
+(55 of 56, `determinism-restart`) then ran end to end. When the machine
+lacks a library the release needs, `get-vice download` and `vice` name it
+rather than leaving the emulator to fail in its log.
 
 **The release zip.** It unpacks as `usr/local/{bin,share}` and bundles no
 libraries. It was built for `/usr/local`, so from `tools/vice-mcp` it
