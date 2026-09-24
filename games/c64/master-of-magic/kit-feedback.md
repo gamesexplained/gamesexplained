@@ -77,6 +77,11 @@ decision, what took longest, operating system and tool versions.
 - `kit/skills/c64/tool-vice-mcp/SKILL.md`: choose a menu entry by reading
   its text from screen memory, not by counting slots; record a
   pass-by-pass trace of the game's variables as the test for a port.
+- `kit/skills/c64/c64-reference/SKILL.md` again: how bitmap mode reads
+  `$D018`, the multicolour pixel pairs in text and bitmap cells, and "the
+  test of a reading is a rebuild" (the brief's title-screen mode was read
+  from one register write and was wrong).
+- `kit/CHANGELOG.md`: 0.0.16, four lessons; `kit/VERSION` 0.0.16.
 - `kit/skills/core/70-minisite/SKILL.md`: a widget that runs a mechanic
   is tested against the game (a trace, or the original code in a 6502
   simulator) before it goes on the page, and the trace stays in `work/`.
@@ -105,6 +110,27 @@ decision, what took longest, operating system and tool versions.
 
 ## What took longest
 
-<the table from `python3 kit/scripts/clock.py report`>
+| Step | Minutes | Model | Sessions | What dominated |
+|---|---:|---|---:|---|
+| 10-orient | 17 | claude-opus-5-5 | 2 | paused at the decruncher hand-over ($3884) to rebuild the emulator on Linux |
+| 20-features | 15 | claude-opus-5-5 | 2 |  |
+| 30-text | 0 | claude-opus-5-5 | 1 |  |
+| 40-sweep | 6 | claude-opus-5-5 | 1 | register census and string sweep on the traced code; the dispatch table found |
+| 50-coverage | 48 | claude-opus-5-5 | 1 | ten agents on disjoint ranges (five over the engine's code, one over title, music and the RAM under the KERNAL, four over the data); 100 % reached with the last agent still writing its notes |
+| 60-verify | 22 | claude-opus-5-5 | 1 | reconciling ten agents' notes into facts.md took most of it; live tests added for death, the DEAD label, the weight limit, the fire count, the reset and the trainer patches |
+| 70-minisite | 51 | claude-opus-5-5 | 1 | the page, the Maps tab and three ported widgets (sight, creatures, music) by three agents in parallel, each tested against the game; a Play tab port was handed to a fourth agent and continues |
+| 80-retro | 2 | claude-opus-5-5 | 1 | kit edits (reference, coverage, verify, minisite, vice-mcp notes), changelog, kit-feedback, game.json, TODO; the Play tab agent still running |
+| total | 162 | claude-opus-5-5 | | 2.7 h of work, over 4.8 h |
 
-The one change to the kit that would have saved the most minutes:
+Minutes to play 17.2; 0.8 minutes per tracked KB (47.6 minutes for
+57,826 bytes, ten agents); 2.7 hours of work. The subagents were
+Opus-class throughout.
+
+The 2.1 hours between the work and the elapsed time are almost all the
+emulator: the release could not be downloaded here, so it was built
+from source, twice, and two races in the check script were found and
+fixed before it passed 56 of 56. That time is off the clock.
+
+The one change to the kit that would have saved the most minutes: a
+Linux path for the emulator from the start, which `tools.py build-vice`
+and the Linux section of `kit/c64/INSTALL.md` now are.

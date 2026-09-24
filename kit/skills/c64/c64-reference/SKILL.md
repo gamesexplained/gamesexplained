@@ -92,7 +92,20 @@ text area, so text column *c*, row *r* is sprite X = 24 + 8*c*, Y = 50 +
 
 Character set: 8 bytes per glyph, 256 glyphs, 2 KB. Colour RAM holds one
 nibble per cell. Multicolour character mode uses bit 3 of the colour nibble
-to select it per cell.
+to select it per cell: in such a cell, pixel pairs `%00` are the background
+`$D021`, `%01` is `$D022`, `%10` is `$D023` and `%11` the colour nibble's low
+three bits.
+
+Bitmap mode (`$D011` bit 5) reads `$D018` differently: bit 3 alone picks
+the bitmap, at `$0000` or `$2000` in the VIC bank, and the high nibble
+points at the screen matrix, which now holds colours, not characters.
+Check `$D011` before naming a character base from `$D018`; a raster split
+can change the mode per band, so read the mode where the band is set up,
+not from a register dump. In multicolour bitmap mode (`$D016` bit 4 as
+well) a cell's pixel pairs are `%00` the background, `%01` the matrix
+byte's high nibble, `%10` its low nibble and `%11` the colour RAM nibble.
+The test of a reading is a rebuild: draw the picture from memory and
+compare it with a screenshot.
 
 ## SID essentials (`$D400`)
 
