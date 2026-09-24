@@ -89,3 +89,12 @@ weapons, turn to the used-up icon once taken; the hang is real code, run
 live from a poked list, but no player can fill the list without two
 sprays. Remember's third "bug" turned out to be the game's own rule for
 icons (show what the next take gives), which Remember's crack changed.
+
+**The RAM under the I/O area.** Building the page's alien gallery showed
+that the police ship's and the pearl's frames live at `$D000`-`$DFFF`,
+the RAM under the I/O area, which the video chip reads in bank 3. The
+coverage ledger excludes that range by default as I/O, so the first
+100 % had left out 4 KB of the game's own sprite shapes. The range went
+back into the count through `coverage.include`, typed as data, with the
+auto symbols of the code's I/O accesses removed from it and each group of
+blocks described: 100 % of 60,134 bytes.

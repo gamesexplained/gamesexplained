@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}}</title>
+<title>Wizball</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -19,6 +19,7 @@
 html{background:var(--bg);min-height:100%}
 body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
 h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+h3{font-size:19px;margin:28px 0 8px}
 .wrap{padding:0 var(--gx)}
 .hero{padding:48px var(--gx) 8px;text-align:left}
 .eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
@@ -29,62 +30,701 @@ section:last-of-type{border-bottom:none}
 .fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
 h2.t{font-size:var(--h2);margin-bottom:12px}
 .lede{color:var(--ink-soft);margin:0 0 30px}
-.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
 .cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
-
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.btn{font-family:var(--fm);font-size:12.5px;line-height:1.3;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.mono{font-family:var(--fm);font-size:13px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 18px;margin:12px 0 0;font-size:14px}
+.readout span{font-family:var(--fm);font-size:13px}
+.k{color:var(--ink-mute);font-size:12.5px;margin-right:6px}
+.scroller{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#000}
+.note{font-size:14px;color:var(--coral);margin:8px 0 0}
+table.d{border-collapse:collapse;font-size:14px;margin:8px 0 0;width:100%}
+table.d th,table.d td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+table.d th{font-weight:700;color:var(--ink-soft);font-size:13px}
+table.d td.n{font-family:var(--fm);font-size:13px;text-align:right}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid rgba(0,0,0,.25)}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);font-size:13px;line-height:1.4}
+.card canvas{background:#000;border-radius:4px;margin:0 auto 6px}
+.card b{font-family:var(--fm);font-size:12.5px}
+.keys{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:620px}
+.key{border:1px solid var(--line);border-radius:5px;padding:5px 2px;text-align:center;font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink-mute)}
+.key.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.key small{display:block;font-size:10px;opacity:.8}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:760px){.two{grid-template-columns:1fr}:root{--gx:18px;--pp:14px}}
+img.ref{display:block;max-width:100%;border-radius:6px;image-rendering:pixelated}
+.bars{display:flex;gap:18px;align-items:flex-end;height:150px;margin:6px 0 0}
+.bar{width:46px;height:120px;border:2px solid var(--ink-soft);border-top:none;border-radius:0 0 12px 12px;position:relative;overflow:hidden;background:var(--surface-2)}
+.bar i{position:absolute;left:0;right:0;bottom:0}
+.barl{text-align:center;font-family:var(--fm);font-size:12px;margin-top:4px}
+input[type=range]{width:100%}
+.sliders{display:grid;grid-template-columns:70px 1fr 40px;gap:4px 10px;align-items:center;font-size:14px;max-width:460px}
 </style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. Sections are a
-  floor, not a ceiling; drop the ones the game has no use for. Every
-  section should have something the reader can press. Copy follows
-  kit/style.md and is written last.
--->
 <!-- tabs -->
 <header class="hero">
-  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
-  <h1>{{title}}</h1>
-  <p class="sub">One sentence a human wrote about what is interesting inside this game.</p>
+  <p class="eyebrow">Commodore 64 · 1987 · Ocean</p>
+  <h1>Wizball</h1>
+  <p class="sub">Sensible Software's shooter, read from its code: how a ball you can only spin gets anywhere, and why the game crashes itself when its clock stops.</p>
 </header>
 <main class="wrap">
-<section>
+
+<section id="frame">
   <p class="fig">01 · One frame, rebuilt from memory</p>
-  <h2 class="t">The play screen, drawn from the snapshot</h2>
-  <p class="lede">Render screen memory, colour memory and the character set with your own code. Toggle overlays here.</p>
-  <div class="plate"><canvas id="screenCv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
+  <h2 class="t">Twelve raster bands a frame</h2>
+  <p class="lede">The play screen is several screens stacked. A raster interrupt at <code>$7C73</code> runs twelve short routines on the way down every frame, and each one points the video chip at a different screen, character set or group of sprites.</p>
+  <div class="plate">
+    <canvas id="frameCv" width="384" height="272" style="width:100%;max-width:768px;background:#000"></canvas>
+    <div class="row" id="bandBtns"></div>
+    <div class="row"><button class="btn" id="sprBtn" aria-pressed="true">Sprites</button></div>
+    <p class="cap" id="bandCap"><b>Choose a band</b> to light the lines it controls.</p>
+    <p class="cap">Drawn by this page from a snapshot of level 1 in play: the screen at <code>$E000</code> and colour memory, the character sets at <code>$F000</code> and <code>$F800</code>, the sprites, and the video chip's registers and sprite pointers as each band left them, read at every interrupt of one frame. It matches the emulator's picture of the same frame in all but 13 of its 104,448 pixels. Twelve of those are stars, which twinkle between the frame shown and the moment memory was read; the thirteenth, on line 239, is not explained.</p>
+  </div>
+  <p>The list of bands lives in memory as data (<code>$B3E2</code> in play): a first raster line, then four bytes a band, the routine's address and the line of the next interrupt. The interrupt writes each routine's address into the operand of its own <code>JSR</code> at <code>$7C9D</code> and calls it. Other screens install other lists through <code>$7CB4</code>: the title, the player menu, name entry, "get ready!" and the three Wiztips pages each have their own.</p>
+  <p>The icon bar at the top and the cauldrons at the bottom sit in the border, where a C64 normally shows nothing. At line 247 the band <code>$8BBB</code> switches the screen to 24 rows: after the line where a 24-row screen starts its bottom border, and before the line where a 25-row screen does, so the border never switches on. The band at line 65 puts 25 rows back. Sprites show in the open border, and that is what the icons and cauldrons are.</p>
+  <p>Sprite 0 appears three times in one frame. From line 48 it is the beam's upper arc, at two lines above the Wizball it becomes the Wizball, and 20 lines further down it becomes the beam's lower arc. The band <code>$8A52</code> writes those two raster lines into the list every frame (<code>$B3F6</code>, <code>$B3FA</code>), so the bands follow the ball up and down.</p>
 </section>
-<section>
-  <p class="fig">02 · The player and the enemies</p>
-  <h2 class="t">What they are drawn with, how they move</h2>
+
+<section id="ball">
+  <p class="fig">02 · The Wizball</p>
+  <h2 class="t">A ball that changes speed only when it bounces</h2>
+  <p class="lede">The joystick does not move the Wizball. Left and right change its spin, and the spin becomes rolling speed only at the moment the ball touches the ground. Thrust, the first icon, makes the spin drive the speed on every frame.</p>
+  <div class="plate">
+    <canvas id="ballCv" width="320" height="176" style="width:100%;max-width:640px;background:#000;border-radius:6px"></canvas>
+    <div class="row">
+      <button class="btn" id="ballL">◀ Left</button><button class="btn" id="ballR">Right ▶</button>
+      <button class="btn" id="ballT" aria-pressed="false">Thrust</button><button class="btn" id="ballReset">Start again</button>
+    </div>
+    <div class="readout" id="ballOut"></div>
+    <p class="cap">Hold a button, or the arrow keys once the picture has been clicked. A port of <code>bounce_wizball</code> (<code>$7F62</code>), <code>read_spin_control</code> (<code>$80F8</code>) and <code>spin_to_roll_speed</code> (<code>$818E</code>), drawn with the game's 16 rotation sprites. It was checked against the game in the emulator: over 370 passes of the frame loop, with the stick moved left and right, spin, rotation, speed, height and vertical speed agree on every pass. With thrust they agree for 56 passes, until the real ball hits a wall, which the port leaves out.</p>
+  </div>
+  <p>Each frame the stick adds or takes 6 from the spin (<code>$B21C</code>), up to 48 either way, and the spin turns the ball through its 16 rotation frames. When the ball lands, <code>$818E</code> turns the spin into one of 13 speeds: below 4 the ball stops rolling, and each further 8 of spin moves it up one step.</p>
+  <table class="d" id="speedTable"></table>
+  <p>Gravity adds 1/16 of a pixel a frame to the falling speed (<code>$B27C</code>), and the bounce at line 200 sends the ball up at the speed it came down at, so it bounces for ever at the same height: in the emulator, once every 128 frames, rising 126 lines. With anti-grav, the second option of the first icon, <code>$8BEA</code> replaces all this: the stick moves the ball up and down directly and it stops bouncing. Only with both thrust and anti-grav does a spin die away when the stick is let go.</p>
 </section>
-<section>
+
+<section id="controls">
   <p class="fig">03 · Controls</p>
-  <h2 class="t">What the game reads</h2>
+  <h2 class="t">Nine keys in play, and a joystick chosen by its fire button</h2>
+  <p class="lede">The game scans the keyboard itself, twice over: all 64 keys on the title and menu screens, and only nine during play.</p>
+  <div class="plate">
+    <div class="row" style="margin:0 0 12px"><button class="btn" id="kFull" aria-pressed="false">Title scan <code>$73D4</code></button><button class="btn" id="kPlay" aria-pressed="true">Play scan <code>$7429</code></button></div>
+    <div class="keys" id="keys"></div>
+    <p class="cap">The keyboard matrix: rows are the lines the game drives low through <span class="mono">$DC00</span>, columns the lines it reads back through <span class="mono">$DC01</span>. The small number is the code the scan gives a key. In play only rows 7-5 and columns 7-5 are read.</p>
+  </div>
+  <p>The play scan's nine keys are RUN/STOP (pause), Q (quit, while paused), C=, /, up-arrow and = (firing volume), comma, @ and colon. They sit in columns 7 to 5 of the matrix, the three lines a joystick in port 1 cannot pull low, so the port-1 stick can never be read as a key.</p>
+  <p>Neither port belongs to a player. On the "get ready!" screen before every life, <code>$6965</code> notes which port the fire button was pressed on, and that stick drives the Wiz until the life ends (<code>$B240</code>); the other stick drives the cat. In a one-player game with the catelite, holding fire for ten frames hands the stick to the cat while the Wiz fires by itself.</p>
 </section>
-<section>
-  <p class="fig">04 · Levels and data</p>
-  <h2 class="t">Where the level lives</h2>
+
+<section id="map">
+  <p class="fig">04 · Landscapes</p>
+  <h2 class="t">Eight landscapes in one map</h2>
+  <p class="lede">All eight levels are one map of 16 rows by 96 tiles at <code>$0532</code>. Four rows make a landscape's height, and each band of four rows holds two landscapes side by side.</p>
+  <div class="plate">
+    <canvas id="mapCv" width="576" height="96" style="width:100%;max-width:864px"></canvas>
+    <div class="row" id="lvlBtns"></div>
+    <div class="row"><button class="btn" id="colBtn" aria-pressed="false">Colour it in</button></div>
+    <div class="scroller" style="margin-top:12px"><canvas id="landCv"></canvas></div>
+    <p class="cap" id="landCap"></p>
+    <p class="note" id="landMsg"></p>
+    <p class="cap">Each tile is 5 × 5 characters from the table at <code>$2642</code>, and each level brings its own 95 glyphs, copied to <code>$FD00</code> by <code>$77C6</code> from the block the table <code>$B31C</code> names. Drawn from the game's bytes; the sky's stars are plotted by the game while it runs and are left out here. Checked against the game: for two stopped frames of level 1, every one of the 445 scenery characters on screen is the character this drawing puts there.</p>
+  </div>
+  <p>The top strip is the whole map, one square a tile, with each level's landscape outlined. Columns 0-44 of a band are one landscape and columns 45-89 another; each opens and closes with the same two tiles. Columns 92-95 hold halves of two pictures, the Wiz-lab and the one shown after the last level: the drawing code (<code>$75DF</code>) jumps four rows down and four columns back after four tiles, so two half-pictures in different bands make one screen.</p>
+  <p>The view scrolls across one landscape at up to 2 pixels a frame. The game keeps three copies of the landscape screen at <code>$E000</code>, <code>$E400</code> and <code>$E800</code>: the one on show and two made ready one column to the left and right, a quarter of each rebuilt every frame (<code>$77F7</code>). A coarse step of the scroll is a switch of screen, not a copy.</p>
 </section>
-<section>
-  <p class="fig">05 · Enemy movement</p>
-  <h2 class="t">The decision rule</h2>
+
+<section id="colour">
+  <p class="fig">05 · Colour</p>
+  <h2 class="t">Three cauldrons, and a fourth that keeps score</h2>
+  <p class="lede">A level is finished when three colours have been made. Each colour has a recipe of red, green and blue units, and the fourth cauldron at the bottom right shows how much of the recipe the three cauldrons hold.</p>
+  <div class="plate">
+    <div class="row" id="mixLvl" style="margin:0 0 10px"></div>
+    <div class="row" id="mixTarget" style="margin:0 0 14px"></div>
+    <div class="two">
+      <div class="sliders" id="mixSliders"></div>
+      <div><div class="bars" id="mixBars"></div></div>
+    </div>
+    <p class="cap" id="mixCap"></p>
+    <p class="cap">A port of the mix at <code>$9E2C</code>: for each of red, green and blue, the smaller of the cauldron and the recipe (<code>$B2C0</code>, three bytes for each of the C64's 16 colours), added up into <code>$B12E</code>. Checked against the game's own code run in a 6502 simulator on 6,400 random cauldron states across the 16 colours: they agree on every one.</p>
+  </div>
+  <p>The colour sphere's droplets come in the level's own colour: red on levels 1, 4 and 7, green on 2, 5 and 8, blue on 3 and 6 (<code>$B18B</code>). Only the cat can catch them. More units than the recipe needs are wasted, so filling red to 20 on a purple level gives half the mix.</p>
+  <p>The game does not compare the mix with 20. <code>$9E81</code> draws the fourth cauldron's sprite a row a frame, and <code>$9E26</code> copies one byte of its top row into <code>$B874</code>. When that row is drawn full the byte is <code>$AA</code>, and the frame loop leaves for "colour completed". In the emulator, with the red cauldron set to 20 on level 1, that took 22 frames.</p>
+  <p>Light blue's recipe is the same as purple's, 10 red and 10 blue (<code>$B2C0</code> + 3 × 14).</p>
+  <img class="ref" src="reference/colour-completed.png" alt="Colour completed: the text over the bonus stage's first wave" style="max-width:384px">
+  <p class="cap">Level 1's first colour done: "colour completed" over the bonus stage's first formation, the red cauldron full.</p>
 </section>
-<section>
-  <p class="fig">06 · Progression</p>
-  <h2 class="t">What gets harder, and by how much</h2>
+
+<section id="aliens">
+  <p class="fig">06 · The aliens</p>
+  <h2 class="t">Eighteen kinds of alien, all worth 50</h2>
+  <p class="lede">Aliens come from two tables of templates: 18 for the landscapes at <code>$3ECF</code> and 20 for the bonus stage at <code>$39DC</code>. Six at most are on screen, one in each of six 42-byte slots at <code>$0200</code>.</p>
+  <div class="plate">
+    <div class="row" style="margin:0 0 12px"><button class="btn" id="aLand" aria-pressed="true">Landscape</button><button class="btn" id="aBonus" aria-pressed="false">Bonus stage</button></div>
+    <div class="grid-cards" id="alienCards"></div>
+    <p class="note" id="aliensMsg"></p>
+    <p class="cap">Each template's frames, drawn from the sprite data at <code>$C000</code>-<code>$DFFF</code> and animated as its frame list says; the points are byte 22 of the template times ten. These are the templates as loaded: for every list it builds, the game rewrites the landscape ones in place, setting each type's shot interval from the level's entry in <code>$A12A</code>, the colour spheres' shots by level (<code>$A027</code>), and sometimes turning a faller into a riser (<code>$A070</code>). The spheres take their colour from the level, drawn here in red.</p>
+  </div>
+  <p><code>$9DA1</code> copies 23 bytes of a template into a slot and then applies its random fields, each a mask, an offset and the byte to change, so two aliens of one kind start in different places. A landscape's aliens come from a list of (column, type) pairs made for it when it opens (<code>$9F9B</code>): groups of 4, 6 or 12 of one type, spawned as the view uncovers their column. Only the highest level open and the two below it get lists. Clearing a list pays 1,000 points and makes a new one.</p>
+  <p>Every landscape alien is worth 50 points, where the manual says 10 to 500. The ninth alien killed since the last pearl leaves a pearl, and every molecule does (<code>$A9AA</code> = 9; colour spheres do not count). The reviews say eighth.</p>
+  <p>Kill nothing for long enough and the police come: after <code>$A1B9</code>[level] seconds without a kill a police ship flies in, with a warning tune a second earlier. In the emulator, on level 1, the tune started at frame 2,200 and the ship at 2,250.</p>
 </section>
-<section>
-  <p class="fig">07 · The sound</p>
-  <h2 class="t">Every tune, from the stored bytes</h2>
+
+<section id="levels">
+  <p class="fig">07 · Difficulty</p>
+  <h2 class="t">What changes from level to level</h2>
+  <p class="lede">Four tables set a level's difficulty. Level access is a fifth rule: a level opens only when every level three below it and lower is done.</p>
+  <div class="plate"><table class="d" id="diffTable"></table>
+  <p class="cap">From <code>$A12A</code> (frames between an alien's shots), <code>$A1B9</code> (seconds without a kill before the police), <code>$A027</code> (whether colour spheres shoot) and <code>$B1D1</code> (the three colours, in the order they replace the greys).</p></div>
+  <p>The highest level open is <code>$B1CE</code> = 2 + the number of levels done, counted from level 1 with no gap (<code>$A9C6</code>). The manual says level five opens when level two is done; in the code it also needs level one. Tubes lead up only as far as <code>$B1CE</code>. After all eight levels the game starts again from level 1 with every alien firing every 10 frames.</p>
 </section>
-<section>
-  <p class="fig">08 · Secrets, quirks and bugs</p>
+
+<section id="sound">
+  <p class="fig">08 · The sound</p>
+  <h2 class="t">Martin Galway's tunes, from the stored bytes</h2>
+  <p class="lede">Nine tunes and 26 sound effects share the SID's three voices. A music mode (<code>$B8F1</code>) says which voices the music has: none, voice 3 only, or all three; the effects get the rest.</p>
+  <div class="plate"><div id="music"></div>
+  <p class="cap" id="musicCap"></p></div>
+  <p>The driver (<code>$4553</code>-<code>$5524</code>) keeps each voice's track as a list of notes and commands with a call-and-repeat stack five levels deep. Each voice has a 29-byte instrument (voice 1 at <code>$87</code>, voice 2 at <code>$4680</code>, voice 3 at <code>$A4</code>): four pitch steps or an arpeggio, a two-step pulse sweep, gate and release times. The notes come from a table tuned for PAL at <code>$471A</code>. A command can call machine code stored among the tune data, which the tunes use to set up the filter.</p>
+  <p>The band <code>$B90C</code> runs the sound once a frame in every display list, and three more bands (<code>$B903</code>, <code>$B8FC</code>, <code>$B8F3</code>) run the music again when its speed says two or four ticks a frame.</p>
+</section>
+
+<section id="secrets">
+  <p class="fig">09 · Secrets, quirks and bugs</p>
   <h2 class="t">Things the manual never told you</h2>
+
+  <h3>Secret: stop the game's clock and it crashes</h3>
+  <p>The initialisation sets CIA 2's timer A to <code>$4CC7</code>, 19,656 cycles, exactly one PAL frame, and makes it the NMI. The NMI handler (<code>$7C61</code>) only clears <code>$85</code>. Late in each frame the band <code>$8BBB</code> stores a non-zero value there, and early in the next the band <code>$8A52</code> ends with a check (<code>$8B04</code>): if <code>$85</code> is not back to 0, the NMI has not come, and the check pulls a byte off the stack so that the band's return goes astray. Anything that stops the timer or its interrupt sets it off.</p>
+  <div class="plate"><table class="d">
+    <tr><th>Address</th><th>Bytes</th><th>Instruction</th><th>What it does</th></tr>
+    <tr><td><code>$8B04</code></td><td class="mono">A7 86</td><td class="mono">LAX $86</td><td>A and X = <code>$FF</code>, set once by the initialisation</td></tr>
+    <tr><td><code>$8B06</code></td><td class="mono">DF 86 FF</td><td class="mono">DCP $FF86,X</td><td><span class="mono">$FF86</span> + <span class="mono">$FF</span> wraps round to <code>$0085</code>: decrement it and compare with <span class="mono">$FF</span></td></tr>
+    <tr><td><code>$8B09</code></td><td class="mono">F0 03</td><td class="mono">BEQ $8B0E</td><td>it was 0: the NMI came, return normally</td></tr>
+    <tr><td><code>$8B0B</code></td><td class="mono">68</td><td class="mono">PLA</td><td>otherwise lose a byte of the return address</td></tr>
+  </table><p class="cap">Both instructions that touch <code>$85</code> are undocumented opcodes, and the address wraps round the top of memory, so a search of the code for <code>$85</code> finds only the writes. In the emulator, with CIA 2's interrupts switched off, the check failed on the next frame and the processor ran into screen memory and stopped on a <span class="mono">JAM</span> opcode at <span class="mono">$EA7D</span>, in the landscape screen.</p></div>
+  <p>The title screen has its own version, with an <span class="mono">INC $FFB0,X</span> that also wraps round to <code>$85</code>, and a failure path (<code>$9292</code>) that increments a random byte of memory first. One more disguised decrement, at <code>$B589</code>, is <code>LXA #$FF</code> followed by <code>DCP $FF97,X</code>. <code>LXA</code> is an undocumented opcode whose result depends on a constant that varies between 6510 chips; only with the constant <code>$EE</code> does X come out as <code>$EE</code> and the address wrap to <code>$0085</code>. The VICE emulator fixes the constant at <code>$EE</code> with the source comment "needs to be 0xee for wizball". The start-up hides as well: the initialisation reaches CIA 2 only through indexed addresses (<span class="mono">STA $DC8E,X</span> with X = <span class="mono">$7F</span> is <span class="mono">$DD0D</span>) and then overwrites itself with random bytes. The menu and "get ready!" screens compare the hardware vectors with their stored copy every frame (<code>$90F8</code>), flickering the screen if they differ.</p>
+
+  <h3>Bug: level 5 draws a tile that does not exist</h3>
+  <p>The tile table has 192 entries, but one byte of the map, at <code>$092B</code>, holds tile number <code>$F8</code> (248). The drawing code does not check, and reads the tile's 25 characters from <code>$2642</code> + 25 × 248 = <code>$3E7A</code>, the middle of two sound-effect records. Most of those bytes are small numbers, which draw as sky, but two are <code>$FF</code>, and glyph <code>$FF</code> of the play character set is the last eight bytes of memory: two unused bytes and the NMI, reset and IRQ vectors. The result sits just to the right of level 5's first well.</p>
+  <div class="plate"><div class="two"><div><img class="ref" src="reference/level5-stray-tile-zoom.png" alt="The stray tile beside level 5's first well, enlarged"></div><div><canvas id="tileCv" width="200" height="200" style="width:200px;height:200px;background:#000;border-radius:6px"></canvas><div id="tileBytes" class="mono" style="margin-top:8px"></div></div></div>
+  <p class="cap">Left: the emulator's screen on level 5, enlarged. Right: the tile's 5 × 5 bytes from <code>$3E7A</code>, drawn with level 5's character set; a 0 is sky, and the star glyphs <code>$01</code>-<code>$5A</code> show whatever stars the game has plotted into them. Remember's 1997 crack lists "matrix in level 5" among the bugs it fixed, and changes exactly this byte to <code>$00</code>.</p></div>
+
+  <h3>Bug: a shield survives quitting the game</h3>
+  <p>The shield timer (<code>$7F06</code>, 40 units, one used every 50 frames) is cleared only when it runs out and in the Wiz-lab. Quitting with Q while paused does not touch it, and nor does starting a new game, so a shield that was running carries into the next game, while that game's icon bar offers the shield as unused. In the emulator: 38 units at the quit, 36 when the new game began, and a collision in the new game cost 8 units and no life. Remember's crack names this as its second fix.</p>
+
+  <h3>Secret: BOREWIZ, and starting on a later level</h3>
+  <p>On the title or the player menu, the band <code>$AF85</code> compares each key pressed with the letters B O R E W I Z (<code>$AFCE</code>, in the game's key numbering). After all seven the border turns brown and <code>$BB07</code> is set: collisions stop ending lives, except during "colour completed" and the bonus stage (<code>$7EF4</code>). Only the last seven keys count, which is why Remember's notes can give it as WIZBOREWIZ. The same band reads the keys 0 to 5: a new game starts on that level, as far as the first level the last game did not finish (<code>$AF7D</code>), with the skipped levels marked done and up to five of thrust, anti-grav, beam, catelite and spray given for free (<code>$B10D</code>). Wiztips calls it the continue game feature.</p>
+
+  <h3>The spray icon Remember's crack "fixed"</h3>
+  <p>Remember's third fix is "the wrong sprite on the spray icon". Every icon in the bar shows what taking it next would give: after thrust is taken the first icon shows anti-grav, after the beam the second shows double. The spray icon follows the same rule, and after the Wiz takes the spray it shows the cat spray, a cat's face with dots very like the catelite's icon. Remember's version of the handler (<code>$7325</code> here) swaps the two images, so its icon shows who holds the spray instead.</p>
+
+  <h3>A hang in the Wiz-lab that no player can reach</h3>
+  <p>The lab keeps up to nine permanent weapons (<code>$B116</code>). When a tenth is taken, <code>$B0B0</code> frees the first two slots holding the spray and tries again; with fewer than two sprays among the nine it jumps to itself for ever (<code>$B0D2</code>). In the emulator, with nine other weapons put in the list by hand, choosing the spray froze the game there. A player never gets that far: thrust, anti-grav, beam, double, catelite and blazers each turn their icon to the used-up shape once taken, so at most six slots can hold anything but the spray.</p>
+
+  <h3>An earlier build left in memory</h3>
+  <p>The image carries pieces of an older version of the game. After the initialisation sits a second copy of its last part (<code>$ECB4</code>) with different addresses, never run. <code>$BB0D</code> holds an earlier draft of the third Wiztips page, spelling "permanent" correctly where the real page says "permenant". <code>$6EE4</code>, just after the quit code, would mark the current level's colours done and jump into the level-complete sequence, and the test in front of it for the Q key branches to the next instruction either way: a debugging key, disconnected. Tests for three more keys (<code>$9E5A</code>) branch nowhere too. And the name-entry buffer at <code>$BFF4</code> still holds "POO BAG", where a team's two sets of initials go; the game fills the buffer with spaces before every entry, so nobody sees it.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
 <script>
-// Inline everything. Data extracted from the snapshot goes here as arrays.
+/* Data taken from the game: a frame of level 1 in play, and small tables from the loaded image. */
+const WIZ_FRAME = {"about":"Wizball in play on level 1, one frame: bank 3 memory ($E000 screen rows, the $F000-$FFFF character sets, the sprite blocks shown), colour RAM, and the video registers and sprite pointers as each raster band left them, read at every raster interrupt of one frame with the emulator stopped.","regions":[{"a":57344,"b":"MTw9ICAgICAgICAgICAgICAgIDo7ICAgICAgICAgICAgICAgIDI8PTAwMDAwMAAxADA4AAAAAAAAMDUwMDAwAAAAAAAAAAAAAAAwMDAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg8QERIBAgMEBQYHCAkKCwwNDg8QERIBAgMEBQYHCAkKCwwNDg8QESAhIiMkExQVFhcYGRobHB0eHyAhIiMkExQVFhcYGRobHB0eHyAhIu0yMzQ1NiUmJygpKissLS4vMDEyMzQ1NiUmJygpKissLS4vMDEyMzT4REVGR0g3ODk6Ozw9Pj9AQUJDREVGR0g3ODk6Ozw9Pj9AQUJDREVGR1ZXWFlaSUpLTE1OT1BRUlNUVVZXWFlaSUpLTE1OT1BRUlNUVVZXWFkDBAUGBwgJCgsMDQ4PEBESAQIDBAUGBwgJCgsMDerr7BESAQIDBAUGFRYXGBkaGxwdHh8gISIjJBMUFRYXGBkaGxwdHu7v8PHyJBMUFRYXGCcoKSorLC0uLzAxMjM0NTYlJicoKSorLC0uLzAx9PX2NTYlJicoKSo5Ojs8PT4/QEFCQ0RFRkdINzg5Ojs8PT4/QEFCQ0RFRkdINzg5Ojs8S0xNTk9QUVJTVFVWV1hZWklKS0xNTk9QUVJTVFWxsrNZWklKS0xNTgwNDg8QERIBAgMEBQYHCAkKCwwNDg8QERIBAgMEraGuCAkKCwwNDg8eHyAhIiMkExQVFhcYGRobHB0eHyAhIiMkExQVFqunrBobHB0eHyAhMDEyMzQ1NiUmJygpKissLS4vMDEyMzQ1NiUmJyitp6wsLS4vMDEyM0JDREVGR0g3ODk6Ozw9Pj9AQUJDREVGR0g3ODk6raGuPj9AQUJDREVUVVZXWFlaSUpLTE1OT1BRUlNUVVZXWFlaSUpLTKunrFBRUlNUVVZXkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGmp6iRkZGRkZGRkZCPkJCPkI+QkI+Qj5CQj5CPkJCPkI+QkI+Qj5CSo6SlkpCPkI/SwMGSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSqaChoqqSktHT1OXmkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpLVr7CSkpLJ0NXY2ZWWl5OUlZaXk5SVlpeTlJWWl5OUlZaXk5SVlpeTlJWWl5OUlZaXl5OUlP//////////////////////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":61440,"b":"AAAAAAAAAAAAPm7Gxm46AB4wbMbGbDgAADxiwMBkOADwGGzGxmw4AAA8Zv7AZDgAPGJg+GBgYAAAeubOfoZ8AMDc5sbGzM4AHExgMDAwMAAADBwMDJhwAMjY8MzGzswAMDgYGBgYGAAA7P7WxszOAADc9ubGzM4AADhsxsZsOAAAuO7G7LjAAAA6bsZuOgYAALjsxuz4zgAAPGJwPIx4ABj+MDAwPBgAAOZmxsbOdgAA5mbGxsxwAADmZsbW/m4AAGa+OHD6zAAAZubOfoZ8AAA+TBgw4vwAPDAwMDAwPAAMEjB8MGL8ADwMDAwMDDwAABg8fhgYGBgAEDB/fzAQAAAAAAAAAAAADAwcGBggMABmZmYAAAAAAGZm/2b/ZmYAGD5gPAZ8GABiZgwYMGZGADxmPDhnZj8AAAAYAAAAAAAMGDAwMBgMADAYDAwMGDAAOHzW/tZsOAAAGBh+GBgAAAAAAAAAGBgwAAAAfgAAAAAAAAAAABgYAAADBgwYMGAA/sbGxsbG/gA4GBgYGBg8AP4GBv7AwP4A/gYGHgYG/gDGxsb+BgYGAP7AwP4GBv4A/sDA/sbG/gD+BgYGBgYGAP7Gxv7Gxv4A/sbG/gYG/gDGxsb+xsbGADwYGBgYGDwAxsbGxsbG/gD+xsb+wMDAAAAAAAAAAAAAVUAGDBgAGAD////+/f78+////zeHz88P/vX5+fH4+fn////PB2fn5//////++fn5////nw/H7//4/P7//vn5+f9/PxeHx+fn//////75+fn///+fD8ePP//+/P7++PT+Hw93f38vH3/////+/fPz8////38Tg8/P/vX5+fH4+fn////PB+fn5/P3/+/D5+fn/////////////////////+fv/9+Hz8/P/vX5+fD4+fn/988/fx8Px/vX5+fn5+fn///////////////EgMzOzv///88DY3Nz////+fD5+fn///+fB4/Pz//////++fn5////Pw/H5+f////78fj5+f///58Px+fn+/Px+Pz////Pz49H7/////n58Pz/////5+fHHz/////5+fD8///////3zx8/////+fnw/P/////n588fP/////j58Pz///////fPHz/////+/v7+/v7+/X9/f39/f7//8/Ph+P78+PPPz49HR+cPn/n5+fD9///85+fn5+/Pn3/n5+fD9///////////////////////9/jPz8/P358///n5+fD9///8x+fn5+/Pn3/n5+fD9///////////////zs7OhO////9zc3Mhe/////n5+fD9////z8/Ph+/////5+fD8/////+fnxx8/////+fnw+Pn59f/n5+cPn/////////788/Pz////fx+Hz8/////78Pn5+f///x8Px+///////Pjz8/D/5/fnD58/H//+/vj0/v7+f39/Lx9/f3/////78Pn5+f///9+Hz8/P+/fz8fn4+fn////PB+fn59+/n4zIxs7O////50Mzc3P////59Pz+/v///+fPnx8//////fD4/Pz////vh8fn5/////z49//+/////z8Hzx//////////////x8eHjx8/n07E4+Pj8PO9MSEYGBiEnPzw7v////j2zhkTMzMzMzP44M/f/v378D4BgWPHz48NxKG5+fLy8sLDATE5eVtTV/jg58zI2t7cPAkDgyMjY+Pz8+H4/v///8/Pjw9Py8fP+fn58Pz///////+/f/////z+/Pjz////B2fnD5/////+/v78/////39/dw8f////+fn5+Pz////Pz49H7/////n58Pz/////5+fPHz/////Ozobg+f///3NzMwPP/////vz8+fP///8/P5+Xz/////z8/Pz4+fP4x8+fP///n3/4//////759z8Pz8+fP////v79///n5/9//////////9OC4/Pn5MjenJQYnDkhQ/f//////vDk3xkZGRk58SMP7P78+fPgwN8Dd+/fvnwBB6LywuLx4ObfSVxA3MBQA4/d6PDz4+HM3+MDA+PjwiFz//////////D/////////D9Xq9f/+/v7+ValR8XFxcTHV6vX/+P//+FWpUfER0dER1er1//j///5VqVHxMTExMdXq9f/5+fn5ValR8TExMTHV6vX/+Pn4+FWpUfER8fER1er1//j5+PhVqVHxEfHxEdXq9f/4////ValR8RGRkZHV6vX/+Pn5+FWpUfExMTEx1er1//j5+PhVqVHxEZGRkfHg3vz8/PDoI09Pn5+fn5////////////////////////////////////////////////////////////////////////////////////////////////////////////D/////////D//////////+/v7+//Xq1TExMTHxUalV+fj4+P/16tXx8fER8VGpVf////j/9erVEREREfFRqVX4//////Xq1RExERHxUalV////+P/16tWRERER8VGpVfn4+Pj/9erVkZGREfFRqVX///////Xq1RERERHxUalV+fn5+P/16tURERER8VGpVfj///j/9erVEZEREfFRqVX88Pj8+fjx55+fn78fAsHz////4+Pz8+f/////////////////////////////////////////////////////////////////////////////////////oLm6ALu8Rf8AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODg4AAAAAAAeHh4AAAAAAAeHh4AAAAAAAcHBwAAAAAAAODg4OAAAAAAeHh4eAAAAAAeHh4eAAAAAAcHBwcAAAAAAADg4ODgAAAAAHh4eHgAAAAAHh4eHgAAAAAHBwcHAAAAAAAA4ODgAAAAAAB4eHgAAAAAAB4eHgAAAAAABwcHQAAAAAAAPDwAAAAAAAAPDwAAAAAAAAMDAAAAAAAAwMDw8AAAAAAAADw8AAAAAAAADw8AAAAAAAADAwAAAAAAAMDAAAAAAABVQP////////88PDw8PDw8PDw8PDw8PDw8BA4fPnz4cCAgcPh8Ph8OBDz/PAAAAAAAAAA8/zwAAAAAAAAAADz/PP+q/wAAAAAAAAD/qv8AAAAAAAAAAP+q//////////9VAARAEQQBEABAEUQBRBFEEFEVUVQVBVEVVVVZVVUVVVVlVlWaZlVlVpVmWmaZlalmqpqpZppqpqqqqqqmqmqqqlVFVlVZVmmamWmaploVVlmqZlpmRVVRFVVVlVVVUVVVVVGVVWWVaaaqmaWZUVVFVGZpppqlVJWlqaqaqqqqqqqpqpqqqqmqqlVVVmWZZqmaqqqqqqqqqqqmqmqZVlURQKqqmmmWRRRBqqlqpplFVBGaqWqmlVVEAWqqplqVRVEQKCy5saWBJBQAAgorLyuuuwCAoNgE0hFFu7yrLSgJAQCBEQVEFFBAABRAAAAAAAAANXA1BQ0ODgFADAAx7PDERPv7uv67u777uPDQ8fjw0LBBQQARERAQRL6u/u76/r76sPzw0PD08dRFRVERUUUERfp6/vq6/ur68ODw9PHgsPRBAUFFQUFBRqurq6uvr7/+aipqahoaBkW+7j66ur7uvgFBQEEBREFBvru67r7+LjpFQUFREUBBQfHQ8Pyw8qqqFAYSASqqqqoAACiqrrq+/iSx0WWksfCwAABsqdGBkWEAAAACCwsrLwAAqr/+uu24AAAAgOBQNEQvvr+7+76vLvfZnOWY5eSQBAVBEQUFQQQuJwsIAQAAAIgQQSBFVQAABBQQUEAAAACqqqqqqqpfB6rq/n8X3PAUAAAAAAAAAACqq7zw8L/77qv/dQAAAM///l8lAAAAP/36f1cJAAM/96rq/n8X3PAUAAM/8PB/1+0P/AAAAAD8X/B/GgIAAD/1AMD8r2/91UWrrqqqqqqqqgBAKoqqqqqqAABBFAqqqqqqqqqqqqpaFqqqahoWAUQRFREEAEFAEBGqqqqqamoaRu6rv6qqqqqqqqqqqqqrr/6qqqqqq6uvvqurr767++++7rv7776+vvvr77/+qqqqqlaWVZWZlaVllaWlqWlZWmb66++vvqqqqvv7u++vu6qq9NT17PWZqqpEABARQIKqqgQBEAVBKKqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAr6+qqqqqqqq1urqqqqqqqrXU8Pjw0fHsUVFSqqqqqqoGKqqqqqqqqu//776//vr7u7u+vr76+/oFAUFEEBEERBAEAUFEQBAQADg0NDQ0NLUAAgsKLy8uvrjuv/v/uv7qAACAQOCQEIQAAAACAgIKKwAAFPRvFgEAr/+7D/CvahWl6KGYAP+qVRBEFEA/6qVQAABQfORQAACltaW19qa16oAuKC4MCwEAAAQRBMEQgVQEEAAQQEAAAAAAAEBAQJCkJQkCAgIAAABQYVBkoZGlYRRQQEBAAAAAoRQkJCQkJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGF8AABzfA=="},{"a":49152,"b":"////6qqp6qqp6r6p6v+p6//p6/3p6/3p7//Z7//Z719Z7VVZ7VVZ6dVp6dVp6VVp6lWp6pap6qqp6qqpVVVVFA=="},{"a":49216,"b":"////6qqp6qqp6qqp6qqp6qup6qpp6qm56qep6Aap6Mqp4wKp4wKp4AKp4AKp4AKp6Aqp6Aqp6qqp6qqpVVVVFA=="},{"a":49280,"b":"////6qqp6qqp6qqp6qqp6r6p6v+p6vqp6+vp6/4p64op64op60lp6lWp6tWp6pap6qqp6qqp6qqp6qqpVVVVHg=="},{"a":49472,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":49536,"b":"////6qqp6qqp6qqp6qqp6qqp+qqp9qqpxqqp5aqpwb+pxZWp5qr91qpV2qqp6qqp6qqp6qqp6qqp6qqpVVVVHg=="},{"a":49600,"b":"////6qqp6qrp6r/56pVZ6qpp6r6p6v2p6sGp6+lp6wBp68Fp6ump6tWp6pap66qp7/6p5Vap6aqp6qqpVVVVHg=="},{"a":49664,"b":"////6qqp6rap6rap+qqt3qq15r6Z6v2p6sGp6+lp6wBp68Fp6ump6tWp7pa59qqd2qql6rap6rap6qqpVVVVHg=="},{"a":49856,"b":"////6v+p61Xp6app6r6p6pap6r6p6v2p6sGp6+lp6wBp68Fp6ump6tWp6pap6r6p6pap66rp6f9p6lWpVVVVHg=="},{"a":50176,"b":"AAAAAP8AA/7AA2mADRTgDTTgDuvQPr6oO9foLUF4NAAcLUF0K9fUOr1UCpZQCqlQDpZQAqlAAlVAAJUAAAAAFQ=="},{"a":59392,"b":"A/4AA/4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AA//AA//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":60992,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="},{"a":61056,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="},{"a":61120,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="},{"a":61184,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="}],"colour":"tLS0tLS0vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vrS0tLS0tL6xvr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr65ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubmwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsA==","bands":[{"from":0,"vic":"RPyC+Kz4AADW+BT4AAAAACATAdEAN8gA3fnxADYA///w8Pv88//78vL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]},{"from":2,"vic":"RPyC+Kz4AADW+BT4AAAAACATFNEAN8gA3fnxADYA///w8Pv88//78vL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]},{"from":21,"vic":"WBp0GpAarBrIGuQaABoAAEATMNEAf8gAsfnxAP8A///w8Pv88/bx/v7+/v7+/v4=","ptrs":[7,11,2,6,8,1,0,0]},{"from":49,"vic":"rFAAAAAAAAAAAAAAAAAAAAATP9EAA8gAjfnxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":64,"vic":"rFAAAAAAAAAAAAAAAAAAAAATQdEAA8gAjfnxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":66,"vic":"rFAAAAAAAAAAAAAAAAAAAAAbZdEAA9cAj/nxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":102,"vic":"rGcAAAAAAAAAAAAAAAAAAAAbe9EAA9cAj/nxAAMA///w8Pv88/v99fD28PDw8PA=","ptrs":[16,0,73,0,0,0,0,0]},{"from":124,"vic":"rH4AAAAAAAAAAAAAAAAAAAAb5dEAA9cAj/nxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":230,"vic":"rH4AAAAAAAAAAAAAAAAAAAAb6NEAA9cAj/nxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":233,"vic":"AH4AAAAAAAAAAAAAAAAAAAAb7tEAA9cAj/nxAP8A///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":239,"vic":"RPyC+Kz4AADW+BT4AAAAACAb99EAN8gA3fnxADYA///w8Pv88//79PL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]},{"from":248,"vic":"RPyC+Kz4AADW+BT4AAAAACAT/9EAN8gA3fnxADYA///w8Pv88//79PL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]}]};
+const WIZ_TABLES = {"rotation":"AAAAAP8AA/7AA2mADRTgDTTgDuvQPr6oO9foLUF4NAAcLUF0K9fUOr1UCpZQCqlQDpZQAqlAAlVAAJUAAAAAFQAAAAD/AAP+wAPagA9OoA9GYA+5ED/5ODVfpDwB6DtB1DtANCr1XDpf8AqlUAmqUA5ZUAKpQAJVQACVAAAAABUAAAAA/wAD/sAD5oAPk6AN06ANfZA9HWg/RzQ7Qzg7QeQ6wdQq0NQ5dHQJnXAKZ9AOWVACpUACVUAAlQAAAAAVAAAAAP8AA/7AA3qAD3WgD1zQD1zgP05YO0dkOsM4OsM0KcOUOdHUKbHUCbXQCnXQCq3QAq3AAqdAAJUAAAAAFQAAAAD/AAP3wAP3gA+3oA/XkA7XYD7XODbDNDbD2DbDWDbDVCbDNDrXNArX0ArXUA63UAG3QAJ3QABdAAAAABUAAAAA/wAD+8ADrcAOreAOddANtdA5sdg50dQ5w1g6wzQqwzQ7R9QrTVQLXNALXNALd1ADdUAC1UAAlQAAAAAVAAAAAP8AA/rAA+6AD1qgD2vQDa1wPrR0OtDUPsHYO0HkK0M0O0c0LR3UDXVQDdNQD1NQAq1AAlVAAJUAAAAAFQAAAAD/AAP+wAPqgA9aoA2qkA+qoD6v+D71XDtAdDtB1D0B1DVfVD/1NAlZMApN0A5GUAK5QAJVQACVAAAAABUAAAAA/wAD/sAD6oAP1qAPqqAOqpA+vqg71+QtQXg0ABwtQXQr19Q6fVQKVdAJNNANNJAC50ACVUAAlQAAAAAVAAAAAP8AA/7AA+qAD+WgD6pgD6qQP/qoNV+kPAHoO0HUO0A0KfVcNN/0BOVQC1NQDpNQAq1AAlVAAJUAAAAAFQAAAAD/AAP6wAPugA/poA/pkA16YD0eqD8HpDtDaDtB1CTB1DTR1Ct0dAmdcA5HcApN0AK5QAJVQACVAAAAABUAAAAA/wAD/sADeoAPdqAPXZAPXWA/TWg7R2Q5w1g0w1Qkw1Q70dQpcdQJNdAJNdAK7dACrcACZ0AAlQAAAAAVAAAAAP8AA97AA92AD92gD9eQDddgNNdoNMNUN8NYNsNYOcNUJMNUNNdkC9dQCtdQDt1QAd1AAt1AAHUAAAAAFQAAAAD/AAP7wAPtwA9t4A010A010D7x2DnR1DTDWDTDZCvDVDtHVCtNlAtdkAtdUAt2UAN2QALZQACVAAAAABUAAAAA/wAD/sAD2oAPTuAPT3AOfXA9tHQ00dQ0wdg/QdQ7Q2Q7B1Q9HVQNdlAP2ZAOqlACpUADVUAAlQAAAAAVAAAAAP8AA/7AA+aAD5OgDVOQBO6gNO/4P/VcO0B0O0HUPQHUNV9kP/WUCVpQCqpQDqVQAqlAAlVAAJUAAAAAFQ==","recipes":[0,0,0,0,0,0,20,0,0,0,10,10,10,0,10,0,20,0,0,0,20,10,10,0,15,5,0,5,10,5,10,5,5,0,0,0,0,0,0,0,0,0,10,0,10,0,0,0],"levelColours":[2,4,3,0,9,8,7,0,6,14,3,0,9,5,7,0,2,8,3,0,6,14,7,0,2,4,7,0,9,10,3,0],"noKill":[45,40,25,20,20,20,15,10],"fireInterval":[70,65,50,40,37,35,33,30]};
+
+</script>
+<script>
+// Wizball play frame, drawn line by line from a snapshot: bank 3 memory ($C000-$FFFF), colour RAM,
+// and the video chip's registers as each raster band left them. Returns palette indices for a
+// 384 x 272 picture, VICE's visible PAL area (raster lines 16-287, sprite X -8 to 375).
+// Used by test.js (node) and pasted into the page.
+function renderWizballFrame(F, opts) {
+  const noSprites = !!(opts && opts.noSprites);
+  const W = 384, H = 272, LINE0 = 16, X0 = -8;
+  const px = new Uint8Array(W * H), fg = new Uint8Array(W);
+  const mem = F.mem, col = F.colour;                 // mem[0] is $C000
+  const bands = F.bands.slice().sort((a, b) => a.from - b.from);
+  const bandAt = (y) => { let s = bands[bands.length - 1]; for (const b of bands) if (b.from <= y) s = b; return s; };
+  const stateAt = (y) => bandAt(y).vic;
+  const spr = [0, 1, 2, 3, 4, 5, 6, 7].map(() => ({ on: false, row: 0, half: 0 }));
+  for (let y = 0; y < 312; y++) {
+    const v = stateAt(y);
+    // sprites whose Y matched on the previous line start now
+    const vp = stateAt(y - 1 < 0 ? 311 : y - 1);
+    for (let n = 0; n < 8; n++) {
+      const s = spr[n];
+      if (!s.on && (vp[0x15] >> n & 1) && vp[2 * n + 1] === ((y - 1) & 0xFF)) { s.on = true; s.row = 0; s.half = 0; }
+    }
+    if (y >= LINE0 && y < LINE0 + H) {
+      const out = (y - LINE0) * W;
+      const bg = v[0x21] & 15, border = v[0x20] & 15;
+      const csel = v[0x16] & 8, xs = v[0x16] & 7, mcm = v[0x16] & 16;
+      const winL = csel ? 24 : 31, winR = csel ? 343 : 334;
+      const scr = ((v[0x18] >> 4) & 15) * 0x400, chr = (v[0x18] & 0x0E) * 0x400;
+      fg.fill(0);
+      for (let x = 0; x < W; x++) px[out + x] = bg;
+      // characters, in the 25 rows of the display window (Y scroll 3: rows start at line 51)
+      if (y >= 51 && y <= 250) {
+        const r = (y - 51) >> 3, pr = (y - 51) & 7;
+        for (let c = 0; c < 40; c++) {
+          const code = mem[scr + r * 40 + c], cc = col[r * 40 + c] & 15, bits = mem[chr + code * 8 + pr];
+          const base = 24 + 8 * c + xs - X0;
+          if (mcm && (cc & 8)) {
+            for (let p = 0; p < 4; p++) {
+              const q = (bits >> (6 - 2 * p)) & 3;
+              const colr = q === 0 ? bg : q === 1 ? v[0x22] & 15 : q === 2 ? v[0x23] & 15 : cc & 7;
+              for (let k = 0; k < 2; k++) {
+                const x = base + 2 * p + k;
+                if (x >= 0 && x < W) { px[out + x] = colr; fg[x] = q >= 2 ? 1 : 0; }
+              }
+            }
+          } else {
+            for (let p = 0; p < 8; p++) {
+              const x = base + p;
+              if (x >= 0 && x < W && (bits & (0x80 >> p))) { px[out + x] = mcm ? cc & 7 : cc; fg[x] = 1; }
+            }
+          }
+        }
+      }
+      // sprites, 7 first so that 0 ends on top
+      for (let n = 7; n >= 0; n--) {
+        const s = spr[n];
+        if (noSprites || !s.on || !(v[0x15] >> n & 1)) continue;
+        const ptrs = bandAt(y).ptrs, ptr = ptrs ? ptrs[n] : mem[scr + 0x3F8 + n], d = ptr * 64 + s.row * 3;
+        const X = v[2 * n] | ((v[0x10] >> n & 1) << 8), mc = v[0x1C] >> n & 1, ex = (v[0x1D] >> n & 1) + 1;
+        const behind = v[0x1B] >> n & 1, own = v[0x27 + n] & 15;
+        for (let b = 0; b < 24; b++) {
+          const byte = mem[d + (b >> 3)];
+          let colr = -1;
+          if (mc) {
+            const q = (byte >> (6 - 2 * ((b & 7) >> 1))) & 3;
+            if (q) colr = q === 1 ? v[0x25] & 15 : q === 2 ? own : v[0x26] & 15;
+          } else if (byte & (0x80 >> (b & 7))) colr = own;
+          if (colr < 0) continue;
+          for (let k = 0; k < ex; k++) {
+            const x = X + b * ex + k - X0;
+            if (x < 0 || x >= W || (behind && fg[x])) continue;
+            px[out + x] = colr;
+          }
+        }
+      }
+      // the side borders are never opened
+      for (let x = 0; x < W; x++) { const X = x + X0; if (X < winL || X > winR) px[out + x] = border; }
+    }
+    // advance the sprites that were shown on this line
+    for (let n = 0; n < 8; n++) {
+      const s = spr[n];
+      if (!s.on) continue;
+      const ey = v[0x17] >> n & 1;
+      if (ey && !s.half) { s.half = 1; continue; }
+      s.half = 0; s.row++;
+      if (s.row >= 21) s.on = false;
+    }
+  }
+  return { w: W, h: H, px };
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { renderWizballFrame };
+
+</script>
+<script>
+// The Wizball's movement without anti-grav, one pass of the frame loop: bounce_wizball $7F62 (gravity
+// and the bounce at line $C8), read_spin_control $80F8 (spin and rotation), the Y limits of
+// place_wizball_sprite $8097, and spin_to_roll_speed $818E (at a bounce, or every pass with thrust).
+// s: { spin, angHi, angLo, speed, yHi, yLo, vsHi, vsLo, dir, thrust, antigrav }, bytes as the game keeps them.
+// stick: the joystick byte $B23F (0 bits pressed: 4 left, 8 right).
+function wizballPass(s, stick) {
+  const speedFromSpin = () => {
+    const sp = s.spin;
+    if (!(sp & 0x80)) { const a = sp - 4; s.speed = a < 0 ? 0 : ((a >> 3) + 1); }
+    else { const a = ((0 - sp) & 0xFF) - 4; s.speed = a < 0 ? 0 : ((0 - ((a >> 3) + 1)) & 0xFF); }
+  };
+  // $7F62: vertical motion, gravity $10
+  if (s.dir) {
+    let lo = s.yLo + s.vsLo; if (lo > 255) { lo &= 255; s.yHi = (s.yHi + 1) & 255; } s.yLo = lo;
+    s.yHi = (s.yHi + s.vsHi) & 255;
+    if (s.yHi >= 0xC8) { s.dir = 0; speedFromSpin(); }
+    else { let v = s.vsLo + 0x10; if (v > 255) { v &= 255; s.vsHi = (s.vsHi + 1) & 255; } s.vsLo = v; }
+  } else {
+    let lo = s.yLo - s.vsLo; if (lo < 0) { lo &= 255; s.yHi = (s.yHi - 1) & 255; } s.yLo = lo;
+    s.yHi = (s.yHi - s.vsHi) & 255;
+    if (!(s.vsHi | s.vsLo)) s.dir = 1;
+    else {
+      let v = s.vsLo - 0x10;
+      if (v < 0) { v &= 255; s.vsHi = (s.vsHi - 1) & 255; if (s.vsHi & 0x80) { s.vsHi = 0; v = 0; } }
+      s.vsLo = v;
+    }
+  }
+  // $80F8: the stick turns the spin; with thrust and anti-grav both, a released stick lets it die away
+  if ((stick & 0x0C) === 0x0C) {
+    if ((s.thrust & s.antigrav) && s.spin) { const old = s.spin; s.spin = (s.spin + ((old & 0x80) ? 1 : -1)) & 255; }
+  } else {
+    if (!(stick & 4) && s.spin !== 0xD0) { let a = (s.spin - 6) & 255; if (((a - 0xD0) & 255) & 0x80) a = 0xD0; s.spin = a; }
+    if (!(stick & 8) && s.spin !== 0x30) { let a = (s.spin + 6) & 255; if (!(((a - 0x30) & 255) & 0x80)) a = 0x30; s.spin = a; }
+  }
+  for (let k = 0; k < 2; k++) {                       // the angle turns by the spin twice a pass
+    const lo = s.angLo + s.spin;
+    if (!(s.spin & 0x80)) { if (lo > 255) s.angHi++; } else if (lo <= 255) s.angHi--;
+    s.angLo = lo & 255;
+  }
+  s.angHi &= 15;
+  // $8097: the limits
+  if (s.yHi < 0x49) s.yHi = 0x49;
+  if (s.yHi >= 0xC8) s.yHi = 0xC8;
+  // $7E4C: with thrust the speed follows the spin every pass
+  if (s.thrust) speedFromSpin();
+  return s;
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { wizballPass };
+
+</script>
+<script>
+// A landscape's characters, drawn from the map the way fetch_left_column $78CF does: four tile rows of
+// the level's band, each tile 5 x 5 characters from $2642 + 25 x tile. ram is the game image.
+// Levels 0-7 are the eight landscapes (45 tiles from column 0 or 45 of their band, from $B2F0);
+// 8 is the Wiz-lab and 9 the finale, two 4-tile halves side by side (the $75DF jump).
+function wizLandscape(ram, level) {
+  const MAP = 0x0532, TILES = 0x2642;
+  const parts = [];
+  if (level < 8) {
+    const rec = 0xB2F0 + 4 * level, row = ram[rec + 1], first = ram[rec] === 0xFF ? 0 : 45;
+    parts.push({ row, col: first, n: 45 });
+  } else if (level === 8) parts.push({ row: 8, col: 92, n: 4 }, { row: 12, col: 92, n: 4 });
+  else parts.push({ row: 0, col: 92, n: 4 }, { row: 4, col: 92, n: 4 });
+  const tilesW = parts.reduce((s, p) => s + p.n, 0), w = tilesW * 5, h = 20;
+  const codes = new Uint8Array(w * h), tiles = new Int16Array(tilesW * 4);
+  let tx = 0;
+  for (const p of parts) for (let i = 0; i < p.n; i++, tx++) for (let r = 0; r < 4; r++) {
+    const t = ram[MAP + 96 * (p.row + r) + p.col + i];
+    tiles[r * tilesW + tx] = t;
+    for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++)
+      codes[(r * 5 + y) * w + tx * 5 + x] = ram[(TILES + 25 * t + 5 * y + x) & 0xFFFF];
+  }
+  const block = ram[0xB31C + 2 * level] | ram[0xB31D + 2 * level] << 8;   // the level's glyphs, copied to $FD00
+  return { w, h, codes, tiles, tilesW, parts, block };
+}
+// The play character set $F800-$FFFF for a level: the loaded glyphs, the level's block at $FD00, and
+// glyph $FF, which is the six hardware-vector bytes the initialisation copies from $B62D.
+function wizCharset(ram, level) {
+  const cs = new Uint8Array(2048);
+  cs.set(ram.subarray(0xF800, 0xFD00), 0);
+  const L = wizLandscape(ram, level);
+  cs.set(ram.subarray(L.block, L.block + 760), 0x500);
+  cs[0x7F8] = 0; cs[0x7F9] = 0; cs.set(ram.subarray(0xB62D, 0xB633), 0x7FA);
+  return cs;
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { wizLandscape, wizCharset };
+
+</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* music.js: not built */
+</script>
+<script>
+(function () {
+  'use strict';
+  const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
+               '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown', 'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+  const RGB = PAL.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const $ = id => document.getElementById(id);
+  const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  const signed = b => b & 0x80 ? b - 256 : b;
+
+  /* ---------------------------------------------------------------- 01 the frame */
+  const F = { mem: new Uint8Array(0x4000), colour: b64(WIZ_FRAME.colour), bands: WIZ_FRAME.bands.map(b => ({ from: b.from, vic: Array.from(b64(b.vic)), ptrs: b.ptrs })) };
+  for (const r of WIZ_FRAME.regions) F.mem.set(b64(r.b), r.a - 0xC000);
+  const BANDS = [   // [interrupt line, routine, what it does, first and last line it governs (null: sound only)]
+    [1, '$B90C', 'Sound: the volume fade, the sound effects on the voices the music leaves free, and the music. It changes nothing on the screen.', null, null],
+    [20, '$89BB', 'The icon bar: seven sprites in the open top border, their shapes from $EFF8 (the screen at $EC00 is chosen only for its sprite pointers).', 21, 48],
+    [48, '$8A52', 'The score rows: rows 0-1 of the screen at $E000 in the small font at $F000. Loads every play sprite from the copy of the video registers at $E7C4, and sprite 0 becomes the beam\'s upper arc. Ends with the NMI check.', 49, 65],
+    [63, '$B903', 'Sound: a second music tick, when the tune\'s speed asks for more than one a frame.', null, null],
+    [65, '$8A25', 'The landscape: one of the three screens $E000, $E400, $E800, characters from $F800, multicolour, 38 columns, the fine scroll, and 25 rows again. These settings last until the panel.', 66, 238],
+    [101, '$8B0F', 'Sprite 0 becomes the Wizball, two lines above it. This band\'s line is rewritten every frame.', 102, 123],
+    [123, '$8B22', 'Sprite 0 becomes the beam\'s lower arc, 20 lines below the Wizball\'s band; with the beam off it is a blank shape.', 124, 147],
+    [229, '$B8FC', 'Sound: another music tick.', null, null],
+    [232, '$8BCB', 'Black below the landscape; sprite 0 moved away.', 233, 238],
+    [238, '$8B46', 'The panel: the level digit and the four cauldrons, their shapes from $F7F8 (the screen at $F400).', 239, 287],
+    [247, '$8BBB', 'Switches to 24 rows after line 247, too late for the bottom border to start, so the border stays open. Stores the check value for the NMI watchdog.', 248, 287],
+    [255, '$B8F3', 'Sound: another music tick.', null, null],
+  ];
+  const frameCv = $('frameCv'), fctx = frameCv.getContext('2d');
+  let showSprites = true, band = -1;
+  function drawFrame() {
+    const r = renderWizballFrame(F, { noSprites: !showSprites });
+    const img = fctx.createImageData(r.w, r.h);
+    for (let i = 0; i < r.px.length; i++) { const c = RGB[r.px[i]]; img.data[4 * i] = c[0]; img.data[4 * i + 1] = c[1]; img.data[4 * i + 2] = c[2]; img.data[4 * i + 3] = 255; }
+    fctx.putImageData(img, 0, 0);
+    if (band >= 0) {
+      const B = BANDS[band];
+      fctx.fillStyle = 'rgba(0,0,0,.55)';
+      if (B[3] != null) {
+        const y0 = Math.max(0, B[3] - 16), y1 = Math.min(272, B[4] + 1 - 16);
+        if (y0 > 0) fctx.fillRect(0, 0, 384, y0);
+        if (y1 < 272) fctx.fillRect(0, y1, 384, 272 - y1);
+        fctx.strokeStyle = '#ffd24a'; fctx.lineWidth = 1; fctx.strokeRect(0.5, y0 + 0.5, 383, Math.max(1, y1 - y0 - 1));
+      } else {
+        fctx.fillRect(0, 0, 384, 272);
+        if (B[0] >= 16) { fctx.fillStyle = '#ffd24a'; fctx.fillRect(0, B[0] - 16, 384, 1); }
+      }
+    }
+  }
+  const bandBtns = $('bandBtns');
+  BANDS.forEach((b, i) => {
+    const e = document.createElement('button'); e.className = 'btn'; e.textContent = 'line ' + b[0];
+    e.setAttribute('aria-pressed', 'false');
+    e.onclick = () => {
+      band = band === i ? -1 : i;
+      [...bandBtns.children].forEach((x, k) => x.setAttribute('aria-pressed', k === band ? 'true' : 'false'));
+      $('bandCap').innerHTML = band < 0 ? '<b>Choose a band</b> to light the lines it controls.' :
+        `<b>Line ${b[0]}, <code>${b[1]}</code>.</b> ${esc(b[2])}` + (b[3] == null ? '' : ` Lines ${b[3]}-${b[4]}.`);
+      drawFrame();
+    };
+    bandBtns.appendChild(e);
+  });
+  $('sprBtn').onclick = () => { showSprites = !showSprites; $('sprBtn').setAttribute('aria-pressed', String(showSprites)); drawFrame(); };
+  drawFrame();
+
+  /* ---------------------------------------------------------------- 02 the ball */
+  const ROT = b64(WIZ_TABLES.rotation);
+  const PX = [0, 1 / 8, 1 / 4, 1 / 2, 1, 1.5, 2];
+  const speedPx = sp => { const i = signed(sp); return i >= 0 ? PX[i] : -PX[-i]; };
+  {
+    const t = $('speedTable');
+    let h = '<tr><th>Spin</th>' + ['0-3', '4-11', '12-19', '20-27', '28-35', '36-43', '44-48'].map(x => `<td class="n">${x}</td>`).join('') + '</tr>';
+    h += '<tr><th>Speed, pixels a frame</th>' + PX.map(x => `<td class="n">${x === 0 ? '0' : x === 1 / 8 ? '1/8' : x === 1 / 4 ? '1/4' : x === 1 / 2 ? '1/2' : x}</td>`).join('') + '</tr>';
+    t.innerHTML = h;
+  }
+  const ballCv = $('ballCv'), bctx = ballCv.getContext('2d');
+  let S, held = 0, ground = 0, stars = [];
+  function resetBall() {
+    S = { spin: 0, angHi: 0, angLo: 0, speed: 0, yHi: 97, yLo: 160, vsHi: 1, vsLo: 192, dir: 1, thrust: $('ballT').getAttribute('aria-pressed') === 'true' ? 1 : 0, antigrav: 0 };
+    ground = 0; stars = Array.from({ length: 24 }, (_, i) => [((i * 97) % 320), 8 + ((i * 53) % 110), 1 + (i % 3)]);
+  }
+  function drawSpriteMC(ctx, d, x, y, cols) {
+    for (let r = 0; r < 21; r++) for (let b = 0; b < 12; b++) {
+      const q = (d[r * 3 + (b >> 2)] >> (6 - 2 * (b & 3))) & 3;
+      if (!q) continue;
+      ctx.fillStyle = PAL[cols[q]]; ctx.fillRect(x + 2 * b, y + r, 2, 1);
+    }
+  }
+  function drawBall() {
+    bctx.fillStyle = '#000'; bctx.fillRect(0, 0, 320, 176);
+    const v = speedPx(S.speed);
+    for (const s of stars) {
+      s[0] = ((s[0] - v * s[2] / 3) % 320 + 320) % 320;
+      bctx.fillStyle = PAL[s[2] === 3 ? 15 : s[2] === 2 ? 12 : 11]; bctx.fillRect(Math.round(s[0]), s[1], 1, 1);
+    }
+    ground = ((ground + v) % 16 + 16) % 16;
+    for (let x = -16; x < 336; x += 4) for (let y = 0; y < 8; y += 2) {
+      bctx.fillStyle = PAL[((x >> 2) + (y >> 1)) & 1 ? 12 : 11];
+      bctx.fillRect(Math.round(x - ground), 162 + y, 2, 1);
+    }
+    bctx.fillStyle = PAL[12]; bctx.fillRect(0, 160, 320, 1);
+    const frame = S.angHi & 15;
+    drawSpriteMC(bctx, ROT.subarray(frame * 64, frame * 64 + 63), 148, S.yHi - 60, [0, 11, 5, 13]);
+    const out = $('ballOut');
+    out.innerHTML = [['Spin', signed(S.spin)], ['Rotation frame', hex(0x10 + frame)], ['Speed', `${signed(S.speed)} (${speedPx(S.speed)} px a frame)`],
+      ['Height', 200 - S.yHi], ['Falling speed', ((S.vsHi * 256 + S.vsLo) / 256).toFixed(2) + (S.dir ? ' down' : ' up')]]
+      .map(([k, x]) => `<div><span class="k">${k}</span><span>${x}</span></div>`).join('');
+  }
+  let last = 0, acc = 0;
+  function tick(t) {
+    if (!last) last = t;
+    acc += Math.min(200, t - last); last = t;
+    let n = 0;
+    while (acc >= 20 && n < 10) { acc -= 20; n++; wizballPass(S, 0xFF & ~held); }
+    if (n) drawBall();
+    requestAnimationFrame(tick);
+  }
+  const hold = (el, bit) => {
+    const on = e => { e.preventDefault(); held |= bit; el.setAttribute('aria-pressed', 'true'); };
+    const off = () => { held &= ~bit; el.setAttribute('aria-pressed', 'false'); };
+    el.addEventListener('pointerdown', on); el.addEventListener('pointerup', off); el.addEventListener('pointerleave', off); el.addEventListener('pointercancel', off);
+  };
+  hold($('ballL'), 4); hold($('ballR'), 8);
+  ballCv.tabIndex = 0;
+  ballCv.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { held |= 4; e.preventDefault(); } if (e.key === 'ArrowRight') { held |= 8; e.preventDefault(); } });
+  ballCv.addEventListener('keyup', e => { if (e.key === 'ArrowLeft') held &= ~4; if (e.key === 'ArrowRight') held &= ~8; });
+  $('ballT').onclick = () => { const on = $('ballT').getAttribute('aria-pressed') !== 'true'; $('ballT').setAttribute('aria-pressed', String(on)); S.thrust = on ? 1 : 0; };
+  $('ballReset').onclick = resetBall;
+  resetBall(); drawBall(); requestAnimationFrame(tick);
+
+  /* ---------------------------------------------------------------- 03 the keys */
+  const MATRIX = [['DEL', 'RETURN', 'CRSR →', 'F7', 'F1', 'F3', 'F5', 'CRSR ↓'], ['3', 'W', 'A', '4', 'Z', 'S', 'E', 'SHIFT'],
+    ['5', 'R', 'D', '6', 'C', 'F', 'T', 'X'], ['7', 'Y', 'G', '8', 'B', 'H', 'U', 'V'], ['9', 'I', 'J', '0', 'M', 'K', 'O', 'N'],
+    ['+', 'P', 'L', '-', '.', ':', '@', ','], ['£', '*', ';', 'HOME', 'SHIFT', '=', '↑', '/'], ['1', '←', 'CTRL', '2', 'SPACE', 'C=', 'Q', 'STOP']];
+  function drawKeys(full) {
+    $('kFull').setAttribute('aria-pressed', String(full)); $('kPlay').setAttribute('aria-pressed', String(!full));
+    let h = '';
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+      const play = r >= 5 && c >= 5, code = full ? 1 + 8 * (7 - r) + (7 - c) : play ? 1 + 3 * (7 - r) + (7 - c) : null;
+      h += `<div class="key${full || play ? ' on' : ''}">${esc(MATRIX[r][c])}<small>${code == null ? '&nbsp;' : code}</small></div>`;
+    }
+    $('keys').innerHTML = h;
+  }
+  $('kFull').onclick = () => drawKeys(true); $('kPlay').onclick = () => drawKeys(false);
+  drawKeys(false);
+
+  /* ---------------------------------------------------------------- 05 the mixer */
+  const REC = WIZ_TABLES.recipes, LC = WIZ_TABLES.levelColours;
+  let mixLevel = 0, mixTarget = LC[0], units = [0, 0, 0];
+  const mixOf = (t, u) => [0, 1, 2].reduce((s, k) => s + Math.min(REC[3 * t + k], u[k]), 0);   // $9E2C
+  function drawMix() {
+    $('mixLvl').innerHTML = '<span class="k">Level</span>' + [0, 1, 2, 3, 4, 5, 6, 7].map(l => `<button class="btn" data-l="${l}" aria-pressed="${l === mixLevel}">${l + 1}</button>`).join('');
+    $('mixTarget').innerHTML = '<span class="k">Colour</span>' + [0, 1, 2].map(k => { const c = LC[4 * mixLevel + k]; return `<button class="btn" data-t="${c}" aria-pressed="${c === mixTarget}"><span class="sw" style="background:${PAL[c]}"></span> ${NAMES[c]}</button>`; }).join('');
+    $('mixSliders').innerHTML = ['red', 'green', 'blue'].map((n, k) => `<label>${n}</label><input type="range" min="0" max="20" value="${units[k]}" data-u="${k}"><span class="mono">${units[k]}</span>`).join('');
+    const m = mixOf(mixTarget, units), rc = [2, 5, 6];
+    $('mixBars').innerHTML = [0, 1, 2].map(k => `<div><div class="bar"><i style="height:${units[k] * 5}%;background:${PAL[rc[k]]}"></i></div><div class="barl">${units[k]}</div></div>`).join('') +
+      `<div><div class="bar" style="border-color:var(--ink)"><i style="height:${m * 5}%;background:${PAL[mixTarget]}"></i></div><div class="barl">${m} / 20</div></div>`;
+    const r = [0, 1, 2].map(k => REC[3 * mixTarget + k]);
+    $('mixCap').innerHTML = `<b>${NAMES[mixTarget]}</b>: recipe ${r[0]} red, ${r[1]} green, ${r[2]} blue. Mix ${m} of 20` + (m >= 20 ? ': the colour is complete.' : '.');
+    $('mixLvl').querySelectorAll('button').forEach(b => b.onclick = () => { mixLevel = +b.dataset.l; mixTarget = LC[4 * mixLevel]; drawMix(); });
+    $('mixTarget').querySelectorAll('button').forEach(b => b.onclick = () => { mixTarget = +b.dataset.t; drawMix(); });
+    $('mixSliders').querySelectorAll('input').forEach(i => i.oninput = () => { units[+i.dataset.u] = +i.value; drawMix(); });
+  }
+  drawMix();
+
+  /* ---------------------------------------------------------------- 07 difficulty */
+  {
+    const fire = WIZ_TABLES.fireInterval, nk = WIZ_TABLES.noKill;
+    const sph = l => l < 4 ? 'no' : l < 6 ? 'aimed' : 'eight ways, half as often';
+    let h = '<tr><th>Level</th><th>Alien shots every</th><th>Police after</th><th>Colour spheres shoot</th><th>Colours to make</th></tr>';
+    for (let l = 0; l < 8; l++) h += `<tr><td class="n">${l + 1}</td><td class="n">${fire[l]} frames</td><td class="n">${nk[l]} s</td><td>${sph(l)}</td><td>` +
+      [0, 1, 2].map(k => { const c = LC[4 * l + k]; return `<span class="sw" style="background:${PAL[c]}"></span> ${NAMES[c]}`; }).join(', ') + '</td></tr>';
+    $('diffTable').innerHTML = h;
+  }
+
+  /* ---------------------------------------------------------------- 04, 06, 09: from listing.json */
+  const needSite = 'This drawing reads the game\'s bytes from listing.json, which the built site serves: open the page from the site, not from disk.';
+  if (!window.C64) { $('landMsg').textContent = needSite; $('aliensMsg').textContent = needSite; return; }
+  C64.load('listing.json').then(G => {
+    const ram = G.ram;
+    /* the map overview */
+    const mapCv = $('mapCv'), mctx = mapCv.getContext('2d');
+    const LVL = [0, 1, 2, 3, 4, 5, 6, 7].map(l => wizLandscape(ram, l));
+    let level = 0, coloured = false;
+    function drawMap() {
+      mctx.fillStyle = '#000'; mctx.fillRect(0, 0, 576, 96);
+      for (let r = 0; r < 16; r++) for (let c = 0; c < 96; c++) {
+        const t = ram[0x0532 + 96 * r + c];
+        mctx.fillStyle = t === 0 ? '#111' : t >= 192 ? '#ff2a2a' : PAL[c >= 92 ? 14 : 12];
+        mctx.fillRect(c * 6, r * 6, 5, 5);
+      }
+      LVL.forEach((L, l) => {
+        const p = L.parts[0];
+        mctx.strokeStyle = l === level ? '#ffd24a' : 'rgba(255,255,255,.35)'; mctx.lineWidth = l === level ? 2 : 1;
+        mctx.strokeRect(p.col * 6 - 1, p.row * 6 - 1, p.n * 6 + 1, 24 + 1);
+        mctx.fillStyle = l === level ? '#ffd24a' : '#fff'; mctx.font = '10px monospace'; mctx.fillText(String(l + 1), p.col * 6 + 2, p.row * 6 + 10);
+      });
+    }
+    const landCv = $('landCv'), lctx = landCv.getContext('2d');
+    function drawLand() {
+      const L = level < 8 ? LVL[level] : wizLandscape(ram, level), cs = wizCharset(ram, level);
+      const S2 = 2, w = L.w * 8, h = L.h * 8;
+      landCv.width = w * S2 / 2 * 2; landCv.height = h * S2; landCv.style.width = (w * S2) + 'px';
+      const img = lctx.createImageData(w, h);
+      const lc = level < 8 ? [LC[4 * level], LC[4 * level + 1], LC[4 * level + 2]] : [11, 12, 1];
+      const cols = coloured && level < 8 ? [0, lc[0], lc[1], lc[2] & 7] : [0, 11, 12, 1];
+      for (let cy = 0; cy < L.h; cy++) for (let cx = 0; cx < L.w; cx++) {
+        const code = L.codes[cy * L.w + cx];
+        for (let py = 0; py < 8; py++) {
+          const bits = code === 0 ? 0 : cs[code * 8 + py];
+          for (let p = 0; p < 4; p++) {
+            const q = (bits >> (6 - 2 * p)) & 3, c = RGB[cols[q]];
+            for (let k = 0; k < 2; k++) { const i = 4 * ((cy * 8 + py) * w + cx * 8 + 2 * p + k); img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255; }
+          }
+        }
+      }
+      const tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h; tmp.getContext('2d').putImageData(img, 0, 0);
+      landCv.width = w * S2; landCv.height = h * S2; lctx.imageSmoothingEnabled = false; lctx.drawImage(tmp, 0, 0, w * S2, h * S2);
+      // mark any tile past the end of the table
+      for (let r = 0; r < 4; r++) for (let x = 0; x < L.tilesW; x++) if (L.tiles[r * L.tilesW + x] >= 192) {
+        lctx.strokeStyle = '#ff2a2a'; lctx.lineWidth = 2; lctx.strokeRect(x * 40 * S2 + 1, r * 40 * S2 + 1, 40 * S2 - 2, 40 * S2 - 2);
+      }
+      const names = ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Level 6', 'Level 7', 'Level 8', 'The Wiz-lab', 'After level 8'];
+      const p = L.parts;
+      $('landCap').innerHTML = `<b>${names[level]}</b>: map rows ${p[0].row}-${p[0].row + 3}, columns ${p[0].col}-${p[0].col + p[0].n - 1}` +
+        (p[1] ? ` and rows ${p[1].row}-${p[1].row + 3}, columns ${p[1].col}-${p[1].col + p[1].n - 1}` : '') +
+        `; glyphs from <code>${hex(L.block, 4)}</code>` + (level === 4 ? '. The red box is the stray tile (Secrets, below).' : level === 2 ? '. The three heads in the third row are the Mount Rushmore Zzap!64 mentions.' : '.');
+      drawMap();
+      const box = landCv.parentElement;
+      if (level === 4) box.scrollLeft = Math.max(0, (57 - 45) * 40 * S2 - 200); else box.scrollLeft = 0;
+    }
+    const lb = $('lvlBtns');
+    ['1', '2', '3', '4', '5', '6', '7', '8', 'Wiz-lab', 'Finale'].forEach((n, i) => {
+      const e = document.createElement('button'); e.className = 'btn'; e.textContent = n; e.setAttribute('aria-pressed', String(i === 0));
+      e.onclick = () => { level = i; [...lb.children].forEach((x, k) => x.setAttribute('aria-pressed', String(k === i))); drawLand(); };
+      lb.appendChild(e);
+    });
+    $('colBtn').onclick = () => { coloured = !coloured; $('colBtn').setAttribute('aria-pressed', String(coloured)); drawLand(); };
+    drawLand();
+
+    /* the stray tile */
+    {
+      const cs = wizCharset(ram, 4), tc = $('tileCv').getContext('2d');
+      tc.fillStyle = '#000'; tc.fillRect(0, 0, 200, 200);
+      const bytes = [];
+      for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++) {
+        const code = ram[0x3E7A + 5 * y + x]; bytes.push(code);
+        for (let py = 0; py < 8; py++) {
+          const bits = code === 0 ? 0 : cs[code * 8 + py];
+          for (let p = 0; p < 4; p++) {
+            const q = (bits >> (6 - 2 * p)) & 3;
+            if (!q) continue;
+            tc.fillStyle = PAL[[0, 11, 12, 1][q]]; tc.fillRect(x * 40 + p * 10, y * 40 + py * 5, 10, 5);
+          }
+        }
+        tc.strokeStyle = 'rgba(255,255,255,.15)'; tc.strokeRect(x * 40 + .5, y * 40 + .5, 39, 39);
+      }
+      $('tileBytes').innerHTML = [0, 1, 2, 3, 4].map(y => bytes.slice(5 * y, 5 * y + 5).map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')).join('<br>');
+    }
+
+    /* the aliens */
+    const spr = n => ram.subarray(0xC000 + 64 * n, 0xC000 + 64 * n + 63);
+    const cards = [];
+    function aliens(bonus) {
+      $('aLand').setAttribute('aria-pressed', String(!bonus)); $('aBonus').setAttribute('aria-pressed', String(bonus));
+      const base = bonus ? 0x39DC : 0x3ECF, n = bonus ? 20 : 18, box = $('alienCards');
+      box.innerHTML = ''; cards.length = 0;
+      const MOVE = ['falls under its own gravity', 'rises under its own gravity', 'follows a path', 'accelerates along a path'], FIRE = ['no shots', 'aimed shots', 'turning shots', 'eight-way bursts'];
+      for (let i = 0; i < n; i++) {
+        const p = ram[base + 2 * i] | ram[base + 2 * i + 1] << 8, t = ram.subarray(p, p + 24);
+        let frames;
+        const list = t[19] | t[20] << 8;
+        if (t[17] === 0) frames = [t[18]];
+        else if (t[17] === 1) frames = [ram[list + t[18]]];
+        else { frames = []; for (let k = list; ram[k] !== 0xFF && frames.length < 32; k++) frames.push(ram[k]); }
+        const sphere = t[21] === 1, colour = sphere ? 2 : t[16] & 0x10 ? 1 : t[16] & 15, hires = t[16] & 0x40;
+        const div = document.createElement('div'); div.className = 'card';
+        const cv = document.createElement('canvas'); cv.width = 48; cv.height = 42; cv.style.width = '96px'; cv.style.height = '84px';
+        div.appendChild(cv);
+        const kind = t[16] & 0x80 ? 'police ship' : t[21] === 1 ? 'colour sphere' : t[21] === 6 ? 'lookalike: a Wizball when shot' : t[21] === 0xFF ? 'shots bounce off' : t[16] & 0x20 ? 'always a pearl' : '';
+        div.insertAdjacentHTML('beforeend', `<b>${bonus ? 'Bonus ' : 'Type '}${i}</b> · ${t[22] * 10} points<br>${MOVE[t[8] & 3]}; ${sphere ? 'shots set by the level' : FIRE[t[14] & 3]}${kind ? '<br><i>' + kind + (sphere ? ', coloured by the level' : '') + '</i>' : ''}<br><span class="k">${hex(p, 4)} · frames ${[...new Set(frames)].map(f => hex(f)).join(' ')}</span>`);
+        box.appendChild(div);
+        cards.push({ ctx: cv.getContext('2d'), frames, rate: t[17] === 2 ? Math.max(1, t[18]) : 0, colour, hires, k: 0 });
+      }
+    }
+    function drawCards(fr) {
+      for (const c of cards) {
+        const f = c.frames[c.rate ? Math.floor(fr / c.rate) % c.frames.length : 0];
+        c.ctx.fillStyle = '#000'; c.ctx.fillRect(0, 0, 48, 42);
+        const d = spr(f);
+        if (c.hires) { for (let r = 0; r < 21; r++) for (let b = 0; b < 24; b++) if (d[r * 3 + (b >> 3)] & (0x80 >> (b & 7))) { c.ctx.fillStyle = PAL[c.colour]; c.ctx.fillRect(12 + b, 10 + r, 1, 1); } }
+        else drawSpriteMC(c.ctx, d, 12, 10, [0, 11, c.colour, 13]);
+      }
+    }
+    $('aLand').onclick = () => aliens(false); $('aBonus').onclick = () => aliens(true);
+    aliens(false);
+    let fr = 0; setInterval(() => { fr++; drawCards(fr); }, 20);
+  }).catch(e => { $('landMsg').textContent = needSite + ' (' + e.message + ')'; $('aliensMsg').textContent = needSite; });
+})();
 </script>

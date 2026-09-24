@@ -54,7 +54,7 @@ character set's star and level glyphs, and the title sprites at run time.
 | Sound effects | 24-byte records from `$3C5F` |
 | Wiztips pages | table `$4199`-`$41A4`, pages `$41A5`-`$4552` |
 | Variables and tables | `$B000`-`$BFFF` (the per-side block `$B116`-`$B12D`, the scores `$BFDA`-`$BFE7`) |
-| Sprites | `$C000`-`$CFFF`, blocks 0-63 |
+| Sprites | `$C000`-`$DFFF`, blocks 0-127; `$D000`-`$DFFF` (blocks `$40`-`$7F`) is the RAM under the I/O area, which the video chip reads and the CPU never does |
 | Screens (bank 3) | `$E000`, `$E400`, `$E800`: the landscape, three buffers; rows 0-1 of `$E000` are the score line. `$EC00`: the title, menu, Wiztips and get-ready text; in play only its sprite pointers `$EFF8`-`$EFFF` are used (the icon bar) |
 | Character sets | `$F000`-`$F1FF` small font, `$F200`-`$F7F7` large font (both loaded, stored inverted); `$F800`-`$FFF7` the play set: glyph 0 blank, `$01`-`$5A` star glyphs drawn at run time, `$5B`-`$7F` small blocks, `$80`-`$9F` ground textures, `$A0`-`$FE` the level's glyphs copied to `$FD00` by `$77C6`, `$FF` the six hardware-vector bytes |
 
@@ -329,8 +329,10 @@ into those operands before they run.
   turns; a team (one plays the Wiz, the other the cat); a team against a
   player; two teams.
 - **The Wizball** stays between lines `$49` and `$C8` (`$8097`). Gravity
-  adds `$10`/256 pixel a frame each frame (`$B27C`); each bounce sends it
-  up at 3 + `$F0`/256 pixels a frame (`$B211`/`$B212`). The stick spins it
+  adds `$10`/256 pixel a frame each frame (`$B27C`); a bounce at line 200
+  sends it back up at the speed it came down at (`$7F62`), so it bounces for
+  ever at one height (*live*: a bounce every 128 passes at 3 + `$F0`/256
+  pixels a frame, `$B211`/`$B212`, the top at line 74). The stick spins it
   (6 a frame, up to 48 either way, `$80F8`); the spin becomes rolling
   speed only at a bounce, or every frame once thrust is taken (`$818E`):
   0 below 4, else ((spin - 4) / 8) + 1, speeds 0, 1/8, 1/4, 1/2, 1, 1.5
