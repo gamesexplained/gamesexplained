@@ -31,8 +31,17 @@ measures whatever was installed. The measurements, each dated:
 | v3.11.0 with pull requests #6, #7, #11, #14 to #24 merged, from source | macOS arm64 | 22 September 2026 | 56 of 56 |
 | v3.13.0, from source | Linux x86_64, no display | 24 September 2026 | 56 of 56, three runs |
 | v3.13.1, from source (`get-vice build`) | macOS arm64 | 24 September 2026 | 56 of 56 |
+| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 24 September 2026 | 56, 55 and 53 of 56, three runs |
+| v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
 
-Add a row whenever a build is measured on a machine not listed. What the
+Add a row whenever a build is measured on a machine not listed. The two
+Linux rows of v3.13.1 failed the same checks, whichever way the build was
+made: `determinism-running-save` and `determinism-restart`, and once
+`step-instruction`, more of them while a compile was loading the host;
+the same snapshot replayed three times in a row came back identical. So
+treat those two checks as intermittent on that machine, save snapshots
+from a stopped machine, and compare runs by what the game wrote
+(`workarounds.md`). What the
 v3.11.0 release fails, by phase, is below. A contributor who declines to
 build is offered the newest release with a build for their machine, and
 on 24 September 2026 that was v3.11.0 for a Mac. On an emulator that has
@@ -118,6 +127,8 @@ it, and that is the complete list:
   were installed for this. On macOS they are Homebrew formulas ("Get the
   emulator", below; `brew uninstall` them, then `brew autoremove`), on
   Linux apt packages (the list is under Linux, below).
+- When the Linux release zip was used: its runtime libraries, if they
+  were installed for this (apt packages; the list is under Linux, below).
 
 Verified on macOS with `tools.py verify-footprint`: the emulator wrote its
 log, settings and snapshots under `tools/vice-home/` and nothing under the
@@ -181,7 +192,7 @@ The builds the project publishes, when a release has them:
 |---|---|---|
 | macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with** (v3.11.0) |
 | macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; no run recorded |
-| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | no run of the zip recorded; the same GUI build compiled from source is known to work (Linux, below) |
+| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | the GUI zip run on 24 September 2026 in a container with no display (Linux, below) |
 | Windows x86_64 | `...-windows-x86_64-headless.zip` | headless, so **stops do not work in it** at all; no run recorded |
 
 `get-vice` only ever picks a GUI build.
@@ -308,13 +319,44 @@ start the tools by hand; the containment is in the launcher.
 
 ## Linux — run on a server with no display, 24 September 2026
 
-Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in a cloud
-container with no display (gcc 13.3, Python 3.11, cargo 1.94). The
-emulator was built from source; the release zip was not tried, because
-that environment could not reach GitHub's release downloads. Measured
-there: `check-emulator` 56 of 56, three runs in a row; `verify-footprint`
-clean. No run is recorded on a Linux desktop, with the release zip, on
-ARM or on another distribution.
+Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in cloud
+containers with no display (gcc 13.3, Python 3.11, cargo 1.94). The first
+run built v3.13.0 from source and measured `check-emulator` 56 of 56 three
+times, `verify-footprint` clean. A second run the same day used the
+v3.13.1 release zip and then a source build of the same tag (the table at
+the top of this file). No run is recorded on a Linux desktop, on ARM or on
+another distribution.
+
+**A network that refuses the GitHub API.** In those containers the proxy
+answered `api.github.com`, the project's web pages and `codeload` with 403
+("GitHub access to this repository is not enabled for this session"), for
+any repository not attached to the session, while `git clone` and the
+release files themselves
+(`github.com/barryw/vice-mcp/releases/download/<tag>/<file>`) went
+through. The first run took that for "no release downloads" and built from
+source. `get-vice` now reads the tags with `git ls-remote` when the API does
+not answer, and finds a release's file by the name the project's CI gives
+it (`<tag>-<machine>-gui.zip`, or `.dmg` on a Mac), so the plain command
+still says what this machine can have.
+
+**The release zip.** It unpacks as `usr/local/{bin,share}` and bundles no
+libraries. It was built for `/usr/local`, so from `tools/vice-mcp` it
+stops at start-up with "Couldn't load kernal ROM"; the launcher links
+`tools/vice-home/data/vice` (VICE's user data folder, searched first) to
+the build's own `share/vice`, which fixes that and changes nothing outside
+the repository. On Ubuntu 24.04 it needed these runtime packages, which
+live outside the repository like the build packages below:
+
+```
+sudo apt-get install --no-install-recommends libpulse0 libpcap0.8t64 libusb-1.0-0 \
+  libieee1284-3t64 libflac12t64 libvorbisenc2 libvorbisfile3 libvorbis0a libogg0 \
+  libglew2.2 libevdev2 libmicrohttpd12t64 libportaudio2 libmpg123-0t64
+```
+
+`ldd tools/vice-mcp/bin/x64sc | grep "not found"` lists what another
+machine lacks. `verify-footprint` was clean with the release zip and with
+the source build. Its `SHA256SUMS` file checks every file but itself (it lists
+its own hash as that of an empty file).
 
 **Build the emulator from source.** This is the path when there is no
 release you can download, as here, where the container could not reach
@@ -370,7 +412,8 @@ shader cache. `xvfb-run` keeps its X authority file in a temporary folder
 under `/tmp` and removes it on exit. regenerator2000 wrote nothing to
 `~/.config/regenerator2000` in this run; the path stays on the Uninstall
 list until a run shows where it writes. The apt packages above, if they
-were installed for this, are the Linux addition to that list.
+were installed for this, are the Linux addition to that list, and so are the
+release zip's runtime packages (above).
 
 ## Windows — no run recorded
 

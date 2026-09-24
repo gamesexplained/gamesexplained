@@ -50,24 +50,68 @@ def this_machine():
 
 
 def api(path):
+    """A GitHub API answer, or None when the API cannot be reached (releases() then asks git)."""
     req = urllib.request.Request(f"https://api.github.com/{path}", headers={"Accept": "application/vnd.github+json"})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.load(r)
     except Exception as e:
-        sys.exit(f"could not reach GitHub ({e}); if downloads are blocked here, build from a clone (kit/c64/INSTALL.md)")
+        print(f"the GitHub API did not answer ({e}); reading the release tags with git instead")
+        return None
+
+
+def version(tag):
+    return tuple(int(x) for x in tag[1:].split("."))
 
 
 def releases():
-    """Published vX.Y.Z releases, newest first. Drafts, pre-releases and other tag styles are skipped."""
-    rs = [r for r in api(f"repos/{UPSTREAM}/releases?per_page=30")
+    """Published vX.Y.Z releases, newest first. Drafts, pre-releases and other tag styles are skipped.
+
+    Some networks refuse api.github.com but let a clone and the release files through (a proxy that
+    allows only the repositories a session is given, for instance). Then the tags come from
+    `git ls-remote`, and each release's files are found by their conventional names (gui_asset)."""
+    rs = api(f"repos/{UPSTREAM}/releases?per_page=30")
+    if rs is None:
+        return releases_from_git()
+    rs = [r for r in rs
           if not r.get("draft") and not r.get("prerelease") and re.match(r"v\d+\.\d+\.\d+$", r["tag_name"])]
-    return sorted(rs, key=lambda r: tuple(int(x) for x in r["tag_name"][1:].split(".")), reverse=True)
+    return sorted(rs, key=lambda r: version(r["tag_name"]), reverse=True)
+
+
+def releases_from_git():
+    r = subprocess.run(["git", "ls-remote", "--tags", f"https://github.com/{UPSTREAM}"],
+                       capture_output=True, text=True, timeout=120)
+    tags = set(re.findall(r"refs/tags/(v\d+\.\d+\.\d+)$", r.stdout, re.M))
+    if not tags:
+        sys.exit(f"could not reach GitHub by its API or by git ({r.stderr.strip()[:200]}); "
+                 "see kit/c64/INSTALL.md, 'Get the emulator'")
+    return [{"tag_name": t, "published_at": "date unknown (tag read with git)", "assets": None}
+            for t in sorted(tags, key=version, reverse=True)]
+
+
+def probe(url):
+    """The size of a file on a release, asking for its first byte only; None when there is no such file.
+    A tag need not have a release, nor a release a file for every machine."""
+    req = urllib.request.Request(url, headers={"Range": "bytes=0-0"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            m = re.search(r"/(\d+)$", r.headers.get("Content-Range", ""))
+            return int(m.group(1)) if m else int(r.headers.get("Content-Length", 0)) or None
+    except Exception:
+        return None
 
 
 def gui_asset(rel, plat):
     """The GUI build for this platform in a release, else None. Headless builds cannot stop the CPU
     (kit/c64/INSTALL.md), so they are never picked on their own."""
+    if rel.get("assets") is None:                   # from git: try the names the project's CI gives its files
+        for ext in ("zip", "dmg"):
+            name = f"{rel['tag_name']}-{plat}-gui.{ext}"
+            url = f"https://github.com/{UPSTREAM}/releases/download/{rel['tag_name']}/{name}"
+            size = probe(url)
+            if size:
+                return {"name": name, "size": size, "browser_download_url": url}
+        return None
     for a in rel.get("assets", []):
         if f"-{plat}-gui." in a["name"]:
             return a
@@ -85,7 +129,8 @@ def resolve():
         sys.exit(f"no releases found on github.com/{UPSTREAM}")
     newest = rs[0]
     tag = newest["tag_name"]
-    print(f"newest vice-mcp release: {tag}, published {newest['published_at'][:10]} (github.com/{UPSTREAM}/releases)")
+    when = newest["published_at"]
+    print(f"newest vice-mcp release: {tag}, published {when[:10] if when[:1].isdigit() else when} (github.com/{UPSTREAM}/releases)")
     print(f"this machine: {plat or sys.platform}")
     now = tools.vice_build()
     print(f"installed now: {now}")

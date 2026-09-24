@@ -42,9 +42,18 @@ annotate it byte by byte.
    second known address before trusting it.
 4. **Save a snapshot** of the machine in play. Name it by state
    (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
-   everything downstream is read from. Save more at each distinct state
-   you can reach: title, first frame of play, each interlude, death, game
-   over.
+   everything downstream is read from, unless the hand-over (next) holds
+   more of the program. Save more at each distinct state you can reach:
+   title, first frame of play, each interlude, death, game over.
+
+   **Save the hand-over too**: a stopping checkpoint on the game's first
+   instruction (the loader's jump into it), then `work/entry.vsf`. Compare
+   it with the play snapshot byte for byte. Code that exists only at the
+   hand-over (an initialisation that runs from what becomes screen
+   memory), or authored data the game overwrites once it runs (a title
+   character set replaced by a level's), makes the hand-over image the one
+   to disassemble and to build the listing from; where the two agree
+   except in variables, either will do.
 5. **Write the recipe** into `orientation.md`: which file on the disk, the
    exact key presses and waits from power-on to the snapshot, the
    interrupt vectors observed, what the loader appears to do in one
@@ -56,6 +65,18 @@ annotate it byte by byte.
 7. **Understand the loader well enough to describe it in a paragraph**,
    then stop. If the game reloads data per level (overlays), say so in
    `orientation.md`: it means one snapshot per state.
+
+## Several versions on one disk
+
+When the image carries more than one crack or release of the game, take
+each to the same screen and compare their memory. A byte that differs and
+that the game itself changes between two of its own states (title and
+play) is working state; what is left is each version's own. Two versions
+that agree everywhere else are the best evidence you will get that the
+code is the original. One that differs across the program is a different
+build (a tape version, or bug fixes its crackers announce): not the image
+to analyse, but read its intro and notes, which may list claims about the
+original worth checking.
 
 ## Snapshot facts that bite
 

@@ -140,6 +140,20 @@ at every one of them.
   values the variable takes live; a parse that stopped at the first odd
   entry can be a quarter of the real table.
 
+### Calls whose target is written at run time
+
+A raster interrupt that runs a different routine in each band of the
+screen often does it with one `JSR` whose operand it rewrites from a
+display list, and a music driver may dispatch its command bytes through
+`JMP (table)` with an operand it computes. The tracer reaches none of the
+targets. Find what writes the operand, parse every table it reads (and
+every table of such tables), and seed the tracer with each entry, checking
+that it lands on code; an entry pointing at data is an unused slot. One
+game gained 4.5 KB of code from its display lists and 1 KB from its
+music driver's three dispatch tables this way. Such an operand is often
+assembled as `$0000`, which sends the tracer into zero page
+(`tool-regen2000`).
+
 **Reaching 100 % is a correctness pass, not a formality.** Writing a
 precise description of every routine forces re-reading code that was
 "already understood", and that is where confident wrong claims get

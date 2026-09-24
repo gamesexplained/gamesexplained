@@ -117,6 +117,13 @@ def vice(machine="x64sc"):
     for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
                      ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data")):
         env[var] = os.path.join(VICE_HOME, sub); os.makedirs(env[var], exist_ok=True)
+    # The Linux release is built for /usr/local and looks for its ROMs, keymaps and fonts there, not
+    # beside the binary, so unpacked in tools/ it stops with "Couldn't load kernal ROM". VICE searches
+    # $XDG_DATA_HOME/vice before its built-in folder: point that at the build's own share/vice.
+    # Harmless for a build that already finds its data (the same files, found first).
+    data, share = os.path.join(env["XDG_DATA_HOME"], "vice"), os.path.join(VICE_DIR, "share", "vice")
+    if os.path.isdir(share) and not os.path.lexists(data):
+        os.symlink(os.path.relpath(share, env["XDG_DATA_HOME"]), data)
     start(virtual_display([exe, "-mcpserver"], env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
           port=6510, name="emulator")
 

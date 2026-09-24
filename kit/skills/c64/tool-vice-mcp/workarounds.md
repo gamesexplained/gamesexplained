@@ -120,6 +120,15 @@ between. So:
   still good for the disassembler. Re-autostarting the image is the
   reliable way back to a state.
 
+On v3.13.1 on Linux (24 September 2026) the stops were exact and only
+`determinism-running-save` and `determinism-restart` failed, in most runs
+but not all, whether the build was the release or compiled from source:
+the same snapshot replayed three times by hand came back identical, and
+the checks failed more often while the host was busy. The cause is not
+established. What follows from it is the same: save the snapshots you
+will rely on from a machine stopped at a checkpoint, and compare runs by
+what the game wrote.
+
 ## The joystick
 
 `joy-port-1`, `joy-port-2`, `joy-immediate`, `joy-fire`, `joy-release`
