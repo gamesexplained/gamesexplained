@@ -549,8 +549,10 @@ def platforms_html(games):
 
 
 def featured_game(games):
-    """The game the home page opens with: the first at Gold or better, else the first there is."""
-    return next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None)
+    """The game the home page opens with: the one whose game.json says "featured": true,
+    else the first at Gold or better, else the first there is."""
+    return (next((g for g in games if g.get("featured")), None)
+            or next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None))
 
 
 def broken_links(out_root):
