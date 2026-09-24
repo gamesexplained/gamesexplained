@@ -99,8 +99,8 @@ checked against the game's own code at `$07F9` (`78 D8 A2 FF 9A`) and at
 
   | Band | From raster | What it sets |
   |---|---|---|
-  | 0 | `$28` | character mode, VIC bank 0: screen `$0400`, characters `$3000`; background yellow; sprites from the table at `$3A00` |
-  | 1 | `$8E` | background brown (the menu band); the music (`$1949`) when `$03D1` is on, else a noise burst on voice 1 when `$03CF` asks for one |
+  | 0 | `$28` | multicolour character mode, VIC bank 0: screen `$0400`, characters `$3000`; background yellow; sprites from the table at `$3A00` |
+  | 1 | `$8E` | background colour 8, orange, which shows brown (the menu band); the music (`$1949`) when `$03D1` is on, else a noise burst on voice 1 when `$03CF` asks for one |
   | 2 | `$B6` | multicolour bitmap, VIC bank 2: bitmap `$A000`, screen `$A800`; background black; sprites from `$3A20`; counts frames in `$03A0` and collects sprite-background collisions into `$038D` |
 
   Registers that the handler rewrites cannot be sampled from outside;
@@ -109,20 +109,22 @@ checked against the game's own code at `$07F9` (`78 D8 A2 FF 9A`) and at
   (fire), `$0388` (x) and `$0389` (y), then the keys from the KERNAL's
   scan: SHIFT right and the Commodore key left (`$028D`), H up and B down
   (`$C5`). `$0C94`, called just before it, toggles `$03D1` on M.
-- **Where the code and data sit** (first pass, from a page census of
-  `entry-07f9.vsf` against `play-run.vsf`; the sweep refines it):
+- **Where the code and data sit** (the full map is in `facts.md`):
 
   | Range | What |
   |---|---|
   | `$0340`-`$03FF`, `$0801`-`$080B` | crack's decruncher and BASIC line, overwritten or dead |
-  | `$07F9`-`$2FFF` | game code, variables in page 3 |
+  | `$07F9`-`$2F52` | game code; variables in page 3 |
   | `$3000`-`$37FF` | character set for the top band |
-  | `$3800`-`$3903` | the crack's trainer at the hand-over; the game overwrites page `$38` in play |
-  | `$3A00`-`$3A3F` | sprite register images for bands 0 and 2 |
-  | `$4000`-`$BFFF` | mostly static data, some code near `$4200` and `$5C00`-`$5DFF` (title and demonstration) |
-  | `$A000`-`$BF3F` | the bitmap the bottom band shows |
-  | `$C000`-`$C2FF` | code, called as `$C000`/`$C003`/`$C006` (by where it is called from, the music) |
-  | `$C400`-`$FFFF` | data, including the title screen's matrix and characters (`$C400`, `$F000`), under the I/O and KERNAL ROM |
+  | `$3800`-`$3903` | the crack's trainer at the hand-over; the game's sprite shapes in play |
+  | `$3A00`-`$5B26` | sprite register images, a little more code (`$3A40`-`$3BCA`), tables and text |
+  | `$5B27`-`$5E4D` | title, story scroller and the start of the demonstration |
+  | `$6000`-`$7F3F` | the picture sheet |
+  | `$8000`-`$8F99` | `CBM80`, the title scroller's text, the controls and instruction pages |
+  | `$9000`-`$9FFF` | the dungeon map |
+  | `$A000`-`$BF3F` | the bottom band's bank: tile tables, the demonstration, its bitmap |
+  | `$C000`-`$CBE6` | the music driver and its three tunes, called as `$C000`/`$C003`/`$C006` |
+  | `$CC00`-`$CFE7`, `$E000`-`$FF3F` | the title picture's screen matrix and bitmap, the bitmap in the RAM under the KERNAL ROM |
   | `$D000`-`$DFFF` | RAM under I/O: never written (the emulator's fill pattern) |
 
 - **No overlays.** The game is a single load from tape; the disk is not

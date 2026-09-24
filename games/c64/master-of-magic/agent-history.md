@@ -55,3 +55,62 @@ disjoint ranges: five over the engine's code, one for the title,
 demonstration, music driver and the RAM under the KERNAL, and four over
 the data (variables and the top band's font, the text and property
 tables, the pictures, the map and the bottom band's bitmap).
+Every agent had its own range, its own annotation log and its own
+coverage figure (`coverage.py --range`, added to the kit for this), and a
+brief with what was known. Two claims in that brief were wrong, and the
+agents caught both. `$2566`, with its table pointers at `$4968`/`$4970`
+and an operand rewritten at `$25A7`, was briefed as a picture-drawing
+routine; it is the creatures' move chooser, and the rewritten operand
+picks between two tables of the ways out of each tile. The title screen
+was briefed as character mode with its matrix at `$C400` and characters
+at `$F000`; it is a multicolour bitmap at `$E000` with its matrix at
+`$CC00`, which two agents found independently and proved by rebuilding
+the picture from memory. The lesson for the next brief: say which
+claims are measured and which are guesses from a register write.
+
+Agents also disagreed with each other, and settling that was most of the
+verify step. Whether a shield, armour or ring protects when carried in
+the backpack (it does not: the test wants the object's position to be
+the player). Whether the DEAD sprite is doubled one way or both (both,
+`$D017` and `$D01D` are written `$FF`). One agent reported that pressing
+fire cuts a timed action short, from the test at `$0904`. The code and a
+live count both say no: nothing polls the controls during a timed
+verb's passes, and INVENTORY ran its 12 passes with fire held. The comment
+that said otherwise was corrected before the export.
+
+**The lairs.** The inlay says most monsters patrol round their lair. The
+code has a home address per creature, but the new-game loop that clears
+two 31-byte flag tables runs for 64 entries and wipes the high byte of
+every home as it goes. The loaded file already has them wiped, which says
+the game was saved from memory after it had run. With a home in page 0,
+an idle creature heads north, and in play-run 17 of the 24 creatures
+that do not wander were north of their starting row. Two agents found
+this separately.
+
+**Rock is not floor.** An agent simulating the ray caster reported a
+corner case in "open floor" where no ray records the player's own cell,
+naming `$7E` as plain floor. `$7E` is solid rock. Poking the player into
+rock to test it gave nonsense (an invisible attacker, a menu that would
+not close). A flood fill over the cells the player can actually stand on
+from the start showed the corner case needs one of 11 cells in a strip
+of level 4 that cannot be reached.
+
+**Spells.** One agent read that spells never roll: the random number is
+fetched and then overwritten by `LDA #$1F`. The test was a cast of MAGIC
+MISSILE from a saved target menu, from six random seeds poked into the
+generator, at a skeleton, both vampires and the minotaur. The results
+were the same every time, and match the arithmetic.
+
+**The reset.** RESTORE restarted the game cleanly, but a reset brought
+the title up with scrambled colours. The label on `$01` said the restart
+clears bit 0; reading the CPU port after a reset showed the data
+direction register at 0, so that write does nothing and BASIC stays in
+over the game's tables. Starting a game after a reset confirmed it: the
+view window stays empty. The kit's platform reference now says to test
+the reset as well as RESTORE.
+
+**Live tests added in verify**: the death (body poked to 0, the minotaur
+put on the player's cell), the DEAD label (a skeleton left with 10 and a
+missile), the weight limit (either side of 70) and the fire count. Each
+took a few minutes with the menu read from the screen and chosen by
+label.
