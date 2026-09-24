@@ -141,6 +141,16 @@ over; `$7B` is the win.
 | 16 | CAST | `$2E23` | 20 | no spell is in force (`$57D2` = `$FF`) |
 | 17 | UNCAST | `$2F22` | 10 | a spell is in force |
 
+- **The door test is signed** (`$11E5`: `CMP #$F0` / `BMI`), so codes `$00`–`$6F`
+  pass as doors as well as `$F0`–`$FF`. The map holds some of them where
+  a player can stand: the edge of level 2's pool (`$52` at `$9BAA`/`$9BAB`,
+  floor but for a row of water), its fringe cells `$61`/`$63` and the wall
+  mark `$60`. On `$52` or `$60` the menu offers OPEN, on `$61` or `$63` CLOSE.
+  Choosing it prints "OPEN DOOR." or "CLOSE DOOR." and costs its 8 passes;
+  `$1BBF` and `$1C85` act only on the door codes, so nothing opens (*live*:
+  the player walked onto `$9BAA` from the floor to its left, the menu read
+  RUN, INVENTORY, OPEN, ATTACK, EXAMINE, CAST, and OPEN printed OPEN DOOR.;
+  `reference/pool-edge-open-door.png`).
 - **WALK is never offered**: `$11A2` adds only options 1–17, and nothing
   prints the verb at `$4130`. Its handler sets a pixel every second pass
   (`$039A` = 2) where RUN's sets one every pass.
@@ -672,6 +682,7 @@ Run on VICE via vice-mcp (build in `game.json`), from the snapshots in
 | MAGIC MISSILE at a skeleton, both vampires and the minotaur, from six random states | the same four results every time: 20 → 5, 50 → 50, 50 → 35, 50 → 50 |
 | INVENTORY with fire held during its passes, and without | 12 passes both times (checkpoint count on `$08E1`, with the interrupt as a control) |
 | The view window against the map in play-run | cell for cell, centred on `$93F8` |
+| The player placed on the floor left of the pool edge `$9BAA` (level 2), then the stick right | he entered `$52`; the menu offered OPEN; OPEN printed OPEN DOOR. and changed no map byte |
 | Body 0, the minotaur put on the player's cell, RUN | "THE MINOTAUR ATTACKED YOU WITH ITS SWORD. HE HIT. YOU+RE DEAD..."; `$24DE` and the tune-1 call `$086C` each ran once |
 | A skeleton with body 10, MAGIC MISSILE | "YOU KILLED THE SKELETON.", body `$FF`, a band-2 sprite enabled (`$3A30` = 1): DEAD over the picture |
 | The trainer's two patches (cheats.md) | body 5 kept through twelve of the minotaur's hits; MAGIC MISSILE left mind at 30 (24 without) |

@@ -109,6 +109,9 @@ Found in the code, not in the manual.
 - **A demonstration recorder** (live, up to the replay): CTRL+R on the title
   starts a game whose input is written over the demonstration, F ends it,
   and by the code the next demonstration replays it.
+- **The pool's edge is a door** (live): the menu's door test is signed,
+  so standing on the edge of level 2's pool (`$9BAA`) offers OPEN, which
+  prints "OPEN DOOR." and does nothing (`reference/pool-edge-open-door.png`).
 - **WALK is never offered** (traced): the verb and its handler are there,
   but the menu builder never adds it.
 - **A timed action cannot be cut short** (live): every verb costs a fixed
