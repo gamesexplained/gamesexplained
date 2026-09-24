@@ -556,9 +556,8 @@ def card_html(g):
     plat, slug = g["platform"], g["slug"]
     kb = sum(g["_totals"][k] for k in PROGRAM) / 1024
     return (f'<a class="tile" href="{plat}/{slug}/index.html" data-platform="{html.escape(plat)}">{shot_html(g, "thumb")}'
-            f'<span class="body"><b>{html.escape(g.get("title", slug))}</b>'
-            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")} · {kb:.0f} KB</span>{strip_html(g)}</span>'
-            f'{stamp_html(g)}</a>')
+            f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b>{stamp_html(g)}</span>'
+            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")} · {kb:.0f} KB</span>{strip_html(g)}</span></a>')
 
 
 def platforms_html(games):
