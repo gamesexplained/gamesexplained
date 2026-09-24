@@ -193,9 +193,9 @@ def tier_name(t):
 
 
 def tabbar(game, present, lib):
-    tabs = "".join(f'<a class="tab" href="{f}">{n}</a>' for f, n in TABS if f in present)
+    tabs = "".join(f'<a class="tab" href="{"./" if f == "index.html" else f}">{n}</a>' for f, n in TABS if f in present)
     tier = game.get("tier", "none")
-    return (f'<nav class="gametabs"><div class="in"><span class="crumb"><a href="{lib}/../index.html">Games Explained</a> / '
+    return (f'<nav class="gametabs"><div class="in"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
             f'{PLATFORM_NAMES.get(game.get("platform"), game.get("platform"))} / {html.escape(game.get("title", ""))}</span>'
             f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
 
@@ -488,7 +488,7 @@ def runs_table(games):
         S = summarize(gdir)
         program = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
         fmt = lambda v, unit="": (f"{v:g}{unit}" if v is not None else "")
-        rows.append(f'<tr><td><a href="{g["platform"]}/{g["slug"]}/index.html">{html.escape(g.get("title", g["slug"]))}</a></td>'
+        rows.append(f'<tr><td><a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a></td>'
                     f'<td>{program // 1024} KB</td><td>{html.escape(tier_name(g.get("tier", "none")))}</td><td>{fmt(S["hours"])}</td>'
                     f'<td>{fmt(S["minutes_to_play"])}</td><td>{fmt(S["min_per_kb"])}</td><td>{fmt(S["agents"])}</td>'
                     f'<td>{html.escape(", ".join(S["models"]))}</td></tr>')
@@ -546,7 +546,7 @@ def featured_html(g):
     """One game, large: title screen, memory strip, the title and its opening line."""
     plat, slug = g["platform"], g["slug"]
     meta = " · ".join(x for x in (PLATFORM_NAMES.get(plat, plat), str(g.get("year") or ""), g.get("publisher") or "") if x)
-    return (f'<a class="show" href="{plat}/{slug}/index.html">{shot_html(g)}{strip_html(g)}'
+    return (f'<a class="show" href="{plat}/{slug}/">{shot_html(g)}{strip_html(g)}'
             f'<span class="cap"><b>{html.escape(g.get("title", slug))}</b><span class="m">{html.escape(meta)}</span></span>'
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
@@ -555,7 +555,7 @@ def card_html(g):
     """Every game, small: thumbnail, title, a line of facts, the memory strip, the tier."""
     plat, slug = g["platform"], g["slug"]
     kb = sum(g["_totals"][k] for k in PROGRAM) / 1024
-    return (f'<a class="tile" href="{plat}/{slug}/index.html" data-platform="{html.escape(plat)}">{shot_html(g, "thumb")}'
+    return (f'<a class="tile" href="{plat}/{slug}/" data-platform="{html.escape(plat)}">{shot_html(g, "thumb")}'
             f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b>{stamp_html(g)}</span>'
             f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")} · {kb:.0f} KB</span>{strip_html(g)}</span></a>')
 
