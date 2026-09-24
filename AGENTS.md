@@ -66,7 +66,11 @@ in order:
    python3 kit/scripts/check_listing.py
    ```
 
-   Push the branch and open the pull request. If you cannot push to this
+   Commit as the contributor, under the GitHub noreply address checked
+   at the start (`kit/START.md`); the agent appears only in the commit
+   trailers. Push the branch. Open the pull request yourself if the
+   contributor said at the start that you may; otherwise tell them it is
+   ready and open it when they say so. If you cannot push to this
    repository, push to the contributor's fork and open it from there. If
    there is no remote at all, leave the branch and say so.
 

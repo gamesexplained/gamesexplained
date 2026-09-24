@@ -82,6 +82,15 @@ decision, what took longest, operating system and tool versions.
   test of a reading is a rebuild" (the brief's title-screen mode was read
   from one register write and was wrong).
 - `kit/CHANGELOG.md`: 0.0.16, four lessons; `kit/VERSION` 0.0.16.
+- `kit/START.md` and `AGENTS.md`, delivery: the start questions now ask
+  whether the run may open the pull request itself (by default it asks
+  when the branch is ready), and end by setting the commit identity to
+  the contributor's GitHub noreply address, for this repository only,
+  and proving it with a throwaway commit. The old step said only to
+  prefer the noreply form, and the login was asked for at the very end.
+  This run found out at the end that its environment would not commit
+  under the contributor's name, so its commits credit nobody; asked
+  first, that is a two-minute conversation before the first commit.
 - `kit/skills/core/70-minisite/SKILL.md`, Play: a recorded demonstration is
   the end-to-end test of a port; count polls, not time.
 - `kit/skills/core/70-minisite/SKILL.md`: a widget that runs a mechanic
