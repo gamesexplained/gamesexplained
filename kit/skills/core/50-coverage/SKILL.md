@@ -67,6 +67,13 @@ same way, so tiers mean the same thing everywhere.
   around them; then give the range back with `coverage.include` in
   `game.json`. The disassembler will name those addresses after the chips'
   registers, so say in each comment which meaning is live.
+  A game in VIC bank 3 can keep graphics there without banking anything:
+  the video chip reads the RAM beneath the I/O while the CPU sees the
+  chips. Nothing references those bytes by address, so no symbol points at
+  them and the ledger never counts them. Whenever `$DD00` selects bank 3,
+  look at the snapshot's RAM at `$D000`-`$DFFF` for sprite and character
+  data (one run found 64 sprite shapes there only when its page's gallery
+  asked for a police ship's frames).
 - **Is the picture loaded or drawn?** Compare a snapshot taken before the
   game's first instruction (the loader's hand-over) with one in play. A
   screen or bitmap that is already there before the game runs is authored
@@ -139,6 +146,20 @@ at every one of them.
   indexing a long table of other call sites). Check its length against the
   values the variable takes live; a parse that stopped at the first odd
   entry can be a quarter of the real table.
+
+### Calls whose target is written at run time
+
+A raster interrupt that runs a different routine in each band of the
+screen often does it with one `JSR` whose operand it rewrites from a
+display list, and a music driver may dispatch its command bytes through
+`JMP (table)` with an operand it computes. The tracer reaches none of the
+targets. Find what writes the operand, parse every table it reads (and
+every table of such tables), and seed the tracer with each entry, checking
+that it lands on code; an entry pointing at data is an unused slot. One
+game gained 4.5 KB of code from its display lists and 1 KB from its
+music driver's three dispatch tables this way. Such an operand is often
+assembled as `$0000`, which sends the tracer into zero page
+(`tool-regen2000`).
 
 **Reaching 100 % is a correctness pass, not a formality.** Writing a
 precise description of every routine forces re-reading code that was

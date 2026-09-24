@@ -227,6 +227,31 @@ ROM: an `LDA $E000,X` in such a game reads KERNAL bytes (a cheap source
 of noise), and a `JSR $FFD2` calls CHROUT, while the snapshot shows the
 game's graphics there. Say in each comment which one is meant.
 
+The same holds at `$D000`-`$DFFF` in VIC bank 3 (`$DD00` bits 0-1 = 0).
+With the I/O switched in, the CPU sees the chips there and the VIC sees
+the RAM underneath, so a bank-3 game can keep 4 KB of sprites or a
+character set in it. No instruction reads those bytes by address, the
+emulator's CPU-view memory reads return the chips' registers, and the
+coverage ledger excludes the range as I/O by default. Read the snapshot's
+RAM there (the `ram` bank), and when it holds the game's data give the
+range back with `coverage.include` in `game.json` and describe it.
+
+## Undocumented opcodes
+
+The 6510 runs the NMOS 6502's undocumented opcodes, and protection code
+uses them because a disassembler shows them as data bytes and a search of
+the decoded instructions for an address misses them. Seen in real games:
+`LAX` (`$A7` zero page: load A and X), `DCP` (`$DF` absolute,X: decrement
+memory, then compare it with A), `LXA #imm` (`$AB`), and the `NOP`s that
+swallow the bytes after them (`$C2` immediate, `$7C` absolute,X). `LXA`
+is unstable: A = X = (A OR a constant) AND the operand, and the constant
+differs between chips. VICE fixes it at `$EE`, so code that depends on it
+can behave differently on a real machine. An absolute indexed address
+that passes `$FFFF` wraps round to zero page: `DCP $FF86,X` with X = `$FF`
+works on `$0085`. Before saying nothing reads an address, decode the gaps
+in the code with a decoder that knows these opcodes, and look for bases
+that an index can carry round.
+
 ## `CBM80` in a game that is not a cartridge
 
 A program that writes `C3 C2 CD 38 30` to `$8004`-`$8008` catches the

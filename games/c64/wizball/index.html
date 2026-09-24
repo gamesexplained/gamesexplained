@@ -1,0 +1,1401 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wizball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+h3{font-size:19px;margin:28px 0 8px}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.btn{font-family:var(--fm);font-size:12.5px;line-height:1.3;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.mono{font-family:var(--fm);font-size:13px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 18px;margin:12px 0 0;font-size:14px}
+.readout span{font-family:var(--fm);font-size:13px}
+.k{color:var(--ink-mute);font-size:12.5px;margin-right:6px}
+.scroller{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#000}
+.note{font-size:14px;color:var(--coral);margin:8px 0 0}
+table.d{border-collapse:collapse;font-size:14px;margin:8px 0 0;width:100%}
+table.d th,table.d td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+table.d th{font-weight:700;color:var(--ink-soft);font-size:13px}
+table.d td.n{font-family:var(--fm);font-size:13px;text-align:right}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;border:1px solid rgba(0,0,0,.25)}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);font-size:13px;line-height:1.4}
+.card canvas{background:#000;border-radius:4px;margin:0 auto 6px}
+.card b{font-family:var(--fm);font-size:12.5px}
+.keys{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:620px}
+.key{border:1px solid var(--line);border-radius:5px;padding:5px 2px;text-align:center;font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink-mute)}
+.key.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.key small{display:block;font-size:10px;opacity:.8}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:760px){.two{grid-template-columns:1fr}:root{--gx:18px;--pp:14px}}
+img.ref{display:block;max-width:100%;border-radius:6px;image-rendering:pixelated}
+.bars{display:flex;gap:18px;align-items:flex-end;height:150px;margin:6px 0 0}
+.bar{width:46px;height:120px;border:2px solid var(--ink-soft);border-top:none;border-radius:0 0 12px 12px;position:relative;overflow:hidden;background:var(--surface-2)}
+.bar i{position:absolute;left:0;right:0;bottom:0}
+.barl{text-align:center;font-family:var(--fm);font-size:12px;margin-top:4px}
+input[type=range]{width:100%}
+.sliders{display:grid;grid-template-columns:70px 1fr 40px;gap:4px 10px;align-items:center;font-size:14px;max-width:460px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Ocean</p>
+  <h1>Wizball</h1>
+  <p class="sub">Sensible Software's shooter, read from its code: how a ball you can only spin gets anywhere, and why the game crashes itself when its clock stops.</p>
+</header>
+<main class="wrap">
+
+<section id="frame">
+  <p class="fig">01 · One frame, rebuilt from memory</p>
+  <h2 class="t">Twelve raster bands a frame</h2>
+  <p class="lede">The play screen is several screens stacked. A raster interrupt at <code>$7C73</code> runs twelve short routines on the way down every frame, and each one points the video chip at a different screen, character set or group of sprites.</p>
+  <div class="plate">
+    <canvas id="frameCv" width="384" height="272" style="width:100%;max-width:768px;background:#000"></canvas>
+    <div class="row" id="bandBtns"></div>
+    <div class="row"><button class="btn" id="sprBtn" aria-pressed="true">Sprites</button></div>
+    <p class="cap" id="bandCap"><b>Choose a band</b> to light the lines it controls.</p>
+    <p class="cap">Drawn by this page from a snapshot of level 1 in play: the screen at <code>$E000</code> and colour memory, the character sets at <code>$F000</code> and <code>$F800</code>, the sprites, and the video chip's registers and sprite pointers as each band left them, read at every interrupt of one frame. It matches the emulator's picture of the same frame in all but 13 of its 104,448 pixels. Twelve of those are stars, which twinkle between the frame shown and the moment memory was read; the thirteenth, on line 239, is not explained.</p>
+  </div>
+  <p>The list of bands lives in memory as data (<code>$B3E2</code> in play): a first raster line, then four bytes a band, the routine's address and the line of the next interrupt. The interrupt writes each routine's address into the operand of its own <code>JSR</code> at <code>$7C9D</code> and calls it. Other screens install other lists through <code>$7CB4</code>: the title, the player menu, name entry, "get ready!" and the three Wiztips pages each have their own.</p>
+  <p>The icon bar at the top and the cauldrons at the bottom sit in the border, where a C64 normally shows nothing. At line 247 the band <code>$8BBB</code> switches the screen to 24 rows: after the line where a 24-row screen starts its bottom border, and before the line where a 25-row screen does, so the border never switches on. The band at line 65 puts 25 rows back. Sprites show in the open border, and that is what the icons and cauldrons are.</p>
+  <p>Sprite 0 appears three times in one frame. From line 48 it is the beam's upper arc, at two lines above the Wizball it becomes the Wizball, and 20 lines further down it becomes the beam's lower arc. The band <code>$8A52</code> writes those two raster lines into the list every frame (<code>$B3F6</code>, <code>$B3FA</code>), so the bands follow the ball up and down.</p>
+</section>
+
+<section id="ball">
+  <p class="fig">02 · The Wizball</p>
+  <h2 class="t">A ball that changes speed only when it bounces</h2>
+  <p class="lede">The joystick does not move the Wizball. Left and right change its spin, and the spin becomes rolling speed only at the moment the ball touches the ground. Thrust, the first icon, makes the spin drive the speed on every frame.</p>
+  <div class="plate">
+    <canvas id="ballCv" width="320" height="176" style="width:100%;max-width:640px;background:#000;border-radius:6px"></canvas>
+    <div class="row">
+      <button class="btn" id="ballL">◀ Left</button><button class="btn" id="ballR">Right ▶</button>
+      <button class="btn" id="ballT" aria-pressed="false">Thrust</button><button class="btn" id="ballReset">Start again</button>
+    </div>
+    <div class="readout" id="ballOut"></div>
+    <p class="cap">Hold a button, or the arrow keys once the picture has been clicked. A port of <code>bounce_wizball</code> (<code>$7F62</code>), <code>read_spin_control</code> (<code>$80F8</code>) and <code>spin_to_roll_speed</code> (<code>$818E</code>), drawn with the game's 16 rotation sprites. It was checked against the game in the emulator: over 370 passes of the frame loop, with the stick moved left and right, spin, rotation, speed, height and vertical speed agree on every pass. With thrust they agree for 56 passes, until the real ball hits a wall, which the port leaves out.</p>
+  </div>
+  <p>Each frame the stick adds or takes 6 from the spin (<code>$B21C</code>), up to 48 either way, and the spin turns the ball through its 16 rotation frames. When the ball lands, <code>$818E</code> turns the spin into one of 13 speeds: below 4 the ball stops rolling, and each further 8 of spin moves it up one step.</p>
+  <table class="d" id="speedTable"></table>
+  <p>Gravity adds 1/16 of a pixel a frame to the falling speed (<code>$B27C</code>), and the bounce at line 200 sends the ball up at the speed it came down at, so it bounces for ever at the same height: in the emulator, once every 128 frames, rising 126 lines. With anti-grav, the second option of the first icon, <code>$8BEA</code> replaces all this: the stick moves the ball up and down directly and it stops bouncing. Only with both thrust and anti-grav does a spin die away when the stick is let go.</p>
+</section>
+
+<section id="controls">
+  <p class="fig">03 · Controls</p>
+  <h2 class="t">Nine keys in play, and a joystick chosen by its fire button</h2>
+  <p class="lede">The game scans the keyboard itself, twice over: all 64 keys on the title and menu screens, and only nine during play.</p>
+  <div class="plate">
+    <div class="row" style="margin:0 0 12px"><button class="btn" id="kFull" aria-pressed="false">Title scan <code>$73D4</code></button><button class="btn" id="kPlay" aria-pressed="true">Play scan <code>$7429</code></button></div>
+    <div class="keys" id="keys"></div>
+    <p class="cap">The keyboard matrix: rows are the lines the game drives low through <span class="mono">$DC00</span>, columns the lines it reads back through <span class="mono">$DC01</span>. The small number is the code the scan gives a key. In play only rows 7-5 and columns 7-5 are read.</p>
+  </div>
+  <p>The play scan's nine keys are RUN/STOP (pause), Q (quit, while paused), C=, /, up-arrow and = (firing volume), comma, @ and colon. They sit in columns 7 to 5 of the matrix, the three lines a joystick in port 1 cannot pull low, so the port-1 stick can never be read as a key.</p>
+  <p>Neither port belongs to a player. On the "get ready!" screen before every life, <code>$6965</code> notes which port the fire button was pressed on, and that stick drives the Wiz until the life ends (<code>$B240</code>); the other stick drives the cat. In a one-player game with the catelite, holding fire for ten frames hands the stick to the cat while the Wiz fires by itself.</p>
+</section>
+
+<section id="map">
+  <p class="fig">04 · Landscapes</p>
+  <h2 class="t">Eight landscapes in one map</h2>
+  <p class="lede">All eight levels are one map of 16 rows by 96 tiles at <code>$0532</code>. Four rows make a landscape's height, and each band of four rows holds two landscapes side by side.</p>
+  <div class="plate">
+    <canvas id="mapCv" width="576" height="96" style="width:100%;max-width:864px"></canvas>
+    <div class="row" id="lvlBtns"></div>
+    <div class="row"><button class="btn" id="colBtn" aria-pressed="false">Colour it in</button></div>
+    <div class="scroller" style="margin-top:12px"><canvas id="landCv"></canvas></div>
+    <p class="cap" id="landCap"></p>
+    <p class="note" id="landMsg"></p>
+    <p class="cap">Each tile is 5 × 5 characters from the table at <code>$2642</code>, and each level brings its own 95 glyphs, copied to <code>$FD00</code> by <code>$77C6</code> from the block the table <code>$B31C</code> names. Drawn from the game's bytes; the sky's stars are plotted by the game while it runs and are left out here. Checked against the game: for two stopped frames of level 1, every one of the 445 scenery characters on screen is the character this drawing puts there.</p>
+  </div>
+  <p>The top strip is the whole map, one square a tile, with each level's landscape outlined. Columns 0-44 of a band are one landscape and columns 45-89 another; each opens and closes with the same two tiles. Columns 92-95 hold halves of two pictures, the Wiz-lab and the one shown after the last level: the drawing code (<code>$75DF</code>) jumps four rows down and four columns back after four tiles, so two half-pictures in different bands make one screen.</p>
+  <p>The view scrolls across one landscape at up to 2 pixels a frame. The game keeps three copies of the landscape screen at <code>$E000</code>, <code>$E400</code> and <code>$E800</code>: the one on show and two made ready one column to the left and right, a quarter of each rebuilt every frame (<code>$77F7</code>). A coarse step of the scroll is a switch of screen, not a copy.</p>
+</section>
+
+<section id="colour">
+  <p class="fig">05 · Colour</p>
+  <h2 class="t">Three cauldrons, and a fourth that keeps score</h2>
+  <p class="lede">A level is finished when three colours have been made. Each colour has a recipe of red, green and blue units, and the fourth cauldron at the bottom right shows how much of the recipe the three cauldrons hold.</p>
+  <div class="plate">
+    <div class="row" id="mixLvl" style="margin:0 0 10px"></div>
+    <div class="row" id="mixTarget" style="margin:0 0 14px"></div>
+    <div class="two">
+      <div class="sliders" id="mixSliders"></div>
+      <div><div class="bars" id="mixBars"></div></div>
+    </div>
+    <p class="cap" id="mixCap"></p>
+    <p class="cap">A port of the mix at <code>$9E2C</code>: for each of red, green and blue, the smaller of the cauldron and the recipe (<code>$B2C0</code>, three bytes for each of the C64's 16 colours), added up into <code>$B12E</code>. Checked against the game's own code run in a 6502 simulator on 6,400 random cauldron states across the 16 colours: they agree on every one.</p>
+  </div>
+  <p>The colour sphere's droplets come in the level's own colour: red on levels 1, 4 and 7, green on 2, 5 and 8, blue on 3 and 6 (<code>$B18B</code>). Only the cat can catch them. More units than the recipe needs are wasted, so filling red to 20 on a purple level gives half the mix.</p>
+  <p>The game does not compare the mix with 20. <code>$9E81</code> draws the fourth cauldron's sprite a row a frame, and <code>$9E26</code> copies one byte of its top row into <code>$B874</code>. When that row is drawn full the byte is <code>$AA</code>, and the frame loop leaves for "colour completed". In the emulator, with the red cauldron set to 20 on level 1, that took 22 frames.</p>
+  <p>Light blue's recipe is the same as purple's, 10 red and 10 blue (<code>$B2C0</code> + 3 × 14).</p>
+  <img class="ref" src="reference/colour-completed.png" alt="Colour completed: the text over the bonus stage's first wave" style="max-width:384px">
+  <p class="cap">Level 1's first colour done: "colour completed" over the bonus stage's first formation, the red cauldron full.</p>
+</section>
+
+<section id="aliens">
+  <p class="fig">06 · The aliens</p>
+  <h2 class="t">Eighteen kinds of alien, all worth 50</h2>
+  <p class="lede">Aliens come from two tables of templates: 18 for the landscapes at <code>$3ECF</code> and 20 for the bonus stage at <code>$39DC</code>. Six at most are on screen, one in each of six 42-byte slots at <code>$0200</code>.</p>
+  <div class="plate">
+    <div class="row" style="margin:0 0 12px"><button class="btn" id="aLand" aria-pressed="true">Landscape</button><button class="btn" id="aBonus" aria-pressed="false">Bonus stage</button></div>
+    <div class="grid-cards" id="alienCards"></div>
+    <p class="note" id="aliensMsg"></p>
+    <p class="cap">Each template's frames, drawn from the sprite data at <code>$C000</code>-<code>$DFFF</code> and animated as its frame list says; the points are byte 22 of the template times ten. These are the templates as loaded: for every list it builds, the game rewrites the landscape ones in place, setting each type's shot interval from the level's entry in <code>$A12A</code>, the colour spheres' shots by level (<code>$A027</code>), and sometimes turning a faller into a riser (<code>$A070</code>). The spheres take their colour from the level, drawn here in red.</p>
+  </div>
+  <p><code>$9DA1</code> copies 23 bytes of a template into a slot and then applies its random fields, each a mask, an offset and the byte to change, so two aliens of one kind start in different places. A landscape's aliens come from a list of (column, type) pairs made for it when it opens (<code>$9F9B</code>): groups of 4, 6 or 12 of one type, spawned as the view uncovers their column. Only the highest level open and the two below it get lists. Clearing a list pays 1,000 points and makes a new one.</p>
+  <p>Every landscape alien is worth 50 points, where the manual says 10 to 500. The ninth alien killed since the last pearl leaves a pearl, and every molecule does (<code>$A9AA</code> = 9; colour spheres do not count). The reviews say eighth.</p>
+  <p>Kill nothing for long enough and the police come: after <code>$A1B9</code>[level] seconds without a kill a police ship flies in, with a warning tune a second earlier. In the emulator, on level 1, the tune started at frame 2,200 and the ship at 2,250.</p>
+</section>
+
+<section id="levels">
+  <p class="fig">07 · Difficulty</p>
+  <h2 class="t">What changes from level to level</h2>
+  <p class="lede">Four tables set a level's difficulty. Level access is a fifth rule: a level opens only when every level three below it and lower is done.</p>
+  <div class="plate"><table class="d" id="diffTable"></table>
+  <p class="cap">From <code>$A12A</code> (frames between an alien's shots), <code>$A1B9</code> (seconds without a kill before the police), <code>$A027</code> (whether colour spheres shoot) and <code>$B1D1</code> (the three colours, in the order they replace the greys).</p></div>
+  <p>The highest level open is <code>$B1CE</code> = 2 + the number of levels done, counted from level 1 with no gap (<code>$A9C6</code>). The manual says level five opens when level two is done; in the code it also needs level one. Tubes lead up only as far as <code>$B1CE</code>. After all eight levels the game starts again from level 1 with every alien firing every 10 frames.</p>
+</section>
+
+<section id="sound">
+  <p class="fig">08 · The sound</p>
+  <h2 class="t">Martin Galway's tunes, from the stored bytes</h2>
+  <p class="lede">Nine tunes and 26 sound effects share the SID's three voices. A music mode (<code>$B8F1</code>) says which voices the music has: none, voice 3 only, or all three; the effects get the rest.</p>
+  <div class="plate"><div id="music"></div>
+  <p class="cap">A port of the driver (<code>$45BD</code>-<code>$5524</code>, with the two routines in the tune data that command <code>$D6</code> calls and the clock at <code>$B8F3</code>), started as the game starts each tune, playing through the site's model of the SID, which leaves out the filter. It was checked against the game's own code run in a 6502 simulator: all 25 registers after every frame, and the order of the writes within each frame, for 3,000 to 22,000 frames of each tune, past every loop point, and for 400 random tunes that use every command of every voice.</p></div>
+  <p>The driver (<code>$4553</code>-<code>$5524</code>) keeps each voice's track as a list of notes and commands with a call-and-repeat stack five levels deep. Each voice has a 29-byte instrument (voice 1 at <code>$87</code>, voice 2 at <code>$4680</code>, voice 3 at <code>$A4</code>): four pitch steps or an arpeggio, a two-step pulse sweep, gate and release times. The notes come from a table tuned for PAL at <code>$471A</code>. A command can call machine code stored among the tune data, which the tunes use to set up the filter. The voice 2 and voice 3 code switches a note off and on again within one frame, so the attack restarts at every note; a model that heard only the registers at the end of each frame would lose it.</p>
+  <p>The two bonus-stage tunes take turns: the first bonus stage after loading plays one, the next plays the other, and <code>$BB0C</code> keeps the turn from one game to the next. The Wiz-lab has its tune only after the second of the two (<code>$AB66</code>); after the first it is silent. Every command byte some voice understands is used by at least one tune, and the notes run from the eighth entry of the table to the ninetieth.</p>
+  <p>The band <code>$B90C</code> runs the sound once a frame in every display list, and three more bands (<code>$B903</code>, <code>$B8FC</code>, <code>$B8F3</code>) run the music again when its speed says two or four ticks a frame.</p>
+</section>
+
+<section id="secrets">
+  <p class="fig">09 · Secrets, quirks and bugs</p>
+  <h2 class="t">Things the manual never told you</h2>
+
+  <h3>Secret: stop the game's clock and it crashes</h3>
+  <p>The initialisation sets CIA 2's timer A to count 19,656 cycles (<code>$4CC7</code> + 1), exactly one PAL frame, and makes it the NMI. The NMI handler (<code>$7C61</code>) only clears <code>$85</code>. Late in each frame the band <code>$8BBB</code> stores a non-zero value there, and early in the next the band <code>$8A52</code> ends with a check (<code>$8B04</code>): if <code>$85</code> is not back to 0, the NMI has not come, and the check pulls a byte off the stack so that the band's return goes astray. Anything that stops the timer or its interrupt sets it off.</p>
+  <div class="plate"><table class="d">
+    <tr><th>Address</th><th>Bytes</th><th>Instruction</th><th>What it does</th></tr>
+    <tr><td><code>$8B04</code></td><td class="mono">A7 86</td><td class="mono">LAX $86</td><td>A and X = <code>$FF</code>, set once by the initialisation</td></tr>
+    <tr><td><code>$8B06</code></td><td class="mono">DF 86 FF</td><td class="mono">DCP $FF86,X</td><td><span class="mono">$FF86</span> + <span class="mono">$FF</span> wraps round to <code>$0085</code>: decrement it and compare with <span class="mono">$FF</span></td></tr>
+    <tr><td><code>$8B09</code></td><td class="mono">F0 03</td><td class="mono">BEQ $8B0E</td><td>it was 0: the NMI came, return normally</td></tr>
+    <tr><td><code>$8B0B</code></td><td class="mono">68</td><td class="mono">PLA</td><td>otherwise lose a byte of the return address</td></tr>
+  </table><p class="cap">Both instructions that touch <code>$85</code> are undocumented opcodes, and the address wraps round the top of memory, so a search of the code for <code>$85</code> finds only the writes. In the emulator, with CIA 2's interrupts switched off, the check failed on the next frame and the processor ran into screen memory and stopped on a <span class="mono">JAM</span> opcode at <span class="mono">$EA7D</span>, in the landscape screen.</p></div>
+  <p>The title screen has its own version, with an <span class="mono">INC $FFB0,X</span> that also wraps round to <code>$85</code>, and a failure path (<code>$9292</code>) that increments a random byte of memory first. One more disguised decrement, at <code>$B589</code>, is <code>LXA #$FF</code> followed by <code>DCP $FF97,X</code>. <code>LXA</code> is an undocumented opcode whose result depends on a constant that varies between 6510 chips; only with the constant <code>$EE</code> does X come out as <code>$EE</code> and the address wrap to <code>$0085</code>. The VICE emulator fixes the constant at <code>$EE</code> with the source comment "needs to be 0xee for wizball". The start-up hides as well: the initialisation reaches CIA 2 only through indexed addresses (<span class="mono">STA $DC8E,X</span> with X = <span class="mono">$7F</span> is <span class="mono">$DD0D</span>) and then overwrites itself with random bytes. The menu and "get ready!" screens compare the hardware vectors with their stored copy every frame (<code>$90F8</code>), flickering the screen if they differ.</p>
+
+  <h3>Bug: level 5 draws a tile that does not exist</h3>
+  <p>The tile table has 192 entries, but one byte of the map, at <code>$092B</code>, holds tile number <code>$F8</code> (248). The drawing code does not check, and reads the tile's 25 characters from <code>$2642</code> + 25 × 248 = <code>$3E7A</code>, the middle of two sound-effect records. Most of those bytes are small numbers, which draw as sky, but two are <code>$FF</code>, and glyph <code>$FF</code> of the play character set is the last eight bytes of memory: two unused bytes and the NMI, reset and IRQ vectors. The result sits just to the right of level 5's first well.</p>
+  <div class="plate"><div class="two"><div><img class="ref" src="reference/level5-stray-tile-zoom.png" alt="The stray tile beside level 5's first well, enlarged"></div><div><canvas id="tileCv" width="200" height="200" style="width:200px;height:200px;background:#000;border-radius:6px"></canvas><div id="tileBytes" class="mono" style="margin-top:8px"></div></div></div>
+  <p class="cap">Left: the emulator's screen on level 5, enlarged. Right: the tile's 5 × 5 bytes from <code>$3E7A</code>, drawn with level 5's character set; a 0 is sky, and the star glyphs <code>$01</code>-<code>$5A</code> show whatever stars the game has plotted into them. Remember's 1997 crack lists "matrix in level 5" among the bugs it fixed, and changes exactly this byte to <code>$00</code>.</p></div>
+
+  <h3>Bug: a shield survives quitting the game</h3>
+  <p>The shield timer (<code>$7F06</code>, 40 units, one used every 50 frames) is cleared only when it runs out and in the Wiz-lab. Quitting with Q while paused does not touch it, and nor does starting a new game, so a shield that was running carries into the next game, while that game's icon bar offers the shield as unused. In the emulator: 38 units at the quit, 36 when the new game began, and a collision in the new game cost 8 units and no life. Remember's crack names this as its second fix.</p>
+
+  <h3>Secret: BOREWIZ, and starting on a later level</h3>
+  <p>On the title or the player menu, the band <code>$AF85</code> compares each key pressed with the letters B O R E W I Z (<code>$AFCE</code>, in the game's key numbering). After all seven the border turns brown and <code>$BB07</code> is set: collisions stop ending lives, except during "colour completed" and the bonus stage (<code>$7EF4</code>). The letters only have to come seven in a row, which is why Remember's notes can give it as WIZBOREWIZ; a doubled B breaks it, because a wrong key resets the count without being tried as a new first letter. The same band reads the keys 0 to 5: key n starts the next game on level n + 1, as far as the first level the last game did not finish (<code>$AF7D</code>), with the skipped levels marked done and up to five of thrust, anti-grav, beam, catelite and spray given for free (<code>$B10D</code>). Wiztips calls it the continue game feature.</p>
+
+  <h3>The spray icon Remember's crack "fixed"</h3>
+  <p>Remember's third fix is "the wrong sprite on the spray icon". Every icon in the bar shows what taking it next would give: after thrust is taken the first icon shows anti-grav, after the beam the second shows double. The spray icon follows the same rule, and after the Wiz takes the spray it shows the cat spray, a cat's face with dots very like the catelite's icon. Remember's version of the handler (<code>$7325</code> here) swaps the two images, so its icon shows who holds the spray instead.</p>
+
+  <h3>A hang in the Wiz-lab that no player can reach</h3>
+  <p>The lab keeps up to nine permanent weapons (<code>$B116</code>). When a tenth is taken, <code>$B0B0</code> frees the first two slots holding the spray and tries again; with fewer than two sprays among the nine it jumps to itself for ever (<code>$B0D2</code>). In the emulator, with nine other weapons put in the list by hand, choosing the spray froze the game there. A player never gets that far: thrust, anti-grav, beam, double, catelite and blazers each turn their icon to the used-up shape once taken, so at most six slots can hold anything but the spray.</p>
+
+  <h3>An earlier build left in memory</h3>
+  <p>The image carries pieces of an older version of the game. After the initialisation sits a second copy of its last part (<code>$ECB4</code>) with different addresses, never run. <code>$BB0D</code> holds an earlier draft of the third Wiztips page, spelling "permanent" correctly where the real page says "permenant". <code>$6EE4</code>, just after the quit code, would mark the current level's colours done and jump into the level-complete sequence, and the test in front of it for the Q key branches to the next instruction either way: a debugging key, disconnected. Tests for three more keys (<code>$9E5A</code>) branch nowhere too. And the name-entry buffer at <code>$BFF4</code> still holds "POO BAG", where a team's two sets of initials go; the game fills the buffer with spaces before every entry, so nobody sees it.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+
+<script>
+/* Data taken from the game: a frame of level 1 in play, and small tables from the loaded image. */
+const WIZ_FRAME = {"about":"Wizball in play on level 1, one frame: bank 3 memory ($E000 screen rows, the $F000-$FFFF character sets, the sprite blocks shown), colour RAM, and the video registers and sprite pointers as each raster band left them, read at every raster interrupt of one frame with the emulator stopped.","regions":[{"a":57344,"b":"MTw9ICAgICAgICAgICAgICAgIDo7ICAgICAgICAgICAgICAgIDI8PTAwMDAwMAAxADA4AAAAAAAAMDUwMDAwAAAAAAAAAAAAAAAwMDAwMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADg8QERIBAgMEBQYHCAkKCwwNDg8QERIBAgMEBQYHCAkKCwwNDg8QESAhIiMkExQVFhcYGRobHB0eHyAhIiMkExQVFhcYGRobHB0eHyAhIu0yMzQ1NiUmJygpKissLS4vMDEyMzQ1NiUmJygpKissLS4vMDEyMzT4REVGR0g3ODk6Ozw9Pj9AQUJDREVGR0g3ODk6Ozw9Pj9AQUJDREVGR1ZXWFlaSUpLTE1OT1BRUlNUVVZXWFlaSUpLTE1OT1BRUlNUVVZXWFkDBAUGBwgJCgsMDQ4PEBESAQIDBAUGBwgJCgsMDerr7BESAQIDBAUGFRYXGBkaGxwdHh8gISIjJBMUFRYXGBkaGxwdHu7v8PHyJBMUFRYXGCcoKSorLC0uLzAxMjM0NTYlJicoKSorLC0uLzAx9PX2NTYlJicoKSo5Ojs8PT4/QEFCQ0RFRkdINzg5Ojs8PT4/QEFCQ0RFRkdINzg5Ojs8S0xNTk9QUVJTVFVWV1hZWklKS0xNTk9QUVJTVFWxsrNZWklKS0xNTgwNDg8QERIBAgMEBQYHCAkKCwwNDg8QERIBAgMEraGuCAkKCwwNDg8eHyAhIiMkExQVFhcYGRobHB0eHyAhIiMkExQVFqunrBobHB0eHyAhMDEyMzQ1NiUmJygpKissLS4vMDEyMzQ1NiUmJyitp6wsLS4vMDEyM0JDREVGR0g3ODk6Ozw9Pj9AQUJDREVGR0g3ODk6raGuPj9AQUJDREVUVVZXWFlaSUpLTE1OT1BRUlNUVVZXWFlaSUpLTKunrFBRUlNUVVZXkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGmp6iRkZGRkZGRkZCPkJCPkI+QkI+Qj5CQj5CPkJCPkI+QkI+Qj5CSo6SlkpCPkI/SwMGSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSqaChoqqSktHT1OXmkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpLVr7CSkpLJ0NXY2ZWWl5OUlZaXk5SVlpeTlJWWl5OUlZaXk5SVlpeTlJWWl5OUlZaXl5OUlP//////////////////////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":61440,"b":"AAAAAAAAAAAAPm7Gxm46AB4wbMbGbDgAADxiwMBkOADwGGzGxmw4AAA8Zv7AZDgAPGJg+GBgYAAAeubOfoZ8AMDc5sbGzM4AHExgMDAwMAAADBwMDJhwAMjY8MzGzswAMDgYGBgYGAAA7P7WxszOAADc9ubGzM4AADhsxsZsOAAAuO7G7LjAAAA6bsZuOgYAALjsxuz4zgAAPGJwPIx4ABj+MDAwPBgAAOZmxsbOdgAA5mbGxsxwAADmZsbW/m4AAGa+OHD6zAAAZubOfoZ8AAA+TBgw4vwAPDAwMDAwPAAMEjB8MGL8ADwMDAwMDDwAABg8fhgYGBgAEDB/fzAQAAAAAAAAAAAADAwcGBggMABmZmYAAAAAAGZm/2b/ZmYAGD5gPAZ8GABiZgwYMGZGADxmPDhnZj8AAAAYAAAAAAAMGDAwMBgMADAYDAwMGDAAOHzW/tZsOAAAGBh+GBgAAAAAAAAAGBgwAAAAfgAAAAAAAAAAABgYAAADBgwYMGAA/sbGxsbG/gA4GBgYGBg8AP4GBv7AwP4A/gYGHgYG/gDGxsb+BgYGAP7AwP4GBv4A/sDA/sbG/gD+BgYGBgYGAP7Gxv7Gxv4A/sbG/gYG/gDGxsb+xsbGADwYGBgYGDwAxsbGxsbG/gD+xsb+wMDAAAAAAAAAAAAAVUAGDBgAGAD////+/f78+////zeHz88P/vX5+fH4+fn////PB2fn5//////++fn5////nw/H7//4/P7//vn5+f9/PxeHx+fn//////75+fn///+fD8ePP//+/P7++PT+Hw93f38vH3/////+/fPz8////38Tg8/P/vX5+fH4+fn////PB+fn5/P3/+/D5+fn/////////////////////+fv/9+Hz8/P/vX5+fD4+fn/988/fx8Px/vX5+fn5+fn///////////////EgMzOzv///88DY3Nz////+fD5+fn///+fB4/Pz//////++fn5////Pw/H5+f////78fj5+f///58Px+fn+/Px+Pz////Pz49H7/////n58Pz/////5+fHHz/////5+fD8///////3zx8/////+fnw/P/////n588fP/////j58Pz///////fPHz/////+/v7+/v7+/X9/f39/f7//8/Ph+P78+PPPz49HR+cPn/n5+fD9///85+fn5+/Pn3/n5+fD9///////////////////////9/jPz8/P358///n5+fD9///8x+fn5+/Pn3/n5+fD9///////////////zs7OhO////9zc3Mhe/////n5+fD9////z8/Ph+/////5+fD8/////+fnxx8/////+fnw+Pn59f/n5+cPn/////////788/Pz////fx+Hz8/////78Pn5+f///x8Px+///////Pjz8/D/5/fnD58/H//+/vj0/v7+f39/Lx9/f3/////78Pn5+f///9+Hz8/P+/fz8fn4+fn////PB+fn59+/n4zIxs7O////50Mzc3P////59Pz+/v///+fPnx8//////fD4/Pz////vh8fn5/////z49//+/////z8Hzx//////////////x8eHjx8/n07E4+Pj8PO9MSEYGBiEnPzw7v////j2zhkTMzMzMzP44M/f/v378D4BgWPHz48NxKG5+fLy8sLDATE5eVtTV/jg58zI2t7cPAkDgyMjY+Pz8+H4/v///8/Pjw9Py8fP+fn58Pz///////+/f/////z+/Pjz////B2fnD5/////+/v78/////39/dw8f////+fn5+Pz////Pz49H7/////n58Pz/////5+fPHz/////Ozobg+f///3NzMwPP/////vz8+fP///8/P5+Xz/////z8/Pz4+fP4x8+fP///n3/4//////759z8Pz8+fP////v79///n5/9//////////9OC4/Pn5MjenJQYnDkhQ/f//////vDk3xkZGRk58SMP7P78+fPgwN8Dd+/fvnwBB6LywuLx4ObfSVxA3MBQA4/d6PDz4+HM3+MDA+PjwiFz//////////D/////////D9Xq9f/+/v7+ValR8XFxcTHV6vX/+P//+FWpUfER0dER1er1//j///5VqVHxMTExMdXq9f/5+fn5ValR8TExMTHV6vX/+Pn4+FWpUfER8fER1er1//j5+PhVqVHxEfHxEdXq9f/4////ValR8RGRkZHV6vX/+Pn5+FWpUfExMTEx1er1//j5+PhVqVHxEZGRkfHg3vz8/PDoI09Pn5+fn5////////////////////////////////////////////////////////////////////////////////////////////////////////////D/////////D//////////+/v7+//Xq1TExMTHxUalV+fj4+P/16tXx8fER8VGpVf////j/9erVEREREfFRqVX4//////Xq1RExERHxUalV////+P/16tWRERER8VGpVfn4+Pj/9erVkZGREfFRqVX///////Xq1RERERHxUalV+fn5+P/16tURERER8VGpVfj///j/9erVEZEREfFRqVX88Pj8+fjx55+fn78fAsHz////4+Pz8+f/////////////////////////////////////////////////////////////////////////////////////oLm6ALu8Rf8AAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODg4AAAAAAAeHh4AAAAAAAeHh4AAAAAAAcHBwAAAAAAAODg4OAAAAAAeHh4eAAAAAAeHh4eAAAAAAcHBwcAAAAAAADg4ODgAAAAAHh4eHgAAAAAHh4eHgAAAAAHBwcHAAAAAAAA4ODgAAAAAAB4eHgAAAAAAB4eHgAAAAAABwcHQAAAAAAAPDwAAAAAAAAPDwAAAAAAAAMDAAAAAAAAwMDw8AAAAAAAADw8AAAAAAAADw8AAAAAAAADAwAAAAAAAMDAAAAAAABVQP////////88PDw8PDw8PDw8PDw8PDw8BA4fPnz4cCAgcPh8Ph8OBDz/PAAAAAAAAAA8/zwAAAAAAAAAADz/PP+q/wAAAAAAAAD/qv8AAAAAAAAAAP+q//////////9VAARAEQQBEABAEUQBRBFEEFEVUVQVBVEVVVVZVVUVVVVlVlWaZlVlVpVmWmaZlalmqpqpZppqpqqqqqqmqmqqqlVFVlVZVmmamWmaploVVlmqZlpmRVVRFVVVlVVVUVVVVVGVVWWVaaaqmaWZUVVFVGZpppqlVJWlqaqaqqqqqqqpqpqqqqmqqlVVVmWZZqmaqqqqqqqqqqqmqmqZVlURQKqqmmmWRRRBqqlqpplFVBGaqWqmlVVEAWqqplqVRVEQKCy5saWBJBQAAgorLyuuuwCAoNgE0hFFu7yrLSgJAQCBEQVEFFBAABRAAAAAAAAANXA1BQ0ODgFADAAx7PDERPv7uv67u777uPDQ8fjw0LBBQQARERAQRL6u/u76/r76sPzw0PD08dRFRVERUUUERfp6/vq6/ur68ODw9PHgsPRBAUFFQUFBRqurq6uvr7/+aipqahoaBkW+7j66ur7uvgFBQEEBREFBvru67r7+LjpFQUFREUBBQfHQ8Pyw8qqqFAYSASqqqqoAACiqrrq+/iSx0WWksfCwAABsqdGBkWEAAAACCwsrLwAAqr/+uu24AAAAgOBQNEQvvr+7+76vLvfZnOWY5eSQBAVBEQUFQQQuJwsIAQAAAIgQQSBFVQAABBQQUEAAAACqqqqqqqpfB6rq/n8X3PAUAAAAAAAAAACqq7zw8L/77qv/dQAAAM///l8lAAAAP/36f1cJAAM/96rq/n8X3PAUAAM/8PB/1+0P/AAAAAD8X/B/GgIAAD/1AMD8r2/91UWrrqqqqqqqqgBAKoqqqqqqAABBFAqqqqqqqqqqqqpaFqqqahoWAUQRFREEAEFAEBGqqqqqamoaRu6rv6qqqqqqqqqqqqqrr/6qqqqqq6uvvqurr767++++7rv7776+vvvr77/+qqqqqlaWVZWZlaVllaWlqWlZWmb66++vvqqqqvv7u++vu6qq9NT17PWZqqpEABARQIKqqgQBEAVBKKqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAr6+qqqqqqqq1urqqqqqqqrXU8Pjw0fHsUVFSqqqqqqoGKqqqqqqqqu//776//vr7u7u+vr76+/oFAUFEEBEERBAEAUFEQBAQADg0NDQ0NLUAAgsKLy8uvrjuv/v/uv7qAACAQOCQEIQAAAACAgIKKwAAFPRvFgEAr/+7D/CvahWl6KGYAP+qVRBEFEA/6qVQAABQfORQAACltaW19qa16oAuKC4MCwEAAAQRBMEQgVQEEAAQQEAAAAAAAEBAQJCkJQkCAgIAAABQYVBkoZGlYRRQQEBAAAAAoRQkJCQkJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGF8AABzfA=="},{"a":49152,"b":"////6qqp6qqp6r6p6v+p6//p6/3p6/3p7//Z7//Z719Z7VVZ7VVZ6dVp6dVp6VVp6lWp6pap6qqp6qqpVVVVFA=="},{"a":49216,"b":"////6qqp6qqp6qqp6qqp6qup6qpp6qm56qep6Aap6Mqp4wKp4wKp4AKp4AKp4AKp6Aqp6Aqp6qqp6qqpVVVVFA=="},{"a":49280,"b":"////6qqp6qqp6qqp6qqp6r6p6v+p6vqp6+vp6/4p64op64op60lp6lWp6tWp6pap6qqp6qqp6qqp6qqpVVVVHg=="},{"a":49472,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":49536,"b":"////6qqp6qqp6qqp6qqp6qqp+qqp9qqpxqqp5aqpwb+pxZWp5qr91qpV2qqp6qqp6qqp6qqp6qqp6qqpVVVVHg=="},{"a":49600,"b":"////6qqp6qrp6r/56pVZ6qpp6r6p6v2p6sGp6+lp6wBp68Fp6ump6tWp6pap66qp7/6p5Vap6aqp6qqpVVVVHg=="},{"a":49664,"b":"////6qqp6rap6rap+qqt3qq15r6Z6v2p6sGp6+lp6wBp68Fp6ump6tWp7pa59qqd2qql6rap6rap6qqpVVVVHg=="},{"a":49856,"b":"////6v+p61Xp6app6r6p6pap6r6p6v2p6sGp6+lp6wBp68Fp6ump6tWp6pap6r6p6pap66rp6f9p6lWpVVVVHg=="},{"a":50176,"b":"AAAAAP8AA/7AA2mADRTgDTTgDuvQPr6oO9foLUF4NAAcLUF0K9fUOr1UCpZQCqlQDpZQAqlAAlVAAJUAAAAAFQ=="},{"a":59392,"b":"A/4AA/4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AAH4AA//AA//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},{"a":60992,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="},{"a":61056,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="},{"a":61120,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="},{"a":61184,"b":"UAAF3AAfHAAcBwBwBwBwBwBwBwBwHAAcHAAcHAAccAAHcAAHcAAHcAAHcAAHcAAHHAAcHAAcHwB8ccPHcP8PEg=="}],"colour":"tLS0tLS0vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vrS0tLS0tL6xvr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr6+vr65ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubmwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsA==","bands":[{"from":0,"vic":"RPyC+Kz4AADW+BT4AAAAACATAdEAN8gA3fnxADYA///w8Pv88//78vL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]},{"from":2,"vic":"RPyC+Kz4AADW+BT4AAAAACATFNEAN8gA3fnxADYA///w8Pv88//78vL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]},{"from":21,"vic":"WBp0GpAarBrIGuQaABoAAEATMNEAf8gAsfnxAP8A///w8Pv88/bx/v7+/v7+/v4=","ptrs":[7,11,2,6,8,1,0,0]},{"from":49,"vic":"rFAAAAAAAAAAAAAAAAAAAAATP9EAA8gAjfnxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":64,"vic":"rFAAAAAAAAAAAAAAAAAAAAATQdEAA8gAjfnxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":66,"vic":"rFAAAAAAAAAAAAAAAAAAAAAbZdEAA9cAj/nxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":102,"vic":"rGcAAAAAAAAAAAAAAAAAAAAbe9EAA9cAj/nxAAMA///w8Pv88/v99fD28PDw8PA=","ptrs":[16,0,73,0,0,0,0,0]},{"from":124,"vic":"rH4AAAAAAAAAAAAAAAAAAAAb5dEAA9cAj/nxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":230,"vic":"rH4AAAAAAAAAAAAAAAAAAAAb6NEAA9cAj/nxAAMA///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":233,"vic":"AH4AAAAAAAAAAAAAAAAAAAAb7tEAA9cAj/nxAP8A///w8Pv88/v98PD28PDw8PA=","ptrs":[5,0,73,0,0,0,0,0]},{"from":239,"vic":"RPyC+Kz4AADW+BT4AAAAACAb99EAN8gA3fnxADYA///w8Pv88//79PL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]},{"from":248,"vic":"RPyC+Kz4AADW+BT4AAAAACAT/9EAN8gA3fnxADYA///w8Pv88//79PL18Pby8PA=","ptrs":[160,185,186,0,187,188,69,255]}]};
+const WIZ_TABLES = {"rotation":"AAAAAP8AA/7AA2mADRTgDTTgDuvQPr6oO9foLUF4NAAcLUF0K9fUOr1UCpZQCqlQDpZQAqlAAlVAAJUAAAAAFQAAAAD/AAP+wAPagA9OoA9GYA+5ED/5ODVfpDwB6DtB1DtANCr1XDpf8AqlUAmqUA5ZUAKpQAJVQACVAAAAABUAAAAA/wAD/sAD5oAPk6AN06ANfZA9HWg/RzQ7Qzg7QeQ6wdQq0NQ5dHQJnXAKZ9AOWVACpUACVUAAlQAAAAAVAAAAAP8AA/7AA3qAD3WgD1zQD1zgP05YO0dkOsM4OsM0KcOUOdHUKbHUCbXQCnXQCq3QAq3AAqdAAJUAAAAAFQAAAAD/AAP3wAP3gA+3oA/XkA7XYD7XODbDNDbD2DbDWDbDVCbDNDrXNArX0ArXUA63UAG3QAJ3QABdAAAAABUAAAAA/wAD+8ADrcAOreAOddANtdA5sdg50dQ5w1g6wzQqwzQ7R9QrTVQLXNALXNALd1ADdUAC1UAAlQAAAAAVAAAAAP8AA/rAA+6AD1qgD2vQDa1wPrR0OtDUPsHYO0HkK0M0O0c0LR3UDXVQDdNQD1NQAq1AAlVAAJUAAAAAFQAAAAD/AAP+wAPqgA9aoA2qkA+qoD6v+D71XDtAdDtB1D0B1DVfVD/1NAlZMApN0A5GUAK5QAJVQACVAAAAABUAAAAA/wAD/sAD6oAP1qAPqqAOqpA+vqg71+QtQXg0ABwtQXQr19Q6fVQKVdAJNNANNJAC50ACVUAAlQAAAAAVAAAAAP8AA/7AA+qAD+WgD6pgD6qQP/qoNV+kPAHoO0HUO0A0KfVcNN/0BOVQC1NQDpNQAq1AAlVAAJUAAAAAFQAAAAD/AAP6wAPugA/poA/pkA16YD0eqD8HpDtDaDtB1CTB1DTR1Ct0dAmdcA5HcApN0AK5QAJVQACVAAAAABUAAAAA/wAD/sADeoAPdqAPXZAPXWA/TWg7R2Q5w1g0w1Qkw1Q70dQpcdQJNdAJNdAK7dACrcACZ0AAlQAAAAAVAAAAAP8AA97AA92AD92gD9eQDddgNNdoNMNUN8NYNsNYOcNUJMNUNNdkC9dQCtdQDt1QAd1AAt1AAHUAAAAAFQAAAAD/AAP7wAPtwA9t4A010A010D7x2DnR1DTDWDTDZCvDVDtHVCtNlAtdkAtdUAt2UAN2QALZQACVAAAAABUAAAAA/wAD/sAD2oAPTuAPT3AOfXA9tHQ00dQ0wdg/QdQ7Q2Q7B1Q9HVQNdlAP2ZAOqlACpUADVUAAlQAAAAAVAAAAAP8AA/7AA+aAD5OgDVOQBO6gNO/4P/VcO0B0O0HUPQHUNV9kP/WUCVpQCqpQDqVQAqlAAlVAAJUAAAAAFQ==","recipes":[0,0,0,0,0,0,20,0,0,0,10,10,10,0,10,0,20,0,0,0,20,10,10,0,15,5,0,5,10,5,10,5,5,0,0,0,0,0,0,0,0,0,10,0,10,0,0,0],"levelColours":[2,4,3,0,9,8,7,0,6,14,3,0,9,5,7,0,2,8,3,0,6,14,7,0,2,4,7,0,9,10,3,0],"noKill":[45,40,25,20,20,20,15,10],"fireInterval":[70,65,50,40,37,35,33,30]};
+
+</script>
+<script>
+// Wizball play frame, drawn line by line from a snapshot: bank 3 memory ($C000-$FFFF), colour RAM,
+// and the video chip's registers as each raster band left them. Returns palette indices for a
+// 384 x 272 picture, VICE's visible PAL area (raster lines 16-287, sprite X -8 to 375).
+// Used by test.js (node) and pasted into the page.
+function renderWizballFrame(F, opts) {
+  const noSprites = !!(opts && opts.noSprites);
+  const W = 384, H = 272, LINE0 = 16, X0 = -8;
+  const px = new Uint8Array(W * H), fg = new Uint8Array(W);
+  const mem = F.mem, col = F.colour;                 // mem[0] is $C000
+  const bands = F.bands.slice().sort((a, b) => a.from - b.from);
+  const bandAt = (y) => { let s = bands[bands.length - 1]; for (const b of bands) if (b.from <= y) s = b; return s; };
+  const stateAt = (y) => bandAt(y).vic;
+  const spr = [0, 1, 2, 3, 4, 5, 6, 7].map(() => ({ on: false, row: 0, half: 0 }));
+  for (let y = 0; y < 312; y++) {
+    const v = stateAt(y);
+    // sprites whose Y matched on the previous line start now
+    const vp = stateAt(y - 1 < 0 ? 311 : y - 1);
+    for (let n = 0; n < 8; n++) {
+      const s = spr[n];
+      if (!s.on && (vp[0x15] >> n & 1) && vp[2 * n + 1] === ((y - 1) & 0xFF)) { s.on = true; s.row = 0; s.half = 0; }
+    }
+    if (y >= LINE0 && y < LINE0 + H) {
+      const out = (y - LINE0) * W;
+      const bg = v[0x21] & 15, border = v[0x20] & 15;
+      const csel = v[0x16] & 8, xs = v[0x16] & 7, mcm = v[0x16] & 16;
+      const winL = csel ? 24 : 31, winR = csel ? 343 : 334;
+      const scr = ((v[0x18] >> 4) & 15) * 0x400, chr = (v[0x18] & 0x0E) * 0x400;
+      fg.fill(0);
+      for (let x = 0; x < W; x++) px[out + x] = bg;
+      // characters, in the 25 rows of the display window (Y scroll 3: rows start at line 51)
+      if (y >= 51 && y <= 250) {
+        const r = (y - 51) >> 3, pr = (y - 51) & 7;
+        for (let c = 0; c < 40; c++) {
+          const code = mem[scr + r * 40 + c], cc = col[r * 40 + c] & 15, bits = mem[chr + code * 8 + pr];
+          const base = 24 + 8 * c + xs - X0;
+          if (mcm && (cc & 8)) {
+            for (let p = 0; p < 4; p++) {
+              const q = (bits >> (6 - 2 * p)) & 3;
+              const colr = q === 0 ? bg : q === 1 ? v[0x22] & 15 : q === 2 ? v[0x23] & 15 : cc & 7;
+              for (let k = 0; k < 2; k++) {
+                const x = base + 2 * p + k;
+                if (x >= 0 && x < W) { px[out + x] = colr; fg[x] = q >= 2 ? 1 : 0; }
+              }
+            }
+          } else {
+            for (let p = 0; p < 8; p++) {
+              const x = base + p;
+              if (x >= 0 && x < W && (bits & (0x80 >> p))) { px[out + x] = mcm ? cc & 7 : cc; fg[x] = 1; }
+            }
+          }
+        }
+      }
+      // sprites, 7 first so that 0 ends on top
+      for (let n = 7; n >= 0; n--) {
+        const s = spr[n];
+        if (noSprites || !s.on || !(v[0x15] >> n & 1)) continue;
+        const ptrs = bandAt(y).ptrs, ptr = ptrs ? ptrs[n] : mem[scr + 0x3F8 + n], d = ptr * 64 + s.row * 3;
+        const X = v[2 * n] | ((v[0x10] >> n & 1) << 8), mc = v[0x1C] >> n & 1, ex = (v[0x1D] >> n & 1) + 1;
+        const behind = v[0x1B] >> n & 1, own = v[0x27 + n] & 15;
+        for (let b = 0; b < 24; b++) {
+          const byte = mem[d + (b >> 3)];
+          let colr = -1;
+          if (mc) {
+            const q = (byte >> (6 - 2 * ((b & 7) >> 1))) & 3;
+            if (q) colr = q === 1 ? v[0x25] & 15 : q === 2 ? own : v[0x26] & 15;
+          } else if (byte & (0x80 >> (b & 7))) colr = own;
+          if (colr < 0) continue;
+          for (let k = 0; k < ex; k++) {
+            const x = X + b * ex + k - X0;
+            if (x < 0 || x >= W || (behind && fg[x])) continue;
+            px[out + x] = colr;
+          }
+        }
+      }
+      // the side borders are never opened
+      for (let x = 0; x < W; x++) { const X = x + X0; if (X < winL || X > winR) px[out + x] = border; }
+    }
+    // advance the sprites that were shown on this line
+    for (let n = 0; n < 8; n++) {
+      const s = spr[n];
+      if (!s.on) continue;
+      const ey = v[0x17] >> n & 1;
+      if (ey && !s.half) { s.half = 1; continue; }
+      s.half = 0; s.row++;
+      if (s.row >= 21) s.on = false;
+    }
+  }
+  return { w: W, h: H, px };
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { renderWizballFrame };
+
+</script>
+<script>
+// The Wizball's movement without anti-grav, one pass of the frame loop: bounce_wizball $7F62 (gravity
+// and the bounce at line $C8), read_spin_control $80F8 (spin and rotation), the Y limits of
+// place_wizball_sprite $8097, and spin_to_roll_speed $818E (at a bounce, or every pass with thrust).
+// s: { spin, angHi, angLo, speed, yHi, yLo, vsHi, vsLo, dir, thrust, antigrav }, bytes as the game keeps them.
+// stick: the joystick byte $B23F (0 bits pressed: 4 left, 8 right).
+function wizballPass(s, stick) {
+  const speedFromSpin = () => {
+    const sp = s.spin;
+    if (!(sp & 0x80)) { const a = sp - 4; s.speed = a < 0 ? 0 : ((a >> 3) + 1); }
+    else { const a = ((0 - sp) & 0xFF) - 4; s.speed = a < 0 ? 0 : ((0 - ((a >> 3) + 1)) & 0xFF); }
+  };
+  // $7F62: vertical motion, gravity $10
+  if (s.dir) {
+    let lo = s.yLo + s.vsLo; if (lo > 255) { lo &= 255; s.yHi = (s.yHi + 1) & 255; } s.yLo = lo;
+    s.yHi = (s.yHi + s.vsHi) & 255;
+    if (s.yHi >= 0xC8) { s.dir = 0; speedFromSpin(); }
+    else { let v = s.vsLo + 0x10; if (v > 255) { v &= 255; s.vsHi = (s.vsHi + 1) & 255; } s.vsLo = v; }
+  } else {
+    let lo = s.yLo - s.vsLo; if (lo < 0) { lo &= 255; s.yHi = (s.yHi - 1) & 255; } s.yLo = lo;
+    s.yHi = (s.yHi - s.vsHi) & 255;
+    if (!(s.vsHi | s.vsLo)) s.dir = 1;
+    else {
+      let v = s.vsLo - 0x10;
+      if (v < 0) { v &= 255; s.vsHi = (s.vsHi - 1) & 255; if (s.vsHi & 0x80) { s.vsHi = 0; v = 0; } }
+      s.vsLo = v;
+    }
+  }
+  // $80F8: the stick turns the spin; with thrust and anti-grav both, a released stick lets it die away
+  if ((stick & 0x0C) === 0x0C) {
+    if ((s.thrust & s.antigrav) && s.spin) { const old = s.spin; s.spin = (s.spin + ((old & 0x80) ? 1 : -1)) & 255; }
+  } else {
+    if (!(stick & 4) && s.spin !== 0xD0) { let a = (s.spin - 6) & 255; if (((a - 0xD0) & 255) & 0x80) a = 0xD0; s.spin = a; }
+    if (!(stick & 8) && s.spin !== 0x30) { let a = (s.spin + 6) & 255; if (!(((a - 0x30) & 255) & 0x80)) a = 0x30; s.spin = a; }
+  }
+  for (let k = 0; k < 2; k++) {                       // the angle turns by the spin twice a pass
+    const lo = s.angLo + s.spin;
+    if (!(s.spin & 0x80)) { if (lo > 255) s.angHi++; } else if (lo <= 255) s.angHi--;
+    s.angLo = lo & 255;
+  }
+  s.angHi &= 15;
+  // $8097: the limits
+  if (s.yHi < 0x49) s.yHi = 0x49;
+  if (s.yHi >= 0xC8) s.yHi = 0xC8;
+  // $7E4C: with thrust the speed follows the spin every pass
+  if (s.thrust) speedFromSpin();
+  return s;
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { wizballPass };
+
+</script>
+<script>
+// A landscape's characters, drawn from the map the way fetch_left_column $78CF does: four tile rows of
+// the level's band, each tile 5 x 5 characters from $2642 + 25 x tile. ram is the game image.
+// Levels 0-7 are the eight landscapes (45 tiles from column 0 or 45 of their band, from $B2F0);
+// 8 is the Wiz-lab and 9 the finale, two 4-tile halves side by side (the $75DF jump).
+function wizLandscape(ram, level) {
+  const MAP = 0x0532, TILES = 0x2642;
+  const parts = [];
+  if (level < 8) {
+    const rec = 0xB2F0 + 4 * level, row = ram[rec + 1], first = ram[rec] === 0xFF ? 0 : 45;
+    parts.push({ row, col: first, n: 45 });
+  } else if (level === 8) parts.push({ row: 8, col: 92, n: 4 }, { row: 12, col: 92, n: 4 });
+  else parts.push({ row: 0, col: 92, n: 4 }, { row: 4, col: 92, n: 4 });
+  const tilesW = parts.reduce((s, p) => s + p.n, 0), w = tilesW * 5, h = 20;
+  const codes = new Uint8Array(w * h), tiles = new Int16Array(tilesW * 4);
+  let tx = 0;
+  for (const p of parts) for (let i = 0; i < p.n; i++, tx++) for (let r = 0; r < 4; r++) {
+    const t = ram[MAP + 96 * (p.row + r) + p.col + i];
+    tiles[r * tilesW + tx] = t;
+    for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++)
+      codes[(r * 5 + y) * w + tx * 5 + x] = ram[(TILES + 25 * t + 5 * y + x) & 0xFFFF];
+  }
+  const block = ram[0xB31C + 2 * level] | ram[0xB31D + 2 * level] << 8;   // the level's glyphs, copied to $FD00
+  return { w, h, codes, tiles, tilesW, parts, block };
+}
+// The play character set $F800-$FFFF for a level: the loaded glyphs, the level's block at $FD00, and
+// glyph $FF, which is the six hardware-vector bytes the initialisation copies from $B62D.
+function wizCharset(ram, level) {
+  const cs = new Uint8Array(2048);
+  cs.set(ram.subarray(0xF800, 0xFD00), 0);
+  const L = wizLandscape(ram, level);
+  cs.set(ram.subarray(L.block, L.block + 760), 0x500);
+  cs[0x7F8] = 0; cs[0x7F9] = 0; cs.set(ram.subarray(0xB62D, 0xB633), 0x7FA);
+  return cs;
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = { wizLandscape, wizCharset };
+
+</script>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* Wizball's music: Martin Galway's driver, ported from the game's 6502 code (work/music/driver.js,
+   tested frame by frame against the game's own code by work/music/test_music.js), played through
+   the site's shared SID model (../../lib/sid.js). WIZ_MUSIC is the driver's tables and tune data as
+   the game loads them (work/music/music-data.json); it holds no machine code. */
+(function () {
+'use strict';
+const WIZ_MUSIC = {"source":"entry.vsf: Wizball (Ocean, 1987), the game in memory at its entry point $6389, before its first instruction","about":"Data read by Wizball's music driver (Martin Galway; code at $45BD-$45FE and $47D0-$5524, not included; the tune routines at $5AFF and $5F2E are left out and ported instead). Addresses are hex; each table is loaded at its address.","tables":{"commands":{"addr":"4600","about":"music_cmds_voice1/2/3: the three command tables, words of handler addresses for commands $C0-$E8 (voice 1, $4600), $C0-$E8 (voice 2, $462A) and $C0-$EA (voice 3, $4654); the port dispatches on these addresses as the code does with JMP ($46xx)","bytes":[9,74,255,72,180,73,249,72,177,73,233,73,129,73,242,73,103,73,49,74,32,74,29,73,42,74,47,73,63,73,218,73,81,73,193,73,225,73,222,73,155,73,42,75,75,74,239,74,69,74,236,74,8,75,186,74,18,75,159,74,82,75,72,75,105,74,65,75,123,74,141,74,35,9,35,9,35,9,252,74,35,9,213,74,110,76,108,75,33,76,102,75,38,9,75,76,238,75,84,76,212,75,163,76,134,76,140,75,156,76,158,75,174,75,66,76,190,75,46,76,38,9,38,9,11,76,143,76]},"load_offsets":{"addr":"4717","about":"tbl_music_mode_offsets: $00 $F9 $1D, what load_tune adds to $0094/$0098 to clear each voice's pitch and pulse modes ($F9 lands in the stack page, not in voice 2's template)","bytes":[0,249,29]},"note_lo":{"addr":"471A","about":"note_freq_lo: 91 notes, C-0 to F-7 then 0 (PAL), low bytes","bytes":[23,40,58,76,96,117,139,163,188,214,242,16,47,80,115,153,192,234,22,69,119,172,228,31,94,160,231,50,128,212,45,139,238,88,200,62,188,65,205,99,1,168,90,22,221,176,144,124,119,129,155,197,2,81,180,44,186,96,31,249,239,3,54,139,3,161,103,87,115,192,62,241,222,5,108,22,6,67,206,174,231,128,125,228,187,10,215,44,13,133,0]},"note_hi":{"addr":"4775","about":"note_freq_hi: the high bytes of the same 91 notes","bytes":[1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,4,4,4,4,5,5,5,6,6,6,7,7,8,8,9,9,10,11,11,12,13,13,14,15,16,17,18,19,20,22,23,24,26,27,29,31,32,34,37,39,41,44,46,49,52,55,58,62,65,69,74,78,83,88,93,98,104,110,117,124,131,139,148,156,166,176,186,0]},"vars":{"addr":"4680","about":"the driver's variables above its command tables, as the image holds them ($EE fill): voice 2's instrument template, voice 1 and 2 live state, durations, voice 2 and 3 stacks. Only $46AB-$46AC and $46CE-$46CF (the pulse step counts, copied into the step counters at every note start) are read before the driver writes them","bytes":[238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238,238]},"tune_table":{"addr":"5525","about":"tbl_tunes: nine tune records of 7 bytes, voice 1, 2 and 3 track addresses and a tempo","bytes":[239,89,239,89,4,94,4,26,91,24,91,16,91,6,185,89,183,89,181,89,7,67,96,201,97,216,98,5,239,89,239,89,79,92,2,221,89,240,89,242,89,5,223,87,87,86,71,89,9,0,90,2,90,53,90,2,149,90,147,90,139,90,8]},"tune_data_1":{"addr":"5564","about":"tune data: tracks, patterns, instruments, envelopes, pitch, arpeggio and filter blocks, to the routine at $5AFF","bytes":[12,0,244,255,12,0,0,0,10,20,10,0,50,5,0,0,0,0,0,0,0,0,0,8,73,25,137,20,255,17,0,239,255,17,0,0,0,10,20,10,0,100,5,70,1,0,0,22,0,252,249,0,5,33,205,15,255,200,246,255,0,0,0,0,0,0,255,0,0,0,90,4,41,90,203,20,200,12,0,244,255,12,0,13,0,10,20,10,0,40,7,33,22,135,20,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,137,3,39,25,10,208,28,129,85,57,24,95,24,95,16,55,24,95,24,95,16,54,24,95,24,210,172,85,58,5,59,5,61,6,210,153,85,62,16,204,3,95,16,206,62,16,65,16,64,16,69,5,65,5,62,6,202,25,189,64,16,95,8,62,8,202,25,205,61,16,232,158,85,59,16,232,129,85,56,24,54,8,52,16,54,7,212,13,7,220,6,21,0,95,4,220,6,0,0,95,5,54,16,192,0,4,0,4,0,8,0,8,0,4,0,8,0,8,0,4,0,16,192,208,28,152,87,204,2,95,8,80,8,80,16,80,12,80,12,80,8,206,204,9,95,4,60,2,60,2,86,8,86,8,60,4,60,4,86,4,60,4,60,4,86,8,60,4,86,8,206,194,225,85,204,2,204,7,95,16,206,208,28,100,85,95,12,52,4,57,4,59,8,61,8,62,8,61,8,59,4,57,8,59,4,202,26,141,55,24,95,24,202,26,137,95,24,54,4,58,4,59,8,61,8,62,8,64,8,62,4,61,4,202,26,141,62,24,95,24,202,26,137,208,13,99,88,95,16,95,16,50,4,53,4,57,8,62,8,64,8,65,8,64,4,62,8,61,4,57,8,202,26,141,52,16,95,24,202,26,137,95,4,52,4,54,4,56,8,57,4,59,8,61,8,62,8,64,8,232,177,85,60,8,232,100,85,59,12,202,26,141,57,16,206,208,23,123,87,210,191,85,204,15,95,8,206,198,45,68,86,218,8,187,87,198,43,68,86,218,8,193,87,198,42,68,86,218,8,199,87,198,47,68,86,198,38,68,86,218,8,181,87,7,12,7,12,218,8,199,87,4,12,4,12,4,12,218,8,193,87,198,40,68,86,218,8,205,87,198,45,68,86,0,4,0,4,0,8,0,8,0,4,0,8,0,8,0,4,0,12,200,0,87,86,0,0,0,0,1,0,4,0,181,87,0,5,0,8,0,0,0,0,0,0,0,0,0,0,33,24,106,30,150,176,4,0,0,0,0,0,0,255,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,17,0,242,5,6,0,4,7,12,24,12,0,4,9,12,24,12,0,4,10,12,24,12,0,3,7,12,24,12,0,4,7,9,24,12,218,8,193,87,95,4,204,5,42,12,206,192,95,4,208,28,196,85,89,4,89,4,89,4,204,7,89,8,89,4,89,4,206,208,28,123,87,95,4,204,5,95,4,204,5,45,12,206,218,8,187,87,95,4,204,5,43,12,206,194,211,87,218,8,199,87,95,4,204,5,47,12,206,95,4,204,5,38,12,206,218,8,181,87,95,4,45,12,45,12,218,8,199,87,42,12,42,12,42,12,198,254,211,87,218,8,205,87,216,0,204,2,95,4,204,5,45,12,206,206,218,8,181,87,206,196,225,87,10,0,246,255,10,0,246,255,8,16,8,0,50,7,132,3,7,0,249,255,7,0,0,0,10,20,10,0,40,5,120,120,10,5,3,0,253,255,0,9,73,24,107,15,254,6,0,0,0,0,0,0,0,255,0,0,0,40,4,246,255,0,0,0,0,0,0,255,0,0,0,25,4,0,0,0,0,0,0,0,0,0,8,65,7,104,40,40,33,12,40,4,40,12,33,4,33,12,40,4,40,8,232,128,88,28,8,232,99,88,192,194,171,88,31,12,40,4,40,12,31,4,31,12,40,4,40,8,232,128,88,28,8,232,99,88,30,12,40,4,40,12,30,4,30,12,40,4,40,8,232,128,88,34,8,232,99,88,35,12,42,4,42,12,35,4,35,12,42,4,42,8,23,4,25,4,26,12,33,4,33,12,26,4,26,12,33,4,33,8,232,128,88,28,8,232,99,88,33,12,40,4,40,12,33,4,30,12,37,4,37,8,28,4,30,4,28,12,35,4,35,12,28,4,28,12,35,4,35,8,23,4,25,4,198,244,171,88,194,171,88,216,0,192,208,28,142,88,222,224,83,88,204,4,218,0,253,255,20,12,20,4,20,8,218,0,248,255,35,4,35,4,206,208,28,99,88,204,3,194,194,88,206,226,194,225,85,208,28,99,88,204,21,95,4,206,222,40,8,30,8,32,12,194,194,88,196,71,89,0,5,3,7,12,0,5,7,3,12,0,7,5,3,12,5,0,0,0,0,1,0,5,0,136,89,0,15,0,8,0,0,0,0,0,0,0,0,0,0,33,51,154,50,50,191,2,191,2,208,28,152,89,60,32,192,32,78,168,103,176,54,192,99,220,220,220,220,0,5,0,0,0,0,0,0,0,0,0,8,65,255,240,255,1,222,224,195,94,208,28,192,89,50,32,204,6,95,32,206,212,27,1,192,95,1,95,1,196,225,89,208,28,64,94,222,224,48,94,192,191,2,208,28,64,94,191,1,196,59,90,147,0,0,0,0,0,0,0,7,0,0,0,2,4,0,249,0,0,0,0,0,0,1,0,0,0,5,4,85,0,171,255,0,0,0,0,4,4,2,0,4,5,194,247,89,224,93,94,202,24,65,202,27,45,216,9,204,4,232,25,90,151,10,232,11,90,50,6,202,13,0,52,3,206,202,13,4,218,0,208,0,55,10,55,10,202,13,0,57,4,55,4,53,4,52,2,53,2,52,2,50,4,52,4,53,2,52,2,50,2,50,2,48,2,45,2,48,2,50,2,232,39,90,48,20,95,1,192,224,191,90,214,255,90,95,8,95,8,208,28,162,90,202,17,0,202,24,21,196,30,91,56,255,0,0,0,0,0,0,255,0,0,0,10,4,255,0,0,4,50,0,0,0,0,8,65,3,151,13,8,254,255,254,255,2,0,2,0,255,255,255,255,255,5,176,4,12,4,10,4,8,4,5,4,3,4,0,4,192,0,4,3,4,5,4,8,4,10,4,12,4,192,12,4,0,4,10,4,0,4,7,4,3,4,192,0,4,3,4,7,4,12,4,192]},"tune_data_2":{"addr":"5B10","about":"tune data between the routines at $5AFF and $5F2E","bytes":[224,191,90,214,255,90,95,6,95,6,208,28,162,90,204,2,204,2,198,67,207,90,198,55,207,90,198,43,207,90,198,31,207,90,206,204,2,198,71,220,90,198,57,220,90,198,45,220,90,198,31,220,90,206,206,204,4,198,50,233,90,198,55,233,90,198,53,233,90,198,58,233,90,206,204,4,198,50,246,90,198,62,246,90,198,55,246,90,198,67,246,90,198,60,246,90,198,72,246,90,198,65,246,90,198,77,246,90,206,196,30,91,40,0,216,255,40,0,0,0,3,5,2,0,10,5,12,255,0,4,160,0,188,255,0,8,73,3,167,2,5,216,255,4,0,12,0,244,255,20,25,20,20,0,4,188,2,211,255,0,0,45,0,0,0,4,4,4,4,16,5,226,255,0,0,0,0,4,0,255,0,0,0,15,7,95,3,38,2,40,2,38,2,35,2,34,3,95,1,33,6,192,33,8,42,4,95,2,43,3,95,1,38,2,39,2,40,2,43,2,40,2,39,2,38,2,33,8,45,4,95,2,43,3,95,1,45,1,47,1,45,2,43,1,45,1,43,2,42,1,43,1,42,2,40,2,33,6,33,2,43,2,45,2,43,2,40,2,95,2,22,2,34,4,47,2,45,2,43,2,21,2,33,3,95,1,33,4,25,2,26,2,27,2,28,4,28,2,31,3,95,1,204,2,31,2,28,2,206,192,17,2,17,2,29,2,17,2,192,222,224,157,91,208,28,128,91,35,4,23,4,35,4,34,4,22,4,34,4,33,4,21,4,33,4,32,4,20,4,32,4,204,2,204,2,31,9,43,9,41,9,41,3,38,6,36,6,34,6,206,27,9,39,9,37,9,37,3,34,6,32,6,30,6,26,9,38,9,36,9,36,3,14,3,26,3,17,3,29,3,18,3,30,3,206,234,4,194,247,89,194,218,91,218,22,0,8,24,8,36,3,194,201,91,23,8,35,3,194,201,91,22,8,34,3,194,201,91,21,8,33,3,194,201,91,194,218,91,204,2,45,2,43,2,40,3,95,1,43,2,40,4,37,4,38,2,39,2,40,4,43,4,44,2,45,2,43,2,40,3,95,1,43,2,40,3,95,1,232,173,91,39,12,232,187,91,48,6,232,64,94,206,204,4,31,8,32,6,33,2,95,2,21,8,31,1,33,1,36,1,38,1,36,2,31,8,32,6,33,2,95,2,21,2,22,2,23,2,26,2,27,2,28,2,30,2,206,234,5,198,0,147,94,234,3,194,247,89,204,4,19,8,31,2,7,2,19,2,21,2,22,6,22,2,34,2,22,4,23,2,24,6,24,2,36,2,24,4,24,2,198,254,70,92,198,0,70,92,206,204,4,204,2,31,2,31,2,43,2,31,2,31,2,41,2,31,2,31,2,38,2,31,2,36,2,31,2,34,2,31,2,29,2,26,2,206,204,2,29,2,29,2,43,2,29,2,29,2,41,2,29,2,29,2,38,2,29,2,36,2,29,2,34,2,31,2,29,2,26,2,206,206,204,4,204,2,31,2,31,2,19,2,31,2,19,2,204,4,19,2,31,2,206,31,2,31,2,19,2,206,31,2,31,2,22,2,31,2,22,2,204,4,22,2,31,2,206,31,2,31,2,22,2,29,2,29,2,24,2,29,2,24,2,204,3,24,2,29,2,206,24,2,28,2,28,2,28,2,24,2,206,234,2,196,79,92,208,28,64,94,222,224,48,94,204,2,21,2,21,2,28,2,28,2,27,2,27,2,26,2,26,2,33,2,33,2,32,2,31,2,28,2,27,2,26,2,24,2,206,192,20,0,236,255,50,0,206,255,4,4,4,4,10,7,88,2,20,0,236,255,20,0,0,0,2,4,2,0,8,5,20,200,0,5,100,0,246,255,0,4,73,1,196,2,5,20,0,236,255,20,0,120,0,4,4,4,0,4,7,100,0,0,0,0,0,1,0,5,0,123,94,0,7,7,8,254,252,254,3,254,252,254,0,254,252,254,2,254,252,254,0,254,252,254,5,254,252,254,0,194,247,89,232,109,94,224,211,94,202,24,65,202,27,255,59,16,204,3,194,172,94,95,16,206,220,8,131,94,95,16,220,8,123,94,95,16,220,8,139,94,95,16,220,8,123,94,192,250,255,255,255,1,0,6,0,128,255,255,128,0,5,76,4,25,0,231,255,25,0,10,0,9,18,9,0,100,7,160,160,0,5,8,0,248,255,0,8,65,6,250,255,254,183,255,0,0,73,0,0,0,10,10,10,10,10,5,65,6,246,20,50,20,0,0,0,216,255,0,0,41,40,20,0,5,4,4,0,0,0,0,0,0,0,255,0,0,0,10,5,28,4,0,133,41,0,124,0,128,4,81,9,138,20,254]},"tune_data_3":{"addr":"5F33","about":"tune data after the routine at $5F2E, to the end of the title tune's voice 3 ($6387)","bytes":[204,4,50,12,74,12,69,12,65,12,62,6,65,6,65,6,57,6,62,6,62,6,53,6,57,6,206,204,4,47,12,76,12,71,12,68,12,64,6,68,6,68,6,59,6,64,6,56,6,59,6,52,6,206,192,204,4,41,12,65,12,60,12,58,12,53,6,58,6,58,6,48,6,53,6,53,6,46,6,48,6,206,204,4,40,12,64,12,58,12,56,12,52,6,56,6,56,6,46,6,52,6,52,6,40,6,46,6,206,204,4,39,12,63,12,58,12,55,12,51,6,55,6,55,6,46,6,51,6,51,6,43,6,46,6,206,204,4,38,12,62,12,58,12,54,12,50,6,54,6,54,6,46,6,50,6,50,6,42,6,46,6,206,204,4,37,12,61,12,58,12,53,12,49,6,53,6,53,6,46,6,49,6,49,6,41,6,46,6,206,204,4,36,12,60,12,58,12,52,12,48,6,52,6,52,6,46,6,48,6,48,6,40,6,46,6,206,204,4,35,12,59,12,58,12,51,12,47,6,51,6,51,6,46,6,47,6,47,6,39,6,42,6,206,204,4,34,12,58,12,53,12,50,12,46,6,50,6,50,6,41,6,46,6,46,6,38,6,41,6,206,192,208,28,211,94,222,224,195,94,58,32,214,46,95,204,20,95,32,206,58,32,95,32,95,32,228,95,24,58,4,57,4,58,32,95,24,55,8,62,32,230,218,6,6,0,64,32,228,64,32,95,32,95,32,95,8,60,16,55,4,53,4,52,32,95,32,53,32,55,32,232,240,94,55,32,232,3,95,95,32,95,32,202,13,4,55,24,202,13,0,53,8,202,9,5,204,4,202,13,4,55,16,202,13,0,53,6,206,208,12,211,94,228,55,32,212,27,254,95,32,95,32,95,32,95,24,55,16,60,32,95,32,64,32,95,32,62,32,212,27,150,95,32,95,32,95,16,58,16,62,32,95,32,65,32,95,16,232,3,95,202,12,50,218,0,226,255,67,16,232,211,94,228,64,32,212,27,254,95,32,95,32,95,32,67,24,69,24,67,16,65,24,64,24,60,16,62,32,95,32,95,32,95,16,60,16,58,32,95,32,55,32,95,16,218,6,0,0,230,53,12,220,6,18,0,95,8,220,6,0,0,230,202,26,175,218,6,0,0,204,127,95,4,206,60,32,204,6,95,32,206,95,16,212,12,100,220,6,244,255,95,16,220,6,0,0,220,27,254,255,208,28,17,95,204,24,95,32,206,194,51,95,194,51,95,194,106,95,95,9,196,67,96,25,0,231,255,25,0,0,0,9,18,9,0,100,0,160,160,0,5,8,0,248,255,0,8,65,182,255,254,255,65,0,86,12,50,5,12,0,7,4,12,0,7,2,12,0,7,4,12,0,7,5,12,254,7,4,12,254,7,2,12,254,7,4,12,254,7,4,244,12,7,4,232,4,7,12,244,4,7,12,232,12,7,2,244,10,7,2,230,2,7,10,244,2,7,10,230,10,7,208,28,94,98,218,8,137,97,204,13,95,32,206,60,32,204,7,95,32,206,204,2,220,8,153,97,204,8,95,32,206,220,8,137,97,204,8,95,32,206,206,220,8,153,97,204,8,95,32,206,220,8,137,97,204,12,95,8,206,95,5,220,18,255,255,220,8,169,97,95,3,204,19,95,8,206,220,18,0,0,220,8,185,97,208,28,103,97,204,8,95,32,206,204,3,24,32,204,7,95,32,206,31,32,204,7,95,32,206,206,208,28,17,95,202,13,5,95,9,204,24,95,32,206,194,51,95,194,106,95,196,201,97,255,255,255,255,255,255,7,0,255,255,255,0,255,7,100,0,0,0,0,0,1,0,20,0,152,98,0,15,0,8,1,1,0,5,1,0,0,0,1,0,65,254,191,255,255,6,0,250,255,6,0,250,255,10,20,10,0,100,5,160,160,0,5,8,0,248,255,0,8,65,204,138,255,254,0,7,4,12,0,7,2,12,0,7,4,12,0,7,5,12,254,7,4,12,254,7,2,12,254,7,4,12,254,7,5,12,12,7,4,244,12,7,4,232,4,7,12,244,4,7,12,232,10,7,2,244,10,7,2,230,2,7,10,244,2,7,10,230,208,28,94,98,204,5,95,32,206,60,32,204,15,95,32,206,204,2,220,8,168,98,204,8,95,32,206,220,8,152,98,204,8,95,32,206,206,220,8,168,98,204,25,95,4,206,212,27,254,220,18,255,255,218,22,207,14,218,18,255,255,204,15,95,8,206,60,32,204,3,220,8,184,98,204,8,95,32,206,220,8,200,98,204,8,95,32,206,206,208,28,103,97,95,4,29,32,204,7,95,32,206,26,32,208,28,123,98,204,7,95,32,206,222,224,78,98,204,2,29,32,204,11,95,32,206,23,32,204,11,95,32,206,206,204,6,34,32,204,11,95,32,206,206,34,32,204,10,95,32,206,220,12,255,7,202,26,143,218,27,254,255,95,32,22,32,204,45,95,8,206,191,5,196,216,98]}}};
+/* Wizball (Ocean, 1987), music by Martin Galway: the game's music driver ported to JavaScript
+   from its 6502 code, for the site's shared SID player (site/lib/sid.js).
+
+   What it ports (addresses in the game's memory, names from symbols.json):
+     $45BD-$45FE  check_music_end, step_music_fade, start_tune
+     $47D0-$4841  reset_music, load_tune, build_duration_table
+     $4842-$48F8  the pulse, filter and pitch restart/reload helpers
+     $48F9-$4CB6  the command handlers of voices 1, 2 and 3 (tables $4600, $462A, $4654)
+     $4CB7-$4D4D  update_filter_sweep, write_filter_cutoff, start_filter_program
+     $4D4E-$50F3  per voice: tick, next event, start note, set duration
+     $50F4-$5524  per voice: shape sound (gate, release, pulse sweep, pitch steps, arpeggio),
+                  test_music_playing, test_music_voice3
+     $5AFF, $5F2E the two routines in the tune data that command $D6 calls
+     $B8F3-$B94D  the clock: the band routines that run the music once to four times a frame
+   Not ported: the sound effects ($4553, $B960). With music on one voice (mode 1) or none (mode
+   0) the effect player owns the other voices; the port plays it with no effect running, which
+   writes 0 to those voices' seven registers every frame.
+
+   createDriver(M) returns {init, stop, play, sid, playing, voice} for sid.js, plus m (the
+   driver's memory), modes, and writes: every SID write of the last frame in order, as
+   [register, value, register, value, ...] (with init's or stop's writes before it). The game
+   writes some registers more than once a frame: voices 2 and 3 set the test bit ($08) before
+   every note, and a gate goes off and on again within a frame, which the frame's final
+   registers do not show; a player that applies writes in order hears those re-attacks. M is music-data.json: the driver's tables and tune data as the
+   game loads them, each at its address (M.tables[name] = {addr, bytes}). m is a 64 KB array
+   laid out as the game's memory, so every variable sits at its own address: track pointers
+   $04-$09, note times $0A-$0C, templates $87 (voice 1), $4680 (voice 2), $A4 (voice 3), live
+   state $469D, $46C0, $C1, and so on; notes-2.md and symbols.json name them all. The code's
+   self-modified operands that carry state keep their addresses too: the tempo is the operand
+   of ADC at $4838.
+
+   Where the 6502 code would hang or run garbage, the port ends the voice or the loop instead:
+   a command whose table entry is not a handler (voice 2's $DE $E0 $E2 $E6, voice 3's $C8 $E4
+   $E6, odd bytes), $D6 calling code other than the two routines, pulse steps, pitch steps or
+   filter steps that reload to zero for ever, a track of commands with no note. A note number
+   above 90 (after transposing, or in an arpeggio) reads past the note table into the driver's
+   code, which the port does not have: it reads 0 there. No tune does any of these; the tunes'
+   notes run from 7 to 89.
+
+   Tested by test_music.js: each of the nine tunes started as the game starts it, run in a 6502
+   simulator on the game's own code and memory and in this port side by side, all 25 SID
+   registers compared after every frame, with the order of each register's writes and the
+   driver's memory, past every loop point; then seeded random tunes that use every command of
+   every voice, which with the nine execute all of the driver's instructions. */
+
+function createDriver(M) {
+  const m = new Uint8Array(0x10000);                 // the driver's memory; only its tables are loaded
+  const tables = (M && M.tables) || {};
+  for (const k in tables) m.set(tables[k].bytes, parseInt(tables[k].addr, 16));
+  const sid = new Uint8Array(25);                    // $D400-$D418 as last written
+  const writes = [];                                 // this frame's writes: register, value, ...
+  let pending = false;                               // init or stop wrote since the last frame
+  const W = (r, v) => { sid[r] = v; writes.push(r, v); };
+
+  // How the game starts each tune (Y = 7 x tune + 5 into start_tune $45F1): the music mode
+  // $B8F1 (1 = voice 3 only, 2 = all voices) and speed $B8F2 (0, 1, 2 = 1, 2, 4 ticks a frame)
+  // its caller sets, the fade $45CE and volume $45CF it starts from, and whether the loop it
+  // plays in runs check_music_end ($45BD). See README.md for the evidence.
+  const MODES = [
+    { mode: 1, speed: 0, fade: 0, volume: 15, endCheck: true },   // 0 police alarm, $893D/$A17D in play
+    { mode: 2, speed: 1, fade: 1, volume: 0 },                    // 1 bonus stage 2, $6573
+    { mode: 2, speed: 0, fade: 1, volume: 0 },                    // 2 colour completed, $6507
+    { mode: 2, speed: 2, fade: 0, volume: 15 },                   // 3 title, $8F6A
+    { mode: 1, speed: 0, fade: 1, volume: 0 },                    // 4 bonus stage 1, $6573
+    { mode: 2, speed: 2, fade: 1, volume: 0 },                    // 5 get ready, $6916
+    { mode: 2, speed: 2, fade: 0, volume: 15 },                   // 6 name entry, $6BC0
+    { mode: 2, speed: 0, fade: 0, volume: 15 },                   // 7 game over, $6A91
+    { mode: 2, speed: 2, fade: 0, volume: 15 },                   // 8 Wiz-lab, $AB75
+  ];
+
+  const MODE = 0xB8F1, SPEED = 0xB8F2, FILTER_TYPE = 0xB94D, FADE = 0x45CE, VOLUME = 0x45CF,
+    TEMPO = 0x4838, DURATIONS = 0x46E2, NOTE_LO = 0x471A, NOTE_HI = 0x4775, CMDS = 0x4600,
+    SCRATCH = 0x13, NOTE_BYTE = 0x1B, FILTER_VOICE = 0x57, SWEEP_MODE = 0x4E,
+    CUTOFF = 0x51, CUT_SHIFT = 0x58;
+
+  // Indexed addresses keep the 6502's wrap: zero page,X wraps within page 0, absolute,X does not.
+  const zp = (b) => [b, 0xFF], ab = (b) => [b, 0xFFFF];
+  const at = (p, i) => (p[0] + i) & p[1];
+  // Per voice: its zero-page variables, SID registers, the dispatch offset (command + disp is
+  // the low byte of JMP ($46xx)) and where each indexed access of its copy of the code lands.
+  const VOICES = [
+    { x: 0, r: 0x00, ptr: 0x04, time: 0x0A, si: 0x0D, tr: 0x10, freq: 0x2F, pw: 0x29, on: 0x59,
+      disp: 0x40, tpl: zp(0x87), live: ab(0x469D), callLo: zp(0xE4), callHi: zp(0xE9),
+      loopN: zp(0xEE), endN: zp(0xEF), endLo: zp(0xE5), endHi: zp(0xEA), retLo: zp(0xE5),
+      retHi: ab(0x00EA), env: ab(0x009F) },
+    { x: 1, r: 0x07, ptr: 0x06, time: 0x0B, si: 0x0E, tr: 0x11, freq: 0x15, pw: 0x2B, on: 0x5A,
+      disp: 0x6A, tpl: ab(0x4680), live: ab(0x46C0), callLo: zp(0xF3), callHi: zp(0xF8),
+      loopN: ab(0x4703), endN: ab(0x4704), endLo: zp(0xF4), endHi: zp(0xF9), retLo: zp(0xF4),
+      retHi: ab(0x00F9), env: ab(0x4698) },
+    { x: 2, r: 0x0E, ptr: 0x08, time: 0x0C, si: 0x0F, tr: 0x12, freq: 0x17, pw: 0x2D, on: 0x5B,
+      disp: 0x94, tpl: zp(0xA4), live: zp(0xC1), callLo: ab(0x4708), callHi: ab(0x470D),
+      loopN: ab(0x4712), endN: ab(0x4713), endLo: ab(0x4709), endHi: ab(0x470E),
+      retLo: ab(0x4709), retHi: ab(0x470E), env: ab(0x00BC) },
+  ];
+  // template bytes: 0-7 four pitch steps, 8-11 their counts, 12 delay, 13 pitch mode, 14-15
+  // pulse step counts, 16 pulse delay, 17 pulse mode, 18-21 two pulse steps, 22-23 pulse width,
+  // 24 control, 25 AD, 26 SR, 27 gate time, 28 release time. Live state: 0-23 the same, 24-25
+  // the note's frequency, 26 control, 27 gate, 28 release, 29-32 pitch counters, 33-34 pulse
+  // counters. In arpeggio mode (mode bit 3): 4 tick counter, 6 ticks per note, 8-9 the table,
+  // 10 base note, 11 first index, 12 index.
+  const T = (v, i) => at(v.tpl, i), L = (v, i) => at(v.live, i);
+  const ptr = (v) => m[v.ptr] | m[v.ptr + 1] << 8;
+  const setPtr = (v, a) => { m[v.ptr] = a & 0xFF; m[v.ptr + 1] = a >> 8 & 0xFF; };
+  const rd = (a) => m[a & 0xFFFF];
+
+  let tune = -1, reads = 0;
+  const last = [null, null, null], cmds = [[], [], []];
+
+  // ------------------------------------------------------------------ starting and stopping
+  // $47D0 reset_music: $08 then $00 into $D417-$D400, all voices idle, filter sweep off
+  function resetMusic() {
+    for (let x = 0x17; x >= 0; x--) { W(x, 0x08); W(x, 0); }
+    m[0x46B9] = m[0x46DC] = m[0xDD] = m[SWEEP_MODE] = 0;
+    m[0x59] = m[0x5A] = m[0x5B] = 0;
+    m[FILTER_VOICE] = 0xFF;                            // X after the loop
+  }
+
+  // $45F1 start_tune: the filter-type nibble ($70 for the title), then $47F2 load_tune
+  function startTune(y) {
+    m[FILTER_TYPE] = y === 0x1A ? 0x70 : 0x10;
+    m[TEMPO] = rd(0x5526 + y);                         // record byte 6
+    m[0x5C] = 2; m[0x5D] = 4;
+    y = (y - 1) & 0xFF;
+    do {                                               // voice 3, 2, 1
+      let x = m[0x5D];
+      m[(0x04 + x) & 0xFF] = rd(0x5525 + y);
+      m[(0x05 + x) & 0xFF] = rd(0x5526 + y);
+      m[0x19] = y;
+      x = m[0x5C];
+      const off = m[0x4717 + x];                       // $00, $F9, $1D
+      m[(0x10 + x) & 0xFF] = 0;                        // transpose
+      m[(0x0094 + off) & 0xFFFF] = 0;                  // pitch mode (voice 2: $018D, a slip)
+      m[(0x0098 + off) & 0xFFFF] = 0;                  // pulse mode (voice 2: $0191)
+      m[(0x0D + x) & 0xFF] = 4;                        // stack empty
+      m[(0x0A + x) & 0xFF] = 1;                        // the first event on the first tick
+      m[(0x59 + x) & 0xFF] = 1;                        // active
+      y = (m[0x19] - 2) & 0xFF;
+      m[0x5D] = m[0x5D] - 2;
+      m[0x5C] = m[0x5C] - 1;
+    } while (!(m[0x5C] & 0x80));
+    buildDurations();
+  }
+
+  // $4834 build_duration_table: code d (1-32) lasts d x tempo ticks, 8-bit
+  function buildDurations() {
+    let a = 0;
+    for (let x = 0; x < 0x20; x++) { a = (a + m[TEMPO]) & 0xFF; m[0x46E3 + x] = a; }
+  }
+
+  function init(t) {
+    const md = MODES[t];
+    tune = t;
+    for (let x = 0; x < 3; x++) { last[x] = null; cmds[x] = []; }
+    writes.length = 0; pending = true;
+    resetMusic();
+    m[FADE] = md.fade; m[VOLUME] = md.volume;
+    startTune(7 * t + 5);
+    m[MODE] = md.mode; m[SPEED] = md.speed;
+  }
+
+  function stop() { writes.length = 0; pending = true; resetMusic(); }
+
+  // ------------------------------------------------------------------ the clock
+  // $B90C sound_frame, then $B903, $B8FC and $B8F3 further down the frame: one frame
+  function play() {
+    if (pending) pending = false; else writes.length = 0;
+    stepFade();                                        // $45D0
+    W(0x18, m[VOLUME] | m[FILTER_TYPE]);
+    const mode = m[MODE];
+    if (mode === 0) { idleEffects(0x0E); idleEffects(0x07); idleEffects(0x00); }   // $B94E
+    else {
+      if (mode !== 2) { idleEffects(0x07); idleEffects(0x00); }                  // $B955
+      musicTick();                                     // $B925
+    }
+    if (m[SPEED] === 2) musicTick();                   // $B903
+    if (tune >= 0 && MODES[tune].endCheck) checkMusicEnd();   // the play loop, near line 200
+    if (m[SPEED] !== 0) musicTick();                   // $B8FC
+    if (m[SPEED] === 2) musicTick();                   // $B8F3
+  }
+
+  // $B960 with no effect in the voice's slot writes 0 to its seven registers
+  function idleEffects(r) { for (const i of [5, 6, 0, 1, 2, 3, 4]) W(r + i, 0); }
+
+  // $B925: one tick of the music
+  function musicTick() {
+    const mode = m[MODE];
+    if (mode === 0) return;
+    if (mode !== 1) {
+      shape(VOICES[0]); tick(VOICES[0]);               // $50F4, $4D4E
+      shape(VOICES[1]); tick(VOICES[1]);               // $5269, $4E86
+    }
+    shape(VOICES[2]); tick(VOICES[2]);                 // $53D7, $4FD5
+    updateFilterSweep();                               // $4CB7
+    W(0x18, m[VOLUME] | m[FILTER_TYPE]);
+  }
+
+  // $45D0 step_music_fade: $45CE = 1 fades in, $FF out, one step a frame
+  function stepFade() {
+    const f = m[FADE];
+    if (f === 0) return;
+    if (f & 0x80) { if (m[VOLUME] === 0) m[FADE] = 0; else m[VOLUME]--; }
+    else if (m[VOLUME] === 0x0F) m[FADE] = 0; else m[VOLUME]++;
+  }
+
+  // $45BD check_music_end: when voice 3's track has ended, the music gives the voices up
+  function checkMusicEnd() {
+    if (m[0x5B] !== 0) return;
+    m[MODE] = 0; m[FILTER_TYPE] = 0; W(0x17, 0);
+  }
+
+  // $5513 test_music_playing: any voice active or releasing. With music on voice 3 only, voices
+  // 1 and 2 are never ticked and their flags stay set, so $5522 test_music_voice3 instead, as
+  // check_music_end asks: voice 3's track still running.
+  function playing() {
+    const mode = m[MODE];
+    if (mode === 0) return false;
+    if (mode === 1) return m[0x5B] !== 0;
+    return (m[0x59] | m[0x5A] | m[0x5B] | m[0x46B9] | m[0x46DC] | m[0xDD]) !== 0;
+  }
+
+  // ------------------------------------------------------------------ reading a track
+  // $4D4E v1_tick (and $4E86, $4FD5): count the note down; at 0, read events
+  function tick(v) {
+    if (m[v.on] === 0) return;
+    m[v.time] = m[v.time] - 1;
+    if (m[v.time] === 0) readEvents(v);
+  }
+
+  // $4D5D: step the track pointer on by n
+  function advance(v, n) {
+    const s = m[v.ptr] + n;
+    m[v.ptr] = s & 0xFF;
+    if (s > 0xFF) m[v.ptr + 1] = m[v.ptr + 1] + 1;
+  }
+
+  // $4D64 (j_4E9C, j_4FEB): the event at the track pointer. A note or rest ends the reading; a
+  // command ($C0 and up) jumps through JMP ($46xx), xx = command + 40/6A/94, with A = the byte
+  // after it; its handler moves the pointer on and reads again, or returns (end of track).
+  function readEvents(v) {
+    for (let guard = 0; guard < 100000; guard++) {
+      const p = ptr(v), b = m[p];
+      if (b < 0xC0) { startNote(v, b); return; }
+      const a = rd(p + 1);
+      const lo = (b + v.disp) & 0xFF;
+      const h = m[CMDS + lo] | m[CMDS + ((lo + 1) & 0xFF)] << 8;
+      const H = HANDLERS[h];
+      const list = cmds[v.x];
+      if (list.length >= 16) list.shift();
+      list.push({ addr: p, cmd: b, bytes: Array.from({ length: H ? H[2] : 1 }, (_, i) => rd(p + i)) });
+      if (!H) { m[v.on] = 0; return; }                 // not a handler: the game runs garbage
+      v = VOICES[H[0]];                                // a handler continues in its own voice
+      const n = H[1](v, a);
+      if (n < 0) return;                               // RTS: end of track
+      if (n > 0) advance(v, n);                        // JMP $4D5B (n = 3) or $4D5D
+    }
+    m[v.on] = 0;                                       // no note in 100,000 events: the game hangs
+  }
+
+  // $4D7A v1_start_note (and $4EB2, $5001)
+  function startNote(v, b) {
+    const x0 = v.x, r = v.r;
+    m[NOTE_BYTE] = b;
+    let a = b >= 0x60 ? b - 0x60 : b;                   // $60-$BF: a note with a literal tick count
+    if (a === 0x5F) { recordRead(v, -1); setDuration(v); return; }   // a rest: the SID untouched
+    let x = (a + m[v.tr]) & 0xFF;
+    if (x0 !== 0) W(r + 4, 0x08);                      // voices 2 and 3: test bit, gate off
+    if ((x0 === 0 && m[FILTER_VOICE] === 0) || (x0 === 2 && m[FILTER_VOICE] === 2)) {
+      m[SCRATCH] = x; startFilterProgram(); x = m[SCRATCH];   // the filter voice restarts the sweep
+    }
+    const lo = rd(NOTE_LO + x), hi = rd(NOTE_HI + x);
+    m[L(v, 24)] = lo; m[L(v, 25)] = hi;
+    W(r, lo); W(r + 1, hi);
+    const pwl = m[T(v, 22)], pwh = m[T(v, 23)];
+    W(r + 2, pwl); W(r + 3, pwh);
+    W(r + 5, m[T(v, 25)]); W(r + 6, m[T(v, 26)]);
+    m[L(v, 26)] = m[T(v, 24)];
+    W(r + 4, m[T(v, 24)] & 0xF7);
+    setPulse(v, pwl, pwh);
+    m[L(v, 17)] = m[T(v, 17)];
+    if (m[T(v, 17)] !== 0) {                           // a pulse sweep: its parameters
+      m[L(v, 22)] = pwl; m[L(v, 23)] = pwh;
+      m[v.pw] = pwl; m[v.pw + 1] = pwh;
+      for (const i of [21, 20, 19, 18, 16]) m[L(v, i)] = m[T(v, i)];
+      m[L(v, 14)] = m[T(v, 14)]; m[L(v, 33)] = m[T(v, 14)];
+      m[L(v, 34)] = m[T(v, 15)]; m[L(v, 15)] = m[T(v, 15)];
+    }
+    const pm = m[T(v, 13)];
+    m[L(v, 13)] = pm;
+    if (pm !== 0) {                                    // a pitch effect: its parameters
+      for (let i = 12; i >= 0; i--) m[L(v, i)] = m[T(v, i)];
+      if (pm & 0x08) {                                 // arpeggio: the base note
+        const nb = m[NOTE_BYTE];
+        // a literal-duration note ($60-$BF) comes out 2 higher: SBC #$5F then ADC with carry
+        const base = (nb < 0x60 ? nb + m[v.tr] : nb - 0x5F + m[v.tr] + 1) & 0xFF;
+        m[L(v, 10)] = base;
+        if (base === 0) restartPitch(v);               // BNE skips the restart only when not 0
+      } else restartPitch(v);
+    }
+    m[L(v, 27)] = m[T(v, 27)]; m[L(v, 28)] = m[T(v, 28)];
+    recordRead(v, x);
+    setDuration(v);
+  }
+
+  // $4E69 v1_set_duration: a duration code (x tempo) or a literal tick count; past the event
+  function setDuration(v) {
+    let a = rd(ptr(v) + 1);
+    if (m[NOTE_BYTE] < 0x60) a = rd(DURATIONS + a);
+    m[v.time] = a;
+    advance(v, 2);
+    if (last[v.x]) last[v.x].ticks = a || 256;
+  }
+
+  // for the display: the note or rest event, and the commands read on the way to it
+  function recordRead(v, note) {
+    const p = ptr(v);
+    last[v.x] = { n: ++reads, addr: p, bytes: [m[p], rd(p + 1)], rest: note < 0, note,
+      literal: m[NOTE_BYTE] >= 0x60, ticks: 0, cmds: cmds[v.x] };
+    cmds[v.x] = [];
+  }
+
+  // $4848 set_v1_pulse (and $485F, $4874): pulse width X/Y, step counters from live 14/15
+  function setPulse(v, lo, hi) {
+    m[v.pw] = lo; m[v.pw + 1] = hi;
+    m[L(v, 33)] = m[L(v, 14)]; m[L(v, 34)] = m[L(v, 15)];
+  }
+  // $4842 restart_v1_pulse: back to the note's pulse width
+  function restartPulse(v) { setPulse(v, m[L(v, 22)], m[L(v, 23)]); }
+  // $489A restart_v1_pitch: back to the note's frequency; $48A4 reload the step counters
+  function restartPitch(v) {
+    m[v.freq] = m[L(v, 24)]; m[v.freq + 1] = m[L(v, 25)];
+    reloadPitchCounts(v);
+  }
+  function reloadPitchCounts(v) {
+    m[L(v, 32)] = m[L(v, 11)]; m[L(v, 31)] = m[L(v, 10)];
+    m[L(v, 30)] = m[L(v, 9)]; m[L(v, 29)] = m[L(v, 8)];
+  }
+
+  // ------------------------------------------------------------------ the commands
+  // Each handler gets the voice whose code it is and A (the byte after the command; Y = 1)
+  // and returns how far to move the pointer before reading on (3 = JMP next_event, 1-4 = JMP
+  // $4D5D with A), 0 to read at the pointer it set, or -1 for RTS.
+  function cmdReturn(v) {                              // $C0 $4A09
+    const y = m[v.si];
+    if (y === 4) { m[v.on] = m[v.on] - 1; return -1; }   // stack empty: end of track
+    m[v.si] = y + 1;
+    setPtr(v, m[at(v.retLo, y)] | m[at(v.retHi, y)] << 8);
+    return 0;
+  }
+  function pushReturn(v, n) {                          // the address n bytes on, onto the stack
+    const x = m[v.si], s = m[v.ptr] + n;
+    m[at(v.callLo, x)] = s & 0xFF;
+    m[at(v.callHi, x)] = (m[v.ptr + 1] + (s >> 8)) & 0xFF;
+    return x;
+  }
+  function cmdCall(v) {                                // $C2 lo hi: call a pattern ($48FF)
+    pushReturn(v, 3); m[v.si] = m[v.si] - 1;
+    const p = ptr(v); setPtr(v, rd(p + 1) | rd(p + 2) << 8);
+    return 0;
+  }
+  function cmdCallT(v, a) {                            // $C6 t lo hi: transpose, call ($48F9)
+    m[v.tr] = a;
+    pushReturn(v, 4); m[v.si] = m[v.si] - 1;
+    const p = ptr(v); setPtr(v, rd(p + 2) | rd(p + 3) << 8);
+    return 0;
+  }
+  function cmdJump(v) {                                // $C4 lo hi ($49B4)
+    const p = ptr(v); setPtr(v, rd(p + 1) | rd(p + 2) << 8);
+    return 0;
+  }
+  function cmdJumpT(v, a) {                            // $C8 t lo hi: transpose, jump ($49B1)
+    m[v.tr] = a;
+    const p = ptr(v); setPtr(v, rd(p + 2) | rd(p + 3) << 8);
+    return 0;
+  }
+  function cmdInstByte(v, a) { m[T(v, a)] = rd(ptr(v) + 2); return 3; }   // $CA i v ($49E9)
+  function cmdLoop(v, a) {                             // $CC n: repeat to $CE n times ($4981)
+    const x = pushReturn(v, 2);
+    m[at(v.loopN, x)] = a;
+    m[v.si] = x - 1;
+    return 2;
+  }
+  function cmdLoopEnd(v) {                             // $CE ($49F2)
+    const x = m[v.si], c = at(v.endN, x);
+    m[c] = m[c] - 1;
+    if (m[c] !== 0) { setPtr(v, m[at(v.endLo, x)] | m[at(v.endHi, x)] << 8); return 0; }
+    m[v.si] = x + 1;
+    return 1;
+  }
+  function cmdLoadInst(v, a) {                         // $D0 n lo hi: n+1 bytes to the template ($4967)
+    const p = ptr(v), src = rd(p + 2) | rd(p + 3) << 8;
+    let x = a;
+    do { m[T(v, x)] = rd(src + x); x = (x - 1) & 0xFF; } while (!(x & 0x80));
+    return 4;
+  }
+  function cmdEnvelope(v, a) {                         // $D2 lo hi: template 24-28 ($4A31)
+    m[SCRATCH] = a; m[SCRATCH + 1] = rd(ptr(v) + 2);
+    const src = m[SCRATCH] | m[SCRATCH + 1] << 8;
+    for (let y = 4; y >= 0; y--) m[at(v.env, y)] = rd(src + y);
+    return 3;
+  }
+  function cmdLiveByte(v, a) { m[L(v, a)] = rd(ptr(v) + 2); return 3; }   // $D4 i v ($4A20)
+  function cmdCode(v, a) {                             // $D6 lo hi: call machine code ($491D)
+    m[SCRATCH] = a; m[SCRATCH + 1] = rd(ptr(v) + 2);
+    const target = m[SCRATCH] | m[SCRATCH + 1] << 8;
+    if (target === 0x5AFF) {                           // music_code_filter_all
+      W(0x17, 0xF7); W(0x18, 0x1F); m[FILTER_VOICE] = 3;
+      startFilterProgram();
+    } else if (target === 0x5F2E) m[FILTER_VOICE] = 3; // music_code_filter_free
+    return 3;                                          // RTS to next_event
+  }
+  function cmdTranspose(v, a) { m[v.tr] = a; return 2; }                   // $D8 t ($4A2A)
+  function cmdInstWord(v, a) {                         // $DA i lo hi ($492F)
+    const p = ptr(v);
+    m[T(v, a)] = rd(p + 2); m[T(v, a + 1)] = rd(p + 3);
+    return 4;
+  }
+  function cmdLiveWord(v, a) {                         // $DC i lo hi ($493F)
+    const p = ptr(v);
+    m[L(v, a)] = rd(p + 2); m[L(v, a + 1)] = rd(p + 3);
+    return 4;
+  }
+  function cmdFilterOn(v) {                            // $DE: voice 1 $49DA, voice 3 $4C42
+    if (v.x === 0) { W(0x17, 0xF1); m[FILTER_VOICE] = 0; W(0x18, 0x1F); }
+    else { W(0x18, 0x1F); W(0x17, 0xF4); m[FILTER_VOICE] = 2; }
+    return 1;
+  }
+  function cmdFilterOff(v) {                           // $E2: voice 1 $49C1, voice 3 $4C2E
+    m[SWEEP_MODE] = 0; W(0x17, 0xF0); m[FILTER_VOICE] = 3;
+    if (v.x === 0) W(0x18, 0x1F);                      // voice 3's copy leaves $D418 alone
+    return 1;
+  }
+  function cmdFilterProgram(v, a) {                    // $E0 lo hi: 16 bytes to $31-$40 ($4951)
+    const src = a | rd(ptr(v) + 2) << 8;
+    for (let x = 15; x >= 0; x--) m[0x31 + x] = rd(src + x);
+    return 3;
+  }
+  function cmdPitchMode5(v) { m[T(v, 13)] = 5; return 1; }   // $E4 ($49E1)
+  function cmdPitchMode7(v) { m[T(v, 13)] = 7; return 1; }   // $E6 ($49DE)
+  function cmdPitch(v, a) {                            // $E8 lo hi: template 0-13 ($499B)
+    const src = a | rd(ptr(v) + 2) << 8;
+    for (let x = 13; x >= 0; x--) m[T(v, x)] = rd(src + x);
+    return 3;
+  }
+  function cmdTempo(v, a) { m[TEMPO] = a; buildDurations(); return 2; }   // $EA n ($4C8F)
+
+  // handler address -> [voice, handler, length in bytes] as the three tables point at them
+  const HANDLERS = {};
+  const def = (x, list) => { for (const [addr, fn, len] of list) HANDLERS[addr] = [x, fn, len]; };
+  def(0, [[0x4A09, cmdReturn, 1], [0x48FF, cmdCall, 3], [0x49B4, cmdJump, 3],
+    [0x48F9, cmdCallT, 4], [0x49B1, cmdJumpT, 4], [0x49E9, cmdInstByte, 3], [0x4981, cmdLoop, 2],
+    [0x49F2, cmdLoopEnd, 1], [0x4967, cmdLoadInst, 4], [0x4A31, cmdEnvelope, 3],
+    [0x4A20, cmdLiveByte, 3], [0x491D, cmdCode, 3], [0x4A2A, cmdTranspose, 2],
+    [0x492F, cmdInstWord, 4], [0x493F, cmdLiveWord, 4], [0x49DA, cmdFilterOn, 1],
+    [0x4951, cmdFilterProgram, 3], [0x49C1, cmdFilterOff, 1], [0x49E1, cmdPitchMode5, 1],
+    [0x49DE, cmdPitchMode7, 1], [0x499B, cmdPitch, 3]]);
+  def(1, [[0x4B2A, cmdReturn, 1], [0x4A4B, cmdCall, 3], [0x4AEF, cmdJump, 3],
+    [0x4A45, cmdCallT, 4], [0x4AEC, cmdJumpT, 4], [0x4B08, cmdInstByte, 3], [0x4ABA, cmdLoop, 2],
+    [0x4B12, cmdLoopEnd, 1], [0x4A9F, cmdLoadInst, 4], [0x4B52, cmdEnvelope, 3],
+    [0x4B48, cmdLiveByte, 3], [0x4A69, cmdCode, 3], [0x4B41, cmdTranspose, 2],
+    [0x4A7B, cmdInstWord, 4], [0x4A8D, cmdLiveWord, 4], [0x4AFC, cmdPitchMode5, 1],
+    [0x4AD5, cmdPitch, 3]]);
+  def(2, [[0x4C6E, cmdReturn, 1], [0x4B6C, cmdCall, 3], [0x4C21, cmdJump, 3],
+    [0x4B66, cmdCallT, 4], [0x4C4B, cmdInstByte, 3], [0x4BEE, cmdLoop, 2],
+    [0x4C54, cmdLoopEnd, 1], [0x4BD4, cmdLoadInst, 4], [0x4CA3, cmdEnvelope, 3],
+    [0x4C86, cmdLiveByte, 3], [0x4B8C, cmdCode, 3], [0x4C9C, cmdTranspose, 2],
+    [0x4B9E, cmdInstWord, 4], [0x4BAE, cmdLiveWord, 4], [0x4C42, cmdFilterOn, 1],
+    [0x4BBE, cmdFilterProgram, 3], [0x4C2E, cmdFilterOff, 1], [0x4C0B, cmdPitch, 3],
+    [0x4C8F, cmdTempo, 2]]);
+
+  // ------------------------------------------------------------------ every tick
+  // $50F4 v1_shape_sound (and $5269, $53D7): gate-off and release, then the effects. A release
+  // time of 0 means nothing to do; $FF holds the gate or the release for ever.
+  function shape(v) {
+    const r = v.r;
+    if (m[L(v, 28)] === 0) return;
+    let gateGone = false;
+    if (m[L(v, 26)] & 0x08) {                          // control bit 3: gate off n ticks before the end
+      if (m[v.time] >= m[L(v, 27)]) { effects(v); return; }
+      m[L(v, 27)] = 0;
+      const a = m[L(v, 26)] & 0xF6;
+      m[L(v, 26)] = a;
+      if (a !== 0) { W(r + 4, a); effects(v); return; }
+      gateGone = true;                                 // A = 0: on into the release, this tick
+    }
+    if (gateGone || m[L(v, 27)] === 0) {               // counting the release down
+      if (m[L(v, 28)] === 0xFF) { effects(v); return; }
+      m[L(v, 28)] = m[L(v, 28)] - 1;
+      if (m[L(v, 28)] !== 0) { effects(v); return; }
+      for (let i = 6; i >= 0; i--) W(r + i, 0);        // released: the voice cleared
+      if ((v.x === 0 && m[FILTER_VOICE] === 0) || (v.x === 2 && m[FILTER_VOICE] === 2))
+        m[SWEEP_MODE] = 0;                             // the filter voice ends the sweep ($512E)
+      return;
+    }
+    if (m[L(v, 27)] === 0xFF) { effects(v); return; }  // counting the gate down
+    m[L(v, 27)] = m[L(v, 27)] - 1;
+    if (m[L(v, 27)] === 0) W(r + 4, m[L(v, 26)] & 0xF6);
+    effects(v);
+  }
+
+  function effects(v) { pulseSweep(v); pitchEffect(v); }
+
+  // $5149 v1_pulse_sweep: after a delay, two steps with counts, then hold, repeat or restart
+  function pulseSweep(v) {
+    const r = v.r;
+    if (m[L(v, 17)] === 0) return;
+    if (m[L(v, 16)] !== 0) { m[L(v, 16)] = m[L(v, 16)] - 1; return; }
+    for (let k = 0; k < 3; k++) {                      // k > 1: both counts reload to 0 (the game hangs)
+      let x = m[v.pw], y = m[v.pw + 1], s;
+      if (m[L(v, 33)] !== 0) {
+        m[L(v, 33)] = m[L(v, 33)] - 1;
+        s = x + m[L(v, 18)]; x = s & 0xFF; y = (y + m[L(v, 19)] + (s >> 8)) & 0xFF;
+      } else if (m[L(v, 34)] !== 0) {
+        m[L(v, 34)] = m[L(v, 34)] - 1;
+        s = x + m[L(v, 20)]; x = s & 0xFF; y = (y + m[L(v, 21)] + (s >> 8)) & 0xFF;
+      } else {
+        const md = m[L(v, 17)] & 0x81;
+        if (md !== 0) {
+          if (md & 0x80) restartPulse(v); else setPulse(v, x, y);
+          continue;
+        }
+      }
+      m[v.pw] = x; m[v.pw + 1] = y;
+      W(r + 2, x); W(r + 3, y);
+      return;
+    }
+  }
+
+  // $51A7 v1_pitch_effect: a delay (sliding by step 4 if mode bit 1), then the arpeggio or steps
+  function pitchEffect(v) {
+    const pm = m[L(v, 13)];
+    if (pm === 0) return;
+    if (pm & 0x08) { arpeggio(v); return; }
+    if (m[L(v, 12)] !== 0) {
+      m[L(v, 12)] = m[L(v, 12)] - 1;
+      if (pm & 0x02) addStep(v, m[v.freq], m[v.freq + 1], 6);
+      return;
+    }
+    // $51FA v1_pitch_steps: four 16-bit steps with counts, then hold, repeat or restart
+    for (let k = 0; k < 3; k++) {                      // k > 1: all counts reload to 0 (the game hangs)
+      const x = m[v.freq], y = m[v.freq + 1];
+      for (let i = 0; i < 4; i++) {
+        if (m[L(v, 29 + i)] !== 0) {
+          m[L(v, 29 + i)] = m[L(v, 29 + i)] - 1;
+          addStep(v, x, y, 2 * i);
+          return;
+        }
+      }
+      const md = m[L(v, 13)] & 0x81;
+      if (md === 0) { setFreq(v, x, y); return; }
+      if (md & 0x80) restartPitch(v); else reloadPitchCounts(v);
+    }
+  }
+  function addStep(v, x, y, i) {                       // frequency + live word i
+    const s = x + m[L(v, i)];
+    setFreq(v, s & 0xFF, (y + m[L(v, i + 1)] + (s >> 8)) & 0xFF);
+  }
+  function setFreq(v, x, y) {
+    W(v.r, x); W(v.r + 1, y);
+    m[v.freq] = x; m[v.freq + 1] = y;
+  }
+
+  // $51C5 v1_arpeggio: every n ticks the base note plus the next table entry, read downwards
+  function arpeggio(v) {
+    m[L(v, 4)] = m[L(v, 4)] - 1;
+    if (m[L(v, 4)] !== 0) return;
+    m[L(v, 4)] = m[L(v, 6)];
+    let y = m[L(v, 12)];
+    if (y & 0x80) y = m[L(v, 11)];
+    m[SCRATCH] = m[L(v, 8)]; m[SCRATCH + 1] = m[L(v, 9)];
+    const a = (m[L(v, 10)] + rd((m[SCRATCH] | m[SCRATCH + 1] << 8) + y)) & 0xFF;
+    m[L(v, 12)] = y - 1;
+    W(v.r, rd(NOTE_LO + a)); W(v.r + 1, rd(NOTE_HI + a));
+  }
+
+  // ------------------------------------------------------------------ the filter
+  // $4D3B start_filter_program: the program $31-$40 into its working copy, the sweep restarted
+  function startFilterProgram() {
+    for (let x = 7; x >= 0; x--) { m[0x41 + x] = m[0x31 + x]; m[0x49 + x] = m[0x39 + x]; }
+    restartFilterSweep();
+    writeCutoff(m[CUTOFF], m[CUTOFF + 1]);
+  }
+  // $4881 restart_filter_sweep, $4889 reload_filter_counts
+  function restartFilterSweep() { m[CUTOFF] = m[0x4F]; m[CUTOFF + 1] = m[0x50]; reloadFilterCounts(); }
+  function reloadFilterCounts() { for (let i = 0; i < 4; i++) m[0x53 + i] = m[0x49 + i]; }
+  // $4D10 write_filter_cutoff: bits 0-2 to $D415, bits 3-10 to $D416
+  function writeCutoff(x, y) {
+    W(0x15, x & 0x07);
+    m[CUT_SHIFT] = ((y & 3) << 6 | x >> 2) & 0xFF;
+    W(0x16, ((y & 7) << 5 | x >> 3) & 0xFF);
+  }
+  // $4CB7 update_filter_sweep: a delay (sliding by step 4 if mode bit 1), four cutoff steps,
+  // then hold, repeat or restart; the cutoff is written every tick once the delay is over
+  function updateFilterSweep() {
+    const sm = m[SWEEP_MODE];
+    if (sm === 0) return;
+    if (m[0x4D] !== 0) {
+      m[0x4D] = m[0x4D] - 1;
+      if (sm & 0x02) addCutoff(m[CUTOFF], m[CUTOFF + 1], 6);
+      return;
+    }
+    for (let k = 0; k < 3; k++) {                      // k > 1: all counts reload to 0 (the game hangs)
+      const x = m[CUTOFF], y = m[CUTOFF + 1];
+      for (let i = 0; i < 4; i++) {
+        if (m[0x53 + i] !== 0) { m[0x53 + i] = m[0x53 + i] - 1; addCutoff(x, y, 2 * i); return; }
+      }
+      const md = m[SWEEP_MODE] & 0x81;
+      if (md === 0) { m[CUTOFF] = x; m[CUTOFF + 1] = y; writeCutoff(x, y); return; }
+      if (md & 0x80) restartFilterSweep(); else reloadFilterCounts();
+    }
+  }
+  function addCutoff(x, y, i) {                        // cutoff + step word $41 + i
+    const s = x + m[0x41 + i];
+    x = s & 0xFF; y = (y + m[0x42 + i] + (s >> 8)) & 0xFF;
+    m[CUTOFF] = x; m[CUTOFF + 1] = y;
+    writeCutoff(x, y);
+  }
+
+  // ------------------------------------------------------------------ for the display
+  // voice x: whether the music plays it, whether its track still runs, its track pointer, the
+  // note or rest event it read last ({n, addr, bytes, rest, note: the note number after
+  // transposing, 0 = C-0 as in the note table, literal, ticks, cmds: the commands read on the
+  // way, each {addr, cmd, bytes}}), its instrument template (29 bytes, at tplAddr) and transpose
+  function voice(x) {
+    const v = VOICES[x], mode = m[MODE];
+    const tpl = [];
+    for (let i = 0; i < 29; i++) tpl.push(m[T(v, i)]);
+    return { on: mode === 2 || (mode === 1 && x === 2), active: m[v.on] !== 0, track: ptr(v),
+      read: last[x], tpl, tplAddr: v.tpl[0], transpose: m[v.tr] };
+  }
+
+  return { m, sid, writes, modes: MODES, init, stop, play, playing, voice };
+}
+
+// One short name per tune, in the order of the tune table at $5525.
+const TUNES = ['police alarm', 'bonus stage 2', 'colour completed', 'title', 'bonus stage 1',
+  'get ready', 'name entry', 'game over', 'Wiz-lab'];
+// Each tune's music mode $B8F1 and speed $B8F2 as the game sets them (and the fade), from the
+// port itself so there is one table.
+const MODES = createDriver(null).modes;
+
+
+
+const NAMES = ['Police alarm', 'Bonus stage 2', 'Colour completed', 'Title', 'Bonus stage 1', 'Get ready', 'Name entry', 'Game over', 'Wiz-lab'];
+function mountMusic(root) {
+  if (!root) return;
+  const S = globalThis.C64Sid;
+  if (!S) { root.textContent = 'The player needs the site\u2019s shared sound script, ../../lib/sid.js: open this page from the built site.'; return; }
+  const { hex, bytes, noteName } = S;
+  S.mount(root, {
+    driver: createDriver, data: WIZ_MUSIC, tunes: NAMES,
+    rows: [
+      { k: 'Plays', f: (v) => v.on ? (v.active ? 'music' : 'music, track ended') : 'sound effects (none here)' },
+      { k: 'Track', f: (v) => v.on && v.track != null ? hex(v.track, 4) : '-' },
+      { k: 'Read', f: (v) => v.read ? hex(v.read.addr, 4) + ': ' + bytes(Array.from(v.read.bytes)) : null },
+      { in: true, f: (v) => v.read ? (v.read.rest ? 'rest' : noteName(v.read.note)) + ', ' + v.read.ticks + ' ticks' : null },
+      { k: 'Instrument', f: (v) => hex(v.tplAddr, 4) + (v.transpose ? ', transpose ' + v.transpose : '') },
+      { in: true, mono: true, f: (v) => bytes(Array.from(v.tpl)) },
+    ],
+    mark: (v, p) => !!(v.read && !v.read.rest && (!p || !p.read || p.read.n !== v.read.n)),
+  });
+}
+mountMusic(document.getElementById('music'));
+})();
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
+               '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown', 'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+  const RGB = PAL.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const $ = id => document.getElementById(id);
+  const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  const signed = b => b & 0x80 ? b - 256 : b;
+
+  /* ---------------------------------------------------------------- 01 the frame */
+  const F = { mem: new Uint8Array(0x4000), colour: b64(WIZ_FRAME.colour), bands: WIZ_FRAME.bands.map(b => ({ from: b.from, vic: Array.from(b64(b.vic)), ptrs: b.ptrs })) };
+  for (const r of WIZ_FRAME.regions) F.mem.set(b64(r.b), r.a - 0xC000);
+  const BANDS = [   // [interrupt line, routine, what it does, first and last line it governs (null: sound only)]
+    [1, '$B90C', 'Sound: the volume fade, the sound effects on the voices the music leaves free, and the music. It changes nothing on the screen.', null, null],
+    [20, '$89BB', 'The icon bar: seven sprites in the open top border, their shapes from $EFF8 (the screen at $EC00 is chosen only for its sprite pointers).', 21, 48],
+    [48, '$8A52', 'The score rows: rows 0-1 of the screen at $E000 in the small font at $F000. Loads every play sprite from the copy of the video registers at $E7C4, and sprite 0 becomes the beam\'s upper arc. Ends with the NMI check.', 49, 65],
+    [63, '$B903', 'Sound: a second music tick, when the tune\'s speed asks for more than one a frame.', null, null],
+    [65, '$8A25', 'The landscape: one of the three screens $E000, $E400, $E800, characters from $F800, multicolour, 38 columns, the fine scroll, and 25 rows again. These settings last until the panel.', 66, 238],
+    [101, '$8B0F', 'Sprite 0 becomes the Wizball, two lines above it. This band\'s line is rewritten every frame.', 102, 123],
+    [123, '$8B22', 'Sprite 0 becomes the beam\'s lower arc, 20 lines below the Wizball\'s band; with the beam off it is a blank shape.', 124, 147],
+    [229, '$B8FC', 'Sound: another music tick.', null, null],
+    [232, '$8BCB', 'Black below the landscape; sprite 0 moved away.', 233, 238],
+    [238, '$8B46', 'The panel: the level digit and the four cauldrons, their shapes from $F7F8 (the screen at $F400).', 239, 287],
+    [247, '$8BBB', 'Switches to 24 rows after line 247, too late for the bottom border to start, so the border stays open. Stores the check value for the NMI watchdog.', 248, 287],
+    [255, '$B8F3', 'Sound: another music tick.', null, null],
+  ];
+  const frameCv = $('frameCv'), fctx = frameCv.getContext('2d');
+  let showSprites = true, band = -1;
+  function drawFrame() {
+    const r = renderWizballFrame(F, { noSprites: !showSprites });
+    const img = fctx.createImageData(r.w, r.h);
+    for (let i = 0; i < r.px.length; i++) { const c = RGB[r.px[i]]; img.data[4 * i] = c[0]; img.data[4 * i + 1] = c[1]; img.data[4 * i + 2] = c[2]; img.data[4 * i + 3] = 255; }
+    fctx.putImageData(img, 0, 0);
+    if (band >= 0) {
+      const B = BANDS[band];
+      fctx.fillStyle = 'rgba(0,0,0,.55)';
+      if (B[3] != null) {
+        const y0 = Math.max(0, B[3] - 16), y1 = Math.min(272, B[4] + 1 - 16);
+        if (y0 > 0) fctx.fillRect(0, 0, 384, y0);
+        if (y1 < 272) fctx.fillRect(0, y1, 384, 272 - y1);
+        fctx.strokeStyle = '#ffd24a'; fctx.lineWidth = 1; fctx.strokeRect(0.5, y0 + 0.5, 383, Math.max(1, y1 - y0 - 1));
+      } else {
+        fctx.fillRect(0, 0, 384, 272);
+        if (B[0] >= 16) { fctx.fillStyle = '#ffd24a'; fctx.fillRect(0, B[0] - 16, 384, 1); }
+      }
+    }
+  }
+  const bandBtns = $('bandBtns');
+  BANDS.forEach((b, i) => {
+    const e = document.createElement('button'); e.className = 'btn'; e.textContent = 'line ' + b[0];
+    e.setAttribute('aria-pressed', 'false');
+    e.onclick = () => {
+      band = band === i ? -1 : i;
+      [...bandBtns.children].forEach((x, k) => x.setAttribute('aria-pressed', k === band ? 'true' : 'false'));
+      $('bandCap').innerHTML = band < 0 ? '<b>Choose a band</b> to light the lines it controls.' :
+        `<b>Line ${b[0]}, <code>${b[1]}</code>.</b> ${esc(b[2])}` + (b[3] == null ? '' : ` Lines ${b[3]}-${b[4]}.`);
+      drawFrame();
+    };
+    bandBtns.appendChild(e);
+  });
+  $('sprBtn').onclick = () => { showSprites = !showSprites; $('sprBtn').setAttribute('aria-pressed', String(showSprites)); drawFrame(); };
+  drawFrame();
+
+  /* ---------------------------------------------------------------- 02 the ball */
+  const ROT = b64(WIZ_TABLES.rotation);
+  const PX = [0, 1 / 8, 1 / 4, 1 / 2, 1, 1.5, 2];
+  const speedPx = sp => { const i = signed(sp); return i >= 0 ? PX[i] : -PX[-i]; };
+  {
+    const t = $('speedTable');
+    let h = '<tr><th>Spin</th>' + ['0-3', '4-11', '12-19', '20-27', '28-35', '36-43', '44-48'].map(x => `<td class="n">${x}</td>`).join('') + '</tr>';
+    h += '<tr><th>Speed, pixels a frame</th>' + PX.map(x => `<td class="n">${x === 0 ? '0' : x === 1 / 8 ? '1/8' : x === 1 / 4 ? '1/4' : x === 1 / 2 ? '1/2' : x}</td>`).join('') + '</tr>';
+    t.innerHTML = h;
+  }
+  const ballCv = $('ballCv'), bctx = ballCv.getContext('2d');
+  let S, held = 0, ground = 0, stars = [];
+  function resetBall() {
+    S = { spin: 0, angHi: 0, angLo: 0, speed: 0, yHi: 97, yLo: 160, vsHi: 1, vsLo: 192, dir: 1, thrust: $('ballT').getAttribute('aria-pressed') === 'true' ? 1 : 0, antigrav: 0 };
+    ground = 0; stars = Array.from({ length: 24 }, (_, i) => [((i * 97) % 320), 8 + ((i * 53) % 110), 1 + (i % 3)]);
+  }
+  function drawSpriteMC(ctx, d, x, y, cols) {
+    for (let r = 0; r < 21; r++) for (let b = 0; b < 12; b++) {
+      const q = (d[r * 3 + (b >> 2)] >> (6 - 2 * (b & 3))) & 3;
+      if (!q) continue;
+      ctx.fillStyle = PAL[cols[q]]; ctx.fillRect(x + 2 * b, y + r, 2, 1);
+    }
+  }
+  function drawBall() {
+    bctx.fillStyle = '#000'; bctx.fillRect(0, 0, 320, 176);
+    const v = speedPx(S.speed);
+    for (const s of stars) {
+      s[0] = ((s[0] - v * s[2] / 3) % 320 + 320) % 320;
+      bctx.fillStyle = PAL[s[2] === 3 ? 15 : s[2] === 2 ? 12 : 11]; bctx.fillRect(Math.round(s[0]), s[1], 1, 1);
+    }
+    ground = ((ground + v) % 16 + 16) % 16;
+    for (let x = -16; x < 336; x += 4) for (let y = 0; y < 8; y += 2) {
+      bctx.fillStyle = PAL[((x >> 2) + (y >> 1)) & 1 ? 12 : 11];
+      bctx.fillRect(Math.round(x - ground), 162 + y, 2, 1);
+    }
+    bctx.fillStyle = PAL[12]; bctx.fillRect(0, 160, 320, 1);
+    const frame = S.angHi & 15;
+    drawSpriteMC(bctx, ROT.subarray(frame * 64, frame * 64 + 63), 148, S.yHi - 60, [0, 11, 5, 13]);
+    const out = $('ballOut');
+    out.innerHTML = [['Spin', signed(S.spin)], ['Rotation frame', hex(0x10 + frame)], ['Speed', `${signed(S.speed)} (${speedPx(S.speed)} px a frame)`],
+      ['Height', 200 - S.yHi], ['Falling speed', ((S.vsHi * 256 + S.vsLo) / 256).toFixed(2) + (S.dir ? ' down' : ' up')]]
+      .map(([k, x]) => `<div><span class="k">${k}</span><span>${x}</span></div>`).join('');
+  }
+  let last = 0, acc = 0;
+  function tick(t) {
+    if (!last) last = t;
+    acc += Math.min(200, t - last); last = t;
+    let n = 0;
+    while (acc >= 20 && n < 10) { acc -= 20; n++; wizballPass(S, 0xFF & ~held); }
+    if (n) drawBall();
+    requestAnimationFrame(tick);
+  }
+  const hold = (el, bit) => {
+    const on = e => { e.preventDefault(); held |= bit; el.setAttribute('aria-pressed', 'true'); };
+    const off = () => { held &= ~bit; el.setAttribute('aria-pressed', 'false'); };
+    el.addEventListener('pointerdown', on); el.addEventListener('pointerup', off); el.addEventListener('pointerleave', off); el.addEventListener('pointercancel', off);
+  };
+  hold($('ballL'), 4); hold($('ballR'), 8);
+  ballCv.tabIndex = 0;
+  ballCv.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { held |= 4; e.preventDefault(); } if (e.key === 'ArrowRight') { held |= 8; e.preventDefault(); } });
+  ballCv.addEventListener('keyup', e => { if (e.key === 'ArrowLeft') held &= ~4; if (e.key === 'ArrowRight') held &= ~8; });
+  $('ballT').onclick = () => { const on = $('ballT').getAttribute('aria-pressed') !== 'true'; $('ballT').setAttribute('aria-pressed', String(on)); S.thrust = on ? 1 : 0; };
+  $('ballReset').onclick = resetBall;
+  resetBall(); drawBall(); requestAnimationFrame(tick);
+
+  /* ---------------------------------------------------------------- 03 the keys */
+  const MATRIX = [['DEL', 'RETURN', 'CRSR →', 'F7', 'F1', 'F3', 'F5', 'CRSR ↓'], ['3', 'W', 'A', '4', 'Z', 'S', 'E', 'SHIFT'],
+    ['5', 'R', 'D', '6', 'C', 'F', 'T', 'X'], ['7', 'Y', 'G', '8', 'B', 'H', 'U', 'V'], ['9', 'I', 'J', '0', 'M', 'K', 'O', 'N'],
+    ['+', 'P', 'L', '-', '.', ':', '@', ','], ['£', '*', ';', 'HOME', 'SHIFT', '=', '↑', '/'], ['1', '←', 'CTRL', '2', 'SPACE', 'C=', 'Q', 'STOP']];
+  function drawKeys(full) {
+    $('kFull').setAttribute('aria-pressed', String(full)); $('kPlay').setAttribute('aria-pressed', String(!full));
+    let h = '';
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+      const play = r >= 5 && c >= 5, code = full ? 1 + 8 * (7 - r) + (7 - c) : play ? 1 + 3 * (7 - r) + (7 - c) : null;
+      h += `<div class="key${full || play ? ' on' : ''}">${esc(MATRIX[r][c])}<small>${code == null ? '&nbsp;' : code}</small></div>`;
+    }
+    $('keys').innerHTML = h;
+  }
+  $('kFull').onclick = () => drawKeys(true); $('kPlay').onclick = () => drawKeys(false);
+  drawKeys(false);
+
+  /* ---------------------------------------------------------------- 05 the mixer */
+  const REC = WIZ_TABLES.recipes, LC = WIZ_TABLES.levelColours;
+  let mixLevel = 0, mixTarget = LC[0], units = [0, 0, 0];
+  const mixOf = (t, u) => [0, 1, 2].reduce((s, k) => s + Math.min(REC[3 * t + k], u[k]), 0);   // $9E2C
+  function drawMix() {
+    $('mixLvl').innerHTML = '<span class="k">Level</span>' + [0, 1, 2, 3, 4, 5, 6, 7].map(l => `<button class="btn" data-l="${l}" aria-pressed="${l === mixLevel}">${l + 1}</button>`).join('');
+    $('mixTarget').innerHTML = '<span class="k">Colour</span>' + [0, 1, 2].map(k => { const c = LC[4 * mixLevel + k]; return `<button class="btn" data-t="${c}" aria-pressed="${c === mixTarget}"><span class="sw" style="background:${PAL[c]}"></span> ${NAMES[c]}</button>`; }).join('');
+    $('mixSliders').innerHTML = ['red', 'green', 'blue'].map((n, k) => `<label>${n}</label><input type="range" min="0" max="20" value="${units[k]}" data-u="${k}"><span class="mono">${units[k]}</span>`).join('');
+    const m = mixOf(mixTarget, units), rc = [2, 5, 6];
+    $('mixBars').innerHTML = [0, 1, 2].map(k => `<div><div class="bar"><i style="height:${units[k] * 5}%;background:${PAL[rc[k]]}"></i></div><div class="barl">${units[k]}</div></div>`).join('') +
+      `<div><div class="bar" style="border-color:var(--ink)"><i style="height:${m * 5}%;background:${PAL[mixTarget]}"></i></div><div class="barl">${m} / 20</div></div>`;
+    const r = [0, 1, 2].map(k => REC[3 * mixTarget + k]);
+    $('mixCap').innerHTML = `<b>${NAMES[mixTarget]}</b>: recipe ${r[0]} red, ${r[1]} green, ${r[2]} blue. Mix ${m} of 20` + (m >= 20 ? ': the colour is complete.' : '.');
+    $('mixLvl').querySelectorAll('button').forEach(b => b.onclick = () => { mixLevel = +b.dataset.l; mixTarget = LC[4 * mixLevel]; drawMix(); });
+    $('mixTarget').querySelectorAll('button').forEach(b => b.onclick = () => { mixTarget = +b.dataset.t; drawMix(); });
+    $('mixSliders').querySelectorAll('input').forEach(i => i.oninput = () => { units[+i.dataset.u] = +i.value; drawMix(); });
+  }
+  drawMix();
+
+  /* ---------------------------------------------------------------- 07 difficulty */
+  {
+    const fire = WIZ_TABLES.fireInterval, nk = WIZ_TABLES.noKill;
+    const sph = l => l < 4 ? 'no' : l < 6 ? 'aimed' : 'eight ways, half as often';
+    let h = '<tr><th>Level</th><th>Alien shots every</th><th>Police after</th><th>Colour spheres shoot</th><th>Colours to make</th></tr>';
+    for (let l = 0; l < 8; l++) h += `<tr><td class="n">${l + 1}</td><td class="n">${fire[l]} frames</td><td class="n">${nk[l]} s</td><td>${sph(l)}</td><td>` +
+      [0, 1, 2].map(k => { const c = LC[4 * l + k]; return `<span class="sw" style="background:${PAL[c]}"></span> ${NAMES[c]}`; }).join(', ') + '</td></tr>';
+    $('diffTable').innerHTML = h;
+  }
+
+  /* ---------------------------------------------------------------- 04, 06, 09: from listing.json */
+  const needSite = 'This drawing reads the game\'s bytes from listing.json, which the built site serves: open the page from the site, not from disk.';
+  if (!window.C64) { $('landMsg').textContent = needSite; $('aliensMsg').textContent = needSite; return; }
+  C64.load('listing.json').then(G => {
+    const ram = G.ram;
+    /* the map overview */
+    const mapCv = $('mapCv'), mctx = mapCv.getContext('2d');
+    const LVL = [0, 1, 2, 3, 4, 5, 6, 7].map(l => wizLandscape(ram, l));
+    let level = 0, coloured = false;
+    function drawMap() {
+      mctx.fillStyle = '#000'; mctx.fillRect(0, 0, 576, 96);
+      for (let r = 0; r < 16; r++) for (let c = 0; c < 96; c++) {
+        const t = ram[0x0532 + 96 * r + c];
+        mctx.fillStyle = t === 0 ? '#111' : t >= 192 ? '#ff2a2a' : PAL[c >= 92 ? 14 : 12];
+        mctx.fillRect(c * 6, r * 6, 5, 5);
+      }
+      LVL.forEach((L, l) => {
+        const p = L.parts[0];
+        mctx.strokeStyle = l === level ? '#ffd24a' : 'rgba(255,255,255,.35)'; mctx.lineWidth = l === level ? 2 : 1;
+        mctx.strokeRect(p.col * 6 - 1, p.row * 6 - 1, p.n * 6 + 1, 24 + 1);
+        mctx.fillStyle = l === level ? '#ffd24a' : '#fff'; mctx.font = '10px monospace'; mctx.fillText(String(l + 1), p.col * 6 + 2, p.row * 6 + 10);
+      });
+    }
+    const landCv = $('landCv'), lctx = landCv.getContext('2d');
+    function drawLand() {
+      const L = level < 8 ? LVL[level] : wizLandscape(ram, level), cs = wizCharset(ram, level);
+      const S2 = 2, w = L.w * 8, h = L.h * 8;
+      landCv.width = w * S2 / 2 * 2; landCv.height = h * S2; landCv.style.width = (w * S2) + 'px';
+      const img = lctx.createImageData(w, h);
+      const lc = level < 8 ? [LC[4 * level], LC[4 * level + 1], LC[4 * level + 2]] : [11, 12, 1];
+      const cols = coloured && level < 8 ? [0, lc[0], lc[1], lc[2] & 7] : [0, 11, 12, 1];
+      for (let cy = 0; cy < L.h; cy++) for (let cx = 0; cx < L.w; cx++) {
+        const code = L.codes[cy * L.w + cx];
+        for (let py = 0; py < 8; py++) {
+          const bits = code === 0 ? 0 : cs[code * 8 + py];
+          for (let p = 0; p < 4; p++) {
+            const q = (bits >> (6 - 2 * p)) & 3, c = RGB[cols[q]];
+            for (let k = 0; k < 2; k++) { const i = 4 * ((cy * 8 + py) * w + cx * 8 + 2 * p + k); img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255; }
+          }
+        }
+      }
+      const tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h; tmp.getContext('2d').putImageData(img, 0, 0);
+      landCv.width = w * S2; landCv.height = h * S2; lctx.imageSmoothingEnabled = false; lctx.drawImage(tmp, 0, 0, w * S2, h * S2);
+      // mark any tile past the end of the table
+      for (let r = 0; r < 4; r++) for (let x = 0; x < L.tilesW; x++) if (L.tiles[r * L.tilesW + x] >= 192) {
+        lctx.strokeStyle = '#ff2a2a'; lctx.lineWidth = 2; lctx.strokeRect(x * 40 * S2 + 1, r * 40 * S2 + 1, 40 * S2 - 2, 40 * S2 - 2);
+      }
+      const names = ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Level 6', 'Level 7', 'Level 8', 'The Wiz-lab', 'After level 8'];
+      const p = L.parts;
+      $('landCap').innerHTML = `<b>${names[level]}</b>: map rows ${p[0].row}-${p[0].row + 3}, columns ${p[0].col}-${p[0].col + p[0].n - 1}` +
+        (p[1] ? ` and rows ${p[1].row}-${p[1].row + 3}, columns ${p[1].col}-${p[1].col + p[1].n - 1}` : '') +
+        `; glyphs from <code>${hex(L.block, 4)}</code>` + (level === 4 ? '. The red box is the stray tile (Secrets, below).' : level === 2 ? '. The three heads in the third row are the Mount Rushmore Zzap!64 mentions.' : '.');
+      drawMap();
+      const box = landCv.parentElement;
+      if (level === 4) box.scrollLeft = Math.max(0, (57 - 45) * 40 * S2 - 200); else box.scrollLeft = 0;
+    }
+    const lb = $('lvlBtns');
+    ['1', '2', '3', '4', '5', '6', '7', '8', 'Wiz-lab', 'Finale'].forEach((n, i) => {
+      const e = document.createElement('button'); e.className = 'btn'; e.textContent = n; e.setAttribute('aria-pressed', String(i === 0));
+      e.onclick = () => { level = i; [...lb.children].forEach((x, k) => x.setAttribute('aria-pressed', String(k === i))); drawLand(); };
+      lb.appendChild(e);
+    });
+    $('colBtn').onclick = () => { coloured = !coloured; $('colBtn').setAttribute('aria-pressed', String(coloured)); drawLand(); };
+    drawLand();
+
+    /* the stray tile */
+    {
+      const cs = wizCharset(ram, 4), tc = $('tileCv').getContext('2d');
+      tc.fillStyle = '#000'; tc.fillRect(0, 0, 200, 200);
+      const bytes = [];
+      for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++) {
+        const code = ram[0x3E7A + 5 * y + x]; bytes.push(code);
+        for (let py = 0; py < 8; py++) {
+          const bits = code === 0 ? 0 : cs[code * 8 + py];
+          for (let p = 0; p < 4; p++) {
+            const q = (bits >> (6 - 2 * p)) & 3;
+            if (!q) continue;
+            tc.fillStyle = PAL[[0, 11, 12, 1][q]]; tc.fillRect(x * 40 + p * 10, y * 40 + py * 5, 10, 5);
+          }
+        }
+        tc.strokeStyle = 'rgba(255,255,255,.15)'; tc.strokeRect(x * 40 + .5, y * 40 + .5, 39, 39);
+      }
+      $('tileBytes').innerHTML = [0, 1, 2, 3, 4].map(y => bytes.slice(5 * y, 5 * y + 5).map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')).join('<br>');
+    }
+
+    /* the aliens */
+    const spr = n => ram.subarray(0xC000 + 64 * n, 0xC000 + 64 * n + 63);
+    const cards = [];
+    function aliens(bonus) {
+      $('aLand').setAttribute('aria-pressed', String(!bonus)); $('aBonus').setAttribute('aria-pressed', String(bonus));
+      const base = bonus ? 0x39DC : 0x3ECF, n = bonus ? 20 : 18, box = $('alienCards');
+      box.innerHTML = ''; cards.length = 0;
+      const MOVE = ['falls under its own gravity', 'rises under its own gravity', 'follows a path', 'accelerates along a path'], FIRE = ['no shots', 'aimed shots', 'turning shots', 'eight-way bursts'];
+      for (let i = 0; i < n; i++) {
+        const p = ram[base + 2 * i] | ram[base + 2 * i + 1] << 8, t = ram.subarray(p, p + 24);
+        let frames;
+        const list = t[19] | t[20] << 8;
+        if (t[17] === 0) frames = [t[18]];
+        else if (t[17] === 1) frames = [ram[list + t[18]]];
+        else { frames = []; for (let k = list; ram[k] !== 0xFF && frames.length < 32; k++) frames.push(ram[k]); }
+        const sphere = t[21] === 1, colour = sphere ? 2 : t[16] & 0x10 ? 1 : t[16] & 15, hires = t[16] & 0x40;
+        const div = document.createElement('div'); div.className = 'card';
+        const cv = document.createElement('canvas'); cv.width = 48; cv.height = 42; cv.style.width = '96px'; cv.style.height = '84px';
+        div.appendChild(cv);
+        const kind = t[16] & 0x80 ? 'police ship' : t[21] === 1 ? 'colour sphere' : t[21] === 6 ? 'lookalike: a Wizball when shot' : t[21] === 0xFF ? 'shots bounce off' : t[16] & 0x20 ? 'always a pearl' : '';
+        div.insertAdjacentHTML('beforeend', `<b>${bonus ? 'Bonus ' : 'Type '}${i}</b> · ${t[22] * 10} points<br>${MOVE[t[8] & 3]}; ${sphere ? 'shots set by the level' : FIRE[t[14] & 3]}${kind ? '<br><i>' + kind + (sphere ? ', coloured by the level' : '') + '</i>' : ''}<br><span class="k">${hex(p, 4)} · frames ${[...new Set(frames)].map(f => hex(f)).join(' ')}</span>`);
+        box.appendChild(div);
+        cards.push({ ctx: cv.getContext('2d'), frames, rate: t[17] === 2 ? Math.max(1, t[18]) : 0, colour, hires, k: 0 });
+      }
+    }
+    function drawCards(fr) {
+      for (const c of cards) {
+        const f = c.frames[c.rate ? Math.floor(fr / c.rate) % c.frames.length : 0];
+        c.ctx.fillStyle = '#000'; c.ctx.fillRect(0, 0, 48, 42);
+        const d = spr(f);
+        if (c.hires) { for (let r = 0; r < 21; r++) for (let b = 0; b < 24; b++) if (d[r * 3 + (b >> 3)] & (0x80 >> (b & 7))) { c.ctx.fillStyle = PAL[c.colour]; c.ctx.fillRect(12 + b, 10 + r, 1, 1); } }
+        else drawSpriteMC(c.ctx, d, 12, 10, [0, 11, c.colour, 13]);
+      }
+    }
+    $('aLand').onclick = () => aliens(false); $('aBonus').onclick = () => aliens(true);
+    aliens(false);
+    let fr = 0; setInterval(() => { fr++; drawCards(fr); }, 20);
+  }).catch(e => { $('landMsg').textContent = needSite + ' (' + e.message + ')'; $('aliensMsg').textContent = needSite; });
+})();
+</script>
