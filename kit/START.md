@@ -56,8 +56,11 @@ the job is not a new run. A Bronze game is continued to Silver: read its
 above still applies. A Silver game is curated to Gold, and that is the
 contributor's work with your hands: they say what is dull, what deserves
 more, and what reads like an agent wrote it; you cut, expand, verify
-anything new against the code, and rewrite to `kit/style.md`. Set `copy`
-in `game.json` honestly, and open the pull request as `AGENTS.md` says.
+anything new against the code, and rewrite to `kit/style.md`. When the
+first edit pass begins, set `tier` in `game.json` to `silver-claimed`
+and `steward` to their GitHub login: the page then says who is editing
+it. Set `gold` when every section has had its pass. Set `copy` in
+`game.json` honestly, and open the pull request as `AGENTS.md` says.
 
 Time expectations: A Silver run takes one to three hours, mostly
 unattended. A Bronze run takes about 20 to 45 minutes.

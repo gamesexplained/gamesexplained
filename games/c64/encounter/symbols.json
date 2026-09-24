@@ -11365,22 +11365,22 @@
   {
    "address": 27150,
    "type": "line",
-   "text": "Third to seventh JMP $6A1D stubs ($6A0E, $6A11, $6A14, $6A17, $6A1A), each three bytes, called from the title loop, the title reset, the game start, the frame wait, the end of frame and the death routine; every one lands on the RTS at $6A1D."
+   "text": "Third to seventh JMP $6A1D stubs ($6A0E, $6A11, $6A14, $6A17, $6A1A), each three bytes, called from the title loop, the title reset, the game start, the main loop's raster wait, the end of the pass and the death routine; every one lands on the RTS at $6A1D."
   },
   {
    "address": 27153,
    "type": "line",
-   "text": "Stubs 3 to 6 of the seven: $6A11 (called from the game start at $9E9F), $6A14 (from the end of frame at $AB68), $6A17 (from the frame wait at $A18E) and $6A1A. Each is JMP $6A1D, which is RTS, so the calls are no-ops in this build."
+   "text": "Stubs 3 to 6 of the seven: $6A11 (called from the game start at $9E9F), $6A14 (from the end of the pass at $AB68), $6A17 (from the raster wait at $A18E) and $6A1A. Each is JMP $6A1D, which is RTS, so the calls are no-ops in this build."
   },
   {
    "address": 27156,
    "type": "line",
-   "text": "Stubs 4 to 6 ($6A14 from the end of frame at $AB68, $6A17 from the frame wait at $A18E, $6A1A unreferenced), each JMP $6A1D to the RTS; no-ops in this build."
+   "text": "Stubs 4 to 6 ($6A14 from the end of the pass at $AB68, $6A17 from the raster wait at $A18E, $6A1A unreferenced), each JMP $6A1D to the RTS; no-ops in this build."
   },
   {
    "address": 27159,
    "type": "line",
-   "text": "Stubs 5 and 6 ($6A17, called from the frame wait at $A18E every frame, and $6A1A, unreferenced): JMP $6A1D to the RTS. No-ops in this build."
+   "text": "Stubs 5 and 6 ($6A17, called from the raster wait at $A18E every pass, and $6A1A, unreferenced): JMP $6A1D to the RTS. No-ops in this build."
   },
   {
    "address": 27165,
@@ -12095,7 +12095,7 @@
   {
    "address": 33760,
    "type": "line",
-   "text": "Per-object state/lifetime, objects 0-31: 0 = slot free, $FF = permanent (player $83E0, saucer $83E3 at $A2A3, missile $83E2 at $A3CE), otherwise a frame count decremented by tick_object_lifetimes ($B59A) - enemy shots start at $30 ($A9D9), spawned slots at $18 ($ACF0). $83F8 (object 24, the explosion) drives the explosion colour ($A14F-$A15D) and the voice-3 crackle. Cleared at $9FC4."
+   "text": "Per-object state/lifetime, objects 0-31: 0 = slot free, $FF = permanent (player $83E0, saucer $83E3 at $A2A3, missile $83E2 at $A3CE), otherwise a pass count decremented by tick_object_lifetimes ($B59A) - enemy shots start at $30 ($A9D9), spawned slots at $18 ($ACF0). $83F8 (object 24, the explosion) drives the explosion colour ($A14F-$A15D) and the voice-3 crackle. Cleared at $9FC4."
   },
   {
    "address": 33762,
@@ -12175,7 +12175,7 @@
   {
    "address": 33984,
    "type": "line",
-   "text": "Per-object heading, low 8 bits (fine angle). Player = $84C0, advanced by the turn rate $23/$24 (from tbl_skill_turn_rate) each frame while turning. Together with obj_heading_octant it indexes quarter_sine_tbl in compute_object_velocity ($B5A1-$B5A9)."
+   "text": "Per-object heading, low 8 bits (fine angle). Player = $84C0, advanced by the turn rate $23/$24 (from tbl_skill_turn_rate) each pass while turning. Together with obj_heading_octant it indexes quarter_sine_tbl in compute_object_velocity ($B5A1-$B5A9)."
   },
   {
    "address": 33985,
@@ -12325,7 +12325,7 @@
   {
    "address": 35584,
    "type": "line",
-   "text": "160-byte initial image of zero page $02-$A1: copied to $02+X (X = $9F..1) by init at $9C43 and again at every game start at $9E82, so every zero-page variable restarts from these values. This block: $02-$41 (e.g. $08 frame parity, $09/$0A char-definition page and screen-row limit, $1A = $94 view $D018 base, $23-$25 turn rates, $3B/$3C, $3E)."
+   "text": "160-byte initial image of zero page $02-$A1: copied to $02+X (X = $9F..1) by init at $9C43 and again at every game start at $9E82, so every zero-page variable restarts from these values. This block: $02-$41 (e.g. $08 pass counter (bit 0 picks the draw buffer), $09/$0A char-definition page and screen-row limit, $1A = $94 view $D018 base, $23-$25 turn rates, $3B/$3C, $3E)."
   },
   {
    "address": 35648,
@@ -12400,7 +12400,7 @@
   {
    "address": 35918,
    "type": "line",
-   "text": "Fire scripts continued: $8C4E sixteen pairs '00 40 00 48 ... 00 38' (a full spread sweep every frame, restart $4D); $8C6F '30 00 FF 6F'; $8C73 '00 00 00 08 00 78 00 10 30 70 FF 73'."
+   "text": "Fire scripts continued: $8C4E sixteen pairs '00 40 00 48 ... 00 38' (delay 0 throughout: the burst handler of type 5 fires all sixteen in one pass, the default handler of type 10 one a pass; restart $4D); $8C6F '30 00 FF 6F'; $8C73 '00 00 00 08 00 78 00 10 30 70 FF 73'."
   },
   {
    "address": 35967,
@@ -12425,7 +12425,7 @@
   {
    "address": 36095,
    "type": "line",
-   "text": "Last entry ($11, white/white) of explosion_colour_tbl: the colour pair used in the first frames of an explosion, when the fragment lifetime index is highest."
+   "text": "Last entry ($11, white/white) of explosion_colour_tbl: the colour pair used in the first passes of an explosion, when the fragment lifetime index is highest."
   },
   {
    "address": 36096,
@@ -12525,7 +12525,7 @@
   {
    "address": 36760,
    "type": "line",
-   "text": "By skill: 0E 0C 0A 0A -> $25 at $9ED6; per-frame heading increment reloaded into $23/$24 by turn_player_right/left ($B4EB/$B503)."
+   "text": "By skill: 0E 0C 0A 0A -> $25 at $9ED6; per-pass heading increment reloaded into $23/$24 by turn_player_right/left ($B4EB/$B503)."
   },
   {
    "address": 36764,
@@ -12920,7 +12920,7 @@
   {
    "address": 40497,
    "type": "line",
-   "text": "Manipulates the datasette bits of $01 each frame. If the cassette-switch sense bit ($01 bit 4) is set (no button pressed) sets $BF=$10 and $01=$26; if a button is pressed: $BF=0 -> $01=$26, else $01=$06. Both values clear bit 5 (motor line on) while keeping BASIC out, KERNAL and I/O in. Purpose unknown (perhaps winding a tape original past the loader); harmless on disk."
+   "text": "Manipulates the datasette bits of $01 on each pass of the title and main loops. If the cassette-switch sense bit ($01 bit 4) is set (no button pressed) sets $BF=$10 and $01=$26; if a button is pressed: $BF=0 -> $01=$26, else $01=$06. Both values clear bit 5 (motor line on) while keeping BASIC out, KERNAL and I/O in. Purpose unknown (perhaps winding a tape original past the loader); harmless on disk."
   },
   {
    "address": 40518,
@@ -12945,7 +12945,7 @@
   {
    "address": 40868,
    "type": "line",
-   "text": "Per-level reset (also jumped from $ABE7 after the player is destroyed). Clears $33 (missile pending count), $44-$47 (saucer behaviour timers), $91. If $69 (stargate/warp phase flag) was set, restores the level index $63 from $7C (the level saved at the last spawn: a death in the warp returns to the previous level). Clears $69, $A5 (warp progress), $83 (entered-gate flag), object lifetimes $83E0-$83FF, sets $8460-$849F to 3, $58 (time counter, 256-frame units) = $35 = 0, $90=$5F, $4C=$1F, state vector $A3/$A4 = state_between_enemies, $4D=$34 (52-frame delay before the first spawn), border $0B, $A7=7 (enemy colour pair), $AE=1 (firing allowed), then the unexplained bytes at $9FF9 and level_start."
+   "text": "Per-level reset (also jumped from $ABE7 after the player is destroyed). Clears $33 (missile pending count), $44-$47 (saucer behaviour timers), $91. If $69 (stargate/warp phase flag) was set, restores the level index $63 from $7C (the level saved at the last spawn: a death in the warp returns to the previous level). Clears $69, $A5 (warp progress), $83 (entered-gate flag), object lifetimes $83E0-$83FF, sets $8460-$849F to 3, $58 (time counter, 256-frame units) = $35 = 0, $90=$5F, $4C=$1F, state vector $A3/$A4 = state_between_enemies, $4D=$34 (52-pass delay before the first spawn), border $0B, $A7=7 (enemy colour pair), $AE=1 (firing allowed), then the unexplained bytes at $9FF9 and level_start."
   },
   {
    "address": 40953,
@@ -12960,12 +12960,12 @@
   {
    "address": 41036,
    "type": "line",
-   "text": "Main loop, once per frame (jumped back to from $AB97). $B584 ages every object (decrements lifetimes $83E0,x, moves those with a speed). $75 ramps by 8 towards $FF while $76 is set, else towards 0 (warp tone pitch). Decrements the countdowns $5C (fire lock), $5E (enemy fire delay), $78 (spawn delay). If $69 (stargate phase) skip to main_loop_input. Else check_player_shots tests player shot slots 1,4,5 through $AC30 (obelisk grid $8A00); when all three return carry set and the cooldown $1D is 0, $1D=12 and the voice-1 noise burst (freq $1414, AD $36, ctrl $80/$81) plays. $59 counts down the light-blue 'saucer firing' flash on the right console light, restoring blue (6) at row 23. check_enemy_shots: when not warping ($A5=0), objects 8-23 (enemy shots) through $AC30 accumulating carries in $5D; if the last carry is clear and $5A (sound busy) is 0, voice 2 plays a noise burst (freq $1414, AD $36)."
+   "text": "Main loop, once per pass, and a pass takes two frames (jumped back to from $AB97). $B584 ages every object (decrements lifetimes $83E0,x, moves those with a speed). $75 ramps by 8 towards $FF while $76 is set, else towards 0 (warp tone pitch). Decrements the countdowns $5C (fire lock), $5E (enemy fire delay), $78 (spawn delay). If $69 (stargate phase) skip to main_loop_input. Else check_player_shots tests player shot slots 1,4,5 through $AC30 (obelisk grid $8A00); when all three return carry set and the cooldown $1D is 0, $1D=12 and the voice-1 noise burst (freq $1414, AD $36, ctrl $80/$81) plays. $59 counts down the light-blue 'saucer firing' flash on the right console light, restoring blue (6) at row 23. check_enemy_shots: when not warping ($A5=0), objects 8-23 (enemy shots) through $AC30 accumulating carries in $5D; if the last carry is clear and $5A (sound busy) is 0, voice 2 plays a noise burst (freq $1414, AD $36)."
   },
   {
    "address": 41219,
    "type": "line",
-   "text": "Second part of the frame: $B77F, $B829, $B868, $B1EC (drawing/collision, other range), cassette_motor_toggle, joystick read ($BC2C -> $6D directions, $6E fire), read_key_column0. F1 ($EF) -> abort_to_title. In demo ($71<>0) F7 also aborts. Otherwise check_pause_key: column 7 ($DC00=$7F) row bit 4 = SPACE ($EF) -> pause_loop: loops reading F1 (abort) and the joystick until a direction is pushed ($6D<>$0F): the joystick, not SPACE, resumes; then $58=0. Continues to enemy_explosion_update."
+   "text": "Second part of the pass: $B77F, $B829, $B868, $B1EC (drawing/collision, other range), cassette_motor_toggle, joystick read ($BC2C -> $6D directions, $6E fire), read_key_column0. F1 ($EF) -> abort_to_title. In demo ($71<>0) F7 also aborts. Otherwise check_pause_key: column 7 ($DC00=$7F) row bit 4 = SPACE ($EF) -> pause_loop: loops reading F1 (abort) and the joystick until a direction is pushed ($6D<>$0F): the joystick, not SPACE, resumes; then $58=0. Continues to enemy_explosion_update."
   },
   {
    "address": 41252,
@@ -12980,7 +12980,7 @@
   {
    "address": 41345,
    "type": "line",
-   "text": "Frame sync: spins until the raster line is >= $C0 (192, below the 3D view rows), then $B918 (redraw status on level change), $B9A5 (sprites), stub $6A17. $1A alternates $80/$94 with the frame counter $08 (read by the raster IRQ stages at $B321/$B3C4). $B1A1 draws the view. If $A5 (warp progress) is non-zero: warp_phase_frame, else joystick_move_player."
+   "text": "Frame sync: spins until the raster line is >= $C0 (192, below the 3D view rows), then $B918 (redraw status on level change), $B9A5 (sprites), stub $6A17. $1A alternates $80/$94 with the pass counter $08 (read by the raster IRQ stages at $B321/$B3C4). $B1A1 draws the view. If $A5 (warp progress) is non-zero: warp_phase_frame, else joystick_move_player."
   },
   {
    "address": 41374,
@@ -13015,7 +13015,7 @@
   {
    "address": 41633,
    "type": "line",
-   "text": "Enemy counter reached zero: the stargate (object 3, lifetime $83E3=$FF) is placed at the last enemy's X rounded to a multiple of 4 ($8262 -> $8263), same Y ($8322 -> $8323), low bytes 0; $76=$FF (warp tone rises), firing off ($AE=0), $4C=0, $15A3=0, $A7=0, $78=$F0 (240 frames), shot shape $8448=$23, voices 2 and 3 set up (AD 0, SR $F0, test bit $10), warp_tone_update, then the state vector becomes state_stargate_open."
+   "text": "Enemy counter reached zero: the stargate (object 3, lifetime $83E3=$FF) is placed at the last enemy's X rounded to a multiple of 4 ($8262 -> $8263), same Y ($8322 -> $8323), low bytes 0; $76=$FF (warp tone rises), firing off ($AE=0), $4C=0, $15A3=0, $A7=0, $78=$F0 (240 passes), shot shape $8448=$23, voices 2 and 3 set up (AD 0, SR $F0, test bit $10), warp_tone_update, then the state vector becomes state_stargate_open."
   },
   {
    "address": 41762,
@@ -13030,7 +13030,7 @@
   {
    "address": 42028,
    "type": "line",
-   "text": "Saucer spawn. Type $7A: if $9E (2 after a level up) is set, type = $9B + $9E after decrementing (the level's two new types first, in order), else type = ($9F * ($9B+2))>>8 = random in 0..2*level+1 (level 8: 0..15; 16 types in all). Shape $8442=$42, $35=$42, $A7 = colour pair $8CE0[type], voices 2/3 off, $7B = fire-script start $8C00[type] (script at $8C00+), $8BF0[type] passed to $BC75 which is now just RTS. Left console light row 21 = yellow (7): 'saucer present'. Placement: 1 in 4 via place_object_at_player (X=2, random heading offset, random speed 1-16, i.e. near the player), else a random X ($8262) and Y ($8322 = rnd&$E0|$10). Copies object 2's position into object 7 ($8267/$8327/$82C7/$8387). Clears $44-$47 (behaviour timers), $75, $17A2 (speed), sets $76=$FF, gate lifetime $83E7=$FF, $78=$30 (48 frames before the behaviour handler starts)."
+   "text": "Saucer spawn. Type $7A: if $9E (2 after a level up) is set, type = $9B + $9E after decrementing (the level's two new types first, in order), else type = ($9F * ($9B+2))>>8 = random in 0..2*level+1 (level 8: 0..15; 16 types in all). Shape $8442=$42, $35=$42, $A7 = colour pair $8CE0[type], voices 2/3 off, $7B = fire-script start $8C00[type] (script at $8C00+), $8BF0[type] passed to $BC75 which is now just RTS. Left console light row 21 = yellow (7): 'saucer present'. Placement: 1 in 4 via place_object_at_player (X=2, random heading offset, random speed 1-16, i.e. near the player), else a random X ($8262) and Y ($8322 = rnd&$E0|$10). Copies object 2's position into object 7 ($8267/$8327/$82C7/$8387). Clears $44-$47 (behaviour timers), $75, $17A2 (speed), sets $76=$FF, gate lifetime $83E7=$FF, $78=$30 (48 passes before the behaviour handler starts)."
   },
   {
    "address": 42189,
@@ -13050,7 +13050,7 @@
   {
    "address": 42339,
    "type": "line",
-   "text": "Behaviour handler for saucer types 5 and 11 (tables $AAB5/$AAA5). First entry ($45=0): $48=0, voice 3 set to triangle-ready (freq hi $30, SR $F0, AD 0), $5E=0. Each frame $45 counts down, toggling voice 3 gate ($11/$10) every 16 frames. At 0: $1D=$1F, then 16 calls of enemy_fire_script_step in a row (a cloud of fire), enemy object removed ($83E2=0), $4D=$4C=$38, vector back to state_between_enemies. While counting: $44 pause, else re-seed $44 = rnd&$3F with X=$3B and join saucer_set_speed_and_heading."
+   "text": "Behaviour handler for saucer types 5 and 11 (tables $AAB5/$AAA5). First entry ($45=0): $48=0, voice 3 set to triangle-ready (freq hi $30, SR $F0, AD 0), $5E=0. $45 is then decremented from 0, so it counts down from 255 passes, toggling voice 3 gate ($11/$10) every 16 passes. At 0: $1D=$1F, then 16 calls of enemy_fire_script_step in a row (a cloud of fire), enemy object removed ($83E2=0), $4D=$4C=$38, vector back to state_between_enemies. While counting: $44 pause, else re-seed $44 = rnd&$3F with X=$3B and join saucer_set_speed_and_heading."
   },
   {
    "address": 42439,
@@ -13065,7 +13065,7 @@
   {
    "address": 42482,
    "type": "line",
-   "text": "Shared saucer logic. If $58 (256-frame time counter) >= 24 the saucer leaves: lifetime $83E2=0, voices 2/3 off, schedule_next_spawn. Otherwise voice 3 hum: SR $80, AD 0, triangle $11, pitch derived from the range $31. $44 pause countdown -> hit test. $45 hover countdown: while running the saucer stops ($17A2=0), $48=$10; at 0 for types 0-1 outside the demo with $46 set: $48=0, $91=$FF -> saucer_tone_from_91. With $45=0: if $91 >= $92 (threshold $8FC0[difficulty]) $91 -= 4 and retune, else $47=$FF, $48=$10 and reroll when $46=0."
+   "text": "Shared saucer logic. If $58 (256-frame time counter) >= 24 the saucer leaves: lifetime $83E2=0, voices 2/3 off, schedule_next_spawn. Otherwise voice 3 hum: SR $80, AD 0, triangle $11, pitch derived from the range $31. $44 move countdown (the saucer keeps its course) -> hit test. $45 wait countdown: while running the saucer stops ($17A2=0), $48=$10; at 0 for types 0-1 outside the demo with $46 set: $48=0, $91=$FF -> saucer_tone_from_91. With $45=0: if $91 >= $92 (threshold $8FC0[difficulty]) $91 -= 4 and retune, else $47=$FF, $48=$10 and reroll when $46=0."
   },
   {
    "address": 42579,
@@ -13075,7 +13075,7 @@
   {
    "address": 42643,
    "type": "line",
-   "text": "Re-rolls the saucer's behaviour parameters. X = $3B + (rnd|$FC)+1 (difficulty $3B minus 0..3): $92 = $8FC0[X], $44 = rnd&$3F (pause), $45 = rnd&$1F+8 (hover), $47=$46=0, $48=1. $46 (evasion count) = from rnd & $8EC0[X] nibbles when rnd & mask & $0F is 0 and the range $31 < $F0. Falls into saucer_set_speed_and_heading."
+   "text": "Re-rolls the saucer's behaviour parameters. X = $3B + (rnd|$FC)+1 (difficulty $3B minus 0..3): $92 = $8FC0[X], $44 = rnd&$3F (passes of moving), $45 = rnd&$1F+8 (passes of waiting), $47=$46=0, $48=1. $46 (evasion count) = from rnd & $8EC0[X] nibbles when rnd & mask & $0F is 0 and the range $31 < $F0. Falls into saucer_set_speed_and_heading."
   },
   {
    "address": 42726,
@@ -13085,7 +13085,7 @@
   {
    "address": 42765,
    "type": "line",
-   "text": "Behaviour handler for types 7 and 13: fire per script every frame it is allowed, no evasion; then check_enemy_hit."
+   "text": "Behaviour handler for types 7 and 13: fire per script every pass it is allowed, no evasion; then check_enemy_hit."
   },
   {
    "address": 42771,
@@ -13100,7 +13100,7 @@
   {
    "address": 42839,
    "type": "line",
-   "text": "Once $A5 >= $40 and every 3 frames ($5E): spawn a sphere in slot $9A (cycles 8..23): place_object_at_player with a random heading offset and speed $14, lifetime $50, shape from tbl_warp_sphere_shapes[rnd&7], $15A0=0. While $58 (256-frame units since warp start) < 4, $A5 counts up (saturating at $FF: full speed); after that $A5 counts down and at 0 -> level_complete."
+   "text": "Once $A5 >= $40 and every 3 passes ($5E): spawn a sphere in slot $9A (cycles 8..23): place_object_at_player with a random heading offset and speed $14, lifetime $50, shape from tbl_warp_sphere_shapes[rnd&7], $15A0=0. While $58 (256-frame units since warp start) < 4, $A5 counts up (saturating at $FF: full speed); after that $A5 counts down and at 0 -> level_complete."
   },
   {
    "address": 42904,
@@ -13120,7 +13120,7 @@
   {
    "address": 42992,
    "type": "line",
-   "text": "State handler while a homing missile is live. Left console light row 19 (offset 0 via $AA70) alternates red (2) and pink ($0A) each frame, read back from $DB00. $AD26 (X=0, Y=2) tests the missile against the player: carry clear -> $AB9A (player hit, other range). Missile whine: voices 2 and 3 (triangle $11) with frequencies derived from the range $31 (closer = higher). Steering once within range $40: every $36 frames pick a new turn amount $37 = rnd and re-seed $36 = rnd&$3F+1, toggle direction $38; the missile heading $84A2:$84C2 is moved by $37 in that direction. Then update_enemy_motion_vector and check_enemy_hit."
+   "text": "State handler while a homing missile is live. Left console light row 19 (offset 0 via $AA70) alternates red (2) and pink ($0A) each pass, read back from $DB00. $AD26 (X=0, Y=2) tests the missile against the player: carry clear -> $AB9A (player hit, other range). Missile whine: voices 2 and 3 (triangle $11) with frequencies derived from the range $31 (closer = higher). Weaving while far: when the range $31 is at or above $40 (set per difficulty from $8E40) the heading $84A2:$84C2, just set to the bearing, is moved by the turn $37 (subtracted when $38 is set, added when clear); every $36 passes a new $37 = rnd and $36 = rnd&$3F+1 are picked and $38 is toggled. Below $40 the heading stays the bearing, so the missile flies straight in (live: every recorded missile pass, 675 of them). Then update_enemy_motion_vector and check_enemy_hit."
   },
   {
    "address": 43156,
@@ -13135,7 +13135,7 @@
   {
    "address": 43362,
    "type": "line",
-   "text": "$4C=$FF, $4D = rnd&$1F+8 frames until the next spawn, then the state vector returns to state_between_enemies and the main loop continues at $AAC8."
+   "text": "$4C=$FF, $4D = rnd&$1F+8 passes until the next spawn, then the state vector returns to state_between_enemies and the main loop continues at $AAC8."
   },
   {
    "address": 43386,
@@ -13180,7 +13180,7 @@
   {
    "address": 43720,
    "type": "line",
-   "text": "End-of-frame part of the main loop: every enemy behaviour routine in $A29B-$A977 jumps here and it jumps back to the loop head at $A04C. (1) Pays out a pending score award: while $A1 is non-negative it decrements it and adds the BCD value at $8BA3+$A0 to the score with add_score_bcd ($B8B8), one award per frame. (2) Loops Y = 8..$17 (the enemy and enemy-shot slots) calling test_object_hits_player ($AD26) with X = 0 (the player); carry clear = hit -> player_destroyed via $AAC5. (3) Radar blip (sprite 0): skipped (sprite 0 off, $42 = 0) while $56 or $4C is set. Otherwise object slot 6 is used as a polar-to-cartesian converter: its speed $17A6 = ($31 - $80)/4 (0 when $31 < $80), compute_object_velocity ($B5A1) turns that and the slot's heading $84A6/$84C6 into the velocity vector $1606:$1626 / $1666:$1686; each component >> 2, + $80, scaled by $9E/256 resp. $78/256 (mul8 $B4C0) and offset by $52 resp. $A1 gives sprite 0 X/Y. Inside $80-$C1 x $C4-$F5 (the radar box under the view) sprite 0 is enabled ($D015 bit 0) and its Y kept in $42, else disabled. $17A6 is then restored to $20. (4) $56 = $4C. (5) If $6C = 0: calls $6A14, decrements $6C and jumps to $9E9F (outside this range). (6) Else adds $3D to the 16-bit $3B:$3C (high byte only stored while below $40), clears $3D, takes a random byte r ($BC1E): $9F = NOT (r*r/256) and $3E = (r*r/256) * $3B / 256; purpose of $3B/$3E/$9F unknown. Uses $74 as the loop index."
+   "text": "End-of-pass part of the main loop: every enemy behaviour routine in $A29B-$A977 jumps here and it jumps back to the loop head at $A04C. (1) Pays out a pending score award: while $A1 is non-negative it decrements it and adds the BCD value at $8BA3+$A0 to the score with add_score_bcd ($B8B8), one award per pass. (2) Loops Y = 8..$17 (the enemy and enemy-shot slots) calling test_object_hits_player ($AD26) with X = 0 (the player); carry clear = hit -> player_destroyed via $AAC5. (3) Radar blip (sprite 0): skipped (sprite 0 off, $42 = 0) while $56 or $4C is set. Otherwise object slot 6 is used as a polar-to-cartesian converter: its speed $17A6 = ($31 - $80)/4 (0 when $31 < $80), compute_object_velocity ($B5A1) turns that and the slot's heading $84A6/$84C6 into the velocity vector $1606:$1626 / $1666:$1686; each component >> 2, + $80, scaled by $9E/256 resp. $78/256 (mul8 $B4C0) and offset by $52 resp. $A1 gives sprite 0 X/Y. Inside $80-$C1 x $C4-$F5 (the radar box under the view) sprite 0 is enabled ($D015 bit 0) and its Y kept in $42, else disabled. $17A6 is then restored to $20. (4) $56 = $4C. (5) If $6C = 0: calls $6A14, decrements $6C and jumps to $9E9F (outside this range). (6) Else adds $3D to the 16-bit $3B:$3C (high byte only stored while below $40), clears $3D, takes a random byte r ($BC1E): $9F = NOT (r*r/256) and $3E = (r*r/256) * $3B / 256; purpose of $3B/$3E/$9F unknown. Uses $74 as the loop index."
   },
   {
    "address": 43930,
@@ -13200,17 +13200,17 @@
   {
    "address": 44080,
    "type": "line",
-   "text": "Test and resolve object X's collision with an obelisk. Returns carry set when nothing happened (object inactive: $83E0,x = 0; no obelisk in its map cell; or the obelisk's range code >= $4F) and carry clear when it collided. Map cell = ((position hi $8260,x + 8) & $F0) | ((position hi $8320,x + 8) >> 4), a 16x16 grid over the two world axes, looked up in the obelisk map $8A00 (0 = empty, else the obelisk's object index $20-$5F, kept in $15). With Y = that obelisk and $1E/$1F = the object's heading, object_delta_octant / bearing_from_viewer / log_distance_code ($B6A2/$B729/$B766) give the range; below $4F the object is put back on its previous position ($16C0/$16E0/$1700/$1720 -> $8260/$82C0/$8320/$8380), its heading $84A0,x:$84C0,x is changed by the relative bearing of the obelisk (a deflection; exact geometry not worked out) and compute_object_velocity ($B5A1) is rerun. Callers: $A082/$A089/$A090 for the player's shots (slots 1, 4, 5) and $A0D6 for slots 8-$17; the caller collects the carries in $5D. Scratch: $15, $50, $51, $FF."
+   "text": "Test and resolve object X's collision with an obelisk. Returns carry set when nothing happened (object inactive: $83E0,x = 0; no obelisk in its map cell; or the obelisk's range code >= $4F) and carry clear when it collided. Map cell = ((position hi $8260,x + 8) & $F0) | ((position hi $8320,x + 8) >> 4), a 16x16 grid over the two world axes, looked up in the obelisk map $8A00 (0 = empty, else the obelisk's object index $20-$5F, kept in $15). With Y = that obelisk and $1E/$1F = the object's heading, object_delta_octant / bearing_from_viewer / log_distance_code ($B6A2/$B729/$B766) give the range; below $4F the object is put back on its previous position ($16C0/$16E0/$1700/$1720 -> $8260/$82C0/$8320/$8380), its heading $84A0,x:$84C0,x is turned by the relative bearing of the object seen from the obelisk (only the high and middle position bytes are restored, not $15C0/$15E0): new heading = H + 1028 + 4 * ((B - H) mod 512) in 2048ths, H the heading and B the bearing of the object from the obelisk, so a head-on hit comes back reversed and an offset d turns it by 4d (live: all recorded bounces) and compute_object_velocity ($B5A1) is rerun. Callers: $A082/$A089/$A090 for the player's shots (slots 1, 4, 5) and $A0D6 for slots 8-$17; the caller collects the carries in $5D. Scratch: $15, $50, $51, $FF."
   },
   {
    "address": 44214,
    "type": "line",
-   "text": "Fire the player's shot (called from $A252 on the fire button). Does nothing while the cooldown $5C is non-zero or while all three shot slots 1, 4 and 5 are active ($83E0,x != 0). Otherwise, if the sound countdown $1D is below $0F, plays the shot noise on SID voice 1 ($1D = $0C, frequency $1414, AD $08, gate+noise $81). The free slot X gets lifetime $83E0,x = $18 frames, the player's heading ($84A0/$84C0 of object 0) and position ($8260/$82C0/$8320/$8380 of object 0), $15A0,x = 0, the cooldown $5C = 8, and compute_object_velocity ($B5A1) sets its velocity from its speed $17A0,x."
+   "text": "Fire the player's shot (called from $A252 on the fire button). Does nothing while the cooldown $5C is non-zero or while all three shot slots 1, 4 and 5 are active ($83E0,x != 0). Otherwise, if the sound countdown $1D is below $0F, plays the shot noise on SID voice 1 ($1D = $0C, frequency $1414, AD $08, gate+noise $81). The free slot X gets lifetime $83E0,x = $18 passes, the player's heading ($84A0/$84C0 of object 0) and position ($8260/$82C0/$8320/$8380 of object 0), $15A0,x = 0, the cooldown $5C = 8, and compute_object_velocity ($B5A1) sets its velocity from its speed $17A0,x."
   },
   {
    "address": 44326,
    "type": "line",
-   "text": "Hit test of object Y (an enemy or enemy shot, slots 8-$17) against the player (X = 0 on entry). Returns carry clear = hit, carry set = miss. An inactive object ($83E0,y = 0) is a miss. Otherwise the absolute bearing of object Y from the player (object_delta_octant $B6A2 and bearing_from_viewer $B729 with $1E/$1F = 0) is stored >> 3 in $1580,y, the previous value kept in $3A, and the range code from log_distance_code ($B766) decides: below $80 = hit; $C0 or more = miss and $15A0,y = $FF (arms the flag); $80-$BF = a hit only when the flag $15A0,y is set and the bearing changed by $57 or more since last frame (the object crossed the player's position between two frames), else a miss with the flag set. Note: on the inactive-object exit X is still the caller's 0, so $15A0[0] gets $FF instead of $15A0,y. Scratch: $15, $FF."
+   "text": "Hit test of object Y (an enemy or enemy shot, slots 8-$17) against the player (X = 0 on entry). Returns carry clear = hit, carry set = miss. An inactive object ($83E0,y = 0) is a miss. Otherwise the absolute bearing of object Y from the player (object_delta_octant $B6A2 and bearing_from_viewer $B729 with $1E/$1F = 0) is stored >> 3 in $1580,y, the previous value kept in $3A, and the range code from log_distance_code ($B766) decides: below $80 = hit; $C0 or more = miss and $15A0,y = $FF (arms the flag); $80-$BF = a hit only when the flag $15A0,y is set and the bearing changed by $57 or more since the last pass (the object crossed the player's position between two passes), else a miss with the flag set. Note: on the inactive-object exit X is still the caller's 0, so $15A0[0] gets $FF instead of $15A0,y. Scratch: $15, $FF."
   },
   {
    "address": 44405,
@@ -13310,7 +13310,7 @@
   {
    "address": 45473,
    "type": "line",
-   "text": "Start of a new view frame. Called at game start ($9EEA) and once per main-loop pass ($A19B, after $1A was set to display the buffer just finished). Increments the frame/buffer counter $08; its bit 0 selects the draw buffer: 0 = screen $6000 + charset $4000, 1 = screen $6400 + charset $5000. Clears the sky half of the view (rows 2-9, offsets $050-$18F) of that buffer to char $00, then resets the dynamic-character allocator: $05 = $80 (next char code), $FD/$FE = bitmap of char $80 ($4400 or $5400), $09 = charset base/2048 (8 or 10, used at $B063 to locate an existing char's bitmap), $0A = screen page minus 1 ($5F or $63, high-byte base for the row pointers built at $AD9F). The ground half (rows 10-17) is not cleared: $B1EC regenerates it by mirroring."
+   "text": "Start of a new view frame. Called at game start ($9EEA) and once per main-loop pass ($A19B, after $1A was set to display the buffer just finished). Increments the pass/buffer counter $08; its bit 0 selects the draw buffer: 0 = screen $6000 + charset $4000, 1 = screen $6400 + charset $5000. Clears the sky half of the view (rows 2-9, offsets $050-$18F) of that buffer to char $00, then resets the dynamic-character allocator: $05 = $80 (next char code), $FD/$FE = bitmap of char $80 ($4400 or $5400), $09 = charset base/2048 (8 or 10, used at $B063 to locate an existing char's bitmap), $0A = screen page minus 1 ($5F or $63, high-byte base for the row pointers built at $AD9F). The ground half (rows 10-17) is not cleared: $B1EC regenerates it by mirroring."
   },
   {
    "address": 45548,
@@ -13430,7 +13430,7 @@
   {
    "address": 46296,
    "type": "line",
-   "text": "Turn right. Called from the main loop ($A217) while joystick right is held ($6D bit 3 low). Adds the turn step $23 to the 11-bit angle $84A0:$84C0 entry 0, high byte masked to 3 bits so it wraps mod 2048: the player's heading (entries 1-31 of the same lo/hi tables belong to the other objects and are read indexed at $AC57). Then $23 = $25, so the first frame of a turn moves by 2 ($A21F sets $23 = 2 whenever right is not held) and every later frame by $25 (10 in the snapshot)."
+   "text": "Turn right. Called from the main loop ($A217) while joystick right is held ($6D bit 3 low). Adds the turn step $23 to the 11-bit angle $84A0:$84C0 entry 0, high byte masked to 3 bits so it wraps mod 2048: the player's heading (entries 1-31 of the same lo/hi tables belong to the other objects and are read indexed at $AC57). Then $23 = $25, so the first pass of a turn moves by 2 ($A21F sets $23 = 2 whenever right is not held) and every later pass by $25 (10 in the snapshot)."
   },
   {
    "address": 46320,
@@ -13450,7 +13450,7 @@
   {
    "address": 46348,
    "type": "line",
-   "text": "Move the player in direction $2E (0 = forward, 4 = reverse) unless the nearby object blocks the way. $2D = index of the object that scan_visible_objects found within 4 high-byte units of the player this frame (0 = none). Its bearing octant $14C0,y (0..7 relative to the player's heading) is XORed with $2E: result 0 or 7 = the object lies within +-45 degrees of the direction of travel, so if its log-distance $1740,y < $43 (threshold, $90 in the snapshot) the move is refused and player_blocked_bump plays the bump; result 3 or 4 = the object is directly behind, the player moves at a fixed speed $20 instead of $68 (temporarily written to $17A0); any other octant, or no nearby object = normal move via compute_object_velocity + apply_object_velocity with X=0 and the bump timer $1C cleared. Obelisks (objects $20-$5F) and objects $18-$1F are the only ones that can be in $2D."
+   "text": "Move the player in direction $2E (0 = forward, 4 = reverse) unless the nearby object blocks the way. $2D = index of the object that scan_visible_objects found within 4 high-byte units of the player this pass (0 = none). Its bearing octant $14C0,y (0..7 relative to the player's heading) is XORed with $2E: result 0 or 7 = the object lies within +-45 degrees of the direction of travel, so if its log-distance $1740,y < $43 (threshold, $90 in the snapshot) the move is refused and player_blocked_bump plays the bump; result 3 or 4 = the object is directly behind, the player moves at a fixed speed $20 instead of $68 (temporarily written to $17A0); any other octant, or no nearby object = normal move via compute_object_velocity + apply_object_velocity with X=0 and the bump timer $1C cleared. Obelisks (objects $20-$5F) and objects $18-$1F are the only ones that can be in $2D."
   },
   {
    "address": 46378,
@@ -13475,7 +13475,7 @@
   {
    "address": 46468,
    "type": "line",
-   "text": "Per-frame motion of the non-player objects 1..$1F (called from $A04C at the top of the play loop; obelisks $20-$5F never move). For each object whose state byte $83E0,x is nonzero (active) and whose speed $17A0,x is nonzero, add its stored velocity to its position (apply_object_velocity). Then, if the state is not $FF (permanent), decrement it: for shots (objects 1,4,5 start at $18) and other timed objects $83E0 is a lifetime in frames; reaching 0 deactivates them. Velocity is not recomputed here; whoever changes an object's heading calls compute_object_velocity."
+   "text": "Per-pass motion of the non-player objects 1..$1F (called from $A04C at the top of the play loop; obelisks $20-$5F never move). For each object whose state byte $83E0,x is nonzero (active) and whose speed $17A0,x is nonzero, add its stored velocity to its position (apply_object_velocity). Then, if the state is not $FF (permanent), decrement it: for shots (objects 1,4,5 start at $18) and other timed objects $83E0 is a lifetime in passes; reaching 0 deactivates them. Velocity is not recomputed here; whoever changes an object's heading calls compute_object_velocity."
   },
   {
    "address": 46497,
@@ -13505,7 +13505,7 @@
   {
    "address": 46975,
    "type": "line",
-   "text": "Build the list of objects in the player's field of view; called once per frame from $A103 before the sort and the draw. Sets the viewer heading $1E/$1F from the player's $84A0/$84C0, clears the count $0F and the near-object index $2D, then walks X from $90 (highest object index, $5F = 96 objects) down to 1, skipping inactive objects ($83E0,x = 0) and those farther than $60 high-byte units on either axis (wrap-aware). For the remaining objects it calls object_delta_octant with Y=0. Objects X >= $18 (the eight slots $18-$1F and the 64 obelisks $20-$5F) that are within 4 units on both axes are recorded in $2D as the collision candidate for the player's move, with their bearing octant in $14C0,x and range in $1740,x, even when out of view. Otherwise the coarse octant minus the heading octant must be 0, 1 or 7 before the exact bearing_from_viewer is computed; a result of 0 or 7 adds the object to the list at $B806. Note object 0 is never listed."
+   "text": "Build the list of objects in the player's field of view; called once per pass from $A103 before the sort and the draw. Sets the viewer heading $1E/$1F from the player's $84A0/$84C0, clears the count $0F and the near-object index $2D, then walks X from $90 (highest object index, $5F = 96 objects) down to 1, skipping inactive objects ($83E0,x = 0) and those farther than $60 high-byte units on either axis (wrap-aware). For the remaining objects it calls object_delta_octant with Y=0. Objects X >= $18 (the eight slots $18-$1F and the 64 obelisks $20-$5F) that are within 4 units on both axes are recorded in $2D as the collision candidate for the player's move, with their bearing octant in $14C0,x and range in $1740,x, even when out of view. Otherwise the coarse octant minus the heading octant must be 0, 1 or 7 before the exact bearing_from_viewer is computed; a result of 0 or 7 adds the object to the list at $B806. Note object 0 is never listed."
   },
   {
    "address": 47040,
@@ -13665,7 +13665,7 @@
   {
    "address": 48172,
    "type": "line",
-   "text": "Input for the frame. Sets CIA1 DDR A to all inputs and reads $DC00 = joystick port 2 (keys are not read here; the pause/abort keys are scanned at $A12A through $DC01). Normal play ($71 = 0): $6D = bits 0-3 = up, down, left, right (active low, $0F = centred), $6E = bit 4 = fire (0 = pressed, 1 = released); returns with Z set when fire is pressed (the title loop at $9D0E/$9D16/$9D1E uses that). Demo mode ($71 != 0, the value the zero-page image starts with is $10): the port is ignored and $6D/$6E come from a recorded script: $6F counts frames down, and at zero the next record (joystick byte in the same bit layout, then a frame count -> $6F) is read from ($72/$73), which advances by 2. The script starts at $7400 ($72/$73 = $7400 in the zero-page image; first records: $FF for 70 frames = idle, $FB for 9 = left, $FE for 7 = up). Callers: title loop $9D0E/$9D16/$9D1E, main loop $A112 and $A142 (the resume-from-pause wait, which needs $6D = $0F). Live: 75 hits in 4 s."
+   "text": "Input for the pass. Sets CIA1 DDR A to all inputs and reads $DC00 = joystick port 2 (keys are not read here; the pause/abort keys are scanned at $A12A through $DC01). Normal play ($71 = 0): $6D = bits 0-3 = up, down, left, right (active low, $0F = centred), $6E = bit 4 = fire (0 = pressed, 1 = released); returns with Z set when fire is pressed (the title loop at $9D0E/$9D16/$9D1E uses that). Demo mode ($71 != 0, the value the zero-page image starts with is $10): the port is ignored and $6D/$6E come from a recorded script: $6F counts passes down, and at zero the next record (joystick byte in the same bit layout, then a pass count -> $6F) is read from ($72/$73), which advances by 2. The script starts at $7400 ($72/$73 = $7400 in the zero-page image; first records: $FF for 70 passes = idle, $FB for 9 = left, $FE for 7 = up). Callers: title loop $9D0E/$9D16/$9D1E, main loop $A112 and $A142 (the resume-from-pause wait, which needs $6D = $0F). Live: 75 hits in 4 s."
   },
   {
    "address": 48177,
@@ -13675,7 +13675,7 @@
   {
    "address": 48200,
    "type": "side",
-   "text": "demo replay: (joystick byte, frame count) records from ($72)"
+   "text": "demo replay: (joystick byte, pass count) records from ($72)"
   },
   {
    "address": 48244,
@@ -13700,7 +13700,7 @@
   {
    "address": 48255,
    "type": "line",
-   "text": "2 bytes $80 $94: the $D018 value of each draw buffer, picked by frame counter $08 & 1 into $1A at $A196 once the buffer is complete. $80 = screen $6000 + charset $4000, $94 = screen $6400 + charset $5000. The raster IRQs use $1A (OR #$02 for the mirrored charset at +$800 on the ground rows)."
+   "text": "2 bytes $80 $94: the $D018 value of each draw buffer, picked by pass counter $08 & 1 into $1A at $A196 once the buffer is complete. $80 = screen $6000 + charset $4000, $94 = screen $6400 + charset $5000. The raster IRQs use $1A (OR #$02 for the mirrored charset at +$800 on the ground rows)."
   },
   {
    "address": 48257,

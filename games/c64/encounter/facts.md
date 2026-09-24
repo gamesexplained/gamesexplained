@@ -35,7 +35,7 @@ loader; nothing in the game references it.
 | Scene records, sound loops, object arrays, maths tables, level tables, score, zero-page image, shape scripts | $8000-$9BFF, see Data tables |
 | Init, title, game start | $9C00-$9FFF |
 | Main loop, enemy state machine, warp, spawning, scoring | $A000-$AA6F |
-| Console lights, enemy behaviour dispatch, end of frame, death, game over, obelisk collision, player shots, hit test, shape renderer | $AA70-$B19F |
+| Console lights, enemy behaviour dispatch, end of pass, death, game over, obelisk collision, player shots, hit test, shape renderer | $AA70-$B19F |
 | Frame swap, ground mirror, raster interrupt chain, per-frame timers, multiply, turning | $B1A1-$B507 |
 | Player movement, object motion, bearing and range, view list, drawing order, BCD score | $B508-$B8E0 |
 | Status digits, scene apply, scenery sprites, stargate rectangle, random, joystick, edge tables | $B8E1-$BDFD |
@@ -49,19 +49,24 @@ only. VIC bank 1 (`$DD00` = $96).
 ## Timing
 
 PAL machine; the emulator was set to PAL and the game checks for it
-($9DEC, see Oddities). One game frame per raster frame: the main loop
-waits at $A181 for raster line $C0 (192), which is just before the
-console interrupt at line 194, and the seven-stage raster chain runs
-once per frame (309 hits in six seconds, live). The CIA interrupts are
+($9DEC, see Oddities). The seven-stage raster chain runs once per frame
+(309 hits in six seconds, live), but the main loop does not: it waits
+at $A181 for raster line $C0 (192), and one pass of the loop takes two
+frames. *Live:* a non-stopping checkpoint on $A04C counted 500 passes in
+1,000 frames at the start of level 1, so the game world steps 25 times a
+second; with several shots in flight a pass sometimes takes three frames
+(the frame counter $1B advances by 3). Every count the game keeps in the
+main loop is therefore in passes, not frames: lifetimes, the fire lock,
+the enemy countdowns and the fire-script delays. The CIA interrupts are
 disabled ($9F16), so there is no timer tick. Frame counter $1B advances
-in the line-194 stage ($B45F); $58 counts its wraps (256 frames, about
-5.1 s) and is reset by a kill, a shot or a pause. Colour blending flips
-each frame between the two nibbles of a colour pair ($B467), a 25 Hz
-flicker. Player turn steps are 2 units on the first frame and then $25
-per frame (10 at level 1) out of 2048 for a full circle ($B4D8). Player
-shots live 24 frames ($ACB6); the fire lock is 8 frames ($5C); a
-destroyed enemy's fragments and explosion colours run off the lifetime
-of object 24 ($83F8).
+in the line-194 stage ($B45F), once per frame; $58 counts its wraps (256
+frames, about 5.1 s) and is reset by a kill, a shot or a pause. Colour
+blending flips each frame between the two nibbles of a colour pair
+($B467), a 25 Hz flicker. Player turn steps are 2 units on the first
+pass and then $25 per pass (10 at level 1) out of 2048 for a full circle
+($B4D8). Player shots live 24 passes ($ACB6); the fire lock is 8 passes
+($5C); a destroyed enemy's fragments and explosion colours run off the
+lifetime of object 24 ($83F8).
 
 ## Controls
 
@@ -73,7 +78,7 @@ heading flip at the same speed), left and right turn ($B4F0/$B4D8);
 diagonals therefore turn while moving. Fire launches a shot ($ACB6) when
 $AE allows it, $69 is zero (no gate phase) and the fire lock $5C has
 expired; holding fire repeats. During the attract demo ($71 ≠ 0) the same
-routine replays a script of (joystick byte, frame count) records from
+routine replays a script of (joystick byte, pass count) records from
 $7400 instead of the port.
 
 Keys are scanned by the KERNAL `SCNKEY` on the title screen and read as
@@ -103,7 +108,18 @@ every edge cell as a freshly allocated character ($B035 hands out codes
 $80, $A0, $C0, $E0, $01, $21, ...) whose eight rows are composed from
 2-pixel-pair AND masks and OR patterns ($BC85/$BD05) picked by a profile
 row table ($8FC0 or $9800). The bitmaps go into the character buffer for
-the frame being drawn.
+the frame being drawn. An edge cell that already holds a dynamic
+character is edited in place, which is how a nearer object paints over
+a farther one inside one cell. *Checked:* a port of $AD76, $AEDB, $B053
+and $B035 on the tables from the image, given four objects (obelisks at
+size steps 30, 28 and 25, and a shot, family 1, at size step 0, texture 2),
+rebuilds screen rows 2-9 and all 15 characters of the play snapshot byte
+for byte; the unique match for each object came from a search over every
+shape and horizontal position. Codes not allocated in a frame are never
+cleared: in the snapshot, every byte of $4000-$47FF outside the 15
+allocated characters and the four fills equals the shape-script byte at
+$2000 + offset, the copy the init left behind when it moved the scripts
+from $3E00 down to $1E00.
 
 **Double buffering and a free reflection.** Frames alternate between
 screen $6000 + characters $4000 and screen $6400 + characters $5000 ($08
@@ -127,7 +143,7 @@ hardware sprites). No sprite is multicoloured.
 each side are five colour-RAM cells at columns 7-11 and 28-32 of rows 19,
 21 and 23, recoloured by $AA70: row 21 turns yellow (7) when a saucer
 launches and back to orange (8) when it is gone; row 23 turns light blue
-($0E) when a saucer fires for $12 frames; row 19 alternates red and pink
+($0E) when a saucer fires for $12 passes; row 19 alternates red and pink
 (2/$0A) while a homing missile is live.
 
 ## Hardware register census
@@ -248,8 +264,8 @@ correctly.
 interrupt switches the 3D view rows (2-17) to `$D018 = $80/$82` or
 `$94/$96`: screen $6000 with characters at $4000 (sky half) and $4800
 (ground half), or screen $6400 with $5000 and $5800, a double buffer
-picked by bit 0 of the frame counter $08. Those characters are built
-every frame by the column drawer ($B053/$B10D) from the column-shape
+picked by bit 0 of the pass counter $08 (incremented at $B1A1). Those characters are built
+every pass by the column drawer ($B053/$B10D) from the column-shape
 tables at $9800-$9B80, and the ground half is the sky half reflected: the
 screen rows are copied 2..9 into 17..10 with the codes EOR $FF and the
 charset is byte-reversed into the +$800 copy ($B1EC). The block at $7000
@@ -272,19 +288,33 @@ the current enemy; 3 the stargate; 6 a marker used for the radar
 conversion; 7 the warp-in flash; 8-23 enemy shots (and warp spheres);
 24-31 explosion fragments; 32-95 the 64 obelisks. Each has a state
 ($83E0: 0 inactive, $FF permanent, else a lifetime counted down every
-frame by $B584), a type/shape byte ($8440: bits 7-5 family, bits 1-0
+pass by $B584), a type/shape byte ($8440: bits 7-5 family, bits 1-0
 texture), an 11-bit heading ($84A0 octant, $84C0 fine), a speed ($17A0)
 and a 24-bit X and Y position ($8260/$82C0/$15C0 and $8320/$8380/$15E0).
 $B5A1 turns heading and speed into a velocity through the quarter-sine
 table at $8900; $B65D adds it.
 
-**The plain.** Obelisks sit on a 32-unit grid; $8A00 is a 16×16 map from
-grid cell to obelisk index, used by $AC30 to stop shots and enemy shots
-and by $B50C to stop the player: a move is refused when the nearest
-object in the travel direction is within $43 units ($90), and the game
-plays a bump noise ($B53F).
+**The plain.** A 256 × 256 torus in high-byte units: positions wrap, and
+the bearing code works on the 16-bit difference, so everything is seen
+the short way round. Obelisks sit on a 32-unit grid; $8A00 is a 16×16
+map from grid cell to obelisk index, used by $AC30 to stop shots and
+enemy shots and by $B50C to stop the player: a move is refused when the
+nearest object in the travel direction is within $43 units ($90), and
+the game plays a bump noise ($B53F).
 
-**Seeing.** Each frame $B77F walks every object, culls to a ±$60 box,
+**Bounces.** When $AC30 finds a shot in an obelisk's cell with a range
+code below $4F, it puts back the high and middle bytes of the position
+from before the move (not the low byte) and turns the heading. With H
+the shot's heading and B the bearing of the shot seen from the obelisk,
+both in 2048ths of a circle, the new heading is H + 1028 + 4 × ((B − H)
+mod 512). A head-on hit (B − H = 1024) comes straight back, 0.7° off
+reverse; an offset of δ turns the shot by 4δ where a mirror would turn
+it by 2δ, and the multiplier wraps every 90°. *Live:* the formula,
+computed with a port of $B6A2/$B729, gave the recorded new heading for
+all 69 bounces in six recordings (the five below and 2,500 passes of the
+attract demo).
+
+**Seeing.** Each pass $B77F walks every object, culls to a ±$60 box,
 computes bearing and logarithmic range ($B729/$B766 via the reciprocal
 table $8500, arctangent $8600 and hypotenuse adjustment $8700), and
 builds a view list ($1460) sorted nearest-last ($B829). $B86C draws it
@@ -292,21 +322,67 @@ far to near so nearer objects overwrite. The size index comes from
 range through $8800.
 
 **Enemies.** Between enemies ($A28A) a countdown $4D (random 8-39
-frames, $A962) spawns the next: a homing missile ($A3A5) when $33 says
+passes, $A962) spawns the next: a homing missile ($A3A5) when $33 says
 one is pending, when the player has idled 24 × 256 frames, or one time
-in four while a saucer flag is set; otherwise a saucer ($A42C). Saucer
-type $7A is random in 0..2×level-1 (16 types at level 8), except that the
-first two spawns after a level-up are the two newly unlocked types
-($9E). Each type has a fire script at $8C00 (delay, spread pairs) and
-one of four behaviour routines ($AAB5 table): default, burst fire,
-script fire, permanent fire. Saucers reroll speed and heading from the
-difficulty ($3B, ramping to $3F) and leave after 24 × 256 frames.
-Missiles steer toward the player ($A7F0) and whine on voices 2 and 3 with
-pitch from range $31.
+in four while a saucer flag is set; otherwise a saucer ($A42C), which
+warps in for 48 passes ($78) before its handler starts. Saucer type $7A
+is random in 0..2×level-1 (16 types at level 8), except that the first
+two spawns after a level-up are the two newly unlocked types ($9E). Each
+type has a fire script at $8C00 and one of four behaviour routines
+($AAB5 table); saucers leave after 24 × 256 frames ($58).
+
+- *Fire script.* Pairs of (delay, spread) from $8C00 + $8C00[type],
+  ended by $FF and a restart offset. $A97A fires when the delay $5E has
+  run out: the pair's delay goes into $5E, so it is the wait *after*
+  that shot, in passes. $A99A takes the first free slot 8-23, gives it
+  lifetime $30 (48 passes) and speed $A6, and heads it along the saucer's
+  bearing to the player ($2F:$39) plus twice the spread byte, in
+  2048ths; with bit 7 set the spread is random within the low bits,
+  centred.
+- *Default handler* ($A5D6, types 0-4, 6, 8, 10), a cycle of four phases.
+  Move: $44 (0-63 passes) counts down at the speed $8F00[X]. Wait: $45
+  (8-40 passes) counts down with the speed set to 0. Aim, types 0 and 1
+  only: a rising tone as $91 falls by 4 a pass from $FF to the threshold
+  $92 = $8FC0[X]. Shoot: $47 is set and the script runs, the saucer
+  standing still, until the script reaches its $FF; then the attack
+  count $46 goes down and, if it is not yet 0, a one-pass wait and
+  another aim and shoot follow, otherwise $A693 rerolls. A reroll takes
+  X = $3B − 0..3 (difficulty), sets $44, $45, $92 and the speed, and aims
+  the course at the player when a random byte is below $68C8 ($30, one
+  time in 5.3), otherwise at a "random" heading built from one random
+  byte used for both the octant (its low three bits) and the fine angle,
+  so only 256 of the 2048 headings can come up.
+- *Script fire* ($A5C7, types 9, 12, 14, 15): the script runs every pass
+  while the saucer moves and rerolls as above; it never waits or aims.
+- *Burst fire* ($A563, types 5, 11): $45 starts at 0 and is decremented
+  first, so it counts down from 255 passes while the saucer wanders,
+  choosing a new course with X = $3B whenever $44 runs out. At 0 it calls
+  the script step 16 times in one pass, a fan of 16 shots (type 5: from
+  22.5° left to 19.7° right in 2.8° steps), and removes itself without
+  scoring.
+- *Permanent fire* ($A70D, types 7, 13): only the script step. The speed
+  cleared at spawn is never set, so the saucer never moves.
+- *Homing missile* ($A7F0): each pass its heading is the bearing to the
+  player. While its range code $31 is at or above $40 (far) it adds or
+  subtracts a turn $37 (up to 45°), switching side ($38) every 1-64
+  passes ($36), so it weaves; inside that range it flies straight in.
+
+*Live:* five recordings of level 1 (saucer types 0, 5, 7 and 9 forced at
+$A441, and a forced missile), 1,200 passes each, read at $A04C every
+pass and checked against ports of $B5A1, $B6A2/$B729 and the handlers:
+every enemy and player shot velocity equals $B5A1 of its heading and
+speed (8,778 shot-passes, the demo included); every new enemy shot has lifetime $30, speed $A6 and the heading
+above; every saucer course change took its speed (and, for $A5D6/$A5C7,
+$92) from one difficulty row and was either aimed or one of the 256
+one-byte headings; the permanent-fire saucer never moved; all 675
+missile passes, the demo's included, matched the weave-or-straight rule. The standing player
+was hit three times by type 9 in 1,200 passes, twice by type 5's fans
+and five times by missiles, the fifth ending the game; types 0 and 7
+never hit it.
 
 **Hits.** $AD26 tests an object against the player by bearing and range:
 range under $80 is a hit, over $C0 a miss, and in between a hit only if
-the bearing jumped by $57 or more between frames (the object crossed the
+the bearing jumped by $57 or more between passes (the object crossed the
 player). Player shots are tested against the enemy at $A894. A kill
 ($A8B2) awards 500 for a missile or (type+1) × 100 for a saucer (table
 $8BB0), paid level times over ($A1 at $AAC8), decrements the enemy count
@@ -321,10 +397,10 @@ $ABED, which moves SCORE to LAST SCORE on the title screen, updates the
 high score, and shows the game-over screen ($9C5C).
 
 **Stargate and warp.** The gate is object 3, placed at the last enemy's
-X ($A2A1) for $F0 frames. Flying into it ($A4EC, tested with $AD26)
+X ($A2A1) for $F0 passes. Flying into it ($A4EC, tested with $AD26)
 starts the warp ($A713): the scene switches to the warp colour block
 ($63 = $80), speed ramps by $A5 toward the level's top speed ($A7E8),
-and spheres appear in slots 8-23 every three frames. After about four
+and spheres appear in slots 8-23 every three passes. After about four
 256-frame periods the level completes ($A798): the level digit
 increments and $68CB records the highest level reached. Missing the gate
 returns to play with a new enemy count ($A552); no shield loss was found
@@ -350,7 +426,7 @@ array is 96 long).
 
 | Table | Length | Holds |
 |---|---|---|
-| $83E0 | 96 | state: 0 inactive, $FF permanent, else frames left |
+| $83E0 | 96 | state: 0 inactive, $FF permanent, else passes left |
 | $8440 | 96 | type: bits 7-5 shape family ($00 obelisk, $20 shot, $40 saucer, $E0 gate), bits 1-0 texture |
 | $84A0 / $84C0 | 32 | heading octant (0-7, clockwise from +Y) and fine angle; entry 0 is the player's view heading |
 | $8260 / $82C0 / $15C0 | 96 | X position high, middle, low |
@@ -359,10 +435,10 @@ array is 96 long).
 | $1600 / $1620 / $1640 | 32 | X velocity, three bytes |
 | $1660 / $1680 / $16A0 | 32 | Z velocity |
 | $16C0 / $16E0 / $1700 / $1720 | 32 | previous position, restored after an obelisk collision |
-| $1400 | 32 | size step this frame (from $8800 by range) |
+| $1400 | 32 | size step this pass (from $8800 by range) |
 | $1460 | 32 | view list, nearest last; count in $0F |
-| $14C0 / $1520 | 32 | bearing octant and fine bearing this frame |
-| $1580 / $15A0 | 32 | bearing seen by the hit test last frame, and its invalid flag |
+| $14C0 / $1520 | 32 | bearing octant and fine bearing this pass |
+| $1580 / $15A0 | 32 | bearing seen by the hit test last pass, and its invalid flag |
 | $1740 | 32 | logarithmic range code |
 | $8460 / $8480 | 32 | set to 3 for every object at game start; no reader found (unknown) |
 
@@ -417,7 +493,7 @@ pointers are at $63F8 and $67F8.
 
 **Zero page.** $8B00-$8B9F is the image copied to $03-$A1 at init
 ($9C43) and at every game start ($9E82); $02 is never initialised.
-Named variables: $05 next dynamic character; $08 frame parity; $0F view
+Named variables: $05 next dynamic character; $08 pass counter, whose bit 0 picks the buffer; $0F view
 count; $12 object screen X in pixel pairs; $1B frame counter, $58 its
 256-frame wraps; $1D voice-1 countdown; $23-$25 turn steps and rate;
 $2D object ahead; $31 range to the enemy; $33 missiles pending; $3B
@@ -480,12 +556,12 @@ selection key is held.
 - 2026-09-20, attract demo with hit counters on the mechanic routines
   and the raster stage as control: over about four minutes, 13 saucer
   spawns ($A42C), 2 missile spawns ($A3A5), 10 kills ($A8B2), 113 shots
-  ($ACB6), 42 bumps ($B53F), 70205 obelisk tests ($AC30), 483 frames of
+  ($ACB6), 42 bumps ($B53F), 70205 obelisk tests ($AC30), 483 passes of
   the warp-in flash rectangle ($BA04), 6 deaths ($AB9A), one game over
   ($ABED then $9C5C), 10672 raster frames. After poking the enemy count
   $8BA8 to 1, the next kill opened the gate once ($A2A1), the gate state
-  ran 133 frames ($A4EC), the shield digit went up once ($A91D), and the
-  warp ran 351 frames ($A713) before the demo's scripted stick flew into
+  ran 133 passes ($A4EC), the shield digit went up once ($A91D), and the
+  warp ran 351 passes ($A713) before the demo's scripted stick flew into
   a sphere; $A798 never ran, so level completion stayed traced. The game
   over came on the sixth death: four shields plus the one awarded, and
   the death that finds the digit already at 0 ends the game ($ABD8).

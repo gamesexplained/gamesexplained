@@ -184,12 +184,20 @@ def read(p):
     return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
 
 
+TIER_NAMES = {"silver-claimed": "silver (claimed)"}
+
+
+def tier_name(t):
+    """How a tier reads on the page: game.json's value, except silver-claimed."""
+    return TIER_NAMES.get(t, t)
+
+
 def tabbar(game, present, lib):
     tabs = "".join(f'<a class="tab" href="{f}">{n}</a>' for f, n in TABS if f in present)
     tier = game.get("tier", "none")
     return (f'<nav class="gametabs"><div class="in"><span class="crumb"><a href="{lib}/../index.html">Games Explained</a> / '
             f'{PLATFORM_NAMES.get(game.get("platform"), game.get("platform"))} / {html.escape(game.get("title", ""))}</span>'
-            f'{tabs}<span class="tier">tier <b>{tier}</b></span></div></nav>')
+            f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
 
 
 def banner(game, cons):
@@ -197,6 +205,9 @@ def banner(game, cons):
 
     Gold and Platinum name the humans (git authors, linked). Silver is agent-generated
     and asks for a human editor, and credits the contributor (git authors, linked).
+    Silver (claimed) is a Silver a human has started editing: it names them (the
+    steward in game.json) as editing it to a Gold standard, with no prompt, so nobody
+    starts the same work twice.
     Bronze, or no tier, is unfinished and asks for a
     contributor. The prompt behind the button is the one line to paste into an agent.
     """
@@ -213,6 +224,14 @@ def banner(game, cons):
         body = (lead + 'It\u2019s agent-generated and needs a human editor. '
                 f'<span class="prompt" id="prompt">{html.escape(prompt)}</span>'
                 '<button type="button" data-copy="#prompt">Copy the prompt to work on it</button>')
+    elif tier == "silver-claimed":
+        who = ", ".join(f'<a href="https://github.com/{html.escape(l)}">{html.escape(l)}</a>' if l else html.escape(n) for _, n, l in cons)
+        lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
+        st = game.get("steward") or ""
+        if not st:
+            print(f"warning: {where} is silver-claimed with no steward; set steward in game.json to the editor's GitHub login", file=sys.stderr)
+        ed = f'<a href="https://github.com/{html.escape(st)}">{html.escape(st)}</a>' if st else 'an editor'
+        body = lead + f'It\u2019s currently claimed by {ed} who is editing it to reach a Gold tier standard.'
     else:
         cov = game.get("coverage_percent") or 0
         prompt = f"Clone {repo} and follow kit/START.md to continue {where} to Silver."
@@ -350,7 +369,7 @@ def build_game(gdir, out_root):
     json.dump({"runs": runs, "totals": totals, "symbols": symbols}, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
     game["_totals"] = totals
     about = fill(read(os.path.join(SITE, "about.html")), **common, footprint=footprint_table(totals),
-                 tier=game.get("tier", "none"), coverage=f"{game.get('coverage_percent') or 0:g} %",
+                 tier=html.escape(tier_name(game.get("tier", "none"))), coverage=f"{game.get('coverage_percent') or 0:g} %",
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, links=link_html,
@@ -440,7 +459,7 @@ def runs_table(games):
         program = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
         fmt = lambda v, unit="": (f"{v:g}{unit}" if v is not None else "")
         rows.append(f'<tr><td><a href="{g["platform"]}/{g["slug"]}/index.html">{html.escape(g.get("title", g["slug"]))}</a></td>'
-                    f'<td>{program // 1024} KB</td><td>{html.escape(g.get("tier", "none"))}</td><td>{fmt(S["hours"])}</td>'
+                    f'<td>{program // 1024} KB</td><td>{html.escape(tier_name(g.get("tier", "none")))}</td><td>{fmt(S["hours"])}</td>'
                     f'<td>{fmt(S["minutes_to_play"])}</td><td>{fmt(S["min_per_kb"])}</td><td>{fmt(S["agents"])}</td>'
                     f'<td>{html.escape(", ".join(S["models"]))}</td></tr>')
     if not rows:
@@ -490,7 +509,7 @@ def strip_html(g):
 
 def stamp_html(g):
     t = g.get("tier", "none")
-    return f'<span class="stamp {html.escape(t)}">{html.escape(t)}</span>'
+    return f'<span class="stamp {html.escape(t)}">{html.escape(tier_name(t))}</span>'
 
 
 def featured_html(g):

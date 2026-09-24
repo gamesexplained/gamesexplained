@@ -48,3 +48,31 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   showed garbage until the stepper at $A97A was read again: the script
   starts one byte after the offset.
 - Retro: four kit edits, changelog 0.0.7.
+
+## 2026-09-23, session 2 (Claude Opus 5.5), minisite work with the contributor
+
+- The character viewer in section 03 looked like noise. The frame's 15
+  characters sit 32 codes apart ($05 += $20), and every other code in
+  $4000-$47FF still holds the load image of the shape scripts ($4000 + n
+  = script byte $2000 + n, all 1,900 bytes). A Python port of $AD76 then
+  rebuilt rows 2-9 and all 15 characters of the snapshot byte for byte
+  from four objects found by search; the page now runs the same port.
+  The yellow disc in the frame is a shot (family 1, size 0, texture 2),
+  not the saucer's arrival flash the page copy named.
+- For the top-down replays the object table was recorded from a running
+  game once per pass at $A04C (work/record.py), with saucer types forced
+  at $A441 and a missile forced through $33. Ports of $B5A1, $B6A2/$B729,
+  the bounce at $AC86 and the four saucer handlers were checked against
+  every recorded pass (work/verify_moves.py). Two readings of the code
+  turned out wrong: the missile weaves while far and flies straight
+  when near (the listing had it the other way), and $44 is the saucer's
+  move timer, not a pause. The bounce geometry, noted as not worked out,
+  fitted all recorded bounces first time.
+- Hit counts over whole frames showed the main loop takes two frames a
+  pass (500 passes in 1,000 frames). Session 1 had written "frames" for
+  every count kept in the loop; facts.md now says passes.
+- Recording traps: vice_autostart does not resume a paused machine, and
+  a title screen left alone starts the attract demo within seconds, so
+  a "game" started too late was the demo ($71 = $10, $68C8 = $20).
+  The missile run ended in a game over after five hits and carried on
+  into the demo; the clip is cut at pass 520.
