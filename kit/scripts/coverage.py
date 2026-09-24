@@ -29,6 +29,8 @@ Usage:
   coverage.py <game dir> --live          from the running disassembler
   coverage.py <game dir> --top 40        longer work queue
   coverage.py <game dir> --code | --data queue only that side
+  coverage.py <game dir> --range $2000 $27FF   figures and queue for one address range,
+                                         for an agent that owns that range
 """
 import json, os, sys
 
@@ -72,7 +74,11 @@ def main():
     from ledger import compute
     L = compute(blocks, syms, comments, reg)
     state, code, owner, dups = L["state"], L["code"], L["owner"], L["dups"]
-    tracked = [a for a in range(0x10000) if state[a]]
+    lo, hi = 0, 0xFFFF
+    if "--range" in argv:
+        i = argv.index("--range")
+        lo, hi = (int(x.lstrip("$"), 16) for x in argv[i + 1:i + 3])
+    tracked = [a for a in range(lo, hi + 1) if state[a]]
     if not tracked:
         print("nothing tracked: no code blocks or symbols yet"); return
     expl = sum(1 for a in tracked if state[a] == 2)
@@ -97,7 +103,7 @@ def main():
         t, e = agg[k]
         print(f"  ${k:X}000-${k:X}FFF  {t:>7} {e:>7} {100*e/t:>5.0f}%")
     runs, cur = [], None
-    for a in range(0x10000):
+    for a in range(lo, hi + 1):
         if state[a] == 1:
             if cur and cur[1] + cur[2] == a:
                 cur[2] += 1

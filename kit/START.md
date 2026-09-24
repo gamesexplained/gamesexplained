@@ -10,14 +10,13 @@ step needs something only they have.
 1. **Make sure you are inside a clone of this repository.** If you have
    none yet, `git clone https://github.com/gamesexplained/gamesexplained`
    and continue inside it.
-2. **If there is any question over what commit email to use, prefer the
-   anonymous form** `<login>@users.noreply.github.com`.
-3. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
+2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
-4. **Ask the contributor five things** if they have not already told you:
+3. **Ask the contributor six things** if they have not already told you:
    which game, which platform it is for, where their copy of it is on
-   disk, **which run they want**, of the two below, and **whether you may
-   look the game up online**. We never download game binaries; they
+   disk, **which run they want**, of the two below, **whether you may
+   look the game up online**, and **whether you may open the pull request
+   yourself when the run is done**. We never download game binaries; they
    supply their own.
 
    - **Silver** (recommended) aims to explain 100 % of the program and
@@ -37,18 +36,59 @@ step needs something only they have.
    folder. One yes covers the whole run. With a no, the game's own
    screens and text are the only documentation, and `features.md` says
    so.
-5. **Set up the tools** with `kit/INSTALL.md` for their operating system.
+
+   **The pull request can wait for them or not.** By default the run
+   ends with the branch pushed, tells the contributor it is ready, and
+   opens the pull request when they say so, so they can look first. If
+   they say you may open it yourself, the run ends with the pull request
+   open and a link to it. Either answer holds for the whole run; do not
+   ask again at the end.
+
+   **Last, make sure the commits will be theirs.** The site credits a
+   game to the GitHub accounts that authored its commits, so commits made
+   under the agent's identity credit nobody. Ask for their GitHub login
+   and the name they want shown, and set both for this repository only,
+   never globally:
+
+   ```
+   git config user.name "<their name>"
+   git config user.email "<login>@users.noreply.github.com"
+   ```
+
+   The noreply address keeps their real one private and still links each
+   commit to their account. GitHub's email settings page shows it,
+   sometimes with a number in front (`<id>+<login>@users.noreply.github.com`);
+   either form works. Then prove it with a commit that goes nowhere:
+
+   ```
+   git switch -c identity-check
+   git commit --allow-empty -m "Identity check"
+   git log -1 --format='%an <%ae>'
+   git switch -
+   git branch -D identity-check
+   ```
+
+   The author line must show their name and the noreply address. If the
+   commit is refused (some agent environments will not commit under
+   another person's name) or shows anyone else, say so now, while it is
+   cheap to fix, and agree with the contributor how the commits will be
+   authored before the first real one. If they said you may open the pull
+   request, check now that you can: `gh auth status` should show their
+   login, or your environment should have its own way to open one.
+4. **Set up the tools** with `kit/INSTALL.md` for their operating system.
    Tell them plainly what is known to work and what is untested on their
    platform.
-6. **Create the game folder** with `kit/scripts/new_game.py` and copy their
+5. **Create the game folder** with `kit/scripts/new_game.py` and copy their
    image into its `work/` directory.
-7. **Follow the skills** in the order `AGENTS.md` gives, opening each
+6. **Follow the skills** in the order `AGENTS.md` gives, opening each
    `SKILL.md` as you reach it.
-8. **Finish with the retrospective** (`kit/skills/core/80-retro`) and open a
-   pull request from the branch, as `AGENTS.md` says. Nothing goes to
-   `main` directly. This step needs the contributor's GitHub login in the
-   shell, to fork and to open the pull request; ask for it when you get
-   here, not before.
+7. **Finish with the retrospective** (`kit/skills/core/80-retro`) and the
+   pull request, as `AGENTS.md` says. Nothing goes to `main` directly. If
+   the contributor said at the start that you may open it, open it and
+   give them the link; otherwise push the branch, tell them it is ready,
+   and open it when they say so. If you cannot push or open it (no fork,
+   no login), leave the branch where it is and say exactly what is
+   missing.
 
 **If the contributor points you at a game folder that already exists**,
 the job is not a new run. A Bronze game is continued to Silver: read its
@@ -60,7 +100,9 @@ anything new against the code, and rewrite to `kit/style.md`. When the
 first edit pass begins, set `tier` in `game.json` to `silver-claimed`
 and `steward` to their GitHub login: the page then says who is editing
 it. Set `gold` when every section has had its pass. Set `copy` in
-`game.json` honestly, and open the pull request as `AGENTS.md` says.
+`game.json` honestly, and open the pull request as `AGENTS.md` says. The
+two questions about the pull request and the commit identity in step 3
+come first in this job too.
 
 Time expectations: A Silver run takes one to three hours, mostly
 unattended. A Bronze run takes about 20 to 45 minutes.

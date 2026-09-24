@@ -81,6 +81,18 @@ the game folder, or pass `--game`, so the log lands in the right place.
   `symbols.json` plus a snapshot.
 - After any bulk recovery, verify with a clean process, a full replay and
   a block-count check, not "the replay didn't error".
+- **The flow tracer can wander into text.** `$20` is `JSR`, so a run of
+  PETSCII spaces decodes as `JSR $2020 / JSR $2020`, and a trace that
+  reaches such bytes keeps going: one run minted code blocks inside a
+  title scroller, reached from nothing but each other. After tracing, ask
+  `get_cross_references` about every small code block, and set the ones
+  only reached from inside themselves back to `undefined`.
+- **A `JSR` into ROM traces the RAM underneath.** The snapshot holds the
+  RAM below the BASIC and KERNAL ROMs, so a call to `$E544` or `$FFD2` makes
+  the tracer disassemble whatever the game keeps there. Set those ranges
+  back to `undefined`, and list the entry byte under `coverage.exclude` in
+  `game.json`, so the auto symbol at it stops owning the RAM beneath (the
+  ledger skips a symbol whose address is excluded).
 - Auto-generated symbols (branch targets) are minted on every load; the
   export keeps them because the coverage denominator uses them, and the
   import drops them because the tool regenerates them.

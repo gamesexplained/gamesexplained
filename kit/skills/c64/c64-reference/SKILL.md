@@ -92,7 +92,20 @@ text area, so text column *c*, row *r* is sprite X = 24 + 8*c*, Y = 50 +
 
 Character set: 8 bytes per glyph, 256 glyphs, 2 KB. Colour RAM holds one
 nibble per cell. Multicolour character mode uses bit 3 of the colour nibble
-to select it per cell.
+to select it per cell: in such a cell, pixel pairs `%00` are the background
+`$D021`, `%01` is `$D022`, `%10` is `$D023` and `%11` the colour nibble's low
+three bits.
+
+Bitmap mode (`$D011` bit 5) reads `$D018` differently: bit 3 alone picks
+the bitmap, at `$0000` or `$2000` in the VIC bank, and the high nibble
+points at the screen matrix, which now holds colours, not characters.
+Check `$D011` before naming a character base from `$D018`; a raster split
+can change the mode per band, so read the mode where the band is set up,
+not from a register dump. In multicolour bitmap mode (`$D016` bit 4 as
+well) a cell's pixel pairs are `%00` the background, `%01` the matrix
+byte's high nibble, `%10` its low nibble and `%11` the colour RAM nibble.
+The test of a reading is a rebuild: draw the picture from memory and
+compare it with a screenshot.
 
 ## SID essentials (`$D400`)
 
@@ -150,7 +163,17 @@ that reads low; `vice_keyboard_matrix` takes the same `row` and `col`.
 | 7 | 1 | ← | CTRL | 2 | SPACE | C= | Q | RUN/STOP |
 
 The KERNAL numbers a key 8 × row + column (A is 10, SPACE 60) and writes
-64 to `$CB` when none is held. A game that scans the matrix itself may
+64 to `$CB` when none is held. `$C5` holds the same number for the key its
+scan last saw, 64 for none, and is what a game that leaves the scanning
+to the KERNAL usually compares with. The modifier keys are not keys in
+this numbering: the scan ORs their flags into `$028D`, 1 for either SHIFT,
+2 for C=, 4 for CTRL, so CTRL+R reads as `$028D` = 4 with `$C5` = 17 (checked
+in the decode table at `$EB81` of kernal-901227-03). `$0291` bit 7 set stops
+SHIFT + C= switching the character set; printing CHR$(8) sets it.
+
+`$02A6` is 1 on PAL and 0 on NTSC: the KERNAL sets it at reset from
+whether the raster ever reaches line 311 (`$FF5E`-`$FF68`). A game that
+keeps its music at the same tempo on both usually reads it. A game that scans the matrix itself may
 number the keys the other way round, row + 8 × column; its key table is 64
 bytes in that order, and printing it as an 8 × 8 grid against this one
 settles which.
@@ -193,6 +216,36 @@ tables there and lose nothing. The same applies to `$9000`-`$9FFF` in bank
 *other* bank has to copy the ROM into RAM there, which is the usual reason
 for a byte-for-byte copy of `$D000`-`$D7FF` appearing somewhere in a bank
 1 or 3 layout.
+
+## RAM the CPU cannot see
+
+The converse also bites. The VIC always reads RAM, never the BASIC or
+KERNAL ROM, so a game that keeps the KERNAL switched in (`$01` = `$36`)
+can still keep a bitmap, a character set or a screen at `$E000`-`$FFFF`
+and show it in VIC bank 3. The CPU reading the same addresses gets the
+ROM: an `LDA $E000,X` in such a game reads KERNAL bytes (a cheap source
+of noise), and a `JSR $FFD2` calls CHROUT, while the snapshot shows the
+game's graphics there. Say in each comment which one is meant.
+
+## `CBM80` in a game that is not a cartridge
+
+A program that writes `C3 C2 CD 38 30` to `$8004`-`$8008` catches the
+reset and RESTORE: the KERNAL's reset routine and its NMI handler both
+check for the signature and jump through `$8000` (cold) and `$8002`
+(warm) when it is there. A disk or tape game does it so that RESTORE,
+or a reset switch, restarts the game instead of dropping to BASIC. Read
+the two vectors; test RESTORE (`vice_keyboard_restore`) with a stopping
+checkpoint on the warm start.
+
+Test the reset as well (`vice_machine_reset`), because it is not the same
+path. A reset clears the 6510's data direction register `$00`, and the
+KERNAL jumps through `$8000` before its `IOINIT` would set it to `$2F`
+again. With `$00` = 0 every line of the processor port is an input and
+reads high, so writes to `$01` change nothing: BASIC, KERNAL and I/O stay
+in whatever the game asks for. A game whose restart does not set `$00`
+itself runs after a reset with BASIC over its data at `$A000`-`$BFFF`.
+Read `$00` and the CPU's view of the game's tables after the reset; the
+symptom is usually wrong colours or missing graphics, not a crash.
 
 ## Screen codes and PETSCII
 
