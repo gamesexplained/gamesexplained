@@ -38,7 +38,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 canvas{display:block;max-width:100%;image-rendering:pixelated;background:#000;border-radius:6px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
 .btn{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
-.btn.on{color:var(--ink);border-color:var(--violet);background:#241f58}
+.btn.on,.btn.on:hover{color:#fff;border-color:var(--violet);background:var(--violet)}
 .btn:hover{color:var(--ink)}
 label.sl{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);display:flex;gap:8px;align-items:center}
 input[type=range]{width:220px}
@@ -53,21 +53,30 @@ td.m{font-family:var(--fm);font-size:13px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:700px){.two{grid-template-columns:1fr}}
 .tok{display:inline-block;font-family:var(--fm);font-size:12px;padding:1px 6px;border-radius:4px;margin:2px;border:1px solid var(--line)}
-.tok.row{background:#2a2350}.tok.fill{background:#1d3a2a}.tok.edge{background:#3a2a1d}.tok.end{background:#3a1d1d}
+.tok.row{background:#e7e5fb;border-color:#c9c4f2}.tok.fill{background:#dff1e5;border-color:#b5dbc3}.tok.edge{background:#fbe9d6;border-color:#efcca6}.tok.end{background:#f8dcdc;border-color:#e6b3b3}
 .kbd{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:4px;padding:1px 6px;background:var(--surface-2)}
+.ctiles{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}
+.ctile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 3px 3px;font-family:var(--fm);font-size:11.5px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.ctile:hover{color:var(--ink)}
+.ctile.on{color:var(--ink);border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
+.ctile.gap{margin-left:12px}
+.ctile canvas{border-radius:2px}
 </style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1984 · Novagen Software</p>
   <h1>Encounter</h1>
-  <p class="sub">A first-person plain of obelisks and saucers, drawn on a text screen whose characters are rebuilt every frame, with the ground half of the picture supplied by turning the sky upside down.</p>
+  <p class="sub">A first-person plain of obelisks and saucers, drawn with text where characters change every frame, and the ground is rendered by turning the sky upside down.</p>
 </header>
 <main class="wrap">
 
 <section>
   <p class="fig">01 · One frame, rebuilt from memory</p>
   <h2 class="t">The play screen, drawn from the snapshot</h2>
-  <p class="lede">Screen memory at <code>$6000</code>, the character buffer at <code>$4000</code> and its reflected copy at <code>$4800</code>, colour memory, the font at <code>$7800</code> and the eight sprite registers, rendered here by the page's own code. A reconstruction, not a screenshot.</p>
+  <p class="lede">This is a game of spheres bouncing around in apparent real-time 3D. For fans of other Paul Woakes games, we might expect an
+    efficient circle-drawing routine similar to the one rendering the planetfall in his game MERCENARY. It's quite astonishing then that all
+    the circles in Encounter are drawn in text on a standard grid, using custom characters on rows 2-17.
+    Here's a faithfully reconstructed frame rendered with characters, not a screenshot: try clicking <i>cell grid</i> to see how the circle is made.</p>
   <div class="plate">
     <canvas id="scr" width="640" height="400"></canvas>
     <div class="row">
@@ -79,7 +88,7 @@ td.m{font-family:var(--fm);font-size:13px}
     <p class="cap" id="scrCap"></p>
   </div>
   <p>The picture is character mode from top to bottom. Rows 0 and 1 are the status line in a double-width font. Rows 2 to 17 are the view, shown in multicolour text mode through a character set the game builds every frame. Rows 18 to 24 are the console, drawn once from the same font as the status line. Nothing in the sky or the ground is a pixel: those are background colours changed by a raster interrupt as the beam passes, which is the next section.</p>
-  <p>The eight sprites are the small things. Sprite 1 is the gun sight, fixed in the middle. Sprite 0 is the radar blip. Sprites 2 to 7 are the horizon hills and the clouds, which scroll against the heading so the horizon turns with the player. The yellow shape at the right edge is the flash a saucer arrives through, caught a second after the reference screenshot in <code>reference/</code> was taken.</p>
+  <p>The eight sprites are the small things. Sprite 1 is the gun sight, fixed in the middle. Sprite 0 is the radar blip. Sprites 2 to 7 are the horizon hills and the clouds, which scroll against the heading so the horizon turns with the player. The yellow shape at the right edge is the shot from a yellow saucer - a near miss.</p>
 </section>
 
 <section>
@@ -109,7 +118,8 @@ td.m{font-family:var(--fm);font-size:13px}
   <h2 class="t">The ground is the sky upside down</h2>
   <p class="lede">After the objects are drawn into rows 2 to 9, <code>$B1EC</code> copies those rows into rows 17 to 10 with every character code inverted, and writes a top-to-bottom reversed copy of the character set into the next 2 KB. The interrupt at line 130 switches to that copy, so the lower half of the view is a mirror image for the cost of a copy loop.</p>
   <div class="plate">
-    <div class="row"><label class="sl">character code <input type="range" id="mirCode" min="0" max="255" value="1"><span id="mirVal"></span></label></div>
+    <div class="ctiles" id="mirTiles"></div>
+    <p class="cap" id="mirTilesCap" style="margin:0 0 16px"></p>
     <div class="two">
       <div><canvas id="mirA" width="192" height="192"></canvas><p class="cap" id="mirCapA"></p></div>
       <div><canvas id="mirB" width="192" height="192"></canvas><p class="cap" id="mirCapB"></p></div>
@@ -126,9 +136,15 @@ td.m{font-family:var(--fm);font-size:13px}
   <div class="plate">
     <div class="row">
       <select id="shFam"></select>
-      <label class="sl">size step <input type="range" id="shSize" min="0" max="31" value="20"><span id="shSizeVal"></span></label>
+      <label class="sl">size step <input type="range" id="shSize" min="0" max="31" value="8"><span id="shSizeVal"></span></label>
+      <label class="sl">sub-cell position <input type="range" id="shShift" min="0" max="3" value="0" style="width:80px"><span id="shShiftVal"></span></label>
+      <button class="btn on" id="shApart">explode cells</button>
     </div>
-    <p class="cap" id="shHead"></p>
+    <canvas id="shPic" width="640" height="460"></canvas>
+    <p class="cap" id="shPicCap"></p>
+    <canvas id="shSheet" width="640" height="200" style="margin-top:18px"></canvas>
+    <p class="cap" id="shSheetCap"></p>
+    <p class="cap" id="shHead" style="margin-top:22px"></p>
     <div id="shTokens" style="margin:10px 0"></div>
     <p class="mono" id="shBytes"></p>
     <p class="cap">Scripts live at <code>$1E00</code> to <code>$3EEB</code>; the pointer tables at <code>$9600</code> (low bytes) and <code>$9700</code> (high bytes) are indexed by family × 32 + size step. Token colours: purple starts a new screen row, green is a run of fill cells, orange is one edge cell, red ends the variant.</p>
@@ -308,6 +324,57 @@ const PAL=['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b'
 const hex=(n,w=2)=>'$'+n.toString(16).toUpperCase().padStart(w,'0');
 const V=DATA.vicSnap;
 function spriteData(ptr){ const a=ptr*64; if(a>=0x3000) return SPR7.subarray(a-0x3000,a-0x3000+63); if(a>=0x2400&&a<0x2800) return SPR6.subarray(a-0x2400,a-0x2400+63); return new Uint8Array(63); }
+const TBL={"profWide":"oKSorLC0uLzAwsTGyMrMztDS1NbY2tze4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OLk5ujq7O7w8vT2+Pr8/gAAAAAAAAAAAAAAAAAAAAAAAAAAGAgAADgAAAAAAAgAGDgAAAAAAAAAAAAAAAAAAAAIAAAYAAAAABgAAAAIAAAAAAgAAAAAAAA4GAgAAAAAAAAYAAAAAAgACAAAABgYCAAACDgAAAgAGAgAAAAACAAIAAAAAAAAAAAAAAAAAAAACAAYCAAAAAAIAAgAGAAAAAAICBgIAAAYCDgYCAAIGDgAGAg4AAAACAgYAAAACAAYCAAIAAAAOBgICAAYAAgYCAAAAAAAAAAAAAAAAAAAADgIGAAAGAgAADgAAAAAADgYeHgIAAAAAAAAAAAAAAAAAAAYAAA4AAAAADgAAAgYAAAAADgYAAgYeAg4GAgIAAAAAAAYAAAAAAgACAAAADgYCAAIGDgACHgAGAgAAAAAGAgYAAgAAAAAAAAAAAAAAAgAGAA4GAgICAgYGAgAGAAAAAgYCBgYCAg4CDgYCAAIGDgAGAg4AAAIGAgYAAgACAA4GAAYCAgAOBgICAAYCBgYCAAAAAAAAAAAAGAAMBgICHgYOAAAGAgAADgAAAAAADgYeHgIAAAAAAAYeAgAADgAAAAYAAA4AAAAADgAAAgYAAAAAHg4CBh4eHh4OBgYCAAAAAA4AAAACBgAGAgACHgYCAAYODgAOHgYOBgACAAIGAgYAAgAAAAAAAAAAAAIGBgIOAA4GAgYGAgYOBgIOAgAAAgYCBgYCAg4GDgYCAAIGDgQGAg4CAgIGAgYAAgAGAg4GAB4CBgIOBgIGAg4CBg4GAAAAAAAAAAAAHAIeDgYCHgYOAAAGAgAADgIeAAYOHg4eHgYAAAAAAB4eDgACHgYAAA4AAB4AAAAADgAAAgYCAAAAHg4CBh4eHh4OBgYCAAAAAh4CBgAGDgAOBgIGHg4GAA4eHgAeHg4OBgIGAAIOBg4CBgAAAAAAAAAAAgYOBgIOAA4GAg4GBg4eBgIOBgACBg4GDgYCBg4GDgYCAAIGDh4OBg4eAgIGAgYEBgIGAg4GAh4CHgYOBgIGAg4CBg4GAAAAAAAADgIGHAIeDgYCHgYOAAAGAgAADgYeAg4eHg4eHgYAAAAAAh4eHgAGHg4AAA4AAB4ADh4GDgACAgYGAgAAHh4GDh4eHh4OBg4GAAACAh4eHgAGDgIOBgIOHg4GAB4eHgYeHh4eDg4eAgYeDg4CBgAAAAAYDAYGAgYODgYeAB4OBg4OBg4eBgIODgIGBg4GDgYCBg4OHgYCBgYODh4OBg4eBgYOAgYeBgIGAg4GBh4CHgYOBgIGAg4GDg4GAAAYDAYCDgIGHAIeDgYCHgYOAAAGAgAADg4eBh4eHg4eHgYCHgYOAh4eHgAGHg4AAA4AAB4CHh4eDgYOAgYOBgIAHh4GDh4eHh4OBh4OAAIGAh4eHgIGDgYeDgYeHg4GAh4eHg4eHh4eDh4eAgYeDg4CBgAAAAQYDAYOBg4eDgYeAB4OBh4OBg4eDgYeDgIGDh4GDgYCDg4OHgYCDgYODh4OBg4eDgYOAgYeDgYOBg4GDh4CHg4eDgYGAg4GDg4GAAAYDAYCDgIGHAIeDgYCHgYOAh4GAgYODg4eBh4eHg4eHgYOHh4eBh4eHgIOHh4AAA4CBh4GHh4eDg4eAgYeDgYAHh4OHh4eHh4OBh4OAgIGBh4eHgYOHg4eDgYeHg4GHh4eHh4eHh4eDh4eAgYeHg4CBhgMBg4cHg4OBg4eDgYeBB4OBh4ODh4eDgYeHgYODh4OHgYCDg4eHgYCDgYODh4OBh4eHgYOBg4eHg4OBh4ODh4GHh4eDgYGAg4OHh4OBAIYDAYCDgIGHAIeDgYCHgYOBh4GAg4eDg4eBh4eHg4eHgYeHh4eBh4eHgIOHh4OBg4eHh4OHh4eDh4eAgYeDgYeHh4OHh4eHh4OBh4eDgYOBh4eHh4OHh4eHg4eHg4GHh4eHh4eHh4eHh4eBg4eHh4GDhgMBg4cHg4OBg4eDgYeHh4OBh4eDh4eDgYeHg4eDh4OHg4GHh4eHg4GHgYOHh4eDh4eHg4eBg4eHg4eDh4OHh4GHh4eDgYOBh4OHh4OA==","profNarrow":"AAAAAAAAAAAAAAAAEAAAAAAIGAAAAAAIAAAIGAgAAAAIAAAAAAAAABAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAABAQEBAIGAAAEAAAEEBQmqTs7e7vysvMzebmzLDmnc2wzc3Mzc3NzsxtbW1tXFRYYEREYFBEZGBQZGRgYGRkRGAAAAAAAAAAAAAAABA4AAAAAAgYCAgAABgIGAgYCAAIAAgAAAAAABAAOAgIAAAACBgAABg4AAAAAAAAAAAAABAIEBAQOBg4AAAQAAAqVX+q1bGys7S1t7i5uru8vb6/wMHCw8TFxsfIyVZWVlZEREREVlZWVkRERERWVlZWRERERAAIAAAAAAAAAAAQOHgAAAAACBgIGAgAGAgYCBgYCAgAGAAAAAAAEAA4CAgAAAAIGDgYGDgAAAAAAAAAAAAQEAgQEDg4GDgAEDgAABCAkJqo7O3u78rLzM3m5syw5p3NsM2ezLDNnc6wbW1tbVxUWGBERGBQRGRgUGRkYFBkZERQAAgAAAAAAAAAEDh4eAAAAAgYOBg4GAgYCDgIGBgIGAgYAAAAABA4CHgYGAg4GHh4OBgYOAAICAgAAAAAEBAQCBA4ODgYOAAQOAAAEEBQmqTs7e7vysvMzebmzLDmnc2wzc3Mzc3NzsxtbW1tXFRYYEREYFBEZGBQZGRgYGRkRGAACAAAAAAAABA4eHh4AAAACDh4ODgYCDgYOBg4GAg4GDgAYDAYEDgIeBh4ODgYeHg4GBg4AAgICAAAABAQEBAIODg4OBg4EDh4AAAqVX+q1bGys7S1t7i5uru8vb6/wMHCw8TFxsfIyVZWVlZEREREVlZWVkRERERWVlZWRERERAAIAAAAAAAQOHh4eHgAOBgYeHh4OBgIeDg4OHgYCDgYeBBgMBg4eDh4eHg4OBh4eDgYGDgIGBh4OAAQEBAQOBg4ODh4OHgQOHgAAPyAiI2U7O3u78rLzM3m5syw5p3NsM2ezLDNnc6wbW1tbVxUWGBERGBQRGRgUGRkYFBkZERQABgAABBgMDh4eHh4eDg4GDh4eHh4OBh4eHh4eDgYOBh4EGAwGDh4OHh4eDg4GHh4OBgYOAgYeHg4EBAQEDg4GDg4eHg4eDh4eAAAKlV/qtWxsrO0tbe4ubq7vL2+v8DBwsPExcbHyMlWVlZWRERERFZWVlZEREREVlZWVkREREQAGGAwOHB4eHh4eHh4OHg4eHh4eHh4OHh4eHh4eDg4GHg4cHg4eHg4eHh4ODgYeHg4GBg4eHh4eDgQEBA4ODgYOHh4eDh4OHh4AAAQgJCaqOzt7u/Ky8zN5ubMsOadzbDNnsywzZ3OsG1tbW1cVFhgRERgUERkYFBkZGBQZGREUA==","pairAnd":"///////////8/Pz8Pz8/P/Pz8/PPz8/P8PDw8A8PDw/Pz8/P8/Pz88zMzMwzMzMzw8PDw8PDw8PAwMDAAwMDAz8/Pz/8/Pz8PDw8PDw8PDwzMzMzzMzMzDAwMDAMDAwMDw8PD/Dw8PAMDAwMMDAwMAMDAwPAwMDAAAAAAAAAAAA=","pairOr":"AAAAAAAAAAAAAQIDAECAwAAECAwAECAwAAUKDwBQoPAAECAwAAQIDAARIjMARIjMABQoPAAUKDwAFSo/AFSo/ABAgMAAAQIDAEGCwwBBgsMARIjMABEiMwBFis8AUaLzAFCg8AAFCg8AUaLzAEWKjwBUqPwAFSo/AFWq/wBVqv8=","fillChar":"ACBAYA=="}; // from listing.json: $8FC0-$95FF, $9800-$9BFF, $BC85, $BD05, $BC81
+// ---- the object renderer ($AD76), run on the game's own tables -------------------
+const PW=un64(TBL.profWide), PN=un64(TBL.profNarrow), PAND=un64(TBL.pairAnd), POR=un64(TBL.pairOr), FILLC=un64(TBL.fillChar);
+function newFrame(){ return {scr:new Uint8Array(1000), ch:new Uint8Array(2048), code:0x80, log:[]}; }
+// one edge cell: edit the dynamic character already there, or build a new one over the fill texture
+function edgeCell(F,pos,prof,t3,narrow){
+  const old=F.scr[pos], ix=r=>(narrow?PN[r*0x80+prof]:PW[r*0xC0+prof])|t3;
+  if(old&0x9F){ for(let r=0;r<8;r++){ const i=ix(r); F.ch[old*8+r]=(F.ch[old*8+r]&PAND[i])|POR[i]; } F.log.push({code:old,pos,edit:true}); return; }
+  const tex=POR[0x7C+(old>>5)], c=F.code; F.scr[pos]=c;
+  for(let r=0;r<8;r++){ const i=ix(r); F.ch[c*8+r]=(tex&PAND[i])|POR[i]; }
+  F.log.push({code:c,pos,edit:false});
+  const n=c+0x20; F.code=((n&0xFF)+(n>>8))&0xFF;   // $B035: $80, $A0, $C0, $E0, $01, $21 ...
+}
+// draw_shape: X = draw type, Y = shape number (family*32 + size step), $12 = fine horizontal position
+function drawShape(F,shade,shape,f12){
+  const p=(PLO[shape]|(PHI[shape]<<8))-DATA.shapesBase, S=k=>SHAPES[p+k], b0=S(0), sh=f12&3, c04=f12>>2, fill=FILLC[shade];
+  let row=4*(b0&0x7F)+40-256+216, idx, dir=1, d02=0, d03=shade;   // row: ($F9) relative to $6000, biased by $D8
+  if(!(b0&0x80)){ if(sh>=2){ dir=-1; idx=sh==2?1:S(1); } else idx=sh==1?1:S(1); }   // two variants, shifts 2-3 drawn right to left
+  else idx=sh==3?3:S(sh+1);                                                          // four variants
+  const skipRow=()=>{ for(;;){ const a=S(++idx); if(!a) return false; if(a==0x1F) idx++; if(a<0x11){ idx--; return true; } } };
+  const off=y=>((y-0xD8)&0xFF)>=0x80;
+  for(;;){
+    const a=S(++idx); if(!a) return;
+    if(a>=0x40||a==0x1F){ let prof=a, narrow=false; if(a==0x1F){ prof=S(++idx); narrow=true; }
+      if(dir>0){ if(d02>=0xD8) edgeCell(F,row+d02-0xD8,prof,d03,narrow); d02=(d02+1)&0xFF; if(d02<0x80&&!skipRow()) return; }
+      else { if(d02>=0x80) edgeCell(F,row+d02-0xD8,prof,d03,narrow); d02=(d02-1)&0xFF; if(off(d02)&&!skipRow()) return; }
+      continue; }
+    if(a<0x1F){ row+=40;
+      if(dir>0){ d02=(c04+0xCD-a)&0xFF; if(d02<0x80){ if(!skipRow()) return; continue; } d03=shade; }
+      else { d02=(a+0xCB+c04)&0xFF; if(off(d02)){ if(!skipRow()) return; continue; } d03=shade|4; }
+      continue; }
+    const n=a&0x1F; let y=d02, out=false;
+    for(let k=0;k<n&&!out;k++){
+      if(dir>0){ if(y>=0xD8) F.scr[row+y-0xD8]=fill; y=(y+1)&0xFF; out=y<0x80; }
+      else { if(y>=0x80) F.scr[row+y-0xD8]=fill; y=(y-1)&0xFF; out=off(y); } }
+    if(out){ if(!skipRow()) return; continue; }
+    d02=y; d03=dir>0?shade|4:shade;
+  }
+}
+// the four objects of the snapshot frame: [shape, $12, draw type], farthest first
+const FRAME_OBJS=[[30,121,3,'the obelisk in the middle'],[28,180,3,'the obelisk on the right'],[25,56,3,'the obelisk on the left'],[32,238,2,'the yellow shot']];
+const REBUILT=(()=>{ const F=newFrame(), owner={};
+  FRAME_OBJS.forEach((o,k)=>{ const n=F.log.length; drawShape(F,o[2],o[0],o[1]); for(const e of F.log.slice(n)) (owner[e.code]=owner[e.code]||[]).push(k); });
+  let ok=true; for(let p=80;p<400;p++) if(F.scr[p]!==SCREEN[p]) ok=false;
+  for(const e of F.log) for(let r=0;r<8;r++) if(F.ch[e.code*8+r]!==CHA[e.code*8+r]) ok=false;
+  return {F,owner,ok,order:F.log.filter(e=>!e.edit).map(e=>e.code)}; })();
+// a multicolour character at (x,y), k screen pixels per C64 pixel row; cols = [%00,%01,%10,%11]; flip = read bottom to top
+function glyphAt(ctx,bytes,x,y,k,cols,flip){ for(let r=0;r<8;r++){ const b=bytes[flip?7-r:r];
+  for(let p=0;p<4;p++){ ctx.fillStyle=cols[(b>>(6-2*p))&3]; ctx.fillRect(x+p*2*k,y+r*k,2*k,k); } } }
+const VIEWCOL=(()=>{ const sky=PAL[ZP[0xBB]&15], ground=PAL[ZP[0xAD]&15], c1=PAL[ZP[0xAB]&15], c2=PAL[ZP[0xA7]&15], c3=PAL[COLOUR[80]&7];
+  return {sky:[sky,c1,c2,c3], ground:[ground,c1,c2,c3]}; })();
 
 // ---- 01 the screen ------------------------------------------------------------
 (function(){
@@ -337,7 +404,7 @@ function spriteData(ptr){ const a=ptr*64; if(a>=0x3000) return SPR7.subarray(a-0
     if(ov.bands){ ctx.strokeStyle='rgba(232,163,61,.95)'; ctx.lineWidth=1; ctx.font='11px IBM Plex Mono'; ctx.fillStyle='#e8a33d';
       for(const [line,txt] of [[16,'16 status band'],[66,'66 sky'],[121,'121 horizon 1'],[125,'125 horizon 2'],[128,'128 horizon 3'],[130,'130 ground, mirrored charset'],[194,'194 console']]){
         const y=(line-50)*S+.5; if(y<0) continue; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke(); ctx.fillText(txt,4,y-3); } }
-    if(ov.grid){ ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+    if(ov.grid){ ctx.strokeStyle='rgba(0,0,0,.45)'; ctx.lineWidth=1;
       for(let c=0;c<=40;c++){ctx.beginPath();ctx.moveTo(c*8*S+.5,0);ctx.lineTo(c*8*S+.5,cv.height);ctx.stroke();}
       for(let r=0;r<=25;r++){ctx.beginPath();ctx.moveTo(0,r*8*S+.5);ctx.lineTo(cv.width,r*8*S+.5);ctx.stroke();} }
   }
@@ -368,35 +435,91 @@ function spriteData(ptr){ const a=ptr*64; if(a>=0x3000) return SPR7.subarray(a-0
 
 // ---- 03 mirror -------------------------------------------------------------------
 (function(){
-  const a=document.getElementById('mirA').getContext('2d'), b=document.getElementById('mirB').getContext('2d');
-  const sl=document.getElementById('mirCode'), val=document.getElementById('mirVal');
-  function glyph(ctx,cs,code,label,cap){ ctx.fillStyle='#000'; ctx.fillRect(0,0,192,192);
-    for(let y=0;y<8;y++) for(let p=0;p<4;p++){ const v=(cs[code*8+y]>>(6-2*p))&3; ctx.fillStyle=['#2e2c9b','#ffffff','#edf171','#000'][v]; if(v) ctx.fillRect(p*48,y*24,48,24); }
-    ctx.strokeStyle='rgba(255,255,255,.15)'; for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(0,i*24+.5);ctx.lineTo(192,i*24+.5);ctx.stroke();}
-    document.getElementById(cap).innerHTML=label; }
-  function draw(){ const c=+sl.value; val.textContent=hex(c)+' → '+hex(255-c);
-    glyph(a,CHA,c,'<b>$4000</b> character '+hex(c)+' as drawn in the sky half','mirCapA');
-    glyph(b,CHM,255-c,'<b>$4800</b> character '+hex(255-c)+', the same rows bottom to top, shown in the ground half','mirCapB');
+  const a=document.getElementById('mirA').getContext('2d'), b=document.getElementById('mirB').getContext('2d'), tiles=document.getElementById('mirTiles');
+  const fills=[0x00,0x20,0x40,0x60], codes=REBUILT.order.concat(fills);
+  const objName=k=>FRAME_OBJS[k][3]+' (size step '+(FRAME_OBJS[k][0]&31)+')';
+  const cells=c=>{ const out=[]; for(let p=80;p<720;p++) if(SCREEN[p]===c) out.push('row '+(p/40|0)+', column '+(p%40)); return out; };
+  const at=c=>{ const w=cells(c); return w.length?(w.length>3?w.length+' cells':w.join('; ')):'not on screen this frame'; };
+  function big(ctx,bytes,cols){ ctx.fillStyle=cols[0]; ctx.fillRect(0,0,192,192); glyphAt(ctx,bytes,0,0,24,cols,false);
+    ctx.strokeStyle='rgba(0,0,0,.18)'; ctx.lineWidth=1;
+    for(let i=1;i<8;i++){ ctx.beginPath(); ctx.moveTo(0,i*24+.5); ctx.lineTo(192,i*24+.5); ctx.stroke(); }
+    for(let i=1;i<4;i++){ ctx.beginPath(); ctx.moveTo(i*48+.5,0); ctx.lineTo(i*48+.5,192); ctx.stroke(); } }
+  let sel=REBUILT.order.find(c=>(REBUILT.owner[c]||[])[0]===3)??codes[0];
+  const btns=codes.map((c,i)=>{ const bt=document.createElement('button'), o=(REBUILT.owner[c]||[-1])[0];
+    if(c===fills[0]){ const br=document.createElement('div'); br.style.flexBasis='100%'; tiles.appendChild(br); }
+    bt.className='ctile'+(i>0&&o>=0&&o!==(REBUILT.owner[codes[i-1]]||[-1])[0]?' gap':''); bt.title=o>=0?FRAME_OBJS[o][3]:'fixed fill';
+    const cv=document.createElement('canvas'); cv.width=cv.height=32; glyphAt(cv.getContext('2d'),CHA.subarray(c*8,c*8+8),0,0,4,VIEWCOL.sky,false);
+    const lb=document.createElement('span'); lb.textContent=hex(c); bt.append(cv,lb); bt.onclick=()=>{sel=c;draw();}; tiles.appendChild(bt); return [c,bt]; });
+  // unused codes: do they still hold the load image of the shape scripts ($4000+n = script byte $2000+n)?
+  const used=new Set([...SCREEN.subarray(80,400),...fills]); let stale=true;
+  for(let c=0;c<256;c++) if(!used.has(c)) for(let r=0;r<8;r++) if(CHA[c*8+r]!==SHAPES[0x2000-DATA.shapesBase+c*8+r]) stale=false;
+  document.getElementById('mirTilesCap').innerHTML='The <b>'+REBUILT.order.length+'</b> characters built for this frame, grouped by the object that built them, in the order the allocator at <code>$B035</code> handed them out. Below them are the four fixed fills. Each new code is the last plus <code>$20</code>, so they sit 32 codes apart. '+
+    (stale?'The other '+(256-used.size)+' codes are not on screen. They still hold what the loader left there, a copy of the shape scripts: <code>$4000</code> + n is the byte now at <code>$2000</code> + n.':'');
+  function draw(){ const c=sel, m=c^0xFF, own=REBUILT.owner[c]||[];
+    btns.forEach(([x,bt])=>bt.classList.toggle('on',x===c));
+    big(a,CHA.subarray(c*8,c*8+8),VIEWCOL.sky); big(b,CHM.subarray(m*8,m*8+8),VIEWCOL.ground);
+    document.getElementById('mirCapA').innerHTML='<b>$4000</b> character <b>'+hex(c)+'</b>, '+(fills.includes(c)?'a fixed fill':'built for '+own.map(objName).join(', then painted by ')) +' · '+at(c);
+    document.getElementById('mirCapB').innerHTML='<b>$4800</b> character <b>'+hex(m)+'</b>, the same eight bytes in reverse order, in the ground half · '+at(m);
     let rows=''; for(let r=2;r<=9;r++){ const top=[...SCREEN.subarray(r*40,r*40+40)], bot=[...SCREEN.subarray((19-r)*40,(19-r)*40+40)];
       const ok=top.every((v,i)=>(v^0xFF)===bot[i]); rows+='row '+r+' vs row '+(19-r)+': '+(ok?'every code inverted':'differs')+'<br>'; }
     document.getElementById('mirRows').innerHTML='In the snapshot, '+rows; }
-  sl.oninput=draw; (function(){ for(let r=2;r<=9;r++) for(let c=0;c<40;c++){ const x=SCREEN[r*40+c]; if((x&0x9F)&&CHA.subarray(x*8,x*8+8).some(v=>v)){ sl.value=x; return; } } })(); draw();
+  draw();
 })();
 
 // ---- 04 shapes -------------------------------------------------------------------
 (function(){
   const fam=document.getElementById('shFam'), sl=document.getElementById('shSize'), sv=document.getElementById('shSizeVal');
+  const shl=document.getElementById('shShift'), shv=document.getElementById('shShiftVal'), apart=document.getElementById('shApart');
+  const pic=document.getElementById('shPic'), pctx=pic.getContext('2d'), sheet=document.getElementById('shSheet'), sctx=sheet.getContext('2d');
   const names=['obelisk','shot / sphere','saucer','homing missile','fragment A','fragment B','fragment C'];
-  names.forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=i+' · '+n;fam.appendChild(o);}); fam.value=2;
-  function draw(){ const f=+fam.value, s=+sl.value, i=f*32+s, p=PLO[i]|(PHI[i]<<8); sv.textContent=s;
-    const base=DATA.shapesBase, a=p-base; const b0=SHAPES[a], four=!!(b0&0x80), start=four?4:2, row0=Math.floor((b0&0x7F)/10)+1;
+  names.forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=i+' · '+n;fam.appendChild(o);}); fam.value=1;
+  const shadeOf=f=>f==0?3:2, key=b=>b.join(','), PITCH=19, GREYS=['#34373e','#9a9da4','#9a9da4','#9a9da4'];
+  let gap=3, sheetFam=-1, sheetList=[], sheetInfo=new Map(), sheetMost=0, hoverI=-1;
+  const build=(f,s,h)=>{ const F=newFrame(); drawShape(F,shadeOf(f),f*32+s,0x80+h); return F; };
+  const charsOf=F=>F.log.filter(e=>!e.edit).map(e=>key(F.ch.slice(e.code*8,e.code*8+8)));
+  function drawPic(F){
+    let r0=9,c0=39,c1=0; for(let p=80;p<400;p++) if(F.scr[p]){ const r=p/40|0,c=p%40; r0=Math.min(r0,r); c0=Math.min(c0,c); c1=Math.max(c1,c); }
+    c0=Math.max(0,c0-1); c1=Math.min(39,c1+1); r0=Math.max(2,r0-1);
+    const rows=[]; for(let r=r0;r<=9;r++) rows.push([r,false]); for(let r=9;r>=r0;r--) rows.push([r,true]);
+    const nc=c1-c0+1, nr=rows.length, W=pic.width, H=pic.height, hz=8;
+    const k=Math.max(1,Math.min(12,Math.floor((W-24-gap*(nc-1))/(nc*8)),Math.floor((H-24-hz-gap*(nr-2))/(nr*8))));
+    const cw=8*k, tw=nc*cw+gap*(nc-1), th=nr*cw+gap*(nr-2)+hz, x0=(W-tw)>>1, y0=(H-th)>>1;
+    pctx.fillStyle='#4f525a'; pctx.fillRect(0,0,W,H);
+    rows.forEach(([r,mir],j)=>{ const y=y0+j*cw+(j-(mir?1:0))*gap+(mir?hz:0), cols=mir?VIEWCOL.ground:VIEWCOL.sky;
+      for(let c=c0;c<=c1;c++){ const code=F.scr[r*40+c], x=x0+(c-c0)*(cw+gap);
+        glyphAt(pctx,(code&0x9F)?F.ch.subarray(code*8,code*8+8):new Uint8Array(8).fill(POR[0x7C+(code>>5)]),x,y,k,cols,mir); } });
+    const yh=y0+(nr/2)*cw+(nr/2-1)*gap+hz/2; pctx.fillStyle='#e8a33d'; pctx.fillRect(x0-8,yh-1,tw+16,2);
+  }
+  function buildSheet(f){ sheetList=[]; sheetInfo=new Map(); sheetMost=0;
+    for(let s=0;s<32;s++) for(let h=0;h<4;h++){ const F=build(f,s,h), ks=charsOf(F); sheetMost=Math.max(sheetMost,new Set(ks).size);
+      for(const kk of ks){ if(!sheetInfo.has(kk)){ sheetInfo.set(kk,{b:kk.split(',').map(Number),sizes:new Set()}); sheetList.push(kk); } sheetInfo.get(kk).sizes.add(s); } }
+    const per=Math.floor((sheet.width-4)/PITCH); sheet.height=Math.ceil(sheetList.length/per)*PITCH+4; sheetFam=f; }
+  function drawSheet(cur){ const f=+fam.value, per=Math.floor((sheet.width-4)/PITCH);
+    sctx.fillStyle='#4f525a'; sctx.fillRect(0,0,sheet.width,sheet.height);
+    sheetList.forEach((kk,i)=>{ const x=2+(i%per)*PITCH, y=2+(i/per|0)*PITCH;
+      glyphAt(sctx,sheetInfo.get(kk).b,x,y,2,cur.has(kk)?VIEWCOL.sky:GREYS,false); });
+    let hov=''; if(hoverI>=0){ const x=2+(hoverI%per)*PITCH, y=2+(hoverI/per|0)*PITCH, sz=[...sheetInfo.get(sheetList[hoverI]).sizes];
+      sctx.strokeStyle='#fff'; sctx.lineWidth=2; sctx.strokeRect(x-1,y-1,18,18);
+      hov='<br>Under the pointer: used at size step'+(sz.length>1?'s ':' ')+sz.join(', ')+'.'; }
+    document.getElementById('shSheetCap').innerHTML='Every edge character the '+names[f]+' family builds over empty sky, across its 32 size steps and 4 sub-cell positions: <b>'+sheetList.length+'</b>. Lit are the <b>'+cur.size+'</b> different ones this size and position use. The most any one drawing needs is <b>'+sheetMost+'</b>.'+hov; }
+  function draw(){ const f=+fam.value, s=+sl.value, h=+shl.value, i=f*32+s, p=PLO[i]|(PHI[i]<<8); sv.textContent=s; shv.textContent=h;
+    const F=build(f,s,h), cur=new Set(charsOf(F)); let fillN=0; for(let q=80;q<400;q++) if(F.scr[q]&&!(F.scr[q]&0x9F)) fillN++;
+    drawPic(F); if(f!==sheetFam) buildSheet(f); drawSheet(cur);
+    document.getElementById('shPicCap').innerHTML='Size step <b>'+s+'</b> at sub-cell position <b>'+h+'</b>: <b>'+F.log.length+'</b> edge cells, each a newly built character, and <b>'+fillN+'</b> fill cells. Only the part above the horizon is drawn; the half below is the reflection. '+
+      'The page draws it by running the renderer on the game\'s own scripts and mask tables. Given the four objects of the frame in section 01, the same code rebuilds rows 2 to 9 and all '+REBUILT.order.length+' characters '+(REBUILT.ok?'byte for byte.':'with differences.');
+    const base=DATA.shapesBase, a=p-base; const b0=SHAPES[a], four=!!(b0&0x80), row0=Math.floor((b0&0x7F)/10)+1;
+    const start=four?(h==3?4:SHAPES[a+h+1]+1):((h==1||h==2)?2:SHAPES[a+1]+1), rtl=!four&&h>=2;
     let j=start, toks=[], rows=0; while(a+j<SHAPES.length){ const x=SHAPES[a+j]; if(x===0){toks.push(['end','00']);break;}
       if(x>=1&&x<=0x1E){rows++;toks.push(['row','row +'+x]);} else if(x===0x1F){toks.push(['edge','edge² '+hex(SHAPES[a+j+1])]);j++;} else if(x<0x40){toks.push(['fill','fill × '+(x&0x1F)]);} else toks.push(['edge','edge '+hex(x)]); j++; }
     const next=(()=>{let best=0x3EEC; for(let k=0;k<256;k++){const q=PLO[k]|(PHI[k]<<8); if(q>p&&q<best) best=q;} return best;})();
-    document.getElementById('shHead').innerHTML='entry <b>'+i+'</b> → <b>'+hex(p,4)+'</b>, '+(next-p)+' bytes to the next script · header '+hex(b0)+': first screen row <b>'+row0+'</b>, <b>'+(four?4:2)+'</b> sub-cell variants · variant 0 has <b>'+rows+'</b> row steps';
+    document.getElementById('shHead').innerHTML='entry <b>'+i+'</b> → <b>'+hex(p,4)+'</b>, '+(next-p)+' bytes to the next script · header '+hex(b0)+': first screen row <b>'+row0+'</b>, <b>'+(four?4:2)+'</b> sub-cell variants · position '+h+' reads the variant at byte '+start+(rtl?', drawn right to left':'')+', <b>'+rows+'</b> row steps';
     document.getElementById('shTokens').innerHTML=toks.map(t=>'<span class="tok '+t[0]+'">'+t[1]+'</span>').join('');
     document.getElementById('shBytes').textContent=[...SHAPES.subarray(a,Math.min(a+next-p,a+96))].map(v=>v.toString(16).toUpperCase().padStart(2,'0')).join(' ')+(next-p>96?' …':''); }
-  fam.onchange=draw; sl.oninput=draw; draw();
+  sheet.onmousemove=e=>{ const R=sheet.getBoundingClientRect(), per=Math.floor((sheet.width-4)/PITCH), x=(e.clientX-R.left)*sheet.width/R.width-2, y=(e.clientY-R.top)*sheet.height/R.height-2;
+    const c=Math.floor(x/PITCH), r=Math.floor(y/PITCH), i=r*per+c, n=(c>=0&&c<per&&i>=0&&i<sheetList.length)?i:-1; if(n!==hoverI){ hoverI=n; draw(); } };
+  sheet.onmouseleave=()=>{ hoverI=-1; draw(); };
+  apart.onclick=()=>{ gap=gap?0:3; apart.classList.toggle('on',!!gap); draw(); };
+  fam.onchange=()=>{ hoverI=-1; draw(); }; sl.oninput=draw; shl.oninput=draw; draw();
 })();
 
 // ---- 06 the plain ----------------------------------------------------------------
