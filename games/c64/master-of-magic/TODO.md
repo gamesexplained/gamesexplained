@@ -24,10 +24,6 @@ booting.
 
 ## Open, and worth a few minutes each
 
-- **Doorways and exact alignment** (Zzap): the player's dot has to fit the
-  gap in a door's glyph, because walls are sprite collisions. Measure how
-  many pixel positions let you through a doorway, live, from the start of
-  each approach.
 - **NTSC**: the music's one-tick-in-six skip and the scroller's slower
   pace are traced, not heard.
 - **The loading picture**: the tape's own loading screen, or the

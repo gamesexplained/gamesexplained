@@ -265,6 +265,17 @@ WALK and RUN the player's movement tick (`$0ABF`) and the picture strip
   (wall, rock, a shut door, the water) and `$0AD3` calls `$0F95`, which
   reverses the direction of travel for the next step. Fire cannot end a run
   while the dot touches a wall (`$091C`).
+- **Narrow passages fit the dot exactly.** The dot is 4 pixels wide (rows
+  `.##.`, `####`, `####`, `.##.`) and spans in-cell x − 2 to x + 1. The
+  narrow north-south corridors and doors (`$84`, `$86`, `$88`, `$F4`–`$F7`)
+  have wall pixels at x 0–1 and 6–7, a gap of 4, so only in-cell x = 4
+  passes; east-west corridors (`$83`) have one-pixel walls top and bottom
+  and let y = 3, 4 or 5 through (*live*: pushing up the corridor at level
+  3's column 64 from in-cell x = 2, 3, 4, 5 and 6, only x = 4 moved; the
+  others bounced in place).
+- From the start, with every door shut, the player can walk to 609 cells:
+  292 on level 4 and 317 on level 3; levels 1 and 2 are behind doors (flood
+  fill with the page's movement port, which matches the game's).
 - Controls (`$0CC6`): joystick port 2 (`$DC00`) into `$0387` fire, `$0388` x and
   `$0389` y; then SHIFT alone (`$028D` = 1) is right, the Commodore key alone
   (2) is left, H (`$C5` = `$1D`) is up, B (`$1C`) is down, SPACE (`$3C`) is
@@ -375,7 +386,8 @@ strength `$4D89`, speed `$4B81`, pursuit `$4D49` AND `$7F`, natural weapon `$4F6
   31-byte packing the first store also zeroes every home's high byte and
   both bytes of `$3E` and `$3F`. Home is then an address in page 0, north of
   the map, so an idle creature heads towards its start column and then due
-  north, and presses against the northernmost wall it can reach. In
+  north, and paces back and forth under the northernmost wall it can
+  reach (staircases carry some to other levels). In
   play-run, 53 seconds into a game, 17 of the 24 creatures that do not
   wander were north of their start row, nine of them in map rows 0–1.
   Seven wanderers (`$22`, `$23`, `$2A`, `$2B`, `$2E`, `$33`, `$35`) get a random
@@ -698,6 +710,7 @@ Run on VICE via vice-mcp (build in `game.json`), from the snapshots in
 | INVENTORY with fire held during its passes, and without | 12 passes both times (checkpoint count on `$08E1`, with the interrupt as a control) |
 | The view window against the map in play-run | cell for cell, centred on `$93F8` |
 | Non-stopping checkpoints on the title interrupt for exactly 100 frames | `$5D08` 12,685 entries, `$5D12` 12,586, the two raster halves 99 each |
+| The player in level 3's narrow corridor (`$93C0`) at in-cell x = 2 to 6, stick up for 2.5 s | only x = 4 moved (to `$91C0`); the others stayed where they were, bouncing |
 | The player placed on the floor left of the pool edge `$9BAA` (level 2), then the stick right | he entered `$52`; the menu offered OPEN; OPEN printed OPEN DOOR. and changed no map byte |
 | Body 0, the minotaur put on the player's cell, RUN | "THE MINOTAUR ATTACKED YOU WITH ITS SWORD. HE HIT. YOU+RE DEAD..."; `$24DE` and the tune-1 call `$086C` each ran once |
 | A skeleton with body 10, MAGIC MISSILE | "YOU KILLED THE SKELETON.", body `$FF`, a band-2 sprite enabled (`$3A30` = 1): DEAD over the picture |
