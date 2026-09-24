@@ -49,6 +49,20 @@ interrupt of one frame. `tool-regen2000`: undocumented opcodes appear as
 that indexes into I/O mints symbols in the RAM beneath. `kit/CHANGELOG.md`
 0.0.18 and `kit/VERSION`.
 
+**The site's SID player (`site/lib/sid.js`).** It applied each frame's
+final registers, so a gate turned off and on within one frame, which
+Wizball's voices 2 and 3 do at nearly every note (the test bit, then the
+note), never restarted the envelope: 1,836 of the 1,909 note starts on
+voice 3 of one bonus-stage tune would have had no attack. A driver may now
+keep `writes`, every register write of the frame in order, and the player
+applies them in order before the final registers. A driver without it
+(Master of Magic's) plays exactly as before; both were played in the built
+site, and a node check with a driver that re-gates a voice within one frame
+showed the envelope restarting with the writes (its level from 6 to 231)
+and not without them (6 to 4). The contract is in the header of `sid.js`.
+
+`verify-footprint` was clean on this machine.
+
 ## For a maintainer to decide
 
 - **The ledger's default exclusion of `$D000`-`$DFFF`.** It hid 4 KB of
@@ -76,7 +90,29 @@ that indexes into I/O mints symbols in the RAM beneath. `kit/CHANGELOG.md`
 
 ## What took longest
 
-<the table from `python3 kit/scripts/clock.py report`>
+| Step | Minutes | Model | Sessions | What dominated |
+|---|---:|---|---:|---|
+| 10-orient | 28 | claude-opus-5-5 | 1 | release zip tried then source build (both flaky on determinism checks); three cracks compared in RAM; Remember's intro and manual read from memory; entry and loops traced |
+| 20-features | 6 | claude-opus-5-5 | 1 | C64-Wiki, c64.com manual and review, Zzap 27 OCR, Wikipedia; attract, Wiztips and play screenshots |
+| 30-text | 3 | claude-opus-5-5 | 1 | charsets rendered; text is PETSCII with FF terminators and a row/column prefix; 60 strings found in one sweep once the offset was known |
+| 40-sweep | 10 | claude-opus-5-5 | 1 | register census and PETSCII string sweep from a local disassembly of the traced code; display lists and pointer tables resolved to seed the tracer |
+| 50-coverage | 69 | claude-opus-5-5 | 1 | nine parallel annotation agents by address range (about an hour each), then the lead's own low RAM, the music driver's zero page and the stray unreferenced bytes; merging and spot checks |
+| 60-verify | 24 | claude-opus-5-5 | 1 | fourteen live tests; the level 5 stray tile took longest (a level poke too late for the map, then a random start position, then the continue keys); the lab-hang reachability argument; facts.md written from nine agents' notes |
+| 70-minisite | 68 | claude-opus-5-5 | 1 | the rebuilt frame (per-interrupt registers and sprite pointers after a first render drew the beam for the ball), the landscape renderer and the ball port with their tests, and the music driver ported by one agent in parallel (an hour; exact on all nine tunes); the RAM-under-I/O sprites found and added to coverage on the way |
+| 80-retro | 0 | claude-opus-5-5 | 1 | kit edits (platform reference, four skills, the SID player), changelog, kit-feedback, game.json, TODO and cheats |
+| total | 210 | claude-opus-5-5 | | 3.5 h of work |
+
+The retrospective shows almost no time because its edits were made
+during `70-minisite`, while the music port ran in the background. The
+table counts the lead's steps; the ten subagents' hours ran alongside them
+and are not in it.
+
+The one change to the kit that would have saved the most minutes: a
+shared capture-and-render script for raster-split screens (the loop that
+records the video registers and sprite pointers at every interrupt of a
+frame, and `work/frame/render.js`, moved into `kit/c64/` and
+`site/lib/c64.js` with a test), since the rebuilt frame took half an hour
+here and every split-screen C64 game needs the same one.
 
 ## Operating system and tools
 

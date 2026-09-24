@@ -510,10 +510,38 @@ into those operands before they run.
   steps or an arpeggio, a two-step pulse sweep, gate and release times.
   A shared filter program sweeps the cut-off (`$4CB7`). Notes use the
   91-entry PAL table at `$471A`/`$4775`.
-- **Tunes** (`$45F1`, Y = 7 x tune + 5; records at `$5525`): 0 the police
-  alarm; 1 and 4 the bonus stage (alternately, `$BB0C`); 2 colour
-  completed; 3 the title; 5 get ready; 6 name entry; 7 game over; 8 the
-  Wiz-lab.
+- **Tunes** (`$45F1`, Y = 7 x tune + 5; records at `$5525`), with the music
+  mode and speed each caller sets:
+
+  | Tune | What | Mode / speed | Started at |
+  |---|---|---|---|
+  | 0 | police alarm (a second before a police ship, and a filth raid) | 1 / 0 | `$A17D`, `$893D` |
+  | 1 | bonus stage, every second one | 2 / 1 | `$6573` |
+  | 2 | colour completed | 2 / 0 | `$6507` |
+  | 3 | title | 2 / 2 | `$8F6A` |
+  | 4 | bonus stage, the first after loading and every second one after | 1 / 0 | `$6573` |
+  | 5 | get ready | 2 / 2 | `$6916` |
+  | 6 | name entry | 2 / 2 | `$6BC0` |
+  | 7 | game over | 2 / 0 | `$6A91` |
+  | 8 | Wiz-lab, only after tune 1's bonus stage (`$AB66`) | 2 / 2 | `$AB75` |
+
+  `$6553`-`$6573` flips `$BB0C` between 2 and 0 at each bonus stage; the
+  image holds 2, so the first bonus stage after loading plays tune 4, and
+  the turn carries from game to game. Tunes 1, 3, 4, 6 and 8 loop; 0, 2, 5
+  and 7 end.
+- **The driver ported.** `work/music/driver.js` reproduces the driver's
+  SID writes exactly: all 25 registers after every frame and the order of
+  the writes within each frame, compared with the game's code in a 6502
+  simulator for 3,000 to 22,000 frames of each tune past every loop point,
+  and for 400 random tunes using every command of every voice. Voices 2
+  and 3 set the test bit before every note, so a gate goes off and on
+  within one frame.
+- **Corner cases of the driver.** A pulse, pitch or filter sweep in a
+  repeat or restart mode whose step counts are all 0 loops for ever; no
+  tune has one. On voices 1 and 2 command `$EA` runs the next voice's
+  return handler. The tunes use notes 7 to 89 and every command byte some
+  voice has, except voice 1's `$C8`, `$D2` and `$E2` and voice 2's `$D6` and
+  `$E4`.
 - **Effects** (`$4553`, records at `$3C5F` through `$BACA`): 26 effects;
   a new one replaces the one on its voice if its priority number is not
   higher, or if the voice's first time counter is 0. A record is voice,

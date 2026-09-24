@@ -11,6 +11,10 @@
 //   sid         a Uint8Array(25): $D400-$D418 as the driver last wrote them
 //   playing()   true while a tune runs, false once it has ended or been stopped
 //   voice(x)    optional: plain data about voice x (0-2) for the display's rows
+//   writes      optional: every register write of the last frame in order, as a flat list
+//               [register, value, register, value, ...]. When a driver keeps it, the player
+//               applies the writes in order instead of the frame's final registers, so a gate
+//               turned off and on again within one frame restarts the envelope, as on the chip
 // data is anything that survives structured cloning, usually the driver's tables as the game
 // loads them. Test the port against the game's own code run in a 6502 simulator, every register
 // after every frame, before it goes on a page.
@@ -190,6 +194,8 @@ globalThis.C64Sid = (function () {
             toFrame += FRAME_CYCLES;
             if (on) {
               drv.play();
+              const w = drv.writes;                          // in order, where the driver keeps them
+              if (w) for (let k = 0; k + 1 < w.length; k += 2) sid.write(w[k], w[k + 1]);
               sid.setRegs(drv.sid);
               if (drv.playing()) frames++;
               if (post) post(snapshot(t0 + i / sampleRate));
