@@ -241,6 +241,36 @@ def banner(game, cons):
     return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
 
 
+# the file in the game folder each tab is written from; the Source and About tabs are
+# assembled, so they point at the prose the reader sees most of
+EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "play.html": "play.html",
+                "source.html": "facts.md", "about.html": "features.md"}
+
+
+def edit_footer(game, tab):
+    """The 'Edit this page' footer: a link to GitHub's editor for the file behind this tab.
+
+    GitHub's /edit/ URL forks the repository for anyone without write access and turns
+    the edit into a pull request, so a reader can fix a mistake without cloning anything.
+    """
+    repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
+    where = f'games/{game["platform"]}/{game["slug"]}'
+    f = EDIT_SOURCES[tab]
+    edit, hist, tree = (f"{repo}/edit/main/{where}/{f}", f"{repo}/commits/main/{where}", f"{repo}/tree/main/{where}")
+    return (f'<footer class="editfoot"><div class="in">'
+            f'<p><b>Spotted a mistake, or know something we don\u2019t?</b> '
+            'Make edits on GitHub and submit as a pull request.</p>'
+            f'<p class="acts"><a class="btn" href="{html.escape(edit)}">Edit this page on GitHub</a>'
+            f'<a href="{html.escape(hist)}">History</a><a href="{html.escape(tree)}">All the files for this game</a></p>'
+            f'</div></footer>')
+
+
+def at_end(page, foot):
+    """Put the edit footer above the page's own site footer, or last in the body if it has none."""
+    m = re.search(r"<footer\b", page, re.I) or re.search(r"</body>", page, re.I)
+    return page[:m.start()] + foot + "\n" + page[m.start():] if m else page + "\n" + foot + "\n"
+
+
 def under_title(page, ban):
     """Place the banner after the page's first <h1>, the game's title; after the tabs if there is none."""
     m = re.search(r"</h1>", page, re.I)
@@ -345,7 +375,7 @@ def build_game(gdir, out_root):
     for f in ("index.html", "levels.html", "play.html"):
         if f in present:
             page = fill(read(os.path.join(gdir, f)), **head)
-            open(os.path.join(out, f), "w").write(under_title(inject(page, nav, lib), ban))
+            open(os.path.join(out, f), "w").write(at_end(under_title(inject(page, nav, lib), ban), edit_footer(game, f)))
     # source
     facts = markdown(read(os.path.join(gdir, "facts.md")))
     cheats = read(os.path.join(gdir, "cheats.md"))
@@ -355,7 +385,7 @@ def build_game(gdir, out_root):
     src = under_title(src, ban)
     if "site.js" not in src:
         src += f'\n<script src="{lib}/site.js"></script>\n'
-    open(os.path.join(out, "source.html"), "w").write(src)
+    open(os.path.join(out, "source.html"), "w").write(at_end(src, edit_footer(game, "source.html")))
     # about
     cred = [c for c in (game.get("credits") or []) if (c.get("by") or c.get("name", "")).strip()]   # the game's makers; agents live in "model"
     con_html = "<ul>" + "".join(
@@ -376,7 +406,7 @@ def build_game(gdir, out_root):
                  features=markdown(read(os.path.join(gdir, "features.md"))),
                  orientation=markdown(read(os.path.join(gdir, "orientation.md")))).replace("<!-- tabs -->", nav)
     about = under_title(about, ban)
-    open(os.path.join(out, "about.html"), "w").write(about)
+    open(os.path.join(out, "about.html"), "w").write(at_end(about, edit_footer(game, "about.html")))
     for f in ("listing.json", "symbols.json"):
         if os.path.exists(os.path.join(gdir, f)):
             shutil.copy(os.path.join(gdir, f), out)
