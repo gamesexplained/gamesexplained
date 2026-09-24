@@ -41,8 +41,12 @@ against a pass-by-pass trace of the game's own variables recorded in
 the emulator (400 passes, 1.8 million values), the music against the
 original driver code run in a 6502 simulator on the snapshot (every
 sound register, every frame), and the line of sight against a second
-implementation and two screenshots. The minisite skill now asks for
-this, and the emulator notes say how to record the trace.
+implementation and two screenshots. Then the whole game was ported for
+a Play tab, and the game's own demonstration, a recording of input,
+tested all of it at once: fed that input poll by poll, the port
+reproduced the real demonstration's run for all 2,371 passes of the game
+loop, byte for byte. The minisite skill now asks for this kind of test,
+and the emulator notes say how to record the trace.
 
 **Rebuild a picture before naming its mode.** The coordinator's brief
 called the title screen character mode, from one write to `$D018`; it

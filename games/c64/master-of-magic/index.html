@@ -202,6 +202,7 @@ bpl hit</div>
   <div class="plate"><div data-w="demo"></div>
   <p class="cap">The recording, one byte per run of identical input: the stick in the high four bits, the number of polls less one in the low four. <span data-demo-stats></span>. It ends with an idle stretch and the end mark the recorder writes when its buffer runs out.</p></div>
   <p>CTRL with R on the title screen starts a recording. <code>$5BBA</code> saves the random state and starts a game in which every input is written over the demonstration, and F ends it. The next time the title's story runs out, the demonstration plays the new recording: in the emulator, a short walk recorded this way was replayed through the same cells to the same pixel.</p>
+  <p>The recording is also the best test there is of a port. The <a href="play.html">Play</a> tab runs the whole game in JavaScript; fed this recording poll by poll, it reproduces the real game's run through the demonstration, every one of its 2,371 world passes, byte for byte.</p>
 </section>
 
 <section id="sound">
@@ -2521,7 +2522,9 @@ function spriteDraw(d, W, H, sx, sy, shape, col, ex, ey, clipTop, clipBot) {
 // ---------------------------------------------------------------- 1. the play screen
 // Three raster bands from the play interrupt $2653: band 0 from line $28 (multicolour text,
 // background 7, $D022 11, $D023 12), band 1 from $8E (the same text, background 8), band 2
-// from $B6 (multicolour bitmap in bank 2: bitmap $A000, matrix $A800, background 0).
+// from $B6 (multicolour bitmap in bank 2: bitmap $A000, matrix $A800, background 0). The
+// handlers' register writes land a line or two after their interrupt: the switches below are
+// where the emulator's screenshots show them (line $8F and line 184, $B8).
 const V = R.vic;
 const STATES = {
   run: { screen: SCREEN, colram: COLRAM, bm: STRIP_BM, scr: STRIP_SCR, top: R.sprites.top, bottom: R.sprites.bottom, shapes: VIEWSHAPES },
@@ -2533,7 +2536,7 @@ function renderPlay(showSprites, which) {
   const im = ctx.createImageData(W, H), d = im.data;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) setPx(d, W, x, y, V.border);
   for (let y = 0; y < 200; y++) {
-    const raster = 51 + y, band = raster < 0x8E ? 0 : raster < 0xB6 ? 1 : 2, row = y >> 3, line = y & 7;
+    const raster = 51 + y, band = raster < 0x8F ? 0 : raster < 0xB8 ? 1 : 2, row = y >> 3, line = y & 7;
     for (let cx = 0; cx < 40; cx++) {
       const cell = row * 40 + cx, cc = COLRAM[cell];
       if (band < 2) textLine(d, W, OX + cx * 8, OY + y, SCREEN[cell], cc, line, band ? V.bg1 : V.bg0, V.mc1, V.mc2);
@@ -2542,13 +2545,13 @@ function renderPlay(showSprites, which) {
   }
   if (showSprites) {
     const T = S.top, B = S.bottom;
-    for (let n = 0; n < 8; n++) if (T[0x10] & (1 << n)) {       // band 0: $3A00 image, MSB 0, no expansion
+    for (let n = 7; n >= 0; n--) if (T[0x10] & (1 << n)) {      // band 0: $3A00 image, MSB 0, no expansion; sprite 0 drawn last, on top
       const shape = n === 0 ? R.sprites.dot : Array.from(VIEWSHAPES.slice((n - 1) * 64, (n - 1) * 64 + 63));
-      spriteDraw(d, W, H, T[2 * n] - 24 + OX, T[2 * n + 1] - 50 + OY, shape, T[0x15 + n] & 15, 0, 0, 0, 0xB6 - 16);
+      spriteDraw(d, W, H, T[2 * n] - 24 + OX, T[2 * n + 1] - 50 + OY, shape, T[0x15 + n] & 15, 0, 0, 0, 0xB8 - 16);
     }
-    for (let n = 0; n < 8; n++) if (B[0x10] & (1 << n)) {       // band 2: $3A20 image, all pointing at DEAD ($A500)
+    for (let n = 7; n >= 0; n--) if (B[0x10] & (1 << n)) {      // band 2: $3A20 image, all pointing at DEAD ($A500)
       const x = B[2 * n] + ((B[0x1D] >> n) & 1) * 256;
-      spriteDraw(d, W, H, x - 24 + OX, B[2 * n + 1] - 50 + OY, R.sprites.dead, 10, 1, 1, 0xB6 - 16, H);
+      spriteDraw(d, W, H, x - 24 + OX, B[2 * n + 1] - 50 + OY, R.sprites.dead, 10, 1, 1, 0xB8 - 16, H);
     }
   }
   ctx.putImageData(im, 0, 0);

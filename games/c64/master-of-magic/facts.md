@@ -105,9 +105,11 @@ entered through `$0314` (`$2627` installs it).
 - **Clock** (`$2C50`): HH:MM;SS, one second per 8 world passes (the first
   after 4, `$03BC`), wrapping after 99 hours. It is called only from the
   pass loop (`$08ED`), so it stands still while the menu waits (*live*).
-- Band 2 begins at raster `$B6`, inside character row 16, so only rows 16–24
-  of its bitmap are ever shown; `$A000`–`$B3FF` of that bank is never
-  displayed and holds tables.
+- Band 2's interrupt comes at raster `$B6`, inside character row 16, and
+  its register writes take effect a line or two later: the bitmap shows
+  from line 184 in the emulator's screenshots, which the Play tab's
+  renderer matches to one pixel. So only rows 16–24 of the bitmap are ever
+  shown; `$A000`–`$B3FF` of that bank is never displayed and holds tables.
 
 ## Main loop and the menu
 
@@ -155,8 +157,13 @@ over; `$7B` is the win.
   prints the verb at `$4130`. Its handler sets a pixel every second pass
   (`$039A` = 2) where RUN's sets one every pass.
 - Live agreement: the first menu reads RUN, INVENTORY, EXAMINE, CAST
-  (`reference/play-first-menu.png`); holding the amulet it reads RUN, PUT
-  DOWN, SWAP, INVENTORY, EXAMINE, CAST (`reference/play-menu-holding.png`).
+  (`reference/play-first-menu.png`); with the amulet's number put into the
+  right-hand slot `$4C01` alone it reads RUN, PUT DOWN, SWAP, INVENTORY,
+  EXAMINE, CAST (`reference/play-menu-holding.png`). An amulet really
+  carried (location 0/0) adds WEAR, because the amulet can be worn
+  (`$4A96` = 1) and the builder counts wearable objects by their location
+  (`$12C5`–`$12CF`): the game's code run in a 6502 simulator, and the Play
+  tab's port, both offer it.
 - **The chooser** (`$1320`, every menu): waits for fire to be released,
   starts on slot 0, blinks the slot black for 20 and white for 10 of its
   rounds; the stick moves one slot sideways (wrapping across rows) or one
@@ -185,6 +192,10 @@ WALK and RUN the player's movement tick (`$0ABF`) and the picture strip
 - While running, the clock advanced 21 seconds in 17.6 real seconds on
   PAL (*live*): about 9.5 passes a second, so the player runs about 1.2
   cells a second (one pixel a pass, 8 pixels a cell).
+- Passes are uneven. The one in which the 29th ray completes a sweep also
+  draws the view and finds everything in sight (`$0FAA`), about 139,000
+  cycles by the listing's instruction counts, some seven frames; the
+  others take a frame or two.
 
 ## The dungeon map
 
@@ -276,6 +287,9 @@ WALK and RUN the player's movement tick (`$0ABF`) and the picture strip
 - From the start, with every door shut, the player can walk to 609 cells:
   292 on level 4 and 317 on level 3; levels 1 and 2 are behind doors (flood
   fill with the page's movement port, which matches the game's).
+- The collision latch `$038D` loads as `$A5`, bit 0 set, so the very first
+  movement tick after loading bounces instead of moving (the demonstration
+  trace shows it).
 - Controls (`$0CC6`): joystick port 2 (`$DC00`) into `$0387` fire, `$0388` x and
   `$0389` y; then SHIFT alone (`$028D` = 1) is right, the Commodore key alone
   (2) is left, H (`$C5` = `$1D`) is up, B (`$1C`) is down, SPACE (`$3C`) is
@@ -406,10 +420,12 @@ strength `$4D89`, speed `$4B81`, pursuit `$4D49` AND `$7F`, natural weapon `$4F6
 - Every door closed, by the player or a creature anywhere in the dungeon,
   ends with a full recast of the player's view (`$1CF9`: `$1C50`, then
   `$0B05`, 30 rays). The recast leaves the shared pointer `$9B`/`$9C` in
-  screen memory, so a door-opener that closes one door and has to open
+  screen memory, or in the character set (`$3608`–`$36D0`) when something
+  is in sight, so a door-opener that closes one door and has to open
   another in the same decision (`$25F4`, then `$2600`) opens nothing: `$1BBF`
-  reads a screen byte, and the creature walks on through the shut door
-  (traced; it did not happen in 300,000 passes of the page's port).
+  reads a byte that is never a door code, and the creature walks on
+  through the shut door (traced; it did not happen in 300,000 passes of
+  the page's creature port).
 - **Footsteps**: orcs, the wizard, skeletons, hellhounds, vampires and the
   minotaur (`$59DC`) make a footstep every third sub-step while in sight;
   bats, spiders and snakes are silent.
@@ -698,6 +714,14 @@ timers and `$D01E` are never touched.
   unconditional jumps (`$C074`, `$C09B`).
 
 ## Live tests
+
+The Play tab's port of the whole game was checked against the game
+itself: fed the built-in demonstration's input stream poll by poll, it
+reproduces a trace of the real demonstration recorded in the emulator,
+all 2,371 world passes, 6,462 bytes of state a pass (six bytes the
+interrupt owns excluded); and 14 scripted sessions covering the verbs,
+weapons, spells, potions, doors, the win and death give the same state,
+pass by pass, as the game's code run in a 6502 simulator.
 
 Run on VICE via vice-mcp (build in `game.json`), from the snapshots in
 `orientation.md`.

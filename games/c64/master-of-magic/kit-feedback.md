@@ -82,6 +82,8 @@ decision, what took longest, operating system and tool versions.
   test of a reading is a rebuild" (the brief's title-screen mode was read
   from one register write and was wrong).
 - `kit/CHANGELOG.md`: 0.0.16, four lessons; `kit/VERSION` 0.0.16.
+- `kit/skills/core/70-minisite/SKILL.md`, Play: a recorded demonstration is
+  the end-to-end test of a port; count polls, not time.
 - `kit/skills/core/70-minisite/SKILL.md`: a widget that runs a mechanic
   is tested against the game (a trace, or the original code in a 6502
   simulator) before it goes on the page, and the trace stays in `work/`.

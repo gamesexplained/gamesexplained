@@ -31,10 +31,10 @@ booting.
 
 ## Article ideas
 
-- A Play tab: the line-of-sight and movement port, the creature port and
-  the music driver on the page are most of a JavaScript version of the
-  game; the menus, the verbs, combat and the picture strip are what is
-  left.
+- The Play tab leaves out the title screen, the instruction pages, the
+  CTRL+R recorder and the footstep noise. In a player's own game its wall
+  collisions rest on an estimate of the cycle count (the demonstration
+  checks it; a player's route may not).
 - The picture strip's slot allocation, with a stepper: what happens when
   more than twelve things are in sight, and the ninth dead creature that
   gets no DEAD label.
