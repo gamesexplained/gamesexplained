@@ -59,7 +59,12 @@ address links into the Source tab, and the house style in `kit/style.md`.
 6. **Progression and difficulty.** The tables, as tables, and what they
    do to play.
 7. **The sound.** The player for the stored tunes and effects, tied to
-   the bytes that produce each note.
+   the bytes that produce each note. Port the game's own music driver
+   and play it through the site's model of the SID, `../../lib/sid.js`:
+   it runs the driver once a frame, plays it, and shows each voice on a
+   piano roll with the lines the port supplies about what the driver
+   read. The script's header gives the driver's contract and what the
+   model leaves out.
 8. **Secrets, quirks and bugs.** The best part. Things a player who
    finished the game would not know, each verified live, with the
    evidence beside it. One kind deserves a special look: a state the code
@@ -76,12 +81,17 @@ address links into the Source tab, and the house style in `kit/style.md`.
 ## Building it
 
 - One self-contained `index.html`. Inline CSS and JavaScript; no
-  build step; external resources only for fonts. It must open from disk.
-- `levels.html` and `play.html` may also use the site's shared scripts:
-  `../../lib/c64.js` draws glyphs, screens and sprites, and rebuilds the
-  game image from `listing.json`, so a page draws from the bytes the
-  Source tab shows. Those work only in the built site, served as in
-  "Check it in a browser" below.
+  build step; external resources only for fonts. It must open from disk,
+  all but the widgets built on the site's shared scripts, which say so
+  when the script is missing.
+- Any page may use the site's shared scripts: `../../lib/c64.js` draws
+  glyphs, screens and sprites, and rebuilds the game image from
+  `listing.json`, so a page draws from the bytes the Source tab shows;
+  `../../lib/sid.js` plays a music driver's port through a model of the
+  SID. Those work only in the built site, served as in "Check it in a
+  browser" below. A widget the next game could use as it is belongs
+  there, not in the page. One that grew inside a page moves there with a
+  test that the page still gives the same result.
 - The build publishes the authored pages, `listing.json`, `symbols.json`
   and `reference/`, and nothing else from the game folder. A link to any
   other file would build and then fail in the reader's browser, so

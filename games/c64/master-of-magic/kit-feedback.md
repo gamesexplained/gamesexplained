@@ -91,6 +91,15 @@ decision, what took longest, operating system and tool versions.
   This run found out at the end that its environment would not commit
   under the contributor's name, so its commits credit nobody; asked
   first, that is a two-minute conversation before the first commit.
+- `site/lib/sid.js` (new), with `kit/scripts/build.py` and
+  `kit/skills/core/70-minisite/SKILL.md`: the music widget's model of the
+  SID, its frame player, its audio host and its display moved out of this
+  game's pages into the site's shared scripts, so the next game brings
+  only its driver's port. Old and new give the same samples and the same
+  display for all three tunes, block by block, and the port still matches
+  the 6502 code on every register for 35,932 frames. The skill now lets
+  `index.html` use the shared scripts, and sends a widget the next game
+  could use to them.
 - `kit/skills/core/70-minisite/SKILL.md`, Play: a recorded demonstration is
   the end-to-end test of a port; count polls, not time.
 - `kit/skills/core/70-minisite/SKILL.md`: a widget that runs a mechanic

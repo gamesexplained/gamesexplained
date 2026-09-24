@@ -403,7 +403,7 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 """
 
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js")
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js")
 
 
 def version_lib(out_root):
