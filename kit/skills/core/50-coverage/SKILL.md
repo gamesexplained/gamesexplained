@@ -67,6 +67,13 @@ same way, so tiers mean the same thing everywhere.
   around them; then give the range back with `coverage.include` in
   `game.json`. The disassembler will name those addresses after the chips'
   registers, so say in each comment which meaning is live.
+  A game in VIC bank 3 can keep graphics there without banking anything:
+  the video chip reads the RAM beneath the I/O while the CPU sees the
+  chips. Nothing references those bytes by address, so no symbol points at
+  them and the ledger never counts them. Whenever `$DD00` selects bank 3,
+  look at the snapshot's RAM at `$D000`-`$DFFF` for sprite and character
+  data (one run found 64 sprite shapes there only when its page's gallery
+  asked for a police ship's frames).
 - **Is the picture loaded or drawn?** Compare a snapshot taken before the
   game's first instruction (the loader's hand-over) with one in play. A
   screen or bitmap that is already there before the game runs is authored

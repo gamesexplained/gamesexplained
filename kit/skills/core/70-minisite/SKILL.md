@@ -47,7 +47,14 @@ address links into the Source tab, and the house style in `kit/style.md`.
 1. **One frame, rebuilt from memory.** Render the play screen from the
    snapshot's screen memory, colour memory and character set with your
    own code, not a screenshot. It proves the data is understood and it is
-   the base for overlays.
+   the base for overlays. A screen split by raster interrupts changes the video
+   registers, and often the sprite pointers, several times a frame, so one
+   read of them draws the wrong picture: stop at the interrupt handler's
+   entry at every interrupt of one whole frame, record the registers and
+   the pointer bytes each time, and draw each line with the state in force.
+   Compare the result with the emulator's screenshot pixel by pixel; the
+   screenshot shows the last complete frame, so record two frames and draw
+   the second.
 2. **The player and the enemies.** What they are drawn with (character
    graphics, sprites, both), how they move, how they collide.
 3. **Controls.** What the game reads and how, including anything the

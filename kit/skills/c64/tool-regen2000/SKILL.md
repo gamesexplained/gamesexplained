@@ -108,3 +108,17 @@ the game folder, or pass `--game`, so the log lands in the right place.
   as `JSR $0000`; the flow tracer follows it and marks `$0000` onward as
   code. Set that range back to `undefined`, and find the real targets from
   whatever writes the operand (a table of routines, a display list).
+- **Undocumented opcodes come out as data.** 0.9.20 decodes only the
+  documented instruction set: `LAX`, `DCP`, `LXA` and the multi-byte `NOP`s
+  show as `.byte` lines inside a code block, the bytes after them are
+  sometimes decoded as instructions they are not (`STX $DF` inside
+  `DCP $FF86,X`), and the cross-references miss what they touch. Type such
+  a spot `byte` and write the real instructions in its comment
+  (`c64-reference`, Undocumented opcodes). A search of the decoded code for
+  readers of an address is incomplete until these gaps have been read.
+- **Code that indexes into I/O mints symbols in the RAM beneath.**
+  `STA $D800,X`, `LDA $DDDD,X` (a placeholder operand) and the like leave
+  automatic symbols at `$D000`-`$DFFF`. If that RAM holds the game's own
+  data (`coverage.include`), type it, clear those symbols (an empty name)
+  and label the data, or the listing names sprite rows after the chips'
+  registers.

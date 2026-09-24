@@ -363,8 +363,8 @@ the source build. Its `SHA256SUMS` file checks every file but itself (it lists
 its own hash as that of an empty file).
 
 **Build the emulator from source.** This is the path when there is no
-release you can download, as here, where the container could not reach
-GitHub's release downloads but could clone:
+release for the machine, or the release fails `check-emulator` where a
+build might not:
 
 ```
 python3 kit/scripts/tools.py get-vice build

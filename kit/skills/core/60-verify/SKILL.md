@@ -17,6 +17,7 @@ sounded right and was never tested.
 | "no writes to that register" | the search pattern did not match |
 | "that string isn't in the image" | it used a private alphabet |
 | "there is no level data" | there was a small bitmap |
+| "nothing reads that byte" | two checks did, in undocumented opcodes the disassembler showed as data, one through an indexed address that wrapped past `$FFFF` |
 
 Before reporting that something is missing, ask what encoding, indirection
 or aliasing could hide it. A negative result is a claim about your search,
@@ -41,7 +42,11 @@ tested. Typical tests:
 
 - **Poke the variable, watch the screen.** Set the lives counter, the
   level number, the timer, and confirm the effect matches the claimed
-  meaning.
+  meaning. Poke it before the code that reads it has run: a level
+  number poked after the level was set up changes only what is read
+  later, and the screen then mixes two levels. Where the game has its own
+  way in (a level-select key, a continue feature), use it and poke only
+  its limit.
 - **Break on the routine.** A breakpoint at the entry with a hit count
   proves when it runs (once at start, every frame, only on collision).
 - **Watch the address.** A watchpoint on a table entry shows who reads it

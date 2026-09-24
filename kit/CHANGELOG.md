@@ -12,6 +12,40 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
+## 0.0.18 · 24 September 2026 · Wizball · air with Claude Opus 5.5
+
+**Read the gaps in the code before calling a byte unread.** One agent
+searched every decoded instruction for a read of the NMI watchdog's byte
+and reported that nothing reads it. Three others found the two checks
+that do, written in undocumented opcodes the disassembler shows as data,
+one of them reaching zero page through an absolute indexed address that
+wraps past `$FFFF`. The platform reference now lists the undocumented
+opcodes seen in games and the wrap-round, the disassembler's notes say
+how they appear, and the verify skill's table of negative results has
+the case.
+
+**In VIC bank 3 the RAM under the I/O area belongs to the video chip.**
+The first 100 % left out 4 KB: 64 sprite shapes at `$D000`-`$DFFF`, which
+the video chip reads in bank 3 while the CPU sees the chips there, and
+which the coverage ledger excludes as I/O by default. Nothing refers to
+them by address; they turned up only when the page's alien gallery asked
+for frames that were not in the listing. The platform reference and the
+coverage skill now say to look there whenever `$DD00` selects bank 3.
+
+**Rebuild a split screen interrupt by interrupt.** The play screen
+changes the video registers, and sprite 0's pointer, at a dozen raster
+lines a frame. Recorded at every interrupt of one frame and drawn line by
+line with the state in force, the rebuilt frame matched the emulator's
+screenshot in all but 13 of 104,448 pixels; drawn from one read of the
+registers, it had shown the beam where the ball should be. The minisite
+skill now says how.
+
+**Poke before the reader runs, or use the game's own way in.** A level
+number poked on the get-ready screen changed the level's glyphs but not
+its map, because the view had already been built: the screen mixed two
+levels. The game's continue keys, with only their limit poked, gave a
+real level 5. The verify skill says so.
+
 ## 0.0.16 · 24 September 2026 · Master of Magic · air with Claude Opus 5.5
 
 **Test the reset as well as RESTORE.** The game writes the `CBM80`
