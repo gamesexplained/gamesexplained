@@ -60,3 +60,32 @@ screen. Searching for the letter differences of known words ("wiztips",
 "chemical"), which finds a word under any constant offset, showed at once
 that the stored text is plain PETSCII, converted with `AND #$3F` when
 printed; a second sweep in PETSCII then found every string.
+
+**Coverage.** Nine agents annotated the image in parallel, one address
+range each, with a written brief of the facts checked so far; the lead
+took low RAM. The brief had one wrong guess in it (that a routine copied
+the cauldrons; it builds the landscape's spare screens), and the agent
+that met it said so rather than following it: a brief should mark its
+guesses as guesses. The agents disagreed about `$85`. One searched every
+documented instruction for a read of it and reported that nothing reads
+it; three others found the reads in undocumented opcodes (`LAX`, `DCP`,
+and an `INC` whose indexed address wraps past `$FFFF`) that the
+disassembler shows as data bytes. The absence was a fact about the
+decoder, not the game. One agent's key-code formula had row and column
+swapped, which the next agent's check against the platform reference's
+matrix caught. The music driver's zero page and the few runs nothing
+refers to (a depacker's tail in the bullet table, a frame list, a sound
+record the table skips) were described last; 100 % came at about 56,000
+bytes, with the run-time screens and glyphs excluded in `game.json`.
+
+**Verification.** The emulator settled most claims in minutes each. Two
+went wrong first. Poking the level number on the get-ready screen changed
+the glyphs but not the map, because the view had already been built:
+the level 5 test then went through the game's own continue keys, with only
+their limit poked, and the start position is random per turn, so a second
+start was needed to land near the stray tile. And the Wiz-lab hang looked
+reachable until the lab screen showed that blazers, like the other
+weapons, turn to the used-up icon once taken; the hang is real code, run
+live from a poked list, but no player can fill the list without two
+sprays. Remember's third "bug" turned out to be the game's own rule for
+icons (show what the next take gives), which Remember's crack changed.

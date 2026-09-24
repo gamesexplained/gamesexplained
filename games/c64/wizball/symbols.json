@@ -20771,7 +20771,7 @@
   {
    "address": 2290,
    "type": "line",
-   "text": "Landscape map, tile row 10 ($08F2-$0951), the third row of band 2. Level 3's part holds its three Mount Rushmores (tiles $BC $BD $BE at columns 8-10, 20-22 and 35-37, base $BF in row 11). At $092B (column 57, level 5) is the stray tile number $F8: the tile table has only 192 entries, so $78CF draws 25 bytes of sound-effect data ($2642 + 25 x $F8 = $3E7A) as characters there. Remember's crack changes exactly this byte to $00, apparently its fix for the 'matrix in level 5' bug. Columns 92-95: Wiz-lab tiles $76 $89 $8F $90."
+   "text": "Landscape map, tile row 10 ($08F2-$0951), the third row of band 2. Level 3's part holds its three Mount Rushmores (tiles $BC $BD $BE at columns 8-10, 20-22 and 35-37, base $BF in row 11). At $092B (column 57, level 5) is the stray tile number $F8: the tile table has only 192 entries, so $78CF draws 25 bytes of sound-effect data ($2642 + 25 x $F8 = $3E7A) as characters there. Remember's crack changes exactly this byte to $00, apparently its fix for the 'matrix in level 5' bug. Columns 92-95: Wiz-lab tiles $76 $89 $8F $90. Live: on level 5, with the view at tile column 54, the tile's bytes were on screen just right of the first well, including two glyphs $FF (the vector bytes) and a glyph $64."
   },
   {
    "address": 2386,
@@ -23806,7 +23806,7 @@
   {
    "address": 28343,
    "type": "line",
-   "text": "Pause: returns unless the play-key scan left RUN/STOP ($B254 = 1; a test for Q, 2, at $6EBE branches to the RTS either way). Paused, it loops once a frame ($6E71, $7429): RUN/STOP again resumes, Q ($6ED7) clears the continue level $AF7E and the BOREWIZ flag $BB07, drops one return address and jumps to the title $8F61. The CMP #5 at $6ECC is overwritten by the CMP #2 after it."
+   "text": "Pause: returns unless the play-key scan left RUN/STOP ($B254 = 1; a test for Q, 2, at $6EBE branches to the RTS either way). Paused, it loops on the raster wait $6E71 and the play-key scan $7429, several passes in each frame's lines 205-254 (about seven, measured live): RUN/STOP again resumes, Q ($6ED7) clears the continue level $AF7E and the BOREWIZ flag $BB07, drops one return address and jumps to the title $8F61. The CMP #5 at $6ECC is overwritten by the CMP #2 after it. Live: RUN/STOP stopped the frame loop, and Q then reached the title."
   },
   {
    "address": 28388,
@@ -23986,7 +23986,7 @@
   {
    "address": 29477,
    "type": "line",
-   "text": "Icon 5, spray. The first take sets $B237 (spray on, tested at $84FF) with the spray on Wiz ($B238 = 0) and shows shape $0A on the icon; every later take flips $B238 between Wiz (0) and the cat (1; the cat's spray is at $855E) and shows shape $0A or 8, the other one's spray. The icon never runs out, and Wiz and the cat never both have a spray."
+   "text": "Icon 5, spray. The first take sets $B237 (spray on, tested at $84FF) with the spray on Wiz ($B238 = 0) and shows shape $0A on the icon; every later take flips $B238 between Wiz (0) and the cat (1; the cat's spray is at $855E) and shows shape $0A or 8, the other one's spray. The icon never runs out, and Wiz and the cat never both have a spray. Remember's crack swaps the two images (8 and $0A) in its copy of this handler, so its icon shows who holds the spray; here, as for every icon, it shows what the next take gives."
   },
   {
    "address": 29515,
@@ -24341,7 +24341,7 @@
   {
    "address": 32518,
    "type": "line",
-   "text": "The Wizball's shield in units of 50 frames: 40 from take_shield, -1 a second, -8 a collision, off below 5, so a shield lasts 36 seconds without collisions. Cleared by update_shield and at $AB14; nothing on the way from a quit to a new game clears it."
+   "text": "The Wizball's shield in units of 50 frames: 40 from take_shield, -1 a second, -8 a collision, off below 5, so a shield lasts 36 seconds without collisions. Cleared by update_shield and at $AB14; nothing on the way from a quit to a new game clears it. Live: 40 to 38 in 100 frames; a collision cost 8 with no life lost; a shield running at a quit was still running in the next game."
   },
   {
    "address": 32519,
@@ -24676,7 +24676,7 @@
   {
    "address": 35588,
    "type": "line",
-   "text": "Anti-tamper check at the end of band $8A52, in undocumented opcodes, typed as bytes because the disassembler does not decode them: A7 86 = LAX $86 (A = X = $FF, stored in $86 by the initialisation at $EC4B); DF 86 FF = DCP $FF86,X, which wraps to $0085: decrements $85 and compares it with $FF; F0 03 = BEQ $8B0E; 68 = PLA; C2 C2 = NOP #$C2. $85 is cleared by the NMI ($7C6B) and made non-zero by band $8BBB at the bottom of each frame, so the check passes only if the once-a-frame NMI came in between. If not, the PLA leaves the IRQ's JSR return address ($7C9F) short and the RTS at $8B0E jumps to $7D in the page of the X register the IRQ saved: apparently a deliberate crash. The same check is at $9287."
+   "text": "Anti-tamper check at the end of band $8A52, in undocumented opcodes, typed as bytes because the disassembler does not decode them: A7 86 = LAX $86 (A = X = $FF, stored in $86 by the initialisation at $EC4B); DF 86 FF = DCP $FF86,X, which wraps to $0085: decrements $85 and compares it with $FF; F0 03 = BEQ $8B0E; 68 = PLA; C2 C2 = NOP #$C2. $85 is cleared by the NMI ($7C6B) and made non-zero by band $8BBB at the bottom of each frame, so the check passes only if the once-a-frame NMI came in between. If not, the PLA leaves the IRQ's JSR return address ($7C9F) short and the RTS at $8B0E jumps to $7D in the page of the X register the IRQ saved: apparently a deliberate crash. The same check is at $9287. Live: with CIA 2's interrupts switched off in play the check failed on the next frame (the PLA at $8B0B ran once) and the CPU ran into screen memory and stopped on a JAM at $EA7D."
   },
   {
    "address": 35598,
@@ -25476,7 +25476,7 @@
   {
    "address": 40461,
    "type": "line",
-   "text": "Once a frame in play ($6450), and from $AB91 and $AEE5. Caps the red, green and blue cauldron levels $B12B-$B12D at 20 (a signed test); while $B1CF and $B213 are 0 copies a byte of the mix cauldron's top row ($EF01) into $B874, so a full mix cauldron sends the frame loop to the colour-completed sequence ($6414, $646F); sets the mix level $B12E to the sum, over red, green and blue, of the smaller of the cauldron's level and the target recipe ($B2C0 + 3 x $B51A), unless $AC4E is set; compares the new-key code $B254 with 8, 9 and 7 through branches that all land on the next instruction (no effect); then redraws one row of each cauldron ($9E81)."
+   "text": "Once a frame in play ($6450), and from $AB91 and $AEE5. Caps the red, green and blue cauldron levels $B12B-$B12D at 20 (a signed test); while $B1CF and $B213 are 0 copies a byte of the mix cauldron's top row ($EF01) into $B874, so a full mix cauldron sends the frame loop to the colour-completed sequence ($6414, $646F); sets the mix level $B12E to the sum, over red, green and blue, of the smaller of the cauldron's level and the target recipe ($B2C0 + 3 x $B51A), unless $AC4E is set; compares the new-key code $B254 with 8, 9 and 7 through branches that all land on the next instruction (no effect); then redraws one row of each cauldron ($9E81). Live: with the red cauldron poked to 20 on level 1 (target red), $B874 became $AA 22 frames later and the loop left for $646F."
   },
   {
    "address": 40577,
@@ -25626,7 +25626,7 @@
   {
    "address": 41401,
    "type": "line",
-   "text": "Seconds without a kill before a police ship comes, by level 0-7: 45, 40, 25, 20, 20, 20, 15, 10. Read by $A168, and copied by $A78A into the SBC operand at $A795."
+   "text": "Seconds without a kill before a police ship comes, by level 0-7: 45, 40, 25, 20, 20, 20, 15, 10. Read by $A168, and copied by $A78A into the SBC operand at $A795. Live on level 1 with no kill: the warning tune at 2,200 frames, the police ship at 2,250 (45 seconds)."
   },
   {
    "address": 41409,
@@ -25891,7 +25891,7 @@
   {
    "address": 43434,
    "type": "line",
-   "text": "9: the ninth alien killed since the last pearl leaves one (compared at $A87A; nothing writes it)."
+   "text": "9: the ninth alien killed since the last pearl leaves one (compared at $A87A; nothing writes it). Live: a poked hit with $A9A9 = 8 left a pearl and reset the count; with 0 the alien exploded and the count became 1."
   },
   {
    "address": 43435,
@@ -26086,7 +26086,7 @@
   {
    "address": 45174,
    "type": "line",
-   "text": "Wiz-lab weapon choice, one step per frame from the lab loop at $AB7E, doing nothing once $B10C is set. Reads the joystick through $9420 (only a changed value counts): right moves the cursor $B258 up to icon 5, left down to icon 1. Fire takes the icon under the cursor unless its sprite pointer ($EFF7 + icon) is 9, the blank image of a used-up icon: the icon goes into the first empty slot of the permanent list $B116-$B11E and into $B075, is applied at once through $72DF, $B10C is set, the cursor cleared and the heading replaced by \"ALL SYSTEMS GO!!\" ($B0FC) on row 0 with row 1 blanked. When all nine slots are full it empties the first two slots holding 5 (spray) and tries again; with fewer than two such slots it loops for ever at $B0D2."
+   "text": "Wiz-lab weapon choice, one step per frame from the lab loop at $AB7E, doing nothing once $B10C is set. Reads the joystick through $9420 (only a changed value counts): right moves the cursor $B258 up to icon 5, left down to icon 1. Fire takes the icon under the cursor unless its sprite pointer ($EFF7 + icon) is 9, the blank image of a used-up icon: the icon goes into the first empty slot of the permanent list $B116-$B11E and into $B075, is applied at once through $72DF, $B10C is set, the cursor cleared and the heading replaced by \"ALL SYSTEMS GO!!\" ($B0FC) on row 0 with row 1 blanked. When all nine slots are full it empties the first two slots holding 5 (spray) and tries again; with fewer than two such slots it loops for ever at $B0D2. Live with a poked list of nine non-spray weapons: choosing spray left the CPU at $B0D2. Not reachable in play: thrust, anti-grav, beam, double, catelite and blazers turn their icons to 9 once taken, so at most six slots hold anything but spray."
   },
   {
    "address": 45266,
