@@ -153,7 +153,13 @@ def stop_at(rpc, a):
 
 
 def stop_after_passes(rpc, n_passes):
-    """A stopping checkpoint on the loop that fires on pass n_passes + 1."""
+    """A stopping checkpoint on the loop that fires on pass n_passes + 1.
+
+    Armed on a stopped machine: on a running one the checkpoint can fire in the gap between
+    adding it and setting its ignore count, and it does whenever a call takes longer than a
+    pass is from its end (a host where calls take 16 ms loses that race four times in five)."""
+    if ping(rpc) != "paused":
+        call(rpc, "vice_execution_pause", {}); wait_paused(rpc)
     n = cp_add(rpc, LOOP, True)
     call(rpc, "vice_checkpoint_set_ignore_count", {"checkpoint_num": n, "count": n_passes})
     return n
@@ -277,10 +283,21 @@ def p3(rpc):
     check("count-matches", abs(h.get(LOOP, 0) - own) <= 2, "the loop's hit count matches the program's own counter", f"hits {h.get(LOOP)} counter {own}")
     check("count-busy-loop", h.get(WAIT1, 0) > 20 * h.get(LOOP, 1), "a busy-wait checkpoint counts every time round", f"{h.get(WAIT1)}")
     cp_del(rpc, a); cp_del(rpc, b)
-    call(rpc, "vice_cycles_stopwatch", {"action": "reset"}); time.sleep(0.5)
-    r = j(call(rpc, "vice_cycles_stopwatch", {"action": "read"}))
+    # Against emulated time, not the wall clock: the loop runs one pass a frame, and the pass
+    # counter and the stopwatch are both read on a stopped machine. A wall-clock window is
+    # skewed whenever the host is slow, and right after the busy checkpoint above VICE runs
+    # faster than real time to catch up (0.5 s read 700k cycles on a 4-core Linux container).
+    std = str(j(call(rpc, "vice_machine_config_get", {})).get("video_standard", "PAL")).upper()
+    frame = {"PAL": 63 * 312, "NTSC": 65 * 263, "NTSC-OLD": 64 * 262, "PAL-N": 65 * 312}.get(std, 63 * 312)
+    call(rpc, "vice_execution_pause", {}); wait_paused(rpc)
+    p0 = word(rpc, PASSES); call(rpc, "vice_cycles_stopwatch", {"action": "reset"})
+    run(rpc); time.sleep(1.0); call(rpc, "vice_execution_pause", {}); wait_paused(rpc)
+    r = j(call(rpc, "vice_cycles_stopwatch", {"action": "read"})); np_ = (word(rpc, PASSES) - p0) & 0xFFFF
     cyc = r.get("elapsed_cycles", r.get("cycles"))
-    check("stopwatch", isinstance(cyc, (int, float)) and 400_000 <= cyc <= 600_000, "0.5 s on the cycle stopwatch is about 500k cycles", cyc)
+    check("stopwatch", isinstance(cyc, (int, float)) and np_ > 0 and abs(cyc - np_ * frame) < frame,
+          f"the cycle stopwatch agrees with the frame count ({std}: {frame} cycles a pass), to within a frame",
+          f"{cyc} cycles, {np_} passes = {np_ * frame}")
+    run(rpc)
     ws = j(call(rpc, "vice_watch_add", {"address": addr(SIDE), "store": True, "stop": False}))
     wl = j(call(rpc, "vice_watch_add", {"address": addr(VX), "load": True, "stop": False}))
     check("watch-args", ws.get("stop") is False and wl.get("stop") is False, "vice_watch_add takes load, store, stop", f"{json.dumps(ws)[:60]}")

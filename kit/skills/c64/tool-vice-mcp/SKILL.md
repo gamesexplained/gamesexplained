@@ -41,7 +41,9 @@ list of failed checks in `orientation.md`, and the build line in
 
 The v3.11.0 release fails 28 of the 56 checks, most of phase 4 among them.
 A contributor's own build may pass them all (`kit/c64/INSTALL.md`, "Using
-a build of your own").
+a build of your own"). v3.13.0 has every fix and passes 56 of 56,
+built from source with `tools.py build-vice`; its release build is not
+yet measured.
 
 ## The sequence that works
 
@@ -203,6 +205,14 @@ the batch.
   a known quantity (a timer latch you can compute, a loop you can count),
   and record in `features.md` when an input path could not be exercised
   rather than calling it confirmed.
+- **Measure in the machine's time, not the host's.** A non-stopping
+  checkpoint on a busy loop can slow the machine below real time, and VICE
+  then runs faster than real time until it has caught up: half a second of
+  wall clock read 700,000 cycles once. Count passes, frames or cycles on a
+  stopped machine at both ends, and never compare against `sleep`.
+- **Arm a stopping checkpoint on a stopped machine** when you set its
+  ignore count or condition in a second call. On a running machine it can
+  fire in between, and on a slow host it usually does.
 - **When a key "does nothing", try the other tool** before concluding
   anything about the game: `vice_keyboard_matrix`, `vice_keyboard_key_press`
   by host name, and `vice_keyboard_type` through the KERNAL buffer reach the

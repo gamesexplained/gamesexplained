@@ -19,6 +19,7 @@ Usage:
   tools.py use-vice <dir>          use a vice-mcp build of your own: link tools/vice-mcp to it
   tools.py use-vice release        go back to the release (kept at tools/vice-mcp-release)
   tools.py check-emulator          test the emulator against kit/EMULATOR.md (kit/c64/check_emulator.py)
+  tools.py build-vice <src dir>    build a vice-mcp source tree into <src dir>/install and use it (kit/c64/build_vice.py)
   tools.py snapshots               where emulator snapshots are, and what is there
   tools.py verify-footprint        prove the tools write nothing outside this repository
 
@@ -55,6 +56,19 @@ def with_pty(cmd, log):
     if shutil.which("script"):
         return ["script", "-q", "-c", " ".join(f'"{c}"' for c in cmd), log]
     return cmd  # no `script` (Windows): try without; report what happens in kit-feedback.md
+
+
+def virtual_display(cmd, env):
+    """The GUI build needs an X display. A Linux server or container has none; give it a virtual one.
+
+    xvfb-run starts Xvfb on a free display number, runs the emulator on it and stops it when the
+    emulator exits. Nothing is drawn anywhere, and screenshots still work: VICE renders them itself."""
+    if not sys.platform.startswith("linux") or env.get("DISPLAY") or env.get("WAYLAND_DISPLAY"):
+        return cmd
+    if not shutil.which("xvfb-run"):
+        sys.exit("no display and no xvfb-run: install Xvfb (Debian/Ubuntu: xvfb), or run with a desktop session")
+    env["NO_AT_BRIDGE"] = "1"      # no accessibility bus in a container; GTK waits for it otherwise
+    return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd
 
 
 def start(cmd, log, env=None, cwd=None, port=None, name=""):
@@ -100,7 +114,8 @@ def vice(machine="x64sc"):
     for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
                      ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data")):
         env[var] = os.path.join(VICE_HOME, sub); os.makedirs(env[var], exist_ok=True)
-    start([exe, "-mcpserver"], os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR, port=6510, name="emulator")
+    start(virtual_display([exe, "-mcpserver"], env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
+          port=6510, name="emulator")
 
 
 def r2000(path):
@@ -119,7 +134,8 @@ def r2000(path):
 
 def stop(which="all"):
     # only this clone's tools: another clone on the same machine keeps its emulator and disassembler
-    pats = {"vice": [re.escape(os.path.join(VICE_DIR, "bin")) + ".*-mcpserver"],
+    # the emulator itself only: its wrappers (script, and xvfb-run with its X server) exit after it
+    pats = {"vice": ["^" + re.escape(os.path.join(VICE_DIR, "bin")) + ".*-mcpserver"],
             "r2000": ["regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))]}
     for k in (pats if which == "all" else [which]):
         for p in pats[k]:
@@ -151,14 +167,46 @@ def vice_build():
     commit, branch = git("rev-parse", "--short", "HEAD"), git("rev-parse", "--abbrev-ref", "HEAD")
     if not commit:
         return "own build, not in a git tree: say in game.json where its source can be had"
-    for ref in git("branch", "-r", "--contains", "HEAD").splitlines():
-        ref = ref.strip()
-        if " -> " in ref or "/" not in ref:
-            continue
-        remote, rbranch = ref.split("/", 1)
-        url = public_url(git("remote", "get-url", remote))
-        if url:
-            return f"own build of {url}, branch {rbranch}, commit {commit}"
+
+    def public(rev):
+        """(url, branch) of a public remote branch holding rev: a branch before a pull request."""
+        found = []
+        for ref in git("branch", "-r", "--contains", rev).splitlines():
+            ref = ref.strip()
+            if " -> " in ref or "/" not in ref:
+                continue
+            remote, rbranch = ref.split("/", 1)
+            url = public_url(git("remote", "get-url", remote))
+            if url:
+                found.append((url, rbranch))
+        found.sort(key=lambda f: f[1].startswith("pr/"))
+        return found[0] if found else None
+
+    def name(rbranch):    # pull requests fetched as <remote>/pr/<n> (kit/c64/build_vice.py says how)
+        m = re.match(r"pr/(\d+)$", rbranch)
+        return f"pull request #{m.group(1)}" if m else f"branch {rbranch}"
+
+    hit = public("HEAD")
+    if hit:
+        return f"own build of {hit[0]}, {name(hit[1])}, commit {commit}"
+    # A local branch: name the public commit it starts from and every head merged into it.
+    merged, local = [], False
+    for c in git("rev-list", "--first-parent", "--max-count=500", "HEAD").splitlines():
+        base = public(c)
+        if base:
+            parts = []
+            for p in reversed(merged):
+                m = public(p)
+                parts.append(f"{name(m[1])} ({p[:8]})" if m else f"commit {p[:8]} on no public remote")
+                local = local or not m
+            said = f"own build of {base[0]}, {name(base[1])}, commit {c[:8]}"
+            said += f", with {', '.join(parts)} merged" if parts else ""
+            if local:
+                said += "; and local changes: push them, or say in game.json what they are"
+            return said + f" (local commit {commit})"
+        parents = git("rev-list", "--parents", "-n", "1", c).split()[1:]
+        merged.extend(parents[1:])
+        local = local or len(parents) < 2
     return (f"own build, commit {commit} on {branch}, on no public remote: "
             "push it, or say in game.json where its source can be had")
 
@@ -294,6 +342,8 @@ def main():
         use_vice(a[1])
     elif a[0] == "check-emulator":
         sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "check_emulator.py"), *a[1:]]).returncode)
+    elif a[0] == "build-vice":
+        sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_vice.py"), *a[1:]]).returncode)
     elif a[0] == "snapshots":
         print(os.path.relpath(SNAPSHOTS, ROOT))
         for f in sorted(os.listdir(SNAPSHOTS)) if os.path.isdir(SNAPSHOTS) else []:

@@ -43,9 +43,10 @@ contributor can trust it with their computer.** In practice:
    The platform notes name each project, its licence and its source, and
    the contributor hears all three before anything is fetched.
 
-**If you are the first on an operating system** (Linux and Windows are
-untested), the macOS setup is the standard to match, and matching it is
-part of your run:
+**If you are the first on an operating system** (Windows is untested;
+Linux has been run on a server with no display, not yet on a desktop),
+the macOS setup is the standard to match, and matching it is part of your
+run:
 
 - Install the tools inside `tools/` exactly as the platform's notes say.
 - Make the platform's launcher, `kit/<platform>/tools.py`, contain the

@@ -34,9 +34,16 @@ already been driven, `ping-running` passes as well.
 
 The phase 4 failures are small changes inside the server's own code, and
 the project asks for contributions: pull requests #6, #7, #11 and #14 to
-#20 on `barryw/vice-mcp` fix most of them. Fixing them upstream is the
+#24 on `barryw/vice-mcp` fix them, and all of them are merged: v3.13.0,
+tagged 24 September 2026, has every one. Fixing them upstream was the
 path, so that contributors keep installing a release rather than
 compiling.
+
+v3.13.0 (`main` at `00b275f2`), built from source on Linux (below),
+measured 24 September 2026: 56 of 56. No v3.13.0 release build has been
+measured yet. The v3.11.0 figures above were measured before `stopwatch`
+and `determinism-running-save` were changed to stop racing the host (see
+`check_emulator.py`); those two rows are not re-measured on it.
 
 ### Using a build of your own
 
@@ -68,7 +75,12 @@ release, since a commit alone does not say. One such build, measured 22
 September 2026 on macOS arm64: branch `fixed` of
 `github.com/air/vice-mcp`, commit `8a07b08d5c`, which is v3.11.0 with pull
 requests #6, #7, #11 and #14 to #24 of `barryw/vice-mcp` merged. It passes
-56 of 56 checks.
+56 of 56 checks. v3.13.0 now carries the same fixes. A build of a pull
+request still under review is named the same way: merge it into a local
+branch and `tools.py build-vice` it (Linux, below), and `status` says, for
+example, `own build of github.com/barryw/vice-mcp, branch main, commit
+fbcbbcf2, with pull request #20 (962d86c0), pull request #24 (ab6f88d1)
+merged`, which is how the fixes were run here before they were merged.
 
 **Prerequisite the kit does not install:** Rust's `cargo`
 (https://rustup.rs), for the disassembler. If the contributor has no
@@ -82,22 +94,27 @@ Tell the contributor this before installing anything:
 | What | Where | Size |
 |---|---|---|
 | Emulator build | `tools/vice-mcp/`, or a link to the contributor's own build | about 100 MB |
+| Emulator source and build, when built from source (`build-vice`) | `tools/src/vice-mcp/`, with `tools/vice-mcp` a link into it | about 550 MB |
 | Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
 | Disassembler binary | `tools/cargo/` | about 20 MB |
 | Logs | `tools/logs/` | small |
 
-**Uninstall:** delete the repository folder. Two small things can be left
-outside it, and that is the complete list:
+**Uninstall:** delete the repository folder. These can be left outside
+it, and that is the complete list:
 
 - regenerator2000 writes a settings file of a few hundred bytes to its own
   config folder (`~/Library/Application Support/regenerator2000` on macOS).
   Delete it if you want no trace.
 - Rust itself, if the contributor installed it for this (`rustup self
   uninstall` removes it).
+- On Linux, when the emulator was built from source: the build packages,
+  if they were installed for this (the list is under Linux, below; the
+  package manager removes them).
 
 Verified on macOS with `tools.py verify-footprint`: the emulator wrote its
 log, settings and snapshots under `tools/vice-home/` and nothing under the
-home directory, at launch, in use and on exit. Not yet verified on Linux or
+home directory, at launch, in use and on exit. Verified the same way on
+Linux, in a container with no display (below). Not yet verified on
 Windows.
 
 ## Get the emulator
@@ -116,7 +133,7 @@ published on its GitHub releases page; nothing comes from anywhere else.
 |---|---|---|
 | macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) into `tools/vice-mcp/` |
 | macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; untested by us |
-| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | untested by us; prefer the GUI build, see below |
+| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | the zip is untested by us; the same GUI build compiled from source is known to work (Linux, below); prefer the GUI build |
 | Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only, so **stops do not work on Windows** at all; untested by us |
 
 **Use the GUI build wherever one exists.** The kit talks to the emulator
@@ -221,12 +238,70 @@ start the tools by hand; the containment is in the launcher.
   full.
 - **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
-## Linux — untested
+## Linux — known to work on a server with no display; a desktop is untested
 
-Release builds exist (above); regenerator2000 installs with cargo. Nobody
-has run the full workflow on Linux yet. If you do, please record what
-happened in your game's `kit-feedback.md` so this section can be written
-properly.
+Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in a cloud
+container with no display (gcc 13.3, Python 3.11, cargo 1.94). The
+emulator was built from source; the release zip was not tried, because
+that environment could not reach GitHub's release downloads. Measured
+there: `check-emulator` 56 of 56, three runs in a row; `verify-footprint`
+clean. A Linux desktop, the release zip, ARM and other distributions are
+untested.
+
+**Build the emulator from source.** This is the path when there is no
+release you can download, and the way to run fixes that are merged into
+`main` but not yet released, or still under review as pull requests:
+
+```
+git clone https://github.com/barryw/vice-mcp tools/src/vice-mcp
+python3 kit/scripts/tools.py build-vice tools/src/vice-mcp
+```
+
+`kit/c64/build_vice.py` (reached as `build-vice`; `-h` shows how to add a
+pull request) configures the GTK3 GUI build the way the project's CI does,
+installs it into `tools/src/vice-mcp/install` and links `tools/vice-mcp`
+to it, so `tools.py status` names the build from its git history, pull
+requests included, and that line can go into `game.json` as it stands.
+About ten minutes on four cores; the source tree with its build is about
+550 MB, all of it under `tools/`. The build needs system packages, which
+live outside the repository: the script names whatever is missing and
+stops, and installing them is the contributor's call. On Debian or Ubuntu
+the complete list was:
+
+```
+sudo apt-get install --no-install-recommends build-essential autoconf automake \
+  bison byacc flex xa65 dos2unix pkg-config libgtk-3-dev libglew-dev \
+  libmicrohttpd-dev libevdev-dev libpng-dev libcurl4-openssl-dev \
+  libasound2-dev libpulse-dev xvfb xauth
+```
+
+**No display.** A server or container has no X display, and the GUI build
+will not start without one. The launcher sees that (neither `DISPLAY` nor
+`WAYLAND_DISPLAY` is set) and runs the emulator under `xvfb-run`, which
+starts a virtual X server for it and stops it when the emulator exits;
+`tools.py stop` stops the emulator itself so that `xvfb-run` can clean up.
+Nothing is drawn anywhere and screenshots still work, since VICE renders
+them itself. Use the GUI build here too, not the headless one: the
+headless build's pause does not stop the CPU (above). The picture is
+rendered in software (Mesa's llvmpipe), and the emulator uses about 80 %
+of one core.
+
+**Speed.** An unpaced MCP call took about 16 ms (61 a second), several
+times a Mac's. Two things follow. A script that arms a stopping checkpoint
+and then adjusts it in a second call can lose the race to the machine; arm
+it on a stopped machine. And a non-stopping checkpoint on a busy loop
+(77,000 hits a second) slowed the machine to 78 % of real time, after
+which VICE ran faster than real time until it had caught up; a wall-clock
+window just after such a measurement is skewed, so count passes or frames
+instead.
+
+**Footprint.** Everything the emulator wrote went under `tools/vice-home/`:
+its snapshots, PulseAudio's runtime directory, GTK's dconf store and Mesa's
+shader cache. `xvfb-run` keeps its X authority file in a temporary folder
+under `/tmp` and removes it on exit. regenerator2000 wrote nothing to
+`~/.config/regenerator2000` in this run; the path stays on the Uninstall
+list until a run shows where it writes. The apt packages above, if they
+were installed for this, are the Linux addition to that list.
 
 ## Windows — untested
 
