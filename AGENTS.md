@@ -136,6 +136,10 @@ platform follows `kit/PLATFORMS.md`.
   `reference/` folder) is asked once, at the start, as `kit/START.md`
   says, and recommended: a yes covers the whole run. Anything else, ask
   when it comes up.
+- **A merged branch is finished.** Once a branch's pull request has been
+  merged, never push to that branch again. New work starts a new branch
+  from `main`, with its own pull request. An agent that can push to only
+  one branch stops and asks for a new one rather than reuse it.
 
 ## Where knowledge lives
 
