@@ -76,8 +76,8 @@ step needs something only they have.
    request, check now that you can: `gh auth status` should show their
    login, or your environment should have its own way to open one.
 4. **Set up the tools** with `kit/INSTALL.md` for their operating system.
-   Tell them plainly what is known to work and what is untested on their
-   platform.
+   Tell them plainly what has a recorded run on their platform and what
+   has none.
 5. **Create the game folder** with `kit/scripts/new_game.py` and copy their
    image into its `work/` directory.
 6. **Follow the skills** in the order `AGENTS.md` gives, opening each

@@ -43,8 +43,8 @@ contributor can trust it with their computer.** In practice:
    The platform notes name each project, its licence and its source, and
    the contributor hears all three before anything is fetched.
 
-**If you are the first on an operating system** (Windows is untested;
-Linux has been run on a server with no display, not yet on a desktop),
+**If you are the first on an operating system** (each platform's notes
+say which systems a run is recorded on, and when),
 the macOS setup is the standard to match, and matching it is part of your
 run:
 
@@ -61,7 +61,7 @@ run:
   `home_candidates()` in the launcher, so the check looks in the right
   places next time.
 - Write the section for your operating system in the platform's notes,
-  change "untested" to what you verified, and record it in your game's
+  replace "no run recorded" with what you ran and when, and record it in your game's
   `kit-feedback.md`.
 
 ## Everything goes in `tools/`, and uninstalling is deleting the folder

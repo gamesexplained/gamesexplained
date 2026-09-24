@@ -5,7 +5,7 @@ description: First step for any game. Boot it in the emulator, get past the load
 
 # Orient: boot, get past the loader, capture the game
 
-Start the clock: `python3 kit/scripts/clock.py start 10-orient --model <your model id> games/<platform>/<slug>`, the model id as your system prompt names it, and again at every step, because a run may change model. Runs so far: twenty minutes to an hour, nearly all of it reaching play. Past an hour, the retro wants to know what ate it.
+Start the clock: `python3 kit/scripts/clock.py start 10-orient --model <your model id> games/<platform>/<slug>`, the model id as your system prompt names it, and again at every step, because a run may change model. Runs to 19 September 2026: twenty minutes to an hour, nearly all of it reaching play. Past an hour, the retro wants to know what ate it.
 
 The goal is the game engine: mechanics, graphics, sound, input, level
 data. The loader, decompressor, trainer menu or copy-protection in front

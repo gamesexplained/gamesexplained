@@ -5,7 +5,7 @@ description: Turn traced claims into verified facts. Test cheaply testable claim
 
 # Verify before publishing
 
-Start the clock: `python3 kit/scripts/clock.py start 60-verify --model <your model id> games/<platform>/<slug>`. No figure yet. Both retros so far name single features that ate more time here than whole steps did; when one does, say which in the stop note.
+Start the clock: `python3 kit/scripts/clock.py start 60-verify --model <your model id> games/<platform>/<slug>`. No figure yet. Both retros to 19 September 2026 name single features that ate more time here than whole steps did; when one does, say which in the stop note.
 
 Most serious errors come from trusting an absence, or from a claim that
 sounded right and was never tested.

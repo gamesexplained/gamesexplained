@@ -2,12 +2,12 @@
 
 The kit is split by platform in two places. `kit/skills/core/` and
 `kit/scripts/` are shared by every machine; `kit/skills/<platform>/` and
-`kit/<platform>/` are one machine. The Commodore 64 is the only platform
-so far, and it is the worked example for the next one.
+`kit/<platform>/` are one machine. The Commodore 64 was the first platform,
+and it is the worked example for the next one.
 
 ## What a platform owns
 
-| Path | Contents | The C64 today |
+| Path | Contents | The C64's |
 |---|---|---|
 | `kit/skills/<platform>/<machine>-reference/` | facts about the machine, consulted rather than recalled: memory map, registers, timing | `kit/skills/c64/c64-reference` |
 | `kit/skills/<platform>/tool-<name>/` | one skill per tool: how to drive it, what it gets wrong | `tool-vice-mcp`, `tool-regen2000` |

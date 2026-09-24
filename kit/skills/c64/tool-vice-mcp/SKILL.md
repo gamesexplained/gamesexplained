@@ -26,12 +26,15 @@ call costs a round trip.
 ## Check the emulator before you trust it
 
 ```
-python3 kit/scripts/tools.py status            # which build: release, or own build of <repo>, commit ...
+python3 kit/scripts/tools.py status            # which build: release <tag>, or own build of <repo>, commit ...
+python3 kit/scripts/tools.py get-vice          # is there a newer one for this machine? changes nothing
 python3 kit/scripts/tools.py check-emulator    # kit/EMULATOR.md's four phases, under a minute
 ```
 
-The check resets the machine, so run it before the game is loaded, not
-during. It runs its own small test program, measures each capability
+If `get-vice` names a newer release than the one installed, tell the
+contributor what it printed and ask before changing anything; an older
+build is not wrong, only measured by its own checks. The check resets
+the machine, so run it before the game is loaded, not during. It runs its own small test program, measures each capability
 this file relies on, and gives every check a name. **Read
 `workarounds.md` for the names that failed, and only those.** Everything
 in this file is written for a build that passes; where a section needs a
@@ -39,11 +42,12 @@ particular check, it says which. Put the build line from `status` and the
 list of failed checks in `orientation.md`, and the build line in
 `game.json` under `tools.emulator`.
 
-The v3.11.0 release fails 28 of the 56 checks, most of phase 4 among them.
-A contributor's own build may pass them all (`kit/c64/INSTALL.md`, "Using
-a build of your own"). v3.13.0 has every fix and passes 56 of 56,
-built from source with `tools.py build-vice`; its release build is not
-yet measured.
+Which build to have is not a version you pick: `tools.py get-vice` finds
+the newest release and what this machine can have of it, and asks
+(`kit/c64/INSTALL.md`, "Get the emulator"). The dated measurements are
+the table at the top of that file: on 22 September 2026 the v3.11.0
+release failed 28 of the 56 checks, most of phase 4 among them; on 24
+September v3.13 built from source passed all 56.
 
 ## The sequence that works
 

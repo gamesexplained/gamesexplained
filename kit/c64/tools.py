@@ -4,8 +4,9 @@
 Reached through `python3 kit/scripts/tools.py`, which picks the platform; do not run this file directly.
 
 Everything the kit installs lives under tools/ (gitignored):
-  tools/vice-mcp/    the emulator build, unpacked from the upstream release, or a link
-                     to a build of the contributor's own (`tools.py use-vice <dir>`)
+  tools/vice-mcp/    the emulator build, unpacked from the upstream release (`tools.py get-vice`),
+                     or a link to a build (`get-vice build`, or `use-vice <dir>` for one of your own)
+  tools/src/         vice-mcp source and its build, when built here
   tools/vice-home/   the emulator's config, log and snapshots (XDG paths pointed here)
   tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000`
   tools/logs/        terminal logs of both
@@ -16,6 +17,7 @@ Usage:
   tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
   tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
   tools.py stop [vice|r2000|all]
+  tools.py get-vice [download|build]   the newest vice-mcp for this machine; plain, it only says what that is (kit/c64/get_vice.py)
   tools.py use-vice <dir>          use a vice-mcp build of your own: link tools/vice-mcp to it
   tools.py use-vice release        go back to the release (kept at tools/vice-mcp-release)
   tools.py check-emulator          test the emulator against kit/EMULATOR.md (kit/c64/check_emulator.py)
@@ -37,6 +39,7 @@ VICE_RELEASE = os.path.join(TOOLS, "vice-mcp-release")
 VICE_HOME = os.path.join(TOOLS, "vice-home")
 LOGS = os.path.join(TOOLS, "logs")
 SNAPSHOTS = os.path.join(VICE_HOME, "config", "vice", "mcp_snapshots")
+RELEASE_NOTE = ".kit-release"    # written by get-vice into a downloaded release: "<tag> <asset>"
 
 
 def up(port):
@@ -161,7 +164,11 @@ def vice_build():
     if not os.path.isdir(VICE_DIR):
         return "MISSING"
     if not os.path.islink(VICE_DIR):
-        return "release"
+        try:
+            tag, asset = open(os.path.join(VICE_DIR, RELEASE_NOTE)).read().split()[:2]
+            return f"release {tag}, {asset}"
+        except (OSError, ValueError):
+            return "release, version not recorded (downloaded by hand): say which in game.json"
     real = os.path.realpath(VICE_DIR)
     git = lambda *a: subprocess.run(["git", "-C", real, *a], capture_output=True, text=True).stdout.strip()
     commit, branch = git("rev-parse", "--short", "HEAD"), git("rev-parse", "--abbrev-ref", "HEAD")
@@ -182,13 +189,16 @@ def vice_build():
         found.sort(key=lambda f: f[1].startswith("pr/"))
         return found[0] if found else None
 
-    def name(rbranch):    # pull requests fetched as <remote>/pr/<n> (kit/c64/build_vice.py says how)
+    def name(rbranch, rev=None):    # pull requests fetched as <remote>/pr/<n> (kit/c64/build_vice.py says how)
         m = re.match(r"pr/(\d+)$", rbranch)
-        return f"pull request #{m.group(1)}" if m else f"branch {rbranch}"
+        if m:
+            return f"pull request #{m.group(1)}"
+        tag = git("describe", "--tags", "--exact-match", rev) if rev else ""
+        return f"release {tag}" if tag else f"branch {rbranch}"
 
     hit = public("HEAD")
     if hit:
-        return f"own build of {hit[0]}, {name(hit[1])}, commit {commit}"
+        return f"own build of {hit[0]}, {name(hit[1], 'HEAD')}, commit {commit}"
     # A local branch: name the public commit it starts from and every head merged into it.
     merged, local = [], False
     for c in git("rev-list", "--first-parent", "--max-count=500", "HEAD").splitlines():
@@ -199,7 +209,7 @@ def vice_build():
                 m = public(p)
                 parts.append(f"{name(m[1])} ({p[:8]})" if m else f"commit {p[:8]} on no public remote")
                 local = local or not m
-            said = f"own build of {base[0]}, {name(base[1])}, commit {c[:8]}"
+            said = f"own build of {base[0]}, {name(base[1], c)}, commit {c[:8]}"
             said += f", with {', '.join(parts)} merged" if parts else ""
             if local:
                 said += "; and local changes: push them, or say in game.json what they are"
@@ -342,6 +352,8 @@ def main():
         use_vice(a[1])
     elif a[0] == "check-emulator":
         sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "check_emulator.py"), *a[1:]]).returncode)
+    elif a[0] == "get-vice":
+        sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "get_vice.py"), *a[1:]]).returncode)
     elif a[0] == "build-vice":
         sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_vice.py"), *a[1:]]).returncode)
     elif a[0] == "snapshots":

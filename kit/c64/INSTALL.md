@@ -20,8 +20,22 @@ minute). It names every check it makes, and
 one that fails. Run it once after installing, and again after any new
 build or release.
 
-The vice-mcp v3.11.0 release, macOS arm64 GUI build, measured 22 September
-2026 on a freshly started emulator: 28 of 56 checks pass. On one that has
+**Which build: the newest, always.** The kit pins no version of vice-mcp.
+`tools.py get-vice` finds the newest release and says what this machine
+can have of it ("Get the emulator", below), and `check-emulator` then
+measures whatever was installed. The measurements, each dated:
+
+| Build | Machine | Measured | Checks passed |
+|---|---|---|---|
+| v3.11.0 release, GUI | macOS arm64 | 22 September 2026 | 28 of 56 |
+| v3.11.0 with pull requests #6, #7, #11, #14 to #24 merged, from source | macOS arm64 | 22 September 2026 | 56 of 56 |
+| v3.13.0, from source | Linux x86_64, no display | 24 September 2026 | 56 of 56, three runs |
+| v3.13.1, from source (`get-vice build`) | macOS arm64 | 24 September 2026 | 56 of 56 |
+
+Add a row whenever a build is measured on a machine not listed. What the
+v3.11.0 release fails, by phase, is below. A contributor who declines to
+build is offered the newest release with a build for their machine, and
+on 24 September 2026 that was v3.11.0 for a Mac. On an emulator that has
 already been driven, `ping-running` passes as well.
 
 | Phase | Passes | Fails |
@@ -32,18 +46,14 @@ already been driven, `ping-running` passes as well.
 | 4 frame stepping | keys by matrix and by host name reach the program | stops land up to a frame late; run after a stop, `run_until` and step do not do what they say; no frame advance; joystick port numbers are off by one and input lands up to a frame late |
 | transport | a call during a stop answers; 1600 unpaced calls | `vice_ping` has reported `paused` on a fresh, running machine |
 
-The phase 4 failures are small changes inside the server's own code, and
-the project asks for contributions: pull requests #6, #7, #11 and #14 to
-#24 on `barryw/vice-mcp` fix them, and all of them are merged: v3.13.0,
-tagged 24 September 2026, has every one. Fixing them upstream was the
-path, so that contributors keep installing a release rather than
-compiling.
-
-v3.13.0 (`main` at `00b275f2`), built from source on Linux (below),
-measured 24 September 2026: 56 of 56. No v3.13.0 release build has been
-measured yet. The v3.11.0 figures above were measured before `stopwatch`
-and `determinism-running-save` were changed to stop racing the host (see
-`check_emulator.py`); those two rows are not re-measured on it.
+The failures are small changes inside the server's own code, and the
+project asks for contributions: pull requests #6, #7, #11 and #14 to #24
+on `barryw/vice-mcp` fix them, and all of them are merged, from v3.13.0
+on. Fixing them upstream is the path, so that contributors keep
+installing a release rather than compiling. The v3.11.0 figures were
+measured before `stopwatch` and `determinism-running-save` were changed
+to stop racing the host (see `check_emulator.py`); those two rows are not
+re-measured on it.
 
 ### Using a build of your own
 
@@ -71,16 +81,13 @@ on the About tab, a home folder usually names a person, and nobody else
 can use it (`check_docs.py` refuses one anywhere in the repository). A
 commit on no public remote is said so; push it, or say in `game.json`
 where the source can be had. Add what the build contains over the
-release, since a commit alone does not say. One such build, measured 22
-September 2026 on macOS arm64: branch `fixed` of
-`github.com/air/vice-mcp`, commit `8a07b08d5c`, which is v3.11.0 with pull
-requests #6, #7, #11 and #14 to #24 of `barryw/vice-mcp` merged. It passes
-56 of 56 checks. v3.13.0 now carries the same fixes. A build of a pull
-request still under review is named the same way: merge it into a local
-branch and `tools.py build-vice` it (Linux, below), and `status` says, for
-example, `own build of github.com/barryw/vice-mcp, branch main, commit
-fbcbbcf2, with pull request #20 (962d86c0), pull request #24 (ab6f88d1)
-merged`, which is how the fixes were run here before they were merged.
+release, since a commit alone does not say. A build of a pull request
+still under review is named the same way, and `status` says, for example,
+`own build of github.com/barryw/vice-mcp, release v3.13.1, commit
+fdc435ca, with pull request #30 (962d86c0) merged`. Building with
+unmerged pull requests is for maintainers, not contributors: it runs
+code nobody has merged, from whoever opened the pull request ("Unmerged
+fixes", below).
 
 **Prerequisite the kit does not install:** Rust's `cargo`
 (https://rustup.rs), for the disassembler. If the contributor has no
@@ -94,7 +101,7 @@ Tell the contributor this before installing anything:
 | What | Where | Size |
 |---|---|---|
 | Emulator build | `tools/vice-mcp/`, or a link to the contributor's own build | about 100 MB |
-| Emulator source and build, when built from source (`build-vice`) | `tools/src/vice-mcp/`, with `tools/vice-mcp` a link into it | about 550 MB |
+| Emulator source and build, when built from source (`get-vice build`) | `tools/src/vice-mcp/`, with `tools/vice-mcp` a link into it | 550 MB (Linux) to 700 MB (macOS) |
 | Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
 | Disassembler binary | `tools/cargo/` | about 20 MB |
 | Logs | `tools/logs/` | small |
@@ -107,34 +114,96 @@ it, and that is the complete list:
   Delete it if you want no trace.
 - Rust itself, if the contributor installed it for this (`rustup self
   uninstall` removes it).
-- On Linux, when the emulator was built from source: the build packages,
-  if they were installed for this (the list is under Linux, below; the
-  package manager removes them).
+- When the emulator was built from source: the build packages, if they
+  were installed for this. On macOS they are Homebrew formulas ("Get the
+  emulator", below; `brew uninstall` them, then `brew autoremove`), on
+  Linux apt packages (the list is under Linux, below).
 
 Verified on macOS with `tools.py verify-footprint`: the emulator wrote its
 log, settings and snapshots under `tools/vice-home/` and nothing under the
 home directory, at launch, in use and on exit. Verified the same way on
-Linux, in a container with no display (below). Not yet verified on
-Windows.
+Linux, in a container with no display (below). No Windows run is
+recorded.
 
 ## Get the emulator
 
-Nobody needs to compile VICE. The vice-mcp project publishes builds on its
-releases page, https://github.com/barryw/vice-mcp/releases. As of v3.11.0:
+Always the newest vice-mcp release. Nobody pins a version, because the
+project does not build every platform for every release: in September
+2026, v3.12.1 and v3.13.1 had Linux and Windows builds and no macOS one,
+and v3.11.0 was the newest release with a macOS build. So find out what
+this machine can have, with nothing changed:
+
+```
+python3 kit/scripts/tools.py get-vice
+```
+
+It names the newest release, this machine (`macos-arm64`,
+`linux-x86_64` and so on) and the build installed now, then says which
+of these applies. **Show the contributor what it printed and ask**; each
+path is their answer, never a default.
+
+- **The newest release has a GUI build for this machine.** Ask before
+  downloading, giving the file name and size, then
+  `tools.py get-vice download`. It unpacks into `tools/vice-mcp/` and
+  records the version, so `status` says `release v3.13.1,
+  v3.13.1-linux-x86_64-gui.zip`.
+- **It has none.** Offer both, and let the contributor choose:
+  1. **Build the newest release from source**, `tools.py get-vice build`.
+     It clones the release into `tools/src/vice-mcp/` and compiles it:
+     550 to 700 MB there. The compile needs system packages outside this
+     repository (apt on Linux, Homebrew on macOS; the full macOS set is
+     about 400 MB, most of it GTK 3, with Homebrew itself and Xcode's
+     command line tools under it). The script lists whatever is missing,
+     with the one command that installs it, and stops before anything is
+     built. Many contributors will not want that on their machine; that
+     is a fine answer.
+  2. **Download the newest release that has a build for this machine**,
+     `tools.py get-vice download <tag>`, which the plain command names.
+     It is older, so it may fail checks the newest passes; the table at
+     the top of this file says what v3.11.0 fails, and `workarounds.md`
+     is written for it.
+
+The compile took two minutes on a ten-core Apple silicon Mac and about
+ten on a four-core Linux container. Run `check-emulator` afterwards, whichever path was taken.
 
 What it is, and say so when you ask: VICE is the long-running open-source
 Commodore emulator, under the GNU General Public License v2. vice-mcp is
 a fork of it by Barry Walker that adds an MCP server, under the same
 licence, with the stated aim of contributing the work back to VICE. The
 builds are produced by the project's own continuous integration and
-published on its GitHub releases page; nothing comes from anywhere else.
+published on its GitHub releases page,
+https://github.com/barryw/vice-mcp/releases; the source is cloned from
+the same repository. Nothing comes from anywhere else.
+
+The builds the project publishes, when a release has them:
 
 | Operating system | Asset | Notes |
 |---|---|---|
-| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with.** Open the image and copy its contents (the `.app` bundles and `bin/`) into `tools/vice-mcp/` |
-| macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; untested by us |
-| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | the zip is untested by us; the same GUI build compiled from source is known to work (Linux, below); prefer the GUI build |
-| Windows x86_64 | `...-windows-x86_64-headless.zip` | headless only, so **stops do not work on Windows** at all; untested by us |
+| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with** (v3.11.0) |
+| macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; no run recorded |
+| Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | no run of the zip recorded; the same GUI build compiled from source is known to work (Linux, below) |
+| Windows x86_64 | `...-windows-x86_64-headless.zip` | headless, so **stops do not work in it** at all; no run recorded |
+
+`get-vice` only ever picks a GUI build.
+
+### Unmerged fixes: maintainers only
+
+A fix can sit in the project's pull-request queue for a while. An admin
+of this repository can build the newest release with reviewed, unmerged
+pull requests merged on top:
+
+```
+python3 kit/scripts/tools.py get-vice build --prs
+```
+
+The pull requests are listed in `kit/c64/vice-prs.json`, each with the
+commit that was reviewed and why it is there. A pull request that has
+been pushed to since is refused until someone reviews it again, and one
+already in the release is skipped, with a note to take it out of the
+list. The script checks with the GitHub CLI that whoever runs it is an
+admin of the repository in `site/config.json`, and refuses otherwise.
+Never do this for a contributor: it compiles and runs code that nobody
+has merged, from whoever opened the pull request.
 
 **Use the GUI build wherever one exists.** The kit talks to the emulator
 only over MCP, so a headless build looks sufficient, and it is not. In
@@ -146,21 +215,20 @@ should halt the machine silently does not. Keys sent by host key name
 (`vice_keyboard_key_press`) also have no keymap to land in. The GUI
 build stops, late by up to one frame (the pause takes hold at the next
 vertical sync), which is what the tool skill's `workarounds.md` is
-written for. On Windows the only release is headless, so a Windows contributor
-today gets a build in which phase 4 of `kit/EMULATOR.md` cannot be done
+written for. Every Windows build the project had published by 24
+September 2026 was headless, so a Windows contributor with one of those gets a build in which phase 4 of `kit/EMULATOR.md` cannot be done
 and phase 3 must never use a stopping checkpoint; say so before they
 start. The headless build is still the right one for unattended batch
 runs that never need to stop: a cycle limit and an exit screenshot, or a
 replay through the in-game input hook. **Ask the contributor
 before downloading**, tell them the file name and size, and let them fetch
-it if they prefer. macOS may refuse to open an unsigned download; if so the
+it if they prefer; a build fetched by hand is unpacked into `tools/vice-mcp/`
+so that `tools/vice-mcp/bin/x64sc` exists, and its version goes into
+`game.json` by hand. macOS may refuse to open an unsigned download; if so the
 contributor clears it in System Settings, Privacy & Security, or with
-`xattr -dr com.apple.quarantine <folder>`. There is no Intel macOS or ARM
-Linux build; those contributors would have to build from source, which
-nobody here has done.
-
-Unpack every build into `tools/vice-mcp/` so that `tools/vice-mcp/bin/x64sc`
-exists.
+`xattr -dr com.apple.quarantine tools/vice-mcp`. The project had published no
+Intel macOS or ARM Linux build by 24 September 2026; `get-vice build` is
+the way to one where none exists, and no run of it is recorded on either.
 
 ## Get the disassembler
 
@@ -238,27 +306,28 @@ start the tools by hand; the containment is in the launcher.
   full.
 - **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
-## Linux — known to work on a server with no display; a desktop is untested
+## Linux — run on a server with no display, 24 September 2026
 
 Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in a cloud
 container with no display (gcc 13.3, Python 3.11, cargo 1.94). The
 emulator was built from source; the release zip was not tried, because
 that environment could not reach GitHub's release downloads. Measured
 there: `check-emulator` 56 of 56, three runs in a row; `verify-footprint`
-clean. A Linux desktop, the release zip, ARM and other distributions are
-untested.
+clean. No run is recorded on a Linux desktop, with the release zip, on
+ARM or on another distribution.
 
 **Build the emulator from source.** This is the path when there is no
-release you can download, and the way to run fixes that are merged into
-`main` but not yet released, or still under review as pull requests:
+release you can download, as here, where the container could not reach
+GitHub's release downloads but could clone:
 
 ```
-git clone https://github.com/barryw/vice-mcp tools/src/vice-mcp
-python3 kit/scripts/tools.py build-vice tools/src/vice-mcp
+python3 kit/scripts/tools.py get-vice build
 ```
 
-`kit/c64/build_vice.py` (reached as `build-vice`; `-h` shows how to add a
-pull request) configures the GTK3 GUI build the way the project's CI does,
+That clones the newest release into `tools/src/vice-mcp` and hands it to
+`kit/c64/build_vice.py` (also reachable as `build-vice <source dir>` for
+a tree of your own; `-h` shows how to add a pull request by hand), which
+configures the GTK3 GUI build the way the project's CI does,
 installs it into `tools/src/vice-mcp/install` and links `tools/vice-mcp`
 to it, so `tools.py status` names the build from its git history, pull
 requests included, and that line can go into `game.json` as it stands.
@@ -303,7 +372,7 @@ under `/tmp` and removes it on exit. regenerator2000 wrote nothing to
 list until a run shows where it writes. The apt packages above, if they
 were installed for this, are the Linux addition to that list.
 
-## Windows — untested
+## Windows — no run recorded
 
 A headless release build exists (above). regenerator2000 installs with
 cargo. The `script` wrapper the launcher uses does not exist on Windows;

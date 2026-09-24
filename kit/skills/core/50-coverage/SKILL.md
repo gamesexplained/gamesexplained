@@ -5,7 +5,7 @@ description: The annotation loop. Measure comprehension with the shared coverage
 
 # Measure comprehension, not disassembly
 
-Start the clock: `python3 kit/scripts/clock.py start 50-coverage --model <your model id> games/<platform>/<slug>`. The largest run so far: 24 KB to 100 % in about forty minutes of wall clock with nine agents on disjoint ranges. One agent is several times slower per kilobyte. Note the agent count when you stop the clock, and their model in the note if it differs from yours.
+Start the clock: `python3 kit/scripts/clock.py start 50-coverage --model <your model id> games/<platform>/<slug>`. The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes of wall clock with nine agents on disjoint ranges. One agent is several times slower per kilobyte. Note the agent count when you stop the clock, and their model in the note if it differs from yours.
 
 Disassembly coverage flatters you. Bytes can be decoded, labelled, even
 commented nearby, and still understood by nobody. The shared metric

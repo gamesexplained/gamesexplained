@@ -111,6 +111,11 @@ platform follows `kit/PLATFORMS.md`.
 - **Correct in place.** Reference files (`facts.md`, `features.md`,
   `symbols.json`) state what is true now. The story of how understanding
   developed goes in `agent-history.md`, nowhere else.
+- **No claims about the present.** "Current version", "the latest
+  release", "not yet", "so far", "today": each is false the day after it
+  is written, and nobody comes back to fix it. Date the observation ("on
+  24 September 2026, v3.11.0 was the newest macOS build"), or state a rule
+  the reader applies at the time ("take the newest release").
 - **Consult the platform reference, don't recall it.** Register addresses,
   timing constants and memory maps come from `kit/skills/<platform>/`.
 - **Copy is not analysis.** Article text follows `kit/style.md`. Write it
