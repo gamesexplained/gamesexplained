@@ -50,14 +50,14 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| **Goal** (inlay, screen, Addict): bring the Amulet of Immortality back to the pedestal by the pool where you arrived; Thelric's parting message says so at the start of every game. The Addict won by dropping it on the pedestal; the ending is text | open | the parting message is live (`reference/play-first-menu.png`); the win is `$03C7` = `$7B` in the main loop (`$0851`), which prints the ending at `$5A5D`; what sets it is not found yet |
+| **Goal** (inlay, screen, Addict): bring the Amulet of Immortality back to the pedestal by the pool where you arrived; Thelric's parting message says so at the start of every game. The Addict won by dropping it on the pedestal; the ending is text | confirmed | PUT DOWN (`$1AED`) sets `$03C7` to `$7B` when the object put down is `$15`, the amulet, and the player stands at exactly (`$77`, `$96`) (`$1B82`-`$1B96`); live with the amulet poked into the right hand and the player onto that spot: the ending printed (`reference/ending.png`) |
 | **The Minotaur guards the amulet and falls only to the Dagger of Death** (Addict, Lemon64 snippets; a scroll: "THE DAGGER OF DEATH IS A SPECIAL KIND, WHEN USED ON THE MINOTAUR IT WEAKENS HIS MIND") | open | the scroll text is at `$53EF` |
 | **Vampires need the wooden dagger** (Addict, Crash; a scroll: "AS SURELY AS THE EAST WIND BLOWS, THE DAGGER OF WOOD IS THE VAMPIRES FOE"); one of two vampires carries the Dagger of Death | open | the scroll text is at `$55A4` |
 | **Controls** (inlay, screen): joystick in port 2, or keys H up, B down, Commodore key left, SHIFT right, SPACE fire | confirmed | `$0CC6` reads `$DC00` (port 2) into `$0387`/`$0388`/`$0389`, then SHIFT and Commodore from `$028D` and H and B from `$C5`; port 2 movement and B live |
 | **Demonstration mode** (inlay, Crash): runs on its own after the title scroller; fire or SPACE leaves it | live | `reference/demo-orc-attack.png`; SPACE left it |
 | **Controls screen and five instruction pages** (screen): "FIRE TO START OR B FOR INSTRUCTIONS"; the pages are HOW TO CONTROL THE GAME, THE DISPLAY, TO PLAY THE GAME, USING MAGIC, MAGICAL OR PHYSICAL COMBAT | live | B and stick down both open them (`reference/controls-screen.png`, `reference/instructions-page1.png`); text at `$8391`-`$8F9A` |
 | **Menu across the middle** (inlay, screen): chosen with the stick and fire; the cursor starts on RUN; some options open submenus | live | RUN INVENTORY EXAMINE CAST at the start; eighteen verbs dispatched through `$4C03` (facts.md) |
-| **The menu offers only what applies** (inlay: "other options will appear"; Crash, Your Sinclair: PICK UP, OPEN, CLOSE, ATTACK appear when relevant, so ATTACK's position drifts) | open | |
+| **The menu offers only what applies** (inlay: "other options will appear"; Crash, Your Sinclair: PICK UP, OPEN, CLOSE, ATTACK appear when relevant, so ATTACK's position drifts) | live | holding the amulet, the menu read RUN, PUT DOWN, SWAP, INVENTORY, EXAMINE, CAST (`reference/play-menu-holding.png`); how `$11A2` builds it is open |
 | **RUN** (inlay): move about; fire returns to the menu | live (moving) | the view scrolls as you move |
 | **Doors** (inlay, Crash): OPEN in front of one, CLOSE once through; many monsters open and close doors too | open | handlers OPEN `$1B9D`, CLOSE `$1C31` |
 | **Doorways need exact alignment** (Zzap: you can get stuck in a doorway unless exactly lined up with the passage) | open | |
@@ -80,7 +80,7 @@ Sources:
 | **Body strength and hits**: every creature has one; a hit takes off an amount set by the weapon and the attacker's strength; hit or miss is partly luck, and depends on protection, skill and magic (inlay) | open | the trainer's body option patches `SBC $038A` at `$24D0` out of the update of `$4EC5` (orientation.md) |
 | **A dead monster's possessions can be picked up and used** (inlay, Zzap) | open | |
 | **DEAD stamped on a killed creature's picture, in red** (Zzap, Crash) | open | |
-| **Game clock** (inlay, screen): top right; stops while you choose from the menu, and (Crash) the monsters with it | live (clock) | 00:00:00 in the first menu, running during RUN; the monsters open |
+| **Game clock** (inlay, screen): top right; stops while you choose from the menu, and (Crash) the monsters with it | live (clock) | 00:00:00 in the first menu, running during RUN, at about 1.2 game seconds a real second (21 in 17.6 s, measured); the monsters open |
 | **The view window**: only what is in your line of sight (inlay, Zzap, Sinclair User) | live | corridors appear as they come into view (`reference/play-corridor.png`) |
 | **Several levels, with stairs and doors; items always in the same places** (Your Sinclair, Addict, Crash) | open | |
 | **The picture strip**: pictures of every creature and object near you (inlay) | live | the orc in the demonstration |
@@ -89,7 +89,7 @@ Sources:
 | **Thelric's warning** (inlay): "a sharpened blade may not be best!" | open | |
 | **Title screen** (screen): the logo over a cave picture, the story on a scroller | live | `reference/title.png` |
 | **Music by Rob Hubbard**, three tunes (HVSC: "Main Theme", "Game Over (You're dead)", "Game beaten"); the main theme is an arrangement of Synergy's "Shibolet" (HVSC, Wikipedia) | live (title and play) | the SID plays on the title and in play (`$03D1` set); the other two open |
-| **No sound effects, only music** (Addict) | open | the play interrupt has a voice-1 noise burst when `$03CF` asks for one (`$2778`) |
+| **No sound effects, only music** (Addict) | differs | with the music off (M), footsteps sound: every third step of the player sets `$03CF` (`$0D51`-`$0D5D`), and creatures' steps set it too (`$2242`-`$2254`); the play interrupt's band 1 then plays a noise burst on voice 1 (`$2782`). Live: ten bursts in 2.5 s of walking, none standing still. With the music on, band 1 plays the music instead and the steps are silent |
 | **Credits** (inlay): programmed by Richard Darling, graphics by James Wilson, music by Rob Hubbard | open | not found in the game's own text |
 
 ## Beyond the documentation
