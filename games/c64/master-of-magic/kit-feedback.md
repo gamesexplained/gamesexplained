@@ -126,7 +126,10 @@ decision, what took longest, operating system and tool versions.
 
 Minutes to play 17.2; 0.8 minutes per tracked KB (47.6 minutes for
 57,826 bytes, ten agents); 2.7 hours of work. The subagents were
-Opus-class throughout.
+Opus-class throughout. The Play tab is not in the table: its agent
+started during 70-minisite and finished about an hour after the clock
+had stopped, and the lead's twenty minutes of checking and integrating
+it came after the retro.
 
 The 2.1 hours between the work and the elapsed time are almost all the
 emulator: the release could not be downloaded here, so it was built
