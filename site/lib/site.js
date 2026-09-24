@@ -1,8 +1,11 @@
 // Shared behaviour: mark the active tab, and turn $XXXX inside <code> into links to the Source tab.
 (function(){
-  var here=location.pathname.split('/').pop()||'index.html';
+  var seg=location.pathname.split('/').pop();
+  var here=(seg&&seg.indexOf('.html')>-1)?seg:'index.html';   /* clean URLs land on the directory */
   document.querySelectorAll('.gametabs a.tab').forEach(function(a){
-    if((a.getAttribute('href')||'')===here) a.classList.add('on');
+    var h=a.getAttribute('href')||'';
+    if(h==='./')h='index.html';
+    if(h===here) a.classList.add('on');
   });
   document.querySelectorAll('button[data-copy]').forEach(function(b){
     var src=document.querySelector(b.dataset.copy); if(!src) return;
