@@ -61,10 +61,47 @@ decision, what took longest, operating system and tool versions.
   text decoded as `JSR $2020`, and the RAM under ROM routines the game
   calls.
 - `kit/skills/c64/c64-reference/SKILL.md`: the RAM the CPU cannot see
-  (VIC data under the KERNAL while the ROM is in), and `CBM80` in a game
-  that is not a cartridge.
+  (VIC data under the KERNAL while the ROM is in); `CBM80` in a game that
+  is not a cartridge, and a paragraph on testing the reset as well as
+  RESTORE (a reset leaves the 6510's data direction register at 0, and
+  a restart that does not set it runs with BASIC over `$A000`); the
+  KERNAL's key variables `$C5`, `$028D` and `$0291` and the PAL flag
+  `$02A6`, checked in kernal-901227-03's decode table and `$FF5E`.
+- `kit/skills/core/50-coverage/SKILL.md`: how far a description reaches
+  now names the ledger's fixed edges (`$0100` ... `$E000`), which cut a
+  routine in two, and says that renaming a symbol the disassembler made
+  keeps its 64-byte cap. Two agents lost time to each.
+- `kit/skills/core/60-verify/SKILL.md`: "What a test lets through": list
+  every value a classifying compare accepts and look for the unintended
+  ones in the data. That is how the pool edge that offers OPEN was found.
+- `kit/skills/c64/tool-vice-mcp/SKILL.md`: choose a menu entry by reading
+  its text from screen memory, not by counting slots; record a
+  pass-by-pass trace of the game's variables as the test for a port.
+- `kit/skills/core/70-minisite/SKILL.md`: a widget that runs a mechanic
+  is tested against the game (a trace, or the original code in a 6502
+  simulator) before it goes on the page, and the trace stays in `work/`.
 
 ## What I would change but did not (a maintainer's call)
+
+- **The ledger's fixed edges cut code.** A routine that runs across
+  `$1000` owns only its first part unless a second label is put on the
+  edge, in the middle of an instruction stream. The edges make sense for
+  data; for a code block they could be skipped. Documented, not changed.
+- **A disassembler session loaded from a snapshot cannot be saved** as a
+  project (`r2000_save_project` needs a project path). The symbol export
+  is the canonical result, but crash recovery depends on replaying ten
+  agents' logs in an order that respects overlapping edits. A "save as"
+  in regenerator2000, or the kit loading the snapshot through a project
+  file from the start, would remove that risk.
+- **The commits are authored by the agent.** This environment refused a
+  commit authored as the contributor, so the branch's commits carry the
+  agent's default identity and the site's contributor list (from git
+  authors, humans only) will not show the contributor until they are
+  re-authored or the contributor adds a commit of their own.
+- **The KERNAL's random bytes.** The combat widget needed the game's
+  random numbers; they come from the KERNAL ROM, which the site must not
+  embed. The page carries the two 256-number cycles the game uses, as
+  derived values. A maintainer may want a rule for derived ROM data.
 
 ## What took longest
 

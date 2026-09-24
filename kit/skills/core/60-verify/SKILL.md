@@ -22,6 +22,18 @@ Before reporting that something is missing, ask what encoding, indirection
 or aliasing could hide it. A negative result is a claim about your search,
 not about the binary. Prefer "unknown" to a plausible guess.
 
+## What a test lets through
+
+For every compare that sorts a value into a class (is this tile a door,
+is this object a weapon, is this creature one of these), write down
+every value the test actually accepts, not the ones it was written for.
+A signed branch after a compare (`CMP #$F0` / `BMI`) admits half the
+byte range on the other side; two compares with the same register in a
+row admit nothing at all. Then look for the unintended values in the
+data: a tile code a player can stand on, an object a player can carry.
+One that is reachable is a secret for the article; one that is not is a
+corner case for `facts.md`.
+
 ## Live verification
 
 Any claim that can be tested in the emulator in under a few minutes gets

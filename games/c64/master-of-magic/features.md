@@ -106,9 +106,9 @@ Found in the code, not in the manual.
   direction register at 0, so BASIC stays switched in over the game's
   tables at `$A000`: the title's colours come out scrambled and the view
   window stays empty (`reference/reset-title.png`, `reference/reset-play.png`).
-- **A demonstration recorder** (live, up to the replay): CTRL+R on the title
-  starts a game whose input is written over the demonstration, F ends it,
-  and by the code the next demonstration replays it.
+- **A demonstration recorder** (live): CTRL+R on the title starts a game
+  whose input is written over the demonstration, F ends it, and the next
+  demonstration replays it.
 - **The pool's edge is a door** (live): the menu's door test is signed,
   so standing on the edge of level 2's pool (`$9BAA`) offers OPEN, which
   prints "OPEN DOOR." and does nothing (`reference/pool-edge-open-door.png`).

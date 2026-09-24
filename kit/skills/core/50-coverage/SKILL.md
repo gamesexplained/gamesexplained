@@ -80,7 +80,13 @@ same way, so tiers mean the same thing everywhere.
 - **Know how far a description reaches.** In `kit/scripts/ledger.py` a
   symbol owns the bytes from itself to the next boundary symbol, capped at
   1024 bytes for code and for symbols you create yourself, and at 64 bytes
-  for any other data symbol. Block boundaries cut a span too. A data table
+  for any other data symbol. Renaming a symbol the disassembler made keeps
+  its type, and with it the 64-byte cap: create the label afresh, or add
+  labels inside, when a renamed table is longer. Block boundaries cut a
+  span too, and so do fixed edges at `$0100`, `$0200`, `$0400`, `$0800`,
+  `$1000`, `$4000`, `$8000`, `$A000`, `$C000`, `$D000` and `$E000`: a
+  routine or table that runs across one of them needs a second symbol
+  there, with a comment saying where the whole starts. A data table
   of a few hundred bytes therefore needs a named symbol every 64 bytes or
   less, each with its own description, or most of it stays bare however
   well you have explained the whole.

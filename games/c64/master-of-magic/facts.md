@@ -550,9 +550,11 @@ was listed.
 - **The title interrupt** `$5D08`: at raster `$30` the bitmap and two steps of
   the story; at `$EE` bank 0 text (screen `$0400`, characters `$3000`), 38
   columns with fine scroll, one music frame (`$1949`), then `$EA31`. A CIA
-  interrupt returns without reading `$DC0D` (`$5D12`), so while the CIA's
-  timer interrupt is pending the handler is entered again and again until
-  the KERNAL exit at `$EE` acknowledges it.
+  interrupt returns without reading `$DC0D` (`$5D12`), so once the CIA's
+  timer has run out the handler is entered again and again until the
+  KERNAL exit at `$EE` acknowledges it (*live*: in 100 frames of the title
+  the handler was entered 12,685 times, 12,586 of them leaving through
+  `$5D12`, against 99 entries of each raster half).
 - **The story** (`$5DAC`): `$8009`–`$838D`, the story, "PRESS FIRE OR SPACE TO
   BEGIN. PRESS M FOR MUSIC ON/OFF." and the credits "PROGRAMMED BY RICHARD
   DARLING, ART BY JAMES WILSON, MUSIC BY ROB HUBBARD." (`$831D`), between 40
@@ -571,12 +573,14 @@ was listed.
   exactly. Real fire ends it. The shipped recording is 700 records, 7,724
   polls with 46 fire presses; its last 151 records are idle and it ends
   with `$EF` at `$A7FF`, the byte the recorder writes when its buffer runs out.
-- **The recorder is still in the game** (*live*, up to the replay): CTRL alone with R on the
+- **The recorder is still in the game** (*live*): CTRL alone with R on the
   title (`$5BBA`: `$028D` = 4, `$C5` = `$11`) saves the current seed at `$A540` and
   starts a game with `$03D3` = 1, in which `$179D` writes every input into the
   same buffer, a fire press as `$FA`; F (`$C5` = `$15`) ends the recording and the
-  game. By the code, the next demonstration replays it, until the game is
-  loaded again.
+  game. The next demonstration replays it, until the game is loaded again
+  (*live*: a walk up, left and down recorded from the start was replayed
+  by the next demonstration through the same cells to the same cell and
+  pixel, from the same seed).
 
 ## Random numbers
 
@@ -678,10 +682,12 @@ Run on VICE via vice-mcp (build in `game.json`), from the snapshots in
 | Amulet poked into the right hand, player onto `$9677`, PUT DOWN | `$03C7` = `$7B`, the ending |
 | RUN with the music off | ten noise bursts in 2.5 s of walking, none standing still |
 | RUN for 17.6 s | the clock advanced 21 seconds |
-| CTRL+R on the title, a walk, then F | `$03D3` = 1; the buffer at `$A540` took a new seed and the walk's records; F ended the game with the end mark `$EF` at `$A561`. The replay of a new recording was not watched |
+| CTRL+R on the title, a walk, then F | `$03D3` = 1; the buffer at `$A540` took a new seed and the walk's records; F ended the game with the end mark `$EF` at `$A561` |
+| A second recording (up, left, down from the start), then the title left to run | the next demonstration started from the saved seed and walked the same cells, `$947B` to `$9479`, ending at the same pixel |
 | MAGIC MISSILE at a skeleton, both vampires and the minotaur, from six random states | the same four results every time: 20 → 5, 50 → 50, 50 → 35, 50 → 50 |
 | INVENTORY with fire held during its passes, and without | 12 passes both times (checkpoint count on `$08E1`, with the interrupt as a control) |
 | The view window against the map in play-run | cell for cell, centred on `$93F8` |
+| Non-stopping checkpoints on the title interrupt for exactly 100 frames | `$5D08` 12,685 entries, `$5D12` 12,586, the two raster halves 99 each |
 | The player placed on the floor left of the pool edge `$9BAA` (level 2), then the stick right | he entered `$52`; the menu offered OPEN; OPEN printed OPEN DOOR. and changed no map byte |
 | Body 0, the minotaur put on the player's cell, RUN | "THE MINOTAUR ATTACKED YOU WITH ITS SWORD. HE HIT. YOU+RE DEAD..."; `$24DE` and the tune-1 call `$086C` each ran once |
 | A skeleton with body 10, MAGIC MISSILE | "YOU KILLED THE SKELETON.", body `$FF`, a band-2 sprite enabled (`$3A30` = 1): DEAD over the picture |

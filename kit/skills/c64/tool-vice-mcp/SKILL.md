@@ -121,6 +121,21 @@ in-game input hook below does the same job.
   (`load-held`, `checkpoints-survive-load`). The same snapshot plus the
   same inputs gives the same machine, byte for byte (`determinism`). This
   is how to reach a corner case and try it a hundred ways.
+- **Choose from a menu by its text, not its position.** A game whose menu
+  lists only what applies moves every entry when one appears or goes, so
+  "three to the right" picks something else as soon as the state differs.
+  Read the menu's rows from screen memory, find the entry's slot, move
+  the cursor that many slots and press fire; read the rows again after
+  each choice. For a submenu, save a snapshot on it and start each trial
+  from there.
+- **A trace of the real game is the test for a port.** Before trusting a
+  JavaScript version of a mechanic, record the game's own state with a
+  stopping checkpoint on the top of its loop: per pass, read the blocks
+  of memory the mechanic uses and write them out, a few hundred passes
+  with the input held still. Start the port from the first pass's state
+  and compare every pass. A port that matches every variable for
+  hundreds of passes is the same mechanic; one that matches most of them
+  is not yet.
 
 A replay loop: load, then per pass `joy()`, `step_pass()`, read the
 variables. About nine passes a second.

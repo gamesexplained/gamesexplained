@@ -95,6 +95,17 @@ address links into the Source tab, and the house style in `kit/style.md`.
   tables, tune bytes. Small excerpts for commentary; never the program.
 - Every claim shows its evidence: the table, the bytes, the register, the
   screenshot from `reference/`.
+- A widget that runs a mechanic is a claim too. Port the routine, then
+  test the port against the game itself before it goes on the page:
+  against a pass-by-pass trace of the game's own variables recorded in
+  the emulator (the platform's tool notes say how), or, for a routine that
+  only computes, against the original code run in a 6502 simulator on the
+  snapshot's memory. Write node tests that do the comparison and say in
+  the caption how it was checked. A trace is a copy of game memory, so it
+  and the tests that read it stay in the game's gitignored `work/`, like
+  the snapshots.
+  Porting is work that splits well across agents: one mechanic each, each
+  with its own trace and its own files.
 - Reference images go in `reference/`; the page refers to them by
   relative path from the game folder (`reference/<name>.png`).
 
