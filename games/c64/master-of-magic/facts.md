@@ -618,10 +618,20 @@ was listed.
 - **Notes** (`$C32F`): 96, C0 to B7, tuned for PAL: A4 is `$1D46`, 440.1 Hz,
   and notes 0–94 are within 3.2 cents of equal temperament; the last entry,
   `$FD2E`, is exactly B7 on the NTSC clock.
-- **Lengths**, by running the driver in a 6502 simulator: tune 1 stops
-  after 11.56 s and tune 2 after 23.08 s (HVSC 0:12, 0:24). Tune 0 sets the
-  master volume from voice 3's position in its track (`$C3F5`), which fades
-  it from 4:28.5 to silence at 5:21.9 (HVSC 5:21); it loops at 5:36.0.
+- **Lengths**, by running the driver in a 6502 simulator on the snapshot's
+  memory, at PAL's 50.12 frames a second (312 lines of 63 cycles): tune 1
+  stops after 578 frames, 11.53 s, and tune 2 after 1,154, 23.02 s (HVSC
+  0:12, 0:24). Tune 0 sets the master volume from voice 3's position in
+  its track (`$C3F5`), which fades it from volume 14 at 4:27.8 to silence
+  at 5:21.1 (HVSC 5:21); it loops after 16,800 frames, at 5:35.2.
+- Starting a tune does not reset the tempo counter `$C41A`, the pulse
+  timers `$C414`–`$C416` or the pulse directions `$C417`–`$C419`, so the exact
+  sound of a tune depends on what played before it. The ring-modulated
+  instruments 14 and 16 are only ever played on voice 2, so voice 1 is
+  always their modulator.
+- The page's player is a JavaScript port of the driver that matches the
+  6502 code on every sound-chip register after every frame: 34,000 frames
+  of tune 0, all of tunes 1 and 2, no difference.
 - **Footsteps**: with the music off (M, `$03D1` = 0), band 1 plays a noise
   burst on voice 1 (`$2782`–`$27A2`: volume 15, frequency `$1000`, attack/decay
   `$00`, sustain/release `$53`, gate on and off) whenever `$03CF` is set: every
