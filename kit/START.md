@@ -75,6 +75,18 @@ step needs something only they have.
    authored before the first real one. If they said you may open the pull
    request, check now that you can: `gh auth status` should show their
    login, or your environment should have its own way to open one.
+
+   **The branch is usually yours to name; ask only if it is not.** Where
+   you create the branch yourself, call it `game/<platform>/<slug>` as
+   `AGENTS.md` says and ask nothing. Some environments, hosted cloud
+   sessions among them, start you on a branch they named (`claude/…`)
+   and refuse pushes anywhere else without the contributor's say-so. If
+   yours does, and the contributor has not already named a branch, ask
+   with the questions above whether you may push to
+   `game/<platform>/<slug>` instead. On a yes, create it and push it at
+   once, before any work is on it, so a refusal shows now and not at the
+   end. If the push is refused, stay on the environment's branch and say
+   in the pull request why the name differs.
 4. **Set up the tools** with `kit/INSTALL.md` for their operating system.
    Tell them plainly what has a recorded run on their platform and what
    has none.

@@ -61,6 +61,15 @@ site, and a node check with a driver that re-gates a voice within one frame
 showed the envelope restarting with the writes (its level from 6 to 231)
 and not without them (6 to 4). The contract is in the header of `sid.js`.
 
+**The branch name (`kit/START.md`).** This run's cloud session started on
+a branch it named, `claude/confident-feynman-v3trkg`, and allowed pushes
+only there without the contributor's permission, so the branch is not the
+`game/c64/wizball` that `AGENTS.md` asks for. `START.md` now has an agent
+in that position ask for `game/<platform>/<slug>` with the other start
+questions, push it at once to find out whether the environment allows it,
+and fall back to its own branch if not. An agent that names its own
+branch, the usual case, asks nothing new.
+
 `verify-footprint` was clean on this machine.
 
 ## For a maintainer to decide
