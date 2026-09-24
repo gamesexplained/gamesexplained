@@ -194,6 +194,26 @@ tables there and lose nothing. The same applies to `$9000`-`$9FFF` in bank
 for a byte-for-byte copy of `$D000`-`$D7FF` appearing somewhere in a bank
 1 or 3 layout.
 
+## RAM the CPU cannot see
+
+The converse also bites. The VIC always reads RAM, never the BASIC or
+KERNAL ROM, so a game that keeps the KERNAL switched in (`$01` = `$36`)
+can still keep a bitmap, a character set or a screen at `$E000`-`$FFFF`
+and show it in VIC bank 3. The CPU reading the same addresses gets the
+ROM: an `LDA $E000,X` in such a game reads KERNAL bytes (a cheap source
+of noise), and a `JSR $FFD2` calls CHROUT, while the snapshot shows the
+game's graphics there. Say in each comment which one is meant.
+
+## `CBM80` in a game that is not a cartridge
+
+A program that writes `C3 C2 CD 38 30` to `$8004`-`$8008` catches the
+reset and RESTORE: the KERNAL's reset routine and its NMI handler both
+check for the signature and jump through `$8000` (cold) and `$8002`
+(warm) when it is there. A disk or tape game does it so that RESTORE,
+or a reset switch, restarts the game instead of dropping to BASIC. Read
+the two vectors; test RESTORE (`vice_keyboard_restore`) with a stopping
+checkpoint on the warm start.
+
 ## Screen codes and PETSCII
 
 Screen codes: `@`=0, A–Z=1–26, space=32, digits `0`–`9`=48–57, symbols

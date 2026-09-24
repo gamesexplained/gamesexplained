@@ -153,6 +153,9 @@ Routines are independent, so the burn-down parallelises. What matters:
   them explicitly and say so in each prompt.
 - **One log per agent.** Parallel appends to one file interleave. Give
   each agent its own `work/annotations-<n>.jsonl`, merge afterwards.
+- **One figure per agent.** `coverage.py <game> --live --range $2000 $27FF`
+  prints the figure and the work queue for one agent's range alone; the
+  whole-image queue is mostly other agents' work.
 - Agents read into neighbours' ranges for context; ranges prevent write
   collisions, not two agents naming the same thing. Catch that when
   merging.

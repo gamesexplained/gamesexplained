@@ -218,6 +218,14 @@ the batch.
   by host name, and `vice_keyboard_type` through the KERNAL buffer reach the
   game by different paths. Keep a hit counter on the routine that should
   react as the instrument.
+- **A key held through `vice_keyboard_matrix` stays down until released,
+  across snapshot loads**: it is the emulator's keyboard, not the machine's
+  state. A script that dies between the press and the release leaves it
+  held, and every key test after it is wrong: the KERNAL's scan keeps the
+  last key it finds in its scan order, so the stuck key hides the one you
+  press, and a working key reads as dead. Release in a `finally`, and after
+  any failed script release every key it pressed. The tell: the KERNAL's
+  current-key variable `$C5` sitting on one code (`$40` means none).
 - **`vice_machine_config_set` has a six-entry whitelist**:
   `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
   `CIA2Model`. Joystick port assignment is not among them.
