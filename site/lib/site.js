@@ -7,6 +7,10 @@
     if(h==='./')h='index.html';
     if(h===here) a.classList.add('on');
   });
+  // the tab bar sticks to the top and wraps on a narrow screen, so a link to a section lands below its
+  // real height (site.css, section[id])
+  var bar=document.querySelector('.gametabs');
+  if(bar){ var fit=function(){ document.documentElement.style.setProperty('--tabs-h',bar.offsetHeight+'px'); }; fit(); addEventListener('resize',fit); }
   document.querySelectorAll('button[data-copy]').forEach(function(b){
     var src=document.querySelector(b.dataset.copy); if(!src) return;
     b.addEventListener('click',function(){
