@@ -127,7 +127,7 @@ control run from one snapshot, and recording the SID to check music.
 
 ## Would change, but it needs a maintainer's call
 
-Filed on 25 September 2026: one address, two meanings, as #28. The others have been done in the kit since (#25 says where).
+Filed on 25 September 2026: one address, two meanings, as #28, taken up in kit 0.0.22. The others have been done in the kit since (#25 says where).
 
 - **Reading the manual online.** `AGENTS.md` says manuals from the web
   are welcome after the contributor confirms. `20-features` and

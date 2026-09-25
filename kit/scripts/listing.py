@@ -18,22 +18,42 @@ tracks nor has been told to leave out: the tail of a table longer than
 its symbol's reach, a table no symbol starts, a picture nothing refers to
 by address.
 
+An address the chips share with RAM (the platform's "hidden" ranges: on
+the C64, $D000-$DFFF) has two meanings, and an instruction's operand there
+takes the one the instruction sees. Code located in that range runs with
+the chips banked out, so it sees the RAM and gets the game's symbols; all
+other code sees the chips, and gets the register's name from
+kit/<platform>/registers.py, or the bare address where there is none. A
+jump or a call always gets the code's symbol. game.json overrides the rule
+for code that banks the chips out itself, over the instructions' own
+addresses, the last row that holds the instruction deciding:
+
+  "io": [["$B275", "$B2F0", "ram", "the I/O area is banked out from $B273 to $B2F1"]]
+
+with "registers" for code under the I/O area that banks the chips in.
+
 Usage:
   listing.py <game dir> <snapshot.vsf> [--entry <hand-over.vsf>]
                          the hand-over defaults to the game's work/entry.vsf
+  listing.py <game dir> --relabel
+                         name the operands of the existing listing.json again,
+                         for a change to "io" or to the register names, without
+                         the snapshot; refused once symbols.json has changed
 
 Record fields (short, the file is large):
   a  address            t  kind: code | byte | word | addr | lohi | text | gap | note
   b  bytes              m  mnemonic (code)         o  operand text, symbolic
-  oa operand address    l  label at this address   c  line comment
+  oa operand address, except on a chip's register (nothing in the listing is there)
+  l  label at this address                         c  line comment
   s  side comment       x  addresses that reference this one
   d  decoded text (text records) / value list (word, addr)
 """
-import hashlib, json, os, sys
+import hashlib, importlib.util, json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ledger import compute
 
+KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VSF_RAM_OFFSET = 209
 
 # --- opcode table -----------------------------------------------------------
@@ -89,6 +109,77 @@ def petscii(c):
     if 0xC1 <= c <= 0xDA: return chr(c - 0x80)
     if 0x41 <= c <= 0x5A: return chr(c)
     return "."
+
+
+def symbol_names(sym):
+    names = {}
+    for s in sym["symbols"]:
+        names.setdefault(s["address"], s["name"])     # first name wins
+    return names
+
+
+def register_names(platform):
+    """kit/<platform>/registers.py's NAMES, or none."""
+    path = os.path.join(KIT, platform or "", "registers.py")
+    if not platform or not os.path.exists(path):
+        return {}
+    spec = importlib.util.spec_from_file_location(f"{platform}_registers", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.NAMES
+
+
+def io_meaning(game):
+    """chips(target, at): whether the instruction at `at` sees a chip's register at
+    `target` rather than the RAM beneath it. The rule is in this file's help."""
+    from symbols_export import PLATFORM_DEFAULTS, hexint
+    plat = PLATFORM_DEFAULTS.get(game.get("platform", "c64"), {})
+    hidden = [(hexint(r[0]), hexint(r[1])) for r in plat.get("hidden", [])]
+    rows = []
+    for r in game.get("io", []):
+        if len(r) != 4 or r[2] not in ("ram", "registers"):
+            sys.exit(f'game.json "io": each row is [first, last, "ram" or "registers", why], not {r}')
+        rows.append((hexint(r[0]), hexint(r[1]), r[2] == "registers"))
+
+    def two(a):
+        return any(lo <= a <= hi for lo, hi in hidden)
+
+    def chips(target, at):
+        if not two(target):
+            return False
+        for lo, hi, registers in reversed(rows):
+            if lo <= at <= hi:
+                return registers
+        return not two(at)
+    return chips
+
+
+FORMAT = {"zp": "{}", "zpx": "{},x", "zpy": "{},y", "izx": "({},x)", "izy": "({}),y",
+          "abs": "{}", "abx": "{},x", "aby": "{},y", "ind": "({})", "rel": "{}"}
+
+
+def operand(a, m, mode, bs, names, regs, chips):
+    """(text, address) of the operand of the instruction at a. The address is None where
+    there is none, and on a chip's register: nothing in the listing is there to link to or
+    to be referenced from."""
+    if mode == "imp":
+        return None, None
+    if mode == "imm":
+        return f"#${bs[1]:02X}", None
+    if mode == "acc":
+        return "a", None
+    if mode == "rel":
+        ta = (a + 2 + (bs[1] - 256 if bs[1] > 127 else bs[1])) & 0xFFFF
+    elif LEN[mode] == 2:
+        ta = bs[1]
+    else:
+        ta = bs[1] | (bs[2] << 8)
+    width = 2 if LEN[mode] == 2 and mode != "rel" else 4
+    plain = f"${ta:0{width}X}"
+    goes = mode == "rel" or (m in ("jsr", "jmp") and mode == "abs")   # code never runs in the chips
+    if not goes and chips(ta, a):
+        return FORMAT[mode].format(regs.get(ta) or plain), None
+    return FORMAT[mode].format(names.get(ta) or plain), ta
 
 
 def uncounted(game, reg, L, ram, entry=None, top=12):
@@ -159,8 +250,46 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
     return lines
 
 
+def relabel(gdir):
+    """Name the operands of gdir's listing.json again, from the bytes it already holds."""
+    game = json.load(open(os.path.join(gdir, "game.json")))
+    spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
+    out = json.load(open(lpath))
+    if out.get("symbols_sha256") != hashlib.sha256(open(spath, "rb").read()).hexdigest():
+        sys.exit(f"{lpath} was built from a different symbols.json: rebuild it from the snapshot")
+    names = symbol_names(json.load(open(spath)))
+    regs, chips = register_names(game.get("platform")), io_meaning(game)
+    code, xrefs, changed = set(), {}, 0
+    for r in out["records"]:
+        if r["t"] != "code":
+            continue
+        code.add(r["a"])
+        m, mode = OPS[r["b"][0]]
+        o, ta = operand(r["a"], m, mode, r["b"], names, regs, chips)
+        changed += (r.get("o"), r.get("oa")) != (o, ta)
+        for k, v in (("o", o), ("oa", ta)):
+            r.pop(k, None)
+            if v is not None:
+                r[k] = v
+        if ta is not None:
+            xrefs.setdefault(ta, []).append(r["a"])
+    for r in out["records"]:          # references from data (.addr, split tables) stand as built
+        for src in r.get("x", []):
+            if src not in code:
+                xrefs.setdefault(r["a"], []).append(src)
+    for r in out["records"]:
+        r.pop("x", None)
+        if r["a"] in xrefs:
+            r["x"] = sorted(set(xrefs[r["a"]]))
+    with open(lpath, "w") as f:
+        json.dump(out, f, separators=(",", ":"))
+    print(f"wrote {lpath}: {changed} operands named differently")
+
+
 def main():
     argv = sys.argv[1:]
+    if len(argv) == 2 and argv[1] == "--relabel":
+        relabel(argv[0]); return
     if len(argv) < 2 or argv[0] in ("-h", "--help"):
         print(__doc__); return
     gdir, vsf = argv[0], argv[1]
@@ -182,9 +311,8 @@ def main():
     L = compute(sym["blocks"], sym["symbols"], sym["comments"], reg)
     state, code = L["state"], L["code"]
 
-    names = {}
-    for s in sym["symbols"]:
-        names.setdefault(s["address"], s["name"])     # first name wins
+    names = symbol_names(sym)
+    regs, chips = register_names(game.get("platform")), io_meaning(game)
     line = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "line"}
     side = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "side"}
     btype = bytearray(0x10000)
@@ -223,21 +351,11 @@ def main():
                 n = LEN[mode]
                 bs = list(ram[a:a + n])
                 rec.update({"t": "code", "b": bs, "m": m})
-                if mode == "imm":
-                    rec["o"] = f"#${bs[1]:02X}"
-                elif mode == "acc":
-                    rec["o"] = "a"
-                elif mode in ("zp", "zpx", "zpy", "izx", "izy"):
-                    ta = bs[1]; rec["oa"] = ta; xref(ta, a)
-                    s = sym_or_hex(ta, 2)
-                    rec["o"] = {"zp": s, "zpx": s + ",x", "zpy": s + ",y", "izx": f"({s},x)", "izy": f"({s}),y"}[mode]
-                elif mode in ("abs", "abx", "aby", "ind"):
-                    ta = bs[1] | (bs[2] << 8); rec["oa"] = ta; xref(ta, a)
-                    s = sym_or_hex(ta)
-                    rec["o"] = {"abs": s, "abx": s + ",x", "aby": s + ",y", "ind": f"({s})"}[mode]
-                elif mode == "rel":
-                    ta = (a + 2 + (bs[1] - 256 if bs[1] > 127 else bs[1])) & 0xFFFF
-                    rec["oa"] = ta; xref(ta, a); rec["o"] = sym_or_hex(ta)
+                o, ta = operand(a, m, mode, bs, names, regs, chips)
+                if ta is not None:
+                    rec["oa"] = ta; xref(ta, a)
+                if o is not None:
+                    rec["o"] = o
                 records.append(rec); a += n
             else:
                 rec.update({"t": "byte", "b": [op], "note": "not a legal opcode"})

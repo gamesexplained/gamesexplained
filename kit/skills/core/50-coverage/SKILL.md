@@ -67,6 +67,19 @@ same way, so tiers mean the same thing everywhere.
   around them; then give the range back with `coverage.include` in
   `game.json`. The disassembler will name those addresses after the chips'
   registers, so say in each comment which meaning is live.
+  An address there has one label but two meanings, and each instruction
+  sees one of them. `listing.py` names an operand there after the chip's
+  register when the instruction lies outside the range, and after the
+  game's symbol when it lies inside, since code there can only run with
+  the chips banked out; a jump or a call always gets the code's symbol.
+  That rule is wrong for code elsewhere that banks the chips out and
+  reads or writes the RAM beneath, so go through every bank switch and
+  list those instructions in `game.json` under `io`, one row per stretch,
+  `["$B275", "$B2F0", "ram", "banked out from $B273 to $B2F1"]` (`registers`
+  for code in the range that banks the chips back in; the last row that
+  holds the instruction decides). `listing.py <game dir> --relabel` puts a
+  change to `io` into `listing.json` without the snapshot. An instruction
+  reached both ways keeps one name; say the other in its comment.
   A game in VIC bank 3 can keep graphics there without banking anything:
   the video chip reads the RAM beneath the I/O while the CPU sees the
   chips. Nothing references those bytes by address, so no symbol points at
