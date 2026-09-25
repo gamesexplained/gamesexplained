@@ -64,7 +64,9 @@ License: cite it, and write your own words.
 Games that run under the ROMs use `$35` and install their own handlers at
 the hardware vectors `$FFFA`–`$FFFF`. When you see `LDA #$35 / STA $01`,
 expect that. The snapshot's RAM image always holds the RAM underneath;
-what the CPU *saw* depends on `$01` at that moment.
+what the CPU *saw* depends on `$01` at that moment. The Source tab names
+the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
+`sid_v1_control`, `cia1_port_a`) on the instructions that see the chips.
 
 ## VIC-II essentials (`$D000`)
 

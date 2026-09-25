@@ -14,6 +14,7 @@ and it is the worked example for the next one.
 | `kit/<platform>/INSTALL.md` | the tools, how to get them, sizes, what they leave behind, what is known to work per operating system, and the emulator's pass/fail per phase of `kit/EMULATOR.md` | `kit/c64/INSTALL.md` |
 | `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it | `kit/c64/tools.py` |
 | `kit/<platform>/<tool>.py` | a scripting client per tool, for the loops that are too slow as single calls | `vice.py`, `r2000.py` |
+| `kit/<platform>/registers.py` | the I/O registers by name, `NAMES`, for the operands of the Source tab; without it an operand that sees the chips shows its address | `kit/c64/registers.py` |
 | `kit/<platform>/check_emulator.py` | `kit/EMULATOR.md`'s tests as a script with its own test program, one name per check; the launcher runs it as `check-emulator` | `kit/c64/check_emulator.py` |
 | `kit/skills/<platform>/tool-<emulator>/workarounds.md` | what to do instead, one section per check that fails on some build | `tool-vice-mcp/workarounds.md` |
 | `site/lib/<platform>.js` | what the page needs that is specific to the machine | `c64.js`, and the memory map in `memmap.js` |
@@ -29,7 +30,10 @@ These already read `platform` from `game.json` and need one entry each:
   `listing.py` take their regions from here. Two more entries serve
   `listing.py`'s check for data the ledger cannot see: `hidden`, RAM a
   default exclusion covers but a game can still use, and `system`, the
-  machine's own work area, never reported as the game's.
+  machine's own work area, never reported as the game's. `hidden` is also
+  where an operand has two meanings, the chips' and the RAM's, and
+  `listing.py` picks one per instruction (`kit/skills/core/50-coverage`,
+  "A game can live under its I/O").
 - `kit/scripts/check_binaries.py`, the extensions and magic bytes of the
   platform's images and snapshots, so that none can ever be committed.
   Several platforms are listed already; check yours is.
