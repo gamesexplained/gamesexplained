@@ -40,7 +40,7 @@ in order:
    builds the listing (step 4), cuts `index.html` down to the header plus
    what it learned (the features, the reference screenshots), then goes
    to `80-retro`. `build.py` publishes every game folder, so an untouched
-   template would go live with eight empty sections.
+   template would go live as a page of placeholders.
 
    Platform knowledge is in `kit/skills/<platform>/`. For the C64:
    `kit/skills/c64/c64-reference` (facts about the machine — consult it, do not
