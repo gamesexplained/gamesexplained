@@ -59,9 +59,14 @@ annotate it byte by byte.
    interrupt vectors observed, what the loader appears to do in one
    paragraph. Someone else must be able to rebuild the snapshot from their
    own copy by following it.
-6. **Start the disassembler on the snapshot** and confirm it answers. Note
-   which processor-port or banking configuration was active when the
-   snapshot was taken: what is visible at a given address depends on it.
+6. **Start the disassembler on the snapshot** with `python3
+   kit/scripts/tools.py r2000 games/<platform>/<slug>/work/<state>.vsf`
+   and confirm it answers. It starts on the snapshot's
+   project file, `work/<state>.regen2000proj`, built from the snapshot on
+   the first start, so the session can be saved from the first annotation
+   (the disassembler's tool skill). Note which processor-port or banking
+   configuration was active when the snapshot was taken: what is visible
+   at a given address depends on it.
 7. **Understand the loader well enough to describe it in a paragraph**,
    then stop. If the game reloads data per level (overlays), say so in
    `orientation.md`: it means one snapshot per state.
@@ -115,5 +120,6 @@ original worth checking.
 ## Outputs
 
 `orientation.md` filled in; at least one steady-state snapshot in `work/`;
-the disassembler running on it; a first `work/annotations.jsonl` (the
-client script creates it on the first mutating call).
+the disassembler running on its project file; a first
+`work/annotations.jsonl` (the client script creates it on the first
+mutating call).

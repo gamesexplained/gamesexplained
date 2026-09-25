@@ -115,14 +115,20 @@ Tell the contributor this before installing anything:
 | Emulator source and build, when built from source (`get-vice build`) | `tools/src/vice-mcp/`, with `tools/vice-mcp` a link into it | 550 MB (Linux) to 700 MB (macOS) |
 | Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
 | Disassembler binary | `tools/cargo/` | about 20 MB |
+| Disassembler's settings file (its list of recent projects) | `tools/r2000-home/` | under 1 KB |
 | Logs | `tools/logs/` | small |
 
 **Uninstall:** delete the repository folder. These can be left outside
 it, and that is the complete list:
 
-- regenerator2000 writes a settings file of a few hundred bytes to its own
-  config folder (`~/Library/Application Support/regenerator2000` on macOS).
-  Delete it if you want no trace.
+- On Windows, regenerator2000's settings file, a few hundred bytes with
+  its list of recent projects, which it rewrites every time it opens or
+  saves a project (expected in `%APPDATA%\regenerator2000\config`; no Windows
+  run is recorded). On Linux and macOS the launcher points the tool's
+  home folder into `tools/r2000-home/` and the file lands there. Kits
+  before 0.0.22 did not, so a copy may be left in
+  `~/Library/Application Support/regenerator2000` (macOS) or
+  `~/.config/regenerator2000` (Linux). Delete it if you want no trace.
 - Rust itself, if the contributor installed it for this (`rustup self
   uninstall` removes it).
 - When the emulator was built from source: the build packages, if they
@@ -264,14 +270,17 @@ no prebuilt binary is downloaded or run.
 ```
 python3 kit/scripts/tools.py status
 python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510
-python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000
+python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000, on the snapshot's project file
 python3 kit/scripts/tools.py snapshots            # where emulator snapshots land
 python3 kit/scripts/tools.py stop
 ```
 
 The launcher, `kit/c64/tools.py`, points the emulator's XDG config, state
-and cache paths into `tools/vice-home/`, gives both tools the
-pseudo-terminal they need, and writes their logs to `tools/logs/`. Do not
+and cache paths into `tools/vice-home/` and the disassembler's home
+folder into `tools/r2000-home/`, gives both tools the pseudo-terminal
+they need, and writes their logs to `tools/logs/`. It also starts the
+disassembler on a project file rather than on the snapshot itself, so
+that the session can be saved (`kit/skills/c64/tool-regen2000`). Do not
 start the tools by hand; the containment is in the launcher.
 
 `python3 kit/c64/frame.py test` checks the site's frame renderer against
@@ -423,11 +432,16 @@ instead.
 **Footprint.** Everything the emulator wrote went under `tools/vice-home/`:
 its snapshots, PulseAudio's runtime directory, GTK's dconf store and Mesa's
 shader cache. `xvfb-run` keeps its X authority file in a temporary folder
-under `/tmp` and removes it on exit. regenerator2000 wrote nothing to
-`~/.config/regenerator2000` in this run; the path stays on the Uninstall
-list until a run shows where it writes. The apt packages above, if they
-were installed for this, are the Linux addition to that list, and so are the
-release zip's runtime packages (above).
+under `/tmp` and removes it on exit. regenerator2000 0.9.20 rewrites its
+settings file, `~/.config/regenerator2000/config.toml`, whenever it opens
+or saves a project; the 24 September run, which opened only a snapshot,
+found nothing there. On 25 September 2026, with the disassembler on a
+project, `verify-footprint` failed with the launcher's home folder
+override taken out (that file, written outside) and passed with it (the
+file in `tools/r2000-home/.config/`). The emulator was not installed in
+that run, so its half of the check was not exercised. The apt packages
+above, if they were installed for this, are the Linux addition to that
+list, and so are the release zip's runtime packages (above).
 
 ## Windows — no run recorded
 

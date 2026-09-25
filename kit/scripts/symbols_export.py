@@ -4,6 +4,12 @@
 Reads from the running regenerator2000 MCP server, or from a
 .regen2000proj file with --project. Never includes the memory image.
 
+A live export first saves the disassembler's project file
+(r2000_save_project), so the project and symbols.json leave together.
+The save needs a session started on a project file, which
+`tools.py r2000 <snapshot>` always gives; without one the export still
+runs and says the project was not saved.
+
 Usage:
   symbols_export.py <game dir>                      from the live server
   symbols_export.py <game dir> --project <file>     from a project file
@@ -78,8 +84,16 @@ def regions(game):
 
 def from_live(plat):
     sys.path.insert(0, os.path.join(KIT, plat))   # kit/<platform>/r2000.py, the disassembler client
-    from r2000 import make_client, call
+    from r2000 import make_client, call, failed
     rpc = make_client()
+    saved = call(rpc, "r2000_save_project", {})
+    if failed(saved):
+        print("WARNING: the disassembler's project was not saved: the session was not started on a project "
+              "file, and a crash loses everything since it started. This export still writes symbols.json; "
+              "then stop the disassembler and start it again with `tools.py r2000 <snapshot>`, which builds "
+              "a project from it.")
+    else:
+        print(saved.replace(os.path.dirname(KIT) + os.sep, ""))
     blocks = json.loads(call(rpc, "r2000_get_blocks", {}))
     syms = json.loads(call(rpc, "r2000_get_symbols", {}))
     comments = json.loads(call(rpc, "r2000_get_comments", {}))

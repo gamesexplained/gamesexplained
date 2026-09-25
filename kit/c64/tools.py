@@ -9,13 +9,15 @@ Everything the kit installs lives under tools/ (gitignored):
   tools/src/         vice-mcp source and its build, when built here
   tools/vice-home/   the emulator's config, log and snapshots (XDG paths pointed here)
   tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000`
+  tools/r2000-home/  the disassembler's settings file, its list of recent projects (HOME pointed here)
   tools/logs/        terminal logs of both
 Deleting the repository removes all of it. See kit/c64/INSTALL.md, "Uninstall".
 
 Usage:
   tools.py status
   tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
-  tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
+  tools.py r2000 <snapshot.vsf>    start the disassembler's MCP server on :3000 on the snapshot's project file
+  tools.py r2000 <file>            ... or on a .regen2000proj or .prg as it is
   tools.py stop [vice|r2000|all]
   tools.py get-vice [download|build]   the newest vice-mcp for this machine; plain, it only says what that is (kit/c64/get_vice.py)
   tools.py use-vice <dir>          use a vice-mcp build of your own: link tools/vice-mcp to it
@@ -25,10 +27,17 @@ Usage:
   tools.py snapshots               where emulator snapshots are, and what is there
   tools.py verify-footprint        prove the tools write nothing outside this repository
 
+A snapshot inside a game folder is not loaded as it is: a session started on a snapshot
+cannot be saved (r2000_save_project needs a project file). `r2000` starts on
+work/<snapshot name>.regen2000proj instead, building it first from symbols.json and the
+snapshot when there is none (kit/scripts/symbols_import.py; with no symbols.json yet, a
+project with no annotations). An existing one is what the last save left, and is used.
+
 verify-footprint is how the clean-footprint principle (AGENTS.md, kit/INSTALL.md) is
 checked on any operating system: it starts the emulator, makes it write a snapshot,
-stops it, and then lists every file outside the repository that changed meanwhile and
-looks like it belongs to one of the tools. An empty list is the pass.
+starts the disassembler on a project built from it and saves that, stops both, and then
+lists every file outside the repository that changed meanwhile and looks like it belongs
+to one of the tools. An empty list is the pass.
 """
 import os, re, shutil, socket, subprocess, sys, time
 
@@ -37,6 +46,7 @@ TOOLS = os.path.join(ROOT, "tools")
 VICE_DIR = os.path.join(TOOLS, "vice-mcp")
 VICE_RELEASE = os.path.join(TOOLS, "vice-mcp-release")
 VICE_HOME = os.path.join(TOOLS, "vice-home")
+R2000_HOME = os.path.join(TOOLS, "r2000-home")
 LOGS = os.path.join(TOOLS, "logs")
 SNAPSHOTS = os.path.join(VICE_HOME, "config", "vice", "mcp_snapshots")
 RELEASE_NOTE = ".kit-release"    # written by get-vice into a downloaded release: "<tag> <asset>"
@@ -146,6 +156,50 @@ def vice(machine="x64sc"):
           port=6510, name="emulator")
 
 
+def symbols_import():
+    sys.path.insert(0, os.path.join(ROOT, "kit", "scripts"))
+    import symbols_import
+    return symbols_import
+
+
+def game_of(path):
+    """The game folder a file sits in: the nearest folder above it with a game.json, or None."""
+    d = os.path.dirname(os.path.abspath(path))
+    while d != os.path.dirname(d):
+        if os.path.exists(os.path.join(d, "game.json")):
+            return d
+        d = os.path.dirname(d)
+    return None
+
+
+def project_for(path):
+    """The file to start the disassembler on: for a snapshot inside a game folder, its project file."""
+    gdir = game_of(path) if path.lower().endswith(".vsf") else None
+    if not gdir:
+        if not path.lower().endswith(".regen2000proj"):
+            print(f"WARNING: a session started on {os.path.basename(path)} cannot be saved (r2000_save_project "
+                  "needs a project file). Copy a snapshot into the game's work/ and start on that instead.")
+        return path
+    si = symbols_import()
+    proj = si.default_project(gdir, path)
+    if not os.path.exists(proj):
+        print(si.build(gdir, path, proj).replace(ROOT + os.sep, ""))
+        return proj
+    if si.project_ram(proj) != si.snapshot_ram(path):
+        sys.exit(f"{os.path.relpath(proj, ROOT)} holds a different memory image from {os.path.basename(path)}: "
+                 "the snapshot was taken again after the project was built.\nGive the new snapshot a name of its "
+                 "own. Or, to carry the annotations over to it: `tools.py r2000` on the project itself, "
+                 "symbols_export.py, `tools.py stop r2000`, then symbols_import.py <game> <snapshot> --force.")
+    saved = time.strftime("%d %b %H:%M", time.localtime(os.path.getmtime(proj)))
+    print(f"starting on {os.path.relpath(proj, ROOT)}, last saved {saved}")
+    missing = si.unsaved(gdir, proj)
+    if missing:
+        print(f"WARNING: symbols.json has labels or comments this project lacks ({missing}): it changed after the "
+              "last save. To start from symbols.json instead, stop the disassembler and run "
+              "symbols_import.py <game> <snapshot> --force.")
+    return proj
+
+
 def r2000(path):
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
     exe = local if os.path.exists(local) else shutil.which("regenerator2000")
@@ -157,7 +211,14 @@ def r2000(path):
             sys.exit(f"a disassembler started from another folder already answers on :3000:\n  {owner}\n"
                      "stop it there (its own `tools.py stop r2000`) before starting this clone's")
         sys.exit("something already answers on :3000; only one disassembler can run. `tools.py stop r2000` first")
-    start([exe, "--mcp-server", os.path.abspath(path)], os.path.join(LOGS, "r2000.log"), port=3000, name="disassembler")
+    path = project_for(path)
+    # Every project it opens or saves goes into a list of recent projects in its settings file,
+    # which it keeps in the home folder's config area (the `directories` crate): point HOME and
+    # XDG_CONFIG_HOME here so that file stays in the repository. Windows ignores both.
+    env = dict(os.environ, HOME=R2000_HOME, XDG_CONFIG_HOME=os.path.join(R2000_HOME, ".config"))
+    os.makedirs(env["XDG_CONFIG_HOME"], exist_ok=True)
+    start([exe, "--mcp-server", os.path.abspath(path)], os.path.join(LOGS, "r2000.log"), env=env, port=3000,
+          name="disassembler")
 
 
 def stop(which="all"):
@@ -298,9 +359,9 @@ def home_candidates():
 
 
 # Leftovers we know about and list under "Uninstall" in kit/c64/INSTALL.md. Anything else is a failure.
-KNOWN_RESIDUE = ("Library/Application Support/regenerator2000/",   # macOS
-                 ".config/regenerator2000/",                        # Linux, expected; unverified
-                 "regenerator2000\\config")                         # Windows, expected; unverified
+# On Linux and macOS the disassembler's settings file goes to tools/r2000-home (r2000(), above), so
+# one in ~/.config or ~/Library/Application Support means the containment broke: not listed here.
+KNOWN_RESIDUE = ("regenerator2000\\config",)                        # Windows, expected; unverified
 
 
 def verify_footprint():
@@ -320,8 +381,15 @@ def verify_footprint():
     except Exception:
         where = out[:200]
     print("snapshot written to:", where)
+    proj = os.path.join(SNAPSHOTS, name + ".regen2000proj")
     if where and os.path.exists(where) and not up(3000):
-        r2000(where)                       # exercise the disassembler too
+        # exercise the disassembler too, as a run does: on a project built from the snapshot,
+        # saved through MCP. Loading and saving a project both rewrite its settings file.
+        si = symbols_import()
+        si.write(si.project(si.EMPTY, si.snapshot_ram(where)), proj)
+        r2000(proj)
+        from r2000 import make_client, call as r2000_call
+        print("disassembler:", r2000_call(make_client(), "r2000_save_project", {}))
         stop("r2000")
     stop("vice")
     inside = os.path.realpath(ROOT)
@@ -353,7 +421,7 @@ def verify_footprint():
         for p in hits: print("  ", p)
     else:
         print("unexpected files written outside the repository: none")
-    for f in (name + ".vsf", name + ".json"):
+    for f in (name + ".vsf", name + ".json", name + ".regen2000proj"):
         try: os.remove(os.path.join(SNAPSHOTS, f))
         except OSError: pass
     if hits or not ok_inside:

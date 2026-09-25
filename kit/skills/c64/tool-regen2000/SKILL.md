@@ -5,9 +5,11 @@ description: How to drive regenerator2000, the recommended disassembler, through
 
 # regenerator2000
 
-An interactive 6502 disassembler with an MCP server. It loads `.vsf`
-snapshots directly, which is how it is used here: start it on the
-steady-state snapshot from `10-orient`.
+An interactive 6502 disassembler with an MCP server. It can load `.vsf`
+snapshots directly, but a session started that way cannot be saved, so
+the launcher does not: it starts the disassembler on the snapshot's
+project file, and the steady-state snapshot from `10-orient` is read
+through that.
 
 ## Start and drive
 
@@ -21,10 +23,22 @@ It binds port 3000 with no option to change it; one instance at a time;
 it needs a pseudo-terminal even headless. Addresses in arguments are
 decimal integers.
 
+**The project file is the save.** Given a snapshot in a game's `work/`,
+the launcher starts on `work/<state>.regen2000proj`: the snapshot's
+memory image with the annotations. When there is none it builds one
+first with `symbols_import.py`, from `symbols.json`, or with no
+annotations at the start of a run. When there is one it starts on it as
+the last save left it, after checking that it holds the same memory image
+as the snapshot. `r2000_save_project` writes the session back to that
+file, and `symbols_export.py` calls it before every export. After a
+crash, `tools.py r2000` on the same snapshot starts where the last save
+stopped.
+
 The client script logs every mutating call to
-`games/<platform>/<slug>/work/annotations.jsonl`. That log is crash
-insurance: `r2000.py --replay <log>` rebuilds a fresh session. Run it from
-the game folder, or pass `--game`, so the log lands in the right place.
+`games/<platform>/<slug>/work/annotations.jsonl`: what came after the last
+save is in there. `r2000.py --replay <log>` replays a log into the running
+session. Run the client from the game folder, or pass `--game`, so the log
+lands in the right place.
 
 ## Tools that matter
 
@@ -42,7 +56,7 @@ the game folder, or pass `--game`, so the log lands in the right place.
 | `r2000_undo` | undo the last operation; note that the log does not record undos |
 | `r2000_unpack_binary` | **destructive**: wipes all annotations. Do not use on an annotated session |
 | `r2000_batch_execute` `{calls: [{name, arguments}, ...]}` | many calls in one round trip; each entry names its tool as `name`, not `tool` |
-| `r2000_save_project` | only works for sessions loaded from a project file; use `symbols_export.py` instead |
+| `r2000_save_project` `{}` | write the session to the project file it was started on (above); refused with "No active project path" on a session started on a snapshot or `.prg` |
 
 ## Traps
 
@@ -78,7 +92,16 @@ the game folder, or pass `--game`, so the log lands in the right place.
   Undo with `r2000_set_data_type` to `undefined`.
 - The project file (`.regen2000proj`) embeds the memory image. It stays in
   `work/` and is never committed. `symbols_import.py` rebuilds it from
-  `symbols.json` plus a snapshot.
+  `symbols.json` plus a snapshot, and will not overwrite one without
+  `--force`: the saved project can hold work that `symbols.json` does not.
+- **A snapshot started on directly is traced from its program counter.**
+  0.9.20 loading a `.vsf` disassembles from the saved program counter and
+  labels it `start`; a project built from the snapshot starts with nothing
+  traced and no labels. Trace from the interrupt handlers and the entry
+  point `10-orient` found, not from wherever the CPU was waiting.
+- **Retaking a snapshot under the same name** leaves its project holding
+  the old image. The launcher refuses to start and says how to carry the
+  annotations over; a new state is better saved under a new name.
 - After any bulk recovery, verify with a clean process, a full replay and
   a block-count check, not "the replay didn't error".
 - **The flow tracer can wander into text.** `$20` is `JSR`, so a run of

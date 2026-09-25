@@ -32,7 +32,11 @@ same way, so tiers mean the same thing everywhere.
 4. Every 30 minutes or so, and at the end of every session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
    `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.vsf`
-   so the committed listing never drifts from the symbols.
+   so the committed listing never drifts from the symbols. The export
+   saves the disassembler's project file first; if it warns that it could
+   not, the session was started some other way than `tools.py r2000` on
+   the snapshot, and a crash would lose everything since it started:
+   restart it that way now, after this export.
 5. Repeat until the tier you are aiming for is met.
 
 ## Rules that keep the number honest
@@ -204,6 +208,10 @@ Routines are independent, so the burn-down parallelises. What matters:
   them explicitly and say so in each prompt.
 - **One log per agent.** Parallel appends to one file interleave. Give
   each agent its own `work/annotations-<n>.jsonl`, merge afterwards.
+- **Save more often while agents write.** A crash of the shared
+  disassembler costs every agent's work since the last save. Saving is
+  cheap and changes nothing: the lead saves the project every ten minutes
+  or so (`r2000_save_project`, the tool skill), and agents never need to.
 - **One figure per agent.** `coverage.py <game> --live --range $2000 $27FF`
   prints the figure and the work queue for one agent's range alone; the
   whole-image queue is mostly other agents' work.

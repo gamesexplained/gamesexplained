@@ -17,7 +17,7 @@ Parallel agents share one disassembler but must not share one log: appends
 from several processes interleave and the replay is then unusable. Give each
 agent its own --log (or set ANNOTATION_LOG) and merge the files afterwards.
 
-Requires `regenerator2000 --mcp-server <file>` listening on :3000.
+Requires the disassembler's MCP server on :3000: `tools.py r2000 <snapshot.vsf>`.
 
 Calls that come back as an error are not logged, so a replay does not
 reproduce your mistakes. A batch is logged as a whole, so check its result.
