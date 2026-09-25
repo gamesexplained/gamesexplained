@@ -16,8 +16,9 @@ step needs something only they have.
    which game, which platform it is for, where their copy of it is on
    disk, **which run they want**, of the two below, **whether you may
    look the game up online**, and **whether you may open the pull request
-   yourself when the run is done**. We never download game binaries; they
-   supply their own.
+   yourself when the run is done**, which covers filing the run's asks
+   for the maintainers as issues too. We never download game binaries;
+   they supply their own.
 
    - **Silver** (recommended) aims to explain 100 % of the program and
      builds the minisite. Recent runs took one to three hours, mostly
@@ -41,8 +42,11 @@ step needs something only they have.
    ends with the branch pushed, tells the contributor it is ready, and
    opens the pull request when they say so, so they can look first. If
    they say you may open it yourself, the run ends with the pull request
-   open and a link to it. Either answer holds for the whole run; do not
-   ask again at the end.
+   open and a link to it. The same yes lets the retrospective file what
+   needs a maintainer's decision as issues on the repository
+   (`kit/skills/core/80-retro`); with a no, those asks go in the pull
+   request's description for whoever merges it. Either answer holds for
+   the whole run; do not ask again at the end.
 
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
@@ -74,7 +78,8 @@ step needs something only they have.
    cheap to fix, and agree with the contributor how the commits will be
    authored before the first real one. If they said you may open the pull
    request, check now that you can: `gh auth status` should show their
-   login, or your environment should have its own way to open one.
+   login, which opens the pull request and files the issues, or your
+   environment should have its own way to open one.
 
    **The branch is usually yours to name; ask only if it is not.** Where
    you create the branch yourself, call it `game/<platform>/<slug>` as
@@ -96,9 +101,9 @@ step needs something only they have.
    `SKILL.md` as you reach it.
 7. **Finish with the retrospective** (`kit/skills/core/80-retro`) and the
    pull request, as `AGENTS.md` says. Nothing goes to `main` directly. If
-   the contributor said at the start that you may open it, open it and
-   give them the link; otherwise push the branch, tell them it is ready,
-   and open it when they say so. If you cannot push or open it (no fork,
+   the contributor said at the start that you may open it, open it, file
+   the retrospective's asks as issues, and give them the link; otherwise
+   push the branch, tell them it is ready, and open it when they say so. If you cannot push or open it (no fork,
    no login), leave the branch where it is and say exactly what is
    missing.
 
