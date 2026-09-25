@@ -116,6 +116,14 @@ address links into the Source tab, and the house style in `kit/style.md`.
   players, table explorers.
 - Embed only the data you need: extracted character set, level data,
   tables, tune bytes. Small excerpts for commentary; never the program.
+- A game can read the machine's ROM as data: a table, or code used as
+  noise. When a mechanic on the page depends on it, embed only the bytes
+  the game reads, or the values it computes from them, and never the
+  whole ROM. Read them from the ROM the emulator runs, not from memory,
+  and say beside the widget which ROM, which revision and which addresses
+  they came from. If the emulator has other revisions of that ROM,
+  compare the same addresses: when they differ, the mechanic differs
+  between machines, and the page says so.
 - Every claim shows its evidence: the table, the bytes, the register, the
   screenshot from `reference/`.
 - A widget that runs a mechanic is a claim too. Port the routine, then
