@@ -37,12 +37,17 @@ def compute(blocks, syms, comments, regions):
         if b["type"] == "Code":
             for a in range(b["start"], b["end"] + 1):
                 code[a] = 1
-    edges = {0x0000, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x4000, 0x8000, 0xA000, 0xC000, 0xD000, 0xE000}
+    # A span ends at the edge of its block. A data span also ends at the fixed edges of the
+    # memory map, so that a table's reach cannot run on into the next region; a routine
+    # runs on across them, since code that crosses $1000 is still one routine.
+    block_edges = set()
     for b in blocks:
-        edges.add(b["start"]); edges.add(b["end"] + 1)
-    edges = sorted(edges)
+        block_edges.add(b["start"]); block_edges.add(b["end"] + 1)
+    fixed = {0x0000, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x4000, 0x8000, 0xA000, 0xC000, 0xD000, 0xE000}
+    walls = {True: sorted(block_edges), False: sorted(block_edges | fixed)}
 
     def wall_after(a):
+        edges = walls[bool(code[a])]
         i = bisect.bisect_right(edges, a)
         return edges[i] if i < len(edges) else 0x10000
 

@@ -26,7 +26,10 @@ These already read `platform` from `game.json` and need one entry each:
 - `kit/scripts/build.py`, the platform's display name.
 - `kit/scripts/symbols_export.py`, the standard coverage exclusions (stack,
   I/O) and the screen and character set sizes. `coverage.py` and
-  `listing.py` take their regions from here.
+  `listing.py` take their regions from here. Two more entries serve
+  `listing.py`'s check for data the ledger cannot see: `hidden`, RAM a
+  default exclusion covers but a game can still use, and `system`, the
+  machine's own work area, never reported as the game's.
 - `kit/scripts/check_binaries.py`, the extensions and magic bytes of the
   platform's images and snapshots, so that none can ever be committed.
   Several platforms are listed already; check yours is.

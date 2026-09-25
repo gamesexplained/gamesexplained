@@ -105,7 +105,40 @@ not from a register dump. In multicolour bitmap mode (`$D016` bit 4 as
 well) a cell's pixel pairs are `%00` the background, `%01` the matrix
 byte's high nibble, `%10` its low nibble and `%11` the colour RAM nibble.
 The test of a reading is a rebuild: draw the picture from memory and
-compare it with a screenshot.
+compare it with a screenshot (`kit/c64/frame.py` records a frame and
+compares its rebuild with the emulator's picture).
+
+## The video chip, cycle by cycle (PAL, measured)
+
+Measured in VICE (x64sc, vice-mcp 3.13.1) on 24 September 2026 with
+`kit/c64/frame.py test`, and followed by `C64.renderFrame` in
+`site/lib/c64.js`:
+
+- A PAL frame is 312 raster lines of 63 cycles, 19,656 cycles. The raster
+  register steps in a line's first cycle, except that line 0's first
+  cycle still reads 311.
+- VICE's picture of the screen is 384 × 272: raster lines 16-287, sprite X
+  -8 to 375 (sprite X = the picture's x − 8). The 40-column window is X
+  24-343 and 38 columns X 31-334; 25 rows are lines 51-250, 24 rows 55-246.
+- A register written in cycle c of a line (the store's last cycle) shows
+  from the picture's 8-pixel column starting at x = 8(c − 13). A colour
+  shows there at once; VICE draws one grey pixel where it changes. `$D011`'s
+  bitmap and extended-colour bits and `$D016`'s X scroll show a cycle
+  later, `$D016`'s multicolour bit half a cycle later.
+- The graphics go into a shift register one byte per 8-pixel slot, at the
+  pixel whose low three bits equal the X scroll; column i's slot is X
+  24 + 8i to 31 + 8i. A scroll change that passes over a slot's moment
+  loses that column, and a register not reloaded for eight pixels shows
+  background.
+- A sprite's Y is compared with the low eight bits of the raster line, so
+  a sprite with Y below 56 is displayed twice a frame: its 21 rows start
+  on the line after Y and again 256 lines further down.
+- The border closes at line 251 with 25 rows and at 247 with 24. Switching
+  to 24 rows between lines 247 and 250 means neither compare meets the
+  raster, so the border stays open through the bottom and the top of the
+  next frame. Where no character row is being fetched, the chip shows the
+  byte at `$3FFF` of its bank (`$39FF` with extended colour) as a black
+  pattern on the background colour.
 
 ## SID essentials (`$D400`)
 
@@ -235,6 +268,8 @@ emulator's CPU-view memory reads return the chips' registers, and the
 coverage ledger excludes the range as I/O by default. Read the snapshot's
 RAM there (the `ram` bank), and when it holds the game's data give the
 range back with `coverage.include` in `game.json` and describe it.
+`listing.py` names the range whenever it holds data and `game.json` has
+not said what it is.
 
 ## Undocumented opcodes
 
@@ -250,7 +285,9 @@ can behave differently on a real machine. An absolute indexed address
 that passes `$FFFF` wraps round to zero page: `DCP $FF86,X` with X = `$FF`
 works on `$0085`. Before saying nothing reads an address, decode the gaps
 in the code with a decoder that knows these opcodes, and look for bases
-that an index can carry round.
+that an index can carry round. `kit/c64/opcodes.py` does both (`--refs`),
+with all 256 opcodes under the names VICE's monitor gives them; `--check`
+compares its table with the emulator's disassembler.
 
 ## `CBM80` in a game that is not a cartridge
 

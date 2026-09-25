@@ -73,7 +73,8 @@ same way, so tiers mean the same thing everywhere.
   them and the ledger never counts them. Whenever `$DD00` selects bank 3,
   look at the snapshot's RAM at `$D000`-`$DFFF` for sprite and character
   data (one run found 64 sprite shapes there only when its page's gallery
-  asked for a police ship's frames).
+  asked for a police ship's frames). `listing.py` names that RAM whenever
+  it holds data and `game.json` has not said what it is (below).
 - **Is the picture loaded or drawn?** Compare a snapshot taken before the
   game's first instruction (the loader's hand-over) with one in play. A
   screen or bitmap that is already there before the game runs is authored
@@ -90,13 +91,36 @@ same way, so tiers mean the same thing everywhere.
   for any other data symbol. Renaming a symbol the disassembler made keeps
   its type, and with it the 64-byte cap: create the label afresh, or add
   labels inside, when a renamed table is longer. Block boundaries cut a
-  span too, and so do fixed edges at `$0100`, `$0200`, `$0400`, `$0800`,
-  `$1000`, `$4000`, `$8000`, `$A000`, `$C000`, `$D000` and `$E000`: a
-  routine or table that runs across one of them needs a second symbol
-  there, with a comment saying where the whole starts. A data table
+  span too. A data span also stops at the fixed edges of the memory map,
+  `$0100`, `$0200`, `$0400`, `$0800`, `$1000`, `$4000`, `$8000`, `$A000`,
+  `$C000`, `$D000` and `$E000`: a table that runs across one of them needs
+  a second symbol there, with a comment saying where the whole starts. A
+  routine runs on across them. A data table
   of a few hundred bytes therefore needs a named symbol every 64 bytes or
   less, each with its own description, or most of it stays bare however
   well you have explained the whole.
+
+## Data the ledger cannot see
+
+The ledger counts what code, symbols and `game.json` name. Data that
+nothing refers to by address is outside the count altogether, neither
+explained nor bare, so the work queue never shows it and a game can reach
+100 % without it: sprite shapes found through pointers, a picture's
+colours, the words of an inline table after a call, the tail of a table
+past its symbol's reach, and anything under a default exclusion.
+
+`listing.py` lists it after every build. It names the RAM a platform
+default excludes but a game can still use (on the C64, the RAM under the
+I/O area) whenever that RAM holds data and `game.json` has not said what
+it is. With the hand-over snapshot, `work/entry.vsf` (`10-orient`), it
+also lists every stretch of loaded data, the same bytes at the hand-over
+and in play, that the ledger neither tracks nor has been told to leave
+out. Before calling 100 %, go through that list and say what each stretch
+is: label and describe it, or list it in `game.json` under
+`coverage.extra` (authored data), `coverage.include` (RAM under a default
+exclusion) or `coverage.exclude` (not the game's, with the reason). One
+game reached 100 % with 1.6 KB of its own tables and its picture's
+colours outside the count.
 
 ## Inline parameters: the reason a flow disassembler stalls
 
@@ -186,12 +210,17 @@ Routines are independent, so the burn-down parallelises. What matters:
 - Agents read into neighbours' ranges for context; ranges prevent write
   collisions, not two agents naming the same thing. Catch that when
   merging.
-- Brief them cold: the feature list, `facts.md` so far, the rules above,
-  the exact client command, and "prefer unknown to a guess".
+- Brief them cold, from `brief.md` beside this file: copy it to the
+  game's `work/BRIEF.md` and fill it in. It asks for the feature list,
+  `facts.md` so far, the rules above, the exact client command with each
+  agent's own log, and the report you want back.
 - **A brief carries only what has been checked**: traced to the code or
-  seen live. Anything else goes in as a hypothesis, labelled as one. An
-  agent treats its brief as ground truth, so an unchecked guess there
-  costs every agent that meets it the time to disprove it.
+  seen live. The template has two headings for facts. Under "Established"
+  each line names its evidence; anything without evidence goes under
+  "Guesses", with what would settle it. An agent treats its brief as
+  ground truth, so an unchecked guess there costs every agent that meets
+  it the time to disprove it. The report asks each agent what became of
+  each guess.
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
 
