@@ -108,6 +108,8 @@ decision, what took longest, operating system and tool versions.
 
 ## What I would change but did not (a maintainer's call)
 
+Filed on 25 September 2026: the snapshot session's save as #26, the data from ROM as #27. The ledger's fixed edges are taken up in #24, and the commits were re-authored.
+
 - **The ledger's fixed edges cut code.** A routine that runs across
   `$1000` owns only its first part unless a second label is put on the
   edge, in the middle of an instruction stream. The edges make sense for

@@ -127,6 +127,8 @@ two MCP servers reply in different formats. macOS has no `timeout`.
 
 ## Would change, needs a maintainer's call
 
+Filed on 25 September 2026: near-duplicate descriptions, as #29 (identical ones have counted once since). The others have been done in the kit since (#25 says where).
+
 - **`coverage.py` counts what the disassembler will say, not what a reader
   gets.** It is a good metric and I would not weaken it, but two things
   about it surprised me. Placing a labelled, commented symbol every 64 bytes
