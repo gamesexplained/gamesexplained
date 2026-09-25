@@ -26,7 +26,8 @@
 // waveforms (approximated by AND), samples played through the volume register (registers change
 // once a frame), and NTSC timing (the clock is PAL's: 985,248 Hz, frames of 312 lines of 63 cycles).
 //
-//   C64Sid.mount(root, options)  the player: tune buttons, a piano roll and a panel per voice
+//   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll and a panel
+//                                per voice
 //   C64Sid.host(options)         the sound alone, for a page with its own controls
 //   C64Sid.engine()              the model and the frame player without a page, for tests
 globalThis.C64Sid = (function () {
@@ -98,6 +99,13 @@ globalThis.C64Sid = (function () {
           const t = o.rc < p ? p - o.rc : 0x8000 - o.rc + p;
           if (n < t) { o.rc = (o.rc + n) & 0x7FFF; return; }
           n -= t; o.rc = 0;
+          if (o.hold || (o.state === DECAY && o.env === (o.sr >> 4) * 0x11)) {
+            // the level cannot move: count the remaining periods at once (expc < expp, always)
+            const m = 1 + Math.floor(n / p);
+            o.rc = n % p;
+            if (o.state !== ATTACK) o.expc = (o.expc + m) % o.expp;
+            return;
+          }
           if (o.state !== ATTACK && (o.expc = (o.expc + 1) & 0xFF) !== o.expp) continue;
           o.expc = 0;
           if (o.hold) continue;
@@ -163,18 +171,37 @@ globalThis.C64Sid = (function () {
         return y > 1 ? 1 : y < -1 ? -1 : y;
       }
 
-      return { V, mute, write, setRegs, sample };
+      function skip(c) {                                     // c cycles with no output: envelopes and phases
+        for (let i = 0; i < 3; i++) {
+          const o = V[i];
+          clockEnv(o, c);
+          o.msbUp = false;
+          if (o.ctrl & 8) o.acc = 0;
+          else o.acc = (o.acc + o.freq * c) % 0x1000000;
+        }
+      }
+
+      return { V, mute, write, setRegs, sample, skip };
     }
 
     // ------------------------------------------------------------------ driver + SID + frames
-    // createPlayer(driver, sampleRate, opts) takes the commands {cmd: 'start', tune, run},
+    // createPlayer(driver, sampleRate, opts) takes the commands {cmd: 'start', tune, run, at},
     // {cmd: 'stop'} and {cmd: 'mute', voice, on}; render() fills a buffer, running the driver
-    // once a PAL frame.
+    // once a PAL frame. A start with at > 0 begins that many frames into the tune: the driver
+    // runs from the tune's start through the model without sound, since a driver's state is
+    // everything it has played so far and nothing short of playing it recreates it.
     function createPlayer(drv, sampleRate, opts) {
       const sid = createSID(sampleRate, opts), cps = CLOCK / sampleRate;
       let toFrame = 0, frames = 0, on = false, run = 0;
       function command(c) {
-        if (c.cmd === 'start') { drv.init(c.tune); frames = 0; on = true; run = c.run || 0; }
+        if (c.cmd === 'start') {
+          drv.init(c.tune); frames = 0; on = true; run = c.run || 0;
+          if (c.at > 0) {
+            frame();                                         // init's writes, and the first frame
+            while (frames < c.at && drv.playing()) { sid.skip(FRAME_CYCLES); frame(); }
+            toFrame = FRAME_CYCLES;                          // the last frame is heard
+          }
+        }
         else if (c.cmd === 'stop') drv.stop();
         else if (c.cmd === 'mute') sid.mute[c.voice] = !!c.on;
       }
@@ -187,17 +214,20 @@ globalThis.C64Sid = (function () {
         }
         return { t, run, frame: frames, vol: s[24] & 15, playing: drv.playing(), v };
       }
+      function frame() {                                     // the game calls its driver
+        drv.play();
+        const w = drv.writes;                                // in order, where the driver keeps them
+        if (w) for (let k = 0; k + 1 < w.length; k += 2) sid.write(w[k], w[k + 1]);
+        sid.setRegs(drv.sid);
+        if (drv.playing()) frames++;
+      }
       // fill out[0..n) from time t0; post(snapshot) after each driver frame
       function render(out, n, t0, post) {
         for (let i = 0; i < n; i++) {
-          if (toFrame <= 0) {                                // a new frame: the game calls its driver
+          if (toFrame <= 0) {                                // a new frame
             toFrame += FRAME_CYCLES;
             if (on) {
-              drv.play();
-              const w = drv.writes;                          // in order, where the driver keeps them
-              if (w) for (let k = 0; k + 1 < w.length; k += 2) sid.write(w[k], w[k + 1]);
-              sid.setRegs(drv.sid);
-              if (drv.playing()) frames++;
+              frame();
               if (post) post(snapshot(t0 + i / sampleRate));
             }
           }
@@ -279,6 +309,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-vol{display:inline-flex;gap:2px;vertical-align:-1px;margin-left:6px}
 .sid-vol i{display:block;width:4px;height:12px;border-radius:1px;background:var(--line,#d5d3cc)}
 .sid-vol i.sid-lit{background:var(--accent,#1f5fa8)}
+.sid-seek{display:flex;align-items:center;gap:12px;margin:0 0 10px;font-family:var(--fm,'IBM Plex Mono',ui-monospace,monospace);font-size:12.5px}
+.sid-seek input{flex:1;min-width:0;margin:0;accent-color:var(--accent,#1f5fa8)}
+.sid-seek input:disabled{opacity:.45}
+.sid-seek span{white-space:nowrap;font-variant-numeric:tabular-nums}
 .sid-roll{display:block;width:100%;height:190px;border:1px solid var(--line,#d5d3cc);border-radius:8px;background:#fff}
 .sid-voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px;margin-top:12px}
 .sid-v{border:1px solid var(--line,#d5d3cc);border-radius:8px;padding:9px 12px 10px;background:var(--surface,#fff);min-width:0}
@@ -331,9 +365,11 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       '<div class="sid-bar">' +
       o.tunes.map((n, t) => `<button type="button" data-tune="${t}" aria-pressed="false">${esc(n)}</button>`).join('') +
       '<button type="button" data-stop>Stop</button>' +
-      '<span class="sid-stat"><span><span class="sid-k">Time</span><span data-g="time">0:00.0</span></span>' +
+      '<span class="sid-stat">' +
       '<span><span class="sid-k">Volume</span><span data-g="vol">-</span><span class="sid-vol">' +
       '<i></i>'.repeat(15) + '</span></span></span></div>' +
+      '<div class="sid-seek"><input type="range" min="0" max="1" step="1" value="0" disabled ' +
+      'aria-label="Position in the tune"><span data-g="time">0:00.0</span></div>' +
       '<canvas class="sid-roll" role="img" aria-label="Piano roll: the pitch of each voice over the last seconds"></canvas>' +
       '<div class="sid-voices">' + [0, 1, 2].map((x) => `<div class="sid-v" data-voice="${x}">
         <div class="sid-vh"><i class="sid-sw" style="background:${COLORS[x]}"></i>Voice ${x + 1}
@@ -353,11 +389,35 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     const canvas = $('.sid-roll'), msg = $('.sid-msg');
     const setText = (el, s) => { if (el.textContent !== s) el.textContent = s; };
     const muted = [false, false, false];
-    const timeEl = $('[data-g="time"]'), volEl = $('[data-g="vol"]');
+    const timeEl = $('[data-g="time"]'), volEl = $('[data-g="vol"]'), seek = $('.sid-seek input');
     const FONT_M = getComputedStyle(root).getPropertyValue('--fm').trim() || "'IBM Plex Mono', monospace";
     const FONT_B = getComputedStyle(root).getPropertyValue('--fb').trim() || "'Lato', sans-serif";
     let ctx = null, send = () => {}, starting = null, raf = 0, playing = -1, quietSince = 0, runs = 0;
-    let queue = [], hist = [];
+    let queue = [], hist = [], tune = -1, dragging = false;
+    // Each tune's length in frames, or null where it runs on past LONG: measured once, by running
+    // the driver as the player does (a few milliseconds for minutes of music). A tune that runs on
+    // gets a bar LONG long, which grows if the tune is played past it.
+    const LONG = Math.ceil(300 * FPS), lengths = [];
+    function length(t) {
+      if (lengths[t] === undefined) {
+        let n = 0;
+        try {
+          const d = o.driver(o.data);
+          d.init(t);
+          for (; n < LONG; n++) { d.play(); if (!d.playing()) break; }
+        } catch (e) { n = LONG; }
+        lengths[t] = n < LONG ? n : null;
+      }
+      return lengths[t];
+    }
+    const clock = (f) => {
+      const d = Math.floor(f / FPS * 10);                    // tenths of a second
+      return Math.floor(d / 600) + ':' + ((d % 600) / 10).toFixed(1).padStart(4, '0');
+    };
+    function time(f) {
+      const n = lengths[tune];
+      setText(timeEl, clock(f) + (tune < 0 ? '' : ' / ' + (n != null ? clock(n) : clock(+seek.max) + '+')));
+    }
 
     async function audio() {                                 // created on the first click only
       const h = await host({ driver: o.driver, data: o.data, gain: o.gain, onFrame: take });
@@ -371,7 +431,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       if (queue.length > 600) queue.splice(0, queue.length - 600);
     }
 
-    async function start(tune) {
+    async function start(t, at) {
       try {
         await (starting = starting || audio());
       } catch (e) {
@@ -379,15 +439,34 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         msg.hidden = false;
         return;
       }
-      send({ cmd: 'start', tune, run: ++runs });
-      playing = tune; quietSince = 0;
+      if (t !== tune) {
+        tune = t;
+        const n = length(t);
+        seek.max = String(n != null ? Math.max(1, n) : LONG);
+        seek.disabled = false;
+      }
+      at = Math.max(0, Math.min(at || 0, +seek.max));
+      send({ cmd: 'start', tune: t, run: ++runs, at });
+      queue = []; hist = [];
+      if (!dragging) seek.value = String(at);
+      time(at);
+      playing = t; quietSince = 0;
       buttons();
+      draw();
       if (!raf) raf = requestAnimationFrame(loop);
     }
 
     function buttons() {
       root.querySelectorAll('[data-tune]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.tune === playing)));
     }
+
+    // The bar: dragging shows the time under the thumb; letting go starts the tune there.
+    seek.addEventListener('input', () => { dragging = true; time(+seek.value); });
+    seek.addEventListener('change', () => {
+      dragging = false;
+      if (ctx && ctx.state !== 'running') ctx.resume();
+      if (tune >= 0) start(tune, +seek.value);
+    });
 
     root.addEventListener('click', (e) => {
       const b = e.target.closest('button');
@@ -408,7 +487,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       raf = requestAnimationFrame(loop);
       const now = ctx.currentTime - (ctx.outputLatency || 0);
       let s = null;
-      while (queue.length && queue[0].t <= now) { s = queue.shift(); hist.push(s); }
+      while (queue.length && queue[0].t <= now) {
+        const q = queue.shift();
+        if (q.run === runs) { s = q; hist.push(q); }         // frames of an earlier start are dropped
+      }
       if (!s) return;
       const keep = Math.ceil(canvas.clientWidth / PX) + 2;
       if (hist.length > keep) hist.splice(0, hist.length - keep);
@@ -422,8 +504,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }
 
     function show(s) {
-      const d = Math.floor(s.frame / FPS * 10);             // tenths of a second
-      setText(timeEl, Math.floor(d / 600) + ':' + ((d % 600) / 10).toFixed(1).padStart(4, '0'));
+      if (s.frame > +seek.max) seek.max = String(Math.ceil(s.frame * 1.25));
+      if (!dragging) { seek.value = String(s.frame); time(s.frame); }
       setText(volEl, String(s.vol));
       volBars.forEach((b, i) => b.classList.toggle('sid-lit', i < s.vol));
       s.v.forEach((v, x) => {
