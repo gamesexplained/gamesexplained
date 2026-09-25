@@ -37,15 +37,15 @@ reconstructed screen.
 
 ## Sections
 
-Not every game has every section, and the list is not the page's order
-("The order", below, says how to choose one).
+Not every game has every section, and the list below is in no order: each
+page chooses its own ("The order", below).
 It is a starting set, not a form: the page is open to any structure that
 works for this game, any number of sections at any depth, and the human
 who takes it to Gold will cut what is dull, expand what is interesting and
 add what the agent did not think of. What stays fixed is the tab bar, the
 address links into the Source tab, and the house style in `kit/style.md`.
 
-1. **One frame, rebuilt from memory.** Draw the play screen from memory
+- **One frame, rebuilt from memory.** Draw the play screen from memory
    with the page's own code, not a screenshot. It proves the data is
    understood and it is the base for overlays. A screen split by raster
    interrupts changes the video registers, and often the sprite pointers,
@@ -62,24 +62,24 @@ address links into the Source tab, and the house style in `kit/style.md`.
    many pixels differ and why. If the renderer lacks something the game
    does, extend it in `site/lib/c64.js` and in `frame.py test`, so that the
    next game has it too.
-2. **The player and the enemies.** What they are drawn with (character
+- **The player and the enemies.** What they are drawn with (character
    graphics, sprites, both), how they move, how they collide.
-3. **Controls.** What the game reads and how, including anything the
+- **Controls.** What the game reads and how, including anything the
    manual never mentioned.
-4. **Levels and data.** Where the level lives, what format, a browser for
+- **Levels and data.** Where the level lives, what format, a browser for
    it. If placement is procedural, show the rule and let the reader roll
    it.
-5. **Enemy movement and AI.** The actual decision rule, steppable.
-6. **Progression and difficulty.** The tables, as tables, and what they
+- **Enemy movement and AI.** The actual decision rule, steppable.
+- **Progression and difficulty.** The tables, as tables, and what they
    do to play.
-7. **The sound.** The player for the stored tunes and effects, tied to
+- **The sound.** The player for the stored tunes and effects, tied to
    the bytes that produce each note. Port the game's own music driver
    and play it through the site's model of the SID, `../../lib/sid.js`:
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver
    read. The script's header gives the driver's contract and what the
    model leaves out.
-8. **Secrets, quirks and bugs.** The best part. Things a player who
+- **Secrets, quirks and bugs.** The best part. Things a player who
    finished the game would not know, each verified live, with the
    evidence beside it. One kind deserves a special look: a state the code
    accepts but the programmer never meant anyone to reach. It shows up as
@@ -97,17 +97,19 @@ address links into the Source tab, and the house style in `kit/style.md`.
 The order serves the explanation and the reader's attention at once. A
 section should not lean on one that comes after it, and attention is
 highest at the top of the page and falls with every screen, so the best
-thing on the page goes as high as the explanation lets it. Followed as it
-stands, the list above puts the tune player seventh of eight.
+thing on the page goes as high as the explanation lets it. The page's
+order is its own, chosen for this game: no two games have the same best
+thing, and no two pages need the same shape.
 
 Once the widgets work, and before the copy, choose the one or two things a
 reader would most regret missing. They are usually things that move or
 make a sound: a tune player, a map to scrub through, a replay of the game
-playing. Move each up to the second or third section, as far as the
+playing. Move each into the first two or three sections, as far as the
 sections it relies on allow, and read the moved section again for anything
-it now mentions before the page has explained it. The rebuilt frame
-usually stays first: it is the establishing shot, and the proof that the
-data is understood.
+it now mentions before the page has explained it. No section has a fixed
+place, not even the rebuilt frame: it is a natural opener, the
+establishing shot, but a page whose best thing is its music or its maps
+can open with that instead.
 
 ## Building it
 
