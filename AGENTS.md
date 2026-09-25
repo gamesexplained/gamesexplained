@@ -102,7 +102,12 @@ platform follows `kit/PLATFORMS.md`.
 - **No binaries, ever.** Disk images, program files, cartridge dumps,
   emulator snapshots and disassembler project files that embed the memory
   image are never committed and never uploaded anywhere. `work/` is
-  gitignored for this reason. `check_binaries.py` must pass.
+  gitignored for this reason. `check_binaries.py` must pass. The
+  machine's ROMs are never committed either, with one exception: when a
+  mechanic depends on data the game reads from a ROM, a page may carry
+  that excerpt (the bytes the game reads, or the values it computes from
+  them) and names the ROM, its revision and the addresses. Never a whole
+  ROM.
 - **Prefer "unknown" to a plausible guess.** An admitted gap costs nothing.
   A wrong claim is copied into every downstream document.
 - **Distrust your own negative results.** "It isn't there" is a claim about
