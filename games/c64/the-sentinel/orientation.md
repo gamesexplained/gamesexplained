@@ -58,18 +58,42 @@ therefore reads `$FFFF`, and the first raster interrupt after the `CLI`
 sends the CPU through `$FF` bytes forever (observed: the program counter
 alternates between `$FFFF` and `$0002`, the screen a yellow field).
 
+Most of that range is probably as the game had it. `$F900`-`$FF3F` is the
+bottom five character rows of the title picture (a multicolour bitmap at
+`$E000`, below), where `$FF` shows each cell as a solid block in its colour
+RAM colour: the blocky pedestal under the Sentinel. A screenshot of the C64
+title published on C64-Wiki (the secret-code prompt, read 25 September
+2026) shows the same blocks. What is missing is `$FF40`-`$FFFF`: the NMI
+and IRQ vectors and a table of `JMP`s at `$FFC2`-`$FFF6` that the game
+writes when it starts, and whatever else the original held there, which is
+unknown.
+
 The game rebuilds that area itself. `$3F00` is `JSR $8900` followed by the
 rest of the game's start-up. `$8900` sets `$00` = `$2F`, `$01` = `$35`, the
-NMI vector (`$FFFA` = `$8F98`), an IRQ vector (`$FFFE` = `$8F9E`), and a
-table of `JMP`s at `$FFC2`-`$FFF6`; `$3F07` then replaces the IRQ vector
-with `$95E9`. `$3F00` follows 32 bytes of `$FF` filler and is the only
-caller of `$8900` (a byte search of the image for `JSR $8900` and
-`JMP $8900`), which is why it is taken as the game's entry. Starting there
-makes the backup play. What else the original held at `$F900`-`$FFFF` is
-unknown. During play the game writes its own data over all of `$E000`-`$FF3F`,
-so nothing it needs from that range can have come from the load, but the
-title picture lives there (below) and its bottom five character rows are
-the `$FF` bytes.
+NMI vector (`$FFFA` = `$8F98`), an IRQ vector (`$FFFE` = `$8F9E`), and the
+table of `JMP`s; `$3F07` then replaces the IRQ vector with `$95E9`. `$3F00`
+follows 32 bytes of `$FF` filler and is the only caller of `$8900` (a byte
+search of the image for `JSR $8900` and `JMP $8900`), which is why it is
+taken as the game's entry. Starting there makes the backup play. During
+play the game writes its own data over all of `$E000`-`$FF3F`, so nothing
+it needs in play can have come from the load there.
+
+### Code missing from the backup: `$B000`-`$B5FF`
+
+The restored RAM at `$B000`-`$B5FF` (1.5 KB) holds the emulator's power-up
+pattern (`FF FF 00 00 00 00 FF FF` repeating) in the hand-over image, and
+nothing writes or runs there on the way from the hand-over to the first
+view of landscape 0000 (a store and an execute checkpoint on the range,
+both 0 hits, against 3,357 on the raster interrupt). But the game calls
+into it: `JSR $B006` at `$367C`, after waiting for raster line 230. Holding
+S to pan the view reaches that call within 0.6 s (a stopping execute
+checkpoint on the range stopped at `$B006`, called from `$367C`), and the
+CPU then runs through the power-up pattern until it wrecks the processor
+port (`ISB $FFFF,X` with X = 1 increments `$0000`) and jams. So this copy
+cannot pan. With an `RTS` poked at `$B006` for testing only, the game goes
+on: a pan leaves the screen as it was, and the next full redraw (a U-turn)
+shows the new view, so the missing code is the part that scrolls the
+picture during a pan. That poke is never part of the analysed image.
 
 ## Steady state
 
