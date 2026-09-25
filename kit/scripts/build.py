@@ -9,9 +9,10 @@ For every games/<platform>/<slug>/game.json:
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
 Plus a home page with the catalogue and the games most recently added or changed
-(from git history), site/lib/, kit.html (the kit changelog) and
+(from git history), site/lib/, kit.html (the kit changelog),
 status.html (from site/status.html + site/status.json: which kits work on which
-computers, and the work needed).
+computers, and the work needed) and about.html (from site/about-site.html: who
+runs the site and the principles it follows; static).
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
 filled from game.json. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
@@ -884,6 +885,10 @@ def main():
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "kit.html"), "w").write(page)
     open(os.path.join(out_root, "status.html"), "w").write(status_page(games))
+    # the site's About page; site/about.html is the About tab of a game
+    repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"))
+    open(os.path.join(out_root, "about.html"), "w").write(
+        fill(read(os.path.join(SITE, "about-site.html")), site_title="About · Games Explained", lib="lib", repo=repo))
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
     version_lib(out_root)
