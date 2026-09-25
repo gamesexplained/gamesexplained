@@ -34,7 +34,8 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 24 September 2026 | 56, 55 and 53 of 56, three runs |
 | v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
 
-Add a row whenever a build is measured on a machine not listed. The two
+Add a row whenever a build is measured on a machine not listed, and bring
+that machine's `c64` cell in `site/status.json` into line with it. The two
 Linux rows of v3.13.1 failed the same checks, whichever way the build was
 made: `determinism-running-save` and `determinism-restart`, and once
 `step-instruction`, more of them while a compile was loading the host;

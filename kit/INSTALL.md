@@ -63,6 +63,11 @@ run:
 - Write the section for your operating system in the platform's notes,
   replace "no run recorded" with what you ran and when, and record it in your game's
   `kit-feedback.md`.
+- Set your system's cell for the platform in `site/status.json`, which
+  the status page is built from: `works`, `limited` or `untested`, a
+  sentence on what was measured, and the date. Add a row to `hosts` if
+  your kind of computer has none; its `match` is a pattern that finds
+  it in `tools.host` in `game.json`.
 
 ## Everything goes in `tools/`, and uninstalling is deleting the folder
 
