@@ -1,0 +1,113 @@
+# The Sentinel — orientation
+
+How to get from the contributor's own copy to the analysed state. Someone
+else must be able to follow this exactly.
+
+## The emulator
+
+`release v3.13.1, v3.13.1-linux-x86_64-gui.zip` (vice-mcp), on Linux x86_64
+with no display, 25 September 2026. `check-emulator`: 56 of 56 passed, so
+none of `kit/skills/c64/tool-vice-mcp/workarounds.md` applies. PAL, 6581 SID.
+
+## The image
+
+`SENTIN.D64`, 35 tracks, no error bytes. Disk name `P00 IMPORTS`, id `01 2A`.
+The directory:
+
+| Entry | Blocks | Loads at | What it is |
+|---|---|---|---|
+| `SENTINEL+` | 154 | `$0801`-`$9FFF` | a single-file freezer-cartridge backup of the running game, packed; **the file used here** |
+| `SENTINEL` | 28 | `$02C0`-`$1D9E` | the first file of a second, two-part freezer backup: it loads over the BASIC vectors (`$0302` = `$0334`), and `$0334` runs `JSR $A659 / JMP $A7AE` on the BASIC text at `$02C4`, `LOAD"SENTINEL1",8,1`, and `SENTINEL1` is not on the disk. Its code at `$0800` is the same kind of state restorer as `SENTINEL+`'s, with screen-code prompts such as `LOADING BLOCK?`. Not run successfully: `vice_autostart` loaded `SENTINEL+` whatever `program` or `index` said, and a typed `LOAD"SENTINEL",8,1` ended on a black screen with the CPU in the game's keyboard loop and `$0302` = `$02A7`, which was not followed up |
+| `ZIP*` | 0 | | a scratched (`DEL`) entry |
+
+Neither file is the original release. Both are backups made with a
+freezer cartridge, so the image analysed here is the game's memory as it
+stood when someone froze it, not as the original loader left it. The
+difference matters in one place, below.
+
+## From power-on to play
+
+1. Make sure the machine is **running** (`vice_execution_run`): a paused
+   machine stays paused through an autostart.
+2. Arm a stopping checkpoint at **`$8D0D`**, then autostart the image with
+   program `SENTINEL+` (`vice_autostart`, `program: "SENTINEL+"`). The
+   checkpoint hits about 13 seconds later (autostart turns warp on).
+3. At the stop: delete the checkpoint, turn warp off, and **set PC to
+   `$3F00` and SP to `$F6`**. This is `work/entry.vsf`, the hand-over.
+   Why this step is needed is under "The backup is damaged", below.
+4. Run. The title screen, `THE SENTINEL` / `PRESS ANY KEY`, is up within
+   two seconds (`reference/title.png`).
+5. Press SPACE (`vice_keyboard_matrix`, held 0.4 s). `LANDSCAPE NUMBER?`
+   appears with an input field (`reference/landscape-number-prompt.png`).
+6. Type `0`, `0`, `0`, `0` (each held 0.3 s, 0.3 s apart), then RETURN.
+   The screen goes blue for about three seconds, then shows the landscape
+   from above: `LANDSCAPE 0000` / `PRESS ANY KEY`
+   (`reference/landscape-0000-overview.png`). Landscape 0000 asks for no
+   secret code.
+7. Press SPACE. The first-person view is drawn in about four seconds
+   (`reference/play-l0000-first-view.png`). Pause, and save
+   `work/play-l0000.vsf`.
+
+## The backup is damaged
+
+`SENTINEL+` restores the machine and resumes the frozen game with `RTI` to
+`$8D0D`, inside the keyboard scan (`$8D01`-`$8D23`), which ends in `CLI`.
+But the restored RAM from `$F900` to `$FFFF` is all `$FF`. With the KERNAL
+banked out (`$01` = `$35`) the IRQ vector is the RAM at `$FFFE`, which
+therefore reads `$FFFF`, and the first raster interrupt after the `CLI`
+sends the CPU through `$FF` bytes forever (observed: the program counter
+alternates between `$FFFF` and `$0002`, the screen a yellow field).
+
+The game rebuilds that area itself. `$3F00` is `JSR $8900` followed by the
+rest of the game's start-up. `$8900` sets `$00` = `$2F`, `$01` = `$35`, the
+NMI vector (`$FFFA` = `$8F98`), an IRQ vector (`$FFFE` = `$8F9E`), and a
+table of `JMP`s at `$FFC2`-`$FFF6`; `$3F07` then replaces the IRQ vector
+with `$95E9`. `$3F00` follows 32 bytes of `$FF` filler and is the only
+caller of `$8900` (a byte search of the image for `JSR $8900` and
+`JMP $8900`), which is why it is taken as the game's entry. Starting there
+makes the backup play. What else the original held at `$F900`-`$FFFF` is
+unknown. During play the game writes its own data over all of `$E000`-`$FF3F`,
+so nothing it needs from that range can have come from the load, but the
+title picture lives there (below) and its bottom five character rows are
+the `$FF` bytes.
+
+## Steady state
+
+Measured on `work/play-l0000.vsf`, running:
+
+| What | Value |
+|---|---|
+| `$00` / `$01` | `$2F` / `$35`: RAM at `$A000`-`$BFFF` and `$E000`-`$FFFF`, I/O at `$D000` |
+| IRQ vector (RAM `$FFFE`) | `$95E9`, a raster interrupt: 504 entries in 1,985,257 cycles (about 101 frames), five a frame, against 16,081 hits on a control at `$31D2` |
+| NMI vector (RAM `$FFFA`) | `$8F98`: reads `$DD0D` and returns. 0 hits in the same window |
+| `$8F9E` (the IRQ `$8900` installs) | acknowledges and returns; 0 hits in play |
+| Play screen | VIC bank 1 (`$DD00` = `$C6`), screen matrix `$7C00`, multicolour **text** mode (`$D011` = `$1B`, `$D016` = `$D8`). The interrupt rewrites `$D018` five times a frame, at lines 54, 94, 134, 174 and 214, to `$F1`, `$F3`, `$F5`, `$F7`, `$F9`: character sets at `$4000`, `$4800`, `$5000`, `$5800` and `$6000`, one per band of 40 lines (`work/frame-play.json`; the kit's renderer redraws it with 0 of 104,448 pixels different) |
+| Title screen | VIC bank 3 (`$DD00` = `$C4`), multicolour **bitmap** at `$E000`, screen matrix `$CC00` (`$D011` = `$BB`, `$D018` = `$39`), no raster split (`work/frame-title.json`: 0 writes in the frame) |
+
+The game code sits at `$0800`-`$3FFF` and `$8000`-`$9FFF` or so (to be
+mapped in the sweep). Between the hand-over and play, the code bytes are
+the same except single bytes that the code itself changes (variables and
+operands inside routines). The data that differs is working memory: zero
+page, `$0400`-`$07FF`, the five character sets at `$4000`-`$67CF`,
+`$A700`-`$D103` in patches, and all of `$E000`-`$FF3F`.
+
+**The analysis image is `work/entry.vsf`**: it has the same code as play
+and also the title picture at `$E000`-`$FF3F`, which play overwrites. The
+disassembler runs on it.
+
+Nothing is loaded from disk once the game is running: the landscapes are
+generated (to be confirmed in the code, `features.md`).
+
+## The loader, in a paragraph
+
+`SENTINEL+` is a BASIC line `SYS 2061`. The code at `$080D` masks the
+interrupts, banks everything to RAM, and moves the packed data up so that
+it ends at `$FFFF`. It then unpacks colour RAM from 512 bytes of nybbles at
+`$0900`, the zero page from `$0B00` and the stack page from `$0C00`,
+programs the SID for a loading noise, restores the VIC and CIA registers
+from `$0D00`, `$0D30` and `$0D40`, and jumps to a decruncher it has just
+put in zero page (`$0050`-`$00CE`). That fills memory up to `$FFFF`, puts
+back the zero page it borrowed (from `$035C` and `$0166`), sets `$01` =
+`$35`, and resumes the frozen program with `RTI` from a stack frame at
+`$01F5`. On the way it reads `$DF00`, in the I/O area where cartridges keep
+their registers. Not annotated further, by policy.
