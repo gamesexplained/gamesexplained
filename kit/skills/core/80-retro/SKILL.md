@@ -41,7 +41,9 @@ into the diff that saves the next contributor the trouble.
    the game and who worked it. A fix to a script, a path, the site or the
    prose style goes in `kit-feedback.md` and the pull request instead.
 5. **Complete `game.json`**: tier reached (only if every requirement is
-   met; an unattended run stops at Silver, since Gold is human curation), tools and versions, model (every model that appears in
+   met; an unattended run stops at Silver, since Gold is human curation), tools and versions,
+   with `tools.host` naming the operating system and the processor (the
+   status page counts the games made on each kind of computer from it), model (every model that appears in
    `timings.json`, and the subagents' model if different), copy
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
@@ -51,7 +53,8 @@ into the diff that saves the next contributor the trouble.
    are part of your retrospective: run
    `python3 kit/scripts/tools.py verify-footprint`, contain or list
    whatever it finds, and write your platform's section in
-   `kit/INSTALL.md` to the standard of "The footprint principle" there.
+   `kit/INSTALL.md` to the standard of "The footprint principle" there,
+   and your system's cell in `site/status.json`.
 
 ## Do not
 

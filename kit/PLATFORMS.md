@@ -17,6 +17,7 @@ and it is the worked example for the next one.
 | `kit/<platform>/check_emulator.py` | `kit/EMULATOR.md`'s tests as a script with its own test program, one name per check; the launcher runs it as `check-emulator` | `kit/c64/check_emulator.py` |
 | `kit/skills/<platform>/tool-<emulator>/workarounds.md` | what to do instead, one section per check that fails on some build | `tool-vice-mcp/workarounds.md` |
 | `site/lib/<platform>.js` | what the page needs that is specific to the machine | `c64.js`, and the memory map in `memmap.js` |
+| `site/status.json` | the machine's entry under `systems` (its library size, with the source and the date it was read), and its cell in every row of `hosts`: what was measured on each kind of computer, and when | the `c64` entries |
 
 ## Where the shared scripts branch on the platform
 
@@ -66,7 +67,10 @@ then rather than copy the code:
    first game.
 3. The entries in the shared scripts, above.
 4. Lift the seams in `listing.py` and the symbols scripts.
-5. `site/lib/<platform>.js`, and whatever the memory map needs.
+5. `site/lib/<platform>.js`, and whatever the memory map needs. Add the
+   platform's cells to `site/status.json`: the build gives the status page
+   a column for every kit it finds, and a host with no cell for yours reads
+   "No run recorded".
 6. Run one game through the whole workflow to Silver. The retrospective on
    that game (`kit/skills/core/80-retro`) is where the seams you missed show
    up; fix them in the same pull request.

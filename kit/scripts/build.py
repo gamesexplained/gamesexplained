@@ -8,7 +8,9 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
-Plus a home page with the catalogue and site/lib/.
+Plus a home page with the catalogue, site/lib/, kit.html (the kit changelog) and
+status.html (from site/status.html + site/status.json: which kits work on which
+computers, and the work needed).
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
 filled from game.json. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
@@ -21,7 +23,7 @@ import glob, html, json, os, re, shutil, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
-PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES", "amiga": "Amiga"}
+PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES"}
 TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
         ("play.html", "Play"), ("about.html", "About")]
 
@@ -584,6 +586,167 @@ def featured_game(games):
             or next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None))
 
 
+# --- the status page: which kits work on which computers, and the work needed
+HOST_STATES = {"works": "Works", "limited": "Limited", "untested": "No run recorded"}
+MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September",
+          "October", "November", "December")
+
+
+def long_date(iso):
+    """2026-09-24 -> 24 September 2026, the way dates read everywhere else in the repository."""
+    y, m, d = (int(x) for x in iso.split("-"))
+    return f"{d} {MONTHS[m - 1]} {y}"
+
+
+def commit_stamp():
+    """(date, short hash) of the commit being built, so two builds of one commit are the same page."""
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%cs %h"], cwd=ROOT, capture_output=True, text=True).stdout.split()
+        return long_date(out[0]), out[1]
+    except Exception:
+        return "an unknown date", "unknown"
+
+
+def kits():
+    """The platforms with a kit: install notes and a launcher in kit/<platform>/ (kit/PLATFORMS.md)."""
+    return sorted(os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(ROOT, "kit", "*", "tools.py"))
+                  if os.path.isfile(os.path.join(os.path.dirname(p), "INSTALL.md")))
+
+
+TIER_ORDER = ("platinum", "gold", "silver-claimed", "silver", "bronze", "none")
+
+
+def tier_stamps(gs):
+    counts = {}
+    for g in gs:
+        counts[g.get("tier", "none")] = counts.get(g.get("tier", "none"), 0) + 1
+    return " ".join(f'<span class="stamp {html.escape(t)}">{counts[t]} {html.escape(tier_name(t))}</span>'
+                    for t in TIER_ORDER if counts.get(t))
+
+
+def rough(n):
+    """A library size to two significant figures, since that is all the sources support: 23,000, 1,400, 460."""
+    step = 10 ** max(len(str(int(n))) - 2, 0)
+    return int(n / step + 0.5) * step
+
+
+def status_page(games):
+    """site/status.html filled from site/status.json and the repository.
+
+    What the repository knows (which systems have a kit, the games made with each, the
+    computer each was made on) is read here at build time. What it cannot know (what a
+    kit was measured doing on each kind of computer, how many games a system had) is in
+    status.json, each with a date. Works: every kit and computer measured as working.
+    Work needed: every other pairing of a kit and a computer, and every system with no kit,
+    the ones marked "wanted" first. Every box carries a prompt to paste into an agent;
+    status.json can give one of its own as "prompt"."""
+    S = json.load(open(os.path.join(SITE, "status.json")))
+    raw_repo = json.load(open(os.path.join(SITE, "config.json")))["repo"]
+    repo = html.escape(raw_repo)
+    blob = lambda path, text: f'<a href="{repo}/blob/main/{path}">{html.escape(text)}</a>'
+    have = kits()
+    names = {s["id"]: s["name"] for s in S["systems"]}
+    name = lambda k: names.get(k) or PLATFORM_NAMES.get(k, k)
+    stamp = lambda cls, text: f'<span class="state {cls}">{html.escape(text)}</span>'
+    wanted = '<span class="wanted">Wanted</span>'
+
+    ids = iter(range(1, 1000))
+
+    def card(title, state, note, seen, extra, start, want, prompt):
+        """One box: what it is, where it stands, and the line to paste into an agent to take it on."""
+        date = f' <span class="mute">Recorded {long_date(seen)}.</span>' if seen else ""
+        go = f'<p class="start">Start with {" and ".join(start)}.</p>' if start else ""
+        pid = f"prompt-{next(ids)}"
+        paste = (f'<div class="paste"><code id="{pid}">{html.escape(prompt)}</code>'
+                 f'<button type="button" data-copy="#{pid}">Copy</button></div>')
+        return (f'<div class="proj{" want" if want else ""}"><p class="top"><b>{title}</b>{wanted if want else ""}</p>{state}'
+                f'<p>{html.escape(note)}{date}</p>{extra}{go}{paste}</div>')
+
+    works, research = [], []
+    for k in have:
+        for h in S["hosts"]:
+            c = h["kits"].get(k) or {"state": "untested", "note": "No run recorded."}
+            if c["state"] not in HOST_STATES:
+                sys.exit(f"site/status.json: host {h['id']}, kit {k}: state {c['state']!r} is not one of {', '.join(HOST_STATES)}")
+            title = f'{html.escape(name(k))} on {html.escape(h["name"])}, {html.escape(h["arch"])}'
+            if c["state"] == "works":
+                pat = re.compile(h["match"], re.I)
+                gs = [g for g in games if g["platform"] == k and pat.search(str((g.get("tools") or {}).get("host") or ""))]
+                made = ('<p class="made">Games made here: ' + ", ".join(
+                    f'<a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>' for g in gs) + '</p>') if gs else ""
+                works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), made, [], False,
+                                  c.get("prompt") or f'Clone {raw_repo} and follow kit/START.md. I am on {h["name"]}, {h["arch"]}, '
+                                  f'and I want to explain a {name(k)} game.'))
+            else:
+                start = [blob(f"kit/{k}/INSTALL.md", f"kit/{k}/INSTALL.md"),
+                         blob("kit/INSTALL.md#the-footprint-principle", "the footprint principle")]
+                prompt = c.get("prompt") or (
+                    f'Clone {raw_repo} and follow kit/START.md to explain a {name(k)} game on {h["name"]}, {h["arch"]}. '
+                    'Nobody has run the kit here: follow "If you are the first on an operating system" in kit/INSTALL.md, '
+                    f'run check-emulator, and record what works in kit/{k}/INSTALL.md and site/status.json.')
+                research.append((not c.get("wanted"), card(title, stamp(c["state"], HOST_STATES[c["state"]]), c.get("note", ""),
+                                                           c.get("seen"), "", start, c.get("wanted"), prompt)))
+    rows = []
+    for s in S["systems"]:
+        if s["id"] in have:
+            continue
+        lib = s.get("library") or {}
+        meta = " · ".join(str(x) for x in (s.get("maker"), s.get("year"), s.get("cpu")) if x)
+        if s.get("wanted"):
+            size = f' Its library runs to roughly {rough(lib["games"]):,} titles.' if lib.get("games") else ""
+            research.append((False, card(f'{html.escape(s["name"])}, on any computer', stamp("nokit", "No kit"),
+                                         (s.get("note") or "No kit on any computer.") + size, None,
+                                         f'<p class="m">{html.escape(meta)}</p>',
+                                         [blob("kit/PLATFORMS.md", "kit/PLATFORMS.md"), blob("kit/EMULATOR.md", "kit/EMULATOR.md")], True,
+                                         s.get("prompt") or f'Clone {raw_repo} and follow kit/PLATFORMS.md to add the {s["name"]} as a '
+                                         f'platform: choose an emulator that passes the tests in kit/EMULATOR.md and a disassembler '
+                                         f'for its {s.get("cpu") or "CPU"}, both with an agent interface, then take one game to Silver '
+                                         'with kit/START.md.')))
+            continue
+        rows.append(f'<tr><td><b>{html.escape(s["name"])}</b><span class="m">{html.escape(meta)}</span></td>'
+                    f'<td class="num">{"~" + format(rough(lib["games"]), ",") if lib.get("games") else "<span class=mute>unknown</span>"}</td></tr>')
+    research.sort(key=lambda r: r[0])   # stable: wanted first, otherwise in the order above
+    grid = lambda cards: '<div class="projs">' + "".join(cards) + '</div>'
+    unrecorded = [g for g in games if not (g.get("tools") or {}).get("host")]
+    works_html = grid(works) + (f'<p class="mute">{len(unrecorded)} {"games do" if len(unrecorded) != 1 else "game does"} not record '
+                                f'the computer they were made on: {", ".join(html.escape(g.get("title", g["slug"])) for g in unrecorded)}.</p>'
+                                if unrecorded else "")
+    systems_html = ('<div class="tablewrap"><table class="systems"><tr><th>System</th><th class="num">Library</th></tr>'
+                    + "".join(rows) + '</table></div>')
+
+    src = []
+    for s in S["systems"]:
+        lib = s.get("library") or {}
+        if lib.get("games"):
+            fig = lib.get("figure") or f'{lib["games"]:,}'
+            src.append(f'<li><b>{html.escape(s["name"])}</b>: {html.escape(fig[0].lower() + fig[1:])} {html.escape(lib.get("counts", ""))}. '
+                       f'<a href="{html.escape(lib["url"])}">{html.escape(lib["source"])}</a>'
+                       + (f', read {long_date(lib["seen"])}' if lib.get("seen") else "") + '.</li>')
+    sources_html = ('<p class="mute">Library sizes are rough. Every source counts in its own way: some list only commercial or licensed '
+                    'releases, some add public-domain games, type-ins and new games written since, and a few count software of every '
+                    'kind. Each line says what its figure counts.</p><ul class="sources">' + "".join(src) + '</ul>')
+
+    # games per system: the systems runs have chosen, most games first
+    per = {}
+    for g in games:
+        per.setdefault(g["platform"], []).append(g)
+    top = max((len(v) for v in per.values()), default=1)
+    board = "".join(
+        f'<tr><td class="num rank">{i}</td><td><b>{html.escape(name(p))}</b></td><td class="num"><b>{len(gs)}</b></td>'
+        f'<td class="barcell"><span class="bar" style="width:{100 * len(gs) / top:.1f}%"></span></td>'
+        f'<td class="tiers">{tier_stamps(gs)}</td></tr>'
+        for i, (p, gs) in enumerate(sorted(per.items(), key=lambda kv: (-len(kv[1]), kv[0])), 1))
+    others = len([x for x in S["systems"] if x["id"] not in per])
+    board_html = ('<div class="tablewrap"><table class="board"><tr><th class="num">#</th><th>System</th><th class="num">Games</th>'
+                  '<th></th><th>Tiers</th></tr>' + board + '</table></div>'
+                  + (f'<p class="mute">The other {others} systems on this page have none.</p>' if per and others else ""))
+
+    built, commit = commit_stamp()
+    return fill(read(os.path.join(SITE, "status.html")), site_title="Platform status · Games Explained", lib="lib", built=built,
+                commit=html.escape(commit), repo=repo, works=works_html, research=grid(r for _, r in research),
+                systems=systems_html, sources=sources_html, board=board_html)
+
+
 def broken_links(out_root):
     """Relative src and href on every built page that point at no file the build wrote.
 
@@ -626,6 +789,7 @@ def main():
     page = fill(read(os.path.join(SITE, "page.html")), site_title="How the kit has changed", lib="lib", body=log,
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "kit.html"), "w").write(page)
+    open(os.path.join(out_root, "status.html"), "w").write(status_page(games))
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
     version_lib(out_root)
