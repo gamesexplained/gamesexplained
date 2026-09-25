@@ -116,6 +116,12 @@ the game folder, or pass `--game`, so the log lands in the right place.
   a spot `byte` and write the real instructions in its comment
   (`c64-reference`, Undocumented opcodes). A search of the decoded code for
   readers of an address is incomplete until these gaps have been read.
+  `python3 kit/c64/opcodes.py games/c64/<slug> [<snapshot.vsf>] [--live]`
+  lists every undocumented opcode inside a code block, with what the
+  disassembler shows there, and decodes the spots typed `byte` inside
+  code; `--refs <address>` lists every instruction that can touch an
+  address, documented or not: by name, as a pointer, or through an index,
+  including one that wraps past `$FFFF`.
 - **Code that indexes into I/O mints symbols in the RAM beneath.**
   `STA $D800,X`, `LDA $DDDD,X` (a placeholder operand) and the like leave
   automatic symbols at `$D000`-`$DFFF`. If that RAM holds the game's own

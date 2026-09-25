@@ -28,6 +28,12 @@ PLATFORM_DEFAULTS = {
         "extra": [],
         "screen_size": 0x400,      # 1000 cells plus the sprite pointers
         "charset_size": 0x800,
+        # for listing.py's check of data the ledger does not count: RAM that a default
+        # exclusion covers but a game can still use, and the machine's own work area,
+        # which is never reported as the game's data
+        "hidden": [["$D000", "$DFFF", "the RAM under the I/O area",
+                    "kit/skills/c64/c64-reference, \"RAM the CPU cannot see\""]],
+        "system": [["$0000", "$03FF", "zero page, stack and the KERNAL's work area"]],
     }
 }
 
