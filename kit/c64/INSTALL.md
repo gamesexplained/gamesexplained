@@ -9,6 +9,7 @@ they are known to work.
 |---|---|---|
 | Emulator with an agent interface | attach a disk, autostart, pause, read and write memory, breakpoints, screenshots, save and load snapshots | VICE with the `vice-mcp` server (https://github.com/barryw/vice-mcp) |
 | Disassembler with an agent interface | load a snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 (on crates.io) |
+| A JavaScript runtime | run the site's frame renderer outside a browser, for `kit/c64/frame.py` | node when it is on the path; on macOS the system's own JavaScriptCore otherwise, so nothing is installed |
 
 ## Where the emulator stands, by phase
 
@@ -272,6 +273,14 @@ The launcher, `kit/c64/tools.py`, points the emulator's XDG config, state
 and cache paths into `tools/vice-home/`, gives both tools the
 pseudo-terminal they need, and writes their logs to `tools/logs/`. Do not
 start the tools by hand; the containment is in the launcher.
+
+`python3 kit/c64/frame.py test` checks the site's frame renderer against
+the emulator with a split-screen program of its own, in a few seconds.
+Like `check-emulator` it resets the machine, so run it before a game is
+loaded. On 24 September 2026, on macOS arm64 with vice-mcp 3.13.1 and
+JavaScriptCore, it passed: every pixel matched but the handful at a
+mid-line change of mode or scroll that the renderer does not follow to
+the pixel.
 
 ## macOS — known to work
 

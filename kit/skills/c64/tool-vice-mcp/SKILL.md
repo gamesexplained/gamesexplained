@@ -101,6 +101,16 @@ in-game input hook below does the same job.
   stop and stops at the frame boundary, one call for any count. `frames()`
   in `vice.py`. A game paced by a delay loop rather than the frame runs a
   pass in some other time; step by pass there.
+- **Every write of one frame.** A stopping checkpoint that fires first
+  ends `vice_frame_advance` early (its message says so), and the next call
+  runs on to the same frame's end. So a loop of calls, with stopping
+  watchpoints on what you want to see written, visits every such write of
+  one frame and ends at its boundary. After a store the machine stops on
+  the next instruction, with the value already written. The raster line at
+  each stop and the cycle stopwatch place each write on its line and cycle:
+  the raster register steps in the first cycle of a line, except that line
+  0's first cycle still reads 311. `kit/c64/frame.py capture` does all of
+  this for the video chip.
 - **The stick.** `vice_joystick_set` with `port` 1 is control port 1
   (`$DC01`), 2 is `$DC00`. A value set while stopped is in the register
   before the call returns, seen by the next instruction, and stays until
@@ -218,8 +228,9 @@ the batch.
 - **Registers a raster interrupt rewrites cannot be sampled.** Reading
   `$D011`, `$D016`, `$D018` or `$DD00` from a script gives whichever value
   the handler last wrote, and consecutive reads disagree. It looks like a
-  flaky tool and it is not. Read the interrupt handler instead and work out
-  what each band does.
+  flaky tool and it is not. Read the interrupt handler to work out what
+  each band does, and record the frame with `kit/c64/frame.py capture`,
+  which stops at every write of one frame instead of sampling.
 - **Validate a measuring tool before you trust a figure from it**, against
   a known quantity (a timer latch you can compute, a loop you can count),
   and record in `features.md` when an input path could not be exercised
@@ -252,6 +263,8 @@ the batch.
   RAM image lands where the platform reference says it does.
 - **Some calls can take the server down.** If a call returns a closed
   socket, check `tools.py status` before assuming the answer meant anything.
+- **`vice_machine_reset` leaves a paused machine paused**, `run_after`
+  or not. Resume it with `vice_execution_run` before waiting for `READY.`.
 - **One emulator answers on :6510, whoever started it.** A second clone of
   the kit on the same computer, or an emulator left from an earlier run,
   takes this session's calls, and its snapshots land in its own folder.

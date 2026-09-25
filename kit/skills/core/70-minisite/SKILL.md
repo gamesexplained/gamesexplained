@@ -44,17 +44,23 @@ who takes it to Gold will cut what is dull, expand what is interesting and
 add what the agent did not think of. What stays fixed is the tab bar, the
 address links into the Source tab, and the house style in `kit/style.md`.
 
-1. **One frame, rebuilt from memory.** Render the play screen from the
-   snapshot's screen memory, colour memory and character set with your
-   own code, not a screenshot. It proves the data is understood and it is
-   the base for overlays. A screen split by raster interrupts changes the video
-   registers, and often the sprite pointers, several times a frame, so one
-   read of them draws the wrong picture: stop at the interrupt handler's
-   entry at every interrupt of one whole frame, record the registers and
-   the pointer bytes each time, and draw each line with the state in force.
-   Compare the result with the emulator's screenshot pixel by pixel; the
-   screenshot shows the last complete frame, so record two frames and draw
-   the second.
+1. **One frame, rebuilt from memory.** Draw the play screen from memory
+   with the page's own code, not a screenshot. It proves the data is
+   understood and it is the base for overlays. A screen split by raster
+   interrupts changes the video registers, and often the sprite pointers,
+   several times a frame, so one read of them draws the wrong picture. On
+   the C64 the kit records and draws the frame for you:
+   `python3 kit/c64/frame.py capture work/frame.json` records one whole
+   frame of the running game (every write to the video chip, the video
+   bank and the sprite pointers, with the line and cycle it happened on,
+   and memory as the frame began), `compare` draws it with
+   `C64.renderFrame` from `../../lib/c64.js` and counts the pixels that
+   differ from the emulator's picture of the same frame, line by line, and
+   `trim` keeps only the memory the drawing reads, which is what the page
+   embeds (`C64.drawFrame` puts it on a canvas). Say in the caption how
+   many pixels differ and why. If the renderer lacks something the game
+   does, extend it in `site/lib/c64.js` and in `frame.py test`, so that the
+   next game has it too.
 2. **The player and the enemies.** What they are drawn with (character
    graphics, sprites, both), how they move, how they collide.
 3. **Controls.** What the game reads and how, including anything the
