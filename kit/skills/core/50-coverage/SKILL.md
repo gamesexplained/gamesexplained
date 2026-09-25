@@ -186,12 +186,17 @@ Routines are independent, so the burn-down parallelises. What matters:
 - Agents read into neighbours' ranges for context; ranges prevent write
   collisions, not two agents naming the same thing. Catch that when
   merging.
-- Brief them cold: the feature list, `facts.md` so far, the rules above,
-  the exact client command, and "prefer unknown to a guess".
+- Brief them cold, from `brief.md` beside this file: copy it to the
+  game's `work/BRIEF.md` and fill it in. It asks for the feature list,
+  `facts.md` so far, the rules above, the exact client command with each
+  agent's own log, and the report you want back.
 - **A brief carries only what has been checked**: traced to the code or
-  seen live. Anything else goes in as a hypothesis, labelled as one. An
-  agent treats its brief as ground truth, so an unchecked guess there
-  costs every agent that meets it the time to disprove it.
+  seen live. The template has two headings for facts. Under "Established"
+  each line names its evidence; anything without evidence goes under
+  "Guesses", with what would settle it. An agent treats its brief as
+  ground truth, so an unchecked guess there costs every agent that meets
+  it the time to disprove it. The report asks each agent what became of
+  each guess.
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
 
