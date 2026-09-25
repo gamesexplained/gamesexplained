@@ -48,6 +48,14 @@ step needs something only they have.
    request's description for whoever merges it. Either answer holds for
    the whole run; do not ask again at the end.
 
+   **Offer them the top of the page.** The How it works page can open
+   with a note from the contributor to the reader: why this game matters
+   to them, what they remember of it, what they hope its code will
+   explain. It is optional, a few sentences are enough, and they can
+   write it later instead, when the page is curated. Put it in
+   `game.json` word for word, as `kit/skills/core/70-minisite` says.
+   Never write one for them, and never fill the gap with one of your own.
+
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
    under the agent's identity credit nobody. Ask for their GitHub login
@@ -113,8 +121,9 @@ the job is not a new run. A Bronze game is continued to Silver: read its
 above still applies. A Silver game is curated to Gold, and that is the
 contributor's work with your hands: they say what is dull, what deserves
 more, and what reads like an agent wrote it; you cut, expand, verify
-anything new against the code, and rewrite to `kit/style.md`. When the
-first edit pass begins, set `tier` in `game.json` to `silver-claimed`
+anything new against the code, and rewrite to `kit/style.md`. If the
+page has no note from them yet, offer the top of the page as in step 3.
+When the first edit pass begins, set `tier` in `game.json` to `silver-claimed`
 and `steward` to their GitHub login: the page then says who is editing
 it. Set `gold` when every section has had its pass. Set `copy` in
 `game.json` honestly, and open the pull request as `AGENTS.md` says. The

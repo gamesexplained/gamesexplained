@@ -57,6 +57,18 @@ Real examples:
 | The needle cannot tell you whether you are about to land | Secret: the landing gauge lets you go over - by one pixel | Spell out the finding, don't be cryptic |
 | Sixteen numbers and then it stops | An uneven difficulty curve | Spell out the finding, don't be cryptic |
 
+## The top of the page
+
+Under the title come the standfirst and then, on some games, the
+contributor's note and a Don't miss line (`kit/skills/core/70-minisite`).
+
+- A Don't miss line is one sentence saying what is there and what the
+  reader can do with it, under the rules above: "Play the whole game on
+  the Play tab, ported routine by routine from its code." The label is the
+  build's.
+- The contributor's note is not copy. It is a person's own words, and the
+  rewrite pass leaves it alone.
+
 ## Declare provenance
 
 `game.json` records who wrote the copy: `agent-draft` (agent-written, no

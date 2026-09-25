@@ -2,7 +2,8 @@
 """Build the static site into _site/.
 
 For every games/<platform>/<slug>/game.json:
-  index.html   copied through, tab bar injected  (How it works)
+  index.html   copied through, tab bar injected, and under its standfirst the
+               contributor's note and the Don't miss pointers from game.json  (How it works)
   source.html  from site/source.html + facts.md + cheats.md   (Source code)
   levels.html  copied through if authored          (Maps / levels)
   play.html    copied through if authored          (Play)
@@ -282,6 +283,78 @@ def under_title(page, ban):
     return page.replace("</nav>", "</nav>\n" + ban, 1)
 
 
+DONT_MISS_MAX = 2   # a pointer on every page, or three on one, is a table of contents
+
+
+def dont_miss_href(href, gdir, present, where):
+    """A Don't miss target as the page links it: an id on How it works ("#sound"), another tab
+    ("play.html"), or a tab and an id ("levels.html#maze"). Stops the build on a tab the game
+    does not have, or an id the authored page does not carry, so renaming a section cannot
+    leave the pointer pointing at nothing."""
+    m = re.fullmatch(r"([a-z]+\.html)?(?:#([\w-]+))?", href or "")
+    if not href or not m:
+        sys.exit(f'{where}: dont_miss href {href!r} is not in this minisite: use "#<id>" for a section of '
+                 'How it works, "<tab>.html" for another tab, or "<tab>.html#<id>"')
+    page, anchor = m.group(1) or "index.html", m.group(2)
+    if page not in present:
+        sys.exit(f"{where}: dont_miss href {href!r} names {page}, a tab this game does not have")
+    if page == "index.html" and not anchor:
+        sys.exit(f"{where}: dont_miss href {href!r} points at How it works, the page it is on: add the section's id")
+    authored = page in ("index.html", "levels.html", "play.html")   # the generated tabs' ids come from the build
+    if anchor and authored and not re.search(r'\bid\s*=\s*["\']' + re.escape(anchor) + r'["\']', read(os.path.join(gdir, page))):
+        sys.exit(f'{where}: dont_miss href {href!r}: {page} has no element with id="{anchor}"')
+    return f"#{anchor}" if page == "index.html" else href
+
+
+def opener(game, gdir, present):
+    """The block under the standfirst on How it works, both parts from game.json, both optional.
+
+    "note" is the contributor's note to the reader, in their own words and never an agent's:
+    {"by": "<GitHub login>", "text": "<paragraph>"} or with "text" a list of paragraphs, which
+    take the inline markdown the .md files do. "dont_miss" points at what the reader would most
+    regret missing when it sits low on the page or on another tab: at most two
+    {"href", "text"}, one plain sentence each. Empty fields, as the template has them, are no
+    note and no pointer.
+    """
+    where = f'games/{game["platform"]}/{game["slug"]}/game.json'
+    parts = []
+    note = game.get("note") or {}
+    text = note.get("text") or []
+    paras = [p.strip() for p in ([text] if isinstance(text, str) else text) if p.strip()]
+    if paras:
+        by = (note.get("by") or "").strip()
+        if not by:
+            sys.exit(f'{where}: the note has no "by". It is the contributor\u2019s own words, so it names them: their GitHub login')
+        parts.append(f'<div class="gamenote"><p class="gamenote-by">A note from {person_html(by, by)}</p>'
+                     + "".join(f"<p>{inline(p)}</p>" for p in paras) + "</div>")
+    picks = [d for d in (game.get("dont_miss") or []) if (d.get("href") or "").strip() or (d.get("text") or "").strip()]
+    if len(picks) > DONT_MISS_MAX:
+        sys.exit(f"{where}: {len(picks)} dont_miss pointers; at most {DONT_MISS_MAX}. Keep the one a reader "
+                 "would most regret missing, and move the others up the page")
+    for d in picks:
+        href = dont_miss_href((d.get("href") or "").strip(), gdir, present, where)
+        what = (d.get("text") or "").strip()
+        if not what:
+            sys.exit(f"{where}: dont_miss {href!r} has no text: one sentence saying what is there")
+        parts.append(f'<a class="dontmiss" href="{html.escape(href)}"><span class="dontmiss-k">Don\u2019t miss</span>'
+                     f'<span class="dontmiss-t">{html.escape(what)}</span>'
+                     f'<span class="dontmiss-go" aria-hidden="true">{"&darr;" if href.startswith("#") else "&rarr;"}</span></a>')
+    return f'<aside class="opener">{"".join(parts)}</aside>' if parts else ""
+
+
+def under_standfirst(page, block, ban):
+    """Place the opener at the page's <!-- note --> marker; else after its standfirst, the first
+    <p class="sub">; else after the banner under the title."""
+    if "<!-- note -->" in page:
+        return page.replace("<!-- note -->", block, 1)
+    if not block:
+        return page
+    m = re.search(r'<p\s+class="sub"[^>]*>.*?</p>', page, re.S | re.I)
+    if m:
+        return page[:m.end()] + "\n" + block + page[m.end():]
+    return page.replace(ban, ban + "\n" + block, 1)
+
+
 FONTS = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900'
          '&family=IBM+Plex+Mono:wght@400;500&display=swap">')
 
@@ -395,8 +468,10 @@ def build_game(gdir, out_root):
     head = dict(title=common["title"], platform=common["platform_name"], year=common["year"], publisher=common["publisher"])
     for f in ("index.html", "levels.html", "play.html"):
         if f in present:
-            page = fill(read(os.path.join(gdir, f)), **head)
-            open(os.path.join(out, f), "w").write(at_end(under_title(inject(page, nav, lib), ban), edit_footer(game, f)))
+            page = under_title(inject(fill(read(os.path.join(gdir, f)), **head), nav, lib), ban)
+            if f == "index.html":
+                page = under_standfirst(page, opener(game, gdir, present), ban)
+            open(os.path.join(out, f), "w").write(at_end(page, edit_footer(game, f)))
     # source
     facts = markdown(read(os.path.join(gdir, "facts.md")))
     cheats = read(os.path.join(gdir, "cheats.md"))

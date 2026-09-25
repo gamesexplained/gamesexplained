@@ -76,7 +76,8 @@ into the diff that saves the next contributor the trouble.
    with `tools.host` naming the operating system and the processor (the
    status page counts the games made on each kind of computer from it), model (every model that appears in
    `timings.json`, and the subagents' model if different), copy
-   provenance, kit version, coverage figure. `credits` is for the game's
+   provenance, the contributor's `note` word for word if they gave one,
+   kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
 7. **Update `TODO.md`** with what is missing for the next tier.

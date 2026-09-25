@@ -111,6 +111,43 @@ place, not even the rebuilt frame: it is a natural opener, the
 establishing shot, but a page whose best thing is its music or its maps
 can open with that instead.
 
+## The top of the page
+
+A best thing that cannot move up gets a pointer instead: the game itself
+on a Play tab, a level browser on Maps / levels, a widget that needs the
+sections before it. The build puts it under the standfirst, labelled
+Don't miss, from `game.json`:
+
+```json
+"dont_miss": [
+  {"href": "play.html", "text": "Play the whole game on the Play tab, ported routine by routine from its code."}
+]
+```
+
+`href` is another tab, a tab and an element's id (`levels.html#maze`), or
+the id of a section of How it works (`#sound`, with `id="sound"` on the
+section). The text is one plain sentence under `kit/style.md` saying what
+is there. Use it sparingly: one pointer, occasionally two, and none when
+the best thing is already near the top. A pointer on every page is noise
+and three are a table of contents, so the build stops at three, and on a
+pointer whose tab or id does not exist.
+
+The same block can open with a note to the reader from the contributor:
+why the game matters to them, what they remember of it, what they wanted
+its code to explain. `kit/START.md` offers it at the start of a run, and
+whoever curates the page can add one at any time. It goes into
+`game.json` word for word, with their GitHub login:
+
+```json
+"note": {"by": "<login>", "text": ["A paragraph.", "Another."]}
+```
+
+Never write, draft or polish a note for anyone, and leave it out of the
+rewrite pass. An empty slot costs nothing; a note the contributor did not
+write puts words in a real person's mouth. The build draws the block,
+like the tab bar, so it shows on the built site and not when the page is
+opened from disk.
+
 ## Building it
 
 - One self-contained `index.html`. Inline CSS and JavaScript; no
@@ -240,7 +277,9 @@ not read the controls, so a port paced by the clock drifts off the
 recording within a menu or two. This is a
 first-class part of the minisite, not an extra: a reader who can play the
 game while reading how it works understands it better than one who only
-reads. The page's mechanic widgets are usually the seed. Omit the tab only
+reads. A reader who never looks at the tab bar never finds it, so a Play
+tab is the plainest case for a Don't miss pointer. The page's mechanic
+widgets are usually the seed. Omit the tab only
 if there is genuinely nothing playable to put on it. No tier requires the Play tab, so it never blocks Silver or Gold.
 
 ## Check it in a browser
@@ -264,7 +303,8 @@ needs a browser it can screenshot and click: either a browser extension
 that exposes the page to it, or a harness desktop app with a built-in browser. Without one you are writing a visual artefact blind.
 
 Check, at least: every canvas has drawn something; the console has no
-errors; every control does something when clicked; and the rebuilt screen
+errors; every control does something when clicked; each Don't miss lands
+where it says; and the rebuilt screen
 matches a reference screenshot from `reference/`. The reconstruction is
 the one section that is either right or obviously wrong the moment you
 see it, which makes it the best test that the data is understood.
@@ -272,6 +312,8 @@ see it, which makes it the best test that the data is understood.
 ## Outputs
 
 `index.html` opening cleanly from disk, loaded in a browser with every
-widget exercised, its best thing high on the page; `listing.json` built
-and passing `check_listing.py`; `game.json` with `copy` set; `build.py`
-producing the minisite without errors.
+widget exercised, its best thing high on the page or pointed at;
+`listing.json` built and passing `check_listing.py`; `game.json` with
+`copy` set, `dont_miss` when the best thing could not move up, and the
+contributor's `note` if they gave one; `build.py` producing the minisite
+without errors.
