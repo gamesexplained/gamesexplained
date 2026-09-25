@@ -252,7 +252,9 @@ can behave differently on a real machine. An absolute indexed address
 that passes `$FFFF` wraps round to zero page: `DCP $FF86,X` with X = `$FF`
 works on `$0085`. Before saying nothing reads an address, decode the gaps
 in the code with a decoder that knows these opcodes, and look for bases
-that an index can carry round.
+that an index can carry round. `kit/c64/opcodes.py` does both (`--refs`),
+with all 256 opcodes under the names VICE's monitor gives them; `--check`
+compares its table with the emulator's disassembler.
 
 ## `CBM80` in a game that is not a cartridge
 

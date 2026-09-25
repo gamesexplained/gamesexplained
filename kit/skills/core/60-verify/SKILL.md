@@ -21,7 +21,10 @@ sounded right and was never tested.
 
 Before reporting that something is missing, ask what encoding, indirection
 or aliasing could hide it. A negative result is a claim about your search,
-not about the binary. Prefer "unknown" to a plausible guess.
+not about the binary. Prefer "unknown" to a plausible guess. Before saying
+that nothing reads or writes an address, search with every opcode and
+every index that can reach it: on the C64,
+`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`.
 
 ## What a test lets through
 
