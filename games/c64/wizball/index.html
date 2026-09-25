@@ -92,8 +92,19 @@ input[type=range]{width:100%}
   <p>Sprite 0 appears three times in one frame. From line 48 it is the beam's upper arc, at two lines above the Wizball it becomes the Wizball, and 20 lines further down it becomes the beam's lower arc. The band <code>$8A52</code> writes those two raster lines into the list every frame (<code>$B3F6</code>, <code>$B3FA</code>), so the bands follow the ball up and down.</p>
 </section>
 
+<section id="sound">
+  <p class="fig">02 · The sound</p>
+  <h2 class="t">Martin Galway's tunes, from the stored bytes</h2>
+  <p class="lede">Nine tunes and 26 sound effects share the SID's three voices. A music mode (<code>$B8F1</code>) says which voices the music has: none, voice 3 only, or all three; the effects get the rest.</p>
+  <div class="plate"><div id="music"></div>
+  <p class="cap">A port of the driver (<code>$45BD</code>-<code>$5524</code>, with the two routines in the tune data that command <code>$D6</code> calls and the clock at <code>$B8F3</code>), started as the game starts each tune, playing through the site's model of the SID, which leaves out the filter. It was checked against the game's own code run in a 6502 simulator: all 25 registers after every frame, and the order of the writes within each frame, for 3,000 to 22,000 frames of each tune, past every loop point, and for 400 random tunes that use every command of every voice.</p></div>
+  <p>The driver (<code>$4553</code>-<code>$5524</code>) keeps each voice's track as a list of notes and commands with a call-and-repeat stack five levels deep. Each voice has a 29-byte instrument (voice 1 at <code>$87</code>, voice 2 at <code>$4680</code>, voice 3 at <code>$A4</code>): four pitch steps or an arpeggio, a two-step pulse sweep, gate and release times. The notes come from a table tuned for PAL at <code>$471A</code>. A command can call machine code stored among the tune data, which the tunes use to set up the filter. The voice 2 and voice 3 code switches a note off and on again within one frame, so the attack restarts at every note; a model that heard only the registers at the end of each frame would lose it.</p>
+  <p>The two bonus-stage tunes take turns: the first bonus stage after loading plays one, the next plays the other, and <code>$BB0C</code> keeps the turn from one game to the next. The Wiz-lab has its tune only after the second of the two (<code>$AB66</code>); after the first it is silent. Every command byte some voice understands is used by at least one tune, and the notes run from the eighth entry of the table to the ninetieth.</p>
+  <p>The band <code>$B90C</code> runs the sound once a frame in every display list, and three more bands (<code>$B903</code>, <code>$B8FC</code>, <code>$B8F3</code>) run the music again when its speed says two or four ticks a frame.</p>
+</section>
+
 <section id="ball">
-  <p class="fig">02 · The Wizball</p>
+  <p class="fig">03 · The Wizball</p>
   <h2 class="t">A ball that changes speed only when it bounces</h2>
   <p class="lede">The joystick does not move the Wizball. Left and right change its spin, and the spin becomes rolling speed only at the moment the ball touches the ground. Thrust, the first icon, makes the spin drive the speed on every frame.</p>
   <div class="plate">
@@ -111,7 +122,7 @@ input[type=range]{width:100%}
 </section>
 
 <section id="controls">
-  <p class="fig">03 · Controls</p>
+  <p class="fig">04 · Controls</p>
   <h2 class="t">Nine keys in play, and a joystick chosen by its fire button</h2>
   <p class="lede">The game scans the keyboard itself, twice over: all 64 keys on the title and menu screens, and only nine during play.</p>
   <div class="plate">
@@ -124,7 +135,7 @@ input[type=range]{width:100%}
 </section>
 
 <section id="map">
-  <p class="fig">04 · Landscapes</p>
+  <p class="fig">05 · Landscapes</p>
   <h2 class="t">Eight landscapes in one map</h2>
   <p class="lede">All eight levels are one map of 16 rows by 96 tiles at <code>$0532</code>. Four rows make a landscape's height, and each band of four rows holds two landscapes side by side.</p>
   <div class="plate">
@@ -141,7 +152,7 @@ input[type=range]{width:100%}
 </section>
 
 <section id="colour">
-  <p class="fig">05 · Colour</p>
+  <p class="fig">06 · Colour</p>
   <h2 class="t">Three cauldrons, and a fourth that keeps score</h2>
   <p class="lede">A level is finished when three colours have been made. Each colour has a recipe of red, green and blue units, and the fourth cauldron at the bottom right shows how much of the recipe the three cauldrons hold.</p>
   <div class="plate">
@@ -162,7 +173,7 @@ input[type=range]{width:100%}
 </section>
 
 <section id="aliens">
-  <p class="fig">06 · The aliens</p>
+  <p class="fig">07 · The aliens</p>
   <h2 class="t">Eighteen kinds of alien, all worth 50</h2>
   <p class="lede">Aliens come from two tables of templates: 18 for the landscapes at <code>$3ECF</code> and 20 for the bonus stage at <code>$39DC</code>. Six at most are on screen, one in each of six 42-byte slots at <code>$0200</code>.</p>
   <div class="plate">
@@ -177,23 +188,12 @@ input[type=range]{width:100%}
 </section>
 
 <section id="levels">
-  <p class="fig">07 · Difficulty</p>
+  <p class="fig">08 · Difficulty</p>
   <h2 class="t">What changes from level to level</h2>
   <p class="lede">Four tables set a level's difficulty. Level access is a fifth rule: a level opens only when every level three below it and lower is done.</p>
   <div class="plate"><table class="d" id="diffTable"></table>
   <p class="cap">From <code>$A12A</code> (frames between an alien's shots), <code>$A1B9</code> (seconds without a kill before the police), <code>$A027</code> (whether colour spheres shoot) and <code>$B1D1</code> (the three colours, in the order they replace the greys).</p></div>
   <p>The highest level open is <code>$B1CE</code> = 2 + the number of levels done, counted from level 1 with no gap (<code>$A9C6</code>). The manual says level five opens when level two is done; in the code it also needs level one. Tubes lead up only as far as <code>$B1CE</code>. After all eight levels the game starts again from level 1 with every alien firing every 10 frames.</p>
-</section>
-
-<section id="sound">
-  <p class="fig">08 · The sound</p>
-  <h2 class="t">Martin Galway's tunes, from the stored bytes</h2>
-  <p class="lede">Nine tunes and 26 sound effects share the SID's three voices. A music mode (<code>$B8F1</code>) says which voices the music has: none, voice 3 only, or all three; the effects get the rest.</p>
-  <div class="plate"><div id="music"></div>
-  <p class="cap">A port of the driver (<code>$45BD</code>-<code>$5524</code>, with the two routines in the tune data that command <code>$D6</code> calls and the clock at <code>$B8F3</code>), started as the game starts each tune, playing through the site's model of the SID, which leaves out the filter. It was checked against the game's own code run in a 6502 simulator: all 25 registers after every frame, and the order of the writes within each frame, for 3,000 to 22,000 frames of each tune, past every loop point, and for 400 random tunes that use every command of every voice.</p></div>
-  <p>The driver (<code>$4553</code>-<code>$5524</code>) keeps each voice's track as a list of notes and commands with a call-and-repeat stack five levels deep. Each voice has a 29-byte instrument (voice 1 at <code>$87</code>, voice 2 at <code>$4680</code>, voice 3 at <code>$A4</code>): four pitch steps or an arpeggio, a two-step pulse sweep, gate and release times. The notes come from a table tuned for PAL at <code>$471A</code>. A command can call machine code stored among the tune data, which the tunes use to set up the filter. The voice 2 and voice 3 code switches a note off and on again within one frame, so the attack restarts at every note; a model that heard only the registers at the end of each frame would lose it.</p>
-  <p>The two bonus-stage tunes take turns: the first bonus stage after loading plays one, the next plays the other, and <code>$BB0C</code> keeps the turn from one game to the next. The Wiz-lab has its tune only after the second of the two (<code>$AB66</code>); after the first it is silent. Every command byte some voice understands is used by at least one tune, and the notes run from the eighth entry of the table to the ninetieth.</p>
-  <p>The band <code>$B90C</code> runs the sound once a frame in every display list, and three more bands (<code>$B903</code>, <code>$B8FC</code>, <code>$B8F3</code>) run the music again when its speed says two or four ticks a frame.</p>
 </section>
 
 <section id="secrets">
