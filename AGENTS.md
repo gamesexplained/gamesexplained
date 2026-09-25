@@ -69,8 +69,10 @@ in order:
    Commit as the contributor, under the GitHub noreply address checked
    at the start (`kit/START.md`); the agent appears only in the commit
    trailers. Push the branch. Open the pull request yourself if the
-   contributor said at the start that you may; otherwise tell them it is
-   ready and open it when they say so. If you cannot push to this
+   contributor said at the start that you may, and file the
+   retrospective's asks for a maintainer as issues ("Finishing", below);
+   otherwise tell them it is ready and open it when they say so. If you
+   cannot push to this
    repository, push to the contributor's fork and open it from there. If
    there is no remote at all, leave the branch and say so.
 
@@ -214,3 +216,10 @@ fall short, and what is the diff that would have saved the next
 contributor the trouble. Make the edits to `kit/` in the same
 branch and describe them in `games/<platform>/<slug>/kit-feedback.md`.
 That is how the kit improves.
+
+What needs a maintainer's decision, and so was not changed, goes to the
+issue tracker: one issue per ask, labelled `kit-ask`, the maintainers'
+one inbox. Filing needs the same yes as opening the pull request. A run
+without that yes, or without a way to reach GitHub, puts its asks in the
+pull request's description under "Maintainer asks" instead, and whoever
+merges it files them.

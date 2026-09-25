@@ -22,6 +22,8 @@ decision, what took longest, operating system and tool versions.
 
 ## What I would change but did not
 
+Each of these has been done in the kit since (#25 says where).
+
 - The MCP server registered in `.mcp.json` is only picked up if it is
   running when the agent session starts. `INSTALL.md` says a server
   started later is picked up on the next call; in this Claude Code

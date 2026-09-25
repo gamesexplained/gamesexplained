@@ -24,23 +24,54 @@ into the diff that saves the next contributor the trouble.
    this game, it belongs in the game's `facts.md`, not in a skill.
    `check_docs.py` enforces the separation.
 3. **Write `kit-feedback.md`** in the game folder: what you changed and
-   why, what you would change but did not (needs a maintainer's call),
-   what took longest, and anything about your operating system or tool
-   versions that the install notes should say. For "what took longest",
+   why, what took longest, anything about your operating system or tool
+   versions that the install notes should say, and your asks for a
+   maintainer (step 4). For "what took longest",
    run `python3 kit/scripts/clock.py stop` and then `clock.py report`, and
    paste the table. Under it, one sentence naming the single change to
    the kit that would have saved the most minutes. A run takes hours, so
    a saved half hour compounds across every game after yours; that
    sentence is usually a changelog entry, because it changes what the
    next agent does. `timings.json` is committed with the game.
-4. **Add to `kit/CHANGELOG.md` only what the next game will do
+4. **Send each ask for a maintainer to the issue tracker.** An ask is a
+   change you would make but did not, because it is a maintainer's call:
+   a rule to loosen, a bug in a tool upstream, a change to the site, to
+   the delivery or to another game. An ask written only into
+   `kit-feedback.md` waits there until someone happens to read it, so each
+   one becomes an issue on the repository, labelled `kit-ask`: the
+   maintainers' one inbox.
+   - **Title**: the ask, in one line.
+   - **Body**: the problem and what it cost this run; what you suggest,
+     and where in the kit it would go; the game, the date and the branch;
+     and a link to the game's `kit-feedback.md`
+     (`https://github.com/gamesexplained/gamesexplained/blob/main/games/<platform>/<slug>/kit-feedback.md`,
+     live once the pull request is merged).
+   - **Search first**, open and closed:
+     `gh issue list --repo gamesexplained/gamesexplained --label kit-ask --state all --search "<words>"`.
+     An ask someone already filed gets a comment with this run's case,
+     not a second issue.
+
+   ```
+   gh issue create --repo gamesexplained/gamesexplained --label kit-ask --title "<the ask>" --body-file <file>
+   ```
+
+   Then list them in `kit-feedback.md` under "Maintainer asks", one line
+   each with its number. Filing an issue publishes, so it takes the
+   contributor's yes, and the one they gave at the start to your opening
+   the pull request yourself (`kit/START.md`) covers it. With a no, or
+   when this environment cannot reach the GitHub API (some hosted
+   sessions' networks refuse it), file nothing: put the asks in the pull
+   request's description under the heading **Maintainer asks**, one
+   paragraph each, and say in `kit-feedback.md` that they are there.
+   Whoever merges the pull request files them.
+5. **Add to `kit/CHANGELOG.md` only what the next game will do
    differently.** That file is the record of what the kit learned about
    reverse engineering, from which game and whom, not of what changed. If
    a lesson from this game changes how an agent reads, traces, measures
    or verifies, write it there in plain words, under a heading that names
    the game and who worked it. A fix to a script, a path, the site or the
    prose style goes in `kit-feedback.md` and the pull request instead.
-5. **Complete `game.json`**: tier reached (only if every requirement is
+6. **Complete `game.json`**: tier reached (only if every requirement is
    met; an unattended run stops at Silver, since Gold is human curation), tools and versions,
    with `tools.host` naming the operating system and the processor (the
    status page counts the games made on each kind of computer from it), model (every model that appears in
@@ -48,8 +79,8 @@ into the diff that saves the next contributor the trouble.
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
-6. **Update `TODO.md`** with what is missing for the next tier.
-7. **If you were the first on your operating system**, the install notes
+7. **Update `TODO.md`** with what is missing for the next tier.
+8. **If you were the first on your operating system**, the install notes
    are part of your retrospective: run
    `python3 kit/scripts/tools.py verify-footprint`, contain or list
    whatever it finds, and write your platform's section in
@@ -59,12 +90,13 @@ into the diff that saves the next contributor the trouble.
 ## Do not
 
 - Put game-specific facts in a skill.
-- Loosen a rule because it was inconvenient. Say in `kit-feedback.md` why
-  it was inconvenient and let a maintainer decide.
+- Loosen a rule because it was inconvenient. Say why it was inconvenient
+  in a maintainer ask (step 4) and let a maintainer decide.
 - Bump skill versions silently: note each change in `kit-feedback.md`.
 
 ## Outputs
 
 Skill and kit edits committed on the branch and included in the pull
-request; `kit-feedback.md` with the timings table; `timings.json`;
-`game.json` complete; `TODO.md` current.
+request; `kit-feedback.md` with the timings table; each ask for a
+maintainer filed as a `kit-ask` issue, or in the pull request's
+description; `timings.json`; `game.json` complete; `TODO.md` current.

@@ -127,6 +127,8 @@ control run from one snapshot, and recording the SID to check music.
 
 ## Would change, but it needs a maintainer's call
 
+Filed on 25 September 2026: one address, two meanings, as #28. The others have been done in the kit since (#25 says where).
+
 - **Reading the manual online.** `AGENTS.md` says manuals from the web
   are welcome after the contributor confirms. `20-features` and
   `c64-reference` tell the agent to read the wiki page and the manual

@@ -98,6 +98,8 @@ somebody stuck at "fire does nothing" will look.
 
 ## Would change, but it needs a maintainer's call
 
+Each of these has been done in the kit since (#25 says where).
+
 - **`new_game.py` leaves `{{title}}` in `index.html`.** It substitutes
   `{{title}}` in the `.md` files but not in the template article, and
   `build.py` only substitutes into the generated tabs, so an article

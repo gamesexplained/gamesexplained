@@ -74,6 +74,8 @@ branch, the usual case, asks nothing new.
 
 ## For a maintainer to decide
 
+All four are taken up in #24.
+
 - **The ledger's default exclusion of `$D000`-`$DFFF`.** It hid 4 KB of
   sprite shapes until the page needed them. `listing.py` has the snapshot:
   it could warn when an excluded range holds non-zero RAM that is the same
