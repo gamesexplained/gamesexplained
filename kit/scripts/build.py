@@ -613,6 +613,17 @@ def kits():
                   if os.path.isfile(os.path.join(os.path.dirname(p), "INSTALL.md")))
 
 
+TIER_ORDER = ("platinum", "gold", "silver-claimed", "silver", "bronze", "none")
+
+
+def tier_stamps(gs):
+    counts = {}
+    for g in gs:
+        counts[g.get("tier", "none")] = counts.get(g.get("tier", "none"), 0) + 1
+    return " ".join(f'<span class="stamp {html.escape(t)}">{counts[t]} {html.escape(tier_name(t))}</span>'
+                    for t in TIER_ORDER if counts.get(t))
+
+
 def rough(n):
     """A library size to two significant figures, since that is all the sources support: 23,000, 1,400, 460."""
     step = 10 ** max(len(str(int(n))) - 2, 0)
@@ -697,10 +708,25 @@ def status_page(games):
                     'releases, some add public-domain games, type-ins and new games written since, and a few count software of every '
                     'kind. Each line says what its figure counts.</p><ul class="sources">' + "".join(src) + '</ul>')
 
+    # games per system: the systems runs have chosen, most games first
+    per = {}
+    for g in games:
+        per.setdefault(g["platform"], []).append(g)
+    top = max((len(v) for v in per.values()), default=1)
+    board = "".join(
+        f'<tr><td class="num rank">{i}</td><td><b>{html.escape(name(p))}</b></td><td class="num"><b>{len(gs)}</b></td>'
+        f'<td class="barcell"><span class="bar" style="width:{100 * len(gs) / top:.1f}%"></span></td>'
+        f'<td class="tiers">{tier_stamps(gs)}</td></tr>'
+        for i, (p, gs) in enumerate(sorted(per.items(), key=lambda kv: (-len(kv[1]), kv[0])), 1))
+    others = len([x for x in S["systems"] if x["id"] not in per])
+    board_html = ('<div class="tablewrap"><table class="board"><tr><th class="num">#</th><th>System</th><th class="num">Games</th>'
+                  '<th></th><th>Tiers</th></tr>' + board + '</table></div>'
+                  + (f'<p class="mute">The other {others} systems on this page have none.</p>' if per and others else ""))
+
     built, commit = commit_stamp()
     return fill(read(os.path.join(SITE, "status.html")), site_title="Platform status · Games Explained", lib="lib", built=built,
                 commit=html.escape(commit), repo=repo, works=works_html, research=grid(r for _, r in research),
-                systems=systems_html, sources=sources_html)
+                systems=systems_html, sources=sources_html, board=board_html)
 
 
 def broken_links(out_root):
