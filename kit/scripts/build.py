@@ -8,7 +8,8 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
-Plus a home page with the catalogue, site/lib/, kit.html (the kit changelog) and
+Plus a home page with the catalogue and the games most recently added or changed
+(from git history), site/lib/, kit.html (the kit changelog) and
 status.html (from site/status.html + site/status.json: which kits work on which
 computers, and the work needed).
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
@@ -217,17 +218,17 @@ def banner(game, cons):
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "")
     where = f'games/{game["platform"]}/{game["slug"]}'
     if tier in ("gold", "platinum"):
-        who = ", ".join(f'<a href="https://github.com/{html.escape(l)}">{html.escape(l)}</a>' if l else html.escape(n) for _, n, l in cons)
+        who = ", ".join(person_html(n, l) for _, n, l in cons)
         body = f'This minisite was curated by {who}.' if who else 'This minisite was curated by hand.'
     elif tier == "silver":
-        who = ", ".join(f'<a href="https://github.com/{html.escape(l)}">{html.escape(l)}</a>' if l else html.escape(n) for _, n, l in cons)
+        who = ", ".join(person_html(n, l) for _, n, l in cons)
         lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         prompt = f"Clone {repo} and follow kit/START.md to curate {where} with me to Gold."
         body = (lead + 'It\u2019s agent-generated and needs a human editor. '
                 f'<span class="prompt" id="prompt">{html.escape(prompt)}</span>'
                 '<button type="button" data-copy="#prompt">Copy the prompt to work on it</button>')
     elif tier == "silver-claimed":
-        who = ", ".join(f'<a href="https://github.com/{html.escape(l)}">{html.escape(l)}</a>' if l else html.escape(n) for _, n, l in cons)
+        who = ", ".join(person_html(n, l) for _, n, l in cons)
         lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         st = game.get("steward") or ""
         if not st:
@@ -319,6 +320,21 @@ BOT_EMAILS = ("noreply@anthropic.com",      # Claude Code
 GITHUB_NOREPLY = re.compile(r"^(?:\d+\+)?([A-Za-z0-9-]+)@users\.noreply\.github\.com$")
 
 
+def is_agent(email):
+    return any(email.endswith(b) for b in BOT_EMAILS)
+
+
+def github_login(email):
+    """The login in a canonical <login>@users.noreply.github.com address, else None."""
+    m = GITHUB_NOREPLY.match(email)
+    return m.group(1) if m else None
+
+
+def person_html(name, login):
+    """A contributor as the site shows one: their GitHub login, linked, or their name when there is none."""
+    return f'<a href="https://github.com/{html.escape(login)}">{html.escape(login)}</a>' if login else html.escape(name)
+
+
 def contributors(gdir):
     """(commits, name, github login or None) per human author of this game folder.
 
@@ -338,15 +354,15 @@ def contributors(gdir):
         if "\t" not in ln:
             continue
         name, email = ln.split("\t", 1)
-        if any(email.endswith(b) for b in BOT_EMAILS):
+        if is_agent(email):
             continue
         counts[(name, email)] = counts.get((name, email), 0) + 1
     rows = []
     for (name, email), n in sorted(counts.items(), key=lambda kv: -kv[1]):
-        m = GITHUB_NOREPLY.match(email)
-        if not m:
+        login = github_login(email)
+        if not login:
             print(f"warning: contributor {name} <{email}> has no GitHub login; add a .mailmap line mapping them to <login>@users.noreply.github.com", file=sys.stderr)
-        rows.append((n, name, m.group(1) if m else None))
+        rows.append((n, name, login))
     return rows
 
 
@@ -586,6 +602,84 @@ def featured_game(games):
             or next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None))
 
 
+# --- the home page's New and updated row: the latest games added or changed, from git history
+PUBLISHED = re.compile(r"(index|levels|play)\.html|(facts|cheats|features|orientation)\.md|(game|listing|symbols)\.json|reference/.+")
+
+
+def recent_changes(games, n=4):
+    """The newest n changes to games, one row per game per day: {game, date, kind, who}.
+
+    Walks main's first-parent line, so a merged pull request is one change. A change
+    counts when it alters what readers see of exactly one game, a file the build
+    publishes from one game folder: a sweep across every game, or a change to the kit
+    alone, is left out. It is "contributed" when it adds the game's game.json, else
+    "updated". The people are the git authors of the change, through .mailmap (for a
+    merge, the authors of the commits it brought in, not whoever merged it), agents and
+    bots left out as on the About tab."""
+    by_key = {(g["platform"], g["slug"]): g for g in games}
+    git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
+    try:
+        out = git("log", "--first-parent", "--diff-merges=first-parent", "--name-status",
+                  "--format=%x1e%H %P%x1f%cs%x1f%aN%x1f%aE", "HEAD", "--", "games")
+    except Exception:
+        return []
+    rows = {}
+    for chunk in out.split("\x1e")[1:]:
+        head, *files = chunk.strip("\n").split("\n")
+        shas, date, name, email = head.split("\x1f")
+        sha, *parents = shas.split()
+        if len(rows) >= n and date < list(rows.values())[n - 1]["date"]:
+            break
+        touched, added = set(), set()
+        for f in files:
+            status, *paths = f.split("\t")
+            for p in paths:
+                m = re.match(r"games/([^/]+)/([^/]+)/(.+)$", p)
+                if m and PUBLISHED.fullmatch(m.group(3)):
+                    touched.add(m.group(1, 2))
+                    if status == "A" and m.group(3) == "game.json":
+                        added.add(m.group(1, 2))
+        if len(touched) != 1 or next(iter(touched)) not in by_key:
+            continue
+        key = next(iter(touched))
+        if len(parents) > 1:   # a merge: the people whose commits it brought in, most commits first
+            authors = [ln.split("\x1f") for ln in git("log", "--no-merges", "--format=%aN%x1f%aE",
+                                                      f"{parents[0]}..{sha}", "--", "games/%s/%s" % key).splitlines()]
+        else:
+            authors = [(name, email)]
+        counts = {}
+        for nm, em in authors:
+            if not is_agent(em):
+                who = (nm, github_login(em))
+                counts[who] = counts.get(who, 0) + 1
+        row = rows.setdefault(key + (date,), {"game": by_key[key], "date": date, "kind": "updated", "who": {}})
+        if key in added:
+            row["kind"] = "contributed"
+        for who, _ in sorted(counts.items(), key=lambda kv: -kv[1]):
+            row["who"].setdefault(who[1] or who[0], who)
+    return list(rows.values())[:n]
+
+
+def recent_html(rows):
+    """One small card per change: title screen, the game (the card's link), who and when."""
+    if not rows:
+        return ""
+    repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
+    cards = []
+    for r in rows:
+        g = r["game"]
+        who = [person_html(nm, login) for nm, login in r["who"].values()]
+        by = " by " + (", ".join(who[:-1]) + " and " + who[-1] if len(who) > 1 else who[0]) if who else ""
+        m, d = (int(x) for x in r["date"].split("-")[1:])
+        cards.append(f'<div class="card">{shot_html(g, "thumb")}<span class="body">'
+                     f'<a class="g" href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>'
+                     f'<span class="v">{r["kind"]}{by}</span>'
+                     f'<time datetime="{r["date"]}" title="{long_date(r["date"])}">{d} {MONTHS[m - 1][:3]}</time></span></div>')
+    return (f'<div class="recent"><div class="cathead"><h2>New and updated</h2>'
+            f'<a href="{html.escape(repo)}/commits/main/games">All changes</a></div>'
+            f'<div class="cards">{"".join(cards)}</div></div>')
+
+
 # --- the status page: which kits work on which computers, and the work needed
 HOST_STATES = {"works": "Works", "limited": "Limited", "untested": "No run recorded"}
 MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September",
@@ -782,7 +876,7 @@ def main():
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
                 cards="".join(card_html(g) for g in games), featured=featured_html(feat) if feat else "",
-                platforms=platforms_html(games), n_games=len(games))
+                recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # the kit changelog, game by game
     log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False, addr=False) + runs_table(games)
