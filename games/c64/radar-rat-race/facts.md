@@ -265,15 +265,10 @@ approximate.
 
 ## Restarting the tools
 
-```bash
-script -q /tmp/r2000-tui.log ~/.cargo/bin/regenerator2000 --mcp-server radar-rat-race.regen2000proj
-pkill -f "vice-mcp-gui/VICE.app"   # VICE, MCP on :6510
-```
+`symbols.json` holds every label and comment. `work/README.md` gives the
+steps to rebuild the rest from your own copy of the game: take the
+snapshot, build the disassembler's project from it and `symbols.json`, and
+start the disassembler on that project.
 
-The project file holds every label and comment. To rebuild it from the
-replay log instead: start the server on `work/real_gameplay_confirmed.vsf`,
-run `python3 scripts/r2000_replay.py annotations.jsonl`, then
-`python3 scripts/export_regen_project.py`.
-
-Coverage: `python3 scripts/coverage.py [--top N] [--code] [--data]`.
+Coverage: `python3 kit/scripts/coverage.py games/c64/radar-rat-race [--top N] [--code | --data]`.
 Reference screenshots: `reference/`.
