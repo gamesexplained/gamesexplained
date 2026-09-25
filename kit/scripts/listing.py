@@ -9,8 +9,18 @@ record for each skipped run. Labels, comments and block types come from
 symbols.json; the bytes come from the snapshot; cross-references are
 computed here.
 
+Then it lists the data the ledger does not count. RAM that a default
+exclusion covers but a game can still use (on the C64, the RAM under the
+I/O area) is named whenever it holds data and game.json has not said what
+it is. With the hand-over snapshot, so is every stretch of loaded data,
+the same bytes at the hand-over and in play, that the ledger neither
+tracks nor has been told to leave out: the tail of a table longer than
+its symbol's reach, a table no symbol starts, a picture nothing refers to
+by address.
+
 Usage:
-  listing.py <game dir> <snapshot.vsf>
+  listing.py <game dir> <snapshot.vsf> [--entry <hand-over.vsf>]
+                         the hand-over defaults to the game's work/entry.vsf
 
 Record fields (short, the file is large):
   a  address            t  kind: code | byte | word | addr | lohi | text | gap | note
@@ -81,6 +91,74 @@ def petscii(c):
     return "."
 
 
+def uncounted(game, reg, L, ram, entry=None, top=12):
+    """The data the ledger does not count, as lines to print (none when there is nothing).
+
+    $00 and $FF are not counted as data anywhere here: the emulator fills unwritten RAM
+    with them, and a stretch of that pattern is not the game's."""
+    from symbols_export import PLATFORM_DEFAULTS, hexint
+    plat = PLATFORM_DEFAULTS.get(game.get("platform", "c64"), {})
+    cov = game.get("coverage", {})
+
+    def ranges(rows):
+        return [(hexint(r[0]), hexint(r[1])) for r in rows]
+
+    def inside(a, rs):
+        return any(lo <= a <= hi for lo, hi in rs)
+
+    said = ranges(cov.get("include", []) + cov.get("exclude", []))
+    found = []                                  # (start, end, bytes of data, what)
+    hidden = []
+    for row in plat.get("hidden", []):          # RAM a default exclusion covers: reported by the page
+        lo, hi = hexint(row[0]), hexint(row[1])
+        for p in range(lo, hi + 1, 256):
+            e = min(p + 255, hi)
+            n = sum(1 for a in range(p, e + 1) if ram[a] not in (0, 0xFF) and not inside(a, said))
+            if n < 16:                          # the fill pattern leaves a few stray bytes a page
+                continue
+            if hidden and hidden[-1][1] == p - 1:
+                hidden[-1][1] = e; hidden[-1][2] += n
+            else:
+                hidden.append([p, e, n, f"{row[2]} holds data, and game.json does not say what it is ({row[3]})"])
+    found += hidden
+    if entry is not None:
+        state, owner = L["state"], L["owner"]
+        left_out = ranges(cov.get("exclude", [])) + ranges(plat.get("system", [])) + [(s, e) for s, e, *_ in hidden]
+        free = [not state[a] and not inside(a, left_out) for a in range(0x10000)]
+        loaded = [free[a] and ram[a] == entry[a] and ram[a] not in (0, 0xFF) for a in range(0x10000)]
+        a = 0
+        while a < 0x10000:                      # stretches of loaded data, split at 64 bytes of anything else
+            if not loaded[a]:
+                a += 1; continue
+            s = e = a; n = gap = 0
+            while a < 0x10000 and free[a] and gap < 64:
+                if loaded[a]:
+                    e, n, gap = a, n + 1, 0
+                else:
+                    gap += 1
+                a += 1
+            if n < 8:
+                continue
+            ex = next((name for lo, hi, name in reg["exclude"] if lo <= s <= hi), None)
+            before = owner.get(s - 1)
+            where = f"excluded by default as {ex}" if ex else \
+                f"after {before[0]} (${before[1]:04X})" if before else "untracked"
+            found.append([s, e, n, f"loaded with the game, {where}"])
+    if not found:
+        return []
+    found.sort(key=lambda f: -(f[1] - f[0]))
+    lines = ["", f"data the ledger does not count ({'hand-over and play snapshots' if entry else 'play snapshot only'}):"]
+    for s, e, n, what in found[:top]:
+        lines.append(f"  ${s:04X}-${e:04X} {e - s + 1:6} bytes  {what}")
+    if len(found) > top:
+        rest = found[top:]
+        lines.append(f"  and {len(rest)} more stretches, {sum(f[1] - f[0] + 1 for f in rest)} bytes")
+    lines.append("Say what each is: label and describe it, or list it in game.json under coverage.extra")
+    lines.append("(authored data), coverage.include (RAM under a default exclusion) or coverage.exclude")
+    lines.append("(not the game's, with the reason). kit/skills/core/50-coverage, \"Data the ledger cannot see\".")
+    return lines
+
+
 def main():
     argv = sys.argv[1:]
     if len(argv) < 2 or argv[0] in ("-h", "--help"):
@@ -91,6 +169,13 @@ def main():
     sym = json.load(open(spath))
     ram = open(vsf, "rb").read()[VSF_RAM_OFFSET:VSF_RAM_OFFSET + 0x10000]
     assert len(ram) == 0x10000, "snapshot too short"
+    epath = argv[argv.index("--entry") + 1] if "--entry" in argv else os.path.join(gdir, "work", "entry.vsf")
+    entry = None
+    if os.path.exists(epath) and os.path.abspath(epath) != os.path.abspath(vsf):
+        entry = open(epath, "rb").read()[VSF_RAM_OFFSET:VSF_RAM_OFFSET + 0x10000]
+        assert len(entry) == 0x10000, "hand-over snapshot too short"
+    elif "--entry" in argv:
+        sys.exit(f"no hand-over snapshot at {epath}")
 
     from symbols_export import regions
     reg = regions(game)
@@ -257,6 +342,8 @@ def main():
     for i in index: kinds[i["k"]] = kinds.get(i["k"], 0) + 1
     print(f"wrote {path}: {len(records)} records, {sum(1 for r in records if r['t']=='code')} instructions, "
           f"index {kinds}, {os.path.getsize(path)//1024} KB")
+    for line in uncounted(game, reg, L, ram, entry):
+        print(line)
 
 
 if __name__ == "__main__":

@@ -235,6 +235,8 @@ emulator's CPU-view memory reads return the chips' registers, and the
 coverage ledger excludes the range as I/O by default. Read the snapshot's
 RAM there (the `ram` bank), and when it holds the game's data give the
 range back with `coverage.include` in `game.json` and describe it.
+`listing.py` names the range whenever it holds data and `game.json` has
+not said what it is.
 
 ## Undocumented opcodes
 
