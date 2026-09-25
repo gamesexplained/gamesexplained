@@ -10,7 +10,7 @@ For every games/<platform>/<slug>/game.json:
   listing.json, symbols.json, reference/           copied
 Plus a home page with the catalogue, site/lib/, kit.html (the kit changelog) and
 status.html (from site/status.html + site/status.json: which kits work on which
-computers, and what is still a research project).
+computers, and the work needed).
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
 filled from game.json. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
@@ -586,7 +586,7 @@ def featured_game(games):
             or next((g for g in games if g.get("tier") in ("gold", "platinum")), games[0] if games else None))
 
 
-# --- the status page: which kits work on which computers, and what is still a research project
+# --- the status page: which kits work on which computers, and the work needed
 HOST_STATES = {"works": "Works", "limited": "Limited", "untested": "No run recorded"}
 MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September",
           "October", "November", "December")
@@ -637,10 +637,12 @@ def status_page(games):
     computer each was made on) is read here at build time. What it cannot know (what a
     kit was measured doing on each kind of computer, how many games a system had) is in
     status.json, each with a date. Works: every kit and computer measured as working.
-    Research projects: every other pairing of a kit and a computer, and every system with
-    no kit, the ones marked "wanted" first."""
+    Work needed: every other pairing of a kit and a computer, and every system with no kit,
+    the ones marked "wanted" first. Every box carries a prompt to paste into an agent;
+    status.json can give one of its own as "prompt"."""
     S = json.load(open(os.path.join(SITE, "status.json")))
-    repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"])
+    raw_repo = json.load(open(os.path.join(SITE, "config.json")))["repo"]
+    repo = html.escape(raw_repo)
     blob = lambda path, text: f'<a href="{repo}/blob/main/{path}">{html.escape(text)}</a>'
     have = kits()
     names = {s["id"]: s["name"] for s in S["systems"]}
@@ -648,11 +650,17 @@ def status_page(games):
     stamp = lambda cls, text: f'<span class="state {cls}">{html.escape(text)}</span>'
     wanted = '<span class="wanted">Wanted</span>'
 
-    def card(title, state, note, seen, extra, start, want):
+    ids = iter(range(1, 1000))
+
+    def card(title, state, note, seen, extra, start, want, prompt):
+        """One box: what it is, where it stands, and the line to paste into an agent to take it on."""
         date = f' <span class="mute">Recorded {long_date(seen)}.</span>' if seen else ""
         go = f'<p class="start">Start with {" and ".join(start)}.</p>' if start else ""
+        pid = f"prompt-{next(ids)}"
+        paste = (f'<div class="paste"><code id="{pid}">{html.escape(prompt)}</code>'
+                 f'<button type="button" data-copy="#{pid}">Copy</button></div>')
         return (f'<div class="proj{" want" if want else ""}"><p class="top"><b>{title}</b>{wanted if want else ""}</p>{state}'
-                f'<p>{html.escape(note)}{date}</p>{extra}{go}</div>')
+                f'<p>{html.escape(note)}{date}</p>{extra}{go}{paste}</div>')
 
     works, research = [], []
     for k in have:
@@ -666,12 +674,18 @@ def status_page(games):
                 gs = [g for g in games if g["platform"] == k and pat.search(str((g.get("tools") or {}).get("host") or ""))]
                 made = ('<p class="made">Games made here: ' + ", ".join(
                     f'<a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a>' for g in gs) + '</p>') if gs else ""
-                works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), made, [], False))
+                works.append(card(title, stamp("works", HOST_STATES["works"]), c.get("note", ""), c.get("seen"), made, [], False,
+                                  c.get("prompt") or f'Clone {raw_repo} and follow kit/START.md. I am on {h["name"]}, {h["arch"]}, '
+                                  f'and I want to explain a {name(k)} game.'))
             else:
                 start = [blob(f"kit/{k}/INSTALL.md", f"kit/{k}/INSTALL.md"),
                          blob("kit/INSTALL.md#the-footprint-principle", "the footprint principle")]
+                prompt = c.get("prompt") or (
+                    f'Clone {raw_repo} and follow kit/START.md to explain a {name(k)} game on {h["name"]}, {h["arch"]}. '
+                    'Nobody has run the kit here: follow "If you are the first on an operating system" in kit/INSTALL.md, '
+                    f'run check-emulator, and record what works in kit/{k}/INSTALL.md and site/status.json.')
                 research.append((not c.get("wanted"), card(title, stamp(c["state"], HOST_STATES[c["state"]]), c.get("note", ""),
-                                                           c.get("seen"), "", start, c.get("wanted"))))
+                                                           c.get("seen"), "", start, c.get("wanted"), prompt)))
     rows = []
     for s in S["systems"]:
         if s["id"] in have:
@@ -683,7 +697,11 @@ def status_page(games):
             research.append((False, card(f'{html.escape(s["name"])}, on any computer', stamp("nokit", "No kit"),
                                          (s.get("note") or "No kit on any computer.") + size, None,
                                          f'<p class="m">{html.escape(meta)}</p>',
-                                         [blob("kit/PLATFORMS.md", "kit/PLATFORMS.md"), blob("kit/EMULATOR.md", "kit/EMULATOR.md")], True)))
+                                         [blob("kit/PLATFORMS.md", "kit/PLATFORMS.md"), blob("kit/EMULATOR.md", "kit/EMULATOR.md")], True,
+                                         s.get("prompt") or f'Clone {raw_repo} and follow kit/PLATFORMS.md to add the {s["name"]} as a '
+                                         f'platform: choose an emulator that passes the tests in kit/EMULATOR.md and a disassembler '
+                                         f'for its {s.get("cpu") or "CPU"}, both with an agent interface, then take one game to Silver '
+                                         'with kit/START.md.')))
             continue
         rows.append(f'<tr><td><b>{html.escape(s["name"])}</b><span class="m">{html.escape(meta)}</span></td>'
                     f'<td class="num">{"~" + format(rough(lib["games"]), ",") if lib.get("games") else "<span class=mute>unknown</span>"}</td></tr>')
