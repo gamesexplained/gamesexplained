@@ -1,6 +1,6 @@
 ---
 name: 70-minisite
-description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first, evidence beside every claim, copy written last under the house style.
+description: Build the game's minisite. The "How it works" page (index.html) from symbols.json, facts.md and the reference images; the listing behind the Source code tab; optional Maps/levels and Play tabs. Interactivity first and the best of it high on the page, evidence beside every claim, copy written last under the house style.
 ---
 
 # The minisite
@@ -37,8 +37,9 @@ reconstructed screen.
 
 ## Sections
 
-Not every game has every section. Order them to suit the game. The list
-is a starting set, not a form: the page is open to any structure that
+Not every game has every section, and the list is not the page's order
+("The order", below, says how to choose one).
+It is a starting set, not a form: the page is open to any structure that
 works for this game, any number of sections at any depth, and the human
 who takes it to Gold will cut what is dull, expand what is interesting and
 add what the agent did not think of. What stays fixed is the tab bar, the
@@ -90,6 +91,23 @@ address links into the Source tab, and the house style in `kit/style.md`.
    poke: prove a player could get there (`60-verify`, reachability), and
    build the section around a stepper the reader can walk through. It is
    one kind of interesting fact among several, not the point of the page.
+
+## The order
+
+The order serves the explanation and the reader's attention at once. A
+section should not lean on one that comes after it, and attention is
+highest at the top of the page and falls with every screen, so the best
+thing on the page goes as high as the explanation lets it. Followed as it
+stands, the list above puts the tune player seventh of eight.
+
+Once the widgets work, and before the copy, choose the one or two things a
+reader would most regret missing. They are usually things that move or
+make a sound: a tune player, a map to scrub through, a replay of the game
+playing. Move each up to the second or third section, as far as the
+sections it relies on allow, and read the moved section again for anything
+it now mentions before the page has explained it. The rebuilt frame
+usually stays first: it is the establishing shot, and the proof that the
+data is understood.
 
 ## Building it
 
@@ -252,6 +270,6 @@ see it, which makes it the best test that the data is understood.
 ## Outputs
 
 `index.html` opening cleanly from disk, loaded in a browser with every
-widget exercised; `listing.json` built and passing
-`check_listing.py`; `game.json` with `copy` set; `build.py` producing the
-minisite without errors.
+widget exercised, its best thing high on the page; `listing.json` built
+and passing `check_listing.py`; `game.json` with `copy` set; `build.py`
+producing the minisite without errors.
