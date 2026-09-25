@@ -43,9 +43,16 @@ from reading the code in `work/handover-7200.vsf` (`orientation.md`).
 
 ## Timing
 
-- PAL only: `$5024` loops back to `$5000` for ever when `$02A6` is 0.
+- PAL only: `$5024` jumps back to `$5000` when `$02A6` is 0 (NTSC). The copy's
+  self-modified operands (`$5004`-`$500D`) are not reset, so the second
+  pass copies `$5000` onwards over zero page, the stack and the screen and
+  the machine crashes (*live*: switched to NTSC, power cycle, boot; 40 s
+  later the program counter was at `$704C` and in the KERNAL's IRQ entry,
+  `$02A6` itself overwritten with `$9D`, the BASIC screen full of copied
+  bytes: `reference/ntsc-machine-crash.png`).
 - One raster interrupt pair a frame. The panel half counts frames in `$E2`
-  to 50, then seconds in `$E3`-`$E4` (`$BA60`-`$BA70`).
+  to 50, then seconds in `$E3`-`$E4` (`$BA60`-`$BA70`): 100 frames advanced
+  from a stop took `$E3` from `$8C` to `$8E` with 99 hits on `$B9BB` (*live*).
 - The main loop ran 10 passes in 100 frames standing still on the ground
   (*live*, non-stopping checkpoints on `$855C` and `$AF84` over 100
   frames): the view is redrawn five times a second there.
@@ -86,8 +93,9 @@ Three alphabets on one character set (`$7800`):
 | Figures | the value: `$00`-`$09` are 0-9; `$8B` +, `$8D` - | *live*, the LOC, ALT and SPEED readouts |
 
 Stored text is ASCII in capitals, the last character of a word with bit 7
-set. In messages, values 0-9 stand for the digits and `$6D`, `$6E`, `$6F`
-for ?, ! and '. A message is a list of tokens, ended by 0 (`$8E24`):
+set. In messages, values 0-9 stand for the digits, `$0A`-`$0F` for
+* + , - . / (glyphs `$8A`-`$8F`: so `$0D` is a hyphen, "TYPE - DOMINION DART"),
+and `$6D`, `$6E`, `$6F` for ?, ! and '. A message is a list of tokens, ended by 0 (`$8E24`):
 
 | Token | Meaning |
 |---|---|
@@ -165,6 +173,17 @@ names: the intro's messages at `$700B`-`$71B4`, and four names at `$760A`,
 "KBCODE(", "MYONO (", "POWER (", "ALLFLG(", nothing reads yet.
 
 ## Live tests
+
+- The opening sequence and the idle messages, logged from the message row
+  (`$5F78`-`$5F8E`) every quarter second for five and a half minutes from
+  `$7200` with no input: every message listed in `features.md`, in order,
+  and the idle lines 18 s apart.
+- The Dart bought: at the fifth "DO YOU WANT TO BUY?", Y held for 1.5 s
+  one second after the question appeared: "TRANSACTION COMPLETED", "YOU
+  HAVE 4000 CREDITS", and `$7700`-`$7703` went from `00 00 90 00` to
+  `00 00 40 00`. Saved as `work/dart-bought.vsf`.
+- RESTORE in play: one hit on `$8009`, and the main loop went on (nine
+  passes in the next two seconds).
 
 - Walking forward two seconds from the start raised Y (`$7A:$79:$78`) from
   `$08:$88:$00` to `$08:$8C:$60`; turning changed no position byte.
