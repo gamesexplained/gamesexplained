@@ -16,7 +16,10 @@ Usage:
   tools.py status
   tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
   tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
-  tools.py stop [vice|r2000|all]
+  tools.py stop [vice|r2000|all] [--force]
+                                   the disassembler stays up while an annotation log written since
+                                   it started is newer than the game's symbols.json: export first,
+                                   or --force
   tools.py get-vice [download|build]   the newest vice-mcp for this machine; plain, it only says what that is (kit/c64/get_vice.py)
   tools.py use-vice <dir>          use a vice-mcp build of your own: link tools/vice-mcp to it
   tools.py use-vice release        go back to the release (kept at tools/vice-mcp-release)
@@ -160,15 +163,96 @@ def r2000(path):
     start([exe, "--mcp-server", os.path.abspath(path)], os.path.join(LOGS, "r2000.log"), port=3000, name="disassembler")
 
 
-def stop(which="all"):
-    # only this clone's tools: another clone on the same machine keeps its emulator and disassembler
-    # the emulator itself only: its wrappers (script, and xvfb-run with its X server) exit after it
-    pats = {"vice": ["^" + re.escape(os.path.join(VICE_DIR, "bin")) + ".*-mcpserver"],
-            "r2000": ["regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))]}
-    for k in (pats if which == "all" else [which]):
-        for p in pats[k]:
-            subprocess.run(["pkill", "-f", "--", p], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    time.sleep(1); status()
+# only this clone's tools: another clone on the same machine keeps its emulator and disassembler
+# the emulator itself only: its wrappers (script, and xvfb-run with its X server) exit after it
+STOP_PATTERNS = {"vice": "^" + re.escape(os.path.join(VICE_DIR, "bin")) + ".*-mcpserver",
+                 "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
+
+
+def elapsed(etime):
+    """Seconds in a ps etime, [[dd-]hh:]mm:ss."""
+    days, _, clock = etime.rpartition("-")
+    secs = 0
+    for part in clock.split(":"):
+        secs = secs * 60 + int(part)
+    return secs + int(days or 0) * 86400
+
+
+def r2000_running():
+    """(file, start time) of this clone's disassembler: the file it was started on, and when it started.
+    ("", 0) when one answers but ps cannot tell which or since when; None when none runs."""
+    try:
+        out = subprocess.run(["ps", "-A", "-ww", "-o", "etime=,command="], capture_output=True, text=True).stdout
+    except OSError:
+        return ("", 0) if up(3000) else None
+    for line in out.splitlines():
+        m = re.search(STOP_PATTERNS["r2000"] + ".*$", line)
+        if m:
+            try:
+                started = time.time() - elapsed(line.split()[0]) - 1   # etime drops the fraction
+            except ValueError:
+                started = 0
+            return m.group(0).split(" --mcp-server ", 1)[1], started
+    return None
+
+
+def unexported(path, started):
+    """Games whose annotation logs are newer than their symbols.json, as (game dir, newest log, export time).
+
+    Every log r2000.py writes lands in the game's work/ as a .jsonl, after the call it records. A log
+    newer than the last export, written since the disassembler started, is work it holds that stopping
+    it would lose. Logs from before the start went to an earlier session: a fresh one does not hold
+    them (exporting it would overwrite a good symbols.json), and one rebuilt from them with
+    r2000.py --replay can be rebuilt again. The game is the one the disassembler was started on; a
+    file outside games/ leaves every game in the clone."""
+    parts = os.path.relpath(path, ROOT).split(os.sep) if path else []
+    if len(parts) > 3 and parts[0] == "games" and os.path.isfile(os.path.join(ROOT, *parts[:3], "game.json")):
+        games = [os.path.join(ROOT, *parts[:3])]
+    else:
+        base = os.path.join(ROOT, "games")
+        games = [os.path.join(base, p, s) for p in sorted(os.listdir(base)) if os.path.isdir(os.path.join(base, p))
+                 for s in sorted(os.listdir(os.path.join(base, p)))
+                 if os.path.isfile(os.path.join(base, p, s, "game.json"))] if os.path.isdir(base) else []
+    found = []
+    for g in games:
+        work = os.path.join(g, "work")
+        logs = [os.path.join(work, f) for f in os.listdir(work) if f.endswith(".jsonl")] if os.path.isdir(work) else []
+        if not logs:
+            continue
+        newest = max(logs, key=os.path.getmtime)
+        sym = os.path.join(g, "symbols.json")
+        exported = os.path.getmtime(sym) if os.path.exists(sym) else None
+        if os.path.getmtime(newest) > max(exported or 0, started):
+            found.append((g, newest, exported))
+    return found
+
+
+def stop(which="all", force=False):
+    if which not in STOP_PATTERNS and which != "all":
+        sys.exit("usage: tools.py stop [vice|r2000|all] [--force]")
+    kinds = list(STOP_PATTERNS) if which == "all" else [which]
+    held = []
+    if "r2000" in kinds and not force:
+        running = r2000_running()
+        held = unexported(*running) if running else []
+        if held:
+            kinds.remove("r2000")    # the disassembler stays up; anything else asked for still stops
+    for k in kinds:
+        subprocess.run(["pkill", "-f", "--", STOP_PATTERNS[k]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if kinds:
+        time.sleep(1)
+    status()
+    if held:
+        when = lambda t: time.strftime("%H:%M:%S", time.localtime(t))
+        lines = ["", "the disassembler is still running: it holds annotations made since the last export"]
+        for g, log, exported in held:
+            lines.append(f"  {os.path.relpath(g, ROOT)}: {os.path.basename(log)} written {when(os.path.getmtime(log))}, "
+                         + (f"symbols.json exported {when(exported)}" if exported else "never exported (no symbols.json)"))
+        lines += ["export first:"]
+        lines += [f"  python3 kit/scripts/symbols_export.py {os.path.relpath(g, ROOT)}" for g, _, _ in held]
+        lines += ["or stop it anyway, and rebuild from the logs later (r2000.py --replay):",
+                  "  python3 kit/scripts/tools.py stop r2000 --force"]
+        sys.exit("\n".join(lines))
 
 
 def public_url(url):
@@ -322,7 +406,7 @@ def verify_footprint():
     print("snapshot written to:", where)
     if where and os.path.exists(where) and not up(3000):
         r2000(where)                       # exercise the disassembler too
-        stop("r2000")
+        stop("r2000", force=True)          # its own, on a throwaway snapshot: nothing to export
     stop("vice")
     inside = os.path.realpath(ROOT)
     words = ("vice", "x64", "regenerator", "r2000")
@@ -370,7 +454,9 @@ def main():
     elif a[0] == "r2000":
         if len(a) < 2: sys.exit("usage: tools.py r2000 <file>")
         r2000(a[1])
-    elif a[0] == "stop": stop(a[1] if len(a) > 1 else "all")
+    elif a[0] == "stop":
+        rest = [x for x in a[1:] if x != "--force"]
+        stop(rest[0] if rest else "all", force="--force" in a[1:])
     elif a[0] == "verify-footprint": verify_footprint()
     elif a[0] == "use-vice":
         if len(a) < 2: sys.exit("usage: tools.py use-vice <dir> | release")
