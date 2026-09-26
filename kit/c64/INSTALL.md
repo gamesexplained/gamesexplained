@@ -34,16 +34,21 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.1, from source (`get-vice build`) | macOS arm64 | 24 September 2026 | 56 of 56 |
 | v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 24 and 25 September 2026 | 56, 55 and 53 of 56, three runs on the 24th; 56 of 56 on the 25th |
 | v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
+| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 26 September 2026 | 56 of 57, five runs: all but `pause-at-instruction` |
 
 Add a row whenever a build is measured on a machine not listed, and bring
 that machine's `c64` cell in `site/status.json` into line with it. The two
 Linux rows of v3.13.1 failed the same checks, whichever way the build was
 made: `determinism-running-save` and `determinism-restart`, and once
-`step-instruction`, more of them while a compile was loading the host;
-the same snapshot replayed three times in a row came back identical. So
-treat those two checks as intermittent on that machine, save snapshots
-from a stopped machine, and compare runs by what the game wrote
-(`workarounds.md`). What the
+`step-instruction`, more of them while a compile was loading the host.
+Each went on straight after `vice_execution_pause`, two to load a
+snapshot and one to read the PC, and that pause there stopped four to
+seven times in thirty inside the vertical sync, part way through an
+instruction, where the registers read stale and a load keeps the old
+ones. From 26 September 2026 `check-emulator` measures
+that as `pause-at-instruction`, and the three stop with `pause()` in
+`kit/c64/vice.py`; on the release they then passed in five runs out of
+five. Stop the machine the same way (`workarounds.md`). What the
 v3.11.0 release fails, by phase, is below. A contributor who declines to
 build is offered the newest release with a build for their machine, and
 on 24 September 2026 that was v3.11.0 for a Mac. On an emulator that has
@@ -293,7 +298,8 @@ Like `check-emulator` it resets the machine, so run it before a game is
 loaded. On 24 September 2026, on macOS arm64 with vice-mcp 3.13.1 and
 JavaScriptCore, it passed: every pixel matched but the handful at a
 mid-line change of mode or scroll that the renderer does not follow to
-the pixel.
+the pixel. On 26 September, on Linux x86_64 with the v3.13.1 release and
+node, the same.
 
 ## macOS — known to work
 

@@ -47,7 +47,9 @@ the newest release and what this machine can have of it, and asks
 (`kit/c64/INSTALL.md`, "Get the emulator"). The dated measurements are
 the table at the top of that file: on 22 September 2026 the v3.11.0
 release failed 28 of the 56 checks, most of phase 4 among them; on 24
-September v3.13 built from source passed all 56.
+September v3.13 built from source passed all 56; on 26 September, with
+a 57th added, the v3.13.1 release on Linux passed all but
+`pause-at-instruction`.
 
 ## The sequence that works
 
@@ -63,7 +65,9 @@ September v3.13 built from source passed all 56.
    should react has reacted; on a running machine a short press can fall
    between two of the game's reads.
 4. Confirm play with a screenshot, then `vice_snapshot_save` with a name
-   that describes the state. Snapshots are written to
+   that describes the state, on the running machine or after `pause()` in
+   `vice.py`, never straight after `vice_execution_pause`
+   (`pause-at-instruction`). Snapshots are written to
    `tools/vice-home/config/vice/mcp_snapshots/`
    (`python3 kit/scripts/tools.py snapshots` lists them); copy the `.vsf`
    into the game's `work/`.
@@ -90,9 +94,13 @@ the frame calls need the `frame-advance-` checks. Where they fail, the
 in-game input hook below does the same job.
 
 - **A stop is on the instruction.** A stopping checkpoint,
-  `vice_execution_pause`, `vice_execution_step` and `vice_frame_advance`
-  halt the CPU where they say, `vice_ping` reports `paused` only then,
-  and `vice_execution_run` resumes from any of them.
+  `vice_execution_step` and `vice_frame_advance` halt the CPU where they
+  say, `vice_ping` reports `paused` only then, and `vice_execution_run`
+  resumes from any of them. `vice_execution_pause` needs
+  `pause-at-instruction` as well: where that fails, a pause can stop part
+  way through an instruction. To stop wherever the machine is, use
+  `pause()` in `vice.py`, which is right on any build with
+  `vice_frame_advance`.
 - **One pass of the game loop.** Put a stopping checkpoint on the top of
   the loop; then `vice_execution_run` and wait for `paused` is one pass,
   exactly, about a tenth of a second from a script. `step_pass()` in

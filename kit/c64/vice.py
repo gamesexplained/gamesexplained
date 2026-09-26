@@ -9,7 +9,7 @@ Usage:
   vice.py --list                       list the emulator's tools
   vice.py <tool> '<json arguments>'    call one tool
 
-  from vice import connect, call, read_mem, halt_at, release, poke, joy, step_pass, frames, LEFT
+  from vice import connect, call, read_mem, halt_at, release, poke, joy, step_pass, frames, pause, LEFT
   rpc = connect()
   cp = halt_at(rpc, "$E12C")           # stop at the top of the game loop
   poke(rpc, 0x0010, [0x00, 0x00])
@@ -18,11 +18,13 @@ Usage:
   frames(rpc, 3)                       # or run exactly three frames
   release(rpc, cp)
 
+  pause(rpc)                           # stop wherever it is, between two instructions,
+                                       # never vice_execution_pause alone (pause-at-instruction)
   stick_arm(rpc); stick(rpc, LEFT)     # joystick input on a build that fails joy-port-1
 
 Which of these to use depends on `tools.py check-emulator`: step_pass needs
-stop-exact and step-pass, frames needs the frame-advance- checks, joy needs
-the joy- checks. Where a check fails, kit/skills/c64/tool-vice-mcp/workarounds.md
+stop-exact and step-pass, frames and pause need the frame-advance- checks,
+joy needs the joy- checks. Where a check fails, kit/skills/c64/tool-vice-mcp/workarounds.md
 says what to use instead (halt_at and release for stops, stick_arm for port 1).
 """
 import json, sys, time, urllib.request
@@ -105,6 +107,29 @@ def release(rpc, n, run=True):
 
 def paused(rpc):
     return json.loads(call(rpc, "vice_ping"))["execution"] == "paused"
+
+
+def pause(rpc, timeout=5.0):
+    """Stop a running machine between two instructions: the stop to save a snapshot from.
+
+    vice_execution_pause alone can leave the emulator in VICE's own pause loop at the
+    vertical sync, part way through an instruction (the pause-at-instruction check). There
+    the registers read stale, a register set is lost, and a snapshot saved or loaded is
+    wrong (workarounds.md). A one-frame vice_frame_advance from there finishes the
+    instruction and stops; from a proper stop it runs one frame. Either way the machine
+    ends on the first instruction after a vertical sync. A stopped machine is left where
+    it is. Returns False if it did not stop within timeout seconds.
+    """
+    if paused(rpc):
+        return True
+    call(rpc, "vice_execution_pause", {})
+    t0 = time.time()
+    while not paused(rpc):
+        if time.time() - t0 > timeout:
+            return False
+        time.sleep(0.01)
+    call(rpc, "vice_frame_advance", {"frames": 1})
+    return True
 
 
 def step_pass(rpc, timeout=5.0):

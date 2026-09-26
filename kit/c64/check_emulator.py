@@ -35,7 +35,7 @@ import json, os, subprocess, sys, time, traceback
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
-from vice import connect, call, read_mem, poke, addr, clear_checkpoints  # noqa: E402
+from vice import connect, call, read_mem, poke, addr, clear_checkpoints, pause  # noqa: E402
 
 SNAPDIR = os.path.join(ROOT, "tools", "vice-home", "config", "vice", "mcp_snapshots")
 OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
@@ -157,9 +157,10 @@ def stop_after_passes(rpc, n_passes):
 
     Armed on a stopped machine: on a running one the checkpoint can fire in the gap between
     adding it and setting its ignore count, and it does whenever a call takes longer than a
-    pass is from its end (a host where calls take 16 ms loses that race four times in five)."""
-    if ping(rpc) != "paused":
-        call(rpc, "vice_execution_pause", {}); wait_paused(rpc)
+    pass is from its end (a host where calls take 16 ms loses that race four times in five).
+    Stopped by pause(), not vice_execution_pause alone: a load where that pause can leave the
+    machine keeps the registers it had (pause-at-instruction), and the passes then differ."""
+    pause(rpc)
     n = cp_add(rpc, LOOP, True)
     call(rpc, "vice_checkpoint_set_ignore_count", {"checkpoint_num": n, "count": n_passes})
     return n
@@ -374,6 +375,8 @@ def p4(rpc):
     call(rpc, "vice_execution_pause", {})
     w = wait_paused(rpc); s1 = sample(rpc); time.sleep(0.3); s2 = sample(rpc)
     check("pause-exact", w is not None and s1 == s2, "vice_execution_pause stops the CPU", f"{w and round(w * 1000)} ms, {diff(s1, s2)}")
+    if "vice_frame_advance" in has:          # to a stop between two instructions, which the pause need
+        call(rpc, "vice_frame_advance", {"frames": 1})     # not be (pause-at-instruction, below)
     p0 = pc(rpc)
     dis = j(call(rpc, "vice_disassemble", {"address": addr(p0), "count": 1}))["lines"][0]
     mnem = [t for t in dis["instruction"].upper().split() if len(t) == 3 and t.isalpha()][0]
@@ -381,6 +384,23 @@ def p4(rpc):
     r = j(call(rpc, "vice_execution_step", {"count": 1})); p1_ = pc(rpc)
     check("step-instruction", r.get("PC") == p1_ and ping(rpc) == "paused" and (jumps or p1_ == p0 + dis["size"]),
           "vice_execution_step runs one instruction and replies with the PC", f"${p0:04X} -> ${p1_:04X} {dis['instruction']}")
+    # A pause can stop the machine in VICE's own pause loop at the vertical sync, part way
+    # through an instruction, rather than between two: the registers then read as they were
+    # some time before, and one set is lost at the next instruction. The program never uses
+    # Y, so a Y set after the pause is still there a frame later unless it was lost. Whether
+    # a pause lands there is a race, so it takes many.
+    lost, tries = 0, 30
+    for i in range(tries):
+        run(rpc); time.sleep(0.02 * (1 + i % 5))
+        call(rpc, "vice_execution_pause", {}); wait_paused(rpc)
+        call(rpc, "vice_registers_set", {"register": "Y", "value": 0x40 + i})
+        if "vice_frame_advance" in has:
+            call(rpc, "vice_frame_advance", {"frames": 1})
+        else:
+            call(rpc, "vice_execution_step", {"count": 1})
+        lost += j(call(rpc, "vice_registers_get")).get("Y") != 0x40 + i
+    check("pause-at-instruction", lost == 0, "vice_execution_pause stops between two instructions: a register set after it holds",
+          f"lost after {lost} of {tries} pauses")
     run(rpc); time.sleep(0.1)
     call(rpc, "vice_watch_add", {"address": addr(SIDE), "store": True, "stop": True})
     w = wait_paused(rpc); p = pc(rpc)

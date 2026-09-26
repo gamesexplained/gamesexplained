@@ -159,7 +159,11 @@ Needs:
   that is deferred to the next vertical sync runs up to a frame more, and
   every symptom of that looks like something else: the program counter
   is not where the break was, the registers belong to a later
-  instruction, two checkpoints alternated to step one pass run two.
+  instruction, two checkpoints alternated to step one pass run two. A
+  pause names no instruction, and still stops between two: one that
+  parks the machine part way through an instruction hands out registers
+  the processor has moved on from, loses a register set, and saves and
+  loads snapshots wrong.
 - **Advance N frames** from a stopped machine, and stop again exactly at
   the frame boundary. One call, not N.
 - **Input that persists through a stop, and lands at once.** A joystick
@@ -198,7 +202,11 @@ other time than a frame; there the unit is the pass, and the test is the
 stopping checkpoint on the loop top with run-and-wait, once per pass,
 exactly once, ten times. Then send a hundred calls with no pacing while
 a stopping checkpoint is armed: none may fail, and the machine must be
-where the checkpoint says afterwards.
+where the checkpoint says afterwards. And pause the running machine
+thirty times, at varied moments: after each, set a register the test
+program never uses, advance a frame, and read it back. It must hold
+every time; a pause that lands at the wrong moment is a race, so one
+try proves nothing.
 
 ## What the platform notes record
 
