@@ -121,7 +121,10 @@ in-game input hook below does the same job.
   delivers it 1000 cycles plus a random amount up to a frame later, on
   purpose, to imitate a hand. Use the matrix tool for anything timed.
   `pressed: true` holds a key until a call with `pressed: false`, and
-  `hold_frames` holds it for a count of frames. A key the tool has no name
+  `hold_frames` holds it for a count of frames. Prefer `pressed: true` and
+  a release of your own once the game has taken the key: an automatic
+  release (`hold_ms`, `hold_frames`) has been seen to miss a game that
+  scans the matrix itself (`workarounds.md`, Keys). A key the tool has no name
   for, such as `:`, takes its `row` and `col` from the matrix in
   `c64-reference`. Letters are named in capitals: on the v3.13.1 release
   `"U"` works and `"u"` comes back as "Unknown key name", which a script
