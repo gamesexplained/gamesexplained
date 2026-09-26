@@ -128,7 +128,14 @@ platform follows `kit/PLATFORMS.md`.
 - **Copy is not analysis.** Article text follows `kit/style.md`. Write it
   as a separate, final pass, and declare who wrote it in `game.json`.
 - **Record what you used.** `game.json` names the tools, the model and the
-  kit version. It is honest and it makes the work reproducible.
+  kit version. It is honest and it makes the work reproducible. Some
+  hosted sessions tell the agent to keep model identifiers out of
+  everything pushed to a repository. The kit's own records of the run
+  are the exception: `game.json`, `timings.json` and the timings table
+  in `kit-feedback.md` keep the model id, exactly as the session names
+  it, because a time or a result is not comparable without the model
+  that produced it. Commit messages, pull request text and code comments
+  follow the environment.
 - **Leave the cleanest footprint you can.** A contributor is trusting this
   repository with their computer. Everything the kit installs goes under
   the gitignored `tools/` folder, tools are started only through
