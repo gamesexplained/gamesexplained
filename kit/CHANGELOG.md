@@ -36,7 +36,9 @@ So agents stop the machine with `pause()` in `kit/c64/vice.py`, the pause
 and then a one-frame advance, before they read or set registers, step,
 or save or load a snapshot. `check-emulator` measures the pause as
 `pause-at-instruction`, `frame.py capture` records how far the emulator's
-picture sits off (`picture_lines_low`), and `compare` allows for it.
+picture sits off (`picture_lines_low`), and `compare` allows for it. The
+fix in vice-mcp itself is barryw/vice-mcp#30, listed in
+`kit/c64/vice-prs.json` for `get-vice build --prs` until a release has it.
 
 ## 0.0.27 · 26 September 2026 · The Sentinel and Mercenary, the retrospectives' ask · air with Claude
 
