@@ -109,8 +109,17 @@ table.d td.n,table.d th.n{text-align:right;font-variant-numeric:tabular-nums}
   <p>The dot is four pixels wide. The narrow corridors that run north and south, and the doors in them, have walls two pixels thick on each side of an eight-pixel cell, which leaves a gap of four. Only one of the eight pixel columns in a cell lets you through; at the other seven the dot touches a wall, bounces, and touches it again, and you stay where you are. Zzap!64's review warned that you can get stuck in a doorway unless you are exactly lined up with the passage, and this is why. In the emulator, pushing up level 3's long corridor from five neighbouring columns, only the middle one moved. East-west corridors are kinder: their walls are one pixel thick, and three rows get through. CLOSE puts you back in the middle of your cell, which lines you up again.</p>
 </section>
 
+<section id="sound">
+  <p class="fig">03 · The sound</p>
+  <h2 class="t">Rob Hubbard's three tunes, from the stored bytes</h2>
+  <p class="lede">The music driver at <code>$C000</code> plays three tunes: the main theme on the title and in play, a short one when you die and a longer one when you win.</p>
+  <div class="plate"><div data-w="music"></div>
+  <p class="cap">A port of the driver's reading of its patterns and instruments, checked frame by frame against the original code, feeding a small model of the sound chip.</p></div>
+  <p>The main theme ends in a fade: the driver sets the volume from how far voice 3 has got through its list of patterns, so the theme fades from 4:28 to silence at 5:21 and loops at 5:35. M stops the music in play, and then the footsteps can be heard: every third pixel you move, and every third step of most monsters in sight, the interrupt plays a short burst of noise on voice 1. With the music on, the steps are silent.</p>
+</section>
+
 <section id="map">
-  <p class="fig">03 · The dungeon</p>
+  <p class="fig">04 · The dungeon</p>
   <h2 class="t">Four levels side by side in one map</h2>
   <p class="lede">The whole dungeon is one 4 KB block at <code>$9000</code>: 32 rows of 128 cells, each byte the character the view window shows. The 128 columns are four levels of 32, laid out left to right.</p>
   <div class="plate"><div data-w="map"></div>
@@ -120,7 +129,7 @@ table.d td.n,table.d th.n{text-align:right;font-variant-numeric:tabular-nums}
 </section>
 
 <section id="menu">
-  <p class="fig">04 · Choosing what to do</p>
+  <p class="fig">05 · Choosing what to do</p>
   <h2 class="t">A menu of what applies, and a clock that stops while you choose</h2>
   <p class="lede">Every time you choose, <code>$11A2</code> builds the menu again from what is around you, and the clock stops until you have chosen.</p>
   <div class="plate"><div data-w="menu"></div>
@@ -130,7 +139,7 @@ table.d td.n,table.d th.n{text-align:right;font-variant-numeric:tabular-nums}
 </section>
 
 <section id="cast">
-  <p class="fig">05 · The cast</p>
+  <p class="fig">06 · The cast</p>
   <h2 class="t">Thirty pictures for 64 things</h2>
   <p class="lede">Everything you can see appears in the strip at the bottom as a picture, cut from one multicolour bitmap sheet at <code>$6000</code>. Most kinds share one picture, and seven are drawn twice as tall.</p>
   <div class="plate"><div data-w="cast"></div>
@@ -139,7 +148,7 @@ table.d td.n,table.d th.n{text-align:right;font-variant-numeric:tabular-nums}
 </section>
 
 <section id="combat">
-  <p class="fig">06 · Fighting</p>
+  <p class="fig">07 · Fighting</p>
   <h2 class="t">A roll of 0 to 31 against a defence</h2>
   <p class="lede">Every blow is a random number from 0 to 31 plus the attacker's to-hit score, against the defender's defence. Damage is the random number masked by the weapon plus an eighth of the attacker's strength.</p>
   <div data-w="combat"></div>
@@ -169,7 +178,7 @@ bne $2B8C
 </section>
 
 <section id="magic">
-  <p class="fig">07 · Magic</p>
+  <p class="fig">08 · Magic</p>
   <h2 class="t">Secret: spells never roll the dice</h2>
   <p class="lede">The instructions promise that Magic Missile has a high chance of missing. The code fetches a random number for it and throws it away.</p>
   <div class="asm"><span class="c">; $3AD3 spell_hit_creature</span>
@@ -186,7 +195,7 @@ bpl hit</div>
 </section>
 
 <section id="creatures">
-  <p class="fig">08 · The monsters</p>
+  <p class="fig">09 · The monsters</p>
   <h2 class="t">Bug: the monsters' homes are wiped, so they wander north</h2>
   <p class="lede">The instructions say most monsters patrol round their lair. The code gives every creature a home to walk back to when it is not hunting you, and the new-game routine wipes half of each address.</p>
   <div class="plate"><div data-w="creatures"></div>
@@ -196,22 +205,13 @@ bpl hit</div>
 </section>
 
 <section id="demo">
-  <p class="fig">09 · The demonstration</p>
+  <p class="fig">10 · The demonstration</p>
   <h2 class="t">Secret: the demo recorder is still in the game</h2>
   <p class="lede">After one pass of the title's story the game plays itself. It does it by replaying a recording of joystick input from <code>$A543</code>, with the random numbers reset to where they were when it was recorded.</p>
   <div class="plate"><div data-w="demo"></div>
   <p class="cap">The recording, one byte per run of identical input: the stick in the high four bits, the number of polls less one in the low four. <span data-demo-stats></span>. It ends with an idle stretch and the end mark the recorder writes when its buffer runs out.</p></div>
   <p>CTRL with R on the title screen starts a recording. <code>$5BBA</code> saves the random state and starts a game in which every input is written over the demonstration, and F ends it. The next time the title's story runs out, the demonstration plays the new recording: in the emulator, a short walk recorded this way was replayed through the same cells to the same pixel.</p>
   <p>The recording is also the best test there is of a port. The <a href="play.html">Play</a> tab runs the whole game in JavaScript; fed this recording poll by poll, it reproduces the real game's run through the demonstration, every one of its 2,371 world passes, byte for byte.</p>
-</section>
-
-<section id="sound">
-  <p class="fig">10 · The sound</p>
-  <h2 class="t">Rob Hubbard's three tunes, from the stored bytes</h2>
-  <p class="lede">The music driver at <code>$C000</code> plays three tunes: the main theme on the title and in play, a short one when you die and a longer one when you win.</p>
-  <div class="plate"><div data-w="music"></div>
-  <p class="cap">A port of the driver's reading of its patterns and instruments, checked frame by frame against the original code, feeding a small model of the sound chip.</p></div>
-  <p>The main theme ends in a fade: the driver sets the volume from how far voice 3 has got through its list of patterns, so the theme fades from 4:28 to silence at 5:21 and loops at 5:35. M stops the music in play, and then the footsteps can be heard: every third pixel you move, and every third step of most monsters in sight, the interrupt plays a short burst of noise on voice 1. With the music on, the steps are silent.</p>
 </section>
 
 <section id="title">

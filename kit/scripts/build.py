@@ -341,9 +341,11 @@ def contributors(gdir):
 
     Git authors only, through .mailmap, so every alias a person has committed under
     collapses to one GitHub account. Agents are co-authors in trailers, never authors,
-    so they do not appear. The login comes from the canonical
-    <login>@users.noreply.github.com address; an author with another address is shown
-    unlinked and the build says so, so a .mailmap line can be added.
+    so they do not appear. The login comes from the GitHub noreply address, in either
+    form: <login>@users.noreply.github.com, or <id>+<login>@ as GitHub writes on commits
+    made on the web, merges from its pull request page among them. Both forms of one
+    login are one row. An author with another address is shown unlinked and the build
+    says so, so a .mailmap line can be added.
     """
     try:
         out = subprocess.run(["git", "log", "--no-merges", "--format=%aN\t%aE", "HEAD", "--", gdir],
@@ -358,13 +360,14 @@ def contributors(gdir):
         if is_agent(email):
             continue
         counts[(name, email)] = counts.get((name, email), 0) + 1
-    rows = []
+    rows = {}
     for (name, email), n in sorted(counts.items(), key=lambda kv: -kv[1]):
         login = github_login(email)
         if not login:
             print(f"warning: contributor {name} <{email}> has no GitHub login; add a .mailmap line mapping them to <login>@users.noreply.github.com", file=sys.stderr)
-        rows.append((n, name, login))
-    return rows
+        c, shown, _ = rows.get(login or (name, email), (0, name, login))   # the name of the alias with most commits
+        rows[login or (name, email)] = (c + n, shown, login)
+    return sorted(rows.values(), key=lambda r: -r[0])
 
 
 def fill(tpl, **kw):
