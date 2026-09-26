@@ -287,6 +287,15 @@ FONTS = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=
          '&family=IBM+Plex+Mono:wght@400;500&display=swap">')
 
 
+def links_asset(page, name):
+    """True when the page already loads name through a <script src> or <link href>.
+
+    A plain substring test is not enough: a page's own scripts can mention site.js in a
+    comment (Mercenary's do), and then the shared script was never added.
+    """
+    return re.search(r'<(?:script|link)\b[^>]*\b(?:src|href)="[^"]*/' + re.escape(name) + r'(?:\?[^"]*)?"', page) is not None
+
+
 def inject(page, nav, lib):
     """Put the tab bar into an authored page and hook the shared css/js.
 
@@ -302,12 +311,12 @@ def inject(page, nav, lib):
     else:
         page = nav + page
     page = re.sub(r'<link rel="stylesheet" href="https://fonts\.googleapis\.com/[^"]*">', FONTS, page, count=1)
-    if "site.css" not in page:
+    if not links_asset(page, "site.css"):
         i = page.rfind("</style>")
         page = page[:i + 8] + "\n" + hook + page[i + 8:] if i >= 0 else hook + "\n" + page
     if "<meta charset" not in page:
         page = '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' + page
-    if "site.js" not in page:
+    if not links_asset(page, "site.js"):
         page += f'\n<script src="{lib}/site.js"></script>\n'
     return page
 
@@ -405,7 +414,7 @@ def build_game(gdir, out_root):
         facts += "<h2>Cheats</h2>" + markdown(cheats)
     src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
     src = under_title(src, ban)
-    if "site.js" not in src:
+    if not links_asset(src, "site.js"):
         src += f'\n<script src="{lib}/site.js"></script>\n'
     open(os.path.join(out, "source.html"), "w").write(at_end(src, edit_footer(game, "source.html")))
     # about
