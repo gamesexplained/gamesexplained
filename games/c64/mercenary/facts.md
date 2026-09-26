@@ -183,12 +183,21 @@ Weapons and moving objects therefore run only on the surface.
   `$5900` = round(256 (2^(i/256) − 1)); `$5A00`/`$5B00` hold sin((i + 0.5)
   × 90°/256) as floats.
 - `$82FA` multiplies and `$8334` divides by adding and subtracting logs
-  (error at most 0.43 %); overflow saturates to ±2^30, underflow to 2^−31
-  (`$831A`). `$838B` adds: the smaller mantissa is shifted by the exponent
-  difference through self-modified branches (`$83AB`, `$8404`), a difference
-  of 9 or more returns the larger operand, unlike signs subtract and
-  renormalise (`$83D5`), and the result truncates (at most 0.55 %).
-  Callers subtract by flipping the sign bit (`EOR #1`, `$9C91`, `$AA05`).
+  (error at most 0.429 % and 0.437 %; the worst division is mantissas `$F7`
+  ÷ `$EF`: logs 249 − 244 = 5, and `$5905` holds 3). Overflow of the final
+  exponent add saturates to ±2^30, underflow to 2^−31 (`$831A`); the
+  mantissa carry (`$8307`) and borrow (`$8346`) adjust the exponent before
+  that check and wrap, so (1.5 × 2^31) × 1.5 gives 2.25 × 2^−32 while
+  1.5 × (1.5 × 2^31) saturates. `$838B` adds: the smaller mantissa is
+  shifted by the exponent difference through self-modified branches
+  (`$83AB`, `$8404`), a difference of 9 or more returns the larger operand,
+  unlike signs subtract and renormalise (`$83D5`; an underflow there returns
+  +2^−31, sign lost, `$83EC`), and the result truncates (up to 0.581 % of
+  the larger operand; 1.0078125 + 0.998046875 gives 2.0). The exponent carry
+  is unchecked: 2^31 + 2^31 gives 2^−32. Callers subtract by flipping the
+  sign bit (`EOR #1`, `$9C91`, `$AA05`). All of this was checked against the
+  routines in a 6502 simulator on millions of operand pairs
+  (`work/tests/test-math-float.js`).
 - `$841F`/`$841E`: sine and cosine of a 1024-step angle (Y high 2 bits, X
   low), ±0.001. `$8434`: 8-bit sine and cosine of a 64-step angle from the
   half-wave table `$8457` (into `$BEBE`/`$BEBF`). `$82BB` 8 × 8 multiply;
@@ -250,8 +259,17 @@ Weapons and moving objects therefore run only on the surface.
   tables `$BC38`/`$BC40`, called through `JMP ($0004)`. Each plots, steps
   the major axis, adds or subtracts the slope `$66` (|minor|/|major| × 256)
   from an 8-bit error, and steps the minor axis on the carry or borrow.
-  Octant 5 adds with the carry set, so it steps by slope + 1: a
-  129-pixel vertical line drawn upward kinks one pixel left.
+  Octant 5 adds with the carry set, so it steps by slope + 1: a vertical
+  line of 129 pixels or more drawn upward kinks one pixel left after 128.
+  A vertical line only reaches octant 5 when its X difference is negative:
+  x − x keeps the sign of the operand the set-up at `$9A94` puts the end in
+  (`$8383`), so vertical lines left of the view's centre kink and those from
+  the centre rightwards (octant 6) do not. `$66` cannot hold 1, so a 45°
+  line gets `$FF` and counts as steep: diagonals of 129 pixels or more miss
+  one sideways step (at step 129 in octants 1 and 2, 128 in octant 6) and
+  end one pixel short; octant 5's extra 1 makes its diagonals exact. The
+  eight routines and their set-up were checked bit for bit against the
+  6502 code on 4,680 lines (`work/tests/test-math-line.js`).
 - **Line colour**: `$AE06` patches all eight routines to `ORA $5660,X` (the
   pixel pair gains %01, `$AE02`) or `AND $7760,X` (the pair becomes %00,
   `$ADFC`). Buildings and objects are drawn with AND: white lines. The roads

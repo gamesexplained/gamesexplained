@@ -1,0 +1,572 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+
+/* city-levels */
+/* The map of Targ and the model sheet (city-levels.js). Every class and id is prefixed city-levels-. */
+.city-levels-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px}
+#city-levels-map button,#city-levels-models button{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer}
+#city-levels-map button:hover{border-color:var(--violet)}
+#city-levels-map button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff}
+.city-levels-legend{font-family:var(--fm);font-size:12px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.city-levels-sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-left:8px;vertical-align:-1px}
+.city-levels-mapwrap{position:relative}
+#city-levels-cv{display:block;width:100%;height:auto;aspect-ratio:1;border-radius:6px;background:#000;cursor:pointer}
+.city-levels-pop{position:absolute;width:312px;max-width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px rgba(0,0,0,.25);padding:14px 16px 12px;z-index:2}
+.city-levels-x{position:absolute;top:8px;right:8px;font-size:15px!important;line-height:1;padding:3px 8px!important}
+.city-levels-title{font-family:var(--fm);font-size:13px;color:var(--ink);margin:0 34px 10px 0;line-height:1.45}
+.city-levels-title span{color:var(--amber)}
+#city-levels-turn{display:block;width:280px;max-width:100%;height:auto;aspect-ratio:280/200;background:#000;border-radius:6px;cursor:grab}
+.city-levels-facts{font-family:var(--fm);font-size:12px;color:var(--ink-soft);line-height:1.6;margin-top:10px}
+.city-levels-facts table{border-collapse:collapse;width:100%}
+.city-levels-facts td{padding:3px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.city-levels-facts td:first-child{color:var(--ink-mute);padding-right:10px;white-space:nowrap}
+.city-levels-facts a.city-levels-sq{color:var(--link);text-decoration:none;cursor:pointer}
+.city-levels-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:10px 0 0}
+.city-levels-sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.city-levels-card{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:8px;padding:6px 6px 7px;font-family:var(--fm);font-size:11px;color:var(--ink-soft);cursor:pointer;line-height:1.45;min-width:0}
+.city-levels-card:hover{border-color:var(--violet)}
+.city-levels-card.city-levels-on{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet)}
+.city-levels-card canvas{display:block;width:100%;height:auto;aspect-ratio:106/90;background:#000;border-radius:5px;margin-bottom:5px}
+.city-levels-card .city-levels-unused{color:var(--coral)}
+.city-levels-card .city-levels-road{color:var(--ink-mute)}
+@media(max-width:720px){.city-levels-pop{position:static;width:auto;margin-top:12px;box-shadow:none}}
+/* rooms-levels */
+/* rooms-levels: the underground's plans, booths and keys (with rooms.css for the viewer) */
+.rooms-maps-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.rooms-maps-tabs button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer}
+.rooms-maps-tabs button:hover{border-color:var(--violet)}
+.rooms-maps-tabs button.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.rooms-maps-tabs button.on .rooms-sub{color:#dfe2ff}
+.rooms-maps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.rooms-maps-right{position:sticky;top:60px}
+.rooms-maps-right .rooms-screen,.rooms-maps-right .rooms-where,.rooms-maps-right .rooms-bar,.rooms-maps-right .rooms-doors,.rooms-maps-right .rooms-rec{max-width:none}
+.rooms-maps-plan{background:#16171b;border-radius:6px;padding:6px;max-height:78vh;overflow:auto}
+.rooms-svg{display:block;width:100%;height:auto}
+.rooms-room{cursor:pointer}
+.rooms-room rect{transition:opacity .1s}
+.rooms-room:hover rect,.rooms-room:focus rect{opacity:.8}
+.rooms-room:focus{outline:none}
+.rooms-room.rooms-here rect{stroke:#fff0c2;stroke-width:.9}
+.rooms-lab{font-family:var(--fm);font-size:1.5px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.rooms-floor{font-family:var(--fm);font-size:2.4px;fill:#c9c7c0;letter-spacing:.05em}
+.rooms-obj{fill:#fff;stroke:#000;stroke-width:.2}
+.rooms-lift circle{fill:#fff0c2;stroke:#000;stroke-width:.2}
+.rooms-lift text{font-family:var(--fm);font-size:1.7px;text-anchor:middle;dominant-baseline:central;fill:#000;font-weight:500}
+.rooms-door-plain,.rooms-door-key,.rooms-door-dark,.rooms-door-booth,.rooms-door-exit{stroke-width:.75;stroke-linecap:butt}
+.rooms-door-plain{stroke:#fff}
+.rooms-door-key{stroke:#ffb347}
+.rooms-door-dark{stroke:#ff7a7a}
+.rooms-door-booth{stroke:#b8a6ff}
+.rooms-door-exit{stroke:#ff5a4a}
+.rooms-tag{font-family:var(--fm);font-size:1.6px;text-anchor:middle;fill:#b8a6ff;cursor:default}
+.rooms-tag-exit{fill:#ff5a4a}
+.rooms-miss{stroke:#fff0c2;stroke-width:.3;stroke-dasharray:.5 .4}
+.rooms-maps-info{font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin:10px 0 6px}
+.rooms-legend{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.rooms-legend li{display:flex;align-items:center;gap:6px}
+.rooms-key-sw{display:inline-block;width:14px;height:10px;border:1px solid #706deb}
+.rooms-key-dark{background:#111;border:1px dashed #777}
+.rooms-key-line{display:inline-block;width:14px;height:3px;background:#fff;box-shadow:0 0 0 1px #16171b}
+.rooms-k-plain{background:#fff;outline:1px solid #16171b}
+.rooms-k-key{background:#ffb347}
+.rooms-k-dark{background:#ff7a7a}
+.rooms-k-booth{background:#b8a6ff}
+.rooms-key-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;border:1px solid #000}
+.rooms-key-lift{display:inline-flex;width:14px;height:14px;border-radius:50%;background:#fff0c2;border:1px solid #000;font-size:9px;align-items:center;justify-content:center;color:#000}
+.rooms-booths-graph{background:#16171b;border-radius:6px;padding:10px}
+.rooms-net text{font-family:var(--fm);text-anchor:middle}
+.rooms-node rect{fill:#2f3136;stroke:#8e8c86;stroke-width:.3}
+.rooms-node{cursor:pointer}
+.rooms-node:hover rect,.rooms-node:focus rect{stroke:#fff0c2}
+.rooms-node:focus{outline:none}
+.rooms-node text{font-size:2.3px;fill:#f1efea}
+.rooms-node .rooms-node-n{font-size:1.8px;fill:#a8a6a0}
+.rooms-e-two,.rooms-e-one,.rooms-e-hub,.rooms-e-mirror{fill:none;stroke-width:.45}
+.rooms-e-two{stroke:#b8a6ff}
+.rooms-e-one{stroke:#7fd1c7}
+.rooms-e-mirror{stroke:#ffb347}
+.rooms-e-hub{stroke:#8e8c86;stroke-dasharray:.8 .6}
+.rooms-arrowhead{fill:#7fd1c7}
+.rooms-e-lab{font-size:1.9px;fill:#e9e7e1;paint-order:stroke;stroke:#16171b;stroke-width:.6px}
+.rooms-hub circle{fill:#16171b;stroke:#8e8c86;stroke-width:.4}
+.rooms-hub text{font-size:2.2px;fill:#e9e7e1}
+.rooms-wide{max-width:none;margin-top:16px}
+.rooms-link{font-family:var(--fm);font-size:11.5px;background:none;border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin:1px 0;cursor:pointer;color:var(--link)}
+.rooms-link:hover{border-color:var(--violet)}
+.rooms-shape{width:34px;height:36px;background:#2e2c9b;border-radius:3px;display:block}
+.rooms-shape polyline{fill:none;stroke:#706deb;stroke-width:12;stroke-linejoin:round}
+.rooms-shape .rooms-floorline{stroke:#706deb;stroke-width:6}
+.rooms-keys-extra{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin:12px 0 0}
+@media (max-width:900px){.rooms-maps-grid{grid-template-columns:minmax(0,1fr)}.rooms-maps-right{position:static;order:-1}.rooms-maps-plan{max-height:none}}
+.rooms-maps-zoom{display:flex;gap:4px;justify-content:flex-end;margin:0 0 6px}
+.rooms-maps-zoom button{font-family:var(--fm);font-size:12px;min-width:30px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer}
+.rooms-maps-zoom button:hover{border-color:var(--violet)}
+.rooms-maps-zoom button.on{border-color:var(--violet);color:var(--violet)}
+.rooms-offwall{stroke:#ff7a7a;stroke-width:.35;stroke-dasharray:1.2 .8}
+.rooms-arrowhead-m{fill:#ffb347}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The city of Targ square by square, and the 174 rooms beneath it, drawn from the game's own tables.</p>
+</header>
+<main class="wrap">
+<section id="city-levels-map">
+  <p class="fig">01 · The map of Targ</p>
+  <h2 class="t">The city of Targ, square by square</h2>
+  <p class="lede">Sixteen by sixteen squares, each with one building model and the roads through it, drawn from the tables the game reads.</p>
+  <div class="plate">
+    <div class="city-levels-bar">
+      <button type="button" id="city-levels-owner" aria-pressed="false">Owners, as the Metal Detector shows them</button>
+      <span class="city-levels-legend" id="city-levels-legend" hidden><i class="city-levels-sw" data-c="5"></i>Palyar <i class="city-levels-sw" data-c="6"></i>Mechanoid <i class="city-levels-sw" data-c="2"></i>nobody's</span>
+    </div>
+    <div class="city-levels-mapwrap" id="city-levels-mapwrap">
+      <canvas id="city-levels-cv" width="854" height="854" aria-label="The 16 by 16 squares of the city, north at the top"></canvas>
+      <div class="city-levels-pop" id="city-levels-pop" hidden>
+        <button type="button" class="city-levels-x" id="city-levels-close" aria-label="Close">×</button>
+        <p class="city-levels-title" id="city-levels-title"></p>
+        <canvas id="city-levels-turn" width="280" height="200" aria-label="The square's model, turning"></canvas>
+        <div class="city-levels-facts" id="city-levels-facts"></div>
+      </div>
+    </div>
+    <p class="city-levels-note" id="city-levels-note" hidden></p>
+    <p class="cap">Square <b>XX-YY</b> is column X, row Y, as the LOC readout shows it; north is at the top. Each square's model comes from <code>$2600</code> and <code>$2700</code> (the loader is <code>$9575</code>), drawn from above at a slant: white for the edges the game draws in white, grey for its road marks. Names from the square's script, <code>$2B00</code> bits 0-4 (script 32 + n); owners from bits 5 and 6, coloured as the Metal Detector colours the message window (<code>$B553</code>). Click a square for its model.</p>
+  </div>
+</section>
+<section id="city-levels-models">
+  <p class="fig">02 · Every model</p>
+  <h2 class="t">Every building model in the image</h2>
+  <p class="lede">The image holds 106 models: 91 buildings, every one of them used by some square, and 15 road pieces, of which 8 are used by none.</p>
+  <div class="plate">
+    <div class="city-levels-sheet" id="city-levels-sheet"></div>
+    <p class="cap">In address order, from <code>$C000</code> to <code>$CF66</code> and <code>$E000</code> to <code>$FFCF</code>, each drawn from its own bytes. Under each, the squares that use it. Click one to find its squares on the map.</p>
+  </div>
+</section>
+
+<section id="rooms-maps">
+  <p class="fig">03 · The underground</p>
+  <h2 class="t">The underground, complex by complex</h2>
+  <p class="lede">Each lift goes down into a hangar, and the hangar's doors lead on into a complex of rooms: six complexes under the city and the Colony Craft's three floors, 152 rooms in all, with 22 transporter booths between them.</p>
+  <div class="plate">
+    <div class="rooms-maps-tabs" id="rooms-maps-tabs" role="toolbar" aria-label="Complex"></div>
+    <div class="rooms-maps-grid">
+      <div class="rooms-maps-left">
+        <div class="rooms-maps-zoom" id="rooms-maps-zoom" role="toolbar" aria-label="Zoom"><button type="button" data-z="out" title="Zoom out">&minus;</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="fit">Fit</button></div>
+        <div class="rooms-maps-plan" id="rooms-maps-plan"><p class="rooms-note rooms-need" hidden>The plans read the game from <code>listing.json</code>, so they need the built site.</p></div>
+        <p class="rooms-maps-info" id="rooms-maps-info"></p>
+        <ul class="rooms-legend">
+          <li><span class="rooms-key-sw" style="background:#2e2c9b"></span>a room in its own two colours</li>
+          <li><span class="rooms-key-sw rooms-key-dark"></span>dark room</li>
+          <li><span class="rooms-key-line rooms-k-plain"></span>door</li>
+          <li><span class="rooms-key-line rooms-k-key"></span>locked door</li>
+          <li><span class="rooms-key-line rooms-k-dark"></span>triangle sign: a dark room beyond</li>
+          <li><span class="rooms-key-line rooms-k-booth"></span>door to a booth, with its number</li>
+          <li><span class="rooms-key-dot"></span>object</li>
+          <li><span class="rooms-key-lift">E</span>lift</li>
+        </ul>
+      </div>
+      <div class="rooms-maps-right"><div id="rooms-maps-view" class="rooms-view"><p class="rooms-note rooms-need" hidden>The viewer reads the game from <code>listing.json</code>, so it needs the built site.</p></div></div>
+    </div>
+    <p class="cap"><b>Floor plans from the room records</b> (<code>$3000</code>-<code>$3B23</code>, pointers <code>$2300</code>/<code>$23C0</code>): each room is placed so that its doors meet the doors they lead to, north at the top, one unit being 256, and a city square 256 units across. The game never places rooms against one another, so the plan is the designer's, read back from the doors' positions. Click a room to stand in it; the viewer draws it with the game's own arithmetic, objects included, checked byte for byte against the game's code in a 6502 simulator.</p>
+  </div>
+</section>
+
+<section id="rooms-booths">
+  <p class="fig">04 · Transporter booths</p>
+  <h2 class="t">The 22 transporter booths</h2>
+  <p class="lede">A booth is a room three units square with one door, and entering it rewrites that door: to the room you did not come from, to one fixed room, or to one of eight at random.</p>
+  <div class="plate">
+    <div id="rooms-booths-graph" class="rooms-booths-graph"><p class="rooms-note rooms-need" hidden>The diagram reads the game from <code>listing.json</code>, so it needs the built site.</p></div>
+    <p class="cap"><b>The complexes and the booths between them</b>: a line for a booth that works both ways, an arrow for one that only sends, dotted lines for booth <code>$72</code>, which picks one of its eight pairs with the game's random number (<code>$910E</code>). Booths inside one complex are left out of the diagram and listed below. From the booth records <code>$375E</code>-<code>$389D</code>, the relinking at <code>$9119</code>-<code>$913B</code>, checked against the game's code in a 6502 simulator.</p>
+    <p class="rooms-keys-extra" id="rooms-booths-inside"></p>
+    <div id="rooms-booths-table" class="rooms-rec rooms-wide"></div>
+  </div>
+  <p>A booth holds two links, a room and a door each. On entry the game compares the room you came from with the first link and points the booth's door at the other one. When both links name the same room the booth is one way: from anywhere else it sends you there, and coming from that room it leaves the door alone, so you go straight back. Booth <code>$7F</code> also calls <code>$9353</code>, which flips the mirror flag <code>$F1</code>. Both its links name room <code>$56</code>, so the flip happens only when you come in from <code>$90</code> on the Colony Craft, and nothing else in the game sets the flag back.</p>
+</section>
+
+<section id="rooms-keys">
+  <p class="fig">05 · Keys</p>
+  <h2 class="t">Seven keys, each shaped like the doors it opens</h2>
+  <p class="lede">A door whose outline is one of seven key shapes stays LOCKED unless the object numbered eight more than its type is carried.</p>
+  <div class="plate">
+    <div id="rooms-keys-table" class="rooms-rec rooms-wide"><p class="rooms-note rooms-need" hidden>The table reads the game from <code>listing.json</code>, so it needs the built site.</p></div>
+    <p class="rooms-keys-extra" id="rooms-keys-extra"></p>
+    <p class="cap"><b>The key-shaped outlines</b> at <code>$92E2</code>-<code>$932A</code>, drawn from their bytes; the lock test at <code>$9493</code> wants object 8 + type carried (<code>$29C8</code> + type, bit 7) unless object 48 is (<code>$948E</code>). Where each key lies is its room at the start (<code>$2940</code>).</p>
+  </div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+window.MERC_GAME = window.C64 ? C64.load('listing.json') : Promise.reject(new Error('no C64'));
+window.MERC_GAME.catch(() => {});
+</script>
+<script>
+/* city-levels */
+// The city map for the Maps page: the 16 x 16 squares of Targ with their roads, every square's
+// building drawn small from its model, the owners from $2B00, and a sheet of every model in the
+// image. Reads listing.json through window.MERC_GAME; nothing is embedded.
+(function () {
+  'use strict';
+
+  // A building model ($2600/$2700 -> the format load_building $9575 reads): +0 last vertex, +1 last
+  // edge, +2 pen split, +3 rotor; edges one byte (two nibbles) until a 0, then two bytes; rotor
+  // vertices 3 bytes (dx, height, dz in quarter units about the rotor centre), the rest 2 bytes
+  // (x and z in the low six bits, 0 -> $00, 63 -> $FF, else + $60; height from the top two bits of
+  // both, 15 meaning a third byte). Vertices 60-63 are the square's road ends.
+  function parseModel(ram, p) {
+    const nv = ram[p] + 1, ne = ram[p + 1] + 1, pen = ram[p + 2], r = ram[p + 3];
+    let y = p + 4, rotor = null;
+    if (r) { rotor = { n: (r & 15) + 1, speed: (r & 0xF0) >> 1, cx: ram[y], cz: ram[y + 1], byte: r }; y += 2; }
+    const edges = [];
+    let wideAt = -1;
+    while (edges.length < ne) {
+      if (wideAt < 0) { const b = ram[y++]; if (b === 0) { wideAt = edges.length; continue; } edges.push([b >> 4, b & 15]); }
+      else { edges.push([ram[y], ram[y + 1]]); y += 2; }
+    }
+    const coord = b => { const c = b & 63; return c === 0 ? 0 : c === 63 ? 255 : c + 0x60; };
+    const V = [];
+    for (let i = 0; i < nv; i++) {
+      if (rotor && i < rotor.n) {
+        const raw = [ram[y], ram[y + 1], ram[y + 2]]; y += 3;
+        V.push({ rot: true, raw, x: rotor.cx + (raw[0] << 24 >> 24) / 4, h: raw[1], z: rotor.cz + (raw[2] << 24 >> 24) / 4 });
+        continue;
+      }
+      const b1 = ram[y], b2 = ram[y + 1]; y += 2;
+      const code = (b1 >> 6) << 2 | (b2 >> 6);
+      let h = code, raw = [b1, b2];
+      if (code === 15) { const e = ram[y++]; raw.push(e); h = e & 0x80 ? ((e >> 4) & 7) + (e & 15) / 16 : e; }
+      V.push({ rot: false, raw, x: coord(b1), h, z: coord(b2) });
+    }
+    return { addr: p, end: y - 1, V, edges, pen, rotor, wideAt };
+  }
+
+  if (typeof document === 'undefined') { module.exports = { parseModel }; return; }
+})();
+</script>
+<script>
+/* rooms-levels */
+// The underground on the Maps page: every complex as a floor plan drawn from the room records,
+// the transporter booths, the keys; a room viewer beside the plans. Needs rooms.js first
+// (window.MercRooms) and window.MERC_GAME (C64.load('listing.json')).
+(function () {
+  'use strict';
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // The complexes, by the room each plan starts from; the Colony Craft's three floors stand on
+  // one another where its booths $86 and $87 join them (rooms $91, $9C and $A9 share a place).
+  const SETS = [
+    { id: 'h12', title: 'Hangars 1 and 2', starts: [1], lifts: [1, 2] },
+    { id: 'h3', title: 'Hangar 3', starts: [3], lifts: [3] },
+    { id: 'h4', title: 'Hangar 4', starts: [4], lifts: [4] },
+    { id: 'h5', title: 'Hangar 5', starts: [5], lifts: [5] },
+    { id: 'h6', title: 'Hangar 6', starts: [6], lifts: [6] },
+    { id: 'h7', title: 'Hangar 7', starts: [7], lifts: [7] },
+    { id: 'cc', title: 'The Colony Craft', starts: [8, 0x9A, 0x88], floors: ['Top floor', 'Middle floor', 'Bottom floor'], align: [0x91, 0x9C, 0xA9], lifts: [8] },
+  ];
+
+  function start() {
+    const host = $('rooms-maps');
+    if (!host) return;
+    const fail = () => { host.querySelectorAll('.rooms-need').forEach(e => { e.hidden = false; }); };
+    if (!window.MercRooms || !window.MERC_GAME || !window.C64) { fail(); return; }
+    window.MERC_GAME.then(game => {
+      const R = window.MercRooms, G = R.build(game.ram);
+      const V = R.viewer($('rooms-maps-view'), G, { picker: true });
+      maps(G, R, V);
+      booths(G, R, V);
+      keys(G, R, V);
+    }).catch(e => { fail(); if (window.console) console.error(e); });
+  }
+
+  // ---- Floor plans ----------------------------------------------------------------------------
+  function maps(G, R, V) {
+    const PAL = window.C64.PAL, tabs = $('rooms-maps-tabs'), plan = $('rooms-maps-plan'), info = $('rooms-maps-info');
+    const complexOf = new Map();
+    G.complexes.forEach(c => c.rooms.forEach(n => complexOf.set(n, c)));
+    const byStart = new Map(G.complexes.map(c => [c.start, c]));
+    const setOf = n => SETS.find(s => s.starts.some(st => byStart.get(st) && byStart.get(st).rooms.includes(n)));
+    tabs.innerHTML = SETS.map(s => {
+      const n = s.starts.reduce((a, st) => a + byStart.get(st).rooms.length, 0);
+      return `<button type="button" data-set="${s.id}">${esc(s.title)} <span class="rooms-sub">${n}</span></button>`;
+    }).join('');
+    let cur = null, svgRooms = new Map();
+
+    function draw(set) {
+      cur = set;
+      tabs.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.set === set.id));
+      const floors = set.starts.map(st => byStart.get(st));
+      // each floor's rooms placed; the Colony Craft's floors side by side, aligned on its booths
+      const panels = floors.map((c, i) => {
+        const base = set.align ? c.pos.get(set.align[i]) : [0, 0];
+        const pos = new Map([...c.pos].map(([n, p]) => [n, [p[0] - base[0], p[1] - base[1]]]));
+        let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+        for (const [n, [x, y]] of pos) { const r = G.rooms[n]; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x + r.xs); y1 = Math.max(y1, y + r.ys); }
+        return { c, pos, x0, y0, x1, y1 };
+      });
+      const PAD = 3, GAP = 6;
+      if (set.align) {        // one frame for all floors, so the shared places line up
+        const y0 = Math.min(...panels.map(p => p.y0)), y1 = Math.max(...panels.map(p => p.y1));
+        const x0 = Math.min(...panels.map(p => p.x0)), x1 = Math.max(...panels.map(p => p.x1));
+        panels.forEach(p => { p.x0 = x0; p.x1 = x1; p.y0 = y0; p.y1 = y1; });
+      }
+      let ox = PAD;
+      panels.forEach(p => { p.ox = ox - p.x0; p.oy = PAD + (set.floors ? 5 : 0) - p.y0; ox += (p.x1 - p.x0) + GAP; });
+      const W = ox - GAP + PAD, H = Math.max(...panels.map(p => p.y1 - p.y0)) + 2 * PAD + (set.floors ? 5 : 0);
+      const parts = [];
+      svgRooms = new Map();
+      panels.forEach((p, i) => {
+        if (set.floors) parts.push(`<text class="rooms-floor" x="${p.ox + p.x0}" y="${PAD + 2.5}">${esc(set.floors[i])}</text>`);
+        for (const n of p.c.rooms) {
+          const r = G.rooms[n], [x, y] = p.pos.get(n), X = x + p.ox, Y = y + p.oy;
+          const fill = r.dark ? '#111' : PAL[r.c10 & 15], stroke = r.dark ? '#777' : PAL[r.c11 & 15];
+          const tip = `${R.h2(n)}${r.name ? ' ' + r.name : ''}: ${r.xs} × ${r.ys}, ${r.h} high${r.dark ? ', dark' : ''}${G.objects[n].length ? '; holds ' + G.objects[n].map(o => R.objectLabel(G, o)).join(', ') : ''}`;
+          let g = `<g class="rooms-room${r.dark ? ' rooms-darkroom' : ''}" data-room="${n}" tabindex="0" role="button" aria-label="${esc(tip)}"><title>${esc(tip)}</title>`;
+          g += `<rect x="${X}" y="${Y}" width="${r.xs}" height="${r.ys}" fill="${fill}" stroke="${stroke}" stroke-width="0.35"${r.dark ? ' stroke-dasharray="0.8 0.5"' : ''}/>`;
+          const big = r.xs >= 3 && r.ys >= 2;
+          if (big) g += `<text class="rooms-lab" x="${X + r.xs / 2}" y="${Y + r.ys / 2 - (n <= 8 ? 3.5 : 0)}" fill="${r.dark ? '#bbb' : labelInk(PAL[r.c10 & 15])}">${n <= 8 ? 'HANGAR ' + n : R.h2(n).slice(1)}</text>`;
+          // objects at their places ($2480/$2500: X and Y middle bytes, in units)
+          for (const o of G.objects[n]) {
+            const ox2 = G.ram[0x2480 + o] + G.ram[0x2880 + o] / 256, oy2 = G.ram[0x2500 + o] + G.ram[0x2900 + o] / 256;
+            g += `<circle class="rooms-obj" cx="${X + ox2}" cy="${Y + oy2}" r="0.55"><title>${esc(R.objectLabel(G, o))} (object ${o}) in ${R.h2(n)}</title></circle>`;
+          }
+          // the lift, where the ride arrives ($A2EB)
+          if (n <= 8) {
+            const L = R.lift(G, n, 0), lx = X + L.x / 256, ly = Y + L.y / 256;
+            g += `<g class="rooms-lift"><circle cx="${lx}" cy="${ly}" r="1.3"/><text x="${lx}" y="${ly + 0.05}">E</text><title>Lift ${n}: E anywhere in the room rides up to ${sq(G.lifts[n])}${n === 5 ? ' (coming down needs the Pass)' : ''}${n === 8 ? ', onto the Colony Craft’s deck' : ''}; the ride down arrives here</title></g>`;
+          }
+          g += '</g>';
+          parts.push(g);
+        }
+        // doors, drawn over the rooms
+        for (const n of p.c.rooms) {
+          const r = G.rooms[n], [x, y] = p.pos.get(n), X = x + p.ox, Y = y + p.oy;
+          for (const d of r.doors) {
+            const k = kind(G, d), a = 0x50 / 256, b = 0xB0 / 256;
+            const [x1, y1, x2, y2] = d.wallX ? [X + d.x, Y + d.y + a, X + d.x, Y + d.y + b] : [X + d.x + a, Y + d.y, X + d.x + b, Y + d.y];
+            const to = d.dest ? R.roomLabel(G, d.dest) : 'outside';
+            const tip = `${R.h2(n)} door ${d.i}: ${R.KIND[d.type] || 'type ' + d.type}${d.type >= 8 ? ' (object ' + (d.type + 8) + ')' : ''}, to ${to}`;
+            parts.push(`<line class="rooms-door-${k}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><title>${esc(tip)}</title></line>`);
+            const onWall = d.wallX ? (d.x === 0 || d.x === r.xs) && d.y < r.ys : (d.y === 0 || d.y === r.ys) && d.x < r.xs;
+            if (!onWall) {
+              const qx = Math.max(X, Math.min(X + r.xs, x1)), qy = Math.max(Y, Math.min(Y + r.ys, y1));
+              parts.push(`<line class="rooms-offwall" x1="${x1}" y1="${y1}" x2="${qx}" y2="${qy}"><title>${esc(`${R.h2(n)} door ${d.i} is recorded at X ${d.x} (${R.h2(d.x)}), outside a room ${r.xs} wide: the door test never finds it, so the room has no way out`)}</title></line>`);
+            }
+            if (k === 'booth' || k === 'exit') {
+              const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2, bn = d.dest;
+              parts.push(`<text class="rooms-tag rooms-tag-${k}" x="${cx + (d.wallX ? (d.x === 0 ? -2.2 : 2.2) : 0)}" y="${cy + (d.wallX ? 0.4 : (d.y === 0 ? -1.2 : 2.2))}">${k === 'exit' ? 'out' : R.h2(bn).slice(1)}<title>${esc(tip + (k === 'booth' ? '; ' + boothWhat(G, R, bn) : ''))}</title></text>`);
+            }
+          }
+          // door pairs that do not meet on the plan (the records disagree by a unit or two)
+          for (const o of p.c.off) if (o.from === n && o.to && o.from < o.to) {
+            const d = r.doors[o.door], D = G.rooms[o.to], back = D.doors[d.arr], [tx, ty] = p.pos.get(o.to);
+            const m = (dd, bx, by) => dd.wallX ? [bx + dd.x, by + dd.y + 0.5] : [bx + dd.x + 0.5, by + dd.y];
+            const [ax2, ay2] = m(d, X, Y), [bx2, by2] = m(back, tx + p.ox, ty + p.oy);
+            parts.push(`<line class="rooms-miss" x1="${ax2}" y1="${ay2}" x2="${bx2}" y2="${by2}"><title>${R.h2(n)} door ${d.i} and ${R.h2(o.to)} door ${d.arr} lead to each other but sit ${Math.hypot(o.dx, o.dy).toFixed(1)} units apart on this plan</title></line>`);
+          }
+        }
+      });
+      plan.innerHTML = `<svg xmlns="${NS}" class="rooms-svg" viewBox="0 0 ${W} ${H}" style="aspect-ratio:${W}/${H}" role="img" aria-label="${esc(set.title)}: floor plan">${parts.join('')}</svg>`;
+      zoom = set.id === 'h12' ? 3 : 1; applyZoom();
+      plan.querySelectorAll('.rooms-room').forEach(el => svgRooms.set(+el.dataset.room, el));
+      const offs = floors.reduce((a, c) => a + c.off.filter(o => o.to && o.from < o.to).length, 0);
+      const nRooms = floors.reduce((a, c) => a + c.rooms.length, 0);
+      let extra = '';
+      if (set.id === 'h12') {
+        const p0 = panels[0].pos, d = [p0.get(2)[0] - p0.get(1)[0], p0.get(2)[1] - p0.get(1)[1]];
+        extra = ` On the plan hangar 2 lies ${Math.abs(d[1])} units ${d[1] < 0 ? 'north' : 'south'}${d[0] ? ' and ' + Math.abs(d[0]) + ' ' + (d[0] < 0 ? 'west' : 'east') : ''} of hangar 1; their lift squares are one square, 256 units, apart. The prison, <code>$51</code>, stands where its one door puts it, 128 units west of the door (dashed).`;
+      }
+      info.innerHTML = `${esc(set.title)}: ${nRooms} rooms${set.floors ? ' on three floors' : ''}, lift${set.lifts.length > 1 ? 's' : ''} at ${set.lifts.map(k => sq(G.lifts[k])).join(' and ')}.` +
+        (offs ? ` ${offs} pair${offs > 1 ? 's' : ''} of doors that lead to each other do not meet on the plan (dotted).` : ' Every pair of doors meets.') + extra;
+      const here = floors.some(c => c.rooms.includes(V.state.room));
+      mark(here ? V.state.room : set.starts[0], true);
+      if (!here) svgRooms.forEach(el => el.classList.remove('rooms-here'));
+    }
+    let zoom = 1;
+    const zoomBar = $('rooms-maps-zoom');
+    function applyZoom() {
+      const svg = plan.querySelector('svg'); if (!svg) return;
+      svg.style.width = (zoom * 100) + '%';
+      zoomBar.querySelector('[data-z="fit"]').classList.toggle('on', zoom === 1);
+    }
+    zoomBar.addEventListener('click', ev => {
+      const b = ev.target.closest('button[data-z]'); if (!b) return;
+      const cx = (plan.scrollLeft + plan.clientWidth / 2) / plan.scrollWidth, cy = (plan.scrollTop + plan.clientHeight / 2) / plan.scrollHeight;
+      zoom = b.dataset.z === 'fit' ? 1 : Math.max(1, Math.min(8, zoom * (b.dataset.z === 'in' ? 1.5 : 1 / 1.5)));
+      applyZoom();
+      plan.scrollLeft = cx * plan.scrollWidth - plan.clientWidth / 2; plan.scrollTop = cy * plan.scrollHeight - plan.clientHeight / 2;
+    });
+    // show the current room: highlight it and, when the plan is larger than its box, scroll to it
+    function mark(n, scroll) {
+      svgRooms.forEach((el, k) => el.classList.toggle('rooms-here', k === n));
+      const el = svgRooms.get(n);
+      if (!el || !scroll) return;
+      const a = el.getBoundingClientRect(), b = plan.getBoundingClientRect();
+      if (a.left < b.left || a.right > b.right || a.top < b.top || a.bottom > b.bottom) {
+        plan.scrollLeft += (a.left + a.right) / 2 - (b.left + b.right) / 2;
+        plan.scrollTop += (a.top + a.bottom) / 2 - (b.top + b.bottom) / 2;
+      }
+    }
+    tabs.addEventListener('click', ev => { const b = ev.target.closest('button[data-set]'); if (b) draw(SETS.find(s => s.id === b.dataset.set)); });
+    const pickRoom = ev => { const g = ev.target.closest('.rooms-room'); if (!g) return; V.show(+g.dataset.room); if (window.innerWidth < 900) $('rooms-maps-view').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+    plan.addEventListener('click', pickRoom);
+    plan.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pickRoom(ev); } });
+    V.on(st => { const s = setOf(st.room); if (s && s !== cur) draw(s); else mark(st.room, true); });
+    draw(setOf(V.state.room) || SETS[0]);
+  }
+  function sq(l) { const f = v => (v > 99 ? '**' : String(v).padStart(2, '0')); return l.x > 99 || l.y > 99 ? `${l.x}-${l.y} (LOC **-**)` : `${f(l.x)}-${f(l.y)}`; }
+  function labelInk(hex) { const v = parseInt(hex.slice(1), 16), l = 0.3 * (v >> 16) + 0.59 * (v >> 8 & 255) + 0.11 * (v & 255); return l > 120 ? '#111' : '#fff'; }
+  function kind(G, d) {
+    if (!d.dest) return 'exit';
+    if (G.rooms[d.dest].booth) return 'booth';
+    if (d.type >= 8) return 'key';
+    if (d.type === 3) return 'dark';
+    return 'plain';
+  }
+  function boothWhat(G, R, b) {
+    const r = G.rooms[b], p = r.pairs;
+    if (b === 0x72) return 'booth $72 sends you to one of eight rooms at random';
+    if (p[0].room === p[1].room) return `booth ${R.h2(b)} always sends you to ${R.roomLabel(G, p[0].room)}` + (b === 0x7F ? ', and coming from $90 it mirrors the world' : '');
+    return `booth ${R.h2(b)} joins ${R.roomLabel(G, p[0].room)} and ${R.roomLabel(G, p[1].room)}`;
+  }
+
+  // ---- Booths -----------------------------------------------------------------------------------
+  function booths(G, R, V) {
+    const host = $('rooms-booths'), tbl = $('rooms-booths-table');
+    if (!host) return;
+    const complexOf = new Map();
+    G.complexes.forEach(c => c.rooms.forEach(n => complexOf.set(n, c.start)));
+    const NAME = { 1: 'Hangars 1 and 2', 3: 'Hangar 3', 4: 'Hangar 4', 5: 'Hangar 5', 6: 'Hangar 6', 7: 'Hangar 7', 8: 'Colony top', 0x9A: 'Colony middle', 0x88: 'Colony bottom' };
+    // node places in a 100 x 64 box
+    const NODE = { 8: [15, 7], 0x9A: [50, 7], 0x88: [85, 7], 3: [15, 31], 1: [50, 31], 5: [85, 31], 4: [15, 56], 6: [50, 56], 7: [85, 56] };
+    const HUB = [68, 45], HW = 10.5, HH = 4.2;
+    const rows = [], groups = new Map();
+    const add = (a, b, kind, n) => {
+      const key = kind === 'two' ? [Math.min(a, b), Math.max(a, b), kind].join() : [a, b, kind].join();
+      if (!groups.has(key)) groups.set(key, { a, b, kind, ns: [] });
+      if (!groups.get(key).ns.includes(n)) groups.get(key).ns.push(n);
+    };
+    const inside = [];
+    for (const r of G.rooms.slice(1).filter(x => x.booth)) {
+      const into = [];
+      for (const q of G.rooms.slice(1)) for (const d of q.doors) if (d.dest === r.n) into.push({ room: q.n, door: d.i });
+      const p = r.pairs, oneWay = r.n !== 0x72 && p[0].room === p[1].room;
+      const what = r.n === 0x72 ? 'one of eight rooms at random' : oneWay ? `always to ${R.roomLabel(G, p[0].room)}` : `between ${R.roomLabel(G, p[0].room)} and ${R.roomLabel(G, p[1].room)}`;
+      rows.push(`<tr><td><code>${R.h4(r.a)}</code></td><td><button type="button" class="rooms-link" data-room="${r.n}">${R.h2(r.n)}</button></td><td>${R.KIND[r.doors[0].type]}</td>` +
+        `<td>${into.map(x => `<button type="button" class="rooms-link" data-room="${x.room}">${R.h2(x.room)}</button>`).join(' ')}</td><td>${esc(what)}${r.n === 0x7F ? '; entered from $90 it also mirrors the world' : ''}</td></tr>`);
+      if (r.n === 0x72) { for (const q of p) add('hub', complexOf.get(q.room), 'hub', q.room); continue; }
+      if (oneWay) {
+        for (const x of into) if (x.room !== p[0].room) {
+          const a = complexOf.get(x.room), b = complexOf.get(p[0].room);
+          if (a === b) inside.push(r.n); else add(a, b, r.n === 0x7F ? 'mirror' : 'one', r.n);
+        }
+      } else {
+        const a = complexOf.get(p[0].room), b = complexOf.get(p[1].room);
+        if (a === b) inside.push(r.n); else add(a, b, 'two', r.n);
+      }
+    }
+    tbl.innerHTML = `<table class="rooms-tbl"><thead><tr><th>Record</th><th>Booth</th><th>Door 0</th><th>Entered from</th><th>Sends you</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+    const at = k => k === 'hub' ? HUB : NODE[k];
+    // where the segment from a node's centre toward (tx, ty) leaves its box (or the hub's circle)
+    const exit = (k, tx, ty) => {
+      const [x, y] = at(k), dx = tx - x, dy = ty - y, L = Math.hypot(dx, dy) || 1;
+      if (k === 'hub') return [x + dx / L * 3.4, y + dy / L * 3.4];
+      const t = Math.min(dx ? (HW + 0.6) / Math.abs(dx) : 1e9, dy ? (HH + 0.6) / Math.abs(dy) : 1e9);
+      return [x + dx * t, y + dy * t];
+    };
+    const BEND = { '5,7,one': 5, '5,7,two': -5 };
+    const parts = [`<defs><marker id="rooms-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="rooms-arrowhead"/></marker>` +
+      `<marker id="rooms-arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="rooms-arrowhead-m"/></marker></defs>`];
+    const labels = [];
+    for (const g of groups.values()) {
+      const [x1, y1] = at(g.a), [x2, y2] = at(g.b);
+      const key = [g.a, g.b, g.kind].join(), bend = BEND[key] !== undefined ? BEND[key] : (g.kind === 'two' && groups.has([g.a, g.b, 'one'].join()) ? -4 : 0);
+      const L = Math.hypot(x2 - x1, y2 - y1), nx = -(y2 - y1) / L, ny = (x2 - x1) / L;
+      const cx = (x1 + x2) / 2 + nx * bend, cy = (y1 + y2) / 2 + ny * bend;
+      const [sx, sy] = exit(g.a, cx, cy), [ex, ey] = exit(g.b, cx, cy);
+      const cls = { two: 'rooms-e-two', one: 'rooms-e-one', mirror: 'rooms-e-mirror', hub: 'rooms-e-hub' }[g.kind];
+      const tip = g.kind === 'hub' ? `Booth $72 sends you, at random, to ${g.ns.map(R.h2).join(', ')} in ${NAME[g.b]}` :
+        `Booth${g.ns.length > 1 ? 's' : ''} ${g.ns.map(R.h2).join(', ')}: ${NAME[g.a]} ${g.kind === 'two' ? 'and' : 'to'} ${NAME[g.b]}${g.kind === 'two' ? ', both ways' : ', one way'}${g.kind === 'mirror' ? ', mirroring the world' : ''}`;
+      const mk = g.kind === 'one' ? ' marker-end="url(#rooms-arrow)"' : g.kind === 'mirror' ? ' marker-end="url(#rooms-arrow-m)"' : '';
+      parts.push(`<path class="${cls}" d="M${sx.toFixed(2)},${sy.toFixed(2)} Q${cx.toFixed(2)},${cy.toFixed(2)} ${ex.toFixed(2)},${ey.toFixed(2)}"${mk}><title>${esc(tip)}</title></path>`);
+      if (g.kind !== 'hub') {
+        const lx = (sx + 2 * cx + ex) / 4, ly = (sy + 2 * cy + ey) / 4;
+        labels.push(`<text class="rooms-e-lab" x="${lx.toFixed(2)}" y="${(ly + 0.7).toFixed(2)}">${g.ns.map(n => R.h2(n).slice(1)).join(' ')}<title>${esc(tip)}</title></text>`);
+      }
+    }
+    for (const [k, [x, y]] of Object.entries(NODE)) {
+      const c = G.complexes.find(cc => cc.start === +k), first = +k;
+      parts.push(`<g class="rooms-node" data-room="${first}" tabindex="0" role="button"><rect x="${x - HW}" y="${y - HH}" width="${2 * HW}" height="${2 * HH}" rx="1.5"/><text x="${x}" y="${y - 0.3}">${NAME[k]}</text><text class="rooms-node-n" x="${x}" y="${y + 2.5}">${c.rooms.length} rooms</text><title>${NAME[k]}: ${c.rooms.length} rooms; click to stand in ${R.h2(first)}</title></g>`);
+    }
+    parts.push(`<g class="rooms-hub" data-room="114" tabindex="0" role="button"><circle cx="${HUB[0]}" cy="${HUB[1]}" r="3.2"/><text x="${HUB[0]}" y="${HUB[1] + 0.8}">72</text><title>Booth $72: one of eight rooms at random</title></g>`);
+    $('rooms-booths-graph').innerHTML = `<svg xmlns="${NS}" class="rooms-svg rooms-net" viewBox="0 0 100 64" role="img" aria-label="The complexes and the booths between them">${parts.join('')}${labels.join('')}</svg>`;
+    $('rooms-booths-inside').innerHTML = inside.length ? `Booths with both ends in hangars 1 and 2 (left out of the diagram): ${[...new Set(inside)].map(n => `<button type="button" class="rooms-link" data-room="${n}">${R.h2(n)}</button>`).join(' ')}.` : '';
+    host.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-room]'); if (!b) return;
+      V.show(+b.dataset.room); $('rooms-maps-view').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+    host.addEventListener('keydown', ev => { const b = ev.target.closest('g[data-room]'); if (b && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); V.show(+b.dataset.room); } });
+  }
+
+  // ---- Keys -------------------------------------------------------------------------------------
+  function keys(G, R, V) {
+    const host = $('rooms-keys');
+    if (!host) return;
+    const ram = G.ram, rows = [];
+    const outline = t => {                      // the door's outline from $928A, in a 256 x 256 cell
+      let k = ram[0x932B + t], pts = [];
+      for (let g = 0; g < 16; g++) { const a = ram[0x928A + k]; if (a === 0xFF) break; pts.push([a, 0xC8 - ram[0x928B + k]]); k += 2; }
+      return `<svg class="rooms-shape" viewBox="30 -10 200 220" aria-hidden="true"><polyline points="${pts.map(p => p[0] + ',' + p[1]).join(' ')}"/><line x1="30" y1="200" x2="230" y2="200" class="rooms-floorline"/></svg>`;
+    };
+    for (let t = 9; t <= 15; t++) {
+      const o = t + 8, at = ram[0x2940 + o], doors = [];
+      let count = 0;
+      for (const r of G.rooms.slice(1)) { const k = r.doors.filter(d => d.type === t).length; if (k) { count += k; doors.push(`<button type="button" class="rooms-link" data-room="${r.n}">${R.h2(r.n)}${k > 1 ? ' ×' + k : ''}</button>`); } }
+      rows.push(`<tr><td>${outline(t)}</td><td>${t}</td><td>object ${o}</td><td>${at >= 1 && at <= 0xAE ? `<button type="button" class="rooms-link" data-room="${at}">${R.h2(at)}</button>` : R.h2(at)}</td><td>${count}: ${doors.join(' ')}</td></tr>`);
+    }
+    const o16 = ram[0x2940 + 16], o48 = ram[0x2940 + 48];
+    $('rooms-keys-table').innerHTML = `<table class="rooms-tbl"><thead><tr><th>Shape</th><th>Door type</th><th>Key</th><th>Lies in</th><th>Doors it opens</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+    $('rooms-keys-extra').innerHTML = `Object 48 opens every locked door and lies in <button type="button" class="rooms-link" data-room="${o48}">${R.h2(o48)}</button>; the Photon Emitter (object 16), which lights the 20 dark rooms, lies in <button type="button" class="rooms-link" data-room="${o16}">${R.h2(o16)}</button>.`;
+    host.addEventListener('click', ev => { const b = ev.target.closest('button[data-room]'); if (b) { V.show(+b.dataset.room); $('rooms-maps-view').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>
