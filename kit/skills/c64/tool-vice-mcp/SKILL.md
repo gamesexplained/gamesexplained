@@ -278,11 +278,24 @@ the batch.
   and nothing loads. `frame.py test` leaves the machine paused, so
   resume it before the first autostart; `tools.py check-emulator` resumes
   it at the end.
-- **`vice_autostart` loads the first program on the disk.** On the
-  v3.13.1 release (25 September 2026) its `program` and `index`
-  arguments did not choose another file. For any other file, resume the
-  machine at `READY.` and type `LOAD"NAME",8,1` and `RUN` with
-  `vice_keyboard_type`.
+- **`vice_autostart`'s `index` counts from 1, not from 0.** The tool's
+  schema says 0-based, but the server hands the number to VICE's own
+  autostart unchanged, and VICE counts directory entries from 1 and
+  reads 0 as "the first file" (`autostart_disk` and
+  `image_contents_filename_by_number` in `vice/src`, read in the v3.13.1
+  source on 26 September 2026). So `index: 0` and `index: 1` both load
+  the first file; the second file is `index: 2`.
+- **`program` is typed as given.** The server passes it to VICE, which
+  types `LOAD"<program>",8,1` at `READY.` and matches the directory name
+  exactly: use the name as the directory shows it, in capitals (the C64's
+  unshifted letters), with no quotes and no `,8,1`. A wildcard (`NAME*`)
+  loads the first file that matches. To see what autostart actually
+  typed, read VICE's `Loading program '…'` line in `tools/logs/vice.log`.
+  One run (25 September 2026) reported that neither argument chose the
+  second of two files; the second file there was itself a freezer backup
+  that restores a running game, so the report may not show what was
+  loaded. If a file will not autostart, resume the machine at `READY.`
+  and type `LOAD"NAME",8,1` and `RUN` with `vice_keyboard_type`.
 - **`vice_memory_read` takes at most 65,535 bytes**, so a whole 64 KB is
   two reads.
 - **Every MCP call stops the emulated machine for a moment.** A script
