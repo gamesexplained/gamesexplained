@@ -197,6 +197,25 @@ the matrix tool in the same session. Keys a game polls rarely can need a
 `hold_ms` around 3000; where that still does nothing, try
 `vice_keyboard_type`, which goes through the KERNAL buffer.
 
+On 26 September 2026, on v3.13.1 built from source on macOS, a game that
+scans the matrix itself from its main loop (about five passes a second)
+never saw E sent with an automatic release: `vice_keyboard_matrix` with
+`hold_ms` 600, three times, and `vice_keyboard_key_press` with `hold_ms`
+400 and 800. A non-stopping checkpoint on the instruction that latches a
+new key was never hit. `vice_keyboard_matrix` with `pressed: true`, left
+down across two or three other tool calls and then released with
+`pressed: false`, reached it every time. Released after a single call it
+was missed once. So when an automatic release does nothing, hold the key
+by hand, watch the latch with a checkpoint or a variable, and release
+only after it has moved.
+
+In the same session, `vice_joystick_set` did not always stay set across
+`vice_frame_advance`: "up" held through three advances of 200-250 frames,
+but "right", set after a snapshot load, was not seen at all by the game
+(its stick variable stayed `$0F`); set again, it was seen for about 50
+frames and then gone. Read the game's own stick variable after setting
+the stick, and set it again after every snapshot load.
+
 ## The stopwatch
 
 `stopwatch`

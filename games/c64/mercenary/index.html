@@ -84,6 +84,30 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .lift-ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:14px;font-family:var(--fm);font-size:13px}
 .lift-ctl button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
 @media (max-width:720px){.lift-grid,.lift-step{grid-template-columns:1fr}}
+.lift-grid-3{grid-template-columns:1fr 1fr 1fr}
+.lmap-wrap{background:var(--surface-2);border-radius:6px;padding:6px}
+.lmap{width:100%;height:auto;display:block;cursor:crosshair;font-family:var(--fm)}
+.lmap .grid{stroke:var(--line-soft);stroke-width:1}
+.lmap .axis{fill:var(--ink-mute);font-size:11px}
+.lmap .runway{stroke:var(--ink-soft);stroke-width:2.5;fill:none;stroke-linejoin:round}
+.lmap .pyr{stroke:var(--ink);stroke-width:2;fill:none}
+.lmap .pad{stroke:var(--violet);stroke-width:2;stroke-dasharray:6 5;fill:rgba(74,91,214,.06)}
+.lmap .patch{fill:rgba(42,138,74,.28);stroke:var(--green);stroke-width:2}
+.lmap .route{stroke:var(--amber);stroke-width:2;stroke-dasharray:3 5;fill:none}
+.lmap .lbl{font-size:12px;fill:var(--ink)}
+.lmap .lbl.v{fill:var(--violet)}
+.lmap .lbl.g{fill:var(--green);font-weight:500}
+.lmap .you{fill:var(--amber);stroke:#fff;stroke-width:1.5}
+.lmap .dart{fill:var(--ink)}
+.lmap .probe.ok{fill:var(--green)}
+.lmap .probe.no{fill:var(--coral)}
+.lmap-tbl{margin:18px 0 6px}
+.lmap-h{font-size:20px;margin:28px 0 8px}
+.lmap-steps{padding-left:1.3em}
+.lmap-steps li{margin:0 0 6px}
+.lmap-fig{margin:14px 0;max-width:420px}
+.lmap-fig img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
+@media (max-width:720px){.lift-grid-3{grid-template-columns:1fr}}
 /* lead-blind */
 .blind-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--fm);font-size:13px;margin-bottom:14px}
 .blind-ctl button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
@@ -532,25 +556,52 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="lift">
-  <p class="fig">02 · Secret</p>
-  <h2 class="t">Secret: the lift at 08-08 goes to the Colony Craft from the ground</h2>
-  <p class="lede">The Colony Craft hangs 65 squares above 08-08, and the solutions all say to fly up to it. The game will also take you up in its lift from the ground.</p>
+  <p class="fig">02 · Bug</p>
+  <h2 class="t">Bug: stand on one patch of grass at the start and E takes you into the Colony Craft</h2>
+  <p class="lede">You crash-land at 08-08, and the Colony Craft hangs straight above you at ALT 64997. There is no lift on the ground here. But one invisible patch of grass, 1,024 units a side and about 14 seconds' walk from where you land, answers the E key as if it were the lift on the Colony Craft's deck. The ride goes down into the Colony Craft's hangar, and E again brings you up on its deck. The published solutions all fly there.</p>
   <div class="plate">
-    <div class="lift-grid">
-      <div><img src="reference/lift-0808-room8-hangar.png" alt="Room 8, the Colony Craft's hangar, reached by pressing E on the ground at 08-08"><p class="cap"><b>E on the ground at 08-08</b>: the lift goes down into room 8, the Colony Craft's hangar.</p></div>
-      <div><img src="reference/lift-0808-colony-deck.png" alt="Standing on the Colony Craft's deck after the ride up, ALT reading 64997"><p class="cap"><b>E again</b>: the lift comes up on the Colony Craft's deck, ALT 64997.</p></div>
-    </div>
+    <div class="lmap-wrap"><svg id="lmap" class="lmap" viewBox="0 0 640 448" role="img" aria-label="Top-down map of square 08-08 around the lift spot. Click anywhere to test the E key there."></svg></div>
+    <div class="lift-ctl"><button id="lmap-walk" type="button">Walk it from the landing</button><button id="lmap-clear" type="button">Clear</button><span id="lmap-msg">Click anywhere to stand there and press E.</span></div>
+    <p class="cap">Square 08-08 from above, north up, drawn from the game's bytes: the square's model at <code>$CEF6</code> (runway marks and the spinning pyramid), the Dart's position (object 1, <code>$2481</code>/<code>$2501</code>), the E key's test at <code>$B40C</code> and the Colony Craft's pad test at <code>$A13D</code>. One grid step is 256 units, 1/256 of the square. The landing point is where the opening leaves you, measured in the emulator.</p>
   </div>
-  <p>Pressing E runs the test at <code>$B3FD</code>. It checks that no ride is running, that you are on the surface and standing on something, and that you stand on the lift's spot: the middle bytes of your X and Y (<code>$73</code>, <code>$79</code>) both between <code>$70</code> and <code>$73</code>. Then it looks for your square in the table of eight lift squares at <code>$B4B6</code>/<code>$B4BE</code>. Entry 8 is 08-08, meant for the lift on the Colony Craft's deck. Nothing looks at your height.</p>
+  <table class="lift-tbl lmap-tbl">
+    <thead><tr><th>Place</th><th>X, Y within 08-08</th><th>Where from</th></tr></thead>
+    <tbody>
+      <tr><td>Where you land, facing south</td><td><code>$88:00</code>, <code>$88:00</code></td><td>live, after the opening</td></tr>
+      <tr><td>The patch where E works</td><td><code>$70:00</code>-<code>$73:FF</code> on both</td><td><code>$B40C</code>, <code>$B414</code></td></tr>
+      <tr><td>The lift on the deck, where the ride up arrives</td><td><code>$71:00</code>, <code>$71:00</code></td><td><code>$A24A</code></td></tr>
+      <tr><td>The deck's pad, 64997 up</td><td><code>$68:00</code>-<code>$77:FF</code> on both</td><td><code>$A13D</code></td></tr>
+      <tr><td>The Dominion Dart</td><td><code>$96:E4</code>, <code>$8B:77</code></td><td>object 1</td></tr>
+    </tbody>
+  </table>
+  <p>The Colony Craft sits over 08-08, so its deck and the grass underneath share one X and one Y. Only the height tells them apart. Its lift is entry 8 in the table of lift squares at <code>$B4B6</code>/<code>$B4BE</code>, and the E key's test checks the square and the middle bytes of X and Y. It never reads the height. So the patch under the deck's lift works exactly like the lift.</p>
   <div class="plate">
     <div class="lift-step">
       <pre class="lift-asm" id="lift-asm"></pre>
       <table class="lift-tbl"><thead><tr><th>Test</th><th>On the deck</th><th>On the ground</th></tr></thead><tbody id="lift-rows"></tbody></table>
     </div>
     <div class="lift-ctl"><button id="lift-next" type="button">Step</button><button id="lift-reset" type="button">Start again</button><span id="lift-msg"></span></div>
-    <p class="cap">The E key's test, one instruction group at a time, with the values it reads standing on the Colony Craft's deck and standing on the ground at 08-08. Tested live in the emulator from the ground: the ride went down to room 8, and E there came up at height <code>$40FF51</code>.</p>
+    <p class="cap">The E key's test, one instruction group at a time, with the values it reads on the Colony Craft's deck and on the grass under it.</p>
   </div>
-  <p>Room 8 is the Colony Craft's hangar, so the ride down lands you inside it, and the ride up from any hangar ends at that hangar's lift square: for room 8, the deck. The Dart you can buy at the start cannot climb that high: flat out, nose up, its climb gives out at ALT 24000, against the deck's 64997, until it carries the Poweramp. The lift needs neither. It does not open the Colony Craft, though: all three of hangar 8's doors are keyed to object 23 (room 8's record at <code>$30A6</code>), and the published solutions fetch that key from the hangar at 81-35 first.</p>
+  <p>The ride down ends in room 8, the Colony Craft's hangar, whichever end you started from. The ride up from room 8 adds <code>$40FF00</code> to your height, which puts you on the deck. The game does not know how you got in.</p>
+  <div class="plate">
+    <div class="lift-grid lift-grid-3">
+      <div><img src="reference/lift-0808-room8-hangar.png" alt="Room 8, the Colony Craft's hangar, reached by pressing E on the grass at 08-08"><p class="cap"><b>E on the grass</b>: down into room 8, the Colony Craft's hangar.</p></div>
+      <div><img src="reference/lift-0808-colony-deck.png" alt="Standing on the Colony Craft's deck after the ride up, ALT reading 64997"><p class="cap"><b>E again</b>: up on the deck, ALT 64997.</p></div>
+      <div><img src="reference/lift-0808-falling-from-deck.png" alt="Tumbling down towards the city after walking off the deck"><p class="cap"><b>Walk off the pad</b>: you tumble all the way down.</p></div>
+    </div>
+  </div>
+  <p>It does not break the game open. Hangar 8's three doors are all keyed to object 23 (room 8's record at <code>$30A6</code>), and you start without it, so the hangar and the deck are as far as you get. Take the lift back down, or walk off the deck: leaving its pad starts the tumbling fall (<code>$A1DA</code>), which never kills you, and you land back on the grass at 08-08. With the key, the patch would take you into the Colony Craft without a craft that can climb to 64997, which the Dart you start next to cannot do until it carries the Poweramp. That follows from the code; it was not played through.</p>
+  <h3 class="lmap-h">Try it yourself</h3>
+  <p>You need your own copy of the game and a C64 emulator. This was checked in VICE with the original Novagen disk.</p>
+  <ol class="lmap-steps">
+    <li>Let the opening play to the end. Touch nothing until you stand at LOC 08-08 and Benson has finished "CRASH LANDED ON TARG". You face south.</li>
+    <li>Turn right three-eighths of a turn, to face north-west. The COMP dial turns red as you pass west; north-west is the middle of the red quarter.</li>
+    <li>Walk forward for about 14 seconds, about 100 steps, and stop.</li>
+    <li>Press E. If nothing happens you are off the patch, which is about 2.5 seconds of walking across. An emulator snapshot taken at step 1 makes retrying cheap.</li>
+  </ol>
+  <figure class="lmap-fig"><img src="reference/lift-0808-spot-facing-nw.png" alt="On the patch, facing north-west: an empty field and a red COMP dial"><figcaption class="cap">On the patch, facing north-west. Nothing on the screen marks it.</figcaption></figure>
+  <p>The exact way is to put yourself there. X and Y are three bytes each, and the middle bytes are <code>$73</code> and <code>$79</code>. In VICE's monitor, <code>&gt; 73 72</code> and <code>&gt; 79 72</code>, then <code>x</code> to carry on, leave you in the middle of the patch at 08-08. Then press E.</p>
 </section>
 
 <section id="blind">
@@ -1906,6 +1957,122 @@ window.MERC_GAME.catch(() => {});
   $('lift-next').onclick = () => { if (k < STEPS.length) k++; render(); };
   $('lift-reset').onclick = () => { k = 0; render(); };
   render();
+})();
+</script>
+<script>
+/* lead-lift-map */
+// Square 08-08 from above, drawn from the game's bytes: the square's model ($2600/$2700, format
+// read by $9575/$968D), the Dart (object 1), the E test's window ($B40C) and the deck pad ($A13D).
+(function () {
+  const $ = id => document.getElementById(id);
+  const svg = $('lmap'); if (!svg || !window.MERC_GAME) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const X0 = 0x58, Z0 = 0x62, K = 8;                       // map origin (middle bytes) and pixels a unit
+  const px = x => (x - X0) * K, pz = z => (z - Z0) * K;
+  const el = (t, a, parent) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); (parent || svg).appendChild(e); return e; };
+  const hex2 = n => '$' + (n & 255).toString(16).toUpperCase().padStart(2, '0');
+  const START = 0x8800;                                     // where the opening leaves you, X and Y
+  const inPatch = v => ((v >> 8) >> 2) === 0x1C;             // $B40C: middle byte LSR LSR = $1C
+  const onPad = v => (v >> 8) >= 0x68 && (v >> 8) <= 0x77;  // $A13D
+  let probe = null, timer = null;
+  const msg = $('lmap-msg');
+  function say(x, y) {
+    const e = inPatch(x) && inPatch(y);
+    msg.innerHTML = 'X ' + hex2(x >> 8) + ':' + hex2(x) + ', Y ' + hex2(y >> 8) + ':' + hex2(y) + '. E on the grass: ' +
+      (e ? '<b style="color:var(--green)">down into room 8</b>' : 'nothing') + '. The same spot on the deck: ' +
+      (onPad(x) && onPad(y) ? 'on the pad' : 'off the pad, falling') + '.';
+    return e;
+  }
+  function place(x, y) {
+    if (!probe) probe = el('circle', { r: 6 });
+    probe.setAttribute('cx', px(x / 256)); probe.setAttribute('cy', pz(y / 256));
+    probe.setAttribute('class', 'probe ' + (say(x, y) ? 'ok' : 'no'));
+  }
+  window.MERC_GAME.then(game => {
+    const ram = game.ram;
+    for (let v = X0; v <= X0 + 80; v += 8) {
+      el('line', { class: 'grid', x1: px(v), y1: 0, x2: px(v), y2: 448 });
+      if (v % 16 === 0) el('text', { class: 'axis', x: px(v) + 3, y: 440 }).textContent = hex2(v);
+    }
+    for (let v = Z0 - (Z0 % 8) + 8; v <= Z0 + 56; v += 8) {
+      el('line', { class: 'grid', x1: 0, y1: pz(v), x2: 640, y2: pz(v) });
+      if (v % 16 === 0) el('text', { class: 'axis', x: 3, y: pz(v) - 3 }).textContent = hex2(v);
+    }
+    el('text', { class: 'axis', x: 612, y: 16 }).textContent = 'N ↑';
+    // the deck's pad, overhead, and the patch where E works
+    el('rect', { class: 'pad', x: px(0x68), y: pz(0x68), width: 16 * K, height: 16 * K });
+    el('text', { class: 'lbl v', x: px(0x68) + 4, y: pz(0x68) - 6 }).textContent = "the deck's pad, overhead";
+    el('rect', { class: 'patch', x: px(0x70), y: pz(0x70), width: 4 * K, height: 4 * K });
+    el('text', { class: 'lbl g', x: px(0x74) + 6, y: pz(0x72) + 4 }).textContent = 'E works here';
+    // the square's model: $2600/$2700 for square 8*16+8
+    const sq = 0x88, p = ram[0x2600 + sq] | ram[0x2700 + sq] << 8;
+    const nv = ram[p] + 1, lastEdge = ram[p + 1], pen = ram[p + 2], r = ram[p + 3];
+    let y = 3, nrot = 0;
+    if (r) { nrot = (r & 15) + 1; y = 5; }
+    const from = [], to = []; let wide = false;
+    while (from.length <= lastEdge) {
+      if (!wide) { const b = ram[p + ++y]; if (b === 0) { wide = true; continue; } from.push(b >> 4); to.push(b & 15); }
+      else { from.push(ram[p + ++y]); to.push(ram[p + ++y]); }
+    }
+    const V = []; let b06 = 0;
+    for (let i = 0; i < nv; i++) {
+      if (i < nrot) { y += 3; V.push(null); continue; }       // spinning points: drawn round the rotor centre below
+      const coord = () => { const b = ram[p + ++y]; b06 = ((b06 << 2) | (b >> 6)) & 255; const c = b & 63; return c === 0 ? 0 : c === 63 ? 255 : c + 0x60; };
+      const x = coord(), z = coord();
+      if ((b06 & 15) === 15) y++;
+      V.push({ x, z });
+    }
+    for (let e = pen + 1; e <= lastEdge; e++) {               // the road marks: the runway
+      const a = V[from[e]], b = V[to[e]]; if (!a || !b) continue;
+      el('line', { class: 'runway', x1: px(a.x), y1: pz(a.z), x2: px(b.x), y2: pz(b.z) });
+    }
+    if (r) {                                                   // the pyramid spinning on its tip
+      const cx = px(ram[p + 4]), cz = pz(ram[p + 5]);
+      el('path', { class: 'pyr', d: 'M' + (cx) + ',' + (cz - 9) + ' L' + (cx + 8) + ',' + (cz + 5) + ' L' + (cx - 8) + ',' + (cz + 5) + ' Z' });
+      el('text', { class: 'lbl', x: cx - 58, y: cz + 24 }).textContent = 'spinning pyramid';
+    }
+    el('text', { class: 'lbl', x: px(0x61), y: pz(0x7E) - 6 }).textContent = 'runway marks';
+    // the Dart, object 1
+    const dx = ram[0x2481] + ram[0x2881] / 256, dz = ram[0x2501] + ram[0x2901] / 256;
+    el('path', { class: 'dart', d: 'M' + px(dx) + ',' + (pz(dz) - 7) + ' l6,12 l-6,-3 l-6,3 Z' });
+    el('text', { class: 'lbl', x: px(dx) + 10, y: pz(dz) + 4 }).textContent = 'Dart';
+    // the landing point and the route
+    const s = START / 256;
+    el('line', { class: 'route', x1: px(s), y1: pz(s), x2: px(0x72), y2: pz(0x72) });
+    el('circle', { class: 'you', cx: px(s), cy: pz(s), r: 7 });
+    el('path', { class: 'you', d: 'M' + (px(s) - 5) + ',' + (pz(s) + 9) + ' l5,8 l5,-8 Z' });
+    el('text', { class: 'lbl', x: px(s) + 12, y: pz(s) + 16 }).textContent = 'you land here, facing south';
+    svg.addEventListener('click', ev => {
+      if (timer) { clearInterval(timer); timer = null; }
+      const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      place(Math.round((q.x / K + X0) * 256), Math.round((q.y / K + Z0) * 256));
+    });
+    $('lmap-walk').onclick = () => {
+      if (timer) clearInterval(timer);
+      const step = 80 * Math.SQRT1_2;                         // 80 units a step ($A1ED), north-west
+      const at = n => Math.round(START - n * step);
+      let first = 0; while (!inPatch(at(first))) first++;
+      let last = first; while (inPatch(at(last + 1))) last++;
+      const stop = Math.round((first + last) / 2);            // the middle of the patch
+      let n = 0;
+      timer = setInterval(() => {
+        const v = at(n);
+        place(v, v);
+        msg.innerHTML = 'Step ' + n + '. ' + msg.innerHTML;
+        if (n >= stop) {
+          clearInterval(timer); timer = null;
+          msg.innerHTML += ' E works from step ' + first + ' to step ' + last + '; stop anywhere in between.';
+        }
+        n++;
+      }, 70);
+    };
+    $('lmap-clear').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; }
+      if (probe) { probe.remove(); probe = null; }
+      msg.textContent = 'Click anywhere to stand there and press E.';
+    };
+  }).catch(() => {});
 })();
 </script>
 <script>
