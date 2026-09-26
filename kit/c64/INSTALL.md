@@ -32,7 +32,7 @@ measures whatever was installed. The measurements, each dated:
 | v3.11.0 with pull requests #6, #7, #11, #14 to #24 merged, from source | macOS arm64 | 22 September 2026 | 56 of 56 |
 | v3.13.0, from source | Linux x86_64, no display | 24 September 2026 | 56 of 56, three runs |
 | v3.13.1, from source (`get-vice build`) | macOS arm64 | 24 September 2026 | 56 of 56 |
-| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 24 September 2026 | 56, 55 and 53 of 56, three runs |
+| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 24 and 25 September 2026 | 56, 55 and 53 of 56, three runs on the 24th; 56 of 56 on the 25th |
 | v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
 
 Add a row whenever a build is measured on a machine not listed, and bring

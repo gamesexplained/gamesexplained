@@ -123,7 +123,9 @@ in-game input hook below does the same job.
   `pressed: true` holds a key until a call with `pressed: false`, and
   `hold_frames` holds it for a count of frames. A key the tool has no name
   for, such as `:`, takes its `row` and `col` from the matrix in
-  `c64-reference`.
+  `c64-reference`. Letters are named in capitals: on the v3.13.1 release
+  `"U"` works and `"u"` comes back as "Unknown key name", which a script
+  that ignores the reply takes for a key the game did not answer.
 - **Typing into a game.** A game that scans the keyboard from its main
   loop misses a press shorter than a pass, and a fixed `hold_frames` is
   either too short or slow. Put a non-stopping checkpoint on the
@@ -272,6 +274,37 @@ the batch.
   socket, check `tools.py status` before assuming the answer meant anything.
 - **`vice_machine_reset` leaves a paused machine paused**, `run_after`
   or not. Resume it with `vice_execution_run` before waiting for `READY.`.
+  So does `vice_autostart`: on a paused machine it attaches and returns,
+  and nothing loads. `frame.py test` leaves the machine paused, so
+  resume it before the first autostart; `tools.py check-emulator` resumes
+  it at the end.
+- **`vice_autostart` loads the first program on the disk.** On the
+  v3.13.1 release (25 September 2026) its `program` and `index`
+  arguments did not choose another file. For any other file, resume the
+  machine at `READY.` and type `LOAD"NAME",8,1` and `RUN` with
+  `vice_keyboard_type`.
+- **`vice_memory_read` takes at most 65,535 bytes**, so a whole 64 KB is
+  two reads.
+- **Every MCP call stops the emulated machine for a moment.** A script
+  that polls in a tight loop slows the game it is watching. Sleep between
+  polls, or let a stopping checkpoint do the waiting.
+- **A restored screen can be one the game is still drawing.** A snapshot
+  or a freezer backup may show the title while the game redraws it from
+  scratch, for seconds; keys pressed before it reaches its keyboard read
+  are lost, and the next key does the job of the lost one. Before typing,
+  stop on the routine that reads the keys, or wait until the game's
+  key variable changes.
+- **Protected originals (`.g64`) need the drive's own processor.** The
+  drive settings are not in `vice_machine_config_set`'s whitelist: stop
+  the emulator, write them to `tools/vice-home/config/vice/vicerc` under
+  `[C64SC]` (`Drive8Type=1541`, `Drive8TrueEmulation=1`, `TrapDevice8=0`;
+  the names carry the drive number, and `DriveTrueEmulation` or
+  `VirtualDevice8` are unknown to v3.13.1), start it again, check
+  `tools/logs/vice.log` for "Unknown resource", and delete the file when
+  done. When a loader hangs, look at the drive: with
+  `BinaryMonitorServer=1` in the same file, VICE's binary monitor answers
+  on port 6502, and memory space 1 of its protocol is drive 8, so the
+  drive's program counter and RAM can be read while the C64 waits.
 - **One emulator answers on :6510, whoever started it.** A second clone of
   the kit on the same computer, or an emulator left from an earlier run,
   takes this session's calls, and its snapshots land in its own folder.

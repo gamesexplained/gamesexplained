@@ -241,6 +241,34 @@ through `$8000` before doing them, and the loader runs under a KERNAL that
 has already booted. Annotate the cartridge entry as well as the loader's;
 the difference between them says what the machine state is on arrival.
 
+## Freezer-cartridge backups
+
+Many disk images in circulation are not the release but a **freezer
+backup**: a cartridge (Action Replay, Final Cartridge, Expert and others)
+stopped the running game and saved all of memory, packed, as one or two
+files. The tells: a BASIC `SYS` line and a loader that masks the
+interrupts, banks everything to RAM, unpacks colour RAM, zero page, the
+stack page and the VIC and CIA registers from small blocks, then resumes
+with an `RTI` into the middle of the game; reads of `$DE00`-`$DFFF`, where
+freezer cartridges keep their registers. The analysed image is then the game as it stood when frozen,
+not as its own loader left it, and two things follow.
+
+- **Parts of memory may not have been saved.** A freezer cannot always
+  reach RAM under the I/O area or at the very top, and a range it lost
+  comes back as whatever the emulator fills memory with at power-up (in
+  VICE, runs of `$00` and `$FF` in a fixed pattern). A resume that
+  crashes at once usually means the vectors at `$FFFA`-`$FFFF` were among
+  them. Before trusting any range that looks like fill, put a store and
+  an execute checkpoint on it and play: a range the game never touches
+  is spare; one it writes is working memory; one it calls is missing
+  code, and nothing in the image can supply it.
+- **Restart at the game's own entry.** The game's start-up code is
+  usually still in memory, and it rebuilds the vectors and tables it
+  needs. Find it (the only caller of the routine that sets up the
+  machine, or the code the release's loader jumps to), set the program
+  counter there and the stack pointer to a sane value, and snapshot
+  that as the hand-over. Record the whole recipe in `orientation.md`.
+
 ## RAM the VIC cannot see
 
 In VIC banks 0 and 2 the video chip sees the character ROM at `$1000`-`$1FFF`

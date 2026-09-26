@@ -219,6 +219,13 @@ Routines are independent, so the burn-down parallelises. What matters:
   them explicitly and say so in each prompt.
 - **One log per agent.** Parallel appends to one file interleave. Give
   each agent its own `work/annotations-<n>.jsonl`, merge afterwards.
+- **One scratch folder per agent**, `work/agent<n>/`, named in its prompt.
+  Agents write helper scripts, and they reach for the same obvious names
+  (`refs.py`, `state.py`): in a shared folder one agent's helper
+  overwrites another's halfway through its work.
+- **Ask for the report in a file as well**, `work/reports/agent<n>.md`.
+  The final message is all the lead sees, and it can be lost from the
+  lead's context before the facts are merged.
 - **Export every ten minutes while agents write.** A crash of the shared
   disassembler costs every agent's work since the last export;
   `symbols_import.py` rebuilds the session from that export (the tool

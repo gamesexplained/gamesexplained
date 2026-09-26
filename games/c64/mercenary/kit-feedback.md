@@ -61,7 +61,7 @@ lets through" that gave this game its best findings: a lookup keyed on
 fewer coordinates than the place it stands for (the lift table has no
 height), and deferred work behind a condition (a building's count, name
 and reprisal wait on a countdown that only runs its course with the
-player in the square). `kit/CHANGELOG.md` 0.0.25, `kit/VERSION`.
+player in the square). `kit/CHANGELOG.md` 0.0.26, `kit/VERSION`.
 
 **The emulator (`kit/skills/c64/tool-vice-mcp`).** Switching the video
 standard to NTSC and back left every earlier snapshot refusing to load
@@ -83,7 +83,7 @@ craft's top speeds, computed exactly, came within 1 % of Zzap!64's table
 and were written down as consistent; the port in the game's truncating
 floats gave the table to the digit, and a hard ceiling the exact version
 missed. The skill now says to compute the game's figures the game's way
-before calling a gap small. Added to `kit/CHANGELOG.md` 0.0.25.
+before calling a gap small. Added to `kit/CHANGELOG.md` 0.0.26.
 
 ## What took longest
 

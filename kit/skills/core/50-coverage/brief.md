@@ -65,6 +65,9 @@ evidence.
   or stop a tool.>
 - **Do not edit** game.json, facts.md, features.md, symbols.json or any
   file outside GAME/work. What you learn goes in your final report.
+- **Your own folder for helper scripts**: GAME/work/agent<n>/. Other
+  agents are writing helpers at the same time, under the same obvious
+  names.
 - **Never commit**, and never copy image or snapshot data outside
   GAME/work.
 
@@ -115,7 +118,8 @@ description specific.
 
 ## Your final report
 
-Your last message is all the lead sees.
+Your last message is all the lead sees. Write it to
+GAME/work/reports/agent<n>.md as well, before you send it.
 
 1. Your range's final coverage figure.
 2. What the range holds: the subsystems, the key routines and tables,
