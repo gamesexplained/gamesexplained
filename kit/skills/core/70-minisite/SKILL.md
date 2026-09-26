@@ -136,6 +136,13 @@ can open with that instead.
   A finished example to borrow patterns from is any Gold game in `games/`:
   canvas renderers for character sets and screens, Web Audio note
   players, table explorers.
+- Keep every section a top-level `<section>` with the template's label
+  line (`<p class="fig">01 · label</p>`) and an `<h2>` heading. The build
+  lists the sections in the page's left margin by their headings, so the
+  headings are what a reader scans to choose where to go. A heading that
+  begins `Bug:`, `Secret:` or `Music:` is tagged in that list, and the
+  sound section is tagged Music without the prefix when its heading names
+  the tunes.
 - Embed only the data you need: extracted character set, level data,
   tables, tune bytes. Small excerpts for commentary; never the program.
 - A game can read the machine's ROM as data: a table, or code used as

@@ -2,7 +2,7 @@
 """Build the static site into _site/.
 
 For every games/<platform>/<slug>/game.json:
-  index.html   copied through, tab bar injected  (How it works)
+  index.html   copied through, tab bar injected, its sections listed in the margin  (How it works)
   source.html  from site/source.html + facts.md + cheats.md   (Source code)
   levels.html  copied through if authored          (Maps / levels)
   play.html    copied through if authored          (Play)
@@ -21,7 +21,7 @@ Usage: build.py [--out _site]
 Preview: python3 -m http.server -d _site 8000   (8000, or any free port)
 No dependencies. The markdown converter handles the subset the templates use.
 """
-import glob, html, json, os, re, shutil, subprocess, sys
+import glob, html, html.parser, json, os, re, shutil, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
@@ -283,6 +283,118 @@ def under_title(page, ban):
     return page.replace("</nav>", "</nav>\n" + ban, 1)
 
 
+# --- How it works: the page's sections, listed in the left margin -----------------
+class SectionScan(html.parser.HTMLParser):
+    """The top-level <section>s of an authored page: where each opens, its id, its label
+    (the .fig line, "NN · label") and its heading (the first <h2>, less any badge in it)."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.found, self.depth, self.grab, self.skip = [], 0, None, 0
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "section":
+            self.depth += 1
+            if self.depth == 1:
+                self.found.append({"at": self.getpos(), "id": a.get("id"), "fig": None, "h2": None})
+            return
+        if not self.depth:
+            return
+        s, cls = self.found[-1], set((a.get("class") or "").split())
+        if self.grab:
+            if tag == "span" and (self.skip or cls & {"tag", "badge"}):
+                self.skip += 1
+            elif tag == "br" and not self.skip:
+                self.handle_data(" ")
+        elif tag == "h2" and s["h2"] is None:
+            self.grab, s["h2"] = "h2", ""
+        elif "fig" in cls and s["fig"] is None and s["h2"] is None:
+            self.grab, s["fig"] = tag, ""
+
+    def handle_endtag(self, tag):
+        if tag == "section":
+            self.depth = max(0, self.depth - 1)
+        elif self.grab and tag == "span" and self.skip:
+            self.skip -= 1
+        elif tag == self.grab:
+            self.grab = None
+
+    def handle_data(self, data):
+        if self.grab and not self.skip:
+            self.found[-1]["h2" if self.grab == "h2" else "fig"] += data
+
+
+SOUND_SECTION = re.compile(r"(?:the )?(sound|music)$", re.I)
+ABOUT_TUNES = re.compile(r"\b(?:tunes?|music|songs?)\b", re.I)
+
+
+def section_tag(label, heading):
+    """(tag, heading) as the margin list shows a section.
+
+    Bug and Secret come from the heading's own prefix ("Secret: ..."), which the list shows
+    as a tag. Music is a Music: prefix, or the sound section when it is about the tunes: one
+    labelled Music, or labelled Sound under a heading that names them. A sound section about
+    engine noise or effects gets no tag.
+    """
+    m = re.match(r"(bug|secret|music)\s*:\s*", heading, re.I)
+    if m:
+        rest = heading[m.end():]
+        return m.group(1).lower(), rest[:1].upper() + rest[1:]
+    s = SOUND_SECTION.match(label)
+    if s and (s.group(1).lower() == "music" or ABOUT_TUNES.search(heading)):
+        return "music", heading
+    return "", heading
+
+
+def slug(s):
+    s = re.sub(r"[^a-z0-9]+", "-", s.lower().replace("&", " and ").replace("'", "").replace("’", ""))
+    return s.strip("-")[:40].strip("-")
+
+
+def pagenav(page):
+    """Give every top-level <section> an id, and list the sections in the left margin by heading.
+
+    The list is in the page from the first paint, before any script runs; site.js marks the
+    section being read and, on a narrow screen, makes the list a drawer. A page with fewer
+    than two sections gets no list.
+    """
+    scan = SectionScan()
+    scan.feed(page); scan.close()
+    if len(scan.found) < 2:
+        return page
+    starts = [0] + [m.end() for m in re.finditer("\n", page)]
+    taken = set(re.findall(r'\bid="([^"]+)"', page))
+    edits, items = [], []
+    for s in scan.found:
+        fig = " ".join((s["fig"] or "").split())
+        m = re.match(r"(\d+)\s*[·:.–—-]\s*(.*)", fig)
+        num, label = (m.group(1), m.group(2)) if m else ("", fig)
+        heading = " ".join((s["h2"] or "").split()) or label
+        if not heading:
+            continue
+        sid = s["id"]
+        if not sid:
+            base = slug(label or heading) or "section"
+            sid, n = base, 2
+            while sid in taken:
+                sid, n = f"{base}-{n}", n + 1
+            edits.append((starts[s["at"][0] - 1] + s["at"][1], sid))
+        taken.add(sid)
+        tag, text = section_tag(label, heading)
+        k = f'<span class="k {tag}">{tag.capitalize()}</span> ' if tag else ""
+        items.append(f'<li><a href="#{html.escape(sid)}"><span class="n">{html.escape(num)}</span>'
+                     f'<span class="h">{k}{html.escape(text, quote=False)}</span></a></li>')
+    for at, sid in sorted(edits, reverse=True):
+        if page[at:at + 8].lower() == "<section":
+            page = page[:at + 8] + f' id="{html.escape(sid)}"' + page[at + 8:]
+    nav = ('<nav class="pagenav" id="pagenav" aria-label="On this page"><div class="in">'
+           '<p class="hd">On this page</p><ol>' + "".join(items) + "</ol>"
+           '<a class="top" href="#">↑ Back to the top</a></div></nav>')
+    m = re.search(r'<nav class="gametabs">.*?</nav>', page, re.S)
+    return page[:m.end()] + "\n" + nav + page[m.end():] if m else nav + "\n" + page
+
+
 FONTS = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900'
          '&family=IBM+Plex+Mono:wght@400;500&display=swap">')
 
@@ -406,7 +518,8 @@ def build_game(gdir, out_root):
     for f in ("index.html", "levels.html", "play.html"):
         if f in present:
             page = fill(read(os.path.join(gdir, f)), **head)
-            open(os.path.join(out, f), "w").write(at_end(under_title(inject(page, nav, lib), ban), edit_footer(game, f)))
+            page = at_end(under_title(inject(page, nav, lib), ban), edit_footer(game, f))
+            open(os.path.join(out, f), "w").write(pagenav(page) if f == "index.html" else page)
     # source
     facts = markdown(read(os.path.join(gdir, "facts.md")))
     cheats = read(os.path.join(gdir, "cheats.md"))
