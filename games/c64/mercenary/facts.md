@@ -92,7 +92,7 @@ to BASIC's READY (`reference/reset-crack-basic.png`).
 | Missiles and ships in flight | `$BDA3`-`$BDFF` |
 | Motion record, carried list, counters, script state | `$BEA0`-`$BEFF` |
 | Zero-page copy | `$BF00`-`$BFFF` |
-| Building models | 29 at `$C000`-`$CF66`, 15 road pieces and 77 more at `$E000`-`$FFCF` |
+| Building models | 29 at `$C000`-`$CF66`; 15 road pieces and 62 more at `$E000`-`$FFCF` |
 | Vectors | NMI `$FFFA` (`$8009`), IRQ `$FFFE` |
 
 ## Start-up and the opening
@@ -118,8 +118,8 @@ to BASIC's READY (`reference/reset-crack-basic.png`).
   as a disc of radius 1024 / distance (`$7508`).
 - Play starts at X `$08:$88`, Y `$08:$88`, height `$7F:$00:$88`, heading
   512 (south), pitch `$0300` (straight down), motion mode 10 (the descent,
-  `$9E66`). The first stage of the descent shows heights × 8 through the
-  self-modified `$9E93`, which `$9E84` patches to `JMP $8510` when that stage
+  `$9E66`). The first stage of the descent converts heights × 8 (road ends
+  and object dots) through the self-modified `$9E93`, which `$9E84` patches to `JMP $8510` when that stage
   ends. The crash landing puts object 10, the wreck, at the crash site.
 - Credits start at 9000 (`$710C`). `$7203` starts script 0: the crash
   report, a landing remark picked at random from canned messages 60-63
@@ -222,9 +222,20 @@ Weapons and moving objects therefore run only on the surface.
   x' = cos r u + sin r w, y' = sin r u − cos r w;
   screen x = `$8E` + 64 x'/z, y = `$8F` + 128 y'/z (Y doubled for the wide
   pixels). The focal length 64 is the exponent `$21` = `$18`. The window is
-  160 × 136, centred at (80, 68); the centre moves up by height/4096, at
-  most 16 lines. On foot and underground the heading-only transform `$A979`
-  is used. The mirror flag `$F1` flips x.
+  160 × 136. In a craft its centre (`$8E`, `$8F`) is (80, 68) moved by c
+  times the matrix's height column, c = min(height/4096, 16): `$8E` = 80 +
+  round(c · −sin r cos p), `$8F` = 68 + round(c · cos r cos p), so it rises
+  by up to 16 lines in level flight, tilts with the roll, and does not move
+  looking straight down. The sky and ground fill (`$AFD5`) keeps the fixed
+  centre (80, 68), so from high up the painted horizon lies below eye level
+  and far roads fall on the sky, where they do not show. On foot and
+  underground the heading-only transform `$A979` is used, `$A320` does not
+  run, and `$8E`/`$8F` and the clip window `$90`-`$97` keep their last
+  values. The mirror flag `$F1` flips x. The page's port of the whole
+  surface pass (`$A544`, `$94E0`, `$A320`, `$A4B2`, `$AFD5`, `$9054`,
+  `$96D8`/`$96E7`) is bit-exact against these routines in a 6502 simulator
+  on 18,000 random views, and reproduces the displayed bitmaps of
+  `work/stadium-view.vsf` byte for byte (`work/tests/city-test-*.js`).
 - **Vertices.** A building's vertices come through `$A5CE`, an object's
   through `$A61F` (objects 0-15 are first turned by their angles `$802A`,
   `$801A`, `$800A` in 64ths of a turn, `$A6AD`), road ends through `$A67B`
@@ -333,8 +344,10 @@ Weapons and moving objects therefore run only on the surface.
   table). `$2600`/`$2700` give each square's building model, read only by
   `$9575`; they point at 98 distinct models: 91 structures and 7 road
   pieces. 233 squares hold a structure (00-00's is never drawn) and 23
-  only a road piece. The image holds 106 models (29 at `$C000`, 77 at `$E1D3`-`$FFCF`)
-  and 15 road pieces (`$E000`-`$E1D2`, 8 of them unused).
+  only a road piece. The image holds 106 models: 91 buildings (29 at
+  `$C000`-`$CF66`, 62 at `$E1D3`-`$FFCF`), every one used, and 15 road
+  pieces (`$E000`-`$E1D2`), 8 of them unused. Drawn all at once, the city
+  would be about 7,500 points and 9,600 edges; one square is a few dozen.
 - **Building model** (loader `$9575`, reader `$968D`): +0 last vertex, +1
   last edge, +2 pen split P (edges 0-P are the structure, drawn with AND;
   later edges are road marks, drawn with ORA; `$FF`: all road marks), +3
@@ -353,8 +366,9 @@ Weapons and moving objects therefore run only on the surface.
   of the road along its row (`$2C00` west, `$2D00` east) and of the road
   along its column (`$2E00` north, `$2F00` south), 0 for none; every square
   a road crosses lists the whole road. 32 roads (15 along X, 17 along Y)
-  with 52 distinct ends. In every square, a building model draws a stub
-  toward a road end exactly when the map names one.
+  with 52 distinct ends. In every square, a building model draws a stub toward a road end exactly
+  when the map names another square there (68 entries name the square
+  itself, where a road ends).
 - Roads are drawn only from height 2048 up. `$8EC2` lists the roads in a
   (2r + 1)² window of squares around the player, r = `$2A00`[height / 2048]
   (0-63; the value 29 never occurs), clipped to the city (`$8F7F`), into the
@@ -366,6 +380,9 @@ Weapons and moving objects therefore run only on the surface.
   `$96A6`/`$96AC`, and the rotor stops); bit 6 Mechanoid, bit 5 nobody's,
   neither Palyar (115, 27 and 114 squares); bits 0-4 n: when the square is
   destroyed, script 32 + n runs once and the bits are cleared (`$8800`-`$8813`).
+  The 27 nobody's squares are the 23 road-piece squares, the three
+  ground-grid squares (`$CDC0`) and 00-00; destroying one starts no script
+  (`$87CD`, `$8805`).
 - **Named squares** (script = 32 + n):
 
 | Square | Script | Name (from the script) | Model |
@@ -887,6 +904,12 @@ registers beyond sprite 0, `$D01C`, `$D022`-`$D026`, or the CIA timers.
   bytes of `$E849`; `$ECEF`'s vertex 6 is unused; `$F3D3` draws one edge
   twice.
 - `$8FAE` never checks the road list's size (52 ends fit 60 slots).
+- `$8EC2` tests whether the whole city is already listed (`$EE`) with the
+  X register that `$8F7F` leaves unchanged when an axis misses the city:
+  fly out of the city due north or south with a view radius of 8 or more
+  and all 32 roads stay listed, where arriving any other way lists none.
+  The roads then lie on the sky, where they do not show, except at the
+  horizon with the nose down (checked in a 6502 simulator).
 - `$B3D6` would hang if `$E1` were below 30; only the opening sets it that
   low, and it reads no keys.
 - The escape loop keeps the scripts and the L, D, E and digit keys live;
