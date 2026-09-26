@@ -26,7 +26,7 @@ appears on the screen at any point, and none was found in the packer's
 stages.
 
 **Compared with the original.** The contributor also supplied their copy
-of the original Novagen disk, `mercenary[novagen_1985](pal).g64` (a
+of the original Novagen disk, a G64 file named for Novagen, 1985 and PAL (a
 track-level image; SHA-256
 `8bca12b725f6e635ccb2366327a638e667e3500586a63b1641561c2c640d5cf6`),
 disk name `mercenary`, ID `mo`, three files: `mercenary` (2 blocks),

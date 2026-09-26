@@ -128,7 +128,9 @@ I/O area) whenever that RAM holds data and `game.json` has not said what
 it is. With the hand-over snapshot, `work/entry.vsf` (`10-orient`), it
 also lists every stretch of loaded data, the same bytes at the hand-over
 and in play, that the ledger neither tracks nor has been told to leave
-out. Before calling 100 %, go through that list and say what each stretch
+out. When the listing is built from the hand-over itself (the start-up
+code exists nowhere else), give it the play snapshot as the second image:
+`--entry work/<play>.vsf`. Before calling 100 %, go through that list and say what each stretch
 is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
@@ -220,7 +222,13 @@ Routines are independent, so the burn-down parallelises. What matters:
 - **Export every ten minutes while agents write.** A crash of the shared
   disassembler costs every agent's work since the last export;
   `symbols_import.py` rebuilds the session from that export (the tool
-  skill).
+  skill). Restart the emulator alone (`tools.py stop vice`): a bare
+  `tools.py stop` takes the disassembler with it.
+- **Renaming an auto symbol keeps its reach.** A label set over one the
+  tracer minted keeps its type, and with it the 64-byte span of an auto
+  symbol, so a long table named that way still leaves its tail uncounted.
+  Give the tail a label of its own, or describe it from the table's
+  start.
 - **One figure per agent.** `coverage.py <game> --live --range $2000 $27FF`
   prints the figure and the work queue for one agent's range alone; the
   whole-image queue is mostly other agents' work.

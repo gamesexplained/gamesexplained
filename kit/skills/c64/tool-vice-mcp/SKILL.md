@@ -259,6 +259,13 @@ the batch.
 - **`vice_machine_config_set` has a six-entry whitelist**:
   `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
   `CIA2Model`. Joystick port assignment is not among them.
+- **Switching the video standard sticks.** One run set
+  `MachineVideoStandard` to NTSC and back to PAL, and every snapshot saved
+  earlier then failed to load: the call says only "Failed to load
+  snapshot", while `tools/logs/vice.log` says the snapshot was made with
+  another video chip model. Restarting the emulator (`tools.py stop vice`,
+  then `tools.py vice`) cured it. Run an NTSC test last, or restart after
+  it.
 - **A snapshot save name cannot be reused.** Save **without** ROMs so the
   RAM image lands where the platform reference says it does.
 - **Some calls can take the server down.** If a call returns a closed

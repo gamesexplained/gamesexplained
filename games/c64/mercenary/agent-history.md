@@ -59,3 +59,46 @@ T or P to take an object, went to T (`$970A`).
 Twelve annotation agents (the same model as the lead) took disjoint
 ranges: variables, the scripts and text, three data ranges, the start-up
 and panel, and six code ranges of about 2.5 KB each.
+
+Midway, the emulator had to be restarted: switching it to NTSC and back
+for the PAL test left every earlier snapshot refusing to load. The restart
+used the bare `tools.py stop`, which also stopped the disassembler twelve
+agents were writing to. The session was rebuilt from their logs (each
+replayed to its length at the stop, then the rest appended), about ten
+minutes lost; the agents were told and went on. The kit now says to stop
+the emulator alone.
+
+The agents' first guesses about the data mostly fell: the four tables at
+`$2C00` were taken for building pointers and are the roads (the building
+pointer is `$2600`/`$2700`); `$2B00` was taken to be per object and is per
+square; the fill loop at `$2170` was taken for copy protection reached
+after a load, and is the reset trap, which the original disk's `CBM80`
+signature arms. Two agents disagreed on script 10 (which branch pays the
+500,000); the script's inverted test settled it. The Source tab showed the
+script table shifted by a byte, because code reading `$0801,Y` mints a
+symbol on the first entry's second byte; `listing.py` now keeps such pairs
+whole.
+
+## Verifying
+
+The agents' suggestions for live tests were the best source of findings.
+Agent 9 wondered whether E at ground level at 08-08 would give "a free
+ride": it does, into the Colony Craft's hangar and up to its deck. Agent 6
+noted that the hit follow-up ignores hits outside the player's square: a
+first test from the ground failed because the missile sinks into the
+ground before it gets there (the level pitch's sine is not quite zero),
+and from 1024 units up the building fell with no count and no message.
+The TRAITOR sign was checked by flying the bought Dart to 13-04 and firing.
+A reader's report in Zzap!64 15 of a crash above a million credits was not
+reproduced.
+
+## The minisite
+
+The minisite's widgets were split among five agents: the city in 3D, the
+underground, the arithmetic and line drawing, Benson's messages and
+scripts, and the flight model, each to be tested against the game (a 6502
+simulator on the snapshots, the recorded frames, a 253-pass flight trace).
+The lead wrote the frame, the secrets, the controls, the opening and the
+odds and ends. The rebuilt frame of the descent showed the roads in the
+fourth colour, which is how the ORA line form on the roads was noticed and
+`facts.md` corrected.

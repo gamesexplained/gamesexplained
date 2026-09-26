@@ -83,7 +83,7 @@ list names.
 
 ```
 python3 kit/scripts/tools.py status
-python3 kit/scripts/tools.py stop
+python3 kit/scripts/tools.py stop            # every tool; stop <tool> for one
 python3 kit/scripts/tools.py verify-footprint
 ```
 

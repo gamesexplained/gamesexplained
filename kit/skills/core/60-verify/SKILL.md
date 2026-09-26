@@ -38,6 +38,15 @@ data: a tile code a player can stand on, an object a player can carry.
 One that is reachable is a secret for the article; one that is not is a
 corner case for `facts.md`.
 
+Two more shapes of the same thing. A lookup keyed on fewer coordinates
+than the place it stands for: a lift table matched on the map square and
+the spot within it, but not the height, answers at ground level for a lift
+that was meant to be in the sky. And deferred work behind a condition: an
+event that sets a countdown and leaves the rest (the score, the message,
+the reprisal) to a routine that returns early unless the player is still
+in the right place loses the rest whenever the player is not. For each,
+list what the test ignores, or what the deferred part requires, and try it.
+
 ## Live verification
 
 Any claim that can be tested in the emulator in under a few minutes gets

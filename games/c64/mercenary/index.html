@@ -34,33 +34,406 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
 
+
+/* lead-frame */
+.frame-wrap{background:#000;border-radius:6px;overflow:hidden;line-height:0}
+.frame-wrap canvas{width:100%;height:auto;image-rendering:pixelated;display:block}
+.frame-ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:14px;font-family:var(--fm);font-size:13px}
+.frame-ctl button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.frame-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.frame-ctl input[type=range]{flex:1;min-width:160px}
+.frame-state{color:var(--ink-soft)}
+/* lead-lift */
+.lift-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.lift-grid img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
+.lift-step{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+.lift-asm{font-family:var(--fm);font-size:12.5px;line-height:1.55;margin:0;padding:12px;background:var(--surface-2);color:var(--ink);border-radius:6px;overflow-x:auto;white-space:pre}
+.lift-asm .on{background:var(--hl);display:block}
+.lift-tbl{border-collapse:collapse;font-size:14px;width:100%}
+.lift-tbl th,.lift-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.lift-tbl th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
+.lift-tbl tr.pending td{color:var(--ink-mute)}
+.lift-tbl .ok{color:var(--green);font-weight:700}
+.lift-tbl .none{color:var(--coral);font-weight:700}
+.lift-ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:14px;font-family:var(--fm);font-size:13px}
+.lift-ctl button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+@media (max-width:720px){.lift-grid,.lift-step{grid-template-columns:1fr}}
+/* lead-blind */
+.blind-ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--fm);font-size:13px;margin-bottom:14px}
+.blind-ctl button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.blind-ctl button[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink)}
+.blind-row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;align-items:start}
+.blind-sign canvas{width:220px;height:120px;border-radius:6px;display:block}
+.blind-tbl{border-collapse:collapse;font-size:13.5px;width:100%}
+.blind-tbl th,.blind-tbl td{border-bottom:1px solid var(--line-soft);padding:3px 8px;text-align:left}
+.blind-tbl th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
+.blind-tbl tr.cur td{background:var(--hl)}
+@media (max-width:720px){.blind-row{grid-template-columns:1fr}}
+/* lead-signs */
+.signs-strip{display:grid;grid-template-columns:1fr 1fr auto;gap:18px;align-items:center;margin-top:18px}
+.signs-strip img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
+.signs-msg{font-family:var(--fm);font-weight:500;background:#813338;color:#fff;padding:10px 16px;border-radius:4px;letter-spacing:.08em}
+@media (max-width:720px){.signs-strip{grid-template-columns:1fr}}
+/* lead-keys */
+.keys-tbl{border-collapse:collapse;font-size:14.5px;width:100%}
+.keys-tbl th,.keys-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:top}
+.keys-tbl th{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
+.keys-tbl td:first-child{white-space:nowrap;font-weight:700}
+/* lead-opening */
+.open-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.open-grid img{width:100%;image-rendering:pixelated;border-radius:6px;display:block}
+@media (max-width:720px){.open-grid{grid-template-columns:1fr 1fr}}
+/* lead-reset */
+.reset-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:18px;align-items:start}
+@media (max-width:720px){.reset-grid{grid-template-columns:1fr}}
+/* lead-odd */
+#odd-dos{width:100%;height:auto;image-rendering:pixelated;display:block;background:#2e2c9b;border-radius:6px}
+.odd-list{padding-left:20px}
+.odd-list li{margin:0 0 12px}
+.odd-img{display:block;width:min(384px,100%);image-rendering:pixelated;border-radius:6px;margin-top:10px}
 </style>
-<!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. The section below
-  shows the parts a section is made of, not which section comes first: the
-  kinds of section are listed in kit/skills/core/70-minisite, in no order,
-  and this page's order is its own. The best thing to press or hear goes
-  as high as the explanation lets it, and every section should have
-  something the reader can press. Copy follows kit/style.md and is written
-  last.
--->
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">One sentence a human wrote about what is interesting inside this game.</p>
+  <p class="sub">Paul Woakes's city of Targ has buildings on 233 of its 256 squares, and the game only ever draws the one you are standing in.</p>
 </header>
 <main class="wrap">
-<section>
-  <p class="fig">01 · What this section explains</p>
-  <h2 class="t">The finding, spelled out</h2>
-  <p class="lede">What a player would notice, in a sentence or two.</p>
-  <div class="plate"><canvas id="cv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
-  <p>The explanation, with the bytes, the table or the register beside each claim.</p>
+<section id="one">
+  <p class="fig">01 · The trick</p>
+  <h2 class="t">Only one building exists at a time</h2>
+  <p class="lede">The city has 256 squares and buildings on 233 of them, but the game only ever draws the building of the square you are standing in.</p>
+  <div class="plate">
+    <div class="lift-grid">
+      <div><img src="reference/one-building-a-0808-facing-north.png" alt="At 08-08, near its north edge, facing north: an empty horizon"><p class="cap"><b>08-08, facing north, 3072 units from the edge.</b> Bosher Stadium stands in the next square, dead ahead. Nothing is drawn.</p></div>
+      <div><img src="reference/one-building-b-0807-facing-north.png" alt="Three thousand units further on, in 08-07: the stadium on the horizon"><p class="cap"><b>6144 units further on, in 08-07.</b> The same stadium, now drawn, far off on the horizon.</p></div>
+    </div>
+  </div>
+  <p>The square's model is loaded by <code>$9575</code> only when the high byte of your X or Y changes (<code>$94FE</code>-<code>$952F</code>), from the table at <code>$2600</code>/<code>$2700</code>, and drawn only while your height is under 65536. From higher up you see the roads instead: they are drawn from height 2048 up, as lines between the centres of the squares they join, and from height <code>$200000</code> a fixed picture of 13 roads replaces them (<code>$902A</code>). So a building is never in view from outside its square, and roads are never in view from the ground. The flying view above has a switch to draw every building at once; the game does 1/256 of that work.</p>
+</section>
+
+<section id="frame">
+  <p class="fig">02 · The screen</p>
+  <h2 class="t">One frame, rebuilt from memory</h2>
+  <p class="lede">The view is a bitmap of 160 by 136 wide pixels, and there are two of them: the game draws into one while you look at the other.</p>
+  <div class="plate">
+    <div class="frame-wrap"><canvas id="frame-cv" width="768" height="544"></canvas></div>
+    <div class="frame-ctl"><button id="frame-back" type="button" aria-pressed="false">Show the other bitmap</button><span id="frame-state" class="frame-state"></span></div>
+    <p class="cap" id="frame-cap">One frame of the opening descent, high over the city, drawn by the site's C64 renderer from the memory and video-chip writes recorded in the emulator: all 104,448 pixels match the emulator's own picture of that frame. The button points the view at the other bitmap, which is half drawn.</p>
+  </div>
+  <p>Above the panel the screen is in multicolour bitmap mode: each byte holds four pixels of two bits, and each pixel is twice as wide as it is tall. Two bitmaps sit in the video chip's second bank, at <code>$4000</code> and <code>$6000</code>. On every pass the main loop swaps them (<code>$AF84</code>): the counter <code>$24</code> picks which one the game draws into (<code>$25</code>), and <code>$C7</code> holds the value the view's raster interrupt writes into <code>$D018</code> to show the other. At line 186 a second interrupt switches the screen to text for the panel (<code>$BA1E</code>).</p>
+  <div class="plate">
+    <div class="frame-wrap"><canvas id="frame-cyc" width="640" height="272"></canvas></div>
+    <div class="frame-ctl"><button id="frame-play" type="button">Play</button><input id="frame-f" type="range" min="0" max="13" step="1" value="0" aria-label="Frame"><span id="frame-flab" class="frame-state"></span></div>
+    <p class="cap">The bitmap at <code>$6000</code> after each of 14 frames, read from the emulator one frame at a time during the same descent. Sky and ground go in first, then nothing changes for six frames while the vertices are transformed, then the lines. At frame 13 the buffers swap and this one is shown.</p>
+  </div>
+  <p>Seen from above the whole city, a view takes 13 frames to draw, so the picture changes about four times a second. On the ground, with one building to draw, the main loop runs five passes a second.</p>
+</section>
+
+<section id="lift">
+  <p class="fig">03 · Secret</p>
+  <h2 class="t">Secret: the lift at 08-08 goes to the Colony Craft from the ground</h2>
+  <p class="lede">The Colony Craft hangs 65 squares above 08-08, and the solutions all say to fly up to it. The game will also take you up in its lift from the ground.</p>
+  <div class="plate">
+    <div class="lift-grid">
+      <div><img src="reference/lift-0808-room8-hangar.png" alt="Room 8, the Colony Craft's hangar, reached by pressing E on the ground at 08-08"><p class="cap"><b>E on the ground at 08-08</b>: the lift goes down into room 8, the Colony Craft's hangar.</p></div>
+      <div><img src="reference/lift-0808-colony-deck.png" alt="Standing on the Colony Craft's deck after the ride up, ALT reading 64997"><p class="cap"><b>E again</b>: the lift comes up on the Colony Craft's deck, ALT 64997.</p></div>
+    </div>
+  </div>
+  <p>Pressing E runs the test at <code>$B3FD</code>. It checks that no ride is running, that you are on the surface and standing on something, and that you stand on the lift's spot: the middle bytes of your X and Y (<code>$73</code>, <code>$79</code>) both between <code>$70</code> and <code>$73</code>. Then it looks for your square in the table of eight lift squares at <code>$B4B6</code>/<code>$B4BE</code>. Entry 8 is 08-08, meant for the lift on the Colony Craft's deck. Nothing looks at your height.</p>
+  <div class="plate">
+    <div class="lift-step">
+      <pre class="lift-asm" id="lift-asm"></pre>
+      <table class="lift-tbl"><thead><tr><th>Test</th><th>On the deck</th><th>On the ground</th></tr></thead><tbody id="lift-rows"></tbody></table>
+    </div>
+    <div class="lift-ctl"><button id="lift-next" type="button">Step</button><button id="lift-reset" type="button">Start again</button><span id="lift-msg"></span></div>
+    <p class="cap">The E key's test, one instruction group at a time, with the values it reads standing on the Colony Craft's deck and standing on the ground at 08-08. Tested live in the emulator from the ground: the ride went down to room 8, and E there came up at height <code>$40FF51</code>.</p>
+  </div>
+  <p>Room 8 is the Colony Craft's hangar, so the ride down lands you inside it, and the ride up from any hangar ends at that hangar's lift square: for room 8, the deck. The Dart you can buy at the start cannot climb that high (its ceiling byte is <code>$0A</code> against the Colony Craft's <code>$40</code>) until it carries the Poweramp. The lift needs neither.</p>
+</section>
+
+<section id="blind">
+  <p class="fig">04 · Secret</p>
+  <h2 class="t">Secret: shoot a building from the next square and nobody notices</h2>
+  <p class="lede">A building shot from outside its square is destroyed, but the game never counts it, never names it, and nobody comes after you for it.</p>
+  <div class="plate">
+    <div class="blind-ctl"><span>Where the player is while the building falls:</span>
+      <button type="button" id="blind-in" aria-pressed="true">In 13-04, with the sign</button>
+      <button type="button" id="blind-out" aria-pressed="false">Next door in 12-04</button>
+      <button type="button" id="blind-run">Fire</button></div>
+    <div class="blind-row"><div class="blind-sign"><canvas id="blind-cv" width="220" height="120"></canvas></div>
+      <table class="blind-tbl"><thead><tr><th>Pass</th><th><code>$F4</code></th><th><code>$B7</code> = <code>$F5</code>?</th><th>What runs</th></tr></thead><tbody id="blind-rows"></tbody></table></div>
+    <p class="cap" id="blind-cap">The hit and the sixteen passes after it (<code>$871B</code>, <code>$879B</code>), for a missile that reaches 13-04's Commodore sign. The table is the code's order of tests; the live runs behind it are below.</p>
+  </div>
+  <p>When a missile gets within 4096 units of a square's centre below height 2048, <code>$871B</code> marks the square destroyed in <code>$2B00</code> at once and starts a countdown of 16 passes in <code>$F4</code> for square <code>$F5</code>. Everything else waits for the countdown: sinking the building, adding it to the count of Palyar or Mechanoid sites, and starting its script, which names it and sends the owner's ship after you. The routine that does all that returns straight away unless you are standing in that square (<code>$87A4</code>). The countdown runs out anyway, and a later hit finds the square already destroyed and does nothing (<code>$87C1</code>).</p>
+  <div class="plate">
+    <div class="lift-grid">
+      <div><img src="reference/blind-shot-from-1204.png" alt="In 12-04, firing east toward 13-04: the sign in the next square is not drawn"><p class="cap"><b>12-04, facing east, 1024 units up.</b> The sign in 13-04 is not drawn: only your own square's building ever is. The missile went anyway.</p></div>
+      <div><img src="reference/blind-shot-1304-flattened.png" alt="In 13-04 afterwards: the sign lies flat"><p class="cap"><b>Then in 13-04.</b> The sign lies flat. <code>$2B4D</code> went from <code>$51</code> to <code>$D1</code>; the Mechanoid count stayed 0, and Benson said nothing.</p></div>
+    </div>
+  </div>
+  <p>Firing from the ground does not work: level flight still points the nose down by a sine of −0.003, so a missile launched 63 units up hits the ground within five passes, before it reaches the next square's centre. From a little higher it does.</p>
+</section>
+
+<section id="signs">
+  <p class="fig">05 · Joke</p>
+  <h2 class="t">Shoot the Commodore sign and Benson calls you a traitor</h2>
+  <p class="lede">Ten squares of the city hold billboards: five with the Commodore logo, five with Atari's. Destroying either kind gets a verdict.</p>
+  <div class="plate">
+    <div class="lift-grid">
+      <div><img src="reference/sign-commodore-1304.png" alt="The Commodore sign at 13-04"><p class="cap"><b>13-04</b>: model <code>$C82E</code>, the Commodore logo on two posts. Also at 03-13, 09-13, 04-15 and 09-15.</p></div>
+      <div><img src="reference/sign-atari-1405.png" alt="The Atari sign at 14-05"><p class="cap"><b>14-05</b>: model <code>$C7B2</code>, the Atari logo. Also at 14-08, 12-11, 06-15 and 11-15.</p></div>
+    </div>
+    <div class="signs-strip"><img src="reference/sign-commodore-collapsing.png" alt="The sign sinking"><img src="reference/sign-commodore-flattened.png" alt="The sign flat on the ground"><div class="signs-msg" id="signs-msg">TRAITOR!</div></div>
+    <p class="cap">Shot from inside its square in the Dart: the Commodore sign sinks into the ground and Benson prints TRAITOR! (live). Its square's byte in <code>$2B00</code> says Mechanoid, script 17 + 32 = 49; the Atari squares run script 50, GOOD SHOW!</p>
+  </div>
+  <p>Each square's byte in the table at <code>$2B00</code> holds its owner (bit 6 Mechanoid, bit 5 nobody's, neither Palyar) and, in its low five bits, a script number n. When the square is destroyed, script 32 + n runs once. Scripts 36 to 48 name the landmarks ("YOU HAVE JUST DESTROYED", then BOSHER STADIUM, say), and all but Novabill's then set off an attack by the square's owner; scripts 49 and 50 print their one word and leave you alone.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">06 · Controls</p>
+  <h2 class="t">The keys, as the game reads them</h2>
+  <p class="lede">The game scans the keyboard itself and turns each key into a number, row × 8 + column, with 64 added for SHIFT and 128 for CTRL. The joystick goes in port 2.</p>
+  <div class="plate tablewrap">
+    <table class="keys-tbl"><thead><tr><th>Key</th><th>Number</th><th>Does</th><th>Where</th></tr></thead><tbody>
+      <tr><td>Stick</td><td></td><td>walk or fly; on foot, up and down step 80 units, left and right turn 1/64 of a turn a pass</td><td><code>$B2FE</code>, <code>$A165</code></td></tr>
+      <tr><td>Fire</td><td></td><td>a missile, from a craft on the surface</td><td><code>$886A</code></td></tr>
+      <tr><td>1 to 9, 0</td><td></td><td>throttle 2<sup>n+4</sup>; 0 is 2<sup>14</sup>, the fastest</td><td><code>$B47E</code>, <code>$BC50</code></td></tr>
+      <tr><td>SHIFT + digit</td><td></td><td>the same, in reverse</td><td><code>$B47E</code></td></tr>
+      <tr><td>+ and −</td><td><code>$28</code>, <code>$2B</code></td><td>throttle × 1.03 or × 0.98 every pass while held</td><td><code>$B499</code></td></tr>
+      <tr><td>SPACE, ←</td><td><code>$3C</code>, <code>$39</code></td><td>throttle 2<sup>−31</sup>: stop</td><td><code>$BC50</code></td></tr>
+      <tr><td>T</td><td><code>$16</code></td><td>take an object within 256 units</td><td><code>$970A</code></td></tr>
+      <tr><td>B</td><td><code>$1C</code></td><td>board a craft within 512 units</td><td><code>$970E</code></td></tr>
+      <tr><td>D</td><td><code>$12</code></td><td>drop the last object taken</td><td><code>$98FE</code></td></tr>
+      <tr><td>L</td><td><code>$2A</code></td><td>leave the craft, when landed</td><td><code>$98C8</code></td></tr>
+      <tr><td>E</td><td><code>$0E</code></td><td>the lift</td><td><code>$B3FD</code></td></tr>
+      <tr><td>Y</td><td><code>$19</code></td><td>yes, when Benson asks</td><td>script op 11</td></tr>
+      <tr><td>CTRL + RETURN</td><td><code>$81</code></td><td>pause, until the next key</td><td><code>$B335</code></td></tr>
+      <tr><td>CTRL + Q</td><td><code>$BE</code></td><td>scatter what you carry over the city and start again in the Dart at 08-08</td><td><code>$80E8</code></td></tr>
+      <tr><td>CTRL + S, CTRL + L</td><td><code>$8D</code>, <code>$AA</code></td><td>save or load position 0-9 on disk</td><td><code>$B382</code>, <code>$819E</code></td></tr>
+    </tbody></table>
+    <p class="cap">The dispatch is at <code>$B2FE</code>-<code>$B47E</code>. Stick input skips the keyboard for that pass, and any input at all sets bit 7 of <code>$BEC0</code>, which is how Benson knows you have not been doing anything.</p>
+  </div>
+</section>
+
+<section id="opening">
+  <p class="fig">07 · The opening</p>
+  <h2 class="t">A crash, with a countdown</h2>
+  <p class="lede">The game opens in space, runs its own event script through a failing Novadrive, and drops you in the middle of the city with 9000 credits.</p>
+  <div class="plate">
+    <div class="open-grid">
+      <div><img src="reference/intro-countdown.png" alt="The countdown in space"><p class="cap">The countdown, over a starfield of 21 stars.</p></div>
+      <div><img src="reference/intro-planet-reverse-thrust.png" alt="Targ approaching: maximum reverse thrust"><p class="cap">MAXIMUM REVERSE THRUST, with Targ growing.</p></div>
+      <div><img src="reference/intro-city-from-above.png" alt="The descent over the city"><p class="cap">The descent: the city's roads from above.</p></div>
+      <div><img src="reference/intro-crash-imminent.png" alt="Crash imminent"><p class="cap">CRASH IMMINENT! Then manual control.</p></div>
+    </div>
+    <p class="cap">From the emulator, about 75 seconds from the start of the game to standing at 08-08. The opening's messages were logged from the message window as they played.</p>
+  </div>
+  <p>The opening is written in the same byte code as the rest of the game's events, at <code>$7001</code>, and it lives in memory that the second bitmap overwrites once play begins: after the opening it is gone. Its starfield speeds up (−32 a frame, then × 4.05 once, then × 1.012 a frame) and slows down again, and the planet grows as a disc of radius 1024 over the distance, from 1023 to 0 (<code>$74CA</code>). The descent starts at height <code>$7F0088</code>, looking straight down. Script 0 then takes over: CRASH IMMINENT!, one of four landing remarks picked at random ("WHERE AM I", "YOU CRASHED", "GOOD LANDING!", "OUCH!"), the status report ("CRASH LANDED ON TARG", "STATE OF WAR BETWEEN PALYARS AND MECHANOIDS") and the offer of the Dominion Dart for 5000.</p>
+  <p>The first message on the original disk is NOVADRIVE COUNTDOWN. The copy this page was made from reads ABC UNLIMITED in its place, the cracking group's name, typed over the same bytes at <code>$7009</code>: it is the only change to the game's text.</p>
+</section>
+
+<section id="reset">
+  <p class="fig">08 · Protection</p>
+  <h2 class="t">The reset button hangs the original</h2>
+  <p class="lede">Novagen's disk makes the game look like a cartridge, so that pressing reset runs one of the game's own loops instead of handing the machine back.</p>
+  <div class="plate">
+    <div class="reset-grid">
+      <pre class="lift-asm">$8000  $2170           ; cold start
+$8004  C3 C2 CD 38 30  ; CBM80 (crack: 0s)
+
+$2170  SEI
+$2171  LDX #$00
+$2173  STA $2180,X
+$2176  DEX
+$2177  BNE $2171       ; back to LDX
+$2179  INC $2175       ; never reached
+$217C  JMP $2170</pre>
+      <div><div class="lift-grid"><div><img src="reference/reset-original-hangs.png" alt="The original after a reset: garbage on screen"><p class="cap"><b>Original</b>: stuck in <code>$2171</code>-<code>$2177</code>.</p></div><div><img src="reference/reset-crack-basic.png" alt="The crack after a reset: BASIC's READY prompt"><p class="cap"><b>Crack</b>: BASIC's READY.</p></div></div></div>
+    </div>
+    <p class="cap">Both reset in the emulator from play (live). The original was the contributor's own disk, booted to the same point.</p>
+  </div>
+  <p>On reset the KERNAL checks <code>$8004</code> for the letters CBM80, and if they are there it jumps through <code>$8000</code> as if a cartridge were plugged in. The original holds them, so reset runs <code>$2170</code>, inside the dictionary's pointer table. The code after the loop would wipe memory a page at a time: it steps the page byte of its own <code>STA</code> and goes round again. But the loop's branch goes back one instruction too far, to <code>LDX #$00</code>, so X is 0 at every store: the machine writes to <code>$2180</code> for ever and never gets to the wipe. Either way, after a reset nothing runs but the loop. The cracked copy clears the signature and changes the branch to land on the <code>$00</code> of <code>LDX #$00</code>, which is a <code>BRK</code>.</p>
+</section>
+
+<section id="odd">
+  <p class="fig">09 · Odds and ends</p>
+  <h2 class="t">Things a pilot would not know</h2>
+  <p class="lede">Small things found in the code and checked in the emulator.</p>
+  <div class="plate">
+    <canvas id="odd-dos" width="640" height="64"></canvas>
+    <p class="cap" id="odd-dos-cap">The bytes at <code>$BCB8</code>-<code>$BCFF</code>, drawn with the game's own panel font (the Atari's space, <code>$00</code>, left blank): a piece of Atari DOS 2's menu, in 40-column lines with the Atari's two-column left margin. Nothing reads them.</p>
+  </div>
+  <ul class="odd-list">
+    <li><b>An Atari screen in a Commodore game.</b> The bytes above are in the Atari's internal screen code, which is also how the game stores its panel labels (A is <code>$21</code>). They are a slice of an Atari's screen memory with the DOS menu on it, carried along in a block of the game's memory.</li>
+    <li><b>Benson notices when you do nothing.</b> Ignore the offer of the Dart and he asks IS ANYBODY THERE, AM I TALKING TO MYSELF, ARE YOU STILL ALIVE and WHERE ARE YOU, 18 seconds apart; touch anything and he says AH! YOU ARE BACK, NOW YOU ARE HERE... I WILL START AGAIN, and starts the briefing over. Any key or stick movement sets bit 7 of <code>$BEC0</code> (<code>$B31B</code>), and script 0 tests it.</li>
+    <li><b>RESTORE does nothing.</b> The NMI vector points at <code>$8009</code>, a bare <code>RTI</code>.</li>
+    <li><b>It will not run on an American machine, and crashes trying.</b> <code>$5024</code> reads the KERNAL's PAL flag and, on NTSC, jumps back to the copy loop at <code>$5000</code>, whose self-modified addresses have already moved on: the second pass copies memory over zero page and then over itself.<br><img class="odd-img" src="reference/ntsc-machine-crash.png" alt="The NTSC machine after the crash: the screen full of copied bytes"></li>
+    <li><b>A save file holds the whole world.</b> CTRL + S writes 1904 bytes gathered from 14 blocks (<code>$8260</code>): every square's state, every object's position, the scripts' state, the credits and the whole zero page. One of the blocks is <code>$8000</code>-<code>$803F</code>, so a position saved from the original disk carries its CBM80 signature into any copy that loads it.</li>
+    <li><b>The escape waits for the author.</b> Destroy the billboard at 02-03, the author's advert for his earlier game Encounter, and your ship refuses to leave: THE AUTHOR WON'T LET YOU LEAVE UNTIL YOU FIX HIS ADVERT (script 7 tests <code>$2B00</code> + <code>$32</code>). The Anti Time Bomb repairs it.</li>
+    <li><b>GAME OVER, for ever.</b> After the escape the script machine's busy flag (bit 6 of <code>$BEC0</code>) is never cleared, so no other event runs again, and GAME OVER comes round every 15 seconds.</li>
+    <li><b>The attacking ship's missile is not homing.</b> The ship itself closes in by 1/32 of the distance each pass, but its missile is aimed once, at launch, and flies straight.</li>
+    <li><b>00-00 has a building nobody has seen.</b> Square number 0 also means "outside the city", so the model the table gives it (<code>$E424</code>) is never loaded.</li>
+    <li><b>You can never have exactly 999,999 credits.</b> Hertz's ship costs 999,999, but the test at <code>$0E6F</code> wants the top byte of the credits above zero: 1,000,000. It makes no difference: you start with 9000 and every price is a multiple of 5000, so your credits always end in 4000 or 9000.</li>
+  </ul>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
 <script>
-// Inline everything. Data extracted from the snapshot goes here as arrays.
+window.MERC_GAME = window.C64 ? C64.load('listing.json') : Promise.reject(new Error('no C64'));
+window.MERC_GAME.catch(() => {});
+</script>
+<script>
+/* lead-frame */
+(function () {
+  const F = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[160,116,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,200,1,127,241,241,0,0,1,0,255,240,241,241,242,243,244,240,255,242,243,244,245,246,247,252],"cia2":[150,63],"cpu":[47,53],"writes":[[0,21,53272,121],[0,27,53265,59],[0,40,53270,216],[0,46,65534,30],[0,52,65535,186],[186,33,65534,187],[186,39,65535,185],[186,61,53272,127],[187,2,53265,27],[187,12,53270,200]],"colour":"CwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQUAAAAACQkJCQkAAAAABAQEBAQAAAAABQUFBQUAAAAAAAAAAAAAAAUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFBQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQUAAAAAAgICAgICAgICAgICAgICAgICAgICAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIPCAcADwQPBA8FDwMOAAsECwIPAAcFDA==","ram":[{"a":23552,"b":"ZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWWgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgQOUlLOZAQOXpLC8j6eZAQOXpISw06eZAQOUzMCUlJOZAQEBAQEBAQEDs/PrrQEDsAAiNAAjrQEDsAAMHBQLrQEDsiwAAAADrQOUjLy0w5kBA7P3760BA6Orq6urq50BA6Orq6urq50BA6Orq6urq50Ds9/f39+tAQOz++utAQOXp6enp6enp6enp6enp6enp6enp6enp6eZA7Nzd3t/rQEDs//vrQEDsoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKDrQOjq6urq50BA6Orq50BA6Orq6urq6urq6urq6urq6urq6urq6urq50BAQEBAQEBAoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoA=="},{"a":24576,"b":"qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqvquqqvrv7u7u/u+qqv67urq6/6qqqv+qqqqqqqqqqv+rq6uqqqqqqv+6uqqqqqqq6v/qqqqqqqqq+q+qqqqqqqqq6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqurq6vu7u7urrq7u7q6ur67urr//7q6uvq6uvrrv6urq6uqqrq7u7u7/7u76qqqqqrqv6qrq6urq6urq6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrq6urq7+rq7u7u7u7vv++urr67+rq6v+/q6v/6+vr/vq/urr+u7rq6//r6+v/6+uqqvq6urr/uqurrq6uru6/qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqurq6urq6urvr6+v76+v7rq6ur/qqqq/+/u7u7+rq7u+u/q6v7r6urr/+vr6//u7rrq/+rq6v7urq6u/q6urq6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqKqqqqqrq6urq6urq666urq6urq6q6uurq6urq6/+rq6urq6urqv66uL6+vr+7+7+6urq+q7u7urq6u/66urq6urq66/qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqurq6urq6ururq6urq6urqurq6urq6u7v/6urq6uqqqrv/u7u7u7u7qqqqqqqqqqq6urq6urq6urq6urq6urq6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquqqq6urq66+7+76urq6uqq/qu7u7u7u7vr/6qqqqqqqqqqu7+rq6urq6uq/quqqqqqqrq6+qqqqqqqurq6urq6urqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6qqu7u7u7v7r6qqqqqqqqr+q+vq6urq6ur//6qqqqqqqqqu/66urq6urqrqvKqqqqqqqqqqqqqqqqq6uurq6urq6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr/qqqqqqqqqq7/qqqqqqqqquq/qqqqqqqqqvqvqqqqqurq6uqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="},{"a":30720,"b":"/4GZmZmZgf8="},{"a":30736,"b":"/4H5gZ+Zgf//wfnB+fnB/w=="},{"a":30760,"b":"/4GfgfmZgf8="},{"a":30776,"b":"/4H5+fn5+f//gZmBmZmB/w=="},{"a":30984,"b":"M/8AGDxmfmY="},{"a":31000,"b":"M/8APGZgZjwz/wB4bGxseDP/AH5gfGB+"},{"a":31072,"b":"M/8AYGBgYH4z/wBjd39rYw=="},{"a":31096,"b":"M/8APGZmZjwz/wB8ZnxgYA=="},{"a":31128,"b":"M/8APGA8Bjwz/wB+GBgYGA=="},{"a":31232,"b":"M8wzzDPMM8w="},{"a":31832,"b":"/+fngefn//8="},{"a":31848,"b":"////gf////8="},{"a":32000,"b":"//////////8="},{"a":32480,"b":"/x6enp4e////DExMTAz///8fn5+fH////8zMzMzM//8="},{"a":32552,"b":"M/9g0EjEQsEz/gcKEyJDgoNCIxILBv/MQcJEyFDgf8wz/wAAAAAAAAAAAAAAAP/MAwIDAgMCAwJAwEDAQMBAwA=="},{"a":32696,"b":"8/Pz8/Pz8/M="},{"a":32720,"b":"ycH//////////////8HJyeTg//////8A///////g5CD8/P//////AP//////4OQg"}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":196,"colour_cells_changed_during_frame":0}};       // kit/c64/frame.py trim of one frame: the view shows $6000
+  const BACK = "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq+q6qqqqqqqqr6r6qqqqqurq7uv7q6uqqqqqqq/66uqqqqqqqq/quqqqq6u+vr7qqqqqq66urqqqqqqqqqqqqqqqqqqqqquqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6urq7q/urq6/7q6uvq+urq6/6uqqqqqqqqq+u7u7u7/rq6u6urq6ur+6+qqqqqqqqrqqrq66urq6urqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqvqvqqqqqqurq+u/q6uuur676ur+6+qrq/+76+v/67+6uvq/urr6/q+vr/u/u7vq6r6urq7/rqqqqqqqqqr/6urq6urq6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrq+urq6vqqrq+q+qqqr+u+vu7r6urq7+v7rq6v7r6ur7v7u7u/+7u66u/66uuvq/q6ur/6urq+vqqqqq6qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrq6urq7u7u77+rq6qqqqvrqv66urq6urr7+/+7u7u7ru7u7+6urq/+rq6urq66urqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqu7u7u+vr6+uvqqqqqqqqqu6+rq66urq76urq6urq6qqrq6urq6uurv6vrq6urq6uqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqvquqqqqqqqqq+q+qqqqqqqqq6r/r6+7u7u7u7qqqqqqqqqqqu7u/q6urq6uqqvqvqqqqqq6uru6+qqqqrq66urq6urqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv6qqqrq6urr6v6qqqqurq6ur///qqqqqqqqqqv6rqqqqqqqrq/+rq66urqqqqvqvqqqqqqqqqqqqqqq6urq6urq6uqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquqqqqqqqqq+q+qqqqqqqqq+q+qqqqqqq6u7r+qqqqqqqqqqv+qqqqqqqqqqv6rqurq6urq6uqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg==";     // the bitmap at $4000 at the same moment (base64)
+  const CYCLE = [{"f":0,"shown":"$4000","rle":"/6r/qv+q/6r/qoqqAb4BqwKqAfoB7wPuAf4B7wKqAf4BuwO6Af8DqgH/CKoB/wOrBaoB/wK6BaoB6gH/AeoGqgH6Aa8HqgHq/KoEqwTuAa4BugK7A7oBvgG7AroC/wO6AfoCugH6AesBvwSrAqoBugS7Af8CuwHqBKoB6gG/AaoIq/+qAaoFqwG/AqsFuwG+Af8BvgK6AfoB7wPqAf8BvwKrAf8D6wH+AfoBvwK6Af4BuwG6AeoB6wH/A+sB/wLrAqoB+gO6Af8BugKrBK4B7gG//6oBqgirA74BvwK+Ab8BugPqAf8DqgH/Ae8D7gH+Aq4B7gH6Ae8C6gH+AesC6gHrAf8D6wH/Au4BugHqAf8D6gH+Ae4DrgH+BK77qgGiBKoIrgG6B+oCrga6Af8I6gG/Aq4BLwOvAe4B/gHvAe4CrgGvAaoD7gOuAf8HrgG6Af7/qgGqCK4I6ga6ArsB/wXqAqoBuwH/BrsIqhC6/aoBqwKqBK4BugH7Ab8BuwXqAaoB/gGrBrsB6wH/CKoBuwG/BqsBqgH+AasFqgK6AfoFqgi6/aoBqwKqBbsB+wGvB6oB/gGrAesG6gL/B6oBrgH/Bq4BqgHqAbwNqgK6Bur/qhmqAf8HqgGuAf8HqgHqAb8HqgH6Aa8EqgTq/6r/qv+q/6r/qomq"},{"f":1,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+qTaoEqwSqAr4BvwG6B6oB/wSqAf4CrgHuBKoB/gHrAuoEqgHrAf8C7gSqAuoB/gHuBKoErvuqAaIEqgiuAboH6gKuBroB/wjqAb8CrgEvA68B7gH+Ae8B7gKuAa8BqgPuA64B/weuAboB/v+qAaoIrgjqBroCuwH/BeoCqgG7Af8GuwiqELr9qgGrAqoErgG6AfsBvwG7BeoBqgH+AasGuwHrAf8IqgG7Ab8GqwGqAf4BqwWqAroB+gWqCLr9qgGrAqoFuwH7Aa8HqgH+AasB6wbqAv8HqgGuAf8GrgGqAeoBvA2qAroG6v+qGaoB/weqAa4B/weqAeoBvweqAfoBrwSqBOr/qv+q/6r/qv+qiao="},{"f":2,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+qVao="},{"f":3,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+qVao="},{"f":4,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+qVao="},{"f":5,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+qVao="},{"f":6,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+qVao="},{"f":7,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+q/6r/qv+qVao="},{"f":8,"shown":"$4000","rle":"/6r/qv+q/6r/qv+q/6r/qv+q/6qhqgGrDqoCrgeqAav/qimqAf4BqwaqAa4B7gG+BK4BugiqAfoBrweqAeoBvgGrB6oB6veqAfoBrwiqAf4BqweqAeoBvxCqA7oBvwiqAf4BqweqAeoBvv2qAasIqgH6Aa8IqgH+CKoB+gGvB6oB6gG+AasHqgHqAb8IqgH6Aa//qhKqAasHqgHqAb8IqgH6Aa8HqgHqAb4BqweqAfoBrwiqAfr/qjmqAa8HqgHqAb4BqweqAer/qv+q/6r/qkmq"},{"f":9,"shown":"$4000","rle":"/6r/qv+q/6r/qv+qxaoBq/+qQaoB/gGrB6oB6gG/A6oBrgGrA6oB+gGvAqoB6gOqAboB+gH+AesB6gaqAeoBv/+qJKoBvgGrA6oBvwOqAfoBrwGuAboB6gH6Aa8DqgH+AesDqgG6Aa8CqgHqAfoBrwOqAfoBrwKqAeoBvgGrAqoB6gG+A6oB+gGvCKoB+v+qC6oBuge7AeoHqgG+BKsDrgGqAfoBrwSqAqsCqgH6BKoI6v+qEaoBuwLrBe4B/gGrBqoBrgHuAb4ErgG6CKoB+wGvBqsBqgHqAb4BqweqAer3qgH6Aa8IqgH+AasEqgOrAesBvwPuAq4DugiqA7oBvwiqAf4BqwKqAqsDrgHuAb79qgGrCKoB+gGvCKoB/gWrA64B+gG/B6oB6gG+AasHqgHqAb8IqgH6Aa//qhKqAasHqgHuAb8IqgH6Aa8HqgHqAb4BqweqAfoBrwiqAfr/qjmqAa8HqgHqAb4BqweqAer/qv+q/6r/qkmq"},{"f":10,"shown":"$4000","rle":"/6r/qv+q/6r/qpqqAa4BqwSqA6sB6wG/BKoBugGvCKoB+v+qEaoBqwmqBKsDrgGqAeoBvgGrA6oBugOuAf4BrwiqAf4B7wHuAqoBugGvAqoB6gG/BKoB/gGrB6oB6gG+/6oCqgH+AasGqgGuAe4BvwSuAbsBrwKqAfoBrwKqAeoB+gG/ArsB+wH/AusB7gGuAfoBvwK6AfoBvwSqAf4BqwKqAfoBrwKrAa4B7gG+Aa8HqgH6/6oJqgO6Ab4BqwOqAb8DqgH6Aa8BrgG6AesB+wGvA64B/gHvBLoB7wPqAfoBrwOqAfoBrwGqAa4B7gG+Aa8CrgH6Ab4BrwKqAfoBrwSqAfoDqgH6/6oLqgG6B7sB6geqAf4EqwOuAaoB+gGvBKoBqwG7AroB+gSqCOr/qhGqAbsC6wXuAf4BqwaqAa4B7gG+BK4BugiqAfsBrwarAaoB6gG+AasHqgHq96oB+gGvCKoB/gGrBKoDqwHrAb8D7gKuA7oIqgO6Ab8IqgH+AasCqgKrA64B7gG+/aoBqwiqAfoBrwiqAf4FqwOuAfoBvweqAeoBvgGrB6oB6gG/CKoB+gGv/6oSqgGrB6oB7gG/CKoB+gGvB6oB6gG+AasHqgH6Aa8IqgH6/6o5qgGvB6oB6gG+AasHqgHq/6r/qv+q/6pJqg=="},{"f":11,"shown":"$4000","rle":"/6r/qv+q/6pKqgG+AasHqgHq/6o5qgG/CKoB+gGvAqoBrgGrA6oB6gG/AqsB6wG/BKoB+gGvA6oErgG7AfsBuwKqAeoC6wOuD6oBq/eqAasJqgSrA64BqgHqAb4BqwKqAroDrgH+Aa8IqgH+Ae8B7gO7Aa8CqwHrAb8ErgH+Aa8BrgG6BaoB6gG+AaoCqwau+KoB/gGrBqoBrgHuAb8ErgG7Ab8CugH6Ae8D6gH6Ab8CuwH7Af8C6wHuAa4B+gG/AroB+gG/BK4B/gGvAq4B+gG/ArsBvgH+Ab4BvweqAfoErgS6/6oBqgO6Ab4BqwOqAf8DqgH6Aa8BrgG6AesB+wGvA64B/gHvBLoB7wPqAf4BvwO6AfoBvwG6Ab4B7gH+Ae8C7gH6Af4BrwKqAfoBrwOqAboB+gO6AfoC6v+qCaoBuge7AeoHqgH+BKsDrgG6AfoBvwXrAfsD+gSqEOr/qgmqAbsC6wXuAf4BqwaqAa4B7gG+Aq4CrwG7BeoDqgH7Aa8HqwHrAb8FqwOqAer3qgH6Aa8IqgH+AasEqgOrAesBvwPuAq4DugiqA7sBvwOrAa4EqgH+AasCqgKrA64B7gG+AaoCqwau9KoBqwiqAfoBrwiqAf4FqwOuAfoBvweqAeoBvgGrBKoDrgHuAb8DrgWqAfoBrwmqBK4Euv+qAaoBqweqAe4BvwiqAfoBrweqAeoBvgGrAqoBrgS6AfoBrwiqAfoIqga6Aur/qimqAa8HqgHqAb4BqwWqA+r/qv+q/6r/qkmq"},{"f":12,"shown":"$4000","rle":"/6r/qv+q/6pJqgGrAb8BqwKqAeoB/gHvAa4BugH6BKoB+gGvAqsGqgH+AasHqgHq/6oZqgerAa4Bvwe6Aa4B/gGvA64BrwGuAqoB6gG/AqsB6wG/Ab4BqwKqAfoBrwOqAf4BrwKuAbsB+wG7AqoB6gH/AesDrgSqAeoBvwiqAfoBr/eqAasIrgHqBOsD7gGuAe4BvgG7BLoDrgH+Aa8IqgH+Ae8B7gO7Aa8CqwHrAb8ErgH+Aa8BrgG6BaoB6gG+AaoCqwau+KoB/ge7Au4BvwSuAbsBvwK6AfoB7wPqAfoBvwK7AfsB/wLrAe4BrgH6Ab8CugH6Ab8ErgH+Aa8CrgH6Ab8CuwG+Af4BvgG/B6oB+gSuBLruqgGoCaoDuwHrBO4DugG+AasDqgH/A6oB+gGvAa4BugHrAfsBrwOuAf4B7wS6Ae8D6gH+Ab8DugH6Ab8BugG+Ae4B/gHvAu4B+gH+Aa8CqgH6Aa8DqgG6AfoDugH6Aur1qgOrBe4BrgK6CKoBuge7AeoHqgH+BKsDrgG6AfoBvwXrAfsD+gSqEOrwqgerAa4IugiqAbsC6wXuAf4BqwaqAa4B7gG+Aq4CrwG7BeoDqgH7Aa8HqwHrAb8FqwOqAer0qgOuAf4BrwOuBeoB/gHrAeoDqgOrAesBvwPuAq4DugiqA7sBvwOrAa4EqgH+AasCqgKrA64B7gG+AaoCqwau9KoBqwOqAa4BugO7AfsBrwGqAuoFqgH+BasDrgH6Ab8HqgHqAb4BqwSqA64B7gG/A64FqgH6Aa8JqgSuBLr/qgGqAasHqgHuAb8IqgH6Aa8HqgHqAb4BqwKqAa4EugH6Aa8IqgH6CKoGugLq/6opqgGvB6oB6gG+AasFqgPq/6r/qv+q/6pJqg=="},{"f":13,"shown":"$6000","rle":"/6r/qv+q/6pJqgGrAb8BqwKqAeoB/gHvAa4BugH6BKoB+gGvAqsGqgH+AasHqgHq/6oZqgerAa4Bvwe6Aa4B/gGvA64BrwGuAqoB6gG/AqsB6wG/Ab4BqwKqAfoBrwOqAf4BrwKuAbsB+wG7AqoB6gH/AesDrgSqAeoBvwiqAfoBr/eqAasIrgHqBOsD7gGuAe4BvgG7BLoDrgH+Aa8IqgH+Ae8B7gO7Aa8CqwHrAb8ErgH+Aa8BrgG6BaoB6gG+AaoCqwau+KoB/ge7Au4BvwSuAbsBvwK6AfoB7wPqAfoBvwK7AfsB/wLrAe4BrgH6Ab8CugH6Ab8ErgH+Aa8CrgH6Ab8CuwG+Af4BvgG/B6oB+gSuBLruqgGoCaoDuwHrBO4DugG+AasDqgH/A6oB+gGvAa4BugHrAfsBrwOuAf4B7wS6Ae8D6gH+Ab8DugH6Ab8BugG+Ae4B/gHvAu4B+gH+Aa8CqgH6Aa8DqgG6AfoDugH6Aur1qgOrBe4BrgK6CKoBuge7AeoHqgH+A6sBKwOuAboB+gG/BesB+wP6BKoQ6vCqB6sBrgi6CKoBuwLrBe4B/gGrBqoBrgHuAb4CrgKvAbsF6gOqAfsBrwerAesBvwWrA6oB6vSqA64B/gGvA64F6gH+AesB6gOqA6sB6wG/A+4CrgO6CKoDuwG/A6sBrgSqAf4BqwKqAqsDrgHuAb4BqgKrBq70qgGrA6oBrgG6A7sB+wGvAaoC6gWqAf4FqwOuAfoBvweqAeoBvgGrBKoDrgHuAb8DrgWqAfoBrAmqBK4Euv+qAaoBqweqAe4BvwiqAfoBrweqAeoBvgGrAqoBrgS6AfoBrwiqAfoIqga6Aur/qimqAa8HqgHqAb4BqwWqA+r/qv+q/6r/qkmq"}];   // the $6000 bitmap after each of 14 frames: (count, value) pairs, base64
+  const $ = id => document.getElementById(id);
+  const cv = $('frame-cv'), btn = $('frame-back'), st = $('frame-state');
+  if (!window.C64) { $('frame-cap').textContent = 'This drawing needs the site\'s C64 library: open the page from the built site.'; return; }
+  const H = JSON.parse(JSON.stringify(F));
+  H.writes[0][3] = 0x71;                                   // $D018 at line 0: bitmap at $4000
+  H.ram = H.ram.map(r => r.a === 0x6000 ? { a: 0x4000, b: BACK } : r);
+  let back = false;
+  function draw() {
+    C64.drawFrame(cv, back ? H : F, 2);
+    st.textContent = back ? '$D018 = $71: the bitmap at $4000, being drawn' : '$D018 = $79: the bitmap at $6000, on screen';
+    btn.setAttribute('aria-pressed', String(back));
+  }
+  btn.onclick = () => { back = !back; draw(); };
+  draw();
+
+  // the drawing cycle
+  const cyc = $('frame-cyc'), cx = cyc.getContext('2d'), slider = $('frame-f'), lab = $('frame-flab'), play = $('frame-play');
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const cols = [1, 6, 5, 11].map(i => rgb(C64.PAL[i]));  // %00 white, %01 sky, %10 ground, %11
+  const states = CYCLE.map(s => {
+    const b = Uint8Array.from(atob(s.rle), c => c.charCodeAt(0)), out = new Uint8Array(5440);
+    for (let i = 0, o = 0; i < b.length; i += 2) { out.fill(b[i + 1], o, o + b[i]); o += b[i]; }
+    return { f: s.f, shown: s.shown, bm: out };
+  });
+  const img = cx.createImageData(640, 272);
+  function drawCycle(f) {
+    const bm = states[f].bm, d = img.data;
+    for (let y = 0; y < 136; y++) for (let x = 0; x < 160; x++) {
+      const v = (bm[(y >> 3) * 320 + (y & 7) + (x >> 2) * 8] >> (6 - 2 * (x & 3))) & 3, c = cols[v];
+      for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 4; dx++) {
+        const p = ((y * 2 + dy) * 640 + x * 4 + dx) * 4;
+        d[p] = c[0]; d[p + 1] = c[1]; d[p + 2] = c[2]; d[p + 3] = 255;
+      }
+    }
+    cx.putImageData(img, 0, 0);
+    lab.textContent = 'frame ' + f + ': ' + (states[f].shown === '$6000' ? 'swapped, this bitmap is on screen' : 'on screen: $4000; being drawn: this one');
+  }
+  let timer = null;
+  slider.oninput = () => drawCycle(+slider.value);
+  play.onclick = () => {
+    if (timer) { clearInterval(timer); timer = null; play.textContent = 'Play'; return; }
+    play.textContent = 'Stop';
+    timer = setInterval(() => { slider.value = (+slider.value + 1) % 14; drawCycle(+slider.value); }, 120);
+  };
+  drawCycle(0);
+})();
+</script>
+<script>
+/* lead-lift */
+(function () {
+  const $ = id => document.getElementById(id);
+  const ASM = [
+    ['$B3FD', 'JSR $B4B2', 'forget the key'],
+    ['$B400', 'LDA $CA : BNE $B42F', 'a ride already running?'],
+    ['$B404', 'LDA $A8 : BNE $B455', 'underground? (another test)'],
+    ['$B408', 'LDA $7F : BEQ $B42F', 'standing on something?'],
+    ['$B40C', 'LDA $73 : LSR : LSR : CMP #$1C : BNE $B42F', 'X middle byte $70-$73?'],
+    ['$B414', 'LDA $79 : LSR : LSR : CMP #$1C : BNE $B42F', 'Y middle byte $70-$73?'],
+    ['$B41C', 'LDX #$08', 'from lift 8 down'],
+    ['$B41E', 'LDA $B4B6,X : CMP $74 : BNE $B42C', 'square column'],
+    ['$B425', 'LDA $B4BE,X : CMP $7A : BEQ $B430', 'square row'],
+    ['$B430', 'CPX #$05 : BNE $B43E', 'lift 5 wants the Pass'],
+    ['$B43E', 'JSR $B94D : STX $CD', 'beep; the ride goes to room 8'],
+  ];
+  const STEPS = [
+    { asm: 1, test: 'No ride running (<code>$CA</code>)', deck: '0', ground: '0', ok: true },
+    { asm: 2, test: 'On the surface (<code>$A8</code>)', deck: '0', ground: '0', ok: true },
+    { asm: 3, test: 'Standing on something (<code>$7F</code>)', deck: '$3F', ground: '$3F', ok: true },
+    { asm: 4, test: 'X middle byte (<code>$73</code>)', deck: '$71', ground: '$71', ok: true },
+    { asm: 5, test: 'Y middle byte (<code>$79</code>)', deck: '$71', ground: '$71', ok: true },
+    { asm: 8, test: 'Square in the table, lift 8', deck: '08-08', ground: '08-08', ok: true },
+    { asm: 9, test: 'Not lift 5, no Pass needed', deck: 'lift 8', ground: 'lift 8', ok: true },
+    { asm: 10, test: 'Height (<code>$75</code>-<code>$77</code>)', deck: '<code>$40FF3F</code>', ground: '<code>$00003F</code>', ok: null },
+  ];
+  const asmEl = $('lift-asm'), rows = $('lift-rows'), msg = $('lift-msg');
+  let k = 0;
+  function render() {
+    asmEl.innerHTML = ASM.map((l, i) => '<span class="' + (k > 0 && STEPS[k - 1].asm === i ? 'on' : '') + '">' +
+      l[0] + '  ' + l[1].padEnd(40) + ' ; ' + l[2] + '</span>').join('\n');
+    rows.innerHTML = STEPS.map((s, i) => {
+      const done = i < k;
+      const res = s.ok === null ? '<span class="none">never read</span>' : '<span class="ok">passes</span>';
+      return '<tr class="' + (done ? '' : 'pending') + '"><td>' + s.test + '</td><td>' + (done ? s.deck : '') + '</td><td>' + (done ? s.ground + ' ' + res : '') + '</td></tr>';
+    }).join('');
+    msg.textContent = k === 0 ? 'Press Step.' : k < STEPS.length ? 'Both pass.' : 'Both ride to room 8. The ride up from room 8 ends on the deck.';
+  }
+  $('lift-next').onclick = () => { if (k < STEPS.length) k++; render(); };
+  $('lift-reset').onclick = () => { k = 0; render(); };
+  render();
+})();
+</script>
+<script>
+/* lead-blind */
+(function () {
+  const $ = id => document.getElementById(id);
+  const cv = $('blind-cv'), cx = cv.getContext('2d'), rows = $('blind-rows');
+  const PAL = window.C64 ? C64.PAL : ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b'];
+  let inside = true, pass = -1, timer = null;
+  // the sign sinks over the countdown while the player is in its square (the collapse, $96AC)
+  function sign(h) {
+    cx.fillStyle = PAL[6]; cx.fillRect(0, 0, 220, 60); cx.fillStyle = PAL[5]; cx.fillRect(0, 60, 220, 60);
+    cx.strokeStyle = PAL[1]; cx.lineWidth = 2;
+    const base = 60, top = base - 50 * h;
+    cx.beginPath(); cx.moveTo(95, base); cx.lineTo(95, top + 30 * h); cx.moveTo(125, base); cx.lineTo(125, top + 30 * h);
+    cx.rect(80, top, 60, 30 * h); cx.stroke();
+    if (h > 0.25) { cx.beginPath(); cx.arc(110, top + 15 * h, 9 * h, 0.5, 5.8); cx.stroke(); }
+  }
+  function render() {
+    const out = [];
+    for (let p = 0; p <= Math.min(pass, 16); p++) {
+      const f4 = 16 - p;
+      let what, eq = inside ? 'yes' : 'no: <code>$4C</code> ≠ <code>$4D</code>';
+      if (p === 0) { what = 'the hit: <code>$2B4D</code> |= <code>$80</code>, <code>$F4</code> = 16, <code>$F5</code> = <code>$4D</code>'; eq = ''; }
+      else if (!inside) what = p === 16 ? 'nothing; the countdown is over' : 'nothing';
+      else what = p === 16 ? 'counted in <code>$BEBC</code>; script 49: TRAITOR!' : 'the building sinks';
+      out.push('<tr class="' + (p === pass ? 'cur' : '') + '"><td>' + p + '</td><td>' + (p === 0 ? 16 : f4) + '</td><td>' + eq + '</td><td>' + what + '</td></tr>');
+    }
+    rows.innerHTML = out.join('') || '<tr><td colspan="4">Press Fire.</td></tr>';
+    sign(pass < 0 || !inside ? 1 : Math.max(0, 1 - pass / 16));
+  }
+  function run() {
+    if (timer) clearInterval(timer);
+    pass = 0; render();
+    timer = setInterval(() => { pass++; render(); if (pass >= 16) { clearInterval(timer); timer = null; } }, 260);
+  }
+  function mode(v) { inside = v; $('blind-in').setAttribute('aria-pressed', String(v)); $('blind-out').setAttribute('aria-pressed', String(!v)); pass = -1; if (timer) { clearInterval(timer); timer = null; } render(); }
+  $('blind-in').onclick = () => mode(true);
+  $('blind-out').onclick = () => mode(false);
+  $('blind-run').onclick = run;
+  render();
+})();
+</script>
+<script>
+/* lead-odd */
+(function () {
+  const cv = document.getElementById('odd-dos'), cap = document.getElementById('odd-dos-cap');
+  window.MERC_GAME.then(G => {
+    const ctx = cv.getContext('2d'), ram = G.ram, cs = G.bytes(0x7800, 2048);
+    ctx.fillStyle = C64.PAL[6]; ctx.fillRect(0, 0, 640, 64);
+    for (let line = 0; line < 2; line++) for (let c = 0; c < 40; c++) {
+      const a = 0xBCB8 + line * 40 + c;
+      if (a > 0xBCFF) break;
+      if (ram[a]) C64.drawGlyph(ctx, cs, ram[a] & 0x7F, c * 16, 8 + line * 24, 2, C64.PAL[14]);   // $00 is the Atari's space
+    }
+  }).catch(() => { cap.textContent = 'This drawing reads the game\'s bytes from listing.json: open the page from the built site. ' + cap.textContent; });
+})();
 </script>

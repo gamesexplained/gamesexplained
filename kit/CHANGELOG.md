@@ -12,6 +12,29 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
+## 0.0.25 · 26 September 2026 · Mercenary · air with Claude
+
+**Try what a test ignores.** Mercenary's lift key matches the player's
+map square and the spot inside it against a table of eight lift squares,
+and never looks at the height. The eighth entry is the lift on the Colony
+Craft, 65 squares up; standing on the ground under it, the same key takes
+the player into the Colony Craft, a journey every published solution makes
+by flying up. And a building hit by a missile is marked destroyed at once,
+while its count, its name and the owner's reprisal wait on a 16-pass
+countdown whose routine returns early unless the player is in that square:
+fired from the next square, the building falls and the game never notices.
+Neither shape is a comparison with the wrong sign; both are tests that
+leave something out. `60-verify` now names them: for a lookup, list the
+coordinates it does not key on; for deferred work, what it requires of the
+player later; then try it in the emulator.
+
+**The hand-over has two traps.** A stopping checkpoint on an address that
+a ROM covers fires inside the ROM (here BASIC's number conversion, on the
+depacker's address), and a second autostart keeps the first boot's RAM
+wherever the loader does not write. `10-orient` says to check `$01` at the
+stop or stop first on RAM only, to power-cycle before any boot whose memory
+will be read, and, for a packed program, to keep the last hand-over.
+
 ## 0.0.22 · 25 September 2026 · Little Computer People, the retrospective's ask · air with Claude
 
 **Under the I/O area, the instruction decides what an address is.** Little

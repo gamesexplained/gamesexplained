@@ -253,10 +253,14 @@ Weapons and moving objects therefore run only on the surface.
   Octant 5 adds with the carry set, so it steps by slope + 1: a
   129-pixel vertical line drawn upward kinks one pixel left.
 - **Line colour**: `$AE06` patches all eight routines to `ORA $5660,X` (the
-  pixel pair becomes %01, `$AE02`) or `AND $7760,X` (%00, `$ADFC`). The
-  surface draws with AND: white lines on sky and ground. A building's edges
-  after its pen split (`$98`) are drawn with ORA: road marks, visible only
-  on the ground.
+  pixel pair gains %01, `$AE02`) or `AND $7760,X` (the pair becomes %00,
+  `$ADFC`). Buildings and objects are drawn with AND: white lines. The roads
+  are drawn with ORA (`$9054`): over the ground's %10 that gives %11, the
+  colour-RAM colour (dark grey on the surface), and over the sky's %01 it
+  changes nothing. A building's edges are drawn from the last down
+  (`$96E7`): those after its pen split (`$98`) with ORA, as road marks
+  on the ground, then the structure with AND. *Live*: the roads of the
+  descent's frame are %11.
 - **Colours**: %00 is `$A3` (white on the surface), %01 the sky (blue, fixed
   by `ORA #$60` at `$BB4C`), %10 `$A5` (the ground), %11 `$A6`; the
   surface's are `01 06 05 0B` at `$B27D`. `$BB4F` paints the view's matrix
@@ -301,7 +305,8 @@ Weapons and moving objects therefore run only on the surface.
 - 16 × 16 squares, number Y × 16 + X (`$B7`, the same index for every
   table). `$2600`/`$2700` give each square's building model, read only by
   `$9575`; they point at 98 distinct models: 91 structures and 7 road
-  pieces. The image holds 106 models (29 at `$C000`, 77 at `$E1D3`-`$FFCF`)
+  pieces. 233 squares hold a structure (00-00's is never drawn) and 23
+  only a road piece. The image holds 106 models (29 at `$C000`, 77 at `$E1D3`-`$FFCF`)
   and 15 road pieces (`$E000`-`$E1D2`, 8 of them unused).
 - **Building model** (loader `$9575`, reader `$968D`): +0 last vertex, +1
   last edge, +2 pen split P (edges 0-P are the structure, drawn with AND;
