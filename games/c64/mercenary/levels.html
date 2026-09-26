@@ -63,7 +63,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .city-levels-card canvas{display:block;width:100%;height:auto;aspect-ratio:106/90;background:#000;border-radius:5px;margin-bottom:5px}
 .city-levels-card .city-levels-unused{color:var(--coral)}
 .city-levels-card .city-levels-road{color:var(--ink-mute)}
-@media(max-width:720px){.city-levels-pop{position:static;width:auto;margin-top:12px;box-shadow:none}}
+@media(max-width:720px){.city-levels-pop{position:relative;width:auto;margin-top:12px;box-shadow:none}}
 /* rooms-levels */
 /* rooms-levels: the underground's plans, booths and keys (with rooms.css for the viewer) */
 .rooms-maps-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
@@ -202,7 +202,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       </div>
       <div class="rooms-maps-right"><div id="rooms-maps-view" class="rooms-view"><p class="rooms-note rooms-need" hidden>The viewer reads the game from <code>listing.json</code>, so it needs the built site.</p></div></div>
     </div>
-    <p class="cap"><b>Floor plans from the room records</b> (<code>$3000</code>-<code>$3B23</code>, pointers <code>$2300</code>/<code>$23C0</code>): each room is placed so that its doors meet the doors they lead to, north at the top, one unit being 256, and a city square 256 units across. The game never places rooms against one another, so the plan is the designer's, read back from the doors' positions. Click a room to stand in it; the viewer draws it with the game's own arithmetic, objects included, checked byte for byte against the game's code in a 6502 simulator.</p>
+    <p class="cap"><b>Floor plans from the room records</b> (<code>$3000</code>-<code>$3B23</code>, pointers <code>$2300</code>/<code>$23C0</code>): each room is placed so that its doors meet the doors they lead to, north at the top, one unit being 256, and a city square 256 units across. The game itself never places one room against another: it only reads the door you arrive by. Click a room to stand in it; the viewer draws it with the game's own arithmetic, objects included, checked byte for byte against the game's code in a 6502 simulator.</p>
   </div>
 </section>
 
@@ -216,7 +216,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="rooms-keys-extra" id="rooms-booths-inside"></p>
     <div id="rooms-booths-table" class="rooms-rec rooms-wide"></div>
   </div>
-  <p>A booth holds two links, a room and a door each. On entry the game compares the room you came from with the first link and points the booth's door at the other one. When both links name the same room the booth is one way: from anywhere else it sends you there, and coming from that room it leaves the door alone, so you go straight back. Booth <code>$7F</code> also calls <code>$9353</code>, which flips the mirror flag <code>$F1</code>. Both its links name room <code>$56</code>, so the flip happens only when you come in from <code>$90</code> on the Colony Craft, and nothing else in the game sets the flag back.</p>
+  <p>A booth holds two links, a room and a door each. On entry the game compares the room you came from with the first link's room: if they differ, the booth's door is pointed at the first link, and if they match, at the second. When both links name the same room the booth works one way. From anywhere else it sends you to that room, and coming from that room it leaves its door alone, so you go straight back, without the booth's flash of colour. Booth <code>$7F</code> also calls <code>$9353</code>, which flips the mirror flag <code>$F1</code> and so swaps the stick's left and right and mirrors the view. Both its links name room <code>$56</code>, so the flip happens only when you come in from <code>$90</code> on the Colony Craft. In play nothing else writes the flag, CTRL + Q included.</p>
 </section>
 
 <section id="rooms-keys">
@@ -240,7 +240,8 @@ window.MERC_GAME.catch(() => {});
 /* city-levels */
 // The city map for the Maps page: the 16 x 16 squares of Targ with their roads, every square's
 // building drawn small from its model, the owners from $2B00, and a sheet of every model in the
-// image. Reads listing.json through window.MERC_GAME; nothing is embedded.
+// image. Reads listing.json through window.MERC_GAME; nothing is embedded but the square names,
+// which are the words the squares' scripts print (work/tests/city-test-names.js checks them).
 (function () {
   'use strict';
 
@@ -275,8 +276,290 @@ window.MERC_GAME.catch(() => {});
     }
     return { addr: p, end: y - 1, V, edges, pen, rotor, wideAt };
   }
+  // Every model in the image, in address order: they tile $C000-$CF66 and $E000-$FFCF, some
+  // followed by an end mark 4C 00 00 that nothing reads; $E7FF counts one vertex more than it
+  // has and reads two bytes of $E849, the next model.
+  function modelList(ram) {
+    const out = [];
+    for (const [lo, hi] of [[0xC000, 0xCF66], [0xE000, 0xFFCF]]) {
+      let p = lo;
+      while (p <= hi) {
+        out.push(p);
+        let q = parseModel(ram, p).end + 1;
+        if (ram[q] === 0x4C && ram[q + 1] === 0 && ram[q + 2] === 0) q += 3;
+        if (q === 0xE84B) q = 0xE849;
+        if (q <= p) break;
+        p = q;
+      }
+    }
+    return out;
+  }
+  // The squares' names: script 32 + ($2B00 AND 31) prints them when the building is destroyed.
+  const NAMES = { 36: 'NOVABILL', 37: 'THE AUTHORS ADVERT', 38: 'SABINS CUBE', 39: 'THE WALTON MONUMENT', 40: 'ST. STALLARDS',
+    41: 'THE MOORBY ARCH', 42: 'TYLER POINT', 43: 'BOSHER STADIUM', 44: 'JORDAN AIRPORT', 45: 'VECTOR HENGE',
+    46: "THE PALYAR COMMANDER'S BROTHER-IN-LAWS HOUSE", 47: 'THE MECHANOID FORT', 48: 'THE COACH AND HORSES', 49: 'TRAITOR!', 50: 'GOOD SHOW!' };
+  const LABELS = { 36: ['NOVABILL'], 37: ['AUTHORS', 'ADVERT'], 38: ['SABINS', 'CUBE'], 39: ['WALTON', 'MONUMENT'], 40: ['ST.', 'STALLARDS'],
+    41: ['MOORBY', 'ARCH'], 42: ['TYLER', 'POINT'], 43: ['BOSHER', 'STADIUM'], 44: ['JORDAN', 'AIRPORT'], 45: ['VECTOR', 'HENGE'],
+    46: ['BROTHER-', 'IN-LAWS'], 47: ['MECHANOID', 'FORT'], 48: ['COACH AND', 'HORSES'], 49: ['TRAITOR!'], 50: ['GOOD SHOW!'] };
+  // The Metal Detector's colours ($B553): bit 5 set red, else bit 6 set blue, else green.
+  const owner = st => st & 0x20 ? { c: 2, name: "nobody's" } : st & 0x40 ? { c: 6, name: 'Mechanoid' } : { c: 5, name: 'Palyar' };
 
-  if (typeof document === 'undefined') { module.exports = { parseModel }; return; }
+  if (typeof document === 'undefined') { module.exports = { parseModel, modelList, NAMES, LABELS, owner }; return; }
+
+  const $ = id => document.getElementById(id);
+  if (!$('city-levels-map')) return;
+  const NEED = 'This map reads the game from listing.json, which the built site serves: open the page from the site, not from disk.';
+  const note = m => { const n = $('city-levels-note'); n.textContent = m; n.hidden = false; };
+  if (!window.MERC_GAME) { note(NEED); return; }
+  window.MERC_GAME.then(start, e => note(NEED + (e && e.message ? ' (' + e.message + ')' : '')));
+
+  function start(G) {
+    const ram = G.ram, PAL = window.C64.PAL;
+    const hex = (n, w) => n.toString(16).toUpperCase().padStart(w || 2, '0');
+    const addrHtml = a => '<code><a href="source.html#' + hex(a, 4) + '">$' + hex(a, 4) + '</a></code>';
+    const sqName = s => String(s & 15).padStart(2, '0') + '-' + String(s >> 4).padStart(2, '0');
+    const modelAt = s => ram[0x2600 + s] | ram[0x2700 + s] << 8;
+    const models = new Map();                       // address -> parsed model
+    const users = new Map();                        // address -> squares
+    for (let s = 0; s < 256; s++) {
+      const a = modelAt(s);
+      if (!models.has(a)) models.set(a, parseModel(ram, a));
+      if (!users.has(a)) users.set(a, []);
+      users.get(a).push(s);
+    }
+    const sheet = modelList(ram);
+    for (const a of sheet) if (!models.has(a)) models.set(a, parseModel(ram, a));
+    const isRoad = a => a >= 0xE000 && a < 0xE1D3;
+    const label = a => G.names && G.names.get(a);
+
+    // ------------------------------------------------------------------ drawing a model
+    const ENDS = { 60: [255, 0, 128], 61: [0, 0, 128], 62: [128, 0, 255], 63: [128, 0, 0] };
+    // segments [x1, h1, z1, x2, h2, z2, road mark?, stub?] in model units, the rotor turned by a
+    // (10-bit) spin angle; road marks are the edges after the pen split, drawn first
+    function segments(m, spin) {
+      const V = m.V.map(v => [v.x, v.h, v.z]);
+      if (m.rotor && spin) {
+        const t = spin * Math.PI * 2 / 1024, c = Math.cos(t), s = Math.sin(t);
+        for (let i = 0; i < m.rotor.n; i++) {
+          const dx = (m.V[i].raw[0] << 24 >> 24) / 4, dz = (m.V[i].raw[2] << 24 >> 24) / 4;
+          V[i] = [m.rotor.cx + dx * c - dz * s, m.V[i].h, m.rotor.cz + dx * s + dz * c];
+        }
+      }
+      const out = [];
+      m.edges.forEach(([a, b], k) => {
+        const pa = a >= 60 ? ENDS[a] : V[a], pb = b >= 60 ? ENDS[b] : V[b];
+        if (!pa || !pb) return;
+        out.push([...pa, ...pb, m.pen === 255 || k > m.pen, a >= 60 || b >= 60]);
+      });
+      return out.sort((p, q) => q[6] - p[6]);
+    }
+    // the building proper: edges that neither reach a road end nor touch the square's border
+    // (those are the road lanes, which the map draws as the roads between square centres)
+    const onBorder = (x, z) => x === 0 || x === 255 || z === 0 || z === 255;
+    const inner = sg => !sg[7] && !onBorder(sg[0], sg[2]) && !onBorder(sg[3], sg[5]);
+    // oblique view from above: north up, heights lifted up and a little right
+    const obl = (x, h, z) => [x - 128 + 0.3 * h, z - 128 - 0.8 * h];
+    function drawOblique(g, segs, ox, oy, scale, lw) {
+      for (const s of segs) {
+        g.strokeStyle = s[6] ? PAL[11] : PAL[1]; g.lineWidth = lw;
+        const [x1, y1] = obl(s[0], s[1], s[2]), [x2, y2] = obl(s[3], s[4], s[5]);
+        g.beginPath(); g.moveTo(ox + x1 * scale, oy + y1 * scale); g.lineTo(ox + x2 * scale, oy + y2 * scale); g.stroke();
+      }
+    }
+
+    // ------------------------------------------------------------------ the map
+    const cv = $('city-levels-cv'), L = 854, M = 22, CELL = 52, ENLARGE = 4.5;   // no structure reaches past 23 units from the centre
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = L * dpr; cv.height = L * dpr;
+    const g = cv.getContext('2d');
+    let ownerMode = false, selected = -1, marked = new Set();
+    const roads = [];
+    { const seen = new Set();
+      for (let s = 0; s < 256; s++) for (const [a, b] of [[ram[0x2C00 + s], ram[0x2D00 + s]], [ram[0x2E00 + s], ram[0x2F00 + s]]]) {
+        if (!a || !b) continue; const k = a + ',' + b; if (!seen.has(k)) { seen.add(k); roads.push([a, b]); } } }
+    const cellX = s => M + (s & 15) * CELL, cellY = s => M + (s >> 4) * CELL;
+    function drawMap() {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.fillStyle = '#000'; g.fillRect(0, 0, L, L);
+      g.font = '10px ' + getComputedStyle(document.body).getPropertyValue('--fm');
+      g.fillStyle = PAL[15]; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (let i = 0; i < 16; i++) { g.fillText(String(i).padStart(2, '0'), M + (i + 0.5) * CELL, M / 2); g.fillText(String(i).padStart(2, '0'), M / 2, M + (i + 0.5) * CELL); }
+      for (let s = 0; s < 256; s++) {
+        g.fillStyle = PAL[ownerMode ? owner(ram[0x2B00 + s]).c : 5];
+        g.fillRect(cellX(s), cellY(s), CELL, CELL);
+      }
+      g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1;
+      for (let i = 0; i <= 16; i++) { g.beginPath(); g.moveTo(M + i * CELL, M); g.lineTo(M + i * CELL, M + 16 * CELL); g.stroke(); g.beginPath(); g.moveTo(M, M + i * CELL); g.lineTo(M + 16 * CELL, M + i * CELL); g.stroke(); }
+      g.strokeStyle = PAL[11]; g.lineWidth = 2;
+      for (const [a, b] of roads) { g.beginPath(); g.moveTo(cellX(a) + CELL / 2, cellY(a) + CELL / 2); g.lineTo(cellX(b) + CELL / 2, cellY(b) + CELL / 2); g.stroke(); }
+      const k = CELL / 256 * ENLARGE;
+      for (let s = 0; s < 256; s++) {
+        g.save(); g.beginPath(); g.rect(cellX(s) + 1, cellY(s) + 1, CELL - 2, CELL - 2); g.clip();
+        g.globalAlpha = s ? 1 : 0.45;
+        drawOblique(g, segments(models.get(modelAt(s)), 0).filter(inner), cellX(s) + CELL / 2, cellY(s) + CELL / 2 + 4, k, 1.1);
+        g.restore();
+      }
+      g.font = '500 8.5px ' + getComputedStyle(document.body).getPropertyValue('--fm');
+      g.textBaseline = 'alphabetic';
+      for (let s = 0; s < 256; s++) {
+        g.fillStyle = 'rgba(0,0,0,.55)'; g.textAlign = 'left';
+        g.fillText(sqName(s), cellX(s) + 2, cellY(s) + 9);
+        const lines = LABELS[32 + (ram[0x2B00 + s] & 31)] || (s === 0x13 ? ['SCIENCE', 'MUSEUM'] : null);
+        if (!lines) continue;
+        const w = Math.max(...lines.map(t => g.measureText(t).width)) + 6, h = lines.length * 10 + 3;
+        const x0 = cellX(s) + CELL / 2 - w / 2, y0 = cellY(s) + CELL - h - 1;
+        g.fillStyle = s === 0x13 ? 'rgba(40,40,40,.62)' : 'rgba(0,0,0,.72)'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = s === 0x13 ? PAL[15] : PAL[7]; g.textAlign = 'center';
+        lines.forEach((t, i) => g.fillText(t, cellX(s) + CELL / 2, y0 + 10 + i * 10));
+      }
+      g.lineWidth = 2.5;
+      for (const s of marked) { g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--violet') || '#4a5bd6'; g.strokeRect(cellX(s) + 1.5, cellY(s) + 1.5, CELL - 3, CELL - 3); }
+      if (selected >= 0) { g.strokeStyle = PAL[7]; g.lineWidth = 3; g.strokeRect(cellX(selected) + 1.5, cellY(selected) + 1.5, CELL - 3, CELL - 3); }
+    }
+    const cellAt = ev => {
+      const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * L / r.width, y = (ev.clientY - r.top) * L / r.height;
+      const cx = Math.floor((x - M) / CELL), cy = Math.floor((y - M) / CELL);
+      return cx >= 0 && cx < 16 && cy >= 0 && cy < 16 ? cy << 4 | cx : -1;
+    };
+    cv.addEventListener('mousemove', ev => {
+      const s = cellAt(ev);
+      if (s < 0) { cv.title = ''; return; }
+      const st = ram[0x2B00 + s], nm = NAMES[32 + (st & 31)];
+      cv.title = 'LOC ' + sqName(s) + (nm ? ' · ' + nm : '') + ' · model $' + hex(modelAt(s), 4) + ' · ' + owner(st).name;
+    });
+    cv.addEventListener('click', ev => { const s = cellAt(ev); if (s >= 0) select(s); });
+
+    // ------------------------------------------------------------------ the square's panel
+    const pop = $('city-levels-pop'), turn = $('city-levels-turn'), tg = turn.getContext('2d');
+    turn.width = 280 * dpr; turn.height = 200 * dpr;
+    let yaw = 0.6, spin = 0, dragging = null, auto = true, tmodel = null, raf = 0, lastT = 0;
+    function select(s) {
+      selected = s; marked = new Set(users.get(modelAt(s)).filter(q => q !== s));
+      const a = modelAt(s), m = models.get(a), st = ram[0x2B00 + s], n = st & 31, own = owner(st);
+      tmodel = m;
+      const nm = NAMES[32 + n];
+      $('city-levels-title').innerHTML = 'LOC ' + sqName(s) + (nm ? ' · <span>' + nm + '</span>' : s === 0x13 ? ' · <span>the manual\'s Science Museum</span>' : '');
+      const marks = m.edges.filter((e, k) => m.pen === 255 || k > m.pen).length;
+      const rows = [];
+      rows.push(['owner', '<i class="city-levels-sw" style="background:' + PAL[own.c] + ';margin:0 6px 0 0"></i>' + own.name + ', ' + addrHtml(0x2B00 + s) + ' = ' + hex(st)]);
+      rows.push(['script', !s ? 'none: square 0 means outside the city, and its building is never loaded'
+        : st & 0x20 ? 'none: nobody\'s squares are not counted and start no script' : n ? (32 + n) + (nm ? ', which prints ' + nm : n === 2 ? ', a Palyar attack, 81 times in 256' : n === 3 ? ', a Mechanoid attack, 81 times in 256' : '') : 'none (bits 0-4 are 0)']);
+      rows.push(['model', addrHtml(a) + (label(a) ? ' ' + label(a) : '')]);
+      rows.push(['size', m.V.length + ' points, ' + m.edges.length + ' edges: ' + (m.edges.length - marks) + ' white, ' + marks + ' road marks']);
+      rows.push(['rotor', m.rotor ? m.rotor.n + ' points turn about (' + m.rotor.cx + ', ' + m.rotor.cz + '), ' + m.rotor.speed + ' of 1024 a pass' : 'none']);
+      const others = users.get(a).filter(q => q !== s);
+      rows.push(['same model', others.length ? others.map(q => '<a class="city-levels-sq" data-sq="' + q + '">' + sqName(q) + '</a>').join(' ') : 'no other square']);
+      $('city-levels-facts').innerHTML = '<table>' + rows.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>').join('') + '</table>';
+      $('city-levels-facts').querySelectorAll('a.city-levels-sq').forEach(el => el.addEventListener('click', () => select(+el.dataset.sq)));
+      pop.hidden = false;
+      place(s);
+      drawMap(); cards.forEach(c => c.el.classList.toggle('city-levels-on', c.a === a));
+      if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(tick); }
+    }
+    function place(s) {
+      if (getComputedStyle(pop).position !== 'absolute') { pop.style.left = pop.style.top = ''; return; }
+      const scale = cv.clientWidth / L, cx = (cellX(s) + CELL / 2) * scale, cy = cellY(s) * scale, w = pop.offsetWidth, W = cv.clientWidth;
+      let x = cx > W / 2 ? cx - CELL * scale / 2 - w - 10 : cx + CELL * scale / 2 + 10;
+      x = Math.max(0, Math.min(W - w, x));
+      const y = Math.max(0, Math.min(cv.clientHeight - pop.offsetHeight, cy - 20));
+      pop.style.left = x + 'px'; pop.style.top = y + 'px';
+    }
+    $('city-levels-close').addEventListener('click', () => { pop.hidden = true; selected = -1; marked = new Set(); drawMap(); cards.forEach(c => c.el.classList.remove('city-levels-on')); });
+    // the turntable: perspective, the square's ground in green, the model as the game colours it
+    function drawTurn() {
+      const W = 280, H = 200, m = tmodel;
+      tg.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const segs = segments(m, spin);
+      // fit: the white edges (or all, for road pieces), road ends aside
+      let pts = [];
+      for (const s of segs) if (!s[7] && (!s[6] || segs.every(q => q[6]))) pts.push([s[0], s[1], s[2]], [s[3], s[4], s[5]]);
+      if (!pts.length) pts = segs.map(s => [s[0], s[1], s[2]]);
+      let cx = 0, cy = 0, cz = 0; pts.forEach(p => { cx += p[0]; cy += p[1]; cz += p[2]; }); cx /= pts.length; cy /= pts.length; cz /= pts.length;
+      let r = 4; pts.forEach(p => { r = Math.max(r, Math.hypot(p[0] - cx, (p[1] - cy), p[2] - cz)); });
+      const el = 0.42, d = r * 3.2, f = 60 / r * d * 0.9;   // 24 degrees above the ground
+      const cyw = Math.cos(yaw), syw = Math.sin(yaw), ce = Math.cos(el), se = Math.sin(el);
+      const P = (x, h, z) => {
+        const X = x - cx, Y = h - cy, Z = z - cz;
+        const xr = X * cyw - Z * syw, zr = X * syw + Z * cyw;          // turn about the vertical
+        const yv = Y * ce + zr * se, zv = zr * ce - Y * se + d;       // the eye above, looking down at the model
+        return [xr, yv, zv];
+      };
+      const S = p => [W / 2 + f * p[0] / p[2], H / 2 - f * p[1] / p[2]];
+      const near = 1;
+      // the ground is endless, as in the game: sky above the horizon, ground below it
+      const hy = Math.max(0, Math.min(H, H / 2 - f * se / ce));
+      tg.fillStyle = PAL[6]; tg.fillRect(0, 0, W, hy);
+      tg.fillStyle = PAL[5]; tg.fillRect(0, hy, W, H - hy);
+      for (const s of segs) {
+        let a = P(s[0], s[1], s[2]), b = P(s[3], s[4], s[5]);
+        if (a[2] <= near && b[2] <= near) continue;
+        if (a[2] <= near || b[2] <= near) { const t = (near - a[2]) / (b[2] - a[2]), c = [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]), near]; if (a[2] <= near) a = c; else b = c; }
+        const [x1, y1] = S(a), [x2, y2] = S(b);
+        tg.strokeStyle = s[6] ? PAL[11] : PAL[1]; tg.lineWidth = 1.5;
+        tg.setLineDash(s[7] ? [4, 3] : []);
+        tg.beginPath(); tg.moveTo(x1, y1); tg.lineTo(x2, y2); tg.stroke();
+      }
+      tg.setLineDash([]);
+    }
+    function tick(t) {
+      const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
+      if (pop.hidden) { raf = 0; return; }
+      if (auto && !dragging) yaw += dt * 0.5;
+      if (tmodel.rotor) spin = (spin + tmodel.rotor.speed * 5 * dt) % 1024;
+      drawTurn();
+      raf = requestAnimationFrame(tick);
+    }
+    turn.addEventListener('pointerdown', ev => { dragging = { x: ev.clientX, yaw }; turn.setPointerCapture(ev.pointerId); auto = false; });
+    turn.addEventListener('pointermove', ev => { if (dragging) yaw = dragging.yaw + (ev.clientX - dragging.x) * 0.012; });
+    turn.addEventListener('pointerup', () => { dragging = null; });
+    turn.addEventListener('dblclick', () => { auto = true; });
+
+    // ------------------------------------------------------------------ the sheet
+    const cards = [];
+    const sheetEl = $('city-levels-sheet');
+    for (const a of sheet) {
+      const m = models.get(a), us = users.get(a) || [];
+      const el = document.createElement('div'); el.className = 'city-levels-card';
+      const c = document.createElement('canvas'); c.width = 106 * dpr; c.height = 90 * dpr;
+      const cg = c.getContext('2d'); cg.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cg.fillStyle = PAL[5]; cg.fillRect(0, 0, 106, 90);
+      const segs = segments(m, 0);
+      let xs = [], ys = [];
+      for (const s of segs) { if (!inner(s)) continue; const p = obl(s[0], s[1], s[2]), q = obl(s[3], s[4], s[5]); xs.push(p[0], q[0]); ys.push(p[1], q[1]); }
+      if (!xs.length) { xs = [-128, 128]; ys = [-128, 128]; }
+      else { const pad = 3; xs.push(Math.min(...xs) - pad, Math.max(...xs) + pad); ys.push(Math.min(...ys) - pad, Math.max(...ys) + pad); }
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const sc = Math.min(96 / Math.max(8, x1 - x0), 80 / Math.max(8, y1 - y0));
+      cg.save(); cg.beginPath(); cg.rect(0, 0, 106, 90); cg.clip();
+      drawOblique(cg, segs, 53 - (x0 + x1) / 2 * sc, 45 - (y0 + y1) / 2 * sc, sc, 1.1);
+      cg.restore();
+      el.appendChild(c);
+      const t = document.createElement('div');
+      const where = us.length ? us.slice(0, 3).map(sqName).join(' ') + (us.length > 3 ? ' +' + (us.length - 3) : '') : '';
+      t.innerHTML = addrHtml(a) + (isRoad(a) ? ' <span class="city-levels-road">road</span>' : '') + '<br>' +
+        (us.length ? where : '<span class="city-levels-unused">unused</span>');
+      el.appendChild(t);
+      el.title = (label(a) || '$' + hex(a, 4)) + ': ' + m.V.length + ' points, ' + m.edges.length + ' edges' + (us.length ? '; squares ' + us.map(sqName).join(' ') : '; used by no square');
+      el.addEventListener('click', ev => {
+        if (ev.target.closest('a')) return;
+        if (!us.length) { selected = -1; marked = new Set(); pop.hidden = true; drawMap(); cards.forEach(q => q.el.classList.toggle('city-levels-on', q.a === a)); return; }
+        select(us[0]);
+        $('city-levels-map').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      sheetEl.appendChild(el);
+      cards.push({ a, el });
+    }
+
+    $('city-levels-owner').addEventListener('click', () => {
+      ownerMode = !ownerMode;
+      $('city-levels-owner').setAttribute('aria-pressed', ownerMode ? 'true' : 'false');
+      $('city-levels-legend').hidden = !ownerMode;
+      drawMap();
+    });
+    document.querySelectorAll('#city-levels-legend .city-levels-sw').forEach(el => { el.style.background = PAL[+el.dataset.c]; });
+    window.addEventListener('resize', () => { if (!pop.hidden && selected >= 0) place(selected); });
+    drawMap();
+  }
 })();
 </script>
 <script>

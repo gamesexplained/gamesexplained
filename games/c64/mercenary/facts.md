@@ -582,8 +582,10 @@ Weapons and moving objects therefore run only on the surface.
   the dial tape). There is no subtraction: a purchase adds the ten's
   complement (99995000 is −5000 at `$0A29`; 99000001 is −999,999 at
   `$0E90`).
-- **The Dart**: 5000, offered at the start with a 5-second Y window
-  (`$0AB6`-`$0ABA`). *Live*: Y at the fifth offer gave "TRANSACTION
+- **The Dart**: 5000, offered at the start with a Y window of 4 to 5
+  seconds from the end of the question (`$0AB6`-`$0ABA`: op 2 at `$8C4E`
+  zeroes the seconds `$E3`/`$E4` but not the frame count `$E2`, so every
+  wait of n seconds lasts between n − 1 and n). *Live*: Y at the fifth offer gave "TRANSACTION
   COMPLETED", "YOU HAVE 4000 CREDITS", `$7700`-`$7703` `00 00 90 00` →
   `00 00 40 00` (`work/dart-bought.vsf`). Boarding it unbought angers the
   brother-in-law (`$BEC0` bit 5) and a Palyar ship attacks (script 1).
@@ -619,7 +621,7 @@ Weapons and moving objects therefore run only on the surface.
   advert, `$2B00`+`$32` bit 7) not destroyed; otherwise THE AUTHOR WON'T LET
   YOU LEAVE. It pokes `$BEFE`; `$AA62` then runs the escape starfield and
   never returns. The ending never clears `$BEC0` bit 6, so GAME OVER repeats
-  every 15 s for ever.
+  for ever, a 15-second wait and a 150-frame line apart.
 
 ## The event scripts
 
@@ -662,7 +664,8 @@ Weapons and moving objects therefore run only on the surface.
 | 32, 33 | `$8BDB`, `$8B7C` | set or clear, and test, `$29C0` bits of object `$57EE` |
 | 34 | `$8B0E` | test the craft the player is in (`$A9`) |
 
-- **`$BEC0`**: bit 0 the last answer was Y; 1 the site reward given; 2 the
+- **`$BEC0`**: bit 0 the last answer was Y; 1 the key-sites message given
+  (`$11F5`, used by both site scripts, of which only 10 pays); 2 the
   ship hired; 3 the advert destroyed (read by nothing); 5 the
   brother-in-law angry; 6 an event script running; 7 the stick or a key
   touched (`$B2FE`), which script 0's idle lines test.
@@ -690,8 +693,12 @@ Three alphabets on one character set (`$7800`):
 Stored text is ASCII in capitals, the last character of a word with bit 7
 set. In messages, values 0-9 stand for the digits, `$0A`-`$0F` for
 * + , - . / (glyphs `$8A`-`$8F`: so `$0D` is a hyphen, "TYPE - DOMINION
-DART"), and `$6D`, `$6E`, `$6F` for ?, ! and '. The digit zero is written
-as the letter O ("LOAD NO. O-9 ?"): a zero byte would end the message.
+DART"), and `$6D`, `$6E`, `$6F` for ?, ! and '. "LOAD NO. O-9 ?" is
+written with the letter O, which has the same glyph as the digit 0 (`$7E78`
+and `$7800` hold the same bytes). Inside a word or a literal a zero byte
+prints as 0; only the print operation's scan for the end of its text
+(`$8C40`) would stop at one, so a zero in a script's literal would leave the
+script pointer short.
 A message is a list of tokens, ended by 0 (`$8E1E`):
 
 | Token | Meaning |
@@ -707,16 +714,26 @@ A message is a list of tokens, ended by 0 (`$8E1E`):
   `$2210`+n (high); 90 word numbers are unused. Canned message n starts
   one byte after `$20A0`/`$20E0`+n; 17-20, 33, 37, 39 and 51-55 repeat
   their neighbour's pointer. 10, 11, 13, 14, 22 and 36 are printed by
-  nothing: the rooms name only 0, 9 and 15, the scripts' operations 20 and
-  27 name 3-8, 12, 21, 23, 50 and 60-63, the code's calls to `$8DAA` name
-  0, 2, 48-50 and 57, and none of those objects has `$29C0` bit 3.
+  nothing: the rooms name only 9 and 15; operation 20 names 3, 4, 5, 7, 8,
+  12, 21, 23 and 50, and the sale objects through `$57EE` (`$1027`);
+  operation 27 names 60-63; the code prints 0 (LOCKED, `$9430`), 1 (dark
+  rooms, `$9206`), 2, 48-50, 56-59 (the save and load prompts, `$B373`,
+  `$B380`, `$B3B4`) and the objects with `$29C0` bit 3, none of which is 10,
+  11, 13, 14, 22 or 36.
 - **The printer** (`$8DC3`, every frame): text scrolls into the window
   `$5F78`-`$5F8E` in 25-character lines, one character a frame, the tick on
-  voice 3 at frequency (character AND `$3F`) + `$30`. After each line it
-  waits until the frame count `$E0` reaches `$E1` (`$7D`, 125 frames, in
-  play; `$96` at the ending). `$DE`/`$DF` are single bytes, so a message
-  cannot run past 255 bytes, and `$8DAA` drops a new request while one
-  prints.
+  voice 3 at frequency (character AND `$3F`) + `$30`, blanks silent. After
+  each line it waits until the frame count `$E0` reaches `$E1` (`$7D` in
+  play, `$96` at the ending): lines start 124 frames apart in play, 25
+  moving and 99 still, and a message of L lines keeps the printer busy for
+  124 L + 1 frames. The window is 23 cells wide, so the first two characters
+  of each line have scrolled off when it stops. `$DE`/`$DF` are single bytes,
+  so a message cannot run past 255 bytes, and `$8DAA` drops a new request
+  while one prints. Lines are centred with dictionary words that are only
+  spaces (words 230-238, nine spaces down to one), and canned message 50,
+  nine spaces, clears the window. A port of `$8DA4`-`$8EC1` matches the
+  game's code run in a 6502 simulator on every frame of all 219 messages
+  (`work/tests/benson-test.js`).
 - The ending prints "PLEASED YOU!VE GONE": the literal at `$1163` has
   `$6E` (!) where the apostrophe `$6F` was meant.
 

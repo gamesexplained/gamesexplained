@@ -971,7 +971,7 @@ $217C  JMP $2170</pre>
     <li><b>It will not run on an American machine, and crashes trying.</b> <code>$5024</code> reads the KERNAL's PAL flag and, on NTSC, jumps back to the copy loop at <code>$5000</code>, whose self-modified addresses have already moved on: the second pass copies memory over zero page and then over itself.<br><img class="odd-img" src="reference/ntsc-machine-crash.png" alt="The NTSC machine after the crash: the screen full of copied bytes"></li>
     <li><b>A save file holds the whole world.</b> CTRL + S writes 1904 bytes gathered from 14 blocks (<code>$8260</code>): every square's state, every object's position, the scripts' state, the credits and the whole zero page. One of the blocks is <code>$8000</code>-<code>$803F</code>, so a position saved from the original disk carries its CBM80 signature into any copy that loads it.</li>
     <li><b>The escape waits for the author.</b> Destroy the billboard at 02-03, the author's advert for his earlier game Encounter, and your ship refuses to leave: THE AUTHOR WON'T LET YOU LEAVE UNTIL YOU FIX HIS ADVERT (script 7 tests <code>$2B00</code> + <code>$32</code>). The Anti Time Bomb repairs it.</li>
-    <li><b>GAME OVER, for ever.</b> After the escape the script machine's busy flag (bit 6 of <code>$BEC0</code>) is never cleared, so no other event runs again, and GAME OVER comes round every 15 seconds.</li>
+    <li><b>GAME OVER, for ever.</b> After the escape the script machine's busy flag (bit 6 of <code>$BEC0</code>) is never cleared, so no other event runs again, and GAME OVER comes round every 18 seconds or so: a 15-second wait, then the line.</li>
     <li><b>The attacking ship's missile is not homing.</b> The ship itself closes in by 1/32 of the distance each pass, but its missile is aimed once, at launch, and flies straight.</li>
     <li><b>00-00 has a building nobody has seen.</b> Square number 0 also means "outside the city", so the model the table gives it (<code>$E424</code>) is never loaded.</li>
     <li><b>You can never have exactly 999,999 credits.</b> Hertz's ship costs 999,999, but the test at <code>$0E6F</code> wants the top byte of the credits above zero: 1,000,000. It makes no difference: you start with 9000 and every price is a multiple of 5000, so your credits always end in 4000 or 9000.</li>
@@ -2740,7 +2740,8 @@ window.MERC_GAME.catch(() => {});
         log('+ refused: the next step would reach 2^15, so the throttle stays at ' + fmtInt(s.T) + ' (<code>$B4A7</code>).');
       }
       if (before.onGround && !s.onGround) {
-        log('Airborne at height ' + fmtInt(s.h) + '. The craft’s own record is loaded again (<code>$A0FF</code>).', 'flight-ok');
+        log('Airborne at height ' + fmtInt(s.h) + '. The craft’s own record is loaded again (<code>$A0FF</code>).' +
+          (s.v < 0 && before.pitch === 512 ? ' The nose was level: reversing, the negative speed times the level sine, -0.003, climbs.' : ''), 'flight-ok');
         rollingLogged = false;
       }
       if (ev.crash) {
@@ -2762,12 +2763,14 @@ window.MERC_GAME.catch(() => {});
           ' and lands again, every pass.');
       }
       if (!s.onGround) { onDeck = false; }
-      if (ev.ceilingHit && !prevCeil) {
-        const c = F.M[0xBEAD], amp = (F.M[0x29DC] & 0x80) && s.vehicle === 1;
-        log('Above the ceiling byte <code>$' + hex2(amp ? 0x5A : c).slice(-2) + '</code>' + (amp ? ' (the Poweramp’s)' : '') +
-          ': the climb factor’s power of two becomes ' + (amp ? 90 : c) + ' minus the height’s top byte (<code>$A05D</code>).');
+      const ceil = (F.M[0x29DC] & 0x80) && s.vehicle === 1 ? 0x5A : F.M[0x9DAD + (s.vehicle & 7) * 16 + 13];
+      const above = !s.onGround && (s.h >> 16) > ceil && (s.h >> 16) < 0x80;
+      if (above && !prevCeil && s.vehicle !== 2 && s.vehicle !== 5) {
+        const amp = ceil === 0x5A && s.vehicle === 1;
+        log('Above the ceiling byte <code>$' + hex2(ceil) + '</code>' + (amp ? ' (the Poweramp’s)' : '') +
+          ': climbing, the climb factor’s power of two is now ' + ceil + ' minus the height’s top byte (<code>$A05D</code>).');
       }
-      prevCeil = ev.ceilingHit;
+      prevCeil = above;
       if (!s.onGround && ev.ceilingHit && ev.hStep === 0 && prevStep !== 0) {
         log('The climb step rounds down to 0: at this speed the craft can climb no higher than height ' + fmtInt(s.h) + '.');
       }
@@ -4517,11 +4520,11 @@ window.MERC_GAME.catch(() => {});
   const NOTES = {                                                    // one line under an instruction
     0x0A29: '99995000 is −5000 in eight-digit ten’s complement: the carry out of the top byte is lost',
     0x0AB5: 'the clock is zeroed only after the question has finished printing ($8AB2 waits while $E6 is set)',
-    0x0ABA: 'the five-second window: the seconds count on from wherever the frame count $E2 was, so 4.02 to 5 s',
+    0x0ABA: 'the five-second window: zeroing the clock leaves its frame count $E2 running, so it lasts between 4 and 5 seconds',
     0x0E6F: 'tests the top byte of the credits: 1,000,000 or more, for a price of 999,999',
     0x0E90: '99000001 is −999999',
     0x1163: 'the literal holds $6E, the code for !, where the apostrophe $6F was meant',
-    0x0A74: 'the job offer comes with 81 chances in 256 every 15 s, or at once away from the surface',
+    0x0A74: 'every 15 s: the job offer with 81 chances in 256, or for certain when the player is inside a complex',
     0x1240: '$296E is the room of object 46, the Pass: it moves to room 1',
     0x7009: 'the crack’s text: the original disk has NOVADRIVE COUNTDOWN here',
     0x0866: 'entries 21 and 30-33 point here; nothing starts them',
@@ -4694,8 +4697,8 @@ window.MERC_GAME.catch(() => {});
         const codes = run.stream.slice(st, en);
         ctx.fillStyle = mute; ctx.fillText(String(L + 1), 6, y + 12);
         if (!codes.length) continue;
-        const tmp = document.createElement('canvas'), tc = blit(tmp, paintCells(ram, codes, state.ink), S);
-        void tc;
+        const tmp = document.createElement('canvas');
+        blit(tmp, paintCells(ram, codes, state.ink), S);
         ctx.drawImage(tmp, 0, 0, Math.min(2, codes.length) * CELL, CELL, X0, y, Math.min(2, codes.length) * CELL, CELL);
         if (codes.length > 2) ctx.drawImage(tmp, 2 * CELL, 0, (codes.length - 2) * CELL, CELL, cellX(2), y, (codes.length - 2) * CELL, CELL);
       }
@@ -4783,7 +4786,7 @@ window.MERC_GAME.catch(() => {});
     colSel.innerHTML = [['', 'red (' + C.window + '): no Metal Detector, or a square of nobody’s'], [C.detector.pal, 'green (' + C.detector.pal + '): the Metal Detector over a Palyar square'],
       [C.detector.mech, 'blue (' + C.detector.mech + '): the Metal Detector over a Mechanoid square']].map(([v, t]) => '<option value="' + v + '">' + esc(t) + '</option>').join('');
     colSel.onchange = () => { state.ink = colSel.value === '' ? null : +colSel.value; renderTape(); show(f); state.redraw.forEach(fn => fn()); };
-    load('c15', false);
+    load('s' + (0x0AAC).toString(16), false);
     return key => { load(key, true); $('benson-window').scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(play, 450); };
   }
 
@@ -5599,7 +5602,7 @@ window.MERC_GAME.catch(() => {});
       }
     }
     const t = ram[r.a + 4 * k + 5];
-    const out = { room: n, head: st.head, h: st.h, mirror, lit: st.lit, links, flash, from, via: k, guard: 2,
+    const out = { room: n, head: st.head, h: st.h, mirror, lit: st.lit, keys: st.keys, links, flash, from, via: k, guard: 2,
       x: (ram[r.a + 4 * k + 7] << 8) | ((t & 0x80) ^ 0x80), y: (ram[r.a + 4 * k + 8] << 8) | (t & 0x80) };
     if (!r.doors[k]) out.missing = k;
     return clamp(G, out);
@@ -5609,8 +5612,8 @@ window.MERC_GAME.catch(() => {});
   // through fp_mul and fp_to_int16.
   function walkStep(G, st, forward) {
     const F = G.F, h = st.head & 0x3FF, step = [G.ram[0x724E], G.ram[0x7252] ^ (forward ? 1 : 0)];
-    const dy = F.toInt16(F.mul(step, F.cos10(h & 255, h >> 8), true));
-    const dx = F.toInt16(F.mul(step, F.sin10(h & 255, h >> 8), true));
+    const dy = F.toInt16(F.mul(F.cos10(h & 255, h >> 8), step, true));   // X, Y = cos h; $08, $09 = step
+    const dx = F.toInt16(F.mul(F.sin10(h & 255, h >> 8), step, true));
     st.y = (st.y + dy) & 0xFFFF; st.x = (st.x + dx) & 0xFFFF;
     if (st.guard) st.guard--;
     return st;
@@ -5799,7 +5802,8 @@ window.MERC_GAME.catch(() => {});
       if (!d) return;
       const t = destination(G, st, d);
       if (d.type >= 8 && !st.keys) { note = G.locked + ': the door wants object ' + (d.type + 8) + ' carried.'; draw(); return; }
-      if (r.n === 0x51 && d.x > r.xs) { note = 'The door test never finds this door: its X byte is ' + h2(d.x) + ' in a room ' + r.xs + ' wide.'; draw(); return; }
+      const onWall = d.wallX ? (d.x === 0 || d.x === r.xs) && d.y < r.ys : (d.y === 0 || d.y === r.ys) && d.x < r.xs;
+      if (!onWall) { note = 'The door test never finds this door: it is recorded at ' + d.x + ', ' + d.y + ', off the walls of a room ' + r.xs + ' by ' + r.ys + '.'; draw(); return; }
       if (t.room === 0) { note = 'Room 0 is outside: the player drops from beside the Colony Craft.'; draw(); return; }
       go(enter(G, Object.assign({}, st, { head: facing(r, d) }), t.room, t.arr));
     }
