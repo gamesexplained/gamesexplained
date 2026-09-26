@@ -26,6 +26,16 @@ annotate it byte by byte.
    Screenshot. If a trainer or cracktro menu appears, note the options,
    choose the plain game (no cheats) unless the contributor says
    otherwise, and record the choice in `orientation.md`.
+
+   **Ask what the image is before trusting it.** A backup of a running
+   game (a snapshot saved by a freezer cartridge, a packed memory dump)
+   is the game as it stood when it was saved, not as its loader left it,
+   and a part of memory it did not save comes back as the emulator's
+   fill. The platform reference says how to recognise one. If it is one,
+   restart it at the game's own entry, and before the analysis rests on
+   it, check every range that looks like fill with a store and an execute
+   checkpoint while you play: a range the game calls is missing code, and
+   the contributor needs to know before the run goes further.
 2. **Reach real gameplay, not the title screen.** If a key press seems not
    to register, hold it far longer than feels sensible before concluding
    anything: a game that only samples input from a timer interrupt, or only

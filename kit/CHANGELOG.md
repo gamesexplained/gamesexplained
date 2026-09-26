@@ -39,7 +39,8 @@ like the emulator's power-up fill and nothing touched it on the way to
 play, but a checkpoint on it caught the first pan calling into it: 1.5 KB
 of missing code. The platform reference now describes such backups, how
 to restart them, and how to tell a spare range from missing code with a
-store and an execute checkpoint before trusting the image.
+store and an execute checkpoint, and the orientation step asks for that
+check on the first view, before the run rests on the image.
 
 ## 0.0.22 · 25 September 2026 · Little Computer People, the retrospective's ask · air with Claude
 
