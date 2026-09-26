@@ -24,6 +24,11 @@
       document.querySelectorAll('[data-platform]').forEach(function(el){ el.classList.toggle('hidden',!!f&&el.dataset.platform!==f); });
     });
   });
+  // About page: a # beside each section heading, shown on hover, links straight to that section
+  document.querySelectorAll('.about h2[id]').forEach(function(h){
+    var a=document.createElement('a'); a.className='hash'; a.href='#'+h.id; a.textContent='#';
+    a.setAttribute('aria-label','Link to this section'); h.appendChild(a);
+  });
   if(document.body.dataset.nolink) return;
   document.querySelectorAll('code').forEach(function(c){
     if(c.closest('a')||c.closest('pre')||c.children.length) return;
