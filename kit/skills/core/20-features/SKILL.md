@@ -35,6 +35,12 @@ Sources in `features.md` with its address and the date, and put the wiki
 page and the manual in `links` in `game.json`, where the About tab shows
 them.
 
+Some fan sites serve plain HTTP only, and an agent's fetch tool may
+upgrade every address to HTTPS and report such a site unreachable. Before
+writing a site off, fetch it with `curl` over `http://` (through the
+environment's proxy, if it has one). A research subagent reports what its
+tools could not reach; check each of those yourself.
+
 ## Status words
 
 Every row in `features.md` carries one:

@@ -261,6 +261,13 @@ the batch.
 - **`vice_machine_config_set` has a six-entry whitelist**:
   `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
   `CIA2Model`. Joystick port assignment is not among them.
+- **Switching the video standard sticks.** One run set
+  `MachineVideoStandard` to NTSC and back to PAL, and every snapshot saved
+  earlier then failed to load: the call says only "Failed to load
+  snapshot", while `tools/logs/vice.log` says the snapshot was made with
+  another video chip model. Restarting the emulator (`tools.py stop vice`,
+  then `tools.py vice`) cured it. Run an NTSC test last, or restart after
+  it.
 - **A snapshot save name cannot be reused.** Save **without** ROMs so the
   RAM image lands where the platform reference says it does.
 - **Some calls can take the server down.** If a call returns a closed
@@ -268,8 +275,9 @@ the batch.
 - **`vice_machine_reset` leaves a paused machine paused**, `run_after`
   or not. Resume it with `vice_execution_run` before waiting for `READY.`.
   So does `vice_autostart`: on a paused machine it attaches and returns,
-  and nothing loads. `tools.py check-emulator` and `frame.py test` leave
-  the machine paused, so resume it before the first autostart.
+  and nothing loads. `frame.py test` leaves the machine paused, so
+  resume it before the first autostart; `tools.py check-emulator` resumes
+  it at the end.
 - **`vice_autostart` loads the first program on the disk.** On the
   v3.13.1 release (25 September 2026) its `program` and `index`
   arguments did not choose another file. For any other file, resume the

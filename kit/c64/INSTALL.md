@@ -266,8 +266,15 @@ python3 kit/scripts/tools.py status
 python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510
 python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000
 python3 kit/scripts/tools.py snapshots            # where emulator snapshots land
-python3 kit/scripts/tools.py stop
+python3 kit/scripts/tools.py stop vice            # the emulator only
+python3 kit/scripts/tools.py stop                 # both tools
 ```
+
+To restart the emulator (after a crash, or a change of video standard that
+leaves snapshots refusing to load), stop it alone with `stop vice`. A bare
+`stop` stops the disassembler too, and with it every annotation made since
+the last export: rebuild the session from the logs (`r2000.py --replay`),
+then export.
 
 The launcher, `kit/c64/tools.py`, points the emulator's XDG config, state
 and cache paths into `tools/vice-home/`, gives both tools the

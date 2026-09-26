@@ -1,0 +1,1725 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+
+/* city-levels */
+/* The map of Targ and the model sheet (city-levels.js). Every class and id is prefixed city-levels-. */
+.city-levels-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 14px}
+#city-levels-map button,#city-levels-models button{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer}
+#city-levels-map button:hover{border-color:var(--violet)}
+#city-levels-map button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff}
+.city-levels-legend{font-family:var(--fm);font-size:12px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.city-levels-legend.city-levels-off{visibility:hidden}
+.city-levels-sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-left:8px;vertical-align:-1px}
+.city-levels-mapwrap{position:relative}
+#city-levels-cv{display:block;width:100%;height:auto;aspect-ratio:1;border-radius:6px;background:#000;cursor:pointer}
+.city-levels-pop{position:absolute;width:312px;max-width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px rgba(0,0,0,.25);padding:14px 16px 12px;z-index:2}
+.city-levels-x{position:absolute;top:8px;right:8px;font-size:15px!important;line-height:1;padding:3px 8px!important}
+.city-levels-title{font-family:var(--fm);font-size:13px;color:var(--ink);margin:0 34px 10px 0;line-height:1.45}
+.city-levels-title span{color:var(--amber)}
+#city-levels-turn{display:block;width:280px;max-width:100%;height:auto;aspect-ratio:280/200;background:#000;border-radius:6px;cursor:grab}
+.city-levels-facts{font-family:var(--fm);font-size:12px;color:var(--ink-soft);line-height:1.6;margin-top:10px}
+.city-levels-facts table{border-collapse:collapse;width:100%}
+.city-levels-facts td{padding:3px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.city-levels-facts td:first-child{color:var(--ink-mute);padding-right:10px;white-space:nowrap}
+.city-levels-facts a.city-levels-sq{color:var(--link);text-decoration:none;cursor:pointer}
+.city-levels-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:10px 0 0}
+.city-levels-sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.city-levels-card{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:8px;padding:6px 6px 7px;font-family:var(--fm);font-size:11px;color:var(--ink-soft);cursor:pointer;line-height:1.45;min-width:0}
+.city-levels-card:hover{border-color:var(--violet)}
+.city-levels-card.city-levels-on{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet)}
+.city-levels-card canvas{display:block;width:100%;height:auto;aspect-ratio:106/90;background:#000;border-radius:5px;margin-bottom:5px}
+.city-levels-card .city-levels-unused{color:var(--coral)}
+.city-levels-card .city-levels-road{color:var(--ink-mute)}
+@media(max-width:720px){.city-levels-pop{position:relative;width:auto;margin-top:12px;box-shadow:none}}
+/* rooms */
+/* rooms: the underground viewer (How it works) and the maps (rooms-levels.css adds those) */
+.rooms-view{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.rooms-screen{max-width:640px;margin:0 auto;background:#000;border-radius:6px;overflow:hidden}
+.rooms-canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;outline:none;touch-action:manipulation}
+.rooms-canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--violet)}
+.rooms-msg{background:#813338;color:#fff;font-family:var(--fm);font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+  padding:6px 12px;min-height:1.6em;line-height:1.6}
+.rooms-msg.rooms-quiet{color:#c46c71}
+.rooms-where{max-width:640px;margin:8px auto 0;color:var(--ink-mute);font-size:12px}
+.rooms-where code{font-size:11px}
+.rooms-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px auto 0;max-width:640px}
+.rooms-bar button,.rooms-door{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.rooms-bar button:hover,.rooms-door:hover,.rooms-door:focus-visible{border-color:var(--violet)}
+.rooms-bar label{display:flex;gap:6px;align-items:center;color:var(--ink-soft);cursor:pointer}
+.rooms-bar input{accent-color:var(--violet)}
+.rooms-pick{font-family:var(--fm);font-size:12.5px;max-width:260px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface)}
+.rooms-doors{display:flex;flex-wrap:wrap;gap:6px;margin:12px auto 0;max-width:640px}
+.rooms-door{padding:5px 10px;font-size:12px;text-align:left}
+.rooms-dk{display:inline-block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-mute);margin-right:4px}
+.rooms-keyed{border-color:var(--amber)}
+.rooms-keyed .rooms-dk{color:var(--amber)}
+.rooms-sub{color:var(--ink-mute)}
+.rooms-rec{max-width:640px;margin:14px auto 0;overflow-x:auto}
+.rooms-tbl{border-collapse:collapse;font-family:var(--fm);font-size:12px;width:100%}
+.rooms-tbl th,.rooms-tbl td{border-bottom:1px solid var(--line-soft);padding:5px 8px;text-align:left;vertical-align:top}
+.rooms-tbl th{color:var(--ink-mute);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.rooms-tbl td.rooms-b{white-space:nowrap;color:var(--ink)}
+.rooms-tbl code{font-size:11px}
+.rooms-sw{display:inline-block;width:11px;height:11px;border:1px solid var(--line);border-radius:2px;vertical-align:-1px}
+.rooms-note{font-family:var(--fm);font-size:13px;color:var(--ink-mute);margin:0}
+@media (max-width:560px){.rooms-bar button{padding:7px 9px}.rooms-tbl td{padding:4px 5px}}
+/* rooms-levels */
+/* rooms-levels: the underground's plans, booths and keys (with rooms.css for the viewer) */
+.rooms-maps-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.rooms-maps-tabs button{font-family:var(--fm);font-size:12.5px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer}
+.rooms-maps-tabs button:hover{border-color:var(--violet)}
+.rooms-maps-tabs button.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.rooms-maps-tabs button.on .rooms-sub{color:#dfe2ff}
+.rooms-maps-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.rooms-maps-right{position:sticky;top:60px}
+.rooms-maps-right .rooms-screen,.rooms-maps-right .rooms-where,.rooms-maps-right .rooms-bar,.rooms-maps-right .rooms-doors,.rooms-maps-right .rooms-rec{max-width:none}
+.rooms-maps-plan{background:#16171b;border-radius:6px;padding:6px;max-height:78vh;overflow:auto}
+.rooms-svg{display:block;width:100%;height:auto}
+.rooms-room{cursor:pointer}
+.rooms-room rect{transition:opacity .1s}
+.rooms-room:hover rect,.rooms-room:focus rect{opacity:.8}
+.rooms-room:focus{outline:none}
+.rooms-room.rooms-here rect{stroke:#fff0c2;stroke-width:.9}
+.rooms-lab{font-family:var(--fm);font-size:1.5px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.rooms-floor{font-family:var(--fm);font-size:2.4px;fill:#c9c7c0;letter-spacing:.05em}
+.rooms-obj{fill:#fff;stroke:#000;stroke-width:.2}
+.rooms-lift circle{fill:#fff0c2;stroke:#000;stroke-width:.2}
+.rooms-lift text{font-family:var(--fm);font-size:1.7px;text-anchor:middle;dominant-baseline:central;fill:#000;font-weight:500}
+.rooms-door-plain,.rooms-door-key,.rooms-door-dark,.rooms-door-booth,.rooms-door-exit{stroke-width:.75;stroke-linecap:butt}
+.rooms-door-plain{stroke:#fff}
+.rooms-door-key{stroke:#ffb347}
+.rooms-door-dark{stroke:#ff7a7a}
+.rooms-door-booth{stroke:#b8a6ff}
+.rooms-door-exit{stroke:#ff5a4a}
+.rooms-tag{font-family:var(--fm);font-size:1.6px;text-anchor:middle;fill:#b8a6ff;cursor:default}
+.rooms-tag-exit{fill:#ff5a4a}
+.rooms-miss{stroke:#fff0c2;stroke-width:.3;stroke-dasharray:.5 .4}
+.rooms-maps-info{font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin:10px 0 6px}
+.rooms-legend{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.rooms-legend li{display:flex;align-items:center;gap:6px}
+.rooms-key-sw{display:inline-block;width:14px;height:10px;border:1px solid #706deb}
+.rooms-key-dark{background:#111;border:1px dashed #777}
+.rooms-key-line{display:inline-block;width:14px;height:3px;background:#fff;box-shadow:0 0 0 1px #16171b}
+.rooms-k-plain{background:#fff;outline:1px solid #16171b}
+.rooms-k-key{background:#ffb347}
+.rooms-k-dark{background:#ff7a7a}
+.rooms-k-booth{background:#b8a6ff}
+.rooms-key-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;border:1px solid #000}
+.rooms-key-lift{display:inline-flex;width:14px;height:14px;border-radius:50%;background:#fff0c2;border:1px solid #000;font-size:9px;align-items:center;justify-content:center;color:#000}
+.rooms-booths-graph{background:#16171b;border-radius:6px;padding:10px}
+.rooms-net text{font-family:var(--fm);text-anchor:middle}
+.rooms-node rect{fill:#2f3136;stroke:#8e8c86;stroke-width:.3}
+.rooms-node{cursor:pointer}
+.rooms-node:hover rect,.rooms-node:focus rect{stroke:#fff0c2}
+.rooms-node:focus{outline:none}
+.rooms-node text{font-size:2.3px;fill:#f1efea}
+.rooms-node .rooms-node-n{font-size:1.8px;fill:#a8a6a0}
+.rooms-e-two,.rooms-e-one,.rooms-e-hub,.rooms-e-mirror{fill:none;stroke-width:.45}
+.rooms-e-two{stroke:#b8a6ff}
+.rooms-e-one{stroke:#7fd1c7}
+.rooms-e-mirror{stroke:#ffb347}
+.rooms-e-hub{stroke:#8e8c86;stroke-dasharray:.8 .6}
+.rooms-arrowhead{fill:#7fd1c7}
+.rooms-e-lab{font-size:1.9px;fill:#e9e7e1;paint-order:stroke;stroke:#16171b;stroke-width:.6px}
+.rooms-hub circle{fill:#16171b;stroke:#8e8c86;stroke-width:.4}
+.rooms-hub text{font-size:2.2px;fill:#e9e7e1}
+.rooms-wide{max-width:none;margin-top:16px}
+.rooms-link{font-family:var(--fm);font-size:11.5px;background:none;border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin:1px 0;cursor:pointer;color:var(--link)}
+.rooms-link:hover{border-color:var(--violet)}
+.rooms-shape{width:34px;height:36px;background:#2e2c9b;border-radius:3px;display:block}
+.rooms-shape polyline{fill:none;stroke:#706deb;stroke-width:12;stroke-linejoin:round}
+.rooms-shape .rooms-floorline{stroke:#706deb;stroke-width:6}
+.rooms-keys-extra{font-family:var(--fm);font-size:12.5px;color:var(--ink-soft);margin:12px 0 0}
+@media (max-width:900px){.rooms-maps-grid{grid-template-columns:minmax(0,1fr)}.rooms-maps-right{position:static;order:-1}.rooms-maps-plan{max-height:none}}
+.rooms-maps-zoom{display:flex;gap:4px;justify-content:flex-end;margin:0 0 6px}
+.rooms-maps-zoom button{font-family:var(--fm);font-size:12px;min-width:30px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer}
+.rooms-maps-zoom button:hover{border-color:var(--violet)}
+.rooms-maps-zoom button.on{border-color:var(--violet);color:var(--violet)}
+.rooms-offwall{stroke:#ff7a7a;stroke-width:.35;stroke-dasharray:1.2 .8}
+.rooms-arrowhead-m{fill:#ffb347}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The city of Targ square by square, and the 174 rooms beneath it, drawn from the game's own tables.</p>
+</header>
+<main class="wrap">
+<section id="city-levels-map">
+  <p class="fig">01 · The map of Targ</p>
+  <h2 class="t">The city of Targ, square by square</h2>
+  <p class="lede">Sixteen by sixteen squares, each with one building model and the roads through it, drawn from the tables the game reads.</p>
+  <div class="plate">
+    <div class="city-levels-bar">
+      <button type="button" id="city-levels-owner" aria-pressed="false">Owners, as the Metal Detector shows them</button>
+      <span class="city-levels-legend city-levels-off" id="city-levels-legend"><i class="city-levels-sw" data-c="5"></i>Palyar <i class="city-levels-sw" data-c="6"></i>Mechanoid <i class="city-levels-sw" data-c="2"></i>nobody's</span>
+    </div>
+    <div class="city-levels-mapwrap" id="city-levels-mapwrap">
+      <canvas id="city-levels-cv" width="854" height="854" aria-label="The 16 by 16 squares of the city, north at the top"></canvas>
+      <div class="city-levels-pop" id="city-levels-pop" hidden>
+        <button type="button" class="city-levels-x" id="city-levels-close" aria-label="Close">×</button>
+        <p class="city-levels-title" id="city-levels-title"></p>
+        <canvas id="city-levels-turn" width="280" height="200" aria-label="The square's model, turning"></canvas>
+        <div class="city-levels-facts" id="city-levels-facts"></div>
+      </div>
+    </div>
+    <p class="city-levels-note" id="city-levels-note" hidden></p>
+    <p class="cap">Square <b>XX-YY</b> is column X, row Y, as the LOC readout shows it; north is at the top. Each square's model comes from <code>$2600</code> and <code>$2700</code> (the loader is <code>$9575</code>), drawn from above at a slant: white for the edges the game draws in white, grey for its road marks. Names from the square's script, <code>$2B00</code> bits 0-4 (script 32 + n); owners from bits 5 and 6, coloured as the Metal Detector colours the message window (<code>$B553</code>). Click a square for its model.</p>
+  </div>
+</section>
+<section id="city-levels-models">
+  <p class="fig">02 · Every model</p>
+  <h2 class="t">Every building model in the image</h2>
+  <p class="lede">The image holds 106 models: 91 buildings, every one of them used by some square, and 15 road pieces, of which 8 are used by none.</p>
+  <div class="plate">
+    <div class="city-levels-sheet" id="city-levels-sheet"></div>
+    <p class="cap">In address order, from <code>$C000</code> to <code>$CF66</code> and <code>$E000</code> to <code>$FFCF</code>, each drawn from its own bytes and seen from the south-east; white and grey as the game draws them. Under each, the squares that use it. Click one to find its squares on the map.</p>
+  </div>
+</section>
+
+<section id="rooms-maps">
+  <p class="fig">03 · The underground</p>
+  <h2 class="t">The underground, complex by complex</h2>
+  <p class="lede">Each lift goes down into a hangar, and the hangar's doors lead on into a complex of rooms: six complexes under the city and the Colony Craft's three floors, 152 rooms in all, with 22 transporter booths between them.</p>
+  <div class="plate">
+    <div class="rooms-maps-tabs" id="rooms-maps-tabs" role="toolbar" aria-label="Complex"></div>
+    <div class="rooms-maps-grid">
+      <div class="rooms-maps-left">
+        <div class="rooms-maps-zoom" id="rooms-maps-zoom" role="toolbar" aria-label="Zoom"><button type="button" data-z="out" title="Zoom out">&minus;</button><button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="fit">Fit</button></div>
+        <div class="rooms-maps-plan" id="rooms-maps-plan"><p class="rooms-note rooms-need" hidden>The plans read the game from <code>listing.json</code>, so they need the built site.</p></div>
+        <p class="rooms-maps-info" id="rooms-maps-info"></p>
+        <ul class="rooms-legend">
+          <li><span class="rooms-key-sw" style="background:#2e2c9b"></span>a room in its own two colours</li>
+          <li><span class="rooms-key-sw rooms-key-dark"></span>dark room</li>
+          <li><span class="rooms-key-line rooms-k-plain"></span>door</li>
+          <li><span class="rooms-key-line rooms-k-key"></span>locked door</li>
+          <li><span class="rooms-key-line rooms-k-dark"></span>triangle sign: a dark room beyond</li>
+          <li><span class="rooms-key-line rooms-k-booth"></span>door to a booth, with its number</li>
+          <li><span class="rooms-key-dot"></span>object</li>
+          <li><span class="rooms-key-lift">E</span>lift</li>
+        </ul>
+      </div>
+      <div class="rooms-maps-right"><div id="rooms-maps-view" class="rooms-view"><p class="rooms-note rooms-need" hidden>The viewer reads the game from <code>listing.json</code>, so it needs the built site.</p></div></div>
+    </div>
+    <p class="cap"><b>Floor plans from the room records</b> (<code>$3000</code>-<code>$3B23</code>, pointers <code>$2300</code>/<code>$23C0</code>): each room is placed so that its doors meet the doors they lead to, north at the top, one unit being 256, and a city square 256 units across. The game itself never places one room against another: it only reads the door you arrive by. Click a room to stand in it; the viewer draws it with the game's own arithmetic, objects included, checked byte for byte against the game's code in a 6502 simulator.</p>
+  </div>
+</section>
+
+<section id="rooms-booths">
+  <p class="fig">04 · Transporter booths</p>
+  <h2 class="t">The 22 transporter booths</h2>
+  <p class="lede">A booth is a room three units square with one door, and entering it rewrites that door: to the room you did not come from, to one fixed room, or to one of eight at random.</p>
+  <div class="plate">
+    <div id="rooms-booths-graph" class="rooms-booths-graph"><p class="rooms-note rooms-need" hidden>The diagram reads the game from <code>listing.json</code>, so it needs the built site.</p></div>
+    <p class="cap"><b>The complexes and the booths between them</b>: a line for a booth that works both ways, an arrow for one that only sends, dotted lines for booth <code>$72</code>, which picks one of its eight pairs with the game's random number (<code>$910E</code>). Booths inside one complex are left out of the diagram and listed below. From the booth records <code>$375E</code>-<code>$389D</code>, the relinking at <code>$9119</code>-<code>$913B</code>, checked against the game's code in a 6502 simulator.</p>
+    <p class="rooms-keys-extra" id="rooms-booths-inside"></p>
+    <div id="rooms-booths-table" class="rooms-rec rooms-wide"></div>
+  </div>
+  <p>A booth holds two links, a room and a door each. On entry the game compares the room you came from with the first link's room: if they differ, the booth's door is pointed at the first link, and if they match, at the second. When both links name the same room the booth works one way. From anywhere else it sends you to that room, and coming from that room it leaves its door alone, so you go straight back, without the booth's flash of colour. Booth <code>$7F</code> also calls <code>$9353</code>, which flips the mirror flag <code>$F1</code> and so swaps the stick's left and right and mirrors the view. Both its links name room <code>$56</code>, so the flip happens only when you come in from <code>$90</code> on the Colony Craft. In play nothing else writes the flag, CTRL + Q included.</p>
+</section>
+
+<section id="rooms-keys">
+  <p class="fig">05 · Keys</p>
+  <h2 class="t">Seven keys, each shaped like the doors it opens</h2>
+  <p class="lede">A door whose outline is one of seven key shapes stays LOCKED unless the object numbered eight more than its type is carried.</p>
+  <div class="plate">
+    <div id="rooms-keys-table" class="rooms-rec rooms-wide"><p class="rooms-note rooms-need" hidden>The table reads the game from <code>listing.json</code>, so it needs the built site.</p></div>
+    <p class="rooms-keys-extra" id="rooms-keys-extra"></p>
+    <p class="cap"><b>The key-shaped outlines</b> at <code>$92E2</code>-<code>$932A</code>, drawn from their bytes; the lock test at <code>$9493</code> wants object 8 + type carried (<code>$29C8</code> + type, bit 7) unless object 48 is (<code>$948E</code>). Where each key lies is its room at the start (<code>$2940</code>).</p>
+  </div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+window.MERC_GAME = window.C64 ? C64.load('listing.json') : Promise.reject(new Error('no C64'));
+window.MERC_GAME.catch(() => {});
+</script>
+<script>
+/* city-levels */
+// The city map for the Maps page: the 16 x 16 squares of Targ with their roads, every square's
+// building drawn small from its model, the owners from $2B00, and a sheet of every model in the
+// image. Reads listing.json through window.MERC_GAME; nothing is embedded but the square names,
+// which are the words the squares' scripts print (work/tests/city-test-names.js checks them).
+(function () {
+  'use strict';
+
+  // A building model ($2600/$2700 -> the format load_building $9575 reads): +0 last vertex, +1 last
+  // edge, +2 pen split, +3 rotor; edges one byte (two nibbles) until a 0, then two bytes; rotor
+  // vertices 3 bytes (dx, height, dz in quarter units about the rotor centre), the rest 2 bytes
+  // (x and z in the low six bits, 0 -> $00, 63 -> $FF, else + $60; height from the top two bits of
+  // both, 15 meaning a third byte). Vertices 60-63 are the square's road ends.
+  function parseModel(ram, p) {
+    const nv = ram[p] + 1, ne = ram[p + 1] + 1, pen = ram[p + 2], r = ram[p + 3];
+    let y = p + 4, rotor = null;
+    if (r) { rotor = { n: (r & 15) + 1, speed: (r & 0xF0) >> 1, cx: ram[y], cz: ram[y + 1], byte: r }; y += 2; }
+    const edges = [];
+    let wideAt = -1;
+    while (edges.length < ne) {
+      if (wideAt < 0) { const b = ram[y++]; if (b === 0) { wideAt = edges.length; continue; } edges.push([b >> 4, b & 15]); }
+      else { edges.push([ram[y], ram[y + 1]]); y += 2; }
+    }
+    const coord = b => { const c = b & 63; return c === 0 ? 0 : c === 63 ? 255 : c + 0x60; };
+    const V = [];
+    for (let i = 0; i < nv; i++) {
+      if (rotor && i < rotor.n) {
+        const raw = [ram[y], ram[y + 1], ram[y + 2]]; y += 3;
+        V.push({ rot: true, raw, x: rotor.cx + (raw[0] << 24 >> 24) / 4, h: raw[1], z: rotor.cz + (raw[2] << 24 >> 24) / 4 });
+        continue;
+      }
+      const b1 = ram[y], b2 = ram[y + 1]; y += 2;
+      const code = (b1 >> 6) << 2 | (b2 >> 6);
+      let h = code, raw = [b1, b2];
+      if (code === 15) { const e = ram[y++]; raw.push(e); h = e & 0x80 ? ((e >> 4) & 7) + (e & 15) / 16 : e; }
+      V.push({ rot: false, raw, x: coord(b1), h, z: coord(b2) });
+    }
+    return { addr: p, end: y - 1, V, edges, pen, rotor, wideAt };
+  }
+  // Every model in the image, in address order: they tile $C000-$CF66 and $E000-$FFCF, some
+  // followed by an end mark 4C 00 00 that nothing reads; $E7FF counts one vertex more than it
+  // has and reads two bytes of $E849, the next model.
+  function modelList(ram) {
+    const out = [];
+    for (const [lo, hi] of [[0xC000, 0xCF66], [0xE000, 0xFFCF]]) {
+      let p = lo;
+      while (p <= hi) {
+        out.push(p);
+        let q = parseModel(ram, p).end + 1;
+        if (ram[q] === 0x4C && ram[q + 1] === 0 && ram[q + 2] === 0) q += 3;
+        if (q === 0xE84B) q = 0xE849;
+        if (q <= p) break;
+        p = q;
+      }
+    }
+    return out;
+  }
+  // The squares' names: script 32 + ($2B00 AND 31) prints them when the building is destroyed.
+  const NAMES = { 36: 'NOVABILL', 37: 'THE AUTHORS ADVERT', 38: 'SABINS CUBE', 39: 'THE WALTON MONUMENT', 40: 'ST. STALLARDS',
+    41: 'THE MOORBY ARCH', 42: 'TYLER POINT', 43: 'BOSHER STADIUM', 44: 'JORDAN AIRPORT', 45: 'VECTOR HENGE',
+    46: "THE PALYAR COMMANDER'S BROTHER-IN-LAWS HOUSE", 47: 'THE MECHANOID FORT', 48: 'THE COACH AND HORSES', 49: 'TRAITOR!', 50: 'GOOD SHOW!' };
+  const LABELS = { 36: ['NOVABILL'], 37: ['AUTHORS', 'ADVERT'], 38: ['SABINS', 'CUBE'], 39: ['WALTON', 'MONUMENT'], 40: ['ST.', 'STALLARDS'],
+    41: ['MOORBY', 'ARCH'], 42: ['TYLER', 'POINT'], 43: ['BOSHER', 'STADIUM'], 44: ['JORDAN', 'AIRPORT'], 45: ['VECTOR', 'HENGE'],
+    46: ['BROTHER-', 'IN-LAWS'], 47: ['MECHANOID', 'FORT'], 48: ['COACH AND', 'HORSES'], 49: ['TRAITOR!'], 50: ['GOOD SHOW!'] };
+  // The Metal Detector's colours ($B553): bit 5 set red, else bit 6 set blue, else green.
+  const owner = st => st & 0x20 ? { c: 2, name: "nobody's" } : st & 0x40 ? { c: 6, name: 'Mechanoid' } : { c: 5, name: 'Palyar' };
+
+  if (typeof document === 'undefined') { module.exports = { parseModel, modelList, NAMES, LABELS, owner }; return; }
+
+  const $ = id => document.getElementById(id);
+  if (!$('city-levels-map')) return;
+  const NEED = 'This map reads the game from listing.json, which the built site serves: open the page from the site, not from disk.';
+  const note = m => { const n = $('city-levels-note'); n.textContent = m; n.hidden = false; };
+  if (!window.MERC_GAME) { note(NEED); return; }
+  window.MERC_GAME.then(start, e => note(NEED + (e && e.message ? ' (' + e.message + ')' : '')));
+
+  function start(G) {
+    const ram = G.ram, PAL = window.C64.PAL;
+    const hex = (n, w) => n.toString(16).toUpperCase().padStart(w || 2, '0');
+    const addrHtml = a => '<code><a href="source.html#' + hex(a, 4) + '">$' + hex(a, 4) + '</a></code>';
+    const sqName = s => String(s & 15).padStart(2, '0') + '-' + String(s >> 4).padStart(2, '0');
+    const modelAt = s => ram[0x2600 + s] | ram[0x2700 + s] << 8;
+    const models = new Map();                       // address -> parsed model
+    const users = new Map();                        // address -> squares
+    for (let s = 0; s < 256; s++) {
+      const a = modelAt(s);
+      if (!models.has(a)) models.set(a, parseModel(ram, a));
+      if (!users.has(a)) users.set(a, []);
+      users.get(a).push(s);
+    }
+    const sheet = modelList(ram);
+    for (const a of sheet) if (!models.has(a)) models.set(a, parseModel(ram, a));
+    const isRoad = a => a >= 0xE000 && a < 0xE1D3;
+    const label = a => G.names && G.names.get(a);
+
+    // ------------------------------------------------------------------ drawing a model
+    const ENDS = { 60: [255, 0, 128], 61: [0, 0, 128], 62: [128, 0, 255], 63: [128, 0, 0] };
+    // segments [x1, h1, z1, x2, h2, z2, road mark?, stub?] in model units, the rotor turned by a
+    // (10-bit) spin angle; road marks are the edges after the pen split, drawn first
+    function segments(m, spin) {
+      const V = m.V.map(v => [v.x, v.h, v.z]);
+      if (m.rotor && spin) {
+        const t = spin * Math.PI * 2 / 1024, c = Math.cos(t), s = Math.sin(t);
+        for (let i = 0; i < m.rotor.n; i++) {
+          const dx = (m.V[i].raw[0] << 24 >> 24) / 4, dz = (m.V[i].raw[2] << 24 >> 24) / 4;
+          V[i] = [m.rotor.cx + dx * c - dz * s, m.V[i].h, m.rotor.cz + dx * s + dz * c];
+        }
+      }
+      const out = [];
+      m.edges.forEach(([a, b], k) => {
+        const pa = a >= 60 ? ENDS[a] : V[a], pb = b >= 60 ? ENDS[b] : V[b];
+        if (!pa || !pb) return;
+        out.push([...pa, ...pb, m.pen === 255 || k > m.pen, a >= 60 || b >= 60]);
+      });
+      return out.sort((p, q) => q[6] - p[6]);
+    }
+    // the building proper: edges that neither reach a road end nor touch the square's border
+    // (those are the road lanes, which the map draws as the roads between square centres)
+    const onBorder = (x, z) => x === 0 || x === 255 || z === 0 || z === 255;
+    const inner = sg => !sg[7] && !onBorder(sg[0], sg[2]) && !onBorder(sg[3], sg[5]);
+    // oblique view from above: north up, heights lifted up and a little right
+    const obl = (x, h, z) => [x - 128 + 0.3 * h, z - 128 - 0.8 * h];
+    // the sheet's view: from the south-east, 35 degrees up, so that boards facing east and
+    // boards facing south both show
+    const axo = (x, h, z) => [(x - z) * 0.7071, (x + z - 256) * 0.4056 - 0.8192 * h];
+    function drawOblique(g, segs, ox, oy, scale, lw, proj) {
+      proj = proj || obl;
+      for (const s of segs) {
+        g.strokeStyle = s[6] ? PAL[11] : PAL[1]; g.lineWidth = lw;
+        const [x1, y1] = proj(s[0], s[1], s[2]), [x2, y2] = proj(s[3], s[4], s[5]);
+        g.beginPath(); g.moveTo(ox + x1 * scale, oy + y1 * scale); g.lineTo(ox + x2 * scale, oy + y2 * scale); g.stroke();
+      }
+    }
+
+    // ------------------------------------------------------------------ the map
+    const cv = $('city-levels-cv'), L = 854, M = 22, CELL = 52, ENLARGE = 4.5;   // no structure reaches past 23 units from the centre
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = L * dpr; cv.height = L * dpr;
+    const g = cv.getContext('2d');
+    let ownerMode = false, selected = -1, marked = new Set();
+    const roads = [];
+    { const seen = new Set();
+      for (let s = 0; s < 256; s++) for (const [a, b] of [[ram[0x2C00 + s], ram[0x2D00 + s]], [ram[0x2E00 + s], ram[0x2F00 + s]]]) {
+        if (!a || !b) continue; const k = a + ',' + b; if (!seen.has(k)) { seen.add(k); roads.push([a, b]); } } }
+    const cellX = s => M + (s & 15) * CELL, cellY = s => M + (s >> 4) * CELL;
+    const hasLabel = s => !!LABELS[32 + (ram[0x2B00 + s] & 31)] || s === 0x13;
+    function drawMap() {
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.fillStyle = '#000'; g.fillRect(0, 0, L, L);
+      g.font = '10px ' + getComputedStyle(document.body).getPropertyValue('--fm');
+      g.fillStyle = PAL[15]; g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (let i = 0; i < 16; i++) { g.fillText(String(i).padStart(2, '0'), M + (i + 0.5) * CELL, M / 2); g.fillText(String(i).padStart(2, '0'), M / 2, M + (i + 0.5) * CELL); }
+      for (let s = 0; s < 256; s++) {
+        g.fillStyle = PAL[ownerMode ? owner(ram[0x2B00 + s]).c : 5];
+        g.fillRect(cellX(s), cellY(s), CELL, CELL);
+      }
+      g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1;
+      for (let i = 0; i <= 16; i++) { g.beginPath(); g.moveTo(M + i * CELL, M); g.lineTo(M + i * CELL, M + 16 * CELL); g.stroke(); g.beginPath(); g.moveTo(M, M + i * CELL); g.lineTo(M + 16 * CELL, M + i * CELL); g.stroke(); }
+      g.strokeStyle = PAL[11]; g.lineWidth = 2;
+      for (const [a, b] of roads) { g.beginPath(); g.moveTo(cellX(a) + CELL / 2, cellY(a) + CELL / 2); g.lineTo(cellX(b) + CELL / 2, cellY(b) + CELL / 2); g.stroke(); }
+      const k = CELL / 256 * ENLARGE;
+      for (let s = 0; s < 256; s++) {
+        g.save(); g.beginPath(); g.rect(cellX(s) + 1, cellY(s) + 1, CELL - 2, CELL - 2); g.clip();
+        g.globalAlpha = s ? 1 : 0.45;
+        const lab = hasLabel(s);
+        drawOblique(g, segments(models.get(modelAt(s)), 0).filter(inner), cellX(s) + CELL / 2, cellY(s) + CELL / 2 + (lab ? -5 : 4), k * (lab ? 0.8 : 1), 1.1);
+        g.restore();
+      }
+      g.font = '500 8.5px ' + getComputedStyle(document.body).getPropertyValue('--fm');
+      g.textBaseline = 'alphabetic';
+      for (let s = 0; s < 256; s++) {
+        g.fillStyle = 'rgba(0,0,0,.55)'; g.textAlign = 'left';
+        g.fillText(sqName(s), cellX(s) + 2, cellY(s) + 9);
+        const lines = LABELS[32 + (ram[0x2B00 + s] & 31)] || (s === 0x13 ? ['SCIENCE', 'MUSEUM'] : null);
+        if (!lines) continue;
+        const w = Math.max(...lines.map(t => g.measureText(t).width)) + 6, h = lines.length * 10 + 3;
+        const x0 = cellX(s) + CELL / 2 - w / 2, y0 = cellY(s) + CELL - h - 1;
+        g.fillStyle = s === 0x13 ? 'rgba(40,40,40,.55)' : 'rgba(0,0,0,.62)'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = s === 0x13 ? PAL[15] : PAL[7]; g.textAlign = 'center';
+        lines.forEach((t, i) => g.fillText(t, cellX(s) + CELL / 2, y0 + 10 + i * 10));
+      }
+      g.lineWidth = 2.5;
+      for (const s of marked) { g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--violet') || '#4a5bd6'; g.strokeRect(cellX(s) + 1.5, cellY(s) + 1.5, CELL - 3, CELL - 3); }
+      if (selected >= 0) { g.strokeStyle = PAL[7]; g.lineWidth = 3; g.strokeRect(cellX(selected) + 1.5, cellY(selected) + 1.5, CELL - 3, CELL - 3); }
+    }
+    const cellAt = ev => {
+      const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * L / r.width, y = (ev.clientY - r.top) * L / r.height;
+      const cx = Math.floor((x - M) / CELL), cy = Math.floor((y - M) / CELL);
+      return cx >= 0 && cx < 16 && cy >= 0 && cy < 16 ? cy << 4 | cx : -1;
+    };
+    cv.addEventListener('mousemove', ev => {
+      const s = cellAt(ev);
+      if (s < 0) { cv.title = ''; return; }
+      const st = ram[0x2B00 + s], nm = NAMES[32 + (st & 31)];
+      cv.title = 'LOC ' + sqName(s) + (nm ? ' · ' + nm : '') + ' · model $' + hex(modelAt(s), 4) + ' · ' + owner(st).name;
+    });
+    cv.addEventListener('click', ev => { const s = cellAt(ev); if (s >= 0) select(s); });
+
+    // ------------------------------------------------------------------ the square's panel
+    const pop = $('city-levels-pop'), turn = $('city-levels-turn'), tg = turn.getContext('2d');
+    turn.width = 280 * dpr; turn.height = 200 * dpr;
+    let yaw = 0.6, spin = 0, dragging = null, auto = true, tmodel = null, raf = 0, lastT = 0;
+    function select(s) {
+      selected = s; marked = new Set(users.get(modelAt(s)).filter(q => q !== s));
+      const a = modelAt(s), m = models.get(a), st = ram[0x2B00 + s], n = st & 31, own = owner(st);
+      tmodel = m;
+      const nm = NAMES[32 + n];
+      $('city-levels-title').innerHTML = 'LOC ' + sqName(s) + (nm ? ' · <span>' + nm + '</span>' : s === 0x13 ? ' · <span>the manual\'s Science Museum</span>' : '');
+      const marks = m.edges.filter((e, k) => m.pen === 255 || k > m.pen).length;
+      const rows = [];
+      rows.push(['owner', '<i class="city-levels-sw" style="background:' + PAL[own.c] + ';margin:0 6px 0 0"></i>' + own.name + ', ' + addrHtml(0x2B00 + s) + ' = ' + hex(st)]);
+      rows.push(['script', !s ? 'none: square 0 means outside the city, and its building is never loaded'
+        : st & 0x20 ? 'none: nobody\'s squares are not counted and start no script' : n ? (32 + n) + (nm ? ', which prints ' + nm : n === 2 ? ', a Palyar attack, 81 times in 256' : n === 3 ? ', a Mechanoid attack, 81 times in 256' : '') : 'none (bits 0-4 are 0)']);
+      rows.push(['model', addrHtml(a) + (label(a) ? ' ' + label(a) : '')]);
+      rows.push(['size', m.V.length + ' points, ' + m.edges.length + ' edges: ' + (m.edges.length - marks) + ' white, ' + marks + ' road marks']);
+      rows.push(['rotor', m.rotor ? m.rotor.n + ' points turn about (' + m.rotor.cx + ', ' + m.rotor.cz + '), ' + m.rotor.speed + ' of 1024 a pass' : 'none']);
+      const others = users.get(a).filter(q => q !== s);
+      rows.push(['same model', others.length ? others.map(q => '<a class="city-levels-sq" data-sq="' + q + '">' + sqName(q) + '</a>').join(' ') : 'no other square']);
+      $('city-levels-facts').innerHTML = '<table>' + rows.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>').join('') + '</table>';
+      $('city-levels-facts').querySelectorAll('a.city-levels-sq').forEach(el => el.addEventListener('click', () => select(+el.dataset.sq)));
+      pop.hidden = false;
+      place(s);
+      drawMap(); cards.forEach(c => c.el.classList.toggle('city-levels-on', c.a === a));
+      if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(tick); }
+    }
+    function place(s) {
+      if (getComputedStyle(pop).position !== 'absolute') { pop.style.left = pop.style.top = ''; return; }
+      const scale = cv.clientWidth / L, cx = (cellX(s) + CELL / 2) * scale, cy = cellY(s) * scale, w = pop.offsetWidth, W = cv.clientWidth;
+      let x = cx > W / 2 ? cx - CELL * scale / 2 - w - 10 : cx + CELL * scale / 2 + 10;
+      x = Math.max(0, Math.min(W - w, x));
+      const y = Math.max(0, Math.min(cv.clientHeight - pop.offsetHeight, cy - 20));
+      pop.style.left = x + 'px'; pop.style.top = y + 'px';
+    }
+    $('city-levels-close').addEventListener('click', () => { pop.hidden = true; selected = -1; marked = new Set(); drawMap(); cards.forEach(c => c.el.classList.remove('city-levels-on')); });
+    // the turntable: perspective, the square's ground in green, the model as the game colours it
+    function drawTurn() {
+      const W = 280, H = 200, m = tmodel;
+      tg.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const segs = segments(m, spin);
+      // fit: the white edges (or all, for road pieces), road ends aside
+      let pts = [];
+      for (const s of segs) if (!s[7] && (!s[6] || segs.every(q => q[6]))) pts.push([s[0], s[1], s[2]], [s[3], s[4], s[5]]);
+      if (!pts.length) pts = segs.map(s => [s[0], s[1], s[2]]);
+      let cx = 0, cy = 0, cz = 0; pts.forEach(p => { cx += p[0]; cy += p[1]; cz += p[2]; }); cx /= pts.length; cy /= pts.length; cz /= pts.length;
+      let r = 4; pts.forEach(p => { r = Math.max(r, Math.hypot(p[0] - cx, (p[1] - cy), p[2] - cz)); });
+      const el = 0.42, d = r * 3.2, f = 60 / r * d * 0.9;   // 24 degrees above the ground
+      const cyw = Math.cos(yaw), syw = Math.sin(yaw), ce = Math.cos(el), se = Math.sin(el);
+      const P = (x, h, z) => {
+        const X = x - cx, Y = h - cy, Z = z - cz;
+        const xr = X * cyw - Z * syw, zr = X * syw + Z * cyw;          // turn about the vertical
+        const yv = Y * ce + zr * se, zv = zr * ce - Y * se + d;       // the eye above, looking down at the model
+        return [xr, yv, zv];
+      };
+      const S = p => [W / 2 + f * p[0] / p[2], H / 2 - f * p[1] / p[2]];
+      const near = 1;
+      // the ground is endless, as in the game: sky above the horizon, ground below it
+      const hy = Math.max(0, Math.min(H, H / 2 - f * se / ce));
+      tg.fillStyle = PAL[6]; tg.fillRect(0, 0, W, hy);
+      tg.fillStyle = PAL[5]; tg.fillRect(0, hy, W, H - hy);
+      for (const s of segs) {
+        let a = P(s[0], s[1], s[2]), b = P(s[3], s[4], s[5]);
+        if (a[2] <= near && b[2] <= near) continue;
+        if (a[2] <= near || b[2] <= near) { const t = (near - a[2]) / (b[2] - a[2]), c = [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]), near]; if (a[2] <= near) a = c; else b = c; }
+        const [x1, y1] = S(a), [x2, y2] = S(b);
+        tg.strokeStyle = s[6] ? PAL[11] : PAL[1]; tg.lineWidth = 1.5;
+        tg.setLineDash(s[7] ? [4, 3] : []);
+        tg.beginPath(); tg.moveTo(x1, y1); tg.lineTo(x2, y2); tg.stroke();
+      }
+      tg.setLineDash([]);
+    }
+    function tick(t) {
+      const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
+      if (pop.hidden) { raf = 0; return; }
+      if (auto && !dragging) yaw += dt * 0.5;
+      if (tmodel.rotor) spin = (spin + tmodel.rotor.speed * 5 * dt) % 1024;
+      drawTurn();
+      raf = requestAnimationFrame(tick);
+    }
+    turn.addEventListener('pointerdown', ev => { dragging = { x: ev.clientX, yaw }; turn.setPointerCapture(ev.pointerId); auto = false; });
+    turn.addEventListener('pointermove', ev => { if (dragging) yaw = dragging.yaw + (ev.clientX - dragging.x) * 0.012; });
+    turn.addEventListener('pointerup', () => { dragging = null; });
+    turn.addEventListener('dblclick', () => { auto = true; });
+
+    // ------------------------------------------------------------------ the sheet
+    const cards = [];
+    const sheetEl = $('city-levels-sheet');
+    for (const a of sheet) {
+      const m = models.get(a), us = users.get(a) || [];
+      const el = document.createElement('div'); el.className = 'city-levels-card';
+      const c = document.createElement('canvas'); c.width = 106 * dpr; c.height = 90 * dpr;
+      const cg = c.getContext('2d'); cg.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cg.fillStyle = PAL[5]; cg.fillRect(0, 0, 106, 90);
+      const segs = segments(m, 0);
+      let xs = [], ys = [];
+      const fitOn = segs.some(inner) ? segs.filter(inner) : segs;
+      for (const s of fitOn) { const p = axo(s[0], s[1], s[2]), q = axo(s[3], s[4], s[5]); xs.push(p[0], q[0]); ys.push(p[1], q[1]); }
+      { const pad = 3; xs.push(Math.min(...xs) - pad, Math.max(...xs) + pad); ys.push(Math.min(...ys) - pad, Math.max(...ys) + pad); }
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const sc = Math.min(96 / Math.max(8, x1 - x0), 80 / Math.max(8, y1 - y0));
+      cg.save(); cg.beginPath(); cg.rect(0, 0, 106, 90); cg.clip();
+      drawOblique(cg, segs, 53 - (x0 + x1) / 2 * sc, 45 - (y0 + y1) / 2 * sc, sc, 1.1, axo);
+      cg.restore();
+      el.appendChild(c);
+      const t = document.createElement('div');
+      const where = us.length ? us.slice(0, 3).map(sqName).join(' ') + (us.length > 3 ? ' +' + (us.length - 3) : '') : '';
+      t.innerHTML = addrHtml(a) + (isRoad(a) ? ' <span class="city-levels-road">road</span>' : '') + '<br>' +
+        (us.length ? where : '<span class="city-levels-unused">unused</span>');
+      el.appendChild(t);
+      el.title = (label(a) || '$' + hex(a, 4)) + ': ' + m.V.length + ' points, ' + m.edges.length + ' edges' + (us.length ? '; squares ' + us.map(sqName).join(' ') : '; used by no square');
+      el.addEventListener('click', ev => {
+        if (ev.target.closest('a')) return;
+        if (!us.length) { selected = -1; marked = new Set(); pop.hidden = true; drawMap(); cards.forEach(q => q.el.classList.toggle('city-levels-on', q.a === a)); return; }
+        select(us[0]);
+        $('city-levels-map').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      sheetEl.appendChild(el);
+      cards.push({ a, el });
+    }
+
+    $('city-levels-owner').addEventListener('click', () => {
+      ownerMode = !ownerMode;
+      $('city-levels-owner').setAttribute('aria-pressed', ownerMode ? 'true' : 'false');
+      $('city-levels-legend').classList.toggle('city-levels-off', !ownerMode);
+      drawMap();
+    });
+    document.querySelectorAll('#city-levels-legend .city-levels-sw').forEach(el => { el.style.background = PAL[+el.dataset.c]; });
+    window.addEventListener('resize', () => { if (!pop.hidden && selected >= 0) place(selected); });
+    drawMap();
+  }
+})();
+</script>
+<script>
+/* rooms */
+// The underground: Mercenary's 174 rooms, parsed from the game's own bytes and drawn the way
+// the game draws them. Core (window.MercRooms, shared with rooms-levels.js) plus the How it
+// works widget (#rooms-view). Every table is read at run time from the image that
+// C64.load('listing.json') rebuilds (window.MERC_GAME); nothing is embedded.
+(function (root) {
+  'use strict';
+
+  // ---- Where things are (all in listing.json) ----------------------------------------------
+  const AD = {
+    ROOM_LO: 0x2300, ROOM_HI: 0x23C0,       // room n's record, n = $01-$AE
+    LOG: 0x5800, EXP: 0x5900,               // 256 log2(1 + i/256), 256 (2^(i/256) - 1)
+    SIN_M: 0x5A00, SIN_E: 0x5B00,           // sin((i + 0.5) 90/256 degrees) as floats
+    OUTLINE: 0x928A, OUTLINE_OFS: 0x932B,   // door outlines, offset per door type
+    BOX_FROM: 0x933A, BOX_TO: 0x9346,       // the box's 12 edges, read at +1..+12
+    OCT_MAP: 0xBBD0, CORNER_X: 0xBBD8, CORNER_Y: 0xBBE0,
+    CLIP_BITS: 0xBBE8, CLIP_START: 0xBBF8, CLIP_END: 0xBC18,
+    LIFT_X: 0xB4B6, LIFT_Y: 0xB4BE,         // lift n's square, n = 1-8
+    OBJ_ROOM: 0x2940, OBJ_FLAGS: 0x29C0,
+    MSG_LO: 0x20A0, MSG_HI: 0x20E0, DICT_LO: 0x2120, DICT_HI: 0x2210, SCRIPTS: 0x0800,
+  };
+  const FIRST = 0x01, LAST = 0xAE, SCALE = 0x18;   // $21: the focal exponent byte, 2^6 = 64
+  const CX = 80, CY = 68;                          // $8E, $8F underground
+
+  const h2 = n => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+  const h4 = n => '$' + n.toString(16).toUpperCase().padStart(4, '0');
+
+  // ---- 6502 arithmetic, for porting the game's routines step by step -----------------------
+  function adc(a, b, c) { const r = a + b + c; return [r & 255, r > 255 ? 1 : 0, ((a ^ r) & (b ^ r) & 0x80) ? 1 : 0]; }
+  function sbc(a, b, c) { const r = a - b - (1 - c); return [r & 255, r >= 0 ? 1 : 0, ((a ^ b) & (a ^ r) & 0x80) ? 1 : 0]; }
+
+  // ---- The game's floats ----------------------------------------------------------------------
+  // Two bytes [m, e]: e's bits 2-7 are a signed power of two, bit 0 the sign; the value is
+  // +-(1 + m/256) 2^power. Each function below is the routine named beside it, step for step
+  // (the tests run both on random operands and compare every byte).
+  function floats(ram) {
+    const L = ram.subarray(AD.LOG, AD.LOG + 256), X2 = ram.subarray(AD.EXP, AD.EXP + 256);
+    const SM = ram.subarray(AD.SIN_M, AD.SIN_M + 256), SE = ram.subarray(AD.SIN_E, AD.SIN_E + 256);
+    const sat = r => (r & 0x80) ? [0, (r & 1) | 0x78] : [0, (r & 1) | 0x84];   // fp_saturate $831A
+    // a x b by logarithms: fp_mul $82FA (check = true) or the same code inline (no overflow test)
+    function mul(a, b, check) {
+      const [s, c] = adc(L[a[0]], L[b[0]], 0);
+      const e = c ? (a[1] + 4) & 255 : a[1];
+      const [r, , v] = adc(e, b[1], 0);
+      if (v && check) return sat(r);
+      return [X2[s], r & 0xFD];
+    }
+    // a / b: fp_div $8334 (check = true) or inline
+    function div(a, b, check) {
+      const [d, c] = sbc(L[a[0]], L[b[0]], 1);
+      let e = a[1] | 2;
+      if (!c) e = (e - 4) & 255;
+      const [r, , v] = sbc(e, b[1], 1);
+      if (v && check) return sat(r);
+      return [X2[d], r & 0xFD];
+    }
+    // renormalise after a subtraction: fp_normalise $83D5
+    function norm(a, ey) {
+      let n = 0, c;
+      do { c = a >> 7; a = (a << 1) & 255; n = (n - 1) & 255; } while (!c);
+      const [r, , v] = adc((n << 2) & 255, ey, 0);
+      return v ? [0, 0x84] : [a, r];
+    }
+    // x (the X, Y operand) + f (the $08, $09 operand): fp_add $838B
+    function add(x, f) {
+      const [xm, xe] = x, [fm, fe] = f;
+      const big = () => (xe & 0x80) ? [fm, fe] : [xm, xe];                   // $836C
+      let [a, c, v] = sbc(xe, fe, 1);
+      if (v) return big();
+      const diff = a;
+      [a, c, v] = adc(diff, 1, c);
+      if (v) return big();
+      const unlike = diff & 1;
+      const tail = (lm, sm, ey) => {                                          // $83C2 / $83D1
+        if (!unlike) { const r = lm + sm; return r > 255 ? [(r & 255) >> 1, (ey + 4) & 255] : [r, ey]; }
+        const r = lm - sm;
+        return r >= 0 ? [r, ey] : norm(r & 255, ey);
+      };
+      if (a & 0x80) {                                                         // $83F5: f is larger
+        if (a < 0xE0) return [fm, fe];
+        const d = 8 - ((a >> 2) & 7);
+        return tail(fm, (256 + xm) >> d, fe);
+      }
+      const d = a >> 2;
+      if (d === 0) {                                                          // $8359: same power
+        if (!unlike) { const r = xm + fm; return [(r >> 1) & 255, (xe + 4) & 255]; }
+        const r = xm - fm;
+        if (r === 0) { const [q, , w] = sbc(xe, 0x24, 1); return w ? [0, (q & 1) | 0x84] : [0, q]; }
+        return r > 0 ? norm(r, xe) : norm((-r) & 255, fe);
+      }
+      if (d >= 9) return [xm, xe];
+      return tail(xm, (256 + fm) >> d, xe);
+    }
+    // signed 24-bit integer to a float, truncating: int24_to_fp $8510
+    function fromInt(v) {
+      v = ((v % 0x1000000) + 0x1000000) % 0x1000000;
+      const sign = v >> 23;
+      const n = sign ? (0x1000000 - v) & 0xFFFFFF : v;
+      let a, low, x;
+      if (n >> 16) { a = n >> 16; low = (n >> 8) & 255; x = 24; }
+      else if (n >> 8) { a = n >> 8; low = n & 255; x = 16; }
+      else if (n) { a = n; low = 0; x = 8; }
+      else return [0, 0xE0];
+      let c;
+      do { x--; const lo7 = low >> 7; low = (low << 1) & 255; c = a >> 7; a = ((a << 1) | lo7) & 255; } while (!c);
+      return [a, ((x << 2) | sign) & 255];
+    }
+    // float to a signed byte, halves away from zero; null when it does not fit: fp_to_int8 $8477
+    function toByte(f) {
+      const [m, e] = f;
+      let a, c;
+      if (e & 0x80) { a = 0; c = e >= 0xFC ? 1 : 0; }
+      else {
+        const n = e >> 2;
+        if (n >= 7) return null;
+        const full = 256 + m, sh = 8 - n;
+        a = full >> sh; c = (full >> (sh - 1)) & 1;
+      }
+      a += c;
+      if (a & 0x80) return null;
+      if (e & 1) a = (256 - a) & 255;
+      return a;
+    }
+    // float to a signed 16-bit integer: the magnitude truncated, a negative value as its ones'
+    // complement (-trunc - 1); null from e = 15 up: fp_to_int16 $84A7
+    function toInt16(f) {
+      const [m, e] = f;
+      if (e & 0x80) return (e & 1) ? -1 : 0;
+      const n = e >> 2;
+      if (n >= 15) return null;
+      const mag = (((256 + m) << 7) >> (15 - n)) & 0xFFFF;
+      return (e & 1) ? -mag - 1 : mag;
+    }
+    // the line routines' slope byte from a ratio below 1: $9B1E then fp_to_int16 (truncates)
+    function slopeByte(f) { return toInt16([f[0], (f[1] + 0x20) & 0xFC]) & 255; }
+    // sine and cosine of a 10-bit angle (lo, hi): fp_sin10 $841F, fp_cos10 $841E
+    function sin10(lo, hi) { const x = (hi & 1) ? lo ^ 0xFF : lo; return [SM[x], SE[x] | ((hi >> 1) & 1)]; }
+    function cos10(lo, hi) { return sin10(lo, (hi + 1) & 255); }
+    const value = f => (f[1] & 1 ? -1 : 1) * (1 + f[0] / 256) * Math.pow(2, ((f[1] >> 2) ^ 32) - 32);
+    const neg = f => [f[0], f[1] ^ 1];
+    return { mul, div, add, norm, fromInt, toByte, toInt16, slopeByte, sin10, cos10, value, neg };
+  }
+
+  // ---- Text: the message decoder of work/merc-text.js ($8E1E), the parts a room name needs ----
+  function text(ram) {
+    function ch(c) {
+      c &= 0x7F;
+      if (c < 10) return String(c);
+      if (c < 16) return '*+,-./'[c - 10];
+      if (c === 0x6D) return '?';
+      if (c === 0x6E) return '!';
+      if (c === 0x6F) return "'";
+      return String.fromCharCode(c);
+    }
+    function word(n) {
+      let a = ((ram[AD.DICT_LO + n] | ram[AD.DICT_HI + n] << 8) + 1) & 0xFFFF, s = '';
+      for (let i = 0; i < 40; i++) { const c = ram[a++]; s += ch(c); if (c & 0x80) break; }
+      return s;
+    }
+    function decode(a) {
+      let s = '';
+      for (let guard = 0; guard < 200; guard++) {
+        const t = ram[a];
+        if (t === 0) break;
+        if (t === 0xFF) { let b = a + 1, w = ''; for (let i = 0; i < 60; i++) { const c = ram[b++]; w += ch(c); if (c & 0x80) break; } s += ' ' + w; a = b; continue; }
+        if (t === 0xEF) { s += ' '; a++; continue; }
+        if (t >= 0xF0) { s += t >= 0xF8 ? ' [figure]' : ' [word]'; a++; continue; }
+        s += (t < 8 ? '' : ' ') + word(t); a++;
+      }
+      return s.replace(/\s+/g, ' ').trim();
+    }
+    const canned = n => decode(((ram[AD.MSG_LO + n] | ram[AD.MSG_HI + n] << 8) + 1) & 0xFFFF);
+    // The first line a script prints: its first op 1 (print) or op 20 (canned message), passing
+    // over the calls (the waits), variable and figure settings before it.
+    const LEN = { 2: 1, 4: 3, 13: 6, 14: 6, 15: 3, 16: 2, 17: 2, 25: 4, 28: 1, 30: 2, 32: 2 };
+    function scriptTitle(n) {
+      let a = ram[AD.SCRIPTS + 2 * n] | ram[AD.SCRIPTS + 2 * n + 1] << 8;
+      for (let i = 0; i < 12; i++) {
+        const op = ram[a] & 0x3F;
+        if (op === 1) return { text: decode(a + 1), at: a };
+        if (op === 20) return { text: canned(ram[a + 1]), at: a, canned: ram[a + 1] };
+        if (!LEN[op]) return null;
+        a += LEN[op];
+      }
+      return null;
+    }
+    return { canned, scriptTitle, word, decode };
+  }
+
+  // ---- Rooms --------------------------------------------------------------------------------
+  // A record ($90F6-$9287): byte 0 X size (bit 7 booth), 1 height (bits 0-2) and n (bits 3-7),
+  // 2 Y size (bit 7: n is a script, else a canned message), 3 and 4 colours; doors of 4 bytes
+  // (type, destination, X, Y) until a 0, or $80 for a dark room; a booth then holds (room, door)
+  // pairs at bytes 10-13, room $72 eight of them at bytes 10-25.
+  const KIND = ['', '', 'plain', 'triangle', 'up arrow', 'down arrow', 'cross', 'diagonal', '',
+    'key 17', 'key 18', 'key 19', 'key 20', 'key 21', 'key 22', 'key 23'];
+  function parseRoom(ram, n) {
+    const a = ram[AD.ROOM_LO + n] | ram[AD.ROOM_HI + n] << 8, b = i => ram[a + i];
+    const r = {
+      n, a, xs: b(0) & 0x7F, booth: !!(b(0) & 0x80), h: b(1) & 7, num: b(1) >> 3,
+      ys: b(2) & 0x7F, script: !!(b(2) & 0x80), c10: b(3), c11: b(4), doors: [], dark: false,
+    };
+    let y = 5;
+    for (;;) {
+      const t = b(y);
+      if (t === 0 || t === 0x80) { r.dark = t === 0x80; r.endAt = a + y; y++; break; }
+      r.doors.push({ i: r.doors.length, a: a + y, t, type: t & 15, wallX: !!(t & 0x80), arr: (t >> 4) & 7, dest: b(y + 1), x: b(y + 2), y: b(y + 3) });
+      y += 4;
+    }
+    r.len = y;
+    if (r.booth) {
+      r.pairs = [];
+      for (let k = 0; k < (n === 0x72 ? 8 : 2); k++) r.pairs.push({ room: b(10 + 2 * k), arr: (b(11 + 2 * k) >> 4) & 7, a: a + 10 + 2 * k });
+      r.len = Math.max(r.len, 10 + 2 * r.pairs.length);
+    }
+    return r;
+  }
+
+  function build(ram) {
+    const F = floats(ram), T = text(ram);
+    const rooms = [null];
+    for (let n = FIRST; n <= LAST; n++) rooms.push(parseRoom(ram, n));
+    const lifts = [null];
+    for (let k = 1; k <= 8; k++) lifts.push({ x: ram[AD.LIFT_X + k], y: ram[AD.LIFT_Y + k] });
+    // what each room holds at the start ($2940)
+    const objects = rooms.map(() => []);
+    for (let o = 0; o < 64; o++) { const rm = ram[AD.OBJ_ROOM + o]; if (rm >= FIRST && rm <= LAST) objects[rm].push(o); }
+    // names, as Benson prints them
+    for (let n = FIRST; n <= LAST; n++) {
+      const r = rooms[n];
+      if (!r.num) r.name = null;
+      else if (r.script) { const t = T.scriptTitle(r.num); r.name = t ? t.text : null; r.nameFrom = 'script ' + r.num; }
+      else { r.name = T.canned(r.num); r.nameFrom = 'canned message ' + r.num; }
+    }
+    const G = { ram, F, T, rooms, lifts, objects, dark: T.canned(1), locked: T.canned(0),
+      tables: {
+        outline: i => ram[AD.OUTLINE + i], outlineOfs: t => ram[AD.OUTLINE_OFS + t],
+        boxFrom: i => ram[AD.BOX_FROM + 1 + i], boxTo: i => ram[AD.BOX_TO + 1 + i],
+        octMap: i => ram[AD.OCT_MAP + i], cornerX: i => ram[AD.CORNER_X + i], cornerY: i => ram[AD.CORNER_Y + i],
+        clipBits: i => ram[AD.CLIP_BITS + i], clipStart: i => ram[AD.CLIP_START + i], clipEnd: i => ram[AD.CLIP_END + i],
+      } };
+    G.complexes = complexes(G);
+    return G;
+  }
+
+  // Where a door can lead: its destination, or for a booth's door 0, which is relinked on
+  // entry, any room the booth's pairs name.
+  function targets(G, r, d) {
+    if (r.booth && d.i === 0) return r.pairs.map(p => ({ room: p.room, arr: p.arr }));
+    return [{ room: d.dest, arr: d.arr }];
+  }
+
+  // ---- The room's model: build_room $9162, room_add_door $922F ------------------------------
+  // 64 vertex slots of 24-bit X, height, Y (world units, 256 to a size unit); the box's corners
+  // come from the sizes, each door adds its outline's points and joins them in order.
+  function model(G, r) {
+    const T = G.tables, X = new Int32Array(64), H = new Int32Array(64), Y = new Int32Array(64);
+    const edges = [], owner = [];
+    for (let i = 0; i < 12; i++) { edges.push([T.boxFrom(i), T.boxTo(i)]); owner.push(-1); }
+    for (const i of [0, 1, 4, 5]) X[i] = r.xs << 8;
+    for (const i of [0, 1, 2, 3]) H[i] = r.h << 8;
+    for (const i of [0, 3, 4, 7]) Y[i] = r.ys << 8;
+    let last = 7;
+    for (const d of r.doors) {
+      let k = T.outlineOfs(d.type);
+      const first = last + 1;
+      for (let guard = 0; guard < 16; guard++) {
+        const along = T.outline(k);
+        if (along === 0xFF) break;
+        last++;
+        if (last > 63) throw new Error('room ' + h2(r.n) + ': more than 64 vertices');
+        if (d.wallX) { X[last] = d.x << 8; Y[last] = (d.y << 8) | along; }
+        else { X[last] = (d.x << 8) | along; Y[last] = d.y << 8; }
+        H[last] = T.outline(k + 1);
+        k += 2;
+      }
+      for (let v = first; v < last; v++) { edges.push([v, v + 1]); owner.push(d.i); }
+    }
+    return { X, H, Y, last, edges, owner };
+  }
+
+  // ---- Projection: vertex_rel $A5CE and the heading-only project_vertex_level $A979 ----------
+  // eye: {x, y, h} 24-bit, head 10-bit (lo, hi as $2C, $2D), mirror ($F1). Returns per vertex
+  // the clip flags (bit 7 behind, 0 x off, 1 y off), screen x/y, projected floats, view floats.
+  function project(G, M, eye) {
+    const F = G.F, sinH = F.sin10(eye.head & 255, eye.head >> 8), cosH = F.cos10(eye.head & 255, eye.head >> 8);
+    const V = [];
+    const rel = (v, p) => F.fromInt(((v - p) % 0x1000000 + 0x1000000) % 0x1000000);
+    for (let i = 0; i <= M.last; i++) {
+      const X = rel(M.X[i], eye.x), Hh = rel(M.H[i], eye.h), Y = rel(M.Y[i], eye.y);
+      const z0 = F.add(F.mul(X, sinH), F.mul(Y, cosH));
+      const vz = F.neg(z0);
+      let clip = (vz[1] & 1) ? 0x80 : 0, sx, sy, px, py;
+      const xs = F.add(F.mul(X, cosH), F.neg(F.mul(Y, sinH)));
+      const vx = [xs[0], xs[1] ^ (eye.mirror ? 1 : 0)];
+      if (!clip) {
+        px = F.div(vx, vz);
+        const [r, , v] = adc(px[1], SCALE, 0);
+        const b = v ? null : F.toByte([px[0], r]);
+        if (b === null) clip = 1;
+        else { sx = (b + CX) & 255; if (sx >= 160) clip = 1; }
+      }
+      const h1 = F.neg(Hh);
+      const [e4, , v4] = adc(h1[1], 4, 0);
+      const vy = [h1[0], v4 ? h1[1] : e4];
+      if (!(clip & 0x80)) {
+        py = F.div(vy, vz);
+        const [r, , v] = adc(py[1], SCALE, 0);
+        const b = v ? null : F.toByte([py[0], r]);
+        if (b === null) clip |= 2;
+        else { sy = (b + CY) & 255; if (sy >= 136) clip |= 2; }
+      }
+      V.push({ clip, sx, sy, px, py, vx, vy, vz });
+    }
+    return V;
+  }
+
+  // ---- One edge: draw_edge $99DD, edge_end_behind $9B2C, edge_clip_start $9C36 ---------------
+  // plot(x, y) receives every pixel the game's line routine ($AC61 + 47n) would set.
+  const CLIPWIN = F => ({ left: F.fromInt(-CX), right: F.fromInt(159 - CX), top: F.fromInt(-CY), bottom: F.fromInt(135 - CY) });
+  function drawEdge(G, V, i, j, plot) {
+    const F = G.F, T = G.tables;
+    let s = i, e = j;
+    const ci = V[i].clip, cj = V[j].clip;
+    if (ci !== 0) {
+      if (ci & 0x80) { if (cj & 0x80) return; s = j; e = i; }
+      else if (cj === 0) { s = j; e = i; }
+      else if (!(cj & 0x80) && ((V[i].vz[1] ^ 0x80) < (V[j].vz[1] ^ 0x80))) { s = j; e = i; }
+    }
+    const S = V[s], E = V[e];
+    let dx, dy, oct = 0, slope;
+    if (!(E.clip & 0x80)) {                         // both in front: from the projected points
+      dx = F.add(E.px, F.neg(S.px)); oct = (dx[1] << 1) & 2;
+      dy = F.add(E.py, F.neg(S.py)); oct |= dy[1] & 1;
+    } else {                                         // end behind: the way the line heads
+      const k = F.neg(F.div(E.vz, S.vz));
+      dx = F.add(E.vx, F.mul(k, S.vx)); oct = ((dx[1] ^ S.vz[1]) << 1) & 2;
+      dy = F.add(E.vy, F.mul(k, S.vy)); oct |= (dy[1] ^ S.vz[1]) & 1;
+    }
+    slope = F.div(dy, dx);                            // dY/dX, kept for the clipping
+    let ratio = slope;
+    if (!(slope[1] & 0x80)) { oct |= 4; ratio = F.div(dx, dy); }
+    const step = (ratio[1] & 0x80) ? F.slopeByte(ratio) : 0xFF;
+    const rt = T.octMap(oct);
+    let x1, y1;
+    if (E.clip) { x1 = T.cornerX(rt); y1 = T.cornerY(rt); } else { x1 = E.sx; y1 = E.sy; }
+    let x0 = S.sx, y0 = S.sy;
+    if (S.clip) {                                    // start off screen: enter by an edge
+      const region = c => (((c.px[1] << 3) & 8) | ((c.py[1] << 2) & 4));
+      const edges = T.clipStart((T.clipBits(region(S) | S.clip) | rt) >> 1);
+      if (!edges) return;
+      if (!(E.clip & 0x80)) {
+        const idx = (T.clipBits(region(E) | E.clip) | rt) >> 1;
+        if (!(idx >= 32 ? 1 : T.clipEnd(idx))) return;
+      }
+      const W = CLIPWIN(F), sc = w => [w[0], (w[1] - SCALE) & 255];
+      const cross = (w, a, b, byDiv, centre, lim) => {
+        let f = F.add(F.neg(a), sc(w));
+        f = byDiv ? F.div(f, slope, true) : F.mul(slope, f, true);
+        f = F.add(b, f);
+        const [r, , v] = adc(f[1], SCALE, 0);
+        if (v) return null;
+        const q = F.toByte([f[0], r]);
+        if (q === null) return null;
+        const t = (q + centre) & 255;
+        return t < lim ? t : null;
+      };
+      let t;
+      if ((edges & 1) && (t = cross(W.right, S.px, S.py, false, CY, 136)) !== null) { x0 = 159; y0 = t; }
+      else if ((edges & 2) && (t = cross(W.bottom, S.py, S.px, true, CX, 160)) !== null) { x0 = t; y0 = 135; }
+      else if ((edges & 4) && (t = cross(W.left, S.px, S.py, false, CY, 136)) !== null) { x0 = 0; y0 = t; }
+      else if ((edges & 8) && (t = cross(W.top, S.py, S.px, true, CX, 160)) !== null) { x0 = t; y0 = 0; }
+      else return;
+    }
+    line(rt, x0, y0, x1, y1, step, plot);
+  }
+
+  // The eight line routines: plot, stop when the major axis reaches the end, else step it, add
+  // or subtract the slope (with the carry the end test left) and step the minor axis on a carry
+  // or borrow, stopping if that leaves the view. [major dx, dy, minor dx, dy, add?]
+  const OCT = [[1, 0, 0, 1, 1], [0, 1, 1, 0, 1], [0, 1, -1, 0, 1], [-1, 0, 0, 1, 0],
+               [-1, 0, 0, -1, 0], [0, -1, -1, 0, 1], [0, -1, 1, 0, 0], [1, 0, 0, -1, 1]];
+  function line(rt, x, y, x1, y1, slope, plot) {
+    const [mx, my, nx, ny, add] = OCT[rt], xMajor = mx !== 0;
+    let err = 0x80;
+    for (let guard = 0; guard < 512; guard++) {
+      if (x < 160 && y < 136) plot(x, y);
+      const p = xMajor ? x : y, q = xMajor ? x1 : y1;
+      if (p === q) return;
+      const c = p >= q ? 1 : 0;                      // the carry CPX/CPY left
+      x = (x + mx) & 255; y = (y + my) & 255;
+      let minor;
+      if (add) { const r = err + slope + c; err = r & 255; minor = r > 255; }
+      else { const r = err - slope - (1 - c); err = r & 255; minor = r < 0; }
+      if (minor) {
+        x = (x + nx) & 255; y = (y + ny) & 255;
+        if (nx && (x === 160 || x === 255)) return;
+        if (ny && (y === 136 || y === 255)) return;
+      }
+    }
+  }
+
+  // ---- Objects: object_loop $9706, draw_object $9728, model_vertex_rel $A61F -----------------
+  // The objects in the room (list_room_objects $9374: $2940 = the room), each a model at
+  // $2800/$2840: last vertex, three signed bytes a vertex in 16s, then the edges.
+  const OBJ = { XL: 0x2880, XM: 0x2480, XH: 0x2540, HL: 0x28C0, HM: 0x24C0, HH: 0x2580, YL: 0x2900, YM: 0x2500, YH: 0x25C0,
+    MLO: 0x2800, MHI: 0x2840, ANG_XH: 0x800A, ANG_HY: 0x801A, ANG_HEAD: 0x802A, SIN64: 0x8457 };
+  function sin64(ram, a) { a &= 0x3F; const v = ram[OBJ.SIN64 + (a & 0x1F)]; return a >= 0x20 ? (-v) & 255 : v; }
+  // smul8_q7 $82D3: sign(a y) * (|a| * (2|y| mod 256) >> 8)
+  function smul8(a, y) {
+    const sign = (a ^ y) & 0x80, ya = y & 0x80 ? (256 - y) & 255 : y, aa = a & 0x80 ? (256 - a) & 255 : a;
+    const p = (aa * ((ya << 1) & 255)) >> 8;
+    return sign ? (256 - p) & 255 : p;
+  }
+  // rotate_pair $A728: (X, Y) by angle A (64 a turn)
+  function rot(ram, x, y, ang) {
+    const s = sin64(ram, ang), c = sin64(ram, ang + 16);
+    return [(smul8(c, x) - smul8(s, y)) & 255, (smul8(c, y) + smul8(s, x)) & 255];
+  }
+  function roomObjects(G, n) {
+    const out = [];
+    for (let o = 0x3F; o >= 0; o--) if (G.ram[AD.OBJ_ROOM + o] === n) out.push(o);
+    return out;
+  }
+  function drawObject(G, st, o, plot) {
+    const ram = G.ram, F = G.F;
+    const pos = (l, m, h) => ram[h + o] << 16 | ram[m + o] << 8 | ram[l + o];
+    const rel = (v, p) => ((v - p) % 0x1000000 + 0x1000000) % 0x1000000;
+    let rx = rel(pos(OBJ.XL, OBJ.XM, OBJ.XH), st.x), rh = rel(pos(OBJ.HL, OBJ.HM, OBJ.HH), st.h), ry = rel(pos(OBJ.YL, OBJ.YM, OBJ.YH), st.y);
+    const near = v => { const a = v & 0x800000 ? 0x1000000 - v : v; return (a >> 8) < 0x100; };   // within_box, one square
+    if (!(near(rx) && near(rh) && near(ry))) return false;   // far objects are dots: never underground
+    rx = (rx - 0x800) & 0xFFFFFF; rh = (rh - 0x800) & 0xFFFFFF; ry = (ry - 0x800) & 0xFFFFFF;
+    const m = ram[OBJ.MLO + o] | ram[OBJ.MHI + o] << 8, last = ram[m];
+    const M = { X: [], H: [], Y: [], last };
+    let k = m + 1;
+    for (let i = 0; i <= last; i++, k += 3) {
+      let x = ram[k], h = ram[k + 1], y = ram[k + 2];
+      if (o < 16) {                                          // orient_vertex $A6AD
+        let a = ram[OBJ.ANG_HEAD + o]; if (a) [y, x] = rot(ram, y, x, a);
+        a = ram[OBJ.ANG_HY + o]; if (a) [h, y] = rot(ram, h, y, a);
+        a = ram[OBJ.ANG_XH + o]; if (a) [x, h] = rot(ram, x, h, a);
+      }
+      M.X.push((rx + ((x ^ 0x80) << 4)) & 0xFFFFFF); M.H.push((rh + ((h ^ 0x80) << 4)) & 0xFFFFFF); M.Y.push((ry + ((y ^ 0x80) << 4)) & 0xFFFFFF);
+    }
+    // project relative to the eye at 0: the model's points are offsets already
+    const V = project(G, M, { x: 0, y: 0, h: 0, head: st.head, mirror: st.mirror });
+    const n = ram[k];
+    if (n < 0x80) for (let e = 0; e <= n; e++) { const b = ram[k + 1 + e]; drawEdge(G, V, b >> 4, b & 15, plot); }
+    else for (let e = 0; e <= (n & 0x7F); e++) drawEdge(G, V, ram[k + 1 + 2 * e], ram[k + 2 + 2 * e], plot);
+    return true;
+  }
+
+  // ---- A whole view: frame_start's fill ($B197, all $AA), draw_building $96E7 (ORA), then the
+  // objects (AND, $ADFC). Returns 160 x 136 pixel pairs (0 = %00, 2 = %10, 3 = %11) and, for each
+  // pixel, what drew it: a door's number, -1 the box, 100 + n object n, -2 nothing.
+  function render(G, st, opts) {
+    const r = G.rooms[st.room], M = model(G, r);
+    const V = project(G, M, st);
+    const pix = new Uint8Array(160 * 136).fill(2), who = new Int16Array(160 * 136).fill(-2);
+    for (let k = M.edges.length - 1; k >= 0; k--) {
+      const [a, b] = M.edges[k], d = M.owner[k];
+      drawEdge(G, V, a, b, (x, y) => { const o = y * 160 + x; pix[o] |= 1; if (who[o] < d || who[o] === -2) who[o] = d; });
+    }
+    const objs = opts && opts.objects === false ? [] : roomObjects(G, st.room);
+    for (const o of objs.slice().reverse()) drawObject(G, st, o, (x, y) => { const q = y * 160 + x; pix[q] = 0; who[q] = 100 + o; });
+    return { pix, who, M, V, objects: objs };
+  }
+
+  // The four colours of a room's view: %00 $C2 (white), %01 blue (ORA #$60, $BB4C), %10 byte 3
+  // ($C4 -> $A5, the matrix's low nibble), %11 byte 4 ($C5 -> $A6, colour RAM); a dark room
+  // unlit sets $C2, $C4 and $C5 to 0 ($91FE).
+  function colours(G, st) {
+    const r = G.rooms[st.room];
+    if (r.dark && !st.lit) return [0, 6, 0, 0];
+    return [1, 6, r.c10 & 15, r.c11 & 15];
+  }
+
+  function paint(ctx, pix, cols, PAL, sx = 2, sy = 1) {
+    const img = ctx.createImageData(160 * sx, 136 * sy), rgb = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    for (let y = 0; y < 136 * sy; y++) for (let x = 0; x < 160 * sx; x++) {
+      const c = rgb[cols[pix[(y / sy | 0) * 160 + (x / sx | 0)]]], o = (y * 160 * sx + x) * 4;
+      img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  // ---- Moving: keep_in_room $939E, enter_room $90F6, walk_step $A1ED, door_check $9437 --------
+  // Positions here are the low 16 bits (middle:low); underground the high bytes are 0 ($9167).
+  // keep_in_room: $20 from each wall; returns how many walls were touched.
+  function keep(G, st) {
+    const r = G.rooms[st.room];
+    let touched = 0;
+    const lim = (v, size) => {
+      if (v & 0x8000 || v < 0x20) { touched++; return 0x20; }            // $93A4: negative or < 0.$20
+      const max = ((size - 1) << 8) | 0xDF;
+      if (((v >> 8) + 1) > size || (((v >> 8) + 1) === size && (v & 255) >= 0xDF)) { touched++; return max; }
+      return v;
+    };
+    st.x = lim(st.x & 0xFFFF, r.xs); st.y = lim(st.y & 0xFFFF, r.ys);
+    return touched;
+  }
+  const clamp = (G, st) => { keep(G, st); return st; };
+  // Arrive in room n by its door k ($9148): the middle bytes are the bytes at 4k+7 and 4k+8 of
+  // its record, the low bytes $80 along the wall and 0 across it by bit 7 of the byte at 4k+5,
+  // then keep_in_room. (Room $45's door 0 names door 6 of room $96, which has four: the game
+  // reads on into room $97's record, and so does this.) A booth first relinks its door 0 ($9119).
+  function enter(G, st, n, k, random) {
+    const r = G.rooms[n], from = st.room, links = Object.assign({}, st.links || {}), ram = G.ram;
+    let mirror = st.mirror || 0, flash = 0;
+    if (r.booth) {
+      let p;
+      if (n === 0x72) p = r.pairs[Math.floor((random || Math.random)() * 8)];
+      else if (from !== r.pairs[0].room) p = r.pairs[0];
+      else if (from !== r.pairs[1].room) p = r.pairs[1];
+      // Coming from the room both pairs name, $9125 skips the relink, the flash and the mirror.
+      if (p) {
+        links[n] = { room: p.room, arr: p.arr };
+        flash = 10;
+        if (n === 0x7F) { mirror ^= 1; flash = 0x1F; }
+      }
+    }
+    const t = ram[r.a + 4 * k + 5];
+    const out = { room: n, head: st.head, h: st.h, mirror, lit: st.lit, keys: st.keys, links, flash, from, via: k, guard: 2,
+      x: (ram[r.a + 4 * k + 7] << 8) | ((t & 0x80) ^ 0x80), y: (ram[r.a + 4 * k + 8] << 8) | (t & 0x80) };
+    if (!r.doors[k]) out.missing = k;
+    return clamp(G, out);
+  }
+  // One pass of walking: $AA/$AB is the float 80 (set by the start-up's LDA #$40, LDA #$18 at
+  // $724D, $7251), its sign flipped going forward; Y += int(step cos h), X += int(step sin h)
+  // through fp_mul and fp_to_int16.
+  function walkStep(G, st, forward) {
+    const F = G.F, h = st.head & 0x3FF, step = [G.ram[0x724E], G.ram[0x7252] ^ (forward ? 1 : 0)];
+    const dy = F.toInt16(F.mul(F.cos10(h & 255, h >> 8), step, true));   // X, Y = cos h; $08, $09 = step
+    const dx = F.toInt16(F.mul(F.sin10(h & 255, h >> 8), step, true));
+    st.y = (st.y + dy) & 0xFFFF; st.x = (st.x + dx) & 0xFFFF;
+    if (st.guard) st.guard--;
+    return st;
+  }
+  // Turning on foot: the stick adds or takes $AC a pass (16, the start-up's LDA #$10 at $7249),
+  // left adds; the mirror swaps the stick's left and right ($A165).
+  function turn(G, st, left) {
+    const d = G.ram[0x724A] * (left ? 1 : -1) * (st.mirror ? -1 : 1);
+    st.head = (st.head + d) & 0x3FF; return st;
+  }
+  // door_check $9437: the door the player is passing through, if any (keys not tested here: the
+  // result says which object the door wants). Needs the player against the wall (after keep).
+  function doorTest(G, st) {
+    const r = G.rooms[st.room], ram = G.ram;
+    const xlo = st.x & 255, xm = st.x >> 8, ylo = st.y & 255, ym = st.y >> 8;
+    for (let k = 0, y = r.a + 5; ; k++, y += 4) {
+      const t = ram[y];
+      if (!((t << 1) & 255)) return null;
+      if ((((xlo + (t & 0x80)) >> 8) + xm & 255) !== ram[y + 2]) continue;
+      if (!((((ylo - 0x40) & 255) ^ t) & 0x80)) continue;
+      if ((((ylo + ((t & 0x80) ^ 0x80)) >> 8) + ym & 255) !== ram[y + 3]) continue;
+      if ((((xlo - 0x28) & 255) ^ t) & 0x80) continue;
+      const q = ((st.head >> 8) + 2 + ((st.head >> 7) & 1)) & 255;
+      if ((q & 1) !== (t >> 7)) continue;
+      return { k, dest: ram[y + 1], arr: (t >> 4) & 7, key: (t & 15) >= 8 ? 8 + (t & 15) : 0 };
+    }
+  }
+  // Where a door leads now: its record, or for a booth's door 0 the last relink.
+  function destination(G, st, d) {
+    const r = G.rooms[st.room];
+    if (r.booth && d.i === 0 && st.links && st.links[r.n]) return st.links[r.n];
+    return { room: d.dest, arr: d.arr };
+  }
+  // The heading that faces a door's wall head-on, out of the room (the door test $947F wants the
+  // heading within 45 degrees of the crossing axis).
+  function facing(r, d) {
+    if (d.wallX) return d.x === 0 ? 256 : 768;
+    return d.y === 0 ? 0 : 512;
+  }
+  // Take the lift down to hangar k: door 0's placement, then middle bytes 8 and 8 ($A2EB);
+  // the ride ends at height 128 ($A302).
+  function lift(G, k, head) {
+    const st = enter(G, { room: 0, head: head || 512, h: 0x80, links: {} }, k, 0);
+    st.x = 0x0800 | (st.x & 255); st.y = 0x0800 | (st.y & 255); st.flash = 0; st.from = 0;
+    return st;
+  }
+
+  // ---- Complexes and floor plans ------------------------------------------------------------
+  // Rooms joined by doors that are not booths make a complex. Placing each room so that its
+  // doors meet the doors they lead to gives a floor plan; where two paths disagree the first
+  // placement is kept and the disagreement is counted.
+  function complexes(G) {
+    const seen = new Map(), out = [];
+    const starts = [1, 3, 4, 5, 6, 7, 8, 0x9A, 0x88];
+    for (const s of starts) {
+      if (seen.has(s)) continue;
+      const pos = new Map([[s, [0, 0]]]), q = [s], off = [];
+      while (q.length) {
+        const n = q.shift(), r = G.rooms[n], [ox, oy] = pos.get(n);
+        if (r.booth) continue;
+        for (const d of r.doors) {
+          if (!d.dest || G.rooms[d.dest].booth) continue;
+          const D = G.rooms[d.dest], back = D.doors[d.arr];
+          if (!back) { off.push({ from: n, door: d.i, why: 'no door ' + d.arr + ' in ' + h2(d.dest) }); continue; }
+          const p = [ox + d.x - back.x, oy + d.y - back.y];
+          if (!pos.has(d.dest)) { pos.set(d.dest, p); q.push(d.dest); }
+          else { const o = pos.get(d.dest); if (o[0] !== p[0] || o[1] !== p[1]) off.push({ from: n, door: d.i, to: d.dest, dx: p[0] - o[0], dy: p[1] - o[1] }); }
+        }
+      }
+      for (const n of pos.keys()) seen.set(n, out.length);
+      out.push({ start: s, rooms: [...pos.keys()].sort((a, b) => a - b), pos, off });
+    }
+    // the Colony Craft's floors stand on top of one another through booths $86 and $87
+    return out;
+  }
+
+  // ---- Labels ---------------------------------------------------------------------------------
+  const HEADING = h => ['north', 'north-west', 'west', 'south-west', 'south', 'south-east', 'east', 'north-east'][((h + 64) >> 7) & 7];
+  // An object's label: its name when the game has one for it (canned message n, printed on
+  // taking it when $29C0 bit 3 is set, and the Mechanoid, 12, whom the scripts name), else what
+  // the code makes of it: the seven keys (17-23) open the key-shaped doors, type = object - 8.
+  function objectLabel(G, o) {
+    if ((G.ram[AD.OBJ_FLAGS + o] & 8) || o === 12) return G.T.canned(o);
+    if (o >= 17 && o <= 23) return 'key ' + o;
+    return 'object ' + o;
+  }
+  function roomLabel(G, n) {
+    if (n === 0) return 'outside';
+    const r = G.rooms[n];
+    return h2(n) + (r.name ? ' ' + r.name : r.booth ? ' (booth)' : '');
+  }
+
+  // ---- The viewer ---------------------------------------------------------------------------
+  // host: an element to fill. opts.picker: a room list; opts.start: the first standpoint.
+  function viewer(host, G, opts) {
+    opts = opts || {};
+    const PAL = root.C64.PAL, ram = G.ram;
+    const START = () => Object.assign({ room: 8, x: 0x0820, y: 0x0880, h: 0x80, head: 512, mirror: 0, links: {}, lit: false, keys: false, guard: 0 }, opts.start || {});
+    host.innerHTML = `
+      <div class="rooms-screen">
+        <canvas class="rooms-canvas" width="320" height="136" tabindex="0" aria-label="The view in the room: arrow keys walk and turn, click a door to go through it"></canvas>
+        <div class="rooms-msg" aria-live="polite"></div>
+      </div>
+      <div class="rooms-where"></div>
+      <div class="rooms-bar">
+        <button type="button" data-k="left" title="Turn left (hold)">&#8630; Left</button>
+        <button type="button" data-k="fwd" title="Walk forward (hold)">&#8593; Forward</button>
+        <button type="button" data-k="back" title="Walk back (hold)">&#8595; Back</button>
+        <button type="button" data-k="right" title="Turn right (hold)">Right &#8631;</button>
+        <label title="Object 16: dark rooms are lit while it is carried or lies in the room"><input type="checkbox" data-o="lit"> Photon Emitter</label>
+        <label title="Objects 17-23: each opens the doors of its shape"><input type="checkbox" data-o="keys"> Keys</label>
+        ${opts.picker ? '<select class="rooms-pick" aria-label="Go to room"></select>' : ''}
+        <button type="button" data-k="restart">Start again</button>
+      </div>
+      <div class="rooms-doors"></div>
+      <div class="rooms-rec"></div>`;
+    const cv = host.querySelector('canvas'), ctx = root.C64.canvas(cv, 320, 136);
+    cv.style.width = '100%'; cv.style.height = 'auto';
+    const msg = host.querySelector('.rooms-msg'), where = host.querySelector('.rooms-where');
+    const doorsEl = host.querySelector('.rooms-doors'), recEl = host.querySelector('.rooms-rec');
+    const pick = host.querySelector('.rooms-pick');
+    let st = START(), view = null, hover = -1, flashT = null, note = '', listeners = [];
+
+    if (pick) pick.innerHTML = G.rooms.slice(1).map(r => `<option value="${r.n}">${roomLabel(G, r.n)}${r.dark ? ' (dark)' : ''}</option>`).join('');
+
+    function said(r) {                          // what Benson prints for this room ($F7, $AEE4)
+      if (r.num && !r.script) return r.name;    // the room's canned message replaces "dark"
+      if (r.dark && !st.lit) return G.dark;
+      return r.name || '';
+    }
+    function paintNow(cols) {
+      paint(ctx, view.pix, cols || colours(G, st), PAL);
+      if (hover >= 0) {
+        ctx.fillStyle = '#ffffff';
+        for (let o = 0; o < view.who.length; o++) if (view.who[o] === hover) ctx.fillRect((o % 160) * 2, (o / 160 | 0), 2, 1);
+      }
+    }
+    function draw() {
+      const r = G.rooms[st.room];
+      view = render(G, st);
+      clearInterval(flashT);
+      if (st.flash) {                           // the booth's flash: %10 takes $BB7E + $F0 a pass
+        let f = st.flash; st.flash = 0;
+        const cols = colours(G, st);
+        flashT = setInterval(() => {
+          if (--f <= 0) { clearInterval(flashT); paintNow(); return; }
+          const c = cols.slice(); c[2] = ram[0xBB7E + f] & 15; paintNow(c);
+        }, 70);
+      } else paintNow();
+      msg.textContent = note || said(r) || ' ';
+      msg.classList.toggle('rooms-quiet', !note && !said(r));
+      note = '';
+      const fx = v => (v / 256).toFixed(2);
+      const here = view.objects.map(o => objectLabel(G, o) + ' (' + o + ')');
+      where.innerHTML = `Room <code>${h2(r.n)}</code>, record <code>${h4(r.a)}</code> · X ${fx(st.x)} Y ${fx(st.y)} of ${r.xs} × ${r.ys} · facing ${HEADING(st.head)} (${st.head})${st.mirror ? ' · mirrored' : ''}${here.length ? ' · here: ' + here.join(', ') : ''}`;
+      doorList(r); record(r);
+      if (pick) pick.value = String(st.room);
+      listeners.forEach(f => f(st));
+    }
+    function doorList(r) {
+      doorsEl.innerHTML = r.doors.map(d => {
+        const t = destination(G, st, d), key = d.type >= 8 ? d.type + 8 : 0;
+        return `<button type="button" data-door="${d.i}" class="rooms-door${key ? ' rooms-keyed' : ''}"><span class="rooms-dk">${KIND[d.type] || 'type ' + d.type}</span> ${roomLabel(G, t.room)}${r.booth && d.i === 0 ? ' <span class="rooms-sub">(relinked)</span>' : ''}</button>`;
+      }).join('') || '<span class="rooms-sub">No doors.</span>';
+    }
+    function record(r) {
+      const b = i => ram[r.a + i].toString(16).toUpperCase().padStart(2, '0');
+      const bytes = (i, n) => Array.from({ length: n }, (_, k) => b(i + k)).join(' ');
+      const sw = c => `<span class="rooms-sw" style="background:${PAL[c & 15]}"></span>`;
+      const rows = [
+        [`<code>${h4(r.a)}</code>`, bytes(0, 3), `${r.xs} × ${r.ys} units, ${r.h} high${r.booth ? '; bit 7: transporter booth' : ''}; ${r.num ? (r.script ? 'bit 7 of byte 2: script ' + r.num + ' on entry' : 'canned message ' + r.num) : 'n = 0: no name'}`],
+        [`<code>${h4(r.a + 3)}</code>`, bytes(3, 2), `${sw(r.c10)} ${r.c10 & 15} fills the view (%10), ${sw(r.c11)} ${r.c11 & 15} draws the lines (%11)`],
+        ...r.doors.map(d => [`<code>${h4(d.a)}</code>`, bytes(d.a - r.a, 4),
+          `door ${d.i}: ${KIND[d.type] || 'type ' + d.type}${d.type >= 8 ? ' (needs object ' + (d.type + 8) + ')' : ''}, in a wall of constant ${d.wallX ? 'X' : 'Y'} at ${d.x}, ${d.y}; to ${d.dest ? h2(d.dest) : 'room 0, outside'}, arriving by its door ${d.arr}`]),
+        [`<code>${h4(r.endAt)}</code>`, b(r.endAt - r.a), r.dark ? '$80: dark, unless the Photon Emitter is carried or here' : '0: end of the doors'],
+      ];
+      if (r.booth) rows.push([`<code>${h4(r.pairs[0].a)}</code>`, bytes(10, 2 * r.pairs.length),
+        `${r.pairs.length} links for door 0 (room, door): ${r.pairs.map(p => h2(p.room) + '/' + p.arr).join(', ')}; ${r.n === 0x72 ? 'one at random' : 'the room you did not come from'}`]);
+      recEl.innerHTML = `<table class="rooms-tbl"><thead><tr><th>At</th><th>Bytes</th><th>Room ${h2(r.n)}</th></tr></thead><tbody>` +
+        rows.map(x => `<tr><td>${x[0]}</td><td class="rooms-b">${x[1]}</td><td>${x[2]}</td></tr>`).join('') + '</tbody></table>';
+    }
+    function go(s) { st = s; hover = -1; draw(); }
+    // Through door k as the door test would let the player through, facing it head-on.
+    function through(k) {
+      const r = G.rooms[st.room], d = r.doors[k];
+      if (!d) return;
+      const t = destination(G, st, d);
+      if (d.type >= 8 && !st.keys) { note = G.locked + ': the door wants object ' + (d.type + 8) + ' carried.'; draw(); return; }
+      const onWall = d.wallX ? (d.x === 0 || d.x === r.xs) && d.y < r.ys : (d.y === 0 || d.y === r.ys) && d.x < r.xs;
+      if (!onWall) { note = 'The door test never finds this door: it is recorded at ' + d.x + ', ' + d.y + ', off the walls of a room ' + r.xs + ' by ' + r.ys + '.'; draw(); return; }
+      if (t.room === 0) { note = 'Room 0 is outside: the player drops from beside the Colony Craft.'; draw(); return; }
+      go(enter(G, Object.assign({}, st, { head: facing(r, d) }), t.room, t.arr));
+    }
+    // One main-loop pass of the stick: turn or walk, keep inside, then the door test.
+    function pass(k) {
+      const s = Object.assign({}, st);
+      if (k === 'left' || k === 'right') turn(G, s, k === 'left');
+      else walkStep(G, s, k === 'fwd');
+      const touched = keep(G, s);
+      if (touched && !s.guard) {
+        const d = doorTest(G, s);
+        if (d) {
+          if (d.key && !s.keys) { note = G.locked + ': the door wants object ' + d.key + ' carried.'; st = s; draw(); return false; }
+          if (d.dest === 0) { note = 'Room 0 is outside: the player drops from beside the Colony Craft.'; st = s; draw(); return false; }
+          const t = destination(G, s, G.rooms[s.room].doors[d.k]);
+          go(enter(G, s, t.room, t.arr)); return false;
+        }
+      }
+      st = s; draw(); return true;
+    }
+    let rep = null;
+    const stop = () => { clearInterval(rep); rep = null; };
+    host.querySelector('.rooms-bar').addEventListener('pointerdown', ev => {
+      const b = ev.target.closest('button[data-k]'); if (!b) return;
+      const k = b.dataset.k;
+      if (k === 'restart') { const s = START(); s.lit = st.lit; s.keys = st.keys; go(s); return; }
+      stop(); pass(k);
+      rep = setInterval(() => { if (!pass(k)) stop(); }, 60);
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(e => host.querySelector('.rooms-bar').addEventListener(e, stop));
+    host.querySelector('.rooms-bar').addEventListener('keydown', ev => {      // Enter/Space on a focused button
+      const b = ev.target.closest('button[data-k]');
+      if (b && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); if (b.dataset.k === 'restart') go(START()); else for (let i = 0; i < 4; i++) if (!pass(b.dataset.k)) break; }
+    });
+    host.querySelectorAll('input[data-o]').forEach(inp => inp.addEventListener('change', () => { st[inp.dataset.o] = inp.checked; draw(); }));
+    cv.addEventListener('keydown', ev => {
+      const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'fwd', ArrowDown: 'back' }[ev.key];
+      if (k) { ev.preventDefault(); pass(k); }
+    });
+    if (pick) pick.addEventListener('change', () => show(+pick.value));
+    doorsEl.addEventListener('click', ev => { const b = ev.target.closest('button[data-door]'); if (b) through(+b.dataset.door); });
+    doorsEl.addEventListener('mouseover', ev => { const b = ev.target.closest('button[data-door]'); const h = b ? +b.dataset.door : -1; if (h !== hover) { hover = h; paintNow(); } });
+    doorsEl.addEventListener('focusin', ev => { const b = ev.target.closest('button[data-door]'); if (b) { hover = +b.dataset.door; paintNow(); } });
+    doorsEl.addEventListener('mouseleave', () => { hover = -1; paintNow(); });
+    cv.addEventListener('click', ev => {         // a door under the pointer: go through it
+      const rc = cv.getBoundingClientRect();
+      const x = Math.floor((ev.clientX - rc.left) / rc.width * 160), y = Math.floor((ev.clientY - rc.top) / rc.height * 136);
+      let best = -1, bd = 1e9;
+      for (let dy = -5; dy <= 5; dy++) for (let dx = -3; dx <= 3; dx++) {
+        const X = x + dx, Y = y + dy;
+        if (X < 0 || X >= 160 || Y < 0 || Y >= 136) continue;
+        const w = view.who[Y * 160 + X], dd = 4 * dx * dx + dy * dy;
+        if (w >= 0 && dd < bd) { bd = dd; best = w; }
+      }
+      if (best >= 0) through(best);
+    });
+    cv.addEventListener('mousemove', ev => {
+      const rc = cv.getBoundingClientRect();
+      const x = Math.floor((ev.clientX - rc.left) / rc.width * 160), y = Math.floor((ev.clientY - rc.top) / rc.height * 136);
+      let h = -1;
+      for (let dy = -5; dy <= 5 && h < 0; dy++) for (let dx = -3; dx <= 3 && h < 0; dx++) {
+        const X = x + dx, Y = y + dy;
+        if (X >= 0 && X < 160 && Y >= 0 && Y < 136 && view.who[Y * 160 + X] >= 0) h = view.who[Y * 160 + X];
+      }
+      let ob = -1;
+      for (let dy = -2; dy <= 2 && ob < 0; dy++) for (let dx = -1; dx <= 1 && ob < 0; dx++) {
+        const X = x + dx, Y = y + dy;
+        if (X >= 0 && X < 160 && Y >= 0 && Y < 136 && view.who[Y * 160 + X] >= 100) ob = view.who[Y * 160 + X] - 100;
+      }
+      cv.title = ob >= 0 ? objectLabel(G, ob) + ' (object ' + ob + ')' : h >= 0 ? 'Door ' + h + ': click to go through' : '';
+      cv.style.cursor = h >= 0 ? 'pointer' : '';
+      if (h !== hover) { hover = h; paintNow(); }
+    });
+    // Show room n: a hangar as the lift leaves you, any other room in the middle of the floor,
+    // facing its first door.
+    function show(n) {
+      const r = G.rooms[n];
+      let s;
+      if (n >= 1 && n <= 8) s = lift(G, n, st.head);
+      else { s = { room: n, x: r.xs << 7, y: r.ys << 7, h: 0x80, head: r.doors.length ? facing(r, r.doors[0]) : 0, guard: 0 }; keep(G, s); }
+      go(Object.assign(s, { lit: st.lit, keys: st.keys, links: st.links, mirror: st.mirror }));
+    }
+    draw();
+    return { show, get state() { return st; }, on: f => listeners.push(f), G };
+  }
+
+  root.MercRooms = { AD, h2, h4, KIND, HEADING, floats, text, parseRoom, build, targets, model, project, drawEdge, line,
+    render, colours, paint, keep, clamp, enter, walkStep, turn, doorTest, destination, facing, lift, complexes,
+    objectLabel, roomLabel, viewer, CX, CY, SCALE };
+
+  // ---- The How it works widget (#rooms-view) ----------------------------------------------------
+  if (typeof document === 'undefined') return;
+  if (root.MERC_GAME) root.MERC_GAME.catch(() => {});    // handled at once; each widget reports its own failure
+  function start() {
+    const host = document.getElementById('rooms-view');
+    if (!host) return;
+    const fail = () => { host.innerHTML = '<p class="rooms-note">This viewer reads the game from <code>listing.json</code>, so it needs the built site.</p>'; };
+    if (!root.MERC_GAME) { fail(); return; }
+    root.MERC_GAME.then(game => { viewer(host, build(game.ram), { start: { head: 768 } }); }).catch(fail);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* rooms-levels */
+// The underground on the Maps page: every complex as a floor plan drawn from the room records,
+// the transporter booths, the keys; a room viewer beside the plans. Needs rooms.js first
+// (window.MercRooms) and window.MERC_GAME (C64.load('listing.json')).
+(function () {
+  'use strict';
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // The complexes, by the room each plan starts from; the Colony Craft's three floors stand on
+  // one another where its booths $86 and $87 join them (rooms $91, $9C and $A9 share a place).
+  const SETS = [
+    { id: 'h12', title: 'Hangars 1 and 2', starts: [1], lifts: [1, 2] },
+    { id: 'h3', title: 'Hangar 3', starts: [3], lifts: [3] },
+    { id: 'h4', title: 'Hangar 4', starts: [4], lifts: [4] },
+    { id: 'h5', title: 'Hangar 5', starts: [5], lifts: [5] },
+    { id: 'h6', title: 'Hangar 6', starts: [6], lifts: [6] },
+    { id: 'h7', title: 'Hangar 7', starts: [7], lifts: [7] },
+    { id: 'cc', title: 'The Colony Craft', starts: [8, 0x9A, 0x88], floors: ['Top floor', 'Middle floor', 'Bottom floor'], align: [0x91, 0x9C, 0xA9], lifts: [8] },
+  ];
+
+  function start() {
+    const host = $('rooms-maps');
+    if (!host) return;
+    const fail = () => { host.querySelectorAll('.rooms-need').forEach(e => { e.hidden = false; }); };
+    if (!window.MERC_GAME) { fail(); return; }
+    window.MERC_GAME.then(game => {
+      if (!window.MercRooms) throw new Error('rooms.js must come before rooms-levels.js');
+      const R = window.MercRooms, G = R.build(game.ram);
+      const V = R.viewer($('rooms-maps-view'), G, { picker: true });
+      maps(G, R, V);
+      booths(G, R, V);
+      keys(G, R, V);
+    }).catch(e => { fail(); if (window.console) console.error(e); });
+  }
+
+  // ---- Floor plans ----------------------------------------------------------------------------
+  function maps(G, R, V) {
+    const PAL = window.C64.PAL, tabs = $('rooms-maps-tabs'), plan = $('rooms-maps-plan'), info = $('rooms-maps-info');
+    const complexOf = new Map();
+    G.complexes.forEach(c => c.rooms.forEach(n => complexOf.set(n, c)));
+    const byStart = new Map(G.complexes.map(c => [c.start, c]));
+    const setOf = n => SETS.find(s => s.starts.some(st => byStart.get(st) && byStart.get(st).rooms.includes(n)));
+    tabs.innerHTML = SETS.map(s => {
+      const n = s.starts.reduce((a, st) => a + byStart.get(st).rooms.length, 0);
+      return `<button type="button" data-set="${s.id}">${esc(s.title)} <span class="rooms-sub">${n}</span></button>`;
+    }).join('');
+    let cur = null, svgRooms = new Map();
+
+    function draw(set) {
+      cur = set;
+      tabs.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.set === set.id));
+      const floors = set.starts.map(st => byStart.get(st));
+      // each floor's rooms placed; the Colony Craft's floors side by side, aligned on its booths
+      const panels = floors.map((c, i) => {
+        const base = set.align ? c.pos.get(set.align[i]) : [0, 0];
+        const pos = new Map([...c.pos].map(([n, p]) => [n, [p[0] - base[0], p[1] - base[1]]]));
+        let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+        for (const [n, [x, y]] of pos) { const r = G.rooms[n]; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x + r.xs); y1 = Math.max(y1, y + r.ys); }
+        return { c, pos, x0, y0, x1, y1 };
+      });
+      const PAD = 3, GAP = 6;
+      if (set.align) {        // one frame for all floors, so the shared places line up
+        const y0 = Math.min(...panels.map(p => p.y0)), y1 = Math.max(...panels.map(p => p.y1));
+        const x0 = Math.min(...panels.map(p => p.x0)), x1 = Math.max(...panels.map(p => p.x1));
+        panels.forEach(p => { p.x0 = x0; p.x1 = x1; p.y0 = y0; p.y1 = y1; });
+      }
+      let ox = PAD;
+      panels.forEach(p => { p.ox = ox - p.x0; p.oy = PAD + (set.floors ? 5 : 0) - p.y0; ox += (p.x1 - p.x0) + GAP; });
+      const W = ox - GAP + PAD, H = Math.max(...panels.map(p => p.y1 - p.y0)) + 2 * PAD + (set.floors ? 5 : 0);
+      const parts = [];
+      svgRooms = new Map();
+      panels.forEach((p, i) => {
+        if (set.floors) parts.push(`<text class="rooms-floor" x="${p.ox + p.x0}" y="${PAD + 2.5}">${esc(set.floors[i])}</text>`);
+        for (const n of p.c.rooms) {
+          const r = G.rooms[n], [x, y] = p.pos.get(n), X = x + p.ox, Y = y + p.oy;
+          const fill = r.dark ? '#111' : PAL[r.c10 & 15], stroke = r.dark ? '#777' : PAL[r.c11 & 15];
+          const tip = `${R.h2(n)}${r.name ? ' ' + r.name : ''}: ${r.xs} × ${r.ys}, ${r.h} high${r.dark ? ', dark' : ''}${G.objects[n].length ? '; holds ' + G.objects[n].map(o => R.objectLabel(G, o)).join(', ') : ''}`;
+          let g = `<g class="rooms-room${r.dark ? ' rooms-darkroom' : ''}" data-room="${n}" tabindex="0" role="button" aria-label="${esc(tip)}"><title>${esc(tip)}</title>`;
+          g += `<rect x="${X}" y="${Y}" width="${r.xs}" height="${r.ys}" fill="${fill}" stroke="${stroke}" stroke-width="0.35"${r.dark ? ' stroke-dasharray="0.8 0.5"' : ''}/>`;
+          const big = r.xs >= 3 && r.ys >= 2;
+          if (big) g += `<text class="rooms-lab" x="${X + r.xs / 2}" y="${Y + r.ys / 2 - (n <= 8 ? 3.5 : 0)}" fill="${r.dark ? '#bbb' : labelInk(PAL[r.c10 & 15])}">${n <= 8 ? 'HANGAR ' + n : R.h2(n).slice(1)}</text>`;
+          // objects at their places ($2480/$2500: X and Y middle bytes, in units)
+          for (const o of G.objects[n]) {
+            const ox2 = G.ram[0x2480 + o] + G.ram[0x2880 + o] / 256, oy2 = G.ram[0x2500 + o] + G.ram[0x2900 + o] / 256;
+            g += `<circle class="rooms-obj" cx="${X + ox2}" cy="${Y + oy2}" r="0.55"><title>${esc(R.objectLabel(G, o))} (object ${o}) in ${R.h2(n)}</title></circle>`;
+          }
+          // the lift, where the ride arrives ($A2EB)
+          if (n <= 8) {
+            const L = R.lift(G, n, 0), lx = X + L.x / 256, ly = Y + L.y / 256;
+            g += `<g class="rooms-lift"><circle cx="${lx}" cy="${ly}" r="1.3"/><text x="${lx}" y="${ly + 0.05}">E</text><title>Lift ${n}: E anywhere in the room rides up to ${sq(G.lifts[n])}${n === 5 ? ' (coming down needs the Pass)' : ''}${n === 8 ? ', onto the Colony Craft’s deck' : ''}; the ride down arrives here</title></g>`;
+          }
+          g += '</g>';
+          parts.push(g);
+        }
+        // doors, drawn over the rooms
+        for (const n of p.c.rooms) {
+          const r = G.rooms[n], [x, y] = p.pos.get(n), X = x + p.ox, Y = y + p.oy;
+          for (const d of r.doors) {
+            const k = kind(G, d), a = 0x50 / 256, b = 0xB0 / 256;
+            const [x1, y1, x2, y2] = d.wallX ? [X + d.x, Y + d.y + a, X + d.x, Y + d.y + b] : [X + d.x + a, Y + d.y, X + d.x + b, Y + d.y];
+            const to = d.dest ? R.roomLabel(G, d.dest) : 'outside';
+            const tip = `${R.h2(n)} door ${d.i}: ${R.KIND[d.type] || 'type ' + d.type}${d.type >= 8 ? ' (object ' + (d.type + 8) + ')' : ''}, to ${to}`;
+            parts.push(`<line class="rooms-door-${k}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><title>${esc(tip)}</title></line>`);
+            const onWall = d.wallX ? (d.x === 0 || d.x === r.xs) && d.y < r.ys : (d.y === 0 || d.y === r.ys) && d.x < r.xs;
+            if (!onWall) {
+              const qx = Math.max(X, Math.min(X + r.xs, x1)), qy = Math.max(Y, Math.min(Y + r.ys, y1));
+              parts.push(`<line class="rooms-offwall" x1="${x1}" y1="${y1}" x2="${qx}" y2="${qy}"><title>${esc(`${R.h2(n)} door ${d.i} is recorded at X ${d.x} (${R.h2(d.x)}), outside a room ${r.xs} wide: the door test never finds it, so the room has no way out`)}</title></line>`);
+            }
+            if (k === 'booth' || k === 'exit') {
+              const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2, bn = d.dest;
+              parts.push(`<text class="rooms-tag rooms-tag-${k}" x="${cx + (d.wallX ? (d.x === 0 ? -2.2 : 2.2) : 0)}" y="${cy + (d.wallX ? 0.4 : (d.y === 0 ? -1.2 : 2.2))}">${k === 'exit' ? 'out' : R.h2(bn).slice(1)}<title>${esc(tip + (k === 'booth' ? '; ' + boothWhat(G, R, bn) : ''))}</title></text>`);
+            }
+          }
+          // door pairs that do not meet on the plan (the records disagree by a unit or two)
+          for (const o of p.c.off) if (o.from === n && o.to && o.from < o.to) {
+            const d = r.doors[o.door], D = G.rooms[o.to], back = D.doors[d.arr], [tx, ty] = p.pos.get(o.to);
+            const m = (dd, bx, by) => dd.wallX ? [bx + dd.x, by + dd.y + 0.5] : [bx + dd.x + 0.5, by + dd.y];
+            const [ax2, ay2] = m(d, X, Y), [bx2, by2] = m(back, tx + p.ox, ty + p.oy);
+            parts.push(`<line class="rooms-miss" x1="${ax2}" y1="${ay2}" x2="${bx2}" y2="${by2}"><title>${R.h2(n)} door ${d.i} and ${R.h2(o.to)} door ${d.arr} lead to each other but sit ${Math.hypot(o.dx, o.dy).toFixed(1)} units apart on this plan</title></line>`);
+          }
+        }
+      });
+      plan.innerHTML = `<svg xmlns="${NS}" class="rooms-svg" viewBox="0 0 ${W} ${H}" style="aspect-ratio:${W}/${H}" role="img" aria-label="${esc(set.title)}: floor plan">${parts.join('')}</svg>`;
+      zoom = set.id === 'h12' ? 3 : 1; applyZoom();
+      plan.querySelectorAll('.rooms-room').forEach(el => svgRooms.set(+el.dataset.room, el));
+      const offs = floors.reduce((a, c) => a + c.off.filter(o => o.to && o.from < o.to).length, 0);
+      const nRooms = floors.reduce((a, c) => a + c.rooms.length, 0);
+      let extra = '';
+      if (set.id === 'h12') {
+        const p0 = panels[0].pos, d = [p0.get(2)[0] - p0.get(1)[0], p0.get(2)[1] - p0.get(1)[1]];
+        extra = ` On the plan hangar 2 lies ${Math.abs(d[1])} units ${d[1] < 0 ? 'north' : 'south'}${d[0] ? ' and ' + Math.abs(d[0]) + ' ' + (d[0] < 0 ? 'west' : 'east') : ''} of hangar 1; their lift squares are one square, 256 units, apart. The prison, <code>$51</code>, stands where its one door puts it, 128 units west of the door (dashed).`;
+      }
+      info.innerHTML = `${esc(set.title)}: ${nRooms} rooms${set.floors ? ' on three floors' : ''}, lift${set.lifts.length > 1 ? 's' : ''} at ${set.lifts.map(k => sq(G.lifts[k])).join(' and ')}.` +
+        (offs ? ` ${offs} pair${offs > 1 ? 's' : ''} of doors that lead to each other do not meet on the plan (dotted).` : ' Every pair of doors meets.') + extra;
+      const here = floors.some(c => c.rooms.includes(V.state.room));
+      mark(here ? V.state.room : set.starts[0], true);
+      if (!here) svgRooms.forEach(el => el.classList.remove('rooms-here'));
+    }
+    let zoom = 1;
+    const zoomBar = $('rooms-maps-zoom');
+    function applyZoom() {
+      const svg = plan.querySelector('svg'); if (!svg) return;
+      svg.style.width = (zoom * 100) + '%';
+      zoomBar.querySelector('[data-z="fit"]').classList.toggle('on', zoom === 1);
+    }
+    zoomBar.addEventListener('click', ev => {
+      const b = ev.target.closest('button[data-z]'); if (!b) return;
+      const cx = (plan.scrollLeft + plan.clientWidth / 2) / plan.scrollWidth, cy = (plan.scrollTop + plan.clientHeight / 2) / plan.scrollHeight;
+      zoom = b.dataset.z === 'fit' ? 1 : Math.max(1, Math.min(8, zoom * (b.dataset.z === 'in' ? 1.5 : 1 / 1.5)));
+      applyZoom();
+      plan.scrollLeft = cx * plan.scrollWidth - plan.clientWidth / 2; plan.scrollTop = cy * plan.scrollHeight - plan.clientHeight / 2;
+    });
+    // show the current room: highlight it and, when the plan is larger than its box, scroll to it
+    function mark(n, scroll) {
+      svgRooms.forEach((el, k) => el.classList.toggle('rooms-here', k === n));
+      const el = svgRooms.get(n);
+      if (!el || !scroll) return;
+      const a = el.getBoundingClientRect(), b = plan.getBoundingClientRect();
+      if (a.left < b.left || a.right > b.right || a.top < b.top || a.bottom > b.bottom) {
+        plan.scrollLeft += (a.left + a.right) / 2 - (b.left + b.right) / 2;
+        plan.scrollTop += (a.top + a.bottom) / 2 - (b.top + b.bottom) / 2;
+      }
+    }
+    tabs.addEventListener('click', ev => { const b = ev.target.closest('button[data-set]'); if (b) draw(SETS.find(s => s.id === b.dataset.set)); });
+    const pickRoom = ev => { const g = ev.target.closest('.rooms-room'); if (!g) return; V.show(+g.dataset.room); if (window.innerWidth < 900) $('rooms-maps-view').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+    plan.addEventListener('click', pickRoom);
+    plan.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pickRoom(ev); } });
+    V.on(st => { const s = setOf(st.room); if (s && s !== cur) draw(s); else mark(st.room, true); });
+    draw(setOf(V.state.room) || SETS[0]);
+  }
+  function sq(l) { const f = v => (v > 99 ? '**' : String(v).padStart(2, '0')); return l.x > 99 || l.y > 99 ? `${l.x}-${l.y} (LOC **-**)` : `${f(l.x)}-${f(l.y)}`; }
+  function labelInk(hex) { const v = parseInt(hex.slice(1), 16), l = 0.3 * (v >> 16) + 0.59 * (v >> 8 & 255) + 0.11 * (v & 255); return l > 120 ? '#111' : '#fff'; }
+  function kind(G, d) {
+    if (!d.dest) return 'exit';
+    if (G.rooms[d.dest].booth) return 'booth';
+    if (d.type >= 8) return 'key';
+    if (d.type === 3) return 'dark';
+    return 'plain';
+  }
+  function boothWhat(G, R, b) {
+    const r = G.rooms[b], p = r.pairs;
+    if (b === 0x72) return 'booth $72 sends you to one of eight rooms at random';
+    if (p[0].room === p[1].room) return `booth ${R.h2(b)} always sends you to ${R.roomLabel(G, p[0].room)}` + (b === 0x7F ? ', and coming from $90 it mirrors the world' : '');
+    return `booth ${R.h2(b)} joins ${R.roomLabel(G, p[0].room)} and ${R.roomLabel(G, p[1].room)}`;
+  }
+
+  // ---- Booths -----------------------------------------------------------------------------------
+  function booths(G, R, V) {
+    const host = $('rooms-booths'), tbl = $('rooms-booths-table');
+    if (!host) return;
+    const complexOf = new Map();
+    G.complexes.forEach(c => c.rooms.forEach(n => complexOf.set(n, c.start)));
+    const NAME = { 1: 'Hangars 1 and 2', 3: 'Hangar 3', 4: 'Hangar 4', 5: 'Hangar 5', 6: 'Hangar 6', 7: 'Hangar 7', 8: 'Colony top', 0x9A: 'Colony middle', 0x88: 'Colony bottom' };
+    // node places in a 100 x 64 box
+    const NODE = { 8: [15, 7], 0x9A: [50, 7], 0x88: [85, 7], 3: [15, 31], 1: [50, 31], 5: [85, 31], 4: [15, 56], 6: [50, 56], 7: [85, 56] };
+    const HUB = [68, 45], HW = 10.5, HH = 4.2;
+    const rows = [], groups = new Map();
+    const add = (a, b, kind, n) => {
+      const key = kind === 'two' ? [Math.min(a, b), Math.max(a, b), kind].join() : [a, b, kind].join();
+      if (!groups.has(key)) groups.set(key, { a, b, kind, ns: [] });
+      if (!groups.get(key).ns.includes(n)) groups.get(key).ns.push(n);
+    };
+    const inside = [];
+    for (const r of G.rooms.slice(1).filter(x => x.booth)) {
+      const into = [];
+      for (const q of G.rooms.slice(1)) for (const d of q.doors) if (d.dest === r.n) into.push({ room: q.n, door: d.i });
+      const p = r.pairs, oneWay = r.n !== 0x72 && p[0].room === p[1].room;
+      const what = r.n === 0x72 ? 'one of eight rooms at random' : oneWay ? `always to ${R.roomLabel(G, p[0].room)}` : `between ${R.roomLabel(G, p[0].room)} and ${R.roomLabel(G, p[1].room)}`;
+      rows.push(`<tr><td><code>${R.h4(r.a)}</code></td><td><button type="button" class="rooms-link" data-room="${r.n}">${R.h2(r.n)}</button></td><td>${R.KIND[r.doors[0].type]}</td>` +
+        `<td>${into.map(x => `<button type="button" class="rooms-link" data-room="${x.room}">${R.h2(x.room)}</button>`).join(' ')}</td><td>${esc(what)}${r.n === 0x7F ? '; entered from $90 it also mirrors the world' : ''}</td></tr>`);
+      if (r.n === 0x72) { for (const q of p) add('hub', complexOf.get(q.room), 'hub', q.room); continue; }
+      if (oneWay) {
+        for (const x of into) if (x.room !== p[0].room) {
+          const a = complexOf.get(x.room), b = complexOf.get(p[0].room);
+          if (a === b) inside.push(r.n); else add(a, b, r.n === 0x7F ? 'mirror' : 'one', r.n);
+        }
+      } else {
+        const a = complexOf.get(p[0].room), b = complexOf.get(p[1].room);
+        if (a === b) inside.push(r.n); else add(a, b, 'two', r.n);
+      }
+    }
+    tbl.innerHTML = `<table class="rooms-tbl"><thead><tr><th>Record</th><th>Booth</th><th>Door 0</th><th>Entered from</th><th>Sends you</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+    const at = k => k === 'hub' ? HUB : NODE[k];
+    // where the segment from a node's centre toward (tx, ty) leaves its box (or the hub's circle)
+    const exit = (k, tx, ty) => {
+      const [x, y] = at(k), dx = tx - x, dy = ty - y, L = Math.hypot(dx, dy) || 1;
+      if (k === 'hub') return [x + dx / L * 3.4, y + dy / L * 3.4];
+      const t = Math.min(dx ? (HW + 0.6) / Math.abs(dx) : 1e9, dy ? (HH + 0.6) / Math.abs(dy) : 1e9);
+      return [x + dx * t, y + dy * t];
+    };
+    const BEND = { '5,7,one': 5, '5,7,two': -5 };
+    const parts = [`<defs><marker id="rooms-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="rooms-arrowhead"/></marker>` +
+      `<marker id="rooms-arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="rooms-arrowhead-m"/></marker></defs>`];
+    const labels = [];
+    for (const g of groups.values()) {
+      const [x1, y1] = at(g.a), [x2, y2] = at(g.b);
+      const key = [g.a, g.b, g.kind].join(), bend = BEND[key] !== undefined ? BEND[key] : (g.kind === 'two' && groups.has([g.a, g.b, 'one'].join()) ? -4 : 0);
+      const L = Math.hypot(x2 - x1, y2 - y1), nx = -(y2 - y1) / L, ny = (x2 - x1) / L;
+      const cx = (x1 + x2) / 2 + nx * bend, cy = (y1 + y2) / 2 + ny * bend;
+      const [sx, sy] = exit(g.a, cx, cy), [ex, ey] = exit(g.b, cx, cy);
+      const cls = { two: 'rooms-e-two', one: 'rooms-e-one', mirror: 'rooms-e-mirror', hub: 'rooms-e-hub' }[g.kind];
+      const tip = g.kind === 'hub' ? `Booth $72 sends you, at random, to ${g.ns.map(R.h2).join(', ')} in ${NAME[g.b]}` :
+        `Booth${g.ns.length > 1 ? 's' : ''} ${g.ns.map(R.h2).join(', ')}: ${NAME[g.a]} ${g.kind === 'two' ? 'and' : 'to'} ${NAME[g.b]}${g.kind === 'two' ? ', both ways' : ', one way'}${g.kind === 'mirror' ? ', mirroring the world' : ''}`;
+      const mk = g.kind === 'one' ? ' marker-end="url(#rooms-arrow)"' : g.kind === 'mirror' ? ' marker-end="url(#rooms-arrow-m)"' : '';
+      parts.push(`<path class="${cls}" d="M${sx.toFixed(2)},${sy.toFixed(2)} Q${cx.toFixed(2)},${cy.toFixed(2)} ${ex.toFixed(2)},${ey.toFixed(2)}"${mk}><title>${esc(tip)}</title></path>`);
+      if (g.kind !== 'hub') {
+        const lx = (sx + 2 * cx + ex) / 4, ly = (sy + 2 * cy + ey) / 4;
+        labels.push(`<text class="rooms-e-lab" x="${lx.toFixed(2)}" y="${(ly + 0.7).toFixed(2)}">${g.ns.map(n => R.h2(n).slice(1)).join(' ')}<title>${esc(tip)}</title></text>`);
+      }
+    }
+    for (const [k, [x, y]] of Object.entries(NODE)) {
+      const c = G.complexes.find(cc => cc.start === +k), first = +k;
+      parts.push(`<g class="rooms-node" data-room="${first}" tabindex="0" role="button"><rect x="${x - HW}" y="${y - HH}" width="${2 * HW}" height="${2 * HH}" rx="1.5"/><text x="${x}" y="${y - 0.3}">${NAME[k]}</text><text class="rooms-node-n" x="${x}" y="${y + 2.5}">${c.rooms.length} rooms</text><title>${NAME[k]}: ${c.rooms.length} rooms; click to stand in ${R.h2(first)}</title></g>`);
+    }
+    parts.push(`<g class="rooms-hub" data-room="114" tabindex="0" role="button"><circle cx="${HUB[0]}" cy="${HUB[1]}" r="3.2"/><text x="${HUB[0]}" y="${HUB[1] + 0.8}">72</text><title>Booth $72: one of eight rooms at random</title></g>`);
+    $('rooms-booths-graph').innerHTML = `<svg xmlns="${NS}" class="rooms-svg rooms-net" viewBox="0 0 100 64" role="img" aria-label="The complexes and the booths between them">${parts.join('')}${labels.join('')}</svg>`;
+    $('rooms-booths-inside').innerHTML = inside.length ? `Booths with both ends in hangars 1 and 2 (left out of the diagram): ${[...new Set(inside)].map(n => `<button type="button" class="rooms-link" data-room="${n}">${R.h2(n)}</button>`).join(' ')}.` : '';
+    host.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-room]'); if (!b) return;
+      V.show(+b.dataset.room); $('rooms-maps-view').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+    host.addEventListener('keydown', ev => { const b = ev.target.closest('g[data-room]'); if (b && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); V.show(+b.dataset.room); } });
+  }
+
+  // ---- Keys -------------------------------------------------------------------------------------
+  function keys(G, R, V) {
+    const host = $('rooms-keys');
+    if (!host) return;
+    const ram = G.ram, rows = [];
+    const outline = t => {                      // the door's outline from $928A, in a 256 x 256 cell
+      let k = ram[0x932B + t], pts = [];
+      for (let g = 0; g < 16; g++) { const a = ram[0x928A + k]; if (a === 0xFF) break; pts.push([a, 0xC8 - ram[0x928B + k]]); k += 2; }
+      return `<svg class="rooms-shape" viewBox="30 -10 200 220" aria-hidden="true"><polyline points="${pts.map(p => p[0] + ',' + p[1]).join(' ')}"/><line x1="30" y1="200" x2="230" y2="200" class="rooms-floorline"/></svg>`;
+    };
+    for (let t = 9; t <= 15; t++) {
+      const o = t + 8, at = ram[0x2940 + o], doors = [];
+      let count = 0;
+      for (const r of G.rooms.slice(1)) { const k = r.doors.filter(d => d.type === t).length; if (k) { count += k; doors.push(`<button type="button" class="rooms-link" data-room="${r.n}">${R.h2(r.n)}${k > 1 ? ' ×' + k : ''}</button>`); } }
+      rows.push(`<tr><td>${outline(t)}</td><td>${t}</td><td>object ${o}</td><td>${at >= 1 && at <= 0xAE ? `<button type="button" class="rooms-link" data-room="${at}">${R.h2(at)}</button>` : R.h2(at)}</td><td>${count}: ${doors.join(' ')}</td></tr>`);
+    }
+    const o16 = ram[0x2940 + 16], o48 = ram[0x2940 + 48];
+    $('rooms-keys-table').innerHTML = `<table class="rooms-tbl"><thead><tr><th>Shape</th><th>Door type</th><th>Key</th><th>Lies in</th><th>Doors it opens</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+    $('rooms-keys-extra').innerHTML = `Object 48 opens every locked door and lies in <button type="button" class="rooms-link" data-room="${o48}">${R.h2(o48)}</button>; the Photon Emitter (object 16), which lights the 20 dark rooms, lies in <button type="button" class="rooms-link" data-room="${o16}">${R.h2(o16)}</button>.`;
+    host.addEventListener('click', ev => { const b = ev.target.closest('button[data-room]'); if (b) { V.show(+b.dataset.room); $('rooms-maps-view').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } });
+  }
+
+  if (window.MERC_GAME) window.MERC_GAME.catch(() => {});
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>

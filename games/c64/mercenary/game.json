@@ -1,0 +1,468 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "mercenary",
+  "title": "Mercenary",
+  "year": 1985,
+  "publisher": "Novagen Software",
+  "developer": "Paul Woakes",
+  "title_image": "reference/original-disk-loading-screen.png",
+  "build": "MERCENAR.D64, program MERCENARY: a one-file crack packed with Compacker V2.0 (a run-length stage at $B98B, a copier at $5000, the start-up at $7200); against the contributor's original Novagen disk only the opening's first message, the CBM80 reset signature, one branch offset and filler differ (orientation.md)",
+  "tier": "silver",
+  "coverage_percent": 100.0,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Paul Woakes",
+      "role": "author and programmer"
+    },
+    {
+      "by": "Bruce Jordan",
+      "role": "design"
+    }
+  ],
+  "tools": {
+    "emulator": "VICE 3.10 via vice-mcp: release v3.13.1, v3.13.1-linux-x86_64-gui.zip (Linux x86_64, run under Xvfb)",
+    "disassembler": "regenerator2000 0.9.20",
+    "python": "3.11.15",
+    "host": "Linux 6.18 x86_64, Ubuntu 24.04 cloud container with four cores and no display",
+    "widget tests": "node 22.22.2: every ported routine checked against the game's own code in a 6502 simulator on the snapshots, and against a 253-pass flight recording and captured frames from the emulator",
+    "browser check": "Playwright 1.56.1 with Chromium 1194",
+    "subagents": "one research agent, twelve annotation agents on disjoint address ranges and five widget agents, all claude-opus-5-5"
+  },
+  "model": "claude-opus-5-5",
+  "kit_version": "0.0.24",
+  "created": "2026-09-25",
+  "video": {
+    "screen": "",
+    "charset": "$7800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$4000",
+        "$4FFF",
+        "the unread twin of $E000-$EFFF: the routine at $5000 copies it there before the game starts, and the view's bitmap overwrites it once play draws"
+      ],
+      [
+        "$6000",
+        "$6FFF",
+        "the unread twin of $F000-$FFFF: copied there by $5000, then overwritten by the second bitmap"
+      ],
+      [
+        "$502F",
+        "$553F",
+        "the last rows of the first bitmap ($4000-$553F): the view, cleared and redrawn every other frame; $AA filler at the hand-over"
+      ],
+      [
+        "$55C8",
+        "$55CF",
+        "eight $AA filler bytes between the row tables $5540 and $55D0 (the builder at $72A2 stops at row 136); nothing reads or writes them"
+      ],
+      [
+        "$5C00",
+        "$5EA7",
+        "the view's colours in the screen matrix (text rows 0-16), painted by $BB4F whenever the place changes"
+      ],
+      [
+        "$D000",
+        "$DFFF",
+        "not the game's: the packer's leftovers under the I/O area ($D000-$D867 filled with $33, $D868-$DA67 the first unpacker's turbo loader, $DA68-$DFFF packed data). No game code maps this RAM in: every write to $01 stores $35, $36 or $05"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0000",
+      "$00FF",
+      "variables",
+      "zero page: position, angles, speed, maths, message printer, keys"
+    ],
+    [
+      "$0100",
+      "$01BF",
+      "variables",
+      "view-space vertex tables in the stack page"
+    ],
+    [
+      "$02C0",
+      "$02FF",
+      "variables",
+      "vertex Y' exponents"
+    ],
+    [
+      "$0340",
+      "$07FF",
+      "variables",
+      "scene tables: world, view and screen vertices, edges"
+    ],
+    [
+      "$0800",
+      "$0865",
+      "tables",
+      "event-script table: where scripts 0-50 start"
+    ],
+    [
+      "$0866",
+      "$1248",
+      "code",
+      "event scripts: byte code for the interpreter at $8AB2, messages inline"
+    ],
+    [
+      "$1249",
+      "$151E",
+      "text",
+      "message dictionary, 239 words"
+    ],
+    [
+      "$151F",
+      "$16FF",
+      "text",
+      "64 canned messages, object names among them"
+    ],
+    [
+      "$1700",
+      "$2098",
+      "graphics",
+      "32 object models, wire-frame"
+    ],
+    [
+      "$20A0",
+      "$215F",
+      "tables",
+      "canned-message and dictionary pointers"
+    ],
+    [
+      "$2164",
+      "$216F",
+      "tables",
+      "dictionary pointers"
+    ],
+    [
+      "$217F",
+      "$22FF",
+      "tables",
+      "dictionary pointers"
+    ],
+    [
+      "$2300",
+      "$247F",
+      "tables",
+      "room pointers"
+    ],
+    [
+      "$2480",
+      "$25FF",
+      "variables",
+      "object positions, middle and high bytes"
+    ],
+    [
+      "$2600",
+      "$27FF",
+      "levels",
+      "the building on each city square"
+    ],
+    [
+      "$2800",
+      "$287F",
+      "tables",
+      "object model pointers"
+    ],
+    [
+      "$2880",
+      "$29FF",
+      "variables",
+      "object positions (low bytes), rooms, flags"
+    ],
+    [
+      "$2A00",
+      "$2AFF",
+      "tables",
+      "view range by height"
+    ],
+    [
+      "$2B00",
+      "$2BFF",
+      "levels",
+      "each square's owner, state and script"
+    ],
+    [
+      "$2C00",
+      "$2FFF",
+      "levels",
+      "the city's roads"
+    ],
+    [
+      "$3000",
+      "$3B24",
+      "levels",
+      "174 underground rooms and their doors"
+    ],
+    [
+      "$3B25",
+      "$3FFF",
+      "graphics",
+      "23 object models, wire-frame"
+    ],
+    [
+      "$4000",
+      "$4FFF",
+      "graphics",
+      "the view's first bitmap"
+    ],
+    [
+      "$502F",
+      "$553F",
+      "graphics",
+      "the view's first bitmap, last rows"
+    ],
+    [
+      "$5540",
+      "$579F",
+      "tables",
+      "row, column and pixel-mask tables for line drawing"
+    ],
+    [
+      "$57A0",
+      "$57EF",
+      "variables",
+      "spinning building points; script variables"
+    ],
+    [
+      "$5800",
+      "$5BFF",
+      "tables",
+      "logarithm, antilogarithm and sine tables"
+    ],
+    [
+      "$5C00",
+      "$5EA7",
+      "variables",
+      "the view's colours"
+    ],
+    [
+      "$5EA8",
+      "$5FE7",
+      "graphics",
+      "the instrument panel's layout"
+    ],
+    [
+      "$6000",
+      "$6FFF",
+      "graphics",
+      "the view's second bitmap"
+    ],
+    [
+      "$7001",
+      "$71B3",
+      "code",
+      "the opening's script"
+    ],
+    [
+      "$75D6",
+      "$763F",
+      "tables",
+      "planet masks; a leftover name list"
+    ],
+    [
+      "$7640",
+      "$767F",
+      "graphics",
+      "the gun sight sprite"
+    ],
+    [
+      "$7680",
+      "$76ED",
+      "graphics",
+      "the dial tape the EL and COMP dials scroll"
+    ],
+    [
+      "$7700",
+      "$775F",
+      "variables",
+      "credits, the offer, figures as text"
+    ],
+    [
+      "$7760",
+      "$77FF",
+      "tables",
+      "pixel clear masks"
+    ],
+    [
+      "$7800",
+      "$7FFF",
+      "graphics",
+      "the panel's character set"
+    ],
+    [
+      "$8000",
+      "$8009",
+      "tables",
+      "cartridge header and NMI return"
+    ],
+    [
+      "$800A",
+      "$80B9",
+      "tables",
+      "object angles; binary to BCD"
+    ],
+    [
+      "$8258",
+      "$828A",
+      "variables",
+      "save file name and layout"
+    ],
+    [
+      "$8457",
+      "$8476",
+      "tables",
+      "sine table, 64 steps a turn"
+    ],
+    [
+      "$8D5D",
+      "$8DA3",
+      "tables",
+      "script operation handlers"
+    ],
+    [
+      "$902A",
+      "$9053",
+      "levels",
+      "the city seen from high above"
+    ],
+    [
+      "$90ED",
+      "$90F5",
+      "levels",
+      "where the Colony Craft's trap door drops you"
+    ],
+    [
+      "$928A",
+      "$9352",
+      "graphics",
+      "door outlines and the room box's edges"
+    ],
+    [
+      "$94D8",
+      "$94DF",
+      "tables",
+      "bit masks"
+    ],
+    [
+      "$9DAD",
+      "$9E5C",
+      "tables",
+      "eleven motion records, one per craft and mode"
+    ],
+    [
+      "$9E9E",
+      "$9EBD",
+      "tables",
+      "opening descent steps"
+    ],
+    [
+      "$A17B",
+      "$A18A",
+      "tables",
+      "joystick mirror map"
+    ],
+    [
+      "$AF52",
+      "$AF6D",
+      "sound",
+      "the curtain wipe's hum"
+    ],
+    [
+      "$B27D",
+      "$B280",
+      "tables",
+      "surface colours"
+    ],
+    [
+      "$B4B7",
+      "$B4C6",
+      "tables",
+      "the eight lift squares"
+    ],
+    [
+      "$B921",
+      "$B939",
+      "sound",
+      "SID start values"
+    ],
+    [
+      "$B985",
+      "$B9BA",
+      "sound",
+      "thirteen sounds"
+    ],
+    [
+      "$BB7E",
+      "$BC8F",
+      "tables",
+      "flash, lift and panel colours; line-drawing, horizon and speed-key tables"
+    ],
+    [
+      "$BC90",
+      "$BCFF",
+      "text",
+      "unused: a fragment of the Atari DOS 2 menu"
+    ],
+    [
+      "$BDA3",
+      "$BDFF",
+      "variables",
+      "missiles and attacking ships in flight"
+    ],
+    [
+      "$BEA0",
+      "$BFFF",
+      "variables",
+      "motion record, carried objects, counters, script state; zero-page copy"
+    ],
+    [
+      "$C000",
+      "$CF66",
+      "graphics",
+      "29 building models"
+    ],
+    [
+      "$CF67",
+      "$CFFF",
+      "tables",
+      "an end mark and an unread copy of $3F6A-$3FFE"
+    ],
+    [
+      "$E000",
+      "$E1D2",
+      "graphics",
+      "15 road pieces"
+    ],
+    [
+      "$E1D3",
+      "$FFCF",
+      "graphics",
+      "77 building models"
+    ],
+    [
+      "$FFD0",
+      "$FFF9",
+      "tables",
+      "an end mark and zero fill, unread"
+    ],
+    [
+      "$FFFA",
+      "$FFFF",
+      "variables",
+      "NMI, reset and IRQ vectors"
+    ]
+  ],
+  "links": {
+    "wiki": "https://en.wikipedia.org/wiki/Mercenary_(video_game)",
+    "manual": "https://archive.org/details/Mercenary-_Escape_from_Targ_1985_Novagen_4220_Instructions"
+  }
+}

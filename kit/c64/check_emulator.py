@@ -530,6 +530,10 @@ def main():
             for ext in (".vsf", ".json"):
                 try: os.remove(os.path.join(SNAPDIR, name + ext))
                 except FileNotFoundError: pass
+    try:                                             # leave it running: an autostart into a paused
+        run(fresh(rpc))                              # machine loads and then waits for a run
+    except Exception:
+        pass
     failed = sorted({n for n, ok in results if not ok})
     passed = sorted({n for n, ok in results if ok} - set(failed))
     summary = {"build": build, "when": time.strftime("%Y-%m-%d %H:%M"), "seconds": round(time.time() - started),

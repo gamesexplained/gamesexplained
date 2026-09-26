@@ -64,6 +64,16 @@ annotate it byte by byte.
    character set replaced by a level's), makes the hand-over image the one
    to disassemble and to build the listing from; where the two agree
    except in variables, either will do.
+
+   Two traps on the way to it. A checkpoint on an address that a ROM
+   covers at that moment fires while the ROM runs there: read `$01` (on
+   the C64) at the stop, or stop first on an address only RAM holds (the
+   loader's `SYS` target) and step on from it. And an autostart resets
+   the CPU but keeps RAM, so on a second boot every byte the loader does
+   not write still holds the first boot's: power-cycle (a hard reset)
+   before any boot whose memory you will read. A packed program may pass
+   through several hand-overs (depacker, copier, start-up): the one to
+   keep is the last, where the game's own code first runs.
 5. **Write the recipe** into `orientation.md`: which file on the disk, the
    exact key presses and waits from power-on to the snapshot, the
    interrupt vectors observed, what the loader appears to do in one

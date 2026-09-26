@@ -72,6 +72,11 @@ step needs something only they have.
    git branch -D identity-check
    ```
 
+   Where you may not delete branches (a contributor's rule, or the
+   environment's), make the same commit on a detached HEAD instead, and
+   there is nothing to delete: `git switch --detach`, the commit, the
+   `git log` line, then `git switch -`.
+
    The author line must show their name and the noreply address. If the
    commit is refused (some agent environments will not commit under
    another person's name) or shows anyone else, say so now, while it is
@@ -96,7 +101,9 @@ step needs something only they have.
    Tell them plainly what has a recorded run on their platform and what
    has none.
 5. **Create the game folder** with `kit/scripts/new_game.py` and copy their
-   image into its `work/` directory.
+   image into its `work/` directory. In a hosted session the image is not
+   on the machine: ask the contributor to upload it into the conversation,
+   and look for it where the environment keeps uploads.
 6. **Follow the skills** in the order `AGENTS.md` gives, opening each
    `SKILL.md` as you reach it.
 7. **Finish with the retrospective** (`kit/skills/core/80-retro`) and the

@@ -38,6 +38,15 @@ data: a tile code a player can stand on, an object a player can carry.
 One that is reachable is a secret for the article; one that is not is a
 corner case for `facts.md`.
 
+Two more shapes of the same thing. A lookup keyed on fewer coordinates
+than the place it stands for: a lift table matched on the map square and
+the spot within it, but not the height, answers at ground level for a lift
+that was meant to be in the sky. And deferred work behind a condition: an
+event that sets a countdown and leaves the rest (the score, the message,
+the reprisal) to a routine that returns early unless the player is still
+in the right place loses the rest whenever the player is not. For each,
+list what the test ignores, or what the deferred part requires, and try it.
+
 ## Live verification
 
 Any claim that can be tested in the emulator in under a few minutes gets
@@ -108,6 +117,13 @@ lies, all of which have cost real time:
   choice, so one result from it is one sample. To see the spread, start
   from several snapshots, or wait a different number of frames before the
   input.
+
+**A figure close to a published one is not a match.** A top speed worked
+out in exact arithmetic came to within 1 % of a magazine's table, and was
+written down as consistent; computed with a port of the game's own
+arithmetic (floats that truncate, a key that refuses its last step) it was
+the magazine's figure to the digit. When the game's own numbers are
+within reach, compute them the game's way before calling a gap small.
 
 **When the code and a measurement disagree, neither wins automatically.**
 Work out what would have to be true for both, and test that. A model that
