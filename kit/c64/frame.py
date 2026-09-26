@@ -343,6 +343,17 @@ def compare(frame_path, shot_path=None, quiet=False):
         if per_line:
             worst = sorted(per_line.items(), key=lambda kv: -kv[1])[:12]
             print("  lines that differ most: " + ", ".join(f"{l}: {n}" for l, n in worst))
+            # A picture that sits a line or two off differs only along edges. Seen once with the
+            # v3.13.1 release (The Sentinel, 25 September 2026): three captures of one state all
+            # matched exactly one line lower. Say so, rather than send anyone after the drawing.
+            for dy in (-2, -1, 1, 2):
+                off = sum(1 for y in range(max(0, -dy), min(h, h - dy)) for x in range(w)
+                          if colour_of[rows[y + dy][x]] != px[y * w + x])
+                if off == 0:
+                    print(f"  the emulator's picture sits {abs(dy)} line{'s' if abs(dy) > 1 else ''} "
+                          f"{'lower' if dy > 0 else 'higher'} than the drawing, and there it matches at every "
+                          "pixel: the picture is offset, not the drawing wrong")
+                    break
         if meta["romReads"] and not F.get("charrom"):
             print("  the frame shows the character ROM, which the frame file does not hold: those glyphs are blank")
     return bad
@@ -456,6 +467,10 @@ def test(keep=False):
           + ("to the cycle" if not c['phase_cycles_uncertain'] else f"to within {c['phase_cycles_uncertain'] + 1} cycles")
           + f", the writes {'account for' if c['writes_account_for_end_state'] else 'DO NOT account for'} "
           f"the registers at the end")
+    if len(f["writes"]) < len(BANDS):            # every band changes a register: fewer writes means
+        print(f"FAIL: {len(f['writes'])} writes captured, at least {len(BANDS)} expected: "   # the program
+              "the test program did not run (was the machine left paused?)")                 # never ran
+        return False
     bad = compare(path)
     if bad == 0 and not keep:                    # a failure keeps its files, to be looked at
         for name in ("test.json", "test.png", "test-diff.png"):

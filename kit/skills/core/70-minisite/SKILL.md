@@ -128,7 +128,9 @@ can open with that instead.
 - The build publishes the authored pages, `listing.json`, `symbols.json`
   and `reference/`, and nothing else from the game folder. A link to any
   other file would build and then fail in the reader's browser, so
-  `build.py` stops on one.
+  `build.py` stops on one. It reads every `src=` and `href=` in the page,
+  the comments of an inlined script included, so a comment that names a
+  file should not put it in an attribute.
 - Start from `kit/template/index.html` for the design tokens and layout.
   Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
   A finished example to borrow patterns from is any Gold game in `games/`:

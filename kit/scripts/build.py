@@ -138,7 +138,7 @@ def footprint(gdir, game):
                     cat[a] = k; why[a] = e["n"]
     # coverage regions from game.json: runtime and ROM
     for lo, hi, name in cov_regions(game)["exclude"]:
-        k = "rom" if "rom" in name.lower() else "runtime"
+        k = "rom" if re.search(r"\bROMs?\b", name, re.I) else "runtime"   # the word, not "from"
         for a in range(lo, hi + 1):
             cat[a] = k; why[a] = name
     # video charset: graphics

@@ -97,8 +97,9 @@ def log_call(gdir, name, arguments, log=None):
     os.makedirs(os.path.join(gdir, "work"), exist_ok=True)
     with open(log_path(gdir, log), "a") as f:
         if name == "r2000_batch_execute":
-            for c in arguments.get("calls", []):
-                f.write(json.dumps({"kind": "call", "name": c["name"], "arguments": c["arguments"]}) + "\n")
+            for c in arguments.get("calls", []):       # a batch's reads stay out of the replay log
+                if c.get("name") in MUTATING and c.get("name") != "r2000_batch_execute":
+                    f.write(json.dumps({"kind": "call", "name": c["name"], "arguments": c["arguments"]}) + "\n")
         else:
             f.write(json.dumps({"kind": "call", "name": name, "arguments": arguments}) + "\n")
 
