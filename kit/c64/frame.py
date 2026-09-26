@@ -47,13 +47,10 @@ class Machine:
         return self.j("vice_ping")["execution"] == "paused"
 
     def pause(self):
-        if not self.paused():
-            self._call(self.rpc, "vice_execution_pause", {})
-            t0 = time.time()
-            while not self.paused():
-                if time.time() - t0 > 5:
-                    raise RuntimeError("the machine did not stop")
-                time.sleep(0.01)
+        """Stop between two instructions (vice.pause: never vice_execution_pause alone)."""
+        from vice import pause
+        if not pause(self.rpc):
+            raise RuntimeError("the machine did not stop")
 
     def read(self, a, n, bank="ram"):
         out = b""
@@ -94,7 +91,11 @@ def capture(out, shot=None):
         m.j("vice_checkpoint_toggle", {"checkpoint_num": c["checkpoint_num"], "enabled": False})
     ours = []
     try:
-        m.j("vice_frame_advance", {"frames": 1})          # to the top of a frame
+        m.j("vice_frame_advance", {"frames": 1})          # to the emulator's vertical sync: on a PAL chip
+        for _ in range(600):                   # the top of a frame, unless its picture is out of step
+            if m.vic()[0] < lines - 8:         # (picture_lines_low, below); then the sync comes a line
+                break                          # or more early, and a few instructions more reach the top
+            m.j("vice_execution_step", {"count": 1})
         m.j("vice_cycles_stopwatch", {"action": "reset"})
         line0, vic0 = m.vic()
         ram0 = m.read(0, 0x10000)
@@ -158,6 +159,19 @@ def capture(out, shot=None):
             m.j("vice_checkpoint_toggle", {"checkpoint_num": c["checkpoint_num"], "enabled": True})
     o, spread = phase(samples, lines, cycles)
     total = lines * cycles
+    # VICE draws each line into its picture at the row its own line counter names, and runs the
+    # vertical sync when that counter wraps. The counter can be out of step with the beam: a
+    # snapshot saved in a pause that stopped in the vertical sync, and loaded later, leaves it a
+    # line ahead (kit/skills/c64/tool-vice-mcp/workarounds.md, pause-at-instruction). Then every
+    # picture sits that many lines low, and the sync, where the frame ended, comes that many
+    # lines before the top of the frame. That is where it comes in step on the 312-line chips;
+    # an NTSC one runs it lower down, where its picture ends, so there it is not measured.
+    boundary = (o + end_sw) % total // cycles
+    low = None
+    if lines == 312:
+        low = (lines - boundary) % lines
+        if low > lines // 2:
+            low -= lines
 
     def when(sw):                       # the line and cycle (1 to cycles) of the store's write
         w = (o + sw - 1) % total
@@ -171,6 +185,7 @@ def capture(out, shot=None):
         "ram": [{"a": 0, "b": base64.b64encode(ram0).decode()}],
         "charrom": base64.b64encode(charrom).decode(),
         "capture": {"phase_cycles_uncertain": spread, "frame_cycles": end_sw,
+                    "frame_ended_on_line": boundary, "picture_lines_low": low,
                     "writes_account_for_end_state": all(
                         (a & 0x7F if i == 0x11 else a) == (b & 0x7F if i == 0x11 else b)
                         for i, (a, b) in enumerate(zip(vic, end_vic)) if i not in SELF_CHANGING),
@@ -299,10 +314,15 @@ def compare(frame_path, shot_path=None, quiet=False):
     w, h, rows = read_png(shot_path)
     if (w, h) != (meta["w"], meta["h"]):
         raise SystemExit(f"the picture is {w}x{h}, the drawing {meta['w']}x{meta['h']}: VICE's border setting?")
+    # the drawing's line y is the picture's line y + low when the emulator's picture sits low
+    # (capture measures it; frame files from before it did have none, and are taken as 0)
+    cap = F.get("capture", {})
+    low = cap.get("picture_lines_low") or 0
+    shown = range(max(0, -low), min(h, h - low))
     votes = {}
-    for y in range(h):
+    for y in shown:
         for x in range(w):
-            k = (rows[y][x], px[y * w + x])
+            k = (rows[y + low][x], px[y * w + x])
             votes[k] = votes.get(k, 0) + 1
     best = {}
     for (rgb, i), n in votes.items():
@@ -320,10 +340,12 @@ def compare(frame_path, shot_path=None, quiet=False):
             dots.add((line - 16, 8 * (cyc - 13)))
         elif a in (0xD011, 0xD016, 0xD018, 0xDD00, 0xDD02):
             switches.setdefault(line - 16, []).append(8 * (cyc - 13))
-    bad, grey, near, per_line, out = 0, 0, 0, {}, []
+    bad, grey, near, unseen, per_line, out = 0, 0, 0, 0, {}, []
     for y in range(h):
         for x in range(w):
-            rgb = rows[y][x]
+            if y not in shown:
+                unseen += 1; out.append((0, 64, 255)); continue
+            rgb = rows[y + low][x]
             if colour_of[rgb] == px[y * w + x]:
                 out.append(tuple(v // 3 for v in rgb)); continue
             if (y, x) in dots:
@@ -335,24 +357,39 @@ def compare(frame_path, shot_path=None, quiet=False):
     diff = os.path.splitext(frame_path)[0] + "-diff.png"
     write_png(diff, w, h, out)
     if not quiet:
-        print(f"{w * h - bad - grey - near} of {w * h} pixels match the emulator's picture; {bad} differ"
+        if low:
+            n, s = abs(low), "s" if abs(low) > 1 else ""
+            print(f"the emulator's picture sits {n} line{s} {'lower' if low > 0 else 'higher'} than the frame: "
+                  f"its frame ended on line {cap.get('frame_ended_on_line')}, not 0, because its line counter "
+                  "is out of step with the beam (kit/skills/c64/tool-vice-mcp/workarounds.md, "
+                  f"pause-at-instruction). Each line of the drawing is compared with the picture's line {n} "
+                  f"{'below' if low > 0 else 'above'} it; the drawing's {'last' if low > 0 else 'first'} "
+                  f"{'line has' if n == 1 else f'{n} lines have'} none, and {'is' if n == 1 else 'are'} not compared")
+        print(f"{w * h - unseen - bad - grey - near} of {w * h - unseen} pixels match the emulator's picture; {bad} differ"
               + (f"; {grey} are VICE's grey dot where a colour register changed mid-line" if grey else "")
               + (f"; {near} are within 16 pixels of a mid-line change of mode, scroll or memory, "
                  f"which the drawing does not follow to the pixel" if near else "")
-              + f" ({diff}: differences red, grey dots yellow, mode changes orange)")
+              + f" ({diff}: differences red, grey dots yellow, mode changes orange"
+              + (", lines not compared blue)" if unseen else ")"))
         if per_line:
             worst = sorted(per_line.items(), key=lambda kv: -kv[1])[:12]
             print("  lines that differ most: " + ", ".join(f"{l}: {n}" for l, n in worst))
-            # A picture that sits a line or two off differs only along edges. Seen once with the
-            # v3.13.1 release (The Sentinel, 25 September 2026): three captures of one state all
-            # matched exactly one line lower. Say so, rather than send anyone after the drawing.
+            # A picture that sits a line or two off differs only along edges. capture measures
+            # the known cause, the emulator's line counter out of step, as picture_lines_low;
+            # a frame file from before it did has none. Say so, rather than send anyone after
+            # the drawing.
             for dy in (-2, -1, 1, 2):
-                off = sum(1 for y in range(max(0, -dy), min(h, h - dy)) for x in range(w)
-                          if colour_of[rows[y + dy][x]] != px[y * w + x])
+                d = low + dy
+                off = sum(1 for y in range(max(0, -d), min(h, h - d)) for x in range(w)
+                          if colour_of.get(rows[y + d][x], -1) != px[y * w + x] and (y, x) not in dots
+                          and not any(0 <= x - s < 16 for s in switches.get(y, [])))
                 if off == 0:
-                    print(f"  the emulator's picture sits {abs(dy)} line{'s' if abs(dy) > 1 else ''} "
-                          f"{'lower' if dy > 0 else 'higher'} than the drawing, and there it matches at every "
-                          "pixel: the picture is offset, not the drawing wrong")
+                    print(f"  the emulator's picture sits {abs(d)} line{'s' if abs(d) > 1 else ''} "
+                          f"{'lower' if d > 0 else 'higher'} than the drawing, and there it matches at every "
+                          "pixel the drawing models: the picture is offset, not the drawing wrong. "
+                          + ("The frame file is older than capture's measure of the offset; capture it again"
+                             if "picture_lines_low" not in cap else
+                             f"Capture measured {low}, so something other than the line counter moved it"))
                     break
         if meta["romReads"] and not F.get("charrom"):
             print("  the frame shows the character ROM, which the frame file does not hold: those glyphs are blank")
@@ -498,3 +535,10 @@ if __name__ == "__main__":
               + f"; the writes {'account for' if c['writes_account_for_end_state'] else 'DO NOT account for'} "
               f"the registers at the end; {c['ram_bytes_changed_during_frame']} bytes of RAM and "
               f"{c['colour_cells_changed_during_frame']} colour cells changed during the frame")
+        if c["picture_lines_low"]:
+            n = abs(c["picture_lines_low"])
+            print(f"  the emulator's picture of it sits {n} line{'s' if n > 1 else ''} "
+                  f"{'low' if c['picture_lines_low'] > 0 else 'high'}: its line counter is out of step with the "
+                  "beam. The frame file is right, and compare allows for the offset; every screenshot of this "
+                  "machine state is offset the same way, and so is every snapshot saved from it "
+                  "(kit/skills/c64/tool-vice-mcp/workarounds.md, pause-at-instruction)")
