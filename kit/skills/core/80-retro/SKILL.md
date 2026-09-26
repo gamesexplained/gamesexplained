@@ -49,7 +49,10 @@ into the diff that saves the next contributor the trouble.
    - **Search first**, open and closed:
      `gh issue list --repo gamesexplained/gamesexplained --label kit-ask --state all --search "<words>"`.
      An ask someone already filed gets a comment with this run's case,
-     not a second issue.
+     not a second issue. Without `gh`, list every issue that carries the
+     label and read the titles: a search tool is not a listing, and on
+     26 September 2026 one found none of the four `kit-ask` issues there
+     were.
 
    ```
    gh issue create --repo gamesexplained/gamesexplained --label kit-ask --title "<the ask>" --body-file <file>
