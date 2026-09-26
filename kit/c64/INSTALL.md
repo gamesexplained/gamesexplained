@@ -9,7 +9,7 @@ they are known to work.
 |---|---|---|
 | Emulator with an agent interface | attach a disk, autostart, pause, read and write memory, breakpoints, screenshots, save and load snapshots | VICE with the `vice-mcp` server (https://github.com/barryw/vice-mcp) |
 | Disassembler with an agent interface | load a snapshot, disassemble, label, comment, type data, export a symbol map | regenerator2000 (on crates.io) |
-| A JavaScript runtime | run the site's frame renderer outside a browser, for `kit/c64/frame.py` | node when it is on the path; on macOS the system's own JavaScriptCore otherwise, so nothing is installed |
+| A JavaScript runtime | run the site's frame renderer outside a browser, for `kit/c64/frame.py`; run the 6502 simulator (`kit/c64/cpu6502.js`) and the widget tests | node. For the frame renderer alone, macOS's own JavaScriptCore does when node is not on the path, so nothing is installed |
 
 ## Where the emulator stands, by phase
 

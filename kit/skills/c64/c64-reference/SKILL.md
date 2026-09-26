@@ -64,7 +64,12 @@ License: cite it, and write your own words.
 Games that run under the ROMs use `$35` and install their own handlers at
 the hardware vectors `$FFFA`–`$FFFF`. When you see `LDA #$35 / STA $01`,
 expect that. The snapshot's RAM image always holds the RAM underneath;
-what the CPU *saw* depends on `$01` at that moment. The Source tab names
+what the CPU *saw* depends on `$01` at that moment. The banks follow the
+port's lines, not the byte written: a bit that `$00` makes an input reads
+as 1 there. Read back, `$01` gives what was written on its output bits;
+an input bit reads 1 on bits 0-2 and 4, 0 on bit 5, and on bits 3, 6 and 7
+whatever was last driven on it, until bits 6 and 7 fade to 0 some 350,000
+cycles later (VICE x64sc, measured 26 September 2026). The Source tab names
 the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 `sid_v1_control`, `cia1_port_a`) on the instructions that see the chips.
 
@@ -311,7 +316,10 @@ memory, then compare it with A), `LXA #imm` (`$AB`), and the `NOP`s that
 swallow the bytes after them (`$C2` immediate, `$7C` absolute,X). `LXA`
 is unstable: A = X = (A OR a constant) AND the operand, and the constant
 differs between chips. VICE fixes it at `$EE`, so code that depends on it
-can behave differently on a real machine. An absolute indexed address
+can behave differently on a real machine. `ANE` (`$8B`, A = (A OR a
+constant) AND X AND the operand) is unstable the same way, and VICE takes
+`$EF` for it. `kit/c64/cpu6502.js` runs all 256 opcodes as VICE's x64sc
+does, these constants included. An absolute indexed address
 that passes `$FFFF` wraps round to zero page: `DCP $FF86,X` with X = `$FF`
 works on `$0085`. Before saying nothing reads an address, decode the gaps
 in the code with a decoder that knows these opcodes, and look for bases
@@ -333,7 +341,8 @@ Test the reset as well (`vice_machine_reset`), because it is not the same
 path. A reset clears the 6510's data direction register `$00`, and the
 KERNAL jumps through `$8000` before its `IOINIT` would set it to `$2F`
 again. With `$00` = 0 every line of the processor port is an input and
-reads high, so writes to `$01` change nothing: BASIC, KERNAL and I/O stay
+the three that select the banks read high, so writes to `$01` change
+nothing: BASIC, KERNAL and I/O stay
 in whatever the game asks for. A game whose restart does not set `$00`
 itself runs after a reset with BASIC over its data at `$A000`-`$BFFF`.
 Read `$00` and the CPU's view of the game's tables after the reset; the
@@ -392,6 +401,9 @@ may use neither (see `30-text`).
   `C64MEM` module header, and the RAM underneath them holds unrelated
   values. Screen memory is the second worst, because a running game has
   moved on since the save. Pick two bytes of the game's own code.
+  `readSnapshot` in `kit/c64/cpu6502.js` reads the modules by name: the
+  port (data at offset 205, direction at 206), the RAM, and x64sc's
+  registers and cycle count from its `MAINC64CPU` module.
 - **A string found in a snapshot file is not necessarily the screen.** A
   game keeps its own copy of the status line to stamp onto the screen, and
   finding that copy while hunting for the RAM offset gives an offset that is

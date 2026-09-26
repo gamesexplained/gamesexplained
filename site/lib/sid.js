@@ -17,7 +17,8 @@
 //               turned off and on again within one frame restarts the envelope, as on the chip
 // data is anything that survives structured cloning, usually the driver's tables as the game
 // loads them. Test the port against the game's own code run in a 6502 simulator, every register
-// after every frame, before it goes on a page.
+// after every frame, before it goes on a page: kit/c64/cpu6502.js hands the driver's writes to the
+// test in order, so writes too can be compared.
 //
 // The model: three voices with triangle, sawtooth, pulse and noise (the 23-bit noise register),
 // the test bit, sync and ring modulation; envelopes on reSID's rate table, with the exponential
