@@ -96,9 +96,25 @@ reproduced.
 
 The minisite's widgets were split among five agents: the city in 3D, the
 underground, the arithmetic and line drawing, Benson's messages and
-scripts, and the flight model, each to be tested against the game (a 6502
-simulator on the snapshots, the recorded frames, a 253-pass flight trace).
-The lead wrote the frame, the secrets, the controls, the opening and the
-odds and ends. The rebuilt frame of the descent showed the roads in the
-fourth colour, which is how the ORA line form on the roads was noticed and
-`facts.md` corrected.
+scripts, and the flight model. Each ported the game's routines and tested
+the port against the game's own code in a 6502 simulator on the snapshots:
+the city's view on 18,000 random views, and against the stadium view's
+displayed bitmap, byte for byte; the rooms in 2,942 views; the floats on
+millions of operand pairs and 4,680 lines; the printer on every frame of
+219 messages; the flying step on 1.2 million passes and on a 253-pass
+recording of the Dart. The lead wrote the frame, the secrets, the
+controls, the opening and the odds and ends.
+
+The ports corrected `facts.md` in a dozen places. The top speeds, first
+worked out in exact arithmetic, came out as Zzap!64 13's table to the
+digit once the port truncated as the game's floats do. The ceiling
+replaces the climb's power of two rather than halving it, so every craft
+has a hard top, and the Dart's is ALT 24000, below the Colony Craft.
+Room lines are drawn in the ORA form. The model count had counted the
+road pieces twice. The rebuilt frame of the descent showed the roads in
+the fourth colour, which is how the ORA form on the roads was noticed.
+The flight agent pointed out that the other agents' random tests used a
+multiplier that loses its low bits in JavaScript's doubles; the tests
+were rerun with `Math.imul` and still pass. The flight port also predicted
+that reverse thrust lifts a craft off with the nose level, and the
+emulator confirmed the heights to the unit.
