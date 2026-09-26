@@ -100,18 +100,21 @@ same way, so tiers mean the same thing everywhere.
   region you explore, or a replay under-restores.
 - **Know how far a description reaches.** In `kit/scripts/ledger.py` a
   symbol owns the bytes from itself to the next boundary symbol, capped at
-  1024 bytes for code and for symbols you create yourself, and at 64 bytes
-  for any other data symbol. Renaming a symbol the disassembler made keeps
-  its type, and with it the 64-byte cap: create the label afresh, or add
-  labels inside, when a renamed table is longer. Block boundaries cut a
-  span too. A data span also stops at the fixed edges of the memory map,
-  `$0100`, `$0200`, `$0400`, `$0800`, `$1000`, `$4000`, `$8000`, `$A000`,
-  `$C000`, `$D000` and `$E000`: a table that runs across one of them needs
-  a second symbol there, with a comment saying where the whole starts. A
-  routine runs on across them. A data table
-  of a few hundred bytes therefore needs a named symbol every 64 bytes or
-  less, each with its own description, or most of it stays bare however
-  well you have explained the whole.
+  1024 bytes for code, for symbols you create yourself and for a symbol
+  the disassembler made that you have renamed inside a typed data block
+  (bytes, words, text, pointers), and at 64 bytes for any other data
+  symbol: one you renamed in memory left undefined keeps the cap, so that
+  a renamed variable does not take in the bytes after it. Block boundaries
+  cut a span too. A data span also stops at the fixed edges of the memory
+  map, `$0100`, `$0200`, `$0400`, `$0800`, `$1000`, `$4000`, `$8000`,
+  `$A000`, `$C000`, `$D000` and `$E000`: a table that runs across one of
+  them needs a second symbol there, with a comment saying where the whole
+  starts. A routine runs on across them. A data table of a few hundred
+  bytes under a 64-byte symbol therefore needs a data type and a name of
+  your own, or a named symbol every 64 bytes or less, each with its own
+  description,
+  or most of it stays out of the count however well you have explained
+  the whole.
 
 ## Data the ledger cannot see
 

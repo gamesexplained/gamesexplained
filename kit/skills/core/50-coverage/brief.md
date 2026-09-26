@@ -91,9 +91,9 @@ through it. Addresses in the disassembler's arguments are <in which form>.
 A byte is explained when the symbol that owns it carries a non-blank line
 comment, and a symbol owns only so many bytes (the coverage skill, "Know
 how far a description reaches"). Comment each routine's entry, not its
-branch targets; give a long table a label with its own description at
-least every 64 bytes. An identical comment counts once, so make every
-description specific.
+branch targets; give a long table a data type and a name of your own, or
+a label with its own description at least every 64 bytes. An identical
+comment counts once, so make every description specific.
 
 ## How to work
 
