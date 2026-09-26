@@ -182,6 +182,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   .flight-dial{width:120px;height:120px;margin:0}
   .flight-chart{height:220px}
 }
+@media (max-width:480px){
+  .flight-side{grid-template-columns:1fr}
+  .flight-dial{margin:0 auto}
+}
 /* math */
 /* Widget "math": numbers as logarithms, and drawing a line. Every class and id starts math-. */
 .math-need{font-family:var(--fm);font-size:13px;color:var(--coral);margin:0 0 12px}
@@ -515,7 +519,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       </div>
       <div class="city-stat" id="city-stat"></div>
     </div>
-    <p class="cap"><b>160 × 136</b> multicolour pixels, drawn by the page with the game's view code ported routine by routine: the angles <code>$A544</code>, the square and its road list <code>$94E0</code>, the matrix <code>$A320</code>, sky and ground <code>$AFD5</code>, the roads <code>$9054</code>, the building <code>$96D8</code> and <code>$96E7</code>, projection <code>$A75C</code> and the clipped lines <code>$99DD</code>, in the game's two-byte logarithmic floats (tables <code>$5800</code> to <code>$5BFF</code>). Models from <code>$2600</code> and <code>$2700</code>, roads from <code>$2C00</code> to <code>$2FFF</code>, all read from the listing. Checked against the same routines run in a 6502 simulator on a snapshot: 15,000 random views identical byte for byte. The pictures the game displayed in two snapshots match too, but for the object dots, which this view does not draw. The map shows the roads the game lists for the view (bright), the window of squares they come from, and the square whose building is loaded.</p>
+    <p class="cap"><b>160 × 136</b> multicolour pixels, drawn by the page with the game's view code ported routine by routine (<code>$A544</code>, <code>$94E0</code>, <code>$A320</code>, <code>$AFD5</code>, <code>$9054</code>, <code>$96D8</code>, <code>$96E7</code>, <code>$A75C</code>, <code>$99DD</code>) in its two-byte logarithmic floats (tables <code>$5800</code> to <code>$5BFF</code>), from the models named at <code>$2600</code> and <code>$2700</code> and the roads at <code>$2C00</code> to <code>$2FFF</code>, all read from the listing. Checked against the same routines run in a 6502 simulator: 15,000 random views identical byte for byte. The pictures the game displayed in two snapshots match too, apart from the objects, which this view leaves out. <b>Every building</b> draws the models of all squares but 00-00 at once, which the game never does. The map shows the roads listed for the view (bright), the window of squares they come from, and the square whose building is loaded.</p>
   </div>
 </section>
 
@@ -569,7 +573,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="lift-ctl"><button id="lift-next" type="button">Step</button><button id="lift-reset" type="button">Start again</button><span id="lift-msg"></span></div>
     <p class="cap">The E key's test, one instruction group at a time, with the values it reads standing on the Colony Craft's deck and standing on the ground at 08-08. Tested live in the emulator from the ground: the ride went down to room 8, and E there came up at height <code>$40FF51</code>.</p>
   </div>
-  <p>Room 8 is the Colony Craft's hangar, so the ride down lands you inside it, and the ride up from any hangar ends at that hangar's lift square: for room 8, the deck. The Dart you can buy at the start cannot climb that high (its ceiling byte is <code>$0A</code> against the Colony Craft's <code>$40</code>) until it carries the Poweramp. The lift needs neither.</p>
+  <p>Room 8 is the Colony Craft's hangar, so the ride down lands you inside it, and the ride up from any hangar ends at that hangar's lift square: for room 8, the deck. The Dart you can buy at the start cannot climb that high (its ceiling byte is <code>$0A</code> against the Colony Craft's <code>$40</code>) until it carries the Poweramp. The lift needs neither. It does not open the Colony Craft, though: all three of hangar 8's doors are keyed to object 23 (room 8's record at <code>$30A6</code>), and the published solutions fetch that key from the hangar at 81-35 first.</p>
 </section>
 
 <section id="blind">
@@ -613,7 +617,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section id="flight-fly">
   <p class="fig">07 · Flying</p>
   <h2 class="t">The flight model, pass by pass</h2>
-  <p class="lede">Every craft runs the same flying step once a pass, with its handling read from a 16-byte record: take-off needs speed, the climb fades above the craft's ceiling, and a touchdown crashes only on a steep drop or a steep nose.</p>
+  <p class="lede">Every craft but the interstellar ship runs the same flying step once a pass, with its handling read from a 16-byte record: take-off needs speed, the climb fades above the craft's ceiling, and a touchdown crashes only on a steep drop or a steep nose.</p>
   <div class="plate flight-plate" id="flight-widget" tabindex="0" aria-label="Flight model: pick a craft, press throttle keys and move the stick">
     <div class="flight-crafts" id="flight-crafts" role="group" aria-label="Craft"></div>
     <div class="flight-main">
@@ -660,7 +664,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <ol class="flight-log" id="flight-log" aria-live="polite"></ol>
     <p class="cap">The flying step (<code>$9F17</code>-<code>$A13C</code>), the ground routine (<code>$9EFD</code>) and the throttle keys (<code>$B47E</code>, <code>$B499</code>), ported from the listing with the game's two-byte floats and its sine table, and the readouts drawn with the panel's own glyphs from <code>$7800</code> (<code>$B53D</code>). Checked against the Dart recorded in the emulator (all 253 passes match in speed, throttle, pitch, height, X, Y and the motion record) and against the original code in a 6502 simulator (1.2 million random passes identical). Keys work when the plate has focus: arrows for the stick, digits, SHIFT + digit, SPACE, + and -.</p>
   </div>
-  <p>The throttle keys set a target, and the speed chases it: each pass the speed becomes (speed + throttle x thrust) x kept. On the ground a craft slower than 128 has its nose held level. Faster, it takes the level pitch's sine, -0.003, sinks below height 64 and lands again, every pass, until the stick lifts the nose. In the air the climb is speed x sine of the pitch x the record's climb factor; above the ceiling byte that factor's power of two is replaced by the ceiling minus the height's top byte. A touchdown crashes when that pass's height step is 256 or more, or the nose is more than 45 degrees down.</p>
+  <p>The throttle keys set a target, and the speed chases it: each pass the speed becomes (speed + throttle × thrust) × kept. On the ground a craft slower than 128 has its nose held level. Faster, it takes the level pitch's sine, -0.003, sinks below height 64 and lands again, every pass, until the stick lifts the nose. In the air the height changes by speed × sine of the pitch × the record's climb factor; climbing above the ceiling byte, that factor's power of two is replaced by the ceiling minus the height's top byte. A touchdown crashes when that pass's height step is 256 or more, or the nose is more than 45 degrees down.</p>
 </section>
 
 <section id="flight-records">
@@ -672,7 +676,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <thead><tr><th>Record</th><th>Craft</th><th>Routine</th><th>Turn kept</th><th>Turn step</th><th>Pitch step</th><th>Bank</th><th>Climb</th><th>Speed kept</th><th>Ceiling</th><th>Thrust</th></tr></thead>
       <tbody><tr><td colspan="11">The table is read from the game's bytes in listing.json, which the built site serves.</td></tr></tbody>
     </table></div>
-    <p class="cap">Decoded from the bytes at <code>$9DAD</code> by the loader <code>$9D99</code>: the floats are a mantissa byte and an exponent byte, (1 + m/256) x 2 to the power of the exponent byte's top six bits. Byte 12 (<code>$10</code> in records 0-7) is read by nothing. The Dart and CHEESE are named by the game's own messages and the new ship by the script that runs when it is shot; the car, jet, Palyar diamond and land Dart are matched to Zzap!64 13's table by where the objects start and by their top speeds.</p>
+    <p class="cap">Decoded from the bytes at <code>$9DAD</code> by the loader <code>$9D99</code>: each float is a mantissa byte m and an exponent byte, worth (1 + m/256) × 2^e, e being the exponent byte's top six bits (signed) and bit 0 the sign. Byte 12 (<code>$10</code> in records 0-7) is read by nothing. The Dart and CHEESE are named by the game's own messages and the new ship by the script that runs when it is shot; the car, jet, Palyar diamond and land Dart are matched to Zzap!64 13's table by where the objects start and by their top speeds.</p>
   </div>
 </section>
 
@@ -685,7 +689,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <thead><tr><th>Craft</th><th>Starts at</th><th class="flight-n">Air, the port</th><th class="flight-n">Zzap!64</th><th class="flight-n">Ground, the port</th><th class="flight-n">Zzap!64</th></tr></thead>
       <tbody><tr><td colspan="6">The speeds are computed by the port, which reads the game's bytes from listing.json, served by the built site.</td></tr></tbody>
     </table></div>
-    <p class="cap">SPEED as the panel prints it (<code>$B5A8</code>): the speed's whole part, high byte as two digits and low byte x 25/64 as two more. Holding + multiplies the throttle by 1.03 a pass and stops after 23 passes at 32512, where the next step would reach 2^15 (<code>$B4A7</code>). On the ground every craft lands each pass and takes record 8's speed kept, 0.25. Zzap!64 13 (May 1986), pages 61-62.</p>
+    <p class="cap">SPEED as the panel prints it (<code>$B5A8</code>): the speed's whole part, high byte as two digits and low byte × 25/64 as two more. Zzap!64's figures are green where the port gives the same. Holding + multiplies the throttle by 1.03 a pass and stops after 23 passes at 32512, where the next step would reach 2^15 (<code>$B4A7</code>). On the ground every craft lands each pass and takes record 8's speed kept, 0.25. Zzap!64 13 (May 1986), pages 61-62.</p>
   </div>
 </section>
 
@@ -887,7 +891,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div id="rooms-view" class="rooms-view"><p class="rooms-note">This viewer reads the game from <code>listing.json</code>, so it needs the built site.</p></div>
     <p class="cap"><b>Room 8, the Colony Craft's hangar</b>, where the lift from 08-08 arrives, looking east at two of its three doors, drawn from the room's record at <code>$30A6</code> and the door outlines at <code>$928A</code> by a port of the game's projection (<code>$A979</code>) and line drawing (<code>$99DD</code>). The buttons or the arrow keys walk and turn; walking into a doorway, clicking a door or its button goes through it. The port reproduces the game's own drawing byte for byte in 2,942 views of all 174 rooms, run in a 6502 simulator, and room 8's picture in the saved game pixel for pixel.</p>
   </div>
-  <p>A room's record starts with its X size, its height and its Y size, in units of 256 (a city square is 65,536 across). Then come two colours: the view is filled with the first and the lines are drawn in the second. Each door is four bytes: its kind and which wall it is in, the room it leads to, and its position on the wall. The list ends with a 0, or with <code>$80</code> for a dark room.</p>
+  <p>A room's record starts with its X size, its height and its Y size, in units of 256 (a city square is 65,536 across). Then come two colours: the view is filled with the first and the lines are drawn in the second. Each door is four bytes: its kind, which wall it is in and which door of the next room you come out of, then the room it leads to and its position on the wall. The list ends with a 0, or with <code>$80</code> for a dark room.</p>
 </section>
 
 <section id="keys">
@@ -1616,11 +1620,10 @@ window.MERC_GAME.catch(() => {});
       }
       R.sqx = -1;                               // the slots are spent: reload the square next pass
     }
-    function spinStep() { if (model && R.B7 && !(ram[0x2B00 + R.B7] & 0x80) && model.speed !== null) S.spin = (S.spin + model.speed) & 0xFFFF; }
 
     return { S, R, T, Mx, count, fl, sx, sy, qx, qy, vx, vy, vz, fmul, lmul, fdiv, ldiv, fadd, toInt8, toInt16, i24f, sin10, cos10, fval,
              trig, centreOffset, matrix, project, edge, line, skyGround, loadModel, collapse, spinPoints, projectModel, drawModel,
-             buildRoads, presetRoads, enterSquare, loadModelAt, modelAddr, panelFigures, viewRange, drawRoads, pass, passAll, spinStep,
+             buildRoads, presetRoads, enterSquare, loadModelAt, modelAddr, panelFigures, viewRange, drawRoads, pass, passAll,
              get model() { return model; }, set model(m) { model = m; },
              target(out, base) { bits = out; page = base || 0; }, setOr(v) { orMode = v; } };
   }
@@ -2732,7 +2735,7 @@ window.MERC_GAME.catch(() => {});
       if (input.key >= 0 && ev.key) {
         refusedLogged = false;
         const T = s.T;
-        log((keyName ? keyName + ': ' : '') + 'throttle <code>$EC</code>/<code>$ED</code> = ' + hex2(s.Tm) + ' ' + hex2(s.Te) + ', ' +
+        log((keyName ? 'Key ' + keyName + ': ' : '') + 'throttle <code>$EC</code>/<code>$ED</code> = ' + hex2(s.Tm) + ' ' + hex2(s.Te) + ', ' +
           (Math.abs(T) < 1 ? '2^-31, a stop' : (T < 0 ? '-' : '') + '2^' + Math.round(Math.log2(Math.abs(T))) + ' = ' + fmtInt(T)) + '.');
       }
       if (input.trim && ev.refused && !refusedLogged) {
@@ -2745,7 +2748,7 @@ window.MERC_GAME.catch(() => {});
         rollingLogged = false;
       }
       if (ev.crash) {
-        const why = ev.why === 'nose' ? 'the nose was ' + nose(ev.pitch) + ' (pitch ' + ev.pitch + '; 640-1023 crashes)'
+        const why = ev.why === 'nose' ? nose(ev.pitch) + ' (pitch ' + ev.pitch + '; 640-1023 crashes)'
           : ev.why === 'step' ? 'this pass’s height step was ' + fmtInt(Math.abs(ev.hStep)) + ', 256 or more'
           : 'the ground craft left the ground and fell (<code>$9F09</code>)';
         crashed = why;
@@ -2782,6 +2785,7 @@ window.MERC_GAME.catch(() => {});
     function record() {
       if (passNo < hist.next && passNo !== 0) return;
       if (hist.n === CAP) {
+        hover = -1; tip.hidden = true;
         let j = 0;
         for (let i = 0; i < CAP; i += 2, j++) { hist.pass[j] = hist.pass[i]; hist.spd[j] = hist.spd[i]; hist.alt[j] = hist.alt[i]; }
         hist.n = j; hist.stride *= 2;
@@ -2801,7 +2805,7 @@ window.MERC_GAME.catch(() => {});
         next() {
           if (p >= 253) { log('End of the recording: 253 passes, the same number the emulator recorded (<code>$855C</code>).'); return null; }
           const q = p++;
-          return { stick: q >= 153 && q < 193 ? 0x0D : 0x0F, key: q === 0 ? 35 : -1, trim: null, name: 'key 0' };
+          return { stick: q >= 153 && q < 193 ? 0x0D : 0x0F, key: q === 0 ? 35 : -1, trim: null, name: '0' };
         },
       };
     }
@@ -2811,7 +2815,7 @@ window.MERC_GAME.catch(() => {});
       log('Flat out: key 0, + held until refused, 20 passes to gather speed, the stick back until the nose points straight up, then centred.');
       return {
         next(s, ev) {
-          if (phase === 0) { phase = 1; return { stick: 15, key: 35, trim: null, name: 'key 0' }; }
+          if (phase === 0) { phase = 1; return { stick: 15, key: 35, trim: null, name: '0' }; }
           if (phase === 1) {
             if (!(ev && ev.refused)) return { stick: 15, key: -1, trim: '+' };
             phase = 2; count = 0;
@@ -2997,7 +3001,7 @@ window.MERC_GAME.catch(() => {});
       const s = last, ev = lastEv;
       drawPanel();
       drawDial(s.pitch);
-      if (hover < 0) drawChart();
+      drawChart();
       let state, cls = '';
       if (crashed) { state = 'crashed: ' + crashed; cls = 'flight-warn'; }
       else if (s.onDeck) { state = 'on the Colony Craft’s deck'; cls = 'flight-good'; }
@@ -5324,8 +5328,8 @@ window.MERC_GAME.catch(() => {});
     return G;
   }
 
-  // Whether a door outline is one of the transporter kinds, and a door's destination(s):
-  // a booth's door 0 is relinked on entry, so it may lead to any room its pairs name.
+  // Where a door can lead: its destination, or for a booth's door 0, which is relinked on
+  // entry, any room the booth's pairs name.
   function targets(G, r, d) {
     if (r.booth && d.i === 0) return r.pairs.map(p => ({ room: p.room, arr: p.arr }));
     return [{ room: d.dest, arr: d.arr }];
@@ -5428,7 +5432,7 @@ window.MERC_GAME.catch(() => {});
     let x0 = S.sx, y0 = S.sy;
     if (S.clip) {                                    // start off screen: enter by an edge
       const region = c => (((c.px[1] << 3) & 8) | ((c.py[1] << 2) & 4));
-      let edges = T.clipStart((T.clipBits(region(S) | S.clip) | rt) >> 1);
+      const edges = T.clipStart((T.clipBits(region(S) | S.clip) | rt) >> 1);
       if (!edges) return;
       if (!(E.clip & 0x80)) {
         const idx = (T.clipBits(region(E) | E.clip) | rt) >> 1;
@@ -5486,7 +5490,6 @@ window.MERC_GAME.catch(() => {});
   // $2800/$2840: last vertex, three signed bytes a vertex in 16s, then the edges.
   const OBJ = { XL: 0x2880, XM: 0x2480, XH: 0x2540, HL: 0x28C0, HM: 0x24C0, HH: 0x2580, YL: 0x2900, YM: 0x2500, YH: 0x25C0,
     MLO: 0x2800, MHI: 0x2840, ANG_XH: 0x800A, ANG_HY: 0x801A, ANG_HEAD: 0x802A, SIN64: 0x8457 };
-  const sbyte = v => (v & 0x80 ? v - 256 : v);
   function sin64(ram, a) { a &= 0x3F; const v = ram[OBJ.SIN64 + (a & 0x1F)]; return a >= 0x20 ? (-v) & 255 : v; }
   // smul8_q7 $82D3: sign(a y) * (|a| * (2|y| mod 256) >> 8)
   function smul8(a, y) {
@@ -5504,7 +5507,7 @@ window.MERC_GAME.catch(() => {});
     for (let o = 0x3F; o >= 0; o--) if (G.ram[AD.OBJ_ROOM + o] === n) out.push(o);
     return out;
   }
-  function drawObject(G, st, o, V0, plot) {
+  function drawObject(G, st, o, plot) {
     const ram = G.ram, F = G.F;
     const pos = (l, m, h) => ram[h + o] << 16 | ram[m + o] << 8 | ram[l + o];
     const rel = (v, p) => ((v - p) % 0x1000000 + 0x1000000) % 0x1000000;
@@ -5544,7 +5547,7 @@ window.MERC_GAME.catch(() => {});
       drawEdge(G, V, a, b, (x, y) => { const o = y * 160 + x; pix[o] |= 1; if (who[o] < d || who[o] === -2) who[o] = d; });
     }
     const objs = opts && opts.objects === false ? [] : roomObjects(G, st.room);
-    for (const o of objs.slice().reverse()) drawObject(G, st, o, V, (x, y) => { const q = y * 160 + x; pix[q] = 0; who[q] = 100 + o; });
+    for (const o of objs.slice().reverse()) drawObject(G, st, o, (x, y) => { const q = y * 160 + x; pix[q] = 0; who[q] = 100 + o; });
     return { pix, who, M, V, objects: objs };
   }
 
@@ -5880,15 +5883,11 @@ window.MERC_GAME.catch(() => {});
     // Show room n: a hangar as the lift leaves you, any other room in the middle of the floor,
     // facing its first door.
     function show(n) {
-      const r = G.rooms[n], keepOpts = { lit: st.lit, keys: st.keys, links: st.links, mirror: st.mirror };
+      const r = G.rooms[n];
       let s;
       if (n >= 1 && n <= 8) s = lift(G, n, st.head);
-      else {
-        s = { room: n, x: (r.xs << 7) | 0, y: (r.ys << 7) | 0, h: 0x80, head: r.doors.length ? (facing(r, r.doors[0]) + 512) & 1023 : 0, guard: 0 };
-        if (r.doors.length) { const d = r.doors[0]; s.head = facing(r, d); }
-        keep(G, s);
-      }
-      go(Object.assign(s, keepOpts, { lit: st.lit, keys: st.keys }));
+      else { s = { room: n, x: r.xs << 7, y: r.ys << 7, h: 0x80, head: r.doors.length ? facing(r, r.doors[0]) : 0, guard: 0 }; keep(G, s); }
+      go(Object.assign(s, { lit: st.lit, keys: st.keys, links: st.links, mirror: st.mirror }));
     }
     draw();
     return { show, get state() { return st; }, on: f => listeners.push(f), G };
@@ -5900,11 +5899,12 @@ window.MERC_GAME.catch(() => {});
 
   // ---- The How it works widget (#rooms-view) ----------------------------------------------------
   if (typeof document === 'undefined') return;
+  if (root.MERC_GAME) root.MERC_GAME.catch(() => {});    // handled at once; each widget reports its own failure
   function start() {
     const host = document.getElementById('rooms-view');
     if (!host) return;
     const fail = () => { host.innerHTML = '<p class="rooms-note">This viewer reads the game from <code>listing.json</code>, so it needs the built site.</p>'; };
-    if (!root.MERC_GAME || !root.C64) { fail(); return; }
+    if (!root.MERC_GAME) { fail(); return; }
     root.MERC_GAME.then(game => { viewer(host, build(game.ram), { start: { head: 768 } }); }).catch(fail);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();

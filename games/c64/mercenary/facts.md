@@ -75,7 +75,7 @@ to BASIC's READY (`reference/reset-crack-basic.png`).
 | Room pointers | `$2300`/`$23C0` (rooms `$01`-`$AE`) |
 | Objects | 64; positions in nine split tables: X `$2880`/`$2480`/`$2540`, height `$28C0`/`$24C0`/`$2580`, Y `$2900`/`$2500`/`$25C0` (low, middle, high); room `$2940`; flags `$29C0`; objects in view `$2981` on (count `$B2`) |
 | City | building model per square `$2600`/`$2700`; square status `$2B00`; roads `$2C00`-`$2FFF`; view radius by height `$2A00` |
-| Rooms | 174 records `$3000`-`$3B16` |
+| Rooms | 174 records `$3000`-`$3B23` (room `$AE` starts at `$3B16`; `$3B24` spare) |
 | Bitmaps (bank 1) | `$4000`-`$553F` and `$6000`-`$753F`, 160 × 136 multicolour pixels each, double-buffered |
 | Hand-over copier | `$5000`-`$502E` |
 | Drawing tables | row addresses `$5540`/`$55D0`, pixel masks `$5660`, column offsets `$5700`, clear masks `$7760` |
@@ -278,11 +278,20 @@ Weapons and moving objects therefore run only on the surface.
   changes nothing. A building's edges are drawn from the last down
   (`$96E7`): those after its pen split (`$98`) with ORA, as road marks
   on the ground, then the structure with AND. *Live*: the roads of the
-  descent's frame are %11.
+  descent's frame are %11. A room is drawn by the same routine with the pen
+  split set to `$FF` (`$920A`), so every room edge is ORA, %11, byte 4's
+  colour; the objects in it follow with AND (`$8592`), white.
 - **Colours**: %00 is `$A3` (white on the surface), %01 the sky (blue, fixed
   by `ORA #$60` at `$BB4C`), %10 `$A5` (the ground), %11 `$A6`; the
-  surface's are `01 06 05 0B` at `$B27D`. `$BB4F` paints the view's matrix
-  `$5C00`-`$5EA7` and colour RAM from them whenever the place changes.
+  surface's are `01 06 05 0B` at `$B27D`. `$BB48` writes `$60` OR `$A5`
+  into the view's matrix `$5C00`-`$5EA7` (so %01 is blue and %10 is `$A5`)
+  and `$BB4F` fills colour RAM with `$A6` (%11), whenever the place changes.
+  The next place's colours wait in `$C2`-`$C5` and become `$A3`-`$A6` when
+  the view changes: at the end of a door wipe (`$AEF3`), a lift arrival
+  (`$A2E3`-`$A2E9`) or the end of a ride (`$BB1D`). Underground, a room's
+  byte 3 goes to `$C4` (`$91DB`) and byte 4 to `$C5` (`$91E5`); `$C2` is 1,
+  white (`$9399`), or 0 in an unlit dark room (`$9200`). A booth's flash
+  swaps `$A5` for `$BB7E` + `$F0` each pass (`$AFA8`).
 - **Sky and ground** (`$AFD5`): each row is split at the horizon's x; cells
   on the left get `$82` through the unrolled fill in page `$BE`, cells on
   the right `$83` through page `$BD` (entry offsets written at `$B10B` and
@@ -493,9 +502,12 @@ Weapons and moving objects therefore run only on the surface.
   09-06, 09-05, 03-00, 11-13, 03-15 (the Pass, `$B430`; else PASS HOLDERS
   ONLY), 81-35, 136-136 (LOC `**`), 08-08. Nothing tests the height.
   Underground, E works anywhere in rooms 1-8, the hangars (`$B455`).
-- The ride (`$A24A`, `$BA7B`, `$BADD`) goes down to room n (arriving at
-  (8, 8), `$A2EB`) or up to the lift square; room 8's lift comes up on the
-  Colony Craft's deck.
+- The ride (`$A24A`, `$BA7B`, `$BADD`) goes down to room n or up to the
+  lift square; room 8's lift comes up on the Colony Craft's deck. Arriving
+  below, `$A2EB` sets the middle bytes of X and Y to 8 and the low bytes come
+  from door 0's placement (room 8: X `$08:$20`, Y `$08:$80`, as in the live
+  test). No room name is printed on a lift arrival: the name is printed only
+  when a door wipe ends (`$AEE4`).
 - **The 08-08 lift works from the ground.** Entry 8 is meant for the deck,
   but with no height test it answers on the ground too. *Live*: standing at
   08-08 with `$73` = `$79` = `$71`, E took the player down into room 8, the
@@ -505,7 +517,7 @@ Weapons and moving objects therefore run only on the surface.
 
 ## Underground
 
-- 174 rooms, `$01`-`$AE` (`$2300`/`$23C0`). A record (`$90F6`-`$9287`,
+- 174 rooms, `$01`-`$AE` (`$2300`/`$23C0`, records `$3000`-`$3B23`). A record (`$90F6`-`$9287`,
   `$9437`): byte 0 X size in units of 256 (bit 7: transporter booth); byte
   1 height (bits 0-2) and a number n (bits 3-7); byte 2 Y size (bit 7: on
   entry start script n, else show canned message n through `$F7`); bytes
@@ -522,14 +534,26 @@ Weapons and moving objects therefore run only on the surface.
   (on entry door 0 is relinked to the room you did not come from,
   `$9119`-`$913B`), diagonal ones one-way; room `$72` sends you to one of 8
   rooms at random (`$910E`); room `$7F` toggles the mirror flag `$F1`, which
-  swaps the stick's left and right (`$A165`, `$A17B`) and flips the view. The
-  relinked doors are not in the save file.
+  swaps the stick's left and right (`$A165`, `$A17B`) and flips the view,
+  but only when entered from room `$90`: both its links name `$56`, so
+  entering from `$56` skips the relink, the flash and the toggle (`$9125`).
+  Nothing else writes `$F1`, and CTRL + Q leaves it set. The relinked doors
+  are not in the save file.
 - **Dark rooms**: 20, shown dark with ITS VERY DARK IN HERE (canned message
   1) unless the Photon Emitter is carried (`$941A`) or in the room
-  (`$9425`); all 9 triangle-marked doors lead into one.
-- Rooms 1-8 are the hangars (16 × 16 × 4, HANGER). Plain doors join them
-  into complexes: hangars 1 and 2, 78 rooms; hangar 3, 13 (every Mechanoid
-  room); 4, 9; 5, 12; 6, 3; 7, 7. The Colony Craft has three floors joined
+  (`$9425`); all 9 triangle-marked doors lead into one. Hangar 5 is the one
+  dark room with a name: `$9224` stores its message 9 over the 1 stored at
+  `$9208`, so Benson says HANGER.
+- Rooms 1-8 are the hangars (16 × 16 × 4, HANGER). The doors that do not
+  lead into booths join them into complexes: hangars 1 and 2, 78 rooms;
+  hangar 3, 13 (every Mechanoid room); 4, 9; 5, 12; 6, 3; 7, 7; the Colony
+  Craft's floors 8, 10 and 12. Every door leads to a door that leads back,
+  except the doors into the ten one-way booths, room `$45`'s door 0 (it
+  names door 6 of room `$96`, which has 4) and room `$AB`'s door 3, the
+  drop from the Colony Craft. Four doors carry a skull and crossbones
+  (objects 57-60): into the mirror booth (`$90`), the drop (`$AB`), the
+  prison (`$62`) and dark hangar 5 (`$6F`). The prison's one door is
+  recorded 128 units outside its walls (X `$84`) and needs key 17 anyway. The Colony Craft has three floors joined
   by booths `$86`/`$87`: the top with hangar 8 (three doors need key 23),
   the middle `$9A`-`$A3`, the bottom `$88` and `$A4`-`$AE`. Room `$AB`'s door
   3 leads to room 0: the player falls from beside the Colony Craft
@@ -858,8 +882,7 @@ registers beyond sprite 0, `$D01C`, `$D022`-`$D026`, or the CIA timers.
 - `$A861`, `$A911`, `$AA34` add the focal exponent to x'/z without checking
   it, so a point at almost zero depth is drawn at the centre.
 - Room `$51` (the prison) has door 0 at X `$84` in a room 4 wide: `$9456` can
-  never match it. Room `$45`'s door 0 names arrival door 6 of room `$96`,
-  which has 4.
+  never match it.
 - The building model at `$E7FF` counts 18 vertices and has 17, reading two
   bytes of `$E849`; `$ECEF`'s vertex 6 is unused; `$F3D3` draws one edge
   twice.
