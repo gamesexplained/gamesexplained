@@ -548,12 +548,28 @@ Weapons and moving objects therefore run only on the surface.
   from door 0's placement (room 8: X `$08:$20`, Y `$08:$80`, as in the live
   test). No room name is printed on a lift arrival: the name is printed only
   when a door wipe ends (`$AEE4`).
-- **The 08-08 lift works from the ground.** Entry 8 is meant for the deck,
-  but with no height test it answers on the ground too. *Live*: standing at
-  08-08 with `$73` = `$79` = `$71`, E took the player down into room 8, the
-  Colony Craft's hangar; E there brought them up to height `$40:$FF:$51`, on
-  the Colony Craft's deck (`reference/lift-0808-room8-hangar.png`,
-  `reference/lift-0808-colony-deck.png`).
+- **Bug: the 08-08 lift works from the ground.** Nothing on the ground at
+  08-08 is a lift: the square's model (`$CEF6`) is runway marks and a
+  spinning pyramid. Entry 8 is the deck's lift, and the deck lies over
+  08-08, so on the grass under it the E test (no height test) answers too.
+  The patch is X and Y middle bytes `$70`-`$73`, 1,024 units a side; the
+  opening leaves the player at `$88:00`, `$88:00` facing south (heading
+  512), exactly north-west of it, `$1600` units on each axis.
+  *Live*: standing at 08-08 with `$73` = `$79` = `$71`, and again at `$72`,
+  E took the player down into room 8, the Colony Craft's hangar; E there
+  brought them up to height `$40:$FF:$51`-`$52`, on the Colony Craft's
+  deck (`reference/lift-0808-room8-hangar.png`,
+  `reference/lift-0808-colony-deck.png`). *Live*, by walking: from the
+  landing point with the heading set to 128 (north-west), stick up for 700
+  frames (14 s, about 100 steps of 80 units) reached `$72:D9`, `$72:D9`,
+  and E there started the ride (`reference/lift-0808-spot-facing-nw.png`;
+  the COMP dial is red in the north-to-west quarter).
+- Hangar 8's three doors need key 23, which the player does not start
+  with, so the bug reaches only the hangar and the deck. *Live*: walking
+  south from the deck's lift, the fall began between Y `$77:90` and
+  `$78:30`, leaving the pad (`$68`-`$77`, `$A13D`); the tumble ended on the
+  ground at 08-08, `$71:00`, `$78:30`, unhurt
+  (`reference/lift-0808-falling-from-deck.png`).
 
 ## Underground
 

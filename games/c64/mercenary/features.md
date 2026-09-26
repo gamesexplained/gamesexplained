@@ -103,8 +103,13 @@ Found in the code, not in the manual.
 
 - **Only one building exists at a time**: the player's own square's
   (live: `reference/one-building-a-0808-facing-north.png`, `-b-…`).
-- **The lift at 08-08 works from the ground**: E there goes down into the
-  Colony Craft's hangar, and E again comes up on its deck (live:
+- **A bug puts you in the Colony Craft from the start**: there is no lift
+  on the ground at 08-08, but E on a patch of grass 1,024 units a side
+  (X and Y middle bytes `$70`-`$73`), about 14 seconds' walk north-west of
+  the landing point, rides down into the Colony Craft's hangar, and E
+  again comes up on its deck. The E test never reads the height, and the
+  deck lift's square is 08-08. Hangar 8's doors need key 23, so nothing
+  else opens; walking off the deck's pad falls safely back to 08-08 (live:
   `reference/lift-0808-*.png`).
 - **A building shot from the next square is never counted**: no name, no
   reprisal, no credit toward the site reward (live:
