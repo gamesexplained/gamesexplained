@@ -368,13 +368,23 @@ def main():
                     and e not in names and e not in line and e not in side:
                 e += 1
             return e
+        # a word or pointer is two bytes: a label on its second byte (the base of a table's high
+        # bytes, which code reads as table+1,Y) must not split the pair and shift every entry
+        # after it by one. The label is still shown, as a note inside the item.
+        def pair_end(limit):
+            blk = next(b for b in sym["blocks"] if b["start"] <= a <= b["end"])
+            e = a + 1
+            while e < 0x10000 and e < a + limit and state[e] and btype[e] == btype[a] \
+                    and ((e - blk["start"]) % 2 == 1 or (e not in names and e not in line and e not in side)):
+                e += 1
+            return e
         if t in ("Word", "Lo/Hi Word", "Hi/Lo Word"):
-            e = run_end(8); bs = list(ram[a:e])
+            e = pair_end(8); bs = list(ram[a:e])
             vals = [bs[i] | (bs[i + 1] << 8) for i in range(0, len(bs) - 1, 2)] if t != "Hi/Lo Word" else \
                    [(bs[i] << 8) | bs[i + 1] for i in range(0, len(bs) - 1, 2)]
             rec.update({"t": "word", "b": bs, "d": vals})
         elif t == "Address":
-            e = min(run_end(2), a + 2); bs = list(ram[a:e])
+            e = min(pair_end(2), a + 2); bs = list(ram[a:e])
             if len(bs) == 2:
                 ta = bs[0] | (bs[1] << 8); xref(ta, a)
                 rec.update({"t": "addr", "b": bs, "oa": ta, "o": sym_or_hex(ta)})
