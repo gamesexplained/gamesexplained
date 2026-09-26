@@ -229,8 +229,10 @@ Routines are independent, so the burn-down parallelises. What matters:
 - **Export every ten minutes while agents write.** A crash of the shared
   disassembler costs every agent's work since the last export;
   `symbols_import.py` rebuilds the session from that export (the tool
-  skill). Restart the emulator alone (`tools.py stop vice`): a bare
-  `tools.py stop` takes the disassembler with it.
+  skill). Restart the emulator alone (`tools.py stop vice`). A bare
+  `tools.py stop` leaves the disassembler up while its logs are newer
+  than the export, and says so; `--force` is for a session you mean to
+  lose.
 - **Renaming an auto symbol keeps its reach.** A label set over one the
   tracer minted keeps its type, and with it the 64-byte span of an auto
   symbol, so a long table named that way still leaves its tail uncounted.

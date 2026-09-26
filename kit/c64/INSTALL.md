@@ -271,10 +271,16 @@ python3 kit/scripts/tools.py stop                 # both tools
 ```
 
 To restart the emulator (after a crash, or a change of video standard that
-leaves snapshots refusing to load), stop it alone with `stop vice`. A bare
-`stop` stops the disassembler too, and with it every annotation made since
-the last export: rebuild the session from the logs (`r2000.py --replay`),
-then export.
+leaves snapshots refusing to load), stop it alone with `stop vice`.
+
+Stopping the disassembler loses every annotation made since the last
+export. So `stop` and `stop r2000` leave it running while an annotation log
+in the game's `work/` is newer than both the game's `symbols.json` and the
+disassembler's start; they name the game and exit with an error, and a
+bare `stop` still stops the emulator. Export (`symbols_export.py`) and stop
+again, or stop it anyway with `stop r2000 --force` and rebuild the session
+later from the logs (`r2000.py --replay`). A disassembler started on a file
+outside `games/` is checked against every game in the clone.
 
 The launcher, `kit/c64/tools.py`, points the emulator's XDG config, state
 and cache paths into `tools/vice-home/`, gives both tools the

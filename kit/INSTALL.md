@@ -92,7 +92,9 @@ python3 kit/scripts/tools.py verify-footprint
 points each tool's settings, state and cache paths into `tools/`, gives
 the tools the terminal they need, and writes their logs to `tools/logs/`.
 Do not start the tools by hand. The commands that start each tool are in
-the platform's notes. With one platform under `kit/` it is the default;
+the platform's notes, with what `stop` leaves running: a tool holding work
+that the game folder lacks stays up until that work is saved or the stop
+is forced. With one platform under `kit/` it is the default;
 with more, `--platform <name>` or `KIT_PLATFORM` chooses.
 
 ## When the sandbox has no `timeout`
