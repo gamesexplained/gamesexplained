@@ -208,8 +208,57 @@ Commodore 64, and it agrees with this port on all 10,000.</p>
 
 </section>
 
+<section id="sound">
+  <p class="fig">03 · Sound</p>
+  <h2 class="t">The BBC Micro's tunes, played on the SID</h2>
+  <p class="lede">The music is the BBC version's own bytes. The C64 plays it through its own copy of the BBC's sound call, which turns an 8-byte block into SID registers, and a tick once a frame that does the work of the BBC's envelopes. Every tune and sound is below.</p>
+  <div class="plate"><div id="music"></div><p class="cap">The game's sound driver, ported to JavaScript and played through the site's model of the SID. The port was held to the game's own code, run in a 6502 simulator on the analysed image: 20 runs, 4,718 frames, every SID register after every frame and every write in order, with no difference. The game runs its sound routine <code>$352C</code> from nine places in its code, wherever it happens to be; the port runs it once a frame. That is what happens where the transfer and hyperspace tunes play, but not everywhere, so in the game the U-turn's second chord and the notes of the game-over tune can come a little later than here.</p></div>
+  
+<h3>A sound is eight bytes</h3>
+<p>The BBC code plays sound n by handing the block at <code>$AC00</code> + 8n to OSWORD 7, the
+BBC operating system's sound call (<code>$3470</code>). The C64 answers that call with code of its
+own (<code>$8DB4</code>, section 5 below), which reads the block like this:</p>
+<div class="tablewrap"><table class="d">
+<tr><th>Byte</th><th>What it sets</th></tr>
+<tr><td>0</td><td>the voice, 0 to 2</td></tr>
+<tr><td>1</td><td>the SID's control byte, written first without its gate so the envelope starts again</td></tr>
+<tr><td>2, 3</td><td>attack and decay, sustain and release; the low nibble of byte 3 also picks a release time in frames (<code>$8EC1</code>)</td></tr>
+<tr><td>4</td><td>the pitch, an index into the frequency tables at <code>$9033</code> and <code>$9133</code></td></tr>
+<tr><td>5</td><td>the pulse width's high nibble; with bit 7 set, the frequency is halved (bits 4-6) + 1 times</td></tr>
+<tr><td>6</td><td>frames before the gate is released, or <code>$80</code> and up to hold the note</td></tr>
+<tr><td>7</td><td>a pitch effect: the offset of a 7-byte record at <code>$AC40</code>, or <code>$80</code> for none</td></tr>
+</table></div>
+<p>The interrupt then does the rest once a frame: <code>$8ED1</code> counts each note down, lets
+go of the gate, and silences the voice when its release time has passed; <code>$8F0C</code> steps
+the pitch effects, a change of pitch per frame in three sections. The three records are the pitch
+half of the BBC version's envelopes 2 to 4, byte for byte, for the music, the scanner and the
+ping.</p>
+<p>The pitch is the BBC's too: 48 steps to the octave, quarter semitones. The C64's table holds
+2100 × 2<sup>n/48</sup> for pitch n, which puts pitch 89, the BBC's A above middle C, at 446 Hz
+on a PAL machine, about 1.3 % sharp.</p>
+
+<h3>The tunes</h3>
+<p>A tune (<code>$34DE</code>, bytes at <code>$AB50</code>) is a list of pitches. A byte of
+<code>$C8</code> or more sets the wait after each following note to (byte − <code>$C8</code>) × 4
+frames, and <code>$FF</code> ends the tune. Each note is played as sound 3 on the next voice in
+turn, so three notes with no wait between them make a chord. Five places in the code start the
+music, at five offsets:</p>
+<div class="tablewrap"><table class="d">
+<tr><th>Offset</th><th>When</th><th>Started at</th><th>Length</th></tr>
+<tr><td>0</td><td>hyperspace</td><td><code>$2181</code></td><td>5.5 s</td></tr>
+<tr><td>25</td><td>transfer</td><td><code>$1B82</code></td><td>5.5 s</td></tr>
+<tr><td>40</td><td>U-turn: the last two chords of the transfer tune</td><td><code>$1B3C</code></td><td>4.1 s</td></tr>
+<tr><td>50</td><td>game over</td><td><code>$87F6</code></td><td>6.5 s</td></tr>
+<tr><td>66</td><td>landscape won</td><td><code>$3627</code></td><td>7.9 s</td></tr>
+</table></div>
+<p>The game-over screen adds a falling noise (<code>$352C</code>): sound 6, one frame long, from
+pitch 230 down to 60, a step every one to four frames drawn from the game's random numbers. The
+BBC version falls from 250 to 80.</p>
+
+</section>
+
 <section id="frame">
-  <p class="fig">03 · The play screen</p>
+  <p class="fig">04 · The play screen</p>
   <h2 class="t">The view is drawn as a bitmap and shown as text</h2>
   <p class="lede">The drawing code writes a multicolour bitmap at <code>$E000</code>, and on the title screens that bitmap is what the screen shows. In play the screen shows multicolour text instead: the bitmap is copied into five character sets, and a raster interrupt switches between them every 40 lines.</p>
   <div class="plate">
@@ -242,7 +291,7 @@ them (<code>$98B2</code>).</p>
 </section>
 
 <section id="bbc">
-  <p class="fig">04 · A BBC Micro program</p>
+  <p class="fig">05 · A BBC Micro program</p>
   <h2 class="t">Inside, it is still a BBC Micro program</h2>
   <p class="lede">Long stretches of the C64 code are byte for byte the BBC Micro original, most of them at the same addresses. What the BBC code expects of its machine, the C64 version supplies itself.</p>
   <div class="plate">
@@ -286,13 +335,6 @@ C64's own numbering; it is the only code that reads the keyboard, and nothing re
 
 </section>
 
-<section id="sound">
-  <p class="fig">05 · Sound</p>
-  <h2 class="t">Every tune and sound, from the stored bytes</h2>
-  <p class="lede"></p>
-  <div class="plate"><div id="music"></div><p class="cap"></p></div>
-  
-</section>
 
 <section id="clock">
   <p class="fig">06 · The enemies' clock</p>
@@ -381,7 +423,8 @@ it (white) and with the font's own zero (yellow):</p>
 
 <div class="card"><h3>A U-turn plays the end of the transfer tune</h3>
 <p>The transfer tune starts at offset 25 of the music (<code>$1B82</code>); the U-turn starts the
-same tune at offset 40 (<code>$1B3C</code>), its last notes. Both are in the sound player above.</p></div>
+same tune at offset 40 (<code>$1B3C</code>), its last two chords. Live: a stop on the tune starter,
+<code>$888F</code>, caught the U-turn with 40 in A. Both are in the sound player above.</p></div>
 
 <div class="card"><h3>Any action wakes the enemies, even one that fails</h3>
 <p>The enemies wait until the first action key: absorb, create, transfer, hyperspace or U-turn
@@ -1441,7 +1484,385 @@ reads.</li>
 window.FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[174,154,8,51,32,51,56,51,0,0,0,0,0,0,0,0,14,27,0,209,0,0,216,0,249,122,241,0,15,0,0,1,240,246,240,241,243,240,245,241,241,241,241,245,246,247,252],"cia2":[198,63],"cpu":[47,53],"writes":[[54,22,53272,241],[94,21,53272,243],[134,21,53272,245],[174,24,53272,247],[214,24,53272,249]],"colour":"DQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ==","ram":[{"a":16704,"b":"AFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVAJSAlIKKiqqqqqqqqqqqqqqqoqKiioqKioqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqoAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUQVRBVVFVUVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFQCSgoqCiqqqqqqqqqqqqqqqqqqqqioqKiioqKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgBVAFUAVaGhAFUAVQBVQFUAVQBVAFUAVQBVAFUAVQAVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAVUBVVRVVFVVXV1dAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQFVAFVAVUBVUFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAUgBUAkoKKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqooqKioqKKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgIAgISGhoaFVVVUVFUVFRVVVVVVVVVVVVVVVVVVVVVUUFUVFRVFRUQBVVVVVVVVVAEVVVVVVVVUAVQAFQEFQUAFVAVUHVwdXZWVlZWVnZ2cAVQBVQFVAVQBVAFUAVQBVAVUBVQFVBVVQVVBVUFVUVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVQBVAFICSgJKKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqoqKioqKIqKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhoaGh"},{"a":17992,"b":"UVFRVA=="},{"a":18000,"b":"VVVVVQ=="},{"a":18008,"b":"VVVVVQ=="},{"a":18016,"b":"VFRVVQ=="},{"a":18024,"b":"VVUVFQ=="},{"a":18032,"b":"VVVV"},{"a":18040,"b":"UVRU"},{"a":18048,"b":"BUVV"},{"a":18056,"b":"p6en"},{"a":18064,"b":"QFVA"},{"a":18072,"b":"AFUA"},{"a":18080,"b":"BVYG"},{"a":18088,"b":"VFVU"},{"a":18096,"b":"AFUA"},{"a":18104,"b":"AFUA"},{"a":18112,"b":"AFUA"},{"a":18120,"b":"AFUA"},{"a":18128,"b":"AFUA"},{"a":18136,"b":"AFUA"},{"a":18144,"b":"AFUq"},{"a":18152,"b":"AFWh"},{"a":18160,"b":"AFVA"},{"a":18168,"b":"AFUA"},{"a":18176,"b":"AFUA"},{"a":18184,"b":"AFUA"},{"a":18192,"b":"AFUA"},{"a":18200,"b":"AFUA"},{"a":18208,"b":"Kiqq"},{"a":18216,"b":"qqqq"},{"a":18224,"b":"qqqq"},{"a":18232,"b":"qqqq"},{"a":18240,"b":"qqqq"},{"a":18248,"b":"oqKi"},{"a":18256,"b":"qqqq"},{"a":18264,"b":"qqqq"},{"a":18272,"b":"qqqq"},{"a":18280,"b":"qqqq"},{"a":18288,"b":"qqqq"},{"a":18296,"b":"qqqq"},{"a":18307,"b":"VVVVVVU="},{"a":18316,"b":"QUFVVQ=="},{"a":18323,"b":"bu5ZVVU="},{"a":18331,"b":"VdVVVVU="},{"a":18363,"b":"VlZWVVU="},{"a":18371,"b":"VVWqVVU="},{"a":18379,"b":"lZWVVVU="},{"a":18432,"b":"oaGFhYWFhYVVVVVVVVVVVRVFRVFRUVRUVVVVVVVVVVVVVVVVVVVVVVFRUVRUVFVVVVVVVVVVFRVVVVVVVVVVVV1dXX19fX12p6enp6enp6fQ1dDV1NX09ABVAFUAVQBVFlZ2WlpaWlp1dXV1dXZ2dgBVAFUAVUBVAFUAVQBVAFUAVQBVAFUAVQBVAFUAVABSAiIiKKioqKiqqqqqqqqqqqqqqqqqqqqqgoKIiIgoKCiFhYWhoaioqlRVVVVVVVUVVRUVRUVFUVFQUFRUVVRUUgBSCkoqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqKioKioqKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqFVVVVVVVVVVVUVVVVVVVVVFVVVVVVVVVVFVVVVVVVVVVVFRVFRUVRVVVVVVVVVVUVRVVVVVVVVVVVVVVVVVVVdnZVVVVVVVWnpydVVVVVVfT19VVVVVVVABVBVVVVVVVa2tpVVVVVVXZ2dlVVVVVVQFVAFRVFRVEAVQBUVVVVVQBVAFVVVVVVAlICSlVVVVWoqKioVVVVVaqqqqpUVVVVqqqqqqhVVVUoKCgoqFRUVKqqqqqqqqqqFRWFhaGqqqpUVFVUUqqqqkpKKqqqqqqqqqqqqqqqqqqqqqqqoqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqKiioqqqqqqqqqqqioqKKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqoqqqqqlVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVRUVFVVVVVVVVVVFRUVRVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVRUVVVVVVVVVVUVFRVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRVVVVVVVVVqioqKioqKkqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqoqKioqCoqKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVFUVFUVFRVVVVVVVVVVRVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRVFRUVRUVVVVVVVVVVUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVKSkpKSkpSUqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqKioqKKioqKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpVVVVV"},{"a":19720,"b":"VVVVVQ=="},{"a":19728,"b":"VVVVVQ=="},{"a":19736,"b":"VVVVVQ=="},{"a":19744,"b":"VVVVVQ=="},{"a":19752,"b":"VVVVVQ=="},{"a":19760,"b":"FRVF"},{"a":19768,"b":"VVVV"},{"a":19776,"b":"VVVV"},{"a":19784,"b":"VVVV"},{"a":19792,"b":"VVVV"},{"a":19800,"b":"VVVV"},{"a":19808,"b":"VVVV"},{"a":19816,"b":"VVVV"},{"a":19824,"b":"VVVV"},{"a":19832,"b":"VVVV"},{"a":19840,"b":"FUVF"},{"a":19848,"b":"VVVV"},{"a":19856,"b":"VVVV"},{"a":19864,"b":"VVVV"},{"a":19872,"b":"VVVV"},{"a":19880,"b":"VVVV"},{"a":19888,"b":"UlJS"},{"a":19896,"b":"qqqq"},{"a":19904,"b":"qqqq"},{"a":19912,"b":"qqqq"},{"a":19920,"b":"qqqq"},{"a":19928,"b":"qqqq"},{"a":19936,"b":"qqqq"},{"a":19944,"b":"qqqq"},{"a":19952,"b":"qqqq"},{"a":19960,"b":"qqqq"},{"a":19968,"b":"iioq"},{"a":19976,"b":"qqqq"},{"a":19984,"b":"qqqq"},{"a":19992,"b":"qqqq"},{"a":20000,"b":"qqqq"},{"a":20008,"b":"qqqq"},{"a":20016,"b":"qqqq"},{"a":20024,"b":"qqqq"},{"a":20036,"b":"oaGhoQ=="},{"a":20044,"b":"VFRVVQ=="},{"a":20052,"b":"VVUVFQ=="},{"a":20060,"b":"VVVVVQ=="},{"a":20068,"b":"VVVVVQ=="},{"a":20076,"b":"FUVFRQ=="},{"a":20083,"b":"VVVVVVU="},{"a":20091,"b":"VVVVVVU="},{"a":20099,"b":"HR0dXV0="},{"a":20107,"b":"p6enp6c="},{"a":20115,"b":"VVBV0NU="},{"a":20123,"b":"VQBVAFU="},{"a":20131,"b":"VhZWFlY="},{"a":20139,"b":"VVRVdXU="},{"a":20147,"b":"VQBVAFU="},{"a":20155,"b":"VQBVAFU="},{"a":20163,"b":"VQBVAFU="},{"a":20171,"b":"VQBVAFU="},{"a":20179,"b":"UgJCAkI="},{"a":20187,"b":"qqqqqqo="},{"a":20195,"b":"qqqqqqo="},{"a":20203,"b":"oaCggoI="},{"a":20211,"b":"VVVVFRU="},{"a":20219,"b":"RUVRUVQ="},{"a":20227,"b":"FVVVVVU="},{"a":20235,"b":"VQAFQEE="},{"a":20243,"b":"VQBVAFQ="},{"a":20251,"b":"UgpKKqo="},{"a":20259,"b":"qqqqqqo="},{"a":20267,"b":"qqqqqqo="},{"a":20275,"b":"qqqqqqo="},{"a":20283,"b":"qqqqqqo="},{"a":20291,"b":"qqqqqqo="},{"a":20299,"b":"ooqKioo="},{"a":20307,"b":"qqqqqqo="},{"a":20315,"b":"qqqqqqo="},{"a":20323,"b":"qqqqqqo="},{"a":20331,"b":"qqqqqqo="},{"a":20339,"b":"qqqqqqo="},{"a":20347,"b":"qqqqqqo="},{"a":20480,"b":"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVRUVFVVVVVVVVVVFRUVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVVVVVVVVVVUVFUVFRVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVSpKSkpKSkpSqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqKiooqKioqKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVFUVFUVFRVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRVFRUVVVVVVVVVVUVFUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUlJSUlJSVFSqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqoqKiooqKioqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVFUVFRVFRVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRVFRVFRUVVVVVVVVVVUVFVVVVVVVVVVVVVVVVVVVVVVUVFRUVVVVVaqqqqoqKioqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqKKioqKKioqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqVVVVVQ=="},{"a":21448,"b":"VVVVVQ=="},{"a":21456,"b":"VVVVVQ=="},{"a":21464,"b":"VVVVVQ=="},{"a":21472,"b":"VVVVVQ=="},{"a":21480,"b":"VVVVVQ=="},{"a":21488,"b":"VVVVVQ=="},{"a":21496,"b":"VVVVVQ=="},{"a":21504,"b":"VVVVVQ=="},{"a":21512,"b":"VFRU"},{"a":21520,"b":"VVVV"},{"a":21528,"b":"VVVV"},{"a":21536,"b":"VVVV"},{"a":21544,"b":"VVVV"},{"a":21552,"b":"VVVV"},{"a":21560,"b":"VVVV"},{"a":21568,"b":"VVVV"},{"a":21576,"b":"VVVV"},{"a":21584,"b":"VVVV"},{"a":21592,"b":"VVVV"},{"a":21600,"b":"RUVF"},{"a":21608,"b":"VVVV"},{"a":21616,"b":"VVVV"},{"a":21624,"b":"VVVV"},{"a":21632,"b":"Kioq"},{"a":21640,"b":"qqqq"},{"a":21648,"b":"qqqq"},{"a":21656,"b":"qqqq"},{"a":21664,"b":"qqqq"},{"a":21672,"b":"qqqo"},{"a":21680,"b":"Kiqq"},{"a":21688,"b":"qqqq"},{"a":21696,"b":"qqqq"},{"a":21704,"b":"qqqq"},{"a":21712,"b":"qqqq"},{"a":21720,"b":"qqqq"},{"a":21728,"b":"qqqq"},{"a":21736,"b":"qqqq"},{"a":21744,"b":"qqqq"},{"a":21752,"b":"qqqq"},{"a":21764,"b":"VVVVVQ=="},{"a":21772,"b":"VVVVVQ=="},{"a":21780,"b":"VVVVVQ=="},{"a":21788,"b":"VVVVVQ=="},{"a":21796,"b":"VVVVVQ=="},{"a":21804,"b":"VVVVVQ=="},{"a":21811,"b":"RUVRUVQ="},{"a":21819,"b":"VVVVVVU="},{"a":21827,"b":"VVVVVVU="},{"a":21835,"b":"VVVVVVU="},{"a":21843,"b":"VVVVVVU="},{"a":21851,"b":"VVVVVVU="},{"a":21859,"b":"VVVVVVU="},{"a":21867,"b":"VVVVVVU="},{"a":21875,"b":"VVVVVVU="},{"a":21883,"b":"VVVVVVU="},{"a":21891,"b":"UVFRVFQ="},{"a":21899,"b":"VVVVVVU="},{"a":21907,"b":"VVVVVVU="},{"a":21915,"b":"VVVVVVU="},{"a":21923,"b":"VVVVVVU="},{"a":21931,"b":"VVVVVVU="},{"a":21939,"b":"UlRUVFQ="},{"a":21947,"b":"qqqqqqo="},{"a":21955,"b":"qqqqqqo="},{"a":21963,"b":"qqqqqqo="},{"a":21971,"b":"qqqqqqo="},{"a":21979,"b":"qqqqqqo="},{"a":21987,"b":"qqqqqqo="},{"a":21995,"b":"qqqqqqo="},{"a":22003,"b":"qqqqqqo="},{"a":22011,"b":"qqqqqKg="},{"a":22019,"b":"Kioqqqo="},{"a":22027,"b":"qqqqqqo="},{"a":22035,"b":"qqqqqqo="},{"a":22043,"b":"qqqqqqo="},{"a":22051,"b":"qqqqqqo="},{"a":22059,"b":"qqqqqqo="},{"a":22067,"b":"qqqqqqo="},{"a":22075,"b":"qqqqqqpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVFVVVVVVVVVVFRUVRUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVFRUVRUVRUVRVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVVVVVVVVqqoqKioqKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqiooqKioqKKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="},{"a":22528,"b":"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRVVVVVVVVVVRUVFUVFRVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRVFRUVVVVVVVVVVUVFUVFVVVVVVVVVVUqKioqSkpKSqqqqqqqqqqqqqqqqqqqqqqooqKiooqKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVRUVVVVVVVVVVUVFRVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRVFRVFRVVVVVVVVVVRUVFUpKSlJSUlJSqqqqqqqqqqqqqqqqqqqoqIqKKioqKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlVVVVU="},{"a":23176,"b":"VVVVVQ=="},{"a":23184,"b":"VVVVVQ=="},{"a":23192,"b":"VVVVVQ=="},{"a":23200,"b":"VVVVVQ=="},{"a":23208,"b":"VVVVVQ=="},{"a":23216,"b":"VVVVVQ=="},{"a":23224,"b":"VVVVVQ=="},{"a":23232,"b":"VVVVVQ=="},{"a":23240,"b":"VVVV"},{"a":23248,"b":"VVVV"},{"a":23256,"b":"VVVV"},{"a":23264,"b":"VVVV"},{"a":23272,"b":"RUVR"},{"a":23280,"b":"VVVV"},{"a":23288,"b":"VVVV"},{"a":23296,"b":"VVVV"},{"a":23304,"b":"VVVV"},{"a":23312,"b":"VVVV"},{"a":23320,"b":"VVVV"},{"a":23328,"b":"VVVV"},{"a":23336,"b":"VVVV"},{"a":23344,"b":"VVVV"},{"a":23352,"b":"VVVV"},{"a":23360,"b":"RUVR"},{"a":23368,"b":"UlRU"},{"a":23376,"b":"qqqq"},{"a":23384,"b":"qKio"},{"a":23392,"b":"qqqq"},{"a":23400,"b":"qqqq"},{"a":23408,"b":"qqqq"},{"a":23416,"b":"qqqq"},{"a":23424,"b":"qqqq"},{"a":23432,"b":"qqqq"},{"a":23440,"b":"qqqq"},{"a":23448,"b":"qqqq"},{"a":23456,"b":"qqqq"},{"a":23464,"b":"qqqq"},{"a":23472,"b":"qqqq"},{"a":23480,"b":"qqqq"},{"a":23492,"b":"VVVVVQ=="},{"a":23500,"b":"VVVVVQ=="},{"a":23508,"b":"VVVVVQ=="},{"a":23516,"b":"VVVVVQ=="},{"a":23524,"b":"VVVVVQ=="},{"a":23532,"b":"VVVVVQ=="},{"a":23540,"b":"VVVVVQ=="},{"a":23548,"b":"VVVVVQ=="},{"a":23556,"b":"VVVVVQ=="},{"a":23563,"b":"VVVVVVU="},{"a":23571,"b":"FRUVRUU="},{"a":23579,"b":"VVVVVVU="},{"a":23587,"b":"VVVVVVU="},{"a":23595,"b":"VVVVVVU="},{"a":23603,"b":"VVVVVVU="},{"a":23611,"b":"VVVVVVU="},{"a":23619,"b":"VVVVVVU="},{"a":23627,"b":"VVVVVVU="},{"a":23635,"b":"VVVVVVU="},{"a":23643,"b":"VVVVVVU="},{"a":23651,"b":"UVFUVFQ="},{"a":23659,"b":"VVVVVVU="},{"a":23667,"b":"VVVVVVU="},{"a":23675,"b":"VVVVVVU="},{"a":23683,"b":"SkpKSko="},{"a":23691,"b":"qqqqqqo="},{"a":23699,"b":"qqqqqqo="},{"a":23707,"b":"qqqqqqo="},{"a":23715,"b":"qqqqqqo="},{"a":23723,"b":"qKioqKI="},{"a":23731,"b":"qqqqqqo="},{"a":23739,"b":"qqqqqqo="},{"a":23747,"b":"qqqqqqo="},{"a":23755,"b":"qqqqqqo="},{"a":23763,"b":"qqqqqqo="},{"a":23771,"b":"qqqqqqo="},{"a":23779,"b":"qqqqqqo="},{"a":23787,"b":"qqqqqqo="},{"a":23795,"b":"qqqqqqo="},{"a":23803,"b":"qqqqqqpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVRUVFUVFVVVVVVVVVVFRVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVFUVFRVFRVFVVVVVVVVVVVVVVVVVVVVVKUlJSUlJSVKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqoqKiioqKioqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVRUVFUVFRVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVVVVVVVVVVUVFUVFRVFVVVVVVVVVVVRUVFRUVFVVqqqqqqqqKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqioqKgqKioqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"},{"a":24896,"b":"VVVVVVVVVVUVFUVFRVFRUVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVFRUVRUVFUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUQFVVVVVUQAAAVVVQAAAAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="},{"a":25220,"b":"VVVVVQ=="},{"a":25228,"b":"VVVVVQ=="},{"a":25236,"b":"VVVVVQ=="},{"a":25244,"b":"VVVVVQ=="},{"a":25252,"b":"VVVVVQ=="},{"a":25260,"b":"VVVVVQ=="},{"a":25268,"b":"VVVVVQ=="},{"a":25276,"b":"VVVVVQ=="},{"a":25284,"b":"VVVVVQ=="},{"a":25291,"b":"VVVVVVU="},{"a":25299,"b":"VVVVVVU="},{"a":25307,"b":"VVVVVVU="},{"a":25315,"b":"VVVVVVU="},{"a":25323,"b":"UVFUVFU="},{"a":25331,"b":"VVVVVRU="},{"a":25339,"b":"VVVVVVU="},{"a":25347,"b":"VVVVVVU="},{"a":25355,"b":"VVVVVVU="},{"a":25363,"b":"VVVVVVU="},{"a":25371,"b":"VVVVVVU="},{"a":25379,"b":"VVVVVVU="},{"a":25387,"b":"VVVVVVU="},{"a":25395,"b":"VVVVVVU="},{"a":25403,"b":"VVVVVVU="},{"a":25411,"b":"UVFUVFU="},{"a":25419,"b":"VFRUVBU="},{"a":25427,"b":"qqqqqio="},{"a":25435,"b":"oqKioqI="},{"a":25443,"b":"qqqqqqo="},{"a":25451,"b":"qqqqqqo="},{"a":25459,"b":"qqqqqqo="},{"a":25467,"b":"qqqqqqo="},{"a":25475,"b":"qqqqqqo="},{"a":25483,"b":"qqqqqqo="},{"a":25491,"b":"qqqqqqo="},{"a":25499,"b":"qqqqqqo="},{"a":25507,"b":"qqqqqqo="},{"a":25515,"b":"qqqqqqo="},{"a":25523,"b":"qqqqqqo="},{"a":25531,"b":"qqqqqqpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVFRVFRUVRUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVRUVRUVRUVFUKioqKioqSkqKioqKKioqKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlVVFRUVRUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVFVVVVVVVVVVFRUVRUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVFVVVVVVVVVKCAgIQEJSUCqqqqqqqqoKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqUVFRUVRUVFVVVVVVVVVVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUVFRVFRVVVVVVVVVVRUVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVEAAVVVVVEAAAABVUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAqgIAAAAAAACqqgAAAAAAAKqqCgAAAAAAqqqqAAAAAACqqqoqAAAAAKqqqqoAAAAAqqqqqqoAAACqqqqqqgIAAKqqqqqqqgAAqqqqqqqqKgBVVVVV"},{"a":26504,"b":"fVUAFA=="},{"a":26512,"b":"XV1u"},{"a":26520,"b":"VVVV"},{"a":26552,"b":"VlZW"},{"a":26560,"b":"qlVV"},{"a":26568,"b":"lZWV"},{"a":31744,"b":"8PHw8fDx8PLz8PDw8PDw8PDw8PDw8PDw8PDw8PD3+Pj4+Pj4+Pj58CgpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7vAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7vAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7vAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7vKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QEFCQ0RFRkdISUpLTE1OTw=="},{"a":32767,"b":"WQ=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19657,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":10,"colour_cells_changed_during_frame":0}};
 </script>
 <script>
+// The Sentinel (C64, Firebird 1986): the sound driver, ported from the game's code for
+// site/lib/sid.js. createDriver(data) refers to nothing outside itself; data is data.json, the
+// game's tables as its memory holds them (extract.py names each address range).
+//
+// What the game does, and what this port does in the same order with the same 8-bit arithmetic:
+//
+//   Once a frame the raster interrupt ($9630-$963D) counts the sound timer $0CDF down (it stops
+//   at 0), then steps the pitch effects ($8F0C, reached through JMP $FFC5, with A = 3) and then
+//   the note timers ($8ED1, through JMP $FFC2).
+//
+//   The main program calls $352C, "process the sound", at many points: once per tile drawn
+//   ($2A12), per row of the view ($26EC, $3714), per row of corners traced ($24ED), per pass of
+//   the game loop ($12C1), per tick of the game-over screen decay ($880A, $87A1), and in busy
+//   loops that wait for a tune to end ($35D5 after a new view, $362A after a landscape is won).
+//   It does nothing while $0CDF is not 0. Then, by the sound kind in $0C73: 4, the scanner, plays
+//   sound 4 and sets $0CDF = 50; 3, music, reads the tune on ($34DE) and plays its next note;
+//   6, game over, plays sound 6 at the falling pitch $0C74 and sets $0CDF to 1-4 at random.
+//
+//   Sound n is the 8-byte block at $AC00 + 8n, played by OSWORD 7 ($3470 -> $FFF1 -> $8DB4):
+//     0 voice 0-2
+//     1 SID control byte: written without its gate bit first, so the envelope restarts, and
+//       again as given once the other registers are set
+//     2 attack/decay     3 sustain/release; the low nibble also picks the release time, in
+//                          frames, from $8EC1
+//     4 pitch: an index into the frequency tables $9033 (low) / $9133 (high), 48 steps an octave
+//     5 bits 0-3: pulse width, high nibble (the low byte is written 0); bit 7 set: the frequency
+//       is halved (bits 4-6) + 1 times, by shifting it right. Only the first frequency is
+//       shifted: a pitch effect writes the table's frequency unshifted ($8F5C)
+//     6 frames before the gate is released; $80 and up: held until the voice is silenced
+//     7 offset of a 7-byte pitch-effect record at $AC40; $80 and up: none
+//   A pitch-effect record is byte 0: flags (the effect steps only if it has a bit in common with
+//   A = 3; bit 7: stop after the third section instead of starting again), bytes 1-3: the pitch
+//   change per step in sections 0-2 (signed, in 48ths of an octave), bytes 4-6: the steps in
+//   each section. OSWORD 7 copies it for the voice ($8EA6 + 7 × voice) and the effect steps once
+//   a frame. The note timer counts byte 6 down; at 0 it writes the control byte without its gate
+//   (the SID's release begins) and counts the release time from $8EC1 down, the first count in
+//   the same frame; at 0 it writes sustain/release 0 and control 0, and stops the effect.
+//
+// The port's frames. A frame here is one interrupt followed by the main program's calls of
+// $352C until the next interrupt. play() runs the interrupt's part ($9630-$963D), then calls
+// $352C again and again until a call makes no sound: a note whose wait has run out plays in the
+// frame whose interrupt ran it out, and the notes of a chord (waits of 0) all play in one frame.
+// This assumes the game calls $352C at least once a frame. It does in the busy loops at $35D5
+// and $362A, in the corner loop of build_tile_visibility (every 2,000-2,700 cycles, where the
+// transfer and hyperspace tunes play) and in the first game-over decay (a tick of about 10,050
+// cycles). It does not in some stretches of a view's redraw, measured in a simulator without
+// the interrupts: precompute_tile_angles calls it once per row, about 51,000 cycles apart;
+// clear_view_screen (about 109,000 cycles) and show_whole_view (about 131,000) not at all;
+// draw_view_rows at times 100,000 cycles apart. Nor in the second game-over decay, where the
+// interrupt draws fade dots and a tick comes about every 1.3 frames. A note due in such a
+// stretch plays at the next call, and the notes after it follow it: the U-turn's second chord
+// and the game-over tune's notes can come later in the game than here.
+//
+// init(tune) resets the driver and the SID to the state the game's start-up leaves them in
+// ($89A9-$89C1 write $08 to the three control registers, $0F to the volume and 0 to the filter),
+// then makes the game's own call, whose SID writes are published by the next play(). That first
+// play() has no interrupt part: the call is made in the main program, and the first interrupt
+// after it comes in the second frame. stop() clears the sound kind as $360A-$360C does and
+// silences the three voices as $351C does. playing() is true while the music or a repeating
+// sound has more to play or a voice still sounds, so a tune lasts until its last release ends.
+// voice(x) gives the voice's sound, pitch index, note timer, release count and effect section;
+// state() gives every game variable the port keeps, by address, for the test.
+//
+// Tunes, in init's numbering:
+//   0-4   music: hyperspace, transfer, U-turn, game over, landscape won
+//   5-11  sounds 0-6 on their own; the scanner (9) and the game-over noise (11) as $352C makes
+//         them, sound 2 (7) held until stop(), sound 3 (8) as its block stands in the image
+//   12    the refused-action ping: sound 5 at pitch 170 ($1BA9)
+function createDriver(data) {
+  'use strict';
+  const FLO = data.freqLo, FHI = data.freqHi;      // $9033, $9133
+  const REL = data.release;                        // $8EC1
+  const SIDOFS = data.sidOffset;                   // $8EBB: 0, 7, 14
+  const ENVOFS = data.effectOffset;                // $8EBE: 0, 7, 14
+  const MUSIC = data.music;                        // $AB50
+  const EFFECTS = data.effects;                    // $AC40
 
+  const sid = new Uint8Array(25);                  // $D400-$D418 as last written
+  const blk = new Uint8Array(56);                  // $AC00-$AC37: the game writes into it
+  // the driver's variables, $8E80-$8EBA
+  let freqLo = 0, byte5 = 0, soundVoice = 0, copyCount = 0, tickMask = 3;
+  const duration = new Uint8Array(4);              // $8E86 frames to the gate-off; $80+: held
+  const pitch = new Uint8Array(4);                 // $8E8A
+  const relLen = new Uint8Array(4);                // $8E8E
+  const relLeft = new Uint8Array(4);               // $8E92
+  const envBase = new Uint8Array(4);               // $8E96 offset of the voice's record; $80+: none
+  const envSteps = new Uint8Array(4);              // $8E9A
+  const envSection = new Uint8Array(4);            // $8E9E
+  const ctrlRel = new Uint8Array(4);               // $8EA2 control byte without its gate
+  const env = new Uint8Array(21);                  // $8EA6-$8EBA: the three voices' records
+  // the game's variables
+  let timer = 0;                                   // $0CDF sound timer
+  let kind = 0;                                    // $0C73 sound kind: 3 music, 4 scanner, 6 game over
+  let musicPos = 0x80;                             // $0CE7 offset of the next music byte; $80+: none
+  let noteWait = 0;                                // $0C70 wait after each note
+  let goPitch = 0;                                 // $0C74 game-over pitch
+  const seed = new Uint8Array(5);                  // $0C7B-$0C7F random-number register
+  // the port's own bookkeeping
+  const sound = new Int8Array(3);                  // the sound that last started each voice
+  let pending = [], first = true;
+
+  function w(r, v) { sid[r] = v; pending.push(r, v); }
+
+  // ---------------------------------------------------------------- OSWORD 7, $8DB4
+  function osword7(b) {                            // b: the block's offset in $AC00-$AC37
+    let x = blk[b];
+    soundVoice = x;                                // $8DBD
+    envBase[x] = 0x80;                             // $8DC2: no effect, no timing while setting up
+    duration[x] = 0x80;                            // $8DC5
+    sound[x] = b >> 3;
+    x = SIDOFS[x];                                 // $8DC8
+    w(x + 4, blk[b + 1] & 0xFE);                   // $8DD2 control, gate off
+    w(x + 5, blk[b + 2]);                          // $8DD9 attack/decay
+    w(x + 6, blk[b + 3]);                          // $8DE0 sustain/release
+    w(x + 2, 0);                                   // $8DE5 pulse width low
+    byte5 = blk[b + 5];                            // $8DEC
+    w(x + 3, byte5 & 0x0F);                        // $8DF1 pulse width high
+    let y = blk[b + 4];                            // $8DF6 pitch
+    freqLo = FLO[y];                               // $8DF9
+    let a = FHI[y];                                // $8DFF
+    if (byte5 & 0x80) {                            // $8E02 BIT: bit 7, octaves down
+      y = (byte5 >> 4) & 0x07;                     // $8E08-$8E11
+      do {                                         // $8E13 LSR A / ROR $8E80 / DEY / BPL
+        const c = a & 1;
+        a >>= 1;
+        freqLo = (freqLo >> 1) | (c << 7);
+        y = (y - 1) & 0xFF;
+      } while (!(y & 0x80));
+    }
+    w(x + 1, a);                                   // $8E1A frequency high
+    w(x + 0, freqLo);                              // $8E20 frequency low
+    w(x + 4, blk[b + 1]);                          // $8E27 control as given: gate on
+    x = soundVoice;                                // $8E2A
+    ctrlRel[x] = blk[b + 1] & 0xFE;                // $8E33
+    pitch[x] = blk[b + 4];                         // $8E3A
+    relLen[x] = REL[blk[b + 3] & 0x0F];            // $8E44
+    y = blk[b + 7];                                // $8E4C
+    if (!(y & 0x80)) {                             // $8E4F
+      envSteps[x] = 0;                             // $8E53
+      envSection[x] = 0;                           // $8E56
+      copyCount = 7;                               // $8E5B
+      let i = ENVOFS[x];                           // $8E5E
+      do {                                         // $8E62 copy the record
+        env[i] = EFFECTS[y];
+        i = (i + 1) & 0xFF; y = (y + 1) & 0xFF;
+        copyCount = (copyCount - 1) & 0xFF;
+      } while (copyCount !== 0);
+      x = soundVoice;                              // $8E6F
+      envBase[x] = ENVOFS[x];                      // $8E75
+    }
+    duration[x] = blk[b + 6];                      // $8E7C
+  }
+
+  // $3470: sound n is the block at $AC00 + 8n (ASL ×3, ADC #0 with the last shift's carry)
+  function makeSound(n) {
+    const c = (n >> 5) & 1;
+    osword7((((n << 3) & 0xFF) + c) & 0xFF);
+  }
+
+  // OSBYTE $15, $8F81: silence voice x
+  function silence(x) {
+    const y = SIDOFS[x];
+    envBase[x] = 0x80;
+    duration[x] = 0x80;
+    w(y + 6, 0);
+    w(y + 4, 0);
+  }
+
+  // ---------------------------------------------------------------- the note timer, $8ED1
+  function noteTimer() {
+    for (let x = 2; x >= 0; x--) {
+      const d = duration[x];
+      if (d !== 0) {
+        if (d & 0x80) continue;                    // $8ED8 held
+        duration[x] = (d - 1) & 0xFF;              // $8EDA
+        if (duration[x] !== 0) continue;
+        w(SIDOFS[x] + 4, ctrlRel[x]);              // $8EE5 gate off
+        relLeft[x] = relLen[x];                    // $8EEB
+      }
+      if (relLeft[x] === 0) continue;              // $8EEE
+      relLeft[x] = (relLeft[x] - 1) & 0xFF;        // $8EF3
+      if (relLeft[x] !== 0) continue;
+      envBase[x] = 0x80;                           // $8EFA
+      w(SIDOFS[x] + 6, 0);                         // $8F02
+      w(SIDOFS[x] + 4, 0);                         // $8F05
+    }
+  }
+
+  // ---------------------------------------------------------------- the pitch effects, $8F0C
+  function effectTick(a) {
+    tickMask = a;                                  // $8F0E
+    for (let x = 2; x >= 0; x--) {
+      if (envBase[x] & 0x80) continue;             // $8F14 none
+      if ((env[envBase[x]] & tickMask) === 0) continue;  // $8F1C
+      envSteps[x] = (envSteps[x] - 1) & 0xFF;      // $8F1E
+      let next;                                    // where the code goes on: 'L8F25', 'L8F37', 'L8F49'
+      if (envSteps[x] & 0x80) next = 'L8F37';
+      else if (envSteps[x] !== 0) next = 'L8F49';
+      else next = 'L8F25';
+      let s = 0, ended = false;
+      for (let guard = 0; next !== 'L8F49'; guard++) {
+        if (guard > 8) throw new Error('pitch effect with no steps in any section');  // the game would hang
+        if (next === 'L8F25') {                    // the next section
+          s = (envSection[x] + 1) & 0xFF;
+          if (s < 3) next = 'L8F39';
+          else if (env[envBase[x]] & 0x80) { envBase[x] = 0x80; ended = true; break; }  // $8F71
+          else next = 'L8F37';
+        }
+        if (next === 'L8F37') { s = 0; next = 'L8F39'; }
+        envSection[x] = s;                         // $8F39
+        envSteps[x] = env[4 + ((s + envBase[x]) & 0xFF)];   // $8F41: $8EAA + section + base
+        next = envSteps[x] === 0 ? 'L8F25' : 'L8F49';       // $8F47
+      }
+      if (ended) continue;
+      const i = (envSection[x] + envBase[x]) & 0xFF;        // $8F49
+      pitch[x] = (env[1 + i] + pitch[x]) & 0xFF;            // $8F51: $8EA7 + section + base
+      const y = pitch[x];
+      const lo = FLO[y];
+      w(SIDOFS[x] + 1, FHI[y]);                    // $8F66
+      w(SIDOFS[x] + 0, lo);                        // $8F6A
+    }
+  }
+
+  // ---------------------------------------------------------------- the random numbers, $31CA
+  function nextSeed() {
+    for (let i = 0; i < 8; i++) {
+      let c = ((seed[2] >> 3) ^ seed[4]) & 1;      // bit 3 of $0C7D EOR bit 0 of $0C7F
+      for (let k = 0; k < 5; k++) {                // ROL $0C7B ... ROL $0C7F
+        const o = seed[k] >> 7;
+        seed[k] = ((seed[k] << 1) | c) & 0xFF;
+        c = o;
+      }
+    }
+    return seed[4];
+  }
+
+  // ---------------------------------------------------------------- the music, $34DE
+  function processMusic() {                        // true when a note was played
+    for (;;) {
+      const x = musicPos;
+      if (x & 0x80) return false;                  // $34E1
+      musicPos = (musicPos + 1) & 0xFF;            // $34E3
+      const a = MUSIC[x];                          // $34E6
+      if (a === 0xFF) { musicPos = 0xFF; return false; }  // $3518 the end
+      if (a >= 0xC8) {                             // $34ED a wait for the notes after it
+        noteWait = ((a - 0xC8) << 2) & 0xFF;       // $34F1-$34F5
+        continue;                                  // $34F8
+      }
+      blk[0x1C] = a;                               // $34FB sound 3's pitch
+      timer = noteWait;                            // $3501
+      let v = (blk[0x18] + 1) & 0xFF;              // $3504 sound 3's voice, 0 -> 1 -> 2 -> 0
+      if (v >= 3) v = 0;
+      blk[0x18] = v;                               // $3510
+      makeSound(3);                                // $3515
+      return true;
+    }
+  }
+
+  // ---------------------------------------------------------------- process the sound, $352C
+  function processSound() {                        // true when a sound was made
+    if (timer !== 0) return false;                 // $352F
+    if (kind === 4) {                              // $3561 the scanner
+      timer = 50;
+      makeSound(4);
+      return true;
+    }
+    if (kind === 3) return processMusic();         // $355E
+    if (kind !== 6) return false;                  // $353E
+    const y = goPitch;                             // $3540 game over
+    if (y < 0x3C) return false;                    // $3543
+    blk[0x34] = y;                                 // $3547 sound 6's pitch
+    makeSound(6);                                  // $354C
+    timer = ((nextSeed() & 3) + 1) & 0xFF;         // $354F-$3557
+    goPitch = (goPitch - 1) & 0xFF;                // $355A
+    return true;
+  }
+
+  // ---------------------------------------------------------------- the interrupt's part
+  function interrupt() {
+    timer = (timer - 1) & 0xFF;                    // $9630 DEC
+    if (timer & 0x80) timer = (timer + 1) & 0xFF;  // $9633 BPL / INC
+    effectTick(3);                                 // $9638-$963A
+    noteTimer();                                   // $963D
+  }
+
+  // ---------------------------------------------------------------- the driver
+  function reset() {
+    sid.fill(0); blk.set(data.blocks);
+    freqLo = 0; byte5 = 0; soundVoice = 0; copyCount = 0; tickMask = 3;
+    for (const t of [duration, pitch, relLen, relLeft, envSteps, envSection, ctrlRel, env]) t.fill(0);
+    envBase.fill(0xFF);                            // as the image holds $8E96-$8E99
+    timer = 0; kind = 0; musicPos = 0x80; noteWait = 0; goPitch = 0;
+    seed.set(data.seed);
+    sound.fill(-1);
+    pending = []; first = true;
+    w(4, 0x08); w(11, 0x08); w(18, 0x08);         // $89A9-$89B1 test bits on
+    w(24, 0x0F);                                   // $89B6 volume 15
+    w(21, 0); w(22, 0); w(23, 0);                  // $89BB-$89C1 filter off
+  }
+
+  function startMusic(offset) {                    // $888F
+    musicPos = offset;
+    kind = 3;
+    blk[0x18] = 1;                                 // sound 3's voice: the first note is on voice 2
+  }
+
+  function init(tune) {
+    reset();
+    switch (tune) {
+      case 0: startMusic(0x00); break;             // hyperspace: LDA #$00 at $217F
+      case 1: startMusic(0x19); break;             // transfer: LDA #$19 at $1B82
+      case 2: startMusic(0x28); break;             // U-turn: LDA #$28 at $1B3C
+      case 3: startMusic(0x32); break;             // game over: LDA #$32 at $87F4
+      case 4: timer = 0x0A; startMusic(0x42); break;  // landscape won: $0CDF = 10 at $3620, LDA #$42 at $3625
+      case 5: case 6: case 7: case 8: case 10:
+        makeSound(tune - 5); break;                // sounds 0, 1, 2, 3, 5 through $3470
+      case 9: kind = 4; break;                     // the scanner: $0C73 = 4, as $195F sets it
+      case 11: kind = 6; goPitch = 0xE6; break;    // game over: $87C4-$87CB
+      case 12:                                     // refused action, $1BA9-$1BB5
+        blk[0x2C] = 0xAA; makeSound(5); blk[0x2C] = 0x90; break;
+      default: break;                              // no such tune: the driver stays idle
+    }
+  }
+
+  // Stop: the sound kind cleared as $360A-$360C does, and the three voices silenced as $351C
+  // does (OSBYTE $15 for voices 2, 1, 0).
+  function stop() {
+    kind = 0;
+    for (let x = 2; x >= 0; x--) silence(x);
+  }
+
+  function play() {
+    if (!first) interrupt();
+    first = false;
+    for (let n = 0; n < 16 && processSound(); n++) {}   // the main program's calls of $352C
+    self.writes = pending;
+    pending = [];
+  }
+
+  function voiceActive(x) {
+    const d = duration[x];
+    if (d === 0) return relLeft[x] !== 0;          // releasing
+    if (d & 0x80) return (sid[SIDOFS[x] + 4] & 1) !== 0;  // held while its gate is on
+    return true;
+  }
+  // A tune runs while the music or a repeating sound has more to play, or a voice still sounds.
+  function playing() {
+    const more = (kind === 3 && !(musicPos & 0x80)) || kind === 4 || (kind === 6 && goPitch >= 0x3C);
+    return more || voiceActive(0) || voiceActive(1) || voiceActive(2);
+  }
+
+  function voice(x) {
+    return {
+      sound: sound[x],                             // the sound that last started the voice, -1: none
+      pitch: pitch[x],                             // the driver's pitch, 0-255
+      timer: duration[x] & 0x80 ? -1 : duration[x],  // frames to the gate-off; -1: held or silenced
+      release: relLeft[x],                         // frames of release left
+      effect: envBase[x] & 0x80 ? -1 : envSection[x],  // the pitch effect's section, -1: none
+    };
+  }
+
+  // For the test: every game variable the port keeps, by its address in the game's memory.
+  function state() {
+    const m = { 0x0CDF: timer, 0x0C73: kind, 0x0CE7: musicPos, 0x0C70: noteWait, 0x0C74: goPitch,
+      0x8E80: freqLo, 0x8E82: byte5, 0x8E83: soundVoice, 0x8E84: copyCount, 0x8E85: tickMask };
+    seed.forEach((v, i) => { m[0x0C7B + i] = v; });
+    blk.forEach((v, i) => { m[0xAC00 + i] = v; });
+    [duration, pitch, relLen, relLeft, envBase, envSteps, envSection, ctrlRel].forEach((t, k) =>
+      t.forEach((v, i) => { m[0x8E86 + 4 * k + i] = v; }));
+    env.forEach((v, i) => { m[0x8EA6 + i] = v; });
+    return m;
+  }
+
+  reset();
+  pending = [];
+  const self = { init, stop, play, sid, playing, voice, writes: [], state };
+  return self;
+}
+window.SENTINEL_SOUND = {"image":"work/entry.vsf: RAM at file offset 209 + address","from":{"freqLo":"$9033-$9132: SID frequency, low byte, for pitch 0-255 (read at $8DF9, $8F5C)","freqHi":"$9133-$9232: SID frequency, high byte (read at $8DFF, $8F60)","release":"$8EC1-$8ED0: release time in frames by the low nibble of block byte 3 (read at $8E44)","sidOffset":"$8EBB-$8EBD: SID register offset of voice 0-2 (read at $8DC8, $8EDF, $8EFD, $8F63, $8F81)","effectOffset":"$8EBE-$8EC0: offset of voice 0-2's copy of a pitch-effect record in $8EA6-$8EBA (read at $8E5E, $8E72)","blocks":"$AC00-$AC37: the seven 8-byte sound blocks, sound n at $AC00 + 8n (read at $8DBA-$8E7A)","effects":"$AC40-$AC54: the three 7-byte pitch-effect records (copied at $8E62)","music":"$AB50-$ABAF: the music: notes, waits ($C8 + n) and ends ($FF) (read at $34E6)","seed":"$0C7B-$0C7F: the random-number register as the image holds it (stepped by $31CA for the game-over gaps)"},"freqLo":[52,83,114,145,177,209,242,19,53,87,122,158,193,230,11,48,86,124,163,203,243,28,69,111,154,197,241,29,74,120,167,214,6,54,103,153,204,255,51,104,158,212,11,67,124,182,240,44,104,165,227,34,98,162,228,39,106,175,244,59,131,203,21,96,172,249,71,150,230,56,139,223,52,138,226,59,149,240,77,171,11,108,206,50,152,254,103,208,60,168,23,135,249,108,225,88,208,74,198,68,195,69,200,78,213,94,233,118,5,151,42,192,87,241,141,44,205,112,21,189,103,20,195,117,42,225,155,87,22,216,157,101,47,253,205,161,119,81,46,14,241,216,194,175,160,148,140,136,135,138,145,155,169,188,210,236,11,45,84,127,175,227,27,88,153,223,42,122,207,40,135,235,84,194,53,174,44,176,58,201,94,249,154,65,238,162,91,27,226,175,131,94,64,41,25,16,14,20,33,54,83,119,164,216,21,91,168,254,93,197,54,176,51,191,85,244,158,81,14,213,167,131,106,92,89,96,116,146,188,242,52,130,220,67,183,55,196,95,7,189,128,81,49,31,28,39,66,108,165,239,72,177,43,181,80,253],"freqHi":[8,8,8,8,8,8,8,9,9,9,9,9,9,9,10,10,10,10,10,10,10,11,11,11,11,11,11,12,12,12,12,12,13,13,13,13,13,13,14,14,14,14,15,15,15,15,15,16,16,16,16,17,17,17,17,18,18,18,18,19,19,19,20,20,20,20,21,21,21,22,22,22,23,23,23,24,24,24,25,25,26,26,26,27,27,27,28,28,29,29,30,30,30,31,31,32,32,33,33,34,34,35,35,36,36,37,37,38,39,39,40,40,41,41,42,43,43,44,45,45,46,47,47,48,49,49,50,51,52,52,53,54,55,55,56,57,58,59,60,61,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,78,79,80,81,82,83,85,86,87,88,90,91,92,94,95,96,98,99,101,102,104,105,107,108,110,111,113,115,116,118,120,122,123,125,127,129,131,133,135,137,139,141,143,145,147,149,151,153,156,158,160,162,165,167,170,172,175,177,180,182,185,188,191,193,196,199,202,205,208,211,214,217,220,223,227,230,233,237,240,244,247,251,255,2,6,10,14,18,22,26,30,34,38,42,47,51,56,60,65,69],"release":[1,2,3,3,6,9,11,12,15,38,75,120,150,255,255,255],"sidOffset":[0,7,14],"effectOffset":[0,7,14],"blocks":[0,129,148,0,48,168,12,128,0,65,148,0,30,161,12,128,0,129,223,224,100,8,255,128,1,33,11,43,34,8,62,0,1,33,218,139,34,8,20,7,2,65,8,0,144,8,20,14,0,129,2,0,154,152,1,128],"effects":[2,1,255,0,1,1,8,1,6,250,0,1,1,0,130,1,255,0,2,1,7],"music":[200,8,36,206,36,200,20,48,206,48,200,28,56,206,56,200,0,28,206,28,200,8,36,36,255,200,8,36,206,36,200,20,48,206,48,200,16,44,206,44,200,0,28,206,28,200,8,36,36,255,204,8,36,64,68,215,84,201,104,84,68,64,36,212,8,255,201,8,36,212,36,201,0,28,205,28,201,28,56,206,56,201,20,48,207,48,201,16,28,209,28,201,8,36,36,255],"seed":[3,0,1,0,0]};
 </script>
 <script>
 (function () {
@@ -1974,6 +2395,21 @@ land.set(0);
   const root = document.getElementById('music');
   if (!root) return;
   if (!globalThis.C64Sid || typeof createDriver !== 'function') { root.textContent = 'The player needs the site’s shared sound script, ../../lib/sid.js: open this page from the built site.'; return; }
-  
+    const S = globalThis.C64Sid, hex = S.hex;
+  const SOUNDS = ['an enemy turns', 'a meanie turns', 'create or absorb', 'a music note', 'the scanner', 'the ping', 'game-over noise'];
+  const NAMES = ['Hyperspace', 'Transfer', 'U-turn', 'Game over', 'Landscape won',
+    'Sound 0: an enemy turns', 'Sound 1: a meanie turns', 'Sound 2: create, absorb', 'Sound 3: one music note',
+    'Sound 4: the scanner', 'Sound 5: the ping', 'Sound 6: game-over noise', 'Refused action'];
+  S.mount(root, {
+    driver: createDriver, data: window.SENTINEL_SOUND, tunes: NAMES,
+    rows: [
+      { k: 'Sound', f: (v) => v.sound >= 0 ? v.sound + ', ' + SOUNDS[v.sound] + ', block ' + hex(0xAC00 + 8 * v.sound, 4) : 'none yet' },
+      { k: 'Pitch', f: (v) => v.sound >= 0 ? v.pitch + ', from ' + hex(0x9033 + v.pitch, 4) + ' and ' + hex(0x9133 + v.pitch, 4) : '-' },
+      { k: 'Note timer', f: (v) => v.timer >= 0 ? v.timer + ' frames to the release' : (v.sound >= 0 ? 'held, or done' : '-') },
+      { k: 'Release', f: (v) => v.release ? v.release + ' frames left' : '-' },
+      { k: 'Pitch effect', f: (v) => v.effect >= 0 ? 'section ' + v.effect : 'none' },
+    ],
+  });
+
 })();
 </script>

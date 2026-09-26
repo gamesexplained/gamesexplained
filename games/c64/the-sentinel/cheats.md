@@ -11,5 +11,6 @@ labelled as candidates.
 | Being seen costs no energy: the drain takes 0 units instead of 1 | `$1A16` = `$00` (`SBC #$01` becomes `SBC #$00`) | candidate; the enemy still counts a unit taken (`$1A4F`) and later plants it as a tree, so the landscape gains trees |
 
 No poke is needed to reach a landscape: every secret code follows from
-the landscape number (`facts.md`, "Landscape generation"), and
-`work/port/landscape.js` gives the code for any of the 10,000.
+the landscape number (`facts.md`, "Landscape generation"), and the
+landscape explorer on the How it works page gives the code for any of the
+10,000.

@@ -51,8 +51,8 @@ cleared `$00`-`$8F`).
 
 The secret codes are the BBC's too. Simon Owen's list
 (https://github.com/simonowen/sentcode, read 25 September 2026) gives
-one column for "BBC/C64", and the port in `work/port/landscape.js`
-reproduces all 10,000 codes from the C64 routines.
+one column for "BBC/C64", and the port of the C64 routines on this
+game's How it works page reproduces all 10,000 codes.
 
 ### What the C64 adds or rewrites
 
@@ -314,7 +314,8 @@ against the overview screens of eight landscapes).
 
 ## Landscape generation
 
-`work/port/landscape.js` ports these routines. It reproduces, byte for
+The landscape explorer on this game's How it works page runs a port of
+these routines (kept with its tests in `work/port/`). It reproduces, byte for
 byte, the tiles, the 64 object slots and the variables of eight
 landscapes recorded in the emulator (0000, 0001, 0002, 0012, 0100, 1000,
 4321, 9999; `work/traces/`), and all 10,000 codes of the published list.
@@ -431,7 +432,7 @@ What the tests that sort values into classes actually let through
 | Sine, 128 entries | `$AC80` |
 | SID frequency for pitch n = round(2100 × 2^(n/48)): quarter semitones, 48 to the octave, 123.3 Hz at 0 on PAL; entries 239-255 wrap | `$9033`/`$9133` |
 | Seven sound blocks, three pitch-effect records | `$AC00`, `$AC40` |
-| Music | `$AB50` |
+| Music, the BBC's own bytes | `$AB50` |
 | Energy icons and scanner frame, characters 240-249 | `$ABB0` |
 | Keyboard maps, ASCII by key number, with and without SHIFT | `$8FB3`, `$8FF3` |
 | Tile visibility, one bit a tile | `$3E80` |
@@ -439,39 +440,79 @@ What the tests that sort values into classes actually let through
 ## Sound
 
 The BBC's SOUND and ENVELOPE become the C64's own OSWORD 7 (`$8DB4`),
-which takes an 8-byte block (`$3470` passes block n at `$AC00` + 8n):
+which takes an 8-byte block (`$3470` passes block n at `$AC00` + 8n). It
+first parks the voice (duration and effect bytes `$80`, `$8DC2`, `$8DC5`),
+then reads:
 
 1. voice
-2. SID control byte
+2. SID control byte: written without its gate bit first, so the envelope
+   restarts, and again as given once the other registers are set
 3. attack/decay
 4. sustain/release; the low nibble also picks a release time in frames
-   from `$8EC1`
+   from `$8EC1` (`$8E44`)
 5. pitch, looked up in `$9033`/`$9133`
-6. pulse width in bits 0-3; with bit 7 set, the pitch is shifted down
-   (bits 4-6) + 1 octaves
-7. duration in frames (`$80` and up: held)
-8. pitch-effect offset at `$AC40` (`$80`: none)
+6. pulse width's high nibble in bits 0-3 (the low byte is written 0,
+   `$8DE5`); with bit 7 set, the first frequency written is halved (bits
+   4-6) + 1 times (`$8E13`); a pitch effect writes the table's value
+   unshifted (`$8F5C`)
+7. duration in frames (`$80` and up: held), stored last (`$8E7C`)
+8. pitch-effect offset at `$AC40` (`$80`: none); the record is copied to
+   `$8EA6` + 7 × voice (`$8E62`)
 
-The seven sounds: 0 enemy turning (`$181D`), 1 meanie turning
-(`$1750`), 2 create and absorb (`$12EE`, held), 3 music notes, 4 the
-scanner (`$3568`), 5 the ping (`$1A1F`; also after a volume key, `$34B2`,
-and at pitch 170 for a refused action, `$1BAB`-`$1BB5`), 6 game over,
-falling from pitch 230 (`$87CB`) to 60 (`$3540`-`$355A`). The three
-pitch effects are the pitch half of the BBC's envelopes 2, 3 and 4, for
-the music, the scanner and the ping, stepped once a frame (`$8F0C`).
+Once a frame the interrupt counts `$0CDF` down, stopping at 0 (`$9630`),
+steps the pitch effects (`$8F0C`, through `$FFC5` with A = 3) and the note
+timers (`$8ED1`, through `$FFC2`, voices 2, 1, 0). A note timer at 0 writes
+the control byte without its gate and starts the release count from
+`$8EC1`, whose first step comes in the same frame; when that count runs
+out it writes sustain/release 0 and control 0 (`$8EF8`-`$8F05`). A
+pitch-effect record is byte 0, flags (the effect steps only if it shares a
+bit with A = 3; bit 7: stop after section 2 instead of starting again),
+bytes 1-3, the signed pitch change per step in sections 0-2, and bytes
+4-6, the steps in each. The three records are bytes 1-7 of the BBC's
+envelopes 2, 3 and 4, byte for byte, used by the music, the scanner and
+the ping.
 
-Music (`$34DE`, data at `$AB50`): a byte of `$C8` or more sets the wait
-after each following note to (byte − `$C8`) × 4 frames; other bytes are
-notes, played as sound 3 on the three voices in turn (`$3504`-`$3510`);
-`$FF` ends a tune. `$888F` starts the music at an offset:
+The seven sounds: 0 enemy turning (`$181D`), 1 meanie turning (`$1750`), 2
+create and absorb (`$12EE`, held until `$12FC` silences voice 0), 3 music
+notes, 4 the scanner (`$3568`), 5 the ping (`$1A1F`, a unit drained; also
+after a volume key, `$34B2`, and at pitch 170 for a refused action,
+`$1BA9`), 6 game over.
 
-| Offset | When | Where |
-|---|---|---|
-| 0 | hyperspace | `$2181` |
-| 25 | transfer | `$1B82` |
-| 40 | U-turn: the last notes of the transfer tune | `$1B3C` |
-| 50 | game over | `$87F6` |
-| 66 | landscape finished | `$3627` |
+`$352C` runs the sound kind in `$0C73`, and does nothing while `$0CDF` is
+not 0: 4, the scanner, plays sound 4 and sets `$0CDF` = 50; 3, music,
+jumps to `$34DE`; 6, game over, plays sound 6 at the pitch in `$0C74` while
+it is 60 or more (`$3543`), sets `$0CDF` to 1-4 from the seed register
+(`$354F`) and lowers the pitch. The game-over pitch starts at 230
+(`$87C9`); the BBC version's falls from 250 to 80. `$352C` is called from
+nine places, wherever the game happens to be: once per pass of the game
+loop (`$12C1`), per tile corner traced (`$24ED`), per row (`$26EC`,
+`$3714`), per tile drawn (`$2A12`), per dissolve batch (`$87A1`) and decay
+tick (`$880A`), and in two busy loops that wait for a tune to end
+(`$35D5`, `$362A`).
+
+Music (`$34DE`, data at `$AB50`, the BBC's own bytes): a byte of `$C8` or
+more sets the wait after each following note to (byte − `$C8`) × 4
+frames; other bytes are notes, played as sound 3 on the three voices in
+turn (`$3504`-`$3510`); `$FF` ends a tune. `$888F` starts the music at an
+offset and sets the voice to 1, so the first note of every tune is on
+voice 2 and a three-note chord takes voices 2, 0 and 1. Lengths, to the
+last release, with `$352C` run once a frame:
+
+| Offset | When | Where | Length |
+|---|---|---|---|
+| 0 | hyperspace | `$2181` | 278 frames, 5.55 s |
+| 25 | transfer | `$1B82` | 278 frames, 5.55 s |
+| 40 | U-turn: the last two chords of the transfer tune | `$1B3C` | 206 frames, 4.11 s |
+| 50 | game over | `$87F6` | 326 frames, 6.50 s |
+| 66 | landscape finished | `$3627` | 396 frames, 7.90 s |
+
+In the game `$352C` is not called in every frame: `show_whole_view` and
+`clear_view_screen` never call it, and `precompute_tile_angles` calls it
+about 51,000 cycles apart (measured by the sound port's simulator, without
+interrupts). A note due then waits for the next call, so the U-turn's
+second chord and the game-over tune's notes can come later than the
+lengths above. The frequency table puts pitch 89, the BBC's A above middle
+C, at 446 Hz on PAL.
 
 ## The BBC operating system, rebuilt
 
@@ -505,7 +546,7 @@ The census of every absolute access to `$D000`-`$DFFF` in the traced code.
 | `$D019`, `$D01A` | raster interrupt enable and acknowledge | `$896F`-`$8981`, `$8FA7`, `$95EB`, `$95F2` |
 | `$D01C`, `$D025`-`$D02A` | sprite multicolour and colours | `$3F69`, `$3F8D`-`$3F93`, `$8999`, `$98C1`-`$9909`, `$9AA9` |
 | `$D020`-`$D023` | border and background colours | `$8A05`, `$8A38`-`$8A42`, `$8657`-`$867B` |
-| `$D400`-`$D406` | voice registers, reached with an index for the voice | `$8DD2`-`$8E27`, `$8EE5`-`$8F91` |
+| `$D400`-`$D406` | voice registers, reached with an index for the voice | `$89AB` (init), `$8DD2`-`$8E27`, `$8EE5`-`$8F91` |
 | `$D40B`, `$D412`, `$D415`-`$D417` | voices 2 and 3 control, filter off | `$89AE`, `$89B1`, `$89BB`-`$89C1` (init) |
 | `$D418` | volume | `$89B6` (init), `$34A8` (in BBC-derived code) |
 | `$D800`-`$DBFF` | colour RAM | `$8A26`-`$8A2F` (fill with `$0D`), `$9A73`-`$9AEF` |
@@ -584,4 +625,5 @@ printable range.
 | CRSR ←→, then CRSR ↑↓ | the main loop stops while the interrupt runs and the scanner turns solid; then it runs again |
 | 7, 7, 8 | 9 writes to `$D418` |
 | F1 in play | back to the bitmap display (`$9AF6` = 0) and the title |
+| U, with a stopping checkpoint on `$888F` | stopped with A = `$28` (music offset 40); the player's yaw `$09FE` went from 40 to 168 |
 | `frame.py capture` of the first view | 0 of 104,448 pixels differ from the emulator's picture |

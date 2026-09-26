@@ -123,7 +123,9 @@ in-game input hook below does the same job.
   `pressed: true` holds a key until a call with `pressed: false`, and
   `hold_frames` holds it for a count of frames. A key the tool has no name
   for, such as `:`, takes its `row` and `col` from the matrix in
-  `c64-reference`.
+  `c64-reference`. Letters are named in capitals: on the v3.13.1 release
+  `"U"` works and `"u"` comes back as "Unknown key name", which a script
+  that ignores the reply takes for a key the game did not answer.
 - **Typing into a game.** A game that scans the keyboard from its main
   loop misses a press shorter than a pass, and a fixed `hold_frames` is
   either too short or slow. Put a non-stopping checkpoint on the

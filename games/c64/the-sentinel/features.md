@@ -63,7 +63,7 @@ Sources:
 | Pause and continue: the cursor keys (manual; the wiki says → and ↓) | live: CRSR ←→ pauses, CRSR ↑↓ continues (the C64's two cursor keys) | `reference/paused-scanner-solid.png`; `$34BA` |
 | Sound volume: 8 and 7 (wiki) | live (7 down, 8 up; 16 levels) | `$347D`-`$34A8` |
 | Abort the game: F1 (wiki) | live | `$11A3`, `$0C64` |
-| Sound: creaks, hums and hisses; a meanie makes a scratching sound (wiki, manual) | traced (not heard: this run had no audio output): seven SID sounds, one of them for a meanie turning | `$AC00`, `$1750` |
+| Sound: creaks, hums and hisses; a meanie makes a scratching sound (wiki, manual) | traced: seven SID sounds, one of them a meanie turning, and five tunes; the page's port of the driver matches the game's own code run in a 6502 simulator, frame by frame (not heard in the emulator: this run had no audio output) | `$AC00`, `$1750`, `$AB50` |
 
 ## Beyond the documentation
 
