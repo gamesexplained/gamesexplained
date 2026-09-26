@@ -23,9 +23,34 @@ The file is not Novagen's own disk layout. Its BASIC line reads
 a packer of that name, and it unpacks through two more stages (below)
 before the game's own code runs. No intro, trainer or credit to a cracker
 appears on the screen at any point, and none was found in the packer's
-stages. Who packed it, and whether the stage at `$5000` (below) is theirs
-or Novagen's, is unknown. With only one version of the game on the disk,
-there is nothing to compare it with.
+stages.
+
+**Compared with the original.** The contributor also supplied their copy
+of the original Novagen disk, `mercenary[novagen_1985](pal).g64` (a
+track-level image; SHA-256
+`8bca12b725f6e635ccb2366327a638e667e3500586a63b1641561c2c640d5cf6`),
+disk name `mercenary`, ID `mo`, three files: `mercenary` (2 blocks),
+`m2` (7) and `m3` (202). Autostarted from a power-cycled machine, it shows
+Novagen's loading screen ("LOADING: BLOCKS TO GO", counting down;
+`reference/original-disk-loading-screen.png`) for about 144 seconds and
+then reaches the same `$5000` (a stopping checkpoint there, `$01` =
+`$36`; `work/orig-entry-5000.vsf`). Memory at that stop, compared byte for
+byte with the packed build's `work/entry.vsf`, is identical over
+`$0800`-`$CFFE` except for five places, all the cracker's:
+
+| Where | Original | Packed build |
+|---|---|---|
+| `$7009`-`$7021`, the intro's first message | "NOVADRIVE COUNTDOWN" | "ABC UNLIMITED" |
+| `$8004`-`$8008` | `CBM80` (C3 C2 CD 38 30): a reset jumps through `$8000` to `$2170` | zeros |
+| `$2178`, the loop at `$2170` | branch offset `$F8`: the loop spins for ever | `$F9`: it lands on a `BRK` |
+| `$5100`-`$52FF` | loader leftovers | `$AA` filler |
+| `$BFFF` | `$00` | `$7D` |
+
+Below `$0800` the two differ as the loaders leave them; above `$CFFE` the
+original has nothing loaded at that moment (VICE's power-on pattern), so
+the packed build's `$D000`-`$DFFF` is the packer's. The copy at `$5000`
+and its NTSC test are the same in both: they are Novagen's. Every address
+in this folder holds for the original too, apart from those five places.
 
 ## From power-on to play
 

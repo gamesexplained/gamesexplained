@@ -18,6 +18,16 @@ from reading the code in `work/handover-7200.vsf` (`orientation.md`).
   (`$7000`-`$71B3`), which the second bitmap overwrites in play.
 - No build identifier or version string was found. `COMPACKER V2.0` in the
   BASIC line is the packer's.
+- The original Novagen disk, booted to the same `$5000`, matches the analysed
+  memory over `$0800`-`$CFFE` but for five places (`orientation.md`): the
+  intro's first message ("NOVADRIVE COUNTDOWN", which the crack replaced
+  with "ABC UNLIMITED"), the `CBM80` reset signature at `$8004` (zeros in
+  the crack), one branch offset at `$2178`, filler at `$5100`-`$52FF`, and
+  `$BFFF` (*live*, `work/orig-entry-5000.vsf`).
+- **The reset trap** (original only): with `CBM80` at `$8004`, the KERNAL's
+  reset routine jumps through `$8000` to `$2170`: `SEI`, then a loop that
+  branches back to its own `LDX #$00` and spins for ever. The crack removed
+  the signature and changed the loop's offset.
 
 ## Memory layout
 
@@ -56,6 +66,13 @@ from reading the code in `work/handover-7200.vsf` (`orientation.md`).
 - The main loop ran 10 passes in 100 frames standing still on the ground
   (*live*, non-stopping checkpoints on `$855C` and `$AF84` over 100
   frames): the view is redrawn five times a second there.
+- **One view takes 13 frames over the city.** Stepping 24 frames from
+  `work/intro-city-grid.vsf` (the opening descent, the whole city in view)
+  and reading both bitmaps after each: after a swap, the new back buffer is
+  filled with sky and ground in about 2 frames, nothing is drawn for about
+  6 (the models are being transformed), the lines go in over about 5, and
+  the buffers swap (`$24` 68, 69, 70 at frames 0, 4 and 17): about 3.8 views
+  a second (*live*).
 - **Double buffering** (`$AF84`): `$24` counts passes; on even passes the
   game draws into `$4000` (`$25` = `$40`) while `$C7` = `$78` shows `$6000`,
   on odd passes the reverse (`$25` = `$60`, `$C7` = `$70`). The view's
