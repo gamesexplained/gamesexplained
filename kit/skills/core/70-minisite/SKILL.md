@@ -154,10 +154,17 @@ can open with that instead.
   the emulator (the platform's tool notes say how), or, for a routine that
   only computes, against the original code run in a 6502 simulator on the
   snapshot's memory. Write node tests that do the comparison and say in
-  the caption how it was checked. On the C64 the simulator is
-  `kit/c64/cpu6502.js` (`loadSnapshot`, then `new CPU(mem).call(entry,
-  regs)`; its self-test is `kit/c64/test_cpu6502.js`): one run's five widget
-  agents each wrote their own before it existed. For random cases in
+  the caption how it was checked. On the C64 use the kit's simulator,
+  `kit/c64/cpu6502.js`, rather than writing one; its header is the
+  manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
+  left it, the port's banking included, and `call(entry, regs)` runs a
+  routine to its return. The chips belong to the test: `io.write` sees
+  every write in order, which is how a music driver's port is checked
+  register by register, frame by frame. A read of a chip the test does not
+  answer stops the run, and so does a call into ROM unless a hook stands
+  in for the routine. `irq()` runs the game's interrupt, `cycles` times a
+  routine, and the `executed` map shows which instructions the cases
+  reached. For random cases in
   JavaScript, a generator written `seed * 1103515245 + 12345` overflows the
   doubles' 53 bits and loses its low bits, so its "random" inputs repeat far
   sooner than they seem to; use `Math.imul(seed, 1103515245)` or xorshift. A trace is a copy of game memory, so it
