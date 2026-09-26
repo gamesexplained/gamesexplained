@@ -16,6 +16,8 @@ may be started more than once (a second session); the report sums them.
 --model is the id of the model doing the step, as your system prompt names
 it (claude-opus-5, claude-fable-5-1, ...). It is required: a run can change
 model between steps, and a time means nothing without the model that took it.
+Record it even where the environment keeps model ids out of commits
+(AGENTS.md, "Record what you used").
 The game dir is the argument, else GAME_DIR, else the current directory when
 it holds a game.json.
 
