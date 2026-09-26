@@ -308,6 +308,11 @@ the batch.
   `BinaryMonitorServer=1` in the same file, VICE's binary monitor answers
   on port 6502, and memory space 1 of its protocol is drive 8, so the
   drive's program counter and RAM can be read while the C64 waits.
+  Try the image before writing the file: VICE's own defaults already run
+  the drive's processor. On 26 September 2026 the v3.13.1 Linux release,
+  with no `vicerc` at all, autostarted a publisher's original G64 through
+  its custom loader to the game in 143 seconds; the file is for an image
+  that hangs.
 - **One emulator answers on :6510, whoever started it.** A second clone of
   the kit on the same computer, or an emulator left from an earlier run,
   takes this session's calls, and its snapshots land in its own folder.
