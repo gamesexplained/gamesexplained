@@ -118,6 +118,13 @@ lies, all of which have cost real time:
   from several snapshots, or wait a different number of frames before the
   input.
 
+**A figure close to a published one is not a match.** A top speed worked
+out in exact arithmetic came to within 1 % of a magazine's table, and was
+written down as consistent; computed with a port of the game's own
+arithmetic (floats that truncate, a key that refuses its last step) it was
+the magazine's figure to the digit. When the game's own numbers are
+within reach, compute them the game's way before calling a gap small.
+
 **When the code and a measurement disagree, neither wins automatically.**
 Work out what would have to be true for both, and test that. A model that
 reproduces every point of a series once one known effect is accounted for

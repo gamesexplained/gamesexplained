@@ -68,9 +68,46 @@ standard to NTSC and back left every earlier snapshot refusing to load
 ("Failed to load snapshot"; the log says the video chip model differs).
 Restarting the emulator cured it; the note says to run an NTSC test last.
 
+**A 6502 simulator in the kit (`kit/c64/cpu6502.js`, `kit/c64/test_cpu6502.js`,
+`kit/skills/core/70-minisite`).** The skill asks for ports to be tested
+against the original code in a 6502 simulator, and the kit had none: five
+agents on this run each wrote one. The best-tested of them is now in the
+kit with its 49-case self-test (documented opcodes, NMOS decimal mode,
+`JMP ($xxFF)`, `loadSnapshot` for a VICE snapshot, `call`). The skill
+also warns that a linear congruential generator written with `*` in
+JavaScript loses its low bits in the doubles: three agents' random tests
+used one, and were rerun with `Math.imul`.
+
+**Exact arithmetic is not the game's (`kit/skills/core/60-verify`).** The
+craft's top speeds, computed exactly, came within 1 % of Zzap!64's table
+and were written down as consistent; the port in the game's truncating
+floats gave the table to the digit, and a hard ceiling the exact version
+missed. The skill now says to compute the game's figures the game's way
+before calling a gap small. Added to `kit/CHANGELOG.md` 0.0.25.
+
 ## What took longest
 
-The clock report goes here when the last step stops.
+| Step | Minutes | Model | Sessions | What dominated |
+|---|---:|---|---:|---|
+| 10-orient | 16 | claude-opus-5-5 | 1 | tools installed first (release zip, 56 of 56); a one-file packed build: Compacker V2.0, a run-length stage at $B98B and a copy at $5000 traced to the hand-over; a power cycle for clean RAM; a false stop in BASIC's ROM at $B98B |
+| 20-features | 3 | claude-opus-5-5 | 2 | a research agent read 20 sources (manuals, Zzap 11 and 13, the fan site's mirrors) while I traced; the fan site read directly afterwards; the game's own 51 scripts decoded for the text rows |
+| 30-text | 10 | claude-opus-5-5 | 1 |  |
+| 40-sweep | 4 | claude-opus-5-5 | 1 |  |
+| 50-coverage | 54 | claude-opus-5-5 | 1 | twelve annotation agents on disjoint ranges, all claude-opus-5-5, plus the lead: 50.7 KB tracked to 100 %. The disassembler was stopped once by tools.py stop (bare) mid-run and rebuilt from the agents' logs (about 10 minutes lost) |
+| 60-verify | 18 | claude-opus-5-5 | 1 | facts.md rewritten from twelve agent reports (three disagreements settled from the code: script 10's reward, the canned messages printed, the SID census); nine live tests. The shot into the next square took a second try (a missile fired from the ground sinks before it arrives) |
+| 70-minisite | 83 | claude-opus-5-5 | 1 | five widget agents (all claude-opus-5-5) built and tested the city, the underground, the floats and lines, Benson and the scripts, and the flight model, in parallel with the lead's sections; the copy pass and the browser check of both pages by the lead |
+| 80-retro | 2 | claude-opus-5-5 | 1 | kit edits (the simulator into kit/c64, the minisite and verify lessons), kit-feedback, five kit-ask issues (three filed, two commented) |
+| total | 192 | claude-opus-5-5 | | 3.2 h of work, over 3.3 h |
+
+Portable figures: 16.4 minutes to play, 1.1 minutes per KB (53.8 minutes
+for 50,703 tracked bytes), 3.2 hours. Most of the retrospective's kit
+edits were made in 70-minisite while the widget agents worked, so its
+2 minutes are the filing and this file.
+
+The single change that would have saved the most minutes is a 6502
+simulator in the kit: five widget agents each wrote their own before
+testing their ports, perhaps twenty minutes apiece, in parallel but on
+the critical path of every widget. `kit/c64/cpu6502.js` is that change.
 
 ## Operating system and tools
 
@@ -79,8 +116,23 @@ VICE 3.10 through vice-mcp's v3.13.1 Linux release zip, with the fourteen
 runtime libraries `kit/c64/INSTALL.md` lists, passed all 56 checks, so no
 workaround applied. regenerator2000 0.9.20. The widget tests ran on node
 22.22.2 with a 6502 simulator written for them; the pages were checked
-with Playwright's Chromium from `/opt/pw-browsers`.
+with Playwright's Chromium from `/opt/pw-browsers`. `tools.py verify-footprint` was clean on this machine: nothing written outside the repository.
 
 ## Maintainer asks
 
-Filed as `kit-ask` issues at the end of the run and listed here.
+Filed as `kit-ask` issues on 26 September 2026, after searching the open
+and closed ones:
+
+- #44: say whether the model id goes in committed files when a hosted
+  session forbids model identifiers (the kit's rule was followed here).
+- #45: `tools.py stop` should refuse to stop the disassembler while it
+  holds changes newer than the last export.
+- #46: give a renamed auto symbol the reach of a user label in the ledger.
+
+Two asks already filed by another run got this run's case as a comment:
+
+- #41: the emulator's picture one raster line lower than the recorded
+  frame. Here a ground frame differed by 9,001 pixels, 122 at one line's
+  offset, while the descent frame matched exactly.
+- #42: a shared 6502 simulator in `kit/c64`. This branch adds one, and the
+  comment says what of the ask it covers and what it does not.

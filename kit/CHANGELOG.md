@@ -35,6 +35,17 @@ wherever the loader does not write. `10-orient` says to check `$01` at the
 stop or stop first on RAM only, to power-cycle before any boot whose memory
 will be read, and, for a packed program, to keep the last hand-over.
 
+**Compute the game's figures the game's way.** Mercenary's craft speeds,
+worked out in exact arithmetic from the motion records, came within 1 %
+of the table Zzap!64 printed, and were written down as consistent. A port
+of the flying step in the game's own two-byte logarithmic floats, which
+truncate, with the throttle key that refuses its last step, gave the
+magazine's figures to the digit, and a hard ceiling for every craft that
+the exact version missed. `60-verify` now says so. The ports that
+corrected it were tested in a 6502 simulator on the snapshots, and five
+widget agents each wrote their own; the kit now has one,
+`kit/c64/cpu6502.js`, with a self-test.
+
 ## 0.0.22 · 25 September 2026 · Little Computer People, the retrospective's ask · air with Claude
 
 **Under the I/O area, the instruction decides what an address is.** Little

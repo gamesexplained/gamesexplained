@@ -152,7 +152,13 @@ can open with that instead.
   the emulator (the platform's tool notes say how), or, for a routine that
   only computes, against the original code run in a 6502 simulator on the
   snapshot's memory. Write node tests that do the comparison and say in
-  the caption how it was checked. A trace is a copy of game memory, so it
+  the caption how it was checked. On the C64 the simulator is
+  `kit/c64/cpu6502.js` (`loadSnapshot`, then `new CPU(mem).call(entry,
+  regs)`; its self-test is `kit/c64/test_cpu6502.js`): one run's five widget
+  agents each wrote their own before it existed. For random cases in
+  JavaScript, a generator written `seed * 1103515245 + 12345` overflows the
+  doubles' 53 bits and loses its low bits, so its "random" inputs repeat far
+  sooner than they seem to; use `Math.imul(seed, 1103515245)` or xorshift. A trace is a copy of game memory, so it
   and the tests that read it stay in the game's gitignored `work/`, like
   the snapshots.
   Porting is work that splits well across agents: one mechanic each, each
