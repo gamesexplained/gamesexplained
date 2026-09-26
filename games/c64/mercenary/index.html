@@ -2050,12 +2050,21 @@ window.MERC_GAME.catch(() => {});
     });
     $('lmap-walk').onclick = () => {
       if (timer) clearInterval(timer);
-      let n = 0; const step = 80 * Math.SQRT1_2;               // 80 units a step ($A1ED), north-west
+      const step = 80 * Math.SQRT1_2;                         // 80 units a step ($A1ED), north-west
+      const at = n => Math.round(START - n * step);
+      let first = 0; while (!inPatch(at(first))) first++;
+      let last = first; while (inPatch(at(last + 1))) last++;
+      const stop = Math.round((first + last) / 2);            // the middle of the patch
+      let n = 0;
       timer = setInterval(() => {
-        const v = Math.round(START - n * step);
+        const v = at(n);
         place(v, v);
         msg.innerHTML = 'Step ' + n + '. ' + msg.innerHTML;
-        if (++n > 125) { clearInterval(timer); timer = null; }
+        if (n >= stop) {
+          clearInterval(timer); timer = null;
+          msg.innerHTML += ' E works from step ' + first + ' to step ' + last + '; stop anywhere in between.';
+        }
+        n++;
       }, 70);
     };
     $('lmap-clear').onclick = () => {
