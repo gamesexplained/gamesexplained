@@ -32,11 +32,14 @@ def compute(blocks, syms, comments, regions):
             seen[key] = c["address"]
             commented.add(c["address"])
 
-    code = bytearray(0x10000)
+    # typed: data blocks given a shape (bytes, words, text, pointers), not left undefined
+    code, typed = bytearray(0x10000), bytearray(0x10000)
     for b in blocks:
-        if b["type"] == "Code":
-            for a in range(b["start"], b["end"] + 1):
-                code[a] = 1
+        if b["type"] == "Undefined":
+            continue
+        grid = code if b["type"] == "Code" else typed
+        for a in range(b["start"], b["end"] + 1):
+            grid[a] = 1
     # A span ends at the edge of its block. A data span also ends at the fixed edges of the
     # memory map, so that a table's reach cannot run on into the next region; a routine
     # runs on across them, since code that crosses $1000 is still one routine.
@@ -61,8 +64,12 @@ def compute(blocks, syms, comments, regions):
         if excluded(a) or a >= 0x10000:
             continue
         nxt = baddrs[i + 1] if i + 1 < len(bounds) else 0x10000   # the last symbol spans to its cap, not one byte
-        routine = s["type"] in ("Subroutine", "UserDefined") or code[a]
-        end = min(nxt, a + (0x400 if routine else MAX_SPAN), wall_after(a))
+        # the long reach: code, a label made afresh, or a symbol the tracer minted that the
+        # agent has renamed inside a typed data block. Renaming keeps the tracer's type, and a
+        # renamed variable in undefined memory would otherwise take in the bytes after it.
+        long_reach = (s["type"] in ("Subroutine", "UserDefined") or code[a]
+                      or (s.get("kind") == "user" and typed[a]))
+        end = min(nxt, a + (0x400 if long_reach else MAX_SPAN), wall_after(a))
         val = 2 if a in commented else 1
         for x in range(a, max(end, a + 1)):
             if not excluded(x) and state[x] < val:
