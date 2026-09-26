@@ -573,7 +573,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <div class="lift-ctl"><button id="lift-next" type="button">Step</button><button id="lift-reset" type="button">Start again</button><span id="lift-msg"></span></div>
     <p class="cap">The E key's test, one instruction group at a time, with the values it reads standing on the Colony Craft's deck and standing on the ground at 08-08. Tested live in the emulator from the ground: the ride went down to room 8, and E there came up at height <code>$40FF51</code>.</p>
   </div>
-  <p>Room 8 is the Colony Craft's hangar, so the ride down lands you inside it, and the ride up from any hangar ends at that hangar's lift square: for room 8, the deck. The Dart you can buy at the start cannot climb that high (its ceiling byte is <code>$0A</code> against the Colony Craft's <code>$40</code>) until it carries the Poweramp. The lift needs neither. It does not open the Colony Craft, though: all three of hangar 8's doors are keyed to object 23 (room 8's record at <code>$30A6</code>), and the published solutions fetch that key from the hangar at 81-35 first.</p>
+  <p>Room 8 is the Colony Craft's hangar, so the ride down lands you inside it, and the ride up from any hangar ends at that hangar's lift square: for room 8, the deck. The Dart you can buy at the start cannot climb that high: flat out, nose up, its climb gives out at ALT 24000, against the deck's 64997, until it carries the Poweramp. The lift needs neither. It does not open the Colony Craft, though: all three of hangar 8's doors are keyed to object 23 (room 8's record at <code>$30A6</code>), and the published solutions fetch that key from the hangar at 81-35 first.</p>
 </section>
 
 <section id="blind">
@@ -2488,7 +2488,7 @@ window.MERC_GAME.catch(() => {});
   }
   const game = window.MERC_GAME;
   if (!game || typeof game.then !== 'function') { noSite(); return; }
-  game.then(start).catch(e => { noSite(); if (window.console) console.warn('flight widget:', e); });
+  game.then(start, noSite);
 
   const CRAFTS = [
     { n: 0, amp: false, label: '0 New ship', name: 'the brother-in-law’s new ship' },
@@ -2586,12 +2586,11 @@ window.MERC_GAME.catch(() => {});
       return [bits, b];
     });
     const keysEl = $('flight-keys');
-    const keyBtns = KEYS.map(([name, num]) => {
+    KEYS.forEach(([name, num]) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'flight-btn'; b.textContent = name;
       b.addEventListener('click', () => { stopScript(); pressKey(num, name); });
       keysEl.appendChild(b);
-      return b;
     });
     const shiftBtn = document.createElement('button');
     shiftBtn.type = 'button'; shiftBtn.className = 'flight-btn'; shiftBtn.textContent = 'SHIFT';
@@ -2759,7 +2758,7 @@ window.MERC_GAME.catch(() => {});
         onDeck = true;
       } else if (ev.touch && !before.onGround) {
         log('Touchdown at pitch ' + ev.pitch + ' with a height step of ' + ev.hStep + ': landed.' +
-          (ev.ground ? ' Record 8’s ground handling (<code>$9E2F</code>) replaces bytes 2-11.' : ' The nose was up, so the pitch stays and the record stays (<code>$A0C4</code>).'), 'flight-ok');
+          (ev.ground ? ' Record 8’s ground handling (<code>$9E2F</code>) replaces bytes 2-11.' : ' The pitch was below 512, so it is not levelled and the ground handling is not loaded (<code>$A0C4</code>).'), 'flight-ok');
       } else if (ev.touch && before.onGround && !rollingLogged) {
         rollingLogged = true;
         log('Speed ' + fmtInt(Math.abs(s.v)) + ' is 128 or more, so the height step runs: the level pitch’s sine is -0.003, the craft sinks to ' + fmtInt(63 + ev.hStep) +
@@ -2923,6 +2922,7 @@ window.MERC_GAME.catch(() => {});
       ];
       c.font = '11px ' + COL.font;
       c.textBaseline = 'middle';
+      const refLabels = [];
       for (const P of panels) {
         const Y = v => P.y0 + P.h - (v - P.lo) / (P.hi - P.lo) * P.h;
         P.Y = Y;
@@ -2938,9 +2938,7 @@ window.MERC_GAME.catch(() => {});
         if (P.refs) for (const [v, label] of P.refs) {
           const y = Math.round(Y(v)) + 0.5;
           c.strokeStyle = COL.mute; c.beginPath(); c.moveTo(L, y); c.lineTo(W - R, y); c.stroke();
-          c.fillStyle = COL.soft; c.textAlign = 'right'; c.textBaseline = 'bottom';
-          c.fillText(label, W - R, y - 2);
-          c.textBaseline = 'middle';
+          refLabels.push([label, y, P]);
         }
         c.strokeStyle = P.col; c.lineWidth = 2; c.lineJoin = 'round'; c.lineCap = 'round';
         c.beginPath();
@@ -2950,6 +2948,26 @@ window.MERC_GAME.catch(() => {});
         c.fillStyle = P.col; c.strokeStyle = COL.surface; c.lineWidth = 2;
         c.beginPath(); c.arc(X(passNo), Y(P.cur), 4, 0, 2 * Math.PI); c.fill(); c.stroke();
       }
+      // the reference lines' labels: above or below the line, whichever side the data crosses
+      // less and clear of the other label, with a halo of the plate's colour
+      c.textAlign = 'right'; c.textBaseline = 'bottom';
+      const placed = [];
+      for (const [label, y, P] of refLabels) {
+        const w = c.measureText(label).width, x0 = W - R - w - 2, x1 = W - R;
+        const boxes = [[y - 15, y - 2], [y + 2, y + 15]];
+        const score = boxes.map(([t, b]) => {
+          let hits = 0;
+          for (let i = 0; i < n; i++) { const x = X(hist.pass[i]); if (x < x0 || x > x1) continue; const yy = P.Y(P.data[i]); if (yy >= t && yy <= b) hits++; }
+          if (placed.some(([pt, pb]) => pt < b && pb > t)) hits += 1e6;
+          return hits;
+        });
+        const k = score[1] < score[0] ? 1 : 0;
+        placed.push(boxes[k]);
+        c.lineWidth = 3; c.lineJoin = 'round'; c.strokeStyle = COL.surface;
+        c.strokeText(label, x1, boxes[k][1]);
+        c.fillStyle = COL.soft; c.fillText(label, x1, boxes[k][1]);
+      }
+      c.textBaseline = 'middle';
       // pass axis
       const xs = niceStep(xmax);
       c.fillStyle = COL.mute; c.textAlign = 'center'; c.textBaseline = 'top';

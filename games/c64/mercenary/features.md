@@ -83,8 +83,8 @@ table cites it):
 | **Objects** (Zzap 13, site): Antenna, Antigrav, Anti-Time Bomb, Photon Emitter, Sights, Metal Detector, Poweramp, Novadrive, Kitchen Sink, Cobweb, Cheese, Pass, keys, Coffin, Gold, Medical Supplies, Catering Provisions, Large Box, Useful Armament, Energy Crystal, Neutron Fuel, Winchester, Databank, Essential 12939 Supply, the Mechanoid leader | traced | 64 objects; names are canned messages (`$151F` on); 55 models at `$1700`-`$2098` and `$3B25`-`$3FFE`; each object's use is in `facts.md`, "Objects" |
 | **Metal Detector** colours the panel by a building's owner: red nobody, green Palyar, blue Mechanoid (Zzap 13) | traced | `$B542`: with object 26 carried, on the surface and low, the message window is blue for `$2B00` bit 6, red for bit 5, green otherwise |
 | **Kitchen Sink** lets you take almost anything, and with the Cobweb opens any door (Zzap 13, site) | traced | the Sink (47) skips the fixed and heavy checks (`$980B`); object 48, drawn as a cobweb, opens every lock (`$948E`) on its own, but taking it needs the Sink |
-| **Vehicles**: two ground vehicles and four flight craft, plus the interstellar one; speeds per craft (leaflet, manual; Zzap 13's C64 table: Dart 1650/4950, Palyar Diamond 1650/1650, Jet 825/7400, Cheese 3300/9900, Land Dart 3837, Car 825) | traced | eleven motion records at `$9DAD`: craft 2 and 5 on the ground only, 0, 1, 3, 4 and 6 flying, 7 interstellar; top speeds by calculation within 1 % of Zzap 13 (`facts.md`, "Moving") |
-| **Take-off needs speed; landing too hard crashes** (leaflet, Zzap 11) | live (take-off), traced (landing) | the craft stays down below speed 128 (`$A024`); a touchdown crashes when the pass's height step is 256 or more, or the nose is more than 45° down (`$A0AF`); forward speed is not tested |
+| **Vehicles**: two ground vehicles and four flight craft, plus the interstellar one; speeds per craft (leaflet, manual; Zzap 13's C64 table: Dart 1650/4950, Palyar Diamond 1650/1650, Jet 825/7400, Cheese 3300/9900, Land Dart 3837, Car 825) | confirmed | eleven motion records at `$9DAD`: craft 2 and 5 on the ground only, 0, 1, 3, 4 and 6 flying, 7 interstellar; a port of the flying step that matches a 253-pass recording of the Dart gives every top speed in Zzap 13's table to the digit (`facts.md`, "Moving") |
+| **Take-off needs speed; landing too hard crashes** (leaflet, Zzap 11) | live (take-off), traced (landing) | the craft stays down below speed 128 (`$A024`); a touchdown crashes when the pass's height step is 256 or more, or the nose is more than 45° down (`$A0AF`); forward speed is not tested. Reverse thrust takes off with the nose level (live: SHIFT + 0, 9 units a pass) |
 | **The Brother-in-law's New Ship** shuttles between 00-00 and 00-15 at altitude 500 and speed 100 (Zzap 13) | differs | object 0 (`$85C5`) moves one way along column 00, +1/256 square each surface pass, wrapping from row 15 to 0; shooting it runs script 27 |
 | **Attacks**: ships attack after you destroy a side's buildings; a homing missile (manual, Zzap 13) | differs (the missile) | `$BEF8`, set by the squares' scripts: the attack ship (object 15) homes on the player at 1/32 of the distance a pass, but its missile (object 14) is aimed once at launch and not steered |
 | **You are never killed**: hit, you lose your ship; crashes cost nothing (leaflet, manual, Survival Kit) | traced | a hit prints SHIP DESTROYED and sets mode 9, a fall (`$8964`); a crash throws the player out (`$98C8`) |
@@ -111,9 +111,12 @@ Found in the code, not in the manual.
   `reference/blind-shot-*.png`).
 - **The original hangs on reset** (`CBM80` at `$8004`, a loop at `$2170`);
   the crack returns to BASIC (live: `reference/reset-*.png`).
-- **The Dart cannot reach the Colony Craft on its own**: its ceiling is
-  `$0A` (height 655,360, ALT 10000) against the Colony Craft's `$40`; the
-  Poweramp raises it to `$5A`, as the jet and the CHEESE have.
+- **The Dart cannot reach the Colony Craft on its own**: flat out with the
+  nose straight up its climb gives out at ALT 24000, against the Colony
+  Craft's 64997. With the Poweramp, and in the jet or the CHEESE, the top is
+  ALT 105000, which the panel prints `**000`.
+- **Reverse thrust lifts a craft off the ground**, nose level, and level
+  flight forward slowly sinks: the level pitch's sine is −0.003 (live).
 - **Roads** are drawn only from height 2048 up, and above `$200000` a fixed
   13-road picture replaces them.
 - **00-00 never shows its building** (`$E424`): square number 0 means

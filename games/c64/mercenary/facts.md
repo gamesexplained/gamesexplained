@@ -473,33 +473,56 @@ Weapons and moving objects therefore run only on the surface.
      set by the keys.
   4. Y += v cos p cos h, X += v cos p sin h.
   5. On the ground (`$7F` set) with |v| below 128 the pitch is held level
-     and the height does not change; otherwise height += v sin p × climb,
-     halved for every 65536 above the ceiling (`$BEAD`).
+     and the height does not change; otherwise height += v sin p × climb.
+     Above the ceiling byte (`$BEAD`), `$A05D`-`$A06B` sets the climb
+     factor's power of two to the ceiling minus the height's top byte: 2^−1
+     one square of height above it, down to 2^−32 at 32 above, and 2^−30
+     beyond. For a climb of 0.5 the first 65536 above changes nothing; for
+     1.0 it halves at once.
   6. Height below 64 is a touchdown: a crash if this pass's height step was
      256 or more, or the pitch is 640-1023 (nose down more than 45°);
-     otherwise the craft lands (height 63, roll 0, ground handling record
-     8). A crash throws the player out (`$98C8`) and flashes black (`$B242`).
+     otherwise the craft lands (height 63, roll 0), and a touchdown at
+     pitch 512-1023 is levelled and loads the ground handling (record 8);
+     nose-up and upside-down touchdowns keep their pitch and their record.
+     A crash throws the player out (`$98C8`) and flashes black (`$B242`).
   7. Over 08-08 at height `$40` with the middle byte `$FC` or more, the
      craft lands on the Colony Craft's deck (`$40FF3F`) with no crash test.
   8. The heading changes by the turn rate; the roll follows it.
 - **Take-off**: the level pitch's sine is −0.003, so above speed 128 a craft
   on the ground lands again every pass; pulling back lifts it past 64 and the
-  flying record returns. *Live*: the Dart left the ground with full throttle
-  and the stick back (`reference/flight-dart-descending.png`).
-- **The records** (`$9DAD`), and the top speeds the SPEED readout gives with
-  the throttle at its limit, in the air and on the ground, against the
-  review table in Zzap!64 13 (craft matched by speed where the code does
-  not name them):
+  flying record returns (the nose moves one step on the first pass, at the
+  ground pitch rate, so it leaves on the second). *Live*: the Dart left the
+  ground with full throttle and the stick back
+  (`reference/flight-dart-descending.png`). The same sine makes level flight
+  sink slowly, and reverse thrust climb: *live*, SHIFT + 0 on the ground
+  lifted the Dart off on the first pass with the nose level, climbing 9
+  units a pass (67, 74, 82 ...).
+- **Every craft has a hard top**, where the truncated climb step reaches
+  zero. Flat out with the nose straight up, the Dart stops at `$180000` (ALT
+  24000) and never reaches the Colony Craft (`$40`, ALT 64997); the Palyar
+  diamond at `$0E0000` (ALT 14000); the jet, the CHEESE and the Dart with the
+  Poweramp at `$690000`, which the panel prints `**000`, passing the Colony
+  Craft's height 212 (jet) or 317 passes after the nose comes up. (The
+  flight widget's port and the game's code in a 6502 simulator agree.)
+- **The records** (`$9DAD`), and the top speeds the SPEED readout shows
+  with the throttle at its limit (+ held stops after 23 passes at 32512,
+  where `$B4A7` refuses the next step), in the air and on the ground. The
+  flight widget's port of the game's truncating float arithmetic gives
+  Zzap!64 13's table to the digit. The craft are named by their speeds, and
+  by where objects 2-7 start: object 2 on 12-13, 3 in hangar 7 under
+  `**-**`, 4 in hangar 3 (03-00), 5 in hangar 2 (09-05), 6 in room `$36`
+  beside hangar 4 (11-13), 7 in hangar 5 (03-15), each where Zzap!64 13 puts
+  that craft.
 
-| Record | Craft | Ceiling | Thrust | Top speed | Zzap!64 |
+| Record | Craft | Ceiling byte | Thrust | Top speed | Zzap!64 13 |
 |---|---|---|---|---|---|
-| 0 | the brother-in-law's new ship (object 0) | `$5A` | 0.906 | 11577 / 3859 | — |
-| 1 | Dominion Dart | `$0A` (`$5A` with the Poweramp) | 0.391 | 4990 / 1663 | 4950 / 1650 |
-| 2 | car (ground only) | — | 0.195 | 832 | 825 |
-| 3 | jet | `$5A` | 0.195 | 7485 / 832 | 7400 / 825 |
-| 4 | Palyar diamond | `$01` | 0.391 | 1663 / 1663 | 1650 / 1650 |
-| 5 | land Dart (ground only) | — | 0.906 | 3859 | 3837 |
-| 6 | CHEESE | `$5A` | 0.781 | 9980 / 3327 | 9900 / 3300 |
+| 0 | the brother-in-law's new ship (object 0) | `$5A` | 0.906 | `**75` (11475) / 3837 | — |
+| 1 | Dominion Dart | `$0A` (`$5A` with the Poweramp) | 0.391 (doubled) | 4950 / 1650 (9900 / 3300) | 4950 / 1650 |
+| 2 | car (ground only) | — | 0.195 | 825 | 825 |
+| 3 | jet | `$5A` | 0.195 | 7400 / 825 | 7400 / 825 |
+| 4 | Palyar diamond | `$01` | 0.391 | 1650 / 1650 | 1650 / 1650 |
+| 5 | land Dart (ground only) | — | 0.906 | 3837 | 3837 |
+| 6 | CHEESE | `$5A` | 0.781 | 9900 / 3300 | 9900 / 3300 |
 | 7 | interstellar ship | — | — | — | — |
 
 - **Throttle** (`$B47E`, `$BC50`): digits 1-9 set T to 2^(n+4), 0 to 2^14;
@@ -890,7 +913,8 @@ registers beyond sprite 0, `$D01C`, `$D022`-`$D026`, or the CIA timers.
   X (`$9437`).
 - `$9ED6` adds to `$29`, `$2B`, `$2D` without keeping them to 10 bits.
 - A ground craft that becomes airborne loses 65536 units of height a pass
-  and crashes (`$9F09`).
+  (`$9F09`) and crashes when the top byte runs out with the middle byte not
+  0; from `$04:00:3F` the car lands safely.
 - Touchdowns with the pitch below 512 (reversing, nose up) are not levelled
   (`$A0C4`); upside-down touchdowns are safe. The Colony Craft's deck has no
   crash test, and a descent faster than 1024 a pass goes through it.
