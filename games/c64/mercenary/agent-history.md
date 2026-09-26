@@ -118,3 +118,19 @@ multiplier that loses its low bits in JavaScript's doubles; the tests
 were rerun with `Math.imul` and still pass. The flight port also predicted
 that reverse thrust lifts a craft off with the nose level, and the
 emulator confirmed the heights to the unit.
+
+## 26 September 2026: the 08-08 lift is a bug
+
+The contributor asked where to stand for the 08-08 lift from the ground,
+which the page listed as a secret. Taken live from their Novagen disk: the
+spot is a patch 1,024 units a side that nothing on screen marks, exactly
+north-west of the landing point. They pointed out that the page did not
+say what was going on: there is no lift on the ground there at all, and
+the game treats the grass as the Colony Craft's deck because the E test
+never reads the height. The section was rewritten as a bug, with a map of
+the square drawn from the game's bytes, the walk and the monitor pokes to
+try it, and the two live tests it needed: walking to the patch from the
+landing point by hand, and walking off the deck, which falls safely back
+to 08-08. VICE's MCP keyboard presses with an automatic release did not
+reach the game's matrix scan; holding the key and releasing it by hand
+did.
