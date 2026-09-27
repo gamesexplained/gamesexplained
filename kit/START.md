@@ -128,6 +128,20 @@ it. Set `gold` when every section has had its pass. Set `copy` in
 two questions about the pull request and the commit identity in step 3
 come first in this job too.
 
+The contributor can also edit the copy with their own hands, on the page
+itself: `python3 kit/scripts/edit.py` serves the site with every
+paragraph, heading, caption, list item and table cell of the authored tabs
+editable in place, and writes each change into the page's source as they
+leave the block (its `-h` lists the keys). They can cut a block, and move
+a section up or down. A block that holds a widget is not cut but hidden,
+marked `data-cut`, because the page's script still looks for what is in
+it. **The cleanup pass** removes those, and it comes before `gold`: delete
+every element marked `data-cut`, with the script that drives only its
+widgets, the CSS only it matches and any reference image nothing else
+shows; then load the page with the console open, press every widget that
+is left, and run the checks. `build.py` lists the pages that still have
+hidden blocks, and fails on a Gold page that has one.
+
 Time expectations: A Silver run takes one to three hours, mostly
 unattended. A Bronze run takes about 20 to 45 minutes.
 

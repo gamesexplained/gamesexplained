@@ -1,0 +1,51 @@
+/* The page editor (kit/scripts/edit.py): what it draws over a page. Served by the editor
+   only, never by the site. */
+.ge-ui{position:absolute;left:0;top:0;width:0;height:0;z-index:2147483000;font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#23262d}
+.ge-ui button,.ge-hud button,.ge-ph button{font:inherit;cursor:pointer}
+.ge-box,.ge-cutbox{position:absolute;display:none;pointer-events:none;border-radius:6px}
+.ge-box{box-shadow:0 0 0 2px rgba(31,95,168,.45)}
+.ge-box.lock{box-shadow:none;outline:2px dashed rgba(128,131,138,.8)}
+.ge-cutbox{background:rgba(208,74,58,.07);box-shadow:0 0 0 2px rgba(208,74,58,.85)}
+.ge-tip{position:absolute;display:none;width:max-content;max-width:460px;background:#23262d;color:#fff;border-radius:6px;padding:5px 9px;font-size:12px;pointer-events:none;white-space:normal}
+.ge-x{position:absolute;display:none;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:#d04a3a;color:#fff;font-size:16px;line-height:22px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.ge-x:hover{background:#b33626}
+.ge-sec{position:absolute;display:none;width:max-content;gap:2px;padding:3px;border-radius:8px;background:#23262d;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.ge-sec button{min-width:28px;padding:3px 8px;border:0;border-radius:5px;background:none;color:#fff;font-size:14px}
+.ge-sec button:hover{background:rgba(255,255,255,.16)}
+.ge-sec button[data-a=cut]:hover{background:#d04a3a}
+.ge-fmt{position:absolute;display:none;width:max-content;align-items:center;gap:2px;padding:3px;border-radius:8px;background:#23262d;color:#aeb2ba;box-shadow:0 2px 10px rgba(0,0,0,.25);white-space:nowrap}
+.ge-fmt button{padding:3px 9px;border:0;border-radius:5px;background:none;color:#fff}
+.ge-fmt button:hover{background:rgba(255,255,255,.16)}
+
+[contenteditable="true"]{outline:2px solid #1f5fa8;outline-offset:5px;border-radius:2px;caret-color:#1f5fa8}
+[data-ge-going]{opacity:.25;transition:opacity .2s}
+[data-ge-flash]{animation:ge-flash .9s ease-out}
+@keyframes ge-flash{from{box-shadow:0 0 0 4px rgba(31,95,168,.55)}to{box-shadow:0 0 0 4px rgba(31,95,168,0)}}
+
+.ge-ph{display:flex;align-items:center;gap:10px;margin:10px 0;padding:6px 8px 6px 12px;border:1px dashed #c25a00;border-radius:8px;background:rgba(194,90,0,.06);color:#8a4200;font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;list-style:none}
+.ge-ph span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ge-ph button{padding:2px 10px;border:1px solid currentColor;border-radius:999px;background:none;color:inherit}
+
+.ge-hud{font:13px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+.ge-bar{position:fixed;right:16px;bottom:16px;z-index:2147483001;display:flex;align-items:center;gap:6px;padding:6px;border-radius:999px;background:#23262d;color:#fff;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+.ge-bar button{flex:none;padding:3px 11px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:none;color:#fff}
+.ge-bar button:hover{border-color:#fff}
+.ge-bar button[disabled]{opacity:.35;cursor:default}
+.ge-bar button[hidden]{display:none}
+.ge-bar .ge-mode{border-color:#1f5fa8;background:#1f5fa8}
+.ge-reading .ge-bar .ge-mode{background:none;border-color:rgba(255,255,255,.35)}
+.ge-bar .ge-err{border-color:#d04a3a;color:#ffb4a8}
+.ge-status{flex:none;width:min(360px,calc(100vw - 260px));padding:0 6px 0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ge-status.bad{color:#ffb4a8}
+.ge-panel{position:fixed;right:16px;bottom:66px;z-index:2147483001;width:min(460px,calc(100vw - 32px));max-height:60vh;overflow:auto;padding:14px 16px;border-radius:12px;background:#fff;color:#23262d;box-shadow:0 8px 30px rgba(0,0,0,.28)}
+.ge-panel[hidden]{display:none}
+.ge-panel p{margin:0 0 10px}
+.ge-panel ul{margin:0;padding:0;list-style:none}
+.ge-panel li{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid #e0ded8}
+.ge-panel li span{flex:1;min-width:0}
+.ge-panel button{flex:none;padding:2px 10px;border:1px solid #1f5fa8;border-radius:999px;background:none;color:#1f5fa8}
+.ge-ask{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:8px 10px;border-radius:8px;background:#f1efea}
+.ge-ask code{flex:1;font:12px/1.45 'IBM Plex Mono',ui-monospace,Menlo,monospace;white-space:normal;background:none;color:inherit;padding:0}
+.ge-toast{position:fixed;left:50%;bottom:74px;z-index:2147483001;max-width:min(560px,calc(100vw - 32px));padding:8px 14px;border-radius:8px;background:#23262d;color:#fff;transform:translateX(-50%);opacity:0;transition:opacity .2s;pointer-events:none}
+.ge-toast.on{opacity:1}
+.ge-reading .ge-box,.ge-reading .ge-cutbox,.ge-reading .ge-tip,.ge-reading .ge-x,.ge-reading .ge-sec,.ge-reading .ge-fmt{display:none!important}
