@@ -50,6 +50,26 @@ differ, `orientation.md`).
   shows that line depends on timing it does not model; the emulator
   would settle it.
 
+## Listing comments to correct
+
+Five comments in `symbols.json` say less than `facts.md` now does. Changing
+them means rebuilding `listing.json`, which `kit/scripts/listing.py` does
+from the contributor's snapshot, and the snapshot was not in the
+container of the session that found them (27 September 2026):
+
+- `$7472`: "X and Y each from three random bytes": Y's low byte is what
+  `$8510` left in `$07` from converting X.
+- `$8634`: "The descent takes 780 passes (about 2.6 minutes ...)": 779
+  passes after the placing pass, 780 from the poke; 2 min 38 s standing
+  at 08-08, 1 min 29 s in room 8.
+- `$8B41`: "branches when it comes back with the carry clear": the `JSR`
+  at `$8C69` returns into op 13, and op 9 branches on the carry out of
+  `$1F` + Y + 1, not on the called code's.
+- `$AFA8` and `$BB7E`: the flash colour is read with `$F0` before it
+  counts down, so 10 gives `$BB88`-`$BB7F` (black first, then dark grey,
+  grey, light grey, three whites, light grey, grey) and 31 gives 19
+  oranges, not 18.
+
 ## Ideas for the page
 
 - The sound on the How it works page: thirteen SID settings at `$B987` and
