@@ -30,12 +30,12 @@
     a.setAttribute('aria-label','Link to this section'); h.appendChild(a);
   });
   // Every tab but Source: the sections in the margin, listed by build.py. Mark the one being read and keep
-  // it in view; below 1200px the list is a drawer, opened from a Contents button.
+  // it in view; below 1200px the list is a drawer, opened from a Contents button. A section or heading the
+  // page's own script writes (a levels page drawn from the game's bytes) joins the list when it appears.
   var pn=document.querySelector('.pagenav');
   if(pn) (function(){
-    var root=document.documentElement, tabs=document.querySelector('.gametabs'), cur=-2, busy=false;
-    var links=[].slice.call(pn.querySelectorAll('ol a'));
-    var secs=links.map(function(a){ return document.getElementById(decodeURIComponent(a.hash.slice(1))); });
+    var root=document.documentElement, tabs=document.querySelector('.gametabs'), list=pn.querySelector('ol');
+    var cur=-2, busy=false, links=[], secs=[];
     var btn=document.createElement('button'), scrim=document.createElement('div');
     btn.type='button'; btn.className='pagenav-btn'; btn.setAttribute('aria-controls','pagenav'); btn.setAttribute('aria-expanded','false');
     btn.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h8"/></svg>Contents <span class="n"></span>';
@@ -74,9 +74,59 @@
       keep(false);
     }
     function measure(){ if(tabs) root.style.setProperty('--tabs-h',tabs.offsetHeight+'px'); }
+    function collect(){
+      links=[].slice.call(list.querySelectorAll('a'));
+      secs=links.map(function(a){ return document.getElementById(decodeURIComponent(a.hash.slice(1))); });
+      btn.hidden=!links.length; cur=-2;
+    }
+    // The page's outline read the way build.py reads it: each top-level section, by its first h2 or
+    // its label, and every other h2 as an entry of its own.
+    function bare(el){ var c=el.cloneNode(true); [].forEach.call(c.querySelectorAll('.tag, .badge'),function(x){ x.remove(); }); return c.textContent.replace(/\s+/g,' ').trim(); }
+    function slug(s){ return s.toLowerCase().replace(/&/g,' and ').replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40).replace(/-+$/,''); }
+    function outline(){
+      var out=[], top=new Map();
+      [].forEach.call(document.querySelectorAll('section, h2'),function(el){
+        if(pn.contains(el)) return;
+        var s=el.tagName==='SECTION'?el:el.closest('section');
+        while(s&&s.parentElement&&s.parentElement.closest('section')) s=s.parentElement.closest('section');
+        if(el.tagName==='SECTION'){ if(s===el){ var e={el:el,h2:null}; out.push(e); top.set(el,e); } return; }
+        var t=s&&top.get(s);
+        if(t&&!t.h2) t.h2=el; else out.push({el:el,h2:el});
+      });
+      return out;
+    }
+    function entry(e){
+      var fig=e.el.tagName==='SECTION'&&e.el.querySelector('.fig'), num='', label='', tag='';
+      if(fig&&(!e.h2||fig.compareDocumentPosition(e.h2)&Node.DOCUMENT_POSITION_FOLLOWING)){
+        var f=bare(fig), m=/^(\d+)\s*[·:.–—-]\s*(.*)$/.exec(f); num=m?m[1]:''; label=m?m[2]:f;
+      }
+      var head=(e.h2?bare(e.h2):'')||label, p=/^(bug|secret|music)\s*:\s*/i.exec(head);
+      if(p){ tag=p[1].toLowerCase(); head=head.slice(p[0].length); head=head.charAt(0).toUpperCase()+head.slice(1); }
+      else if(/^(?:the )?(sound|music)$/i.test(label)&&(/music$/i.test(label)||/\b(?:tunes?|music|songs?)\b/i.test(head))) tag='music';
+      return {num:num,label:label,head:head,tag:tag};
+    }
+    function grow(){   // add what the page wrote after the build, in page order
+      var have={}, prev=null, added=0;
+      links.forEach(function(a){ have[decodeURIComponent(a.hash.slice(1))]=a.parentNode; });
+      outline().forEach(function(e){
+        if(e.el.id&&have[e.el.id]){ prev=have[e.el.id]; return; }
+        var d=entry(e); if(!d.head) return;
+        if(!e.el.id){ var base=slug(d.label||d.head)||'section', id=base, n=2; while(document.getElementById(id)) id=base+'-'+n++; e.el.id=id; }
+        var li=document.createElement('li'), a=document.createElement('a'), num=document.createElement('span'), h=document.createElement('span');
+        a.href='#'+e.el.id; num.className='n'; num.textContent=d.num; h.className='h';
+        if(d.tag){ var k=document.createElement('span'); k.className='k '+d.tag; k.textContent=d.tag.charAt(0).toUpperCase()+d.tag.slice(1); h.appendChild(k); h.appendChild(document.createTextNode(' ')); }
+        h.appendChild(document.createTextNode(d.head)); a.appendChild(num); a.appendChild(h); li.appendChild(a);
+        list.insertBefore(li,prev?prev.nextSibling:list.firstChild); prev=have[e.el.id]=li; added++;
+        if(location.hash==='#'+e.el.id&&scrollY<50) e.el.scrollIntoView();   // a link to it arrived before it did
+      });
+      if(added){ collect(); spy(); }
+    }
+    var H2=document.getElementsByTagName('h2'), SEC=document.getElementsByTagName('section'), count=-1, soon=0;
+    function watch(){ soon=0; var n=H2.length+SEC.length; if(n!==count){ count=n; grow(); } }
+    new MutationObserver(function(){ if(!soon) soon=setTimeout(watch,200); }).observe(document.body,{childList:true,subtree:true});
     addEventListener('scroll',function(){ if(!busy){ busy=true; requestAnimationFrame(spy); } },{passive:true});
     addEventListener('resize',function(){ measure(); cur=-2; spy(); });
-    measure(); spy();
+    collect(); watch(); measure(); spy();
   })();
   if(document.body.dataset.nolink) return;
   document.querySelectorAll('code').forEach(function(c){

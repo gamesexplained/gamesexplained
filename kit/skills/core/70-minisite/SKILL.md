@@ -140,11 +140,11 @@ can open with that instead.
   line (`<p class="fig">01 · label</p>`) and an `<h2>` heading, on the
   Maps / levels and Play pages too. The build lists each page's sections
   in its left margin by their headings (any further `<h2>` gets an entry
-  of its own), so the headings are what a reader scans to choose where to
-  go. A heading that
-  begins `Bug:`, `Secret:` or `Music:` is tagged in that list, and the
-  sound section is tagged Music without the prefix when its heading names
-  the tunes.
+  of its own, and so does a section or heading the page's script adds),
+  so the headings are what a reader scans to choose where to go. A
+  heading that begins `Bug:`, `Secret:` or `Music:` is tagged in that
+  list, and the sound section is tagged Music without the prefix when
+  its heading names the tunes.
 - Embed only the data you need: extracted character set, level data,
   tables, tune bytes. Small excerpts for commentary; never the program.
 - A game can read the machine's ROM as data: a table, or code used as

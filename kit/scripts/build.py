@@ -368,8 +368,9 @@ def pagenav(page):
     """List a page's sections in the left margin by heading, giving each one an id to link to.
 
     The list is in the page from the first paint, before any script runs; site.js marks the
-    section being read and, on a narrow screen, makes the list a drawer. A page with fewer
-    than two entries gets no list.
+    section being read, adds any section or heading the page's own script writes, and on a
+    narrow screen makes the list a drawer. Every tab but Source gets one, so the page column
+    sits in the same place on each.
     """
     scan = Outline()
     scan.feed(page); scan.close()
@@ -395,8 +396,6 @@ def pagenav(page):
         k = f'<span class="k {tag}">{tag.capitalize()}</span> ' if tag else ""
         items.append(f'<li><a href="#{html.escape(sid)}"><span class="n">{html.escape(num)}</span>'
                      f'<span class="h">{k}{html.escape(text, quote=False)}</span></a></li>')
-    if len(items) < 2:
-        return page
     for at, el, sid in sorted(edits, reverse=True):
         n = len(el) + 1
         if page[at:at + n].lower() == "<" + el:
