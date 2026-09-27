@@ -133,7 +133,7 @@ section table{margin:6px 0 18px}
   <h3>What moves</h3>
   <table>
     <tr><th>Traffic</th><th>Where it goes</th></tr>
-    <tr><td>44 cars: the game's car (object 2) and its land Dart (object 5)</td><td>Along the roads of the game's road table, keeping left, from one place to another at up to the car's own top speed: SPEED 825 on the panel, which shows 100/256 of the units a pass, so 2,112 units a pass. They queue behind the car in front and stop when you stand in the road.</td></tr>
+    <tr><td>44 cars: the game's car (object 2) and its land Dart (object 5)</td><td>Along the roads of the game's road table, keeping left, from one place to another at up to the car's own top speed: SPEED 825 on the panel, which shows 100/256 of the units a pass, so 2,112 units a pass. They slow for corners, queue behind the car in front, stop when you stand in the road, and pull in to the kerb when they arrive.</td></tr>
     <tr><td>14 craft: Darts, Palyar diamonds, jets and CHEESEs</td><td>From a stand at the airbase (08-08) or Jordan Airport (12-13), or from a lift, to another one. They roll and take off from the runways, rise out of the lifts and sink back into them, and cruise at a third to a half of the craft's top speed in the game's table.</td></tr>
     <tr><td>4 Palyar diamonds</td><td>Drop from the Colony Craft's deck, fly a short way below it and dock again.</td></tr>
     <tr><td>1 Palyar Dart</td><td>Flies in formation with the brother-in-law's new ship, 700 units to its west, down column 00. Shoot his ship and the escort breaks away and joins the traffic.</td></tr>
@@ -6751,34 +6751,51 @@ function makeDisplay(opts) {
       const p = path(G, car.at, dest);
       car.route = p && p.length > 1 ? p : null; car.leg = 1;
     }
-    // something just ahead in the car's lane: another car, or you on foot
+    // something just ahead in the car's lane: another car going the same way, or you on foot.
+    // Oncoming and crossing cars pass through, as the game's objects do, so two cars never wait
+    // for each other
     function blocked(car, ux, uy) {
       const near = (x, y) => { const ax = x - car.x, ay = y - car.y, along = ax * ux + ay * uy; return along > 0 && along < 0x1800 && Math.abs(ax * uy - ay * ux) < 0x500; };
-      for (const o of V) if (o !== car && o.kind === 'car' && !o.dead && o.park <= 0 && near(o.x, o.y)) return true;
+      const same = o => Math.abs(((o.head - headingTo(ux, uy) + 1536) % 1024) - 512) < 128;
+      for (const o of V) if (o !== car && o.kind === 'car' && !o.dead && o.park <= 0 && same(o) && near(o.x, o.y)) return true;
       if ((M[0xA9] & 0x80) && !M[0xA8] && !M[0x76] && !M[0x77]) return near(M[0x72] | M[0x73] << 8 | M[0x74] << 16, M[0x78] | M[0x79] << 8 | M[0x7A] << 16);
       return false;
     }
+    // keep left: the lane is 1,536 units to the left of the way the car goes. A leg ends where the
+    // car's lane meets the next leg's (the corner of the two lanes), or on its lane at the square's
+    // centre when the road goes straight on or the route ends; the point is fixed for the whole leg
+    const LANE = 0x600;
+    function legEnd(route, k) {
+      const a = centre(route[k - 1]), b = centre(route[k]);
+      const ux = Math.sign(b.x - a.x), uy = Math.sign(b.y - a.y);
+      let x = b.x + uy * LANE, y = b.y - ux * LANE;         // left of (ux, uy) is (uy, -ux)
+      if (k + 1 < route.length) {
+        const c = centre(route[k + 1]), vx = Math.sign(c.x - b.x), vy = Math.sign(c.y - b.y);
+        if (vx !== ux || vy !== uy) { x += vy * LANE; y -= vx * LANE; }
+        return { x, y, turn: vx !== ux || vy !== uy };
+      }
+      // the last leg pulls in to the kerb, somewhere short of the centre, so parked cars line up
+      const back = Math.floor(rnd() * 0x4000);
+      return { x: x + uy * 0x500 - ux * back, y: y - ux * 0x500 - uy * back, turn: true };
+    }
     function stepCar(car) {
       if (car.park > 0) { car.park--; return; }
-      if (!car.route) { pickCarDestination(car); if (!car.route) { car.park = 50; return; } }
-      const target = car.route[car.leg], c = centre(target);
-      // keep left: the lane is 1,536 units to the left of the way the car goes
-      const dx0 = c.x - car.x, dy0 = c.y - car.y;
-      const along = Math.abs(dx0) > Math.abs(dy0) ? 'x' : 'y';
-      const lane = 0x600;
-      let tx = c.x, ty = c.y;
-      if (along === 'x') ty += dx0 > 0 ? -lane : lane; else tx += dy0 > 0 ? lane : -lane;
-      const dx = tx - car.x, dy = ty - car.y, d = Math.hypot(dx, dy);
-      if (d && blocked(car, dx / d, dy / d)) return;
-      if (d <= car.speed) {
-        car.x = tx; car.y = ty; car.at = target;
+      if (!car.route) { pickCarDestination(car); if (!car.route) { car.park = 50; return; } car.to = legEnd(car.route, 1); }
+      const T = car.to, dx = T.x - car.x, dy = T.y - car.y, d = Math.hypot(dx, dy);
+      if (d && blocked(car, dx / d, dy / d)) { car.v = 0; return; }
+      // pull away, and slow for a corner or the end of the route: a third of the top speed there
+      const slow = T.turn ? car.speed / 3 : car.speed;
+      car.v = Math.min(car.speed, (car.v || 0) + 150, slow + d / 10);
+      if (d <= car.v) {
+        car.x = T.x; car.y = T.y; car.at = car.route[car.leg];
         if (++car.leg >= car.route.length) {                 // arrived: park at the side for a while
-          car.route = null;
+          const target = car.at;
+          car.route = null; car.v = 0;
           car.park = target === STADIUM ? 900 + Math.floor(rnd() * 500) : target === PUB ? 600 + Math.floor(rnd() * 900) : 60 + Math.floor(rnd() * 400);
-        }
+        } else car.to = legEnd(car.route, car.leg);
         return;
       }
-      car.x += Math.round(dx / d * car.speed); car.y += Math.round(dy / d * car.speed);
+      car.x += Math.round(dx / d * car.v); car.y += Math.round(dy / d * car.v);
       car.head = headingTo(dx, dy);
     }
 
@@ -6880,12 +6897,15 @@ function makeDisplay(opts) {
       // fly or land: turn toward the point, climb or sink toward the height
       const dx = L.x - cr.x, dy = L.y - cr.y, dist = Math.hypot(dx, dy);
       const want = headingTo(dx, dy);
-      const off = turnTo(cr, want, Math.min(40, 12 + Math.round(cr.speed / 800)));   // faster craft turn faster, as the game's do
+      const rate = Math.min(40, 12 + Math.round(cr.speed / 800)), off = turnTo(cr, want, rate);   // faster craft turn faster, as the game's do
       cr.speed = Math.min(L.speed, cr.speed + Math.max(120, Math.round(L.speed / 20)));
       if (L.t === 'land') { const glide = Math.max(0, Math.min(1, dist / (SQ * 1.5))); const th = Math.round(glide * ALT(1200)); cr.h += Math.max(-600, Math.min(400, th - cr.h)); cr.speed = Math.max(900, Math.min(cr.speed, Math.round(dist / 12))); }
       else { const dh = L.h - cr.h; cr.h += Math.max(-Math.max(900, cr.speed * 0.4), Math.min(Math.max(700, cr.speed * 0.3), dh)); }
       cr.pitch = 0;
-      const go = off > 128 ? cr.speed >> 1 : cr.speed;
+      // a craft turns at most `rate` a pass, so a point inside its turning circle is never reached at
+      // full speed: slow down until it is outside it
+      const circle = cr.speed / (rate / 1024 * Math.PI * 2);
+      const go = off > 16 && dist < 2 * circle ? Math.max(128, Math.round(cr.speed * dist / (2 * circle))) : off > 128 ? cr.speed >> 1 : cr.speed;
       const a = cr.head / 1024 * Math.PI * 2;
       if (dist <= go * 1.2) {
         cr.x = L.x; cr.y = L.y;
