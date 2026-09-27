@@ -222,3 +222,41 @@ frame the wipe starts. The opening's voice 2 turned out to have a third
 event after the Novadrive and its fade: the script's own poke of `$81`
 into `$D40B` at UNABLE TO CORRECT, the rumble of the fall, which lasts
 until the first engine pass after the landing sets its pitch to 0.
+
+## 27 September 2026: smooth motion on the Play tab
+
+The contributor asked for the Play tab at the screen's own frame rate
+rather than the C64's four to eight views a second, with the game kept as
+it is. Running passes faster was ruled out first: every step the game
+takes (80 units on foot, a sixteenth of a quarter turn, a craft's flight
+equations, the traffic) is per pass, so more passes a second would be a
+faster game. The view is drawn between passes instead, from two passes the
+game has already computed: the picture on show and the next pass's eye,
+which the game sets before that picture appears. The native renderer
+already kept each pass's scene in world positions; it now also keeps what
+each object was and where, and the pass's objects are looked up again at
+the flip for where the next pass will draw them.
+
+The hard part was when the next picture would go on show. Taking the last
+picture's time made turning uneven whenever a pass ran a frame longer, and
+in flight every sixth or seventh pass ran five to seven frames longer: its
+city_view_update rebuilds the road list when the craft enters a new square
+or a new view radius. A harness in node timed every checkpoint of the main
+loop, scored each version against the ideal (each picture's eye moving
+evenly over its actual time on show, known afterwards), and settled on:
+where the program is in its pass and how long the rest took last time, a
+rebuild foreseen from the eye's course, and the pace eased over a frame.
+With that the worst change of speed from one frame to the next matched
+the ideal's, walking, turning and flying, at 60 and 144 Hz.
+
+The same harness ran the page on `main` and on the branch with the same
+input, the smooth view asked for a pose at 144 Hz throughout: the game's
+memory was identical at every pass, walking (1,221 passes) and flying under
+attack (554), with and without Targ Traffic. The view in the C64's pixels
+was compared with the game's own frames at the moment of a flip; putting
+the ground from row 67 when level (`$AFD5` places the horizon 33.5 double
+rows down) and rounding line ends to the nearest pixel brought a level
+view to no pixels different and a banked one to within about 3 %. In the
+desktop app's browser pane the page drew 121 views a second on a 120 Hz
+screen, at about 0.3 ms each. The gun sight, which the native view had
+been painting over, is drawn in front of it again.

@@ -88,6 +88,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-act="restart">Start again</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="render" aria-pressed="false" title="Draw the view at the screen's own resolution">Native resolution</button>
+      <button type="button" data-act="smooth" aria-pressed="false" title="Draw the view at the screen's own frame rate, moving between the game's pictures">Smooth motion</button>
       <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
       <span class="pl-sep" aria-hidden="true"></span>
       <button type="button" data-act="ctrlq" title="CTRL + Q: quit the situation">CTRL + Q</button>
@@ -118,7 +119,7 @@ section table{margin:6px 0 18px}
       </span>
       <span class="pl-status" id="alive-status"></span>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame the way the video chip would: the view's two bitmaps, the panel in the game's character set, the gun sight sprite. <b>Native resolution</b> draws the same view (the same edges, dots and horizon, from the same positions) as sharp lines at the screen's own resolution.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame the way the video chip would: the view's two bitmaps, the panel in the game's character set, the gun sight sprite. <b>Native resolution</b> draws the same view (the same edges, dots and horizon, from the same positions) as sharp lines at the screen's own resolution. <b>Smooth motion</b> draws the view at the screen's own frame rate, sliding it from each of the game's pictures to the next (section 03).</p>
     <div id="alive-panel" hidden>
       <canvas id="alive-cv" width="440" height="440" role="img" aria-label="Map of the city: the roads, you, and the traffic"></canvas>
       <p class="cap" id="alive-cap">Targ Traffic can be switched on at any time; the traffic appears at once and the game carries on. Switched off, the game is the original again. On the map north is up, <b>blue</b> is Palyar and <b>red</b> Mechanoid, a square is a car and a triangle a craft, and the amber disc is you.</p>
@@ -187,6 +188,17 @@ section table{margin:6px 0 18px}
     <tr><td>On the Colony Craft's deck</td><td>400</td><td>49</td><td>48</td></tr>
     <tr><td>The descent</td><td>400</td><td>46</td><td>45</td></tr>
   </table>
+  <h3>Smooth motion</h3>
+  <p>The C64 redraws the view once a pass: about twelve times a second in a room, five to eight times with the city in view. With <b>Smooth motion</b> on, the page draws the view at the screen's own rate, 60, 120 or 144 times a second, and the game underneath does not change.</p>
+  <p>This works because every picture the C64 shows is a pass behind the game. While a picture is on show, the next one is being drawn, from where the game moved you at the end of the pass before. So the page knows where the next picture looks from before it appears. It draws the picture on show from an eye part of the way there, and moves each craft, car and missile part of the way to where the game has already put it. By the time the C64 would flip to the next picture, the view has arrived at it.</p>
+  <p>How long a picture stays on show depends on how much the next pass draws, so the page cannot know it in advance. It follows the program through its pass and expects the rest to take as long as it did last time. One kind of pass runs much longer: the one that rebuilds the list of roads in view, when you fly into a new square or a new band of height. The page sees that coming from your course and slows the glide for it, where the C64 holds the picture.</p>
+  <p>What the game changes at once stays sudden: a door, a lift, boarding or leaving a craft. A craft's turn and a building's rotor keep the game's steps, since only positions slide. Without native resolution the page draws the view in the C64's pixels with its own lines and fill, which match the game's bitmaps to within a pixel.</p>
+  <table>
+    <tr><th>Session, with smooth motion drawing at 144 frames a second</th><th>Passes</th><th>The game's memory</th></tr>
+    <tr><td>Walking and turning at the landing site</td><td>1,221</td><td>identical at every pass to a run without it</td></tr>
+    <tr><td>Boarding the Dart, climbing, banking, under attack</td><td>554</td><td>identical at every pass</td></tr>
+    <tr><td>Both again with Targ Traffic on</td><td>1,221 and 519</td><td>identical at every pass</td></tr>
+  </table>
 </section>
 <section id="differences">
   <p class="fig">04 · Differences</p>
@@ -196,6 +208,7 @@ section table{margin:6px 0 18px}
     <li><b>The screen.</b> The video chip is drawn line by line from the registers the game writes and the line each write lands on, which is how the game splits the screen into the view, the panel and the message window. A register written in the middle of a line takes effect from the next line.</li>
     <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID, a frame at a time.</li>
     <li><b>The interrupts.</b> They run between the steps of a pass, not inside them (section 02).</li>
+    <li><b>Smooth motion.</b> A view between two of the game's pictures never appears on a C64. The page draws it from the game's own positions, part of the way from one pass to the next (section 03).</li>
     <li><b>The keyboard.</b> The arrows are the joystick in port 2, and F or the right Ctrl key fires. The other keys are the C64's by name: the digits set the thrust, T takes and B boards. Esc is CTRL + RETURN, the game's pause.</li>
   </ul>
 </section>
@@ -6042,7 +6055,7 @@ function makeRuntime(P, opts) {
   const prog = program();
   let lastCp = null, lastUnder = 0, passes = 0;
   const PRE_WAIT = 20;                                    // frame_start's two stores before its wait
-  const listeners = { pass: [] };
+  const listeners = { pass: [], cp: [] };
   // run the program until the clock reaches cycle `until`
   function runUntil(until) {
     let guard = 0;
@@ -6055,6 +6068,7 @@ function makeRuntime(P, opts) {
         zeroWork();
         lastCp = y.cp; lastUnder = M[0xA8] ? 1 : 0;
         advance(dt);
+        for (const f of listeners.cp) f(y.cp, t);
         if (y.cp === 0x855C) { passes++; for (const f of listeners.pass) f(passes); }
       } else if (y && y.wait !== undefined) {
         // the frame's wait for line $E0: the work before it is two stores; the segment after it
@@ -6075,9 +6089,9 @@ function makeRuntime(P, opts) {
   function runFrame() { if (target === null) target = t; target += FRAME; if (t < target) runUntil(target); return done[done.length - 1]; }
   return {
     P, M, vic, sid, colour, input,
-    get t() { return t; }, get frame() { return frameIdx; }, get passes() { return passes; },
+    get t() { return t; }, get target() { return target; }, get frame() { return frameIdx; }, get passes() { return passes; },
     runFrame, runUntil, lastFrame: () => done[done.length - 1],
-    onPass: f => listeners.pass.push(f), onSid: f => sidListeners.push(f),
+    onPass: f => listeners.pass.push(f), onCheckpoint: f => listeners.cp.push(f), onSid: f => sidListeners.push(f),
   };
 }
 </script>
@@ -6097,6 +6111,7 @@ function makeDisplay(opts) {
   const px = new Uint8Array(W * Hgt);
   const bitmapLine = new Uint8Array(Hgt);        // 1 where the line shows the bitmap (the view)
   const pageLine = new Uint16Array(Hgt);         // the bitmap's base on that line
+  const sprite = new Uint8Array(W * Hgt);        // 1 where a sprite's pixel is shown (the gun sight)
   // regs: the 47 video registers as the frame starts; writes: [line, reg, value] in order, applied
   // from the line after the one they were made on (the interrupts write within a line's first
   // cycles, before the line's pixels... see validate); bank: VIC bank base (0x4000 here)
@@ -6108,6 +6123,7 @@ function makeDisplay(opts) {
       const line = FIRST + y;
       while (wi < writes.length && writes[wi][0] < line) { R[writes[wi][1]] = writes[wi][2]; wi++; }
       const o = y * W;
+      sprite.fill(0, o, o + W);
       const border = R[0x20] & 15;
       const inDisplay = line >= 51 && line < 251 && (R[0x11] & 0x10);
       bitmapLine[y] = 0;
@@ -6163,13 +6179,13 @@ function makeDisplay(opts) {
           const x = sx + bx - X0;
           if (x < 0 || x >= W) continue;
           if (behind) continue;            // (the game keeps the sprite in front: $D01B = 0)
-          px[o + x] = c;
+          px[o + x] = c; sprite[o + x] = 1;
         }
       }
     }
     return px;
   }
-  return { W, H: Hgt, FIRST, X0, BORDER, px, compose, bitmapLine, pageLine };
+  return { W, H: Hgt, FIRST, X0, BORDER, px, compose, bitmapLine, pageLine, sprite };
 }
 </script>
 <script>
@@ -6183,26 +6199,88 @@ function makeDisplay(opts) {
    show, the same scene is projected again in double precision, with the game's focal lengths
    (64 across, 128 down) and its horizon (from the fixed centre 80, 68, as $AFD5 fills it), and
    drawn as smooth lines. Everything else on the screen (the panel, the border, the bands of a
-   wipe or a lift ride, the starfields) is the faithful frame, scaled. */
+   wipe or a lift ride, the starfields) is the faithful frame, scaled.
+   Smooth motion draws the view between flips too, at the screen's own rate. A pass's picture
+   goes on show at the flip that ends the next pass, and by then the game has already worked out
+   where that next pass looks from: its eye was moved at the end of the pass before, and every
+   object was moved (object 0's step south at $85C5 is still to come, and is added as the main
+   loop adds it). So while a picture is on show, its eye (position, angles, view centre) and each
+   object it drew slide toward those, at a pace aimed to arrive as the next picture goes on show.
+   When that will be is exact once the next flip has run. Before that it is foreseen from the
+   checkpoint the program last reached and how long the rest of the last ordinary pass took from
+   there, plus what a rebuilt road list costs when the eye is about to cross into a new square
+   or view radius (city_view_update, $94E0). The pace is eased over a frame, so a change of plan
+   bends the motion instead of breaking it. Every drawing is made afresh from two passes the game
+   computed, so nothing builds up; the game's memory is only read; and the view reaches each of
+   the game's pictures at about the moment the C64 shows it. What the game changes at once (a
+   door, a lift ride, a craft boarded or left, the descent's stages, a jump of more than 32
+   squares or an eighth of a turn) is not slid across, and an object's own turn and a rotor's
+   spin keep the game's steps: only positions slide. */
 (function () {
   'use strict';
-  const TAU = Math.PI * 2;
+  const TAU = Math.PI * 2, LINE = 63, FRAME = 63 * 312;
   const s24 = v => (v & 0x800000 ? v - 0x1000000 : v);
+  const d24 = (a, b) => s24((b - a) & 0xFFFFFF);                  // b - a on the 24-bit world, the short way round
+  const d10 = (a, b) => ((b - a + 512) & 1023) - 512;              // the same on the 10-bit angles
   // the angles exactly: the game's table is sampled half a step off (level reads -0.003), which only a sharp horizon would show
-  const sin10 = a => Math.sin((a & 1023) * TAU / 1024), cos10 = a => sin10(a + 256);   // exact, as the object viewer turns its models
+  const sin10 = a => Math.sin(a * TAU / 1024), cos10 = a => sin10(a + 256);   // exact, as the object viewer turns its models (and between steps, for smooth motion)
+  const FAR = 0x200000;                                            // 32 squares: farther than any pass moves anything
 
   function attach(rt) {
     const P = rt.P, M = P.M;
-    const scenes = { 0x40: null, 0x60: null };
-    let cur = null, pending = null;
+    const scenes = { 0x40: null, 0x60: null }, hist = [];
+    const st = { scenes, hist, clock: { V: null, phi: 0, v: 0 }, rt, cycle: new Map(), cp: null, cpT: 0, rest: null, city: 0, extra: 0 };
+    let cur = null, pending = null, serial = 0, flipT = 0, waitT = null, rebuilt = false;
     const w24 = (lo, mid, hi) => (M[hi] << 16) | (M[mid] << 8) | M[lo];
     const player = () => ({ x: w24(0x72, 0x73, 0x74), h: w24(0x75, 0x76, 0x77), y: w24(0x78, 0x79, 0x7A) });
+    // an object's position in its tables, and what is being drawn: the object's number, or the
+    // thing a mod draws in a borrowed slot (P.drawTag, which keeps its own x, h, y)
+    const objAt = o => ({ x: w24(0x2880 + o, 0x2480 + o, 0x2540 + o), h: w24(0x28C0 + o, 0x24C0 + o, 0x2580 + o), y: w24(0x2900 + o, 0x2500 + o, 0x25C0 + o) });
+    const who = () => (P.drawTag !== undefined ? P.drawTag : M[0xAF]);
+    function objNow(k) {                                          // at a flip: where the pass after will draw it
+      if (typeof k !== 'number') return { x: k.x & 0xFFFFFF, h: k.h & 0xFFFFFF, y: k.y & 0xFFFFFF };
+      const p = objAt(k);
+      if (k === 0 && !M[0xA8]) {                                  // $85C5, before the objects are drawn
+        const mid = (M[0x2500] + 1) & 255, hi = mid ? M[0x25C0] : (M[0x25C0] + 1) & 0x0F;
+        p.y = (hi << 16) | (mid << 8) | M[0x2900];
+      }
+      return p;
+    }
+    function cut(a, b) {
+      if (a.under !== b.under || a.room !== b.room || a.mode !== b.mode || a.mirror !== b.mirror || a.descent !== b.descent || a.lift || b.lift) return true;
+      if (Math.abs(d24(a.eye.x, b.eye.x)) > FAR || Math.abs(d24(a.eye.h, b.eye.h)) > FAR || Math.abs(d24(a.eye.y, b.eye.y)) > FAR) return true;
+      return Math.abs(d10(a.head, b.head)) > 128 || Math.abs(d10(a.pitch, b.pitch)) > 128 || Math.abs(d10(a.roll, b.roll)) > 128;
+    }
     function begin() {
-      const page = M[0x25];
-      cur = { page, verts: new Map(), edges: [], dots: [], eye: player(), roll: M[0x28] | M[0x29] << 8, pitch: M[0x2A] | M[0x2B] << 8,
+      const sc = { n: ++serial, page: M[0x25], verts: new Map(), edges: [], dots: [], objs: new Map(),
+        eye: player(), roll: M[0x28] | M[0x29] << 8, pitch: M[0x2A] | M[0x2B] << 8,
         head: M[0x2C] | M[0x2D] << 8, cx: M[0x8E], cy: M[0x8F], mirror: M[0xF1] & 1,
-        level: !!(M[0xA8] || (M[0xA9] & 0x80)), under: !!M[0xA8], descent: M[0x9E93] === 0x20 };
-      scenes[page] = cur;
+        level: !!(M[0xA8] || (M[0xA9] & 0x80)), under: !!M[0xA8], descent: M[0x9E93] === 0x20,
+        room: M[0xCD], mode: M[0xA9], lift: M[0xCA] };
+      if (cur) {
+        cur.showT = (Math.floor(flipT / FRAME) + 1) * FRAME;     // the next line 0 copies $C7 into $D018
+        cur.next = sc;
+        cur.objNext = new Map();
+        for (const k of cur.objs.keys()) cur.objNext.set(k, objNow(k));
+        sc.cut = cut(cur, sc);
+        // the way from the last flip to this one: from a pass that rebuilt no road list, how long
+        // the rest took from each checkpoint to the wait; from one that did, how much longer
+        // city_view_update ($85A4-$85A7) took than usual. The picture it ended is marked.
+        const a = st.cycle.get(0x85A4), b = st.cycle.get(0x85A7), city = a !== undefined && b !== undefined ? b - a : null;
+        if (rebuilt) {
+          if (city !== null) st.extra = Math.max(0, city - st.city);
+          if (hist.length > 1) hist[hist.length - 2].rebuilt = true;
+        } else if (waitT !== null) {
+          if (city !== null) st.city = city;
+          st.rest = new Map();
+          for (const [c, t] of st.cycle) st.rest.set(c, waitT - t);
+        }
+      }
+      st.cycle = new Map([[0xAF7D, flipT]]); st.cp = 0xAF7D; st.cpT = flipT;
+      waitT = null; rebuilt = false;
+      cur = sc;
+      scenes[sc.page] = sc;
+      hist.push(sc); if (hist.length > 6) hist.shift();
     }
     function wrap(name, after, before) {
       const f = P[name];
@@ -6212,8 +6290,8 @@ function makeDisplay(opts) {
         : function (r) { if (before) before(r); const v = f.call(this, r); if (after) after(r, v); return v; };
     }
     // a pass's picture starts when the buffers flip
-    wrap('flip_buffers', () => begin());
-    // where each vertex is in the world, as the game's own integers
+    wrap('flip_buffers', () => begin(), () => { flipT = rt.t; });
+    // where each vertex is in the world, as the game's own integers, and whose it is
     wrap('vertex_rel', () => {
       const i = M[0x19];
       pending = { x: s24(w24(0x0400 + i, 0x0440 + i, 0x0740 + i)), h: s24(w24(0x0480 + i, 0x04C0 + i, 0x0780 + i)), y: s24(w24(0x0500 + i, 0x0540 + i, 0x07C0 + i)) };
@@ -6221,7 +6299,7 @@ function makeDisplay(opts) {
     wrap('model_vertex_rel', () => {
       const e = cur ? cur.eye : player();
       const rel = (a, o) => s24(w24(a, a + 1, a + 2)) + ((M[o] | M[o + 1] << 8) << 16 >> 16);
-      pending = { x: s24(e.x) + rel(0xD5, 0xCF), h: s24(e.h) + rel(0xD8, 0xD1), y: s24(e.y) + rel(0xDB, 0xD3) };
+      pending = { x: s24(e.x) + rel(0xD5, 0xCF), h: s24(e.h) + rel(0xD8, 0xD1), y: s24(e.y) + rel(0xDB, 0xD3), o: who() };
     });
     wrap('square_centre_rel', r => {
       const sq = r && r.a !== undefined ? r.a : 0;
@@ -6239,63 +6317,173 @@ function makeDisplay(opts) {
     wrap('plot_point_dot', () => {
       if (!cur) return;
       const e = cur.eye, rel = a => s24(w24(a, a + 1, a + 2));
-      cur.dots.push({ x: s24(e.x) + rel(0xD5), h: s24(e.h) + rel(0xD8), y: s24(e.y) + rel(0xDB) });
+      cur.dots.push({ x: s24(e.x) + rel(0xD5), h: s24(e.h) + rel(0xD8), y: s24(e.y) + rel(0xDB), o: who() });
     });
-    return { scenes };
+    // where the program is: each checkpoint of the main loop as it reaches it, the wait before a
+    // flip (frame_start's two stores, then line 224), and a road list rebuilt ($8EC2, from
+    // city_view_update), which holds that flip back
+    if (rt.onCheckpoint) rt.onCheckpoint((c, t) => { st.cp = c; st.cpT = t; if (!st.cycle.has(c)) st.cycle.set(c, t); });
+    wrap('frame_start', null, () => { waitT = rt.t + 20; });
+    wrap('build_road_list', null, () => { rebuilt = true; });
+    // every object a pass draws, where it is as the pass draws it ($AF is set inside, from X)
+    wrap('draw_object', null, r => {
+      if (!cur || !r) return;
+      const k = P.drawTag !== undefined ? P.drawTag : r.x & 255;
+      if (!cur.objs.has(k)) cur.objs.set(k, objAt(r.x & 255));
+    });
+    return st;
+  }
+
+  // --- smooth motion -----------------------------------------------------------------------------
+  // the earliest a flip made at cycle t or later goes on show: it waits for line 224, and the next
+  // frame's line 0 shows it
+  const showAfter = t => { let f = Math.floor(t / FRAME) * FRAME + 224 * LINE; if (f < t) f += FRAME; return f + FRAME - 224 * LINE; };
+  // a picture's usual time on show: the last one's that no road list lengthened
+  function usual(H, i) {
+    for (let j = i; j > 0; j--) if (H[j - 1].showT !== undefined && H[j].showT !== undefined && !H[j].cut && !H[j - 1].rebuilt) return Math.min(40 * FRAME, H[j].showT - H[j - 1].showT);
+    return 8 * FRAME;
+  }
+  // whether the pass whose flip ends a picture's time on show rebuilds the road list before it
+  // ($94E0: a new square, or a new view radius $2A00[height / 2048] below height $200000): judged
+  // from where the eye's last step takes it, two passes on from the picture's
+  function rebuildNext(M, s) {
+    const b = s.next;
+    if (!b || b.cut || b.under || b.lift) return false;
+    const on = (a, c) => (c + d24(a, c)) & 0xFFFFFF;
+    const nx = on(s.eye.x, b.eye.x), ny = on(s.eye.y, b.eye.y), nh = Math.max(0, s24(b.eye.h) + d24(s.eye.h, b.eye.h));
+    if (nx >> 16 !== b.eye.x >> 16 || ny >> 16 !== b.eye.y >> 16) return true;
+    if (nh >= 0x200000 || b.eye.h >= 0x200000) return false;
+    const r = h => M[0x2A00 + (h >> 11 & 255)];
+    return r(nh) !== r(b.eye.h);
+  }
+  // how long the picture H[i] stays on show: exact once the flip after it has run; before that,
+  // from the checkpoint the program last reached and how long the rest of the last ordinary pass
+  // took from there (the last ordinary picture's time, until one is known), plus a rebuild's
+  // extra if one is coming; never less than the program has already run without flipping
+  function showLength(st, i) {
+    const H = st.hist, s = H[i];
+    if (s.next && s.next.showT !== undefined) return s.next.showT - s.showT;
+    const fore = st.extra > 0 && rebuildNext(st.rt.M, s);
+    const rest = st.rest && st.rest.get(st.cp);
+    const L = rest !== undefined ? showAfter(st.cpT + rest + (fore && !st.cycle.has(0x85A7) ? st.extra : 0)) - s.showT
+      : usual(H, i) + (fore ? st.extra : 0);
+    return Math.max(L, showAfter(st.rt.t) - s.showT);
+  }
+  // the scene to draw at cycle V of the machine's clock, and its eye and objects part of the way
+  // to the next pass's. The way is a phase, the scene's number and a fraction, which moves at a
+  // pace aimed to reach the next pass's eye as its picture goes on show; the pace is eased over
+  // a frame, so a change of plan bends the motion instead of breaking it
+  function smooth(st, V) {
+    const H = st.hist, c = st.clock;
+    let i = H.length - 1;
+    while (i >= 0 && !(H[i].showT <= V)) i--;
+    if (i < 0) return null;
+    const s = H[i], L = showLength(st, i), end = s.n + 1;
+    let phi;
+    if (c.V === null || V < c.V || V - c.V > 8 * FRAME || c.phi > end || c.phi < s.n - 1) {
+      phi = s.n + Math.min(1, (V - s.showT) / L); c.v = 1 / L;
+    } else {
+      const left = s.showT + L - c.V, want = left > 0 ? Math.min((end - c.phi) / left, 1 / FRAME) : 1 / FRAME;
+      c.v += (want - c.v) * (1 - Math.exp(-(V - c.V) / FRAME));
+      phi = Math.min(end, c.phi + Math.max(0, c.v) * (V - c.V));
+    }
+    if (s.cut && phi < s.n) phi = s.n;                    // nothing from before a cut once it is on show
+    c.V = V; c.phi = phi;
+    let sc = s, f = phi - s.n;
+    if (f < 0) { const q = H.find(h => h.n === Math.floor(phi)); if (q) { sc = q; f = phi - q.n; } else f = 0; }
+    return pose(sc, Math.min(1, f));
+  }
+  // a scene's eye and objects the fraction f of the way to the next pass's
+  function pose(sc, f) {
+    const b = sc.next, e = sc.eye;
+    if (!b || b.cut || !(f > 0)) return { sc, f: 0, ex: s24(e.x), eh: s24(e.h), ey: s24(e.y), head: sc.head, pitch: sc.pitch, roll: sc.roll, cx: sc.cx, cy: sc.cy, off: null };
+    const off = new Map();
+    for (const [k, p] of sc.objs) {
+      const q = sc.objNext.get(k);
+      if (!q) continue;
+      const dx = d24(p.x, q.x), dh = d24(p.h, q.h), dy = d24(p.y, q.y);
+      if (Math.abs(dx) > FAR || Math.abs(dh) > FAR || Math.abs(dy) > FAR) continue;   // taken somewhere else, not moved
+      if (dx || dh || dy) off.set(k, [dx * f, dh * f, dy * f]);
+    }
+    return { sc, f, ex: s24(e.x) + d24(e.x, b.eye.x) * f, eh: s24(e.h) + d24(e.h, b.eye.h) * f, ey: s24(e.y) + d24(e.y, b.eye.y) * f,
+      head: (sc.head & 1023) + d10(sc.head, b.head) * f, pitch: (sc.pitch & 1023) + d10(sc.pitch, b.pitch) * f,
+      roll: (sc.roll & 1023) + d10(sc.roll, b.roll) * f, cx: sc.cx + (b.cx - sc.cx) * f, cy: sc.cy + (b.cy - sc.cy) * f, off };
   }
 
   // --- drawing ---------------------------------------------------------------------------------
-  function project(sc) {
-    const e = sc.eye, h = sc.head, p = sc.pitch, r = sc.roll, mir = sc.mirror ? -1 : 1;
+  function project(v) {
+    const sc = v.sc, h = v.head, p = v.pitch, r = v.roll, mir = sc.mirror ? -1 : 1;
     const sH = sin10(h), cH = cos10(h), sP = sin10(p), cP = cos10(p), sR = sin10(r), cR = cos10(r);
     // the full transform ($A320's matrix) and, on foot and underground, the heading-only one ($A979)
     const full = [mir * (sH * sP * sR + cH * cR), -mir * cP * sR, mir * (cH * sP * sR - sH * cR),
       -sH * sP * cR + cH * sR, cP * cR, -(cH * sP * cR + sH * sR),
       sH * cP, sP, cH * cP];
     const Mx = sc.level ? [mir * cH, 0, -mir * sH, 0, -1, 0, -sH, 0, -cH] : full;
-    const ex = s24(e.x), eh = s24(e.h), ey = s24(e.y);
+    const ex = v.ex, eh = v.eh, ey = v.ey, off = v.off;
     const k = sc.descent ? 8 : 1;                               // the descent's first stage: heights x 8
+    const NEAR = 1;
+    const view = q => {
+      let x = q.x, hh = q.h, y = q.y;
+      if (off && q.o !== undefined) { const d = off.get(q.o); if (d) { x += d[0]; hh += d[1]; y += d[2]; } }
+      const X = x - ex, H = (q.road ? -(eh & ~255) : hh - eh) * (q.road ? k : 1), Y = y - ey;
+      return [X * Mx[0] + H * Mx[1] + Y * Mx[2], X * Mx[3] + H * Mx[4] + Y * Mx[5], X * Mx[6] + H * Mx[7] + Y * Mx[8]];
+    };
+    // edges clipped to z > near, projected with the eye's centre ($8E, $8F): view pixels, 160 x 136
+    const proj = q => [v.cx + 64 * q[0] / q[2], v.cy + 128 * q[1] / q[2]];
     return {
-      Mx, full,
-      view(v) {
-        const X = v.x - ex, H = (v.road ? -(eh & ~255) : v.h - eh) * (v.road ? k : 1), Y = v.y - ey;
-        return [X * Mx[0] + H * Mx[1] + Y * Mx[2], X * Mx[3] + H * Mx[4] + Y * Mx[5], X * Mx[6] + H * Mx[7] + Y * Mx[8]];
+      Mx, full, view, proj, NEAR,
+      // sky and ground, from the fixed centre (80, 68): the ray (dx/64, dy/128, 1) is level where
+      // it has no world-up part: Mx1 dx/64 + Mx4 dy/128 + Mx7 = 0
+      upOf: (x, y) => full[1] * (x - 80) / 64 + full[4] * (y - 68) / 128 + full[7],
+      segment(a, b) {
+        let A = view(a), B = view(b);
+        if (A[2] <= NEAR && B[2] <= NEAR) return null;
+        if (A[2] <= NEAR) { const t = (NEAR - A[2]) / (B[2] - A[2]); A = [A[0] + t * (B[0] - A[0]), A[1] + t * (B[1] - A[1]), NEAR]; }
+        if (B[2] <= NEAR) { const t = (NEAR - B[2]) / (A[2] - B[2]); B = [B[0] + t * (A[0] - B[0]), B[1] + t * (A[1] - B[1]), NEAR]; }
+        return [proj(A), proj(B)];
       },
     };
   }
-  function draw(cv, faithful, rt, frame, disp) {
+  // the view's lines that show a bitmap in the faithful frame, and which one
+  function shown(disp) {
+    let y0 = -1, y1 = -1, page = 0;
+    for (let y = disp.BORDER; y < disp.BORDER + 136; y++) if (disp.bitmapLine[y]) { if (y0 < 0) y0 = y; y1 = y; page = disp.pageLine[y]; }
+    return y0 < 0 ? null : { y0, y1, page };
+  }
+  // what to draw: the scene of the bitmap on show, or with V (a cycle of the clock) the smooth pose
+  function poseFor(rt, disp, on, V) {
+    const st = rt.modern;
+    if (!st || rt.M[0xBEFE]) return null;                 // the escape's starfield: no scene, bitmap A holds the stars
+    if (V !== undefined && V !== null) return smooth(st, V);
+    const sc = st.scenes[on.page >> 8];
+    return sc ? pose(sc, 0) : null;
+  }
+  function draw(cv, faithful, rt, frame, disp, V) {
     const dpr = window.devicePixelRatio || 1, css = cv.getBoundingClientRect();
     const W = Math.max(352, Math.round(css.width * dpr)), H = Math.round(W * disp.H / disp.W);
     if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; cv.classList.add('pl-native'); }
     const g = cv.getContext('2d'), s = W / disp.W;
     g.imageSmoothingEnabled = false;
     g.drawImage(faithful, 0, 0, W, H);
-    const st = rt.modern;
-    if (!st) return;
-    if (rt.M[0xBEFE]) return;                           // the escape's starfield: no scene, bitmap A holds the stars
-    // the view's lines that show a bitmap, and which one
-    let y0 = -1, y1 = -1, page = 0;
-    for (let y = disp.BORDER; y < disp.BORDER + 136; y++) if (disp.bitmapLine[y]) { if (y0 < 0) y0 = y; y1 = y; page = disp.pageLine[y]; }
-    if (y0 < 0) return;
-    const sc = st.scenes[page >> 8];
-    if (!sc) return;
+    const on = shown(disp);
+    if (!on) return;
+    const v = poseFor(rt, disp, on, V);
+    if (!v) return;
+    const sc = v.sc, { y0, y1 } = on;
     const M = rt.M, col = n => C64.PAL[n & 15];
     const bx = disp.BORDER * s, by = disp.BORDER * s, vw = 320 * s, vh = 136 * s;
     const X = x => bx + x * 2 * s, Y = y => by + y * s;          // view pixel (160 x 136) to canvas
     g.save();
     g.beginPath(); g.rect(bx, Y(y0 - disp.BORDER), vw, (y1 - y0 + 1) * s); g.clip();
-    const Pj = project(sc), Mx = Pj.full;               // the fill follows the angles, as $AFD5 does
-    // sky and ground, from the fixed centre (80, 68): the ray (dx/64, dy/128, 1) is level where
-    // it has no world-up part: Mx1 dx/64 + Mx4 dy/128 + Mx7 = 0
+    const Pj = project(v);                              // the fill follows the angles, as $AFD5 does
     const sky = col(6), ground = col(M[0xA5]), lineAnd = col(M[0xA3]), lineOr = col(M[0xA6]);
-    const upOf = (x, y) => Mx[1] * (x - 80) / 64 + Mx[4] * (y - 68) / 128 + Mx[7];
     g.fillStyle = sc.under ? ground : sky; g.fillRect(bx, by, vw, vh);
     let groundPath = null;
     if (!sc.under) {
       // clip the view rectangle to the half-plane upOf < 0 (the ground)
       const pts = [[0, 0], [160, 0], [160, 136], [0, 136]], poly = [];
       for (let i = 0; i < 4; i++) {
-        const a = pts[i], b = pts[(i + 1) % 4], fa = upOf(a[0], a[1]), fb = upOf(b[0], b[1]);
+        const a = pts[i], b = pts[(i + 1) % 4], fa = Pj.upOf(a[0], a[1]), fb = Pj.upOf(b[0], b[1]);
         if (fa < 0) poly.push(a);
         if ((fa < 0) !== (fb < 0)) { const t = fa / (fa - fb); poly.push([a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]); }
       }
@@ -6306,16 +6494,6 @@ function makeDisplay(opts) {
         g.fillStyle = ground; g.fill(groundPath);
       }
     }
-    // edges: clip to z > near, project with the eye's centre ($8E, $8F)
-    const NEAR = 1;
-    const proj = v => [sc.cx + 64 * v[0] / v[2], sc.cy + 128 * v[1] / v[2]];
-    function segment(a, b) {
-      let A = Pj.view(a), B = Pj.view(b);
-      if (A[2] <= NEAR && B[2] <= NEAR) return null;
-      if (A[2] <= NEAR) { const t = (NEAR - A[2]) / (B[2] - A[2]); A = [A[0] + t * (B[0] - A[0]), A[1] + t * (B[1] - A[1]), NEAR]; }
-      if (B[2] <= NEAR) { const t = (NEAR - B[2]) / (A[2] - B[2]); B = [B[0] + t * (A[0] - B[0]), B[1] + t * (A[1] - B[1]), NEAR]; }
-      return [proj(A), proj(B)];
-    }
     const lw = Math.max(1, s * 0.9);
     g.lineCap = 'round'; g.lineWidth = lw;
     // the ORA pen: marks that only the ground (or a room's floor and walls) shows
@@ -6325,17 +6503,81 @@ function makeDisplay(opts) {
       if (!sc.under && groundPath) g.clip(groundPath);
       else if (!sc.under) ors.length = 0;
       g.strokeStyle = lineOr; g.beginPath();
-      for (const [a, b] of ors) { const q = segment(a, b); if (q) { g.moveTo(X(q[0][0]), Y(q[0][1])); g.lineTo(X(q[1][0]), Y(q[1][1])); } }
+      for (const [a, b] of ors) { const q = Pj.segment(a, b); if (q) { g.moveTo(X(q[0][0]), Y(q[0][1])); g.lineTo(X(q[1][0]), Y(q[1][1])); } }
       g.stroke(); g.restore();
     }
     g.strokeStyle = lineAnd; g.beginPath();
-    for (const [a, b] of ands) { const q = segment(a, b); if (q) { g.moveTo(X(q[0][0]), Y(q[0][1])); g.lineTo(X(q[1][0]), Y(q[1][1])); } }
+    for (const [a, b] of ands) { const q = Pj.segment(a, b); if (q) { g.moveTo(X(q[0][0]), Y(q[0][1])); g.lineTo(X(q[1][0]), Y(q[1][1])); } }
     g.stroke();
     g.fillStyle = lineAnd;
-    for (const d of sc.dots) { const v = Pj.view(d); if (v[2] <= NEAR) continue; const q = proj(v); g.fillRect(X(q[0]) - lw, Y(q[1]) - lw / 2, 2 * lw, lw); }
+    for (const d of sc.dots) { const q = Pj.view(d); if (q[2] <= Pj.NEAR) continue; const p = Pj.proj(q); g.fillRect(X(p[0]) - lw, Y(p[1]) - lw / 2, 2 * lw, lw); }
+    // the gun sight (sprite 0) stays in front of the view, as the video chip keeps it
+    if (disp.sprite) for (let y = y0; y <= y1; y++) for (let x = disp.BORDER, o = y * disp.W; x < disp.BORDER + 320; x++) {
+      if (disp.sprite[o + x]) { g.fillStyle = col(disp.px[o + x]); g.fillRect(x * s, y * s, s, s); }
+    }
     g.restore();
   }
-  window.MercModern = { attach, draw };
+  // the smooth view in the C64's own pixels (160 x 136, each two wide), into a frame of palette
+  // indices where the frame shows a bitmap, the gun sight left in front; false when there is none.
+  // As the game draws them: the ground from row 67 when level ($AFD5 puts the horizon 33.5 double
+  // rows down), the ends of an edge and a dot at the nearest pixel. At a flip it matches the
+  // game's own frame to within a few hundred of the view's 43,520 pixels (the line steps).
+  function paint(px, rt, disp, V) {
+    const on = shown(disp);
+    if (!on) return false;
+    const v = poseFor(rt, disp, on, V);
+    if (!v) return false;
+    const sc = v.sc, M = rt.M, Pj = project(v);
+    const sky = 6, ground = M[0xA5] & 15, lineAnd = M[0xA3] & 15, lineOr = M[0xA6] & 15;
+    const buf = paint.buf || (paint.buf = new Uint8Array(160 * 136));
+    for (let y = 0, o = 0; y < 136; y++) {
+      if (sc.under) { buf.fill(ground, o, o + 160); o += 160; continue; }
+      for (let x = 0; x < 160; x++, o++) buf[o] = Pj.upOf(x + 0.5, y + 1.5) < 0 ? ground : sky;
+    }
+    // a line between the pixels nearest its ends, clipped to the view first
+    function line(q, c, groundOnly) {
+      const [[ax, ay], [bx, by]] = q;
+      if (!Number.isFinite(ax + ay + bx + by)) return;
+      const dx = bx - ax, dy = by - ay;
+      let t0 = 0, t1 = 1;
+      for (const [p, r] of [[-dx, ax + 0.5], [dx, 159.499 - ax], [-dy, ay + 0.5], [dy, 135.499 - ay]]) {
+        if (p === 0) { if (r < 0) return; continue; }
+        const t = r / p;
+        if (p < 0) { if (t > t1) return; if (t > t0) t0 = t; } else { if (t < t0) return; if (t < t1) t1 = t; }
+      }
+      let x0 = Math.round(ax + t0 * dx), y0 = Math.round(ay + t0 * dy);
+      const x1 = Math.round(ax + t1 * dx), y1 = Math.round(ay + t1 * dy);
+      const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, ex = Math.abs(x1 - x0), ey = -Math.abs(y1 - y0);
+      let err = ex + ey;
+      for (;;) {
+        const o = y0 * 160 + x0;
+        if (!groundOnly || buf[o] === ground) buf[o] = c;
+        if (x0 === x1 && y0 === y1) break;
+        const e2 = 2 * err;
+        if (e2 >= ey) { err += ey; x0 += sx; }
+        if (e2 <= ex) { err += ex; y0 += sy; }
+      }
+    }
+    for (const [a, b, or] of sc.edges) if (or) { const q = Pj.segment(a, b); if (q) line(q, lineOr, true); }
+    for (const [a, b, or] of sc.edges) if (!or) { const q = Pj.segment(a, b); if (q) line(q, lineAnd, false); }
+    for (const d of sc.dots) {
+      const q = Pj.view(d); if (q[2] <= Pj.NEAR) continue;
+      const p = Pj.proj(q), x = Math.round(p[0]), y = Math.round(p[1]);
+      if (x >= 0 && x < 160 && y >= 0 && y < 136) buf[y * 160 + x] = lineAnd;
+    }
+    const B = disp.BORDER, W = disp.W;
+    for (let y = on.y0; y <= on.y1; y++) {
+      if (!disp.bitmapLine[y]) continue;
+      const o = y * W + B, r = (y - B) * 160;
+      for (let x = 0; x < 160; x++) {
+        const c = buf[r + x];
+        if (!disp.sprite || !disp.sprite[o + 2 * x]) px[o + 2 * x] = c;
+        if (!disp.sprite || !disp.sprite[o + 2 * x + 1]) px[o + 2 * x + 1] = c;
+      }
+    }
+    return true;
+  }
+  window.MercModern = { attach, draw, paint, smooth };
 })();
 </script>
 <script>
@@ -6718,14 +6960,15 @@ function makeDisplay(opts) {
       return r;
     }
     // drawn after the game's own objects, on the surface, by the game's own routine; not counted
-    // in the pass's time (the mod pretends the machine has time to spare)
+    // in the pass's time (the mod pretends the machine has time to spare). Each is named in
+    // P.drawTag while it is drawn, since they all share slot 9: the smooth view follows each one
     const loop0 = P.object_loop;
     P.object_loop = function (r) {
       const out = loop0.call(this, r);
       if (!on || M[0xA8] || M[0xCD]) return out;
       const work = Object.assign({}, P.work), key = M[0xB8];
       M[0xB8] = 0;                                            // no T or B for the traffic
-      for (const v of mod.V) if (!v.dead && !v.hidden) inSlot(v, () => P.draw_object({ x: SLOT }));
+      for (const v of mod.V) if (!v.dead && !v.hidden) inSlot(v, () => { P.drawTag = v; try { P.draw_object({ x: SLOT }); } finally { P.drawTag = undefined; } });
       M[0xB8] = key;
       Object.assign(P.work, work);
       return out;
@@ -6841,7 +7084,8 @@ function makeDisplay(opts) {
 /* play: the page. Loads the game's bytes from listing.json (through the site's C64 library),
    puts the original disk's first message back, builds the port on that memory, and runs it at
    the PAL machine's pace: 50.12 frames a second, the main loop taking as many frames a pass as
-   the C64 would. */
+   the C64 would. With smooth motion the view is drawn again at every frame the browser paints
+   (the modern script's smooth), at the moment on the machine's clock that frame stands for. */
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -6855,7 +7099,7 @@ function makeDisplay(opts) {
   const ORIGINAL_7009 = [0x01, 0xFF, 0x20, 0x20, 0x4E, 0x4F, 0x56, 0x41, 0x44, 0x52, 0x49, 0x56, 0x45, 0x20,
     0x43, 0x4F, 0x55, 0x4E, 0x54, 0x44, 0x4F, 0x57, 0x4E, 0x20, 0xA0, 0x00];
 
-  let image = null, rt = null, P = null, disp = null, running = false, paused = false, native = false;
+  let image = null, rt = null, P = null, disp = null, running = false, paused = false, native = false, smooth = false;
   const INSTALL = window.MERC_INSTALL || [];
 
   // --- saving: the game's save file (1904 bytes) in the browser's storage, one slot a digit
@@ -6885,21 +7129,40 @@ function makeDisplay(opts) {
   }
 
   // --- drawing ---------------------------------------------------------------------------------
+  // The faithful frame is composed when the clock finishes one. With smooth motion the view is
+  // drawn over it at every frame the browser paints, for a moment one frame behind the clock
+  // (every flip up to it has run), in the C64's pixels or, with native resolution, as lines.
   const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+  const CYCLES = 19656;
   const off = document.createElement('canvas');
-  let offCtx = null, img = null;
-  function draw() {
-    const f = rt.lastFrame(); if (!f) return;
-    const px = disp.compose(rt.M, rt.colour, f.regs0, f.writes, 0x4000);
+  let offCtx = null, img = null, frame = null, work = null;
+  function rgb(px) {
     if (!offCtx) { off.width = disp.W; off.height = disp.H; offCtx = off.getContext('2d'); img = offCtx.createImageData(disp.W, disp.H); }
     const d = img.data;
     for (let i = 0, o = 0; i < px.length; i++, o += 4) { const c = RGB[px[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
     offCtx.putImageData(img, 0, 0);
-    if (!native || !window.MercModern) {
+  }
+  function compose() {
+    frame = rt.lastFrame(); if (!frame) return;
+    disp.compose(rt.M, rt.colour, frame.regs0, frame.writes, 0x4000);
+    if (!smooth || native) rgb(disp.px);
+  }
+  const viewTime = () => (smooth && rt && rt.target !== null ? rt.target - CYCLES + Math.min(acc, FRAME_MS) / FRAME_MS * CYCLES : undefined);
+  function present(V) {
+    if (!frame) return;
+    const MM = window.MercModern;
+    if (smooth && !native) {
+      if (!work) work = new Uint8Array(disp.px.length);
+      work.set(disp.px);
+      if (MM) MM.paint(work, rt, disp, V);
+      rgb(work);
+    }
+    if (!native || !MM) {
       if (cv.width !== disp.W) { cv.width = disp.W; cv.height = disp.H; cv.classList.remove('pl-native'); }
       cv.getContext('2d').drawImage(off, 0, 0);
-    } else window.MercModern.draw(cv, off, rt, f, disp);
+    } else MM.draw(cv, off, rt, frame, disp, V);
   }
+  function draw() { if (!rt) return; compose(); present(viewTime()); }
 
   // --- the loop --------------------------------------------------------------------------------
   let acc = 0, last = 0;
@@ -6912,7 +7175,11 @@ function makeDisplay(opts) {
       while (acc >= FRAME_MS && n < 10) { rt.runFrame(); taps(); sound.frame(); acc -= FRAME_MS; n++; }
     } catch (e) { running = false; showOver('The port stopped: ' + e.message); console.error(e); return; }
     if (n === 10) acc = 0;
-    if (n) draw();
+    if (n) compose();
+    if (n || smooth) {
+      try { present(viewTime()); }
+      catch (e) { console.error(e); setSmooth(false); say('Smooth motion stopped: ' + e.message); }   // the view, never the game
+    }
   }
 
   // --- input: the keyboard as the C64's, the arrows as the joystick in port 2 -----------------
@@ -7030,6 +7297,7 @@ function makeDisplay(opts) {
   // --- controls ---------------------------------------------------------------------------------
   let sayTimer = 0;
   function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 6000); }
+  function setSmooth(v) { smooth = v; bar.querySelector('[data-act="smooth"]').setAttribute('aria-pressed', String(v)); }
   function showOver(t, btn) {
     overMsg.textContent = t; over.hidden = false;
     const old = over.querySelector('button'); if (old) old.remove();
@@ -7049,6 +7317,7 @@ function makeDisplay(opts) {
     if (act === 'pause') { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
     else if (act === 'restart') { rt = null; boot(); sound.attach(); running = true; paused = false; bar.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false'); screen.focus(); }
     else if (act === 'render') { native = !native; b.setAttribute('aria-pressed', String(native)); if (!native) { cv.width = 1; } draw(); screen.focus(); }
+    else if (act === 'smooth') { setSmooth(!smooth); draw(); screen.focus(); }
     else if (act === 'sound') { const on = await sound.set(!sound.on); b.setAttribute('aria-pressed', String(on)); screen.focus(); }
     else if (act === 'ctrlq' && running) tap([KEY.CTRL, KEY.Q], 12);
     else if (act === 'save' && running) { tap([KEY.CTRL, KEY.S], 12); say('Saving: type a digit 0-9, then Enter.'); }

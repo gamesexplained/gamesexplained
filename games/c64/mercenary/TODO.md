@@ -12,7 +12,9 @@ clichés, add what the agent missed. The pass is under way (`steward`: air,
 after it began and are agent-written, not yet read by the steward: section
 04 of the How it works page (the craft that fly without you), section 14
 (the sound) and the Play tab's four sections (the mod, the port, the
-speed, the differences) (#61).
+speed, the differences) (#61). The Play tab's smooth motion came later and
+is agent-written too: the caption's last sentence, section 03's Smooth
+motion and its line in section 04.
 
 At a phone's width (390 px) the How it works page scrolls sideways by
 about 19 px: the Outside the city table and the lift section's code lines
@@ -67,6 +69,12 @@ next export would put it back: copy these five line comments from
 
 - The Second City's changes, once unpacked; the Play tab could then load
   it (#73).
+- Smooth motion slides positions only. An object's own turn (its three
+  64-step angles at `$800A`, `$801A` and `$802A`) and a rotor's spin (`$A2`
+  a pass) could slide too, from the same two passes.
+- The smooth view in the C64's pixels fills the sky and the ground by the
+  horizon's half-plane, not by `$AFD5`'s row stepping, so along a banked
+  horizon its edge can sit a pixel from the game's.
 - The Play tab shows the port's case of the game's two interrupt races
   (the Play page, section 02). Running the interrupts inside a step, at the
   cycle the cost model puts them, would show the white band too (#74).
