@@ -5807,8 +5807,9 @@ function install_main(P) {
       yield CP(0x85D5); yield* gen(P.line_mode_clear());
       yield CP(0x85D8); yield* gen(P.object_loop());
       yield CP(0x85DB); const rc = yield* gen(P.read_controls());
-      yield CP(0x85DE); yield* gen(P.move_player({ c: rc && rc.c ? 1 : 0 }));
-      yield CP(0x85E3); yield* gen(P.fire_missile({ a: 0x30 }));
+      yield CP(0x85DE); const mp = yield* gen(P.move_player({ c: rc && rc.c ? 1 : 0 }));
+      // $85E1 LDA #$30: X and Y are what move_player left (sound_voice1 parks X at $B985)
+      yield CP(0x85E3); yield* gen(P.fire_missile({ a: 0x30, x: mp ? mp.x : undefined, y: mp ? mp.y : undefined }));
       yield CP(0x85E6); yield* gen(P.building_hit_update());
       yield CP(0x85E9); yield* gen(P.move_objects());
       yield CP(0x85EC); yield* gen(P.attack_ship_update());
