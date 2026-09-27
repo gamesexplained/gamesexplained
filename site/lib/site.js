@@ -29,7 +29,7 @@
     var a=document.createElement('a'); a.className='hash'; a.href='#'+h.id; a.textContent='#';
     a.setAttribute('aria-label','Link to this section'); h.appendChild(a);
   });
-  // How it works: the sections in the margin, listed by build.py. Mark the one being read and keep
+  // Every tab but Source: the sections in the margin, listed by build.py. Mark the one being read and keep
   // it in view; below 1200px the list is a drawer, opened from a Contents button.
   var pn=document.querySelector('.pagenav');
   if(pn) (function(){

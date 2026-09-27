@@ -137,9 +137,11 @@ can open with that instead.
   canvas renderers for character sets and screens, Web Audio note
   players, table explorers.
 - Keep every section a top-level `<section>` with the template's label
-  line (`<p class="fig">01 · label</p>`) and an `<h2>` heading. The build
-  lists the sections in the page's left margin by their headings, so the
-  headings are what a reader scans to choose where to go. A heading that
+  line (`<p class="fig">01 · label</p>`) and an `<h2>` heading, on the
+  Maps / levels and Play pages too. The build lists each page's sections
+  in its left margin by their headings (any further `<h2>` gets an entry
+  of its own), so the headings are what a reader scans to choose where to
+  go. A heading that
   begins `Bug:`, `Secret:` or `Music:` is tagged in that list, and the
   sound section is tagged Music without the prefix when its heading names
   the tunes.
