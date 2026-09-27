@@ -197,3 +197,28 @@ viewpoint. The picture was taken from a viewpoint without it, and the
 question went into `TODO.md`.
 An agent folded the porting agents' findings about the game into
 `facts.md` and `features.md`.
+
+On 27 September 2026 the How it works page got its Sound section (#72),
+and the steward reported that the lift's hum was missing from the Play
+tab. It was not. The port writes every register the game writes (each
+store to the SID in the listing has its line in the port), and on a ride
+from 08-08 to room 8 the port's gate changes matched the game's code in
+the simulator one for one. Rendered through `site/lib/sid.js` in node,
+and measured in Chromium with an analyser on the page's output, the hum
+ran at about 0.043 RMS for the whole ride, against 0.10 for Benson's tick.
+It is quiet by design (sustain 4 of 15) and low (38 to 83 Hz), below what
+most laptop speakers play. The same search found one sound that neither
+the game nor the page lets anyone hear: the wall sound that `build_room`
+starts through `keep_in_room` on the way into a room and closes 33 cycles
+later. The model applies a frame's writes at one instant, so a gate opened
+and closed inside one frame is silent there as well; on the chip the
+attack runs for the time between, which for 33 cycles is nothing audible.
+
+The section's buttons replay the game's register writes frame by frame.
+The first version put the forward wipe's high hum and its end at frames 34
+and 56, counting the waits; the simulator put them at 33 and 55, because
+the first wait ends at the next panel interrupt, which can come in the
+frame the wipe starts. The opening's voice 2 turned out to have a third
+event after the Novadrive and its fade: the script's own poke of `$81`
+into `$D40B` at UNABLE TO CORRECT, the rumble of the fall, which lasts
+until the first engine pass after the landing sets its pitch to 0.

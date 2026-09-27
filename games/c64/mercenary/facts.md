@@ -1185,18 +1185,62 @@ All through `$B958` (voice 1) or `$B93A` (voice 2), four bytes a sound from
 | `$18` | 1 | crash or hit flash | `$B24D` |
 | `$1C`, `$20` | 1, 2 | transporter chime | `$AEDC`, `$AEE1` |
 | `$24` | 2 | engine | `$B61A` |
-| `$28`, `$2C` | 2 | gate-off fades | start-up |
-| `$30` | 2 | lift hum, pitch from `$BBA5` each frame | `$BA87`, `$BAE9` |
+| `$28` | 2 | the opening's Novadrive, set up with the gate closed | `$72F0` |
+| `$2C` | 2 | the opening's fall, retuned with the gate closed | `$7469` |
+| `$30` | 2 | lift hum, pitch from `$BBA5` each frame | `$B478`; pitch `$BA87`, `$BAE9` |
+
+Ten of the thirteen have sustain level 0 and nothing closes their gate: each
+ends at its decay rate (750 ms for the beep, 15 s for `$04`) unless the next
+sound on the voice cuts it. The frequency's low byte is `$80` and the pulse
+width `$800` from `$B921` on both voices; only the wipes change voice 2's low
+byte, until `$B910` runs again.
 
 - **The engine** (`$B5D8`-`$B61C`): the sustain level is the speed's power
   of two minus 3, at least 1, with two exceptions: below speed 1 the
   sustain and release byte is 0, and reversing at speeds −8 to −16 (`$27`
   = `$0D`) gives it `$0C`, level 0, so the engine falls silent in that
-  band and starts again at −16. The frequency's high byte is the level in
+  band (SPEED −3 to −5 on the panel) and starts again at −16. The page's
+  `engineStep` gives the same writes as `$B5D8` in a 6502 simulator on all
+  65,536 values of `$27` and `$26`, from eight last levels (`$B9AD`). The frequency's high byte is the level in
   its high four bits and the mantissa's top four bits in its low four
   (the game's `$B53D` run in a 6502 simulator on poked speeds). It is
   silent underground and in the descent. Benson's tick is voice 3
   (`$8DCD`, `$8DF9`).
+- **The lift's hum** (`$30`): pulse, sustain 4 of 15, attack and decay 0,
+  its own frequency byte 0. Each frame of a ride the panel's interrupt
+  writes `$D408` from `$BBA5` at 2 × stage + (step ≥ `$42`), the index that
+  also takes the step from `$BB89`: `$02` at the two ends of the shaft to
+  `$05` in the middle, 38 to 83 Hz with the low byte `$80`. `$BB2F` closes
+  the gate at the end. The E key beeps on voice 1 in the same frame (sound 0).
+- **The wipes' hum** (`$AF3E` low, `$AF3A` high): `$D40D` down to `$D401` from
+  `$AF53`-`$AF5F` or `$AF61`-`$AF6D`, then `$D40B` = `$15`, voice 2's
+  triangle ring-modulated by voice 1 (at `$0980`, 143 Hz, control 0). The
+  blocks differ only in voice 2's low frequency byte: `$0550` (80 Hz) or
+  `$05E4` (89 Hz). `$AEF3` (walking through) plays the low hum while the band
+  rises and the high one for 22 frames; `$AE96` (backing) holds the low one
+  for 30 frames and plays the high one while the band comes down. The waits
+  count panel interrupts, and the first can fall in the frame the wipe
+  starts: in a 6502 simulator the high hum came 33 frames after the low one
+  and `$AED3` 55 frames after it walking through, and 30 and 52 backing.
+  `$AED3` runs `$B910`, which stops the hum, and in a booth starts the chime:
+  pulses at `$0E80` and `$0F80` (218 and 233 Hz, beating 15 times a second),
+  attack 1 s, decay 1.5 s.
+- **The opening on voice 2** (the game's code in a 6502 simulator, frames from
+  `$7200`): `$28` (noise `$5080`, attack 3 s, decay 24 s, sustain 10,
+  release 3 s, gate closed) at frame 2; `$741C` opens the gate from frame 335
+  (NOVADRIVE ENGAGED, `$706F` sets `$7000` = 1) and rewrites `$81` every
+  pass; `$7439` closes it at frame 2006 (`$7173`, the slow-down); `$2C` (noise
+  `$3080`, attack 24 ms, decay and release 24 s, gate closed) at 2092; the
+  script's operation 25 at `$7194` pokes `$D40B` = `$81` at 2327, after
+  UNABLE TO CORRECT; at 3669, the first engine pass after the descent, `$B607`
+  and `$B613` write `$D408` = 0 and `$D40D` = 0.
+- **The wall sound on arrival is cut at once.** `build_room` calls
+  `keep_in_room` (`$9226`), which starts sound `$14` when it holds the player
+  off a wall (`$AE` non-zero) and did not the pass before (`$F8` = 0, `$9408`);
+  `$9229`-`$922B` then closes voice 1's gate. In a 6502 simulator, arriving
+  in room 8 by the 08-08 lift, the gate was open for 33 cycles: nothing is
+  heard. `$94D1`-`$94D3` closes voice 1 the same way when `door_check` takes a
+  door.
 - **Benson's tick** is one held note. `$B910` loads voice 3 from `$B921`
   (frequency 0, pulse width `$800`, attack 0, decay 0, sustain 15, release
   0) and sets its control to `$41`, pulse and gate on; `$D418` = `$0F`

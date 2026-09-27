@@ -8,11 +8,11 @@ listing and minisite built; copy `human-edited`, the steward's pass under way).
 A human pass over the How it works page and the Maps page, section by
 section: cut what is dull, expand what is interesting, rewrite the
 clichés, add what the agent missed. The pass is under way (`steward`: air,
-`tier: silver-claimed`); record the outcome in `copy`. Two parts arrived
+`tier: silver-claimed`); record the outcome in `copy`. Three parts arrived
 after it began and are agent-written, not yet read by the steward: section
-04 of the How it works page (the craft that fly without you) and the Play
-tab's four sections (the mod, the port, the speed, the differences)
-(#61).
+04 of the How it works page (the craft that fly without you), section 14
+(the sound) and the Play tab's four sections (the mod, the port, the
+speed, the differences) (#61).
 
 At a phone's width (390 px) the How it works page scrolls sideways by
 about 19 px: the Outside the city table and the lift section's code lines
@@ -74,10 +74,6 @@ the table; kit ask #60 would let it be done without the snapshot:
 
 ## Ideas for the page
 
-- The sound on the How it works page: thirteen SID settings at `$B987` and
-  the engine note computed from the speed (`$B5D8`) would play through
-  `site/lib/sid.js`. The Play tab plays them already, as the game does
-  (#72).
 - The Second City's changes, once unpacked; the Play tab could then load
   it (#73).
 - The Play tab shows the port's case of the game's two interrupt races
