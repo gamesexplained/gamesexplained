@@ -42,11 +42,13 @@ differ, `orientation.md`).
   player can leave it by another way was not tried.
 - After an escape and CTRL + Q, `$BEFE` stays set: boarding craft 7 again
   should launch without Y (not tried).
-- From some viewpoints within about 2,000 units of the brother-in-law's
-  ship, the game's frame (drawn by its own code in the simulator) has a
-  line of stray pixels along the view's bottom row; farther away it does
-  not. The cause is not traced: a clipped edge of the ship's model is the
-  first thing to check.
+- Some frames drawn by the game's code in the simulator have one line of
+  stray pixels just below the view, on the raster line where the panel's
+  interrupt switches the screen to text (line 186); other frames of the
+  same scene do not, and it came and went with the viewpoint. The
+  simulator times the interrupt only to the line, so whether a real C64
+  shows that line depends on timing it does not model; the emulator
+  would settle it.
 
 ## Ideas for the page
 

@@ -189,9 +189,11 @@ For the new section on the craft that fly without you, the simulator
 recorded the attack ship's pursuit of a craft standing still and of one
 flying straight, the hired ship's descent (the formula in the code gave
 the recorded heights exactly) and two pictures of the brother-in-law's
-ship. The first close-up was taken from a saved state and showed a line
-of stray pixels along the view's bottom row; clean states did not, and
-viewpoints close to the ship did, so the picture was taken from a
-viewpoint that does not show it and the question went into `TODO.md`.
+ship. Some close-ups showed a line of stray pixels at the foot of the view.
+Hooks on the drawing routines found nothing drawing there but the fills
+and a road: the line is the first raster line below the view, where the
+panel's interrupt switches to text, and it came and went with the
+viewpoint. The picture was taken from a viewpoint without it, and the
+question went into `TODO.md`.
 An agent folded the porting agents' findings about the game into
 `facts.md` and `features.md`.
