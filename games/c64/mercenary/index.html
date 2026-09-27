@@ -548,6 +548,25 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .odd-list{padding-left:20px}
 .odd-list li{margin:0 0 12px}
 .odd-img{display:block;width:min(384px,100%);image-rendering:pixelated;border-radius:6px;margin-top:10px}
+.npc-row{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:22px;align-items:start}
+.npc-map{display:block;width:100%;height:auto;background:var(--surface-2);border-radius:6px}
+.npc-map text,.npc-chart text{font-family:var(--fm);font-size:11px;fill:var(--ink)}
+.npc-map .npc-sub,.npc-chart .npc-sub{font-size:10.5px;fill:var(--ink-mute)}
+.npc-chart .npc-red{fill:var(--coral)}
+.npc-map .npc-lab{font-size:12px;font-weight:500;fill:var(--ink)}
+.npc-side .city-label{margin:0 0 6px}
+.npc-slide{display:flex;gap:10px;align-items:center;font-family:var(--fm);font-size:12px;color:var(--ink-soft);margin-bottom:14px}
+.npc-slide input{accent-color:var(--violet);flex:1 1 auto;min-width:0}
+.npc-select{font-family:var(--fm);font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 8px;width:100%;margin-bottom:12px}
+.npc-ctl{margin-bottom:10px}
+.npc-where{font-family:var(--fm);font-size:12px;color:var(--ink-soft);line-height:1.7}
+.npc-where b{color:var(--ink);font-weight:500}
+.npc-chart{display:block;width:100%;height:auto;background:var(--surface-2);border-radius:6px}
+.npc-shots{margin:22px 0}
+.npc-shots figure{margin:0}
+.npc-shots img{height:auto}
+.npc-tbl{margin:0 0 16px}
+@media (max-width:720px){.npc-row{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -672,8 +691,78 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>The mast is object 50. It has no name to print, and nothing in the code refers to it by address. What it is for is unknown.</p>
 </section>
 
+<section id="npc">
+  <p class="fig">04 · The other craft</p>
+  <h2 class="t">Secret: the brother-in-law's new ship laps the city at ALT 500, for ever</h2>
+  <p class="lede">One craft flies on its own from the moment the game starts. It belongs to the Palyar commander's brother-in-law, it has the Dart's shape, and it flies south down the west edge of the city, 32,769 units up, wrapping from the south edge back to the north. Two more craft come only when something calls them: the attack ship and the ship you hire.</p>
+  <div class="plate">
+    <div class="npc-row">
+      <svg id="npc-map" class="npc-map" viewBox="0 0 440 440" role="img" aria-label="Map of the city, north up: the brother-in-law's ship on its line down column 00, and the landing site at 08-08"></svg>
+      <div class="npc-side">
+        <p class="city-label">Time since you landed</p>
+        <div class="npc-slide"><input type="range" id="npc-t" min="0" max="150" value="0" step="1" aria-label="Minutes since you landed"><span id="npc-min">0.0 min</span></div>
+        <p class="city-label">Spent</p>
+        <select id="npc-pace" class="npc-select" aria-label="Where you spend the time">
+          <option value="10.03">on foot at the landing site</option>
+          <option value="7.99">in the Dart, on its pad</option>
+          <option value="6.48">flying over the city</option>
+          <option value="6.60">flying outside the city</option>
+          <option value="9.00">on the Colony Craft's deck</option>
+        </select>
+        <div class="blind-ctl npc-ctl"><button type="button" id="npc-play" aria-pressed="false">Play, 40 times as fast</button></div>
+        <div class="npc-where" id="npc-where"></div>
+      </div>
+    </div>
+    <p class="cap">The ship's step (<code>$85C5</code>): one surface pass adds 256 to its Y, 1/256 of a square southward, and the square number is ANDed with 15, so after row 15 comes row 0. A lap is 4,096 passes. How long that takes depends on how long each pass takes to draw, which depends on where you are: the frames a pass are the game's own, measured in the simulator over a whole lap from each place. Underground the step does not run, and the ship waits.</p>
+  </div>
+  <div class="lift-grid npc-shots">
+    <figure><img src="reference/npc-brother-in-law-ship-beside.png" alt="The brother-in-law's ship seen from the side, a white wedge just above the horizon" width="384" height="264"><figcaption class="cap">The ship from 2,600 units west of it and 1,200 behind, from a Dart hovering just above its height. The game's code drew this frame in the simulator.</figcaption></figure>
+    <figure><img src="reference/npc-brother-in-law-ship-from-0808.png" alt="The view west from the landing site: the wreck's strut, and one pixel above the horizon in the middle" width="384" height="264"><figcaption class="cap">From the landing site, turned to face it: the single pixel above the horizon in the middle of the view is the ship, 530,623 units away over 00-09. The white wedge at the left is part of the wreck you stand in.</figcaption></figure>
+  </div>
+  <p>The ship is object 0, with the Dart's model (<code>$3B25</code>). Its X is always <code>$006F41</code>, 4,287 units west of column 00's centre line, and its height is always 32,769 units, which the panel would show as ALT 00500. Only the Y moves. When you land it is over 00-09.</p>
+  <p>You can see it from anywhere in the city. The object routine (<code>$9728</code>) draws a whole model only within 65,536 units on every axis; farther away it plots one pixel, and it does that at any distance for an object above you (<code>$9787</code>). On foot, turned to face column 00, look for a pixel above the horizon.</p>
+  <p><b>Nobody can fly it.</b> B boards a craft only when you are on foot within 512 units of it (<code>$985D</code>), and nowhere 32,769 units up can you stand. Yet it has a motion record of its own, record 0, and it is the fastest in the game: a top speed of 11,475, which the SPEED readout would print as <code>**75</code>. The fastest craft you can fly, the CHEESE and the Dart with the Poweramp, reach 9,900.</p>
+  <p><b>Shooting it</b> starts script 27 (<code>$8797</code>): YOU HAVE JUST DESTROYED, THE PALYAR COMMANDER'S BROTHER-IN-LAWS NEW SHIP, then PALYAR SHIP ATTACKING. The script also sets bit 5 of <code>$BEC0</code>, the brother-in-law's anger, the same bit that script 1 sets when you take the Dart on the pad without paying: THIS CRAFT BELONGED TO THE PALYAR COMMANDER'S BROTHER-IN-LAW, HE IS NOT TOO PLEASED. The Dart you are offered is his old one. Nothing puts the new ship back once it is shot, and its step still runs, so it goes on flying its line, unseen. His house is the cottage at 07-09.</p>
+
+  <h3>The attack ship aims, overshoots and aims again</h3>
+  <p>An attack is one ship, object 15, with the Palyar diamond's model whichever side sent it. It aims at you, flies for 46 passes and aims again. Each aim sets its velocity to a 32nd of the distance to you a pass (<code>$8998</code>), so after 46 passes it has gone 46/32 of the way: it overshoots, and each leg leaves it at 0.44 of the distance of the leg before, on the other side of you. It looks at you only when a leg ends: if it is then within 12,288 units on every axis, it stays where it is and fires (<code>$893E</code>). Flying past you on the way does not count.</p>
+  <div class="plate">
+    <div class="blind-ctl"><span>You:</span>
+      <button type="button" id="npc-still" aria-pressed="true">stand still</button>
+      <button type="button" id="npc-fly" aria-pressed="false">fly straight on</button></div>
+    <svg id="npc-chase" class="npc-chart" viewBox="0 0 680 280" role="img" aria-label="The attack ship's distance from you, pass by pass, on a logarithmic scale"></svg>
+    <p class="cap" id="npc-chase-cap"></p>
+  </div>
+  <p>Its missile, object 14, leaves with a 16th of the distance to you a pass and is not steered afterwards. A hit flashes the view white, prints SHIP DESTROYED if you were in a craft and Benson was not busy, and drops you into the falling mode; the craft you were in is lost, and only CTRL+Q brings the Dart back. The ship itself starts every attack from wherever the last one left it, and the first from under the landing site, 19,738 units below the ground.</p>
+  <p>A craft holding a straight course at more than about 383 units a pass is never caught. The ship's velocity comes to equal yours, 32 passes' travel behind you, and it fires only from within 12,288 units: in the run above, the Dart cruising at about 4,465 units a pass leads it by 142,851 units for as long as it keeps going.</p>
+
+  <h3>The hired ship takes 779 passes to come down</h3>
+  <p>Hire the interstellar ship (the radio in room <code>$10</code>, which works with the Antenna, and a million credits) and Benson tells you it will be there in 2 MINS. The next pass puts object 7 over 08-08 at a height of 8,323,072 units, nearly twice the Colony Craft's, and each pass after that takes a 128th of the height's top two bytes off, and one more (<code>$863B</code>).</p>
+  <div class="plate">
+    <svg id="npc-hire" class="npc-chart" viewBox="0 0 680 240" role="img" aria-label="The hired ship's height, pass by pass, from 8,323,072 units down to the ground"></svg>
+    <p class="cap">The height pass by pass, from the step's own arithmetic; the simulator gives the same heights to the unit. It passes the Colony Craft's height after 86 passes and is down after 779. Standing at the landing site that took 7,893 frames, 2 minutes 38 seconds; in a room underground, where the step goes on, 1 minute 29. It lands 4,352 units east and 768 south of the wreck.</p>
+  </div>
+
+  <h3>Three Darts that never fly</h3>
+  <p>Objects 8 to 15 are the moving ones: <code>move_objects</code> (<code>$8690</code>) moves each of them by its velocity while its lifetime at <code>$BDA3</code> runs. Only three are ever given a lifetime.</p>
+  <table class="lift-tbl npc-tbl">
+    <thead><tr><th>Object</th><th>Model</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>8</td><td>missile</td><td>your missile: 15 moves of 4,096 units</td></tr>
+      <tr><td>9</td><td>Dart</td><td>never moves; can be put on the ground (below)</td></tr>
+      <tr><td>10</td><td>the wreck</td><td>your crashed ship at 08-08; never moves</td></tr>
+      <tr><td>11</td><td>Dart</td><td>never moves, never seen</td></tr>
+      <tr><td>12</td><td>the Mechanoid</td><td>lies in room <code>$66</code>; never moves</td></tr>
+      <tr><td>13</td><td>Dart</td><td>never moves, never seen</td></tr>
+      <tr><td>14</td><td>missile</td><td>the attack ship's missile</td></tr>
+      <tr><td>15</td><td>Palyar diamond</td><td>the attack ship</td></tr>
+    </tbody>
+  </table>
+  <p>One of the three Darts can still turn up. CTRL+Q puts the craft you are in down in a random square of the city (<code>$85F5</code>), and it takes the craft's number from your mode, <code>$A9</code>, which is 9 while you are falling. Press CTRL+Q while you fall, after a hit or off the Colony Craft's deck, and object 9 appears on the ground somewhere in the city. It is a Dart you cannot board, since B takes only objects 0 to 7, and it never moves. In the simulator, from a fall, it landed at 12-15.</p>
+</section>
+
 <section id="blind">
-  <p class="fig">04 · Secret</p>
+  <p class="fig">05 · Secret</p>
   <h2 class="t">Secret: shoot a building from the next square and nobody notices</h2>
   <p class="lede">A building shot from outside its square is destroyed, but the game never counts it, never names it, and nobody comes after you for it.</p>
   <div class="plate">
@@ -690,7 +779,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="signs">
-  <p class="fig">05 · The war of signs</p>
+  <p class="fig">06 · The war of signs</p>
   <h2 class="t">Shooting the Commodore sign makes you a TRAITOR</h2>
   <p class="lede">Ten squares of the city hold billboards: five with the Commodore logo, five with Atari's. Destroying either kind gets a verdict.</p>
   <div class="plate">
@@ -705,7 +794,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="frame">
-  <p class="fig">06 · The screen</p>
+  <p class="fig">07 · The screen</p>
   <h2 class="t">The double buffer gives 4 or 5 fps</h2>
   <p class="lede">The view is a bitmap of 160 by 136 wide pixels, and there are two of them: the game draws into one while you look at the other.</p>
   <div class="plate">
@@ -718,7 +807,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="flight-fly">
-  <p class="fig">07 · Flying</p>
+  <p class="fig">08 · Flying</p>
   <h2 class="t">The flight model, pass by pass</h2>
   <p class="lede">Every craft but the interstellar ship runs the same flying step once a pass, with its handling read from a 16-byte record: take-off needs speed, the climb fades above the craft's ceiling, and a touchdown crashes only on a steep drop or a steep nose.</p>
   <div class="plate flight-plate" id="flight-widget" tabindex="0" aria-label="Flight model: pick a craft, press throttle keys and move the stick">
@@ -772,7 +861,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="flight-records">
-  <p class="fig">08 · The craft</p>
+  <p class="fig">09 · The craft</p>
   <h2 class="t">Eleven motion records</h2>
   <p class="lede">Each craft's handling is sixteen bytes at <code>$9DAD</code>, copied to <code>$BEA0</code> when you board and after every airborne pass.</p>
   <div class="plate">
@@ -785,7 +874,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="flight-top">
-  <p class="fig">09 · Top speeds</p>
+  <p class="fig">10 · Top speeds</p>
   <h2 class="t">Top speeds: Zzap!64's table, to the digit</h2>
   <p class="lede">With key 0 and then + held until the game refuses it, the port's top speeds are the figures Zzap!64 printed in May 1986.</p>
   <div class="plate">
@@ -798,7 +887,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="rooms-underground">
-  <p class="fig">10 · The underground</p>
+  <p class="fig">11 · The underground</p>
   <h2 class="t">The underground: 174 rooms, each a box with doors drawn on its walls</h2>
   <p class="lede">Below the city every room is a record of a few bytes: three sizes, two colours and four bytes for each door, drawn as a wire box with the doors' outlines on its walls.</p>
   <div class="plate">
@@ -809,7 +898,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="objects">
-  <p class="fig">11 · Objects</p>
+  <p class="fig">12 · Objects</p>
   <h2 class="t">All 64 objects: every craft, key, crate and sofa</h2>
   <p class="lede">Everything the game draws apart from the city and the rooms is one of 64 objects: the craft you fly, the things you carry, the furniture, the signs on the walls, even the Colony Craft.</p>
   <div class="plate">
@@ -826,7 +915,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <!-- benson: Benson's message window, how a message is stored, the event scripts, money in BCD.
      Needs benson.css, ../../lib/c64.js, window.MERC_GAME = C64.load('listing.json'), then benson.js. -->
 <section id="benson-window">
-  <p class="fig">12 · Benson</p>
+  <p class="fig">13 · Benson</p>
   <h2 class="t">Benson prints a character a frame, and every character is a note</h2>
   <p class="lede">Benson, the craft's computer, speaks through a strip of 23 cells at the bottom of the panel. Under his words runs a tick: one square wave that sounds for the whole game, retuned every frame from the character he has just printed. A blank sets its pitch to zero, and the note falls silent.</p>
   <div class="plate benson-plate">
@@ -869,7 +958,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-store">
-  <p class="fig">13 · How a message is stored</p>
+  <p class="fig">14 · How a message is stored</p>
   <h2 class="t">How a message is stored</h2>
   <p class="lede">A message is a list of one-byte tokens, most of them numbers of words in a dictionary.</p>
   <div class="plate benson-plate">
@@ -891,7 +980,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-scripts">
-  <p class="fig">14 · The event scripts</p>
+  <p class="fig">15 · The event scripts</p>
   <h2 class="t">The event scripts</h2>
   <p class="lede">What Benson says, and when, comes from 51 scripts in a small byte code, run one operation per pass of the main loop.</p>
   <div class="plate benson-plate">
@@ -907,7 +996,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-money">
-  <p class="fig">15 · Money in BCD</p>
+  <p class="fig">16 · Money in BCD</p>
   <h2 class="t">Money in BCD, and a purchase without subtraction</h2>
   <p class="lede">The credits are eight decimal digits in four bytes, and the scripts have no way to subtract: a purchase adds the price's ten's complement.</p>
   <div class="plate benson-plate">
@@ -933,7 +1022,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="math-numbers">
-  <p class="fig">16 · Numbers</p>
+  <p class="fig">17 · Numbers</p>
   <h2 class="t">Two-byte numbers, multiplied by adding logarithms</h2>
   <p class="lede">The 3D view works in two-byte floats, a mantissa and a power of two, and multiplies two of them by adding their logarithms from a 256-byte table.</p>
   <div class="plate math-calc">
@@ -983,7 +1072,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="math-lines">
-  <p class="fig">17 · Lines</p>
+  <p class="fig">18 · Lines</p>
   <h2 class="t">Drawing a line: eight routines, one per octant</h2>
   <p class="lede">Each edge in the view is drawn by one of eight short routines that step along the longer axis, add a slope byte to an 8-bit counter (or subtract it), and step sideways whenever the counter wraps.</p>
   <div class="plate math-lineplate">
@@ -1026,7 +1115,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="keys">
-  <p class="fig">18 · Controls</p>
+  <p class="fig">19 · Controls</p>
   <h2 class="t">The keys, as the game reads them</h2>
   <p class="lede">The game scans the keyboard itself and turns each key into a number, row × 8 + column, with 64 added for SHIFT and 128 for CTRL. The joystick goes in port 2.</p>
   <div class="plate tablewrap">
@@ -1052,7 +1141,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="opening">
-  <p class="fig">19 · The opening</p>
+  <p class="fig">20 · The opening</p>
   <h2 class="t">The opening: a countdown, then a crash</h2>
   <p class="lede">The game opens in space, runs its own event script through a failing Novadrive, and drops you in the middle of the city with 9000 credits.</p>
   <div class="plate">
@@ -1069,7 +1158,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="reset">
-  <p class="fig">20 · Protection</p>
+  <p class="fig">21 · Protection</p>
   <h2 class="t">The reset button hangs the original</h2>
   <p class="lede">Novagen's disk makes the game look like a cartridge, so that pressing reset runs one of the game's own loops instead of handing the machine back.</p>
   <div class="plate">
@@ -1092,7 +1181,7 @@ $217C  JMP $2170</pre>
 </section>
 
 <section id="odd">
-  <p class="fig">21 · Odds and ends</p>
+  <p class="fig">22 · Odds and ends</p>
   <h2 class="t">Things a pilot would not know</h2>
   <p class="lede">Small things found in the code and checked in the emulator.</p>
   <div class="plate">
@@ -6631,5 +6720,155 @@ window.MERC_GAME.catch(() => {});
       if (ram[a]) C64.drawGlyph(ctx, cs, ram[a] & 0x7F, c * 16, 8 + line * 24, 2, C64.PAL[14]);   // $00 is the Atari's space
     }
   }).catch(() => { cap.textContent = 'This drawing reads the game\'s bytes from listing.json: open the page from the built site. ' + cap.textContent; });
+})();
+</script>
+<script>
+/* npc */
+// The craft that fly without you. The brother-in-law's ship from its step ($85C5): Y + 256 each
+// surface pass, from $091DA4 at the landing, the square number ANDed with 15; the frames a pass
+// measured on the game's code in the simulator, a whole lap from each place. The attack ship: its
+// distance from you each pass, as the game's code ran it in the simulator (the larger of the three
+// axes, which is what its tests compare). The hired ship: $863B's step on the height's top two
+// bytes, v - (v >> 7) - 1, which gives the simulator's heights to the unit.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  if (!$('npc')) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const el = (tag, at, parent) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (parent) parent.appendChild(e); return e; };
+  const text = (parent, x, y, t, cls, anchor) => { const e = el('text', { x, y, class: cls || '', 'text-anchor': anchor || 'start' }, parent); e.textContent = t; return e; };
+  const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+  const num = n => Math.round(n).toLocaleString('en-GB');
+  const FPS = 985248 / 19656;
+
+  // --- the lap ---------------------------------------------------------------------------------
+  {
+    const svg = $('npc-map'), S = 25, M = 20;                 // 16 squares of 25 px
+    const Y0 = 0x091DA4, SHIP_X = 0x006F41, LAND = 0x088800;
+    const P = v => M + v / 65536 * S;
+    for (let q = 0; q <= 16; q++) {
+      el('line', { x1: M + q * S, y1: M, x2: M + q * S, y2: M + 16 * S, stroke: css('--line-soft'), 'stroke-width': 1 }, svg);
+      el('line', { x1: M, y1: M + q * S, x2: M + 16 * S, y2: M + q * S, stroke: css('--line-soft'), 'stroke-width': 1 }, svg);
+    }
+    el('rect', { x: M, y: M, width: S, height: 16 * S, fill: css('--amber'), 'fill-opacity': 0.12 }, svg);
+    for (let q = 0; q < 16; q += 3) {
+      text(svg, M + q * S + S / 2, M - 6, String(q).padStart(2, '0'), 'npc-sub', 'middle');
+      text(svg, M + 16 * S + 4, M + q * S + S / 2 + 4, String(q).padStart(2, '0'), 'npc-sub');
+    }
+    text(svg, M + 16 * S - 2, M + 16 * S + 15, 'N ↑   X east, Y south', 'npc-sub', 'end');
+    // the line it flies, and the landing site
+    el('line', { x1: P(SHIP_X), y1: M, x2: P(SHIP_X), y2: M + 16 * S, stroke: css('--amber'), 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }, svg);
+    const lx = P(LAND), ly = P(LAND);
+    const sight = el('line', { x1: lx, y1: ly, x2: lx, y2: ly, stroke: css('--ink-mute'), 'stroke-width': 1, 'stroke-dasharray': '2 4' }, svg);
+    el('circle', { cx: lx, cy: ly, r: 5, fill: css('--coral') }, svg);
+    text(svg, lx + 9, ly + 4, 'you land here, 08-08', 'npc-sub');
+    const ship = el('g', {}, svg);
+    el('path', { d: 'M0,9 L-5,-6 L0,-3 L5,-6 Z', fill: css('--amber'), stroke: css('--ink'), 'stroke-width': 1 }, ship);   // pointing south
+    const tag = text(svg, 0, 0, '', 'npc-lab');
+    const t = $('npc-t'), pace = $('npc-pace'), minOut = $('npc-min'), where = $('npc-where'), play = $('npc-play');
+    function update() {
+      const min = +t.value / 10, fpp = +pace.value;
+      const passes = Math.floor(min * 60 * FPS / fpp);
+      const y = (Y0 + 256 * passes) & 0x0FFFFF;
+      const sx = P(SHIP_X), sy = P(y);
+      ship.setAttribute('transform', 'translate(' + sx + ',' + sy + ')');
+      tag.setAttribute('x', sx + 10); tag.setAttribute('y', sy + 4); tag.textContent = '00-' + String(y >> 16).padStart(2, '0');
+      sight.setAttribute('x2', sx); sight.setAttribute('y2', sy);
+      minOut.textContent = min.toFixed(1) + ' min';
+      const lap = 4096 * fpp / FPS / 60;
+      const dx = (SHIP_X - LAND) / 65536, dy = (y - LAND) / 65536;
+      where.innerHTML = '<b>' + num(passes) + '</b> passes; lap ' + (passes >> 12) + ', ' + Math.round((passes & 4095) / 40.96) + ' % of the way<br>' +
+        'the ship over <b>00-' + String(y >> 16).padStart(2, '0') + '</b>, Y <code>' + hex(y, 6) + '</code><br>' +
+        'from the landing site ' + Math.abs(dx).toFixed(1) + ' squares west and ' + Math.abs(dy).toFixed(1) + (dy < 0 ? ' north' : ' south') + '<br>' +
+        'a lap here takes ' + lap.toFixed(1) + ' minutes';
+    }
+    let timer = null, last = 0;
+    function step(now) {
+      if (!timer) return;
+      const dt = last ? (now - last) / 1000 : 0; last = now;
+      let v = +t.value + dt * 40 / 60 * 10;                     // 40 times as fast, in tenths of a minute
+      if (v > +t.max) v = 0;
+      t.value = v; update();
+      timer = requestAnimationFrame(step);
+    }
+    play.addEventListener('click', () => {
+      if (timer) { cancelAnimationFrame(timer); timer = null; play.setAttribute('aria-pressed', 'false'); return; }
+      play.setAttribute('aria-pressed', 'true'); last = 0; timer = requestAnimationFrame(step);
+    });
+    t.addEventListener('input', update); pace.addEventListener('change', update);
+    update();
+  }
+
+  // --- the chase -------------------------------------------------------------------------------
+  {
+    const RUNS = {"still":{"d":[446705,432296,417887,403478,389069,374660,360251,345842,331433,317024,302615,288206,273797,259388,244979,230570,216161,201752,187343,172934,158525,144116,129707,115298,100889,86480,72071,57662,43253,28844,18476,19094,19712,28803,43211,57619,72027,86435,100843,115251,129659,144067,158475,172883,187291,201700,195396,189092,182788,176484,170180,163876,157572,151268,144964,138660,132356,126052,119748,113444,107140,100836,94532,88228,81924,75620,69316,63012,56708,50404,44100,37796,31492,25188,18884,12580,6276,30,6333,12637,18941,25245,31549,37853,44157,50461,56765,63069,69373,75677,81981,88285,85527,82769,80011,77253,74495,71737,68979,66221,63463,60705,57947,55189,52431,49673,46915,44157,41399,38641,35883,33125,30367,27609,24851,22093,19335,16577,13819,11061,8303,5545,2787,32,2730,5488,8246,11004,13762,16520,19278,22036,24794,27552,30310,33068,35826,38584,37378,36172,34966,33760,32554,31348,30142,28936,27730,26524,25318,24112,22906,21700,20494,19288,18082,16876,15670,14464,13258,12052,10846,9640,8434,7228,6022,4816,3610,2404,1198,18,1215,2421,3627,4833,6039,7245,8451,9657,10863,12069,13275,14481,15687,16893,16366,15839,15312,14785,14258,13731,13204,12677,12150,11623,11096,10569,10042,9515,8988,8461,7934,7407,6880,6353,5826,5299,4772,4245,3718,3191,2664,2137,1610,1083,556,29,499,1026,1553,2080,2607,3134,3661,4188,4715,5242,5769,6296,6823,7350,7349,7348,7347,7346,7345,7344,7343,7342,7341,7340,7339,7338,7337,7336,7336,7336],"aims":[0,46,92,138,184],"missile":230,"hit":244,"d0":461049},"flying":{"d":[917905,893685,869465,845245,821025,796805,772585,748365,724145,699925,675705,651485,627265,603045,578825,554605,530385,506165,481945,457725,433505,409285,385065,360845,336625,312405,288185,263965,239745,215525,191305,167085,142865,118645,94425,70205,63587,76950,90313,103676,117039,137655,160044,182433,204822,227211,249600,240659,231718,222777,213836,204895,195954,187013,178072,169131,160190,151249,142308,133367,124426,115485,106544,97818,91971,86124,80277,74430,68583,62736,58089,68685,79281,89877,100473,111069,121665,132261,142857,153453,164049,174645,185241,195837,206433,217029,227625,238221,248817,259413,270009,280605,291201,286565,281929,277293,272657,268021,263385,258749,254113,249477,244841,240205,235569,230933,226297,221661,217025,212389,207753,203117,198481,193845,189209,184573,179937,175301,170665,166029,161393,156757,152121,147485,142849,138213,133577,128941,124305,119669,115033,110397,105761,101125,96489,91853,87217,82581,77945,79974,82003,84032,86061,88090,90119,92148,94177,96206,98235,100264,102293,104322,106351,108380,110409,112438,114467,116496,118525,120554,122583,124612,126641,128670,130699,132728,134757,136786,138815,140844,142873,144902,146931,148960,150989,153018,155047,157076,159105,161134,163163,165192,167221,169250,171279,170391,169503,168615,167727,166839,165951,165063,164175,163287,162399,161511,160623,159735,158847,157959,157071,156183,155295,154407,153519,152631,151743,150855,149967,149079,148191,147303,146415,145527,144639,143751,142863,141975,141087,140199,139311,138423,137535,136647,135759,134871,133983,133095,132207,131319,130431,130820,131209,131598,131987,132376,132765,133154,133543,133932,134321,134710,135099,135488,135877,136266,136655,137044,137433,137822,138211,138600,138989,139378,139767,140156,140545,140934,141323,141712,142101,142490,142879,143268,143657,144046,144435,144824,145213,145602,145991,146380,146769,147158,147547,147936,148325,148154,147983,147812,147641,147470,147299,147128,146957,146786,146615,146444,146273,146102,145931,145760,145589,145418,145247,145076,144905,144734,144563,144392,144221,144050,143879,143708,143537,143366,143195,143024,142853,142682,142511,142340,142169,141998,141827,141656,141485,141314,141143,140972,140801,140630,140459,140534,140609,140684,140759,140834,140909,140984,141059,141134,141209,141284,141359,141434,141509,141584,141659,141734,141809,141884,141959,142034,142109,142184,142259,142334,142409,142484,142559,142634,142709,142784,142859,142934,143009,143084,143159,143234,143309,143384,143459,143534,143609,143684,143759,143834,143909,143876,143843,143810,143777,143744,143711,143678,143645,143612,143579,143546,143513,143480,143447,143414,143381,143348,143315,143282,143249,143216,143183,143150,143117,143084,143051,143018,142985,142952,142919,142886,142853,142820,142787,142754,142721,142688,142655,142622,142589,142556,142523,142490,142457,142424,142391,142406,142421,142436,142451,142466,142481,142496,142511,142526,142541,142556,142571,142586,142601,142616,142631,142646,142661,142676,142691,142706,142721,142736,142751,142766,142781,142796,142811,142826,142841,142856,142871,142886,142901,142916,142931,142946,142961,142976,142991,143006,143021,143036,143051,143066,143081,143074,143067,143060,143053,143046,143039,143032,143025,143018,143011,143004,142997,142990,142983,142976,142969,142962,142955,142948,142941,142934,142927,142920,142913,142906,142899,142892,142885,142878,142871,142864,142857,142850,142843,142836,142829,142822,142815,142808,142801,142794,142787,142780,142773,142766,142759,142762,142765,142768,142771,142774,142777,142780,142783,142786,142789,142792,142795,142798,142801,142804,142807,142810,142813,142816,142819,142822,142825,142828,142831,142834,142837,142840,142843,142846,142849,142852,142855,142858,142861,142864,142867,142870,142873,142876,142879,142882,142885,142888,142891,142894,142897,142896,142895,142894,142893,142892,142891,142890,142889,142888,142887,142886,142885,142884,142883,142882,142881,142880,142879,142878,142877,142876,142875,142874,142873,142872,142871,142870,142869,142868,142867,142866,142865,142864,142863,142862,142861,142860,142859,142858,142857,142856,142855,142854,142853,142852,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851,142851],"aims":[1,47,93,139,185,231,277,323,369,415,461,507,553,599,645,691,737,783,829,875],"missile":0,"hit":0}};
+    const svg = $('npc-chase'), cap = $('npc-chase-cap');
+    const W = 680, Hh = 280, L = 70, R = 16, T = 16, B = 34;
+    const LO = 1000, HI = 1e6;
+    const yOf = d => T + (Hh - T - B) * (1 - (Math.log10(Math.max(LO, Math.min(HI, d))) - 3) / 3);
+    const CAPS = {
+      still: 'The Dart on the ground at 01-01, the attack starting 461,049 units away on X and Y, as the game ran it in the simulator. Each dot is an aim, 46 passes apart: 201,700, then 88,285, 38,584 and 16,893 units, 0.44 of the one before. The fifth leg ends inside 12,288 units on every axis, so the ship stays there and its missile leaves; 14 passes later it hits, 2,628 frames (52 seconds) after the attack began. The dips are the ship flying past you.',
+      flying: 'The Dart cruising out of the city at about 4,465 units a pass. The aims settle, and from pass 599 on the ship holds 142,851 units behind on X, matching your speed, and never fires.',
+    };
+    function draw(key) {
+      const run = RUNS[key], n = run.d.length;
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      const xOf = p => L + (W - L - R) * p / n;
+      for (const v of [1e3, 1e4, 1e5, 1e6]) {
+        el('line', { x1: L, y1: yOf(v), x2: W - R, y2: yOf(v), stroke: css('--line-soft'), 'stroke-width': 1 }, svg);
+        text(svg, L - 8, yOf(v) + 4, num(v), 'npc-sub', 'end');
+      }
+      // the box it fires from
+      el('line', { x1: L, y1: yOf(12288), x2: W - R, y2: yOf(12288), stroke: css('--coral'), 'stroke-width': 1.2, 'stroke-dasharray': '5 4' }, svg);
+      text(svg, L + 6, yOf(12288) - 6, 'it fires from within 12,288 units', 'npc-sub npc-red');
+      const step = n > 400 ? 100 : 50;
+      for (let p = 0; p <= n; p += step) text(svg, xOf(p), Hh - B + 18, String(p), 'npc-sub', 'middle');
+      text(svg, W - R, Hh - 4, 'passes', 'npc-sub', 'end');
+      // the distance at pass p (pass 0: where the run starts)
+      const at = p => (p === 0 ? run.d0 : run.d[p - 1]);
+      let d = run.d0 ? 'M' + xOf(0) + ',' + yOf(run.d0).toFixed(1) : '';
+      run.d.forEach((v, i) => { d += (d ? 'L' : 'M') + xOf(i + 1).toFixed(1) + ',' + yOf(v).toFixed(1); });
+      el('path', { d, fill: 'none', stroke: css('--violet'), 'stroke-width': 1.8, 'stroke-linejoin': 'round' }, svg);
+      for (const p of run.aims) el('circle', { cx: xOf(p), cy: yOf(at(p)), r: 3.5, fill: css('--surface'), stroke: css('--violet'), 'stroke-width': 2 }, svg);
+      if (run.missile) {
+        el('circle', { cx: xOf(run.missile), cy: yOf(run.d[run.missile - 1]), r: 4, fill: css('--amber') }, svg);
+        text(svg, xOf(run.missile) - 8, yOf(run.d[run.missile - 1]) + 18, 'missile', 'npc-sub', 'end');
+      }
+      if (run.hit) {
+        el('line', { x1: xOf(run.hit), y1: T, x2: xOf(run.hit), y2: Hh - B, stroke: css('--coral'), 'stroke-width': 1.5 }, svg);
+        text(svg, xOf(run.hit) - 6, T + 12, 'hit', 'npc-sub npc-red', 'end');
+      }
+      cap.textContent = CAPS[key];
+      $('npc-still').setAttribute('aria-pressed', String(key === 'still'));
+      $('npc-fly').setAttribute('aria-pressed', String(key === 'flying'));
+    }
+    $('npc-still').addEventListener('click', () => draw('still'));
+    $('npc-fly').addEventListener('click', () => draw('flying'));
+    draw('still');
+  }
+
+  // --- the descent -----------------------------------------------------------------------------
+  {
+    const svg = $('npc-hire');
+    const hs = [];
+    for (let v = 0x7F00; ; v = v - (v >> 7) - 1) { hs.push(v * 256); if (!v) break; }
+    const W = 680, Hh = 240, L = 90, R = 16, T = 16, B = 34, n = hs.length - 1, top = hs[0];
+    const xOf = p => L + (W - L - R) * p / n, yOf = h => T + (Hh - T - B) * (1 - h / top);
+    for (const v of [0, 2e6, 4e6, 6e6, 8e6]) {
+      el('line', { x1: L, y1: yOf(v), x2: W - R, y2: yOf(v), stroke: css('--line-soft'), 'stroke-width': 1 }, svg);
+      text(svg, L - 8, yOf(v) + 4, num(v), 'npc-sub', 'end');
+    }
+    for (let p = 0; p <= 700; p += 100) text(svg, xOf(p), Hh - B + 18, String(p), 'npc-sub', 'middle');
+    text(svg, W - R, Hh - 4, 'passes', 'npc-sub', 'end');
+    const colony = 0x40FCC0;
+    el('line', { x1: L, y1: yOf(colony), x2: W - R, y2: yOf(colony), stroke: css('--amber'), 'stroke-width': 1.2, 'stroke-dasharray': '5 4' }, svg);
+    text(svg, W - R - 4, yOf(colony) - 6, 'the Colony Craft', 'npc-sub', 'end');
+    let d = '';
+    hs.forEach((h, i) => { d += (i ? 'L' : 'M') + xOf(i).toFixed(1) + ',' + yOf(h).toFixed(1); });
+    el('path', { d, fill: 'none', stroke: css('--violet'), 'stroke-width': 1.8 }, svg);
+    el('circle', { cx: xOf(n), cy: yOf(0), r: 4, fill: css('--violet') }, svg);
+    text(svg, xOf(n) - 6, yOf(0) - 10, 'down, pass 779', 'npc-sub', 'end');
+  }
 })();
 </script>

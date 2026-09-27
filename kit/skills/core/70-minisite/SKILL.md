@@ -267,6 +267,60 @@ game while reading how it works understands it better than one who only
 reads. The page's mechanic widgets are usually the seed. Omit the tab only
 if there is genuinely nothing playable to put on it. No tier requires the Play tab, so it never blocks Silver or Gold.
 
+### A whole game, checked against its own code
+
+With no demonstration to replay, run the game's own code beside the port
+and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
+machine for it: the simulator with a raster interrupt, the keyboard, the
+joystick and colour RAM around it, started from the listing's memory,
+counting passes where the main loop begins; its header is the manual.
+
+- **Port routine by routine, on the game's own memory.** One function per
+  listing label, reading and writing the game's variables where the game
+  keeps them, self-modified operands included. A routine that waits for
+  the raster or for time becomes a generator that yields where time
+  passes. Split the routines into groups, one agent each, with the routine
+  addresses in the prompt.
+- **Test each routine alone first**, against the game's routine run by the
+  simulator (`cpu.call`) on thousands of random states made from real
+  moments of play. Start calls with the stack pointer at `$FF`: a deep
+  call chain started lower can run down into tables the game keeps in the
+  stack page, and the failures look like the game's.
+- **Then the whole loop in lockstep.** Make the port's main loop yield at
+  checkpoints, the return address of each call in its body. Run the game
+  to the same address, note the interrupts that ran on the way, run those
+  interrupts in the port at the checkpoint, and compare all of memory at
+  the start of every pass, from saved moments of play with recorded input.
+  While a group is unfinished, the game's own code stands in for its
+  routines. A polling loop in the port needs a clock that moves while it
+  polls; give the port a virtual raster that the checkpoints set from the
+  game's.
+- **What lockstep cannot match is the game's own races.** The port runs an
+  interrupt between two steps; the machine runs it wherever it falls. An
+  interrupt that uses the main code's scratch bytes, or changes a value
+  the main code is reading, gives results on the machine that depend on
+  where it fell. When a difference survives, hook the machine at the
+  addresses involved and look for an interrupt between the store and the
+  read before calling it a port bug. Leave those bytes out of the
+  comparison only once the race is shown, and say on the page what the
+  port shows instead.
+- **Pace it by the machine's clock.** A game that moves a fixed step per
+  pass is only the same game at the same passes per second. The port
+  executes no instructions, so fit their cost: in the lockstep, record for
+  each stretch between checkpoints the cycles the game took (its
+  interrupts excluded) and how often the port called each routine, plus
+  pixels drawn and rows filled, and fit each routine's own cycles by
+  non-negative least squares. Check the fit on sessions it was not fitted
+  on, then check the pace itself: passes in the same frames from the same
+  moment, on the machine and on the page.
+- **A clock, not a frame loop.** Each stretch moves a virtual PAL clock on
+  by its cost, running the raster interrupts on their lines as it goes; a
+  raster wait moves the clock to its line and the interrupts on the way
+  take their own time, not the wait's. Let the page move a target one
+  frame per real frame and run the port until the clock reaches it. Never
+  "run to the next frame boundary": one long stretch then carries the clock
+  frames ahead of real time and the game runs fast.
+
 ## Check it in a browser
 
 The page is a visual, interactive artefact and none of the kit's checks

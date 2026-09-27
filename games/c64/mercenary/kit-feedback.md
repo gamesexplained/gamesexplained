@@ -136,3 +136,66 @@ Two asks already filed by another run got this run's case as a comment:
   offset, while the descent frame matched exactly.
 - #42: a shared 6502 simulator in `kit/c64`. This branch adds one, and the
   comment says what of the ask it covers and what it does not.
+
+## 27 September 2026: the Play tab
+
+A second session, on the contributor's request: the whole game playable in
+the browser, a section on the craft that fly without you, and a mod.
+
+### Changed in this branch
+
+**A C64 for checking a port against its game (`kit/c64/machine.js`,
+`kit/c64/test_machine.js`, `.github/workflows/ci.yml`).** The simulator
+runs one routine; checking a whole game's port needs the game running on
+its own, with its raster interrupt, keyboard and joystick. The machine
+built for this run is now in the kit, generalised (the main loop's address
+is an option, `passAt`), with a self-test on a program of its own that CI
+runs. On Mercenary it gives the same memory as the game-specific original,
+byte for byte, after 3,000 frames.
+
+**How to port and check a whole game (`kit/skills/core/70-minisite`,
+"A whole game, checked against its own code").** The Play section asked
+for a demonstration replay, and Mercenary has none. The method that
+worked, and the three traps that cost this run most of its time, are now
+there: the lockstep at the main loop's checkpoints with the interrupts
+replayed there, telling a port bug from the game's own interrupt races,
+the stack pointer for simulated calls, the per-routine cost fit for the
+pace, and the page clock that must not run "to the next frame boundary".
+`kit/CHANGELOG.md` 0.0.30, `kit/VERSION`.
+
+### What took longest
+
+| Step | Minutes | Model | Sessions | What dominated |
+|---|---:|---|---:|---|
+| 70-minisite (this session) | 147 | claude-opus-5-5 | 1 | a research agent and nine porting agents ported the 294 routines in parallel while the lead built the reference machine, the lockstep harness, the main loop, the runtime and the display; three timing fits and a frame-loop bug took about two hours; then the mod, the NPC section, the Play page's copy, and an agent folding the findings into facts.md |
+
+The whole run's table, from `clock.py report`, is in `timings.json`.
+
+The single change that would have saved the most minutes is the pacing
+advice now in the skill: the first speed model was a cost per stretch of
+the main loop, and it took three fits and a frame-loop bug, about two
+hours, to learn that the page needs a per-routine cost fitted on the
+simulator and a clock target that moves one frame per real frame.
+
+### Operating system and tools
+
+The same hosted Linux container (Ubuntu 24.04, x86_64). The port and its
+tests ran on node 22.22.2 with the kit's simulator; the pages were checked
+with Playwright 1.56.1's Chromium from `/opt/pw-browsers`. The VICE MCP
+server did not connect in this session, so every observation of the game
+came from its own code in the simulator; none needed the emulator.
+
+### Maintainer asks
+
+Not filed: the contributor's instructions for this session rule out
+publishing without a yes, so this ask waits here for whoever merges.
+
+- **A shared lockstep harness.** `kit/c64/machine.js` covers the machine,
+  but the lockstep itself (stopping the game at the port's checkpoints,
+  replaying its interrupts in the port there, a virtual raster for the
+  port's polling loops, comparing memory by ranges) was written for this
+  game and lives in its `work/`. The mechanics are the same for any game
+  with a main loop; a `kit/c64/lockstep.js` taking the checkpoint list and
+  the interrupt handlers' addresses would save the next Play tab most of a
+  day. Whether the kit should carry it, and in what shape, is a
+  maintainer's call.

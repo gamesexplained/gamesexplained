@@ -129,6 +129,7 @@ section table{margin:6px 0 18px}
     <tr><td>44 cars: the game's car (object 2) and its land Dart (object 5)</td><td>Along the roads of the game's road table, keeping left, from one place to another at up to 825 units a pass, the car's own top speed. They queue behind the car in front and stop when you stand in the road.</td></tr>
     <tr><td>14 craft: Darts, Palyar diamonds, jets and CHEESEs</td><td>From a stand at the airbase (08-08) or Jordan Airport (12-13), or from a lift, to another one. They roll and take off from the runways, rise out of the lifts and sink back into them, and cruise at about three quarters of the craft's top speed in the game's table.</td></tr>
     <tr><td>4 Palyar diamonds</td><td>Drop from the Colony Craft's deck, fly a short way below it and dock again.</td></tr>
+    <tr><td>1 Palyar Dart</td><td>Flies in formation with the brother-in-law's new ship, 700 units to its west, down column 00. Shoot his ship and the escort breaks away and joins the traffic.</td></tr>
   </table>
   <p>Cars head for the Coach and Horses (15-02), for the other named places, or anywhere on the road network. Every so often it is match day: most of the cars that set off then drive to Bosher Stadium (08-07) and park there until the game is over.</p>
   <h3>Shooting one</h3>
@@ -6504,7 +6505,17 @@ function makeDisplay(opts) {
       cr.roll = Math.round(-t * 3);                          // bank into the turn
       return Math.abs(d);
     }
+    // the brother-in-law's escort: in formation with object 0, 700 units west of it and 300
+    // behind, while his ship flies; if it is shot (its room no longer the surface), the escort
+    // breaks away and joins the traffic
+    const obj0 = () => ({ x: M[0x2880] | M[0x2480] << 8 | M[0x2540] << 16, h: M[0x28C0] | M[0x24C0] << 8 | M[0x2580] << 16, y: M[0x2900] | M[0x2500] << 8 | M[0x25C0] << 16 });
+    function stepEscort(cr) {
+      if (M[0x2940] !== 0) { cr.escort = false; cr.base = { kind: 'air' }; cr.legs = null; cr.wait = 0; cr.speed = cr.vmax >> 1; return; }
+      const o = obj0();
+      cr.x = o.x - 700; cr.y = o.y - 300; cr.h = o.h; cr.head = 512; cr.speed = 256; cr.roll = 0; cr.pitch = 0; cr.hidden = false;
+    }
     function stepCraft(cr) {
+      if (cr.escort) return stepEscort(cr);
       if (cr.wait > 0) { cr.wait--; return; }
       if (!cr.legs) { if (!planFlight(cr)) return; cr.hidden = false; }
       const L = cr.legs[cr.leg];
@@ -6548,6 +6559,8 @@ function makeDisplay(opts) {
       for (let i = 0; i < 44; i++) newCar(i);
       for (let i = 0; i < 14; i++) newCraft(100 + i);          // fewer than the stands, so some are always free
       for (let i = 0; i < 4; i++) newCraft(200 + i, { colony: true });
+      V.push({ kind: 'air', escort: true, model: MODEL.dart, fac: 'P', x: 0, y: 0, h: 0, head: 512, pitch: 0, roll: 0, speed: 256,
+        vmax: 4950, base: { kind: 'air' }, wait: 0, hidden: false, id: 300 });
     }
     function step() {
       pass++;

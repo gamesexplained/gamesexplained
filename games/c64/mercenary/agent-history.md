@@ -134,3 +134,64 @@ landing point by hand, and walking off the deck, which falls safely back
 to 08-08. VICE's MCP keyboard presses with an automatic release did not
 reach the game's matrix scan; holding the key and releasing it by hand
 did.
+
+## 27 September 2026: the Play tab
+
+The contributor asked for the whole game in the browser, the craft that
+fly about the world, a native-resolution view beside the faithful one,
+and a mod that fills the city with traffic.
+
+The emulator's MCP server did not connect, so the work was built on the
+game's own code in the kit's simulator. A C64 around it (raster
+interrupt, keyboard, joystick, colour RAM) ran the game from the listing,
+counted passes where the main loop begins, and saved moments of play as
+states. A research agent listed every mechanic the port would need and
+the craft that move by themselves. Nine agents then ported the game's
+routines in groups (the view maths, the scene, the objects, the scripts,
+the motion, the combat, the panel, the rooms, the opening), each testing
+its routines alone against the game's on random states, while the lead
+wrote the main loop and a lockstep harness: the game stopped at each of
+the port's checkpoints, its interrupts were replayed in the port there,
+and all memory was compared at every pass. With every group in and no
+fallback left, 11,240 passes from 38 moments of play were identical but
+two.
+
+Those two, and three lift-ride starts that drift, were the game's own
+races, not the port's. Hooks on the machine showed the panel interrupt
+printing one of Benson's figures in the middle of the sky fill, whose
+fill byte it shares (a black band for one frame), and the lift ride's
+interrupt changing the step the main loop was reading, which the game
+reads twice for that reason. The port runs its interrupts between steps
+and shows the other case; the Play page says so.
+
+The speed took longest. The first model charged each stretch of the main
+loop by its average cost and a few per-unit terms; the page then ran
+twice as fast as the machine, because its frame loop ran each call to the
+next frame boundary and a long stretch carried the clock frames ahead.
+With that fixed, and the raster wait no longer lengthened by the
+interrupts that fell in it, walking still ran 8 to 14 % slow. Counting
+every routine the port called and fitting each one's own cycles on the
+machine brought every pass within about 1 %. The kit now carries both
+lessons.
+
+In the browser the opening, the landing, buying the Dart, walking,
+turning, saving and the sound switch were tried; the native renderer
+draws the same scene from the same positions as smooth lines. The mod
+borrows object slot 9 to draw its vehicles with the game's routine, tests
+the player's missile against them with the game's rule, and answers a hit
+with two event scripts of twelve bytes in the game's own byte code; its
+first version parked craft on top of the Dart and drew the interstellar
+ship among the traffic, and both were changed. Shooting a car in the
+simulator gave YOU HAVE JUST DESTROYED, A PALYAR CRAFT, PALYAR SHIP
+ATTACKING and the attack ship.
+
+For the new section on the craft that fly without you, the simulator
+recorded the attack ship's pursuit of a craft standing still and of one
+flying straight, the hired ship's descent (the formula in the code gave
+the recorded heights exactly) and two pictures of the brother-in-law's
+ship. The first close-up was taken from a saved state and showed a line
+of stray pixels along the view's bottom row; clean states did not, and
+viewpoints close to the ship did, so the picture was taken from a
+viewpoint that does not show it and the question went into `TODO.md`.
+An agent folded the porting agents' findings about the game into
+`facts.md` and `features.md`.
