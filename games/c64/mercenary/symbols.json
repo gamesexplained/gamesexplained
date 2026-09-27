@@ -21355,7 +21355,7 @@
   {
    "address": 29810,
    "type": "line",
-   "text": "Respawns star Y at the far end: X and Y each from three random bytes ($ADEF), the high one masked and offset by $74C0/$74C1 (-32..+31, later -16..+15) and made a float by $8510; Z's mantissa random and its exponent $74C2 ($38: 2^14). Then projects it ($7375)."
+   "text": "Respawns star Y at the far end: X from three random bytes ($ADEF), the high one masked and offset by $74C0/$74C1 (-32..+31, later -16..+15) and made a float by $8510. Y the same, but for its low byte: the random byte stored at $7494 is overwritten at once by $8510's STA $06, so the low byte is what $8510 left in $07 from converting X. Z's mantissa random and its exponent $74C2 ($38: 2^14). Then projects it ($7375)."
   },
   {
    "address": 29887,
@@ -22065,7 +22065,7 @@
   {
    "address": 34356,
    "type": "line",
-   "text": "The hired ship (object 7), every pass. $BEFF = 0: nothing. Negative (script 2 pokes $FF after 'SHIP DESPATCHED / IT WILL LAND AT LOC 8-8 IN 2 MINS'): object 7 is put on the surface ($2947 = 0) at X $08:$99:$00, Y $08:$8B:$00, height $7F:$00:$00, and $BEFF = $7F. Positive: the height (high:middle bytes) loses height/128 + 1 a pass until it is exactly 0, then $BEFF = 0. The descent takes 780 passes (about 2.6 minutes at the 5 passes a second measured on the ground)."
+   "text": "The hired ship (object 7), every pass. $BEFF = 0: nothing. Negative (script 2 pokes $FF after 'SHIP DESPATCHED / IT WILL LAND AT LOC 8-8 IN 2 MINS'): object 7 is put on the surface ($2947 = 0) at X $08:$99:$00, Y $08:$8B:$00, height $7F:$00:$00, and $BEFF = $7F. Positive: the height (high:middle bytes) loses height/128 + 1 a pass until it is exactly 0, then $BEFF = 0. The descent takes 779 passes after the placing pass, 780 from the poke, underground as well (the main loop calls this before it branches, $855F), so its time depends on the pass rate: in a 6502 simulator 2 min 38 s standing at 08-08, 1 min 29 s in room 8."
   },
   {
    "address": 34448,
@@ -22215,7 +22215,7 @@
   {
    "address": 35649,
    "type": "line",
-   "text": "Script op 9: a machine-code address (low, high), then the target. Calls it through $8C5D and branches when it comes back with the carry clear. No script in this image uses it (see $8C5D)."
+   "text": "Script op 9: a machine-code address (low, high), then the target. Calls it through $8C5D, whose JSR at $8C69 returns into op 13 ($8C6C), not here; that ends at $8B92, which returns to $8B44, so op 9 branches ($8B8B) on the carry out of $1F + Y + 1 from $8B95, not on the called code's. No script in this image uses it (see $8C5D)."
   },
   {
    "address": 35655,
@@ -23870,7 +23870,7 @@
   {
    "address": 44968,
    "type": "line",
-   "text": "Ground flash: while $F0 counts down one a pass the ground colour $A5 is $BB7E + $F0; from 10 ($913F) dark grey, grey, light grey, three whites and back, from 31 ($936F) first 18 orange, purple, red, black; at 0 it returns to $C4."
+   "text": "Ground flash: while $F0 counts down one a pass the ground colour $A5 is $BB7E + $F0, read before the count goes down (TAX at $AFB7), and $C4 again on the pass that takes it to 0. From 10 ($913F): black, dark grey, grey, light grey, three whites, light grey, grey. From 31 ($936F): 19 oranges, purple, red, black and the same greys."
   },
   {
    "address": 45002,
@@ -24290,7 +24290,7 @@
   {
    "address": 47998,
    "type": "line",
-   "text": "Transporter flash colours: ground_flash sets $A5 := flash_colours + $F0 as $F0 counts down from its start (never index 0): $0A gives $BB87-$BB7F, 0B 0C 0F 01 01 01 0F 0C 0B (grey to white and back); $1F (mirror_world) first reads 20 bytes on, into elevator_steps: 08 x 18 (orange), 04, 02, then 00 and the ramp."
+   "text": "Transporter flash colours: ground_flash sets $A5 := flash_colours + $F0, read before $F0 counts down from its start (never index 0 or 1: the pass that takes $F0 to 0 restores $C4): $0A gives $BB88-$BB80, 00 0B 0C 0F 01 01 01 0F 0C (black, then grey to white and back); $1F (mirror_world) first reads 20 bytes on, into elevator_steps: 08 x 19 (orange), 04, 02, then 00 and the greys."
   },
   {
    "address": 48009,

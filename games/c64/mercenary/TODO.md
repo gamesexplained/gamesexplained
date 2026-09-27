@@ -51,26 +51,17 @@ differ, `orientation.md`) (#64).
   shows that line depends on timing it does not model; the emulator
   would settle it (#71).
 
-## Listing comments to correct
+## Carry into the disassembler project
 
-Five comments in `symbols.json` say less than `facts.md` now does. Changing
-them means rebuilding `listing.json`, which `kit/scripts/listing.py` does
-from the contributor's snapshot, and the snapshot was not in the
-container of the session that found them (27 September 2026). #63 has
-the table; kit ask #60 would let it be done without the snapshot:
-
-- `$7472`: "X and Y each from three random bytes": Y's low byte is what
-  `$8510` left in `$07` from converting X.
-- `$8634`: "The descent takes 780 passes (about 2.6 minutes ...)": 779
-  passes after the placing pass, 780 from the poke; 2 min 38 s standing
-  at 08-08, 1 min 29 s in room 8.
-- `$8B41`: "branches when it comes back with the carry clear": the `JSR`
-  at `$8C69` returns into op 13, and op 9 branches on the carry out of
-  `$1F` + Y + 1, not on the called code's.
-- `$AFA8` and `$BB7E`: the flash colour is read with `$F0` before it
-  counts down, so 10 gives `$BB88`-`$BB7F` (black first, then dark grey,
-  grey, light grey, three whites, light grey, grey) and 31 gives 19
-  oranges, not 18.
+Five comments were corrected by hand in `symbols.json`, and the listing
+with `listing.py --recomment`, in a session without the snapshot or the
+project (#63). The project in `work/` still holds the old text, and its
+next export would put it back: copy these five line comments from
+`symbols.json` into it first. `$7472` (Y's low byte is what `$8510` left in
+`$07`), `$8634` (779 passes after the placing pass, 780 from the poke),
+`$8B41` (op 9 branches on the carry out of `$1F` + Y + 1), `$AFA8` and
+`$BB7E` (the colour is read before `$F0` counts down: 10 gives
+`$BB88`-`$BB80`, black first; 31 gives 19 oranges).
 
 ## Ideas for the page
 
