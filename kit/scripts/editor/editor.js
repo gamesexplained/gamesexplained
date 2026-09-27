@@ -95,13 +95,32 @@
     return p;
   }
 
+  function remapped(n, list) {
+    for (var k = 0; k < (list || []).length; k++) if (n >= list[k][0] && n < list[k][1]) return n + list[k][2];
+    return n;
+  }
   function remap(list) {
     if (!list || !list.length) return;
     [].slice.call(document.querySelectorAll('[data-ge]')).concat(ghosts).forEach(function (e) {
-      var n = +e.getAttribute('data-ge');
-      for (var k = 0; k < list.length; k++) {
-        if (n >= list[k][0] && n < list[k][1]) { e.setAttribute('data-ge', n + list[k][2]); return; }
-      }
+      e.setAttribute('data-ge', remapped(+e.getAttribute('data-ge'), list));
+    });
+  }
+
+  // The list of sections in the margin (build.py's pagenav, kept by site.js) shows each section's label
+  // and heading. site.js can add an entry but not move or drop one, so an edit that moves, cuts or hides
+  // anything the list shows reloads the page. A new heading or label is written into its entry in place.
+  function inList(x) {
+    return !!document.querySelector('.pagenav') && (x.matches('section, h2, .fig') || !!x.querySelector('section, h2, .fig'));
+  }
+  function patchList(html) {
+    var pn = document.querySelector('.pagenav');
+    if (!pn || !html) return;
+    new DOMParser().parseFromString(html, 'text/html').querySelectorAll('.pagenav ol a').forEach(function (a) {
+      var mine = pn.querySelector('ol a[href="' + a.getAttribute('href').replace(/["\\]/g, '\\$&') + '"]');
+      if (mine) ['.n', '.h'].forEach(function (s) {
+        var f = a.querySelector(s), m = mine.querySelector(s);
+        if (f && m) m.innerHTML = f.innerHTML;
+      });
     });
   }
 
@@ -112,8 +131,12 @@
     });
   }
 
-  function reloadKeeping(msg) {
-    try { sessionStorage.setItem('ge-place', JSON.stringify({y: scrollY, msg: msg || '', page: M.page})); } catch (e) {}
+  // keep: {n, top}, the block to show at the same height on the screen after the reload
+  function reloadKeeping(msg, keep) {
+    try {
+      sessionStorage.setItem('ge-place', JSON.stringify({y: scrollY, msg: msg || '', page: M.page,
+                                                         n: keep ? keep.n : null, top: keep ? keep.top : 0}));
+    } catch (e) {}
     location.reload();
   }
 
@@ -218,7 +241,8 @@
     if (!norm(x.textContent) && m && m.cut === 'cut') { cut(x); return; }   // emptied: it goes
     dirty.add(x);   // until the reply brings its new words, they differ from the source's: that is not a script
     draw();
-    send('save', x, {inner: now}).then(function () { dirty.delete(x); draw(); }, function () { dirty.delete(x); draw(); });
+    send('save', x, {inner: now}, function (j) { patchList(j.nav); })
+      .then(function () { dirty.delete(x); draw(); }, function () { dirty.delete(x); draw(); });
   }
 
   function caretAt(px, py) {
@@ -271,6 +295,7 @@
     send('split', x, {parts: parts}, function (j) {
       remap(j.remap);
       nb.setAttribute('data-ge', +x.getAttribute('data-ge') + 1);
+      patchList(j.nav);
     }).then(function () { dirty.delete(x); }, function () { dirty.delete(x); });
     activate(nb, null, null, carry);
     caretTo(nb, 0);
@@ -302,6 +327,7 @@
     send('join', x, {inner: merged}, function (j) {
       remap(j.remap);
       ghosts.splice(ghosts.indexOf(x), 1);
+      patchList(j.nav);
     }).catch(function () { ghosts.splice(ghosts.indexOf(x), 1); });
     activate(p, null, null, carry);
     caretTo(gap, gap.length);
@@ -361,12 +387,14 @@
     x.setAttribute('data-ge-going', '');
     hov = {text: null, cut: null, sec: null}; draw();
     send('cut', x, null, function (j) {
+      var msg = j.mode === 'cut' ? j.what + '.' : j.what + '. It holds something the page’s script uses, so it stays '
+                + 'in the page, out of sight, until the cleanup pass.';
+      if (inList(x)) { reloadKeeping(msg); return; }
       if (j.mode === 'cut') { x.remove(); remap(j.remap); }
       else { x.removeAttribute('data-ge-going'); x.setAttribute('data-cut', ''); x.setAttribute('hidden', ''); }
       updates(j.updates);
       placeholders();
-      toast(j.mode === 'cut' ? j.what + '.' : j.what + '. It holds something the page’s script uses, so it stays in the '
-            + 'page, out of sight, until the cleanup pass.');
+      toast(msg);
     }).catch(function () { x.removeAttribute('data-ge-going'); });
   }
 
@@ -375,7 +403,10 @@
     var top = sec.getBoundingClientRect().top;
     send('move', sec, {dir: dir}, function (j) {
       var A = byId(j.pair[0]), X = byId(j.pair[1]);
-      if (!A || !X) { reloadKeeping(j.what); return; }
+      if (!A || !X || document.querySelector('.pagenav')) {   // the section stays where it was on the screen
+        reloadKeeping(j.what + '.', {n: remapped(+sec.getAttribute('data-ge'), j.remap), top: top});
+        return;
+      }
       A.before(X);
       remap(j.remap);
       updates(j.updates);
@@ -693,8 +724,12 @@
   try { kept = JSON.parse(sessionStorage.getItem('ge-place') || 'null'); sessionStorage.removeItem('ge-place'); } catch (e) {}
   if (kept && kept.page === M.page) {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    scrollTo(0, kept.y);
-    addEventListener('load', function () { scrollTo(0, kept.y); });
+    var place = function () {
+      var el = kept.n != null && byId(kept.n);
+      if (el) scrollBy(0, el.getBoundingClientRect().top - kept.top); else scrollTo(0, kept.y);
+    };
+    place();
+    addEventListener('load', place);
     if (kept.msg) toast(kept.msg);
   }
   placeholders();

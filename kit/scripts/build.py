@@ -289,19 +289,29 @@ def under_title(page, ban):
 
 
 # --- every tab but Source: the page's sections, listed in the left margin -------------
+VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+
+
 class Outline(html.parser.HTMLParser):
     """What a page's margin list is made of, in page order: each top-level <section>, with
     its label (the .fig line, "NN · label") and its first <h2>, and every other <h2> as an
     entry of its own. Records where each element opens and its id, and reads a heading
-    without the badges in it."""
+    without the badges in it. Nothing inside a block hidden with the page editor (data-cut)
+    is listed: a reader never sees it."""
 
     def __init__(self):
         super().__init__(convert_charrefs=True)
-        self.items, self.depth, self.sec, self.grab, self.skip = [], 0, None, None, 0
+        self.items, self.depth, self.sec, self.grab, self.skip, self.cut = [], 0, None, None, 0, None
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         cls = set((a.get("class") or "").split())
+        if self.cut:   # [tag, how many of that tag are open] for the hidden block being skipped
+            self.cut[1] += tag == self.cut[0]
+            return
+        if "data-cut" in a and tag not in VOID_TAGS:
+            self.cut = [tag, 1]
+            return
         if self.grab:
             if tag == "span" and (self.skip or cls & {"tag", "badge"}):
                 self.skip += 1
@@ -323,6 +333,11 @@ class Outline(html.parser.HTMLParser):
             self.sec["fig"] = ""; self.grab = (tag, self.sec)
 
     def handle_endtag(self, tag):
+        if self.cut:
+            if tag == self.cut[0]:
+                self.cut[1] -= 1
+                self.cut = self.cut if self.cut[1] else None
+            return
         if self.grab:
             if tag == "span" and self.skip:
                 self.skip -= 1
@@ -334,7 +349,7 @@ class Outline(html.parser.HTMLParser):
                 self.sec = None
 
     def handle_data(self, data):
-        if self.grab and not self.skip:
+        if self.grab and not self.skip and not self.cut:
             what, item = self.grab
             item["h2" if what == "h2" else "fig"] += data
 

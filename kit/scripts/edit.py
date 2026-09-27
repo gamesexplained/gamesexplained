@@ -20,6 +20,9 @@ A block the page's script writes, or one filled from game.json, is locked: edit 
 the source. A hidden block stays in the page, marked data-cut, so the scripts that look
 for it keep working; the cleanup pass in kit/START.md removes it with everything only it
 used. build.py lists the pages that still have one, and fails on a Gold page that does.
+The list of sections in the margin leaves hidden blocks out. An edit that moves, cuts or
+hides something it shows reloads the page, so the list follows; a heading or a label you
+change is written into its entry as you leave it.
 
 Usage: edit.py [--port N]   serve on N, or on 8000 or the next free port after it
        edit.py --test       try every edit on every authored page, writing nothing
@@ -458,6 +461,8 @@ def act(req):
         if new != src:
             write(path, new)
             UNDO.setdefault(path, []).append((src, new, did))
+        if op in ("save", "split", "join") and (B[n]["tag"] == "h2" or "fig" in B[n]["cls"]):
+            extra["nav"] = section_list(path, new)   # a heading or a label is what the section list shows
         return 200, dict(extra, ok=True, rev=rev(new), els=meta(new, blocks(new)), undo=len(UNDO.get(path, [])), what=did)
 
 
@@ -483,15 +488,27 @@ def contributors(gdir):
     return build.contributors(gdir)
 
 
+def assemble(path, src):
+    """The page build.py publishes for this authored tab, made from src instead of the file."""
+    gdir, f = os.path.split(path)
+    game = json.load(open(os.path.join(gdir, "game.json")))
+    nav = build.tabbar(game, build.present_tabs(gdir), build.LIB)
+    return build.authored_page(gdir, game, f, nav, build.banner(game, contributors(gdir)), src=src)
+
+
+def section_list(path, src):
+    """The list of the page's sections in the margin (build.pagenav) as src makes it, or "" for none."""
+    m = re.search(r'<nav class="pagenav".*?</nav>', assemble(path, src), re.S)
+    return m.group(0) if m else ""
+
+
 def render(path):
     """An authored page as the build would publish it, with block N tagged data-ge="N", the
     error collector first and the editor last."""
-    gdir, f = os.path.split(path)
+    gdir = os.path.dirname(path)
     src = read(path)
     B = blocks(src)
-    game = json.load(open(os.path.join(gdir, "game.json")))
-    nav = build.tabbar(game, build.present_tabs(gdir), build.LIB)
-    page = build.authored_page(gdir, game, f, nav, build.banner(game, contributors(gdir)), src=tag(src, B))
+    page = assemble(path, tag(src, B))
     page = re.sub(r"<meta charset=[^>]*>", lambda m: m.group(0) + COLLECT, page, count=1, flags=re.I)
     info = {"page": os.path.relpath(path, os.path.join(ROOT, "games")).replace(os.sep, "/"), "rev": rev(src),
             "token": TOKEN, "els": meta(src, B), "undo": len(UNDO.get(path, [])),
@@ -612,7 +629,8 @@ def selftest():
     block saved as it is changes nothing; a split and a join cancel out; a hidden block
     comes back byte for byte; a cut takes exactly its blocks; a section moved up and back
     is where it was; and after each edit every other block is where the renumbering says,
-    start tag and all. Nothing is written."""
+    start tag and all. The page the editor serves is the published page but for its tags,
+    and a hidden section leaves the list of sections in the margin. Nothing is written."""
     fails = pages = tried = 0
     for path in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.html"))):
         if os.path.basename(path) not in build.AUTHORED:
@@ -630,6 +648,23 @@ def selftest():
 
         if re.sub(r' data-ge="\d+"', "", tag(src, B)) != src:
             bad.append("tagging moved a byte")
+        if re.sub(r' data-ge="\d+"', "", assemble(path, tag(src, B))) != assemble(path, src):
+            bad.append("the editor's page is not the published page but for its tags")
+        listed = section_list(path, src).count("<li>")
+        for e in B:   # hide each top-level section in turn: the list loses its entries, and goes below two
+            up = e["parent"]
+            while up is not None and up["tag"] != "section":
+                up = up["parent"]
+            if e["tag"] != "section" or up is not None or hidden(e):
+                continue
+            inner = src[e["i"]:e["ie"]]
+            h2s = len(re.findall(r"<h2\b", inner))   # the first names the section; any other is an entry of its own
+            gone = (1 if h2s or re.search(r'class="[^"]*\bfig\b', inner) else 0) + max(h2s - 1, 0)
+            want = listed - gone if listed - gone >= 2 else 0
+            at = e["i"] - 1 - (src[e["i"] - 2] == "/")
+            shown = section_list(path, src[:at] + " data-cut hidden" + src[at:]).count("<li>")
+            if shown != want:
+                bad.append(f"line {e['line']}: with the section hidden the list has {shown} entries, not {want}")
         for n, e in enumerate(B):
             where, rest = f"line {e['line']}", [k for k in range(len(B)) if k != n]
             try:

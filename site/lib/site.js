@@ -80,13 +80,14 @@
       btn.hidden=!links.length; cur=-2;
     }
     // The page's outline read the way build.py reads it: each top-level section, by its first h2 or
-    // its label, and every other h2 as an entry of its own.
+    // its label, and every other h2 as an entry of its own. Nothing inside a block hidden with the page
+    // editor (data-cut) is listed, as build.py lists none of it.
     function bare(el){ var c=el.cloneNode(true); [].forEach.call(c.querySelectorAll('.tag, .badge'),function(x){ x.remove(); }); return c.textContent.replace(/\s+/g,' ').trim(); }
     function slug(s){ return s.toLowerCase().replace(/&/g,' and ').replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40).replace(/-+$/,''); }
     function outline(){
       var out=[], top=new Map();
       [].forEach.call(document.querySelectorAll('section, h2'),function(el){
-        if(pn.contains(el)) return;
+        if(pn.contains(el)||el.closest('[data-cut]')) return;
         var s=el.tagName==='SECTION'?el:el.closest('section');
         while(s&&s.parentElement&&s.parentElement.closest('section')) s=s.parentElement.closest('section');
         if(el.tagName==='SECTION'){ if(s===el){ var e={el:el,h2:null}; out.push(e); top.set(el,e); } return; }
