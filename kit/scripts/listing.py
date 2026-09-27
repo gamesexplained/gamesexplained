@@ -39,6 +39,13 @@ Usage:
                          name the operands of the existing listing.json again,
                          for a change to "io" or to the register names, without
                          the snapshot; refused once symbols.json has changed
+  listing.py <game dir> --recomment
+                         put symbols.json's comments and label names into the
+                         existing listing.json, without the snapshot; refused
+                         when anything else in symbols.json has changed since
+                         the listing was built (its blocks, its symbols'
+                         addresses and types, which addresses carry a comment,
+                         the ledger), or when git no longer has that symbols.json
 
 Record fields (short, the file is large):
   a  address            t  kind: code | byte | word | addr | lohi | text | gap | note
@@ -286,10 +293,92 @@ def relabel(gdir):
     print(f"wrote {lpath}: {changed} operands named differently")
 
 
+def built_from(gdir, sha):
+    """The symbols.json, from gdir's git history, whose hash is sha; None when there is none."""
+    import subprocess
+    def git(*args):
+        return subprocess.run(["git", "-C", gdir, *args], capture_output=True).stdout
+    for rev in [":"] + git("rev-list", "HEAD", "--", "symbols.json").decode().split():
+        blob = git("show", f"{rev.rstrip(':')}:./symbols.json")
+        if blob and hashlib.sha256(blob).hexdigest() == sha:
+            return json.loads(blob)
+    return None
+
+
+def recomment(gdir):
+    """Put symbols.json's comments and label names into gdir's listing.json, whose bytes,
+    records and cross-references stay as they were built."""
+    from symbols_export import regions
+    game = json.load(open(os.path.join(gdir, "game.json")))
+    spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
+    out = json.load(open(lpath))
+    sha = hashlib.sha256(open(spath, "rb").read()).hexdigest()
+    if out.get("symbols_sha256") == sha:
+        print(f"{lpath} was built from this symbols.json: nothing to do"); return
+    old, new = built_from(gdir, out.get("symbols_sha256")), json.load(open(spath))
+    if old is None:
+        sys.exit(f"{lpath} was built from a symbols.json git does not have: restore listing.json "
+                 "from git and run this again, or rebuild it from the snapshot")
+
+    def shape(sym):
+        L = compute(sym["blocks"], sym["symbols"], sym["comments"], regions(game))
+        return {"blocks": sym["blocks"],
+                "symbols": [(s["address"], s["type"], s.get("kind")) for s in sym["symbols"]],
+                "comments": sorted((c["address"], c["type"]) for c in sym["comments"]),
+                "state": L["state"], "code": L["code"], "commented": L["commented"],
+                "owner": {a: o[1] for a, o in L["owner"].items()}}
+    was, now = shape(old), shape(new)
+    moved = [k for k in was if was[k] != now[k]]
+    if moved:
+        sys.exit(f"symbols.json has changed more than comments and names ({', '.join(moved)}): "
+                 "rebuild it from the snapshot")
+
+    names, before = symbol_names(new), symbol_names(old)
+    at = {}                                          # an old name's address, for split tables
+    for a, n in before.items():
+        at[n] = a if n not in at else None
+    line = {c["address"]: c["text"] for c in new["comments"] if c["type"] == "line"}
+    side = {c["address"]: c["text"] for c in new["comments"] if c["type"] == "side"}
+    regs, chips = register_names(game.get("platform")), io_meaning(game)
+    changed = 0
+    for r in out["records"]:
+        was_r = dict(r)
+        for k, m in (("l", names), ("c", line), ("s", side)):
+            if k in r:
+                r[k] = m[r["a"]]
+        if r["t"] == "code":
+            m, mode = OPS[r["b"][0]]
+            o, ta = operand(r["a"], m, mode, r["b"], names, regs, chips)
+            if ta != r.get("oa"):
+                sys.exit(f"${r['a']:04X}: the operand now points elsewhere: rebuild it from the snapshot")
+            r.pop("o", None)
+            if o is not None:
+                r["o"] = o
+        elif r["t"] == "addr":
+            r["o"] = names.get(r["oa"]) or f"${r['oa']:04X}"
+        elif "note" in r and r["note"].startswith("split table"):
+            d = []
+            for v in r["d"]:
+                a = int(v[1:], 16) if v.startswith("$") else at.get(v)
+                if a is None:
+                    sys.exit(f"${r['a']:04X}: no one address for {v}: rebuild it from the snapshot")
+                d.append(names.get(a) or f"${a:04X}")
+            r["d"] = d
+        changed += r != was_r
+    for i in out["index"]:
+        i["n"] = names[i["a"]]
+    out["symbols_sha256"] = sha
+    with open(lpath, "w") as f:
+        json.dump(out, f, separators=(",", ":"))
+    print(f"wrote {lpath}: {changed} records with new comments or names")
+
+
 def main():
     argv = sys.argv[1:]
     if len(argv) == 2 and argv[1] == "--relabel":
         relabel(argv[0]); return
+    if len(argv) == 2 and argv[1] == "--recomment":
+        recomment(argv[0]); return
     if len(argv) < 2 or argv[0] in ("-h", "--help"):
         print(__doc__); return
     gdir, vsf = argv[0], argv[1]
