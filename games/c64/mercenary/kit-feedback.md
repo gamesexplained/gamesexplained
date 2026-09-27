@@ -187,15 +187,18 @@ came from its own code in the simulator; none needed the emulator.
 
 ### Maintainer asks
 
-Not filed: the contributor's instructions for this session rule out
-publishing without a yes, so this ask waits here for whoever merges.
+Filed as `kit-ask` issues on 27 September 2026, at the contributor's
+request, after reading every issue the label carries (none covered them):
 
-- **A shared lockstep harness.** `kit/c64/machine.js` covers the machine,
-  but the lockstep itself (stopping the game at the port's checkpoints,
-  replaying its interrupts in the port there, a virtual raster for the
-  port's polling loops, comparing memory by ranges) was written for this
-  game and lives in its `work/`. The mechanics are the same for any game
-  with a main loop; a `kit/c64/lockstep.js` taking the checkpoint list and
-  the interrupt handlers' addresses would save the next Play tab most of a
-  day. Whether the kit should carry it, and in what shape, is a
-  maintainer's call.
+- #59: a shared lockstep harness in `kit/c64`. The machine is in the kit,
+  but stopping the game at the port's checkpoints, replaying its
+  interrupts there, the port's virtual raster and the comparison by
+  ranges were written for this game and live in its `work/`; the next
+  Play tab would start from nothing.
+- #60: `listing.py` should apply comment-only changes to `symbols.json`
+  without the snapshot. Five comments found wrong here could not be
+  corrected: the snapshot was not in this session's container, and
+  `--relabel` refuses once `symbols.json` has changed.
+
+The game's own open items are issues too, #61 to #74, each named in
+`TODO.md`.

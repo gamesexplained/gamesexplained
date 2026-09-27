@@ -11,11 +11,12 @@ clichés, add what the agent missed. The pass is under way (`steward`: air,
 `tier: silver-claimed`); record the outcome in `copy`. Two parts arrived
 after it began and are agent-written, not yet read by the steward: section
 04 of the How it works page (the craft that fly without you) and the Play
-tab's four sections (the mod, the port, the speed, the differences).
+tab's four sections (the mod, the port, the speed, the differences)
+(#61).
 
 At a phone's width (390 px) the How it works page scrolls sideways by
 about 19 px: the Outside the city table and the lift section's code lines
-are wider than the column.
+are wider than the column (#62).
 
 ## For Platinum
 
@@ -23,7 +24,7 @@ Reassemble the listing byte for byte to the analysed image. The start-up
 code exists only at the hand-over, and the build is a crack: a Platinum
 build would reproduce the crack's image, or be made from the original
 disk's memory at the same point (`work/orig-entry-5000.vsf`: five places
-differ, `orientation.md`).
+differ, `orientation.md`) (#64).
 
 ## Open questions
 
@@ -31,31 +32,32 @@ differ, `orientation.md`).
   code's side is traced: after a load, `JMP ($BFFD)` runs whatever the file
   put in the zero-page copy. Whether it replaces the city tables
   (`$2600`-`$2FFF`), and whether the eight unused road pieces at `$E000`
-  are for it, is open.
+  are for it, is open (#65).
 - What `$BEBD` was meant for: only the unused script operations 22 and 23
-  touch it.
+  touch it (#66).
 - Why canned messages 10, 11, 13, 14, 22 and 36 exist when nothing prints
-  them.
+  them (#67).
 - The hire path with too little money (`$0E6F`, INSUFFICIENT FUNDS) was not
-  run live; a Zzap!64 15 reader reported a crash there.
+  run live; a Zzap!64 15 reader reported a crash there (#68).
 - Room `$51` (the prison): door 0 can never match (`$9456`); whether a
-  player can leave it by another way was not tried.
+  player can leave it by another way was not tried (#69).
 - After an escape and CTRL + Q, `$BEFE` stays set: boarding craft 7 again
-  should launch without Y (not tried).
+  should launch without Y (not tried) (#70).
 - Some frames drawn by the game's code in the simulator have one line of
   stray pixels just below the view, on the raster line where the panel's
   interrupt switches the screen to text (line 186); other frames of the
   same scene do not, and it came and went with the viewpoint. The
   simulator times the interrupt only to the line, so whether a real C64
   shows that line depends on timing it does not model; the emulator
-  would settle it.
+  would settle it (#71).
 
 ## Listing comments to correct
 
 Five comments in `symbols.json` say less than `facts.md` now does. Changing
 them means rebuilding `listing.json`, which `kit/scripts/listing.py` does
 from the contributor's snapshot, and the snapshot was not in the
-container of the session that found them (27 September 2026):
+container of the session that found them (27 September 2026). #63 has
+the table; kit ask #60 would let it be done without the snapshot:
 
 - `$7472`: "X and Y each from three random bytes": Y's low byte is what
   `$8510` left in `$07` from converting X.
@@ -74,9 +76,10 @@ container of the session that found them (27 September 2026):
 
 - The sound on the How it works page: thirteen SID settings at `$B987` and
   the engine note computed from the speed (`$B5D8`) would play through
-  `site/lib/sid.js`. The Play tab plays them already, as the game does.
+  `site/lib/sid.js`. The Play tab plays them already, as the game does
+  (#72).
 - The Second City's changes, once unpacked; the Play tab could then load
-  it.
+  it (#73).
 - The Play tab shows the port's case of the game's two interrupt races
   (the Play page, section 02). Running the interrupts inside a step, at the
-  cycle the cost model puts them, would show the white band too.
+  cycle the cost model puts them, would show the white band too (#74).
