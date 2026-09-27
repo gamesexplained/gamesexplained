@@ -27,9 +27,9 @@ not yet done, so a difference always points at one group.
 
 **The differences that survive are the game's own races.** Mercenary's
 panel interrupt prints Benson's figures with a scratch byte the sky fill
-keeps its fill in, so a figure printed mid-fill blacks out the rest of the
-view for a frame; and its lift ride changes a value the main loop reads
-twice to be safe. A port that runs interrupts between steps cannot show
+keeps its fill in, so a figure printed mid-fill leaves the rest of the
+view white for a pass; and its lift ride changes a value the main loop
+reads twice to be safe. A port that runs interrupts between steps cannot show
 either. Hooking the machine at the store, the read and the interrupt
 settles each one in minutes; guessing does not.
 

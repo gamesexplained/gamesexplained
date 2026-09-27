@@ -159,7 +159,7 @@ two.
 Those two, and three lift-ride starts that drift, were the game's own
 races, not the port's. Hooks on the machine showed the panel interrupt
 printing one of Benson's figures in the middle of the sky fill, whose
-fill byte it shares (a black band for one frame), and the lift ride's
+fill byte it shares (the rest of the view left white for a pass), and the lift ride's
 interrupt changing the step the main loop was reading, which the game
 reads twice for that reason. The port runs its interrupts between steps
 and shows the other case; the Play page says so.

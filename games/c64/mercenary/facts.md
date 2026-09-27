@@ -116,6 +116,25 @@ to BASIC's READY (`reference/reset-crack-basic.png`).
   frame to about −512, then by 0.977 a frame back to −32. The planet then
   grows from distance 1023 to 0 in steps of 8, 4, 2 and 1 (`$74CA`), drawn
   as a disc of radius 1024 / distance (`$7508`).
+- **The opening's timing** (the game's code in a 6502 simulator, PAL): the
+  starfield runs 2,047 passes, 40 of which take two frames; the planet
+  runs 480 passes in 559 frames (41 take two frames, 19 take three); the
+  first main-loop pass comes at frame 2,651, 53 seconds after `$7200`.
+- **The starfields miss the view's centre lines**, column 80 and row 68,
+  here and in the ending (`$ABBD`). Consecutive bytes of `$ADEF` are
+  correlated: over all 65,536 generator states, a new star made with the
+  spread mask `$3F` never gets |X| below 16,386 or |Y| below 16,640, and
+  its depth starts at most 32,704 and only falls, so X/Z and Y/Z never
+  round to 0. With the mask `$1F` of the opening's slowdown (`$7444`) the
+  smallest |X| is 8,273, so column 80 is possible there in principle. In
+  a 6502 simulator neither line was ever plotted: columns 78 to 82 got
+  264, 337, 0, 323 and 195 of the opening's 42,945 star plots, and 224,
+  281, 0, 324 and 148 in 1,500 frames of the ending; rows 66 to 70 got
+  205, 1,236, 0, 311 and 275, and 181, 398, 0, 227 and 322.
+- A new star's Y is not fully random: its low byte is what `$8510` left
+  in `$07` from converting X, because the random byte stored at `$7494`
+  (`$ABDF` in the ending) goes to `$06` and is overwritten at once. Its X
+  is never 0 (`$ADEF`, below).
 - Play starts at X `$08:$88`, Y `$08:$88`, height `$7F:$00:$88`, heading
   512 (south), pitch `$0300` (straight down), motion mode 10 (the descent,
   `$9E66`). The first stage of the descent converts heights × 8 (road ends
@@ -149,6 +168,31 @@ to BASIC's READY (`reference/reset-crack-basic.png`).
   interrupt copies `$C7` into `$D018`.
 - Benson's printer runs from the panel interrupt, one character a frame
   (below).
+- **Frames a pass** (the game's code in a 6502 simulator), averaged over
+  a lap of object 0, 4,096 surface passes: 10.03 on foot at 08-08 facing
+  south (`landed`), 9.00 on foot on the Colony Craft's deck (`deck`), 7.99
+  in the Dart on the ground at 08-08 (`in-dart`), 6.60 flying out of the
+  city (`dart-cruise`) and 6.48 over it (`dart-air`). Walking in room 8
+  gave 91 passes in 400 frames, and the opening's descent 46.
+- **A flash** (`$B244`: black for a crash, white for a hit) holds the main
+  loop for 104 frames (2.08 s) in a 6502 simulator. After a wait for
+  raster line 276 (`$B250`), the delay loop (`$B25C`) takes 1,963,296 +
+  5 × A cycles, A being the raster byte the wait read (1,963,396 in the
+  run), and the 206 interrupts meanwhile take about 57,500 more.
+- **Cycle costs** of the view's routines, measured in a 6502 simulator
+  over 660 passes from 11 saved states:
+
+| Routine | Cycles |
+|---|---|
+| `$A75C`, project a vertex | mean 1,030 (424-1,484) |
+| `$A5CE`, a building's or room's vertex relative to the eye | about 433 |
+| `$A67B`, a square's centre (a road end) | about 333 |
+| `$A61F`, an object's model vertex | about 676 (up to 1,668) |
+| `$99DD`, an edge drawn | about 757 + 67.8 a pixel; clipping adds up to about 820 |
+| `$99DD`, an edge rejected | 31 with both ends behind, up to 1,319; mean 272 |
+| `$ADCB`, a dot | 61 plotted, 13 out of view |
+| `$A544`, the pass's sines and cosines | 650 |
+| `$A320`, the view matrix | about 2,200; 16 when it skips, on foot |
 
 ## The main loop
 
@@ -206,7 +250,9 @@ Weapons and moving objects therefore run only on the surface.
   complement); `$8510` 24-bit integer to float (truncates).
 - **Random numbers** (`$ADEF`): a 16-bit shift register `$F3`:`$E8` shifted
   right, the new top bit being bit 0 XOR bit 3 of `$E8`; period 57,337.
-  `$B94D` (the key beep) also steps it.
+  `$B94D` (the key beep) also steps it. Called with the carry set it never
+  returns 0 (in none of the 65,536 states; with the carry clear, in
+  1,024), and consecutive bytes are correlated (the starfields, above).
 
 ## The view
 
@@ -244,7 +290,15 @@ Weapons and moving objects therefore run only on the surface.
   with both ends behind is skipped; an end behind is replaced along the line
   toward it (`$9B2C`); an off-screen end becomes the screen corner the line
   heads for (`$BBD8`/`$BBE0`); an off-screen start is cut at the window's
-  edges through region codes (`$BBE8`, `$BBF8`, `$BC18`).
+  edges through region codes (`$BBE8`, `$BBF8`, `$BC18`). `$99DD` starts
+  from an end on screen if there is one, else from the end in front; with
+  both ends off screen, from the end whose depth has the larger power of
+  two (`$99EB` compares only the exponent bytes), and with equal powers
+  from the first given. In a 6502 simulator no line left the window:
+  800,000 random edges between points the game projected in 20,000 random
+  views, and 3,300 passes of play, put no pixel at x ≥ 160 or y ≥ 136, so
+  the drawing tables were never read past their ends. That is a search,
+  not a proof.
 - **Far objects** (`$9728`): an object 65536 units or more away on any axis
   is one dot at its origin (`$ADCB`); below the player it is drawn only
   within `$B9` squares (`$B9` = `$2A00`[height / 2048]), so on foot objects
@@ -302,7 +356,11 @@ Weapons and moving objects therefore run only on the surface.
   (`$A2E3`-`$A2E9`) or the end of a ride (`$BB1D`). Underground, a room's
   byte 3 goes to `$C4` (`$91DB`) and byte 4 to `$C5` (`$91E5`); `$C2` is 1,
   white (`$9399`), or 0 in an unlit dark room (`$9200`). A booth's flash
-  swaps `$A5` for `$BB7E` + `$F0` each pass (`$AFA8`).
+  sets `$A5` to `$BB7E` + `$F0` each pass, indexed before `$F0` counts
+  down (`$AFA8`, `TAX` at `$AFB7`): from 10 (`$913F`) the ground goes
+  black, dark grey, grey, light grey, white three times, light grey,
+  grey, and back to `$C4`; from 31, the mirror booth's (`$936F`), 19
+  passes of orange, then purple, red, black and the same greys.
 - **Sky and ground** (`$AFD5`): each row is split at the horizon's x; cells
   on the left get `$82` through the unrolled fill in page `$BE`, cells on
   the right `$83` through page `$BD` (entry offsets written at `$B10B` and
@@ -312,17 +370,30 @@ Weapons and moving objects therefore run only on the surface.
   `$AA`.
 - **Display modes** (operands of `$B9BB`, `$B9F8`): normal, top curtain
   (`$AE37`: multicolour text with `$D018` = `$F6`, a solid band, switching
-  to the bitmap at line Y + 50), bottom curtain (`$AE76`). The wipes
-  `$AE96` (down, 6 lines a frame, in the new ground colour) and `$AEF3` (up,
-  4 lines a frame) hum on voice 2 ring-modulated by voice 1 (`$AF52`). A
-  lift ride sweeps two text bands in the shaft colours `$BBCA` past the view.
+  to the bitmap at line Y + 50), bottom curtain (`$AE76`). The wipes hum on
+  voice 2 ring-modulated by voice 1 (`$AF52`): `$AE96` hides the old view
+  (30 frames held, then down 6 lines a frame for 22, in the new ground
+  colour: 52 frames), and `$AEF3` reveals the new one (up 4 lines a frame
+  for 34, then 22 held: 56 frames). A lift ride sweeps two text bands in
+  the shaft colours `$BBCA` past the view.
+- **Which wipe a door runs depends on facing** (`$94A1`-`$94C4`): bit 7 of
+  `$C8` is (the player within 128 units of the wall at 0 on the axis the
+  door crosses, the west or the north wall) XOR (the heading rounded to
+  north or west). Walking forward through a door sets `$7F` and runs
+  `$AEF3` after the swap; backing through it sets `$FF` and runs `$AE96`
+  before it. The drop out of the Colony Craft sets `$7F` itself
+  (`$90E6`). In a 6502 simulator, 636 of 636 forward walks through doors
+  ran `$AEF3` and 425 of 426 backing walks ran `$AE96`, the drop being the
+  exception.
 
 ## The panel
 
 - Text rows 17-24 of the matrix, character set `$7800`. `$B53D` runs once a
   pass: ALT (`$B56D`) shows `$77` as two digits, then `$76`:`$75` × 1000 /
   65536 as three, so ALT = height × 1000/65536 (the Colony Craft's deck,
-  `$40FF3F`, reads 64997); SPEED (`$B5A8`) is the speed's 16-bit value, high
+  `$40FF3F`, reads 64997); while `$77` is 100-127 its first two figures
+  are `**` (`$803A`), so the descent from `$7F:00:88` begins at `**002`
+  (in a 6502 simulator); SPEED (`$B5A8`) is the speed's 16-bit value, high
   byte as two digits, then the low byte × 25/64; LOC (`$B64C`) shows each
   coordinate's high byte from −99 to 99, negatives in reversed figures
   (glyphs `$80`-`$89`); beyond, `$803A`'s `$AA` entries print `**` and `$EF`
@@ -330,7 +401,12 @@ Weapons and moving objects therefore run only on the surface.
 - The EL and COMP dials scroll the dial tape `$7680`-`$76ED` a row at a
   time from the panel interrupt (`$B67B`, `$B75B`, `$B809`, `$B899`): EL is
   coloured by pitch quarter (blue, blue, green, green, `$B757`), COMP by
-  heading quarter (red, blue, black, green, `$B895`).
+  heading quarter (red, blue, black, green, `$B895`). They move one step a
+  frame toward the pitch or heading, and not at all during a lift ride
+  (`$BA54`), so half a turn takes up to 288 frames (5.8 s) to show. Their
+  quarter counters, `$BB` (EL) and `$BF` (COMP), are never masked (the
+  saved states hold `$FE`, `$FC` and `$0E`); only their low two bits are
+  read.
 - **Metal Detector** (`$B542`): with object 26 carried, on the surface,
   below `$77` = 1 and outside 00-00, the message window turns blue on a
   Mechanoid square (`$2B00` bit 6), red on a nobody's square (bit 5), green
@@ -423,13 +499,44 @@ Weapons and moving objects therefore run only on the surface.
   Antigrav or the Sink, `$9817`); 4 fixed (needs the Sink, `$980B`); 3 print
   the name (canned message n) when taken or boarded; 2 start script n then
   (`$98B1`); 0 sold. Bit 6 is toggled at `$9360` and read by nothing.
-- **Roles**: objects 0-7 are the craft B can board (`$9857`); 8-15 move
-  (`$8690`, velocities and lifetimes at `$BDA3`): 8 is the player's
-  missile, 14 the attacker's missile, 15 the attack ship; 10 is the wreck.
-  Object 0, the brother-in-law's new ship, moves +1/256 square in Y each
-  surface pass along column 00, wrapping from row 15 to 0 (`$85C5`). Object
-  7 is the interstellar ship (room 5, behind the Pass). Object 63 is the
-  Colony Craft, at height `$40FCC0` over 08-08 and drawn as a dot.
+- **Roles**: objects 0-7 are the craft B can board (`$9857`). 8-15 are
+  the moving range (`$8690`, velocities and lifetimes at `$BDA3`), but
+  only 8, the player's missile, 14, the attacker's missile, and 15, the
+  attack ship, ever get a lifetime: the only writes to one are `$869B`
+  (counting down), `$8715` and `$8857` (0), `$888C`, `$894C` and `$89A4`,
+  and no script pokes `$BDxx`, so 9-13 never move (a loaded save could
+  hold other lifetimes: `$BDA0`-`$BDFF` is saved). 10 is the wreck (model
+  `$2028`) and 12 the Mechanoid (`$1BCA`); 9, 11 and 13 have the Dart's
+  model (`$3B25`) and are out of play in the image. 11 and 13 never
+  appear: no mode is 11 or 13, and nothing else writes their room. 9 can
+  appear: CTRL + Q while falling puts it on the ground (Controls), where
+  it never moves, cannot be boarded, and needs the Kitchen Sink to take
+  (flags `$10`, fixed).
+  The attack ship is drawn with the Palyar diamond's model `$3BCC`
+  (object 4's) for both sides' attacks, and the two missiles share
+  `$3C5C`. Object 7 is the interstellar ship (room 5, behind the Pass).
+  Object 63 is the Colony Craft, at height `$40FCC0` over 08-08 and drawn
+  as a dot.
+- **Object 0, the brother-in-law's new ship**, starts at X `$006F41`,
+  height `$008001` (32,769, ALT 00500), Y `$08BDA4` (00-08), on the
+  surface, with flags `$30` (fixed, heavy), the Dart's model `$3B25` and
+  its heading byte `$802A` at `$20` (south). The opening's descent runs
+  surface passes, so at the landing it is at Y `$091DA4` (00-09). Each
+  surface pass `$85C5` adds 256 to Y, wrapping from row 15 to row 0 (the
+  high byte ANDed with `$0F`); X, height and Y's low byte never change,
+  so it flies south along column 00, 4,287 units west of the column's
+  centre line, always 32,769 up. It does not move underground, and it
+  goes on moving, unseen, after it is shot. A lap is 4,096 surface
+  passes, 8.8 to 13.7 minutes by what the view draws (Timing). Above the
+  player it is a dot at any distance (`$9787`): from the landing site,
+  turned to heading 272, one pixel above the horizon in the middle of the
+  view (`reference/npc-brother-in-law-ship-from-0808.png`, drawn by the
+  game's code in a 6502 simulator). B cannot board it: B works only on
+  foot and within 512 units (`$9853`, `$985D`), and the player is never
+  on foot 32,769 up. Shot (Weapons and attacks), it stays out of play:
+  the writes that put an object back in a room name other objects or need
+  it ridden or carried (`$8620`, `$991D`), which an object out of play
+  cannot be.
 - **Names**: canned message n is object n's name; T or B prints it for the
   objects with `$29C0` bit 3 (6, 16, 24-32, 34, 35, 38, 40-47), and the
   scripts name the Mechanoid (12). 6 CHEESE, 12 MECHANOID, 16 PHOTON EMITTER, 24 ANTI TIME BOMB, 25 NOVADRIVE, 26 METAL
@@ -443,15 +550,25 @@ Weapons and moving objects therefore run only on the surface.
   (`$9800`), B boards one of objects 0-7 within 512 on foot (`$985D`), D
   drops the last one taken (`$990D`), L leaves a craft only when landed
   (`$98C8`). At most ten are carried (`$9827`; list `$BEB1`, count `$EB`).
+  One T acts on every object in reach in the same pass, lowest number
+  first: a refused object (fixed, heavy, or ten already carried) does not
+  use up the key, which only a take does (`$983C`). T and B share
+  `$98B1`, and T takes craft too. In a 6502 simulator one T, with the
+  Neutron Fuel (heavy) and the Sights both in reach, took the Sights; T
+  took the CHEESE (object 6, flags `$08`) with nothing special, printing
+  CHEESE; and with the Antigrav carried, T took the Dart and started its
+  boarding script 1. Boarding sets the heading to 16 × the craft's byte
+  at `$802A` + n, and leaving stores the heading >> 4 there, so a craft
+  keeps its heading only to 1/64 of a turn.
 - **Objects that change the rules**: the Kitchen Sink (47) skips the fixed
   and heavy checks (`$980B`); object 48 opens every locked door (`$948E`);
   the Antigrav (27) lifts heavy objects; the pyramid (56) lets D work in
   the air, leaving the object at the player's height (`$98FE`); the Poweramp
   (28) in the Dart doubles its thrust and raises its ceiling to 90
   (`$9F8A`, `$A050`); the Photon Emitter (16), carried or in the room,
-  lights the dark rooms; the Anti Time Bomb (24), carried, turns a hit on
-  a destroyed building into its repair (`$87AF`, `$8816`); the Pass (46)
-  works the lift at 03-15.
+  lights the dark rooms; the Anti Time Bomb (24), carried in the hit
+  square, turns a hit on a destroyed building into its repair (`$87AF`,
+  `$8816`; Weapons and attacks); the Pass (46) works the lift at 03-15.
 
 ## Moving
 
@@ -528,6 +645,14 @@ Weapons and moving objects therefore run only on the surface.
 - **Throttle** (`$B47E`, `$BC50`): digits 1-9 set T to 2^(n+4), 0 to 2^14;
   SHIFT reverses it; SPACE and ← set it to 2^−31, a stop; + and − multiply
   it by 1.03 and 0.98 every pass while held (`$B499`), refusing 2^15.
+- **A stopped craft creeps one unit a pass.** With the throttle stopped
+  the speed settles near 2^−32 (`$27` = `$80`), and `$84A7` makes each
+  tiny negative step −1 (ones' complement), so X falls by 1 a pass at
+  headings 0-511 and Y at headings 768-1023 and 0-255; at 512-767 nothing
+  moves. The cause is the half-step offset behind the walking drift
+  (Corner cases): sin 0 is +0.003. In a 6502 simulator from `in-dart`,
+  100 passes moved X and Y by −100 and −100 at heading 0, −100 and 0 at
+  256, 0 and 0 at 512, and 0 and −100 at 768. On foot nothing moves.
 - **Falling** (record 9, `$9EBE`): height −12032 a pass, roll +16, pitch
   +21, heading +13.
 - **No collisions on the surface**: no movement path tests a building;
@@ -536,12 +661,23 @@ Weapons and moving objects therefore run only on the surface.
 
 ## Lifts
 
-- The E key (`$B3FD`) starts a ride when no ride is running (`$CA` = 0) and
-  `$7F` is set. On the surface it needs the middle bytes of X and Y (`$73`,
-  `$79`) both in `$70`-`$73` and the square in `$B4B6`/`$B4BE`, entries 1-8:
-  09-06, 09-05, 03-00, 11-13, 03-15 (the Pass, `$B430`; else PASS HOLDERS
-  ONLY), 81-35, 136-136 (LOC `**`), 08-08. Nothing tests the height.
-  Underground, E works anywhere in rooms 1-8, the hangars (`$B455`).
+- The E key (`$B3FD`) starts a ride when no ride is running (`$CA` = 0).
+  On the surface it needs `$7F` set (on the ground), the middle bytes of X
+  and Y (`$73`, `$79`) both in `$70`-`$73`, and the square in
+  `$B4B6`/`$B4BE`, entries 1-8: 09-06, 09-05, 03-00, 11-13, 03-15 (the
+  Pass, `$B430`; else PASS HOLDERS ONLY), 81-35, 136-136 (LOC `**`),
+  08-08. Nothing tests the height. Underground `$7F` is not tested (the
+  `$A8` branch at `$B406` comes first): E works anywhere in rooms 1-8, the
+  hangars (`$B455`).
+- **A craft rides along.** E tests `$7F`, not the mode `$A9`, so a craft
+  on the ground goes down and up with the player. In a 6502 simulator from
+  `in-dart`, with inputs only: the Dart, taxied onto the 08-08 patch at
+  throttle 4 in 116 passes and stopped with SPACE, was in room 8 54 passes
+  after E, `$A9` still 1. Underground it only turned (20 passes of stick
+  up left X and Y at `$000820` and `$000880`), and L parked it in the room
+  (`$2941` = 8). E instead brought it up onto the Colony Craft's deck
+  (`$40:FF:54`, `$FA` = `$FF`, `$A9` = 1), from which it took off with
+  throttle 0 and the stick back.
 - The ride (`$A24A`, `$BA7B`, `$BADD`) goes down to room n or up to the
   lift square; room 8's lift comes up on the Colony Craft's deck. Arriving
   below, `$A2EB` sets the middle bytes of X and Y to 8 and the low bytes come
@@ -601,12 +737,18 @@ Weapons and moving objects therefore run only on the surface.
 - **Transporter booths**, rooms `$72`-`$87`: cross-marked doors are two-way
   (on entry door 0 is relinked to the room you did not come from,
   `$9119`-`$913B`), diagonal ones one-way; room `$72` sends you to one of 8
-  rooms at random (`$910E`); room `$7F` toggles the mirror flag `$F1`, which
-  swaps the stick's left and right (`$A165`, `$A17B`) and flips the view,
-  but only when entered from room `$90`: both its links name `$56`, so
-  entering from `$56` skips the relink, the flash and the toggle (`$9125`).
-  Nothing else writes `$F1`, and CTRL + Q leaves it set. The relinked doors
-  are not in the save file.
+  rooms at random (`$910E`). Each of the ten one-way booths (`$76`,
+  `$78`-`$7A`, `$7F`-`$81`, `$83`-`$85`) names one room R in both its
+  links, and R also has a door into it (`$15` → `$76`, for one). Entered
+  from R there is no relink, no flash and no chime at the end of the wipe
+  (`$9125`), and the booth only leads back to R; entered from anywhere
+  else it flashes (from 10, 31 at `$7F`), chimes and sends the player to
+  R (all ten checked in a 6502 simulator). Room `$7F` toggles the mirror
+  flag `$F1`, which swaps the stick's left and right (`$A165`, `$A17B`)
+  and flips the view, but only when entered from room `$90`: its R is
+  `$56`, and entering from `$56` skips the toggle too. Nothing else writes
+  `$F1`, and CTRL + Q leaves it set. The relinked doors are not in the
+  save file.
 - **Dark rooms**: 20, shown dark with ITS VERY DARK IN HERE (canned message
   1) unless the Photon Emitter is carried (`$941A`) or in the room
   (`$9425`); all 9 triangle-marked doors lead into one. Hangar 5 is the one
@@ -616,11 +758,15 @@ Weapons and moving objects therefore run only on the surface.
   lead into booths join them into complexes: hangars 1 and 2, 78 rooms;
   hangar 3, 13 (every Mechanoid room); 4, 9; 5, 12; 6, 3; 7, 7; the Colony
   Craft's floors 8, 10 and 12. Every door leads to a door that leads back,
-  except the doors into the ten one-way booths, room `$45`'s door 0 (it
-  names door 6 of room `$96`, which has 4) and room `$AB`'s door 3, the
-  drop from the Colony Craft. Four doors carry a skull and crossbones
-  (objects 57-60): into the mirror booth (`$90`), the drop (`$AB`), the
-  prison (`$62`) and dark hangar 5 (`$6F`). The prison's one door is
+  except the doors into the ten one-way booths, room `$45`'s door 0 and
+  room `$AB`'s door 3, the drop from the Colony Craft. `$45`'s door 0
+  names door 6 of room `$96`, which has 4, so the game reads bytes 29-32
+  of `$96`'s record, which lie in `$97`'s (type `$00`, X `$23`, Y `$96`);
+  `$939E` then puts the player in `$96`'s north-east corner at X `$07:DF`,
+  Y `$00:20`, beside its door 3 back to `$45` but outside the doorway.
+  Four doors carry a skull and crossbones (objects 57-60): into the mirror
+  booth (`$90`), the drop (`$AB`), the prison (`$62`) and dark hangar 5
+  (`$6F`). The prison's one door is
   recorded 128 units outside its walls (X `$84`) and needs key 17 anyway. The Colony Craft has three floors joined
   by booths `$86`/`$87`: the top with hangar 8 (three doors need key 23),
   the middle `$9A`-`$A3`, the bottom `$88` and `$A4`-`$AE`. Room `$AB`'s door
@@ -633,23 +779,60 @@ Weapons and moving objects therefore run only on the surface.
 ## Weapons and attacks
 
 - **Firing** (`$886A`): with fire pressed (`$81` = 0), in a craft, on the
-  surface, object 8 flies along the view direction at 4096 units a pass for
-  16 passes. Hitting object 15 prints ENEMY SHIP DESTROYED; hitting object
-  0 starts script 27.
-- **Hitting a building** (`$871B`): a moving object below height 2048 whose
-  X and Y middle bytes are both in `$70`-`$8F` (within 4096 units of a
-  square's centre) sets that square's bit 7, keeps the old status in `$FB`,
-  and starts a 16-pass countdown `$F4` on square `$F5`.
-- **The follow-up** (`$879B`, every pass): only while the player is in
-  square `$F5` (`$87A4`) does it collapse the model, count the square in
-  `$BEBC` (Mechanoid) or `$BEBB` (Palyar), nothing for nobody's (bit 5), and
-  start its script. If the lead of one count over the other reaches 105
-  (`$BEBC` − `$BEBB`, script 10, the Palyar reward) or 106 (the other way,
-  script 26), that script runs instead (`$87EE`-`$87FE`).
-- **Shooting into the next square** goes unnoticed. The countdown runs out
-  while the player is elsewhere, and a later hit finds the square already
-  destroyed (`$87C1`), so the building is never counted or named, and no
-  attack follows. *Live*: from 12-04, 1024 units up, a missile fired east
+  surface, with object 8 idle and no building hit counting down (`$F4` =
+  0, `$8875`: up to 16 passes after any hit, one in the next square
+  included), object 8 leaves along the view direction at 4096 units a
+  pass with lifetime 16. `$8690` runs later in the same pass, so the
+  missile moves 15 times, the firing pass included (61,440 units), and is
+  removed on the 16th pass without moving (in a 6502 simulator from
+  `dart-cruise`: lifetimes `$0F` down to `$01` moving, `$00` removed). Its
+  test against the ships (`$8833`, within 1,024 units on every axis) runs
+  once a pass after the move, so a shot can pass through a target between
+  two samples. Hitting object 15 prints ENEMY SHIP DESTROYED (canned
+  message 49), ends the attack (`$BEF8` = 0) and takes the ship out of
+  play with its lifetime zeroed (in a 6502 simulator, `combat-shoot-ship`:
+  down after pass 2, the player still in the Dart); hitting object 0
+  starts script 27 (below).
+- **Hitting a building** (`$871B`): the player's missile (object 8, the
+  only moving object tested, `$8701`) below height 2048 with its X and Y
+  middle bytes both in `$70`-`$8F` (within 4096 units of a square's
+  centre) sets that square's bit 7, keeps the old status in `$FB`, and
+  starts a 16-pass countdown `$F4` on square `$F5`.
+- **The follow-up** (`$879B`, every pass): the countdown falls one a
+  pass, and only while the player is in square `$F5` (`$87A4`) does it
+  collapse the model, one step a pass (`$96AC`), count the square in
+  `$BEBC` (Mechanoid) or `$BEBB` (Palyar), nothing for nobody's (bit 5),
+  and start its script. Once a step finds the building flat the countdown
+  falls two a pass, and the square is counted on the pass it reaches 0
+  with the player there. If the lead of one count over the other reaches
+  105 (`$BEBC` − `$BEBB`, script 10, the Palyar reward) or 106 (the other
+  way, script 26), that script runs instead (`$87EE`-`$87FE`). In a 6502
+  simulator (`combat-home-fire`, the Dart on the ground in 13-04 facing
+  east), the missile was at heights 50, 37, 24 and 11, then −1 inside the
+  centre zone on its fifth move; the sign's tallest vertex went 14, 13
+  ... 0 by pass 18, and the next pass counted it (`$BEBC` 0 to 1,
+  TRAITOR!).
+- **Six buildings are too tall to be counted.** The countdown allows 17
+  collapse steps, the hit's and 16 more, so a building whose tallest
+  vertex is above 16 (the height's middle byte) is destroyed but never
+  counted, and never starts its script, even when shot from inside:
+  03-02, 00-09, 06-13, 01-15 and 05-15 (Palyar, 20 or 23 high) and 08-11
+  (Mechanoid, 23), found by loading every square's building with `$9575`.
+  In a 6502 simulator (`combat-tall-fire`, 00-09) the status went from
+  `$02` to `$82` with no count, the script bits stayed, and the model was
+  left 6 high until the square was loaded again.
+- **Shooting into the next square** goes unnoticed unless the player gets
+  there before the countdown ends. The collapse and the count run on any
+  pass that finds the player in square `$F5` while it runs, and a square
+  entered meanwhile is loaded already flat (`$96A6`), so the first step
+  finds it flat. Otherwise the countdown runs out while the player is
+  elsewhere, and a later hit finds the square already destroyed
+  (`$87C1`), so the building is never counted or named, and no attack
+  follows. In a 6502 simulator (`combat-next-fire`, 13-04 hit from 12-04
+  after pass 8), staying in 12-04 left the status `$D1` and `$BEBC` 0;
+  moving into 13-04 before pass 10 counted it (`$BEBC` 1) and ran its
+  script (status `$C0`); moving in before pass 30, after the countdown,
+  did not. *Live*: from 12-04, 1024 units up, a missile fired east
   destroyed 13-04's sign (`$2B4D` `$51` → `$D1`) with no count and no
   message; inside 13-04 it lay flat (`reference/blind-shot-1304-flattened.png`).
   From the ground the same shot fails: the level sine −0.003 sinks the
@@ -657,11 +840,93 @@ Weapons and moving objects therefore run only on the surface.
 - *Live*, from inside the square: at 13-04 the sign sank into the ground,
   `$BEBC` became 1 and Benson printed TRAITOR!
   (`reference/sign-commodore-collapsing.png`, `-flattened.png`).
+- **A square's script can be lost.** Counting clears the square's script
+  bits (`$880F`) before `$8A8C`, which refuses while another event script
+  runs (`$BEC0` bit 6): the message and the reprisal are then lost for
+  good. In a 6502 simulator, `combat-home-fire` with bit 6 set gave
+  `$BEBC` = 1, 13-04's status `$C0` and no TRAITOR! in 200 passes.
+- **The Anti Time Bomb** (`$87AF`, `$8816`) acts only while the player is
+  in the hit square during the countdown, so a shot into the next square,
+  left alone, destroys the building anyway. Carried, it puts the square's
+  status back as it was before the hit, without the destroyed bit, and
+  leaves the counts alone; a building destroyed before is reloaded each
+  pass while the countdown runs and collapsed `$F4` steps, so it rises
+  back one step a pass (in a 6502 simulator, `combat-atb-fire`, 12-04:
+  tallest vertex 0 for six passes, then 1, 2, 3 ... 14). Dropped before
+  the countdown ends, the flat test passes and the count code finds the
+  destroyed bit gone: it takes one off the square's count (`$87D7`,
+  `$87E5`; 0 becomes 255), the `ASL`'s clear carry takes one more off the
+  lead (`$87F3`), and the square's script can start. In the simulator,
+  clearing the carried bit (`$29D8` bit 7) after pass 6 turned a count of
+  0 into 255, and a count of 106 into 105 without the reward.
 - **Attacks**: `$BEF8` is set by the square scripts (34 and 35 at random,
   81 in 256, for unnamed squares; the named ones always) and by script 27.
-  The attack ship (object 15) homes at (player − ship) / 32 a pass; its
-  missile (object 14) is aimed once at launch and not steered. A hit prints
-  SHIP DESTROYED and drops the player into mode 9: falling, never killed.
+  The Palyar and Mechanoid scripts differ only in the message
+  (`$11B7`/`$11C3`): either way the attacker is object 15, drawn with the
+  Palyar diamond's model, with its missile, object 14. In the image the
+  ship lies under 08-08 beside the crash site (X `$088937`, height
+  `$FFB2E6`, 19,738 below the ground, Y `$08890A`), and nothing resets it:
+  each attack starts where the last one left it.
+- **The attack ship** (`$8921`) aims (`$8998`) with a velocity of the
+  complement of (ship − player) >> 5 on each axis, about (player − ship)
+  / 32 a pass, and lifetime `$AD`. `$8690` counts the lifetime down, and
+  `$8921` ignores the ship while it is `$80` or more (`$8930`), so each
+  leg lasts 46 passes (`$AD` − `$7F`) and covers 46/32 of the distance:
+  the ship overshoots by 44 %, and the error shrinks to 0.44 of itself and
+  changes sign each leg. At `$7F` it hovers (`$8697` neither moves nor
+  counts it) and is looked at every pass; between aims it can fly right
+  past the player without firing. A height below 0 is set to −1
+  (`$86D8`), so it can skim the ground. It fires (`$893E`) only while
+  hovering within `$3000` = 12,288 units of the player on every axis
+  (`$8935`). It therefore never catches a craft holding a straight course
+  at more than about 383 units a pass along some axis: it settles 32
+  passes' travel behind, at the craft's own velocity, and never fires. In
+  a 6502 simulator from `dart-cruise` it held 142,851 units off in X and
+  10,135 in Y from pass 599 to pass 1,473 without firing. From the Dart
+  standing at 08-08 (`in-dart`) it re-aimed after passes 1 and 47, hovered
+  646 units off in X after pass 93 and fired, and the missile hit the next
+  pass.
+- **Its missile** (object 14) is launched only when its lifetime is 0:
+  sound 8, from the ship's position, with the complement of (ship −
+  player) >> 4, about (player − ship) / 16, as its velocity, and lifetime
+  32. It is not steered. Set after `$8690` has run, the lifetime gives 31
+  moves: past the aimed point after 16, out to about twice the distance.
+  A new missile leaves on the pass the last one's lifetime runs out. The
+  hit test (`$8964`) runs only while the ship hovers within 12,288 units,
+  and hits when the missile is within 1,024 units of the player on every
+  axis; the missile collides with nothing else. Fly more than 12,288 units
+  from the ship and a missile in flight is harmless; a ship within 1,024
+  units launches its missile inside the box, and the hit comes the next
+  pass.
+- **A hit** (`$8970`) flashes the view white (`$B22D`, sound `$18`),
+  prints SHIP DESTROYED (canned message 48) only in a craft (`$8975`) and
+  only if Benson is not printing (`$8DAA` drops it), ends the attack
+  (`$BEF8` = 0), plays sound `$0C`, sets `$A9` = 9, falling (never killed),
+  and takes objects 14 and 15 out of play with their lifetimes as they are
+  (the ship's stays `$7F`). The craft is not put back: its room stays
+  `$FF`. CTRL + Q returns the Dart (`$8101`-`$812C`), and the only other
+  write that could return a craft is the hire's placing of object 7
+  (`$866E`). In a 6502 simulator (`in-dart`) the Dart was gone after the
+  hit and the player on foot the next pass; on foot the hit is the same
+  without the message (`combat-attack-foot`).
+- **What ends an attack**: its missile hitting you (`$897E`), or your
+  missile hitting the ship or object 0 (`$8850` clears `$BEF8` for any
+  hit; object 0's script then starts a new attack). CTRL + Q does not
+  clear `$BEF8` (`$80E8`-`$8132`), and a save keeps it (`$BEA0`-`$BEFF`).
+  Underground or during a lift ride (`$CA`, `$8927`) the ship and both
+  missiles stop, since `$8690` and `$8921` run only in the surface branch
+  (`$85E9`, `$85EC`); the attack resumes on the surface.
+- **Object 0 shot** (`$878E`, your missile within 1,024 units on every
+  axis): sound `$10`, `$BEF8` = 0, object 0's room `$FF` (its lifetime
+  byte is not written), your missile removed, then script 27 (`$8797`):
+  YOU HAVE JUST DESTROYED (canned message 23) THE PALYAR COMMANDER'S
+  BROTHER-IN-LAWS NEW SHIP, `$BEC0` bit 5 (the brother-in-law angry),
+  PALYAR SHIP ATTACKING and `$BEF8` = 1. In a 6502 simulator
+  (`combat-obj0-fire`, the Dart 15,360 units behind it at its height,
+  facing south) it left play after pass 3 and the attack began 71 passes
+  later, the script waiting for each line to print. With another event
+  script running (`$BEC0` bit 6) `$8A8C` refuses script 27 (`$8A93`): the
+  ship is gone with no message and no attack.
 - `$BEBB`/`$BEBC` count destroyed Palyar and Mechanoid squares. The Palyar
   reward (script 10) moves the Pass (46) from room `$50` to room 1, or
   pays 500,000 if it has already left `$50`.
@@ -670,9 +935,13 @@ Weapons and moving objects therefore run only on the surface.
 
 - Credits are figure 8, four BCD bytes at `$7700`, most significant first;
   figure 9 (`$7704`) is the offer. Script operations 13, 14 and 21 set, add
-  and sum figures at `$76E0` + 4n (only 8 and 9 are used; 0-7 would land on
-  the dial tape). There is no subtraction: a purchase adds the ten's
-  complement (99995000 is −5000 at `$0A29`; 99000001 is −999,999 at
+  and sum figures at `$76E0` + 4n (only 8 and 9 are used; 1-7 would land on
+  the dial tape). Figure 0 is not at `$76E0`-`$76E3`: ops 13 and 14 step X
+  down as an 8-bit index (`STA $76E3,X`, then `DEX`, `$8C8C`-`$8C8F`), so
+  its bytes fall at `$76E3`, `$77E2`, `$77E1` and `$77E0`, and op 21 reads
+  it from there but writes a sum to `$76E0`-`$76E3`. There is no
+  subtraction: a purchase adds the ten's complement (99995000 is −5000 at
+  `$0A29`; 99000001 is −999,999 at
   `$0E90`).
 - **The Dart**: 5000, offered at the start with a Y window of 4 to 5
   seconds from the end of the question (`$0AB6`-`$0ABA`: op 2 at `$8C4E`
@@ -705,15 +974,35 @@ Weapons and moving objects therefore run only on the surface.
   Antenna carried or in the room): 999,999, but the test at `$0E6F` is
   `$7700` > 0, i.e. at least 1,000,000. Credits start at 9000 and every
   price is a multiple of 5000, so they always end in 4000 or 9000 and
-  exactly 999,999 cannot occur. The ship is object 7, placed over 08-08 at
-  height `$7F0000` by `$8664` and lowered by `$8634` for 780 passes (about
-  2.6 minutes; the message says 2 MINS).
+  exactly 999,999 cannot occur. The ship is object 7. Script 2 pokes
+  `$BEFF` = `$FF` (`$0EBA`); the next pass `$8664` puts it on the surface
+  at X `$089900`, Y `$088B00`, height `$7F0000`, and sets `$BEFF` = `$7F`.
+  From then on `$863B` lowers it each pass: the height's top two bytes v
+  become v − (v >> 7) − 1 (`$7E01`, `$7D04`, `$7C09`, ... `$550B` after 51
+  passes, `$1A0B` after 201, `$00E6` after 601), one step (256 units) a
+  pass from `$7E` down, reaching 0 after 779 passes, 780 from the poke,
+  when `$BEFF` = 0. It passes the Colony Craft's height after 86 passes
+  and half its own after 89, and lands in 08-08, 4,352 units east and 768
+  south of the wreck (`$088800`, `$088800`). The descent goes on
+  underground (the main loop calls `$8634` before it branches, `$855F`),
+  so its time depends on the pass rate: in a 6502 simulator, 7,893 frames
+  (2 min 38 s) standing at 08-08 (`landed`), 6,194 (2 min 4 s) cruising
+  in the Dart and 4,445 (1 min 29 s) in room 8, where passes are quick.
+  The message says 2 MINS.
 - **The escape** (script 7, `$107F`): riding object 7, on the surface, with
   the ship hired or the Novadrive carried, answering Y, and 02-03 (the
   advert, `$2B00`+`$32` bit 7) not destroyed; otherwise THE AUTHOR WON'T LET
-  YOU LEAVE. It pokes `$BEFE`; `$AA62` then runs the escape starfield and
-  never returns. The ending never clears `$BEC0` bit 6, so GAME OVER repeats
-  for ever, a 15-second wait and a 150-frame line apart.
+  YOU LEAVE. It pokes `$BEFE`, and in the same main-loop pass `$AA62`
+  starts the escape starfield and never returns. `$AA62` is reached only
+  through record 7's motion routine (`$9E5D`, `JMP $AA62`), which `$BEA0`
+  holds once `$9D99` has loaded that record, so only boarding craft 7
+  leads there. Each frame the starfield runs one script operation
+  (`$AA95`) and reads the controls. Of its colour steps (`$AC26`), only 0,
+  2 and `$0A` refill the view's colours (8,566 cycles each), because
+  `$BB4F` skips a fill when the screen byte has not changed; in a 6502
+  simulator 51 of 1,500 star passes took two frames. The ending never
+  clears `$BEC0` bit 6, so GAME OVER repeats for ever, a 15-second wait
+  and a 150-frame line apart.
 
 ## The event scripts
 
@@ -738,7 +1027,7 @@ Weapons and moving objects therefore run only on the surface.
 | 3, 4, 5 | `$8BB2`, `$8BA3`, `$8BBE` | jump, call, return |
 | 6 | `$8B47` | test the square: `$74` and `$7A` against two operands |
 | 7 | `$8AF0` | test clock < operand |
-| 8, 9 | `$8C57`, `$8B41` | call machine code (9 tests its carry); no script uses them, and neither could return correctly (`$8C69` returns into op 13) |
+| 8, 9 | `$8C57`, `$8B41` | call machine code; no script uses them, and neither could return correctly: the `JSR` at `$8C69` returns into op 13, which runs on the next five script bytes, and for op 9 its `$8B92` then returns to `$8B44`, so op 9 branches on the carry out of `$1F` + Y + 1, not on the called code's |
 | 10 | `$8AE5` | test operand < a new random byte `$E8` |
 | 11 | `$8B60` | test the last key (SHIFT and CTRL ignored), then clear it and beep |
 | 12 | `$8B37` | test object `$57EE` carried (`$941A`) |
@@ -833,27 +1122,49 @@ A message is a list of tokens, ended by 0 (`$8E1E`):
 
 The keyboard reader `$B281` scans the matrix itself and forms a key number
 row × 8 + column (the KERNAL's numbering), with bit 6 for SHIFT and bit 7
-for CTRL; the last key found wins, and `$E9` is latched when the number
-changes. The joystick is control port 2 (`$B2FE`): directions to `$80`,
-fire to `$81`; stick input skips the keyboard for that pass.
+for CTRL; the last key found wins, and `$E9` is latched only when the
+number's low six bits change (`$B2EC`-`$B2F0`), so a modifier pressed
+after the key makes no new key: S, then CTRL, gives no CTRL + S. Key 0,
+DEL, reads as no key at all, and F1 can never act: its number, 4, is the
+"no new key" marker (`$B4B2`). The joystick is control port 2 (`$B2FE`):
+directions to `$80`, fire to `$81`; stick input skips the keyboard for
+that pass.
 
 | Key | Number | Where |
 |---|---|---|
 | D (drop) | `$12` | `$B33F` → `$98FE` |
 | L (leave a craft) | `$2A` | `$B349` → `$98C8` |
-| + and − (throttle trim, while held) | `$28`, `$2B` | `$B356`, `$B361` → `$B499` |
-| CTRL + S, CTRL + L (save, load) | `$8D`, `$AA` | `$B36C`, `$B377` → `$B382`: SAVE/LOAD NO. O-9 ?, the digit through `$BC50` into `$825E`, PRESS RETURN WHEN READY, RETURN → `$819E`, anything else cancels |
+| + and − (throttle trim, while held, with no modifier: the whole held-key byte is compared) | `$28`, `$2B` | `$B356`, `$B361` → `$B499` |
+| CTRL + S, CTRL + L (save, load) | `$8D`, `$AA` | `$B36C`, `$B377` → `$B382`: SAVE/LOAD NO. O-9 ?, the digit (SHIFT or CTRL + digit also accepted) through `$BC50` into `$825E`, PRESS RETURN WHEN READY, RETURN → `$819E`, anything else cancels |
 | CTRL + RETURN (pause, until the next new key, which is then acted on) | `$81` | `$B335` |
 | CTRL + Q (quit the situation) | `$BE` | `$B3E5`: stack reset, `JMP $80E8` |
 | E (lift) | `$0E` | `$B3F6` → `$B3FD` |
-| digits, SHIFT + digits, SPACE, ← (throttle) | through `$BC50` | `$B47E` |
+| digits, SHIFT + digits, SPACE, ← (throttle; CTRL + digit sets it too) | through `$BC50` | `$B47E` |
 | T (take), B (board) | `$16`, `$1C` | `$970A`, `$970E` in `$9706` |
 | Y (yes) | `$19` | script key tests (op 11), `$0AB6`, `$10CF` |
 
-- **CTRL + Q** (`$80E8`) scatters everything carried, and the craft the
-  player is in, at random over the city, and puts the player in the Dart
-  (object 1) on its pad at 08-08; the code has no "nothing carried"
-  condition.
+- **CTRL + RETURN** only pauses the main loop: `$B335`-`$B33C` rescans
+  the keyboard, while the panel interrupt goes on, so Benson keeps
+  printing and the seconds clock `$E3`/`$E4`, which the scripts time by,
+  keeps counting (`$BA60`-`$BA70`). In a 6502 simulator from `landed`,
+  1,200 paused frames left the pass count at 127 while `$E3` went from 8
+  to 32, and on resuming the script's next idle message, STATUS REPORT,
+  started at once.
+- **CTRL + Q** (`$80E8`-`$8132`) scatters everything carried, and the
+  craft the player is in, over the city (`$85F2`): each goes on the ground
+  in a random square at a random place, its X and Y low bytes kept. The
+  scatter takes any mode below `$80` as the craft (`$85F5`), so CTRL + Q
+  while falling puts object 9 on the ground (in a 6502 simulator from
+  `falling`: `$A9` 9 to 1, object 9 from out of play to X `$0CFE9C`, Y
+  `$0F9F72`, in 12-15), and during the opening's descent it would scatter
+  object 10, the wreck (read from the code, not run). The player is then
+  put in the Dart (`$A9` = 1, object 1 out of the world), on the surface
+  at the same place within the square, the square folded into the city (X
+  and Y high bytes AND `$0F`), at height `$00:00:80`, heading 512 and
+  pitch 512 (level). In the simulator, from `dart-cruise` X went from
+  `$FA:99:17` to `$0A:99:17`. From a room, whose high bytes are 0, the
+  player surfaces in 00-00 (from `room8`, at X `$00:08:20`, Y
+  `$00:08:80`). The code has no "nothing carried" condition.
 - The cassette motor is switched on (`$01` = `$05`, `$B3B9`) while the save
   prompt waits, although the file goes to disk.
 
@@ -878,9 +1189,14 @@ All through `$B958` (voice 1) or `$B93A` (voice 2), four bytes a sound from
 | `$30` | 2 | lift hum, pitch from `$BBA5` each frame | `$BA87`, `$BAE9` |
 
 - **The engine** (`$B5D8`-`$B61C`): the sustain level is the speed's power
-  of two minus 3 (at least 1); the frequency's high byte is that level plus
-  the mantissa's top four bits. It is silent underground and in the
-  descent. Benson's tick is voice 3 (`$8DCD`, `$8DF9`).
+  of two minus 3, at least 1, with two exceptions: below speed 1 the
+  sustain and release byte is 0, and reversing at speeds −8 to −16 (`$27`
+  = `$0D`) gives it `$0C`, level 0, so the engine falls silent in that
+  band and starts again at −16. The frequency's high byte is the level in
+  its high four bits and the mantissa's top four bits in its low four
+  (the game's `$B53D` run in a 6502 simulator on poked speeds). It is
+  silent underground and in the descent. Benson's tick is voice 3
+  (`$8DCD`, `$8DF9`).
 - **Benson's tick** is one held note. `$B910` loads voice 3 from `$B921`
   (frequency 0, pulse width `$800`, attack 0, decay 0, sustain 15, release
   0) and sets its control to `$41`, pulse and gate on; `$D418` = `$0F`
@@ -948,6 +1264,10 @@ registers beyond sprite 0, `$D01C`, `$D022`-`$D026`, or the CIA timers.
 - A taken test with bit 6 set pushes the operation's address + 3 whatever
   its operand count (`$8BA3`); no script sets bit 6.
 - Message numbers above 63 (`$8D22`) and operations 35-63 are not checked.
+  Past the 64-entry tables, messages 98-100, 151 and 233-238 point into
+  `$D09C`-`$DF6A`, and dictionary word `$FB` at `$DC12`, so the printer
+  would read the I/O chips; only tokens `$F0`-`$F7` or op 20 with a number
+  above 63 could reach them, and nothing uses either.
 - The door test's along-wall window is `$40`-`$BF` for Y but `$28`-`$A7` for
   X (`$9437`).
 - `$9ED6` adds to `$29`, `$2B`, `$2D` without keeping them to 10 bits.
@@ -978,6 +1298,50 @@ registers beyond sprite 0, `$D01C`, `$D022`-`$D026`, or the CIA timers.
 - The escape loop keeps the scripts and the L, D, E and digit keys live;
   `$BEFE` stays set after CTRL + Q, so boarding craft 7 again should
   launch without Y (not tested).
+- **The panel interrupt clobbers `$06`.** When Benson prints a figure,
+  `$8E8A`-`$8EB6` runs inside the interrupt and leaves `$06`, its loop
+  count, at 0 without saving it, while the main code keeps scratch there:
+  the float routines (`$8334`, `$8349`, `$83BA`, `$8510`) and `$B178`,
+  which holds its fill byte there while it fills the view row by row. An
+  interrupt that falls between a store and its read changes the result.
+  In a 6502 simulator from `rooms-door-AB-drop` with no input, 63 passes
+  on, the interrupt printed a figure in the middle of `$AFD5`'s fill of
+  `$AA`, and the rest of that fill, 3,760 bitmap bytes from `$6642` on,
+  was left `$00`; the same happened on the next pass. Bit pairs of 0 show
+  the background colour, `$D021` = 1 there: the lower two thirds of the
+  view were white instead of the ground for those two passes
+  (`reference/race-06-fill-left-white.png`, the frame composed from the
+  simulator's memory and video-chip writes).
+- **A lift ride's height depends on where the interrupt falls.** `$A24A`
+  reads the ride step `$CB`, computes the height, and starts again if
+  `$CB` has changed meanwhile (the panel interrupt moves the ride on each
+  frame). In a 6502 simulator (`motion-ride-down`), at pass 8 the
+  interrupt fell between the read (`$A24D`, `$CB` = `$6C`) and the compare
+  (`$A262`, `$CB` = `$64`), so the game went round again and took `$64`.
+- **The panel interrupt can run in decimal mode.** Script operations 13,
+  14 and 21 run between `SED` and `CLD` for about 100-150 cycles, and
+  neither interrupt handler clears D, so a dial step that falls in that
+  window adds and subtracts in decimal (`$B80E`, `$B812` for COMP, `$B680`,
+  `$B684` for EL). In a 6502 simulator, with op 14 run over and over while
+  the player turned, 30 of 3,000 runs were interrupted inside the window
+  and 17 compass steps were computed with D set.
+- `$8690` stops short (`$869E`): a lifetime running out removes that
+  object and returns, so the objects numbered below it are not moved that
+  pass. When the attacker's missile (14) expires, your missile (8) misses
+  a move, a collision test and a count. In a 6502 simulator
+  (`combat-next-fire`, `$BDB1` poked to 1) object 8 stayed at X `$0CF000`
+  with lifetime `$0F` that pass, and moved to `$0D0000`, `$0E`, the next.
+- After your missile hits the attack ship, `$8789` calls `$8DAA` with X =
+  `$31` (ENEMY SHIP DESTROYED), which leaves X alone, so the object 0 test
+  that follows (`$8790`) compares object 49, a standard lamp in room
+  `$A8`, with object 0 instead of your missile. The test fails, so a
+  missile that reaches the ship and object 0 on the same pass destroys
+  only the ship.
+- Set-ups not reached in play in which the code misbehaves, found in a
+  6502 simulator: model pointers into `$D000`-`$DFFF`; fills past row
+  135; `$89` of `$80` or more, where `$96A6` never ends; and first-pass
+  views below height `$060000`, where the descent's ×8 heights make the
+  road drawing run wild.
 
 ## Live tests
 

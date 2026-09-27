@@ -59,4 +59,4 @@ differ, `orientation.md`).
   it.
 - The Play tab shows the port's case of the game's two interrupt races
   (the Play page, section 02). Running the interrupts inside a step, at the
-  cycle the cost model puts them, would show the black band too.
+  cycle the cost model puts them, would show the white band too.
