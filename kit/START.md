@@ -142,6 +142,14 @@ shows; then load the page with the console open, press every widget that
 is left, and run the checks. `build.py` lists the pages that still have
 hidden blocks, and fails on a Gold page that has one.
 
+The editor's Commit button commits the game's pages as they are, and its
+Finalize button commits them and hands the rest to you. When you start the
+editor for the contributor, also run `python3 kit/scripts/edit.py --wait`
+in the background: it waits until they press Finalize, prints what is left
+(the cleanup pass, when anything is hidden) and exits, which is your cue.
+Do it, commit, and stop the editor. Without an agent waiting, Finalize
+gives the contributor that prompt to paste into one.
+
 Time expectations: A Silver run takes one to three hours, mostly
 unattended. A Bronze run takes about 20 to 45 minutes.
 

@@ -10,6 +10,9 @@
   'use strict';
   var M = JSON.parse(document.getElementById('ge-meta').textContent);
   var meta = M.els, rev = M.rev, undoCount = M.undo || 0;
+  var uncommitted = M.pending || 0;   // this game's files with changes git has not committed, as the server last said
+  var agent = !!M.agent;              // whether an agent is waiting for Finalize (edit.py --wait)
+  var finished = false;               // Finalize was pressed: the page is read-only from then on
   var editing = true;
   var active = null;            // the block being typed in
   var sigs = null;              // the elements it held when typing began, by tag and attributes
@@ -61,7 +64,9 @@
 
   // --- talking to edit.py -------------------------------------------------------
   // One edit at a time, in order. `after` runs as soon as the reply lands, before the next
-  // edit reads its block's number.
+  // edit reads its block's number. A commit waits its turn behind the saves before it.
+  var WRITES = {save: 1, split: 1, join: 1, cut: 1, restore: 1, move: 1};
+  var BUSY = {open: 'Opening it in VS Code…', commit: 'Committing…', finalize: 'Finalizing…', pending: ''};
   function send(op, target, extra, after) {
     pending++;
     var p = queue.then(function () {
@@ -71,7 +76,7 @@
         body.id = n;
         body.tag = (meta[n] || {}).tag;
       }
-      status(op === 'open' ? 'Opening it in VS Code…' : 'Saving…');
+      if (BUSY[op] !== '') status(BUSY[op] || 'Saving…');
       return fetch('/__edit/api', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})
         .then(function (r) { return r.json(); });
     }).then(function (j) {
@@ -81,8 +86,9 @@
       if (j.rev) rev = j.rev;
       if (j.els) meta = j.els;
       if (j.undo != null) undoCount = j.undo;
+      if (WRITES[op]) uncommitted = Math.max(uncommitted, 1);
       if (after) after(j);
-      status(op === 'open' ? 'Opened in VS Code.' : j.what ? j.what + '.' : 'Saved.');
+      if (BUSY[op] !== '') status(op === 'open' ? 'Opened in VS Code.' : j.what ? j.what + '.' : 'Saved.');
       bar();
       draw();
       return j;
@@ -458,6 +464,9 @@
     '<div class="ge-bar"><span class="ge-status"></span>' +   // the buttons on the right never move
     '<button type="button" class="ge-err" hidden></button><button type="button" class="ge-hid" hidden></button>' +
     '<button type="button" class="ge-undo" title="Undo the last change to this page">Undo</button>' +
+    '<button type="button" class="ge-commit" title="Commit this game’s pages as they are; nothing is pushed">Commit</button>' +
+    '<button type="button" class="ge-finish" title="Exit and finalize: commit, and hand the cleanup pass to your agent">' +
+    'Finalize</button>' +
     '<button type="button" class="ge-mode" title="Switch between editing and reading the page">Editing</button></div>';
   document.body.appendChild(ui);
   document.body.appendChild(hud);
@@ -547,7 +556,11 @@
   }
 
   function bar() {
-    $('.ge-undo').disabled = !undoCount;
+    $('.ge-undo').disabled = finished || !undoCount;
+    $('.ge-commit').disabled = finished || !uncommitted;
+    $('.ge-finish').disabled = $('.ge-mode').disabled = finished;
+    $('.ge-finish').title = 'Exit and finalize: commit, and hand the cleanup pass to your agent'
+      + (agent ? ' (standing by)' : ' (none is standing by: you get a prompt to give one)');
     var hid = document.querySelectorAll('[data-cut]').length, h = $('.ge-hid');
     h.hidden = !hid;
     h.textContent = 'Hidden ' + hid;
@@ -563,15 +576,9 @@
     p.dataset.kind = kind;
     p.innerHTML = '';
     if (kind === 'hidden') {
-      var ask = 'Do the cleanup pass in kit/START.md on ' + M.folder + ': remove the blocks hidden with the page editor, '
-              + 'and everything only they use.';
       p.innerHTML = '<p><b>Hidden blocks</b> stay in the page, out of sight, so the page’s scripts keep finding what '
-        + 'they look for. The cleanup pass removes them and the code only they use. When you have finished editing, give '
-        + 'your agent this:</p><div class="ge-ask"><code></code><button type="button">Copy</button></div><ul></ul>';
-      p.querySelector('code').textContent = ask;
-      p.querySelector('.ge-ask button').onclick = function (e) {
-        navigator.clipboard.writeText(ask).then(function () { e.target.textContent = 'Copied'; });
-      };
+        + 'they look for. The cleanup pass removes them with the code only they use: press Finalize when you have '
+        + 'finished editing, and your agent does it.</p><ul></ul>';
       var ul = p.querySelector('ul');
       document.querySelectorAll('[data-cut]').forEach(function (x) {
         var m = mOf(x), li = document.createElement('li');
@@ -592,6 +599,106 @@
       });
     }
     p.hidden = false;
+  }
+
+  // --- committing and finalizing -------------------------------------------------------
+  // Both go through the queue, so they wait for any save still on its way.
+  function asked(kind, fill) {
+    var p = $('.ge-panel');
+    if (!p.hidden && p.dataset.kind === kind) { p.hidden = true; return; }
+    if (active) finish(active);
+    send('pending').then(function (j) {
+      p.dataset.kind = kind;
+      fill(p, j);
+      p.hidden = false;
+      var i = p.querySelector('.ge-msg');
+      if (i) { i.focus(); i.select(); }
+    });
+  }
+  function hiddenIn(j) { return Object.keys(j.hidden || {}).reduce(function (s, k) { return s + j.hidden[k]; }, 0); }
+  function plural(n, one) { return n + ' ' + one + (n === 1 ? '' : 's'); }
+  function listFiles(p, files) {
+    var ul = document.createElement('ul');
+    ul.className = 'ge-files';
+    files.forEach(function (f) { var li = document.createElement('li'); li.textContent = f; ul.appendChild(li); });
+    p.insertBefore(ul, p.querySelector('.ge-go-row'));
+  }
+  function onGo(p, go) {
+    p.querySelector('.ge-go').onclick = go;
+    var i = p.querySelector('.ge-msg');
+    if (i) i.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } };
+  }
+
+  function commitPanel() {
+    asked('commit', function (p, j) {
+      if (!j.files.length) {
+        p.innerHTML = '<p><b>Nothing to commit.</b> Every change to this game’s pages is in a commit already.</p>';
+        return;
+      }
+      p.innerHTML = '<p><b>Commit</b> this game’s pages as they are now. Nothing is pushed: the site changes when '
+        + 'you push.</p><input class="ge-msg" aria-label="Commit message"><pre class="ge-body"></pre>'
+        + '<p class="ge-go-row"><button type="button" class="ge-go">Commit</button></p>';
+      p.querySelector('.ge-msg').value = j.subject;
+      var body = p.querySelector('.ge-body');
+      if (j.body) body.textContent = j.body; else body.remove();
+      listFiles(p, j.files);
+      onGo(p, function () {
+        var subject = p.querySelector('.ge-msg').value;
+        send('commit', null, {subject: subject}, function (r) {
+          uncommitted = 0;
+          p.hidden = true;
+          toast('Committed ' + r.sha + '. Nothing is pushed yet.');
+        });
+      });
+    });
+  }
+
+  function finishPanel() {
+    asked('finish', function (p, j) {
+      var hid = hiddenIn(j), does = [];
+      if (j.files.length) does.push('commits your edits');
+      if (hid) does.push('hands the cleanup pass for the ' + plural(hid, 'hidden block') + ' to your agent');
+      does.push(hid ? 'leaves the editor running for it' : 'stops the editor');
+      var who = hid ? (j.agent ? ' Your agent is standing by.'
+                               : ' No agent is standing by, so you get the prompt to give one.') : '';
+      p.innerHTML = '<p><b>Exit and finalize</b></p><p>This ' + does.join(', then ').replace(/, then ([^,]*)$/, ' and $1')
+        + '.' + who + '</p>' + (j.files.length ? '<input class="ge-msg" aria-label="Commit message">' : '')
+        + '<p class="ge-go-row"><button type="button" class="ge-go">Finalize</button></p>';
+      if (j.files.length) { p.querySelector('.ge-msg').value = j.subject; listFiles(p, j.files); }
+      onGo(p, function () {
+        var i = p.querySelector('.ge-msg');
+        finished = true;
+        setEditing(false);
+        bar();
+        send('finalize', null, {subject: i ? i.value : ''}, function (r) { finalized(p, r); })
+          .catch(function () { finished = false; setEditing(true); bar(); });
+      });
+    });
+  }
+
+  function finalized(p, r) {
+    var a = r.ask, hid = hiddenIn(a);
+    var done = a.commit ? 'Committed ' + a.commit + '; nothing is pushed yet.' : 'There was nothing left to commit.';
+    p.innerHTML = '<p><b>Finalized.</b> ' + done + '</p><p class="ge-next"></p>';
+    var next = p.querySelector('.ge-next');
+    if (r.agent) {
+      next.textContent = hid ? 'Your agent has the cleanup pass from here: it removes the hidden blocks and the code '
+        + 'only they use, checks the page, commits and stops the editor.' : 'Your agent stops the editor.';
+    } else if (hid) {
+      next.textContent = 'Give your agent this for the cleanup pass:';
+      var box = document.createElement('div');
+      box.className = 'ge-ask';
+      box.innerHTML = '<code></code><button type="button">Copy</button>';
+      box.querySelector('code').textContent = a.todo;
+      box.querySelector('button').onclick = function (e) {
+        navigator.clipboard.writeText(a.todo).then(function () { e.target.textContent = 'Copied'; });
+      };
+      p.appendChild(box);
+    } else {
+      next.textContent = 'The editor has stopped. You can close this tab.';
+    }
+    p.hidden = false;
+    status('Finalized.');
   }
 
   function setEditing(on) {
@@ -639,9 +746,10 @@
     if (active && e.target === active && !holding) finish(active);
   });
 
-  // Keys typed into a block are the editor's alone: a game widget listening for W or the
-  // arrow keys on the whole page must not see them.
+  // Keys typed into a block, or into the editor's own panels, are the editor's alone: a game
+  // widget listening for W or the arrow keys on the whole page must not see them.
   function keys(e) {
+    if (hud.contains(e.target)) { e.stopPropagation(); return; }
     if (!active || !active.contains(e.target)) return;
     e.stopPropagation();
     if (e.type !== 'keydown') return;
@@ -703,18 +811,22 @@
   });
   $('.ge-mode').onclick = function () { setEditing(!editing); };
   $('.ge-undo').onclick = function () { if (active) finish(active); send('undo'); };
+  $('.ge-commit').onclick = commitPanel;
+  $('.ge-finish').onclick = finishPanel;
   $('.ge-hid').onclick = function () { panel('hidden'); };
   $('.ge-err').onclick = function () { panel('errors'); };
 
-  // Another program changed the file (an edit saved in VS Code, a git checkout): show it.
+  // Another program changed the file (an edit saved in VS Code, a git checkout): show it. The
+  // same question keeps Commit and the agent's standing up to date.
   setInterval(function () {
     bar();
-    if (active || pending || document.hidden) return;
+    if (finished || active || pending || document.hidden) return;
     var mine = rev;
     fetch('/__edit/api', {method: 'POST', headers: {'Content-Type': 'application/json'},
                           body: JSON.stringify({op: 'rev', page: M.page, token: M.token})})
       .then(function (r) { return r.json(); })
       .then(function (j) {
+        if (j.pending != null && !pending) { uncommitted = j.pending; agent = !!j.agent; bar(); }
         if (j.rev && j.rev !== mine && mine === rev && !pending && !active) reloadKeeping('Reloaded: the file changed on disk.');
       }, function () { status('The editor is not answering. Is edit.py still running?', true); });
   }, 2000);

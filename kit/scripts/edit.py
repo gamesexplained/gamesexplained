@@ -15,6 +15,15 @@ was edited.
   ↑ ↓                     move a section; the 01 · 02 · labels follow
   Alt+click               open that line in VS Code
   Undo                    step back through this session's changes to the page
+  Commit                  commit the game's pages as they are, and nothing else; not pushed
+  Finalize                commit, then hand the cleanup pass to the agent, and stop
+
+Finalize leaves word for an agent that runs `edit.py --wait`: that waits until the
+button is pressed, prints what is left to do (the cleanup pass, when anything is hidden)
+and exits, so an agent that starts the editor for a contributor starts it in the
+background too. With no agent waiting, the page gives the contributor the prompt to
+paste into one. The first commit of a game's pages sets copy to human-edited in its
+game.json.
 
 A block the page's script writes, or one filled from game.json, is locked: edit it in
 the source. A hidden block stays in the page, marked data-cut, so the scripts that look
@@ -25,10 +34,12 @@ hides something it shows reloads the page, so the list follows; a heading or a l
 change is written into its entry as you leave it.
 
 Usage: edit.py [--port N]   serve on N, or on 8000 or the next free port after it
+       edit.py --wait       for an agent: wait for Finalize in this checkout's editor
        edit.py --test       try every edit on every authored page, writing nothing
 No dependencies.
 """
-import functools, glob, hashlib, html, http.server, json, os, re, secrets, socket, subprocess, sys, threading, urllib.parse
+import functools, glob, hashlib, html, http.server, json, os, re, secrets, socket, subprocess, sys, threading, time
+import urllib.parse, urllib.request
 from html.parser import HTMLParser
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -395,6 +406,7 @@ def what(op, e, a, extra):
 # --- the files ------------------------------------------------------------------
 LOCK = threading.Lock()
 UNDO = {}   # path -> [(before, after, what)], this session's writes
+LOG = {}    # game folder -> [(path, what)], its edits since it was last committed from here
 
 
 def read(path):
@@ -430,11 +442,28 @@ def act(req):
     path = page_file(req.get("page"))
     if not path:
         return 404, {"error": "not an authored page"}
-    op = req.get("op")
+    op, gdir = req.get("op"), os.path.dirname(path)
     with LOCK:
+        if op in ("pending", "commit", "finalize"):
+            try:
+                if op == "pending":
+                    subject, body = message(gdir)
+                    return 200, {"ok": True, "files": uncommitted(gdir), "subject": subject, "body": body,
+                                 "hidden": hidden_counts(gdir), "agent": agent_waiting()}
+                if op == "commit":
+                    sha, files, subject = commit(gdir, req.get("subject"))
+                    return 200, {"ok": True, "sha": sha, "files": files, "what": f"Committed {sha}, not pushed"}
+                ask, agent = finalize(path, req.get("subject"))
+                gone = not agent and not ask["hidden"]
+                if gone:   # nothing left to do and nobody to tell: the editor's job is done
+                    threading.Timer(1.5, SERVER[0].shutdown).start()
+                return 200, {"ok": True, "ask": ask, "agent": agent, "stopping": gone,
+                             "what": "Finalized" + (f": committed {ask['commit']}" if ask["commit"] else "")}
+            except Refused as x:
+                return 400, {"error": f"Not committed: {x}."}
         src = read(path)
         if op == "rev":
-            return 200, {"rev": rev(src)}
+            return 200, {"rev": rev(src), "pending": len(uncommitted(gdir, quiet=True)), "agent": agent_waiting()}
         if req.get("rev") != rev(src):
             return 409, {"error": "The file changed on disk, so the page was reloaded.", "reload": True}
         if op == "undo":
@@ -443,6 +472,11 @@ def act(req):
                 return 400, {"error": "Nothing to undo."}
             before, after, did = stack.pop()
             write(path, before)
+            log = LOG.get(gdir, [])
+            for k in range(len(log) - 1, -1, -1):   # the undone edit leaves the commit message too
+                if log[k][0] == path:
+                    del log[k]
+                    break
             return 200, {"ok": True, "reload": True, "what": f"Undone: {did.lower()}."}
         B = blocks(src)
         n = req.get("id")
@@ -463,6 +497,7 @@ def act(req):
         if new != src:
             write(path, new)
             UNDO.setdefault(path, []).append((src, new, did))
+            LOG.setdefault(gdir, []).append((path, did))
         if op in ("save", "split", "join") and (B[n]["tag"] == "h2" or "fig" in B[n]["cls"]):
             extra["nav"] = section_list(path, new)   # a heading or a label is what the section list shows
         return 200, dict(extra, ok=True, rev=rev(new), els=meta(new, blocks(new)), undo=len(UNDO.get(path, [])), what=did)
@@ -476,6 +511,149 @@ def open_in_editor(path, line, col):
         os.startfile(url)
     else:
         subprocess.Popen(["xdg-open", url])
+
+
+# --- committing, and handing the cleanup pass to the agent ---------------------------
+SERVER, PORT = [None], [0]   # the running editor, for Finalize to stop it and the agent to find the page
+ASKS = []                    # Finalize requests no agent has collected yet
+ASKED = threading.Condition()
+WAITING = {"n": 0, "at": 0.0}   # agents waiting now, and when one last asked
+
+
+def git(*args):
+    """git in the repository. A failure is refused with git's own last line."""
+    r = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+    if r.returncode:
+        raise Refused(((r.stderr or r.stdout).strip().splitlines() or ["git failed"])[-1])
+    return r.stdout
+
+
+def uncommitted(gdir, quiet=False):
+    """The files of a game the editor writes (its authored tabs and game.json) that have
+    changes git has not committed, as paths from the repository's root."""
+    files = [os.path.relpath(os.path.join(gdir, f), ROOT) for f in build.AUTHORED + ("game.json",)
+             if os.path.exists(os.path.join(gdir, f))]
+    try:
+        return [ln[3:] for ln in git("status", "--porcelain", "--", *files).splitlines() if ln.strip()]
+    except Refused:
+        if quiet:
+            return []
+        raise
+
+
+def hidden_counts(gdir):
+    """{tab: blocks hidden with the editor} for a game's authored tabs that have any."""
+    out = {}
+    for f in build.AUTHORED:
+        p = os.path.join(gdir, f)
+        n = os.path.exists(p) and sum(1 for e in Tree(read(p)).els if "data-cut" in e["attrs"] and not hidden(e["parent"]))
+        if n:
+            out[f] = n
+    return out
+
+
+def message(gdir):
+    """The commit message the editor offers for a game: a subject, and what was done since
+    it was last committed from here."""
+    counts = {}
+    for _, did in LOG.get(gdir, []):
+        counts[did] = counts.get(did, 0) + 1
+    return (f"{os.path.basename(gdir)}: edits in the page editor",
+            "\n".join(f"{did} ({n})" if n > 1 else did for did, n in counts.items()))
+
+
+def commit(gdir, subject):
+    """Commit a game's pages as they are on disk, and nothing else in the checkout. The first
+    commit of edited pages sets copy to human-edited: a person changed them."""
+    files = uncommitted(gdir)
+    if not files:
+        raise Refused("there is nothing to commit")
+    body = message(gdir)[1]
+    if any(f.endswith(".html") for f in files):
+        p = os.path.join(gdir, "game.json")
+        g = read(p)
+        human = re.sub(r'("copy"\s*:\s*)"(?:agent-draft|agent)"', r'\1"human-edited"', g, count=1)
+        if human != g:
+            write(p, human)
+            body += ("\n" if body else "") + "copy: human-edited"
+            files = uncommitted(gdir)
+    subject = " ".join(str(subject or "").split())[:120] or message(gdir)[0]
+    git("commit", "-q", "-m", subject, *(["-m", body] if body else []), "--", *files)
+    LOG.pop(gdir, None)
+    return git("rev-parse", "--short", "HEAD").strip(), files, subject
+
+
+def agent_waiting():
+    """An agent is asking now, or asked a moment ago and is about to ask again (it asks
+    afresh every 25 seconds, straight away)."""
+    with ASKED:
+        return WAITING["n"] > 0 or time.time() - WAITING["at"] < 5
+
+
+def finalize(path, subject):
+    """Finalize: commit the game's edits, then leave the agent word of what is left, which is
+    the cleanup pass when anything is hidden. Returns (the word, whether an agent is waiting)."""
+    gdir = os.path.dirname(path)
+    sha = None
+    if uncommitted(gdir):
+        sha, _, subject = commit(gdir, subject)
+    hid, folder = hidden_counts(gdir), os.path.relpath(gdir, ROOT).replace(os.sep, "/")
+    url = f"http://127.0.0.1:{PORT[0]}/" + os.path.relpath(path, os.path.join(ROOT, "games")).replace(os.sep, "/")
+    if hid:
+        todo = (f"Do the cleanup pass in kit/START.md on {folder}: remove every element marked data-cut ("
+                + ", ".join(f"{n} in {f}" for f, n in hid.items()) + "), with the script that drives only its "
+                "widgets, the CSS only it matches and any reference image nothing else shows. Then load "
+                f"{url} (the page editor is still running) with the console open, press every widget that is "
+                "left, run the checks, commit, and stop the page editor.")
+    else:
+        todo = f"Nothing in {folder} is hidden, so there is no cleanup pass to do: stop the page editor."
+    ask = {"folder": folder, "commit": sha, "subject": subject if sha else None, "hidden": hid, "url": url, "todo": todo}
+    agent = agent_waiting()
+    if agent:   # with nobody waiting the contributor gets the prompt, and no later agent finds it stale
+        with ASKED:
+            ASKS.append(ask)
+            ASKED.notify_all()
+    return ask, agent
+
+
+def wait_for_finalize():
+    """edit.py --wait: find this checkout's running editor, wait until Finalize is pressed in
+    it, print what is left to do, and exit. Exits with an error when no editor is found for
+    two minutes, or the one found stops before Finalize."""
+    def get(port, path, timeout):
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=timeout) as r:
+            return json.loads(r.read() or b"{}")
+    port, heard = None, time.time()
+    while True:
+        if port is None:
+            for p in range(8000, 8020):
+                try:
+                    if get(p, "/__edit/hello", 0.5).get("root") == ROOT:
+                        port = p
+                        break
+                except (OSError, ValueError):
+                    pass
+            if port is None:
+                if time.time() - heard > 120:
+                    sys.exit("No page editor for this checkout is running (ports 8000 to 8019).")
+                time.sleep(2)
+                continue
+            print(f"Waiting for Finalize in the page editor at http://127.0.0.1:{port}/", flush=True)
+        try:
+            ask = get(port, "/__edit/wait", 40).get("ask")
+            heard = time.time()
+        except (OSError, ValueError):
+            if time.time() - heard > 60:
+                sys.exit("The page editor stopped before Finalize was pressed.")
+            port = None
+            time.sleep(2)
+            continue
+        if ask:
+            print(f"The contributor pressed Finalize in the page editor for {ask['folder']}.")
+            print(f"Their edits are committed as {ask['commit']} ({ask['subject']}), not pushed." if ask["commit"]
+                  else "There was nothing left to commit.")
+            print(ask["todo"], flush=True)
+            return
 
 
 # --- the pages ------------------------------------------------------------------
@@ -514,7 +692,8 @@ def render(path):
     page = re.sub(r"<meta charset=[^>]*>", lambda m: m.group(0) + COLLECT, page, count=1, flags=re.I)
     info = {"page": os.path.relpath(path, os.path.join(ROOT, "games")).replace(os.sep, "/"), "rev": rev(src),
             "token": TOKEN, "els": meta(src, B), "undo": len(UNDO.get(path, [])),
-            "folder": os.path.relpath(gdir, ROOT).replace(os.sep, "/")}
+            "folder": os.path.relpath(gdir, ROOT).replace(os.sep, "/"),
+            "pending": len(uncommitted(gdir, quiet=True)), "agent": agent_waiting()}
     return page + ('\n<link rel="stylesheet" href="/__edit/editor.css">\n<script id="ge-meta" type="application/json">'
                    + json.dumps(info).replace("</", "<\\/") + '</script>\n<script src="/__edit/editor.js"></script>\n')
 
@@ -567,6 +746,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             name = u.path.rsplit("/", 1)[1]
             return self.send(200, read(os.path.join(ASSETS, name)),
                              "text/javascript; charset=utf-8" if name.endswith(".js") else "text/css; charset=utf-8")
+        if u.path == "/__edit/hello":   # how edit.py --wait finds the editor of its own checkout
+            return self.send(200, json.dumps({"editor": 1, "root": ROOT}), "application/json")
+        if u.path == "/__edit/wait":    # edit.py --wait asks here, and is answered when Finalize is pressed
+            ask = None
+            with ASKED:
+                WAITING["n"] += 1
+                try:
+                    if not ASKS:
+                        ASKED.wait(timeout=25)
+                    ask = ASKS.pop(0) if ASKS else None
+                finally:
+                    WAITING["n"] -= 1
+                    WAITING["at"] = 0 if ask else time.time()   # the agent that gets word goes off to work
+            try:
+                return self.send(200, json.dumps({"ask": ask}), "application/json")
+            except OSError:   # it went away while it waited: the next one gets the word instead
+                if ask:
+                    with ASKED:
+                        ASKS.insert(0, ask)
+                raise
         m = re.fullmatch(r"/([a-z0-9-]+)/([a-z0-9-]+)/([a-z0-9-]+\.html)?", u.path)
         path = m and page_file(f"{m.group(1)}/{m.group(2)}/{m.group(3) or 'index.html'}")
         if path:
@@ -593,7 +792,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self.send(403, json.dumps({"error": "This page came from an earlier run of the editor, so it was reloaded.",
                                               "reload": True}), "application/json")
         code, reply = act(req)
-        if req.get("op") not in ("rev", "open"):
+        if req.get("op") not in ("rev", "open", "pending"):
             print(f"  {req.get('page')}: {reply.get('what') or reply.get('error')}", flush=True)
         self.send(code, json.dumps(reply), "application/json")
 
@@ -617,12 +816,14 @@ def serve(port, exact):
             sys.exit(f"port {port} is in use")
         port += 1
     httpd = Server(("127.0.0.1", port), Handler)
+    SERVER[0], PORT[0] = httpd, port
     print(f"\nThe page editor is at http://127.0.0.1:{port}/  (this computer only; Ctrl+C stops it)\n"
           "Open a game and click any paragraph. Each block is written to games/ as you leave it.\n", flush=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nstopped")
+        pass
+    print("\nstopped", flush=True)
 
 
 # --- the self-test ----------------------------------------------------------------
@@ -736,6 +937,8 @@ def main():
         return
     if "--test" in argv:
         sys.exit(selftest())
+    if "--wait" in argv:
+        return wait_for_finalize()
     exact = "--port" in argv
     port = int(argv[argv.index("--port") + 1]) if exact else int(os.environ.get("PORT") or 8000)
     serve(port, exact)
