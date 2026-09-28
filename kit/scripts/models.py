@@ -7,7 +7,7 @@ is trusted when it was made under kit 0.0.31 or earlier (merged after a
 maintainer's review, the only check there was), when every model that ran
 its coverage and verify steps was already proven, or when a maintainer has
 checked it (kit/CHECKING.md) and recorded the check as `verification` in
-its game.json. Any model may run the kit (AGENTS.md, "Model"); a game that
+its game.json. The models kit/models.json declares are proven from the start. Any model may run the kit (AGENTS.md, "Model"); a game that
 is not trusted cannot be Silver.
 
 Usage:
@@ -45,6 +45,14 @@ def step_models(entries, step):
     return {e.get("model") or "unknown" for e in entries if e.get("step") == step}
 
 
+def declared():
+    """The models kit/models.json declares good enough without a check, by exact id."""
+    try:
+        return dict(json.load(open(os.path.join(ROOT, "kit", "models.json"))).get("declared") or {})
+    except (OSError, ValueError):
+        return {}
+
+
 def before_rule(g):
     """Made under kit 0.0.31 or earlier, when a maintainer's review of the pull request was the only check."""
     try:
@@ -73,7 +81,7 @@ def settle():
     """(proven, untrusted). proven is {model: [games that proved it]}; untrusted is [(game dir, used, why)]
     for every Silver-or-above game that is neither from before the rule, nor made on proven models only,
     nor checked. A trusted game proves the models that ran both its coverage and its verify step."""
-    P, pending = {}, []
+    P, pending = {m: ["declared in kit/models.json"] for m in declared()}, []
     for gdir, g, t in games():
         if g.get("tier") in SILVER_UP:
             used = set().union(*(step_models(t, s) for s in PROVING_STEPS))

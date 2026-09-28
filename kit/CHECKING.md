@@ -1,7 +1,8 @@
 # Checking a run made on an unproven model
 
 Any model may run the kit. A proven model is one that has already taken
-a game to Silver: `python3 kit/scripts/models.py` lists them, with the
+a game to Silver, or one the maintainers declare good enough in
+`kit/models.json`: `python3 kit/scripts/models.py` lists them, with the
 games that proved each. When a run's coverage or verify step ran on a
 model that is not on that list, the game cannot be Silver until a
 maintainer has checked it. This file is that check. It is done at review

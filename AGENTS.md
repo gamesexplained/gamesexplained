@@ -97,7 +97,8 @@ platform follows `kit/PLATFORMS.md`.
 ## Rules that are not negotiable
 
 - **Model.** Any model may run the kit, but only a proven one can take a
-  game to Silver on its own. A proven model has already done so:
+  game to Silver on its own. A proven model has already done so, or the
+  maintainers have declared it good enough in `kit/models.json`:
   `python3 kit/scripts/models.py` lists them, with the games. On any other
   model, tell the contributor before the first step, in plain words, that
   an untested model often produces results that read as right and are
