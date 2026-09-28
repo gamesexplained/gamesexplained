@@ -419,6 +419,8 @@ def pagenav(page):
         k = f'<span class="k {tag}">{tag.capitalize()}</span> ' if tag else ""
         items.append(f'<li><a href="#{html.escape(sid)}"><span class="n">{html.escape(num)}</span>'
                      f'<span class="h">{k}{html.escape(text, quote=False)}</span></a></li>')
+    if len(items) < 2:   # one entry is no list; the nav stays so the column sits where it does on every tab
+        items = []
     for at, el, sid in sorted(edits, reverse=True):
         n = len(el) + 1
         if page[at:at + n].lower() == "<" + el:
