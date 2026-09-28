@@ -23,6 +23,32 @@ decision, what took longest, operating system and tool versions.
 - `kit/c64/INSTALL.md`: the macOS arm64 **release** build (v3.13.1) had no
   row; measured 28 September 2026, 56 of 57, failing
   `pause-at-instruction` only.
+- `kit/skills/c64/tool-vice-mcp/SKILL.md`, "The sequence that works": a
+  check that the machine is really moving before trusting a silence. In
+  `20-features` the emulator left by the earlier session was held: `vice_ping`
+  said running, screenshots showed play, and every joystick input and
+  snapshot load seemed to do nothing. Sprite positions that never changed
+  and a `vice_frame_advance` that timed out after one frame were the
+  tells, and restarting the emulator cured it. That cost about ten minutes
+  and very nearly a false "the stick does nothing". The same note says that
+  `vice_memory_read` on a running machine returns no `data_hex` (so
+  `read_mem()` raises), and that `vice_snapshot_load` takes a `name`.
+- `kit/skills/c64/c64-reference/SKILL.md`, "A note table is tuned for one
+  clock": read the cents offset as a size. This run first named the tune's
+  notes from the PAL reading, where each sits 35 cents *sharp* of the
+  semitone below, and so named every note a semitone low. The fix is to
+  count the values that land within a few cents at each clock.
+- `kit/skills/c64/c64-reference/SKILL.md`, "Where to read about a game
+  first": the Internet Archive as the fallback when C64-Wiki has no page
+  (it had none for this game: 404 on 28 September 2026) and the fan sites
+  refuse an agent's fetch. The inlay scan's OCR text was the best source
+  this run had.
+- Re-derived from the bytes, as `TODO.md` asked, and corrected in
+  `orientation.md`: the earlier model placed the engine's code at
+  `$A000-$BFFF`, where nothing executes during play, and read the
+  snapshot's `$01` as `$00` from the RAM image, where the port byte at file
+  offset 205 is `$36`. It had also saved the play screen as
+  `reference/title-screen.png`; that is now `play-forest.png`.
 
 ## Maintainer asks
 
@@ -66,8 +92,25 @@ decision, what took longest, operating system and tool versions.
    relative to the *game folder*, so `reference/title-screen.png` is what
    works and `title-screen.png` silently keeps the warning.
 
+6. The shell Cline drives is the contributor's own interactive zsh: a
+   heredoc, a `;` inside a long command, or a stray `python3 -` can leave
+   it waiting on input or run only part of a line, and `timeout` is not
+   installed on macOS. Writing each helper to a file under `work/` and
+   running one command per call worked every time. Worth a sentence in
+   `kit/INSTALL.md` for macOS or in `AGENTS.md`'s notes on the
+   environment.
+
 ## What took longest
 
-<the table from `python3 kit/scripts/clock.py report`>
+| Step | Minutes | Model | Sessions | What dominated |
+|---|---:|---|---:|---|
+| 10-orient | 4 | deepseek/deepseek-v4.1-flash | 1 | booted to play, snapshots saved, orientation.md written; stopped before the disassembler held the snapshot |
+| 20-features | 27 | claude-opus-5-5 | 1 | web sources (no C64-Wiki page; manual scans on archive.org), reference shots; lost ~10 min to an emulator left paused by an open monitor, cured by restarting it |
+| 30-text | 8 | claude-opus-5-5 | 1 | custom font in screen-code order (+$80); the cards are PETSCII through CHROUT; ten level cards found |
+| 40-sweep | 9 | claude-opus-5-5 | 1 | register census, twin copies, where the CPU runs, and the music interpreter decoded |
+| 80-retro | 4 | claude-opus-5-5 | 1 | kit edits, kit-feedback, TODO, asks |
 
-The one change to the kit that would have saved the most minutes:
+The one change to the kit that would have saved the most minutes: a
+"prove the machine is moving" check before the first input, now in
+`tool-vice-mcp`, because a held emulator reads as a game that ignores
+the stick.
