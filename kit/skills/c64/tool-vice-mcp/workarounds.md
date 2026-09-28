@@ -249,6 +249,18 @@ was missed once. So when an automatic release does nothing, hold the key
 by hand, watch the latch with a checkpoint or a variable, and release
 only after it has moved.
 
+On 28 September 2026, same build, a game that reads keys through the
+KERNAL's scan (the key code in `$C5`, SCNKEY at `$EA87` running 61 times a
+second) never saw Z, C, SPACE, SHIFT or `/` held by row and column with
+`vice_keyboard_matrix` (`pressed: true`, released by hand after a second):
+`$C5` stayed `$40`. `vice_keyboard_key_press` with `"z"`, `"c"`, `"Space"`
+and `"/"`, released with `vice_keyboard_key_release`, reached it every
+time (`$0C`, `$14`, `$3C`, `$37`). `vice_keyboard_type` did not. The
+host-key path accepts no name for SHIFT: `Shift`, `LShift`, `Shift_L`,
+`ShiftLeft` and others all answer "Unknown key name". Read `$C5` (or the
+game's own latch) after the press to know which path worked
+(`games/c64/chiller/work/verify5.py`, `verify6.py`).
+
 In the same session, `vice_joystick_set` did not always stay set across
 `vice_frame_advance`: "up" held through three advances of 200-250 frames,
 but "right", set after a snapshot load, was not seen at all by the game
