@@ -3,6 +3,28 @@
 Current tier and what is missing for the next one. Coverage gaps from
 `coverage.py`. Article ideas.
 
+## STOP: the model was below the kit's minimum
+
+`AGENTS.md` makes this non-negotiable: the work runs on an Opus- or
+Sol-class model or better, and on a weaker one the agent stops and says so,
+because the failures are silent — address arithmetic goes wrong in ways
+that read as confident. This run was made on
+`deepseek/deepseek-v4.1-flash`, so **the analysis work stopped here**, on
+purpose, at the end of `10-orient`.
+
+What that means for whoever picks it up: everything committed is
+mechanical — byte counts, snapshot offsets, the interrupt vectors — and
+each figure is in the commit history beside the script that produced it.
+The **interpretive** claims in `orientation.md` (what the code at `$0818`
+does, which image the listing should come from) were written by that model
+and are to be re-derived from the bytes rather than trusted. Re-reading a
+paragraph costs minutes; adopting a wrong one costs the run.
+
+Resume on an Opus- or Sol-class model — this repository's own runs used
+`claude-opus-5-5` and `claude-fable-5-1` — and correct `model` in
+`game.json` and `timings.json` if the harness names it differently from
+`deepseek/deepseek-v4.1-flash`.
+
 ## Tier
 
 **none.** Boots, and `orientation.md` is written; `features.md` is still the
@@ -47,7 +69,9 @@ into `reference/`, `title_image` set. Then `30-text` and `40-sweep`.
   `orient_entry.py`, `orient_loader.py`); `work/` is gitignored.
 - Stop the emulator the kit's way; on a macOS release install before
   `kit/c64/tools.py` was fixed here, `stop vice` matched nothing.
-- The model is recorded as `claude-fable-5-1`: the session does not name it,
-  and that is what this machine's session transcript holds (28 September 2026)
-  in the form the rest of the repository uses. Correct it if that is wrong.
+- The model: see the STOP section at the top. `10-orient` is timed against
+  `deepseek/deepseek-v4.1-flash`, as the contributor named it; the exact
+  string Cline's own picker shows is still to be confirmed, and the earlier
+  `claude-fable-5-1` (inferred from a stale local session transcript) was
+  wrong.
 

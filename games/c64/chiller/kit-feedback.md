@@ -38,14 +38,19 @@ decision, what took longest, operating system and tool versions.
    `tools/vice-home/cache/vice/autostart-C64SC.d64` and attach that as unit
    8. Worth a line in `kit/skills/c64/tool-vice-mcp/SKILL.md`, "the
    sequence that works".
-3. The harness does not name the model to the agent: `env` here carries only
-   `CLINE_ACTIVE=true`, so `clock.py --model` was first given `unknown` and
-   `game.json` said the same. It was recovered only by reading this
-   machine's local session transcript out of VS Code's state
-   (`claude-fable-5.1`, recorded here as `claude-fable-5-1`). A hosted
-   session could not have done even that. Either a way to ask the harness,
-   or a documented wording for "the harness does not name it", would keep
-   the runs table honest.
+3. **Nothing tells the agent which model it is running on, and inferring it
+   goes wrong.** `env` here carries only `CLINE_ACTIVE=true`. With no way to
+   ask, this run read a session transcript out of VS Code's local state
+   (`emptyWindowChatSessions/*.jsonl`), found `claude-fable-5.1` in it, and
+   recorded `claude-fable-5-1` in `game.json` and `timings.json`. The
+   session was actually running `deepseek/deepseek-v4.1-flash`: the
+   transcript was a different window's. So the runs table gained a false
+   row, and — worse — `AGENTS.md`'s rule that work needs an Opus- or
+   Sol-class model or better could not be checked by the agent at all. The
+   agent only learnt the truth because the contributor said so.
+   `clock.py` should refuse a guessed id, or the kit should say plainly that
+   an agent may not infer its model and must ask the contributor; and if the
+   harness can expose the current model, the launcher should read it.
 4. A second clone of the kit on the same Mac had a *live* run holding :6510
    and :3000. `tools.py status` says the owner is from another folder, but
    nothing says a run is in progress there, so the agent cannot tell
