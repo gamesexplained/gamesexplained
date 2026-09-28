@@ -164,8 +164,12 @@ def r2000(path):
 
 
 # only this clone's tools: another clone on the same machine keeps its emulator and disassembler
-# the emulator itself only: its wrappers (script, and xvfb-run with its X server) exit after it
-STOP_PATTERNS = {"vice": "^" + re.escape(os.path.join(VICE_DIR, "bin")) + ".*-mcpserver",
+# scoped by path rather than anchored to the start of the command line: the launcher runs the
+# emulator through `script`, and on a macOS release build bin/x64sc is a shell wrapper that execs
+# VICE.app/Contents/Resources/bin/x64sc, so the process holding :6510 has neither of those as its
+# first word. Every match still has to lie under this clone's tools/, so no other clone is touched.
+# The emulator alone is killed: its wrappers (script, bash, xvfb-run) exit with it.
+STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
                  "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
 
 

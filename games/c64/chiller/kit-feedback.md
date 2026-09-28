@@ -1,0 +1,54 @@
+# Chiller — kit feedback
+
+Written in the retrospective (`kit/skills/core/80-retro`). What the skills and
+kit got wrong or left out, what was changed, what needs a maintainer's
+decision, what took longest, operating system and tool versions.
+
+## Changed in this branch
+
+- `kit/c64/tools.py`, `STOP_PATTERNS["vice"]`: the pattern was anchored to
+  `<tools/vice-mcp>/bin/x64sc`, but on a macOS **release** install that path
+  is a shell wrapper (`bin/x64sc` execs `VICE.app/Contents/MacOS/VICE`) and
+  the process holding :6510 is
+  `VICE.app/Contents/Resources/bin/x64sc -mcpserver`. Nothing matched, so
+  `tools.py stop vice` printed success and left the emulator running.
+  Observed before the fix: the emulator download refused with "the emulator
+  is running"; `check-emulator` printed "emulator already answering on
+  :6510" instead of restarting, so its `determinism-restart` check re-tested
+  the *same process* and could pass falsely; `verify-footprint` left the
+  machine up. The pattern is now scoped by path and not anchored, so it
+  matches the wrapper and the app both. After the fix: `stop vice` reports
+  `:6510 down`, `check-emulator` shows a real restart, `verify-footprint`
+  ends with the emulator down.
+- `kit/c64/INSTALL.md`: the macOS arm64 **release** build (v3.13.1) had no
+  row; measured 28 September 2026, 56 of 57, failing
+  `pause-at-instruction` only.
+
+## Maintainer asks
+
+1. `check-emulator` on a machine with no emulator running dies with a raw
+   `urllib.error.URLError ... Connection refused` traceback out of
+   `connect()`. The documented order (`get-vice` prints "next: `tools.py
+   vice`, then `check-emulator`") hides this, but a run that follows
+   `10-orient` step 0 as written — `status`, then `check-emulator` — gets a
+   stack trace instead of "start the emulator first".
+2. Nothing in the kit says how to load a **bare `.prg`**, as against a disk
+   image. `vice_autostart` on a `.prg` with no unit attached to serve it
+   sits at `SEARCHING FOR *` forever; what works is to let VICE wrap it into
+   `tools/vice-home/cache/vice/autostart-C64SC.d64` and attach that as unit
+   8. Worth a line in `kit/skills/c64/tool-vice-mcp/SKILL.md`, "the
+   sequence that works".
+3. `game.json` has no honest value for a model whose id the session does not
+   expose. `env` here carries only `CLINE_ACTIVE=true`, so `clock.py
+   --model` was given `unknown` and `game.json` says the same. A way to ask
+   the harness, or a documented wording for "the harness does not name it",
+   would keep the runs table honest. A machine with a second clone's tools
+   holding :6510 and :3000 also cost time to disentangle: `tools.py status`
+   reports the foreign owner but nothing tells the agent that a *live* run
+   in another folder is the reason.
+
+## What took longest
+
+<the table from `python3 kit/scripts/clock.py report`>
+
+The one change to the kit that would have saved the most minutes:
