@@ -51,6 +51,9 @@ decision, what took longest, operating system and tool versions.
    `clock.py` should refuse a guessed id, or the kit should say plainly that
    an agent may not infer its model and must ask the contributor; and if the
    harness can expose the current model, the launcher should read it.
+   **This is not a new issue: it belongs as a comment on #44** ("Say whether
+   the model id goes in committed files when a hosted session forbids model
+   identifiers"), which the retro's search-first rule surfaced.
 4. A second clone of the kit on the same Mac had a *live* run holding :6510
    and :3000. `tools.py status` says the owner is from another folder, but
    nothing says a run is in progress there, so the agent cannot tell

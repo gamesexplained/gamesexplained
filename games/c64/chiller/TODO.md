@@ -25,6 +25,29 @@ Resume on an Opus- or Sol-class model — this repository's own runs used
 `game.json` and `timings.json` if the harness names it differently from
 `deepseek/deepseek-v4.1-flash`.
 
+## How to resume
+
+In Cline: switch the model to an Opus- or Sol-class one, open this clone as
+the folder, start a **new** task, and paste:
+
+> Continue games/c64/chiller — read its TODO.md and follow kit/START.md.
+
+Everything a new session needs is already in place: `gh` is installed and
+signed in as `unorig`, the fork `unorig/gamesexplained` exists and this
+branch is pushed to it and tracks it, the commit identity is set for this
+repository only (`unorig <unorig@users.noreply.github.com>`), and both tools
+are installed under `tools/`. If the tools are down, start them again:
+
+```
+python3 kit/scripts/tools.py vice
+python3 kit/scripts/tools.py r2000 games/c64/chiller/work/play-idle.vsf
+```
+
+At the end of the run: open the pull request (the contributor has allowed
+that), and file the asks in `kit-feedback.md` as `kit-ask` issues — search
+first, because ask 3 there belongs as a comment on the existing issue #44,
+not as a new issue.
+
 ## Tier
 
 **none.** Boots, and `orientation.md` is written; `features.md` is still the
