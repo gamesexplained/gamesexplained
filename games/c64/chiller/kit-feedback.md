@@ -52,6 +52,17 @@ decision, what took longest, operating system and tool versions.
 
 ## Maintainer asks
 
+Filed as `kit-ask` issues on 28 September 2026:
+
+- #82 check-emulator: say "start the emulator first" instead of a URLError traceback (ask 1)
+- #83 tool-vice-mcp: say how to autostart a bare .prg (ask 2)
+- #44, a comment with this run's case: an agent that cannot tell which model it runs on (ask 3)
+- #84 tools.py status: say whether another folder's tools belong to a live run (ask 4)
+- #85 build.py: explain a missing listing.json, and fix the title_image hint (ask 5)
+- #86 Say that the agent's shell may be the contributor's interactive zsh (ask 6)
+
+The detail of each:
+
 1. `check-emulator` on a machine with no emulator running dies with a raw
    `urllib.error.URLError ... Connection refused` traceback out of
    `connect()`. The documented order (`get-vice` prints "next: `tools.py
