@@ -38,11 +38,14 @@ decision, what took longest, operating system and tool versions.
    `tools/vice-home/cache/vice/autostart-C64SC.d64` and attach that as unit
    8. Worth a line in `kit/skills/c64/tool-vice-mcp/SKILL.md`, "the
    sequence that works".
-3. `game.json` has no honest value for a model whose id the session does not
-   expose. `env` here carries only `CLINE_ACTIVE=true`, so `clock.py
-   --model` was given `unknown` and `game.json` says the same. A way to ask
-   the harness, or a documented wording for "the harness does not name it",
-   would keep the runs table honest.
+3. The harness does not name the model to the agent: `env` here carries only
+   `CLINE_ACTIVE=true`, so `clock.py --model` was first given `unknown` and
+   `game.json` said the same. It was recovered only by reading this
+   machine's local session transcript out of VS Code's state
+   (`claude-fable-5.1`, recorded here as `claude-fable-5-1`). A hosted
+   session could not have done even that. Either a way to ask the harness,
+   or a documented wording for "the harness does not name it", would keep
+   the runs table honest.
 4. A second clone of the kit on the same Mac had a *live* run holding :6510
    and :3000. `tools.py status` says the owner is from another folder, but
    nothing says a run is in progress there, so the agent cannot tell

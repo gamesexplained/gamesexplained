@@ -47,6 +47,7 @@ into `reference/`, `title_image` set. Then `30-text` and `40-sweep`.
   `orient_entry.py`, `orient_loader.py`); `work/` is gitignored.
 - Stop the emulator the kit's way; on a macOS release install before
   `kit/c64/tools.py` was fixed here, `stop vice` matched nothing.
-- `game.json` records the model as `unknown`: the session does not name it.
-  Correct it if the harness is known.
+- The model is recorded as `claude-fable-5-1`: the session does not name it,
+  and that is what this machine's session transcript holds (28 September 2026)
+  in the form the rest of the repository uses. Correct it if that is wrong.
 
