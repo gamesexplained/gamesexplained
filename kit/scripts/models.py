@@ -3,7 +3,7 @@
 
 A model is proven when it has run both 50-coverage and 60-verify on a
 trusted game at Silver or above, going by that game's timings.json. A game
-is trusted when it was made under kit 0.0.31 or earlier (merged after a
+is trusted when it was made under kit 0.0.32 or earlier (merged after a
 maintainer's review, the only check there was), when every model that ran
 its coverage and verify steps was already proven, or when a maintainer has
 checked it (kit/CHECKING.md) and recorded the check as `verification` in
@@ -20,7 +20,7 @@ import glob, json, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SILVER_UP = ("silver", "silver-claimed", "gold", "platinum")
 PROVING_STEPS = ("50-coverage", "60-verify")
-RULE_FROM = (0, 0, 32)
+RULE_FROM = (0, 0, 33)
 
 
 def games():
@@ -54,7 +54,7 @@ def declared():
 
 
 def before_rule(g):
-    """Made under kit 0.0.31 or earlier, when a maintainer's review of the pull request was the only check."""
+    """Made under kit 0.0.32 or earlier, when a maintainer's review of the pull request was the only check."""
     try:
         return tuple(int(x) for x in str(g.get("kit_version", "")).split(".")) < RULE_FROM
     except ValueError:
