@@ -17,19 +17,19 @@ with `facts.md`, and the `70-minisite` pages.
 
 ## Where the run stopped
 
-The end of `10-orient`, at its step 6: the disassembler is running, but on
-the contributor's `.prg` and **not on the snapshot**. That matters here more
-than usual — see `orientation.md`: the engine's live code sits at
-`$A000-$BFFF` and `$C000-$CFFF`, and the `.prg` covers only `$0801-$AF6A`
-and is 40,882 of 42,858 bytes overwritten once the game runs. Annotating the
-`.prg` would annotate the wrong bytes.
+End of `10-orient`. The disassembler now holds the right image: the kit's own
+regenerator2000 is running on `work/play-idle.vsf`
+(`tools/cargo/bin/regenerator2000 --mcp-server .../play-idle.vsf`, start it
+with `python3 kit/scripts/tools.py r2000 games/c64/chiller/work/play-idle.vsf`),
+and `$C000` reads back as the engine's code. The contributor's own instance,
+which held the `.prg`, was stopped.
 
-**The one action needed:** have the disassembler hold
-`work/play-idle.vsf`. Either load it in the running regenerator2000 GUI, or
-stop that instance and let the kit start its own:
-`python3 kit/scripts/tools.py r2000 games/c64/chiller/work/play-idle.vsf`
-(then `kit/c64/r2000.py` drives it and logs every annotation to
-`work/annotations.jsonl`).
+Do not go back to the `.prg`: it covers only `$0801-$AF6A` and is 40,882 of
+42,858 bytes overwritten once the game runs, so annotating it would annotate
+the wrong bytes (`orientation.md`).
+
+**Next:** `20-features` — the wiki page and manual, reference screenshots
+into `reference/`, `title_image` set. Then `30-text` and `40-sweep`.
 
 ## Still to establish (open, not absent)
 
