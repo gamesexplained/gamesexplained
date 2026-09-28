@@ -260,6 +260,19 @@ host-key path accepts no name for SHIFT: `Shift`, `LShift`, `Shift_L`,
 `ShiftLeft` and others all answer "Unknown key name". Read `$C5` (or the
 game's own latch) after the press to know which path worked.
 
+When neither path reaches a key at all, and the game reads a KERNAL
+variable the key would set (SHIFT's flag at `$028D`, for one), poking
+that variable directly can stand in for the key — but only if the poke
+is repeated every frame. `SCNKEY` (`$EA87`) runs on the IRQ, about 60
+times a second on a PAL machine, and overwrites `$028D` from the real
+(unpressed) hardware state on every call. A single `poke` before one
+`vice_execution_run` or `vice_frame_advance` is undone before a game
+that checks its input less often than every frame ever sees it, and
+reads as "the game does not respond to this key" when the truth is the
+poke never survived. Re-issue the poke before every `vice_frame_advance`
+call instead, for as many frames as the test needs, and only then read
+the game's own state.
+
 In the same session, `vice_joystick_set` did not always stay set across
 `vice_frame_advance`: "up" held through three advances of 200-250 frames,
 but "right", set after a snapshot load, was not seen at all by the game

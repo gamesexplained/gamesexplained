@@ -61,6 +61,11 @@ Filed as `kit-ask` issues on 28 September 2026:
 - #85 build.py: explain a missing listing.json, and fix the title_image hint (ask 5)
 - #86 Say that the agent's shell may be the contributor's interactive zsh (ask 6)
 
+Filed as `kit-ask` on 29 September 2026, continuing toward Gold:
+
+- #93 Say what a continuing agent should assume about a `work/` folder that survived from an
+  earlier session (ask 7)
+
 The detail of each:
 
 1. `check-emulator` on a machine with no emulator running dies with a raw
@@ -127,6 +132,53 @@ The detail of each:
    rewrites `_site` under a running `http.server`, which resets the
    connection for the shared scripts mid-load: it reads as a broken page.
 
+## Continued toward Gold, 28-29 September 2026
+
+This session picked the game folder back up (per `START.md`, "a Silver
+game is curated to Gold") and did the technical work a human's Gold pass
+does not need to redo: the TODO items that needed more code reading and
+live checking, not editorial judgement.
+
+10. **A model can look right and still be silently wrong.** The first
+    version of the reachability search (`work/reach.py`) flagged almost
+    every cross on every screen as unreachable — a modelling bug in
+    `try_move`'s row arithmetic, not a finding, caught only by comparing
+    the model's own convention against `verify.py`'s already-working
+    `boy_cell()` (`0x0400 + row * 40 + col` with `row = (Y-$2C)//8`
+    taken literally, not shifted). A search that is "syntactically fine
+    and produces plausible-looking numbers" is not evidence until it is
+    checked against a live, independent measurement. `work/verify_reach4.py`
+    did that here: it cleared a column to open space and watched the boy
+    fall, live, to confirm the static model's row-22 ceiling. Worth a
+    line in a skill: a static analysis over the game's own rules earns
+    the same live-check discipline as any other claim in `facts.md`,
+    especially when the code path (`try_move`'s row/column arithmetic)
+    is being re-derived rather than read straight off a comment.
+11. **A one-shot poke of a KERNAL variable the game reads every frame does
+    not survive the KERNAL's own scan.** `$028D` (the shift flag) is
+    rewritten by `SCNKEY` about 60 times a second from the real keyboard
+    state, so a single `poke` before `vice_execution_run` is undone
+    before the game's own 32-pass-period input check ever sees it. Held
+    with a poke before every `vice_frame_advance` call instead, it
+    worked at once. This generalises past SHIFT: any KERNAL-scanned
+    variable a game reads (not just `$C5`, also `$028D`, `$91` STOP,
+    etc.) needs the same per-frame re-poke if the emulator's key-name
+    paths cannot reach it. Worth adding next to the existing SHIFT note
+    in `tool-vice-mcp/workarounds.md`.
+12. **`work/` surviving between sessions on the same machine is a real
+    difference from a fresh clone**, and `AGENTS.md`/`START.md` do not
+    say what to assume. This session found `work/play-idle.vsf` and
+    thirty-odd earlier scripts already in place from the Silver run,
+    which saved re-deriving the snapshot and the level-record layout,
+    but nothing marks a game folder as "continued in the same
+    environment" versus "picked up in a fresh clone, `work/` regenerated
+    from `orientation.md`". An agent that assumes the latter when it is
+    the former re-does work for nothing; one that assumes the former
+    when it is the latter has no snapshot and no disassembler project at
+    all. A one-line check (does `work/` exist and does its README's
+    instructions still apply) at the start of a continuation job would
+    remove the guessing.
+
 ## What took longest
 
 | Step | Minutes | Model | Sessions | What dominated |
@@ -135,12 +187,14 @@ The detail of each:
 | 20-features | 27 | claude-opus-5-5 | 1 | web sources (no C64-Wiki page; manual scans on archive.org), reference shots; lost ~10 min to an emulator left paused by an open monitor, cured by restarting it |
 | 30-text | 8 | claude-opus-5-5 | 1 | custom font in screen-code order (+$80); the cards are PETSCII through CHROUT; ten level cards found |
 | 40-sweep | 9 | claude-opus-5-5 | 1 | register census, twin copies, where the CPU runs, and the music interpreter decoded |
-| 80-retro | 4 | claude-opus-5-5 | 1 | kit edits, kit-feedback, TODO, asks |
-| 50-coverage | 133 | claude-opus-5-5 | — | the kit simulator run on all ten screens found what the tracer could not reach; then the 57 loaded stretches listing.py reports |
+| 50-coverage | 133 | claude-opus-5-5 | 1 | the kit simulator run on all ten screens found what the tracer could not reach; then the 57 loaded stretches listing.py reports |
 | 60-verify | 40 | claude-opus-5-5 | 1 | the keyboard: the matrix tool never reached $C5; playing through with poked crosses to see the way-back screens |
 | 70-minisite | 75 | claude-opus-5-5 | 1 | the browser check; the music port matched the driver write for write at the first full run |
+| 80-retro | 679 | claude-opus-5-5 | 2 | the first retro (4 min): kit edits, kit-feedback, TODO, asks. The second, continued toward Gold (675 min): fixing and then live-confirming the reachability search, decoding and writing up the enemy paths, holding SHIFT by re-poking $028D every frame, looking into the three unread blocks, and building and browser-checking the Maps / levels tab |
 
-The one change to the kit that would have saved the most minutes: a
-"prove the machine is moving" check before the first input, now in
-`tool-vice-mcp`, because a held emulator reads as a game that ignores
-the stick.
+The one change to the kit that would have saved the most minutes this
+time: a note next to the SHIFT workaround in `tool-vice-mcp/workarounds.md`
+that a poked KERNAL variable needs re-poking every frame, not once
+before `vice_execution_run` — the same lesson the SHIFT entry already
+half-states but does not spell out for pokes generally, and this run
+worked it out again from scratch.

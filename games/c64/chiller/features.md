@@ -45,7 +45,7 @@ game's own title screen says "PROGRAMMED BY DAVID AND RICHARD DARLING".
 | Feature | Status | Where |
 |---|---|---|
 | The boy walks left and right | **live** | `player_input` `$C71B`, `try_move` `$2A04`; stick right X 128 → 151 |
-| The boy jumps (stick up, or SHIFT) | **live** | `fire_pressed` `$C19D`, `start_jump` `$5418`, `jump_speeds` `$544A`; stick up Y 224 → 205 → 220. SHIFT traced (`$028D`), not tested: the emulator tool has no name for it |
+| The boy jumps (stick up, or SHIFT) | **live** | `fire_pressed` `$C19D`, `start_jump` `$5418`, `jump_speeds` `$544A`; stick up Y 224 → 205 → 220. SHIFT: the emulator's key-injection tools have no name for it, so `work/verify_shift.py` held the KERNAL's own shift flag `$028D` at 1 directly, re-poking it every frame since `SCNKEY` overwrites it 60 times a second; Y 224 → 205, in-air flag 1 within 30 frames |
 | The boy can also run; walking, running and jumping each cost more energy than the last | **differs** | There is one walking speed and no run. Walking costs a step per about 765 passes (`walk_drain` `$5A20`), jumping a step each time `$5A09` runs out (`drain_step` `$59E6`); standing costs nothing |
 | An energy bar drains, and enemies touching the boy drain it | **live** | `sprite_touch` `$CE87` → `poison_add` `$5B44`; standing still, 69 hits on each when an enemy reached him (`verify7.py`) |
 | No energy means the game is over | **live** | `out_of_energy` `$5A70`, `screen_done` `$5D98`; GAME OVER (`reference/game-over.png`) |
@@ -53,7 +53,7 @@ game's own title screen says "PROGRAMMED BY DAVID AND RICHARD DARLING".
 | Some mushrooms are poisonous toadstools | **live** | tile `$55`: 24 steps of poison, each with a border flash (`poison_tick` `$5B2C`, `flash_border` `$72BA`) |
 | All the magic crosses must be collected to leave a screen | **live** | `crosses_left` `$7F00` from the record's `+$72`: five going out, ten coming back; five poked crosses ended the forest |
 | HUD: score, magic crosses collected, high score, energy bar | **live** | `hud_template` `$8400`, copied by `start_game`; score `$0406`, crosses `$041C`, bar `$042E` |
-| Enemies: ghouls, zombies, ghosts and bats | **traced** | Five slots on sprites 2-6 with path scripts per screen and a thrown sixth on sprite 7 (`extra_enemy` `$CCF5`); which shape is which of the manual's names is not in the code |
+| Enemies: ghouls, zombies, ghosts and bats | **traced** | Five slots on sprites 2-6, moved by `path_step` `$CC12` along a per-slot path script decoded from `path_scripts` `$4A00`-`$4A8F` (direction bytes 0-3 ended by `$FF`), and a thrown sixth on sprite 7 (`extra_enemy` `$CCF5`); which shape is which of the manual's names is not in the code |
 | Five screens: forest, cinema, ghetto, graveyard, haunted house | **live** | `level_records` `$7290`; all reached by play (`reference/screen-00-forest.png` to `screen-04-house.png`) |
 | A card names each screen and says what to do | **live** | `show_level_card` `$5BC7`, cards `$4100`-`$44E8` |
 | After the haunted house, the same five screens in reverse, with the girl | **live** | records `$7300`-`$7500`; `reference/screen-05-house-back.png` to `screen-09-forest-back.png` |
@@ -65,7 +65,7 @@ game's own title screen says "PROGRAMMED BY DAVID AND RICHARD DARLING".
 | Keyboard: Z left, C right, SHIFT jump, `?` switch players | **live** | `read_controls` `$C84D` against `$4512`-`$4515`: Z and C walk, `/` (`$C5 = $37`) switches; tested through `vice_keyboard_key_press` |
 | A title screen with the credits and the controls, shown after a game ends | **live** | `game_over_wait` `$7720`, title card `$7C00` |
 | Music | **traced** | `music_irq` `$60F5`, the play tune `$61F8`, the card tune and jingle `$6A18`-`$6BCC`. Pitches computed for NTSC. Not heard: the tools give no audio |
-| The first release played a version of *Thriller*, withdrawn and replaced with new music | open | Which release this is was not settled: no build text, and the tune was not compared with a known V1 |
+| The first release played a version of *Thriller*, withdrawn and replaced with new music | **open** | Which release this is was not settled: no build text or cassette inlay to check for "Burner Loading System", and the tune's riff (C2 D2 F2 G2 D2, repeating) was not compared against a recording of V1 by an ear that knows both |
 
 ## Beyond the documentation
 
@@ -80,6 +80,10 @@ and data, Bugs):
   and then does nothing: NOPs.
 - **The ledges crumble.** Tiles `$4D`-`$53` step to the next stage every
   8th step on them and the last becomes a space.
+- **The boy's own position is capped at row 22 of 24.** `move_sprite`'s
+  own Y clamp holds him there even in free fall over open space with
+  nothing to land on. Three crosses sit in the two rows below that and
+  can never be reached; see "Can every cross be reached?", below.
 - **The enemies speed up.** When every slot's lives are spent, the LEVEL
   counter goes up and `speed_up` `$5681` halves their delays.
 - **The border is the player indicator on every screen**, not only on the
@@ -95,21 +99,33 @@ and data, Bugs):
 ## Open questions
 
 - **Which release is this?** Games That Weren't describes a withdrawn
-  first version with *Thriller* music and later copies with new music.
-  This image is a PRG whose loader writes `(ANTISOFT)` into the BASIC stub
-  (`orientation.md`), so someone other than Mastertronic has handled it.
-  Settle it by listening, or by comparing the music data against a
-  documented V1.
-- **Can every cross be reached?** A Lemon64 user comment (2022) remembers
-  the game as impossible to finish because one cross was out of reach,
-  and a later crack that fixed it. That is one person's memory. The
-  crosses' positions are now known: `+$5E`-`+$71` of each record, screen
-  addresses, drawn over the play areas in `work/cross-map.txt`
-  (`work/cross_map.py`). Whether each can be reached depends on the jump
-  (24 steps up, about three cells), the floors and the crumbling ledges,
-  and was not settled: the live play-through poked crosses beside the boy
-  rather than walking to the real ones. Next: a reachability pass over
-  the map with `try_move`'s rules, then a live walk to any cross it flags.
+  first version (V1) with *Thriller* music by David Dunn and later
+  copies with new music, also by Dunn. Their one documented way to tell
+  the cassette releases apart by eye is cover text: V1's inlay has no
+  "Burner Loading System" mention in the top-right red triangle: a
+  physical detail that a PRG dump, with no cassette inlay attached,
+  cannot carry either way. This image's loader writes `(ANTISOFT)` into
+  the BASIC stub (`orientation.md`), so someone other than Mastertronic
+  has handled it, which is no help either. The played tune's voice 1
+  opens on a five-note riff, C2 D2 F2 G2 D2, repeating with an occasional
+  octave leap to F3 or D3 (`facts.md`, "Music"; `work/sweep-tune-ntsc.txt`).
+  Still open: nobody who worked this run could compare that riff against
+  a recording of V1's *Thriller* by ear with confidence, so it was not
+  settled either way. Whoever can hum both is closer to answering this
+  than any more bytes are.
+- **Can every cross be reached?** Settled for Gold: no, not quite. A
+  Lemon64 user comment (2022) remembered the game as impossible to
+  finish because one cross was out of reach, later fixed by a crack.
+  `work/reach.py` models `try_move`'s own rules and searches every
+  screen from its start position pixel by pixel; nine of the ten screens
+  have every cross reachable, and three blue crosses on the way back do
+  not, all in the play area's bottom two rows. `work/verify_reach4.py`
+  confirms it live: `move_sprite`'s Y clamp holds the boy's own position
+  at row 22 even falling through open space with nothing to land on, so
+  those three crosses sit below any row his sprite can ever occupy
+  (`facts.md`, "Three crosses cannot be reached"). Not the Lemon64
+  comment's one cross, but a real dead end all the same, since the way
+  back needs every cross, blue and red, to finish.
 - **Which of the manual's enemies is which.** Sprites 2-6 are the five
   enemy slots and 7 the thrown one (`facts.md`); the manual's ghouls,
   zombies, ghosts and bats are not named in the code, so matching them

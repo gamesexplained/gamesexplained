@@ -197,6 +197,23 @@ poked beside the boy were taken and counted, red ones were left. Going
 out only the boy plays and each screen needs five; coming back both play
 and all ten are needed.
 
+**Three crosses cannot be reached.** `work/reach.py` models `try_move`'s
+own rules (below) and searches every screen pixel by pixel from the
+start position in its record. Nine of the ten screens have every cross
+reachable this way. Three blue crosses do not: graveyard-back (record
+`$7380`) at screen address `$079A`, ghetto-back (`$7400`) at `$07C5`,
+cinema-back (`$7480`) at `$07CC`, all in the play area's bottom two
+rows. *Live* (`work/verify_reach4.py`): with a column cleared to open
+space and nothing to land on, the boy still falls no further than Y
+`$E3`, row 22 by `try_move`'s own `(Y-$2C)>>3` — `move_sprite`'s Y clamp
+(`$C930`, `cmp #$E3`) is unconditional, checked before any tile is read,
+so his own position can never be computed as row 23 or 24, whatever the
+scenery there says. All three are on the way back, where every cross,
+blue and red, is needed to finish, so all three would stop a
+completionist there. This is a wider fault than the Lemon64 comment's
+one cross (`features.md`), but the same shape: level data placed below
+where the engine's own sprite can ever stand.
+
 **Switching.** `switch_request` `$58B3` takes fire or `?` (key code
 `$37`); `switch_allowed` `$7280` refuses before level byte 10.
 `player_swap` `$576B` swaps sprites 0 and 1, so the character under
@@ -214,10 +231,27 @@ over the first byte of `read_controls` and `frame_step` (`jump_lockout`
 `$5880`). A fall is counted, but the compare with the limit at `$457A` is
 followed only by NOPs, so **no fall hurts** (`land` `$53EF`).
 
-**The ground.** `try_move` `$2A04` probes the cell the boy would enter.
-Tiles `$2A`-`$4C` are solid. Tiles `$4D`-`$53` are a crumbling ledge:
-every 8th step on one advances it a stage, and `$53` becomes a space
-(`tile_touch_a` `$5A9A`). Tiles `$62`-`$65` let him sink, one try in three.
+**The ground.** `try_move` `$2A04` probes the cell the boy would enter,
+turning his sprite position into a screen cell: row `(Y-$2C)>>3`,
+column `(X-$0C)>>3` with the VIC's X MSB folded in, then `probe_offset`
+`$5145` picks the cell to look at (his own row for up, two rows down,
+the next row over for left or right). Tiles `$2A`-`$4C` are solid.
+Tiles `$4D`-`$53` are a crumbling ledge: every 8th step on one advances
+it a stage, and `$53` becomes a space (`tile_touch_a` `$5A9A`). Tiles
+`$58`-`$61` and `$70`-`$7F` (`tile_touch_b` `$5AC7`, `$5B89`, `$7673`)
+are solid only when the probe is straight down, so they can be walked
+into from the side but not fallen onto from above; `$62`-`$65` let him
+sink the same way, one try in three (`$5A14`); `$66`-`$6F` are solid
+from every direction, with no test of which probe it was.
+
+**The boy's own position is capped at row 22.** `move_sprite` `$C900`
+clamps sprite 0's Y at `$E3` unconditionally, before any tile is
+checked (`$C930`, `cmp #$E3`), and that is row 22 by `try_move`'s own
+formula. *Live* (`work/verify_reach4.py`): falling through a column
+cleared to open space, with nothing to land on, the boy's Y still stops
+at `$E3` after 128 frames. The play area is drawn 23 rows deep (screen
+rows 2-24), but his own sprite position can never be computed as row 23
+or 24: see "Three crosses cannot be reached", above.
 
 **Energy.** One bar of 33 cells, 8 steps each, from `$042E`
 (`find_bar_end` `$5998`), and no lives: `new_life` and `lose_life` exist
@@ -255,6 +289,26 @@ a random slot (`extra_enemy` `$CCF5`). When every slot's lives are used
 up, `level_up` `$2C19` counts the LEVEL counter on, shows "LEVEL nnn"
 over the play area, and `speed_up` `$5681` halves each slot's move and
 frame delays, down to a floor read from `$34E8`.
+
+**Enemy paths, decoded.** Each slot's `+$3B`-`+$3F` (low bytes) and
+`+$40`-`+$44` (high bytes) point into `path_scripts` `$4A00`-`$4A8F`
+(`setup_screen`, into `$575E`/`enemy_script_hi` `$CF24`); `path_step`
+`$CC12` steps one enemy a pixel with `move_sprite` every
+`enemy_move_timer` passes and, every 8th step, reads the next byte of
+its script: 0 up, 1 down, 2 left, 3 right, `$FF` loops back to the
+script's start. Nine scripts serve the ten screens' fifty slots (some
+repeat between screens): three walk down then back up
+(`$4A00`, `$4A26`, `$4A46`), four hold one direction for ever
+(`$4A1E` right, `$4A20` up, `$4A22` left, `$4A24` down), and three are
+long runs down with a single stray `$50` partway through
+(`$4A6B`, `$4A70`, `$4A73`) that `move_sprite` (`$C900`) does not
+recognise as a direction and so does nothing on that one step — not a
+fifth direction, just a byte that fails every `cmp` in the dispatch and
+falls through to `rts`. When `$453D` is set for a slot (no screen uses
+it), `path_step` picks a random one of the script's first 64 bytes
+instead of stepping through it in order. At an edge, a slot leaves the
+screen unless its `$4538` byte (per slot, part of the level settings)
+allows it to stay (`enemy_gone`).
 
 **Score.** Six digits on screen (`$0406`-`$040B`), stepped a point at a
 time (`score_inc` `$CE11`, `add_score` `$CE42`). Points come only from
@@ -421,7 +475,20 @@ start) executed or read it; each is described in `symbols.json`.
 - **Loaded, unread.** `$1000`-`$1FFF` (pages of near-identical rows),
   `$4040`-`$40FF` (after the note list at `$4000` that `unused_note_step`
   would read), `$4A90`-`$50FD`, `$6BCD`-`$6FFD`; what they held is not
-  established.
+  established. Looked into further for Gold:
+  - `$1000`-`$1FFF`: not sprite data. Read as 64-byte multicolour sprites
+    (`work/render_1000.py`, printed and checked by eye), every block is
+    visual noise, no recognisable shape; the "near-identical rows"
+    description holds (64-byte periods differ by only a few bytes) but
+    what repeats at that period is not established.
+  - `$4A90`-`$4AFF`: shaped exactly like `path_scripts` (`$4A00`-`$4A8F`,
+    immediately before it) — bytes `$00`-`$03` ended by `$FF`, several
+    scripts' worth back to back — but no level record's `+$3B`-`+$44`
+    names any address in it. Very likely more enemy paths that no
+    screen's enemy table points at, cut along with a design that did not
+    ship. `$4B00` on no longer fits that pattern.
+  - `$4B00`-`$50FD`, `$6BCD`-`$6FFD`: no pattern as clear as the above was
+    found; still open.
 
 The RAM under the I/O chips (`$D000`-`$DFFF`) and under the KERNAL above
 the stores (`$F000`-`$FFFF`) is loaded and never read; `game.json`
@@ -459,6 +526,7 @@ control.
 | A mushroom under him | `verify2.py` | bar 119 → 142 eighths in 6 s; control 119 → 119 |
 | A toadstool under him | `verify.py` | the bar changes |
 | Jump with stick up | `verify2.py` | in-air flag 1, Y 224 → 205 → 220 |
+| Jump with SHIFT (host-key path has no name for it) | `verify_shift.py` | `$028D` held at 1, re-poked every frame against `SCNKEY`'s own overwrite; in-air flag 1, Y 224 → 205 within 30 frames |
 | Z, C, SPACE, `/` by the host-key path | `verify6.py` | Z, C walk; SPACE nothing; `/` nothing going out |
 | `/` and fire on the way back | `verify3.py`, `verify6.py` | the girl, border 6 → 10 |
 | All ten screens by play | `playthrough.py` | records `$7000` … `$7500` in order, needed 5 then 10, `reference/screen-*.png` |
