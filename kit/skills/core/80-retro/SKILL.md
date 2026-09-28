@@ -75,7 +75,10 @@ into the diff that saves the next contributor the trouble.
    the game and who worked it. A fix to a script, a path, the site or the
    prose style goes in `kit-feedback.md` and the pull request instead.
 6. **Complete `game.json`**: tier reached (only if every requirement is
-   met; an unattended run stops at Silver, since Gold is human curation), tools and versions,
+   met; an unattended run stops at Silver, since Gold is human curation;
+   a run whose coverage or verify step ran on a model that is not proven
+   stops at `bronze`, and `TODO.md` and the pull request say it waits on
+   the maintainer's check in `kit/CHECKING.md`), tools and versions,
    with `tools.host` naming the operating system and the processor (the
    status page counts the games made on each kind of computer from it), model (every model that appears in
    `timings.json`, and the subagents' model if different), copy

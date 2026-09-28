@@ -96,14 +96,22 @@ platform follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable
 
-- **Model.** Reverse-engineering work runs on an Opus- or Sol- class model or
-  better. On a weaker model, stop and say so. The failures are silent:
-  address arithmetic goes wrong in ways that read as confident.
+- **Model.** Any model may run the kit, but only a proven one can take a
+  game to Silver on its own. A proven model has already done so:
+  `python3 kit/scripts/models.py` lists them, with the games. On any other
+  model, tell the contributor before the first step, in plain words, that
+  an untested model often produces results that read as right and are
+  wrong, and that the game cannot be Silver until a maintainer has
+  checked it (`kit/CHECKING.md`). Then work to the tier they chose, and
+  record `tier` as `bronze` until the check passes. The failures are
+  silent: address arithmetic goes wrong in ways that read as confident,
+  which is why the check tests claims against the game rather than
+  reading the page. `clock.py start` warns when the model is not proven.
 - **Know your model; never infer it.** Take the model id only from what
   your session states (the system prompt, the harness). Never deduce it
   from files, chat transcripts, environment variables or how you seem to
   behave: a transcript on disk may belong to another window, and a
-  guessed id both hides a model below the rule above and puts a false row
+  guessed id both hides a model that is not proven and puts a false row
   in the runs table. When the session does not name the model, ask the
   contributor before starting the clock. If they cannot tell either,
   record `unknown` and say in the pull request that the model could not
@@ -178,6 +186,7 @@ platform follows `kit/PLATFORMS.md`.
 | `kit/INSTALL.md` | tools per operating system, how to start and check them |
 | `kit/EMULATOR.md` | what an emulator must do, by phase of use, and the test for each |
 | `kit/style.md` | house style for minisite copy |
+| `kit/CHECKING.md` | the maintainer's check that lets a run on an unproven model be Silver |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
 | `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |
 | `kit/PLATFORMS.md` | what a platform owns, and how to add one |
@@ -195,7 +204,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 | Tier | Requires |
 |---|---|
 | Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; coverage below 100 %; `symbols.json` and `listing.json` committed for what there is |
-| Silver | 100 % coverage; `facts.md`; every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built; all of it agent-authored, copy `agent-draft` |
+| Silver | 100 % coverage; `facts.md`; every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built; all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or a maintainer's check recorded in `game.json` (`kit/CHECKING.md`) |
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |

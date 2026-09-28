@@ -94,6 +94,14 @@ def start(step, model, gdir):
     T["entries"].append({"step": step, "model": model, "start": iso(t), "end": None, "minutes": None, "note": ""})
     save(gdir, T)
     print(f"started {step} at {iso(t)}  ({os.path.relpath(os.path.join(gdir, 'timings.json'), os.getcwd())})")
+    sys.path.insert(0, HERE)
+    from models import proven
+    P = proven()
+    if model not in P:
+        print(f"\nNOTE: {model} is not a proven model (proven: {', '.join(sorted(P)) or 'none'}; kit/scripts/models.py).\n"
+              "The run may go on. Tell the contributor now, in plain words, if you have not already: an untested\n"
+              "model often produces results that read as right and are wrong, and this game cannot be Silver until\n"
+              "a maintainer has checked it (kit/CHECKING.md). Until then its tier is bronze (AGENTS.md, \"Model\").")
 
 
 def stop(gdir, note, agents):
