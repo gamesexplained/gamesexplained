@@ -5,52 +5,39 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-**Bronze.** Boots; `orientation.md`; `features.md` with a status per row
-and reference screenshots; `30-text` and `40-sweep` done into `facts.md`;
-`symbols.json` and `listing.json` at 20.8 % (`coverage.py`, 28 September
-2026); `index.html` cut to what is known.
+**Silver** (28 September 2026). `coverage.py` 100 % of 52,126 tracked
+bytes, with the RAM under the I/O chips and above the screen store
+excluded in `game.json` with the reason; `facts.md` written from the
+trace (mechanics, graphics, tables, unused code, bugs, live tests);
+`features.md` with every row live, traced or differs but one; the How
+it works page with a screen builder, the music player, and widgets for
+crosses, energy, the jump and the enemies, checked in a browser. Copy is
+`agent-draft`.
 
-`10-orient` ran on `deepseek/deepseek-v4.1-flash`, below the kit's
-minimum. Every later step ran on `claude-opus-5-5` and re-derived what
-it relied on: the interpretive claims in `orientation.md` that were
-wrong (where the code runs, `$01` in the snapshot, the title screenshot)
-are corrected, and `kit-feedback.md` lists them.
+## For Gold
 
-## For Silver
-
-- **`50-coverage` to 100 %.** `coverage.py` names the largest bare
-  stretches: `$0AB3-$2A7F`, `$45F8-$5483`, `$65F8-$72DD` (after the tune),
-  `$8462-$95EF`, `$9669-$A658`, `$AA60-$B5C7`, and `$C000`-`$CFFF`, where
-  most of the time goes (379,203 instructions in 3 s). The RAM under the
-  KERNAL (`$E000-$FFFF`) holds a shifted copy of much of `$C000-$CDFF`
-  (`facts.md`, Twin copies); decide in `game.json` `coverage` whether it
-  is excluded. `$D000-$DFFF` RAM holds data too: say what, or exclude it.
-- **`60-verify`**, every open row in `features.md`:
-  - mushrooms and toadstools, the magic crosses and how many each screen
-    needs, running;
-  - the enemies (`$D01E` at `$0987`, `$C6DA`, `$CE87` is where to look),
-    energy loss per contact and per move;
-  - the return journey with the girl, fire / `?` switching players, the
-    border colour, red crosses;
-  - the keyboard controls (no CIA1 keyboard scan was found, so the KERNAL
-    is the lead);
-  - reach the other nine screens: find the level variable, poke it, and
-    screenshot each card and screen into `reference/`.
-- **`70-minisite`**: the full How it works page, `listing.json` rebuilt.
+- A human reads and edits the copy (`kit/style.md`); `game.json` `copy`
+  then leaves `agent-draft`.
+- **Can every cross be reached?** The positions are in
+  `work/cross-map.txt`. A reachability pass with `try_move`'s rules (the
+  jump is 24 pixels, tiles `$2A`-`$4C` solid, ledges crumble), then a live
+  walk to any cross it flags. A Lemon64 comment says one cannot be.
+- A Maps / levels tab: all ten screens with their crosses, enemy paths
+  (the scripts at `+$45` of each record) and pick-ups.
+- The enemy path scripts: decode the format and step one on the page.
+- The page's music player leaves out the filter the game sets; say so
+  louder, or extend `site/lib/sid.js`.
+- SHIFT as a jump key was traced, not tested: the emulator's host-key
+  path has no name for it.
 
 ## Still to establish (open, not absent)
 
 - Which release this is: the withdrawn *Thriller* version or the later
-  one. The tune's notes are decoded (`work/sweep-tune-ntsc.txt`); compare
-  them with a known recording.
-- What else the level records at `$7000 + $80·n` hold, beyond the card
-  pointer at `+$74`.
-- What reads `$02FF`, the tune's counter (`$5DAD`, `$7614`).
-- Where "PRESS CTRL FOR MENU" (`$574A`, `show_press_ctrl`) is used; no
-  call was found.
-- Whether one cross is unreachable, as one Lemon64 comment remembers.
+  one. The page plays the tune; compare it with a known recording.
+- What `$1000`-`$1FFF`, `$4A90`-`$50FD` and `$6BCD`-`$6FFD` held: loaded,
+  never read, named by nothing.
 - What the `(ANTISOFT)` watermark in the rewritten BASIC stub denotes.
-- Whether the game reloads data per level.
+- Which of the manual's ghouls, zombies, ghosts and bats is which shape.
 
 ## Working notes
 

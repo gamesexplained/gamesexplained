@@ -111,6 +111,22 @@ The detail of each:
    `kit/INSTALL.md` for macOS or in `AGENTS.md`'s notes on the
    environment.
 
+7. **The keyboard, on this build.** `vice_keyboard_matrix` held by row and
+   column never reached the KERNAL's key code in `$C5`; the host-key path
+   (`vice_keyboard_key_press`) did, and it has no name for SHIFT. Now in
+   `tool-vice-mcp/workarounds.md`. `check_emulator.py` could test a key
+   through `$C5` as well as through a game's own matrix scan.
+8. **Coverage and loaded data the ledger cannot see.** `listing.py`'s
+   report of loaded, untracked stretches was the real work queue once
+   `coverage.py` said 100 %: 57 stretches, from a 1 KB tune tail to eight
+   NOPs. It would help if `coverage.py` printed that list itself.
+9. **Checking a page in a browser.** A plain `--screenshot` run of headless
+   Chrome hung with the page's audio worklet loaded; a small DevTools
+   protocol script (console, canvases lit, every button clicked, section
+   screenshots) worked and could live in `kit/scripts/`. And `build.py`
+   rewrites `_site` under a running `http.server`, which resets the
+   connection for the shared scripts mid-load: it reads as a broken page.
+
 ## What took longest
 
 | Step | Minutes | Model | Sessions | What dominated |
@@ -120,6 +136,9 @@ The detail of each:
 | 30-text | 8 | claude-opus-5-5 | 1 | custom font in screen-code order (+$80); the cards are PETSCII through CHROUT; ten level cards found |
 | 40-sweep | 9 | claude-opus-5-5 | 1 | register census, twin copies, where the CPU runs, and the music interpreter decoded |
 | 80-retro | 4 | claude-opus-5-5 | 1 | kit edits, kit-feedback, TODO, asks |
+| 50-coverage | 133 | claude-opus-5-5 | — | the kit simulator run on all ten screens found what the tracer could not reach; then the 57 loaded stretches listing.py reports |
+| 60-verify | 40 | claude-opus-5-5 | 1 | the keyboard: the matrix tool never reached $C5; playing through with poked crosses to see the way-back screens |
+| 70-minisite | 75 | claude-opus-5-5 | 1 | the browser check; the music port matched the driver write for write at the first full run |
 
 The one change to the kit that would have saved the most minutes: a
 "prove the machine is moving" check before the first input, now in

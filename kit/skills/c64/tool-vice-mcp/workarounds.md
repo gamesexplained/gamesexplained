@@ -258,8 +258,7 @@ and `"/"`, released with `vice_keyboard_key_release`, reached it every
 time (`$0C`, `$14`, `$3C`, `$37`). `vice_keyboard_type` did not. The
 host-key path accepts no name for SHIFT: `Shift`, `LShift`, `Shift_L`,
 `ShiftLeft` and others all answer "Unknown key name". Read `$C5` (or the
-game's own latch) after the press to know which path worked
-(`games/c64/chiller/work/verify5.py`, `verify6.py`).
+game's own latch) after the press to know which path worked.
 
 In the same session, `vice_joystick_set` did not always stay set across
 `vice_frame_advance`: "up" held through three advances of 200-250 frames,
