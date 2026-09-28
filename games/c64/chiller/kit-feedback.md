@@ -42,10 +42,18 @@ decision, what took longest, operating system and tool versions.
    expose. `env` here carries only `CLINE_ACTIVE=true`, so `clock.py
    --model` was given `unknown` and `game.json` says the same. A way to ask
    the harness, or a documented wording for "the harness does not name it",
-   would keep the runs table honest. A machine with a second clone's tools
-   holding :6510 and :3000 also cost time to disentangle: `tools.py status`
-   reports the foreign owner but nothing tells the agent that a *live* run
-   in another folder is the reason.
+   would keep the runs table honest.
+4. A second clone of the kit on the same Mac had a *live* run holding :6510
+   and :3000. `tools.py status` says the owner is from another folder, but
+   nothing says a run is in progress there, so the agent cannot tell
+   "abandoned leftovers" from "someone's session". The emulator download
+   refuses with "the emulator is running" without naming the other folder.
+5. `build.py` on a game folder that has no `listing.json` dies with an
+   uncaught `FileNotFoundError` traceback for the file; it should say to run
+   `listing.py` first. Separately, the `title_image` warning says "set it in
+   game.json to a file under reference/" while the value is resolved
+   relative to the *game folder*, so `reference/title-screen.png` is what
+   works and `title-screen.png` silently keeps the warning.
 
 ## What took longest
 
