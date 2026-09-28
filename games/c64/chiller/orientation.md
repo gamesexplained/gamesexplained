@@ -59,27 +59,26 @@ stage ran. What ANTISOFT denotes was not established in this step.
 
 ## Steady state
 
-- **Interrupt vectors during play.** `$0314/5 = $60F5`, a RAM address, so
-  the game has its own IRQ handler there; it is the spine of the engine.
+- **Interrupt vectors during play.** `$0314/5 = $60F5`, a RAM address:
+  the music player (`music_irq`, `facts.md`), which ends through the
+  KERNAL's `$EA31`.
   The hardware IRQ vector `$FFFE` is still the KERNAL's `$FF48`, which
   dispatches through `$0314`. The game left NMI alone:
   `$FFFA = $FE43`, `$0318/9 = $FE47`, `$0316/7 = $FE66`, `$FFFC = $FCE2`,
   all KERNAL defaults.
-- **Banking.** `$01` reads `$36` across eight live samples during play:
-  BASIC ROM banked out, so RAM at `$A000-$BFFF` is visible, KERNAL and I/O
-  in. The saved play snapshot's own `$01` byte reads `$00`, so the game
-  swaps the banks within a frame; **do not read `$01` out of the snapshot
-  as a steady-state value.**
-- **Where the code and data sit.** At play time the load area
-  `$0801-$AF6A` differs from the file in 40,882 of its 42,858 bytes: the
-  loader repurposes the area it was loaded into. The engine's live code
-  sits at `$A000-$BFFF` (5,994 nonzero bytes, identical at the hand-over
-  and at play) and at `$C000-$CFFF` (3,766 nonzero bytes at the hand-over,
-  3,846 at play, of which 505 differ — running variables rather than code).
+- **Banking.** `$01` reads `$36` across eight live samples during play,
+  and the snapshot's processor-port byte (file offset 205) is `$36` too:
+  BASIC ROM banked out, KERNAL and I/O in. (`$0001` in the RAM image reads
+  `$00`, but that byte is not the port; `c64-reference`.)
+- **Where the code runs.** Non-stopping checkpoints over 3 s of play
+  (`facts.md`, Memory layout) put it in `$0800`-`$2FFF`, `$5000`-`$7FFF`
+  and `$C000`-`$CFFF`, with the KERNAL's IRQ path above `$E000`. Nothing
+  executed in `$8000`-`$BFFF`. At play time the load area `$0801-$AF6A`
+  differs from the file in 40,882 of its 42,858 bytes.
 - **Consequence for the rest of the run.** The image everything is read
-  from is `work/play-idle.vsf`. The `.prg` on its own does **not** contain
-  the code at `$A000-$CFFF`: it ends at `$AF6A` and its content there is
-  overwritten. The disassembler must hold the snapshot, not the PRG.
+  from is `work/play-idle.vsf`, not the `.prg`: the loader moves and
+  overwrites most of what the file holds. The disassembler must hold the
+  snapshot.
 - **Per-level reloads:** not established in this step.
 
 ## The loader, in a paragraph
@@ -88,9 +87,7 @@ The file is a single PRG with a BASIC stub. `SYS 2061` runs machine code
 that rewrites the stub in place to `SYS 2072 (ANTISOFT)` and passes
 control to `$0818`, which is a copier: it installs blocks at `$CE00`,
 `$CF00` and the VIC registers at `$D000` before the game proper starts.
-The result is an engine that runs from RAM visible only with BASIC ROM
-banked out (`$A000-$BFFF`) and from `$C000-$CFFF`, with its own IRQ
-handler at `$60F5`, while the area it was loaded into is reused for
-something else. The loader's stages before that last hand-over are not
-annotated, by policy.
+The result is a game that runs from `$0800`-`$2FFF`, `$5000`-`$7FFF` and `$C000`-`$CFFF`
+with the music player on the IRQ at `$60F5`. The loader's stages before
+the last hand-over are not annotated, by policy.
 

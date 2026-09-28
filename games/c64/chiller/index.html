@@ -33,31 +33,73 @@ h2.t{font-size:var(--h2);margin-bottom:12px}
 .cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
 .cap b{color:var(--ink);font-weight:700}
 code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
-
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.shots figure{margin:0}
+.shots img{width:100%;height:auto;display:block;image-rendering:pixelated;border-radius:4px}
+.shots figcaption{font-size:14px;color:var(--ink-mute);margin-top:8px;line-height:1.5}
+table.t{border-collapse:collapse;width:100%;font-size:15px}
+table.t th,table.t td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.t th{font-weight:700;color:var(--ink-soft)}
 </style>
 <!--
-  Template for a game article. Keep it self-contained: inline CSS and JS,
-  fonts are the only external resource, opens from disk. The section below
-  shows the parts a section is made of, not which section comes first: the
-  kinds of section are listed in kit/skills/core/70-minisite, in no order,
-  and this page's order is its own. The best thing to press or hear goes
-  as high as the explanation lets it, and every section should have
-  something the reader can press. Copy follows kit/style.md and is written
-  last.
+  A Bronze page: the header and what the run learned, the screens and the
+  documented features. The full article comes with Silver
+  (kit/skills/core/70-minisite). Copy follows kit/style.md.
 -->
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">One sentence a human wrote about what is interesting inside this game.</p>
+  <p class="sub">A boy walks through five haunted screens to rescue his girlfriend, then has to lead her back through all five in reverse.</p>
 </header>
 <main class="wrap">
 <section>
-  <p class="fig">01 · What this section explains</p>
-  <h2 class="t">The finding, spelled out</h2>
-  <p class="lede">What a player would notice, in a sentence or two.</p>
-  <div class="plate"><canvas id="cv" width="320" height="200"></canvas><p class="cap">Caption: what the reader is looking at, and where the bytes came from.</p></div>
-  <p>The explanation, with the bytes, the table or the register beside each claim.</p>
+  <p class="fig">01 · The screens</p>
+  <h2 class="t">What the game looks like</h2>
+  <p class="lede">The opening screen is the forest. Every screen is introduced by a card with a line of verse, and the game has ten of them: five on the way to the haunted house and five on the way back.</p>
+  <div class="shots">
+    <figure><img src="reference/title-screen.png" alt="Title screen: programmed by David and Richard Darling, and the controls"><figcaption>The title screen, shown after a game ends. It gives the goal and the controls.</figcaption></figure>
+    <figure><img src="reference/level-card-forest.png" alt="The level card for the forest"><figcaption>The card before the forest: the screen's name and what to do there.</figcaption></figure>
+    <figure><img src="reference/play-forest.png" alt="The forest screen at the start of play"><figcaption>The forest. The top row counts the score, the magic crosses and the high score. Under it is the energy bar.</figcaption></figure>
+    <figure><img src="reference/play-jump.png" alt="The boy jumping in the forest"><figcaption>The boy in mid-jump. Pushing the stick up lifts him about 24 pixels.</figcaption></figure>
+    <figure><img src="reference/energy-low.png" alt="The energy bar almost empty"><figcaption>After about fifteen seconds of standing still, the energy bar is almost empty.</figcaption></figure>
+    <figure><img src="reference/game-over.png" alt="Game over under the score line"><figcaption>When the energy runs out, GAME OVER appears under the score line.</figcaption></figure>
+  </div>
+</section>
+<section>
+  <p class="fig">02 · The cards</p>
+  <h2 class="t">Ten screens, each with a line of verse</h2>
+  <p class="lede">Before each screen the game clears the display and prints a card. The text is stored as ordinary Commodore text and printed through the machine's own print routine, with colour codes for the layout.</p>
+  <div class="plate">
+    <table class="t">
+      <tr><th></th><th>Screen</th><th>The card says</th></tr>
+      <tr><td>1</td><td>The forest</td><td>MOVE THE BOY AROUND THE FOREST COLLECTING THE BLUE MAGIC CROSSES.</td></tr>
+      <tr><td>2</td><td>The cinema</td><td>THERE'S A MESSAGE SCRAWLED IN BLOOD...</td></tr>
+      <tr><td>3</td><td>The ghetto</td><td>SAVE YOUR ENERGY, YOU'LL NEED IT.</td></tr>
+      <tr><td>4</td><td>The graveyard</td><td>THE MIDNIGHT HOUR IS CLOSE AT HAND, YOUR DEATH AWAITS IN THIS EVIL LAND.</td></tr>
+      <tr><td>5</td><td>The haunted house</td><td>YOUR GIRLFRIEND YOU ARE SEARCHING FOR, WHEN YOU HAVE THE CROSSES SHE'LL APPEAR BY THE DOOR.</td></tr>
+      <tr><td>6</td><td>The haunted house</td><td>BOTH BOY AND GIRL MUST TURN AROUND, BECAUSE YOUR QUEST IS HOMEWARD BOUND.</td></tr>
+      <tr><td>7</td><td>The graveyard</td><td>BY NOW YOUR ENERGY MUST BE LOW, SO FIND A MUSHROOM BEFORE YOU SLOW.</td></tr>
+      <tr><td>8</td><td>The ghetto</td><td>THE GHETTO IS A LONELY PLACE, SO GET YOUR CROSSES WITH GREAT HASTE.</td></tr>
+      <tr><td>9</td><td>The cinema</td><td>THE FINAL MINUTES ARE WITH YOU, USE THEM WELL.</td></tr>
+      <tr><td>10</td><td>The forest</td><td>THE END IS NIGH, YOU'RE GOING TO DIE.</td></tr>
+    </table>
+    <p class="cap">Read from the game's memory at <code>$4100</code>–<code>$44E8</code>. The font has no apostrophe. The cards fake one by moving the cursor up a row, printing a comma and moving back down.</p>
+  </div>
+</section>
+<section>
+  <p class="fig">03 · The music</p>
+  <h2 class="t">The music is pitched for American machines</h2>
+  <p class="lede">The music is a two-voice tune played from the machine's interrupt. Its pitches are computed for the NTSC clock of American machines. On a European PAL machine, like the one this copy was examined on, every note plays about two-thirds of a semitone flat.</p>
+  <div class="plate">
+    <p>The player is a small interpreter. Each byte of the tune is the low half of the address of the routine that handles it. The player writes that byte straight into its own jump instruction and jumps. Eleven commands cover notes on either voice or both, rests, the tempo, waveforms, envelopes, pulse widths and a loop.</p>
+    <p class="cap">Of the tune's 478 note values, 464 land within 2 cents of a true note at the NTSC clock. At the PAL clock, none do. Player at <code>$60A0</code>, tune at <code>$61F8</code>–<code>$6A15</code>.</p>
+  </div>
+</section>
+<section>
+  <p class="fig">04 · Still to explain</p>
+  <h2 class="t">What this page does not cover yet</h2>
+  <p>So far about a fifth of the program has been worked through. What the manual promises, and nobody has yet traced in the code, includes the mushrooms that restore energy and the poisonous toadstools, the magic crosses and how many each screen needs, the girl on the return journey and the button that switches between her and the boy, and whether every cross can be reached. The first release played a version of Michael Jackson's <i>Thriller</i> and was withdrawn. Which release this copy is remains open.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

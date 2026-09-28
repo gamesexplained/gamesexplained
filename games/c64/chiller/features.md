@@ -66,7 +66,7 @@ from `work/play-idle.vsf` with the stick on control port 2.
 | Joystick in control port 2 | **live** | Input on port 2 moved the boy. Leads: `LDA $DC00` at `$C8C5`, `$C8D3` and `$C8E1` tests bits 1, 2 and 3 (71 hits in 3 s); `$58BD` tests the fire bit (2,224 hits in 3 s) |
 | Keyboard: Z left, C right, SHIFT jump, `?` switch players | open | The manual and the title screen; not tried |
 | A title screen with the credits and the controls, shown after a game ends | **live** | `reference/title-screen.png`, reached by standing still until the game ended |
-| Music during play | open | Lemon64 credits David Dunn; not listened to in this run |
+| Music | **traced** | A two-voice interpreter run from the IRQ, `music_irq` `$60F5`, playing the tune at `$61F8` (`facts.md`, Sound). Its pitches are computed for the NTSC clock. Where in the game it plays, and whether sound was heard, were not checked: the tools give no audio |
 | The first release played a version of *Thriller*, withdrawn and replaced with new music | open | Games That Weren't; which version this image is, is not known |
 
 ## Beyond the documentation
