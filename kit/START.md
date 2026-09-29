@@ -123,10 +123,12 @@ more, and what reads like an agent wrote it; you cut, expand, verify
 anything new against the code, and rewrite to `kit/style.md`. When the
 first edit pass begins, set `tier` in `game.json` to `silver-claimed`
 and `steward` to their GitHub login: the page then says who is editing
-it. Set `gold` when every section has had its pass. Set `copy` in
-`game.json` honestly, and open the pull request as `AGENTS.md` says. The
-two questions about the pull request and the commit identity in step 3
-come first in this job too.
+it. Start the clock as `curate` (`kit/scripts/clock.py -h`), and as
+`play` for a Play tab the game did not have; each ends with `80-retro`.
+Their time is kept apart from the run's. Set `gold` when every section
+has had its pass. Set `copy` in `game.json` honestly, and open the pull
+request as `AGENTS.md` says. The two questions about the pull request
+and the commit identity in step 3 come first in this job too.
 
 A `work/` left from an earlier session is a cache, not a record: the
 committed files say what is known. Keep the image, and keep the snapshot

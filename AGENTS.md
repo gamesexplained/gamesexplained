@@ -36,6 +36,9 @@ in order:
    | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
    | retrospective | `kit/skills/core/80-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
 
+   Work on a game after its run is clocked apart: `curate` for the
+   Gold pass, `play` for a Play tab added later (`clock.py -h`).
+
    A Bronze run stops after `40-sweep`. It exports the symbol map and
    builds the listing (step 4), cuts `index.html` down to the header plus
    what it learned (the features, the reference screenshots), then goes
