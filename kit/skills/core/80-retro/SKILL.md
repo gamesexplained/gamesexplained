@@ -45,7 +45,14 @@ into the diff that saves the next contributor the trouble.
      and where in the kit it would go; the game, the date and the branch;
      and a link to the game's `kit-feedback.md`
      (`https://github.com/gamesexplained/gamesexplained/blob/main/games/<platform>/<slug>/kit-feedback.md`,
-     live once the pull request is merged).
+     live once the pull request is merged), and
+     last, on a line of its own, the marker `<!-- kit-ask -->`.
+   - **The label comes from the marker.** GitHub silently drops a label
+     asked for by an author without triage access to the repository, so
+     `--label kit-ask` alone may leave the issue unlabelled and out of the
+     inbox. The marker makes the repository's `kit-ask` workflow
+     (`.github/workflows/kit-ask.yml`) add the label for anyone. Pass both.
+     A title starting `kit-ask:` works too, where a body cannot be set.
    - **Search first**, open and closed:
      `gh issue list --repo gamesexplained/gamesexplained --label kit-ask --state all --search "<words>"`.
      An ask someone already filed gets a comment with this run's case,

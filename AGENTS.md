@@ -250,7 +250,9 @@ That is how the kit improves.
 
 What needs a maintainer's decision, and so was not changed, goes to the
 issue tracker: one issue per ask, labelled `kit-ask`, the maintainers'
-one inbox. Filing needs the same yes as opening the pull request. A run
-without that yes, or without a way to reach GitHub, puts its asks in the
+one inbox. Put `<!-- kit-ask -->` in the body as well: a label from an
+author without triage access is dropped, and the marker makes the
+repository add it. Filing needs the same yes as opening the pull
+request. A run without that yes, or without a way to reach GitHub, puts its asks in the
 pull request's description under "Maintainer asks" instead, and whoever
 merges it files them.
