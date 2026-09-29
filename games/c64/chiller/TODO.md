@@ -54,6 +54,14 @@ an agent, and no human has read any of it yet.
 
 ## Still to establish (open, not absent)
 
+- What the way-back play-through screenshots show (`reference/screen-05`
+  to `screen-09`): a stray fence patch on the cinema, and a crosses
+  counter reading `2S`, `5S` and so on where the outward screens read
+  `05`. They were captured with crosses poked beside the boy, so either
+  the poke or the game could be the cause. The steward does not recognise
+  either from play (29 September 2026); the page uses the screen
+  builder's renders instead.
+
 - Which release this is: the withdrawn *Thriller* version or the later
   one. Games That Weren't says V1's cassette inlay has no "Burner
   Loading System" text, a physical detail this PRG dump cannot carry
