@@ -387,8 +387,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-player button[aria-pressed="true"]{background:var(--accent,#1f5fa8);border-color:var(--accent,#1f5fa8);color:#fff}
 .sid-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
 .sid-filt{display:inline-flex;align-items:center;gap:4px;margin-left:8px}
+.sid-fsw{display:inline-flex;align-items:center;gap:4px}
+.sid-fsw[hidden]{display:none}
 .sid-filt .sid-k{margin-right:2px}
-.sid-fnote{font-size:12.5px;color:var(--ink-mute,#80838a);margin-left:4px}
+.sid-fnote{font-size:12.5px;color:var(--ink-mute,#80838a)}
 .sid-stat{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-family:var(--fm,'IBM Plex Mono',ui-monospace,monospace);font-size:12.5px}
 .sid-k{font-family:var(--fb,'Lato',system-ui,sans-serif);font-size:12.5px;color:var(--ink-mute,#80838a);margin-right:5px}
 .sid-vol{display:inline-flex;gap:2px;vertical-align:-1px;margin-left:6px}
@@ -432,7 +434,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //   gain    optional: the output level, 0.6 by default
   //   filter  optional: '6581', '8580' or 'none', the filter the player starts with. Given, the
   //           player shows a switch between the three, heard at once, to compare them, and
-  //           says beside it when the chosen tune never routes a voice through the filter;
+  //           shows in its place that the chosen tune never routes a voice through the filter;
   //           left out, the filter is off and there is no switch
   //   colors  optional: the three voices' colours
   function mount(root, o) {
@@ -456,9 +458,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       '<div class="sid-bar">' +
       o.tunes.map((n, t) => `<button type="button" data-tune="${t}" aria-pressed="false">${esc(n)}</button>`).join('') +
       '<button type="button" data-stop>Stop</button>' +
-      (o.filter ? '<span class="sid-filt" role="group" aria-label="The SID filter"><span class="sid-k">Filter</span>' +
+      (o.filter ? '<span class="sid-filt" role="group" aria-label="The SID filter">' +
+        '<span class="sid-fsw"><span class="sid-k">Filter</span>' +
         FILTERS.map(([c, n]) => `<button type="button" data-filter="${c}" aria-pressed="${c === filter}">${n}</button>`).join('') +
-        '<span class="sid-fnote" hidden>this tune doesn\u2019t use the filter</span></span>' : '') +
+        '</span><span class="sid-fnote" hidden>this tune doesn\u2019t use the filter</span></span>' : '') +
       '<span class="sid-stat">' +
       '<span><span class="sid-k">Volume</span><span data-g="vol">-</span><span class="sid-vol">' +
       '<i></i>'.repeat(15) + '</span></span></span></div>' +
@@ -546,8 +549,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         const n = length(t);
         seek.max = String(n != null ? Math.max(1, n) : LONG);
         seek.disabled = false;
-        const note = root.querySelector('.sid-fnote');
-        if (note) note.hidden = filtered[t];
+        const sw = root.querySelector('.sid-fsw'), note = root.querySelector('.sid-fnote');
+        if (sw) { sw.hidden = !filtered[t]; note.hidden = filtered[t]; }   // the switch or the note
       }
       at = Math.max(0, Math.min(at || 0, +seek.max));
       send({ cmd: 'start', tune: t, run: ++runs, at });
