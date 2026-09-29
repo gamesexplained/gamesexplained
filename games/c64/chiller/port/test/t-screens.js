@@ -115,10 +115,10 @@ const tests = [
   { name: 's_2CF3', range: [0x2CF3, 0x2CFD], setup: (M, c, rnd) => { const a = rnd(2) ? 0 : rnd(256); return { a, z: a === 0 ? 1 : 0 }; } },
   { name: 's_2F4D', range: [0x2F4D, 0x2F50] },
   // the cards
-  { name: 'card_and_border', range: [0x5A41, 0x5A54], cases: 1500, hooks: cardWait, poll: count, setup: (M, c, rnd) => { cardChain(M, c, rnd); M[0x5A08] = rnd(2); } },
+  { name: 'card_and_border', range: [0x5A41, 0x5A54], hooks: cardWait, poll: count, setup: (M, c, rnd) => { cardChain(M, c, rnd); M[0x5A08] = rnd(2); } },
   { name: 'first_setup', range: [0x5A60, 0x5A6A], setup: (M, c, rnd) => { M[0x45FF] = rnd(2); } },
   { name: 'wait_line16', range: [0x5BB0, 0x5BBE] },
-  { name: 'show_level_card', range: [0x5BC7, 0x5BF1], cases: 1500, hooks: cardWait, poll: count, setup: cardChain },
+  { name: 'show_level_card', range: [0x5BC7, 0x5BF1], hooks: cardWait, poll: count, setup: cardChain },
   { name: 'draw_logo', range: [0x5C00, 0x5C4B], setup: (M, c, rnd) => { if (rnd(2)) M[0x5BFD] = 0; } },
   // draw_logo's end at $5CAA-$5CC4, which it jumps to
   { name: 'draw_logo', cases: 300, range: [0x5CAA, 0x5CC4] },
@@ -134,7 +134,7 @@ const tests = [
     setup: (M, c, rnd) => { if (rnd(8)) M[0x02FF] = 0; arm(turns(rnd)); } },
   { name: 'show_forest_card', range: [0x5E00, 0x5E07], setup: (M, c, rnd) => { titleColour(c, rnd); } },
   { name: 'bank_basic_out', range: [0x5E0A, 0x5E16] },
-  { name: 'setup_screen', range: [0x5E19, 0x5FBC], cases: 1000, hooks: cardWait, poll: count, setup: (M, c, rnd) => {
+  { name: 'setup_screen', range: [0x5E19, 0x5FBC], hooks: cardWait, poll: count, setup: (M, c, rnd) => {
     cardChain(M, c, rnd); M[0x5A08] = rnd(2); M[0x4518] = rnd(256);
     return { x: 2 * rnd(10) };
   } },
@@ -164,10 +164,10 @@ const tests = [
   { name: 'title_flicker', range: [0x7580, 0x75A4], setup: randomState },
   { name: 'set_crosses_needed', range: [0x7600, 0x760B], setup: (M, c, rnd) => { setRecord(M, rnd); return { y: rnd(2) ? 0x71 : rnd(256) }; } },
   { name: 'card_wait', range: [0x7610, 0x763C], cases: 3000, hooks: cardWait, poll: count, setup: (M, c, rnd) => { randomState(M, c, rnd); if (rnd(8)) M[0x02FF] = 0; arm(turns(rnd)); } },
-  { name: 'hud_save', range: [0x763F, 0x7653], cases: 1500, hooks: cardWait, poll: count, setup: cardChain },
-  { name: 'hud_restore', range: [0x7659, 0x7670], cases: 1500, hooks: cardWait, poll: count, setup: cardChain },
+  { name: 'hud_save', range: [0x763F, 0x7653], hooks: cardWait, poll: count, setup: cardChain },
+  { name: 'hud_restore', range: [0x7659, 0x7670], hooks: cardWait, poll: count, setup: cardChain },
   { name: 'j_7673', range: [0x7673, 0x767A], setup: (M, c, rnd) => { const a = rnd(2) ? 0x60 + rnd(0x20) : rnd(256); return { a, y: rnd(2) ? 0x50 : rnd(256) }; } },
-  { name: 'next_screen', range: [0x7680, 0x76DA], cases: 1000, hooks: cardWait, poll: count, setup: (M, c, rnd) => {
+  { name: 'next_screen', range: [0x7680, 0x76DA], hooks: cardWait, poll: count, setup: (M, c, rnd) => {
     cardChain(M, c, rnd); M[0x5A08] = rnd(2); M[0x4518] = rnd(256);
     return { x: rnd(10) ? 2 * rnd(9) : 0xFE };
   } },

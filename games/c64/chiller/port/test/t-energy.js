@@ -10,7 +10,6 @@ function bar(M, rnd) {
   if (rnd(6) === 0) return;                 // as the state has it
   const n = rnd(35);
   for (let i = 0; i < 0x21; i++) M[0x042E + i] = i < n ? 0xA9 : i === n ? 0xA1 + rnd(8) : 0xA1;
-  if (n > 0x21) M[0x042E + 0x21] = 0xA9 + rnd(2) * 0;
 }
 function digits(M, rnd, at) {
   for (let i = 0; i < 6; i++) M[at + i] = rnd(3) ? 0xB9 : 0xB0 + rnd(10);
@@ -43,6 +42,7 @@ function energyState(M, chips, rnd) {
   M[0x5A06] = rnd(2); M[0x5A08] = rnd(2);
   M[0xC5] = rnd(2) ? 0x37 : 0x40;
   chips.game.joy = rnd(2) ? 0x1F : 0x0F;
+  M[0x02FF] = 1;                            // card_wait (in next_screen) ends at once: its interrupt does not run here
   chips.raster = 16;                        // wait_line16, run as the game's code on the port's side
   level(M, rnd);
 }

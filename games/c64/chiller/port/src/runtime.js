@@ -89,12 +89,11 @@ function create(image, opts = {}) {
   const base = COST['@yield'] || 30;
   let nextIrq = TIMER, lastLine = 0, due = false;
   // The loader hands over with interrupts off; the game first allows them in music_start (its
-  // SEI ... CLI round the vector), and an underflow of the timer while they were off is taken then.
+  // SEI ... CLI round the vector, which it leaves at music_irq), and an underflow of the timer
+  // while they were off is taken then.
   rt.irqOn = false;
-  const ms = P.music_start;
-  P.music_start = function (r) { const o = ms.call(this, r); rt.irqOn = true; return o; };
   function irq() {
-    if ((M[0x0314] | (M[0x0315] << 8)) === 0x60F5) P.music_irq();
+    if ((M[0x0314] | (M[0x0315] << 8)) === 0x60F5) P.music_irq({ a: 0, x: 0, y: 0, c: 0 });   // the KERNAL's entry leaves A = 0
     else K().irqTail(P.k);
   }
   // the clock to t: the lines drawn on the way latch the collisions, the timer's interrupts run
@@ -110,6 +109,7 @@ function create(image, opts = {}) {
         chips.coll[0] |= hit[0]; chips.coll[1] |= hit[1];
       }
       if (rt.cycles >= nextIrq) { nextIrq += TIMER; due = true; }
+      if (!rt.irqOn && M[0x0314] === 0xF5 && M[0x0315] === 0x60) rt.irqOn = true;
       if (due && rt.irqOn) { due = false; irq(); }
     }
   }

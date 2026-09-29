@@ -415,7 +415,7 @@
     if (M[0xC84D] === 0x60) return regs(r);
     M[0xC1EE] = 0;
     if (M[0x4511] !== 1) { M[0xC1EC] = 0; M[0xC1ED] = 0; }
-    const k = M[0xC5];
+    const k = P.irq_byte(0xC5);
     if (k !== 0x40) {
       M[0xC1EC] = 0; M[0xC1ED] = 0;
       if (k === M[0x4512]) M[0xC1EC] = 0xFF;
@@ -423,7 +423,7 @@
       if (k === M[0x4514]) M[0xC1ED] = 0xFF;
       if (k === M[0x4515]) M[0xC1ED] = 0x01;
     }
-    if (M[0x028D] !== 0) M[0xC1EE] = 1;
+    if (P.irq_byte(0x028D) !== 0) M[0xC1EE] = 1;
     const s = P.read_stick(r).a;
     if ((s & 1) === 0) M[0xC1EE] = 1;
     if ((io.ciaRead(0) & 2) === 0) M[0xC1EC] = 1;
@@ -475,7 +475,7 @@
   // $C9C4 read_stick: $DC00 (the port-2 stick) in A; with the stick pushed and no key down the
   // remembered directions are cleared first, so the stick replaces a key's direction.
   P.read_stick = function (r) {
-    if ((io.ciaRead(0) & 0x0F) !== 0x0F && M[0xC5] === 0x40) { M[0xC1EC] = 0; M[0xC1ED] = 0; }
+    if ((io.ciaRead(0) & 0x0F) !== 0x0F && P.irq_byte(0xC5) === 0x40) { M[0xC1EC] = 0; M[0xC1ED] = 0; }
     const a = io.ciaRead(0);
     return regs(r, { a }, nz(a));
   };

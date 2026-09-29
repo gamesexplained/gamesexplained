@@ -265,7 +265,7 @@
       if (!atFire) {
         if (M[0xCF7F] !== 0) throw new P.Goto('end_game', regs(r, { a: M[0xCF7F] }));
         r = yield* P.game_over_wait(regs(r, { a: 0 }));
-        if (M[0xC5] !== 0x40) break;
+        if (P.irq_byte(0xC5) !== 0x40) break;
       }
       atFire = false;
       const s = io.ciaRead(0);
@@ -293,6 +293,19 @@
     io.vicWrite(0x15, 0);
     io.vicWrite(0x16, io.vicRead(0x16) | 8);
     for (;;) yield;
+  };
+
+  // Two tails no group took, ported here.
+  // $C1E1 j_C1E1: place_boy continued: sprite 0's X MSB from $4518 into $D010 ($C407), then
+  // its colour from $4510 (j_CEF6).
+  P.j_C1E1 = function (r) {
+    const a = (io.vicRead(0x10) & 0xFE) | M[0x4518];
+    io.vicWrite(0x10, a);
+    return P.j_CEF6(regs(r, { a: M[0x4510] }));
+  };
+  // $CDDE b_CDDE: poison_add with X = 2.
+  P.b_CDDE = function* (r) {
+    return yield* P.poison_add(regs(r, { x: 2 }));
   };
 
   // The main program: from the hand-over, following each place the game jumps to for good.

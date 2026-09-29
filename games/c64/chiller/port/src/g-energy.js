@@ -55,6 +55,8 @@
   // energy and poison timers. In a jump put back the take-off direction; on the ground switch
   // input and frame_step back on, look for a switch request and reset the jump frames. Then
   // drain_step, whose A main_loop compares.
+  // The jump frames written back ($C79C, $C7C6) are the current character's, from the operands at
+  // $582D and $5832 that player_swap patches.
   P.player_step = function* (r) {
     M[0xCF02] = (M[0xCF02] + 1) & 0xFF;
     r = P.bar_speed(r);
@@ -64,9 +66,10 @@
       M[0xC84D] = 0xA9;
       M[0x5980] = 0xAD;
       r = yield* P.switch_request(regs(r, { a: 0xAD }));
-      M[0xC79C] = 0xD8;
-      M[0xC7C6] = 0xDC;
-      r = regs(r, { a: 0xDC });
+      // the operands of these two LDAs are patched by player_swap
+      M[0xC79C] = M[0x582D];
+      M[0xC7C6] = M[0x5832];
+      r = regs(r, { a: M[0x5832] });
     }
     return P.drain_step(r);
   };
@@ -77,7 +80,7 @@
     if (M[0x4503] === 0) return regs(r, { a: 0 });
     let x = 0;
     if ((io.ciaRead(0) & 0x10) === 0) x = 1;
-    if (M[0xC5] === 0x37) x = 1;
+    if (P.irq_byte(0xC5) === 0x37) x = 1;
     if (x === 0) {
       M[0x5A06] = 0;
       return P.idle_frame(regs(r, { a: 0, x: 0 }));

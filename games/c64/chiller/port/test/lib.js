@@ -33,7 +33,7 @@ function loadGroups() {
   for (const f of fs.readdirSync(path.join(ROOT, 'src'))) if (/^g-.*\.js$/.test(f)) require(path.join(ROOT, 'src', f));
 }
 
-// Moments of play, saved by tools/gen-states.js.
+// Moments of play, saved by scripts/gen-states.js.
 let STATES = null;
 function states() {
   if (STATES) return STATES;

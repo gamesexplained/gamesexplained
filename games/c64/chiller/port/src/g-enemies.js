@@ -248,7 +248,7 @@
   // $C9F1 random: the next byte of the code at $C000 (index $CF14) EOR $A2, in A and Y; X = $20.
   P.random = function (r) {
     const i = M[0xCF14] = (M[0xCF14] + 1) & 255;
-    const a = M[0xC000 + i] ^ M[0xA2];
+    const a = M[0xC000 + i] ^ P.irq_byte(0xA2);
     return regs(r, { a, x: 0x20, y: a, z: 0, n: 0 });
   };
   // $CA64 enemy_move_if_on: move sprite X one pixel in direction Y when its $D015 bit (read as
