@@ -2,7 +2,7 @@
 // The pacing fit (kit/skills/core/70-minisite): each routine's own cycles, from the lockstep's
 // timing rows, by non-negative least squares. The game's cycles for a stretch between two
 // checkpoints (its interrupts taken out) against how often the port called each routine in it,
-// plus a constant per stretch ('@yield'). Stretches that hold a wait are left out: the page's
+// plus a constant per stretch ('@yield'), and the interrupt's mean cost ('@irq'). Stretches that hold a wait are left out: the page's
 // clock gives a wait its own time. Fitted on the even-numbered states, checked on the odd.
 // node scripts/fit-cost.js [passes] > cost.json
 const fs = require('fs'), path = require('path');
@@ -14,9 +14,11 @@ const dir = path.join(ROOT, '../work/states');
 const files = fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort()
   .filter(f => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')).cpu.pc === 0xCA00).filter((f, i) => i % 4 === 0);
 
+let irqs = 0, irqCycles = 0;
 function rows(file) {
   const out = [];
   run({ state: path.join(dir, file), passes, seed: 7, timing: t => {
+    irqs += t.irqs; irqCycles += t.irqCycles;
     if (t.wait || t.polls) return;
     out.push({ y: t.cycles, calls: Object.assign({}, t.calls) });
   } });
@@ -47,6 +49,9 @@ for (let it = 0; it < 5000; it++) {
 }
 const cost = {};
 names.forEach((k, i) => { if (w[i] > 0.05) cost[k] = Math.round(w[i] * 10) / 10; });
+// the interrupt's own cycles (the music and the KERNAL's clock and keyboard scan), which the
+// page's clock adds where one falls in the port's work
+cost['@irq'] = Math.round(irqCycles / irqs);
 function err(set) {
   let game = 0, est = 0, abs = 0;
   for (const r of set) {

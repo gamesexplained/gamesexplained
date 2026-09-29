@@ -14,10 +14,10 @@ for (const f of ORDER) {
 }
 const cost = path.join(ROOT, 'cost.json');
 if (fs.existsSync(cost)) parts.push('<script>\nwindow.CHILLER_COST = ' + fs.readFileSync(cost, 'utf8').trim() + ';\n</script>');
-html = html.replace('<!-- port -->', parts.join('\n'));
+html = html.replace('<!-- port -->', () => parts.join('\n'));   // a function, so that $' in the code stays as it is
 for (const f of ['port-results', 'differences']) {
   const p = path.join(ROOT, f + '.html');
-  if (fs.existsSync(p)) html = html.replace('<!-- ' + f + ' -->', fs.readFileSync(p, 'utf8').trim());
+  if (fs.existsSync(p)) html = html.replace('<!-- ' + f + ' -->', () => fs.readFileSync(p, 'utf8').trim());
 }
 fs.writeFileSync(path.join(ROOT, '../play.html'), html);
 console.log('wrote play.html, ' + Math.round(html.length / 1024) + ' KB');

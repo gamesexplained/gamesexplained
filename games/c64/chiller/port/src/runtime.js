@@ -86,7 +86,7 @@ function create(image, opts = {}) {
     P[name] = f instanceof GENF ? function* (...a) { spent += w; return yield* f.apply(this, a); }
       : function (...a) { spent += w; return f.apply(this, a); };
   }
-  const base = COST['@yield'] || 30;
+  const base = COST['@yield'] || 30, IRQ = COST['@irq'] || 0;
   let nextIrq = TIMER, lastLine = 0, due = false;
   // The loader hands over with interrupts off; the game first allows them in music_start (its
   // SEI ... CLI round the vector, which it leaves at music_irq), and an underflow of the timer
@@ -96,8 +96,9 @@ function create(image, opts = {}) {
     if ((M[0x0314] | (M[0x0315] << 8)) === 0x60F5) P.music_irq({ a: 0, x: 0, y: 0, c: 0 });   // the KERNAL's entry leaves A = 0
     else K().irqTail(P.k);
   }
-  // the clock to t: the lines drawn on the way latch the collisions, the timer's interrupts run
-  function advance(t) {
+  // the clock to t: the lines drawn on the way latch the collisions, the timer's interrupts run;
+  // for the port's work (work true) an interrupt's own cycles put the end later, as on the C64
+  function advance(t, work) {
     while (rt.cycles < t) {
       const step = Math.min(t, nextIrq, (lastLine + 1) * LINE);
       rt.cycles = step;
@@ -110,7 +111,7 @@ function create(image, opts = {}) {
       }
       if (rt.cycles >= nextIrq) { nextIrq += TIMER; due = true; }
       if (!rt.irqOn && M[0x0314] === 0xF5 && M[0x0315] === 0x60) rt.irqOn = true;
-      if (due && rt.irqOn) { due = false; irq(); }
+      if (due && rt.irqOn) { due = false; irq(); if (work) t += IRQ; }
     }
   }
   let jumpTo = null;
@@ -136,11 +137,11 @@ function create(image, opts = {}) {
   function step() {
     spent = 0;
     const y = it.next().value;
-    advance(rt.cycles + base + spent);
+    advance(rt.cycles + base + spent, true);
     if (y && y.wait !== undefined) {
       const now = Math.floor(rt.cycles / LINE) % LINES;
       advance(rt.cycles + ((y.wait - now + LINES) % LINES) * LINE + 1);
-    } else if (y && y.cycles !== undefined) advance(rt.cycles + y.cycles);
+    } else if (y && y.cycles !== undefined) advance(rt.cycles + y.cycles, true);
     else if (!y || y.cp === undefined) advance(rt.cycles + LINE);
   }
   rt.runTo = function (t) { while (rt.cycles < t) step(); };
