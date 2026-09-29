@@ -138,8 +138,9 @@ holds the bytes the listing was built from. Rebuild the disassembler
 project from `symbols.json` with `kit/scripts/symbols_import.py` rather
 than opening the one you find, and treat everything else in `work/`
 (scripts, notes, logs, JSON) as unverified: none of it counts until it is
-checked and in a committed file. If the check fails, restore `listing.json` and rebuild `work/` from
-`orientation.md`, as you would on a fresh clone with no `work/` at all.
+checked and in a committed file. If the check fails, restore
+`listing.json` and rebuild `work/` from `orientation.md`, as you would on
+a fresh clone with no `work/` at all.
 
 The contributor can also edit the copy with their own hands, on the page
 itself: `python3 kit/scripts/edit.py` serves the site with every
