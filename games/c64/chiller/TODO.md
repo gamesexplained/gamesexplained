@@ -23,11 +23,11 @@ an agent, and no human has read any of it yet.
   `copy` then leaves `agent-draft`. This is the one thing standing
   between this state and Gold: every other item below that was open at
   Silver has evidence now.
-- The page's music player leaves out the filter the game sets. Said
-  louder in the caption now (cutoff, resonance, which voice, in
-  `index.html`'s music section); extending `site/lib/sid.js` itself
-  would need a maintainer's decision, since the model is shared by every
-  game on the site.
+- The page's music player plays the game's filter through reSID 0.16's
+  6581 cutoff curve, one measured chip; real 6581s spread well either
+  side of it. Hearing the tune on a real C64, or measuring a recording
+  of one, would say where this game's setting lands on the chips it
+  shipped with.
 
 ## Resolved since Silver, with evidence
 

@@ -78,7 +78,10 @@ address links into the Source tab, and the house style in `kit/style.md`.
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver
    read. The script's header gives the driver's contract and what the
-   model leaves out. Say beside a sound below about 100 Hz that laptop
+   model leaves out. The filter is off unless the page passes
+   `filter: '6581'` (or `'8580'`) to `mount`, which also shows a switch
+   to compare it with no filter; pass it when the game sets the filter,
+   and say in the caption that the cutoff is one chip's. Say beside a sound below about 100 Hz that laptop
    and phone speakers barely play it: a reader who hears nothing reports
    it missing. Before believing such a report, render the writes through
    the model (`C64Sid.engine()` in node) and measure the output.

@@ -23,7 +23,13 @@
 // The model: three voices with triangle, sawtooth, pulse and noise (the 23-bit noise register),
 // the test bit, sync and ring modulation; envelopes on reSID's rate table, with the exponential
 // decay and the ADSR delay bug; the C64's output stage (16 kHz low pass, 16 Hz high pass).
-// Not modelled: the filter ($D415-$D417 and the routing bits of $D418 are ignored), combined
+// The filter is off unless a page asks for it (opts.filter '6581' or '8580'; 'none', the default,
+// ignores $D415-$D417 and the routing bits of $D418). When on, it is reSID 0.16's idealised
+// two-integrator state-variable filter: cutoff from $D415/$D416 through the chip's measured curve
+// (F0_6581 or F0_8580, below), Q = 0.707 + resonance / 15, low-, band- and high-pass summed as
+// $D418 selects, and voice 3 off ($D418 bit 7) where voice 3 is not filtered. It is a model of one
+// idealised chip: real 6581s differ from each other in cutoff by large factors, and distort, which
+// this does not. Not modelled either way: combined
 // waveforms (approximated by AND), samples played through the volume register (registers change
 // once a frame), the time between writes inside a frame (a frame's writes land at one instant, so
 // a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
@@ -49,6 +55,24 @@ globalThis.C64Sid = (function () {
     const RATE = [8, 31, 62, 94, 148, 219, 266, 312, 391, 976, 1953, 3125, 3906, 11719, 19531, 31250];
     const ATTACK = 0, DECAY = 1, RELEASE = 2;
 
+    // Filter cutoff in Hz against the 11-bit register ($D416 << 3 | $D415 & 7), as reSID 0.16
+    // (filter.cc, f0_points_6581 and f0_points_8580) tabulates it, joined here by straight lines.
+    // The 6581 curve was measured on one chip; others sit well above or below it.
+    const F0_6581 = [[0, 220], [128, 230], [256, 250], [384, 300], [512, 420], [640, 780], [768, 1600],
+      [832, 2300], [896, 3200], [960, 4300], [992, 5000], [1008, 5400], [1016, 5700], [1023, 6000],
+      [1024, 4600], [1032, 4800], [1056, 5300], [1088, 6000], [1120, 6600], [1152, 7200], [1280, 9500],
+      [1408, 12000], [1536, 14500], [1664, 16000], [1792, 17100], [1920, 17700], [2047, 18000]];
+    const F0_8580 = [[0, 0], [128, 800], [256, 1600], [384, 2500], [512, 3300], [640, 4100], [768, 4800],
+      [896, 5600], [1024, 6300], [1152, 7000], [1280, 7700], [1408, 8400], [1536, 9000], [1664, 9800],
+      [1792, 10500], [1920, 11000], [2047, 11700]];
+    function cutoffHz(chip, fc) {
+      const t = chip === '8580' ? F0_8580 : F0_6581;
+      let k = 1;
+      while (k < t.length - 1 && t[k][0] < fc) k++;
+      const [x0, y0] = t[k - 1], [x1, y1] = t[k];
+      return x1 === x0 ? y1 : y0 + (y1 - y0) * (fc - x0) / (x1 - x0);
+    }
+
     function noiseBits(r) {                                  // LFSR bits 20,18,14,11,9,5,2,0 -> output bits 11-4
       return (r >> 9 & 0x800) | (r >> 8 & 0x400) | (r >> 5 & 0x200) | (r >> 3 & 0x100) |
         (r >> 2 & 0x080) | (r << 1 & 0x040) | (r << 3 & 0x020) | (r << 4 & 0x010);
@@ -67,11 +91,26 @@ globalThis.C64Sid = (function () {
       const kHP = 1 - Math.exp(-2 * Math.PI * 15.9 / sampleRate);   // 16 kHz low pass, 16 Hz high pass
       const gain = opts && opts.gain != null ? opts.gain : 0.6;   // the output level
       let vol = 0, frac = 0, lp = 0, dc = 0;
+      // the filter: chip 'none', '6581' or '8580'; state in the units of one voice's output
+      const F = { chip: 'none', w: 0, n: 1, q1: 1 / 0.707, hp: 0, bp: 0, lp: 0 };
+
+      function filterSet() {                                 // cutoff and Q from the registers
+        const fc = (regs[21] & 7) | regs[22] << 3;
+        const w = 2 * Math.PI * cutoffHz(F.chip, fc) * dt / CLOCK;   // per oscillator step
+        F.n = Math.max(1, Math.ceil(w / 0.2));               // small steps keep the integrators stable
+        F.w = w / F.n;
+        F.q1 = 1 / (0.707 + (regs[23] >> 4) / 15);
+      }
+      function setFilter(chip) {
+        F.chip = chip === '6581' || chip === '8580' ? chip : 'none';
+        F.hp = F.bp = F.lp = 0;
+        filterSet();
+      }
 
       function write(r, val) {
         regs[r] = val;
-        if (r === 24) { vol = val & 15; return; }            // filter mode bits ignored
-        if (r > 20) return;                                  // the filter: not modelled
+        if (r === 24) { vol = val & 15; return; }            // routing and mode: read in sample()
+        if (r > 20) { filterSet(); return; }
         const o = V[(r / 7) | 0];
         switch (r % 7) {
           case 0: o.freq = (o.freq & 0xFF00) | val; break;
@@ -165,7 +204,26 @@ globalThis.C64Sid = (function () {
             }
           }
           for (let i = 0; i < 3; i++) if ((V[i].ctrl & 2) && V[SRC[i]].msbUp) V[i].acc = 0;  // sync
-          for (let i = 0; i < 3; i++) if (!mute[i]) sum += (wave(V[i], V[SRC[i]]) - 0x800) * V[i].env;
+          if (F.chip === 'none') {
+            for (let i = 0; i < 3; i++) if (!mute[i]) sum += (wave(V[i], V[SRC[i]]) - 0x800) * V[i].env;
+            continue;
+          }
+          const route = regs[23], mode = regs[24];
+          let fi = 0;                                        // into the filter
+          for (let i = 0; i < 3; i++) {
+            if (mute[i]) continue;
+            const v = (wave(V[i], V[SRC[i]]) - 0x800) * V[i].env;
+            if (route >> i & 1) fi += v;
+            else if (i !== 2 || !(mode & 0x80)) sum += v;    // voice 3 off applies unfiltered only
+          }
+          for (let k2 = 0; k2 < F.n; k2++) {                 // reSID's integrators, in its order
+            F.bp -= F.w * F.hp;
+            F.lp -= F.w * F.bp;
+            F.hp = F.bp * F.q1 - F.lp - fi;
+          }
+          if (mode & 0x10) sum += F.lp;
+          if (mode & 0x20) sum += F.bp;
+          if (mode & 0x40) sum += F.hp;
         }
         const x = sum * vol / (sub * 3 * 2048 * 255 * 15);
         lp += (x - lp) * kLP;
@@ -184,12 +242,13 @@ globalThis.C64Sid = (function () {
         }
       }
 
-      return { V, mute, write, setRegs, sample, skip };
+      setFilter(opts && opts.filter);
+      return { V, mute, write, setRegs, sample, skip, setFilter, filter: () => F.chip };
     }
 
     // ------------------------------------------------------------------ driver + SID + frames
     // createPlayer(driver, sampleRate, opts) takes the commands {cmd: 'start', tune, run, at},
-    // {cmd: 'stop'} and {cmd: 'mute', voice, on}; render() fills a buffer, running the driver
+    // {cmd: 'stop'}, {cmd: 'mute', voice, on} and {cmd: 'filter', chip}; render() fills a buffer, running the driver
     // once a PAL frame. A start with at > 0 begins that many frames into the tune: the driver
     // runs from the tune's start through the model without sound, since a driver's state is
     // everything it has played so far and nothing short of playing it recreates it.
@@ -207,6 +266,7 @@ globalThis.C64Sid = (function () {
         }
         else if (c.cmd === 'stop') drv.stop();
         else if (c.cmd === 'mute') sid.mute[c.voice] = !!c.on;
+        else if (c.cmd === 'filter') sid.setFilter(c.chip);
       }
       function snapshot(t) {                                 // what the display needs, per frame
         const s = drv.sid, v = [];
@@ -263,7 +323,7 @@ class C64SidProcessor extends AudioWorkletProcessor {
 }
 registerProcessor('c64-sid', C64SidProcessor);`;
 
-  // host({driver, data, gain, onFrame}): an AudioContext playing the driver through the model.
+  // host({driver, data, gain, filter, onFrame}): an AudioContext playing the driver through the model.
   // Call it from a click or a key press, where browsers allow sound to start. It resolves to
   // {ctx, mode, send(command)}. onFrame(snapshot), if given, receives every driver frame when it
   // is computed, ahead of the sound; show it once snapshot.t has reached ctx.currentTime.
@@ -272,7 +332,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     if (!AC) throw new Error('This browser has no Web Audio.');
     const ctx = new AC();
     ctx.resume();
-    const opts = { gain: o.gain }, post = o.onFrame || null;
+    const opts = { gain: o.gain, filter: o.filter }, post = o.onFrame || null;
     const code = 'const E = (' + engine.toString() + ')();\nconst createDriver = (' + o.driver.toString() + ');\n' + WORKLET;
     const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
       () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
@@ -307,6 +367,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-player button:hover{border-color:var(--accent,#1f5fa8)}
 .sid-player button[aria-pressed="true"]{background:var(--accent,#1f5fa8);border-color:var(--accent,#1f5fa8);color:#fff}
 .sid-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
+.sid-filt{display:inline-flex;align-items:center;gap:4px;margin-left:8px}
+.sid-filt .sid-k{margin-right:2px}
 .sid-stat{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-family:var(--fm,'IBM Plex Mono',ui-monospace,monospace);font-size:12.5px}
 .sid-k{font-family:var(--fb,'Lato',system-ui,sans-serif);font-size:12.5px;color:var(--ink-mute,#80838a);margin-right:5px}
 .sid-vol{display:inline-flex;gap:2px;vertical-align:-1px;margin-left:6px}
@@ -338,7 +400,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   const noteName = (n) => NAMES[n % 12] + Math.floor(n / 12);  // note 0 = C0, 57 = A4
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-  // mount(root, {driver, data, tunes, rows, mark, gain, colors}) builds the player inside root.
+  // mount(root, {driver, data, tunes, rows, mark, gain, filter, colors}) builds the player inside root.
   //   tunes   the names of the driver's tunes, in its order: one button each
   //   rows    optional: the lines of each voice's panel above its frequency, each
   //           {k: 'Label', f} or, for an indented line with no label, {in: true, mono, f}.
@@ -348,6 +410,9 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //   mark    optional: (v, prev) => true where a note starts, drawn taller on the piano roll;
   //           by default, where the voice's gate comes on
   //   gain    optional: the output level, 0.6 by default
+  //   filter  optional: '6581', '8580' or 'none', the filter the player starts with. Given, the
+  //           player shows a switch between the three, heard at once, to compare them; left
+  //           out, the filter is off and there is no switch
   //   colors  optional: the three voices' colours
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
@@ -356,6 +421,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       st.textContent = CSS;
       document.head.appendChild(st);
     }
+    const FILTERS = [['none', 'Off'], ['6581', '6581'], ['8580', '8580']];
+    let filter = o.filter && FILTERS.some(([c]) => c === o.filter) ? o.filter : 'none';
     const E = engine(), HZ = E.CLOCK / 16777216, FPS = E.CLOCK / E.FRAME_CYCLES;
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
@@ -368,6 +435,9 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       '<div class="sid-bar">' +
       o.tunes.map((n, t) => `<button type="button" data-tune="${t}" aria-pressed="false">${esc(n)}</button>`).join('') +
       '<button type="button" data-stop>Stop</button>' +
+      (o.filter ? '<span class="sid-filt" role="group" aria-label="The SID filter"><span class="sid-k">Filter</span>' +
+        FILTERS.map(([c, n]) => `<button type="button" data-filter="${c}" aria-pressed="${c === filter}">${n}</button>`).join('') +
+        '</span>' : '') +
       '<span class="sid-stat">' +
       '<span><span class="sid-k">Volume</span><span data-g="vol">-</span><span class="sid-vol">' +
       '<i></i>'.repeat(15) + '</span></span></span></div>' +
@@ -423,7 +493,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }
 
     async function audio() {                                 // created on the first click only
-      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, onFrame: take });
+      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, filter, onFrame: take });
       ctx = h.ctx; send = h.send;
       root.dataset.sidAudio = h.mode;
       muted.forEach((on, voice) => send({ cmd: 'mute', voice, on }));
@@ -477,6 +547,11 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       if (ctx && ctx.state !== 'running') ctx.resume();     // inside the click, for strict browsers
       if (b.dataset.tune !== undefined) start(+b.dataset.tune);
       else if (b.hasAttribute('data-stop')) { send({ cmd: 'stop' }); playing = -1; buttons(); }
+      else if (b.dataset.filter !== undefined) {
+        filter = b.dataset.filter;
+        root.querySelectorAll('[data-filter]').forEach((f) => f.setAttribute('aria-pressed', String(f === b)));
+        send({ cmd: 'filter', chip: filter });
+      }
       else if (b.dataset.mute !== undefined) {
         const x = +b.dataset.mute;
         muted[x] = !muted[x];
