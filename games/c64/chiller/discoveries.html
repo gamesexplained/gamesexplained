@@ -8,15 +8,15 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">What the released game never shows: unused lives, enemy-death routines, a missing menu prompt and questions the code cannot settle.</p>
+  <p class="sub">Unused routines, a disputed claim that the game could not be finished, and questions the code cannot settle.</p>
 </header>
 <main class="wrap">
-<section id="no-ending">
-  <p class="fig">The end</p>
-  <h2 class="t">Get the boy and the girl home, and the game starts again in the forest</h2>
-  <p class="lede">Take the last cross on the way home and Chiller loads the forest again, with its five crosses back and your score kept. <b>There is no ending</b>: no screen, no message, and nothing in the code that counts how many times round you have been.</p>
-  <p>When a level's last cross is taken, <code>crosses_left</code> (<code>$7F00</code>) reads the next level's number from the level's settings and passes it to <code>next_screen</code> (<code>$7680</code>). After the last level, the forest on the way home, the number is <code>$12</code>, and the game swaps it for <code>$FE</code>, which <code>next_screen</code> takes as the forest going out. Just before that are three <code>NOP</code>s (<code>$7F06</code>-<code>$7F08</code>), the size of one subroutine call. That hints at something taken out, perhaps an ending, but nothing in the image says what.</p>
-  <p>A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it. In this release every cross can be taken. The lowest three, in the graveyard, the ghetto and the cinema on the way home, sit in the bottom two rows, and the boy takes each of them by walking left along the ground. This was checked on the game's own code. The boy can never stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but the game looks for a cross in the cell below or beside him, not the one he is in (<code>probe_offset</code>, <code>$5145</code>), so from row 22 it still reaches rows 23 and 24.</p>
+<section id="completion">
+  <p class="fig">A disputed memory</p>
+  <h2 class="t">Was a cross impossible to collect?</h2>
+  <p class="lede">A <a href="https://www.lemon64.com/game/chiller">2022 Lemon64 comment</a> recalls a cross that could not be reached and a crack the player believed fixed it. The first-release copy analysed here was taken through all ten screens in testing: its full outward-and-return journey can be completed. That is not a final ending; the game loops back to the forest.</p>
+  <p>The three lowest crosses, in the graveyard, the ghetto and the cinema on the way home, sit in the bottom two rows. In tests using the game's own code, the boy took each by walking left along the ground. He cannot stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but <code>probe_offset</code> (<code>$5145</code>) checks below and beside him, reaching rows 23 and 24.</p>
+  <p>These tests do not establish whether a different release or crack changed a cross, or whether a particular collection order can leave a player stuck.</p>
 </section>
 <section id="unused">
   <p class="fig">Secret</p>
@@ -64,6 +64,7 @@
   <p class="fig">Open questions</p>
   <h2 class="t">What we're still unsure of</h2>
   <ul>
+    <li>Whether the three <code>NOP</code>s at <code>$7F06</code>-<code>$7F08</code>, the length of one subroutine call, replaced an ending or something else. The surviving code does not say.</li>
     <li>Whether the LEVEL counter can ever appear in real play. Nothing here proves it cannot.</li>
     <li>Screenshots of the way back taken in an emulator show a stray fence patch on the cinema and a crosses counter reading <code>2S</code> or <code>5S</code> where the way to the house reads <code>05</code>. They were taken with crosses moved beside the boy, so that may be the cause.</li>
     <li>What <code>$1000</code>-<code>$1FFF</code> held. It repeats every 64 bytes like sprite data, but drawn as sprites it is noise.</li>
