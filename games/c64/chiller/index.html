@@ -94,7 +94,7 @@ input[type=range]{width:100%}
     <div class="legend" id="scr-legend"></div>
     <p class="cap" id="scr-cap"></p>
   </div>
-  <p>The ten screens' settings sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The five outward screens keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
+  <p>The ten screens' settings sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The first five levels keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
   <table class="t">
     <tr><th>Field</th><th>Offset</th><th>Read by</th></tr>
     <tr><td>Play area: source, end, destination</td><td><code>+$00</code></td><td><code>setup_screen</code>, <code>copy_block</code> <code>$2A80</code></td></tr>
@@ -106,7 +106,7 @@ input[type=range]{width:100%}
     <tr><td>Ten cross addresses, five blue then five red</td><td><code>+$5E</code>-<code>+$71</code></td><td><code>place_crosses</code> <code>$5FC0</code>, <code>colour_cycle</code> <code>$7F80</code></td></tr>
     <tr><td>Crosses needed, level byte, card</td><td><code>+$72</code>, <code>+$73</code>, <code>+$74</code></td><td><code>crosses_left</code> <code>$7F00</code>, <code>show_level_card</code></td></tr>
   </table>
-  <p class="cap">The way-back screens are drawn here over the untouched outward screens, which is what a player sees who took only the crosses. All ten, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
+  <p class="cap">The way-back screens are drawn here over the untouched first five levels, which is what a player sees who took only the crosses. All ten, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
 </section>
 <section id="cast">
   <p class="fig">02 · The cast</p>
@@ -141,22 +141,22 @@ input[type=range]{width:100%}
 </section>
 <section id="wayback">
   <p class="fig">04 · The world</p>
-  <h2 class="t">Five levels out, the same five back</h2>
-  <p class="lede">The boy works through five haunted levels, the forest, the cinema, the ghetto, the graveyard and the haunted house, collecting the blue crosses on each, to reach his girlfriend. After the fifth, the same five levels are played in reverse with both of them. Each level comes back exactly as he left it: a mushroom he ate, a cross he took and a ledge that crumbled under him are all still gone.</p>
+  <h2 class="t">To the haunted house and home again</h2>
+  <p class="lede">The boy works through five haunted levels, the forest, the cinema, the ghetto, the graveyard and the haunted house, to reach his girlfriend. He cannot leave a level until he has collected its five blue crosses. After the haunted house the two of them head home through the same five levels in reverse. The game reuses each level exactly as he left it: a mushroom he ate, a cross he took and a ledge that crumbled under him are all still gone.</p>
   <div class="two">
-    <figure style="margin:0"><img src="reference/built-cinema.png" alt="The cinema on the way out, five blue crosses to take"><figcaption class="cap">The cinema going out: five blue crosses for the boy.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with ten crosses"><figcaption class="cap">The cinema coming back, with five blue and five red crosses placed on the stored screen. Both are drawn from the screens' settings, without the sprites: the boy, the girl and the enemies are not shown.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-cinema.png" alt="The cinema on the way to the house, five blue crosses to take"><figcaption class="cap">The cinema on the way to the house: five blue crosses for the boy.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way home, with the boy, the girl and ten crosses"><figcaption class="cap">The cinema on the way home. The boy (left of the stage) and the girl (on it) stand where the level starts them, and five red crosses have been added to the five blue. Both pictures are drawn from the screens' settings; the enemies are not shown.</figcaption></figure>
   </div>
-  <p>The five return screens have no play areas of their own. As the boy leaves each screen on the way out, <code>next_screen</code> (<code>$7680</code>) copies screen rows 1 to 24 away, and on the way back the game reads that copy. The forest goes to <code>$7800</code>. The other four have no room left in ordinary memory, so they go into the RAM hidden under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. A write to those addresses lands in the RAM even with the ROM switched in. Reading it back needs the ROM switched out, and that is all <code>copy_under_kernal</code> (<code>$72A4</code>) does: it sets the processor port <code>$01</code> to <code>$34</code>, copies, and puts it back.</p>
+  <p>The way home has no levels of its own: it reuses the first five. When the boy has taken a level's crosses and moves on, <code>next_screen</code> (<code>$7680</code>) saves screen rows 1 to 24, and on the way home the game reads that copy back. The forest goes to <code>$7800</code>. The other four have no room left in ordinary memory, so they go into the RAM hidden under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. A write to those addresses lands in the RAM even with the ROM switched in. Reading it back needs the ROM switched out, and that is all <code>copy_under_kernal</code> (<code>$72A4</code>) does: it sets the processor port <code>$01</code> to <code>$34</code>, copies, and puts it back.</p>
   <table class="t">
-    <tr><th>Way-back screen</th><th>Settings at</th><th>Play area read from</th><th>Character set and colours from</th></tr>
+    <tr><th>Level on the way home</th><th>Settings at</th><th>Play area read from</th><th>Character set and colours from</th></tr>
     <tr><td>Haunted house</td><td><code>$7300</code></td><td><code>$EC28</code></td><td>the house's, <code>$A800</code>, <code>$B000</code></td></tr>
     <tr><td>Graveyard</td><td><code>$7380</code></td><td><code>$E828</code></td><td>the graveyard's</td></tr>
     <tr><td>Ghetto</td><td><code>$7400</code></td><td><code>$E428</code></td><td>the ghetto's</td></tr>
     <tr><td>Cinema</td><td><code>$7480</code></td><td><code>$E028</code></td><td>the cinema's</td></tr>
     <tr><td>Forest</td><td><code>$7500</code></td><td><code>$7828</code></td><td>the forest's</td></tr>
   </table>
-  <p>The red crosses are added on the return. An outward screen's settings list five crosses and a way-back screen's list ten, so <code>place_crosses</code> writes the five red ones into the stored copy as the screen is set up.</p>
+  <p>The red crosses are added on the way home. The settings for the first five levels list five crosses each and those for the way home list ten, so <code>place_crosses</code> writes the five red ones into the saved copy as the level is set up.</p>
 </section>
 <section id="crosses">
   <p class="fig">05 · The crosses</p>
@@ -321,7 +321,7 @@ input[type=range]{width:100%}
   <ul>
     <li>Which release this is: the withdrawn <i>Thriller</i> version or the later one. The one difference on record is printed on the cassette inlay, which a program file cannot show, and comparing the music would need a recording of the first release.</li>
     <li>Whether the LEVEL counter can ever appear in real play. Nothing here proves it cannot.</li>
-    <li>Screenshots of the way back taken in an emulator show a stray fence patch on the cinema and a crosses counter reading <code>2S</code> or <code>5S</code> where the outward screens read <code>05</code>. They were taken with crosses moved beside the boy, so that may be the cause.</li>
+    <li>Screenshots of the way back taken in an emulator show a stray fence patch on the cinema and a crosses counter reading <code>2S</code> or <code>5S</code> where the way to the house reads <code>05</code>. They were taken with crosses moved beside the boy, so that may be the cause.</li>
     <li>What <code>$1000</code>-<code>$1FFF</code> held. It repeats every 64 bytes like sprite data, but drawn as sprites it is noise.</li>
     <li>Whether <code>$4A90</code>-<code>$4AFF</code>, shaped like more enemy paths, was ever used. No screen's settings point at it.</li>
     <li>Which of the manual's ghouls, zombies, ghosts and bats is which shape.</li>
@@ -362,7 +362,7 @@ input[type=range]{width:100%}
     const cp = (s, e, t) => { for (let i = 0; i < e - s; i++) mem[t + i] = ram[s + i]; };
     cp(w(0x56C0), w(0x56C2), w(0x56C4));                 // hud_descriptor: the score rows
     const s0 = w(R), e0 = w(R + 2), t0 = w(R + 4);
-    const src = n < 5 ? s0 : w(OUT[9 - n]);              // way back: the outward screen stands in for the store
+    const src = n < 5 ? s0 : w(OUT[9 - n]);              // way back: the first-half screen stands in for the store
     for (let i = 0; i < e0 - s0; i++) mem[t0 + i] = ram[src + i];
     cp(w(R + 6), w(R + 8), w(R + 10));                   // the character set
     const colour = new Uint8Array(1024);
@@ -378,6 +378,10 @@ input[type=range]{width:100%}
     vic[0x22] = ram[R + 0x0E]; vic[0x23] = ram[R + 0x0F]; vic[0x20] = 6;
     vic[0x00] = ram[R + 0x10]; vic[0x01] = ram[R + 0x11]; vic[0x10] = ram[R + 0x12] ? 1 : 0;
     mem[0x07F8] = ram[R + 0x13]; vic[0x15] = 1;
+    if (n >= 5) {                                        // the way back: the girl on sprite 1, from +$14-$17
+      vic[0x02] = ram[R + 0x14]; vic[0x03] = ram[R + 0x15]; vic[0x10] |= ram[R + 0x16] ? 2 : 0;
+      mem[0x07F9] = ram[R + 0x17]; vic[0x28] = vic[0x27]; vic[0x15] = 3;
+    }
     return { F: { vic, cia2: [0xC7, 0x3F], writes: [], ram: [{ a: 0, b: mem }], colour }, R, crosses, mem };
   }
   globalThis.ChillerPage = { compose };
@@ -422,7 +426,7 @@ input[type=range]{width:100%}
       $('#scr-legend').innerHTML = Object.keys(LEG).filter(k => ov[k]).map(k => `<span><i style="background:${LEG[k][0]}"></i>${LEG[k][1]}</span>`).join('');
       $('#scr-cap').textContent = cur < 5
         ? 'Drawn from the screen’s settings with the site’s model of the video chip. Against the emulator’s screenshot of the same screen on arrival, 98.6 to 99.7 % of the pixels match; the rest are the enemies, which the page leaves out, and the energy bar, drawn full.'
-        : 'A way-back screen reads its play area from the store the outward screen was saved into, which holds nothing until a game has been played that far. Here the outward screen stands in for it, with the red crosses added: what a player sees who took only the crosses on the way out.';
+        : 'A way-back screen reads its play area from the copy saved on the way to the house, which holds nothing until a game has been played that far. Here the level as it first appears stands in for it, with the red crosses added: what a player sees who took only the crosses on the way to the house.';
     }
     pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#scr-pick button', b); draw(); });
     $$('[data-ov]').forEach(b => b.addEventListener('click', () => {
