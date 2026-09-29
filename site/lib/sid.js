@@ -25,11 +25,14 @@
 // decay and the ADSR delay bug; the C64's output stage (16 kHz low pass, 16 Hz high pass).
 // The filter is off unless a page asks for it (opts.filter '6581' or '8580'; 'none', the default,
 // ignores $D415-$D417 and the routing bits of $D418). When on, it is reSID 0.16's idealised
-// two-integrator state-variable filter: cutoff from $D415/$D416 through the chip's measured curve
-// (F0_6581 or F0_8580, below), Q = 0.707 + resonance / 15, low-, band- and high-pass summed as
-// $D418 selects, and voice 3 off ($D418 bit 7) where voice 3 is not filtered. It is a model of one
-// idealised chip: real 6581s differ from each other in cutoff by large factors, and distort, which
-// this does not. Not modelled either way: combined
+// two-integrator state-variable filter (filter.cc, filter.h), checked against its source: cutoff
+// from $D415/$D416 through the chip's measured curve (F0_6581 or F0_8580, below), Q = 0.707 +
+// resonance / 15, low-, band- and high-pass summed unweighted as $D418 selects, and voice 3 off
+// ($D418 bit 7) where voice 3 is not filtered. Two departures: the integrators step in seconds of
+// the PAL clock, where reSID counts a cycle as 1 microsecond (its cutoffs sit 1.5 % lower on PAL),
+// and they take smaller steps where reSID caps the cutoff for stability (at 16 kHz or 4 kHz). Each
+// curve is one chip's: real 6581s differ from each other in cutoff by large factors, and distort,
+// which this does not. Not modelled either way: combined
 // waveforms (approximated by AND), samples played through the volume register (registers change
 // once a frame), the time between writes inside a frame (a frame's writes land at one instant, so
 // a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
@@ -55,23 +58,39 @@ globalThis.C64Sid = (function () {
     const RATE = [8, 31, 62, 94, 148, 219, 266, 312, 391, 976, 1953, 3125, 3906, 11719, 19531, 31250];
     const ATTACK = 0, DECAY = 1, RELEASE = 2;
 
-    // Filter cutoff in Hz against the 11-bit register ($D416 << 3 | $D415 & 7), as reSID 0.16
-    // (filter.cc, f0_points_6581 and f0_points_8580) tabulates it, joined here by straight lines.
-    // The 6581 curve was measured on one chip; others sit well above or below it.
-    const F0_6581 = [[0, 220], [128, 230], [256, 250], [384, 300], [512, 420], [640, 780], [768, 1600],
-      [832, 2300], [896, 3200], [960, 4300], [992, 5000], [1008, 5400], [1016, 5700], [1023, 6000],
-      [1024, 4600], [1032, 4800], [1056, 5300], [1088, 6000], [1120, 6600], [1152, 7200], [1280, 9500],
-      [1408, 12000], [1536, 14500], [1664, 16000], [1792, 17100], [1920, 17700], [2047, 18000]];
-    const F0_8580 = [[0, 0], [128, 800], [256, 1600], [384, 2500], [512, 3300], [640, 4100], [768, 4800],
-      [896, 5600], [1024, 6300], [1152, 7000], [1280, 7700], [1408, 8400], [1536, 9000], [1664, 9800],
-      [1792, 10500], [1920, 11000], [2047, 11700]];
-    function cutoffHz(chip, fc) {
-      const t = chip === '8580' ? F0_8580 : F0_6581;
-      let k = 1;
-      while (k < t.length - 1 && t[k][0] < fc) k++;
-      const [x0, y0] = t[k - 1], [x1, y1] = t[k];
-      return x1 === x0 ? y1 : y0 + (y1 - y0) * (fc - x0) / (x1 - x0);
+    // Filter cutoff in Hz against the 11-bit register ($D416 << 3 | $D415 & 7): reSID 0.16's
+    // measured points (filter.cc, f0_points_6581 and f0_points_8580, repeated end points and the
+    // 6581's step at $80 included) joined by its cubic splines (spline.h), one entry per value,
+    // truncated to whole Hz as reSID stores them: all 2048 as reSID's tables but the last, 1 Hz
+    // higher here (reSID steps along the curve by forward differences). Each curve is one C64's.
+    const F0_6581 = [[0, 220], [0, 220], [128, 230], [256, 250], [384, 300], [512, 420], [640, 780],
+      [768, 1600], [832, 2300], [896, 3200], [960, 4300], [992, 5000], [1008, 5400], [1016, 5700],
+      [1023, 6000], [1023, 6000], [1024, 4600], [1024, 4600], [1032, 4800], [1056, 5300], [1088, 6000],
+      [1120, 6600], [1152, 7200], [1280, 9500], [1408, 12000], [1536, 14500], [1664, 16000],
+      [1792, 17100], [1920, 17700], [2047, 18000], [2047, 18000]];
+    const F0_8580 = [[0, 0], [0, 0], [128, 800], [256, 1600], [384, 2500], [512, 3300], [640, 4100],
+      [768, 4800], [896, 5600], [1024, 6500], [1152, 7500], [1280, 8400], [1408, 9200], [1536, 9800],
+      [1664, 10500], [1792, 11000], [1920, 11700], [2047, 12500], [2047, 12500]];
+    function splineTable(pts) {                              // spline.h's interpolate(), res 1
+      const f = new Float64Array(2048);
+      for (let i = 0; i + 3 < pts.length; i++) {
+        const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], [x2, y2] = pts[i + 2], [x3, y3] = pts[i + 3];
+        if (x1 === x2) continue;
+        let k1, k2;
+        if (x0 === x1 && x2 === x3) k1 = k2 = (y2 - y1) / (x2 - x1);
+        else if (x0 === x1) { k2 = (y3 - y1) / (x3 - x1); k1 = (3 * (y2 - y1) / (x2 - x1) - k2) / 2; }
+        else if (x2 === x3) { k1 = (y2 - y0) / (x2 - x0); k2 = (3 * (y2 - y1) / (x2 - x1) - k1) / 2; }
+        else { k1 = (y2 - y0) / (x2 - x0); k2 = (y3 - y1) / (x3 - x1); }
+        const dx = x2 - x1, dy = y2 - y1;
+        const a = ((k1 + k2) - 2 * dy / dx) / (dx * dx);
+        const b = ((k2 - k1) / dx - 3 * (x1 + x2) * a) / 2;
+        const c = k1 - (3 * x1 * a + 2 * b) * x1;
+        const d = y1 - ((x1 * a + b) * x1 + c) * x1;
+        for (let x = x1; x <= x2; x++) f[x] = Math.max(0, Math.trunc(((a * x + b) * x + c) * x + d));
+      }
+      return f;
     }
+    const F0 = { '6581': splineTable(F0_6581), '8580': splineTable(F0_8580) };
 
     function noiseBits(r) {                                  // LFSR bits 20,18,14,11,9,5,2,0 -> output bits 11-4
       return (r >> 9 & 0x800) | (r >> 8 & 0x400) | (r >> 5 & 0x200) | (r >> 3 & 0x100) |
@@ -96,7 +115,7 @@ globalThis.C64Sid = (function () {
 
       function filterSet() {                                 // cutoff and Q from the registers
         const fc = (regs[21] & 7) | regs[22] << 3;
-        const w = 2 * Math.PI * cutoffHz(F.chip, fc) * dt / CLOCK;   // per oscillator step
+        const w = 2 * Math.PI * (F0[F.chip] ? F0[F.chip][fc] : 0) * dt / CLOCK;   // per oscillator step
         F.n = Math.max(1, Math.ceil(w / 0.2));               // small steps keep the integrators stable
         F.w = w / F.n;
         F.q1 = 1 / (0.707 + (regs[23] >> 4) / 15);
