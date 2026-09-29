@@ -437,6 +437,9 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //           shows in its place that the chosen tune never routes a voice through the filter;
   //           left out, the filter is off and there is no switch
   //   colors  optional: the three voices' colours
+  //   onFrame optional: (frame, tune) => ..., called with each frame the reader hears, as the
+  //           display shows it, for a page that draws something in step with the music (lyrics,
+  //           a screen); frame counts from the tune's start, as the seek bar does
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
       const st = document.createElement('style');
@@ -618,6 +621,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     function show(s) {
       if (s.frame > +seek.max) seek.max = String(Math.ceil(s.frame * 1.25));
       if (!dragging) { seek.value = String(s.frame); time(s.frame); }
+      if (o.onFrame) try { o.onFrame(s.frame, tune); } catch (e) { console.error(e); }
       setText(volEl, String(s.vol));
       volBars.forEach((b, i) => b.classList.toggle('sid-lit', i < s.vol));
       s.v.forEach((v, x) => {
