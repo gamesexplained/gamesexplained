@@ -65,7 +65,7 @@ game's own title screen says "PROGRAMMED BY DAVID AND RICHARD DARLING".
 | Keyboard: Z left, C right, SHIFT jump, `?` switch players | **live** | `read_controls` `$C84D` against `$4512`-`$4515`: Z and C walk, `/` (`$C5 = $37`) switches; tested through `vice_keyboard_key_press` |
 | A title screen with the credits and the controls, shown after a game ends | **live** | `game_over_wait` `$7720`, title card `$7C00` |
 | Music | **traced** | `music_irq` `$60F5`, the play tune `$61F8`, the card tune and jingle `$6A18`-`$6BCC`. Pitches computed for NTSC. Not heard: the tools give no audio |
-| The first release played a version of *Thriller*, withdrawn and replaced with new music | **open** | Which release this is was not settled: no build text or cassette inlay to check for "Burner Loading System", and the tune's riff (C2 D2 F2 G2 D2, repeating) was not compared against a recording of V1 by an ear that knows both |
+| The first release played a version of *Thriller*, withdrawn and replaced with new music | **traced** | This copy is the first release: its tune data matches the steward's V1 transcription byte for byte (`facts.md`, top) |
 
 ## Beyond the documentation
 
@@ -98,21 +98,7 @@ and data, Bugs):
 
 ## Open questions
 
-- **Which release is this?** Games That Weren't describes a withdrawn
-  first version (V1) with *Thriller* music by David Dunn and later
-  copies with new music, also by Dunn. Their one documented way to tell
-  the cassette releases apart by eye is cover text: V1's inlay has no
-  "Burner Loading System" mention in the top-right red triangle: a
-  physical detail that a PRG dump, with no cassette inlay attached,
-  cannot carry either way. This image's loader writes `(ANTISOFT)` into
-  the BASIC stub (`orientation.md`), so someone other than Mastertronic
-  has handled it, which is no help either. The played tune's voice 1
-  opens on a five-note riff, C2 D2 F2 G2 D2, repeating with an occasional
-  octave leap to F3 or D3 (`facts.md`, "Music"; `work/sweep-tune-ntsc.txt`).
-  Still open: nobody who worked this run could compare that riff against
-  a recording of V1's *Thriller* by ear with confidence, so it was not
-  settled either way. Whoever can hum both is closer to answering this
-  than any more bytes are.
+- **Which release is this?** Settled for Gold: the first, withdrawn *Thriller* release. Its music player and all 4,238 bytes of tune data at `$61F2`-`$727F` match `Music/v1music.asm` in the steward's https://github.com/unorig/Chiller (branch Latest) byte for byte, and about 1,650 differ from `v2music.asm`; the steward confirmed on 29 September 2026 that V1 is the withdrawn release. The re-release changes the in-play tune and the gate-off compare at `$60B6` (3 to 1); its data is in `reference/music-v2.json` for the page's player.
 - **Can every cross be reached?** Settled for Gold: no, not quite. A
   Lemon64 user comment (2022) remembered the game as impossible to
   finish because one cross was out of reach, later fixed by a crack.

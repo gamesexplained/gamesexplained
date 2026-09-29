@@ -228,13 +228,14 @@ input[type=range]{width:100%}
 </section>
 <section id="music">
   <p class="fig">09 · Music</p>
-  <h2 class="t">The music is tuned for an NTSC C64</h2>
-  <p class="lede">The game's music is played here by its own driver, ported line by line. Press a tune.</p>
+  <h2 class="t">The tune that got the game withdrawn</h2>
+  <p class="lede">This copy is the first release, the one Mastertronic withdrew because its in-play tune is a rendition of Michael Jackson's <i>Thriller</i>. The re-release replaced it with a new tune. Both are played here by the game's own driver, ported line by line. Press a tune.</p>
   <div class="plate">
     <div id="sid"></div>
     <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. Two things differ from a real C64. This player leaves out the sound chip's filter, which the game sets once and keeps on voice 1 for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>), so voice 1 sounds brighter here than it should. And it plays at PAL speed, so the notes are flat, as they were on PAL machines.</p>
   </div>
-  <p>Of the in-play tune's 478 frequency values, 464 land within two cents of a note on an NTSC machine, the kind sold in North America. A PAL machine, the kind sold in Europe, runs about 4 % slower, so there every note plays about a third of a semitone flat.</p>
+  <p>The re-release changed only the in-play tune and one byte of the driver. Its tune data comes from the steward's transcription in <a href="https://github.com/unorig/Chiller/tree/Latest/Music">unorig/Chiller</a>; this copy matches the other file there, Version 1, byte for byte. The level-start and game-over tunes are the same in both. The driver change is the compare at <code>$60B6</code>: this copy cuts each note off three interrupts before the next step, and the re-release cuts it one before, so its notes ring on longer.</p>
+  <p>Both tunes are tuned for an NTSC C64. Of the first release's in-play tune's 478 frequency values, 464 land within two cents of a note on an NTSC machine, the kind sold in North America. A PAL machine, the kind sold in Europe, runs about 4 % slower, so there every note plays about a third of a semitone flat.</p>
   <p>The driver runs on the system interrupt, 60 times a second, on two voices. Each command is one byte, and the byte is the low half of its handler's address in page <code>$61</code>. <code>music_next_command</code> (<code>$6100</code>) writes it into its own <code>JMP</code> at <code>$610B</code> and jumps, so the tune data is a list of jump targets.</p>
   <table class="t">
     <tr><th>Byte</th><th>Handler</th><th>What it does</th></tr>
@@ -247,7 +248,7 @@ input[type=range]{width:100%}
     <tr><td><code>$82</code>, <code>$91</code>, <code>$AC</code></td><td></td><td>waveforms, envelopes, pulse widths</td></tr>
     <tr><td><code>$C7</code></td><td><code>$61C7</code></td><td>loop to the start</td></tr>
   </table>
-  <p>The count command is how the music talks to the game. The card at the start of each level stays up until the level-start tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the game-over tune does (<code>$5DA9</code>). The in-play tune never counts. It loops after about 69 seconds.</p>
+  <p>The count command is how the music talks to the game. The card at the start of each level stays up until the level-start tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the game-over tune does (<code>$5DA9</code>). The in-play tunes never count. The first release's loops after about 69 seconds.</p>
 </section>
 <section id="secrets">
   <p class="fig">10 · Secrets</p>
@@ -319,7 +320,6 @@ input[type=range]{width:100%}
   <p class="fig">11 · Open questions</p>
   <h2 class="t">What we're still unsure of</h2>
   <ul>
-    <li>Which release this is: the withdrawn <i>Thriller</i> version or the later one. The two releases have different music, and both tunes are transcribed in the <a href="https://github.com/unorig/Chiller/tree/Latest/Music">unorig/Chiller</a> disassembly. This copy's player and all 4,238 bytes of its tune data match the one marked Version 1 there, and none of the other's. Which of the two carried the <i>Thriller</i> tune is not settled here.</li>
     <li>Whether the LEVEL counter can ever appear in real play. Nothing here proves it cannot.</li>
     <li>Screenshots of the way back taken in an emulator show a stray fence patch on the cinema and a crosses counter reading <code>2S</code> or <code>5S</code> where the way to the house reads <code>05</code>. They were taken with crosses moved beside the boy, so that may be the cause.</li>
     <li>What <code>$1000</code>-<code>$1FFF</code> held. It repeats every 64 bytes like sprite data, but drawn as sprites it is noise.</li>
@@ -570,8 +570,11 @@ input[type=range]{width:100%}
 
   // ---- 03: the music driver ($60A0-$61F1), ported; see work/music_port.js and test_music.js ----
   function createDriver(M) {
-    const m = new Uint8Array(0x10000);
-    m.set(M.bytes, M.base);
+    // Tunes 0-2 are this copy's (the first release). Tune 3 is the re-release's in-play tune, from
+    // reference/music-v2.json; its level-start and game-over tunes are the same bytes as this copy's,
+    // and its player differs only in the gate-off compare at $60B6 (1 where this copy has 3).
+    const mems = [M, M.v2].map(d => { const x = new Uint8Array(0x10000); if (d) x.set(d.bytes, d.base); return x; });
+    let m = mems[0], gate = 3;
     const sid = new Uint8Array(25);
     let writes = [], pos = 0, loop = 0, timer = 0, tempo = 0, count = 0, w1 = 0, w2 = 0, on = false, cur = 0, acc = 0;
     const last = [null, null, null];
@@ -581,7 +584,9 @@ input[type=range]{width:100%}
     function init(t) {
       for (let r = 0; r < 25; r++) sid[r] = 0;
       writes = []; for (let r = 1; r < 25; r++) writes.push(r, 0);
-      timer = 0; count = 0; cur = t || 0; acc = 0;
+      timer = 0; count = 0; acc = 0;
+      const v2 = t === 3 && M.v2;
+      m = mems[v2 ? 1 : 0]; gate = v2 ? M.v2.gate : 3; cur = v2 ? 0 : t || 0;
       pos = loop = START[cur];
       W(0x15, 0x05); W(0x16, 0x45); W(0x17, 0xF1); W(0x18, 0x3F);               // $60A0 music_init_filter
       on = true;
@@ -590,7 +595,7 @@ input[type=range]{width:100%}
     function irq() {                                                           // $60F5 music_irq
       writes = [];
       if (!on) return;
-      if (timer !== 0) { timer = (timer - 1) & 255; if (timer === 3) { W(0x04, (w1 - 1) & 255); W(0x0B, 0x50); } return; }
+      if (timer !== 0) { timer = (timer - 1) & 255; if (timer === gate) { W(0x04, (w1 - 1) & 255); W(0x0B, 0x50); } return; }
       for (let guard = 0; guard < 4096; guard++) {                             // $6100
         const c = fetch(), a = pos;
         switch (c) {
@@ -628,14 +633,15 @@ input[type=range]{width:100%}
     if (!globalThis.C64Sid) { root.textContent = 'The player needs the site’s shared sound script, ../../lib/sid.js: open this page from the built site.'; return; }
     const M = { base: 0x61F8, bytes: Array.from(G.ram.subarray(0x61F8, 0x6BCD)) };
     const S = C64Sid;
-    S.mount(root, {
-      driver: createDriver, data: M, tunes: ['In play ($61F8)', 'Level start ($6A18)', 'Game over ($6B10)'],
+    fetch('reference/music-v2.json').then(r => r.json()).then(v2 => { M.v2 = v2; }).catch(() => {}).then(() => S.mount(root, {
+      driver: createDriver, data: M, tunes: ['In play', 'Level start', 'Game over']
+        .concat(M.v2 ? ['In play, re-release'] : []),
       rows: [
         { k: 'Command', f: v => v.read && `${S.hex(v.read.addr, 4)}: ${S.hex(v.read.c, 2)}` },
         { in: true, f: v => v.read && ({ 0x0E: 'note, voice 1', 0x26: 'note, voice 2', 0x3E: 'note, both voices' })[v.read.c] },
       ],
       mark: (v, p) => !!(v.read && (!p || !p.read || p.read.addr !== v.read.addr)),
-    });
+    }));
   }
 
   // ---- 09, 10: text from the game's bytes ----

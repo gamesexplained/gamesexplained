@@ -52,6 +52,11 @@ an agent, and no human has read any of it yet.
   `SCNKEY`'s own overwrite: the boy jumped. `features.md` and `facts.md`
   updated from traced to live.
 
+- **Which release is this?** The first, withdrawn *Thriller* release: its
+  tune data matches the steward's V1 transcription in unorig/Chiller byte
+  for byte (`facts.md`, top). The re-release's in-play tune is playable on
+  the page from `reference/music-v2.json`.
+
 ## Still to establish (open, not absent)
 
 - What the way-back play-through screenshots show (`reference/screen-05`
@@ -62,13 +67,6 @@ an agent, and no human has read any of it yet.
   either from play (29 September 2026); the page uses the screen
   builder's renders instead.
 
-- Which release this is: the withdrawn *Thriller* version or the later
-  one. Games That Weren't says V1's cassette inlay has no "Burner
-  Loading System" text, a physical detail this PRG dump cannot carry
-  either way. The played tune's voice 1 opens on a five-note riff, C2 D2
-  F2 G2 D2, repeating (`facts.md`, "Music"); comparing it against a
-  recording of V1 needs an ear that knows both, which nobody on this run
-  had.
 - What `$1000`-`$1FFF` held: not sprite data (`work/render_1000.py`
   renders it as multicolour sprites and it is visual noise), but the
   64-byte periodicity is real and unexplained.

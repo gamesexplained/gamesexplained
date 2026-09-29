@@ -9,9 +9,7 @@ from reading the code in the snapshot named in `orientation.md`.
 
 No build identifier was found in the image: the string sweep
 (`work/sweep_strings.py`) turned up no version or date text. The loader's
-`(ANTISOFT)` mark is a third party's (`orientation.md`). Which of the two
-releases this is (the *Thriller* music or the later one) is open:
-`features.md`.
+`(ANTISOFT)` mark is a third party's (`orientation.md`). This copy is the first, withdrawn *Thriller* release. Its music player and all 4,238 bytes of tune data at `$61F2`-`$727F` match `Music/v1music.asm` in the steward's https://github.com/unorig/Chiller (branch Latest) byte for byte, and about 1,650 differ from `v2music.asm`; the steward confirmed on 29 September 2026 that V1 is the withdrawn release. The re-release changes the in-play tune and the gate-off compare at `$60B6` (3 to 1); its data is in `reference/music-v2.json` for the page's player.
 
 ## Memory layout
 
