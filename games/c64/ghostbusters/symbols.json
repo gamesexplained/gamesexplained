@@ -11588,7 +11588,7 @@
   {
    "address": 14338,
    "type": "line",
-   "text": "Where the Keymaster and Gatekeeper stand at Zuul, (x,y) pairs ($61,$86) and ($65,$87): their target from $7C1A, and both on it ($7C30) starts the Zuul phase."
+   "text": "Where the Keymaster and Gatekeeper stand at Zuul, (x,y) pairs ($61,$86) and ($65,$87): their target from $7C1A, and both on it ($7C30) ends the map: the Zuul phase, or the foreclosure when the balance is below the starting one ($7C2E)."
   },
   {
    "address": 14339,
@@ -12128,7 +12128,7 @@
   {
    "address": 29629,
    "type": "line",
-   "text": "States $12 and above, every 256 frames ($09 = 0): ages each building's state $C8+x (high nibble a timer, bits 2-3 the kind, bits 0-1 the colour). A timer that wraps moves the building on via $A9B4 by kind: kind 0 to $14 (kind 1), kind 1 to $1C (kind 3), kind 2 to $F8, kind 3 to $1F (haunted, red); each stage lasts 15 ticks (3,840 frames). One already at $FF (haunted, unanswered) is cleared and adds 300 to the PK energy ($9895 with 3): the escaped Slimer. Tested in the simulator: $FF poked into a building gave +300."
+   "text": "States $12 and above, every 256 frames ($09 = 0): ages each building's state $C8+x (high nibble a timer, bits 2-3 the kind, bits 0-1 the colour). A timer that wraps moves the building on via $A9B4 by kind: kind 0 to $14 (kind 1), kind 1 to $1C (kind 3), kind 2 to $F8, kind 3 to $1F (haunted, red); each stage lasts 15 ticks (3,840 frames). One already at $FF (haunted, unanswered) is cleared and adds 300 to the PK energy ($9895 with 3): the escaped Slimer. Tested in the simulator: $FF poked into a building gave +300. Live (work/verify/t4-escape.js): a building set to $10 reached $14 after 3839 frames, $1C after 7679, $1F (red) after 11519 and escaped (+300 PK, state 0) after 15359."
   },
   {
    "address": 29683,
@@ -12278,7 +12278,7 @@
   {
    "address": 31659,
    "type": "line",
-   "text": "State $12, the city map each frame, part 1: saves the Roamers' positions (sprites 4-7) to $EA46; a Roamer that reaches its target $EA56 (Zuul) adds 100 PK ($9895 with 1) and is restarted ($9851). Faces each Roamer left or right (frame 8 or 9) by its target. From PK 5000 ($5B >= $50) the Keymaster and Gatekeeper (sprites 2, 3) are sent to Zuul ($3802) when they pass the point $37FE, and from 9500 wherever they are."
+   "text": "State $12, the city map each frame, part 1: saves the Roamers' positions (sprites 4-7) to $EA46; a Roamer that reaches its target $EA56 (Zuul) adds 100 PK ($9895 with 1) and is restarted ($9851). Faces each Roamer left or right (frame 8 or 9) by its target. From PK 5000 ($5B >= $50) the Keymaster and Gatekeeper (sprites 2, 3) are sent to Zuul ($3802) when they pass the point $37FE, and from 9500 wherever they are. Live: a Roamer placed next to Zuul added 100 (work/verify/t3-roamer-zuul.js); from 5000 the two met at Zuul at PK 8495-9999 in eight runs, from 9500 within 188 frames (work/verify/t6b-keymaster-spread.js, t6-keymaster.js)."
   },
   {
    "address": 31790,
@@ -12298,12 +12298,12 @@
   {
    "address": 32035,
    "type": "line",
-   "text": "Sprite 1 follows the logo. For each building whose rectangle ($37D3 columns, $37DD rows; they overlap, so on a street both the building above and the one below qualify, and the lower index wins) holds the logo: $6E = that building; its colour bits show its kind if the matching instrument is owned ($A9B0 in $6D: the PK energy detector for kinds 1 and 3, the marshmallow sensor for kind 2), else 0; a haunted one ($xF) stays red, and a kind-3 building with the detector owned turns haunted ($1F) at once. Buildings not under the logo lose colours 1 and 2 (a low nibble of $0C or more is kept): by this code the pink and white warnings show only on the building the logo is at."
+   "text": "Sprite 1 follows the logo. For each building whose rectangle ($37D3 columns, $37DD rows; they overlap, so on a street both the building above and the one below qualify, and the lower index wins) holds the logo: $6E = that building; its colour bits show its kind if the matching instrument is owned ($A9B0 in $6D: the PK energy detector for kinds 1 and 3, the marshmallow sensor for kind 2), else 0; a haunted one ($xF) stays red, and a kind-3 building with the detector owned turns haunted ($1F) at once. Buildings not under the logo lose colours 1 and 2 (a low nibble of $0C or more is kept): by this code the pink and white warnings show only on the building the logo is at. Live (work/verify/t2-warnings.js): building 15 at $34 turned $35 (purple) with the detector and the logo beside it, stayed $34 without the detector or with only the sensor, and went back to $34 when the logo left; a Marshmallow building $C8 turned $CA (white) only with the sensor; building 8 at $3C became $1F with the detector."
   },
   {
    "address": 32170,
    "type": "line",
-   "text": "A Roamer (sprites 4-7) within about 8 pixels across and 13-17 down of the logo stops where it is and, if not already marked, records the route length $66 (at least 1) in $6F-$72, apparently where it will be met on the drive. For sprites 2-3 the branch is three NOPs: an action removed."
+   "text": "A Roamer (sprites 4-7) within about 8 pixels across and 13-17 down of the logo stops where it is and, if not already marked, records the route length $66 (at least 1) in $6F-$72, the distance at which it is met on the drive (live: poking $6F put a Roamer on the road, work/verify/t13-vacuum.js). For sprites 2-3 the branch is three NOPs: an action removed."
   },
   {
    "address": 32255,
@@ -12318,7 +12318,7 @@
   {
    "address": 32472,
    "type": "line",
-   "text": "When the marshmallow building $80 (chosen by $98D6 as PK crosses a thousand from 5000) has aged to $F8-$FB: clears it, sends the Roamers (sprites 4-7) to four points around it ($37EA/$37F1 by its column and row), clears the bait flag $68, shows -MARSHMALLOW ALERT- ($99CC, 4) and goes to state $24."
+   "text": "When the marshmallow building $80 (chosen by $98D6 as PK crosses a thousand from 5000) has aged to $F8-$FB: clears it, sends the Roamers (sprites 4-7) to four points around it ($37EA/$37F1 by its column and row), clears the bait flag $68, shows -MARSHMALLOW ALERT- ($99CC, 4) and goes to state $24. The pick sets the building to $C8, so the alert comes 769-1024 frames after it. Because $68 is cleared here, bait put down before the alert is wasted; B during state $24 counts (live, work/verify/t7-marshmallow.js). A building replaced in $80 by a newer pick before its alert stays $F8 for good (stage 2 ages into $F8 again, $A9B4), live: work/verify/t17-mm-orphan.js."
   },
   {
    "address": 32553,
@@ -12348,7 +12348,7 @@
   {
    "address": 32883,
    "type": "line",
-   "text": "State $15, the drive, each frame. Speed: $1C += $1B, the road position $1A += $1C/16, and each wrap past $7F adds 1 to the distance $66 (up to $67); the lane dashes (sprites 4-7) are placed at y $1A and $1A+$7F. Until the distance is reached the speed rises by 1 a frame to the car's top speed ($AA9E by car $5C), afterwards it falls to 0. Stick left/right steer ($64 = $FF/$01, applied at $7011) between lateral positions 9 and 100; on arrival the car steers back to 100. Roamers met: when a slot $6F-$72 (the route length recorded on the map, $7DAA) equals the distance, a Roamer appears as sprite 0 or 1 (whichever is free; $73/$74 remember the slot) at a random x from $06, facing frame 8 or 9, doubled in size, heading for y $F0 (off the top); with neither free the slot is retried at the next distance. With the ghost vacuum owned ($6D bit 5), a new press of fire ($11+x) while the Roamer is within x -$20..+$10 of the vacuum (sprite 2, $A4) retargets it to the vacuum ($A4-4, y $3806 by car); on reaching it the countdown $75/$76 runs 32 frames with sound 0 ($3D24), the Roamer flickering and shrinking (x-expand off at 16, y at 8), then it vanishes and $9851 restarts that Roamer on the map. A Roamer not caught flies off the top (y >= $E0). $65 is kept counting with bit 7 set (the vacuum's colour cycle, $704C). Next state ($16) when the distance is reached and the car has stopped."
+   "text": "State $15, the drive, each frame. Speed: $1C += $1B, the road position $1A += $1C/16, and each wrap past $7F adds 1 to the distance $66 (up to $67); the lane dashes (sprites 4-7) are placed at y $1A and $1A+$7F. Until the distance is reached the speed rises by 1 a frame to the car's top speed ($AA9E by car $5C), afterwards it falls to 0. Stick left/right steer ($64 = $FF/$01, applied at $7011) between lateral positions 9 and 100; on arrival the car steers back to 100. Roamers met: when a slot $6F-$72 (the route length recorded on the map, $7DAA) equals the distance, a Roamer appears as sprite 0 or 1 (whichever is free; $73/$74 remember the slot) at a random x from $06, facing frame 8 or 9, doubled in size, heading for y $F0 (off the top); with neither free the slot is retried at the next distance. With the ghost vacuum owned ($6D bit 5), a new press of fire ($11+x) while the Roamer is within x -$20..+$10 of the vacuum (sprite 2, $A4) retargets it to the vacuum ($A4-4, y $3806 by car); on reaching it the countdown $75/$76 runs 32 frames with sound 0 ($3D24), the Roamer flickering and shrinking (x-expand off at 16, y at 8), then it vanishes and $9851 restarts that Roamer on the map. A Roamer not caught flies off the top (y >= $E0). $65 is kept counting with bit 7 set (the vacuum's colour cycle, $704C). Next state ($16) when the distance is reached and the car has stopped. Live (work/verify/t13-vacuum.js): a Roamer put on the road by poking $6F was pulled in on fire, counted 32 frames and restarted on the map; without the vacuum the same fire did nothing."
   },
   {
    "address": 33401,
@@ -12398,7 +12398,7 @@
   {
    "address": 34708,
    "type": "line",
-   "text": "State $1F: the light and the Slimer sink into the trap. When sprite 0 arrives: trap frame $38 (closed, full), sprite 0 and the Slimer hidden, $EA88 = 1; with the laser confinement system owned ($6D bit 6) and fewer than 10 ghosts stored, stored ghosts $6C + 1, else one empty trap fewer ($6B - 1); reward: if the building has a Slimer (kind %11) the high nibble of its state (how long it has been haunted, 0-15) indexes slimer_reward ($A1E4: $1000, $1000, $900 ... $300) and the building is cleared, else the last entry ($300); added to the balance ($9664, hundreds). Meanwhile the men bob ($A9A4 offsets, frames by $7B) for $7F frames; then all sprites but 5-7 are switched off, phrase 1 is spoken ($8DB9) and the men walk to the trap ($8823). Seen in the simulator: $2500 to $3000 for a building at state $BF ($500), empty traps 3 to 2, phrase 1."
+   "text": "State $1F: the light and the Slimer sink into the trap. When sprite 0 arrives: trap frame $38 (closed, full), sprite 0 and the Slimer hidden, $EA88 = 1; with the laser confinement system owned ($6D bit 6) and fewer than 10 ghosts stored, stored ghosts $6C + 1, else one empty trap fewer ($6B - 1); reward: if the building has a Slimer (kind %11) the high nibble of its state (how long it has been haunted, 0-15) indexes slimer_reward ($A1E4: $1000, $1000, $900 ... $300) and the building is cleared, else the last entry ($300); added to the balance ($9664, hundreds). Meanwhile the men bob ($A9A4 offsets, frames by $7B) for $7F frames; then all sprites but 5-7 are switched off, phrase 1 is spoken ($8DB9) and the men walk to the trap ($8823). Seen in the simulator: $2500 to $3000 for a building at state $BF ($500), empty traps 3 to 2, phrase 1. Laser confinement live (work/verify/t18-laser.js): stored 0 -> 1 and 9 -> 10 with the empty traps unchanged; at 10 an empty trap was used."
   },
   {
    "address": 34851,
@@ -12428,7 +12428,7 @@
   {
    "address": 35109,
    "type": "line",
-   "text": "State $24, Marshmallow alert on the map (from $7ED8): the Roamers (sprites 4-7) move toward the four points around the building; each that arrives takes its piece of the Marshmallow Man (frame mm_shapes, $A905). While any is still on the way the map runs as usual (jumps to $7F29). With all four there: delay $7C = $FF, and with bait down ($68) the bait is used up and state $26 (averted), otherwise state $25 (he stomps)."
+   "text": "State $24, Marshmallow alert on the map (from $7ED8): the Roamers (sprites 4-7) move toward the four points around the building; each that arrives takes its piece of the Marshmallow Man (frame mm_shapes, $A905). While any is still on the way the map runs as usual (jumps to $7F29). With all four there: delay $7C = $FF, and with bait down ($68) the bait is used up and state $26 (averted), otherwise state $25 (he stomps). Live (work/verify/t7-marshmallow.js): B 20 frames after the alert gave state $26 and $2500 -> $4500; no B gave $25 and $10000 -> $6000 with the block flattened."
   },
   {
    "address": 35184,
@@ -12733,7 +12733,7 @@
   {
    "address": 38454,
    "type": "line",
-   "text": "Subtracts the BCD amount $25 (high), $24, $23 from the balance $57 (high), $58, $59 in decimal mode; if the balance would go below zero it becomes 0. Called from $7652 and $791D (buying the car and the equipment) and $8983 (the $4000 charge that follows the message $4000 DAMAGE, set up at $8974-$8981). The online cheat POKE 38454,96 turns its first byte into RTS: tested in the simulator, the hearse is then free and the balance stays $10000; by the same token the $4000 damage charge at $8983 is not taken either (from the code, not tested)."
+   "text": "Subtracts the BCD amount $25 (high), $24, $23 from the balance $57 (high), $58, $59 in decimal mode; if the balance would go below zero it becomes 0. Called from $7652 and $791D (buying the car and the equipment) and $8983 (the $4000 charge that follows the message $4000 DAMAGE, set up at $8974-$8981). The online cheat POKE 38454,96 turns its first byte into RTS: tested in the simulator, the hearse is then free and the balance stays $10000; by the same token the $4000 damage charge at $8983 is not taken either (live, work/verify/t20-poke-mm.js: $10000 stayed $10000 through a stomp, $6000 without the poke)."
   },
   {
    "address": 38484,
@@ -12843,7 +12843,7 @@
   {
    "address": 39477,
    "type": "line",
-   "text": "Arranges sprites 0-3 as a column above the trap (sprite 7 at $AE/$AF), called from $86B0 and $875B: steps the counter $79 through 0-5 and sets the four shapes $2B-$2E to $A9CA-$A9CD plus $79; all four at the trap's X; from the height counter $7A (mirrored above $48 as $9C - $7A, so it grows and then shrinks) the sprites' Y are spread upwards from the trap's Y - $15. Not seen running in the simulator: the trap has not yet been sprung there."
+   "text": "Arranges sprites 0-3 as a column above the trap (sprite 7 at $AE/$AF), called from $86B0 and $875B: steps the counter $79 through 0-5 and sets the four shapes $2B-$2E to $A9CA-$A9CD plus $79; all four at the trap's X; from the height counter $7A (mirrored above $48 as $9C - $7A, so it grows and then shrinks) the sprites' Y are spread upwards from the trap's Y - $15. Live: it ran 129 times in 300 frames after the trap was sprung from agent5-beams.json (work/verify/t19-letters-trap.js)."
   },
   {
    "address": 39562,
@@ -12853,7 +12853,7 @@
   {
    "address": 39590,
    "type": "line",
-   "text": "The Slimer's per-pass work during a bust (called from $8522, $852E, $8565, $859B and $86A0): sprite 4 in front of the background when $6D bit 1 is set, behind it otherwise ($D01B bit 4); moves it (slimer_move $9972), recomputes the streams' X at its height ($98EB), and every fourth pass ($09 AND 3 = 0) turns its direction $7D by the random bit $06 AND 1 and sets its shape $2F to $0A plus another random bit."
+   "text": "The Slimer's per-pass work during a bust (called from $8522, $852E, $8565, $859B and $86A0): sprite 4 in front of the background when $6D bit 1 is set, behind it otherwise ($D01B bit 4); moves it (slimer_move $9972), recomputes the streams' X at its height ($98EB), and every fourth pass ($09 AND 3 = 0) turns its direction $7D by the random bit $06 AND 1 and sets its shape $2F to $0A plus another random bit. Live (work/verify/t16-intensifier.js): $D01B = $10 without the image intensifier, $00 with it; the frame pictures show the Slimer cut by a window without it."
   },
   {
    "address": 39642,
@@ -12948,7 +12948,7 @@
   {
    "address": 40188,
    "type": "line",
-   "text": "Turns the typed account number at $EA00 into four bytes: for up to eight characters, stopping at a 0 byte, the low nibble of each is shifted into the 32-bit $23 (high) ... $26 (low), so a shorter number is right-aligned with leading zeros. The character itself is not checked: '8' gives 8, '9' 9, 'A' 1, 'L' $C (whether the typing code lets letters through is decided by its caller at $736D/$7383, not here). Called from $7505, which copies $23-$26 to $EAC7-$EACA for account_decode ($9155)."
+   "text": "Turns the typed account number at $EA00 into four bytes: for up to eight characters, stopping at a 0 byte, the low nibble of each is shifted into the 32-bit $23 (high) ... $26 (low), so a shorter number is right-aligned with leading zeros. The character itself is not checked: '8' gives 8, '9' 9, 'A' 1, 'L' $C The line input lets letters through: LEFTY typed as the number for the name LEFTY packed to $000C5649 and gave $860000, as the cheat lists say (live, work/verify/t19-letters-trap.js). Called from $7505, which copies $23-$26 to $EAC7-$EACA for account_decode ($9155)."
   },
   {
    "address": 40228,
@@ -13093,7 +13093,7 @@
   {
    "address": 41444,
    "type": "line",
-   "text": "Payment for a trapped Slimer in hundreds of dollars (BCD), 16 steps: $1,000, $1,000, $900 ... $300, $300. Read at $87F8 in the catch (state $1C) with the building's timer, the high nibble of $C8,x, when its stage bits 2-3 are 3, else with index 15 ($300); $9664 adds it to the balance. So the fee falls the longer the building has been haunted. +$500 seen in the simulator."
+   "text": "Payment for a trapped Slimer in hundreds of dollars (BCD), 16 steps: $1,000, $1,000, $900 ... $300, $300. Read at $87F8 in st1F_trap_closes (state $1F) with the building's timer, the high nibble of $C8,x, when its stage bits 2-3 are 3, else with index 15 ($300); $9664 adds it to the balance. So the fee falls the longer the building has been haunted. Live (work/verify/t8-reward.js, state poked before the trap closed): $1F paid $1000, $2F $900, $5F $800, $AF $500, $FF $300, $1C $1000, $6C $700, $00 and $34 $300."
   },
   {
    "address": 41460,
@@ -13338,7 +13338,7 @@
   {
    "address": 43440,
    "type": "line",
-   "text": "Which equipment flag lets the player see a building's warning, by its stage bits 2-3: none, PK detector ($01), marshmallow sensor ($04), PK detector. Read at $7D74; without the flag the building shows as normal."
+   "text": "Which equipment flag lets the player see a building's warning, by its stage bits 2-3: none, PK detector ($01), marshmallow sensor ($04), PK detector. Read at $7D74; without the flag the building shows as normal. Only the buildings whose rectangle holds the logo (map_building_under_logo $7D23) show the colour, so a warning is seen only while the logo is on a street beside the building. Live (work/verify/t2-warnings.js)."
   },
   {
    "address": 43444,
@@ -13463,7 +13463,7 @@
   {
    "address": 44179,
    "type": "line",
-   "text": "Text page 4: WHAT IS YOUR ACCOUNT NUMBER? (not seen in the simulator, which answered N)."
+   "text": "Text page 4: WHAT IS YOUR ACCOUNT NUMBER? (seen in the simulator after answering Y, work/verify/t11-account.js)."
   },
   {
    "address": 44209,
@@ -13513,7 +13513,7 @@
   {
    "address": 45353,
    "type": "line",
-   "text": "Text page 13, the losing ending: the Keymaster and Gatekeeper arrived at Zuul and the bank has foreclosed. Not seen in the simulator."
+   "text": "Text page 13, the losing ending: the Keymaster and Gatekeeper arrived at Zuul and the bank has foreclosed. Seen in the simulator after the Keymaster and Gatekeeper met with $2500 against a start of $10000 (work/verify/t14-endings.js)."
   },
   {
    "address": 45497,
