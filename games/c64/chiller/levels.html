@@ -113,11 +113,8 @@ button.b:hover{border-color:var(--ink-mute)}
 <section id="paths">
   <p class="fig">03 &middot; Enemy paths</p>
   <h2 class="t">How the enemies move</h2>
-  <p class="lede"><code>path_step</code> <code>$CC12</code> moves one enemy a pixel at a time and,
-  every 8th step, reads the next byte of its script from <code>path_scripts</code>
-  <code>$4A00</code>-<code>$4A8F</code>: 0 up, 1 down, 2 left, 3 right, <code>$FF</code> loops back
-  to the start. Step through a slot's script below; the arrow shows the direction it is about to
-  read.</p>
+  <p class="lede">Choose a screen and enemy, then use Step or Run to follow its path. The enemy uses its own sprite frames; the route is scaled for clarity, not shown at game speed.</p>
+  <p><code>path_step</code> <code>$CC12</code> moves an enemy a pixel at a time and reads the next byte from <code>path_scripts</code> <code>$4A00</code>-<code>$4A8F</code> every eighth move: 0 up, 1 down, 2 left, 3 right, and <code>$FF</code> loops back. Each press of Step advances one direction byte. The arrow shows the next direction.</p>
   <div class="row" id="pt-pick"></div>
   <div class="row" id="pt-slot"></div>
   <div class="plate">
@@ -126,7 +123,7 @@ button.b:hover{border-color:var(--ink-mute)}
     <button class="b" type="button" id="pt-run">Run</button>
     <button class="b" type="button" id="pt-reset">Reset</button>
   </div>
-  <canvas class="scr" id="pt-cv" style="max-width:640px"></canvas>
+  <canvas class="scr" id="pt-cv" style="max-width:640px" role="img" aria-label="Animated enemy following its path script"></canvas>
   <p class="cap" id="pt-kv"></p>
   </div>
 </section>
@@ -235,10 +232,21 @@ button.b:hover{border-color:var(--ink-mute)}
   // ---- 02: step one enemy's path script ----
   const DIRS = ['up', 'down', 'left', 'right'];
   const DXY = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  const ENEMY_COLOURS = [[2,3,4,5,6],[6,7,7,5,7],[11,11,11,5,12],[2,3,4,5,9],[0,3,4,5,6],
+                         [0,11,1,5,11],[2,3,14,5,9],[11,11,11,5,1],[11,7,7,5,7],[2,3,4,5,0]];
+  function drawEnemySprite(ctx, ram, pointer, cx, cy, colour) {
+    const base = pointer * 64;
+    for (let sy = 0; sy < 21; sy++) for (let sx = 0; sx < 12; sx++) {
+      const b = ram[base + sy * 3 + (sx >> 2)], v = (b >> (6 - 2 * (sx & 3))) & 3;
+      if (!v) continue;
+      ctx.fillStyle = C64.PAL[v === 1 ? 9 : v === 2 ? colour : 1];
+      ctx.fillRect(cx - 12 + sx * 2, cy - 10 + sy, 2, 1);
+    }
+  }
   function pathsPage(G) {
     const cv = $('#pt-cv'), scrPick = $('#pt-pick'), slotPick = $('#pt-slot');
     if (!need(cv)) return;
-    let screen = 0, slot = 0, pos = 0, x = 0, y = 0, running = 0;
+    let screen = 0, slot = 0, pos = 0, frame = 0, x = 0, y = 0, running = 0;
     NAMES.forEach((nm, i) => scrPick.insertAdjacentHTML('beforeend',
       `<button class="b" type="button" data-n="${i}" aria-pressed="${i === 0}">${nm}</button>`));
     for (let k = 0; k < 5; k++) slotPick.insertAdjacentHTML('beforeend',
@@ -249,13 +257,19 @@ button.b:hover{border-color:var(--ink-mute)}
       const base = lo | hi << 8;
       const bytes = [];
       for (let i = base; i < base + 64 && bytes.length < 40; i++) { bytes.push(G.ram[i]); if (G.ram[i] === 0xFF) break; }
-      return { base, bytes };
+      return { base, bytes, rec };
+    }
+    function stop() {
+      if (running) clearInterval(running);
+      running = 0;
+      $('#pt-run').textContent = 'Run';
     }
     function reset() {
+      stop();
       const rec = G.ram[0x7290 + 2 * screen] | G.ram[0x7291 + 2 * screen] << 8;
       x = G.ram[rec + 0x45 + slot * 5] | (G.ram[rec + 0x47 + slot * 5] ? 0x100 : 0);
       y = G.ram[rec + 0x46 + slot * 5];
-      pos = 0; trail = [[0, 0]];
+      pos = 0; frame = 0; trail = [[0, 0]];
       draw();
     }
     // One "step" here is one direction of the script (path_step actually moves a pixel at a
@@ -264,16 +278,26 @@ button.b:hover{border-color:var(--ink-mute)}
     let trail = [[0, 0]];
     function draw() {
       const s = 10, W = 320, H = 320, ctx = C64.canvas(cv, W, H);
-      const { base, bytes } = scriptFor(screen, slot);
+      const { base, bytes, rec } = scriptFor(screen, slot);
       ctx.fillStyle = '#101018'; ctx.fillRect(0, 0, W, H);
       ctx.strokeStyle = '#7b7bff'; ctx.lineWidth = 2; ctx.beginPath();
       trail.forEach(([px, py], i) => { const cx = W / 2 + px * s, cy = H / 2 + py * s;
         i ? ctx.lineTo(cx, cy) : ctx.moveTo(cx, cy); });
       ctx.stroke();
       const [lx, ly] = trail[trail.length - 1];
-      ctx.fillStyle = '#ffe14d';
-      ctx.beginPath(); ctx.arc(W / 2 + lx * s, H / 2 + ly * s, 6, 0, Math.PI * 2); ctx.fill();
+      const cx = W / 2 + lx * s, cy = H / 2 + ly * s;
+      const first = G.ram[rec + 0x1D + slot], last = G.ram[rec + 0x22 + slot];
+      drawEnemySprite(ctx, G.ram, first + frame % (last - first + 1), cx, cy, ENEMY_COLOURS[screen][slot]);
       const cur = bytes[pos % bytes.length];
+      if (cur <= 3) {
+        const [dx, dy] = DXY[cur], tipX = cx + dx * 32, tipY = cy + dy * 32;
+        ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 2; ctx.beginPath();
+        ctx.moveTo(cx + dx * 20, cy + dy * 20); ctx.lineTo(tipX, tipY);
+        ctx.moveTo(tipX - dx * 6 - dy * 5, tipY - dy * 6 + dx * 5);
+        ctx.lineTo(tipX, tipY);
+        ctx.lineTo(tipX - dx * 6 + dy * 5, tipY - dy * 6 - dx * 5);
+        ctx.stroke();
+      }
       const dName = cur === 0xFF ? 'loop back to the start' : cur <= 3 ? DIRS[cur] :
         'stray byte ' + hex(cur, 2) + ' (move_sprite ignores it, no move happens)';
       const offRange = y < 0x32 || y > 0xE3;
@@ -290,14 +314,15 @@ button.b:hover{border-color:var(--ink-mute)}
         trail.push([lx + DXY[d][0], ly + DXY[d][1]]);
       }
       pos = d === 0xFF ? 0 : (pos + 1) % bytes.length;
+      frame = (frame + 1) % 4;
       draw();
     }
     scrPick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; screen = +b.dataset.n; press('#pt-pick button', b); reset(); });
     slotPick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; slot = +b.dataset.k; press('#pt-slot button', b); reset(); });
-    $('#pt-step').addEventListener('click', step);
+    $('#pt-step').addEventListener('click', () => { stop(); step(); });
     $('#pt-reset').addEventListener('click', reset);
     $('#pt-run').addEventListener('click', () => {
-      if (running) { clearInterval(running); running = 0; $('#pt-run').textContent = 'Run'; return; }
+      if (running) { stop(); return; }
       $('#pt-run').textContent = 'Stop'; running = setInterval(step, 250);
     });
     reset();
