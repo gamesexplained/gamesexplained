@@ -88,7 +88,7 @@ the KERNAL's shift flag `$028D`.
 | SPACE | `$C5 = $3C`, in the table twice as up | nothing: up is not a direction on any screen (`$4500 = 0`) |
 | RUN/STOP | the KERNAL | `end_game` `$2CB4` |
 
-Up on the stick jumps; nothing climbs. On all ten screens up and down are
+Up on the stick jumps, and he climbs by jumping from ledge to ledge. On all ten screens up and down are
 switched off as directions (`$4500`-`$4503` = 0, 0, 1, 1, read from the
 snapshots taken on arrival, `work/settings10.py`), so the only way up is
 the jump; no ladder was tried live. He goes down by
