@@ -227,7 +227,7 @@ ul.odd li{margin:0 0 12px}
     <input type="range" id="jr" min="0" max="48" value="0" aria-label="Step of the jump">
     <canvas id="jc" width="600" height="180" class="scr" style="max-width:600px" role="img" aria-label="The jump's height over time"></canvas>
     <p class="kv" id="jk"></p>
-    <p class="cap">Height against time from <code>jump_speeds</code> at <code>$544A</code>: the number of main-loop passes before each step. The boy is drawn in his jumping frame from the game's sprite data.</p>
+    <p class="cap">Left, the boy in his jumping frame, lifted to scale: the full jump is 24 pixels, a little more than his own height. Right, the height against time from <code>jump_speeds</code> at <code>$544A</code>, the number of main-loop passes before each step, stretched upward so the steps show.</p>
   </div>
   <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the game switches the controls off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so he keeps the direction he took off in until he lands. There is no climbing. All ten screens switch off up and down as walking directions (<code>$4500</code>-<code>$4503</code>), so the only way up is to jump.</p>
   <p>Some ledges crumble. Tiles <code>$4D</code>-<code>$53</code> are one ledge in seven stages. Every eighth step on it moves it on a stage, and the last stage is empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
@@ -511,14 +511,22 @@ ul.odd li{margin:0 0 12px}
     for (let k = 23; k >= 0; k--) t.push(t[t.length - 1] + sp[k]);
     const h = i => i <= 24 ? i : 48 - i, T = t[48];
     function draw() {
-      const i = +rng.value, s = 1, W = 600, H = 180, ctx = C64.canvas(cv, W, H);
+      const i = +rng.value, W = 600, H = 180, ctx = C64.canvas(cv, W, H);
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-      const X = v => 20 + v / T * (W - 90), Y = v => H - 20 - v * 5;
-      ctx.strokeStyle = '#555'; ctx.beginPath(); ctx.moveTo(20, Y(0)); ctx.lineTo(W - 70, Y(0)); ctx.stroke();
+      // left: the boy at true scale (2 screen pixels to a C64 pixel, the same for sprite and height)
+      const G0 = H - 20, bx = 50;
+      ctx.strokeStyle = '#555'; ctx.beginPath(); ctx.moveTo(10, G0); ctx.lineTo(150, G0); ctx.stroke();
+      ctx.strokeStyle = '#333'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(10, G0 - 48); ctx.lineTo(150, G0 - 48); ctx.stroke(); ctx.setLineDash([]);
+      spriteMC(ctx, G, 0xE0, bx, G0 - 42 - h(i) * 2, 2, [10, 9, 1]);
+      ctx.fillStyle = '#888'; ctx.font = '11px monospace'; ctx.fillText('to scale', 10, 14); ctx.fillText('24 px', 110, G0 - 52);
+      // right: height against time, the time axis in main-loop passes
+      const L = 200, X = v => L + v / T * (W - L - 20), Y = v => G0 - v * 5;
+      ctx.strokeStyle = '#555'; ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(W - 20, Y(0)); ctx.moveTo(L, Y(0)); ctx.lineTo(L, Y(24)); ctx.stroke();
+      ctx.fillStyle = '#888'; ctx.fillText('height against time (not to scale)', L, 14); ctx.fillText(T + ' passes', W - 90, G0 + 14);
       ctx.strokeStyle = C64.PAL[14]; ctx.lineWidth = 2; ctx.beginPath();
       for (let k = 0; k <= 48; k++) { const x = X(t[k]); k ? ctx.lineTo(x, Y(h(k))) : ctx.moveTo(x, Y(h(k))); if (k < 48) ctx.lineTo(X(t[k + 1]), Y(h(k))); }
-      ctx.stroke();
-      spriteMC(ctx, G, 0xE0, X(t[i]) - 12, Y(h(i)) - 21 * 2, 2, [10, 9, 1]);
+      ctx.stroke(); ctx.lineWidth = 1;
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(t[i]), Y(h(i)), 4, 0, Math.PI * 2); ctx.fill();
       $('#jk').innerHTML = `step <b>${i}</b> of 48 · height <b>${h(i)}</b> pixels · after <b>${t[i]}</b> passes` +
         (i < 48 ? ` · this step waits <b>${sp[i < 24 ? i : 47 - i]}</b>` : ' · landed, unhurt');
     }
