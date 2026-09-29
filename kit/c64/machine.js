@@ -177,7 +177,7 @@ class Machine {
   releaseAll() { this.keys.clear(); }
   save() {
     const c = this.cpu;
-    return { ram: Buffer.from(this.ram).toString('base64'), vic: Array.from(this.vic), colour: Buffer.from(this.colour).toString('base64'),
+    return { ram: Buffer.from(this.ram).toString('base64'), vic: Array.from(this.vic), sidw: Array.from(this.sidw), colour: Buffer.from(this.colour).toString('base64'),
       cpu: { a: c.a, x: c.x, y: c.y, sp: c.sp, pc: c.pc, p: c.p, cycles: c.cycles, pdir: c.pdir, pdata: c.pdata, pout: c.pout },
       cmp: this.cmp, latch: this.latch, enable: this.enable, lastLine: this.lastLine, frames: this.frames, passes: this.passes,
       pra: this.pra, ddra: this.ddra, ddrb: this.ddrb, skipOnce: this.skipOnce, joy: this.joy, keys: Array.from(this.keys), passAt: this.passAt };
@@ -187,7 +187,7 @@ class Machine {
     const c = m.cpu;
     Object.assign(c, { a: s.cpu.a, x: s.cpu.x, y: s.cpu.y, sp: s.cpu.sp, pc: s.cpu.pc, cycles: s.cpu.cycles });
     c.p = s.cpu.p; c.pdir = s.cpu.pdir; c.pdata = s.cpu.pdata; c.pout = s.cpu.pout; c.mapPort();
-    m.vic.set(s.vic); m.colour.set(Buffer.from(s.colour, 'base64'));
+    m.vic.set(s.vic); if (s.sidw) m.sidw.set(s.sidw); m.colour.set(Buffer.from(s.colour, 'base64'));
     Object.assign(m, { cmp: s.cmp, latch: s.latch, enable: s.enable, lastLine: s.lastLine, frames: s.frames, passes: s.passes, pra: s.pra, ddra: s.ddra, ddrb: s.ddrb,
       skipOnce: !!s.skipOnce, joy: s.joy === undefined ? 0x1F : s.joy, keys: new Set(s.keys || []) });
     return m;

@@ -80,6 +80,16 @@
 //   the wait. These are the rows of the pacing fit. A port that counts more itself (pixels, rows)
 //   reads and clears its counters here, and keeps its interrupts' work out of them.
 // - maxFrames: how long the game may run to the port's next checkpoint (default 500).
+// - irqBytes: addresses of RAM an interrupt writes and the main program reads (a jiffy clock, a
+//   keyboard buffer), for the race replay cannot give (irqs above). The port reads each through
+//   P.io.irqByte(a), and gets, in turn, the values the game's main program read of it in the same
+//   stretch (a read past those, the port's own byte). The port runs a stretch before the game does,
+//   so what the game has not yet read comes from a copy of the machine run on ahead to its next
+//   checkpoint or wait's exit: its class's restore(save()), with the input as it stands. A machine
+//   class that keeps more than Machine does extends save() and restore(), or the copy is not the
+//   game. Input onFrame gives inside the stretch, after the copy is made, is not in it, and a copy
+//   made at the head of a raster wait's loop stops at that head the first time round. On the page,
+//   outside the lockstep, the port's io gives irqByte: a => M[a].
 //
 // run({ passes, onPass, onFrame, stopOnDiff }) runs until passes more passes have started (default
 // 1) and returns { passes, ok, diffs, diverged, frames }. At the start of each pass, once the
@@ -153,6 +163,8 @@ class Lockstep {
     c.raster = m.line;
     c.vic.set(m.vic); c.colour.set(m.colour); c.sidw.set(m.sidw);
     for (const k of ['cmp', 'latch', 'enable', 'pra', 'ddra', 'ddrb']) c[k] = m[k];
+    this.irqBytes = new Set((o.irqBytes || []).map(a => a & 0xFFFF));
+    this.ib = { live: new Map(), list: null, used: new Map() };   // the stretch's reads of them
     this.io = this.makeIO();
     P.io = Object.assign({}, P.io, this.io);
     this.timing = o.timing || null;
@@ -189,7 +201,47 @@ class Lockstep {
       colourRead: i => c.colour[i & 0x3FF], colourWrite: (i, v) => wr(0xD800 | (i & 0x3FF), v),
       ciaRead: r => rd(0xDC00 | (r & 0x0F)), ciaWrite: (r, v) => wr(0xDC00 | (r & 0x0F), v),
       cia2Read: r => rd(0xDD00 | (r & 0x0F)), cia2Write: (r, v) => wr(0xDD00 | (r & 0x0F), v),
+      irqByte: a => this.irqByte(a & 0xFFFF),
     };
+  }
+  // A byte an interrupt writes, as the game's main program read it at this point of the stretch.
+  irqByte(a) {
+    if (!this.irqBytes.has(a)) throw this.annotate(new Error('Lockstep: the port read ' + hex(a) + ' through irqByte, and it is not in irqBytes'));
+    const s = this.ib, i = s.used.get(a) || 0;
+    s.used.set(a, i + 1);
+    let vs = (s.list || s.live).get(a) || [];
+    // the game waiting at a stop the port has not reached has read all it will in the stretch
+    if (i >= vs.length && !s.list && !(this.at >= 0 && !this.matched)) { s.list = this.lookahead(); vs = s.list.get(a) || []; }
+    return i < vs.length ? vs[i] : this.P.M[a];
+  }
+  // The game's reads of irqBytes to the end of the stretch: those it has made since the last stop,
+  // then a copy's, run on from here to the next stop outside its interrupts.
+  lookahead() {
+    const m = this.m, g = m.constructor.restore(m.save());
+    if (!(g instanceof m.constructor)) throw new Error('Lockstep: irqBytes needs ' + m.constructor.name + '.restore, to copy the machine');
+    g.sidw.set(m.sidw);
+    const out = new Map(), B = this.irqBytes;
+    for (const [a, vs] of this.ib.live) out.set(a, vs.slice());
+    let depth = 0, stop = false, skip = g.cpu.pc;
+    for (const a of [...this.cps, ...this.waits]) {
+      const prev = g.hooks[a];
+      g.hooks[a] = c => {
+        if (depth) return prev ? prev(c) : false;                     // an interrupt's code
+        if (a === skip) { skip = -1; return prev ? prev(c) : false; }   // the stop it starts at
+        stop = true; g.stopFlag = true; return true;
+      };
+    }
+    const irq = g.cpu.irq, run = g.cpu.run;
+    g.cpu.irq = function (h, o) { depth++; try { return irq.call(this, h, o); } finally { depth--; } };
+    const reads = new Proxy({}, { set(t, k) {
+      const a = +k;
+      if (!depth && B.has(a)) { if (!out.has(a)) out.set(a, []); out.get(a).push(g.ram[a]); }
+      return true;
+    } });
+    g.cpu.run = function (o) { return run.call(this, Object.assign({}, o, { reads })); };
+    const end = g.frames + this.maxFrames;
+    while (!stop && g.frames < end) g.runCycles(FRAME);
+    return out;
   }
   // A chip read, the raster as the game's interrupt handler read it while one is being replayed.
   portRead(a) {
@@ -219,7 +271,7 @@ class Lockstep {
     const m = this.m, cpu = m.cpu, ls = this;
     if (this.at >= 0 && cpu.pc !== this.at) throw new Error('Lockstep: the machine has run since the lockstep stopped it');
     const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
-    const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead') };
+    const s = this.saved = { hooks: {}, onPass: m.onPass, irq: own(cpu, 'irq'), ioRead: own(m, 'ioRead'), run: own(cpu, 'run') };
     m.onPass = null;
     for (const a of [...this.cps, ...this.waits]) {
       const prev = m.hooks[a];
@@ -259,6 +311,16 @@ class Lockstep {
         ls.pending.push(q);
       }
     };
+    // the main program's reads of irqBytes, as it makes them
+    if (this.irqBytes.size) {
+      const run = cpu.run, B = this.irqBytes, live = () => ls.ib.live;
+      const reads = new Proxy({}, { set(t, k) {
+        const a = +k;
+        if (ls.irq === null && B.has(a) && !ls.ib.list) { const L = live(); if (!L.has(a)) L.set(a, []); L.get(a).push(cpu.m[a]); }
+        return true;
+      } });
+      cpu.run = function (o) { return run.call(this, Object.assign({}, o, { reads })); };
+    }
     const ioRead = m.ioRead;
     m.ioRead = function (a) {
       const v = ioRead.call(this, a), q = ls.irq;
@@ -275,6 +337,7 @@ class Lockstep {
     for (const a of Object.keys(s.hooks)) { if (s.hooks[a]) m.hooks[a] = s.hooks[a]; else delete m.hooks[a]; }
     if (s.irq) m.cpu.irq = s.irq; else delete m.cpu.irq;
     if (s.ioRead) m.ioRead = s.ioRead; else delete m.ioRead;
+    if (s.run) m.cpu.run = s.run; else delete m.cpu.run;
     m.onPass = s.onPass;
     this.saved = null;
   }
@@ -431,6 +494,7 @@ class Lockstep {
     this.from = a; this.c0 = cyc; this.ic0 = this.irqCycles; this.in0 = this.irqCount;
     this.calls = {}; this.polls = 0; this.estimate = 0;
     this.syncs++; this.last = a; this.since = 0;
+    this.ib = { live: new Map(), list: null, used: new Map() };
   }
   passStart() {
     const m = this.m;

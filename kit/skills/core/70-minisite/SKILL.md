@@ -329,10 +329,12 @@ Write the port to that from the start. Each file's header is its manual.
   jiffy clock, its key code and its shift flag change under the main
   program, which may read one several times in a stretch between
   checkpoints and see different values. Have the port read each such
-  byte through a single function (`P.irq_byte(a)`), and in the lockstep
-  record, per stretch, every value the game read from it, in order; the
-  function hands them to the port one read at a time. Handing it only the
-  first value leaves every later read stale.
+  byte through `P.io.irqByte(a)`, and list the bytes in the lockstep's
+  `irqBytes`: it hands the port, one read at a time, every value the
+  game read from each in the same stretch, in order (`kit/c64/lockstep.js`
+  says how, and what it cannot see). On the page, `irqByte` is
+  `a => M[a]`. Handing the port only the first value leaves every later
+  read stale.
 - **Pace it by the machine's clock.** A game that moves a fixed step per
   pass is only the same game at the same passes per second. The port
   executes no instructions, so fit their cost: the lockstep's `timing`
