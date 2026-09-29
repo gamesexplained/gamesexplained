@@ -177,7 +177,7 @@ input[type=range]{width:100%}
 </section>
 <section id="enemies">
   <p class="fig">06 · The enemies</p>
-  <h2 class="t">The longer you stay, the faster the enemies get</h2>
+  <h2 class="t">Five enemies a screen, on scripted paths</h2>
   <p class="lede">Each screen has five enemies on sprites 2 to 6, and a sixth on sprite 7 that is thrown in from one of them now and then. Their shapes come from the screen's record. Flip through each screen's set.</p>
   <div class="plate">
     <div class="row" id="en-pick"></div>
@@ -185,7 +185,7 @@ input[type=range]{width:100%}
     <p class="kv" id="en-kv"></p>
     <p class="cap">Four frames per enemy, in the order the game steps through them. Colours are the ones the game sets on arrival (<code>$D029</code>-<code>$D02D</code>); multicolour sprites share <code>$D025</code> and <code>$D026</code>.</p>
   </div>
-  <p>Each enemy slot has a number of lives (<code>$45E7</code>) and a chance out of 128 of coming back after it leaves the screen (<code>$45E2</code>, <code>respawn_timer</code> at <code>$2FB2</code>). When every slot has used up its lives, <code>level_up</code> (<code>$2C19</code>) adds one to the LEVEL counter and shows it over the play area, and <code>speed_up</code> (<code>$5681</code>) halves every enemy's movement and animation delays. So the enemies double their speed every time the counter goes up.</p>
+  <p>Enemies cannot be killed. The code gives each slot a count it calls lives (<code>$45E7</code>), but a life here is one entrance: each time a slot comes back on screen (<code>respawn_timer</code>, <code>$2FB2</code>, a chance out of 128 from <code>$45E2</code>) it uses one, and leaving by an edge gives it back. When every slot has used up its count and all five are off the screen, <code>level_up</code> (<code>$2C19</code>) adds one to a LEVEL counter, shows it over the play area, and <code>speed_up</code> (<code>$5681</code>) halves every enemy's movement and animation delays. Whether play ever gets there is unknown. With edges refunding a life and counts of 200 on most slots, it has not been seen.</p>
   <p>A touch costs energy and nothing else. <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware's sprite collision register, <code>$D01E</code>. When the boy and exactly one enemy are in it, two steps of poison go on the bar, and the enemy carries on. Stand still at the start of the forest and the bar holds for 16 seconds, until an enemy wanders onto him and takes 69 steps in a single visit.</p>
   <p>The enemies follow scripts of direction bytes (0 up, 1 down, 2 left, 3 right), each ended by <code>$FF</code>, at <code>path_scripts</code> (<code>$4A00</code>-<code>$4A8F</code>). <code>path_step</code> (<code>$CC12</code>) moves an enemy one pixel every few passes and reads the next byte every 8th move. Nine scripts serve all fifty slots. Three walk down and back up, four hold one direction for ever, and three are long runs down with one stray byte that matches none of the four directions, so it does nothing. Step through any enemy's script on the <a href="levels.html">Maps / levels</a> tab.</p>
 </section>
