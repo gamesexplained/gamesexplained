@@ -29,11 +29,12 @@ stage ran. What ANTISOFT denotes was not established in this step.
 
 ## From power-on to play
 
-1. `vice_autostart` the file. VICE wraps a bare PRG into a disk image of
-   its own (`tools/vice-home/cache/vice/autostart-C64SC.d64`), attaches it
-   as unit 8, and runs `LOAD"*",8,1` and `RUN`. Autostarting a PRG with no
-   unit attached to serve it sits at `SEARCHING FOR *` forever, so the
-   wrap-and-attach is what makes this file load.
+1. `vice_autostart` the file; no attach is needed first. VICE wraps a
+   bare PRG into a disk image of its own
+   (`tools/vice-home/cache/vice/autostart-C64SC.d64`), attaches it as
+   unit 8, and runs `LOAD"*",8,1` and `RUN`: the name is `*` because the
+   file's is longer than 16 characters. This is VICE's default for any
+   PRG, and the same call as dropping the file on its window.
 2. Autostart turns warp mode on. Turn it off before timing anything:
    `tools_call` → `vice_machine_config_set` `{"resources": {"WarpMode": 0}}`
    (the typed wrapper rejects the argument).

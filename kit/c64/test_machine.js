@@ -1,40 +1,89 @@
 'use strict';
-// A self-test of kit/c64/machine.js on a program of its own: a raster interrupt on line 0 that
-// counts frames, a main loop that counts its passes and scans the keyboard's row 0 and the
-// joystick. Exits 1 on any failure. node kit/c64/test_machine.js
+// A self-test of kit/c64/machine.js on a program of its own: two raster interrupts, one at line 0
+// that counts frames and one at line 16, and a main loop that counts its passes, scans the
+// keyboard's row 0 and the joystick, sums a table, waits for a raster line, runs a delay loop and
+// polls for the next frame. The program is kit/c64/test_lockstep.js's too (program(), below).
+// Exits 1 on any failure. node kit/c64/test_machine.js
 const { Machine, KEY } = require('./machine.js');
-const ram = new Uint8Array(65536);
-const at = (a, bytes) => bytes.forEach((b, i) => { ram[a + i] = b; });
-// $1000: SEI; $01 = $35 (the KERNAL banked out, as a game does); vector $FFFE = $1100; raster
-// compare line 0; enable it; $DC02 = $FF; CLI
-at(0x1000, [0x78, 0xA9, 0x35, 0x85, 0x01, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF,
-  0xA9, 0x00, 0x8D, 0x12, 0xD0, 0xAD, 0x11, 0xD0, 0x29, 0x7F, 0x8D, 0x11, 0xD0,
-  0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0xA9, 0xFF, 0x8D, 0x02, 0xDC, 0x58]);
-// $1027 main: INC $2000; row 0 of the keyboard into $2002; the joystick's port into $2003; JMP $1027
+
 const MAIN = 0x1027;
-at(MAIN, [0xEE, 0x00, 0x20, 0xA9, 0xFE, 0x8D, 0x00, 0xDC, 0xAD, 0x01, 0xDC, 0x8D, 0x02, 0x20,
-  0xA9, 0xFF, 0x8D, 0x00, 0xDC, 0xAD, 0x00, 0xDC, 0x8D, 0x03, 0x20, 0x4C, MAIN & 255, MAIN >> 8]);
-// $1100 irq: PHA; INC $2001; LDA #$FF; STA $D019; PLA; RTI
-at(0x1100, [0x48, 0xEE, 0x01, 0x20, 0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40]);
-let fails = 0;
-const check = (what, got, want) => { if (got !== want) { fails++; console.log('FAIL', what, 'got', got, 'want', want); } else console.log('ok  ', what); };
-const m = new Machine({ ram, pc: 0x1000, passAt: MAIN });
-m.runFrames(10);
-check('ten frames, ten raster interrupts', ram[0x2001], 10);
-check('frames counted', m.frames, 10);
-check('passes counted at passAt', m.passes & 255, ram[0x2000]);
-check('no key: row 0 reads $FF', ram[0x2002], 0xFF);
-m.press('DEL'); m.runFrames(1);
-check('DEL (row 0, column 0) held', ram[0x2002], 0xFE);
-m.releaseAll(); m.joy = 0x1F & ~16; m.runFrames(1);
-check('fire held: port A bit 4 low', ram[0x2003] & 0x10, 0);
-check('KEY.RETURN is row 0 column 1', KEY.RETURN, 1);
-// stop at a pass and resume without counting it twice
-const n = m.passes;
-m.runUntilPass(q => q.passes >= n + 3);
-check('stopped at passAt', m.cpu.pc, MAIN);
-const s = Machine.restore(m.save());
-s.runPasses(2); m.runPasses(2);
-check('restored machine runs as the original', Buffer.compare(Buffer.from(s.ram), Buffer.from(m.ram)), 0);
-check('restored pass count', s.passes, m.passes);
-process.exit(fails ? 1 : 0);
+// The program's addresses, for test_lockstep.js: the main loop's calls, the raster wait's exit
+// and the two handlers.
+const ADDR = { ENTRY: 0x1000, MAIN, SCAN: 0x1040, WORK: 0x1057, WAIT: 0x107D, WAIT_EXIT: 0x1084, DELAY: 0x1085,
+  POLL: 0x108B, IRQ_TOP: 0x1100, IRQ_SPLIT: 0x1130, CALLS: [0x102A, 0x102D, 0x1030, 0x1033, 0x1036] };
+
+function program() {
+  const ram = new Uint8Array(65536);
+  const at = (a, bytes) => bytes.forEach((b, i) => { ram[a + i] = b; });
+  // $1000: SEI; $01 = $35 (the KERNAL banked out, as a game does); vector $FFFE = $1100; raster
+  // compare line 0; enable it; $DC02 = $FF; CLI
+  at(0x1000, [0x78, 0xA9, 0x35, 0x85, 0x01, 0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF,
+    0xA9, 0x00, 0x8D, 0x12, 0xD0, 0xAD, 0x11, 0xD0, 0x29, 0x7F, 0x8D, 0x11, 0xD0,
+    0xA9, 0x01, 0x8D, 0x1A, 0xD0, 0xA9, 0xFF, 0x8D, 0x02, 0xDC, 0x58]);
+  // $1027 main: INC $2000; JSR scan; JSR work; JSR wait; JSR delay; JSR poll; JMP $1027
+  at(MAIN, [0xEE, 0x00, 0x20, 0x20, 0x40, 0x10, 0x20, 0x57, 0x10, 0x20, 0x7D, 0x10, 0x20, 0x85, 0x10,
+    0x20, 0x8B, 0x10, 0x4C, MAIN & 255, MAIN >> 8]);
+  // $1040 scan: row 0 of the keyboard into $2002, the joystick's port into $2003
+  at(0x1040, [0xA9, 0xFE, 0x8D, 0x00, 0xDC, 0xAD, 0x01, 0xDC, 0x8D, 0x02, 0x20,
+    0xA9, 0xFF, 0x8D, 0x00, 0xDC, 0xAD, 0x00, 0xDC, 0x8D, 0x03, 0x20, 0x60]);
+  // $1057 work: $200C = 0; A = $2004; for X = 0-255: CLC; ADC $2100,X; EOR $2002; then ADC $2003
+  // (with the last carry); $2004 = A; $200A = $2005, the count the interrupt at line 16 moved on
+  // meanwhile; $200B = 0. 3,879 cycles, so that interrupt falls inside it.
+  at(0x1057, [0xA9, 0x00, 0x8D, 0x0C, 0x20, 0xA2, 0x00, 0xAD, 0x04, 0x20, 0x18, 0x7D, 0x00, 0x21, 0x4D, 0x02, 0x20,
+    0xE8, 0xD0, 0xF6, 0x6D, 0x03, 0x20, 0x8D, 0x04, 0x20, 0xAD, 0x05, 0x20, 0x8D, 0x0A, 0x20, 0xA9, 0x00, 0x8D, 0x0B, 0x20,
+    0x60]);
+  // $107D wait: LDA #$80; CMP $D012; BNE (to the CMP); $1084 RTS, the wait's exit
+  at(0x107D, [0xA9, 0x80, 0xCD, 0x12, 0xD0, 0xD0, 0xFB, 0x60]);
+  // $1085 delay: LDX #0; DEX; BNE (to the DEX); RTS: 1,287 cycles
+  at(0x1085, [0xA2, 0x00, 0xCA, 0xD0, 0xFD, 0x60]);
+  // $108B poll: LDA $2001; CMP $2001; BEQ (to the CMP); RTS: until the line-0 interrupt counts
+  at(0x108B, [0xAD, 0x01, 0x20, 0xCD, 0x01, 0x20, 0xF0, 0xFB, 0x60]);
+  // $1100 irq at line 0: PHA; TXA; PHA; $2006 = $D012; INC $2001; a delay of 40 turns; $2008 =
+  // $D012, a later line; the vector to $1130 at line 16; LDA #$FF; STA $D019; PLA; TAX; PLA; RTI
+  at(0x1100, [0x48, 0x8A, 0x48, 0xAD, 0x12, 0xD0, 0x8D, 0x06, 0x20, 0xEE, 0x01, 0x20,
+    0xA2, 0x28, 0xCA, 0xD0, 0xFD, 0xAD, 0x12, 0xD0, 0x8D, 0x08, 0x20,
+    0xA9, 0x30, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x10, 0x8D, 0x12, 0xD0,
+    0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0xAA, 0x68, 0x40]);
+  // $1130 irq at line 16: PHA; $2009 = $D019 (the raster's bit latched); $2007 = $2004 (the sum
+  // as work found it, still making the next); INC $2005; $200C = $2005; $200B = $FF; the vector
+  // back to $1100 at line 0; LDA #$FF; STA $D019; PLA; RTI
+  at(0x1130, [0x48, 0xAD, 0x19, 0xD0, 0x8D, 0x09, 0x20, 0xAD, 0x04, 0x20, 0x8D, 0x07, 0x20, 0xEE, 0x05, 0x20,
+    0xAD, 0x05, 0x20, 0x8D, 0x0C, 0x20, 0xA9, 0xFF, 0x8D, 0x0B, 0x20,
+    0xA9, 0x00, 0x8D, 0xFE, 0xFF, 0xA9, 0x11, 0x8D, 0xFF, 0xFF, 0xA9, 0x00, 0x8D, 0x12, 0xD0,
+    0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40]);
+  // $2100: the table work sums
+  for (let i = 0; i < 256; i++) ram[0x2100 + i] = (i * 13 + 7) & 255;
+  return ram;
+}
+
+module.exports = { program, ADDR };
+
+if (require.main === module) {
+  const ram = program();
+  let fails = 0;
+  const check = (what, got, want) => { if (got !== want) { fails++; console.log('FAIL', what, 'got', got, 'want', want); } else console.log('ok  ', what); };
+  const m = new Machine({ ram, pc: 0x1000, passAt: MAIN });
+  m.runFrames(10);
+  check('ten frames, ten interrupts at line 0', ram[0x2001], 10);
+  check('one at line 16 after each but the last', ram[0x2005], 9);
+  check('frames counted', m.frames, 10);
+  check('passes counted at passAt', m.passes & 255, ram[0x2000]);
+  check('one pass a frame', m.passes, 10);
+  check('no key: row 0 reads $FF', ram[0x2002], 0xFF);
+  check('the raster read in the interrupt moves on with its cycles', ram[0x2008] > ram[0x2006], true);
+  check('$D019 in the interrupt: the raster\'s bit latched and the IRQ line', ram[0x2009], 0xF1);
+  m.press('DEL'); m.runFrames(1);
+  check('DEL (row 0, column 0) held', ram[0x2002], 0xFE);
+  m.releaseAll(); m.joy = 0x1F & ~16; m.runFrames(1);
+  check('fire held: port A bit 4 low', ram[0x2003] & 0x10, 0);
+  check('KEY.RETURN is row 0 column 1', KEY.RETURN, 1);
+  // stop at a pass and resume without counting it twice
+  const n = m.passes;
+  m.runUntilPass(q => q.passes >= n + 3);
+  check('stopped at passAt', m.cpu.pc, MAIN);
+  const s = Machine.restore(m.save());
+  s.runPasses(2); m.runPasses(2);
+  check('restored machine runs as the original', Buffer.compare(Buffer.from(s.ram), Buffer.from(m.ram)), 0);
+  check('restored pass count', s.passes, m.passes);
+  process.exit(fails ? 1 : 0);
+}

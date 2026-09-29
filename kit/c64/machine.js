@@ -34,7 +34,10 @@
 // - save() and Machine.restore(state): the whole machine as JSON, for tests that start from a
 //   moment of play. A state holds the game's memory: it stays in the game's gitignored work/.
 // - ioRead and ioWrite may be wrapped by a test to watch the chips (the frame recorder in the
-//   minisite skill does): they see every access in order, with cpu.cycles as the time.
+//   minisite skill does, and so does kit/c64/lockstep.js): they see every access in order, with
+//   cpu.cycles as the time. The lockstep also calls them on a second Machine that never runs, as
+//   a port's chips (its line the lockstep's, its keys and joy the game's), so they use nothing but
+//   the chip state and this.line.
 const fs = require('fs');
 const { CPU } = require('./cpu6502.js');
 

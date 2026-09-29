@@ -55,6 +55,16 @@ a 57th added, the v3.13.1 release on Linux passed all but
 
 1. `vice_disk_attach` the image, then `vice_autostart` it (or autostart
    the image directly). Wait; screenshot with `vice_display_screenshot`.
+   A bare `.prg` needs no attach: `vice_autostart` it by its path. VICE
+   writes it into a disk image of its own,
+   `tools/vice-home/cache/vice/autostart-C64SC.d64`, attaches that as
+   unit 8, and types `LOAD"<name>",8,1` and `RUN`, where the name is the
+   file's name without `.prg`, or `*` when that is longer than 16
+   characters. It is the call VICE makes when a file is dropped on its
+   window (`AutostartPrgMode`, disk image by default; `autostart_prg` in
+   `vice/src/autostart.c`, read in the v3.13.1 source on 29 September
+   2026). If the screen stays on `SEARCHING FOR`, prove the machine is
+   running (step 3) before blaming the load.
 2. `vice_machine_config_get` to confirm PAL/NTSC; autostart turns **warp
    mode on**. Turn it off through the generic `tools_call` with
    `{"name": "vice_machine_config_set", "arguments": {"resources": {"WarpMode": 0}}}`

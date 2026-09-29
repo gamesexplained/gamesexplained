@@ -81,9 +81,9 @@ address links into the Source tab, and the house style in `kit/style.md`.
    model leaves out. The filter is off unless the page passes
    `filter: '6581'` (or `'8580'`) to `mount`, which also shows a switch
    to compare it with no filter; pass it when the game sets the filter,
-   and say in the caption that the cutoff is one chip's. Say beside a sound below about 100 Hz that laptop
-   and phone speakers barely play it: a reader who hears nothing reports
-   it missing. Before believing such a report, render the writes through
+   and say in the caption that the cutoff is one chip's. Say beside a
+   sound below about 100 Hz that laptop and phone speakers barely play
+   it: a reader who hears nothing reports it missing. Before believing such a report, render the writes through
    the model (`C64Sid.engine()` in node) and measure the output.
 - **Secrets, quirks and bugs.** The best part. Things a player who
    finished the game would not know, each verified live, with the
@@ -279,7 +279,10 @@ With no demonstration to replay, run the game's own code beside the port
 and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
 machine for it: the simulator with a raster interrupt, the keyboard, the
 joystick and colour RAM around it, started from the listing's memory,
-counting passes where the main loop begins; its header is the manual.
+counting passes where the main loop begins. `kit/c64/lockstep.js` runs a
+port beside it and says what the port gives it: the checkpoints it
+yields, its raster waits, its polling loops and its interrupt handlers.
+Write the port to that from the start. Each file's header is its manual.
 
 - **Port routine by routine, on the game's own memory.** One function per
   listing label, reading and writing the game's variables where the game
@@ -293,32 +296,42 @@ counting passes where the main loop begins; its header is the manual.
   call chain started lower can run down into tables the game keeps in the
   stack page, and the failures look like the game's.
 - **Then the whole loop in lockstep.** Make the port's main loop yield at
-  checkpoints, the return address of each call in its body. Run the game
-  to the same address, note the interrupts that ran on the way, run those
-  interrupts in the port at the checkpoint, and compare all of memory at
-  the start of every pass, from saved moments of play with recorded input.
-  While a group is unfinished, the game's own code stands in for its
-  routines. A polling loop in the port needs a clock that moves while it
-  polls; give the port a virtual raster that the checkpoints set from the
-  game's.
+  checkpoints, the address of each call in its body. The lockstep runs the
+  game to the same address and runs the interrupts it took on the way in
+  the port there. It compares memory at the start of every pass, from
+  saved moments of play with recorded input: `onPass` for input held over
+  passes, `onFrame` for a key the game waits for in the middle of one. A
+  checkpoint the game reaches that the port did not yield stops the run
+  with both named. While a group is unfinished, the game's own code stands
+  in for its routines (`standIn`). A polling loop in the port yields at
+  each turn and the game moves on a raster line, so the port sees the
+  line and the flags the game's loop does. A wait for a line yields the
+  line, and the game runs to the loop's exit.
 - **What lockstep cannot match is the game's own races.** The port runs an
-  interrupt between two steps; the machine runs it wherever it falls. An
-  interrupt that uses the main code's scratch bytes, or changes a value
-  the main code is reading, gives results on the machine that depend on
-  where it fell. When a difference survives, hook the machine at the
+  interrupt between two steps; the machine runs it wherever it falls. The
+  lockstep closes most of that gap: each handler runs on the bytes the
+  game's read, at the values it read them, and the game's last writer of
+  each byte stands. What is left is the main code reading, in the middle
+  of a stretch, what an interrupt wrote there: a scratch byte both use, a
+  value the interrupt moves on. The results then depend on where the
+  interrupt fell. When a difference survives, hook the machine at the
   addresses involved and look for an interrupt between the store and the
   read before calling it a port bug. Leave those bytes out of the
   comparison only once the race is shown, and say on the page what the
-  port shows instead.
+  port shows instead. A byte the port does not keep the game's way (a
+  register a routine saves, where the port calls it without that
+  register) differs now and then; name it and leave it out too.
 - **Pace it by the machine's clock.** A game that moves a fixed step per
   pass is only the same game at the same passes per second. The port
-  executes no instructions, so fit their cost: in the lockstep, record for
-  each stretch between checkpoints the cycles the game took (its
-  interrupts excluded) and how often the port called each routine, plus
-  pixels drawn and rows filled, and fit each routine's own cycles by
-  non-negative least squares. Check the fit on sessions it was not fitted
-  on, then check the pace itself: passes in the same frames from the same
-  moment, on the machine and on the page.
+  executes no instructions, so fit their cost: the lockstep's `timing`
+  gives, for each stretch between checkpoints, the cycles the game took
+  (its interrupts excluded) and how often the port called each routine.
+  Add the pixels drawn and rows filled from the port's own counters, and
+  fit each routine's own cycles by non-negative least squares. Check the
+  fit on sessions it was not fitted on, and on every kind of play the
+  page offers: a scene the fit never saw can run fast by a routine it
+  never costed. Then check the pace itself: passes in the same frames from
+  the same moment, on the machine and on the page.
 - **A clock, not a frame loop.** Each stretch moves a virtual PAL clock on
   by its cost, running the raster interrupts on their lines as it goes; a
   raster wait moves the clock to its line and the interrupts on the way
