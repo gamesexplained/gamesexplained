@@ -181,8 +181,16 @@ ul.odd li{margin:0 0 12px}
   <p>The girl's frames sit exactly 16 pointers after the boy's, so one set of routines can draw either. <code>player_swap</code> (<code>$576B</code>) adds or takes away that 16 in the three places the frame numbers are kept.</p>
   <p>The enemies live on sprites 2 to 6, and a sixth on sprite 7 is thrown in from one of them now and then. Their shapes are named in the screen's settings. Most are stored at <code>$2000</code>-<code>$29FF</code>, and seven of the ten screens also use a second store at <code>$0B00</code>-<code>$0FFE</code>.</p>
 </section>
+<section id="paths">
+  <p class="fig">07 · The enemies</p>
+  <h2 class="t">You can't kill them, only keep out of the way</h2>
+  <p class="lede">An enemy that runs into the character you control costs energy and nothing else. It carries on along its path, and it cannot be killed.</p>
+  <p>The game has no hit test of its own: <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware's sprite collision register, <code>$D01E</code>, and when your sprite and exactly one enemy sprite overlap, two steps of poison go on the bar. Stand still at the start of the forest and the bar holds for 16 seconds, until an enemy wanders onto him and takes 69 steps in a single visit.</p>
+  <p>The enemies follow scripts of direction bytes (0 up, 1 down, 2 left, 3 right), each ended by <code>$FF</code>, at <code>path_scripts</code> (<code>$4A00</code>-<code>$4A8F</code>). <code>path_step</code> (<code>$CC12</code>) moves an enemy one pixel every few passes and reads the next byte every 8th move. Nine scripts serve all fifty slots. Three walk down and back up, four hold one direction for ever, and three are long runs down with one stray byte that matches none of the four directions, so it does nothing. Step through any enemy's script on the <a href="levels.html">Maps / levels</a> tab.</p>
+  <p>An enemy that walks off an edge comes back later: <code>respawn_timer</code> (<code>$2FB2</code>) gives an empty slot a chance out of 128 (<code>$45E2</code>) to return.</p>
+</section>
 <section id="energy">
-  <p class="fig">07 · Energy</p>
+  <p class="fig">08 · Energy</p>
   <h2 class="t">No lives, and every step costs</h2>
   <p class="lede">Chiller has no lives. You have one energy bar to manage, and when it empties the game is over. Enemies and toadstools drain it and mushrooms fill it. Unusually, walking and jumping cost energy too. Try each on the bar below, which uses the game's own step sizes.</p>
   <div class="plate">
@@ -210,7 +218,7 @@ ul.odd li{margin:0 0 12px}
   <p>The inlay says walking, running and jumping each cost more than the last. There is no running in the code. There is one walking speed, and it gets slower as the bar empties: once the bar's seventh cell is no longer full, <code>bar_speed</code> (<code>$5961</code>) patches the main loop to read the controls every 128 passes instead of every 32. An empty bar goes straight to GAME OVER (<code>out_of_energy</code>, <code>$5A70</code>).</p>
 </section>
 <section id="jump">
-  <p class="fig">08 · The jump</p>
+  <p class="fig">09 · The jump</p>
   <h2 class="t">Jump to go up, fall as far as you like</h2>
   <p class="lede">The jump is 24 one-pixel steps up, each a little slower than the last, and the same steps back down in reverse. However far the boy falls afterwards, he lands unhurt.</p>
   <div class="plate">
@@ -219,14 +227,6 @@ ul.odd li{margin:0 0 12px}
   </div>
   <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the game switches the controls off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so he keeps the direction he took off in until he lands. He climbs by jumping. All ten screens switch off up and down as walking directions (<code>$4500</code>-<code>$4503</code>), so he has no climb of his own and gets up the screen one jump at a time, from ledge to ledge.</p>
   <p>Some ledges crumble. Tiles <code>$4D</code>-<code>$53</code> are one ledge in seven stages. Every eighth step on it moves it on a stage, and the last stage is empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
-</section>
-<section id="paths">
-  <p class="fig">09 · The enemies</p>
-  <h2 class="t">You can't kill them, only keep out of the way</h2>
-  <p class="lede">An enemy that runs into the character you control costs energy and nothing else. It carries on along its path, and it cannot be killed.</p>
-  <p>The game has no hit test of its own: <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware's sprite collision register, <code>$D01E</code>, and when your sprite and exactly one enemy sprite overlap, two steps of poison go on the bar. Stand still at the start of the forest and the bar holds for 16 seconds, until an enemy wanders onto him and takes 69 steps in a single visit.</p>
-  <p>The enemies follow scripts of direction bytes (0 up, 1 down, 2 left, 3 right), each ended by <code>$FF</code>, at <code>path_scripts</code> (<code>$4A00</code>-<code>$4A8F</code>). <code>path_step</code> (<code>$CC12</code>) moves an enemy one pixel every few passes and reads the next byte every 8th move. Nine scripts serve all fifty slots. Three walk down and back up, four hold one direction for ever, and three are long runs down with one stray byte that matches none of the four directions, so it does nothing. Step through any enemy's script on the <a href="levels.html">Maps / levels</a> tab.</p>
-  <p>An enemy that walks off an edge comes back later: <code>respawn_timer</code> (<code>$2FB2</code>) gives an empty slot a chance out of 128 (<code>$45E2</code>) to return.</p>
 </section>
 <section id="unused">
   <p class="fig">10 · Secret</p>
