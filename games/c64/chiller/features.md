@@ -34,8 +34,10 @@ Sources:
 
 What the sources say about who made it: code by Richard Darling and graphics
 by David Darling (Games That Weren't); "Creator: David Darling, Richard
-Darling", title screen by Jim Wilson and music by David Dunn (Lemon64). The
-game's own title screen says "PROGRAMMED BY DAVID AND RICHARD DARLING".
+Darling", title screen attributed to James Wilson and music by David Dunn
+(Lemon64). Ready64 names Jim Wilson for the title screen; CSDb records Jim
+and James as names for the same artist. The game's own title screen says
+"PROGRAMMED BY DAVID AND RICHARD DARLING" and does not credit Wilson.
 
 ## Features
 
@@ -60,7 +62,7 @@ game's own title screen says "PROGRAMMED BY DAVID AND RICHARD DARLING".
 | On the return journey only, fire (or `?`) switches control between the boy and the girl | **live** | `switch_request` `$58B3`, `switch_allowed` `$7280` (level byte 10 on); `/` in the forest did nothing, fire and `/` on the way back gave the girl |
 | On the return journey, the border colour shows who is being controlled | **live** | `tick_border` `$75B0`: 6 the boy, 10 the girl; border 6 → 10 on the switch. It also shows on the way out, where it is always the boy's |
 | On the return journey, the boy collects the blue crosses and the girl the red ones | **live** | `cross_touch` `$7F50` reads colour bit 2; red crosses beside the boy were left |
-| The goal is to get back to the car | **differs** | The last screen is the forest; after it `crosses_left` passes `$FE` and the game ends in a win. No car is drawn or named in the code |
+| The goal is to get back to the car | **differs** | The last screen is the forest; after its final cross, `crosses_left` passes `$FE` and `next_screen` starts the forest again with the score kept. There is no win screen. No car is drawn or named in the code |
 | Joystick in control port 2 | **live** | `$DC00` only (`read_stick` `$C9C4`) |
 | Keyboard: Z left, C right, SHIFT jump, `?` switch players | **live** | `read_controls` `$C84D` against `$4512`-`$4515`: Z and C walk, `/` (`$C5 = $37`) switches; tested through `vice_keyboard_key_press` |
 | A title screen with the credits and the controls, shown after a game ends | **live** | `game_over_wait` `$7720`, title card `$7C00` |
