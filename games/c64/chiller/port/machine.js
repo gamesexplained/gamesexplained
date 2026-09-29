@@ -6,7 +6,7 @@
 const path = require('path');
 const REPO = path.resolve(__dirname, '../../../..');
 const { Machine, KEY, loadListing, LINE, LINES, FRAME } = require(path.join(REPO, 'kit/c64/machine.js'));
-require('./kernal.js');
+require('./src/kernal.js');
 const K = globalThis.ChillerKernal;
 const TIMER = 0x4025 + 1;
 // the video chip as the KERNAL's start-up table ($ECB9) leaves it, character set $1000 in
