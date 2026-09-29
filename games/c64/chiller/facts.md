@@ -447,10 +447,13 @@ Unreached means no call, jump, pointer or absolute access names it, and no
 run of the kit's simulator (`work/sim_all.sh`, all ten screens from their
 start) executed or read it; each is described in `symbols.json`.
 
-- **A shooting game underneath.** `unused_shot_hit` `$CDC7` would score
-  a shot's hit on an enemy, `unused_kill_enemy` `$2F7B` switches the enemy
-  off and pays out through `add_score_for` `$CE6B`, whose points table is at
-  `$4560`. Chiller has no shot, and nothing reaches these.
+- **Enemies that could be killed.** `unused_shot_hit` `$CDC7` would handle
+  an enemy being hit, `unused_kill_enemy` `$2F7B` switches the enemy off and
+  pays out through `add_score_for` `$CE6B`, whose points table is at
+  `$4560`. Nothing reaches these. The shot in the name is our guess, not the
+  code's: `unused_kill_enemy` takes the enemy from the boy's last collision
+  (`$CF5E`, `$CF5F`, written by `sprite_touch`), and no code for a shot
+  survives. How an enemy was hit is unknown.
 - **Lives.** `new_life` `$CAED` and `lose_life` `$CEDA`, and the start count
   `$45ED`, are reached only from other unused code. The game has one bar
   and no lives.

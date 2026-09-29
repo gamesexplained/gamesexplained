@@ -91,7 +91,7 @@ and data, Bugs):
   counter goes up and `speed_up` `$5681` halves their delays.
 - **The border is the player indicator on every screen**, not only on the
   way back, and flickers while poison drains the bar.
-- **A shooting game underneath.** Shot-hit and kill code with a points
+- **Enemies that could be killed.** Hit and kill code with a points
   table, lives, a scroller and a second-character mode, none reached.
 - **A silenced sound player** whose SID stores all go to `$FFFF`.
 - **SILVER CROSSES**, in HUD rows that are never shown.
