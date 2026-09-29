@@ -68,7 +68,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
 .pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
 .pl-levels button:hover{border-color:var(--ink-mute)}
-.pl-levels button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-levels button[aria-current="true"],.pl-levels button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -97,6 +97,12 @@ section table{margin:6px 0 18px}
     <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
       <span>Start on</span>
     </div>
+    <div class="pl-levels" id="pl-cheats" aria-label="Cheats">
+      <span>Cheats</span>
+      <button type="button" data-cheat="energy" aria-pressed="false" title="The energy bar never goes down, so the game never ends">Endless energy</button>
+      <button type="button" data-cheat="ghosts" aria-pressed="false" title="A ghost's touch costs no energy; toadstools still do">Ghosts don't hurt</button>
+      <button type="button" data-cheat="skip" title="End this level as taking its last cross does">Skip this level</button>
+    </div>
     <ul class="pl-keys">
       <li><kbd>←</kbd> <kbd>→</kbd> or <kbd>Z</kbd> <kbd>C</kbd> walk</li>
       <li><kbd>↑</kbd>, <kbd>Space</kbd> or <kbd>Shift</kbd> jump</li>
@@ -108,7 +114,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn, so the way home finds the five levels as it left them.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn, so the way home finds the five levels as it left them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does.</p>
   </div>
 </section>
 <section id="port">
@@ -188,8 +194,10 @@ const sound = (function () {
 
 // --- the loop: one frame of C64 time per frame of real time --------------------------------
 let acc = 0, last = 0;
+const cheats = { energy: false, ghosts: false };
 function boot(n) {
   rt = ChillerRuntime.create(image, { cost: window.CHILLER_COST });
+  Object.assign(rt.cheats, cheats);
   level = n || 0;
   if (n) { rt.jump(n); overMsg.textContent = 'Going to ' + LEVELS[n].toLowerCase() + '…'; over.hidden = false; }
   sound.attach(); input();
@@ -274,6 +282,19 @@ LEVELS.forEach((name, i) => {
   b.setAttribute('aria-label', 'Start on level ' + (i + 1) + ', ' + name.toLowerCase());
   b.onclick = () => { if (image) start(i); };
   levels.appendChild(b);
+});
+$('pl-cheats').addEventListener('click', e => {
+  const b = e.target.closest('button[data-cheat]'); if (!b) return;
+  const c = b.dataset.cheat;
+  if (c === 'skip') {
+    if (!running || !rt || rt.busy) say('Start the game first.');
+    else { rt.skip(); say('Skipping to the next level…'); }
+  } else {
+    cheats[c] = !cheats[c];
+    b.setAttribute('aria-pressed', String(cheats[c]));
+    if (rt) rt.cheats[c] = cheats[c];
+  }
+  screen.focus();
 });
 $('pl-bar').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;

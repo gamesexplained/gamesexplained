@@ -68,7 +68,7 @@ th{font-weight:700;color:var(--ink-soft)}
 .pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
 .pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
 .pl-levels button:hover{border-color:var(--ink-mute)}
-.pl-levels button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-levels button[aria-current="true"],.pl-levels button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 section table{margin:6px 0 18px}
 .pl-list{margin:0 0 14px;padding-left:20px}
 .pl-list li{margin:0 0 6px}
@@ -97,6 +97,12 @@ section table{margin:6px 0 18px}
     <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
       <span>Start on</span>
     </div>
+    <div class="pl-levels" id="pl-cheats" aria-label="Cheats">
+      <span>Cheats</span>
+      <button type="button" data-cheat="energy" aria-pressed="false" title="The energy bar never goes down, so the game never ends">Endless energy</button>
+      <button type="button" data-cheat="ghosts" aria-pressed="false" title="A ghost's touch costs no energy; toadstools still do">Ghosts don't hurt</button>
+      <button type="button" data-cheat="skip" title="End this level as taking its last cross does">Skip this level</button>
+    </div>
     <ul class="pl-keys">
       <li><kbd>←</kbd> <kbd>→</kbd> or <kbd>Z</kbd> <kbd>C</kbd> walk</li>
       <li><kbd>↑</kbd>, <kbd>Space</kbd> or <kbd>Shift</kbd> jump</li>
@@ -108,7 +114,7 @@ section table{margin:6px 0 18px}
       <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
       <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
     </div>
-    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn, so the way home finds the five levels as it left them.</p>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn, so the way home finds the five levels as it left them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does.</p>
   </div>
 </section>
 <section id="port">
@@ -153,6 +159,7 @@ section table{margin:6px 0 18px}
     <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID. Chiller sets the SID's filter at the start and the model does not filter, so the tunes sound brighter than on a C64.</li>
     <li><b>The interrupt.</b> On the C64 the music and the keyboard scan can interrupt the game between any two instructions; on the page they run between the port's steps. The game reads three bytes the interrupt keeps: the clock, the key held and the SHIFT keys. Where the two runs could read different values, the check gave the port what the game read (section 01). In play, a key or a clock tick can be seen a few hundred cycles later than on a C64, which no one can tell.</li>
     <li><b>Start on.</b> The level buttons are the page's own. They start a new game and finish each level before the one chosen, in the game's own code, as if the crosses had all been taken, so the scores, lives and energy are those of a new game.</li>
+    <li><b>The cheats.</b> They are the page's own, not the game's. Running out of energy is the only way Chiller ends, so with <b>Endless energy</b> on the game goes on for ever. The toadstools still poison you with <b>Ghosts don't hurt</b> on; with both on, they only flash the border.</li>
     <li><b>The keys.</b> The arrows or Z and C walk and up or Space jumps, as the joystick in port 2 does. Shift jumps and ? or / swaps the boy and the girl, as it does on the C64, and fire or any key starts a game. On a C64, SHIFT and C= pressed together switch the character set and scramble the picture, because the game leaves the KERNAL's switch unlocked; the page has no C= key, so that cannot happen.</li>
   </ul>
 </section>
@@ -2824,6 +2831,7 @@ root.ChillerScreen = { draw, W, H };
 // rt.frame, rt.cycles, rt.chips (vic, colour, sidw, keys, joy), rt.P, rt.onSid(fn(r, v, t))
 // rt.jump(n)        a fresh game taken to level n (0-9) as finishing each level before it does;
 //                   the caller runs it fast (rt.busy is true until the level has started)
+// rt.cheats         { energy, ghosts } switched on and off by the page; rt.skip() ends the level
 (function (root) {
 'use strict';
 const LINE = 63, LINES = 312, FRAME = LINE * LINES, TIMER = 0x4025 + 1;
@@ -2930,6 +2938,20 @@ function create(image, opts = {}) {
       if (due && rt.irqOn) { due = false; irq(); if (work) t += IRQ; }
     }
   }
+  // The page's cheats, each through the game's own variables and routines. energy: energy_down
+  // takes nothing off the bar, so the energy never runs out (the only way the game ends). ghosts:
+  // a ghost's touch (sprite_touch, girl_touch) adds no poison; a toadstool still does. skip(): at
+  // the next pass, crosses_left with one cross to go, as taking the last cross does.
+  rt.cheats = { energy: false, ghosts: false };
+  let touching = 0, skip = false;
+  const down = P.energy_down, padd = P.poison_add;
+  P.energy_down = function (r) { return rt.cheats.energy ? P.find_bar_end(r) : down.call(this, r); };
+  P.poison_add = function* (r) { if (rt.cheats.ghosts && touching) return r; return yield* padd.call(this, r); };
+  for (const name of ['sprite_touch', 'girl_touch']) {
+    const f = P[name];
+    P[name] = function* (r) { touching++; try { return yield* f.call(this, r); } finally { touching--; } };
+  }
+  rt.skip = () => { skip = true; };
   let jumpTo = null;
   function* driver() {
     for (;;) {
@@ -2943,6 +2965,11 @@ function create(image, opts = {}) {
             yield* P.next_screen({ a: 0, x: x === 0x12 ? 0xFE : x, y: 0 });
           }
           rt.busy = false;
+        }
+        if (y && y.cp === 0xCA00 && skip) {
+          skip = false;
+          M[0x5A15] = 1;
+          yield* P.crosses_left({ a: 0, x: 0, y: 0 });
         }
         yield y;
       }
@@ -3083,8 +3110,10 @@ const sound = (function () {
 
 // --- the loop: one frame of C64 time per frame of real time --------------------------------
 let acc = 0, last = 0;
+const cheats = { energy: false, ghosts: false };
 function boot(n) {
   rt = ChillerRuntime.create(image, { cost: window.CHILLER_COST });
+  Object.assign(rt.cheats, cheats);
   level = n || 0;
   if (n) { rt.jump(n); overMsg.textContent = 'Going to ' + LEVELS[n].toLowerCase() + '…'; over.hidden = false; }
   sound.attach(); input();
@@ -3169,6 +3198,19 @@ LEVELS.forEach((name, i) => {
   b.setAttribute('aria-label', 'Start on level ' + (i + 1) + ', ' + name.toLowerCase());
   b.onclick = () => { if (image) start(i); };
   levels.appendChild(b);
+});
+$('pl-cheats').addEventListener('click', e => {
+  const b = e.target.closest('button[data-cheat]'); if (!b) return;
+  const c = b.dataset.cheat;
+  if (c === 'skip') {
+    if (!running || !rt || rt.busy) say('Start the game first.');
+    else { rt.skip(); say('Skipping to the next level…'); }
+  } else {
+    cheats[c] = !cheats[c];
+    b.setAttribute('aria-pressed', String(cheats[c]));
+    if (rt) rt.cheats[c] = cheats[c];
+  }
+  screen.focus();
 });
 $('pl-bar').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;

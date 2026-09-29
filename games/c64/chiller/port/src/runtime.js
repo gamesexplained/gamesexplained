@@ -8,6 +8,7 @@
 // rt.frame, rt.cycles, rt.chips (vic, colour, sidw, keys, joy), rt.P, rt.onSid(fn(r, v, t))
 // rt.jump(n)        a fresh game taken to level n (0-9) as finishing each level before it does;
 //                   the caller runs it fast (rt.busy is true until the level has started)
+// rt.cheats         { energy, ghosts } switched on and off by the page; rt.skip() ends the level
 (function (root) {
 'use strict';
 const LINE = 63, LINES = 312, FRAME = LINE * LINES, TIMER = 0x4025 + 1;
@@ -114,6 +115,20 @@ function create(image, opts = {}) {
       if (due && rt.irqOn) { due = false; irq(); if (work) t += IRQ; }
     }
   }
+  // The page's cheats, each through the game's own variables and routines. energy: energy_down
+  // takes nothing off the bar, so the energy never runs out (the only way the game ends). ghosts:
+  // a ghost's touch (sprite_touch, girl_touch) adds no poison; a toadstool still does. skip(): at
+  // the next pass, crosses_left with one cross to go, as taking the last cross does.
+  rt.cheats = { energy: false, ghosts: false };
+  let touching = 0, skip = false;
+  const down = P.energy_down, padd = P.poison_add;
+  P.energy_down = function (r) { return rt.cheats.energy ? P.find_bar_end(r) : down.call(this, r); };
+  P.poison_add = function* (r) { if (rt.cheats.ghosts && touching) return r; return yield* padd.call(this, r); };
+  for (const name of ['sprite_touch', 'girl_touch']) {
+    const f = P[name];
+    P[name] = function* (r) { touching++; try { return yield* f.call(this, r); } finally { touching--; } };
+  }
+  rt.skip = () => { skip = true; };
   let jumpTo = null;
   function* driver() {
     for (;;) {
@@ -127,6 +142,11 @@ function create(image, opts = {}) {
             yield* P.next_screen({ a: 0, x: x === 0x12 ? 0xFE : x, y: 0 });
           }
           rt.busy = false;
+        }
+        if (y && y.cp === 0xCA00 && skip) {
+          skip = false;
+          M[0x5A15] = 1;
+          yield* P.crosses_left({ a: 0, x: 0, y: 0 });
         }
         yield y;
       }
