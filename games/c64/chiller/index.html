@@ -216,7 +216,7 @@ input[type=range]{width:100%}
     <div id="sid"></div>
     <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. Two things differ from a real C64. This player leaves out the sound chip's filter, which the game sets once and keeps on voice 1 for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>), so voice 1 sounds brighter here than it should. And it plays at PAL speed, so the notes are flat, as they were on European machines.</p>
   </div>
-  <p>Of the play tune's 478 frequency values, 464 land within two cents of a note on an American NTSC machine. A European PAL machine runs about 4 % slower, so there every note plays about a third of a semitone flat.</p>
+  <p>Of the in-play tune's 478 frequency values, 464 land within two cents of a note on an American NTSC machine. A European PAL machine runs about 4 % slower, so there every note plays about a third of a semitone flat.</p>
   <p>The driver runs on the system interrupt, 60 times a second, on two voices. Each command is one byte, and the byte is the low half of its handler's address in page <code>$61</code>. <code>music_next_command</code> (<code>$6100</code>) writes it into its own <code>JMP</code> at <code>$610B</code> and jumps, so the tune data is a list of jump targets.</p>
   <table class="t">
     <tr><th>Byte</th><th>Handler</th><th>What it does</th></tr>
@@ -229,7 +229,7 @@ input[type=range]{width:100%}
     <tr><td><code>$82</code>, <code>$91</code>, <code>$AC</code></td><td></td><td>waveforms, envelopes, pulse widths</td></tr>
     <tr><td><code>$C7</code></td><td><code>$61C7</code></td><td>loop to the start</td></tr>
   </table>
-  <p>The count command is how the music talks to the game. The card before each screen stays up until the card tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the jingle does (<code>$5DA9</code>). The play tune never counts. It loops after about 69 seconds.</p>
+  <p>The count command is how the music talks to the game. The card at the start of each level stays up until the level-start tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the game-over tune does (<code>$5DA9</code>). The in-play tune never counts. It loops after about 69 seconds.</p>
 </section>
 <section id="screens">
   <p class="fig">09 · The ten screens</p>
@@ -567,7 +567,7 @@ input[type=range]{width:100%}
     const M = { base: 0x61F8, bytes: Array.from(G.ram.subarray(0x61F8, 0x6BCD)) };
     const S = C64Sid;
     S.mount(root, {
-      driver: createDriver, data: M, tunes: ['Play tune ($61F8)', 'Card tune ($6A18)', 'Jingle ($6B10)'],
+      driver: createDriver, data: M, tunes: ['In play ($61F8)', 'Level start ($6A18)', 'Game over ($6B10)'],
       rows: [
         { k: 'Command', f: v => v.read && `${S.hex(v.read.addr, 4)}: ${S.hex(v.read.c, 2)}` },
         { in: true, f: v => v.read && ({ 0x0E: 'note, voice 1', 0x26: 'note, voice 2', 0x3E: 'note, both voices' })[v.read.c] },
