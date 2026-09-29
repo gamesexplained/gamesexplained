@@ -98,3 +98,18 @@ coverage ledger excludes that range by default as I/O, so the first
 back into the count through `coverage.include`, typed as data, with the
 auto symbols of the code's I/O accesses removed from it and each group of
 blocks described: 100 % of 60,134 bytes.
+
+## 29 September 2026: Martin Galway's music source
+
+The contributor pointed at github.com/MartinGalway/C64_music and asked
+whether it held an unreleased tune. `wizball.asm` lists ten tunes where
+the game has nine. The check that settled it was assembling the source,
+not reading it: a small assembler for the Ocean syntax, then the output
+compared with the music data the page already carried. The first pass
+put the tune table 12 bytes late; part of that was the assembler
+(`LDA ^label` is an immediate high byte, not a zero-page load), and the
+rest is the driver code, which is not the game's revision byte for byte.
+Placing the tune table at `$5525` and dropping tune K left no difference
+in 3,846 bytes. The game image was not in this container, so the driver
+code itself could not be compared. Tune K was added to the page's player
+from the assembled bytes, with the port unchanged.

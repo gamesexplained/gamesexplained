@@ -552,6 +552,58 @@ into those operands before they run.
   Effect 10's table entry points at effect 11's record, so the record at
   `$3D4F` is never played.
 
+## Galway's source for the music
+
+Martin Galway published `wizball.asm` in github.com/MartinGalway/C64_music
+(README dated 14 April 2026; checked at commit a458a36 of 12 May 2026,
+GPL-3.0). Its header reads "Work started 10th February 1987" and
+"(C) OCEAN SOFTWARE LTD 16:31 Thursday 23rd April 1987". It was assembled
+with a small assembler written for its Ocean syntax (`#` low byte and `^`
+high byte, both immediate; `DFL`, `DFW`, `DFH`, `DFS`) and compared with
+the game's bytes as the page's music data holds them (from `entry.vsf`).
+
+- **Ten tunes, lettered B to K.** The source's tune list and its
+  `TUNETABLE` have ten records; the game's table at `$5525` has nine. B to
+  J are the game's tunes 0 to 8 in the same order with the same tempo
+  bytes (4, 6, 7, 5, 2, 5, 9, 2, 8). K, "End Of Bonus Level", tempo 5,
+  voices 1 and 2 at `Texit` and voice 3 at `ENDOFBONUS2`, is not in the
+  game: neither its record nor any run of its notes is in the tune data.
+- **The rest matches byte for byte.** With K's record and its 77-byte
+  track left out and `TUNETABLE` placed at `$5525`, the source assembles to
+  the game's bytes at every address the page's data holds: the command
+  tables' layout at `$4600`, the load offsets `$4717`, the note tables
+  `$471A`-`$47CF`, and the tune table and tune data `$5525`-`$6387`; 3,846
+  bytes, no difference, the source's `ED` at `$6388`. Not compared: the
+  routines at `$5AFF` (17 bytes) and `$5F2E` (5 bytes), which the page's
+  data leaves out.
+- **The driver code is not the same revision.** The command-table
+  entries (handler addresses) differ from the game's by -3 to +3 bytes,
+  and the difference changes through the code, so the source's handlers
+  are not all the game's lengths. The game's code was not in this
+  container to compare instruction by instruction; see `TODO.md`.
+- **Room.** The source's `GAP EQU 15*512-SIZE` with `SIZE EQU ED-$45B0`
+  carries the comment "I've currently got 7.5K to play with". In the
+  game's layout the music ends at `$6388`, one byte before the game's
+  code at `$6389`, and uses 7,640 of the 7,680 bytes; K needs 84 (7 in
+  the table, 77 of track). Whether that is why it was cut is unknown.
+- **Speeds.** The source's tune list gives each tune a speed. The game
+  sets the same speed for every tune but one: F, "Bonus (music not
+  selected) - single-channel bass" (the game's tune 4, bonus stage 1), is
+  listed at 200 Hz, and the game plays it at speed 0, once a frame (50 Hz,
+  `$6573`). K is listed at 50 Hz. The source also names the bonus tunes
+  by whether music was selected. The game offers no such choice among the
+  controls traced above; `$6553`-`$6573` alternates the two instead
+  (`$BB0C`).
+- **`CRIXa`** (";CHRIX A...", under a heading "GAME MUSIC DATA") is not a
+  lost tune: bonus stage 1's voice 3 calls it (`$5E93`, command `$C6` at
+  `$5D35`).
+- **Tune K on the page.** The player keeps K's record and track at
+  `$6400` (outside the game's map; `WIZ_MUSIC.tables.end_of_bonus`) and
+  starts it as the game starts tune 0, voice 3 alone at speed 0. Its 64
+  notes run 1,280 frames (25.6 s); the track ends on its return. It uses
+  only commands whose handlers the port was tested on; the port itself
+  was not changed, and tunes 0 to 8 give the same SID writes as before.
+
 ## Corner cases
 
 Each is what the code does; whether a player can reach it is stated.

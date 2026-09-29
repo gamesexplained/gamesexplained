@@ -101,9 +101,8 @@
       if(fig&&(!e.h2||fig.compareDocumentPosition(e.h2)&Node.DOCUMENT_POSITION_FOLLOWING)){
         var f=bare(fig), m=/^(\d+)\s*[·:.–—-]\s*(.*)$/.exec(f); num=m?m[1]:''; label=m?m[2]:f;
       }
-      var head=(e.h2?bare(e.h2):'')||label, p=/^(bug|secret|music)\s*:\s*/i.exec(head);
+      var head=(e.h2?bare(e.h2):'')||label, p=/^(bug|secret|music|sound)\s*:\s*/i.exec(head);
       if(p){ tag=p[1].toLowerCase(); head=head.slice(p[0].length); head=head.charAt(0).toUpperCase()+head.slice(1); }
-      else if(/^(?:the )?(sound|music)$/i.test(label)&&(/music$/i.test(label)||/\b(?:tunes?|music|songs?)\b/i.test(head))) tag='music';
       return {num:num,label:label,head:head,tag:tag};
     }
     function grow(){   // add what the page wrote after the build, in page order

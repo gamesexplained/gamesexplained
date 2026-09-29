@@ -159,7 +159,7 @@ ul.odd li{margin:0 0 12px}
       <button class="b" type="button" data-ver="1" aria-pressed="false">Re-release, new tune</button>
     </div>
     <div id="sid"></div>
-    <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. Two things differ from a real C64. This player leaves out the sound chip's filter, which the game sets once and keeps on voice 1 for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>), so voice 1 sounds brighter here than it should. And it plays at PAL speed, so the notes are flat, as they were on PAL machines.</p>
+    <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. The game sets the sound chip's filter once and keeps it on voice 1, the bass, for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>). The Filter switch plays it three ways, even while it plays. <b>Off</b> leaves the filter out. <b>6581</b>, the chip in every C64 in 1984, darkens voice 1 as the game meant, on the curve the reSID emulator measured from one chip. <b>8580</b>, the chip of later C64s, barely changes it. Real 6581s differ from one another and they distort, which this model does not. It plays at PAL speed, so the notes are flat, as they were on PAL machines.</p>
   </div>
   <p>The re-release changed only the in-play tune and one byte of the driver. Its tune data comes from the steward's transcription in <a href="https://github.com/unorig/Chiller/tree/Latest/Music">unorig/Chiller</a>; this copy matches the other file there, Version 1, byte for byte. The level-start and game-over tunes are the same in both. The driver change is the compare at <code>$60B6</code>: this copy cuts each note off three interrupts before the next step, and the re-release cuts it one before, so its notes ring on longer.</p>
   <p>Both tunes are tuned for an NTSC C64. Of the first release's in-play tune's 478 frequency values, 464 land within two cents of a note on an NTSC machine, the kind sold in North America. A PAL machine, the kind sold in Europe, runs about 4 % slower, so there every note plays about a third of a semitone flat.</p>
@@ -592,6 +592,7 @@ ul.odd li{margin:0 0 12px}
     const S = C64Sid;
     fetch('reference/music-v2.json').then(r => r.json()).then(v2 => { M.v2 = v2; }).catch(() => {}).then(() => S.mount(root, {
       driver: createDriver, data: M, tunes: M.v2 ? ['In play', 'In play', 'Level start', 'Game over'] : ['In play', 'Level start', 'Game over'],
+      filter: '6581',                                                          // the game's filter, $60A0
       rows: [
         { k: 'Command', f: v => v.read && `${S.hex(v.read.addr, 4)}: ${S.hex(v.read.c, 2)}` },
         { in: true, f: v => v.read && ({ 0x0E: 'note, voice 1', 0x26: 'note, voice 2', 0x3E: 'note, both voices' })[v.read.c] },

@@ -62,6 +62,8 @@ th{font-weight:700;color:var(--ink-soft)}
 @media (pointer:coarse){.pl-pad{display:grid}}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
+.pl-coords{font-family:var(--fm);font-size:13px;color:var(--ink-soft);white-space:nowrap}
+.pl-coords.pl-hot{color:var(--accent)}
 .pl-list{margin:0 0 14px;padding-left:20px}
 #alive-cv{display:block;max-width:100%;height:auto;margin-top:14px;border-radius:6px}
 section table{margin:6px 0 18px}
@@ -116,6 +118,7 @@ section table{margin:6px 0 18px}
       <span id="cheat-bar" class="pl-cheats">
         <button type="button" data-cheat="keys" title="Carry the seven keys">🔑 All keys</button>
         <button type="button" data-cheat="summon" title="Hire the interstellar ship as the Communications Room's radio does: it comes down over 08-08 in two minutes or more. Carries the Novadrive too">🚀 Summon the interstellar ship</button>
+        <span class="pl-coords" id="pl-coords" title="The player's position, high:middle:low bytes: X $74:$73:$72, height $77:$76:$75, Y $7A:$79:$78. The high byte of X and Y is the square (08-08 is the landing square); the middle byte is 256 units">X --:--:-- · Y --:--:-- · H --:--:--</span>
       </span>
       <span class="pl-status" id="alive-status"></span>
     </div>
@@ -6026,7 +6029,11 @@ function makeRuntime(P, opts) {
   // much per pixel drawn, per row filled, per far dot and per vertex in front of the eye. Fitted
   // on the reference machine (tests/timing-fit4.js: 69,569 segments of 15 sessions): per pass
   // 90 % within -1.1 %/+1.0 %, and within 2 % on sessions left out of the fit.
-  const MODEL = {"seg":{"855c>855f":26,"855f>85a1":9,"85a1>85a4":5,"85a4>85a7":54,"85a7>85aa":0,"85aa>85ad":7,"af7d>85b0":1,"85b0>85bf":0,"85bf>85c2":0,"85c2>85d5":0,"85d5>85d8":7,"85d8>85db":0,"85db>85de":21,"85de>85e3":0,"85e3>85e6":10,"85e6>85e9":9,"85e9>85ec":70,"85ec>855c":10,"85b0>85d5":0,"855c>855fu":5,"855f>8566u":8,"8566>8569u":5,"af7d>8570u":2,"8570>8589u":0,"8589>858cu":1285,"858c>858fu":80,"858f>8592u":0,"8592>8595u":7,"8595>8598u":0,"8598>859bu":21,"859b>855cu":22,"8570>8579u":0,"8579>857eu":82,"857e>8589u":1210,"8579>8589u":64},"call":{"script_step":30.8,"hired_ship_update":16.3,"view_trig":9.9,"@viewTrig":9.9,"@sin10":78.9,"city_view_update":53.7,"set_view_range":53.7,"view_matrix":6.7,"@viewMatrix":6.7,"spin_points":6.9,"@fmul":115.9,"fp_add":131,"@addAdd":38.9,"@addSub":27.4,"flip_buffers":3,"ground_flash":3,"view_colours":92,"view_colours_y":133.4,"panel_update":3,"alt_next_digit":5.9,"panel_two_digits":14.8,"loc_coordinate":5.9,"black_flash_countdown":1.4,"draw_sky_ground":1.4,"fp_div":4.2,"fp_to_int8":2.8,"horizon_side_entry":1.4,"fill_rows":6,"fill_row_right":189,"fill_row_left":113.8,"horizon_fill_rest":4.6,"draw_roads":215.7,"height_to_float":73.9,"project_building":1220.5,"vertex_rel":15.9,"@vertexRel":15.9,"@diff24":47.7,"project_vertex":95.4,"@projectVertex":95.4,"@lmul":89.2,"@projectY":95.4,"@addNorm":37.3,"@screenX":158.9,"draw_edge":32.1,"@drawEdge":32.1,"@edgeSlope":342.8,"@edgeOctant":342.8,"line_mode_clear":76,"object_loop":82.8,"within_box":215.1,"model_vertex_rel":163.2,"@modelVertexRel":163.2,"@orientVertex":163.2,"read_controls":41.3,"scan_keyboard":43,"walk_model":103.9,"fire_missile":10,"building_hit_update":9,"move_objects":70,"attack_ship_update":10.5,"@addFar":18.8,"flash_black":41.4,"flash_view":41.4,"sound_voice1":82.6,"comp_dial_step":7097.5,"el_dial_step":7097.5,"el_dial_back":4430.3,"reset_colours":41.4,"set_target_colours_surface":41.4,"random":50.3,"@random":50.3,"key_used":30.4,"key_dispatch":109.5,"key_ctrl_q":109.5,"key_e_or_speed":109.5,"key_speed_digit":68.6,"walk_step":249,"object_event":109.9,"start_script":109.9,"load_motion_record":224.6,"stop_craft":72.4,"list_room_objects":1281.9,"craft_climb":245.6,"craft_touchdown_test":131,"craft_land":93.4,"sound_voice2":160.9,"enter_square":119.4,"building_coord":88.2,"square_centre_rel":58.2,"@squareCentreRel":58.2,"craft_airborne":114.6,"road_vertex_slot":298.4,"horizon_off_view":21.1,"key_e_elevator":40.8,"elevator_start":40.8,"road_list_preset":651,"motion_descent_1":37.3,"motion_spin":109.1,"motion_descent_2":34.3,"clear_view_interior":1.6,"keep_in_room":83.8,"fill_view_6000":246,"colony_pad_test":62.1,"door_check":145.9,"go_through_door":1209.5,"enter_room":1209.5,"build_room":1209.5,"wipe_open":47.6,"view_curtain_top":1619.4,"view_split_line":1667,"wipe_hum_low":47.6,"message_tick":2667.2,"wipe_hum_high":47.6,"wipe_finish":47.6,"sid_init":47.6,"view_normal":47.6,"view_mode_operands_normal":47.6,"message_start":845.4},"px":66.4,"rows_s":189,"rows_u":213,"dots":60.8,"vf":158.9,"vb":0};
+  // @rotatePair is measured, not fitted: orient_vertex turns each vertex of objects 0-15 once for
+  // each angle that is not 0 (a craft left where it stood, object 0), and on the game's code that
+  // adds about 1,125 cycles a vertex ($A61F: 573 unturned, 1,697 turned). Without it a turned
+  // craft in view ran the page 4-5 % fast.
+  const MODEL = {"seg":{"855c>855f":26,"855f>85a1":9,"85a1>85a4":5,"85a4>85a7":54,"85a7>85aa":0,"85aa>85ad":7,"af7d>85b0":1,"85b0>85bf":0,"85bf>85c2":0,"85c2>85d5":0,"85d5>85d8":7,"85d8>85db":0,"85db>85de":21,"85de>85e3":0,"85e3>85e6":10,"85e6>85e9":9,"85e9>85ec":70,"85ec>855c":10,"85b0>85d5":0,"855c>855fu":5,"855f>8566u":8,"8566>8569u":5,"af7d>8570u":2,"8570>8589u":0,"8589>858cu":1285,"858c>858fu":80,"858f>8592u":0,"8592>8595u":7,"8595>8598u":0,"8598>859bu":21,"859b>855cu":22,"8570>8579u":0,"8579>857eu":82,"857e>8589u":1210,"8579>8589u":64},"call":{"script_step":30.8,"hired_ship_update":16.3,"view_trig":9.9,"@viewTrig":9.9,"@sin10":78.9,"city_view_update":53.7,"set_view_range":53.7,"view_matrix":6.7,"@viewMatrix":6.7,"spin_points":6.9,"@fmul":115.9,"fp_add":131,"@addAdd":38.9,"@addSub":27.4,"flip_buffers":3,"ground_flash":3,"view_colours":92,"view_colours_y":133.4,"panel_update":3,"alt_next_digit":5.9,"panel_two_digits":14.8,"loc_coordinate":5.9,"black_flash_countdown":1.4,"draw_sky_ground":1.4,"fp_div":4.2,"fp_to_int8":2.8,"horizon_side_entry":1.4,"fill_rows":6,"fill_row_right":189,"fill_row_left":113.8,"horizon_fill_rest":4.6,"draw_roads":215.7,"height_to_float":73.9,"project_building":1220.5,"vertex_rel":15.9,"@vertexRel":15.9,"@diff24":47.7,"project_vertex":95.4,"@projectVertex":95.4,"@lmul":89.2,"@projectY":95.4,"@addNorm":37.3,"@screenX":158.9,"draw_edge":32.1,"@drawEdge":32.1,"@edgeSlope":342.8,"@edgeOctant":342.8,"line_mode_clear":76,"object_loop":82.8,"within_box":215.1,"model_vertex_rel":163.2,"@modelVertexRel":163.2,"@orientVertex":163.2,"@rotatePair":1125,"read_controls":41.3,"scan_keyboard":43,"walk_model":103.9,"fire_missile":10,"building_hit_update":9,"move_objects":70,"attack_ship_update":10.5,"@addFar":18.8,"flash_black":41.4,"flash_view":41.4,"sound_voice1":82.6,"comp_dial_step":7097.5,"el_dial_step":7097.5,"el_dial_back":4430.3,"reset_colours":41.4,"set_target_colours_surface":41.4,"random":50.3,"@random":50.3,"key_used":30.4,"key_dispatch":109.5,"key_ctrl_q":109.5,"key_e_or_speed":109.5,"key_speed_digit":68.6,"walk_step":249,"object_event":109.9,"start_script":109.9,"load_motion_record":224.6,"stop_craft":72.4,"list_room_objects":1281.9,"craft_climb":245.6,"craft_touchdown_test":131,"craft_land":93.4,"sound_voice2":160.9,"enter_square":119.4,"building_coord":88.2,"square_centre_rel":58.2,"@squareCentreRel":58.2,"craft_airborne":114.6,"road_vertex_slot":298.4,"horizon_off_view":21.1,"key_e_elevator":40.8,"elevator_start":40.8,"road_list_preset":651,"motion_descent_1":37.3,"motion_spin":109.1,"motion_descent_2":34.3,"clear_view_interior":1.6,"keep_in_room":83.8,"fill_view_6000":246,"colony_pad_test":62.1,"door_check":145.9,"go_through_door":1209.5,"enter_room":1209.5,"build_room":1209.5,"wipe_open":47.6,"view_curtain_top":1619.4,"view_split_line":1667,"wipe_hum_low":47.6,"message_tick":2667.2,"wipe_hum_high":47.6,"wipe_finish":47.6,"sid_init":47.6,"view_normal":47.6,"view_mode_operands_normal":47.6,"message_start":845.4},"px":66.4,"rows_s":189,"rows_u":213,"dots":60.8,"vf":158.9,"vb":0};
   const segFrom = {};                                     // a path not seen in the fit: the mean from its start
   for (const [k, v] of Object.entries(MODEL.seg)) { const f = k.split('>')[0] + (k.endsWith('u') ? 'u' : ''); (segFrom[f] = segFrom[f] || []).push(v); }
   for (const f in segFrom) segFrom[f] = segFrom[f].reduce((a, b) => a + b, 0) / segFrom[f].length;
@@ -6646,6 +6653,19 @@ function makeDisplay(opts) {
       const msg = w === 'keys' ? keys() : summon();
       if (api.done) api.done(msg);
     });
+    // the readout beside the buttons: the three coordinates, high:middle:low, from the zero page
+    const out = typeof document !== 'undefined' && document.getElementById('pl-coords');
+    if (out) {
+      const h = v => v.toString(16).toUpperCase().padStart(2, '0');
+      const co = (n, lo) => n + ' ' + h(M[lo + 2]) + ':' + h(M[lo + 1]) + ':' + h(M[lo]);
+      let last = '';
+      rt.onPass(() => {
+        // on the grass at 08-08 with X and Y middle bytes $70-$73, E rides the Colony Craft's lift
+        const hot = !M[0xA8] && M[0x74] === 8 && M[0x7A] === 8 && (M[0x73] & 0xFC) === 0x70 && (M[0x79] & 0xFC) === 0x70;
+        const text = co('X', 0x72) + ' · ' + co('Y', 0x78) + ' · ' + co('H', 0x75) + (hot ? ' · on the lift patch: E' : '');
+        if (text !== last) { out.textContent = last = text; out.classList.toggle('pl-hot', hot); }
+      });
+    }
     rt.cheats = api;
     return api;
   }

@@ -78,9 +78,12 @@ address links into the Source tab, and the house style in `kit/style.md`.
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver
    read. The script's header gives the driver's contract and what the
-   model leaves out. Say beside a sound below about 100 Hz that laptop
-   and phone speakers barely play it: a reader who hears nothing reports
-   it missing. Before believing such a report, render the writes through
+   model leaves out. The filter is off unless the page passes
+   `filter: '6581'` (or `'8580'`) to `mount`, which also shows a switch
+   to compare it with no filter; pass it when the game sets the filter,
+   and say in the caption that the cutoff is one chip's. Say beside a
+   sound below about 100 Hz that laptop and phone speakers barely play
+   it: a reader who hears nothing reports it missing. Before believing such a report, render the writes through
    the model (`C64Sid.engine()` in node) and measure the output.
 - **Secrets, quirks and bugs.** The best part. Things a player who
    finished the game would not know, each verified live, with the
@@ -145,9 +148,10 @@ can open with that instead.
   in its left margin by their headings (any further `<h2>` gets an entry
   of its own, and so does a section or heading the page's script adds),
   so the headings are what a reader scans to choose where to go. A
-  heading that begins `Bug:`, `Secret:` or `Music:` is tagged in that
-  list, and the sound section is tagged Music without the prefix when
-  its heading names the tunes.
+  heading that begins `Bug:`, `Secret:`, `Music:` or `Sound:` is tagged
+  in that list, and nothing else is: the prefix is the only way to get a
+  tag. Head the section about the tunes `Music:` and the one about sound
+  effects `Sound:`.
 - Embed only the data you need: extracted character set, level data,
   tables, tune bytes. Small excerpts for commentary; never the program.
 - A game can read the machine's ROM as data: a table, or code used as
