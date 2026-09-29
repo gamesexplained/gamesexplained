@@ -180,53 +180,8 @@ input[type=range]{width:100%}
   </table>
   <p>The key table (<code>$4512</code>) is part of the level settings, so each screen could have had its own keys. All ten have the same.</p>
 </section>
-<section id="unwinnable" class="bug">
-  <p class="fig">07 · The crosses out of reach</p>
-  <h2 class="t">Bug: the game cannot be finished</h2>
-  <p class="lede">On the way back every screen needs all ten of its crosses before it lets you go. On three of those screens, one blue cross sits lower than the boy can ever stand. The first of them is the graveyard, the seventh screen, and that is as far as anyone gets.</p>
-  <div class="two">
-    <figure style="margin:0"><img src="reference/built-graveyard-back.png" alt="The graveyard on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The graveyard on the way back, drawn from its level record. Boxes mark the crosses; the ringed blue one is in the bottom two rows, where no player can reach it.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The cinema on the way back has the same fault. So does the ghetto, which comes between them.</figcaption></figure>
-  </div>
-  <p>The cause is a single compare. <code>move_sprite</code> stops the boy's sprite at Y <code>$E3</code> (<code>$C930</code>, <code>cmp #$E3</code>), row 22 of the screen's 24, before it looks at any scenery. Even falling through open space with nothing underneath, he halts there in mid-air. The game looks for a cross in the cell his position maps to, and from Y <code>$E3</code> that is never lower than row 22. A cross in row 23 or 24 can never be taken.</p>
-  <table class="t">
-    <tr><th>Screen</th><th>Order</th><th>Cross at</th></tr>
-    <tr><td>Graveyard, way back</td><td>7th</td><td><code>$079A</code></td></tr>
-    <tr><td>Ghetto, way back</td><td>8th</td><td><code>$07C5</code></td></tr>
-    <tr><td>Cinema, way back</td><td>9th</td><td><code>$07CC</code></td></tr>
-  </table>
-  <p>A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it. The other seven screens can be cleared: searching each one with the game's own movement rules finds a path to every cross. The <a href="levels.html">Maps / levels</a> tab runs the same search and rings the three crosses it cannot reach.</p>
-</section>
-<section id="unused">
-  <p class="fig">08 · Unused and unreachable code</p>
-  <h2 class="t">Unused code: a shooting game underneath</h2>
-  <p class="lede">Chiller has no gun, no lives and no scrolling. Its code has all three, and a sound player whose every write goes nowhere. None of it can be reached in play.</p>
-  <table class="t">
-    <tr><th>What</th><th>Where</th><th>Why it never runs</th></tr>
-    <tr><td>A shot hitting an enemy, the enemy dying, points per enemy</td><td><code>unused_shot_hit</code> <code>$CDC7</code>, <code>unused_kill_enemy</code> <code>$2F7B</code>, <code>add_score_for</code> <code>$CE6B</code></td><td>nothing calls them; there is no shot</td></tr>
-    <tr><td>Lives: take one, restart the screen</td><td><code>new_life</code> <code>$CAED</code>, <code>lose_life</code> <code>$CEDA</code></td><td>called only from the code above</td></tr>
-    <tr><td>A scroller that moves the whole play area a cell at a time</td><td><code>scroll_timer</code> <code>$C011</code>, <code>scroll_left</code> <code>$C412</code></td><td>every screen sets its period to <code>$FF</code>, off</td></tr>
-    <tr><td>A sound player with a 56-note table</td><td><code>unused_sound_player</code> <code>$CA80</code>, <code>$C300</code></td><td>every sound-chip store in it is aimed at <code>$FFFF</code></td></tr>
-    <tr><td>Fire bringing in the second character on a flat screen</td><td><code>switch_check</code> <code>$C7D4</code></td><td>every screen has gravity, where fire jumps instead</td></tr>
-    <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
-    <tr><td>An older forest card</td><td><code>card_forest_title</code> <code>$5D0D</code></td><td>its printer, <code>$5E00</code>, is never called</td></tr>
-  </table>
-  <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
-  <p>Three of the five outward screens also carry a spare score line that is never shown. It says SILVER CROSSES where the game says MAGIC CROSSES.</p>
-  <div class="plate"><canvas id="silver" width="640" height="64" class="scr" style="max-width:640px" role="img" aria-label="The unused SILVER CROSSES score line above the one the game shows"></canvas>
-  <p class="cap">Top: <code>hud_cinema</code> at <code>$8E00</code>, never copied to the screen. Bottom: <code>hud_template</code> at <code>$8400</code>, the one the game uses. Both drawn with the game's own letters.</p></div>
-  <p id="menu">One more piece was left unfinished. After GAME OVER the game still calls a routine meant to put PRESS CTRL FOR MENU on the bottom row. The routine reads the text, the screen and the colours, and writes nothing. It looks like a feature left out before release, with its prompt stubbed so it never shows.</p>
-  <div class="plate"><canvas id="ctrl" width="640" height="32" class="scr" style="max-width:640px" role="img" aria-label="PRESS CTRL FOR MENU drawn from the game's bytes"></canvas>
-  <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. <code>show_press_ctrl</code> at <code>$5736</code> loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads and no store.</p></div>
-</section>
-<section id="slips" class="bug">
-  <p class="fig">09 · Bugs</p>
-  <h2 class="t">Two small bugs</h2>
-  <p>The jump sound should rise again as he falls. <code>jump_pitch_fall</code> (<code>$5518</code>) adds 5 to the frequency's low byte, but its carry test at <code>$5524</code> branches to the very next instruction. The high byte goes down by one every step regardless, and the pitch keeps dropping.</p>
-  <p>On the title after a game, <code>title_flicker</code> (<code>$7580</code>) should flicker two colour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last level record, so only one flickers.</p>
-</section>
 <section id="music">
-  <p class="fig">10 · Music</p>
+  <p class="fig">07 · Music</p>
   <h2 class="t">The tunes are pitched for an American C64</h2>
   <p class="lede">The game's music is played here by its own driver, ported line by line. Press a tune.</p>
   <div class="plate">
@@ -249,7 +204,7 @@ input[type=range]{width:100%}
   <p>The count command is how the music talks to the game. The card at the start of each level stays up until the level-start tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the game-over tune does (<code>$5DA9</code>). The in-play tune never counts. It loops after about 69 seconds.</p>
 </section>
 <section id="screens">
-  <p class="fig">11 · The ten screens</p>
+  <p class="fig">08 · The ten screens</p>
   <h2 class="t">Each screen is one 128-byte record</h2>
   <p class="lede">A screen is built from a level record: a play area, a character set, a colour map, five enemies and ten crosses. The picture below is drawn by this page from those bytes. Pick a screen, and switch on the tiles the boy can stand on, the ledges that crumble and the pick-ups.</p>
   <div class="plate">
@@ -278,6 +233,51 @@ input[type=range]{width:100%}
     <tr><td>Crosses needed, level byte, card</td><td><code>+$72</code>, <code>+$73</code>, <code>+$74</code></td><td><code>crosses_left</code> <code>$7F00</code>, <code>show_level_card</code></td></tr>
   </table>
   <p class="cap">The way-back screens are drawn here over the untouched outward screens, which is what a player sees who took only the crosses. All ten, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
+</section>
+<section id="unwinnable" class="bug">
+  <p class="fig">09 · The crosses out of reach</p>
+  <h2 class="t">Bug: the game cannot be finished</h2>
+  <p class="lede">On the way back every screen needs all ten of its crosses before it lets you go. On three of those screens, one blue cross sits lower than the boy can ever stand. The first of them is the graveyard, the seventh screen, and that is as far as anyone gets.</p>
+  <div class="two">
+    <figure style="margin:0"><img src="reference/built-graveyard-back.png" alt="The graveyard on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The graveyard on the way back, drawn from its level record. Boxes mark the crosses; the ringed blue one is in the bottom two rows, where no player can reach it.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The cinema on the way back has the same fault. So does the ghetto, which comes between them.</figcaption></figure>
+  </div>
+  <p>The cause is a single compare. <code>move_sprite</code> stops the boy's sprite at Y <code>$E3</code> (<code>$C930</code>, <code>cmp #$E3</code>), row 22 of the screen's 24, before it looks at any scenery. Even falling through open space with nothing underneath, he halts there in mid-air. The game looks for a cross in the cell his position maps to, and from Y <code>$E3</code> that is never lower than row 22. A cross in row 23 or 24 can never be taken.</p>
+  <table class="t">
+    <tr><th>Screen</th><th>Order</th><th>Cross at</th></tr>
+    <tr><td>Graveyard, way back</td><td>7th</td><td><code>$079A</code></td></tr>
+    <tr><td>Ghetto, way back</td><td>8th</td><td><code>$07C5</code></td></tr>
+    <tr><td>Cinema, way back</td><td>9th</td><td><code>$07CC</code></td></tr>
+  </table>
+  <p>A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it. The other seven screens can be cleared: searching each one with the game's own movement rules finds a path to every cross. The <a href="levels.html">Maps / levels</a> tab runs the same search and rings the three crosses it cannot reach.</p>
+</section>
+<section id="unused">
+  <p class="fig">10 · Unused and unreachable code</p>
+  <h2 class="t">Unused code: a shooting game underneath</h2>
+  <p class="lede">Chiller has no gun, no lives and no scrolling. Its code has all three, and a sound player whose every write goes nowhere. None of it can be reached in play.</p>
+  <table class="t">
+    <tr><th>What</th><th>Where</th><th>Why it never runs</th></tr>
+    <tr><td>A shot hitting an enemy, the enemy dying, points per enemy</td><td><code>unused_shot_hit</code> <code>$CDC7</code>, <code>unused_kill_enemy</code> <code>$2F7B</code>, <code>add_score_for</code> <code>$CE6B</code></td><td>nothing calls them; there is no shot</td></tr>
+    <tr><td>Lives: take one, restart the screen</td><td><code>new_life</code> <code>$CAED</code>, <code>lose_life</code> <code>$CEDA</code></td><td>called only from the code above</td></tr>
+    <tr><td>A scroller that moves the whole play area a cell at a time</td><td><code>scroll_timer</code> <code>$C011</code>, <code>scroll_left</code> <code>$C412</code></td><td>every screen sets its period to <code>$FF</code>, off</td></tr>
+    <tr><td>A sound player with a 56-note table</td><td><code>unused_sound_player</code> <code>$CA80</code>, <code>$C300</code></td><td>every sound-chip store in it is aimed at <code>$FFFF</code></td></tr>
+    <tr><td>Fire bringing in the second character on a flat screen</td><td><code>switch_check</code> <code>$C7D4</code></td><td>every screen has gravity, where fire jumps instead</td></tr>
+    <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
+    <tr><td>An older forest card</td><td><code>card_forest_title</code> <code>$5D0D</code></td><td>its printer, <code>$5E00</code>, is never called</td></tr>
+  </table>
+  <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
+  <p>Three of the five outward screens also carry a spare score line that is never shown. It says SILVER CROSSES where the game says MAGIC CROSSES.</p>
+  <div class="plate"><canvas id="silver" width="640" height="64" class="scr" style="max-width:640px" role="img" aria-label="The unused SILVER CROSSES score line above the one the game shows"></canvas>
+  <p class="cap">Top: <code>hud_cinema</code> at <code>$8E00</code>, never copied to the screen. Bottom: <code>hud_template</code> at <code>$8400</code>, the one the game uses. Both drawn with the game's own letters.</p></div>
+  <p id="menu">One more piece was left unfinished. After GAME OVER the game still calls a routine meant to put PRESS CTRL FOR MENU on the bottom row. The routine reads the text, the screen and the colours, and writes nothing. It looks like a feature left out before release, with its prompt stubbed so it never shows.</p>
+  <div class="plate"><canvas id="ctrl" width="640" height="32" class="scr" style="max-width:640px" role="img" aria-label="PRESS CTRL FOR MENU drawn from the game's bytes"></canvas>
+  <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. <code>show_press_ctrl</code> at <code>$5736</code> loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads and no store.</p></div>
+</section>
+<section id="slips" class="bug">
+  <p class="fig">11 · Bugs</p>
+  <h2 class="t">Two small bugs</h2>
+  <p>The jump sound should rise again as he falls. <code>jump_pitch_fall</code> (<code>$5518</code>) adds 5 to the frequency's low byte, but its carry test at <code>$5524</code> branches to the very next instruction. The high byte goes down by one every step regardless, and the pitch keeps dropping.</p>
+  <p>On the title after a game, <code>title_flicker</code> (<code>$7580</code>) should flicker two colour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last level record, so only one flickers.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
