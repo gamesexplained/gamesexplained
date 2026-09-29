@@ -84,7 +84,8 @@ function standIn(P, address) {
     for (const k of ['a', 'x', 'y', 'n', 'v', 'd', 'i', 'z', 'c']) if (r[k] !== undefined) regs[k] = r[k];
     cpu.setRegs(regs);
     cpu.sp = 0xFF;
-    cpu.call(address, {}, { hooks: cpu.hooksK, maxSteps: 2e6 });
+    cpu.active = true;
+    try { cpu.call(address, {}, { hooks: cpu.hooksK, maxSteps: 2e6 }); } finally { cpu.active = false; }
     return { a: cpu.a, x: cpu.x, y: cpu.y, n: cpu.n, v: cpu.v, z: cpu.z, c: cpu.c };
   };
 }
@@ -166,7 +167,7 @@ function check(o) {
     const rA = { a: cpu.a, x: cpu.x, y: cpu.y, c: cpu.c, z: cpu.z, n: cpu.n, v: cpu.v };
     // the port
     let P = null;
-    const MB = M0.slice(), cB = cloneChips(c0, game), logB = logWrites(cB, () => P && cpus.get(P)), ioB = ioOf(cB);
+    const MB = M0.slice(), cB = cloneChips(c0, game), logB = logWrites(cB, () => { const c = P && cpus.get(P); return c && c.active ? c : null; }), ioB = ioOf(cB);
     P = globalThis.ChillerPort.makePort(MB, ioB, { standIn, labels, only: o.groups });
     let rB, perr = null;
     try {

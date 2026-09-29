@@ -34,13 +34,22 @@ const GEN = new Set(`
 `.trim().split(/\s+/));
 class Goto { constructor(to, r) { this.to = to; this.r = r || {}; } }
 function makePort(M, io, opts = {}) {
-  const P = { M, io, Goto };
+  const P = { M, Goto };
+  // P.io is one object for good, so that a routine may keep it (const io = P.io): giving P a
+  // new set of chips (the lockstep does) replaces its members
+  const IO = Object.assign({}, io);
+  Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
+    set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
   P.k = {
     M,
-    colourRead: i => io.colourRead(i), colourWrite: (i, v) => io.colourWrite(i, v),
-    vicRead: r => io.vicRead(r), vicWrite: (r, v) => io.vicWrite(r, v),
-    ciaRead: r => io.ciaRead(r), ciaWrite: (r, v) => io.ciaWrite(r, v),
+    colourRead: i => IO.colourRead(i), colourWrite: (i, v) => IO.colourWrite(i, v),
+    vicRead: r => IO.vicRead(r), vicWrite: (r, v) => IO.vicWrite(r, v),
+    ciaRead: r => IO.ciaRead(r), ciaWrite: (r, v) => IO.ciaWrite(r, v),
   };
+  // A byte the interrupt keeps (the jiffy clock $A2, the keyboard's $C5 and $028D), as the main
+  // program reads it: the lockstep replaces this with what the game's code read there, since
+  // where an interrupt falls inside a stretch of code is the game's own race.
+  P.irq_byte = a => M[a];
   if (opts.standIn) {
     for (const [label, a] of opts.labels) {
       const f = opts.standIn(P, a);
