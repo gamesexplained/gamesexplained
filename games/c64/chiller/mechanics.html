@@ -8,59 +8,9 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">How the ten screens, players, enemies and energy bar work.</p>
+  <p class="sub">What happens when you collect a cross, switch players, jump or meet an enemy, and how the game makes it happen.</p>
 </header>
 <main class="wrap">
-<section id="screens">
-  <p class="fig">The screen</p>
-  <h2 class="t">Let's play: every screen, rebuilt from its own 128 bytes</h2>
-  <p class="lede">Each of Chiller's ten screens is set up from <b>its own 128 bytes of settings</b>: where to find the play area, character set and colours, and where to put the two players, the five enemies and the ten crosses. The picture below is drawn by this page from those bytes. Pick a screen, and switch on the tiles the boy can stand on, the ledges that crumble and the pick-ups.</p>
-  <div class="plate">
-    <div class="row" id="scr-pick"></div>
-    <div class="row">
-      <button class="b" type="button" data-ov="solid" aria-pressed="false">Solid tiles</button>
-      <button class="b" type="button" data-ov="ledge" aria-pressed="false">Crumbling ledges</button>
-      <button class="b" type="button" data-ov="pick" aria-pressed="false">Mushrooms and bonuses</button>
-      <button class="b" type="button" data-ov="cross" aria-pressed="true">Crosses</button>
-    </div>
-    <canvas id="scr" class="scr" width="768" height="544" role="img" aria-label="A Chiller screen rebuilt from its settings"></canvas>
-    <p class="kv" id="scr-kv"></p>
-    <div class="legend" id="scr-legend"></div>
-    <p class="cap" id="scr-cap"></p>
-  </div>
-  <p>The ten screens' settings sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The first five levels keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
-  <table class="t">
-    <tr><th>Field</th><th>Offset</th><th>Read by</th></tr>
-    <tr><td>Play area: source, end, destination</td><td><code>+$00</code></td><td><code>setup_screen</code>, <code>copy_block</code> <code>$2A80</code></td></tr>
-    <tr><td>Character set: source, end, destination</td><td><code>+$06</code></td><td>the same</td></tr>
-    <tr><td>Colour map, two cells to a byte</td><td><code>+$0C</code></td><td><code>unpack_colours</code> <code>$5D20</code></td></tr>
-    <tr><td>Multicolours 1 and 2</td><td><code>+$0E</code>, <code>+$0F</code></td><td>into <code>$D022</code>, <code>$D023</code></td></tr>
-    <tr><td>The two players' start and frames</td><td><code>+$10</code>-<code>+$17</code></td><td><code>set_boy_x</code> <code>$7F20</code> and on</td></tr>
-    <tr><td>Enemies: frames, speeds, paths</td><td><code>+$18</code>-<code>+$5D</code></td><td><code>spawn_enemy</code>, <code>enemy_step</code></td></tr>
-    <tr><td>Ten cross addresses, five blue then five red</td><td><code>+$5E</code>-<code>+$71</code></td><td><code>place_crosses</code> <code>$5FC0</code>, <code>colour_cycle</code> <code>$7F80</code></td></tr>
-    <tr><td>Crosses needed, level byte, card</td><td><code>+$72</code>, <code>+$73</code>, <code>+$74</code></td><td><code>crosses_left</code> <code>$7F00</code>, <code>show_level_card</code></td></tr>
-  </table>
-  <p class="cap">Above, the way-home levels are drawn over the untouched first five, which is what a player sees who took only the crosses. All ten, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
-</section>
-<section id="wayback">
-  <p class="fig">The world</p>
-  <h2 class="t">To the haunted house and home again</h2>
-  <p class="lede">The boy works through five haunted levels, the forest, the cinema, the ghetto, the graveyard and the haunted house, to reach his girlfriend. He cannot leave a level until he has collected its five blue crosses. After the haunted house the two of them head home through the same five levels in reverse. The game reuses each level exactly as he left it: a mushroom he ate, a cross he took and a ledge that crumbled under him are all still gone.</p>
-  <div class="two">
-    <figure style="margin:0"><img src="reference/built-cinema.png" alt="The cinema on the way to the house, five blue crosses to take"><figcaption class="cap">The cinema on the way to the house: five blue crosses for the boy.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way home, with the boy, the girl and ten crosses"><figcaption class="cap">The cinema on the way home. The boy (left of the stage) and the girl (on it) stand where the level starts them, and five red crosses have been added to the five blue. Both pictures are drawn from the screens' settings; the enemies are not shown.</figcaption></figure>
-  </div>
-  <p>The way home has no levels of its own: it reuses the first five. When the boy has taken a level's crosses and moves on, <code>next_screen</code> (<code>$7680</code>) saves screen rows 1 to 24, and on the way home the game reads that copy back. The forest goes to <code>$7800</code>. The other four have no room left in ordinary memory, so they go into the RAM hidden under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. A write to those addresses lands in the RAM even with the ROM switched in. Reading it back needs the ROM switched out, and that is all <code>copy_under_kernal</code> (<code>$72A4</code>) does: it sets the processor port <code>$01</code> to <code>$34</code>, copies, and puts it back.</p>
-  <table class="t">
-    <tr><th>Level on the way home</th><th>Settings at</th><th>Play area read from</th><th>Character set and colours from</th></tr>
-    <tr><td>Haunted house</td><td><code>$7300</code></td><td><code>$EC28</code></td><td>the house's, <code>$A800</code>, <code>$B000</code></td></tr>
-    <tr><td>Graveyard</td><td><code>$7380</code></td><td><code>$E828</code></td><td>the graveyard's</td></tr>
-    <tr><td>Ghetto</td><td><code>$7400</code></td><td><code>$E428</code></td><td>the ghetto's</td></tr>
-    <tr><td>Cinema</td><td><code>$7480</code></td><td><code>$E028</code></td><td>the cinema's</td></tr>
-    <tr><td>Forest</td><td><code>$7500</code></td><td><code>$7828</code></td><td>the forest's</td></tr>
-  </table>
-  <p>The red crosses are added on the way home. The settings for the first five levels list five crosses each and those for the way home list ten, so <code>place_crosses</code> writes the five red ones into the saved copy as the level is set up.</p>
-</section>
 <section id="crosses">
   <p class="fig">The crosses</p>
   <h2 class="t">Blue for him, red for her</h2>

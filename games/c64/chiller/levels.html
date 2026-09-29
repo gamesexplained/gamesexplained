@@ -36,6 +36,8 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 table.t{border-collapse:collapse;width:100%;font-size:15px}
 table.t th,table.t td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
 table.t th{font-weight:700;color:var(--ink-soft)}
+.table-scroll{overflow-x:auto}
+.table-scroll table.t{min-width:680px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
 button.b{font-family:var(--fm);font-size:13px;padding:6px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
 button.b[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
@@ -44,6 +46,7 @@ button.b:hover{border-color:var(--ink-mute)}
 .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
 .legend .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .note{color:var(--ink-mute);font-size:14px}
+@media (max-width:760px){:root{--gx:20px;--h1:34px}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -57,14 +60,14 @@ button.b:hover{border-color:var(--ink-mute)}
 <section id="map">
   <p class="fig">01 &middot; The ten screens</p>
   <h2 class="t">Explore the five locations, out and back</h2>
-  <p class="lede">Choose a screen to see its layout and where the crosses, pick-ups and enemies first appear. On the way home, the game restores each location as you left it; these maps show its original layout instead. They are reconstructed from the game's screen and colour data by <code>setup_screen</code> <code>$5E19</code> and <code>place_crosses</code> <code>$5FC0</code>. The saved return screens come from <code>screen_store</code> <code>$7FE8</code>.</p>
+  <p class="lede">Choose a screen to see its layout and where the crosses, pick-ups and enemies first appear. On the way home, the game restores each location as you left it; these maps show its original layout instead.</p>
   <div class="row" id="lv-pick"></div>
   <div class="row">
-    <button class="b" type="button" data-ov="solid" aria-pressed="true">solid ($2A-$4C)</button>
-    <button class="b" type="button" data-ov="ledge" aria-pressed="true">crumbling ledge ($4D-$53)</button>
-    <button class="b" type="button" data-ov="pick" aria-pressed="true">pick-ups ($54-$56)</button>
-    <button class="b" type="button" data-ov="cross" aria-pressed="true">crosses</button>
-    <button class="b" type="button" data-ov="enemy" aria-pressed="true">enemy start positions</button>
+    <button class="b" type="button" data-ov="solid" aria-pressed="true">Solid tiles</button>
+    <button class="b" type="button" data-ov="ledge" aria-pressed="true">Crumbling ledges</button>
+    <button class="b" type="button" data-ov="pick" aria-pressed="true">Pick-ups</button>
+    <button class="b" type="button" data-ov="cross" aria-pressed="true">Crosses</button>
+    <button class="b" type="button" data-ov="enemy" aria-pressed="true">Enemy starts</button>
   </div>
   <div class="plate"><canvas class="scr" id="lv-scr"></canvas>
   <p class="cap" id="lv-kv"></p>
@@ -77,10 +80,38 @@ button.b:hover{border-color:var(--ink-mute)}
     <span><i class="sw" style="background:#7b7bff"></i>enemy start</span>
   </div>
   </div>
+  <p class="note">These maps are reconstructed from the game's settings. They mark enemy starting positions but do not show the moving enemies or the energy bar.</p>
+</section>
+
+<section id="screen-data">
+  <p class="fig">02 &middot; Behind the maps</p>
+  <h2 class="t">How each screen is built and saved</h2>
+  <p>Each of the ten screens has its own 128-byte settings record at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads the fields below to build the play area, place the players and enemies, and set up the crosses. The first five levels keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each; the way back borrows them.</p>
+  <div class="table-scroll"><table class="t">
+    <tr><th>Field</th><th>Offset</th><th>Read by</th></tr>
+    <tr><td>Play area: source, end, destination</td><td><code>+$00</code></td><td><code>setup_screen</code>, <code>copy_block</code> <code>$2A80</code></td></tr>
+    <tr><td>Character set: source, end, destination</td><td><code>+$06</code></td><td>the same</td></tr>
+    <tr><td>Colour map, two cells to a byte</td><td><code>+$0C</code></td><td><code>unpack_colours</code> <code>$5D20</code></td></tr>
+    <tr><td>Multicolours 1 and 2</td><td><code>+$0E</code>, <code>+$0F</code></td><td>into <code>$D022</code>, <code>$D023</code></td></tr>
+    <tr><td>The two players' start and frames</td><td><code>+$10</code>-<code>+$17</code></td><td><code>set_boy_x</code> <code>$7F20</code> and on</td></tr>
+    <tr><td>Enemies: frames, speeds, paths</td><td><code>+$18</code>-<code>+$5D</code></td><td><code>spawn_enemy</code>, <code>enemy_step</code></td></tr>
+    <tr><td>Ten cross addresses, five blue then five red</td><td><code>+$5E</code>-<code>+$71</code></td><td><code>place_crosses</code> <code>$5FC0</code>, <code>colour_cycle</code> <code>$7F80</code></td></tr>
+    <tr><td>Crosses needed, level byte, card</td><td><code>+$72</code>, <code>+$73</code>, <code>+$74</code></td><td><code>crosses_left</code> <code>$7F00</code>, <code>show_level_card</code></td></tr>
+  </table></div>
+  <p>The way home reuses the first five levels, but keeps the changes you made on the way out. When the boy moves on, <code>next_screen</code> (<code>$7680</code>) saves screen rows 1 to 24. The forest goes to <code>$7800</code>. The other four are stored in RAM hidden under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. Writing there works with the ROM switched in; reading the saved screen back requires <code>copy_under_kernal</code> (<code>$72A4</code>) to set processor port <code>$01</code> to <code>$34</code> temporarily.</p>
+  <div class="table-scroll"><table class="t">
+    <tr><th>Level on the way home</th><th>Settings at</th><th>Play area read from</th><th>Character set and colours from</th></tr>
+    <tr><td>Haunted house</td><td><code>$7300</code></td><td><code>$EC28</code></td><td>the house's, <code>$A800</code>, <code>$B000</code></td></tr>
+    <tr><td>Graveyard</td><td><code>$7380</code></td><td><code>$E828</code></td><td>the graveyard's</td></tr>
+    <tr><td>Ghetto</td><td><code>$7400</code></td><td><code>$E428</code></td><td>the ghetto's</td></tr>
+    <tr><td>Cinema</td><td><code>$7480</code></td><td><code>$E028</code></td><td>the cinema's</td></tr>
+    <tr><td>Forest</td><td><code>$7500</code></td><td><code>$7828</code></td><td>the forest's</td></tr>
+  </table></div>
+  <p>The first five settings records list five blue crosses each. The return records list ten, so <code>place_crosses</code> adds five red crosses to each saved screen as it is set up. The maps above use the untouched outward layouts in place of saved screens and show where both sets of crosses begin.</p>
 </section>
 
 <section id="paths">
-  <p class="fig">02 &middot; Enemy paths</p>
+  <p class="fig">03 &middot; Enemy paths</p>
   <h2 class="t">How the enemies move</h2>
   <p class="lede"><code>path_step</code> <code>$CC12</code> moves one enemy a pixel at a time and,
   every 8th step, reads the next byte of its script from <code>path_scripts</code>
@@ -105,7 +136,7 @@ button.b:hover{border-color:var(--ink-mute)}
 <script>
 /* Chiller, Maps/levels: the ten screens with their crosses, pick-ups and enemy paths, drawn from
    listing.json with ../../lib/c64.js. compose() rebuilds a screen the way setup_screen ($5E19)
-   and place_crosses ($5FC0) do, the same as index.html's screen builder (work/compose.js). */
+   and place_crosses ($5FC0) do. */
 (function () {
   'use strict';
   const NAMES = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',

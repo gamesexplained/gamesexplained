@@ -1,15 +1,10 @@
-/* Chiller: the page's widgets. Every picture is drawn from listing.json (the bytes the Source tab
-   shows) with ../../lib/c64.js. compose() builds a screen as setup_screen ($5E19) and
-   place_crosses ($5FC0) do; checked against the emulator's screenshots with kit/c64/frame.py
-   compare (work/test_frame.js). createDriver() is the music driver ($60A0-$61F1), checked write
-   for write against the game's own code in kit/c64/cpu6502.js (work/test_music.js). */
+/* Chiller: the page's widgets. Pictures are drawn from listing.json (the bytes the Source tab
+   shows) with ../../lib/c64.js. createDriver() is the music driver ($60A0-$61F1), checked
+   write for write against the game's own code in kit/c64/cpu6502.js (work/test_music.js). */
 (function () {
   'use strict';
   const NAMES = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',
     'The house, back', 'The graveyard, back', 'The ghetto, back', 'The cinema, back', 'The forest, back'];
-  // Video registers as the game set them in play (the forest, read live from the emulator):
-  // multicolour text, 40 columns, the font at $3000, all sprites multicolour.
-  const BASE = [128,224,224,224,48,63,215,32,63,50,51,222,186,88,8,0,48,27,108,0,0,109,216,0,29,119,240,0,255,0,0,64,246,240,241,247,241,249,241,250,250,242,243,244,245,246,252];
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 4, '0');
@@ -21,85 +16,7 @@
     return false;
   }
 
-  // ---- compose(): one screen as the game builds it (see work/compose.js) ----
-  function compose(ram, n, opts) {
-    const w = a => ram[a] | ram[a + 1] << 8;
-    const mem = Uint8Array.from(ram);
-    const R = w(0x7290 + 2 * n), OUT = [0x7000, 0x7080, 0x7100, 0x7180, 0x7200];
-    const cp = (s, e, t) => { for (let i = 0; i < e - s; i++) mem[t + i] = ram[s + i]; };
-    cp(w(0x56C0), w(0x56C2), w(0x56C4));                 // hud_descriptor: the score rows
-    const s0 = w(R), e0 = w(R + 2), t0 = w(R + 4);
-    const src = n < 5 ? s0 : w(OUT[9 - n]);              // way back: the first-half screen stands in for the store
-    for (let i = 0; i < e0 - s0; i++) mem[t0 + i] = ram[src + i];
-    cp(w(R + 6), w(R + 8), w(R + 10));                   // the character set
-    const colour = new Uint8Array(1024);
-    for (let i = 0, a = w(R + 0x0C); i < 1008; i += 2, a++) { colour[i] = ram[a] & 15; colour[i + 1] = ram[a] >> 4; }
-    const crosses = [];
-    for (let k = 0; k < 10; k++) {
-      const a = w(R + 0x5E + 2 * k);
-      if (a < 0x0400 || a >= 0x07E8) continue;
-      mem[a] = 0x57; colour[a - 0x400] = k < 5 ? 14 : 10;
-      crosses.push({ a, red: k >= 5 });
-    }
-    const vic = BASE.slice();
-    vic[0x22] = ram[R + 0x0E]; vic[0x23] = ram[R + 0x0F]; vic[0x20] = 6;
-    vic[0x00] = ram[R + 0x10]; vic[0x01] = ram[R + 0x11]; vic[0x10] = ram[R + 0x12] ? 1 : 0;
-    mem[0x07F8] = ram[R + 0x13]; vic[0x15] = 1;
-    if (n >= 5) {                                        // the way back: the girl on sprite 1, from +$14-$17
-      vic[0x02] = ram[R + 0x14]; vic[0x03] = ram[R + 0x15]; vic[0x10] |= ram[R + 0x16] ? 2 : 0;
-      mem[0x07F9] = ram[R + 0x17]; vic[0x28] = vic[0x27]; vic[0x15] = 3;
-    }
-    return { F: { vic, cia2: [0xC7, 0x3F], writes: [], ram: [{ a: 0, b: mem }], colour }, R, crosses, mem };
-  }
-  globalThis.ChillerPage = { compose };
-
-  // ---- 01: the screen builder ----
-  function screens(G) {
-    const cv = $('#scr'); if (!need(cv)) return;
-    const pick = $('#scr-pick'), ov = { solid: false, ledge: false, pick: false, cross: true };
-    let cur = 0;
-    NAMES.forEach((nm, i) => pick.insertAdjacentHTML('beforeend',
-      `<button class="b" type="button" data-n="${i}" aria-pressed="${i === 0}">${nm}</button>`));
-    const LEG = { solid: ['#e9e7e1', 'solid, tiles $2A-$4C'], ledge: ['#ff8a00', 'crumbling ledge, $4D-$53'],
-      pick: ['#2a8a4a', 'mushroom $54, toadstool $55, bonus $56'], cross: ['#ffe14d', 'cross $57: blue for the boy, red for the girl'] };
-    function draw() {
-      const { F, R, crosses, mem } = compose(G.ram, cur);
-      const r = C64.renderFrame(F), s = 2, ctx = C64.canvas(cv, r.w * s, r.h * s);
-      const img = ctx.createImageData(r.w * s, r.h * s);
-      const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
-      for (let y = 0; y < r.h * s; y++) for (let x = 0; x < r.w * s; x++) {
-        const c = rgb[r.px[(y / s | 0) * r.w + (x / s | 0)]], o = (y * r.w * s + x) * 4;
-        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
-      }
-      ctx.putImageData(img, 0, 0);
-      // the screen's 40x25 cells start 32 pixels in and 35 lines down in VICE's visible area
-      const X0 = 32 * s, Y0 = 35 * s, C = 8 * s;
-      ctx.lineWidth = 2;
-      for (let i = 80; i < 1000; i++) {
-        const t = mem[0x400 + i], x = X0 + (i % 40) * C, y = Y0 + (i / 40 | 0) * C;
-        let k = null;
-        if (ov.solid && t >= 0x2A && t <= 0x4C) k = 'solid';
-        else if (ov.ledge && t >= 0x4D && t <= 0x53) k = 'ledge';
-        else if (ov.pick && t >= 0x54 && t <= 0x56) k = 'pick';
-        if (k) { ctx.globalAlpha = .45; ctx.fillStyle = LEG[k][0]; ctx.fillRect(x, y, C, C); ctx.globalAlpha = 1; }
-      }
-      if (ov.cross) for (const c of crosses) {
-        const i = c.a - 0x400, x = X0 + (i % 40) * C, y = Y0 + (i / 40 | 0) * C;
-        ctx.strokeStyle = c.red ? '#ff4040' : '#ffe14d'; ctx.strokeRect(x - 4, y - 4, C + 8, C + 8);
-      }
-      const need = G.ram[R + 0x72];
-      $('#scr-kv').innerHTML = `Settings at <b>${hex(R)}</b> · level byte <b>${G.ram[R + 0x73]}</b> · crosses needed <b>${need}</b> · ` +
-        `multicolours <b>${G.ram[R + 0x0E]}</b>, <b>${G.ram[R + 0x0F]}</b> · play area from <b>${hex(G.ram[R] | G.ram[R + 1] << 8)}</b>${cur < 5 ? '' : ' (the store)'}`;
-      $('#scr-legend').innerHTML = Object.keys(LEG).filter(k => ov[k]).map(k => `<span><i style="background:${LEG[k][0]}"></i>${LEG[k][1]}</span>`).join('');
-      $('#scr-cap').textContent = cur < 5
-        ? 'Drawn from the screen’s settings with the site’s model of the video chip. Against the emulator’s screenshot of the same screen on arrival, 98.6 to 99.7 % of the pixels match; the rest are the enemies, which the page leaves out, and the energy bar, drawn full.'
-        : 'A way-back screen reads its play area from the copy saved on the way to the house, which holds nothing until a game has been played that far. Here the level as it first appears stands in for it, with the red crosses added: what a player sees who took only the crosses on the way to the house.';
-    }
-    pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#scr-pick button', b); draw(); });
-    $$('[data-ov]').forEach(b => b.addEventListener('click', () => {
-      ov[b.dataset.ov] = !ov[b.dataset.ov]; b.setAttribute('aria-pressed', ov[b.dataset.ov]); draw(); }));
-    draw();
-  }
+  globalThis.ChillerPage = {};
 
   // ---- small drawing helpers on the game's own glyphs and sprites ----
   const FONT = G => G.ram.subarray(0x3000, 0x3800);   // the play set as loaded: text glyphs $80-$BF
@@ -310,17 +227,17 @@
 
   // ---- start: the game image from listing.json ----
   if (!globalThis.C64) {                                   // opened from disk: say so beside each picture
-    ['#scr', '#pl', '#xc', '#eb', '#jc', '#en', '#silver', '#ctrl'].forEach(id => need($(id)));
+    ['#pl', '#xc', '#eb', '#jc', '#en', '#silver', '#ctrl'].forEach(id => need($(id)));
     if ($('#sid')) $('#sid').textContent = 'The player needs the site’s shared sound script, ../../lib/sid.js: open this page from the built site.';
     return;
   }
   C64.load('listing.json').then(G => {
-    for (const f of [screens, music, crosses, energy, players, enemies, texts]) {
+    for (const f of [music, crosses, energy, players, enemies, texts]) {
       try { f(G); } catch (e) { console.error(f.name, e); }
     }
   }).catch(e => {
     console.error(e);
-    const anchor = $('#scr') || $('#sid') || $('#silver');
+    const anchor = $('#xc') || $('#sid') || $('#silver');
     if (anchor) anchor.insertAdjacentHTML('afterend', '<p class="note">The game’s bytes (listing.json) could not be loaded: open the page from the built site.</p>');
   });
   globalThis.ChillerPage.createDriver = createDriver;
