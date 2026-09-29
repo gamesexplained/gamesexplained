@@ -387,7 +387,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 .sid-player button[aria-pressed="true"]{background:var(--accent,#1f5fa8);border-color:var(--accent,#1f5fa8);color:#fff}
 .sid-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
 .sid-filt{display:inline-flex;align-items:center;gap:4px;margin-left:8px}
+.sid-fsw{display:inline-flex;align-items:center;gap:4px}
+.sid-fsw[hidden]{display:none}
 .sid-filt .sid-k{margin-right:2px}
+.sid-fnote{font-size:12.5px;color:var(--ink-mute,#80838a)}
 .sid-stat{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-family:var(--fm,'IBM Plex Mono',ui-monospace,monospace);font-size:12.5px}
 .sid-k{font-family:var(--fb,'Lato',system-ui,sans-serif);font-size:12.5px;color:var(--ink-mute,#80838a);margin-right:5px}
 .sid-vol{display:inline-flex;gap:2px;vertical-align:-1px;margin-left:6px}
@@ -430,8 +433,9 @@ registerProcessor('c64-sid', C64SidProcessor);`;
   //           by default, where the voice's gate comes on
   //   gain    optional: the output level, 0.6 by default
   //   filter  optional: '6581', '8580' or 'none', the filter the player starts with. Given, the
-  //           player shows a switch between the three, heard at once, to compare them; left
-  //           out, the filter is off and there is no switch
+  //           player shows a switch between the three, heard at once, to compare them, and
+  //           shows in its place that the chosen tune never routes a voice through the filter;
+  //           left out, the filter is off and there is no switch
   //   colors  optional: the three voices' colours
   function mount(root, o) {
     if (!document.querySelector('style.sid-style')) {
@@ -454,9 +458,10 @@ registerProcessor('c64-sid', C64SidProcessor);`;
       '<div class="sid-bar">' +
       o.tunes.map((n, t) => `<button type="button" data-tune="${t}" aria-pressed="false">${esc(n)}</button>`).join('') +
       '<button type="button" data-stop>Stop</button>' +
-      (o.filter ? '<span class="sid-filt" role="group" aria-label="The SID filter"><span class="sid-k">Filter</span>' +
+      (o.filter ? '<span class="sid-filt" role="group" aria-label="The SID filter">' +
+        '<span class="sid-fsw"><span class="sid-k">Filter</span>' +
         FILTERS.map(([c, n]) => `<button type="button" data-filter="${c}" aria-pressed="${c === filter}">${n}</button>`).join('') +
-        '</span>' : '') +
+        '</span><span class="sid-fnote" hidden>this tune doesn\u2019t use the filter</span></span>' : '') +
       '<span class="sid-stat">' +
       '<span><span class="sid-k">Volume</span><span data-g="vol">-</span><span class="sid-vol">' +
       '<i></i>'.repeat(15) + '</span></span></span></div>' +
@@ -488,17 +493,25 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     let queue = [], hist = [], tune = -1, dragging = false;
     // Each tune's length in frames, or null where it runs on past LONG: measured once, by running
     // the driver as the player does (a few milliseconds for minutes of music). A tune that runs on
-    // gets a bar LONG long, which grows if the tune is played past it.
-    const LONG = Math.ceil(300 * FPS), lengths = [];
+    // gets a bar LONG long, which grows if the tune is played past it. The same run notes whether
+    // the tune ever routes a voice through the filter ($D417 bits 0-2), for the filter switch.
+    const LONG = Math.ceil(300 * FPS), lengths = [], filtered = [];
     function length(t) {
       if (lengths[t] === undefined) {
-        let n = 0;
+        let n = 0, f = false;
+        const routes = (d) => {
+          if (d.sid[23] & 7) return true;
+          const w = d.writes;
+          if (w) for (let k = 0; k + 1 < w.length; k += 2) if (w[k] === 23 && w[k + 1] & 7) return true;
+          return false;
+        };
         try {
           const d = o.driver(o.data);
-          d.init(t);
-          for (; n < LONG; n++) { d.play(); if (!d.playing()) break; }
-        } catch (e) { n = LONG; }
+          d.init(t); f = routes(d);
+          for (; n < LONG; n++) { d.play(); f = f || routes(d); if (!d.playing()) break; }
+        } catch (e) { n = LONG; f = true; }
         lengths[t] = n < LONG ? n : null;
+        filtered[t] = f;
       }
       return lengths[t];
     }
@@ -536,6 +549,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         const n = length(t);
         seek.max = String(n != null ? Math.max(1, n) : LONG);
         seek.disabled = false;
+        const sw = root.querySelector('.sid-fsw'), note = root.querySelector('.sid-fnote');
+        if (sw) { sw.hidden = !filtered[t]; note.hidden = filtered[t]; }   // the switch or the note
       }
       at = Math.max(0, Math.min(at || 0, +seek.max));
       send({ cmd: 'start', tune: t, run: ++runs, at });
