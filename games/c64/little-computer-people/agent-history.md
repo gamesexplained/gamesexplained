@@ -84,3 +84,29 @@ the difference from a run without it. Live runs showed that the parser's
 action codes are activity numbers (letter, fire, greeting and dance),
 that "please light a fire" really builds one, and what each CTRL key
 starts.
+
+## Session 2 (2026-09-29, claude-opus-5-5): the piano and the talking through the SID model
+
+**A port of the effects driver.** The piano and effects driver was ported
+to JavaScript for the site's SID player and run side by side with the
+game's own code in the kit's 6502 simulator, on the image rebuilt from
+`listing.json`. Three things only showed up in the comparison. The tick's
+first instructions (`$B4FB`) touch the SID, not the RAM they were meant
+for, so every frame writes voice 3's frequency and pulse low bytes; the
+one value read there, from a write-only register, had to be given the same
+stand-in on both sides. When the rare path skips a command (`$B371`), the
+tick can end with the I/O area switched out, and the harness had to set
+`$01` before each tick as the interrupt handler does (`$0725`), or the
+next frame's writes vanished into RAM. And a skipped command can send a
+stream into zero page, where `$00` and `$01` read as the processor's port.
+
+**The `$FF00` claim was wrong.** Session 1 wrote that entries 96–99 of
+channel 1's phrase table (`$B7FE`) hold `$FF00`, `$FF40`, `$FF08`, `$FF00`
+and send a quarter of the talking's phrases into uninitialised memory.
+The table's bytes say otherwise: those four words sit at `$B8B6`–`$B8BD`,
+entries 92–95, and entries 96–111 (`$B8BE`–`$B8DD`) are all phrase
+addresses. The comments at `$B7FE`, `$B8C6`, `$B8DE` and
+`$B8E6` were eight bytes out, the facts and a card on the page had copied
+them, and the simulator confirmed that no call reads `$FF00`–`$FF4F`. All
+of them were corrected.
+
