@@ -48,8 +48,8 @@ transcription; `work/research.md` has the notes, source by source.
 | F1: the introduction and interview; F3: straight to vehicle selection (manual) | open | F1 live |
 | Interview: name "LAST,FIRST", "DO YOU HAVE AN ACCOUNT?" | live | text at `$AB8D`, `$ABE1` |
 | New franchise: the bank advances $10,000 | live | text at `$AC2B` |
-| Account number: typed on a Y answer; "INVALID ACCOUNT NUMBER." | open | text at `$AC94`, `$ACB1` |
-| Account number encodes the balance in units of $100, checked against the name (ready64, gbaccount) | open | |
+| Account number: typed on a Y answer; "INVALID ACCOUNT NUMBER." | live | text at `$AC94`, `$ACB1`; decode `$9155`; VENKMAN,PETER with 64405104 gives $123,400, one digit changed is refused |
+| Account number encodes the balance in units of $100, checked against the name (ready64, gbaccount) | confirmed | encode `$90EE`, LFSR `$91A6`, name sum `$91B6`; a Python model agrees with the game |
 | Vehicles: Compact $2,000, 1963 Hearse $4,800, Station Wagon $6,000, High-Performance $15,000 | live | vehicle page |
 | Vehicle options on SPACE: 5, 9, 11, 7 items of cargo; 75, 90, 110, 160 mph | open | text at `$38F1`-`$39EC` |
 | Equipment shop, three pages on keys 1-3, E to end | live | |
@@ -86,19 +86,29 @@ transcription; `work/research.md` has the notes, source by source.
 | Partial: enough money but Zuul not reached, "GOOD TRY" | open | text at `$B1B9` |
 | A winning game gives a new account number | open | text at `$B221`-`$B298` |
 | Digitised speech: "Ghostbusters!", "He slimed me!", a laugh | open | speech heard at start-up; NMI player at `$F0C3`, CIA 2 timer B (`$F47E`) |
-| Music: Russell Lieblich's arrangement of the theme | live | |
+| Music: Russell Lieblich's arrangement of the theme | live | player `$93E2`/`$93F0`; voice 3 lent to sound effects at `$9593` |
 | Credits on the title: "DESIGNED BY DAVID CRANE COPYRIGHT 1984" | live | text at `$3671` |
 
 ## Beyond the documentation
 
 Found in the code, not in the manual.
 
+| Feature | Status | Where |
+|---|---|---|
+| Account digits 8 and 9 are read as 0 and 1: 64485184 works like 64405104 | live | digit parse `$9CFC` keeps 3 bits |
+| The decoded balance is not checked as decimal: ANDY with 777 shows YOU HAVE $?<0000 | live | `$9155` |
+| Names with the same byte sum (anagrams) share every account; about one random number in 256 passes the check | confirmed | 8-bit check byte |
+| PK energy stops at 9999; it rises 1 every 64 passes below 1000, every 32 below 2000, every 16 above; crossing a thousand at 5000 or more marks a random building | confirmed | `$9895` |
+| Money saturates at $999,900 and stops at 0 | confirmed | BCD add `$9664`, subtract `$9636` |
+| `POKE 38454,96` makes the subtract routine return at once: purchases cost nothing | live | `$9636`; buying the hearse left $10,000 |
+| Dead code: `sprite_y_distance` `$9C76`, `set_balance_10000` `$9CF1`; three-NOP runs at `$90D1`, `$90DB` look like a patched-out call | confirmed | no reference, never executed |
+
 ## Open questions
 
 - F1 and F3: no source says they choose a number of players; the manual
   says F3 skips the introduction.
-- The cheats found online are untested: `POKE 22014,9` ("unlimited lives")
-  and `POKE 38454,96: SYS 24576` ("cheat mode"; `$9636` and `$6000`).
-- Published name and account pairs, several impossible under the
-  documented algorithm (digits 8 and 9, a blank name with `458`): test
-  them against the code.
+- `POKE 22014,9` ("unlimited lives", `$55FE`, in the video bank the start-up
+  rebuilds) is untested. `POKE 38454,96` is settled above.
+- Published name and account pairs with digits 8 and 9 are explained by
+  the digit parse (8 reads as 0, 9 as 1). A blank name with `458` is
+  untested.
