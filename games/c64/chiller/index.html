@@ -241,8 +241,22 @@ ul.odd li{margin:0 0 12px}
   <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the game switches the controls off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so he keeps the direction he took off in until he lands. He climbs by jumping. All ten screens switch off up and down as walking directions (<code>$4500</code>-<code>$4503</code>), so he has no climb of his own and gets up the screen one jump at a time, from ledge to ledge.</p>
   <p>Some ledges crumble. Tiles <code>$4D</code>-<code>$53</code> are one ledge in seven stages. Every eighth step on it moves it on a stage, and the last stage is empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
 </section>
+<section id="controls">
+  <p class="fig">10 · Controls</p>
+  <h2 class="t">Joystick or keyboard</h2>
+  <p class="lede">As the title screen says, there are two ways to play: a joystick in control port 2, or the keys Z, C, ? and SHIFT. The game reads the joystick port itself, and leaves the keyboard to the Commodore's built-in routines.</p>
+  <figure style="margin:0 0 24px"><img src="reference/title-screen.png" alt="The title screen: rescue your girlfriend from the haunted house and return to your car; use the keys Z, C, ? and SHIFT, or a joystick in port two" style="width:100%;max-width:576px;image-rendering:pixelated;border-radius:4px;display:block"><figcaption class="cap">The title screen, captured in an emulator.</figcaption></figure>
+  <table class="t">
+    <tr><th>Joystick; keyboard</th><th>Read as</th><th>Does</th></tr>
+    <tr><td>Stick (port 2) left, right; Z, C</td><td><code>$DC00</code> bits 2, 3; key codes <code>$0C</code>, <code>$14</code> in <code>$C5</code></td><td>walk</td></tr>
+    <tr><td>Stick up; SHIFT</td><td><code>$DC00</code> bit 0; the shift flag <code>$028D</code></td><td>jump</td></tr>
+    <tr><td>Fire; <code>?</code></td><td><code>$DC00</code> bit 4; key code <code>$37</code></td><td>switch players, way back only</td></tr>
+    <tr><td>SPACE</td><td>key code <code>$3C</code>, listed twice as up</td><td>nothing: up is off on every screen</td></tr>
+  </table>
+  <p>The key table (<code>$4512</code>) is part of the level settings, so each screen could have had its own keys. All ten have the same.</p>
+</section>
 <section id="unused">
-  <p class="fig">10 · Secret</p>
+  <p class="fig">11 · Secret</p>
   <h2 class="t">Secret: there is a shooting game underneath</h2>
   <p class="lede">Chiller has no gun, no lives and no scrolling. <b>Its code has all three</b>, and a second sound player whose every write goes nowhere. None of it can be reached in play.</p>
   <table class="t">
@@ -257,33 +271,19 @@ ul.odd li{margin:0 0 12px}
   <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
 </section>
 <section id="silver-crosses">
-  <p class="fig">11 · Secret</p>
+  <p class="fig">12 · Secret</p>
   <h2 class="t">Secret: the magic crosses were once silver</h2>
   <p class="lede">Three of the first five levels carry a spare score line that is never shown. <b>It says SILVER CROSSES</b> where the game says MAGIC CROSSES.</p>
       <div class="plate"><canvas id="silver" width="640" height="64" class="scr" style="max-width:640px" role="img" aria-label="The unused SILVER CROSSES score line above the one the game shows"></canvas>
       <p class="cap">Top: <code>hud_cinema</code> at <code>$8E00</code>, never copied to the screen. Bottom: <code>hud_template</code> at <code>$8400</code>, the one the game uses. Both drawn with the game's own letters.</p></div>
 </section>
 <section id="menu">
-  <p class="fig">12 · Unfinished</p>
+  <p class="fig">13 · Unfinished</p>
   <h2 class="t">Unfinished: a PRESS CTRL FOR MENU prompt that never appears</h2>
   <p class="lede">After GAME OVER the game still calls a routine meant to put PRESS CTRL FOR MENU on the bottom row. <b>The routine reads the text, the screen and the colours, and writes nothing.</b> It looks like a feature left out before release, with its prompt stubbed so it never shows. </p>
       <div class="plate"><canvas id="ctrl" width="640" height="32" class="scr" style="max-width:640px" role="img" aria-label="PRESS CTRL FOR MENU drawn from the game's bytes"></canvas>
       <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. The routine loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads and no store.</p></div>
   <p>An older forest card is left behind the same way: <code>card_forest_title</code> (<code>$5D0D</code>) is still there, and its printer, <code>$5E00</code>, is never called.</p>
-</section>
-<section id="controls">
-  <p class="fig">13 · Controls</p>
-  <h2 class="t">Joystick or keyboard</h2>
-  <p class="lede">As the title screen says, there are two ways to play: a joystick in control port 2, or the keys Z, C, ? and SHIFT. The game reads the joystick port itself, and leaves the keyboard to the Commodore's built-in routines.</p>
-  <figure style="margin:0 0 24px"><img src="reference/title-screen.png" alt="The title screen: rescue your girlfriend from the haunted house and return to your car; use the keys Z, C, ? and SHIFT, or a joystick in port two" style="width:100%;max-width:576px;image-rendering:pixelated;border-radius:4px;display:block"><figcaption class="cap">The title screen, captured in an emulator.</figcaption></figure>
-  <table class="t">
-    <tr><th>Joystick; keyboard</th><th>Read as</th><th>Does</th></tr>
-    <tr><td>Stick (port 2) left, right; Z, C</td><td><code>$DC00</code> bits 2, 3; key codes <code>$0C</code>, <code>$14</code> in <code>$C5</code></td><td>walk</td></tr>
-    <tr><td>Stick up; SHIFT</td><td><code>$DC00</code> bit 0; the shift flag <code>$028D</code></td><td>jump</td></tr>
-    <tr><td>Fire; <code>?</code></td><td><code>$DC00</code> bit 4; key code <code>$37</code></td><td>switch players, way back only</td></tr>
-    <tr><td>SPACE</td><td>key code <code>$3C</code>, listed twice as up</td><td>nothing: up is off on every screen</td></tr>
-  </table>
-  <p>The key table (<code>$4512</code>) is part of the level settings, so each screen could have had its own keys. All ten have the same.</p>
 </section>
 <section id="odd">
   <p class="fig">14 · Odds and ends</p>
