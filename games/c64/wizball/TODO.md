@@ -23,6 +23,15 @@ record the outcome in `copy`.
 - Which of the special droplets the thresholds (`$A763`) make most often in
   a real game.
 
+- Galway's driver source against the game's code (`$45B0`-`$5524`): the
+  handler addresses drift by up to three bytes, so the revisions differ.
+  Assemble `wizball.asm` and compare instruction by instruction with an
+  image in `work/`; the routines at `$5AFF` and `$5F2E` are still to
+  compare too.
+- Why the source lists the bonus-stage bass tune at 200 Hz while the game
+  plays it once a frame, and where tune K, End Of Bonus Level, would have
+  played.
+
 ## Ideas for the page
 
 - A Play tab: the Wizball's movement is ported and checked; the aliens'
