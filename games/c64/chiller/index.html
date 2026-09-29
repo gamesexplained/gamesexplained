@@ -80,7 +80,7 @@ input[type=range]{width:100%}
 <section id="screens">
   <p class="fig">01 · The screen</p>
   <h2 class="t">One screen, rebuilt from 128 bytes</h2>
-  <p class="lede">Each of Chiller's ten screens is set up from 128 bytes of settings, which this page calls its level record. The record says where to find the screen's play area, character set and colours, and where to put its two players, its five enemies and its ten crosses. The picture below is drawn by this page from those bytes. Pick a screen, and switch on the tiles the boy can stand on, the ledges that crumble and the pick-ups.</p>
+  <p class="lede">Each of Chiller's ten screens is set up from its own 128 bytes of settings. They say where to find the screen's play area, character set and colours, and where to put its two players, its five enemies and its ten crosses. The picture below is drawn by this page from those bytes. Pick a screen, and switch on the tiles the boy can stand on, the ledges that crumble and the pick-ups.</p>
   <div class="plate">
     <div class="row" id="scr-pick"></div>
     <div class="row">
@@ -89,12 +89,12 @@ input[type=range]{width:100%}
       <button class="b" type="button" data-ov="pick" aria-pressed="false">Mushrooms and bonuses</button>
       <button class="b" type="button" data-ov="cross" aria-pressed="true">Crosses</button>
     </div>
-    <canvas id="scr" class="scr" width="768" height="544" role="img" aria-label="A Chiller screen rebuilt from its level record"></canvas>
+    <canvas id="scr" class="scr" width="768" height="544" role="img" aria-label="A Chiller screen rebuilt from its settings"></canvas>
     <p class="kv" id="scr-kv"></p>
     <div class="legend" id="scr-legend"></div>
     <p class="cap" id="scr-cap"></p>
   </div>
-  <p>The ten records sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The five outward screens keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
+  <p>The ten screens' settings sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The five outward screens keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
   <table class="t">
     <tr><th>Field</th><th>Offset</th><th>Read by</th></tr>
     <tr><td>Play area: source, end, destination</td><td><code>+$00</code></td><td><code>setup_screen</code>, <code>copy_block</code> <code>$2A80</code></td></tr>
@@ -123,7 +123,7 @@ input[type=range]{width:100%}
     <p class="cap">Four frames per enemy, in the order the game steps through them. Colours are the ones the game sets on arrival (<code>$D029</code>-<code>$D02D</code>); multicolour sprites share <code>$D025</code> and <code>$D026</code>.</p>
   </div>
   <p>The girl's frames sit exactly 16 pointers after the boy's, so one set of routines can draw either. <code>player_swap</code> (<code>$576B</code>) adds or takes away that 16 in the three places the frame numbers are kept.</p>
-  <p>The enemies live on sprites 2 to 6, and a sixth on sprite 7 is thrown in from one of them now and then. Their shapes are named in the screen's record. Most are stored at <code>$2000</code>-<code>$29FF</code>, and seven of the ten records also use a second store at <code>$0B00</code>-<code>$0FFE</code>.</p>
+  <p>The enemies live on sprites 2 to 6, and a sixth on sprite 7 is thrown in from one of them now and then. Their shapes are named in the screen's settings. Most are stored at <code>$2000</code>-<code>$29FF</code>, and seven of the ten screens also use a second store at <code>$0B00</code>-<code>$0FFE</code>.</p>
 </section>
 <section id="controls">
   <p class="fig">03 · Controls</p>
@@ -144,18 +144,18 @@ input[type=range]{width:100%}
   <p class="lede">The boy works through five haunted levels, the forest, the cinema, the ghetto, the graveyard and the haunted house, collecting the blue crosses on each, to reach his girlfriend. After the fifth, the same five levels are played in reverse with both of them. Each level comes back exactly as he left it: a mushroom he ate, a cross he took and a ledge that crumbled under him are all still gone.</p>
   <div class="two">
     <figure style="margin:0"><img src="reference/built-cinema.png" alt="The cinema on the way out, five blue crosses to take"><figcaption class="cap">The cinema going out: five blue crosses for the boy.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with ten crosses"><figcaption class="cap">The cinema coming back, with five blue and five red crosses placed on the stored screen. Both are drawn from the level records, without the sprites: the boy, the girl and the enemies are not shown.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with ten crosses"><figcaption class="cap">The cinema coming back, with five blue and five red crosses placed on the stored screen. Both are drawn from the screens' settings, without the sprites: the boy, the girl and the enemies are not shown.</figcaption></figure>
   </div>
   <p>The five return screens have no play areas of their own. As the boy leaves each screen on the way out, <code>next_screen</code> (<code>$7680</code>) copies screen rows 1 to 24 away, and on the way back the game reads that copy. The forest goes to <code>$7800</code>. The other four have no room left in ordinary memory, so they go into the RAM hidden under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. A write to those addresses lands in the RAM even with the ROM switched in. Reading it back needs the ROM switched out, and that is all <code>copy_under_kernal</code> (<code>$72A4</code>) does: it sets the processor port <code>$01</code> to <code>$34</code>, copies, and puts it back.</p>
   <table class="t">
-    <tr><th>Way-back screen</th><th>Record</th><th>Play area read from</th><th>Character set and colours from</th></tr>
+    <tr><th>Way-back screen</th><th>Settings at</th><th>Play area read from</th><th>Character set and colours from</th></tr>
     <tr><td>Haunted house</td><td><code>$7300</code></td><td><code>$EC28</code></td><td>the house's, <code>$A800</code>, <code>$B000</code></td></tr>
     <tr><td>Graveyard</td><td><code>$7380</code></td><td><code>$E828</code></td><td>the graveyard's</td></tr>
     <tr><td>Ghetto</td><td><code>$7400</code></td><td><code>$E428</code></td><td>the ghetto's</td></tr>
     <tr><td>Cinema</td><td><code>$7480</code></td><td><code>$E028</code></td><td>the cinema's</td></tr>
     <tr><td>Forest</td><td><code>$7500</code></td><td><code>$7828</code></td><td>the forest's</td></tr>
   </table>
-  <p>The red crosses are added on the return. An outward record lists five crosses and a way-back record lists ten, so <code>place_crosses</code> writes the five red ones into the stored copy as the screen is set up.</p>
+  <p>The red crosses are added on the return. An outward screen's settings list five crosses and a way-back screen's list ten, so <code>place_crosses</code> writes the five red ones into the stored copy as the screen is set up.</p>
 </section>
 <section id="crosses">
   <p class="fig">05 · The crosses</p>
@@ -257,7 +257,7 @@ input[type=range]{width:100%}
       <h3>The game cannot be finished</h3>
       <p>On the way back every screen needs all ten of its crosses before it lets you go. On three of those screens, one blue cross sits lower than the boy can ever stand. The first of them is the graveyard, the seventh screen, and that is as far as anyone gets.</p>
       <div class="two" style="margin:12px 0">
-        <figure style="margin:0"><img src="reference/built-graveyard-back.png" alt="The graveyard on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The graveyard on the way back, drawn from its level record. Boxes mark the crosses; the ringed blue one is in the bottom two rows, where no player can reach it.</figcaption></figure>
+        <figure style="margin:0"><img src="reference/built-graveyard-back.png" alt="The graveyard on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The graveyard on the way back, drawn from its settings. Boxes mark the crosses; the ringed blue one is in the bottom two rows, where no player can reach it.</figcaption></figure>
         <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The cinema on the way back has the same fault. So does the ghetto, which comes between them.</figcaption></figure>
       </div>
       <p>The cause is a single compare. <code>move_sprite</code> stops the boy's sprite at Y <code>$E3</code>, row 22 of the screen's 24, before it looks at any scenery. Even falling through open space with nothing underneath, he halts there in mid-air. The game looks for a cross in the cell his position maps to, and from Y <code>$E3</code> that is never lower than row 22, so a cross in row 23 or 24 can never be taken. The other seven screens can be cleared: searching each one with the game's own movement rules finds a path to every cross, and the <a href="levels.html">Maps / levels</a> tab rings the three it cannot reach. A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it.</p>
@@ -309,7 +309,7 @@ input[type=range]{width:100%}
     </li>
     <li>
       <h3>The title should flicker two colours</h3>
-      <p>On the title after a game, the flicker routine is meant to change both multicolour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last level record, so only one flickers.</p>
+      <p>On the title after a game, the flicker routine is meant to change both multicolour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last screen's settings, so only one flickers.</p>
       <p class="where"><code>title_flicker</code> <code>$7580</code></p>
     </li>
   </ol>
@@ -322,7 +322,7 @@ input[type=range]{width:100%}
     <li>Whether the LEVEL counter can ever appear in real play. Nothing here proves it cannot.</li>
     <li>Screenshots of the way back taken in an emulator show a stray fence patch on the cinema and a crosses counter reading <code>2S</code> or <code>5S</code> where the outward screens read <code>05</code>. They were taken with crosses moved beside the boy, so that may be the cause.</li>
     <li>What <code>$1000</code>-<code>$1FFF</code> held. It repeats every 64 bytes like sprite data, but drawn as sprites it is noise.</li>
-    <li>Whether <code>$4A90</code>-<code>$4AFF</code>, shaped like more enemy paths, was ever used. No level record points at it.</li>
+    <li>Whether <code>$4A90</code>-<code>$4AFF</code>, shaped like more enemy paths, was ever used. No screen's settings point at it.</li>
     <li>Which of the manual's ghouls, zombies, ghosts and bats is which shape.</li>
   </ul>
 </section>
@@ -416,12 +416,12 @@ input[type=range]{width:100%}
         ctx.strokeStyle = c.red ? '#ff4040' : '#ffe14d'; ctx.strokeRect(x - 4, y - 4, C + 8, C + 8);
       }
       const need = G.ram[R + 0x72];
-      $('#scr-kv').innerHTML = `Record <b>${hex(R)}</b> · level byte <b>${G.ram[R + 0x73]}</b> · crosses needed <b>${need}</b> · ` +
+      $('#scr-kv').innerHTML = `Settings at <b>${hex(R)}</b> · level byte <b>${G.ram[R + 0x73]}</b> · crosses needed <b>${need}</b> · ` +
         `multicolours <b>${G.ram[R + 0x0E]}</b>, <b>${G.ram[R + 0x0F]}</b> · play area from <b>${hex(G.ram[R] | G.ram[R + 1] << 8)}</b>${cur < 5 ? '' : ' (the store)'}`;
       $('#scr-legend').innerHTML = Object.keys(LEG).filter(k => ov[k]).map(k => `<span><i style="background:${LEG[k][0]}"></i>${LEG[k][1]}</span>`).join('');
       $('#scr-cap').textContent = cur < 5
-        ? 'Drawn from the level record with the site’s model of the video chip. Against the emulator’s screenshot of the same screen on arrival, 98.6 to 99.7 % of the pixels match; the rest are the enemies, which the page leaves out, and the energy bar, drawn full.'
-        : 'A way-back record reads its play area from the store the outward screen was saved into, which holds nothing until a game has been played that far. Here the outward screen stands in for it, with the red crosses added: what a player sees who took only the crosses on the way out.';
+        ? 'Drawn from the screen’s settings with the site’s model of the video chip. Against the emulator’s screenshot of the same screen on arrival, 98.6 to 99.7 % of the pixels match; the rest are the enemies, which the page leaves out, and the energy bar, drawn full.'
+        : 'A way-back screen reads its play area from the store the outward screen was saved into, which holds nothing until a game has been played that far. Here the outward screen stands in for it, with the red crosses added: what a player sees who took only the crosses on the way out.';
     }
     pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#scr-pick button', b); draw(); });
     $$('[data-ov]').forEach(b => b.addEventListener('click', () => {
@@ -557,7 +557,7 @@ input[type=range]{width:100%}
           [LIVE_COL[cur][k], 9, 1]));
         txt.push(`slot ${k}: <b>${hex(first, 2)}</b>-<b>${hex(last, 2)}</b> at <b>${hex(first * 64)}</b>`);
       }
-      $('#en-kv').innerHTML = `Record <b>${hex(R)}</b> · ` + txt.join(' · ');
+      $('#en-kv').innerHTML = `Settings at <b>${hex(R)}</b> · ` + txt.join(' · ');
     }
     pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#en-pick button', b); draw(); });
     draw();
