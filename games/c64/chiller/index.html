@@ -229,7 +229,7 @@ input[type=range]{width:100%}
 <section id="music">
   <p class="fig">09 · Music</p>
   <h2 class="t">The tune that got the game withdrawn</h2>
-  <p class="lede">This copy is the first release, the one Mastertronic withdrew because its in-play tune is a rendition of Michael Jackson's <i>Thriller</i>. The re-release replaced it with a new tune. Both are played here by the game's own driver, ported line by line. Press a tune.</p>
+  <p class="lede">This copy is the first release, the one Mastertronic withdrew because its in-play tune is a rendition of Michael Jackson's <i>Thriller</i>. The re-release replaced it with a new tune. Both are played here by the game's own driver, ported line by line: press the first two buttons to hear one after the other.</p>
   <div class="plate">
     <div id="sid"></div>
     <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. Two things differ from a real C64. This player leaves out the sound chip's filter, which the game sets once and keeps on voice 1 for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>), so voice 1 sounds brighter here than it should. And it plays at PAL speed, so the notes are flat, as they were on PAL machines.</p>
@@ -570,9 +570,10 @@ input[type=range]{width:100%}
 
   // ---- 03: the music driver ($60A0-$61F1), ported; see work/music_port.js and test_music.js ----
   function createDriver(M) {
-    // Tunes 0-2 are this copy's (the first release). Tune 3 is the re-release's in-play tune, from
+    // Tune 0 is this copy's in-play tune (the first release), 1 the re-release's in-play tune, from
     // reference/music-v2.json; its level-start and game-over tunes are the same bytes as this copy's,
-    // and its player differs only in the gate-off compare at $60B6 (1 where this copy has 3).
+    // and its player differs only in the gate-off compare at $60B6 (1 where this copy has 3). 2 and 3 are
+    // level start and game over, the same in both.
     const mems = [M, M.v2].map(d => { const x = new Uint8Array(0x10000); if (d) x.set(d.bytes, d.base); return x; });
     let m = mems[0], gate = 3;
     const sid = new Uint8Array(25);
@@ -585,8 +586,8 @@ input[type=range]{width:100%}
       for (let r = 0; r < 25; r++) sid[r] = 0;
       writes = []; for (let r = 1; r < 25; r++) writes.push(r, 0);
       timer = 0; count = 0; acc = 0;
-      const v2 = t === 3 && M.v2;
-      m = mems[v2 ? 1 : 0]; gate = v2 ? M.v2.gate : 3; cur = v2 ? 0 : t || 0;
+      const v2 = t === 1 && M.v2;
+      m = mems[v2 ? 1 : 0]; gate = v2 ? M.v2.gate : 3; cur = M.v2 ? [0, 0, 1, 2][t || 0] : t || 0;
       pos = loop = START[cur];
       W(0x15, 0x05); W(0x16, 0x45); W(0x17, 0xF1); W(0x18, 0x3F);               // $60A0 music_init_filter
       on = true;
@@ -634,8 +635,8 @@ input[type=range]{width:100%}
     const M = { base: 0x61F8, bytes: Array.from(G.ram.subarray(0x61F8, 0x6BCD)) };
     const S = C64Sid;
     fetch('reference/music-v2.json').then(r => r.json()).then(v2 => { M.v2 = v2; }).catch(() => {}).then(() => S.mount(root, {
-      driver: createDriver, data: M, tunes: ['In play', 'Level start', 'Game over']
-        .concat(M.v2 ? ['In play, re-release'] : []),
+      driver: createDriver, data: M, tunes: M.v2 ? ['In play: Thriller, first release', 'In play: replacement, re-release', 'Level start, both', 'Game over, both']
+        : ['In play', 'Level start', 'Game over'],
       rows: [
         { k: 'Command', f: v => v.read && `${S.hex(v.read.addr, 4)}: ${S.hex(v.read.c, 2)}` },
         { in: true, f: v => v.read && ({ 0x0E: 'note, voice 1', 0x26: 'note, voice 2', 0x3E: 'note, both voices' })[v.read.c] },
