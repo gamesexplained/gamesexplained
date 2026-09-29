@@ -272,7 +272,7 @@ recording within a menu or two. This is a
 first-class part of the minisite, not an extra: a reader who can play the
 game while reading how it works understands it better than one who only
 reads. The page's mechanic widgets are usually the seed. Omit the tab only
-if there is genuinely nothing playable to put on it. No tier requires the Play tab, so it never blocks Silver or Gold.
+if there is genuinely nothing playable to put on it. No tier requires the Play tab, so it never blocks Silver or Gold. A Play tab added to a game after its run is timed as its own step: `clock.py start play`.
 
 ### A whole game, checked against its own code
 
