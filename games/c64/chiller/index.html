@@ -91,15 +91,34 @@ ul.odd li{margin:0 0 12px}
     <p class="cap" id="scr-cap"></p>
   </div>
 </section>
+<section id="crosses">
+  <p class="fig">02 · The crosses</p>
+  <h2 class="t">Blue for him, red for her</h2>
+  <p class="lede">Every cross is the same character, tile <code>$57</code>. The only thing that makes it the boy's or the girl's is its colour. Pick a character and a cross colour to see what <code>cross_touch</code> does.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" data-who="0" aria-pressed="true">The boy</button>
+      <button class="b" type="button" data-who="1" aria-pressed="false">The girl</button>
+      <span class="note">touches a</span>
+      <button class="b" type="button" data-col="14" aria-pressed="true">blue cross</button>
+      <button class="b" type="button" data-col="10" aria-pressed="false">red cross</button>
+    </div>
+    <canvas id="xc" width="384" height="120" class="scr" style="max-width:384px" role="img" aria-label="The character and the cross"></canvas>
+    <p class="kv" id="xc-kv"></p>
+  </div>
+  <p><code>cross_touch</code> (<code>$7F50</code>) reads the colour under the cross and tests one bit. Light blue is 14 (<code>%1110</code>) and light red is 10 (<code>%1010</code>), so bit 2 tells them apart. A match replaces the cross with a space and counts it off the MAGIC CROSSES counter (<code>cross_count</code>, <code>$5B5E</code>). The crosses flash because every 40th pass <code>colour_cycle</code> (<code>$7F80</code>) takes 8 off each cross's colour and then puts it back.</p>
+  <p>Going out, only the boy plays, and each screen needs its five blue crosses. On the way back the girl comes too, and all ten are needed. Fire, or the <code>?</code> key, swaps who you control. <code>switch_allowed</code> (<code>$7280</code>) refuses before the first way-back screen, as the inlay says. The border shows who is playing: blue for the boy, light red for the girl.</p>
+  <p>A swap does not move anyone. <code>player_swap</code> exchanges the two sprites, positions and all, so whoever you control is always sprite 0. The one left behind stands still, and still loses energy when an enemy touches it (<code>girl_touch</code>, <code>$CD9D</code>).</p>
+</section>
 <section id="no-ending">
-  <p class="fig">02 · The end</p>
+  <p class="fig">03 · The end</p>
   <h2 class="t">Get the boy and the girl home, and the game starts again in the forest</h2>
   <p class="lede">Take the last cross on the way home and Chiller loads the forest again, with its five crosses back and your score kept. <b>There is no ending</b>: no screen, no message, and nothing in the code that counts how many times round you have been.</p>
   <p>When a level's last cross is taken, <code>crosses_left</code> (<code>$7F00</code>) reads the next level's number from the level's settings and passes it to <code>next_screen</code> (<code>$7680</code>). After the last level, the forest on the way home, the number is <code>$12</code>, and the game swaps it for <code>$FE</code>, which <code>next_screen</code> takes as the forest going out. Just before that are three <code>NOP</code>s (<code>$7F06</code>-<code>$7F08</code>), the size of one subroutine call. That hints at something taken out, perhaps an ending, but nothing in the image says what.</p>
   <p>A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it. In this release every cross can be taken. The lowest three, in the graveyard, the ghetto and the cinema on the way home, sit in the bottom two rows, and the boy takes each of them by walking left along the ground. This was checked on the game's own code. The boy can never stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but the game looks for a cross in the cell below or beside him, not the one he is in (<code>probe_offset</code>, <code>$5145</code>), so from row 22 it still reaches rows 23 and 24.</p>
 </section>
 <section id="wayback">
-  <p class="fig">03 · The world</p>
+  <p class="fig">04 · The world</p>
   <h2 class="t">To the haunted house and home again</h2>
   <p class="lede">The boy works through five haunted levels, the forest, the cinema, the ghetto, the graveyard and the haunted house, to reach his girlfriend. He cannot leave a level until he has collected its five blue crosses. After the haunted house the two of them head home through the same five levels in reverse. The game reuses each level exactly as he left it: a mushroom he ate, a cross he took and a ledge that crumbled under him are all still gone.</p>
   <div class="two">
@@ -118,7 +137,7 @@ ul.odd li{margin:0 0 12px}
   <p>The red crosses are added on the way home. The settings for the first five levels list five crosses each and those for the way home list ten, so <code>place_crosses</code> writes the five red ones into the saved copy as the level is set up.</p>
 </section>
 <section id="music">
-  <p class="fig">04 · Music</p>
+  <p class="fig">05 · Music</p>
   <h2 class="t">The tune that got the game withdrawn</h2>
   <p class="lede">This copy is the first release, the one Mastertronic withdrew because its in-play tune is a rendition of Michael Jackson's <i>Thriller</i>. The re-release replaced it with a new tune. Both are played here by the game's own driver, ported line by line. Play the in-play tune and switch the release to hear the other.</p>
   <div class="plate">
@@ -146,7 +165,7 @@ ul.odd li{margin:0 0 12px}
   <p>The count command is how the music talks to the game. The card at the start of each level stays up until the level-start tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the game-over tune does (<code>$5DA9</code>). The in-play tunes never count. The first release's loops after about 69 seconds.</p>
 </section>
 <section id="cast">
-  <p class="fig">05 · The cast</p>
+  <p class="fig">06 · The cast</p>
   <h2 class="t">A boy, a girl and seventeen kinds of enemy</h2>
   <p class="lede">The boy and the girl share one set of moves: four frames walking each way, two in the air and two standing. Every level brings five enemies, drawn from seventeen different animations that the levels share between them. Flip through each level's five.</p>
   <div class="plate">
@@ -161,25 +180,6 @@ ul.odd li{margin:0 0 12px}
   </div>
   <p>The girl's frames sit exactly 16 pointers after the boy's, so one set of routines can draw either. <code>player_swap</code> (<code>$576B</code>) adds or takes away that 16 in the three places the frame numbers are kept.</p>
   <p>The enemies live on sprites 2 to 6, and a sixth on sprite 7 is thrown in from one of them now and then. Their shapes are named in the screen's settings. Most are stored at <code>$2000</code>-<code>$29FF</code>, and seven of the ten screens also use a second store at <code>$0B00</code>-<code>$0FFE</code>.</p>
-</section>
-<section id="crosses">
-  <p class="fig">06 · The crosses</p>
-  <h2 class="t">Blue for him, red for her</h2>
-  <p class="lede">Every cross is the same character, tile <code>$57</code>. The only thing that makes it the boy's or the girl's is its colour. Pick a character and a cross colour to see what <code>cross_touch</code> does.</p>
-  <div class="plate">
-    <div class="row">
-      <button class="b" type="button" data-who="0" aria-pressed="true">The boy</button>
-      <button class="b" type="button" data-who="1" aria-pressed="false">The girl</button>
-      <span class="note">touches a</span>
-      <button class="b" type="button" data-col="14" aria-pressed="true">blue cross</button>
-      <button class="b" type="button" data-col="10" aria-pressed="false">red cross</button>
-    </div>
-    <canvas id="xc" width="384" height="120" class="scr" style="max-width:384px" role="img" aria-label="The character and the cross"></canvas>
-    <p class="kv" id="xc-kv"></p>
-  </div>
-  <p><code>cross_touch</code> (<code>$7F50</code>) reads the colour under the cross and tests one bit. Light blue is 14 (<code>%1110</code>) and light red is 10 (<code>%1010</code>), so bit 2 tells them apart. A match replaces the cross with a space and counts it off the MAGIC CROSSES counter (<code>cross_count</code>, <code>$5B5E</code>). The crosses flash because every 40th pass <code>colour_cycle</code> (<code>$7F80</code>) takes 8 off each cross's colour and then puts it back.</p>
-  <p>Going out, only the boy plays, and each screen needs its five blue crosses. On the way back the girl comes too, and all ten are needed. Fire, or the <code>?</code> key, swaps who you control. <code>switch_allowed</code> (<code>$7280</code>) refuses before the first way-back screen, as the inlay says. The border shows who is playing: blue for the boy, light red for the girl.</p>
-  <p>A swap does not move anyone. <code>player_swap</code> exchanges the two sprites, positions and all, so whoever you control is always sprite 0. The one left behind stands still, and still loses energy when an enemy touches it (<code>girl_touch</code>, <code>$CD9D</code>).</p>
 </section>
 <section id="energy">
   <p class="fig">07 · Energy</p>
