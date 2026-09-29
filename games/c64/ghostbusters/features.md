@@ -66,25 +66,25 @@ transcription; `work/research.md` has the notes, source by source.
 | An escaped Slimer adds 300 PK (manual) | open | |
 | Route: the Ghostbusters logo moves along the streets, leaving a dotted path; fire sets off (manual, FAQ) | live | |
 | Driving: overhead street, the car steered with the joystick | live | `reference/drive.png` |
-| Ghost vacuum sucks up Roamers on the road (manual) | open | |
+| Ghost vacuum sucks up Roamers on the road (manual) | traced | `$8001`-`$8073`; only if owned (`$6D` bit 5), on a new press of fire; a catch takes 32 frames, pays nothing and sends the Roamer back to the map |
 | Arrival at a building: street scene | live | `reference/building.png` |
-| Busting: first man drops the trap, second walks right, beams on, men move inward, streams must not cross, trap sprung (manual) | open | |
-| "He slimed me!" on a miss; the man is out of action | open | |
-| Crossed streams: "YOU CROSSED THE STREAMS... FORTUNATELY YOUR BACKPACKS SHORTED OUT IN TIME. GO BACK TO GHQ." | open | text at `$3B80` |
-| A Slimer caught pays $300 to $1,000 (FAQ), or according to response time (Apple II guide) | open | |
+| Busting: first man drops the trap, second walks right, beams on, men move inward, streams must not cross, trap sprung (manual) | live | states `$8279`-`$8896`; with the streams on, the stick only closes the gap between the men |
+| "He slimed me!" on a miss; the man is out of action | traced | the Slimer escapes, PK rises by 300, speech phrase 2 |
+| Crossed streams: "YOU CROSSED THE STREAMS... FORTUNATELY YOUR BACKPACKS SHORTED OUT IN TIME. GO BACK TO GHQ." | live | text at `$3B80`; backpacks to 0, two men lost (3 to 1 in the simulator), the Slimer escapes |
+| A Slimer caught pays $300 to $1,000 (FAQ), or according to response time (Apple II guide) | confirmed | table `$A1E4`, by how long the building has been haunted, $1,000 down to $300; +$500 seen |
 | No empty traps, no men, discharged backpacks: "GO BACK TO GHQ" | open | text at `$3A04`-`$3AAE` |
-| GHQ empties traps and revives men (Wikipedia) | open | |
+| GHQ empties traps and revives men (Wikipedia) | live | `$88B6`; 3 men, backpack power 99, traps emptied |
 | SPACE in play: status report | open | text "BACKPACK POWER AT XX% OF MAXIMUM... X EMPTY TRAPS... X MEN LEFT..." at `$3FB9` |
 | MARSHMALLOW ALERT flashes; B drops bait | open | text at `$3AB0` |
-| Bait averts the Marshmallow Man: the mayor pays $2,000 | open | text at `$3B21` |
-| The Marshmallow Man destroys a building: $4,000 deducted | open | text at `$3AC5` |
+| Bait averts the Marshmallow Man: the mayor pays $2,000 | traced | text at `$3B21`; `$8925`-`$8A03` |
+| The Marshmallow Man destroys a building: $4,000 deducted | traced | text at `$3AC5`; four stages, the charge at `$8983` |
 | RUN/STOP pauses; RUN/STOP and RESTORE return to the title (manual) | open | NMI vector `$6425` |
 | Keymaster and Gatekeeper reach Zuul at PK 9999, ending the game | open | text at `$B12B` |
-| Loss: not more money than at the start, the bank forecloses | open | text at `$B12B` |
+| Loss: not more money than at the start, the bank forecloses | live | text at `$B12B`; end pages `$8C74`-`$8D7F` |
 | "GO TO ZUUL! SNEAK PAST THE MARSHMALLOW MAN AND CLOSE THE PORTAL..." | open | text at `$B3B0` |
-| Win: two of three men past the Marshmallow Man into Zuul, $5,000 reward | open | text at `$B2D4` |
-| Partial: enough money but Zuul not reached, "GOOD TRY" | open | text at `$B1B9` |
-| A winning game gives a new account number | open | text at `$B221`-`$B298` |
+| Win: two of three men past the Marshmallow Man into Zuul, $5,000 reward | live | text at `$B2D4`; the door at x `$5B`-`$5E`; +$5,000 seen |
+| Partial: enough money but Zuul not reached, "GOOD TRY" | differs | text at `$B1B9`; shown when the Marshmallow Man catches two men on the Zuul street; the pages then give a credit limit and a new account number as a win does |
+| A winning game gives a new account number | live | text at `$B221`-`$B298`; `$8CC6` calls the encoder `$90EE`; F3 then starts with that account |
 | Digitised speech: "Ghostbusters!", "He slimed me!", a laugh | open | speech heard at start-up; NMI player at `$F0C3`, CIA 2 timer B (`$F47E`) |
 | Music: Russell Lieblich's arrangement of the theme | live | player `$93E2`/`$93F0`; voice 3 lent to sound effects at `$9593` |
 | Credits on the title: "DESIGNED BY DAVID CRANE COPYRIGHT 1984" | live | text at `$3671` |
@@ -101,6 +101,9 @@ Found in the code, not in the manual.
 | PK energy stops at 9999; it rises 1 every 64 passes below 1000, every 32 below 2000, every 16 above; crossing a thousand at 5000 or more marks a random building | confirmed | `$9895` |
 | Money saturates at $999,900 and stops at 0 | confirmed | BCD add `$9664`, subtract `$9636` |
 | `POKE 38454,96` makes the subtract routine return at once: purchases cost nothing | live | `$9636`; buying the hearse left $10,000 |
+| The laser confinement system stores up to 10 ghosts instead of using a trap | traced | `$6D` bit 6 |
+| Each drive leaves two bytes on the stack: state `$14` reaches `next_state` by JSR, not JMP | live | `$8070`; the stack pointer went `$FF` to `$FD` and stayed |
+| "YOU MADE MORE MONEY" is printed when the balance only equals the starting one | traced | end pages |
 | Dead code: `sprite_y_distance` `$9C76`, `set_balance_10000` `$9CF1`; three-NOP runs at `$90D1`, `$90DB` look like a patched-out call | confirmed | no reference, never executed |
 
 ## Open questions
