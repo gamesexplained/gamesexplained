@@ -8,3 +8,7 @@ this folder is ever committed or uploaded.
 To rebuild it from your own copy of the game, follow `../orientation.md`,
 then `python3 kit/scripts/symbols_import.py <this game> <your snapshot.vsf>`
 to recreate the disassembler project with all annotations.
+
+Found this folder already here, left by an earlier session? It is a
+cache, not a record. `kit/START.md`, on a game folder that already
+exists, says what to keep from it and how to check it.
