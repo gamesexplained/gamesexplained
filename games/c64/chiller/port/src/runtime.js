@@ -129,6 +129,16 @@ function create(image, opts = {}) {
     P[name] = function* (r) { touching++; try { return yield* f.call(this, r); } finally { touching--; } };
   }
   rt.skip = () => { skip = true; };
+  // The crosses of the level being left, taken as a player takes them (a space, $A0, in each cell
+  // listed at +$5E of its settings), so that the copy next_screen stores for the way home has none
+  // left, as it would after play.
+  function takeCrosses() {
+    const rec = M[0x11] | (M[0x12] << 8);
+    for (let k = 0; k < 10; k++) {
+      const a = M[rec + 0x5E + 2 * k] | (M[rec + 0x5F + 2 * k] << 8);
+      if (a >= 0x0400 && a < 0x07E8) M[a] = 0xA0;
+    }
+  }
   let jumpTo = null;
   function* driver() {
     for (;;) {
@@ -138,6 +148,7 @@ function create(image, opts = {}) {
         if (y && y.cp === 0xCA00 && jumpTo !== null) {
           const n = jumpTo; jumpTo = null;
           for (let i = 0; i < n; i++) {
+            takeCrosses();
             const x = M[(M[0x11] | (M[0x12] << 8)) + 0x73];
             yield* P.next_screen({ a: 0, x: x === 0x12 ? 0xFE : x, y: 0 });
           }
@@ -145,6 +156,7 @@ function create(image, opts = {}) {
         }
         if (y && y.cp === 0xCA00 && skip) {
           skip = false;
+          takeCrosses();
           M[0x5A15] = 1;
           yield* P.crosses_left({ a: 0, x: 0, y: 0 });
         }
