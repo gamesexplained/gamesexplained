@@ -222,12 +222,10 @@ ul.odd li{margin:0 0 12px}
 <section id="jump">
   <p class="fig">08 · The jump</p>
   <h2 class="t">Jump to go up, fall as far as you like</h2>
-  <p class="lede">The jump is 24 one-pixel steps up, each a little slower than the last, and the same steps back down in reverse. Scrub through it. However far the boy falls afterwards, he lands unhurt.</p>
+  <p class="lede">The jump is 24 one-pixel steps up, each a little slower than the last, and the same steps back down in reverse. However far the boy falls afterwards, he lands unhurt.</p>
   <div class="plate">
-    <input type="range" id="jr" min="0" max="48" value="0" aria-label="Step of the jump">
-    <canvas id="jc" width="600" height="180" class="scr" style="max-width:600px" role="img" aria-label="The jump's height over time"></canvas>
-    <p class="kv" id="jk"></p>
-    <p class="cap">Left, the boy in his jumping frame, lifted to scale: the full jump is 24 pixels, a little more than his own height. Right, the height against time from <code>jump_speeds</code> at <code>$544A</code>, the number of main-loop passes before each step, stretched upward so the steps show.</p>
+    <img src="reference/jump-arc.png" width="300" height="219" style="image-rendering:pixelated;max-width:100%" alt="The boy in the forest at take-off, at the top of his jump 24 pixels higher, and landed 28 pixels to the right, with a dotted line tracing his feet">
+    <p class="cap">One jump up and to the right in the forest, from the game's own code (the port on the Play tab), three times the C64's pixels. It shows the take-off, the top and the landing, with a dot for each frame at his feet. He rises 24 pixels in 24 frames, hangs at the top while the slowest steps run, and lands 28 pixels to the right 70 frames, or 1.4 seconds, after he took off.</p>
   </div>
   <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the game switches the controls off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so he keeps the direction he took off in until he lands. There is no climbing. All ten screens switch off up and down as walking directions (<code>$4500</code>-<code>$4503</code>), so the only way up is to jump.</p>
   <p>Some ledges crumble. Tiles <code>$4D</code>-<code>$53</code> are one ledge in seven stages. Every eighth step on it moves it on a stage, and the last stage is empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
@@ -501,39 +499,6 @@ ul.odd li{margin:0 0 12px}
     draw();
   }
 
-  // ---- 06: the jump, from jump_speeds ($544A, 25 bytes) ----
-  function jump(G) {
-    const cv = $('#jc'), rng = $('#jr'); if (!need(cv)) return;
-    const sp = Array.from(G.ram.subarray(0x544A, 0x544A + 25));
-    // up: step k waits sp[k] passes (k = 0..23); down: the same table backwards
-    const t = [0];
-    for (let k = 0; k < 24; k++) t.push(t[t.length - 1] + sp[k]);
-    for (let k = 23; k >= 0; k--) t.push(t[t.length - 1] + sp[k]);
-    const h = i => i <= 24 ? i : 48 - i, T = t[48];
-    function draw() {
-      const i = +rng.value, W = 600, H = 180, ctx = C64.canvas(cv, W, H);
-      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-      // left: the boy at true scale (2 screen pixels to a C64 pixel, the same for sprite and height)
-      const G0 = H - 20, bx = 50;
-      ctx.strokeStyle = '#555'; ctx.beginPath(); ctx.moveTo(10, G0); ctx.lineTo(150, G0); ctx.stroke();
-      ctx.strokeStyle = '#333'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(10, G0 - 48); ctx.lineTo(150, G0 - 48); ctx.stroke(); ctx.setLineDash([]);
-      spriteMC(ctx, G, 0xE0, bx, G0 - 42 - h(i) * 2, 2, [10, 9, 1]);
-      ctx.fillStyle = '#888'; ctx.font = '11px monospace'; ctx.fillText('to scale', 10, 14); ctx.fillText('24 px', 110, G0 - 52);
-      // right: height against time, the time axis in main-loop passes
-      const L = 200, X = v => L + v / T * (W - L - 20), Y = v => G0 - v * 5;
-      ctx.strokeStyle = '#555'; ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(W - 20, Y(0)); ctx.moveTo(L, Y(0)); ctx.lineTo(L, Y(24)); ctx.stroke();
-      ctx.fillStyle = '#888'; ctx.fillText('height against time (not to scale)', L, 14); ctx.fillText(T + ' passes', W - 90, G0 + 14);
-      ctx.strokeStyle = C64.PAL[14]; ctx.lineWidth = 2; ctx.beginPath();
-      for (let k = 0; k <= 48; k++) { const x = X(t[k]); k ? ctx.lineTo(x, Y(h(k))) : ctx.moveTo(x, Y(h(k))); if (k < 48) ctx.lineTo(X(t[k + 1]), Y(h(k))); }
-      ctx.stroke(); ctx.lineWidth = 1;
-      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(t[i]), Y(h(i)), 4, 0, Math.PI * 2); ctx.fill();
-      $('#jk').innerHTML = `step <b>${i}</b> of 48 · height <b>${h(i)}</b> pixels · after <b>${t[i]}</b> passes` +
-        (i < 48 ? ` · this step waits <b>${sp[i < 24 ? i : 47 - i]}</b>` : ' · landed, unhurt');
-    }
-    rng.addEventListener('input', draw);
-    draw();
-  }
-
   // ---- the cast: the boy's frames $D8-$E7 at $3600, the girl's 16 on ($E8-$F7) ----
   function players(G) {
     const cv = $('#pl'); if (!need(cv)) return;
@@ -675,7 +640,7 @@ ul.odd li{margin:0 0 12px}
     return;
   }
   C64.load('listing.json').then(G => {
-    for (const f of [screens, music, crosses, energy, jump, players, enemies, texts]) {
+    for (const f of [screens, music, crosses, energy, players, enemies, texts]) {
       try { f(G); } catch (e) { console.error(f.name, e); }
     }
   }).catch(e => {

@@ -23,4 +23,4 @@ function shot(file, ram, vic, colour) {
   for (let i = 0; i < r.w * r.h; i++) { const c = rgb[r.px[i]]; out.set([c[0], c[1], c[2], 255], i * 4); }
   png(file, r.w, r.h, out);
 }
-module.exports = { shot, frame };
+module.exports = { shot, frame, png };
