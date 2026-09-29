@@ -260,3 +260,40 @@ view to no pixels different and a banked one to within about 3 %. In the
 desktop app's browser pane the page drew 121 views a second on a 120 Hz
 screen, at about 0.3 ms each. The gun sight, which the native view had
 been painting over, is drawn in front of it again.
+
+## 29 September 2026: the pace beside a turned craft
+
+Issue #79 reported the Play tab's cycle model 8 % short in one random
+flight, nearly all of it in the object loop (`$85D8`-`$85DB`). The rows
+could be taken again in node: the port and the runtime's `MODEL` read out
+of `play.html`, the game from `listing.json` on `kit/c64/machine.js`, the
+two in `kit/c64/lockstep.js` with the checkpoints, waits and ignored bytes
+the issue gives. Flights held level or climbing to the issue's height
+(`$07A…`) by a scripted stick came out within 0.1 % over 1,500 passes, so
+height was not it. The issue's own input (CTRL + Q, `0`, the stick back
+for about 80 passes, then random stick and keys) came out 4.8-5.8 % short
+on four seeds, the object loop 21.5-23.5 %: the 80 passes loop the Dart
+into the ground at about pass 145, and the player stands where the crash
+left it, turned to the heading it had.
+
+Timed per call of `draw_object`, every object was within about 800 cycles
+except a turned one: the Dart, 6 vertices, about 7,100 short a draw.
+`orient_vertex` turns each vertex of objects 0-15 once for each angle that
+is not 0, through `rotate_pair`, and the port counts it (`@rotatePair`),
+but the fitted table had no entry for it, so it cost nothing. Measured on
+the game's code it adds about 1,125 cycles a vertex (facts, "A turned
+object"), and that is the entry added. With it the object loop is within
+1 % on the same sessions. On the page's own runtime, from the same moment
+on foot by the crashed Dart, 2,000 frames gave 244 passes on the machine, 256
+on the page before and 247 after; 4,000 frames on another seed, 442, 461
+and 447. A flight with nothing turned in view gave 328 passes on the page
+either way (331 on the machine). The issue's own flight could not be
+replayed, since its input is not recorded; giving objects 8 and 9 a
+heading in a scripted flight showed the same shortfall there (8,460 a
+draw) and the same fix.
+
+Left open: on foot at the crash site (02-07) the stretch after the frame's
+wait (`$AF7D`-`$85B0`, the flip and the sky and ground fill) runs 2.5 %
+short, and in one of the random sessions the lockstep found a single byte
+different at the start of pass 291, `$02C2` (vertex slot 2's Y' exponent,
+game `$15`, port `$14`), which this session did not explain.
