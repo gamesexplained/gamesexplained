@@ -191,8 +191,8 @@ li{margin:0 0 10px}
 
 <section>
   <p class="fig">07 · Sound</p>
-  <h2 class="t">Music: the title tune, from six tables</h2>
-  <p class="lede">Twenty-nine notes, stored as raw SID frequency values in six tables at <code>$2A00</code>, with the note lengths in a seventh at <code>$2AE0</code>. The player below reads those bytes.</p>
+  <h2 class="t">Music: the title tune, and two effects that sweep the filter</h2>
+  <p class="lede">Twenty-nine notes, stored as raw SID frequency values in six tables at <code>$2A00</code>, with the note lengths in a seventh at <code>$2AE0</code>. The first player below reads those bytes. The second runs two of the game's sound effects from its own code, through a model of the SID that includes the filter.</p>
   <div class="plate">
     <div class="ctl">
       <button id="play">Play</button>
@@ -203,6 +203,14 @@ li{margin:0 0 10px}
     <p class="cap">Each column is one note: the three bars are voices 1, 2 and 3, and the width is how long it is held. Frequency to pitch uses the PAL clock, 985248 Hz divided by 16777216.</p>
   </div>
   <p class="note">The random numbers come from the same chip. Voice 3's oscillator output at <code>$D41B</code> is read whenever the game needs a number: which way a wave arrives, where it spawns, and which frame of the debris cloud a wreck shows.</p>
+  <p class="note">Entering a name on the high-score table and being shot down both move the SID's filter cutoff by hand, one register write at a time. Neither follows the frame. Name entry has no clock at all: it waits by counting, 256 passes of <code>inc $2D</code> at a time. The crash runs once a game tick, 30 times a second.</p>
+  <div class="plate">
+    <div id="sfx"></div>
+    <p class="cap"><b>Name entry.</b> Accepting a letter calls <code>sid_setup_name_entry</code> (<code>$4E00</code>), which puts voice 1 through the filter at full resonance (<code>$D417</code> = <code>$F1</code>), low-pass at volume 15 (<code>$D418</code> = <code>$1F</code>), with the cutoff at <code>$7F</code> in <code>$D416</code>. <code>name_entry_accept_letter</code> (<code>$4DE5</code>) then takes voice 1 straight back out (<code>$D417</code> = <code>$F0</code>) and gates a triangle (<code>$D404</code> = <code>$11</code>), so the clicks while choosing are unfiltered. Choosing <code>_</code>, or a twelfth letter, plays the name back with voice 1 routed through the filter again. For each letter, <code>$4E30</code> gates a sawtooth (<code>$D404</code> = <code>$21</code>) at a pitch from the tables at <code>$2FC0</code> and <code>$2FE0</code>, eight notes a semitone apart, repeated, and the loop at <code>$4D46</code> writes <code>$D416</code> 255 times, from <code>$FE</code> down to <code>$00</code>, one step every 2,056 cycles. Each letter's sweep lasts 0.53 seconds before <code>$D404</code> = <code>$10</code> releases it. The script enters ACE. The stick is read once per pass of the cursor loop (<code>$4DC0</code>), 0.13 seconds, and it presses right once or twice between letters, holds each press of fire for 0.2 seconds, then walks left to <code>_</code>. The click's pitch is <code>$17</code> in <code>$D401</code> over whatever an earlier sound left in <code>$D400</code>, which the port starts at 0.</p>
+    <p class="cap"><b>Shot down.</b> <code>flight_sound_update</code> (<code>$4800</code>) runs once a tick while <code>flight_flags</code> bit 3 is set. On the tick of the hit it copies the 25 bytes at <code>$4F19</code> into <code>$D400</code>-<code>$D418</code> and gates all three voices. Voice 2 is noise synced to voice 1 and voice 3 a ring-modulated triangle, both through the filter at full resonance (<code>$D417</code> = <code>$F6</code>), low-pass. Voice 1 is noise outside it. While the wreck falls, each tick raises the high frequency bytes of voices 1 and 3 by one and the cutoff by two, from <code>$22</code> until it reaches <code>$6D</code> 38 ticks later. Once the wreck is down and stopped, the bytes at <code>$4F32</code> put all three voices through the filter (<code>$D417</code> = <code>$F7</code>) with noise on voices 1 and 2, and the cutoff falls one step a tick from <code>$5F</code> to <code>$3F</code>. <code>$4866</code> then turns the gates off. The long releases of voices 1 and 3 fade until the life ends 191 ticks later and <code>sid_silence</code> (<code>$4C30</code>) zeroes the chip. The script is a jet hit in level flight at sprite Y <code>$60</code>. The game's own flight code drops the wreck a pixel a tick to the floor at <code>$BF</code>, where a falling wreck was seen to stop on a running machine: 96 ticks of dive.</p>
+    <p class="cap">The port was checked against the game's own routines running in a 6502 simulator on the game's bytes. All 814 writes of the name entry land on the same cycle, and all 403 of the crash on the same tick, in the same order, and the same frame by frame as the player hands them on. The port counts the processor's cycles as if nothing interrupted it or took cycles from it; on the machine, anything that does makes the name entry slower. The crash's ticks are 32,768 cycles apart, the timer's <code>$7FFF</code> latch. The engine noise loaded from <code>$4F00</code> at the start of each life is filtered too, but it is not played here: its cutoff is set from an enemy aircraft's position (<code>$5EDE</code>-<code>$5EF0</code>), and the enemies' movement is not ported.</p>
+    <p class="cap">The Filter switch plays both sounds three ways, and changes them while they play. <b>Off</b> leaves the filter out. <b>6581</b> is the original C64's chip, on the cutoff curve the reSID emulator (version 0.16) measured from one such chip. That curve is nearly flat low down, so each name sweep spends its last quarter between 420 and 220 Hz, and the dive's cutoff climbs from about 250 to 2,800 Hz. <b>8580</b>, the chip of later C64s, puts the same dive between about 1,700 and 5,400 Hz. Real 6581s differ from one another in where each setting puts the cutoff, and they distort, which this model does not (<code>site/lib/sid.js</code>).</p>
+  </div>
 </section>
 
 <section>
@@ -489,4 +497,194 @@ document.getElementById("play").onclick=()=>{
 function stopTune(){ if(timer) clearTimeout(timer); timer=null; drawTune();
   document.getElementById("noteNow").textContent="note 0 / "+NOTES; }
 document.getElementById("stop").onclick=stopTune;
+</script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* 07: two filtered sound effects, ported from the game's 6502 code and played through the site's
+   shared SID model (../../lib/sid.js). Checked write by write against the game's own routines in
+   kit/c64/cpu6502.js (work/test_sound.js, gitignored). SFX_DATA is bytes read from the game:
+   the SID images at $4F19 (dive) and $4F32 (touchdown), and the note tables at $2FC0 and $2FE0. */
+(function () {
+  'use strict';
+  const SFX_DATA = { dive: [0xDA, 0x0E, 0xFF, 0x08, 0x80, 0x0D, 0xAF, 0x9B, 0x41, 0xFF, 0x00, 0x80, 0x0A, 0xBF, 0x07, 0x04, 0xFF, 0x08, 0x80, 0x0A, 0xA0, 0x00, 0x20, 0xF6, 0x1F],
+    touchdown: [0xDA, 0x22, 0xFF, 0x08, 0x80, 0x00, 0xFD, 0x9B, 0x08, 0xFF, 0x00, 0x80, 0x00, 0x00, 0x07, 0x04, 0xFF, 0x08, 0x10, 0x0A, 0xFD, 0x00, 0x20, 0xF7, 0x1F],
+    hi: [0x10, 0x11, 0x12, 0x13, 0x15, 0x16, 0x17, 0x19, 0x10, 0x11, 0x12, 0x13, 0x15, 0x16, 0x17, 0x19, 0x10, 0x11, 0x12, 0x13, 0x15, 0x16, 0x17, 0x19, 0x10, 0x11, 0x12, 0x13, 0x15, 0x16, 0x17, 0x19],
+    lo: [0xC3, 0xC3, 0xD1, 0xEF, 0x1F, 0x60, 0xB5, 0x1E, 0xC3, 0xC3, 0xD1, 0xEF, 0x1F, 0x60, 0xB5, 0x1E, 0xC3, 0xC3, 0xD1, 0xEF, 0x1F, 0x60, 0xB5, 0x1E, 0xC3, 0xC3, 0xD1, 0xEF, 0x1F, 0x60, 0xB5, 0x1E] };
+
+  // Two of the game's filtered sounds, ported from its code for the site's SID player
+  // (../../lib/sid.js), which runs this function's source in an AudioWorklet: it refers to nothing
+  // outside itself. D is bytes read from the game: the 25-byte SID images at $4F19 (dive) and $4F32
+  // (touchdown) and the note tables at $2FC0 (high bytes) and $2FE0 (low bytes).
+  // Neither sound runs once a frame. Name entry times itself by counting loops, so the port counts
+  // the 6502's cycles instruction by instruction and hands each write to the frame it falls in
+  // (19,656 cycles a PAL frame). The explosion runs once a game tick, CIA 2 timer B's $7FFF latch,
+  // 32,768 cycles: tick k's writes land at cycle 32,768 k. Cycles the video chip and the raster
+  // interrupt take are not counted.
+  function createSfxDriver(D) {
+    const FRAME = 19656, TICK = 32768;
+    const sid = new Uint8Array(25);
+    let ev = [], k = 0, frame = 0, end = 0, on = false, writes = [], step = ['', '', ''];
+
+    // Name entry, $4CD6-$4D73, for the script S: what each read of the stick at $4CE2 sees
+    // ('-' nothing, 'L', 'R', 'F' fire), fire held for S.hold cycles after the read that saw it,
+    // and tick_counter ($2D) as the entry finds it.
+    function nameEntry(S) {
+      const out = []; let t = 0, tc = S.tick & 255, hl, x, pos = 0, n = 0;
+      const buf = [];
+      for (let i = 0; i < 12; i++) buf.push(0x20);
+      const W = (r, v, what) => out.push([t, r, v, what]);
+      const st = (r, v, what) => { t += 6; W(r, v, what); };     // lda #imm, sta $D4xx: written in its last cycle
+      const incs = () => { const c = tc === 0 ? 256 : 256 - tc; tc = 0; return c; };  // inc $2D until it wraps
+      function cursor(X) {                                     // name_entry_cursor, $4DC0 (with its jsr)
+        t += 6 + 2 + 3 + 3;                                    // jsr, txa, pha, cmp $2F
+        if (X === hl) t += 3;
+        else { t += 31; hl = X; }                              // the highlight moves: two colour writes
+        t += 4 + 2 + 2;                                        // pla, tax, ldy #$3F
+        for (let i = 0; i < 0x3F; i++) t += 8 * incs() - 1 + 2 + (i < 0x3E ? 3 : 2);
+        t += 6;                                                // rts
+      }
+      function setup(what) {                                   // sid_setup_name_entry, $4E00 (with its jsr)
+        t += 6;
+        st(0x04, 0x20, what); st(0x05, 0x3A, what); st(0x06, 0x00, what); st(0x17, 0xF1, what);
+        st(0x16, 0x7F, what); t += 2; st(0x18, 0x1F, what); st(0x01, 0x17, what);
+        t += 6;
+      }
+      const joy = (c) => c === 'L' ? 0xFB : c === 'R' ? 0xF7 : c === 'F' ? 0xEF : 0xFF;
+      t += 2 + 3 + 2 + 3 + 2;                                  // $4CD6: $2F = $FF, $10 = 0, X = 0
+      hl = 0xFF; x = 0;
+      for (;;) {
+        cursor(x);                                             // b_4CDF
+        const c = S.keys[n++] || '-';
+        t += 4; const readAt = t;                              // lda $DC01, read in its last cycle
+        t += 3 + 2;                                            // sta $0C, and #$10
+        const j = joy(c);
+        if (j & 0x10) {                                        // no fire
+          t += 2 + 3 + 2;
+          if (!(j & 0x04)) { t += 2 + 2; x--; if (x >= 0) t += 3; else { t += 2 + 2 + 3; x = 0x1B; } continue; }
+          t += 3 + 3 + 2;
+          if (j & 0x08) { t += 3; continue; }
+          t += 2 + 2 + 2; x++;
+          if (x < 0x1C) t += 4; else { t += 2 + 2 + 4; x = 0; }
+          continue;
+        }
+        const fireAt = readAt;
+        t += 4 + 2;                                            // beq b_4D07 (across a page), cpx #$1B
+        if (x === 0x1B) { t += 3; break; }                     // '_' ends the name
+        t += 2 + 2 + 3 + 2 + 2 + 3 + 5;                        // store the letter in the buffer at $0AB4
+        buf[pos] = x + 0x80;
+        t += 6 + 2 + 5;                                        // jsr name_entry_accept_letter, $4DE5: colour
+        setup('letter ' + String.fromCharCode(x + 64));
+        st(0x17, 0xF0, 'click'); st(0x05, 0x52, 'click'); st(0x04, 0x11, 'click');
+        t += 6 + 2 + 2 + 4 + 2 + 5 + 3 + 2;                    // rts, nop, nop, pla, tax, inc/lda $10, cmp
+        pos++;
+        if (pos >= 12) { t += 3; break; }
+        t += 2;
+        for (;;) {                                             // $4D24: wait for fire to be let go
+          t += 4;
+          if (t < fireAt + S.hold) t += 2 + 3; else { t += 2 + 2 + 4; break; }
+        }
+      }
+      setup('play back');                                      // b_4D2F
+      t += 2 + 2;
+      for (let i = 0; i < 12; i++) {
+        t += 4 + 6 + 2;                                        // lda $0AB4,x, sta ($05),y, cmp #$20
+        if (buf[i] === 0x20) { t += 3; }
+        else {
+          const ix = buf[i] - 0x80, L = String.fromCharCode(buf[i] - 0x40);
+          t += 2 + 6 + 2 + 2 + 3 + 2 + 3 + 3;                  // name_entry_letter_note, $4E30
+          t += 4 + 4; W(0x00, D.lo[ix], 'note ' + L);
+          t += 4 + 4; W(0x01, D.hi[ix], 'note ' + L);
+          st(0x04, 0x21, 'note ' + L);
+          t += 4 + 2 + 6 + 2 + 3 + 2;                          // pla, tax, rts, tya, pha, ldy #$FF
+          for (let y = 0xFE; y >= 0; y--) {                    // $4D46: the sweep
+            t += 8 * incs() - 1 + 2 + 4; W(0x16, y, 'sweep ' + L);
+            t += y ? 3 : 2;
+          }
+          st(0x04, 0x10, 'release ' + L);
+          t += 4 + 2;
+        }
+        t += 2 + 2 + 2 + (i < 11 ? 3 : 2);                     // iny, inx, cpx #$0C, bcc
+      }
+      t += 2 + 2 + 12 * (5 + 2 + 3) - 1 + 2;                   // clear the buffer, ldx #$20
+      cursor(0x20);
+      t += 4 + 2 + 2;                                          // fire is up: on to the save at $4D73
+      return { ev: out, end: t };
+    }
+
+    // Shot down, flight_sound_update $4800 with flight_flags bit 3 set, once a tick, from the tick
+    // of the hit to sid_silence ($4C30) at the end of the life. fall: the ticks the wreck is still
+    // moving or above sprite Y $7F; the script is the game's own flight code, below.
+    function explosion(fall) {
+      const out = []; let tick = 0, crash = 0, cut = 0, f1 = 0, f3 = 0, tc = 0, p = 0x83, what = '';
+      const W = (r, v) => out.push([tick * TICK, r, v, what]);
+      const image = (b) => { for (let r = 0; r < 25; r++) W(r, b[r]); };
+      for (; tick < 4000; tick++) {
+        tc = (tc + 1) & 255;                                   // flight_update $5495
+        if (crash === 0x90 && !(tc & 7) && p < 0x90) p++;      // crash_sequence $56C3: debris frames
+        if (crash === 0) {                                     // sid_load_dive $4990
+          what = 'dive'; image(D.dive); W(0x12, 0x15); W(0x04, 0x81); W(0x0B, 0x83);
+          crash = 0x20; cut = 0x20; f1 = 0x0E; f3 = 0x04;
+        }
+        if (tick < fall) {                                     // $4811: the dive
+          what = 'dive';
+          f1 = Math.min(f1 + 1, 0xE0); W(0x01, f1);
+          f3 = Math.min(f3 + 1, 0xE0); W(0x0F, f3);
+          cut = Math.min(cut + 2, 0x6D); W(0x16, cut);
+        } else {
+          if (!(crash & 0x80)) {                               // sid_load_touchdown $49C0
+            what = 'impact'; image(D.touchdown); W(0x04, 0x81); W(0x0B, 0x81);
+            crash = 0xFF; f1 = 0x0E; f3 = 0x04; cut = 0x60;
+          }
+          if (cut >= 0x40) { cut--; W(0x16, cut); }            // $4850: cutoff down
+          else if (crash !== 0x90) {                           // $4866: all three gates off
+            what = 'fade'; W(0x04, 0x80); W(0x0B, 0x80); W(0x12, 0x80);
+            crash = 0x90; tc = 0x90; p = 0x88;
+          }
+        }
+        if (p >= 0x90 && tc === 0x4F) {                       // $5640: the life ends, sid_silence
+          what = 'silence'; for (let r = 24; r >= 1; r--) W(r, 0);  // ($D419 too, which is read-only)
+          break;
+        }
+      }
+      return { ev: out, end: (tick + 1) * TICK };
+    }
+
+    const SCRIPT = { keys: '--R-F-RR-F-RR-F-LLLLLL-F', hold: 10 * FRAME, tick: 0 };
+    const FALL = 96;
+    function init(t) {
+      const r = t === 1 ? explosion(FALL) : nameEntry(SCRIPT);
+      ev = r.ev; end = r.end; k = 0; frame = 0; on = true; writes = []; step = ['', '', ''];
+      for (let i = 0; i < 25; i++) sid[i] = 0;
+    }
+    function stop() { on = false; writes = []; for (let i = 0; i < 25; i++) sid[i] = 0; }
+    function play() {
+      writes = [];
+      if (!on) return;
+      const e = (frame + 1) * FRAME;
+      while (k < ev.length && ev[k][0] < e) {
+        const [, r, v, what] = ev[k++];
+        sid[r] = v; writes.push(r, v);
+        if (r < 21) step[(r / 7) | 0] = what;
+        else if (r === 22) for (let x = 0; x < 3; x++) if (sid[23] >> x & 1) step[x] = what;
+      }
+      frame++;
+      if (k >= ev.length && frame * FRAME >= end) on = false;
+    }
+    return { init, stop, play, sid, get writes() { return writes; }, playing: () => on,
+      voice: (x) => ({ step: step[x], filt: !!(sid[23] >> x & 1), cut: sid[22] }),
+      events: (t) => { init(t); return ev; } };
+  }
+
+  const root = document.getElementById('sfx');
+  const S = globalThis.C64Sid;
+  if (!S) { root.textContent = 'The player needs the site\u2019s shared sound script, ../../lib/sid.js: open this page from the built site.'; return; }
+  S.mount(root, {
+    driver: createSfxDriver, data: SFX_DATA, tunes: ['Name entry', 'Shot down'],
+    filter: '6581', gain: 0.75,                    // peaks stay below 0.84 with the filter off, 6581 or 8580
+    rows: [
+      { k: 'Doing', f: (v) => v.step || '-' },
+      { k: 'Filter', f: (v) => v.filt ? 'in, cutoff ' + S.hex(v.cut, 2) : 'out' },
+    ],
+  });
+})();
 </script>
