@@ -195,22 +195,25 @@ poked beside the boy were taken and counted, red ones were left. Going
 out only the boy plays and each screen needs five; coming back both play
 and all ten are needed.
 
-**Three crosses cannot be reached.** `work/reach.py` models `try_move`'s
-own rules (below) and searches every screen pixel by pixel from the
-start position in its record. Nine of the ten screens have every cross
-reachable this way. Three blue crosses do not: graveyard-back (record
-`$7380`) at screen address `$079A`, ghetto-back (`$7400`) at `$07C5`,
-cinema-back (`$7480`) at `$07CC`, all in the play area's bottom two
-rows. *Live* (`work/verify_reach4.py`): with a column cleared to open
-space and nothing to land on, the boy still falls no further than Y
-`$E3`, row 22 by `try_move`'s own `(Y-$2C)>>3` — `move_sprite`'s Y clamp
-(`$C930`, `cmp #$E3`) is unconditional, checked before any tile is read,
-so his own position can never be computed as row 23 or 24, whatever the
-scenery there says. All three are on the way back, where every cross,
-blue and red, is needed to finish, so all three would stop a
-completionist there. This is a wider fault than the Lemon64 comment's
-one cross (`features.md`), but the same shape: level data placed below
-where the engine's own sprite can ever stand.
+**Every cross can be taken, and the game has no ending.** The three
+lowest crosses, all blue and all on the way back, sit in the play area's
+bottom two rows: graveyard-back (record `$7380`) at screen address
+`$079A`, ghetto-back (`$7400`) at `$07C5`, cinema-back (`$7480`) at
+`$07CC`. *Live* (29 September 2026, the game's own code in
+`kit/c64/machine.js`, the energy bar kept full): from each level's start
+the boy takes his cross by walking left along the ground (`port/jump.js`
+to reach the level). His own Y stops at `$E3`, row 22 (see "The boy's
+own position is capped at row 22", below), but `try_move` looks for a
+tile in the cell `probe_offset` picks, two rows down or one row down and
+to the side, so from row 22 it reads rows 23 and 24. When a level's last
+cross is taken, `crosses_left` `$7F00` passes the level byte at `+$73`
+to `next_screen` `$7680`; after the last level (`$12`) it passes `$FE`,
+and the game loads the forest going out, with its five crosses and the
+score kept. *Live*: finishing the forest on the way back with
+`crosses_left` on the machine loads record `$7000` with five crosses
+needed. There is no ending. `$7F06`-`$7F08` are three `NOP`s, the length
+of a `JSR`: something may have been removed there (inferred; the image
+does not say what).
 
 **Switching.** `switch_request` `$58B3` takes fire or `?` (key code
 `$37`); `switch_allowed` `$7280` refuses before level byte 10.
@@ -248,8 +251,9 @@ checked (`$C930`, `cmp #$E3`), and that is row 22 by `try_move`'s own
 formula. *Live* (`work/verify_reach4.py`): falling through a column
 cleared to open space, with nothing to land on, the boy's Y still stops
 at `$E3` after 128 frames. The play area is drawn 23 rows deep (screen
-rows 2-24), but his own sprite position can never be computed as row 23
-or 24: see "Three crosses cannot be reached", above.
+rows 2-24), and his own sprite position is never computed as row 23 or
+24. The tiles there are still read, through `probe_offset`: see "Every
+cross can be taken", above.
 
 **Energy.** One bar of 33 cells, 8 steps each, from `$042E`
 (`find_bar_end` `$5998`), and no lives: `new_life` and `lose_life` exist

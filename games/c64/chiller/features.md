@@ -81,9 +81,12 @@ and data, Bugs):
 - **The ledges crumble.** Tiles `$4D`-`$53` step to the next stage every
   8th step on them and the last becomes a space.
 - **The boy's own position is capped at row 22 of 24.** `move_sprite`'s
-  own Y clamp holds him there even in free fall over open space with
-  nothing to land on. Three crosses sit in the two rows below that and
-  can never be reached; see "Can every cross be reached?", below.
+  own Y clamp holds him there even in free fall over open space. The game
+  still reads rows 23 and 24 for crosses, through the cell below or beside
+  him, so every cross can be taken; see "Can every cross be reached?",
+  below.
+- **No ending.** After the last level the game loads the forest again,
+  score kept.
 - **The enemies speed up.** When every slot's lives are spent, the LEVEL
   counter goes up and `speed_up` `$5681` halves their delays.
 - **The border is the player indicator on every screen**, not only on the
@@ -99,19 +102,15 @@ and data, Bugs):
 ## Open questions
 
 - **Which release is this?** Settled for Gold: the first, withdrawn *Thriller* release. Its music player and all 4,238 bytes of tune data at `$61F2`-`$727F` match `Music/v1music.asm` in the steward's https://github.com/unorig/Chiller (branch Latest) byte for byte, and about 1,650 differ from `v2music.asm`; the steward confirmed on 29 September 2026 that V1 is the withdrawn release. The re-release changes the in-play tune and the gate-off compare at `$60B6` (3 to 1); its data is in `reference/music-v2.json` for the page's player.
-- **Can every cross be reached?** Settled for Gold: no, not quite. A
-  Lemon64 user comment (2022) remembered the game as impossible to
-  finish because one cross was out of reach, later fixed by a crack.
-  `work/reach.py` models `try_move`'s own rules and searches every
-  screen from its start position pixel by pixel; nine of the ten screens
-  have every cross reachable, and three blue crosses on the way back do
-  not, all in the play area's bottom two rows. `work/verify_reach4.py`
-  confirms it live: `move_sprite`'s Y clamp holds the boy's own position
-  at row 22 even falling through open space with nothing to land on, so
-  those three crosses sit below any row his sprite can ever occupy
-  (`facts.md`, "Three crosses cannot be reached"). Not the Lemon64
-  comment's one cross, but a real dead end all the same, since the way
-  back needs every cross, blue and red, to finish.
+- **Can every cross be reached?** Settled for Gold: yes. A Lemon64 user
+  comment (2022) remembered the game as impossible to finish because one
+  cross was out of reach, later fixed by a crack. The three lowest crosses
+  (graveyard-back `$079A`, ghetto-back `$07C5`, cinema-back `$07CC`) were
+  each taken on the game's own code on 29 September 2026 by walking left
+  along the ground, and the steward played this release through all ten
+  levels the same day, taking every cross (`facts.md`, "Every cross can be
+  taken"). Whether the crack the comment mentions changed anything is not
+  known.
 - **Which of the manual's enemies is which.** Sprites 2-6 are the five
   enemy slots and 7 the thrown one (`facts.md`); the manual's ghouls,
   zombies, ghosts and bats are not named in the code, so matching them

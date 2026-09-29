@@ -31,16 +31,12 @@ an agent, and no human has read any of it yet.
 
 ## Resolved since Silver, with evidence
 
-- **Can every cross be reached?** No, not quite. `work/reach.py` models
-  `try_move`'s own rules and searches every screen from its start
-  position pixel by pixel; nine of the ten screens have every cross
-  reachable, and three blue crosses on the way back
-  (`graveyard-back`, `ghetto-back`, `cinema-back`) do not, all in the
-  play area's bottom two rows. `work/verify_reach4.py` confirms it live:
-  `move_sprite`'s Y clamp holds the boy's own position at row 22 of 24
-  even falling through open space with nothing to land on. See
-  `facts.md`, "Three crosses cannot be reached", and the reachability
-  overlay on the Maps / levels tab.
+- **Can every cross be reached?** Yes. The three lowest crosses, on the
+  way back, were each taken on the game's own code by walking left along
+  the ground, and the steward played all ten levels through, taking every
+  cross. After the last level the game loads the forest again: there is no
+  ending. See `facts.md`, "Every cross can be taken, and the game has no
+  ending".
 - **The enemy path scripts, decoded.** Direction bytes (0 up, 1 down, 2
   left, 3 right) ended by `$FF`, at `path_scripts` `$4A00`-`$4A8F`,
   stepped by `path_step` `$CC12`. Nine scripts serve the ten screens'

@@ -76,3 +76,21 @@ own hand on the prose.
   Every fact above is agent work, unread by a human; that is the one
   remaining gate to Gold, and it is not this agent's to open.
 
+
+## The cross that could be reached, 29 September 2026
+
+The Gold draft led How it works with a bug: three blue crosses on the
+way back, in the play area's bottom two rows, could never be taken, so
+nobody got home. `work/reach.py` and the levels tab's overlay both looked
+for a cross in the cell the boy's own position maps to, and his own Y
+stops at row 22. Neither modelled `probe_offset` (`$5145`), which makes
+`try_move` read the cell two rows down, or one row down and to the side.
+With the port playable, the steward asked for the claim to be tested. On
+the game's own code the boy took each of the three crosses by walking
+left along the ground, and the steward then played all ten levels,
+taking every cross. The section, the hero line, `facts.md`,
+`features.md`, `TODO.md` and the levels tab's rings were corrected. What
+the playthrough showed in their place is that the game has no ending:
+after the last level it loads the forest again. The lesson for the kit
+is that a reachability search should call the game's own movement code,
+not a model of it; a model that leaves out one table reads as proof.

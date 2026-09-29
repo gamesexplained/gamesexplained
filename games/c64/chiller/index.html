@@ -70,7 +70,7 @@ ul.odd li{margin:0 0 12px}
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">A boy crosses five haunted levels, collecting magic crosses, to rescue his girlfriend, then the two of them play the same five levels back home. One cross on the way back can never be reached, so nobody gets home.</p>
+  <p class="sub">A boy crosses five haunted levels, collecting magic crosses, to rescue his girlfriend, then the two of them play the same five levels back home. Finish the way home and the game starts again in the forest: there is no ending.</p>
 </header>
 <main class="wrap">
 <section id="screens">
@@ -91,22 +91,12 @@ ul.odd li{margin:0 0 12px}
     <p class="cap" id="scr-cap"></p>
   </div>
 </section>
-<section id="unwinnable">
-  <p class="fig">02 · Bug</p>
-  <h2 class="t">Bug: one cross on the way home is lower than the boy can ever stand, so nobody gets home</h2>
-  <p class="lede">On the way home every level needs all ten of its crosses before it lets you go. On three of them, <b>one blue cross sits lower than the boy can ever stand.</b> The first is the graveyard, the seventh level, and that is as far as anyone gets.</p>
-      <div class="two" style="margin:0 0 18px">
-        <figure style="margin:0"><img src="reference/built-graveyard-back.png" alt="The graveyard on the way home, with the unreachable blue cross ringed"><figcaption class="cap">The graveyard on the way home, drawn from its settings. Boxes mark the crosses; the ringed blue one is in the bottom two rows, where no player can reach it.</figcaption></figure>
-        <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way home, with the unreachable blue cross ringed"><figcaption class="cap">The cinema on the way home has the same fault. So does the ghetto, which comes between them.</figcaption></figure>
-      </div>
-      <p>The cause is a single compare. <code>move_sprite</code> stops the boy's sprite at Y <code>$E3</code> (<code>cmp #$E3</code> at <code>$C930</code>), row 22 of the screen's 24, before it looks at any scenery. Even falling through open space with nothing underneath, he halts there in mid-air. The game looks for a cross in the cell his position maps to, and from Y <code>$E3</code> that is never lower than row 22, so a cross in row 23 or 24 can never be taken. The other seven screens can be cleared: searching each one with the game's own movement rules finds a path to every cross, and the <a href="levels.html">Maps / levels</a> tab rings the three it cannot reach. </p>
-  <table class="t">
-    <tr><th>Level</th><th>Order</th><th>Cross at</th></tr>
-    <tr><td>Graveyard, way home</td><td>7th</td><td><code>$079A</code></td></tr>
-    <tr><td>Ghetto, way home</td><td>8th</td><td><code>$07C5</code></td></tr>
-    <tr><td>Cinema, way home</td><td>9th</td><td><code>$07CC</code></td></tr>
-  </table>
-  <p>A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it.</p>
+<section id="no-ending">
+  <p class="fig">02 · The end</p>
+  <h2 class="t">Get the boy and the girl home, and the game starts again in the forest</h2>
+  <p class="lede">Take the last cross on the way home and Chiller loads the forest again, with its five crosses back and your score kept. <b>There is no ending</b>: no screen, no message, and nothing in the code that counts how many times round you have been.</p>
+  <p>When a level's last cross is taken, <code>crosses_left</code> (<code>$7F00</code>) reads the next level's number from the level's settings and passes it to <code>next_screen</code> (<code>$7680</code>). After the last level, the forest on the way home, the number is <code>$12</code>, and the game swaps it for <code>$FE</code>, which <code>next_screen</code> takes as the forest going out. Just before that are three <code>NOP</code>s (<code>$7F06</code>-<code>$7F08</code>), the size of one subroutine call. That hints at something taken out, perhaps an ending, but nothing in the image says what.</p>
+  <p>A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it. In this release every cross can be taken. The lowest three, in the graveyard, the ghetto and the cinema on the way home, sit in the bottom two rows, and the boy takes each of them by walking left along the ground. This was checked on the game's own code. The boy can never stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but the game looks for a cross in the cell below or beside him, not the one he is in (<code>probe_offset</code>, <code>$5145</code>), so from row 22 it still reaches rows 23 and 24.</p>
 </section>
 <section id="wayback">
   <p class="fig">03 · The world</p>
