@@ -322,6 +322,17 @@ Write the port to that from the start. Each file's header is its manual.
   port shows instead. A byte the port does not keep the game's way (a
   register a routine saves, where the port calls it without that
   register) differs now and then; name it and leave it out too.
+  A raster wait that reads the line and then `$D011`'s bit 7 in two
+  instructions is one such race: an interrupt between the reads makes
+  the game leave on a later line than the port.
+- **Read what the interrupt writes through one function.** The KERNAL's
+  jiffy clock, its key code and its shift flag change under the main
+  program, which may read one several times in a stretch between
+  checkpoints and see different values. Have the port read each such
+  byte through a single function (`P.irq_byte(a)`), and in the lockstep
+  record, per stretch, every value the game read from it, in order; the
+  function hands them to the port one read at a time. Handing it only the
+  first value leaves every later read stale.
 - **Pace it by the machine's clock.** A game that moves a fixed step per
   pass is only the same game at the same passes per second. The port
   executes no instructions, so fit their cost: the lockstep's `timing`
@@ -333,6 +344,16 @@ Write the port to that from the start. Each file's header is its manual.
   page offers: a scene the fit never saw can run fast by a routine it
   never costed. Then check the pace itself: passes in the same frames from
   the same moment, on the machine and on the page.
+- **A level picker leaves the game as playing there would.** Jumping to a
+  level by loading its record skips whatever finishing the ones before it
+  left behind: items taken, counters, stored screens. Set that state
+  first, the way the game's own code would, or the page shows a level no
+  player could see (in one game, items left from a skipped level counted
+  towards the next).
+- **Inlining code with `String.replace`.** A build script that pastes the
+  port into the page with a string replacement expands `$'`, `$&` and
+  `$1` in it, and 6502 comments are full of `$`. Pass a function as the
+  replacement.
 - **A clock, not a frame loop.** Each stretch moves a virtual PAL clock on
   by its cost, running the raster interrupts on their lines as it goes; a
   raster wait moves the clock to its line and the interrupts on the way

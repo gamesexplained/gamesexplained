@@ -18,6 +18,7 @@ sounded right and was never tested.
 | "that string isn't in the image" | it used a private alphabet |
 | "there is no level data" | there was a small bitmap |
 | "nothing reads that byte" | two checks did, in undocumented opcodes the disassembler showed as data, one through an indexed address that wrapped past `$FFFF` |
+| "the player can never reach that item" | the movement routine tests a cell a row or two below the player's own, and the search modelled only the player's row |
 
 Before reporting that something is missing, ask what encoding, indirection
 or aliasing could hide it. A negative result is a claim about your search,
@@ -25,6 +26,14 @@ not about the binary. Prefer "unknown" to a plausible guess. Before saying
 that nothing reads or writes an address, search with every opcode and
 every index that can reach it: on the C64,
 `python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`.
+
+"Unreachable" is a negative result too. A search over a model of the
+movement rules finds only what the model allows, and a model re-derived
+from the code misses what the code does off the path you read. Search
+with the game's own movement code instead: drive the player with input on
+the 6502 simulator (on the C64, `kit/c64/machine.js`) and watch for the
+item's pickup, or try it in a port that has been checked in lockstep.
+Only then write that something cannot be reached.
 
 ## What a test lets through
 
