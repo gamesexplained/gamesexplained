@@ -229,8 +229,12 @@ input[type=range]{width:100%}
 <section id="music">
   <p class="fig">09 · Music</p>
   <h2 class="t">The tune that got the game withdrawn</h2>
-  <p class="lede">This copy is the first release, the one Mastertronic withdrew because its in-play tune is a rendition of Michael Jackson's <i>Thriller</i>. The re-release replaced it with a new tune. Both are played here by the game's own driver, ported line by line: press the first two buttons to hear one after the other.</p>
+  <p class="lede">This copy is the first release, the one Mastertronic withdrew because its in-play tune is a rendition of Michael Jackson's <i>Thriller</i>. The re-release replaced it with a new tune. Both are played here by the game's own driver, ported line by line. Play the in-play tune and switch the release to hear the other.</p>
   <div class="plate">
+    <div class="row" id="sid-ver" hidden><span class="note">Release:</span>
+      <button class="b" type="button" data-ver="0" aria-pressed="true">First release, <i>Thriller</i></button>
+      <button class="b" type="button" data-ver="1" aria-pressed="false">Re-release, new tune</button>
+    </div>
     <div id="sid"></div>
     <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. Two things differ from a real C64. This player leaves out the sound chip's filter, which the game sets once and keeps on voice 1 for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>), so voice 1 sounds brighter here than it should. And it plays at PAL speed, so the notes are flat, as they were on PAL machines.</p>
   </div>
@@ -635,14 +639,26 @@ input[type=range]{width:100%}
     const M = { base: 0x61F8, bytes: Array.from(G.ram.subarray(0x61F8, 0x6BCD)) };
     const S = C64Sid;
     fetch('reference/music-v2.json').then(r => r.json()).then(v2 => { M.v2 = v2; }).catch(() => {}).then(() => S.mount(root, {
-      driver: createDriver, data: M, tunes: M.v2 ? ['In play: Thriller, first release', 'In play: replacement, re-release', 'Level start, both', 'Game over, both']
-        : ['In play', 'Level start', 'Game over'],
+      driver: createDriver, data: M, tunes: M.v2 ? ['In play', 'In play', 'Level start', 'Game over'] : ['In play', 'Level start', 'Game over'],
       rows: [
         { k: 'Command', f: v => v.read && `${S.hex(v.read.addr, 4)}: ${S.hex(v.read.c, 2)}` },
         { in: true, f: v => v.read && ({ 0x0E: 'note, voice 1', 0x26: 'note, voice 2', 0x3E: 'note, both voices' })[v.read.c] },
       ],
       mark: (v, p) => !!(v.read && (!p || !p.read || p.read.addr !== v.read.addr)),
-    }));
+    })).then(() => {
+      // One In play button and a release toggle: the toggle points the button at tune 0 or 1, and
+      // restarts it if it is playing. The level-start and game-over tunes are the same in both.
+      const ver = $('#sid-ver'), inplay = root.querySelector('[data-tune="0"]'), other = root.querySelector('[data-tune="1"]');
+      if (!M.v2 || !ver || !inplay || !other) return;
+      other.remove();
+      ver.hidden = false;
+      $$('[data-ver]', ver).forEach(b => b.addEventListener('click', () => {
+        press('#sid-ver [data-ver]', b);
+        const was = inplay.getAttribute('aria-pressed') === 'true';
+        inplay.dataset.tune = b.dataset.ver;
+        if (was) inplay.click();
+      }));
+    });
   }
 
   // ---- 09, 10: text from the game's bytes ----
