@@ -90,6 +90,19 @@ ul.odd li{margin:0 0 12px}
     <div class="legend" id="scr-legend"></div>
     <p class="cap" id="scr-cap"></p>
   </div>
+  <p>The ten screens' settings sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The first five levels keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
+  <table class="t">
+    <tr><th>Field</th><th>Offset</th><th>Read by</th></tr>
+    <tr><td>Play area: source, end, destination</td><td><code>+$00</code></td><td><code>setup_screen</code>, <code>copy_block</code> <code>$2A80</code></td></tr>
+    <tr><td>Character set: source, end, destination</td><td><code>+$06</code></td><td>the same</td></tr>
+    <tr><td>Colour map, two cells to a byte</td><td><code>+$0C</code></td><td><code>unpack_colours</code> <code>$5D20</code></td></tr>
+    <tr><td>Multicolours 1 and 2</td><td><code>+$0E</code>, <code>+$0F</code></td><td>into <code>$D022</code>, <code>$D023</code></td></tr>
+    <tr><td>The two players' start and frames</td><td><code>+$10</code>-<code>+$17</code></td><td><code>set_boy_x</code> <code>$7F20</code> and on</td></tr>
+    <tr><td>Enemies: frames, speeds, paths</td><td><code>+$18</code>-<code>+$5D</code></td><td><code>spawn_enemy</code>, <code>enemy_step</code></td></tr>
+    <tr><td>Ten cross addresses, five blue then five red</td><td><code>+$5E</code>-<code>+$71</code></td><td><code>place_crosses</code> <code>$5FC0</code>, <code>colour_cycle</code> <code>$7F80</code></td></tr>
+    <tr><td>Crosses needed, level byte, card</td><td><code>+$72</code>, <code>+$73</code>, <code>+$74</code></td><td><code>crosses_left</code> <code>$7F00</code>, <code>show_level_card</code></td></tr>
+  </table>
+  <p class="cap">Above, the way-home levels are drawn over the untouched first five, which is what a player sees who took only the crosses. All ten, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
 </section>
 <section id="crosses">
   <p class="fig">02 · The crosses</p>
@@ -258,25 +271,8 @@ ul.odd li{margin:0 0 12px}
       <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. The routine loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads and no store.</p></div>
   <p>An older forest card is left behind the same way: <code>card_forest_title</code> (<code>$5D0D</code>) is still there, and its printer, <code>$5E00</code>, is never called.</p>
 </section>
-<section id="settings">
-  <p class="fig">13 · The level format</p>
-  <h2 class="t">Each screen is 128 bytes of settings, read field by field</h2>
-  <p>The ten screens' settings sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The first five levels keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
-  <table class="t">
-    <tr><th>Field</th><th>Offset</th><th>Read by</th></tr>
-    <tr><td>Play area: source, end, destination</td><td><code>+$00</code></td><td><code>setup_screen</code>, <code>copy_block</code> <code>$2A80</code></td></tr>
-    <tr><td>Character set: source, end, destination</td><td><code>+$06</code></td><td>the same</td></tr>
-    <tr><td>Colour map, two cells to a byte</td><td><code>+$0C</code></td><td><code>unpack_colours</code> <code>$5D20</code></td></tr>
-    <tr><td>Multicolours 1 and 2</td><td><code>+$0E</code>, <code>+$0F</code></td><td>into <code>$D022</code>, <code>$D023</code></td></tr>
-    <tr><td>The two players' start and frames</td><td><code>+$10</code>-<code>+$17</code></td><td><code>set_boy_x</code> <code>$7F20</code> and on</td></tr>
-    <tr><td>Enemies: frames, speeds, paths</td><td><code>+$18</code>-<code>+$5D</code></td><td><code>spawn_enemy</code>, <code>enemy_step</code></td></tr>
-    <tr><td>Ten cross addresses, five blue then five red</td><td><code>+$5E</code>-<code>+$71</code></td><td><code>place_crosses</code> <code>$5FC0</code>, <code>colour_cycle</code> <code>$7F80</code></td></tr>
-    <tr><td>Crosses needed, level byte, card</td><td><code>+$72</code>, <code>+$73</code>, <code>+$74</code></td><td><code>crosses_left</code> <code>$7F00</code>, <code>show_level_card</code></td></tr>
-  </table>
-  <p class="cap">In the builder at the top, the way-home levels are drawn over the untouched first five, which is what a player sees who took only the crosses. All ten, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
-</section>
 <section id="controls">
-  <p class="fig">14 · Controls</p>
+  <p class="fig">13 · Controls</p>
   <h2 class="t">Joystick or keyboard</h2>
   <p class="lede">As the title screen says, there are two ways to play: a joystick in control port 2, or the keys Z, C, ? and SHIFT. The game reads the joystick port itself, and leaves the keyboard to the Commodore's built-in routines.</p>
   <figure style="margin:0 0 24px"><img src="reference/title-screen.png" alt="The title screen: rescue your girlfriend from the haunted house and return to your car; use the keys Z, C, ? and SHIFT, or a joystick in port two" style="width:100%;max-width:576px;image-rendering:pixelated;border-radius:4px;display:block"><figcaption class="cap">The title screen, captured in an emulator.</figcaption></figure>
@@ -290,7 +286,7 @@ ul.odd li{margin:0 0 12px}
   <p>The key table (<code>$4512</code>) is part of the level settings, so each screen could have had its own keys. All ten have the same.</p>
 </section>
 <section id="odd">
-  <p class="fig">15 · Odds and ends</p>
+  <p class="fig">14 · Odds and ends</p>
   <h2 class="t">Things the manual never told you</h2>
   <p class="lede">Small things found in the code.</p>
   <ul class="odd">
@@ -301,7 +297,7 @@ ul.odd li{margin:0 0 12px}
   </ul>
 </section>
 <section id="unsure">
-  <p class="fig">16 · Open questions</p>
+  <p class="fig">15 · Open questions</p>
   <h2 class="t">What we're still unsure of</h2>
   <ul>
     <li>Whether the LEVEL counter can ever appear in real play. Nothing here proves it cannot.</li>
