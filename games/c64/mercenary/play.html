@@ -62,6 +62,9 @@ th{font-weight:700;color:var(--ink-soft)}
 @media (pointer:coarse){.pl-pad{display:grid}}
 .pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .pl-cheats{display:contents}
+.pl-coords{font-family:var(--fm);font-size:13px;color:var(--ink-soft);white-space:nowrap}
+.pl-coords b{color:var(--ink)}
+.pl-coords.pl-hot b{color:var(--accent)}
 .pl-list{margin:0 0 14px;padding-left:20px}
 #alive-cv{display:block;max-width:100%;height:auto;margin-top:14px;border-radius:6px}
 section table{margin:6px 0 18px}
@@ -116,6 +119,7 @@ section table{margin:6px 0 18px}
       <span id="cheat-bar" class="pl-cheats">
         <button type="button" data-cheat="keys" title="Carry the seven keys">🔑 All keys</button>
         <button type="button" data-cheat="summon" title="Hire the interstellar ship as the Communications Room's radio does: it comes down over 08-08 in two minutes or more. Carries the Novadrive too">🚀 Summon the interstellar ship</button>
+        <span class="pl-coords" id="pl-coords" title="The player's position, high:middle:low bytes: X $74:$73:$72, height $77:$76:$75, Y $7A:$79:$78. The high byte of X and Y is the square (08-08 is the landing square); the middle byte, in bold, is 256 units">X --:--:-- · Y --:--:-- · H --:--:--</span>
       </span>
       <span class="pl-status" id="alive-status"></span>
     </div>
@@ -6646,6 +6650,19 @@ function makeDisplay(opts) {
       const msg = w === 'keys' ? keys() : summon();
       if (api.done) api.done(msg);
     });
+    // the readout beside the buttons: the three coordinates, high:middle:low, from the zero page
+    const out = typeof document !== 'undefined' && document.getElementById('pl-coords');
+    if (out) {
+      const h = v => v.toString(16).toUpperCase().padStart(2, '0');
+      const co = (n, lo) => n + ' ' + h(M[lo + 2]) + ':<b>' + h(M[lo + 1]) + '</b>:' + h(M[lo]);
+      let last = '';
+      rt.onPass(() => {
+        // on the grass at 08-08 with X and Y middle bytes $70-$73, E rides the Colony Craft's lift
+        const hot = !M[0xA8] && M[0x74] === 8 && M[0x7A] === 8 && (M[0x73] & 0xFC) === 0x70 && (M[0x79] & 0xFC) === 0x70;
+        const html = co('X', 0x72) + ' · ' + co('Y', 0x78) + ' · ' + co('H', 0x75) + (hot ? ' · on the lift patch: E' : '');
+        if (html !== last) { out.innerHTML = last = html; out.classList.toggle('pl-hot', hot); }
+      });
+    }
     rt.cheats = api;
     return api;
   }
