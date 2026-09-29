@@ -438,7 +438,11 @@ input[type=range]{width:100%}
       for (let i = 0; i < 33; i++) {
         const v = Math.max(0, Math.min(8, steps - i * 8)), g = v === 8 ? 0xA9 : 0xA1 + v;
         const cell = 46 + i, cb = G.ram[0x8800 + (cell >> 1)];   // the forest's colour map, row 1
-        C64.drawGlyph(ctx, f, v ? g : 0xA0, (i + 1) * 8 * s, 4 * s, s, C64.PAL[cell & 1 ? cb >> 4 : cb & 15]);
+        const c = cell & 1 ? cb >> 4 : cb & 15, code = v ? g : 0xA0;
+        // colour 8 and up is a multicolour cell in colour & 7 (one bar cell is 13: green, not light green)
+        if (c & 8) C64.drawGlyphMC(ctx, f, code, (i + 1) * 8 * s, 4 * s, s,
+          [null, C64.PAL[G.ram[0x700E] & 15], C64.PAL[G.ram[0x700F] & 15], C64.PAL[c & 7]]);
+        else C64.drawGlyph(ctx, f, code, (i + 1) * 8 * s, 4 * s, s, C64.PAL[c]);
       }
       $('#eb-kv').innerHTML = `<b>${steps}</b> of 264 steps · ${log}` + (steps <= 0 ? ' <b>GAME OVER.</b>' : '');
     }
