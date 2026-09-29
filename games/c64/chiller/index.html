@@ -139,7 +139,7 @@ input[type=range]{width:100%}
   <div class="plate">
     <div class="row">
       <button class="b" type="button" data-e="walk">Walk 1,000 passes</button>
-      <button class="b" type="button" data-e="touch">An enemy touches</button>
+      <button class="b" type="button" data-e="touch">An enemy runs into you</button>
       <button class="b" type="button" data-e="toad">Eat a toadstool</button>
       <button class="b" type="button" data-e="mush">Eat a mushroom</button>
       <button class="b" type="button" data-e="reset">Full bar</button>
@@ -153,7 +153,7 @@ input[type=range]{width:100%}
     <tr><td>Walking</td><td>one step every 765 passes of the main loop with a direction held</td><td><code>walk_drain</code> <code>$5A20</code></td></tr>
     <tr><td>Jumping</td><td>one step each time a counter runs out in the air</td><td><code>drain_step</code> <code>$59E6</code></td></tr>
     <tr><td>Standing still</td><td>nothing</td><td><code>drain_step</code></td></tr>
-    <tr><td>An enemy touching</td><td>two steps, again every pass it stays</td><td><code>sprite_touch</code> <code>$CE87</code></td></tr>
+    <tr><td>An enemy sprite overlapping yours</td><td>two steps, again every pass it stays</td><td><code>sprite_touch</code> <code>$CE87</code></td></tr>
     <tr><td>A toadstool, tile <code>$55</code></td><td>24 steps, one every 18 calls, each with a border flash</td><td><code>poison_tick</code> <code>$5B2C</code></td></tr>
     <tr><td>A mushroom, tile <code>$54</code></td><td>23 steps back, one every 16 calls; on a full bar, 10 points each instead</td><td><code>energy_tick</code> <code>$5B00</code></td></tr>
     <tr><td>A bonus, tile <code>$56</code></td><td>100 points, no energy</td><td><code>tile_touch_b</code> <code>$5AC7</code></td></tr>
@@ -186,7 +186,7 @@ input[type=range]{width:100%}
     <p class="cap">Four frames per enemy, in the order the game steps through them. Colours are the ones the game sets on arrival (<code>$D029</code>-<code>$D02D</code>); multicolour sprites share <code>$D025</code> and <code>$D026</code>.</p>
   </div>
   <p>Enemies cannot be killed. The code gives each slot a count it calls lives (<code>$45E7</code>), but a life here is one entrance: each time a slot comes back on screen (<code>respawn_timer</code>, <code>$2FB2</code>, a chance out of 128 from <code>$45E2</code>) it uses one, and leaving by an edge gives it back. When every slot has used up its count and all five are off the screen, <code>level_up</code> (<code>$2C19</code>) adds one to a LEVEL counter, shows it over the play area, and <code>speed_up</code> (<code>$5681</code>) halves every enemy's movement and animation delays. Whether play ever gets there is unknown. With edges refunding a life and counts of 200 on most slots, it has not been seen.</p>
-  <p>A touch costs energy and nothing else. <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware's sprite collision register, <code>$D01E</code>. When the boy and exactly one enemy are in it, two steps of poison go on the bar, and the enemy carries on. Stand still at the start of the forest and the bar holds for 16 seconds, until an enemy wanders onto him and takes 69 steps in a single visit.</p>
+  <p>An enemy that runs into the character you control costs energy and nothing else. The game has no hit test of its own: <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware's sprite collision register, <code>$D01E</code>, and when your sprite and exactly one enemy sprite overlap, two steps of poison go on the bar. The enemy carries on along its path. Stand still at the start of the forest and the bar holds for 16 seconds, until an enemy wanders onto him and takes 69 steps in a single visit.</p>
   <p>The enemies follow scripts of direction bytes (0 up, 1 down, 2 left, 3 right), each ended by <code>$FF</code>, at <code>path_scripts</code> (<code>$4A00</code>-<code>$4A8F</code>). <code>path_step</code> (<code>$CC12</code>) moves an enemy one pixel every few passes and reads the next byte every 8th move. Nine scripts serve all fifty slots. Three walk down and back up, four hold one direction for ever, and three are long runs down with one stray byte that matches none of the four directions, so it does nothing. Step through any enemy's script on the <a href="levels.html">Maps / levels</a> tab.</p>
 </section>
 <section id="unused">
@@ -444,7 +444,7 @@ input[type=range]{width:100%}
     }
     const act = {
       walk: () => { const k = Math.floor(1000 / 765); steps -= k; log = `1,000 passes of walking: ${k} step off (one per 765).`; },
-      touch: () => { steps -= 2; log = 'An enemy touch: two steps of poison, again on every pass it stays.'; },
+      touch: () => { steps -= 2; log = 'An enemy runs into you: two steps of poison, again on every pass it stays.'; },
       toad: () => { steps -= 24; log = 'A toadstool: 24 steps of poison, taken one at a time with a border flash.'; },
       mush: () => { const room = 264 - steps, g = Math.min(23, room); steps += g;
         log = `A mushroom: ${g} steps back` + (23 - g ? `, and ${(23 - g) * 10} points for the ${23 - g} that did not fit.` : '.'); },
