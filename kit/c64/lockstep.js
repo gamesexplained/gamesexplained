@@ -121,6 +121,8 @@ class PortChips extends Machine {
   set keys(v) {}
   get joy() { return this.game ? this.game.joy : 0x1F; }
   set joy(v) {}
+  get joy1() { return this.game ? this.game.joy1 : 0x1F; }
+  set joy1(v) {}
 }
 
 class Lockstep {
@@ -152,7 +154,8 @@ class Lockstep {
     c.game = m;
     c.raster = m.line;
     c.vic.set(m.vic); c.colour.set(m.colour); c.sidw.set(m.sidw);
-    for (const k of ['cmp', 'latch', 'enable', 'pra', 'ddra', 'ddrb']) c[k] = m[k];
+    for (const k of ['cmp', 'latch', 'enable', 'pra', 'ddra', 'ddrb', 'pra2', 'ddra2']) c[k] = m[k];
+    if (m.cia) c.cia = JSON.parse(JSON.stringify(m.cia));   // CIA 2's port and the timers' latches; they never count here
     this.io = this.makeIO();
     P.io = Object.assign({}, P.io, this.io);
     this.timing = o.timing || null;
