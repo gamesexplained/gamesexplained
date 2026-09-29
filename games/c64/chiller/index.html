@@ -96,8 +96,8 @@ input[type=range]{width:100%}
   <h2 class="t">The way back is the screen you left</h2>
   <p class="lede">The five return screens have no play areas of their own. As the boy leaves each screen on the way out, the game copies it away, and on the way back it reads that copy. A mushroom he ate, a cross he took and a ledge that crumbled under him are all still gone.</p>
   <div class="two">
-    <figure style="margin:0"><img src="reference/screen-01-cinema.png" alt="The cinema on the way out, five blue crosses to take"><figcaption class="cap">The cinema on the way out: five blue crosses for the boy.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/screen-08-cinema-back.png" alt="The cinema on the way back, with the girl"><figcaption class="cap">The cinema on the way back. The girl is there, and the crosses taken going out are gone.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-cinema.png" alt="The cinema on the way out, five blue crosses to take"><figcaption class="cap">The cinema going out: five blue crosses for the boy.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with the girl and ten crosses"><figcaption class="cap">The cinema coming back: the girl is there, and five blue and five red crosses are placed on the stored screen. Both drawn from the level records.</figcaption></figure>
   </div>
   <p>The copy is made by <code>next_screen</code> (<code>$7680</code>), which saves screen rows 1 to 24. The forest goes to <code>$7800</code>. The other four have no room left in ordinary memory, so they go into the RAM hidden under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. A write to those addresses lands in the RAM even with the ROM switched in. Reading it back needs the ROM switched out, and that is all <code>copy_under_kernal</code> (<code>$72A4</code>) does: it sets the processor port <code>$01</code> to <code>$34</code>, copies, and puts it back.</p>
   <table class="t">
@@ -185,8 +185,8 @@ input[type=range]{width:100%}
   <h2 class="t">Bug: the game cannot be finished</h2>
   <p class="lede">On the way back every screen needs all ten of its crosses before it lets you go. On three of those screens, one blue cross sits lower than the boy can ever stand. The first of them is the graveyard, the seventh screen, and that is as far as anyone gets.</p>
   <div class="two">
-    <figure style="margin:0"><img src="reference/screen-06-graveyard-back.png" alt="The graveyard on the way back"><figcaption class="cap">The graveyard on the way back. One of its blue crosses is in the play area's bottom two rows, where no player can reach it.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/screen-08-cinema-back.png" alt="The cinema on the way back"><figcaption class="cap">The cinema on the way back has the same fault. So does the ghetto, which comes between them.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-graveyard-back.png" alt="The graveyard on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The graveyard on the way back, drawn from its level record. Boxes mark the crosses; the ringed blue one is in the bottom two rows, where no player can reach it.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/built-cinema-back.png" alt="The cinema on the way back, with the unreachable blue cross ringed"><figcaption class="cap">The cinema on the way back has the same fault. So does the ghetto, which comes between them.</figcaption></figure>
   </div>
   <p>The cause is a single compare. <code>move_sprite</code> stops the boy's sprite at Y <code>$E3</code> (<code>$C930</code>, <code>cmp #$E3</code>), row 22 of the screen's 24, before it looks at any scenery. Even falling through open space with nothing underneath, he halts there in mid-air. The game looks for a cross in the cell his position maps to, and from Y <code>$E3</code> that is never lower than row 22. A cross in row 23 or 24 can never be taken.</p>
   <table class="t">
