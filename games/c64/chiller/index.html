@@ -60,7 +60,7 @@ input[type=range]{width:100%}
 .bug h2.t{color:var(--coral)}
 </style>
 <!--
-  Chiller's How it works page. Silver: agent-draft copy (kit/style.md), every widget drawn from the
+  Chiller's How it works page. Copy: Gold editorial pass (kit/style.md), every widget drawn from the
   game's own bytes in listing.json through ../../lib/c64.js and ../../lib/sid.js. The screen
   builder is compose() and the music port createDriver(); both are checked against the game in
   work/ (test_frame.js with kit/c64/frame.py compare, test_music.js in kit/c64/cpu6502.js).
@@ -72,10 +72,169 @@ input[type=range]{width:100%}
   <p class="sub">A boy walks through five haunted screens to find his girlfriend, then leads her back through the same five, left exactly as he left them.</p>
 </header>
 <main class="wrap">
+<section id="unwinnable" class="bug">
+  <p class="fig">01 · The crosses out of reach</p>
+  <h2 class="t">Bug: the game cannot be finished</h2>
+  <p class="lede">On the way back every screen needs all ten of its crosses before it lets you go. On three of those screens, one blue cross sits lower than the boy can ever stand. The first of them is the graveyard, the seventh screen, and that is as far as anyone gets.</p>
+  <div class="two">
+    <figure style="margin:0"><img src="reference/screen-06-graveyard-back.png" alt="The graveyard on the way back"><figcaption class="cap">The graveyard on the way back. One of its blue crosses is in the play area's bottom two rows, where no player can reach it.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/screen-08-cinema-back.png" alt="The cinema on the way back"><figcaption class="cap">The cinema on the way back has the same fault. So does the ghetto, which comes between them.</figcaption></figure>
+  </div>
+  <p>The cause is a single compare. <code>move_sprite</code> stops the boy's sprite at Y <code>$E3</code> (<code>$C930</code>, <code>cmp #$E3</code>), row 22 of the screen's 24, before it looks at any scenery. Even falling through open space with nothing underneath, he halts there in mid-air. The game looks for a cross in the cell his position maps to, and from Y <code>$E3</code> that is never lower than row 22. A cross in row 23 or 24 can never be taken.</p>
+  <table class="t">
+    <tr><th>Screen</th><th>Order</th><th>Cross at</th></tr>
+    <tr><td>Graveyard, way back</td><td>7th</td><td><code>$079A</code></td></tr>
+    <tr><td>Ghetto, way back</td><td>8th</td><td><code>$07C5</code></td></tr>
+    <tr><td>Cinema, way back</td><td>9th</td><td><code>$07CC</code></td></tr>
+  </table>
+  <p>A commenter on Lemon64 remembers Chiller as impossible to finish because one cross was out of reach, and says a later crack fixed it. The other seven screens can be cleared: searching each one with the game's own movement rules finds a path to every cross. The <a href="levels.html">Maps / levels</a> tab runs the same search and rings the three crosses it cannot reach.</p>
+</section>
+<section id="wayback">
+  <p class="fig">02 · The way back</p>
+  <h2 class="t">Secret: the way back is the screen you left</h2>
+  <p class="lede">The five return screens have no play areas of their own. As the boy leaves each screen on the way out, the game copies it away, and on the way back it reads that copy. A mushroom he ate, a cross he took and a ledge that crumbled under him are all still gone.</p>
+  <div class="two">
+    <figure style="margin:0"><img src="reference/screen-01-cinema.png" alt="The cinema on the way out, five blue crosses to take"><figcaption class="cap">The cinema on the way out: five blue crosses for the boy.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/screen-08-cinema-back.png" alt="The cinema on the way back, with the girl"><figcaption class="cap">The cinema on the way back. The girl is there, and the crosses taken going out are gone.</figcaption></figure>
+  </div>
+  <p>The copy is made by <code>next_screen</code> (<code>$7680</code>), which saves screen rows 1 to 24. The forest goes to <code>$7800</code>. The other four have no room left in ordinary memory, so they go into the RAM hidden under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. A write to those addresses lands in the RAM even with the ROM switched in. Reading it back needs the ROM switched out, and that is all <code>copy_under_kernal</code> (<code>$72A4</code>) does: it sets the processor port <code>$01</code> to <code>$34</code>, copies, and puts it back.</p>
+  <table class="t">
+    <tr><th>Way-back screen</th><th>Record</th><th>Play area read from</th><th>Character set and colours from</th></tr>
+    <tr><td>Haunted house</td><td><code>$7300</code></td><td><code>$EC28</code></td><td>the house's, <code>$A800</code>, <code>$B000</code></td></tr>
+    <tr><td>Graveyard</td><td><code>$7380</code></td><td><code>$E828</code></td><td>the graveyard's</td></tr>
+    <tr><td>Ghetto</td><td><code>$7400</code></td><td><code>$E428</code></td><td>the ghetto's</td></tr>
+    <tr><td>Cinema</td><td><code>$7480</code></td><td><code>$E028</code></td><td>the cinema's</td></tr>
+    <tr><td>Forest</td><td><code>$7500</code></td><td><code>$7828</code></td><td>the forest's</td></tr>
+  </table>
+  <p>The red crosses are added on the return. An outward record lists five crosses and a way-back record lists ten, so <code>place_crosses</code> writes the five red ones into the stored copy as the screen is set up.</p>
+  <p>Start a game directly on a way-back screen and there is nothing stored yet. Setting the start level at <code>$C661</code> to 10 does that, and the house comes up as garbage: whatever the loader left under the KERNAL.</p>
+  <div class="two">
+    <figure style="margin:0"><img src="reference/screen-05-house-back.png" alt="The haunted house on the way back after playing through"><figcaption class="cap">The house on the way back, reached by playing through.</figcaption></figure>
+    <figure style="margin:0"><img src="reference/start-on-way-back.png" alt="The haunted house on the way back when the game is started there"><figcaption class="cap">The same screen started directly, before anything has been stored.</figcaption></figure>
+  </div>
+</section>
+<section id="crosses">
+  <p class="fig">03 · Two players, two colours</p>
+  <h2 class="t">The boy takes blue crosses, the girl takes red</h2>
+  <p class="lede">Every cross is the same character, tile <code>$57</code>. The only thing that makes it the boy's or the girl's is its colour. Pick a character and a cross colour to see what <code>cross_touch</code> does.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" data-who="0" aria-pressed="true">The boy</button>
+      <button class="b" type="button" data-who="1" aria-pressed="false">The girl</button>
+      <span class="note">touches a</span>
+      <button class="b" type="button" data-col="14" aria-pressed="true">blue cross</button>
+      <button class="b" type="button" data-col="10" aria-pressed="false">red cross</button>
+    </div>
+    <canvas id="xc" width="384" height="120" class="scr" style="max-width:384px" role="img" aria-label="The character and the cross"></canvas>
+    <p class="kv" id="xc-kv"></p>
+  </div>
+  <p><code>cross_touch</code> (<code>$7F50</code>) reads the colour under the cross and tests one bit. Light blue is 14 (<code>%1110</code>) and light red is 10 (<code>%1010</code>), so bit 2 tells them apart. A match replaces the cross with a space and counts it off the MAGIC CROSSES counter (<code>cross_count</code>, <code>$5B5E</code>). The crosses flash because every 40th pass <code>colour_cycle</code> (<code>$7F80</code>) takes 8 off each cross's colour and then puts it back.</p>
+  <p>Going out, only the boy plays, and each screen needs its five blue crosses. On the way back the girl comes too, and all ten are needed. Fire, or the <code>?</code> key, swaps who you control. <code>switch_allowed</code> (<code>$7280</code>) refuses before the first way-back screen, as the inlay says. The border shows who is playing: blue for the boy, light red for the girl.</p>
+  <p>A swap does not move anyone. <code>player_swap</code> (<code>$576B</code>) exchanges the two sprites, positions and all, so whoever you control is always sprite 0, and patches three routines to draw the other character's frames. The one left behind stands still, and still loses energy when an enemy touches it (<code>girl_touch</code>, <code>$CD9D</code>).</p>
+</section>
+<section id="energy">
+  <p class="fig">04 · Energy</p>
+  <h2 class="t">Secret: standing still costs nothing</h2>
+  <p class="lede">There is one energy bar and no lives. Walking and jumping wear it down, enemies and toadstools poison it, and mushrooms fill it. Standing still costs nothing at all. Try each on the bar below, which uses the game's own step sizes.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" data-e="walk">Walk 1,000 passes</button>
+      <button class="b" type="button" data-e="touch">An enemy touches</button>
+      <button class="b" type="button" data-e="toad">Eat a toadstool</button>
+      <button class="b" type="button" data-e="mush">Eat a mushroom</button>
+      <button class="b" type="button" data-e="reset">Full bar</button>
+    </div>
+    <canvas id="eb" width="560" height="32" class="scr" style="max-width:560px" role="img" aria-label="The energy bar as the game draws it"></canvas>
+    <p class="kv" id="eb-kv"></p>
+    <p class="cap">Drawn with the game's own bar characters, <code>$A1</code>-<code>$A9</code>, in the forest's colours: 33 cells of eight steps. An empty bar ends the game.</p>
+  </div>
+  <table class="t">
+    <tr><th>What</th><th>Effect on the bar</th><th>Where</th></tr>
+    <tr><td>Walking</td><td>one step every 765 passes of the main loop with a direction held</td><td><code>walk_drain</code> <code>$5A20</code></td></tr>
+    <tr><td>Jumping</td><td>one step each time a counter runs out in the air</td><td><code>drain_step</code> <code>$59E6</code></td></tr>
+    <tr><td>Standing still</td><td>nothing</td><td><code>drain_step</code></td></tr>
+    <tr><td>An enemy touching</td><td>two steps, again every pass it stays</td><td><code>sprite_touch</code> <code>$CE87</code></td></tr>
+    <tr><td>A toadstool, tile <code>$55</code></td><td>24 steps, one every 18 calls, each with a border flash</td><td><code>poison_tick</code> <code>$5B2C</code></td></tr>
+    <tr><td>A mushroom, tile <code>$54</code></td><td>23 steps back, one every 16 calls; on a full bar, 10 points each instead</td><td><code>energy_tick</code> <code>$5B00</code></td></tr>
+    <tr><td>A bonus, tile <code>$56</code></td><td>100 points, no energy</td><td><code>tile_touch_b</code> <code>$5AC7</code></td></tr>
+  </table>
+  <p>The inlay says walking, running and jumping each cost more than the last. There is no running in the code. There is one walking speed, and it gets slower as the bar empties: once the bar's seventh cell is no longer full, <code>bar_speed</code> (<code>$5961</code>) patches the main loop to read the controls every 128 passes instead of every 32.</p>
+  <p>Lives are in the code but not in the game. <code>new_life</code> (<code>$CAED</code>), <code>lose_life</code> (<code>$CEDA</code>) and a starting count at <code>$45ED</code> are all there, reached only from other code that nothing calls. An empty bar goes straight to GAME OVER (<code>out_of_energy</code>, <code>$5A70</code>).</p>
+</section>
+<section id="jump">
+  <p class="fig">05 · The jump</p>
+  <h2 class="t">Secret: no fall ever hurts</h2>
+  <p class="lede">The jump is 24 one-pixel steps up, each a little slower than the last, and the same steps back down in reverse. Scrub through it. However far the boy falls afterwards, he lands unhurt.</p>
+  <div class="plate">
+    <input type="range" id="jr" min="0" max="48" value="0" aria-label="Step of the jump">
+    <canvas id="jc" width="600" height="180" class="scr" style="max-width:600px" role="img" aria-label="The jump's height over time"></canvas>
+    <p class="kv" id="jk"></p>
+    <p class="cap">Height against time from <code>jump_speeds</code> at <code>$544A</code>: the number of main-loop passes before each step. The boy is drawn in his jumping frame from the game's sprite data at <code>$3800</code>.</p>
+  </div>
+  <p>Fall damage was written and then switched off twice. Falls are counted, and on landing <code>land</code> (<code>$53EF</code>) compares the count with a limit at <code>$457A</code>. The branch after that compare has been overwritten with <code>NOP</code>s, and the limit is <code>$FF</code> anyway.</p>
+  <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the game switches the controls off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so he keeps the direction he took off in until he lands. There is no climbing. All ten screens switch off up and down as walking directions (<code>$4500</code>-<code>$4503</code>), so the only way up is to jump.</p>
+  <p>Some ledges crumble. Tiles <code>$4D</code>-<code>$53</code> are one ledge in seven stages. Every eighth step on it moves it on a stage, and the last stage is empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
+</section>
+<section id="enemies">
+  <p class="fig">06 · The enemies</p>
+  <h2 class="t">The longer you stay, the faster the enemies get</h2>
+  <p class="lede">Each screen has five enemies on sprites 2 to 6, and a sixth on sprite 7 that is thrown in from one of them now and then. Their shapes come from the screen's record. Flip through each screen's set.</p>
+  <div class="plate">
+    <div class="row" id="en-pick"></div>
+    <canvas id="en" width="720" height="132" class="scr" style="max-width:720px" role="img" aria-label="The enemy animation frames of the chosen screen"></canvas>
+    <p class="kv" id="en-kv"></p>
+    <p class="cap">Four frames per enemy, in the order the game steps through them. Colours are the ones the game sets on arrival (<code>$D029</code>-<code>$D02D</code>); multicolour sprites share <code>$D025</code> and <code>$D026</code>.</p>
+  </div>
+  <p>Each enemy slot has a number of lives (<code>$45E7</code>) and a chance out of 128 of coming back after it leaves the screen (<code>$45E2</code>, <code>respawn_timer</code> at <code>$2FB2</code>). When every slot has used up its lives, <code>level_up</code> (<code>$2C19</code>) adds one to the LEVEL counter and shows it over the play area, and <code>speed_up</code> (<code>$5681</code>) halves every enemy's movement and animation delays. So the enemies double their speed every time the counter goes up.</p>
+  <p>A touch costs energy and nothing else. <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware's sprite collision register, <code>$D01E</code>. When the boy and exactly one enemy are in it, two steps of poison go on the bar, and the enemy carries on. Stand still at the start of the forest and the bar holds for 16 seconds, until an enemy wanders onto him and takes 69 steps in a single visit.</p>
+  <p>The enemies follow scripts of direction bytes (0 up, 1 down, 2 left, 3 right), each ended by <code>$FF</code>, at <code>path_scripts</code> (<code>$4A00</code>-<code>$4A8F</code>). <code>path_step</code> (<code>$CC12</code>) moves an enemy one pixel every few passes and reads the next byte every 8th move. Nine scripts serve all fifty slots. Three walk down and back up, four hold one direction for ever, and three are long runs down with one stray byte that matches none of the four directions, so it does nothing. Step through any enemy's script on the <a href="levels.html">Maps / levels</a> tab.</p>
+</section>
+<section id="unused">
+  <p class="fig">07 · Left in the code</p>
+  <h2 class="t">Secret: a shooting game underneath</h2>
+  <p class="lede">Chiller has no gun, no lives and no scrolling. Its code has all three, and a sound player whose every write goes nowhere. None of it runs in play.</p>
+  <table class="t">
+    <tr><th>What</th><th>Where</th><th>Why it never runs</th></tr>
+    <tr><td>A shot hitting an enemy, the enemy dying, points per enemy</td><td><code>unused_shot_hit</code> <code>$CDC7</code>, <code>unused_kill_enemy</code> <code>$2F7B</code>, <code>add_score_for</code> <code>$CE6B</code></td><td>nothing calls them; there is no shot</td></tr>
+    <tr><td>Lives: take one, restart the screen</td><td><code>new_life</code> <code>$CAED</code>, <code>lose_life</code> <code>$CEDA</code></td><td>called only from the code above</td></tr>
+    <tr><td>A scroller that moves the whole play area a cell at a time</td><td><code>scroll_timer</code> <code>$C011</code>, <code>scroll_left</code> <code>$C412</code></td><td>every screen sets its period to <code>$FF</code>, off</td></tr>
+    <tr><td>A sound player with a 56-note table</td><td><code>unused_sound_player</code> <code>$CA80</code>, <code>$C300</code></td><td>every sound-chip store in it is aimed at <code>$FFFF</code></td></tr>
+    <tr><td>Fire bringing in the second character on a flat screen</td><td><code>switch_check</code> <code>$C7D4</code></td><td>every screen has gravity, where fire jumps instead</td></tr>
+    <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
+    <tr><td>An older forest card</td><td><code>card_forest_title</code> <code>$5D0D</code></td><td>its printer, <code>$5E00</code>, is never called</td></tr>
+  </table>
+  <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
+  <p>Three of the five outward screens also carry a spare score line that is never shown. It says SILVER CROSSES where the game says MAGIC CROSSES.</p>
+  <div class="plate"><canvas id="silver" width="640" height="64" class="scr" style="max-width:640px" role="img" aria-label="The unused SILVER CROSSES score line above the one the game shows"></canvas>
+  <p class="cap">Top: <code>hud_cinema</code> at <code>$8E00</code>, never copied to the screen. Bottom: <code>hud_template</code> at <code>$8400</code>, the one the game uses. Both drawn with the game's own letters.</p></div>
+</section>
+<section id="music">
+  <p class="fig">08 · Music</p>
+  <h2 class="t">The tunes are pitched for an American C64</h2>
+  <p class="lede">The game's music is played here by its own driver, ported line by line. Press a tune.</p>
+  <div class="plate">
+    <div id="sid"></div>
+    <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. Two things differ from a real C64. This player leaves out the sound chip's filter, which the game sets once and keeps on voice 1 for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>), so voice 1 sounds brighter here than it should. And it plays at PAL speed, so the notes are flat, as they were on European machines.</p>
+  </div>
+  <p>Of the play tune's 478 frequency values, 464 land within two cents of a note on an American NTSC machine. A European PAL machine runs about 4 % slower, so there every note plays about a third of a semitone flat.</p>
+  <p>The driver runs on the system interrupt, 60 times a second, on two voices. Each command is one byte, and the byte is the low half of its handler's address in page <code>$61</code>. <code>music_next_command</code> (<code>$6100</code>) writes it into its own <code>JMP</code> at <code>$610B</code> and jumps, so the tune data is a list of jump targets.</p>
+  <table class="t">
+    <tr><th>Byte</th><th>Handler</th><th>What it does</th></tr>
+    <tr><td><code>$0E</code>, <code>$26</code></td><td><code>$610E</code>, <code>$6126</code></td><td>a note on voice 1 or 2: frequency high, low; gate off and on</td></tr>
+    <tr><td><code>$3E</code></td><td><code>$613E</code></td><td>a note on both voices</td></tr>
+    <tr><td><code>$56</code></td><td><code>$6156</code></td><td>retrigger both voices</td></tr>
+    <tr><td><code>$6B</code></td><td><code>$616B</code></td><td>set the tempo: interrupts per step</td></tr>
+    <tr><td><code>$74</code></td><td><code>$6174</code></td><td>end the step: wait for the tempo</td></tr>
+    <tr><td><code>$7C</code></td><td><code>$617C</code></td><td>count: tells the game the tune has reached its end</td></tr>
+    <tr><td><code>$82</code>, <code>$91</code>, <code>$AC</code></td><td></td><td>waveforms, envelopes, pulse widths</td></tr>
+    <tr><td><code>$C7</code></td><td><code>$61C7</code></td><td>loop to the start</td></tr>
+  </table>
+  <p>The count command is how the music talks to the game. The card before each screen stays up until the card tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the jingle does (<code>$5DA9</code>). The play tune never counts. It loops after about 69 seconds.</p>
+</section>
 <section id="screens">
-  <p class="fig">01 · The ten screens</p>
-  <h2 class="t">Five screens out, the same five back</h2>
-  <p class="lede">Each screen is built from one level record: a play area, a character set, a colour map, five enemies and ten crosses. The picture below is drawn by this page from those bytes, not taken from a screenshot. Pick a screen, and switch on the tiles the boy can stand on, the ledges that crumble and the pick-ups.</p>
+  <p class="fig">09 · The ten screens</p>
+  <h2 class="t">Each screen is one 128-byte record</h2>
+  <p class="lede">A screen is built from a level record: a play area, a character set, a colour map, five enemies and ten crosses. The picture below is drawn by this page from those bytes. Pick a screen, and switch on the tiles the boy can stand on, the ledges that crumble and the pick-ups.</p>
   <div class="plate">
     <div class="row" id="scr-pick"></div>
     <div class="row">
@@ -89,148 +248,24 @@ input[type=range]{width:100%}
     <div class="legend" id="scr-legend"></div>
     <p class="cap" id="scr-cap"></p>
   </div>
-  <p>A record is <code>$80</code> bytes, and the ten sit at <code>$7000</code>-<code>$757F</code>, listed by <code>level_records</code> at <code>$7290</code>. <code>setup_screen</code> at <code>$5E19</code> reads one field after another: the play area (screen rows 2 to 24) at <code>+0</code>, the character set at <code>+6</code>, the colour map at <code>+$0C</code>, packed two cells to a byte, and the two shared multicolours at <code>+$0E</code>. It then places the crosses from the ten addresses at <code>+$5E</code> (<code>place_crosses</code>, <code>$5FC0</code>). The five outward screens keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each.</p>
+  <p>The ten records sit at <code>$7000</code>-<code>$757F</code>. <code>setup_screen</code> (<code>$5E19</code>) reads them field by field, in the order below. The five outward screens keep their graphics at <code>$8000</code>-<code>$B1FF</code>, one <code>$A00</code> block each, and the way back borrows them.</p>
   <table class="t">
     <tr><th>Field</th><th>Offset</th><th>Read by</th></tr>
     <tr><td>Play area: source, end, destination</td><td><code>+$00</code></td><td><code>setup_screen</code>, <code>copy_block</code> <code>$2A80</code></td></tr>
     <tr><td>Character set: source, end, destination</td><td><code>+$06</code></td><td>the same</td></tr>
-    <tr><td>Colour map</td><td><code>+$0C</code></td><td><code>unpack_colours</code> <code>$5D20</code></td></tr>
+    <tr><td>Colour map, two cells to a byte</td><td><code>+$0C</code></td><td><code>unpack_colours</code> <code>$5D20</code></td></tr>
     <tr><td>Multicolours 1 and 2</td><td><code>+$0E</code>, <code>+$0F</code></td><td>into <code>$D022</code>, <code>$D023</code></td></tr>
     <tr><td>The two players' start and frames</td><td><code>+$10</code>-<code>+$17</code></td><td><code>set_boy_x</code> <code>$7F20</code> and on</td></tr>
     <tr><td>Enemies: frames, speeds, paths</td><td><code>+$18</code>-<code>+$5D</code></td><td><code>spawn_enemy</code>, <code>enemy_step</code></td></tr>
-    <tr><td>Ten cross addresses, five blue then five red</td><td><code>+$5E</code>-<code>+$71</code></td><td><code>place_crosses</code>, <code>colour_cycle</code> <code>$7F80</code></td></tr>
+    <tr><td>Ten cross addresses, five blue then five red</td><td><code>+$5E</code>-<code>+$71</code></td><td><code>place_crosses</code> <code>$5FC0</code>, <code>colour_cycle</code> <code>$7F80</code></td></tr>
     <tr><td>Crosses needed, level byte, card</td><td><code>+$72</code>, <code>+$73</code>, <code>+$74</code></td><td><code>crosses_left</code> <code>$7F00</code>, <code>show_level_card</code></td></tr>
   </table>
-  <p class="cap">All ten screens, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
-</section>
-<section id="wayback">
-  <p class="fig">02 · The way back</p>
-  <h2 class="t">Secret: the way back is the screen you left</h2>
-  <p class="lede">The five return screens have no play areas of their own. As the boy leaves each screen on the way out, the game copies it away, and on the way back it reads that copy. A mushroom he ate, a cross he took, a ledge that crumbled under him: all still gone.</p>
-  <div class="two">
-    <figure style="margin:0"><img src="reference/screen-01-cinema.png" alt="The cinema on the way out, five blue crosses to take"><figcaption class="cap">The cinema on the way out: five blue crosses for the boy.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/screen-08-cinema-back.png" alt="The cinema on the way back, with the girl"><figcaption class="cap">The cinema on the way back, after playing through: the girl is there, and the crosses taken going out are gone.</figcaption></figure>
-  </div>
-  <p>The copy is made by <code>next_screen</code> (<code>$7680</code>): screen rows 1 to 24 go to a store chosen by <code>screen_store</code> at <code>$7FE8</code>. The forest goes to <code>$7800</code>. The other four have no room left in ordinary memory, so they go into the RAM under the KERNAL ROM, at <code>$E000</code>, <code>$E400</code>, <code>$E800</code> and <code>$EC00</code>. A write there lands in the RAM even with the ROM switched in. Reading it back needs the ROM switched out, which is the only thing <code>copy_under_kernal</code> (<code>$72A4</code>) does: it sets the processor port <code>$01</code> to <code>$34</code>, copies, and puts it back.</p>
-  <table class="t">
-    <tr><th>Way-back screen</th><th>Record</th><th>Play area read from</th><th>Character set and colours from</th></tr>
-    <tr><td>Haunted house</td><td><code>$7300</code></td><td><code>$EC28</code></td><td>the house's, <code>$A800</code>, <code>$B000</code></td></tr>
-    <tr><td>Graveyard</td><td><code>$7380</code></td><td><code>$E828</code></td><td>the graveyard's</td></tr>
-    <tr><td>Ghetto</td><td><code>$7400</code></td><td><code>$E428</code></td><td>the ghetto's</td></tr>
-    <tr><td>Cinema</td><td><code>$7480</code></td><td><code>$E028</code></td><td>the cinema's</td></tr>
-    <tr><td>Forest</td><td><code>$7500</code></td><td><code>$7828</code></td><td>the forest's</td></tr>
-  </table>
-  <p>Coming back, each screen needs all ten crosses, five blue and five red. The outward records list only five, so the red ones were never on the screen going out; the way-back record lists all ten and <code>place_crosses</code> writes them into the stored copy. The page's screen builder above shows the way-back screens over the untouched outward screens, which is what a player sees who takes only the crosses.</p>
-  <p>Starting a game straight on a way-back screen shows what the store holds before anything has been saved there. Poking the start level at <code>$C661</code> to 10 does that, and the house comes up as garbage: whatever the loader left under the KERNAL.</p>
-  <div class="two">
-    <figure style="margin:0"><img src="reference/screen-05-house-back.png" alt="The haunted house on the way back after playing through"><figcaption class="cap">The house on the way back, reached by playing through.</figcaption></figure>
-    <figure style="margin:0"><img src="reference/start-on-way-back.png" alt="The haunted house on the way back when the game is started there"><figcaption class="cap">The same record started directly: its store has never been written.</figcaption></figure>
-  </div>
-</section>
-<section id="music">
-  <p class="fig">03 · Music: the play tune, the card tune and the jingle</p>
-  <h2 class="t">Three tunes from a twelve-command player</h2>
-  <p class="lede">The music is played by the game's own driver, ported line by line and run through a model of the sound chip. Press a tune.</p>
-  <div class="plate">
-    <div id="sid"></div>
-    <p class="cap">The port was checked against the game's driver running in a 6502 simulator on the game's memory: every sound-chip write of 9,000 interrupts of the play tune, and of the card tune and the jingle to their ends, is the same in the same order. <b>What you hear here is not quite what the C64 plays.</b> The model plays PAL timing and leaves the SID's filter out entirely (<code>site/lib/sid.js</code>, a limit shared by every game on this site); the game sets one and leaves it on for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>): cutoff 557 of 2047 (<code>$D415</code> = <code>$05</code>, <code>$D416</code> = <code>$45</code>), resonance 15 with only voice 1 routed through it, low-pass and band-pass both selected. On real hardware that darkens voice 1 audibly all through the tune; this player leaves it at full, unfiltered brightness.</p>
-  </div>
-  <p>The driver runs on the system interrupt, 60 times a second, and uses two voices. Each command is one byte, and the byte is the low half of the address of its handler in page <code>$61</code>: <code>music_next_command</code> (<code>$6100</code>) writes it into its own <code>JMP</code> at <code>$610B</code> and jumps. So the tune data is a list of jump targets.</p>
-  <table class="t">
-    <tr><th>Byte</th><th>Handler</th><th>What it does</th></tr>
-    <tr><td><code>$0E</code>, <code>$26</code></td><td><code>$610E</code>, <code>$6126</code></td><td>a note on voice 1 or 2: frequency high, low; gate off and on</td></tr>
-    <tr><td><code>$3E</code></td><td><code>$613E</code></td><td>a note on both voices</td></tr>
-    <tr><td><code>$56</code></td><td><code>$6156</code></td><td>retrigger both voices</td></tr>
-    <tr><td><code>$6B</code></td><td><code>$616B</code></td><td>set the tempo: interrupts per step</td></tr>
-    <tr><td><code>$74</code></td><td><code>$6174</code></td><td>end the step: wait for the tempo</td></tr>
-    <tr><td><code>$7C</code></td><td><code>$617C</code></td><td>count: tells the game the tune has reached its end</td></tr>
-    <tr><td><code>$82</code>, <code>$91</code>, <code>$AC</code></td><td></td><td>waveforms, envelopes, pulse widths</td></tr>
-    <tr><td><code>$C7</code></td><td><code>$61C7</code></td><td>loop to the start</td></tr>
-  </table>
-  <p>The count command is how the music talks to the game. The card before each screen stays up until the card tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the jingle does (<code>$5DA9</code>). The play tune never counts; it loops after about 69 seconds.</p>
-  <p>The tune's pitches are worked out for an American machine. Of its 478 frequency values, 464 land within two cents of a note at the NTSC clock. On a European PAL machine, which runs about 4 % slower, every note plays about a third of a semitone flat, and that is what this player plays.</p>
-</section>
-<section id="crosses">
-  <p class="fig">04 · Two players, two colours</p>
-  <h2 class="t">The boy takes blue crosses, the girl takes red</h2>
-  <p class="lede">A cross is one character, tile <code>$57</code>. Whose it is depends only on its colour. Pick a character and a cross colour and see what <code>cross_touch</code> does.</p>
-  <div class="plate">
-    <div class="row">
-      <button class="b" type="button" data-who="0" aria-pressed="true">The boy</button>
-      <button class="b" type="button" data-who="1" aria-pressed="false">The girl</button>
-      <span class="note">touches a</span>
-      <button class="b" type="button" data-col="14" aria-pressed="true">blue cross</button>
-      <button class="b" type="button" data-col="10" aria-pressed="false">red cross</button>
-    </div>
-    <canvas id="xc" width="384" height="120" class="scr" style="max-width:384px" role="img" aria-label="The character and the cross"></canvas>
-    <p class="kv" id="xc-kv"></p>
-  </div>
-  <p><code>cross_touch</code> (<code>$7F50</code>) reads the colour-RAM cell under the cross and tests bit 2. Light blue is 14 (<code>%1110</code>) and light red is 10 (<code>%1010</code>), so the bit tells them apart. A match replaces the cross with a space and steps the MAGIC CROSSES counter (<code>cross_count</code>, <code>$5B5E</code>). Anything else is left alone. The crosses also flash: every 40th pass <code>colour_cycle</code> (<code>$7F80</code>) takes 8 from each cross's colour, which toggles the multicolour bit and back.</p>
-  <p>Going out only the boy plays, and each screen needs its five blue crosses. On the way back the girl comes too, and both colours are needed, ten in all. Fire, or the <code>?</code> key, swaps who is under control, but <code>switch_allowed</code> (<code>$7280</code>) refuses before level byte 10, the first screen of the way back, exactly as the inlay's starred note says. The border shows who is playing: <code>tick_border</code> (<code>$75B0</code>) resets it every pass to 6, blue, for the boy and 10, light red, for the girl.</p>
-  <p>A swap does not move anyone. <code>player_swap</code> (<code>$576B</code>) exchanges sprites 0 and 1, positions and all, so whoever is being controlled is always sprite 0, and patches the frame numbers in three routines to the other character's shapes. The one left behind stands still and still loses energy when an enemy touches it (<code>girl_touch</code>, <code>$CD9D</code>).</p>
-  <p class="cap"><b>Secret: three crosses cannot be taken.</b> A search of every screen against <code>try_move</code>'s own rules (<code>work/reach.py</code>) finds nine of the ten screens fully collectable, and three blue crosses that are not, all on the way back, all in the play area's bottom two rows: <code>graveyard-back</code>, <code>ghetto-back</code>, <code>cinema-back</code>. <code>move_sprite</code>'s Y clamp (<code>$C930</code>, <code>cmp #$E3</code>) holds the boy's own position at row 22 of 24 even in free fall over open ground with nothing to land on, so his sprite can never be computed as standing in those rows, whatever the scenery says. See the <a href="levels.html">Maps / levels</a> tab to check each screen for yourself.</p>
-</section>
-<section id="energy">
-  <p class="fig">05 · Energy</p>
-  <h2 class="t">One bar, no lives, and standing still is free</h2>
-  <p class="lede">There is one energy bar and nothing else to lose. Walking wears it down, enemies and toadstools poison it, mushrooms fill it. Try them on the bar below, which uses the game's own step sizes.</p>
-  <div class="plate">
-    <div class="row">
-      <button class="b" type="button" data-e="walk">Walk 1,000 passes</button>
-      <button class="b" type="button" data-e="touch">An enemy touches</button>
-      <button class="b" type="button" data-e="toad">Eat a toadstool</button>
-      <button class="b" type="button" data-e="mush">Eat a mushroom</button>
-      <button class="b" type="button" data-e="reset">Full bar</button>
-    </div>
-    <canvas id="eb" width="560" height="32" class="scr" style="max-width:560px" role="img" aria-label="The energy bar as the game draws it"></canvas>
-    <p class="kv" id="eb-kv"></p>
-    <p class="cap">Drawn with the game's own bar glyphs, <code>$A1</code>-<code>$A9</code> of the play character set, in the colours of the forest's colour map: 33 cells of eight steps. When the bar is empty the game is over.</p>
-  </div>
-  <table class="t">
-    <tr><th>What</th><th>Effect on the bar</th><th>Where</th></tr>
-    <tr><td>Walking</td><td>one step every 765 passes of the main loop with a direction held</td><td><code>walk_drain</code> <code>$5A20</code></td></tr>
-    <tr><td>Jumping</td><td>one step each time a counter runs out in the air</td><td><code>drain_step</code> <code>$59E6</code></td></tr>
-    <tr><td>Standing still</td><td>nothing</td><td><code>drain_step</code></td></tr>
-    <tr><td>An enemy touching</td><td>two steps, again every pass it stays</td><td><code>sprite_touch</code> <code>$CE87</code></td></tr>
-    <tr><td>A toadstool, tile <code>$55</code></td><td>24 steps, one every 18 calls, each with a border flash</td><td><code>poison_tick</code> <code>$5B2C</code></td></tr>
-    <tr><td>A mushroom, tile <code>$54</code></td><td>23 steps back, one every 16 calls; on a full bar, 10 points each instead</td><td><code>energy_tick</code> <code>$5B00</code></td></tr>
-    <tr><td>A bonus, tile <code>$56</code></td><td>100 points, no energy</td><td><code>tile_touch_b</code> <code>$5AC7</code></td></tr>
-  </table>
-  <p>The inlay promises that walking, running and jumping each cost more than the last. There is no running in the code: one walking speed, and it gets slower. Once the bar's seventh cell is no longer full, <code>bar_speed</code> (<code>$5961</code>) patches the main loop to read the controls every 128 passes instead of every 32.</p>
-  <p>Lives are in the code but not in the game. <code>new_life</code> (<code>$CAED</code>) and <code>lose_life</code> (<code>$CEDA</code>) and a starting count at <code>$45ED</code> are there, reached only from other code that nothing calls. An empty bar goes straight to GAME OVER (<code>out_of_energy</code>, <code>$5A70</code>).</p>
-</section>
-<section id="jump">
-  <p class="fig">06 · The jump</p>
-  <h2 class="t">Secret: no fall ever hurts</h2>
-  <p class="lede">The jump is 24 one-pixel steps up, each a little slower than the last, and the same steps back down in reverse. Scrub through it. However far the boy falls afterwards, he lands unhurt.</p>
-  <div class="plate">
-    <input type="range" id="jr" min="0" max="48" value="0" aria-label="Step of the jump">
-    <canvas id="jc" width="600" height="180" class="scr" style="max-width:600px" role="img" aria-label="The jump's height over time"></canvas>
-    <p class="kv" id="jk"></p>
-    <p class="cap">Height against time from <code>jump_speeds</code> at <code>$544A</code>: the number of main-loop passes before each step. The boy's sprite is his jumping frame, pointer <code>$E0</code>, drawn from the game's sprite data at <code>$3800</code>.</p>
-  </div>
-  <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the controls are switched off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so the direction he took off in is kept until he lands. There is no climbing: on all ten screens up and down are switched off as walking directions (<code>$4500</code>-<code>$4503</code>), so the only way up is to jump.</p>
-  <p>Falls are counted. When he lands, <code>land</code> (<code>$53EF</code>) compares the count with a limit at <code>$457A</code>, and the branch after the compare was replaced with <code>NOP</code>s. The limit is <code>$FF</code> anyway. Fall damage was written and then switched off twice over.</p>
-  <p>The ground has one more trick: tiles <code>$4D</code>-<code>$53</code> are a ledge in seven stages. Every eighth step on one moves it a stage further, and the last stage becomes empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
-</section>
-<section id="enemies">
-  <p class="fig">07 · The enemies</p>
-  <h2 class="t">Five enemies a screen, faster every LEVEL</h2>
-  <p class="lede">Each screen has five enemy slots on sprites 2 to 6, and a sixth enemy on sprite 7 that is thrown in from one of them now and then. Their shapes come from the level record. Flip through each screen's set.</p>
-  <div class="plate">
-    <div class="row" id="en-pick"></div>
-    <canvas id="en" width="720" height="132" class="scr" style="max-width:720px" role="img" aria-label="The enemy animation frames of the chosen screen"></canvas>
-    <p class="kv" id="en-kv"></p>
-    <p class="cap">Four frames per slot, in the order the game steps through them, drawn from the sprite data the record's frame table names. Colours are those the game set on the screen (<code>$D029</code>-<code>$D02D</code>, read live on arrival); multicolour sprites use <code>$D025</code> and <code>$D026</code>.</p>
-  </div>
-  <p>Each slot has a number of lives (<code>$45E7</code>) and a chance out of 128 of coming back after it leaves the screen (<code>$45E2</code>, <code>respawn_timer</code> at <code>$2FB2</code>). When every slot has used all its lives, <code>level_up</code> (<code>$2C19</code>) counts the LEVEL counter on and shows it over the play area, and <code>speed_up</code> (<code>$5681</code>) halves every slot's movement and animation delays. So the longer the boy lingers, the faster the enemies get.</p>
-  <p>A touch costs energy and nothing else. <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware collision register <code>$D01E</code>; when sprite 0 and exactly one enemy are in it, two steps of poison go on the bar. The enemy stays. In one test run, standing still from the start of the forest, the bar held for 16 seconds and then lost 69 steps in a single visit, all of them from enemy touches.</p>
-  <p>Each slot moves along a path script: direction bytes, 0 up, 1 down, 2 left, 3 right, ended by <code>$FF</code>, at <code>path_scripts</code> (<code>$4A00</code>-<code>$4A8F</code>). <code>path_step</code> (<code>$CC12</code>) moves the enemy one pixel every few passes and reads the next byte of its script every 8th move; <code>$FF</code> loops back to the start. Nine scripts serve the ten screens' fifty slots: three walk down then back up, four hold one direction for ever, and three are long runs down with a single stray byte the move routine simply does nothing with, since it matches none of the four directions it checks for. Step through any slot's script on the <a href="levels.html">Maps / levels</a> tab.</p>
+  <p class="cap">The way-back screens are drawn here over the untouched outward screens, which is what a player sees who took only the crosses. All ten, with their enemy paths and pick-ups, are on the <a href="levels.html">Maps / levels</a> tab.</p>
 </section>
 <section id="controls">
-  <p class="fig">08 · Controls</p>
-  <h2 class="t">The keys go through the machine's own keyboard scan</h2>
-  <p class="lede">The game reads the joystick itself, but leaves the keyboard to the Commodore's built-in routines and reads the key they found.</p>
+  <p class="fig">10 · Controls</p>
+  <h2 class="t">Controls</h2>
+  <p class="lede">The game reads the joystick itself, and leaves the keyboard to the Commodore's built-in routines.</p>
   <table class="t">
     <tr><th>Control</th><th>Read as</th><th>Does</th></tr>
     <tr><td>Stick left, right; Z, C</td><td><code>$DC00</code> bits 2, 3; key codes <code>$0C</code>, <code>$14</code> in <code>$C5</code></td><td>walk</td></tr>
@@ -238,34 +273,16 @@ input[type=range]{width:100%}
     <tr><td>Fire; <code>?</code></td><td><code>$DC00</code> bit 4; key code <code>$37</code></td><td>switch players, way back only</td></tr>
     <tr><td>SPACE</td><td>key code <code>$3C</code>, listed twice as up</td><td>nothing: up is off on every screen</td></tr>
   </table>
-  <p><code>read_controls</code> (<code>$C84D</code>) compares the key code with a table of four at <code>$4512</code>. The table is part of the level settings, so each screen could have had its own keys; all ten have the same.</p>
-</section>
-<section id="unused">
-  <p class="fig">09 · Left in the code</p>
-  <h2 class="t">Secret: a shooting game underneath</h2>
-  <p class="lede">Chiller has no gun, no lives and no scrolling. Its code has all three, and a sound player whose every write goes nowhere. None of it is reached in play.</p>
-  <table class="t">
-    <tr><th>What</th><th>Where</th><th>Why it never runs</th></tr>
-    <tr><td>A shot hitting an enemy, the enemy dying, points per enemy</td><td><code>unused_shot_hit</code> <code>$CDC7</code>, <code>unused_kill_enemy</code> <code>$2F7B</code>, <code>add_score_for</code> <code>$CE6B</code></td><td>nothing calls them; there is no shot</td></tr>
-    <tr><td>Lives: take one, restart the screen</td><td><code>new_life</code> <code>$CAED</code>, <code>lose_life</code> <code>$CEDA</code></td><td>called only from the code above</td></tr>
-    <tr><td>A scroller that moves the whole play area a cell at a time</td><td><code>scroll_timer</code> <code>$C011</code>, <code>scroll_left</code> <code>$C412</code></td><td>every screen sets its period to <code>$FF</code>, off</td></tr>
-    <tr><td>A sound player with a 56-note table</td><td><code>unused_sound_player</code> <code>$CA80</code>, <code>$C300</code></td><td>every sound-chip store in it is aimed at <code>$FFFF</code></td></tr>
-    <tr><td>Fire bringing in the second character on a flat screen</td><td><code>switch_check</code> <code>$C7D4</code></td><td>every screen has gravity, where fire jumps instead</td></tr>
-    <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
-    <tr><td>An older forest card</td><td><code>card_forest_title</code> <code>$5D0D</code></td><td>its printer, <code>$5E00</code>, is never called</td></tr>
-  </table>
-  <p>The sound player's stores were not removed, only pointed at the last byte of memory, so the code still steps through its notes and makes no sound. That is also true of the program as it is loaded, not only in memory after play.</p>
-  <p>Three of the five outward screens also carry a spare copy of the top two rows, the score line, that is never shown. It says SILVER CROSSES where the game says MAGIC CROSSES.</p>
-  <div class="plate"><canvas id="silver" width="640" height="64" class="scr" style="max-width:640px" role="img" aria-label="The unused SILVER CROSSES score line above the one the game shows"></canvas>
-  <p class="cap">Top: <code>hud_cinema</code> at <code>$8E00</code>, never copied to the screen. Bottom: <code>hud_template</code> at <code>$8400</code>, the one <code>start_game</code> copies. Both drawn with the game's text glyphs.</p></div>
+  <p>The key table (<code>$4512</code>) is part of the level settings, so each screen could have had its own keys. All ten have the same.</p>
 </section>
 <section id="bugs" class="bug">
-  <p class="fig">10 · Bugs</p>
+  <p class="fig">11 · Smaller bugs</p>
   <h2 class="t">Bug: PRESS CTRL FOR MENU never appears</h2>
-  <p class="lede">After GAME OVER the game calls a routine to put PRESS CTRL FOR MENU on the bottom row. It reads the text, reads the screen, reads the colours, and writes nothing.</p>
+  <p class="lede">After GAME OVER the game calls a routine to put PRESS CTRL FOR MENU on the bottom row. It reads the text, the screen and the colours, and writes nothing.</p>
   <div class="plate"><canvas id="ctrl" width="640" height="32" class="scr" style="max-width:640px" role="img" aria-label="PRESS CTRL FOR MENU drawn from the game's bytes"></canvas>
-  <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. <code>show_press_ctrl</code> at <code>$5736</code> loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads, no store.</p></div>
-  <p>Two smaller slips. The jump sound should rise again as he falls: <code>jump_pitch_fall</code> (<code>$5518</code>) adds 5 to the frequency's low byte, and its carry test at <code>$5524</code> branches to the very next instruction, so the high byte is taken down by one every step and the pitch keeps dropping. And on the title after a game, <code>title_flicker</code> (<code>$7580</code>) should flicker two colour registers, <code>$D022</code> and <code>$D023</code>; its second store goes to <code>$7523</code>, a byte in the last level record, so only one flickers.</p>
+  <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. <code>show_press_ctrl</code> at <code>$5736</code> loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads and no store.</p></div>
+  <p>The jump sound should rise again as he falls. <code>jump_pitch_fall</code> (<code>$5518</code>) adds 5 to the frequency's low byte, but its carry test at <code>$5524</code> branches to the very next instruction. The high byte goes down by one every step regardless, and the pitch keeps dropping.</p>
+  <p>On the title after a game, <code>title_flicker</code> (<code>$7580</code>) should flicker two colour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last level record, so only one flickers.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
