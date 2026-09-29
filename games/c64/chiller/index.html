@@ -230,19 +230,8 @@ ul.odd li{margin:0 0 12px}
   </table>
   <p>The inlay says walking, running and jumping each cost more than the last. There is no running in the code. There is one walking speed, and it gets slower as the bar empties: once the bar's seventh cell is no longer full, <code>bar_speed</code> (<code>$5961</code>) patches the main loop to read the controls every 128 passes instead of every 32. An empty bar goes straight to GAME OVER (<code>out_of_energy</code>, <code>$5A70</code>).</p>
 </section>
-<section id="jump">
-  <p class="fig">09 · The jump</p>
-  <h2 class="t">Jump to go up, fall as far as you like</h2>
-  <p class="lede">The jump is 24 one-pixel steps up, each a little slower than the last, and the same steps back down in reverse. However far the boy falls afterwards, he lands unhurt.</p>
-  <div class="plate">
-    <img src="reference/jump-arc.png" width="300" height="219" style="image-rendering:pixelated;max-width:100%" alt="The boy in the forest at take-off, at the top of his jump 24 pixels higher, and landed 28 pixels to the right, with a dotted line tracing his feet">
-    <p class="cap">One jump up and to the right in the forest, from the game's own code (the port on the Play tab), three times the C64's pixels. It shows the take-off, the top and the landing, with a dot for each frame at his feet. He rises 24 pixels in 24 frames, hangs at the top while the slowest steps run, and lands 28 pixels to the right 70 frames, or 1.4 seconds, after he took off.</p>
-  </div>
-  <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the game switches the controls off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so he keeps the direction he took off in until he lands. He climbs by jumping. All ten screens switch off up and down as walking directions (<code>$4500</code>-<code>$4503</code>), so he has no climb of his own and gets up the screen one jump at a time, from ledge to ledge.</p>
-  <p>Some ledges crumble. Tiles <code>$4D</code>-<code>$53</code> are one ledge in seven stages. Every eighth step on it moves it on a stage, and the last stage is empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
-</section>
 <section id="controls">
-  <p class="fig">10 · Controls</p>
+  <p class="fig">09 · Controls</p>
   <h2 class="t">Joystick or keyboard</h2>
   <p class="lede">As the title screen says, there are two ways to play: a joystick in control port 2, or the keys Z, C, ? and SHIFT. The game reads the joystick port itself, and leaves the keyboard to the Commodore's built-in routines.</p>
   <figure style="margin:0 0 24px"><img src="reference/title-screen.png" alt="The title screen: rescue your girlfriend from the haunted house and return to your car; use the keys Z, C, ? and SHIFT, or a joystick in port two" style="width:100%;max-width:576px;image-rendering:pixelated;border-radius:4px;display:block"><figcaption class="cap">The title screen, captured in an emulator.</figcaption></figure>
@@ -255,6 +244,17 @@ ul.odd li{margin:0 0 12px}
   </table>
   <p>The key table (<code>$4512</code>) is part of the level settings, so each screen could have had its own keys. All ten have the same.</p>
 </section>
+<section id="jump">
+  <p class="fig">10 · The jump</p>
+  <h2 class="t">Jump to go up, fall as far as you like</h2>
+  <p class="lede">The jump is 24 one-pixel steps up, each a little slower than the last, and the same steps back down in reverse. However far the boy falls afterwards, he lands unhurt.</p>
+  <div class="plate">
+    <img src="reference/jump-arc.png" width="300" height="219" style="image-rendering:pixelated;max-width:100%" alt="The boy in the forest at take-off, at the top of his jump 24 pixels higher, and landed 28 pixels to the right, with a dotted line tracing his feet">
+    <p class="cap">One jump up and to the right in the forest, from the game's own code (the port on the Play tab), three times the C64's pixels. It shows the take-off, the top and the landing, with a dot for each frame at his feet. He rises 24 pixels in 24 frames, hangs at the top while the slowest steps run, and lands 28 pixels to the right 70 frames, or 1.4 seconds, after he took off.</p>
+  </div>
+  <p>Up on the stick, or SHIFT, starts a jump (<code>start_jump</code>, <code>$5418</code>) unless he is already falling. In the air the game switches the controls off by writing an <code>RTS</code> over the first byte of <code>read_controls</code> (<code>$C84D</code>), so he keeps the direction he took off in until he lands. He climbs by jumping. All ten screens switch off up and down as walking directions (<code>$4500</code>-<code>$4503</code>), so he has no climb of his own and gets up the screen one jump at a time, from ledge to ledge.</p>
+  <p>Some ledges crumble. Tiles <code>$4D</code>-<code>$53</code> are one ledge in seven stages. Every eighth step on it moves it on a stage, and the last stage is empty space (<code>tile_touch_a</code>, <code>$5A9A</code>). Stand on a crumbling ledge too long and it drops you.</p>
+</section>
 <section id="unused">
   <p class="fig">11 · Secret</p>
   <h2 class="t">Secret: enemies could once be killed, for points</h2>
@@ -265,10 +265,10 @@ ul.odd li{margin:0 0 12px}
     <tr><td>Lives: a starting count, take one, restart the screen</td><td><code>$45ED</code>, <code>new_life</code> <code>$CAED</code>, <code>lose_life</code> <code>$CEDA</code></td><td>called only from the code above</td></tr>
     <tr><td>A scroller that moves the whole play area a cell at a time</td><td><code>scroll_timer</code> <code>$C011</code>, <code>scroll_left</code> <code>$C412</code></td><td>every screen sets its period to <code>$FF</code>, off</td></tr>
     <tr><td>A sound player with a 56-note table</td><td><code>unused_sound_player</code> <code>$CA80</code>, <code>$C300</code></td><td>every sound-chip store in it is aimed at <code>$FFFF</code></td></tr>
-    <tr><td>Fire bringing in the second character on a flat screen</td><td><code>switch_check</code> <code>$C7D4</code></td><td>every screen has gravity, where fire jumps instead</td></tr>
+    <tr><td>Fire putting a second sprite on top of the boy, facing his way, with a sound, and that sprite switched off when it hits the scenery</td><td><code>switch_check</code> <code>$C7D4</code>, <code>sprite1_hit_scenery</code> <code>$C4FB</code></td><td>the first works only on a screen with no jumping, and every screen has jumping; the second is switched off on every screen (<code>$45FE</code> = 0)</td></tr>
     <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
   </table>
-  <p>We first read the kill code as part of a shooting game, which is why the first routine is named for a shot. The code does not say how an enemy was hit. <code>unused_kill_enemy</code> takes the enemy from the boy's last collision (<code>$CF5E</code>, <code>$CF5F</code>, written by <code>sprite_touch</code>), so it may once have been enough to touch an enemy at the right moment, or there may have been a shot whose code is gone. Nothing left in the game settles which.</p>
+  <p>We first read the kill code as part of a shooting game, which is why the first routine is named for a shot. The code does not say how an enemy was hit. <code>unused_kill_enemy</code> takes the enemy from the boy's last collision (<code>$CF5E</code>, <code>$CF5F</code>, written by <code>sprite_touch</code>), so it may once have been enough to touch an enemy. The row above may be a shot's beginning: fire puts a second sprite on the boy, facing his way, with a sound, and it vanishes when it hits the scenery. No code has been found that moves that sprite along, so nothing left in the game settles which.</p>
   <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
 </section>
 <section id="silver-crosses">

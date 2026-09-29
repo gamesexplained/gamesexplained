@@ -453,7 +453,8 @@ start) executed or read it; each is described in `symbols.json`.
   `$4560`. Nothing reaches these. The shot in the name is our guess, not the
   code's: `unused_kill_enemy` takes the enemy from the boy's last collision
   (`$CF5E`, `$CF5F`, written by `sprite_touch`), and no code for a shot
-  survives. How an enemy was hit is unknown.
+  survives beyond what `switch_check` does with sprite 1 (below). How an
+  enemy was hit is unknown.
 - **Lives.** `new_life` `$CAED` and `lose_life` `$CEDA`, and the start count
   `$45ED`, are reached only from other unused code. The game has one bar
   and no lives.
@@ -464,9 +465,13 @@ start) executed or read it; each is described in `symbols.json`.
 - **A scroller.** `scroll_timer` `$C011`, `scroll_left` `$C412` and
   `scroll_rows` `$C47F` scroll the whole play area a cell, wrapping. Every
   level sets the period to `$FF`, which turns it off.
-- **A second character on a flat screen.** `switch_check` `$C7D4` brings
-  sprite 1 in with fire on a screen without gravity; every screen has
-  gravity. `sprite1_hit_scenery` `$C4FB` waits on `$45FE`, which is 0.
+- **A second sprite on fire, on a flat screen.** `switch_check` `$C7D4`
+  brings sprite 1 in on top of the boy with fire on a screen without
+  gravity, framed for his facing (`$4508`), with a sound on voice 3;
+  every screen has gravity. `sprite1_hit_scenery` `$C4FB` switches sprite 1
+  off when it hits the scenery, and waits on `$45FE`, which is 0. Together
+  they look like the start of a shot, but no code found moves sprite 1
+  along (inferred, not run).
 - **Screen-editor tools.** `unused_editor_tools` `$5198` (a box drawer, a
   character plotter) and `unused_screen_tools` `$C038` (fills, a glyph
   mirror) call only each other.
