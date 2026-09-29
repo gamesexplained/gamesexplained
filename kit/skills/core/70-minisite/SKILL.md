@@ -148,9 +148,9 @@ can open with that instead.
   in its left margin by their headings (any further `<h2>` gets an entry
   of its own, and so does a section or heading the page's script adds),
   so the headings are what a reader scans to choose where to go. A
-  heading that begins `Bug:`, `Secret:` or `Music:` is tagged in that
-  list, and the sound section is tagged Music without the prefix when
-  its heading names the tunes.
+  heading that begins `Bug:`, `Secret:`, `Sound:` or `Music:` is tagged
+  in that list, and any section whose label starts with Sound, Music or
+  SFX gets the Sound tag without the prefix, tunes and effects alike.
 - Embed only the data you need: extracted character set, level data,
   tables, tune bytes. Small excerpts for commentary; never the program.
 - A game can read the machine's ROM as data: a table, or code used as
