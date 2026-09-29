@@ -85,7 +85,7 @@ transcription; `work/research.md` has the notes, source by source.
 | Win: two of three men past the Marshmallow Man into Zuul, $5,000 reward | live | text at `$B2D4`; the door at x `$5B`-`$5E`; +$5,000 seen |
 | Partial: enough money but Zuul not reached, "GOOD TRY" | differs | text at `$B1B9`; shown when the Marshmallow Man catches two men on the Zuul street; the pages then give a credit limit and a new account number as a win does |
 | A winning game gives a new account number | live | text at `$B221`-`$B298`; `$8CC6` calls the encoder `$90EE`; F3 then starts with that account |
-| Digitised speech: "Ghostbusters!", "He slimed me!", a laugh | open | speech heard at start-up; NMI player at `$F0C3`, CIA 2 timer B (`$F47E`) |
+| Digitised speech: "Ghostbusters!", "He slimed me!", a laugh | live | heard at start-up; player `$F080`, run by the NMI of CIA 2 timer B at 9,659 samples a second (PAL), 4-bit samples to `$D418`; phrases and samples `$F4EA`-`$FF9B`; which phrase says which words is not settled from the code |
 | Music: Russell Lieblich's arrangement of the theme | live | player `$93E2`/`$93F0`; voice 3 lent to sound effects at `$9593` |
 | Credits on the title: "DESIGNED BY DAVID CRANE COPYRIGHT 1984" | live | text at `$3671` |
 
@@ -104,6 +104,9 @@ Found in the code, not in the manual.
 | The laser confinement system stores up to 10 ghosts instead of using a trap | traced | `$6D` bit 6 |
 | Each drive leaves two bytes on the stack: state `$14` reaches `next_state` by JSR, not JMP | live | `$8070`; the stack pointer went `$FF` to `$FD` and stayed |
 | "YOU MADE MORE MONEY" is printed when the balance only equals the starting one | traced | end pages |
+| A sixth speech phrase, phrase 0 (0.95 s, beginning like phrase 1), is stored but never played | confirmed | the game asks only for phrases 1-4 |
+| The speech player has 2-bit sample decoders no phrase uses | confirmed | `$F267`-`$F2E3`, `$F3E2`; all four decoders hooked while every phrase played |
+| A turbo tape loader, never run, is left at `$CE00`; its RESTORE handler fills memory with the JAM opcode `$02` | confirmed | `$CE00`-`$CED9`, `$CEC1`; a dead chain at `$CF80` calls it and `$0A00`, `$0E00`, likely the original tape's loading sequence (inference) |
 | Dead code: `sprite_y_distance` `$9C76`, `set_balance_10000` `$9CF1`; three-NOP runs at `$90D1`, `$90DB` look like a patched-out call | confirmed | no reference, never executed |
 
 ## Open questions
