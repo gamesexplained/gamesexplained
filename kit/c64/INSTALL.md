@@ -35,6 +35,7 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 24 and 25 September 2026 | 56, 55 and 53 of 56, three runs on the 24th; 56 of 56 on the 25th |
 | v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
 | v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 26 September 2026 | 56 of 57, five runs: all but `pause-at-instruction` |
+| v3.13.1 release, `v3.13.1-macos-arm64-gui.dmg` | macOS arm64 | 28 September 2026 | 56 of 57: all but `pause-at-instruction` |
 
 Add a row whenever a build is measured on a machine not listed, and bring
 that machine's `c64` cell in `site/status.json` into line with it. The two

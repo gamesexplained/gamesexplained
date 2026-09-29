@@ -16,6 +16,9 @@ may be started more than once (a second session); the report sums them.
 --model is the id of the model doing the step, as your system prompt names
 it (claude-opus-5, claude-fable-5-1, ...). It is required: a run can change
 model between steps, and a time means nothing without the model that took it.
+Never infer it from files, transcripts or the environment: when the session
+does not name it, ask the contributor, and pass `unknown` if they cannot tell
+(AGENTS.md, "Know your model; never infer it").
 Record it even where the environment keeps model ids out of commits
 (AGENTS.md, "Record what you used").
 The game dir is the argument, else GAME_DIR, else the current directory when
@@ -91,6 +94,14 @@ def start(step, model, gdir):
     T["entries"].append({"step": step, "model": model, "start": iso(t), "end": None, "minutes": None, "note": ""})
     save(gdir, T)
     print(f"started {step} at {iso(t)}  ({os.path.relpath(os.path.join(gdir, 'timings.json'), os.getcwd())})")
+    sys.path.insert(0, HERE)
+    from models import proven
+    P = proven()
+    if model not in P:
+        print(f"\nNOTE: {model} is not a proven model (proven: {', '.join(sorted(P)) or 'none'}; kit/scripts/models.py).\n"
+              "The run may go on. Tell the contributor now, in plain words, if you have not already: an untested\n"
+              "model often produces results that read as right and are wrong, and this game cannot be Silver until\n"
+              "a maintainer has checked it (kit/CHECKING.md). Until then its tier is bronze (AGENTS.md, \"Model\").")
 
 
 def stop(gdir, note, agents):
@@ -177,7 +188,9 @@ def main():
         if not rest or rest[0].startswith("--"): sys.exit("usage: clock.py start <step> --model <id> [<game dir>]")
         if "--model" not in rest or rest.index("--model") + 1 >= len(rest):
             sys.exit("clock.py start needs --model <id>: the model id your system prompt names, e.g. claude-opus-5.\n"
-                     "A time is only comparable with the model that took it recorded beside it.")
+                     "A time is only comparable with the model that took it recorded beside it.\n"
+                     "If nothing in your session names the model, ask the contributor; never infer it from files,\n"
+                     "transcripts or the environment. Pass `unknown` if they cannot tell.")
         model = rest[rest.index("--model") + 1]
         start(rest[0], model, game_dir([r for r in rest[1:] if r != model]))
     elif cmd == "stop":

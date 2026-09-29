@@ -567,6 +567,28 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .npc-shots img{height:auto}
 .npc-tbl{margin:0 0 16px}
 @media (max-width:720px){.npc-row{grid-template-columns:1fr}}
+/* sound */
+.snd-scroll{overflow-x:auto;margin:6px 0 18px}
+.snd-tbl{min-width:760px}
+.snd-tbl td:nth-child(2){min-width:210px}
+.snd-tbl td{font-size:13.5px}
+.snd-tbl td:nth-child(1),.snd-tbl td:nth-child(4),.snd-tbl td:nth-child(6){font-family:var(--fm);font-size:12.5px;white-space:nowrap}
+.snd-tbl td:nth-child(7){white-space:nowrap}
+.snd-need{font-size:14px;color:var(--coral);margin:10px 0 0}
+.eng-ctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 12px;font-family:var(--fm);font-size:13px}
+.eng-ctl input[type=range]{flex:1 1 260px;min-width:0;accent-color:var(--violet)}
+.eng-ctl button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.eng-ctl button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff}
+.eng-presets{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.eng-presets button{font-family:var(--fm);font-size:12px;padding:4px 9px;border:1px dotted var(--ink-mute);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.eng-chart{display:block;width:100%;height:150px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;touch-action:none}
+.eng-regs{font-family:var(--fm);font-size:12px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);margin-top:12px;overflow-x:auto}
+.eng-regs table{border-collapse:collapse;width:100%}
+.eng-regs td{padding:2px 8px 2px 0;vertical-align:top;border:0}
+.eng-regs td:first-child{color:var(--ink-mute);white-space:nowrap}
+.eng-regs td:nth-child(2){font-weight:500;white-space:nowrap}
+.eng-regs td:nth-child(3){color:var(--ink-soft);font-family:var(--fb);font-size:12.5px}
+.eng-regs .eng-quiet td:nth-child(3){color:var(--coral);font-weight:700}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -957,8 +979,50 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p>Only the low six bits of a character count, so the digits land on the same pitches as the first nine letters: 1 sounds like A, and 9 like I. The punctuation sits at the top, and ?, ! and the apostrophe are Benson's highest notes. A line takes 25 frames at 50 a second, half a second of chatter, then 99 frames of silence while it can be read.</p>
 </section>
 
+<section id="sound">
+  <p class="fig">14 · Sound</p>
+  <h2 class="t">Thirteen sound effects of four bytes each, and an engine tuned by the speed</h2>
+  <p class="lede">The game has no music. Its sound effects are thirteen entries of four bytes in one table, each started on voice 1 or voice 2 by the same routine; only the doors' hum and Benson's tick come from elsewhere. The lift and the engine rewrite a register while they play.</p>
+  <div class="plate">
+    <div id="snd-player"></div>
+    <p class="cap">Each button plays the game's own register writes, frame by frame, through the site's model of the SID: the four bytes from the table at <code>$B987</code>, then whatever the game writes while the sound runs (the lift's pitch every frame, the wipes' two blocks, the opening's gate). The bytes are read from listing.json. A test runs the game's code in the kit's 6502 simulator and gets the same registers and the same gate changes on every frame, for every button. Voice 3 is Benson's (section 13) and stays silent here.</p>
+    <p class="snd-need" hidden></p>
+  </div>
+  <p><code>$B958</code> (voice 1) and <code>$B93A</code> (voice 2) share a tail at <code>$B961</code> that closes the voice's gate, then writes the frequency's high byte, the attack and decay, the sustain and release, and the control byte, which opens the gate again with a pulse or noise wave. The frequency's low byte is <code>$80</code> and the pulse width <code>$800</code>, as <code>$B910</code> sets them from <code>$B921</code>, so every pulse is square; only the doors' hum changes the low byte, until <code>$B910</code> runs again. Whatever the voice was playing is cut off.</p>
+  <div class="snd-scroll"><table class="lift-tbl snd-tbl">
+    <thead><tr><th>Sound</th><th>What plays it</th><th>Voice</th><th>Bytes</th><th>Wave</th><th>Frequency</th><th>Attack, decay, sustain, release</th></tr></thead>
+    <tbody id="snd-tbl"><tr><td colspan="7">The table is read from the game's bytes in listing.json, which the built site serves.</td></tr></tbody>
+  </table></div>
+  <p>Nearly every entry has sustain level 0, and nothing closes the gate afterwards. The note rises at the attack rate and dies away at the decay rate: 750 ms for the key beep, 15 seconds for a building. The next sound on the same voice cuts it off. Voice 1 carries the beeps, the missiles and the hits, voice 2 the engine, the lift and the opening. The transporter chime uses both.</p>
+  <p>The lift's hum, sound <code>$30</code>, holds a steady level: sustain 4 of 15, a quarter of full volume, on a square wave whose own frequency byte is 0. The panel's interrupt supplies the pitch every frame (<code>$BA87</code> going down, <code>$BAE9</code> going up) from <code>$BBA5</code>, at the index that also picks the ride's step from <code>$BB89</code>. The pitch is lowest at the two ends of the shaft and highest in the middle, <code>$0280</code> to <code>$0580</code>, 38 to 83 Hz. The steps are smallest at the ends too, so the lift speeds up and slows down. Most laptop and phone speakers play little that low, and the hum is easier to hear in headphones. At the end of the ride <code>$BB2F</code> closes the gate.</p>
+  <p>The doors hum on voice 2 with the triangle wave, ring-modulated by voice 1. <code>$AF3E</code> and <code>$AF3A</code> write thirteen registers, <code>$D40D</code> down to <code>$D401</code>, from one of two blocks, <code>$AF53</code> and <code>$AF61</code>, then <code>$15</code> into voice 2's control: the triangle, the ring modulation and the gate. The blocks differ in one byte, the low byte of voice 2's frequency: <code>$0550</code> (80 Hz) or <code>$05E4</code> (89 Hz). Walking through a door, the lower hum plays while the band rises and the higher one for the 22 frames after; backing through, the lower one holds for 30 frames and the higher one plays while the band comes down. Voice 1 sits at <code>$0980</code> (143 Hz) with no wave of its own, heard only through the ring modulation. At the end <code>$B910</code> reloads the whole SID, which stops the hum. In a transporter booth the chime follows: square waves at <code>$0E80</code> and <code>$0F80</code>, 218 and 233 Hz, which beat against each other 15 times a second as they swell for a second and fade.</p>
+  <p>The opening plays the Novadrive on voice 2. Sound <code>$28</code> sets up noise with a three-second attack and leaves the gate closed. NOVADRIVE ENGAGED sets the mode that opens it on every pass (<code>$741C</code>), and the slow-down closes it (<code>$7439</code>, a three-second release). Sound <code>$2C</code> then retunes the noise lower and stretches its fade to 24 seconds. At UNABLE TO CORRECT the opening's script pokes <code>$81</code> into <code>$D40B</code> itself (operation 25 at <code>$7194</code>), and the rumble of the fall fades until the landing, where the engine's code sets its pitch to zero.</p>
+  <h3>The engine</h3>
+  <div class="plate">
+    <div class="eng-ctl">
+      <button type="button" id="eng-play" aria-pressed="false">Play the engine</button>
+      <label for="eng-speed">Speed</label>
+      <input type="range" id="eng-speed" min="-3840" max="3840" step="1" value="2825" aria-describedby="eng-regs">
+    </div>
+    <div class="eng-presets" id="eng-presets">
+      <button type="button" data-p="0">Stopped</button>
+      <button type="button" data-p="-865">Reversing, SPEED −4</button>
+      <button type="button" data-p="-1057">Reversing, SPEED −7</button>
+      <button type="button" data-p="865">SPEED 4</button>
+      <button type="button" data-p="2825">The car flat out, 825</button>
+      <button type="button" data-p="3469">The Dart flat out, 4950</button>
+    </div>
+    <canvas id="eng-chart" class="eng-chart" role="img" aria-label="The engine's sustain level at every speed, reversing on the left and forward on the right; the current speed is marked"></canvas>
+    <div class="eng-regs" id="eng-regs" aria-live="polite"></div>
+    <p class="cap">The slider sets the speed as the game holds it, a two-byte float: <code>$27</code>, the exponent with the sign in bit 0, and <code>$26</code>, the mantissa. The page computes the engine's two registers the way <code>$B5D8</code> does, and a test that runs the game's own code in the simulator on every value of the two bytes, from eight different last levels, gets the same writes. The bars are the sustain level at each speed; the red band is the one where reversing is silent.</p>
+    <p class="snd-need" hidden></p>
+  </div>
+  <p>On the surface, and not during the opening's descent, the panel's routine sets the engine note once a pass (<code>$B5D8</code>-<code>$B61C</code>). Voice 2 plays noise. The sustain level is the speed's power of two less 3, and at least 1, so from 32 units a pass the engine gets one step louder each time the speed doubles. The frequency's high byte takes the level in its top four bits and the top four bits of the speed's mantissa below them: the pitch climbs in 16 steps through each doubling and then jumps. When the level rises the game starts sound <code>$24</code> again, since the SID's envelope only falls to a new sustain level by itself. When the level falls, a write to <code>$D40D</code> is enough.</p>
+  <p>Below a speed of 1 the sustain and release byte is 0 and the engine is silent. The other silence comes from the arithmetic. The level is the speed's exponent byte less <code>$0C</code>, and bit 0 of that byte is the sign. Going forward at 8 to 16 units a pass the byte is <code>$0C</code>, the difference is 0, and the code replaces it with the minimum, level 1. Reversing at the same speeds the byte is <code>$0D</code> and the difference is 1, which the code keeps: shifted into place it becomes <code>$0C</code>, sustain 0 and a three-second release. The engine falls silent between −8 and −16, SPEED −3 to −5 on the panel, and comes back at −16.</p>
+</section>
+
 <section id="benson-store">
-  <p class="fig">14 · How a message is stored</p>
+  <p class="fig">15 · How a message is stored</p>
   <h2 class="t">How a message is stored</h2>
   <p class="lede">A message is a list of one-byte tokens, most of them numbers of words in a dictionary.</p>
   <div class="plate benson-plate">
@@ -980,7 +1044,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-scripts">
-  <p class="fig">15 · The event scripts</p>
+  <p class="fig">16 · The event scripts</p>
   <h2 class="t">The event scripts</h2>
   <p class="lede">What Benson says, and when, comes from 51 scripts in a small byte code, run one operation per pass of the main loop.</p>
   <div class="plate benson-plate">
@@ -996,7 +1060,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="benson-money">
-  <p class="fig">16 · Money in BCD</p>
+  <p class="fig">17 · Money in BCD</p>
   <h2 class="t">Money in BCD, and a purchase without subtraction</h2>
   <p class="lede">The credits are eight decimal digits in four bytes, and the scripts have no way to subtract: a purchase adds the price's ten's complement.</p>
   <div class="plate benson-plate">
@@ -1022,7 +1086,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="math-numbers">
-  <p class="fig">17 · Numbers</p>
+  <p class="fig">18 · Numbers</p>
   <h2 class="t">Two-byte numbers, multiplied by adding logarithms</h2>
   <p class="lede">The 3D view works in two-byte floats, a mantissa and a power of two, and multiplies two of them by adding their logarithms from a 256-byte table.</p>
   <div class="plate math-calc">
@@ -1072,7 +1136,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="math-lines">
-  <p class="fig">18 · Lines</p>
+  <p class="fig">19 · Lines</p>
   <h2 class="t">Drawing a line: eight routines, one per octant</h2>
   <p class="lede">Each edge in the view is drawn by one of eight short routines that step along the longer axis, add a slope byte to an 8-bit counter (or subtract it), and step sideways whenever the counter wraps.</p>
   <div class="plate math-lineplate">
@@ -1115,7 +1179,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="keys">
-  <p class="fig">19 · Controls</p>
+  <p class="fig">20 · Controls</p>
   <h2 class="t">The keys, as the game reads them</h2>
   <p class="lede">The game scans the keyboard itself and turns each key into a number, row × 8 + column, with 64 added for SHIFT and 128 for CTRL. The joystick goes in port 2.</p>
   <div class="plate tablewrap">
@@ -1141,7 +1205,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="opening">
-  <p class="fig">20 · The opening</p>
+  <p class="fig">21 · The opening</p>
   <h2 class="t">The opening: a countdown, then a crash</h2>
   <p class="lede">The game opens in space, runs its own event script through a failing Novadrive, and drops you in the middle of the city with 9000 credits.</p>
   <div class="plate">
@@ -1158,7 +1222,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="reset">
-  <p class="fig">21 · Protection</p>
+  <p class="fig">22 · Protection</p>
   <h2 class="t">The reset button hangs the original</h2>
   <p class="lede">Novagen's disk makes the game look like a cartridge, so that pressing reset runs one of the game's own loops instead of handing the machine back.</p>
   <div class="plate">
@@ -1181,7 +1245,7 @@ $217C  JMP $2170</pre>
 </section>
 
 <section id="odd">
-  <p class="fig">22 · Odds and ends</p>
+  <p class="fig">23 · Odds and ends</p>
   <h2 class="t">Things a pilot would not know</h2>
   <p class="lede">Small things found in the code and checked in the emulator.</p>
   <div class="plate">
@@ -5839,6 +5903,369 @@ window.MERC_GAME.catch(() => {});
     });
     $('benson-reset').onclick = () => { cIn.value = state.start; sold.clear(); refreshSales(); note.textContent = ''; draw(); };
     draw();
+  }
+})();
+</script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* sound */
+/* Sound (section 14): the sound effects and the engine through the site's model of the SID
+   (../../lib/sid.js), from the game's own bytes in listing.json.
+
+   createSfxDriver(D) is the driver sid.js calls once a frame. It refers to nothing outside itself,
+   since sid.js runs its source text in an AudioWorklet. D holds bytes read from the game: the
+   SID's start values (init, $B921), the sound table (tbl, $B987), the lift's steps (steps, $BB89)
+   and hum pitches (pitch, $BBA5), and the wipes' two blocks (wipe, $AF52); tunes lists what each
+   button plays. A tune is a list of frames, each the register writes the game makes in that
+   frame, in order. A test (work/tests/test-sound.js) runs the game's own code in
+   kit/c64/machine.js and compares its writes with these, frame by frame. */
+function createSfxDriver(D) {
+  'use strict';
+  const FPS = 985248 / 19656;
+  const ATTACK = [2, 8, 16, 24, 38, 56, 68, 80, 100, 250, 500, 800, 1000, 3000, 5000, 8000];
+  const DECAY = [6, 24, 48, 72, 114, 168, 204, 240, 300, 750, 1500, 2400, 3000, 9000, 15000, 24000];
+  const hex = n => '$' + n.toString(16).toUpperCase().padStart(2, '0');
+  const sid = new Uint8Array(25), label = ['', '', ''];
+  let seq = [], at = 0, on = false;
+  const frame = k => { while (seq.length <= k) seq.push({ w: [], l: [] }); return seq[k]; };
+  const put = (k, r, v) => frame(k).w.push(r, v);
+  const say = (k, x, s) => frame(k).l.push(x, s);
+  const frames = ms => Math.ceil(ms / 1000 * FPS);
+  // $B910 sid_init: $D418 down to $D400 from $B921. Voice 3 is Benson's tick (section 13) and is
+  // left out: $B910 gates it on at frequency 0, which is silent.
+  function sidInit(k) {
+    for (let r = 0x18; r >= 0; r--) if (r < 0x0E || r > 0x14) put(k, r, D.init[r]);
+    say(k, 0, ''); say(k, 1, '');
+  }
+  // $B961: sound n on the voice whose registers start at v (0 or 7): gate off, frequency high,
+  // attack/decay, sustain/release, control.
+  function sound(k, n, v) {
+    put(k, v + 4, 0); put(k, v + 1, D.tbl[n]); put(k, v + 5, D.tbl[n + 1]); put(k, v + 6, D.tbl[n + 2]); put(k, v + 4, D.tbl[n + 3]);
+    say(k, v / 7, hex(n) + ', ' + D.names[n >> 2]);
+  }
+  // A sound with sustain 0 is over when attack and decay have run.
+  const fades = n => frames(ATTACK[D.tbl[n + 1] >> 4] + DECAY[D.tbl[n + 1] & 15]);
+  // $AF3E wipe_hum_low (y = $0D) and $AF3A wipe_hum_high (y = $1B): $D40D down to $D401 from
+  // $AF52 + y downwards, then $D40B := $15, voice 2's triangle ring-modulated by voice 1.
+  function wipeHum(k, y, what) {
+    for (let x = 0x0D; x > 0; x--, y--) put(k, x, D.wipe[y]);
+    put(k, 0x0B, 0x15);
+    say(k, 1, 'the wipe\'s hum, ' + what); say(k, 0, 'the ring modulator, no wave');
+  }
+  const BUILD = {
+    one(t) { sidInit(0); sound(0, t.n, t.v); return fades(t.n) + 5; },
+    // $AEF3 wipe_open, walking through a door: the low hum while the band rises 4 lines a frame,
+    // the high hum for 22 frames, then $AED3 wipe_finish: $B910, and in a booth the chime. The
+    // waits count the panel's interrupts, and the first comes in the frame the wipe starts: 34
+    // counts of the band are 33 frames.
+    door(t) {
+      sidInit(0); wipeHum(0, 0x0D, 'low');
+      wipeHum(33, 0x1B, 'high');
+      sidInit(55);
+      if (!t.booth) return 55 + 10;
+      sound(55, 0x1C, 0); sound(55, 0x20, 7);
+      return 55 + fades(0x1C) + 5;
+    },
+    // $AE96 wipe_close, backing through a door: the low hum held 30 frames, the high one while the
+    // band comes down 6 lines a frame (22 frames), then wipe_finish.
+    back() { sidInit(0); wipeHum(0, 0x0D, 'low'); wipeHum(30, 0x1B, 'high'); sidInit(52); return 52 + 10; },
+    // E underground ($B45D): the key beep and sound $30; then the panel's interrupt, every frame,
+    // $BADD elevator_ride_up: the pitch from $BBA5 and the step from $BB89 at 2 x stage + (step
+    // >= $42); the step past $84 starts the next stage, and stage 14 closes the gate ($BB2F).
+    lift() {
+      sidInit(0); sound(0, 0x00, 0); sound(0, 0x30, 7);
+      let stage = 0, step = 0x42, k = 1;
+      for (;; k++) {
+        const i = 2 * stage + (step >= 0x42 ? 1 : 0);
+        put(k, 0x08, D.pitch[i]);
+        step = (step + D.steps[i]) & 255;
+        if (step < 0x84) continue;
+        step = 0;
+        if (++stage === 14) { put(k, 0x0B, 0); break; }
+      }
+      return k + 10;
+    },
+    // The opening, from 1 s before NOVADRIVE ENGAGED: the frames are the game's, counted from $7200
+    // (D.opening), less the frame this tune starts at.
+    opening(t) {
+      const o = D.opening, k0 = o.from;
+      sidInit(0); sound(0, 0x28, 7);
+      for (const [f, what] of o.events) {
+        const k = f - k0;
+        if (what === 'on') put(k, 0x0B, 0x81);
+        else if (what === 'off') put(k, 0x0B, 0x80);
+        else if (what === 'fall') sound(k, 0x2C, 7);
+        else if (what === 'land') { put(k, 0x08, 0); put(k, 0x0D, 0); say(k, 1, hex(0x2C) + ', its pitch set to 0 at the landing'); }
+      }
+      return o.events[o.events.length - 1][0] - k0 + 25;
+    },
+  };
+  const d = {
+    sid, writes: [],
+    init(t) {
+      seq = []; at = 0; on = true;
+      const T = D.tunes[t];
+      const n = BUILD[T.kind](T);
+      frame(n);
+    },
+    stop() { seq = [{ w: [0x04, 0, 0x0B, 0], l: [] }]; at = 0; on = true; },
+    play() {
+      const f = at < seq.length ? seq[at++] : null;
+      d.writes = f ? f.w : [];
+      if (f) {
+        for (let i = 0; i + 1 < f.w.length; i += 2) sid[f.w[i]] = f.w[i + 1];
+        for (let i = 0; i + 1 < f.l.length; i += 2) label[f.l[i]] = f.l[i + 1];
+      }
+      if (at >= seq.length) on = false;
+    },
+    playing: () => on,
+    voice: x => ({ sound: label[x] }),
+  };
+  return d;
+}
+
+// The engine: a driver that plays the writes the page sends it, a frame each.
+function createEngineDriver() {
+  'use strict';
+  const sid = new Uint8Array(25), queue = [];
+  const d = { sid, writes: [], playing: () => true, stop() {},
+    init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); },
+    play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
+  return d;
+}
+
+// $B5D8-$B61C, the engine: from the speed's exponent byte $27 and mantissa $26, and the sustain
+// and release byte of the last pass (snd_engine_sr, $B9AD), voice 2's frequency high byte and
+// sustain/release, and the writes: $D408, then $D40D if the byte changed, and sound $24 started
+// again ($B61A) if it rose. tbl24 is the table's $24 entry (frequency, AD, SR, control).
+function engineStep(ex, m, old, tbl24) {
+  let a;
+  if (ex & 0x80) a = 0;                                // below 1: SR 0
+  else {
+    a = (ex - 0x0C) & 0xFF;                            // 4 x (power - 3) + the sign bit
+    if (a === 0 || (a & 0x80)) a = 4;                  // at least level 1
+    a = ((a << 2) | 0x08) & 0xFF;
+  }
+  const f = (m >> 4) | (a & 0xF0);
+  const w = [0x08, f];
+  let did = 'same';
+  if (a !== old) {
+    w.push(0x0D, a);
+    did = a > old ? 'rose' : 'fell';
+    if (a > old) w.push(0x0B, 0, 0x08, f, 0x0C, tbl24[1], 0x0D, a, 0x0B, tbl24[3]);
+  }
+  return { sr: a, fhi: f, w, did };
+}
+
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const root = $('snd-player');
+  if (!root) return;
+  const plates = document.querySelectorAll('#sound .snd-need');
+  const need = msg => plates.forEach(p => { p.textContent = msg; p.hidden = false; });
+  const S = window.C64Sid;
+  const hx = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+  const HZ = 985248 / 16777216;
+  const ATTACK = [2, 8, 16, 24, 38, 56, 68, 80, 100, 250, 500, 800, 1000, 3000, 5000, 8000];
+  const DECAY = [6, 24, 48, 72, 114, 168, 204, 240, 300, 750, 1500, 2400, 3000, 9000, 15000, 24000];
+  const ms = t => t < 1000 ? t + ' ms' : (t / 1000).toLocaleString('en-GB') + ' s';
+  const hz = f => (f * HZ).toLocaleString('en-GB', { maximumFractionDigits: f * HZ < 100 ? 1 : 0 }) + ' Hz';
+  function wave(c) {
+    const w = [];
+    if (c & 0x10) w.push('triangle'); if (c & 0x20) w.push('sawtooth'); if (c & 0x40) w.push('pulse'); if (c & 0x80) w.push('noise');
+    let s = w.length ? w.join(' + ') : 'no wave';
+    if (c & 0x04) s += ', ring-modulated';
+    return s + (c & 1 ? ', gate open' : ', gate closed');
+  }
+  const envText = (ad, sr) => ms(ATTACK[ad >> 4]) + ', ' + ms(DECAY[ad & 15]) + ', ' + (sr >> 4) + ', ' + ms(DECAY[sr & 15]);
+
+  // What plays each of the thirteen, and where (facts.md, "Sound")
+  const NAMES = ['key beep', 'building destroyed', 'missile launched', 'hit by a missile', 'ship hit',
+    'wall', 'crash or hit', 'transporter chime', 'transporter chime', 'engine', 'the Novadrive',
+    'the fall', 'the lift\'s hum'];
+  const WHO = [
+    ['The key beep, for most keys', ['$B94D'], 1],
+    ['A building destroyed', ['$876E'], 1],
+    ['A missile launched, yours or the attacker\'s', ['$8882', '$8947'], 1],
+    ['The attacker\'s missile hits you', ['$8983'], 1],
+    ['Your missile hits a ship', ['$884B'], 1],
+    ['Walking into a wall', ['$9413'], 1],
+    ['A crash, or the white flash of a hit', ['$B24D'], 1],
+    ['The transporter chime, voice 1', ['$AEDC'], 1],
+    ['The transporter chime, voice 2', ['$AEE1'], 2],
+    ['The engine; two of its bytes are rewritten every pass (below)', ['$B61A'], 2],
+    ['The opening: the Novadrive, gate closed', ['$72F0'], 2],
+    ['The opening: the fall, gate closed', ['$7469'], 2],
+    ['The lift\'s hum, its pitch set every frame', ['$B478'], 2],
+  ];
+  const TUNES = [
+    ['Key beep', { kind: 'one', n: 0x00, v: 0 }],
+    ['Missile', { kind: 'one', n: 0x08, v: 0 }],
+    ['Your missile hits', { kind: 'one', n: 0x10, v: 0 }],
+    ['Hit by a missile', { kind: 'one', n: 0x0C, v: 0 }],
+    ['Crash', { kind: 'one', n: 0x18, v: 0 }],
+    ['Building destroyed', { kind: 'one', n: 0x04, v: 0 }],
+    ['Into a wall', { kind: 'one', n: 0x14, v: 0 }],
+    ['Lift, a ride up', { kind: 'lift' }],
+    ['Door', { kind: 'door' }],
+    ['Door, backing out', { kind: 'back' }],
+    ['Transporter booth', { kind: 'door', booth: true }],
+    ['The opening', { kind: 'opening' }],
+  ];
+  // The opening's writes to voice 2, in frames from $7200, from the game's code in the kit's
+  // simulator: $28 at frame 2 (gate closed), the gate opened at NOVADRIVE ENGAGED ($741C) and
+  // closed for the slow-down ($7439), $2C, the script's poke of $81 into $D40B ($7194), and the
+  // landing's $D408 = 0 and $D40D = 0 ($B607, $B613). The tune starts 50 frames before the gate.
+  const OPENING = { from: 285, events: [[335, 'on'], [2006, 'off'], [2092, 'fall'], [2327, 'on'], [3669, 'land']] };
+
+  if (!S) { need('The sound needs the site\'s shared script, ../../lib/sid.js: open this page from the built site.'); return; }
+  (window.MERC_GAME || Promise.reject(new Error('no listing'))).then(G => {
+    const ram = G.ram, bytes = (a, n) => Array.from(ram.subarray(a, a + n));
+    const D = { init: bytes(0xB921, 25), tbl: bytes(0xB987, 52), steps: bytes(0xBB89, 28), pitch: bytes(0xBBA5, 28),
+      wipe: bytes(0xAF52, 28), names: NAMES, tunes: TUNES.map(t => t[1]), opening: OPENING };
+    fillTable(D);
+    S.mount(root, {
+      driver: createSfxDriver, data: D, tunes: TUNES.map(t => t[0]), gain: 0.5,
+      rows: [
+        { k: 'Sound', f: v => v.sound || '-' },
+        { k: 'Wave', f: v => wave(v.ctrl) },
+        { k: 'A, D, S, R', f: v => envText(v.ad, v.sr) },
+      ],
+    });
+    engine(ram, D);
+  }, () => need('The sound reads the game\'s bytes from listing.json, which the built site serves: open the page from the site, not from disk.'));
+
+  function fillTable(D) {
+    const code = a => '<code>' + a + '</code>';
+    const rows = [];
+    for (let n = 0; n < 52; n += 4) {
+      const [fh, ad, sr, c] = D.tbl.slice(n, n + 4), [who, where, v] = WHO[n >> 2];
+      const f = fh << 8 | D.init[(v - 1) * 7];
+      const freq = n === 0x30 ? hx(fh) + ', set by the ride' : n === 0x24 ? 'from the speed' : hx(f, 4) + ', ' + hz(f);
+      rows.push('<tr><td>' + code(hx(n)) + '</td><td>' + who + ' (' + where.map(code).join(', ') + ')</td><td>' + v + '</td><td>' +
+        D.tbl.slice(n, n + 4).map(b => hx(b).slice(1)).join(' ') + '</td><td>' + wave(c).replace(', gate open', '') + '</td><td>' + freq + '</td><td>' +
+        (n === 0x24 ? ms(ATTACK[ad >> 4]) + ', ' + ms(DECAY[ad & 15]) + ', from the speed' : envText(ad, sr)) + '</td></tr>');
+    }
+    $('snd-tbl').innerHTML = rows.join('');
+  }
+
+  // ---- the engine -------------------------------------------------------------------------------
+  function engine(ram, D) {
+    const slider = $('eng-speed'), chart = $('eng-chart'), regs = $('eng-regs'), btn = $('eng-play');
+    const tbl24 = D.tbl.slice(0x24, 0x28);
+    const MAX = 3840;
+    // Position p on the slider: 0 is stopped ($27 = $80, 2^-32: the stop's settled speed); else
+    // 256 steps a doubling from 1 to 2^15, the sign in bit 0 of the exponent byte.
+    function fp(p) {
+      if (!p) return { ex: 0x80, m: 0, e: -32, s: 0 };
+      const q = Math.abs(p) - 1, e = q >> 8, m = q & 255, s = p < 0 ? 1 : 0;
+      return { ex: (e << 2) | s, m, e, s };
+    }
+    const value = f => (1 + f.m / 256) * Math.pow(2, f.e);
+    // SPEED on the panel ($B5A8): |speed| as 16 bits, the high byte as two digits, then the low
+    // byte x 25/64 as two more, each through the binary-to-BCD table at $803A ($A: '*').
+    function panelSpeed(f) {
+      const q = f.e < 0 ? 0 : f.e >= 8 ? (256 + f.m) << (f.e - 8) : (256 + f.m) >> (8 - f.e);
+      const hi = q >> 8, lo = q & 255, t = ((((lo >> 3) + lo) >> 1) + lo) >> 2;
+      const dig = b => [b >> 4, b & 15].map(n => n > 9 ? '*' : String(n)).join('');
+      return (f.s ? '−' : '+') + dig(ram[0x803A + hi]) + dig(ram[0x803A + t]);
+    }
+    let pos = +slider.value, old = 0, host = null, playing = false, last = null;
+    const INIT = []; for (let r = 0x18; r >= 0; r--) if (r < 0x0E || r > 0x14) INIT.push(r, D.init[r]);
+
+    function show() {
+      const f = fp(pos), r = last && last.pos === pos ? last.r : engineStep(f.ex, f.m, old, tbl24);
+      const speed = f.e < 0 ? 'below 1' : (f.s ? '−' : '+') + value(f).toLocaleString('en-GB', { maximumFractionDigits: 2 });
+      const level = r.sr >> 4, silent = level === 0;
+      const why = !silent ? '' : f.ex & 0x80 ? ': below a speed of 1' : ': reversing between −8 and −16';
+      const full = r.fhi << 8 | D.init[7];
+      const did = !playing ? 'press Play the engine to hear it' : r.did === 'rose' ? 'the level rose: sound $24 started again' : r.did === 'fell' ? 'the level fell: $D40D rewritten' : 'the same level: $D408 only';
+      regs.innerHTML = '<table>' +
+        '<tr><td>Speed</td><td>' + speed + '</td><td>units a pass; SPEED ' + panelSpeed(f) + ' on the panel</td></tr>' +
+        '<tr><td>$27 $26</td><td>' + hx(f.ex) + ' ' + hx(f.m) + '</td><td>' + (f.e < 0 ? '2^' + f.e + ', the stop' : '(1 + ' + f.m + '/256) × 2^' + f.e + (f.s ? ', reversing' : ', forward')) + '</td></tr>' +
+        '<tr' + (silent ? ' class="eng-quiet"' : '') + '><td>$D40D</td><td>' + hx(r.sr) + '</td><td>sustain level ' + level + ' of 15, release ' + ms(DECAY[r.sr & 15]) + (silent ? '. Silent' + why : '') + '</td></tr>' +
+        '<tr><td>$D408</td><td>' + hx(r.fhi) + '</td><td>the frequency ' + hx(full, 4) + ', noise at ' + hz(full) + '</td></tr>' +
+        '<tr><td>This pass</td><td></td><td>' + did + '</td></tr></table>';
+      draw();
+    }
+    function set(p, send) {
+      pos = Math.max(-MAX, Math.min(MAX, Math.round(p)));
+      slider.value = String(pos);
+      const f = fp(pos), r = engineStep(f.ex, f.m, old, tbl24);
+      last = { pos, r };
+      if (playing && host) { host.send({ cmd: 'start', tune: { frames: [r.w] } }); old = r.sr; }
+      else if (send !== false) old = r.sr;
+      show();
+    }
+
+    function draw() {
+      const dpr = window.devicePixelRatio || 1, W = chart.clientWidth, H = chart.clientHeight;
+      if (!W || !H) return;
+      if (chart.width !== Math.round(W * dpr) || chart.height !== Math.round(H * dpr)) { chart.width = Math.round(W * dpr); chart.height = Math.round(H * dpr); }
+      const g = chart.getContext('2d');
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, W, H);
+      const top = 10, bot = H - 22, xOf = p => (p + MAX) / (2 * MAX) * W, pOf = x => x / W * 2 * MAX - MAX;
+      const css = getComputedStyle(document.documentElement);
+      const ink = css.getPropertyValue('--ink-mute').trim() || '#80838a', accent = css.getPropertyValue('--violet').trim() || '#4a5bd6';
+      const coral = css.getPropertyValue('--coral').trim() || '#d04a3a';
+      // the silent reversing band: exponent byte $0D, positions -769 to -1024
+      g.fillStyle = coral; g.globalAlpha = 0.14;
+      g.fillRect(xOf(-1024), top, xOf(-768) - xOf(-1024), bot - top);
+      g.globalAlpha = 1;
+      // bars: the sustain level at each pixel's speed
+      g.fillStyle = accent;
+      g.beginPath();
+      for (let x = 0; x < W; x++) {
+        const f = fp(Math.round(pOf(x + 0.5))), r = engineStep(f.ex, f.m, 0, tbl24), l = r.sr >> 4;
+        if (l) g.rect(x, bot - l / 15 * (bot - top), 1, l / 15 * (bot - top));
+      }
+      g.fill();
+      // axis: 16, 256 and 4096 units a pass each way
+      g.fillStyle = ink; g.font = '11px ' + (css.getPropertyValue('--fm').trim() || 'monospace'); g.textAlign = 'center';
+      g.fillRect(0, bot, W, 1);
+      for (const k of [4, 8, 12]) for (const s of [-1, 1]) {
+        const x = xOf(s * (1 + k * 256));
+        g.fillRect(x, bot, 1, 4);
+        g.fillText((s < 0 ? '−' : '') + Math.pow(2, k), x, H - 6);
+      }
+      g.fillText('0', xOf(0), H - 6);
+      // the slider's speed
+      const x = xOf(pos);
+      g.fillStyle = css.getPropertyValue('--ink').trim() || '#2f3136';
+      g.fillRect(Math.round(x) - 1, top - 6, 2, bot - top + 6);
+      g.textAlign = 'left';
+      g.fillStyle = accent; g.fillText('sustain level, 0-15', 6, top + 8);
+    }
+
+    slider.addEventListener('input', () => set(+slider.value));
+    $('eng-presets').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (b) set(+b.dataset.p); });
+    let drag = false;
+    const fromChart = e => { const r = chart.getBoundingClientRect(); set((e.clientX - r.left) / r.width * 2 * MAX - MAX); };
+    chart.addEventListener('pointerdown', e => { drag = true; chart.setPointerCapture(e.pointerId); fromChart(e); });
+    chart.addEventListener('pointermove', e => { if (drag) fromChart(e); });
+    chart.addEventListener('pointerup', () => { drag = false; });
+    btn.addEventListener('click', async () => {
+      if (!playing) {
+        try {
+          if (!host) host = await S.host({ driver: createEngineDriver, data: null, gain: 0.5 });
+          host.ctx.resume();
+        } catch (e) { need('No sound: ' + e.message); return; }
+        playing = true; old = 0;                       // the engine starts from silence
+        const f = fp(pos), r = engineStep(f.ex, f.m, old, tbl24);
+        host.send({ cmd: 'start', tune: { frames: [INIT.concat(r.w)] } });
+        old = r.sr; last = { pos, r };
+      } else {
+        playing = false;
+        if (host) host.send({ cmd: 'start', tune: { frames: [[0x0B, 0]] } });
+      }
+      btn.setAttribute('aria-pressed', String(playing));
+      btn.textContent = playing ? 'Stop the engine' : 'Play the engine';
+      show();
+    });
+    window.addEventListener('resize', draw);
+    set(pos, false);
   }
 })();
 </script>

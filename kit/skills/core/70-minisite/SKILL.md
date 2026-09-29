@@ -78,7 +78,10 @@ address links into the Source tab, and the house style in `kit/style.md`.
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver
    read. The script's header gives the driver's contract and what the
-   model leaves out.
+   model leaves out. Say beside a sound below about 100 Hz that laptop
+   and phone speakers barely play it: a reader who hears nothing reports
+   it missing. Before believing such a report, render the writes through
+   the model (`C64Sid.engine()` in node) and measure the output.
 - **Secrets, quirks and bugs.** The best part. Things a player who
    finished the game would not know, each verified live, with the
    evidence beside it. One kind deserves a special look: a state the code

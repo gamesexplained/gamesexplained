@@ -39,7 +39,7 @@ Usage: edit.py [--port N]   serve on N, or on 8000 or the next free port after i
 No dependencies.
 """
 import functools, glob, hashlib, html, http.server, json, os, re, secrets, socket, subprocess, sys, threading, time
-import urllib.parse, urllib.request
+import concurrent.futures, urllib.parse, urllib.request
 from html.parser import HTMLParser
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -833,26 +833,56 @@ def selftest():
     comes back byte for byte; a cut takes exactly its blocks; a section moved up and back
     is where it was; and after each edit every other block is where the renumbering says,
     start tag and all. The page the editor serves is the published page but for its tags,
-    and a hidden section leaves the list of sections in the margin. Nothing is written."""
-    fails = pages = tried = 0
+    and a hidden section leaves the list of sections in the margin. Nothing is written.
+    Every edit is checked on a fresh parse of the whole page, so the work goes to a process
+    per core: each page's blocks in parts of about 25, the biggest pages first."""
+    pages, jobs = [], []
     for path in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.html"))):
         if os.path.basename(path) not in build.AUTHORED:
             continue
-        name, src, pages = os.path.relpath(path, ROOT), read(path), pages + 1
-        B, bad = blocks(src), []
-        M = meta(src, B)
-        start = lambda s, e: s[e["s"]:e["i"]]
+        src = read(path)
+        B = blocks(src)
+        parts = max(1, -(-len(B) // 25))
+        pages.append((path, parts, len(B), meta(src, B)))
+        jobs += [(len(src) * len(B) // parts, path, k, parts) for k in range(parts)]
+    jobs.sort(reverse=True)   # the longest first, so that no core is left finishing one alone
+    with concurrent.futures.ProcessPoolExecutor() as pool:
+        runs = [pool.submit(trial, path, k, parts) for _, path, k, parts in jobs]
+        got = {(j[1], j[2]): r.result() for j, r in zip(jobs, runs)}
+    fails = tried = 0
+    for path, parts, n, M in pages:
+        name = os.path.relpath(path, ROOT)
+        bad = sorted((b for k in range(parts) for b in got[path, k][0]), key=lambda b: b[0])
+        tried += sum(got[path, k][1] for k in range(parts))
+        for _, b in bad:
+            print(f"  x  {name}: {b}")
+        fails += len(bad)
+        if not bad:
+            print(f"  ok {name}: {n} blocks, {sum(1 for m in M if m.get('edit'))} editable, "
+                  f"{sum(1 for m in M if m.get('cut'))} can go")
+    print(f"\n{'FAILED - ' + str(fails) + ' problem(s)' if fails else 'OK'}: {tried} edits tried on {len(pages)} pages")
+    return 1 if fails else 0
 
-        def lands(new, remap, keep):
-            """Every block in keep is at its renumbered place in new, start tag and all."""
-            B2 = blocks(new)
-            return all(0 <= remapped(k, remap) < len(B2) and start(new, B2[remapped(k, remap)]) == start(src, B[k])
-                       for k in keep)
 
+def trial(path, part, parts):
+    """One process's share of the self-test on one page: the checks on the page as a whole
+    with part 0, and every parts-th block from block `part`. Returns the problems, each as
+    (block, what), -1 for the page's own, and the number of edits tried."""
+    src = read(path)
+    B, bad, tried = blocks(src), [], 0
+    M = meta(src, B)
+    start = lambda s, e: s[e["s"]:e["i"]]
+
+    def lands(new, B2, remap, keep):
+        """Every block in keep is at its renumbered place in new, parsed as B2, start tag and all."""
+        return all(0 <= remapped(k, remap) < len(B2) and start(new, B2[remapped(k, remap)]) == start(src, B[k])
+                   for k in keep)
+
+    if part == 0:
         if re.sub(r' data-ge="\d+"', "", tag(src, B)) != src:
-            bad.append("tagging moved a byte")
+            bad.append((-1, "tagging moved a byte"))
         if re.sub(r' data-ge="\d+"', "", assemble(path, tag(src, B))) != assemble(path, src):
-            bad.append("the editor's page is not the published page but for its tags")
+            bad.append((-1, "the editor's page is not the published page but for its tags"))
         listed = section_list(path, src).count("<li>")
         for e in B:   # hide each top-level section in turn: the list loses its entries, and goes below two
             up = e["parent"]
@@ -867,67 +897,67 @@ def selftest():
             at = e["i"] - 1 - (src[e["i"] - 2] == "/")
             shown = section_list(path, src[:at] + " data-cut hidden" + src[at:]).count("<li>")
             if shown != want:
-                bad.append(f"line {e['line']}: with the section hidden the list has {shown} entries, not {want}")
-        for n, e in enumerate(B):
-            where, rest = f"line {e['line']}", [k for k in range(len(B)) if k != n]
-            try:
-                if M[n].get("edit"):
-                    tried += 1
-                    inner = src[e["i"]:e["ie"]]
-                    if op_save(src, B, n, {"inner": inner})[0] != src:
-                        bad.append(f"{where}: saving a block unchanged changed the page")
-                    if e["tag"] in ("p", "li"):
-                        two, x = op_split(src, B, n, {"parts": [inner, "x"]})
-                        B2 = blocks(two)
-                        if not lands(two, x["remap"], range(len(B))) or start(two, B2[n + 1]).replace(" ", "") != \
-                                re.sub(r"""\s+id\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)""", "", start(src, e)).replace(" ", ""):
-                            bad.append(f"{where}: a split put blocks in the wrong places")
-                        if op_join(two, B2, n + 1, {"inner": inner})[0] != src:
-                            bad.append(f"{where}: a split and a join did not cancel out")
-                if M[n].get("hidden"):   # hidden already: it comes back, and hides again, with every other block in place
-                    tried += 1
-                    back = op_restore(src, B, n, {})[0]
-                    again, x = op_cut(back, blocks(back), n, {})
-                    if "data-cut" in blocks(back)[n]["attrs"] or not lands(back, [], rest) or \
-                            x["mode"] == "hide" and ("data-cut" not in blocks(again)[n]["attrs"] or not lands(again, [], rest)):
-                        bad.append(f"{where}: restoring a hidden block and hiding it again moved blocks")
-                elif M[n].get("cut"):
-                    tried += 1
-                    new, x = op_cut(src, B, n, {})
-                    if x["mode"] == "hide":
-                        if M[n]["cut"] != "hide" or not lands(new, [], rest):
-                            bad.append(f"{where}: hiding moved other blocks")
-                        if op_restore(new, blocks(new), n, {})[0] != src:
-                            bad.append(f"{where}: hiding and restoring moved a byte")
-                    else:
-                        m = sum(1 for y in B[n:] if y["s"] < e["e"])
-                        if not lands(new, x["remap"], [k for k in range(len(B)) if not n <= k < n + m]) or \
-                                len(blocks(new)) != len(B) - m:
-                            bad.append(f"{where}: a cut took the wrong blocks")
-                if e["tag"] == "section":
-                    try:
-                        up, x = op_move(src, B, n, {"dir": -1})
-                    except Refused:
-                        continue
-                    tried += 1
-                    if not lands(up, x["remap"], range(len(B))):
-                        bad.append(f"{where}: a move put blocks in the wrong places")
-                    a0 = x["pair"][0]
-                    kids = [k for k in e["parent"]["kids"] if "e" in k]
-                    if kids[next(j for j, k in enumerate(kids) if k is e) - 1] is B[a0]:   # neighbours: moving back undoes it
-                        back, _ = op_move(up, blocks(up), remapped(a0, x["remap"]), {"dir": -1})
-                        if back != src:
-                            bad.append(f"{where}: moving a section up and back moved a byte")
-            except Refused as r:
-                bad.append(f"{where}: refused: {r}")
-        for b in bad:
-            print(f"  x  {name}: {b}")
-        fails += len(bad)
-        if not bad:
-            print(f"  ok {name}: {len(B)} blocks, {sum(1 for m in M if m.get('edit'))} editable, "
-                  f"{sum(1 for m in M if m.get('cut'))} can go")
-    print(f"\n{'FAILED - ' + str(fails) + ' problem(s)' if fails else 'OK'}: {tried} edits tried on {pages} pages")
-    return 1 if fails else 0
+                bad.append((-1, f"line {e['line']}: with the section hidden the list has {shown} entries, not {want}"))
+    for n in range(part, len(B), parts):   # each edit's page is parsed once, and every check on it reads that parse
+        e = B[n]
+        where, rest = f"line {e['line']}", [k for k in range(len(B)) if k != n]
+        try:
+            if M[n].get("edit"):
+                tried += 1
+                inner = src[e["i"]:e["ie"]]
+                if op_save(src, B, n, {"inner": inner})[0] != src:
+                    bad.append((n, f"{where}: saving a block unchanged changed the page"))
+                if e["tag"] in ("p", "li"):
+                    two, x = op_split(src, B, n, {"parts": [inner, "x"]})
+                    B2 = blocks(two)
+                    if not lands(two, B2, x["remap"], range(len(B))) or start(two, B2[n + 1]).replace(" ", "") != \
+                            re.sub(r"""\s+id\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)""", "", start(src, e)).replace(" ", ""):
+                        bad.append((n, f"{where}: a split put blocks in the wrong places"))
+                    if op_join(two, B2, n + 1, {"inner": inner})[0] != src:
+                        bad.append((n, f"{where}: a split and a join did not cancel out"))
+            if M[n].get("hidden"):   # hidden already: it comes back, and hides again, with every other block in place
+                tried += 1
+                back = op_restore(src, B, n, {})[0]
+                Bb = blocks(back)
+                again, x = op_cut(back, Bb, n, {})
+                ok = "data-cut" not in Bb[n]["attrs"] and lands(back, Bb, [], rest)
+                if ok and x["mode"] == "hide":
+                    Ba = blocks(again)
+                    ok = "data-cut" in Ba[n]["attrs"] and lands(again, Ba, [], rest)
+                if not ok:
+                    bad.append((n, f"{where}: restoring a hidden block and hiding it again moved blocks"))
+            elif M[n].get("cut"):
+                tried += 1
+                new, x = op_cut(src, B, n, {})
+                Bn = blocks(new)
+                if x["mode"] == "hide":
+                    if M[n]["cut"] != "hide" or not lands(new, Bn, [], rest):
+                        bad.append((n, f"{where}: hiding moved other blocks"))
+                    if op_restore(new, Bn, n, {})[0] != src:
+                        bad.append((n, f"{where}: hiding and restoring moved a byte"))
+                else:
+                    m = sum(1 for y in B[n:] if y["s"] < e["e"])
+                    if not lands(new, Bn, x["remap"], [k for k in range(len(B)) if not n <= k < n + m]) or \
+                            len(Bn) != len(B) - m:
+                        bad.append((n, f"{where}: a cut took the wrong blocks"))
+            if e["tag"] == "section":
+                try:
+                    up, x = op_move(src, B, n, {"dir": -1})
+                except Refused:
+                    continue
+                tried += 1
+                Bu = blocks(up)
+                if not lands(up, Bu, x["remap"], range(len(B))):
+                    bad.append((n, f"{where}: a move put blocks in the wrong places"))
+                a0 = x["pair"][0]
+                kids = [k for k in e["parent"]["kids"] if "e" in k]
+                if kids[next(j for j, k in enumerate(kids) if k is e) - 1] is B[a0]:   # neighbours: moving back undoes it
+                    back, _ = op_move(up, Bu, remapped(a0, x["remap"]), {"dir": -1})
+                    if back != src:
+                        bad.append((n, f"{where}: moving a section up and back moved a byte"))
+        except Refused as r:
+            bad.append((n, f"{where}: refused: {r}"))
+    return bad, tried
 
 
 def main():

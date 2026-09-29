@@ -64,6 +64,17 @@ a 57th added, the v3.13.1 release on Linux passed all but
    `vice_joystick_set` for the stick. Hold an input until the thing that
    should react has reacted; on a running machine a short press can fall
    between two of the game's reads.
+   Before trusting a silence, prove the machine is moving: two sprite
+   positions or two screenshots a second apart must differ somewhere in
+   a game with anything animated. If nothing moves and
+   `vice_frame_advance` times out after one frame, the emulator is held
+   (an open monitor window, `workarounds.md`, "Resuming after a stop")
+   however `vice_ping` reads, and every input sent looks ignored.
+   `tools.py stop vice` and `tools.py vice` clear it; the snapshot is
+   fine. Separately, `vice_memory_read` on a running machine (v3.13.1
+   release, macOS, 28 September 2026) returns no `data_hex`, so
+   `read_mem()` raises `KeyError`: stop with `pause()`, read, run on.
+   `vice_snapshot_load` takes the snapshot's `name`, not a path.
 4. Confirm play with a screenshot, then `vice_snapshot_save` with a name
    that describes the state, on the running machine or after `pause()` in
    `vice.py`, never straight after `vice_execution_pause`

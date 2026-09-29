@@ -8,6 +8,7 @@
   kit/CHANGELOG.md   lessons only: every entry names the game that taught it
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
+  games/*/*/game.json   Silver or above only on proven models, or checked (models.py)
 
 Usage: check_docs.py      exit 1 on failure
 """
@@ -71,6 +72,9 @@ def main():
         published += glob.glob(os.path.join(ROOT, top, "*", "*", "work", "README.md"))
     for f in sorted(set(published)):
         fails += scan(f, HOME, "a path on the contributor's computer (name where it can be had instead)")
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from models import check as models_check
+    fails += models_check()
     if fails:
         print(f"\nFAILED - {fails} issue(s). Rules in AGENTS.md; workflow in kit/skills/core; platform in kit/skills/<platform>; game facts in games/.")
         sys.exit(1)

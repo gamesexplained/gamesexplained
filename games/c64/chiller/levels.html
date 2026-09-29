@@ -1,0 +1,344 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chiller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+table.t{border-collapse:collapse;width:100%;font-size:15px}
+table.t th,table.t td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.t th{font-weight:700;color:var(--ink-soft)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+button.b{font-family:var(--fm);font-size:13px;padding:6px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+button.b[aria-pressed="true"]{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+button.b:hover{border-color:var(--ink-mute)}
+.scr{width:100%;max-width:768px;height:auto;display:block;image-rendering:pixelated;border-radius:4px;background:#000}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.note{color:var(--ink-mute);font-size:14px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 &middot; 1984 &middot; Mastertronic</p>
+  <h1>Chiller</h1>
+  <p class="sub">Ten screens, five out and the same five back, with their crosses, pick-ups and enemy paths.</p>
+</header>
+
+<main class="wrap">
+
+<section id="map">
+  <p class="fig">01 &middot; The ten screens</p>
+  <h2 class="t">Every screen, with everything a level record places on it</h2>
+  <p class="lede">Drawn the way <code>setup_screen</code> <code>$5E19</code> builds it: the play
+  area copied in from its own character set and colour map, the crosses placed by
+  <code>place_crosses</code> <code>$5FC0</code>. The way back reuses the same five play areas as the
+  way out, drawn from the store the game copies them into when you leave
+  (<code>screen_store</code> <code>$7FE8</code>).</p>
+  <div class="row" id="lv-pick"></div>
+  <div class="row">
+    <button class="b" type="button" data-ov="solid" aria-pressed="true">solid ($2A-$4C)</button>
+    <button class="b" type="button" data-ov="ledge" aria-pressed="true">crumbling ledge ($4D-$53)</button>
+    <button class="b" type="button" data-ov="pick" aria-pressed="true">pick-ups ($54-$56)</button>
+    <button class="b" type="button" data-ov="cross" aria-pressed="true">crosses</button>
+    <button class="b" type="button" data-ov="reach" aria-pressed="true">unreachable crosses</button>
+    <button class="b" type="button" data-ov="enemy" aria-pressed="true">enemy start positions</button>
+  </div>
+  <div class="plate"><canvas class="scr" id="lv-scr"></canvas>
+  <p class="cap" id="lv-kv"></p>
+  <div class="legend">
+    <span><i class="sw" style="background:#e9e7e1"></i>solid</span>
+    <span><i class="sw" style="background:#ff8a00"></i>crumbling ledge</span>
+    <span><i class="sw" style="background:#2a8a4a"></i>mushroom / toadstool / bonus</span>
+    <span><i class="sw" style="background:#ffe14d"></i>blue cross (the boy)</span>
+    <span><i class="sw" style="background:#ff4040"></i>red cross (the girl)</span>
+    <span><i class="sw" style="background:#7b7bff"></i>enemy start</span>
+    <span>a thick red ring marks a cross <code>work/reach.py</code> finds no path to</span>
+  </div>
+  </div>
+</section>
+
+<section id="paths">
+  <p class="fig">02 &middot; Enemy paths</p>
+  <h2 class="t">Nine scripts, direction bytes ended by <code>$FF</code></h2>
+  <p class="lede"><code>path_step</code> <code>$CC12</code> moves one enemy a pixel at a time and,
+  every 8th step, reads the next byte of its script from <code>path_scripts</code>
+  <code>$4A00</code>-<code>$4A8F</code>: 0 up, 1 down, 2 left, 3 right, <code>$FF</code> loops back
+  to the start. Step through a slot's script below; the arrow shows the direction it is about to
+  read.</p>
+  <div class="row" id="pt-pick"></div>
+  <div class="row" id="pt-slot"></div>
+  <div class="plate">
+  <div class="row">
+    <button class="b" type="button" id="pt-step">Step</button>
+    <button class="b" type="button" id="pt-run">Run</button>
+    <button class="b" type="button" id="pt-reset">Reset</button>
+  </div>
+  <canvas class="scr" id="pt-cv" style="max-width:640px"></canvas>
+  <p class="cap" id="pt-kv"></p>
+  </div>
+</section>
+
+</main>
+<script src="../../lib/c64.js"></script>
+<script>
+/* Chiller, Maps/levels: the ten screens with their crosses, pick-ups and enemy paths, drawn from
+   listing.json with ../../lib/c64.js. compose() rebuilds a screen the way setup_screen ($5E19)
+   and place_crosses ($5FC0) do, the same as index.html's screen builder (work/compose.js).
+   reachable() is a JS port of work/reach.py: try_move's own rules, searched pixel by pixel from
+   the record's start position. See facts.md, "Three crosses cannot be reached", for how it was
+   checked live (work/verify_reach4.py): move_sprite's Y clamp holds the boy at row 22 of 24 even
+   falling through open space, so three crosses in the bottom two rows never get a visit. */
+(function () {
+  'use strict';
+  const NAMES = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',
+    'The house, back', 'The graveyard, back', 'The ghetto, back', 'The cinema, back', 'The forest, back'];
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 4, '0');
+  function press(group, btn) { $$(group).forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false')); }
+  function need(el) {
+    if (globalThis.C64) return true;
+    el.insertAdjacentHTML('afterend', '<p class="note">This picture needs the site’s shared script, ../../lib/c64.js: open the page from the built site.</p>');
+    return false;
+  }
+
+  // ---- compose(): one screen as the game builds it (work/compose.js; same as index.html) ----
+  function compose(ram, n) {
+    const w = a => ram[a] | ram[a + 1] << 8;
+    const mem = Uint8Array.from(ram);
+    const R = w(0x7290 + 2 * n), OUT = [0x7000, 0x7080, 0x7100, 0x7180, 0x7200];
+    const cp = (s, e, t) => { for (let i = 0; i < e - s; i++) mem[t + i] = ram[s + i]; };
+    cp(w(0x56C0), w(0x56C2), w(0x56C4));
+    const s0 = w(R), e0 = w(R + 2), t0 = w(R + 4);
+    const src = n < 5 ? s0 : w(OUT[9 - n]);
+    for (let i = 0; i < e0 - s0; i++) mem[t0 + i] = ram[src + i];
+    cp(w(R + 6), w(R + 8), w(R + 10));
+    const colour = new Uint8Array(1024);
+    for (let i = 0, a = w(R + 0x0C); i < 1008; i += 2, a++) { colour[i] = ram[a] & 15; colour[i + 1] = ram[a] >> 4; }
+    const crosses = [];
+    for (let k = 0; k < 10; k++) {
+      const a = w(R + 0x5E + 2 * k);
+      if (a < 0x0400 || a >= 0x07E8) continue;
+      mem[a] = 0x57; colour[a - 0x400] = k < 5 ? 14 : 10;
+      crosses.push({ a, red: k >= 5 });
+    }
+    return { R, crosses, mem, src };
+  }
+
+  // ---- reachable(): a JS port of work/reach.py, try_move's own rules ----
+  function solidTile(t, fromBelow) {
+    if (t === 0xA0 || t < 0x2A) return false;
+    if (t <= 0x4C) return true;
+    if (t <= 0x57) return false;
+    if (t <= 0x61) return fromBelow;
+    if (t <= 0x65) return false;
+    if (t <= 0x6F) return true;
+    if (t <= 0x7F) return fromBelow;
+    if (t === 0xFF) return true;
+    return false;
+  }
+  function reachableSet(mem, startX, startY) {
+    const YLO = 0x32, YHI = 0xE3, XLO = 0x08, XHI = 0x14F;
+    const tileAt = (x, y) => {
+      const row = (y - 0x2C) >> 3, col = (x - 0x0C) >> 3;
+      if (row < 2 || row > 24 || col < 0 || col > 39) return 0xFF;
+      return mem[0x0400 + row * 40 + col];
+    };
+    const key = (x, y) => x * 512 + y;
+    const seen = new Set([key(startX, startY)]);
+    const stack = [[startX, startY]];
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      const moves = [[x, y - 1, false], [x, y + 1, true], [x - 1, y, false], [x + 1, y, false]];
+      for (const [nx, ny, below] of moves) {
+        if (nx < XLO || nx > XHI || ny < YLO || ny > YHI) continue;
+        if (seen.has(key(nx, ny)) || solidTile(tileAt(nx, ny), below)) continue;
+        seen.add(key(nx, ny)); stack.push([nx, ny]);
+      }
+      for (let step = 1; step <= 24; step++) {                  // the jump: 24 pixels up
+        const ny = y - step;
+        if (ny < YLO || solidTile(tileAt(x, ny), false)) break;
+        if (!seen.has(key(x, ny))) { seen.add(key(x, ny)); stack.push([x, ny]); }
+      }
+    }
+    return { has: (x, y) => seen.has(key(x, y)) };
+  }
+  function crossReachable(G, n, mem, cross) {
+    const w = a => G.ram[a] | G.ram[a + 1] << 8, rec = w(0x7290 + 2 * n);
+    const startX = G.ram[rec + 0x10] | (G.ram[rec + 0x12] ? 0x100 : 0), startY = G.ram[rec + 0x11];
+    const seen = reachableSet(mem, startX, startY);
+    const i = cross.a - 0x400, row = (i / 40 | 0), col = i % 40;
+    const cx0 = 0x0C + col * 8, cy0 = 0x2C + row * 8;
+    for (let dx = 0; dx < 8; dx++) for (let dy = 0; dy < 8; dy++) if (seen.has(cx0 + dx, cy0 + dy)) return true;
+    return false;
+  }
+
+  // ---- 01: the ten screens, with crosses, pick-ups, enemy starts and unreachable crosses ----
+  function screensPage(G) {
+    const cv = $('#lv-scr'), pick = $('#lv-pick'); if (!need(cv)) return;
+    const ov = { solid: true, ledge: true, pick: true, cross: true, reach: true, enemy: true };
+    let cur = 0;
+    NAMES.forEach((nm, i) => pick.insertAdjacentHTML('beforeend',
+      `<button class="b" type="button" data-n="${i}" aria-pressed="${i === 0}">${nm}</button>`));
+    const LEG = { solid: '#e9e7e1', ledge: '#ff8a00', pick: '#2a8a4a' };
+    function draw() {
+      const { R, crosses, mem } = compose(G.ram, cur);
+      const s = 2, W = 40 * 8 * s, H = 23 * 8 * s, ctx = C64.canvas(cv, W, H);
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+      const font = G.ram.subarray(0x3000, 0x3800);
+      for (let i = 80; i < 1000; i++) {
+        const t = mem[0x400 + i], row = (i / 40 | 0) - 2, col = i % 40;
+        C64.drawGlyph(ctx, font, t, col * 8 * s, row * 8 * s, s, '#8f8f8f');
+        let k = null;
+        if (ov.solid && t >= 0x2A && t <= 0x4C) k = 'solid';
+        else if (ov.ledge && t >= 0x4D && t <= 0x53) k = 'ledge';
+        else if (ov.pick && t >= 0x54 && t <= 0x56) k = 'pick';
+        if (k) { ctx.globalAlpha = .5; ctx.fillStyle = LEG[k]; ctx.fillRect(col * 8 * s, row * 8 * s, 8 * s, 8 * s); ctx.globalAlpha = 1; }
+      }
+      let unreachable = 0;
+      if (ov.cross) for (const c of crosses) {
+        const i = c.a - 0x400, row = (i / 40 | 0) - 2, col = i % 40;
+        const x = col * 8 * s, y = row * 8 * s;
+        ctx.strokeStyle = c.red ? '#ff4040' : '#ffe14d'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y - 3, 8 * s + 6, 8 * s + 6);
+        if (ov.reach && !crossReachable(G, cur, mem, c)) {
+          unreachable++;
+          ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 4; ctx.beginPath();
+          ctx.arc(x + 4 * s, y + 4 * s, 9 * s, 0, Math.PI * 2); ctx.stroke();
+        }
+      }
+      if (ov.enemy) {
+        const rec = G.ram[0x7290 + 2 * cur] | G.ram[0x7291 + 2 * cur] << 8;
+        for (let slot = 0; slot < 5; slot++) {
+          const ex = G.ram[rec + 0x45 + slot * 5] | (G.ram[rec + 0x47 + slot * 5] ? 0x100 : 0);
+          const ey = G.ram[rec + 0x46 + slot * 5];
+          const row = (ey - 0x2C) >> 3, col = (ex - 0x0C) >> 3;
+          if (row < 0 || row > 24) continue;
+          ctx.fillStyle = '#7b7bff'; ctx.globalAlpha = .8;
+          ctx.beginPath(); ctx.arc((col + 0.5) * 8 * s, (row - 2 + 0.5) * 8 * s, 5 * s, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+      }
+      const need5 = G.ram[R + 0x72];
+      $('#lv-kv').innerHTML = `Record <b>${hex(R)}</b> &middot; crosses needed <b>${need5}</b> &middot; ` +
+        `${unreachable ? `<b>${unreachable} of ${crosses.length} crosses on this screen cannot be reached</b>` : `all ${crosses.length} crosses on this screen are reachable`}`;
+    }
+    pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#lv-pick button', b); draw(); });
+    $$('[data-ov]').forEach(b => b.addEventListener('click', () => {
+      ov[b.dataset.ov] = !ov[b.dataset.ov]; b.setAttribute('aria-pressed', ov[b.dataset.ov]); draw(); }));
+    draw();
+  }
+
+  // ---- 02: step one enemy's path script ----
+  const DIRS = ['up', 'down', 'left', 'right'];
+  const DXY = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+  function pathsPage(G) {
+    const cv = $('#pt-cv'), scrPick = $('#pt-pick'), slotPick = $('#pt-slot');
+    if (!need(cv)) return;
+    let screen = 0, slot = 0, pos = 0, x = 0, y = 0, running = 0;
+    NAMES.forEach((nm, i) => scrPick.insertAdjacentHTML('beforeend',
+      `<button class="b" type="button" data-n="${i}" aria-pressed="${i === 0}">${nm}</button>`));
+    for (let k = 0; k < 5; k++) slotPick.insertAdjacentHTML('beforeend',
+      `<button class="b" type="button" data-k="${k}" aria-pressed="${k === 0}">slot ${k}</button>`);
+    function scriptFor(scr, sl) {
+      const rec = G.ram[0x7290 + 2 * scr] | G.ram[0x7291 + 2 * scr] << 8;
+      const lo = G.ram[rec + 0x3B + sl], hi = G.ram[rec + 0x40 + sl];
+      const base = lo | hi << 8;
+      const bytes = [];
+      for (let i = base; i < base + 64 && bytes.length < 40; i++) { bytes.push(G.ram[i]); if (G.ram[i] === 0xFF) break; }
+      return { base, bytes };
+    }
+    function reset() {
+      const rec = G.ram[0x7290 + 2 * screen] | G.ram[0x7291 + 2 * screen] << 8;
+      x = G.ram[rec + 0x45 + slot * 5] | (G.ram[rec + 0x47 + slot * 5] ? 0x100 : 0);
+      y = G.ram[rec + 0x46 + slot * 5];
+      pos = 0; trail = [[0, 0]];
+      draw();
+    }
+    // One "step" here is one direction of the script (path_step actually moves a pixel at a
+    // time and reads the next direction only every 8th move; this animates one cell per
+    // direction so the shape of the route is visible without 8x as many clicks).
+    let trail = [[0, 0]];
+    function draw() {
+      const s = 10, W = 320, H = 320, ctx = C64.canvas(cv, W, H);
+      const { base, bytes } = scriptFor(screen, slot);
+      ctx.fillStyle = '#101018'; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#7b7bff'; ctx.lineWidth = 2; ctx.beginPath();
+      trail.forEach(([px, py], i) => { const cx = W / 2 + px * s, cy = H / 2 + py * s;
+        i ? ctx.lineTo(cx, cy) : ctx.moveTo(cx, cy); });
+      ctx.stroke();
+      const [lx, ly] = trail[trail.length - 1];
+      ctx.fillStyle = '#ffe14d';
+      ctx.beginPath(); ctx.arc(W / 2 + lx * s, H / 2 + ly * s, 6, 0, Math.PI * 2); ctx.fill();
+      const cur = bytes[pos % bytes.length];
+      const dName = cur === 0xFF ? 'loop back to the start' : cur <= 3 ? DIRS[cur] :
+        'stray byte ' + hex(cur, 2) + ' (move_sprite ignores it, no move happens)';
+      const offRange = y < 0x32 || y > 0xE3;
+      $('#pt-kv').innerHTML = `script <b>${hex(base)}</b>: ${bytes.map((b, i) => (i === pos % bytes.length ? '<b>' : '') +
+        (b === 0xFF ? 'END' : b <= 3 ? DIRS[b][0].toUpperCase() : hex(b, 2)) + (i === pos % bytes.length ? '</b>' : '')).join(' ')}` +
+        `<br>spawn (<b>$${x.toString(16)}</b>, <b>$${y.toString(16)}</b>) &middot; next direction: <b>${dName}</b>` +
+        (offRange ? ' &middot; Y is outside move_sprite\'s $32-$E3, so whether this slot is ever placed on this screen was not checked live' : '');
+    }
+    function step() {
+      const { bytes } = scriptFor(screen, slot);
+      const d = bytes[pos % bytes.length];
+      if (d !== 0xFF && d <= 3) {
+        const [lx, ly] = trail[trail.length - 1];
+        trail.push([lx + DXY[d][0], ly + DXY[d][1]]);
+      }
+      pos = d === 0xFF ? 0 : (pos + 1) % bytes.length;
+      draw();
+    }
+    scrPick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; screen = +b.dataset.n; press('#pt-pick button', b); reset(); });
+    slotPick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; slot = +b.dataset.k; press('#pt-slot button', b); reset(); });
+    $('#pt-step').addEventListener('click', step);
+    $('#pt-reset').addEventListener('click', reset);
+    $('#pt-run').addEventListener('click', () => {
+      if (running) { clearInterval(running); running = 0; $('#pt-run').textContent = 'Run'; return; }
+      $('#pt-run').textContent = 'Stop'; running = setInterval(step, 250);
+    });
+    reset();
+  }
+
+  // ---- start: the game image from listing.json ----
+  if (!globalThis.C64) {
+    ['#lv-scr', '#pt-cv'].forEach(id => need($(id)));
+    return;
+  }
+  C64.load('listing.json').then(G => {
+    for (const f of [screensPage, pathsPage]) {
+      try { f(G); } catch (e) { console.error(f.name, e); }
+    }
+  }).catch(e => {
+    console.error(e);
+    $('#lv-scr').insertAdjacentHTML('afterend', '<p class="note">The game’s bytes (listing.json) could not be loaded: open the page from the built site.</p>');
+  });
+})();
+</script>

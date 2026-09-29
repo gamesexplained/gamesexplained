@@ -33,6 +33,15 @@ same way, so tiers mean the same thing everywhere.
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
    `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.vsf`
    so the committed listing never drifts from the symbols.
+   A later session that has neither the snapshot nor the disassembler
+   project (a hosted one starts in a fresh container) can still correct a
+   comment or rename a label: edit `symbols.json` by hand, then
+   `python3 kit/scripts/listing.py games/<platform>/<slug> --recomment`.
+   It changes only the listing's comments and names, and refuses anything
+   more (a block, a symbol's address or type, a comment added or removed).
+   The project still holds the old text, and its next export would put it
+   back, so name each hand edit in `TODO.md` for whoever holds the project
+   to carry into it.
 5. Repeat until the tier you are aiming for is met.
 
 ## Rules that keep the number honest

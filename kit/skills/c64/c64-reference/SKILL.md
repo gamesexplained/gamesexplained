@@ -29,6 +29,17 @@ form:
 - **Links**: Lemon64, GameBase64, CSDb, and often a manual scan. The
   manual, when one exists, outranks the wiki as a source.
 
+When the wiki has no page, or the fan sites answer an agent's fetch
+with a browser check (Lemon64 and Ready64 did, 403, on 28 September
+2026), the Internet Archive is the fallback. Its Wayback copy of a
+Lemon64 page (`https://web.archive.org/web/2022/<the page's address>`)
+carries the credits, the control port and the magazine reviews. Its
+item search finds manual and inlay scans
+(`https://archive.org/advancedsearch.php?q=<title>+<publisher>&fl[]=identifier&fl[]=title&output=json`),
+and each item's OCR text is `https://archive.org/download/<id>/<id>_djvu.txt`,
+listed by `https://archive.org/metadata/<id>`. Read the documents only;
+the same search lists game images, which are never downloaded.
+
 It is a fan wiki: what it says is documented, not true. One of the first
 games' pages states a bonus the code never awards, which is what the
 `differs` status in `features.md` is for. Record it under Sources in
@@ -418,4 +429,9 @@ may use neither (see `30-text`).
   much sharp on NTSC. Before naming a game's notes, find the clock that
   makes its table land on equal temperament: one table value against
   f = value × clock / 16777216 for each clock is enough. Name the notes
-  with that clock, and say what the other machine hears.
+  with that clock, and say what the other machine hears. Read the offset
+  as a size, not by the nearest note: an NTSC table read at the PAL clock
+  lands about 35 cents *sharp* of the semitone below, which is the same
+  65 cents flat, and naming notes from that reading puts every one of
+  them a semitone low. Count how many values fall within a few cents at
+  each clock; the right clock takes nearly all of them.

@@ -8,11 +8,13 @@ listing and minisite built; copy `human-edited`, the steward's pass under way).
 A human pass over the How it works page and the Maps page, section by
 section: cut what is dull, expand what is interesting, rewrite the
 clichés, add what the agent missed. The pass is under way (`steward`: air,
-`tier: silver-claimed`); record the outcome in `copy`. Two parts arrived
+`tier: silver-claimed`); record the outcome in `copy`. Three parts arrived
 after it began and are agent-written, not yet read by the steward: section
-04 of the How it works page (the craft that fly without you) and the Play
-tab's four sections (the mod, the port, the speed, the differences)
-(#61).
+04 of the How it works page (the craft that fly without you), section 14
+(the sound) and the Play tab's four sections (the mod, the port, the
+speed, the differences) (#61). The Play tab's smooth motion came later and
+is agent-written too: the caption's last sentence, section 03's Smooth
+motion and its line in section 04.
 
 At a phone's width (390 px) the How it works page scrolls sideways by
 about 19 px: the Outside the city table and the lift section's code lines
@@ -51,35 +53,28 @@ differ, `orientation.md`) (#64).
   shows that line depends on timing it does not model; the emulator
   would settle it (#71).
 
-## Listing comments to correct
+## Carry into the disassembler project
 
-Five comments in `symbols.json` say less than `facts.md` now does. Changing
-them means rebuilding `listing.json`, which `kit/scripts/listing.py` does
-from the contributor's snapshot, and the snapshot was not in the
-container of the session that found them (27 September 2026). #63 has
-the table; kit ask #60 would let it be done without the snapshot:
-
-- `$7472`: "X and Y each from three random bytes": Y's low byte is what
-  `$8510` left in `$07` from converting X.
-- `$8634`: "The descent takes 780 passes (about 2.6 minutes ...)": 779
-  passes after the placing pass, 780 from the poke; 2 min 38 s standing
-  at 08-08, 1 min 29 s in room 8.
-- `$8B41`: "branches when it comes back with the carry clear": the `JSR`
-  at `$8C69` returns into op 13, and op 9 branches on the carry out of
-  `$1F` + Y + 1, not on the called code's.
-- `$AFA8` and `$BB7E`: the flash colour is read with `$F0` before it
-  counts down, so 10 gives `$BB88`-`$BB7F` (black first, then dark grey,
-  grey, light grey, three whites, light grey, grey) and 31 gives 19
-  oranges, not 18.
+Five comments were corrected by hand in `symbols.json`, and the listing
+with `listing.py --recomment`, in a session without the snapshot or the
+project (#63). The project in `work/` still holds the old text, and its
+next export would put it back: copy these five line comments from
+`symbols.json` into it first. `$7472` (Y's low byte is what `$8510` left in
+`$07`), `$8634` (779 passes after the placing pass, 780 from the poke),
+`$8B41` (op 9 branches on the carry out of `$1F` + Y + 1), `$AFA8` and
+`$BB7E` (the colour is read before `$F0` counts down: 10 gives
+`$BB88`-`$BB80`, black first; 31 gives 19 oranges).
 
 ## Ideas for the page
 
-- The sound on the How it works page: thirteen SID settings at `$B987` and
-  the engine note computed from the speed (`$B5D8`) would play through
-  `site/lib/sid.js`. The Play tab plays them already, as the game does
-  (#72).
 - The Second City's changes, once unpacked; the Play tab could then load
   it (#73).
+- Smooth motion slides positions only. An object's own turn (its three
+  64-step angles at `$800A`, `$801A` and `$802A`) and a rotor's spin (`$A2`
+  a pass) could slide too, from the same two passes.
+- The smooth view in the C64's pixels fills the sky and the ground by the
+  horizon's half-plane, not by `$AFD5`'s row stepping, so along a banked
+  horizon its edge can sit a pixel from the game's.
 - The Play tab shows the port's case of the game's two interrupt races
   (the Play page, section 02). Running the interrupts inside a step, at the
   cycle the cost model puts them, would show the white band too (#74).

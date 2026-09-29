@@ -12,7 +12,7 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
-## 0.0.31 · 27 September 2026 · Mercenary, the retrospective's ask · air with Claude
+## 0.0.35 · 29 September 2026 · Mercenary, the retrospective's ask · air with Claude
 
 **The lockstep, in the kit.** Mercenary's port was checked against the
 game by a harness written for it, which stayed in the game's gitignored
@@ -52,6 +52,34 @@ white band, at `$6642` as `facts.md` gives it.
 page's model 8 % short in a flight across 92 squares, almost all of it in
 the object loop, which the fit costs 23 % under what the game takes. The
 skill now says to check the fit on every kind of play the page offers.
+
+## 0.0.34 · 29 September 2026 · Chiller · Claude, continuing toward Gold
+
+**A rule-based search over the game's own code is a claim, not a fact,
+until it is checked live.** Modelling `try_move`'s movement rules to ask
+"can every level cross be reached" first produced a search that flagged
+nearly every cross on every screen as unreachable: a bug in how the
+model turned a sprite Y into a screen row, not a finding. The fix came
+from comparing the model's own row/column arithmetic against an already
+different route to the same numbers, and the result was then checked
+against the machine itself: clearing a column of scenery to open space
+and watching the boy actually fall, live, to the same row the model
+predicted. The lesson generalises past this one search: any analysis
+that re-derives a game's own addressing or movement arithmetic, rather
+than reading it off a comment, earns the same live check every other
+claim in `facts.md` gets, and a plausible-looking result from a model
+that compiles and runs is not evidence on its own.
+
+**A poked variable a KERNAL routine also writes needs poking every
+frame it is watched, not once.** Simulating a key the emulator's
+tools cannot inject, by writing the KERNAL variable the key would set
+(SHIFT's flag at `$028D`), did nothing on the first attempt: `SCNKEY`
+overwrites that byte from the real, unpressed keyboard about 60 times a
+second, faster than a game whose own input check runs less often than
+every frame ever sees a single poke. Re-issuing the poke before every
+frame advance, for as many frames as the test needs, is what a
+KERNAL-scanned variable requires; `kit/skills/c64/tool-vice-mcp/workarounds.md`
+now says so next to the existing SHIFT note.
 
 ## 0.0.30 · 27 September 2026 · Mercenary · air with Claude
 

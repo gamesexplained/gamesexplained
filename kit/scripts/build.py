@@ -118,7 +118,13 @@ def footprint(gdir, game):
     """Classify all 65536 bytes. Returns (runs, totals, symbols)."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from symbols_export import regions as cov_regions
-    L = json.load(open(os.path.join(gdir, "listing.json")))
+    lp = os.path.join(gdir, "listing.json")
+    if not os.path.isfile(lp):
+        rel = os.path.relpath(gdir, ROOT)
+        sys.exit(f"{rel} has no listing.json. Build it from the symbol map and a snapshot first:\n"
+                 f"  python3 kit/scripts/symbols_export.py {rel}\n"
+                 f"  python3 kit/scripts/listing.py {rel} <snapshot.vsf>")
+    L = json.load(open(lp))
     cat = ["unused"] * 0x10000
     why = [""] * 0x10000
     # listing records: what the bytes are
@@ -413,6 +419,8 @@ def pagenav(page):
         k = f'<span class="k {tag}">{tag.capitalize()}</span> ' if tag else ""
         items.append(f'<li><a href="#{html.escape(sid)}"><span class="n">{html.escape(num)}</span>'
                      f'<span class="h">{k}{html.escape(text, quote=False)}</span></a></li>')
+    if len(items) < 2:   # one entry is no list; the nav stays so the column sits where it does on every tab
+        items = []
     for at, el, sid in sorted(edits, reverse=True):
         n = len(el) + 1
         if page[at:at + n].lower() == "<" + el:
@@ -702,8 +710,9 @@ def shot_html(g, cls="shot"):
     if tip and os.path.isfile(tip):
         return (f'<img class="{cls}" src="{plat}/{slug}/{html.escape(ti, quote=True)}" '
                 f'alt="{html.escape(g.get("title", slug))} title screen" loading="lazy">')
-    print(f"warning: {plat}/{slug} has no title_image "
-          f"(set it in game.json to a file under reference/)", file=sys.stderr)
+    what = f"title_image {ti!r} is not a file in the game folder" if ti else "has no title_image"
+    print(f"warning: {plat}/{slug} {what} "
+          f"(set it in game.json to a path from the game folder, e.g. reference/title-screen.png)", file=sys.stderr)
     return f'<div class="{cls} missing" aria-hidden="true"></div>'
 
 

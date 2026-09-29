@@ -25,7 +25,9 @@
 // decay and the ADSR delay bug; the C64's output stage (16 kHz low pass, 16 Hz high pass).
 // Not modelled: the filter ($D415-$D417 and the routing bits of $D418 are ignored), combined
 // waveforms (approximated by AND), samples played through the volume register (registers change
-// once a frame), and NTSC timing (the clock is PAL's: 985,248 Hz, frames of 312 lines of 63 cycles).
+// once a frame), the time between writes inside a frame (a frame's writes land at one instant, so
+// a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
+// cycles between), and NTSC timing (the clock is PAL's: 985,248 Hz, frames of 312 lines of 63 cycles).
 //
 //   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll and a panel
 //                                per voice
