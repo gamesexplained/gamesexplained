@@ -360,23 +360,25 @@ class Outline(html.parser.HTMLParser):
             item["h2" if what == "h2" else "fig"] += data
 
 
-SOUND_SECTION = re.compile(r"(?:the )?(?:sound|music|sfx)\b", re.I)
+SOUND_SECTION = re.compile(r"(?:the )?(sound|music)\b", re.I)
+ABOUT_TUNES = re.compile(r"\b(?:tunes?|music|songs?)\b", re.I)
 
 
 def section_tag(label, heading):
     """(tag, heading) as the margin list shows a section.
 
     Bug and Secret come from the heading's own prefix ("Secret: ..."), which the list shows
-    as a tag. Sound is a Sound: or Music: prefix, or any section whose label starts with
-    Sound, Music or SFX, tunes and effects alike, so a reader can find it at a glance.
+    as a tag. Music is a Music: prefix, or the sound section when it is about the tunes: one
+    whose label starts with Music, or with Sound under a heading that names them. A sound
+    section about engine noise or effects gets no tag.
     """
-    m = re.match(r"(bug|secret|music|sound)\s*:\s*", heading, re.I)
+    m = re.match(r"(bug|secret|music)\s*:\s*", heading, re.I)
     if m:
         rest = heading[m.end():]
-        tag = m.group(1).lower()
-        return ("sound" if tag == "music" else tag), rest[:1].upper() + rest[1:]
-    if SOUND_SECTION.match(label):
-        return "sound", heading
+        return m.group(1).lower(), rest[:1].upper() + rest[1:]
+    s = SOUND_SECTION.match(label)
+    if s and (s.group(1).lower() == "music" or ABOUT_TUNES.search(heading)):
+        return "music", heading
     return "", heading
 
 
