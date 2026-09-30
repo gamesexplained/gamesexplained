@@ -354,8 +354,23 @@ containers with no display (gcc 13.3, Python 3.11, cargo 1.94). The first
 run built v3.13.0 from source and measured `check-emulator` 56 of 56 three
 times, `verify-footprint` clean. A second run the same day used the
 v3.13.1 release zip and then a source build of the same tag (the table at
-the top of this file). No run is recorded on a Linux desktop, on ARM or on
-another distribution.
+the top of this file). No run is recorded on ARM or another distribution.
+
+On 30 September 2026, an Ubuntu 24.04.5 x86_64 desktop used the v3.13.1 GUI
+release and regenerator2000 0.9.20. The emulator passed 56 of 57 checks;
+`pause-at-instruction` failed, so inspection used the documented pause
+workaround. Restoring an existing snapshot reached gameplay. The bounded
+footprint scan found no external file changes after a launch/snapshot/exit
+cycle for both tools. The scanner compares before and after file signatures:
+an unchanged desktop file with a future timestamp is not a tool write.
+
+For page checks, `tools.py browser` can use an installed Firefox. It creates
+an independent profile, XDG directories and temporary directory under
+`tools/firefox/`, and a log under `tools/logs/`; it does not download a browser
+or use the personal profile. Firefox 157.0 was exercised through WebDriver
+BiDi on the same desktop, including screenshots, script-error collection,
+all page controls and narrow-screen layouts. Stop it with `tools.py stop
+browser`. Deleting `tools/firefox/` removes its local state.
 
 **A network that refuses the GitHub API.** In those containers the proxy
 answered `api.github.com`, the project's web pages and `codeload` with 403

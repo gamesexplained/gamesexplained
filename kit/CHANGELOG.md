@@ -12,6 +12,19 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
+## next · 30 September 2026 · Castle Master · 64kramsystem with Codex
+
+**Keep the captured occupant when importing an existing analysis.** An
+annotated listing can account for every byte while a raw RAM file lacks
+the machine state needed to run it. Castle Master's matching snapshot was
+recoverable from the contributor's repository history, and its memory
+matched the supplied dump exactly. The disassembler skill now describes
+direct import of completed Ghidra exports, byte comparison against the
+capture, and separate treatment of replacement overlays. It also separates
+exhaustive code/data classification from the site's prose-span metric;
+neither a successful import nor a restored boot verifies every inherited
+claim.
+
 ## 0.0.44 · 30 September 2026 · Ghostbusters · unorig with Claude
 
 **A test must contain cases that have to succeed.** Ghostbusters' account

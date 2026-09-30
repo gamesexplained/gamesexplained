@@ -402,6 +402,14 @@ is taken, any free port will do. The agent
 needs a browser it can screenshot and click: either a browser extension
 that exposes the page to it, or a harness desktop app with a built-in browser. Without one you are writing a visual artefact blind.
 
+When the session's browser connector lacks its bundled executable but Firefox
+is already installed, the C64 launcher offers `python3 kit/scripts/tools.py
+browser`. It starts an isolated headless profile under `tools/firefox/`,
+with the WebDriver BiDi endpoint at `ws://127.0.0.1:9222/session`.
+Use a BiDi client to navigate, exercise controls and capture screenshots;
+`tools.py stop browser` stops only this clone's test browser. It downloads
+nothing and does not use the contributor's personal browser session.
+
 Check, at least: every canvas has drawn something; the console has no
 errors; every control does something when clicked; and the rebuilt screen
 matches a reference screenshot from `reference/`. The reconstruction is

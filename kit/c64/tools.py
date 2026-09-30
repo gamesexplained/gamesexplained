@@ -16,7 +16,8 @@ Usage:
   tools.py status
   tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
   tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
-  tools.py stop [vice|r2000|all] [--force]
+  tools.py browser                 start installed Firefox headlessly with BiDi on :9222
+  tools.py stop [vice|r2000|browser|all] [--force]
                                    the disassembler stays up while an annotation log written since
                                    it started is newer than the game's symbols.json: export first,
                                    or --force
@@ -194,6 +195,31 @@ def r2000(path):
     start([exe, "--mcp-server", os.path.abspath(path)], os.path.join(LOGS, "r2000.log"), port=3000, name="disassembler")
 
 
+def browser():
+    """Use an installed Firefox without touching the contributor's browser profile.
+
+    BiDi endpoint: ws://127.0.0.1:9222/session. No browser is downloaded.
+    https://developer.mozilla.org/en-US/docs/Web/WebDriver/How_to/Create_BiDi_connection
+    """
+    exe = shutil.which("firefox")
+    if not exe:
+        sys.exit("no installed Firefox on PATH; use the session's browser tool or ask before installing one")
+    if up(9222):
+        sys.exit("port 9222 is occupied; leave that browser alone or stop this clone's with tools.py stop browser")
+    state = os.path.join(TOOLS, "firefox")
+    profile = os.path.join(state, "profile")
+    os.makedirs(profile, exist_ok=True)
+    env = dict(os.environ)
+    for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
+                     ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data"), ("TMPDIR", "tmp")):
+        env[var] = os.path.join(state, sub)
+        os.makedirs(env[var], exist_ok=True)
+    env["MOZ_CRASHREPORTER_DISABLE"] = "1"
+    start([exe, "--headless", "--no-remote", "--profile", profile,
+           "--remote-debugging-port", "9222", "about:blank"],
+          os.path.join(LOGS, "firefox.log"), env=env, cwd=state, port=9222, name="browser")
+
+
 # only this clone's tools: another clone on the same machine keeps its emulator and disassembler
 # scoped by path rather than anchored to the start of the command line: the launcher runs the
 # emulator through `script`, and on a macOS release build bin/x64sc is a shell wrapper that execs
@@ -201,7 +227,8 @@ def r2000(path):
 # first word. Every match still has to lie under this clone's tools/, so no other clone is touched.
 # The emulator alone is killed: its wrappers (script, bash, xvfb-run) exit with it.
 STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
-                 "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
+                 "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, "")),
+                 "browser": "firefox.*--profile " + re.escape(os.path.join(TOOLS, "firefox", "profile")) + " --remote-debugging-port 9222"}
 
 
 def elapsed(etime):
@@ -264,7 +291,7 @@ def unexported(path, started):
 
 def stop(which="all", force=False):
     if which not in STOP_PATTERNS and which != "all":
-        sys.exit("usage: tools.py stop [vice|r2000|all] [--force]")
+        sys.exit("usage: tools.py stop [vice|r2000|browser|all] [--force]")
     kinds = list(STOP_PATTERNS) if which == "all" else [which]
     held = []
     if "r2000" in kinds and not force:
@@ -392,6 +419,8 @@ def use_vice(target):
 
 
 def status():
+    if os.path.isdir(os.path.join(TOOLS, "firefox")):
+        print(f"browser       :9222  {'up' if up(9222) else 'down'}   profile: tools/firefox/profile")
     print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {vice_build()} (tools/vice-mcp)")
     detail = foreign_detail(6510)
     if detail:
@@ -422,6 +451,35 @@ KNOWN_RESIDUE = ("Library/Application Support/regenerator2000/",   # macOS
                  "regenerator2000\\config")                         # Windows, expected; unverified
 
 
+def footprint_candidates():
+    """Snapshot matching external files, so old/future mtimes cannot imply writes.
+
+    This is the launcher's existing bounded, name-based scan, not a general
+    filesystem monitor. Concurrent changes to unrelated matching files still
+    need inspection; unchanged files are never attributed to the tool run.
+    """
+    inside = os.path.normcase(os.path.realpath(ROOT))
+    words = ("vice", "x64", "regenerator", "r2000")
+    found = {}
+    for base in home_candidates():
+        depth0 = base.rstrip(os.sep).count(os.sep)
+        for d, dirs, files in os.walk(base):
+            resolved = os.path.normcase(os.path.realpath(d))
+            if resolved == inside or resolved.startswith(inside + os.sep):
+                dirs[:] = []; continue
+            if d.count(os.sep) - depth0 >= 4:
+                dirs[:] = []
+            for f in files:
+                p = os.path.join(d, f)
+                if any(w in p.lower() for w in words):
+                    try:
+                        st = os.stat(p)
+                        found[p] = (st.st_size, st.st_mtime_ns, st.st_ctime_ns)
+                    except OSError:
+                        pass
+    return found
+
+
 def verify_footprint():
     import json
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -429,6 +487,7 @@ def verify_footprint():
     was_up = up(6510)
     if was_up:
         sys.exit("stop the emulator first (tools.py stop vice): the check has to see a whole launch-to-exit cycle")
+    before = footprint_candidates()
     vice()
     from vice import connect, call
     rpc = connect()
@@ -444,23 +503,8 @@ def verify_footprint():
         stop("r2000", force=True)          # its own, on a throwaway snapshot: nothing to export
     stop("vice")
     inside = os.path.realpath(ROOT)
-    words = ("vice", "x64", "regenerator", "r2000")
-    hits = []
-    for base in home_candidates():
-        depth0 = base.rstrip(os.sep).count(os.sep)
-        for d, dirs, files in os.walk(base):
-            if os.path.realpath(d).startswith(inside):
-                dirs[:] = []; continue
-            if d.count(os.sep) - depth0 >= 4:
-                dirs[:] = []
-            for f in files:
-                p = os.path.join(d, f)
-                if any(w in p.lower() for w in words):
-                    try:
-                        if os.path.getmtime(p) >= t0:
-                            hits.append(p)
-                    except OSError:
-                        pass
+    after = footprint_candidates()
+    hits = [p for p, signature in after.items() if before.get(p) != signature]
     ok_inside = os.path.realpath(where).startswith(inside) if where else False
     print("snapshot inside the repository:", "yes" if ok_inside else "NO")
     known = [p for p in hits if any(k in p.replace(os.sep, "/") or k in p for k in KNOWN_RESIDUE)]
@@ -485,6 +529,7 @@ def main():
     if not a or a[0] in ("-h", "--help"):
         print(__doc__); return
     if a[0] == "status": status()
+    elif a[0] == "browser": browser()
     elif a[0] == "vice": vice(a[1] if len(a) > 1 else "x64sc")
     elif a[0] == "r2000":
         if len(a) < 2: sys.exit("usage: tools.py r2000 <file>")
