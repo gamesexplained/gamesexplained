@@ -188,6 +188,13 @@ can open with that instead.
   the snapshots.
   Porting is work that splits well across agents: one mechanic each, each
   with its own trace and its own files.
+- **Draw from the memory the game draws from.** A renderer fed from the
+  listing reads the hand-over image, and a game that swaps character
+  shapes per area or per level has different glyphs there than in play:
+  one map drawn that way showed letters where the stalactites belong.
+  Compare the character set and the colour table of the hand-over with a
+  play snapshot, and embed the bytes that differ for the state the
+  picture claims to show.
 - Reference images go in `reference/`; the page refers to them by
   relative path from the game folder (`reference/<name>.png`).
 

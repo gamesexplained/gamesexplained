@@ -41,6 +41,15 @@ writing a site off, fetch it with `curl` over `http://` (through the
 environment's proxy, if it has one). A research subagent reports what its
 tools could not reach; check each of those yourself.
 
+A hosted session's network can refuse the game sites outright: on 30
+September 2026 a cloud session's proxy answered 403 for C64-Wiki (HTTP and
+HTTPS), Lemon64, GameBase64, MobyGames, Wikipedia and archive.org alike,
+while its web search still worked. Then the search results' summaries are
+all there is. Use them as leads, say so under Sources, and mark every row
+that rests on them as weaker than a page read. Key lists found that way
+are often another machine's version of the game: read the controls from
+the input routine before trusting them.
+
 ## Status words
 
 Every row in `features.md` carries one:

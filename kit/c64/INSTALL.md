@@ -255,7 +255,7 @@ the way to one where none exists, and no run of it is recorded on either.
 cargo install --root tools/cargo regenerator2000
 ```
 
-That compiles it (about a minute on a recent machine) and puts the binary at
+That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
 
 What it is, and say so when you ask: regenerator2000 is an open-source

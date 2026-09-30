@@ -256,6 +256,14 @@ Routines are independent, so the burn-down parallelises. What matters:
 - Agents read into neighbours' ranges for context; ranges prevent write
   collisions, not two agents naming the same thing. Catch that when
   merging.
+- **Find the loaded data before you split the image.** Build the listing
+  with both snapshots (`listing.py <game> work/entry.vsf --entry
+  work/<play>.vsf`) and read its list of loaded data the ledger does not
+  count before choosing the ranges. One game's flow trace covered 26 KB
+  and the ledger said nothing of 16 KB more: the map under the KERNAL and
+  every sprite image, which nothing names by address. Found after the
+  agents had finished, they were one person's work; found first, they
+  are a range in a brief.
 - Brief them cold, from `brief.md` beside this file: copy it to the
   game's `work/BRIEF.md` and fill it in. It asks for the feature list,
   `facts.md` so far, the rules above, the exact client command with each
