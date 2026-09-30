@@ -5,15 +5,15 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-**Silver** (30 September 2026). Coverage 100 %, every feature confirmed,
-traced or explicitly open (`features.md`), facts verified (`facts.md`),
-How it works and Play tabs built. The copy is `agent-draft`.
+**Silver (claimed)** (30 September 2026). Coverage 100 %, every feature
+confirmed, traced or explicitly open (`features.md`), facts verified
+(`facts.md`), the Overview, focused tabs and Play tab built. The copy is
+`agent-draft`. The steward, unorig, has claimed the Gold pass.
 
 ## For Gold
 
-- A human pass over the How it works page, section by section: rewrite,
-  cut, expand, add what the agent missed. Set `tier` to `silver-claimed`
-  and `steward` to the curator's GitHub login when the pass begins.
+- A human pass over every tab, section by section: rewrite, cut, expand,
+  add what the agent missed. Set `copy` to what the pass did.
 - A human pass over the Play tab's text in the same way.
 
 ## Open
