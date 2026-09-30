@@ -79,7 +79,10 @@ into the diff that saves the next contributor the trouble.
    reverse engineering, from which game and whom, not of what changed. If
    a lesson from this game changes how an agent reads, traces, measures
    or verifies, write it there in plain words, under a heading that names
-   the game and who worked it. A fix to a script, a path, the site or the
+   the game and who worked it: `## next · <date> · <game> · <who>`, the
+   newest first. `next` becomes the version number when the pull request
+   is merged; put `[kit-bump]` in its description, and never edit
+   `kit/VERSION` yourself. A fix to a script, a path, the site or the
    prose style goes in `kit-feedback.md` and the pull request instead.
 6. **Complete `game.json`**: tier reached (only if every requirement is
    met; an unattended run stops at Silver, since Gold is human curation;

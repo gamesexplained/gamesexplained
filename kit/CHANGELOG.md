@@ -12,7 +12,7 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
-## 0.0.45 · 30 September 2026 · A View to a Kill · unorig with Claude
+## next · 30 September 2026 · A View to a Kill · unorig with Claude
 
 **A game can be several programs.** *A View to a Kill* is five: an
 intro, three sections and an ending, each loaded from a menu over the
