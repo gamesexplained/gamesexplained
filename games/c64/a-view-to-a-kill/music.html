@@ -21,6 +21,10 @@
     <tr><td>The first</td><td>the intro and City Hall, with the same driver at the same address (<a href="source.html#C640"><code>$C640</code></a>)</td><td>three pulse waves; voice 1 through the low-pass filter</td></tr>
     <tr><td>The second</td><td>Paris and the mine, with the same notes and different drivers (<a href="source-paris.html#7AAB"><code>$7AAB</code></a>, <a href="source-mine.html#7BAB"><code>$7BAB</code></a>)</td><td>three voices; Paris uses noise, sawtooth and pulse</td></tr>
   </table>
+  <div class="plate">
+    <div id="sid"></div>
+    <p class="cap">The game's two music drivers, the intro's (<a href="source.html#C640"><code>$C640</code></a>-<code>$C7B5</code>) and Paris's (<a href="source-paris.html#7A40"><code>$7A40</code></a>-<code>$7BC7</code>), ported to JavaScript and played through the site's model of the SID, with the notes read from each program. The ports were checked against the game's own code run in the kit's 6502 simulator: every register write, in order, for 40,000 frames of each tune, 342,506 writes in all, matched. Each tune is played once here; the game starts it again at once. The filter is a 6581's, whose cutoff varies from chip to chip. Both tunes have many notes below 100 Hz, some of Paris's below 60 Hz, which laptop and phone speakers barely play.</p>
+  </div>
   <p>Which tune is the Bond theme and which is the title song was not checked by ear. In both drivers a note is three bytes, two for the frequency and one for its length, and the notes step after three frames and then two, in turn: 20 steps a second on a European machine. The intro's driver adds vibrato by adding 0, 4, 8 or 12 to the frequency each frame (<a href="source.html#C798"><code>$C798</code></a>). One pass of the intro's tune is 5,106 steps, about 102 seconds.</p>
   <p>Paris lets the player choose on the instruction page: the tune, the effects, or both (<a href="source-paris.html#4F30"><code>$4F30</code></a>). In the mine the two effects, a beep for yes and a buzz for no, borrow the tune's second voice (<a href="source-mine.html#3B7D"><code>$3B7D</code></a>, <a href="source-mine.html#3B9C"><code>$3B9C</code></a>).</p>
 </section>
@@ -41,6 +45,16 @@
     <tr><td>The intro</td><td>one, <code>$A092</code>-<code>$AA81</code></td><td>about 2.2 seconds, some 9,400 bits a second, with a silence of about 0.6 s in the middle</td></tr>
     <tr><td>Paris</td><td>three, at <code>$1090</code>, <code>$1225</code> and <code>$190A</code></td><td>one on a catch; one or two on a loss, depending on how it was lost (<a href="source-paris.html#4BA0"><code>$4BA0</code></a>)</td></tr>
   </table>
+  <div class="plate">
+    <div class="row" id="sp-buttons"></div>
+    <canvas id="sp" width="900" height="220" style="width:100%;height:auto;display:block"></canvas>
+    <p class="kv" id="sp-kv"></p>
+    <p class="cap">The speech player ported to JavaScript: it computes every write to the volume register and the cycle it lands on. The port was checked against the game's routine in the kit's simulator, and all 51,220 writes of the four samples matched, cycle for cycle. The picture shows how often the level changes along the sample; it is flat where the sample is silent. Heard here as a straight level through the C64's output stage. When the car is wrecked the game plays two samples one after the other (<a href="source-paris.html#4BA0"><code>$4BA0</code></a>).</p>
+  </div>
   <p>The words themselves were not checked by ear. The <a href="https://frgcb.blogspot.com/2023/04/james-bond-007-view-to-kill-domark-1985.html">FRGCB blog</a> hears the intro's as "My name is Bond... James Bond", which would fit the silence in the middle.</p>
 </section>
 </main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/avtak-music.js"></script>
+<script src="reference/avtak-sound.js"></script>
