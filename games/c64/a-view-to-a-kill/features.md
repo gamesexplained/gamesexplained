@@ -46,7 +46,7 @@ Sources:
 |---|---|---|---|
 | Gun-barrel opening picture, the Domark logo and a scrolling roll of credits | intro | live | `reference/intro-gun-barrel.png`, `intro-credits.png`; `white_wipe` `$C100`, `logo_assemble` `$C430`, `credits_scroll` `$C54E` (intro) |
 | Spoken words, "speech by B.-Jones" | intro | traced | a 1-bit sample player, `speech_play` `$A000` (intro), heard as a burst of about 2.2 s; it says "My name's Bond. James Bond" (heard by the contributor); Paris adds "Well done, 007" (`$1225`), "You failed, Bond" (`$190A`) and "Damn it" (`$1090`) |
-| Music by Tony Crowther: the James Bond theme and Duran Duran's "A View to a Kill" (Wikipedia, MI6-HQ) | all | traced | two tunes: one in the intro and City Hall (`$C640`, notes from `$E000`), one in Paris and the mine (notes `$E000`-`$FFFF`); which is which was not checked by ear |
+| Music by Tony Crowther: the James Bond theme and Duran Duran's "A View to a Kill" (Wikipedia, MI6-HQ) | all | traced | two tunes: one in the intro and City Hall (`$C640`, notes from `$E000`), one in Paris and the mine (notes `$E000`-`$FFFF`); the first is the James Bond theme, the second the tune based on the Duran Duran song (heard by the contributor) |
 | A choice of theme tune only, sound effects only, or both | paris | confirmed | `$02E0`, chosen with the stick on the instruction page (`title_page`, `$4F30`, paris) |
 | Chase May Day by car while she parachutes from the Eiffel Tower; be at her drop point when she lands | paris | confirmed | `mayday_update` `$5200`: she circles, then lands at one of eight points; a catch is possible below 060 (paris) |
 | A first-person view from the car over an overhead map of the streets | paris | live | `reference/paris-chase.png`; `build_3d_view` `$4600` (paris) |

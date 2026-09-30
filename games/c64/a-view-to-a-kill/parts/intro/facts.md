@@ -11,7 +11,7 @@ comes from, in this part's listing.
 | `$1800`-`$1BFF` | the credits' character set, 128 glyphs, copied to `$4800` |
 | `$2000`-`$3F3F` | the gun barrel, a multicolour bitmap, copied to `$6000` |
 | `$8000`-`$801A` | `copy_tune_start`: copies the tune to `$E000` and starts the intro |
-| `$8500`-`$8EFF` | the tune: three note lists |
+| `$8500`-`$8EFF` | the tune, the James Bond theme (heard by the contributor): three note lists |
 | `$9000`-`$9B9F` | the credits: printer, 85 entries (`credit_lines`), their strings, the title rows |
 | `$A000`-`$AA82` | `speech_play` and its samples |
 | `$B000`-`$B9FF` | a hires fragment with "A VIEW TO A KILL" lettering that nothing shows |

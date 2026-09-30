@@ -105,7 +105,8 @@ comes from, in this part's listing.
 
 ## Sound
 
-- The theme tune has three voices, noise, sawtooth and pulse, read from
+- The tune, based on Duran Duran's "A View to a Kill" (heard by the
+  contributor), has three voices, noise, sawtooth and pulse, read from
   under the KERNAL with `$01` = 0 (`$7B73`); its notes step every third and
   then every second frame (`music_tick`, `$7AAB`).
 - `play_speech` (`$1000`) plays one bit at a time by switching the SID's

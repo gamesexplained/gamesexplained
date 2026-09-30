@@ -25,7 +25,7 @@
     ] };
     C64Sid.mount(root, {
       driver: createDriver, data, filter: '6581',
-      tunes: ['Intro and City Hall', 'Paris and the mine'],
+      tunes: ['James Bond theme (intro, City Hall)', 'A View to a Kill (Paris, the mine)'],
       rows: [
         { k: 'Note read from', f: (v) => v.at == null ? '-' : hex(v.at, 4) },
         { k: 'Length', f: (v) => v.len == null ? '-' : v.len + ' steps, ' + v.left + ' left' },
