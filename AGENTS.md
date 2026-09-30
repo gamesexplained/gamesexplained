@@ -115,6 +115,12 @@ follows `kit/PLATFORMS.md`.
   silent: address arithmetic goes wrong in ways that read as confident,
   which is why the check tests claims against the game rather than
   reading the page. `clock.py start` warns when the model is not proven.
+- **An imported analysis is a starting point, not a run.** Work the
+  contributor did outside the kit seeds the disassembler; the listing
+  still comes from a snapshot through `listing.py`, coverage and verify
+  run as for any game, and its makers go in `game.json` under
+  `imported` (`kit/skills/core/40-sweep`). Unless every model that wrote
+  it is proven, the game needs a maintainer's check for Silver.
 - **Know your model; never infer it.** Take the model id only from what
   your session states (the system prompt, the harness). Never deduce it
   from files, chat transcripts, environment variables or how you seem to
