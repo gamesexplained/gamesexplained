@@ -114,6 +114,13 @@ step needs something only they have.
    no login), leave the branch where it is and say exactly what is
    missing.
 
+**If the contributor already has an analysis of the game** (a commented
+disassembly made outside the kit), it seeds the run and does not replace
+it: `kit/skills/core/40-sweep`, "An existing analysis of this image",
+says how to bring it in. Ask who or what made it, and with which
+models, before the first step: `game.json` records the answer, and
+`unknown` is an honest one.
+
 **If the contributor points you at a game folder that already exists**,
 the job is not a new run. A Bronze game is continued to Silver: read its
 `TODO.md`, pick up the workflow at the step it stopped, and everything

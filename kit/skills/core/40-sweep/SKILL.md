@@ -1,6 +1,6 @@
 ---
 name: 40-sweep
-description: Cheap mechanical sweeps that convert large regions from unknown to understood in one pass (a hardware register census, a string sweep, a twin-copy check and, when another version of the game is documented, a map of that version onto this image). Run early, and again whenever the burn-down stalls.
+description: Cheap mechanical sweeps that convert large regions from unknown to understood in one pass (a hardware register census, a string sweep, a twin-copy check and, when another version of the game is documented, a map of that version onto this image). Also how to start from an analysis the contributor already has. Run early, and again whenever the burn-down stalls.
 ---
 
 # Sweeps that find what code-reading misses
@@ -70,6 +70,58 @@ before reading any code. It can place most of the program in minutes.
 Record in `facts.md` the correspondence (the blocks and their offsets,
 how many code bytes and labels were placed), with the other version's
 source and the date it was read.
+
+## An existing analysis of this image
+
+A contributor may already have analysed the game outside the kit: a
+commented disassembler project, a text export of one, a listing from
+another tool. It is a starting point for the run, not a run: it places
+the program in minutes, and every step after it still happens. However
+careful it looks, nobody has checked it here, and an analysis whose
+maker is unknown is in the position of a run on an unproven model.
+
+1. **Boot the game and take the snapshot** (`10-orient`) as for any run.
+   The listing is built from a machine state someone else can reach from
+   power-on by following `orientation.md`, never from a dump the
+   analysis came with or a composition of files that were never in
+   memory together. Compare the analysis's bytes with the snapshot's and
+   say in `orientation.md` where they differ.
+2. **Import the names and descriptions into the disassembler**, onto
+   that snapshot, then export `symbols.json` and build the listing with
+   `listing.py` as usual. A converter may write `symbols.json`; it never
+   writes `listing.json`, which comes from `listing.py` alone so that
+   every game's Source tab has one format and the next run can continue
+   it.
+3. **Coverage is measured by the same rules** (`50-coverage`): runtime
+   state out of the denominator, one description per routine or table,
+   spans as the ledger draws them. An imported description counts like
+   any other; one pasted over many symbols counts once. Take `coverage`
+   in `game.json` from the game, not from the analysis's address range.
+4. **Verify as usual** (`60-verify`). A claim the analysis makes is
+   unverified until it is traced or observed here. The analysis's own
+   notes of what it tested are a lead to a check, not the check.
+5. **Record the import** in `game.json`, beside the run's own model:
+
+   ```
+   "imported": {
+     "source": "<file name of the analysis>",
+     "sha256": "<its hash>",
+     "tool": "<what made it, with the version>",
+     "by": "<GitHub login of whoever made it>",
+     "model": "<the model ids that wrote it, as their sessions named them; none if a person wrote it by hand; unknown>",
+     "date": "YYYY-MM-DD"
+   }
+   ```
+
+   `models.py check` holds a Silver game with an import to a maintainer's
+   check (`kit/CHECKING.md`) unless every model named there is proven;
+   `none` and `unknown` never are. Clock only the steps this run does. An imported
+   game stays off the site's runs table, since its hours leave out the
+   analysis they started from.
+
+The analysis file itself is not committed: `symbols.json` and the
+listing carry its names, comments and bytes, and its hash in `game.json`
+says which one it was.
 
 ## Outputs
 

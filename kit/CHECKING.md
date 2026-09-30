@@ -14,6 +14,13 @@ page, a routine named for what it looks like rather than what it does, a
 screenshot saved under the wrong name. Reading the page does not find
 them. Testing a sample of claims against the game does.
 
+A game built on an analysis the contributor made outside the kit
+(`imported` in its `game.json`, `kit/skills/core/40-sweep`) needs the
+same check unless every model named under `imported` is proven. Where
+its claims came from changes nothing about how they are sampled or
+tested: the analysis's own record of what it checked is not evidence
+here.
+
 ## Who checks
 
 A maintainer, or their agent running on a proven model. The model that
