@@ -21,6 +21,28 @@ a OneLoad64 one-file conversion of memory `$0314`-`$FFFF`
 pattern the dump carries in unused memory (below, "The conversion's
 leftovers"). No trainer, intro or converter's credit was found.
 
+### Compared with a second copy
+
+A cracked disk image (one file, `GHOSTBUSTERS`, 128 blocks, loading at
+`$0801`; its unpacker ends with `JMP $6000`) was autostarted in VICE and
+stopped at `$6000` (`work/d64/boot.py`), and its 64 KB compared with this
+image as the hand-over leaves it (30 September 2026). Every region
+described in `game.json` matches, except:
+
+- run-time values: `name_entered_flag` `$6328` (1 there, 0 here), the
+  operand at `$8000`, and 19 bytes of the speech player's own variables
+  and operands (`$F085`, `$F0A6`, `$F138`, `$F1BD`, `$F318`, `$F3AA`,
+  `$F41B`, `$F41F`, `$F4DA`-`$F4E5`);
+- `$0400`-`$07FF`: other bytes. Bought there, the compact and the hearse
+  show as noise in the shop (VICE screenshots); here both are whole (the
+  Play port, same moment);
+- `$FD30`-`$FD4F`: the KERNAL's vector table ($EA31, $FE66, ...) in place
+  of speech data. Played through the speech port, phrase 3 differs in 750
+  of 17,768 writes; phrases 0, 1, 2 and 4 are identical.
+
+The zero page, the conversion's own areas and the run-time buffers differ
+as expected.
+
 ## Memory layout
 
 `$01` = `$35` throughout play: RAM at `$A000` and `$E000`, I/O at `$D000`

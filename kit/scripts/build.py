@@ -208,9 +208,13 @@ def tier_name(t):
 
 
 def tabbar(game, present, lib):
-    tabs = "".join(f'<a class="tab" href="{"./" if f == "index.html" else f}">{n}</a>' for f, n in TABS if f in present)
+    tabs = "".join(f'<a class="tab" href="{"./" if f == "index.html" else f}">{n}</a>'
+                   for f, n in game.get("tabs", TABS) if f in present)
     tier = game.get("tier", "none")
-    return (f'<nav class="gametabs"><div class="in"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
+    custom_tabs = "tabs" in game
+    inner_class = "in many-tabs" if custom_tabs else "in"
+    tabs = f'<span class="tab-list">{tabs}</span>' if custom_tabs else tabs
+    return (f'<nav class="gametabs"><div class="{inner_class}"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
             f'{PLATFORM_NAMES.get(game.get("platform"), game.get("platform"))} / {html.escape(game.get("title", ""))}</span>'
             f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
 
@@ -259,6 +263,8 @@ def banner(game, cons):
 # the file in the game folder each tab is written from; the Source and About tabs are
 # assembled, so they point at the prose the reader sees most of
 EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "play.html": "play.html",
+                "mechanics.html": "mechanics.html", "music.html": "music.html",
+                "discoveries.html": "discoveries.html",
                 "source.html": "facts.md", "about.html": "features.md"}
 
 
@@ -526,7 +532,7 @@ def fill(tpl, **kw):
     return tpl
 
 
-AUTHORED = ("index.html", "levels.html", "play.html")   # the tabs a game folder writes by hand
+AUTHORED = ("index.html", "levels.html", "play.html", "mechanics.html", "music.html", "discoveries.html")
 LIB = "../../lib"   # site/lib/ as a game's pages see it
 
 
@@ -575,21 +581,30 @@ def build_game(gdir, out_root):
     open(os.path.join(out, "source.html"), "w").write(at_end(src, edit_footer(game, "source.html")))
     # about
     cred = [c for c in (game.get("credits") or []) if (c.get("by") or c.get("name", "")).strip()]   # the game's makers; agents live in "model"
-    con_html = "<ul>" + "".join(
+    site_contributor_items = "".join(
         (f'<li><a href="https://github.com/{html.escape(login)}">{html.escape(login)}</a>' if login else f"<li>{html.escape(n)}")
-        + f" <span class='mute'>({c} commit{'s' if c != 1 else ''})</span></li>" for c, n, login in cons) + \
-               "".join(f"<li>{html.escape(c.get('by') or c.get('name', ''))} <span class='mute'>— {html.escape(c.get('role',''))}</span></li>" for c in cred) + "</ul>"
+        + f" <span class='mute'>({c} commit{'s' if c != 1 else ''})</span></li>" for c, n, login in cons)
+    game_credit_items = "".join(
+        f"<li>{html.escape(c.get('by') or c.get('name', ''))} <span class='mute'>— {html.escape(c.get('role',''))}</span></li>"
+        for c in cred)
+    site_contributors = f"<ul>{site_contributor_items}</ul>"
+    game_credits = f"<ul>{game_credit_items}</ul>"
+    con_html = f"<ul>{site_contributor_items}{game_credit_items}</ul>"
     links = {k: u for k, u in (game.get("links") or {}).items() if u}   # empty slots from the template are not links
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
     runs, totals, symbols = footprint(gdir, game)
     json.dump({"runs": runs, "totals": totals, "symbols": symbols}, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
     game["_totals"] = totals
-    about = fill(read(os.path.join(SITE, "about.html")), **common, footprint=footprint_table(totals),
+    about_template = os.path.join(gdir, "about-layout.html")
+    if not os.path.isfile(about_template):
+        about_template = os.path.join(SITE, "about.html")
+    about = fill(read(about_template), **common, footprint=footprint_table(totals),
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=f"{game.get('coverage_percent') or 0:g} %",
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
-                 contributors=con_html, links=link_html,
+                 contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
+                 links=link_html,
                  features=markdown(read(os.path.join(gdir, "features.md")), shift=1),
                  orientation=markdown(read(os.path.join(gdir, "orientation.md")), shift=1)).replace("<!-- tabs -->", nav)
     about = under_title(about, ban)

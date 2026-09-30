@@ -34,3 +34,17 @@ come from the kit's simulator, recorded with `work/port/game/simframe.js`.
 
 **Time.** The container stopped for about four hours during verify (16:13-20:20 UTC); the
 60-verify time includes it.
+
+**Editorial structure, 30 September 2026.** At the steward's request the How it works page
+was split, on the model of Chiller's editorial draft, into Overview (the game, its makers, the
+six weeks, reception, versions), The city, How it works, Music and speech, and Discoveries
+(claims the code contradicts, bugs, what was left in, open questions). Findings were moved,
+not rewritten; each lives on one tab and the others link to it. What belongs to the one-file
+conversion moved to About, so the tabs describe the game and not one copy of it.
+
+**A second copy.** The steward sent a cracked disk. Run in VICE to `$6000` and compared with
+the image: the game's code is the same at the same addresses. The crack lost the compact's and
+the hearse's pictures (`$0400`-`$07FF`) and 32 bytes of phrase 3 (`$FD30`, the KERNAL's
+vector table written over it), which the two shop screenshots and the speech port showed. Two
+VICE scripts run at once against the one emulator drew the same screen into both files; the
+pictures were taken again one at a time.

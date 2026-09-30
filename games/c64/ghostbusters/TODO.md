@@ -27,6 +27,9 @@ How it works and Play tabs built. The copy is `agent-draft`.
   interrupt after `init_game_vars`, where the game ran it before. The
   page is not affected; the lockstep's report is.
 
+- A publisher's original disk or tape, to compare with the two copies
+  studied (About, "The copies studied").
+
 ## For Platinum
 
 - Reassemble the listing byte for byte to the analysed image and boot it.
