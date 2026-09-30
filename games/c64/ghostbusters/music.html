@@ -1,0 +1,52 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ghostbusters-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The theme song with its bouncing ball, and five phrases of speech in 2,738 bytes. Both are played here by ports of the game's own players.</p>
+</header>
+<main class="wrap">
+<section id="music">
+  <p class="fig">01 · The sing-along</p>
+  <h2 class="t">The theme song, with a bouncing ball over 52 lines of lyrics</h2>
+  <p class="lede">The title screen plays Ray Parker Jr.'s theme in Russell Lieblich's arrangement while a ball bounces along the words. The music stops when the song ends, four minutes later. In play the same tune loops quietly behind the game.</p>
+  <div class="plate">
+    <div id="lyr" class="lyr" aria-label="The lyric window, as the title screen shows it"></div>
+    <div id="sid" style="margin-top:16px"></div>
+    <p class="cap">The game's own music player (<code>$93E1</code>-<code>$95A4</code>) ported to JavaScript and played through the site's model of the SID. The port was checked against the game's code, register write for register write: 223,366 writes over 111,904 frames matched. The lyric window follows the game's cue table (<code>$68F0</code>) and the ball's script (<code>$92BC</code>): each line and landing is at the frame the game shows it, measured in the simulator. <b>Title</b> is the sing-along, played once. <b>In play</b> is the loop at half volume.</p>
+  </div>
+  <p>The tune is three voices of patterns: a melody, a bass line and a percussion track, each a list of 109 pattern numbers (<code>$A2BD</code>, <code>$A32B</code>, <code>$A399</code>) into 71 patterns (<code>$A407</code>) and nine instruments (<code>$A7EF</code>). The player steps every fourth tick of a counter (<code>$08</code>) that the lyrics share, so the words and the notes cannot drift apart.</p>
+  <p>The game was written for American machines. At start-up it measures the screen's last raster line to tell a European (PAL) C64 from an American one (NTSC) and stores the answer at <code>$EA73</code>. A PAL machine draws 50 frames a second where an NTSC machine draws 60, so on PAL the counter takes an extra step whenever it lands on a value ending in binary <code>001</code>: eight ticks in seven frames, 57.3 a second. The tempo comes out close to the American one. The pitch does not. The note table (<code>$A1F4</code>) holds the SID values for an NTSC clock, where note 57 is exactly 440 Hz. A PAL C64 runs 3.7 % slower, so every note of the song sounds 0.65 of a semitone flat.</p>
+</section>
+
+<section id="speech">
+  <p class="fig">02 · Speech</p>
+  <h2 class="t">Five phrases of speech from 2,738 bytes, and one the game never says</h2>
+  <p class="lede">The game shouts "Ghostbusters!" at start-up and when the space bar is pressed on the title screen. It speaks four phrases in play. A fifth, phrase 0, is stored with the others and never asked for.</p>
+  <div class="plate">
+    <div class="row" id="ph-buttons"></div>
+    <canvas id="ph" width="900" height="260" style="width:100%;height:auto;display:block"></canvas>
+    <p class="kv" id="ph-kv"></p>
+    <p class="cap">The game's speech player (<code>$F080</code>-<code>$F4E9</code>) ported to JavaScript and run on the stored phrases (<code>$F4EA</code>-<code>$FF9B</code>). The port writes the same 311,368 values to the volume register, at the same interrupts, as the game does in the simulator. Top: the four-bit level the player writes, 9,659 times a second. Middle: each frame of the phrase, blue where it is voiced and orange where it is noise. Bottom: the pitch of each voiced period. Heard here as a straight level; a real SID shapes it a little.</p>
+  </div>
+  <table class="t">
+    <tr><th>Phrase</th><th class="n">Length</th><th>When the game plays it</th><th>What it says</th></tr>
+    <tr><td>0</td><td class="n">0.94 s</td><td>never</td><td>its first blocks are phrase 1's; probably a shorter "Ghostbusters" (inferred)</td></tr>
+    <tr><td>1</td><td class="n">1.57 s</td><td>start-up; space on the title (<code>$6393</code>); a Slimer trapped (<code>$8820</code>)</td><td>"Ghostbusters!"</td></tr>
+    <tr><td>2</td><td class="n">1.32 s</td><td>a man slimed (<code>$874B</code>)</td><td>"He slimed me!" (inferred from where it plays)</td></tr>
+    <tr><td>3</td><td class="n">2.68 s</td><td>start-up; a man caught at Zuul (<code>$8AB9</code>); the foreclosure (<code>$8D1F</code>)</td><td>a laugh: nine voiced syllables (inferred)</td></tr>
+    <tr><td>4</td><td class="n">2.22 s</td><td>the portal closing (<code>$8C5A</code>)</td><td>unknown: a falling voice with no consonants</td></tr>
+  </table>
+  <p>Speech on the C64 has no sound chip of its own. The player plays it through the SID's master volume register (<code>$D418</code>): a four-bit value written there moves the output level, and written fast enough it becomes a waveform. A timer in the second CIA chip interrupts the processor every 102 cycles, and each interrupt writes the next value. While a phrase plays the game does nothing else: the raster interrupt stands aside and the main loop waits (<code>$8DB9</code>).</p>
+  <p>Stored as raw samples, the 8.7 seconds of speech would take 42,140 bytes, two thirds of the machine. The player stores 2,738. A voiced sound is a short waveform chunk played forwards, then backwards, then a silence whose length sets the pitch; each new chunk is blended halfway into the last. A hiss is a one-bit pattern slid along as a window, with no pitch at all. Each frame of a phrase is four bytes that say which, how long and where its samples are.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/ghostbusters-page.js"></script>

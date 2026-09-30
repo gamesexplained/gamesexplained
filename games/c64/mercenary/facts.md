@@ -194,6 +194,18 @@ to BASIC's READY (`reference/reset-crack-basic.png`).
 | `$A544`, the pass's sines and cosines | 650 |
 | `$A320`, the view matrix | about 2,200; 16 when it skips, on foot |
 
+- **A turned object costs about 1,125 cycles more a vertex.** `$A6AD`
+  turns each model vertex of objects 0-15 by `$A728` once for each of its
+  angles `$802A`, `$801A`, `$800A` + n that is not 0. In a 6502 simulator,
+  over the models at `$3B25`-`$3BF8` (the Dart, the car, the jet, the
+  diamond, the CHEESE) with random offsets, `$A61F` took 573 cycles a
+  vertex unturned and 1,697 turned by a heading; `$A728` with its `JSR`
+  took 1,078-1,220 over all 63 angles. The game's code writes only the
+  heading, when you leave a craft (`$98F8`); object 0's starts at `$20`,
+  and a load puts back what was saved (`$8000`-`$803F`). So a craft you
+  have left, drawn near, costs about 1,125 cycles more for each of its
+  vertices: 6 for the Dart and the CHEESE, 16 for the car and the jet.
+
 ## The main loop
 
 `$855C`, looping through `JMP $855C` at `$859E` and `$85EF`. Every pass

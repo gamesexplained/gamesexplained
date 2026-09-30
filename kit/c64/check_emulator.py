@@ -531,7 +531,12 @@ def main():
         for ext in (".vsf", ".json"):
             try: os.remove(os.path.join(SNAPDIR, name + ext))
             except FileNotFoundError: pass
-    rpc = connect()
+    try:
+        rpc = connect()
+    except OSError:                                  # URLError: nothing listens on :6510
+        sys.exit("the emulator is not answering on :6510. Start it first:\n"
+                 "  python3 kit/scripts/tools.py vice\n"
+                 "then run check-emulator again.")
     started = time.time()
     p_start(rpc)
     if not any(n == "program-running" and ok for n, ok in results):

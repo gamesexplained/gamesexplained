@@ -29,8 +29,6 @@ that kind of observation is what the page wants.
 
 ## Article ideas not built
 
-- A player for the talking squawks, built from the sound table at `$D764`
-  and the phrase tables at `$B7FE`.
 - A stepper for an activity's state machine: pick an activity, see its
   phase table and step through the handlers.
 - The dog: its 21 places, its bowl and its waits.

@@ -1,0 +1,27 @@
+  <p class="lede">Nothing on this page emulates a 6502. The game's 188 routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
+  <p>The page loads that memory from the listing, the same bytes the Source code tab shows. From then on the port reads and writes the game's variables where the game keeps them, draws the levels from the game's own maps, plays the game's own tunes and puts its sprites where the game puts them. The picture is drawn from that memory as the video chip would draw it.</p>
+  <h3>How it was checked</h3>
+  <p>Each routine was first checked alone against the game's code, run in a 6502 simulator: two to four thousand random starting states each, with every instruction the routine can reach reached at least once. Then the whole port ran beside the original, from 366 moments of play saved on all ten levels, with the same random joystick. At the start of every pass of the main loop all 64 KB are compared, and so are colour RAM and the registers the game writes to the video and sound chips. Only the stack is left out.</p>
+  <table>
+    <tr><th>Sessions</th><th>Passes</th><th>Result</th></tr>
+    <tr><td>366 sessions of up to 5,000 passes, 31 to 40 on each level, through deaths, crosses taken, the cards between levels and the game over</td><td>1,739,834</td><td>identical at every pass in 357; the other 9 left in step at the same interrupt race (below)</td></tr>
+  </table>
+  <p>A session that reaches the game over ends there, because the random joystick only changes at a pass and the game over waits for fire. The 34 moments that were saved during that wait were left out, since the port starts a session at the main loop.</p>
+  <h3>Where the original depends on its interrupt</h3>
+  <p>The music and the keyboard scan run 60 times a second from a timer interrupt, which on the C64 can fall between any two of the game's instructions. The port runs it between its own steps. Where that changes what the game reads, the check gives the port what the game's code read.</p>
+  <ul class="pl-list">
+    <li><b>The random numbers.</b> The game makes a random number from its own code bytes and the low byte of the KERNAL's clock, which the interrupt counts up. When a tick falls between two draws, the second draw sees the new clock. The port reads the clock through one function, which the check gives the value the game read.</li>
+    <li><b>The collisions.</b> The video chip sets its collision registers while it draws, and the port reads them a little before the game gets there. The check first runs the game alone with the same joystick and gives the port the values it read, in turn.</li>
+    <li><b>The wait for line 16.</b> Before it flickers the border while your energy drains, and before it swaps the boy and the girl, the game waits for the raster to reach line 16: it reads the line, compares it with 16 and then checks the ninth bit. Now and then the interrupt falls between the read and the check, and takes 18 lines. The game then leaves the wait on line 34 or 35 instead of 16. The port leaves on line 16, and the check stops there, since the two are no longer at the same moment. Nothing in memory differs at that point. All nine sessions that went out of step did so here.</li>
+  </ul>
+  <h3>Speed</h3>
+  <p>The game runs about fifteen passes of its main loop a frame, so a port that ran as fast as the browser can would be a different game. The page keeps a PAL machine's clock, 312 lines of 63 cycles, and each routine the port calls moves it on by that routine's own cycles. The costs were fitted by least squares on the game's timings in 46 of the sessions above, over a million stretches of code between two points of the main loop. On 46 other sessions the fitted cycles came to within 0.14 % of the game's. The interrupt's own time, 1,197 cycles on average, is added where it falls.</p>
+  <table>
+    <tr><th>From a new game, 400 frames</th><th>Passes, original</th><th>Passes, this page</th></tr>
+    <tr><td>The forest, standing</td><td>6,179</td><td>6,148</td></tr>
+    <tr><td>The cinema, walking right</td><td>5,508</td><td>5,502</td></tr>
+    <tr><td>The graveyard, walking left</td><td>6,057</td><td>6,078</td></tr>
+    <tr><td>The house, going home, walking right</td><td>5,948</td><td>6,099</td></tr>
+    <tr><td>The forest, going home, standing</td><td>6,231</td><td>6,155</td></tr>
+  </table>
+  <p>Over all ten levels, standing still and walking either way, the page's count of passes is within 4 % of the original's.</p>

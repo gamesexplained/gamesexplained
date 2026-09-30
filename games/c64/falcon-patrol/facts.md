@@ -220,9 +220,9 @@ until the tank is full.
 
 **Being destroyed** runs the other way. `$4400` sets bit 3; `$5690`
 flickers sprite 0 through frames `$88`-`$8F` in white multicolour with a
-smoke puff on sprite 7; `$4800` sweeps the SID filter down and switches
-all three voices to noise; `$5640` ends the life once the frame reaches
-`$90`. Rendering those sprite blocks settles what they are: `$83` is the
+smoke puff on sprite 7; `$4800` sweeps the SID filter cutoff up while the
+wreck falls and down once it has stopped, then turns all three gates off
+(see Sound); `$5640` ends the life once the frame reaches `$90`. Rendering those sprite blocks settles what they are: `$83` is the
 jet, `$88` and `$89` are scattered debris, `$8F` is the debris thinning
 out and `$90` is empty. The sequence is an explosion dispersing to
 nothing.
@@ -307,8 +307,76 @@ Zero-page object records:
 ## Sound
 
 SID voice control registers are written at `$4BD3`–`$4BE1` in the title
-loop, and a filter sweep runs at `$4D4B` during name entry. Not yet
-analysed further.
+loop. Two effects sweep the filter cutoff by hand; both were ported and
+their every SID write checked against the game's own routines run in
+`kit/c64/cpu6502.js` on the listing's bytes (814 writes of a name entry at
+the same cycle, 403 of a crash on the same tick, no mismatch).
+
+**Name entry has no clock.** `highscore_name_entry` (`$4CD6`–`$4D73`)
+paces itself with counting loops: `name_entry_cursor` (`$4DC0`) burns
+`$3F` passes of 256 `inc $2D`, about 129,000 cycles (0.13 s), and the stick
+is read once per pass at `$4CE2`, so that is the cursor's repeat rate.
+
+- Accepting a letter: `name_entry_accept_letter` (`$4DE5`) calls
+  `sid_setup_name_entry` (`$4E00`: `$D404` = `$20`, `$D405` = `$3A`,
+  `$D406` = `$00`, `$D417` = `$F1`, `$D416` = `$7F`, `$D418` = `$1F`,
+  `$D401` = `$17`), then writes `$D417` = `$F0`, `$D405` = `$52`, `$D404` =
+  `$11`. Voice 1 is taken back out of the filter before it is gated, so
+  the click is an unfiltered triangle. `$D400` is not written: the click's
+  low frequency byte is whatever an earlier sound left there.
+- Choosing `_` (index `$1B`) or accepting a twelfth letter goes to `$4D2F`,
+  which calls `$4E00` again (voice 1 routed, resonance 15, low-pass) and
+  types the name out. For each non-space character `name_entry_letter_note`
+  (`$4E30`) sets voice 1's frequency from `$2FE0`/`$2FC0` indexed by the
+  code minus `$80` and writes `$D404` = `$21` (sawtooth, gate). The tables
+  hold eight notes a semitone apart, `$10C3` to `$191E`, repeated four
+  times. Then the loop at `$4D46` writes `$D416` from `$FE` down to `$00`,
+  255 writes 2,056 cycles apart (0.53 s), and `$D404` = `$10` releases the
+  note. Spaces are skipped with no sound and no wait.
+- `name_entry_cursor` is first called with `$2F` = `$FF`, so its store to
+  `$DB4E+$2F` goes to `$DC4D`, a mirror of CIA 1's interrupt control
+  register. Seen in the simulator; its effect on the machine was not
+  tested.
+
+**Being shot down**: `flight_sound_update` (`$4800`) runs once a tick
+(CIA 2 timer B, about 30 Hz), after `check_collisions`, so it sees
+`player_hit`'s bit 3 on the tick of the hit.
+
+- With `sfx_crash_state` `$24` = 0 it calls `sid_load_dive` (`$4990`): the
+  25 bytes at `$4F19` into `$D400`-`$D418` (`$D415`-`$D418` = `00 20 F6
+  1F`: voices 2 and 3 filtered, resonance 15, low-pass), then `$D412` =
+  `$15` (triangle, ring, gate), `$D404` = `$81` (noise), `$D40B` = `$83`
+  (noise, sync, gate); `$24` = `$20`, `$AC` = `$20`, `$AD` = `$0E`, `$AE` =
+  `$04`.
+- While `vel_y` is non-zero or sprite 0 is above Y `$7F` (`$4811`): each
+  tick `$AD` and `$AE` go up by one (capped `$E0`) into `$D401` and
+  `$D40F`, and the cutoff `$AC` by two (capped `$6D`) into `$D416`.
+- Once the wreck is down and stopped: `sid_load_touchdown` (`$49C0`, only
+  while `$24` is positive) loads `$4F32` (`$D417` = `$F7`, all three
+  voices filtered; voice 3's control `$10` releases it), gates voices 1
+  and 2 with `$81`, and sets `$AC` = `$60`. Each tick `$4850` lowers the
+  cutoff by one while it is `$40` or more, `$5F` to `$3F` in 33 ticks.
+  The tick after, `$4866` writes `$80` to all three control registers and
+  sets `$24` and `tick_counter` to `$90` (not zero), and `$07F8` to `$88`.
+- `crash_sequence` then steps `$07F8` once every eighth tick to `$90`, and
+  `end_life_when_wreck_settled` (`$5640`) ends the life when
+  `tick_counter` reads `$4F`: 191 ticks after the gates close, whatever
+  the fall. `reset_game_state` calls `sid_silence` (`$4C30`), which zeroes
+  `$D419` down to `$D401`.
+- Simulated with the game's `read_input` (`$5700`, which runs
+  `flight_update` and `crash_sequence`): a jet hit in level flight at
+  sprite Y `$60` falls one pixel a tick and stops at `$BF` on the 96th
+  tick; the whole sound is 321 ticks, 10.7 s. The same path runs when the
+  tank empties at the floor (`$5774` sets bit 3).
+
+The engine preset `$4F00` (`00 10 F5 1F` in `$D415`-`$D418`: voices 1 and
+3 filtered) is loaded by `sid_load_engine` (`$4970`) at the start of each
+life. Its cutoff is then written every tick by `enemy_proximity_siren`
+(`$5EA0`, called from `$5E61` in the frame loop's first routine): either
+from an enemy aircraft's map column against `world_x` + `$93`, capped at
+`$6D`, at `$5EF0`, or wound down by one a tick to a floor of `$10` by
+`sfx_cutoff_decay` (`$48E0`), which is what happens when no enemy is
+flying. Not ported: its input is the enemies' movement.
 
 ## Live tests
 

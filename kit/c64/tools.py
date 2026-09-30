@@ -33,7 +33,7 @@ checked on any operating system: it starts the emulator, makes it write a snapsh
 stops it, and then lists every file outside the repository that changed meanwhile and
 looks like it belongs to one of the tools. An empty list is the pass.
 """
-import os, re, shutil, socket, subprocess, sys, time
+import glob, json, os, re, shutil, socket, subprocess, sys, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TOOLS = os.path.join(ROOT, "tools")
@@ -107,6 +107,37 @@ def foreign(owner):
     return bool(owner) and os.path.join(ROOT, "") not in owner and os.path.join(os.path.realpath(ROOT), "") not in owner
 
 
+def foreign_detail(port):
+    """For a tool on `port` started from another clone: its command line, the clone's folder, how long the
+    process has been up, and any step open on the clock there, so leftovers can be told from someone's live
+    run. Empty when the tool is this clone's, or nothing listens."""
+    owner = port_owner(port) if up(port) else None
+    if not foreign(owner):
+        return ""
+    lines = [f"  {owner}"]
+    try:
+        pid = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"],
+                             capture_output=True, text=True).stdout.split()[0]
+        etime = subprocess.run(["ps", "-o", "etime=", "-p", pid], capture_output=True, text=True).stdout.strip()
+        if etime:
+            lines.append(f"  process {pid}, up {etime} ([[days-]hours:]minutes:seconds)")
+    except (OSError, IndexError):
+        pass
+    head = owner[:owner.find("/tools/")] if "/tools/" in owner else ""
+    clone = head[head.rfind(" /") + 1:] if head else ""
+    if clone and os.path.isfile(os.path.join(clone, "AGENTS.md")):
+        lines.append(f"  from the clone at {clone}")
+        for t in sorted(glob.glob(os.path.join(clone, "games", "*", "*", "timings.json"))):
+            try:
+                open_steps = [e for e in json.load(open(t)).get("entries", []) if e.get("end") is None]
+            except (OSError, ValueError):
+                continue
+            for e in open_steps:
+                lines.append(f"  a run is on the clock there: {e.get('step')} on {os.path.relpath(os.path.dirname(t), clone)}, "
+                             f"started {e.get('start')}; ask before stopping it")
+    return "\n".join(lines)
+
+
 def missing_libraries(exe):
     """Shared libraries the dynamic linker cannot find for exe: the release zip bundles none, so a
     Linux machine may lack some. Empty where there is no ldd to ask (macOS, Windows)."""
@@ -129,10 +160,10 @@ def vice(machine="x64sc"):
     libs = missing_libraries(exe)
     if libs:
         sys.exit(say_missing(libs))
-    owner = port_owner(6510) if up(6510) else None
-    if foreign(owner):
+    detail = foreign_detail(6510)
+    if detail:
         # the MCP server and this clone's scripts would drive that machine, and its snapshots land in its own clone
-        sys.exit(f"an emulator started from another folder already answers on :6510:\n  {owner}\n"
+        sys.exit(f"an emulator started from another folder already answers on :6510:\n{detail}\n"
                  "stop it there (its own `tools.py stop vice`) before starting this clone's")
     env = dict(os.environ)
     for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
@@ -155,17 +186,21 @@ def r2000(path):
     if not exe:
         sys.exit("no regenerator2000; run: cargo install --root tools/cargo regenerator2000")
     if up(3000):
-        owner = port_owner(3000)
-        if foreign(owner):
-            sys.exit(f"a disassembler started from another folder already answers on :3000:\n  {owner}\n"
+        detail = foreign_detail(3000)
+        if detail:
+            sys.exit(f"a disassembler started from another folder already answers on :3000:\n{detail}\n"
                      "stop it there (its own `tools.py stop r2000`) before starting this clone's")
         sys.exit("something already answers on :3000; only one disassembler can run. `tools.py stop r2000` first")
     start([exe, "--mcp-server", os.path.abspath(path)], os.path.join(LOGS, "r2000.log"), port=3000, name="disassembler")
 
 
 # only this clone's tools: another clone on the same machine keeps its emulator and disassembler
-# the emulator itself only: its wrappers (script, and xvfb-run with its X server) exit after it
-STOP_PATTERNS = {"vice": "^" + re.escape(os.path.join(VICE_DIR, "bin")) + ".*-mcpserver",
+# scoped by path rather than anchored to the start of the command line: the launcher runs the
+# emulator through `script`, and on a macOS release build bin/x64sc is a shell wrapper that execs
+# VICE.app/Contents/Resources/bin/x64sc, so the process holding :6510 has neither of those as its
+# first word. Every match still has to lie under this clone's tools/, so no other clone is touched.
+# The emulator alone is killed: its wrappers (script, bash, xvfb-run) exit with it.
+STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
                  "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
 
 
@@ -358,15 +393,15 @@ def use_vice(target):
 
 def status():
     print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {vice_build()} (tools/vice-mcp)")
-    owner = port_owner(6510) if up(6510) else None
-    if foreign(owner):
-        print(f"  WARNING: :6510 is answered by an emulator from another folder: {owner}")
+    detail = foreign_detail(6510)
+    if detail:
+        print(f"  WARNING: :6510 is answered by an emulator from another folder:\n{detail}")
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
     where = "tools/cargo/bin" if os.path.exists(local) else (shutil.which("regenerator2000") or "MISSING")
     print(f"disassembler  :3000  {'up' if up(3000) else 'down'}   binary: {where}")
-    owner = port_owner(3000) if up(3000) else None
-    if foreign(owner):
-        print(f"  WARNING: :3000 is answered by a disassembler from another folder: {owner}")
+    detail = foreign_detail(3000)
+    if detail:
+        print(f"  WARNING: :3000 is answered by a disassembler from another folder:\n{detail}")
 
 
 def home_candidates():
