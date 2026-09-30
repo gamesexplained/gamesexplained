@@ -40,33 +40,47 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| Joystick in control port 2: left, right, up, down, fire | confirmed (left, right and fire live) | reader `$8F3C` |
-| Keys Z left, X right, `;` up, `/` down, RETURN jump (C64) | traced | reader `$8F81`-`$9013` |
-| F1, F3, F5, F7 each set their own flag | traced; F3 drops a marker ("MARKER 4" on the status line), F1 moves the pocket highlight | `$9015` |
-| S opens the Splinx Programmer | live | `$9029` |
-| D, CTRL+D, R, L set a mode byte `$E8` | traced | `$8FA4`, `$902F` |
-| A scrolling cavern map, one screen wide window | live | |
-| Ladders to climb | live | |
-| Four pockets for items (status bar boxes) | open | |
-| Score, six digits | live (000000 at start) | |
-| Six figures beside the score (lives or regenerations) | open | |
-| Splinx follows the Doctor | live (seen beside him after walking) | |
-| Splinx programmer: change mode, go to markers 1-4, return to Doctor, wait, pick up, drop, recharge; shut down, follow Doctor, execute program; battery gauge | live (screen shown) | |
-| Splinx battery drains and is recharged | open | |
-| Markers 1-4 placed in the mines for Splinx | open | |
-| Pick up, use, throw and drop items | open | |
-| Push buttons | open | |
-| Robots and monsters that kill | open | |
-| Death by falling too far | open | |
-| Oxygen needed outside | open | |
-| Spikes | open | |
-| Forced regeneration | open | |
-| Heatonite mining, TIRU, recovering the plans | open | |
-| The Master takes the TIRU crystal at the end; escape bonus 4096 | open | |
-| Load saved games from disk (BBC key list) | open | |
+| Joystick in control port 2: left, right, up, down, fire | confirmed (left, right, fire live) | `$8F3C` |
+| Keys Z left, X right, `;` up, `/` down, RETURN jump | traced | `$8FD5`-`$9013` |
+| F1 moves the pocket selector | live | `$A530` |
+| F3 puts an item in a pocket or drops a marker, or takes one out | confirmed (MARKER 4 shown live) | `$A575`, `$A60C` |
+| F5 picks up the object in front, or uses the held item | traced | `$A929`, `$BACC` |
+| F7 with a direction throws the held item | traced | `$A7D7` |
+| S opens the Splinx Programmer | live | `$AF58` |
+| A scrolling cavern map | live | `$8C32`, map `$E000` |
+| Ladders to climb | live (seen); climbing traced | `$9D15` |
+| Four pockets for items | traced | `$3E`-`$41` |
+| Score, six digits | live (000000) | `$A50D` |
+| Figures beside the score are lives | live (five at the start, four after a death) | `$94AC` |
+| Splinx follows the Doctor | live | `$B3EF` |
+| Splinx programmer: modes, ten-step program, commands | confirmed (cursor live) | `$AF58`-`$B16C`, `$B1A0` |
+| Splinx battery drains and is recharged | traced | `$B1EA`, command 9 |
+| Markers 1-4 placed in the mines for Splinx | confirmed | `$A575`, `$42`-`$45` |
+| Pick up, use, throw and drop items | traced | `$A929`, `$BACC`, `$A6CB` |
+| Push buttons | traced: the code lock's three buttons | `$BE29` |
+| Robots and monsters that kill | traced: controllers (shock), madrag (bite), baby madrag | `$CE5A`, `$B96F`, `$B902` |
+| Death by falling too far | traced: a drop of `$60` or more | `$CD62` |
+| Death on stalagmites | live | `$CA67` |
+| Oxygen needed outside | traced; live: no drain in the start cavern | `$CA90` |
+| Spikes | open: the only terrain deaths found are stalagmite tiles `$74`/`$51`; every `$E8` writer was read | |
+| Forced regeneration | live (key R) | `$9051` |
+| Explosions | traced | `$C09A`-`$C260` |
+| Heatonite mining, TIRU, recovering the plans | traced: the end bonus asks whether production was halted and whether the CAPSULE (TIRU plans) was brought back | `$9102`-`$920F`, `$B9B6` |
+| The Master takes the TIRU crystal at the end; escape bonus 4096 | traced: object `$0C` goes after the CRYSTAL, from the Doctor or a pocket; the end bonus is 1024, doubled for the CRYSTAL and doubled for Splinx, 4096 with both, as the forum said. That `$0C` is the Master is not shown by the code | `$B48A`, `$9163`, `$928C` |
+| Escape by TARDIS or escape pod, Time Lords' rating | traced | `$9102` |
+| Save to cassette or disc | traced; the game ends after saving | `$94FF` |
+| Load saved games | traced: start-up restores a saved block in `$7800`; nothing in the program loads it | `$49C6` |
+| Music, five tunes by area | confirmed (live: music plays) | `$74EA` |
 
 ## Beyond the documentation
 
-Found in the code, not in the manual.
+- The status bar's font lives in the unused rows of its own screen.
+- A code lock whose six-press sequence is dealt from a shuffled deck.
+- The madrag guards two eggs and carries a moved egg back to its nest.
+- Seven zones that each swap in their own character shapes.
+- A countdown worth up to 10,800 points at the end that only ticks once every 21.8 minutes.
+- Several tests that want an exact value: the carrier boards only at Y `$0450`, the lift only at a height difference of 8.
 
 ## Open questions
+
+See `facts.md`, Open questions.
