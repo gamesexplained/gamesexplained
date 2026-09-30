@@ -22,8 +22,10 @@ swell the run's hours, which are what the next run tries to beat:
 Each ends with 80-retro, as a run does; the retro of work after the run is
 counted with it.
 --model is the id of the model doing the step, as your system prompt names
-it (claude-opus-5, claude-fable-5-1, ...). It is required: a run can change
-model between steps, and a time means nothing without the model that took it.
+it (claude-opus-5, claude-fable-5-1, claude-opus-5-5[1m], ...), suffix and
+all: models.py reads a context-window suffix such as [1m] as the same
+model. It is required: a run can change model between steps, and a time
+means nothing without the model that took it.
 Never infer it from files, transcripts or the environment: when the session
 does not name it, ask the contributor, and pass `unknown` if they cannot tell
 (AGENTS.md, "Know your model; never infer it").
@@ -112,9 +114,9 @@ def start(step, model, gdir):
     save(gdir, T)
     print(f"started {step} at {iso(t)}  ({os.path.relpath(os.path.join(gdir, 'timings.json'), os.getcwd())})")
     sys.path.insert(0, HERE)
-    from models import proven
+    from models import proven, is_proven
     P = proven()
-    if model not in P:
+    if not is_proven(model):
         print(f"\nNOTE: {model} is not a proven model (proven: {', '.join(sorted(P)) or 'none'}; kit/scripts/models.py).\n"
               "The run may go on. Tell the contributor now, in plain words, if you have not already: an untested\n"
               "model often produces results that read as right and are wrong, and this game cannot be Silver until\n"
