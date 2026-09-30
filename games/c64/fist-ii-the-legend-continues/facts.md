@@ -164,7 +164,7 @@ Read from the game's tables, with the live tests named.
 | Scroll | Opens | Where |
 |---|---|---|
 | 1 | barriers of type 3 (rooms 4, 21, 37, 39, 40, 53) can be broken | `$0A59`-`$0A6A` |
-| 2 | a location action in room `$34` | `$372F`-`$373C` |
+| 2 | an exit of room 52 (`$34`), taken with the stick | `$36DE`-`$373C` |
 | 3 | leaving area 7 (room 76, on the way to the volcano) alive: without it energy is set to 0 | `$0649`-`$0660` |
 | 4 | barriers of type 7 (rooms 79, 81) can be broken | `$0A44`-`$0A55` |
 | 5 | the chain of opponents at an encounter ends early | `$27AD` |
@@ -186,7 +186,7 @@ screen (`$92` = `$4E`, `$371D`) drops the hero to the room below
 
 **The order.** A search over the exit lists, the walls and the gates
 above finds that the scrolls can be delivered in the order 1, 4, 8, 2, 3,
-6, 7, 5, and that room 122, the ending (`$2DB5`), is then reachable
+6, 7, 5 (the search does not model the room-52 gate of scroll 2), and that room 122, the ending (`$2DB5`), is then reachable
 through the volcano rooms 60-63, if the hole in room 103 can be crossed.
 Every route from the start to scroll 1 in this model crosses that hole,
 and every other part of the world is behind a type-3 barrier that needs
