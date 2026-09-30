@@ -147,10 +147,11 @@ recorded.
 ## Get the emulator
 
 Always the newest vice-mcp release. Nobody pins a version, because the
-project does not build every platform for every release: in September
-2026, v3.12.1 and v3.13.1 had Linux and Windows builds and no macOS one,
-and v3.11.0 was the newest release with a macOS build. So find out what
-this machine can have, with nothing changed:
+project does not build every platform for every release, and a build can
+appear partway through a release's life: on 24 September 2026 v3.13.1 had
+Linux and Windows builds only and v3.11.0 was the newest a Mac could have,
+and by 28 September 2026 v3.13.1 had a macOS arm64 GUI build (the table
+above). So find out what this machine can have, with nothing changed:
 
 ```
 python3 kit/scripts/tools.py get-vice
@@ -194,11 +195,19 @@ published on its GitHub releases page,
 https://github.com/barryw/vice-mcp/releases; the source is cloned from
 the same repository. Nothing comes from anywhere else.
 
+A macOS release file is a `.dmg` with the usual drag-to-install
+`Applications -> /Applications` symlink at its root. `get-vice` unpacks
+only the release's own folder, skipping dotfiles and symlinks. Following
+that link — which an earlier `get-vice` did, until it was fixed on 29
+September 2026 — copies the contributor's whole real `/Applications` into
+`tools/downloads/`: 19 GB there, for a 40 MB file. Delete any
+`tools/downloads/unpacked/Applications` you find.
+
 The builds the project publishes, when a release has them:
 
 | Operating system | Asset | Notes |
 |---|---|---|
-| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with** (v3.11.0) |
+| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | the first three games used v3.11.0; v3.13.1's measured 56 of 57 on 28 September 2026 (table above) |
 | macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; no run recorded |
 | Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | the GUI zip run on 24 September 2026 in a container with no display (Linux, below) |
 | Windows x86_64 | `...-windows-x86_64-headless.zip` | headless, so **stops do not work in it** at all; no run recorded |
