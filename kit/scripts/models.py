@@ -10,17 +10,27 @@ checked it (kit/CHECKING.md) and recorded the check as `verification` in
 its game.json. The models kit/models.json declares are proven from the start. Any model may run the kit (AGENTS.md, "Model"); a game that
 is not trusted cannot be Silver.
 
+Ids are recorded exactly as the session names them, and compared without
+a context-window suffix: claude-opus-5-5[1m] is the same model as
+claude-opus-5-5, run with a larger context, so either proves the other.
+
 Usage:
   models.py                  the proven models, each with the games that proved it
   models.py is-proven <id>   exit 0 if proven, 1 if not
   models.py check            exit 1 if a Silver-or-above game needs a check it lacks
 """
-import glob, json, os, sys
+import glob, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SILVER_UP = ("silver", "silver-claimed", "gold", "platinum")
 PROVING_STEPS = ("50-coverage", "60-verify")
 RULE_FROM = (0, 0, 33)
+CONTEXT_SUFFIX = re.compile(r"\[\d+(?:\.\d+)?[km]\]$", re.I)   # [1m], [200k]: the context window, not the model
+
+
+def base(model):
+    """The model an id names, without a context-window suffix such as [1m]."""
+    return CONTEXT_SUFFIX.sub("", str(model or "").strip()) or "unknown"
 
 
 def games():
@@ -42,13 +52,14 @@ def games():
 
 
 def step_models(entries, step):
-    return {e.get("model") or "unknown" for e in entries if e.get("step") == step}
+    return {base(e.get("model")) for e in entries if e.get("step") == step}
 
 
 def declared():
-    """The models kit/models.json declares good enough without a check, by exact id."""
+    """The models kit/models.json declares good enough without a check, by id less any context-window suffix."""
     try:
-        return dict(json.load(open(os.path.join(ROOT, "kit", "models.json"))).get("declared") or {})
+        d = json.load(open(os.path.join(ROOT, "kit", "models.json"))).get("declared") or {}
+        return {base(m): why for m, why in d.items()}
     except (OSError, ValueError):
         return {}
 
@@ -68,7 +79,7 @@ def verification_problem(v, P):
     for k in ("by", "model", "date", "checked", "wrong"):
         if v.get(k) in (None, ""):
             return f"`verification` has no `{k}`"
-    if v["model"] not in P:
+    if base(v["model"]) not in P:
         return f"the check ran on {v['model']!r}, which is not a proven model"
     if not isinstance(v["checked"], int) or v["checked"] < 1:
         return "`verification.checked` must count the claims checked"
@@ -112,7 +123,7 @@ def proven():
 
 
 def is_proven(model):
-    return model in proven()
+    return base(model) in proven()
 
 
 def check():

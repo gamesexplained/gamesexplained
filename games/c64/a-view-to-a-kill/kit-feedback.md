@@ -41,8 +41,6 @@ description under "Maintainer asks".
 - `tools.py` could start one disassembler per part, each on its own
   port, if regenerator2000 gains a port option, or in its own namespace
   where the system allows it.
-- `kit/VERSION` is 0.0.44 on this branch and on the Ghostbusters branch;
-  whichever merges second needs a new number.
 - `new_game.py` could create the `parts/` folders from a list.
 
 ## What took longest

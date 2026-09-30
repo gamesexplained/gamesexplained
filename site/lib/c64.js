@@ -96,25 +96,32 @@ globalThis.C64 = (function () {
   // pixels after a mid-line change of a mode bit or the scroll, and the grey pixel VICE draws
   // where a colour register changes. Not modelled: sprite collisions, and tricks that move the
   // bad lines within a line.
+  // For a live display (a Play page) three more fields save the work of a recording:
+  //   F.mem     a 64 KB Uint8Array used in place of F.ram     F.colourMem  1024 bytes, for F.colour
+  //   F.keep    an object kept from frame to frame: the chip's state carries over from the last
+  //             call, so the frame is run once, not twice
   // Returns {w, h, px, x0, line0, reads, romReads}: px holds w * h colour indices of VICE's
   // visible PAL area (raster lines 16-287, sprite X -8 to 375); reads marks each RAM address the
   // drawing read.
   function renderFrame(F) {
     const LINES = F.lines || 312, CYC = F.cycles || 63, W = 384, H = 272, LINE0 = 16, X0 = -8;
     if (LINES !== 312 || CYC !== 63) throw new Error('renderFrame models the PAL chip: 312 lines of 63 cycles');
-    const start = new Uint8Array(0x10000);
-    for (const r of F.ram) start.set(bytes64(r.b), r.a);
-    const colour = bytes64(F.colour), rom = F.charrom ? bytes64(F.charrom) : null;
-    const px = new Uint8Array(W * H), reads = new Uint8Array(0x10000);
+    let start = F.mem;
+    if (!start) { start = new Uint8Array(0x10000); for (const r of F.ram) start.set(bytes64(r.b), r.a); }
+    const colour = F.colourMem || bytes64(F.colour), rom = F.charrom ? bytes64(F.charrom) : null;
+    const K = F.keep || null;
+    const px = K ? (K.px = K.px || new Uint8Array(W * H)) : new Uint8Array(W * H);
+    const reads = K ? (K.reads = K.reads || new Uint8Array(0x10000)) : new Uint8Array(0x10000);
     let romReads = 0;
     const byLine = [];
     for (const w of F.writes) (byLine[w[0]] = byLine[w[0]] || []).push(w);
     // what the chip keeps between lines, and between the two runs of the frame
-    const S = { vcbase: 0, vc: 0, rc: 0, display: false, den30: false, vborder: true, mborder: true,
+    const S = K && K.S ? K.S : { vcbase: 0, vc: 0, rc: 0, display: false, den30: false, vborder: true, mborder: true,
       spr: [0, 1, 2, 3, 4, 5, 6, 7].map(() => ({ dma: false, on: false, mcbase: 0, mc: 0, ff: true,
         row: [0, 0, 0], rowOn: false, next: [0, 0, 0], nextOn: false })),
       seq: { byte: 0, code: 0, cc: 0, idx: 8 } };   // the graphics shift register
-    for (let pass = 0; pass < 2; pass++) {
+    if (K) K.S = S;
+    for (let pass = K ? 1 : 0; pass < 2; pass++) {
       const draw = pass === 1;
       const R = F.vic.slice(), mem = start.slice();
       let pra = F.cia2[0], ddra = F.cia2[1];
