@@ -56,19 +56,18 @@ button.b:hover{border-color:var(--ink-mute)}
 
 <section id="map">
   <p class="fig">01 &middot; The ten screens</p>
-  <h2 class="t">Every screen, with everything a level record places on it</h2>
+  <h2 class="t">Every screen, with everything its settings place on it</h2>
   <p class="lede">Drawn the way <code>setup_screen</code> <code>$5E19</code> builds it: the play
   area copied in from its own character set and colour map, the crosses placed by
-  <code>place_crosses</code> <code>$5FC0</code>. The way back reuses the same five play areas as the
-  way out, drawn from the store the game copies them into when you leave
-  (<code>screen_store</code> <code>$7FE8</code>).</p>
+  <code>place_crosses</code> <code>$5FC0</code>. The way home reuses the first five levels, from the copies
+  the game saves as the boy moves on (<code>screen_store</code> <code>$7FE8</code>); here the
+  levels as they first appear stand in for those copies.</p>
   <div class="row" id="lv-pick"></div>
   <div class="row">
     <button class="b" type="button" data-ov="solid" aria-pressed="true">solid ($2A-$4C)</button>
     <button class="b" type="button" data-ov="ledge" aria-pressed="true">crumbling ledge ($4D-$53)</button>
     <button class="b" type="button" data-ov="pick" aria-pressed="true">pick-ups ($54-$56)</button>
     <button class="b" type="button" data-ov="cross" aria-pressed="true">crosses</button>
-    <button class="b" type="button" data-ov="reach" aria-pressed="true">unreachable crosses</button>
     <button class="b" type="button" data-ov="enemy" aria-pressed="true">enemy start positions</button>
   </div>
   <div class="plate"><canvas class="scr" id="lv-scr"></canvas>
@@ -80,14 +79,13 @@ button.b:hover{border-color:var(--ink-mute)}
     <span><i class="sw" style="background:#ffe14d"></i>blue cross (the boy)</span>
     <span><i class="sw" style="background:#ff4040"></i>red cross (the girl)</span>
     <span><i class="sw" style="background:#7b7bff"></i>enemy start</span>
-    <span>a thick red ring marks a cross <code>work/reach.py</code> finds no path to</span>
   </div>
   </div>
 </section>
 
 <section id="paths">
   <p class="fig">02 &middot; Enemy paths</p>
-  <h2 class="t">Nine scripts, direction bytes ended by <code>$FF</code></h2>
+  <h2 class="t">How the enemies move</h2>
   <p class="lede"><code>path_step</code> <code>$CC12</code> moves one enemy a pixel at a time and,
   every 8th step, reads the next byte of its script from <code>path_scripts</code>
   <code>$4A00</code>-<code>$4A8F</code>: 0 up, 1 down, 2 left, 3 right, <code>$FF</code> loops back
@@ -111,11 +109,7 @@ button.b:hover{border-color:var(--ink-mute)}
 <script>
 /* Chiller, Maps/levels: the ten screens with their crosses, pick-ups and enemy paths, drawn from
    listing.json with ../../lib/c64.js. compose() rebuilds a screen the way setup_screen ($5E19)
-   and place_crosses ($5FC0) do, the same as index.html's screen builder (work/compose.js).
-   reachable() is a JS port of work/reach.py: try_move's own rules, searched pixel by pixel from
-   the record's start position. See facts.md, "Three crosses cannot be reached", for how it was
-   checked live (work/verify_reach4.py): move_sprite's Y clamp holds the boy at row 22 of 24 even
-   falling through open space, so three crosses in the bottom two rows never get a visit. */
+   and place_crosses ($5FC0) do, the same as index.html's screen builder (work/compose.js). */
 (function () {
   'use strict';
   const NAMES = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',
@@ -150,89 +144,45 @@ button.b:hover{border-color:var(--ink-mute)}
       mem[a] = 0x57; colour[a - 0x400] = k < 5 ? 14 : 10;
       crosses.push({ a, red: k >= 5 });
     }
-    return { R, crosses, mem, src };
+    // the video registers as index.html's screen builder sets them: multicolour text, the font at $3000
+    const vic = BASE.slice();
+    vic[0x22] = ram[R + 0x0E]; vic[0x23] = ram[R + 0x0F]; vic[0x20] = 6; vic[0x15] = 0;
+    return { R, crosses, mem, src, F: { vic, cia2: [0xC7, 0x3F], writes: [], ram: [{ a: 0, b: mem }], colour } };
   }
+  const BASE = [128,224,224,224,48,63,215,32,63,50,51,222,186,88,8,0,48,27,108,0,0,109,216,0,29,119,240,0,255,0,0,64,246,240,241,247,241,249,241,250,250,242,243,244,245,246,252];
 
-  // ---- reachable(): a JS port of work/reach.py, try_move's own rules ----
-  function solidTile(t, fromBelow) {
-    if (t === 0xA0 || t < 0x2A) return false;
-    if (t <= 0x4C) return true;
-    if (t <= 0x57) return false;
-    if (t <= 0x61) return fromBelow;
-    if (t <= 0x65) return false;
-    if (t <= 0x6F) return true;
-    if (t <= 0x7F) return fromBelow;
-    if (t === 0xFF) return true;
-    return false;
-  }
-  function reachableSet(mem, startX, startY) {
-    const YLO = 0x32, YHI = 0xE3, XLO = 0x08, XHI = 0x14F;
-    const tileAt = (x, y) => {
-      const row = (y - 0x2C) >> 3, col = (x - 0x0C) >> 3;
-      if (row < 2 || row > 24 || col < 0 || col > 39) return 0xFF;
-      return mem[0x0400 + row * 40 + col];
-    };
-    const key = (x, y) => x * 512 + y;
-    const seen = new Set([key(startX, startY)]);
-    const stack = [[startX, startY]];
-    while (stack.length) {
-      const [x, y] = stack.pop();
-      const moves = [[x, y - 1, false], [x, y + 1, true], [x - 1, y, false], [x + 1, y, false]];
-      for (const [nx, ny, below] of moves) {
-        if (nx < XLO || nx > XHI || ny < YLO || ny > YHI) continue;
-        if (seen.has(key(nx, ny)) || solidTile(tileAt(nx, ny), below)) continue;
-        seen.add(key(nx, ny)); stack.push([nx, ny]);
-      }
-      for (let step = 1; step <= 24; step++) {                  // the jump: 24 pixels up
-        const ny = y - step;
-        if (ny < YLO || solidTile(tileAt(x, ny), false)) break;
-        if (!seen.has(key(x, ny))) { seen.add(key(x, ny)); stack.push([x, ny]); }
-      }
-    }
-    return { has: (x, y) => seen.has(key(x, y)) };
-  }
-  function crossReachable(G, n, mem, cross) {
-    const w = a => G.ram[a] | G.ram[a + 1] << 8, rec = w(0x7290 + 2 * n);
-    const startX = G.ram[rec + 0x10] | (G.ram[rec + 0x12] ? 0x100 : 0), startY = G.ram[rec + 0x11];
-    const seen = reachableSet(mem, startX, startY);
-    const i = cross.a - 0x400, row = (i / 40 | 0), col = i % 40;
-    const cx0 = 0x0C + col * 8, cy0 = 0x2C + row * 8;
-    for (let dx = 0; dx < 8; dx++) for (let dy = 0; dy < 8; dy++) if (seen.has(cx0 + dx, cy0 + dy)) return true;
-    return false;
-  }
-
-  // ---- 01: the ten screens, with crosses, pick-ups, enemy starts and unreachable crosses ----
+  // ---- 01: the ten screens, with crosses, pick-ups and enemy starts ----
   function screensPage(G) {
     const cv = $('#lv-scr'), pick = $('#lv-pick'); if (!need(cv)) return;
-    const ov = { solid: true, ledge: true, pick: true, cross: true, reach: true, enemy: true };
+    const ov = { solid: true, ledge: true, pick: true, cross: true, enemy: true };
     let cur = 0;
     NAMES.forEach((nm, i) => pick.insertAdjacentHTML('beforeend',
       `<button class="b" type="button" data-n="${i}" aria-pressed="${i === 0}">${nm}</button>`));
     const LEG = { solid: '#e9e7e1', ledge: '#ff8a00', pick: '#2a8a4a' };
     function draw() {
-      const { R, crosses, mem } = compose(G.ram, cur);
+      const { R, crosses, mem, F } = compose(G.ram, cur);
       const s = 2, W = 40 * 8 * s, H = 23 * 8 * s, ctx = C64.canvas(cv, W, H);
-      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-      const font = G.ram.subarray(0x3000, 0x3800);
+      // the play area (screen rows 2-24) as the video chip draws it, in the screen's own
+      // character set, colour map and multicolours; rows start 35 lines down, 32 pixels in
+      const r = C64.renderFrame(F), img = ctx.createImageData(W, H);
+      const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const c = rgb[r.px[(35 + 16 + (y / s | 0)) * r.w + 32 + (x / s | 0)]], o = (y * W + x) * 4;
+        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
       for (let i = 80; i < 1000; i++) {
         const t = mem[0x400 + i], row = (i / 40 | 0) - 2, col = i % 40;
-        C64.drawGlyph(ctx, font, t, col * 8 * s, row * 8 * s, s, '#8f8f8f');
         let k = null;
         if (ov.solid && t >= 0x2A && t <= 0x4C) k = 'solid';
         else if (ov.ledge && t >= 0x4D && t <= 0x53) k = 'ledge';
         else if (ov.pick && t >= 0x54 && t <= 0x56) k = 'pick';
         if (k) { ctx.globalAlpha = .5; ctx.fillStyle = LEG[k]; ctx.fillRect(col * 8 * s, row * 8 * s, 8 * s, 8 * s); ctx.globalAlpha = 1; }
       }
-      let unreachable = 0;
       if (ov.cross) for (const c of crosses) {
         const i = c.a - 0x400, row = (i / 40 | 0) - 2, col = i % 40;
         const x = col * 8 * s, y = row * 8 * s;
         ctx.strokeStyle = c.red ? '#ff4040' : '#ffe14d'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y - 3, 8 * s + 6, 8 * s + 6);
-        if (ov.reach && !crossReachable(G, cur, mem, c)) {
-          unreachable++;
-          ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 4; ctx.beginPath();
-          ctx.arc(x + 4 * s, y + 4 * s, 9 * s, 0, Math.PI * 2); ctx.stroke();
-        }
       }
       if (ov.enemy) {
         const rec = G.ram[0x7290 + 2 * cur] | G.ram[0x7291 + 2 * cur] << 8;
@@ -247,8 +197,7 @@ button.b:hover{border-color:var(--ink-mute)}
         }
       }
       const need5 = G.ram[R + 0x72];
-      $('#lv-kv').innerHTML = `Record <b>${hex(R)}</b> &middot; crosses needed <b>${need5}</b> &middot; ` +
-        `${unreachable ? `<b>${unreachable} of ${crosses.length} crosses on this screen cannot be reached</b>` : `all ${crosses.length} crosses on this screen are reachable`}`;
+      $('#lv-kv').innerHTML = `Settings at <b>${hex(R)}</b> &middot; crosses needed <b>${need5}</b> of the <b>${crosses.length}</b> on this screen`;
     }
     pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#lv-pick button', b); draw(); });
     $$('[data-ov]').forEach(b => b.addEventListener('click', () => {

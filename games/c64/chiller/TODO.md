@@ -5,42 +5,34 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-**Silver** (28 September 2026), with further work toward Gold on 28-29
-September 2026. `coverage.py` 100 % of 52,126 tracked bytes, with the
-RAM under the I/O chips and above the screen store excluded in
-`game.json` with the reason; `facts.md` written from the trace
-(mechanics, graphics, tables, unused code, bugs, live tests);
-`features.md` with every row live, traced or differs but one; the How
-it works page with a screen builder, the music player, and widgets for
-crosses, energy, the jump and the enemies, checked in a browser; a Maps
-/ levels tab with all ten screens, a reachability overlay and an enemy
-path stepper. Copy is still `agent-draft`: everything below was done by
-an agent, and no human has read any of it yet.
+**Gold** (29 September 2026). The steward, unorig, went through the How
+it works page section by section and the copy is `human-edited`: sections
+reordered, the false "unreachable cross" bug replaced by the missing
+ending, the jump widget replaced by a picture of a real jump, the level
+format folded into the screen section, and the shooting claim softened to
+what the code shows. A Play tab runs a JavaScript port of every routine,
+checked in lockstep against the game (357 of 366 sessions identical; the
+other 9 hit the line-16 interrupt race), with a level picker and cheats.
 
-## For Gold
+## Open
 
-- **A human reads and edits the copy** (`kit/style.md`); `game.json`
-  `copy` then leaves `agent-draft`. This is the one thing standing
-  between this state and Gold: every other item below that was open at
-  Silver has evidence now.
 - The page's music player plays the game's filter through reSID 0.16's
   6581 cutoff curve, one measured chip; real 6581s spread well either
   side of it. Hearing the tune on a real C64, or measuring a recording
   of one, would say where this game's setting lands on the chips it
   shipped with.
+- How an enemy was once hit. The kill code and the fire sprite in
+  `switch_check` survive, but no code that moves that sprite along has
+  been found (`facts.md`, "Enemies that could be killed").
 
-## Resolved since Silver, with evidence
+## Resolved on the way to Gold, with evidence
 
-- **Can every cross be reached?** No, not quite. `work/reach.py` models
-  `try_move`'s own rules and searches every screen from its start
-  position pixel by pixel; nine of the ten screens have every cross
-  reachable, and three blue crosses on the way back
-  (`graveyard-back`, `ghetto-back`, `cinema-back`) do not, all in the
-  play area's bottom two rows. `work/verify_reach4.py` confirms it live:
-  `move_sprite`'s Y clamp holds the boy's own position at row 22 of 24
-  even falling through open space with nothing to land on. See
-  `facts.md`, "Three crosses cannot be reached", and the reachability
-  overlay on the Maps / levels tab.
+- **Can every cross be reached?** Yes. The three lowest crosses, on the
+  way back, were each taken on the game's own code by walking left along
+  the ground, and the steward played all ten levels through, taking every
+  cross. After the last level the game loads the forest again: there is no
+  ending. See `facts.md`, "Every cross can be taken, and the game has no
+  ending".
 - **The enemy path scripts, decoded.** Direction bytes (0 up, 1 down, 2
   left, 3 right) ended by `$FF`, at `path_scripts` `$4A00`-`$4A8F`,
   stepped by `path_step` `$CC12`. Nine scripts serve the ten screens'
@@ -52,15 +44,21 @@ an agent, and no human has read any of it yet.
   `SCNKEY`'s own overwrite: the boy jumped. `features.md` and `facts.md`
   updated from traced to live.
 
+- **Which release is this?** The first, withdrawn *Thriller* release: its
+  tune data matches the steward's V1 transcription in unorig/Chiller byte
+  for byte (`facts.md`, top). The re-release's in-play tune is playable on
+  the page from `reference/music-v2.json`.
+
 ## Still to establish (open, not absent)
 
-- Which release this is: the withdrawn *Thriller* version or the later
-  one. Games That Weren't says V1's cassette inlay has no "Burner
-  Loading System" text, a physical detail this PRG dump cannot carry
-  either way. The played tune's voice 1 opens on a five-note riff, C2 D2
-  F2 G2 D2, repeating (`facts.md`, "Music"); comparing it against a
-  recording of V1 needs an ear that knows both, which nobody on this run
-  had.
+- What the way-back play-through screenshots show (`reference/screen-05`
+  to `screen-09`): a stray fence patch on the cinema, and a crosses
+  counter reading `2S`, `5S` and so on where the outward screens read
+  `05`. They were captured with crosses poked beside the boy, so either
+  the poke or the game could be the cause. The steward does not recognise
+  either from play (29 September 2026); the page uses the screen
+  builder's renders instead.
+
 - What `$1000`-`$1FFF` held: not sprite data (`work/render_1000.py`
   renders it as multicolour sprites and it is visual noise), but the
   64-byte periodicity is real and unexplained.

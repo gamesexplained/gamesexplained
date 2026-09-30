@@ -1,0 +1,321 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-screen canvas.pl-native{image-rendering:auto}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-over button{font-size:16px}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-over button,.pl-mod button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button[aria-pressed="true"],.pl-mod button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover,.pl-mod button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
+.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.pl-pad button.on{background:var(--ink);color:#fff}
+@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pl-cheats{display:contents}
+.pl-fig{margin:6px 0 18px;max-width:420px}
+.pl-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
+.pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.pl-levels button:hover{border-color:var(--ink-mute)}
+.pl-levels button[aria-current="true"],.pl-levels button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+section table{margin:6px 0 18px}
+.pl-list{margin:0 0 14px;padding-left:20px}
+.pl-list li{margin:0 0 6px}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The whole game, playable in the browser: all five levels to the haunted house and the five on the way home, ported routine by routine from the game's own 6502 code and checked against it pass by pass. Pick any level to start on.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
+      <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart">Start again</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
+      <span>Start on</span>
+    </div>
+    <div class="pl-levels" id="pl-cheats" aria-label="Cheats">
+      <span>Cheats</span>
+      <button type="button" data-cheat="energy" aria-pressed="false" title="The energy bar never goes down, so the game never ends">Endless energy</button>
+      <button type="button" data-cheat="ghosts" aria-pressed="false" title="A ghost's touch costs no energy; toadstools still do">Ghosts don't hurt</button>
+      <button type="button" data-cheat="skip" title="End this level as taking its last cross does">Skip this level</button>
+    </div>
+    <ul class="pl-keys">
+      <li><kbd>←</kbd> <kbd>→</kbd> or <kbd>Z</kbd> <kbd>C</kbd> walk</li>
+      <li><kbd>↑</kbd>, <kbd>Space</kbd> or <kbd>Shift</kbd> jump</li>
+      <li><kbd>?</kbd> or <kbd>/</kbd> swap to the girl and back, on the way home</li>
+      <li>Any key or <kbd>Space</kbd> after GAME OVER starts again</li>
+    </ul>
+    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
+      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
+      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
+      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
+    </div>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does.</p>
+  </div>
+</section>
+<section id="port">
+  <p class="fig">01 · The port</p>
+  <h2 class="t">Every routine of the game, checked against the original</h2>
+  <!-- port-results -->
+</section>
+<section id="differences">
+  <p class="fig">02 · Differences</p>
+  <h2 class="t">What differs from a C64</h2>
+  <!-- differences -->
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<!-- port -->
+<script>
+/* the page: the port on a virtual PAL clock, drawn each frame, the keyboard and the joystick */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272), px = new Uint8Array(384 * 272);
+const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+const FRAME = ChillerRuntime.FRAME, FRAME_MS = 1000 * FRAME / 985248;
+const LEVELS = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',
+  'The house, going home', 'The graveyard, going home', 'The ghetto, going home', 'The cinema, going home', 'The forest, going home'];
+let image = null, rt = null, running = false, paused = false, level = null;
+
+function draw() {
+  ChillerScreen.draw(rt.M, rt.chips.vic, rt.chips.colour, px);
+  const d = img.data;
+  for (let i = 0, o = 0; i < px.length; i++, o += 4) { const c = RGB[px[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
+  ctx.putImageData(img, 0, 0);
+}
+
+// --- sound: the SID writes of each frame of C64 time, streamed to the site's SID model -------
+const sound = (function () {
+  let host = null, on = false, pending = new Map(), sent = 0;
+  function driver() {
+    const sid = new Uint8Array(25), queue = [];
+    const d = { sid, writes: [], playing: () => true, stop() {},
+      init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 25) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
+      play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
+    return d;
+  }
+  function attach() {
+    if (!rt) return;
+    pending.clear(); sent = rt.frame;
+    rt.onSid((r, v, t) => {
+      if (!on || rt.busy) return;
+      const f = Math.max(sent, Math.floor(t / FRAME));
+      let w = pending.get(f); if (!w) pending.set(f, w = []);
+      w.push(r, v);
+    });
+  }
+  async function set(want) {
+    if (want && !on) { pending.clear(); sent = rt ? rt.frame : 0; }
+    on = want;
+    if (on && !host) {
+      try {
+        host = await C64Sid.host({ driver, data: null, gain: 0.5, filter: '6581' });
+        host.send({ cmd: 'start', tune: { frames: [Array.from(rt ? rt.chips.sidw.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : [])] } });
+      } catch (e) { on = false; say('No sound: ' + e.message); }
+    }
+    if (host) { if (on) host.ctx.resume(); else host.ctx.suspend(); }
+    return on;
+  }
+  function frame() {
+    if (!on || !host || !rt) return;
+    const frames = [];
+    for (; sent < rt.frame; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
+    if (frames.length) host.send({ cmd: 'start', tune: { frames } });
+  }
+  return { attach, set, frame, get on() { return on; } };
+})();
+
+// --- the loop: one frame of C64 time per frame of real time --------------------------------
+let acc = 0, last = 0;
+const cheats = { energy: false, ghosts: false };
+function boot(n) {
+  rt = ChillerRuntime.create(image, { cost: window.CHILLER_COST });
+  Object.assign(rt.cheats, cheats);
+  level = n || 0;
+  if (n) { rt.jump(n); overMsg.textContent = 'Going to ' + LEVELS[n].toLowerCase() + '…'; over.hidden = false; }
+  sound.attach(); input();
+  document.querySelectorAll('#pl-levels button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.level === level)));
+}
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (!running || paused || !rt) { last = now; return; }
+  try {
+    if (rt.busy) {                                   // on the way to a picked level: as fast as it goes
+      const t0 = performance.now();
+      while (rt.busy && performance.now() - t0 < 30) rt.runTo(rt.cycles + FRAME);
+      if (!rt.busy) { over.hidden = true; acc = 0; last = now; }
+      return;
+    }
+    acc += Math.min(250, now - (last || now)); last = now;
+    let n = 0;
+    while (acc >= FRAME_MS && n < 10) { rt.runTo((rt.frame + 1) * FRAME); sound.frame(); acc -= FRAME_MS; n++; }
+    if (n === 10) acc = 0;
+    if (n) draw();
+  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+}
+
+// --- input: the keyboard as the C64's, the arrows and space as the joystick in port 2 --------
+const KEY = { Z: 0x0C, C: 0x14, LSHIFT: 0x0F, '/': 0x37, SPACE: 0x3C, RETURN: 0x01 };
+const JOY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, Space: 16, ControlRight: 16 };
+const held = new Map();
+let joyBits = 0, padBits = 0;
+function input() {
+  if (!rt) return;
+  rt.chips.joy = 0x1F & ~(joyBits | padBits);
+  const s = new Set();
+  for (const k of held.values()) s.add(k);
+  rt.chips.keys = s;
+}
+function c64Key(e) {
+  const c = e.code;
+  if (c === 'KeyZ') return KEY.Z;
+  if (c === 'KeyC') return KEY.C;
+  if (c === 'ShiftLeft' || c === 'ShiftRight') return KEY.LSHIFT;
+  if (c === 'Slash' || e.key === '?' || e.key === '/') return KEY['/'];
+  if (c === 'Enter') return KEY.RETURN;
+  return null;
+}
+function onKey(e, down) {
+  if (!running || e.metaKey || e.altKey || e.ctrlKey) return;
+  if (JOY[e.code] !== undefined) { e.preventDefault(); if (down) joyBits |= JOY[e.code]; else joyBits &= ~JOY[e.code]; input(); return; }
+  const k = c64Key(e);
+  if (k === null) return;
+  e.preventDefault();
+  if (down) held.set(e.code, k); else held.delete(e.code);
+  input();
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); joyBits = 0; input(); });
+document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+document.querySelectorAll('#pl-pad button').forEach(b => {
+  const bits = +b.dataset.pad;
+  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
+  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+});
+
+// --- controls ----------------------------------------------------------------------------------
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 6000); }
+function start(n) {
+  over.hidden = true;
+  boot(n);
+  const sb = document.querySelector('[data-act="sound"]');
+  if (sb.getAttribute('aria-pressed') === 'true' && !sound.on) sound.set(true).then(v => sb.setAttribute('aria-pressed', String(v)));
+  running = true; paused = false; last = 0; acc = 0;
+  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  screen.focus();
+}
+const levels = $('pl-levels');
+LEVELS.forEach((name, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.level = i; b.textContent = String(i + 1); b.title = name;
+  b.setAttribute('aria-label', 'Start on level ' + (i + 1) + ', ' + name.toLowerCase());
+  b.onclick = () => { if (image) start(i); };
+  levels.appendChild(b);
+});
+$('pl-cheats').addEventListener('click', e => {
+  const b = e.target.closest('button[data-cheat]'); if (!b) return;
+  const c = b.dataset.cheat;
+  if (c === 'skip') {
+    if (!running || !rt || rt.busy) say('Start the game first.');
+    else { rt.skip(); say('Skipping to the next level…'); }
+  } else {
+    cheats[c] = !cheats[c];
+    b.setAttribute('aria-pressed', String(cheats[c]));
+    if (rt) rt.cheats[c] = cheats[c];
+  }
+  screen.focus();
+});
+$('pl-bar').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
+  else if (act === 'restart' && image) start(level || 0);
+  else if (act === 'sound') { const on = await sound.set(!sound.on); b.setAttribute('aria-pressed', String(on)); }
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (!running && image) start(0); });
+function showStart(t) {
+  overMsg.textContent = t; over.hidden = false;
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(0); };
+  over.appendChild(bt);
+}
+C64.load('listing.json').then(G => {
+  image = G.ram;
+  showStart('Chiller, as the tape starts it: the forest card, then the forest. Click, then use the keyboard, or pick a level below.');
+  requestAnimationFrame(tick);
+}, err => { overMsg.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
+window.ChillerPlay = { get rt() { return rt; } };
+})();
+</script>

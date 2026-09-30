@@ -65,7 +65,7 @@ game's own title screen says "PROGRAMMED BY DAVID AND RICHARD DARLING".
 | Keyboard: Z left, C right, SHIFT jump, `?` switch players | **live** | `read_controls` `$C84D` against `$4512`-`$4515`: Z and C walk, `/` (`$C5 = $37`) switches; tested through `vice_keyboard_key_press` |
 | A title screen with the credits and the controls, shown after a game ends | **live** | `game_over_wait` `$7720`, title card `$7C00` |
 | Music | **traced** | `music_irq` `$60F5`, the play tune `$61F8`, the card tune and jingle `$6A18`-`$6BCC`. Pitches computed for NTSC. Not heard: the tools give no audio |
-| The first release played a version of *Thriller*, withdrawn and replaced with new music | **open** | Which release this is was not settled: no build text or cassette inlay to check for "Burner Loading System", and the tune's riff (C2 D2 F2 G2 D2, repeating) was not compared against a recording of V1 by an ear that knows both |
+| The first release played a version of *Thriller*, withdrawn and replaced with new music | **traced** | This copy is the first release: its tune data matches the steward's V1 transcription byte for byte (`facts.md`, top) |
 
 ## Beyond the documentation
 
@@ -81,14 +81,17 @@ and data, Bugs):
 - **The ledges crumble.** Tiles `$4D`-`$53` step to the next stage every
   8th step on them and the last becomes a space.
 - **The boy's own position is capped at row 22 of 24.** `move_sprite`'s
-  own Y clamp holds him there even in free fall over open space with
-  nothing to land on. Three crosses sit in the two rows below that and
-  can never be reached; see "Can every cross be reached?", below.
+  own Y clamp holds him there even in free fall over open space. The game
+  still reads rows 23 and 24 for crosses, through the cell below or beside
+  him, so every cross can be taken; see "Can every cross be reached?",
+  below.
+- **No ending.** After the last level the game loads the forest again,
+  score kept.
 - **The enemies speed up.** When every slot's lives are spent, the LEVEL
   counter goes up and `speed_up` `$5681` halves their delays.
 - **The border is the player indicator on every screen**, not only on the
   way back, and flickers while poison drains the bar.
-- **A shooting game underneath.** Shot-hit and kill code with a points
+- **Enemies that could be killed.** Hit and kill code with a points
   table, lives, a scroller and a second-character mode, none reached.
 - **A silenced sound player** whose SID stores all go to `$FFFF`.
 - **SILVER CROSSES**, in HUD rows that are never shown.
@@ -98,34 +101,16 @@ and data, Bugs):
 
 ## Open questions
 
-- **Which release is this?** Games That Weren't describes a withdrawn
-  first version (V1) with *Thriller* music by David Dunn and later
-  copies with new music, also by Dunn. Their one documented way to tell
-  the cassette releases apart by eye is cover text: V1's inlay has no
-  "Burner Loading System" mention in the top-right red triangle: a
-  physical detail that a PRG dump, with no cassette inlay attached,
-  cannot carry either way. This image's loader writes `(ANTISOFT)` into
-  the BASIC stub (`orientation.md`), so someone other than Mastertronic
-  has handled it, which is no help either. The played tune's voice 1
-  opens on a five-note riff, C2 D2 F2 G2 D2, repeating with an occasional
-  octave leap to F3 or D3 (`facts.md`, "Music"; `work/sweep-tune-ntsc.txt`).
-  Still open: nobody who worked this run could compare that riff against
-  a recording of V1's *Thriller* by ear with confidence, so it was not
-  settled either way. Whoever can hum both is closer to answering this
-  than any more bytes are.
-- **Can every cross be reached?** Settled for Gold: no, not quite. A
-  Lemon64 user comment (2022) remembered the game as impossible to
-  finish because one cross was out of reach, later fixed by a crack.
-  `work/reach.py` models `try_move`'s own rules and searches every
-  screen from its start position pixel by pixel; nine of the ten screens
-  have every cross reachable, and three blue crosses on the way back do
-  not, all in the play area's bottom two rows. `work/verify_reach4.py`
-  confirms it live: `move_sprite`'s Y clamp holds the boy's own position
-  at row 22 even falling through open space with nothing to land on, so
-  those three crosses sit below any row his sprite can ever occupy
-  (`facts.md`, "Three crosses cannot be reached"). Not the Lemon64
-  comment's one cross, but a real dead end all the same, since the way
-  back needs every cross, blue and red, to finish.
+- **Which release is this?** Settled for Gold: the first, withdrawn *Thriller* release. Its music player and all 4,238 bytes of tune data at `$61F2`-`$727F` match `Music/v1music.asm` in the steward's https://github.com/unorig/Chiller (branch Latest) byte for byte, and about 1,650 differ from `v2music.asm`; the steward confirmed on 29 September 2026 that V1 is the withdrawn release. The re-release changes the in-play tune and the gate-off compare at `$60B6` (3 to 1); its data is in `reference/music-v2.json` for the page's player.
+- **Can every cross be reached?** Settled for Gold: yes. A Lemon64 user
+  comment (2022) remembered the game as impossible to finish because one
+  cross was out of reach, later fixed by a crack. The three lowest crosses
+  (graveyard-back `$079A`, ghetto-back `$07C5`, cinema-back `$07CC`) were
+  each taken on the game's own code on 29 September 2026 by walking left
+  along the ground, and the steward played this release through all ten
+  levels the same day, taking every cross (`facts.md`, "Every cross can be
+  taken"). Whether the crack the comment mentions changed anything is not
+  known.
 - **Which of the manual's enemies is which.** Sprites 2-6 are the five
   enemy slots and 7 the thrown one (`facts.md`); the manual's ghouls,
   zombies, ghosts and bats are not named in the code, so matching them

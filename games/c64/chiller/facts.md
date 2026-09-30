@@ -9,9 +9,7 @@ from reading the code in the snapshot named in `orientation.md`.
 
 No build identifier was found in the image: the string sweep
 (`work/sweep_strings.py`) turned up no version or date text. The loader's
-`(ANTISOFT)` mark is a third party's (`orientation.md`). Which of the two
-releases this is (the *Thriller* music or the later one) is open:
-`features.md`.
+`(ANTISOFT)` mark is a third party's (`orientation.md`). This copy is the first, withdrawn *Thriller* release. Its music player and all 4,238 bytes of tune data at `$61F2`-`$727F` match `Music/v1music.asm` in the steward's https://github.com/unorig/Chiller (branch Latest) byte for byte, and about 1,650 differ from `v2music.asm`; the steward confirmed on 29 September 2026 that V1 is the withdrawn release. The re-release changes the in-play tune and the gate-off compare at `$60B6` (3 to 1); its data is in `reference/music-v2.json` for the page's player.
 
 ## Memory layout
 
@@ -90,7 +88,7 @@ the KERNAL's shift flag `$028D`.
 | SPACE | `$C5 = $3C`, in the table twice as up | nothing: up is not a direction on any screen (`$4500 = 0`) |
 | RUN/STOP | the KERNAL | `end_game` `$2CB4` |
 
-Up on the stick jumps; nothing climbs. On all ten screens up and down are
+Up on the stick jumps, and he climbs by jumping from ledge to ledge. On all ten screens up and down are
 switched off as directions (`$4500`-`$4503` = 0, 0, 1, 1, read from the
 snapshots taken on arrival, `work/settings10.py`), so the only way up is
 the jump; no ladder was tried live. He goes down by
@@ -197,22 +195,25 @@ poked beside the boy were taken and counted, red ones were left. Going
 out only the boy plays and each screen needs five; coming back both play
 and all ten are needed.
 
-**Three crosses cannot be reached.** `work/reach.py` models `try_move`'s
-own rules (below) and searches every screen pixel by pixel from the
-start position in its record. Nine of the ten screens have every cross
-reachable this way. Three blue crosses do not: graveyard-back (record
-`$7380`) at screen address `$079A`, ghetto-back (`$7400`) at `$07C5`,
-cinema-back (`$7480`) at `$07CC`, all in the play area's bottom two
-rows. *Live* (`work/verify_reach4.py`): with a column cleared to open
-space and nothing to land on, the boy still falls no further than Y
-`$E3`, row 22 by `try_move`'s own `(Y-$2C)>>3` — `move_sprite`'s Y clamp
-(`$C930`, `cmp #$E3`) is unconditional, checked before any tile is read,
-so his own position can never be computed as row 23 or 24, whatever the
-scenery there says. All three are on the way back, where every cross,
-blue and red, is needed to finish, so all three would stop a
-completionist there. This is a wider fault than the Lemon64 comment's
-one cross (`features.md`), but the same shape: level data placed below
-where the engine's own sprite can ever stand.
+**Every cross can be taken, and the game has no ending.** The three
+lowest crosses, all blue and all on the way back, sit in the play area's
+bottom two rows: graveyard-back (record `$7380`) at screen address
+`$079A`, ghetto-back (`$7400`) at `$07C5`, cinema-back (`$7480`) at
+`$07CC`. *Live* (29 September 2026, the game's own code in
+`kit/c64/machine.js`, the energy bar kept full): from each level's start
+the boy takes his cross by walking left along the ground (`port/jump.js`
+to reach the level). His own Y stops at `$E3`, row 22 (see "The boy's
+own position is capped at row 22", below), but `try_move` looks for a
+tile in the cell `probe_offset` picks, two rows down or one row down and
+to the side, so from row 22 it reads rows 23 and 24. When a level's last
+cross is taken, `crosses_left` `$7F00` passes the level byte at `+$73`
+to `next_screen` `$7680`; after the last level (`$12`) it passes `$FE`,
+and the game loads the forest going out, with its five crosses and the
+score kept. *Live*: finishing the forest on the way back with
+`crosses_left` on the machine loads record `$7000` with five crosses
+needed. There is no ending. `$7F06`-`$7F08` are three `NOP`s, the length
+of a `JSR`: something may have been removed there (inferred; the image
+does not say what).
 
 **Switching.** `switch_request` `$58B3` takes fire or `?` (key code
 `$37`); `switch_allowed` `$7280` refuses before level byte 10.
@@ -250,8 +251,9 @@ checked (`$C930`, `cmp #$E3`), and that is row 22 by `try_move`'s own
 formula. *Live* (`work/verify_reach4.py`): falling through a column
 cleared to open space, with nothing to land on, the boy's Y still stops
 at `$E3` after 128 frames. The play area is drawn 23 rows deep (screen
-rows 2-24), but his own sprite position can never be computed as row 23
-or 24: see "Three crosses cannot be reached", above.
+rows 2-24), and his own sprite position is never computed as row 23 or
+24. The tiles there are still read, through `probe_offset`: see "Every
+cross can be taken", above.
 
 **Energy.** One bar of 33 cells, 8 steps each, from `$042E`
 (`find_bar_end` `$5998`), and no lives: `new_life` and `lose_life` exist
@@ -445,10 +447,14 @@ Unreached means no call, jump, pointer or absolute access names it, and no
 run of the kit's simulator (`work/sim_all.sh`, all ten screens from their
 start) executed or read it; each is described in `symbols.json`.
 
-- **A shooting game underneath.** `unused_shot_hit` `$CDC7` would score
-  a shot's hit on an enemy, `unused_kill_enemy` `$2F7B` switches the enemy
-  off and pays out through `add_score_for` `$CE6B`, whose points table is at
-  `$4560`. Chiller has no shot, and nothing reaches these.
+- **Enemies that could be killed.** `unused_shot_hit` `$CDC7` would handle
+  an enemy being hit, `unused_kill_enemy` `$2F7B` switches the enemy off and
+  pays out through `add_score_for` `$CE6B`, whose points table is at
+  `$4560`. Nothing reaches these. The shot in the name is our guess, not the
+  code's: `unused_kill_enemy` takes the enemy from the boy's last collision
+  (`$CF5E`, `$CF5F`, written by `sprite_touch`), and no code for a shot
+  survives beyond what `switch_check` does with sprite 1 (below). How an
+  enemy was hit is unknown.
 - **Lives.** `new_life` `$CAED` and `lose_life` `$CEDA`, and the start count
   `$45ED`, are reached only from other unused code. The game has one bar
   and no lives.
@@ -459,9 +465,13 @@ start) executed or read it; each is described in `symbols.json`.
 - **A scroller.** `scroll_timer` `$C011`, `scroll_left` `$C412` and
   `scroll_rows` `$C47F` scroll the whole play area a cell, wrapping. Every
   level sets the period to `$FF`, which turns it off.
-- **A second character on a flat screen.** `switch_check` `$C7D4` brings
-  sprite 1 in with fire on a screen without gravity; every screen has
-  gravity. `sprite1_hit_scenery` `$C4FB` waits on `$45FE`, which is 0.
+- **A second sprite on fire, on a flat screen.** `switch_check` `$C7D4`
+  brings sprite 1 in on top of the boy with fire on a screen without
+  gravity, framed for his facing (`$4508`), with a sound on voice 3;
+  every screen has gravity. `sprite1_hit_scenery` `$C4FB` switches sprite 1
+  off when it hits the scenery, and waits on `$45FE`, which is 0. Together
+  they look like the start of a shot, but no code found moves sprite 1
+  along (inferred, not run).
 - **Screen-editor tools.** `unused_editor_tools` `$5198` (a box drawer, a
   character plotter) and `unused_screen_tools` `$C038` (fills, a glyph
   mirror) call only each other.

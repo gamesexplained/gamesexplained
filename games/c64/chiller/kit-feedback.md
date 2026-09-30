@@ -179,6 +179,62 @@ live checking, not editorial judgement.
     instructions still apply) at the start of a continuation job would
     remove the guessing.
 
+## The Gold pass, 29 September 2026
+
+The steward, unorig, went through the How it works page section by
+section in a hosted session, with Claude's hands. What changed in the
+kit, and why:
+
+13. **"Unreachable" was a negative result, and it was wrong.** The Silver
+    page led with a bug: three crosses on the way home that could never
+    be taken. Item 10 above fixed the search's row arithmetic and checked
+    one column live, and that was taken as proof. The steward then played
+    the Play tab's port through all ten levels and took every cross. On
+    the game's own code (`kit/c64/machine.js`) the boy takes each of the
+    three by walking left along the ground: `try_move` tests a cell one or
+    two rows below his own (`probe_offset` `$5145`), which the model left
+    out. `kit/skills/core/60-verify/SKILL.md`, "Negative results", now has
+    the row and says to search with the game's own movement code before
+    writing that something cannot be reached.
+14. **Bytes the interrupt writes, read by read.** The lockstep first
+    handed the port the first value the game read of `$A2`, `$C5` and
+    `$028D` in each stretch, and passes drifted where the game read one
+    again later. Recording every read in order, and having the port read
+    those bytes through one function, took the lockstep to 357 of 366
+    sessions identical. The other nine are the raster wait's own race
+    (the line and `$D011` bit 7 read in two instructions). Both are now in
+    `kit/skills/core/70-minisite/SKILL.md`, "A whole game, checked against
+    its own code".
+15. **A level picker has to finish the levels it skips.** The Play tab's
+    first level jump loaded the record and left the skipped level's
+    crosses on screen, so crosses of the wrong colour appeared and a
+    level could be finished early. Now in the same skill section, with a
+    note that a build script inlining the port through `String.replace`
+    must pass a function, since `$'` in 6502 comments is expanded.
+16. **The shot that was a guess.** The Silver copy called the unused kill
+    code "a shooting game underneath". The steward asked whether it was a
+    shot or a way to hit enemies, and the code does not say: the kill
+    routine takes the enemy from the boy's last collision, and the only
+    sprite that could be a shot (`switch_check`) is never moved by any
+    code found. A name given while reading became a claim on the page;
+    `60-verify` already says to prefer unknown, and this is a case of it.
+
+The kit version is now 0.0.39, with an entry in `kit/CHANGELOG.md`.
+
+### Maintainer asks from the Gold pass
+
+This session could reach only the steward's fork, not the upstream
+repository's issue tracker, so these are in the pull request's
+description under "Maintainer asks" for whoever merges it to file:
+
+8. **`clock.py` has no step for Gold curation or a Play tab added
+   later.** This pass (most of it the Play port and its lockstep) had no step
+   to start, so it is not in the table below; only
+   its retrospective is.
+9. **`kit/c64/lockstep.js` could record the game's reads of
+   interrupt-written bytes itself** (item 14), as an option naming the
+   bytes, and hand the port a reader; each game now writes it again.
+
 ## What took longest
 
 | Step | Minutes | Model | Sessions | What dominated |
@@ -187,10 +243,12 @@ live checking, not editorial judgement.
 | 20-features | 27 | claude-opus-5-5 | 1 | web sources (no C64-Wiki page; manual scans on archive.org), reference shots; lost ~10 min to an emulator left paused by an open monitor, cured by restarting it |
 | 30-text | 8 | claude-opus-5-5 | 1 | custom font in screen-code order (+$80); the cards are PETSCII through CHROUT; ten level cards found |
 | 40-sweep | 9 | claude-opus-5-5 | 1 | register census, twin copies, where the CPU runs, and the music interpreter decoded |
-| 50-coverage | 133 | claude-opus-5-5 | 1 | the kit simulator run on all ten screens found what the tracer could not reach; then the 57 loaded stretches listing.py reports |
-| 60-verify | 40 | claude-opus-5-5 | 1 | the keyboard: the matrix tool never reached $C5; playing through with poked crosses to see the way-back screens |
-| 70-minisite | 75 | claude-opus-5-5 | 1 | the browser check; the music port matched the driver write for write at the first full run |
-| 80-retro | 679 | claude-opus-5-5 | 2 | the first retro (4 min): kit edits, kit-feedback, TODO, asks. The second, continued toward Gold (675 min): fixing and then live-confirming the reachability search, decoding and writing up the enemy paths, holding SHIFT by re-poking $028D every frame, looking into the three unread blocks, and building and browser-checking the Maps / levels tab |
+| 50-coverage | 133 | claude-opus-5-5 | 1 | one agent; the kit simulator run on all ten screens found the code the tracer could not reach; ~15 min lost to shell quoting |
+| 60-verify | 40 | claude-opus-5-5 | 1 | one agent; the keyboard ate the most: vice_keyboard_matrix never reached $C5 on this build, the host-key path did, and it has no SHIFT name. Playing through with poked crosses was the way to see the way-back screens as the game draws them |
+| 70-minisite | 74 | claude-opus-5-5 | 1 | one agent; the music port and its simulator test went fastest; checking the page in a browser took longest: headless screenshots hung, so a DevTools-protocol checker was written, and build.py rebuilding _site under a running server looked like a page failure |
+| 80-retro | 684 | claude-opus-5-5 | 3 | kit edits (held-emulator tell, cents reading, archive.org fallback), kit-feedback, TODO, asks; reachability search fixed and confirmed live, enemy paths written up, SHIFT tested by poking $028D, three unread blocks looked into, Maps/levels tab built and checked in headless Chrome; the Gold retro: kit edits for unreachable claims and interrupt-written bytes, kit-feedback, TODO |
+| total | 978 | deepseek/deepseek-v4.1-flash, claude-opus-5-5 | | 16.3 h of work, over 28.9 h |
+
 
 The one change to the kit that would have saved the most minutes this
 time: a note next to the SHIFT workaround in `tool-vice-mcp/workarounds.md`
@@ -198,3 +256,7 @@ that a poked KERNAL variable needs re-poking every frame, not once
 before `vice_execution_run` — the same lesson the SHIFT entry already
 half-states but does not spell out for pokes generally, and this run
 worked it out again from scratch.
+
+For the Gold pass, the change that would have saved the most: searching
+for the crosses with the game's own code from the start, which would have
+kept a false bug off the Silver page and out of a round of corrections.

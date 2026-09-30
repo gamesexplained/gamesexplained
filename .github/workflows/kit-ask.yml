@@ -1,0 +1,31 @@
+name: kit-ask
+# Labels an issue `kit-ask` when its body carries the marker <!-- kit-ask -->
+# or its title starts with "kit-ask:". GitHub drops the labels an author
+# without triage access asks for, so a contributor's agent filing a
+# retrospective's ask (kit/skills/core/80-retro) cannot set the label
+# itself. This workflow runs as the repository and sets it for them.
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add the label when the marker is there
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          TITLE: ${{ github.event.issue.title }}
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          shopt -s nocasematch
+          if [[ "$BODY" == *"<!-- kit-ask -->"* || "$TITLE" == kit-ask:* ]]; then
+            gh issue edit "$NUMBER" --add-label kit-ask
+          else
+            echo "No kit-ask marker on #$NUMBER."
+          fi

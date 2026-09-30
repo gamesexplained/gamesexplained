@@ -1,0 +1,3249 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+h3{font-size:19px;margin:22px 0 8px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+/* the game */
+.pl-first{padding-top:22px}
+.pl-plate{padding:18px}
+.pl-screen{position:relative;background:#000;border-radius:6px;overflow:hidden;outline:none;cursor:pointer;line-height:0}
+.pl-screen:focus-visible,.pl-screen.pl-focus{box-shadow:0 0 0 3px var(--accent)}
+.pl-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.pl-screen canvas.pl-native{image-rendering:auto}
+.pl-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--fm);font-size:14px;line-height:1.4;text-align:center;padding:20px}
+.pl-over[hidden]{display:none}
+.pl-over button{font-size:16px}
+.pl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.pl-bar button,.pl-over button,.pl-mod button{font-family:var(--fb);font-size:14px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.pl-bar button[aria-pressed="true"],.pl-mod button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pl-bar button:hover,.pl-mod button:hover{border-color:var(--ink-mute)}
+.pl-bar .pl-sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.pl-status{font-family:var(--fm);font-size:12px;color:var(--ink-mute);margin-left:auto}
+.pl-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 18px;margin:16px 0 0;padding:0;list-style:none;font-size:14px;color:var(--ink-soft)}
+.pl-keys li{margin:0}
+.pl-pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px;margin-top:14px}
+.pl-pad button{font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.pl-pad button.on{background:var(--ink);color:#fff}
+@media (pointer:coarse){.pl-pad{display:grid}}
+.pl-mod{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pl-cheats{display:contents}
+.pl-fig{margin:6px 0 18px;max-width:420px}
+.pl-fig img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.pl-levels{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px}
+.pl-levels span{font-size:14px;color:var(--ink-soft);margin-right:4px}
+.pl-levels button{font-family:var(--fb);font-size:13px;font-weight:700;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.pl-levels button:hover{border-color:var(--ink-mute)}
+.pl-levels button[aria-current="true"],.pl-levels button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+section table{margin:6px 0 18px}
+.pl-list{margin:0 0 14px;padding-left:20px}
+.pl-list li{margin:0 0 6px}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The whole game, playable in the browser: all five levels to the haunted house and the five on the way home, ported routine by routine from the game's own 6502 code and checked against it pass by pass. Pick any level to start on.</p>
+</header>
+<main class="wrap">
+<section class="pl-first" id="game">
+  <div class="plate pl-plate">
+    <div class="pl-screen" id="pl-screen" tabindex="0" aria-label="The game's screen. Click it, then play with the keyboard.">
+      <canvas id="pl-cv" width="384" height="272" role="img" aria-label="The Commodore 64 screen of Chiller"></canvas>
+      <div class="pl-over" id="pl-over"><span id="pl-over-msg">Loading the game's bytes…</span></div>
+    </div>
+    <div class="pl-bar" id="pl-bar">
+      <button type="button" data-act="pause" aria-pressed="false">Pause</button>
+      <button type="button" data-act="restart">Start again</button>
+      <span class="pl-sep" aria-hidden="true"></span>
+      <button type="button" data-act="sound" aria-pressed="true">🔊 Sound</button>
+      <span class="pl-status" id="pl-status" aria-live="polite"></span>
+    </div>
+    <div class="pl-levels" id="pl-levels" aria-label="Start on a level">
+      <span>Start on</span>
+    </div>
+    <div class="pl-levels" id="pl-cheats" aria-label="Cheats">
+      <span>Cheats</span>
+      <button type="button" data-cheat="energy" aria-pressed="false" title="The energy bar never goes down, so the game never ends">Endless energy</button>
+      <button type="button" data-cheat="ghosts" aria-pressed="false" title="A ghost's touch costs no energy; toadstools still do">Ghosts don't hurt</button>
+      <button type="button" data-cheat="skip" title="End this level as taking its last cross does">Skip this level</button>
+    </div>
+    <ul class="pl-keys">
+      <li><kbd>←</kbd> <kbd>→</kbd> or <kbd>Z</kbd> <kbd>C</kbd> walk</li>
+      <li><kbd>↑</kbd>, <kbd>Space</kbd> or <kbd>Shift</kbd> jump</li>
+      <li><kbd>?</kbd> or <kbd>/</kbd> swap to the girl and back, on the way home</li>
+      <li>Any key or <kbd>Space</kbd> after GAME OVER starts again</li>
+    </ul>
+    <div class="pl-pad" id="pl-pad" aria-label="Joystick">
+      <button type="button" data-pad="5">↖</button><button type="button" data-pad="1">↑</button><button type="button" data-pad="9">↗</button>
+      <button type="button" data-pad="4">←</button><button type="button" data-pad="16">●</button><button type="button" data-pad="8">→</button>
+      <button type="button" data-pad="6">↙</button><button type="button" data-pad="2">↓</button><button type="button" data-pad="10">↘</button>
+    </div>
+    <p class="cap" id="pl-cap">The game's own screen, drawn from the port's memory each frame as the video chip would draw it. <b>Start on</b> begins a new game and takes it to that level the way the game gets there, finishing each level before it in turn with its crosses taken, so the way home finds the five levels as play leaves them. The <b>cheats</b> work on the game's own routines: with <b>Endless energy</b> the routine that takes a step off the energy bar takes nothing, and with <b>Ghosts don't hurt</b> a ghost's touch adds no poison. <b>Skip this level</b> does what taking the last cross does.</p>
+  </div>
+</section>
+<section id="port">
+  <p class="fig">01 · The port</p>
+  <h2 class="t">Every routine of the game, checked against the original</h2>
+  <p class="lede">Nothing on this page emulates a 6502. The game's 188 routines are written out in JavaScript, one function each, named by the listing's labels, and run on the game's own 64 KB of memory.</p>
+  <p>The page loads that memory from the listing, the same bytes the Source code tab shows. From then on the port reads and writes the game's variables where the game keeps them, draws the levels from the game's own maps, plays the game's own tunes and puts its sprites where the game puts them. The picture is drawn from that memory as the video chip would draw it.</p>
+  <h3>How it was checked</h3>
+  <p>Each routine was first checked alone against the game's code, run in a 6502 simulator: two to four thousand random starting states each, with every instruction the routine can reach reached at least once. Then the whole port ran beside the original, from 366 moments of play saved on all ten levels, with the same random joystick. At the start of every pass of the main loop all 64 KB are compared, and so are colour RAM and the registers the game writes to the video and sound chips. Only the stack is left out.</p>
+  <table>
+    <tr><th>Sessions</th><th>Passes</th><th>Result</th></tr>
+    <tr><td>366 sessions of up to 5,000 passes, 31 to 40 on each level, through deaths, crosses taken, the cards between levels and the game over</td><td>1,739,834</td><td>identical at every pass in 357; the other 9 left in step at the same interrupt race (below)</td></tr>
+  </table>
+  <p>A session that reaches the game over ends there, because the random joystick only changes at a pass and the game over waits for fire. The 34 moments that were saved during that wait were left out, since the port starts a session at the main loop.</p>
+  <h3>Where the original depends on its interrupt</h3>
+  <p>The music and the keyboard scan run 60 times a second from a timer interrupt, which on the C64 can fall between any two of the game's instructions. The port runs it between its own steps. Where that changes what the game reads, the check gives the port what the game's code read.</p>
+  <ul class="pl-list">
+    <li><b>The random numbers.</b> The game makes a random number from its own code bytes and the low byte of the KERNAL's clock, which the interrupt counts up. When a tick falls between two draws, the second draw sees the new clock. The port reads the clock through one function, which the check gives the value the game read.</li>
+    <li><b>The collisions.</b> The video chip sets its collision registers while it draws, and the port reads them a little before the game gets there. The check first runs the game alone with the same joystick and gives the port the values it read, in turn.</li>
+    <li><b>The wait for line 16.</b> Before it flickers the border while your energy drains, and before it swaps the boy and the girl, the game waits for the raster to reach line 16: it reads the line, compares it with 16 and then checks the ninth bit. Now and then the interrupt falls between the read and the check, and takes 18 lines. The game then leaves the wait on line 34 or 35 instead of 16. The port leaves on line 16, and the check stops there, since the two are no longer at the same moment. Nothing in memory differs at that point. All nine sessions that went out of step did so here.</li>
+  </ul>
+  <h3>Speed</h3>
+  <p>The game runs about fifteen passes of its main loop a frame, so a port that ran as fast as the browser can would be a different game. The page keeps a PAL machine's clock, 312 lines of 63 cycles, and each routine the port calls moves it on by that routine's own cycles. The costs were fitted by least squares on the game's timings in 46 of the sessions above, over a million stretches of code between two points of the main loop. On 46 other sessions the fitted cycles came to within 0.14 % of the game's. The interrupt's own time, 1,197 cycles on average, is added where it falls.</p>
+  <table>
+    <tr><th>From a new game, 400 frames</th><th>Passes, original</th><th>Passes, this page</th></tr>
+    <tr><td>The forest, standing</td><td>6,179</td><td>6,148</td></tr>
+    <tr><td>The cinema, walking right</td><td>5,508</td><td>5,502</td></tr>
+    <tr><td>The graveyard, walking left</td><td>6,057</td><td>6,078</td></tr>
+    <tr><td>The house, going home, walking right</td><td>5,948</td><td>6,099</td></tr>
+    <tr><td>The forest, going home, standing</td><td>6,231</td><td>6,155</td></tr>
+  </table>
+  <p>Over all ten levels, standing still and walking either way, the page's count of passes is within 4 % of the original's.</p>
+</section>
+<section id="differences">
+  <p class="fig">02 · Differences</p>
+  <h2 class="t">What differs from a C64</h2>
+  <ul class="pl-list">
+    <li><b>The loading.</b> There is none: the page starts where the loader hands over, at the title.</li>
+    <li><b>The KERNAL.</b> Chiller keeps the C64's ROM switched in and uses three pieces of it: the 50 Hz timer interrupt's own work (the clock and the keyboard scan), the routine that prints a character, which draws the cards between levels, and the one that places the cursor. The page does not carry the ROM. It has those three written out in JavaScript from what they do to memory, and they were checked against the game's run with the real ROM.</li>
+    <li><b>The screen.</b> The page draws the picture once a frame from the memory and the video chip's registers as they stand. Chiller changes nothing in the middle of a frame, so this is the picture the C64 shows.</li>
+    <li><b>Sprite collisions.</b> The game learns that a ghost has touched you, or that you have walked into a wall, from the video chip's collision registers, which the chip sets as it draws the line where two things overlap. The page works them out line by line on the same clock, from the sprites and characters in memory.</li>
+    <li><b>The sound.</b> The game's writes to the sound chip go to the site's model of the SID, with the filter the game sets on the 6581's curve as the reSID emulator measured it from one chip. Real 6581s differ from one another, and they distort, which the model does not.</li>
+    <li><b>The interrupt.</b> On the C64 the music and the keyboard scan can interrupt the game between any two instructions; on the page they run between the port's steps. The game reads three bytes the interrupt keeps: the clock, the key held and the SHIFT keys. Where the two runs could read different values, the check gave the port what the game read (section 01). In play, a key or a clock tick can be seen a few hundred cycles later than on a C64, which no one can tell.</li>
+    <li><b>Start on.</b> The level buttons are the page's own. They start a new game and finish each level before the one chosen, in the game's own code, as if the crosses had all been taken, so the scores, lives and energy are those of a new game.</li>
+    <li><b>The cheats.</b> They are the page's own, not the game's. Running out of energy is the only way Chiller ends, so with <b>Endless energy</b> on the game goes on for ever. The toadstools still poison you with <b>Ghosts don't hurt</b> on; with both on, they only flash the border.</li>
+    <li><b>The keys.</b> The arrows or Z and C walk and up or Space jumps, as the joystick in port 2 does. Shift jumps and ? or / swaps the boy and the girl, as it does on the C64, and fire or any key starts a game. On a C64, SHIFT and C= pressed together switch the character set and scramble the picture, because the game leaves the KERNAL's switch unlocked; the page has no C= key, so that cannot happen.</li>
+  </ul>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* port/src/kernal.js */
+// Stand-ins for the four KERNAL routines Chiller calls with the KERNAL banked in: the tail of the
+// interrupt ($EA31: the jiffy clock and the keyboard scan), CHROUT ($FFD2) as far as the screen
+// editor goes for the cards, and PLOT ($FFF0). The simulator holds no ROM, so the game run on the
+// kit's C64 and the port both use these. They keep the KERNAL's variables where the KERNAL keeps
+// them, so that the game's reads of them ($A1, $A2, $C5, $028D) see what they would.
+// k = { M, colourRead(i), colourWrite(i, v), vicRead(r), vicWrite(r, v), ciaRead(r), ciaWrite(r, v) }
+(function (root) {
+'use strict';
+const SCREEN = 0x0400;
+const COLOURS = { 0x05: 1, 0x1C: 2, 0x1E: 5, 0x1F: 6, 0x81: 8, 0x90: 0, 0x95: 9, 0x96: 10, 0x97: 11, 0x98: 12,
+  0x99: 13, 0x9A: 14, 0x9B: 15, 0x9C: 4, 0x9E: 7, 0x9F: 3 };
+// the unshifted key table's modifiers ($EB81): SHIFT 1, C= 2, CTRL 4 (RUN/STOP, 3, is a key)
+const MOD = { 0x0F: 1, 0x34: 1, 0x3D: 2, 0x3A: 4 };
+
+// $EA31's work before it leaves: UDTIM ($FFEA) and SCNKEY ($EA87).
+function irqTail(k) {
+  const M = k.M;
+  // the jiffy clock $A0-$A2, reset at 24 hours ($4F1A01)
+  if (++M[0xA2] === 256) { M[0xA2] = 0; if (++M[0xA1] === 256) { M[0xA1] = 0; M[0xA0] = (M[0xA0] + 1) & 255; } }
+  if (M[0xA0] === 0x4F && M[0xA1] === 0x1A && M[0xA2] === 0x01) { M[0xA0] = M[0xA1] = M[0xA2] = 0; }
+  scnkey(k);
+}
+
+// SCNKEY: SFDX ($CB) is the last key found scanning from matrix code 0 up, modifiers aside; LSTX
+// ($C5) takes it; SHFLAG ($028D) the modifiers, the last scan's in $028E. SHIFT with C= swaps the
+// character sets unless MODE ($0291) bit 7 locks them. The keyboard buffer is not kept: the game
+// never reads it.
+function scnkey(k) {
+  const M = k.M;
+  let shift = 0, key = 0x40;
+  k.ciaWrite(0, 0);
+  if (k.ciaRead(1) !== 0xFF) {
+    for (let row = 0; row < 8; row++) {
+      k.ciaWrite(0, ~(1 << row) & 0xFF);
+      const v = k.ciaRead(1);
+      for (let col = 0; col < 8; col++) {
+        if (v & (1 << col)) continue;
+        const code = row * 8 + col;
+        if (MOD[code]) shift |= MOD[code]; else key = code;
+      }
+    }
+  }
+  M[0x028D] = shift;
+  if (shift === 3 && M[0x028E] !== 3 && !(M[0x0291] & 0x80)) k.vicWrite(0x18, k.vicRead(0x18) ^ 2);
+  M[0xCB] = key; M[0xC5] = key; M[0x028E] = shift;
+  k.ciaWrite(0, 0x7F);
+}
+
+// The screen editor, physical rows: TBLX ($D6) the cursor's row, PNTR ($D3) its column within the
+// logical line (0-79), LDTB1 ($D9-$F1) bit 7 set where a row starts a logical line, COLOR ($0286),
+// RVS ($C7), MODE ($0291). A row printed past column 39 is joined to a blank row opened below it,
+// as the KERNAL does.
+const start = (M, r) => (M[0xD9 + r] & 0x80) !== 0;
+function lineStart(M, r) { while (r > 0 && !start(M, r)) r--; return r; }
+function row(M) { return M[0xD6]; }
+function col(M) { return M[0xD3] - 40 * (row(M) - lineStart(M, row(M))); }
+function setPos(M, r, c) {
+  M[0xD6] = r;
+  const s = lineStart(M, r);
+  M[0xD3] = c + 40 * (r - s);
+  const pnt = SCREEN + 40 * s;
+  M[0xD1] = pnt & 255; M[0xD2] = pnt >> 8;
+  M[0xF3] = pnt & 255; M[0xF4] = (pnt >> 8) + 0xD4;
+  M[0xD5] = s < 24 && !start(M, s + 1) ? 79 : 39;
+}
+function copyRow(k, from, to) {
+  const M = k.M;
+  for (let i = 0; i < 40; i++) {
+    M[SCREEN + 40 * to + i] = M[SCREEN + 40 * from + i];
+    k.colourWrite(40 * to + i, k.colourRead(40 * from + i));
+  }
+}
+function clearRow(k, r) {
+  const M = k.M, bg = k.vicRead(0x21) & 15;           // revision 3 clears a row's colour to $D021's
+  for (let i = 0; i < 40; i++) { M[SCREEN + 40 * r + i] = 0x20; k.colourWrite(40 * r + i, bg); }
+}
+function scrollUp(k) {
+  const M = k.M;
+  for (let r = 0; r < 24; r++) { copyRow(k, r + 1, r); M[0xD9 + r] = M[0xDA + r]; }
+  clearRow(k, 24); M[0xD9 + 24] |= 0x80;
+}
+function openBelow(k, r) {                             // a blank row at r + 1, the rows below moved down
+  const M = k.M;
+  for (let i = 24; i > r + 1; i--) { copyRow(k, i - 1, i); M[0xD9 + i] = M[0xD8 + i]; }
+  clearRow(k, r + 1);
+  M[0xD9 + r + 1] &= 0x7F;
+}
+function clearScreen(k) {
+  const M = k.M;
+  for (let r = 0; r < 25; r++) { clearRow(k, r); M[0xD9 + r] = 0x84 | ((SCREEN + 40 * r) >> 8); }
+  M[0xC7] = 0; setPos(M, 0, 0);
+}
+function down(k) {
+  const M = k.M; let r = row(M) + 1; const c = col(M);
+  if (r > 24) { scrollUp(k); r = 24; }
+  setPos(M, r, c);
+}
+function put(k, code) {
+  const M = k.M; let r = row(M), c = col(M);
+  M[SCREEN + 40 * r + c] = code;
+  k.colourWrite(40 * r + c, M[0x0286]);
+  if (++c < 40) { setPos(M, r, c); return; }
+  const s = lineStart(M, r);
+  if (r === s && (r === 24 || start(M, r + 1))) {      // a single row grows into a second
+    if (r === 24) { scrollUp(k); r = 23; }
+    openBelow(k, r);
+  } else if (r + 1 > 24) { scrollUp(k); r = 23; }
+  setPos(M, r + 1, 0);
+}
+function chrout(k, a) {
+  const M = k.M;
+  if (a === 0x0D || a === 0x8D) {
+    let r = row(M) + 1;
+    while (r <= 24 && !start(M, r)) r++;
+    M[0xC7] = 0;
+    if (r > 24) { scrollUp(k); r = 24; }
+    setPos(M, r, 0); return;
+  }
+  if (a === 0x93) { clearScreen(k); return; }
+  if (a === 0x11) { down(k); return; }
+  if (a === 0x91) { const r = row(M); if (r > 0) setPos(M, r - 1, col(M)); return; }
+  if (a === 0x9D) { const r = row(M), c = col(M); if (c > 0) setPos(M, r, c - 1); else if (r > 0) setPos(M, r - 1, 39); return; }
+  if (a === 0x1D) { const r = row(M), c = col(M); if (c < 39) setPos(M, r, c + 1); else down(k), setPos(M, row(M), 0); return; }
+  if (a === 0x12) { M[0xC7] = 0x12; return; }
+  if (a === 0x92) { M[0xC7] = 0; return; }
+  if (a === 0x08) { M[0x0291] |= 0x80; return; }
+  if (a === 0x09) { M[0x0291] &= 0x7F; return; }
+  if (a === 0x0E) { k.vicWrite(0x18, k.vicRead(0x18) | 2); return; }
+  if (a === 0x8E) { k.vicWrite(0x18, k.vicRead(0x18) & 0xFD); return; }
+  if (COLOURS[a] !== undefined) { M[0x0286] = COLOURS[a]; return; }
+  let s;
+  if (a >= 0x20 && a < 0x40) s = a;
+  else if (a >= 0x40 && a < 0x60) s = a - 0x40;
+  else if (a >= 0x60 && a < 0x80) s = a - 0x20;
+  else if (a >= 0xA0 && a < 0xC0) s = a - 0x40;
+  else if (a >= 0xC0 && a < 0xFF) s = a - 0x80;
+  else if (a === 0xFF) s = 0x5E;
+  else return;                                         // a control code the cards do not use
+  put(k, s | (M[0xC7] ? 0x80 : 0));
+}
+// PLOT with the carry clear: the cursor to row X, column Y.
+function plot(k, x, y) { setPos(k.M, x, y); }
+// What the KERNAL leaves in these when a program starts: a cleared screen's links, light blue.
+function boot(M) {
+  for (let r = 0; r < 25; r++) M[0xD9 + r] = 0x84 | ((SCREEN + 40 * r) >> 8);
+  M[0x0286] = 14; M[0xC7] = 0; M[0x0291] = 0; M[0x0288] = SCREEN >> 8;
+  M[0xC5] = M[0xCB] = 0x40;
+  setPos(M, 0, 0);
+}
+
+// The video chip's collision registers, which the kit's C64 does not keep: one raster line's
+// collisions, as the chip finds them while it draws the line, from memory as the processor
+// leaves it (bank 0, the RAM; a character set in the ROM's place collides with nothing).
+// Returns [sprite-sprite bits, sprite-background bits]. Sprites collide wherever they are drawn,
+// the border included; with the background only inside the display window, and only with a
+// character's foreground: set bits in a high-resolution character, bit pairs 10 and 11 in a
+// multicolour one. A sprite's pixel is any set bit, or any bit pair but 00 in multicolour.
+const sprRow = new Int32Array(8 * 2);                  // up to 48 pixels a line: two 24-bit halves
+function collideLine(M, vic, colour, line) {
+  const en = vic[0x15];
+  if (!en) return [0, 0];
+  const scr = (vic[0x18] >> 4) << 10, chars = ((vic[0x18] >> 1) & 7) << 11;
+  let on = 0;
+  const x0 = [], w = [], px = [];
+  for (let n = 0; n < 8; n++) {
+    if (!(en >> n & 1)) continue;
+    const y = vic[1 + 2 * n], ey = vic[0x17] >> n & 1;
+    let dy = line - (y + 1); if (dy < 0) dy += 312;
+    if (dy >= (ey ? 42 : 21)) continue;
+    const r = ey ? dy >> 1 : dy, a = M[scr + 0x3F8 + n] * 64 + r * 3;
+    const bits = (M[a] << 16) | (M[a + 1] << 8) | M[a + 2], mc = vic[0x1C] >> n & 1, ex = vic[0x1D] >> n & 1;
+    const p = new Uint8Array(ex ? 48 : 24);
+    for (let i = 0; i < 24; i++) {
+      const b = mc ? ((bits >> (22 - (i & ~1))) & 3) !== 0 : ((bits >> (23 - i)) & 1) !== 0;
+      if (!b) continue;
+      if (ex) { p[2 * i] = 1; p[2 * i + 1] = 1; } else p[i] = 1;
+    }
+    on |= 1 << n; x0[n] = vic[2 * n] | ((vic[0x10] >> n & 1) << 8); w[n] = p.length; px[n] = p;
+  }
+  let ss = 0, sb = 0;
+  for (let a = 0; a < 8; a++) {
+    if (!(on >> a & 1)) continue;
+    for (let b = a + 1; b < 8; b++) {
+      if (!(on >> b & 1)) continue;
+      const lo = Math.max(x0[a], x0[b]), hi = Math.min(x0[a] + w[a], x0[b] + w[b]);
+      for (let x = lo; x < hi; x++) if (px[a][x - x0[a]] && px[b][x - x0[b]]) { ss |= (1 << a) | (1 << b); break; }
+    }
+  }
+  // the background: text mode only (the game's)
+  const d11 = vic[0x11], d16 = vic[0x16], ys = d11 & 7, xs = d16 & 7;
+  const ly = line - 0x30 - ys;
+  if ((d11 & 0x60) || ly < 0 || ly >= 200 || !(d11 & 0x10)) return [ss, sb];
+  const top = d11 & 8 ? 51 : 55, bot = d11 & 8 ? 250 : 246;
+  if (line < top || line > bot) return [ss, sb];
+  const left = d16 & 8 ? 24 : 31, right = d16 & 8 ? 343 : 334;
+  const romChars = chars === 0x1000 || chars === 0x1800;
+  if (romChars) return [ss, sb];
+  const row = ly >> 3, gl = ly & 7, mcm = d16 & 0x10;
+  for (let n = 0; n < 8; n++) {
+    if (!(on >> n & 1)) continue;
+    for (let i = 0; i < w[n]; i++) {
+      if (!px[n][i]) continue;
+      const x = x0[n] + i;
+      if (x < left || x > right) continue;
+      const tx = x - 24 - xs;
+      if (tx < 0 || tx >= 320) continue;
+      const cell = row * 40 + (tx >> 3), code = M[scr + cell], g = M[chars + code * 8 + gl], cc = colour[cell] & 15;
+      let fg;
+      if (mcm && (cc & 8)) fg = ((g >> (6 - ((tx & 6)))) & 2) !== 0;
+      else fg = ((g >> (7 - (tx & 7))) & 1) !== 0;
+      if (fg) { sb |= 1 << n; break; }
+    }
+  }
+  return [ss, sb];
+}
+
+root.ChillerKernal = { irqTail, scnkey, chrout, plot, boot, clearScreen, collideLine };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/core.js */
+// The port's frame: P, the game's routines on the game's memory. Each group of routines is a
+// file of its own that adds its functions to P (ChillerGroups); this makes P and installs them.
+//
+// The conventions every routine keeps:
+// - P.M is the game's 64 KB, read and written at the game's addresses, self-modified operands
+//   included; P.io the chips (kit/c64/lockstep.js lists its functions); P.k the same chips and
+//   memory for the KERNAL stand-ins (kernal.js).
+// - A routine is P.<its listing label>(r): r holds the registers it is entered with ({ a, x, y,
+//   c }, those it reads), and it returns the registers it leaves ({ a, x, y }, and c, z or n
+//   where a caller reads them). That is the kit's standIn's form, so the game's own code can
+//   stand in for any routine not yet written, and a routine of one group calls another's as P.x.
+// - A routine that waits (for the raster, for the interrupt, or in a delay loop), or calls one
+//   that does, is a generator: it yields where time passes, as kit/c64/lockstep.js describes
+//   ({ wait: line } for a raster wait, a bare yield for each turn of a loop that polls memory an
+//   interrupt changes, { cycles: n } for a delay loop), and is called with yield*.
+// - A JMP to a place that never returns to its caller (main_loop, restart_screen, start_game,
+//   game_over and the like) throws a Goto, which the main program catches.
+(function (root) {
+'use strict';
+const G = root.ChillerGroups = root.ChillerGroups || {};
+// The routines that are generators: those whose code can reach a wait. Callers use yield*.
+const GEN = new Set(`
+  b_2A29 b_CDDE boy_first card_and_border card_apostrophe card_wait collect_check cross_count
+  cross_touch crosses_left delay enemy_pass enemy_setup enemy_step energy_tick fall_blocked
+  fall_step flash_border game_entry game_over game_over_wait girl_touch hud_and_music hud_reset
+  hud_restore hud_save j_2A57 j_2EE3 j_5B8D j_5DA9 j_75E0 j_7673 j_C144 j_C6E0 j_CDFA
+  jump_colour_step jump_step level_banner level_up main_loop next_screen place_boy player_input
+  player_step player_swap poison_add poison_tick reset_players respawn_check respawn_timer
+  restart_screen score_reset screen_done screen_exit scroll_nudge scroll_timer scroll_wait
+  setup_screen show_card show_forest_card show_level_card spawn_enemy sprite_touch start_game
+  swap_sprites switch_allowed switch_request tick_border tile_touch_a tile_touch_b title_start
+  to_switch_allowed try_move unused_end_sound unused_shot_hit unused_sound_player wait_fire
+  wait_line16
+`.trim().split(/\s+/));
+class Goto { constructor(to, r) { this.to = to; this.r = r || {}; } }
+function makePort(M, io, opts = {}) {
+  const P = { M, Goto };
+  // P.io is one object for good, so that a routine may keep it (const io = P.io): giving P a
+  // new set of chips (the lockstep does) replaces its members
+  const IO = Object.assign({}, io);
+  Object.defineProperty(P, 'io', { enumerable: true, get: () => IO,
+    set: v => { for (const k of Object.keys(IO)) delete IO[k]; Object.assign(IO, v); } });
+  P.k = {
+    M,
+    colourRead: i => IO.colourRead(i), colourWrite: (i, v) => IO.colourWrite(i, v),
+    vicRead: r => IO.vicRead(r), vicWrite: (r, v) => IO.vicWrite(r, v),
+    ciaRead: r => IO.ciaRead(r), ciaWrite: (r, v) => IO.ciaWrite(r, v),
+  };
+  // A byte the interrupt keeps (the jiffy clock $A2, the keyboard's $C5 and $028D), as the main
+  // program reads it: the lockstep replaces this with what the game's code read there, since
+  // where an interrupt falls inside a stretch of code is the game's own race.
+  P.irq_byte = a => M[a];
+  if (opts.standIn) {
+    for (const [label, a] of opts.labels) {
+      const f = opts.standIn(P, a);
+      P[label] = GEN.has(label) ? function* (r) { return f(r); } : f;
+    }
+  }
+  for (const name of Object.keys(G)) if (!opts.only || opts.only.includes(name)) G[name](P);
+  return P;
+}
+root.ChillerPort = { makePort, Goto, GEN };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-fabric.js */
+// The game's flow: the start, the main loop and its second half, the checks between them, a
+// screen's restart, a new game and the end of one. Everything else is called from here through
+// P. The main loop yields a checkpoint { cp } at each place the game's loop calls a routine.
+(function (root) {
+'use strict';
+(root.ChillerGroups = root.ChillerGroups || {}).fabric = function (P) {
+  const M = P.M, io = P.io, K = root.ChillerKernal;
+  const nz = v => ({ z: v === 0 ? 1 : 0, n: (v >> 7) & 1 });
+  const regs = (r, o) => Object.assign({}, r, o);
+
+  // $2DFA game_entry, where the loader hands over: init_irq_vector (the STOP vector's low byte
+  // to $EA, which turns off RUN/STOP, then first_setup), then title_start.
+  P.game_entry = function* (r) {
+    r = P.init_irq_vector(r);
+    return yield* P.title_start(r);
+  };
+  // $75A7 init_irq_vector
+  P.init_irq_vector = function (r) {
+    M[0x0328] = 0xEA;
+    return P.first_setup(regs(r, { a: 0xEA }));
+  };
+  // $2CE4 title_start: main_loop's two compares from the settings, the pass count that runs
+  // player_input ($45FC into $CA19) and the one that runs joy_move ($45FD into $CA07); then
+  // $2EE3, which reads $45FE for nothing and starts a game.
+  P.title_start = function* (r) {
+    M[0xCA19] = M[0x45FC];
+    M[0xCA07] = M[0x45FD];
+    return yield* P.j_2EE3(regs(r, { a: M[0xCA07] }));
+  };
+  P.j_2EE3 = function* (r) {
+    throw new P.Goto('start_game', regs(r, { a: M[0x45FE] }, nz(M[0x45FE])));
+  };
+
+  // $C646 start_game: reset the players and the score, the boy first, the background from the
+  // settings, CHR$(8) (SHIFT and C= may no longer swap the character sets), sprites off; build
+  // the forest (setup_screen with X = 0), copy the block at $56C0, then restart_screen.
+  P.start_game = function* (r) {
+    r = yield* P.reset_players(r);
+    r = yield* P.boy_first(r);
+    io.vicWrite(0x21, M[0x450F]);
+    K.chrout(P.k, 0x08);
+    io.vicWrite(0x15, 0);
+    r = yield* P.setup_screen(regs(r, { a: 0, x: 0 }));
+    r = P.copy_block(regs(r, { x: 0xC0, y: 0x56 }));
+    throw new P.Goto('restart_screen', r);
+  };
+
+  // $C694 restart_screen: the level's first enemies (when $45AB is 0, spawn_enemy for slots 0 to
+  // $45AC - 1), the boy at his start (place_boy), the play font ($D018 = $1C), $0F into the RAM
+  // under $FFFF, sprite 7's frame $F8 and sprite 1's colour from the settings, each slot's
+  // counters cleared, $D01E read to clear it, then enemy_setup and the main loop.
+  P.restart_screen = function* (r) {
+    if (M[0x45AB] === 0) {
+      M[0xCEFF] = 0;
+      let a = 0;
+      do {
+        r = yield* P.spawn_enemy(regs(r, { a }));
+        M[0xCEFF] = (M[0xCEFF] + 1) & 255;
+        a = M[0xCEFF];
+      } while (a !== M[0x45AC]);
+    }
+    r = yield* P.place_boy(r);
+    io.vicWrite(0x18, 0x1C);
+    M[0xFFFF] = 0x0F;
+    M[0x07FF] = 0xF8;
+    io.vicWrite(0x28, M[0x45B2]);
+    for (let x = 0; x < 5; x++) M[0xCF1A + x] = M[0xCF29 + x] = M[0xCF2E + x] = M[0xCF4F + x] = 0;
+    const c = io.vicRead(0x1E);
+    return yield* P.enemy_setup(regs(r, { a: c, x: 5, c: 1 }, nz(c)));
+  };
+  // $C032 place_boy: Y from $4517, then $C144 (the enemies' group) does the rest.
+  P.place_boy = function* (r) {
+    return yield* P.j_C144(regs(r, { a: M[0x4517] }));
+  };
+  // $C6E0: slot X's colour from $45AD,x, then set_enemy_colour.
+  P.j_C6E0 = function* (r) {
+    return P.set_enemy_colour(regs(r, { a: M[0x45AD + r.x] }));
+  };
+  // $2D00 enemy_setup: each slot's lives from $45E7, the sprite multicolours, which sprites are
+  // multicolour and which are twice as wide; then the main loop.
+  P.enemy_setup = function* (r) {
+    for (let x = 0; x < 5; x++) M[0xCF76 + x] = M[0x45E7 + x];
+    io.vicWrite(0x25, M[0x45F5]);
+    io.vicWrite(0x26, M[0x45F6]);
+    io.vicWrite(0x1C, M[0x45F4]);
+    io.vicWrite(0x1D, M[0x45F1]);
+    throw new P.Goto('main_loop', regs(r, { a: M[0x45F1], x: 5 }));
+  };
+
+  // $CA00 main_loop: tick_border, player_step, joy_move when player_step's count reaches the
+  // compare at $CA07, player_input every $CA19th pass, then collect_check and enemy_pass.
+  P.main_loop = function* (r) {
+    for (;;) {
+      yield { cp: 0xCA00 };
+      r = yield* P.tick_border(r);
+      yield { cp: 0xCA03 };
+      r = yield* P.player_step(r);
+      if (r.a === M[0xCA07]) {
+        M[0xCF02] = 0;
+        yield { cp: 0xCA0F };
+        r = P.joy_move(regs(r, { a: 0 }));
+      }
+      M[0xCF03] = (M[0xCF03] + 1) & 255;
+      if (M[0xCF03] === M[0xCA19]) {
+        M[0xCF03] = 0;
+        yield { cp: 0xCA21 };
+        r = yield* P.player_input(regs(r, { a: 0 }));
+      }
+      yield { cp: 0xCA24 };
+      r = yield* P.collect_check(regs(r, { a: M[0xCF03] }));
+      r = yield* P.enemy_pass(r);
+    }
+  };
+
+  // $2D4B collect_check. For the slots in turn: one with no lives left whose sprite is off counts
+  // as gone (respawn_check); one the settings do not let hit the scenery ($45F7,x = 0) is passed
+  // over; the first that is still in play and may hit the scenery ends the scan: sprite 1 (the
+  // other player) against the scenery ($D01F bit 1) on screens with $45FE set runs
+  // sprite1_hit_scenery. All five gone is the next LEVEL (level_up). Then, energy gone ($CF7D = 1),
+  // screen_done and the wait for the jingle; otherwise on to enemy_pass.
+  P.collect_check = function* (r) {
+    let x = 0;
+    for (;;) {
+      if (M[0xCF76 + x] === 0) {                       // respawn_check
+        if ((M[0xCF08 + x] & io.vicRead(0x15)) === 0) {
+          if (++x === 5) return yield* P.level_up(regs(r, { x }));
+          continue;
+        }
+      }
+      if (M[0x45F7 + x] === 0) {                       // $2D5D: passed over
+        if (++x === 5) return yield* P.level_up(regs(r, { x }));
+        continue;
+      }
+      break;
+    }
+    const c = io.vicRead(0x1F);                        // $2D60
+    M[0x2D7A] = c;
+    let a = c & 2;
+    if (a !== 0) {
+      a = M[0x45FE];
+      if (a !== 0) r = P.sprite1_hit_scenery(regs(r, { a, x, c: 1 }, nz(a)));
+      else r = regs(r, { a, x });
+    } else r = regs(r, { a, x });
+    if (M[0xCF7D] === 1) {                             // $2D7B
+      r = yield* P.screen_done(regs(r, { a: 1, c: 1, z: 1, n: 0 }));
+      return yield* P.j_5DA9(r);
+    }
+    return regs(r, { a: M[0xCF7D] });
+  };
+  // $2EB7 respawn_check (its code is part of collect_check above; this is the entry for others).
+  P.respawn_check = function* (r) {
+    throw new Error('respawn_check is entered only from collect_check');
+  };
+
+  // $CA27 enemy_pass: enemy_step for slots 0-4, extra_enemy, sprite_touch; the screen left
+  // ($CF81 = 1) restarts it; otherwise the scroll and respawn timers, and RUN/STOP ($CF7F = $FF)
+  // ends the game.
+  P.enemy_pass = function* (r) {
+    M[0xCEFF] = 0;
+    let a = 0;
+    do {
+      yield { cp: 0xCA2F };
+      r = yield* P.enemy_step(regs(r, { a }));
+      yield { cp: 0xCA32 };                            // (a checkpoint may not follow itself)
+      M[0xCEFF] = (M[0xCEFF] + 1) & 255;
+      a = M[0xCEFF];
+    } while (a !== 5);
+    yield { cp: 0xCA3C };
+    r = P.extra_enemy(regs(r, { a: 5 }));
+    yield { cp: 0xCA3F };
+    r = yield* P.sprite_touch(r);
+    if (M[0xCF81] === 1) {
+      M[0xCF81] = 0;
+      throw new P.Goto('restart_screen', regs(r, { a: 0 }));
+    }
+    yield { cp: 0xCA51 };
+    r = yield* P.scroll_timer(regs(r, { a: M[0xCF81] }));
+    yield { cp: 0xCA54 };
+    r = yield* P.respawn_timer(r);
+    if (M[0xCF7F] === 0xFF) throw new P.Goto('end_game', regs(r, { a: 0xFF }));
+    return regs(r, { a: M[0xCF7F] });
+  };
+
+  // $2C19 level_up: all of the enemies are gone: the LEVEL counter's three digits ($CFA7-$CFA9)
+  // count up, speed_up makes them faster, and level_banner shows it.
+  P.level_up = function* (r) {
+    let x = 3;
+    for (;;) {
+      const d = M[0xCFA6 + x] = (M[0xCFA6 + x] + 1) & 255;
+      if (d !== 0xBA) break;
+      M[0xCFA6 + x] = 0xB0;
+      if (--x === 0) break;
+    }
+    r = P.speed_up(regs(r, { x }));
+    return yield* P.level_banner(r);
+  };
+  // $2C44 level_banner: only the boy's sprite on; LEVEL nnn over row 11 (the nine cells at $05EF
+  // and their colours kept at $0345 and $034E), in the colour of the cell at $D81A; the two
+  // operands at $2E07 and $2E21 set to 3 and 4 while it shows; wait until the jiffy clock's middle
+  // byte, set to 4, reaches 6 (512 interrupts, about eight and a half seconds); put it all back
+  // and restart the screen.
+  P.level_banner = function* (r) {
+    io.vicWrite(0x15, 1);
+    for (let x = 0; x < 9; x++) {
+      M[0x0345 + x] = M[0x05EF + x];
+      M[0x034E + x] = io.colourRead(0x1EF + x);
+      M[0x05EF + x] = M[0xCFA1 + x];            // txt_level: LEVEL and the three digits
+      io.colourWrite(0x1EF + x, io.colourRead(0x01A));
+    }
+    M[0xCF73] = 0;
+    M[0x2E07] = 3;
+    M[0x2E21] = 4;
+    M[0xA1] = 4;
+    while (M[0xA1] !== 6) yield;
+    M[0x2E07] = 5;
+    M[0x2E21] = 7;
+    M[0xCF74] = 0;
+    for (let x = 0; x < 9; x++) {
+      M[0x05EF + x] = M[0x0345 + x];
+      io.colourWrite(0x1EF + x, M[0x034E + x]);
+    }
+    throw new P.Goto('restart_screen', regs(r, { a: M[0x034E + 8], x: 9, c: 1, z: 1, n: 0 }));
+  };
+
+  // $2C00 hud_reset: each slot's move and frame delays (set_enemy_speed with $4542,x), then
+  // hud_and_music.
+  P.hud_reset = function* (r) {
+    for (let x = 0; x < 5; x++) r = P.set_enemy_speed(regs(r, { a: M[0x4542 + x], x }));
+    r = yield* P.hud_and_music(regs(r, { x: 5 }));
+    return r;
+  };
+  // $2CA4 score_reset: the LEVEL counter to 001, then hud_reset.
+  P.score_reset = function* (r) {
+    M[0xCFA7] = M[0xCFA8] = 0xB0;
+    M[0xCFA9] = 0xB1;
+    return yield* P.hud_reset(regs(r, { a: 0xB1 }));
+  };
+  // $2E62 hud_and_music: lives from $45ED, the screen-over flag cleared; the music setting and
+  // the tune started ($2E8B); sprite priorities from $45F1; A = $450E.
+  P.hud_and_music = function* (r) {
+    M[0xCF7C] = M[0x45ED];
+    M[0xCF7D] = 0;
+    r = P.s_2CF3(regs(r, { a: M[0x45EF] }));
+    r = P.s_2F4D(r);
+    io.vicWrite(0x1B, M[0x45F1]);
+    return regs(r, { a: M[0x450E] }, nz(M[0x450E]));
+  };
+
+  // $2DA0 game_over: sprites off, the death tune's setting, a pause (delay with $CF65 and $CF66
+  // at $FF); then, until fire or a key: game_over_wait (after a while the title card) and, with
+  // the border not black (still the play screen), the score against the high score; then a new
+  // game.
+  P.game_over = function* (r) {
+    io.vicWrite(0x15, 0);
+    r = P.s_2CF3(regs(r, { a: M[0x45EE] }));
+    M[0xCF65] = M[0xCF66] = 0xFF;
+    r = yield* P.delay(regs(r, { a: 0xFF }));
+    return yield* waitLoop(r, false);
+  };
+  // $2D97 wait_fire, in the loop at $2DB6 it belongs to. Each turn: RUN/STOP ($CF7F) would end
+  // the game; game_over_wait; a key held ($C5 not $40) goes on; otherwise wait_fire: fire goes
+  // on, else round again. A turn takes the game 55 cycles when game_over_wait only counts.
+  function* waitLoop(r, atFire) {
+    for (;;) {
+      if (!atFire) {
+        if (M[0xCF7F] !== 0) throw new P.Goto('end_game', regs(r, { a: M[0xCF7F] }));
+        r = yield* P.game_over_wait(regs(r, { a: 0 }));
+        if (P.irq_byte(0xC5) !== 0x40) break;
+      }
+      atFire = false;
+      const s = io.ciaRead(0);
+      yield { cycles: 55 };
+      if ((s & 0x10) === 0) break;
+    }
+    if ((io.vicRead(0x20) & 0x0F) !== 0) r = P.check_hiscore(r);   // $2DC9
+    throw new P.Goto('start_game', r);
+  }
+  P.wait_fire = function* (r) { return yield* waitLoop(r, true); };
+
+  // $2CB4 end_game (RUN/STOP: nothing in the game sets $CF7F to $FF, so it is never reached):
+  // the KERNAL's interrupt back, green border, light grey background, the ROM's characters, the
+  // screen cleared, the keyboard buffer emptied, $00 into the RAM under $FFFF, sprites off and
+  // 40 columns; then an RTS to wherever the stack points.
+  P.end_game = function* (r) {
+    M[0x0314] = 0x31; M[0x0315] = 0xEA;
+    M[0xCF7F] = 0;
+    io.vicWrite(0x20, 5);
+    io.vicWrite(0x21, 0x0F);
+    io.vicWrite(0x18, 0x15);
+    K.chrout(P.k, 0x93);
+    M[0xC6] = 0;
+    M[0xFFFF] = 0;
+    io.vicWrite(0x15, 0);
+    io.vicWrite(0x16, io.vicRead(0x16) | 8);
+    for (;;) yield;
+  };
+
+  // Two tails no group took, ported here.
+  // $C1E1 j_C1E1: place_boy continued: sprite 0's X MSB from $4518 into $D010 ($C407), then
+  // its colour from $4510 (j_CEF6).
+  P.j_C1E1 = function (r) {
+    const a = (io.vicRead(0x10) & 0xFE) | M[0x4518];
+    io.vicWrite(0x10, a);
+    return P.j_CEF6(regs(r, { a: M[0x4510] }));
+  };
+  // $CDDE b_CDDE: poison_add with X = 2.
+  P.b_CDDE = function* (r) {
+    return yield* P.poison_add(regs(r, { x: 2 }));
+  };
+
+  // The main program: from the hand-over, following each place the game jumps to for good.
+  P.program = function* (start, r0) {
+    let at = start || 'game_entry', r = r0 || {};
+    for (;;) {
+      try {
+        yield* P[at](r);
+        throw new Error(at + ' returned, which the game never does');
+      } catch (e) {
+        if (!(e instanceof P.Goto)) throw e;
+        at = e.to; r = e.r;
+      }
+    }
+  };
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-player.js */
+// The player: the boy's moves through the scenery (try_move, move_sprite), the keyboard and
+// joystick (read_controls, player_input), the jump and the fall with their sounds, the walking
+// and standing frames, the second player's arrival on screens without jumping, the border's
+// colour for the current player and the flashing of the crosses.
+//
+// Several of these routines are rewritten by other code while the game runs, and read here from
+// P.M: try_move's row offset ($2A0C, gravity_setup), the frame numbers in idle_frame ($5848,
+// $584C, $5876, $587B), jump_lockout ($589B, $58A4, $58A9) and player_input ($C79C, $C7C6,
+// player_swap and player_step), and the first bytes of read_controls ($C84D) and frame_step
+// ($5980), which become RTS ($60) while the boy is in the air.
+(function (root) {
+'use strict';
+(root.ChillerGroups = root.ChillerGroups || {}).player = function (P) {
+  const M = P.M, io = P.io;
+  const nz = v => ({ z: (v & 0xFF) === 0 ? 1 : 0, n: (v >> 7) & 1 });
+  const cmp = (a, b) => ({ c: a >= b ? 1 : 0, z: a === b ? 1 : 0, n: ((a - b) >> 7) & 1 });
+  const regs = (r, ...o) => Object.assign({}, r, ...o);
+  // A byte as the processor sees it with the KERNAL and I/O banked in: $D000-$DFFF are the chips.
+  const rd = a => (a >= 0xD000 && a < 0xE000) ? io.read(a) : M[a];
+  const wr = (a, v) => { if (a >= 0xD000 && a < 0xE000) io.write(a, v & 0xFF); else M[a] = v & 0xFF; };
+
+  // $2A04 try_move: try to move the boy one pixel in direction A (0 up, 1 down, 2 left, 3
+  // right). His sprite position becomes a screen row (Y less the offset at $2A0C, over 8) and a
+  // column (X less $0C, over 2, with the MSB as bit 7; left of $0C the MSB is not added).
+  P.try_move = function* (r) {
+    M[0x2AFE] = r.a;
+    const row = ((io.vicRead(1) - M[0x2A0C]) & 0xFF) >> 3;
+    const dx = io.vicRead(0) - 0x0C;
+    let a;
+    if (dx < 0) a = (dx & 0xFF) >> 1;          // $2A00: the half column, no MSB
+    else {
+      M[0x2AFF] = dx >> 1;
+      a = ((io.vicRead(0x10) & 1) ? 0x80 : 0) | M[0x2AFF];
+    }
+    return yield* P.b_2A29(regs(r, { a, y: row }));
+  };
+  // $2A29 b_2A29: the cell for row Y and half column A: the row's address from row_offsets plus
+  // column and $0400 (the screen), and probe_offset[direction] the cell to look at. A space ($A0)
+  // or a tile that is positive and below $2A lets him move; tiles $2A-$53 are tile_touch_a's,
+  // the rest tile_touch_b's.
+  P.b_2A29 = function* (r) {
+    const col = r.a >> 2, ty = (r.y << 1) & 0xFF;
+    M[0xFB] = M[0x5100 + ty];
+    M[0xFC] = M[0x5101 + ty];
+    const lo = M[0xFB] + col;
+    M[0xFB] = lo & 0xFF;
+    if (lo > 0xFF) M[0xFC] = (M[0xFC] + 1) & 0xFF;
+    M[0xFC] = (M[0xFC] + 4) & 0xFF;
+    const x = M[0x2AFE], y = M[0x5145 + x];
+    const t = rd(((M[0xFB] | (M[0xFC] << 8)) + y) & 0xFFFF);
+    if (t === 0xA0 || (((t - 0x2A) & 0x80) !== 0)) return yield* P.j_2A57(regs(r, { a: t, x, y }));
+    const f = cmp(t, 0x54);
+    const out = regs(r, { a: t, x, y }, f);
+    if (f.n) return yield* P.tile_touch_a(out);
+    return yield* P.tile_touch_b(out);
+  };
+  // $2A57 j_2A57: the way is open: move the boy (sprite 0) in try_move's direction.
+  P.j_2A57 = function* (r) {
+    return P.move_sprite(regs(r, { a: M[0x2AFE], x: 0 }));
+  };
+  // $2A72 jump_setup: the rising flag ($C19B) from A, the first step's time from jump_speeds
+  // into the step timer $2A7F, then jump_lockout.
+  P.jump_setup = function (r) {
+    M[0xC19B] = r.a;
+    M[0x2A7F] = M[0x544A];
+    return P.jump_lockout(regs(r, { a: M[0x544A] }));
+  };
+  // $2D8D s_2D8D: sprite 1's pointer from A, and $C544 cleared.
+  P.s_2D8D = function (r) {
+    M[0x07F9] = r.a;
+    M[0xC544] = 0;
+    return regs(r, { a: 0, z: 1, n: 0 });
+  };
+  // $2F00 second_player_in: sprite 1's MSB (A) into $D010, voice 3 silenced, then its seven
+  // settings from $45B3.
+  P.second_player_in = function (r) {
+    io.vicWrite(0x10, r.a);
+    io.sidWrite(0x12, 0);
+    for (let x = 0; x < 7; x++) io.sidWrite(0x0E + x, M[0x45B3 + x]);
+    return regs(r, { a: M[0x45B9], x: 7, c: 1, z: 1, n: 0 });
+  };
+
+  // $5350 fall_step: gravity when not jumping, on screens that have it ($45FF). Every $534B
+  // calls try him a pixel down: if he moved he falls (the whistle, the fall count, up and down
+  // locked), if not he stands (silence, land).
+  P.fall_step = function* (r) {
+    if (M[0x45FF] === 0) return regs(r, { a: 0, z: 1, n: 0 });
+    M[0x534C] = (M[0x534C] - 1) & 0xFF;
+    if (M[0x534C] !== 0) return regs(r, { a: M[0x45FF], z: 0, n: M[0x534C] >> 7 });
+    M[0x534C] = M[0x534B];
+    M[0x534A] = io.vicRead(1);
+    r = yield* P.try_move(regs(r, { a: 1, x: 0 }));
+    if (io.vicRead(1) === M[0x534A]) return P.fall_sound_off(regs(r, { a: M[0x534A] }));
+    r = P.fall_sound(regs(r, { a: io.vicRead(1) }));
+    M[0x534E] = (M[0x534E] + 1) & 0xFF;
+    M[0x4502] = 0;
+    M[0x4503] = 0;
+    return regs(r, { a: 0, z: 1, n: 0 });
+  };
+  // $538E jump_step: the boy's vertical motion each pass. Not jumping: fall_step. Jumping: when
+  // the step timer $2A7F runs out, a pixel up while rising ($C19B = 0), with jump_counter $2A7E
+  // counting up to 24 through jump_speeds, or a pixel down while falling, the counter counting
+  // back to 0; the jump sound's pitch follows.
+  P.jump_step = function* (r) {
+    M[0xCF02] = (M[0xCF02] + 1) & 0xFF;
+    if (M[0xC19C] === 0) return yield* P.fall_step(regs(r, { a: 0 }));
+    M[0x2A7F] = (M[0x2A7F] - 1) & 0xFF;
+    if (M[0x2A7F] !== 0) return regs(r, { a: M[0xC19C] }, nz(M[0x2A7F]));
+    r = P.remember_y(r);
+    if (r.a === 0) {
+      r = yield* P.try_move(regs(r, { a: 0 }));
+      r = P.rise_blocked(r);
+      const x = M[0x2A7E];
+      if (x === 0x18) {
+        M[0xC19B] = 1;
+        return regs(r, { a: 1, x, z: 0, n: 0, c: 1 });
+      }
+      M[0x2A7F] = M[0x544A + x];
+      return P.jump_pitch_rise(regs(r, { a: M[0x2A7F], x }));
+    }
+    r = yield* P.fall_blocked(regs(r, { a: 1 }));
+    M[0x2A7E] = (M[0x2A7E] - 1) & 0xFF;
+    const x = M[0x2A7E];
+    if (x === 0) {
+      M[0xC19C] = 0;
+      M[0x534E] = 0x18;
+      return regs(r, { a: 0x18, x, z: 0, n: 0, c: 1 });
+    }
+    M[0x2A7F] = M[0x544A + x];
+    return P.jump_pitch_fall(regs(r, { a: M[0x2A7F], x }));
+  };
+  // $53EF land: standing, so up and down are allowed again and the fall count is cleared. (Its
+  // compare of the fall with $457A leads only to NOPs: there is no fall damage.)
+  P.land = function (r) {
+    M[0x4502] = 1;
+    M[0x4503] = 1;
+    const f = cmp(M[0x534E], M[0x457A]);
+    M[0x534E] = 0;
+    return regs(r, { a: 0, c: f.c, z: 1, n: 0 });
+  };
+  // $5418 start_jump: only when the boy is not falling ($534E = 0): in the air ($C19C = 1),
+  // jump_counter 0, the rising flag 0, then jump_setup. Falling: walk_frame.
+  P.start_jump = function (r) {
+    if (M[0x534E] !== 0) return P.walk_frame(regs(r, { a: M[0x534E] }));
+    M[0xC19C] = 1;
+    M[0x2A7E] = 0;                               // $C1B4
+    return P.jump_setup(regs(r, { a: 0 }));
+  };
+  // $542B remember_y: keep sprite 0's Y in $542A before a step; return the rising/falling flag.
+  P.remember_y = function (r) {
+    M[0x542A] = io.vicRead(1);
+    return regs(r, { a: M[0xC19B] }, nz(M[0xC19B]));
+  };
+  // $5437 rise_blocked: after a rising step an unchanged Y means a ceiling: he falls from here
+  // ($C19B = 1). Count the step.
+  P.rise_blocked = function (r) {
+    let a = io.vicRead(1);
+    const c = a >= M[0x542A] ? 1 : 0;
+    if (a === M[0x542A]) { a = 1; M[0xC19B] = 1; }
+    M[0x2A7E] = (M[0x2A7E] + 1) & 0xFF;
+    return regs(r, { a, c }, nz(M[0x2A7E]));
+  };
+  // $5467 fall_blocked: one falling step; an unchanged Y means he has landed and the jump is over.
+  P.fall_blocked = function* (r) {
+    M[0x5466] = io.vicRead(1);
+    r = yield* P.try_move(regs(r, { a: 1 }));
+    const f = cmp(M[0x5466], io.vicRead(1));
+    if (!f.z) return regs(r, { a: M[0x5466] }, f);
+    M[0xC19C] = 0;
+    return regs(r, { a: 0, c: 1, z: 1, n: 0 });
+  };
+  // $5483 jump_sound: start the jump sound on voice 3 (attack/decay $0D, sustain/release 0, the
+  // waveform from $45B7), its frequency $0800 (jump_sound_freq), then walk_frame.
+  P.jump_sound = function (r) {
+    io.sidWrite(0x12, 0);
+    io.sidWrite(0x13, 0x0D);
+    io.sidWrite(0x14, 0);
+    io.sidWrite(0x12, M[0x45B7]);
+    return P.jump_sound_freq(regs(r, { a: 0 }));
+  };
+  // $54A0 fall_sound_off: silence voice 3, forget the whistle, then land.
+  P.fall_sound_off = function (r) {
+    io.sidWrite(0x12, 0);
+    M[0x549F] = 0;
+    return P.land(regs(r, { a: 0 }));
+  };
+  // $54AC fall_sound: the falling whistle. The first call starts it (the jump sound, then $8080);
+  // each later one lowers the frequency by $80. The first call's BEQ lands inside the JMP after
+  // it and runs a CMP ($54,X), a read with no effect unless it reaches a chip.
+  P.fall_sound = function (r) {
+    if (M[0x549F] !== 0) {
+      const d = M[0x54C0] - 0x80;
+      M[0x54C0] = d & 0xFF;
+      io.sidWrite(0x0E, M[0x54C0]);
+      if (d < 0) M[0x54BF] = (M[0x54BF] - 1) & 0xFF;
+      io.sidWrite(0x0F, M[0x54BF]);
+      return regs(r, { a: M[0x54BF], c: d < 0 ? 0 : 1 }, nz(M[0x54BF]));
+    }
+    const ea = M[(0x54 + r.x) & 0xFF] | (M[(0x55 + r.x) & 0xFF] << 8);
+    if (ea >= 0xD000 && ea < 0xE000) io.read(ea);
+    M[0x549F] = 1;
+    r = P.jump_sound(regs(r, { a: 1 }));
+    M[0x54BF] = 0x80;
+    M[0x54C0] = 0x80;
+    return regs(r, { a: 0x80, z: 0, n: 1 });
+  };
+  // $54EA jump_sound_freq: the jump sound's starting frequency, $0800, then walk_frame.
+  P.jump_sound_freq = function (r) {
+    M[0x54F9] = 0;
+    M[0x54FA] = 8;
+    return P.walk_frame(regs(r, { a: 8 }));
+  };
+  // $54FC jump_pitch_rise: a rising step lowers the jump sound's low byte by 5; the high byte
+  // goes up when there was no borrow.
+  P.jump_pitch_rise = function (r) {
+    const d = M[0x54F9] - 5;
+    M[0x54F9] = d & 0xFF;
+    io.sidWrite(0x0E, M[0x54F9]);
+    if (d >= 0) M[0x54FA] = (M[0x54FA] + 1) & 0xFF;
+    io.sidWrite(0x0F, M[0x54FA]);
+    return regs(r, { a: M[0x54FA], c: d >= 0 ? 1 : 0 }, nz(M[0x54FA]));
+  };
+  // $5518 jump_pitch_fall: a falling step raises the low byte by 5, and (its BCS going to the
+  // next instruction) lowers the high byte every time.
+  P.jump_pitch_fall = function (r) {
+    const s = M[0x54F9] + 5;
+    M[0x54F9] = s & 0xFF;
+    io.sidWrite(0x0E, M[0x54F9]);
+    M[0x54FA] = (M[0x54FA] - 1) & 0xFF;
+    io.sidWrite(0x0F, M[0x54FA]);
+    return regs(r, { a: M[0x54FA], c: s > 0xFF ? 1 : 0 }, nz(M[0x54FA]));
+  };
+  // $5651 gravity_setup: with gravity ($45FF) down is blocked from above ($4500 = 0) and $570A
+  // sets try_move's offset $2C; without it $5716 sets $30.
+  P.gravity_setup = function (r) {
+    if (M[0x45FF] !== 0) {
+      M[0x4500] = 0;
+      return P.j_570A(regs(r, { a: 0, z: 1, n: 0 }));
+    }
+    return P.j_5716(regs(r, { a: 0, z: 1, n: 0 }));
+  };
+  // $5844 idle_frame: after a jump's frame ($5848) the standing frame ($584C); when sprite 0's X
+  // has not changed for $90 passes ($5A03), the standing frame for the facing ($5876 or $587B).
+  P.idle_frame = function (r) {
+    if (M[0x07F8] === M[0x5848]) M[0x07F8] = M[0x584C];
+    const x = io.vicRead(0), a = M[0x5A02];
+    M[0x5A02] = x;
+    if (a !== x) {
+      M[0x5A03] = 0;
+      return regs(r, { a: 0, x, z: 1, n: 0, c: a >= x ? 1 : 0 });
+    }
+    M[0x5A03] = (M[0x5A03] + 1) & 0xFF;
+    const n = M[0x5A03];
+    if (n !== 0x90) return regs(r, { a: n, x }, cmp(n, 0x90));
+    const f = (M[0x07F8] & 4) ? M[0x587B] : M[0x5876];
+    M[0x07F8] = f;
+    return regs(r, { a: f, x, c: 1 }, nz(f));
+  };
+  // $5880 jump_lockout: in the air read_controls and frame_step are switched off (RTS), the
+  // take-off direction kept ($5A01), the jumping frame shown by facing, player_input's vertical
+  // frame bases set, and the jump sound started.
+  P.jump_lockout = function (r) {
+    M[0x5A00] = 0;
+    M[0x5A01] = M[0xC1ED];
+    M[0xC84D] = 0x60;
+    M[0x5980] = 0x60;
+    M[0x07F8] = (M[0x07F8] & 4) ? M[0x58A4] : M[0x589B];
+    M[0xC79C] = M[0x58A9];
+    M[0xC7C6] = M[0x58A9];
+    return P.jump_sound(regs(r, { a: M[0x58A9] }));
+  };
+  // $5980 frame_step: sprite 0's next walking frame, the low two bits of $07F8 wrapping from 3
+  // to 0. Its first byte is RTS during a jump.
+  P.frame_step = function (r) {
+    if (M[0x5980] === 0x60) return regs(r);
+    const v = M[0x07F8];
+    if ((v & 3) !== 3) {
+      M[0x07F8] = (v + 1) & 0xFF;
+      return regs(r, { a: v & 3, c: 0 }, nz(M[0x07F8]));
+    }
+    M[0x07F8] = v & 0xFC;
+    return regs(r, { a: M[0x07F8], c: 1 }, nz(M[0x07F8]));
+  };
+  // $75B0 tick_border: with no energy-refill countdown ($5A11), the border in the current
+  // player's colour, 6 for the boy and 10 for the girl ($5A08); then jump_colour_step.
+  P.tick_border = function* (r) {
+    if (M[0x5A11] === 0) {
+      const c = M[0x5A08] === 0 ? 6 : 0x0A;
+      io.vicWrite(0x20, c);
+      r = regs(r, { a: c });
+    } else r = regs(r, { a: M[0x5A11] });
+    return yield* P.jump_colour_step(r);
+  };
+  // $75E0 j_75E0: when the colour at $DA5C is white (the title card), show_programmed_by.
+  P.j_75E0 = function* (r) {
+    const a = io.colourRead(0x25C) & 0x0F;
+    if (a === 1) return P.show_programmed_by(regs(r, { a, c: 1, z: 1, n: 0 }));
+    return regs(r, { a }, cmp(a, 1));
+  };
+  // $7EF1 set_boy_msb: sprite 0's X MSB in $D010 from A (0 or 1).
+  P.set_boy_msb = function (r) {
+    M[0x7EF0] = r.a;
+    const a = (io.vicRead(0x10) & 0xFE) | M[0x7EF0];
+    io.vicWrite(0x10, a);
+    return regs(r, { a }, nz(a));
+  };
+  // $7F20 set_boy_x: sprite 0's X, kept in $4516 as the start.
+  P.set_boy_x = function (r) {
+    M[0x4516] = r.a;
+    io.vicWrite(0, r.a);
+    return regs(r);
+  };
+  // $7F27 set_boy_y: sprite 0's Y, kept in $4517 as the start.
+  P.set_boy_y = function (r) {
+    M[0x4517] = r.a;
+    io.vicWrite(1, r.a);
+    return regs(r);
+  };
+  // $7F2E set_boy_xmsb: sprite 0's X MSB, kept in $4518.
+  P.set_boy_xmsb = function (r) {
+    M[0x4518] = r.a;
+    return P.set_boy_msb(r);
+  };
+  // $7F80 colour_cycle: every 40th call, the ten crosses flash: for each colour-RAM cell listed
+  // at +$5E..+$71 of the level record (zp $11) subtract 8 from its colour.
+  P.colour_cycle = function (r) {
+    M[0x5A16] = (M[0x5A16] - 1) & 0xFF;
+    if (M[0x5A16] !== 0) return regs(r, nz(M[0x5A16]));
+    M[0x5A16] = 0x28;
+    const base = M[0x11] | (M[0x12] << 8);
+    let y = 0x5D;
+    for (let x = 0; x < 10; x++) {
+      y++;
+      M[0xFB] = rd((base + y) & 0xFFFF);
+      y++;
+      M[0xFC] = (rd((base + y) & 0xFFFF) + 0xD4) & 0xFF;
+      const at = M[0xFB] | (M[0xFC] << 8);
+      wr(at, rd(at) - 8);
+    }
+    return regs(r, { a: y, x: 10, y, c: 1, z: 1, n: 0 });
+  };
+  // $7FAE jump_colour_step: the jump or fall step, then the crosses' colour cycle.
+  P.jump_colour_step = function* (r) {
+    r = yield* P.jump_step(r);
+    return P.colour_cycle(r);
+  };
+  // $C19D fire_pressed: fire or SHIFT. Where the level allows jumping ($45FF) start a jump unless
+  // he is in the air ($C19C); where it does not, bring in the second player (switch_check).
+  P.fire_pressed = function (r) {
+    if (M[0x45FF] === 0) return P.switch_check(regs(r, { a: io.vicRead(0x15) }));
+    if (M[0xC19C] !== 0) return P.walk_frame(regs(r, { a: M[0xC19C] }));
+    return P.start_jump(regs(r, { a: 0 }));
+  };
+  // $C700 joy_move: move sprite 1 one pixel, its frame number ($07F9 - $E0) as the direction.
+  P.joy_move = function (r) {
+    r = P.move_sprite(regs(r, { a: (M[0x07F9] - 0xE0) & 0xFF, x: 1 }));
+    return regs(r, { c: 1 }, nz(r.y));
+  };
+  // $C71B player_input: read the controls, then move the boy a pixel for each direction held
+  // and allowed ($4500-$4503: up, down, left, right), choosing the frame when $4504-$4507 say
+  // so; $CF06 counts the moves. With fire (C1EE) fire_pressed, else walk_frame.
+  P.player_input = function* (r) {
+    M[0xCF06] = 0;
+    r = P.read_controls(regs(r, { a: 0 }));
+    const dirs = [
+      [0xC1EC, 0xFF, 0x4500, 0x4504, 1, 0xD8],
+      [0xC1EC, 0x01, 0x4501, 0x4505, 1, 0xDA],
+      [0xC1ED, 0xFF, 0x4502, 0x4506, 3, 0xC79C],
+      [0xC1ED, 0x01, 0x4503, 0x4507, 3, 0xC7C6],
+    ];
+    for (let d = 0; d < 4; d++) {
+      const [key, want, allow, anim, mask, base] = dirs[d];
+      if (M[key] !== want || M[allow] === 0) continue;
+      r = yield* P.try_move(regs(r, { a: d, x: 0 }));
+      M[0xCF06] = (M[0xCF06] + 1) & 0xFF;
+      if (M[anim] === 0) continue;
+      const b = d < 2 ? base : M[base];        // the last two bases are rewritten ($C79C, $C7C6)
+      M[0x07F8] = ((M[0x07F8] & mask) + b) & 0xFF;
+    }
+    if (M[0xC1EE] === 0) return P.walk_frame(regs(r, { a: 0 }));
+    return P.fire_pressed(regs(r, { a: M[0xC1EE] }));
+  };
+  // $C7D4 switch_check: fire without jumping. With sprite 1 off (A, $D015, bit 1 clear) and a
+  // frame for the facing in $4508 (not $FF), bring sprite 1 in on top of the boy: its pointer,
+  // on, his position and MSB, voice 3 from $45B3 (second_player_in). Then walk_frame.
+  P.switch_check = function (r) {
+    if (r.a & 2) return P.walk_frame(regs(r, { a: 2 }));
+    const x = ((M[0x07F8] - 0xD8) & 0xFF) >> 1;
+    const f = M[0x4508 + x];
+    if (f === 0xFF) return P.walk_frame(regs(r, { a: f, x }));
+    r = P.s_2D8D(regs(r, { a: (f + 0xE0) & 0xFF, x }));
+    io.vicWrite(0x15, 2 | io.vicRead(0x15));
+    io.vicWrite(0x02, io.vicRead(0x00));
+    io.vicWrite(0x03, io.vicRead(0x01));
+    const y = io.vicRead(0x10) & 1;
+    io.vicWrite(0x10, io.vicRead(0x10) & 0xFD);
+    r = P.second_player_in(regs(r, { a: (y << 1) | io.vicRead(0x10), y }));
+    return P.walk_frame(r);
+  };
+  // $C819 walk_frame: when the boy moved this pass ($CF06), or always with $450D = 1, every
+  // $450C calls ($CF07) step his walking frame (frame_step).
+  P.walk_frame = function (r) {
+    if (M[0x450D] !== 1 && M[0xCF06] === 0) return regs(r, { a: 0, c: 1, z: 1, n: 0 });
+    M[0xCF07] = (M[0xCF07] + 1) & 0xFF;
+    const n = M[0xCF07];
+    if (n !== M[0x450C]) return regs(r, { a: n }, cmp(n, M[0x450C]));
+    M[0xCF07] = 0;
+    return P.frame_step(regs(r, { a: 0, c: 1, z: 1, n: 0 }));
+  };
+  // $C84D read_controls: the keyboard and the port-2 stick into directions: $C1EC vertical and
+  // $C1ED horizontal ($FF up or left, 1 down or right), $C1EE = 1 to jump. Keys from $C5
+  // against the level's table $4512-$4515, SHIFT from $028D, the stick from $DC00 (up jumps).
+  // With $4511 = 1 the last direction stays while nothing is pressed. RTS during a jump.
+  P.read_controls = function (r) {
+    if (M[0xC84D] === 0x60) return regs(r);
+    M[0xC1EE] = 0;
+    if (M[0x4511] !== 1) { M[0xC1EC] = 0; M[0xC1ED] = 0; }
+    const k = P.irq_byte(0xC5);
+    if (k !== 0x40) {
+      M[0xC1EC] = 0; M[0xC1ED] = 0;
+      if (k === M[0x4512]) M[0xC1EC] = 0xFF;
+      if (k === M[0x4513]) M[0xC1EC] = 0x01;
+      if (k === M[0x4514]) M[0xC1ED] = 0xFF;
+      if (k === M[0x4515]) M[0xC1ED] = 0x01;
+    }
+    if (P.irq_byte(0x028D) !== 0) M[0xC1EE] = 1;
+    const s = P.read_stick(r).a;
+    if ((s & 1) === 0) M[0xC1EE] = 1;
+    if ((io.ciaRead(0) & 2) === 0) M[0xC1EC] = 1;
+    if ((io.ciaRead(0) & 4) === 0) M[0xC1ED] = 0xFF;
+    if ((io.ciaRead(0) & 8) === 0) { M[0xC1ED] = 1; return regs(r, { a: 1, c: 0, z: 0, n: 0 }); }
+    return regs(r, { a: 8, c: 1, z: 1, n: 0 });
+  };
+  // $C900 move_sprite: move sprite X one pixel in direction A (0 up, 1 down, 2 left, 3 right)
+  // within Y $32-$E3 and X 8-$14F, keeping its $D010 bit. Y = 0 when it moved, $FF at an edge.
+  P.move_sprite = function (r) {
+    M[0xC8FE] = r.a;
+    M[0xC8FF] = r.x;
+    const x = (r.x << 1) & 0xFF, d = r.a, s = M[0xC8FF];
+    const out = o => regs(r, Object.assign({ x }, o));
+    if (d === 0 || d === 1) {
+      const at = 0xD001 + x, v = io.read(at), edge = d === 0 ? 0x32 : 0xE3;
+      if (v === edge) return out({ a: v, y: 0xFF, c: 1, z: 1, n: 0 });
+      io.write(at, (v + (d === 0 ? -1 : 1)) & 0xFF);
+      return out({ a: v, y: 0, c: v >= edge ? 1 : 0, z: 1, n: 0 });
+    }
+    if (d === 2) {
+      const at = 0xD000 + x, v = io.read(at);
+      if (v === 8) {
+        const t = M[0xC9E9 + s] & io.vicRead(0x10);
+        if (t === 0) return out({ a: 0, y: 0xFF, c: 1, z: 0, n: 1 });
+      }
+      io.write(at, (v - 1) & 0xFF);
+      const w = io.read(at);                   // read back, as the game does
+      if (w !== 0xFF) return out({ a: w, y: 0, c: w >= 0xFF ? 1 : 0, z: 1, n: 0 });
+      const m = M[0xC9E1 + s] & io.vicRead(0x10);
+      io.vicWrite(0x10, m);
+      return out({ a: m, y: 0, c: 1, z: 1, n: 0 });
+    }
+    if (d === 3) {
+      const at = 0xD000 + x, v = io.read(at);
+      if (v === 0x4F) {
+        const t = M[0xC9E9 + s] & io.vicRead(0x10);
+        if (t !== 0) return out({ a: t, y: 0xFF, c: 1, z: 0, n: 1 });
+      }
+      io.write(at, (v + 1) & 0xFF);
+      const w = io.read(at);
+      if (w !== 0) return out({ a: w, y: 0, c: 1, z: 1, n: 0 });
+      const m = M[0xC9E9 + s] | io.vicRead(0x10);
+      io.vicWrite(0x10, m);
+      return out({ a: m, y: 0, c: 1, z: 1, n: 0 });
+    }
+    return out(Object.assign({ a: d, y: 0xFF }, cmp(d, 3)));
+  };
+  // $C9C4 read_stick: $DC00 (the port-2 stick) in A; with the stick pushed and no key down the
+  // remembered directions are cleared first, so the stick replaces a key's direction.
+  P.read_stick = function (r) {
+    if ((io.ciaRead(0) & 0x0F) !== 0x0F && P.irq_byte(0xC5) === 0x40) { M[0xC1EC] = 0; M[0xC1ED] = 0; }
+    const a = io.ciaRead(0);
+    return regs(r, { a }, nz(a));
+  };
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-energy.js */
+// The energy group: the energy bar and what fills and drains it (walking, jumping, mushrooms,
+// toadstools and poison), the tiles the boy touches, the magic crosses, the score, the switch
+// between the boy and the girl, the high score and the GAME OVER line.
+(function (root) {
+'use strict';
+(root.ChillerGroups = root.ChillerGroups || {}).energy = function (P) {
+  const M = P.M, io = P.io;
+  const BAR = 0x042E;          // the energy bar's first cell, screen row 1 column 6
+  const SCORE = 0x0405;        // the six score digits are $0406-$040B, indexed 1 to 6 from here
+  const SPACE = 0xA0;
+
+  // A byte at an address as the 6502 sees it, with the chips at $D000-$DFFF.
+  const rd = a => { a &= 0xFFFF; return a >= 0xD000 && a < 0xE000 ? io.read(a) & 0xFF : M[a]; };
+  const wr = (a, v) => { a &= 0xFFFF; if (a >= 0xD000 && a < 0xE000) io.write(a, v & 0xFF); else M[a] = v & 0xFF; };
+  // (zp),y
+  const ind = (zp, y) => ((M[zp] | (M[(zp + 1) & 0xFF] << 8)) + y) & 0xFFFF;
+  // a CMP followed by BMI: the sign of the difference
+  const minus = (a, k) => ((a - k) & 0x80) !== 0;
+  const regs = (r, o) => Object.assign({}, r, o);
+
+  // $5733 s_5733: three NOPs, then show_press_ctrl.
+  P.s_5733 = function (r) { return P.show_press_ctrl(r); };
+
+  // $5736 show_press_ctrl: reads PRESS CTRL FOR MENU and the screen and colour bytes of row 23
+  // but stores nothing. It leaves X = $13 and A the last colour-RAM byte it read.
+  P.show_press_ctrl = function (r) {
+    return regs(r, { a: rd(0xDBCA + 0x12), x: 0x13 });
+  };
+
+  // $5768 to_switch_allowed: on to switch_allowed.
+  P.to_switch_allowed = function* (r) { return yield* P.switch_allowed(r); };
+
+  // The frame numbers player_swap patches into read_controls, walk_frame and jump_lockout.
+  const FRAME_AT = [0x582D, 0x5832, 0x58A9, 0x5848, 0x584C, 0x5876, 0x587B, 0x58A4, 0x589B];
+  const GIRL_FRAMES = [0xE8, 0xEC, 0xF0, 0xF1, 0xF6, 0xF2, 0xF6, 0xF1, 0xF0];
+  const BOY_FRAMES = [0xD8, 0xDC, 0xE0, 0xE1, 0xE6, 0xE2, 0xE6, 0xE1, 0xE0];
+
+  // $576B player_swap: wait for line 16, swap the boy's and the girl's sprites and turn both on;
+  // patch in the other character's frames, flip $5A08 and set the border (light red for the
+  // girl, blue for the boy); then idle_frame.
+  P.player_swap = function* (r) {
+    r = yield* P.wait_line16(r);
+    r = yield* P.swap_sprites(r);
+    io.vicWrite(0x15, io.vicRead(0x15) | 0x03);
+    const girl = M[0x5A08] === 0;
+    M[0x5A08] = girl ? 1 : 0;
+    const f = girl ? GIRL_FRAMES : BOY_FRAMES;
+    for (let i = 0; i < FRAME_AT.length; i++) M[FRAME_AT[i]] = f[i];
+    const border = girl ? 0x0A : 0x06;
+    io.vicWrite(0x20, border);
+    return P.idle_frame(regs(r, { a: border }));
+  };
+
+  // $5800 player_step: once per main-loop pass: count the pass, the bar's speed check and the
+  // energy and poison timers. In a jump put back the take-off direction; on the ground switch
+  // input and frame_step back on, look for a switch request and reset the jump frames. Then
+  // drain_step, whose A main_loop compares.
+  // The jump frames written back ($C79C, $C7C6) are the current character's, from the operands at
+  // $582D and $5832 that player_swap patches.
+  P.player_step = function* (r) {
+    M[0xCF02] = (M[0xCF02] + 1) & 0xFF;
+    r = P.bar_speed(r);
+    r = yield* P.energy_tick(r);
+    if (M[0x5A00] !== 0) M[0xC1ED] = M[0x5A01];
+    if (M[0xC19C] === 0) {
+      M[0xC84D] = 0xA9;
+      M[0x5980] = 0xAD;
+      r = yield* P.switch_request(regs(r, { a: 0xAD }));
+      // the operands of these two LDAs are patched by player_swap
+      M[0xC79C] = M[0x582D];
+      M[0xC7C6] = M[0x5832];
+      r = regs(r, { a: M[0x5832] });
+    }
+    return P.drain_step(r);
+  };
+
+  // $58B3 switch_request: fire or the '?' key ($C5 = $37) asks for a switch; only the first
+  // press after a release goes on to switch_allowed. Otherwise idle_frame.
+  P.switch_request = function* (r) {
+    if (M[0x4503] === 0) return regs(r, { a: 0 });
+    let x = 0;
+    if ((io.ciaRead(0) & 0x10) === 0) x = 1;
+    if (P.irq_byte(0xC5) === 0x37) x = 1;
+    if (x === 0) {
+      M[0x5A06] = 0;
+      return P.idle_frame(regs(r, { a: 0, x: 0 }));
+    }
+    const held = M[0x5A06];
+    if (held !== 0) return P.idle_frame(regs(r, { a: held, x: 1 }));
+    return yield* P.to_switch_allowed(regs(r, { a: 0, x: 1 }));
+  };
+
+  // $58E6 swap_sprites: exchange sprite 0 and sprite 1: X, Y, their X MSB bits and their
+  // pointers. The one under control is always sprite 0. Marks the switch as held ($5A06).
+  P.swap_sprites = function* (r) {
+    M[0x5A06] = 1;
+    const x0 = io.vicRead(0x00), x1 = io.vicRead(0x02);
+    io.vicWrite(0x00, x1); io.vicWrite(0x02, x0);
+    const y0 = io.vicRead(0x01), y1 = io.vicRead(0x03);
+    io.vicWrite(0x01, y1); io.vicWrite(0x03, y0);
+    const msb = io.vicRead(0x10), b0 = msb & 0x01, b1 = msb & 0x02;
+    let m = msb & 0xFC;
+    if (b1) m |= 0x01;
+    if (b0) m |= 0x02;
+    M[0x5A07] = m;
+    io.vicWrite(0x10, m);
+    const p0 = M[0x07F8], p1 = M[0x07F9];
+    M[0x07F8] = p1; M[0x07F9] = p0;
+    return regs(r, { a: p1, x: p0, y: b1 });
+  };
+
+  // $5900 reset_players: for a new game: score_reset, sprite 1 parked at $E0,$E0, the border
+  // blue and sprite 1's pointer $EE.
+  P.reset_players = function* (r) {
+    r = yield* P.score_reset(r);
+    io.vicWrite(0x02, 0xE0);
+    io.vicWrite(0x03, 0xE0);
+    io.vicWrite(0x20, 0x06);
+    M[0x07F9] = 0xEE;
+    return regs(r, { a: 0xEE });
+  };
+
+  // $5961 bar_speed: while the bar's seventh cell is full, input every $20 passes and a frame
+  // step every 2; once it is not, input every $80 passes and a frame step every 4.
+  P.bar_speed = function (r) {
+    if (M[0x0430] !== 0xA9) {
+      M[0xCA19] = 0x80;
+      M[0x450C] = 0x04;
+      return regs(r, { a: 0x04 });
+    }
+    const a = M[0x450C];
+    if (a !== 0x04) return regs(r, { a });
+    M[0x450C] = 0x02;          // $5A88
+    M[0xCF07] = 0x00;
+    M[0xCA19] = 0x20;
+    return regs(r, { a: 0x20 });
+  };
+
+  // $5998 find_bar_end: the first cell of the energy bar that is not a full block ($A9), its
+  // index in X and its glyph in A.
+  P.find_bar_end = function (r) {
+    let x = 0;
+    while (M[BAR + x] === 0xA9) x = (x + 1) & 0xFF;
+    return regs(r, { a: M[BAR + x], x });
+  };
+
+  // $59A3 energy_down: one eighth-cell off the bar; an empty cell ($A1) moves the end back a
+  // cell, and with no cell left the boy is out of energy.
+  P.energy_down = function (r) {
+    r = P.find_bar_end(r);
+    const x = r.x, a = r.a;
+    if (a !== 0xA1) { M[BAR + x] = (a - 1) & 0xFF; return r; }
+    if (x === 0) return P.out_of_energy(r);
+    M[BAR + x - 1] = 0xA8;
+    return regs(r, { a: 0xA8, x: x - 1 });
+  };
+
+  // $59C3 energy_up: one step onto the bar, up to 33 cells; a full bar scores 10 instead.
+  P.energy_up = function (r) {
+    r = P.find_bar_end(r);
+    if (r.x !== 0x21) { M[BAR + r.x] = (M[BAR + r.x] + 1) & 0xFF; return r; }
+    M[0xCF5A] = 0x0A; M[0xCF5B] = 0x00; M[0xCF5C] = 0x11;
+    return P.add_score(regs(r, { a: 0x11 }));
+  };
+
+  // $59E6 drain_step: in a jump one step off the bar each time $5A09 counts to zero; walking,
+  // walk_drain.
+  P.drain_step = function (r) {
+    const a = M[0xC19C];
+    if (a === 0) return P.walk_drain(regs(r, { a }));
+    M[0x5A09] = (M[0x5A09] - 1) & 0xFF;
+    if (M[0x5A09] !== 0) return regs(r, { a });
+    return P.energy_down(regs(r, { a: 0 }));
+  };
+
+  // $5A20 walk_drain: while a direction is held, one step off the bar every 255 x 3 passes.
+  P.walk_drain = function (r) {
+    const a = M[0xC1ED];
+    if (a === 0) return regs(r, { a });
+    M[0x5A0A] = (M[0x5A0A] - 1) & 0xFF;
+    if (M[0x5A0A] !== 0) return regs(r, { a });
+    M[0x5A0A] = 0xFF;
+    M[0x5A0B] = (M[0x5A0B] - 1) & 0xFF;
+    if (M[0x5A0B] !== 0) return regs(r, { a: 0xFF });
+    M[0x5A0B] = 0x03;
+    return P.energy_down(regs(r, { a: 0x03 }));
+  };
+
+  // $5A70 out_of_energy: the energy is gone: set the screen-over flag $CF7D, and the slow pace
+  // ($450C = 2, $CA19 = $20).
+  P.out_of_energy = function (r) {
+    M[0xCF7D] = 0x01;
+    M[0x450C] = 0x02;
+    M[0xCF07] = 0x00;
+    M[0xCA19] = 0x20;
+    return regs(r, { a: 0x20 });
+  };
+
+  // $5A9A tile_touch_a: tiles $2A-$53. Below $4D solid. $4D-$53 from the side let him move;
+  // underfoot (Y = $50) every 8th try the ledge crumbles a stage, and $53 becomes a space.
+  P.tile_touch_a = function* (r) {
+    const a = r.a & 0xFF, y = r.y & 0xFF;
+    if (minus(a, 0x4D)) return regs(r, {});
+    if (y !== 0x50) return yield* P.j_2A57(r);
+    M[0x5A0F] = (M[0x5A0F] - 1) & 0xFF;
+    if (M[0x5A0F] !== 0) return regs(r, {});
+    M[0x5A0F] = 0x08;
+    const at = ind(0xFB, y);
+    if (a === 0x53) { wr(at, SPACE); return regs(r, { a: SPACE, x: 0x08 }); }
+    const v = (rd(at) + 1) & 0xFF;
+    wr(at, v);
+    return regs(r, { a: v, x: v });
+  };
+
+  // $5AC7 tile_touch_b: tiles $54 up. A mushroom ($54) gives energy, a toadstool ($55) poison,
+  // a bonus ($56) 100 points, each taken off the screen; a cross ($57) goes to cross_touch. The
+  // rest decide whether he may move: $58-$61 and $66 up are solid underfoot; $62-$65 give way
+  // underfoot every 3rd try.
+  P.tile_touch_b = function* (r) {
+    const a = r.a & 0xFF, y = r.y & 0xFF;
+    if (a === 0x54) {
+      r = P.energy_add_slow(regs(r, { x: 0x18 }));
+      wr(ind(0xFB, r.y & 0xFF), SPACE);
+      return regs(r, { a: SPACE });
+    }
+    if (a === 0x55) {
+      r = yield* P.poison_add(regs(r, { x: 0x19 }));
+      wr(ind(0xFB, r.y & 0xFF), SPACE);
+      return regs(r, { a: SPACE });
+    }
+    if (a === 0x56) {
+      M[0xCF5A] = 0x64; M[0xCF5B] = 0x00; M[0xCF5C] = 0x11;
+      r = P.add_score(regs(r, { a: 0x11 }));
+      wr(ind(0xFB, r.y & 0xFF), SPACE);
+      return regs(r, { a: SPACE });
+    }
+    if (a === 0x57) return yield* P.cross_touch(r);
+    if (minus(a, 0x62)) return yield* P.j_5B8D(r);
+    if (!minus(a, 0x66)) return yield* P.j_7673(r);
+    if (y !== 0x50) return yield* P.j_2A57(r);
+    M[0x5A14] = (M[0x5A14] - 1) & 0xFF;
+    if (M[0x5A14] !== 0) return regs(r, {});
+    M[0x5A14] = 0x03;
+    return yield* P.j_2A57(regs(r, { a: 0x03 }));
+  };
+
+  // $5B8D j_5B8D: a tile solid underfoot: with the probe below (Y = $50) he does not move,
+  // otherwise he does (j_2A57).
+  P.j_5B8D = function* (r) {
+    if ((r.y & 0xFF) === 0x50) return regs(r, {});
+    return yield* P.j_2A57(r);
+  };
+
+  // $5B00 energy_tick: every 16th call while energy is pending ($5A0D), spend a unit on one
+  // step of the bar. Then poison_tick.
+  P.energy_tick = function* (r) {
+    if (M[0x5A0D] !== 0) {
+      M[0x5A0E] = (M[0x5A0E] - 1) & 0xFF;
+      if (M[0x5A0E] === 0) {
+        M[0x5A0E] = 0x10;
+        M[0x5A0D] = (M[0x5A0D] - 1) & 0xFF;
+        r = P.energy_up(regs(r, { a: 0x10 }));
+      }
+    }
+    return yield* P.poison_tick(r);
+  };
+
+  // Add X-1 to a pending counter, stopping at 255; the count is left in its scratch byte.
+  function addPending(r, scratch, counter) {
+    M[scratch] = r.x & 0xFF;
+    for (;;) {
+      M[scratch] = (M[scratch] - 1) & 0xFF;
+      if (M[scratch] === 0) break;
+      M[counter] = (M[counter] + 1) & 0xFF;
+      if (M[counter] === 0) break;
+    }
+    return regs(r, {});
+  }
+
+  // $5B18 energy_add_slow: add X-1 to the pending energy $5A0D (stopping at 255).
+  P.energy_add_slow = function (r) { return addPending(r, 0x5A10, 0x5A0D); };
+
+  // $5B2C poison_tick: every 18th call while poison is pending ($5A11), spend a unit on
+  // flash_border, which takes a step off the bar.
+  P.poison_tick = function* (r) {
+    const a = M[0x5A11];
+    if (a === 0) return regs(r, { a });
+    M[0x5A12] = (M[0x5A12] - 1) & 0xFF;
+    if (M[0x5A12] !== 0) return regs(r, { a });
+    M[0x5A12] = 0x12;
+    M[0x5A11] = (M[0x5A11] - 1) & 0xFF;
+    return yield* P.flash_border(regs(r, { a: 0x12 }));
+  };
+
+  // $5B44 poison_add: add X-1 to the pending poison $5A11 (stopping at 255).
+  P.poison_add = function* (r) { return addPending(r, 0x5A13, 0x5A11); };
+
+  // $5B5E cross_count: one more cross on the two-digit MAGIC CROSSES counter ($041C tens,
+  // $041D units, 99 wraps to 00), then crosses_left.
+  P.cross_count = function* (r) {
+    let a = M[0x041D];
+    if (a !== 0xB9) M[0x041D] = a + 1;
+    else if (M[0x041C] === 0xB9) { a = 0xB0; M[0x041D] = 0xB0; M[0x041C] = 0xB0; }
+    else { a = 0xB0; M[0x041D] = 0xB0; M[0x041C] = (M[0x041C] + 1) & 0xFF; }
+    return yield* P.crosses_left(regs(r, { a }));
+  };
+
+  // $5D60 boy_first: a new game starts with the boy: $5A08 = 1, then player_swap flips it.
+  P.boy_first = function* (r) {
+    M[0x5A08] = 0x01;
+    return yield* P.player_swap(regs(r, { a: 0x01 }));
+  };
+
+  // $7280 switch_allowed: a switch only from level byte 10 on (the way back); then player_swap.
+  P.switch_allowed = function* (r) {
+    const a = rd(ind(0x11, 0x73));
+    r = regs(r, { a, y: 0x73 });
+    if (minus(a, 0x0A)) return r;
+    return yield* P.player_swap(r);
+  };
+
+  // $72BA flash_border: a step off the bar; every 4th call wait for line 16 and flip bit 3 of
+  // the border colour.
+  P.flash_border = function* (r) {
+    r = P.energy_down(r);
+    M[0x72B9] = (M[0x72B9] - 1) & 0xFF;
+    if (M[0x72B9] !== 0) return r;
+    M[0x72B9] = 0x04;
+    yield { wait: 0x10 };
+    const a = io.vicRead(0x20) ^ 0x08;
+    io.vicWrite(0x20, a);
+    return regs(r, { a });
+  };
+
+  // $7780 check_hiscore: compare the score with hiscore_digits ($8422) from digit X on; when
+  // higher, copy it there. Then reset game_over_wait's timers.
+  P.check_hiscore = function (r) {
+    let x = r.x & 0xFF;
+    for (;;) {
+      const a = M[0x0406 + x], h = M[0x8422 + x];
+      if (minus(a, h)) break;
+      if (a !== h) {
+        for (x = 0; x < 6; x++) M[0x8422 + x] = M[0x0406 + x];
+        break;
+      }
+      x = (x + 1) & 0xFF;
+      if (x === 6) break;
+    }
+    M[0x771E] = 0x0A;
+    M[0x771D] = 0xFF;
+    M[0x771C] = 0xFF;
+    return regs(r, { a: 0xFF, x });
+  };
+
+  // $7F00 crosses_left: one fewer cross needed ($5A15). At zero the screen is done: sprites 0
+  // and 1 on and next_screen with the level byte, or $FE after the last level ($12).
+  P.crosses_left = function* (r) {
+    M[0x5A15] = (M[0x5A15] - 1) & 0xFF;
+    if (M[0x5A15] !== 0) return regs(r, {});
+    io.vicWrite(0x15, 0x03);
+    const a = rd(ind(0x11, 0x73));
+    const x = a === 0x12 ? 0xFE : a;
+    return yield* P.next_screen(regs(r, { a, x, y: 0x73 }));
+  };
+
+  // $7F50 cross_touch: a cross tile. Its colour (bit 2 of the colour-RAM cell) says blue or
+  // red; the boy takes blue ones, the girl red ones. A cross taken becomes a space and is
+  // counted. $FC is left pointing at colour RAM when the cross is not taken.
+  P.cross_touch = function* (r) {
+    const y = r.y & 0xFF;
+    M[0xFC] = (M[0xFC] + 0xD4) & 0xFF;
+    const x = rd(ind(0xFB, y)) & 0x04;
+    const a = M[0x5A08];
+    if (a !== 0 ? x !== 0 : x !== 0x04) return regs(r, { a, x });
+    M[0xFC] = (M[0xFC] - 0xD4) & 0xFF;
+    wr(ind(0xFB, y), SPACE);
+    return yield* P.cross_count(regs(r, { a: SPACE, x }));
+  };
+
+  // $CE11 score_inc: one point, carried leftwards through the six score digits.
+  P.score_inc = function (r) {
+    let x = 6, a;
+    for (;;) {
+      a = M[SCORE + x] = (M[SCORE + x] + 1) & 0xFF;
+      if (a !== 0xBA) break;
+      a = M[SCORE + x] = 0xB0;
+      x--;
+      if (x === 0) break;
+    }
+    return regs(r, { a, x });
+  };
+
+  // $CE28 score_dec: one point off, borrowed leftwards; only when the borrow runs through all
+  // six digits is score_inc called. Nothing calls it.
+  P.score_dec = function (r) {
+    let x = 6, a;
+    for (;;) {
+      a = M[SCORE + x] = (M[SCORE + x] - 1) & 0xFF;
+      if (a !== 0xAF) return regs(r, { a, x });
+      a = M[SCORE + x] = 0xB9;
+      x--;
+      if (x === 0) break;
+    }
+    return P.score_inc(regs(r, { a, x }));
+  };
+
+  // The routine the JSR at $CE52 calls; its low byte is patched from $CF5C.
+  function scoreStep(r) {
+    const at = M[0xCE53] | (M[0xCE54] << 8);
+    if (at === 0xCE11) return P.score_inc(r);
+    if (at === 0xCE28) return P.score_dec(r);
+    throw new Error('add_score: no port of a counter at $' + at.toString(16));
+  }
+
+  // $CE42 add_score: add $CF5A + 255 x $CF5B points, one at a time, with the counter whose low
+  // byte is $CF5C.
+  P.add_score = function (r) {
+    M[0xCE53] = M[0xCF5C];
+    for (;;) {
+      if (M[0xCF5A] !== 0) {
+        M[0xCF5A] = (M[0xCF5A] - 1) & 0xFF;
+        r = scoreStep(regs(r, { a: M[0xCF5A] + 1 & 0xFF }));
+        continue;
+      }
+      if (M[0xCF5B] === 0) return regs(r, { a: 0 });
+      M[0xCF5B] = (M[0xCF5B] - 1) & 0xFF;
+      M[0xCF5A] = 0xFF;
+      r = scoreStep(regs(r, { a: 0xFF }));
+    }
+  };
+
+  // $CE6B add_score_for: the points of enemy $CF4E (s_CE6E with X from $CF4E).
+  P.add_score_for = function (r) { return P.s_CE6E(regs(r, { x: M[0xCF4E] })); };
+
+  // $CE6E s_CE6E: the points of enemy X from the tables at $4560, $4565 and $456A, added.
+  P.s_CE6E = function (r) {
+    const x = r.x & 0xFF;
+    M[0xCF5A] = M[0x4560 + x];
+    M[0xCF5B] = M[0x4565 + x];
+    M[0xCF5C] = M[0x456A + x];
+    return P.add_score(regs(r, { a: M[0xCF5C] }));
+  };
+
+  // $CFC0 show_game_over: GAME OVER on screen row 1 at $0438, in white.
+  P.show_game_over = function (r) {
+    r = P.s_5733(r);
+    let a = 0;
+    for (let x = 0; x < 9; x++) {
+      io.colourWrite(0x38 + x, 0x01);
+      a = M[0xCFAA + x];
+      M[0x0438 + x] = a;
+    }
+    return regs(r, { a, x: 9 });
+  };
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-enemies.js */
+// The enemies: the five enemy slots on sprites 2-6 (spawning, walking their path scripts, the
+// death animation, leaving by an edge and coming back), the extra enemy thrown on sprite 7, the
+// collisions with the boy and the girl, the game's random numbers, the lives, the speed-up each
+// LEVEL, and the play-area scroll that no level switches on.
+(function (root) {
+'use strict';
+(root.ChillerGroups = root.ChillerGroups || {}).enemies = function (P) {
+  const M = P.M, io = P.io;
+  const regs = (r, o) => Object.assign({}, r, o);
+  const nz = v => ({ z: (v & 255) === 0 ? 1 : 0, n: (v >> 7) & 1 });
+  // A byte at a 16-bit address as the game's code sees it: the chips at $D000-$DFFF, RAM elsewhere.
+  const rd = a => { a &= 0xFFFF; return a >= 0xD000 && a < 0xE000 ? P.io.read(a) : M[a]; };
+  const wr = (a, v) => { a &= 0xFFFF; if (a >= 0xD000 && a < 0xE000) P.io.write(a, v & 255); else M[a] = v & 255; };
+  // The zero-page pointer at z plus y, as (z),y addresses it.
+  const ptr = (z, y) => (M[z] | (M[(z + 1) & 255] << 8)) + y;
+  // A call to another group's routine from a generator, whether that routine waits or not.
+  function* call(f, r) { const v = f(r); return v && typeof v.next === 'function' ? yield* v : v; }
+  // BPL after CMP: the difference's sign bit is clear.
+  const pl = (a, b) => (((a - b) & 0x80) === 0);
+
+  // $2ED0 screen_exit: the boy left the screen; $0384 = 0 and $CF81 = 1, which enemy_pass turns
+  // into restart_screen.
+  P.screen_exit = function* (r) {
+    M[0x0384] = 0;
+    M[0xCF81] = 1;
+    return regs(r, { a: 1 });
+  };
+
+  // $2F38 set_enemy_colour: slot X's colour (A) into its sprite's colour register, then its
+  // first direction from its path script (s_2F47).
+  P.set_enemy_colour = function (r) {
+    wr(0xD029 + r.x, r.a);
+    M[0xFB] = M[0x575E + r.x];
+    M[0xFC] = M[0xCF24 + r.x];
+    return P.s_2F47(regs(r, { y: 0 }));
+  };
+  // $2F47 s_2F47: the byte Y of the path script at ($FB) becomes slot X's direction.
+  P.s_2F47 = function (r) {
+    const a = rd(ptr(0xFB, r.y));
+    M[0xCF15 + r.x] = a;
+    return regs(r, { a });
+  };
+
+  // $2FB2 respawn_timer: every 255th pass, each slot whose sprite is off and which has lives left
+  // comes back with probability $45E2,x / 128: spawn_enemy, one life fewer, its script from the
+  // start and its step count cleared.
+  P.respawn_timer = function* (r) {
+    const t = M[0xCF75] = (M[0xCF75] + 1) & 255;
+    if (t !== 0xFF) return regs(r, { a: t });
+    M[0xCF75] = 0;
+    let a = 0, x = 0, y = r.y;
+    do {
+      a = M[0xCF08 + x] & io.vicRead(0x15);
+      if (a === 0) {
+        a = M[0xCF76 + x];
+        if (a !== 0) {
+          y = P.random(regs(r, { a: x, x, y })).y;
+          a = y & 0x7F;
+          if (!pl(a, M[0x45E2 + x])) {
+            const s = yield* call(P.spawn_enemy, regs(r, { a: x, x, y }));
+            x = s.x; y = s.y;
+            M[0xCF76 + x] = (M[0xCF76 + x] - 1) & 255;
+            M[0xCF29 + x] = 1;
+            a = 0;
+            M[0xCF1A + x] = 0;
+          }
+        }
+      }
+      x = (x + 1) & 255;
+    } while (x !== 5);
+    return regs(r, { a, x, y });
+  };
+
+  // $5662 mark_moving: keep the slot being spawned (A) in $C0E3 and set its frame timer to 1.
+  P.mark_moving = function (r) {
+    M[0xC0E3] = r.a;
+    M[0xCF33 + r.a] = 1;
+    return regs(r, { x: r.a });
+  };
+  // $566D enemy_lives_reset: each slot's lives from $45E7, and sprite 0's frame from $45EC.
+  P.enemy_lives_reset = function (r) {
+    for (let x = 0; x < 5; x++) M[0xCF76 + x] = M[0x45E7 + x];
+    const a = M[0x07F8] = M[0x45EC];
+    return regs(r, { a, x: 5 });
+  };
+  // $5681 speed_up: at each LEVEL, each slot whose move delay is not already its value at $34E8
+  // gets it halved; an odd delay drops to 1 instead, and only an even one halves the frame delay
+  // too ($54E5, 1 becoming 2).
+  P.speed_up = function (r) {
+    let a = 0;
+    for (let x = 0; x < 5; x++) {
+      a = M[0x34E8 + x];
+      if (a === M[0xCF9C + x]) continue;
+      const d = M[0xCF9C + x];
+      a = M[0xCF9C + x] = d >> 1;
+      if (d & 1) { a = M[0xCF9C + x] = 1; continue; }
+      a = M[0x54E5 + x] = M[0x54E5 + x] >> 1;
+      if (a === 1) a = M[0x54E5 + x] = 2;
+    }
+    return regs(r, { a, x: 5 });
+  };
+  // $56B2 set_enemy_speed: slot X's move delay (A), and its frame delay from $4548.
+  P.set_enemy_speed = function (r) {
+    M[0xCF9C + r.x] = r.a;
+    const a = M[0x54E5 + r.x] = M[0x4548 + r.x];
+    return regs(r, { a });
+  };
+  // $56BC enemy_lives: enemy_lives_reset, for new_life.
+  P.enemy_lives = function (r) { return P.enemy_lives_reset(r); };
+  // $570A j_570A: gravity_setup with gravity: $4501 = A, try_move's row offset $2C, and slot X's
+  // direction reloaded from the script (s_2F47).
+  P.j_570A = function (r) {
+    M[0x4501] = r.a;
+    M[0x2A0C] = 0x2C;
+    return P.s_2F47(regs(r, { a: 0x2C }));
+  };
+  // $5716 j_5716: gravity_setup without gravity: the direction reloaded, then the row offset $30.
+  P.j_5716 = function (r) {
+    r = P.s_2F47(r);
+    M[0x2A0C] = 0x30;
+    return regs(r, { a: 0x30 });
+  };
+
+  // $C000 launch_extra: throw the extra enemy from slot X when that slot's sprite is on and it is
+  // not dying (the direction from $454E, extra_launch); otherwise just extra_move.
+  P.launch_extra = function (r) {
+    let a = M[0xCF46 + r.x] & io.vicRead(0x15);
+    if (a === 0) return P.extra_move(regs(r, { a }));
+    a = M[0xCF4F + r.x];
+    if (a === 1) return P.extra_move(regs(r, { a }));
+    return P.extra_launch(regs(r, { a: M[0x454E + r.x] }));
+  };
+  // $C011 scroll_timer: when the scroll period $4555 is not $FF, count $CF43 down (nudging the
+  // boy every 8th count) and at 0 reload it, set 38 columns and scroll (scroll_wait).
+  P.scroll_timer = function* (r) {
+    let a = M[0x4555];
+    if (a === 0xFF) return regs(r, { a });
+    M[0xCF43] = (M[0xCF43] - 1) & 255;
+    r = yield* call(P.scroll_nudge, r);
+    if (!r.z) return r;
+    M[0xCF43] = M[0x4555];
+    a = io.vicRead(0x16) & 0xF7;
+    io.vicWrite(0x16, a);
+    return yield* call(P.scroll_wait, regs(r, { a }));
+  };
+
+  // $C0E4 spawn_enemy: bring slot A onto the screen: mark it moving, put it on its path, its
+  // sprite on, its first frame, then its colour and first direction ($C6E0).
+  P.spawn_enemy = function* (r) {
+    r = P.mark_moving(r);
+    r = P.enemy_to_path(r);
+    const x = M[0xC0E3];
+    io.vicWrite(0x15, M[0xCF46 + x] | io.vicRead(0x15));
+    const a = M[0x07FA + x] = M[0xCF68 + x];
+    return yield* call(P.j_C6E0, regs(r, { a, x }));
+  };
+  // $C144 j_C144: place_boy continued: sprite 0's Y (A) and X ($4516), then its MSB ($C1E1).
+  P.j_C144 = function* (r) {
+    io.vicWrite(0x01, r.a);
+    const a = M[0x4516];
+    io.vicWrite(0x00, a);
+    return yield* call(P.j_C1E1, regs(r, { a }));
+  };
+
+  // $C412 scroll_left: the play area (rows 1-24, characters and colours) one cell to the left;
+  // the first cell's character and colour are kept in $C411 and $C410 for scroll_rows.
+  P.scroll_left = function (r) {
+    M[0xC410] = rd(0xD828);
+    M[0xC411] = M[0x0428];
+    let a = 0;
+    const run = (from, n) => {
+      for (let x = 0; x < n; x++) {
+        M[from + x - 1] = M[from + x];
+        a = rd(0xD400 + from + x);
+        wr(0xD400 + from + x - 1, a);
+      }
+    };
+    run(0x0429, 0xD2); run(0x04FA, 0xFA); run(0x05F4, 0xFA); run(0x06EE, 0xFA);
+    return regs(r, { a, x: 0xFA });
+  };
+  // $C46B scroll_wait: wait for raster line $4B, then scroll_left and scroll_rows.
+  P.scroll_wait = function* (r) {
+    while (io.vicRead(0x12) !== 0x4B) yield { wait: 0x4B };
+    r = P.scroll_left(regs(r, { a: 0x4B }));
+    return P.scroll_rows(r);
+  };
+  // $C47F scroll_rows: each row's last cell moves down a row (from $07BF up, the pointers at $FB
+  // and $FD), then the saved first cell goes to the end of row 1.
+  P.scroll_rows = function (r) {
+    M[0xFB] = 0xBF; M[0xFC] = 0x07; M[0xFD] = 0xBF; M[0xFE] = 0xDB;
+    let x = r.x;
+    for (;;) {
+      x = rd(ptr(0xFB, 0));
+      wr(ptr(0xFD, 0x28), rd(ptr(0xFD, 0)));
+      wr(ptr(0xFB, 0x28), x);
+      const lo = M[0xFB] - 40;
+      if (lo < 0) { M[0xFC] = (M[0xFC] - 1) & 255; M[0xFE] = (M[0xFE] - 1) & 255; }
+      M[0xFB] = M[0xFD] = lo & 255;
+      if (M[0xFC] === 3) break;
+      if (M[0xFB] === 0x27 && M[0xFC] === 4) break;
+    }
+    wr(0xD84F, M[0xC410]);
+    const a = M[0x044F] = M[0xC411];
+    return regs(r, { a, x, y: 0x28 });
+  };
+  // $C4FB sprite1_hit_scenery: A = 1 switches sprite 1 off; otherwise its frame flips and on the
+  // fifth flip ($C544) it goes off.
+  P.sprite1_hit_scenery = function (r) {
+    let a;
+    if (r.a !== 1) {
+      a = M[0x07F9] = M[0x07F9] ^ 0x01;
+      a = M[0xC544] = (M[0xC544] + 1) & 255;
+      if (a !== 5) return regs(r, { a });
+      M[0xC544] = 0;
+    }
+    a = io.vicRead(0x15) & 0xFD;
+    io.vicWrite(0x15, a);
+    return regs(r, { a });
+  };
+  // $C525 scroll_nudge: every 8th scroll count, the boy one pixel right and left (try_move 3,
+  // then 2). Returns $CF43, whose zero flag scroll_timer reads.
+  P.scroll_nudge = function* (r) {
+    if ((M[0xCF43] & 7) === 0) {
+      r = yield* call(P.try_move, regs(r, { a: 3, x: 1 }));
+      r = yield* call(P.try_move, regs(r, { a: 2 }));
+    }
+    const a = M[0xCF43];
+    return regs(r, Object.assign({ a }, nz(a)));
+  };
+  // $C607 enemy_dying: slot X's death animation: every 10 passes, and every $455B,x of those,
+  // the next frame; at frame $FC its sprite goes off and the slot stops dying.
+  P.enemy_dying = function (r) {
+    const x = r.x;
+    let a = M[0xCF82 + x] = (M[0xCF82 + x] - 1) & 255;
+    if (a !== 0) return regs(r, { a });
+    M[0xCF82 + x] = 0x0A;
+    a = M[0xCF54 + x] = (M[0xCF54 + x] - 1) & 255;
+    if (a !== 0) return regs(r, { a });
+    a = M[0x07FA + x] = (M[0x07FA + x] + 1) & 255;
+    if (a === 0xFC) {
+      io.vicWrite(0x15, (M[0xCF46 + x] ^ 0xFF) & io.vicRead(0x15));
+      M[0xCF4F + x] = 0;
+    }
+    a = M[0xCF54 + x] = M[0x455B + x];
+    return regs(r, { a });
+  };
+
+  // $C9F1 random: the next byte of the code at $C000 (index $CF14) EOR $A2, in A and Y; X = $20.
+  P.random = function (r) {
+    const i = M[0xCF14] = (M[0xCF14] + 1) & 255;
+    const a = M[0xC000 + i] ^ P.irq_byte(0xA2);
+    return regs(r, { a, x: 0x20, y: a, z: 0, n: 0 });
+  };
+  // $CA64 enemy_move_if_on: move sprite X one pixel in direction Y when its $D015 bit (read as
+  // $CF06,x, which is enemy_bits for X = 2-6) is on. The move is $C37A: move_sprite with A = Y.
+  P.enemy_move_if_on = function (r) {
+    const a = M[0xCF06 + r.x] & io.vicRead(0x15);
+    if (a === 0) return regs(r, { a });
+    return P.move_sprite(regs(r, { a: r.y }));
+  };
+
+  // $CAED new_life: a life off ($CF7C), only the boy's sprite on, the enemies' lives reloaded.
+  P.new_life = function (r) {
+    M[0xCF7C] = (M[0xCF7C] - 1) & 255;
+    io.vicWrite(0x15, 1);
+    return P.enemy_lives(regs(r, { a: 1 }));
+  };
+  // $CAF9 j_CAF9: Y into the address in its own operand ($FFFF), then lose_life.
+  P.j_CAF9 = function (r) {
+    wr(M[0xCAFA] | (M[0xCAFB] << 8), r.y);
+    return P.lose_life(r);
+  };
+  // $CB24 enemy_to_path: place slot A at its path block's X, Y and MSB ($4519 + $CF0D,x), then
+  // walk it right by a random part of the block's count right (starting again from the block's X
+  // each time the count is reached), and the same downwards.
+  P.enemy_to_path = function (r) {
+    const s = M[0xCB23] = r.a;
+    let x = M[0xCF0D + s], y, a;
+    const setX = y0 => {
+      wr(0xD004 + ((s << 1) & 255), M[0x4519 + x]);
+      if (y0) wr(0xD005 + ((s << 1) & 255), M[0x451A + x]);
+      a = (M[0xCF08 + s] ^ 0xFF) & io.vicRead(0x10);
+      io.vicWrite(0x10, a);
+      a = M[0x451B + x] | io.vicRead(0x10);
+      io.vicWrite(0x10, a);
+    };
+    setX(true);
+    y = s;
+    // walk in direction dir by the count at $451C or $451D; true when the random count ran out
+    const walk = (count, dir, restart) => {
+      y = P.random(regs(r, { a, x, y })).y;
+      for (;;) {
+        a = M[0xCF12] = 0;
+        for (;;) {
+          x = M[0xCF0D + s];
+          a = M[0xCF12];
+          if (a === M[count + x]) break;
+          y = (y - 1) & 255;
+          if (y === 0) return;
+          M[0xCF12] = (M[0xCF12] + 1) & 255;
+          M[0xCF13] = y;
+          P.move_sprite(regs(r, { a: dir, x: (s + 2) & 255, y }));
+          y = M[0xCF13];
+        }
+        M[0xCF13] = y;
+        x = M[0xCF0D + s];
+        restart();
+        y = M[0xCF13];
+      }
+    };
+    a = M[0x451C + x];
+    if (a !== 0) walk(0x451C, 3, () => setX(false));
+    a = M[0x451D + x];
+    if (a !== 0) walk(0x451D, 1, () => { a = M[0x451A + x]; wr(0xD005 + ((s << 1) & 255), a); });
+    return regs(r, { a, x, y });
+  };
+  // $CC12 path_step: slot A one pixel in its direction; at an edge, unless $4538,x lets it stay,
+  // it leaves (enemy_gone, sprite off). Every 8 steps the next direction from its script ($FF
+  // starts it again), or with $453D,x set a random one of the script's first 64 bytes.
+  P.path_step = function (r) {
+    M[0xCC11] = r.a;
+    const s = r.a;
+    let a = M[0xCF15 + s];
+    r = P.enemy_move_if_on(regs(r, { a, x: (s + 2) & 255, y: a }));
+    let x, y = r.y;
+    if (y === 0xFF) {
+      x = s;
+      a = M[0x4538 + x];
+      if (a === 0) {
+        r = P.enemy_gone(regs(r, { a, x }));
+        a = (r.a ^ 0xFF) & io.vicRead(0x15);
+        io.vicWrite(0x15, a);
+        return regs(r, { a });
+      }
+    }
+    x = s;
+    a = M[0xCF1A + x] = (M[0xCF1A + x] + 1) & 255;
+    if (a !== 8) return regs(r, { a, x, y });
+    M[0xCF1A + x] = 0;
+    if (M[0x453D + x] !== 0) {
+      y = P.random(regs(r, { a, x, y })).y & 0x3F;
+      M[0xFB] = M[0x575E + s];
+      M[0xFC] = M[0xCF24 + s];
+      a = M[0xCF15 + s] = rd(ptr(0xFB, y));
+      return regs(r, { a, x: s, y });
+    }
+    M[0xFB] = M[0x575E + x];
+    M[0xFC] = M[0xCF24 + x];
+    y = M[0xCF29 + x];
+    M[0xCF29 + x] = (y + 1) & 255;
+    a = rd(ptr(0xFB, y));
+    if (a === 0xFF) {
+      M[0xCF29 + s] = 1;
+      y = 0;
+      a = rd(ptr(0xFB, 0));
+    }
+    M[0xCF15 + s] = a;
+    return regs(r, { a, x: s, y });
+  };
+  // $CCAB enemy_move: slot X's path step every $CF9C,x passes; every 16 passes, and every $54E5
+  // of those, its sprite's next frame (for the slot in $CEFF), from the last back to the first.
+  P.enemy_move = function (r) {
+    let x = r.x;
+    let a = M[0xCF2E + x] = (M[0xCF2E + x] + 1) & 255;
+    if (a === M[0xCF9C + x]) {
+      M[0xCF2E + x] = 0;
+      r = P.path_step(regs(r, { a: x }));
+      x = r.x;
+    }
+    a = M[0xCF97 + x] = (M[0xCF97 + x] + 1) & 255;
+    if (a !== 0x10) return regs(r, { a, x });
+    M[0xCF97 + x] = 0;
+    x = M[0xCEFF];
+    a = M[0xCF33 + x] = (M[0xCF33 + x] + 1) & 255;
+    if (a !== M[0x54E5 + x]) return regs(r, { a, x });
+    M[0xCF33 + x] = 0;
+    a = M[0x07FA + x];
+    M[0x07FA + x] = (a + 1) & 255;
+    if (a === M[0xCF38 + x]) a = M[0x07FA + x] = M[0xCF3D + x];
+    return regs(r, { a, x });
+  };
+  // $CCF5 extra_enemy: the extra enemy on sprite 7. While it is off, when extra_roll comes in
+  // below $4553, launch it from a random slot 0-4 (launch_extra); otherwise extra_move.
+  P.extra_enemy = function (r) {
+    let a = io.vicRead(0x15) & 0x80;
+    if (a !== 0) return P.extra_move(regs(r, { a }));
+    r = P.extra_roll(r);
+    if (pl(r.y, M[0x4553])) return P.extra_move(r);
+    do { r = P.random(r); a = r.y & 7; } while (pl(a, 5));
+    return P.launch_extra(regs(r, { a, x: a }));
+  };
+  // $CD17 extra_launch: direction A (4: none) into $CF44, sprite 7 on at slot X's sprite's X, Y
+  // and MSB in colour $454D, then extra_move.
+  P.extra_launch = function (r) {
+    let a = r.a;
+    if (a === 4) return P.extra_move(r);
+    M[0xCF44] = a;
+    io.vicWrite(0x15, io.vicRead(0x15) | 0x80);
+    io.vicWrite(0x2E, M[0x454D]);
+    const x2 = (r.x << 1) & 255;
+    io.vicWrite(0x0E, rd(0xD004 + x2));
+    a = rd(0xD005 + x2);
+    io.vicWrite(0x0F, a);
+    const x = x2 >> 1;
+    a = 0x7F & io.vicRead(0x10);
+    io.vicWrite(0x10, a);
+    a &= M[0xCF46 + x];
+    if (a !== 0) { a = 0x80 | io.vicRead(0x10); io.vicWrite(0x10, a); }
+    return P.extra_move(regs(r, { a, x }));
+  };
+  // $CD55 extra_move: every $4554 passes ($CF45) sprite 7 one pixel in its direction ($CF44);
+  // at an edge it goes off.
+  P.extra_move = function (r) {
+    let a = M[0xCF45] = (M[0xCF45] + 1) & 255;
+    if (a !== M[0x4554]) return regs(r, { a });
+    M[0xCF45] = 0;
+    r = P.move_sprite(regs(r, { a: M[0xCF44], x: 7 }));
+    if (r.y !== 0xFF) return r;
+    a = io.vicRead(0x15) & 0x7F;
+    io.vicWrite(0x15, a);
+    return regs(r, { a });
+  };
+  // $CD7B extra_roll: two random rolls; Y is the first (0-127) when the second is at least
+  // $78, else $7F.
+  P.extra_roll = function (r) {
+    r = P.random(r);
+    M[0xCF4C] = r.y & 0x7F;
+    r = P.random(r);
+    const a = r.y & 0x7F;
+    return regs(r, { a, y: pl(a, 0x78) ? M[0xCF4C] : 0x7F });
+  };
+  // $CD9D girl_touch: sprite 1 in the collisions kept at $FD with any of sprites 2-6 costs
+  // energy (poison_add X = 2).
+  P.girl_touch = function* (r) {
+    let a = M[0xFD] & 2;
+    if (a === 0) return regs(r, { a });
+    let y = 0;
+    for (let x = 0; x < 5; x++) { a = M[0xCF46 + x] & M[0xFD]; if (a) y++; }
+    if (y === 0) return regs(r, { a, x: 5, y });
+    return yield* call(P.poison_add, regs(r, { a, x: 2, y }));
+  };
+  // $CDE9 enemy_step: slot A's turn: enemy_dying while it dies, else enemy_move.
+  P.enemy_step = function* (r) {
+    const x = r.a, a = M[0xCF4F + x];
+    if (a === 1) return P.enemy_dying(regs(r, { a, x }));
+    return P.enemy_move(regs(r, { a, x }));
+  };
+  // $CDFA j_CDFA: unused_shot_hit continued: a dying slot X is left alone; otherwise the boy
+  // loses energy ($CDDE).
+  P.j_CDFA = function* (r) {
+    const a = M[0xCF4F + r.x];
+    if (a === 1) return regs(r, { a, z: 1, c: 1, n: 0 });
+    return yield* call(P.b_CDDE, regs(r, { a, z: 0, c: a >= 1 ? 1 : 0, n: ((a - 1) >> 7) & 1 }));
+  };
+  // $CE87 sprite_touch: the collisions ($D01E, kept at $FD). The boy (sprite 0) touching exactly
+  // one of sprites 2-7 without the girl: its bits into $CF5E, its slot into $CF5F, and energy
+  // lost (poison_add X = 2). Then girl_touch, unless both the boy and the girl are in it.
+  P.sprite_touch = function* (r) {
+    let a = M[0xFD] = io.vicRead(0x1E);
+    if ((a & 1) === 0) return yield* call(P.girl_touch, regs(r, { a: 0 }));
+    if (a & 2) return regs(r, { a: 2 });
+    let y = 0;
+    for (let x = 0; x < 6; x++) { a = M[0xCF46 + x] & M[0xFD]; if (a) y++; }
+    if (y !== 1) return regs(r, { a, x: 6, y });
+    a = M[0xCF5E] = M[0xFD] & 0xFC;
+    let x = 0;
+    while (a !== 4) { x++; a >>= 1; }
+    M[0xCF5F] = x;
+    r = yield* call(P.poison_add, regs(r, { a, x: 2, y }));
+    return yield* call(P.girl_touch, r);
+  };
+  // $CEDA lose_life: new_life, the lives digit at $041A down, and at "0" the screen-over flag.
+  P.lose_life = function (r) {
+    r = P.new_life(r);
+    let a = M[0x041A] = (M[0x041A] - 1) & 255;
+    if (a === 0xB0) a = M[0xCF7D] = 1;
+    return regs(r, { a });
+  };
+  // $CEEE enemy_gone: slot X left by an edge: a life back, and A its sprite bit for the caller.
+  P.enemy_gone = function (r) {
+    M[0xCF76 + r.x] = (M[0xCF76 + r.x] + 1) & 255;
+    return regs(r, { a: M[0xCF08 + r.x] });
+  };
+  // $CEF6 j_CEF6: place_boy's end: the boy's colour (A), then new_life.
+  P.j_CEF6 = function (r) {
+    io.vicWrite(0x27, r.a);
+    return P.new_life(regs(r, { a: M[0x45EC] }));
+  };
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/g-screens.js */
+// The screens group: building a screen from its level record, the cards shown between screens
+// (the CHILLER logo, MASTERTRONIC'S, the text printed through the KERNAL), the HUD kept across a
+// card, the block copier, and the music driver that plays in the KERNAL's interrupt.
+(function (root) {
+'use strict';
+(root.ChillerGroups = root.ChillerGroups || {}).screens = function (P) {
+  const M = P.M;
+  const K = () => root.ChillerKernal;
+  // P.io is read when a routine runs: the lockstep sets it after the port is made.
+  const vw = (r, v) => P.io.vicWrite(r, v & 0xFF), vr = r => P.io.vicRead(r);
+  const sw = (r, v) => P.io.sidWrite(r, v & 0xFF);
+  const cw = (i, v) => P.io.colourWrite(i, v & 0xFF);
+  // Memory as the processor sees it with $01 = $36 (the chips at $D000-$DFFF), or, while
+  // copy_under_kernal runs with $01 = $34, all RAM.
+  let allRam = false;
+  function rd(a) {
+    a &= 0xFFFF;
+    if (!allRam && a >= 0xD000 && a < 0xE000) return P.io.read(a) & 0xFF;
+    return M[a];
+  }
+  function wr(a, v) {
+    a &= 0xFFFF; v &= 0xFF;
+    if (!allRam && a >= 0xD000 && a < 0xE000) P.io.write(a, v); else M[a] = v;
+  }
+  const zp16 = z => M[z] | (M[(z + 1) & 0xFF] << 8);
+  const rec = y => rd(zp16(0x11) + y);               // (zp $11),y: the level record
+  const regs = (r, o) => Object.assign({}, r, o);
+  const signBit = v => (v & 0x80) ? 1 : 0;
+
+  // $2A80 copy_block: X/Y point at a six-byte descriptor (source, end, destination); put it
+  // into block_copy's operands and copy.
+  function copy_block(r) {
+    M[0xFB] = r.x & 0xFF; M[0xFC] = r.y & 0xFF;
+    const d = zp16(0xFB);
+    M[0xC29E] = rd(d); M[0xC2A2] = rd(d + 1);
+    M[0xC2AE] = rd(d + 2); M[0xC2B3] = rd(d + 3);
+    M[0xC2A6] = rd(d + 4); M[0xC2AA] = rd(d + 5);
+    return block_copy(regs(r, { y: 5 }));
+  }
+  // $C29D block_copy: copy from the source to the destination held in its own operands, a byte
+  // at a time, until the source reaches the end ($0390/$0391, the high byte compared first).
+  function block_copy(r) {
+    M[0xFB] = M[0xC29E]; M[0xFC] = M[0xC2A2];
+    M[0xFD] = M[0xC2A6]; M[0xFE] = M[0xC2AA];
+    M[0x0390] = M[0xC2AE]; M[0x0391] = M[0xC2B3];
+    for (;;) {
+      wr(zp16(0xFD), rd(zp16(0xFB)));
+      M[0xFB] = (M[0xFB] + 1) & 0xFF; if (M[0xFB] === 0) M[0xFC] = (M[0xFC] + 1) & 0xFF;
+      M[0xFD] = (M[0xFD] + 1) & 0xFF; if (M[0xFD] === 0) M[0xFE] = (M[0xFE] + 1) & 0xFF;
+      if (M[0x0391] !== M[0xFC]) continue;
+      if (M[0x0390] === M[0xFB]) break;
+    }
+    return regs(r, { a: M[0x0390], y: 0, z: 1, c: 1, n: 0 });
+  }
+  // $72A4 copy_under_kernal: copy_block with the KERNAL and the chips banked out ($01 = $34), so
+  // a return screen can come from the RAM under the KERNAL; then $01 = $36.
+  function copy_under_kernal(r) {
+    M[0x00] |= 0x02; M[0x01] = 0x34;
+    allRam = true;
+    let o;
+    try { o = copy_block(r); } finally { allRam = false; }
+    M[0x01] = 0x36;
+    return regs(o, { a: 0x36, z: 0, n: 0 });
+  }
+
+  // $2CF3 s_2CF3: keep the music setting in $2E81; when the caller's load of it was not zero,
+  // write 0 to $FFFF (the RAM under the KERNAL).
+  function s_2CF3(r) {
+    M[0x2E81] = r.a & 0xFF;
+    const zero = r.z !== undefined ? !!r.z : (r.a & 0xFF) === 0;
+    if (zero) return regs(r, {});
+    M[0xFFFF] = 0;
+    return regs(r, { a: 0, z: 1, n: 0 });
+  }
+  // $2F4D s_2F4D: start the music, for hud_and_music.
+  function s_2F4D(r) { return music_start(r); }
+
+  // $5A41 card_and_border: show the card with the HUD kept, then the border in the current
+  // player's colour (6 the boy, 10 the girl).
+  function* card_and_border(r) {
+    const o = yield* hud_restore(r);
+    const c = M[0x5A08] ? 0x0A : 0x06;
+    vw(0x20, c);
+    return regs(o, { a: c, z: 0, n: 0 });
+  }
+  // $5A60 first_setup: once after loading, the walking frame every 2nd call ($450C = 2), $CF07
+  // cleared, then video_setup.
+  function first_setup(r) {
+    M[0x450C] = 2; M[0xCF07] = 0;
+    return video_setup(regs(r, { a: 0 }));
+  }
+  // $5BB0 wait_line16: wait for raster line 16, above the visible screen.
+  function* wait_line16(r) {
+    let guard = 0;
+    while (!(vr(0x12) === 0x10 && !(vr(0x11) & 0x80))) {
+      yield { wait: 0x10 };
+      if (++guard > 1000) break;
+    }
+    return regs(r, { a: 0, z: 1, n: 0 });
+  }
+  // $5BC7 show_level_card: the title font back, sprites off, multicolours black, the screen's
+  // card (+$74 of its record), then the card tune ($6A18) until it signals.
+  function* show_level_card(r) {
+    let o = copy_block(regs(r, { x: 0xBF, y: 0x5B }));
+    vw(0x15, 0); vw(0x22, 0); vw(0x23, 0);
+    const x = rec(0x74), y = rec(0x75);
+    o = yield* show_card(regs(o, { a: y, x, y }));
+    M[0xB7] = 0x18; M[0xB8] = 0x6A;
+    return yield* card_wait(regs(o, { a: 0x6A }));
+  }
+  // $5C00 draw_logo: the big CHILLER logo, glyphs from $E7 in five-row strips three columns to a
+  // letter, from $0545 in red, $6A strips in all; the last cell gets glyph $32.
+  function draw_logo(r) {
+    M[0x5BFF] = 0xE7;
+    logo_reset(r);
+    let x = 0, y = 0;
+    M[0xFB] = 0x45; M[0xFC] = 0x05; M[0xFD] = 0x45; M[0xFE] = 0xD9;
+    const scr = zp16(0xFB), col = zp16(0xFD);
+    for (;;) {
+      logo_next_glyph({ a: 0, x, y });
+      M[0x5BFB] = (M[0x5BFB] + 1) & 0xFF;
+      if (M[0x5BFB] === 0x6A) {
+        wr(scr + 0x31, 0x32); wr(col + 0x31, 0x0A);
+        return regs(r, { a: 0x0A, x, y: 0x31, z: 0, n: 0 });
+      }
+      wr(scr + y, M[0x5BFF]); wr(col + y, 0x0A);
+      if (++x !== 5) { y = (y + 0x28) & 0xFF; continue; }
+      y = (y - 0x9F) & 0xFF; x = 0;
+      M[0x5BFE] = (M[0x5BFE] + 1) & 0xFF;
+      if (M[0x5BFE] === 3) { M[0x5BFE] = 0; y = (y + 1) & 0xFF; }
+    }
+  }
+  // $5C4F show_card: print the card at X/Y, black border and background, the logo, multicolour
+  // text and the title font ($D018 = $1C), MASTERTRONIC'S in red on row 5, then the apostrophe.
+  function* show_card(r) {
+    let o = print_card(r);
+    vw(0x20, 0); vw(0x21, 0);
+    M[0x5BFD] = 0;
+    o = draw_logo(regs(o, { a: 0 }));
+    vw(0x16, vr(0x16) | 0x10);
+    vw(0x18, 0x1C);
+    for (let x = 0; x < 14; x++) { M[0x04D6 + x] = M[0x5D00 + x]; cw(0xD6 + x, 2); }
+    return yield* card_apostrophe(regs(o, { a: 2, x: 14 }));
+  }
+  // $5C87 logo_next_glyph: the next glyph, +$19 down a letter's strip, back $63 after five.
+  function logo_next_glyph(r) {
+    M[0x5BFD] = (M[0x5BFD] + 1) & 0xFF;
+    let a;
+    if (M[0x5BFD] === 6) {
+      M[0x5BFD] = 1;
+      const d = M[0x5BFF] - 0x63;
+      a = d & 0xFF; M[0x5BFF] = a;
+      return regs(r, { a, c: d >= 0 ? 1 : 0, z: a === 0 ? 1 : 0, n: signBit(a) });
+    }
+    const s = M[0x5BFF] + 0x19;
+    a = s & 0xFF; M[0x5BFF] = a;
+    return regs(r, { a, c: s > 0xFF ? 1 : 0, z: a === 0 ? 1 : 0, n: signBit(a) });
+  }
+  // $5CC5 logo_reset: clear draw_logo's counters.
+  function logo_reset(r) {
+    M[0x5BFE] = M[0x5BFB] = M[0x5BFC] = M[0x5BFD] = 0;
+    return regs(r, { a: 0, z: 1, n: 0 });
+  }
+  // $5CD8 print_card: clear the screen, put the cursor at the card's first two bytes (row,
+  // column), then print the card's PETSCII up to its $01.
+  function print_card(r) {
+    const k = K();
+    k.chrout(P.k, 0x93);
+    M[0xFB] = r.x & 0xFF; M[0xFC] = r.y & 0xFF;
+    const p = zp16(0xFB);
+    const row = rd(p), column = rd(p + 1);
+    k.plot(P.k, row, column);
+    let y = 2, a;
+    for (;;) {
+      a = rd(p + y);
+      if (a === 1) break;
+      y = (y + 1) & 0xFF;
+      k.chrout(P.k, a);
+    }
+    return regs(r, { a: 1, x: row, y, z: 1, c: 1, n: 0 });
+  }
+  // $5D20 unpack_colours: the screen's colour map (its address in the operands at $5D21/$5D23)
+  // into colour RAM $D800-$DBEF, two cells a byte, the low nibble first.
+  function unpack_colours(r) {
+    const x = M[0x5D21];
+    let src = x | (M[0x5D23] << 8), dst = 0xD800;
+    do {
+      const v = rd(src);
+      wr(dst, v); wr(dst + 1, v >> 4);
+      src = (src + 1) & 0xFFFF; dst = (dst + 2) & 0xFFFF;
+    } while (dst !== 0xDBF0);
+    M[0xFB] = src & 0xFF; M[0xFC] = src >> 8; M[0xFD] = dst & 0xFF; M[0xFE] = dst >> 8;
+    return regs(r, { a: 0xF0, x, y: 1, z: 1, c: 1, n: 0 });
+  }
+  // $5D80 video_setup: multicolour text, the third and fourth background colours (grey, white),
+  // BASIC banked out, then gravity_setup.
+  function video_setup(r) {
+    vw(0x16, vr(0x16) | 0x10);
+    vw(0x23, 0x0B); vw(0x24, 0x01);
+    const o = bank_basic_out(r);
+    return P.gravity_setup(o);
+  }
+  // $5D98 screen_done: out of energy: GAME OVER on row 1, then the jingle at $6B10.
+  function* screen_done(r) {
+    const o = P.show_game_over(r);
+    M[0xB7] = M[0xB9] = 0x10; M[0xB8] = M[0xBA] = 0x6B;
+    return regs(o, { a: 0x6B, z: 0, n: 0 });
+  }
+  // $5DA9 j_5DA9: wait for the jingle's count, stop the music, clear pending energy and poison,
+  // then game_over.
+  function* j_5DA9(r) {
+    for (;;) { yield; if (M[0x02FF]) break; }
+    const o = music_stop(r);
+    M[0x5A0D] = 0; M[0x5A11] = 0;
+    throw new P.Goto('game_over', regs(o, { a: 0, z: 1, n: 0 }));
+  }
+  // $5E00 show_forest_card: the older forest card at $5D0D; nothing calls it.
+  function* show_forest_card(r) { return yield* show_card(regs(r, { x: 0x0D, y: 0x5D })); }
+  // $5E0A bank_basic_out: clear bit 0 of the processor port: BASIC out, $A000-$BFFF is RAM.
+  function bank_basic_out(r) {
+    M[0x01] &= 0xFE;
+    return regs(r, { a: 0, z: 1, n: 0 });
+  }
+  // $5E19 setup_screen: build screen X/2 from its level record: the card with the HUD kept, the
+  // play area and the character set, the colour map, the multicolours, the boy and the girl, the
+  // enemy tables, the path table, the crosses, and the crosses needed.
+  function* setup_screen(r) {
+    const x0 = r.x & 0xFF;
+    M[0x11] = rd(0x7290 + x0);
+    M[0x12] = rd(0x7291 + x0);
+    let o = yield* card_and_border(regs(r, { a: M[0x12] }));
+    o = copy_under_kernal(regs(o, { x: M[0x11], y: M[0x12] }));
+    o = copy_block(regs(o, { x: (M[0x11] + 6) & 0xFF, y: M[0x12] }));
+    M[0x5D21] = rec(0x0C);
+    M[0x5D23] = rec(0x0D);
+    o = unpack_colours(o);
+    let x = o.x, y = 0x0E, a;
+    vw(0x22, rec(y)); y++;
+    vw(0x23, rec(y)); y++;
+    o = P.set_boy_x({ a: rec(y), x, y }); x = o.x; y = (o.y + 1) & 0xFF;
+    o = P.set_boy_y({ a: rec(y), x, y }); x = o.x; y = (o.y + 1) & 0xFF;
+    o = P.set_boy_xmsb({ a: rec(y), x, y }); x = o.x; y = (o.y + 1) & 0xFF;
+    M[0x07F8] = rec(y); y++;
+    vw(0x02, rec(y)); y++;
+    vw(0x03, rec(y)); y++;
+    vw(0x10, (M[0x4518] & 0xFD) | rec(y)); y++;
+    M[0x07F9] = rec(y);
+    // the enemy tables, five bytes each
+    for (const base of [0xCF68, 0xCF3D, 0xCF38, 0x45AD, 0xCF9C, 0x54E5, 0x45E2, 0x575E, 0xCF24]) {
+      for (let i = 0; i < 5; i++) { y++; a = rec(y); M[base + i] = a; }
+    }
+    // the path table
+    for (x = 0; x < 0x19; x++) { y++; M[0x4519 + x] = rec(y); }
+    M[0x5FDC] = 0x0E;
+    o = place_crosses({ a: 0x0E, x, y });
+    M[0x5FDC] = 0x0A;
+    o = place_crosses(regs(o, { a: 0x0A }));
+    return set_crosses_needed(o);
+  }
+  // $5FC0 place_crosses: five crosses from the record's next ten bytes: the cross tile $57 at
+  // each screen address, its colour ($5FDC, patched) in colour RAM $D4 pages above.
+  function place_crosses(r) {
+    let y = r.y & 0xFF;
+    for (let x = 0; x < 5; x++) {
+      y = (y + 1) & 0xFF; M[0xFB] = rec(y);
+      y = (y + 1) & 0xFF; M[0xFC] = rec(y);
+      wr(zp16(0xFB), 0x57);
+      M[0xFC] = (M[0xFC] + 0xD4) & 0xFF;
+      wr(zp16(0xFB), M[0x5FDC]);
+    }
+    return regs(r, { a: y, x: 5, y, z: 1, c: 1, n: 0 });
+  }
+
+  // The music driver. $60A0 music_init_filter: cutoff $45/$05, resonance 15 with voice 1
+  // filtered, low-pass and band-pass, volume 15.
+  function music_init_filter(r) {
+    sw(0x15, 0x05); sw(0x16, 0x45); sw(0x17, 0xF1); sw(0x18, 0x3F);
+    return regs(r, { a: 0x3F, z: 0, n: 0 });
+  }
+  // The KERNAL's tail of the interrupt ($EA31), where the handler leaves.
+  function tail(r) { K().irqTail(P.k); return r; }
+  // $60B5 music_irq_exit: with the step timer at 3, gate voice 1 off (its waveform less one) and
+  // set voice 2's control to $50; then the KERNAL's tail.
+  function music_irq_exit(r) {
+    if (M[0x02] !== 3) return tail(regs(r, { a: 3, z: 0, c: 3 >= M[0x02] ? 1 : 0, n: signBit(3 - M[0x02]) }));
+    const x = (M[0x02AC] - 1) & 0xFF;
+    sw(0x04, x); sw(0x0B, 0x50);
+    return tail(regs(r, { a: 0x50, x, z: 0, c: 1, n: 0 }));
+  }
+  // $60CA music_start: silence the SID, the play position and the loop point at the tune $61F9,
+  // the filter and volume, and music_irq in $0314.
+  function music_start(r) {
+    M[0x02] = 0; M[0x02FF] = 0;
+    for (let x = 0x20; x > 0; x--) P.io.write(0xD400 + x, 0);
+    M[0xB7] = M[0xB9] = 0xF8; M[0xB8] = M[0xBA] = 0x61;
+    music_init_filter(r);
+    M[0x0314] = 0xF5; M[0x0315] = 0x60;
+    return regs(r, { a: 0x60, x: 0, z: 0, n: 0 });
+  }
+  // $60F5 music_irq: the interrupt: count the step timer zp $02 down; when it has run out, play
+  // commands until one ends the step.
+  function music_irq(r) {
+    const y = 0;
+    if ((r.a & 0xFF) === M[0x02]) return music_next_command(regs(r, { y }));
+    M[0x02] = (M[0x02] - 1) & 0xFF;
+    return music_irq_exit(regs(r, { y }));
+  }
+  // $61E9 music_fetch: advance the play position and give the byte there.
+  function music_fetch(r) {
+    fetchPos();
+    const a = rd(zp16(0xB7) + (r.y & 0xFF));
+    return regs(r, { a, z: a === 0 ? 1 : 0, n: signBit(a) });
+  }
+  function fetchPos() { M[0xB7] = (M[0xB7] + 1) & 0xFF; if (M[0xB7] === 0) M[0xB8] = (M[0xB8] + 1) & 0xFF; }
+  const fetch = r => { const o = music_fetch(r); r.a = o.a; return o.a; };
+  // The command handlers, by address. Each takes the registers and gives true when the step goes
+  // on to the next command, false when it has ended (in the KERNAL's tail).
+  const CMD = {
+    // $6100 (the byte $00): music_next_command itself, a filler the tunes use
+    0x6100: () => true,
+    // $610E voice 1's note: frequency high and low, gate off and on with voice 1's waveform
+    0x610E: r => { sw(0x01, fetch(r)); sw(0x00, fetch(r)); r.a = M[0x02AC]; sw(0x04, r.y); sw(0x04, r.a); return true; },
+    // $6126 voice 2's note
+    0x6126: r => { sw(0x08, fetch(r)); sw(0x07, fetch(r)); r.a = M[0x02AD]; sw(0x0B, r.y); sw(0x0B, r.a); return true; },
+    // $613E both voices' notes, then both retriggered
+    0x613E: r => { sw(0x01, fetch(r)); sw(0x00, fetch(r)); sw(0x08, fetch(r)); sw(0x07, fetch(r)); return CMD[0x6156](r); },
+    // $6156 gate both voices off and on again
+    0x6156: r => { sw(0x04, r.y); sw(0x0B, r.y); sw(0x04, M[0x02AC]); r.a = M[0x02AD]; sw(0x0B, r.a); return true; },
+    // $616B the tempo from the next byte; the step ends
+    0x616B: r => { M[0x02AA] = fetch(r); return false; },
+    // $6174 a rest: the step timer from the tempo
+    0x6174: r => { r.a = M[0x02AA]; M[0x02] = r.a; return false; },
+    // $617C count: $02FF goes up, which the game polls
+    0x617C: r => { M[0x02FF] = (M[0x02FF] + 1) & 0xFF; return false; },
+    // $6182 the two voices' waveforms
+    0x6182: r => { M[0x02AC] = fetch(r); M[0x02AD] = fetch(r); return true; },
+    // $6191 attack/decay 1 and 2, then sustain/release 1 and 2
+    0x6191: r => { sw(0x05, fetch(r)); sw(0x0C, fetch(r)); sw(0x06, fetch(r)); sw(0x0D, fetch(r)); return true; },
+    // $61AC the pulse widths, lo and hi for voice 1, then voice 2
+    0x61AC: r => { sw(0x02, fetch(r)); sw(0x03, fetch(r)); sw(0x09, fetch(r)); sw(0x0A, fetch(r)); return true; },
+    // $61C7 back to the loop point
+    0x61C7: r => { M[0xB7] = M[0xB9]; r.a = M[0xBA]; M[0xB8] = r.a; return false; },
+  };
+  // Run the handler at address, then the commands after it until one ends the step.
+  function play(at, r) {
+    r = regs(r, {});
+    for (;;) {
+      const f = CMD[at];
+      if (!f) throw new Error('music: no command handler at $' + at.toString(16));
+      if (!f(r)) return tail(r);
+      // $6100 music_next_command: the next byte, stored into the JMP at $610B
+      fetchPos();
+      r.a = rd(zp16(0xB7) + (r.y & 0xFF));
+      M[0x610C] = r.a;
+      at = M[0x610C] | (M[0x610D] << 8);
+    }
+  }
+  // $6100 music_next_command: the next command byte into music_dispatch's JMP, and on.
+  function music_next_command(r) {
+    fetchPos();
+    const a = rd(zp16(0xB7) + (r.y & 0xFF));
+    M[0x610C] = a;
+    return music_dispatch(regs(r, { a }));
+  }
+  // $610B music_dispatch: the JMP to $61xx that music_next_command patched.
+  function music_dispatch(r) { return play(M[0x610C] | (M[0x610D] << 8), r); }
+  // $61D2 music_stop: silence the SID and give $0314 back to the KERNAL's $EA31.
+  function music_stop(r) {
+    for (let x = 0x20; x > 0; x--) P.io.write(0xD400 + x, 0);
+    M[0x0314] = 0x31; M[0x0315] = 0xEA;
+    return regs(r, { a: 0xEA, x: 0, z: 0, n: 1 });
+  }
+
+  // $72E0 card_apostrophe: the apostrophe of MASTERTRONIC'S (glyph $AC, row 4, column 26) in
+  // red, then the PROGRAMMED BY line when this is the title card ($75E0).
+  function* card_apostrophe(r) {
+    M[0x04BA] = 0xAC; cw(0xBA, 2);
+    return yield* P.j_75E0(regs(r, { a: 2 }));
+  }
+  // $72ED show_programmed_by: the 40 cells of txt_programmed_by ($77C0) on row 0 in purple.
+  function show_programmed_by(r) {
+    for (let x = 0; x < 0x28; x++) { M[0x0400 + x] = M[0x77C0 + x]; cw(x, 4); }
+    return regs(r, { a: 4, x: 0x28, z: 1, c: 1, n: 0 });
+  }
+  // $7580 title_flicker: one step of the card flicker for the title after a game. Its second
+  // branch stores to $7523 instead of $D023, so only $D022 ever flickers.
+  function title_flicker(r) {
+    let o = P.random(r);
+    if ((o.y & 0xFF) !== 0) return regs(o, { z: 0, c: 1, n: signBit(o.y) });
+    o = P.random(o);
+    const y = o.y & 0xFF;
+    let a;
+    if ((y - 0x40) & 0x80) { a = vr(0x22) ^ 2; vw(0x22, a); } else { a = (vr(0x23) ^ 2) & 0xFF; M[0x7523] = a; }
+    return regs(o, { a: a & 0xFF, z: (a & 0xFF) === 0 ? 1 : 0, n: signBit(a), c: y >= 0x40 ? 1 : 0 });
+  }
+  // $7600 set_crosses_needed: the crosses to collect from the record (+$72) into $5A15;
+  // sprites 0 and 1 on.
+  function set_crosses_needed(r) {
+    const y = (r.y + 1) & 0xFF;
+    M[0x5A15] = rec(y);
+    vw(0x15, 3);
+    return regs(r, { a: 3, y, z: 0, n: 0 });
+  }
+  // $7610 card_wait: wait on the card until the card tune's count sets $02FF, and meanwhile,
+  // when random gives 0, flicker $D022 or $D023; then the play music.
+  function* card_wait(r) {
+    let o = regs(r, {});
+    for (;;) {
+      yield;
+      if (M[0x02FF]) break;
+      o = P.random(o);
+      if ((o.y & 0xFF) !== 0) continue;
+      o = P.random(o);
+      const reg = ((o.y - 0x40) & 0x80) ? 0x22 : 0x23;
+      o.a = (vr(reg) ^ 2) & 0xFF;
+      vw(reg, o.a);
+    }
+    return music_start(o);
+  }
+  // $763F hud_save: screen rows 0-1 (80 bytes from $0400) to $0200, then show_level_card.
+  function* hud_save(r) {
+    M[0xFB] = 0; M[0xFC] = 4;
+    let a = 4;
+    for (let y = 0; y < 0x50; y++) { a = M[0x0400 + y]; M[0x0200 + y] = a; }
+    return yield* show_level_card(regs(r, { a, y: 0x50 }));
+  }
+  // $7659 hud_restore: save the HUD and show the card (hud_save), then put the 80 bytes back.
+  function* hud_restore(r) {
+    const o = yield* hud_save(r);
+    M[0xFB] = 0; M[0xFC] = 2;
+    let a = 2;
+    for (let y = 0; y < 0x50; y++) { a = M[0x0200 + y]; M[0x0400 + y] = a; }
+    return regs(o, { a, y: 0x50, z: 1, c: 1, n: 0 });
+  }
+  // $7673 j_7673: tile_touch_b for tiles from $70 (signed compare): below, return; from $70 on,
+  // as $5B8D.
+  function* j_7673(r) {
+    const a = r.a & 0xFF, d = (a - 0x70) & 0xFF;
+    const f = { c: a >= 0x70 ? 1 : 0, z: d === 0 ? 1 : 0, n: signBit(d) };
+    if (f.n) return regs(r, f);
+    return yield* P.j_5B8D(regs(r, f));
+  }
+  // $7680 next_screen: on from the screen with level byte X. On the way out (X below 10, signed)
+  // keep the play area for the way back; then setup_screen X + 2; the girl playing swaps the two
+  // sprite pointers and has the light red border; from level byte 10 on both sprites stay on.
+  function* next_screen(r) {
+    const x = r.x & 0xFF;
+    M[0x767F] = x;
+    let o = regs(r, {});
+    if ((x - 0x0A) & 0x80) {
+      M[0x7FE4] = rd(0x7FE8 + x);
+      M[0x7FE5] = rd(0x7FE9 + x);
+      o = copy_block(regs(o, { x: 0xE0, y: 0x7F }));
+    }
+    o = yield* setup_screen(regs(o, { x: (M[0x767F] + 2) & 0xFF }));
+    if (M[0x5A08]) {
+      const a = M[0x07F8], b = M[0x07F9];
+      M[0x07F9] = a; M[0x07F8] = b;
+      o = regs(o, { x: b });
+      vw(0x20, 0x0A);
+    } else vw(0x20, 0x06);
+    M[0xC19B] = 1;
+    const v = rec(0x73);
+    const a = ((v - 0x0A) & 0x80) ? 1 : 3;
+    vw(0x15, a);
+    return regs(o, { a, y: 0x73, z: 0, n: 0 });
+  }
+  // $7720 game_over_wait: on the title (black border) the flicker; otherwise count the three
+  // timers down (255 x 255 x 10 calls), and at the end the high score, the title font, the
+  // colours off, the title card and its music.
+  function* game_over_wait(r) {
+    const b = vr(0x20) & 0x0F;
+    if (!b) return title_flicker(regs(r, { a: 0 }));
+    const dec = at => (M[at] = (M[at] - 1) & 0xFF);
+    let v = dec(0x771C);
+    if (v) return regs(r, { a: b, z: 0, n: signBit(v) });
+    M[0x771C] = 0xFF;
+    v = dec(0x771D);
+    if (v) return regs(r, { a: 0xFF, z: 0, n: signBit(v) });
+    M[0x771D] = 0xFF;
+    v = dec(0x771E);
+    if (v) return regs(r, { a: 0xFF, z: 0, n: signBit(v) });
+    M[0x771E] = 0x0A;
+    let o = P.check_hiscore(regs(r, { a: 0x0A }));
+    o = copy_block(regs(o, { x: 0xBF, y: 0x5B }));
+    for (const reg of [0x15, 0x22, 0x23, 0x20, 0x21]) vw(reg, 0);
+    o = yield* show_card(regs(o, { a: 0, x: 0, y: 0x7C }));
+    return music_start(o);
+  }
+  // $C6E7 delay: a busy wait, $CF66 times round a loop of $CF65; X and Y kept, A left as Y.
+  function* delay(r) {
+    do {
+      const n = M[0xCF65] || 256;
+      M[0xCF67] = 0;
+      yield { cycles: 8 + n * 9 - 1 + 9 };
+      M[0xCF66] = (M[0xCF66] - 1) & 0xFF;
+    } while (M[0xCF66]);
+    const y = r.y & 0xFF;
+    return regs(r, { a: y, z: y === 0 ? 1 : 0, n: signBit(y) });
+  }
+
+  Object.assign(P, {
+    copy_block, s_2CF3, s_2F4D, card_and_border, first_setup, wait_line16, show_level_card,
+    draw_logo, show_card, logo_next_glyph, logo_reset, print_card, unpack_colours, video_setup,
+    screen_done, j_5DA9, show_forest_card, bank_basic_out, setup_screen, place_crosses,
+    music_init_filter, music_irq_exit, music_start, music_irq, music_next_command, music_dispatch,
+    mcmd_note_v1: r => play(0x610E, r), mcmd_note_v2: r => play(0x6126, r),
+    mcmd_note_both: r => play(0x613E, r), mcmd_retrigger_both: r => play(0x6156, r),
+    mcmd_set_tempo: r => play(0x616B, r), mcmd_rest: r => play(0x6174, r),
+    mcmd_count: r => play(0x617C, r), mcmd_set_waveforms: r => play(0x6182, r),
+    mcmd_set_envelopes: r => play(0x6191, r), mcmd_set_pulse: r => play(0x61AC, r),
+    mcmd_loop: r => play(0x61C7, r),
+    music_stop, music_fetch, copy_under_kernal, card_apostrophe, show_programmed_by, title_flicker,
+    set_crosses_needed, card_wait, hud_save, hud_restore, j_7673, next_screen, game_over_wait,
+    block_copy, delay,
+  });
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/screen.js */
+// The picture, as the video chip draws what Chiller uses of it: text mode with multicolour
+// characters, the border, and eight sprites with multicolour, expansion and priority, from the
+// registers and memory as they stand (the game changes nothing in the middle of a frame). The
+// frame is the PAL visible area of site/lib/c64.js's renderFrame (384 x 272 from raster line 16
+// and sprite X -8), which checks it (port/test/t-screen.js). Out: a colour index per pixel.
+(function (root) {
+'use strict';
+const W = 384, H = 272;
+function draw(M, vic, colour, px) {
+  const bc = vic[0x20] & 15, d11 = vic[0x11], d16 = vic[0x16], d18 = vic[0x18];
+  px.fill(bc);
+  const fg = new Uint8Array(W * H);                    // 1 where the characters' foreground is
+  if (d11 & 0x10) {
+    const ys = d11 & 7, xs = d16 & 7, mcm = d16 & 0x10;
+    const scr = (d18 >> 4) << 10, chars = ((d18 >> 1) & 7) << 11;
+    const top = (d11 & 8 ? 51 : 55) - 16, bot = (d11 & 8 ? 250 : 246) - 16;
+    const left = (d16 & 8 ? 24 : 31) + 8, right = (d16 & 8 ? 343 : 334) + 8;
+    const b0 = vic[0x21] & 15, b1 = vic[0x22] & 15, b2 = vic[0x23] & 15;
+    for (let y = top; y <= bot; y++) {
+      const ly = y + 16 - 0x30 - ys;
+      for (let x = left; x <= right; x++) {
+        const o = y * W + x;
+        if (ly < 0 || ly >= 200) { px[o] = b0; continue; }
+        const tx = x - 32 - xs;
+        if (tx < 0 || tx >= 320) { px[o] = b0; continue; }
+        const cell = (ly >> 3) * 40 + (tx >> 3), code = M[scr + cell], g = M[chars + code * 8 + (ly & 7)], cc = colour[cell] & 15;
+        if (mcm && (cc & 8)) {
+          const p = (g >> (6 - (tx & 6))) & 3;
+          px[o] = p === 0 ? b0 : p === 1 ? b1 : p === 2 ? b2 : cc & 7;
+          fg[o] = p >> 1;
+        } else {
+          const b = (g >> (7 - (tx & 7))) & 1;
+          px[o] = b ? cc : b0;
+          fg[o] = b;
+        }
+      }
+    }
+    // sprites: where two overlap the lower number's pixel is the one drawn, and then its priority
+    // bit decides against the characters
+    const en = vic[0x15], sp = new Uint8Array(W * H);    // sprite number + 1, colour in spc
+    const spc = new Uint8Array(W * H);
+    for (let n = 0; n < 8; n++) {
+      if (!(en >> n & 1)) continue;
+      const sx = vic[2 * n] | ((vic[0x10] >> n & 1) << 8), sy = vic[1 + 2 * n];
+      const ex = vic[0x1D] >> n & 1, ey = vic[0x17] >> n & 1, mc = vic[0x1C] >> n & 1;
+      const data = M[scr + 0x3F8 + n] * 64, sc = vic[0x27 + n] & 15, m0 = vic[0x25] & 15, m1 = vic[0x26] & 15;
+      for (let r = 0; r < (ey ? 42 : 21); r++) {
+        let line = sy + 1 + r; if (line >= 312) line -= 312;
+        const y = line - 16;
+        if (y < 0 || y >= H) continue;
+        const a = data + (ey ? r >> 1 : r) * 3, bits = (M[a] << 16) | (M[a + 1] << 8) | M[a + 2];
+        for (let i = 0; i < 24; i++) {
+          let c;
+          if (mc) { const p = (bits >> (22 - (i & ~1))) & 3; if (!p) continue; c = p === 1 ? m0 : p === 2 ? sc : m1; }
+          else { if (!((bits >> (23 - i)) & 1)) continue; c = sc; }
+          for (let e = 0; e <= ex; e++) {
+            let x = sx + (ex ? 2 * i + e : i); if (x >= 504) x -= 504;
+            x += 8;
+            if (x < 0 || x >= W) continue;
+            const o = y * W + x;
+            // inside the border only; behind the characters' foreground when its priority bit is set
+            if (x < left || x > right || y < top || y > bot || sp[o]) continue;
+            sp[o] = n + 1; spc[o] = c;
+          }
+        }
+      }
+    }
+    for (let o = 0; o < W * H; o++) {
+      const n = sp[o];
+      if (n && !((vic[0x1B] >> (n - 1) & 1) && fg[o])) px[o] = spc[o];
+    }
+  }
+  return px;
+}
+root.ChillerScreen = { draw, W, H };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* port/src/runtime.js */
+// The port run as the machine would run it, for the page: a virtual PAL clock that the port's
+// work moves on (each stretch between two yields costs what the game's code takes for it, from
+// the fitted costs in COST), the KERNAL's 60 Hz interrupt on that clock, the chips the port
+// reads and writes, and a jump to any level.
+//
+// const rt = ChillerRuntime.create(ram, { cost });   // ram: the listing's 64 KB (copied)
+// rt.runTo(cycles)  run the port until the clock reaches cycles
+// rt.frame, rt.cycles, rt.chips (vic, colour, sidw, keys, joy), rt.P, rt.onSid(fn(r, v, t))
+// rt.jump(n)        a fresh game taken to level n (0-9) as finishing each level before it does;
+//                   the caller runs it fast (rt.busy is true until the level has started)
+// rt.cheats         { energy, ghosts } switched on and off by the page; rt.skip() ends the level
+(function (root) {
+'use strict';
+const LINE = 63, LINES = 312, FRAME = LINE * LINES, TIMER = 0x4025 + 1;
+const K = () => root.ChillerKernal;
+// the video chip as the KERNAL leaves it at start-up, the character set at $1000
+const VIC0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1B,0x37,0,0,0,0x08,0,0x15,0x0F,0,0,0,0,0,0,
+  0x0E,0x06,0x01,0x02,0x03,0x04,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07];
+
+// The chips the game uses: the video chip's registers (the raster from the clock, the collision
+// registers latched as the lines are drawn and cleared by a read), colour RAM, the SID's
+// registers (each write passed to onSid with the time), CIA 1's keyboard and joystick.
+function Chips(rt) {
+  const c = {
+    vic: new Uint8Array(0x40), colour: new Uint8Array(0x400), sidw: new Uint8Array(0x20),
+    pra: 0x7F, ddra: 0xFF, keys: new Set(), joy: 0x1F, coll: [0, 0], cmp: 0, onSid: null,
+    get line() { return Math.floor(rt.cycles / LINE) % LINES; },
+    read(a) {
+      if (a >= 0xD000 && a < 0xD400) {
+        const r = a & 0x3F;
+        if (r === 0x12) return c.line & 255;
+        if (r === 0x11) return (c.vic[0x11] & 0x7F) | ((c.line >> 8) << 7);
+        if (r === 0x1E || r === 0x1F) { const v = c.coll[r - 0x1E]; c.coll[r - 0x1E] = 0; return v; }
+        if (r === 0x19) return 0x70;
+        if (r === 0x1A) return 0xF0;
+        return c.vic[r];
+      }
+      if (a >= 0xD400 && a < 0xD800) return 0;
+      if (a >= 0xD800 && a < 0xDC00) return c.colour[a - 0xD800] | 0xF0;
+      if (a >= 0xDC00 && a < 0xDD00) {
+        const r = a & 15;
+        if (r === 0) return (c.ddra ? (c.pra | ~c.ddra) & 0xFF : 0xE0 | c.joy) & (0xE0 | c.joy);
+        if (r === 1) {
+          let v = 0xFF;
+          const rows = c.ddra ? c.pra & c.ddra : 0xFF;
+          for (const k of c.keys) if (!(rows & (1 << (k >> 3)))) v &= ~(1 << (k & 7));
+          return v & 0xFF;
+        }
+        if (r === 2) return c.ddra;
+        return 0;
+      }
+      return 0;
+    },
+    write(a, v) {
+      v &= 255;
+      if (a >= 0xD000 && a < 0xD400) { c.vic[a & 0x3F] = v; return; }
+      if (a >= 0xD400 && a < 0xD800) { c.sidw[a & 0x1F] = v; if (c.onSid) c.onSid(a & 0x1F, v, rt.cycles); return; }
+      if (a >= 0xD800 && a < 0xDC00) { c.colour[a - 0xD800] = v & 15; return; }
+      if (a >= 0xDC00 && a < 0xDD00) { const r = a & 15; if (r === 0) c.pra = v; else if (r === 2) c.ddra = v; }
+    },
+  };
+  c.io = {
+    read: a => c.read(a & 0xFFFF), write: (a, v) => c.write(a & 0xFFFF, v),
+    vicRead: r => c.read(0xD000 | (r & 0x3F)), vicWrite: (r, v) => c.write(0xD000 | (r & 0x3F), v),
+    sidRead: r => 0, sidWrite: (r, v) => c.write(0xD400 | (r & 0x1F), v),
+    colourRead: i => c.colour[i & 0x3FF], colourWrite: (i, v) => { c.colour[i & 0x3FF] = v & 15; },
+    ciaRead: r => c.read(0xDC00 | (r & 0x0F)), ciaWrite: (r, v) => c.write(0xDC00 | (r & 0x0F), v),
+    cia2Read: r => 0, cia2Write: (r, v) => {},
+  };
+  c.vic.set(VIC0);
+  return c;
+}
+
+function create(image, opts = {}) {
+  const M = new Uint8Array(image);
+  const rt = { cycles: 0, frame: 0, busy: false, level: null };
+  const chips = rt.chips = Chips(rt);
+  const P = rt.P = root.ChillerPort.makePort(M, chips.io);
+  K().boot(M);
+  // the routines' calls since the last yield, for the cost of the stretch
+  const COST = opts.cost || {};
+  let spent = 0;
+  const GENF = Object.getPrototypeOf(function* () {}).constructor;
+  for (const name of Object.keys(P)) {
+    const f = P[name], w = COST[name] || 0;
+    if (typeof f !== 'function' || !w) continue;
+    P[name] = f instanceof GENF ? function* (...a) { spent += w; return yield* f.apply(this, a); }
+      : function (...a) { spent += w; return f.apply(this, a); };
+  }
+  const base = COST['@yield'] || 30, IRQ = COST['@irq'] || 0;
+  let nextIrq = TIMER, lastLine = 0, due = false;
+  // The loader hands over with interrupts off; the game first allows them in music_start (its
+  // SEI ... CLI round the vector, which it leaves at music_irq), and an underflow of the timer
+  // while they were off is taken then.
+  rt.irqOn = false;
+  function irq() {
+    if ((M[0x0314] | (M[0x0315] << 8)) === 0x60F5) P.music_irq({ a: 0, x: 0, y: 0, c: 0 });   // the KERNAL's entry leaves A = 0
+    else K().irqTail(P.k);
+  }
+  // the clock to t: the lines drawn on the way latch the collisions, the timer's interrupts run;
+  // for the port's work (work true) an interrupt's own cycles put the end later, as on the C64
+  function advance(t, work) {
+    while (rt.cycles < t) {
+      const step = Math.min(t, nextIrq, (lastLine + 1) * LINE);
+      rt.cycles = step;
+      while ((lastLine + 1) * LINE <= rt.cycles) {
+        lastLine++;
+        const l = lastLine % LINES;
+        if (l === 0) rt.frame++;
+        const hit = K().collideLine(M, chips.vic, chips.colour, l);
+        chips.coll[0] |= hit[0]; chips.coll[1] |= hit[1];
+      }
+      if (rt.cycles >= nextIrq) { nextIrq += TIMER; due = true; }
+      if (!rt.irqOn && M[0x0314] === 0xF5 && M[0x0315] === 0x60) rt.irqOn = true;
+      if (due && rt.irqOn) { due = false; irq(); if (work) t += IRQ; }
+    }
+  }
+  // The page's cheats, each through the game's own variables and routines. energy: energy_down
+  // takes nothing off the bar, so the energy never runs out (the only way the game ends). ghosts:
+  // a ghost's touch (sprite_touch, girl_touch) adds no poison; a toadstool still does. skip(): at
+  // the next pass, crosses_left with one cross to go, as taking the last cross does.
+  rt.cheats = { energy: false, ghosts: false };
+  let touching = 0, skip = false;
+  const down = P.energy_down, padd = P.poison_add;
+  P.energy_down = function (r) { return rt.cheats.energy ? P.find_bar_end(r) : down.call(this, r); };
+  P.poison_add = function* (r) { if (rt.cheats.ghosts && touching) return r; return yield* padd.call(this, r); };
+  for (const name of ['sprite_touch', 'girl_touch']) {
+    const f = P[name];
+    P[name] = function* (r) { touching++; try { return yield* f.call(this, r); } finally { touching--; } };
+  }
+  rt.skip = () => { skip = true; };
+  // The crosses of the level being left, taken as a player takes them (a space, $A0, in each cell
+  // listed at +$5E of its settings), so that the copy next_screen stores for the way home has none
+  // left, as it would after play.
+  function takeCrosses() {
+    const rec = M[0x11] | (M[0x12] << 8);
+    for (let k = 0; k < 10; k++) {
+      const a = M[rec + 0x5E + 2 * k] | (M[rec + 0x5F + 2 * k] << 8);
+      if (a >= 0x0400 && a < 0x07E8) M[a] = 0xA0;
+    }
+  }
+  let jumpTo = null;
+  function* driver() {
+    for (;;) {
+      const it = P.program('game_entry');
+      for (;;) {
+        const y = it.next().value;
+        if (y && y.cp === 0xCA00 && jumpTo !== null) {
+          const n = jumpTo; jumpTo = null;
+          for (let i = 0; i < n; i++) {
+            takeCrosses();
+            const x = M[(M[0x11] | (M[0x12] << 8)) + 0x73];
+            yield* P.next_screen({ a: 0, x: x === 0x12 ? 0xFE : x, y: 0 });
+          }
+          rt.busy = false;
+        }
+        if (y && y.cp === 0xCA00 && skip) {
+          skip = false;
+          takeCrosses();
+          M[0x5A15] = 1;
+          yield* P.crosses_left({ a: 0, x: 0, y: 0 });
+        }
+        yield y;
+      }
+    }
+  }
+  const it = driver();
+  // one yield of the port: its stretch's cost, then the time it waits
+  function step() {
+    spent = 0;
+    const y = it.next().value;
+    advance(rt.cycles + base + spent, true);
+    if (y && y.wait !== undefined) {
+      const now = Math.floor(rt.cycles / LINE) % LINES;
+      advance(rt.cycles + ((y.wait - now + LINES) % LINES) * LINE + 1);
+    } else if (y && y.cycles !== undefined) advance(rt.cycles + y.cycles, true);
+    else if (!y || y.cp === undefined) advance(rt.cycles + LINE);
+  }
+  rt.runTo = function (t) { while (rt.cycles < t) step(); };
+  rt.onSid = fn => { chips.onSid = fn; };
+  rt.jump = function (n) { jumpTo = n; rt.busy = n > 0; };
+  rt.M = M; rt.FRAME = FRAME;
+  return rt;
+}
+root.ChillerRuntime = { create, FRAME, LINE, LINES };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+window.CHILLER_COST = {
+ "@yield": 18,
+ "tick_border": 80.6,
+ "fall_step": 7.4,
+ "colour_cycle": 0.7,
+ "player_step": 49.4,
+ "switch_request": 45.8,
+ "idle_frame": 75.9,
+ "drain_step": 69.9,
+ "collect_check": 66.1,
+ "enemy_step": 43.2,
+ "random": 63.6,
+ "sprite_touch": 22,
+ "girl_touch": 5,
+ "scroll_timer": 3,
+ "respawn_timer": 20.3,
+ "try_move": 138.3,
+ "move_sprite": 127.4,
+ "fall_sound_off": 48.9,
+ "path_step": 76,
+ "player_input": 83,
+ "read_stick": 99.2,
+ "walk_frame": 8.9,
+ "fire_pressed": 0.1,
+ "start_jump": 45.6,
+ "jump_setup": 50.7,
+ "jump_sound": 80.8,
+ "jump_pitch_rise": 40.6,
+ "energy_down": 248.1,
+ "find_bar_end": 56.6,
+ "spawn_enemy": 372.4,
+ "fall_blocked": 68.9,
+ "extra_launch": 0.9,
+ "frame_step": 11.8,
+ "tile_touch_a": 62.8,
+ "tile_touch_b": 52.2,
+ "energy_add_slow": 477.2,
+ "fall_sound": 17.8,
+ "energy_up": 303.5,
+ "add_score": 119.8,
+ "score_inc": 49.9,
+ "j_5B8D": 0.9,
+ "j_7673": 20.9,
+ "to_switch_allowed": 51,
+ "poison_add": 195.2,
+ "cross_touch": 124.4,
+ "swap_sprites": 162.3,
+ "@irq": 1197
+};
+</script>
+<script>
+/* the page: the port on a virtual PAL clock, drawn each frame, the keyboard and the joystick */
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('pl-cv'), screen = $('pl-screen'), over = $('pl-over'), overMsg = $('pl-over-msg'), status = $('pl-status');
+const ctx = cv.getContext('2d'), img = ctx.createImageData(384, 272), px = new Uint8Array(384 * 272);
+const RGB = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+const FRAME = ChillerRuntime.FRAME, FRAME_MS = 1000 * FRAME / 985248;
+const LEVELS = ['The forest', 'The cinema', 'The ghetto', 'The graveyard', 'The haunted house',
+  'The house, going home', 'The graveyard, going home', 'The ghetto, going home', 'The cinema, going home', 'The forest, going home'];
+let image = null, rt = null, running = false, paused = false, level = null;
+
+function draw() {
+  ChillerScreen.draw(rt.M, rt.chips.vic, rt.chips.colour, px);
+  const d = img.data;
+  for (let i = 0, o = 0; i < px.length; i++, o += 4) { const c = RGB[px[i]]; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; }
+  ctx.putImageData(img, 0, 0);
+}
+
+// --- sound: the SID writes of each frame of C64 time, streamed to the site's SID model -------
+const sound = (function () {
+  let host = null, on = false, pending = new Map(), sent = 0;
+  function driver() {
+    const sid = new Uint8Array(25), queue = [];
+    const d = { sid, writes: [], playing: () => true, stop() {},
+      init(t) { if (t && t.frames) for (const f of t.frames) queue.push(f); while (queue.length > 25) { const f = queue.shift(); queue[0] = f.concat(queue[0]); } },
+      play() { const f = queue.shift(); d.writes = f || []; if (f) for (let i = 0; i + 1 < f.length; i += 2) sid[f[i]] = f[i + 1]; } };
+    return d;
+  }
+  function attach() {
+    if (!rt) return;
+    pending.clear(); sent = rt.frame;
+    rt.onSid((r, v, t) => {
+      if (!on || rt.busy) return;
+      const f = Math.max(sent, Math.floor(t / FRAME));
+      let w = pending.get(f); if (!w) pending.set(f, w = []);
+      w.push(r, v);
+    });
+  }
+  async function set(want) {
+    if (want && !on) { pending.clear(); sent = rt ? rt.frame : 0; }
+    on = want;
+    if (on && !host) {
+      try {
+        host = await C64Sid.host({ driver, data: null, gain: 0.5, filter: '6581' });
+        host.send({ cmd: 'start', tune: { frames: [Array.from(rt ? rt.chips.sidw.subarray(0, 25).reduce((a, v, i) => (a.push(i, v), a), []) : [])] } });
+      } catch (e) { on = false; say('No sound: ' + e.message); }
+    }
+    if (host) { if (on) host.ctx.resume(); else host.ctx.suspend(); }
+    return on;
+  }
+  function frame() {
+    if (!on || !host || !rt) return;
+    const frames = [];
+    for (; sent < rt.frame; sent++) { frames.push(pending.get(sent) || []); pending.delete(sent); }
+    if (frames.length) host.send({ cmd: 'start', tune: { frames } });
+  }
+  return { attach, set, frame, get on() { return on; } };
+})();
+
+// --- the loop: one frame of C64 time per frame of real time --------------------------------
+let acc = 0, last = 0;
+const cheats = { energy: false, ghosts: false };
+function boot(n) {
+  rt = ChillerRuntime.create(image, { cost: window.CHILLER_COST });
+  Object.assign(rt.cheats, cheats);
+  level = n || 0;
+  if (n) { rt.jump(n); overMsg.textContent = 'Going to ' + LEVELS[n].toLowerCase() + '…'; over.hidden = false; }
+  sound.attach(); input();
+  document.querySelectorAll('#pl-levels button').forEach(b => b.setAttribute('aria-current', String(+b.dataset.level === level)));
+}
+function tick(now) {
+  requestAnimationFrame(tick);
+  if (!running || paused || !rt) { last = now; return; }
+  try {
+    if (rt.busy) {                                   // on the way to a picked level: as fast as it goes
+      const t0 = performance.now();
+      while (rt.busy && performance.now() - t0 < 30) rt.runTo(rt.cycles + FRAME);
+      if (!rt.busy) { over.hidden = true; acc = 0; last = now; }
+      return;
+    }
+    acc += Math.min(250, now - (last || now)); last = now;
+    let n = 0;
+    while (acc >= FRAME_MS && n < 10) { rt.runTo((rt.frame + 1) * FRAME); sound.frame(); acc -= FRAME_MS; n++; }
+    if (n === 10) acc = 0;
+    if (n) draw();
+  } catch (e) { running = false; overMsg.textContent = 'The port stopped: ' + e.message; over.hidden = false; console.error(e); }
+}
+
+// --- input: the keyboard as the C64's, the arrows and space as the joystick in port 2 --------
+const KEY = { Z: 0x0C, C: 0x14, LSHIFT: 0x0F, '/': 0x37, SPACE: 0x3C, RETURN: 0x01 };
+const JOY = { ArrowUp: 1, ArrowDown: 2, ArrowLeft: 4, ArrowRight: 8, Space: 16, ControlRight: 16 };
+const held = new Map();
+let joyBits = 0, padBits = 0;
+function input() {
+  if (!rt) return;
+  rt.chips.joy = 0x1F & ~(joyBits | padBits);
+  const s = new Set();
+  for (const k of held.values()) s.add(k);
+  rt.chips.keys = s;
+}
+function c64Key(e) {
+  const c = e.code;
+  if (c === 'KeyZ') return KEY.Z;
+  if (c === 'KeyC') return KEY.C;
+  if (c === 'ShiftLeft' || c === 'ShiftRight') return KEY.LSHIFT;
+  if (c === 'Slash' || e.key === '?' || e.key === '/') return KEY['/'];
+  if (c === 'Enter') return KEY.RETURN;
+  return null;
+}
+function onKey(e, down) {
+  if (!running || e.metaKey || e.altKey || e.ctrlKey) return;
+  if (JOY[e.code] !== undefined) { e.preventDefault(); if (down) joyBits |= JOY[e.code]; else joyBits &= ~JOY[e.code]; input(); return; }
+  const k = c64Key(e);
+  if (k === null) return;
+  e.preventDefault();
+  if (down) held.set(e.code, k); else held.delete(e.code);
+  input();
+}
+let active = false;
+screen.addEventListener('focus', () => { active = true; screen.classList.add('pl-focus'); });
+screen.addEventListener('blur', () => { active = false; screen.classList.remove('pl-focus'); held.clear(); joyBits = 0; input(); });
+document.addEventListener('keydown', e => { if (active) onKey(e, true); });
+document.addEventListener('keyup', e => { if (active) onKey(e, false); });
+document.querySelectorAll('#pl-pad button').forEach(b => {
+  const bits = +b.dataset.pad;
+  const on = ev => { ev.preventDefault(); padBits |= bits; b.classList.add('on'); input(); screen.focus(); };
+  const off = () => { padBits &= ~bits; b.classList.remove('on'); input(); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+});
+
+// --- controls ----------------------------------------------------------------------------------
+let sayTimer = 0;
+function say(t) { status.textContent = t; clearTimeout(sayTimer); sayTimer = setTimeout(() => { status.textContent = ''; }, 6000); }
+function start(n) {
+  over.hidden = true;
+  boot(n);
+  const sb = document.querySelector('[data-act="sound"]');
+  if (sb.getAttribute('aria-pressed') === 'true' && !sound.on) sound.set(true).then(v => sb.setAttribute('aria-pressed', String(v)));
+  running = true; paused = false; last = 0; acc = 0;
+  document.querySelector('[data-act="pause"]').setAttribute('aria-pressed', 'false');
+  screen.focus();
+}
+const levels = $('pl-levels');
+LEVELS.forEach((name, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.level = i; b.textContent = String(i + 1); b.title = name;
+  b.setAttribute('aria-label', 'Start on level ' + (i + 1) + ', ' + name.toLowerCase());
+  b.onclick = () => { if (image) start(i); };
+  levels.appendChild(b);
+});
+$('pl-cheats').addEventListener('click', e => {
+  const b = e.target.closest('button[data-cheat]'); if (!b) return;
+  const c = b.dataset.cheat;
+  if (c === 'skip') {
+    if (!running || !rt || rt.busy) say('Start the game first.');
+    else { rt.skip(); say('Skipping to the next level…'); }
+  } else {
+    cheats[c] = !cheats[c];
+    b.setAttribute('aria-pressed', String(cheats[c]));
+    if (rt) rt.cheats[c] = cheats[c];
+  }
+  screen.focus();
+});
+$('pl-bar').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'pause' && running) { paused = !paused; b.setAttribute('aria-pressed', String(paused)); }
+  else if (act === 'restart' && image) start(level || 0);
+  else if (act === 'sound') { const on = await sound.set(!sound.on); b.setAttribute('aria-pressed', String(on)); }
+  screen.focus();
+});
+screen.addEventListener('click', () => { if (!running && image) start(0); });
+function showStart(t) {
+  overMsg.textContent = t; over.hidden = false;
+  const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Start';
+  bt.onclick = ev => { ev.stopPropagation(); bt.remove(); start(0); };
+  over.appendChild(bt);
+}
+C64.load('listing.json').then(G => {
+  image = G.ram;
+  showStart('Chiller, as the tape starts it: the forest card, then the forest. Click, then use the keyboard, or pick a level below.');
+  requestAnimationFrame(tick);
+}, err => { overMsg.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
+window.ChillerPlay = { get rt() { return rt; } };
+})();
+</script>

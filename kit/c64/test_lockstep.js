@@ -110,6 +110,36 @@ const input = (n, m) => {
   check('a port ahead of the game: the last writer still the game\'s', r.ok && r.passes === 50, true);
 }
 
+// 1c. The race given to the port: work reads the count through irqByte and gets the value the
+// game's work read: from a copy run on ahead when the port reads first, or from the game's own run
+// for the part of the stretch it has run; and the machine is given back as it was.
+{
+  const withByte = () => { const P = port(), M = P.M, work = P.work; P.work = function () { work(); M[0x200A] = P.io.irqByte(0x2005); }; return P; };
+  const ls = lockstep(withByte(), { irqBytes: [0x2005] }), r = ls.run({ passes: 100, onPass: input });
+  check('irqBytes: the race gone, 100 passes identical', r.ok && r.passes === 100, true);
+  check('the machine\'s run its own again', Object.prototype.hasOwnProperty.call(ls.m.cpu, 'run'), false);
+  // the read made later, the game part way through the stretch (40 lines) or waiting at its end (80)
+  for (const lines of [40, 80]) {
+    const P = port(), work = P.work;
+    P.work = function* () { work(); for (let i = 0; i < lines; i++) yield; P.M[0x200A] = P.io.irqByte(0x2005); };
+    P.main_loop = function* () {
+      for (;;) {
+        yield { cp: 0x1027 }; P.M[0x2000] = (P.M[0x2000] + 1) & 255;
+        yield { cp: 0x102A }; P.scan();
+        yield { cp: 0x102D }; yield* P.work();
+        yield { cp: 0x1030 }; yield* P.wait();
+        yield { cp: 0x1033 }; yield* P.delay();
+        yield { cp: 0x1036 }; yield* P.poll();
+      }
+    };
+    const r2 = lockstep(P, { irqBytes: [0x2005] }).run({ passes: 50, onPass: input });
+    check('irqBytes read ' + lines + ' lines on: 50 passes identical', r2.ok && r2.passes === 50, true);
+  }
+  let msg = '';
+  try { lockstep(withByte()).run({ passes: 2 }); } catch (e) { msg = e.message; }
+  check('irqByte of a byte not listed', /\$2005 through irqByte, and it is not in irqBytes/.test(msg), true);
+}
+
 // 2. With the race's byte left out, every pass matches, chips included; and the raster the port's
 // handler reads is the game's, a different line before and after its delay.
 {
