@@ -8,11 +8,39 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">How each of the three sections works: what wins, what loses, and what the player cannot see. Every address here is in that section's own program.</p>
+  <p class="sub">The five programs in the order they are loaded: the intro, the three sections you play, and the ending. Every address here is in that program's own memory.</p>
 </header>
 <main class="wrap">
+<section id="intro" data-source="source.html">
+  <p class="fig">01 · The intro</p>
+  <h2 class="t">A gun barrel, a gunshot, a spoken line and the credits, all driven from one interrupt</h2>
+  <p class="lede">The intro plays by itself for about 100 seconds and then waits. Nothing in it reads the joystick or loads the next program.</p>
+  <div class="shots">
+    <figure><img src="reference/intro-domark-logo.png" width="384" height="272" alt="The Domark logo over the words D O M A R K presents you as James Bond 007"><figcaption>The Domark logo, put together from six sprites.</figcaption></figure>
+    <figure><img src="reference/intro-mission-begins.png" width="384" height="272" alt="The words Now, James, your mission begins under the Domark logo"><figcaption>The words on screen while the speech plays.</figcaption></figure>
+  </div>
+  <h3>The running order</h3>
+  <p>A raster interrupt runs one of three modes, music only, the gun barrel or the credits, and every mode ends by stepping the tune (<code>$CC00</code>). The main program steps through the scenes:</p>
+  <table class="t">
+    <tr><th class="n">Seconds</th><th>What</th></tr>
+    <tr><td class="n">0.3</td><td>two white dots roll across the screen (<code>$C000</code>)</td></tr>
+    <tr><td class="n">4.5</td><td>the gun barrel is wiped in from the right, then scrolls left as Bond walks in (<code>$C100</code>, <code>$C809</code>)</td></tr>
+    <tr><td class="n">11.0</td><td>the gunshot, and blood runs down the screen (<code>$CABC</code>, <code>$C840</code>)</td></tr>
+    <tr><td class="n">15.6</td><td>the screen shakes (<code>$C900</code>)</td></tr>
+    <tr><td class="n">21.1</td><td>the speech, under the words "Now, James, your mission begins" (<code>$A000</code>)</td></tr>
+    <tr><td class="n">23.3</td><td>the picture dissolves (<code>$CA80</code>)</td></tr>
+    <tr><td class="n">24.3</td><td>the Domark logo flies together (<code>$C430</code>)</td></tr>
+    <tr><td class="n">29.7</td><td>D O M A R K presents you as JAMES BOND 007 (<code>$90A0</code>)</td></tr>
+    <tr><td class="n">37.0</td><td>the credits scroll, a new line every 0.8 s (<code>$C54E</code>)</td></tr>
+    <tr><td class="n">103</td><td>the music stops and the logo sparkles for good (<code>$C476</code>)</td></tr>
+  </table>
+  <p>The times are frames of a run in a simulator at 50 a second, so a real machine takes a little longer. The barrel scrolls a pixel every two frames across two screen banks, the picture moving two character cells each time the banks swap (<code>$CD00</code>, <code>$C170</code>). The blood is the barrel's picture changed a line at a time, turning white pixels red (<code>$C840</code>).</p>
+  <h3>Bug: on some boots the credits never scroll</h3>
+  <p>Before the credits, the intro asks for its next interrupt on a raster line the screen never reaches, and relies on a later write to put it right. That write copies back whatever line the beam is on, so if the beam is low on the screen at that moment the mistake stays, and the credits and the music stop for good. In the emulator, one boot in four did it. The <a href="discoveries.html#intro">Discoveries</a> tab has the detail.</p>
+</section>
+
 <section id="paris" data-source="source-paris.html">
-  <p class="fig">01 · Paris</p>
+  <p class="fig">02 · Paris</p>
   <h2 class="t">Catch May Day once her altimeter reads below 60, before the damage reaches 40</h2>
   <p class="lede">May Day circles down over Paris and lands at one of eight points. The car has to touch her once she is low enough.</p>
   <div class="shots">
@@ -31,7 +59,7 @@
 </section>
 
 <section id="city-hall" data-source="source-city-hall.html">
-  <p class="fig">02 · City Hall</p>
+  <p class="fig">03 · City Hall</p>
   <h2 class="t">A 75-room building where the clock and the energy gauges never kill you</h2>
   <p class="lede">Bond walks through City Hall one room at a time, carrying objects and using them from a menu, to reach Stacey and take her out through a door that opens only at the end.</p>
   <div class="shots">
@@ -51,7 +79,7 @@
 </section>
 
 <section id="mine" data-source="source-mine.html">
-  <p class="fig">03 · The mine</p>
+  <p class="fig">04 · The mine</p>
   <h2 class="t">Five digits, one key and one column: how the bomb is defused</h2>
   <p class="lede">A cave 150 tiles wide and 100 deep scrolls around Bond, who stays in the middle of the screen. The clock counts down from 90 minutes.</p>
   <div class="shots">
@@ -71,5 +99,18 @@
     <tr><td>anything else</td><td>either</td><td>the bomb goes off</td></tr>
   </table>
   <p>MI6-HQ gives the combination as 32768. The program checks 67134.</p>
+</section>
+
+<section id="finale" data-source="source-finale.html">
+  <p class="fig">05 · The ending</p>
+  <h2 class="t">Three seconds of animation, and no score</h2>
+  <p class="lede">The last program asks for the mine's code, ILVCT, and then plays a short scene over two pictures. It never loads anything else or prints a message.</p>
+  <div class="shots">
+    <figure><img src="reference/finale-shower.png" width="384" height="272" alt="Bond and Stacey in the shower, seen through binoculars"><figcaption>The first picture: the shower, seen through binoculars.</figcaption></figure>
+    <figure><img src="reference/finale-cracked-lens.png" width="384" height="272" alt="The binocular lenses cracked"><figcaption>The second picture: the same lenses, cracked.</figcaption></figure>
+  </div>
+  <h3>What plays</h3>
+  <p>The code prompt is the same routine as City Hall's and the mine's (<code>$804C</code>). Here RETURN without the code only asks again, so the ending cannot be seen without ILVCT. The scene itself is straight-line code (<code>$1000</code>): the shower picture in high resolution, then eight steps of sprites over it with a pause of about a third of a second after each. A man's head seen from behind turns to the left. A bar grows out of the small machine at the lower left, and a round object flies from the machine towards the head, growing to double size on the last step. Then the program switches to the cracked picture, turns the sprites off and stops (<code>$1186</code>).</p>
+  <p>The whole scene lasts about 2.8 seconds. There is no sound, and no code or score is printed. RESTORE brings the prompt back, over the cracked picture, and typing ILVCT blind plays the scene again.</p>
 </section>
 </main>
