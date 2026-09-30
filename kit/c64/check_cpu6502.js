@@ -87,7 +87,14 @@ function vectors(dir, fetch) {
 
 // --- the emulator ----------------------------------------------------------------------------------
 // A client for the emulator's MCP server, the node twin of kit/c64/vice.py.
-async function connect(url = 'http://127.0.0.1:6510/mcp') {
+// KIT_VICE_PORT, else the port kit/c64/tools.py last started the emulator on, else 6510
+function vicePort() {
+  if (process.env.KIT_VICE_PORT) return process.env.KIT_VICE_PORT;
+  try { return require('fs').readFileSync(require('path').join(__dirname, '..', '..', 'tools', 'vice-port'), 'utf8').trim(); }
+  catch (e) { return 6510; }
+}
+
+async function connect(url = `http://127.0.0.1:${vicePort()}/mcp`) {
   let session = null, id = 0;
   async function rpc(method, params, notify) {
     const body = { jsonrpc: '2.0', method };

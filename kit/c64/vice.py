@@ -27,9 +27,18 @@ stop-exact and step-pass, frames and pause need the frame-advance- checks,
 joy needs the joy- checks. Where a check fails, kit/skills/c64/tool-vice-mcp/workarounds.md
 says what to use instead (halt_at and release for stops, stick_arm for port 1).
 """
-import json, sys, time, urllib.request
+import json, os, sys, time, urllib.request
 
-URL = "http://127.0.0.1:6510/mcp"
+def _port():
+    """KIT_VICE_PORT, else the port the launcher last started the emulator on, else 6510 (kit/c64/tools.py)."""
+    try:
+        return int(os.environ.get("KIT_VICE_PORT") or
+                   open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "vice-port")).read())
+    except (OSError, ValueError):
+        return 6510
+
+
+URL = f"http://127.0.0.1:{_port()}/mcp"
 
 
 def connect(url=URL):
