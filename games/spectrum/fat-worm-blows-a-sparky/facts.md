@@ -109,6 +109,6 @@ code disagree, the code wins and `features.md` says **differs**.
 ## Open
 
 - The difficulty ramp the author describes ("the monsters get tougher") is
-  not yet tied to a table.
+  not tied to a table.
 - The author describes a level/height progression the game *lacked*; no
-  evidence of one yet.
+  evidence of one has been found.
