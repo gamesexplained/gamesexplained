@@ -5,6 +5,8 @@ For every games/<platform>/<slug>/game.json:
   index.html   copied through, tab bar injected  (How it works)
   source.html  from site/source.html + facts.md + cheats.md   (Source code)
   levels.html  copied through if authored          (Maps / levels)
+  maps.html    copied through if authored          (maps and solutions, when levels.html
+               explains the sections instead)
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
@@ -272,7 +274,7 @@ def banner(game, cons):
 # assembled, so they point at the prose the reader sees most of
 EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "play.html": "play.html",
                 "mechanics.html": "mechanics.html", "music.html": "music.html",
-                "discoveries.html": "discoveries.html",
+                "discoveries.html": "discoveries.html", "maps.html": "maps.html",
                 "source.html": "facts.md", "about.html": "features.md"}
 
 
@@ -540,7 +542,7 @@ def fill(tpl, **kw):
     return tpl
 
 
-AUTHORED = ("index.html", "levels.html", "play.html", "mechanics.html", "music.html", "discoveries.html")
+AUTHORED = ("index.html", "levels.html", "maps.html", "play.html", "mechanics.html", "music.html", "discoveries.html")
 LIB = "../../lib"   # site/lib/ as a game's pages see it
 
 

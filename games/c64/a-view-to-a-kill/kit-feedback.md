@@ -32,6 +32,10 @@ decision, what took longest, operating system and tool versions.
 - Subagents could not write their report files (the harness refused the
   write), so the reports lived only in their final messages, as
   `50-coverage` warns.
+- **A tab for maps and solutions.** Here `levels.html` explains the five
+  parts, so the maps and the ways to finish them had nowhere of their own.
+  `build.py` builds only authored pages it names, so it now also builds
+  `maps.html` when a game has one.
 
 ## Maintainer asks
 
