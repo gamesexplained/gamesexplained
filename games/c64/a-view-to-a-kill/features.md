@@ -29,6 +29,12 @@ Sources:
 - c64.com, interview with Grant Harrison, published 31 March 2015,
   https://www.c64.com/gt_display_interview.php?interview=38, read 30
   September 2026: Softstone, the deadline, his view of the game.
+- FRGCB blog, "James Bond 007: A View to a Kill (Domark, 1985)", 12 April
+  2023, https://frgcb.blogspot.com/2023/04/james-bond-007-view-to-kill-domark-1985.html,
+  read 30 September 2026 through a summarising fetch tool (the site was
+  refused directly): the licence and delay, Dominic Wheatley in Retro Gamer
+  96, the C64 credits, the gun barrel, the ending as Q's robot's view, the
+  speech heard as "My name is Bond... James Bond", the Lemon64 rating.
 - The English C64-Wiki, Lemon64 and its manual page, the Internet Archive
   and the Zzap!64 archive could not be read from this session (the
   network refused them, or they answered 403), so no manual text was
