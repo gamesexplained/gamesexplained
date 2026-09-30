@@ -4,16 +4,20 @@ name: kit-version
 # A change asks with [kit-bump] in its pull request's title or body, a
 # kit-bump label on the pull request, or [kit-bump] in a commit message (for
 # a direct push). CHANGELOG headings written as "## next · ..." get the new
-# number. The push this job makes starts no workflow (GitHub does not run
-# them for its own token), so it asks for the site's build itself.
+# number.
+# It pushes as the repository's own GitHub App, which main's ruleset lets bypass
+# the pull request rule; the Actions token cannot. The app's id is the
+# repository variable KIT_BOT_APP_ID and its private key the secret
+# KIT_BOT_PRIVATE_KEY. Its push starts ci.yml like any other, which deploys
+# the site with the new number, and starts this workflow again, which the
+# job's condition stops.
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: write        # push the bump to main
+  contents: read         # the app's token pushes; this one only reads
   pull-requests: read    # read the merged pull request's title, body and labels
-  actions: write         # start ci.yml, which deploys the site
 
 concurrency:
   group: kit-version
@@ -21,11 +25,14 @@ concurrency:
 
 jobs:
   bump:
+    # not for the app's own push of a bump
+    if: ${{ !endsWith(github.actor, '[bot]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Did the change ask for a bump?
         id: ask
         env:
@@ -46,13 +53,25 @@ jobs:
           else
             echo "No [kit-bump] in this push."
           fi
+      - name: The app's token
+        if: steps.ask.outputs.bump == 'yes'
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.KIT_BOT_APP_ID }}
+          private-key: ${{ secrets.KIT_BOT_PRIVATE_KEY }}
       - name: Bump kit/VERSION and name the CHANGELOG's new entries
         if: steps.ask.outputs.bump == 'yes'
         env:
-          GH_TOKEN: ${{ github.token }}
+          TOKEN: ${{ steps.app.outputs.token }}
+          SLUG: ${{ steps.app.outputs.app-slug }}
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REPO: ${{ github.repository }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          uid=$(gh api "/users/${SLUG}[bot]" --jq .id)
+          git config user.name "${SLUG}[bot]"
+          git config user.email "${uid}+${SLUG}[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
           done=""
           for try in 1 2 3; do
             git fetch -q origin main && git reset -q --hard origin/main
@@ -65,4 +84,3 @@ jobs:
           done
           [ -n "$done" ] || { echo "could not push the bump to main"; exit 1; }
           echo "kit/VERSION is $done"
-          gh workflow run ci.yml --ref main
