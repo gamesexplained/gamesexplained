@@ -110,6 +110,4 @@ platform starts with it.
 macOS arm64 (darwin), Apple silicon, Python 3.14.7. ZEsarUX-13.0
 (`ZEsarUX_macos-silicon-13.0.dmg`), `check-emulator` 36 of 40 (the three
 with workarounds plus `stopwatch` under host load). SkoolKit 10.1. Commit
-signing via 1Password was unreachable from this shell, so every commit was
-made with a per-command `commit.gpgsign=false` override; no git config was
-changed, and the commits are unsigned.
+signing uses this machine's SSH key; every commit is signed.
