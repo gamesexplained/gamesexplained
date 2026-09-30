@@ -1,0 +1,79 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ghostbusters-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The city map is the whole game: buildings to clear before their Slimers escape, a PK energy meter that keeps climbing, and two wanderers whose meeting at Zuul ends it.</p>
+</header>
+<main class="wrap">
+<section id="city">
+  <p class="fig">01 · The city</p>
+  <h2 class="t">Twenty buildings, each on a clock: green, purple, red, and gone</h2>
+  <p class="lede">The city map is the game's hub. Buildings turn red when a Slimer moves in, the PK energy meter climbs, and four Roamers drift towards Zuul. Every building has a timer, and a Slimer left alone escapes after five minutes.</p>
+  <div class="plate">
+    <canvas id="scr-map" class="scr" width="384" height="272"></canvas>
+    <p class="cap">One frame of the city map drawn from memory by the site's renderer, with every write the game made to the video chip during the frame. Checked against the emulator's own picture of the same frame: all 104,448 pixels match. The status band at the bottom is a raster split: the interrupt changes the colours at lines <code>$DF</code> and <code>$EC</code>.</p>
+  </div>
+  <div class="plate">
+    <div class="row" id="bl-own">
+      <button class="b" data-own="1" aria-pressed="false">PK energy detector</button>
+      <button class="b" data-own="4" aria-pressed="false">Marshmallow sensor</button>
+      <button class="b" data-near aria-pressed="true">Logo on the building's street</button>
+    </div>
+    <label class="f" for="bl-t">Time since the building was picked</label>
+    <input id="bl-t" type="range" min="0" max="15600" value="0">
+    <div class="kv" id="bl-kv"></div>
+    <canvas id="bl-bar" width="900" height="70" style="width:100%;height:auto;display:block;margin-top:10px"></canvas>
+    <p class="cap">One haunting, as <code>frame_building_timers</code> (<code>$73BD</code>) ages it and <code>map_building_under_logo</code> (<code>$7D23</code>) colours it. The state byte's high nibble is a timer that counts every 256 frames; when it wraps, <code>bldg_next_stage</code> (<code>$A9B4</code>) moves the building on. The times match the simulator: stage 1 at 3,839 frames, stage 3 at 7,679, red at 11,519, escaped at 15,359. The fee is <code>slimer_reward</code> (<code>$A1E4</code>) by the timer.</p>
+  </div>
+  <p>A building starts at stage 0 when the game picks it (<code>$740C</code>), and nothing on the map shows it. After 76.6 seconds it reaches stage 1, and 76.6 seconds later stage 3. Stage 2 is the Marshmallow Man's (below). At stage 3 the Slimer is already inside: the bust tests the two stage bits, and a building at stage 3 passes, though it still shows green. 76.6 seconds after that the building turns red and flashes, and 76.6 seconds later again the Slimer escapes and adds 300 to the city's PK energy.</p>
+  <p>The fee falls $100 every two timer ticks, from $1,000 when the building has just turned red to $300. A trapped Slimer in a building that has already been cleared pays $300. The timer restarts when a building turns red, so a Slimer caught at hidden stage 3 is paid by the time since stage 3 began.</p>
+  <h3>The detector makes a hidden Slimer show itself</h3>
+  <p>The PK energy detector and the marshmallow sensor colour only the buildings whose block the Ghostbusters logo is on, and only while it is there. Stage 1 turns purple with the detector, stage 2 white with the sensor. At stage 3 the detector does more than colour it: the building turns red on the spot, with its fee timer restarted at the top rate (<code>$7D23</code>, seen in the simulator).</p>
+</section>
+
+<section id="pk">
+  <p class="fig">02 · PK energy and the end</p>
+  <h2 class="t">The game ends when the Keymaster and the Gatekeeper meet at Zuul, somewhere between 8,495 and 9,999</h2>
+  <p class="lede">The manual says the game ends when the city's PK energy reaches 9,999. The code has no such test. Two wandering sprites on the map decide it.</p>
+  <table class="t">
+    <tr><th>PK energy</th><th>The meter rises by 1 every</th><th>The map's sprites move 2 pixels every</th><th>What else happens</th></tr>
+    <tr><td>0-999</td><td>64 frames</td><td>64th frame</td><td></td></tr>
+    <tr><td>1,000-1,999</td><td>32 frames</td><td>32nd frame</td><td></td></tr>
+    <tr><td>2,000-4,999</td><td>16 frames</td><td>16th, 8th, 4th</td><td></td></tr>
+    <tr><td>5,000-9,499</td><td>16 frames</td><td>other frame</td><td>each thousand crossed picks a Marshmallow Man building; each of the Keymaster and Gatekeeper heads for Zuul when it next passes its own crossing</td></tr>
+    <tr><td>9,500-9,999</td><td>16 frames</td><td>other frame</td><td>both head for Zuul at once</td></tr>
+  </table>
+  <p class="note">From <code>frame_pk_rise</code> (<code>$73F3</code>), <code>pk_rate_masks</code> (<code>$9DBA</code>) and <code>st12_city_map</code> (<code>$7BF8</code>-<code>$7C2C</code>). Every Roamer that reaches Zuul adds 100, and every escaped Slimer 300.</p>
+  <p>The Keymaster and the Gatekeeper are map sprites 2 and 3. They wander the street grid, choosing each turn from the random byte (<code>$7DFF</code>). When both stand on Zuul, <code>map_zuul_meeting</code> (<code>$7C2E</code>) compares the balance with the balance at the start. In eight runs from 5,000 in the simulator they met at 8,495, 9,511, 9,519, 9,524, 9,718, 9,724, 9,725 and 9,999. The meter stops at 9,999, but nothing happens there.</p>
+  <p class="note">The comparison lets an equal balance through: see <a href="discoveries.html#bugs">Discoveries</a>.</p>
+</section>
+
+<section id="marshmallow">
+  <p class="fig">03 · The Marshmallow Man</p>
+  <h2 class="t">Bait dropped before the alert is wasted</h2>
+  <p class="lede">From 5,000 PK energy, every thousand crossed picks a building for the Marshmallow Man. When it has aged, MARSHMALLOW ALERT flashes, the four Roamers gather round it, and the player has until they arrive to drop bait with B. Bait pays $2,000 from the mayor; no bait costs $4,000 in damage.</p>
+  <p>The alert (<code>map_marshmallow_check</code>, <code>$7ED8</code>) clears the bait flag before the Roamers set off. Bait already on the map when it flashes counts for nothing, and only a dollop dropped after the alert stops the stomp (seen in the simulator both ways).</p>
+  <p class="note">A building picked for the Marshmallow Man can be forgotten for the rest of the game: see <a href="discoveries.html#secrets">Discoveries</a>.</p>
+</section>
+
+<section id="zuul">
+  <p class="fig">04 · Zuul</p>
+  <h2 class="t">Two men past the Marshmallow Man, then a climb of 197 steps</h2>
+  <p class="lede">If the Keymaster and Gatekeeper meet at Zuul with the balance not below the start, the game sends the car there. Three men must sneak past the Marshmallow Man into the building; two are enough.</p>
+  <div class="plate"><canvas id="scr-zuul" class="scr" width="384" height="272"></canvas><p class="cap">The street outside Zuul, drawn from memory (simulator). The Marshmallow Man is four doubled sprites walking a 32-step path to and fro (<code>$A8A5</code>-<code>$A8E5</code>).</p></div>
+  <p>A catch is a hardware sprite collision (<code>$D01E</code>), tested every fourth tick. Two men through the door start the climb: the screen scrolls down a row per step (<code>$3300</code>), 176 steps of three repeating tower rows and then the 21 rows of the temple top. The portal then closes whatever happens, for $5,000.</p>
+  <h3>Two men caught: GOOD TRY</h3>
+  <p>If the Marshmallow Man catches two men on the street (<code>$8B10</code>), the game shows GOOD TRY. The pages then give a credit limit and a new account number exactly as a win does, without the $5,000.</p>
+  <div class="plate"><canvas id="scr-end" class="scr" width="384" height="272"></canvas><p class="cap">The winning end page, drawn from memory (simulator). The credit limit is the balance with its last two digits zeroed; the account number is made from that.</p></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/ghostbusters-page.js"></script>

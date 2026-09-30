@@ -45,7 +45,14 @@ into the diff that saves the next contributor the trouble.
      and where in the kit it would go; the game, the date and the branch;
      and a link to the game's `kit-feedback.md`
      (`https://github.com/gamesexplained/gamesexplained/blob/main/games/<platform>/<slug>/kit-feedback.md`,
-     live once the pull request is merged).
+     live once the pull request is merged), and
+     last, on a line of its own, the marker `<!-- kit-ask -->`.
+   - **The label comes from the marker.** GitHub silently drops a label
+     asked for by an author without triage access to the repository, so
+     `--label kit-ask` alone may leave the issue unlabelled and out of the
+     inbox. The marker makes the repository's `kit-ask` workflow
+     (`.github/workflows/kit-ask.yml`) add the label for anyone. Pass both.
+     A title starting `kit-ask:` works too, where a body cannot be set.
    - **Search first**, open and closed:
      `gh issue list --repo gamesexplained/gamesexplained --label kit-ask --state all --search "<words>"`.
      An ask someone already filed gets a comment with this run's case,
@@ -75,7 +82,10 @@ into the diff that saves the next contributor the trouble.
    the game and who worked it. A fix to a script, a path, the site or the
    prose style goes in `kit-feedback.md` and the pull request instead.
 6. **Complete `game.json`**: tier reached (only if every requirement is
-   met; an unattended run stops at Silver, since Gold is human curation), tools and versions,
+   met; an unattended run stops at Silver, since Gold is human curation;
+   a run whose coverage or verify step ran on a model that is not proven
+   stops at `bronze`, and `TODO.md` and the pull request say it waits on
+   the maintainer's check in `kit/CHECKING.md`), tools and versions,
    with `tools.host` naming the operating system and the processor (the
    status page counts the games made on each kind of computer from it), model (every model that appears in
    `timings.json`, and the subagents' model if different), copy

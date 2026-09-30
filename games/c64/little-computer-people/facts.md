@@ -397,16 +397,61 @@ program touches the disk (`orientation.md`, "Steady state").
   Für Elise (E5 D♯5 E5 D♯5 E5 B4 D5 C5 A4); piece 3 is the fugue in C minor
   from the Well-Tempered Clavier, BWV 847 (C5 B4 C5 G4 A♭4 C5 B4 C5 D5).
   Piece 1 is not identified.
+  The pieces never route a voice through the filter: sound 12's start
+  loads filter preset 0 for set B (`$D362` from `$B2CE`; `$B6A1`: `$D417` =
+  `$00`, `$D418` = `$0F`) and no piece loads another preset, so those
+  writes, once, are all the filter registers get (*simulated*: every SID
+  write of each piece to its end frame, 2,953 to 4,657 frames, in the 6502
+  simulator on the listing's image).
 - **Sound requests** (`$3476`, once a pass): 22 slots at `$3560`, the
   highest served first; sound numbers at `$35A8`.
 - **Talking:** slot 18 (`$3572`), sound `$15`, raised by the mouth routine
   (`$24C8`) each time it picks the widest mouth. A call starts with a random
   "syllable" of noise through one of four band-pass filters, then a random
-  phrase of gliding notes. A quarter of the phrases for one channel come
-  from `$FF00`–`$FF4F`, uninitialised memory (`$B7FE` entries 96–99).
+  phrase of gliding notes. Both channels (0 and 1, voices 1 and 2) begin
+  with command `$20 $B8 $03`: one of shared patterns `$B8`–`$BB`
+  (`$DBA3`–`$DBBA`), each instrument `$69` (noise) with filter preset
+  `$2C`, `$30`, `$34` or `$38` (band-pass, resonance 15, voices 1 and 2,
+  `$D416` = `$40`, `$60`, `$80`, `$A0`). Then channel 0 plays one of its
+  patterns `$53`–`$62` (`$20 $53 $0F`, table `$D8F5`), which load preset
+  `$3C`, `$2C`, `$30` or `$38` (band-pass on voices 1 and 2) or `$24`
+  (low-pass on voice 1, `$D417` = `$F1`, `$D418` = `$1F`) and sweep the
+  cutoff one step a frame (`$1D` reads the step, `$18`/`$19` add it,
+  `$D258`); channel 1 plays one of entries 96–111 of its table `$B7FE`
+  (`$20 $60 $0F`, `$B8BE`–`$B8DD`), all sixteen of them phrases at
+  `$DBCC`–`$DCEB`. The `$FFxx` words in that table are entries 89–95
+  (`$B8B0`–`$B8BD`), which the talking cannot reach (*simulated*: no read
+  of `$FF00`–`$FF4F` in 12,000 calls, from the snapshot's driver state and
+  999 random ones).
   *Live:* during a phone call the mouth routine ran 39 times and raised
   slot 18 24 times, and the SID sounded at 22 different pitches; during a
   greeting, when his mouth does not move, neither happened.
+- **The random source** of the talking is the driver's own byte `snd_random`
+  (`$B0D3`), software only. Every frame it becomes itself plus the frame
+  count `$B0D0`, the dispatch count `$B017` and the frame mix `$B1D4`, with
+  the carry (`$B52A`–`$B539`); every sound start sets it to `$B0D0` plus
+  `$B017` (`$B2E8`). Command `$20` ANDs it with its mask. The driver never
+  reads `$D41B` or `$D41C`; its one SID read is below.
+- **The tick writes to voice 3:** `sound_frame` starts with `LDA $D7AC`,
+  `ADC #4`, `STA $D7AE`, `ADC #4`, `STA $D7B0` (`$B4FB`), meant for sound
+  12's pointers in the RAM under the I/O area, but the raster interrupt has
+  I/O switched in (`$0725`), so it reads the write-only SID register `$0C`
+  and writes voice 3's frequency low byte (`$D40E`) and pulse width low
+  byte (`$D410`) every frame. snd_output overwrites both when a channel
+  owns voice 3 that frame. What the read returns is the chip's data bus;
+  in reSID it is 0 once the last write has faded, which makes the writes
+  `$04` and `$08`.
+- **A command is skipped when a counter wraps:** when
+  `snd_dispatch_count` (`$B017`) reaches 0 on a dispatch,
+  `snd_rare_count` (`$B0D1`) counts up, and when that wraps to 0 the
+  command's handler is not run (`$B371`). If bit 5 of channel 0's frequency
+  high byte is set, the byte becomes `$3F` and the tick ends there without
+  writing the SID. Otherwise the tick goes on with the next voice; when the
+  skipped command was on the last one, snd_output runs with the I/O area
+  still switched out, and its writes land in the RAM under the SID. The
+  channel then reads the skipped command's operands as commands. How often
+  this happens in play was not measured; in the snapshot `$B0D1` is `$01`.
+  *Simulated* from states with `$B0D1` = `$FF`.
 - **Footsteps** sound only on the tiled floors, the kitchen and the
   bathroom (`$34BC`); the attic is silent.
 - **The eight "sound jobs"** of the record player's driver (`$4574`–

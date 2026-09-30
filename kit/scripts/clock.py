@@ -13,9 +13,22 @@ Usage:
 
 <step> is the skill folder name: 10-orient, 20-features, ... 80-retro. A step
 may be started more than once (a second session); the report sums them.
+Work on a game after its run has two steps of its own, so that it does not
+swell the run's hours, which are what the next run tries to beat:
+  curate    the Gold pass: the contributor's edits, section by section, and
+            what the agent does for them (kit/START.md)
+  play      a Play tab added to a game whose run had none (70-minisite, "Play"):
+            the port, its lockstep and its pacing
+Each ends with 80-retro, as a run does; the retro of work after the run is
+counted with it.
 --model is the id of the model doing the step, as your system prompt names
-it (claude-opus-5, claude-fable-5-1, ...). It is required: a run can change
-model between steps, and a time means nothing without the model that took it.
+it (claude-opus-5, claude-fable-5-1, claude-opus-5-5[1m], ...), suffix and
+all: models.py reads a context-window suffix such as [1m] as the same
+model. It is required: a run can change model between steps, and a time
+means nothing without the model that took it.
+Never infer it from files, transcripts or the environment: when the session
+does not name it, ask the contributor, and pass `unknown` if they cannot tell
+(AGENTS.md, "Know your model; never infer it").
 Record it even where the environment keeps model ids out of commits
 (AGENTS.md, "Record what you used").
 The game dir is the argument, else GAME_DIR, else the current directory when
@@ -32,6 +45,12 @@ import datetime, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
+LATER = ("curate", "play")                       # work after the run: kept out of its hours
+
+
+def steps_known():
+    core = os.path.join(ROOT, "kit", "skills", "core")
+    return sorted(d for d in os.listdir(core) if os.path.isfile(os.path.join(core, d, "SKILL.md"))) + list(LATER)
 
 
 def now():
@@ -84,6 +103,9 @@ def close_open(T, t, note="", agents=None):
 
 
 def start(step, model, gdir):
+    known = steps_known()
+    if step not in known:
+        sys.exit(f"no step {step!r}: the steps are {', '.join(known)}")
     T = load(gdir); t = now()
     closed = close_open(T, t)
     if closed:
@@ -91,6 +113,14 @@ def start(step, model, gdir):
     T["entries"].append({"step": step, "model": model, "start": iso(t), "end": None, "minutes": None, "note": ""})
     save(gdir, T)
     print(f"started {step} at {iso(t)}  ({os.path.relpath(os.path.join(gdir, 'timings.json'), os.getcwd())})")
+    sys.path.insert(0, HERE)
+    from models import proven, is_proven
+    P = proven()
+    if not is_proven(model):
+        print(f"\nNOTE: {model} is not a proven model (proven: {', '.join(sorted(P)) or 'none'}; kit/scripts/models.py).\n"
+              "The run may go on. Tell the contributor now, in plain words, if you have not already: an untested\n"
+              "model often produces results that read as right and are wrong, and this game cannot be Silver until\n"
+              "a maintainer has checked it (kit/CHECKING.md). Until then its tier is bronze (AGENTS.md, \"Model\").")
 
 
 def stop(gdir, note, agents):
@@ -116,7 +146,11 @@ def summarize(gdir):
     """Per-step totals and the portable figures. Used by report and by build.py."""
     T = load(gdir)
     steps, first, last, agents, models = {}, None, None, 0, []
+    later, after = 0.0, False
     for e in T["entries"]:
+        # a retro after curate or play is that work's retro, not the run's
+        if e["step"] in LATER: after = True
+        elif e["step"] != "80-retro": after = False
         s = steps.setdefault(e["step"], {"minutes": 0.0, "sessions": 0, "notes": [], "open": False, "models": []})
         s["sessions"] += 1
         m = e.get("model") or "unknown"
@@ -126,16 +160,20 @@ def summarize(gdir):
             s["open"] = True; continue
         s["minutes"] += e["minutes"]
         if e.get("note"): s["notes"].append(e["note"])
+        if after:
+            later += e["minutes"]; s["later"] = s.get("later", 0.0) + e["minutes"]; continue
         if e.get("agents"): agents = max(agents, e["agents"])
         a, b = parse(e["start"]), parse(e["end"])
         first = a if first is None or a < first else first
         last = b if last is None or b > last else last
-    total_min = sum(s["minutes"] for s in steps.values())
+    total_min = sum(s["minutes"] for s in steps.values()) - later
     tracked = tracked_bytes(gdir)
     cov = steps.get("50-coverage", {}).get("minutes", 0.0)
     return {
         "steps": steps,
         "hours": round(total_min / 60, 1),
+        "later_hours": round(later / 60, 1) or None,
+        "later_minutes": round(later, 1),
         "span_hours": round(max(0, (last - first).total_seconds()) / 3600, 1) if first and last else None,
         "minutes_to_play": round(steps.get("10-orient", {}).get("minutes", 0.0), 1) or None,
         "coverage_minutes": round(cov, 1) or None,
@@ -156,7 +194,9 @@ def report(gdir):
         s = S["steps"][step]
         print(f"| {step} | {s['minutes']:.0f}{' (open)' if s['open'] else ''} | {', '.join(s['models'])} | {s['sessions']} | {'; '.join(s['notes'])} |")
     print(f"| total | {S['hours'] * 60:.0f} | {', '.join(S['models'])} | | {S['hours']} h of work"
-          + (f", over {S['span_hours']} h" if S['span_hours'] and S['span_hours'] != S['hours'] else "") + " |")
+          + (f", over {S['span_hours']} h" if S['span_hours'] and S['span_hours'] != S['hours'] and not S['later_hours'] else "") + " |")
+    if S["later_hours"]:
+        print(f"| after the run | {S['later_minutes']:.0f} | | | curate, play and their retros: {S['later_hours']} h, not in the total |")
     print()
     print("Portable figures:")
     print(f"  minutes to play : {S['minutes_to_play'] if S['minutes_to_play'] is not None else 'n/a'}")
@@ -165,7 +205,7 @@ def report(gdir):
               + (f", {S['agents']} agents" if S['agents'] else "") + ")")
     else:
         print("  min per KB      : n/a (needs a coverage step and a symbols.json)")
-    print(f"  hours           : {S['hours']}")
+    print(f"  hours           : {S['hours']}" + (f"  (and {S['later_hours']} h after the run)" if S['later_hours'] else ""))
 
 
 def main():
@@ -177,7 +217,9 @@ def main():
         if not rest or rest[0].startswith("--"): sys.exit("usage: clock.py start <step> --model <id> [<game dir>]")
         if "--model" not in rest or rest.index("--model") + 1 >= len(rest):
             sys.exit("clock.py start needs --model <id>: the model id your system prompt names, e.g. claude-opus-5.\n"
-                     "A time is only comparable with the model that took it recorded beside it.")
+                     "A time is only comparable with the model that took it recorded beside it.\n"
+                     "If nothing in your session names the model, ask the contributor; never infer it from files,\n"
+                     "transcripts or the environment. Pass `unknown` if they cannot tell.")
         model = rest[rest.index("--model") + 1]
         start(rest[0], model, game_dir([r for r in rest[1:] if r != model]))
     elif cmd == "stop":

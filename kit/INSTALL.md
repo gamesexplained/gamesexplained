@@ -97,7 +97,20 @@ that the game folder lacks stays up until that work is saved or the stop
 is forced. With one platform under `kit/` it is the default;
 with more, `--platform <name>` or `KIT_PLATFORM` chooses.
 
-## When the sandbox has no `timeout`
+## The shell you are given
+
+Some agents run their commands in a sandbox of their own. Others, such as
+Cline on macOS, type them into the contributor's own interactive shell
+(zsh on a Mac). There, a heredoc, a bare `python3 -`, or a `;` late in a
+long line can leave the shell waiting for input or run only part of the
+line, and nothing says so. When the shell is the contributor's, or you
+cannot tell:
+
+- put anything longer than one line in a script file under the game's
+  `work/` folder and run the file;
+- send one command per call;
+- set `GH_PAGER=cat` for `gh`, and `git --no-pager` for git, so nothing
+  waits on a pager.
 
 macOS ships no `timeout` command. A long-running probe needs a guard inside
 the script, or a background run you poll, rather than `timeout 60 ...`.

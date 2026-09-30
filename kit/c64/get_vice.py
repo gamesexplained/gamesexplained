@@ -118,6 +118,15 @@ def gui_asset(rel, plat):
     return None
 
 
+def emulator_running():
+    """Why a download or build refuses while :6510 answers: this clone's emulator, or another folder's."""
+    detail = tools.foreign_detail(6510)
+    if detail:
+        return (f"an emulator started from another folder answers on :6510:\n{detail}\n"
+                "stop it there (its own `tools.py stop vice`) first")
+    return "the emulator is running; `tools.py stop vice` first"
+
+
 def mb(n):
     return f"{n / 1048576:.0f} MB"
 
@@ -205,7 +214,7 @@ def download(tag=None):
     if not a:
         sys.exit(f"{rel['tag_name']} has no GUI build for {plat}; run `tools.py get-vice` for the choices")
     if tools.up(6510):
-        sys.exit("the emulator is running; `tools.py stop vice` first")
+        sys.exit(emulator_running())
     os.makedirs(DOWNLOADS, exist_ok=True)
     path = os.path.join(DOWNLOADS, a["name"])
     print(f"downloading {a['name']} ({mb(a['size'])}) from the {rel['tag_name']} release of github.com/{UPSTREAM}")
@@ -286,7 +295,7 @@ def build(prs=False):
         if not ok:
             sys.exit(f"--prs is for the organization's admins, and {why}. Build without it.")
     if tools.up(6510):
-        sys.exit("the emulator is running; `tools.py stop vice` first")
+        sys.exit(emulator_running())
     tag = releases()[0]["tag_name"]
     if not os.path.isdir(os.path.join(SRC, ".git")):
         os.makedirs(os.path.dirname(SRC), exist_ok=True)

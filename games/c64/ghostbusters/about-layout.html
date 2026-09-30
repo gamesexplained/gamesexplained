@@ -1,0 +1,69 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} — about</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="{{lib}}/site.css">
+<style>
+.research-details{border-top:1px solid var(--line);padding:16px 0}
+.research-details summary{cursor:pointer;font-weight:700}
+.research-details[open] summary{margin-bottom:18px}
+</style>
+<body class="site">
+<!-- tabs -->
+<div class="wrap about">
+  <p class="eyebrow" style="margin-top:36px">{{platform_name}} · {{year}} · {{publisher}}</p>
+  <h1 style="margin-top:0">About this page</h1>
+  <p>These pages explain Activision's Commodore 64 <i>Ghostbusters</i> from its own code. Every claim links to the address it rests on in the copy studied; the notes below record who made the game, who made the pages, and how the conclusions were checked.</p>
+
+  <h2>Original game credits</h2>
+  <p>The title screen says only DESIGNED BY DAVID CRANE COPYRIGHT 1984. The other roles below come from the sources named on the Overview.</p>
+  {{game_credits}}
+
+  <h2>Site contributors</h2>
+  {{site_contributors}}
+
+  <h2>Other places to love this game</h2>
+  {{links}}
+
+  <h2 id="copy">The copies studied</h2>
+  <p>The pages describe the game's own code and data: Activision's program, which starts at <code>$6000</code>, and everything it builds. The addresses are those of the copy analysed, a single file that holds the whole of memory from <code>$0314</code> up so the game loads in one go.</p>
+  <p>A second copy, a cracked disk whose one file unpacks itself and then jumps to <code>$6000</code>, was run in the emulator to that point and compared byte for byte. Every byte of the game's code and data is the same at the same address, with three kinds of exception:</p>
+  <ul>
+    <li><b>Values the game changes as it runs.</b> At least one copy was saved from memory after the game had run. Nineteen bytes of the speech player that it rewrites while it talks differ, as does one operand at <code>$8000</code>, and the flag at <code>$6328</code> that says a name has been typed: it is set in the disk copy, so there F3 on the title skips the interview from the first game.</li>
+    <li><b>Two car pictures.</b> The disk copy has other bytes at <code>$0400</code>-<code>$07FF</code>, where the compact's and the hearse's pictures are kept. Bought in that copy, both cars show as noise; the station wagon and the high-performance car are intact.</li>
+    <li><b>Part of the laugh.</b> The 32 bytes at <code>$FD30</code>-<code>$FD4F</code> hold, in the disk copy, the KERNAL's table of vectors in place of speech data. Played through the port of the speech player, phrase 3 then differs in 750 of its 17,768 writes; the other phrases are unchanged.</li>
+  </ul>
+  <p>The one-file copy is intact in all three places, which is why it is the one analysed. Its own additions, left out of the other tabs, are these:</p>
+  <ul>
+    <li><b>The hand-over.</b> The file's first two bytes overwrite the interrupt vector, so the first interrupt after loading runs a short routine at <code>$C800</code>. It puts back pages <code>$0200</code> and <code>$0300</code> and jumps to <code>$6000</code>, the game's cold start. Loaded through the disk drive with interrupts running, the vector arrives before the code it points to and the machine falls back to READY, so it needs a loader that writes memory in one go.</li>
+    <li><b>A turbo tape loader that nothing calls</b>, at <code>$CE00</code>. It points the RESTORE key's interrupt at <code>$CEC1</code>, which would fill memory with <code>$02</code>, an opcode that stops the processor. A chain at <code>$CF80</code>, also never reached, loads and runs <code>$0A00</code> and then <code>$0E00</code>; in this file those addresses hold car graphics. That these are the original tape's loading sequence is an inference.</li>
+    <li><b>Leftover memory</b>: the power-on pattern in unused RAM, and the bytes at <code>$4000</code>-<code>$5FFF</code>, which the start-up clears and rebuilds.</li>
+  </ul>
+  <p>No game image is hosted here.</p>
+
+  <h2>Research record</h2>
+  <p>The write-up, facts and symbol map are available under CC BY-SA 4.0; code is under MIT.</p>
+  <details class="research-details"><summary>Version, coverage and tools</summary>
+    <div class="tablewrap"><table>
+      <tr><th>Tier</th><td>{{tier}}</td></tr>
+      <tr><th>Coverage</th><td>{{coverage}} of the bytes the game uses have a description</td></tr>
+      <tr><th>Build analysed</th><td>{{build}}</td></tr>
+      <tr><th>Copy</th><td>{{copy}}</td></tr>
+      <tr><th>Tools</th><td>{{tools}}</td></tr>
+      <tr><th>Model</th><td>{{model}}</td></tr>
+      <tr><th>Kit version</th><td>{{kit_version}}</td></tr>
+    </table></div>
+  </details>
+  <details class="research-details"><summary>What the game does, and how it was checked</summary>{{features}}</details>
+  <details class="research-details"><summary>How the analysed state was reached</summary>{{orientation}}</details>
+  <details class="research-details"><summary>Memory footprint</summary>
+    <p>Every byte of the C64's 64 KB, one pixel each, 512 to a row. Lit pixels are code, graphics, sound, text, tables and variables; dim areas are screen and working memory.</p>
+    <div id="memmap"></div>
+    {{footprint}}
+  </details>
+  <p>The symbol map is <a href="symbols.json">symbols.json</a>; the listing behind the Source tab is <a href="listing.json">listing.json</a>.</p>
+</div>
+<script src="{{lib}}/site.js"></script>
+<script src="{{lib}}/memmap.js"></script>
+<script>C64Map.render(document.getElementById('memmap'), 'memmap.json');</script>

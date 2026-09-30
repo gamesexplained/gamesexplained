@@ -29,6 +29,17 @@ form:
 - **Links**: Lemon64, GameBase64, CSDb, and often a manual scan. The
   manual, when one exists, outranks the wiki as a source.
 
+When the wiki has no page, or the fan sites answer an agent's fetch
+with a browser check (Lemon64 and Ready64 did, 403, on 28 September
+2026), the Internet Archive is the fallback. Its Wayback copy of a
+Lemon64 page (`https://web.archive.org/web/2022/<the page's address>`)
+carries the credits, the control port and the magazine reviews. Its
+item search finds manual and inlay scans
+(`https://archive.org/advancedsearch.php?q=<title>+<publisher>&fl[]=identifier&fl[]=title&output=json`),
+and each item's OCR text is `https://archive.org/download/<id>/<id>_djvu.txt`,
+listed by `https://archive.org/metadata/<id>`. Read the documents only;
+the same search lists game images, which are never downloaded.
+
 It is a fan wiki: what it says is documented, not true. One of the first
 games' pages states a bonus the code never awards, which is what the
 `differs` status in `features.md` is for. Record it under Sources in
@@ -87,6 +98,14 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | `$D01C` | sprite multicolour; `$D01D`/`$D017` X/Y expand; `$D01B` priority |
 | `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
 | `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |
+
+The raster compare sets `$D019` bit 0 whether or not `$D01A` enables
+it, and the bit stays set until the program writes a 1 to it. The
+interrupt is raised whenever a latched bit is enabled, so a program
+that enables the raster interrupt after its line has passed, without
+acknowledging first, takes the interrupt at once. A model of the VIC
+that raises it only when the line is reached waits a whole frame there,
+and a start-up that waits on the interrupt runs late or hangs.
 
 VIC bank: CIA2 port A (`$DD00`) bits 0–1, **inverted**: `%11` = `$0000`,
 `%10` = `$4000`, `%01` = `$8000`, `%00` = `$C000`. The character ROM is
@@ -418,4 +437,9 @@ may use neither (see `30-text`).
   much sharp on NTSC. Before naming a game's notes, find the clock that
   makes its table land on equal temperament: one table value against
   f = value × clock / 16777216 for each clock is enough. Name the notes
-  with that clock, and say what the other machine hears.
+  with that clock, and say what the other machine hears. Read the offset
+  as a size, not by the nearest note: an NTSC table read at the PAL clock
+  lands about 35 cents *sharp* of the semitone below, which is the same
+  65 cents flat, and naming notes from that reading puts every one of
+  them a semitone low. Count how many values fall within a few cents at
+  each clock; the right clock takes nearly all of them.
