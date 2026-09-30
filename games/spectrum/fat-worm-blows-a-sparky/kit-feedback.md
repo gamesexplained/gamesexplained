@@ -6,9 +6,10 @@ decision, what took longest, operating system and tool versions.
 
 ## Maintainer asks
 
-This session had no GitHub login and was told not to open pull requests, so
-nothing was filed. The asks are in the pull request's description under
-"Maintainer asks"; whoever opens or merges it should file them:
+The contributor then asked for the pull requests to be opened, so the two
+asks below are in this game's pull request
+(`gamesexplained/gamesexplained` #128) under "Maintainer asks"; whoever
+merges it should file them as `kit-ask` issues:
 
 1. **Let `new_game.py` create an empty `symbols.json`.** A fresh game has
    none, so `symbols_import.py` cannot build the first control file and the
