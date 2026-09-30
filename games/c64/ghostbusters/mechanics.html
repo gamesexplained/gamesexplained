@@ -1,0 +1,146 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ghostbusters-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The saved game in an account number, the shop, the drive, the bust, the controls, and the one interrupt a frame that runs the screen.</p>
+</header>
+<main class="wrap">
+<section id="account">
+  <p class="fig">01 · The account number</p>
+  <h2 class="t">The saved game is an eight-digit number that holds your money and a check on your name</h2>
+  <p class="lede">A game that ends with more money than it started with prints a new account number. Typed back in at the start, with the same name, it gives the player that money to spend. There is no disk file: the number is the save.</p>
+  <div class="plate">
+    <div class="grid2">
+      <div>
+        <label class="f" for="ac-name">Name, as typed (LAST,FIRST)</label>
+        <input id="ac-name" class="tx" value="SPENGLER" maxlength="20" spellcheck="false">
+        <label class="f" for="ac-bal" style="margin-top:12px">Balance</label>
+        <input id="ac-bal" type="range" min="1" max="9999" value="1234">
+        <p class="out" id="ac-bal-out"></p>
+        <p class="note" style="margin:10px 0 2px">The account number the game prints</p>
+        <p class="big" id="ac-num"></p>
+        <div class="steps" id="ac-steps"></div>
+      </div>
+      <div>
+        <label class="f" for="ac-try">Type an account number</label>
+        <input id="ac-try" class="tx" value="64105104" maxlength="8" spellcheck="false">
+        <p class="big" id="ac-res" style="font-size:22px"></p>
+        <div class="steps" id="ac-why"></div>
+      </div>
+    </div>
+    <p class="cap">The game's routines ported: <code>$90EE</code> makes the number, <code>$9155</code> checks it, <code>$9CFC</code> reads what was typed, <code>$91B6</code> adds up the name and <code>$91A6</code> steps the check. Run on 20,000 random names, balances and typed numbers beside the game's own code, every result matched.</p>
+  </div>
+  <p>The number carries the balance in hundreds of dollars, four decimal digits kept in two bytes (<code>$57</code>, <code>$58</code>); the tens and units are dropped. A third byte is a check worked out from the name: the balance's two bytes are added, and the sum is stepped through an eight-bit shift register once for every unit of the name's byte total. The 24 bits are written as eight octal digits, and the game prints them in pairs with each pair reversed.</p>
+  <h3>What the check lets through</h3>
+  <ul>
+    <li>An eight-bit check lets one number in 256 through for any name. Typing numbers at random finds a working one in a few hundred tries.</li>
+    <li>Only the sum of the name's bytes counts, so names with the same letters share every account: STANTZ,RAY and TZANTS,RAY.</li>
+    <li>The reader keeps three bits of each typed character. An 8 reads as 0 and a 9 as 1, so 64485184 is the same account as 64405104. Letters get through too, by their character code: LEFTY typed as the number, with the name LEFTY, gives $860,000.</li>
+    <li>Nothing checks that the decoded balance is a decimal number. A blank name with 458 decodes to hexadecimal <code>$A0</code> in the top byte and the vehicle page shows YOU HAVE $:00000. <a href="discoveries.html#bugs">Discoveries</a> says what that does to the end of the game.</li>
+  </ul>
+</section>
+
+<section id="shop">
+  <p class="fig">02 · Cars and equipment</p>
+  <h2 class="t">The shop: four cars and seven items</h2>
+  <p class="lede">The $10,000 buys a car, then equipment carried across the shop on a forklift and loaded into it. Each item is painted into the car's picture as it goes in.</p>
+  <div class="two">
+    <div class="plate"><canvas id="scr-vehicle" class="scr" width="384" height="272"></canvas><p class="cap">The vehicle page, drawn from memory. All 104,448 pixels match the emulator.</p></div>
+    <div class="plate"><canvas id="scr-shop" class="scr" width="384" height="272"></canvas><p class="cap">The shop after buying, drawn from memory. All 104,448 pixels match the emulator.</p></div>
+  </div>
+  <table class="t">
+    <tr><th>Car</th><th class="n">Price</th><th class="n">Carries</th><th class="n">Top speed</th><th>The options page says</th></tr>
+    <tr><td>Compact</td><td class="n">$2,000</td><td class="n">5</td><td class="n"><code>$60</code></td><td>75 mph</td></tr>
+    <tr><td>1963 Hearse</td><td class="n">$4,800</td><td class="n">9</td><td class="n"><code>$70</code></td><td>90 mph</td></tr>
+    <tr><td>Station wagon</td><td class="n">$6,000</td><td class="n">11</td><td class="n"><code>$80</code></td><td>110 mph</td></tr>
+    <tr><td>High-performance</td><td class="n">$15,000</td><td class="n">7</td><td class="n"><code>$A0</code></td><td>160 mph</td></tr>
+  </table>
+  <p class="note">Prices from <code>$A1D4</code>/<code>$A1D8</code>, capacity from <code>car_capacity</code> (<code>$AA9A</code>), top speed from <code>car_top_speed</code> (<code>$AA9E</code>). The top speed only changes how fast the road scrolls, and so how long a drive takes.</p>
+  <table class="t" style="margin-top:14px">
+    <tr><th>Item</th><th class="n">Price</th><th>What it does in the code</th></tr>
+    <tr><td>PK energy detector</td><td class="n">$400</td><td>colours stage 1 buildings purple near the logo, and makes a hidden stage 3 Slimer show</td></tr>
+    <tr><td>Image intensifier</td><td class="n">$800</td><td>draws the Slimer in front of the building; without it the Slimer goes behind the windows (<code>$9AA6</code>)</td></tr>
+    <tr><td>Marshmallow sensor</td><td class="n">$800</td><td>colours the Marshmallow Man's building white near the logo</td></tr>
+    <tr><td>Ghost bait</td><td class="n">$400</td><td>five dollops; B on the map</td></tr>
+    <tr><td>Ghost trap</td><td class="n">$600</td><td>required; the shelf refills, so the car can be filled with them</td></tr>
+    <tr><td>Ghost vacuum</td><td class="n">$500</td><td>catches Roamers on the road; pays nothing</td></tr>
+    <tr><td>Portable laser confinement system</td><td class="n">$8,000</td><td>stores up to 10 Slimers, so a trap is emptied at once</td></tr>
+  </table>
+  <p class="note">The price table has an eighth item that no shelf holds, and ten traps confuse the status report: both are in <a href="discoveries.html#secrets">Discoveries</a>.</p>
+</section>
+
+<section id="drive">
+  <p class="fig">03 · The drive</p>
+  <h2 class="t">The drive's length is the route's dots plus five</h2>
+  <p class="lede">Choosing a building sets the car off along the dotted route drawn on the map. The drive scene is an overhead road; Roamers met on the map come back on it, where the vacuum can catch them.</p>
+  <div class="plate"><canvas id="scr-drive" class="scr" width="384" height="272"></canvas><p class="cap">A frame of the drive, drawn from memory, recorded in the kit's simulator. The road scrolls by the fine scroll register (<code>$7024</code>) and a whole-character shift every eight pixels (<code>$34F9</code>).</p></div>
+  <p>The map counts the dots of the route as the logo moves (<code>$7F29</code>). A Roamer the logo touches on the way is marked with the dot count at that moment (<code>$7DAA</code>) and meets the car at that distance on the road, two at a time at most (<code>$8117</code>). The car accelerates by one a frame to its top speed and brakes at the end.</p>
+  <p>The ghost vacuum needs a fresh press of fire with the Roamer within 32 pixels behind the car or 15 ahead. It takes 32 frames to pull the Roamer in, and then the Roamer starts again from its place on the map. It earns nothing and changes no PK energy, but it keeps that Roamer from reaching Zuul for a while.</p>
+</section>
+
+<section id="bust">
+  <p class="fig">04 · The bust</p>
+  <h2 class="t">Crossing the streams costs two men</h2>
+  <p class="lede">At the building, one man lays the trap, two men walk into place, fire turns the proton streams on, and the joystick closes the gap between them to herd the Slimer over the trap. Then fire springs it.</p>
+  <div class="two">
+    <div class="plate"><canvas id="scr-beams" class="scr" width="384" height="272"></canvas><p class="cap">The streams on, drawn from memory (simulator).</p></div>
+    <div class="plate"><canvas id="scr-bust" class="scr" width="384" height="272"></canvas><p class="cap">A building with the trap down (simulator).</p></div>
+  </div>
+  <div class="plate">
+    <label class="f" for="st-dx">Distance between the men, in the game's half-pixels</label>
+    <input id="st-dx" type="range" min="0" max="80" value="50">
+    <label class="f" for="st-dy">Height difference</label>
+    <input id="st-dy" type="range" min="0" max="60" value="0">
+    <canvas id="st" width="900" height="200" style="width:100%;height:auto;display:block;margin-top:8px"></canvas>
+    <p class="kv" id="st-kv"></p>
+    <p class="cap">The crossing test at <code>$85D4</code>-<code>$8615</code>: with the men facing each other, the streams cross when the gap is below <code>$2A</code> minus a quarter of the height difference. Positions are stored halved (<code>$A0</code>-<code>$AF</code>).</p>
+  </div>
+  <p>With the streams on and the men 12 or more apart, the stick only moves them towards each other (<code>$85B9</code>, with made-up joystick readings at <code>auto_joystick</code>, <code>$B3AD</code>). The backpacks lose one percent every 16 frames; at zero the trap springs by itself. The trap catches the Slimer if it is within 8 pixels to the left, 7 to the right, 12 above and 3 below the trap's light before the light has risen to <code>$9C</code>.</p>
+  <table class="t">
+    <tr><th>Outcome</th><th>What the code does</th></tr>
+    <tr><td>Caught</td><td>the fee by the building's timer (<code>$87DB</code>), "Ghostbusters!", an empty trap filled or, with the laser system, the Slimer stored</td></tr>
+    <tr><td>Missed</td><td>the Slimer flies to a man, who is slimed and out (<code>$8704</code>); "He slimed me!"; the building is cleared and PK energy rises by 300</td></tr>
+    <tr><td>Streams crossed</td><td>a 64-frame freeze, backpacks at 0, two men lost, YOU CROSSED THE STREAMS... and the Slimer escapes</td></tr>
+    <tr><td>No Slimer</td><td>the men wait out a delay and leave</td></tr>
+  </table>
+  <p>A trip to GHQ empties the traps, restores the three men and fills the backpacks to 99 (<code>$88B6</code>).</p>
+</section>
+
+<section id="controls">
+  <p class="fig">05 · Controls</p>
+  <h2 class="t">The joystick goes in port 1</h2>
+  <p class="lede">Most C64 games read the joystick in control port 2, which the keyboard does not share. Ghostbusters reads port 1 and nothing else, and its own keyboard scan gives up while either port reads anything but "nothing pressed" (<code>$96CA</code>, <code>$96E8</code>).</p>
+  <table class="t">
+    <tr><th>Control</th><th>Where</th><th>What it does</th></tr>
+    <tr><td>F1 on the title</td><td><code>$6399</code></td><td>the interview</td></tr>
+    <tr><td>F3 on the title</td><td><code>$63A8</code></td><td>with a name typed since power-on, straight to the vehicle page with the stored account; otherwise as F1</td></tr>
+    <tr><td>Space on the title</td><td><code>$6385</code></td><td>"Ghostbusters!"</td></tr>
+    <tr><td>Space in play</td><td><code>$7175</code></td><td>BACKPACK POWER AT XX% OF MAXIMUM... X EMPTY TRAPS... X MEN LEFT on the ticker</td></tr>
+    <tr><td>RUN/STOP</td><td><code>$70BA</code></td><td>pause, only on the map, the drive, a bust and Zuul's street</td></tr>
+    <tr><td>RUN/STOP and RESTORE</td><td><code>$6425</code></td><td>back to the title</td></tr>
+    <tr><td>B on the map</td><td><code>$7F70</code></td><td>a dollop of bait</td></tr>
+    <tr><td>1-3, E in the shop</td><td><code>$7A5B</code></td><td>pages; E leaves, once a trap is bought</td></tr>
+  </table>
+</section>
+
+<section id="screen">
+  <p class="fig">06 · The screens</p>
+  <h2 class="t">One raster interrupt a frame runs everything but the game's logic</h2>
+  <div class="plate">
+    <canvas id="scr-title" class="scr" width="384" height="272"></canvas>
+    <p class="cap">The title, drawn from memory. All 104,448 pixels match the emulator. The lyric window's smooth scroll is a raster split (<code>$8EB7</code>).</p>
+  </div>
+  <p>The game draws everything in video bank 1 (<code>$4000</code>-<code>$7FFF</code>): the screen at <code>$5400</code>, the character set at <code>$5800</code>, sixty sprite shapes from <code>$4000</code>. None of it is in the file as it appears: the start-up clears the bank and rebuilds it, unpacking the sprites from a run-length stream (<code>$B408</code>-<code>$BFF7</code>, a zero byte count after each <code>$11</code>), mirroring eight of them for walking left, and copying the upper-case letters from the character ROM with the Activision logo and a few symbols over the top.</p>
+  <p>The raster interrupt fires at line <code>$B8</code>. In play it steps the random number, counts the tick, scrolls the bottom line, waits for lines <code>$DF</code> and <code>$EC</code> to colour the status band, writes all eight sprites from the positions the game keeps halved, sets the frame flag the main loop waits for, and runs the music and the sound effects. The main loop (<code>$6FEC</code>) does one pass of the game each time the flag is set, ending with the handler for the current state from a table of 64 (<code>$381A</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/ghostbusters-page.js"></script>

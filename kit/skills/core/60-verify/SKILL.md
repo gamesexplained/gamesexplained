@@ -127,6 +127,15 @@ lies, all of which have cost real time:
   from several snapshots, or wait a different number of frames before the
   input.
 
+**A test must contain cases that have to succeed.** A port of a code
+checker (a password, an account number, a checksum) tested on random
+inputs agrees with the game on almost every one, because both reject
+almost everything. One such port read four bytes in the wrong order and
+passed 20,000 random cases. Put in the codes the game itself hands out,
+read off the screen, and require that each one is accepted and decodes
+to what the game then does; a round trip through the game's own encoder
+catches the same class of error.
+
 **A figure close to a published one is not a match.** A top speed worked
 out in exact arithmetic came to within 1 % of a magazine's table, and was
 written down as consistent; computed with a port of the game's own

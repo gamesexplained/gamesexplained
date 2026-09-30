@@ -1,39 +1,27 @@
 # Alter Ego — facts
 
-## Scope and evidence
+## Fresh boot
 
-The stopped male-edition physical RAM image and the two analysed replacement gameplay spaces. Machine-ROM and crack-introduction overlays are excluded. The complete disk narrative corpus is not embedded in this article.
+The supplied male disk 01a reaches the FNC introduction, Activision menu and first name prompt. Direct matrix Space exits the intro; Return selects Begin a new game. The reference image records the fresh prompt.
 
-Technical statements below are traced from the contributor’s accurate disassembly and retained evidence ledger. The validation paragraph identifies checks repeated for publication. A traced claim is not labelled as a new live test.
+All 9,794 imported native-code bytes and 2,718 word bytes match at the prompt. Thirty byte-data bytes differ from the original capture. The final hand-over at $4000 contains the same code; bitmap output changes by 7,593 bytes on the way to the prompt.
 
-## Record framing
+## VM decoder check
 
-The live disk record at $8045 has 256 bytes: status, identifier, leading $3A, 252 payload bytes, trailing $3A. The retained host REL record omits the first two bytes and has 254 bytes. $5C3D maps a logical offset to floor(offset/252) and cursor offset%252+3; $5EAD performs the inverse.
+The contributor’s recovered `decode_vm.py` was run on the fresh physical RAM. It decodes 82 procedures and 7,071 operations, with no invalid opcode, missing return, shared instruction byte or branch into an instruction body/header. After JSON normalization, every decoded operation and procedure matches the supplied VM export. This checks the imported decoding against the fresh image; it does not independently prove every opcode’s semantic description.
 
-## Virtual machine
+## Hidden VM mirror
 
-The resident program uses a virtual machine with native gateways. $6FF4 consumes an inline native target. $7059 instead consumes a workspace count and signed 16-bit stack adjustment, then enters the native body after that header. The root annotations retain the procedure and native routine contracts.
+$D800-$DFFF exactly matches $ABEB-$B3EA over 2,048 bytes. The imported note described only the final 1,599-byte suffix at $D9C1. The complete prefix also includes compiled bytecode and personality/acquisition strings. Internal targets refer to the active RAM addresses, so the stored bytes are a mirror rather than independently relocated execution. Visible colour-RAM/CIA operands refer to different occupants.
 
-## Compressed scenes
+## Annotation corrections
 
-The grouped LZW routines include $A45D, $A4E1, $A4F7, $A850 and $A974. The prefix dictionary is $B57B–$BD7A (2,048 bytes), the suffix dictionary $BD7B–$C17A (1,024 bytes). Generated entries occupy indices 256–1023; entries 0–255 represent literal bytes.
+The offcut label retains its operand address. Hardware-register labels were removed from the underlying RAM occupant; named graphics and VM-mirror regions replace them. Compiled procedure frame/body descriptions name their game purpose and checked operation boundaries. Native continuations name their actual preceding inline call and argument cleanup. Text records retain literal content and hexadecimal substitution bytes; category terminators name the table they end.
 
-## Save layout
+## Open verification
 
-The payload is 380 bytes distributed over seven regions: state $7F40 (128), stage choices $81C5 (48), Life Map $81F7 (180), name $82CB (16), stage $82BD (2), acquisition $82AB (2), and family-episode mask $7FC0 (4).
+Complete the hand-over untracked-data queue, current runtime workspace boundaries, and remaining annotations. Trace and test name input, questionnaire and file behavior before restoring the interactive technical draft. Male and female gameplay overlays require fresh independent captures. Original analysis models are unknown; Silver needs the required maintainer check.
 
-## Phase replacement
+## Provenance
 
-The male gameplay overlay changes $8466–$9991; the female gameplay overlay spans $8466–$CC69. Each is exported in its own address space. Copying either into the first-prompt listing would destroy the provenance of the original occupant.
-
-## Validation
-
-All 65,536 physical RAM bytes were compared with the supplied capture. Overlay bytes and annotations were exported independently from their named Ghidra spaces. The offset calculator was checked around each record boundary and against the inverse mapping. Save region lengths sum to 380. No full-life input replay or new disk save round trip is claimed.
-
-## Import provenance
-
-Source: `alter_ego_full_listing.txt`. SHA-256: `569f63e5e7ac084df3f63ed4863d17fe73b8fb43234d3ea8d37b017ea0a246c6`. Imported 65,536 initialized bytes. The [annotated text export](reference/annotated-listing.txt) retains original labels, references and comments for the selected game spaces. `symbols.json` is the native symbol map; `listing.json` is its searchable Source representation.
-
-## Publication checks
-
-The native Source rows reproduce every initialized byte of the selected physical listing. The browser pass exercised all article controls and the Source tab in Firefox 157.0, with no script errors and no horizontal overflow at a 390-pixel viewport. These checks do not establish a full-game input route.
+`alter_ego_full_listing.txt`, SHA-256 `569f63e5e7ac084df3f63ed4863d17fe73b8fb43234d3ea8d37b017ea0a246c6`. Source is generated by `listing.py` from fresh exported symbols and the declared snapshot. Binaries and original text exports remain private.

@@ -99,6 +99,14 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
 | `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |
 
+The raster compare sets `$D019` bit 0 whether or not `$D01A` enables
+it, and the bit stays set until the program writes a 1 to it. The
+interrupt is raised whenever a latched bit is enabled, so a program
+that enables the raster interrupt after its line has passed, without
+acknowledging first, takes the interrupt at once. A model of the VIC
+that raises it only when the line is reached waits a whole frame there,
+and a start-up that waits on the interrupt runs late or hangs.
+
 VIC bank: CIA2 port A (`$DD00`) bits 0–1, **inverted**: `%11` = `$0000`,
 `%10` = `$4000`, `%01` = `$8000`, `%00` = `$C000`. The character ROM is
 visible to the VIC at `$1000`–`$1FFF` in banks 0 and 2 only.

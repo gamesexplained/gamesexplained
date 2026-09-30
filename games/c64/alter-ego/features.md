@@ -1,13 +1,12 @@
 # Alter Ego — features
 
-Sources: [game documentation](https://www.lemon64.com/doc/alter-ego-male/47) and the contributor’s annotated listing, consulted 30 September 2026. The documentation supplies the feature inventory; technical status comes from the listing.
+Inventory: [game documentation](https://www.lemon64.com/doc/alter-ego-male/47), consulted 30 September 2026, and the contributor’s annotated listing.
 
 | Feature | Status | Evidence or open work |
 |---|---|---|
-| Life stages and choices | traced | Resident VM and gameplay overlays; complete life replay remains open |
-| Separate male/female editions | traced | GAMEPLAY_MALE_PHASE and GAMEPLAY_FEMALE_PHASE exports |
-| Compressed scene text | traced | $A45D grouped LZW; disk corpus remains external |
-| Name entry | traced | Prior first-prompt capture and bitmap reconstruction |
-| Saving a life | traced | Seven regions totaling 380 bytes; new disk round trip remains open |
-
-“Traced” means supported by the imported analysis. It does not imply a fresh live replay in this publication pass. Scope exclusions are described in `orientation.md`.
+| Boot and first name prompt | live | Fresh disk boot and screenshot |
+| Name entry | open | Prompt reached; trace and exercise accepted input |
+| Life stages and choices | open | Imported VM/menu descriptions guide questionnaire and gameplay tests |
+| Male/female editions | open | Distinct imported overlays retained privately; capture both independently |
+| Compressed scene text | open | Imported grouped-LZW routines and exact VM decode; compare decompression with disk records |
+| Saving a life | open | Imported seven-region 380-byte transfer; test release-specific disk behavior |

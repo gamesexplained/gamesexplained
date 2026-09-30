@@ -1,19 +1,19 @@
 # Alter Ego — orientation
 
-## Build and scope
+## Build and route
 
-Male edition first name prompt, with separately published male/female gameplay overlays. The stopped male-edition physical RAM image and the two analysed replacement gameplay spaces. Machine-ROM and crack-introduction overlays are excluded. The complete disk narrative corpus is not embedded in this article.
+Male edition disk 01a, first directory entry. Hard reset, autostart, run until the FNC introduction appears. Hold Space in the keyboard matrix for 60 frames, release, and allow loading to finish. Select Begin a new game with Return held for 60 frames, release, then wait for the name prompt. Use direct matrix keys; an ordinary timed Space event did not leave the intro in this run. An early Space during autostart cancelled its queued RUN once; entering RUN then reached the intro.
 
-## Route and capture
+## Captures and comparison
 
-The contributor capture is the first male-edition name prompt before text entry. Its bitmap reconstruction is retained as the reference image. The root Source tab records that physical RAM state; replacement male and female gameplay code has separate listings linked from the article. The same address therefore need not hold the same instruction after the questionnaire. This publication imports prior capture and format evidence rather than restarting the lengthy disk route.
+`work/name-prompt.vsf` is the canonical Source snapshot. A second cold boot stopped on execution at $4000 before startup and saved `work/entry.vsf`. Both snapshots retain all 9,794 imported code bytes unchanged. At the prompt, all 2,718 imported word bytes match the contributor capture and 30 byte-data bytes differ as state. Between hand-over and prompt, 338 word bytes and 14,598 byte-data bytes change; 7,593 bitmap bytes differ. No imported code is lost at the hand-over.
+
+The Source listing uses the fresh prompt and `--entry work/entry.vsf` for the untracked-data audit. Its physical RAM begins at offset 209. Snapshots, original exports and replacement-phase leads are private under `work/`.
 
 ## Machine state
 
-PC $714A; A $76, X $CF, Y $00, SP $01, P $21; CPU port $36, direction $2F; screen $0400 and bitmap $2000. Physical RAM bytes $51/$00 at $0000/$0001 are not the processor-port registers.
+Visible processor registers $00=$2F, $01=$36; their shadow RAM bytes do not describe banking. IRQ vector $0314 points to $4229; the NMI vector $0318 points to KERNAL $FE47. $DD00=$C7 selects VIC bank zero; $D018=$19 selects screen $0400 and hires bitmap $2000. VICE uses dummy audio on a virtual display. Emulator health workarounds apply for instruction pause and unpaced transport calls.
 
-## Reproduction
+## Scope and reconstruction
 
-Keep the supplied image and any recovered snapshots under `work/`. Import `alter_ego_full_listing.txt` with `kit/c64/import_ghidra.py` (introduced by the Castle Master contribution). Use `--verify-ram` with the supplied 65,536-byte dump when one exists. The Source tab is built from the text export directly; no synthetic snapshot is created. 65,536 initialized bytes are represented; uninitialized ranges remain gaps.
-
-Original listing SHA-256: `569f63e5e7ac084df3f63ed4863d17fe73b8fb43234d3ea8d37b017ea0a246c6`. Binary media and emulator state are not published.
+Male first name prompt only. Later male/female gameplay loads remain separate states under RFC #124. Rebuild the private regenerator project with `symbols_import.py` on `symbols.json` and `work/name-prompt.vsf`; export with `symbols_export.py`, then generate Source with `listing.py` on that same snapshot. The original Ghidra text seeds annotations and is not published as a parallel listing.
