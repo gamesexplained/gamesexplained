@@ -49,6 +49,59 @@ code disagree, the code wins and `features.md` says **differs**.
   `P` rotate right, `1` burper sparky, `SPACE` blaster sparky, `H` halt
   (bouncing-ball routine), `G` game over. Kempston joystick optional.
 
+## The renderer and the perspective (`$80EB`, `$811E`)
+
+- The screen is drawn from a 256&times;128 board bitmap at `$F000`
+  (32 bytes a row), which the panel and line plotters share, then copied
+  and masked onto the ULA screen. Verified live: the board bitmap in
+  `work/play-1.sna` holds the dithered track pattern.
+- Objects are drawn from four extent words. `$80EB`
+  (`scale_object_extent`) reads a scale byte `B = curve[A >> 1]` from the
+  64-byte curve at `$6300` and applies it to each word through `$811E`.
+  `$811E` (`mul_scale`) is a shift-and-add that returns
+  `extent * (128+B) / 128`; it doubles `DE`, shifts `B` right and adds on
+  the carry, eight times, then folds the high byte back. Verified by
+  reading `$811E`-`$8179` and the curve at `$6300`.
+- `$811E` is also the game's only range test: a value whose low byte is
+  `$C0`-`$FF`, or whose high byte is neither `$00` nor `$FF`, comes back
+  unchanged. Coordinates outside the visible area pass through untouched.
+- `$81DB` (`draw_object`) scales each object's extent twice, at the
+  record's `+$0D` and `+$0C` bytes, adds `$0080` to the first two resulting
+  words and `$0040` to the last two (which is what centres the worm), then
+  dispatches on `type & 3` to one of four drawing arms.
+
+## The draw list (`$AAF3`)
+
+- Every frame `$AAF3` (`build_display_list`) rebuilds a list of
+  depth-sorted 15-byte records: one per live board object, then the four
+  board panels, each inserted by the sorted insert at `$B008`. Verified by
+  reading `$AAF3`-`$AB10`.
+- Its first two instructions are `LD HL,$EB8D` then `LD HL,$0000`. The
+  second overwrites the first, so the list head is set to a null pointer
+  and the following `LD (HL),A` writes to `$0000` in ROM. The list is built
+  correctly from a load that never has any effect.
+
+## The worm (`$9EB0`)
+
+- `$9EB0` (`worm_steer`) chooses one of four legs from bits 7 of the
+  overlap object's flags at `(IX+$09)`, `(IX+$05)`, `(IX+$03)` and
+  `(IX+$07)`, each of which snaps the worm onto a track direction (0/128
+  or 64/192). `($8001)` is the heading; `($8000)` is a 12-frame rate
+  limiter. When the worm is already heading into the window a leg tests,
+  `$9F37` reverses the heading and quarters the projection scale
+  (`$8002`) - the worm bumping into an edge.
+- `($8001)` heading, `($8002)` speed/scale, `($7FF4/$7FF6/$7FFE)` position,
+  `($805D)` sparkies, `($805B)` score display. These addresses are the
+  agents' reading of the code and are marked for live checking.
+
+## The halt screen (`$D05E`)
+
+- `H` runs a self-contained bouncing-ball screen at `$D05E`, reached only
+  from `$779A`. It builds its own 1&nbsp;KB pattern at `$FC00-$FFFF` and
+  moves five objects. It was not executed in either snapshot; its
+  appearance is open. The `H` key's path is `$7C13` reading the controls
+  into `($8057)` and the frame loop's bit 4 test at `$7790`.
+
 ## Open
 
 - The difficulty ramp the author describes ("the monsters get tougher") is

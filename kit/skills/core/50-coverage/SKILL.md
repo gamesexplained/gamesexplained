@@ -31,7 +31,9 @@ same way, so tiers mean the same thing everywhere.
 3. Update `features.md` statuses and `facts.md` as facts firm up.
 4. Every 30 minutes or so, and at the end of every session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
-   `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.vsf`
+   `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.<snapshot ext>`
+   (the platform's snapshot extension: a `.vsf` on the C64, a `.sna` on the
+   ZX Spectrum; `kit/skills/<platform>/` names it)
    so the committed listing never drifts from the symbols.
    A later session that has neither the snapshot nor the disassembler
    project (a hosted one starts in a fresh container) can still correct a
@@ -43,6 +45,20 @@ same way, so tiers mean the same thing everywhere.
    back, so name each hand edit in `TODO.md` for whoever holds the project
    to carry into it.
 5. Repeat until the tier you are aiming for is met.
+
+### When the disassembler does not follow control flow
+
+On the C64 the disassembler walks the code and mints a symbol at every
+branch target, so the coverage queue is populated for you. A platform whose
+annotation surface is a **control file** (the ZX Spectrum's SkoolKit
+`.ctl`) has no such tracer: `sna2skool.py` disassembles only the bytes a
+`c` block tells it to. Before the loop above can start, the code and data
+have to be separated by hand. Two cheap sources, used together: the
+emulator's **executed-address map** (ZEsarUX's `cpu-code-coverage get`),
+which finds the code that runs including everything reached by `jp (hl)`;
+and a **recursive trace** from the entry points, which adds the code a
+static walk can reach. Everything neither found is data, unless `refs` on
+it says a routine reads it as a table. The platform's tool skill says how.
 
 ## Rules that keep the number honest
 
@@ -140,12 +156,13 @@ past its symbol's reach, and anything under a default exclusion.
 `listing.py` lists it after every build. It names the RAM a platform
 default excludes but a game can still use (on the C64, the RAM under the
 I/O area) whenever that RAM holds data and `game.json` has not said what
-it is. With the hand-over snapshot, `work/entry.vsf` (`10-orient`), it
+it is. With the hand-over snapshot, `work/entry.<snapshot ext>`
+(`10-orient`), it
 also lists every stretch of loaded data, the same bytes at the hand-over
 and in play, that the ledger neither tracks nor has been told to leave
 out. When the listing is built from the hand-over itself (the start-up
 code exists nowhere else), give it the play snapshot as the second image:
-`--entry work/<play>.vsf`. Before calling 100 %, go through that list and say what each stretch
+`--entry work/<play>.<snapshot ext>`. Before calling 100 %, go through that list and say what each stretch
 is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One

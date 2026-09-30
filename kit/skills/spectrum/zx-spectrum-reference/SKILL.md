@@ -179,6 +179,18 @@ for it (often `EI` + `HALT`, or a poll of the frame counter at
 than a frame — `kit/EMULATOR.md` phase 4 says to measure the pass, not the
 frame, for those.
 
+**The interrupt vector is fixed.** On a 48K machine `IM 1` vectors to
+`$0038` in the ROM; there is no RAM vector table to change. The ROM's
+handler at `$0038` scans the keyboard, increments the 3-byte frame counter
+`FRAMES` at `$5C78`, and returns. A game that wants its own per-frame work
+therefore either polls `$5C78` or the ULA, or switches to `IM 2` and
+supplies a vector table whose high byte it puts in the `I` register (the
+`.sna` header's first byte). A snapshot whose `IFF2` byte is 0 was taken
+with interrupts disabled; a game that sets `DI` and keeps it that way does
+its own timing and the ROM handler never runs. Check the header, the image
+for an `EI`/`IM 2`, and whether anything reads `$5C78`, before assuming the
+ROM's handler is in use.
+
 ## The character set
 
 Codes `$20`–`$7F` follow ASCII-1967 with three changes: `$5E` is `↑`,

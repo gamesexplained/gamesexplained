@@ -76,6 +76,7 @@ lists all 129.
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
 | Machine | `get-current-machine` | `ZX Spectrum 48k` |
 | Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine |
+| Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler |
 
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
 `get-visualmem-read-dump` and `get-visualmem-written-dump` (the memory a
@@ -160,6 +161,27 @@ rpc.registers()["PC"]                  # exactly 0x800F: the stop is on the inst
 - **A load resumes the machine** unless it was already in cpu-step:
   `snapshot-load` enters cpu-step, loads, and exits it again. Stop first
   (`enter_step`) to come back to the state you saved and stay there.
+
+## Finding a game's code
+
+The kit's Z80 decoder is a decoder, not a flow follower, and SkoolKit's
+`sna2skool.py` disassembles the bytes it is given linearly. A whole-image
+game therefore needs its code separated from its data by hand before any
+block can be typed. Two cheap sources of truth, used together:
+
+- **The executed-address map.** `cpu-code-coverage enabled yes` while the
+  machine runs, drive the game through as many states as you can reach,
+  then `cpu-code-coverage get`. Every address it returns is an executed
+  instruction; decoding the instruction there marks the code bytes. This
+  finds the code that runs, including everything reached by `jp (hl)` and
+  `jp (iy)`, which no static walk of `call`/`jp` operands finds.
+- **A recursive trace** from the entry points (the game's own start, and
+  the targets of the tables the executed map shows) marks the rest, and
+  names the bytes nothing reached either way. Those bytes are data, and
+  `refs` on their addresses says which routine reads them.
+
+Save both to the game's `work/` and treat them as a cache: the committed
+`symbols.json` is what counts.
 
 ## Input
 

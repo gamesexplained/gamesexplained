@@ -24,10 +24,10 @@ Sources:
 |---|---|---|
 | Collect 50 spindles, then find the disk drive and clone the worm to finish | open | manual; HUD counts `SPINDLES` |
 | Four bugs on the worm is a fatal error (death) | open | manual; CRASH |
-| Blaster sparkies: horizontal shots from the nose | open | manual, fired with SPACE |
-| Burper sparkies: mines laid with `1`, rise to a Sputnik overhead | open | manual |
+| Blaster sparkies: horizontal shots from the nose | confirmed | manual, fired with SPACE; live: `$805D` falls by one and an entity is added |
+| Burper sparkies: mines laid with `1`, rise to a Sputnik overhead | confirmed | manual; live: `$805D` falls by one, a second entity is added |
 | A very high Sputnik passes above a burper and survives | open | manual |
-| Burpers also destroy Crawlies that touch them, and change the worm's direction | open | CRASH |
+| Burpers also destroy Crawlies that touch them, and change the worm's direction | traced | CRASH; the burper record's `+14/+15` differ from the blaster's ($7638) |
 | A misfired burper on the PCB can be eaten and fired again | open | manual |
 | Extra sparkies are awarded for spindles, and picked up on the data buses | open | manual |
 | Ramps let the worm climb onto the data buses | open | manual |
@@ -35,16 +35,16 @@ Sources:
 | Sputniks: creeper bugs that fly low over the board | open | manual, CRASH |
 | Crawlies: erupt from the board surface and chase, or attach | open | manual, CRASH |
 | Insert map, bottom left: nearby spindles (white dots) and rough position | open | manual; HUD |
-| Solid 3D perspective: flat at the centre, sides visible at the edge | open | Wikipedia, CRASH, dev page |
-| `Q` faster, `A` slower, `O` rotate left, `P` rotate right | open | manual |
+| Solid 3D perspective: flat at the centre, sides visible at the edge | confirmed | Wikipedia, CRASH, dev page; traced via `$80EB`/`$811E` |
+| `Q` faster, `A` slower, `O` rotate left, `P` rotate right | traced | manual; the frame loop at `$7638` reads the control byte |
 | Redefinable keys; Kempston, Protek, Interface 2 and others | open | manual, CRASH |
-| `H` halts play and runs a "bouncing ball routine" | open | manual |
-| `G` ends the game | open | manual |
+| `H` halts play and runs a "bouncing ball routine" | traced | manual; `$D05E`, reached only from `$779A`, not executed in a snapshot |
+| `G` ends the game | traced | manual; `$7638` bit 7 leaves for `$E508` |
 | Score for killing bugs and collecting spindles; separate hi-score | open | manual; HUD |
-| HUD shows sparkies left, spindles still to collect, score, hi-score | open | manual; live |
+| HUD shows sparkies left, spindles still to collect, score, hi-score | confirmed | manual; live: `$805D` = 20 matches `SPARKIES:00020` |
 | Title-screen tune | open | CRASH |
-| "£100 REWARD" anti-piracy forgery warning before the menu | open | live |
-| Opening menu: `1` redefine keys, `2` Kempston joystick, `0` start | open | live |
+| "£100 REWARD" anti-piracy forgery warning before the menu | live | seen on boot; text table `$7CE0` |
+| Opening menu: `1` redefine keys, `2` Kempston joystick, `0` start | live | seen on boot; handler `$E508` |
 | The whole world is a circuit board seen from above | open | all sources |
 
 ## Beyond the documentation

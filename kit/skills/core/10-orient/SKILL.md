@@ -65,13 +65,17 @@ annotate it byte by byte.
    or a handler earlier than the one the named handler runs on; read the
    handler's own write to the raster register for that.
 4. **Save a snapshot** of the machine in play. Name it by state
-   (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
+   (`work/play-round1.vsf`, not by timestamp) with the platform's own
+   snapshot extension (`kit/<platform>/INSTALL.md` and
+   `kit/skills/<platform>/` name it: a `.vsf` on the C64, a `.sna` on the
+   ZX Spectrum). This snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds
    more of the program. Save more at each distinct state you can reach:
    title, first frame of play, each interlude, death, game over.
 
    **Save the hand-over too**: a stopping checkpoint on the game's first
-   instruction (the loader's jump into it), then `work/entry.vsf`. Compare
+   instruction (the loader's jump into it), then `work/entry.<ext>` with
+   the same extension. Compare
    it with the play snapshot byte for byte. Code that exists only at the
    hand-over (an initialisation that runs from what becomes screen
    memory), or authored data the game overwrites once it runs (a title
