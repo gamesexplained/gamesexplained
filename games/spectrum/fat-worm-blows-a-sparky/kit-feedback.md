@@ -97,6 +97,13 @@ platform starts with it.
   kit has no way to resume a failed agent's work except a fresh run with a
   new prompt, and the failed agents left no partial output.
 
+- **The minisite was not checked in a browser.** No browser or headless
+  browser was available to this session, so `index.html` was checked only
+  by `node --check` on its script and by the `build.py` link check. The
+  `70-minisite` browser pass (every canvas drawn, every control clicked,
+  the rebuilt screen compared to a reference) was not done and is in the
+  game's `TODO.md`. A hosted agent with a browser is the next step.
+
 ## Operating system and tools
 
 macOS arm64 (darwin), Apple silicon, Python 3.14.7. ZEsarUX-13.0
