@@ -95,7 +95,7 @@
   <p class="lede">Every sprite image in the game, drawn from the bytes at <code>$5000</code>-<code>$73FF</code>. Click one to see where it is stored.</p>
   <div class="plate">
     <div class="gal" id="gal"></div>
-    <p class="cap" id="galcap">Multicolour sprites with the game's shared colours, red and orange. Each object's own colour comes from <code>$1850</code>; grey stands in for it here.</p>
+    <p class="cap" id="galcap">Multicolour sprites in the colours the game gives them: the shared red and orange (<code>$D025</code>, <code>$D026</code>) and each object's own colour from <code>$1850</code>, for the object whose animation table or starting frame uses the image. Grey marks the few images no table names. The Doctor's own colour is black, which is why he shows only red and orange, as in the game.</p>
   </div>
   <p>Controllers follow fixed routes through the mine, 25 of them stored as lists of waypoints at <code>$764A</code> (<code>controllers_update</code>, <code>$CD9A</code>). Touching one is fatal. Other creatures patrol their own routes (<code>$C404</code>) or walk between waypoints (<code>trio_update</code>, <code>$C28E</code>).</p>
   <p>The madrag guards two eggs. If an egg is moved, she fetches it and carries it back to its nest. She takes an egg from Splinx if he is carrying one, and bites the Doctor if she reaches him. Her code runs twice in every pass of the main loop, where other creatures' runs once (<code>$B680</code>). If the Doctor goes near a free egg, a baby madrag hatches from it.</p>
@@ -193,12 +193,25 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
     document.getElementById('msg').textContent = DW.message(M, M[0x90EF]) + DW.message(M, n) + '\n(message ' + n + ', entry ' + (e >> 1) + ' of the table at $90EF)'; }
   sel.onchange = death; death();
 
-  // sprites
-  const gal = document.getElementById('gal');
+  // sprites, each in the own colour ($1850) of the object that shows it: first the frame tables
+  // the animation code reads, then each object's starting frame ($1D30)
+  const gal = document.getElementById('gal'), owner = new Map();
+  const claim = (from, to, obj, who) => { for (let a = from; a <= to; a++) { const p = M[a];
+    if (p >= 0x40 && p < 0xD0 && !owner.has(p)) owner.set(p, { obj, who, at: a }); } };
+  claim(0xCC16, 0xCC3F, 0, 'the Doctor');              // doctor_frames_*, $CC16-$CC3F
+  claim(0xB197, 0xB19E, 2, 'Splinx');                  // splinx_frames_*
+  claim(0xB66D, 0xB67E, 0x0A, 'the madrag');           // madrag_*_frames
+  claim(0xB46F, 0xB476, 0x0C, 'object $0C');           // obj0c_frames_*
+  claim(0x77B3, 0x77C6, 0x10, 'a controller');         // entity_anim_frames, read by controllers_update
+  claim(0xC4F5, 0xC50E, 3, 'the walking creatures, objects 3-9');   // patrol, climb and carry frames
+  for (let o = 0; o < 80; o++) claim(0x1D30 + o, 0x1D30 + o, o, 'object ' + C64.hex(o, 2));
   for (let p = 0x40; p < 0xD0; p++) {
-    const cv = document.createElement('canvas'); DW.drawSprite(cv, M, p, 2); cv.title = C64.hex(p, 2);
+    const w = owner.get(p), cv = document.createElement('canvas');
+    DW.drawSprite(cv, M, p, 2, w ? M[0x1850 + w.obj] : null); cv.title = C64.hex(p, 2);
     cv.onclick = () => { gal.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); cv.classList.add('sel');
-      document.getElementById('galcap').innerHTML = 'Sprite pointer <code>' + C64.hex(p, 2) + '</code>: 63 bytes at <code>' + C64.hex(0x4000 + p * 64) + '</code>, drawn with the shared colours red and orange; grey stands in for the object\'s own colour from <code>$1850</code>.'; };
+      document.getElementById('galcap').innerHTML = 'Sprite pointer <code>' + C64.hex(p, 2) + '</code>: 63 bytes at <code>' + C64.hex(0x4000 + p * 64) + '</code>. ' +
+        (w ? 'Shown by ' + w.who + ' (frame from <code>' + C64.hex(w.at) + '</code>), so drawn in its own colour, <code>' + C64.hex(0x1850 + w.obj) + '</code> = ' + M[0x1850 + w.obj] + ', with the shared red and orange.'
+           : 'No frame table or starting frame names it, so its own colour is not known; grey stands in.'); };
     gal.appendChild(cv);
   }
 
