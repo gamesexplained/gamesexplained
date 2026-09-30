@@ -12,7 +12,7 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
-## 0.0.45 · 30 September 2026 · Doctor Who and the Mines of Terror · unorig with Claude
+## next · 30 September 2026 · Doctor Who and the Mines of Terror · unorig with Claude
 
 **Look for the loaded data before splitting the work.** The flow trace of
 Doctor Who and the Mines of Terror covered 26 KB, and seven agents took

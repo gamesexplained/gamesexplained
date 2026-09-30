@@ -50,6 +50,10 @@ jobs:
     needs: check-and-build
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_PAGES == 'true'
     runs-on: ubuntu-latest
+    # one deployment at a time: kit-version.yml starts this again after its bump
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write

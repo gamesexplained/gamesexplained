@@ -685,8 +685,8 @@ def runs_table(games):
     rows = []
     for g in games:
         gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
-        if not os.path.isfile(os.path.join(gdir, "timings.json")):
-            continue
+        if not os.path.isfile(os.path.join(gdir, "timings.json")) or g.get("imported"):
+            continue    # an imported analysis's hours leave out the work it started from
         S = summarize(gdir)
         program = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
         fmt = lambda v, unit="": (f"{v:g}{unit}" if v is not None else "")
