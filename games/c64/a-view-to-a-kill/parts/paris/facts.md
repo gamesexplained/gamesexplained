@@ -120,6 +120,8 @@ comes from, in this part's listing.
 - Lost: back to the instruction page, which plays the speech at `$190A`
   when the altimeter reached 000, and `$1090` then `$190A` when the damage
   was full (`speak_result`, `$4BA0`).
+- The samples say, as heard by the contributor: `$1225` "Well done, 007",
+  `$190A` "You failed, Bond", `$1090` "Damn it".
 - There is no score, no pause and no keyboard control: only `$DC00` is
   read, and both CIAs' timer A is stopped, so the KERNAL never scans the
   keys.

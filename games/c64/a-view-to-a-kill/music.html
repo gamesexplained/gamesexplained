@@ -41,9 +41,11 @@
   <p class="lede">The intro ends with "Now, James, your mission begins" on screen, and Paris speaks when the chase is won or lost.</p>
   <p>Both players work the same way. They switch the sound chip's master volume between 0 and 15, one bit of sample at a time, with the interrupts off (the intro <a href="source.html#A000"><code>$A000</code></a>, Paris <a href="source-paris.html#1000"><code>$1000</code></a>). Each change of volume makes a click in the output, and a fast enough stream of clicks is heard as a voice.</p>
   <table class="t">
-    <tr><th>Where</th><th>Samples</th><th>Heard</th></tr>
-    <tr><td>The intro</td><td>one, <code>$A092</code>-<code>$AA81</code></td><td>about 2.2 seconds, some 9,400 bits a second, with a silence of about 0.6 s in the middle</td></tr>
-    <tr><td>Paris</td><td>three, at <code>$1090</code>, <code>$1225</code> and <code>$190A</code></td><td>one on a catch; one or two on a loss, depending on how it was lost (<a href="source-paris.html#4BA0"><code>$4BA0</code></a>)</td></tr>
+    <tr><th>Sample</th><th>When</th><th class="n">Length</th><th>What it says</th></tr>
+    <tr><td><code>$A090</code></td><td>the end of the intro</td><td class="n">2.18 s</td><td>"My name's Bond. James Bond"</td></tr>
+    <tr><td><code>$1225</code></td><td>Paris, May Day caught</td><td class="n">1.53 s</td><td>"Well done, 007"</td></tr>
+    <tr><td><code>$190A</code></td><td>Paris, May Day lands (the altimeter reaches 000)</td><td class="n">1.47 s</td><td>"You failed, Bond"</td></tr>
+    <tr><td><code>$1090</code>, then <code>$190A</code></td><td>Paris, the car wrecked (the damage reaches 40)</td><td class="n">0.36 s + 1.47 s</td><td>"Damn it", then "You failed, Bond"</td></tr>
   </table>
   <div class="plate">
     <div class="row" id="sp-buttons"></div>
@@ -51,7 +53,7 @@
     <p class="kv" id="sp-kv"></p>
     <p class="cap">The speech player ported to JavaScript: it computes every write to the volume register and the cycle it lands on. The port was checked against the game's routine in the kit's simulator, and all 51,220 writes of the four samples matched, cycle for cycle. The picture shows how often the level changes along the sample; it is flat where the sample is silent. Heard here as a straight level through the C64's output stage. When the car is wrecked the game plays two samples one after the other (<a href="source-paris.html#4BA0"><code>$4BA0</code></a>).</p>
   </div>
-  <p>The words themselves were not checked by ear. The <a href="https://frgcb.blogspot.com/2023/04/james-bond-007-view-to-kill-domark-1985.html">FRGCB blog</a> hears the intro's as "My name is Bond... James Bond", which would fit the silence in the middle.</p>
+  <p>Paris has no separate sample for a wreck: it says "Damn it" and then plays the same "You failed, Bond" as a landing (<a href="source-paris.html#4BA0"><code>$4BA0</code></a>). The words were heard by the site's contributor; the <a href="https://frgcb.blogspot.com/2023/04/james-bond-007-view-to-kill-domark-1985.html">FRGCB blog</a> hears the intro's the same way.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>

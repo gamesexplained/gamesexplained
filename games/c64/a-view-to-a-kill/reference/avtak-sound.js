@@ -39,10 +39,10 @@
     const ctx = cv.getContext('2d');
     // what each button plays: one sample, or two one after the other as the game does ($4BD8)
     const CHOICES = [
-      { name: 'The intro', parts: [0] },
-      { name: 'Paris: May Day caught', parts: [1] },
-      { name: 'Paris: May Day lands', parts: [3] },
-      { name: 'Paris: the car wrecked', parts: [2, 3] },
+      { name: 'The intro', parts: [0], says: '“My name’s Bond. James Bond”' },
+      { name: 'Paris: May Day caught', parts: [1], says: '“Well done, 007”' },
+      { name: 'Paris: May Day lands', parts: [3], says: '“You failed, Bond”' },
+      { name: 'Paris: the car wrecked', parts: [2, 3], says: '“Damn it”, then “You failed, Bond”' },
     ];
     const cache = {};
     function writes(i) {
@@ -80,7 +80,7 @@
       ctx.fillText('0 s', 2, H - 8); ctx.fillText(secs.toFixed(2) + ' s', W - 60, H - 8);
       if (pos != null) { ctx.fillStyle = '#d04a3a'; ctx.fillRect(pos * W - 1, top - 12, 2, h + 12); }
       const ones = w.values.slice(1, -1).filter((v) => v).length, bits = w.values.length - 2;
-      kv.innerHTML = `<b>${bits.toLocaleString('en')}</b> bits, <b>${secs.toFixed(2)} s</b>, ${Math.round(bits / secs).toLocaleString('en')} a second; ` +
+      kv.innerHTML = `${CHOICES[cur].says}: <b>${bits.toLocaleString('en')}</b> bits, <b>${secs.toFixed(2)} s</b>, ${Math.round(bits / secs).toLocaleString('en')} a second; ` +
         `${Math.round(ones / bits * 100)} % of them 1s. Samples ` + w.marks.map(([, a]) => hex(a, 4)).join(' then ') + '.';
     }
     function pcm(w, rate) {
