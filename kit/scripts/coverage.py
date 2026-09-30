@@ -49,7 +49,13 @@ def load(gdir, live):
 
 
 def tracked_count(gdir):
-    """(tracked bytes, explained bytes) from symbols.json, for clock.py and build.py."""
+    """(tracked bytes, explained bytes) from symbols.json, for clock.py and build.py.
+    A game made of parts (kit/scripts/parts.py) counts the sum of its parts."""
+    from parts import parts
+    P = parts(gdir)
+    if P:
+        counts = [tracked_count(p["dir"]) for p in P if os.path.isfile(os.path.join(p["dir"], "symbols.json"))]
+        return sum(t for t, _ in counts), sum(e for _, e in counts)
     blocks, syms, comments, reg = load(gdir, False)
     from ledger import compute
     state = compute(blocks, syms, comments, reg)["state"]

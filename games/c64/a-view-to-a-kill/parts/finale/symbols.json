@@ -1,0 +1,915 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "a-view-to-a-kill/finale",
+ "build": null,
+ "source": "regenerator2000 live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    53248,
+    57343,
+    "I/O and colour RAM"
+   ],
+   [
+    1024,
+    2047,
+    "screen RAM"
+   ],
+   [
+    3008,
+    4095,
+    "not the finale's: after the last sprite shape ($2E) nothing reads these bytes; loaded by the packer as whatever was in memory when the part was saved"
+   ],
+   [
+    4512,
+    7071,
+    "not the finale's: stale bytes after show_ending's final JMP at $119D, a near copy of paris at the same addresses (2443 of 3680 bytes in $11A0-$1FFF equal); no finale code reads them"
+   ],
+   [
+    7073,
+    8191,
+    "not the finale's: stale bytes after code_flag, part of the same near copy of paris; no finale code reads them"
+   ],
+   [
+    16192,
+    17383,
+    "not the finale's: the unused tail of bank 0's bitmap area and $4000-$43E7; nothing reads them"
+   ],
+   [
+    17384,
+    18431,
+    "screen matrix of the cracked-lens picture at $4400 (VIC bank 1): show_ending fills $43E8-$47E7 with $0E before it is shown (the loaded copy is already $0E except one $0F at $44A4); $47E8-$47FF unused, sprites are off in bank 1"
+   ],
+   [
+    18432,
+    20479,
+    "not the finale's: stale bytes, 1187 of 2048 equal to paris at the same addresses; nothing in the finale reads them"
+   ],
+   [
+    20497,
+    24575,
+    "not the finale's: a near copy of paris's code and data at the same addresses (2264 of 4079 bytes equal; $5027 reads $D059 where paris has $D019, $5016 ORs #$41 where paris ORs #$01), left behind when the 17-byte delay routine was written over $5000; never run here"
+   ],
+   [
+    32576,
+    32767,
+    "not the finale's: the unused tail of bank 1's bitmap area; nothing reads it"
+   ],
+   [
+    32929,
+    33023,
+    "not the finale's: stale bytes after secret_code, identical to city-hall's image at $80A1-$80FF; nothing in the finale reads them"
+   ],
+   [
+    33024,
+    65535,
+    "not written by the finale's depacker (traced: it writes only $0800-$80FF), so not part of the program: $8100-$BF88 is memory left from before, $BF89-$FFFF the packed stream's working copy; includes the RAM under the KERNAL at $FFCF/$FFD2 that calls to CHRIN/CHROUT name"
+   ]
+  ],
+  "extra": [
+   [
+    8192,
+    16191,
+    "shower picture bitmap, loaded ready-made, shown by show_ending in VIC bank 0"
+   ],
+   [
+    24576,
+    32575,
+    "cracked-lens picture bitmap, loaded ready-made, shown by ending_crack in VIC bank 1"
+   ],
+   [
+    2048,
+    3007,
+    "fifteen sprite shapes $20-$2E of the ending animation, found through sprite pointers"
+   ]
+  ]
+ },
+ "blocks": [
+  {
+   "start": 0,
+   "end": 2047,
+   "type": "Undefined"
+  },
+  {
+   "start": 2048,
+   "end": 3007,
+   "type": "Byte"
+  },
+  {
+   "start": 3008,
+   "end": 4095,
+   "type": "Undefined"
+  },
+  {
+   "start": 4096,
+   "end": 4511,
+   "type": "Code"
+  },
+  {
+   "start": 4512,
+   "end": 7071,
+   "type": "Undefined"
+  },
+  {
+   "start": 7072,
+   "end": 7072,
+   "type": "Byte"
+  },
+  {
+   "start": 7073,
+   "end": 8191,
+   "type": "Undefined"
+  },
+  {
+   "start": 8192,
+   "end": 16191,
+   "type": "Byte"
+  },
+  {
+   "start": 16192,
+   "end": 20479,
+   "type": "Undefined"
+  },
+  {
+   "start": 20480,
+   "end": 20496,
+   "type": "Code"
+  },
+  {
+   "start": 20497,
+   "end": 24575,
+   "type": "Undefined"
+  },
+  {
+   "start": 24576,
+   "end": 32575,
+   "type": "Byte"
+  },
+  {
+   "start": 32576,
+   "end": 32767,
+   "type": "Undefined"
+  },
+  {
+   "start": 32768,
+   "end": 32810,
+   "type": "Code"
+  },
+  {
+   "start": 32811,
+   "end": 32843,
+   "type": "PETSCII Text"
+  },
+  {
+   "start": 32844,
+   "end": 32913,
+   "type": "Code"
+  },
+  {
+   "start": 32914,
+   "end": 32923,
+   "type": "Byte"
+  },
+  {
+   "start": 32924,
+   "end": 32928,
+   "type": "PETSCII Text"
+  },
+  {
+   "start": 32929,
+   "end": 65535,
+   "type": "Undefined"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 251,
+   "name": "fill_ptr_bank0",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 252,
+   "name": "zpa_FC",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 253,
+   "name": "fill_ptr_bank1",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 254,
+   "name": "zpa_FE",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 792,
+   "name": "a_0318",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 793,
+   "name": "a_0319",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 2040,
+   "name": "a_07F8",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 2041,
+   "name": "a_07F9",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 2042,
+   "name": "a_07FA",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 2043,
+   "name": "a_07FB",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 2044,
+   "name": "a_07FC",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 2045,
+   "name": "a_07FD",
+   "type": "AbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 2048,
+   "name": "spr_head_back_lo",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2112,
+   "name": "spr_head_back_hi",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2176,
+   "name": "spr_turn1_a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2240,
+   "name": "spr_turn1_b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2304,
+   "name": "spr_turn1_c",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2368,
+   "name": "spr_turn1_d",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2432,
+   "name": "spr_turn2_a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2496,
+   "name": "spr_turn2_b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2560,
+   "name": "spr_turn2_c",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2624,
+   "name": "spr_turn2_d",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2688,
+   "name": "spr_bar_short",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2752,
+   "name": "spr_bar_long",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2816,
+   "name": "spr_ball_small",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2880,
+   "name": "spr_ball_mid",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 2944,
+   "name": "spr_ball_big",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4096,
+   "name": "show_ending",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 4112,
+   "name": "b_1010",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 4114,
+   "name": "b_1012",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 4158,
+   "name": "ending_head_back",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4206,
+   "name": "ending_head_turn1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4284,
+   "name": "ending_head_turn2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4362,
+   "name": "ending_bar",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4418,
+   "name": "ending_ball",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4486,
+   "name": "ending_crack",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4509,
+   "name": "j_119D",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 7072,
+   "name": "code_flag",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 8192,
+   "name": "pic_shower_rows00",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 9152,
+   "name": "pic_shower_rows03",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 10112,
+   "name": "pic_shower_rows06",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 11072,
+   "name": "pic_shower_rows09",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12032,
+   "name": "pic_shower_rows12",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12992,
+   "name": "pic_shower_rows15",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 13952,
+   "name": "pic_shower_rows18",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 14912,
+   "name": "pic_shower_rows21",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 15872,
+   "name": "pic_shower_rows24",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20480,
+   "name": "delay",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 20482,
+   "name": "b_5002",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 20484,
+   "name": "b_5004",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 24576,
+   "name": "pic_cracked_rows00",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 25536,
+   "name": "pic_cracked_rows03",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 26496,
+   "name": "pic_cracked_rows06",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 27456,
+   "name": "pic_cracked_rows09",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 28416,
+   "name": "pic_cracked_rows12",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 29376,
+   "name": "pic_cracked_rows15",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 30336,
+   "name": "pic_cracked_rows18",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 31296,
+   "name": "pic_cracked_rows21",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 32256,
+   "name": "pic_cracked_rows24",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 32768,
+   "name": "finale_start",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 32795,
+   "name": "b_801B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 32811,
+   "name": "str_enter_code",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 32844,
+   "name": "read_code",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 32846,
+   "name": "b_804E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 32867,
+   "name": "b_8063",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 32888,
+   "name": "b_8078",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 32906,
+   "name": "b_808A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 32914,
+   "name": "code_input",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 32924,
+   "name": "secret_code",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 65487,
+   "name": "s_FFCF",
+   "type": "Subroutine",
+   "kind": "auto"
+  },
+  {
+   "address": 65490,
+   "name": "s_FFD2",
+   "type": "Subroutine",
+   "kind": "auto"
+  }
+ ],
+ "comments": [
+  {
+   "address": 251,
+   "type": "line",
+   "text": "Zero-page pointer (lo) used by show_ending's colour fill: starts at $03E8 and steps a page at a time to cover $03E8-$07E7, the first picture's screen matrix at $0400 (24 bytes early, so it ends at $07E7 and never touches the sprite pointers)."
+  },
+  {
+   "address": 252,
+   "type": "line",
+   "text": "High byte of fill_ptr_bank0: $03, incremented to $07 by show_ending's fill loop."
+  },
+  {
+   "address": 253,
+   "type": "line",
+   "text": "Zero-page pointer (lo) used by show_ending's colour fill: starts at $43E8 to cover $43E8-$47E7, the second picture's screen matrix at $4400 in VIC bank 1."
+  },
+  {
+   "address": 254,
+   "type": "line",
+   "text": "High byte of fill_ptr_bank1: $43, incremented to $47 by show_ending's fill loop."
+  },
+  {
+   "address": 792,
+   "type": "line",
+   "text": "KERNAL NMI vector low byte, set to $00 by finale_start: with $0319 it sends RESTORE to $8000 (finale_start), the code prompt."
+  },
+  {
+   "address": 793,
+   "type": "line",
+   "text": "KERNAL NMI vector high byte, set to $80 by finale_start (see $0318)."
+  },
+  {
+   "address": 2048,
+   "type": "line",
+   "text": "Sprite shape $20 ($0800-$083F), sprite 0 in ending step 1 (x $91, y $7F): a small black cap at its top, the bottom of the man's head seen from behind, under shape $21."
+  },
+  {
+   "address": 2112,
+   "type": "line",
+   "text": "Sprite shape $21 ($0840-$087F), sprite 1 in ending step 1 (x $91, y $6B): a solid black oval, the back of the man's head."
+  },
+  {
+   "address": 2176,
+   "type": "line",
+   "text": "Sprite shape $22 ($0880-$08BF), sprite 0 in ending step 2 (x $90, y $7F): a three-line black patch at its top, the neck under the turning head."
+  },
+  {
+   "address": 2240,
+   "type": "line",
+   "text": "Sprite shape $23 ($08C0-$08FF), sprite 1 in ending step 2 (x $90, y $7F): a three-pixel outline stroke at its top right, the end of the face outline drawn by shape $25."
+  },
+  {
+   "address": 2304,
+   "type": "line",
+   "text": "Sprite shape $24 ($0900-$093F), sprite 2 in ending step 2 (x $90, y $6A): a black crescent, the hair of the head part-turned to the left."
+  },
+  {
+   "address": 2368,
+   "type": "line",
+   "text": "Sprite shape $25 ($0940-$097F), sprite 3 in ending step 2 (x $90, y $6A): a one-pixel outline down its right side with a small bump, the face's profile edge as the head turns left."
+  },
+  {
+   "address": 2432,
+   "type": "line",
+   "text": "Sprite shape $26 ($0980-$09BF), sprite 0 in ending step 3 (x $90, y $7F): only a two-pixel mark in its top row, the end of the profile line drawn by shape $29."
+  },
+  {
+   "address": 2496,
+   "type": "line",
+   "text": "Sprite shape $27 ($09C0-$09FF), sprite 1 in ending step 3 (x $90, y $7F): a three-line black patch at its top, the neck under the head in profile."
+  },
+  {
+   "address": 2560,
+   "type": "line",
+   "text": "Sprite shape $28 ($0A00-$0A3F), sprite 2 in ending step 3 (x $90, y $6A): a black wedge sweeping to the upper right, the hair of the head facing left."
+  },
+  {
+   "address": 2624,
+   "type": "line",
+   "text": "Sprite shape $29 ($0A40-$0A7F), sprite 3 in ending step 3 (x $90, y $6A): a one-pixel profile outline down the right side, a different line from shape $25, the face turned further to the left."
+  },
+  {
+   "address": 2688,
+   "type": "line",
+   "text": "Sprite shape $2A ($0A80-$0ABF), sprite 4 in ending step 4 (x $58, y $98): a rounded lump on a thick horizontal bar that runs to the frame's right edge, over the top of the small machine at the lower left."
+  },
+  {
+   "address": 2752,
+   "type": "line",
+   "text": "Sprite shape $2B ($0AC0-$0AFF), sprite 4 from ending step 5 on: the lump further left and the bar longer, as if the object reached further out."
+  },
+  {
+   "address": 2816,
+   "type": "line",
+   "text": "Sprite shape $2C ($0B00-$0B3F), sprite 5 in ending step 6 (x $58, y $98): a small black disc with a dotted square and diagonals on it."
+  },
+  {
+   "address": 2880,
+   "type": "line",
+   "text": "Sprite shape $2D ($0B40-$0B7F), sprite 5 in ending step 7 (x $68, y $80): the disc filling the whole 24 x 21 frame. Its 63 image bytes are identical to shape $2E's; only the unused 64th byte differs ($36 against $00)."
+  },
+  {
+   "address": 2944,
+   "type": "line",
+   "text": "Sprite shape $2E ($0B80-$0BBF), sprite 5 in ending step 8 (x $78, y $70): the same image as $2D, shown double width and height ($D017, $D01D), so the disc grows by expansion rather than by a bigger drawing, just before the lens cracks."
+  },
+  {
+   "address": 4096,
+   "type": "line",
+   "text": "The finale's whole ending, reached only from read_code on a correct code; never returns. Fills both pictures' screen matrices ($0400 and $4400, from $03E8/$43E8 through fill_ptr_bank0/1) with $0E, black ink on light blue paper; switches the VIC to hires bitmap mode (D011 bit 5) with the bitmap at +$2000 (D018 bit 3), light grey border and background; shows the loaded shower picture at $2000 in VIC bank 0 and animates it with black sprites (shapes $0800-$0BBF, pointers $20-$2E) in eight steps separated by delay ($5000); then selects VIC bank 1 to show the cracked-lens picture at $6000, turns every sprite off and stops at $119D. No sound, no keyboard or joystick read; the KERNAL IRQ keeps running."
+  },
+  {
+   "address": 4132,
+   "type": "side",
+   "text": "hires bitmap on; bitmap at +$2000"
+  },
+  {
+   "address": 4148,
+   "type": "side",
+   "text": "light grey background and border"
+  },
+  {
+   "address": 4158,
+   "type": "line",
+   "text": "Step 1: sprites 0 and 1 (shapes $20 at $0800 and $21 at $0840, black, x $91, y $7F and $6B) draw a man's dark head seen from behind beside the woman in the shower; $D015 = $FF turns on all eight sprites, including 2-7 whose pointers and positions this part never set at this point; then delay."
+  },
+  {
+   "address": 4206,
+   "type": "line",
+   "text": "Step 2: the head as four sprites (shapes $22-$25 at $0880-$093F; sprites 0-1 at y $7F, 2-3 at y $6A, all x $90, black), the first frame of the head turning to the left; only sprites 0-3 on ($0F); then delay."
+  },
+  {
+   "address": 4284,
+   "type": "line",
+   "text": "Step 3: the same four sprites with shapes $26-$29 ($0980-$0A3F), the head in profile facing left towards the small machine at the picture's lower left; then delay."
+  },
+  {
+   "address": 4362,
+   "type": "line",
+   "text": "Steps 4 and 5: sprite 4 (black, x $58, y $98, over the top of the small machine at the lower left) shows shape $2A ($0A80), a short horizontal bar, then after a delay shape $2B ($0AC0), a longer bar; $D015 = $1F; delay after each."
+  },
+  {
+   "address": 4418,
+   "type": "line",
+   "text": "Steps 6 to 8: sprite 5 (black) carries a round object with a dotted square on it: shape $2C ($0B00) at x $58, y $98 over the machine, then (INC of the pointer) shape $2D ($0B40) at x $68, y $80, then shape $2E ($0B80, the same image as $2D) at x $78, y $70 with sprite 5 doubled in both directions ($D017 = $D01D = $20), so it flies up and right towards the man's head and grows; a delay after each position."
+  },
+  {
+   "address": 4486,
+   "type": "line",
+   "text": "Last step: makes CIA 2 port A bits 0-1 outputs ($DD02) and writes %10 to them ($DD00), selecting VIC bank 1 ($4000-$7FFF), so the same bitmap mode now shows the cracked-lens picture at $6000 with the matrix at $4400; sprites off ($D015 = 0); then JMP * at $119D forever. Only RESTORE (NMI to finale_start) or a reset leaves it."
+  },
+  {
+   "address": 4509,
+   "type": "side",
+   "text": "the end: loops here for good; RESTORE jumps to $8000 without restoring the VIC"
+  },
+  {
+   "address": 7072,
+   "type": "line",
+   "text": "Code flag shared by name with the other parts' prompts: read_code stores 1 on a correct code ($8072) and 0 on an early RETURN ($808C). Nothing in the finale reads it, and the 0 path restarts the prompt, so the ending always runs with 1 here."
+  },
+  {
+   "address": 8192,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($2000-$23BF), hires, one colour pair for the whole picture from the $0E fill: rows 0-2: the solid black top margin and the upper arcs of both binocular lenses, with the top of the shower pipe."
+  },
+  {
+   "address": 9152,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($23C0-$277F), hires, one colour pair for the whole picture from the $0E fill: rows 3-5: the tiled bathroom wall behind the shower, the pipe bending down to the shower head."
+  },
+  {
+   "address": 10112,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($2780-$2B3F), hires, one colour pair for the whole picture from the $0E fill: rows 6-8: water falling from the shower head, the top of the woman's head, the tiles either side."
+  },
+  {
+   "address": 11072,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($2B40-$2EFF), hires, one colour pair for the whole picture from the $0E fill: rows 9-11: the woman's face and shoulders and the dark shoulders beside her (the sprites add the man's head above them), the curtain rail's rings."
+  },
+  {
+   "address": 12032,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($2F00-$32BF), hires, one colour pair for the whole picture from the $0E fill: rows 12-14: the shower-curtain rail and the top of the curtain, the top of a small machine on a pole outside the left lens."
+  },
+  {
+   "address": 12992,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($32C0-$367F), hires, one colour pair for the whole picture from the $0E fill: rows 15-17: the hanging curtain folds and soap bubbles, the body of the small machine at the left."
+  },
+  {
+   "address": 13952,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($3680-$3A3F), hires, one colour pair for the whole picture from the $0E fill: rows 18-20: the bottom of the curtain, the machine's base, the lower arcs where the two lenses meet."
+  },
+  {
+   "address": 14912,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($3A40-$3DFF), hires, one colour pair for the whole picture from the $0E fill: rows 21-23: solid black ink ($FF bytes) below the lenses."
+  },
+  {
+   "address": 15872,
+   "type": "line",
+   "text": "Shower picture bitmap, loaded ready-made and shown by show_ending in VIC bank 0 ($3E00-$3F3F), hires, one colour pair for the whole picture from the $0E fill: row 24: the last solid black ($FF) character row."
+  },
+  {
+   "address": 20480,
+   "type": "line",
+   "text": "Busy-wait pause between the ending's animation steps: 79 x 255 passes of a 17-cycle loop (DEX, six NOPs, BNE), about 343,000 cycles or 0.35 s on a PAL machine. Destroys X and Y. Called eight times by show_ending."
+  },
+  {
+   "address": 24576,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($6000-$63BF), hires, one colour pair for the whole picture from the $0E fill: rows 0-2: the solid black top margin and the lens tops with the first cracks running in from their edges."
+  },
+  {
+   "address": 25536,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($63C0-$677F), hires, one colour pair for the whole picture from the $0E fill: rows 3-5: the top of the jagged black hole in the middle of the lenses and the cracks around it."
+  },
+  {
+   "address": 26496,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($6780-$6B3F), hires, one colour pair for the whole picture from the $0E fill: rows 6-8: the hole at its widest with a loose shard of glass inside it, cracks running to both lens edges."
+  },
+  {
+   "address": 27456,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($6B40-$6EFF), hires, one colour pair for the whole picture from the $0E fill: rows 9-11: the lower part of the hole and cracks spreading across the right lens."
+  },
+  {
+   "address": 28416,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($6F00-$72BF), hires, one colour pair for the whole picture from the $0E fill: rows 12-14: the bottom points of the hole and cracks towards the lower lens edges."
+  },
+  {
+   "address": 29376,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($72C0-$767F), hires, one colour pair for the whole picture from the $0E fill: rows 15-17: crack lines across the lower parts of both lenses."
+  },
+  {
+   "address": 30336,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($7680-$7A3F), hires, one colour pair for the whole picture from the $0E fill: rows 18-20: the lower arcs of both lenses with the last crack ends."
+  },
+  {
+   "address": 31296,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($7A40-$7DFF), hires, one colour pair for the whole picture from the $0E fill: rows 21-23: solid black ink ($FF bytes) below the cracked lenses."
+  },
+  {
+   "address": 32256,
+   "type": "line",
+   "text": "Cracked-lens picture bitmap, loaded ready-made and shown by ending_crack in VIC bank 1 ($7E00-$7F3F), hires, one colour pair for the whole picture from the $0E fill: row 24: the final solid black ($FF) character row of the cracked-lens bitmap."
+  },
+  {
+   "address": 32768,
+   "type": "line",
+   "text": "Part entry (the depacker jumps here) and restart point. Points the NMI vector $0318/$0319 at itself, so RESTORE (KERNAL NMI $FE43: SEI, JMP ($0318)) restarts this prompt; SEI (undone by the first CHROUT, which ends in CLI); border, background and background colours 1-2 to black; then prints str_enter_code through KERNAL CHROUT $FFD2 until its $FF terminator and falls into read_code. Reached from the hand-over, from a RETURN-only entry ($808F) and from RESTORE."
+  },
+  {
+   "address": 32811,
+   "type": "line",
+   "text": "PETSCII prompt printed by finale_start, ended by $FF: CLR/HOME ($93), $08 (lock the case switch), cursor down, nine cursor-rights, yellow ($9E), 'PLEASE ENTER CODE', RETURN, cursor down."
+  },
+  {
+   "address": 32844,
+   "type": "line",
+   "text": "Reads the code: up to five characters through KERNAL CHRIN $FFCF (the screen editor returns a typed line after RETURN), skipping zero bytes, storing each in code_input at $8092+Y. A RETURN before the fifth character goes to $808A (flag $1BA0 = 0, back to finale_start). After five characters compares them with secret_code ($809C, 'ILVCT'); a match stores 1 in $1BA0 and jumps to show_ending at $1000. A mismatch ($8078) prints RETURN, cursor up and a space through CHROUT and reads again from here. Characters typed after the fifth are not checked."
+  },
+  {
+   "address": 32880,
+   "type": "side",
+   "text": "all five matched: flag 1, run the ending"
+  },
+  {
+   "address": 32888,
+   "type": "side",
+   "text": "wrong code: RETURN, cursor-up, space, then read again"
+  },
+  {
+   "address": 32906,
+   "type": "side",
+   "text": "RETURN before five characters: flag 0, restart the prompt (the ending is never reached this way)"
+  },
+  {
+   "address": 32914,
+   "type": "line",
+   "text": "Buffer of the characters read by read_code: $8092-$8096 receive up to five characters (a RETURN is stored too when typed early); $8097-$809B are loaded as $FF and never written. The play snapshot holds 'ILVCT' here."
+  },
+  {
+   "address": 32924,
+   "type": "line",
+   "text": "The finale's code, five PETSCII bytes 'ILVCT', compared byte for byte with code_input by read_code. A fixed string in the part, not derived from play."
+  }
+ ]
+}

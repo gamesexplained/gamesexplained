@@ -5,7 +5,7 @@
   document.querySelectorAll('.gametabs a.tab').forEach(function(a){
     var h=a.getAttribute('href')||'';
     if(h==='./')h='index.html';
-    if(h===here) a.classList.add('on');
+    if(h===here||(h==='source.html'&&/^source-.+\.html$/.test(here))) a.classList.add('on');   /* a part's Source page */
   });
   document.querySelectorAll('button[data-copy]').forEach(function(b){
     var src=document.querySelector(b.dataset.copy); if(!src) return;

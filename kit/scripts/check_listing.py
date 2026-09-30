@@ -6,7 +6,8 @@ cannot rebuild it; it checks instead that every user label and every
 comment in symbols.json appears in the listing unchanged, and that the
 listing records the hash of the symbols.json it was built from.
 
-Usage: check_listing.py [game dir ...]      default: every game
+Usage: check_listing.py [game dir ...]      default: every game, and every part of a
+                                            game that is several programs (parts.py)
 """
 import glob, hashlib, json, os, sys
 
@@ -34,7 +35,8 @@ def check(gdir):
 
 
 def main():
-    dirs = sys.argv[1:] or [os.path.dirname(p) for p in glob.glob(os.path.join(ROOT, "games", "*", "*", "symbols.json"))]
+    dirs = sys.argv[1:] or [os.path.dirname(p) for p in glob.glob(os.path.join(ROOT, "games", "*", "*", "symbols.json"))
+                            + glob.glob(os.path.join(ROOT, "games", "*", "*", "parts", "*", "symbols.json"))]
     errs = []
     for d in dirs:
         errs += check(d)
