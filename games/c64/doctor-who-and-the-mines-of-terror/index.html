@@ -3,340 +3,39 @@
 <title>Doctor Who and the Mines of Terror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>
-:root{
-  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
-  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
-  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
-  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
-  --chip:#2f3136; --chip-ink:#ffffff;
-  --c64blue:#40318d; --c64grey:#686868;
-  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
-  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
-  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
-}
-*{box-sizing:border-box}
-html{background:var(--bg);min-height:100%}
-body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
-h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
-.wrap{padding:0 var(--gx)}
-.hero{padding:48px var(--gx) 8px;text-align:left}
-.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
-.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
-.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
-section{padding:var(--sy) 0 24px}
-section:last-of-type{border-bottom:none}
-.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
-h2.t{font-size:var(--h2);margin-bottom:12px}
-.lede{color:var(--ink-soft);margin:0 0 30px}
-.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
-.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
-.cap b{color:var(--ink);font-weight:700}
-code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
-canvas{max-width:100%;image-rendering:pixelated;display:block;background:#000}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
-button,select{font-family:var(--fm);font-size:13px;padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
-button.on{background:var(--chip);color:var(--chip-ink)}
-table{border-collapse:collapse;width:100%;font-size:15px}
-th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
-th{font-size:13px;color:var(--ink-mute);font-weight:700}
-.out{font-family:var(--fm);font-size:14px;background:#000;color:#b2b2b2;padding:10px 12px;border-radius:6px;min-height:2.6em;white-space:pre-wrap}
-.gal{display:flex;flex-wrap:wrap;gap:4px}
-.gal canvas{cursor:pointer;background:#000;border:1px solid #000}
-.gal canvas.sel{border-color:#c25a00}
-</style>
+<link rel="stylesheet" href="reference/dw-page.css">
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
   <h1>Doctor Who and the Mines of Terror</h1>
-  <p class="sub">A 4,096-pixel-wide mine kept under the KERNAL ROM, a robot cat you program in ten steps, and a status bar whose font lives in the unused rows of its own screen.</p>
+  <p class="sub">An arcade adventure in which the Sixth Doctor and Splinx, a robot cat he programs, explore a mine the Master has taken over.</p>
 </header>
 <main class="wrap">
-
-<section>
-  <p class="fig">01 · The screen</p>
-  <h2 class="t">One frame, rebuilt from memory</h2>
-  <p class="lede">The Doctor, Splinx and the TARDIS at the start of play, drawn by this page from the game's memory and its video registers.</p>
-  <div class="plate">
-    <div class="row"><button id="fbands">Show the raster bands</button></div>
-    <canvas id="frame"></canvas>
-    <p class="cap" id="framecap">A reconstruction, not a screenshot. One frame recorded in the emulator, every write to the video chip with the line it happened on, drawn line by line. It matches the emulator's own picture in all 104,448 pixels.</p>
-  </div>
-  <p>The picture is two screens in one. An interrupt at <code>$8010</code> runs three times a frame and rewrites the video chip each time. From line 256 to line 78 of the next frame the chip shows the status bar out of VIC bank 0, screen <code>$0400</code>. From line 78 it switches to bank 1 and one of two play screens, <code>$7800</code> or <code>$7C00</code>, which the game draws in turn and swaps while the other is shown. The interrupt keeps the handler's own number in the offset of a branch at <code>$8017</code>, so the next interrupt jumps straight to the next band.</p>
-</section>
-
-<section>
-  <p class="fig">02 · The world</p>
-  <h2 class="t">The whole mine, drawn from its map</h2>
-  <p class="lede">The mine is one map of 56 rows by 128 blocks, kept in the RAM under the KERNAL ROM at <code>$E000</code>. Drag across the map to move the magnifier.</p>
-  <div class="plate">
-    <canvas id="map"></canvas>
-    <div class="row" style="margin-top:12px"><span class="fig" style="margin:0" id="mappos"></span></div>
-    <canvas id="mapzoom"></canvas>
-    <p class="cap">Every block drawn from <code>map_e000</code> and the block definitions at <code>$3000</code>, with the play-area characters at <code>$4000</code> and each character's colour from <code>$2F00</code>. The orange cross is the Doctor's first position. The game swaps in its own shapes for sixteen characters in some zones of the map (<code>zone_graphics</code>); this picture shows every zone with the start zone's, copied from the running game.</p>
-  </div>
-  <p>A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, stored bottom row first. The map holds one byte per block, 128 to a row, and row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom of the mine: the game counts heights upward from the floor, and draws the screen from the bottom row up (<code>$8746</code>). That puts the world at 4,096 by 1,792 pixels in 7 KB.</p>
-  <p>The game runs with the BASIC and KERNAL ROMs switched out (<code>$01</code> = <code>$35</code>) from its first instructions to the moment it saves, so all of <code>$A000</code>-<code>$FFFF</code> is RAM for it. The map fills <code>$E000</code>-<code>$FBFF</code>, and the code that plays the TARDIS scenes sits above it, at <code>$FC8C</code>.</p>
-  <p>Colour RAM holds a colour for every screen cell, and the game never stores one for the map. Each time it draws a row or a column it looks up the colour of each character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>), so a character always has the same colour wherever it appears.</p>
-</section>
-
-<section>
-  <p class="fig">03 · The status bar</p>
-  <h2 class="t">A font kept in the screen it draws</h2>
-  <p class="lede">The status bar is four rows of a 25-row screen. The other 21 rows hold the font the status bar is written in.</p>
-  <div class="plate">
-    <div class="row"><button id="sb1" class="on">As the video chip draws it</button><button id="sb2">The whole screen as characters</button></div>
-    <canvas id="status"></canvas>
-    <p class="cap" id="statuscap"></p>
-  </div>
-  <p>In the status band the video chip reads screen <code>$0400</code> with its character base at <code>$0000</code>. The game writes all its own text in a private alphabet in which a letter is its ASCII code plus 155: A is <code>$DC</code>, Z is <code>$F5</code>, the digits are <code>$F6</code>-<code>$FF</code> and <code>$94</code> is a space. A character's eight bytes sit at eight times its code, so the glyphs for <code>$94</code>-<code>$FF</code> fill <code>$04A0</code>-<code>$07FF</code>: the rows of the same screen that the band never shows.</p>
-  <p>The start-up copies the screen and the game's own glyphs from <code>$4B00</code>, then copies A to Z and 0 to 9 from the character ROM into place (<code>$48F5</code>). One glyph does not fit. The glyph for <code>$FF</code> would be the last eight bytes of the screen page, and the video chip reads the eight sprite pointers there. So digit 9 is drawn with code <code>$F5</code>, the letter Z's code, and the digit table at <code>$1730</code> maps 9 to it. The status bar has no Z to show.</p>
-</section>
-
-<section>
-  <p class="fig">04 · Controls</p>
-  <h2 class="t">Pockets on the function keys, Splinx on S</h2>
-  <p class="lede">The joystick in port 2 moves and jumps. Everything else is on the keyboard.</p>
-  <div class="plate">
-    <table>
-      <tr><th>Input</th><th>What it does</th><th>Where</th></tr>
-      <tr><td>Stick, or Z, X, <b>;</b>, <b>/</b></td><td>walk left and right, climb up and down</td><td><code>$8F3C</code>, <code>$8FD5</code></td></tr>
-      <tr><td>Fire or RETURN</td><td>jump: 24 frames up, 16 level, then fall</td><td><code>$A0D4</code></td></tr>
-      <tr><td>F1</td><td>move the pocket selector across the four pockets and the marker box</td><td><code>$A530</code></td></tr>
-      <tr><td>F3</td><td>put the held item in a pocket, drop a marker, or take the selected item out</td><td><code>$A575</code></td></tr>
-      <tr><td>F5</td><td>standing still, pick up what is in front; holding something, use it</td><td><code>$A929</code>, <code>$BACC</code></td></tr>
-      <tr><td>F7 and a direction</td><td>throw the held item</td><td><code>$A7D7</code></td></tr>
-      <tr><td>S</td><td>the Splinx Programmer</td><td><code>$AF58</code></td></tr>
-      <tr><td>R</td><td>forced regeneration: give up a life and restart</td><td><code>$9051</code></td></tr>
-      <tr><td>D, CTRL+D, L</td><td>the save menu, on one kind of floor only (below)</td><td><code>$8FA4</code>, <code>$C902</code></td></tr>
-    </table>
-    <p class="cap">Read from the input routine at <code>$8F24</code>, which scans six keyboard rows once a pass and keeps each in its own byte. The BBC Micro version's key list, which is the one found online, does not apply.</p>
-  </div>
-  <p>The keys D, CTRL+D and L all set the same event byte, <code>$E8</code>, to a negative number, and the event handler at <code>$9102</code> takes any negative number as "open the save menu". Every pass, though, the Doctor's own update clears that byte unless he stands on character <code>$23</code> (<code>$C902</code>-<code>$C909</code>). Pressed anywhere else, the keys do nothing.</p>
-</section>
-
-<section>
-  <p class="fig">05 · Splinx</p>
-  <h2 class="t">Splinx runs a ten-step program</h2>
-  <p class="lede">Splinx follows the Doctor, or runs a program of up to ten commands you write on its own screen.</p>
-  <div class="plate">
-    <img src="reference/splinx-programmer.png" alt="The Splinx Programmer screen" style="max-width:100%;image-rendering:pixelated;display:block">
-    <p class="cap">The programmer screen, <code>$0C00</code>, in screen codes with its own font at <code>$0800</code>. The game parks the play screen's colour RAM at <code>$1000</code> while it is shown (<code>$B16D</code>).</p>
-  </div>
-  <table style="margin-top:20px">
-    <tr><th>Command</th><th>What Splinx does</th></tr>
-    <tr><td>1-4 GOTO MARKER</td><td>walks to one of the four markers the Doctor has dropped</td></tr>
-    <tr><td>R RETURN TO DOCTOR</td><td>walks back to him</td></tr>
-    <tr><td>W WAIT</td><td>stands</td></tr>
-    <tr><td>P PICK UP OBJECT</td><td>takes the nearest free item within 16 × 8 pixels</td></tr>
-    <tr><td>D DROP OBJECT</td><td>puts it down</td></tr>
-    <tr><td>C RECHARGE</td><td>on a charging point, one unit of battery every 8 frames</td></tr>
-  </table>
-  <p>The program is ten bytes at <code>$30</code>-<code>$39</code>, and a mode byte at <code>$FF</code> chooses between shut down, follow the Doctor and execute the program (<code>splinx_update</code>, <code>$B1A0</code>). The interpreter picks a command's handler by writing twice the command number into the offset of a branch at <code>$B1CC</code>; the game uses the same trick for the Doctor, the controllers and most of its creatures.</p>
-  <p>The battery, <code>$1F</code>, starts full at 24 and loses one unit every 1,024 frames, about 20 seconds, while Splinx follows or runs a program: eight minutes of work from a full charge.</p>
-</section>
-
-<section>
-  <p class="fig">06 · Sprites</p>
-  <h2 class="t">144 frames in bank 1</h2>
-  <p class="lede">Every hardware sprite image the game keeps, drawn from the bytes at <code>$5000</code>-<code>$73FF</code>. Click one to see its pointer.</p>
-  <div class="plate">
-    <div class="gal" id="gal"></div>
-    <p class="cap" id="galcap">Multicolour sprites with the game's shared colours (<code>$D025</code> = red, <code>$D026</code> = orange); each object's own colour comes from <code>$1850</code>, and grey stands in for it here.</p>
-  </div>
-  <p>At most eight objects are on screen at once. Each pass, <code>sprite_list_add_object</code> (<code>$81DA</code>) collects the visible ones and drops any ninth; <code>$8133</code> writes their frames into the sprite pointers of both play screens. The items with numbers <code>$30</code>-<code>$4F</code> can also be drawn into the background as characters, blended pixel pair by pixel pair into 32 spare character codes (<code>$8652</code>).</p>
-</section>
-
-<section>
-  <p class="fig">07 · Deaths</p>
-  <h2 class="t">Twelve ways to lose a regeneration</h2>
-  <p class="lede">A death writes a cause into <code>$E8</code>, and the handler at <code>$9102</code> prints the matching message across the status bar. Choose a cause to decode its message from the game's tables.</p>
-  <div class="plate">
-    <div class="row"><select id="cause"></select></div>
-    <div class="out" id="msg"></div>
-    <p class="cap">Decoded by this page from the message table <code>$90EF</code> and the string pointers at <code>$95CB</code>/<code>$9626</code>, in the game's private alphabet.</p>
-  </div>
-  <table style="margin-top:20px">
-    <tr><th><code>$E8</code></th><th>Cause</th><th>Where it is set</th></tr>
-    <tr><td>6</td><td>caught in an explosion</td><td><code>$C1F6</code></td></tr>
-    <tr><td>8</td><td>the rising level reaches the Doctor</td><td><code>$C0C2</code></td></tr>
-    <tr><td>10</td><td>touching a controller</td><td><code>$CE5A</code></td></tr>
-    <tr><td>12</td><td>a drop of 96 pixels or more</td><td><code>$CD8B</code></td></tr>
-    <tr><td>14</td><td>landing on a stalagmite</td><td><code>$CA67</code></td></tr>
-    <tr><td>16</td><td>the oxygen counter runs out</td><td><code>$CAC2</code></td></tr>
-    <tr><td>18</td><td>key R</td><td><code>$9051</code></td></tr>
-    <tr><td>20</td><td>the madrag's bite</td><td><code>$B96F</code></td></tr>
-    <tr><td>22</td><td>coming near a madrag's egg: a baby hatches</td><td><code>$B902</code></td></tr>
-  </table>
-  <p>The Doctor starts with five lives, shown as five figures in the item field when he holds nothing (<code>$1E</code>, <code>$94AC</code>). After a death he starts again at the last of nine restart points he came near (<code>$907D</code>).</p>
-  <p>Oxygen is a counter of 50 at <code>$F1</code> that falls once a pass while the Doctor is high in the map, and the AIR MASK fills it again (<code>$CA90</code>).</p>
-</section>
-
-<section>
-  <p class="fig">08 · The end</p>
-  <h2 class="t">How the Time Lords mark you</h2>
-  <p class="lede">The game ends when the Doctor leaves in the TARDIS or in an escape pod. What he carries doubles the bonus.</p>
-  <table>
-    <tr><th>Step</th><th>Effect on the score</th><th>Where</th></tr>
-    <tr><td>time left</td><td>the counter <code>$1B</code>-<code>$1D</code> is added, unless the Doctor is low in the map</td><td><code>$911D</code>, <code>$91BC</code></td></tr>
-    <tr><td>bonus</td><td>starts at 1,024</td><td><code>$9163</code></td></tr>
-    <tr><td>the CRYSTAL, the TIRU plans, Splinx</td><td>the bonus doubles for each one carried or pocketed</td><td><code>$928C</code></td></tr>
-    <tr><td>leaving in the TARDIS</td><td>doubles again</td><td><code>$918D</code></td></tr>
-    <tr><td>heatonite production halted</td><td>doubles again</td><td><code>$9190</code>-<code>$920F</code></td></tr>
-  </table>
-  <table style="margin-top:20px">
-    <tr><th>Final score</th><th>The Time Lords are</th></tr>
-    <tr><td>below 4,100</td><td>very displeased</td></tr>
-    <tr><td>below 20,000</td><td>displeased</td></tr>
-    <tr><td>below 40,000</td><td>pleased</td></tr>
-    <tr><td>40,000 or more</td><td>very pleased</td></tr>
-  </table>
-  <p>The whole bonus is 1,024 × 2⁵ = 32,768 when everything is done. With the crystal and Splinx and nothing else it is 4,096, the escape bonus a BBC Micro players' forum quotes for the same moment.</p>
-</section>
-
-<section>
-  <p class="fig">09 · Quirks</p>
-  <h2 class="t">Bug: a countdown that almost never counts</h2>
-  <p class="lede">The time bonus starts at 10,800 and is meant to fall as you play. It falls by one every 21.8 minutes.</p>
-  <p>The frame routine at <code>$80DA</code> counts frames in three bytes, <code>$53</code>-<code>$55</code>, and was meant to take one off the time bonus every 64 frames. The test that gates it is written after two branches that skip it unless the low two bytes have both just wrapped to zero, which happens once every 65,536 frames. The <code>AND #$3F</code> that should pick every 64th frame then always passes. In practice the whole 10,800 is added to the score at the end.</p>
-  <p>The first game starts the counter at 010800 in decimal (<code>$4996</code>); every later game, started with F1 after the end, at 010805 (<code>$9408</code>).</p>
-</section>
-
-<section>
-  <h2 class="t">Saving ends the game</h2>
-  <p>The save menu writes zero page, the object tables and the status rows into the play screen at <code>$7800</code>, then saves <code>$7800</code>-<code>$7D7F</code> as DRWHO to tape or disc (<code>$94FF</code>). To call the KERNAL it switches the ROMs back in, and when the save is done it jumps through the vector at <code>$A000</code>, which with BASIC in place is BASIC's cold start. The game is gone. Loading the file and starting it again is the only way back: the start-up checks <code>$7800</code> and restores a saved block if it finds one (<code>$49C6</code>). Nothing in the program itself ever loads.</p>
-</section>
-
-<section>
-  <h2 class="t">Exact numbers where a range was meant</h2>
-  <p>The carrier takes the Doctor aboard only when his height is exactly <code>$0450</code> (<code>$A395</code>), and the lift only when he is exactly eight pixels from its floor (<code>$A294</code>). One pixel either way and he stays where he is.</p>
-  <p>Two messages exist that nothing prints in the way their text suggests. EXPOSURE TO RADIATION has no entry in the table of death causes. Cause 8, the rising level, points at GAME OVER instead of a cause, so a Doctor who still has lives reads THE DOCTOR REGENERATES AFTER GAME OVER (<code>$90F3</code>).</p>
-</section>
-
+  <section id="adventure">
+    <p class="fig">01 · The adventure</p>
+    <h2 class="t">The Doctor, a robot cat and a mine full of heatonite</h2>
+    <p>The Master has taken over a heatonite mine on the second moon of Rijar. The Doctor lands there in the TARDIS with Splinx, a robot cat. He has to stop the heatonite production, recover the plans for the TIRU that the Master is building, and get away, in the TARDIS or in an escape pod.</p>
+    <p>The mine is one large map that scrolls in every direction: caverns joined by ladders, a lift and a carrier that runs along a track. The Doctor walks, climbs and jumps. He can carry four items in his pockets, and he can drop markers for Splinx. Splinx follows him, or runs a program of up to ten commands typed in on a screen of its own. Controllers, a madrag and her eggs, explosions, long falls, stalagmites and thin air can all cost the Doctor one of his five regenerations.</p>
+    <figure class="shot"><img src="reference/play-start-tardis.png" width="384" height="272" alt="The Doctor and Splinx beside the TARDIS in a blue cavern, with the score and five figures in the status bar above"><figcaption>The first screen: the Doctor, Splinx and the TARDIS. Captured in an emulator from the copy studied here.</figcaption></figure>
+    <p class="overview-links"><a href="levels.html">Explore the whole mine</a><a href="mechanics.html">See how it works</a><a href="discoveries.html">Read the discoveries</a></p>
+  </section>
+  <section id="release">
+    <p class="fig">02 · The release</p>
+    <h2 class="t">A BBC Micro game, brought to the Commodore</h2>
+    <p>Micro Power released the game for the BBC Micro in 1985, and for the Commodore 64 and the Amstrad CPC in 1986, according to <a href="https://en.wikipedia.org/wiki/Doctor_Who_and_the_Mines_of_Terror">Wikipedia</a>. A ZX Spectrum version was developed and never released. <a href="https://www.gamesthatwerent.com/2022/01/doctor-who-and-the-mines-of-terror/">Games That Weren't</a> records that the Commodore version, too, was long thought to be unreleased, until an original copy turned up.</p>
+    <p>The key list usually found online is the BBC Micro version's, and it does not work on the Commodore. The controls on this site are read from the Commodore game's own input routine.</p>
+    <p class="overview-note">The history here comes from search-result summaries of the pages linked above, read on 30 September 2026: the network used for this analysis refused the pages themselves. Nothing on the other tabs depends on them.</p>
+  </section>
+  <section id="copy">
+    <p class="fig">03 · The copy studied</p>
+    <h2 class="t">One packed file, straight into play</h2>
+    <p>The copy analysed here is a single program file of 29,175 bytes. It unpacks itself and starts the game straight into play, with no title screen, menu or trainer. Its memory still holds the original release's loading picture and a small loader routine that printed "PLEASE WAIT -- STILL LOADING".</p>
+    <figure class="shot"><img src="reference/boot-loading.png" width="384" height="272" alt="The C64 BASIC screen showing LOAD MINES, SEARCHING FOR MINES, LOADING"><figcaption>The file loading in an emulator.</figcaption></figure>
+  </section>
+  <section id="findings">
+    <p class="fig">04 · What the code shows</p>
+    <h2 class="t">A time bonus that almost never counts down</h2>
+    <p>The game pays a bonus for time left at the end, starting at 10,800. A slip in the frame counter means it goes down by one only every 21.8 minutes, so almost every game gets all of it. The save menu has a surprise of its own: it saves the game and then drops to BASIC, so saving ends the game. These and the other quirks are on the <a href="discoveries.html">Discoveries</a> tab.</p>
+    <p class="overview-note">The <a href="source.html">source listing</a> links every explanation to its address in the analysed game. The <a href="about.html">About tab</a> records contributors, sources and methods. No game image is hosted here.</p>
+  </section>
 </main>
-<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
-<script src="../../lib/c64.js"></script>
-<script>
-const START_ZONE = {"glyph":{"161":[235,215,235,215,235,215,235,215],"162":[0,0,0,0,0,0,0,0],"163":[1,48,15,10,11,17,0,120],"164":[176,100,12,2,32,8,58,208],"165":[0,0,34,4,47,146,0,30],"245":[3,51,3,48,113,254,109,108],"246":[109,110,109,110,109,110,109,110],"247":[59,12,4,20,56,13,8,12],"248":[33,206,32,32,28,32,19,32],"249":[0,47,47,203,203,242,242,0],"250":[242,242,242,242,242,242,242,242],"251":[242,242,242,0,203,203,47,47],"252":[255,213,218,218,216,216,216,216],"253":[213,213,53,53,29,77,19,7],"254":[87,87,92,92,116,112,208,196],"255":[184,205,205,221,50,205,205,255]},"colour":{"161":10,"162":10,"163":13,"164":217,"165":33,"245":13,"246":217,"247":221,"248":45,"249":11,"250":12,"251":10,"252":15,"253":10,"254":10,"255":33}};
-const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[175,150,175,142,155,150,211,150,155,150,175,150,175,142,0,0,0,16,0,0,0,7,208,0,17,112,241,0,7,0,127,127,240,240,249,248,243,242,248,240,240,241,246,241,240,240,252],"cia2":[151,63],"cpu":[47,53],"writes":[[78,8,56576,150],[78,19,53272,243],[78,34,53270,211],[78,47,53265,20],[86,63,53272,241],[256,6,56576,151],[256,19,53270,208],[256,29,53265,144],[256,35,53272,17]],"colour":"CAgICAgICAgJCAgICAgJCAgICAkICAgICQgICAgJCAgICAkICAgICAgCAgICAgIFBQUFBQUICQgICAgJCAgICAkICAgICQgICAgJCAgICAgICAQEBAQEBAQEBAQECAkICAgICQgICAgJCAgICAkICAgICQgICAgICQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQ4ODQ0ODQ4NDQ4NDQ4ODg4ODg0NDg0ODQ0ODQ0ODg0NDg4ODg4ODg4ODQ0ODg4NDg0ODg0NDg4ODg0NDg4ODQ4NDg4NDQ0NDg4ODg4ODg4ODg0ODg4ODQ4ODg4ODQ4ODg4NDg4ODg0ODg4ODg0NDg4ODg4ODg4ODg0ODg4ODg4ODg4ODg4NDg4NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDg4ODg4ODg4ODg4ODQ4NDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4NDg0ODg4OBgYGBg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODQ4ODg4ODgYGBgYODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4OCg0NDQ0PDg4ODg4ODg4ODg8NDQ0NDQ0NDQ0NDQ0NDQ0NDg4ODg4ODg4ODg4ODQ8ODg4ODg4ODg8NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDw4ODg4ODg8NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg0PDg4ODg8NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDg4ODg4ODg0NDQ0ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg0ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODQ4ODQ0ODg0NDQ4ODg4ODg4ODg4ODg0NDQ4ODQ4ODg0NDQ4ODg4ODg0ODQ0NDg0NDg0NDg4ODg4ODg4ODg0NDg0ODQ0ODg4NDg0NDg4ODgEPAQ8PDw0PAQ8BDwEPAQ8NDw0PDQ8KDw==","ram":[{"a":1024,"b":"lJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJTu3urt4JT29vb29vaUlpqbnJ2WlJSUlJaUlJSUlpSUlJSWlJSUlJSUlJSUmZSZlJmUmZSZlJaen6ChlpSUlJSWlJSUlJaUlJSUlpSUlJSUl5eXl5eXl5eXl5eXl5eYlZWVl5iXl5eXmJeXl5eYl5eXl5iXl5eXlwAAAAAAAAAAAACqqqr/"},{"a":1200,"b":"wMDAwMDAwMAAAAAAAP8="},{"a":1216,"b":"wMDAwMD/"},{"a":1224,"b":"GBj/PDxmZsMAqqWpqamlqgCoqKioqGioAKqlqqWmpaoAqGhoaKhoqACqpaqpqqWqAKhoaGhoaKgAqqampaqqqgCoaGhoaGio"},{"a":1776,"b":"PGZgYGBmPAA="},{"a":1792,"b":"fmBgeGBgfgA="},{"a":1872,"b":"PGZmZmZmPAA="},{"a":1896,"b":"fGZmfHhsZgA8ZmA8BmY8AA=="},{"a":1968,"b":"PGZudmZmPAA="},{"a":16383,"b":"IQ=="},{"a":16672,"b":"qv/AMwwzwP8="},{"a":16800,"b":"DPwwwPMDw88wwAAMAwAwwA=="},{"a":16856,"b":"Dxo4FvAp4tggwMAwsDAviw=="},{"a":16904,"b":"A8DDDAAMAwA="},{"a":17360,"b":"+gooq7DggIA="},{"a":17598,"b":"EA=="},{"a":17608,"b":"8PDAwwMPDww="},{"a":17632,"b":"rCAr4xoyAgNLKqKgrEvgiA=="},{"a":17744,"b":"AAAAf//Av6MDAwP4/wD/DcDAwB//AP/YAAAA/v8D/cWtraOvv4DA/21tbQz/AAD/3cXdxf0BA///8PPz8/Pz8P8D8/Pz8/MD/w/Pz8/Pzw//wM/Pz8/PwA=="},{"a":17984,"b":"PD8MMDw88PAPDAwMPDwwwA=="},{"a":18008,"b":"wwyy64IKIATR43/D6AkRAQ/Dw/PwADAz"},{"a":18040,"b":"MD8LA4LwMDA="},{"a":18176,"b":"AwzAMAwAAAw="},{"a":18232,"b":"29vbWP8AAP8="},{"a":18344,"b":"AzMDMHH+bWw="},{"a":18360,"b":"OwwEFDgNCAwhziAgHCATIA=="},{"a":18848,"b":"AAAA"},{"a":18856,"b":"AAAA"},{"a":18952,"b":"AAAA"},{"a":19408,"b":"AAAA"},{"a":19630,"b":"AAA="},{"a":19646,"b":"AAA="},{"a":19654,"b":"AAA="},{"a":19680,"b":"AAAA"},{"a":19688,"b":"AAAA"},{"a":20032,"b":"AAAA"},{"a":20040,"b":"AAAA"},{"a":20072,"b":"AAAA"},{"a":20224,"b":"AAAA"},{"a":20992,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC2WAC5WAC5VAC5aAC+oAC+4AC+YAC+YAC+YACqgAJWAAlWA"},{"a":22528,"b":"AC7gALu4AC/uAC74AL/uAC/4AAvgAC+AAApgAC1gAL1YALlYALmWAClmAC2WAC7YAC7gAAAAAAAAAAAAAAAA"},{"a":24128,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAIIAAKoAAJkAACYAACgAABQAACoAACqAACqAACagACagAiagAlVgAKqAA"},{"a":31904,"b":"yM00neCczXo04Jw0zc3Jyc3NNJ3gnM16NOCcNM3NNJ3gQTXg4EE14Jk0y0E1NfXg+EHgyzTJmciZNMtBNTX14PhB4Ms0NMtBNTVB4EE1QeDI9TXgQeD3NeA1NUGcyMnIyfU14EHg9zXgNTVBnPU14EFBNeA1QTXgy+A14EHgNeBB4DXgQZzImcvgNeBB4DXgQeA14EHgNeBB4DXgQTXgNTQ1QTXgNUE14DVBNeCczXo0NUE14DVBNeA1QTXgNUE14DVBNeDgQTv4QeBBNUHgQTVB4EE1NfXg+EHgQTWqq6ytQeBBNUHgQTVB4EE1QTs04DVB4EE1QeBBNUHgQeD3NeA1QeBBrq/nsDVB4EE1QeBBNUHgQTs0yeDgNeBB4DXgQeA14EHgNeBB4DXgQbGytLPgNeBB4DXgQTXgNTvNyMk1NUE14DVBNeA1QTXgNUE14DVBNeCxsrSzNUE14DVBNeDgQTs0yJnJQUHgQTVB4EE1QeBBNUHgQTVB4EE1sbK0s0HgQTVB4EE1QTs0zcnJzeA1QeBBNUHgQTVB4EE1QeBBNUHgQbGytLM1QeBBNUHgQTs0yc3IyJkkzMzLyzxBNeDgNeBBNeA1O8zMy8vMzMvLzMzLy8zMy8vNyM2ZyciZNciZyMnPPOBBNUE14OBBOzTImcjJyJnIyciZyMnImcjJmcnNyc3JyTXIyJnNzc88NUHgQTVBOzTNyMiZzcjImc3IyJnNyMiZzc2ZyM3Jmcg1zc3JyM3Jzzw1QeBBOzTJzc3NycjNzcnIzc3JyM3NycjJyJmZyMnI4MvNmcjJyJnIzMzLy8nImcjNyM2ZzcjJyMnImcjNyM2ZyciZyM3IyTXMzcjIzcnJzciZyMnNycnNmcnNyciZyZnNycnNmcnNyc3Jyc3ImclBz8jJmcmZyJnIyJnNyZnImc2ZyM3Jyc3IyZnImc2ZyM3JmciZycnN4MzJzcjIycjJzc3JyMjJyMnJyJmZyMiZycjJyMnJyJmZyMnIycjImeCcyJnLnMiZy8s0zZnNyM2ZzcjNmcnJNM+cyJnLmciZzMs0zZnNyM01nM16NJzNejTgnDTNmcnNyZnJzcnNNJ3gnM16NMjNyM/gnDTNmcnN"},{"a":32760,"b":"SGB5"},{"a":32767,"b":"AA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19653,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":16,"colour_cells_changed_during_frame":0}};
-(async function () {
-  if (!window.C64) { document.querySelectorAll('canvas').forEach(c => c.insertAdjacentHTML('afterend', '<p class="cap">This widget needs the site\'s shared script, lib/c64.js.</p>')); return; }
-  const PAL = C64.PAL, rgb = PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
-
-  // 01 the frame
-  let bands = false;
-  function frame() {
-    const cv = document.getElementById('frame'), r = C64.drawFrame(cv, FRAME, 2);
-    if (bands) {
-      const ctx = cv.getContext('2d');
-      for (const [l, t] of [[78, 'line 78: bank 1, play screen, characters $4800'], [86, 'line 86: characters $4000'], [256, 'line 256: bank 0, status screen $0400']]) {
-        const y = (l - 16) * 2; ctx.fillStyle = '#c25a00'; ctx.fillRect(0, y, cv.width, 2);
-        ctx.font = '14px IBM Plex Mono, monospace'; ctx.fillStyle = '#fff'; ctx.fillText(t, 8, y - 4 > 12 ? y - 4 : y + 16);
-      }
-    }
-  }
-  frame();
-  document.getElementById('fbands').onclick = e => { bands = !bands; e.target.classList.toggle('on', bands); frame(); };
-
-  const G = await C64.load('listing.json'), M = G.ram;
-
-  // 02 the map
-  for (const c in START_ZONE.glyph) START_ZONE.glyph[c].forEach((v, i) => M[0x4000 + c * 8 + i] = v);
-  for (const c in START_ZONE.colour) M[0x2F00 + +c] = START_ZONE.colour[c];
-  const W = 128, H = 56, BW = 32, BH = 32;
-  const full = document.createElement('canvas'); full.width = W * BW; full.height = H * BH;
-  const fctx = full.getContext('2d'), img = fctx.createImageData(full.width, full.height);
-  const bg = [0, 9, 8];
-  function plot(x, y, c) { const o = (y * full.width + x) * 4, k = rgb[c]; img.data[o] = k[0]; img.data[o + 1] = k[1]; img.data[o + 2] = k[2]; img.data[o + 3] = 255; }
-  for (let r = 0; r < H; r++) {
-    const row = 0xFB80 - 0x80 * r;
-    for (let c = 0; c < W; c++) {
-      const b = M[row + c], ba = M[0x1400 + b] | M[0x1500 + b] << 8;
-      for (let i = 0; i < 16; i++) {
-        const ch = M[ba + i], by = 3 - (i >> 2), bx = i & 3, col = M[0x2F00 + ch] & 15;
-        const px = c * BW + bx * 8, py = (H - 1 - r) * BH + by * 8;
-        for (let y = 0; y < 8; y++) {
-          const g = M[0x4000 + ch * 8 + y];
-          if (col & 8) for (let x = 0; x < 4; x++) { const v = (g >> (6 - 2 * x)) & 3; const k = v === 3 ? col & 7 : bg[v]; plot(px + 2 * x, py + y, k); plot(px + 2 * x + 1, py + y, k); }
-          else for (let x = 0; x < 8; x++) plot(px + x, py + y, (g & (0x80 >> x)) ? col : 0);
-        }
-      }
-    }
-  }
-  fctx.putImageData(img, 0, 0);
-  const mv = document.getElementById('map'), S = 4, mctx = C64.canvas(mv, full.width / S, full.height / S);
-  const zv = document.getElementById('mapzoom'), zctx = C64.canvas(zv, 640, 320);
-  const dx = M[0x1B70] | M[0x1BC0] << 8, dy = M[0x1C10] | M[0x1C60] << 8;
-  const doc = [dx, full.height - dy];
-  let view = [Math.max(0, doc[0] - 160), Math.max(0, doc[1] - 110)];
-  function drawMap() {
-    mctx.imageSmoothingEnabled = true; mctx.drawImage(full, 0, 0, mv.width, mv.height);
-    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 320 / S, 160 / S);
-    mctx.fillStyle = '#c25a00'; mctx.fillRect(doc[0] / S - 4, doc[1] / S - 1, 8, 2); mctx.fillRect(doc[0] / S - 1, doc[1] / S - 4, 2, 8);
-    zctx.drawImage(full, view[0], view[1], 320, 160, 0, 0, 640, 320);
-    const col = view[0] / BW | 0, row = H - 1 - ((view[1] + 159) / BH | 0);
-    document.getElementById('mappos').textContent = 'block column ' + col + ', map row ' + row + ' (' + C64.hex(0xFB80 - 0x80 * row) + ')';
-  }
-  function at(e) {
-    const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;
-    view = [Math.min(full.width - 320, Math.max(0, x - 160)), Math.min(full.height - 160, Math.max(0, y - 80))]; drawMap();
-  }
-  let drag = false;
-  mv.onpointerdown = e => { drag = true; at(e); }; mv.onpointermove = e => { if (drag) at(e); }; window.onpointerup = () => drag = false;
-  drawMap();
-
-  // 03 the status bar
-  const sv = document.getElementById('status'), sc = FRAME && null;
-  const screen = new Uint8Array(1000), font = new Uint8Array(2048);
-  for (let i = 0; i < 0x400; i++) { const v = M[0x4B00 + i]; if (i < 1000) screen[i] = v; font[0x400 + i] = v; }
-  // letters and digits as the start-up builds them from the ROM are in the recorded frame's RAM
-  const fr = C64.renderFrame(FRAME);
-  function ramOf(a) { for (const r of FRAME.ram) { const b = Uint8Array.from(atob(r.b), c => c.charCodeAt(0)); if (a >= r.a && a < r.a + b.length) return b[a - r.a]; } return null; }
-  for (let a = 0x400; a < 0x800; a++) { const v = ramOf(a); if (v !== null) { font[a] = v; if (a < 0x7E8) screen[a - 0x400] = v; } }
-  const colour = FRAME.colour ? Uint8Array.from(atob(FRAME.colour), c => c.charCodeAt(0)) : null;
-  let whole = false;
-  function status() {
-    const rows = whole ? 25 : 4, s = 2, ctx = C64.canvas(sv, 320 * s, rows * 8 * s);
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, sv.width, sv.height);
-    for (let r = 0; r < rows; r++) for (let c = 0; c < 40; c++) {
-      const i = r * 40 + c, code = screen[i];
-      if (whole && r >= 4) { C64.drawGlyph(ctx, font, code, c * 8 * s, r * 8 * s, s, '#7b7b7b'); continue; }
-      const k = colour ? colour[i] & 15 : 1;
-      if (k & 8) C64.drawGlyphMC(ctx, font, code, c * 8 * s, r * 8 * s, s, [PAL[0], PAL[9], PAL[8], PAL[k & 7]]);
-      else C64.drawGlyph(ctx, font, code, c * 8 * s, r * 8 * s, s, PAL[k]);
-    }
-    if (whole) { ctx.fillStyle = 'rgba(194,90,0,.35)'; ctx.fillRect(0, 4 * 8 * s, sv.width, 2); }
-    document.getElementById('statuscap').innerHTML = whole
-      ? 'All 25 rows of <code>$0400</code> drawn with the same font. Below the orange line, rows 4 to 24 are the font\'s own bytes, read back as if they were characters.'
-      : 'The four rows the status band shows, drawn from <code>$0400</code> with the font at <code>$0000</code>-<code>$07FF</code> of bank 0.';
-  }
-  status();
-  document.getElementById('sb1').onclick = () => { whole = false; document.getElementById('sb1').classList.add('on'); document.getElementById('sb2').classList.remove('on'); status(); };
-  document.getElementById('sb2').onclick = () => { whole = true; document.getElementById('sb2').classList.add('on'); document.getElementById('sb1').classList.remove('on'); status(); };
-
-  // 06 sprites
-  const gal = document.getElementById('gal'), cols = [0, 2, 12, 8];
-  function sprite(cv, p, s) {
-    const ctx = C64.canvas(cv, 24 * s, 21 * s), a = 0x4000 + p * 64;
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
-    for (let y = 0; y < 21; y++) for (let b = 0; b < 3; b++) { const g = M[a + y * 3 + b];
-      for (let x = 0; x < 4; x++) { const v = (g >> (6 - 2 * x)) & 3; if (!v) continue; ctx.fillStyle = PAL[cols[v]]; ctx.fillRect((b * 8 + x * 2) * s, y * s, 2 * s, s); } }
-  }
-  for (let p = 0x40; p < 0xD0; p++) {
-    const cv = document.createElement('canvas'); sprite(cv, p, 2); cv.title = C64.hex(p, 2);
-    cv.onclick = () => { gal.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); cv.classList.add('sel');
-      document.getElementById('galcap').innerHTML = 'Pointer <code>' + C64.hex(p, 2) + '</code>: 63 bytes at <code>' + C64.hex(0x4000 + p * 64) + '</code>. Multicolour, with the shared colours <code>$D025</code> = red and <code>$D026</code> = orange; grey stands in for the object\'s own colour from <code>$1850</code>.'; };
-    gal.appendChild(cv);
-  }
-
-  // 07 deaths
-  function str(p) { let o = ''; while (M[p]) { const b = M[p++]; o += b >= 0xF6 ? String(b - 0xF6) : b === 0x94 ? ' ' : String.fromCharCode((b - 155) & 255); } return o; }
-  function message(n) { const out = []; for (let i = n; M[0x9626 + i] !== 0xFF; i++) out.push(str(M[0x95CB + i] | M[0x9626 + i] << 8)); return out.join(''); }
-  const causes = [[6, 'explosion'], [8, 'rising level'], [10, 'controller'], [12, 'fall'], [14, 'stalagmite'], [16, 'oxygen'], [18, 'key R'], [20, 'madrag'], [22, 'baby madrag']];
-  const sel = document.getElementById('cause');
-  for (const [e, t] of causes) sel.insertAdjacentHTML('beforeend', '<option value="' + e + '">$E8 = ' + e + ': ' + t + '</option>');
-  function death() { const e = +sel.value, n = M[0x90EF + (e >> 1)];
-    document.getElementById('msg').textContent = message(M[0x90EF]) + message(n) + '\n(message ' + n + ', table entry ' + (e >> 1) + ')'; }
-  sel.onchange = death; death();
-})();
-</script>

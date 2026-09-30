@@ -1,0 +1,82 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doctor Who and the Mines of Terror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/dw-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
+  <h1>Doctor Who and the Mines of Terror</h1>
+  <p class="sub">The whole mine, 4,096 by 1,792 pixels, drawn from the map the game keeps under its operating system.</p>
+</header>
+<main class="wrap">
+<section id="mine">
+  <p class="fig">The mine</p>
+  <h2 class="t">One map, seven kilobytes</h2>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier, and switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
+      <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
+      <span class="note" id="mappos"></span>
+    </div>
+    <canvas id="map" class="scr" style="max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
+    <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
+    <p class="kv" id="rpkv"></p>
+    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code> and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. Parts of the mine swap in their own shapes for sixteen characters (<code>zone_graphics</code>); this picture draws every part with the starting cavern's.</p>
+  </div>
+  <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. It holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
+  <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
+</section>
+<section id="scroll">
+  <p class="fig">Scrolling</p>
+  <h2 class="t">Two screens, drawn in turn</h2>
+  <p>The game keeps two copies of the play screen, at <code>$7800</code> and <code>$7C00</code>. While one is shown, it builds the next position of the mine in the other, spread over three frames (<code>coarse_scroll_step</code>, <code>$8C32</code>), and then swaps them. Between those steps the video chip's fine scroll moves the picture a pixel at a time, so the view glides in all eight directions.</p>
+  <p>The mine is split into seven zones by the Doctor's position, checked every eighth frame (<code>zone_classify</code>, <code>$AA3D</code>). Entering a zone puts the creatures of other zones to sleep, wakes that zone's own and swaps in its shapes for sixteen characters (<code>zone_graphics</code>, <code>$ABCF</code>).</p>
+</section>
+<section id="restart">
+  <p class="fig">Restart points</p>
+  <h2 class="t">Nine places to come back to</h2>
+  <p>The mine has nine restart points, stored as four tables of nine bytes at <code>$9059</code>-<code>$907C</code>. When the Doctor comes close to one, it becomes the current point (<code>check_restart_points</code>, <code>$907D</code>). After he loses a regeneration, the game puts him back at the current point.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/dw-page.js"></script>
+<script>
+(async function () {
+  let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
+  const M = G.ram, full = DW.drawMine(M), S = 4;
+  const mv = document.getElementById('map'), mctx = C64.canvas(mv, full.width / S, full.height / S);
+  const zv = document.getElementById('zoom'), zctx = C64.canvas(zv, 768, 384);
+  const Y = y => full.height - y;
+  const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
+  const pts = [...Array(9)].map((_, i) => [M[0x9059 + i] << 8 | M[0x9062 + i], Y(M[0x906B + i] << 8 | M[0x9074 + i])]);
+  let view, showRp = false;
+  const centre = ([x, y]) => view = [Math.min(full.width - 384, Math.max(0, x - 192)), Math.min(full.height - 192, Math.max(0, y - 120))];
+  centre(start);
+  function cross(ctx, x, y, s, c) { ctx.fillStyle = c; ctx.fillRect(x - 4 * s, y - s / 2, 8 * s, s); ctx.fillRect(x - s / 2, y - 4 * s, s, 8 * s); }
+  function draw() {
+    mctx.imageSmoothingEnabled = true; mctx.drawImage(full, 0, 0, mv.width, mv.height);
+    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 384 / S, 192 / S);
+    cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
+    zctx.drawImage(full, view[0], view[1], 384, 192, 0, 0, 768, 384);
+    if (showRp) pts.forEach(([x, y], i) => {
+      mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill();
+      mctx.fillStyle = '#000'; mctx.font = 'bold 9px IBM Plex Mono, monospace'; mctx.fillText(i, x / S - 3, y / S + 3);
+      const zx = (x - view[0]) * 2, zy = (y - view[1]) * 2;
+      if (zx > -20 && zx < 788 && zy > -20 && zy < 404) { zctx.strokeStyle = '#fff'; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 14, 0, 7); zctx.stroke(); zctx.fillStyle = '#fff'; zctx.font = 'bold 16px IBM Plex Mono, monospace'; zctx.fillText('restart ' + i, zx + 18, zy + 5); }
+    });
+    const col = view[0] / 32 | 0, row = 55 - ((view[1] + 191) / 32 | 0);
+    document.getElementById('mappos').textContent = 'block column ' + col + ', map row ' + row + ' at ' + C64.hex(0xFB80 - 0x80 * row);
+  }
+  function at(e) { const b = mv.getBoundingClientRect(); centre([(e.clientX - b.left) * mv.width / b.width * S, (e.clientY - b.top) * mv.height / b.height * S]); draw(); }
+  let drag = false;
+  mv.onpointerdown = e => { drag = true; at(e); }; mv.onpointermove = e => { if (drag) at(e); }; window.addEventListener('pointerup', () => drag = false);
+  const rp = document.getElementById('rp');
+  rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
+    document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
+  document.getElementById('home').onclick = () => { centre(start); draw(); };
+  draw();
+})();
+</script>

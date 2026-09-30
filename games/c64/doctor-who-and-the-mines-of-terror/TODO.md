@@ -3,14 +3,15 @@
 Tier: **Silver** (100 % coverage, 56,533 tracked bytes; facts, features,
 minisite; copy `agent-draft`).
 
-For Gold, a human pass over `index.html`, section by section.
+For Gold, a human pass over every tab (Overview, Maps / levels, How it
+works, Discoveries), section by section. The tabs follow the Chiller
+editorial layout.
 
 Worth doing, found in the run and not done:
 
-- A Maps / levels tab: the map renderer on the How it works page draws the
-  whole mine; a page with every zone's own glyph set (`$ABCF`, `$2E00`), the
-  restart points (`$9059`), the lift and carrier stops and the object
-  start positions would show the whole game world.
+- The Maps / levels tab draws the whole mine and the restart points. It
+  could add every zone's own glyph set (`$ABCF`, `$2E00`), the lift and
+  carrier stops and the objects' start positions.
 - The music: five tunes at `$1F00`-`$2D3F`, a two-voice driver at `$74EA`.
   Port it to `sid.js` and check it register by register against the game.
 - Live tests not run: the lift and carrier exact-match boarding (`$A395`,
