@@ -1,0 +1,59 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fist II: The Legend Continues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
+  <h1>Fist II: The Legend Continues</h1>
+  <p class="sub">Two programs sharing one processor, a second joystick nothing switches on, an opponent who writes into the hero's slot, and graphics nothing reads.</p>
+</header>
+<main class="wrap">
+<section id="tasks">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: the game runs as two tasks</h2>
+  <p class="lede">The fighting and the scrolling are two separate programs, each with its own stack, and the raster interrupt switches between them.</p>
+  <p>The main loop (<code>play_loop</code>, <code>$21E2</code>) runs the fighters, the opponent and the rules. The scrolling needs a whole new screen built every time the view moves a character's width, which is far more work than fits between two frames. So the game gives it a task of its own (<code>$12CA</code>-<code>$1540</code>): it shifts the hidden screen one column at a time and draws the new edge, and when its time is up it gives the processor back.</p>
+  <p>The switch is made by patching an interrupt handler. When the scroll task has work, <code>$12CA</code> writes a <code>NOP</code> over the <code>RTI</code> that ends the status-band interrupt (<code>$3D86</code>), so instead of returning, the handler falls into <code>JMP $1503</code> and the other task's stack. <code>$14E8</code> switches back, and <code>$12E0</code> puts the <code>RTI</code> back when the work is done. The first task is started by an <code>RTI</code> from a stack frame the game builds itself (<code>$0133</code>-<code>$0135</code>).</p>
+</section>
+<section id="second-player">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: a second joystick for the other fighter</h2>
+  <p>The routine that reads the joystick (<code>$3393</code>) can read either port. For fighter 1, the opponent, it reads port 1 instead of letting the computer decide, when one byte, <code>$0455</code>, is zero. Nothing in the Adventure sets it to zero, so the computer always plays the opponent. It may be what is left of a two-player mode, or the way the Training program lets a second player in; the Training load was not analysed.</p>
+</section>
+<section id="combo-bug">
+  <p class="fig">Bug</p>
+  <h2 class="t">Bug: one attack combination writes into the hero's slot</h2>
+  <p>The opponent attacks with scripted combinations. Combination 8 ends by setting up combination 5, and stores it with <code>STA $B4</code> at <code>$31F2</code>. Eleven other stores of this kind in the opponent code are <code>STA $B4,X</code>, into the slot of the fighter running the combination; one more, at <code>$3179</code>, is unindexed too. Without the <code>,X</code>, the combination is always written into fighter 0's slot, the hero's. What the hero does with it has not been tested.</p>
+</section>
+<section id="trap">
+  <p class="fig">Quirk</p>
+  <h2 class="t">An area that drains you until the last scroll is found</h2>
+  <p>In area 5, the game checks whether scroll 8 has been delivered to its chamber. If it has not, the screen flashes and the hero loses a point of energy every ten frames until he falls (<code>$2CE4</code>-<code>$2D13</code>). Delivering the eighth scroll is what makes the area safe.</p>
+</section>
+<section id="leftovers">
+  <p class="fig">Leftovers</p>
+  <h2 class="t">Graphics and code nothing uses</h2>
+  <table class="t">
+    <tr><th>What</th><th>Where</th><th>Why it seems unused</th></tr>
+    <tr><td>29 uncompressed head sprites, side-on</td><td><code>$B746</code>-<code>$BEBF</code></td><td>no instruction or pointer table reaching them was found</td></tr>
+    <tr><td>A full character set of 193 glyphs</td><td><code>$E000</code>-<code>$E607</code></td><td>the start-up points the video chip at it for a moment; nothing else reads it</td></tr>
+    <tr><td>1,200 bytes in the unused half of the status-band font</td><td><code>$E910</code>-<code>$EDBF</code></td><td>no reader found</td></tr>
+    <tr><td>An older start-up routine</td><td><code>$C280</code>-<code>$C3BA</code></td><td>nothing calls it, and it calls <code>$4EF3</code>, where no routine is</td></tr>
+    <tr><td>27 blank sprite images</td><td><code>$AF10</code>-<code>$AF45</code></td><td>no entry in the frame tables points at them</td></tr>
+    <tr><td>The Adventure loader</td><td><code>$C000</code>-<code>$C27F</code></td><td>its work is done before the game starts</td></tr>
+  </table>
+  <p>"No reader found" is a statement about the search: code reached through a pointer computed at run time can still use these bytes.</p>
+</section>
+<section id="open">
+  <p class="fig">Open questions</p>
+  <h2 class="t">What the code does not settle</h2>
+  <ul class="odd">
+    <li><b>Music.</b> Only the first voice restarts its vibrato when a new note starts (<code>STA $FAD7</code> at <code>$F6F0</code>, not indexed); the other two keep a free-running vibrato. It may not be audible.</li>
+    <li><b>A step that loses its sign.</b> <code>$4A39</code> stores the absolute value of a fighter's step back into the step, so a step to the left becomes a step to the right on the next call.</li>
+    <li><b>The ending.</b> A scene is reached from room <code>$7A</code> (<code>$2DB5</code>); it has not been reached in testing.</li>
+  </ul>
+</section>
+</main>

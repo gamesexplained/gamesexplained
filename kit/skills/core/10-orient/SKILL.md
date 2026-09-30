@@ -49,7 +49,13 @@ annotate it byte by byte.
    vectors (the platform reference says where they live and what the
    system defaults are). A vector pointing into RAM is the game's own
    handler; that handler is the spine of the engine. Verify against a
-   second known address before trusting it.
+   second known address before trusting it. A game whose interrupt
+   handlers chain, each writing the next one's address into the vector,
+   shows only one of them in a vector read. Record a frame
+   (`kit/c64/frame.py capture` on the C64): its writes to the vector name
+   every handler in the chain, with the line each runs on, and tracing
+   from all of them can reach code that nothing else calls, such as the
+   music driver.
 4. **Save a snapshot** of the machine in play. Name it by state
    (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds

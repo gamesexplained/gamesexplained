@@ -12,6 +12,16 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
+## 0.0.46 · 30 September 2026 · Fist II: The Legend Continues · unorig with Claude
+
+**A frame capture names every handler in an interrupt chain.** Fist II's
+raster handlers each write the next one's address into the vector, so a
+read of the vector finds one of them, and tracing from the entry and the
+vectors reached 12 KB of a 61 KB load and no sound code at all. One
+frame recorded with `frame.py` listed five handlers and their lines in
+its writes to `$FFFE`; tracing from them found the music driver under
+the KERNAL. `10-orient` now says to take the handlers from a frame.
+
 ## 0.0.44 · 30 September 2026 · Ghostbusters · unorig with Claude
 
 **A test must contain cases that have to succeed.** Ghostbusters' account
