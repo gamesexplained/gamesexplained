@@ -1,5 +1,5 @@
-# Reference material
+# References
 
-original-menu.png and play-settled.png are VICE screenshots from the recovered matching snapshot and its gameplay continuation.
+`original-menu.png` and `play-settled.png` are fresh VICE captures from the hard-reset disk boot described in `orientation.md`.
 
-`import-audit.json` records the source hash and repeated publication checks. The original analysis stays in the private `work/` folder. The article’s widgets embed only the data they display.
+The original Ghidra export stays under `work/`; `game.json` records its hash and makers. `reference/import-audit.json` records the original import’s byte comparison, not verification of its descriptions.

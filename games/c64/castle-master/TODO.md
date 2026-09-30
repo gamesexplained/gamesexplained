@@ -1,9 +1,9 @@
-# Work required for Silver
+# Work toward Silver
 
-- Complete the site’s prose-span coverage: 30,684/65,280 tracked bytes (47.0%). This metric differs from exhaustive code/data classification in the supplied disassembly. Do not fill gaps with repeated generic comments.
-- Run the maintainer check in `kit/CHECKING.md`; the publication model is not in the proven-model register.
-- The imported analysis records its maker's model as unknown, so it also requires the maintainer check before Silver under the rule merged from issue #113.
-- Resolve or explicitly retain the open features in `features.md`, with live replay where practical.
-- Preserve the occupant boundary in `orientation.md`; later loads require separate evidence.
-
-The contributor requested publication directly from the existing accurate listing. This PR delivers that import and explanation; its tier remains Bronze until every Silver requirement is met.
+- Finish the coverage burn-down: 56.4% explained (25,343 of 44,973 tracked bytes). Correct remaining runtime-state scope as it is traced; resolve the loaded-data report before calling 100%.
+- Determine what physical `$D800–$DBFF` holds; `listing.py` identifies 1,024 non-fill bytes under I/O. Do not suppress the warning by guessing.
+- Capture the loader’s final hand-over and compare against menu/play to account for initialization-only data.
+- Verify the 65 changed code-typed bytes between menu and play as state-dependent operands or self-modification.
+- Trace projection, clipping, rotations, interpreter, save layout and music from the imported leads. Replay cheaply testable claims live, including save/load and interactions.
+- Restore and expand the drafted interactive article only after its claims are verified. The published page is Bronze form meanwhile.
+- Have a maintainer check the completed work for Silver: the run model is unproven and the imported models are unknown.

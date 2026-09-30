@@ -14,16 +14,14 @@ Versions that taught nothing of the kind do not appear.
 
 ## next · 30 September 2026 · Castle Master · 64kramsystem with Codex
 
-**Keep the captured occupant when importing an existing analysis.** An
-annotated listing can account for every byte while a raw RAM file lacks
-the machine state needed to run it. Castle Master's matching snapshot was
-recoverable from the contributor's repository history, and its memory
-matched the supplied dump exactly. The disassembler skill now describes
-direct import of completed Ghidra exports, byte comparison against the
-capture, and separate treatment of replacement overlays. It also separates
-exhaustive code/data classification from the site's prose-span metric;
-neither a successful import nor a restored boot verifies every inherited
-claim.
+**Compare an imported capture with a booted game before using it.**
+Castle Master’s menu capture matched every code byte in a new disk boot,
+but playing replaced its menu storage with the renderer’s output. An
+annotated export can seed the disassembler while still requiring a
+power-on recipe, a play snapshot and a comparison to choose the listing
+image. Names and descriptions survive the import; verification does not.
+The source snapshot carries the bytes, and `listing.py` generates the
+Source records. The maker’s unknown model remains explicit in provenance.
 
 ## 0.0.44 · 30 September 2026 · Ghostbusters · unorig with Claude
 

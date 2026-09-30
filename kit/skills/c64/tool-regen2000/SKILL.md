@@ -9,29 +9,6 @@ An interactive 6502 disassembler with an MCP server. It loads `.vsf`
 snapshots directly, which is how it is used here: start it on the
 steady-state snapshot from `10-orient`.
 
-## Importing an existing annotated export
-
-When the contributor supplies a completed Ghidra text listing and asks to
-publish that analysis, preserve its occupants instead of disassembling a
-raw RAM dump again. `python3 kit/c64/import_ghidra.py <game> <listing>`
-writes the native symbol map. Build the Source listing from the captured
-snapshot with `python3 kit/scripts/listing.py <game> <snapshot.vsf>`. Add
-`--verify-ram <65536-byte-dump>` to compare every initialized row with the
-supplied capture. Unknown bytes remain gaps. The default address space is
-physical RAM; use `--space <name>` in a separate output game directory for
-each replacement game overlay. Never combine overlays into one apparent
-stopped state or publish whole machine-ROM spaces.
-
-The importer accepts address/hex-bytes/instruction-or-data text rows and
-the labels and comments preceding them. Keep the original export in
-`work/` and record its SHA-256 under `imported` in `game.json`. Check the
-initialized-byte count and compare the supplied dump where available.
-An exhaustive code/data classification is different from the kit's
-prose-span coverage. Run `coverage.py`, keep its measured result, and
-record inherited verification separately from tests repeated for this
-publication. A RAM dump is not a bootable snapshot: CPU, video, interrupt
-and drive state must come from capture metadata or a matching snapshot.
-
 ## Start and drive
 
 ```
