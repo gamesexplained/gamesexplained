@@ -37,6 +37,11 @@ Sources:
   the Master tries to take the TIRU crystal at the end, and getting it
   past him with Splinx's help earns a 4096 escape bonus; oxygen lets the
   Doctor go outside; cloth disables controllers that run over it.
+- Reception, read 30 September 2026: GameBase64's Game of the Week page
+  reproduces Zzap!64's review (April 1986, 86 %); Wikipedia adds ASM,
+  4/10, and the Castle Quest likeness; The Register (2013) gives Amtix
+  48 %, the £14.95 price and the ROM chip, and says the development cost
+  "did for Micro Power". Lemon64 and MobyGames refused the request.
 - Key lists found by search (Z, X, `:`, `/`, RETURN, U, P, I, C, E, H, F0)
   are for the BBC Micro version and do not match the C64's reader at
   `$8F3C`; the C64 keys below are read from that code.
