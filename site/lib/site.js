@@ -133,7 +133,10 @@
     if(c.closest('a')||c.closest('pre')||c.children.length) return;
     var t=c.textContent, m=/^\$([0-9A-Fa-f]{4})$/.exec(t.trim());
     if(!m) return;
-    var a=document.createElement('a'); a.href='source.html#'+m[1].toUpperCase(); a.textContent=t;
+    /* a game of several programs names the part's Source page on an enclosing element; "" links nowhere */
+    var d=c.closest('[data-source]'), page=d?d.dataset.source:'source.html';
+    if(!page) return;
+    var a=document.createElement('a'); a.href=page+'#'+m[1].toUpperCase(); a.textContent=t;
     a.dataset.auto='';   /* not in the source: the page editor leaves it out of what it saves */
     c.textContent=''; c.appendChild(a);
   });

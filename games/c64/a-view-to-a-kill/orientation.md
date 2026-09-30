@@ -41,8 +41,8 @@ is the crackers' word for packing each loaded part into a file of its own.
 4. Then, per part:
    - intro: let it run; it ends by itself after about a minute.
    - Paris: tap fire (a press of about 0.3 s) on the instruction page.
-     Holding fire for a second started the car in a crashed state it did
-     not leave.
+     Once, holding fire for a second started the car in a state it did
+     not leave; a second try, holding it for 1.2 s, started normally.
    - City Hall: type `CCPHJ` and RETURN at "PLEASE ENTER CODE", then fire
      on the memos page.
    - mine: `DB4CT`, RETURN, fire.

@@ -577,13 +577,14 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats):
     with the part's own facts and listing, and the game's facts and cheats on the first."""
     for i, p in enumerate(P):
         page = part_page(P, i)
-        facts = markdown(read(os.path.join(p["dir"], "facts.md")), addr=page)
+        # the game's own facts and cheats name addresses in every part, so they link to none
+        facts = f"<h2>{html.escape(p['title'])}</h2>" + markdown(read(os.path.join(p["dir"], "facts.md")), addr=page, shift=1)
         if i == 0:
             top = read(os.path.join(gdir, "facts.md"))
             if top.strip():
-                facts = markdown(top, addr=page) + facts
+                facts = '<div data-source="">' + markdown(top, addr=False) + "</div>" + facts
             if cheats.strip():
-                facts += "<h2>Cheats</h2>" + markdown(cheats, addr=page)
+                facts += '<h2>Cheats</h2><div data-source="">' + markdown(cheats, addr=False) + "</div>"
         src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
         src = src.replace("<!-- parts -->", part_picker(P, i))
         src = re.sub(r"(<body\b[^>]*)>", lambda m: m.group(1) + f' data-listing="parts/{p["id"]}/listing.json">', src, count=1)
@@ -628,6 +629,12 @@ def data_links(P):
     return "Each part of the game has its own symbol map and listing: " + "; ".join(
         f'{html.escape(p["title"])}, <a href="parts/{p["id"]}/symbols.json">symbols.json</a> and '
         f'<a href="parts/{p["id"]}/listing.json">listing.json</a>' for p in P) + "."
+
+
+def nolink(h, P):
+    """A game made of parts names addresses in several programs, so its game-wide files link
+    none of them (site.js leaves code inside data-source="" alone)."""
+    return f'<div data-source="">{h}</div>' if P else h
 
 
 def parts_about(about, P):
@@ -701,8 +708,8 @@ def build_game(gdir, out_root):
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
                  links=link_html,
-                 features=markdown(read(os.path.join(gdir, "features.md")), shift=1),
-                 orientation=markdown(read(os.path.join(gdir, "orientation.md")), shift=1)).replace("<!-- tabs -->", nav)
+                 features=nolink(markdown(read(os.path.join(gdir, "features.md")), addr=not P, shift=1), P),
+                 orientation=nolink(markdown(read(os.path.join(gdir, "orientation.md")), addr=not P, shift=1), P)).replace("<!-- tabs -->", nav)
     about = under_title(about, ban)
     about = fill(about, data_links=data_links(P))
     if P:

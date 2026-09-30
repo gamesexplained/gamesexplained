@@ -1,0 +1,65 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/avtak-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Claims the code contradicts, bugs, and the questions still open. Everything under "Confirmed" was read in the code, and where it says so, seen in the emulator.</p>
+</header>
+<main class="wrap">
+<section id="sources" data-source="">
+  <p class="fig">01 · Checked against the sources</p>
+  <h2 class="t">Where the code and the sources disagree</h2>
+  <table class="t">
+    <tr><th>The claim</th><th>What the code does</th></tr>
+    <tr><td>MI6-HQ: the mine's detonator combination is 32768.</td><td>The mine checks 6, 7, 1, 3, 4 (<a href="source-mine.html#26F0"><code>$26F0</code></a>), and only digits 1 to 7 can be entered at all.</td></tr>
+    <tr><td>C64-Wiki: the game can be played from the keyboard as well as the joystick.</td><td>In play only the joystick in port 2 is read, and the keyboard scan is stopped. Keys are read only at the code prompts.</td></tr>
+    <tr><td>The code prompts: RETURN plays the section without the code.</td><td>It plays, but City Hall and the mine cannot then be won (<a href="mechanics.html#codes">How it fits together</a>).</td></tr>
+  </table>
+</section>
+
+<section id="city-hall" data-source="source-city-hall.html">
+  <p class="fig">02 · City Hall</p>
+  <h2 class="t">Bug: a burning room runs the end test from the middle of an instruction</h2>
+  <p>The main loop's test for a burning room branches to <code>$7090</code>, which is the second byte of a branch instruction. From there the processor reads <code>ORA $57AD</code>, then an undocumented instruction that shifts a byte of memory left and ORs it in (<code>SLO</code>, writing <code>$0BFC</code>), and arrives at the load of the code flag in the end test (<code>$7096</code>). Seen in the emulator with Bond's room set on fire: with CCPHJ typed, the next pass showed the mission-complete screen and DB4CT; without it, a new game. The byte at <code>$0BFC</code> went from <code>$40</code> to <code>$80</code>, the undocumented shift at work. Whether the branch was meant to go to the end test and the target is off by a byte, or was changed later, is not known.</p>
+  <h3>The gauges and the clock cannot kill Bond</h3>
+  <p>The energy gauges empty and nothing happens (<code>$8900</code>). The clock counts and nothing reads it: where a test might have been there are nine <code>NOP</code>s (<code>$6EA1</code>).</p>
+  <h3>A table read from the screen</h3>
+  <p>When the fire spreads to the next floor, the new temperatures are masked with <code>AND $03E9,Y</code> (<code>$95AD</code>), a read of the screen, where an <code>AND #</code> of a fixed value was probably meant. Not tried in the emulator.</p>
+</section>
+
+<section id="intro" data-source="source.html">
+  <p class="fig">03 · The intro</p>
+  <h2 class="t">Bug: on some boots the credits never scroll</h2>
+  <p>Before the credits the intro writes <code>$97</code> to the video chip's control register (<code>$CB50</code>). Its top bit is also the top bit of the raster line the next interrupt is asked for, which becomes line 496, a line a European screen never reaches. A later read, AND and write of the register clears it (<code>$C540</code>), but reading that bit gives the line the beam is on, so if the beam is below line 255 at that moment the bit is written back set. Then no interrupt ever comes again: the credits, the music and everything else driven from the interrupt stop. Seen in the emulator: of four boots started a tenth of a second apart, three scrolled the credits and in one the scrolling routine never ran.</p>
+</section>
+
+<section id="mine" data-source="source-mine.html">
+  <p class="fig">04 · The mine</p>
+  <h2 class="t">A digit counter with no limit</h2>
+  <p>Each digit entered is stored at <code>$1B73</code> plus the count so far, and nothing limits the count (<code>$38AA</code>). The numbered objects stay in the list after use, so a digit can be entered again and again. The fourteenth digit would land on the pause flag and stop the clock, and the forty-sixth on the code flag itself, which would make the section winnable without DB4CT once the count wraps round after 256. None of this was tried in the emulator.</p>
+  <p>Two smaller slips: the welcome page loads the stack pointer from the byte at <code>$FF</code> where the number <code>$FF</code> was meant (<code>$7D1D</code>), harmless because the next routine sets it again; and the planks' handler tests for an object number no object has (<code>$3970</code>).</p>
+</section>
+
+<section id="leftovers" data-source="">
+  <p class="fig">05 · Left in the files</p>
+  <h2 class="t">An older code, an older end screen, and an older menu</h2>
+  <p>City Hall holds a code prompt nothing calls, which asks for QRS21 and gives three tries (<a href="source-city-hall.html#967B"><code>$967B</code></a>), and an end screen nothing shows: WEBL DONE 007 YOUR CODE IS 111122 (<a href="source-city-hall.html#7E5A"><code>$7E5A</code></a>). It also holds the mine's end screen, with ILVCT, at the mine's address. The intro holds the menu of an earlier crack of the game: SEE OPENING, PARIS-CHASE, CITY ESCAPE, SILICON MINE, FINALE. The <a href="about.html#copy">About</a> tab lists every layer.</p>
+</section>
+
+<section id="open" data-source="">
+  <p class="fig">06 · Open questions</p>
+  <h2 class="t">Questions still open</h2>
+  <ul>
+    <li>Whether the code prompts and end screens are the game's own or were written by crackers. The older prompt and end screen in City Hall point to someone having replaced them; the memo pages, which are plainly the game's, print the same way.</li>
+    <li>What the meter on the mine's panel measures. It rises towards the upper right of the mine (<a href="source-mine.html#3000"><code>$3000</code></a>); the sources call something a Geiger counter.</li>
+    <li>Which of the two tunes is the Bond theme and which the title song.</li>
+    <li>What City Hall's door codes 1, 2, 3, 5 and 7 look like: the drawing code handles only 0 and 6.</li>
+    <li>Why Paris rewrites two short stretches of its map at every start (<a href="source-paris.html#4140"><code>$4140</code></a>).</li>
+  </ul>
+</section>
+</main>

@@ -1,0 +1,46 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/avtak-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Two tunes shared between four programs, a gunshot, and speech played by switching the volume on and off.</p>
+</header>
+<main class="wrap">
+<section id="tunes" data-source="">
+  <p class="fig">01 · The tunes</p>
+  <h2 class="t">Two tunes, each kept in the memory under the operating system</h2>
+  <p class="lede">The credits thank Tony Crowther for the arrangement of the James Bond theme, and name Duran Duran and John Barry for the title music.</p>
+  <p>The game has two tunes, each used by two programs. Both keep their notes at <code>$E000</code> and up, in the memory hidden under the operating system's ROM. To read a note the player switches everything but RAM out for a moment (the intro <a href="source.html#C773"><code>$C773</code></a>, Paris <a href="source-paris.html#7B73"><code>$7B73</code></a>).</p>
+  <table class="t">
+    <tr><th>Tune</th><th>Played in</th><th>Voices</th></tr>
+    <tr><td>The first</td><td>the intro and City Hall, with the same driver at the same address (<a href="source.html#C640"><code>$C640</code></a>)</td><td>three pulse waves; voice 1 through the low-pass filter</td></tr>
+    <tr><td>The second</td><td>Paris and the mine, with the same notes and different drivers (<a href="source-paris.html#7AAB"><code>$7AAB</code></a>, <a href="source-mine.html#7BAB"><code>$7BAB</code></a>)</td><td>three voices; Paris uses noise, sawtooth and pulse</td></tr>
+  </table>
+  <p>Which tune is the Bond theme and which is the title song was not checked by ear. In both drivers a note is three bytes, two for the frequency and one for its length, and the notes step after three frames and then two, in turn: 20 steps a second on a European machine. The intro's driver adds vibrato by adding 0, 4, 8 or 12 to the frequency each frame (<a href="source.html#C798"><code>$C798</code></a>). One pass of the intro's tune is 5,106 steps, about 102 seconds.</p>
+  <p>Paris lets the player choose on the instruction page: the tune, the effects, or both (<a href="source-paris.html#4F30"><code>$4F30</code></a>). In the mine the two effects, a beep for yes and a buzz for no, borrow the tune's second voice (<a href="source-mine.html#3B7D"><code>$3B7D</code></a>, <a href="source-mine.html#3B9C"><code>$3B9C</code></a>).</p>
+</section>
+
+<section id="intro" data-source="source.html">
+  <p class="fig">02 · The intro</p>
+  <h2 class="t">A gunshot with the interrupts off, and the tune parked while it sounds</h2>
+  <p>The gunshot is voice 3's noise at a fixed frequency, played with the interrupts off so nothing else runs (<code>$CABC</code>). Before it, the intro saves the music driver's whole state to <code>$9F00</code> and puts it back afterwards, so the tune picks up where it stopped (<code>$C1B0</code>, <code>$C1C0</code>).</p>
+</section>
+
+<section id="speech" data-source="">
+  <p class="fig">03 · Speech</p>
+  <h2 class="t">Speech made of one-bit samples, played on the volume control</h2>
+  <p class="lede">The intro ends with "Now, James, your mission begins" on screen, and Paris speaks when the chase is won or lost.</p>
+  <p>Both players work the same way. They switch the sound chip's master volume between 0 and 15, one bit of sample at a time, with the interrupts off (the intro <a href="source.html#A000"><code>$A000</code></a>, Paris <a href="source-paris.html#1000"><code>$1000</code></a>). Each change of volume makes a click in the output, and a fast enough stream of clicks is heard as a voice.</p>
+  <table class="t">
+    <tr><th>Where</th><th>Samples</th><th>Heard</th></tr>
+    <tr><td>The intro</td><td>one, <code>$A092</code>-<code>$AA81</code></td><td>about 2.2 seconds, some 9,400 bits a second, with a silence of about 0.6 s in the middle</td></tr>
+    <tr><td>Paris</td><td>three, at <code>$1090</code>, <code>$1225</code> and <code>$190A</code></td><td>one on a catch; one or two on a loss, depending on how it was lost (<a href="source-paris.html#4BA0"><code>$4BA0</code></a>)</td></tr>
+  </table>
+  <p>The words themselves were not checked by ear.</p>
+</section>
+</main>
