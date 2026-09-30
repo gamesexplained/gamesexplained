@@ -17,6 +17,9 @@
   <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier, and switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
   <div class="plate">
     <div class="row">
+      <button class="b" type="button" id="ob" aria-pressed="true">Objects</button>
+      <button class="b" type="button" id="us" aria-pressed="true">Where they are used</button>
+      <button class="b" type="button" id="dg" aria-pressed="true">Dangers</button>
       <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
       <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
       <span class="note" id="mappos"></span>
@@ -24,8 +27,21 @@
     <canvas id="map" class="scr" style="max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
     <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
+    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label.</p>
     <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code> and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. Parts of the mine swap in their own shapes for sixteen characters (<code>zone_graphics</code>); this picture draws every part with the starting cavern's.</p>
   </div>
+  <h3>What the objects are for</h3>
+  <p>Each use below is the code's own test: the game compares the Doctor's position with a table of points when he uses the object he holds (F5, <code>use_item_update</code>, <code>$BACC</code>).</p>
+  <table class="t">
+    <tr><th>Object</th><th>Where it works</th><th>What it does</th></tr>
+    <tr><td>PICK AXE</td><td>three dig sites (<code>$BC1C</code>)</td><td>three hits wear the rock away and open the passage</td></tr>
+    <tr><td>SPANNER</td><td>eight bolts (<code>$BB94</code>)</td><td>each bolt, once undone, changes a piece of the map (<code>use_spanner</code>, <code>$BBBC</code>)</td></tr>
+    <tr><td>ACTIVATOR</td><td>three points at the top of the mine (<code>$BCDA</code>)</td><td>launches the escape pod, one of the two ways to leave (<code>$BCE0</code>)</td></tr>
+    <tr><td>EXPLOSIVES</td><td>anywhere, once armed; two places matter</td><td>a blast near one point starts the level rising (<code>$C202</code>); a blast near another opens a wall (<code>$C22E</code>)</td></tr>
+    <tr><td>AIR MASK</td><td>carried in the hand</td><td>keeps the air countdown full (<code>$CAB1</code>)</td></tr>
+  </table>
+  <p>The air runs out only after the Doctor has breathed bad air. Walking into one of the four bad-air blocks high in the mine starts a countdown of 50. It keeps running while he is high in the mine (<code>$1C60</code> of 2 or more), except in open cavern, and he suffocates when it reaches 0 (<code>doctor_tile_checks</code>, <code>$CA58</code>). Holding the AIR MASK fills it again every time. The fifth bad-air block lies lower down, where the test is never made. Stalagmite blocks, sixteen of them, kill at a touch.</p>
+  <p>What the PASS CARD, MAT, PLATFORM, BOX, CHEMICALS and the eggs do is not traced here. The circuits count when they sit in their slots in the machinery (<code>machinery_update</code>, <code>$B9B6</code>), and the crystal and the TIRU capsule double the bonus at the end.</p>
   <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. It holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
   <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
 </section>
@@ -52,7 +68,37 @@
   const Y = y => full.height - y;
   const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
   const pts = [...Array(9)].map((_, i) => [M[0x9059 + i] << 8 | M[0x9062 + i], Y(M[0x906B + i] << 8 | M[0x9074 + i])]);
-  let view, showRp = false;
+  let view, showRp = false, showOb = true, showUs = true, showDg = true;
+  const P = (xh, xl, yh, yl) => [xh << 8 | xl, Y(yh << 8 | yl)];
+  const name = o => DW.itemName(M, o);
+  // objects $34-$4C where a new game places them (the markers $30-$33 wait with Splinx; x high $FF is off the map)
+  const objs = [];
+  for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) objs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t: name(o) });
+  // where objects act: each list read from the table the code tests the Doctor's position against
+  const uses = [];
+  for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBC1C + i], M[0xBC1F + i], M[0xBC22 + i], M[0xBC25 + i]), t: 'PICK AXE: dig here (3 hits)' });        // $BC11
+  for (let i = 0; i < 8; i++) uses.push({ at: P(M[0xBB94 + i], M[0xBB9C + i], M[0xBBA4 + i], M[0xBBAC + i]), t: 'SPANNER: bolt ' + (i + 1) });             // use_spanner $BBBC
+  for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBCDA + i], M[0xBCDD + i], 0x06, 0x48), t: 'ACTIVATOR: escape pod' });                                 // use_activator $BCE0
+  uses.push({ at: P(0x0E, 0x60, 0x00, 0x68), t: 'EXPLOSIVES blown here: the level starts rising' });   // blast_damage $C202
+  uses.push({ at: P(0x0B, 0xE0, 0x05, 0x88), t: 'a blast here opens the wall' });                      // $C22E, switch cell $0B
+  // dangers: map blocks the Doctor's centre is tested against (doctor_tile_checks, $CA58)
+  const dangers = [];
+  for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) {
+    const b = M[0xFB80 - 0x80 * r + c], at = [c * 32 + 16, Y(r * 32 + 16)];
+    if (b === 0x74 || b === 0x51) dangers.push({ at, t: 'stalagmite: fatal' });
+    else if (b === 0x3F && r * 32 >= 0x200) dangers.push({ at, t: 'bad air: hold the AIR MASK' });
+  }
+  function marks(list, colour, round) {
+    for (const k of list) {
+      const [x, y] = k.at; mctx.fillStyle = colour; mctx.strokeStyle = '#000'; mctx.lineWidth = 1.5;
+      mctx.beginPath(); if (round) mctx.arc(x / S, y / S, 4.5, 0, 7); else mctx.rect(x / S - 4.5, y / S - 4.5, 9, 9); mctx.fill(); mctx.stroke();
+      const zx = (x - view[0]) * 2, zy = (y - view[1]) * 2;
+      if (zx > -40 && zx < 808 && zy > -20 && zy < 404) {
+        zctx.strokeStyle = colour; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 12, 0, 7); zctx.stroke();
+        zctx.font = 'bold 14px IBM Plex Mono, monospace'; zctx.lineWidth = 4; zctx.strokeStyle = '#000'; zctx.strokeText(k.t, zx + 16, zy + 5); zctx.fillStyle = colour; zctx.fillText(k.t, zx + 16, zy + 5);
+      }
+    }
+  }
   const centre = ([x, y]) => view = [Math.min(full.width - 384, Math.max(0, x - 192)), Math.min(full.height - 192, Math.max(0, y - 120))];
   centre(start);
   function cross(ctx, x, y, s, c) { ctx.fillStyle = c; ctx.fillRect(x - 4 * s, y - s / 2, 8 * s, s); ctx.fillRect(x - s / 2, y - 4 * s, s, 8 * s); }
@@ -61,6 +107,9 @@
     mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 384 / S, 192 / S);
     cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
     zctx.drawImage(full, view[0], view[1], 384, 192, 0, 0, 768, 384);
+    if (showDg) marks(dangers, '#ff6b5b', false);
+    if (showOb) marks(objs, '#e8c547', true);
+    if (showUs) marks(uses, '#5fd068', false);
     if (showRp) pts.forEach(([x, y], i) => {
       mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill();
       mctx.fillStyle = '#000'; mctx.font = 'bold 9px IBM Plex Mono, monospace'; mctx.fillText(i, x / S - 3, y / S + 3);
@@ -76,6 +125,10 @@
   const rp = document.getElementById('rp');
   rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
     document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
+  for (const [id, set] of [['ob', v => showOb = v], ['us', v => showUs = v], ['dg', v => showDg = v]]) {
+    const b = document.getElementById(id);
+    b.onclick = () => { const v = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', v); set(v); draw(); };
+  }
   document.getElementById('home').onclick = () => { centre(start); draw(); };
   draw();
 })();
