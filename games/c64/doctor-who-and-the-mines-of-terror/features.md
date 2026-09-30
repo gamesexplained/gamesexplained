@@ -19,7 +19,10 @@ Sources:
 - Search summaries of Wikipedia, "Doctor Who and the Mines of Terror",
   and of the Games That Weren't entry (2022): released by Micro Power on
   the BBC Micro in 1985 and on the Amstrad CPC and C64 in 1986; a ZX
-  Spectrum version was developed and not released. The Games That
+  Spectrum version was developed and not released. Wikipedia (read 30
+  September 2026) also says it began as a sequel to the BBC Micro game
+  Castle Quest and became a Doctor Who game mid-development, and that the
+  BBC version came with its own ROM chip. The Games That
   Weren't page itself (read 30 September 2026) is about the Spectrum
   version; it opens with its author's own story that he had thought the
   C64 version unreleased, after a Commodore Force feature on unreleased
