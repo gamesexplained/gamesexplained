@@ -133,8 +133,8 @@ def image(gdir, vsf=None):
 
 def blocks_of(gdir, live):
     if live:
-        from symbols_export import from_live
-        blocks, syms, _ = from_live("c64")
+        from symbols_export import read_live
+        blocks, syms, _ = read_live("c64")
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms = s["blocks"], s["symbols"]
