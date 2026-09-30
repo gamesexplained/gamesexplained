@@ -7,7 +7,7 @@ The supplied RAM dump was captured at the language menu. The matching Dualis D64
 With VICE MCP 3.13.1 (PAL):
 
 1. Hard-reset the machine, resume execution, and autostart the D64’s first entry. Wait for the animated Dualis intro. Fire on port 2 did not dismiss it in this run.
-2. Hold Space for 60 frames, release it, and advance 900 frames. The game unpacks and draws the language menu. Wait until the language choices are visible. Save `work/disk-menu.vsf` without ROMs using `pause()` from `kit/c64/vice.py` before saving.
+2. Hold Space for 60 frames, release it, and advance 1,200 frames. The game unpacks and draws the language menu. Wait until the language choices are visible. Save `work/disk-menu.vsf` without ROMs using `pause()` from `kit/c64/vice.py` before saving.
 3. Hold `1` for 60 frames, release for 30; hold Return for 60, release for 30. Repeat `1`, Return for the character menu with the same holds and gaps.
 4. Advance 300 more frames. Confirm the castle exterior and WILDERNESS label, then save `work/disk-play.vsf` without ROMs.
 
