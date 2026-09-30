@@ -38,21 +38,34 @@ Sources:
 | Feature | Status | Where |
 |---|---|---|
 | Two modes on the disk: Training and Adventure | live (menu) | `LL` at `$9800` |
-| Adventure: a large scrolling world (jungle, dojos, waterfalls, caves, dungeons, mountains) | live (jungle and a stone wall seen) | |
-| Walk left and right | live | |
-| Turn round with fire and back | open | |
-| Up: evade a sweep, climb stairs; down: duck, climb down | open | |
-| Punches and kicks by joystick position, with and without fire | open | |
-| Opponents to fight one to one | live (one seen approaching) | |
-| Dogs | open | |
-| A life bar that refills slowly outside fights | open | |
-| Eight scrolls to collect | open | |
-| Shrines and meditation chambers: refill life, respawn point, progress kept | open | |
-| Puzzles around scrolls and shrines | open | |
-| The Warlord in the volcano | open | |
-| Score (a number at the top of the screen) | live (0 at the start) | |
-| Training / combat practice mode | live (menu); not played | `LOADIT` |
+| A large scrolling world of screens and areas | live (jungle, stone wall); 123 screens, 48 areas | `$4A71`, `$4AEC` |
+| Walk left and right | live | move map `$33C3` |
+| Turn round with fire and back | traced | `$33C3` |
+| Up: evade, climb stairs; down: duck, climb down | traced | `$33C3`, `$33E3` |
+| Punches and kicks by joystick position, with and without fire | confirmed (flying kick, sweep live) | `$33C3`, move scripts `$AF46` |
+| Opponents fought one to one, with attack combinations | confirmed (one fought live) | `$2E0E`-`$32F8` |
+| Dogs and other hazards | traced: hazard objects cost 2 or 10 energy and can be knocked away | `$2A57`, `$2BB4` |
+| A life bar that refills slowly | confirmed (47 at the start live; +1 every 128 frames traced) | `$2D14` |
+| Eight scrolls to collect | traced | flags `$0405`-`$040C` |
+| Meditation chambers: refill, respawn point, progress kept | traced: rooms `$44`-`$4B`; meditation raises the maximum by beaten opponents; respawn in the last chamber | `$396F`, `$2D33` |
+| Lives | live: 1 at the start; traced: +1 per scroll delivered | `$2D32` |
+| Puzzles around scrolls and shrines | traced in part: area 5 drains the hero unless scroll 8 is delivered | `$2CE4` |
+| The Warlord in the volcano | open: an ending scene is reached from room `$7A` (`$2DB5`), not tested | |
+| Score and high score | confirmed (score rises on a hit, live) | `$CC01`, `$CC21` |
+| Music, three tunes by zone | confirmed (tune 3 in the jungle) | `$F400` |
+| Sampled sound effects | traced | `$3D8B`, `$3DB8` |
+| RESTORE pauses | live | `$3C23` |
+| F5 restarts | traced | `$2444` |
+| Training / combat practice mode | live (menu); not analysed: a separate load | `LOADIT` |
 
 ## Beyond the documentation
 
+- The game runs two tasks on two stacks: the scrolling is done by a
+  background task that the interrupt switches to.
+- Fighters are stored facing one way and mirrored as they are unpacked.
+- The fighters' sprites are split down the screen in one of seven layouts.
+- A second fighter on joystick port 1 is wired into the input routine.
+
 ## Open questions
+
+See `facts.md`, Open questions.
