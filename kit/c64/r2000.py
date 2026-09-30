@@ -79,6 +79,20 @@ def failed(out):
     return out.lstrip().startswith("{") and '"error"' in out
 
 
+def read_live():
+    """(blocks, symbols, comments) from the running server, in symbols.json's
+    vocabulary. symbols_export.py calls this for a c64 game."""
+    rpc = make_client()
+    blocks = json.loads(call(rpc, "r2000_get_blocks", {}))
+    syms = json.loads(call(rpc, "r2000_get_symbols", {}))
+    comments = json.loads(call(rpc, "r2000_get_comments", {}))
+    return ([{"start": b["start_address"], "end": b["end_address"], "type": b["type"]} for b in blocks],
+            [{"address": s["address"], "name": s["name"], "type": s["type"],
+              "kind": s.get("kind", "user").lower()} for s in syms],
+            [{"address": c["address"], "type": c["type"], "text": c["comment"]}
+             for c in comments if c["comment"].strip()])
+
+
 def game_dir(explicit=None):
     for cand in (explicit, os.environ.get("GAME_DIR"), os.getcwd()):
         if cand and os.path.exists(os.path.join(cand, "game.json")):
