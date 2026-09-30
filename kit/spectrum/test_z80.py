@@ -23,20 +23,18 @@ import z80
 
 
 def load_skoolkit():
+    """Find the SkoolKit package. kit/spectrum/skoolkit.py shadows it while HERE is on
+    sys.path, so that entry comes off (z80 is already imported) and any cached shim is dropped."""
+    sys.path[:] = [p for p in sys.path if os.path.abspath(p) != HERE]
+    sys.modules.pop("skoolkit", None)
+    for p in glob.glob(os.path.join(HERE, "..", "..", "tools", "skoolkit", "lib", "python*", "site-packages")):
+        if os.path.isdir(p) and p not in sys.path:
+            sys.path.insert(0, p)
     try:
-        import skoolkit  # noqa: F401
+        from skoolkit import components  # noqa: F401   the package, not the shim
         return True
     except ImportError:
-        pass
-    for p in glob.glob(os.path.join(HERE, "..", "..", "tools", "skoolkit", "lib", "python*", "site-packages")):
-        if os.path.isdir(p):
-            sys.path.insert(0, p)
-            try:
-                import skoolkit  # noqa: F401
-                return True
-            except ImportError:
-                pass
-    return False
+        return False
 
 
 def oracle():
