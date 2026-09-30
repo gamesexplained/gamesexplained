@@ -90,9 +90,13 @@ code disagree, the code wins and `features.md` says **differs**.
   limiter. When the worm is already heading into the window a leg tests,
   `$9F37` reverses the heading and quarters the projection scale
   (`$8002`) - the worm bumping into an edge.
-- `($8001)` heading, `($8002)` speed/scale, `($7FF4/$7FF6/$7FFE)` position,
-  `($805D)` sparkies, `($805B)` score display. These addresses are the
-  agents' reading of the code and are marked for live checking.
+- `($8001)` heading, `($8002)` speed/scale, `($8003)` speed,
+  `($7FF4/$7FF6/$7FFE)` position, `($805D)` sparkies, `($8059)` frame
+  counter, `($7C71)` entity count. Read from `work/play-1.sna`: `$8001` =
+  `$83` (the initial heading the steering code writes), `$805D` = 20 (the
+  HUD's `SPARKIES:00020`), `$8059` = 125, `$7C71` = 8. Live: holding
+  `SPACE` at `work/play-1.sna` took `$805D` 20→19 and `$7C71` 8→9; the
+  `1` key then took them 19→18 and 9→10.
 
 ## The halt screen (`$D05E`)
 
