@@ -1,0 +1,68 @@
+name: kit-version
+# Moves kit/VERSION on by one after a change lands on main that asks for it,
+# so pull requests never edit the number and never conflict over it.
+# A change asks with [kit-bump] in its pull request's title or body, a
+# kit-bump label on the pull request, or [kit-bump] in a commit message (for
+# a direct push). CHANGELOG headings written as "## next · ..." get the new
+# number. The push this job makes starts no workflow (GitHub does not run
+# them for its own token), so it asks for the site's build itself.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write        # push the bump to main
+  pull-requests: read    # read the merged pull request's title, body and labels
+  actions: write         # start ci.yml, which deploys the site
+
+concurrency:
+  group: kit-version
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Did the change ask for a bump?
+        id: ask
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: |
+          shas=$(git rev-list "$BEFORE..$AFTER" 2>/dev/null || echo "$AFTER")
+          text=""
+          for sha in $shas; do
+            text+=$(git log -1 --format=%B "$sha")$'\n'
+            text+=$(gh api "repos/$GH_REPO/commits/$sha/pulls" \
+              --jq '.[] | .title + "\n" + (.body // "") + "\n" + ([.labels[].name | "[" + . + "]"] | join(" "))')$'\n'
+          done
+          if grep -qF '[kit-bump]' <<<"$text"; then
+            echo "bump=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "No [kit-bump] in this push."
+          fi
+      - name: Bump kit/VERSION and name the CHANGELOG's new entries
+        if: steps.ask.outputs.bump == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          done=""
+          for try in 1 2 3; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            v=$(python3 -c "a = open('kit/VERSION').read().strip().split('.'); a[-1] = str(int(a[-1]) + 1); print('.'.join(a))")
+            echo "$v" > kit/VERSION
+            sed -i "s/^## next · /## $v · /" kit/CHANGELOG.md
+            git commit -qam "kit $v"
+            if git push -q origin HEAD:main; then done="$v"; break; fi
+            sleep 5
+          done
+          [ -n "$done" ] || { echo "could not push the bump to main"; exit 1; }
+          echo "kit/VERSION is $done"
+          gh workflow run ci.yml --ref main

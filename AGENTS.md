@@ -94,8 +94,12 @@ they ask for a change, commit straight to `main` if they wish.
 `kit/CHANGELOG.md` is not a list of changes: it records what the
 kit learned about reverse engineering, from which game and whom, and a
 change that does not alter what the next agent does when it opens a game
-stays out of it. Bump `kit/VERSION` when the workflow changes. A new
-platform follows `kit/PLATFORMS.md`.
+stays out of it. When the workflow changes, put `[kit-bump]` in the pull
+request's description (or the commit message, on a push to `main`) and
+leave `kit/VERSION` alone: after the merge, `.github/workflows/kit-version.yml`
+moves it on and gives a CHANGELOG entry headed `## next · ...` the new
+number, so two pull requests never conflict over it. A new platform
+follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable
 
