@@ -141,6 +141,59 @@ the loader and the start-up (`$C459`, `$C469`), and stays `$15` in play
 | `$DC0D`, `$DC0F` | CIA 1 interrupts; timer B for samples |
 | `$DD00`, `$DD0D` | VIC bank 3 at start-up; NMI source test |
 
+## Towards a solution
+
+Read from the game's tables, with the live tests named.
+
+**Where the scrolls lie** (encounter records with flags `$60`-`$67` at
+`$E609`; flags AND 7 is the scroll number, byte 2 the map position):
+
+| Scroll | Room | Map position | Its chamber |
+|---|---|---|---|
+| 1 | 102 | 180 | room 68 (`$44`) |
+| 2 | 91 | 152 | 69 |
+| 3 | 114 | 110 | 70 |
+| 4 | 84 | 124 | 71 |
+| 5 | 107 | 143 | 72 |
+| 6 | 110 | 140 | 73 |
+| 7 | 118 | 212 | 74 |
+| 8 | 44 | 175 | 75 |
+
+**What each delivered scroll opens** (the code that tests `$0405`+n):
+
+| Scroll | Opens | Where |
+|---|---|---|
+| 1 | barriers of type 3 (rooms 4, 21, 37, 39, 40, 53) can be broken | `$0A59`-`$0A6A` |
+| 2 | a location action in room `$34` | `$372F`-`$373C` |
+| 3 | leaving area 7 (room 76, on the way to the volcano) alive: without it energy is set to 0 | `$0649`-`$0660` |
+| 4 | barriers of type 7 (rooms 79, 81) can be broken | `$0A44`-`$0A55` |
+| 5 | the chain of opponents at an encounter ends early | `$27AD` |
+| 6 | the exits of area 13 (room 79) | `$064C`-`$0677` |
+| 7 | the colour scheme of one zone changes | `$10E5` |
+| 8 | area 5 (rooms 64-67) stops draining the hero | `$2CE4` |
+
+**The map.** Each of the 123 rooms has an exit list at `$4AEC`: type,
+column, destination room, arrival column (read with `find_room_exits`
+`$1A06`). Exits of types 9 and 10 are stairs down and up, taken with the
+stick on the exit's column (*live*: rooms 100 → 101 → 102 → 103, each
+arriving at the recorded column). Walls are the 2-byte records of the
+room's item list (`$501E`); the hero stops at a wall's column plus
+`$0AC7`[type] from the left and minus `$0ABD`[type] from the right
+(`$087A`-`$08DF`; *live*: stopped at column 75 by the wall at 77 in room
+101). Type-11 exits are holes: crossing one while walking centred on the
+screen (`$92` = `$4E`, `$371D`) drops the hero to the room below
+(*live*: room 103 column 52 falls through 102 into 101).
+
+**The order.** A search over the exit lists, the walls and the gates
+above finds that the scrolls can be delivered in the order 1, 4, 8, 2, 3,
+6, 7, 5, and that room 122, the ending (`$2DB5`), is then reachable
+through the volcano rooms 60-63, if the hole in room 103 can be crossed.
+Every route from the start to scroll 1 in this model crosses that hole,
+and every other part of the world is behind a type-3 barrier that needs
+scroll 1. In testing, walking, jumping and kicking at the hole all fell
+through it; how a player crosses it is not yet known. The order is
+therefore not a verified solution.
+
 ## Open questions
 
 - Two AI combinations: `$31F2` stores into `$B4` without `,X`, so

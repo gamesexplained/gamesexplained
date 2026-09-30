@@ -16,5 +16,9 @@ Worth doing, found in the run and not done:
 - Live tests not run: area 5 without scroll 8; the ending scene from room
   `$7A`; setting `$0455` to 0 for a second joystick; combination 8's store
   into the hero's slot; readers of the head sprites at `$B746`.
+- A solution: facts.md, "Towards a solution", has the scroll locations,
+  the gates and a candidate order; it stops at the hole in room 103
+  (column 52), which no tested move crossed. The solver and the
+  emulator driver are in `work/solver/` (not committed).
 - The Training program: a separate load (`LOADIT`, the `TNK` files).
 - The web sources could not be read in this run's environment.
