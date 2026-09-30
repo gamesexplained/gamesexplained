@@ -28,8 +28,11 @@ game at `$484D` with the KERNAL banked in; the game banks it out itself.
 
 - The main loop waits in `$80DA` for raster line `$FA` with bit 8 clear,
   once per pass, so a pass is at least one frame. It counts frames in
-  `$53`-`$55` and every 64 frames subtracts 1, in decimal, from the
-  three-byte counter `$1B`-`$1D`. (traced: `$80DA`-`$810C`)
+  `$53`-`$55`. It subtracts 1, in decimal, from the three-byte counter
+  `$1B`-`$1D` only when both `$53` and `$54` wrap to zero together (the
+  `BNE`s at `$80EA` and `$80EE`), once every 65,536 frames, about 21.8
+  minutes on PAL; the `AND #$3F` test after them is then always true.
+  (traced: `$80DA`-`$810C`)
 
 ## Controls
 
