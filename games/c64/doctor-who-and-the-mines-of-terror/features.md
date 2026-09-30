@@ -19,8 +19,11 @@ Sources:
 - Search summaries of Wikipedia, "Doctor Who and the Mines of Terror",
   and of the Games That Weren't entry (2022): released by Micro Power on
   the BBC Micro in 1985 and on the Amstrad CPC and C64 in 1986; a ZX
-  Spectrum version was developed and not released; the C64 version was
-  long thought unreleased until an original copy was found.
+  Spectrum version was developed and not released. The Games That
+  Weren't page itself (read 30 September 2026) is about the Spectrum
+  version; it opens with its author's own story that he had thought the
+  C64 version unreleased, after a Commodore Force feature on unreleased
+  games included it by mistake, until he found an original copy.
 - Search summaries of the Wikipedia and GiantBomb pages: the Sixth Doctor
   and Splinx, a programmable robot cat; the Master is mining heatonite to
   build a TIRU; the Doctor recovers the plans and escapes. The Doctor can
