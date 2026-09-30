@@ -1,6 +1,6 @@
 # Doctor Who And The Mines Of Terror — TODO
 
-Tier: **Silver** (100 % coverage, 56,533 tracked bytes; facts, features,
+Tier: **Silver (claimed)**, steward unorig (100 % coverage, 56,533 tracked bytes; facts, features,
 minisite; copy `agent-draft`).
 
 For Gold, a human pass over every tab (Overview, Maps / levels, How it
