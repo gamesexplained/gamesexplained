@@ -233,6 +233,16 @@ class Rpc:
         self.strict("save-screen", os.path.abspath(path))
         return path
 
+    def smartload(self, path):
+        """Load a tape or disk image and let the machine run it (ZEsarUX `smartload`).
+
+        ZEsarUX picks the file type from the extension: a `.tzx`/`.tap` plays the
+        tape, a `.sna`/`.z80` loads a snapshot. It enters cpu-step for the load and
+        leaves it again when the machine was running, so the loader starts by
+        itself. A tape plays at real speed — the machine keeps running while this
+        returns — so watch the screen (or poll the PC) until the game is up."""
+        return self.cmd("smartload", os.path.abspath(path))
+
     # -- phase 3: live measurement ------------------------------------------
     def run(self, limit=0, timeout=60.0, stop_on_data=False):
         """Run the CPU; returns the reply when it stops.
@@ -420,6 +430,7 @@ COMMANDS = {
     "type-ascii":    ("text, ms (optional)", "type a string as keystrokes"),
     "snapshot-save": ("path", "save a snapshot"),
     "snapshot-load": ("path, rearm (optional)", "load one"),
+    "smartload":     ("path (.tzx/.tap/.sna/.z80)", "load a tape or disk image and run it"),
     "save-screen":   ("path (.scr/.bmp/.pbm)", "save the screen"),
     "machine":       ("-", "the emulated machine"),
     "version":       ("-", "the emulator version"),
@@ -487,6 +498,8 @@ def call(rpc, name, args):
         return rpc.snapshot_save(os.path.expanduser(args["path"]))
     if name == "snapshot-load":
         return rpc.snapshot_load(os.path.expanduser(args["path"]), rearm=args.get("rearm", True))
+    if name == "smartload":
+        return rpc.smartload(os.path.expanduser(args["path"]))
     if name == "save-screen":
         return rpc.save_screen(os.path.expanduser(args["path"]))
     if name == "machine":

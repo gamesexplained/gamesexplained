@@ -72,6 +72,7 @@ lists all 129.
 | Input, read back | `get-ui-io-ports` | same 18 hex characters |
 | Keys | `send-keys-event <key> <1\|0>` | pumped by the running machine only; see below |
 | Snapshots | `snapshot-save <file>`, `snapshot-load <file>` | a `.sna` for a 48K machine is 49179 bytes |
+| Load a game | `smartload <file>` | from the extension: `.tzx`/`.tap` plays the tape, `.sna`/`.z80` loads a snapshot; the loader then runs by itself. A tape plays at real speed, so wait for the game (poll the PC or save the screen) |
 | Screen | `save-screen <file>` | `.scr` is 6912 bytes, `.bmp` and `.pbm` too |
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
 | Machine | `get-current-machine` | `ZX Spectrum 48k` |
@@ -96,6 +97,7 @@ breakpoint in the client is `TSTATESP>69888`.
 ```
 python3 kit/spectrum/zesarux.py --list                      # the commands below
 python3 kit/spectrum/zesarux.py read-memory '{"addr":"8000H","len":16}'
+python3 kit/spectrum/zesarux.py smartload '{"path":"games/spectrum/<slug>/work/<image>.tzx"}'
 python3 kit/spectrum/zesarux.py snapshot-save '{"path":"tools/zesarux-home/snapshots/x.sna"}'
 ```
 
@@ -106,7 +108,7 @@ One call per invocation for the agent, and the same calls from a script
 `bp_passcount`, `bp_counts`, `bp_count`, `bp_conditions`, `bp_action`,
 `bp_disable`, `bp_enable_all`, `bp_clear`, `set_input`, `get_input`,
 `release_input`, `key_event`, `type_ascii`, `evaluate`, `snapshot_save`,
-`snapshot_load`, `save_screen`, `machine`, `version`.
+`snapshot_load`, `smartload`, `save_screen`, `machine`, `version`.
 
 Anything with a loop in it belongs in a script: a round trip is about
 0.13 ms, and 800 unpaced calls take 0.1 s (measured), but an agent
