@@ -27,6 +27,32 @@ a filter from voice 3's envelope (`$D41C`), so a port that only writes
 registers drifts from the game. `site/lib/sid.js` now passes a driver
 voice 3's envelope and waveform each frame (`readback`), and a port's
 test feeds the original and the port the same values.
+## 0.0.52 · 1 October 2026 · Impossible Mission · chunkypixel with Claude
+
+**Data the start-up moves is invisible to the hand-over comparison.**
+Comparing the hand-over snapshot with the play snapshot finds loaded
+data that stays where it was loaded. Impossible Mission's start-up
+copies graphics under the I/O area, where the two images differ, so
+half a kilobyte stayed outside every span with coverage at 100 %. Before
+calling 100 %, follow each start-up copy loop to its destination and
+check it against the ledger. Read a disk image's header, not its name:
+this one was called `.d64` and was a G64 that needed true drive
+emulation.
+## 0.0.51 · 1 October 2026 · Delta · chunkypixel with Claude
+
+**Name a requested number by the routine that takes it.** Delta asks
+for a tune by storing its number plus one in a request byte; the sound
+routine subtracts one before calling the driver. Its facts named the
+tunes from the callers' values and three of four were one off, until the
+page's music player was built from the driver's own tune numbers and
+disagreed. Verify now reads the consumer of a request or queue byte
+before stating what its values mean.
+
+**When every page fetch is refused, use search summaries, marked.** The
+session's network policy refused every web page with a 403 from the
+proxy, while web search still answered. The features step now takes
+plain claims from the search results' quotes, says they are second-hand
+and dated, and leaves the rest open.
 
 ## 0.0.48 · 30 September 2026 · Castle Master · 64kramsystem with Codex
 

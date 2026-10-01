@@ -12,7 +12,7 @@ and it is the worked example for the next one.
 | `kit/skills/<platform>/<machine>-reference/` | facts about the machine, consulted rather than recalled: memory map, registers, timing | `kit/skills/c64/c64-reference` |
 | `kit/skills/<platform>/tool-<name>/` | one skill per tool: how to drive it, what it gets wrong | `tool-vice-mcp`, `tool-regen2000` |
 | `kit/<platform>/INSTALL.md` | the tools, how to get them, sizes, what they leave behind, what is known to work per operating system, and the emulator's pass/fail per phase of `kit/EMULATOR.md` | `kit/c64/INSTALL.md` |
-| `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it | `kit/c64/tools.py` |
+| `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it. It declares `COMMANDS` (what its `main()` accepts) and `TOOL_NAMES` (the tool names `stop` takes) as module-level tuples, which the dispatcher reads to pick the platform when there are several; `kit/scripts/test_tools.py` checks the declaration against `main()`. The platform's own scripts call the dispatcher with `--platform <name>` | `kit/c64/tools.py` |
 | `kit/<platform>/<tool>.py` | a scripting client per tool, for the loops that are too slow as single calls | `vice.py`, `r2000.py` |
 | `kit/<platform>/registers.py` | the I/O registers by name, `NAMES`, for the operands of the Source tab; without it an operand that sees the chips shows its address | `kit/c64/registers.py` |
 | `kit/<platform>/check_emulator.py` | `kit/EMULATOR.md`'s tests as a script with its own test program, one name per check; the launcher runs it as `check-emulator` | `kit/c64/check_emulator.py` |

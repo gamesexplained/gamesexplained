@@ -147,7 +147,12 @@ is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
 game reached 100 % with 1.6 KB of its own tables and its picture's
-colours outside the count.
+colours outside the count. The list only finds data that sits at the same address in
+both images: data the start-up copies elsewhere (out of the way of the
+I/O area, under a ROM, into another bank) differs between them and is
+never listed. Search the play snapshot for the start-up's copy loops'
+destinations, and check each against the ledger; one game reached
+100 % with half a kilobyte of moved graphics outside every span.
 
 ## Inline parameters: the reason a flow disassembler stalls
 

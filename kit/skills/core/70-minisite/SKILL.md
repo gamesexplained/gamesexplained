@@ -137,6 +137,15 @@ can open with that instead.
   `build.py` stops on one. It reads every `src=` and `href=` in the page,
   the comments of an inlined script included, so a comment that names a
   file should not put it in an attribute.
+- The built page also loads the site's stylesheet, `site/lib/site.css`,
+  which has class names of its own (`.strip` is one). A page class with
+  the same name picks up its rules and the layout breaks only in the
+  built site. Check the stylesheet before naming a class, or prefix the
+  page's own.
+- A trace for a port has to catch the mechanic running. Before
+  recording, check that the state has the objects alive (the slots
+  active, the counters moving): a snapshot taken between waves records
+  hundreds of empty passes that test nothing.
 - Start from `kit/template/index.html` for the design tokens and layout.
   Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
   A finished example to borrow patterns from is any Gold game in `games/`:

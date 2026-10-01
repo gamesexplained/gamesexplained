@@ -41,6 +41,13 @@ writing a site off, fetch it with `curl` over `http://` (through the
 environment's proxy, if it has one). A research subagent reports what its
 tools could not reach; check each of those yourself.
 
+A hosted session's network policy can refuse every page fetch, on every
+site (HTTP 403 from the proxy itself), while a web search tool still
+answers. Its result summaries quote the pages: use them for plain claims
+only (credits, the year, a feature named), say under Sources that they
+are second-hand and give the date, and leave open whatever they cannot
+settle. The game's own screens are then the main source.
+
 ## Status words
 
 Every row in `features.md` carries one:

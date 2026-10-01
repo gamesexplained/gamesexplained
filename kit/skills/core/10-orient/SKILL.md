@@ -16,7 +16,7 @@ annotate it byte by byte.
 
 0. **Check the emulator** before the game goes in:
    `python3 kit/scripts/tools.py status`, then
-   `python3 kit/scripts/tools.py check-emulator`. It resets the machine and
+   `python3 kit/scripts/tools.py --platform <platform> check-emulator`. It resets the machine and
    takes about a minute. Copy the build line from `status` into
    `game.json` under `tools.emulator`, and the list of failed checks into
    `orientation.md`. Then read the emulator's tool skill, and of its
@@ -26,6 +26,12 @@ annotate it byte by byte.
    Screenshot. If a trainer or cracktro menu appears, note the options,
    choose the plain game (no cheats) unless the contributor says
    otherwise, and record the choice in `orientation.md`.
+
+   **Read the file's header before trusting its name.** An extension
+   says what the file was called, not what it is: a file named as a
+   plain sector image can be a GCR image of a protected original, which
+   needs the drive emulation the platform's tool notes describe. Record
+   what the header says in `orientation.md`.
 
    **Ask what the image is before trusting it.** A backup of a running
    game (a snapshot saved by a freezer cartridge, a packed memory dump)

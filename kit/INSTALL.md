@@ -33,7 +33,7 @@ contributor can trust it with their computer.** In practice:
 3. Uninstalling is deleting the folder. Whatever cannot be contained is
    listed, completely, in the platform's notes under "Uninstall", and the
    contributor is told before anything is installed.
-4. It is verified, not assumed: `python3 kit/scripts/tools.py verify-footprint`
+4. It is verified, not assumed: `python3 kit/scripts/tools.py --platform <platform> verify-footprint`
    runs a whole launch, use and exit and lists anything written outside the
    repository. An empty list is the pass.
 5. Nothing outside the repository is changed without asking first: no
@@ -84,7 +84,7 @@ list names.
 ```
 python3 kit/scripts/tools.py status
 python3 kit/scripts/tools.py stop            # every tool; stop <tool> for one
-python3 kit/scripts/tools.py verify-footprint
+python3 kit/scripts/tools.py --platform <platform> verify-footprint
 ```
 
 `kit/scripts/tools.py` hands every command to the platform's launcher,
@@ -94,8 +94,16 @@ the tools the terminal they need, and writes their logs to `tools/logs/`.
 Do not start the tools by hand. The commands that start each tool are in
 the platform's notes, with what `stop` leaves running: a tool holding work
 that the game folder lacks stays up until that work is saved or the stop
-is forced. With one platform under `kit/` it is the default;
-with more, `--platform <name>` or `KIT_PLATFORM` chooses.
+is forced.
+
+With one platform under `kit/` it is the default. With more,
+`--platform <name>` or `KIT_PLATFORM` chooses; failing that, a command
+only one platform serves (`vice` is the C64's), or a game folder among
+the arguments or as the working directory. `status` and `stop` with
+nothing else to go on cover every platform's tools in this clone;
+anything else ambiguous (`check-emulator`, `verify-footprint`,
+`snapshots`) is refused until a platform is named. `tools.py -h` lists
+each platform's commands.
 
 ## The shell you are given
 
