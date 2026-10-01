@@ -14,19 +14,22 @@
 <section id="mine">
   <p class="fig">The mine</p>
   <h2 class="t">One map, seven kilobytes</h2>
-  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier, or pick an object, a use or a danger from the list to go straight to it. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier. Choose an object to zoom in on it, then press Where it is used to step through the places it works. The dangers have a list of their own. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
   <div class="plate">
     <div class="row">
-      <button class="b" type="button" id="ob" aria-pressed="true">Objects</button>
-      <button class="b" type="button" id="us" aria-pressed="true">Where they are used</button>
-      <button class="b" type="button" id="dg" aria-pressed="true">Dangers</button>
+      <select class="b" id="pk-ob" aria-label="Object"><option value="">Choose an object</option></select>
+      <button class="b" type="button" id="pk-use" disabled>Where it is used</button>
+    </div>
+    <div class="row">
+      <select class="b" id="pk-dg" aria-label="Danger"><option value="">Choose a danger</option></select>
+      <button class="b" type="button" id="pk-dgn">Next danger</button>
+      <select class="b" id="pk-pl" aria-label="Other places"><option value="">Other places</option></select>
+    </div>
+    <div class="row">
+      <button class="b" type="button" id="zm" aria-pressed="false">Zoom ×4</button>
       <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
       <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
       <span class="note" id="mappos"></span>
-    </div>
-    <div class="row">
-      <select class="b" id="pick" aria-label="Go to"><option value="">Choose an object, a use or a danger</option></select>
-      <button class="b" type="button" id="zm" aria-pressed="false">Zoom ×4</button>
     </div>
     <canvas id="map" class="scr" style="max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
     <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
@@ -124,7 +127,7 @@
   const Y = y => full.height - y;
   const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
   const pts = [...Array(9)].map((_, i) => [M[0x9059 + i] << 8 | M[0x9062 + i], Y(M[0x906B + i] << 8 | M[0x9074 + i])]);
-  let view, showRp = false, showOb = true, showUs = true, showDg = true;
+  let view, showRp = false;
   const P = (xh, xl, yh, yl) => [xh << 8 | xl, Y(yh << 8 | yl)];
   const name = o => DW.itemName(M, o);
   // objects $34-$4C where a new game places them (the markers $30-$33 wait with Splinx; x high $FF is off the map)
@@ -159,12 +162,20 @@
     for (const k of list) total[k.t] = (total[k.t] || 0) + 1;
     for (const k of list) { k.kind = kind; seen[k.t] = (seen[k.t] || 0) + 1; k.label = total[k.t] > 1 && !/bolt/.test(k.t) ? k.t + ' (' + seen[k.t] + ' of ' + total[k.t] + ')' : k.t; }
   }
-  const all = [...objs, ...uses, ...dangers], pick = document.getElementById('pick');
-  for (const kind of ['Objects', 'Where they are used', 'Dangers']) {
-    const g = document.createElement('optgroup'); g.label = kind;
-    all.forEach((k, i) => { if (k.kind === kind) { const o = document.createElement('option'); o.value = i; o.textContent = k.label; g.append(o); } });
-    pick.append(g);
-  }
+  const all = [...objs, ...uses, ...dangers];
+  // where each object does something: the marks above, by the object's name
+  const usedAt = n => n === 'AIR MASK' ? dangers.filter(k => /bad air/.test(k.t))
+    : n === 'EXPLOSIVES' ? uses.filter(k => /EXPLOSIVES|blast/.test(k.t))
+    : n === 'DETONATOR' ? uses.filter(k => /blast/.test(k.t))
+    : n === 'CIRCUIT' ? uses.filter(k => /MACHINERY/.test(k.t))
+    : /^(CRYSTAL|CAPSULE|SPLINX)$/.test(n) ? uses.filter(k => /way home/.test(k.t))
+    : uses.filter(k => k.t.startsWith(n + ':'));
+  const WHY = { 'CRYSTAL': 'carried out of the mine, it doubles the bonus', 'CAPSULE': 'carried out of the mine, it doubles the bonus', 'SPLINX': 'carried out of the mine, it doubles the bonus',
+    'PASS CARD': 'held, it makes character $A0 passable, which we take to be the security gate; no table gives the gate a place', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up' };
+  const sel1 = (id, list, text) => { const el = document.getElementById(id); list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = text ? text(k) : k.label; el.append(o); }); return el; };
+  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY)/.test(k.t)));
+  const pkUse = document.getElementById('pk-use');
+  let curObj = null, useIx = -1;
   function marks(list, colour, round) {
     for (const k of list) {
       const [x, y] = k.at; mctx.fillStyle = colour; mctx.strokeStyle = '#000'; mctx.lineWidth = 1.5;
@@ -184,9 +195,9 @@
     mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 768 / Z / S, 384 / Z / S);
     cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
     zctx.imageSmoothingEnabled = false; zctx.drawImage(full, view[0], view[1], 768 / Z, 384 / Z, 0, 0, 768, 384);
-    if (showDg) marks(dangers, '#ff6b5b', false);
-    if (showOb) marks(objs, '#e8c547', true);
-    if (showUs) marks(uses, '#5fd068', false);
+    marks(dangers, '#ff6b5b', false);
+    marks(objs, '#e8c547', true);
+    marks(uses, '#5fd068', false);
     if (showRp) pts.forEach(([x, y], i) => {
       mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill();
       mctx.fillStyle = '#000'; mctx.font = 'bold 9px IBM Plex Mono, monospace'; mctx.fillText(i, x / S - 3, y / S + 3);
@@ -207,39 +218,46 @@
   const rp = document.getElementById('rp');
   rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
     document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
-  for (const [id, set] of [['ob', v => showOb = v], ['us', v => showUs = v], ['dg', v => showDg = v]]) {
-    const b = document.getElementById(id);
-    b.onclick = () => { const v = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', v); set(v); draw(); };
-  }
   lock(M, full);
-  document.getElementById('home').onclick = () => { sel = null; pick.value = ''; centre(start); draw(); };
-  // choosing a mark: switch its layer on if it was off, centre the magnifier on it and ring it
-  const layer = { 'Objects': 'ob', 'Where they are used': 'us', 'Dangers': 'dg' };
-  function choose(k) {
-    sel = k; pick.value = k ? all.indexOf(k) : '';
-    if (!k) { draw(); return; }
-    const b = document.getElementById(layer[k.kind]);
-    if (b.getAttribute('aria-pressed') !== 'true') b.click();
-    const c = k.at[0] / 32 | 0, r = (full.height - k.at[1]) / 32 | 0;
-    document.getElementById('rpkv').textContent = k.label + ': block column ' + c + ', map row ' + r + '.';
-    centre(k.at); draw();
+  document.getElementById('home').onclick = () => { choose(null); centre(start); draw(); };
+  const zm = document.getElementById('zm');
+  function setZoom(z) { Z = z; zm.setAttribute('aria-pressed', Z === 4);
+    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + (Z === 4 ? 'four' : 'twice') + ' times the C64\'s pixels'); }
+  const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
+  // choosing a mark: zoom in, centre the magnifier on it and ring it; an object also arms Where it is used
+  function choose(k, keepObj) {
+    sel = k;
+    for (const el of [pkOb, pkDg, pkPl]) el.value = k && el.querySelector('option[value="' + all.indexOf(k) + '"]') ? all.indexOf(k) : '';
+    if (!keepObj) { curObj = k && k.kind === 'Objects' ? k : null; useIx = -1; }
+    if (curObj) pkOb.value = all.indexOf(curObj);
+    const list = curObj ? usedAt(curObj.t) : [];
+    pkUse.disabled = !list.length;
+    pkUse.textContent = !curObj ? 'Where it is used' : !list.length ? 'No place of use traced' : useIx < 0 ? 'Where it is used (' + list.length + ')'
+      : useIx + 1 >= list.length ? 'Back to the ' + curObj.t : 'Next place (' + (useIx + 2) + ' of ' + list.length + ')';
+    if (!k) { document.getElementById('rpkv').textContent = ''; draw(); return; }
+    let note = k.label + ': ' + where(k) + '.';
+    if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not traced.';
+    if (curObj && k !== curObj) note = curObj.t + ', place ' + (useIx + 1) + ' of ' + list.length + ': ' + k.label + ', ' + where(k) + '.';
+    document.getElementById('rpkv').textContent = note;
+    setZoom(4); centre(k.at); draw();
   }
+  pkUse.onclick = () => { const list = usedAt(curObj.t);
+    if (useIx + 1 >= list.length) { useIx = -1; choose(curObj, true); } else choose(list[++useIx], true); };
+  pkOb.onchange = () => choose(pkOb.value === '' ? null : all[+pkOb.value]);
+  pkDg.onchange = () => choose(pkDg.value === '' ? null : all[+pkDg.value]);
+  pkPl.onchange = () => choose(pkPl.value === '' ? null : all[+pkPl.value]);
+  document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
   // buttons in the solution below: data-go names a mark's label
   document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
     const k = all.find(k => k.label === b.dataset.go || k.t === b.dataset.go);
     if (k) { choose(k); document.getElementById('mine').scrollIntoView({ behavior: 'smooth' }); }
   });
-  pick.onchange = () => choose(pick.value === '' ? null : all[+pick.value]);
-  const zm = document.getElementById('zm');
-  zm.onclick = () => { Z = Z === 2 ? 4 : 2; zm.setAttribute('aria-pressed', Z === 4);
-    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + (Z === 4 ? 'four' : 'twice') + ' times the C64\'s pixels');
-    centre(sel ? sel.at : [view[0] + 768 / (6 - Z) / 2, view[1] + 384 / (6 - Z) / 2]); draw(); };
+  zm.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(Z === 2 ? 4 : 2); centre(sel ? sel.at : c); draw(); };
   // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
   mv.addEventListener('click', e => {
     const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;
-    const shown = all.filter(k => ({ 'Objects': showOb, 'Where they are used': showUs, 'Dangers': showDg })[k.kind]);
     let best = null, bd = 6 * S;
-    for (const k of shown) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
+    for (const k of all) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
     if (best) choose(best);
   });
   draw();
