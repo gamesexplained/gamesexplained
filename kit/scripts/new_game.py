@@ -5,7 +5,9 @@ Usage: new_game.py <platform> <slug> [--title "Game Title"]
 Example: new_game.py c64 jupiter-lander --title "Jupiter Lander"
 
 The slug is lowercase, hyphenated, and becomes the URL. Fills in game.json
-with the platform, slug, title, kit version and creation date.
+with the platform, slug, title, kit version and creation date, and writes
+an empty symbols.json in the schema symbols_export.py writes, so that
+symbols_import.py can seed the disassembler from the first snapshot.
 """
 import datetime, json, os, re, shutil, sys
 
@@ -31,6 +33,13 @@ def main():
                  "created": datetime.date.today().isoformat(),
                  "kit_version": open(os.path.join(ROOT, "kit", "VERSION")).read().strip()})
     json.dump(game, open(gj, "w"), indent=2)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from symbols_export import regions
+    symbols = {"schema": 1, "platform": platform, "game": slug, "build": game.get("build"),
+               "source": "new_game.py", "regions": regions(game),
+               "blocks": [], "symbols": [], "comments": []}
+    with open(os.path.join(dest, "symbols.json"), "w") as f:
+        json.dump(symbols, f, indent=1)
     for name in os.listdir(dest):
         p = os.path.join(dest, name)
         if name.endswith(".md"):

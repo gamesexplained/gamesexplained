@@ -34,6 +34,17 @@ summaries were all that came back, and their key list was the BBC Micro
 version's. The C64's keys came from the input routine. `20-features` says
 so.
 
+## 0.0.48 · 30 September 2026 · Castle Master · 64kramsystem with Codex
+
+**Compare an imported capture with a booted game before using it.**
+Castle Master’s menu capture matched every code byte in a new disk boot,
+but playing replaced its menu storage with the renderer’s output. An
+annotated export can seed the disassembler while still requiring a
+power-on recipe, a play snapshot and a comparison to choose the listing
+image. Names and descriptions survive the import; verification does not.
+The source snapshot carries the bytes, and `listing.py` generates the
+Source records. The maker’s unknown model remains explicit in provenance.
+
 ## 0.0.44 · 30 September 2026 · Ghostbusters · unorig with Claude
 
 **A test must contain cases that have to succeed.** Ghostbusters' account

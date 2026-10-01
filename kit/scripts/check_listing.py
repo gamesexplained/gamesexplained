@@ -4,7 +4,8 @@
 listing.json is derived from symbols.json plus a private snapshot, so CI
 cannot rebuild it; it checks instead that every user label and every
 comment in symbols.json appears in the listing unchanged, and that the
-listing records the hash of the symbols.json it was built from.
+listing records the hash of the symbols.json it was built from. The empty
+symbols.json that new_game.py writes needs no listing yet.
 
 Usage: check_listing.py [game dir ...]      default: every game
 """
@@ -15,9 +16,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 
 def check(gdir):
     lp, sp = os.path.join(gdir, "listing.json"), os.path.join(gdir, "symbols.json")
+    S = json.load(open(sp))
     if not os.path.exists(lp):
+        if not (S["blocks"] or S["symbols"] or S["comments"]):
+            return []   # a new game's empty map: nothing to list yet
         return [f"{gdir}: no listing.json (run kit/scripts/listing.py)"]
-    L, S = json.load(open(lp)), json.load(open(sp))
+    L = json.load(open(lp))
     errs = []
     sha = hashlib.sha256(open(sp, "rb").read()).hexdigest()
     if L.get("symbols_sha256") != sha:
