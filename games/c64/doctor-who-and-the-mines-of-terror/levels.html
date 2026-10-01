@@ -50,6 +50,36 @@
   <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. It holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
   <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
 </section>
+<section id="solution">
+  <p class="fig">Solution</p>
+  <h2 class="t">Two ways out, and five ways to double the bonus</h2>
+  <p class="lede">The game ends when the Doctor leaves the mine, by the escape pod or in the TARDIS. What he carries out, and whether he stopped the heatonite machine, decide the bonus. Each <b>map</b> button below moves the magnifier on the mine map to the place.</p>
+  <p>This solution is read from the code. It has not been played through in an emulator, so the order of the steps, and whether each place can be reached when it is needed, are not checked.</p>
+  <h3>How the end is scored</h3>
+  <p>When the Doctor leaves, the game adds the time counter to the score and then a bonus of 1,024, doubled once for each of these (<code>game_event_handler</code>, <code>$9102</code>-<code>$91B5</code>): the CRYSTAL, the CAPSULE and Splinx, each held or in a pocket (<code>item_bonus_check</code>, <code>$928C</code>); leaving in the TARDIS rather than the escape pod; and having halted the heatonite machine. All five make 32,768. The time counter is added as nothing if the Doctor is low in the mine when he leaves (object 0's height below <code>$0300</code>). Below 4,100 the Master is VERY DISPLEASED, below 20,000 DISPLEASED, below 40,000 PLEASED, and above that VERY PLEASED.</p>
+  <h3>The steps</h3>
+  <table class="t">
+    <tr><th>Step</th><th>Where</th><th>How</th></tr>
+    <tr><td>Keep Splinx</td><td><button class="b" type="button" data-go="SPLINX">map</button> beside the Doctor at the start</td><td>Splinx must be in the Doctor's hands or a pocket at the end (<code>$917F</code>). It follows him, runs ten-step programs and recharges on its own character (see How it works).</td></tr>
+    <tr><td>Take the CRYSTAL</td><td><button class="b" type="button" data-go="CRYSTAL">map</button> row 38, column 18</td><td>Object <code>$0C</code> goes after the CRYSTAL, from the Doctor's hands or a pocket, and carries it away (<code>$B48A</code>), so it needs watching once it is taken.</td></tr>
+    <tr><td>Take the CAPSULE</td><td><button class="b" type="button" data-go="CAPSULE">map</button> row 50, column 119, high on the right</td><td>Held or pocketed at the end (<code>$9177</code>).</td></tr>
+    <tr><td>Halt the heatonite machine</td><td><button class="b" type="button" data-go="MACHINERY: circuit slot 1">map</button> five slots at height <code>$0390</code>, columns 14 to 18</td><td>At the start five CIRCUITs sit in the five slots and the machine runs. Take out the two in slots 3 and 4, and put in their place the two CIRCUITs found elsewhere: <button class="b" type="button" data-go="CIRCUIT (5 of 7)">map</button> and <button class="b" type="button" data-go="CIRCUIT (6 of 7)">map</button>. With CIRCUITs <code>$40</code>, <code>$41</code>, <code>$44</code> and <code>$45</code> exactly in slots 1 to 4, the machine stops and a sound plays (<code>machinery_update</code>, <code>$B9B6</code>, checked only in that part of the mine). Putting the original five back starts it again. At the end the Doctor must carry one of the CIRCUITs <code>$41</code>, <code>$42</code>, <code>$43</code> or <code>$4A</code> for it to count (<code>$9190</code>-<code>$91A1</code>).</td></tr>
+    <tr><td>Or flood the mine</td><td><button class="b" type="button" data-go="EXPLOSIVES blown here: the level starts rising">map</button> low on the right</td><td>The EXPLOSIVES blown at this point start a level rising, one step every 128 frames (<code>$C22B</code>). That also counts as the machine halted at the end (<code>$91AB</code>), but it kills the Doctor if it reaches him (<code>$C0C2</code>).</td></tr>
+    <tr><td>Leave in the TARDIS</td><td><button class="b" type="button" data-go="TARDIS: the way home (empty hands)">map</button> row 28, column 114</td><td>With nothing in his hands, the Doctor presses F5 standing on the TARDIS (block <code>$B2</code>, <code>use_empty_hands</code>, <code>$BD1B</code>). The map has a TARDIS in two places. The one he lands in is removed as soon as he goes right of x <code>$0800</code> (<code>$BADD</code>), so the way home is the other one. This doubles the bonus once more.</td></tr>
+    <tr><td>Or the escape pod</td><td><button class="b" type="button" data-go="ACTIVATOR: escape pod">map</button> the top of the mine</td><td>Holding the <button class="b" type="button" data-go="ACTIVATOR">ACTIVATOR</button>, F5 at one of three points ends the game without the TARDIS doubling (<code>use_activator</code>, <code>$BCE0</code>).</td></tr>
+  </table>
+  <h3>What is in the way</h3>
+  <table class="t">
+    <tr><th>Obstacle</th><th>What gets past it</th></tr>
+    <tr><td>Rock at three dig sites</td><td>The <button class="b" type="button" data-go="PICK AXE">PICK AXE</button>, three hits at each <button class="b" type="button" data-go="PICK AXE: dig here (3 hits) (1 of 3)">map</button></td></tr>
+    <tr><td>Eight clamps on ladders high in the mine</td><td>The <button class="b" type="button" data-go="SPANNER">SPANNER</button> at each bolt <button class="b" type="button" data-go="SPANNER: bolt 1, opens a clamp">map</button></td></tr>
+    <tr><td>Bad air in four blocks high in the mine</td><td>The <button class="b" type="button" data-go="AIR MASK">AIR MASK</button> held in the hand</td></tr>
+    <tr><td>The security gate</td><td>Holding the <button class="b" type="button" data-go="PASS CARD">PASS CARD</button> sets the terrain class of character <code>$A0</code> to 0 instead of 1 (<code>$BB15</code>), which we take to be the gate opening</td></tr>
+    <tr><td>A wall</td><td>A blast at <button class="b" type="button" data-go="a blast here opens the wall">map</button> (<code>$C22E</code>); from the EXPLOSIVES or a DETONATOR, armed with F5</td></tr>
+    <tr><td>The code lock</td><td>The code card; see <a href="#lock">the code lock</a></td></tr>
+    <tr><td>Controllers, stalagmites, falls, the madrag and its eggs</td><td>Kept away from; see How it works for each</td></tr>
+  </table>
+</section>
 <section id="lock">
   <p class="fig">The code lock</p>
   <h2 class="t">A colour, a shape, a number, and the card in the box</h2>
@@ -99,6 +129,7 @@
   const name = o => DW.itemName(M, o);
   // objects $34-$4C where a new game places them (the markers $30-$33 wait with Splinx; x high $FF is off the map)
   const objs = [];
+  objs.push({ at: P(M[0x1BC2], M[0x1B72], M[0x1C62], M[0x1C12]), t: 'SPLINX' });      // object 2, beside the Doctor
   for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) objs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t: name(o) });
   // where objects act: each list read from the table the code tests the Doctor's position against
   const uses = [];
@@ -107,6 +138,11 @@
   for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBCDA + i], M[0xBCDD + i], 0x06, 0x48), t: 'ACTIVATOR: escape pod' });                                 // use_activator $BCE0
   uses.push({ at: P(0x0E, 0x60, 0x00, 0x68), t: 'EXPLOSIVES blown here: the level starts rising' });   // blast_damage $C202
   uses.push({ at: P(0x0B, 0xE0, 0x05, 0x88), t: 'a blast here opens the wall' });                      // $C22E, switch cell $0B
+  // the way home: F5 with empty hands on the TARDIS block $B2 (use_empty_hands, $BD1B)
+  uses.push({ at: [114 * 32 + 16, Y(28 * 32 + 16)], t: 'TARDIS: the way home (empty hands)' });       // switch cell 16
+  uses.push({ at: [28 * 32 + 16, Y(9 * 32 + 16)], t: 'TARDIS: where it lands (leaves at x $0800)' });  // switch cell 8, $BADD
+  // the machinery's five circuit slots, y $0390 (machine_slot_x_lo $B99C)
+  for (let i = 0; i < 5; i++) uses.push({ at: P(M[0xB992 + i], M[0xB99C + i], 0x03, 0x90), t: 'MACHINERY: circuit slot ' + (i + 1) });
   // the code lock (code_lock_press, $BE29): F5 with empty hands, Doctor's x high $0A
   uses.push({ at: P(0x0A, 0x24, 0x05, 0xD8), t: 'CODE LOCK: clue panel' });                            // x low $14-$33, y $05C6 up ($BE56)
   for (let i = 0; i < 3; i++) uses.push({ at: P(0x0A, 0x30 + 0x20 * i, 0x04, 0xC8), t: 'CODE LOCK: button ' + (i + 1) });   // y $04C8, 32-pixel zones from x low $20
@@ -188,6 +224,11 @@
     document.getElementById('rpkv').textContent = k.label + ': block column ' + c + ', map row ' + r + '.';
     centre(k.at); draw();
   }
+  // buttons in the solution below: data-go names a mark's label
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
+    const k = all.find(k => k.label === b.dataset.go || k.t === b.dataset.go);
+    if (k) { choose(k); document.getElementById('mine').scrollIntoView({ behavior: 'smooth' }); }
+  });
   pick.onchange = () => choose(pick.value === '' ? null : all[+pick.value]);
   const zm = document.getElementById('zm');
   zm.onclick = () => { Z = Z === 2 ? 4 : 2; zm.setAttribute('aria-pressed', Z === 4);
