@@ -28,7 +28,8 @@ preinstalled Playwright.
   image's character set; compare it with a play snapshot and embed what
   differs.
 - `kit/c64/INSTALL.md`: the cargo build time in a cloud container.
-- `kit/CHANGELOG.md`, `kit/VERSION` 0.0.45.
+- `kit/CHANGELOG.md`: an entry headed `## next`, which the kit-version
+  workflow numbers after the merge (`[kit-bump]` in the pull request).
 
 ## Other things that cost time
 
