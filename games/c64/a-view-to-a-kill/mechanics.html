@@ -1,0 +1,89 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/avtak-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Five programs that never load each other, the codes that link them, and the code they share.</p>
+</header>
+<main class="wrap">
+<section id="programs" data-source="">
+  <p class="fig">01 · Five programs</p>
+  <h2 class="t">Each section is a whole program that fills the memory</h2>
+  <p class="lede">Nothing in any section loads another. Each is unpacked over the whole of memory and runs until the player loads the next one.</p>
+  <table class="t">
+    <tr><th>Program</th><th>Starts at</th><th>Screen</th><th>Sound</th></tr>
+    <tr><td><a href="source.html">Intro</a></td><td><code>$8020</code></td><td>a scrolling bitmap on two banks</td><td>the Bond theme, speech</td></tr>
+    <tr><td><a href="source-paris.html">Paris</a></td><td><code>$43B0</code></td><td>characters, split in three</td><td>a tune, effects, speech</td></tr>
+    <tr><td><a href="source-city-hall.html">City Hall</a></td><td><code>$1000</code></td><td>characters, split in five</td><td>the Bond theme, effects</td></tr>
+    <tr><td><a href="source-mine.html">The mine</a></td><td><code>$5660</code></td><td>characters, scrolling both ways</td><td>Paris's tune, effects</td></tr>
+    <tr><td><a href="source-finale.html">Finale</a></td><td><code>$8000</code></td><td>two bitmaps</td><td>none</td></tr>
+  </table>
+  <p>Every playable section reads the joystick in port 2 and nothing else. Each stops the timer that makes the computer scan its keyboard, so the keys do nothing in play; they are read only at the code prompts. The intro and the three sections leave the operating system's ROM switched in and point its interrupt vector at their own routine.</p>
+</section>
+
+<section id="codes" data-source="">
+  <p class="fig">02 · The codes</p>
+  <h2 class="t">A section played without its code can never be won</h2>
+  <p class="lede">City Hall, the mine and the ending start with PLEASE ENTER CODE. RETURN on its own lets the player in anyway, but the choice is remembered, and it decides how the section ends.</p>
+  <div class="plate">
+    <label class="f" for="code-in">Type a code, as at the prompt</label>
+    <input id="code-in" class="tx" value="CCPHJ" maxlength="20" spellcheck="false">
+    <div class="steps" id="code-out" style="margin-top:12px"></div>
+    <p class="cap">The prompt's check, the same routine in all three programs (City Hall <a href="source-city-hall.html#1088"><code>$1088</code></a>, the mine <a href="source-mine.html#5707"><code>$5707</code></a>, the finale <a href="source-finale.html#804C"><code>$804C</code></a>): the first five characters are compared, and what comes after them is ignored.</p>
+  </div>
+  <p>The check stores its answer at the same address in each program, <code>$1BA0</code>: 1 for the right code, 0 for RETURN. A wrong code is simply asked for again, as often as the player likes. The value is read once, at the very end.</p>
+  <table class="t">
+    <tr><th>Section</th><th>With the code</th><th>With RETURN</th></tr>
+    <tr><td>City Hall</td><td>reaching the exit with Stacey shows DB4CT (<a href="source-city-hall.html#7096"><code>$7096</code></a>)</td><td>reaching the exit starts a new game</td></tr>
+    <tr><td>The mine</td><td>the right digits show ILVCT (<a href="source-mine.html#25F2"><code>$25F2</code></a>)</td><td>the bomb goes off, whatever the digits</td></tr>
+    <tr><td>Finale</td><td>the ending plays</td><td>the prompt asks again</td></tr>
+  </table>
+  <p>Every code is fixed text in the program that shows it: CCPHJ in Paris's telex, DB4CT in City Hall's end screen, ILVCT in the mine's. Nothing in them depends on how the section was played. There is no score anywhere in the game.</p>
+</section>
+
+<section id="reset" data-source="source-paris.html">
+  <p class="fig">03 · Paris</p>
+  <h2 class="t">Secret: Paris starts the chase by resetting the computer</h2>
+  <p>Fire on Paris's instruction page does not call the game. It jumps to the operating system's own reset routine (<code>$4FBB</code>). A reset checks the memory at <code>$8004</code> for the letters CBM80, the signature a cartridge carries, and if it finds them it starts the cartridge instead of BASIC. Paris keeps a cartridge header of its own at <code>$8000</code>, pointing at the chase (<code>$5A00</code>). So the reset sets up the machine from scratch and then hands straight back to the game.</p>
+  <p>The same trick makes RESTORE useful: the part points the RESTORE key's interrupt at its own start, so pressing it brings the instruction page back (<code>$43B0</code>).</p>
+</section>
+
+<section id="shared" data-source="">
+  <p class="fig">04 · Shared code</p>
+  <h2 class="t">The same routines at the same addresses in different sections</h2>
+  <p class="lede">Compared byte for byte in the unpacked programs, these are identical.</p>
+  <table class="t">
+    <tr><th>What</th><th>Where</th></tr>
+    <tr><td>The music driver</td><td>intro and City Hall, <code>$C621</code>-<code>$C7FE</code></td></tr>
+    <tr><td>The Bond theme's notes</td><td>intro and City Hall, from <code>$E000</code></td></tr>
+    <tr><td>The second tune's notes</td><td>Paris and the mine, <code>$E000</code>-<code>$FFFF</code></td></tr>
+    <tr><td>Reading the joystick</td><td>City Hall <code>$4700</code>, the mine <code>$17A0</code></td></tr>
+    <tr><td>The clock</td><td>Paris <code>$4170</code>, City Hall <code>$6E40</code></td></tr>
+    <tr><td>The "OK" sound</td><td>City Hall <code>$6B50</code>, the mine <code>$3B7D</code></td></tr>
+    <tr><td>The code prompt's check</td><td>City Hall, the mine and the finale, apart from the addresses it names</td></tr>
+    <tr><td>The mine's end screen with ILVCT</td><td>the mine <code>$0A00</code>, and unused in City Hall at the same address</td></tr>
+  </table>
+</section>
+</main>
+<script>
+(function(){
+  var codes={CCPHJ:'City Hall',DB4CT:'the mine',ILVCT:'the finale'};
+  var inp=document.getElementById('code-in'), out=document.getElementById('code-out');
+  function run(){
+    var t=inp.value.toUpperCase(), five=t.slice(0,5), lines=[];
+    if(t.length<5){ lines.push('<b>RETURN after '+t.length+' characters</b>: the flag is 0 and City Hall or the mine starts without the code; the finale asks again.'); }
+    else {
+      lines.push('Compared: <b>'+five.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</b>'+(t.length>5?' (the rest is not read)':''));
+      var hit=codes[five];
+      lines.push(hit?'<span class="ok">Accepted by '+hit+'</span>: the flag is 1.':'<span class="bad">Rejected by every prompt</span>: the cursor goes back and the prompt waits.');
+    }
+    out.innerHTML=lines.join('<br>');
+  }
+  inp.addEventListener('input',run); run();
+})();
+</script>

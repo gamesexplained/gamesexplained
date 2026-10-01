@@ -86,6 +86,23 @@ annotate it byte by byte.
    then stop. If the game reloads data per level (overlays), say so in
    `orientation.md`: it means one snapshot per state.
 
+## A game of several programs
+
+Some games are several programs that never load each other: a menu, or
+the player, loads each section, and each fills the memory on its own. Do
+not force them into one image. List them in `game.json` as `parts` (id
+and title, in the order they are played) and give each a folder,
+`parts/<id>/`, with its own `game.json` (video, coverage, io, regions),
+`symbols.json`, `listing.json`, `facts.md` and gitignored `work/` with its
+`entry.vsf` and `play.vsf`. `kit/scripts/parts.py` explains the layout
+and prints the coverage per part; `coverage.py`, `check_listing.py` and
+`build.py` follow it. Before any snapshot, run each file's packer in the
+6502 simulator over memory filled with two different values: whatever it
+does not write is the previous program's, not this one's. Then compare
+the programs byte for byte. Code at the same address in two of them is
+shared, and a stretch that matches another program's where nothing calls
+it is a leftover of an earlier build or crack.
+
 ## Several versions on one disk
 
 When the image carries more than one crack or release of the game, take

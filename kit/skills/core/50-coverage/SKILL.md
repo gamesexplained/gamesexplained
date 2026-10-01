@@ -269,6 +269,11 @@ Routines are independent, so the burn-down parallelises. What matters:
   each guess.
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
+- **A game of several programs** (`10-orient`, "A game of several
+  programs") splits by part: one agent per part, each with its own
+  disassembler on that part's snapshot. The disassembler has a fixed port,
+  so several instances need somewhere apart to listen; the tool's notes
+  say how. Stop the clock with the number of parts as `--agents`.
 
 ## Declare what the bytes are
 

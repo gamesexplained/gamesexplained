@@ -56,6 +56,11 @@ the reprisal) to a routine that returns early unless the player is still
 in the right place loses the rest whenever the player is not. For each,
 list what the test ignores, or what the deferred part requires, and try it.
 
+A value the player sets at the start, a password or a difficulty, is
+the same kind of test at a distance: find every reader of it
+(`opcodes.py --refs`), not only the routine that sets it. The one reader
+may be at the end of the level, and decide whether it can be won at all.
+
 ## Live verification
 
 Any claim that can be tested in the emulator in under a few minutes gets

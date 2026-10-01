@@ -190,6 +190,16 @@ can open with that instead.
   with its own trace and its own files.
 - Reference images go in `reference/`; the page refers to them by
   relative path from the game folder (`reference/<name>.png`).
+- **A game of several programs** gets one Source page per part: the
+  first part's is `source.html`, which also carries the game's own
+  `facts.md` and `cheats.md`, and the others are `source-<id>.html`, with
+  a row of part links on each. The site links a bare `<code>$1234</code>`
+  to `source.html`, so on an authored page put
+  `data-source="source-<id>.html"` on the section (or any element) whose
+  addresses belong to one part, and `data-source=""` where they belong to
+  several and should link nowhere. An About layout writes `{{data_links}}`
+  where the symbol map and listing are named; the build fills it with each
+  part's, and draws one memory map per part.
 
 ## Copy
 
