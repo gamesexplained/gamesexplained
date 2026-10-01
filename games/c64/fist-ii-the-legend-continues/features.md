@@ -79,3 +79,31 @@ Sources:
 ## Open questions
 
 See `facts.md`, Open questions.
+
+## Outside sources checked on 1 October 2026
+
+- Magnus Andersson's GameFAQs walkthrough (final version, 30 May 2007;
+  gamefaqs.gamespot.com/c64/571009-fist-the-legend-continues/faqs/48570),
+  read through a fetch summary with quoted sentences. It collects every
+  trigram "without using the "restore cheat"-trick at the waterfalls";
+  numbers 39 enemies, the last two "Warlord 1" and "Warlord 2, glowing
+  mask"; wolves "won't kill you, just drain your energy"; a trigram stops
+  the "green radioactive (or poisionous, I don't know) chamber" draining
+  energy (scroll 8, `$2CE4`, agrees); one gives night vision in the
+  pitch-black place (scroll 7, `$10E5`, agrees); and "Fall down into the
+  hole, and the game is completed". Checked against the tables: the
+  volcano rooms 60, 61 and 63 each hold an opponent record, and the way
+  on from 63 to the ending, room 122, is an exit of type 3 (stick up and
+  right at column 69), not a hole; what the player sees there has not been
+  watched. The RESTORE key pauses the game (`$3C23`); how a pause would
+  help at the waterfalls is open. The count of 39 has not been compared:
+  the encounter table has 40 opponent records (flags bit 6 clear), and
+  hordes add opponents beyond them.
+- Mallo's review on The King of Grabs (19 January 2023, C64): developed
+  by Beam, "mostly by the same people who made Fist One", published by
+  Melbourne House in 1986, music by Neil Brennan; "bugs that make
+  defeated enemies re-appear" (the code makes this deliberate, `$2820`);
+  "no end game screen, and no title screen" (the Mindscape disk studied
+  here shows a title picture while loading, and the ending is the final
+  scene `$2DB5`; the review's copy is not named); a one-on-one tournament
+  version "given away for free on side two".
