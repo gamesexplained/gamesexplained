@@ -21,6 +21,12 @@ Sources:
 - Search summaries of archive.org ("Fist: The Legend Continues",
   Mindscape manual text), Lemon64 and the FRGCB blog: developed by Beam
   Software, published by Melbourne House (UK) and Mindscape (US), 1986.
+- Wikipedia's "Beam Software" article, read 1 October 2026: a Melbourne
+  studio working for Melbourne House; its 1980s list includes The Hobbit,
+  Sherlock, The Way of the Exploding Fist (Gregg Barnett, 1985), Rock'n
+  Wrestle (1986), Shadows of Mordor (1987) and Samurai Warrior (1988),
+  each released on the C64. The Overview's list of Beam's other games
+  comes from here.
   Programming Gregg Barnett, music Neil Brennan, graphics Russel Comte and
   Greg Holland. The Warlord rules from a volcanic stronghold; the Fist
   Masters hid their secrets on scrolls and built shrines and temples for
