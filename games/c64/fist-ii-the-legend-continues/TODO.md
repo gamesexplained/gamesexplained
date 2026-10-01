@@ -16,9 +16,14 @@ Worth doing, found in the run and not done:
 - Live tests not run: area 5 without scroll 8; the ending scene from room
   `$7A`; setting `$0455` to 0 for a second joystick; combination 8's store
   into the hero's slot; readers of the head sprites at `$B746`.
-- A solution: facts.md, "Towards a solution", has the scroll locations,
-  the gates and a candidate order; it stops at the hole in room 103
-  (column 52), which no tested move crossed. The solver and the
-  emulator driver are in `work/solver/` (not committed).
+- A solution: facts.md, "Towards a solution", has the exit types, the
+  somersault over holes and 7-column drops, and five scrolls (1, 8, 2, 4,
+  6) driven and delivered in the emulator with fights switched off. Not
+  done: scroll 3 (room 114, from the stairs of room 113), and the region
+  holding scrolls 5 and 7 and the ending, whose only entrance by the exit
+  tables is the middle of room 79; the chute from room 77 drops the hero
+  past it. Read how a fall sets the arrival column, and what
+  `$0491`/`$0492` start. The solver and the driver are in `work/solver/`
+  (not committed).
 - The Training program: a separate load (`LOADIT`, the `TNK` files).
 - The web sources could not be read in this run's environment.

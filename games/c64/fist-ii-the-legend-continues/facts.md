@@ -174,25 +174,80 @@ Read from the game's tables, with the live tests named.
 
 **The map.** Each of the 123 rooms has an exit list at `$4AEC`: type,
 column, destination room, arrival column (read with `find_room_exits`
-`$1A06`). Exits of types 9 and 10 are stairs down and up, taken with the
-stick on the exit's column (*live*: rooms 100 → 101 → 102 → 103, each
-arriving at the recorded column). Walls are the 2-byte records of the
-room's item list (`$501E`); the hero stops at a wall's column plus
-`$0AC7`[type] from the left and minus `$0ABD`[type] from the right
-(`$087A`-`$08DF`; *live*: stopped at column 75 by the wall at 77 in room
-101). Type-11 exits are holes: crossing one while walking centred on the
-screen (`$92` = `$4E`, `$371D`) drops the hero to the room below
-(*live*: room 103 column 52 falls through 102 into 101).
+`$1A06`; tested against the hero's column `$E5` by `scan_room_exits`
+`$0576`). Walls are the 2-byte records of the room's item list (`$501E`);
+the hero stops at a wall's column plus `$0AC7`[type] from the left and
+minus `$0ABD`[type] from the right (`$087A`-`$08DF`; *live*: stopped at
+column 75 by the wall at 77 in room 101). Barriers are the 3-byte records
+with bit 7 set: type 1 breaks to any attack at its striking frame while
+the hero is against it (`$0A2E`; *live*: room 104), types 3 and 7 only
+once scroll 1 or 4 has been delivered.
 
-**The order.** A search over the exit lists, the walls and the gates
-above finds that the scrolls can be delivered in the order 1, 4, 8, 2, 3,
-6, 7, 5 (the search does not model the room-52 gate of scroll 2), and that room 122, the ending (`$2DB5`), is then reachable
-through the volcano rooms 60-63, if the hole in room 103 can be crossed.
-Every route from the start to scroll 1 in this model crosses that hole,
-and every other part of the world is behind a type-3 barrier that needs
-scroll 1. In testing, walking, jumping and kicking at the hole all fell
-through it; how a player crosses it is not yet known. The order is
-therefore not a verified solution.
+**Exit types**, by what `scan_room_exits` does with them:
+
+| Types | Taken by | Stick (*live*, facing right) |
+|---|---|---|
+| 9, 1, 15 | the stick within 2 columns of the exit | down |
+| 10, 2, 4, 14, 20 | the stick within 2 columns | up |
+| 3, 5 | the stick within 2 columns | up and right |
+| 18, 19, 12 | walking off the room's edge | right, left |
+| 11 | a hole: within 2 columns of it | falls |
+| 16 | a drop 7 columns wide (column to column + 6) | falls |
+| 17 | a drop 11 columns wide | falls |
+| 21 | every column left of the exit | falls |
+
+A drop takes the hero only while he is walking with his feet on the
+floor: `$92` is his height on the screen, `$4E` (78) when standing, and
+`$371D` tests it. A forward somersault (stick up and back) lifts him
+off the floor for about ten columns, and so carries him over a hole or
+a 7-column drop (*live*: from column 48 over the hole at 52 in room 103;
+from column 112 over the drop at 115-121 in room 85, landing at 122).
+No tested move crosses an 11-column drop.
+
+**Picking up a scroll.** The encounter scan (`$27F5`) shows a room's
+scroll when the screen's map position `$72` plus 0 (walking left) or 41
+(walking right, `$2961`) equals the scroll's map position; the hero
+picks it up by touching it (sprite collision, `$2C25`), which sets its
+flag to 1. Delivering it to its chamber sets `$80` and adds a life.
+
+**Tested in the emulator.** A breadth-first search over the exit lists,
+walls, barriers, drops and the gates above, with a script that drives
+the joystick along its route. For route testing the script marks every
+encounter except the scrolls as done and holds the hero's energy, so
+fights were not played. On 1 October 2026 it collected and delivered
+five scrolls in this order, ending with scrolls 1, 2, 4, 6 and 8 flagged
+`$80` and 6 lives:
+
+| Scroll | Rooms, from the previous chamber |
+|---|---|
+| 1 | 94, 100, 101, 102 (scroll), 103 (somersault the hole), 104 (break the barrier), back through 103-100, 94, 5, 3, chamber 68 |
+| 8 | 3, 90, 106, 17, 53-55, 22, 57-59, 91, 11, 29, 92, 93, 89, 86, 83, 19, 45, 44 (scroll); 45, 19, 83, 12, 4, 84 (carried on to 87), chamber 75 |
+| 2 | 87, 105, 15, 7, 56, 54, 55, 22, 57-59, 91 (scroll); 11, 29, 92, 93, 89, 86, 83, 19, 45, 46, 48, 64, 38, chamber 69 |
+| 4 | 38, 64, 49-52, 80, 78, 77, 0-2, 14, 112, 84 (scroll, from the right); 112, 14, 2-0, 77, 78, 80, 83, 19, 45, 10, chamber 71 |
+| 3 | not collected: the hero reached room 114 east of the wall at 117 and went on to chamber 70 without it |
+| 6 | 70, 21, 108, 20, 108, 109, 110 (scroll); 109, 108, 26-28, 53-55, 22, 57-59, 91, 11, 29, 92, 93, 89, 86, 83, 19, 45, 46, 48, 64, 49-52, 80, 78, 77, 0-2, 65, 2, 39, 40, 82, 85 (somersault the drop), 121, 9, chamber 73 |
+
+Two traps decide the route. Arriving in room 84 from room 4 carries the
+hero on to room 87, so scroll 4 (at 124, beside the drop at 112-122) is
+reached only from room 112. In room 85 the drop at 115-121 takes the
+hero to room 111 unless he somersaults it.
+
+**What is not solved.** Scroll 3 (room 114, at 110) lies between the
+walls at 77 and 117, reached by the stairs from room 113 that arrive at
+column 92; the search finds that route, and it was not driven. Scrolls
+5 and 7, chambers 72 and 74, the volcano rooms 60-63 and the ending,
+room 122 (`$2DB5`), lie in a region (rooms 8, 16, 18, 30-36, 60-63, 72,
+74, 76, 88, 95-99, 107, 117-120, 122) whose only way in, by the exit
+tables, is room 79's right-hand exit to room 117. That part of room 79
+is reached only from room 117. The way in from the rest of the world is
+a chute: in room 77 the type-20 exit at 222 slides the hero right
+whatever the stick says, into the 11-column drop at 233, and he lands in
+room 79 at column 21. That is inside room 79's own drop at 18, so he
+falls on through to room 82 (*live*, walking, standing, ducking, every
+stick direction). Room 77 refuses jumps and attacks (*live*). How a
+player gets into the region is not known. The rules not yet read include
+how the arrival column is set after a fall, and what `$0491`/`$0492`
+(set by room 79's drop when scroll 6 is held) start.
 
 ## Open questions
 
