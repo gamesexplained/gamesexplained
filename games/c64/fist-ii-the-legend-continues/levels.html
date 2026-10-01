@@ -15,7 +15,7 @@
   <p class="fig">Solution</p>
   <h2 class="t">Eight scrolls, eight chambers, then the volcano</h2>
   <p class="lede">The hero finds each scroll lying in a room, carries it to its own meditation chamber, and gains what it gives. With all eight delivered, the way leads up through the volcano to the ending in room 122.</p>
-  <p>The route below comes from a search over the game's own tables: every room's exits (<code>$4AEC</code>), its walls and barriers (<code>$501E</code>), the drops, and what each scroll opens. Five of its legs were driven in the emulator on 1 October 2026 with the fights switched off: scrolls 1, 8, 2, 4 and 6 were picked up and delivered. Scroll 3, scrolls 7 and 5 and the way to the ending come from the search and have not been driven. A real game also has to win the fights on the way.</p>
+  <p>The route below comes from a search over the game's own tables: every room's exits (<code>$4AEC</code>), its walls and barriers (<code>$501E</code>), the drops, and what each scroll opens. Five of its parts were driven in the emulator on 1 October 2026 with the fights switched off: scrolls 1, 8, 2, 4 and 6 were picked up and delivered. Scroll 3, scrolls 7 and 5 and the way to the ending come from the search and have not been driven. A real game also has to win the fights on the way.</p>
   <h3>What the scrolls give</h3>
   <p>Read from the code that tests each scroll's flag (<code>$0405</code> + scroll), and compared with a hand-drawn map of the game by Master Lee and hiTCH-HiKER (December 2008), whose key names the eight powers.</p>
   <table class="t">
@@ -32,7 +32,8 @@
   <h3>The crevice in room 79</h3>
   <p>The rooms holding scrolls 5 and 7, their chambers, the volcano and the ending are reached only through room 79. Its floor is cut by a drop at column 18, 11 columns wide, which no jump crosses. Climbing the ladder at column 88 of room 43 puts the hero in room 79 at column 0, on the near side of it. With scroll 6 delivered, the game narrows the drop to columns 18-24 (<code>$067B</code>), and a forward somersault (stick up and back) covers about ten columns. So the sixth scroll is what gets him across, and the game blinks the scroll-6 icon at the drop as a hint (<code>$0491</code>/<code>$0492</code>). Past it, a tree at column 109 falls to a kick once scroll 4 is delivered, and the right-hand edge at 171 leads to room 117. A walkthrough by Magnus Andersson (GameFAQs, 2007) describes the same place: up a ladder, "a middle plattform at the waterfall. Jump across and continue right." This crossing has not been driven in the emulator.</p>
   <p>The slide in room 77 is not the way in. Its exit at 222 carries the hero into a drop that lands him in room 79 at column 21, inside the crevice, and he falls on to room 82 (seen live).</p>
-  <h3>The route, leg by leg</h3>
+  <h3>The route, one scroll at a time</h3>
+  <p>The walk is split into nine parts: for each scroll, the way from where you stand to the room it lies in, then on to its chamber; and last, the way from the eighth chamber to the ending. Open a part to see every room on the way, or show it on the map.</p>
   <div id="legs"></div>
   <p class="cap">Each step names the room, the column of the exit taken and how it is taken, from the exit's type: the stick up or down within two columns of a ladder, walking off an edge, or falling into a hole or a drop. Press a room to find it on the map below. Where a room needs something more, a note says what.</p>
 </section>
@@ -43,7 +44,7 @@
   <div class="plate">
     <div class="row">
       <select class="b" id="mp-pick" aria-label="Go to a room"></select>
-      <select class="b" id="mp-leg" aria-label="Show a leg of the route"></select>
+      <select class="b" id="mp-leg" aria-label="Show part of the route"></select>
       <button class="b" type="button" id="mp-in" aria-label="Zoom in">+</button><button class="b" type="button" id="mp-out" aria-label="Zoom out">−</button><button class="b" type="button" id="mp-all">Whole map</button>
     </div>
     <canvas id="mp" style="width:100%;height:460px;display:block;border-radius:6px;touch-action:none;cursor:grab" role="img" aria-label="A map of every room in Fist II, drawn from the game's scenery data, with lines joining the exits"></canvas>
@@ -121,8 +122,8 @@
   const M = FISTMAP.create(G, { canvas: document.getElementById('mp'), layout: LAYOUT, label, onSelect: r => { pick.value = r; describe(r); } });
   for (let r = 0; r < 123; r++) if (r in LAYOUT) pick.insertAdjacentHTML('beforeend', `<option value="${r}">${label(r)}</option>`);
   legSel.insertAdjacentHTML('beforeend', '<option value="">No route shown</option>');
-  ROUTE.legs.forEach(([sn], i) => { legSel.insertAdjacentHTML('beforeend', `<option value="${i}a">Leg ${i + 1}: to scroll ${sn}</option><option value="${i}b">Leg ${i + 1}: scroll ${sn} to chamber ${67 + sn}</option>`); });
-  legSel.insertAdjacentHTML('beforeend', '<option value="end">Leg 9: to the ending</option>');
+  ROUTE.legs.forEach(([sn], i) => { legSel.insertAdjacentHTML('beforeend', `<option value="${i}a">${i + 1}. To scroll ${sn}</option><option value="${i}b">${i + 1}. Scroll ${sn} to chamber ${67 + sn}</option>`); });
+  legSel.insertAdjacentHTML('beforeend', '<option value="end">9. To the ending</option>');
   function hopsOf(v) { if (v === '') return null; if (v === 'end') return ROUTE.final; const leg = ROUTE.legs[parseInt(v)]; return v.endsWith('a') ? leg[1] : leg[2]; }
   function describe(r) {
     const bars = items(r).filter(it => it.bar && (it.t === 3 || it.t === 7 || it.t === 1));
