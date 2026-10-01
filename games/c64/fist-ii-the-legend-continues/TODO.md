@@ -22,8 +22,11 @@ Worth doing, found in the run and not done:
   done: scroll 3 (room 114, from the stairs of room 113), and the region
   holding scrolls 5 and 7 and the ending, whose only entrance by the exit
   tables is the middle of room 79; the chute from room 77 drops the hero
-  past it. Read how a fall sets the arrival column, and what
-  `$0491`/`$0492` start. The solver and the driver are in `work/solver/`
-  (not committed).
+  past it. Read how a fall sets the arrival column. Everything
+  needed to pick this up is in `solver/README.md`, with the search and
+  the driver beside it.
+- symbols.json: `$0491` and `$0492` are the blink count and the scroll
+  icon of `blink_icons` (`$2D57`); their comments still say "meaning not
+  traced".
 - The Training program: a separate load (`LOADIT`, the `TNK` files).
 - The web sources could not be read in this run's environment.

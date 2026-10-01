@@ -46,3 +46,7 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   every non-scroll encounter as done.
 - The run ended stuck at the chute from room 77 into room 79, with five
   scrolls delivered.
+- The search, the driver and a handoff for the next session went into
+  `solver/` (committed; the site does not publish it). Reading the users
+  of `$0491` for that handoff showed that room 79's drop only blinks the
+  scroll-6 icon, which ruled out a fight as the thing that stops the fall.

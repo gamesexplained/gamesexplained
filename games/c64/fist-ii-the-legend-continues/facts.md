@@ -244,10 +244,12 @@ a chute: in room 77 the type-20 exit at 222 slides the hero right
 whatever the stick says, into the 11-column drop at 233, and he lands in
 room 79 at column 21. That is inside room 79's own drop at 18, so he
 falls on through to room 82 (*live*, walking, standing, ducking, every
-stick direction). Room 77 refuses jumps and attacks (*live*). How a
-player gets into the region is not known. The rules not yet read include
-how the arrival column is set after a fall, and what `$0491`/`$0492`
-(set by room 79's drop when scroll 6 is held) start.
+stick direction). Room 77 refuses jumps and attacks (*live*). Room 79's drop blinks the scroll-6 icon ten times
+(`$0491`/`$0492`, read by `blink_icons` `$2D57`), and with scroll 6
+delivered it narrows to columns 18-24 (`$067B`); the live tests had
+scroll 6 delivered and still landed at 21. How a player gets into the
+region is not known; how the arrival column is set after a fall has not
+been read. `solver/README.md` has the tools and the leads.
 
 ## Open questions
 
