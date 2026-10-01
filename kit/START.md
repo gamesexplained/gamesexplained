@@ -45,8 +45,8 @@ step needs something only they have.
    open and a link to it. The same yes lets the retrospective file what
    needs a maintainer's decision as issues on the repository
    (`kit/skills/core/80-retro`); with a no, those asks go in the pull
-   request's description for whoever merges it. Either answer holds for
-   the whole run; do not ask again at the end.
+   request's description, and the repository files them when it merges.
+   Either answer holds for the whole run; do not ask again at the end.
 
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
@@ -110,7 +110,14 @@ step needs something only they have.
    pull request, as `AGENTS.md` says. Nothing goes to `main` directly. If
    the contributor said at the start that you may open it, open it, file
    the retrospective's asks as issues, and give them the link; otherwise
-   push the branch, tell them it is ready, and open it when they say so. If you cannot push or open it (no fork,
+   push the branch, tell them it is ready, and open it when they say so.
+   From a fork, the pull request goes into `gamesexplained/gamesexplained`'s
+   `main`, never the fork's own `main`, where it reaches nobody. A hosted
+   session started on the fork can often write only to the fork; when it
+   cannot open the pull request upstream, give the contributor the link
+   that does,
+   `https://github.com/gamesexplained/gamesexplained/compare/main...<login>:gamesexplained:<branch>`,
+   and the description to paste. If you cannot push or open it (no fork,
    no login), leave the branch where it is and say exactly what is
    missing.
 

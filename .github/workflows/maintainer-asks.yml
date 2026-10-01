@@ -1,0 +1,37 @@
+name: maintainer-asks
+# Files the "Maintainer asks" in a merged pull request's description as
+# kit-ask issues (kit/scripts/maintainer_asks.py), so the asks of a run that
+# could not file them itself (a session whose GitHub access stops at the
+# contributor's fork, or no yes to filing) reach the inbox without anyone
+# copying them by hand. pull_request_target gives a fork's pull request a
+# token that can write issues; it checks out main, never the pull request's
+# head, and reads the description only as text.
+# Issues the Actions token opens do not start kit-ask.yml, so the label is
+# set here directly.
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write   # the comment listing what was filed
+
+jobs:
+  file:
+    if: ${{ github.event.pull_request.merged && github.event.pull_request.base.ref == 'main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: File the asks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: python3 kit/scripts/maintainer_asks.py file

@@ -266,6 +266,7 @@ issue tracker: one issue per ask, labelled `kit-ask`, the maintainers'
 one inbox. Put `<!-- kit-ask -->` in the body as well: a label from an
 author without triage access is dropped, and the marker makes the
 repository add it. Filing needs the same yes as opening the pull
-request. A run without that yes, or without a way to reach GitHub, puts its asks in the
-pull request's description under "Maintainer asks" instead, and whoever
-merges it files them.
+request. A run without that yes, or without a way to file on this
+repository, puts its asks in the pull request's description under
+"Maintainer asks" instead, one bullet each, and the repository files them
+as issues when the pull request merges.
