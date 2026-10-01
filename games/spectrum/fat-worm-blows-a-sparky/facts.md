@@ -53,8 +53,10 @@ code disagree, the code wins and `features.md` says **differs**.
 
 - The screen is drawn from a 256&times;128 board bitmap at `$F000`
   (32 bytes a row), which the panel and line plotters share, then copied
-  and masked onto the ULA screen. Verified live: the board bitmap in
-  `work/play-1.sna` holds the dithered track pattern.
+  onto the ULA screen by `$E9E8`, a straight copy: that routine has no mask
+  and no reference to the ROM font, whatever its older comment said.
+  Verified live: the buffer in `work/play-1.sna` holds the dithered
+  pattern. See "The rasteriser" below.
 - Objects are drawn from four extent words. `$80EB`
   (`scale_object_extent`) reads a scale byte `B = curve[A >> 1]` from the
   64-byte curve at `$6300` and applies it to each word through `$811E`.
@@ -69,6 +71,100 @@ code disagree, the code wins and `features.md` says **differs**.
   record's `+$0D` and `+$0C` bytes, adds `$0080` to the first two resulting
   words and `$0040` to the last two (which is what centres the worm), then
   dispatches on `type & 3` to one of four drawing arms.
+
+## The rasteriser (`$8E67`, `$9270`, `$E9E8`, `$EAA9`)
+
+Observed by stopping `work/play-1.sna` at each drawing routine for one
+frame and reading the arguments and the changed bytes of the buffer. Costs
+come from single-stepping one whole frame: 84,854 instructions and 676,229
+T-states, equal to the count between two checkpoints at `$E9E8`. In the
+frames inspected (idle, and the buffers after holding `O` and `Q`+`O`, at
+headings `$B5` and `$1F`) every face is an axis-aligned rectangle or a
+wedge beside one.
+
+- **There is no general polygon filler.** A solid object is drawn from
+  two primitives. `$8E67` fills an axis-aligned rectangle: `B`=x1, `D`=x2,
+  `C`=y1, `E`=y2, after `$8E13`/`$8E30` clip them to 0-255 by 0-127.
+  `$9270` fills a trapezoid whose two parallel sides are horizontal: the
+  x-range of its first row is `($802B,$802D)`, the x-range of its last
+  row `($802F,$8031)`, and the first row is `($80B3)`. One end of a range
+  collapsing to a point makes a triangle. In the traced frame a box was one
+  `$8E67` call (x 12-42, y 27-73) with one wedge above and one below it.
+  The worm is a chain of small `$9270` and `$8E67` pieces.
+- **Mode `$80B4` bit 7 frames the rectangle.** With it set, `$8E67` draws
+  the first and last rows solid ink (`$8F8A`) and the pattern between;
+  with `y1 = y2` that is a one-pixel solid bar, which is how the outline
+  pass `$828F` draws an edge (observed: several one-row calls per frame).
+- **Rectangle rows are filled by a computed jump.** `$8EAE` stores
+  `$8F76 - 2n` (n whole bytes in the row) into the operand of the `jp` at
+  `$8F87`, which lands in a chain of `INC L / LD (HL),A` pairs at
+  `$8F34-$8F74`: n bytes cost 11 T-states each with no counter. The step
+  to the next row is `ADD HL,DE` with `DE = 32 - n`, which the chain
+  leaves one row short. The end bytes are masked with the table at `$8F00`
+  (`7F 3F 1F 0F 07 03 01 00`), the mask pairs held in `BC'` and `DE'` for
+  the whole fill.
+- **Fill patterns are two bytes.** `$80BE`/`$80BF` give a row byte `P` and a
+  modifier `M`; successive rows alternate between two bytes derived from
+  them, and bit 5 of the row's buffer address (row parity) picks which one
+  a row gets, so the dither stays fixed to the screen. Seen in the buffer:
+  pattern `$AAFF` stores `AA 55 AA 55...` down a face and `$88AA` stores
+  `DD 77 DD 77...` (0 is ink in the buffer). With `M = 0`, `$8ED2`
+  takes a shorter path that writes the same byte on every row.
+- **Slanted edges are walked with 16-bit fraction accumulators.** `$9270`
+  turns each edge's x-change into an increment in `IX` or `IY` (halved by
+  `SRL D / RR E` in one of the two cases), then patches the displacement of
+  the `JR` at `$942E` (one edge) and of the `JR` at `$94C9` (the other) to
+  select one of five loop bodies each (`$942F/$9435/$9452/$947A/$949E` and
+  `$94CA/$94D0/$94F6/$951F/$953A`). The displacements written (`$00`,
+  `$06`, `$23`, `$4B`, `$6F` and `$00`, `$06`, `$2C`, `$55`, `$70`) land
+  exactly on those entries.
+  A span's interior bytes use the rectangle's `$8F34` chain through the same
+  patched `$8F88`, and the edge loops rotate a one-bit mask a pixel at a
+  time and write a byte once, after the mask has crossed it.
+- **Cost of a frame.** At idle: 676,229 T-states, 5.2 frames a second at
+  3.5 MHz. Row spans (`$93E1`, `$9270`) take 27.1 %, rectangles (`$8F38`,
+  `$8E67`) 16.1 %, the copy to the screen (`$E9E8`) 11.5 %, the clear
+  (`$EAA9`) 3.8 % and the multiplies (`$811E`, `$A8D8`) 7.0 %. Frames
+  sampled under idle, `Q`, `O`, `P`, `A` and `Q`+`O` took between 521,392
+  and 695,976 T-states, 5.0 to 6.7 frames a second. A 50-second session
+  played by hand in a windowed ZEsarUX running at 99.3 % of real speed (378
+  frames, counted by a non-stopping checkpoint at `$E9E8`) averaged 7.5
+  frames a second, with one-second readings from 5.0 to 10.9 and a mean
+  frame of 461,852 T-states: what the scene holds sets the rate, and the
+  scripted samples above were the slow end. The slanted edges cost more
+  than the interiors they bound.
+- **The clear and the copy use the stack.** `$EAA9` sets `SP=$0000` and
+  pushes `$FFFF` 2,048 times (11 T-states per two bytes); the first push
+  lands on `$FFFF` and the writes run down to `$F000`, which is the
+  buffer. `$E9E8` sets `SP=$F000` and `POP`s the buffer two bytes at a time
+  into the screen (32 T-states per two bytes, against 21 per byte for
+  `LDIR`). The constants `$00E1` and `$F900` added to `HL` after each row
+  and each character row walk the screen's interleaved layout with no
+  multiply. The buffer is the top 128 pixel rows, two thirds of the screen
+  (`$4000` then `$4800`). Interrupts are off for all of it.
+- **The copy clicks the speaker.** The copy loop contains `DEC L / JP NZ /
+  LD L,H / XOR $F8 / OUT ($FE),A`. Forcing `$8055` to 1, 2 and 4 and running
+  one frame executed the `OUT` at `$EA8A` 128, 64 and 32 times, with the
+  frame's cost unchanged. The sound script writes `$8055` once a frame
+  (`$E9F6`), so a sound effect is the timing of the copy. The clear
+  (`$EAA9`) has the same loop with `$8056`; its `OUT`s did not run in the
+  test, because `$8056` is rewritten before `$EAA9` runs.
+- **The frame is not synchronised to the display.** The recorded play
+  coverage (`work/cov-play.txt`) executes no `HALT` and no `EI`, and the
+  only port read is the keyboard at `$7BFC`.
+- **The view translates and never rotates.** After holding `O` to heading
+  `$EB` (a diagonal), four consecutive frames showed the same rectangles
+  (x 10-41, y 23-69; x 91-175) moving by about one pixel in x and one in
+  y a frame, with unchanged sizes and no slanted rectangle edges. The
+  heading feeds the worm's movement (`$9CF1`) and its limbs, not the
+  projection of the board.
+- **Culling happens while projecting.** `$AF73` subtracts the camera from
+  each corner and returns early, without inserting the record, when a
+  result's high byte shows it is outside the view.
+
+Open: which slope and direction each of the ten loop bodies serves, and
+how `$9270` chooses displacement `$00` (a vertical edge). `symbols.json`
+names the `$8E13` family `edge_*`; `$8E67` is the rectangle filler.
 
 ## The draw list (`$AAF3`)
 

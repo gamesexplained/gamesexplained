@@ -64,3 +64,24 @@ code the first partition left unowned (two range gaps at `$8EF9-$91F0` and
 - `coverage.py` and `kit/c64/opcodes.py` crashed on every platform because
   the seam lift renamed `symbols_export.from_live` to `read_live` and they
   still imported the old name. Fixed in this run.
+
+## The rasteriser pass
+
+A later session (Claude Sonnet 5.5) went after the filled graphics the
+period reviews praise. It stopped the play snapshot at each drawing
+routine for one frame, single-stepped a whole frame for a cost profile,
+and forced `$8055` to count the speaker clicks. The first attempt at the
+click test and at the argument capture gave nonsense: ZEsarUX keeps its
+breakpoint table between scripts, so slots armed by an earlier script
+stopped the run at the wrong place. Every script now disables all 100
+slots first (`work/fill/common.py`). A first reading of mode `$80B4`
+bit 7 as "outline only" was wrong; the `$8F8A` path draws solid first and
+last rows with the pattern between them. `facts.md` has the result.
+
+## The comparison on the page
+
+The same session added the "Building the same scene twice" section to
+`index.html`: five steps, a usual flat-shaded engine beside this game.
+The right-hand picture is the left-hand projection with the rotation left
+out, which is the shape the game's rectangle and trapezoid primitives
+draw. The curve multiply itself stays in the caption and in section 02.

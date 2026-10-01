@@ -35,6 +35,8 @@ td,th{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;text-align:left
 @media(max-width:760px){.grid{grid-template-columns:1fr}}
 .ctl{font-family:var(--fm);font-size:13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 input[type=range]{flex:1 1 200px}
+button.step{font-family:var(--fm);font-size:13px;background:var(--ink);color:#fff;border:0;border-radius:6px;padding:6px 14px;cursor:pointer}
+button.step:disabled{background:var(--line);color:var(--ink-mute);cursor:default}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -92,7 +94,37 @@ input[type=range]{flex:1 1 200px}
 </section>
 
 <section>
-  <p class="fig">03 · The board</p>
+  <p class="fig">03 · Two engines</p>
+  <h2 class="t">Building the same scene twice</h2>
+  <p class="lede">One board, drawn step by step. The left column is what you would see in 
+  a typical flat-shaded 3D game engine, built here for comparison. The right column is
+  the renderer used in <i>Fat Worm Blows A Sparky</i>>. Drag the heading, then step forward.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button id="cmpPrev" class="step" type="button">Back</button>
+      <span id="cmpStep"></span>
+      <button id="cmpNext" class="step" type="button">Next</button>
+      <label for="cmpHead">heading</label>
+      <input id="cmpHead" type="range" min="-70" max="70" value="32" step="1">
+      <span id="cmpHeadOut"></span>
+    </div>
+    <div class="grid" style="margin-top:18px">
+      <div>
+        <p class="fig">Typical 3D engine</p>
+        <canvas id="cmpL"></canvas>
+        <p class="cap" id="cmpLcap"></p>
+      </div>
+      <div>
+        <p class="fig">Fat Worm Blows A Sparky</p>
+        <canvas id="cmpR"></canvas>
+        <p class="cap" id="cmpRcap"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">04 · The board</p>
   <h2 class="t">A circuit board the size of a room</h2>
   <div class="plate">
     <img src="https://spectrumcomputing.co.uk/pub/sinclair/games-maps/f/FatWormBlowsASparky.jpg" alt="A fan-drawn map of the circuit board" loading="lazy" referrerpolicy="no-referrer" style="width:100%;border:1px solid #d5d3cc;border-radius:6px">
@@ -108,7 +140,7 @@ input[type=range]{flex:1 1 200px}
 </section>
 
 <section>
-  <p class="fig">04 · Controls</p>
+  <p class="fig">05 · Controls</p>
   <h2 class="t">What the game reads</h2>
   <div class="plate">
     <table>
@@ -129,7 +161,7 @@ input[type=range]{flex:1 1 200px}
 </section>
 
 <section>
-  <p class="fig">05 · Boot</p>
+  <p class="fig">06 · Boot</p>
   <h2 class="t">A £100 reward before the game</h2>
   <div class="plate">
     <canvas id="forgery" data-scr="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcGDw8AHx+Qjx8eAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4MAAAAAAAAAAAAAAAADAB+PP4AQjx8QgB8QDxCPDwAPHw8fESCAAAEAAAAAAAAEAAAQAAAAAAAAAAgEAAAABAAABAQAAAAAAAAAAAQEAAAACAABAAAABAQQAAQQAAAAAAEAAh4Qnx+QEAIAAAAIAAAAAAEAAAAABAQAAAABAAAABBAAAAQAAAEABAAAAAQABAAAAAQQAAAABAQABAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIihGRgBCQEJCQkQAAAAAAAAAAAAAAAAAAAAAAAAAAAAUFBQUFBQUFBQUFAAAAAAAAAAAAAAAAAAIEABEOEQcABw4eEQAOBAAQEIQAEJCQmYAQkBCQkBCAEBCQkJIRAAABDg4OAB4ODgAAEA4RDgAADgAIBBEOHgQODg4ABwAABw4ODg4ODg4AAAgOAREAEQAOEAAOEA4RDgcBAAQREJCQEBAEAA4aCA4ODg4BAA4eAAAOAA4eAQ4eAA4QDgAEDg4BAAAeAA4OBwAeAAAOEA4eAAAOAAAODgAEDgcPDgcRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgISkoAQnxCQkJCAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAgICAgICAgAAAAAAAAAAAAAAAAACBgAREREIAAgREREAEQYAHxCEABCQkJaAHxAQkI8QgA8QkJCcCgAADxEREAAREQQAAB4BEREAAAEADwQREREEARAEDAgAAAgBEBARBAQRAAAPEQ8RABUMBB4ABB4RFREIDwAAEJCQnxAQAAARFQ8REBARDwAREQAMBAABEQ8REQAEHhEABBEBDwAMEQAQBAgMEQAABB4REQAMBAAMEAEABhEIEREIEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgCFJSAHxAQn58QgAAAAAAAAAAAAAAAAAAAAAAAAAAAD4+Pj4+Pj4+Pj4+AAAAAAAAAAAAAAAAAAgQAERERCAAIERERABEEABAfhAAQkJ8QgBCQEJCAn4AAnx+fEgQAABERHg4AEREEAAARDwoeAAAPAAiEER4RBA8OBAQIAAAIDw4OHgQEHgAACJEREQAVBAQRAAQRHhURCBEAABCQnxAQEAAAHhUIkQ4OHhEAEREABAQADxEREREABBEeAAQeDxEPhBEPjgQIBBEAAAQRHhEABAQABA4PAAQRCBEeCBEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAhiYgBEQFpCREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAgICAgICAgICAAAAAAAAAAAAAAAAAAIEAA8REQgACBEeDwARBAAQEIQAFpCREIAQkBCWkJCAEJAQkREEAAARERABABERBAAAEREKEAAAEQAIhBEQHgQRAQQECAAACBEBARAEBBAAAAiREQ8AFQQEEQAEERAVEQgRAAAREJEQEBAAABAVCJEBARARABERAAQEABERERERAAQREAAEEBERAAQRAAEECAQeAgAEERARAAQEAAQBEQAEEQgPEAgPBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4+PDwAQn4kQkJ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAFBQUFBQUFBQUFBQAAAAAAAAAAAAAAAAAPhAABDg4IAAcOEAEADgQAEBCEAAkPEJCAHx+PCQ8QgA8QEJCQhAAADw4PHgARDgMAABEPBA8AAA8ADwMODxADDx4DDgcAAAcPHh4PAwMPAAAPDg8BAAoOAxEAAxEPCg4IDwAAHg8Qn5+fgAAPFQ8OHh4PDwAOEQAOAwAPEQ8OEQADEQ8AAw8PDwAOEQAeAwgOEAIAAxEPEQAOAwAOHg8ABA4IAQ8IAQYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAABAOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAEAAAAAAAAAAAAAAAAAAAAAA4AAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHwQAAAAAAAAAAAEAAAAAAAAAAAAAAAAABAABAwAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHhCfH5AQAA8PH7+Qjx8fgBA/ngAAAAAAAAAAAAAAAAAADw8PP5AfgBAPHg8fgAAAAAAAAAAAAAAAAAAAAAAAAAAADw8PP5AfgA8fH5+QgAAAAAAAAAAAAAAAAAAAAAAAAAAAP48QkL+PEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP48GAAIPHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCEDg4ODgAODh4BAAAOHhEAAA4RDh4OBw4OAQQOBw8OBwAODgAODgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEQkJAQEAAQEJAEEJCQkAAQBBEAAAAAAAAAAAAAAAAAABCQkAQQEAAQEJEQkAAAAAAAAAAAAAAAAAAAAAAAAAAAABCQkAQQEAAQkJAQGIAAAAAAAAAAAAAAAAAAAAAAAAAAAAQQkJiEEJiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQQigAGEJCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQhBEBEBEAEBERDwAAARERAAAQERAREQgEEQ8GEQgREQgMERAABBEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQkJCfEBAADxCfBBCQkJ8AEAQQgAAAAAAAAAAAAAAAAAAQEI8EEB8AEBCQkB8AAAAAAAAAAAAAAAAAAAAAAAAAAAAQEI8EEB8AEBCfHxSAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEJCUhBCUgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEIIAChCfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHwQeDw4eAA4eEREAAA8REQAADhEOER4IBB4RBBEIER4IBB4OAAQRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEJCfEBAQAACQkAQQn58QABAEEIAAAAAAAAAAAAAAAAAAEB+AhBAQABAQkJOQAAAAAAAAAAAAAAAAAAAAAAAAAAAAEB+AhBAQABOfEBASgAAAAAAAAAAAAAAAAAAAAAAAAAAABB+QkoQQkoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABB+CABIfkIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAEEBEBEAABEBERAAAREQ8AAAERAR4QCAQQEQQRCA8QCAQQAQAEEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEQkRAQEAAQkJAEFpCREAAQBBECAAAAAAAAAAAAAAAAABCQkIQQEAAQEJEQkAIAAAAAAAAAAAAAAAAAAAAAAAAAABCQkIQQEAAQkRAQEYIAAAAAAAAAAAAAAAAAAAAAAAAAAAQQkJGEEJGCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQQggAfkJCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAw8PHg8AHg8RDwAADxEBAAAeDh4QDwcDDw8EDggBDwgODx4AAw4EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeDxCfn5+ADw8QBAkQkJ+AH4QeAgAAAAAAAAAAAAAAAAAPEI8EH5+AH48eDx+CAAAAAAAAAAAAAAAAAAAAAAAAAAAPEI8EH5+ADxCfn5CCAAAAAAAAAAAAAAAAAAAAAAAAAAAEEI8QhA8QggAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEI+AAhCfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAEAAAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+QjxAPEJ4AAAAAAAAAAAAAAAAAAAAAAAQEEAAEEAAAAAAAAAAAAAEAAAEBAAAAAAAAAwAEEAAAAAAAAAAAABAAAAAAAAAEBAABAAAAAAAABAQQAAQQAAMAAAAAAAAAAAAggAAAAAAEBAQAAAgAAAAAAAAEAAAAAAAAAAQAAAAAAAAEAAAAAAAABAAAAAAAAAAAAAEAAAAAAAAAAAEAAAAAAwAAAAAHBg8PAAAAAAQDAAAAAAAAAAQAAwAAAAAEBAAAAAAAAAAEAAABAAAAAAAEAAAAAAAAAAAAAAAAAAMABAAAAAAAAAAABAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAQGJCQEJiRAAAAAAAAAAAAAAAAAAAAABEADhAADhAOAB4OGg4ADh4BAA4BAQcODg4ADgQADhAOHg4HDg4eABEQDgAOER4eBAAOAQARDhEAEQAOEAAOEA4EDgcPDgcRAAAAEQ4RAAARAAQEAAAIDgAADg4eDgAADg8OHhEAHg4ABw4eBA4HDhoOHg4ABw4eEQAADh4BAAAOBw4RDgcBAAAADgQAAAAACIoRkYAAAAAABAAAABEOEQcAHgQOBxoODgAOHgAAAAAABA4OAQ4AAAAADg4AAAAADg4RBwcODg4EEQQAHgcODg4HEQ4ADh4AAAAAAAAAAAAAAAAAAAAAAAAAHxSQEBCUkIAAAAAAAAAAAAAAAAAAAAAVDAQeAAQeEQARARURAAERDwABDw8IERAQABEGAAQeERERCBAREQAVHhEAEBEREQQMEQ8AERERABUMBB4ABB4RBhEIEREIEQAAAAoREQAAFQwEBAAADxEAABAREQQAAAERERERDBERAAgREQQBCBEVEREEAAgREREAAAERDwAAAQgRFQEIDwAAABEGAAAAAB4CEpKAAAAADAYAAAAREREIDBEGEQgVAQQMEREAAAAAAAQRAQ8QAAAAAAQRAAAAAAEQEQgIERAQBhEEABEIERARCBEEDBERAAAAAAAAAAAAAAAAAAAAAAAAABASk5AfkpCAAAAAAAAAAAAAAAAAAAAAFQQEEQAEER4AEQ8VHgAPEREADxERCB4ODgARBAAEER4RHggOEREAFRERAA4REREEBB4RABEREQAVBAQRAAQRHgQRCBEeCBEAAAAEEREAABUEBAQAAAieAAAOHhEEAAAPER4REQQRHgAIHhEEDwgeFR4RBAAIERERAAAPEREAAA8IHhUPCBEAAAARBAAAAAAIAhSUgAAAAAQEAAAAERERCAQRBBEIFQ8EBBERAAAAAAAEHg8RDgAAAAAEEQAAAAAPDhEICB4ODgQRBAARCBEOHggRBAQREQAAAAAAAAAAAAAAAAAAAAAAAAAQEZCQEJGRBgAAAAAAAAAAAAAAAAAAABUEBBEABBEQABERFRAAERERABEREQgQAQEAEQQABBEQHhAIARERABUREQABER4eBAQQEQAPEREAFQQEEQAEERAEEQgPEAgPBgAABBERAAAVBAQEAAAIkAAAARARBAAAEQ8QEREEERAACBAeBBEIEBUQEQQACBEeDwAAERERAAARCBAVEQgRAAAAEQQAAAAACAIYmIAAAAAEBAAAAA8REQgEEQQRCBURBAQREQAAAAAABBAREQEAAAAABBEAAAAAEQERCAgQAQEEEQQAHggRARAIEQQEEREGAAAAAAAAAAAAAAAAAAAAAAAAH5CPH5CQngYAAAAAAAAAAAAAAAAAAAAKDgMRAAMRDwARDxUPAA8RDwAPDw8IDx4eAA4EAAMRDxAPCB4OEQAKEQ4AHg4QEAMODw8AAQ4OAAoOAxEAAxEPBA4IAQ8IAQYAAAQODgAACg4DAwAADw8AAB4PEQMAAA8BDxEODhEPAAgPEAMPBw8VDxEDAAcOEAEAAA8RDwAADwgPCg8IDwAAAA4EAAAAAB+Pjw8AAAAADgQAAAABDg4IDhEEDggVDwMODhEAAAAAAAMPDw8eAAAAAAMOAAAAAA8eDgcHDx4eBA4DABAIDh4PBw4DDg4RBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAEBAAAAAAAA4AAAAAAAAAAAAAAAAAAA4AAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAAAAAABAAAAAAAAAAAAAAABAOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAADg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4O"></canvas>
@@ -141,7 +173,7 @@ input[type=range]{flex:1 1 200px}
 </section>
 
 <section>
-  <p class="fig">06 · Bug</p>
+  <p class="fig">07 · Bug</p>
   <h2 class="t">The draw list that starts empty on purpose</h2>
   <p class="lede">One frame's list of things to draw is built fresh each
   pass. The first two instructions to build it look like a mistake, and the
@@ -210,4 +242,155 @@ function perspective(){
 document.querySelectorAll('canvas[data-scr]').forEach(c=>paint(c, b64bytes(c.dataset.scr)));
 document.getElementById('dist').addEventListener('input', perspective);
 perspective();
+
+/* Two engines, one scene. The left column is a usual flat-shaded pipeline,
+   drawn for comparison. The right column follows the game: no rotation,
+   one curve lookup, rectangles and horizontal-edged trapezoids. */
+const BOXES=[
+  {x0:-50,x1:-16,y0:22,y1:84,h:28},
+  {x0:18,x1:62,y0:40,y1:108,h:20},
+  {x0:-12,x1:14,y0:6,y1:24,h:10}
+];
+const CMP=[
+  {mode:'plan',
+   l:'Eight corners a box, each an x, y and z.',
+   r:'Four extent words and two scale bytes. The corners are worked out when the box is drawn.'},
+  {mode:'plan',
+   l:'The heading rotates every corner around the worm before anything is drawn.',
+   r:'The heading turns the worm. The boxes stay put. At a diagonal heading the picture slides, and every edge stays upright.'},
+  {mode:'wire',
+   l:'Each corner is divided by its depth. Seen at an angle, a box becomes an ordinary quadrilateral.',
+   r:'The rotation is left out, so the edges stay upright. Distance picks a byte of the curve at $6300, and each extent is multiplied by (128+B)/128, once near and once far.'},
+  {mode:'faces',
+   l:'A face is kept when it points at the camera. Turn the heading and a different set survives.',
+   r:'Bits in the type byte choose the faces, and the camera is not consulted. Turn the heading and the same faces stay.'},
+  {mode:'fill',
+   l:'A face can have any outline, so the filler walks two edges on every scanline. Each face is one flat colour.',
+   r:'Every face is a rectangle ($8E67) or a trapezoid with horizontal edges ($9270). A rectangle row is a jump into a chain of stores. The shade is a two-byte pattern fixed to the screen.'}
+];
+let cmpStep=0, cmpProg=1, cmpAnim=0;
+function cmpHeading(){return +document.getElementById('cmpHead').value;}
+function rot2(x,y,deg){
+  const a=deg*Math.PI/180, c=Math.cos(a), s=Math.sin(a);
+  return [x*c-y*s, x*s+y*c];
+}
+function project(x,y,z,deg){
+  const [xr,yr]=rot2(x,y,deg);
+  const depth=yr+56;
+  return {sx:200+xr/depth*300, sy:46+(24-z)/depth*300, depth};
+}
+function corners(b){
+  const p=[[b.x0,b.y0,0],[b.x1,b.y0,0],[b.x1,b.y1,0],[b.x0,b.y1,0],
+           [b.x0,b.y0,b.h],[b.x1,b.y0,b.h],[b.x1,b.y1,b.h],[b.x0,b.y1,b.h]];
+  return p;
+}
+const FACES=[[4,5,6,7],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]];
+function facePoly(b,face,deg){
+  const c=corners(b).map(p=>project(p[0],p[1],p[2],deg));
+  const q=FACES[face].map(i=>c[i]);
+  const area=(q[1].sx-q[0].sx)*(q[2].sy-q[0].sy)-(q[2].sx-q[0].sx)*(q[1].sy-q[0].sy);
+  const depth=q.reduce((s,p)=>s+p.depth,0)/4;
+  return {q, area, depth};
+}
+function dither(ctx){
+  if(dither.pat) return dither.pat;
+  const c=document.createElement('canvas'); c.width=c.height=4;
+  const g=c.getContext('2d');
+  g.fillStyle='#00a000'; g.fillRect(0,0,4,4);
+  g.fillStyle='#004000';
+  g.fillRect(0,0,2,2); g.fillRect(2,2,2,2);
+  dither.pat=ctx.createPattern(c,'repeat');
+  return dither.pat;
+}
+function worm(ctx,x,y,deg){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(-deg*Math.PI/180);
+  ctx.beginPath(); ctx.moveTo(0,-11); ctx.lineTo(7,8); ctx.lineTo(0,3); ctx.lineTo(-7,8); ctx.closePath();
+  ctx.fillStyle='#2f3136'; ctx.fill(); ctx.restore();
+}
+function drawPlan(ctx, side){
+  const head=cmpHeading();
+  ctx.fillStyle='#f4f3ef'; ctx.fillRect(0,0,400,260);
+  ctx.save(); ctx.translate(200,168);
+  ctx.strokeStyle='#d5d3cc';
+  for(let i=-3;i<=3;i++){ctx.beginPath(); ctx.moveTo(i*36,-120); ctx.lineTo(i*36,70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-140,i*28); ctx.lineTo(140,i*28); ctx.stroke();}
+  const turn=side==='trad' && cmpStep>=1 ? head : 0;
+  for(const b of BOXES){
+    const pts=[[b.x0,b.y0],[b.x1,b.y0],[b.x1,b.y1],[b.x0,b.y1]].map(p=>rot2(p[0],p[1],turn));
+    ctx.beginPath();
+    pts.forEach((p,i)=>i?ctx.lineTo(p[0]*1.6,-p[1]*1.15):ctx.moveTo(p[0]*1.6,-p[1]*1.15));
+    ctx.closePath();
+    ctx.fillStyle=side==='trad'?'#8fd18f':'#00a000'; ctx.fill();
+    ctx.strokeStyle='#006000'; ctx.stroke();
+  }
+  worm(ctx,0,0, side==='game'&&cmpStep>=1 ? head : 0);
+  ctx.restore();
+}
+function draw3d(ctx, side, mode){
+  const head=side==='trad'?cmpHeading():0;
+  ctx.fillStyle='#f4f3ef'; ctx.fillRect(0,0,400,260);
+  ctx.strokeStyle='#e0ded8';
+  for(let y=20;y<=110;y+=18){
+    const a=project(-70,y,0,head), b=project(70,y,0,head);
+    ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke();
+  }
+  const drawn=[];
+  for(const b of BOXES) for(let f=0;f<5;f++){
+    const poly=facePoly(b,f,head);
+    if(poly.area>=0) continue;
+    poly.face=f; drawn.push(poly);
+  }
+  drawn.sort((a,b)=>b.depth-a.depth);
+  const shades=['#7ed67e','#3aaa3a','#218c21','#0e7010','#5cbf5c'];
+  for(const poly of drawn){
+    ctx.beginPath();
+    poly.q.forEach((p,i)=>i?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy));
+    ctx.closePath();
+    if(mode==='wire'){ctx.strokeStyle='#006000'; ctx.stroke(); continue;}
+    ctx.save();
+    if(mode==='fill'){
+      const top=Math.min(...poly.q.map(p=>p.sy)), bot=Math.max(...poly.q.map(p=>p.sy));
+      ctx.beginPath(); ctx.rect(0, top, 400, Math.max(0,(bot-top)*cmpProg)); ctx.clip();
+      ctx.beginPath();
+      poly.q.forEach((p,i)=>i?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy));
+      ctx.closePath();
+    }
+    ctx.fillStyle=side==='game'&&mode==='fill'?dither(ctx):shades[poly.face];
+    ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle='#004000'; ctx.stroke();
+  }
+  worm(ctx,200,228, side==='game'?cmpHeading():0);
+}
+function drawCmp(){
+  const step=CMP[cmpStep];
+  for(const [id,side] of [['cmpL','trad'],['cmpR','game']]){
+    const cv=document.getElementById(id);
+    cv.width=400; cv.height=260; cv.style.width='100%'; cv.style.height='auto';
+    const ctx=cv.getContext('2d');
+    if(step.mode==='plan') drawPlan(ctx, side); else draw3d(ctx, side, step.mode);
+  }
+  document.getElementById('cmpStep').textContent=(cmpStep+1)+' of '+CMP.length;
+  document.getElementById('cmpLcap').innerHTML='<b>Typical 3D engine.</b> '+step.l;
+  document.getElementById('cmpRcap').innerHTML='<b>Fat Worm Blows A Sparky.</b> '+step.r;
+  document.getElementById('cmpPrev').disabled=cmpStep===0;
+  document.getElementById('cmpNext').disabled=cmpStep===CMP.length-1;
+  document.getElementById('cmpHeadOut').textContent=cmpHeading()+'°';
+}
+function goCmp(n){
+  cmpStep=Math.max(0, Math.min(CMP.length-1, n));
+  if(CMP[cmpStep].mode==='fill'){cmpProg=0; cancelAnimationFrame(cmpAnim);
+    const t0=performance.now();
+    const tick=t=>{cmpProg=Math.min(1,(t-t0)/900); drawCmp(); if(cmpProg<1) cmpAnim=requestAnimationFrame(tick);};
+    cmpAnim=requestAnimationFrame(tick);
+  } else {cmpProg=1; cancelAnimationFrame(cmpAnim); drawCmp();}
+}
+document.getElementById('cmpPrev').addEventListener('click',()=>goCmp(cmpStep-1));
+document.getElementById('cmpNext').addEventListener('click',()=>goCmp(cmpStep+1));
+document.getElementById('cmpHead').addEventListener('input',drawCmp);
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'&&e.target.type!=='range') return;
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault(); goCmp(cmpStep+(e.key==='ArrowRight'?1:-1));}
+});
+goCmp(0);
 </script>

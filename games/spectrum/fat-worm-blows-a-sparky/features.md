@@ -36,6 +36,7 @@ Sources:
 | Crawlies: erupt from the board surface and chase, or attach | open | manual, CRASH |
 | Insert map, bottom left: nearby spindles (white dots) and rough position | open | manual; HUD |
 | Solid 3D perspective: flat at the centre, sides visible at the edge | confirmed | Wikipedia, CRASH, dev page; traced via `$80EB`/`$811E` |
+| Filled, dither-shaded faces drawn in software | live | rectangle and trapezoid fills into the `$F000` buffer; `facts.md`, "The rasteriser" |
 | `Q` faster, `A` slower, `O` rotate left, `P` rotate right | traced | manual; the frame loop at `$7638` reads the control byte |
 | Redefinable keys; Kempston, Protek, Interface 2 and others | open | manual, CRASH |
 | `H` halts play and runs a "bouncing ball routine" | traced | manual; `$D05E`, reached only from `$779A`, not executed in a snapshot |
