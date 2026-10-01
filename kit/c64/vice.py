@@ -22,7 +22,7 @@ Usage:
                                        # never vice_execution_pause alone (pause-at-instruction)
   stick_arm(rpc); stick(rpc, LEFT)     # joystick input on a build that fails joy-port-1
 
-Which of these to use depends on `tools.py check-emulator`: step_pass needs
+Which of these to use depends on `tools.py --platform c64 check-emulator`: step_pass needs
 stop-exact and step-pass, frames and pause need the frame-advance- checks,
 joy needs the joy- checks. Where a check fails, kit/skills/c64/tool-vice-mcp/workarounds.md
 says what to use instead (halt_at and release for stops, stick_arm for port 1).

@@ -138,7 +138,7 @@ it, and that is the complete list:
 - When the Linux release zip was used: its runtime libraries, if they
   were installed for this (apt packages; the list is under Linux, below).
 
-Verified on macOS with `tools.py verify-footprint`: the emulator wrote its
+Verified on macOS with `tools.py --platform c64 verify-footprint`: the emulator wrote its
 log, settings and snapshots under `tools/vice-home/` and nothing under the
 home directory, at launch, in use and on exit. Verified the same way on
 Linux, in a container with no display (below). No Windows run is
@@ -271,7 +271,7 @@ no prebuilt binary is downloaded or run.
 python3 kit/scripts/tools.py status
 python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510
 python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000
-python3 kit/scripts/tools.py snapshots            # where emulator snapshots land
+python3 kit/scripts/tools.py --platform c64 snapshots            # where emulator snapshots land
 python3 kit/scripts/tools.py stop vice            # the emulator only
 python3 kit/scripts/tools.py stop                 # both tools
 ```

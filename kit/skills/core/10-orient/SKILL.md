@@ -16,7 +16,7 @@ annotate it byte by byte.
 
 0. **Check the emulator** before the game goes in:
    `python3 kit/scripts/tools.py status`, then
-   `python3 kit/scripts/tools.py check-emulator`. It resets the machine and
+   `python3 kit/scripts/tools.py --platform <platform> check-emulator`. It resets the machine and
    takes about a minute. Copy the build line from `status` into
    `game.json` under `tools.emulator`, and the list of failed checks into
    `orientation.md`. Then read the emulator's tool skill, and of its

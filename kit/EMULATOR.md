@@ -226,6 +226,6 @@ checks is known in advance. Give each check a short name. The tool skill
 keeps its workarounds in a separate file, one section per failed check,
 so an agent on a build that passes reads none of them, and a section is
 deleted when the release passes its check. Run the script through the
-launcher (`tools.py check-emulator`) after every install, rebuild and
+launcher (`tools.py --platform <platform> check-emulator`) after every install, rebuild and
 release; a table typed from memory of the last run is not a measurement.
 The Commodore 64's is `kit/c64/check_emulator.py`.

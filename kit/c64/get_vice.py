@@ -21,7 +21,7 @@ release (a release can have Linux and Windows builds and no macOS one).
 Every path asks first. `download` and `build` are the contributor's answer to the question the
 plain command prints, never a default: a download is a file from the internet, and a build installs
 system packages outside this repository (kit/INSTALL.md, the footprint principle). Afterwards run
-`tools.py check-emulator`; its checks, not the version, decide which workarounds apply.
+`tools.py --platform c64 check-emulator`; its checks, not the version, decide which workarounds apply.
 
 --prs runs code nobody has merged, from whoever opened the pull request, on this computer. It is
 for the organization's admins, who review each entry and pin it to a commit: the script checks,

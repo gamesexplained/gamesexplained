@@ -35,6 +35,12 @@ looks like it belongs to one of the tools. An empty list is the pass.
 """
 import glob, json, os, re, shutil, socket, subprocess, sys, time
 
+# What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
+# platforms have a launcher. Keep in step with main() below.
+COMMANDS = ("status", "vice", "r2000", "stop", "verify-footprint", "use-vice", "check-emulator",
+            "get-vice", "build-vice", "snapshots")
+TOOL_NAMES = ("vice", "r2000")   # what `stop` takes
+
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TOOLS = os.path.join(ROOT, "tools")
 VICE_DIR = os.path.join(TOOLS, "vice-mcp")
