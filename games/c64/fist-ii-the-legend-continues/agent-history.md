@@ -50,3 +50,9 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   `solver/` (committed; the site does not publish it). Reading the users
   of `$0491` for that handoff showed that room 79's drop only blinks the
   scroll-6 icon, which ruled out a fight as the thing that stops the fall.
+
+- 1 October 2026 (later session, unorig with Claude): the Maps and solution
+  tab. The way into the scroll 5/7 region was found by reading room 43's
+  exits and the scroll-6 narrowing at `$067B` together, prompted by the
+  contributor's scan of a hand-drawn map whose key says scroll 6 crosses
+  the crevice. The search now completes; the new legs are not driven.

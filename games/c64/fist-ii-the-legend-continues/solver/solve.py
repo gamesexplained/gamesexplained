@@ -18,7 +18,12 @@ import json,sys
 import os
 HERE=os.path.dirname(os.path.abspath(__file__)); G=os.path.dirname(HERE); OUT=os.path.join(G,'work','solver'); os.makedirs(OUT,exist_ok=True)
 # the 64 KB image from the entry snapshot (orientation.md, step 5); RAM starts at byte 209 of a VICE 3.x .vsf
-d=open(os.path.join(G,'work','f2-entry.vsf'),'rb').read()[209:209+65536]
+_vsf=os.path.join(G,'work','f2-entry.vsf')
+if os.path.exists(_vsf): d=open(_vsf,'rb').read()[209:209+65536]
+else:   # no snapshot in this session: the same bytes from the committed listing
+    d=bytearray(65536)
+    for _r in json.load(open(os.path.join(G,'listing.json')))['records']:
+        if _r.get('b'): d[_r['a']:_r['a']+len(_r['b'])]=bytes(_r['b'])
 a=0x4AEC; ex={}
 for s in range(123):
     L=[]
@@ -48,7 +53,8 @@ def barriers(r,dl):
         if tt==3 and 1 not in dl: ws.append((col,t))
         elif tt==7 and 4 not in dl: ws.append((col,t))
     for e in ex[r]:
-        if e[0]==17: ws.append((e[1],'H%d'%(e[0])))   # a drop of 11 columns: cannot be walked or somersaulted across
+        if e[0]==17 and not (area(r)==13 and 6 in dl): ws.append((e[1],'H%d'%(e[0])))   # a drop of 11 columns: cannot be walked or somersaulted across
+        # in area 13 (room 79) scroll 6 narrows the drop to 7 columns ($067B), which a somersault crosses
     return sorted(ws)
 def rl(t): return {'H17':-11,'H16':-7}[t] if isinstance(t,str) else ABD[t]
 def rr(t): return 0 if isinstance(t,str) else AC7[t]
@@ -70,7 +76,8 @@ def exit_ok(r,dl):
 def land(v,dc,dl):
     # arriving on a hole drops straight through to the floor below
     for n in range(8):
-        h=[e for e in ex[v] if (e[0]==11 and e[1]==dc) or (e[0]==17 and e[1]<=dc<e[1]+11) or (e[0]==16 and e[1]<=dc<e[1]+7)]
+        w17=7 if area(v)==13 and 6 in dl else 11
+        h=[e for e in ex[v] if (e[0]==11 and e[1]==dc) or (e[0]==17 and e[1]<=dc<e[1]+w17) or (e[0]==16 and e[1]<=dc<e[1]+7)]
         if not h: break
         v,dc=h[0][2],h[0][3]
     return v,dc

@@ -232,24 +232,38 @@ hero on to room 87, so scroll 4 (at 124, beside the drop at 112-122) is
 reached only from room 112. In room 85 the drop at 115-121 takes the
 hero to room 111 unless he somersaults it.
 
-**What is not solved.** Scroll 3 (room 114, at 110) lies between the
-walls at 77 and 117, reached by the stairs from room 113 that arrive at
-column 92; the search finds that route, and it was not driven. Scrolls
-5 and 7, chambers 72 and 74, the volcano rooms 60-63 and the ending,
-room 122 (`$2DB5`), lie in a region (rooms 8, 16, 18, 30-36, 60-63, 72,
-74, 76, 88, 95-99, 107, 117-120, 122) whose only way in, by the exit
-tables, is room 79's right-hand exit to room 117. That part of room 79
-is reached only from room 117. The way in from the rest of the world is
-a chute: in room 77 the type-20 exit at 222 slides the hero right
-whatever the stick says, into the 11-column drop at 233, and he lands in
-room 79 at column 21. That is inside room 79's own drop at 18, so he
-falls on through to room 82 (*live*, walking, standing, ducking, every
-stick direction). Room 77 refuses jumps and attacks (*live*). Room 79's drop blinks the scroll-6 icon ten times
-(`$0491`/`$0492`, read by `blink_icons` `$2D57`), and with scroll 6
-delivered it narrows to columns 18-24 (`$067B`); the live tests had
-scroll 6 delivered and still landed at 21. How a player gets into the
-region is not known; how the arrival column is set after a fall has not
-been read. `solver/README.md` has the tools and the leads.
+**The crevice in room 79.** Scrolls 5 and 7, chambers 72 and 74, the
+volcano rooms 60-63 and the ending, room 122 (`$2DB5`), lie in a region
+(rooms 8, 16, 18, 30-36, 60-63, 72, 74, 76, 88, 95-99, 107, 117-120, 122)
+whose only way in, by the exit tables, is room 79's right-hand exit at 171
+to room 117. Room 43's exit at 88 (type 5, stick up and right) arrives in
+room 79 at column 0, left of room 79's drop at 18. That drop is 11
+columns wide, but with scroll 6 delivered `scan_room_exits` narrows it
+to columns 18-24 (`$067B`), which the forward somersault crosses; the
+drop blinks the scroll-6 icon as a hint (`$0491`/`$0492`, `blink_icons`
+`$2D57`). Past it, the type-7 barrier at 109 breaks once scroll 4 is
+delivered. With that crossing modelled, the search (`solver/solve.py`,
+reading the committed listing) finds all eight scrolls in the order 1, 8,
+2, 4, 3, 6, 7, 5 and reaches room 122 through rooms 34, 97-99, 76 and
+60-63. The crossing, scrolls 3, 7 and 5 and the ending have not been
+driven in the emulator. Two outside sources agree: the key of a
+hand-drawn map by Master Lee and hiTCH-HiKER (December 2008, given by
+the contributor) names scroll 6 "crossing the rock crevice", and Magnus
+Andersson's GameFAQs walkthrough (2007) has "a middle plattform at the
+waterfall. Jump across and continue right."
+
+The slide in room 77 is not the way in: its exit at 222 carries the hero
+into the drop at 233, which lands him in room 79 at column 21, inside the
+crevice, and he falls on through to room 82 (*live*, walking, standing,
+ducking, every stick direction). Room 77 refuses jumps and attacks
+(*live*).
+
+The same map's key matches the other scrolls to the code: 1 destroying
+stone heaps (type-3 barriers), 2 the way across to the river (room 52),
+3 keeping energy for the last opponent (area 7), 4 kicking trees down
+(type-7 barriers), 5 more fighting strength (chains end early), 7
+lighting the dark rooms (a zone's colours), 8 surviving the poison rooms
+(area 5).
 
 ## Open questions
 

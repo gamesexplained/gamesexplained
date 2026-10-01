@@ -7,8 +7,6 @@ For Gold, a human pass over every tab, section by section.
 
 Worth doing, found in the run and not done:
 
-- A Maps / levels tab: draw every screen from the three scenery sets
-  (`$1556`, `$4A71`, the exit lists at `$4AEC`) and link them by their exits.
 - A pose viewer: build each of the 73 poses from its nine images
   (`$B210`, `$1C0F`) and step through the 44 move scripts (`$AF46`).
 - The music: port the driver at `$F400` to `sid.js`, filter on.
@@ -16,15 +14,15 @@ Worth doing, found in the run and not done:
 - Live tests not run: area 5 without scroll 8; the ending scene from room
   `$7A`; setting `$0455` to 0 for a second joystick; combination 8's store
   into the hero's slot; readers of the head sprites at `$B746`.
-- A solution: facts.md, "Towards a solution", has the exit types, the
-  somersault over holes and 7-column drops, and five scrolls (1, 8, 2, 4,
-  6) driven and delivered in the emulator with fights switched off. Not
-  done: scroll 3 (room 114, from the stairs of room 113), and the region
-  holding scrolls 5 and 7 and the ending, whose only entrance by the exit
-  tables is the middle of room 79; the chute from room 77 drops the hero
-  past it. Read how a fall sets the arrival column. Everything
-  needed to pick this up is in `solver/README.md`, with the search and
-  the driver beside it.
+- The solution: drive the legs the search found and the emulator has not
+  run: scroll 3 (room 114, from the stairs of room 113), the crevice in
+  room 79 (from room 43's ladder at 88, somersault over 18-24 with scroll
+  6), scrolls 7 and 5 and the ending; then win the fights instead of
+  switching them off. The route is on the Maps and solution tab;
+  `solver/README.md` has the tools.
+- Maps: draw each room's scenery from the three scenery sets (`$1556`,
+  `$4A71`); the Maps and solution tab draws exits, walls, barriers and
+  encounters only.
 - symbols.json: `$0491` and `$0492` are the blink count and the scroll
   icon of `blink_icons` (`$2D57`); their comments still say "meaning not
   traced".
