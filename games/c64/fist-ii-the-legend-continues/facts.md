@@ -132,6 +132,31 @@ the loader and the start-up (`$C459`, `$C469`), and stays `$15` in play
   less `$0ABD`[type] on the left and plus `$0ABD`[type] on the right, less
   40 for the scroll position (`find_room_barriers` `$087A`).
 
+## Play, from the manual and the code
+
+- The C64 manual (Lemon64's docs image, read 1 October 2026, given by the
+  contributor) names the moves: fire up, up-back forward somersault, up
+  jump/climb up, up-forward high punch, back walk back, forward walk
+  forward, down-back reverse somersault, down duck/climb down,
+  down-forward jab; fire down, up-back back kick, up flying kick,
+  up-forward high kick, back roundhouse/turn, forward mid kick,
+  down-back rear sweep, down sweep, down-forward low kick.
+- Scroll icons (`$054B`/`$0553`, status font `$E800`) are trigrams, top
+  line first: scrolls 1-8 are Ch'ien, Sun, Kan, Chen, K'un, Ken, Li, Tui.
+  The manual lists them as Ch'ien, Sun, Chen, Kan, Ken, K'un, Li, Tui.
+- Defeat counter `$048C`: cleared at game start (`$2135`), +1 at each
+  defeat (`$3527`), held at 31 (`$352D`-`$3533`). Read by meditation
+  (`$396F`), opponent energy (+64 from 16, `$2755`) and the respawn test.
+  The manual says meditation counts defeats "since your last meditation";
+  the code counts them all.
+- Respawn: `scan_encounters` (`$27F5`) skips a done record (flags bit 7)
+  unless it is not a scroll (bit 6 clear), `$048C` >= 30 and
+  `random AND $81` is 0, one time in four (`$2820`-`$282C`). A record is
+  marked done only at a defeat (`$3522`).
+- Hordes: a record with low nibble `$0A` sets `$0472` = 10 (`$2875`); each
+  defeat brings the next until it runs out, or at once once scroll 5 is
+  delivered (`$27AD`, its only reader).
+
 ## Sound
 
 - Music: a three-voice driver at `$F400`, called once a frame from
@@ -140,6 +165,14 @@ the loader and the start-up (`$C459`, `$C469`), and stays `$15` in play
   pulse-width sweeps, glide, vibrato and a filter sweep. The note table at
   `$F4C9` is one equal-tempered octave (*live* check of the ratios), doubled
   per octave; note lengths at `$F4D5`.
+- Tunes by zone (`$1247`): zone 0 (areas 0-7) tune 1, zone 1 (8-29) tune
+  3, zone 2 (30-47) tune 2; area 6, the temples, tune 2 (`$11FC`-`$1202`).
+  Tempo 2, 2, 5 frames a tick. Tune 1 uses instruments 0-7, tune 2 9-11,
+  tune 3 12-16; instrument 0 sweeps the filter from voice 3's envelope
+  (`$D41C`, source 3).
+- The port in `reference/fist-music.js` matches the driver run in
+  `kit/c64/cpu6502.js`, all 25 SID registers after each of 30,000 frames
+  of each tune (`tests/music.js`).
 - Sampled sounds: a CIA 1 timer B interrupt (`$3D8B`) flips the SID
   volume between two levels, each sample byte choosing the time to the
   next flip through the period table at `$0200`/`$0300`. `play_sample`

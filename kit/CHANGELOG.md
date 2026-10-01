@@ -22,6 +22,12 @@ frame recorded with `frame.py` listed five handlers and their lines in
 its writes to `$FFFE`; tracing from them found the music driver under
 the KERNAL. `10-orient` now says to take the handlers from a frame.
 
+**A music driver can read the sound chip back.** Fist II's driver sweeps
+a filter from voice 3's envelope (`$D41C`), so a port that only writes
+registers drifts from the game. `site/lib/sid.js` now passes a driver
+voice 3's envelope and waveform each frame (`readback`), and a port's
+test feeds the original and the port the same values.
+
 ## 0.0.48 · 30 September 2026 · Castle Master · 64kramsystem with Codex
 
 **Compare an imported capture with a booted game before using it.**

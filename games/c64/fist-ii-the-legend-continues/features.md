@@ -14,6 +14,10 @@ Sources:
   (archive.org's copy of the Mindscape manual, Lemon64, CSDb, GameFAQs,
   C64 Online, the FRGCB blog). What is below comes from web search result
   summaries of those pages, read the same day: leads, weaker than a page.
+- The C64 manual, Lemon64's docs image, given by the contributor on
+  1 October 2026 and read in full: story, enemies, Chi, meditation,
+  trigrams, controls, Tournament and credits. It replaces the summaries
+  below wherever they differ.
 - Search summaries of archive.org ("Fist: The Legend Continues",
   Mindscape manual text), Lemon64 and the FRGCB blog: developed by Beam
   Software, published by Melbourne House (UK) and Mindscape (US), 1986.

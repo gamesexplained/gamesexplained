@@ -34,6 +34,16 @@ labels.
 - Web pages were refused again, so the history rests on search
   summaries.
 
+## Changes made in the curate pass (1 October 2026)
+
+- `kit/scripts/build.py`: `gameplay.html` and `graphics.html` are
+  authored tabs, so a game can split play and pictures out of How it
+  works.
+- `site/lib/sid.js`: a driver may define `readback(env3, osc3)`; the
+  player calls it before each frame with voice 3's envelope and the top
+  of its waveform, as `$D41C` and `$D41B` read. Fist II's tune 1 sweeps
+  its filter from the envelope, and a port without it cannot match.
+
 ## Maintainer asks
 
 This session cannot reach `gamesexplained/gamesexplained` to open the

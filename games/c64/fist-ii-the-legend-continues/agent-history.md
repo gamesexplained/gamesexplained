@@ -65,3 +65,25 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   exits' columns alone overlapped badly, because the rooms' columns do
   not agree with each other; placing rooms row by row and moving them
   sideways or a row on when the spot is taken gave a readable drawing.
+
+## 1 October 2026, curate: manual, gameplay, music
+
+- The contributor attached the manual (Lemon64's docs image) after the
+  session's fetch was refused. It gave the move names for the two
+  unnamed diagonals (the somersaults), the full credits and the trigram
+  names. Matching the game's scroll icons to the manual's drawings named
+  each scroll; the manual's list order differs from the game's.
+- A player's claims on Lemon64 (respawns from a kill count, scroll 5 does
+  nothing for damage) were tested against the code: the defeat counter,
+  the 30-defeat respawn rule and scroll 5's single reader agree with them.
+  The same counter shows the manual is wrong about meditation counting
+  defeats since the last one.
+- The tabs were split at the contributor's request: Gameplay (quest,
+  controls, Chi, trigrams, enemies, respawns), Graphics (fighters,
+  scenery, the frame), Music (a port of the driver with the site's
+  player). `build.py` gained gameplay.html and graphics.html as authored
+  tabs. The driver reads voice 3's envelope for a filter sweep, so
+  `sid.js` now hands a driver `$D41C`/`$D41B` through `readback`.
+- A text walkthrough the contributor found (author unknown) agreed with
+  the shape of the route: eight scrolls, a temple each, kicks, jumps and
+  the volcano last.
