@@ -98,7 +98,7 @@ into the diff that saves the next contributor the trouble.
 7. **Update `TODO.md`** with what is missing for the next tier.
 8. **If you were the first on your operating system**, the install notes
    are part of your retrospective: run
-   `python3 kit/scripts/tools.py verify-footprint`, contain or list
+   `python3 kit/scripts/tools.py --platform <platform> verify-footprint`, contain or list
    whatever it finds, and write your platform's section in
    `kit/INSTALL.md` to the standard of "The footprint principle" there,
    and your system's cell in `site/status.json`.

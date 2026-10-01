@@ -95,6 +95,7 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | `$D016` | control 2: bit 4 multicolour, bit 3 40/38 columns, bits 0–2 horizontal scroll |
 | `$D018` | memory pointers: high nibble × `$0400` = screen base, bits 3–1 × `$0800` = character base, both within the VIC bank. Work it in binary: `$8E` is `1000 111x`, screen 8 × `$0400` = `$2000`, characters 7 × `$0800` = `$3800`, so with bank 1 that is `$6000` and `$7800`; `$8E` and `$8F` are the same pair, and bit 0 means nothing |
 | `$D019`/`$D01A` | interrupt status / enable |
+| `$D01E`/`$D01F` | sprite-sprite / sprite-background collisions: a bit per sprite, set by the hardware, cleared by reading the register |
 | `$D01C` | sprite multicolour; `$D01D`/`$D017` X/Y expand; `$D01B` priority |
 | `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
 | `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |

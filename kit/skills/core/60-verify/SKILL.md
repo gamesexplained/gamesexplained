@@ -162,6 +162,15 @@ against the documented number at the point where the game ends. Trace the
 path from the destruction flag to the next start of play before declaring
 the counter absent; the answer is usually one `inc` on that path.
 
+## A number handed through a request byte
+
+When one routine leaves a number in a variable for another to act on (a
+tune to start, a sound to play, a screen to show), the number's meaning
+is decided by the routine that takes it. Read that routine before
+writing what the values mean: it may subtract one, use the value as an
+offset, or treat one value as a different command. The callers alone
+read as the answer and can be off by one throughout.
+
 ## Writing facts.md
 
 `facts.md` is current truth for this game: memory layout, timing,

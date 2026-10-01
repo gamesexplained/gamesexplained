@@ -1,0 +1,65 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fist II: The Legend Continues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
+  <h1>Fist II: The Legend Continues</h1>
+  <p class="sub">How the fighters are built from nine sprites and mirrored as they are unpacked, how the rooms are drawn, and how one frame of the screen is put together.</p>
+</header>
+<main class="wrap">
+<section id="fighters">
+  <p class="fig">The fighters</p>
+  <h2 class="t">229 packed images, stored facing one way</h2>
+  <p class="lede">Every fighter image in the game, unpacked by this page the way the game does it. Each is one of the nine pieces a fighter is made of: a head, an arm, a leg, part of a body. Switch the facing to see the game's mirror at work, and click an image to see where it is stored.</p>
+  <div class="plate">
+    <div class="row"><button class="b" type="button" id="face" aria-pressed="false">Face the other way</button><span class="note" id="fk"></span></div>
+    <div class="gal" id="gal"></div>
+    <p class="cap">The 229 frames (<code>$8000</code>), found through their address tables (<code>$B57C</code>), drawn in the fighters' colours as the recorded frame further down this page has them: the two shared sprite colours, black and light red for the skin, and red, the colour of sprites 1-3 and 5-7, on the brown of the jungle floor so that the black outline shows.</p>
+  </div>
+  <p>A fighter on screen is nine hardware sprites: three rows of three. Each pose names the image for each of the nine places (<code>$B210</code>), and 73 poses make every stance and blow. The images are packed: any byte other than zero is stored as it is, and a run of zeros is stored as a zero and a count (<code>$1D3E</code>). All 229 images take 12 KB instead of 14.</p>
+  <p>Only one facing is stored. To draw a fighter facing the other way, a second unpacker (<code>$1F58</code>) writes each row's three bytes in reverse order and passes every byte through a 256-byte table that reverses its four pixel pairs (<code>$BF00</code>). In multicolour a pixel is two bits wide, so the pairs move as units.</p>
+  <p>A move is a script of four-byte steps (<code>$AF46</code>): how long to hold, which pose, and how far to move across and up, read one step at a time (<code>$1AF0</code>). There are 44 scripts. A kick is a few steps of rising poses and a few of falling ones.</p>
+</section>
+<section id="scenery">
+  <p class="fig">Scenery</p>
+  <h2 class="t">Rooms built from shapes, objects and lists</h2>
+  <p>The world is 123 screens, each belonging to one of 48 areas (<code>$4A71</code>). The area chooses one of three scenery sets (<code>$196F</code>): areas 0-7 use set 0, the caves; 8-29 set 1; and 30-47 set 2. A set is built in three levels. Shapes are small rectangles of characters. Composite objects are lists of shapes with offsets. Each area then has a list of objects with their positions (<code>$1556</code>), and its colour list paints the colour memory (<code>$16B8</code>).</p>
+  <p>The manual credits the backgrounds to Greg Holland, drawn with David Johnston's "Character Editor" and laid out with Nigel Spencer's "Map Editor".<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The <a href="levels.html#map">map</a> on the Maps and solution tab draws every room from these tables.</p>
+</section>
+<section id="screen">
+  <p class="fig">The screen</p>
+  <h2 class="t">One frame, rebuilt from memory</h2>
+  <p class="lede">The first fight, drawn by this page from the game's memory and the video chip's settings as they changed through one frame.</p>
+  <div class="plate">
+    <canvas id="frame" class="scr"></canvas>
+    <p class="cap">A reconstruction, not a screenshot: one frame recorded in the emulator, with 70 writes to the video chip and the line each happened on, drawn line by line. It matches the emulator's own picture in all 104,448 pixels.</p>
+  </div>
+  <p>The game uses the video chip's last memory bank, the top 16 KB, and keeps its play-area characters (<code>$D000</code>) in the RAM beneath the input and output chips: the processor cannot see them there, but the video chip always reads RAM. There are two play screens, one under the operating system ROM (<code>$F000</code>) and one below the input and output chips (<code>$CC00</code>). While one is shown, the game builds the other, and every coarse scroll step swaps them.</p>
+  <p>Raster interrupts run in a chain. Each handler sets the line for the next and writes the next handler's address into the interrupt vector. Most of them move the fighters' sprites further down the screen: nine sprites a fighter, eighteen for two, with eight on the chip. A planner (<code>$3F67</code>) works out each frame which of seven layouts to use from the gap between the fighters, and writes the lines and sprite images into the next frame's handlers.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/fist-page.js"></script>
+<script>
+const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[237,162,0,198,0,198,0,198,78,162,0,198,0,198,0,198,0,27,0,0,0,255,208,0,59,245,241,0,255,0,3,255,254,254,255,240,254,240,250,241,242,242,242,245,242,242,242],"cia2":[192,63],"cpu":[47,21],"writes":[[0,34,65534,212],[0,40,65535,59],[0,62,53282,254],[1,5,53283,254],[23,47,62457,0],[23,59,62458,0],[24,19,53251,156],[24,23,53253,156],[24,27,53255,156],[24,60,53250,224],[25,5,53252,248],[25,14,53254,16],[25,35,53264,8],[25,53,53240,38],[25,58,62456,38],[27,33,53258,43],[27,41,53260,67],[27,50,53262,91],[28,7,53264,232],[28,33,53259,156],[28,37,53261,156],[28,41,53263,156],[29,5,62462,0],[29,17,62463,0],[29,31,53244,40],[29,36,62460,40],[30,1,53264,248],[73,37,65534,112],[73,43,65535,58],[73,57,53270,215],[74,5,53272,201],[74,12,53283,240],[74,19,53282,248],[74,56,53281,255],[176,25,53251,177],[176,29,53253,177],[176,33,53255,177],[176,37,53259,177],[176,41,53261,177],[176,45,53263,177],[177,23,62457,13],[177,29,62458,14],[177,47,62462,32],[177,53,62463,33],[178,15,65534,203],[197,22,53251,198],[197,26,53253,198],[197,30,53255,198],[197,34,53259,198],[197,38,53261,198],[197,42,53263,198],[198,18,62457,16],[198,24,62458,17],[198,42,62462,35],[198,48,62463,36],[198,54,65534,33],[199,14,65535,61],[234,37,65534,103],[234,43,65535,63],[234,55,53281,254],[235,8,53270,208],[235,63,53282,255],[236,6,53272,59],[236,12,53250,0],[236,16,53252,0],[236,20,53254,0],[236,24,53258,0],[236,28,53260,0],[236,32,53262,0],[236,36,53264,0]],"colour":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw0FCQ8HDQgJAgMOBQcOBwILDQYEAwkICQ==","ram":[{"a":49152,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":49984,"b":"AAAAAADsAAPuAA+uAA//AD7/AD+/AD9/AD/aAA/fAAv/AAH/AAFVAAFVAABbAAB/AABfAABVAAClAACqAAKq"},{"a":50048,"b":"AAAAAAAAAAAAwAAA8AAM/AA/6wD/v7///7/8/7qA9agAWgAAUAAAoAAAsAAA8AAA0AAAUAAAoAAAqAAAqAAA"},{"a":50176,"b":"AAqqAAqqAAqqACqaACpWACqVAKpUAKVAAKkAAqUAAqQACqQACpQAClAABpAABYFVPUVVPRVV/1VB/1QA/QAA"},{"a":50240,"b":"qgAAqoAAqoAApoAAWqAAaqAAWqAAFqgAFagABqgABaoABZoAAVoAAWgAUWkAVRUAVVXwVVX/VVf/AFf/AAfA"},{"a":51200,"b":"AAAAAAAAAAAAAAADMAAP/AA//wDr//7+P/7/Aq7/ACpfAAClAAAFAAAKAAAOAAAPAAAHAAAFAAAKAAAqAAAq"},{"a":51264,"b":"AAAAOwAAu8AAuvAA//AA/7wA/vwA/fwAp/wA9/AA/+AA/0AAVUAAVUAA5QAA/QAA9QAAVQAAWgAAqgAAqoAA"},{"a":51392,"b":"AACqAAKqAAKqAAKaAAqlAAqpAAqlACqUACpUACqQAKpQAKZQAKVAAClAAGlFAFRVD1VV/1VV/9VV/9UAA9AA"},{"a":51456,"b":"qqAAqqAAqqAApqgAlagAVqgAFaoAAVoAAGoAAFqAABqAABqgABagAAWgAAaQVUJQVVF8VVR8QVX/ABX/AAB/"},{"a":51584,"b":"AAAAAAAAAAAAAAAAAAAAAVAABVQACqgAJVwAJ3wAh9QAB/cABf8AAfwAA/QAA/wAAzwAAAAAAAAAAAAAAAAA"},{"a":51712,"b":"AAAAAAAAAAAAAAoAACqAAJagAKagFamABWqgA1agAF1QA3/QA/9QAP9AAH/AAP8AAPAAAAAAAAAAAAAAAAAA"},{"a":52224,"b":"AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":53184,"b":"ACEaGxsbGh0eAAAAAAAAAAAAAAAAAAAAAAAAAAAfIBobGxsbGxocAA=="},{"a":57344,"b":"AA=="},{"a":57351,"b":"AKqqqqqqqqqq"},{"a":57440,"b":"/////////6pVVVVVVVVVAA=="},{"a":57464,"b":"VVVVVVVVVVU="},{"a":57768,"b":"qv////////+qgICAgICAlaoBAQEBAQFV"},{"a":57912,"b":"lZXl5fn5/v4="},{"a":58032,"b":"lZWlpbm5vr6/v29vW1tWVg=="},{"a":58056,"b":"qv6/v6rv7+8="},{"a":58104,"b":"qv7+/qrv7+8="},{"a":59392,"b":"AAAAAAAAAAAcJkJCQkJkOA=="},{"a":59600,"b":"qlV3////qgAAqlV3////qqhmauaupq4oqlZ2/vr6qgKAYKBg4GDggAIJCgkLCQsCqpW3v6+vqoAqmaubupq6KA=="},{"a":61560,"b":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBNjc2NwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBATY3NjcBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE2NzY3WVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZNjc2N19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzY3NjdfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX182NzY3X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fNjc2N19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzY3NjcPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw82NzY3Dw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PNjc2Nw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDzU1NTUPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8MDAwMDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PVg0NDQ8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PD1dHDQ0PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PV0cNDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw9XRw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PD1cPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":62456,"b":"JQcIACcAGhs="},{"a":65535,"b":"Pw=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19655,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":53,"colour_cells_changed_during_frame":0}};
+(async function () {
+  if (!window.C64) { FIST.fail(new Error('This widget needs the site\'s shared script, lib/c64.js.')); return; }
+  C64.drawFrame(document.getElementById('frame'), FRAME, 2);
+  let G; try { G = await FIST.load(); } catch (e) { FIST.fail(e); return; }
+  const M = G.ram, gal = document.getElementById('gal'), cols = [0, 0, 2, 10];
+  const frames = []; for (let i = 0; i < 229; i++) frames.push(FIST.unpack(M, i));
+  let flip = false;
+  function draw() {
+    gal.textContent = '';
+    frames.forEach((f, i) => { const cv = document.createElement('canvas'); FIST.draw(cv, flip ? FIST.mirror(M, f) : f, 2, cols, C64.PAL[8]); cv.title = 'frame ' + i;
+      cv.onclick = () => { document.getElementById('fk').textContent = 'frame ' + i + ' at ' + C64.hex(0x8000 + M[0xB661 + i] * 256 + M[0xB57C + i]); };
+      gal.appendChild(cv); });
+  }
+  draw();
+  document.getElementById('face').onclick = e => { flip = !flip; e.target.setAttribute('aria-pressed', flip); draw(); };
+})();
+</script>

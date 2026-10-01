@@ -33,6 +33,47 @@ machine's.** The session's network refused every game site; search
 summaries were all that came back, and their key list was the BBC Micro
 version's. The C64's keys came from the input routine. `20-features` says
 so.
+## 0.0.53 · 30 September 2026 · Fist II: The Legend Continues · unorig with Claude
+
+**A frame capture names every handler in an interrupt chain.** Fist II's
+raster handlers each write the next one's address into the vector, so a
+read of the vector finds one of them, and tracing from the entry and the
+vectors reached 12 KB of a 61 KB load and no sound code at all. One
+frame recorded with `frame.py` listed five handlers and their lines in
+its writes to `$FFFE`; tracing from them found the music driver under
+the KERNAL. `10-orient` now says to take the handlers from a frame.
+
+**A music driver can read the sound chip back.** Fist II's driver sweeps
+a filter from voice 3's envelope (`$D41C`), so a port that only writes
+registers drifts from the game. `site/lib/sid.js` now passes a driver
+voice 3's envelope and waveform each frame (`readback`), and a port's
+test feeds the original and the port the same values.
+## 0.0.52 · 1 October 2026 · Impossible Mission · chunkypixel with Claude
+
+**Data the start-up moves is invisible to the hand-over comparison.**
+Comparing the hand-over snapshot with the play snapshot finds loaded
+data that stays where it was loaded. Impossible Mission's start-up
+copies graphics under the I/O area, where the two images differ, so
+half a kilobyte stayed outside every span with coverage at 100 %. Before
+calling 100 %, follow each start-up copy loop to its destination and
+check it against the ledger. Read a disk image's header, not its name:
+this one was called `.d64` and was a G64 that needed true drive
+emulation.
+## 0.0.51 · 1 October 2026 · Delta · chunkypixel with Claude
+
+**Name a requested number by the routine that takes it.** Delta asks
+for a tune by storing its number plus one in a request byte; the sound
+routine subtracts one before calling the driver. Its facts named the
+tunes from the callers' values and three of four were one off, until the
+page's music player was built from the driver's own tune numbers and
+disagreed. Verify now reads the consumer of a request or queue byte
+before stating what its values mean.
+
+**When every page fetch is refused, use search summaries, marked.** The
+session's network policy refused every web page with a 403 from the
+proxy, while web search still answered. The features step now takes
+plain claims from the search results' quotes, says they are second-hand
+and dated, and leaves the rest open.
 
 ## 0.0.48 · 30 September 2026 · Castle Master · 64kramsystem with Codex
 

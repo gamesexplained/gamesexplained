@@ -1,0 +1,69 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fist II: The Legend Continues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
+  <h1>Fist II: The Legend Continues</h1>
+  <p class="sub">Two programs sharing one processor, a second joystick nothing switches on, an opponent who writes into the hero's slot, and graphics nothing reads.</p>
+</header>
+<main class="wrap">
+<section id="tasks">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: the game runs as two tasks</h2>
+  <p class="lede">The fighting and the scrolling are two separate programs, each with its own stack, and the raster interrupt switches between them.</p>
+  <p>The main loop (<code>$21E2</code>) runs the fighters, the opponent and the rules. The scrolling needs a whole new screen built every time the view moves a character's width, which is far more work than fits between two frames. So the game gives it a task of its own (<code>$1503</code>): it shifts the hidden screen one column at a time and draws the new edge, and when its time is up it gives the processor back.</p>
+  <p>The switch is made by patching an interrupt handler. When the scroll task has work, the routine at <code>$12CA</code> writes a <code>NOP</code> over the <code>RTI</code> that ends the status-band interrupt (<code>$3D86</code>), so instead of returning, the handler falls into a jump to the other task and its stack. A second routine switches back (<code>$14E8</code>), and a third puts the <code>RTI</code> back (<code>$12E0</code>) when the work is done. The first task is started by an <code>RTI</code> from a stack frame the game builds itself (<code>$0133</code>).</p>
+</section>
+<section id="second-player">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: a second joystick for the other fighter</h2>
+  <p>The routine that reads the joystick (<code>$3393</code>) can read either port. For fighter 1, the opponent, it reads port 1 instead of letting the computer decide, when one byte (<code>$0455</code>) is zero. Nothing in the Adventure sets it to zero, so the computer always plays the opponent. It may be what is left of a two-player mode, or the way the Training program lets a second player in; the Training load was not analysed.</p>
+</section>
+<section id="combo-bug">
+  <p class="fig">Bug</p>
+  <h2 class="t">Bug: one attack combination writes into the hero's slot</h2>
+  <p>The opponent attacks with scripted combinations. Combination 8 ends by setting up combination 5, and stores it with <code>STA $B4</code> (<code>$31F2</code>). Eleven other stores of this kind in the opponent code are <code>STA $B4,X</code>, into the slot of the fighter running the combination; one more (<code>$3179</code>) is unindexed too. Without the <code>,X</code>, the combination is always written into fighter 0's slot, the hero's. What the hero does with it has not been tested.</p>
+</section>
+<section id="respawn">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: after thirty defeats, beaten opponents come back</h2>
+  <p>Beating an opponent marks his place done, and a done place stays empty until the hero has beaten 30 opponents in all. After that, each time the game checks a done place as the hero reaches it, it brings the opponent back one time in four (<code>$2820</code>). Scrolls never come back: their records are skipped. A player on Lemon64<sup class="fn"><a href="about.html#src-5" title="A player's comments on Lemon64">5</a></sup> worked this out from play on the cassette version; the <a href="gameplay.html#return">Gameplay</a> tab sets the two side by side.</p>
+</section>
+<section id="meditation">
+  <p class="fig">Quirk</p>
+  <h2 class="t">Meditation counts every defeat, not the ones since last time</h2>
+  <p>The manual says meditating raises the energy limit "depending on the number of opponents you have defeated since your last meditation"<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup>. The code reads a counter (<code>$048C</code>) that only a new game clears (<code>$2135</code>), so every defeat in the game counts, and meditating twice in a row gives the same limit. The limit reaches its ceiling of 127 after twenty defeats.</p>
+</section>
+<section id="trap">
+  <p class="fig">Quirk</p>
+  <h2 class="t">An area that drains you until the last scroll is found</h2>
+  <p>In area 5, the game checks whether scroll 8 has been delivered to its chamber. If it has not, the screen flashes and the hero loses a point of energy every ten frames until he falls (<code>$2CE4</code>). Delivering the eighth scroll is what makes the area safe: the game reads scroll 8's byte (<code>$040C</code>), and once it is marked delivered the drain is skipped (<code>$2CF0</code>).</p>
+</section>
+<section id="leftovers">
+  <p class="fig">Leftovers</p>
+  <h2 class="t">Graphics and code nothing uses</h2>
+  <table class="t">
+    <tr><th>What</th><th>Why it seems unused</th></tr>
+    <tr><td>29 uncompressed head sprites, side-on (<code>$B746</code>)</td><td>no instruction or pointer table reaching them was found</td></tr>
+    <tr><td>A full character set of 193 glyphs (<code>$E000</code>)</td><td>the start-up points the video chip at it for a moment; nothing else reads it</td></tr>
+    <tr><td>1,200 bytes in the unused half of the status-band font (<code>$E910</code>)</td><td>no reader found</td></tr>
+    <tr><td>An older start-up routine (<code>$C280</code>)</td><td>nothing calls it, and it calls an address where no routine is</td></tr>
+    <tr><td>27 blank sprite images (<code>$AF10</code>)</td><td>no entry in the frame tables points at them</td></tr>
+    <tr><td>The Adventure loader (<code>$C000</code>)</td><td>its work is done before the game starts</td></tr>
+  </table>
+  <p>"No reader found" is a statement about the search: code reached through a pointer computed at run time can still use these bytes.</p>
+</section>
+<section id="open">
+  <p class="fig">Open questions</p>
+  <h2 class="t">What the code does not settle</h2>
+  <ul class="odd">
+    <li><b>Music.</b> Only the first voice restarts its vibrato when a new note starts: the store that asks for it (<code>$F6F0</code>) is not indexed; the other two keep a free-running vibrato. It may not be audible.</li>
+    <li><b>A step that loses its sign.</b> One routine (<code>$4A39</code>) stores the absolute value of a fighter's step back into the step, so a step to the left becomes a step to the right on the next call.</li>
+    <li><b>The ending.</b> A final scene (<code>$2DB5</code>) starts in room 122; it has not been reached in testing.</li>
+  </ul>
+</section>
+</main>

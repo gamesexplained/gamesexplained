@@ -1,0 +1,45 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/chiller-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Hear the first release and the replacement tune, then follow the sound code.</p>
+</header>
+<main class="wrap">
+<section id="music">
+  <p class="fig">Music</p>
+  <h2 class="t">The tune that got the game withdrawn</h2>
+  <p class="lede">This copy is the first release, the one Mastertronic withdrew because its in-play tune is a rendition of Michael Jackson's <i>Thriller</i>. The re-release replaced it with a new tune. Both are played here by the game's own driver, ported line by line. Play the in-play tune and switch the release to hear the other.</p>
+  <div class="plate">
+    <div class="row" id="sid-ver" hidden><span class="note">Release:</span>
+      <button class="b" type="button" data-ver="0" aria-pressed="true">First release, <i>Thriller</i></button>
+      <button class="b" type="button" data-ver="1" aria-pressed="false">Re-release, new tune</button>
+    </div>
+    <div id="sid"></div>
+    <p class="cap">Every sound-chip write the port makes matches the game's own driver, in the same order. The game sets the sound chip's filter once and keeps it on voice 1, the bass, for the whole tune (<code>music_init_filter</code>, <code>$60A0</code>). The Filter switch plays it three ways, even while it plays. <b>Off</b> leaves the filter out. <b>6581</b>, the chip in every C64 in 1984, darkens voice 1 as the game meant, on the curve the reSID emulator measured from one chip. <b>8580</b>, the chip of later C64s, barely changes it. Real 6581s differ from one another and they distort, which this model does not. It plays at PAL speed, so the notes are flat, as they were on PAL machines.</p>
+  </div>
+  <p>The re-release changed only the in-play tune and one byte of the driver. Its tune data comes from the steward's transcription in <a href="https://github.com/unorig/Chiller/tree/Latest/Music">unorig/Chiller</a>; this copy matches the other file there, Version 1, byte for byte. The level-start and game-over tunes are the same in both. The driver change is the compare at <code>$60B6</code>: this copy cuts each note off three interrupts before the next step, and the re-release cuts it one before, so its notes ring on longer.</p>
+  <p>Both tunes are tuned for an NTSC C64. Of the first release's in-play tune's 478 frequency values, 464 land within two cents of a note on an NTSC machine, the kind sold in North America. A PAL machine, the kind sold in Europe, runs about 4 % slower, so there every note plays about a third of a semitone flat.</p>
+  <p>The driver runs on the system interrupt, 60 times a second, on two voices. Each command is one byte, and the byte is the low half of its handler's address in page <code>$61</code>. <code>music_next_command</code> (<code>$6100</code>) writes it into its own <code>JMP</code> at <code>$610B</code> and jumps, so the tune data is a list of jump targets.</p>
+  <table class="t">
+    <tr><th>Byte</th><th>Handler</th><th>What it does</th></tr>
+    <tr><td><code>$0E</code>, <code>$26</code></td><td><code>$610E</code>, <code>$6126</code></td><td>a note on voice 1 or 2: frequency high, low; gate off and on</td></tr>
+    <tr><td><code>$3E</code></td><td><code>$613E</code></td><td>a note on both voices</td></tr>
+    <tr><td><code>$56</code></td><td><code>$6156</code></td><td>retrigger both voices</td></tr>
+    <tr><td><code>$6B</code></td><td><code>$616B</code></td><td>set the tempo: interrupts per step</td></tr>
+    <tr><td><code>$74</code></td><td><code>$6174</code></td><td>end the step: wait for the tempo</td></tr>
+    <tr><td><code>$7C</code></td><td><code>$617C</code></td><td>count: tells the game the tune has reached its end</td></tr>
+    <tr><td><code>$82</code>, <code>$91</code>, <code>$AC</code></td><td></td><td>waveforms, envelopes, pulse widths</td></tr>
+    <tr><td><code>$C7</code></td><td><code>$61C7</code></td><td>loop to the start</td></tr>
+  </table>
+  <p>The count command is how the music talks to the game. The card at the start of each level stays up until the level-start tune counts (<code>card_wait</code>, <code>$7610</code>), and GAME OVER stays up until the game-over tune does (<code>$5DA9</code>). The in-play tunes never count. The first release's loops after about 69 seconds.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/chiller-page.js"></script>

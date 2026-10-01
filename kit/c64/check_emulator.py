@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Test the emulator against kit/EMULATOR.md, with a test program of its own.
 
-    python3 kit/scripts/tools.py check-emulator      (the usual way in)
+    python3 kit/scripts/tools.py --platform c64 check-emulator      (the usual way in)
     python3 kit/c64/check_emulator.py [--keep]
 
 Needs the emulator up (`tools.py vice`) and nothing else: no game, no disk
@@ -192,7 +192,7 @@ def diff(a, b):
 
 
 def tools(*args):
-    return subprocess.run([sys.executable, os.path.join(ROOT, "kit", "scripts", "tools.py"), *args],
+    return subprocess.run([sys.executable, os.path.join(ROOT, "kit", "scripts", "tools.py"), "--platform", "c64", *args],
                           capture_output=True, text=True).stdout.strip()
 
 

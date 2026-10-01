@@ -28,7 +28,7 @@ call costs a round trip.
 ```
 python3 kit/scripts/tools.py status            # which build: release <tag>, or own build of <repo>, commit ...
 python3 kit/scripts/tools.py get-vice          # is there a newer one for this machine? changes nothing
-python3 kit/scripts/tools.py check-emulator    # kit/EMULATOR.md's four phases, under a minute
+python3 kit/scripts/tools.py --platform c64 check-emulator    # kit/EMULATOR.md's four phases, under a minute
 ```
 
 If `get-vice` names a newer release than the one installed, tell the
@@ -90,7 +90,7 @@ a 57th added, the v3.13.1 release on Linux passed all but
    `vice.py`, never straight after `vice_execution_pause`
    (`pause-at-instruction`). Snapshots are written to
    `tools/vice-home/config/vice/mcp_snapshots/`
-   (`python3 kit/scripts/tools.py snapshots` lists them); copy the `.vsf`
+   (`python3 kit/scripts/tools.py --platform c64 snapshots` lists them); copy the `.vsf`
    into the game's `work/`.
 5. `vice_memory_read` (hex encoding, any size), `vice_memory_write`,
    `vice_memory_search`, `vice_disassemble` for live inspection.
@@ -308,7 +308,7 @@ the batch.
   or not. Resume it with `vice_execution_run` before waiting for `READY.`.
   So does `vice_autostart`: on a paused machine it attaches and returns,
   and nothing loads. `frame.py test` leaves the machine paused, so
-  resume it before the first autostart; `tools.py check-emulator` resumes
+  resume it before the first autostart; `tools.py --platform c64 check-emulator` resumes
   it at the end.
 - **`vice_autostart`'s `index` counts from 1, not from 0.** The tool's
   schema says 0-based, but the server hands the number to VICE's own

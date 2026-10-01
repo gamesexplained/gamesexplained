@@ -11,6 +11,9 @@
 //   sid         a Uint8Array(25): $D400-$D418 as the driver last wrote them
 //   playing()   true while a tune runs, false once it has ended or been stopped
 //   voice(x)    optional: plain data about voice x (0-2) for the display's rows
+//   readback(env3, osc3)  optional: called before each play() with what $D41C and $D41B read,
+//               voice 3's envelope level and the top eight bits of its waveform, as the model has
+//               them at the frame's start (the chip's values move within the frame; these do not)
 //   writes      optional: every register write of the last frame in order, as a flat list
 //               [register, value, register, value, ...]. When a driver keeps it, the player
 //               applies the writes in order instead of the frame's final registers, so a gate
@@ -262,7 +265,8 @@ globalThis.C64Sid = (function () {
       }
 
       setFilter(opts && opts.filter);
-      return { V, mute, write, setRegs, sample, skip, setFilter, filter: () => F.chip };
+      const read3 = () => [V[2].env, wave(V[2], V[SRC[2]]) >> 4];   // $D41C, $D41B
+      return { V, mute, write, setRegs, sample, skip, setFilter, read3, filter: () => F.chip };
     }
 
     // ------------------------------------------------------------------ driver + SID + frames
@@ -297,6 +301,7 @@ globalThis.C64Sid = (function () {
         return { t, run, frame: frames, vol: s[24] & 15, playing: drv.playing(), v };
       }
       function frame() {                                     // the game calls its driver
+        if (drv.readback) drv.readback(...sid.read3());
         drv.play();
         const w = drv.writes;                                // in order, where the driver keeps them
         if (w) for (let k = 0; k + 1 < w.length; k += 2) sid.write(w[k], w[k + 1]);

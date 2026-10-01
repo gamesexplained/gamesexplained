@@ -264,6 +264,7 @@ def banner(game, cons):
 # assembled, so they point at the prose the reader sees most of
 EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "play.html": "play.html",
                 "mechanics.html": "mechanics.html", "music.html": "music.html",
+                "gameplay.html": "gameplay.html", "graphics.html": "graphics.html",
                 "discoveries.html": "discoveries.html",
                 "source.html": "facts.md", "about.html": "features.md"}
 
@@ -532,7 +533,8 @@ def fill(tpl, **kw):
     return tpl
 
 
-AUTHORED = ("index.html", "levels.html", "play.html", "mechanics.html", "music.html", "discoveries.html")
+AUTHORED = ("index.html", "gameplay.html", "levels.html", "play.html", "mechanics.html", "graphics.html",
+            "music.html", "discoveries.html")
 LIB = "../../lib"   # site/lib/ as a game's pages see it
 
 

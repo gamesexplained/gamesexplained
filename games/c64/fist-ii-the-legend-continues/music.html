@@ -1,0 +1,62 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fist II: The Legend Continues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
+  <h1>Fist II: The Legend Continues</h1>
+  <p class="sub">Neil Brennan's three tunes, played by the game's own music driver, and the sound effects that play through the volume register.</p>
+</header>
+<main class="wrap">
+<section id="music">
+  <p class="fig">Music</p>
+  <h2 class="t">Three tunes, one for each part of the world</h2>
+  <p class="lede">The game plays one tune at a time, chosen by where the hero stands, and loops it for as long as he stays. Press a tune to hear it.</p>
+  <div class="plate">
+    <div id="sid"></div>
+    <p class="cap">The game's music driver (<code>$F400</code>) ported to JavaScript and played through the site's model of the SID chip. The port was checked against the driver itself, run in a 6502 simulator on the game's bytes: all 25 sound registers after each of 30,000 frames, ten minutes of each tune, match. Tune 1 sweeps the filter, so the player starts with the filter of a 6581, the C64's first sound chip; its cutoff is one chip's, and real 6581s differ widely. The filter sweep follows voice 3's envelope, which the model reads once a frame where the chip would be read part-way through it.</p>
+  </div>
+  <table class="t" style="margin-top:24px">
+    <tr><th>Tune</th><th>Where it plays</th><th>Speed</th><th>Instruments</th></tr>
+    <tr><td>1</td><td>areas 0-7 (scenery set 0, the caves), except the temples</td><td>a tick every 2 frames</td><td>8 (0-7)</td></tr>
+    <tr><td>2</td><td>areas 30-47 (scenery set 2), and the temples</td><td>a tick every 2 frames</td><td>3 (9-11)</td></tr>
+    <tr><td>3</td><td>areas 8-29 (scenery set 1), where the game starts</td><td>a tick every 5 frames</td><td>5 (12-16)</td></tr>
+  </table>
+  <p class="cap">Each zone's tune (<code>$1247</code>) comes from a three-byte table, and the temples, area 6, are given tune 2 (<code>$11FC</code>) on their own. The speeds are the tempo table (<code>$F42F</code>).</p>
+</section>
+<section id="driver">
+  <p class="fig">The driver</p>
+  <h2 class="t">Sequences, patterns and 21-byte instruments</h2>
+  <p>The driver (<code>$F400</code>) runs once a frame from the status-band interrupt. Each voice reads a sequence (<code>$F5BD</code>): play pattern <i>n</i>, repeat a block, or jump back to loop. A pattern is a list of notes, each a note byte (<code>$F68E</code>) (the note in the low four bits, the octave in the next three) and a length byte (<code>$F6C0</code>) that picks one of sixteen lengths (<code>$F4D5</code>). The notes come from a table of one octave (<code>$F4C8</code>), doubled for each octave up. A byte of $80 or more in a pattern changes the instrument (<code>$F683</code>).</p>
+  <p>There are 17 instruments of 21 bytes (<code>$FE43</code>). An instrument sets the waveform and envelope, and can sweep the pulse width from one of three ramps, glide from note to note, add a vibrato or a trill, and route the voice through the filter with a cutoff that sweeps. Only voice 1 restarts its vibrato with each new note: the instruction that asks for the restart (<code>$F6F0</code>) is not indexed by voice, so voices 2 and 3 keep theirs running.</p>
+</section>
+<section id="effects">
+  <p class="fig">Sound effects</p>
+  <h2 class="t">Samples through the volume register</h2>
+  <p>The sound effects are samples, made by Bruce Bayley, the manual says.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> A timer interrupt (<code>$3D8B</code>) switches the SID's volume between two levels, and each byte of a sample sets how long until the next switch, through a table of 256 timer periods (<code>$0200</code>). Each switch of the volume makes a click, and the clicks at the right spacing make the sound. The site's model of the SID does not play samples, so they are not heard here.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/fist-page.js"></script>
+<script src="reference/fist-music.js"></script>
+<script>
+(async function () {
+  const root = document.getElementById('sid');
+  if (!window.C64Sid) { root.textContent = 'This player needs the site’s shared script, lib/sid.js.'; return; }
+  let G; try { G = await FIST.load(); } catch (e) { root.textContent = e.message; return; }
+  C64Sid.mount(root, {
+    driver: FISTMUSIC.createDriver,
+    data: Array.from(G.ram.slice(0xF400)),
+    tunes: ['Tune 1: the caves', 'Tune 2: set 2 and the temples', 'Tune 3: the jungle'],
+    filter: '6581',
+    rows: [
+      { k: 'Instrument', f: (v) => v.instrument },
+      { k: 'Note byte', f: (v) => v.note ? 'note ' + v.note + ' of 12, octave ' + v.octave : 'rest' },
+    ],
+  });
+})();
+</script>

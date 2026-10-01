@@ -1,0 +1,78 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/chiller-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Unused routines, a disputed claim that the game could not be finished, and questions the code cannot settle.</p>
+</header>
+<main class="wrap">
+<section id="completion">
+  <p class="fig">A disputed memory</p>
+  <h2 class="t">Was a cross impossible to collect?</h2>
+  <p class="lede">A <a href="https://www.lemon64.com/game/chiller">2022 Lemon64 comment</a> recalls a cross that could not be reached and a crack the player believed fixed it. The first-release copy analysed here was taken through all ten screens in testing: its full outward-and-return journey can be completed. That is not a final ending; the game loops back to the forest.</p>
+  <p>The three lowest crosses, in the graveyard, the ghetto and the cinema on the way home, sit in the bottom two rows. In tests using the game's own code, the boy took each by walking left along the ground. He cannot stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but <code>probe_offset</code> (<code>$5145</code>) checks below and beside him, reaching rows 23 and 24.</p>
+  <p>These tests do not establish whether a different release or crack changed a cross, or whether a particular collection order can leave a player stuck.</p>
+</section>
+<section id="unused">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: enemies could once be killed, for points</h2>
+  <p class="lede">In Chiller you cannot hurt an enemy, and there are no lives and no scrolling. <b>Its code has all three</b>, and a second sound player whose every write goes nowhere. None of it can be reached in play.</p>
+  <table class="t">
+    <tr><th>What</th><th>Where</th><th>Why it never runs</th></tr>
+    <tr><td>An enemy being hit, the enemy dying, points per enemy</td><td><code>unused_shot_hit</code> <code>$CDC7</code>, <code>unused_kill_enemy</code> <code>$2F7B</code>, <code>add_score_for</code> <code>$CE6B</code></td><td>nothing calls them</td></tr>
+    <tr><td>Lives: a starting count, take one, restart the screen</td><td><code>$45ED</code>, <code>new_life</code> <code>$CAED</code>, <code>lose_life</code> <code>$CEDA</code></td><td>called only from the code above</td></tr>
+    <tr><td>A scroller that moves the whole play area a cell at a time</td><td><code>scroll_timer</code> <code>$C011</code>, <code>scroll_left</code> <code>$C412</code></td><td>every screen sets its period to <code>$FF</code>, off</td></tr>
+    <tr><td>A sound player with a 56-note table</td><td><code>unused_sound_player</code> <code>$CA80</code>, <code>$C300</code></td><td>every sound-chip store in it is aimed at <code>$FFFF</code></td></tr>
+    <tr><td>Fire putting a second sprite on top of the boy, facing his way, with a sound, and that sprite switched off when it hits the scenery</td><td><code>switch_check</code> <code>$C7D4</code>, <code>sprite1_hit_scenery</code> <code>$C4FB</code></td><td>the first works only on a screen with no jumping, and every screen has jumping; the second is switched off on every screen (<code>$45FE</code> = 0)</td></tr>
+    <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
+  </table>
+  <p>We first read the kill code as part of a shooting game, which is why the first routine is named for a shot. The code does not say how an enemy was hit. <code>unused_kill_enemy</code> takes the enemy from the boy's last collision (<code>$CF5E</code>, <code>$CF5F</code>, written by <code>sprite_touch</code>), so it may once have been enough to touch an enemy. The row above may be a shot's beginning: fire puts a second sprite on the boy, facing his way, with a sound, and it vanishes when it hits the scenery. No code has been found that moves that sprite along, so nothing left in the game settles which.</p>
+  <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
+</section>
+<section id="silver-crosses">
+  <p class="fig">Secret</p>
+  <h2 class="t">Secret: the magic crosses were once silver</h2>
+  <p class="lede">Three of the first five levels carry a spare score line that is never shown. <b>It says SILVER CROSSES</b> where the game says MAGIC CROSSES.</p>
+      <div class="plate"><canvas id="silver" width="640" height="64" class="scr" style="max-width:640px" role="img" aria-label="The unused SILVER CROSSES score line above the one the game shows"></canvas>
+      <p class="cap">Top: <code>hud_cinema</code> at <code>$8E00</code>, never copied to the screen. Bottom: <code>hud_template</code> at <code>$8400</code>, the one the game uses. Both drawn with the game's own letters.</p></div>
+</section>
+<section id="menu">
+  <p class="fig">Unfinished</p>
+  <h2 class="t">Unfinished: a PRESS CTRL FOR MENU prompt that never appears</h2>
+  <p class="lede">After GAME OVER the game still calls a routine meant to put PRESS CTRL FOR MENU on the bottom row. <b>The routine reads the text, the screen and the colours, and writes nothing.</b> It looks like a feature left out before release, with its prompt stubbed so it never shows. </p>
+      <div class="plate"><canvas id="ctrl" width="640" height="32" class="scr" style="max-width:640px" role="img" aria-label="PRESS CTRL FOR MENU drawn from the game's bytes"></canvas>
+      <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. The routine loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads and no store.</p></div>
+  <p>An older forest card is left behind the same way: <code>card_forest_title</code> (<code>$5D0D</code>) is still there, and its printer, <code>$5E00</code>, is never called.</p>
+</section>
+<section id="odd">
+  <p class="fig">Odds and ends</p>
+  <h2 class="t">Things the manual never told you</h2>
+  <p class="lede">Small things found in the code.</p>
+  <ul class="odd">
+    <li><b>Fall damage was written, then switched off twice.</b> Falls are counted, and on landing the count is compared with a limit. The branch after that compare has been overwritten with <code>NOP</code>s, and the limit is <code>$FF</code> anyway. (<code>land</code> <code>$53EF</code>; the limit at <code>$457A</code>)</li>
+    <li><b>The enemies can speed up, but nobody has seen it.</b> Each enemy slot has a count the code calls lives. A life here is one entrance: coming back on screen uses one, and leaving by an edge gives it back. When every slot has used up its count and all five are off the screen, a LEVEL counter goes up, is shown over the play area, and every enemy's movement and animation delays are halved. Edges refund a life and most slots start with 200, so play does not seem to get there. (<code>level_up</code> <code>$2C19</code>; <code>speed_up</code> <code>$5681</code>; counts at <code>$CF76</code>, from <code>$45E7</code>)</li>
+    <li><b>The jump sound should rise as he falls.</b> The routine adds 5 to the frequency's low byte, but its carry test branches to the very next instruction. The high byte goes down by one every step regardless, and the pitch keeps dropping. (<code>jump_pitch_fall</code> <code>$5518</code>; the branch at <code>$5524</code>)</li>
+    <li><b>The title should flicker two colours.</b> On the title after a game, the flicker routine is meant to change both multicolour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last screen's settings, so only one flickers. (<code>title_flicker</code> <code>$7580</code>)</li>
+  </ul>
+</section>
+<section id="unsure">
+  <p class="fig">Open questions</p>
+  <h2 class="t">What we're still unsure of</h2>
+  <ul>
+    <li>Whether the three <code>NOP</code>s at <code>$7F06</code>-<code>$7F08</code>, the length of one subroutine call, replaced an ending or something else. The surviving code does not say.</li>
+    <li>Whether the LEVEL counter can ever appear in real play. Nothing here proves it cannot.</li>
+    <li>Screenshots of the way back taken in an emulator show a stray fence patch on the cinema and a crosses counter reading <code>2S</code> or <code>5S</code> where the way to the house reads <code>05</code>. They were taken with crosses moved beside the boy, so that may be the cause.</li>
+    <li>What <code>$1000</code>-<code>$1FFF</code> held. It repeats every 64 bytes like sprite data, but drawn as sprites it is noise.</li>
+    <li>Whether <code>$4A90</code>-<code>$4AFF</code>, shaped like more enemy paths, was ever used. No screen's settings point at it.</li>
+    <li>Which of the manual's ghouls, zombies, ghosts and bats is which shape.</li>
+  </ul>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/chiller-page.js"></script>

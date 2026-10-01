@@ -1,0 +1,156 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fist II: The Legend Continues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
+  <h1>Fist II: The Legend Continues</h1>
+  <p class="sub">123 rooms joined by ladders, holes and drops, eight scrolls to carry to eight chambers, and one crevice that only the sixth scroll gets you across.</p>
+</header>
+<main class="wrap">
+<section id="solution">
+  <p class="fig">Solution</p>
+  <h2 class="t">Eight scrolls, eight chambers, then the volcano</h2>
+  <p class="lede">The hero finds each scroll lying in a room and carries it to its own meditation chamber. Once it is delivered, it gives him a power that opens the way somewhere else: scroll 1 lets him break stone heaps, scroll 4 kick trees down, scroll 6 cross the crevice in room 79, and so on (<a href="#gives">what each scroll gives</a>). The volcano, the Warlord's stronghold, lies past several of those obstacles (<a href="#blocked">what stands in the way</a>), and entering its last room, room 122, starts the ending.</p>
+  <p><b>Where this comes from.</b> The game's code says which rooms are chambers and what each scroll unlocks. The names come from outside it. The manual<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> has the scrolls "scattered ... throughout the land" and temples where the hero meditates on the trigram on the altar mat and, with its scroll, "learn[s] all the secrets associated with that scroll"; this page calls those temples chambers, and the <a href="gameplay.html#trigrams">Gameplay</a> tab gives each scroll's trigram. A text guide posted on Lemon64 in 2018<sup class="fn"><a href="about.html#src-2" title="A text walkthrough, author unknown">2</a></sup> agrees on the shape of the game: it collects eight scrolls, takes each to a "candle lit room where you activate scrolls", kicks down walls, rocks and trees, jumps the pits, and ends in the volcano fighting down through holes to "the war lord with the blinking red mask". The game's final scene does flash one object for ever (<code>$2DB5</code>). A hand-drawn map by Master Lee and hiTCH-HiKER (December 2008)<sup class="fn"><a href="about.html#src-3" title="Map by Master Lee and hiTCH-HiKER, 2008">3</a></sup> names the eight powers in the same terms as the table below, and a 2007 walkthrough on GameFAQs<sup class="fn"><a href="about.html#src-4" title="Magnus Andersson's walkthrough, GameFAQs, 2007">4</a></sup>, quoted below, describes the crevice.</p>
+  <p>The route below comes from a search over the game's own tables: every room's exits (<code>$4AEC</code>), its walls and barriers (<code>$501E</code>), the drops, and what each scroll opens. Five of its parts were driven in the emulator on 1 October 2026 with the fights switched off: scrolls 1, 8, 2, 4 and 6 were picked up and delivered. Scroll 3, scrolls 7 and 5 and the way to the ending come from the search and have not been driven. A real game also has to win the fights on the way.</p>
+  <h3 id="gives">What the scrolls give</h3>
+  <p>Each scroll's power works once the scroll is delivered to its chamber. The game tests a flag for each one (<code>$0405</code>).</p>
+  <div class="tw"><table class="t">
+    <tr><th>Scroll</th><th>Name</th><th>Benefit</th><th>What it does</th><th>Lies in</th><th>Chamber</th><th>In the code</th></tr>
+    <tr><td>1</td><td>Ch'ien</td><td>Breaks obstacles</td><td>smashes stone heaps</td><td><button class="b" type="button" data-room="102">room 102</button></td><td><button class="b" type="button" data-room="68">68</button></td><td>barriers of type 3 can be broken (<code>$0A59</code>)</td></tr>
+    <tr><td>2</td><td>Sun</td><td>Opens a path</td><td>opens the way on from room 52 to room 80</td><td><button class="b" type="button" data-room="91">room 91</button></td><td><button class="b" type="button" data-room="69">69</button></td><td>room 52's exit to room 80 opens (<code>$36DE</code>)</td></tr>
+    <tr><td>3</td><td>Kan</td><td>Protection</td><td>keeps his energy when he leaves room 76, below the volcano</td><td><button class="b" type="button" data-room="114">room 114</button></td><td><button class="b" type="button" data-room="70">70</button></td><td>leaving area 7 without it sets energy to 0 (<code>$0649</code>)</td></tr>
+    <tr><td>4</td><td>Chen</td><td>Breaks obstacles</td><td>kicks trees down</td><td><button class="b" type="button" data-room="84">room 84</button></td><td><button class="b" type="button" data-room="71">71</button></td><td>barriers of type 7 can be broken (<code>$0A44</code>)</td></tr>
+    <tr><td>5</td><td>K'un</td><td>Fighting</td><td>shortens the chains of opponents</td><td><button class="b" type="button" data-room="107">room 107</button></td><td><button class="b" type="button" data-room="72">72</button></td><td>a chain of opponents ends early (<code>$27AD</code>)</td></tr>
+    <tr><td>6</td><td>Ken</td><td>Opens a path</td><td>crosses the crevice in room 79</td><td><button class="b" type="button" data-room="110">room 110</button></td><td><button class="b" type="button" data-room="73">73</button></td><td>the drop in room 79 narrows from 11 columns to 7 (<code>$064C</code>)</td></tr>
+    <tr><td>7</td><td>Li</td><td>Light</td><td>lights the dark rooms</td><td><button class="b" type="button" data-room="118">room 118</button></td><td><button class="b" type="button" data-room="74">74</button></td><td>one zone's colours change (<code>$10E5</code>)</td></tr>
+    <tr><td>8</td><td>Tui</td><td>Protection</td><td>survives the poison rooms, 64-67</td><td><button class="b" type="button" data-room="44">room 44</button></td><td><button class="b" type="button" data-room="75">75</button></td><td>area 5 stops draining energy (<code>$2CE4</code>)</td></tr>
+  </table></div>
+  <h3 id="blocked">What stands in the way of the volcano</h3>
+  <p>Nothing checks that all eight scrolls are delivered: walking into room 122 is what starts the final scene (<code>$218C</code>). What stops you is the way there. Searching the game's tables with every combination of delivered scrolls, room 122 can be reached only with scrolls 1, 2, 3, 4, 6 and 8: 1 and 4 to break the stone heaps and trees on the way, 2 to open room 52, 8 to live through the poison rooms, 6 to cross the crevice in room 79 that is the only way into the volcano's half of the world, and 3 because leaving room 76, below the volcano, without it drops the hero's energy to 0. By the tables, scrolls 5 (shorter chains of opponents) and 7 (light in the dark rooms) are not needed to get there; whether the Warlord can be beaten without scroll 5's help has not been tried. The guide above takes all eight.</p>
+  <h3>The crevice in room 79</h3>
+  <p>The rooms holding scrolls 5 and 7, their chambers, the volcano and the ending are reached only through room 79. Its floor is cut by a drop at column 18, 11 columns wide, which no jump crosses. Climbing the ladder at column 88 of room 43 puts the hero in room 79 at column 0, on the near side of it. With scroll 6 delivered, the game narrows the drop to columns 18-24 (<code>$067B</code>), and a forward somersault (joystick pushed up and away from the way he faces) covers about ten columns. So the sixth scroll is what gets him across, and the game blinks the scroll-6 icon at the drop (<code>$0491</code>) as a hint. Past it, a tree at column 109 falls to a kick once scroll 4 is delivered, and the right-hand edge at 171 leads to room 117. A walkthrough by Magnus Andersson (GameFAQs, 2007)<sup class="fn"><a href="about.html#src-4" title="Magnus Andersson's walkthrough, GameFAQs, 2007">4</a></sup> describes the same place: up a ladder, "a middle plattform at the waterfall. Jump across and continue right." This crossing has not been driven in the emulator.</p>
+  <p>The slide in room 77 is not the way in. Its exit at 222 carries the hero into a drop that lands him in room 79 at column 21, inside the crevice, and he falls on to room 82 (seen live).</p>
+  <h3>The route, one scroll at a time</h3>
+  <p>The walk is split into nine parts: for each scroll, the way from where you stand to the room it lies in, then on to its chamber; and last, the way from the eighth chamber to the ending. Open a part to see every room on the way, or show it on the map.</p>
+  <div id="legs"></div>
+  <p class="cap">Each step names the room, the column of the exit taken and how it is taken, from the exit's type: pushing the joystick up or pulling it down when the hero stands within two columns of the exit, walking off an edge, or falling into a hole or a drop. Press a room to find it on the map below. Where a room needs something more, a note says what.</p>
+</section>
+<section id="map">
+  <p class="fig">Map</p>
+  <h2 class="t">The whole world, drawn from the game</h2>
+  <p class="lede">All 120 rooms you can reach, each drawn from the scenery the game builds it from, and joined where their exits meet. Drag to move around, scroll or pinch to zoom, and press a room to see where its exits lead.</p>
+  <div class="plate">
+    <div class="row">
+      <select class="b" id="mp-pick" aria-label="Go to a room"></select>
+      <select class="b" id="mp-leg" aria-label="Show part of the route"></select>
+      <button class="b" type="button" id="mp-in" aria-label="Zoom in">+</button><button class="b" type="button" id="mp-out" aria-label="Zoom out">−</button><button class="b" type="button" id="mp-all">Whole map</button>
+    </div>
+    <canvas id="mp" style="width:100%;height:460px;display:block;border-radius:6px;touch-action:none;cursor:grab" role="img" aria-label="A map of every room in Fist II, drawn from the game's scenery data, with lines joining the exits"></canvas>
+    <div class="legend"><span><i style="background:#f2c230"></i>a scroll, where it lies (1-8)</span><span><i style="background:#a98bff"></i>a scroll's chamber (C1-C8)</span><span><i style="background:#7bd88f"></i>the start (S)</span><span><i style="background:#ff8c6b"></i>the ending (E)</span><span><i style="background:#ff5b4a;border-radius:50%"></i>an opponent or a hazard</span><span><i style="background:#ffd75e;height:3px;vertical-align:3px"></i>a ladder, stairs, hole or drop between rooms</span><span><i style="background:#59d3ff;height:4px;vertical-align:3px"></i>the route, numbered step by step</span></div>
+    <div id="mp-info"></div>
+    <p class="cap">Each room is drawn the way the game draws it: its objects from the scenery tables (<code>$5BA7</code>), each object's character codes and size from the set's shape tables, coloured by the room's colour list (<code>$16B8</code>), cut to the columns its walls let the screen show. Rooms from the dark scheme, which stay dark until scroll 7 is delivered, are drawn lit. The outdoor rooms were checked against screenshots taken in the emulator (rooms 94 and 100); the cave rooms of scenery set 0 were not. The game keeps no map of its own and the rooms' columns do not agree with each other, so the layout is a drawing: a ladder up puts a room above, a ladder down or a fall below, rooms you walk between sit side by side, and the exits' columns line up where there is space (<code>solver/maplayout.py</code>). Rooms 37, 66 and 67 have no way in and are left out.</p>
+  </div>
+</section>
+<section id="joins">
+  <p class="fig">How rooms join</p>
+  <h2 class="t">123 screens joined by exit lists</h2>
+  <p>The world is 123 screens, each belonging to one of 48 areas (<code>$4A71</code>). The game starts on screen 94, in area 28; the first opponent is waiting on screen 100, in area 30. There is no map in memory: each screen has a list of exits (<code>$4AEC</code>), four bytes each, giving how the exit is taken (a ladder or stairs up or down, an edge, a hole or a drop), the column it is at, the screen it leads to and the column the hero arrives at. Walls in the screen's item list (<code>$501E</code>) stop the hero and the view. The area's zone (areas 0-7, 8-29 or 30-47) also picks the tune, the border colour and the colours of the scenery (<code>$11DA</code>).</p>
+  <p>How a room is drawn is on the <a href="graphics.html#scenery">Graphics</a> tab,.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/fist-page.js"></script>
+<script src="reference/fist-map.js"></script>
+<script>
+(async function () {
+  const ROUTE = {"legs":[[1,[[94,235,18,100],[100,98,10,101],[101,16,10,102],[102,16,10,103],[103,64,10,104],[104,172,9,103],[103,90,9,102],[102,90,9,101],[101,90,9,100],[100,130,9,25],[25,156,2,100],[100,224,10,101],[101,140,10,102]],[[102,136,9,101],[101,180,9,100],[100,220,9,25],[25,133,2,100],[100,134,10,101],[101,94,10,102],[102,94,10,103],[103,176,10,104],[104,60,9,103],[103,52,11,102],[101,54,9,100],[100,20,12,94],[94,3,19,5],[5,90,2,3],[3,3,4,68]]],[8,[[68,38,5,3],[3,128,5,90],[90,151,18,106],[106,133,9,17],[17,74,5,53],[53,85,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91],[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,90,2,44]],[[44,187,1,45],[45,3,4,19],[19,27,2,83],[83,183,15,12],[12,156,2,4],[4,128,5,84],[87,42,19,75]]],[2,[[75,38,5,87],[87,186,18,105],[105,133,9,15],[15,74,5,7],[7,85,1,56],[56,107,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91]],[[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,79,2,38],[38,3,4,69]]],[4,[[69,38,5,38],[38,85,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,92,15,0],[0,35,1,1],[1,107,1,2],[2,3,4,14],[14,27,2,112],[112,20,12,84]],[[84,151,18,112],[112,133,9,14],[14,74,5,2],[2,90,2,1],[1,133,2,0],[0,90,2,77],[77,38,13,78],[78,29,13,80],[80,34,21,83],[83,75,15,19],[19,74,5,45],[45,35,1,10],[10,65,4,71]]],[3,[[71,38,5,10],[10,90,2,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,74,15,13],[13,74,5,81],[81,210,18,113],[113,98,10,114],[114,20,10,115],[115,20,10,116],[116,174,9,115],[115,174,9,114],[114,136,9,113],[113,136,10,114]],[[114,92,9,113],[113,180,10,114],[114,178,10,115],[115,178,10,116],[116,16,9,115],[115,16,9,114],[114,54,9,113],[113,20,12,81],[81,3,19,13],[13,27,2,78],[78,133,14,77],[77,222,20,79],[82,146,20,85],[85,115,16,111],[111,18,9,110],[110,58,9,109],[109,18,9,108],[108,132,9,20],[20,189,2,108],[108,236,9,21],[21,79,4,70]]],[6,[[70,38,5,21],[21,189,2,108],[108,203,9,20],[20,27,2,108],[108,142,10,109],[109,190,10,110]],[[110,186,9,109],[109,138,9,108],[108,176,9,26],[26,227,1,27],[27,227,1,28],[28,243,3,53],[53,85,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91],[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,222,20,79],[82,146,20,85],[85,155,18,121],[121,133,9,9],[9,65,4,73]]],[7,[[73,38,5,9],[9,90,2,121],[121,20,12,85],[85,3,19,6],[6,142,3,7],[7,85,1,56],[56,107,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91],[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,222,20,79],[82,3,19,40],[40,3,4,41],[41,28,2,42],[42,235,5,43],[43,88,5,79],[79,171,18,117],[117,112,10,118],[118,144,10,119],[119,221,9,118]],[[118,226,10,119],[119,182,11,118],[117,224,9,16],[16,199,3,95],[95,74,17,96],[96,74,17,88],[88,40,19,74]]],[5,[[74,38,5,88],[88,176,18,107]],[[107,133,9,30],[30,196,3,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,222,20,79],[82,3,19,40],[40,3,4,41],[41,28,2,42],[42,235,5,43],[43,88,5,79],[79,171,18,117],[117,224,9,16],[16,27,2,31],[31,3,4,18],[18,27,2,32],[32,155,2,33],[33,89,2,34],[34,155,2,35],[35,89,2,36],[36,3,4,72]]]],"final":[[72,38,5,36],[36,84,1,35],[35,35,1,34],[34,134,2,97],[97,71,14,98],[98,63,14,99],[99,63,14,76],[76,10,17,60],[60,69,3,61],[61,69,3,62],[62,69,3,63],[63,69,3,122]]};
+  // live: the legs driven in the emulator on 1 October 2026 (facts.md, "Towards a solution")
+  const LIVE = { 1: true, 8: true, 2: true, 4: true, 6: true };
+  const NOTE = {
+    103: 'somersault over the hole at 52 (take off at 48)',
+    104: 'kick the barrier down',
+    84: 'scroll 4 is reached only from room 112: arriving from room 4 carries the hero on to room 87',
+    85: 'somersault the drop at 115-121 from column 112, or it takes you to room 111',
+    79: 'somersault the crevice at 18-24 (scroll 6), then kick down the tree at 109 (scroll 4)',
+    76: 'needs scroll 3, or leaving the area sets energy to 0',
+    114: 'scroll 3 lies between the walls at 77 and 117: arrive by the stairs from room 113',
+  };
+  let G; try { G = await FIST.load(); } catch (e) { document.getElementById('legs').textContent = e.message; return; }
+  const d = G.ram;
+  const ex = []; let a = 0x4AEC;
+  for (let r = 0; r < 123; r++) { const L = []; while (d[a]) { L.push([d[a], d[a + 1], d[a + 2], d[a + 3]]); a += 4; } a++; ex.push(L); }
+  const area = r => d[0x4A71 + r];
+  const ptr = i => d[0x501E + 2 * i] | d[0x501F + 2 * i] << 8;
+  function items(r) {
+    const i = r < 0x3C ? r : area(r) + d[0x501D], out = []; let p = ptr(i); const e = ptr(i + 1);
+    while (p < e) { if (d[p] & 0x40) { out.push({ wall: true, t: d[p] & 0x0F, col: d[p + 1] }); p += 2; } else { out.push({ t: d[p] & 0x1F, bar: !!(d[p] & 0x80), col: d[p + 1], par: d[p + 2] }); p += 3; } }
+    return out;
+  }
+  const enc = []; for (let i = 0; i < 54; i++) enc.push({ f: d[0xE609 + 3 * i], room: d[0xE60A + 3 * i], pos: d[0xE60B + 3 * i] });
+  const SCROLL = {}; enc.forEach(e => { if ((e.f & 0x60) === 0x60) SCROLL[e.room] = (e.f & 7) + 1; });
+  const how = t => [1, 9, 15].includes(t) ? 'pull the joystick down (go down)' : [2, 4, 10, 14, 20].includes(t) ? 'push the joystick up (go up)' : [3, 5].includes(t) ? 'push the joystick up and right'
+    : t === 18 ? 'walk off the right edge' : (t === 19 || t === 12) ? 'walk off the left edge' : t === 11 ? 'fall into the hole' : t === 16 ? 'fall into the drop (7 columns)'
+    : t === 17 ? 'fall into the drop (11 columns)' : t === 21 ? 'fall: everything left of it drops' : t === 13 ? 'fall: it drops left of its column' : 'type ' + t;
+  function label(r) {
+    if (r === 94) return 'room 94, the start';
+    if (r === 122) return 'room 122, the ending';
+    if (r >= 68 && r <= 75) return 'room ' + r + ', chamber of scroll ' + (r - 67);
+    if (SCROLL[r]) return 'room ' + r + ', scroll ' + SCROLL[r];
+    if (r >= 60 && r <= 63) return 'room ' + r + ', the volcano';
+    if (area(r) === 5) return 'room ' + r + ', poison';
+    return 'room ' + r;
+  }
+  // the legs
+  const legs = document.getElementById('legs');
+  const room = r => `<button class="b" type="button" data-room="${r}">${r}</button>`;
+  // a room's note is shown the first time the leg passes through it; the scroll at the end of the way there
+  function steps(hops, sn) {
+    const seen = new Set();
+    return '<ol class="steps">' + hops.map(([r, col, t, v], i) => {
+      const note = NOTE[r] && !seen.has(r) ? ` <i>(in room ${r}: ${NOTE[r]})</i>` : ''; seen.add(r);
+      const got = sn && i === hops.length - 1 ? ` <b>Pick up scroll ${sn} here.</b>` : '';
+      return `<li>${room(r)} column ${col}: ${how(t)} to ${room(v)}${note}${got}</li>`;
+    }).join('') + '</ol>';
+  }
+  let html = '';
+  ROUTE.legs.forEach(([sn, p1, p2], i) => {
+    const st = LIVE[sn] ? 'driven in the emulator' : 'from the search, not driven';
+    html += `<details${i === 0 ? ' open' : ''}><summary><b>${i + 1}. Scroll ${sn}</b>: to room ${p1.length ? p1[p1.length - 1][3] : '-'}, then chamber ${67 + sn} <span class="note">(${st})</span></summary>`
+      + `<p>To the scroll <button class="b" type="button" data-leg="${i}a">Show on the map</button></p>` + steps(p1, sn) + `<p>To chamber ${67 + sn} <button class="b" type="button" data-leg="${i}b">Show on the map</button></p>` + steps(p2) + '</details>';
+  });
+  html += '<details><summary><b>9. The ending</b>: through the volcano to room 122 <span class="note">(from the search, not driven)</span></summary>' + '<p><button class="b" type="button" data-leg="end">Show on the map</button></p>' + steps(ROUTE.final) + '</details>';
+  legs.innerHTML = html;
+  // the map
+  const LAYOUT = {"0":[1593,-5],"1":[1725,-2],"2":[1742,-1],"3":[5,-1],"4":[1280,-3],"5":[0,0],"6":[881,-1],"7":[754,-3],"8":[1742,1],"9":[1247,0],"10":[1010,-3],"11":[283,3],"12":[1161,-2],"13":[1519,-4],"14":[1669,-2],"15":[685,-4],"16":[-275,0],"17":[374,1],"18":[-405,0],"19":[1171,-2],"20":[109,-3],"21":[100,-2],"22":[759,1],"23":[423,0],"24":[382,1],"25":[336,1],"26":[113,-3],"27":[105,-2],"28":[115,1],"29":[252,2],"30":[195,3],"31":[-332,-1],"32":[1688,2],"33":[1990,-4],"34":[1664,-5],"35":[1652,-7],"36":[1657,-8],"38":[1871,-3],"39":[686,3],"40":[791,2],"41":[674,1],"42":[823,0],"43":[966,1],"44":[1060,-5],"45":[1157,-4],"46":[1292,-2],"47":[1256,-5],"48":[1710,-3],"49":[1136,2],"50":[1264,0],"51":[1170,-1],"52":[1330,-2],"53":[364,-2],"54":[527,-1],"55":[671,-2],"56":[706,-2],"57":[841,0],"58":[102,3],"59":[5,2],"60":[1916,-9],"61":[1955,-10],"62":[1995,-11],"63":[2029,-12],"64":[1877,-2],"65":[1737,0],"68":[-32,-2],"69":[1710,-5],"70":[63,-3],"71":[1035,-4],"72":[1620,-9],"73":[1424,-1],"74":[-35,1],"75":[410,-5],"76":[1877,-10],"77":[1547,-6],"78":[1456,-5],"79":[1056,1],"80":[1275,-4],"81":[1595,-4],"82":[921,2],"83":[1111,-3],"84":[1410,-3],"85":[1047,-1],"86":[939,-2],"87":[411,-5],"88":[-32,1],"89":[838,-1],"90":[135,-1],"91":[241,2],"92":[488,2],"93":[659,0],"94":[102,0],"95":[-121,-1],"96":[-64,0],"97":[1754,-7],"98":[1794,-8],"99":[1826,-9],"100":[339,0],"101":[463,-1],"102":[467,-2],"103":[471,-3],"104":[475,-4],"105":[599,-5],"106":[288,-1],"107":[146,1],"108":[172,-4],"109":[176,-5],"110":[180,-6],"111":[1067,0],"112":[1563,-3],"113":[1807,-4],"114":[1851,-5],"115":[1855,-6],"116":[1859,-7],"117":[1229,1],"118":[1377,0],"119":[1433,-1],"120":[1305,-6],"121":[1204,-1],"122":[2020,-13]};
+  const info = document.getElementById('mp-info'), pick = document.getElementById('mp-pick'), legSel = document.getElementById('mp-leg');
+  const M = FISTMAP.create(G, { canvas: document.getElementById('mp'), layout: LAYOUT, label, onSelect: r => { pick.value = r; describe(r); } });
+  for (let r = 0; r < 123; r++) if (r in LAYOUT) pick.insertAdjacentHTML('beforeend', `<option value="${r}">${label(r)}</option>`);
+  legSel.insertAdjacentHTML('beforeend', '<option value="">No route shown</option>');
+  ROUTE.legs.forEach(([sn], i) => { legSel.insertAdjacentHTML('beforeend', `<option value="${i}a">${i + 1}. To scroll ${sn}</option><option value="${i}b">${i + 1}. Scroll ${sn} to chamber ${67 + sn}</option>`); });
+  legSel.insertAdjacentHTML('beforeend', '<option value="end">9. To the ending</option>');
+  function hopsOf(v) { if (v === '') return null; if (v === 'end') return ROUTE.final; const leg = ROUTE.legs[parseInt(v)]; return v.endsWith('a') ? leg[1] : leg[2]; }
+  function describe(r) {
+    const bars = items(r).filter(it => it.bar && (it.t === 3 || it.t === 7 || it.t === 1));
+    info.innerHTML = `<h3 style="margin:18px 0 6px">The room you picked: ${label(r)}</h3><p style="margin:0 0 8px">Where its ways out are and where each one takes you. Positions are character columns counted from the room's left end; press a destination to go there on the map.${NOTE[r] ? ' <b>Note:</b> ' + NOTE[r] + '.' : ''}</p>`
+      + (bars.length ? '<p class="kv">' + bars.map(it => `column ${it.col}: ${it.t === 3 ? 'a stone heap, broken once scroll 1 is delivered' : it.t === 7 ? 'a tree, kicked down once scroll 4 is delivered' : 'a barrier that breaks to any attack'}`).join('; ') + '</p>' : '')
+      + '<table class="t"><tr><th>At column</th><th>How to take it</th><th>Leads to</th></tr>' + ex[r].map(([t, col, v, ac]) =>
+      `<tr><td class="n">${col}</td><td>${how(t)}</td><td>${v in LAYOUT ? `<button class="b" type="button" data-go="${v}" data-col="${ac}">${label(v)}</button>, column ${ac}` : v < 123 ? label(v) : 'nowhere (' + v + ')'}</td></tr>`).join('') + '</table>';
+  }
+  info.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) M.focus(+b.dataset.go, +b.dataset.col); });
+  pick.onchange = () => M.focus(+pick.value);
+  legSel.onchange = () => M.showRoute(hopsOf(legSel.value));
+  document.getElementById('mp-in').onclick = () => M.zoom(1.6);
+  document.getElementById('mp-out').onclick = () => M.zoom(1 / 1.6);
+  document.getElementById('mp-all').onclick = () => M.fitAll();
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-room]'); if (b) { document.getElementById('map').scrollIntoView({ behavior: 'smooth' }); M.focus(+b.dataset.room); return; }
+    const l = e.target.closest('[data-leg]'); if (l) { e.preventDefault(); legSel.value = l.dataset.leg; document.getElementById('map').scrollIntoView({ behavior: 'smooth' }); M.showRoute(hopsOf(l.dataset.leg)); }
+  });
+  M.fitAll(); M.select(94); describe(94); pick.value = 94;
+})();
+</script>

@@ -16,7 +16,7 @@ annotate it byte by byte.
 
 0. **Check the emulator** before the game goes in:
    `python3 kit/scripts/tools.py status`, then
-   `python3 kit/scripts/tools.py check-emulator`. It resets the machine and
+   `python3 kit/scripts/tools.py --platform <platform> check-emulator`. It resets the machine and
    takes about a minute. Copy the build line from `status` into
    `game.json` under `tools.emulator`, and the list of failed checks into
    `orientation.md`. Then read the emulator's tool skill, and of its
@@ -26,6 +26,12 @@ annotate it byte by byte.
    Screenshot. If a trainer or cracktro menu appears, note the options,
    choose the plain game (no cheats) unless the contributor says
    otherwise, and record the choice in `orientation.md`.
+
+   **Read the file's header before trusting its name.** An extension
+   says what the file was called, not what it is: a file named as a
+   plain sector image can be a GCR image of a protected original, which
+   needs the drive emulation the platform's tool notes describe. Record
+   what the header says in `orientation.md`.
 
    **Ask what the image is before trusting it.** A backup of a running
    game (a snapshot saved by a freezer cartridge, a packed memory dump)
@@ -49,7 +55,13 @@ annotate it byte by byte.
    vectors (the platform reference says where they live and what the
    system defaults are). A vector pointing into RAM is the game's own
    handler; that handler is the spine of the engine. Verify against a
-   second known address before trusting it.
+   second known address before trusting it. A game whose interrupt
+   handlers chain, each writing the next one's address into the vector,
+   shows only one of them in a vector read. Record a frame
+   (`kit/c64/frame.py capture` on the C64): its writes to the vector name
+   every handler in the chain, with the line each runs on, and tracing
+   from all of them can reach code that nothing else calls, such as the
+   music driver.
 4. **Save a snapshot** of the machine in play. Name it by state
    (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds
