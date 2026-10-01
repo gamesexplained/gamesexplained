@@ -8,8 +8,8 @@ decision, what took longest, operating system and tool versions.
 
 <one line per ask, each with its `kit-ask` issue: "#123: the ask in one line".
 When the run could not file issues, say that the asks are in the pull
-request's description under "Maintainer asks", which the repository files
-when the pull request merges.>
+request's description under "Maintainer asks", as links that open each
+issue filled in.>
 
 ## What took longest
 

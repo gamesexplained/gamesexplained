@@ -71,26 +71,18 @@ into the diff that saves the next contributor the trouble.
    Then list them in `kit-feedback.md` under "Maintainer asks", one line
    each with its number. Filing an issue publishes, so it takes the
    contributor's yes, and the one they gave at the start to your opening
-   the pull request yourself (`kit/START.md`) covers it. With a no, or
-   when this environment cannot file on the repository (some hosted
-   sessions' networks refuse the GitHub API; a session started on the
-   contributor's fork can usually write only to the fork), file nothing:
-   put the asks in the pull request's description, and say in
-   `kit-feedback.md` that they are there. The repository files them when
-   the pull request merges (`.github/workflows/maintainer-asks.yml`), so
-   write them in the form it reads, each with the body an issue would
-   have:
-
-   ```
-   ## Maintainer asks
-
-   - **<the ask, in one line>.** <the problem and what it cost this run;
-     what you suggest, and where in the kit it would go>
-   ```
-
-   One bullet per ask, under that heading, with nothing else in the
-   section. Check what it will file with
-   `python3 kit/scripts/maintainer_asks.py parse <description.md>`.
+   the pull request yourself (`kit/START.md`) covers it. A hosted
+   session started on the contributor's fork usually reaches only the
+   fork: attach `gamesexplained/gamesexplained` with push access first,
+   if the environment has a tool for it. With a no, or when filing is
+   refused, the contributor files them: give them one link per ask that
+   opens GitHub's new-issue form already filled in,
+   `https://github.com/gamesexplained/gamesexplained/issues/new?title=<title>&body=<body>`,
+   with title and body URL-encoded and the body ending in the marker.
+   Any GitHub account can open an issue here from a browser, whatever
+   the session could do. Put the same links in the pull request's
+   description under **Maintainer asks**, and say in `kit-feedback.md`
+   that they are there.
 5. **Add to `kit/CHANGELOG.md` only what the next game will do
    differently.** That file is the record of what the kit learned about
    reverse engineering, from which game and whom, not of what changed. If
@@ -132,4 +124,4 @@ into the diff that saves the next contributor the trouble.
 Skill and kit edits committed on the branch and included in the pull
 request; `kit-feedback.md` with the timings table; each ask for a
 maintainer filed as a `kit-ask` issue, or in the pull request's
-description in the form the repository files on merge; `timings.json`; `game.json` complete; `TODO.md` current.
+description as links that open each issue filled in; `timings.json`; `game.json` complete; `TODO.md` current.

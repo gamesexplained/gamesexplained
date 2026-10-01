@@ -45,7 +45,7 @@ step needs something only they have.
    open and a link to it. The same yes lets the retrospective file what
    needs a maintainer's decision as issues on the repository
    (`kit/skills/core/80-retro`); with a no, those asks go in the pull
-   request's description, and the repository files them when it merges.
+   request's description, as links that open each issue filled in.
    Either answer holds for the whole run; do not ask again at the end.
 
    **Last, make sure the commits will be theirs.** The site credits a
@@ -84,7 +84,10 @@ step needs something only they have.
    authored before the first real one. If they said you may open the pull
    request, check now that you can: `gh auth status` should show their
    login, which opens the pull request and files the issues, or your
-   environment should have its own way to open one.
+   environment should have its own way to open one. A hosted session
+   started on the contributor's fork usually reaches only the fork:
+   attach `gamesexplained/gamesexplained` now, with push access, if the
+   environment has a tool for it, and say plainly if that is refused.
 
    **The branch is usually yours to name; ask only if it is not.** Where
    you create the branch yourself, call it `game/<platform>/<slug>` as
