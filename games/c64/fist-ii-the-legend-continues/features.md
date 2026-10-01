@@ -118,3 +118,8 @@ See `facts.md`, Open questions.
   the trigrams in the same order as Lemon64's copy and adds that meditation
   "cures poison", and "underwater hazards" among the dangers. Neither of
   these two has been checked in the code.
+- The pasted text guide ("FIST 2 the legend continues Commodore 64/128
+  Guide to the entire game") is by the Lemon64 member exploding fist64,
+  linked from lemon64.com/forum/viewtopic.php?t=67329 (2 March 2018) as a
+  Google Drive document; the contributor confirmed the thread from a
+  screenshot on 1 October 2026.
