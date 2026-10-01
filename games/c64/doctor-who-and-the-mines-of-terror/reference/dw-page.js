@@ -10,6 +10,13 @@ const DW = (function () {
     if (!window.C64) throw new Error('This widget needs the site\'s shared script, lib/c64.js.');
     game = await C64.load('listing.json');
     const M = game.ram;
+    // The hand-over image holds the graphics set that the code lock's characters come from: keep
+    // those 16 shapes (codes $A1-$A5, $F5-$FF, swap_char_codes $ABAC) before the start zone's replace them.
+    game.lockGlyphs = {};
+    for (const c of M.subarray(0xABAC, 0xABBC)) game.lockGlyphs[c] = Array.from(M.subarray(0x4000 + c * 8, 0x4008 + c * 8));
+    // Start-up writes the 17 switchable cells into the map from cell_states $1D00 (switch_restore_all,
+    // $AECA, called at $4A3C): row from $ADBC, column from $ADAB. The hand-over image is from before that.
+    for (let i = 0; i < 17; i++) M[0xFB80 - 0x80 * M[0xADBC + i] + M[0xADAB + i]] = M[0x1D00 + i];
     for (const c in START_ZONE.glyph) START_ZONE.glyph[c].forEach((v, i) => M[0x4000 + c * 8 + i] = v);
     for (const c in START_ZONE.colour) M[0x2F00 + +c] = START_ZONE.colour[c];
     return game;

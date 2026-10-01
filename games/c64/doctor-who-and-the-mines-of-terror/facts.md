@@ -192,7 +192,24 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   (`$0290`, `$0588`) change the map.
 - **The code lock** (`$BD35`-`$BFD9`): three buttons, a six-press sequence
   dealt from a 186-byte deck with seeds from the frame counter; a wrong
-  press deals a new one; success sets `$4E`.
+  press deals a new one; success sets `$4E`. The clue panel (F5 with empty
+  hands at x `$0A14`-`$0A33`, y `$05C6` up) shows in turn a number 1-5
+  (`$A1`-`$A5`), a shape and a letter W R B G Y (`$F6 $F5 $F7 $F8 $F9`);
+  the shapes 0-5 are characters `$FD $FA $FE $FB $FC $FF`, drawn in the
+  hand-over image's graphics set as triangle, square, circle, cross,
+  diamond and question mark. Deck byte = 8 x colour + shape; the code is
+  the six bytes from the (number)-th occurrence of the clue's colour and
+  shape, so its first shape is the clue's. The deck's first seven entries
+  match the outer band of the printed code card read from its top corner
+  (by eye, from the contributor's photograph). Success also sets switch
+  cell 13 to block `$D5` (`$BF62`). The `$4E` test at `$BB05` is
+  overwritten by the PASS CARD test at `$BB15`.
+- **Spanner bolts** (`$BBBC`): each of the eight points is switch cell 0-7,
+  block `$E0` (a clamp on a ladder); undoing it writes `$E1`, the clamp
+  drawn open. Point 5 needs the Doctor below it (`$BBB4`).
+- **Switchable cells**: start-up writes all 17 from `$1D00` into the map
+  (`$AECA` from `$4A3C`); the hand-over image's map predates that for
+  cells 0, 1, 9, 11 and 14.
 - **The end** (`$9102`, `$E8` = 2 escape pod, 4 TARDIS): the countdown is
   added to the score (zeroed first if object 0's Y high byte is below 3),
   then a bonus of 1024 doubled once for each of the CRYSTAL, the TIRU

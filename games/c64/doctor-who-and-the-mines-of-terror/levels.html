@@ -39,15 +39,36 @@
   <table class="t">
     <tr><th>Object</th><th>Where it works</th><th>What it does</th></tr>
     <tr><td>PICK AXE</td><td>three dig sites (<code>$BC1C</code>)</td><td>three hits wear the rock away and open the passage</td></tr>
-    <tr><td>SPANNER</td><td>eight bolts (<code>$BB94</code>)</td><td>each bolt, once undone, changes a piece of the map (<code>use_spanner</code>, <code>$BBBC</code>)</td></tr>
+    <tr><td>SPANNER</td><td>eight bolts high in the mine (<code>$BB94</code>)</td><td>each bolt is a clamp on a ladder; undoing it redraws that block with the clamp open (block <code>$E0</code> becomes <code>$E1</code>, <code>use_spanner</code>, <code>$BBBC</code>). Bolt 6 works only from below.</td></tr>
     <tr><td>ACTIVATOR</td><td>three points at the top of the mine (<code>$BCDA</code>)</td><td>launches the escape pod, one of the two ways to leave (<code>$BCE0</code>)</td></tr>
     <tr><td>EXPLOSIVES</td><td>anywhere, once armed; two places matter</td><td>a blast near one point starts the level rising (<code>$C202</code>); a blast near another opens a wall (<code>$C22E</code>)</td></tr>
+    <tr><td>nothing (empty hands)</td><td>the code lock's clue panel and its three buttons</td><td>see <a href="#lock">the code lock</a> below</td></tr>
     <tr><td>AIR MASK</td><td>carried in the hand</td><td>keeps the air countdown full (<code>$CAB1</code>)</td></tr>
   </table>
   <p>The air runs out only after the Doctor has breathed bad air. Walking into one of the four bad-air blocks high in the mine starts a countdown of 50. It keeps running while he is high in the mine (<code>$1C60</code> of 2 or more), except in open cavern, and he suffocates when it reaches 0 (<code>doctor_tile_checks</code>, <code>$CA58</code>). Holding the AIR MASK fills it again every time. The fifth bad-air block lies lower down, where the test is never made. Stalagmite blocks, sixteen of them, kill at a touch.</p>
   <p>What the PASS CARD, MAT, PLATFORM, BOX, CHEMICALS and the eggs do is not traced here. The circuits count when they sit in their slots in the machinery (<code>machinery_update</code>, <code>$B9B6</code>), and the crystal and the TIRU capsule double the bonus at the end.</p>
   <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. It holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
   <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
+</section>
+<section id="lock">
+  <p class="fig">The code lock</p>
+  <h2 class="t">A colour, a shape, a number, and the card in the box</h2>
+  <p class="lede">Halfway up the mine is a panel that gives three clues, and below it three buttons that each show a shape. The answer is six shapes long, and the only way to find it is the code card that came with the game.</p>
+  <p>The Doctor works the lock with empty hands and F5 (<code>code_lock_press</code>, <code>$BE29</code>). Standing at the clue panel, each press shows the next clue: a number from 1 to 5, a shape, and a letter (<code>$BE6F</code>). The letters are W, R, B, G and Y, so we read them as white, red, blue, green and yellow, the colours of the lines on the card. Standing at the buttons, he presses the one showing the next shape of the answer. One button always shows it and the other two show other shapes (<code>code_lock_deal_buttons</code>, <code>$BEEC</code>). A wrong press deals a whole new code with new clues (<code>$BED5</code>), so guessing gives a one-in-three chance six times running.</p>
+  <p>The card is in the game too, as 186 bytes at <code>$BD6F</code>. Each byte is a coloured shape: eight times the colour plus the shape. To deal a code, the game takes three numbers from the frame counter (<code>code_lock_new_sequence</code>, <code>$BF69</code>), finds that colour and shape in the list, skips to the occurrence the number names, and reads six shapes from there (<code>$BFC7</code>). So the first shape of the answer is always the shape in the clue. The first empty-handed F5 of a game deals the first code (<code>$BB49</code>).</p>
+  <div class="plate">
+    <div class="row" id="lk-col"></div>
+    <div class="row" id="lk-shp"></div>
+    <div class="row" id="lk-num"></div>
+    <div class="row"><button class="b" type="button" id="lk-deal">Deal a code</button><span class="note" id="lk-kv"></span></div>
+    <canvas id="lk-ans" class="scr" role="img" aria-label="The six shapes of the answer"></canvas>
+    <canvas id="lk-card" class="scr" style="margin-top:14px;max-width:100%" role="img" aria-label="The 186 coloured shapes of the code list, 31 to a row"></canvas>
+    <p class="cap">Choose the three clues, or deal one the way the game does. The answer is read from the list at <code>code_lock_deck</code> (<code>$BD6F</code>-<code>$BE28</code>), drawn here 31 to a row, with the six shapes of the answer boxed. The shapes are the game's own characters: <code>$FD</code> <code>$FA</code> <code>$FE</code> <code>$FB</code> <code>$FC</code> <code>$FF</code> for shapes 0-5 (<code>$BD64</code>), <code>$F6</code> <code>$F5</code> <code>$F7</code> <code>$F8</code> <code>$F9</code> for the letters (<code>$BD5F</code>) and <code>$A1</code>-<code>$A5</code> for the numbers (<code>$BD6A</code>), from the graphics set the hand-over image holds. The printed card runs the same list around its diamond bands: from the white triangle at the top corner, the outer band reads white triangle, red square, red circle, blue square, green triangle, red cross, white diamond, the first seven entries here (compared by eye with a photograph of the contributor's card; the rest of the card has not been read).</p>
+  </div>
+  <p>The clues never show the sixth shape, but answers can contain it: the frame counter is reduced to 0-4 for each clue, and the list uses all six shapes. Every colour and shape the clues can show turns up at least five times, so every clue has an answer.</p>
+  <p>Six right presses set the flag at <code>$4E</code>, play a sound and redraw one block beside the buttons (switch cell 13: block <code>$C2</code> becomes <code>$D5</code>, <code>$BF59</code>). After that the buttons do nothing. The routine that sets the class of character <code>$A0</code> tests the same flag, but the PASS CARD test straight after it overwrites the result every time (<code>$BB05</code>-<code>$BB25</code>), so the flag does not change that character.</p>
+  <div class="plate"><canvas id="lk-door" class="scr" style="max-width:100%" role="img" aria-label="The code lock's room before and after the code is entered"></canvas>
+    <p class="cap">The room around the lock, row 38 to row 47, columns 77 to 85, before (left) and after (right) the code is entered. The clue panel is the framed door at the top; the buttons are drawn onto the screen while the Doctor is there and are not part of the map.</p></div>
 </section>
 <section id="scroll">
   <p class="fig">Scrolling</p>
@@ -82,10 +103,14 @@
   // where objects act: each list read from the table the code tests the Doctor's position against
   const uses = [];
   for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBC1C + i], M[0xBC1F + i], M[0xBC22 + i], M[0xBC25 + i]), t: 'PICK AXE: dig here (3 hits)' });        // $BC11
-  for (let i = 0; i < 8; i++) uses.push({ at: P(M[0xBB94 + i], M[0xBB9C + i], M[0xBBA4 + i], M[0xBBAC + i]), t: 'SPANNER: bolt ' + (i + 1) });             // use_spanner $BBBC
+  for (let i = 0; i < 8; i++) uses.push({ at: P(M[0xBB94 + i], M[0xBB9C + i], M[0xBBA4 + i], M[0xBBAC + i]), t: 'SPANNER: bolt ' + (i + 1) + (i === 5 ? ' (from below)' : '') + ', opens a clamp' });             // use_spanner $BBBC
   for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBCDA + i], M[0xBCDD + i], 0x06, 0x48), t: 'ACTIVATOR: escape pod' });                                 // use_activator $BCE0
   uses.push({ at: P(0x0E, 0x60, 0x00, 0x68), t: 'EXPLOSIVES blown here: the level starts rising' });   // blast_damage $C202
   uses.push({ at: P(0x0B, 0xE0, 0x05, 0x88), t: 'a blast here opens the wall' });                      // $C22E, switch cell $0B
+  // the code lock (code_lock_press, $BE29): F5 with empty hands, Doctor's x high $0A
+  uses.push({ at: P(0x0A, 0x24, 0x05, 0xD8), t: 'CODE LOCK: clue panel' });                            // x low $14-$33, y $05C6 up ($BE56)
+  for (let i = 0; i < 3; i++) uses.push({ at: P(0x0A, 0x30 + 0x20 * i, 0x04, 0xC8), t: 'CODE LOCK: button ' + (i + 1) });   // y $04C8, 32-pixel zones from x low $20
+  uses.push({ at: [84 * 32 + 16, Y(38 * 32 + 16)], t: 'CODE LOCK: changes this block' });               // switch cell 13, $BF62
   // dangers: map blocks the Doctor's centre is tested against (doctor_tile_checks, $CA58)
   const dangers = [];
   for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) {
@@ -150,6 +175,7 @@
     const b = document.getElementById(id);
     b.onclick = () => { const v = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', v); set(v); draw(); };
   }
+  lock(M, full);
   document.getElementById('home').onclick = () => { sel = null; pick.value = ''; centre(start); draw(); };
   // choosing a mark: switch its layer on if it was off, centre the magnifier on it and ring it
   const layer = { 'Objects': 'ob', 'Where they are used': 'us', 'Dangers': 'dg' };
@@ -176,5 +202,53 @@
     if (best) choose(best);
   });
   draw();
+  function lock(M, full) {
+    const glyph = G.lockGlyphs, INK = [1, 2, 6, 5, 7];               // W R B G Y as C64 colours
+    const SHAPE = Array.from(M.subarray(0xBD64, 0xBD6A)), LETTER = Array.from(M.subarray(0xBD5F, 0xBD64)), NUM = Array.from(M.subarray(0xBD6A, 0xBD6F));
+    const DECK = Array.from(M.subarray(0xBD6F, 0xBD6F + 186));
+    function put(ctx, ch, x, y, s, ink, bg) {
+      ctx.fillStyle = C64.PAL[bg]; ctx.fillRect(x, y, 8 * s, 8 * s); ctx.fillStyle = C64.PAL[ink];
+      glyph[ch].forEach((g, r) => { for (let b = 0; b < 8; b++) if (g & 0x80 >> b) ctx.fillRect(x + b * s, y + r * s, s, s); });
+    }
+    function chip(ch, ink) { const c = document.createElement('canvas'); c.width = c.height = 32; const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 32, 32); put(x, ch, 4, 4, 3, ink, 0); c.style.verticalAlign = 'middle'; return c; }
+    let seed = [0, 0, 0];
+    const groups = [['lk-col', 'Letter', LETTER, i => INK[i]], ['lk-shp', 'Shape', SHAPE.slice(0, 5), () => 1], ['lk-num', 'Number', NUM, () => 1]];
+    groups.forEach(([id, label, chars, ink], g) => {
+      const row = document.getElementById(id); row.insertAdjacentHTML('beforeend', '<span class="note" style="min-width:5em">' + label + '</span>');
+      chars.forEach((ch, i) => { const b = document.createElement('button'); b.className = 'b'; b.type = 'button'; b.append(chip(ch, ink(i)));
+        b.setAttribute('aria-label', label + ' ' + (i + 1)); b.onclick = () => { seed[g] = i; show(); }; row.append(b); });
+    });
+    function find() {                                                   // the dealer, $BFA1-$BFC5
+      const want = 8 * seed[0] + seed[1]; let k = -1;
+      for (let i = 0; i < DECK.length; i++) if (DECK[i] === want && ++k === seed[2]) return i;
+      return -1;
+    }
+    const ans = document.getElementById('lk-ans'), actx = C64.canvas(ans, 6 * 40 + 8, 48);
+    const card = document.getElementById('lk-card'), cctx = C64.canvas(card, 31 * 26 + 4, 6 * 26 + 4);
+    function show() {
+      groups.forEach(([id], g) => document.querySelectorAll('#' + id + ' button').forEach((b, i) => b.setAttribute('aria-pressed', i === seed[g])));
+      const at = find(), code = DECK.slice(at, at + 6).map(v => v & 7);
+      actx.fillStyle = '#000'; actx.fillRect(0, 0, ans.width, ans.height);
+      code.forEach((v, i) => put(actx, SHAPE[v], 4 + i * 40, 6, 4, 1, 0));
+      cctx.fillStyle = '#000'; cctx.fillRect(0, 0, card.width, card.height);
+      DECK.forEach((v, i) => put(cctx, SHAPE[v & 7], 2 + (i % 31) * 26 + 1, 2 + (i / 31 | 0) * 26 + 1, 3, INK[v >> 3], 0));
+      cctx.strokeStyle = '#fff'; cctx.lineWidth = 2;
+      for (let i = at; i < at + 6; i++) cctx.strokeRect(2 + (i % 31) * 26, 2 + (i / 31 | 0) * 26, 26, 26);
+      document.getElementById('lk-kv').textContent = 'Occurrence ' + (seed[2] + 1) + ' of that coloured shape is entry ' + at + ' of 186; press these six in order.';
+    }
+    document.getElementById('lk-deal').onclick = () => {                // seeds from the frame counter $53, as $BF6E-$BF9E
+      const f = Math.random() * 256 | 0, m5 = v => v >= 5 ? v - 5 : v;
+      seed = [m5(f & 7), m5(~f & 7), m5((f << 1 & 6) | f >> 7)];       // the third: ROL twice, the first ROL's carry is bit 7
+      show();
+    };
+    show();
+    // before and after: switch cell 13 (row 38, column 84) set to $D5
+    const door = document.getElementById('lk-door'), dctx = C64.canvas(door, 2 * 9 * 32 + 16, 10 * 32);
+    dctx.imageSmoothingEnabled = false;
+    const crop = (src, x) => dctx.drawImage(src, 77 * 32, (55 - 47) * 32, 9 * 32, 10 * 32, x, 0, 9 * 32, 10 * 32);
+    crop(full, 0);
+    const cell = 0xFB80 - 0x80 * 38 + 84, was = M[cell]; M[cell] = 0xD5; const after = DW.drawMine(M); M[cell] = was;
+    crop(after, 9 * 32 + 16);
+  }
 })();
 </script>
