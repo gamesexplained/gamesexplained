@@ -2,7 +2,7 @@
 
 Tier: **Silver, claimed** by unorig on 1 October 2026 for the Gold pass
 (100 % coverage, 63,256 tracked bytes; facts, features, the Overview,
-Gameplay, Maps and solution, How it works, Graphics, Music and Discoveries
+Gameplay, Maps and solution, Graphics, Music and Discoveries
 tabs; copy `agent-draft`).
 
 For Gold, a human pass over every tab, section by section.

@@ -9,6 +9,7 @@
   <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
   <h1>Fist II: The Legend Continues</h1>
   <p class="sub">How the fighters are built from nine sprites and mirrored as they are unpacked, how the rooms are drawn, and how one frame of the screen is put together.</p>
+  <p class="codekey">Words underlined with dots open the code they describe on the <a href="source.html">Source code</a> tab.</p>
 </header>
 <main class="wrap">
 <section id="fighters">
@@ -18,16 +19,16 @@
   <div class="plate">
     <div class="row"><button class="b" type="button" id="face" aria-pressed="false">Face the other way</button><span class="note" id="fk"></span></div>
     <div class="gal" id="gal"></div>
-    <p class="cap">Frames from <code>$8000</code>-<code>$AF0F</code>, found through the address tables <code>$B57C</code>/<code>$B661</code>, drawn in the fighters' colours as the recorded frame further down this page has them: <code>$D025</code> black, <code>$D026</code> light red for the skin, and red, the colour of sprites 1-3 and 5-7 (<code>$D028</code>-<code>$D02A</code>, <code>$D02C</code>-<code>$D02E</code>), on the brown of the jungle floor so that the black outline shows.</p>
+    <p class="cap"><a class="cl" href="source.html#8000">The 229 frames</a>, found through <a class="cl" href="source.html#B57C">their address tables</a>, drawn in the fighters' colours as the recorded frame further down this page has them: the two shared sprite colours, black and light red for the skin, and red, the colour of sprites 1-3 and 5-7, on the brown of the jungle floor so that the black outline shows.</p>
   </div>
-  <p>A fighter on screen is nine hardware sprites: three rows of three. Each pose names the image for each of the nine places (<code>$B210</code>), and 73 poses make every stance and blow. The images are packed: any byte other than zero is stored as it is, and a run of zeros is stored as <code>$00</code> and a count (<code>unpack_sprite_frame</code>, <code>$1D3E</code>). All 229 images take 12 KB instead of 14.</p>
-  <p>Only one facing is stored. To draw a fighter facing the other way, a second unpacker (<code>$1F58</code>) writes each row's three bytes in reverse order and passes every byte through a 256-byte table at <code>$BF00</code> that reverses its four pixel pairs. In multicolour a pixel is two bits wide, so the pairs move as units.</p>
-  <p>A move is a script of four-byte steps: how long to hold, which pose, and how far to move across and up (<code>$AF46</code>, read by <code>$1AF0</code>). There are 44 scripts. A kick is a few steps of rising poses and a few of falling ones.</p>
+  <p>A fighter on screen is nine hardware sprites: three rows of three. <a class="cl" href="source.html#B210">Each pose names the image for each of the nine places</a>, and 73 poses make every stance and blow. The images are packed: <a class="cl" href="source.html#1D3E">any byte other than zero is stored as it is, and a run of zeros is stored as a zero and a count</a>. All 229 images take 12 KB instead of 14.</p>
+  <p>Only one facing is stored. To draw a fighter facing the other way, <a class="cl" href="source.html#1F58">a second unpacker</a> writes each row's three bytes in reverse order and passes every byte through <a class="cl" href="source.html#BF00">a 256-byte table that reverses its four pixel pairs</a>. In multicolour a pixel is two bits wide, so the pairs move as units.</p>
+  <p>A move is <a class="cl" href="source.html#AF46">a script of four-byte steps</a>: how long to hold, which pose, and how far to move across and up, <a class="cl" href="source.html#1AF0">read one step at a time</a>. There are 44 scripts. A kick is a few steps of rising poses and a few of falling ones.</p>
 </section>
 <section id="scenery">
   <p class="fig">Scenery</p>
   <h2 class="t">Rooms built from shapes, objects and lists</h2>
-  <p>The world is 123 screens, each belonging to one of 48 areas (<code>$4A71</code>). The area chooses one of three scenery sets: areas 0-7 use set 0, the caves; 8-29 set 1; and 30-47 set 2 (<code>$196F</code>). A set is built in three levels. Shapes are small rectangles of characters. Composite objects are lists of shapes with offsets. Each area then has a list of objects with their positions (<code>$1556</code> draws them), and its colour list paints the colour memory (<code>paint_colour_ram</code>, <code>$16B8</code>).</p>
+  <p>The world is 123 screens, <a class="cl" href="source.html#4A71">each belonging to one of 48 areas</a>. <a class="cl" href="source.html#196F">The area chooses one of three scenery sets</a>: areas 0-7 use set 0, the caves; 8-29 set 1; and 30-47 set 2. A set is built in three levels. Shapes are small rectangles of characters. Composite objects are lists of shapes with offsets. Each area then has <a class="cl" href="source.html#1556">a list of objects with their positions</a>, and <a class="cl" href="source.html#16B8">its colour list paints the colour memory</a>.</p>
   <p>The manual credits the backgrounds to Greg Holland, drawn with David Johnston's "Character Editor" and laid out with Nigel Spencer's "Map Editor". The <a href="levels.html#map">map</a> on the Maps and solution tab draws every room from these tables.</p>
 </section>
 <section id="screen">
@@ -38,8 +39,8 @@
     <canvas id="frame" class="scr"></canvas>
     <p class="cap">A reconstruction, not a screenshot: one frame recorded in the emulator, with 70 writes to the video chip and the line each happened on, drawn line by line. It matches the emulator's own picture in all 104,448 pixels.</p>
   </div>
-  <p>The game uses the video chip's last memory bank, <code>$C000</code>-<code>$FFFF</code>, and keeps its play-area characters at <code>$D000</code>, in the RAM beneath the input and output chips: the processor cannot see it there, but the video chip always reads RAM. There are two play screens, at <code>$F000</code> and <code>$CC00</code>. While one is shown, the game builds the other, and every coarse scroll step swaps them.</p>
-  <p>Raster interrupts run in a chain. Each handler sets the line for the next and writes the next handler's address into the interrupt vector. Most of them move the fighters' sprites further down the screen: nine sprites a fighter, eighteen for two, with eight on the chip. A planner at <code>$3F67</code> works out each frame which of seven layouts to use from the gap between the fighters, and writes the lines and sprite images into the next frame's handlers.</p>
+  <p>The game uses the video chip's last memory bank, the top 16 KB, and keeps <a class="cl" href="source.html#D000">its play-area characters</a> in the RAM beneath the input and output chips: the processor cannot see them there, but the video chip always reads RAM. There are two play screens, <a class="cl" href="source.html#F000">one under the operating system ROM</a> and <a class="cl" href="source.html#CC00">one below the input and output chips</a>. While one is shown, the game builds the other, and every coarse scroll step swaps them.</p>
+  <p>Raster interrupts run in a chain. Each handler sets the line for the next and writes the next handler's address into the interrupt vector. Most of them move the fighters' sprites further down the screen: nine sprites a fighter, eighteen for two, with eight on the chip. A <a class="cl" href="source.html#3F67">planner</a> works out each frame which of seven layouts to use from the gap between the fighters, and writes the lines and sprite images into the next frame's handlers.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>

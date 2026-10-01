@@ -9,6 +9,7 @@
   <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
   <h1>Fist II: The Legend Continues</h1>
   <p class="sub">Neil Brennan's three tunes, played by the game's own music driver, and the sound effects that play through the volume register.</p>
+  <p class="codekey">Words underlined with dots open the code they describe on the <a href="source.html">Source code</a> tab.</p>
 </header>
 <main class="wrap">
 <section id="music">
@@ -17,7 +18,7 @@
   <p class="lede">The game plays one tune at a time, chosen by where the hero stands, and loops it for as long as he stays. Press a tune to hear it.</p>
   <div class="plate">
     <div id="sid"></div>
-    <p class="cap">The game's music driver (<code>$F400</code>-<code>$FAB4</code>) ported to JavaScript and played through the site's model of the SID chip. The port was checked against the driver itself, run in a 6502 simulator on the game's bytes: all 25 sound registers after each of 30,000 frames, ten minutes of each tune, match. Tune 1 sweeps the filter, so the player starts with the filter of a 6581, the C64's first sound chip; its cutoff is one chip's, and real 6581s differ widely. The filter sweep follows voice 3's envelope, which the model reads once a frame where the chip would be read part-way through it.</p>
+    <p class="cap"><a class="cl" href="source.html#F400">The game's music driver</a> ported to JavaScript and played through the site's model of the SID chip. The port was checked against the driver itself, run in a 6502 simulator on the game's bytes: all 25 sound registers after each of 30,000 frames, ten minutes of each tune, match. Tune 1 sweeps the filter, so the player starts with the filter of a 6581, the C64's first sound chip; its cutoff is one chip's, and real 6581s differ widely. The filter sweep follows voice 3's envelope, which the model reads once a frame where the chip would be read part-way through it.</p>
   </div>
   <table class="t" style="margin-top:24px">
     <tr><th>Tune</th><th>Where it plays</th><th>Speed</th><th>Instruments</th></tr>
@@ -25,18 +26,18 @@
     <tr><td>2</td><td>areas 30-47 (scenery set 2), and the temples</td><td>a tick every 2 frames</td><td>3 (9-11)</td></tr>
     <tr><td>3</td><td>areas 8-29 (scenery set 1), where the game starts</td><td>a tick every 5 frames</td><td>5 (12-16)</td></tr>
   </table>
-  <p class="cap">The zone's tune comes from <code>$1247</code>; the temples, area 6, are given tune 2 by <code>$11FC</code>-<code>$1202</code>. The speeds are the tempo table at <code>$F42F</code>.</p>
+  <p class="cap"><a class="cl" href="source.html#1247">Each zone's tune</a> comes from a three-byte table, and <a class="cl" href="source.html#11FC">the temples, area 6, are given tune 2</a> on their own. The speeds are <a class="cl" href="source.html#F42F">the tempo table</a>.</p>
 </section>
 <section id="driver">
   <p class="fig">The driver</p>
   <h2 class="t">Sequences, patterns and 21-byte instruments</h2>
-  <p>The driver at <code>$F400</code> runs once a frame from the status-band interrupt. Each voice reads a sequence: play pattern <i>n</i>, repeat a block, or jump back to loop. A pattern is a list of notes, each a note byte (the note in the low four bits, the octave in the next three) and a length byte that picks one of sixteen lengths from a table (<code>$F4D5</code>). The notes come from a table of one octave (<code>$F4C9</code>), doubled for each octave up. A byte of <code>$80</code> or more in a pattern changes the instrument.</p>
-  <p>There are 17 instruments of 21 bytes (<code>$FE43</code>). An instrument sets the waveform and envelope, and can sweep the pulse width from one of three ramps, glide from note to note, add a vibrato or a trill, and route the voice through the filter with a cutoff that sweeps. Only voice 1 restarts its vibrato with each new note: the instruction that asks for the restart, at <code>$F6F0</code>, is not indexed by voice, so voices 2 and 3 keep theirs running.</p>
+  <p><a class="cl" href="source.html#F400">The driver</a> runs once a frame from the status-band interrupt. <a class="cl" href="source.html#F5BD">Each voice reads a sequence</a>: play pattern <i>n</i>, repeat a block, or jump back to loop. A pattern is a list of notes, each <a class="cl" href="source.html#F68E">a note byte</a> (the note in the low four bits, the octave in the next three) and <a class="cl" href="source.html#F6C0">a length byte</a> that picks one of <a class="cl" href="source.html#F4D5">sixteen lengths</a>. <a class="cl" href="source.html#F4C8">The notes come from a table of one octave</a>, doubled for each octave up. <a class="cl" href="source.html#F683">A byte of $80 or more in a pattern changes the instrument</a>.</p>
+  <p><a class="cl" href="source.html#FE43">There are 17 instruments of 21 bytes</a>. An instrument sets the waveform and envelope, and can sweep the pulse width from one of three ramps, glide from note to note, add a vibrato or a trill, and route the voice through the filter with a cutoff that sweeps. Only voice 1 restarts its vibrato with each new note: the <a class="cl" href="source.html#F6F0">instruction that asks for the restart</a> is not indexed by voice, so voices 2 and 3 keep theirs running.</p>
 </section>
 <section id="effects">
   <p class="fig">Sound effects</p>
   <h2 class="t">Samples through the volume register</h2>
-  <p>The sound effects are samples, made by Bruce Bayley, the manual says. A timer interrupt (<code>$3D8B</code>) switches the SID's volume between two levels, and each byte of a sample sets how long until the next switch, through a table of 256 timer periods (<code>$0200</code>-<code>$03FF</code>). Each switch of the volume makes a click, and the clicks at the right spacing make the sound. The site's model of the SID does not play samples, so they are not heard here.</p>
+  <p>The sound effects are samples, made by Bruce Bayley, the manual says. <a class="cl" href="source.html#3D8B">A timer interrupt</a> switches the SID's volume between two levels, and each byte of a sample sets how long until the next switch, <a class="cl" href="source.html#0200">through a table of 256 timer periods</a>. Each switch of the volume makes a click, and the clicks at the right spacing make the sound. The site's model of the SID does not play samples, so they are not heard here.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>

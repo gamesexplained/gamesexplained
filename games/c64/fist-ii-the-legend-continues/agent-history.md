@@ -87,3 +87,6 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - A text walkthrough the contributor found (author unknown) agreed with
   the shape of the route: eight scrolls, a temple each, kicks, jumps and
   the volcano last.
+- How it works was then folded away at the contributor's choice: how a
+  blow lands went to Gameplay, how rooms join to Maps and solution, and
+  the scroll flags into the Gameplay trigram table.
