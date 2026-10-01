@@ -63,3 +63,28 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Post each newly added game to Discord once the site carrying it is live.
+  announce:
+    needs: deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Post newly added games to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "No DISCORD_WEBHOOK secret; nothing posted."; exit 0; fi
+          git diff --name-only --diff-filter=A "$BEFORE" HEAD -- 'games/*/*/game.json' | while read -r gj; do
+            python3 -c 'import json, sys
+          g = json.load(open(sys.argv[1]))
+          url = "https://gamesexplained.com/%s/%s/" % (g["platform"], g["slug"])
+          print(json.dumps({"content": "New on Games Explained: **%s** (%s, %s) %s" % (g["title"], g["platform"], g["tier"], url),
+                            "allowed_mentions": {"parse": []}}))' "$gj" > payload.json
+            echo "Announcing $gj"
+            curl -sSf -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK"
+          done
