@@ -24,9 +24,9 @@ const FIST = (function () {
     return out;
   }
   // A multicolour sprite: colours for the pairs 01, 10, 11 are $D025, the sprite's own, $D026.
-  function draw(cv, f, s, cols) {
+  function draw(cv, f, s, cols, bg = '#000') {
     const ctx = C64.canvas(cv, 24 * s, 21 * s);
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, cv.width, cv.height);
     for (let y = 0; y < 21; y++) for (let b = 0; b < 3; b++) { const g = f[y * 3 + b];
       for (let x = 0; x < 4; x++) { const v = (g >> (6 - 2 * x)) & 3; if (!v) continue; ctx.fillStyle = C64.PAL[cols[v]]; ctx.fillRect((b * 8 + x * 2) * s, y * s, 2 * s, s); } }
   }

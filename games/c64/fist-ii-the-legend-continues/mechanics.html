@@ -18,7 +18,7 @@
   <div class="plate">
     <div class="row"><button class="b" type="button" id="face" aria-pressed="false">Face the other way</button><span class="note" id="fk"></span></div>
     <div class="gal" id="gal"></div>
-    <p class="cap">Frames from <code>$8000</code>-<code>$AF0F</code>, found through the address tables <code>$B57C</code>/<code>$B661</code>, drawn with the game's shared sprite colours (<code>$D025</code> black, <code>$D026</code> light red) and grey for the colour each sprite gets of its own.</p>
+    <p class="cap">Frames from <code>$8000</code>-<code>$AF0F</code>, found through the address tables <code>$B57C</code>/<code>$B661</code>, drawn in the fighters' colours as the recorded frame further down this page has them: <code>$D025</code> black, <code>$D026</code> light red for the skin, and red, the colour of sprites 1-3 and 5-7 (<code>$D028</code>-<code>$D02A</code>, <code>$D02C</code>-<code>$D02E</code>), on the brown of the jungle floor so that the black outline shows.</p>
   </div>
   <p>A fighter on screen is nine hardware sprites: three rows of three. Each pose names the image for each of the nine places (<code>$B210</code>), and 73 poses make every stance and blow. The images are packed: any byte other than zero is stored as it is, and a run of zeros is stored as <code>$00</code> and a count (<code>unpack_sprite_frame</code>, <code>$1D3E</code>). All 229 images take 12 KB instead of 14.</p>
   <p>Only one facing is stored. To draw a fighter facing the other way, a second unpacker (<code>$1F58</code>) writes each row's three bytes in reverse order and passes every byte through a 256-byte table at <code>$BF00</code> that reverses its four pixel pairs. In multicolour a pixel is two bits wide, so the pairs move as units.</p>
@@ -96,12 +96,12 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
   if (!window.C64) { FIST.fail(new Error('This widget needs the site\'s shared script, lib/c64.js.')); return; }
   C64.drawFrame(document.getElementById('frame'), FRAME, 2);
   let G; try { G = await FIST.load(); } catch (e) { FIST.fail(e); return; }
-  const M = G.ram, gal = document.getElementById('gal'), cols = [0, 0, 12, 10];
+  const M = G.ram, gal = document.getElementById('gal'), cols = [0, 0, 2, 10];
   const frames = []; for (let i = 0; i < 229; i++) frames.push(FIST.unpack(M, i));
   let flip = false;
   function draw() {
     gal.textContent = '';
-    frames.forEach((f, i) => { const cv = document.createElement('canvas'); FIST.draw(cv, flip ? FIST.mirror(M, f) : f, 2, cols); cv.title = 'frame ' + i;
+    frames.forEach((f, i) => { const cv = document.createElement('canvas'); FIST.draw(cv, flip ? FIST.mirror(M, f) : f, 2, cols, C64.PAL[8]); cv.title = 'frame ' + i;
       cv.onclick = () => { document.getElementById('fk').textContent = 'frame ' + i + ' at ' + C64.hex(0x8000 + M[0xB661 + i] * 256 + M[0xB57C + i]); };
       gal.appendChild(cv); });
   }
