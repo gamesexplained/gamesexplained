@@ -20,9 +20,11 @@ Worth doing, found in the run and not done:
   6), scrolls 7 and 5 and the ending; then win the fights instead of
   switching them off. The route is on the Maps and solution tab;
   `solver/README.md` has the tools.
-- Maps: draw each room's scenery from the three scenery sets (`$1556`,
-  `$4A71`); the Maps and solution tab draws exits, walls, barriers and
-  encounters only.
+- Maps: the world map draws every room's scenery from the game's tables;
+  only the outdoor sets were checked against screenshots (rooms 94 and
+  100). Compare a set 0 room (caves, rooms 0-59) with the emulator, and
+  draw the barriers that a scroll or a kick removes in their broken state
+  once that is known (`restore_item_shapes`, `$0B2B`).
 - symbols.json: `$0491` and `$0492` are the blink count and the scroll
   icon of `blink_icons` (`$2D57`); their comments still say "meaning not
   traced".

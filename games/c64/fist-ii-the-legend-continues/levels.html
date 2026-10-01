@@ -34,22 +34,28 @@
   <p>The slide in room 77 is not the way in. Its exit at 222 carries the hero into a drop that lands him in room 79 at column 21, inside the crevice, and he falls on to room 82 (seen live).</p>
   <h3>The route, leg by leg</h3>
   <div id="legs"></div>
-  <p class="cap">Each step names the room, the column of the exit taken and how it is taken, from the exit's type: the stick up or down within two columns of a ladder, walking off an edge, or falling into a hole or a drop. Press a room to open it in the room explorer below. Where a room needs something more, a note says what.</p>
+  <p class="cap">Each step names the room, the column of the exit taken and how it is taken, from the exit's type: the stick up or down within two columns of a ladder, walking off an edge, or falling into a hole or a drop. Press a room to find it on the map below. Where a room needs something more, a note says what.</p>
 </section>
-<section id="rooms">
-  <p class="fig">Rooms</p>
-  <h2 class="t">Every room, its exits and what stands in the way</h2>
-  <p class="lede">Each room is a strip of floor up to 255 columns long that the screen scrolls along. Choose a room to see where its exits lead, and press an exit to follow it.</p>
+<section id="map">
+  <p class="fig">Map</p>
+  <h2 class="t">The whole world, drawn from the game</h2>
+  <p class="lede">All 120 rooms you can reach, each drawn from the scenery the game builds it from, and joined where their exits meet. Drag to move around, scroll or pinch to zoom, and press a room to see where its exits lead.</p>
   <div class="plate">
-    <div class="row"><select class="b" id="rm-pick" aria-label="Room"></select><button class="b" type="button" id="rm-back">Back</button><span class="note" id="rm-kv"></span></div>
-    <canvas id="rm" class="scr" style="max-width:100%" role="img" aria-label="The room as a strip of columns, with its walls, barriers, exits and encounters"></canvas>
-    <table class="t" id="rm-ex"></table>
-    <p class="cap">Drawn from the room's exit list at <code>$4AEC</code> (type, column, destination, arrival column), its item list through <code>$501E</code> (2-byte records are walls; 3-byte records with bit 7 set are barriers, their type in the low five bits) and the encounter records at <code>$E609</code> (flags, room, map position; flags <code>$60</code>-<code>$67</code> are the scrolls). The rooms' scenery is not drawn.</p>
+    <div class="row">
+      <select class="b" id="mp-pick" aria-label="Go to a room"></select>
+      <select class="b" id="mp-leg" aria-label="Show a leg of the route"></select>
+      <button class="b" type="button" id="mp-in" aria-label="Zoom in">+</button><button class="b" type="button" id="mp-out" aria-label="Zoom out">−</button><button class="b" type="button" id="mp-all">Whole map</button>
+    </div>
+    <canvas id="mp" style="width:100%;height:460px;display:block;border-radius:6px;touch-action:none;cursor:grab" role="img" aria-label="A map of every room in Fist II, drawn from the game's scenery data, with lines joining the exits"></canvas>
+    <div class="legend"><span><i style="background:#f2c230"></i>a scroll, where it lies (1-8)</span><span><i style="background:#a98bff"></i>a scroll's chamber (C1-C8)</span><span><i style="background:#7bd88f"></i>the start (S)</span><span><i style="background:#ff8c6b"></i>the ending (E)</span><span><i style="background:#ff5b4a;border-radius:50%"></i>an opponent or a hazard</span><span><i style="background:#ffd75e;height:3px;vertical-align:3px"></i>a ladder, stairs, hole or drop between rooms</span><span><i style="background:#59d3ff;height:4px;vertical-align:3px"></i>the route, numbered step by step</span></div>
+    <div id="mp-info"></div>
+    <p class="cap">Each room is drawn the way the game draws it: its objects from the scenery tables (<code>$5BA7</code>, <code>$6854</code> and <code>$7876</code> for the three sets), each object's character codes and size from the set's shape tables, coloured by the room's colour list (<code>paint_colour_ram</code>, <code>$16B8</code>), cut to the columns its walls let the screen show. Rooms from the dark scheme, which stay dark until scroll 7 is delivered, are drawn lit. The outdoor rooms were checked against screenshots taken in the emulator (rooms 94 and 100); the cave rooms of scenery set 0 were not. The game keeps no map of its own and the rooms' columns do not agree with each other, so the layout is a drawing: a ladder up puts a room above, a ladder down or a fall below, rooms you walk between sit side by side, and the exits' columns line up where there is space (<code>solver/maplayout.py</code>). Rooms 37, 66 and 67 have no way in and are left out.</p>
   </div>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="reference/fist-page.js"></script>
+<script src="reference/fist-map.js"></script>
 <script>
 (async function () {
   const ROUTE = {"legs":[[1,[[94,235,18,100],[100,98,10,101],[101,16,10,102],[102,16,10,103],[103,64,10,104],[104,172,9,103],[103,90,9,102],[102,90,9,101],[101,90,9,100],[100,130,9,25],[25,156,2,100],[100,224,10,101],[101,140,10,102]],[[102,136,9,101],[101,180,9,100],[100,220,9,25],[25,133,2,100],[100,134,10,101],[101,94,10,102],[102,94,10,103],[103,176,10,104],[104,60,9,103],[103,52,11,102],[101,54,9,100],[100,20,12,94],[94,3,19,5],[5,90,2,3],[3,3,4,68]]],[8,[[68,38,5,3],[3,128,5,90],[90,151,18,106],[106,133,9,17],[17,74,5,53],[53,85,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91],[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,90,2,44]],[[44,187,1,45],[45,3,4,19],[19,27,2,83],[83,183,15,12],[12,156,2,4],[4,128,5,84],[87,42,19,75]]],[2,[[75,38,5,87],[87,186,18,105],[105,133,9,15],[15,74,5,7],[7,85,1,56],[56,107,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91]],[[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,79,2,38],[38,3,4,69]]],[4,[[69,38,5,38],[38,85,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,92,15,0],[0,35,1,1],[1,107,1,2],[2,3,4,14],[14,27,2,112],[112,20,12,84]],[[84,151,18,112],[112,133,9,14],[14,74,5,2],[2,90,2,1],[1,133,2,0],[0,90,2,77],[77,38,13,78],[78,29,13,80],[80,34,21,83],[83,75,15,19],[19,74,5,45],[45,35,1,10],[10,65,4,71]]],[3,[[71,38,5,10],[10,90,2,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,74,15,13],[13,74,5,81],[81,210,18,113],[113,98,10,114],[114,20,10,115],[115,20,10,116],[116,174,9,115],[115,174,9,114],[114,136,9,113],[113,136,10,114]],[[114,92,9,113],[113,180,10,114],[114,178,10,115],[115,178,10,116],[116,16,9,115],[115,16,9,114],[114,54,9,113],[113,20,12,81],[81,3,19,13],[13,27,2,78],[78,133,14,77],[77,222,20,79],[82,146,20,85],[85,115,16,111],[111,18,9,110],[110,58,9,109],[109,18,9,108],[108,132,9,20],[20,189,2,108],[108,236,9,21],[21,79,4,70]]],[6,[[70,38,5,21],[21,189,2,108],[108,203,9,20],[20,27,2,108],[108,142,10,109],[109,190,10,110]],[[110,186,9,109],[109,138,9,108],[108,176,9,26],[26,227,1,27],[27,227,1,28],[28,243,3,53],[53,85,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91],[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,222,20,79],[82,146,20,85],[85,155,18,121],[121,133,9,9],[9,65,4,73]]],[7,[[73,38,5,9],[9,90,2,121],[121,20,12,85],[85,3,19,6],[6,142,3,7],[7,85,1,56],[56,107,1,54],[54,197,3,55],[55,115,1,22],[22,189,2,57],[57,133,2,58],[58,90,2,59],[59,234,5,91],[91,143,15,11],[11,156,2,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,222,20,79],[82,3,19,40],[40,3,4,41],[41,28,2,42],[42,235,5,43],[43,88,5,79],[79,171,18,117],[117,112,10,118],[118,144,10,119],[119,221,9,118]],[[118,226,10,119],[119,182,11,118],[117,224,9,16],[16,199,3,95],[95,74,17,96],[96,74,17,88],[88,40,19,74]]],[5,[[74,38,5,88],[88,176,18,107]],[[107,133,9,30],[30,196,3,29],[29,234,5,92],[92,192,20,93],[93,217,14,89],[89,138,14,86],[86,203,14,83],[83,75,15,19],[19,74,5,45],[45,115,1,46],[46,196,3,48],[48,35,1,64],[64,213,2,49],[49,235,2,50],[50,133,2,51],[51,235,2,52],[52,90,2,80],[80,214,14,78],[78,133,14,77],[77,222,20,79],[82,3,19,40],[40,3,4,41],[41,28,2,42],[42,235,5,43],[43,88,5,79],[79,171,18,117],[117,224,9,16],[16,27,2,31],[31,3,4,18],[18,27,2,32],[32,155,2,33],[33,89,2,34],[34,155,2,35],[35,89,2,36],[36,3,4,72]]]],"final":[[72,38,5,36],[36,84,1,35],[35,35,1,34],[34,134,2,97],[97,71,14,98],[98,63,14,99],[99,63,14,76],[76,10,17,60],[60,69,3,61],[61,69,3,62],[62,69,3,63],[63,69,3,122]]};
@@ -105,46 +111,36 @@
   ROUTE.legs.forEach(([sn, p1, p2], i) => {
     const st = LIVE[sn] ? 'driven in the emulator' : 'from the search, not driven';
     html += `<details${i === 0 ? ' open' : ''}><summary><b>${i + 1}. Scroll ${sn}</b>: to room ${p1.length ? p1[p1.length - 1][3] : '-'}, then chamber ${67 + sn} <span class="note">(${st})</span></summary>`
-      + '<p>To the scroll:</p>' + steps(p1, sn) + `<p>To chamber ${67 + sn}:</p>` + steps(p2) + '</details>';
+      + `<p>To the scroll <button class="b" type="button" data-leg="${i}a">Show on the map</button></p>` + steps(p1, sn) + `<p>To chamber ${67 + sn} <button class="b" type="button" data-leg="${i}b">Show on the map</button></p>` + steps(p2) + '</details>';
   });
-  html += '<details><summary><b>9. The ending</b>: through the volcano to room 122 <span class="note">(from the search, not driven)</span></summary>' + steps(ROUTE.final) + '</details>';
+  html += '<details><summary><b>9. The ending</b>: through the volcano to room 122 <span class="note">(from the search, not driven)</span></summary>' + '<p><button class="b" type="button" data-leg="end">Show on the map</button></p>' + steps(ROUTE.final) + '</details>';
   legs.innerHTML = html;
-  // the room explorer
-  const pick = document.getElementById('rm-pick'), cv = document.getElementById('rm'), W = 1024, H = 150, ctx = C64.canvas(cv, W, H);
-  for (let r = 0; r < 123; r++) pick.insertAdjacentHTML('beforeend', `<option value="${r}">${label(r)}</option>`);
-  let cur = 94, hist = [], arrive = null;
-  const X = c => 12 + c * (W - 24) / 255;
-  function show(r, col) {
-    cur = r; pick.value = r; arrive = col == null ? null : col;
-    ctx.fillStyle = '#10141c'; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#3b4252'; ctx.fillRect(X(0), 100, X(255) - X(0), 6);
-    ctx.font = '11px IBM Plex Mono, monospace';
-    for (let c = 0; c <= 255; c += 32) { ctx.fillStyle = '#6b7280'; ctx.fillText(c, X(c) - 6, 140); }
-    const its = items(r);
-    for (const it of its) {
-      if (it.wall) { ctx.fillStyle = '#c9ccd3'; ctx.fillRect(X(it.col) - 2, 40, 4, 60); continue; }
-      if (!it.bar) continue;
-      ctx.fillStyle = it.t === 3 ? '#9a7b4f' : it.t === 7 ? '#3f8f3f' : '#b0533c'; ctx.fillRect(X(it.col) - 4, 55, 8, 45);
-      ctx.fillStyle = '#e5e7eb'; ctx.fillText(it.t === 3 ? 'scroll 1' : it.t === 7 ? 'scroll 4' : 'kick', X(it.col) - 18, 50);
-    }
-    ex[r].forEach(([t, col, v, ac]) => {
-      const x = X(col);
-      if ([11, 16, 17].includes(t)) { const w = t === 11 ? 3 : t === 16 ? 7 : (area(r) === 13 ? 11 : 11); ctx.fillStyle = '#10141c'; ctx.fillRect(X(col), 99, X(col + w) - X(col), 9); }
-      ctx.fillStyle = '#e8c547'; ctx.beginPath(); ctx.moveTo(x, 112); ctx.lineTo(x - 6, 124); ctx.lineTo(x + 6, 124); ctx.fill();
-      ctx.fillText('→' + v, x - 12, 30 - (ex[r].indexOf(ex[r].find(e => e[1] === col)) % 2) * 12 + 12);
-    });
-    enc.filter(e => e.room === r).forEach(e => { const x = X(e.pos), s = (e.f & 0x60) === 0x60;
-      ctx.fillStyle = s ? '#5fd068' : '#ff6b5b'; ctx.beginPath(); ctx.arc(x, 88, 6, 0, 7); ctx.fill();
-      ctx.fillStyle = '#e5e7eb'; ctx.fillText(s ? 'scroll ' + ((e.f & 7) + 1) : 'fight', x - 14, 76); });
-    if (arrive != null) { ctx.fillStyle = '#fff'; ctx.fillRect(X(arrive) - 1, 34, 2, 72); ctx.fillText('you arrive', X(arrive) + 4, 40); }
-    document.getElementById('rm-kv').textContent = label(r) + ', area ' + area(r) + (NOTE[r] ? ': ' + NOTE[r] : '');
-    document.getElementById('rm-ex').innerHTML = '<tr><th>Column</th><th>How</th><th>Leads to</th></tr>' + ex[r].map(([t, col, v, ac]) =>
-      `<tr><td class="n">${col}</td><td>${how(t)}</td><td>${v < 123 ? `<button class="b" type="button" data-go="${v}" data-col="${ac}">${label(v)}</button>, column ${ac}` : 'nowhere (' + v + ')'}</td></tr>`).join('');
+  // the map
+  const LAYOUT = {"0":[1593,-5],"1":[1725,-2],"2":[1742,-1],"3":[5,-1],"4":[1280,-3],"5":[0,0],"6":[881,-1],"7":[754,-3],"8":[1742,1],"9":[1247,0],"10":[1010,-3],"11":[283,3],"12":[1161,-2],"13":[1519,-4],"14":[1669,-2],"15":[685,-4],"16":[-275,0],"17":[374,1],"18":[-405,0],"19":[1171,-2],"20":[109,-3],"21":[100,-2],"22":[759,1],"23":[423,0],"24":[382,1],"25":[336,1],"26":[113,-3],"27":[105,-2],"28":[115,1],"29":[252,2],"30":[195,3],"31":[-332,-1],"32":[1688,2],"33":[1990,-4],"34":[1664,-5],"35":[1652,-7],"36":[1657,-8],"38":[1871,-3],"39":[686,3],"40":[791,2],"41":[674,1],"42":[823,0],"43":[966,1],"44":[1060,-5],"45":[1157,-4],"46":[1292,-2],"47":[1256,-5],"48":[1710,-3],"49":[1136,2],"50":[1264,0],"51":[1170,-1],"52":[1330,-2],"53":[364,-2],"54":[527,-1],"55":[671,-2],"56":[706,-2],"57":[841,0],"58":[102,3],"59":[5,2],"60":[1916,-9],"61":[1955,-10],"62":[1995,-11],"63":[2029,-12],"64":[1877,-2],"65":[1737,0],"68":[-32,-2],"69":[1710,-5],"70":[63,-3],"71":[1035,-4],"72":[1620,-9],"73":[1424,-1],"74":[-35,1],"75":[410,-5],"76":[1877,-10],"77":[1547,-6],"78":[1456,-5],"79":[1056,1],"80":[1275,-4],"81":[1595,-4],"82":[921,2],"83":[1111,-3],"84":[1410,-3],"85":[1047,-1],"86":[939,-2],"87":[411,-5],"88":[-32,1],"89":[838,-1],"90":[135,-1],"91":[241,2],"92":[488,2],"93":[659,0],"94":[102,0],"95":[-121,-1],"96":[-64,0],"97":[1754,-7],"98":[1794,-8],"99":[1826,-9],"100":[339,0],"101":[463,-1],"102":[467,-2],"103":[471,-3],"104":[475,-4],"105":[599,-5],"106":[288,-1],"107":[146,1],"108":[172,-4],"109":[176,-5],"110":[180,-6],"111":[1067,0],"112":[1563,-3],"113":[1807,-4],"114":[1851,-5],"115":[1855,-6],"116":[1859,-7],"117":[1229,1],"118":[1377,0],"119":[1433,-1],"120":[1305,-6],"121":[1204,-1],"122":[2020,-13]};
+  const info = document.getElementById('mp-info'), pick = document.getElementById('mp-pick'), legSel = document.getElementById('mp-leg');
+  const M = FISTMAP.create(G, { canvas: document.getElementById('mp'), layout: LAYOUT, label, onSelect: r => { pick.value = r; describe(r); } });
+  for (let r = 0; r < 123; r++) if (r in LAYOUT) pick.insertAdjacentHTML('beforeend', `<option value="${r}">${label(r)}</option>`);
+  legSel.insertAdjacentHTML('beforeend', '<option value="">No route shown</option>');
+  ROUTE.legs.forEach(([sn], i) => { legSel.insertAdjacentHTML('beforeend', `<option value="${i}a">Leg ${i + 1}: to scroll ${sn}</option><option value="${i}b">Leg ${i + 1}: scroll ${sn} to chamber ${67 + sn}</option>`); });
+  legSel.insertAdjacentHTML('beforeend', '<option value="end">Leg 9: to the ending</option>');
+  function hopsOf(v) { if (v === '') return null; if (v === 'end') return ROUTE.final; const leg = ROUTE.legs[parseInt(v)]; return v.endsWith('a') ? leg[1] : leg[2]; }
+  function describe(r) {
+    const bars = items(r).filter(it => it.bar && (it.t === 3 || it.t === 7 || it.t === 1));
+    info.innerHTML = `<p class="kv"><b>${label(r)}</b>, area ${area(r)}${NOTE[r] ? ': ' + NOTE[r] : ''}</p>`
+      + (bars.length ? '<p class="kv">' + bars.map(it => `column ${it.col}: ${it.t === 3 ? 'a stone heap, broken once scroll 1 is delivered' : it.t === 7 ? 'a tree, kicked down once scroll 4 is delivered' : 'a barrier that breaks to any attack'}`).join('; ') + '</p>' : '')
+      + '<table class="t"><tr><th>Column</th><th>How</th><th>Leads to</th></tr>' + ex[r].map(([t, col, v, ac]) =>
+      `<tr><td class="n">${col}</td><td>${how(t)}</td><td>${v in LAYOUT ? `<button class="b" type="button" data-go="${v}" data-col="${ac}">${label(v)}</button>, column ${ac}` : v < 123 ? label(v) : 'nowhere (' + v + ')'}</td></tr>`).join('') + '</table>';
   }
-  document.getElementById('rm-ex').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { hist.push(cur); show(+b.dataset.go, +b.dataset.col); } });
-  document.getElementById('rm-back').onclick = () => { if (hist.length) show(hist.pop()); };
-  pick.onchange = () => { hist.push(cur); show(+pick.value); };
-  document.addEventListener('click', e => { const b = e.target.closest('[data-room]'); if (b) { hist.push(cur); show(+b.dataset.room); document.getElementById('rooms').scrollIntoView({ behavior: 'smooth' }); } });
-  show(94);
+  info.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) M.focus(+b.dataset.go, +b.dataset.col); });
+  pick.onchange = () => M.focus(+pick.value);
+  legSel.onchange = () => M.showRoute(hopsOf(legSel.value));
+  document.getElementById('mp-in').onclick = () => M.zoom(1.6);
+  document.getElementById('mp-out').onclick = () => M.zoom(1 / 1.6);
+  document.getElementById('mp-all').onclick = () => M.fitAll();
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-room]'); if (b) { document.getElementById('map').scrollIntoView({ behavior: 'smooth' }); M.focus(+b.dataset.room); return; }
+    const l = e.target.closest('[data-leg]'); if (l) { e.preventDefault(); legSel.value = l.dataset.leg; document.getElementById('map').scrollIntoView({ behavior: 'smooth' }); M.showRoute(hopsOf(l.dataset.leg)); }
+  });
+  M.fitAll(); M.select(94); describe(94); pick.value = 94;
 })();
 </script>

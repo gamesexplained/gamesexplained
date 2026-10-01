@@ -7,6 +7,12 @@ build copies only the pages, `listing.json`, `symbols.json` and
 `reference/`. The game facts it relies on are in `../facts.md`, "Towards
 a solution"; this file is how to pick the work up.
 
+## The world map
+
+`maplayout.py` places every room for the map on the Maps and solution
+tab and prints the layout; `levels.html` carries a copy as `LAYOUT`.
+Run it again if the rules change, and paste the output over the old one.
+
 ## The crevice (found 1 October 2026, later session)
 
 The blocker below is solved on paper: room 43's exit at 88 arrives in

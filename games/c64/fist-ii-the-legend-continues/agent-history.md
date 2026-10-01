@@ -56,3 +56,12 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   exits and the scroll-6 narrowing at `$067B` together, prompted by the
   contributor's scan of a hand-drawn map whose key says scroll 6 crosses
   the crevice. The search now completes; the new legs are not driven.
+
+- 1 October 2026 (same session): the contributor found the room explorer
+  (a bar per room with its exits) of no use, and pointed at a hand-drawn
+  map of the whole world. The tab now draws every room's scenery from the
+  game's own tables, checked against the jungle and stone-wall
+  screenshots, laid out by `solver/maplayout.py`. A layout from the
+  exits' columns alone overlapped badly, because the rooms' columns do
+  not agree with each other; placing rooms row by row and moving them
+  sideways or a row on when the spot is taken gave a readable drawing.

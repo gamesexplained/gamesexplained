@@ -110,6 +110,27 @@ the loader and the start-up (`$C459`, `$C469`), and stays `$15` in play
 - Per-screen exit lists at `$4AEC`: type, trigger column, destination
   screen and column.
 - A zone sets the tune, the border colour, sprite priority and scenery.
+- **Drawing a room** (`setup_room_data` `$0FEC`, `draw_room` `$1556`):
+  `$0F68`[area] objects, their X, Y and type from three lists whose
+  offsets are words indexed by twice the area within its set (set 0 base
+  `$5BD7`, lists `$5BA7`/`$5BB7`/`$5BC7`; set 1 `$68D8`,
+  `$6854`/`$6880`/`$68AC`; set 2 `$78E2`, `$7876`/`$789A`/`$78BE`). A
+  type below `$80` is a shape: a block of screen codes, width by height,
+  found through the set's tables at `$0F32` (`load_zone_tables` `$124A`).
+  A type `$80` and up is a group of shapes, each with its own column and
+  row offset; `$FF` is an empty slot. Rows stop at 20. The character set
+  is `$D800`, `$D000` or `$E000` by set (`$0E40` into `$D018`, `$3BFD`).
+  Colours: a list of rows per room or area, each byte giving rows (high
+  five bits) and colour (low three, plus 8 for multicolour), with the
+  three shared colours from the set's tables or, in set 0, from a scheme
+  chosen by area or by the room's nibble at `$0E52`. Scheme 8 is dark,
+  and becomes scheme 2 once scroll 7 is delivered (`$10D7`-`$10EA`). The
+  chambers (area 6) get extra colour cells painted (`$1703`).
+  *Checked*: drawn this way from listing.json, the start of room 94 and
+  the stone wall of room 100 match the screenshots in `reference/`.
+- **How far the screen scrolls**: a wall stops the view at its column
+  less `$0ABD`[type] on the left and plus `$0ABD`[type] on the right, less
+  40 for the scroll position (`find_room_barriers` `$087A`).
 
 ## Sound
 
