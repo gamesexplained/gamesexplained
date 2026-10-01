@@ -14,7 +14,7 @@
 <section id="mine">
   <p class="fig">The mine</p>
   <h2 class="t">One map, seven kilobytes</h2>
-  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier, and switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier, or pick an object, a use or a danger from the list to go straight to it. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
   <div class="plate">
     <div class="row">
       <button class="b" type="button" id="ob" aria-pressed="true">Objects</button>
@@ -24,10 +24,14 @@
       <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
       <span class="note" id="mappos"></span>
     </div>
+    <div class="row">
+      <select class="b" id="pick" aria-label="Go to"><option value="">Choose an object, a use or a danger</option></select>
+      <button class="b" type="button" id="zm" aria-pressed="false">Zoom ×4</button>
+    </div>
     <canvas id="map" class="scr" style="max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
     <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
-    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label.</p>
+    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
     <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code> and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. Parts of the mine swap in their own shapes for sixteen characters (<code>zone_graphics</code>); this picture draws every part with the starting cavern's.</p>
   </div>
   <h3>What the objects are for</h3>
@@ -65,6 +69,7 @@
   const M = G.ram, full = DW.drawMine(M), S = 4;
   const mv = document.getElementById('map'), mctx = C64.canvas(mv, full.width / S, full.height / S);
   const zv = document.getElementById('zoom'), zctx = C64.canvas(zv, 768, 384);
+  let Z = 2, sel = null;                         // magnification, and the mark chosen from the list
   const Y = y => full.height - y;
   const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
   const pts = [...Array(9)].map((_, i) => [M[0x9059 + i] << 8 | M[0x9062 + i], Y(M[0x906B + i] << 8 | M[0x9074 + i])]);
@@ -88,35 +93,51 @@
     if (b === 0x74 || b === 0x51) dangers.push({ at, t: 'stalagmite: fatal' });
     else if (b === 0x3F && r * 32 >= 0x200) dangers.push({ at, t: 'bad air: hold the AIR MASK' });
   }
+  for (const [list, kind] of [[objs, 'Objects'], [uses, 'Where they are used'], [dangers, 'Dangers']]) {
+    const seen = {}, total = {};
+    for (const k of list) total[k.t] = (total[k.t] || 0) + 1;
+    for (const k of list) { k.kind = kind; seen[k.t] = (seen[k.t] || 0) + 1; k.label = total[k.t] > 1 && !/bolt/.test(k.t) ? k.t + ' (' + seen[k.t] + ' of ' + total[k.t] + ')' : k.t; }
+  }
+  const all = [...objs, ...uses, ...dangers], pick = document.getElementById('pick');
+  for (const kind of ['Objects', 'Where they are used', 'Dangers']) {
+    const g = document.createElement('optgroup'); g.label = kind;
+    all.forEach((k, i) => { if (k.kind === kind) { const o = document.createElement('option'); o.value = i; o.textContent = k.label; g.append(o); } });
+    pick.append(g);
+  }
   function marks(list, colour, round) {
     for (const k of list) {
       const [x, y] = k.at; mctx.fillStyle = colour; mctx.strokeStyle = '#000'; mctx.lineWidth = 1.5;
       mctx.beginPath(); if (round) mctx.arc(x / S, y / S, 4.5, 0, 7); else mctx.rect(x / S - 4.5, y / S - 4.5, 9, 9); mctx.fill(); mctx.stroke();
-      const zx = (x - view[0]) * 2, zy = (y - view[1]) * 2;
+      const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
       if (zx > -40 && zx < 808 && zy > -20 && zy < 404) {
-        zctx.strokeStyle = colour; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 12, 0, 7); zctx.stroke();
+        zctx.strokeStyle = colour; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 6 * Z, 0, 7); zctx.stroke();
         zctx.font = 'bold 14px IBM Plex Mono, monospace'; zctx.lineWidth = 4; zctx.strokeStyle = '#000'; zctx.strokeText(k.t, zx + 16, zy + 5); zctx.fillStyle = colour; zctx.fillText(k.t, zx + 16, zy + 5);
       }
     }
   }
-  const centre = ([x, y]) => view = [Math.min(full.width - 384, Math.max(0, x - 192)), Math.min(full.height - 192, Math.max(0, y - 120))];
+  const centre = ([x, y]) => view = [Math.min(full.width - 768 / Z, Math.max(0, x - 384 / Z)), Math.min(full.height - 384 / Z, Math.max(0, y - 192 / Z))];
   centre(start);
   function cross(ctx, x, y, s, c) { ctx.fillStyle = c; ctx.fillRect(x - 4 * s, y - s / 2, 8 * s, s); ctx.fillRect(x - s / 2, y - 4 * s, s, 8 * s); }
   function draw() {
     mctx.imageSmoothingEnabled = true; mctx.drawImage(full, 0, 0, mv.width, mv.height);
-    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 384 / S, 192 / S);
+    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 768 / Z / S, 384 / Z / S);
     cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
-    zctx.drawImage(full, view[0], view[1], 384, 192, 0, 0, 768, 384);
+    zctx.imageSmoothingEnabled = false; zctx.drawImage(full, view[0], view[1], 768 / Z, 384 / Z, 0, 0, 768, 384);
     if (showDg) marks(dangers, '#ff6b5b', false);
     if (showOb) marks(objs, '#e8c547', true);
     if (showUs) marks(uses, '#5fd068', false);
     if (showRp) pts.forEach(([x, y], i) => {
       mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill();
       mctx.fillStyle = '#000'; mctx.font = 'bold 9px IBM Plex Mono, monospace'; mctx.fillText(i, x / S - 3, y / S + 3);
-      const zx = (x - view[0]) * 2, zy = (y - view[1]) * 2;
+      const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
       if (zx > -20 && zx < 788 && zy > -20 && zy < 404) { zctx.strokeStyle = '#fff'; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 14, 0, 7); zctx.stroke(); zctx.fillStyle = '#fff'; zctx.font = 'bold 16px IBM Plex Mono, monospace'; zctx.fillText('restart ' + i, zx + 18, zy + 5); }
     });
-    const col = view[0] / 32 | 0, row = 55 - ((view[1] + 191) / 32 | 0);
+    if (sel) {                                   // the chosen mark: a white ring on both maps, drawn last
+      const [x, y] = sel.at, zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
+      mctx.strokeStyle = '#fff'; mctx.lineWidth = 2.5; mctx.beginPath(); mctx.arc(x / S, y / S, 9, 0, 7); mctx.stroke();
+      zctx.strokeStyle = '#fff'; zctx.lineWidth = 4; zctx.beginPath(); zctx.arc(zx, zy, 10 * Z, 0, 7); zctx.stroke();
+    }
+    const col = view[0] / 32 | 0, row = 55 - ((view[1] + 384 / Z - 1) / 32 | 0);
     document.getElementById('mappos').textContent = 'block column ' + col + ', map row ' + row + ' at ' + C64.hex(0xFB80 - 0x80 * row);
   }
   function at(e) { const b = mv.getBoundingClientRect(); centre([(e.clientX - b.left) * mv.width / b.width * S, (e.clientY - b.top) * mv.height / b.height * S]); draw(); }
@@ -129,7 +150,31 @@
     const b = document.getElementById(id);
     b.onclick = () => { const v = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', v); set(v); draw(); };
   }
-  document.getElementById('home').onclick = () => { centre(start); draw(); };
+  document.getElementById('home').onclick = () => { sel = null; pick.value = ''; centre(start); draw(); };
+  // choosing a mark: switch its layer on if it was off, centre the magnifier on it and ring it
+  const layer = { 'Objects': 'ob', 'Where they are used': 'us', 'Dangers': 'dg' };
+  function choose(k) {
+    sel = k; pick.value = k ? all.indexOf(k) : '';
+    if (!k) { draw(); return; }
+    const b = document.getElementById(layer[k.kind]);
+    if (b.getAttribute('aria-pressed') !== 'true') b.click();
+    const c = k.at[0] / 32 | 0, r = (full.height - k.at[1]) / 32 | 0;
+    document.getElementById('rpkv').textContent = k.label + ': block column ' + c + ', map row ' + r + '.';
+    centre(k.at); draw();
+  }
+  pick.onchange = () => choose(pick.value === '' ? null : all[+pick.value]);
+  const zm = document.getElementById('zm');
+  zm.onclick = () => { Z = Z === 2 ? 4 : 2; zm.setAttribute('aria-pressed', Z === 4);
+    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + (Z === 4 ? 'four' : 'twice') + ' times the C64\'s pixels');
+    centre(sel ? sel.at : [view[0] + 768 / (6 - Z) / 2, view[1] + 384 / (6 - Z) / 2]); draw(); };
+  // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
+  mv.addEventListener('click', e => {
+    const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;
+    const shown = all.filter(k => ({ 'Objects': showOb, 'Where they are used': showUs, 'Dangers': showDg })[k.kind]);
+    let best = null, bd = 6 * S;
+    for (const k of shown) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
+    if (best) choose(best);
+  });
   draw();
 })();
 </script>
