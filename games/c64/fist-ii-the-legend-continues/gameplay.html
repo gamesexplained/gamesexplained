@@ -18,7 +18,7 @@
   <p class="eyebrow">Commodore 64 · 1986 · Beam Software</p>
   <h1>Fist II: The Legend Continues</h1>
   <p class="sub">How the game is played: the quest, the joystick, the energy bar, the eight scrolls and the enemies who come back, from the manual and from the code.</p>
-  <p class="codekey">Words underlined with dots open the code they describe on the <a href="source.html">Source code</a> tab.</p>
+  <p class="codekey">Each address, like <code>$0A59</code>, opens its code on the <a href="source.html">Source code</a> tab.</p>
 </header>
 <main class="wrap">
 <section id="quest">
@@ -43,7 +43,7 @@
       <div>rear sweep</div><div>sweep</div><div>low kick</div></div></div>
   </div>
   <p>To turn round, start a roundhouse and let go of the button. Blocking is automatic: step back just as the opponent is about to land a blow, and the hero blocks high or low as the blow needs, so holding a block does not work. The kneeling punch, "the true Exploding Fist punch", is a crouch followed by a push forward. RESTORE pauses the game and F5 ends it.</p>
-  <p>In the code, <a class="cl" href="source.html#33C3">a table turns the joystick position and the fire button into a move</a>, and <a class="cl" href="source.html#33E3">a second says which moves may follow which</a>. The forward somersault is how the hero clears a hole or a drop: it carries him about ten columns.</p>
+  <p>In the code, a table turns the joystick position and the fire button into a move (<code>$33C3</code>), and a second says which moves may follow which (<code>$33E3</code>). The forward somersault is how the hero clears a hole or a drop: it carries him about ten columns.</p>
 </section>
 <section id="chi">
   <p class="fig">Chi</p>
@@ -52,13 +52,13 @@
   <figure class="shot" style="margin-top:0"><img src="reference/fight-score-rises.png" width="384" height="272" alt="The hero kicking the opponent; the score reads 300"><figcaption>A kick lands and the score goes up. Captured in an emulator.</figcaption></figure>
   <table class="t" style="margin-top:20px">
     <tr><th>What</th><th>How it works</th></tr>
-    <tr><td>Starting energy</td><td><a class="cl" href="source.html#26D6">47</a>, which is also the bar's limit to begin with</td></tr>
-    <tr><td>Getting it back</td><td><a class="cl" href="source.html#2D14">one point every 128 frames</a>, about 2.5 seconds, up to the limit</td></tr>
-    <tr><td>Meditating</td><td><a class="cl" href="source.html#396F">fills the bar and sets its limit to 47 + 4 for every two opponents beaten</a> in the whole game, at most 127</td></tr>
-    <tr><td>Lives</td><td>one to start with, <a class="cl" href="source.html#2CCD">one more for each scroll delivered</a>, <a class="cl" href="source.html#353E">one lost at each defeat</a>; <a class="cl" href="source.html#2D33">the hero starts again at the last temple he meditated in</a></td></tr>
-    <tr><td>Hazards</td><td><a class="cl" href="source.html#2A57">cost 2 or 10 energy</a>; <a class="cl" href="source.html#2A87">a blow at the right moment knocks one away</a></td></tr>
+    <tr><td>Starting energy</td><td>47 (<code>$26D6</code>), which is also the bar's limit to begin with</td></tr>
+    <tr><td>Getting it back</td><td>one point every 128 frames (<code>$2D14</code>), about 2.5 seconds, up to the limit</td></tr>
+    <tr><td>Meditating</td><td>fills the bar and sets its limit to 47 + 4 for every two opponents beaten in the whole game, at most 127 (<code>$396F</code>)</td></tr>
+    <tr><td>Lives</td><td>one to start with, one more for each scroll delivered (<code>$2CCD</code>), one lost at each defeat (<code>$353E</code>); the hero starts again at the last temple he meditated in (<code>$2D33</code>)</td></tr>
+    <tr><td>Hazards</td><td>cost 2 or 10 energy (<code>$2A57</code>); a blow at the right moment knocks one away (<code>$2A87</code>)</td></tr>
   </table>
-  <p>The manual says the limit grows "depending on the number of opponents you have defeated since your last meditation". The code counts every defeat since the game began instead: <a class="cl" href="source.html#048C">the counter</a> is <a class="cl" href="source.html#2135">cleared only when a game starts</a>, and <a class="cl" href="source.html#396F">meditating reads it</a> without clearing it. So the limit reaches 127 after twenty defeats and stays there, wherever the hero meditates. The counter itself <a class="cl" href="source.html#352D">stops at 31</a>.</p>
+  <p>The manual says the limit grows "depending on the number of opponents you have defeated since your last meditation". The code counts every defeat since the game began instead: the counter (<code>$048C</code>) is cleared only when a game starts (<code>$2135</code>), and meditating reads it (<code>$396F</code>) without clearing it. So the limit reaches 127 after twenty defeats and stays there, wherever the hero meditates. The counter itself stops at 31 (<code>$352D</code>).</p>
 </section>
 <section id="trigrams">
   <p class="fig">Scrolls</p>
@@ -66,16 +66,16 @@
   <p class="lede">Each scroll carries a trigram, three lines whole or broken, and the manual gives each a hint "as to how and when their knowledge can be used". The status band shows the trigram of every scroll found. Matching the game's icons to the manual's drawings puts a name to each scroll, and the code says what each one actually does.</p>
   <table class="t" id="tri-table">
     <tr><th>Scroll</th><th>Trigram</th><th>The manual's hint</th><th>What the code does once it is delivered</th></tr>
-    <tr><td>1</td><td><canvas class="tri" data-scroll="0"></canvas> Ch'ien</td><td>"associated with strength"</td><td><a class="cl" href="source.html#0A59">stone heaps can be broken</a></td></tr>
-    <tr><td>2</td><td><canvas class="tri" data-scroll="1"></canvas> Sun</td><td>"the ability to pass through inimicable elements"</td><td><a class="cl" href="source.html#36DE">opens the exit from room 52 to room 80</a>, on the way to the river</td></tr>
-    <tr><td>3</td><td><canvas class="tri" data-scroll="2"></canvas> Kan</td><td>"the trigram of danger ... it can also afford protection"</td><td>the hero can leave room 76, below the volcano, alive: <a class="cl" href="source.html#0649">without it his energy drops to 0</a></td></tr>
-    <tr><td>4</td><td><canvas class="tri" data-scroll="3"></canvas> Chen</td><td>"can awaken the dead, move the immovable"</td><td><a class="cl" href="source.html#0A44">trees can be kicked down</a></td></tr>
-    <tr><td>5</td><td><canvas class="tri" data-scroll="4"></canvas> K'un</td><td>"earthly strength. It may bend but cannot be broken"</td><td><a class="cl" href="source.html#27AD">a horde of opponents ends after the one being fought</a></td></tr>
-    <tr><td>6</td><td><canvas class="tri" data-scroll="5"></canvas> Ken</td><td>"patient resting, of calm, of poise"</td><td><a class="cl" href="source.html#064C">the crevice in room 79 narrows</a> enough to somersault across</td></tr>
-    <tr><td>7</td><td><canvas class="tri" data-scroll="6"></canvas> Li</td><td>"an eternal source of light, even in the darkest of dark"</td><td><a class="cl" href="source.html#10E5">one zone's dark colour scheme is swapped for a lit one</a></td></tr>
-    <tr><td>8</td><td><canvas class="tri" data-scroll="7"></canvas> Tui</td><td>"the bringer of health, of well-being in the presence of malignance"</td><td>the poison rooms, 64-67, <a class="cl" href="source.html#2CE4">stop draining the hero</a></td></tr>
+    <tr><td>1</td><td><canvas class="tri" data-scroll="0"></canvas> Ch'ien</td><td>"associated with strength"</td><td>stone heaps can be broken (<code>$0A59</code>)</td></tr>
+    <tr><td>2</td><td><canvas class="tri" data-scroll="1"></canvas> Sun</td><td>"the ability to pass through inimicable elements"</td><td>opens the exit from room 52 to room 80 (<code>$36DE</code>), on the way to the river</td></tr>
+    <tr><td>3</td><td><canvas class="tri" data-scroll="2"></canvas> Kan</td><td>"the trigram of danger ... it can also afford protection"</td><td>the hero can leave room 76, below the volcano, alive: without it his energy drops to 0 (<code>$0649</code>)</td></tr>
+    <tr><td>4</td><td><canvas class="tri" data-scroll="3"></canvas> Chen</td><td>"can awaken the dead, move the immovable"</td><td>trees can be kicked down (<code>$0A44</code>)</td></tr>
+    <tr><td>5</td><td><canvas class="tri" data-scroll="4"></canvas> K'un</td><td>"earthly strength. It may bend but cannot be broken"</td><td>a horde of opponents ends after the one being fought (<code>$27AD</code>)</td></tr>
+    <tr><td>6</td><td><canvas class="tri" data-scroll="5"></canvas> Ken</td><td>"patient resting, of calm, of poise"</td><td>the crevice in room 79 narrows enough to somersault across (<code>$064C</code>)</td></tr>
+    <tr><td>7</td><td><canvas class="tri" data-scroll="6"></canvas> Li</td><td>"an eternal source of light, even in the darkest of dark"</td><td>one zone's dark colour scheme is swapped for a lit one (<code>$10E5</code>)</td></tr>
+    <tr><td>8</td><td><canvas class="tri" data-scroll="7"></canvas> Tui</td><td>"the bringer of health, of well-being in the presence of malignance"</td><td>the poison rooms, 64-67, stop draining the hero (<code>$2CE4</code>)</td></tr>
   </table>
-  <p class="cap">The icons are drawn from <a class="cl" href="source.html#E800">the game's status-band font</a>, two characters per scroll from <a class="cl" href="source.html#054B">two small tables</a>, top line first. <a class="cl" href="source.html#0405">Eight bytes record the scrolls</a>: 1 when a scroll is found, $80 once it is delivered. The manual lists the trigrams in a different order (Ch'ien, Sun, Chen, Kan, Ken, K'un, Li, Tui); the names here follow the lines, not the list. Where each scroll lies and the way to its temple are on the <a href="levels.html#gives">Maps and solution</a> tab.</p>
+  <p class="cap">The icons are drawn from the game's status-band font (<code>$E800</code>), two characters per scroll from two small tables (<code>$054B</code>), top line first. Eight bytes record the scrolls (<code>$0405</code>): 1 when a scroll is found, $80 once it is delivered. The manual lists the trigrams in a different order (Ch'ien, Sun, Chen, Kan, Ken, K'un, Li, Tui); the names here follow the lines, not the list. Where each scroll lies and the way to its temple are on the <a href="levels.html#gives">Maps and solution</a> tab.</p>
 </section>
 <section id="enemies">
   <p class="fig">Enemies</p>
@@ -83,25 +83,25 @@
   <p class="lede">The manual names peasant soldiers, warrior guards, ninjas who throw stars, masked shoguns, assassins who "cannot be outrun", and mud warriors from the caves, with snakes, panthers and bats besides. Fighting is optional: "you need not fight them to continue your exploration ... but you will not gain beneficial experience".</p>
   <table class="t">
     <tr><th>What</th><th>Rule</th></tr>
-    <tr><td>An opponent's energy</td><td><a class="cl" href="source.html#274E">a random 31 to 63, and 64 more once the hero has beaten 16</a></td></tr>
-    <tr><td>Points</td><td><a class="cl" href="source.html#051D">100 for each blow landed, times the move's value</a></td></tr>
-    <tr><td>A horde</td><td>at some places, <a class="cl" href="source.html#27A1">beating one opponent brings on the next</a>, <a class="cl" href="source.html#2875">up to ten in all</a>, until scroll 5 is delivered</td></tr>
-    <tr><td>Running away</td><td><a class="cl" href="source.html#3522">an opponent counts as beaten only when his energy runs out</a>; one left behind is waiting there next time</td></tr>
+    <tr><td>An opponent's energy</td><td>a random 31 to 63, and 64 more once the hero has beaten 16 (<code>$274E</code>)</td></tr>
+    <tr><td>Points</td><td>100 for each blow landed, times the move's value (<code>$051D</code>)</td></tr>
+    <tr><td>A horde</td><td>at some places, beating one opponent brings on the next (<code>$27A1</code>), up to ten in all (<code>$2875</code>), until scroll 5 is delivered</td></tr>
+    <tr><td>Running away</td><td>an opponent counts as beaten only when his energy runs out (<code>$3522</code>); one left behind is waiting there next time</td></tr>
   </table>
-  <p>Opponents fight with attack combinations, short scripts of moves chosen from <a class="cl" href="source.html#3288">a jump table</a> and a random number. How a blow is judged to land is <a href="#blows">below</a>.</p>
+  <p>Opponents fight with attack combinations, short scripts of moves chosen from a jump table (<code>$3288</code>) and a random number. How a blow is judged to land is <a href="#blows">below</a>.</p>
 </section>
 <section id="blows">
   <p class="fig">Blows</p>
   <h2 class="t">How a blow is judged to land</h2>
   <p class="lede">Whether a blow lands is worked out from the move and the frame of its animation, not from the pictures touching.</p>
-  <p>For each move and each frame, a table gives either $80, no strike in this frame, or a value <a class="cl" href="source.html#379C">the game compares with the distance between the two fighters</a>. There are two tables, <a class="cl" href="source.html#7CA6">one for fighters facing each other</a> and <a class="cl" href="source.html#7E53">one for both facing the same way</a>, so a kick behind you is judged by its own numbers. <a class="cl" href="source.html#3328">The hardware's sprite collision register is read as well</a>. A blow that lands <a class="cl" href="source.html#051D">scores 100 points times the move's value</a>.</p>
-  <p>A move is <a class="cl" href="source.html#AF46">a script of four-byte steps</a>: how long to hold, which pose, and how far to move across and up, <a class="cl" href="source.html#1AF0">read one step at a time</a>. There are 44 scripts. The opponent's combinations are picked with <a class="cl" href="source.html#3141">a random number from an 8-bit shift register</a>.</p>
+  <p>For each move and each frame, a table gives either $80, no strike in this frame, or a value the game compares with the distance between the two fighters (<code>$379C</code>). There are two tables, one for fighters facing each other (<code>$7CA6</code>) and one for both facing the same way (<code>$7E53</code>), so a kick behind you is judged by its own numbers. The hardware's sprite collision register is read as well (<code>$3328</code>). A blow that lands scores 100 points times the move's value (<code>$051D</code>).</p>
+  <p>A move is a script of four-byte steps (<code>$AF46</code>): how long to hold, which pose, and how far to move across and up, read one step at a time (<code>$1AF0</code>). There are 44 scripts. The opponent's combinations are picked with a random number from an 8-bit shift register (<code>$3141</code>).</p>
 </section>
 <section id="return">
   <p class="fig">Late game</p>
   <h2 class="t">After thirty defeats, the dead come back</h2>
-  <p class="lede">Every place where an opponent waits is a record in <a class="cl" href="source.html#E609">a table of 54</a>, and <a class="cl" href="source.html#3522">beating him marks the record done</a>. A done record stays quiet until the hero has beaten 30 opponents. From then on, each time the game checks a done opponent's place as the hero reaches it, it <a class="cl" href="source.html#2820">rolls a random number and brings him back one time in four</a>.</p>
-  <p>A player on Lemon64 described the same thing from play: enemies "start respawning later in the game", tied to "a kill count threshold" rather than to the scrolls; an opponent scrolled off the screen before he is beaten is still there on the way back; and in the late game a returning opponent "may re-appear, or he may not". The code agrees on all three. The same player's claim that the fifth trigram has "no measurable effect" fits too, as far as damage goes: scroll 5's only reader is <a class="cl" href="source.html#27AD">the horde check above</a>, so it never touches a blow's strength. It shortens hordes instead.</p>
+  <p class="lede">Every place where an opponent waits is a record in a table of 54 (<code>$E609</code>), and beating him marks the record done (<code>$3522</code>). A done record stays quiet until the hero has beaten 30 opponents. From then on, each time the game checks a done opponent's place as the hero reaches it, it rolls a random number and brings him back one time in four (<code>$2820</code>).</p>
+  <p>A player on Lemon64 described the same thing from play: enemies "start respawning later in the game", tied to "a kill count threshold" rather than to the scrolls; an opponent scrolled off the screen before he is beaten is still there on the way back; and in the late game a returning opponent "may re-appear, or he may not". The code agrees on all three. The same player's claim that the fifth trigram has "no measurable effect" fits too, as far as damage goes: scroll 5's only reader is the horde check above (<code>$27AD</code>), so it never touches a blow's strength. It shortens hordes instead.</p>
   <p class="cap">The player tested the cassette version; this site's reading is of the Mindscape disk. The rules match what the player saw, but the two releases have not been compared byte for byte.</p>
 </section>
 <section id="tournament">
