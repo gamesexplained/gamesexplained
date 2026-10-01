@@ -127,9 +127,9 @@
   function hopsOf(v) { if (v === '') return null; if (v === 'end') return ROUTE.final; const leg = ROUTE.legs[parseInt(v)]; return v.endsWith('a') ? leg[1] : leg[2]; }
   function describe(r) {
     const bars = items(r).filter(it => it.bar && (it.t === 3 || it.t === 7 || it.t === 1));
-    info.innerHTML = `<p class="kv"><b>${label(r)}</b>, area ${area(r)}${NOTE[r] ? ': ' + NOTE[r] : ''}</p>`
+    info.innerHTML = `<h3 style="margin:18px 0 6px">The room you picked: ${label(r)}</h3><p style="margin:0 0 8px">Where its ways out are and where each one takes you. Positions are character columns counted from the room's left end; press a destination to go there on the map.${NOTE[r] ? ' <b>Note:</b> ' + NOTE[r] + '.' : ''}</p>`
       + (bars.length ? '<p class="kv">' + bars.map(it => `column ${it.col}: ${it.t === 3 ? 'a stone heap, broken once scroll 1 is delivered' : it.t === 7 ? 'a tree, kicked down once scroll 4 is delivered' : 'a barrier that breaks to any attack'}`).join('; ') + '</p>' : '')
-      + '<table class="t"><tr><th>Column</th><th>How</th><th>Leads to</th></tr>' + ex[r].map(([t, col, v, ac]) =>
+      + '<table class="t"><tr><th>At column</th><th>How to take it</th><th>Leads to</th></tr>' + ex[r].map(([t, col, v, ac]) =>
       `<tr><td class="n">${col}</td><td>${how(t)}</td><td>${v in LAYOUT ? `<button class="b" type="button" data-go="${v}" data-col="${ac}">${label(v)}</button>, column ${ac}` : v < 123 ? label(v) : 'nowhere (' + v + ')'}</td></tr>`).join('') + '</table>';
   }
   info.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) M.focus(+b.dataset.go, +b.dataset.col); });
