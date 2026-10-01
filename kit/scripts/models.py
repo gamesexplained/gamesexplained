@@ -7,7 +7,9 @@ is trusted when it was made under kit 0.0.32 or earlier (merged after a
 maintainer's review, the only check there was), when every model that ran
 its coverage and verify steps was already proven, or when a maintainer has
 checked it (kit/CHECKING.md) and recorded the check as `verification` in
-its game.json. The models kit/models.json declares are proven from the start. Any model may run the kit (AGENTS.md, "Model"); a game that
+its game.json. A game built on an imported analysis (`imported` in
+game.json) also counts the models that wrote it, `unknown` when unsaid,
+and proves no model itself. The models kit/models.json declares are proven from the start. Any model may run the kit (AGENTS.md, "Model"); a game that
 is not trusted cannot be Silver.
 
 Ids are recorded exactly as the session names them, and compared without
@@ -66,10 +68,36 @@ def declared():
 
 def before_rule(g):
     """Made under kit 0.0.32 or earlier, when a maintainer's review of the pull request was the only check."""
+    if g.get("imported"):
+        return False    # the import rule is newer than any such game
     try:
         return tuple(int(x) for x in str(g.get("kit_version", "")).split(".")) < RULE_FROM
     except ValueError:
         return False
+
+
+IMPORT_KEYS = ("source", "sha256", "tool", "by", "model", "date")
+
+
+def import_models(g):
+    """The models that wrote an imported analysis, from game.json `imported`; {'unknown'} when unsaid."""
+    imp = g.get("imported")
+    if not imp:
+        return set()
+    ms = imp.get("model") if isinstance(imp, dict) else None
+    ms = ms if isinstance(ms, list) else [m for m in str(ms or "").split(",")]
+    return {base(m) for m in ms if str(m).strip()} or {"unknown"}
+
+
+def import_problem(g):
+    """Why a game.json `imported` record is incomplete, or ''."""
+    imp = g.get("imported")
+    if imp is None:
+        return ""
+    if not isinstance(imp, dict):
+        return "`imported` must be an object (kit/skills/core/40-sweep)"
+    missing = [k for k in IMPORT_KEYS if imp.get(k) in (None, "", [])]
+    return f"`imported` has no {', '.join('`' + k + '`' for k in missing)}" if missing else ""
 
 
 def verification_problem(v, P):
@@ -95,7 +123,7 @@ def settle():
     P, pending = {m: ["declared in kit/models.json"] for m in declared()}, []
     for gdir, g, t in games():
         if g.get("tier") in SILVER_UP:
-            used = set().union(*(step_models(t, s) for s in PROVING_STEPS))
+            used = set().union(*(step_models(t, s) for s in PROVING_STEPS)) | import_models(g)
             pending.append((gdir, g, t, used))
     changed = True
     while changed:
@@ -105,6 +133,8 @@ def settle():
             if not ok:
                 left.append((gdir, g, t, used)); continue
             changed = True
+            if g.get("imported"):
+                continue    # finishing another's analysis proves nothing about the model that finished it
             for m in (step_models(t, PROVING_STEPS[0]) & step_models(t, PROVING_STEPS[1])) - {"unknown"}:
                 P.setdefault(m, []).append(os.path.relpath(gdir, ROOT))
         pending = left
@@ -128,11 +158,14 @@ def is_proven(model):
 
 def check():
     _, untrusted = settle()
+    bad = [(gdir, import_problem(g)) for gdir, g, _ in games() if import_problem(g)]
+    for gdir, why in bad:
+        print(f"  x  {os.path.relpath(gdir, ROOT)}: {why}")
     for gdir, need, why in untrusted:
         rel = os.path.relpath(gdir, ROOT)
         print(f"  x  {rel} is Silver or above but ran on a model that is not proven ({', '.join(need) or 'none recorded'}): {why}")
         print(f"        a maintainer's check makes it Silver (kit/CHECKING.md); until then its tier is bronze")
-    return len(untrusted)
+    return len(untrusted) + len(bad)
 
 
 def main():

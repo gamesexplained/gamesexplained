@@ -17,9 +17,8 @@ Chromium through the preinstalled Playwright.
 - `c64-reference`: `$D01E`/`$D01F`, the collision registers, were
   missing from the VIC-II table; one agent read `$D01E` as
   sprite-background from the brief, and another had to correct it.
-- `kit/CHANGELOG.md`, `kit/VERSION` 0.0.46. The Doctor Who branch
-  (opened from the same session) carries 0.0.45; whichever merges second
-  may need its changelog heading adjusted.
+- `kit/CHANGELOG.md`: an entry headed `## next`, which the kit-version
+  workflow numbers after the merge (`[kit-bump]` in the pull request).
 
 ## What went well
 

@@ -12,7 +12,7 @@ Changes to the site, the folder layout, the delivery process, the prose
 style or the install mechanics are in the pull requests, not here.
 Versions that taught nothing of the kind do not appear.
 
-## 0.0.46 · 30 September 2026 · Fist II: The Legend Continues · unorig with Claude
+## next · 30 September 2026 · Fist II: The Legend Continues · unorig with Claude
 
 **A frame capture names every handler in an interrupt chain.** Fist II's
 raster handlers each write the next one's address into the vector, so a
@@ -21,6 +21,17 @@ vectors reached 12 KB of a 61 KB load and no sound code at all. One
 frame recorded with `frame.py` listed five handlers and their lines in
 its writes to `$FFFE`; tracing from them found the music driver under
 the KERNAL. `10-orient` now says to take the handlers from a frame.
+
+## 0.0.48 · 30 September 2026 · Castle Master · 64kramsystem with Codex
+
+**Compare an imported capture with a booted game before using it.**
+Castle Master’s menu capture matched every code byte in a new disk boot,
+but playing replaced its menu storage with the renderer’s output. An
+annotated export can seed the disassembler while still requiring a
+power-on recipe, a play snapshot and a comparison to choose the listing
+image. Names and descriptions survive the import; verification does not.
+The source snapshot carries the bytes, and `listing.py` generates the
+Source records. The maker’s unknown model remains explicit in provenance.
 
 ## 0.0.44 · 30 September 2026 · Ghostbusters · unorig with Claude
 
