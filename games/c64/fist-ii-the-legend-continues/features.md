@@ -107,3 +107,14 @@ See `facts.md`, Open questions.
   here shows a title picture while loading, and the ending is the final
   scene `$2DB5`; the review's copy is not named); a one-on-one tournament
   version "given away for free on side two".
+- The Mindscape manual for the US release, *Fist: The Legend Continues*
+  (gamesdatabase.org PDF, filed under Melbourne House; read through a fetch
+  summary with short quotes, 1 October 2026). Copyright Beam Software,
+  "From Melbourne House Publishers Ltd", Mindscape; no individual credits.
+  It describes the disk's Training mode: one player "must defeat each
+  opponent twice to advance to the next dan"; two players fight "eight
+  sixty-second rounds, two in each of four locations"; points for every
+  strike that connects and for time remaining after a knockout. It lists
+  the trigrams in the same order as Lemon64's copy and adds that meditation
+  "cures poison", and "underwater hazards" among the dangers. Neither of
+  these two has been checked in the code.
