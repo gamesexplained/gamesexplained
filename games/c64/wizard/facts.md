@@ -155,7 +155,7 @@ Header fields traced from their consumers:
 |`$70–$75`|six actor type IDs|
 |`$76–$7F`|level-specific machine-code callback area, invoked after treasure changes, with code allowed to extend into unused patch/header space|
 
-Each treasure-patch record is eight bytes: six glyphs laid out 3×2 and a screen destination pointer. `$9477` repeats that patch according to its parallel count/stride fields. These are changes to the live terrain, not just color effects.
+$9477 treats each treasure-patch record as six replacement bytes laid out 3×2 and a destination pointer. Destinations can address screen RAM, color RAM, level state or hardware registers; they are not restricted to the screen. `$9477` repeats that patch according to its parallel count/stride fields. These are changes to the live terrain, not just color effects.
 
 Attract mode uses the real engine. Input pages `$58/$99/$9A` each hold 128 joystick bytes and 128 durations. `$801D` is changed from RTS to NOP to enable playback through CIA port registers. Three resident level images start at `$5900` (Welcome to...WIZARD!), `$5E00` (Crispy Critters), `$9B00` (Hot Stuff); `$8E79` copies exactly `$470` bytes into the normal level workspace. Alignment bytes after the first two images remain loaded but lie outside those copy ranges; their historical provenance is open.
 
@@ -166,9 +166,9 @@ Attract mode uses the real engine. Input pages `$58/$99/$9A` each hold 128 joyst
 
 BLDR selects screen numbers 0–99 (`$33CF`), actor slots 0–5 (`$36B8`), behavior IDs 0–20 (`$3906`), sprite images 0–127 (`$3A66`) and animation spans 0–4 (`$3AB0`, with 1 converted to static 0). It stores charges as a display digit, not a binary count: `$3C4D` writes 48+n to `$C31D`. The terrain palette has 24 objects and compound shapes have explicit footprint checks (`$4CEF`). Independent treasure/fire counters refuse a new item when equal to sixteen (`$5088`). These are equality tests; a corrupt count greater than sixteen is not rejected by that limit alone.
 
-The editor's save preparation at BLDR `$45EF` overwrites elevator velocities with `$1F`, the duration with `$90`, and elevator Y with 197. Thus the editor's separate elevator-parameter command does not by itself guarantee those parameters survive saving. This is traced, not a claim that every player can reach that command with the documented function keys.
+The editor’s save preparation at BLDR `$45EF` overwrites all six packed velocity fields with `$1F`, the shared duration with `$90` (144), and the Y position of each type-7 actor with 197. The save path calls this after title entry (`$41F2`). A live CTRL-S save with distinct injected parameter values produced those reset values in the saved L99T file; the original loader recovered the same values after the working header was cleared. The separate parameter command stores its inputs at `$3BA7/$3BDC`, but the later save preparation overwrites them. The test verifies the save interaction, not every possible route through the parameter UI.
 
-**Live:** selected Construction in the program menu, pressed FIRE on its title, entered screen 0, and reached its terrain/monster/spell menu (`reference/editor-level0.png`). No save was issued.
+**Live:** selected Construction in the program menu, pressed FIRE on its title, entered screen 0, and reached its terrain/monster/spell menu (`reference/editor-level0.png`). A subsequent save/reload test used private disk copies. The shared saver deliberately rejects a disk when loading its PPSS marker succeeds with status $40: `$8B98` leaves Z set, so `$8ABB` returns status 1 (“WRONG DISK”). The private copy of the supplied game disk was rejected; a fresh formatted test disk without PPSS saved successfully with status 0. The supplied original’s SHA-256 remained unchanged.
 
 ## Level-specific programs and coverage scope
 
@@ -181,11 +181,15 @@ Examples traced directly in the level overlays (zero-based disk file numbers; th
 - Level 2, Look Before You Leap: clears two three-cell screen runs.
 - Level 3, Diamond Mine: clears the key's eight glyph rows and may replace a cell with a chalice or diamond according to treasure index.
 - Level 7, Simon Says: visible instruction words require a matching treasure; black words require a mismatch. The automatic starting pearl initializes the rule before movement. The detailed callback and startup evidence are below.
-- Level 17, Burning Bridges: swaps two terrain cells.
+- Level 17, Burning Bridges: swaps `$C5BB/$C5DC`, initially the key and upper exit. The automatic starting gold (index10) swaps them before joystick movement; later treasure pickups swap them again.
 - Level 28, Friend or Foe?: treasure index 2 advances the key one cell along a forty-cell row, wrapping at the end.
-- Level 30, Ladder Land: changes pitch and collision-exempt color; an enabled alternate pass can remove three three-cell ladder runs and advance their pointers down a row.
+- Level 30, Ladder Land: changes pitch and the **saved** collision-color field `$C36F`; the active collision comparison reads `$C0A3`, initialized from that field at `$8EFA`. With `$C066=0`, odd pickup counts of slot 1 erase three three-cell runs, move the pointers down one row and consume one of twenty passes. The patch regenerates the pearl. A nonzero `$C066` takes a separate actor-state branch.
 - Level 33, Madhouse: cycles directional-arrow glyphs across the playable screen, scanning backwards.
 - Level 38, Fire Alarm!: alters two glyphs once and replaces part of its callback with RTS to prevent repeating the operation.
+
+The Immortal Portal callback’s ADC receives carry clear in normal player and thief collection: each calls `$8D4B` immediately before `$C376`, and the spell-name address arithmetic clears carry for IDs 0–11. Thus slot `(treasure index & 3)` receives type `2 + (index & 3)`. All twelve spell IDs, sixteen indices and both carry inputs before `$8D4B` were checked (384 cases).
+
+L35T’s first callback byte remains RTS in all sixteen indexed pickup tests, 1,536 timer-counter/phase cases and 4,096 consecutive terrain updates. The following instruction-shaped fragment overlaps patch storage at `$C380`; treating it as a continuous routine reaches JSR $0000. These tests establish inactivity on those paths, not a historical explanation for the retained bytes.
 
 Full room-completion routes remain open. The Simon Says rule and its initial pickup have additional original-code and live evidence below.
 
@@ -226,3 +230,19 @@ The emulator qualification recorded 54 passing checks and 3 wall-clock-sensitive
 The construction DATA contains twenty default animation spans at `$2A07–$2A42`, twenty sprite-image numbers at `$2A43–$2A97`, and twenty colors at `$2A98–$2ADE`. The READ loops at BLDR `$4825`, `$4834` and `$4843` fill arrays indexed by behavior 1–20. Behavior zero is unused. The default command at `$39D9` adds 128 to the image number for the bank-$C000 sprite pointer, then stores the animation span, pointer and color in the level header.
 
 The article's actor browser shows those defaults and distinct saved combinations from the forty level headers. Only examples whose pointers reference the resident sprite bank are included; runtime-generated images outside it are omitted. Frame bytes come from the canonical listing's relocated sprite RAM, with 58 frames (3,654 drawing bytes) embedded. Each is a 24×21 multicolor sprite: pixel pairs 01 and 11 use shared colors 14 and 1, and pair 10 uses the actor color. The Playground frame's `$D025/$D026` reads confirm those shared colors after masking their high bits. Frames are displayed unmirrored at a common scale; the widget inspects artwork rather than simulating actor motion, expansion or room effects.
+
+## Startup score clearing
+
+The LODR loader reads SCOR, then at `$1117` compares CIA1 port B `$DC01` with exactly `$DF`. With row 7 selected (`$DC00=$7F` in the naturally reached live check), this is Commodore held. `$111E–$1126` clears exactly `$C100–$C14F`, eighty bytes of the score record, and leaves `$C150–$C17F` untouched. It then enters the title at `$6400`; this branch does not write the disk. Both released/held keyboard states were verified live, with distinctive record bytes to establish the boundary; all 256 port values were tested against the original routine. See `reference/loader-source.txt`.
+
+## Treasure and movement explorers
+
+The atlas embeds 700 computed states for 606 selectable pickups across forty rooms. Each is produced by original `$7ACE` collection, `$9477` patching and the loaded `$C376` callback, with fixed random bytes $12, movement/timers paused and no key collected. Repeats are offered only while the same cell regenerates a treasure; traces stop on death, a repeated state or forty pickups. Simon Says starts after its verified automatic pearl and excludes the instruction display from selectable treasures. Every screen byte, color nibble, glyph byte, actor type and actor color matches the original-code replay. Five isolated live checks cover Burning Bridges, Friend or Foe? (four pickups), Ladder Land (nine), Diamond Mine and Hot Stuff. These are immediate outcomes, not walking solutions.
+
+Four motion replays record 240 original `$860E` controller calls each: Bat in Bats In The Belfry, Rat in Diamond Mine, Cat in Wizard’s Pet and Elevator in See Ya Later, Elevator. Terrain resolution `$7D82` and sprite animation `$78AD` execute normally for the selected actor. Other actors, collision IRQs and room timers are paused; randomness, animation phase and horizontal pursuit speed are controlled. The wizard target moves to X=60 at update80 and X=280 at update160. All 960 published positions, velocities, duration values and sprite images match regeneration. Update counts are not video frames or a claim about real-time speed.
+
+Neutral-input room observations establish that L28T’s thief collects regenerated gold and advances the key, and L30T’s thief collects regenerated pearls and advances terrain removal. At the first callback, the hardware stack returns to `$7FA4` (thief collection), with treasure indices 2 and 1 respectively. Saved shapes $D5/$D6 and $D4 contain only transparent/own-color pixel pairs; own color zero conceals these thieves on the black background. These observations used the game’s normal load/setup with the selected file number controlled. No collectible or collision state was injected.
+
+In L17T, the first neutral-input callback comes from player collection (`$849A` return) with index10, the gold at the wizard’s start. It changes `$C5BB/$C5DC` from key/exit to exit/key. Holding left next collects pearl index9 at wizard X=142, Y=133, erases `$C612–$C614` through its patch and swaps the upper key/exit back. The wizard survives this short sequence. It is a reachable pickup demonstration from the prepared room, not a full completion route.
+
+`reference/programs.html` indexes 42 separate program views and 4,449 decoded lines: the construction companion, the loader score-clear excerpt and all forty level callback excerpts. Program-qualified anchors distinguish identical addresses in different loaded images; the shared engine remains in the canonical resident Source tab.

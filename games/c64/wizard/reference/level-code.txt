@@ -256,7 +256,7 @@ The callback returns immediately; configured terrain patches still apply.
 C376 rts
 
 LEVEL 17: Burning Bridges
-Treasure swaps two bridge cells.
+Treasure swaps the two cells initially holding the key and upper exit.
 C376 lda $C5BB
 C379 pha
 C37A lda $C5DC
@@ -275,7 +275,7 @@ C380 sta $D01C
 C383 rts
 
 LEVEL 19: For Your Ice Only
-Early treasures set exempt color cyan; later calls gradually erase a glyph.
+Early treasures set the saved collision-color field $C36F to cyan; later calls gradually erase a glyph. The active collision comparison uses the separate $C0A3 value copied during initialization.
 C376 cpx #$03
 C378 bcs $C37F
 C37A lda #$03
@@ -292,7 +292,7 @@ The callback returns immediately; configured terrain patches still apply.
 C376 rts
 
 LEVEL 21: The Immortal Portal
-Treasure changes one of four actor types; the ADC also consumes incoming carry.
+Treasure index modulo four selects a slot and sets its type to 2, 3, 4 or 5. Both normal callers run $8D4B immediately before this callback; that routine leaves carry clear. All twelve spell names, sixteen indices and both earlier carry inputs were checked (384 cases).
 C376 txa
 C377 and #$03
 C379 tax
@@ -353,7 +353,7 @@ C3DC bpl $C378
 C3DE rts
 
 LEVEL 28: Friend or Foe?
-Treasure index two advances the key along a row, wrapping after forty cells.
+Treasure index two advances the key along a row, wrapping after forty cells. Its patch regenerates the gold bar, so repeated collection repeats the key movement.
 C376 cpx #$02
 C378 beq $C3BB
 C37A rts
@@ -390,7 +390,7 @@ C3D4 bpl $C3D0
 C3D6 rts
 
 LEVEL 30: Ladder Land
-Treasure changes pitch/exempt color; enabled passes can remove and advance ladder runs.
+Every pickup changes SID pitch and the saved $C36F collision-color field, not the separate active $C0A3 value. On odd pickup counts, slot1 clears three three-cell runs and advances each pointer one row, up to twenty times. This path requires $C066=0. Its patch regenerates the pearl. The alternate $C066 path changes actor movement fields instead.
 C376 inc $C3FF
 C379 lda $C3FF
 C37C and #$1F
@@ -478,7 +478,7 @@ The callback returns immediately; configured terrain patches still apply.
 C376 rts
 
 LEVEL 35: Hot Stuff
-Callback begins with RTS. A dormant code-like fragment shares patch storage; activation is unverified.
+Callback begins with RTS. All sixteen indexed treasure pickups, 1,536 timer-counter/phase cases and 4,096 consecutive terrain updates leave that entry unchanged. Bytes after it resemble a disabled routine, but decoding through $C380 enters patch storage (JSR $0000); removing RTS alone does not establish a working routine. No activation is demonstrated on these tested paths; the fragment’s historical purpose remains unknown.
 C376 rts
 
 LEVEL 36: Pyro-mid

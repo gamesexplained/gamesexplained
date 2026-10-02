@@ -36305,7 +36305,7 @@
   {
    "address": 35515,
    "type": "line",
-   "text": "Check PPSS marker file before allowing a save, construct LnnT name, scratch the old file and SAVE $C300-$C76F. Return disk status in FB after a settling delay."
+   "text": "Protect the supplied game disk: $8B98 LOADs PPSS and leaves Z set when status is $40 (marker read succeeded). That case returns FB=1 without saving. Otherwise construct LnnT, initialize/scratch the destination and SAVE $C300-$C76F. Live: private original-disk copy rejected; blank private disk saved L99T with status 0 and reloaded identical reset elevator fields."
   },
   {
    "address": 35581,
@@ -36335,7 +36335,7 @@
   {
    "address": 35736,
    "type": "line",
-   "text": "LOAD the PPSS marker at $0340, read disk status and compare with $40. The level saver returns FB=1 when this check fails."
+   "text": "Try to LOAD marker file PPSS at $0340, then compare READST with $40. Equality identifies the protected original game disk, so the caller REFUSES its save. The marker is not a prerequisite for writing a custom disk."
   },
   {
    "address": 35769,
@@ -36390,7 +36390,7 @@
   {
    "address": 36171,
    "type": "line",
-   "text": "Index twelve 13-byte names by level spell ID $C31C and copy the chosen field to HUD $C7CC-$C7D8."
+   "text": "Draw the selected 13-character spell name. Address construction clears carry for every valid spell ID 0-11; both player and thief call this immediately before the level callback. Consequently the ADC in L21T receives carry clear and assigns type 2+(treasure_index&3). Checked across twelve IDs, sixteen indices and both earlier carry inputs."
   },
   {
    "address": 36199,
@@ -36550,7 +36550,7 @@
   {
    "address": 38007,
    "type": "line",
-   "text": "Normalize the collected screen coordinate and find it in the sixteen indexed treasure slots. Use parallel level header fields for repeat count, stride and color; each eight-byte patch at $C380 has six glyphs in a 3x2 pattern plus a destination pointer."
+   "text": "Find collected treasure in the sixteen-slot object index, then repeat its six-byte 3x2 replacement according to C320/C330 count and stride. Destinations are unrestricted: supplied patches write screen, color RAM, header state or VIC registers. Zero replacement bytes leave destinations alone. Player/thief callbacks execute after the patch, so regenerated treasure can drive repeated changes."
   },
   {
    "address": 38136,
@@ -36666,6 +36666,11 @@
    "address": 39936,
    "type": "line",
    "text": "880 authored screen cells for demonstration \"Hot Stuff\", copied to $C400-$C76F. There are 22 rows of 40 characters; the final row holds the title before runtime replaces it with a solid border. Terrain glyph values are interpreted directly by movement."
+  },
+  {
+   "address": 50031,
+   "type": "line",
+   "text": "Saved collision-exempt color, copied into active C0A3 by initialization. L19T and L30T callbacks write this header byte; the collision IRQ compares the separate active C0A3 value. It is also the last byte of the eight-slot animation-span header range."
   },
   {
    "address": 51200,
