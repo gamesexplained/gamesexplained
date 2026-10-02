@@ -77,7 +77,10 @@ Found in the code, not in the manual.
 - **F1 switches room 1's in-play tune off and on** (`$7C70`, `$1019`), live.
   It does not pause the game.
 - **Room 1 has a tune of its own** in play (`$8C00`), besides the title
-  tune; a second in-play tune at `$89D0` has no caller.
+  tune, and a second in-play tune at `$89D0` that nothing plays; both
+  ported and checked against the game's code, write for write.
+- **Lupenio's room 9, as designed**: with five instructions put back, the
+  room draws two doors and a treasure that its bitmap held all along.
 - **Supermon** at `$97ED`-`$9FFF`, never called: the source of the image's
   calls to `CHRIN` and `CHROUT`.
 - **Lupenio's ending and instructions**, in Italian, never printed, and a

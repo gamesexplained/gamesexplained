@@ -182,7 +182,17 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   plant, pot, chest of drawers; more at `$B000`-`$B0FF` and in the room
   blocks (room 9's television `$7265`, the Golden Hat `$7C00`).
 - Everything that moves is a hardware sprite: Mr Hat sprite 4, the lift
-  cabin sprite 5, guardians on the others.
+  cabin sprite 5, guardians on the others. The 28 shapes are pointers
+  `$24`-`$3F` (`$0900`-`$0FFF`). Mr Hat: walking right `$2C`-`$2E`, left
+  `$2F`-`$31`, a frame every nine one-pixel steps (`$5340`, `$5370`);
+  climbing `$32`/`$33`; crouching `$2A`; dying `$27`, a buffer at `$09C0`
+  into which `$1DDD` copies the death shape from `$ACD8`. Room 1 draws him
+  multicolour: `$D02B` 11, `$D025` 2, `$D026` 13.
+- The dissolve (`$A8F0`) ANDs each byte of the death shape once with the
+  raster line, four bytes a pass (`$09C0+x`, `$09D0+x`, `$09E0+x`, `$09F0+x`), 16
+  passes of 82,504 cycles (84 ms) each; the flash before it (`$A92D`) steps
+  `$D02B` 256 times. *live* in the simulator (`work/death-sim.js`, the
+  raster from the cycle count, no interrupts): 74 set pixels down to 25.
 - *Live*: one frame of room 1 rebuilt by `C64.renderFrame` from memory and
   the frame's register writes matches the emulator's picture in all
   104,448 pixels (`kit/c64/frame.py`, `work/frame-room1.json`).
@@ -227,9 +237,22 @@ and 6.
 - A disabled editor feature: the flag `$C439` is only ever written 0; set,
   `$C1CF` would read keys (F7 all voices, 1, 2, 3 one voice alone) and call
   `$CB51`, which is note data. `$CAF4` holds the text `MUZA1`.
-- In play, room 1 has a tune of its own (`$8C00`-`$8C89`, tables at `$8C90`,
-  `$8D30`, `$8D90`), stopped and started by F1 (above). A second, at
-  `$89D0`-`$8A5B`, has no caller.
+- In play, room 1 has a tune of its own and a second tune has a player
+  nothing calls. The two players are twins (`$8C00`-`$8C89` with the
+  note-off `$85DF`; `$89D0`-`$8A5B` with `$85D0`): voice 3 alone, triangle
+  (`$11`), attack/decay `$20`, every note retriggered after the note-off
+  zeroes `$D40D`-`$D414`; three tables read through pointers kept in the
+  code's own operands, room 1's at `$8C90`/`$8D30`/`$8D90` (95 notes, back
+  to the first at pointer `$EF`), the unused one's at `$8A60`/`$8B00`/`$8B90`
+  (105 notes, back to the second at `$C9`); a note lasts the length byte in
+  interrupts (`$64F9` counts up to `$64FA`). The unused player sends its
+  first column to the frequency's low byte; room 1's sends it to `$D022`, so
+  its notes sound at the high byte alone. That column's values differ
+  between repeats of one note (`$2188`, `$2164`, `$213D`), so it may not be a
+  tuning at all. Room 1's tune rewinds while Mr Hat's pointer is the death
+  frame `$27` (`$8C03`); F1 stops it (above). *live* in the simulator: both
+  ported players match the game's code, every SID write of 3,000 calls
+  each (`work/voice3-test.js`).
 - Effects on voice 3, each run at the end of an interrupt (`$B4C0`-`$B653`):
   one whose pitch is the raster line, the noise during immunity, a score
   tick; and the jump sound `$41B0`.
@@ -270,7 +293,14 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
   walk Mr Hat with the variables `$7CC0` still sets up. Room 9 keeps two
   doors and keys (`$F5` = `$AF` from room 8, `$28`) and a 20,000-point
   treasure whose tests can never pass, their fills patched out (above):
-  keys and doors were Lupenio's subject.
+  keys and doors were Lupenio's subject. Put back as `JSR $56ED` at `$71CF`
+  and `$794A` and `STA $06F3,X` / `$06A3,X` / `$06CB,X` at `$73CF`, `$73D4`,
+  `$73D7` (a reconstruction, from the parameters loaded before each and
+  the cells the room's tests read), the set-up paints both doors `$E0`
+  and the treasure `$7C`/`$7C`/`$0C`, and the room shows two brick doors
+  and the treasure that were in its bitmap all along. *live*
+  (`work/room9-designed.py`; the frame matches the emulator's picture);
+  play with them was not tried.
 - **Supermon**, Jim Butterfield's monitor, `$97ED`-`$9FFF` (2,067 bytes, 15
   commands, tables `$9ED9`-`$9FFF`); its SETMSG call goes to `$96F0`, which
   sets `$01` = `$36` after it. No instruction outside it refers to it, no
@@ -334,4 +364,6 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
 - `work/pausetest.py`: F1 stops room 1's tune and not the guardians.
 - `work/scoretest.js`: the point adders, run on the snapshot's memory.
 - `work/goroom.py ... 40`: rooms 6 and 9 with the light switch on.
-- `kit/c64/frame.py capture` and `compare` on room 1: 0 pixels differ.
+- `kit/c64/frame.py capture` and `compare` on all eleven rooms, the dark
+  and the lit rooms 6 and 9 and room 9 as designed: 0 pixels differ in
+  each. Room 10 needed the recorder's beam phase fixed (kit-feedback.md).

@@ -56,7 +56,13 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
 - `frame.py capture` failed three times in one room, "the samples
   disagree about the beam's position (1 > -19650)": an offset of one
   frame, in a room whose code installs no interrupt handler of its own.
-  The other eleven captures matched to the pixel. Ask below.
+  Fixed afterwards on this branch: `phase()` counted the line counter's
+  wraps from drops in the line, and two samples a frame or more apart
+  show none; it now counts them from the stopwatch. `frame.py test`
+  passes, and the room captured with 0 pixels different.
+- `site/lib/c64.js` gains `drawSpriteMC`, a multicolour sprite drawer, for
+  the page's sprite gallery; checked against `renderFrame` on Mr Hat's
+  sprite in a recorded frame (248 pixels, none different).
 - `check-emulator`'s `warp` check fails on a software-rendered display.
   Nothing in the workflow needs warp, and no workaround section existed;
   one is added.
@@ -75,8 +81,6 @@ nothing was filed. The asks are in the pull request's description under
 
 - `clock.py` should be able to leave out a wait (a usage limit, a
   contributor away), so that a run's step times stay comparable.
-- `frame.py capture` fails to settle the beam's position in one room of
-  this game (no interrupt of its own); the samples are a frame apart.
 - `.mcp.json` could take the port from the environment (Claude Code
   expands `${VAR:-default}` in it), or `tools.py vice` could write it.
 - `check-emulator`'s `warp` threshold fails on a software-rendered

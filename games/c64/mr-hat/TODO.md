@@ -21,9 +21,6 @@ Open work, by value:
   plus exactly one guardian. Staging two guardians on him in one frame
   needs both sprites enabled in that frame; the rooms switch them on and
   off, and the attempt in `work/twotouch.py` could not hold it.
-- **Room 10's frame.** `kit/c64/frame.py capture` could not settle the
-  beam's position there (the room has no interrupt of its own); the page
-  shows a screenshot instead.
 - **A Play tab.** The rooms are copies of one template, which makes a
   port of the main loop, the walk, the jump and the ladder reusable
   across rooms; nothing of it is started.
