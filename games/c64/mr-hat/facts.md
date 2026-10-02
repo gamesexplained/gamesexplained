@@ -25,7 +25,7 @@ machine-code monitor sits at `$97ED`-`$9FFF`.
 | Title set-up | `$CDC0`: starts the music (`$C09B`), copies the font `$CE00`-`$CFFF` to `$2800`, text mode, `$D018` = `$1B`; then `$B683` draws the cast, or, when `$1018` is set, `$BFA8` the end message |
 | Title words | screen codes at `$C000`-`$C058` ("Text") |
 | Play screen | bitmap at `$2000`-`$3F3F`, colours at `$0400`, hires (`$D011` = `$3B`, `$D016` = `$C8`, never written anywhere in the image) |
-| Status line | bitmap row 24: SCORE digits in columns 13-18, ROOM in 24-25, STAGE in 31, drawn from the digit glyphs at `$1600` (16 bytes a digit) |
+| Status line | bitmap rows 23-24: SCORE digits in columns 13-18, ROOM in 24-25, STAGE in 31, each digit two cells high, drawn from the glyphs at `$1600` (16 bytes a digit, top cell first) |
 | Mr Hat | hardware sprite 4: his position is the sprite's own registers `$D008`/`$D009`, stepped with `INC`/`DEC` in place; no other copy of it is kept *live* (`work/track.py`) |
 | Lives marks | colour cells `$07B9`, `$07BA`, `$07E1`, `$07E2` (`$BC` shown); a death recolours one to `$CC`, grey on grey *live* (`$07B9` `$BC` → `$CC` after one death, `work/death1.vsf`) |
 | Interrupts | title: `$0314` = `$C0AF` (music); play: each room installs its own handler (room 1 `$1C00`, which jumps to `$AAB2`), and most end through `$8215` → `$BF30` → `$8C12` → `$7C70`. `$01` = `$36` throughout |
@@ -120,12 +120,16 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   first and goes to `$4475`, the end of the game: back to the title, then
   a new game through `$8020` and `$0870`. *live*: five deaths returned to
   the title (`work/go1.vsf`).
-- **Score**: `$41DA` adds one to the score's thousands digit (bitmap
+- **Score**: `$41DA` (and its twin `$8AD0`) adds one to the score's thousands digit (bitmap
   `$3D38`, carry from `$4206`), so every award is a multiple of 1,000; there
   is no carry past the hundred-thousands digit. Awards are counted calls:
   a treasure 10, 20, 25, 50 or 75 times (`$8E10` and `$B100`-`$B4BB`), room
-  8's key 2, a door 2, room 11's block 10. The web screenshots' scores
-  (25,000, 150,000, 250,000) fit.
+  8's key 2, a door 2, room 11's block 10; `$120E`, `$1219`, `$1224`, `$122F`,
+  `$123A` are the 10,000, 20,000, 25,000, 50,000 and 75,000 adders. *live*
+  (`work/scoretest.js`: each adder run in the kit's simulator on
+  `play-room1.vsf`, the score's digits read back from the bitmap, gave
+  001000, 010000, 025000 and 075000). The web screenshots' scores (25,000,
+  150,000, 250,000) fit.
 - **Treasures** are taken by standing over them with the stick pulled down
   (`$7D`) (`$8E10`, `$B100`-`$B4BB`); switches and barriers work on touch.
   A taken object stays gone for the rest of the game: its colour is kept
@@ -138,9 +142,10 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   barrier in room 11 (`$B100`-`$B4BB`, agent report 8; not tested live).
 - **Light**: rooms 6 and 9 are drawn dark (colour `$00`) unless `$22` =
   `$40`, which `$5519` sets when room 2's candle is taken and `$61E1`
-  clears for a new game (`$5E10` room 6, `$7440` room 9). *live*: room 9
-  set up with `$22` = 0 drew both corridors black
-  (`reference/room09-setup.png`). In the dark, room 6 has a hazard on its
+  clears for a new game (`$5E10` room 6, `$7440` room 9). *live*: rooms 6
+  and 9 set up with `$22` = 0 drew their corridors black, and with `$22` =
+  `$40` lit, with their objects (`reference/room06-setup.png`,
+  `room06-lit-setup.png`, `room09-setup.png`, `room09-lit-setup.png`). In the dark, room 6 has a hazard on its
   bottom floor (X `$C6`-`$F3`) that kills only then, and a bonus that can
   only be taken then.
 - **Immunity**: the objects of rooms 3 and 7 call `$1250`, which writes
@@ -327,4 +332,6 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
 - `work/goroom.py`: every room's set-up started from play draws its room
   with the expected ROOM and STAGE digits.
 - `work/pausetest.py`: F1 stops room 1's tune and not the guardians.
+- `work/scoretest.js`: the point adders, run on the snapshot's memory.
+- `work/goroom.py ... 40`: rooms 6 and 9 with the light switch on.
 - `kit/c64/frame.py capture` and `compare` on room 1: 0 pixels differ.

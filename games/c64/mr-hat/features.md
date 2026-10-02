@@ -44,41 +44,62 @@ German both 404), and no manual beyond the magazine's blurb was found.
 
 | Feature | Status | Where |
 |---|---|---|
-| Joystick in port 2 | live | the title waits for `$DC00` = `$6F` at `$1770` (fire on port 2); the stick on port 2 walks Mr Hat |
+| Joystick in port 2 | live | the title waits for `$DC00` = `$6F` at `$1770`; every room loop reads `$DC00` |
 | Fire on the title starts the game | live | `$1770`-`$1788` |
-| Title screen "SYSTEMS PRESENTS A NEW GAME WITH": the cast Mr Hat, Octopus, Snaily, Dinky, Kniffy, "and all others" | live | `reference/title.png`; title routine `$16A3` |
-| Title music | live | IRQ `$C0AF` on the title (heard as register activity only; the session has no sound) |
-| Stick left and right walk | live | about 2.4 pixels a frame (`$21` to `$56` in 20 frames) |
-| Fire jumps, the way Mr Hat faces | live | from standing in room 1 (`work/death1.vsf`), fire held: sprite Y 204 to 183 at once, held 13 frames, back to 204, and again while fire stays down; `$DC00` compared with `$6F` at `$5227`, `$5A93`, `$86E3` |
-| Stick up | live | does nothing standing on a floor in room 1 (20 frames held); in rooms with ladders it climbs (`$7E`, agent reports) |
-| Touching a hazard kills ("everything you touch kills you", Lemon64) | live | walking into the small object beside the television in room 1: Mr Hat sinks into the floor, then restarts at the room's entry (`reference/death.png`, `reference/respawn-lives.png`) |
-| Lives, shown as marks at the bottom right of the status line | live | four marks at the start, three after one death; after five deaths the game returns to the title. The routine at `$1700` rewrites screen cells `$07E1` and `$07E2` |
-| Game over | open | after the last life the title reappeared; whether a game-over screen shows first is not yet seen |
-| Status line: SCORE (six digits), ROOM, STAGE | live | `reference/stage1-room1.png` |
-| Score | open | the web screenshots show 025000, 105000, 150000, 225000 and 250000: steps of 25,000 or more, from what is unknown |
-| Rooms and stages: at least ten rooms and four stages, each stage with its own brick colour (blue, pink, brown with black caves, blue) | open | web screenshots reach ROOM 10, STAGE 4; the count and order are not documented |
-| Room 1: three floors and a LIFT on the right (the lift as prelude to the maze, Ready64) | open | `reference/stage1-room1.png` |
-| Ladders (stages 2 to 4) | open | web screenshots |
-| Guardians: Octopus, Snaily, Dinky (cherries), Kniffy (a dagger) and others move about the rooms | live | several sprites move in room 1 (sprites 0, 1 and 7) |
-| Objects in the rooms (a television, a painting, cups, cones, plants, a chest of drawers, a trophy, keyhole and switch icons) | open | which are hazards, which are collected, and which are scenery is unknown |
-| The Golden Hat, the goal | open | the booklet; how the game ends when it is found is unknown |
+| Title screen "SYSTEMS PRESENTS A NEW GAME WITH": Mr Hat, Octopus, Snaily, Dynky (so spelt), Kniffy, "and all others" | live | `$B683` draws it from the screen codes at `$C000`-`$C058`; `reference/title.png` |
+| Title music | confirmed | the player `$C080`-`$C373` from the title's interrupt `$C0AF`; register activity seen, no sound in the session |
+| Walk left and right | live | `$5340`/`$5370` and each room's copies, about 2.4 pixels a frame |
+| Fire jumps, the way Mr Hat faces | live | from standing in room 1, fire held: sprite Y 204 to 183, 13 frames, back, again while held; `$DC00` = `$6F` at `$438D` and in every room loop; three phases of 21 steps |
+| Stick up | live | does nothing on a floor (20 frames held in room 1); climbs ladders and rides lifts (`$4B20`, `$4000`, `$8265`) |
+| Stick down: crouch, climb down, take a treasure | traced | `$7D` compared in the room loops and in `$8E10`, `$B100`-`$B4BB`; not tried live |
+| Touching a guardian kills ("everything you touch kills you", Lemon64) | live | in room 1, Mr Hat sank into the floor and restarted at the room's entry (`reference/death.png`, `reference/room01-respawn.png`); `$D01E` read as exact values at `$55B0`, death `$A877` |
+| Deadly spots in the rooms | traced | `$BB10`, by position and exact standing height; room 6's dark-only hazard |
+| Lives, four marks at the bottom right | live | `$07B9`, `$07BA`, `$07E1`, `$07E2`: one recoloured to `$CC` per death; after five deaths the title came back |
+| Game over | live | after the last life `$4475` returns to the title, which waits for fire for a new game; there is no game-over screen of its own |
+| Status line: SCORE, ROOM, STAGE | live | bitmap rows 23-24, glyphs at `$1600`; `reference/stage1-room1.png` |
+| Score in thousands | live | `$41DA`/`$8AD0` step the thousands digit; the 10,000 to 75,000 adders `$120E`-`$123A` run in the simulator gave exactly those scores (`work/scoretest.js`) |
+| Eleven rooms in four stages (web screenshots reach ROOM 10, STAGE 4) | live | rooms 1-11 drawn by starting each set-up (`reference/room02-setup.png` to `room11-setup.png`); stage 1 room 1, stage 2 rooms 2-5, stage 3 rooms 6-9, stage 4 rooms 10-11 |
+| Room 1: three floors and a LIFT | traced | the lift ride `$4000` moves Mr Hat and sprite 5 56 pixels a floor; not ridden live |
+| Ladders | traced | `$4B20`; rooms 2, 5, 6, 9, 10, 11 |
+| Guardians: Octopus, Snaily, Dinky, Kniffy and others | live | they move in room 1 (sprites 0, 1, 7); each room's IRQ moves its own (facts.md, "Guardians") |
+| Treasures worth points | traced | `$8E10`, `$B100`-`$B4BB`: 10,000 to 75,000 each, taken with the stick down |
+| Keys and doors (Lupenio's text: "each key opens one door and one only") | traced | room 9's two doors and keys survive in the code but can never open: their fills were patched out (facts.md, "Leftovers") |
+| Colour-coded switches opening barriers in other rooms | traced | `$B100`-`$B4BB` |
+| The candle lights the dark rooms | live | rooms 6 and 9 dark with `$22` = 0, lit with `$22` = `$40` (`reference/room06-lit-setup.png`, `room09-lit-setup.png`); `$5519` sets it when room 2's candle is taken (traced) |
+| Immunity | traced | the objects of rooms 3 and 7 call `$1250`, which writes `RTS` over the death `$A877` and the life loss `$4C52` until `$100F` reaches `$FE` |
+| The Golden Hat, the goal, and the end | traced | drawn in room 11 (`$7C00`, `$7C50`); `$7CC0` with Mr Hat under it, once room 5's object has opened the block at `$061A`, shows "WONDERFUL / YOU HAVE FINISHED YOUR MISSION" (`$BFA8`, `$B7D8`) and starts a new game. Tried live by jumping into room 11's set-up and placing Mr Hat: the game kept moving him back, so the end was not reached |
 | RUN/STOP disabled | live | `$0328` = `$E1`, set by the tape's depacker at `$A220`, not by the game |
 
 ## Beyond the documentation
 
 Found in the code, not in the manual.
 
-- The image calls the KERNAL's `CHRIN` (`$FFCF`) and `CHROUT` (`$FFD2`) from
-  some thirty places in `$7E11`-`$9EB2` and `$B68A`-`$BFAF`. What reads or
-  prints text there is open.
+- **F1 switches room 1's in-play tune off and on** (`$7C70`, `$1019`), live.
+  It does not pause the game.
+- **Room 1 has a tune of its own** in play (`$8C00`), besides the title
+  tune; a second in-play tune at `$89D0` has no caller.
+- **Supermon** at `$97ED`-`$9FFF`, never called: the source of the image's
+  calls to `CHRIN` and `CHROUT`.
+- **Lupenio's ending and instructions**, in Italian, never printed, and a
+  dead ending routine with a 200,000-point replay bonus (`$7D70`, `$8000`).
+- **The X high-bit slip at `$1020`**: the test reads `$400B` (a code
+  operand, always `$FC`) for `$40BB`.
+- **A store missing its index at `$18B3`** (`STA $2BF8` where its twin at
+  `$916A` has `STA $35D8,Y`): only part of that drawing is done.
+- **122 writes to `$D022`**, invisible in hires bitmap mode, several where a
+  colour store or a call was switched off.
 
 ## Open questions
 
-- What does fire do in play?
-- What scores 25,000 points?
-- What does the LIFT do, and how does Mr Hat leave a room?
-- How many rooms and stages are there, and what happens when the Golden
-  Hat is found?
+- Which pickups can actually be taken: room 8's item and lower bonus, room
+  5's two pickups and room 2's two look impossible by the colour tests
+  (facts.md, "Corner cases"); not tried live.
+- Is room 6's dark bonus repeatable?
+- The way through: which order of rooms, keys and switches a player must
+  take to reach room 11 with room 5's object. The code gives the pieces;
+  nobody has played it through here.
+- Who patched the stores to `$D022`, Chiola or a cracker? Comparing another
+  copy of the game would tell.
 - The owner's copy is a freezer backup of the title screen
   (`orientation.md`). Which issue it came from (n. 6, or the reissue in
   n. 14) is unknown.
