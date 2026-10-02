@@ -24,6 +24,40 @@ twenty files:
 | `LOADIT` and the `TNK`/`TOLOR` files | | | Training, the same layout |
 | `DUMMY` | `$1000` | 256 | not loaded by either loader |
 
+## Two more copies compared
+
+On 2 October 2026 the contributor supplied two GCR images of the Mindscape
+disk: `fist_the_legend_continuesmindscape_1986.g64` (SHA-256
+`87ad649d2d08ff86431e15f3349a050b4ebc556835c2c9d3262b02fc18ad547e`) and
+`...1986alt.g64` (SHA-256
+`7a80f5e037734d178b3b3359b74658bbbd7bb69134a5c0a2db16044c18b83771`).
+Both decode to 35 standard tracks with every sector's checksum good, and
+both directories (disk name `fist`) list the same twenty files with no
+`TITLE`. Nineteen files are byte for byte the same in the two; `BNK12A`,
+`BNK2B` and `BNK3` also match the analysed load at `$0400`, `$5C00` and
+`$8000` exactly.
+
+The one file that differs is `LL`, the menu, in 268 bytes at
+`$9866`-`$9971`:
+
+- In the first image that block is code that decrypts itself (a running EOR
+  that starts from `$C6`), copies a routine to `$033F`, sends the drive a
+  program with `M-W` and starts it with `M-E`. The drive program reads
+  track 2, sector 0, a sector no file owns (the BAM marks it used), and the
+  menu then fetches 256 bytes back from the drive's memory with `M-R` into
+  `$9866` and jumps there. So the menu's own code comes from the drive,
+  after the drive has read the disk: a copy protection check. The rest of
+  track 2 (only sector 7 belongs to a file), and sectors on tracks 18, 33, 34 and 35 that no file uses, hold
+  data, and a 36th track carries five sync marks and no sectors.
+- In the alt image the same block is plain code (`SETLFS`, `SETNAM`, `LOAD`
+  of the logo and the next file), written straight into the file. Track 2
+  and the unused sectors are zeroed and tracks 36-41 are blank. It is the
+  disk with the protection removed.
+
+Neither image is the `.d64` analysed here (its SHA-256 differs and it has
+no disk name); its game files were not compared with these byte for byte
+beyond the three above.
+
 ## From power-on to play
 
 1. Hard reset (power cycle) the emulator, PAL.
