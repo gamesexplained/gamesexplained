@@ -24,6 +24,19 @@
   <p>Only one facing is stored. To draw a fighter facing the other way, a second unpacker (<code>$1F58</code>) writes each row's three bytes in reverse order and passes every byte through a 256-byte table that reverses its four pixel pairs (<code>$BF00</code>). In multicolour a pixel is two bits wide, so the pairs move as units.</p>
   <p>A move is a script of four-byte steps (<code>$AF46</code>): how long to hold, which pose, and how far to move across and up, read one step at a time (<code>$1AF0</code>). There are 44 scripts. A kick is a few steps of rising poses and a few of falling ones.</p>
 </section>
+<section id="cast">
+  <p class="fig">The cast</p>
+  <h2 class="t">One body, five heads</h2>
+  <p class="lede">The hero and every opponent, put together by this page the way the game puts them together. Pick a fighter to see all 73 of its poses.</p>
+  <div class="plate">
+    <div class="row" id="castpick"></div>
+    <div class="row"><button class="b" type="button" id="castface" aria-pressed="false">Face the other way</button><span class="note" id="castnote"></span></div>
+    <div class="gal" id="castgal"></div>
+    <p class="cap">Each pose drawn from its nine parts (<code>$B210</code>) and its head (<code>$B533</code>), placed where the game places them (<code>$45DF</code>), in the colours of the fighter's set (<code>$269D</code>), on the brown of the jungle floor.</p>
+  </div>
+  <p>Every fighter in the game shares one body. The nine parts of each pose, three rows of three sprites, are the same images for the hero and for every opponent. What tells them apart is a tenth sprite, the head, and two colours. Each fighter has a set (<code>$269D</code>) that picks the colour of the body sprites (<code>$26C3</code>), the colour of the head (<code>$26B4</code>) and where its six head images are stored (<code>$26B9</code>, <code>$26BE</code>). The hero is set 0, with a white headband. An opponent takes its set from bits 4 and 5 of its encounter record (<code>$2716</code>): sets 1 and 2 have twelve encounters each, sets 3 and 4 eight (<code>$E609</code>).</p>
+  <p>The head moves with the pose. For each pose a byte says which of the six head images to show, whether to mirror it or turn it upside down (<code>$B533</code>), and two more give its offset from the top left of the body (<code>$B4A1</code>, <code>$B4EA</code>). A fighter facing the other way has the offset measured from the other side (<code>$4648</code>).</p>
+</section>
 <section id="scenery">
   <p class="fig">Scenery</p>
   <h2 class="t">Rooms built from shapes, objects and lists</h2>
@@ -61,5 +74,41 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
   }
   draw();
   document.getElementById('face').onclick = e => { flip = !flip; e.target.setAttribute('aria-pressed', flip); draw(); };
+
+  // The cast: nine body parts per pose plus the head sprite, as build_pose ($1BDE) and the sprite placement ($45DF) do it.
+  const castGal = document.getElementById('castgal'), pick = document.getElementById('castpick');
+  const NAMES = ['The hero (set 0)', 'Set 1', 'Set 2', 'Set 3', 'Set 4'];
+  const sg = v => v > 127 ? v - 256 : v;
+  function blit(ctx, f, x0, y0, cols, s) {
+    for (let y = 0; y < 21; y++) for (let b = 0; b < 3; b++) { const g = f[y * 3 + b];
+      for (let x = 0; x < 4; x++) { const v = (g >> (6 - 2 * x)) & 3; if (!v) continue; ctx.fillStyle = C64.PAL[cols[v]]; ctx.fillRect((x0 + b * 8 + x * 2) * s, (y0 + y) * s, 2 * s, s); } }
+  }
+  function fighter(cv, pose, set, face, s) {
+    const ctx = C64.canvas(cv, 92 * s, 84 * s); ctx.fillStyle = C64.PAL[8]; ctx.fillRect(0, 0, cv.width, cv.height);
+    const ox = 16, oy = 16, body = M[0x26C3 + set], head = M[0x26B4 + set], base = M[0x26BE + set] * 256 + M[0x26B9 + set];
+    for (let k = 0; k < 9; k++) { const v = M[0xB210 + 73 * k + pose]; if (!v) continue;
+      let f = FIST.unpack(M, v), c = k % 3; if (face) { f = FIST.mirror(M, f); c = 2 - c; }
+      blit(ctx, f, ox + 24 * c, oy + 21 * Math.floor(k / 3), [0, 0, body, 10], s); }
+    const at = M[0xB533 + pose], n = (at & 15) - 1; if (n < 0) return;
+    let f = M.slice(base + 64 * n, base + 64 * n + 63);
+    if (((at >> 4) & 1) ^ (face ? 1 : 0)) f = FIST.mirror(M, f);
+    if (at & 0x20) { const g = new Uint8Array(63); for (let y = 0; y < 21; y++) for (let b = 0; b < 3; b++) g[y * 3 + b] = f[(20 - y) * 3 + b]; f = g; }
+    const hx = sg(M[0xB4A1 + pose]), hy = sg(M[0xB4EA + pose]);
+    blit(ctx, f, ox + (face ? 48 - hx : hx), oy + hy, [0, 0, head, 10], s);
+  }
+  let cset = 0, cface = false;
+  NAMES.forEach((nm, i) => { const b = document.createElement('button'); b.className = 'b'; b.type = 'button'; b.setAttribute('aria-pressed', i === 0);
+    const cv = document.createElement('canvas'); fighter(cv, 0, i, false, 1); cv.style.display = 'block'; cv.style.margin = '0 auto 4px';
+    b.appendChild(cv); b.appendChild(document.createTextNode(nm));
+    b.onclick = () => { cset = i; pick.querySelectorAll('button').forEach((x, j) => x.setAttribute('aria-pressed', j === i)); drawCast(); };
+    pick.appendChild(b); });
+  function drawCast() {
+    castGal.textContent = '';
+    for (let p = 0; p < 73; p++) { const cv = document.createElement('canvas'); fighter(cv, p, cset, cface, 2); cv.title = 'pose ' + p;
+      cv.onclick = () => { document.getElementById('castnote').textContent = 'pose ' + p + ': parts at ' + C64.hex(0xB210 + p) + ', head byte at ' + C64.hex(0xB533 + p); };
+      castGal.appendChild(cv); }
+  }
+  drawCast();
+  document.getElementById('castface').onclick = e => { cface = !cface; e.target.setAttribute('aria-pressed', cface); drawCast(); };
 })();
 </script>
