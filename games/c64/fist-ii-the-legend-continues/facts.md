@@ -369,5 +369,7 @@ lighting the dark rooms (a zone's colours), 8 surviving the poison rooms
   `$02`-`$21` to `$22`-`$41` at `$3FA8`; placed at `$45DF`, mirrored as
   48 - X at `$4648`). Body rows are 21 lines apart, columns 24 pixels.
   *Checked*: drawn this way, the five sets in pose 0 match the hero in
-  the reference screenshots; the opponents' sets have not been compared
-  with screenshots.
+  the reference screenshots; *live* (2 October 2026, booted from
+  work/fist-mindscape.g64): the opponent in room 94 (record flags `$10`,
+  set 2) is drawn grey with the grey hood, as the page draws set 2. Sets
+  1, 3 and 4 have not been compared.
