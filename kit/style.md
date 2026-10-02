@@ -41,6 +41,12 @@ rules below mechanically, paragraph by paragraph, as described in
   there are two or four things.
 - No em-dashes as the default joint between clauses. Write two sentences.
 - No summary paragraph that restates the section.
+- Name the thing instead of "it" when the reader could mean two things.
+  When a sentence opens with "it" ("It ...", "Once it is ..."), and the
+  sentence before holds two or more singular nouns, replace "it" with the
+  noun it stands for. Not "The hero finds the scroll in a room and takes it
+  to a chamber. Once it is delivered, it gives him a power." but "... A
+  delivered scroll gives the hero a power."
 - Do not describe the tooling or the process ("we pointed an AI at the
   bytes"). The reader is here for the game.
 
