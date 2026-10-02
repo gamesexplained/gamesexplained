@@ -84,23 +84,9 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
   // The cast: nine body parts per pose plus the head sprite, as build_pose ($1BDE) and the sprite placement ($45DF) do it.
   const castGal = document.getElementById('castgal'), pick = document.getElementById('castpick');
   const NAMES = ['The hero (set 0)', 'Set 1', 'Set 2', 'Set 3', 'Set 4'];
-  const sg = v => v > 127 ? v - 256 : v;
-  function blit(ctx, f, x0, y0, cols, s) {
-    for (let y = 0; y < 21; y++) for (let b = 0; b < 3; b++) { const g = f[y * 3 + b];
-      for (let x = 0; x < 4; x++) { const v = (g >> (6 - 2 * x)) & 3; if (!v) continue; ctx.fillStyle = C64.PAL[cols[v]]; ctx.fillRect((x0 + b * 8 + x * 2) * s, (y0 + y) * s, 2 * s, s); } }
-  }
   function fighter(cv, pose, set, face, s) {
     const ctx = C64.canvas(cv, 92 * s, 84 * s); ctx.fillStyle = C64.PAL[8]; ctx.fillRect(0, 0, cv.width, cv.height);
-    const ox = 16, oy = 16, body = M[0x26C3 + set], head = M[0x26B4 + set], base = M[0x26BE + set] * 256 + M[0x26B9 + set];
-    for (let k = 0; k < 9; k++) { const v = M[0xB210 + 73 * k + pose]; if (!v) continue;
-      let f = FIST.unpack(M, v), c = k % 3; if (face) { f = FIST.mirror(M, f); c = 2 - c; }
-      blit(ctx, f, ox + 24 * c, oy + 21 * Math.floor(k / 3), [0, 0, body, 10], s); }
-    const at = M[0xB533 + pose], n = (at & 15) - 1; if (n < 0) return;
-    let f = M.slice(base + 64 * n, base + 64 * n + 63);
-    if (((at >> 4) & 1) ^ (face ? 1 : 0)) f = FIST.mirror(M, f);
-    if (at & 0x20) { const g = new Uint8Array(63); for (let y = 0; y < 21; y++) for (let b = 0; b < 3; b++) g[y * 3 + b] = f[(20 - y) * 3 + b]; f = g; }
-    const hx = sg(M[0xB4A1 + pose]), hy = sg(M[0xB4EA + pose]);
-    blit(ctx, f, ox + (face ? 48 - hx : hx), oy + hy, [0, 0, head, 10], s);
+    FIST.figure(ctx, M, pose, set, face, 16, 16, s);
   }
   let cset = 0, cface = false;
   const picks = [];
