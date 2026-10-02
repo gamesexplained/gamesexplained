@@ -24,7 +24,9 @@ reproduce your mistakes. A batch is logged as a whole, so check its result.
 """
 import json, os, sys, urllib.request
 
-URL = "http://127.0.0.1:3000/mcp"
+from endpoints import R2000_PORT
+
+URL = f"http://127.0.0.1:{R2000_PORT}/mcp"
 MUTATING = {"r2000_set_label_name", "r2000_set_comment", "r2000_set_data_type",
             "r2000_disassemble", "r2000_batch_execute", "r2000_toggle_splitter",
             "r2000_add_scope", "r2000_set_immediate_format", "r2000_apply_enum_usage",

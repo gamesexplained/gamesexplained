@@ -1,0 +1,202 @@
+# Wizard — verified technical facts
+
+Facts below refer to the canonical `work/entry.vsf` or the named live observation. Open interpretations are kept separate.
+
+## Build and initial image
+
+PP&S disk edition, 1984. Disk GAME loads at `$0801` and starts at `$0819` with `JMP $2245`. The directory and boot recipe are in `orientation.md`.
+
+## Display and alphabets
+
+**Live:** `$DD00=$C4`, `$D018=$13` in Playground select screen `$C400` and character shapes `$C800`. The 2048-byte charset matches CHRW on disk exactly. Rendering all 256 glyphs established this table:
+
+| Screen codes | Meaning |
+|---|---|
+| `$01–$1A` | lowercase a–z |
+| `$20–$3F` | space, punctuation and digits; digits at `$30–$39` |
+| `$41–$5A` | uppercase A–Z |
+| `$60–$7F` | terrain and object fragments, ladders, ropes, slopes, arrows and platforms |
+| `$80–$FF` | alternate forms; 101 of the 128 glyphs are exact bitwise inverses of their lower-half counterparts |
+
+The compiled program's strings use shifted PETSCII: stored `$41–$5A` become lowercase, `$C1–$DA` uppercase. Examples checked against their bytes and visible menu: `$331A` Beginner, `$332A` Intermediate, `$333E` Advanced, `$334E` Expert, `$335C` Customized, `$336E` Mystery. Known text WIZARD appears as `$D7,$C9,$DA,$C1,$D2,$C4`, not a private substitution cipher. Strings are embedded in a bytecode stream, so printable runs may extend into opcodes; the literal boundaries must be checked rather than copied from the raw sweep.
+
+The separate title/menu writer at `$686C` writes screen codes itself. Its source is ($FB), destination ($FD), source cursor `$8D`, destination cursor `$8E`, letter offset `$8B`. Byte zero terminates. `$3F` selects lowercase by subtracting `$40`; `$40` selects uppercase with offset zero. Space, ampersand and period draw unchanged; other small bytes advance the destination cursor. `$68B8` begins the publisher and credit streams. Thus those streams need their formatting commands decoded, not PETSCII transliteration.
+
+Spell names at `$8D73–$8E0E` are twelve 13-byte screen-code fields, padded with spaces. The order is Fireball, Magic Missile, Disintegrate, Enchantment, Freeze, Invisibility, Teleport, Feather Fall, Levitate, Haste, Slow, None. A label in this table proves its presence as text; behavior is checked separately.
+
+## Initial live control check
+
+From `play-round1.vsf`, port-2 right for 12 PAL frames moved sprite 7 X from 172 to 182 and Y from 165 to 167. Other sprites also moved. The before/after pictures are `reference/playground.png` and `reference/playground-moved.png`. This establishes actual gameplay and input delivery; movement speed is not inferred from this single sample.
+
+## Hardware census (initial sweep)
+
+The census is from decoded instructions in GAME and M.L.; indexed accesses name their base register. It is a work list, not proof that a register omitted from the sweep is unused. Indirect stores and banked RAM are checked during annotation.
+
+| Registers | Observed use / entry points |
+|---|---|
+| `$D000–$D010` | Sprite positions and X high bits. Player accesses name `$D00E/$D00F` (sprite 7); e.g. `$707E`, `$7091`, `$75D7`. Other actors use indexed accesses, e.g. `$7DF5/$7DFB`. |
+| `$D011/$D016/$D018` | Display mode, scrolling and screen/font selection; title setup `$6C77–$6C98`, game setup `$8EC2/$8EC7`. |
+| `$D015/$D017/$D01B–$D01D` | Sprite enable, scaling, priority and multicolor flags; `$8EB4–$8ED4`, plus individual actor routines. |
+| `$D019/$D01A/$D01E/$D01F` | Interrupt control and sprite collision latches; installation `$7C78`, handler `$7CBF`, collision dispatch `$7CE7`. |
+| `$D020–$D02E` | Border, background, shared sprite colors and per-actor colors. Actor-color reads at `$7CF5` and `$862E` also participate in logic. |
+| `$D400–$D418` | Frequency, waveform, envelope, pulse width and filter/volume writes across all three SID voices. Many short effects occur at `$9766–$98E9`; these are not only frequency writes. |
+| `$D41B` | SID oscillator output used by `$8E0F` and other routines. The random update also subtracts CIA timer A's low byte at `$8E18`. |
+| `$D800–$DBFF` | Color RAM writes from title drawing and pause display; `$6990–$699F`, `$970F`. |
+| `$DC00/$DC01` | Joystick and keyboard matrix reads: `$7185/$718F`, `$96DA` onward. Direction-register setup is at `$8F69/$8F6E`. |
+| `$DC06/$DC07/$DC0D/$DC0F` | Game interrupt setup selects CIA1 timer B, with both latch bytes `$FF`, at `$7C78–$7CA4`. Timer A is restored for system activity at `$7C60`. |
+| `$DD00` | Video bank selection at `$6C7E`. |
+| `$DD0D/$DD0E/$DD0F` | Disable CIA2 interrupts/timers during game interrupt setup, `$7CA5`. |
+| `$01` | Bank changes at `$7C51`, `$8CDF/$8D38`, `$90D6/$90E4`: setup, in-place sprite transformation, and copying a sprite from RAM beneath ROM. |
+
+## Program representation
+
+`$0819` jumps to `$2245`. This runtime reads its header pointers, initializes variables, and executes through `$0926`. An opcode with bit 7 set selects one of 128 little-endian handler addresses at `$0826–$0925`; the low opcode groups select scalar loads/stores or typed literals. The initial bytecode cursor is `$296D` and is incremented before fetch. This is an interpreter for compiled program data, so `$296E` onward must be decoded through its handlers rather than treated as 6502 instructions.
+
+GAME and BLDR are separately loaded programs. Their shared machine-code routines are reached through the loader-produced jump table at `$7000`. The decoded GAME script is carried in the listing; the separately decoded BLDR script is in `reference/editor-source.txt`.
+
+## The compiled runtime and game script
+
+The short opcode groups are **loads, literals, stores**: `$00–$1F` load secondary value, `$20–$3F` load primary, `$40–$5F` enter a nine-way literal/control dispatcher, and `$60–$7F` store primary. They are not four variable operations. Literal variants carry an unsigned byte, signed little-endian word, six-byte float, or length-prefixed string. `$80–$FF` dispatch through the 128-word table. Numeric comparisons return **-1 for true**, zero for false. That matters whenever the script multiplies a comparison into a score, coordinate or selection.
+
+A complete sequential parse of GAME `$296E–$4A88`, including inline function bodies, produces 4,068 instructions and 90 string literals. Each instruction has a decoded side comment in the source listing. Operand widths were derived from the runtime, including big-endian variable pointers on named NEXT, little-endian GOTO/GOSUB pointers, and variable-length ON tables. The runtime includes scalar and array access, FOR/NEXT, function locals, strings and garbage collection; floating transcendental functions call the machine's BASIC ROM. Their identities were checked against the [original Microsoft/Commodore source commentary in the ROM reference](https://www.pagetable.com/c64ref/c64disasm/), rather than guessed from address values.
+
+BLDR's machine runtime `$0826–$27F1` is byte-for-byte identical to GAME's. Its separate script `$3320–$530C` also parses end to end (3,830 instructions). Its strings, DATA records and behavior must be checked as a separate loaded program; the GAME snapshot does not contain that overlay.
+
+## Players, rounds and score
+
+Traced in bytecode:
+
+- `$34EC–$355C` selects **one through six players**, incrementing on a new joystick direction and wrapping seven to one. This agrees with the supplied manual; the wiki's four-player figure does not match this build.
+- `$36D2–$36E8` initializes six life slots `$02C0–$02C5` to **six lives**, and eighteen score bytes `$02C6–$02D7` to zero. Score columns are low, middle and high bytes for six accounts. `$315B` restores them; `$373D` writes them back.
+- `$36AE` maps the difficulty menu to level bases 0,10,20,30,40. Mystery sets bit 7 and a time-dependent initial level. `$3831` advances players/rounds, choosing another random level in Mystery. Ten completed levels call `$3BA5`: surviving accounts receive `INT(base/10+2)` lives, wrapping through eight bits; `$3D85` advances the difficulty and changes base 40 to Mystery 128.
+- The key is glyph `$1B`; `$7ACE` removes it, sets `$C030` and restores the level's charge count to the HUD. Exit glyph `$40` is accepted only when that key flag is nonzero.
+- Treasure classes `$1C–$1F` plus difficulty select 50,100,200,300,400,500 or 750 points through `$84D8/$84DF`. The machine routine updates seven leading digits of an eight-digit HUD field, whose last digit remains zero. A change in the ten-thousands digit at `$C7BA` grants another life (`$850A`).
+- The bonus starts at 24 (`$8EE4`). CIA timer updates decrement it according to level period `$C350` (`$9270`). Completion bytecode `$3D96` awards **50 points per remaining unit**, up to 1,200. It also grants a life at each exact 10,000 threshold crossed while adding that bonus.
+- Disk SCOR stores ten three-byte values in split columns `$C11E/$C128/$C132`, scaled in units of 50. Three initials columns begin at `$C100/$C10A/$C114`, and the top player's sixteen-character name at `$C13C`. The whole saved record is 128 bytes (`$8B1E`). Ranking inserts only a strictly higher value (`$419A`).
+
+## Timing and movement
+
+`$7C78` installs the game interrupt and enables **sprite-sprite collision interrupts**, not raster interrupts: `$D01A=4`. CIA1 timer B uses latch `$FFFF` and runs the background updates. The normal handler updates colored cells, random state, bonus, disappearance, popup fade, flashing terrain and pause controls. Player/actor movement is called by the bytecode main loop, so its pacing is a separate mechanism.
+
+Digit keys 0–9 during load change `$C005` (`$90ED`); `$80DA` sets the normal default to 5. The script computes `4*(9-speed)^1.15 + 2 - 2*(speed==9)` with true=-1, making the fastest setting 9 a delay value 4. The delay helper converts the script value to a byte and busy-waits. This is not a claim of a fixed real-time movement rate.
+
+Sprite 7 is the wizard, sprite 6 is a projectile/reward/effect, slots 0–5 are level actors. Horizontal player movement is two pixels per call (`$792E`), with ninth-bit X handled separately. Stair routines adjust height from slope glyphs, while ladders/ropes use alignment tests. Jumps select one of two nineteen-byte packed motion sequences (`$76A0/$76B3`), traversed backwards. Collision and terrain checks can shorten a jump.
+
+Elevators are actor type 7. Signed velocity nibbles come from header `$C316+slot`; the leg duration is `$C35F` (`$892A`). Player/elevator sprite collision checks vertical contact and records the supporting slot (`$7D06`); `$855A` then follows its height/velocity.
+
+## Monster identities and collision handling
+
+BLDR's own DATA strings beginning at `$296A` establish type names, in order:
+
+| Type | Name | Traced controller |
+|---:|---|---|
+|0|None|returns at `$8615`|
+|1|Arrow|horizontal spawn/cooldown, `$87C3`|
+|2|Bat|flying pursuit, `$8845`, with sound|
+|3|Ghost|flying pursuit, `$8845`|
+|4|Evil Wizard|randomly chosen pursuit axes, `$8876`|
+|5|Witch|flying pursuit, `$8845`|
+|6|Falling Rock|spawn above/near player and fall, `$88A7`|
+|7|Elevator|signed velocity nibbles, `$892A`|
+|8|Lava|stationary, expanded sprite|
+|9|Pit|stationary, expanded sprite|
+|10|Trap Door|stationary, expanded sprite|
+|11|Gate|vertical bob/reversal, `$89A9`|
+|12|Lava Troll|vertical bob, divided update rate, `$89C7`|
+|13|Rolling Rock|long run with shared terrain physics|
+|14|Rat|ground/ladder controller|
+|15|Scorpion|ground/ladder controller|
+|16|Slime|ground/ladder controller|
+|17|Spider|ground/ladder controller|
+|18|Shadow Lord|ground/ladder controller|
+|19|Thief|ground controller plus treasure removal, `$7F7A`|
+|20|Cat|ground controller and special rat interaction|
+
+The collision handler exempts type 20 from killing the wizard and queues removal when a cat collides with a rat (`$7D45`). A matching exempt sprite color also prevents collision death. All 40 supplied level headers set that color to 3; Freeze changes a victim to color 3 (`$8C1C`) and the controller restores its original color after the shared phase expires (`$862E`). These identities come from the editor's data, not guesses from sprite silhouettes.
+
+## Spells
+
+The level stores spell ID at `$C31C` and initial charges at `$C31D`. The cast path debounces its request and spends one HUD charge (`$765B`). IDs 0–4 use sprite 6 as a projectile; direction selects X steps 5,-5,0,0 and Y steps 0,0,-3,3. A queued hit either removes an actor or, for Freeze ID 4, temporarily sets its color 3. Higher IDs signal the compiled script through `$C02C`:
+
+|ID|Name|Checked effect|
+|---:|---|---|
+|5|Invisibility|counter 32, background-matching wizard color, delayed multicolor/color restoration (`$3091`)|
+|6|Teleport|selects the coordinate-exchange tile effect (`$30EE` → `$7075`)|
+|7|Feather Fall|selects forced downward travel (`$3106` → `$7063`)|
+|8|Levitate|selects forced upward travel (`$3117` → `$7069`)|
+|9|Haste|replaces main-loop delay with delay/2+1 (`$3128`)|
+|10|Slow|sets actor horizontal pursuit speeds to+1/-1 and increases delay below 64 (`$3132`)|
+|11|None|name/table entry exists; no charge-use behavior inferred from the name alone|
+
+Differences among projectile spells 0–3 require further live checks before describing special target immunities. Their distinct graphics alone do not prove different collision rules.
+
+## Level format and resident demos
+
+Each supplied L00T–L39T file loads 1,136 bytes at `$C300`: 128-byte header, 128-byte treasure-patch table, and 880 screen cells (22×40) at `$C400`. The first 21 rows form the playable terrain; the final row initially carries the level title and becomes a solid bottom border at `$96BB`. The remaining screen rows hold the HUD.
+
+Header fields traced from their consumers:
+
+|Offset from `$C300`|Meaning|
+|---|---|
+|`$00–$05`, `$06–$0B`|six actor start X and Y bytes|
+|`$0C–$0F`|terrain, rope, ladder and object colors|
+|`$10–$15`|six actor colors|
+|`$16–$1B`|six packed elevator X/Y velocity settings|
+|`$1C/$1D`|spell ID / charges|
+|`$1E/$1F`|wizard start low X / Y|
+|`$20–$2F`, `$30–$3F`, `$40–$4F`|treasure-patch repeat counts, strides and optional colors|
+|`$50/$51/$52`|bonus-timer period, spell color, starting X-high mask|
+|`$53–$55`, `$56–$58`|three split low/high flashing-terrain pointers|
+|`$59–$5B`, `$5C–$5E`|three stride/mode values and packed durations|
+|`$5F`|elevator leg duration|
+|`$60–$67`, `$68–$6F`|sprite bases and animation settings; `$6F` also supplies initial collision-exempt color|
+|`$70–$75`|six actor type IDs|
+|`$76–$7F`|level-specific machine-code callback area, invoked after treasure changes, with code allowed to extend into unused patch/header space|
+
+Each treasure-patch record is eight bytes: six glyphs laid out 3×2 and a screen destination pointer. `$9477` repeats that patch according to its parallel count/stride fields. These are changes to the live terrain, not just color effects.
+
+Attract mode uses the real engine. Input pages `$58/$99/$9A` each hold 128 joystick bytes and 128 durations. `$801D` is changed from RTS to NOP to enable playback through CIA port registers. Three resident level images start at `$5900` (Welcome to...WIZARD!), `$5E00` (Crispy Critters), `$9B00` (Hot Stuff); `$8E79` copies exactly `$470` bytes into the normal level workspace. Alignment bytes after the first two images remain loaded but lie outside those copy ranges; their historical provenance is open.
+
+
+## Construction overlay
+
+`reference/editor-source.txt` describes the separately loaded BLDR image in 43 program regions, with all 3,830 decoded instructions and 232 packed DATA records. Every control-flow destination lands on an instruction boundary. The shared interpreter is described once in the canonical GAME listing.
+
+BLDR selects screen numbers 0–99 (`$33CF`), actor slots 0–5 (`$36B8`), behavior IDs 0–20 (`$3906`), sprite images 0–127 (`$3A66`) and animation spans 0–4 (`$3AB0`, with 1 converted to static 0). It stores charges as a display digit, not a binary count: `$3C4D` writes 48+n to `$C31D`. The terrain palette has 24 objects and compound shapes have explicit footprint checks (`$4CEF`). Independent treasure/fire counters refuse a new item when equal to sixteen (`$5088`). These are equality tests; a corrupt count greater than sixteen is not rejected by that limit alone.
+
+The editor's save preparation at BLDR `$45EF` overwrites elevator velocities with `$1F`, the duration with `$90`, and elevator Y with 197. Thus the editor's separate elevator-parameter command does not by itself guarantee those parameters survive saving. This is traced, not a claim that every player can reach that command with the documented function keys.
+
+**Live:** selected Construction in the program menu, pressed FIRE on its title, entered screen 0, and reached its terrain/monster/spell menu (`reference/editor-level0.png`). No save was issued.
+
+## Level-specific programs and coverage scope
+
+The 100% ledger measures **45,560 resident bytes**: GAME, the shared M.L. payload, charset and relocated sprites. RAM workspace, ROM, and alternate disk overlays are distinguished explicitly. The separate BLDR report and forty extracted level records extend the analysis beyond that resident snapshot; addresses in those reports are overlay addresses and must not be confused with GAME's bytecode at the same address.
+
+The level callback starts at `$C376`, but some levels place further instructions in otherwise unused header or treasure-patch space. Both player collection (`$8497`) and thief collection (`$7FA1`) invoke it after applying the treasure's patch. The callback receives the treasure index in X. Twenty supplied files have an active callback rather than an initial RTS. Level 35 also contains dormant instruction-shaped bytes whose activation was not established; no active behavior is inferred from that fragment.
+
+Examples traced directly in the level overlays (zero-based disk file numbers; the atlas displays levels 1–40):
+
+- Level 2, Look Before You Leap: clears two three-cell screen runs.
+- Level 3, Diamond Mine: clears the key's eight glyph rows and may replace a cell with a chalice or diamond according to treasure index.
+- Level 7, Simon Says: compares a treasure-indexed glyph with its remembered glyph. A color-selected BEQ/BNE decides whether to set the death flag, then it chooses the next instruction/color.
+- Level 17, Burning Bridges: swaps two terrain cells.
+- Level 28, Friend or Foe?: treasure index 2 advances the key one cell along a forty-cell row, wrapping at the end.
+- Level 30, Ladder Land: changes pitch and collision-exempt color; an enabled alternate pass can remove three three-cell ladder runs and advance their pointers down a row.
+- Level 33, Madhouse: cycles directional-arrow glyphs across the playable screen, scanning backwards.
+- Level 38, Fire Alarm!: alters two glyphs once and replaces part of its callback with RTS to prevent repeating the operation.
+
+These are traced rules. Their complete player routes and puzzle solutions remain open.
+
+
+## Verification evidence
+
+- **Deterministic input pairs:** the same Playground snapshot run for twelve frames stays at (172,165) with no input; right ends at (182,167), up+fire at (172,155), and right+fire at (182,155). Both jumps retain fourteen motion steps. These are frame-specific observations, not universal movement rates.
+- **Forced key pickup:** placing glyph $1B at the wizard's sampled tile $C693 and setting header charge digit to 3 gives key flag 1 and HUD digit 3 after twelve frames. The unmodified control retains flag 0 and digit 0.
+- **Forced treasure/life test:** glyph $1C at the same sampled tile gives 50 points. Starting the HUD at 9950 produces 10000 and increases lives from 6 to 7.
+- **Forced Freeze hit:** set spell 4 and queue actor 0 as the hit target before the main loop. Its color changes from 1 to 3 and its shared phase is 105 after twelve frames. This checks hit processing, not projectile reachability.
+- **Menu selection:** five separate joystick edges select six players; the scalar record holds integer 6 and the screen shows 6 (`reference/six-players.png`).
+- **Pause:** direct keyboard-matrix RUN/STOP press/release produces the blackout/prompt and a second press/release restores play (`reference/paused.png`, `reference/resumed.png`).
+- **Screen reconstruction:** one captured Playground PAL frame has 0 video-register writes and 0 changed color cells. The shared renderer reproduces all 104,448 visible pixels with 0 differences from the emulator. Only the 1,708 RAM bytes actually read for drawing are embedded in the page; no machine ROM is needed.
+- **Original-code comparisons:** 158 cases run the original 6502 routines in the kit simulator. They cover 80 treasure/score/life cases (all sixteen class/difficulty combinations with five score boundary values), eighteen horizontal-movement boundary cases, and sixty comparisons of ordered SID writes for five effect ports, including both carry inputs and varied random state. All pass. Test programs/snapshots stay private under work/.
+
+The emulator qualification recorded 54 passing checks and 3 wall-clock-sensitive failures on this host (watchpoint throughput and warp-rate thresholds). Exact frame counts, stopping, input, and snapshot/restart determinism passed. Claims above use exact frames, register values, or original-code comparisons rather than those failed wall-clock measurements.

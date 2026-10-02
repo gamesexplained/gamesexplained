@@ -201,20 +201,25 @@ def phase(samples, lines, cycles):
     """The stopwatch's origin in cycles from the top of the frame, and how many other values fit.
 
     Each sample says the beam was on raster line L at stopwatch s, so the origin o lies in
-    [L*cycles - s, L*cycles + cycles - 1 - s]; the samples' lines are unwrapped past the
-    frame's last line in order. The video chip resets its counter to 0 a cycle later than it
+    [L*cycles - s, L*cycles + cycles - 1 - s], modulo a whole frame. Elapsed cycles,
+    rather than a falling line number, reveal wraps when a quiet frame has no writes.
+    The video chip resets its counter to 0 a cycle later than it
     steps the others, so the first cycle of line 0 still reads as the last line."""
-    lo, hi, prev, wraps = -10**9, 10**9, None, 0
+    if not samples:
+        raise ValueError("phase needs at least one beam sample")
+    lo = hi = None
+    total = lines * cycles
     for s, L in samples:
-        if prev is not None and L < prev:
-            wraps += 1
-        prev = L
-        u = L + wraps * lines
-        first = u * cycles + (1 if L == 0 else 0)
-        last = u * cycles + cycles - 1 + (1 if L == lines - 1 else 0)
-        lo, hi = max(lo, first - s), min(hi, last - s)
-    if lo > hi:
-        raise RuntimeError(f"the samples disagree about the beam's position ({lo} > {hi})")
+        first = L * cycles + (1 if L == 0 else 0) - s
+        last = L * cycles + cycles - 1 + (1 if L == lines - 1 else 0) - s
+        if lo is None:
+            lo, hi = first, last
+            continue
+        # First integral frame shift whose interval can overlap the surviving origin.
+        wraps = -((last - lo) // total)
+        lo, hi = max(lo, first + wraps * total), min(hi, last + wraps * total)
+        if lo > hi:
+            raise RuntimeError(f"the samples disagree about the beam's position ({lo} > {hi})")
     return lo, hi - lo
 
 

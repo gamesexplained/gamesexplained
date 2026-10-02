@@ -29,7 +29,9 @@ says what to use instead (halt_at and release for stops, stick_arm for port 1).
 """
 import json, sys, time, urllib.request
 
-URL = "http://127.0.0.1:6510/mcp"
+from endpoints import VICE_PORT
+
+URL = f"http://127.0.0.1:{VICE_PORT}/mcp"
 
 
 def connect(url=URL):

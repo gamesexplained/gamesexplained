@@ -152,6 +152,12 @@ Search the play snapshot for the start-up's copy loops' destinations, and
 check each against the ledger; one game reached 100 % with half a
 kilobyte of moved graphics outside every span. <!-- until #146 -->
 
+## Interpreted programs and code loaded as level data
+
+If a CPU trace reaches an interpreter or calls into a loaded level,
+follow the program it dispatches too. Read [compiled-programs.md](compiled-programs.md)
+for operand decoding, branch checks and separate loaded-image meanings.
+
 ## Inline parameters: the reason a flow disassembler stalls
 
 When control-flow disassembly reaches a few thousand bytes and stops, and a

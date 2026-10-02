@@ -14,8 +14,8 @@ Deleting the repository removes all of it. See kit/c64/INSTALL.md, "Uninstall".
 
 Usage:
   tools.py status
-  tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
-  tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
+  tools.py vice [x64sc]            start the emulator (default MCP port 6510)
+  tools.py r2000 <file>            start the disassembler (default MCP port 3000)
   tools.py stop [vice|r2000|all] [--force]
                                    the disassembler stays up while an annotation log written since
                                    it started is newer than the game's symbols.json: export first,
@@ -33,7 +33,9 @@ checked on any operating system: it starts the emulator, makes it write a snapsh
 stops it, and then lists every file outside the repository that changed meanwhile and
 looks like it belongs to one of the tools. An empty list is the pass.
 """
-import glob, json, os, re, shutil, socket, subprocess, sys, time
+import glob, json, os, re, shlex, shutil, socket, subprocess, sys, time
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from endpoints import VICE_PORT, R2000_PORT
 
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
@@ -66,7 +68,7 @@ def with_pty(cmd, log):
     if sys.platform == "darwin":
         return ["script", "-q", log] + cmd
     if shutil.which("script"):
-        return ["script", "-q", "-c", " ".join(f'"{c}"' for c in cmd), log]
+        return ["script", "-q", "-c", shlex.join(cmd), log]
     return cmd  # no `script` (Windows): try without; report what happens in kit-feedback.md
 
 
@@ -166,11 +168,11 @@ def vice(machine="x64sc"):
     libs = missing_libraries(exe)
     if libs:
         sys.exit(say_missing(libs))
-    detail = foreign_detail(6510)
+    detail = foreign_detail(VICE_PORT)
     if detail:
         # the MCP server and this clone's scripts would drive that machine, and its snapshots land in its own clone
-        sys.exit(f"an emulator started from another folder already answers on :6510:\n{detail}\n"
-                 "stop it there (its own `tools.py stop vice`) before starting this clone's")
+        sys.exit(f"an emulator started from another folder already answers on :{VICE_PORT}:\n{detail}\n"
+                 "choose unused ports in this clone's tools/mcp-ports.json (kit/c64/INSTALL.md)")
     env = dict(os.environ)
     for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
                      ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data")):
@@ -182,8 +184,8 @@ def vice(machine="x64sc"):
     data, share = os.path.join(env["XDG_DATA_HOME"], "vice"), os.path.join(VICE_DIR, "share", "vice")
     if os.path.isdir(share) and not os.path.lexists(data):
         os.symlink(os.path.relpath(share, env["XDG_DATA_HOME"]), data)
-    start(virtual_display([exe, "-mcpserver"], env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
-          port=6510, name="emulator")
+    start(virtual_display([exe, "-mcpserver", "-mcpserverport", str(VICE_PORT), "-mcpserverhost", "127.0.0.1"], env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
+          port=VICE_PORT, name="emulator")
 
 
 def r2000_exe():
@@ -196,13 +198,22 @@ def r2000(path):
     exe = r2000_exe()
     if not exe:
         sys.exit("no regenerator2000; run: cargo install --root tools/cargo regenerator2000")
-    if up(3000):
-        detail = foreign_detail(3000)
+    if up(R2000_PORT):
+        detail = foreign_detail(R2000_PORT)
         if detail:
-            sys.exit(f"a disassembler started from another folder already answers on :3000:\n{detail}\n"
-                     "stop it there (its own `tools.py stop r2000`) before starting this clone's")
-        sys.exit("something already answers on :3000; only one disassembler can run. `tools.py stop r2000` first")
-    start([exe, "--mcp-server", os.path.abspath(path)], os.path.join(LOGS, "r2000.log"), port=3000, name="disassembler")
+            sys.exit(f"a disassembler started from another folder already answers on :{R2000_PORT}:\n{detail}\n"
+                     "choose unused ports in this clone's tools/mcp-ports.json (kit/c64/INSTALL.md)")
+        sys.exit(f"something already answers on :{R2000_PORT}; `tools.py stop r2000` first")
+    env = dict(os.environ)
+    for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
+                     ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data")):
+        env[var] = os.path.join(TOOLS, "r2000-home", sub)
+        os.makedirs(env[var], exist_ok=True)
+    cmd = [exe, "--mcp-server", os.path.abspath(path)]
+    if R2000_PORT != 3000:
+        cmd = [sys.executable, os.path.join(ROOT, "kit", "c64", "stdio_bridge.py"),
+               exe, os.path.abspath(path), str(R2000_PORT)]
+    start(cmd, os.path.join(LOGS, "r2000.log"), env=env, port=R2000_PORT, name="disassembler")
 
 
 # only this clone's tools: another clone on the same machine keeps its emulator and disassembler
@@ -216,7 +227,8 @@ def r2000(path):
 # shell wrappers match the pattern and are signalled with the emulator; `script` exits after them,
 # and nothing was left (v3.13.2 dmg, 2 October 2026).
 STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
-                 "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
+                 "r2000": ("regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))
+                           if R2000_PORT == 3000 else re.escape(os.path.join(ROOT, "kit", "c64", "stdio_bridge.py")))}
 WRAPPERS = ("script", "xvfb-run")
 
 
@@ -244,15 +256,25 @@ def r2000_running():
     try:
         out = subprocess.run(["ps", "-A", "-ww", "-o", "etime=,command="], capture_output=True, text=True).stdout
     except OSError:
-        return ("", 0) if up(3000) else None
+        return ("", 0) if up(R2000_PORT) else None
     for line in out.splitlines():
+        bridge_path = None
+        if R2000_PORT != 3000:
+            try:
+                args = shlex.split(line.strip().split(None, 1)[1])
+                bridge = os.path.join(ROOT, "kit", "c64", "stdio_bridge.py")
+                bridge_path = args[args.index(bridge) + 2]
+            except (ValueError, IndexError):
+                continue  # skip the terminal wrapper; inspect the bridge itself
         m = re.search(STOP_PATTERNS["r2000"] + ".*$", line)
         if m:
             try:
                 started = time.time() - elapsed(line.split()[0]) - 1   # etime drops the fraction
             except ValueError:
                 started = 0
-            return m.group(0).split(" --mcp-server ", 1)[1], started
+            command = m.group(0)
+            path = command.split(" --mcp-server ", 1)[1] if R2000_PORT == 3000 else bridge_path
+            return path, started
     return None
 
 
@@ -411,22 +433,22 @@ def use_vice(target):
             print("the release is kept at tools/vice-mcp-release; `tools.py use-vice release` goes back to it")
         os.makedirs(TOOLS, exist_ok=True)   # a fresh clone with no release downloaded has no tools/ yet
         os.symlink(target, VICE_DIR)
-    if up(6510):
+    if up(VICE_PORT):
         print("the emulator is still running the old build: `tools.py stop vice` and `tools.py vice`")
     print("emulator build:", vice_build())
 
 
 def status():
-    print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {vice_build()} (tools/vice-mcp)")
-    detail = foreign_detail(6510)
+    print(f"emulator      :{VICE_PORT}  {'up' if up(VICE_PORT) else 'down'}   build: {vice_build()} (tools/vice-mcp)")
+    detail = foreign_detail(VICE_PORT)
     if detail:
-        print(f"  WARNING: :6510 is answered by an emulator from another folder:\n{detail}")
+        print(f"  WARNING: :{VICE_PORT} is answered by an emulator from another folder:\n{detail}")
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
     where = "tools/cargo/bin" if os.path.exists(local) else (shutil.which("regenerator2000") or "MISSING")
-    print(f"disassembler  :3000  {'up' if up(3000) else 'down'}   binary: {where}")
-    detail = foreign_detail(3000)
+    print(f"disassembler  :{R2000_PORT}  {'up' if up(R2000_PORT) else 'down'}   binary: {where}")
+    detail = foreign_detail(R2000_PORT)
     if detail:
-        print(f"  WARNING: :3000 is answered by a disassembler from another folder:\n{detail}")
+        print(f"  WARNING: :{R2000_PORT} is answered by a disassembler from another folder:\n{detail}")
 
 
 def home_candidates():
@@ -451,7 +473,7 @@ def verify_footprint():
     import json
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     t0 = time.time() - 1
-    was_up = up(6510)
+    was_up = up(VICE_PORT)
     if was_up:
         sys.exit("stop the emulator first (tools.py stop vice): the check has to see a whole launch-to-exit cycle")
     vice()
@@ -469,8 +491,8 @@ def verify_footprint():
     if not r2000_exe():
         print("no regenerator2000, so the disassembler is not checked; install it (kit/c64/INSTALL.md) "
               "and run this again to cover it")
-    elif up(3000):
-        print("a disassembler already answers on :3000, so it is not checked; stop it and run this again to cover it")
+    elif up(R2000_PORT):
+        print(f"a disassembler already answers on :{R2000_PORT}, so it is not checked; stop it and run this again to cover it")
     elif where and os.path.exists(where):
         r2000(where)
         stop("r2000", force=True)          # its own, on a throwaway snapshot: nothing to export

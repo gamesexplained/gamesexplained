@@ -38,6 +38,7 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.1 release, `v3.13.1-macos-arm64-gui.dmg` | macOS arm64 | 28 September 2026 | 56 of 57: all but `pause-at-instruction` |
 | v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, no display | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
+| v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, Ubuntu 24.04, no display | 2 October 2026 | 54 of 57 after making startup progress independent of host speed: `watch-store`, `watch-load` each counted 39 against a minimum 40; warp reached 71 passes/s against a minimum 100. Exact frame stepping, instruction stops and snapshot/restart determinism passed |
 
 Add a row whenever a build is measured on a machine not listed, and bring
 that machine's `c64` cell in `site/status.json` into line with it. The two
@@ -126,12 +127,13 @@ Tell the contributor this before installing anything:
 | Emulator source and build, when built from source (`get-vice build`) | `tools/src/vice-mcp/`, with `tools/vice-mcp` a link into it | 550 MB (Linux) to 700 MB (macOS) |
 | Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
 | Disassembler binary | `tools/cargo/` | about 20 MB |
+| Disassembler XDG settings (Linux) | `tools/r2000-home/` | small |
 | Logs | `tools/logs/` | small |
 
 **Uninstall:** delete the repository folder. These can be left outside
 it, and that is the complete list:
 
-- regenerator2000 writes a settings file of a few hundred bytes to its own
+- On macOS, regenerator2000 writes a settings file of a few hundred bytes to its own
   config folder (`~/Library/Application Support/regenerator2000` on macOS).
   Delete it if you want no trace.
 - Rust itself, if the contributor installed it for this (`rustup self
@@ -148,6 +150,31 @@ log, settings and snapshots under `tools/vice-home/` and nothing under the
 home directory, at launch, in use and on exit. Verified the same way on
 Linux, in a container with no display (below). No Windows run is
 recorded.
+
+## Several clones on one machine
+
+Default MCP ports are 6510 for VICE and 3000 for regenerator2000. If
+another clone is using them, leave that run alone. Choose two unused
+ports in this clone's ignored `tools/mcp-ports.json`, for example:
+
+```json
+{"vice": 6511, "r2000": 3001}
+```
+
+The launcher, clients and installer read this file. Values must be
+different integer ports from 1024 to 65535. Set them before launching;
+do not change them while this clone's tools are running. Direct MCP
+registrations in an editor still need their URLs adjusted locally.
+
+VICE receives its port explicitly and listens on loopback. regenerator2000
+0.9.20 has a fixed HTTP port, so a nondefault port uses its stdio server
+through `kit/c64/stdio_bridge.py`. The bridge accepts `.regen2000proj`
+files, or converts a `.vsf` RAM image to a fresh project beside the
+snapshot; keep both under ignored `work/`. Each conversion has a unique
+name to preserve earlier annotations. The native server remains the
+default. On Linux, the launcher contains the disassembler's XDG
+settings under `tools/r2000-home/`; this does not establish containment
+of native macOS settings.
 
 ## Get the emulator
 
