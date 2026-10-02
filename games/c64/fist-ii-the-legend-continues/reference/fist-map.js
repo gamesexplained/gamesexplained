@@ -225,5 +225,5 @@ const FISTMAP = (function () {
     }
     return { world: Wd, fitAll, focus, showRoute, zoom: f => { size(); zoom(f, cw / 2, ch / 2); }, draw, select: r => { sel = r; draw(); } };
   }
-  return { create, world };
+  return { create, world, strip };
 })();
