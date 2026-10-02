@@ -266,7 +266,7 @@ issue tracker: one issue per ask, labelled `kit-ask`, the maintainers'
 one inbox. Put `<!-- kit-ask -->` in the body as well: a label from an
 author without triage access is dropped, and the marker makes the
 repository add it. Filing needs the same yes as opening the pull
-request. A run without that yes, or whose filing is refused, gives the
-contributor a link per ask that opens the issue already filled in, and
-puts the same links in the pull request's description under "Maintainer
-asks" (`kit/skills/core/80-retro`).
+request. A run without that yes, or that cannot file (a cloud session on
+the contributor's fork never can), writes each ask in full in
+`kit-feedback.md` instead, and the repository files them when the pull
+request merges (`kit/skills/core/80-retro`).

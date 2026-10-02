@@ -1,0 +1,39 @@
+name: maintainer-asks
+# Files the maintainer asks a run could not file itself. A game's
+# kit-feedback.md lists each ask under "## Maintainer asks", by issue number
+# once filed or in full as "- **The ask.** ..." when the run had no way to
+# file it (a cloud session on the contributor's fork never has). When such a
+# file reaches main, kit/scripts/maintainer_asks.py files each ask the push
+# added as a kit-ask issue and comments the numbers on its pull request.
+# check_docs.py checks the form on the pull request, before the merge.
+# Issues the Actions token opens do not start kit-ask.yml, so the label is
+# set here directly.
+on:
+  push:
+    branches: [main]
+    paths: ["games/*/*/kit-feedback.md"]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write   # the comment listing what was filed
+
+concurrency:
+  group: maintainer-asks
+  cancel-in-progress: false
+
+jobs:
+  file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # the push's first commit, to see what it added
+          persist-credentials: false
+      - name: File the asks this push added
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: python3 kit/scripts/maintainer_asks.py file "$BEFORE" "$AFTER"

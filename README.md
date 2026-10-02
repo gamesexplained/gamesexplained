@@ -15,8 +15,7 @@ Clone https://github.com/gamesexplained/gamesexplained and follow kit/START.md.
 works on the repository you pick when you start it and can push only
 where you can. Fork this repository on GitHub first, start the session
 on your fork, and paste the same line. The agent will give you a link to
-open the pull request, and links to file anything it has for the
-maintainers.
+open the pull request.
 
 If you would rather see what the agent will do before it does it, clone
 the repository yourself and read three short files: `kit/START.md` is what

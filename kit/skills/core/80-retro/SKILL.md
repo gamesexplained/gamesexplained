@@ -68,21 +68,27 @@ into the diff that saves the next contributor the trouble.
    gh issue create --repo gamesexplained/gamesexplained --label kit-ask --title "<the ask>" --body-file <file>
    ```
 
-   Then list them in `kit-feedback.md` under "Maintainer asks", one line
-   each with its number. Filing an issue publishes, so it takes the
-   contributor's yes, and the one they gave at the start to your opening
-   the pull request yourself (`kit/START.md`) covers it. A cloud session
-   on the contributor's fork cannot reach this repository, so it never
-   files (`kit/START.md`, step 1). With a no, in such a session, or
-   whenever filing is refused, the contributor files them: give them
-   one link per ask that
-   opens GitHub's new-issue form already filled in,
-   `https://github.com/gamesexplained/gamesexplained/issues/new?title=<title>&body=<body>`,
-   with title and body URL-encoded and the body ending in the marker.
-   Any GitHub account can open an issue here from a browser, whatever
-   the session could do. Put the same links in the pull request's
-   description under **Maintainer asks**, and say in `kit-feedback.md`
-   that they are there.
+   Then list them in `kit-feedback.md` under `## Maintainer asks`, one
+   bullet each, `- #123: the ask in one line`. Filing an issue publishes,
+   so it takes the contributor's yes, and the one they gave at the start
+   to your opening the pull request yourself (`kit/START.md`) covers it.
+
+   **When you cannot file**, because they said no, because a cloud
+   session on their fork cannot reach this repository (`kit/START.md`,
+   step 1), or because filing is refused, write each ask there in full
+   instead, and the repository files it when the pull request merges
+   (`.github/workflows/maintainer-asks.yml`):
+
+   ```
+   - **<the ask, in one line>.** <the problem and what it cost this run;
+     what you suggest, and where in the kit it would go>
+   ```
+
+   The bold opening becomes the issue's title and the bullet its body.
+   Every bullet in the section takes one of the two forms, and
+   `check_docs.py` fails one in neither; prose around them is free. An ask
+   another issue already holds gets that issue's number, not a second
+   copy: search first, as above, which needs only read access.
 5. **Add to `kit/CHANGELOG.md` only what the next game will do
    differently.** That file is the record of what the kit learned about
    reverse engineering, from which game and whom, not of what changed. If
@@ -123,5 +129,5 @@ into the diff that saves the next contributor the trouble.
 
 Skill and kit edits committed on the branch and included in the pull
 request; `kit-feedback.md` with the timings table; each ask for a
-maintainer filed as a `kit-ask` issue, or in the pull request's
-description as links that open each issue filled in; `timings.json`; `game.json` complete; `TODO.md` current.
+maintainer filed as a `kit-ask` issue, or written in full in
+`kit-feedback.md` for the repository to file on merge; `timings.json`; `game.json` complete; `TODO.md` current.

@@ -6,10 +6,11 @@ decision, what took longest, operating system and tool versions.
 
 ## Maintainer asks
 
-<one line per ask, each with its `kit-ask` issue: "#123: the ask in one line".
-When the run could not file issues, say that the asks are in the pull
-request's description under "Maintainer asks", as links that open each
-issue filled in.>
+<one bullet per ask. Filed: "- #123: the ask in one line". Not filed (no
+yes, or no way to reach the repository): "- **The ask, in one line.** The
+problem, what it cost, what to change and where", which the repository
+files when the pull request merges. Prose around the bullets is free;
+check_docs.py checks the bullets.>
 
 ## What took longest
 

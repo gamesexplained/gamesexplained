@@ -17,8 +17,8 @@ step needs something only they have.
    it can push nothing, and you tell them now to fork it on GitHub and
    start a new session on the fork. A session on a fork pushes to the
    fork and cannot reach this repository at all, so you open neither
-   the pull request nor issues here: step 7 and the retrospective say
-   what to hand the contributor instead.
+   the pull request nor issues here: step 7 says how the contributor
+   opens the pull request, and the retrospective how the asks are filed.
 2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
 3. **Ask the contributor six things** if they have not already told you:
@@ -53,8 +53,8 @@ step needs something only they have.
    they say you may open it yourself, the run ends with the pull request
    open and a link to it. The same yes lets the retrospective file what
    needs a maintainer's decision as issues on the repository
-   (`kit/skills/core/80-retro`); with a no, those asks go in the pull
-   request's description, as links that open each issue filled in.
+   (`kit/skills/core/80-retro`); with a no, those asks are written in
+   full in `kit-feedback.md`, and the repository files them on merge.
    Either answer holds for the whole run; do not ask again at the end.
 
    **Last, make sure the commits will be theirs.** The site credits a
@@ -95,7 +95,8 @@ step needs something only they have.
    login, which opens the pull request and files the issues, or your
    environment should have its own way to open one. A cloud session on
    a fork has none (step 1): tell them now that you will give them a
-   link to open the pull request, and links to file the asks.
+   link to open the pull request, and that the repository files the
+   asks once it merges.
 
    **The branch is usually yours to name; ask only if it is not.** Where
    you create the branch yourself, call it `game/<platform>/<slug>` as
