@@ -126,7 +126,8 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
     for (let ar = SETS[k][1]; ar < SETS[k][2]; ar++) { const rs = byArea[ar]; if (!rs) continue;
       const wide = rs.reduce((a, r) => { const [l, h] = Wd.bounds(r), [l2, h2] = Wd.bounds(a); return h - l > h2 - l2 ? r : a; }, rs[0]);
       const fig = document.createElement('figure'); fig.style.margin = '0'; fig.style.maxWidth = '100%';
-      const cv = FISTMAP.strip(Wd, M, wide); cv.style.width = (cv.width * 1.5) + 'px'; cv.style.maxWidth = '100%'; cv.style.height = 'auto'; cv.style.imageRendering = 'pixelated'; cv.style.display = 'block';
+      // strip() gives one canvas pixel per multicolour pixel, which is two screen pixels wide: show it at twice the width
+      const cv = FISTMAP.strip(Wd, M, wide); cv.style.width = (cv.width * 3) + 'px'; cv.style.maxWidth = '100%'; cv.style.height = 'auto'; cv.style.aspectRatio = (cv.width * 2) + ' / 160'; cv.style.imageRendering = 'pixelated'; cv.style.display = 'block';
       const cap = document.createElement('figcaption'); cap.className = 'note';
       cap.textContent = 'Area ' + ar + (ar === 6 ? ', the meditation chambers' : '') + ': room ' + wide + (rs.length > 1 ? ' (rooms ' + rs.join(', ') + ')' : '');
       fig.appendChild(cv); fig.appendChild(cap); areasEl.appendChild(fig); }
