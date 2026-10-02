@@ -151,7 +151,8 @@ project does not build every platform for every release, and a build can
 appear partway through a release's life: on 24 September 2026 v3.13.1 had
 Linux and Windows builds only and v3.11.0 was the newest a Mac could have,
 and by 28 September 2026 v3.13.1 had a macOS arm64 GUI build (the table
-above). So find out what this machine can have, with nothing changed:
+above). On 2 October 2026 v3.13.2 had all five of the files below. So
+find out what this machine can have, with nothing changed:
 
 ```
 python3 kit/scripts/tools.py get-vice
