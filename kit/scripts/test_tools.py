@@ -88,7 +88,8 @@ def test_documented_commands():
     (or, for status/stop, every launcher) when a second platform is present."""
     files = [os.path.join(ROOT, f) for f in ("AGENTS.md", "README.md")]
     for d, _, names in os.walk(KIT):
-        files += [os.path.join(d, n) for n in names if n.endswith((".md", ".py")) and n != "CHANGELOG.md"]
+        if d != os.path.join(KIT, "lessons"):    # a lesson names the commands of its day
+            files += [os.path.join(d, n) for n in names if n.endswith((".md", ".py"))]
     seen = bad = 0
     for path in files:
         if not os.path.isfile(path) or path == os.path.abspath(__file__):

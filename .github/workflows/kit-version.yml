@@ -3,7 +3,7 @@ name: kit-version
 # so pull requests never edit the number and never conflict over it.
 # A change asks with [kit-bump] in its pull request's title or body, a
 # kit-bump label on the pull request, or [kit-bump] in a commit message (for
-# a direct push). CHANGELOG headings written as "## next · ..." get the new
+# a direct push). Lessons in kit/lessons/ headed "## next · ..." get the new
 # number.
 # It pushes as the repository's own GitHub App, which main's ruleset lets bypass
 # the pull request rule; the Actions token cannot. The app's id is the
@@ -60,7 +60,7 @@ jobs:
         with:
           app-id: ${{ vars.KIT_BOT_APP_ID }}
           private-key: ${{ secrets.KIT_BOT_PRIVATE_KEY }}
-      - name: Bump kit/VERSION and name the CHANGELOG's new entries
+      - name: Bump kit/VERSION and number the new lessons
         if: steps.ask.outputs.bump == 'yes'
         env:
           TOKEN: ${{ steps.app.outputs.token }}
@@ -77,7 +77,7 @@ jobs:
             git fetch -q origin main && git reset -q --hard origin/main
             v=$(python3 -c "a = open('kit/VERSION').read().strip().split('.'); a[-1] = str(int(a[-1]) + 1); print('.'.join(a))")
             echo "$v" > kit/VERSION
-            sed -i "s/^## next · /## $v · /" kit/CHANGELOG.md
+            sed -i "s/^## next · /## $v · /" kit/lessons/*.md
             git commit -qam "kit $v"
             if git push -q origin HEAD:main; then done="$v"; break; fi
             sleep 5

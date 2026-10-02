@@ -28,10 +28,22 @@ jobs:
         run: python3 kit/scripts/test_tools.py
       - name: The page editor's self-test
         run: python3 kit/scripts/edit.py --test
+      - name: The skill-usage count's self-test
+        run: python3 kit/scripts/skill_usage.py --test
       - name: No game binaries
         run: python3 kit/scripts/check_binaries.py
       - name: Knowledge in its place
         run: python3 kit/scripts/check_docs.py
+      # kit/skills/core/80-retro, step 1: the passages a run names are found in the skills.
+      - name: Skill text named in this pull request is found in the skills
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          files=$(git diff --name-only --diff-filter=d "$(git merge-base "origin/$BASE" HEAD)" -- 'games/*/*/kit-feedback.md')
+          games=$(grep -l '^## Skill text that changed what I did' $files /dev/null | xargs -r -n1 dirname || true)
+          if [ -z "$games" ]; then echo "No skill text named in this pull request."; exit 0; fi
+          python3 kit/scripts/skill_usage.py --game $games
       - name: Listings match their symbols
         run: python3 kit/scripts/check_listing.py
       - name: Coverage figures reproduce

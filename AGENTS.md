@@ -34,7 +34,7 @@ in order:
    | annotate and measure | `kit/skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
    | verify | `kit/skills/core/60-verify` | every fact traced or observed live; `facts.md` |
    | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
-   | retrospective | `kit/skills/core/80-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
+   | retrospective | `kit/skills/core/80-retro` | the skill text that helped, named; fixes to the kit; `kit-feedback.md`; `game.json` complete |
 
    Work on a game after its run is clocked apart: `curate` for the
    Gold pass, `play` for a Play tab added later (`clock.py -h`).
@@ -91,14 +91,16 @@ the same review a game does, not less. Describe the change in the pull
 request.
 Admins of the `gamesexplained` organization can skip the pull request: when
 they ask for a change, commit straight to `main` if they wish.
-`kit/CHANGELOG.md` is not a list of changes: it records what the
-kit learned about reverse engineering, from which game and whom, and a
-change that does not alter what the next agent does when it opens a game
-stays out of it. When the workflow changes, put `[kit-bump]` in the pull
-request's description (or the commit message, on a push to `main`) and
-leave `kit/VERSION` alone: after the merge, `.github/workflows/kit-version.yml`
-moves it on and gives a CHANGELOG entry headed `## next · ...` the new
-number, so two pull requests never conflict over it. A new platform
+`kit/lessons/` is not a list of changes: it records what the kit
+learned about reverse engineering, from which game and whom, one entry
+to a file (`kit/skills/core/80-retro`), and a change that does not alter
+what the next agent does when it opens a game stays out of it. When the
+workflow changes, put `[kit-bump]` in the pull request's description (or
+the commit message, on a push to `main`) and leave `kit/VERSION` alone:
+after the merge, `.github/workflows/kit-version.yml` moves it on and
+gives each entry headed `## next · ...` the new number. A pull request
+adds a lesson file of its own and edits no other, so two pull requests
+never conflict over either. A new platform
 follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable
@@ -156,6 +158,12 @@ follows `kit/PLATFORMS.md`.
   the reader applies at the time ("take the newest release").
 - **Consult the platform reference, don't recall it.** Register addresses,
   timing constants and memory maps come from `kit/skills/<platform>/`.
+- **Search what earlier runs wrote before working it out again.** The
+  skills keep what goes wrong without anyone noticing. What shows itself
+  (a loader that hangs, a tool that refuses, a script that breaks) stays
+  where the run that met it wrote it down: each game's `agent-history.md`
+  and `kit-feedback.md`, and `kit/lessons/`. When something will not
+  behave, search those for the symptom before spending an hour on it.
 - **Copy is not analysis.** Article text follows `kit/style.md`. Write it
   as a separate, final pass, and declare who wrote it in `game.json`.
 - **Record what you used.** `game.json` names the tools, the model and the
@@ -201,6 +209,7 @@ follows `kit/PLATFORMS.md`.
 | `kit/EMULATOR.md` | what an emulator must do, by phase of use, and the test for each |
 | `kit/style.md` | house style for minisite copy |
 | `kit/CHECKING.md` | the maintainer's check that lets a run on an unproven model be Silver |
+| `kit/lessons/` | what the kit learned, from which game and whom: one entry to a file, the site's kit page |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
 | `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |
 | `kit/PLATFORMS.md` | what a platform owns, and how to add one |
@@ -255,11 +264,13 @@ claim per agent against the source before believing the report.
 
 ## Finishing
 
-The last step of every run is `kit/skills/core/80-retro`: where did the skills
-fall short, and what is the diff that would have saved the next
-contributor the trouble. Make the edits to `kit/` in the same
-branch and describe them in `games/<platform>/<slug>/kit-feedback.md`.
-That is how the kit improves.
+The last step of every run is `kit/skills/core/80-retro`: which skill text
+changed what the run did, where the kit fell short, and the smallest diff
+that would have saved the next contributor the trouble. A script that
+catches the failure comes first, and a skill takes what would otherwise
+go wrong unnoticed. Make the edits to `kit/` in the same branch and
+describe them in `games/<platform>/<slug>/kit-feedback.md`. That is how
+the kit improves.
 
 What needs a maintainer's decision, and so was not changed, goes to the
 issue tracker: one issue per ask, labelled `kit-ask`, the maintainers'

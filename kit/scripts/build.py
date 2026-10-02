@@ -10,7 +10,7 @@ For every games/<platform>/<slug>/game.json:
   listing.json, symbols.json, reference/           copied
 Every tab but Source lists its sections in the left margin (pagenav).
 Plus a home page with the catalogue and the games most recently added or changed
-(from git history), site/lib/, kit.html (the kit changelog),
+(from git history), site/lib/, kit.html (kit/lessons/, newest first),
 status.html (from site/status.html + site/status.json: which kits work on which
 computers, and the work needed) and about.html (from site/about-site.html: who
 runs the site and the principles it follows; static).
@@ -211,6 +211,19 @@ def footprint_table(totals):
 # --- pieces -----------------------------------------------------------------
 def read(p):
     return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
+
+
+def lessons():
+    """kit/lessons/ as one page: its README, then a file per lesson, newest first. A lesson's
+    heading starts with the kit version it went into, or with `next` until the bump after its
+    merge; those sort first."""
+    d = os.path.join(ROOT, "kit", "lessons")
+
+    def key(f):
+        m = re.match(r"## (\d+(?:\.\d+)*) · ", read(os.path.join(d, f)))
+        return (tuple(map(int, m.group(1).split("."))) if m else (float("inf"),), f)
+    files = sorted((f for f in os.listdir(d) if f.endswith(".md") and f != "README.md"), key=key, reverse=True)
+    return "\n\n".join(read(os.path.join(d, f)) for f in ["README.md"] + files)
 
 
 TIER_NAMES = {"silver-claimed": "silver (claimed)"}
@@ -1094,8 +1107,8 @@ def main():
                 cards="".join(card_html(g) for g in games), featured=featured_html(feat) if feat else "",
                 recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
-    # the kit changelog, game by game
-    log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False, addr=False) + runs_table(games)
+    # what the kit learned, game by game
+    log = markdown(lessons(), drop_h1=False, addr=False) + runs_table(games)
     page = fill(read(os.path.join(SITE, "page.html")), site_title="How the kit has changed", lib="lib", body=log,
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "kit.html"), "w").write(page)

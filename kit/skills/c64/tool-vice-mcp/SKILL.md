@@ -44,12 +44,8 @@ list of failed checks in `orientation.md`, and the build line in
 
 Which build to have is not a version you pick: `tools.py get-vice` finds
 the newest release and what this machine can have of it, and asks
-(`kit/c64/INSTALL.md`, "Get the emulator"). The dated measurements are
-the table at the top of that file: on 22 September 2026 the v3.11.0
-release failed 28 of the 56 checks, most of phase 4 among them; on 24
-September v3.13 built from source passed all 56; on 26 September, with
-a 57th added, the v3.13.1 release on Linux passed all but
-`pause-at-instruction`.
+(`kit/c64/INSTALL.md`, "Get the emulator"). The checks each build has
+passed, by date and system, are the table at the top of that file.
 
 ## The sequence that works
 
@@ -299,20 +295,17 @@ the batch.
   reads 0 as "the first file" (`autostart_disk` and
   `image_contents_filename_by_number` in `vice/src`, read in the v3.13.1
   source on 26 September 2026). So `index: 0` and `index: 1` both load
-  the first file; the second file is `index: 2`.
+  the first file; the second file is `index: 2`. <!-- until #153 -->
 - **`program` is typed as given.** The server passes it to VICE, which
   types `LOAD"<program>",8,1` at `READY.` and matches the directory name
   exactly: use the name as the directory shows it, in capitals (the C64's
   unshifted letters), with no quotes and no `,8,1`. A wildcard (`NAME*`)
   loads the first file that matches. To see what autostart actually
   typed, read VICE's `Loading program '…'` line in `tools/logs/vice.log`.
-  One run (25 September 2026) reported that neither argument chose the
-  second of two files; the second file there was itself a freezer backup
-  that restores a running game, so the report may not show what was
-  loaded. If a file will not autostart, resume the machine at `READY.`
+  If a file will not autostart, resume the machine at `READY.`
   and type `LOAD"NAME",8,1` and `RUN` with `vice_keyboard_type`.
 - **`vice_memory_read` takes at most 65,535 bytes**, so a whole 64 KB is
-  two reads.
+  two reads. <!-- until #153 -->
 - **Every MCP call stops the emulated machine for a moment.** A script
   that polls in a tight loop slows the game it is watching. Sleep between
   polls, or let a stopping checkpoint do the waiting.
