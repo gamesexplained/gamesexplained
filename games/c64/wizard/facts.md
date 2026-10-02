@@ -112,7 +112,7 @@ BLDR's own DATA strings beginning at `$296A` establish type names, in order:
 |19|Thief|ground controller plus treasure removal, `$7F7A`|
 |20|Cat|ground controller and special rat interaction|
 
-The collision handler exempts type 20 from killing the wizard and queues removal when a cat collides with a rat (`$7D45`). A matching exempt sprite color also prevents collision death. All 40 supplied level headers set that color to 3; Freeze changes a victim to color 3 (`$8C1C`) and the controller restores its original color after the shared phase expires (`$862E`). These identities come from the editor's data, not guesses from sprite silhouettes.
+The cat uses the ground controller at `$86BA`, whose pursuit calculations read the wizard's coordinates (`$8766`, `$89D9`, `$8A02`), not a rat's position. The collision handler exempts type 20 from killing the wizard and queues removal when a cat collides with a rat (`$7D45`). The queued rat index has bit 7 set; `$8C00` consumes it before the spell-ID test, so the rat is removed even when the room supplies Freeze. A matching exempt sprite color also prevents collision death. All 40 supplied level headers set that color to 3; Freeze changes a victim to color 3 (`$8C1C`) and the controller restores its original color after the shared phase expires (`$862E`). These identities come from the editor's data, not guesses from sprite silhouettes.
 
 ## Spells
 
@@ -128,7 +128,9 @@ The level stores spell ID at `$C31C` and initial charges at `$C31D`. The cast pa
 |10|Slow|sets actor horizontal pursuit speeds to+1/-1 and increases delay below 64 (`$3132`)|
 |11|None|name/table entry exists; no charge-use behavior inferred from the name alone|
 
-Differences among projectile spells 0–3 require further live checks before describing special target immunities. Their distinct graphics alone do not prove different collision rules.
+Fireball, Magic Missile, Disintegrate and Enchantment (IDs 0–3) take the **same actor-removal path** at `$8C16`. The supplied manual describes the same lethal hit effect for all four. With no wizard bit in the collision latch, an active sprite-6 projectile queues the highest other set actor bit without testing target type or color (`$7D3A`). The later handler discards positive queued hits during `$C066` transient state; otherwise only ID 4 selects Freeze. This establishes queued-hit behavior, not that a projectile can physically reach every configured actor. Shape, animation and color remain separate level fields.
+
+Freeze duration is **109 − 16 × difficulty** actor-update passes for difficulty 0–3: 109, 93, 77, 61. `$8C1C` writes that value into the shared `$C0A2`; `$7D70` decrements it before updating the six actors. Cyan actors wait until it reaches zero, then `$862E` restores their saved level colors. A second Freeze hit resets that same counter and extends earlier victims' freeze. Original-code paired timelines verify both victims pause, share the reset and recover their separate colors together. These counts are not fixed seconds; the bytecode loop's delay also depends on speed, Haste and Slow.
 
 ## Level format and resident demos
 
@@ -178,14 +180,26 @@ Examples traced directly in the level overlays (zero-based disk file numbers; th
 
 - Level 2, Look Before You Leap: clears two three-cell screen runs.
 - Level 3, Diamond Mine: clears the key's eight glyph rows and may replace a cell with a chalice or diamond according to treasure index.
-- Level 7, Simon Says: compares a treasure-indexed glyph with its remembered glyph. A color-selected BEQ/BNE decides whether to set the death flag, then it chooses the next instruction/color.
+- Level 7, Simon Says: visible instruction words require a matching treasure; black words require a mismatch. The automatic starting pearl initializes the rule before movement. The detailed callback and startup evidence are below.
 - Level 17, Burning Bridges: swaps two terrain cells.
 - Level 28, Friend or Foe?: treasure index 2 advances the key one cell along a forty-cell row, wrapping at the end.
 - Level 30, Ladder Land: changes pitch and collision-exempt color; an enabled alternate pass can remove three three-cell ladder runs and advance their pointers down a row.
 - Level 33, Madhouse: cycles directional-arrow glyphs across the playable screen, scanning backwards.
 - Level 38, Fire Alarm!: alters two glyphs once and replaces part of its callback with RTS to prevent repeating the operation.
 
-These are traced rules. Their complete player routes and puzzle solutions remain open.
+Full room-completion routes remain open. The Simon Says rule and its initial pickup have additional original-code and live evidence below.
+
+### Simon Says: instruction, tables and startup
+
+In disk L07T (displayed level 08), `$C376` masks color RAM `$D832` to its low nibble. Any nonzero color writes BEQ (`$F0`) at `$C38C`; black writes BNE (`$D0`). The chosen treasure's symbol comes from `$C400+X`, where X is its indexed position, and is compared with `$C35F`. The branch skips the death flag at `$C38E`: **visible words require equality, hidden words require inequality**. The words occupy thirteen color cells `$D832–$D83E`.
+
+The callback always writes the next requested symbol from `$C410+X` into both `$C445` and `$C35F`, even after a failed comparison. It then maps `$C031 & 3` to colors 0, 1, 13, 3. The next treasure kind depends on which position was collected; the words' next visibility depends on random state. The article's example isolates the acceptance rule after a pickup, with original character graphics; it does not simulate a full route or the next random choice.
+
+The saved level starts with remembered pearl `$1E` but a displayed chalice `$1F` and hidden words. **This is an initialization state.** At wizard start (168,197), the first lower-side pickup probe collects the pearl at screen `$C733`, indexed slot 14, before polling the joystick. Its patch has count 7, stride 3, destination `$D832`, and three cyan bytes. The shared patch writer at `$9477` therefore colors the instruction before the callback checks it. The pearl matches the remembered pearl and is safe. The callback then sets both displayed and remembered request to chalice. Neutral input replayed this entire initial pickup live; left, right and up reach the same callback before movement. Level selection was forced at the loader, but the setup, pickup, patch and callback ran unmodified.
+
+### Atlas counts
+
+The atlas counts **indexed treasure and fire cells**, using the original `$7BAA` scan, rather than counting every matching glyph byte in the map. That scan runs backwards and retains at most sixteen of each. Simon Says embeds two sixteen-byte lookup tables in its black first row; these do not enter its full sixteen-slot treasure index. Its indexed cells comprise fifteen room treasures plus the instruction's displayed symbol in slot zero; the automatic starting pearl is one of those fifteen. L35T likewise indexes sixteen of eighteen treasure-shaped cells. A count of indexed cells is not a claim that every one is reachable or collectible.
 
 
 ## Verification evidence
@@ -197,7 +211,12 @@ These are traced rules. Their complete player routes and puzzle solutions remain
 - **Menu selection:** five separate joystick edges select six players; the scalar record holds integer 6 and the screen shows 6 (`reference/six-players.png`).
 - **Pause:** direct keyboard-matrix RUN/STOP press/release produces the blackout/prompt and a second press/release restores play (`reference/paused.png`, `reference/resumed.png`).
 - **Screen reconstruction:** one captured Playground PAL frame has 0 video-register writes and 0 changed color cells. The shared renderer reproduces all 104,448 visible pixels with 0 differences from the emulator. Only the 1,708 RAM bytes actually read for drawing are embedded in the page; no machine ROM is needed.
-- **Original-code comparisons:** 158 cases run the original 6502 routines in the kit simulator. They cover 80 treasure/score/life cases (all sixteen class/difficulty combinations with five score boundary values), eighteen horizontal-movement boundary cases, and sixty comparisons of ordered SID writes for five effect ports, including both carry inputs and varied random state. All pass. Test programs/snapshots stay private under work/.
+- **Initial original-code comparisons:** 158 cases run the original 6502 routines in the kit simulator. They cover 80 treasure/score/life cases (all sixteen class/difficulty combinations with five score boundary values), eighteen horizontal-movement boundary cases, and sixty comparisons of ordered SID writes for five effect ports, including both carry inputs and varied random state. All pass. Test programs/snapshots stay private under work/.
+
+
+- **Projectile/cat matrix:** 7,200 original-code runs cover spell IDs 0–4, all twenty nonzero actor types, six slots, colors 0/1/3 and four difficulties. Each run obtains the queue from the original collision IRQ using a forced latch, then runs the original hit processor; projectile travel afterward is suppressed. IDs 0–3 remove every queued type; ID 4 preserves it, turns it cyan and sets the difficulty-dependent phase. Another 150 runs cover both cat/rat slot orders across all slot pairs and those five spells. Four full paired-Freeze timelines check reset and restoration. No collision-geometry or player-route claim comes from forced latches.
+- **Live hit controls:** from the same Playground snapshot, queued spell IDs 0,1,2,3 each remove actor zero within twelve frames; ID 4 leaves its type and changes its color to cyan. The no-hit control retains the original actors.
+- **Simon Says comparisons:** 4,096 original-code callback cases cover sixteen indexed positions, four remembered treasure symbols, all sixteen color nibbles and four random low-bit values. They check the page's actual acceptance function, death flag, self-modified branch, next displayed/remembered symbol and all thirteen changed colors. Four isolated live callback cases check match/mismatch with visible/hidden words. The separate startup replay above tests the automatic pearl through the real pickup path and its terrain/color patch.
 
 The emulator qualification recorded 54 passing checks and 3 wall-clock-sensitive failures on this host (watchpoint throughput and warp-rate thresholds). Exact frame counts, stopping, input, and snapshot/restart determinism passed. Claims above use exact frames, register values, or original-code comparisons rather than those failed wall-clock measurements.
 

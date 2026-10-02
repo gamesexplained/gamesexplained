@@ -8,6 +8,8 @@ Host: Linux x86_64, Ubuntu 24.04, no display. Emulator: official vice-mcp v3.13.
 
 ## Skill text that changed what I did
 
+- `60-verify`: "Prove reachability with inputs, not pokes": replayed Simon Says from its loaded start with neutral input, discovering the automatic pearl and its preceding color patch before labelling the saved instruction state a bug.
+- `70-minisite`: "A widget that runs a mechanic is a claim too": compared the actual page acceptance function with the original level callback across every color nibble, remembered symbol, treasure index and random low-bit value.
 - `50-coverage`: "Know how far a description reaches": typed the authored tables and described ownership at their actual boundaries, including automatic symbols inside sprite RAM, instead of treating one nearby comment as explaining the whole block.
 - `50-coverage`: "Is the picture loaded or drawn?": compared entry and play images, retaining the loaded charset and relocated sprites while excluding generated screen/workspace bytes.
 - `tool-regen2000`: "A custom alphabet has no data type": typed the custom menu streams as bytes and decoded their formatting commands in comments, rather than accepting the tool's PETSCII rendering.
@@ -33,7 +35,7 @@ The footprint check initially noticed a file written by another active clone; a 
 
 ## Verification
 
-158 original-code comparisons pass: 80 score/life cases, 18 movement boundary cases and 60 ordered SID-write cases. Matched emulator runs verify movement, jumping, key pickup, reward/life thresholds and Freeze hit processing; menu, pause/resume and construction load were observed live. Forced states are labelled as such. Projectile immunity distinctions, startup score clearing, full puzzle routes and the editor's save interaction remain explicit research questions.
+158 original-code comparisons pass: 80 score/life cases, 18 movement boundary cases and 60 ordered SID-write cases. Matched emulator runs verify movement, jumping, key pickup, reward/life thresholds and Freeze hit processing; menu, pause/resume and construction load were observed live. Forced states are labelled as such. The four lethal projectile IDs share one hit rule, consistent with the manual. Startup score clearing, full puzzle routes and the editor's save interaction remain explicit research questions.
 
 The article and forty-level atlas were built, then given a separate copy rewrite. Browser checks exercised all forty maps, markers, selections, score controls, five sound players and image comparison at desktop and phone sizes, with no console errors or horizontal overflow. The full site builds; binary, knowledge-location and listing checks pass. All twelve new Python regression tests and launcher dispatch checks pass.
 
@@ -55,10 +57,15 @@ Existing open and closed issues were searched before commenting; no duplicate is
 | 50-coverage | 51 | gpt-6-astra | 1 | Single agent: compiled GAME interpreter and script, shared engine, assets, separate BLDR trace and forty level overlays. Canonical resident ledger 45560 bytes; overlay findings documented separately. |
 | 60-verify | 14 | gpt-6-astra | 1 | Deterministic input pairs, key/score/extra-life/Freeze forced states, six-player menu, editor load, pause/resume, 158 original-code comparisons and exact 104448-pixel reconstruction. Fixed sparse-frame phase inference. |
 | 70-minisite | 12 | gpt-6-astra | 1 | Interactive article, forty-level atlas, five SID previews, separate copy rewrite, desktop/mobile browser controls and full-site build. |
-| 80-retro | 12 | gpt-6-astra | 3 | One agent; kit fixes for independent tool ports, quiet-frame capture, compiled programs and ROM aliases; regression checks and maintainer feedback.; Rebased onto kit 0.0.57; preserved upstream tool cleanup and measurements, moved the lesson into its own file and added verified skill-usage passages.; Recorded sprite-default evidence and the visual curation pass; no new kit change or maintainer ask. |
-| curate | 13 | gpt-6-astra | 1 | Illustrated all 21 behaviors with original sprites; 86 appearance options and 181 frame selections checked in the browser, plus keyboard and mobile layout. |
+| 80-retro | 15 | gpt-6-astra | 4 | One agent; kit fixes for independent tool ports, quiet-frame capture, compiled programs and ROM aliases; regression checks and maintainer feedback.; Rebased onto kit 0.0.57; preserved upstream tool cleanup and measurements, moved the lesson into its own file and added verified skill-usage passages.; Recorded sprite-default evidence and the visual curation pass; no new kit change or maintainer ask.; Recorded the second research pass, corrections, source verification and live puzzle initialization. Existing verification and reachability rules covered the failures; no new kit change or maintainer ask. |
+| curate | 39 | gpt-6-astra | 2 | Illustrated all 21 behaviors with original sprites; 86 appearance options and 181 frame selections checked in the browser, plus keyboard and mobile layout.; Verified projectile hits, cat contact, shared Freeze timers and Simon Says, including its automatic starting pearl. Added an illustrated puzzle rule explorer, corrected two atlas counts and expanded source comments. 11450 new original-code cases/timelines, live controls and responsive browser checks. |
 | total | 132 | gpt-6-astra | | 2.2 h of work |
-| after the run | 13 | | | curate, play and their retros: 0.2 h, not in the total |
+| after the run | 41 | | | curate, play and their retros: 0.7 h, not in the total |
+
+Portable figures:
+  minutes to play : 25.5
+  min per KB      : 1.2  (51.3 min for 45,560 tracked bytes, 1 agents)
+  hours           : 2.2  (and 0.7 h after the run)
 
 The one change that would have saved the most minutes: identify and decode the interpreted program before treating the unexplained tail as ordinary data; its control flow exposes the menus, round progression and editor commands together.
 
@@ -66,3 +73,12 @@ The one change that would have saved the most minutes: identify and decode the i
 ## Curation follow-up, 2 October 2026
 
 The contributor requested graphics and clearer presentation for the behavior section. The page now uses the editor's default sprite tables and original level appearances, with selectable frames, accessible controls and a responsive layout. Browser checks covered 21 behaviors, 86 appearances and 181 frame selections. The saved blank frame in one level is explicitly labelled. This changes no kit rule and raises no new maintainer ask; the appearance evidence is in `facts.md`. Curation is claimed by jankfoundry, with the other sections still awaiting a human pass.
+
+
+## Research follow-up, 2 October 2026
+
+The second curation pass corrects the unsupported immunity premise, distinguishes cat movement from rat contact, verifies the shared Freeze countdown, and adds a Simon Says rule explorer. The initial manual claim was an analysis error; the kit already requires claims to be traced or observed. The apparently inconsistent Simon Says startup state was resolved by following the real pickup and its earlier patch, under the existing reachability rule. Neither needs another general skill rule or maintainer ask.
+
+Added 11,450 original-code cases/timelines: 7,200 projectile combinations, 150 cat/rat combinations, 4,096 puzzle cases and four paired Freeze timelines. Live queued-hit controls, four isolated callbacks and the automatic starting pickup provide a second check. The rule explorer passed all 64 UI combinations and four responsive widths; all twelve spell selections and both corrected atlas counts were checked. Raw glyph counts had counted lookup-table bytes as treasure; the atlas uses the original index scan, with its scope explained beside the numbers. Coverage remains 100% of the same resident-byte ledger; copy remains agent-draft under the human's curation claim.
+
+No additional kit change was necessary for this follow-up. The source snapshot/listing match was checked before recreating the disassembler project from the canonical symbols. Regenerator's import reinstated predefined ROM aliases alongside RAM labels; comparison of generated records confirmed no unintended source-label changes. A live run-until returns before stopping, so its test harness waits for a paused execution state and verifies the target PC before reading results. That visible harness failure is recorded here rather than adding a new skill rule.

@@ -154,8 +154,29 @@ C3BD dex
 C3BE bpl $C3AD
 C3C0 rts
 
-LEVEL 07: Simon Says
-A color-selected match or mismatch can kill the wizard; the next instruction is then chosen.
+LEVEL 07: Simon Says (display level 08)
+Nonzero low color nibble at $D832 selects BEQ at $C38C: matching the remembered
+symbol is safe. Black selects BNE: a different symbol is safe. Failure sets
+$C02A, but both paths still update the next instruction and its color.
+
+X indexes the treasure slots built by $7BAA. $C400+X gives the collected
+symbol; $C410+X supplies the next requested symbol. The callback copies the
+latter to both the visible $C445 and remembered $C35F. The low two random
+bits select colors black, white, light green and cyan (0,1,13,3).
+
+Startup is special: the wizard at (168,197) automatically collects the pearl
+at $C733 (slot14) before movement. Its patch runs FIRST: seven repeats of
+three cyan bytes, stride3, destination $D832. This makes the words visible,
+so that pearl matches the initial $C35F=$1E and is safe. The callback then
+sets displayed and remembered request to chalice. Neutral-input startup
+was replayed live after selecting L07T at the loader; no pickup state was
+poked. The saved mismatching display/request is an initialization state.
+
+Original-code comparison:4096 cases (16 slots,4 remembered symbols,16 color
+nibbles,4 random low-bit values). Checked death, branch opcode, both next
+symbol stores and all13 color stores. Four isolated live callbacks check
+visible/hidden and matching/mismatching cases. Full completion route open.
+
 C376 lda $D832
 C379 and #$0F
 C37B beq $C381
