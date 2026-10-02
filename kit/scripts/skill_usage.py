@@ -1,34 +1,27 @@
 #!/usr/bin/env python3
-"""Which skill text earns its place, and what a branch adds to the skills.
+"""Count the skill text that runs say changed what they did.
 
-Every run reads the whole skill for each step it reaches, so each line costs every run
-after it. The retrospective (kit/skills/core/80-retro, step 1) names, in the game's
-kit-feedback.md under "Skill text that changed what I did", up to five passages that
-changed what the run did, or "None.":
+The retrospective (kit/skills/core/80-retro, step 1) names, in the game's kit-feedback.md
+under "Skill text that changed what I did", up to five passages that changed what the
+run did, or "None.":
 
   - `50-coverage`: "Resolve every pointer table before excluding a region": two tables
     pointed into the block I was about to exclude, and it held the shape scripts.
 
 The words are copied from the skill, so they find their section however the skill has
-been re-wrapped since. Counted over every game, they show which sections pay for the
-lines every run reads, and which no run has named.
+been re-wrapped since.
 
 Usage:
-  skill_usage.py                   each section of every skill: its lines and the games
-                                   that named text in it; the sections never named,
-                                   largest first; named text no longer in any skill
+  skill_usage.py                   each section of every skill: its lines, and the games
+                                   that named text in it; named text no longer found
   skill_usage.py --game <dir>...   check those games' lines: the format, the skill and
                                    the words; exit 1 on a problem
-  skill_usage.py --growth [<base>] the lines each skill gains and loses on this branch
-                                   against <base> (default origin/main), uncommitted work
-                                   included, and any named text the branch removes
-       --annotate                  with --growth: also as GitHub Actions annotations
   skill_usage.py --stopgaps [<n>]  passages marked <!-- until #n -->, all or issue n's:
                                    words standing in for a fix, deleted when it lands
   skill_usage.py --test            self-test on a made-up kit, writing nothing here
 No dependencies.
 """
-import bisect, glob, os, re, shutil, subprocess, sys, tempfile
+import bisect, glob, os, re, shutil, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 HEADING = "## Skill text that changed what I did"
@@ -220,95 +213,17 @@ def tally(root=ROOT, out=print):
     nones = sum(1 for _, r in games if r["none"])
     if nones:
         out(f"{nones} of them named none.")
-    never = []
     for skill in sorted(idx):
         for doc in idx[skill]:
             out(f"\n{doc.rel[len('kit/skills/'):]}")
             for sec, size in doc.sizes().items():
                 who = sorted(hits.get((doc.rel, sec), ()))
                 out(f"  {size:4d} lines  {len(who):3d}  {sec[:52]:52}  {', '.join(who)}")
-                if not who and sec != "(top)":
-                    never.append((size, doc.rel[len('kit/skills/'):], sec))
-    out(f"\nNever named, largest first: each a candidate to trim, or to move to a file beside its "
-        f"skill that is read only when the case arises, once enough runs have reported.")
-    for size, rel, sec in sorted(never, reverse=True)[:25]:
-        out(f"  {size:4d} lines  {rel}  {sec}")
     if gone:
         out("\nNamed text no longer in its skill (edited or cut since):")
         for slug, raw, words in gone:
             out(f"  {slug}: {raw} \"{words}\"")
-    return hits, never
-
-
-def git(root, *args):
-    return subprocess.run(["git", "-C", root] + list(args), capture_output=True, text=True)
-
-
-def by_folder(rows):
-    """{skill folder path: [added, removed, {file: (added, removed)}]} from {path: (a, d)}."""
-    out = {}
-    for path, (a, d) in sorted(rows.items()):
-        folder = "/".join(path.split("/")[:4])
-        g = out.setdefault(folder, [0, 0, {}])
-        g[0] += a
-        g[1] += d
-        g[2][path] = (a, d)
-    return out
-
-
-def changes(base="origin/main", annotate=False, root=ROOT, out=print):
-    mb = git(root, "merge-base", base, "HEAD").stdout.strip()
-    if not mb:
-        sys.exit(f"no merge base with {base}: fetch it first (git fetch origin main), or name another base")
-    rows = {}
-    for ln in git(root, "diff", "--numstat", "--no-renames", mb, "--", "kit/skills").stdout.splitlines():
-        a, d, path = ln.split("\t", 2)
-        if a != "-":
-            rows[path] = (int(a), int(d))
-    for path in git(root, "ls-files", "--others", "--exclude-standard", "--", "kit/skills").stdout.split():
-        rows[path] = (len(open(os.path.join(root, path), encoding="utf-8").read().splitlines()), 0)
-    out(f"Skill lines on this branch against {base} (merge base {mb[:7]}), uncommitted work included:")
-    if not rows:
-        out("  none changed")
-    pure = []
-    tot_a = tot_d = 0
-    for folder, (a, d, files) in by_folder(rows).items():
-        tot_a, tot_d = tot_a + a, tot_d + d
-        flag = "   added to, nothing taken out" if a and not d else ""
-        out(f"  {folder[len('kit/skills/'):]:28} +{a:<5d} -{d:<5d} {a - d:+d}{flag}")
-        for path, (fa, fd) in files.items():
-            out(f"      {os.path.basename(path):24} +{fa:<5d} -{fd:<5d}")
-        if flag:
-            pure.append((folder, a, next(iter(files))))
-    if rows:
-        out(f"  {'total':28} +{tot_a:<5d} -{tot_d:<5d} {tot_a - tot_d:+d}")
-    # named text the branch removes: found in the skills at the merge base, not now
-    base_files = {}
-    for path in git(root, "ls-tree", "-r", "--name-only", mb, "--", "kit/skills").stdout.split():
-        if path.endswith(".md"):
-            base_files[path] = git(root, "show", f"{mb}:{path}").stdout
-    then, now, lost = index(base_files), on_disk(root), []
-    for slug, r in named(root):
-        for _, raw, words, _ in r["items"]:
-            was = resolve(then, raw, words)
-            if was and not resolve(now, raw, words):
-                lost.append((slug, raw, words, was))
-    if lost:
-        out("\nText a run named as having changed what it did, which this branch removes:")
-        for slug, raw, words, (rel, sec) in lost:
-            out(f"  {slug}: {raw} \"{words}\" ({rel}, {sec})")
-    if annotate:
-        if rows:
-            print(f"::notice title=Skill lines::+{tot_a} -{tot_d} ({tot_a - tot_d:+d}) across "
-                  f"{len(by_folder(rows))} skill folders; run kit/scripts/skill_usage.py --growth for the table")
-        for folder, a, first in pure:
-            print(f"::warning file={first},title=Skill added to, nothing taken out::{folder} gains {a} lines "
-                  f"and loses none. 80-retro, step 4: take something out of every skill you add to (a rule "
-                  f"said twice, a passage a script now enforces, a closed stopgap, detail for a side file).")
-        for slug, raw, words, (rel, sec) in lost:
-            print(f"::warning file={rel},title=Named skill text removed::The {slug} run named \"{words}\" "
-                  f"({sec}) as text that changed what it did, and this change removes it.")
-    return rows, pure, lost
+    return hits, gone
 
 
 def passage(lines, i):
@@ -399,23 +314,19 @@ def selftest():
         ok("check finds the one passage whose words are not in its skill",
            len(probs) == 1 and "not in demo-ref" in probs[0], probs)
         lines = []
-        hits, never = tally(root, out=lines.append)
+        hits, gone = tally(root, out=lines.append)
         ok("the count credits each section with its games, each game once",
            hits.get(("kit/skills/core/10-demo/SKILL.md", "Rules")) == {"a", "e"}
            and hits.get(("kit/skills/core/10-demo/side.md", "Rare case")) == {"a"}, hits)
-        ok("sections no game named are listed", any(sec == "Memory map" for _, _, sec in never), never)
-        ok("named text no longer in its skill is listed", any("nowhere in it" in ln for ln in lines))
+        ok("named text no longer in its skill is listed",
+           [w for _, _, w in gone] == ["words that are nowhere in it"] and any("nowhere in it" in ln for ln in lines),
+           gone)
         ok("three of the five games have said", lines[0].startswith("Skill text that changed what a run did: 3 of 5"),
            lines[0])
         gaps = stopgaps(root=root, out=lambda s: None)
         ok("a stopgap marker is found, from the start of its bullet",
            len(gaps) == 1 and gaps[0][3] == 146 and gaps[0][4].startswith("- A stopgap bullet"), gaps)
         ok("stopgaps for another issue are left out", stopgaps(147, root=root, out=lambda s: None) == [])
-        grown = by_folder({"kit/skills/core/10-demo/SKILL.md": (5, 0), "kit/skills/core/20-x/SKILL.md": (3, 40),
-                        "kit/skills/core/20-x/play.md": (38, 0)})
-        ok("a folder added to with nothing out stands out; a move into a side file does not",
-           grown["kit/skills/core/10-demo"][:2] == [5, 0] and grown["kit/skills/core/20-x"][:2] == [41, 40],
-           grown)
     finally:
         shutil.rmtree(root)
     print(f"\n{'FAILED: ' + ', '.join(fails) if fails else 'OK'}")
@@ -441,9 +352,6 @@ def main():
         if probs:
             sys.exit(f"\n{len(probs)} problem(s) with the named skill text. kit/skills/core/80-retro, step 1.")
         print("OK - every passage named is found in its skill")
-    elif a[0] == "--growth":
-        rest = [x for x in a[1:] if x != "--annotate"]
-        changes(rest[0] if rest else "origin/main", "--annotate" in a)
     elif a[0] == "--stopgaps":
         stopgaps(int(a[1].lstrip("#")) if len(a) > 1 else None)
     else:

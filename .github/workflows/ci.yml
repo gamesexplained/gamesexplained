@@ -34,8 +34,7 @@ jobs:
         run: python3 kit/scripts/check_binaries.py
       - name: Knowledge in its place
         run: python3 kit/scripts/check_docs.py
-      # kit/skills/core/80-retro, steps 1 and 4: the passages a run names are found in
-      # the skills, and a skill added to gives something up. The second only annotates.
+      # kit/skills/core/80-retro, step 1: the passages a run names are found in the skills.
       - name: Skill text named in this pull request is found in the skills
         if: github.event_name == 'pull_request'
         env:
@@ -45,11 +44,6 @@ jobs:
           games=$(grep -l '^## Skill text that changed what I did' $files /dev/null | xargs -r -n1 dirname || true)
           if [ -z "$games" ]; then echo "No skill text named in this pull request."; exit 0; fi
           python3 kit/scripts/skill_usage.py --game $games
-      - name: What this pull request adds to the skills and takes out
-        if: github.event_name == 'pull_request'
-        env:
-          BASE: ${{ github.base_ref }}
-        run: python3 kit/scripts/skill_usage.py --growth "origin/$BASE" --annotate
       - name: Listings match their symbols
         run: python3 kit/scripts/check_listing.py
       - name: Coverage figures reproduce

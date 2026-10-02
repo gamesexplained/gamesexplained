@@ -13,10 +13,10 @@ or the one line "None." (80-retro, step 1). check_docs.py fails while this place
 
 ## What was changed in the kit
 
-<one line per change: the file and what it now says, and for each skill
-added to, what was taken out. For a change that carries a lesson, name
-its file in `kit/lessons/` and stop there: the lesson is told once, in
-that file. Any other change (a script, a path, the site) says why here.>
+<one line per change: the file and what it now says. For a change that
+carries a lesson, name its file in `kit/lessons/` and stop there: the
+lesson is told once, in that file. Any other change (a script, a path,
+the site) says why here.>
 
 ## Candidates
 

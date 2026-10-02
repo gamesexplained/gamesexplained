@@ -1,6 +1,6 @@
 ---
 name: 80-retro
-description: The last step of every run. Name the skill text that changed what you did, record where the kit fell short, and change in the same branch only what the next run would not catch by itself, so the next contributor starts from a better kit rather than a longer one. Complete game.json.
+description: The last step of every run. Name the skill text that changed what you did, record where the kit fell short, and change in the same branch only what the next run would not catch by itself, so the next contributor starts from a better kit. Complete game.json.
 ---
 
 # Retrospective: improve the kit
@@ -8,16 +8,16 @@ description: The last step of every run. Name the skill text that changed what y
 Start the clock: `python3 kit/scripts/clock.py start 80-retro --model <your model id> games/<platform>/<slug>`.
 
 You have just used the kit on a real game. Nobody knows better than you,
-right now, where it was wrong, missing or unclear, or which of it earned
-its place. This step turns that into the diff that saves the next
+right now, where it was wrong, missing or unclear, and which of it
+helped. This step turns that into the diff that saves the next
 contributor the trouble.
 
-Every run reads the whole skill for each step it reaches, so a line in a
-skill costs every run after yours, and a rule read at the start of a step
-competes with all the others there for attention an hour later. A lesson
-goes into a skill only when nothing cheaper will carry it: a script that
-catches the failure speaks up at the moment it matters, and a failure that
-shows itself is found again by searching what earlier runs wrote.
+A rule in a skill is read once, at the start of its step, and competes
+with every other rule there for attention an hour later. So a lesson goes
+where it will be found when it matters: in a script, which speaks up at
+that moment; in the notes this run leaves, which the next agent stuck on
+the same thing searches; and in a skill when it would otherwise go wrong
+unnoticed.
 
 ## Do
 
@@ -36,9 +36,8 @@ shows itself is found again by searching what earlier runs wrote.
    Following the steps of the workflow does not. If nothing did, write
    `None.`, which is worth knowing too.
    `python3 kit/scripts/skill_usage.py --game games/<platform>/<slug>`
-   checks the lines. Counted over every game
-   (`python3 kit/scripts/skill_usage.py`), they show which passages pay
-   for the lines every run reads.
+   checks the lines, and `python3 kit/scripts/skill_usage.py` counts them
+   over every game.
 2. **List where the kit cost you time or nearly cost you a fact**: a
    skill that misled you, a gap that took more than about fifteen minutes
    to get round, a claim you nearly published wrong, steps in the wrong
@@ -48,7 +47,7 @@ shows itself is found again by searching what earlier runs wrote.
 3. **Decide where each one goes**, by whether the next agent would notice
    the failure by itself. Take the first that fits.
    - **A script could stop it or catch it.** Change the script on this
-     branch, or file the ask (step 6) when it is a maintainer's call. If
+     branch, or file the ask (step 5) when it is a maintainer's call. If
      the next run needs words before the script changes, put them in the
      skill as a paragraph or bullet of their own, ending
      `<!-- until #<issue> -->`. When the issue closes, the `stopgaps`
@@ -82,19 +81,11 @@ shows itself is found again by searching what earlier runs wrote.
    platform skill describes the machine, never this one game. A fact
    about this game belongs in its `facts.md`. `check_docs.py` enforces
    the separation.
-4. **Take something out of every skill you add to**: a rule said twice, a
-   passage a script now enforces, a stopgap whose issue has closed, a
-   dated observation a newer one replaces, or detail that belongs in a
-   side file. Never cut a passage because your game did not need it, nor
-   one that other runs named in step 1 (`skill_usage.py` lists them).
-   `python3 kit/scripts/skill_usage.py --growth` shows what the branch adds
-   to and removes from each skill; the pull request's checks show it too.
-5. **Write `kit-feedback.md`** in the game folder: what you changed in
+4. **Write `kit-feedback.md`** in the game folder: what you changed in
    the kit, what took longest, anything about your operating system or
    tool versions that the install notes should say, and your asks for a
-   maintainer (step 6). List each change in one line: the file and what
-   it now says, and for each skill you added to, what you took out. Where
-   the reason is a lesson (step 7), name the lesson's
+   maintainer (step 5). List each change in one line: the file and what
+   it now says. Where the reason is a lesson (step 6), name the lesson's
    file and stop there: a lesson is written once, in that file. A change
    that teaches nothing of the kind (a script, a path, the site) gives
    its reason here. For "what took longest",
@@ -104,7 +95,7 @@ shows itself is found again by searching what earlier runs wrote.
    a saved half hour compounds across every game after yours; that
    sentence is usually a lesson, because it changes what the next agent
    does. `timings.json` is committed with the game.
-6. **Send each ask for a maintainer to the issue tracker.** An ask is a
+5. **Send each ask for a maintainer to the issue tracker.** An ask is a
    change you would make but did not, because it is a maintainer's call:
    a rule to loosen, a bug in a tool upstream, a change to the site, to
    the delivery or to another game. An ask written only into
@@ -145,7 +136,7 @@ shows itself is found again by searching what earlier runs wrote.
    request's description under the heading **Maintainer asks**, one
    paragraph each, and say in `kit-feedback.md` that they are there.
    Whoever merges the pull request files them.
-7. **Write to `kit/lessons/` only what the next game will do
+6. **Write to `kit/lessons/` only what the next game will do
    differently.** That folder is the record of what the kit learned about
    reverse engineering, from which game and whom, not of what changed. If
    a lesson from this game changes how an agent reads, traces, measures
@@ -160,7 +151,7 @@ shows itself is found again by searching what earlier runs wrote.
    is merged; put `[kit-bump]` in its description. A fix to a script, a
    path, the site or the prose style goes in `kit-feedback.md` and the
    pull request instead.
-8. **Complete `game.json`**: tier reached (only if every requirement is
+7. **Complete `game.json`**: tier reached (only if every requirement is
    met; an unattended run stops at Silver, since Gold is human curation;
    a run whose coverage or verify step ran on a model that is not proven
    stops at `bronze`, and `TODO.md` and the pull request say it waits on
@@ -171,19 +162,19 @@ shows itself is found again by searching what earlier runs wrote.
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
-9. **Update `TODO.md`** with what is missing for the next tier.
-10. **If you were the first on your operating system**, the install notes
-    are part of your retrospective: run
-    `python3 kit/scripts/tools.py --platform <platform> verify-footprint`, contain or list
-    whatever it finds, and write your platform's section in
-    `kit/INSTALL.md` to the standard of "The footprint principle" there,
-    and your system's cell in `site/status.json`.
+8. **Update `TODO.md`** with what is missing for the next tier.
+9. **If you were the first on your operating system**, the install notes
+   are part of your retrospective: run
+   `python3 kit/scripts/tools.py --platform <platform> verify-footprint`, contain or list
+   whatever it finds, and write your platform's section in
+   `kit/INSTALL.md` to the standard of "The footprint principle" there,
+   and your system's cell in `site/status.json`.
 
 ## Do not
 
 - Put game-specific facts in a skill.
 - Loosen a rule because it was inconvenient. Say why it was inconvenient
-  in a maintainer ask (step 6) and let a maintainer decide.
+  in a maintainer ask (step 5) and let a maintainer decide.
 - Bump skill versions silently: note each change in `kit-feedback.md`.
 
 ## Outputs

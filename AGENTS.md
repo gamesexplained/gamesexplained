@@ -267,10 +267,10 @@ claim per agent against the source before believing the report.
 The last step of every run is `kit/skills/core/80-retro`: which skill text
 changed what the run did, where the kit fell short, and the smallest diff
 that would have saved the next contributor the trouble. A script that
-catches the failure comes first; a skill takes only what would otherwise
-go wrong unnoticed, and gives something up for what it takes. Make the
-edits to `kit/` in the same branch and describe them in
-`games/<platform>/<slug>/kit-feedback.md`. That is how the kit improves.
+catches the failure comes first, and a skill takes what would otherwise
+go wrong unnoticed. Make the edits to `kit/` in the same branch and
+describe them in `games/<platform>/<slug>/kit-feedback.md`. That is how
+the kit improves.
 
 What needs a maintainer's decision, and so was not changed, goes to the
 issue tracker: one issue per ask, labelled `kit-ask`, the maintainers'
