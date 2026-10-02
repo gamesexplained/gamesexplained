@@ -17,6 +17,8 @@ installed them.
 
 ## What was changed in the kit
 
+The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
+
 - **The emulator's port can move** (`kit/c64/tools.py`, `vice.py`,
   `get_vice.py`, `check_emulator.py`, `check_cpu6502.js`). The
   contributor's own web server held 6510. `KIT_VICE_PORT` starts the
