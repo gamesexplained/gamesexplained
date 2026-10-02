@@ -140,3 +140,5 @@ See `facts.md`, Open questions.
   you choose to run"; shoguns often follow "hordes of warrior guards"
   (hordes, `$27A1`); the main game is joystick only, in the rear port.
   The swamp, current and pursuit claims have not been checked in the code.
+
+- Read 2 October 2026, given by the contributor: Super Chart Island's pages on Fist II and The Way of the Exploding Fist (Gallup number one for the week ending 18 October 1986, one week; the first game twelve weeks; C64 reviews in Commodore User, Your Commodore and Zzap!64; Barnett's "reskin" remark to Retro Gamer), C64.com's 2011 interview with Nigel Spencer (screen editor, packing the levels into memory) and Tsumea's interview with Gregg Barnett (joined Beam in 1982). Reviews in Computer & Video Games and Your Computer were left out because the version reviewed is not stated. Super Chart Island also reports a reviewer's complaint about the hero getting "stuck in a loop while the screen moves" and no death message; neither has been checked in the code.
