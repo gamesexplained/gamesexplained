@@ -70,3 +70,26 @@ game's own code write for write over 6,000 interrupts. The Chrome
 extension was not connected, so the page was checked in Playwright's
 cached headless Chromium: a full-page screenshot, and a copy of the page
 that clicked all 45 controls and reported no errors.
+
+## 2 October 2026, additions on the same branch (claude-opus-5-5)
+
+At the contributor's request, after the pull request was opened: the
+two in-play tunes ported and checked write for write (`work/voice3-test.js`);
+a sprite gallery and Mr Hat's animations, with the death dissolve run
+from the game's own code in the simulator; `drawSpriteMC` added to
+`site/lib/c64.js`. Room 10's frame failed in `frame.py` because `phase()`
+counted wraps from drops in the line; it now counts them from the
+stopwatch, and room 10 rebuilds with no pixel different. Room 9 was
+drawn with its five switched-off instructions put back. A first reading
+of room 1's tune as "out of tune" was dropped: its first column varies
+between repeats of the same note, so it may never have been a tuning.
+
+Then a consistency pass over the nine agents' annotation: neutral names
+for the zero-page bytes that two subsystems share; names for the sprite
+pointers, lives marks, carried-item cells and status digits that the
+listing showed as automatic labels; `kill_hat` for the shared death
+entry and `room1_kill_hat` for room 1's; `room7_` for four `r7_` labels;
+the F1 routine's label no longer says pause; room 9's loop no longer
+calls `$D8` = `$40` a kill (it is the last life gone, `$1734`). The
+switch-to-barrier table, which rested on one agent's reading, was
+checked flag by flag.

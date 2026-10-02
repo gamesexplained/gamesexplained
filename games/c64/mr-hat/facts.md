@@ -139,7 +139,10 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
 - **Barriers and switches**: a barrier pushes Mr Hat back until the switch
   of its colour is taken: room 5's switch opens room 2's barrier, room 6's
   opens room 9's upper barrier, room 8's its lower one, room 2's the
-  barrier in room 11 (`$B100`-`$B4BB`, agent report 8; not tested live).
+  barrier in room 11. Each switch writes one flag, which only its barrier's
+  routine reads: `$1383` (written at `$B384`, read at `$B31E`), `$1384` (`$B3E7`,
+  `$B43F`), `$1386` (`$B414`, `$B46B`), `$1380` (`$B2FE`, `$B4A2`). Traced; not
+  tested live.
 - **Light**: rooms 6 and 9 are drawn dark (colour `$00`) unless `$22` =
   `$40`, which `$5519` sets when room 2's candle is taken and `$61E1`
   clears for a new game (`$5E10` room 6, `$7440` room 9). *live*: rooms 6
@@ -168,8 +171,10 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   waits for fire; then `JMP $0870` starts a new game. Traced; a live attempt
   that jumped straight into room 11's set-up did not keep Mr Hat where he
   was poked, so the ending was not reached in the emulator.
-- **Game state** `$D8`: `$40` killed, `$50` carrying an object; `$F5` which
-  object (`$28`, `$AF`, `$EE`), shown in status cells `$07BE`/`$07E6`.
+- **Game state** `$D8`: `$40` no lives left (`$1734`, after the last mark);
+  `$50` set when a room's object is taken (`$4E3B`, `$5CC8`, `$6467`,
+  `$6D7D`), tested at `$4E0F`. `$F5` says which object is carried (`$28`, `$AF`,
+  `$EE`), shown in status cells `$07BE`/`$07E6`.
 
 ## Graphics
 
