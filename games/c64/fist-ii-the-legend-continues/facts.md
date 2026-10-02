@@ -156,6 +156,15 @@ the loader and the start-up (`$C459`, `$C469`), and stays `$15` in play
 - Hordes: a record with low nibble `$0A` sets `$0472` = 10 (`$2875`); each
   defeat brings the next until it runs out, or at once once scroll 5 is
   delivered (`$27AD`, its only reader).
+  No record in the table has low nibble `$0A`, and the only writes to it
+  set or clear bit 7 (`$278B`, `$2C3C`, `$3524`), so no horde occurs in
+  this copy and scroll 5's power has nothing to act on.
+- Room 76 (area 7): its two type-17 drops (columns 10 and 19) lead to
+  room 60 and are the only way into the volcano. Falling into one tests
+  scroll 3 (`$0659`); undelivered, energy `$0412` is set to 0 (`$0660`).
+  Bill McIntosh (Stuckey's thesis, 2016) remembered this as a trapdoor
+  that "killed the player instantly", followed by nine unbeatable
+  warriors; the warriors are not in this copy.
 
 ## Sound
 
