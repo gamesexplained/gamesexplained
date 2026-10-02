@@ -123,3 +123,20 @@ See `facts.md`, Open questions.
   linked from lemon64.com/forum/viewtopic.php?t=67329 (2 March 2018) as a
   Google Drive document; the contributor confirmed the thread from a
   screenshot on 1 October 2026.
+- Gamebox64's scans of the Melbourne House cassette manual (two leaflet
+  pages and a supplementary sheet, MH 352/353; given by the contributor on
+  2 October 2026, copies in the project files, not committed). The same
+  text and credits as Lemon64's copy, plus: the tape loads with the
+  "PAVLOVA" fast loader in about 3 minutes; RESTORE pauses and pressing it
+  again restarts play; F5 "will terminate the game, and return you to demo
+  mode" (the disk restarts instead, `$2444`); "you will be unable to smash
+  through strong barriers ... with insufficient Chi" (the barrier test
+  `$0A2E` reads no energy); a poisoned hero "will not regain Chi" until
+  meditation cures him (no poison state found; regeneration `$2D14` tests
+  none); Chi drains "underwater, and in poisonous gas chambers" (area 5,
+  `$2CE4`); entering a temple, the hero walks to the shrine by himself, and
+  fire ends the meditation; sweeps and somersaults are "restricted" in
+  swamps and river currents; some opponents "will still pursue you even if
+  you choose to run"; shoguns often follow "hordes of warrior guards"
+  (hordes, `$27A1`); the main game is joystick only, in the rear port.
+  The swamp, current and pursuit claims have not been checked in the code.
