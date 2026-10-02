@@ -21,7 +21,8 @@ checks: 28, on a freshly started emulator. It has also crashed partway
 through the check (`no-exception`, at the end of this file). The headless
 builds fail more: their pause is a stub, so nothing stops at all
 (`kit/c64/INSTALL.md`). The v3.13.1 release on Linux failed one check on
-26 September 2026, in five runs: `pause-at-instruction`.
+26 September 2026, in five runs: `pause-at-instruction`. The v3.13.2
+release on Linux failed none on 2 October 2026, in five runs.
 
 ## A pause that stops inside the vertical sync
 

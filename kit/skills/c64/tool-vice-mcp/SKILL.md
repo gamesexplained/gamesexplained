@@ -49,7 +49,8 @@ the table at the top of that file: on 22 September 2026 the v3.11.0
 release failed 28 of the 56 checks, most of phase 4 among them; on 24
 September v3.13 built from source passed all 56; on 26 September, with
 a 57th added, the v3.13.1 release on Linux passed all but
-`pause-at-instruction`.
+`pause-at-instruction`; on 2 October the v3.13.2 release on Linux passed
+all 57, five runs out of five.
 
 ## The sequence that works
 
