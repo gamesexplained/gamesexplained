@@ -72,7 +72,7 @@ def main():
                 fails += 1
     if os.path.exists(os.path.join(ROOT, "kit", "CHANGELOG.md")):
         print("  x  kit/CHANGELOG.md  lessons are one file each in kit/lessons/, so pull requests never")
-        print("        conflict over them: move each entry to its own file (kit/skills/core/80-retro, step 5)")
+        print("        conflict over them: python3 kit/scripts/changelog_to_lessons.py moves this branch's")
         fails += 1
     for f in glob.glob(os.path.join(ROOT, "games", "*", "*", "facts.md")) + \
              glob.glob(os.path.join(ROOT, "games", "*", "*", "features.md")):
