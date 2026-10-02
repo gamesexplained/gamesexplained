@@ -9,7 +9,16 @@ step needs something only they have.
 
 1. **Make sure you are inside a clone of this repository.** If you have
    none yet, `git clone https://github.com/gamesexplained/gamesexplained`
-   and continue inside it.
+   and continue inside it. In a hosted cloud session the checkout is
+   already made, from the repository the contributor picked when they
+   started it, and a fork of this one counts (`git remote -v` shows
+   which). Write access here is kept to maintainers, so a contributor's
+   cloud session must start on their fork: started on this repository,
+   it can push nothing, and you tell them now to fork it on GitHub and
+   start a new session on the fork. A session on a fork pushes to the
+   fork and cannot reach this repository at all, so you open neither
+   the pull request nor issues here: step 7 and the retrospective say
+   what to hand the contributor instead.
 2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
 3. **Ask the contributor six things** if they have not already told you:
@@ -84,10 +93,9 @@ step needs something only they have.
    authored before the first real one. If they said you may open the pull
    request, check now that you can: `gh auth status` should show their
    login, which opens the pull request and files the issues, or your
-   environment should have its own way to open one. A hosted session
-   started on the contributor's fork usually reaches only the fork:
-   attach `gamesexplained/gamesexplained` now, with push access, if the
-   environment has a tool for it, and say plainly if that is refused.
+   environment should have its own way to open one. A cloud session on
+   a fork has none (step 1): tell them now that you will give them a
+   link to open the pull request, and links to file the asks.
 
    **The branch is usually yours to name; ask only if it is not.** Where
    you create the branch yourself, call it `game/<platform>/<slug>` as
@@ -115,10 +123,9 @@ step needs something only they have.
    the retrospective's asks as issues, and give them the link; otherwise
    push the branch, tell them it is ready, and open it when they say so.
    From a fork, the pull request goes into `gamesexplained/gamesexplained`'s
-   `main`, never the fork's own `main`, where it reaches nobody. A hosted
-   session started on the fork can often write only to the fork; when it
-   cannot open the pull request upstream, give the contributor the link
-   that does,
+   `main`, never the fork's own `main`, where it reaches nobody. When
+   you cannot open it there (a cloud session on a fork never can), give
+   the contributor the link that does,
    `https://github.com/gamesexplained/gamesexplained/compare/main...<login>:gamesexplained:<branch>`,
    and the description to paste. If you cannot push or open it (no fork,
    no login), leave the branch where it is and say exactly what is

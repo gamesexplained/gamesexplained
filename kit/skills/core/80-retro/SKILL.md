@@ -71,11 +71,11 @@ into the diff that saves the next contributor the trouble.
    Then list them in `kit-feedback.md` under "Maintainer asks", one line
    each with its number. Filing an issue publishes, so it takes the
    contributor's yes, and the one they gave at the start to your opening
-   the pull request yourself (`kit/START.md`) covers it. A hosted
-   session started on the contributor's fork usually reaches only the
-   fork: attach `gamesexplained/gamesexplained` with push access first,
-   if the environment has a tool for it. With a no, or when filing is
-   refused, the contributor files them: give them one link per ask that
+   the pull request yourself (`kit/START.md`) covers it. A cloud session
+   on the contributor's fork cannot reach this repository, so it never
+   files (`kit/START.md`, step 1). With a no, in such a session, or
+   whenever filing is refused, the contributor files them: give them
+   one link per ask that
    opens GitHub's new-issue form already filled in,
    `https://github.com/gamesexplained/gamesexplained/issues/new?title=<title>&body=<body>`,
    with title and body URL-encoded and the body ending in the marker.
