@@ -49,8 +49,8 @@ German both 404), and no manual beyond the magazine's blurb was found.
 | Title screen "SYSTEMS PRESENTS A NEW GAME WITH": the cast Mr Hat, Octopus, Snaily, Dinky, Kniffy, "and all others" | live | `reference/title.png`; title routine `$16A3` |
 | Title music | live | IRQ `$C0AF` on the title (heard as register activity only; the session has no sound) |
 | Stick left and right walk | live | about 2.4 pixels a frame (`$21` to `$56` in 20 frames) |
-| Stick up jumps | live | the play snapshot was taken mid-jump: sprite Y 183, back on the floor at 204 about 13 frames later |
-| Fire during play | open | no visible effect in room 1 in 40 frames |
+| Fire jumps, the way Mr Hat faces | live | from standing in room 1 (`work/death1.vsf`), fire held: sprite Y 204 to 183 at once, held 13 frames, back to 204, and again while fire stays down; `$DC00` compared with `$6F` at `$5227`, `$5A93`, `$86E3` |
+| Stick up | live | does nothing standing on a floor in room 1 (20 frames held); in rooms with ladders it climbs (`$7E`, agent reports) |
 | Touching a hazard kills ("everything you touch kills you", Lemon64) | live | walking into the small object beside the television in room 1: Mr Hat sinks into the floor, then restarts at the room's entry (`reference/death.png`, `reference/respawn-lives.png`) |
 | Lives, shown as marks at the bottom right of the status line | live | four marks at the start, three after one death; after five deaths the game returns to the title. The routine at `$1700` rewrites screen cells `$07E1` and `$07E2` |
 | Game over | open | after the last life the title reappeared; whether a game-over screen shows first is not yet seen |

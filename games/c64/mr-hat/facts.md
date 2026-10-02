@@ -35,8 +35,10 @@ image (below, "Text").
 
 - Joystick in control port 2: the title waits at `$1770` for `$DC00` to
   read exactly `$6F` (fire, nothing else). *live*
-- Stick up jumps, left and right walk, about 2.4 pixels a frame. *live*
-  (`work/track.py`)
+- Fire jumps: Mr Hat rises 21 pixels at once (sprite Y 204 to 183), stays
+  13 frames and drops back; held, he jumps again. Stick up does nothing on
+  a floor. Left and right walk, about 2.4 pixels a frame. *live*
+  (`work/track.py death1`)
 
 ## Graphics
 
