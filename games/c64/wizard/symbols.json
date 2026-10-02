@@ -5800,7 +5800,7 @@
   },
   {
    "address": 11118,
-   "name": "script_begin_death",
+   "name": "script_fatal_event_gate",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5860,25 +5860,31 @@
   },
   {
    "address": 12433,
-   "name": "script_invisibility",
+   "name": "script_cast_invisibility",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12467,
+   "name": "script_spend_invisibility_protection",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 12526,
-   "name": "script_teleport_spell",
+   "name": "script_cast_teleport",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 12550,
-   "name": "script_feather_fall_spell",
+   "name": "script_cast_feather_fall",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 12567,
-   "name": "script_levitate_spell",
+   "name": "script_cast_levitate",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7269,6 +7275,12 @@
    "kind": "auto"
   },
   {
+   "address": 28999,
+   "name": "player_bounded_fall_probe",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 29018,
    "name": "b_715A",
    "type": "Branch",
@@ -7948,7 +7960,7 @@
   },
   {
    "address": 30091,
-   "name": "align_on_rope_ends",
+   "name": "align_on_ladder_sides",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -7996,7 +8008,7 @@
   },
   {
    "address": 30140,
-   "name": "center_player_on_rope",
+   "name": "center_player_on_ladder",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -8110,7 +8122,7 @@
   },
   {
    "address": 30368,
-   "name": "vertical_jump_steps",
+   "name": "standing_jump_motion",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -8907,6 +8919,12 @@
    "kind": "auto"
   },
   {
+   "address": 32006,
+   "name": "test_elevator_contact_height",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
    "address": 32030,
    "name": "b_7D1E",
    "type": "Branch",
@@ -9652,7 +9670,7 @@
   },
   {
    "address": 34138,
-   "name": "ride_elevator",
+   "name": "ride_supporting_elevator",
    "type": "Jump",
    "kind": "user"
   },
@@ -15475,7 +15493,7 @@
   {
    "address": 11118,
    "type": "line",
-   "text": "Inspect player color and invisibility timer before accepting a death. Clear flags, position sprite 6 as a visual effect near the wizard, copy X-high bit, save spell sprite settings and replace them for the death sequence."
+   "text": "Compiled death gate: reached only after nonzero $C02A, unless active $C035 travel cleared it. Sprite-7 color 2 bypasses Invisibility. Otherwise nonzero V21 suppresses this fatal report, clears $C02A and enters $30B3; safe movement passes do not spend V21. Original interpreter matrix: 84 states; safe passes, all 32 protected reports and the next death checked live."
   },
   {
    "address": 11118,
@@ -18640,7 +18658,7 @@
   {
    "address": 12433,
    "type": "line",
-   "text": "Set invisibility counter 32, match player color to background and temporarily select hires. On collision-driven countdown restore multicolor at 16, fade color during the last eight counts and return to color 4 at zero."
+   "text": "Set V21=32, set sprite-7 color to background $D021 and clear its multicolor bit. V21 counts protected fatal reports, not elapsed movement passes. Red hazard-death state bypasses protection at $2B6E."
   },
   {
    "address": 12433,
@@ -18746,6 +18764,11 @@
    "address": 12464,
    "type": "side",
    "text": "bytecode: GOTO $2B67"
+  },
+  {
+   "address": 12467,
+   "type": "line",
+   "text": "Consume one V21 unit after a suppressed fatal report. Restore sprite-7 multicolor at 16; below 9 set color from 10-V21/3; at zero set color 4. Continuous danger can spend units on successive movement updates. Live sequence agrees with original compiled interpreter."
   },
   {
    "address": 12467,
@@ -18970,7 +18993,7 @@
   {
    "address": 12526,
    "type": "line",
-   "text": "Set cast latch, clear event and call engine API $7075, selecting the teleport tile-effect helper."
+   "text": "Compiled spell handler: arm cast latch, clear event and SYS $7075 to set coordinate-exchange effect 1. The first target is the level start; later targets are remembered departure coordinates. $79B3 adds a random-direction two-pixel horizontal nudge after exchanging positions."
   },
   {
    "address": 12526,
@@ -19040,7 +19063,7 @@
   {
    "address": 12550,
    "type": "line",
-   "text": "Set cast latch and invoke $7063, the downward forced-motion tile effect."
+   "text": "Compiled spell handler sets cast latch and SYS $7063: effect 6 descends two pixels per player update, bypassing ordinary gravity until terrain ends the effect."
   },
   {
    "address": 12550,
@@ -19080,7 +19103,7 @@
   {
    "address": 12567,
    "type": "line",
-   "text": "Set cast latch and invoke $7069, the upward forced-motion effect."
+   "text": "Compiled spell handler sets cast latch and SYS $7069: effect 4 ascends two pixels per player update until terrain ends the effect."
   },
   {
    "address": 12567,
@@ -35398,6 +35421,11 @@
    "text": "Update spell/collision state; kill a player outside the playable coordinate bounds; sample left, right and foot tiles; collect objects; handle gravity, slopes, elevator riding and active jumps. Then dispatch the port-2 joystick value to movement or spell activation."
   },
   {
+   "address": 28999,
+   "type": "line",
+   "text": "With blank feet and no active jump, matching rope $63 or ladder $65-$67 body probes skip falling. Other matching body probes set X=4; mismatched probes retain the preceding X. Advance Y one pixel until (Y-37)&7 is zero, then re-probe feet, or report death when X expires. This is a bounded alignment/support test, not an accumulating fall-speed model."
+  },
+  {
    "address": 29210,
    "type": "line",
    "text": "Select the stationary player shape from the supporting terrain, clear animation length to one initially, and update the sprite through the shared pose routine."
@@ -35545,7 +35573,7 @@
   {
    "address": 30091,
    "type": "line",
-   "text": "Recognize the left/right end glyphs $65/$67 and nudge X two pixels toward their center, returning zero when such a correction occurs."
+   "text": "Recognize ladder-side glyphs $65/$67 and nudge X two pixels toward their center, returning zero when a correction occurs. The narrow rope uses $63 with anchor $64; ladder center is $66."
   },
   {
    "address": 30129,
@@ -35560,12 +35588,12 @@
   {
    "address": 30140,
    "type": "line",
-   "text": "For center rope glyph $66, snap X to the next/previous eight-pixel alignment according to bits 1-2, maintaining the VIC X-high bit on overflow."
+   "text": "For ladder-center glyph $66, snap X to the next/previous eight-pixel alignment according to bits 1-2, maintaining the VIC X-high bit on overflow."
   },
   {
    "address": 30146,
    "type": "line",
-   "text": "Alternate rope-centering entry that skips the glyph test. Use player X bits 1-2 to move to an eight-pixel boundary and update VIC X-high on carry."
+   "text": "Alternate centering entry skips the glyph test. Use X bits 1-2 to move to an eight-pixel boundary and update VIC X-high on carry."
   },
   {
    "address": 30190,
@@ -35600,7 +35628,7 @@
   {
    "address": 30368,
    "type": "line",
-   "text": "Nineteen packed jump steps read backwards through ($FD),Y. Bit 0 requests horizontal movement; bit 7 is vertical sign and bits 6/5 each add one vertical pixel. $76C6 selects this standing-jump sequence."
+   "text": "Nineteen packed bytes, traversed backwards after initializing remaining=19; indices 18..1 execute and index 0 is the terminating step. Bit 0 requests a two-pixel horizontal move, bits 5/6 each request one vertical pixel, bit 7 selects upward. Clear-space standing and running arcs reach thirteen pixels above takeoff. Terrain can end either early."
   },
   {
    "address": 30387,
@@ -35620,7 +35648,7 @@
   {
    "address": 30475,
    "type": "line",
-   "text": "Release the FIRE latch, test rope/platform landings and sprite-background hazards, terminate or bounce against terrain, then apply the next packed movement record and jump-note frequency."
+   "text": "Continue packed jump, but matching lower-left/right rope $63, anchor $64 or ladder-center $66 probes end it immediately. Platform/anchor and slope tests can end it before the countdown expires. Prepared replay records include clear jumps, rope and ladder catches; player outputs were compared live."
   },
   {
    "address": 30716,
@@ -35856,6 +35884,11 @@
    "address": 31975,
    "type": "line",
    "text": "Read the sprite collision latch. Player collisions ignore sprite 6, matching exempt color and type 20; type 7 can become a supporting elevator. Without player bit 7, select the two highest set sprite bits. An active sprite-6 projectile queues the other slot without testing actor type or color; cat/type 20 versus rat/type 14 queues the rat with bit 7 set. Original-code tests cover all actor slots/types for spells 0-4 and every cat/rat slot pair. Forced latches test dispatch, not collision geometry."
+  },
+  {
+   "address": 32006,
+   "type": "line",
+   "text": "After a sprite-collision latch selected elevator slot Y, compute ADC #14 then SBC elevatorY WITHOUT SEC. For ordinary player Y<242 the ADC carry is clear, so accept (playerY+13-elevatorY) modulo 256 in 0..2. Set $C02B=2 and supporting slot $C033. All six slots and eight nearby height offsets checked against the original IRQ; collision geometry is separate."
   },
   {
    "address": 32058,
@@ -36115,7 +36148,7 @@
   {
    "address": 34138,
    "type": "line",
-   "text": "Count down contact flag, identify supporting actor $C033, and either snap player feet to actor Y-13 or add elevator Y velocity during the early jump phase; then continue normal player handling."
+   "text": "Decrement contact lifetime $C02B, select slot $C033. With jump remaining below 14 set wizard Y=elevatorY-13 and feet=$5C; during the first jump steps add its Y velocity instead. This routine does not add elevator X velocity. Continue at $7174. Vertical ride outputs compared with live execution."
   },
   {
    "address": 34179,

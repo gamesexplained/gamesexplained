@@ -84,6 +84,13 @@ Sprite 7 is the wizard, sprite 6 is a projectile/reward/effect, slots 0–5 are 
 
 Elevators are actor type 7. Signed velocity nibbles come from header `$C316+slot`; the leg duration is `$C35F` (`$892A`). Player/elevator sprite collision checks vertical contact and records the supporting slot (`$7D06`); `$855A` then follows its height/velocity.
 
+
+The packed jump starts with remaining=19 and consumes indices 18 through 1. Its unobstructed vertical arc rises thirteen pixels. Bit 0 requests horizontal movement, bits 5 and 6 each request one vertical pixel, and bit 7 selects upward. In the prepared flat-floor example at (120,133), a running jump lands at (150,133); terrain may extend or shorten its horizontal travel. This is not a universal maximum gap-width claim. Walking right into the prepared one-cell gap reports death on update 7; jumping from the same start survives.
+
+Narrow rope glyphs are `$63` (rope) and `$64` (anchor); the three ladder pieces are `$65/$66/$67`. Matching lower-side probes containing rope, anchor or ladder center stop the jump at `$770B`. The climbing path advances one vertical pixel per update. With empty feet and no jump, matching non-climbable side probes set a four-iteration allowance at `$7158`: each iteration moves Y one pixel until `(Y-37)&7` is zero, then feet are tested again. Exhausting the allowance reports death. Mismatched side probes retain an earlier X value rather than setting four; the rule is bounded terrain alignment, not an accumulating fall-speed model.
+
+Elevator collision height uses ADC #14 followed by SBC without SEC at `$7D09`. With ordinary Y below 242 this accepts `(playerY+13-elevatorY) & 255` in 0..2, then records contact lifetime 2 and the slot. All six slots and eight nearby offsets were checked (48 cases). The ride path at `$855A` sets playerY=elevatorY-13 for jump remaining below 14; earlier jump steps add the elevator's Y velocity. It does not add horizontal elevator velocity. The illustrated ride supplies contact rather than simulating sprite collision geometry.
+
 ## Monster identities and collision handling
 
 BLDR's own DATA strings beginning at `$296A` establish type names, in order:
@@ -120,10 +127,10 @@ The level stores spell ID at `$C31C` and initial charges at `$C31D`. The cast pa
 
 |ID|Name|Checked effect|
 |---:|---|---|
-|5|Invisibility|counter 32, background-matching wizard color, delayed multicolor/color restoration (`$3091`)|
-|6|Teleport|selects the coordinate-exchange tile effect (`$30EE` → `$7075`)|
-|7|Feather Fall|selects forced downward travel (`$3106` → `$7063`)|
-|8|Levitate|selects forced upward travel (`$3117` → `$7069`)|
+|5|Invisibility|32 protected fatal reports; safe updates preserve the count; background-matching wizard color and staged display restoration (`$3091/$30B3`)|
+|6|Teleport|exchanges position with remembered departure, initially the level start; adds a random-direction two-pixel horizontal nudge (`$30EE` → `$7075`)|
+|7|Feather Fall|moves down two pixels per update while bypassing ordinary falling until terrain ends the effect (`$3106` → `$7063`)|
+|8|Levitate|moves up two pixels per update until terrain ends the effect (`$3117` → `$7069`)|
 |9|Haste|replaces main-loop delay with delay/2+1 (`$3128`)|
 |10|Slow|sets actor horizontal pursuit speeds to+1/-1 and increases delay below 64 (`$3132`)|
 |11|None|name/table entry exists; no charge-use behavior inferred from the name alone|
@@ -131,6 +138,11 @@ The level stores spell ID at `$C31C` and initial charges at `$C31D`. The cast pa
 Fireball, Magic Missile, Disintegrate and Enchantment (IDs 0–3) take the **same actor-removal path** at `$8C16`. The supplied manual describes the same lethal hit effect for all four. With no wizard bit in the collision latch, an active sprite-6 projectile queues the highest other set actor bit without testing target type or color (`$7D3A`). The later handler discards positive queued hits during `$C066` transient state; otherwise only ID 4 selects Freeze. This establishes queued-hit behavior, not that a projectile can physically reach every configured actor. Shape, animation and color remain separate level fields.
 
 Freeze duration is **109 − 16 × difficulty** actor-update passes for difficulty 0–3: 109, 93, 77, 61. `$8C1C` writes that value into the shared `$C0A2`; `$7D70` decrements it before updating the six actors. Cyan actors wait until it reaches zero, then `$862E` restores their saved level colors. A second Freeze hit resets that same counter and extends earlier victims' freeze. Original-code paired timelines verify both victims pause, share the reset and recover their separate colors together. These counts are not fixed seconds; the bytecode loop's delay also depends on speed, Haste and Slow.
+
+
+Invisibility's V21 is an event budget, not a movement timer. Main-loop `$2B45` clears a fatal report if a travel effect is active. Otherwise `$2B6E` is entered only for nonzero `$C02A`. Color 2 reaches death directly; other colors with nonzero V21 clear the report and run `$30B3`, decrementing V21 once. Safe passes never enter that decrement. A continuing dangerous contact can spend protection on successive updates. Multicolor returns at 16; counts 8 and 7 use color 7, 6–4 use 8, 3–1 use 9, and zero restores 4. An 84-case interpreter matrix covers count boundaries, safe/fatal state, red bypass and active travel; a 99-safe-pass control preserves the count. Live execution checks casting, two safe passes, all 32 protected reports and the following death routine.
+
+Teleport `$79B3` uses level start `$C31E/$C31F/$C352` when saved Y `$C09C` is zero, otherwise the saved `$C09B/$C09C/$C09D` coordinates. It stores the departure before nudging arrival two pixels left or right from random state. Two casts with the prepared (120,133) departure and (200,133) start, using a rightward nudge, arrive at (202,133) then (122,133); the second departure saved is (202,133). Feather Fall and Levitate select effects 6 and 4. The travel dispatcher clears death state and skips ordinary gravity; each changes Y by two and ends on eligible platform/slope contact. The illustrated examples hold neutral after casting and isolate fixed terrain.
 
 ## Level format and resident demos
 
@@ -191,7 +203,7 @@ The Immortal Portal callback’s ADC receives carry clear in normal player and t
 
 L35T’s first callback byte remains RTS in all sixteen indexed pickup tests, 1,536 timer-counter/phase cases and 4,096 consecutive terrain updates. The following instruction-shaped fragment overlaps patch storage at `$C380`; treating it as a continuous routine reaches JSR $0000. These tests establish inactivity on those paths, not a historical explanation for the retained bytes.
 
-Full room-completion routes remain open. The Simon Says rule and its initial pickup have additional original-code and live evidence below.
+Burning Bridges has a completed checkpointed input route, documented below. Other full room-completion routes remain open. The Simon Says rule and its initial pickup have additional original-code and live evidence below.
 
 ### Simon Says: instruction, tables and startup
 
@@ -243,6 +255,15 @@ Four motion replays record 240 original `$860E` controller calls each: Bat in Ba
 
 Neutral-input room observations establish that L28T’s thief collects regenerated gold and advances the key, and L30T’s thief collects regenerated pearls and advances terrain removal. At the first callback, the hardware stack returns to `$7FA4` (thief collection), with treasure indices 2 and 1 respectively. Saved shapes $D5/$D6 and $D4 contain only transparent/own-color pixel pairs; own color zero conceals these thieves on the black background. These observations used the game’s normal load/setup with the selected file number controlled. No collectible or collision state was injected.
 
-In L17T, the first neutral-input callback comes from player collection (`$849A` return) with index10, the gold at the wizard’s start. It changes `$C5BB/$C5DC` from key/exit to exit/key. Holding left next collects pearl index9 at wizard X=142, Y=133, erases `$C612–$C614` through its patch and swaps the upper key/exit back. The wizard survives this short sequence. It is a reachable pickup demonstration from the prepared room, not a full completion route.
+In L17T, the first neutral-input callback comes from player collection (`$849A` return) with index10, the gold at the wizard’s start. It changes `$C5BB/$C5DC` from key/exit to exit/key. Holding left next collects pearl index9 at wizard X=142, Y=133, erases `$C612–$C614` through its patch and swaps the upper key/exit back. The wizard survives this short sequence. This short variant demonstrates the first pickup on the left; the complete checkpointed route below visits the right pearl first.
 
 `reference/programs.html` indexes 42 separate program views and 4,449 decoded lines: the construction companion, the loader score-clear excerpt and all forty level callback excerpts. Program-qualified anchors distinguish identical addresses in different loaded images; the shared engine remains in the canonical resident Source tab.
+
+
+## Movement, protection and a completed room route
+
+The player explorer records 25 prepared scenes and 494 states from the original controller. Eleven representative traces were compared with the emulator at every update: 205 position/jump/death/contact/effect states agree, covering standing and running jumps, a failed wide gap, a fatal walk, rope and ladder catches, a plain fall, Feather Fall, Levitate, Teleport and a supplied-contact elevator ride. Prepared scenes omit other actors and timers. The 48 elevator-height tests supply collision latches; neither they nor the ride illustration claim to reproduce collision geometry.
+
+Burning Bridges (disk L17T, level 18) has a completed **checkpointed input route**. Preparation selects that room through the original loader, sets Intermediate behavior `$C007=1`, and gives the compiled script difficulty base 10 and round 7. Speed is 5. Arrows, the elevator, collision IRQs and room timers remain active; no pickup, key or exit state is injected. The five treasures are the automatic starting gold, the nearby right pearl, nearby left pearl, far-left pearl and far-right pearl. The outer pearls create ropes. The first four treasure swaps leave the key on the left; after the key is collected, the fifth swaps the enabled exit into its vacant cell. Thus the cell swap continues after key collection.
+
+The route climbs the short left rope, reaches the far-left pearl by a standing jump, descends the new rope and climbs the outer ladder to the key. It returns up the new rope, crosses to the far-right pearl, and returns to the outer-left ladder and exit. The successful tail starts from the saved key checkpoint and reaches `$8C8F` at wizard (40,130), with key flag 1, difficulty 1 and upper cells `[64,32]`. Continuing that saved exit state through the normal script reaches loader `$8A66` requesting file 18. `reference/bridges-after-completion.png` records that transition. The ten article illustrations use room states captured across live attempts. Saved checkpoints were resumed; this is not a claim of an uninterrupted full-game run. Arrow timing caused deaths in other attempts, so the prose gives landmarks and warns readers to time the crossings rather than presenting fixed update counts as a universal input script.
