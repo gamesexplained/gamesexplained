@@ -268,6 +268,17 @@ Routines are independent, so the burn-down parallelises. What matters:
   (the template's opening comment says why).
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
+- **An agent stopped by the account's usage limit keeps its context.**
+  Nine agents at once use up a session's allowance quickly; when they
+  stop on the limit, export at once, wait for the reset and resume each
+  agent with a message (the harness's resume, not a new agent), telling
+  it what is already in the disassembler. A new agent rereads its range
+  from nothing. Stop the clock while the run waits, with a note saying
+  why: the wall clock otherwise counts hours of nothing as the step's.
+- **Correct the brief the moment a fact in it turns out wrong**, and say
+  in it that it was corrected. Agents still running read the old line;
+  their reports will contradict it, which is how one run found that its
+  "Established" control had been read off a snapshot taken mid-jump.
 
 ## Declare what the bytes are
 
