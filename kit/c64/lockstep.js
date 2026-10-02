@@ -1,6 +1,6 @@
 'use strict';
 // A port of a whole game checked against the game's own code, pass by pass (kit/skills/core/
-// 70-minisite, "A whole game, checked against its own code"). The game runs on the kit's C64
+// 70-minisite/play.md, "A whole game, checked against its own code"). The game runs on the kit's C64
 // (kit/c64/machine.js) while the port runs beside it on its own copy of the game's memory. Wherever
 // the port says it has got to, the game is run to the same place; the interrupts the game took on
 // the way are run in the port there; and at the start of every pass the two memories are compared.

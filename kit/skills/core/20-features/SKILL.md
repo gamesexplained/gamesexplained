@@ -44,11 +44,10 @@ tools could not reach; check each of those yourself.
 A hosted session's network policy can refuse every page fetch, on every
 site (HTTP 403 from the proxy itself), while a web search tool still
 answers. Its result summaries quote the pages: use them for plain claims
-only (credits, the year, a feature named), say under Sources that they
-are second-hand and give the date, and leave open whatever they cannot
-settle. The game's own screens are then the main source. Key lists found
-that way are often another machine's version of the game: read the
-controls from the input routine before trusting them.
+only (credits, the year, a feature named; not the keys, which often come
+from another machine's version), say under Sources that they are
+second-hand and give the date, and leave open whatever they cannot
+settle. The game's own screens are then the main source.
 
 ## Status words
 

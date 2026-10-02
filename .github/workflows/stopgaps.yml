@@ -1,0 +1,42 @@
+name: stopgaps
+# When an issue closes, lists on it the kit passages that stood in for it. A
+# retrospective (kit/skills/core/80-retro, step 3) that needs words in a skill
+# before a script can change ends that passage with <!-- until #<issue> -->, so
+# the words go when the fix lands instead of staying to contradict it.
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: List the passages that waited on this issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          REASON: ${{ github.event.issue.state_reason }}
+        run: |
+          found=$(python3 kit/scripts/skill_usage.py --stopgaps "$NUMBER")
+          if [ -z "$found" ]; then echo "No passage waits on #$NUMBER."; exit 0; fi
+          if [ "$REASON" = "not_planned" ]; then
+            what="This issue closed without a fix, so the words may be all there is: keep each passage, without its marker, or delete it if it no longer holds."
+          else
+            what="Now that the fix has landed, delete each one, or move its marker to the issue that still needs it."
+          fi
+          {
+            echo "These passages in the kit were written to stand in for this issue (\`<!-- until #$NUMBER -->\`). $what"
+            echo
+            echo '```'
+            echo "$found"
+            echo '```'
+            echo
+            echo "Listed by \`.github/workflows/stopgaps.yml\`."
+          } > body.md
+          gh issue comment "$NUMBER" --body-file body.md

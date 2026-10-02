@@ -5,6 +5,8 @@
   kit/skills/core/       workflow only: no game names
   kit/skills/<platform>/ platform facts only: no game names
   games/*/*/facts.md, features.md   current truth, no narration of past mistakes
+  games/*/*/kit-feedback.md   the skill text that changed what the run did, named in the
+                     form skill_usage.py counts, or "None." (kit/skills/core/80-retro, step 1)
   kit/lessons/       one entry a file, under one heading that names the game that taught it
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
@@ -86,6 +88,11 @@ def main():
     for f in sorted(set(published)):
         fails += scan(f, HOME, "a path on the contributor's computer (name where it can be had instead)")
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from skill_usage import parse as named_skill_text
+    for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "kit-feedback.md"))):
+        for n, msg in named_skill_text(f)["problems"]:   # the words themselves: skill_usage.py --game
+            print(f"  x  {os.path.relpath(f, ROOT)}:{n}  skill text that changed what I did: {msg}")
+            fails += 1
     from models import check as models_check
     fails += models_check()
     if fails:
