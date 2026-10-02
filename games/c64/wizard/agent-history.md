@@ -24,3 +24,10 @@ A first pickup experiment wrote the foot-support cell rather than the lower-side
 Frame capture exposed a phase-inference bug when a frame has no video writes: two equal line numbers can be a whole frame apart. The kit now uses elapsed cycles to unwrap those samples, with five regression cases. The rebuilt Playground frame matches all 104,448 visible pixels. Separate original-code tests passed 158 score, movement and sound comparisons.
 
 The article and forty-map atlas were built before a distinct copy rewrite pass. Browser checks exercised controls, all forty maps and five effect buttons at desktop and mobile sizes. The only first-pass console failures were missing favicons; explicit icons were added to the authored pages.
+
+
+## Human curation: monster appearance, 2 October 2026
+
+jankfoundry requested graphics for each selected behavior and a tidier presentation. The actor section now pairs each behavior with its editor-default sprite, individually selectable frames, and distinct appearance/color combinations found in the shipped level headers. The default tables were checked against BLDR's READ loops and default-setting command; all drawing bytes come from the canonical listing. A dark display area, a light background for black actors, grouped controls, and a responsive two-column layout make the artwork readable. No behavior simulation was added. The run is marked `silver-claimed` with jankfoundry as steward; other sections remain to be curated for Gold.
+
+Browser checks covered all 21 behavior selections, 86 appearance options and 181 frame selections, including the blank frame in the Double Cross falling-rock sequence. Desktop and 390-pixel mobile layouts were inspected; keyboard navigation, next/previous wrap and direct-file artwork previews passed. The built page had no browser errors.

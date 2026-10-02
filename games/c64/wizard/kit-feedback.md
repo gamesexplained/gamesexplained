@@ -55,7 +55,14 @@ Existing open and closed issues were searched before commenting; no duplicate is
 | 50-coverage | 51 | gpt-6-astra | 1 | Single agent: compiled GAME interpreter and script, shared engine, assets, separate BLDR trace and forty level overlays. Canonical resident ledger 45560 bytes; overlay findings documented separately. |
 | 60-verify | 14 | gpt-6-astra | 1 | Deterministic input pairs, key/score/extra-life/Freeze forced states, six-player menu, editor load, pause/resume, 158 original-code comparisons and exact 104448-pixel reconstruction. Fixed sparse-frame phase inference. |
 | 70-minisite | 12 | gpt-6-astra | 1 | Interactive article, forty-level atlas, five SID previews, separate copy rewrite, desktop/mobile browser controls and full-site build. |
-| 80-retro | 12 | gpt-6-astra | 2 | One agent; kit fixes for independent tool ports, quiet-frame capture, compiled programs and ROM aliases; regression checks and maintainer feedback.; Rebased onto kit 0.0.57; preserved upstream tool cleanup and measurements, moved the lesson into its own file and added verified skill-usage passages. |
-| total | 132 | gpt-6-astra | | 2.2 h of work, over 2.3 h |
+| 80-retro | 12 | gpt-6-astra | 3 | One agent; kit fixes for independent tool ports, quiet-frame capture, compiled programs and ROM aliases; regression checks and maintainer feedback.; Rebased onto kit 0.0.57; preserved upstream tool cleanup and measurements, moved the lesson into its own file and added verified skill-usage passages.; Recorded sprite-default evidence and the visual curation pass; no new kit change or maintainer ask. |
+| curate | 13 | gpt-6-astra | 1 | Illustrated all 21 behaviors with original sprites; 86 appearance options and 181 frame selections checked in the browser, plus keyboard and mobile layout. |
+| total | 132 | gpt-6-astra | | 2.2 h of work |
+| after the run | 13 | | | curate, play and their retros: 0.2 h, not in the total |
 
 The one change that would have saved the most minutes: identify and decode the interpreted program before treating the unexplained tail as ordinary data; its control flow exposes the menus, round progression and editor commands together.
+
+
+## Curation follow-up, 2 October 2026
+
+The contributor requested graphics and clearer presentation for the behavior section. The page now uses the editor's default sprite tables and original level appearances, with selectable frames, accessible controls and a responsive layout. Browser checks covered 21 behaviors, 86 appearances and 181 frame selections. The saved blank frame in one level is explicitly labelled. This changes no kit rule and raises no new maintainer ask; the appearance evidence is in `facts.md`. Curation is claimed by jankfoundry, with the other sections still awaiting a human pass.

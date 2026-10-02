@@ -1,8 +1,8 @@
 # Wizard — further work
 
-Silver: the canonical resident-image ledger explains all 45,560 tracked bytes; the article, forty-level atlas and source companions are built and checked. Copy remains `agent-draft`.
+Silver curation claimed by jankfoundry. The canonical resident-image ledger explains all 45,560 tracked bytes; the article, forty-level atlas and source companions are built and checked. Copy remains `agent-draft`.
 
-Gold requires a human to curate every section. Set `silver-claimed` and record the steward when that pass begins; then rewrite, cut or expand the material and record the human copy provenance.
+The human curation pass began with the request to illustrate and tidy the monster behavior section. That section now has original sprite previews, frame selection and level appearance examples. The remaining sections still need the human review required for Gold; copy remains `agent-draft` until that review establishes its provenance.
 
 Research opportunities, explicitly open:
 

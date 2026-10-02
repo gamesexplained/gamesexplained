@@ -200,3 +200,10 @@ These are traced rules. Their complete player routes and puzzle solutions remain
 - **Original-code comparisons:** 158 cases run the original 6502 routines in the kit simulator. They cover 80 treasure/score/life cases (all sixteen class/difficulty combinations with five score boundary values), eighteen horizontal-movement boundary cases, and sixty comparisons of ordered SID writes for five effect ports, including both carry inputs and varied random state. All pass. Test programs/snapshots stay private under work/.
 
 The emulator qualification recorded 54 passing checks and 3 wall-clock-sensitive failures on this host (watchpoint throughput and warp-rate thresholds). Exact frame counts, stopping, input, and snapshot/restart determinism passed. Claims above use exact frames, register values, or original-code comparisons rather than those failed wall-clock measurements.
+
+
+## Actor appearance browser
+
+The construction DATA contains twenty default animation spans at `$2A07–$2A42`, twenty sprite-image numbers at `$2A43–$2A97`, and twenty colors at `$2A98–$2ADE`. The READ loops at BLDR `$4825`, `$4834` and `$4843` fill arrays indexed by behavior 1–20. Behavior zero is unused. The default command at `$39D9` adds 128 to the image number for the bank-$C000 sprite pointer, then stores the animation span, pointer and color in the level header.
+
+The article's actor browser shows those defaults and distinct saved combinations from the forty level headers. Only examples whose pointers reference the resident sprite bank are included; runtime-generated images outside it are omitted. Frame bytes come from the canonical listing's relocated sprite RAM, with 58 frames (3,654 drawing bytes) embedded. Each is a 24×21 multicolor sprite: pixel pairs 01 and 11 use shared colors 14 and 1, and pair 10 uses the actor color. The Playground frame's `$D025/$D026` reads confirm those shared colors after masking their high bits. Frames are displayed unmirrored at a common scale; the widget inspects artwork rather than simulating actor motion, expansion or room effects.
