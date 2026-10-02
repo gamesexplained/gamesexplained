@@ -91,14 +91,16 @@ the same review a game does, not less. Describe the change in the pull
 request.
 Admins of the `gamesexplained` organization can skip the pull request: when
 they ask for a change, commit straight to `main` if they wish.
-`kit/CHANGELOG.md` is not a list of changes: it records what the
-kit learned about reverse engineering, from which game and whom, and a
-change that does not alter what the next agent does when it opens a game
-stays out of it. When the workflow changes, put `[kit-bump]` in the pull
-request's description (or the commit message, on a push to `main`) and
-leave `kit/VERSION` alone: after the merge, `.github/workflows/kit-version.yml`
-moves it on and gives a CHANGELOG entry headed `## next · ...` the new
-number, so two pull requests never conflict over it. A new platform
+`kit/lessons/` is not a list of changes: it records what the kit
+learned about reverse engineering, from which game and whom, one entry
+to a file (`kit/skills/core/80-retro`), and a change that does not alter
+what the next agent does when it opens a game stays out of it. When the
+workflow changes, put `[kit-bump]` in the pull request's description (or
+the commit message, on a push to `main`) and leave `kit/VERSION` alone:
+after the merge, `.github/workflows/kit-version.yml` moves it on and
+gives each entry headed `## next · ...` the new number. A pull request
+adds a lesson file of its own and edits no other, so two pull requests
+never conflict over either. A new platform
 follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable
@@ -201,6 +203,7 @@ follows `kit/PLATFORMS.md`.
 | `kit/EMULATOR.md` | what an emulator must do, by phase of use, and the test for each |
 | `kit/style.md` | house style for minisite copy |
 | `kit/CHECKING.md` | the maintainer's check that lets a run on an unproven model be Silver |
+| `kit/lessons/` | what the kit learned, from which game and whom: one entry to a file, the site's kit page |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
 | `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |
 | `kit/PLATFORMS.md` | what a platform owns, and how to add one |

@@ -23,16 +23,20 @@ into the diff that saves the next contributor the trouble.
    a platform skill describes the machine, never this one game. If a fact is about
    this game, it belongs in the game's `facts.md`, not in a skill.
    `check_docs.py` enforces the separation.
-3. **Write `kit-feedback.md`** in the game folder: what you changed and
-   why, what took longest, anything about your operating system or tool
-   versions that the install notes should say, and your asks for a
-   maintainer (step 4). For "what took longest",
+3. **Write `kit-feedback.md`** in the game folder: what you changed in
+   the kit, what took longest, anything about your operating system or
+   tool versions that the install notes should say, and your asks for a
+   maintainer (step 4). List each change in one line: the file and what
+   it now says. Where the reason is a lesson (step 5), name the lesson's
+   file and stop there: a lesson is written once, in that file. A change
+   that teaches nothing of the kind (a script, a path, the site) gives
+   its reason here. For "what took longest",
    run `python3 kit/scripts/clock.py stop` and then `clock.py report`, and
    paste the table. Under it, one sentence naming the single change to
    the kit that would have saved the most minutes. A run takes hours, so
    a saved half hour compounds across every game after yours; that
-   sentence is usually a changelog entry, because it changes what the
-   next agent does. `timings.json` is committed with the game.
+   sentence is usually a lesson, because it changes what the next agent
+   does. `timings.json` is committed with the game.
 4. **Send each ask for a maintainer to the issue tracker.** An ask is a
    change you would make but did not, because it is a maintainer's call:
    a rule to loosen, a bug in a tool upstream, a change to the site, to
@@ -74,16 +78,21 @@ into the diff that saves the next contributor the trouble.
    request's description under the heading **Maintainer asks**, one
    paragraph each, and say in `kit-feedback.md` that they are there.
    Whoever merges the pull request files them.
-5. **Add to `kit/CHANGELOG.md` only what the next game will do
-   differently.** That file is the record of what the kit learned about
+5. **Write to `kit/lessons/` only what the next game will do
+   differently.** That folder is the record of what the kit learned about
    reverse engineering, from which game and whom, not of what changed. If
    a lesson from this game changes how an agent reads, traces, measures
-   or verifies, write it there in plain words, under a heading that names
-   the game and who worked it: `## next · <date> · <game> · <who>`, the
-   newest first. `next` becomes the version number when the pull request
-   is merged; put `[kit-bump]` in its description, and never edit
-   `kit/VERSION` yourself. A fix to a script, a path, the site or the
-   prose style goes in `kit-feedback.md` and the pull request instead.
+   or verifies, write it in plain words in a new file,
+   `kit/lessons/<YYYY-MM-DD>-<slug>.md` (today's date, the game folder's
+   slug, and `-2` on the end if that name is taken). The file is this
+   run's one entry, however many lessons it holds, under one heading that
+   names the game and who worked it, as its first line:
+   `## next · <date> · <game> · <who>`. Edit no other file there, and
+   never `kit/VERSION`: each pull request adds only its own file, so no
+   two conflict. `next` becomes the version number when the pull request
+   is merged; put `[kit-bump]` in its description. A fix to a script, a
+   path, the site or the prose style goes in `kit-feedback.md` and the
+   pull request instead.
 6. **Complete `game.json`**: tier reached (only if every requirement is
    met; an unattended run stops at Silver, since Gold is human curation;
    a run whose coverage or verify step ran on a model that is not proven
@@ -113,6 +122,7 @@ into the diff that saves the next contributor the trouble.
 ## Outputs
 
 Skill and kit edits committed on the branch and included in the pull
-request; `kit-feedback.md` with the timings table; each ask for a
+request; the run's entry in `kit/lessons/`, if it taught one;
+`kit-feedback.md` with the timings table; each ask for a
 maintainer filed as a `kit-ask` issue, or in the pull request's
 description; `timings.json`; `game.json` complete; `TODO.md` current.
