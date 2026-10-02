@@ -62,6 +62,44 @@ const DW = (function () {
   function message(M, n) { const out = []; for (let i = n; M[0x9626 + i] !== 0xFF; i++) out.push(str(M, M[0x95CB + i] | M[0x9626 + i] << 8)); return out.join(''); }
   // Item names: ten characters at $1770 + $1720[object].
   const itemName = (M, o) => { const a = 0x1770 + M[0x1720 + o]; let t = ''; for (let i = 0; i < 10; i++) { const b = M[a + i]; t += b >= 0xF6 ? String(b - 0xF6) : b >= 0xDC && b <= 0xF5 ? String.fromCharCode(b - 155) : ' '; } return t.trim(); };
+  // A multicolour sprite image (63 bytes) drawn at x, y with nothing behind it: cols are the
+  // colours of bit pairs 01, 10 and 11 ($D025, the sprite's own colour, $D026).
+  function sprite(ctx, img, x, y, s, cols) {
+    for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) { const g = img[r * 3 + b];
+      for (let k = 0; k < 4; k++) { const v = (g >> (6 - 2 * k)) & 3; if (!v) continue;
+        ctx.fillStyle = C64.PAL[cols[v - 1]]; ctx.fillRect(x + (b * 8 + k * 2) * s, y + r * s, 2 * s, s); } }
+  }
+  const image = (M, p) => Array.from(M.subarray(0x4000 + p * 64, 0x4000 + p * 64 + 64));
+  // The Doctor is two sprites in black with the shared red and orange: object 0, the coat and legs,
+  // and object 1, the head and arms, placed eight pixels higher at the same x ($CB3C-$CB56).
+  function doctor(ctx, M, f0, f1, x, y, s, img0, img1) {
+    const cols = [2, 0, 8];
+    sprite(ctx, img0 || image(M, f0), x, y, s, cols);
+    sprite(ctx, img1 || image(M, f1), x, y - 8 * s, s, cols);
+  }
+  // dissolve_sprite ($FEA9): clears n two-bit pixels, in the order of the 68 offsets at $09A0 and
+  // the five masks at $FC66/$FC6B, from the image test and the same pixels from each image in
+  // also. A pixel already clear in test is passed over without counting. st holds $FC60 and
+  // $FC61, the place in the order, which carries on from call to call as in the game.
+  function dissolver(M, st) {
+    const order = M.subarray(0x09A0, 0x09E4), keep = M.subarray(0xFC66, 0xFC6B), want = M.subarray(0xFC6B, 0xFC70);
+    return function (test, also, n) {
+      let c60 = st.c60, c61 = st.c61;
+      const done = () => { st.c60 = c60; st.c61 = c61; };
+      let left = n & 0xFF;
+      for (;;) {
+        const y = order[c60], a = test[y] || 0;
+        if (a !== 0) {
+          if (a & want[c61]) {
+            test[y] &= keep[c61]; for (const im of also) if (y < im.length) im[y] &= keep[c61];
+            if (!(left = (left - 1) & 0xFF)) return done();
+          } else { if (--c61 < 0) c61 = 4; continue; }
+        }
+        if (--c60 < 0) c60 = 0x43;
+        if (--c61 < 0) c61 = 4;
+      }
+    };
+  }
   function fail(e) { document.querySelectorAll('canvas').forEach(c => c.insertAdjacentHTML('afterend', '<p class="cap">' + e.message + '</p>')); }
-  return { load, drawMine, drawSprite, str, message, itemName, fail };
+  return { load, drawMine, drawSprite, sprite, image, doctor, dissolver, str, message, itemName, fail };
 })();

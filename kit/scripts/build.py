@@ -289,7 +289,7 @@ def banner(game, cons):
 
 # the file in the game folder each tab is written from; the Source and About tabs are
 # assembled, so they point at the prose the reader sees most of
-EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "play.html": "play.html",
+EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "solution.html": "solution.html", "play.html": "play.html",
                 "mechanics.html": "mechanics.html", "music.html": "music.html",
                 "gameplay.html": "gameplay.html", "graphics.html": "graphics.html",
                 "discoveries.html": "discoveries.html",
@@ -560,7 +560,7 @@ def fill(tpl, **kw):
     return tpl
 
 
-AUTHORED = ("index.html", "gameplay.html", "levels.html", "play.html", "mechanics.html", "graphics.html",
+AUTHORED = ("index.html", "gameplay.html", "levels.html", "solution.html", "play.html", "mechanics.html", "graphics.html",
             "music.html", "discoveries.html")
 LIB = "../../lib"   # site/lib/ as a game's pages see it
 
