@@ -239,9 +239,9 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
 
 A game that is several loads is at a tier when every one of its parts
-is. Its coverage is the sum over the parts listed in `game.json`, each
-byte counted once, and a part that is listed and not analysed keeps the
-game at Bronze, with the page saying how many of its parts are done.
+is. Its coverage is the sum over its parts, each byte counted once, and
+a part that has a folder and no analysis keeps the game at Bronze, with
+the page saying how many of its parts are done.
 
 Silver is the default goal and the normal path: the contributor pastes the
 one line, answers a few questions, walks away, and comes back to a Silver

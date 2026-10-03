@@ -128,14 +128,17 @@ title screen and play in one load are one, and step 4 chooses its
 snapshot. The loader, a protection check and a cracker's menu are not
 parts either; they stand in front of the game.
 
-1. **List every part**, in the order they are played, analysed or not:
-   `python3 kit/scripts/parts.py add <game dir> <id> --title "..."` makes
-   `parts/<id>/` and adds it to `game.json` (`parts.py -h` has the
-   layout). A part with no symbol map shows as not analysed on the page
-   and in `coverage.py`, and that is what keeps the game's figure honest:
-   the parts left out of the list are the ones nobody knows are missing.
-   When the first load was analysed before the others were found,
-   `--adopt` makes the game folder's own symbol map that part's.
+1. **Give every part a folder**, in the order they are played, analysed
+   or not: `python3 kit/scripts/parts.py add <game dir> <id> --title "..."`
+   makes `parts/<id>/` (`parts.py -h` has the layout). The folder says
+   everything about the part, in its `part.json`: its title, its place
+   in the order, the part it lies over. No file lists the parts, so
+   adding one writes nothing another part shares. A part with no symbol
+   map shows as not analysed on the page and in `coverage.py`, and that
+   is what keeps the game's figure honest: the parts with no folder are
+   the ones nobody knows are missing. When the first load was analysed
+   before the others were found, `--adopt` makes the game folder's own
+   symbol map that part's.
 2. **A snapshot for each part**, in the part's own `work/`: the
    hand-over as `entry.<ext>` and one in play, as above. The game's own
    loader puts the part in memory. Never assemble an image from the

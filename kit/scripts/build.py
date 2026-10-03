@@ -772,7 +772,7 @@ def build_game(gdir, out_root):
     os.makedirs(out, exist_ok=True)
     lib = LIB
     check_tabs(gdir, game)
-    P = parts(gdir, game)
+    P = parts(gdir)
     if P and not any(listed(p) for p in P):
         sys.exit(f"{os.path.relpath(gdir, ROOT)} is a game of several parts and none has a listing.json. "
                  "Build one from a part's symbol map and its snapshot first (kit/scripts/listing.py).")

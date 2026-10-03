@@ -6,18 +6,18 @@ What makes one is the machine's: where a game loads from disk or tape, a
 part is a load as the player meets it, the program as it stands when the
 loading is over and something happens. However many files arrive behind
 one loading screen, they are one part; an intro, each level that is loaded
-on its own and an ending are a part each. game.json lists them in the
-order they are played:
+on its own and an ending are a part each.
 
-  "parts": [{"id": "engine", "title": "The engine"},
-            {"id": "park", "title": "The park", "over": "engine"}, ...]
+Each part is a folder, games/<platform>/<slug>/parts/<id>/, laid out as a
+small game folder, and the folder says everything about the part. No file
+lists the parts: a game has the parts it has folders for, so two people
+adding two parts never write the same file.
 
-and each is a folder, games/<platform>/<slug>/parts/<id>/, laid out as a
-small game folder:
-
-  part.json      what the scripts read for one image: "video", "coverage",
-                 "io", "regions", and "ranges" for a part that lies over
-                 another
+  part.json      what the part is: "title", as the page names it; "order",
+                 a number, its place among the parts as they are played;
+                 "over", the id of the part it lies over, when it does, and
+                 then "ranges"; and what the scripts read for one image:
+                 "video", "coverage", "io", "regions"
   symbols.json, listing.json, facts.md, and a gitignored work/ with the
   part's snapshots (work/entry.<ext> is the hand-over, as for any game)
 
@@ -25,7 +25,7 @@ Every script that takes a <game dir> takes a part's folder in its place:
 symbols_export.py, symbols_import.py, listing.py, coverage.py,
 check_listing.py. The game folder keeps what is about the game as a whole
 (game.json, index.html, features.md, orientation.md, its own facts.md,
-timings.json).
+timings.json), and its game.json says nothing of the parts.
 
 Every byte has one owner. A part owns every address its ledger tracks,
 unless it names the part it lies "over": then it owns only its "ranges"
@@ -39,13 +39,14 @@ address space of its own.
 Usage:
   parts.py <game dir>                  list the parts, with each one's coverage
   parts.py add <game dir> <id> [--title "..."] [--over <id>] [--adopt]
-                                       add a part: its folder, and its entry in game.json.
+                                       add a part, after the ones there are: its folder.
+                                       To move it, change "order" in its part.json.
                                        --adopt makes the game folder's own symbols.json,
                                        listing.json, facts.md and ledger settings this
                                        part's, for a game that turned out to have more
                                        loads after its first was analysed
 """
-import json, os, re, shutil, sys
+import glob, json, os, re, shutil, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ID = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
@@ -67,19 +68,16 @@ def home(gdir):
     return gdir, None
 
 
-def parts(gdir, game=None):
-    """[{id, title, over, dir}] in game.json's order; [] for a game that is one load."""
-    if game is None:
-        p = os.path.join(gdir, "game.json")
-        game = json.load(open(p)) if os.path.isfile(p) else {}
+def parts(gdir):
+    """[{id, title, order, over, dir}] for the folders under parts/ that hold a part.json, in
+    the order they are played; [] for a game that is one load."""
     out = []
-    for p in game.get("parts") or []:
-        d = dict(p)
-        d["dir"] = os.path.join(gdir, "parts", p["id"])
-        d.setdefault("title", p["id"])
-        d.setdefault("over", None)
-        out.append(d)
-    return out
+    for f in glob.glob(os.path.join(gdir, "parts", "*", "part.json")):
+        own, d = json.load(open(f)), os.path.dirname(f)
+        pid = os.path.basename(d)
+        out.append({"id": pid, "title": own.get("title") or pid, "order": own.get("order", 0),
+                    "over": own.get("over") or None, "dir": d})
+    return sorted(out, key=lambda p: (p["order"], p["id"]))
 
 
 def under(P, p):
@@ -88,7 +86,7 @@ def under(P, p):
     while p.get("over"):
         q = by.get(p["over"])
         if q is None:
-            sys.exit(f'part {p["id"]} lies over {p["over"]!r}, which game.json\'s "parts" does not list')
+            sys.exit(f'part {p["id"]} lies over {p["over"]!r}, and the game has no part of that name')
         if q in out or q["id"] == p["id"]:
             sys.exit(f'part {p["id"]}: "over" goes round in a circle')
         out.append(q); p = q
@@ -159,12 +157,10 @@ def load_game(gdir):
     game = json.load(open(os.path.join(top, "game.json")))
     if pid is None:
         return game
-    P = parts(top, game)
-    me = next((p for p in P if p["id"] == pid), None)
-    if me is None:
-        sys.exit(f'{os.path.relpath(gdir)}: no part {pid!r} in game.json\'s "parts"; `parts.py add` lists one')
+    P = parts(top)
+    me = next(p for p in P if p["id"] == pid)
     own = settings(me)
-    out = {k: v for k, v in game.items() if k not in LEDGER_KEYS and k != "parts"}
+    out = {k: v for k, v in game.items() if k not in LEDGER_KEYS}
     out.update({k: own.get(k, EMPTY[k]) for k in LEDGER_KEYS})
     out["part"] = {"id": pid, "title": me["title"], "over": [q["id"] for q in under(P, me)]}
     out["elsewhere"] = elsewhere(P, me)
@@ -262,11 +258,11 @@ def add(gdir, pid, title=None, over=None, adopt=False):
         sys.exit(f"{gdir} has no game.json: give the game's folder")
     if not ID.fullmatch(pid):
         sys.exit("a part's id is lowercase letters, digits and hyphens: it becomes a folder and a URL")
-    game = json.load(open(gj))
-    listed = [p["id"] for p in game.get("parts") or []]
-    if pid in listed:
+    raw = open(gj, encoding="utf-8").read()
+    game, P = json.loads(raw), parts(gdir)
+    if pid in [p["id"] for p in P]:
         sys.exit(f"{pid} is already one of this game's parts")
-    if over and over not in listed:
+    if over and over not in [p["id"] for p in P]:
         sys.exit(f"--over {over}: no such part; add the part beneath first")
     d = os.path.join(gdir, "parts", pid)
     if os.path.exists(d):
@@ -283,11 +279,13 @@ def add(gdir, pid, title=None, over=None, adopt=False):
         sys.exit(f"--adopt: {gdir} has no symbol map of its own to adopt")
     os.makedirs(os.path.join(d, "work"))
     name = title or pid.replace("-", " ").capitalize()
-    part = json.loads(json.dumps(EMPTY))
+    part = {"title": name, "order": max([p["order"] for p in P] + [0]) + 1}
+    if over:
+        part.update({"over": over, "ranges": []})
+    part.update(json.loads(json.dumps(EMPTY)))
+    stale = [k for k in LEDGER_KEYS if game.get(k) not in (None, EMPTY[k])]   # game.json's own, read by nothing now
     if adopt:
-        for k in LEDGER_KEYS:
-            if k in game:
-                part[k] = game.pop(k)
+        part.update({k: game[k] for k in LEDGER_KEYS if k in game})
         for f in own + ["facts.md"]:
             if os.path.isfile(os.path.join(gdir, f)):
                 shutil.move(os.path.join(gdir, f), os.path.join(d, f))
@@ -295,16 +293,16 @@ def add(gdir, pid, title=None, over=None, adopt=False):
             f.write(f"# {game.get('title') or game.get('slug')} — verified technical facts\n\n"
                     "What is true of the game as a whole: how its parts follow one another, and what they share.\n"
                     "Each part's own facts are in `parts/<id>/facts.md`.\n")
+        # game.json is rewritten only when that changes nothing but the settings that moved: a file
+        # laid out by hand is its author's, and they take the four keys out themselves
+        rest = {k: v for k, v in game.items() if k not in LEDGER_KEYS}
+        if json.dumps(game, indent=2) == raw.rstrip("\n"):
+            with open(gj, "w", encoding="utf-8") as f:
+                f.write(json.dumps(rest, indent=2) + raw[len(raw.rstrip("\n")):])
+            stale = []
     else:
         if "symbols.json" in own:   # the empty symbol map new_game.py wrote: the parts hold them
             os.remove(os.path.join(gdir, "symbols.json"))
-        kept = [k for k in LEDGER_KEYS if game.get(k) not in (None, EMPTY[k])]
-        for k in LEDGER_KEYS:       # and the empty ledger settings beside it
-            if k in game and k not in kept:
-                del game[k]
-        if kept:
-            print(f"note: game.json's own {', '.join(kept)} describe no part and are read by nothing now: "
-                  "move them into the part.json they belong to")
         with open(os.path.join(d, "symbols.json"), "w") as f:
             json.dump({"schema": 1, "platform": game.get("platform"), "game": game.get("slug"), "part": pid,
                        "build": game.get("build"), "source": "parts.py", "blocks": [], "symbols": [], "comments": []},
@@ -312,8 +310,6 @@ def add(gdir, pid, title=None, over=None, adopt=False):
         with open(os.path.join(d, "facts.md"), "w") as f:
             f.write(f"# {game.get('title') or game.get('slug')}: {name} — verified technical facts\n\n"
                     "What is true of this part alone. An address here is an address in this part.\n")
-    if over:
-        part["ranges"] = []
     with open(os.path.join(d, "part.json"), "w") as f:
         json.dump(part, f, indent=2)
     with open(os.path.join(d, "work", "README.md"), "w") as f:
@@ -322,14 +318,12 @@ def add(gdir, pid, title=None, over=None, adopt=False):
                 "To rebuild it from your own copy of the game, follow the route to this part in the\n"
                 "game's `orientation.md`, then\n"
                 "`python3 kit/scripts/symbols_import.py <this part's folder> <your snapshot>`.\n")
-    entry = {"id": pid, "title": name}
-    if over:
-        entry["over"] = over
-    game.setdefault("parts", []).append(entry)
-    with open(gj, "w") as f:
-        json.dump(game, f, indent=2)
     print(f"added {os.path.relpath(d)}" + (f", over {over}" if over else "")
           + (": the game's own symbol map, listing, facts and ledger settings are this part's now" if adopt else ""))
+    if stale:
+        print(f"next: take {', '.join(stale)} out of {os.path.relpath(gj)}: "
+              + ("they are in this part's part.json now" if adopt else "a part's are in its own part.json")
+              + ", and a game with parts reads none from game.json (check_listing.py says so while they stay)")
     if over:
         print(f'next: put the addresses its load writes in {os.path.relpath(os.path.join(d, "part.json"))} '
               'as "ranges", e.g. [["$4000", "$8FFF"]]')

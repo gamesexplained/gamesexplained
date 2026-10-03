@@ -205,16 +205,38 @@ class Parts(unittest.TestCase):
             f = g / 'parts' / 'street' / 'part.json'
             f.write_text(json.dumps({k: v for k, v in json.loads(f.read_text()).items() if k != 'ranges'}))
             out = run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout
-            self.assertIn('parts/stray is a folder', out)
+            self.assertIn('parts/stray has no part.json', out)
             self.assertIn('part street lies over engine but its part.json has no "ranges"', out)
+
+    def test_a_part_says_what_it_is(self):
+        # no file lists the parts: adding one writes its own folder and nothing else
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            before = (g / 'game.json').read_bytes()
+            run(KIT / 'scripts' / 'parts.py', 'add', g, 'sewers', '--title', 'The sewers', '--over', 'engine')
+            self.assertEqual((g / 'game.json').read_bytes(), before)
+            self.assertEqual([(p['id'], p['order'], p['over']) for p in P.parts(str(g))],
+                             [('engine', 1, None), ('park', 2, 'engine'), ('street', 3, 'engine'), ('sewers', 4, 'engine')])
+            f = g / 'parts' / 'sewers' / 'part.json'
+            own = json.loads(f.read_text())
+            self.assertEqual(own['title'], 'The sewers')
+            f.write_text(json.dumps(dict(own, order=2)))               # moved, by its own number
+            self.assertEqual([p['id'] for p in P.parts(str(g))], ['engine', 'park', 'sewers', 'street'])
+            out = run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout
+            self.assertIn('parts park and sewers have the same "order" (2)', out)
+            f.write_text(json.dumps(dict(own, order=1.5)))
+            self.assertIn('OK', run(KIT / 'scripts' / 'check_listing.py', g).stdout)
+            # the list an earlier layout kept in game.json is said to be in the wrong place
+            (g / 'game.json').write_text(json.dumps(dict(json.loads(before), parts=[{'id': 'engine'}])))
+            self.assertIn('the parts are their folders', run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout)
 
     def test_adopt_makes_the_first_load_a_part(self):
         with tempfile.TemporaryDirectory() as d:
             g = Path(d) / 'one'
             g.mkdir()
-            (g / 'game.json').write_text(json.dumps({
-                'platform': 'c64', 'slug': 'one', 'title': 'One', 'video': {'screen': '$0400', 'charset': ''},
-                'coverage': {'exclude': [['$2000', '$20FF', 'a buffer']], 'extra': [], 'include': []}}))
+            settings = {'platform': 'c64', 'slug': 'one', 'title': 'One', 'video': {'screen': '$0400', 'charset': ''},
+                        'coverage': {'exclude': [['$2000', '$20FF', 'a buffer']], 'extra': [], 'include': []}}
+            (g / 'game.json').write_text(json.dumps(settings, indent=2) + '\n')
             (g / 'symbols.json').write_text(json.dumps({
                 'schema': 1, 'platform': 'c64', 'game': 'one', 'blocks': [{'start': 0x1000, 'end': 0x1006, 'type': 'Code'}],
                 'symbols': [sym(0x1000, 'main')], 'comments': [line(0x1000, 'All of it.')]}))
@@ -223,14 +245,31 @@ class Parts(unittest.TestCase):
             before = tracked_count(str(g))
             self.assertIn('--adopt', run(KIT / 'scripts' / 'parts.py', 'add', g, 'level-2', ok=False).stderr)
             run(KIT / 'scripts' / 'parts.py', 'add', g, 'level-1', '--title', 'Level 1', '--adopt')
-            game = json.loads((g / 'game.json').read_text())
-            self.assertEqual(game['parts'], [{'id': 'level-1', 'title': 'Level 1'}])
-            self.assertNotIn('coverage', game)
-            self.assertEqual(json.loads((g / 'parts' / 'level-1' / 'part.json').read_text())['video']['screen'], '$0400')
+            self.assertEqual((g / 'game.json').read_text(),              # the settings moved, nothing else touched
+                             json.dumps({'platform': 'c64', 'slug': 'one', 'title': 'One'}, indent=2) + '\n')
+            own = json.loads((g / 'parts' / 'level-1' / 'part.json').read_text())
+            self.assertEqual((own['title'], own['order'], own['video']['screen']), ('Level 1', 1, '$0400'))
+            self.assertEqual(own['coverage']['exclude'], [['$2000', '$20FF', 'a buffer']])
             self.assertIn('$1000', (g / 'parts' / 'level-1' / 'facts.md').read_text())
             self.assertFalse((g / 'symbols.json').exists())
             self.assertEqual(tracked_count(str(g)), before)
             self.assertIn('OK - 1 listing', run(KIT / 'scripts' / 'check_listing.py', g).stdout)   # no rebuild needed
+
+    def test_adopt_leaves_a_hand_laid_out_game_json_alone(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = Path(d) / 'one'
+            g.mkdir()
+            by_hand = '{"platform": "c64", "slug": "one", "title": "One",\n "video": {"screen": "$0400", "charset": ""}}\n'
+            (g / 'game.json').write_text(by_hand)
+            (g / 'symbols.json').write_text(json.dumps({
+                'schema': 1, 'platform': 'c64', 'game': 'one', 'blocks': [{'start': 0x1000, 'end': 0x1006, 'type': 'Code'}],
+                'symbols': [sym(0x1000, 'main')], 'comments': [line(0x1000, 'All of it.')]}))
+            run(KIT / 'scripts' / 'listing.py', g, snapshot(g / 'one.vsf', ENGINE))
+            out = run(KIT / 'scripts' / 'parts.py', 'add', g, 'level-1', '--adopt').stdout
+            self.assertEqual((g / 'game.json').read_text(), by_hand)
+            self.assertIn('take video out of', out)
+            self.assertEqual(json.loads((g / 'parts' / 'level-1' / 'part.json').read_text())['video']['screen'], '$0400')
+            self.assertIn('game.json has video, which nothing reads', run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout)
 
 
 if __name__ == '__main__':
