@@ -29,6 +29,12 @@ import glob, html, html.parser, json, os, re, shutil, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
 PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES"}
+# The footprint widget and the extra script it needs, per platform: a page loads only
+# its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
+PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap"}
+PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"]}
+# How the footprint blurb names the address space, so the C64 pages keep their copy.
+PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 64 KB"}
 TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
         ("play.html", "Play"), ("about.html", "About")]
 _warned = set()
@@ -594,9 +600,12 @@ def build_game(gdir, out_root):
     cons = contributors(gdir)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
+    platform_scripts = "".join(f'<script src="{lib}/{f}"></script>' for f in PLATFORM_MAP_LIBS.get(plat, []))
     common = dict(title=html.escape(game.get("title", slug)), lib=lib, build=html.escape(game.get("build") or ""),
                   platform=plat, platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
-                  publisher=html.escape(game.get("publisher") or ""))
+                  publisher=html.escape(game.get("publisher") or ""),
+                  platform_map=PLATFORM_MAPS.get(plat, "C64Map"), platform_scripts=platform_scripts,
+                  platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
     for f in AUTHORED:
         if f in present:
             open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
