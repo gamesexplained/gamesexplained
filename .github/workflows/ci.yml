@@ -18,57 +18,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: The 6502 simulator's self-test
-        run: node kit/c64/test_cpu6502.js
-      - name: The C64 machine's self-test
-        run: node kit/c64/test_machine.js
-      - name: The lockstep's self-test
-        run: node kit/c64/test_lockstep.js
-      - name: The launcher dispatcher picks one platform per command
-        run: python3 kit/scripts/test_tools.py
+      # One convention for the kit's tests (#159): a file matching
+      # `kit/**/test_*.py` (or `test_*.js`) is a test, and this runs every
+      # one of them. A new test needs no edit here. The older `--test`
+      # self-tests on the tools are run by the same script, from a list at
+      # the top of it. `--require-tools` makes a test that needs an installed
+      # tool fail rather than skip, so CI cannot pass because an oracle was
+      # absent. See AGENTS.md, "Working on the kit or the site".
+      - name: SkoolKit, the Z80 decoder's oracle in CI
+        run: pip install skoolkit==10.1
+      - name: Every kit test
+        run: python3 kit/scripts/test_kit.py --require-tools
       - name: Every kit script imports
         run: |
           for f in $(git ls-files 'kit/*.py' 'kit/**/*.py'); do
             dir=$(dirname "$f"); mod=$(basename "$f" .py)
             (cd "$dir" && python3 -c "import $mod") || exit 1
           done
-      - name: SkoolKit, the Z80 decoder's oracle in CI
-        run: pip install skoolkit==10.1
-      - name: The Z80 decoder agrees with SkoolKit over every opcode
-        run: python3 kit/spectrum/test_z80.py --require-skoolkit
-      - name: The Spectrum control file round trips
-        run: python3 kit/spectrum/test_skoolkit.py
-      - name: The ZEsarUX client absorbs the server's quirks
-        run: python3 kit/spectrum/test_zesarux.py
-      - name: The .sna reader's self-test
-        run: python3 kit/spectrum/snapshot.py --test
-      - name: The control-file writer's self-test
-        run: python3 kit/spectrum/skoolkit.py --test
-      - name: The Spectrum code map, routine simulator and ROM-copy finder's self-tests
-        run: |
-          python3 kit/spectrum/codemap.py --test
-          python3 kit/spectrum/simulate.py --test
-          python3 kit/spectrum/romcopy.py --test
-      - name: The .vsf reader and the project writer's self-tests
-        run: |
-          python3 kit/c64/snapshot.py --test
-          python3 kit/c64/project.py --roundtrip
-      - name: The emulator client absorbs the server's quirks
-        run: python3 kit/c64/test_vice.py
-      - name: The page editor's self-test
-        run: python3 kit/scripts/edit.py --test
-      - name: Importer and footprint regression tests
-        run: |
-          python3 -m unittest discover -s kit/c64 -p "test_*.py"
-          python3 -m unittest discover -s kit/scripts -p "test_browser.py"
-      - name: Undocumented instruction listing alignment
-        run: python3 kit/scripts/test_listing_undocumented.py
-      - name: The skill-usage count's self-test
-        run: python3 kit/scripts/skill_usage.py --test
-      - name: The proven-model rule's self-test
-        run: python3 kit/scripts/models.py --test
-      - name: The maintainer asks parser's self-test
-        run: python3 kit/scripts/maintainer_asks.py --test
       - name: No game binaries
         run: python3 kit/scripts/check_binaries.py
       - name: Knowledge in its place
