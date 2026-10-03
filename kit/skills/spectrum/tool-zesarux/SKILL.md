@@ -77,6 +77,14 @@ lists all 129.
 | Machine | `get-current-machine` | `ZX Spectrum 48k` |
 | Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine |
 
+ZRCP has more than the kit uses. Worth knowing for finding data tables:
+`get-visualmem-read-dump` and `get-visualmem-written-dump` (the memory a
+range was read from and written to), `cpu-transaction-log` and
+`cpu-history` (an instruction trace, for the run-up to a stop), the
+`snapshot-inram-*` commands (save and restore a snapshot in memory, no
+file), and `get-ocr` (text off the screen). None is wired into the client;
+`help <command>` gives their syntax.
+
 ZEsarUX's own expressions are worth knowing: `IN(<port>)` reads a port
 (sixteen bits, so the keyboard rows decode as `IN(65278)` for `$FEFE`),
 `PEEK(<addr>)` a byte, `MWA`/`MRV` the last write's address and the last
@@ -102,7 +110,9 @@ One call per invocation for the agent, and the same calls from a script
 
 Anything with a loop in it belongs in a script: a round trip is about
 0.13 ms, and 800 unpaced calls take 0.1 s (measured), but an agent
-thinking between two calls takes seconds.
+thinking between two calls takes seconds. On Linux the client sets
+`TCP_QUICKACK` on the connection first; without it the server's Nagle
+waits for a delayed ACK and a round trip is about 40 ms there.
 
 ## Steps, checkpoints and frames
 
@@ -135,8 +145,17 @@ rpc.registers()["PC"]                  # exactly 0x800F: the stop is on the inst
   other armed stopping checkpoint will end that run first** — the client
   says which one did, and the fix is `bp_disable` (or `bp_clear`) before a
   frame advance.
-- **A load turns every checkpoint off.** Re-arm after it;
-  `snapshot_load(..., rearm=True)` is the default. See `workarounds.md`.
+- **A load used to turn every checkpoint off.** The launcher passes
+  `--snap-no-change-machine`, so it no longer does;
+  `snapshot_load(..., rearm=True)` (the default) still re-arms as
+  belt-and-braces.
+- **A load does not restore where in the frame the machine was.** It lands
+  at the start of a frame, so start every experiment from a load and never
+  compare a live run with a loaded one (`load-keeps-frame-phase`).
+- **A memory watchpoint counts only the last byte it touches.**
+  `MWA=<addr>H` and `MRA=<addr>H` fire on the address line at the end of
+  the instruction, so a 16-bit access is seen at its second byte, and
+  watching the first byte counts nothing (`watch-store`, `watch-load`).
 - **A load resumes the machine** unless it was already in cpu-step:
   `snapshot-load` enters cpu-step, loads, and exits it again. Stop first
   (`enter_step`) to come back to the state you saved and stay there.
@@ -195,6 +214,9 @@ the game's `work/`. A `.sna` is not committed anywhere: it holds the game.
   support menu"), which is a reason the kit never arms a stopping
   checkpoint and then leaves the machine running: with nothing driving the
   run loop, the machine only stops at its own next opportunity.
+- **Warp cannot be switched over ZRCP.** It is `--emulatorspeed` at
+  launch; ZRCP reads it (`get-cpu-turbo-speed`) and has no setter, so it
+  takes a restart (`warp`).
 - **Gatekeeper rejects the macOS bundle** (it is ad-hoc signed, `spctl`
   says rejected). Never launch it with Finder or `open`; the launcher
   execs the binary inside `tools/zesarux/zesarux.app/Contents/MacOS/`.
@@ -204,7 +226,7 @@ the game's `work/`. A `.sna` is not committed anywhere: it holds the game.
 ```
 python3 kit/scripts/tools.py --platform spectrum stop
 python3 kit/scripts/tools.py --platform spectrum get-zesarux     # what this machine can have
-python3 kit/scripts/tools.py --platform spectrum check-emulator  # 40 named checks, about 10 s
+python3 kit/scripts/tools.py --platform spectrum check-emulator  # 45 named checks, about 15 s
 ```
 
 `check-emulator`'s names are the ones `workarounds.md` is indexed by, and
