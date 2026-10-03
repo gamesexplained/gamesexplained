@@ -378,6 +378,12 @@ def connect(host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=30.0):
     except OSError as e:
         raise ZesaruxError(f"nothing answering on {host}:{port} ({e}). "
                            "Start it: python3 kit/scripts/tools.py --platform spectrum zesarux")
+    if hasattr(socket, "TCP_QUICKACK"):
+        # Linux only. Each ZRCP reply arrives in two pieces (the text, then the
+        # prompt), the server's Nagle holds the second until the client ACKs, and
+        # Linux delays that ACK about 40 ms: 23 calls a second instead of 5000+.
+        # QUICKACK stops the delay; the server still gets its ACK.
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
     sock.settimeout(timeout)
     banner, buf = _read_reply(sock, b"", "the connect banner")
     rpc = Rpc(sock, host, port, banner)
