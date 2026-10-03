@@ -132,3 +132,15 @@ which runs on room 3's ladder). All fifteen were corrected, the same
 wrong sentence in agent 9's other table comments with them, and every
 explicit caller citation in the listing (221) was checked mechanically:
 one more was misleading.
+
+Then the whole listing. Nine fresh agents, each on a range of about
+5,000 words of comments, checked all 1,268 against the bytes and
+corrected 235 of them (18.5 %) and nine labels, listing callers with a
+helper that reads the decoded listing (`work/callers.py`), since byte
+searches had put phantom callers into comments. Among what they found:
+fire with a direction jumps from standing (confirmed live, and corrected
+on the page), the F1 replay and both replay bonuses never run, the
+"television" sprite is the lift cabin, and a live block of room 1's code
+had been labelled unused. A second random sample of 60, none from the
+first, checked by another fresh agent: 58 correct, 2 with a minor error
+(3.3 %, 95 % interval 0.9-11.4 %), none wrong; both were corrected.

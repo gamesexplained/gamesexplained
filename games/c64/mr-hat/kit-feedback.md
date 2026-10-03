@@ -42,6 +42,8 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
   return addresses above the `RTI`'s lead to the game's own entry.
 - **PETSCII spaced with cursor controls** (`c64-reference`).
 - **Test a control from a standing start** (`20-features`).
+- **Measure the listing's comments with a random sample** (`60-verify`),
+  after a full audit took this run's from 25 % to 3 % wrong.
 - **Count the instances before a claim about all of them** (`60-verify`),
   after the maintainer's review found that most wrong claims were one
   room or one test written up as the game's.
@@ -104,10 +106,10 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
 | 30-text | 4 | claude-opus-5-5 | 1 |  |
 | 40-sweep | 2 | claude-opus-5-5 | 1 |  |
 | 50-coverage | 2513 | claude-opus-5-5 | 2 | all nine annotation agents stopped at once on the account's session usage limit (HTTP 429) and did no work; the step sat idle about six hours until the limit reset at midnight, then was restarted; nine annotation agents on disjoint ranges, all claude-opus-5-5 (inherited from the lead), interrupted twice by the account's usage limits (a five-hour session limit, then the weekly limit) and resumed from their own contexts; the wall clock includes those waits |
-| 60-verify | 337 | claude-opus-5-5 | 3 | after the maintainer's review: merge of main, the asks reformatted, five wrong claims checked and fixed, a verifier agent (claude-opus-5-5) auditing all ~120 page claims and re-checking the fixes, kit lesson on generalised claims; audits of facts.md and features.md (every claim) and of 60 sampled listing comments, by two claude-opus-5-5 agents (one interrupted by the usage limit and resumed); corrections; live tests showing room 5's object cannot be taken and the ending is reached without it |
+| 60-verify | 643 | claude-opus-5-5 | 4 | after the maintainer's review: merge of main, the asks reformatted, five wrong claims checked and fixed, a verifier agent (claude-opus-5-5) auditing all ~120 page claims and re-checking the fixes, kit lesson on generalised claims; audits of facts.md and features.md (every claim) and of 60 sampled listing comments, by two claude-opus-5-5 agents (one interrupted by the usage limit and resumed); corrections; live tests showing room 5's object cannot be taken and the ending is reached without it; full audit of all 1,268 listing comments by nine claude-opus-5-5 agents on balanced ranges (235 corrected; interrupted once by the session limit and resumed), and a fresh 60-comment sample to measure the result (25% before, 3.3% after) |
 | 70-minisite | 19 | claude-opus-5-5 | 1 |  |
 | 80-retro | 3 | claude-opus-5-5 | 1 | retro: kit edits (port, contained Rust, Linux desktop notes, brief and coverage skill on usage limits, reference notes on freezer stacks and PETSCII cursor controls, features note on testing controls), game records |
-| total | 2898 | claude-opus-5-5 | | 48.3 h of work, over 66.2 h |
+| total | 3204 | claude-opus-5-5 | | 53.4 h of work, over 71.4 h |
 
 The tools' set-up before the clock started took about twenty minutes,
 most of it the disassembler's compile and waiting for the contributor's

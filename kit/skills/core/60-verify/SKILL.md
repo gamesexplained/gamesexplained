@@ -49,6 +49,19 @@ one test's of four, a tune called one room's that played in all of them,
 a bug whose effect was worked out from counts without reading the
 callers.
 
+## Measure the listing before calling it done
+
+The comments in the listing are claims too, and an annotation agent's
+are rarely all right. Draw a random sample of about 60 (a fixed seed,
+spread over every agent's range) and have an agent that wrote none of
+them check each against the bytes; the error rate with its interval goes
+in `facts.md` or the pull request. One run measured 25 % of its comments
+with a wrong detail (callers, rooms and counts, almost never what a
+routine does); a full pass by fresh agents, each correcting its own range
+and listing callers from the decoded listing rather than from a byte
+search, brought a second, independent sample to 3 %. If the first sample
+is bad, audit the whole listing before the page is published.
+
 ## What a test lets through
 
 For every compare that sorts a value into a class (is this tile a door,
