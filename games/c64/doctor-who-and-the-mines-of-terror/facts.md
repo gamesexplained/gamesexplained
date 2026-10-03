@@ -210,7 +210,11 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   (`$0E60`, `$0068`) start a rising level `$51`, one step every 128
   frames.
 - **The machinery** (`$B9B6`): circuits set exactly in their slots at Y
-  `$0390` stop four moving objects (`$4F`); chemicals left at
+  `$0390` stop four moving objects (`$4F`). Each circuit's sprite is a
+  letter: the five in the machine spell START (`$40` S, `$41` T, `$42` A,
+  `$43` R, `$4A` T), the spares are `$44` O and `$45` P. Slots 1-4 must
+  read S, T (either), O, P to stop it (`$B989`, slot 5 not tested) and
+  START to restart it (`$B97F`); chemicals left at
   (`$0290`, `$0588`) recolour the pool and stop two controllers.
 - **The code lock** (`$BD35`-`$BFD9`): three buttons, a six-press sequence
   dealt from a 186-byte deck with seeds from the frame counter; a wrong
