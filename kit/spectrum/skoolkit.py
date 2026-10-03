@@ -20,6 +20,8 @@ Control-file vocabulary used here, from SkoolKit's own manual
   c $ADDR [title]      a code block
   b $ADDR [title]      bytes
   w $ADDR [title]      words (a pointer is a word)
+  ; kit-block $ADDR T  the symbols.json type, when the letter cannot carry it (Address
+                       and the lo/hi split tables), so the round trip is lossless
   t $ADDR [title]      text in the machine's alphabet
   i $ADDR              ignored from here (used to close a block exactly)
   @ $ADDR label=NAME   a label
@@ -99,9 +101,19 @@ def symbols_from_ctl(path):
     RST target is not the game's, and must not become a symbol in the ledger."""
     blocks, symbols, comments = [], [], []
     directives = []                       # every block directive, to bound the ones we keep
+    types = {}                            # kit-block tags: a control-file letter cannot tell
+                                          # Address from Word, so ctl_from_symbols writes the
+                                          # symbols.json type in a comment for those it cannot
     with open(path) as f:
         for raw in f:
             line = raw.rstrip("\n")
+            tag = re.match(r";\s*kit-block\s+(\S+)\s+(\S+)\s*$", line)
+            if tag:
+                try:
+                    types[addr(tag.group(1))] = tag.group(2)
+                except ValueError:
+                    pass
+                continue
             if not line.strip() or line[0] in "#%;":
                 continue
             first, rest = line[0], line[1:].lstrip()
@@ -142,7 +154,7 @@ def symbols_from_ctl(path):
     for (a, letter, title), nxt in zip(directives, directives[1:] + [(None, None, None)]):
         if letter in FROM_CTL and RAM_LO <= a <= RAM_HI:
             end = min(nxt[0] - 1, RAM_HI) if nxt[0] is not None else RAM_HI
-            blocks.append({"start": a, "end": end, "type": FROM_CTL[letter]})
+            blocks.append({"start": a, "end": end, "type": types.get(a, FROM_CTL[letter])})
             if title:
                 comments.append({"address": a, "type": "line", "text": title})
     symbols.sort(key=lambda s: s["address"])
@@ -173,7 +185,10 @@ def ctl_from_symbols(gdir, snapshot, out=None):
         if prev_end + 1 < start:
             lines.append(f"i {_hex(prev_end + 1)}")
         title = line.get(start, "")
-        lines.append(f"{TO_CTL[b['type']]} {_hex(start)}" + (f" {title}" if title else ""))
+        letter = TO_CTL[b["type"]]
+        if FROM_CTL[letter] != b["type"]:
+            lines.append(f"; kit-block {_hex(start)} {b['type']}")
+        lines.append(f"{letter} {_hex(start)}" + (f" {title}" if title else ""))
         prev_end = end
     if prev_end < RAM_HI:
         lines.append(f"i {_hex(prev_end + 1)}")
@@ -232,6 +247,7 @@ def test():
         json.dump({"slug": "x", "title": "X", "platform": "spectrum"},
                   open(os.path.join(d, "game.json"), "w"))
         json.dump({"blocks": [{"start": 0x8000, "end": 0x8005, "type": "Code"},
+                              {"start": 0x8006, "end": 0x8009, "type": "Address"},
                               {"start": 0x0000, "end": 0x0010, "type": "Code"}],
                    "symbols": [{"address": 0x8000, "name": "start", "type": "UserDefined", "kind": "user"},
                                {"address": 0x0038, "name": "rom_rst38", "type": "UserDefined", "kind": "user"}],
@@ -240,7 +256,8 @@ def test():
                   open(os.path.join(d, "symbols.json"), "w"))
         ctl = write(d, os.path.join(d, "x.sna"))
         blocks, symbols, comments = read_file(ctl)
-        assert blocks == [{"start": 0x8000, "end": 0x8005, "type": "Code"}], blocks
+        assert blocks == [{"start": 0x8000, "end": 0x8005, "type": "Code"},
+                          {"start": 0x8006, "end": 0x8009, "type": "Address"}], blocks
         assert [s["name"] for s in symbols] == ["start"], symbols      # the ROM label is refused
         assert {c["address"]: c["text"] for c in comments} == {0x8000: "entry point", 0x8003: "counter"}, comments
         if skoolkit_bin("sna2skool.py"):
