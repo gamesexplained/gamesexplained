@@ -6,32 +6,51 @@ code disagree, the code wins and `features.md` says **differs**.
 
 ## Machine and layout
 
-- 48K ZX Spectrum, ROM at `$0000-$3FFF`, screen at `$4000-$5AFF`, game at
-  `$5B00-$EBCD`, hand-over and loader at `$EC00-$FFFF`
-  (`work/layout.json`; strings and code read from `work/entry.sna`).
+- 48K ZX Spectrum, ROM at `$0000-$3FFF`, screen at `$4000-$5AFF`, the
+  game's own code and data at `$5B00-$EBFF`, the boot/init routine, the tape
+  loader and the hand-over stub at `$EC00-$FFFF` (`work/layout.json`; strings
+  and code read from `work/entry.sna`).
+- **`$5B00-$62FF` is generated at boot, not authored data.** `$EBF0-$EC59`
+  builds the 256-entry bit-reverse table at `$6200-$62FF` (eight `SLA C` /
+  `RR A` pairs per entry) and the pre-shift pages below it, writing into
+  `$5Bxx`-`$62xx`; the boot/init routine at `$EB9C` runs it before play
+  starts. The board's own records are the rest of the region, and the walker
+  at `$AF49` advances through them by `$0007` (`$AF43`), not 8 bytes.
+- **`$C001-$C2EE` is referenced.** Eighteen words in the pointer table at
+  `$BF27` point into it (`$C011`, `$C02D`, ... `$C279`), so it is not data
+  "no operand references by address".
 - The game runs with **interrupts disabled**: the hand-over stub executes
   `DI`, the snapshot header reads `IFF2=0`/`IM=1`, and the image contains
   no read of the ROM frame counter at `$5C78`. It times itself.
   (`work/entry.sna` header, `orientation.md`.)
-- The only I/O the game touches: `IN A,($FE)` keyboard reads at `$7BFC`,
-  `$7CA9`, `$D6AE`; `OUT ($FE),A` (border and speaker) at `$E755`,
-  `$EA8A`, `$EAD3`, `$EAEC`; and the Kempston joystick `IN A,($1F)` at
-  `$7C32`. No AY (a 48K machine).
+- **Every `IN` and `OUT` in the game, from the built listing**: `IN A,($FE)`
+  keyboard reads at `$7BFC`, `$7CA9`, `$D33E` and `$E5B3`; `IN A,(C)` at
+  `$7B91`; the Kempston joystick `IN A,($1F)` at `$7C32`; and `OUT ($FE),A`
+  (border and speaker) at `$E755`, `$EA8A`, `$EAD3`, `$EAEC`. So `$FE` is not
+  the only input port, and `$D6AE` is not an input at all: it is the high
+  byte of the `JP Z,$DB0C` at `$D6AC`. No AY (a 48K machine).
 - **No custom character set.** Text is the ROM font (`$3C00`-based), plain
-  ZX codes. The forgery warning's text table is at `$7CE0`; the opening
-  menu's at `$E7B1`-`$E930`.
+  ZX codes. The forgery warning's text table is at `$7CE0`. `$E7B1` is not
+  menu text: it is the key names of the redefine-keys screen (`$E7A8`-`$E7DA`
+  holds `<SPACE>`, `<SYM SHIFT>`, `<CAPS SHIFT>`, `<ENTER>`); the menu's own
+  text is message `$86` of the game's message script and starts at `$E7DB`.
 
 ## Boot and entry
 
 - Tape: a BASIC wrapper (`POKE 23624,0`, `POKE 23693,0`, `CLEAR 65535`,
   `LOAD "WORM" CODE`, `RANDOMIZE USR 64242`) calls a 190-byte turbo loader
   at `$FAF2`, which loads 49001 bytes to `$4000` and returns to `$EFD8`.
-- `$EFD8` hand-over stub: `DI`, `SP=$F000`, clear the bitmap
-  `$4000-$57FF`, fill the attributes `$5800-$5AFF` with `$0E`, border `1`
-  (blue), `JP $7C92`.
-- `$7C92` reads the flag at `$FC00`; non-zero draws the anti-piracy
-  forgery warning and waits for a key (`$7C90`-`$7CB0`), zero goes straight
-  to the menu.
+- Hand-over stub: the `DI` is at **`$EFDA`**, not `$EFD8` (`$EFD8-$EFD9` are
+  two zero bytes the listing does not carry as instructions). It sets
+  `SP=$F000`, clears the bitmap `$4000-$57FF` with `LDIR`, fills the
+  attributes `$5800-$5AFF` with `$0E`, sets the border to `1` (blue) and
+  `JP $7C92`.
+- `$7C92` reads the byte at `$FC00`; non-zero draws the anti-piracy forgery
+  warning from the string at `$7CE0` and waits for a key
+  (`$7C90`-`$7CB0`), zero goes straight to the menu. **No code writes
+  `$FC00`** - there is no store to it anywhere in the listing - so it is not
+  a variable but a byte of the loaded image, and it reads `$FF` in both
+  snapshots, so the real boot takes the warning path.
 - `$7F30` copies a pre-rendered picture from `$F000-$F8FF` onto the screen
   and jumps to the menu handler at `$E508`.
 - The menu handler draws the title `FAT WORM BLOWS A SPARKY` and the three
@@ -58,19 +77,28 @@ code disagree, the code wins and `features.md` says **differs**.
   Verified live: the buffer in `work/play-1.sna` holds the dithered
   pattern. See "The rasteriser" below.
 - Objects are drawn from four extent words. `$80EB`
-  (`scale_object_extent`) reads a scale byte `B = curve[A >> 1]` from the
-  64-byte curve at `$6300` and applies it to each word through `$811E`.
+  (`scale_object_extent`) reads a scale byte from the **128-byte** curve at
+  `$6300`-`$637F` - `LD H,$63` / `LD L,A` / `SRL L` indexes 0-127 - and
+  applies it to each word through `$811E`. The curve is one monotone run from
+  `$00` to `$FA`; `$6380` onwards is a different table, not more curve.
   `$811E` (`mul_scale`) is a shift-and-add that returns
   `extent * (128+B) / 128`; it doubles `DE`, shifts `B` right and adds on
-  the carry, eight times, then folds the high byte back. Verified by
-  reading `$811E`-`$8179` and the curve at `$6300`.
-- `$811E` is also the game's only range test: a value whose low byte is
-  `$C0`-`$FF`, or whose high byte is neither `$00` nor `$FF`, comes back
-  unchanged. Coordinates outside the visible area pass through untouched.
+  the carry, eight times, then folds the high byte back. Verified by reading
+  `$811E`-`$8179`, the curve at `$6300`, and by simulating the routine
+  (`HL=00BF`, `B=3F` gives `HL=011D` = 285).
+- **`$811E` is not the game's only range test.** Inside it, a value with a
+  non-zero high byte takes one of two paths: the positive path multiplies
+  only what is below `$C0` in the low byte, and the **negative path also
+  scales** (measured at `B=3F`: `$FF00` and `$FF20` come back unchanged,
+  `$FF40` gives `$FEE2` and `$FFC0` gives `$FFA1`, so the untouched window is
+  `$FF00-$FF3F`). Two other routines test ranges as well: `$B9F2`
+  (`LD A,D / AND A / RET NZ / ... / BIT 7,L`) and `$D027`
+  (`LD A,E / AND $1F / RET Z / CP $09 / RET NC / LD A,D / CP $5A`).
 - `$81DB` (`draw_object`) scales each object's extent twice, at the
   record's `+$0D` and `+$0C` bytes, adds `$0080` to the first two resulting
   words and `$0040` to the last two (which is what centres the worm), then
-  dispatches on `type & 3` to one of four drawing arms.
+  dispatches on **`type & $C0`** - `$827B` is `AND $C0`, then `CP $C0`,
+  `CP $80`, `CP $40` - to one of four drawing arms, not on `type & 3`.
 
 ## The rasteriser (`$8E67`, `$9270`, `$E9E8`, `$EAA9`)
 
@@ -182,8 +210,10 @@ names the `$8E13` family `edge_*`; `$8E67` is the rectangle filler.
 - `$9EB0` (`worm_steer`) chooses one of four legs from bits 7 of the
   overlap object's flags at `(IX+$09)`, `(IX+$05)`, `(IX+$03)` and
   `(IX+$07)`, each of which snaps the worm onto a track direction (0/128
-  or 64/192). `($8001)` is the heading; `($8000)` is a 12-frame rate
-  limiter. When the worm is already heading into the window a leg tests,
+  or 64/192). `($8001)` is the heading; `($8000)` is **not** a 12-frame rate
+  limiter - `$9CF1`'s first two instructions clear it and the frame loop at
+  `$765C` calls `$9CF1` every frame, so it holds state for one frame. When
+  the worm is already heading into the window a leg tests,
   `$9F37` reverses the heading and quarters the projection scale
   (`$8002`) - the worm bumping into an edge.
 - `($8001)` heading, `($8002)` speed/scale, `($8003)` speed,
@@ -197,10 +227,16 @@ names the `$8E13` family `edge_*`; `$8E67` is the rectangle filler.
 ## The halt screen (`$D05E`)
 
 - `H` runs a self-contained bouncing-ball screen at `$D05E`, reached only
-  from `$779A`. It builds its own 1&nbsp;KB pattern at `$FC00-$FFFF` and
-  moves five objects. It was not executed in either snapshot; its
-  appearance is open. The `H` key's path is `$7C13` reading the controls
-  into `($8057)` and the frame loop's bit 4 test at `$7790`.
+  from the `CALL $D05E` at `$779A`. Its pattern fill at `$D37D` writes
+  **4&nbsp;KB at `$F000-$FFFF`**, with `SP=$0000` and PUSH working down from
+  `$FFFF` (measured by simulating the routine: the stack pointer's lowest
+  value is exactly `$F000`, and 3,672 of the 4,096 bytes change value) - not
+  the 1&nbsp;KB at `$FC00-$FFFF` an earlier note claimed. It keeps the old
+  stack pointer at `$E9E6` and restores it, and is called from `$D12F`. The
+  `H` key's path is `$7C13` reading the controls into `($8057)`, the frame
+  loop's bit-4 test at **`$778C`** (`$7789`-`$778E`), and the wait at
+  `$7790` for the key to be released. It was not executed in either
+  snapshot; its appearance is open.
 
 ## Open
 

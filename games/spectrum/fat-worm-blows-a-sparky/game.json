@@ -24,12 +24,12 @@
  ],
  "tools": {
   "emulator": "release ZEsarUX-13.0, ZEsarUX_macos-silicon-13.0.dmg; check-emulator 36 of 40 (the three with workarounds, plus stopwatch, which fell below its 0.5x floor on a busy host)",
-  "disassembler": "SkoolKit 10.1",
+  "disassembler": "SkoolKit 10.1 (its simulator was also used to run individual routines, and sna2ctl.py to cross-check the code/data split)",
   "host": "macOS arm64 (darwin), Apple silicon",
   "python": "3.14.7"
  },
  "model": "deepseek-flash",
- "kit_version": "0.0.44",
+ "kit_version": "0.0.66",
  "created": "2026-09-29",
  "video": {
   "screen": "$4000",
@@ -46,13 +46,13 @@
    "$5B00",
    "$757E",
    "levels",
-   "the circuit board's coordinate tables and cell scripts; each cell is 8-byte records the walker at $AF49 turns into drawing calls"
+   "$5B00-$62FF is generated at boot by $EBF0-$EC59 - the 256-entry bit-reverse table at $6200-$62FF and the pre-shift pages below it - so it is not authored data. The rest of the range is the board's own records, which the walker at $AF49 steps through 7 bytes at a time ($AF43 loads $0007 into BC), not 8."
   ],
   [
    "$C001",
    "$C2EE",
    "graphics",
-   "shape or picture data loaded with the game that no operand references by address"
+   "the shape and picture data selected by 18 words in the pointer table at $BF27 ($C011, $C02D, ... $C279); the region is referenced by address, by those pointers"
   ],
   [
    "$F000",
@@ -61,10 +61,10 @@
    "the pre-rendered picture $7F30 copies onto the screen for the opening menu"
   ],
   [
-   "$805D",
-   "$80EA",
+   "$8000",
+   "$8067",
    "variables",
-   "sparkie count, entity count, frame counter and the speed bytes"
+   "the game's variable block: $8000 a per-frame counter that $9CF1 clears, $8001 the heading, $8002/$8003 the projection scale and speed, $8059 the frame counter, $805D the sparkie count, and the object and cursor pointers and counters around them. The entity count is not in this range: it is at $7C71."
   ],
   [
    "$7F54",

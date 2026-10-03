@@ -31,13 +31,17 @@ cracktro. The tape holds, in order:
    contiguously, overwriting itself as it passes (the loader's later half
    is re-written with the image's own bytes). It leaves a return address,
    `$EFD8`, on the stack and `RET`s there.
-4. `$EFD8` is the game's hand-over stub: `di`, `SP=$F000`, clear the bitmap
-   `$4000-$57FF`, fill the attributes `$5800-$5AFF` with `$0E`, set the
-   border blue, then `JP $7C92`.
-5. `$7C92` reads the flag at `$FC00`; if it is non-zero the game draws the
-   anti-piracy forgery warning (text from the table at `$7CE0`) and waits
-   for any key. A key press clears the flag and goes to the menu at
-   `$7F30`.
+4. `$EFD8` is where the loader returns: two zero bytes (the listing carries
+   no instruction there), then the hand-over stub proper at **`$EFDA`** -
+   `di`, `SP=$F000`, clear the bitmap `$4000-$57FF`, fill the attributes
+   `$5800-$5AFF` with `$0E`, set the border blue, then `JP $7C92`.
+5. `$7C92` reads the byte at `$FC00`; if it is non-zero the game draws the
+   anti-piracy forgery warning (text from the table at `$7CE0`) and waits for
+   any key at `$7CA8`, which selects **all eight** keyboard half-rows
+   (`XOR A` before `IN A,($FE)`), then goes to the menu at `$7F30`. Nothing
+   writes `$FC00` - there is no store to it anywhere in the listing - so it
+   is a byte of the loaded image rather than a flag the game clears; it reads
+   `$FF` in both snapshots, so the warning is what the real boot shows.
 6. `$7F30` copies a pre-rendered picture from `$F000` into the screen
    (`$F000-$F7FF` → `$5000-$57FF`, `$F800-$F8FF` → `$5A00-$5AFF`) and
    jumps to the menu handler at `$E508`.
@@ -52,7 +56,7 @@ cracktro. The tape holds, in order:
 
 | File | State |
 |---|---|
-| `work/entry.sna` | at the forgery screen's wait loop (`$7CA8`), the turbo loader still in memory at `$FAF2` |
+| `work/entry.sna` | at the forgery screen's wait loop (`$7CA8`, all eight half-rows selected), the turbo loader still in memory at `$FAF2` |
 | `work/play-1.sna` | steady play, the worm on the board early in a game |
 
 The two images differ in 10424 bytes. **The entry image is the one to
@@ -90,15 +94,29 @@ first half, which has already run. On success it returns, via a pushed
 return address, to the game's entry stub at `$EFD8`. Per policy it is not
 annotated byte by byte; the entry stub and everything from `$7C92` are.
 
-## Where the code and data sit (first pass)
+## Where the code and data sit
 
-- `$5B00-$757E` — data: the circuit board, graphics and tables.
-- `$757F-$EBCD` — the game's code, interleaved with tables and variables.
-- `$EC00-$F000` — the hand-over stub, init and the pre-rendered menu picture.
-- `$F000-$FF41` — the loader's region and further code/data, overwritten
-  during play.
-- `$ED00-$F200` — mostly zero: uninitialised buffers.
+- `$5B00-$62FF` - built at boot by `$EBF0-$EC59`: the 256-entry bit-reverse
+  table at `$6200-$62FF` and the pre-shift pages below it. Not authored data.
+- `$6300-$757E` - the board: the perspective curve at `$6300-$637F`, then the
+  board's own records, which the walker at `$AF49` steps 7 bytes at a time.
+- `$757F-$EBFF` - the game's code, interleaved with tables and variables.
+- `$EC00-$EC6A` - the boot/init routine at `$EB9C` and its table generator.
+- `$EC6B-$EFD9` - 817 zero bytes, then further zeros, the same in the
+  hand-over and the play image; nothing reads them.
+- `$EFDA-$EFFA` - the hand-over stub. It exists only in the hand-over image:
+  in play the game has overwritten it with its own variables.
+- `$F000-$FFFF` - data loaded from tape, which the halt screen's `$D37D`
+  overwrites in full when the player presses `H`.
+- `$FA67-$FF45` - the loader's region, a copy of a ROM routine, and the stack.
 
-The exact split comes from the static trace
-(`work/tracer.py`, seeded at the entry) and the emulator's executed-address
-map (`work/coverage_run.py`); both are working files and are not committed.
+The exact split is the one committed in `symbols.json`: `work/layout.json`
+seeds it, `work/merge.py` writes the control file, and
+`kit/scripts/symbols_export.py --ctl` turns that back into `symbols.json`. The
+trace (`work/tracer.py`, seeded at the entry, and the 2026-10-01 review's
+successor `work/agents/a3_trace.py`) and the emulator's executed-address map
+(`work/coverage_run.py`) are working files and are not committed. **The code
+and data split was re-done on 3 October 2026**: a recursive trace from the
+executed-address map found 5,934 bytes of reachable code still typed as data,
+most of it sitting in the gaps *between* known code, including `$7790-$779C`,
+whose `CALL $D05E` had hidden the whole halt screen from every earlier walk.

@@ -80,17 +80,23 @@ button.step:disabled{background:var(--line);color:var(--ink-mute);cursor:default
       <input id="dist" type="range" min="0" max="120" value="0" step="1">
       <span id="distout"></span>
     </div>
-    <p class="cap"><b>Drag the slider.</b> The index walks the 64-byte curve
-    at <code>$6300</code>; the value it returns is the multiplier used by the
-    routine at <code>$811E</code>, <code>extent &times; (128+B) &divide; 128</code>.
+    <p class="cap"><b>Drag the slider.</b> The index walks the 128-byte curve
+    at <code>$6300-$637F</code> (<code>LD H,$63 / LD L,A / SRL L</code> indexes
+    0-127); the value it returns is the multiplier used by the routine at
+    <code>$811E</code>, <code>extent &times; (128+B) &divide; 128</code>.
     At the centre the factor is 1, so blocks show only their tops. Towards the
     edge the factor grows and their sides come into view.</p>
   </div>
   <p><code>$80EB</code> reads the curve with <code>B = curve[A &gt;&gt; 1]</code> and
   applies it to each of an object's four extent words through the
-  shift-and-add at <code>$811E</code>. That routine is also the game's only
-  range test: a coordinate whose magnitude is 192 or more comes back
-  unchanged, which is how things outside the view pass through untouched.</p>
+  shift-and-add at <code>$811E</code>. That routine also rejects coordinates
+  outside the view, but it is not the game's only range test: what comes back
+  untouched is <code>$FF00-$FF3F</code> and the positive range below
+  <code>$C0</code>, and the negative path still scales
+  (<code>$FFC0</code> &rarr; <code>$FFA1</code>), with further range tests at
+  <code>$B9F2</code> and <code>$D027</code>. The widget
+  above is a port of <code>$811E</code> checked against the routine on 789
+  inputs, boundaries included.</p>
 </section>
 
 <section>
@@ -127,8 +133,12 @@ button.step:disabled{background:var(--line);color:var(--ink-mute);cursor:default
   <p class="fig">04 · The board</p>
   <h2 class="t">A circuit board the size of a room</h2>
   <div class="plate">
-    <img src="https://spectrumcomputing.co.uk/pub/sinclair/games-maps/f/FatWormBlowsASparky.jpg" alt="A fan-drawn map of the circuit board" loading="lazy" referrerpolicy="no-referrer" style="width:100%;border:1px solid #d5d3cc;border-radius:6px">
-    <p class="cap"><b>The whole board.</b> A fan map from the <a href="https://spectrumcomputing.co.uk/entry/1736/ZX-Spectrum/Fat_Worm_Blows_a_Sparky">Spectrum Computing archive</a>. Blocks, ramps, data buses and the disk drive the
+    <img src="reference/20-board-map.jpg" alt="A fan-drawn map of the circuit board" loading="lazy" style="width:100%;border:1px solid #d5d3cc;border-radius:6px">
+    <p class="cap"><b>The whole board.</b> A fan-drawn map, hosted here with
+    credit, from the <a href="https://spectrumcomputing.co.uk/entry/1736/ZX-Spectrum/Fat_Worm_Blows_a_Sparky">Spectrum Computing
+    archive</a> (its <code>games-maps</code> collection, file
+    <code>FatWormBlowsASparky.jpg</code>). It is not the game's own artwork.
+    Blocks, ramps, data buses and the disk drive the
     worm has to reach are laid out on it. The game draws a small insert of
     the nearby cells into the bottom-left of the screen.</p>
   </div>
@@ -156,7 +166,9 @@ button.step:disabled{background:var(--line);color:var(--ink-mute);cursor:default
     </table>
     <p class="cap">Keys are redefinable; a Kempston joystick is read from
     port <code>$1F</code>. The keyboard rows come in through the ULA at
-    <code>$FE</code>, the only input port the game uses.</p>
+    <code>$FE</code> - every one of the game's keyboard reads and both its
+    joystick reads are listed in <code>facts.md</code>; <code>$FE</code> is not
+    its only input port.</p>
   </div>
 </section>
 
@@ -213,12 +225,21 @@ function paint(canvas, scr){
 }
 // Faithful port of $811E for positive values: v * (128+B) / 128, with the game's clamp.
 function mulScale(v, b){
-  if(v<0) return -mulScale(-v, b);
-  if((v>>8)||((v&0xFF)+0x40>=0x100)) return v;
-  let c=b&0xFF, de=v, hl=0;
-  for(let i=0;i<8;i++){ de=(de<<1)&0xFFFF; if(c&1) hl=(hl+de)&0xFFFF; c>>=1; }
-  hl=(hl+de)&0xFFFF; const carry=hl>>16;
-  return ((carry<<8)|((hl>>8)&0xFF))&0xFFFF;
+  v&=0xFFFF;
+  let neg=false;
+  if(v&0x8000){                      // $811F-$8121: ld a,h / and a / jp m,$817A
+    if(v<0xFF00) return v;           // $817A: inc a / ret nz  (the high byte must be $FF)
+    if((v&0xFF)<0x40) return v;      // $817D: add a,$C0 / ret nc
+    v=(0x10000-v)&0xFFFF; neg=true;   // $8184: sbc hl,de negates the argument
+  }else{
+    if(v>0xFF) return v;             // $8124: ret nz
+    if((v&0xFF)>=0xC0) return v;     // $8126: add a,$40 / ret c
+  }
+  let de=v, hl=0, c=b&0xFF;
+  for(let i=0;i<8;i++){ de=(de<<1)&0xFFFF; if(c&1) hl=(hl+de)&0xFFFF; c>>>=1; }
+  const sum=hl+de, carry=sum>0xFFFF?1:0;   // $8175 add hl,de, then the fold at $8176-$8178
+  const out=((carry<<8)|((sum>>8)&0xFF))&0xFFFF;
+  return neg?(0x10000-out)&0xFFFF:out;     // $81D2-$81D8 negates the result again
 }
 function perspective(){
   const A=+document.getElementById('dist').value;
