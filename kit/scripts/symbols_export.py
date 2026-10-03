@@ -40,11 +40,13 @@ PLATFORM_DEFAULTS = {
     },
     "spectrum": {
         # The 48K machine's ROM owns $0000-$3FFF: the machine's own routines, never
-        # the game's. The picture (bitmap + attributes + printer buffer + system
-        # variables) is added from video.screen below, so it is not repeated here.
+        # the game's. The picture (the bitmap and the attributes) is added from
+        # video.screen below, so it is not repeated here. The printer buffer and the
+        # system variables above it ($5B00-$5CB5) are not excluded: a game that runs
+        # with the ROM's interrupt off keeps its own data there.
         "exclude": [["$0000", "$3FFF", "ROM"]],
         "extra": [],
-        "screen_size": 0x1B00,     # $4000-$5AFF: bitmap, attributes, printer buffer, sysvars
+        "screen_size": 0x1B00,     # $4000-$5AFF: the bitmap ($1800) and the attributes ($300)
         "charset_size": 0x300,     # the ROM font in $3D00-$3FFF
         "snapshot_ext": "sna",     # the hand-over default, work/entry.<ext> (listing.py)
         "hidden": [],              # I/O is port-mapped, so no address has two meanings
