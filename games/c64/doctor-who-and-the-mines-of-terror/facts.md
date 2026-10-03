@@ -191,13 +191,15 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
 - **Objects 3-5, 6-9, controllers `$10`-`$28`.** Waypoint walkers
   (`$C28E`), patrols on routes at `$C404` (`$C44D`), and controllers on
   routes at `$764A` (`$CD9A`) whose touch kills.
-- **The madrag** (objects `$0A`/`$0B`) guards two eggs, fetches an egg that
+- **The madrag** (objects `$0A`, her legs, and `$0B`, her head and body,
+  placed 21 pixels higher by `$B861`) guards two eggs, fetches an egg that
   has been moved back to its nest, takes one from Splinx, and bites; its
   behaviour runs twice a pass (`$B680`). A baby madrag (`$0D`) hatches
   when the Doctor comes near a free egg.
 - **Object `$0C`** goes after the CRYSTAL, from the Doctor's hands or a
-  pocket, and carries it off (`$B48A`). Whether it is the Master is not
-  shown by the code.
+  pocket, and carries it off (`$B48A`). It is one sprite, frames `$9A`-`$A1`
+  (`$B46F`), drawn at double height (`$18AC` = 1). The code does not name
+  it; players know it as the Master.
 - **Using items** (`$BACC`): the pick axe digs at three sites, three hits
   each; the spanner works at eight points; detonators and explosives are
   armed; the activator at three points ends the game (`$E8` = 2, the
@@ -292,7 +294,6 @@ stop. `STA $D400,Y` at `$755D` reaches the SID through an index.
 - `$881D` does not clear the drawn flag of object `$4F`.
 - `$8652` reads the overlay glyphs from `$0000`-`$07FF`, not `$4000`: is
   that where they are?
-- Who object `$0C` is.
 - How a saved game is loaded: nothing in the program calls LOAD.
 
 ## Live tests
