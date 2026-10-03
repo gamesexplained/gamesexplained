@@ -948,6 +948,13 @@ def kits():
 TIER_ORDER = ("platinum", "gold", "silver-claimed", "silver", "bronze", "none")
 
 
+def by_tier(games):
+    """The games best first, as the home page lists them: Platinum and Gold at the top,
+    Bronze and no tier at the bottom; within a tier, the order they came in."""
+    rank = lambda g: TIER_ORDER.index(g.get("tier", "none")) if g.get("tier", "none") in TIER_ORDER else len(TIER_ORDER)
+    return sorted(games, key=rank)
+
+
 def tier_stamps(gs):
     counts = {}
     for g in gs:
@@ -1129,7 +1136,7 @@ def main():
         games.append(build_game(os.path.dirname(gj), out_root))
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
-                cards="".join(card_html(g) for g in games), featured=featured_html(feat) if feat else "",
+                cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
                 recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # what the kit learned, game by game

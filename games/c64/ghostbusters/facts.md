@@ -281,7 +281,8 @@ tests affordability. A new franchise starts at `$10000` (`st02`, `$57` =
 $4,800, $6,000, $15,000); equipment `item_price` `$A1DC` in hundreds
 ($400, $800, $800, $400, $600, $600, $500, $8,000 for items 0-7). Item 4
 (shape `$37`, $600, no flag) is on no shelf (`shelf_shapes` `$AAB3`), so it
-cannot be bought. `POKE 38454,96` makes `money_subtract` an `RTS`: every
+cannot be bought. Its unpacked shape, between the bait (`$36`) and the trap
+(`$38`), has the trap's base and row of dashes under two raised flaps. `POKE 38454,96` makes `money_subtract` an `RTS`: every
 purchase and the Marshmallow Man's charge become free (*live*: the hearse
 for nothing, agent 6; $10,000 kept through a stomp, `t20-poke-mm.js`).
 
