@@ -10,12 +10,14 @@
   <p class="eyebrow">{{platform_name}} · {{year}} · {{publisher}}</p>
   <h1 style="margin-top:0">{{title}}: the source</h1>
   <p class="mute">Every routine, table and variable the game uses, with the names and descriptions given to them. Click an operand to follow it; the counter beside a label lists what refers to it. The reference below the fold is rendered from the game's facts file.</p>
+  <!-- parts -->
   <details class="factsbox"><summary>Technical reference: memory map, timing, tables, cheats</summary>
   <!-- facts -->
   </details>
 </div>
 <div class="src" id="src">
   <div class="side">
+    <!-- pick -->
     <input type="text" id="q" placeholder="filter names… or $E56E" autocomplete="off">
     <div class="chips" id="chips">
       <span class="chip on" data-k="routine">routines</span>
@@ -27,27 +29,77 @@
     <div class="opts">
       <label><input type="checkbox" id="explained" checked> explained only</label>
       <label><input type="checkbox" id="bytes"> bytes</label>
+      <label id="aloneopt" hidden><input type="checkbox" id="alone"> <span></span></label>
     </div>
     <div class="idx" id="idx"></div>
   </div>
   <div class="main" id="main"><p class="mute">Loading listing…</p></div>
 </div>
+<!-- part -->
 <script>
 (async function(){
-  const L = await fetch('listing.json').then(r=>r.json()).catch(()=>null);
+  // A game of several parts names this page's part, and the parts it is loaded over, in #part
+  // (kit/scripts/build.py): the listing is then the part's own laid over theirs.
+  const PART=JSON.parse((document.getElementById('part')||{}).textContent||'null');
+  const get=u=>fetch(u).then(r=>r.json()).catch(()=>null);
+  const L = await get(PART?PART.listing:'listing.json');
   const main=document.getElementById('main'), idx=document.getElementById('idx');
   if(!L){ main.innerHTML='<p class="mute">listing.json could not be loaded. Serve the site over http (python3 -m http.server) rather than opening the file directly.</p>'; return; }
   const hex4=a=>'$'+a.toString(16).toUpperCase().padStart(4,'0');
   const id4=a=>a.toString(16).toUpperCase().padStart(4,'0');
   const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  const recs=L.records;
-  const byAddr=new Map(recs.filter(r=>r.t!=='gap').map(r=>[r.a,r]));
-  const names=new Map(recs.filter(r=>r.l).map(r=>[r.a,r.l]));
-  // the first record at each address, and the addresses in order, for the nearest record at or before one
-  const first=new Map(); recs.forEach((r,i)=>{ if(r.t!=='gap'&&!first.has(r.a)) first.set(r.a,i); });
-  const addrs=[...first.keys()].sort((x,y)=>x-y);
+  const UNDER=PART&&PART.under.length?(await Promise.all(PART.under.map(u=>get(u.listing)))).filter(Boolean):[];
+  // Lay the listings one over another, the part's own last. A row's layer is r.p: 0 is this part.
+  // Where two hold the same address the upper one wins, and a label the lower one kept for an
+  // address it does not own gives way to the upper one's row. Gaps are measured again, and a
+  // reference from one layer into another, which neither listing could know of alone, is added.
+  function lay(layers){
+    const all=[], span=r=>r.b?r.b.length:0;
+    layers.forEach((Lr,k)=>{ const p=layers.length-1-k;
+      Lr.records.forEach(r=>{ if(r.t!=='gap') all.push(Object.assign({},r,{p:p,x:r.x?r.x.slice():undefined})); }); });
+    all.sort((x,y)=>x.a-y.a||(x.t==='note')-(y.t==='note')||x.p-y.p);
+    const out=[]; let row=null;                                    // row: the last one placed that holds bytes
+    for(const r of all){
+      const hit=row&&row.a+span(row)>r.a;
+      if(!span(r)){ if(!(hit&&row.p<r.p)) out.push(r); continue; }    // a label beneath a row gives way to it
+      if(hit){
+        if(row.p<=r.p) continue;                                    // it lies beneath the row already placed
+        out.splice(out.indexOf(row),1);                             // or over it
+      }
+      out.push(r); row=r;
+    }
+    const at=new Map(); out.forEach(r=>{ if(!at.has(r.a)) at.set(r.a,r); });
+    for(const r of out){
+      for(const a of r.ta||(r.oa!==undefined?[r.oa]:[])){
+        const t=at.get(a);
+        if(t&&t.p!==r.p){ t.x=t.x||[]; if(!t.x.includes(r.a)) t.x.push(r.a); }
+      }
+    }
+    const records=[]; let a=0;
+    for(const r of out){
+      if(span(r)){ if(r.a>a) records.push({a:a,t:'gap',n:r.a-a}); a=Math.max(a,r.a+span(r)); }
+      if(r.x) r.x.sort((x,y)=>x-y); else delete r.x;
+      records.push(r);
+    }
+    if(a<0x10000) records.push({a:a,t:'gap',n:0x10000-a});
+    const index=[]; layers.forEach((Lr,k)=>Lr.index.forEach(e=>index.push(Object.assign({},e,{p:layers.length-1-k}))));
+    return {records:records,index:index};
+  }
+  let recs, byAddr, names, first, addrs, index, unused;
+  function use(V){
+    recs=V.records;
+    // what a gap is: in a game of several parts, a part alone leaves out what the others own
+    unused=!PART?'not used by the game':V===L?'that are not this part\u2019s, or not used':'that none of these parts uses';
+    byAddr=new Map(recs.filter(r=>r.t!=='gap').map(r=>[r.a,r]));
+    names=new Map(recs.filter(r=>r.l).map(r=>[r.a,r.l]));
+    // the first record at each address, and the addresses in order, for the nearest record at or before one
+    first=new Map(); recs.forEach((r,i)=>{ if(r.t!=='gap'&&!first.has(r.a)) first.set(r.a,i); });
+    addrs=[...first.keys()].sort((x,y)=>x-y);
+    index=V.index.slice().sort((x,y)=>x.a-y.a);
+  }
+  const WHOLE=UNDER.length?lay(UNDER.concat([L])):L;
+  use(WHOLE);
   // owner of each record: the nearest index entry whose span covers it
-  const index=L.index.slice().sort((x,y)=>x.a-y.a);
   const commentedOwner=a=>{ let lo=0,hi=index.length-1,best=null; while(lo<=hi){const m=(lo+hi)>>1; if(index[m].a<=a){best=index[m];lo=m+1;}else hi=m-1;} return best && a<best.a+best.len ? best.c : false; };
   const link=(oa,txt)=> oa!==undefined && byAddr.has(oa) ? `<a href="#${id4(oa)}">${esc(txt)}</a>` : esc(txt);
   const bytes=b=>b?b.map(x=>x.toString(16).toUpperCase().padStart(2,'0')).join(' '):'';
@@ -62,7 +114,7 @@
     let h=0, he=0;
     for(let k=done;k<end;k++){
       const r=recs[k];
-      if(r.t==='gap'){ rows.push(`<div class="gap" data-a="${r.a}">… ${r.n} bytes not used by the game (${hex4(r.a)}–${hex4(r.a+r.n-1)})</div>`); h+=GAP; continue; }
+      if(r.t==='gap'){ rows.push(`<div class="gap" data-a="${r.a}">… ${r.n} bytes ${unused} (${hex4(r.a)}–${hex4(r.a+r.n-1)})</div>`); h+=GAP; continue; }
       const id=id4(r.a);
       const own=commentedOwner(r.a);
       if(r.c){ rows.push(`<div class="cmt" data-a="${r.a}" data-own="1">${esc(r.c)}</div>`); const c=cmtH(r.c); h+=c; he+=c; }
@@ -75,17 +127,20 @@
       else if(r.t==='note') instr=`<span class="note">${esc(r.note||'')}</span>`;
       if(r.s) instr+=`<span class="s">; ${esc(r.s)}</span>`;
       const xr=r.x?`<span class="xr" data-x="${r.x.join(',')}" title="referenced by">${r.x.length}</span>`:'';
+      if(UNDER.length&&!r.p) cls+=' mine';
       rows.push(`<div class="row ${cls}${r.t!=='code'?' data':''}" id="${id}" data-a="${r.a}" data-own="${own?1:0}"><span class="a"><a href="#${id}">${id}</a></span><span class="b">${bytes(r.b)}</span><span class="l">${r.l?esc(r.l):''}${xr}</span><span class="i">${instr}</span></div>`);
       h+=ROW; if(own) he+=ROW;
     }
     main.insertAdjacentHTML('beforeend',`<div class="blk" style="--h:${h}px;--he:${he}px">${rows.join('')}</div>`);
     done=end;
   }
-  function slice(){
+  let run=0;                                                    // the listing being drawn: a new one stops the old
+  function slice(n){
+    if(n===undefined) n=++run; else if(n!==run) return;
     const t=performance.now();
     do block(); while(done<recs.length&&performance.now()-t<40);
     if(want>=0&&done>want){ want=-1; setTimeout(goHash,0); }   // a permalink was waiting for its row: its own task
-    if(done<recs.length) setTimeout(slice,0);
+    if(done<recs.length) setTimeout(()=>slice(n),0);
   }
   // index pane
   const kinds=new Set(['routine','table','variable','string']);
@@ -93,7 +148,7 @@
     const q=(document.getElementById('q').value||'').trim().toLowerCase();
     const expl=document.getElementById('explained').checked;
     const hits=index.filter(e=>kinds.has(e.k)&&(!expl||e.c)&&(!q||e.n.toLowerCase().includes(q)||hex4(e.a).toLowerCase().includes(q)))
-      .map(e=>`<a href="#${id4(e.a)}" class="${e.c?'':'unc'}"><span class="a">${id4(e.a)}</span><span>${esc(e.n)}</span><span class="k">${e.k}</span></a>`);
+      .map(e=>`<a href="#${id4(e.a)}" class="${e.c?'':'unc'}${UNDER.length&&!e.p?' mine':''}"><span class="a">${id4(e.a)}</span><span>${esc(e.n)}</span><span class="k">${e.k}</span></a>`);
     let h='';   // in blocks too: a few thousand entries take longer to lay out than the whole listing's first screen
     for(let i=0;i<hits.length;i+=100) h+=`<div class="blk" style="--h:${Math.min(100,hits.length-i)*IDX}px">${hits.slice(i,i+100).join('')}</div>`;
     idx.innerHTML=h;
@@ -109,6 +164,12 @@
   document.getElementById('q').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const m=/^\$?([0-9a-f]{1,4})$/i.exec(e.target.value.trim()); if(m) location.hash=m[1].toUpperCase().padStart(4,'0'); }});
   document.getElementById('explained').addEventListener('change',applyOpts);
   document.getElementById('bytes').addEventListener('change',applyOpts);
+  // a part laid over others: show it alone, or with what lies beneath. Either is a new listing to draw.
+  if(UNDER.length){
+    const box=document.getElementById('alone'), lab=document.getElementById('aloneopt');
+    lab.hidden=false; lab.querySelector('span').textContent='only '+PART.title;
+    box.addEventListener('change',()=>{ use(box.checked?L:WHOLE); done=0; want=-1; hl=null; main.textContent=''; renderIdx(); slice(); goHash(); });
+  }
   // xref popovers
   let pop=null;
   main.addEventListener('click',e=>{

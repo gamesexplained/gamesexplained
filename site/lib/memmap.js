@@ -4,9 +4,11 @@
 // so C64Map and SpectrumMap are two label sets over one implementation.
 globalThis.makeMemMap = function (LABELS) {
   const COLOURS = { code: '#e8a33d', graphics: '#6fc7d4', levels: '#8fd17a', sound: '#d97f6e', text: '#edf171',
-                    tables: '#8f7fe0', variables: '#c46c71', runtime: '#3a3d6a', rom: '#2a2c4a', unused: '#12142c' };
+                    tables: '#8f7fe0', variables: '#c46c71', runtime: '#3a3d6a', rom: '#2a2c4a', other: '#24424a', unused: '#12142c' };
   const hex = a => '$' + a.toString(16).toUpperCase().padStart(4, '0');
+  LABELS = Object.assign({ other: 'another part of the game' }, LABELS);   // in a game of several parts: the bytes this part does not own
   async function render(el, url, opts = {}) {
+    if (!el) return null;   // a game of several parts has a map for each, and none for the game
     const M = await fetch(url).then(r => r.json());
     const W = 512, H = 128, mini = !!opts.mini;
     el.innerHTML = '';
@@ -61,7 +63,7 @@ globalThis.makeMemMap = function (LABELS) {
     el.appendChild(axis);
     const legend = document.createElement('div');
     legend.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--fm);font-size:12px;color:var(--ink-soft)';
-    const order = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'unused'];
+    const order = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'other', 'unused'];
     legend.innerHTML = order.filter(k => M.totals[k]).map(k =>
       `<span><i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${COLOURS[k]};margin-right:6px;vertical-align:-1px;border:1px solid var(--line)"></i>${LABELS[k]} <span style="color:var(--ink-mute)">${M.totals[k].toLocaleString()}</span></span>`).join('');
     el.appendChild(legend);
@@ -85,7 +87,7 @@ globalThis.makeMemMap = function (LABELS) {
   // most of its bytes are. The catalogue's compact map; the ruler is the same as render's.
   async function strip(el, url) {
     const M = await fetch(url).then(r => r.json());
-    const RANK = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'unused'];
+    const RANK = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'other', 'unused'];
     const cv = document.createElement('canvas'); el.innerHTML = ''; el.appendChild(cv);
     const draw = () => {
       const dpr = window.devicePixelRatio || 1, w = Math.max(64, Math.round((cv.clientWidth || 256) * dpr)), h = Math.max(1, Math.round((cv.clientHeight || 8) * dpr));

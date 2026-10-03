@@ -1,11 +1,17 @@
 // Shared behaviour: mark the active tab, and turn $XXXX inside <code> into links to the Source tab.
+// In a game of several parts an address belongs to one of them: an element's data-part="<id>" sends
+// the addresses inside it to that part's Source page, and data-part="" links none of them.
 (function(){
   var seg=location.pathname.split('/').pop();
   var here=(seg&&seg.indexOf('.html')>-1)?seg:'index.html';   /* clean URLs land on the directory */
   document.querySelectorAll('.gametabs a.tab').forEach(function(a){
     var h=a.getAttribute('href')||'';
     if(h==='./')h='index.html';
-    if(h===here) a.classList.add('on');
+    if(h===here||(h==='source.html'&&/^source-.+\.html$/.test(here))) a.classList.add('on');   /* a part's Source page */
+  });
+  // a list that goes somewhere: the parts beside a listing (build.py, part_step)
+  document.querySelectorAll('select[data-go]').forEach(function(s){
+    s.addEventListener('change',function(){ if(s.value) location.href=s.value; });
   });
   document.querySelectorAll('button[data-copy]').forEach(function(b){
     var src=document.querySelector(b.dataset.copy); if(!src) return;
@@ -33,6 +39,11 @@
   // it in view; below 1200px the list is a drawer, opened from a Contents button. A section or heading the
   // page's own script writes (a levels page drawn from the game's bytes) joins the list when it appears.
   var pn=document.querySelector('.pagenav');
+  if(!pn) (function(){   // the Source tab: its index sticks beneath the tab bar, however many rows of tabs the game has
+    var tabs=document.querySelector('.gametabs');
+    function measure(){ if(tabs) document.documentElement.style.setProperty('--tabs-h',tabs.offsetHeight+'px'); }
+    measure(); addEventListener('resize',measure);
+  })();
   if(pn) (function(){
     var root=document.documentElement, tabs=document.querySelector('.gametabs'), list=pn.querySelector('ol');
     var cur=-2, busy=false, links=[], secs=[];
@@ -133,7 +144,9 @@
     if(c.closest('a')||c.closest('pre')||c.children.length) return;
     var t=c.textContent, m=/^\$([0-9A-Fa-f]{4})$/.exec(t.trim());
     if(!m) return;
-    var a=document.createElement('a'); a.href='source.html#'+m[1].toUpperCase(); a.textContent=t;
+    var d=c.closest('[data-part]'), page=d?(d.dataset.part?'source-'+d.dataset.part+'.html':''):'source.html';
+    if(!page) return;
+    var a=document.createElement('a'); a.href=page+'#'+m[1].toUpperCase(); a.textContent=t;
     a.dataset.auto='';   /* not in the source: the page editor leaves it out of what it saves */
     c.textContent=''; c.appendChild(a);
   });
