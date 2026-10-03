@@ -114,9 +114,11 @@ def test():
         open(os.path.join(game, "work", "s.vsf"), "wb").write(head + bytes(209 - len(head)) + body)
         out = write(game, os.path.join(game, "work", "s.vsf"))
         blocks, syms, comments = read_file(out)
-        assert blocks[1]["type"] == "Lo/Hi Address", blocks
+        kinds = {b["start"]: b["type"] for b in blocks}
+        assert kinds[0x8002] == "Lo/Hi Address", blocks
+        assert kinds[0] == kinds[0x8004] == "Undefined", blocks       # the gaps project_blocks fills
         assert syms[0]["name"] == "start" and comments[0]["text"] == "hi", (syms, comments)
-    print("ok - project.py self-check: block types and symbols survive a round trip")
+    print("ok - project.py self-check: block types and symbols survive a round trip, gaps are Undefined")
 
 
 def main():
