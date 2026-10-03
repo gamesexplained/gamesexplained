@@ -12,18 +12,20 @@ tools/zesarux-home/snapshots.
 
 The test program (assembled below, so it is source and not a binary):
 
-  $8000  di ; clear $9000-$9005 ; ld sp,$A000
-  $800F  loop: passes += 1        (a 16-bit counter at $9000)
-  $8017         keys = ~(port $FEFE) & $18   (row 0: bit 4 = V, bit 3 = C)
-  $8021         out ($FE),0       (border black; an OUT, and a write to port $FE)
-  $8025         jp loop
-  $8028  dead:  dead_count += 1 ; ret        (never reached: nothing jumps here)
+  $8000  di ; nop ; nop (or im 1 ; ei) ; clear $9000-$9005 ; ld sp,$A000
+  $8011  loop: passes += 1        (a 16-bit counter at $9000)
+  $8019         keys = ~(port $FEFE) & $18   (row 0: bit 4 = V, bit 3 = C)
+  $8023         out ($FE),0       (border black; an OUT, and a write to port $FE)
+  $8027         jp loop
+  $802A  dead:  dead_count += 1 ; ret        (never reached: nothing jumps here)
 
   $9000 passes (2)   $9002 keys   $9004 dead_count (always 0)
 
-Interrupts are off, so the ROM never runs and every value is known in advance: the
-counter is the measurement, $9002 is what the machine saw of the input, and $9004 is
-a checkpoint that must stay at zero.
+Interrupts are off in the default program, so the ROM never runs and every value is
+known in advance: the counter is the measurement, $9002 is what the machine saw of
+the input, and $9004 is a checkpoint that must stay at zero. One phase swaps it for a
+variant that runs in IM 1 with interrupts on, so the ROM's interrupt can be counted
+and the machine has a clock the host cannot move; the two variants lay out identically.
 
 Every check has a name. The summary lists the names that failed, and
 kit/skills/spectrum/tool-zesarux/workarounds.md says, per name, what to do instead.
@@ -40,11 +42,12 @@ SNAPDIR = os.path.join(ROOT, "tools", "zesarux-home", "snapshots")
 OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
 WORKAROUNDS = "kit/skills/spectrum/tool-zesarux/workarounds.md"
 
-BASE, LOOP, DEAD = 0x8000, 0x800F, 0x8028
+BASE = 0x8000
 PASSES, KEYS, DEADCOUNT = 0x9000, 0x9002, 0x9004
+FRAMES = 0x5C78          # the ROM's 3-byte frame counter: the ROM's ISR increments it once per interrupt
 STACK = 0xA000
 ROW0 = 0xFEFE            # port $FEFE: V C X Z CapsShift, with A = $FE in `in a,($fe)`
-SNAPS = ("zemutest_base", "zemutest_run", "zemutest_nocp")
+SNAPS = ("zemutest_base", "zemutest_run", "zemutest_nocp", "zemutest_int")
 
 try:                     # the lead's snapshot reader, when it is there
     from snapshot import read as snapshot_read, header as snapshot_header, SNA_48K_SIZE
@@ -69,8 +72,15 @@ except ImportError:      # else the 27-byte header, parsed here
         return b"\0" * 0x4000 + blob[27:]
 
 
-def program():
-    """The test program, assembled here so that it is source, not a binary."""
+def program(interrupts=False):
+    """The test program, assembled here so that it is source, not a binary.
+
+    `interrupts` swaps the leading `di` for `im 1` / `ei`, padded to the same
+    three bytes so every label and variable address is the same in both
+    variants. The interrupt variant lets the ROM's own ISR run, which
+    increments its 3-byte frame counter at `$5C78` once a frame: that is the
+    interrupt reference the `interrupt-rate` and `stopwatch` checks use.
+    """
     code, labels, fix = bytearray(), {}, []
 
     def op(*b):
@@ -80,9 +90,15 @@ def program():
         labels[n] = BASE + len(code)
 
     def br(opcode, n):
-        code.extend((opcode, 0)); fix.append((len(code) - 1, n))
+        code.extend((opcode, 0)); fix.append((len(code) - 1, n, "rel"))
 
-    op(0xF3)                                  # di
+    def jp(n):
+        code.extend((0xC3, 0, 0)); fix.append((len(code) - 2, n, "abs"))
+
+    if interrupts:
+        op(0xED, 0x56, 0xFB)                  # im 1 ; ei
+    else:
+        op(0xF3, 0x00, 0x00)                  # di ; nop ; nop
     op(0x3E, 0x00)                            # ld a,0
     op(0x21, PASSES & 0xFF, PASSES >> 8)      # ld hl,$9000
     op(0x06, 0x06)                            # ld b,6
@@ -98,17 +114,24 @@ def program():
     op(0x2F, 0xE6, 0x18)                      # cpl ; and $18
     op(0x32, KEYS & 0xFF, KEYS >> 8)          # ld ($9002),a    what the machine saw of the keys
     op(0x3E, 0x00, 0xD3, 0xFE)                # ld a,0 ; out ($FE),a    border black
-    op(0xC3, LOOP & 0xFF, LOOP >> 8)          # jp loop
+    jp("loop")                                # jp loop
     lab("dead"); op(0x21, DEADCOUNT & 0xFF, DEADCOUNT >> 8)   # ld hl,$9004
     op(0x34, 0xC9)                            # inc (hl) ; ret     -- never reached
-    for i, n in fix:
-        d = labels[n] - (BASE + i + 1)
-        assert -128 <= d <= 127, n
-        code[i] = d & 0xFF
+    for i, n, kind in fix:
+        a = labels[n]
+        if kind == "rel":
+            d = a - (BASE + i + 1)
+            assert -128 <= d <= 127, n
+            code[i] = d & 0xFF
+        else:
+            code[i], code[i + 1] = a & 0xFF, a >> 8
     return bytes(code), labels
 
 
 CODE, LABELS = program()
+ICODE, ILABELS = program(interrupts=True)
+assert LABELS == ILABELS, "the interrupt variant must lay out identically to the plain one"
+LOOP, DEAD = LABELS["loop"], LABELS["dead"]
 
 results = []
 
@@ -153,13 +176,18 @@ def rows(rpc):
     return out
 
 
-def setup(rpc):
-    """Hard reset, write the test program, start it. Returns after one pass has gone."""
+def setup(rpc, code=None):
+    """Hard reset, write the test program, start it. Returns after one pass has gone.
+
+    `code` picks the variant: `CODE` (interrupts off) by default, `ICODE` for the
+    interrupt checks. Both lay out identically, so `LOOP` is the same address.
+    """
+    code = CODE if code is None else code
     rpc.bp_clear()
     rpc.exit_step()
     rpc.cmd("hard-reset-cpu")
     rpc.enter_step()
-    rpc.write_memory(BASE, CODE)
+    rpc.write_memory(BASE, code)
     rpc.write_memory(PASSES, bytes(6))
     rpc.set_register("PC", BASE)
     rpc.step()                                   # the program's own `di`
@@ -421,6 +449,41 @@ def p3(rpc):
     rpc.bp_clear()
 
 
+@phase("interrupts: the rate, and the phase a load loses")
+def p_interrupts(rpc):
+    """The ROM's interrupt, running: the tests that need a clock the host cannot move.
+
+    `ICODE` enables interrupts and runs in IM 1, so the ROM's ISR runs once a frame
+    and increments its own 3-byte counter at `$5C78`. That counter is the reference:
+    no wall-clock timing, so the answers are the same on a loaded machine.
+    """
+    rpc.bp_clear()
+    rpc.exit_step()
+    setup(rpc, ICODE)
+    f0 = int.from_bytes(rpc.read_memory(FRAMES, 3), "little")
+    rpc.frames(100, timeout=60)
+    f1 = int.from_bytes(rpc.read_memory(FRAMES, 3), "little")
+    check("interrupt-rate", 95 <= f1 - f0 <= 105,
+          "the ROM's interrupt runs once a frame, and the machine can be counted",
+          f"{f1 - f0} interrupts in 100 frames, {f1 - f0} a second")
+
+    # stop mid-frame, save, load, and see whether the machine came back where it was
+    rpc.bp_set(1, f"PC={LOOP:04X}H")
+    rpc.bp_passcount(1, 2000)
+    rpc.run(timeout=30)
+    phase = rpc.tstates_in_frame()
+    snap = os.path.join(SNAPDIR, "zemutest_int.sna")
+    rpc.snapshot_save(snap)
+    rpc.enter_step()
+    rpc.snapshot_load(snap)
+    after = rpc.tstates_in_frame()
+    check("load-keeps-frame-phase", after == phase,
+          "a load restores the machine's position within the frame",
+          f"saved {phase} T-states into the frame, loaded at {after}")
+    rpc.bp_clear()
+    setup(rpc)                     # the phases after this one expect interrupts off again
+
+
 @phase("phase 4: frame stepping with inputs")
 def p4(rpc):
     rpc.bp_clear()
@@ -588,7 +651,7 @@ def main():
     if not any(n == "program-runs" and ok for n, ok in results):
         print("\nthe test program never ran; stopping here")
         sys.exit(1)
-    for step in (p1, p3, p4, p2):
+    for step in (p1, p3, p_interrupts, p4, p2):
         fresh(rpc)
         step(rpc)
     rpc = p2_restart(rpc)
