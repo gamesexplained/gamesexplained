@@ -40,9 +40,48 @@ rules below mechanically, paragraph by paragraph, as described in
 - No tidy triplets for rhythm. Two things or four things are fine when
   there are two or four things.
 - No em-dashes as the default joint between clauses. Write two sentences.
+- Use the Oxford comma: a list of three or more items takes a comma before
+  the final "and" or "or" ("the Doctor, a robot cat, and a mine"). The
+  comma removes the doubt over whether the last two items are a pair.
 - No summary paragraph that restates the section.
+- Name the thing instead of "it" when the reader could mean two things.
+  When a sentence opens with "it" ("It ...", "Once it is ..."), and the
+  sentence before holds two or more singular nouns, replace "it" with the
+  noun it stands for. Not "The hero finds the scroll in a room and takes it
+  to a chamber. Once it is delivered, it gives him a power." but "... A
+  delivered scroll gives the hero a power."
 - Do not describe the tooling or the process ("we pointed an AI at the
   bytes"). The reader is here for the game.
+
+### Paragraphs
+
+A paragraph makes one point, and the reader should be able to say what it
+was. Before keeping a paragraph, state its purpose in a line: "why the
+villain needs the base", "how the game picks a walking frame". Then:
+
+- Every sentence serves that purpose. A sentence that is true and
+  interesting but supports a different point moves to the paragraph or
+  section whose point it serves, or to Discoveries, or is cut. Interesting
+  is not a reason to stay.
+- The point goes first or last, never in the middle. First suits an
+  explanation, so a reader who stops there still has it. Last suits a story
+  or a discovery, where each sentence builds towards it.
+- Each sentence flows from the one before. Open it with something the
+  reader already has (the subject of the last sentence, or a word from its
+  end) and end it with what is new. That puts each new fact where the next
+  sentence can pick it up. If two neighbouring sentences could be swapped
+  without anyone noticing, the paragraph is a list. Order them, or make it
+  a list or a table.
+- A pronoun has one possible antecedent. Do not open a sentence with "it"
+  or "they" when the sentence before names two or more things it could
+  mean. Name the thing again.
+- One paragraph, one purpose. When the purpose line has an "and" in it,
+  it is two paragraphs.
+- The paragraph serves its page. Each tab has a purpose of its own, the
+  one its subtitle states (Gameplay: what the player does; Graphics: how
+  the picture is made). A paragraph whose purpose belongs to another tab
+  moves there and leaves a link behind, however well it reads where it is.
+  The same holds one level down: a paragraph serves its section's heading.
 
 The test is a human reading the page without noticing how it was made.
 

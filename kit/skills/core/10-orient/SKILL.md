@@ -59,9 +59,11 @@ annotate it byte by byte.
    handlers chain, each writing the next one's address into the vector,
    shows only one of them in a vector read. Record a frame
    (`kit/c64/frame.py capture` on the C64): its writes to the vector name
-   every handler in the chain, with the line each runs on, and tracing
-   from all of them can reach code that nothing else calls, such as the
-   music driver.
+   every handler in the chain, and tracing from all of them can reach code
+   that nothing else calls, such as the music driver. The line beside each
+   write is where the handler before it wrote the vector, usually a line
+   or a handler earlier than the one the named handler runs on; read the
+   handler's own write to the raster register for that.
 4. **Save a snapshot** of the machine in play. Name it by state
    (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds
@@ -94,7 +96,16 @@ annotate it byte by byte.
 6. **Start the disassembler on the snapshot** and confirm it answers. Note
    which processor-port or banking configuration was active when the
    snapshot was taken: what is visible at a given address depends on it.
-7. **Understand the loader well enough to describe it in a paragraph**,
+7. **Map the disk's files onto memory.** Extract every file (on the C64,
+   `c1541` from the emulator's build reads a G64 or D64), then search the
+   hand-over and play snapshots for each file's bytes in 16-byte pieces,
+   take the offset most pieces agree on, and count the bytes equal there.
+   A file that lands whole says what a region is before any code is read
+   (one run found its speech samples and its speech timing table this way,
+   and caught a table it had credited to the wrong file); a file that is
+   found nowhere is the loader's, or is built from. Put the table in
+   `orientation.md`.
+8. **Understand the loader well enough to describe it in a paragraph**,
    then stop. If the game reloads data per level (overlays), say so in
    `orientation.md`: it means one snapshot per state.
 

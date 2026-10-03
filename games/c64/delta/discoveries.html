@@ -1,0 +1,55 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/delta-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">A cheat left in the code, a store one page off, randomness read from instructions, leftovers in memory, and the questions still open.</p>
+</header>
+<main class="wrap">
+<section id="trainer">
+  <p class="fig">01 · Left in the code</p>
+  <h2 class="t">Secret: a trainer nothing calls</h2>
+  <p>At <code>$BA00</code> sits a routine that no instruction reaches. It was written to run in place of the jump to the ship's movement: holding F3 sets the lives back to 3, and F5 toggles two patches, one making the enemies' fire harmless (<code>$2BC9</code>) and one switching off the collision with the shop's icons (<code>$2BDA</code>). It ends by jumping to the ship's movement, so hooking it in would be a single changed address. It is probably the developer's own cheat for testing, left in the finished game.</p>
+</section>
+
+<section id="timer">
+  <p class="fig">02 · A store one page off</p>
+  <h2 class="t">Bug: a timer cleared one page too low</h2>
+  <p>The wave routine at <code>$9024</code> keeps a wave timer at <code>$129E</code>. At <code>$9057</code> it clears a timer with <code>STY $029E</code>, one page below, an address nothing else reads or writes. The neighbouring code uses <code>$129E</code> throughout, so the store was almost certainly meant for it: the timer is not cleared there. The next instruction writes <code>$129F</code>, which nothing reads either.</p>
+</section>
+
+<section id="random">
+  <p class="fig">03 · Randomness</p>
+  <h2 class="t">Secret: the random numbers are the game's own code</h2>
+  <p>Delta has no random number generator. When it needs a random choice for the enemies' fire or the boss's aim, <code>enemy_ai_step</code> (<code>$99AC</code>) walks through the bytes at <code>$3000</code>, using each one to find the next. Those bytes are the game's own code: the routines that move the enemies' bullets and shots. Any change to that code would change how the enemies fire.</p>
+</section>
+
+<section id="leftovers">
+  <p class="fig">04 · Leftovers</p>
+  <h2 class="t">Secret: 1986 and a disk command in memory</h2>
+  <ul>
+    <li>The title texts stored in the game say "(c)MCMLXXXVI" and "(c)1986 THALAMUS" (<code>$F7B0</code>). The title screen the player sees is a picture saying MCMLXXXVII and 1987.</li>
+    <li><code>$9FF4</code> holds the text <code>S:DEMO DELTA</code>, a disk-drive command to delete a file called DEMO DELTA, left in memory by the developer's tools.</li>
+    <li>Code no instruction reaches: <code>$175E</code> (switches the ROMs back in and restarts BASIC), <code>$3D13</code>, and a test of a stage flag at <code>$9D77</code> padded out with sixteen <code>NOP</code>s.</li>
+  </ul>
+</section>
+
+<section id="open">
+  <p class="fig">05 · Open questions</p>
+  <h2 class="t">What we have not settled</h2>
+  <ul>
+    <li><b>Mix-E-Load.</b> The loading-music remixer belonged to the original tape loader, which this crack does not contain. An original tape or disk image would show it.</li>
+    <li><b><i>Delta Patrol</i>.</b> Whether the American release differs from this one in code is not known: the copy studied says nothing about it.</li>
+    <li><b>Taking credits away.</b> A wave record can be marked to take a credit away when the wave ends (bit 6 of its byte 3, <code>$80B5</code>). Which waves carry the mark, if any reach play, was not checked.</li>
+  </ul>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/delta-page.js"></script>

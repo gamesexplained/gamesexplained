@@ -1,0 +1,240 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doctor Who and the Mines of Terror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/dw-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
+  <h1>Doctor Who and the Mines of Terror</h1>
+  <p class="sub">Every sprite in the game, the TARDIS landing, one frame rebuilt from two screens, and a status bar whose font hides in its own screen.</p>
+</header>
+<main class="wrap">
+<section id="cast">
+  <p class="fig">The cast</p>
+  <h2 class="t">Every sprite in the mine</h2>
+  <p class="lede">The Doctor, Splinx, the controllers, the madrag, and every item, drawn from the bytes at <code>$5000</code>-<code>$73FF</code> in the colours the game gives them. Click one to see where it is stored and who shows it. The <a href="gameplay.html#pockets">Gameplay</a> tab says what each one is for.</p>
+  <div class="plate">
+    <div class="gal" id="gal"></div>
+    <p class="cap" id="galcap">Multicolour sprites in the colours the game gives them: the shared red and orange (<code>$D025</code>, <code>$D026</code>) and each object's own colour from <code>$1850</code>, for the object whose animation table or starting frame uses the image. Grey marks the few images no table names. The Doctor's own colour is black, which is why he shows only red and orange, as in the game.</p>
+  </div>
+  <p>The game's sprite images sit in the second 16 KB of memory, which the video chip shows during play, so a frame number from <code>$40</code> to <code>$CF</code> points straight at 64 bytes from <code>$5000</code> to <code>$73FF</code>.</p>
+  <p>At most eight objects appear at once, because the C64 has eight hardware sprites. Each pass, the game collects the visible ones and leaves out any ninth (<code>sprite_list_add_object</code>, <code>$81DA</code>).</p>
+  <p>Some items can be drawn into the scenery as well as flying as sprites. The game blends their shapes into 32 spare characters, pixel pair by pixel pair, so they sit on the rock without covering it (<code>charobj_composite_char</code>, <code>$8652</code>).</p>
+</section>
+<section id="doctor">
+  <p class="fig">The Doctor</p>
+  <h2 class="t">Two sprites, and a frame for every two pixels</h2>
+  <p class="lede">The Doctor is drawn from two sprites, one above the other. Press a move to see the frames the game shows for it.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" data-pose="left">Walk left</button>
+      <button class="b" type="button" data-pose="right" aria-pressed="true">Walk right</button>
+      <button class="b" type="button" data-pose="climb">Climb</button>
+      <button class="b" type="button" data-pose="hold">Carry</button>
+      <button class="b" type="button" data-pose="die">Regenerate</button>
+    </div>
+    <canvas id="doc" class="scr" style="max-width:384px" role="img" aria-label="The Doctor, drawn from the game's sprite frames on dark grey"></canvas>
+    <p class="cap" id="doccap"></p>
+  </div>
+  <p>The lower sprite draws his coat and legs, and the upper one, eight pixels higher, his head and arms (<code>$CB48</code>). The frame comes from where he stands, not from a timer. Walking, the game takes his x position, keeps the lowest four bits, and halves them, so each two pixels of ground pick the next of eight frames. Facing left he uses a second table of frames, and as x falls he steps through it in reverse order (<code>doctor_pick_frames</code>, <code>$CC4C</code>). On a ladder his height picks one of four frames, a new one every four pixels (<code>$CCBE</code>). Carrying something, he keeps one upper frame with his arms full (<code>$CC96</code>, <code>$CCB2</code>).</p>
+</section>
+<section id="tardis">
+  <p class="fig">The TARDIS</p>
+  <h2 class="t">Landing in a shimmer of pixels</h2>
+  <p class="lede">The game opens with the TARDIS arriving. Six sprites in a block of two by three shimmer over the landing place and thin out pixel by pixel until almost nothing is left. Leaving runs the same effect backwards.</p>
+  <div class="plate">
+    <div class="row"><button class="b" type="button" id="t-land" aria-pressed="false">Land</button><button class="b" type="button" id="t-leave" aria-pressed="false">Leave</button><button class="b" type="button" id="t-img" aria-pressed="false">Use the second image</button></div>
+    <canvas id="tardis-cv" class="scr" style="max-width:384px" role="img" aria-label="The TARDIS arrival effect, drawn from the game's sprite image and dissolve order"></canvas>
+    <p class="kv" id="tkv"></p>
+    <p class="cap">The six sprites at the positions in <code>$FC70</code>, all showing one image (<code>$7400</code>) in the colours set at <code>$FF2F</code>. The image starts as one of two at <code>$09E4</code>; the second is used when the Doctor is high in the mine (<code>$FE60</code>).</p>
+  </div>
+  <p>Every fourth frame the game copies the whole image afresh and then clears some of its pixel pairs (<code>arrival_frame</code>, <code>$FD1F</code>). The pairs go in a fixed shuffle: 68 byte offsets at <code>$09A0</code>, each tried with one of five masks in turn, so every copy loses a different scatter of pixels (<code>dissolve_sprite</code>, <code>$FEA9</code>). Each image has 128 coloured pixel pairs. The number cleared starts at two, holds while a counter runs down, and then grows by three each time up to 125 (<code>$FCAF</code>), so the last copy keeps three. For the departure it starts at 127 and falls by three (<code>departure_sequence</code>, <code>$FE23</code>), so the shimmer thickens instead.</p>
+  <p>The same routine fades the Doctor when he loses a regeneration, on his own two frames (<code>$CB6B</code>), as the Regenerate button in <a href="#doctor">the Doctor</a> above shows.</p>
+</section>
+<section id="screen">
+  <p class="fig">The screen</p>
+  <h2 class="t">One frame, rebuilt from memory</h2>
+  <p class="lede">The first screen of the game, drawn by this page from the game's memory and the video chip's settings. Show the raster bands to see where the picture changes mode.</p>
+  <div class="plate">
+    <div class="row"><button class="b" type="button" id="fbands" aria-pressed="false">Show the raster bands</button></div>
+    <canvas id="frame" class="scr"></canvas>
+    <p class="cap">A reconstruction, not a screenshot: one frame recorded in the emulator, with every write to the video chip and the line it happened on, drawn line by line. It matches the emulator's own picture in all 104,448 pixels.</p>
+  </div>
+  <p>The picture is two screens in one. An interrupt at <code>$8010</code> runs three times a frame and resets the video chip each time. From line 256 to line 78 of the next frame the chip shows the status bar, from memory bank 0 and screen <code>$0400</code>. From line 78 it switches to bank 1 and whichever of the two play screens is ready. The handler keeps its place in the frame in the offset of a branch at <code>$8017</code>, so each interrupt jumps straight to the next band's code.</p>
+</section>
+<section id="status-bar">
+  <p class="fig">The status bar</p>
+  <h2 class="t">A font kept in the screen it draws</h2>
+  <p class="lede">The status bar uses four rows of a 25-row screen. The other 21 rows are never shown: they hold the font the status bar is written in.</p>
+  <div class="plate">
+    <div class="row"><button class="b" type="button" id="sb1" aria-pressed="true">As the video chip draws it</button><button class="b" type="button" id="sb2" aria-pressed="false">The whole screen as characters</button></div>
+    <canvas id="status" class="scr"></canvas>
+    <p class="cap" id="statuscap"></p>
+  </div>
+  <p>The game writes its own text in a private alphabet in which each letter is its ASCII code plus 155: A is <code>$DC</code>, Z is <code>$F5</code>, the digits are <code>$F6</code>-<code>$FF</code>, and <code>$94</code> is a space. The video chip finds a character's shape at eight times its code from the start of the font. In the status band the font starts at <code>$0000</code>, so the shapes for <code>$94</code>-<code>$FF</code> sit at <code>$04A0</code>-<code>$07FF</code>, in the unused rows of the status bar's own screen.</p>
+  <p>As the game starts, it copies the screen and its own shapes from <code>$4B00</code>, then copies A to Z and 0 to 9 from the Commodore's character ROM into place (<code>$48F5</code>). One shape does not fit. The shape for <code>$FF</code> would be the last eight bytes of the screen's memory, where the video chip reads the sprite pointers. So the digit 9 is drawn with <code>$F5</code>, the code for Z, and the digit table at <code>$1730</code> sends 9 there. The status bar never needs a Z.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/dw-page.js"></script>
+<script>
+const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[175,150,175,142,155,150,211,150,155,150,175,150,175,142,0,0,0,16,0,0,0,7,208,0,17,112,241,0,7,0,127,127,240,240,249,248,243,242,248,240,240,241,246,241,240,240,252],"cia2":[151,63],"cpu":[47,53],"writes":[[78,8,56576,150],[78,19,53272,243],[78,34,53270,211],[78,47,53265,20],[86,63,53272,241],[256,6,56576,151],[256,19,53270,208],[256,29,53265,144],[256,35,53272,17]],"colour":"CAgICAgICAgJCAgICAgJCAgICAkICAgICQgICAgJCAgICAkICAgICAgCAgICAgIFBQUFBQUICQgICAgJCAgICAkICAgICQgICAgJCAgICAgICAQEBAQEBAQEBAQECAkICAgICQgICAgJCAgICAkICAgICQgICAgICQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQ4ODQ0ODQ4NDQ4NDQ4ODg4ODg0NDg0ODQ0ODQ0ODg0NDg4ODg4ODg4ODQ0ODg4NDg0ODg0NDg4ODg0NDg4ODQ4NDg4NDQ0NDg4ODg4ODg4ODg0ODg4ODQ4ODg4ODQ4ODg4NDg4ODg0ODg4ODg0NDg4ODg4ODg4ODg0ODg4ODg4ODg4ODg4NDg4NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDg4ODg4ODg4ODg4ODQ4NDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4NDg0ODg4OBgYGBg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODQ4ODg4ODgYGBgYODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4PDQ4ODg4OCg0NDQ0PDg4ODg4ODg4ODg8NDQ0NDQ0NDQ0NDQ0NDQ0NDg4ODg4ODg4ODg4ODQ8ODg4ODg4ODg8NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDw4ODg4ODg8NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg0PDg4ODg8NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDg4ODg4ODg0NDQ0ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg0ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4NDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODQ4ODQ0ODg0NDQ4ODg4ODg4ODg4ODg0NDQ4ODQ4ODg0NDQ4ODg4ODg0ODQ0NDg0NDg0NDg4ODg4ODg4ODg0NDg0ODQ0ODg4NDg0NDg4ODgEPAQ8PDw0PAQ8BDwEPAQ8NDw0PDQ8KDw==","ram":[{"a":1024,"b":"lJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJTu3urt4JT29vb29vaUlpqbnJ2WlJSUlJaUlJSUlpSUlJSWlJSUlJSUlJSUmZSZlJmUmZSZlJaen6ChlpSUlJSWlJSUlJaUlJSUlpSUlJSUl5eXl5eXl5eXl5eXl5eYlZWVl5iXl5eXmJeXl5eYl5eXl5iXl5eXlwAAAAAAAAAAAACqqqr/"},{"a":1200,"b":"wMDAwMDAwMAAAAAAAP8="},{"a":1216,"b":"wMDAwMD/"},{"a":1224,"b":"GBj/PDxmZsMAqqWpqamlqgCoqKioqGioAKqlqqWmpaoAqGhoaKhoqACqpaqpqqWqAKhoaGhoaKgAqqampaqqqgCoaGhoaGio"},{"a":1776,"b":"PGZgYGBmPAA="},{"a":1792,"b":"fmBgeGBgfgA="},{"a":1872,"b":"PGZmZmZmPAA="},{"a":1896,"b":"fGZmfHhsZgA8ZmA8BmY8AA=="},{"a":1968,"b":"PGZudmZmPAA="},{"a":16383,"b":"IQ=="},{"a":16672,"b":"qv/AMwwzwP8="},{"a":16800,"b":"DPwwwPMDw88wwAAMAwAwwA=="},{"a":16856,"b":"Dxo4FvAp4tggwMAwsDAviw=="},{"a":16904,"b":"A8DDDAAMAwA="},{"a":17360,"b":"+gooq7DggIA="},{"a":17598,"b":"EA=="},{"a":17608,"b":"8PDAwwMPDww="},{"a":17632,"b":"rCAr4xoyAgNLKqKgrEvgiA=="},{"a":17744,"b":"AAAAf//Av6MDAwP4/wD/DcDAwB//AP/YAAAA/v8D/cWtraOvv4DA/21tbQz/AAD/3cXdxf0BA///8PPz8/Pz8P8D8/Pz8/MD/w/Pz8/Pzw//wM/Pz8/PwA=="},{"a":17984,"b":"PD8MMDw88PAPDAwMPDwwwA=="},{"a":18008,"b":"wwyy64IKIATR43/D6AkRAQ/Dw/PwADAz"},{"a":18040,"b":"MD8LA4LwMDA="},{"a":18176,"b":"AwzAMAwAAAw="},{"a":18232,"b":"29vbWP8AAP8="},{"a":18344,"b":"AzMDMHH+bWw="},{"a":18360,"b":"OwwEFDgNCAwhziAgHCATIA=="},{"a":18848,"b":"AAAA"},{"a":18856,"b":"AAAA"},{"a":18952,"b":"AAAA"},{"a":19408,"b":"AAAA"},{"a":19630,"b":"AAA="},{"a":19646,"b":"AAA="},{"a":19654,"b":"AAA="},{"a":19680,"b":"AAAA"},{"a":19688,"b":"AAAA"},{"a":20032,"b":"AAAA"},{"a":20040,"b":"AAAA"},{"a":20072,"b":"AAAA"},{"a":20224,"b":"AAAA"},{"a":20992,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC2WAC5WAC5VAC5aAC+oAC+4AC+YAC+YAC+YACqgAJWAAlWA"},{"a":22528,"b":"AC7gALu4AC/uAC74AL/uAC/4AAvgAC+AAApgAC1gAL1YALlYALmWAClmAC2WAC7YAC7gAAAAAAAAAAAAAAAA"},{"a":24128,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAIIAAKoAAJkAACYAACgAABQAACoAACqAACqAACagACagAiagAlVgAKqAA"},{"a":31904,"b":"yM00neCczXo04Jw0zc3Jyc3NNJ3gnM16NOCcNM3NNJ3gQTXg4EE14Jk0y0E1NfXg+EHgyzTJmciZNMtBNTX14PhB4Ms0NMtBNTVB4EE1QeDI9TXgQeD3NeA1NUGcyMnIyfU14EHg9zXgNTVBnPU14EFBNeA1QTXgy+A14EHgNeBB4DXgQZzImcvgNeBB4DXgQeA14EHgNeBB4DXgQTXgNTQ1QTXgNUE14DVBNeCczXo0NUE14DVBNeA1QTXgNUE14DVBNeDgQTv4QeBBNUHgQTVB4EE1NfXg+EHgQTWqq6ytQeBBNUHgQTVB4EE1QTs04DVB4EE1QeBBNUHgQeD3NeA1QeBBrq/nsDVB4EE1QeBBNUHgQTs0yeDgNeBB4DXgQeA14EHgNeBB4DXgQbGytLPgNeBB4DXgQTXgNTvNyMk1NUE14DVBNeA1QTXgNUE14DVBNeCxsrSzNUE14DVBNeDgQTs0yJnJQUHgQTVB4EE1QeBBNUHgQTVB4EE1sbK0s0HgQTVB4EE1QTs0zcnJzeA1QeBBNUHgQTVB4EE1QeBBNUHgQbGytLM1QeBBNUHgQTs0yc3IyJkkzMzLyzxBNeDgNeBBNeA1O8zMy8vMzMvLzMzLy8zMy8vNyM2ZyciZNciZyMnPPOBBNUE14OBBOzTImcjJyJnIyciZyMnImcjJmcnNyc3JyTXIyJnNzc88NUHgQTVBOzTNyMiZzcjImc3IyJnNyMiZzc2ZyM3Jmcg1zc3JyM3Jzzw1QeBBOzTJzc3NycjNzcnIzc3JyM3NycjJyJmZyMnI4MvNmcjJyJnIzMzLy8nImcjNyM2ZzcjJyMnImcjNyM2ZyciZyM3IyTXMzcjIzcnJzciZyMnNycnNmcnNyciZyZnNycnNmcnNyc3Jyc3ImclBz8jJmcmZyJnIyJnNyZnImc2ZyM3Jyc3IyZnImc2ZyM3JmciZycnN4MzJzcjIycjJzc3JyMjJyMnJyJmZyMiZycjJyMnJyJmZyMnIycjImeCcyJnLnMiZy8s0zZnNyM2ZzcjNmcnJNM+cyJnLmciZzMs0zZnNyM01nM16NJzNejTgnDTNmcnNyZnJzcnNNJ3gnM16NMjNyM/gnDTNmcnN"},{"a":32760,"b":"SGB5"},{"a":32767,"b":"AA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19653,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":16,"colour_cells_changed_during_frame":0}};
+(async function () {
+  if (!window.C64) { DW.fail(new Error('This widget needs the site\'s shared script, lib/c64.js.')); return; }
+  const PAL = C64.PAL;
+  let bands = false;
+  function frame() {
+    const cv = document.getElementById('frame'); C64.drawFrame(cv, FRAME, 2);
+    if (!bands) return;
+    const ctx = cv.getContext('2d');
+    for (const [l, t] of [[78, 'line 78: bank 1, play screen'], [86, 'line 86: play-area characters'], [256, 'line 256: bank 0, the status bar']]) {
+      const y = (l - 16) * 2; ctx.fillStyle = '#c25a00'; ctx.fillRect(0, y, cv.width, 2);
+      ctx.font = '14px IBM Plex Mono, monospace'; ctx.fillStyle = '#fff'; ctx.fillText(t, 8, y > 20 ? y - 5 : y + 18);
+    }
+  }
+  frame();
+  document.getElementById('fbands').onclick = e => { bands = !bands; e.target.setAttribute('aria-pressed', bands); frame(); };
+
+  let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
+  const M = G.ram;
+
+  // the Doctor ($CC4C): the frame comes from his position, (x & 15) >> 1 walking, (y & 15) >> 2 climbing;
+  // facing left reads $CC16/$CC2A, right $CC1E/$CC32; carrying keeps upper frame $CC3F (right) or $CC3E (left)
+  (function () {
+    const cv = document.getElementById('doc'), S = 4, W = 96, ctx = C64.canvas(cv, W * S, 40 * S);
+    const T = a => Array.from(M.subarray(a, a + 8));
+    const POSE = {
+      left:  { lo: T(0xCC16), up: T(0xCC2A), dx: -1, cap: 'Walking left: lower frames from <code>$CC16</code>, upper from <code>$CC2A</code>, picked by x.' },
+      right: { lo: T(0xCC1E), up: T(0xCC32), dx: 1, cap: 'Walking right: lower frames from <code>$CC1E</code>, upper from <code>$CC32</code>, picked by x.' },
+      climb: { lo: T(0xCC26), up: T(0xCC3A), dy: 1, cap: 'On a ladder: four frames from <code>$CC26</code> and <code>$CC3A</code>, picked by height.' },
+      hold:  { lo: T(0xCC1E), up: Array(8).fill(M[0xCC3F]), dx: 1, cap: 'Carrying an item: the legs walk as usual and the upper sprite stays on frame <code>' + C64.hex(M[0xCC3F], 2) + '</code> (<code>$CC3F</code>).' },
+    };
+    let pose = 'right', x = 36, y = 0, timer = null, death = null;
+    const at = () => ((x % (W - 24)) + (W - 24)) % (W - 24);
+    function draw() {
+      ctx.fillStyle = C64.PAL[11]; ctx.fillRect(0, 0, cv.width, cv.height);
+      if (death) { DW.doctor(ctx, M, 0, 0, at() * S, 15 * S, S, death.lo, death.up); return; }
+      const p = POSE[pose], i = p.dy ? (y & 15) >> 2 : (x & 15) >> 1;
+      DW.doctor(ctx, M, p.lo[i], p.up[i], (p.dy ? 36 : at()) * S, 15 * S, S);
+      document.getElementById('doccap').innerHTML = p.cap + ' Position ' + (p.dy ? 'y = ' + (y & 0xFF) : 'x = ' + (x & 0xFF)) + ', frame ' + i + ': <code>' + C64.hex(p.lo[i], 2) + '</code> and <code>' + C64.hex(p.up[i], 2) + '</code>.';
+    }
+    function walk() { clearInterval(timer); death = null;
+      timer = setInterval(() => { const p = POSE[pose]; if (p.dy) y += p.dy; else x += p.dx; draw(); }, 20); draw(); }
+    // regeneration: doctor_draw ($CB6B) from countdown $7F, every fourth frame, $FC62 += 6, fresh copies, dissolve
+    function regenerate() {
+      clearInterval(timer);
+      const i = (x & 15) >> 1, lo0 = DW.image(M, POSE.right.lo[i]), up0 = DW.image(M, POSE.right.up[i]);
+      const cut = DW.dissolver(M, { c60: 1, c61: 1 });                  // $FC60 and $FC61 as normal_sprite_colours leaves them
+      let n = 1, left = 0x7F;
+      death = { lo: lo0.slice(), up: up0.slice() };
+      document.getElementById('doccap').innerHTML = 'Regenerating: every fourth frame the two frames are copied afresh and more pixel pairs cleared, in the order of <code>$09A0</code> (<code>$CB7F</code>).';
+      timer = setInterval(() => {
+        if (left === 0x7F || !(left & 3)) {
+          n = (n + 6) & 0xFF;
+          death.lo = lo0.slice(); death.up = up0.slice();
+          const test = Array(64).fill(0xFF).concat(death.up.slice(0, 4));
+          cut(test, [death.lo, death.up], n);
+        }
+        draw();
+        if (--left < 0) { clearInterval(timer); setTimeout(() => { if (death) { death = null; pose = 'right'; mark(); walk(); } }, 900); }
+      }, 20);
+      draw();
+    }
+    const btns = document.querySelectorAll('[data-pose]');
+    function mark() { btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.pose === pose)); }
+    btns.forEach(b => b.onclick = () => { if (b.dataset.pose === 'die') { pose = 'die'; mark(); regenerate(); } else { pose = b.dataset.pose; mark(); walk(); } });
+    walk();
+  })();
+
+  // sprites, each in the own colour ($1850) of the object that shows it: first the frame tables
+  // the animation code reads, then each object's starting frame ($1D30)
+  const gal = document.getElementById('gal'), owner = new Map();
+  const claim = (from, to, obj, who) => { for (let a = from; a <= to; a++) { const p = M[a];
+    if (p >= 0x40 && p < 0xD0 && !owner.has(p)) owner.set(p, { obj, who, at: a }); } };
+  claim(0xCC16, 0xCC3F, 0, 'the Doctor');              // doctor_frames_*, $CC16-$CC3F
+  claim(0xB197, 0xB19E, 2, 'Splinx');                  // splinx_frames_*
+  claim(0xB66D, 0xB67E, 0x0A, 'the madrag');           // madrag_*_frames
+  claim(0xB46F, 0xB476, 0x0C, 'the Master');           // obj0c_frames_*
+  claim(0x77B3, 0x77C6, 0x10, 'a controller');         // entity_anim_frames, read by controllers_update
+  claim(0xC4F5, 0xC50E, 3, 'the walking creatures, objects 3-9');   // patrol, climb, and carry frames
+  for (let o = 0; o < 80; o++) claim(0x1D30 + o, 0x1D30 + o, o, 'object ' + C64.hex(o, 2));
+  for (let p = 0x40; p < 0xD0; p++) {
+    const w = owner.get(p), cv = document.createElement('canvas');
+    DW.drawSprite(cv, M, p, 2, w ? M[0x1850 + w.obj] : null); cv.title = C64.hex(p, 2);
+    cv.onclick = () => { gal.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); cv.classList.add('sel');
+      document.getElementById('galcap').innerHTML = 'Sprite pointer <code>' + C64.hex(p, 2) + '</code>: 63 bytes at <code>' + C64.hex(0x4000 + p * 64) + '</code>. ' +
+        (w ? 'Shown by ' + w.who + ' (frame from <code>' + C64.hex(w.at) + '</code>), so drawn in its own colour, <code>' + C64.hex(0x1850 + w.obj) + '</code> = ' + M[0x1850 + w.obj] + ', with the shared red and orange.'
+           : 'No frame table or starting frame names it, so its own colour is not known; grey stands in.'); };
+    gal.appendChild(cv);
+  }
+
+
+  // the TARDIS: arrival_sequence ($FC8E) and departure_sequence ($FE23), one sprite image on six sprites
+  const tv = document.getElementById("tardis-cv"), TS = 3, tctx = C64.canvas(tv, 128 * TS, 80 * TS);
+  const POS = Array.from(M.subarray(0xFC70, 0xFC7C));
+  let high = false, timer = null, shown = Array.from(M.subarray(0x09E4, 0x0A24));
+  const source = () => Array.from(M.subarray(high ? 0x0A24 : 0x09E4, high ? 0x0A64 : 0x0A24));
+  function tdraw(note) {
+    tctx.fillStyle = C64.PAL[11]; tctx.fillRect(0, 0, tv.width, tv.height);
+    for (let i = 0; i < 6; i++) DW.sprite(tctx, shown, (POS[2 * i] - 0xA8 + 40) * TS, (POS[2 * i + 1] - 0x76 + 8) * TS, TS, [6, 0, 9]);
+    if (note != null) document.getElementById('tkv').innerHTML = note;
+  }
+  // arrival_sequence ($FC8E) and departure_sequence ($FE23), followed step by step; each yield is one frame
+  function* sequence(leave) {
+    const st = leave ? { c60: 1, c61: 1 } : { c60: M[0xFC60], c61: M[0xFC61] }, cut = DW.dissolver(M, st);
+    let src = source(), n = leave ? 0x7F : M[0xFC62], f = 0;
+    function* frame() {                                   // arrival_frame $FD1F: show the copy, every fourth frame cut a fresh one
+      do { f++; shown = src.slice(); yield n; } while (f & 3);
+      src = source(); cut(src, [], n);
+    }
+    if (leave) { do { yield* frame(); n -= 3; } while (n >= 0); return; }
+    yield* frame();
+    st.c60 = 15;                                          // $FC60 is also this loop's counter ($FC9D-$FCAD)
+    do { yield* frame(); st.c60 = (st.c60 - 1) & 0xFF; } while (st.c60 < 0x80);
+    do { yield* frame(); n += 3; } while (n < 0x80);      // $FCAF-$FCBB
+  }
+  function run(leave) {
+    clearInterval(timer);
+    const it = sequence(leave);
+    timer = setInterval(() => {
+      const r = it.next();
+      if (r.done) { clearInterval(timer); tdraw(leave ? 'the shimmer is whole, and the game ends' : 'the last copy keeps 3 of its 128 pixel pairs'); return; }
+      tdraw('pixel pairs cleared from each copy: <b>' + r.value + '</b>');
+    }, 20);
+  }
+  document.getElementById('t-land').onclick = () => run(false);
+  document.getElementById('t-leave').onclick = () => run(true);
+  document.getElementById('t-img').onclick = e => { high = !high; e.target.setAttribute('aria-pressed', high); clearInterval(timer); shown = source(); tdraw('image at <code>' + (high ? '$0A24' : '$09E4') + '</code>'); };
+  tdraw('image at <code>$09E4</code>');
+
+  // status bar
+  const screen = new Uint8Array(1000), font = new Uint8Array(2048);
+  for (let i = 0; i < 0x400; i++) { const v = M[0x4B00 + i]; if (i < 1000) screen[i] = v; font[0x400 + i] = v; }
+  const runs = FRAME.ram.map(r => ({ a: r.a, b: Uint8Array.from(atob(r.b), c => c.charCodeAt(0)) }));
+  for (const r of runs) for (let i = 0; i < r.b.length; i++) { const a = r.a + i; if (a >= 0x400 && a < 0x800) { font[a] = r.b[i]; if (a < 0x7E8) screen[a - 0x400] = r.b[i]; } }
+  const colour = Uint8Array.from(atob(FRAME.colour), c => c.charCodeAt(0));
+  const sv = document.getElementById('status');
+  let whole = false;
+  function status() {
+    const rows = whole ? 25 : 4, s = 2, ctx = C64.canvas(sv, 320 * s, rows * 8 * s);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, sv.width, sv.height);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < 40; c++) {
+      const i = r * 40 + c, code = screen[i], x = c * 8 * s, y = r * 8 * s;
+      if (r >= 4) { C64.drawGlyph(ctx, font, code, x, y, s, '#7b7b7b'); continue; }
+      const k = colour[i] & 15;
+      if (k & 8) C64.drawGlyphMC(ctx, font, code, x, y, s, [PAL[0], PAL[9], PAL[8], PAL[k & 7]]);
+      else C64.drawGlyph(ctx, font, code, x, y, s, PAL[k]);
+    }
+    if (whole) { ctx.fillStyle = '#c25a00'; ctx.fillRect(0, 4 * 8 * s, sv.width, 2); }
+    document.getElementById('statuscap').innerHTML = whole
+      ? 'All 25 rows of <code>$0400</code>, drawn with the status bar\'s font. Below the orange line, rows 4 to 24 are the font\'s own bytes, read back as if they were characters.'
+      : 'The four rows the status band shows, drawn from <code>$0400</code> with the font at <code>$0000</code>-<code>$07FF</code> of bank 0.';
+  }
+  status();
+  const b1 = document.getElementById('sb1'), b2 = document.getElementById('sb2');
+  b1.onclick = () => { whole = false; b1.setAttribute('aria-pressed', true); b2.setAttribute('aria-pressed', false); status(); };
+  b2.onclick = () => { whole = true; b2.setAttribute('aria-pressed', true); b1.setAttribute('aria-pressed', false); status(); };
+})();
+</script>

@@ -123,3 +123,24 @@ See `facts.md`, Open questions.
   linked from lemon64.com/forum/viewtopic.php?t=67329 (2 March 2018) as a
   Google Drive document; the contributor confirmed the thread from a
   screenshot on 1 October 2026.
+- Gamebox64's scans of the Melbourne House cassette manual (two leaflet
+  pages and a supplementary sheet, MH 352/353; given by the contributor on
+  2 October 2026, copies in the project files, not committed). The same
+  text and credits as Lemon64's copy, plus: the tape loads with the
+  "PAVLOVA" fast loader in about 3 minutes; RESTORE pauses and pressing it
+  again restarts play; F5 "will terminate the game, and return you to demo
+  mode" (the disk restarts instead, `$2444`); "you will be unable to smash
+  through strong barriers ... with insufficient Chi" (the barrier test
+  `$0A2E` reads no energy); a poisoned hero "will not regain Chi" until
+  meditation cures him (no poison state found; regeneration `$2D14` tests
+  none); Chi drains "underwater, and in poisonous gas chambers" (area 5,
+  `$2CE4`); entering a temple, the hero walks to the shrine by himself, and
+  fire ends the meditation; sweeps and somersaults are "restricted" in
+  swamps and river currents; some opponents "will still pursue you even if
+  you choose to run"; shoguns often follow "hordes of warrior guards"
+  (hordes, `$27A1`); the main game is joystick only, in the rear port.
+  The swamp, current and pursuit claims have not been checked in the code.
+
+- Read 2 October 2026, given by the contributor: Super Chart Island's pages on Fist II and The Way of the Exploding Fist (Gallup number one for the week ending 18 October 1986, one week; the first game twelve weeks; C64 reviews in Commodore User, Your Commodore and Zzap!64; Barnett's "reskin" remark to Retro Gamer), C64.com's 2011 interview with Nigel Spencer (screen editor, packing the levels into memory) and Tsumea's interview with Gregg Barnett (joined Beam in 1982). Reviews in Computer & Video Games and Your Computer were left out because the version reviewed is not stated. Super Chart Island also reports a reviewer's complaint about the hero getting "stuck in a loop while the screen moves" and no death message; neither has been checked in the code.
+- Remix64's interview with Neil Brennan (Neil Carr, 28 November 2020), given by the contributor on 2 October 2026: his working method with Fred Milgrom and a 4-track; it says nothing about Fist II itself.
+- Helen Stuckey's PhD thesis (Flinders, 2016), given by the contributor on 2 October 2026: Bill McIntosh's trapdoor and nine warriors (trapdoor confirmed in room 76, `$0659`/`$0660`; warriors not found, no horde record in `$E609`); Barnett as Beam's Commodore expert; the Tsumea interview by Souri dated 2014. Its story of a hidden figure in Fist II's shrubbery is about the Spectrum version and was left out.

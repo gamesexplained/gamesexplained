@@ -11,6 +11,7 @@
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
   games/*/*/game.json   Silver or above only on proven models, or checked (models.py)
+  games/*/*/kit-feedback.md   each maintainer ask filed (#123) or fileable (maintainer_asks.py)
 
 Usage: check_docs.py      exit 1 on failure
 """
@@ -95,6 +96,8 @@ def main():
             fails += 1
     from models import check as models_check
     fails += models_check()
+    from maintainer_asks import check as asks_check
+    fails += asks_check(sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "kit-feedback.md"))))
     if fails:
         print(f"\nFAILED - {fails} issue(s). Rules in AGENTS.md; workflow in kit/skills/core; platform in kit/skills/<platform>; game facts in games/.")
         sys.exit(1)

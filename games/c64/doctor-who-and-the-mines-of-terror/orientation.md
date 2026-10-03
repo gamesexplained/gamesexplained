@@ -26,6 +26,17 @@ examined in the sweep; no intro, menu or trainer appears on the screen.
      (a stopping checkpoint on `$484D` set before the depacker runs).
    - `play-start.vsf`: a few seconds into play, no input yet.
 
+## The original disk
+
+On 3 October 2026 the steward supplied an image of the original disk
+(`.g64`, 286,164 bytes, titled DWMT DISK MASTER). Autostarted, its BASIC
+boot program DWMT shows the title screen (SCR), asks LOAD A SAVED POSITION
+(Y/N)?, plays the title tune (THEME) until space is pressed, then loads
+P2, P3 and P1 and types SYS18509. A stopping checkpoint on `$484D` set
+before space is pressed catches the hand-over; there its memory equals the
+listing everywhere the listing has bytes, except zero page and
+`$FF70`-`$FFFF`. Snapshot `work/dw-disk-entry.vsf`.
+
 ## Steady state
 
 The start-up at `$484D` blanks the screen, stops CIA1 timer A, sets `$01`

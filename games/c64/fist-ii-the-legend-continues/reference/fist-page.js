@@ -30,6 +30,26 @@ const FIST = (function () {
     for (let y = 0; y < 21; y++) for (let b = 0; b < 3; b++) { const g = f[y * 3 + b];
       for (let x = 0; x < 4; x++) { const v = (g >> (6 - 2 * x)) & 3; if (!v) continue; ctx.fillStyle = C64.PAL[cols[v]]; ctx.fillRect((b * 8 + x * 2) * s, y * s, 2 * s, s); } }
   }
+  // One whole fighter in a pose, as build_pose ($1BDE) and the sprite placement ($45DF) put it together:
+  // nine body parts from the pose tables ($B210), then the head ($B533, offsets $B4A1/$B4EA), in the
+  // colours of graphics set `set` ($269D). (x, y) is the top left of the body, in C64 pixels.
+  function figure(ctx, M, pose, set, face, x, y, s) {
+    const sg = v => v > 127 ? v - 256 : v;
+    const blit = (f, x0, y0, cols) => {
+      for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) { const g = f[r * 3 + b];
+        for (let k = 0; k < 4; k++) { const v = (g >> (6 - 2 * k)) & 3; if (!v) continue; ctx.fillStyle = C64.PAL[cols[v]]; ctx.fillRect((x0 + b * 8 + k * 2) * s, (y0 + r) * s, 2 * s, s); } }
+    };
+    const body = M[0x26C3 + set], head = M[0x26B4 + set], base = M[0x26BE + set] * 256 + M[0x26B9 + set];
+    for (let k = 0; k < 9; k++) { const v = M[0xB210 + 73 * k + pose]; if (!v) continue;
+      let f = unpack(M, v), c = k % 3; if (face) { f = mirror(M, f); c = 2 - c; }
+      blit(f, x + 24 * c, y + 21 * Math.floor(k / 3), [0, 0, body, 10]); }
+    const at = M[0xB533 + pose], n = (at & 15) - 1; if (n < 0) return;
+    let f = M.slice(base + 64 * n, base + 64 * n + 63);
+    if (((at >> 4) & 1) ^ (face ? 1 : 0)) f = mirror(M, f);
+    if (at & 0x20) { const g = new Uint8Array(63); for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) g[r * 3 + b] = f[(20 - r) * 3 + b]; f = g; }
+    const hx = sg(M[0xB4A1 + pose]), hy = sg(M[0xB4EA + pose]);
+    blit(f, x + (face ? 48 - hx : hx), y + hy, [0, 0, head, 10]);
+  }
   function fail(e) { document.querySelectorAll('canvas').forEach(c => c.insertAdjacentHTML('afterend', '<p class="cap">' + e.message + '</p>')); }
-  return { load, unpack, mirror, draw, fail };
+  return { load, unpack, mirror, draw, figure, fail };
 })();

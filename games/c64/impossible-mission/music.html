@@ -1,0 +1,98 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impossible Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/impossible-mission-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1984 · Epyx</p>
+  <h1>Impossible Mission</h1>
+  <p class="sub">The musical lock of the two code rooms, and the sampled voice that greets the agent, played from the sound chip's volume register.</p>
+</header>
+<main class="wrap">
+
+<section id="notes">
+  <p class="fig">01 · The code rooms</p>
+  <h2 class="t">Sound: the code rooms play a C major scale</h2>
+  <p class="lede">Two rooms hold a computer with a big chequered screen. Searching it starts a musical puzzle: find the hidden notes in rising order.</p>
+  <div class="plate">
+    <div class="ctl" id="ndiv"></div>
+    <p class="cap">The eight notes of <code>$A9F8</code>, played on three voices an octave apart as <code>$A950</code> does. At the NTSC clock they are C6 to C7 to within a cent; the second octave of tones is the same scale an octave lower. Sound plays in your browser through Web Audio.</p>
+  </div>
+  <p>The first visit hides two notes among 32 squares. Each success adds a note, up to 14, and pays a password: a lift init for an even number of notes, a snooze for an odd one (<code>$A771</code>). A note lower than the last one pressed starts the count again.</p>
+  <p>The phone on the pocket computer is the game's other musical instrument: it dials in touch tones (<a href="discoveries.html#phone">Discoveries</a>).</p>
+</section>
+
+<section id="speech">
+  <p class="fig">02 · Speech</p>
+  <h2 class="t">Sound: eight voice lines, and one the game never plays</h2>
+  <p class="lede">The voice is sampled, about 6 KB in its own file, <code>words</code>, loaded at <code>$E000</code>.</p>
+  <p>A driver at <code>$0880</code> decodes each short frame of compressed samples into a buffer and plays it by writing volume levels to the SID's master volume register, from a timer interrupt 9,755 times a second on a PAL machine (<code>$0C71</code>). While a line plays, the game swaps its raster interrupt for one that only counts frames, so the samples are not disturbed.</p>
+  <table class="d">
+    <tr><th>Line</th><th>When the game plays it</th></tr>
+    <tr><td>2 and 3</td><td>At start-up, after the load and after every restart: the greeting (<code>$39AE</code>)</td></tr>
+    <tr><td>1</td><td>Entering a room after a game hour has passed</td></tr>
+    <tr><td>7</td><td>The agent falls</td></tr>
+    <tr><td>5</td><td>Time runs out</td></tr>
+    <tr><td>4</td><td>Over Elvin's face at the end</td></tr>
+    <tr><td>0</td><td>The end screen</td></tr>
+    <tr><td>6</td><td>Never: no call to <code>$BED9</code> asks for it</td></tr>
+  </table>
+  <p>Descriptions of the game quote the greeting as "Another visitor. Stay a while, stay forever!" Which words each line holds was not checked against the samples for these pages.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+// Data: excerpts of the game's memory from listing.json (address, base64), see the build in work/.
+const DATA = [[43512, "D0V9g3nHlx5DS1RZZHB+hg=="]];
+const M = new Uint8Array(65536);
+for (const [a, b] of DATA) { const s = atob(b); for (let i = 0; i < s.length; i++) M[a + i] = s.charCodeAt(i); }
+const PAL = ['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171','#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+const hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+
+
+
+// ---- drawing ----
+function ctx2(cv) { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }
+function cellMC(c, charset, code, x, y, cols) {
+  for (let r = 0; r < 8; r++) { const b = M[charset + code * 8 + r];
+    for (let p = 0; p < 4; p++) { const v = (b >> (6 - 2 * p)) & 3; c.fillStyle = PAL[cols[v]]; c.fillRect(x + p * 2, y + r, 2, 1); } }
+}
+function cellHi(c, charset, code, x, y, fg, bg) {
+  for (let r = 0; r < 8; r++) { const b = M[charset + code * 8 + r];
+    for (let p = 0; p < 8; p++) { c.fillStyle = PAL[(b & (0x80 >> p)) ? fg : bg]; c.fillRect(x + p, y + r, 1, 1); } }
+}
+function drawTextMC(c, charset, scr, col, bg, mc1, mc2) {          // multicolour text mode, 40x25
+  for (let i = 0; i < 1000; i++) {
+    const cc = col[i] < 0 ? 0 : col[i] & 15, x = (i % 40) * 8, y = Math.floor(i / 40) * 8;
+    if (cc & 8) cellMC(c, charset, scr[i], x, y, [bg, mc1, mc2, cc & 7]);
+    else cellHi(c, charset, scr[i], x, y, cc & 7, bg);
+  }
+}
+function sprite(c, addr, sx, sy, colour, mc, m1, m2) {               // sprite at VIC coordinates
+  const x0 = sx - 24, y0 = sy - 50;
+  for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) {
+    const v = M[addr + r * 3 + b];
+    if (mc) for (let p = 0; p < 4; p++) { const k = (v >> (6 - 2 * p)) & 3; if (!k) continue;
+      c.fillStyle = PAL[[0, m1, colour, m2][k]]; c.fillRect(x0 + b * 8 + p * 2, y0 + r, 2, 1); }
+    else for (let p = 0; p < 8; p++) if (v & (0x80 >> p)) { c.fillStyle = PAL[colour]; c.fillRect(x0 + b * 8 + p, y0 + r, 1, 1); }
+  }
+}
+// ---- sound ----
+let AC = null;
+const audio = () => AC || (AC = new (window.AudioContext || window.webkitAudioContext)());
+function tones(freqs, start, dur) {
+  const a = audio(), g = a.createGain(); g.gain.value = 0.12; g.connect(a.destination);
+  for (const f of freqs) { const o = a.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.connect(g); o.start(a.currentTime + start); o.stop(a.currentTime + start + dur); }
+}
+const clockHz = () => document.querySelector('input[name=clk]:checked').value === 'pal' ? 985248 : 1022727;
+const sidHz = (v, clk) => v * clk / 16777216;
+const keyHz = (n, clk) => [sidHz(M[0x7E6E + n] | M[0x7E7A + n] << 8, clk), sidHz(M[0x7E86 + n] | M[0x7E92 + n] << 8, clk)];
+
+const NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'];
+const ndiv = document.getElementById('ndiv');
+for (let n = 0; n < 8; n++) { const v = M[0xA9F8 + n] | M[0xAA00 + n] << 8, b = document.createElement('button');
+  b.textContent = NAMES[n] + (n === 7 ? '7' : '6'); b.title = 'SID value ' + hex(v, 4);
+  b.onclick = () => { const f = sidHz(v, 1022727); tones([f, f / 2, f / 4], 0, .5); }; ndiv.appendChild(b); }
+</script>

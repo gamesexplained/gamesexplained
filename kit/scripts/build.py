@@ -8,6 +8,10 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
+Those are the default tabs. A game that wants others lists all of its tabs, in
+order, in game.json's "tabs" as [file, label] pairs; every authored page it
+names is copied through, and a page in the folder that no tab names is left out
+with a warning (about-layout.html, the game's own About template, aside).
 Every tab but Source lists its sections in the left margin (pagenav).
 Plus a home page with the catalogue and the games most recently added or changed
 (from git history), site/lib/, kit.html (kit/lessons/, newest first),
@@ -287,13 +291,9 @@ def banner(game, cons):
     return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
 
 
-# the file in the game folder each tab is written from; the Source and About tabs are
-# assembled, so they point at the prose the reader sees most of
-EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "play.html": "play.html",
-                "mechanics.html": "mechanics.html", "music.html": "music.html",
-                "gameplay.html": "gameplay.html", "graphics.html": "graphics.html",
-                "discoveries.html": "discoveries.html",
-                "source.html": "facts.md", "about.html": "features.md"}
+# the tabs build.py assembles, which every game has, and the file each one's edit link opens:
+# the prose the reader sees most of. Every other tab is a page in the game folder, edited as it is
+ASSEMBLED = {"source.html": "facts.md", "about.html": "features.md"}
 
 
 def edit_footer(game, tab):
@@ -304,7 +304,7 @@ def edit_footer(game, tab):
     """
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
     where = f'games/{game["platform"]}/{game["slug"]}'
-    f = EDIT_SOURCES[tab]
+    f = ASSEMBLED.get(tab, tab)
     edit, hist, tree = (f"{repo}/edit/main/{where}/{f}", f"{repo}/commits/main/{where}", f"{repo}/tree/main/{where}")
     return (f'<footer class="editfoot"><div class="in">'
             f'<p><b>Spotted a mistake, or know something we don\u2019t?</b> '
@@ -560,14 +560,38 @@ def fill(tpl, **kw):
     return tpl
 
 
-AUTHORED = ("index.html", "gameplay.html", "levels.html", "play.html", "mechanics.html", "graphics.html",
-            "music.html", "discoveries.html")
 LIB = "../../lib"   # site/lib/ as a game's pages see it
+LAYOUTS = ("about-layout.html",)   # a game's own template for an assembled tab, not a page of its own
+PAGE_NAME = re.compile(r"[a-z0-9-]+\.html")   # a tab is a page beside index.html, never a path
 
 
-def present_tabs(gdir):
-    """The tabs a game has: the three every game gets, and the authored ones it wrote."""
-    return {"index.html", "source.html", "about.html"} | {f for f in AUTHORED if os.path.exists(os.path.join(gdir, f))}
+def authored(gdir, game=None):
+    """The pages a game writes itself, in tab order: index.html, and every page its tabs name
+    (game.json's "tabs", or TABS when it has none) that is not assembled and is in its folder."""
+    if game is None:
+        game = json.load(open(os.path.join(gdir, "game.json")))
+    names = [f for f, _ in game.get("tabs", TABS) if f != "index.html" and f not in ASSEMBLED and PAGE_NAME.fullmatch(f)]
+    return ["index.html"] + [f for f in dict.fromkeys(names) if os.path.isfile(os.path.join(gdir, f))]
+
+
+def present_tabs(gdir, game=None):
+    """The tabs a game has: the assembled ones every game gets, and the pages it wrote."""
+    return set(ASSEMBLED) | set(authored(gdir, game))
+
+
+def check_tabs(gdir, game):
+    """Warn about a tab whose page is missing, and a page no tab names: the build leaves both out."""
+    where = os.path.relpath(gdir, ROOT).replace(os.sep, "/")
+    for f, _ in game.get("tabs", []):
+        if not PAGE_NAME.fullmatch(f):
+            warn(f"{where}: game.json has a tab for {f!r}, which is not a page name like controls.html; the tab is left out")
+        elif f not in ASSEMBLED and not os.path.isfile(os.path.join(gdir, f)):
+            warn(f"{where}: game.json has a tab for {f}, which is not in the folder; the tab is left out")
+    pages = set(authored(gdir, game)) | set(LAYOUTS)
+    for p in sorted(glob.glob(os.path.join(gdir, "*.html"))):
+        if os.path.basename(p) not in pages:
+            warn(f"{where}: {os.path.basename(p)} is not published, because no tab names it: "
+                 "list every tab, this one included, in game.json's \"tabs\"")
 
 
 def authored_page(gdir, game, f, nav, ban, src=None):
@@ -588,16 +612,16 @@ def build_game(gdir, out_root):
     out = os.path.join(out_root, plat, slug)
     os.makedirs(out, exist_ok=True)
     lib = LIB
-    present = present_tabs(gdir)
+    check_tabs(gdir, game)
+    present = present_tabs(gdir, game)
     cons = contributors(gdir)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
     common = dict(title=html.escape(game.get("title", slug)), lib=lib, build=html.escape(game.get("build") or ""),
                   platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
                   publisher=html.escape(game.get("publisher") or ""))
-    for f in AUTHORED:
-        if f in present:
-            open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
+    for f in authored(gdir, game):
+        open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
     # source
     facts = markdown(read(os.path.join(gdir, "facts.md")))
     cheats = read(os.path.join(gdir, "cheats.md"))
@@ -924,6 +948,13 @@ def kits():
 TIER_ORDER = ("platinum", "gold", "silver-claimed", "silver", "bronze", "none")
 
 
+def by_tier(games):
+    """The games best first, as the home page lists them: Platinum and Gold at the top,
+    Bronze and no tier at the bottom; within a tier, the order they came in."""
+    rank = lambda g: TIER_ORDER.index(g.get("tier", "none")) if g.get("tier", "none") in TIER_ORDER else len(TIER_ORDER)
+    return sorted(games, key=rank)
+
+
 def tier_stamps(gs):
     counts = {}
     for g in gs:
@@ -1083,8 +1114,9 @@ def cut_blocks(games):
     kit/START.md removes it with everything only it used; until then it is dead weight."""
     out = []
     for g in games:
-        for f in AUTHORED:
-            n = len(re.findall(r"<[a-zA-Z][^<>]*\sdata-cut\b", read(os.path.join(ROOT, "games", g["platform"], g["slug"], f))))
+        gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
+        for f in authored(gdir, g):
+            n = len(re.findall(r"<[a-zA-Z][^<>]*\sdata-cut\b", read(os.path.join(gdir, f))))
             if n:
                 out.append((f'games/{g["platform"]}/{g["slug"]}/{f}', g.get("tier", "none"), n))
     return out
@@ -1104,7 +1136,7 @@ def main():
         games.append(build_game(os.path.dirname(gj), out_root))
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
-                cards="".join(card_html(g) for g in games), featured=featured_html(feat) if feat else "",
+                cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
                 recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # what the kit learned, game by game

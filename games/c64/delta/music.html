@@ -1,0 +1,39 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/delta-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Rob Hubbard's driver and all thirteen of its tunes, run from the game's own bytes, and the sound effects the player hears by default.</p>
+</header>
+<main class="wrap">
+<section id="tunes">
+  <p class="fig">01 · Rob Hubbard's score</p>
+  <h2 class="t">Music: thirteen tunes, three in use</h2>
+  <p class="lede">The game carries a complete Hubbard music driver with thirteen tunes. Only three are ever requested.</p>
+  <div class="plate">
+    <div id="music"></div>
+    <p class="cap"><b>The game's own driver, run in the page.</b> The buttons start each tune through <code>set_tune</code> at <code>$C357</code>, and every frame calls <code>music_play</code> at <code>$BDE4</code>, both executed by a small 6502 interpreter over the bytes <code>$BC00</code>-<code>$CFFF</code> as the game loads them. Checked against the same code run in the kit's 6502 simulator: every SID register write matched for every tune (9,000 frames for tunes 0, 11 and 12, 1,500 for the rest). The filter is one chip's: a 6581's cutoff curve. The drums' lowest notes sit under 100 Hz, which laptop and phone speakers barely play.</p>
+  </div>
+  <p>The game asks for a tune by writing its number plus one into <code>$117D</code>, and the sound routine at <code>$9D60</code> passes it on once a frame. Tune 11 starts with the title screen (a direct call at <code>$17C3</code>) and comes back at game over and name entry. Tune 12 plays when all 32 stages are cleared (<code>game_completed</code>, <code>$9D00</code>). Tune 0 is the in-game music, requested whenever play starts and at each player's turn.</p>
+  <p>By default the player never hears tune 0. In play, the game uses the SID for its sound effects (<code>$0FFD</code> = 1). Pressing F5 on the title swaps the effects for the music, and then the request for tune 0 starts it. With the effects on, the same request only hands the three voices back to the effect player at <code>$0406</code>.</p>
+  <p>Tunes 1 to 10 are short pieces of a few seconds that end on their own. They sit in the tune table at <code>$C4F4</code> with the rest, and nothing in the game asks for them.</p>
+</section>
+
+<section id="effects">
+  <p class="fig">02 · Sound effects</p>
+  <h2 class="t">Sound: 21 effects and an engine that tells you what is coming</h2>
+  <p>The sound effects have their own player at <code>$0406</code>, with 21 effects of two eight-byte records each: pitch scripts, sweeps and alternating waveforms. The main loop's only job besides waiting for the raster is to feed it (<code>sfx_queue_service</code>, <code>$9D60</code>).</p>
+  <p>Voices 1 and 2 take turns playing an engine drone, and which drone plays depends on the wave: effect <code>$50</code> while an enemy that cannot be destroyed is on screen, <code>$4B</code> for any other enemy, and otherwise the next of three background effects. With the effects on, the drone gives away when an indestructible enemy is on screen.</p>
+  <p>F5 on the title chooses between the effects and the in-game tune; the two never play together in play.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/delta-page.js"></script>

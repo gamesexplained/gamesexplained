@@ -156,6 +156,15 @@ the loader and the start-up (`$C459`, `$C469`), and stays `$15` in play
 - Hordes: a record with low nibble `$0A` sets `$0472` = 10 (`$2875`); each
   defeat brings the next until it runs out, or at once once scroll 5 is
   delivered (`$27AD`, its only reader).
+  No record in the table has low nibble `$0A`, and the only writes to it
+  set or clear bit 7 (`$278B`, `$2C3C`, `$3524`), so no horde occurs in
+  this copy and scroll 5's power has nothing to act on.
+- Room 76 (area 7): its two type-17 drops (columns 10 and 19) lead to
+  room 60 and are the only way into the volcano. Falling into one tests
+  scroll 3 (`$0659`); undelivered, energy `$0412` is set to 0 (`$0660`).
+  Bill McIntosh (Stuckey's thesis, 2016) remembered this as a trapdoor
+  that "killed the player instantly", followed by nine unbeatable
+  warriors; the warriors are not in this copy.
 
 ## Sound
 
@@ -343,3 +352,24 @@ lighting the dark rooms (a zone's colours), 8 surviving the poison rooms
 | Screen and area at the start and at the first opponent | 94/28, 100/30 |
 | Tune number in the jungle | 3 |
 | Sprite frame table, mirror table, note table, period table | checked in the snapshot |
+
+## The cast
+
+- All fighters share the 229 body images and the 73 poses (`$B210`, nine
+  tables of 73). A fighter's graphics set `$4E,X` (`set_fighter_graphics`
+  `$269D`) picks the body colour `$5E` (`$26C3`: 2, 9, 11, 2, 9), the head
+  sprite's colour `$48` (`$26B4`: 1, 2, 11, 5, 1) and the head images'
+  address (`$26B9`/`$26BE`: `$B746`, `$BD46`, `$B8C6`, `$BA46`, `$BBC6`,
+  six unpacked 64-byte images each). The hero is set 0 (`$26D0`); an
+  opponent's set is bits 4-5 of its record plus 1 (`$2716`-`$2723`):
+  sets 1-4 have 12, 12, 8 and 8 of the 40 opponent records.
+- Per pose, `$B533` gives the head image (low nibble - 1, none when 0),
+  mirror (bit 4, XOR facing) and upside down (bit 5); `$B4A1` and `$B4EA`
+  the head's signed X and Y offset from the body's top left (copied
+  `$02`-`$21` to `$22`-`$41` at `$3FA8`; placed at `$45DF`, mirrored as
+  48 - X at `$4648`). Body rows are 21 lines apart, columns 24 pixels.
+  *Checked*: drawn this way, the five sets in pose 0 match the hero in
+  the reference screenshots; *live* (2 October 2026, booted from
+  work/fist-mindscape.g64): the opponent in room 94 (record flags `$10`,
+  set 2) is drawn grey with the grey hood, as the page draws set 2. Sets
+  1, 3 and 4 have not been compared.

@@ -9,6 +9,29 @@ An interactive 6502 disassembler with an MCP server. It loads `.vsf`
 snapshots directly, which is how it is used here: start it on the
 steady-state snapshot from `10-orient`.
 
+## Seeding from a Ghidra text export
+
+The accepted producer is the custom **CompleteListingWriter** exporter from
+`ghidra-mcp-next` (`export_full_listing`), not Ghidra's stock ASCII exporter.
+The compatible source is bundled in `kit/c64/ghidra_export/`, with its pinned
+revision, licence and run instructions in `README.md`. The bundled script and
+synthetic fixture were run on Ghidra **12.1.4**. Stock ASCII exports are
+unsupported: their label, comment and XREF columns differ. For this importer,
+run `ExportGhidraListing.java` on the existing program and save into `work/`.
+
+For an existing analysis, follow `core/40-sweep`, "An existing analysis of
+this image". `python3 kit/c64/import_ghidra.py <game> <export>` converts
+labels, comments and types into `symbols.json`; it never writes a listing.
+`--verify-ram <65536-byte-dump>` checks each initialized source row, and
+`--space <name>` selects one replacement overlay. Whole ROM overlays are
+refused. Keep the source export in `work/` and record its hash and makers
+under `imported` in `game.json`.
+
+Load this map into the disassembler on the chosen snapshot with
+`symbols_import.py`, inspect it, then export through `symbols_export.py`.
+Only `listing.py` builds the listing. Source annotations are leads until
+coverage and verification establish them in this run.
+
 ## Start and drive
 
 ```
@@ -18,11 +41,11 @@ python3 kit/c64/r2000.py --game games/<platform>/<slug> r2000_disassemble '{"add
 ```
 
 Its native HTTP server binds port 3000 with no option to change it;
-it needs a pseudo-terminal even headless. The kit can use a separate
-port per clone through the stdio server and a loopback bridge; see
-`kit/c64/INSTALL.md`, "Several clones on one machine". The client,
-exporter and launcher read the same local port configuration. Addresses
-in arguments are decimal integers.
+it needs a pseudo-terminal even headless. A second clone's disassembler
+goes on a port of its own with `KIT_R2000_PORT`, through the stdio server
+and a loopback bridge (`kit/c64/INSTALL.md`, "Another program on port
+3000"); the client, the exporter and the launcher find it through
+`tools/r2000-port`. Addresses in arguments are decimal integers.
 
 The client script logs every mutating call to
 `games/<platform>/<slug>/work/annotations.jsonl`. That log is crash

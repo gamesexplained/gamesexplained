@@ -431,9 +431,10 @@ def rev(text):
 def page_file(page):
     """games/<platform>/<slug>/<tab>.html for "<platform>/<slug>/<tab>.html", if it is an authored tab."""
     m = re.fullmatch(r"([a-z0-9-]+)/([a-z0-9-]+)/([a-z0-9-]+\.html)", page or "")
-    if not m or m.group(3) not in build.AUTHORED:
+    gdir = m and os.path.join(ROOT, "games", m.group(1), m.group(2))
+    if not m or not os.path.isfile(os.path.join(gdir, "game.json")) or m.group(3) not in build.authored(gdir):
         return None
-    path = os.path.join(ROOT, "games", *m.groups())
+    path = os.path.join(gdir, m.group(3))
     return path if os.path.isfile(path) else None
 
 
@@ -531,7 +532,7 @@ def git(*args):
 def uncommitted(gdir, quiet=False):
     """The files of a game the editor writes (its authored tabs and game.json) that have
     changes git has not committed, as paths from the repository's root."""
-    files = [os.path.relpath(os.path.join(gdir, f), ROOT) for f in build.AUTHORED + ("game.json",)
+    files = [os.path.relpath(os.path.join(gdir, f), ROOT) for f in build.authored(gdir) + ["game.json"]
              if os.path.exists(os.path.join(gdir, f))]
     try:
         return [ln[3:] for ln in git("status", "--porcelain", "--", *files).splitlines() if ln.strip()]
@@ -544,7 +545,7 @@ def uncommitted(gdir, quiet=False):
 def hidden_counts(gdir):
     """{tab: blocks hidden with the editor} for a game's authored tabs that have any."""
     out = {}
-    for f in build.AUTHORED:
+    for f in build.authored(gdir):
         p = os.path.join(gdir, f)
         n = os.path.exists(p) and sum(1 for e in Tree(read(p)).els if "data-cut" in e["attrs"] and not hidden(e["parent"]))
         if n:
@@ -672,7 +673,7 @@ def assemble(path, src):
     """The page build.py publishes for this authored tab, made from src instead of the file."""
     gdir, f = os.path.split(path)
     game = json.load(open(os.path.join(gdir, "game.json")))
-    nav = build.tabbar(game, build.present_tabs(gdir), build.LIB)
+    nav = build.tabbar(game, build.present_tabs(gdir, game), build.LIB)
     return build.authored_page(gdir, game, f, nav, build.banner(game, contributors(gdir)), src=src)
 
 
@@ -838,7 +839,7 @@ def selftest():
     per core: each page's blocks in parts of about 25, the biggest pages first."""
     pages, jobs = [], []
     for path in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.html"))):
-        if os.path.basename(path) not in build.AUTHORED:
+        if os.path.basename(path) not in build.authored(os.path.dirname(path)):
             continue
         src = read(path)
         B = blocks(src)

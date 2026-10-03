@@ -117,6 +117,26 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   `$3C`/`$48`/`$4C` DETONATOR, `$3D` EXPLOSIVES, `$3E` CAPSULE, `$3F`
   ACTIVATOR, `$40`-`$45` and `$4A` CIRCUIT, `$46`/`$47` EGG, `$49`
   CHEMICALS, `$4B` GEM, `$4D`-`$4F` SPANNER.
+- What the less obvious objects do, traced: a MAT lying free (`$1B55` = 0)
+  level with a controller and within 10 pixels in x stops it (`$CDD6`,
+  `controller_stop` `$CE78`). The Doctor jumping up within 20 x 8 pixels
+  of the PLATFORM is put in the airborne state `$0A` with `$E7` = `$FF`
+  (`$C975`-`$C9A2`). `doctor_ride_platform` (`$CCE2`) then moves him by
+  the stick: up until he is `$50` (80) pixels above it, down until level
+  with it, which ends the ride, as does a horizontal distance of `$14` or
+  more or reaching a ladder (state 8). `$A9E8` refuses to pick it up
+  meanwhile. A free EGG within 20 x 12 pixels of the
+  Doctor sets `$E8` = `$16` (death by a baby madrag) and places object
+  `$0D` at the egg (`$B861`); the madrag returns moved eggs to the nests at
+  `$B665` and takes one from Splinx (`$B752`). No routine was found that
+  tests for the BOX (`$3B`) by number, and no absolute operand in the code
+  addresses its entries in the object tables (`$1850`-`$1DF0` + `$3B`); only the
+  indexed routines shared by all items touch it. The CHEMICALS (`$49`) are tested at
+  `$BA8D`: lying at y exactly `$0588` and within `$50` of x `$0290`, they set
+  the states of controllers `$1A` and `$1B` (`$1CCA`, `$1CCB`) to 3, which
+  only draws them, in colour 2 (`$CD92`), and set the colours of characters
+  `$A1` and `$3A` (`$2FA1`, `$2F3A`) to `$0C`, recolouring the pool (`$AE81`).
+  The restore after a lost life skips objects `$1A` and `$1B` (`$93C7`-`$93CD`).
 - Messages are chains of strings through the pointer tables
   `$95CB`/`$9626`, printed by a scroller on status row `$0450` in step with
   raster `$C8` (`$92E3`).
@@ -171,13 +191,15 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
 - **Objects 3-5, 6-9, controllers `$10`-`$28`.** Waypoint walkers
   (`$C28E`), patrols on routes at `$C404` (`$C44D`), and controllers on
   routes at `$764A` (`$CD9A`) whose touch kills.
-- **The madrag** (objects `$0A`/`$0B`) guards two eggs, fetches an egg that
+- **The madrag** (objects `$0A`, her legs, and `$0B`, her head and body,
+  placed 21 pixels higher by `$B861`) guards two eggs, fetches an egg that
   has been moved back to its nest, takes one from Splinx, and bites; its
   behaviour runs twice a pass (`$B680`). A baby madrag (`$0D`) hatches
   when the Doctor comes near a free egg.
 - **Object `$0C`** goes after the CRYSTAL, from the Doctor's hands or a
-  pocket, and carries it off (`$B48A`). Whether it is the Master is not
-  shown by the code.
+  pocket, and carries it off (`$B48A`). It is one sprite, frames `$9A`-`$A1`
+  (`$B46F`), drawn at double height (`$18AC` = 1). The code does not name
+  it; players know it as the Master.
 - **Using items** (`$BACC`): the pick axe digs at three sites, three hits
   each; the spanner works at eight points; detonators and explosives are
   armed; the activator at three points ends the game (`$E8` = 2, the
@@ -188,8 +210,12 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   (`$0E60`, `$0068`) start a rising level `$51`, one step every 128
   frames.
 - **The machinery** (`$B9B6`): circuits set exactly in their slots at Y
-  `$0390` stop four moving objects (`$4F`); chemicals brought to
-  (`$0290`, `$0588`) change the map.
+  `$0390` stop four moving objects (`$4F`). Each circuit's sprite is a
+  letter: the five in the machine spell START (`$40` S, `$41` T, `$42` A,
+  `$43` R, `$4A` T), the spares are `$44` O and `$45` P. Slots 1-4 must
+  read S, T (either), O, P to stop it (`$B989`, slot 5 not tested) and
+  START to restart it (`$B97F`); chemicals left at
+  (`$0290`, `$0588`) recolour the pool and stop two controllers.
 - **The code lock** (`$BD35`-`$BFD9`): three buttons, a six-press sequence
   dealt from a 186-byte deck with seeds from the frame counter; a wrong
   press deals a new one; success sets `$4E`. The clue panel (F5 with empty
@@ -223,7 +249,11 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   to `$FF` and saves that block as "DRWHO"; the start-up restores it when
   `$7800` is not zero (`$49C6`). After saving it jumps through `$A000`,
   which with the BASIC ROM in is a BASIC cold start: the game does not
-  resume.
+  resume. The original disk's BASIC boot program DWMT loads the save: it
+  POKEs `$7800` to 0, asks LOAD A SAVED POSITION (Y/N)?, on Y loads
+  "DRWHO",8,1, then loads P2 (`$8000`-`$CFFF`), P3 (`$E000`-`$FF6F`) and
+  P1 (`$0800`-`$77FF`) and types SYS18509 (`$484D`) into the keyboard
+  buffer (disk image, 3 October 2026).
 
 ## Sound
 
@@ -272,8 +302,6 @@ stop. `STA $D400,Y` at `$755D` reaches the SID through an index.
 - `$881D` does not clear the drawn flag of object `$4F`.
 - `$8652` reads the overlay glyphs from `$0000`-`$07FF`, not `$4000`: is
   that where they are?
-- Who object `$0C` is.
-- How a saved game is loaded: nothing in the program calls LOAD.
 
 ## Live tests
 
@@ -289,3 +317,8 @@ stop. `STA $D400,Y` at `$755D` reaches the SID through an index.
 | D pressed beside the TARDIS | nothing; `$E8` back to 0 |
 | Walk right until a fall | FALLING ON A STALAGMITE, a life lost |
 | Twelve frames stepped in play, SID and `$E1` read | music plays; `$E1` stays 1 |
+| Original disk, stopped at `$484D`, RAM compared with the listing | equal in all bytes the listing holds except zero page and `$FF70`-`$FFFF` (3 October 2026) |
+| Restart point moved to the crystal room, a life lost | the room on screen matches the Maps tab, railing gap included |
+| CIRCUITs `$44` and `$45` put at x `$0208` and `$0228`, y `$0390` | slots read S T O P T; `$4F` = `$FF`; `$42`/`$43` put back: `$4F` = 0 |
+| Restart beside the madrag | head and body drawn above the legs, as on Gameplay |
+| Title screen, after N | SID voice 2 plays the title tune; stops when space is pressed |

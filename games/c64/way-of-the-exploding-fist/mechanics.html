@@ -1,0 +1,89 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The fighters built from nine sprites, the stick and the keyboard, a hit test that measures distance, an opponent tuned by eight tables, and seven raster interrupts a frame.</p>
+</header>
+<main class="wrap">
+<section id="fighters">
+  <p class="fig">01 · The fighters</p>
+  <h2 class="t">Every pose is built from nine pieces</h2>
+  <p class="lede">A fighter is a three-by-three grid of multicolour sprites. The game never stores a whole pose. Each shape frame is nine cell numbers, and each cell is a 64-byte piece of a karateka.</p>
+  <div class="plate">
+    <div class="fx-row">
+      <div>
+        <div class="fx-ctl"><span class="fx-btn" style="cursor:default">Stick</span><button class="fx-btn" id="fireBtn">Fire</button><button class="fx-btn" id="mirBtn">Facing right</button><button class="fx-btn" id="gridBtn">Show the grid</button></div>
+        <div class="fx-pad" id="pad"></div>
+        <p class="fx-out" id="moveOut" style="margin-top:12px"></p>
+      </div>
+      <div><canvas id="poseCv" width="216" height="189"></canvas>
+        <div class="fx-ctl" style="margin-top:10px"><label for="frameIn">Shape frame</label><input type="range" id="frameIn" min="0" max="78" value="0"><span class="fx-out" id="frameOut"></span></div>
+      </div>
+      <div style="flex:1;min-width:220px"><table class="fx-tab" id="stepTab"></table></div>
+    </div>
+    <p class="cap">Press a direction, with or without fire, to play that move's animation as the game stores it: a list of steps, each a number of ticks, a shape frame and a step in X and Y (<code>$7720</code>). The pose is assembled the way the sprite builder (<code>$3914</code>) does it, from the frame tables at <code>$7AE0</code> and the cells at <code>$8000</code>; facing left takes the columns in reverse and mirrors every byte through the table at <code>$7E00</code> (<code>$3BC5</code>). Checked against both fighters' sprites in a snapshot of play.</p>
+  </div>
+  <p>Sixteen stick positions give sixteen moves, in the table at <code>$286C</code>. Down-forward from standing is a punch (move <code>$18</code>), and from a crouch a different blow (move 7); fire with back from standing becomes a turn round (<code>$12</code>). There are 79 shape frames. The karateka use <code>$00</code>-<code>$3A</code>, and <code>$3B</code>-<code>$4C</code> are the bull of the bonus round, which uses the same tables but takes each byte as a sprite pointer instead of a cell (<code>$5D</code> = <code>$40</code>).</p>
+  <p>Each fighter has two 576-byte buffers at <code>$C040</code>-<code>$C93F</code> and is rebuilt into the spare one whenever its frame changes, so a half-built pose is never on screen. A cell of 0 leaves its sprite blank: the standing pose fills six of the nine.</p>
+</section>
+
+<section id="controls">
+  <p class="fig">02 · Controls</p>
+  <h2 class="t">Two joysticks, or two halves of the keyboard</h2>
+  <p class="lede">The white fighter reads joystick port 2 and the red fighter port 1 (<code>$2851</code>). F7 in the attract mode swaps both to the keyboard, with a block of nine keys for each player.</p>
+  <table class="fx-tab">
+    <tr><th></th><th>Directions</th><th>Fire</th><th>Read at</th></tr>
+    <tr><td>Player 1 (white)</td><td>Q W E · A D · Z X C</td><td>S or left SHIFT</td><td><code>$28B2</code></td></tr>
+    <tr><td>Player 2 (red)</td><td>P @ * · L ; · , . /</td><td>: or right SHIFT</td><td><code>$2931</code></td></tr>
+  </table>
+  <p>Each block is the stick's eight directions around its fire key, S or :, and the first direction held wins. The function keys work only between games (<code>$1E64</code>): F1 or fire starts one, F3 switches between one and two players, F7 between joystick and keyboard, DEL switches the shouts off, and F5 abandons a game at any time.</p>
+  <p>Pulling back while the opponent's blow is in reach turns into the block that stops it (<code>$2AF2</code>), so a player defends by retreating.</p>
+</section>
+
+<section id="scoring">
+  <p class="fig">03 · Scoring</p>
+  <h2 class="t">A blow scores by distance, not timing</h2>
+  <p class="lede">The manual talks of well-executed and loosely timed blows. In the code a blow is tested once, on its striking frame, and the only question is how far apart the fighters stand.</p>
+  <div class="plate">
+    <div class="fx-ctl"><label for="gMove">Blow</label><select id="gMove"></select><label for="gFrame">Defender's frame</label><input type="range" id="gFrame" min="0" max="58" value="0"><span class="fx-out" id="gFrameOut"></span></div>
+    <div class="fx-row"><canvas id="gPose" width="144" height="126"></canvas><div style="flex:1;min-width:280px"><canvas id="gBar" width="600" height="90"></canvas><p class="fx-out" id="gOut"></p></div></div>
+    <p class="cap">A port of the hit test (<code>$2B8E</code>) for fighters facing each other, checked against the game's own routine for every blow, every defender frame and every distance from -40 to 60: 65,549 cases, no difference. Green is a whole point, amber a half, grey a miss; the distance is the attacker's along its facing.</p>
+  </div>
+  <p>Each blow has a reach profile, one byte per frame the defender might be in (<code>$7200</code>-<code>$7711</code>, 22 profiles). The byte is the distance at which the blow lands squarely. At that distance, or closer by up to a margin the blow sets (<code>$11BD</code>), it is a whole point; closer still, by up to a second margin (<code>$11D6</code>), a half point. A profile byte of <code>$80</code> means a defender in that frame cannot be hit, which is how jumps and somersaults evade.</p>
+  <p>Four half points win a bout. Points for the score come from a table in hundreds (<code>$12A5</code>), halved for a half point.</p>
+  <table class="fx-tab" id="ptsTab"></table>
+</section>
+
+<section id="opponent">
+  <p class="fig">04 · The opponent</p>
+  <h2 class="t">Ten dans of the same opponent, with faster reflexes</h2>
+  <p class="lede">The computer fights every bout with the same rules. What changes with rank is a set of eight masks that limit how long it waits, walks, holds a move and reacts.</p>
+  <div class="plate"><table class="fx-tab" id="aiTab"></table>
+    <p class="cap">The per-level tables at <code>$27A9</code>-<code>$27FC</code>, as <code>ai_level_setup</code> (<code>$2593</code>) loads them. Each is a mask the computer applies to a random number: for the timers (hold, wait, walk, pause, reaction) a smaller mask means shorter waits; the others narrow its choices. Level 0 is Novice; the level rises by one with each bout won.</p></div>
+  <p>When attacked, the computer either blocks with the right block for the blow (<code>$118F</code>), starts one of nine scripted plans (<code>$2774</code>), or counter-attacks. When close it picks an attack from a table indexed by distance (<code>$26D5</code>), and against a blocking player it chooses among the blows that block does not stop (<code>$27A1</code>). The reaction-delay mask is zero from level 4 up, so from 4th dan the computer reacts at once. The walking table has 11 entries for 12 levels, so level 11 reads the first byte of the next table.</p>
+  <p>In a one-player game, two bout wins clear a rank, from Novice to 10th dan (<code>$1BA7</code>); a lost bout ends the game. Past 10th dan the rank stays on screen as 10TH DAN while the opponent's level is drawn at random from 7 to 10 (<code>$1C65</code>).</p>
+</section>
+
+<section id="screen">
+  <p class="fig">05 · The screen</p>
+  <h2 class="t">Seven raster interrupts draw one frame</h2>
+  <p class="lede">Two fighters need eighteen sprites and the machine has eight. The game draws the top row of both fighters with sprites 0-5, then moves those sprites down the screen as the beam passes.</p>
+  <div class="plate">
+    <canvas id="frameCv" width="768" height="544"></canvas>
+    <div class="fx-ctl" style="margin-top:12px"><button class="fx-btn" id="bandBtn">Show the raster writes</button><span class="fx-out" id="bandOut"></span></div>
+    <p class="cap">One frame of a two-player bout, drawn from memory and the recorded writes to the video chip with the site's renderer: all 104,448 pixels match the emulator's own picture of the same frame. The chain: <code>$31F2</code> at line 0 sets up the frame, <code>$2FB0</code> switches to the bitmap at line 90, the sprite handlers move sprites 0-5 down a row of 21 lines at a time, a handler on line 217 draws the shadow, and <code>$30E5</code> at line 255 returns to text for the panel and plays the music.</p>
+  </div>
+  <p>The gap between the two fighters' heights decides which of seven interrupt chains runs that frame (<code>$32CD</code>). When one fighter is exactly 20 lines higher than the other, one fighter's second row and the other's third start a line apart, and a combined handler moves all six sprites at once (<code>$2F02</code>, <code>$2F59</code>). The routines that set this up (<code>$3291</code>-<code>$3750</code>) work by rewriting the handlers' own instructions: the raster line, the sprite heights and the pointers are all operands patched every frame.</p>
+  <p>A jumping fighter casts a shadow on the floor. It is a fourth row of sprites from a fixed set under the I/O chips (<code>$D480</code>), shown at a fixed height while the fighter is off the ground.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/fist-page.js"></script>

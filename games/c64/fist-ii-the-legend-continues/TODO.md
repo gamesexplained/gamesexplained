@@ -2,7 +2,7 @@
 
 Tier: **Silver, claimed** by unorig on 1 October 2026 for the Gold pass
 (100 % coverage, 63,256 tracked bytes; facts, features, the Overview,
-Gameplay, Maps and solution, Graphics, Music and Discoveries
+Gameplay, Maps, Solution, Graphics, Music and Discoveries
 tabs; copy `agent-draft`).
 
 For Gold, a human pass over every tab, section by section.
@@ -19,7 +19,7 @@ Worth doing, found in the run and not done:
   run: scroll 3 (room 114, from the stairs of room 113), the crevice in
   room 79 (from room 43's ladder at 88, somersault over 18-24 with scroll
   6), scrolls 7 and 5 and the ending; then win the fights instead of
-  switching them off. The route is on the Maps and solution tab;
+  switching them off. The route is on the Solution tab;
   `solver/README.md` has the tools.
 - Maps: the world map draws every room's scenery from the game's tables;
   only the outdoor sets were checked against screenshots (rooms 94 and

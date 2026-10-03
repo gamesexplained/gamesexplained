@@ -25,9 +25,12 @@ def check(name, ok, detail=""):
         failures.append(name)
 
 
-# A second platform shaped like the ZX Spectrum's launcher, for the rules.
-SECOND = {"COMMANDS": ("status", "zesarux", "stop", "snapshots", "verify-footprint", "check-emulator",
-                       "get-zesarux", "get-skoolkit"), "TOOL_NAMES": ()}
+# A synthetic second platform, for the rules. It serves the shared commands, so the
+# ambiguity rules are tested whatever else is under kit/, and one command of its own;
+# it never copies another platform's own commands (kit/spectrum's), which would make a
+# one-platform command look ambiguous.
+SECOND = {"COMMANDS": ("status", "stop", "check-emulator", "verify-footprint", "snapshots", "second-only"),
+          "TOOL_NAMES": ()}
 
 
 def decls():
@@ -63,14 +66,14 @@ def test_rules():
     check("KIT_PLATFORM wins", resolves(["vice"], env="c64") == ["c64"])
     check("unknown explicit platform is refused", str(resolves(["status"], explicit="nope")).startswith("refused"))
     check("a command one platform serves picks it", resolves(["vice"]) == ["c64"])
-    check("... and the other's picks the other", resolves(["get-zesarux", "download"]) == ["second"])
+    check("... and the other's picks the other", resolves(["second-only"]) == ["second"])
     check("a tool argument picks its platform", resolves(["stop", "r2000", "--force"]) == ["c64"])
     check("a game folder argument picks its platform",
           resolves(["snapshots", os.path.join(games, "second", "x", "work")]) == ["second"])
     check("a working directory in a game picks its platform",
           resolves(["check-emulator"], cwd=os.path.join(games, "c64", "x")) == ["c64"])
-    check("status alone covers every platform", resolves(["status"]) == ["c64", "second"])
-    check("stop alone covers every platform", resolves(["stop"]) == ["c64", "second"])
+    check("status alone covers every platform", resolves(["status"]) == sorted(decls()))
+    check("stop alone covers every platform", resolves(["stop"]) == sorted(decls()))
     for cmd in ("check-emulator", "verify-footprint", "snapshots"):
         r = resolves([cmd])
         check(f"{cmd} alone is refused, naming the flag", isinstance(r, str) and "--platform" in r, r)
@@ -109,6 +112,10 @@ def test_documented_commands():
                         continue                          # a platform not in this checkout
                 if not args or args[0].startswith("<") or args[0] in ("-h", "--help", "--platforms"):
                     continue
+                # Shared browser commands bypass platform selection; test_browser.py
+                # checks their dispatch with both one and multiple platforms.
+                if args == ["browser"] or args in (["stop", "browser"], ["stop", "browser", "--force"]):
+                    continue
                 seen += 1
                 r = resolves(args, explicit=explicit)
                 ok = isinstance(r, list)
@@ -132,7 +139,8 @@ def test_end_to_end():
     with tempfile.TemporaryDirectory() as tmp:
         kit = os.path.join(tmp, "kit")
         os.makedirs(os.path.join(kit, "scripts"))
-        shutil.copy(os.path.join(HERE, "tools.py"), os.path.join(kit, "scripts"))
+        for f in ("tools.py", "launcher.py", "browser.py"):   # the dispatcher, what the launchers share, the browser
+            shutil.copy(os.path.join(HERE, f), os.path.join(kit, "scripts"))
         for p in tools.platforms():
             shutil.copytree(os.path.join(KIT, p), os.path.join(kit, p))
         os.makedirs(os.path.join(kit, "stub"))

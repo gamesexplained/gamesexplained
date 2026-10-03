@@ -61,3 +61,14 @@ the first, a search for comments outside code blocks found the second.
 **The web.** The contributor said yes to looking the game up, but the
 container's network refused every game site; only the summaries of a
 web search could be read, and `features.md` marks those rows "(search)".
+
+## 2 October 2026: the page split into tabs
+
+At the contributor's request the single How it works page was split into
+tabs on the pattern of other games' minisites: an Overview, The
+stronghold (the room browser and the room record), How it works (the
+puzzle pieces, the pocket computer, the robots, time and score), Sound
+and speech, and Discoveries (the protection, the phone, the PAL ending,
+the claims the code contradicts and the open questions). The content is
+the verified material of the single page, regrouped; each page embeds
+only the memory excerpts its widgets draw from.

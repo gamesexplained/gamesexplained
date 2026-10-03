@@ -14,12 +14,12 @@
 <section id="guides">
   <p class="fig">01 · Checked against the guides</p>
   <h2 class="t">Where the code and the guides disagree</h2>
-  <p class="lede">The manual, online guides and cheat lists make claims about the game that its code settles. Each of these was tested on the game's own code.</p>
+  <p class="lede">The manual, online guides, and cheat lists make claims about the game that its code settles. Each of these was tested on the game's own code.</p>
   <table class="t">
     <tr><th>The claim</th><th>What the code does</th></tr>
-    <tr><td>The manual: the game ends when PK energy reaches 9,999.</td><td>Nothing happens at 9,999. The game ends when the Keymaster and the Gatekeeper meet at Zuul, which in simulator runs happened anywhere from 8,495 to 9,999 (<a href="levels.html#pk">The city</a>).</td></tr>
-    <tr><td>Online guides: GOOD TRY is the ending for having enough money but not reaching Zuul.</td><td>GOOD TRY is shown when the Marshmallow Man catches two men on Zuul's street (<code>$8B10</code>, <a href="levels.html#zuul">The city</a>).</td></tr>
-    <tr><td>Cheat lists: <code>POKE 22014,9</code> gives unlimited lives.</td><td>In the copy studied, 22014 (<code>$55FE</code>) is a character on the screen that the start-up clears and nothing reads.</td></tr>
+    <tr><td>The manual: the game ends when PK energy reaches 9,999.<sup class="fn"><a href="about.html#src-1" title="The Commodore 64 manual">1</a></sup></td><td>Nothing happens at 9,999. The game ends when the Keymaster and the Gatekeeper meet at Zuul, which in test runs happened anywhere from 8,495 to 9,999 (<a href="levels.html#pk">Map</a>).</td></tr>
+    <tr><td>Online guides: GOOD TRY is the ending for having enough money but not reaching Zuul.</td><td>GOOD TRY is shown when the Marshmallow Man catches two men on Zuul's street (<code>$8B10</code>, <a href="gameplay.html#zuul">Gameplay</a>).</td></tr>
+    <tr><td>Cheat lists: <code>POKE 22014,9</code> gives unlimited lives.</td><td>22014 (<code>$55FE</code>) is a character on the screen that the start-up clears and nothing reads.</td></tr>
     <tr><td>Cheat lists: <code>POKE 38454,96</code> makes everything free.</td><td>True: it puts an <code>RTS</code> at the start of <code>money_subtract</code> (<code>$9636</code>), so cars, equipment and the Marshmallow Man's damage all cost nothing. The <a href="play.html#cheats">Play tab</a> has it as a switch.</td></tr>
   </table>
 </section>
@@ -35,7 +35,7 @@
   <h3>Bug: every drive leaves two bytes on the stack</h3>
   <p>State <code>$14</code> reaches <code>next_state</code> with <code>JSR</code> (<code>$8070</code>) where every other handler jumps, and nothing takes the return address off again. The stack pointer sinks by two per drive. The stack wraps inside its page, and nothing the game keeps there is overwritten, so no player sees it.</p>
   <h3>Bug: ten traps read ":"</h3>
-  <p>The status report (space in play) prints the number of empty traps as one character: the count plus the code for 0. The station wagon carries 11 items, so with at least $12,000 to spend it can hold 10 or 11 traps, and the report then says ":" or ";" (seen by setting the count).</p>
+  <p>The status report (space in play) prints the number of empty traps as one character: the count plus the code for 0. The station wagon carries 11 items, so with at least $12,000 to spend it can hold 10 or 11 traps, and the report then says ":" or ";".</p>
 </section>
 
 <section id="secrets">
@@ -43,7 +43,12 @@
   <h2 class="t">An item nobody can buy, and a building nobody visits</h2>
   <p class="lede">Some of the game's data and code can never be reached in play, and one rule can leave a building out of the game for good.</p>
   <h3>Secret: an eighth item with a price and no shelf</h3>
-  <p>The price table (<code>item_price</code>, <code>$A1DC</code>) has eight entries. Item 4, sprite shape <code>$37</code>, costs $600 and sets no equipment flag. No shelf holds it (<code>shelf_shapes</code>, <code>$AAB3</code>), so it cannot be bought. Two items at $600, a trap and this one, may mean a second kind of trap was cut; the code does not say.</p>
+  <p>The price table (<code>item_price</code>, <code>$A1DC</code>) has eight entries. Item 4, sprite shape <code>$37</code>, costs $600 and sets no equipment flag. No shelf holds it (<code>shelf_shapes</code>, <code>$AAB3</code>), so it cannot be bought. Its picture is still among the game's sprites, between the bait and the trap.</p>
+  <div class="plate">
+    <canvas id="item4" width="272" height="100" style="image-rendering:pixelated;max-width:100%;border-radius:4px;display:block" role="img" aria-label="The ghost trap's sprite beside item 4's"></canvas>
+    <p class="cap">The ghost trap (left) and item 4 (right), unpacked from the game's sprite data and drawn in the shop's colours at four times the C64's pixels.</p>
+  </div>
+  <p>The picture looks like the trap with its doors open: the same base, with the same row of dashes, under two raised flaps. Item 4 also costs the same $600 as a trap. A second kind of trap may have been cut, but the code does not say what item 4 was meant to be.</p>
   <h3>A building the Marshmallow Man forgets</h3>
   <p>The game keeps one Marshmallow building (<code>$80</code>). If PK energy crosses the next thousand before the alert, a new building is picked and the old one is left at state <code>$F8</code>. It never ages out of it: the stage table sends stage 2 back to <code>$F8</code>. That building is never haunted and never stomped for the rest of the game, and it shows white to a sensor near the logo. In the eight runs from 5,000 no alert came at all, because Roamers reaching Zuul pushed the meter up a thousand at a time.</p>
   <table class="t">
@@ -70,3 +75,6 @@
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/ghostbusters-page.js"></script>

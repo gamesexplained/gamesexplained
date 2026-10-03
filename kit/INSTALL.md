@@ -10,6 +10,7 @@ platform's own notes:
 | Platform | Notes |
 |---|---|
 | Commodore 64 | `kit/c64/INSTALL.md` |
+| ZX Spectrum | `kit/spectrum/INSTALL.md` |
 
 What "an emulator with an agent interface" has to be able to do, phase
 by phase, and the test for each, is `kit/EMULATOR.md`. Read it before
@@ -87,7 +88,8 @@ python3 kit/scripts/tools.py stop            # every tool; stop <tool> for one
 python3 kit/scripts/tools.py --platform <platform> verify-footprint
 ```
 
-`kit/scripts/tools.py` hands every command to the platform's launcher,
+`kit/scripts/tools.py` handles browser commands itself and hands platform
+commands to the platform's launcher,
 `kit/<platform>/tools.py`, and that is where the containment lives: it
 points each tool's settings, state and cache paths into `tools/`, gives
 the tools the terminal they need, and writes their logs to `tools/logs/`.
@@ -104,6 +106,30 @@ nothing else to go on cover every platform's tools in this clone;
 anything else ambiguous (`check-emulator`, `verify-footprint`,
 `snapshots`) is refused until a platform is named. `tools.py -h` lists
 each platform's commands.
+
+## Browser checks
+
+The shared launcher works for every game platform; neither `browser` nor
+`stop browser` needs `--platform`. It uses `kit/scripts/browser.py`.
+
+For page checks, `tools.py browser` can use an installed Firefox. It creates
+an independent profile, XDG directories and temporary directory under
+`tools/firefox/`, and a log under `tools/logs/`; it does not download a browser
+or use the personal profile. Firefox 157.0 was exercised through WebDriver
+BiDi on Ubuntu 24.04.5 x86_64 on 30 September 2026, including screenshots,
+script-error collection,
+all page controls and narrow-screen layouts. Stop it with `tools.py stop
+browser`. The package origin (native package, Mozilla archive or snap) and
+BiDi client were not recorded for that run; it establishes page behavior,
+not containment of an arbitrary Firefox package. A snap can create
+`~/snap/firefox/` through snapd regardless of the supplied profile and XDG
+paths. Use a native Firefox executable and check its footprint before
+claiming containment; `verify-footprint` does not scan Firefox state.
+Deleting `tools/firefox/` removes its local state.
+
+The launcher uses `pkill` to stop the process whose command names this
+clone's exact profile. The recorded host test is Linux; verify containment
+before using this launcher on another host OS.
 
 ## The shell you are given
 

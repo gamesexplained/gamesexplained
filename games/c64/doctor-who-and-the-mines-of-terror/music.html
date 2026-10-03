@@ -1,0 +1,83 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doctor Who and the Mines of Terror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/dw-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
+  <h1>Doctor Who and the Mines of Terror</h1>
+  <p class="sub">Five tunes, four of them chosen by where the Doctor stands, played here through the game's own music player.</p>
+</header>
+<main class="wrap">
+<section id="music">
+  <p class="fig">Music</p>
+  <h2 class="t">A tune for each part of the mine</h2>
+  <p class="lede">The music never stops while the Doctor explores. Every other frame the game looks at where he is and picks one of four tunes for that part of the mine, and it starts the new tune from the top the moment he crosses into another part (<code>music_update</code>, <code>$74EA</code>). Press a tune to hear it, or click the mine.</p>
+  <div class="plate">
+    <div id="sid"></div>
+    <canvas id="zones" class="scr" style="margin-top:18px" role="img" aria-label="The mine, coloured by the tune that plays in each part"></canvas>
+    <p class="legend" id="zkey"></p>
+    <p class="cap">The game's music player (<code>$7548</code>-<code>$7647</code>) ported to JavaScript and played through the site's model of the SID chip. The port matches the player itself, run in a 6502 simulator on the game's bytes, in all 25 sound registers after each of 30,000 frames of every tune. The map is coloured from the tests at <code>$74F5</code>-<code>$7534</code>: the Doctor's height and how far across the mine he is.</p>
+  </div>
+  <table class="t" style="margin-top:24px">
+    <tr><th>Tune</th><th>Where it plays</th><th>Notes, voice 1 and 2</th><th>Before it repeats</th></tr>
+    <tr><td>0</td><td>the middle third of the mine, and the upper right</td><td>206 and 145</td><td>43 seconds</td></tr>
+    <tr><td>1</td><td>the left half, above the bottom</td><td>one list of 251, shared</td><td>30 seconds</td></tr>
+    <tr><td>2</td><td>the bottom of the mine, below height <code>$0300</code>, where the TARDIS lands</td><td>174 and 132</td><td>31 seconds</td></tr>
+    <tr><td>3</td><td>nowhere: no test chooses it</td><td>174 and 22</td><td>4 seconds</td></tr>
+    <tr><td>4</td><td>a band on the right, from height <code>$0300</code> to <code>$03FF</code></td><td>138 and 121</td><td>58 seconds</td></tr>
+  </table>
+  <p class="cap">Note counts from the length lists at <code>$1F00</code>-<code>$2D3F</code>; times are the player's first pass through each tune at 50 frames a second.</p>
+  <p>The disk also plays a title tune while it waits for the player to press space. That tune is a file of its own, THEME, which the boot program loads at <code>$1000</code> and stops before the game loads, so none of it is in the game's code and it is not one of the five here.<sup class="fn"><a href="about.html#src-10" title="The original Commodore 64 disk, run in VICE, 3 October 2026">10</a></sup></p>
+</section>
+<section id="player">
+  <p class="fig">The player</p>
+  <h2 class="t">Two voices, two lists each, and nothing else</h2>
+  <p>The player is one of the simplest a Commodore game could have. Two of the SID chip's three voices play, both with a sawtooth wave and each with a fixed envelope, set once when a tune starts (<code>sid_init_list</code>, <code>$756B</code>). Each voice reads two lists: the notes, as the SID's own frequency numbers, high byte first, and how long each note lasts (<code>music_step</code>, <code>$75C0</code>). There are no instruments, no effects, and no repeats. One step before a note ends, the player switches its voice off, so every note is separated from the next by a short gap.</p>
+  <p>The tune ends when either voice reaches a length of 0, and both voices start again from the top (<code>$7647</code>). So the two halves of a tune do not have to be the same length, and whichever is longer never plays its last notes. In tune 4, voice 2 has 264 steps of music that are never heard.</p>
+  <p>Tune 1 saves memory a different way. Both voices read the same list: voice 2 starts at note 121 (<code>$2520</code>), so the second half of the melody is played against the first. When voice 2 reaches the end, both start over, and voice 1 never gets far past its middle.</p>
+  <p>Tune 3 is built from other tunes' lists. Its first voice plays tune 2's notes from the fifth note on, to tune 2's rhythm from the first (<code>$2768</code>), so notes and lengths are four apart, and its second voice is the last 22 lengths of the same list (<code>$26C0</code>). Nothing in the game picks tune 3. Heard, it is a jumble, because its notes and lengths were never written to go together, which suggests a tune that was never finished.</p>
+</section>
+<section id="effects">
+  <p class="fig">Sound effects</p>
+  <h2 class="t">The third voice</h2>
+  <p>The third voice plays the 24 sound effects, from thirteen tables of settings (<code>$C677</code>). A lower-numbered effect cuts off a higher one (<code>sound_start</code>, <code>$C7C7</code>), and the effects are updated every other frame (<code>$C818</code>).</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/dw-page.js"></script>
+<script src="reference/dw-music.js"></script>
+<script>
+(async function () {
+  const root = document.getElementById('sid');
+  if (!window.C64Sid) { root.textContent = 'This player needs the site’s shared script, lib/sid.js.'; return; }
+  let G; try { G = await DW.load(); } catch (e) { root.textContent = e.message; return; }
+  const M = G.ram;
+  C64Sid.mount(root, {
+    driver: DWMUSIC.createDriver,
+    data: Array.from(M.slice(0x1F00, 0x7800)),
+    tunes: ['Tune 0: the middle', 'Tune 1: the left', 'Tune 2: the bottom and the TARDIS', 'Tune 3: never chosen', 'Tune 4: the right band'],
+  });
+  // the tune for each place, as music_update ($74F5-$7534) decides: Y high ($1C60), then X high ($1BC0)
+  const tune = (xh, yh) => yh < 3 ? 2 : xh < 8 ? 1 : xh < 13 ? 0 : yh >= 4 ? 0 : 4;
+  const COL = ['#e8c547', '#5fd068', '#4a9be8', '#888', '#ff6b5b'];
+  const full = DW.drawMine(M), S = 8, cv = document.getElementById('zones'), ctx = C64.canvas(cv, full.width / S, full.height / S);
+  ctx.drawImage(full, 0, 0, cv.width, cv.height);
+  ctx.globalAlpha = 0.38;
+  for (let xh = 0; xh < 16; xh++) for (let yh = 0; yh < 7; yh++) {
+    ctx.fillStyle = COL[tune(xh, yh)];
+    ctx.fillRect(xh * 256 / S, cv.height - Math.min(1792, (yh + 1) * 256) / S, 256 / S, 256 / S);
+  }
+  ctx.globalAlpha = 1;
+  document.getElementById('zkey').innerHTML = [0, 1, 2, 4].map(t => '<span><i style="background:' + COL[t] + '"></i>tune ' + t + '</span>').join('');
+  cv.style.cursor = 'pointer';
+  cv.onclick = e => {
+    const b = cv.getBoundingClientRect(), x = (e.clientX - b.left) / b.width * full.width, y = full.height - (e.clientY - b.top) / b.height * full.height;
+    const t = tune(x >> 8, y >> 8), btn = root.querySelector('[data-tune="' + t + '"]');
+    if (btn) btn.click();
+  };
+})();
+</script>

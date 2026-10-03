@@ -24,11 +24,29 @@
   <p>Only one facing is stored. To draw a fighter facing the other way, a second unpacker (<code>$1F58</code>) writes each row's three bytes in reverse order and passes every byte through a 256-byte table that reverses its four pixel pairs (<code>$BF00</code>). In multicolour a pixel is two bits wide, so the pairs move as units.</p>
   <p>A move is a script of four-byte steps (<code>$AF46</code>): how long to hold, which pose, and how far to move across and up, read one step at a time (<code>$1AF0</code>). There are 44 scripts. A kick is a few steps of rising poses and a few of falling ones.</p>
 </section>
+<section id="cast">
+  <p class="fig">The cast</p>
+  <h2 class="t">One body, five heads</h2>
+  <p class="lede">The hero and every opponent, put together by this page the way the game puts them together. Pick a fighter to see all 73 of its poses.</p>
+  <div class="plate">
+    <div class="row"><button class="b" type="button" id="castface" aria-pressed="false">Face the other way</button><span class="note" id="castnote"></span></div>
+    <div class="row" id="castpick"></div>
+    <div class="gal" id="castgal"></div>
+    <p class="cap">Each pose drawn from its nine parts (<code>$B210</code>) and its head (<code>$B533</code>), placed where the game places them (<code>$45DF</code>), in the colours of the fighter's set (<code>$269D</code>), on the brown of the jungle floor.</p>
+  </div>
+  <p>Every fighter in the game shares one body. The nine parts of each pose, three rows of three sprites, are the same images for the hero and for every opponent. What tells them apart is a tenth sprite, the head, and two colours. Each fighter has a set (<code>$269D</code>) that picks the colour of the body sprites (<code>$26C3</code>), the colour of the head (<code>$26B4</code>) and where its six head images are stored (<code>$26B9</code>, <code>$26BE</code>). The hero is set 0, with a white headband. An opponent takes its set from bits 4 and 5 of its encounter record (<code>$2716</code>): sets 1 and 2 have twelve encounters each, sets 3 and 4 eight (<code>$E609</code>).</p>
+  <p>The head moves with the pose. For each pose a byte says which of the six head images to show, whether to mirror it or turn it upside down (<code>$B533</code>), and two more give its offset from the top left of the body (<code>$B4A1</code>, <code>$B4EA</code>). A fighter facing the other way has the offset measured from the other side (<code>$4648</code>).</p>
+</section>
 <section id="scenery">
   <p class="fig">Scenery</p>
   <h2 class="t">Rooms built from shapes, objects and lists</h2>
   <p>The world is 123 screens, each belonging to one of 48 areas (<code>$4A71</code>). The area chooses one of three scenery sets (<code>$196F</code>): areas 0-7 use set 0, the caves; 8-29 set 1; and 30-47 set 2. A set is built in three levels. Shapes are small rectangles of characters. Composite objects are lists of shapes with offsets. Each area then has a list of objects with their positions (<code>$1556</code>), and its colour list paints the colour memory (<code>$16B8</code>).</p>
-  <p>The manual credits the backgrounds to Greg Holland, drawn with David Johnston's "Character Editor" and laid out with Nigel Spencer's "Map Editor".<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The <a href="levels.html#map">map</a> on the Maps and solution tab draws every room from these tables.</p>
+  <p>The manual credits the backgrounds to Greg Holland, drawn with David Johnston's "Character Editor" and laid out with Nigel Spencer's "Map Editor".<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> Spencer remembers writing that screen editor and making all the levels with it, and that "trying to pack in so many levels into Fist II in so little memory was a real challenge".<sup class="fn"><a href="about.html#src-12" title="Interview with Nigel Spencer, C64.com">12</a></sup> The three levels of shapes, objects and lists are how they fit. The <a href="levels.html#map">map</a> on the Maps and solution tab draws every room from these tables.</p>
+  <div class="plate">
+    <div class="row" id="areapick"></div>
+    <div id="areas" style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start"></div>
+    <p class="cap">Each of the 48 areas, shown by its widest room, drawn by this page from the room's object list (<code>$1556</code>), the shapes of its scenery set and its colour list (<code>$16B8</code>), as far as the screen can scroll. The dark rooms are drawn lit. Every room is on the <a href="levels.html#map">map</a>.</p>
+  </div>
 </section>
 <section id="screen">
   <p class="fig">The screen</p>
@@ -38,12 +56,13 @@
     <canvas id="frame" class="scr"></canvas>
     <p class="cap">A reconstruction, not a screenshot: one frame recorded in the emulator, with 70 writes to the video chip and the line each happened on, drawn line by line. It matches the emulator's own picture in all 104,448 pixels.</p>
   </div>
-  <p>The game uses the video chip's last memory bank, the top 16 KB, and keeps its play-area characters (<code>$D000</code>) in the RAM beneath the input and output chips: the processor cannot see them there, but the video chip always reads RAM. There are two play screens, one under the operating system ROM (<code>$F000</code>) and one below the input and output chips (<code>$CC00</code>). While one is shown, the game builds the other, and every coarse scroll step swaps them.</p>
+  <p>The game uses the video chip's last memory bank, the top 16 KB, and keeps its play-area characters (<code>$D000</code>) in the RAM beneath the input and output chips: the processor cannot see them there, but the video chip always reads RAM. There are two play screens, one under the operating system ROM (<code>$F000</code>) and one below the input and output chips (<code>$CC00</code>). While one is shown, the game builds the other, and every coarse scroll step swaps them (<code>$3BFD</code>).</p>
   <p>Raster interrupts run in a chain. Each handler sets the line for the next and writes the next handler's address into the interrupt vector. Most of them move the fighters' sprites further down the screen: nine sprites a fighter, eighteen for two, with eight on the chip. A planner (<code>$3F67</code>) works out each frame which of seven layouts to use from the gap between the fighters, and writes the lines and sprite images into the next frame's handlers.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="reference/fist-page.js"></script>
+<script src="reference/fist-map.js"></script>
 <script>
 const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[237,162,0,198,0,198,0,198,78,162,0,198,0,198,0,198,0,27,0,0,0,255,208,0,59,245,241,0,255,0,3,255,254,254,255,240,254,240,250,241,242,242,242,245,242,242,242],"cia2":[192,63],"cpu":[47,21],"writes":[[0,34,65534,212],[0,40,65535,59],[0,62,53282,254],[1,5,53283,254],[23,47,62457,0],[23,59,62458,0],[24,19,53251,156],[24,23,53253,156],[24,27,53255,156],[24,60,53250,224],[25,5,53252,248],[25,14,53254,16],[25,35,53264,8],[25,53,53240,38],[25,58,62456,38],[27,33,53258,43],[27,41,53260,67],[27,50,53262,91],[28,7,53264,232],[28,33,53259,156],[28,37,53261,156],[28,41,53263,156],[29,5,62462,0],[29,17,62463,0],[29,31,53244,40],[29,36,62460,40],[30,1,53264,248],[73,37,65534,112],[73,43,65535,58],[73,57,53270,215],[74,5,53272,201],[74,12,53283,240],[74,19,53282,248],[74,56,53281,255],[176,25,53251,177],[176,29,53253,177],[176,33,53255,177],[176,37,53259,177],[176,41,53261,177],[176,45,53263,177],[177,23,62457,13],[177,29,62458,14],[177,47,62462,32],[177,53,62463,33],[178,15,65534,203],[197,22,53251,198],[197,26,53253,198],[197,30,53255,198],[197,34,53259,198],[197,38,53261,198],[197,42,53263,198],[198,18,62457,16],[198,24,62458,17],[198,42,62462,35],[198,48,62463,36],[198,54,65534,33],[199,14,65535,61],[234,37,65534,103],[234,43,65535,63],[234,55,53281,254],[235,8,53270,208],[235,63,53282,255],[236,6,53272,59],[236,12,53250,0],[236,16,53252,0],[236,20,53254,0],[236,24,53258,0],[236,28,53260,0],[236,32,53262,0],[236,36,53264,0]],"colour":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw0FCQ8HDQgJAgMOBQcOBwILDQYEAwkICQ==","ram":[{"a":49152,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":49984,"b":"AAAAAADsAAPuAA+uAA//AD7/AD+/AD9/AD/aAA/fAAv/AAH/AAFVAAFVAABbAAB/AABfAABVAAClAACqAAKq"},{"a":50048,"b":"AAAAAAAAAAAAwAAA8AAM/AA/6wD/v7///7/8/7qA9agAWgAAUAAAoAAAsAAA8AAA0AAAUAAAoAAAqAAAqAAA"},{"a":50176,"b":"AAqqAAqqAAqqACqaACpWACqVAKpUAKVAAKkAAqUAAqQACqQACpQAClAABpAABYFVPUVVPRVV/1VB/1QA/QAA"},{"a":50240,"b":"qgAAqoAAqoAApoAAWqAAaqAAWqAAFqgAFagABqgABaoABZoAAVoAAWgAUWkAVRUAVVXwVVX/VVf/AFf/AAfA"},{"a":51200,"b":"AAAAAAAAAAAAAAADMAAP/AA//wDr//7+P/7/Aq7/ACpfAAClAAAFAAAKAAAOAAAPAAAHAAAFAAAKAAAqAAAq"},{"a":51264,"b":"AAAAOwAAu8AAuvAA//AA/7wA/vwA/fwAp/wA9/AA/+AA/0AAVUAAVUAA5QAA/QAA9QAAVQAAWgAAqgAAqoAA"},{"a":51392,"b":"AACqAAKqAAKqAAKaAAqlAAqpAAqlACqUACpUACqQAKpQAKZQAKVAAClAAGlFAFRVD1VV/1VV/9VV/9UAA9AA"},{"a":51456,"b":"qqAAqqAAqqAApqgAlagAVqgAFaoAAVoAAGoAAFqAABqAABqgABagAAWgAAaQVUJQVVF8VVR8QVX/ABX/AAB/"},{"a":51584,"b":"AAAAAAAAAAAAAAAAAAAAAVAABVQACqgAJVwAJ3wAh9QAB/cABf8AAfwAA/QAA/wAAzwAAAAAAAAAAAAAAAAA"},{"a":51712,"b":"AAAAAAAAAAAAAAoAACqAAJagAKagFamABWqgA1agAF1QA3/QA/9QAP9AAH/AAP8AAPAAAAAAAAAAAAAAAAAA"},{"a":52224,"b":"AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":53184,"b":"ACEaGxsbGh0eAAAAAAAAAAAAAAAAAAAAAAAAAAAfIBobGxsbGxocAA=="},{"a":57344,"b":"AA=="},{"a":57351,"b":"AKqqqqqqqqqq"},{"a":57440,"b":"/////////6pVVVVVVVVVAA=="},{"a":57464,"b":"VVVVVVVVVVU="},{"a":57768,"b":"qv////////+qgICAgICAlaoBAQEBAQFV"},{"a":57912,"b":"lZXl5fn5/v4="},{"a":58032,"b":"lZWlpbm5vr6/v29vW1tWVg=="},{"a":58056,"b":"qv6/v6rv7+8="},{"a":58104,"b":"qv7+/qrv7+8="},{"a":59392,"b":"AAAAAAAAAAAcJkJCQkJkOA=="},{"a":59600,"b":"qlV3////qgAAqlV3////qqhmauaupq4oqlZ2/vr6qgKAYKBg4GDggAIJCgkLCQsCqpW3v6+vqoAqmaubupq6KA=="},{"a":61560,"b":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBNjc2NwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBATY3NjcBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE2NzY3WVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZNjc2N19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzY3NjdfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX182NzY3X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fNjc2N19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXzY3NjcPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw82NzY3Dw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PNjc2Nw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDzU1NTUPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8MDAwMDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PVg0NDQ8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PD1dHDQ0PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PV0cNDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw9XRw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PD1cPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":62456,"b":"JQcIACcAGhs="},{"a":65535,"b":"Pw=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19655,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":53,"colour_cells_changed_during_frame":0}};
 (async function () {
@@ -61,5 +80,46 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
   }
   draw();
   document.getElementById('face').onclick = e => { flip = !flip; e.target.setAttribute('aria-pressed', flip); draw(); };
+
+  // The cast: nine body parts per pose plus the head sprite, as build_pose ($1BDE) and the sprite placement ($45DF) do it.
+  const castGal = document.getElementById('castgal'), pick = document.getElementById('castpick');
+  const NAMES = ['The hero (set 0)', 'Set 1', 'Set 2', 'Set 3', 'Set 4'];
+  function fighter(cv, pose, set, face, s) {
+    const ctx = C64.canvas(cv, 92 * s, 84 * s); ctx.fillStyle = C64.PAL[8]; ctx.fillRect(0, 0, cv.width, cv.height);
+    FIST.figure(ctx, M, pose, set, face, 16, 16, s);
+  }
+  let cset = 0, cface = false;
+  const picks = [];
+  NAMES.forEach((nm, i) => { const b = document.createElement('button'); b.className = 'b'; b.type = 'button'; b.setAttribute('aria-pressed', i === 0);
+    const cv = document.createElement('canvas'); fighter(cv, 0, i, false, 1); cv.style.display = 'block'; cv.style.margin = '0 auto 4px'; picks.push(cv);
+    b.appendChild(cv); b.appendChild(document.createTextNode(nm));
+    b.onclick = () => { cset = i; pick.querySelectorAll('button').forEach((x, j) => x.setAttribute('aria-pressed', j === i)); drawCast(); };
+    pick.appendChild(b); });
+  function drawCast() {
+    castGal.textContent = '';
+    for (let p = 0; p < 73; p++) { const cv = document.createElement('canvas'); fighter(cv, p, cset, cface, 2); cv.title = 'pose ' + p;
+      cv.onclick = () => { document.getElementById('castnote').textContent = 'pose ' + p + ': parts at ' + C64.hex(0xB210 + p) + ', head byte at ' + C64.hex(0xB533 + p); };
+      castGal.appendChild(cv); }
+  }
+  drawCast();
+
+  // Every area, by its widest room, drawn with the map's own renderer (reference/fist-map.js).
+  const Wd = FISTMAP.world(M), areasEl = document.getElementById('areas'), apick = document.getElementById('areapick');
+  const byArea = []; for (let r = 0; r < 123; r++) (byArea[Wd.area(r)] = byArea[Wd.area(r)] || []).push(r);
+  const SETS = [['The caves (set 0)', 0, 8], ['Set 1', 8, 30], ['Set 2', 30, 48]];
+  function showSet(k) {
+    areasEl.textContent = ''; apick.querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', j === k));
+    for (let ar = SETS[k][1]; ar < SETS[k][2]; ar++) { const rs = byArea[ar]; if (!rs) continue;
+      const wide = rs.reduce((a, r) => { const [l, h] = Wd.bounds(r), [l2, h2] = Wd.bounds(a); return h - l > h2 - l2 ? r : a; }, rs[0]);
+      const fig = document.createElement('figure'); fig.style.margin = '0'; fig.style.maxWidth = '100%';
+      // strip() gives one canvas pixel per multicolour pixel, which is two screen pixels wide: show it at twice the width
+      const cv = FISTMAP.strip(Wd, M, wide); cv.style.width = (cv.width * 3) + 'px'; cv.style.maxWidth = '100%'; cv.style.height = 'auto'; cv.style.aspectRatio = (cv.width * 2) + ' / 160'; cv.style.imageRendering = 'pixelated'; cv.style.display = 'block';
+      const cap = document.createElement('figcaption'); cap.className = 'note';
+      cap.textContent = 'Area ' + ar + (ar === 6 ? ', the meditation chambers' : '') + ': room ' + wide + (rs.length > 1 ? ' (rooms ' + rs.join(', ') + ')' : '');
+      fig.appendChild(cv); fig.appendChild(cap); areasEl.appendChild(fig); }
+  }
+  SETS.forEach(([nm], k) => { const b = document.createElement('button'); b.className = 'b'; b.type = 'button'; b.textContent = nm; b.onclick = () => showSet(k); apick.appendChild(b); });
+  showSet(1);
+  document.getElementById('castface').onclick = e => { cface = !cface; e.target.setAttribute('aria-pressed', cface); picks.forEach((cv, i) => fighter(cv, 0, i, cface, 1)); drawCast(); };
 })();
 </script>

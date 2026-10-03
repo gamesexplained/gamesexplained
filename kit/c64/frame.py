@@ -201,25 +201,27 @@ def phase(samples, lines, cycles):
     """The stopwatch's origin in cycles from the top of the frame, and how many other values fit.
 
     Each sample says the beam was on raster line L at stopwatch s, so the origin o lies in
-    [L*cycles - s, L*cycles + cycles - 1 - s], modulo a whole frame. Elapsed cycles,
-    rather than a falling line number, reveal wraps when a quiet frame has no writes.
-    The video chip resets its counter to 0 a cycle later than it
-    steps the others, so the first cycle of line 0 still reads as the last line."""
+    [L*cycles - s, L*cycles + cycles - 1 - s]; the samples' lines are unwrapped past the
+    frame's last line in order. The video chip resets its counter to 0 a cycle later than it
+    steps the others, so the first cycle of line 0 still reads as the last line.
+
+    The wraps are counted from the stopwatch, not from the line going down: two samples a whole
+    frame or more apart (a stop that ran on past a frame boundary) show no drop in the line, and
+    counting drops then put every later sample a frame out (seen on 2 October 2026 in a game's
+    room with no raster interrupt of its own)."""
     if not samples:
         raise ValueError("phase needs at least one beam sample")
-    lo = hi = None
+    lo, hi = -10**9, 10**9
+    s0, L0 = samples[0]
     total = lines * cycles
     for s, L in samples:
-        first = L * cycles + (1 if L == 0 else 0) - s
-        last = L * cycles + cycles - 1 + (1 if L == lines - 1 else 0) - s
-        if lo is None:
-            lo, hi = first, last
-            continue
-        # First integral frame shift whose interval can overlap the surviving origin.
-        wraps = -((last - lo) // total)
-        lo, hi = max(lo, first + wraps * total), min(hi, last + wraps * total)
-        if lo > hi:
-            raise RuntimeError(f"the samples disagree about the beam's position ({lo} > {hi})")
+        wraps = round(((s - s0) - (L - L0) * cycles) / total)
+        u = L + wraps * lines
+        first = u * cycles + (1 if L == 0 else 0)
+        last = u * cycles + cycles - 1 + (1 if L == lines - 1 else 0)
+        lo, hi = max(lo, first - s), min(hi, last - s)
+    if lo > hi:
+        raise RuntimeError(f"the samples disagree about the beam's position ({lo} > {hi})")
     return lo, hi - lo
 
 

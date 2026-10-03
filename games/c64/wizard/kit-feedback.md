@@ -25,6 +25,8 @@ Host: Linux x86_64, Ubuntu 24.04, no display. Emulator: official vice-mcp v3.13.
 
 The run began on kit 0.0.54. Before delivery, it was rebased onto 0.0.57, retaining the upstream launcher cleanup and new measurement records and moving this run's lesson to the new per-run file format. The earlier and this run's v3.13.2 qualification results remain separately identified.
 
+Merged with kit 0.0.67 by a maintainer on 3 October 2026. By then the kit had an emulator port override of its own (`KIT_VICE_PORT`, kept in `tools/vice-port`) and its own repair of the quiet-frame phase, so those stand in place of this run's; this run's phase tests pass against that repair. The disassembler bridge is kept and follows the same convention: `KIT_R2000_PORT` and `tools/r2000-port` in place of `tools/mcp-ports.json` (`kit/c64/INSTALL.md`, "Another program on port 3000"). The shell-quoting fix moved with the terminal wrapper into `kit/scripts/launcher.py`.
+
 ## What needed care
 
 The protected disk reached the illustrations but stalled in its sector-XOR loop. The documented orientation recipe applies that loader computation to the two patterns read from the supplied image, without changing an engine instruction or the disk. This assistance is part of the reproducible route, not an unmodified boot claim.
@@ -41,8 +43,8 @@ The article and forty-level atlas were built, then given a separate copy rewrite
 
 ## Maintainer asks
 
-- [#131: distinguish functional emulator checks from host throughput](https://github.com/gamesexplained/gamesexplained/issues/131#issuecomment-5955324111). Added the C64 watchpoint and warp measurements to the existing host-load issue; suggest exact emulated intervals for counts and a separate throughput report.
-- [#148: extend independent endpoints to per-part tools](https://github.com/gamesexplained/gamesexplained/issues/148#issuecomment-5955325046), also relevant to #124. The bridge solves one disassembler per clone. Maintainers can decide how to carry it into per-part launching and source/coverage views for overlapping loaded programs.
+- #131: distinguish functional emulator checks from host throughput ([comment](https://github.com/gamesexplained/gamesexplained/issues/131#issuecomment-5955324111)). Added the C64 watchpoint and warp measurements to the existing host-load issue; suggest exact emulated intervals for counts and a separate throughput report.
+- #148: extend independent endpoints to per-part tools ([comment](https://github.com/gamesexplained/gamesexplained/issues/148#issuecomment-5955325046)), also relevant to #124. The bridge solves one disassembler per clone. Maintainers can decide how to carry it into per-part launching and source/coverage views for overlapping loaded programs.
 
 Existing open and closed issues were searched before commenting; no duplicate issue was created.
 

@@ -37,14 +37,13 @@ decision, what took longest, operating system and tool versions.
 
 ## Maintainer asks
 
-Issues are disabled on `chunkypixel/gamesexplained`, so the asks could
-not be filed. They are in the pull request's description under
-"Maintainer asks":
+The session could reach only the contributor's fork, so a maintainer
+filed the asks after the run:
 
-- check_docs: let quoted game text through the narration rule. The
+- #145: check_docs: let quoted game text through the narration rule. The
   game's message "ORIENTATION CORRECTED" could not be quoted as it
   appears.
-- listing.py: report authored data the start-up moves to another
+- #146: listing.py: report authored data the start-up moves to another
   address. Search the hand-over image for untracked play-snapshot runs.
 
 ## What took longest

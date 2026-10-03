@@ -116,6 +116,13 @@ comment counts once, so make every description specific.
 6. At 100 % of your range, re-read your own names and comments for claims
    you did not check, and soften or fix them.
 
+Write as you go. Label and comment each routine in a small batch as soon
+as you understand it, and start your report file early and keep it
+current. A session can stop at any moment (a usage limit, a crash), and
+what is only in your head then is lost: one run's agents read for an
+hour, meant to write everything in one batch at the end, and stopped on
+a usage limit with almost nothing written.
+
 ## Your final report
 
 Your last message is all the lead sees. Write it to

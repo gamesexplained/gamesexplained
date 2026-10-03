@@ -12,7 +12,7 @@ and it is the worked example for the next one.
 | `kit/skills/<platform>/<machine>-reference/` | facts about the machine, consulted rather than recalled: memory map, registers, timing | `kit/skills/c64/c64-reference` |
 | `kit/skills/<platform>/tool-<name>/` | one skill per tool: how to drive it, what it gets wrong | `tool-vice-mcp`, `tool-regen2000` |
 | `kit/<platform>/INSTALL.md` | the tools, how to get them, sizes, what they leave behind, what is known to work per operating system, and the emulator's pass/fail per phase of `kit/EMULATOR.md` | `kit/c64/INSTALL.md` |
-| `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it. It declares `COMMANDS` (what its `main()` accepts) and `TOOL_NAMES` (the tool names `stop` takes) as module-level tuples, which the dispatcher reads to pick the platform when there are several; `kit/scripts/test_tools.py` checks the declaration against `main()`. The platform's own scripts call the dispatcher with `--platform <name>` | `kit/c64/tools.py` |
+| `kit/<platform>/tools.py` | the launcher: starts, checks, stops and contains the tools; `kit/scripts/tools.py` hands commands to it. It declares `COMMANDS` (what its `main()` accepts) and `TOOL_NAMES` (the tool names `stop` takes) as module-level tuples, which the dispatcher reads to pick the platform when there are several; `kit/scripts/test_tools.py` checks the declaration against `main()`. The platform's own scripts call the dispatcher with `--platform <name>`. What is not about a machine (port probing, the pseudo-terminal wrapper, starting and stopping a tool, telling this clone's tools from another clone's, the shared-library check, the macOS `.dmg` unpack, and `verify-footprint`'s walk and verdict) is in `kit/scripts/launcher.py`: import it rather than copy it | `kit/c64/tools.py` |
 | `kit/<platform>/<tool>.py` | a scripting client per tool, for the loops that are too slow as single calls | `vice.py`, `r2000.py` |
 | `kit/<platform>/registers.py` | the I/O registers by name, `NAMES`, for the operands of the Source tab; without it an operand that sees the chips shows its address | `kit/c64/registers.py` |
 | `kit/<platform>/check_emulator.py` | `kit/EMULATOR.md`'s tests as a script with its own test program, one name per check; the launcher runs it as `check-emulator` | `kit/c64/check_emulator.py` |
@@ -54,10 +54,6 @@ then rather than copy the code:
 - `kit/scripts/symbols_import.py` has the same snapshot reader and writes
   regenerator2000's project format. Whether regenerator2000 handles other
   CPUs is not established; check before assuming.
-- `kit/c64/tools.py` carries pieces that are not about the C64 at all:
-  port probing, the pseudo-terminal wrapper, process start, the per-OS
-  home folders, and the walk that `verify-footprint` does. Lift them into
-  `kit/scripts/` when the second launcher needs them.
 - `site/lib/memmap.js` draws the C64's memory layout and is named for it.
 - `kit/template/index.html` names its colour tokens after the C64.
 

@@ -1,0 +1,70 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">A bull that falls to one move at one range, a blow that crashes the game when a stray timer runs, slips in the scoring, and the questions still open.</p>
+</header>
+<main class="wrap">
+<section id="bull">
+  <p class="fig">01 · The bonus round</p>
+  <h2 class="t">Secret: only one blow fells the bull</h2>
+  <p class="lede">After a rank is cleared in front of the Buddha, a bull charges across the screen. One of the player's moves, at one distance, fells it.</p>
+  <div class="plate"><div class="fx-row"><canvas id="bullCv" width="216" height="189"></canvas><div style="flex:1;min-width:260px"><div class="fx-ctl"><button class="fx-btn" id="bullPlay">Play the bull's charge</button></div><p class="fx-out" id="bullOut"></p></div><img src="reference/bull-felled.png" alt="The bull felled, the fighter in a low punch, the score at 6100" style="width:320px;max-width:100%;image-rendering:pixelated"></div>
+    <p class="cap">The bull's frames drawn from its own tables (shape frames <code>$3B</code>-<code>$4C</code>, animations <code>$1C</code>-<code>$1F</code>), its sprites shown directly by pointer from memory nobody else uses: past the fighters' buffers at <code>$C940</code>, under the I/O chips and in unused characters of the font. Below: the emulator, after felling the bull at a distance of 26.</p></div>
+  <p><code>bull_round</code> (<code>$132C</code>) fells the bull only when the player is in move 7, the down-forward blow from a crouch, on its striking frame <code>$0D</code>, with the bull between 25 and 29 units ahead (<code>$136C</code>-<code>$1381</code>). That is worth 3,000 points. Any other blow, or the right blow at the wrong distance, does nothing, and the bull runs the player over. If the bull passes without touching the player, the round ends with 500 points (<code>$1406</code>).</p>
+  <p>The crouch matters: from standing, down-forward is a different move (<code>$18</code>), so the player has to be crouching already when the bull comes into range. In the emulator, holding down and adding forward when the bull was 28 units away felled it at 26.</p>
+</section>
+
+<section id="trap">
+  <p class="fig">02 · A trap</p>
+  <h2 class="t">Bug: a blow can crash the game if a timer is running</h2>
+  <p class="lede">After every scoring blow the game reads a register it never sets, and if that register is not zero it throws its own stack out of balance.</p>
+  <p>The reaction to a blow (<code>$2CA8</code>) reads the control register of CIA 2's timer A (<code>$DD0E</code>). The game never starts that timer, so on a normal machine the read gives 0 and nothing happens. If it is running, the routine pushes two bytes and jumps into the animator, and the return address is lost. In the emulator, with the timer started by hand before a blow, the screen filled with garbage and the processor ended up executing the speech table at <code>$0201</code>. Why the check is there is not known; a cartridge or tool left running in the background is one thing it would catch.</p>
+  </section>
+
+<section id="bugs">
+  <p class="fig">03 · Bugs</p>
+  <h2 class="t">Bug: three slips in the scoring and the opponent</h2>
+  <p class="lede">Small mistakes in the code, each read from the routine; none of them stops the game.</p>
+  <ul>
+    <li>The points tie-break at time up (<code>$2169</code>) reads the first fighter's half-or-whole flag for both fighters, where the score routine (<code>$206C</code>) uses each fighter's own. A half point by the second fighter can count as a whole one in the tie-break, or the reverse.</li>
+    <li>One of the computer's scripted plans (<code>$2661</code>) compares its own facing with the first fighter's move number, an index slip that probably meant the other fighter's facing.</li>
+    <li>Another plan (<code>$2646</code>) stores the next plan without the fighter index, so in the attract mode, where both fighters are computers, it always changes the first fighter's plan.</li>
+  </ul>
+</section>
+
+<section id="odd">
+  <p class="fig">04 · Odds and ends</p>
+  <h2 class="t">Things the manual never says</h2>
+  <ul>
+    <li>The 30 seconds on the clock are 30 units of 50 passes of the fight loop (<code>$212F</code>). A pass usually takes one frame, but measured in the emulator a unit took 50 to 66 frames, so a bout lasts 30 to 40 real seconds.</li>
+    <li>RESTORE does nothing: the game's NMI handler ignores any interrupt that did not come from its own timer (<code>$2FF2</code>).</li>
+    <li>Fire on joystick port 1 starts a one-player game from the attract mode, because the function-key scan reads the port the joystick shares with the keyboard (<code>$1E64</code>). Checked in the emulator.</li>
+    <li>Holding fire at the end of a one-player game skips the high-score table, and the new entry keeps the name <code>......</code> (<code>$1472</code>).</li>
+    <li>Past 10th dan the rank stays on screen as 10TH DAN while the opponent's level is drawn at random from 7 to 10 (<code>$1C65</code>).</li>
+    <li>In a two-player game a blow's yin-yang appears in the panel and is wiped at the next exchange: only points count (<code>$1B7A</code>). Checked in the emulator.</li>
+  </ul>
+</section>
+
+<section id="open">
+  <p class="fig">05 · Open questions</p>
+  <h2 class="t">What is not settled</h2>
+  <ul>
+    <li>Why the reaction to a blow tests CIA 2's timer A (<code>$2CAE</code>).</li>
+    <li>Which named kick or punch each fire move is. The pages name only the moves that were clear in screenshots.</li>
+    <li>Whether fighters exactly 21 lines apart make a sprite row appear a frame late: the multiplexer asks for two changes on the same raster line then (<code>$32EA</code>, <code>$32FD</code>).</li>
+    <li>What two files on the disk, <code>m.tsound</code> and <code>m.spchtbl</code>, are for. Neither is in the game's memory as it stands on disk; they may be the loader's shout.</li>
+    <li>What the sprite images at <code>$D200</code>-<code>$D3BF</code> and <code>$E5C0</code>-<code>$E63F</code> are for. Nothing found points at them.</li>
+  </ul>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/fist-page.js"></script>

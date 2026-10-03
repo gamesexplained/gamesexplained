@@ -1,0 +1,122 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/delta-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">An inverted character set, bullets cut out of glyphs, hits found by reading the screen, and a shop that is an attack wave.</p>
+</header>
+<main class="wrap">
+<section id="charset">
+  <p class="fig">01 · Colour from nothing</p>
+  <h2 class="t">An inverted character set</h2>
+  <p class="lede">Every set bit in Delta's font is drawn black. The colours come from the bits that are clear.</p>
+  <div class="plate">
+    <div class="two">
+      <canvas id="glyphCv" width="300" height="120"></canvas>
+      <div>
+        <canvas id="starCv"></canvas>
+        <div class="row"><button id="starBtn" class="on">Running</button><button id="starStep">Step one frame</button><span class="lab" id="starLab"></span></div>
+      </div>
+    </div>
+    <p class="cap"><b>Left:</b> the three star glyphs, <code>$2F</code>, <code>$30</code> and <code>$31</code>, as the frame is drawn: each is solid but for one clear pixel. <b>Right:</b> the 18 star positions at <code>$100A</code>-<code>$101B</code>, each drawn in all four quarters of the screen, run by a port of <code>stars_update</code> (<code>$1DB9</code>). Checked against the game's code in the kit's 6502 simulator over 600 frames. Colours are the three backgrounds of the recorded frame.</p>
+  </div>
+  <p>The screen runs in the VIC-II's extended background colour mode (<code>$D011</code> = <code>$5C</code>). In that mode only 64 glyphs exist, and the top two bits of each character code pick one of four background colours, <code>$D021</code> to <code>$D024</code>, instead of choosing a glyph. Colour RAM is black everywhere (<code>clear_screen</code>, <code>$0DDD</code>). A set bit is therefore black, and a clear bit shows the background colour the code selects. The blank character <code>$2E</code> is solid, so empty space is black.</p>
+  <p>A star is one character with a single clear bit. Three layers use the same trick with three codes: <code>$6F</code>, <code>$30</code> and <code>$B1</code> point at glyphs <code>$2F</code>, <code>$30</code> and <code>$31</code> through three different backgrounds, so each layer has its own colour. To move a layer, the game rotates the one row of its glyph that holds the clear bit (<code>ROL</code> at <code>$1D1C</code>). Every star of that layer slides one pixel left at once. When the bit falls out, it goes back in at the right edge and the six stars of the layer move one column left. The fast layer rotates twice a frame, the middle once, the slow one every second frame. The four background colours step through a six-entry cycle every fourth frame (<code>colour_cycle_step</code>, <code>$1DDD</code>), so the stars change colour as they drift.</p>
+</section>
+
+<section id="shots">
+  <p class="fig">02 · Bullets made of type</p>
+  <h2 class="t">Every shot is a character</h2>
+  <p class="lede">The enemies' shots are cut out of whatever glyph lies under them, and hits are found by reading the screen.</p>
+  <div class="plate">
+    <div class="two">
+      <canvas id="shotCv" width="256" height="128"></canvas>
+      <div>
+        <div class="row"><span class="lab">Position in the cell</span><input id="shotPos" type="range" min="0" max="7" value="0"><span class="lab" id="shotPosLab"></span></div>
+        <div class="row"><span class="lab">Underneath</span><button data-under="2e2e" class="on">blank</button><button data-under="2f2e">slow star</button><button data-under="2e31">fast star</button></div>
+        <div class="out" id="shotOut"></div>
+      </div>
+    </div>
+    <p class="cap"><b>A port of <code>draw_enemy_shot_0</code></b> (<code>$25D5</code>): the two glyphs under the shot are ANDed with two columns of the mask table <code>shot_masks</code> at <code>$FF70</code>. Checked against the game's code in the kit's 6502 simulator in 40 cases. Clear bits are drawn in one colour here; on the screen they take the background colour of the shot's character code.</p>
+  </div>
+  <p>Enemy shots, homing bombs and eight-way bullets are all drawn with characters. An aimed shot is a four-pixel ball that moves one pixel at a time across two cells. The game does not draw the ball. It builds two new glyphs each frame, taking the glyphs under the shot and clearing the ball's bits out of them with one of eight masks. In an inverted font a clear bit is colour, so the ball appears, and a star under it stays visible. The bombs read the same table through patched operands (<code>$28C1</code>, <code>$299C</code>).</p>
+  <h3>Hits by reading the screen</h3>
+  <p>The VIC-II can report when a sprite touches a character (<code>$D01F</code>). Delta never reads that register. Instead:</p>
+  <ul>
+    <li>an enemy is hit when one of the four cells under its sprite holds a glyph from <code>$32</code> to <code>$3F</code>, the player's weapons. The low four bits of the glyph say which weapon hit it, and that shot is used up, except the orbiter's (<code>enemies_hit_by_weapons</code>, <code>$2B0A</code>);</li>
+    <li>the ship is hit when the cell under its middle holds a glyph below <code>$2E</code>, the enemies' fire (<code>ship_hit_by_fire</code>, <code>$2BBC</code>).</li>
+  </ul>
+  <p>Sprite against sprite (the ship and the enemies, the rows of rocks, the shop's icons) uses the chip's own collision register <code>$D01E</code>, read in three of the bands.</p>
+</section>
+
+<section id="shop">
+  <p class="fig">03 · The corner shop in space</p>
+  <h2 class="t">The shop</h2>
+  <p class="lede">Some attack waves are made of weapon icons. Fly into a blue one to buy it. Grey ones kill.</p>
+  <div class="plate">
+    <div class="row"><span class="lab">Credits</span><span id="credBtns"></span></div>
+    <canvas id="shopCv" width="560" height="64" style="margin-top:14px;cursor:pointer"></canvas>
+    <div class="row"><button id="shopNew">New shop</button></div>
+    <div class="out" id="shopOut">Click an icon to fly into it.</div>
+    <p class="cap"><b>A port of <code>shop_try_buy</code></b> (<code>$2261</code>), checked against the game's code in the kit's 6502 simulator over all 280 combinations of icon, credits and shop state. Icon 4 bought with 7 credits, and icon 5 touched with 2, were also tried live in VICE.</p>
+  </div>
+  <p>The shop is not a separate screen. It is an attack group like the others (bit 4 of the wave record's byte 2 marks it), whose sprites are the seven weapon icons, flying through the play area. In stage 1 it is the second group to arrive, about three seconds in. An icon costs its own number in credits. Icons the player can afford are light blue and the rest grey (<code>icons_update</code>, <code>$0808</code>).</p>
+  <p>Touching an icon that costs more than the credits counts as being shot, and so does touching a second icon in the same shop: one purchase per visit. Buying spends every credit. The price goes, and each credit left over is paid out as 100 points. The bought icon then blinks 14 times along the bottom row, eight frames each, and only then takes effect.</p>
+  <p>A credit comes from clearing a whole attack group: when a group ends and none of its enemies escaped, most groups add one (<code>$80B5</code>).</p>
+  <div class="scroll"><table>
+    <tr><th>Icon</th><th>Price</th><th>Kept in</th><th>What it does</th></tr>
+    <tr><td>1 speed</td><td>1</td><td><code>$0F00</code></td><td>ship speed 1, 2, 4 or 8 pixels a frame; buying it at the top speed goes back to the slowest</td></tr>
+    <tr><td>2 fire rate</td><td>2</td><td><code>$0F01</code></td><td>1, 2 or 3 laser bolts on screen at once (<code>ship_fire</code>, <code>$349A</code>)</td></tr>
+    <tr><td>3 extra weapon</td><td>3</td><td><code>$0F02</code></td><td>each shot also fires one up, one down and one backwards (<code>$3502</code>)</td></tr>
+    <tr><td>4 double laser</td><td>4</td><td><code>$0F03</code></td><td>two more beams, level with the ship and two rows below (<code>$3E88</code>)</td></tr>
+    <tr><td>5 orbiter</td><td>5</td><td><code>$0F04</code></td><td>a satellite circling the ship through 16 positions; it destroys what it touches and is never used up (<code>$3E5E</code>)</td></tr>
+    <tr><td>6 slow-down</td><td>6</td><td><code>$0F05</code></td><td>the attack wave moves and spawns only every second frame (<code>wave_step</code>, <code>$2C22</code>)</td></tr>
+    <tr><td>7 shield</td><td>7</td><td><code>$0F06</code></td><td>absorbs three hits, with 16 frames of safety after each (<code>$3880</code>)</td></tr>
+  </table></div>
+  <p>Weapons change the enemies too. Owning the shield brings out the homing bombs, and the double laser and slow-down change how finely they aim (<code>enemy_fire_setup</code>, <code>$9100</code>; <a href="#fire">enemy fire</a>). Every weapon is lost when the ship dies (<code>$397E</code>).</p>
+</section>
+
+<section id="waves">
+  <p class="fig">04 · The enemies</p>
+  <h2 class="t">Attack waves</h2>
+  <p class="lede">Up to seven enemies at once, each following a path of straight segments, with hit points and sometimes a second form.</p>
+  <p>Each stage is a list of groups (<code>$B800</code> for stages 1 to 21, <code>$B900</code> after), and each group points at an eight-byte record in <code>wave_records</code> at <code>$AB00</code>. <code>enemy_spawn</code> (<code>$811F</code>) decodes it: hit points, animation, colour, which side to enter from, points, path, starting height and delay. One enemy enters per frame into a free sprite, up to seven.</p>
+  <p>A path (<code>$B500</code>) is a list of segments (<code>$A880</code>), and each segment runs a list of (dx, dy) steps from <code>$B000</code> for so many frames a step, mirrored as the record says (<code>enemy_move_1</code>, <code>$82CC</code>, and six copies, one per sprite). An enemy that leaves the play area is gone, and a group with an escapee earns no credit.</p>
+  <p>Hit points come from <code>$A100</code>. An enemy with 0 or 1 dies at the first hit, and one with <code>$FF</code> cannot be destroyed. When a segment says so, an enemy whose hits run out changes into a new form instead of dying. In waves led by an indestructible enemy in the first sprite, destroying the one in the last sprite blows up the whole wave (<code>enemies_wave_timers</code>, <code>$9024</code>).</p>
+  <p>Enemies are worth 5, 7, 10, 15, 20, 25, 50 or 100, and the panel shows ten times that: the score is kept in five digits and printed with a 0 after them. An extra life comes each time the panel's ten-thousands digit goes up (<code>extra_life_check</code>, <code>$9CD6</code>), so every 10,000 points, up to nine lives.</p>
+</section>
+
+<section id="fire">
+  <p class="fig">05 · Enemy fire</p>
+  <h2 class="t">Three kinds of fire, paid for from one budget</h2>
+  <p>Enemies fire three ways, all drawn with characters (<code>enemy_fire_decide</code>, <code>$9208</code>): aimed shots that travel along a row, six at most; homing bombs two characters square, two at most; and bullets, the character <code>$ED</code> moving in one of eight directions, seven at most.</p>
+  <p>Each frame one enemy, taking the seven in turn, may fire. It must be alive, past its entrance and allowed to fire by its wave, and its own counter must have reached the stage's fire rate. New fire is allowed only while the fire already in flight costs less than the stage's budget: a shot counts 5, a bomb 10 and a bullet 1 (<a href="levels.html#table">every stage's numbers</a>).</p>
+  <p>Which kind comes depends on the player's weapons (<code>enemy_fire_setup</code>, <code>$9100</code>). Owning the shield brings the homing bombs, and owning the double laser or the slow-down changes how finely the shots are aimed. Buying weapons makes the enemies fire differently.</p>
+</section>
+
+<section id="controls">
+  <p class="fig">06 · Controls</p>
+  <h2 class="t">Controls</h2>
+  <div class="scroll"><table>
+    <tr><th>Input</th><th>Where</th><th>Effect</th></tr>
+    <tr><td>Joystick, either port</td><td>play</td><td>both ports are read and combined (<code>read_joysticks</code>, <code>$3375</code>)</td></tr>
+    <tr><td>W, X, A, D, RETURN</td><td>play, after F3</td><td>up, down, left, right, fire (<code>read_keys</code>, <code>$0C40</code>)</td></tr>
+    <tr><td>F1</td><td>title</td><td>one or two players; turns pass at each death</td></tr>
+    <tr><td>F3</td><td>title</td><td>joystick or keyboard</td></tr>
+    <tr><td>F5</td><td>title</td><td>sound effects or music in play</td></tr>
+    <tr><td>SPACE</td><td>title</td><td>shows the three options</td></tr>
+    <tr><td>RUN/STOP</td><td>play</td><td>pause; fire resumes, T quits to game over (<code>pause_check</code>, <code>$9A30</code>)</td></tr>
+    <tr><td>RESTORE</td><td>anywhere</td><td>nothing: the NMI vector points at an <code>RTI</code> at <code>$FFF8</code></td></tr>
+  </table></div>
+  <p>The demo on the title replays 63 recorded joystick bytes from <code>$9F40</code>, one every eight frames. The game points its own joystick read at <code>$0F90</code> for the demo by patching the instruction (<code>demo_joystick_patch</code>), so the ship flies by the same code as in play.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/delta-page.js"></script>

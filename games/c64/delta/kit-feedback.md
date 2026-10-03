@@ -43,14 +43,15 @@ decision, what took longest, operating system and tool versions.
 
 ## Maintainer asks
 
-If the session can reach GitHub when the pull request is opened, these
-are filed as `kit-ask` issues and listed here by number; otherwise they
-are in the pull request's description under "Maintainer asks".
+The session could reach only the contributor's fork, so a maintainer
+filed the ask after the run:
 
-- Give the classes in `site/lib/site.css` a prefix so that a page's own
+- #143: prefix the classes in `site/lib/site.css` so that a page's own
   class names cannot collide with them.
-- `pause-at-instruction` fails in `check-emulator` with the VICE v3.13.1
-  Linux release: worth a look in `kit/c64/`.
+
+`pause-at-instruction` failing in `check-emulator` with the VICE v3.13.1
+Linux release was not filed: `kit/c64/INSTALL.md` and
+`tool-vice-mcp/workarounds.md` already recorded it.
 
 ## What took longest
 

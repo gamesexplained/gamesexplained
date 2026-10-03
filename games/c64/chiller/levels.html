@@ -52,7 +52,7 @@ button.b:hover{border-color:var(--ink-mute)}
 <header class="hero">
   <p class="eyebrow">Commodore 64 &middot; 1984 &middot; Mastertronic</p>
   <h1>Chiller</h1>
-  <p class="sub">Travel through five locations, ending at the haunted house, then revisit them with the girl on the way home. Explore each screen and see how its enemies move.</p>
+  <p class="sub">The five places out to the haunted house and the same five on the way home, each rebuilt from its settings, with where every enemy goes.</p>
 </header>
 
 <main class="wrap">
@@ -80,7 +80,6 @@ button.b:hover{border-color:var(--ink-mute)}
     <span><i class="sw" style="background:#7b7bff"></i>enemy start</span>
   </div>
   </div>
-  <p class="note">These maps are reconstructed from the game's settings. They mark enemy starting positions but do not show the moving enemies or the energy bar.</p>
 </section>
 
 <section id="screen-data">
@@ -179,9 +178,10 @@ button.b:hover{border-color:var(--ink-mute)}
   function screensPage(G) {
     const cv = $('#lv-scr'), pick = $('#lv-pick'); if (!need(cv)) return;
     const ov = { solid: true, ledge: true, pick: true, cross: true, enemy: true };
-    let cur = 0;
+    // levels.html?screen=N opens on screen N, as the Gameplay tab's pins link it
+    let cur = Math.max(0, Math.min(9, parseInt(new URLSearchParams(location.search).get('screen'), 10) || 0));
     NAMES.forEach((nm, i) => pick.insertAdjacentHTML('beforeend',
-      `<button class="b" type="button" data-n="${i}" aria-pressed="${i === 0}">${nm}</button>`));
+      `<button class="b" type="button" data-n="${i}" aria-pressed="${i === cur}">${nm}</button>`));
     const LEG = { solid: '#e9e7e1', ledge: '#ff8a00', pick: '#2a8a4a' };
     function draw() {
       const { R, crosses, mem, F } = compose(G.ram, cur);

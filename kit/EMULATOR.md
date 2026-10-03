@@ -224,8 +224,9 @@ few dozen bytes written into memory and started, rather than a game: it
 then runs on any machine with no image to hand, and every value it
 checks is known in advance. Give each check a short name. The tool skill
 keeps its workarounds in a separate file, one section per failed check,
-so an agent on a build that passes reads none of them, and a section is
-deleted when the release passes its check. Run the script through the
+so an agent on a build that passes reads none of them. A section is
+deleted when the release passes its check; the file stays, saying so,
+when it passes them all, ready for the next check that fails. Run the script through the
 launcher (`tools.py --platform <platform> check-emulator`) after every install, rebuild and
 release; a table typed from memory of the last run is not a measurement.
 The Commodore 64's is `kit/c64/check_emulator.py`.

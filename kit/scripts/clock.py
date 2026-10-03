@@ -13,14 +13,17 @@ Usage:
 
 <step> is the skill folder name: 10-orient, 20-features, ... 80-retro. A step
 may be started more than once (a second session); the report sums them.
-Work on a game after its run has two steps of its own, so that it does not
-swell the run's hours, which are what the next run tries to beat:
-  curate    the Gold pass: the contributor's edits, section by section, and
-            what the agent does for them (kit/START.md)
+The clock times pure machine work, with no person in it, because that is what
+the next run can beat. Before you hand the turn to the contributor and wait
+(a question, a download to approve, a page to look at), stop it, and start
+the same step again when they answer. Work on a game after its run is timed
+only when it is that kind of work:
   play      a Play tab added to a game whose run had none (70-minisite, "Play"):
             the port, its lockstep and its pacing
-Each ends with 80-retro, as a run does; the retro of work after the run is
-counted with it.
+It ends with 80-retro, as a run does, and that retro is counted with it, apart
+from the run's hours. The Gold pass (kit/START.md) is not timed, nor is the
+retro that ends it: a person paces it, reading, deciding and coming back days
+later. clock.py refuses both.
 --model is the id of the model doing the step, as your system prompt names
 it (claude-opus-5, claude-fable-5-1, claude-opus-5-5[1m], ...), suffix and
 all: models.py reads a context-window suffix such as [1m] as the same
@@ -45,7 +48,8 @@ import datetime, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-LATER = ("curate", "play")                       # work after the run: kept out of its hours
+LATER = ("play",)                                # work after the run: kept out of its hours
+CURATE = "curate"                                # the Gold pass, not timed; an older timings.json may hold one
 
 
 def steps_known():
@@ -102,11 +106,30 @@ def close_open(T, t, note="", agents=None):
     return None
 
 
+def in_play(T):
+    """True when the entries end in a Play tab added after the run: play, then its retro."""
+    steps = [e["step"] for e in T["entries"] if e["step"] != "80-retro"]
+    return bool(steps) and steps[-1] in LATER
+
+
+def tier(gdir):
+    try:
+        return json.load(open(os.path.join(gdir, "game.json"))).get("tier")
+    except (OSError, ValueError):
+        return None
+
+
 def start(step, model, gdir):
+    if step == CURATE:
+        sys.exit("the Gold pass is not timed: the clock times pure machine work, and a person paces this.\n"
+                 "Work without the clock. A Play tab added in it is timed: clock.py start play.")
     known = steps_known()
     if step not in known:
         sys.exit(f"no step {step!r}: the steps are {', '.join(known)}")
     T = load(gdir); t = now()
+    if step == "80-retro" and tier(gdir) in ("silver-claimed", "gold") and not in_play(T):
+        sys.exit(f"this game is {tier(gdir)}: the retro of a Gold pass is not timed, as the pass is not.\n"
+                 "Do the retro without the clock. The retro of a Play tab follows clock.py start play.")
     closed = close_open(T, t)
     if closed:
         print(f"stopped {closed['step']} after {closed['minutes']} min")
@@ -148,9 +171,10 @@ def summarize(gdir):
     steps, first, last, agents, models = {}, None, None, 0, []
     later, after = 0.0, False
     for e in T["entries"]:
-        # a retro after curate or play is that work's retro, not the run's
-        if e["step"] in LATER: after = True
+        # a retro after play (or an older timings.json's curate) is that work's retro, not the run's
+        if e["step"] in LATER or e["step"] == CURATE: after = True
         elif e["step"] != "80-retro": after = False
+        if e["step"] == CURATE: continue
         s = steps.setdefault(e["step"], {"minutes": 0.0, "sessions": 0, "notes": [], "open": False, "models": []})
         s["sessions"] += 1
         m = e.get("model") or "unknown"
@@ -196,7 +220,7 @@ def report(gdir):
     print(f"| total | {S['hours'] * 60:.0f} | {', '.join(S['models'])} | | {S['hours']} h of work"
           + (f", over {S['span_hours']} h" if S['span_hours'] and S['span_hours'] != S['hours'] and not S['later_hours'] else "") + " |")
     if S["later_hours"]:
-        print(f"| after the run | {S['later_minutes']:.0f} | | | curate, play and their retros: {S['later_hours']} h, not in the total |")
+        print(f"| after the run | {S['later_minutes']:.0f} | | | {S['later_hours']} h, not in the total |")
     print()
     print("Portable figures:")
     print(f"  minutes to play : {S['minutes_to_play'] if S['minutes_to_play'] is not None else 'n/a'}")
