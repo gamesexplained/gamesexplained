@@ -18,7 +18,10 @@ from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
 (`levels.html`, authored, only when the game has level data worth a page),
 **Play** (`play.html`, authored, only when a JavaScript version exists),
 **About** (generated from `game.json`, `features.md`, `orientation.md`, git).
-`kit/scripts/build.py` assembles them; you write the authored ones.
+`kit/scripts/build.py` assembles them; you write the authored ones. A game
+that needs other tabs lists all of its tabs, in order, as `[file, label]`
+pairs in `game.json`'s `"tabs"`; the build publishes the pages named there
+and warns about any other `.html` in the folder.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
@@ -319,6 +322,18 @@ then open `http://127.0.0.1:8000/<platform>/<slug>/index.html`; if 8000
 is taken, any free port will do. The agent
 needs a browser it can screenshot and click: either a browser extension
 that exposes the page to it, or a harness desktop app with a built-in browser. Without one you are writing a visual artefact blind.
+
+When the session's browser connector lacks its bundled executable but Firefox
+is already installed, the shared launcher offers `python3 kit/scripts/tools.py
+browser`. It starts an isolated headless profile under `tools/firefox/`,
+with the WebDriver BiDi endpoint at `ws://127.0.0.1:9222/session`.
+Use a BiDi client to navigate, exercise controls and capture screenshots,
+and record its name/version and Firefox package origin. The 30 September
+2026 run did not record its client or package origin; see the containment
+limits in `kit/INSTALL.md`.
+`tools.py stop browser` stops only this clone's test browser. It downloads
+nothing and does not use the contributor's personal browser session. See
+`kit/INSTALL.md`, "Browser checks", for the tested host and containment.
 
 Check, at least: every canvas has drawn something; the console has no
 errors; every control does something when clicked; and the rebuilt screen

@@ -69,10 +69,6 @@ KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # script loads them by `game.json`'s platform. The interface is in kit/PLATFORMS.md.
 _PLATFORM = {}
 
-# Explicitly code-typed NMOS instruction verified in a game. Keep it
-# separate from the documented table used by other tooling.
-UNDOCUMENTED = {0xBF: ("lax", "aby")}
-
 
 def platform_modules(platform):
     """(cpu, snapshot) for `platform`, loaded by path from kit/<platform>/."""

@@ -9,6 +9,29 @@ An interactive 6502 disassembler with an MCP server. It loads `.vsf`
 snapshots directly, which is how it is used here: start it on the
 steady-state snapshot from `10-orient`.
 
+## Seeding from a Ghidra text export
+
+The accepted producer is the custom **CompleteListingWriter** exporter from
+`ghidra-mcp-next` (`export_full_listing`), not Ghidra's stock ASCII exporter.
+The compatible source is bundled in `kit/c64/ghidra_export/`, with its pinned
+revision, licence and run instructions in `README.md`. The bundled script and
+synthetic fixture were run on Ghidra **12.1.4**. Stock ASCII exports are
+unsupported: their label, comment and XREF columns differ. For this importer,
+run `ExportGhidraListing.java` on the existing program and save into `work/`.
+
+For an existing analysis, follow `core/40-sweep`, "An existing analysis of
+this image". `python3 kit/c64/import_ghidra.py <game> <export>` converts
+labels, comments and types into `symbols.json`; it never writes a listing.
+`--verify-ram <65536-byte-dump>` checks each initialized source row, and
+`--space <name>` selects one replacement overlay. Whole ROM overlays are
+refused. Keep the source export in `work/` and record its hash and makers
+under `imported` in `game.json`.
+
+Load this map into the disassembler on the chosen snapshot with
+`symbols_import.py`, inspect it, then export through `symbols_export.py`.
+Only `listing.py` builds the listing. Source annotations are leads until
+coverage and verification establish them in this run.
+
 ## Start and drive
 
 ```

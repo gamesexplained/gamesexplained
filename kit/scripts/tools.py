@@ -3,11 +3,13 @@
 
 Every tool the kit uses is started only through this script (AGENTS.md,
 "Leave the cleanest footprint you can"), so that the containment lives in
-one place per platform: kit/<platform>/tools.py. This script picks the
-platform and hands the command over unchanged.
+kit/scripts/browser.py for browser checks, and kit/<platform>/tools.py for
+platform tools. Browser commands need no platform selection.
 
 Usage:
   tools.py [--platform <name>] <command> [args]     e.g. tools.py status
+  tools.py browser                                 installed Firefox, isolated profile
+  tools.py stop browser                            stop only this clone's browser
   tools.py --platforms                              list platforms that have a launcher
   tools.py -h                                       this, and every platform's commands
 
@@ -31,6 +33,7 @@ read here without running it:
   TOOL_NAMES the tool names its commands take as an argument (`stop vice`)
 """
 import ast, os, runpy, subprocess, sys
+import browser
 
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(KIT)
@@ -62,6 +65,7 @@ class Ambiguous(Exception):
 def _game_platform(path, avail):
     """The platform of games/<platform>/ that `path` lies in, or None."""
     rel = os.path.relpath(os.path.realpath(path), os.path.realpath(ROOT)).split(os.sep)   # on macOS /var is /private/var
+
     return rel[1] if len(rel) >= 3 and rel[0] == "games" and rel[1] in avail else None
 
 
@@ -121,6 +125,10 @@ def main():
     if a and a[0] == "--platform":
         if len(a) < 2: sys.exit("usage: tools.py --platform <name> <command>")
         explicit, a = a[1], a[2:]
+    if a == ["browser"]:
+        browser.start(); return
+    if a in (["stop", "browser"], ["stop", "browser", "--force"]):
+        browser.stop(); return
     avail = platforms()
     decl = {p: declared(p) for p in avail}
     if not explicit and not os.environ.get("KIT_PLATFORM") and len(avail) > 1 \
@@ -130,6 +138,12 @@ def main():
         chosen = resolve(a, decl, explicit=explicit, env=os.environ.get("KIT_PLATFORM"), cwd=os.getcwd())
     except Ambiguous as e:
         sys.exit(f"{e}\n\n{usage(avail, decl)}")
+    if a == ["status"]:
+        browser.status()
+    if a and a[0] == "stop" and all(x in ("all", "--force") for x in a[1:]):
+        browser.stop()
+    if not a or a[0] in ("-h", "--help"):
+        print(__doc__)
     if len(chosen) == 1:
         os.environ["KIT_PLATFORM"] = chosen[0]
         launcher = os.path.join(KIT, chosen[0], "tools.py")

@@ -23,7 +23,8 @@ class ListingAlignment(unittest.TestCase):
             ram[1] = 0x35
             ram[0x8000:0x8004] = bytes([0xBF, 0x36, 0xDC, 0x60])
             image = p / 'capture.vsf'
-            image.write_bytes(bytes(209) + ram)
+            magic = b'VICE Snapshot File'         # kit/c64/snapshot.py refuses a file without it
+            image.write_bytes(magic + bytes(209 - len(magic)) + ram)
             subprocess.run([sys.executable, str(Path(__file__).with_name('listing.py')), str(p), str(image)], check=True, capture_output=True)
             rows = [r for r in json.loads((p / 'listing.json').read_text())['records'] if 0x8000 <= r['a'] <= 0x8003]
             self.assertEqual([(r['a'], r['m'], r['b']) for r in rows], [

@@ -112,6 +112,10 @@ def test_documented_commands():
                         continue                          # a platform not in this checkout
                 if not args or args[0].startswith("<") or args[0] in ("-h", "--help", "--platforms"):
                     continue
+                # Shared browser commands bypass platform selection; test_browser.py
+                # checks their dispatch with both one and multiple platforms.
+                if args == ["browser"] or args in (["stop", "browser"], ["stop", "browser", "--force"]):
+                    continue
                 seen += 1
                 r = resolves(args, explicit=explicit)
                 ok = isinstance(r, list)
@@ -135,7 +139,7 @@ def test_end_to_end():
     with tempfile.TemporaryDirectory() as tmp:
         kit = os.path.join(tmp, "kit")
         os.makedirs(os.path.join(kit, "scripts"))
-        for f in ("tools.py", "launcher.py"):       # the dispatcher, and what the launchers share
+        for f in ("tools.py", "launcher.py", "browser.py"):   # the dispatcher, what the launchers share, the browser
             shutil.copy(os.path.join(HERE, f), os.path.join(kit, "scripts"))
         for p in tools.platforms():
             shutil.copytree(os.path.join(KIT, p), os.path.join(kit, p))

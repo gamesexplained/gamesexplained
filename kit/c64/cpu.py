@@ -55,11 +55,15 @@ LEN = {"imp": 1, "acc": 1, "imm": 2, "zp": 2, "zpx": 2, "zpy": 2, "rel": 2,
        "abs": 3, "abx": 3, "aby": 3, "ind": 3, "izx": 2, "izy": 2}
 assert len(OPS) == 151, len(OPS)
 
+# Explicitly code-typed NMOS instruction verified in a game. Keep it
+# separate from the documented table used by other tooling.
+UNDOCUMENTED = {0xBF: ("lax", "aby")}
+
 
 def decode(ram, a):
     """(mnemonic, mode, nbytes) for the instruction at a, or None for a byte that
     is not an opcode. One byte per instruction: this machine has no prefixes."""
-    e = OPS.get(ram[a])
+    e = OPS.get(ram[a]) or UNDOCUMENTED.get(ram[a])
     return (e[0], e[1], LEN[e[1]]) if e else None
 
 
