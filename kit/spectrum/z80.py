@@ -176,7 +176,7 @@ def _ed():
     T = {}
     for r in range(8):
         if r == 6:
-            continue                         # ED70/ED71 are undocumented
+            continue                         # ED70/ED71 are undocumented; added below
         T[0x40 + 8 * r] = ("in", f"{REG8[r]},(c)", 2)
         T[0x41 + 8 * r] = ("out", f"(c),{REG8[r]}", 2)
     for i, rp in enumerate(RP):
@@ -184,12 +184,13 @@ def _ed():
         T[0x4A + 0x10 * i] = ("adc", f"hl,{rp}", 2)
         T[0x43 + 0x10 * i] = ("ld", f"({{a}}),{rp}", 4)
         T[0x4B + 0x10 * i] = ("ld", f"{rp},({{a}})", 4)
-    del T[0x63], T[0x6B]                       # undocumented LD (nn),HL aliases
     for op in (0x44, 0x4C, 0x54, 0x5C, 0x64, 0x6C, 0x74, 0x7C):
         T[op] = ("neg", None, 2)
     for op in (0x45, 0x55, 0x5D, 0x65, 0x6D, 0x75, 0x7D):
         T[op] = ("retn", None, 2)
     T[0x4D] = ("reti", None, 2)
+    T[0x70] = ("in", "f,(c)", 2)              # undocumented IN F,(C): reads the port, sets flags
+    T[0x71] = ("out", "(c),0", 2)             # undocumented OUT (C),0: writes zero
     for op, im in ((0x46, "0"), (0x4E, "0"), (0x66, "0"), (0x6E, "0"),
                    (0x56, "1"), (0x76, "1"), (0x5E, "2"), (0x7E, "2")):
         T[op] = ("im", im, 2)

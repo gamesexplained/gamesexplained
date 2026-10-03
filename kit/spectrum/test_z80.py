@@ -49,10 +49,11 @@ def oracle():
         def __init__(self, address, operation, data):
             self.address, self.operation, self.data = address, operation, list(data)
 
-    # IM/NEG/RETN/XYCB are the undocumented slots the standard set fills in; the
-    # table decodes them too, so the oracle is told to. ED63/ED6B/ED70/ED71 stay
-    # data on both sides.
-    conf = cfg(False, True, 8, 8, 4, False, lambda a, o, d: Instr(a, o, d), "IM,NEG,RETN,XYCB", True)
+    # The undocumented slots the standard set leaves out, the table decodes too,
+    # so the oracle is told to as well: ED63/ED6B/ED70/ED71 and the IM/NEG/RETN/
+    # XYCB groups.
+    conf = cfg(False, True, 8, 8, 4, False, lambda a, o, d: Instr(a, o, d),
+               "ED63,ED6B,ED70,ED71,IM,NEG,RETN,XYCB", True)
     return get_component("Disassembler", [0] * 65536, conf)
 
 
@@ -69,7 +70,7 @@ def contexts():
 
 def check_lengths():
     assert len(z80.BASE) == 252, len(z80.BASE)          # 256 minus the four prefixes
-    assert len(z80.CB) == 256 and len(z80.ED) == 74, (len(z80.CB), len(z80.ED))
+    assert len(z80.CB) == 256 and len(z80.ED) == 78, (len(z80.CB), len(z80.ED))
     assert len(z80.IX) == len(z80.IY) == 85, (len(z80.IX), len(z80.IY))
     assert len(z80.IXCB) == len(z80.IYCB) == 256
     for tab in (z80.BASE, z80.CB, z80.ED, z80.IX, z80.IY, z80.IXCB, z80.IYCB):
