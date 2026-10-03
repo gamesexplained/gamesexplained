@@ -1,0 +1,39 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ghostbusters-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">A joystick in port 1, the function keys on the title screen, and the few keys that work in play.</p>
+</header>
+<main class="wrap">
+<section id="joystick">
+  <p class="fig">The joystick</p>
+  <h2 class="t">The joystick goes in port 1</h2>
+  <p class="lede">Most C64 games read the joystick in control port 2, which the keyboard does not share. <i>Ghostbusters</i> reads port 1 and nothing else, as its manual says.<sup class="fn"><a href="about.html#src-1" title="The Commodore 64 manual">1</a></sup></p>
+  <p>Port 1 shares its register with the keyboard's columns (<code>$DC01</code>), so a joystick move and a key press can be mistaken for each other. The game's own keyboard scan guards against that: it gives up while either port reads anything but "nothing pressed" (<code>$96CA</code>, <code>$96E8</code>), so pushing the stick never types a key.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">The keys</p>
+  <h2 class="t">Function keys to start, and space for a report</h2>
+  <p class="lede">The keyboard starts the game, types the name and the account number, and in play gives a status report and a pause.</p>
+  <table class="t">
+    <tr><th>Control</th><th>Where</th><th>What it does</th></tr>
+    <tr><td>F1 on the title</td><td><code>$6399</code></td><td>the interview</td></tr>
+    <tr><td>F3 on the title</td><td><code>$63A8</code></td><td>with a name typed since power-on, straight to the vehicle page with the stored account; otherwise as F1</td></tr>
+    <tr><td>Space on the title</td><td><code>$6385</code></td><td>"Ghostbusters!"</td></tr>
+    <tr><td>Space in play</td><td><code>$7175</code></td><td>BACKPACK POWER AT XX% OF MAXIMUM... X EMPTY TRAPS... X MEN LEFT on the ticker</td></tr>
+    <tr><td>RUN/STOP</td><td><code>$70BA</code></td><td>pause, only on the map, the drive, a bust, and Zuul's street</td></tr>
+    <tr><td>RUN/STOP and RESTORE</td><td><code>$6425</code></td><td>back to the title</td></tr>
+    <tr><td>B on the map</td><td><code>$7F70</code></td><td>a dollop of bait</td></tr>
+    <tr><td>1-3, E in the shop</td><td><code>$7A5B</code></td><td>pages; E leaves, once a trap is bought</td></tr>
+  </table>
+  <p>F3 is a shortcut for the next game. The flag that says a name has been typed (<code>$6328</code>) survives RUN/STOP and RESTORE and the cold start at the end of a game, so F3 skips the interview and starts with the account the last game printed.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
