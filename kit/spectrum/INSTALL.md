@@ -139,6 +139,13 @@ The launcher points `HOME` (and the XDG variables) at
 `tools/zesarux-home/` before starting the emulator, because ZEsarUX reads
 and writes `.zesaruxrc` in the home directory on every run.
 
+One thing can be installed outside the repository, on Linux only: the
+`ubuntu24` build is dynamically linked against SDL 1.2, which Ubuntu 24.04
+does not install by default. `apt-get install libsdl1.2debian` puts
+`libSDL-1.2.so.0` in the system library path, where deleting this repository
+does not remove it. `get-zesarux download` and `tools.py zesarux` name the
+missing library, as the C64 launcher does for VICE's.
+
 **Uninstall:** delete the repository folder. Nothing else is left behind.
 
 Verified with `tools.py --platform spectrum verify-footprint` on macOS

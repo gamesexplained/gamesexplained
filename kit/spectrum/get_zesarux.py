@@ -229,6 +229,9 @@ def download(tag=None):
         print(f"if macOS still refuses it: the ad-hoc signature fails Gatekeeper (spctl rejects the bundle); "
               f"run the binary inside tools/zesarux, never `open`")
     print("emulator build:", tools.build())
+    libs = tools.missing_libraries(tools.app_path())
+    if libs:
+        print(tools.say_missing(libs))
     print("next: python3 kit/scripts/tools.py --platform spectrum zesarux, then check-emulator")
 
 

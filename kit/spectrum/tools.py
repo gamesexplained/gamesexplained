@@ -75,6 +75,22 @@ def app_path():
     return found[0] if found else None
 
 
+def missing_libraries(exe):
+    """Shared libraries the dynamic linker cannot find for exe. Empty where there is no
+    ldd to ask (macOS, Windows). The Ubuntu build needs SDL 1.2, which Ubuntu 24.04 does
+    not install by default."""
+    if not sys.platform.startswith("linux") or not shutil.which("ldd"):
+        return []
+    out = subprocess.run(["ldd", exe], capture_output=True, text=True).stdout
+    return sorted({line.split("=>")[0].strip() for line in out.splitlines() if "not found" in line})
+
+
+def say_missing(libs):
+    return ("the emulator needs shared libraries this machine does not have:\n  " + " ".join(libs) +
+            "\ninstalling them is outside this repository, so ask the contributor first; on Ubuntu 24.04 "
+            "the whole set is one apt-get line in kit/spectrum/INSTALL.md, 'Linux'")
+
+
 def build():
     """Which release tools/zesarux is, as a line that can go into game.json."""
     if not app_path():
@@ -165,6 +181,9 @@ def zesarux(extra=()):
     if not exe:
         sys.exit(f"no emulator under {os.path.relpath(ZESARUX_DIR, ROOT)}; "
                  "see kit/spectrum/INSTALL.md, 'Get the emulator'")
+    libs = missing_libraries(exe)
+    if libs:
+        sys.exit(say_missing(libs))
     detail = foreign_detail(PORT)
     if detail:
         sys.exit(f"an emulator started from another folder already answers on :{PORT}:\n{detail}\n"
