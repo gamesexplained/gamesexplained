@@ -16,7 +16,7 @@ Default output: the platform's own name in <game dir>/work/.
 import json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from symbols_export import platform_fn
+from symbols_export import platform_fn, platform_of
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     gdir, snapshot = argv[0], argv[1]
     out = argv[2] if len(argv) > 2 else None
     game = json.load(open(os.path.join(gdir, "game.json")))
-    plat = game.get("platform", "c64")
+    plat = platform_of(game)
     write = platform_fn(plat, "write", ("project", "skoolkit"))
     write(gdir, snapshot, out)
 

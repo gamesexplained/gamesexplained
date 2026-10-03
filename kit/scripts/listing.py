@@ -116,8 +116,8 @@ def register_names(platform):
 def io_meaning(game):
     """chips(target, at): whether the instruction at `at` sees a chip's register at
     `target` rather than the RAM beneath it. The rule is in this file's help."""
-    from symbols_export import PLATFORM_DEFAULTS, hexint
-    plat = PLATFORM_DEFAULTS.get(game.get("platform", "c64"), {})
+    from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
+    plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
     hidden = [(hexint(r[0]), hexint(r[1])) for r in plat.get("hidden", [])]
     rows = []
     for r in game.get("io", []):
@@ -143,8 +143,8 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
 
     $00 and $FF are not counted as data anywhere here: the emulator fills unwritten RAM
     with them, and a stretch of that pattern is not the game's."""
-    from symbols_export import PLATFORM_DEFAULTS, hexint
-    plat = PLATFORM_DEFAULTS.get(game.get("platform", "c64"), {})
+    from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
+    plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
     cov = game.get("coverage", {})
 
     def ranges(rows):

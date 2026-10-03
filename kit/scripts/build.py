@@ -131,7 +131,7 @@ def hexint(v):
 def footprint(gdir, game):
     """Classify all 65536 bytes. Returns (runs, totals, symbols)."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from symbols_export import regions as cov_regions, PLATFORM_DEFAULTS
+    from symbols_export import regions as cov_regions, PLATFORM_DEFAULTS, platform_of
     lp = os.path.join(gdir, "listing.json")
     if not os.path.isfile(lp):
         rel = os.path.relpath(gdir, ROOT)
@@ -166,12 +166,12 @@ def footprint(gdir, game):
         k = "rom" if re.search(r"\bROMs?\b", name, re.I) else "runtime"   # the word, not "from"
         for a in range(lo, hi + 1):
             cat[a] = k; why[a] = name
-    # video charset: graphics. Its size is the machine's (kit/<platform>/registers.py's
-    # platform defaults): the C64's font is 2 KB, the Spectrum's ROM font 768 bytes.
+    # video charset: graphics. Its size is the machine's (symbols_export.PLATFORM_DEFAULTS):
+    # the C64's font is 2 KB, the Spectrum's ROM font 768 bytes.
     v = game.get("video") or {}
     if v.get("charset"):
         a0 = hexint(v["charset"])
-        cs = PLATFORM_DEFAULTS.get(game.get("platform", "c64"), {}).get("charset_size", 0x800)
+        cs = PLATFORM_DEFAULTS.get(platform_of(game), {}).get("charset_size", 0x800)
         for a in range(a0, a0 + cs):
             if cat[a] != "unused":
                 cat[a] = "graphics"; why[a] = "character set"

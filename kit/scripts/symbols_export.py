@@ -79,9 +79,22 @@ def read_live(plat):
     return platform_fn(plat, "read_live", ("r2000", "skoolkit"))()
 
 
-def read_file(plat, path):
-    """(blocks, symbols, comments) from a disassembler's own project or control file."""
-    return platform_fn(plat, "read_file", ("project", "skoolkit"))(path)
+def read_file(plat, path, kind="project"):
+    """(blocks, symbols, comments) from a disassembler's project or control file.
+
+    `kind` selects the reader: "project" for the disassembler's own project file,
+    "ctl" for a SkoolKit control file. A platform without that reader says so
+    rather than parsing the wrong format as the right one."""
+    return platform_fn(plat, "read_file", ("skoolkit",) if kind == "ctl" else ("project",))(path)
+
+
+def platform_of(game):
+    """game.json's platform, which every game must name (kit/PLATFORMS.md)."""
+    plat = game.get("platform")
+    if not plat:
+        sys.exit(f"{game.get('slug') or game.get('title') or 'game.json'} names no platform; "
+                 "every game must (kit/PLATFORMS.md)")
+    return plat
 
 
 def hexint(s):
@@ -89,7 +102,7 @@ def hexint(s):
 
 
 def regions(game):
-    plat = game.get("platform", "c64")
+    plat = platform_of(game)
     d = PLATFORM_DEFAULTS.get(plat, {"exclude": [], "extra": []})
     exclude = [[hexint(a), hexint(b), n] for a, b, n in d["exclude"]]
     extra = [[hexint(a), hexint(b), n] for a, b, n in d["extra"]]
@@ -120,10 +133,11 @@ def main():
         print(__doc__); return
     gdir = argv[0]
     game = json.load(open(os.path.join(gdir, "game.json")))
-    plat = game.get("platform", "c64")
+    plat = platform_of(game)
     key = next((k for k in ("--project", "--ctl") if k in argv), None)
     if key:
-        blocks, syms, comments = read_file(plat, argv[argv.index(key) + 1])
+        blocks, syms, comments = read_file(plat, argv[argv.index(key) + 1],
+                                           "ctl" if key == "--ctl" else "project")
         source = "regen2000proj" if key == "--project" else "control file"
     else:
         blocks, syms, comments = read_live(plat)

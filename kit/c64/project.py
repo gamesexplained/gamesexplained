@@ -15,7 +15,8 @@ Usage:
 """
 import base64, gzip, json, os, sys
 
-VSF_RAM_OFFSET = 209
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from snapshot import read  # the one .vsf reader  # noqa: E402
 
 PROJECT_BLOCK_TYPES = {
     "Code": "Code", "DataByte": "Byte", "DataWord": "Word", "Address": "Address",
@@ -53,11 +54,7 @@ def write(gdir, snapshot, out=None):
     if out is None:
         out = os.path.join(gdir, "work", f"{game['slug']}.regen2000proj")
     sym = json.load(open(os.path.join(gdir, "symbols.json")))
-    blob = open(snapshot, "rb").read()
-    ram = blob[VSF_RAM_OFFSET:VSF_RAM_OFFSET + 0x10000]
-    if len(ram) != 0x10000:
-        sys.exit(f"{snapshot}: {len(blob)} bytes, too short for a VICE snapshot "
-                 f"(needs {VSF_RAM_OFFSET + 0x10000})")
+    ram = read(snapshot)
     labels = {}
     for s in sym["symbols"]:
         if s.get("kind", "user") != "user":
