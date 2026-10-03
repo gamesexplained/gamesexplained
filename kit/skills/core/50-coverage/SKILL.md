@@ -48,17 +48,31 @@ same way, so tiers mean the same thing everywhere.
 
 ### When the disassembler does not follow control flow
 
-On the C64 the disassembler walks the code and mints a symbol at every
-branch target, so the coverage queue is populated for you. A platform whose
-annotation surface is a **control file** (the ZX Spectrum's SkoolKit
-`.ctl`) has no such tracer: `sna2skool.py` disassembles only the bytes a
-`c` block tells it to. Before the loop above can start, the code and data
-have to be separated by hand. Two cheap sources, used together: the
-emulator's **executed-address map** (ZEsarUX's `cpu-code-coverage get`),
-which finds the code that runs including everything reached by `jp (hl)`;
-and a **recursive trace** from the entry points, which adds the code a
-static walk can reach. Everything neither found is data, unless `refs` on
-it says a routine reads it as a table. The platform's tool skill says how.
+Where the disassembler walks the code and mints a symbol at every branch
+target, the coverage queue is populated for you. Where the annotation
+surface is instead a **control file** - typed blocks the disassembler obeys
+rather than derives - nothing separates the code from the data for you, and
+it has to be done before the loop above can start. Two cheap sources, used
+together:
+
+- **The emulator's executed-address map**: every address the CPU executed
+  while you drove the game through the states you could reach. It finds the
+  code that runs, including what only a computed jump reaches.
+- **A recursive trace from the entry points**: decode from every address the
+  map gives, follow every branch and call target, repeat. It adds the code a
+  static walk can reach that the recorded play never ran.
+
+Everything neither found is data, unless a reference says a routine reads it
+as a table.
+
+**Iterate, because a wrong type hides what it calls.** A walk decodes only
+what it is given, so a stretch filed as data also hides the routines *it*
+calls, and the map sweep on its own will report that stretch as data too.
+Repeat the sweep until a pass adds nothing, then believe the total. A single
+pass under-reports, and the difference is not a rounding error: see the entry
+in `kit/lessons/` for the run that measured both. The platform's tool skills
+say which commands produce the map, how to turn it into the control file's
+format, and how to read the result back.
 
 ## Rules that keep the number honest
 

@@ -9,8 +9,9 @@ executed-address map (ZEsarUX's `cpu-code-coverage get`), which finds the
 code that runs including everything reached by `jp (hl)`; and a recursive
 trace from the entry points, which adds what a static walk can reach.
 Everything neither found is data, unless `refs` says a routine reads it as
-a table. `50-coverage` now has the step, and the ZEsarUX skill has the
-command and its traps.
+a table. The core skill now carries the rule, the platform tool skill the
+commands, and the review that followed this run added the part that matters
+most: **the sweep has to be iterated** (see the entry for 3 October 2026).
 
 **When the game overwrites its own screen, the hand-over snapshot is the
 disassembly base.** This game's play snapshot differed from its entry

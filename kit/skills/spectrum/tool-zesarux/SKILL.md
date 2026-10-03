@@ -76,7 +76,7 @@ lists all 129.
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
 | Machine | `get-current-machine` | `ZX Spectrum 48k` |
 | Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine |
-| Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler |
+| Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler; see "From the map to a control file" below, and iterate that sweep - one pass under-reports |
 
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
 `get-visualmem-read-dump` and `get-visualmem-written-dump` (the memory a
@@ -182,6 +182,38 @@ block can be typed. Two cheap sources of truth, used together:
 
 Save both to the game's `work/` and treat them as a cache: the committed
 `symbols.json` is what counts.
+
+### From the map to a control file
+
+`cpu-code-coverage get` returns space-separated hex addresses; SkoolKit's
+`sna2ctl.py` wants **one `$XXXX` per line**, so a one-liner converts it, and
+then the control file is built from the map directly:
+
+```sh
+tr ' ' '\n' < work/cov-play.txt | sed 's/^/\$/' > work/map.txt
+python3 tools/skoolkit/bin/sna2ctl.py -m work/map.txt work/entry.sna > work/from-map.ctl
+```
+
+Two things to know about its output. Its addresses are **decimal** unless you
+pass `-l`, so a diff against the kit's own `.ctl` needs converting. And it
+writes `t` blocks where the bytes look printable, which is a guess: check each
+one before keeping it.
+
+**Run it more than once, and let each pass feed the next.** A walk decodes
+only what the previous typing gave it, so a stretch filed as data hides every
+routine it calls, and the map sweep reports that stretch as data in the same
+pass. Rebuild the map from the control file's `call`/`jp`/`jr` targets, run
+`sna2ctl.py` again, and repeat until a pass changes nothing. Measured on the
+first game this was done to: one pass found **3,320** bytes of reachable code
+typed as data; the fixpoint found **5,934**. The 2,600-byte gap was all of it
+behind stretches the first pass still called data - a 13-byte region held a
+`CALL` into a 611-byte routine that neither the map nor the walk could see
+until the 13 bytes were retyped.
+
+A recursive trace of the same kind (`work/agents/a3_trace.py` in that game's
+`work/`) reaches the fixpoint faster than repeated `sna2ctl.py` runs, because
+it adds a target's whole chain as soon as it finds it. Whichever you use, the
+test is the same: a further pass must add nothing.
 
 ## Input
 
