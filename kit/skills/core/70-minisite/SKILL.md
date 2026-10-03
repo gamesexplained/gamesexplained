@@ -5,8 +5,6 @@ description: Build the game's minisite. The "How it works" page (index.html) fro
 
 # The minisite
 
-Start the clock: `python3 kit/scripts/clock.py start 70-minisite --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
-
 The minisite is the deliverable: a small site that explains the game, where
 the writing is the spine but anything that explains the game can live
 (widgets, level browsers, tune players, even a full JavaScript port of the
@@ -304,9 +302,7 @@ This is a first-class part of the minisite, not an extra: a reader who
 can play the game while reading how it works understands it better than
 one who only reads. The page's mechanic widgets are usually the seed.
 Omit the tab only if there is genuinely nothing playable to put on it.
-No tier requires the Play tab, so it never blocks Silver or Gold. A Play
-tab added to a game after its run is timed as its own step:
-`clock.py start play`.
+No tier requires the Play tab, so it never blocks Silver or Gold.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in

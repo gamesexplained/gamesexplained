@@ -2,8 +2,8 @@
 """Which models are proven, and which games still need a maintainer's check.
 
 A model is proven when it has run both 50-coverage and 60-verify on a
-trusted game at Silver or above, going by that game's timings.json. A game
-is trusted when it was made under kit 0.0.32 or earlier (merged after a
+trusted game at Silver or above, going by `step_models` in that game's
+game.json. A game is trusted when it was made under kit 0.0.32 or earlier (merged after a
 maintainer's review, the only check there was), when every model that ran
 its coverage and verify steps was already proven, or when a maintainer has
 checked it (kit/CHECKING.md) and recorded the check as `verification` in
@@ -23,7 +23,7 @@ claude-opus-5-5, run with a larger context, so either proves the other.
 
 Usage:
   models.py                  the proven models, each with the games that proved it
-  models.py is-proven <id>   exit 0 if proven, 1 if not
+  models.py is-proven <id>   say whether a model is proven; exit 0 if it is, 1 if not
   models.py check            exit 1 if a Silver-or-above game needs a check it lacks
   models.py --test           self-check on made-up games (writes only to a temp dir)
 """
@@ -42,25 +42,22 @@ def base(model):
 
 
 def games():
-    """(game dir, game.json, timings entries) for every game."""
+    """(game dir, game.json, its step_models) for every game."""
     out = []
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
-        gdir = os.path.dirname(gj)
         try:
             g = json.load(open(gj))
         except (OSError, ValueError):
             continue
-        tp = os.path.join(gdir, "timings.json")
-        try:
-            t = json.load(open(tp)).get("entries", []) if os.path.isfile(tp) else []
-        except (OSError, ValueError):
-            t = []
-        out.append((gdir, g, t))
+        sm = g.get("step_models")
+        out.append((os.path.dirname(gj), g, sm if isinstance(sm, dict) else {}))
     return out
 
 
-def step_models(entries, step):
-    return {base(e.get("model")) for e in entries if e.get("step") == step}
+def step_models(sm, step):
+    """The models game.json `step_models` names for a step, as {"50-coverage": ["<model id>", ...]}."""
+    ms = sm.get(step) or []
+    return {base(m) for m in ([ms] if isinstance(ms, str) else ms)}
 
 
 def declared():
@@ -156,7 +153,7 @@ def settle():
     untrusted = []
     for gdir, g, t, used in pending:
         if not used:
-            why = "timings.json has no 50-coverage or 60-verify step to say which model did them"
+            why = "game.json has no `step_models` for 50-coverage or 60-verify to say which model did them"
         else:
             why = verification_problem(g.get("verification"), P)
         untrusted.append((gdir, sorted(used - set(P)), why))
@@ -188,7 +185,7 @@ def test():
     import tempfile
     global ROOT
     keep = ROOT
-    steps = lambda *models: {"entries": [{"step": s, "model": m} for m in models for s in PROVING_STEPS]}
+    steps = lambda *models: {s: list(models) for s in PROVING_STEPS}
     check_ok = {"by": "someone", "model": "old-hand", "date": "2026-01-01", "checked": 33, "wrong": 0}
     made = {
         "first":  ({"tier": "silver", "kit_version": "0.0.20"}, steps("old-hand")),                # before the rule
@@ -206,8 +203,7 @@ def test():
             for slug, (g, t) in made.items():
                 d = os.path.join(tmp, "games", "x", slug)
                 os.makedirs(d)
-                json.dump(g, open(os.path.join(d, "game.json"), "w"))
-                json.dump(t, open(os.path.join(d, "timings.json"), "w"))
+                json.dump(dict(g, step_models=t), open(os.path.join(d, "game.json"), "w"))
             P, untrusted = settle()
             assert set(P) == {"old-hand", "newcomer"}, P                  # a passed check proves the run's model
             assert "guesser" not in P                                      # a refuted one's does not
@@ -231,7 +227,13 @@ def main():
         for m in sorted(P):
             print(f"{m}  ({', '.join(P[m])})")
     elif a[0] == "is-proven" and len(a) == 2:
-        sys.exit(0 if is_proven(a[1]) else 1)
+        if is_proven(a[1]):
+            print(f"{a[1]} is a proven model"); return
+        print(f"{a[1]} is not a proven model (proven: {', '.join(sorted(proven())) or 'none'}).\n"
+              "The run may go on. Tell the contributor now, in plain words: an untested model often produces\n"
+              "results that read as right and are wrong, and this game cannot be Silver until a maintainer has\n"
+              "checked it (kit/CHECKING.md). Until then its tier is bronze (AGENTS.md, \"Model\").")
+        sys.exit(1)
     elif a[0] == "check":
         n = check()
         if n:

@@ -5,7 +5,7 @@ description: The annotation loop. Measure comprehension with the shared coverage
 
 # Measure comprehension, not disassembly
 
-Start the clock: `python3 kit/scripts/clock.py start 50-coverage --model <your model id> games/<platform>/<slug>`. The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes of wall clock with nine agents on disjoint ranges. One agent is several times slower per kilobyte. Note the agent count when you stop the clock, and their model in the note if it differs from yours.
+Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game proves the model or needs a maintainer's check (`kit/CHECKING.md`). The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes with nine agents on disjoint ranges. One agent is several times slower per kilobyte.
 
 Disassembly coverage flatters you. Bytes can be decoded, labelled, even
 commented nearby, and still understood by nobody. The shared metric
@@ -328,8 +328,7 @@ Routines are independent, so the burn-down parallelises. What matters:
   stop on the limit, export at once, wait for the reset and resume each
   agent with a message (the harness's resume, not a new agent), telling
   it what is already in the disassembler. A new agent rereads its range
-  from nothing. Stop the clock while the run waits, with a note saying
-  why: the wall clock otherwise counts hours of nothing as the step's.
+  from nothing.
 - **Correct the brief the moment a fact in it turns out wrong**, and say
   in it that it was corrected. Agents still running read the old line;
   their reports will contradict it, which is how one run found that its

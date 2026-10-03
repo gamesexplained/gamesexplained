@@ -2,8 +2,8 @@
 
 Written in the retrospective (`kit/skills/core/80-retro`). Which skill text
 changed what the run did, what the skills and kit got wrong or left out,
-what was changed, what needs a maintainer's decision, what took longest,
-operating system and tool versions.
+what was changed, what needs a maintainer's decision, what cost the most
+time, operating system and tool versions.
 
 ## Skill text that changed what I did
 
@@ -33,8 +33,6 @@ problem, what it cost, what to change and where", which the repository
 files when the pull request merges. Prose around the bullets is free;
 check_docs.py checks the bullets.>
 
-## What took longest
+## What cost the most time
 
-<the table from `python3 kit/scripts/clock.py report`>
-
-The one change to the kit that would have saved the most minutes:
+<one sentence: the single change to the kit that would have saved the most time>

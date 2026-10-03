@@ -81,7 +81,7 @@ model it tested is not credited with the result:
 ```
 
 A model named under `failed` is not proven by this game, whatever
-`timings.json` says it ran. `check_docs.py` (through `models.py check`)
+`step_models` in its `game.json` says it ran. `check_docs.py` (through `models.py check`)
 fails any game at Silver or above that ran on an unproven model and has
 no passing `verification`. Once the game is merged, its models count as
 proven for every run after it.

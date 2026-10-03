@@ -5,10 +5,6 @@ description: The last step of every run. Name the skill text that changed what y
 
 # Retrospective: improve the kit
 
-Start the clock: `python3 kit/scripts/clock.py start 80-retro --model <your model id> games/<platform>/<slug>`.
-After a Gold pass, leave it off, here and in step 4: the pass is not
-timed, and `clock.py` refuses its retro.
-
 You have just used the kit on a real game. Nobody knows better than you,
 right now, where it was wrong, missing or unclear, and which of it
 helped. This step turns that into the diff that saves the next
@@ -84,19 +80,16 @@ unnoticed.
    about this game belongs in its `facts.md`. `check_docs.py` enforces
    the separation.
 4. **Write `kit-feedback.md`** in the game folder: what you changed in
-   the kit, what took longest, anything about your operating system or
-   tool versions that the install notes should say, and your asks for a
-   maintainer (step 5). List each change in one line: the file and what
+   the kit, what cost the most time, anything about your operating system
+   or tool versions that the install notes should say, and your asks for
+   a maintainer (step 5). List each change in one line: the file and what
    it now says. Where the reason is a lesson (step 6), name the lesson's
    file and stop there: a lesson is written once, in that file. A change
    that teaches nothing of the kind (a script, a path, the site) gives
-   its reason here. For "what took longest",
-   run `python3 kit/scripts/clock.py stop` and then `clock.py report`, and
-   paste the table. Under it, one sentence naming the single change to
-   the kit that would have saved the most minutes. A run takes hours, so
-   a saved half hour compounds across every game after yours; that
+   its reason here. Under "What cost the most time", one sentence naming
+   the single change to the kit that would have saved the most; that
    sentence is usually a lesson, because it changes what the next agent
-   does. `timings.json` is committed with the game.
+   does.
 5. **Send each ask for a maintainer to the issue tracker.** An ask is a
    change you would make but did not, because it is a maintainer's call:
    a rule to loosen, a bug in a tool upstream, a change to the site, to
@@ -175,8 +168,9 @@ unnoticed.
    stops at `bronze`, and `TODO.md` and the pull request say it waits on
    the maintainer's check in `kit/CHECKING.md`), tools and versions,
    with `tools.host` naming the operating system and the processor (the
-   status page counts the games made on each kind of computer from it), model (every model that appears in
-   `timings.json`, and the subagents' model if different), copy
+   status page counts the games made on each kind of computer from it), model (every model the run used,
+   and the subagents' model if different), `step_models` (the models that
+   ran `50-coverage` and `60-verify`, which `models.py` reads), copy
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
@@ -199,8 +193,7 @@ unnoticed.
 
 Skill and kit edits committed on the branch and included in the pull
 request; the run's entry in `kit/lessons/`, if it taught one;
-`kit-feedback.md` naming the skill text that changed what you did, with
-the timings table; each ask for a
-maintainer filed as a `kit-ask` issue, or written in full in
-`kit-feedback.md` for the repository to file on merge; `timings.json`;
-`game.json` complete; `TODO.md` current.
+`kit-feedback.md` naming the skill text that changed what you did; each
+ask for a maintainer filed as a `kit-ask` issue, or written in full in
+`kit-feedback.md` for the repository to file on merge; `game.json`
+complete; `TODO.md` current.
