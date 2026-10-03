@@ -42,6 +42,39 @@ A committed `symbols.json` plus the contributor's own `.sna` rebuild the
 control file, and the control file rebuilds `symbols.json`; neither holds
 the memory image, so both are safe to commit.
 
+## The first control file, from an execution map
+
+Before any of the above can run, a whole-image game has to have its code
+separated from its data: `sna2skool.py` disassembles the bytes a `c` block
+tells it to, and nothing mints those blocks for you (`50-coverage`, "When the
+disassembler does not follow control flow"). SkoolKit will do it from a
+**code execution map**:
+
+```sh
+tr ' ' '\n' < work/cov-play.txt | sed 's/^/\$/' > work/map.txt
+python3 tools/skoolkit/bin/sna2ctl.py -m work/map.txt work/entry.sna > work/from-map.ctl
+```
+
+`-m` takes one `$XXXX` address per line. The map comes from the emulator
+(`kit/skills/spectrum/tool-zesarux`, "Finding a game's code", says how to
+record one). Two traps in the output: its addresses are written in **decimal**
+unless `-l` is passed, so comparing against the kit's own `.ctl` needs a
+conversion; and it emits `t` (text) blocks where the bytes look printable,
+which is the tool's guess about your game rather than a fact, so check each
+one before keeping it.
+
+**Run it more than once, and let each pass feed the next.** The map marks
+the code that ran, and the walk from it follows what it decodes - so a
+stretch filed as data also hides every routine that stretch calls, in the
+map sweep and in any trace that trusts the same typing. Rebuild the map from
+the control file's `call`/`jp`/`jr` targets, run `sna2ctl.py` again, and
+repeat until a pass changes nothing. Measured on the first game this was
+done to: one pass found **3,320** bytes of reachable code typed as data and
+the fixpoint found **5,934**, the whole 2,600-byte difference hidden behind
+stretches the first pass still called data - a 13-byte region held a `CALL`
+into a 611-byte routine that neither the map nor the walk could see until
+those 13 bytes were retyped.
+
 ## The control file, as far as the kit writes it
 
 Full syntax: the "Control files" chapter of the manual. The subset

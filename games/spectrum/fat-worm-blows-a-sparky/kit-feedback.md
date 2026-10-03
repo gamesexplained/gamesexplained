@@ -28,9 +28,12 @@ below were filed as `kit-ask` issues for this second pass:
    afford 115058"), and nothing in the kit says to check a balance before a
    fan-out, to lower `max_tokens`, or what a `60-verify` should do when its
    independent sample cannot run.
-3. **#180 — `sna2ctl.py -m <map>` belongs in a SkoolKit tool skill.** #128
-   carries it in `tool-zesarux` because `kit/spectrum/tool-skoolkit/SKILL.md`
-   is added by #127, which is unmerged; it should move when that lands.
+3. **#180 — `sna2ctl.py -m <map>` belongs in a SkoolKit tool skill.** Filed
+   when `kit/spectrum/tool-skoolkit/SKILL.md` was #127's unmerged file and
+   #128 therefore had nowhere to put the step. **#127 merged during this
+   pass**, the step moved into `tool-skoolkit` ("The first control file, from
+   an execution map"), and `tool-zesarux` now keeps only the emulator's half
+   and points at it. Ask closed.
 
 ## What took longest
 
@@ -97,14 +100,15 @@ platform starts with it. What the review added is that the step must
   finding that makes the difference: **a wrong type hides what it calls**, so
   the sweep must repeat until a pass adds nothing. Measured here: one pass
   found 3,320 mistyped bytes, the fixpoint 5,934.
-- **`kit/skills/spectrum/tool-zesarux` gained "From the map to a control
-  file"**: the `tr`/`sed` one-liner that turns `cpu-code-coverage get` output
-  into `sna2ctl.py`'s one-address-per-line map, the trap that its addresses
-  are **decimal** unless `-l` is passed, the trap that its `t` (text) blocks
-  are the tool's guess and must be checked, and the fixpoint requirement.
-  The review's ask was to rewrite `50-coverage` around `sna2ctl.py`; the
-  command lives here because `tool-skoolkit` is #127's file, which is what
-  #180 asks a maintainer to finish.
+- **`kit/skills/spectrum/tool-skoolkit` gained "The first control file, from
+  an execution map"**: the `tr`/`sed` one-liner that turns
+  `cpu-code-coverage get` output into `sna2ctl.py`'s one-address-per-line
+  map, the trap that its addresses are **decimal** unless `-l` is passed,
+  the trap that its `t` (text) blocks are the tool's guess and must be
+  checked, and the fixpoint requirement. `tool-zesarux` keeps the emulator's
+  half - the coverage command and the map's format - and points at it. This
+  is where the review asked for the step to live; it could not go there
+  until #127 merged, which it did during this pass (#180, closed).
 - **`70-minisite` gained the boundary-value sweep** for widget ports: every
   boundary value of each input register plus random cases, with the case
   count in the caption, and the example of a port that agreed with the game
@@ -180,10 +184,13 @@ platform starts with it. What the review added is that the step must
   mention**: it writes addresses in decimal unless `-l` is passed, and it
   emits `t` (text) blocks on its own guess about printable bytes. Both are
   now in the `tool-zesarux` step.
-- **The seam between #127 and #128 made the review's kit ask
-  unanswerable as written.** "Rewrite `50-coverage` around `sna2ctl.py`"
-  needs a SkoolKit skill to live in, and `tool-skoolkit` is #127's unmerged
-  file. Filed as #180 rather than duplicating the file.
+- **The seam between #127 and #128 made the review's kit ask unanswerable
+  for an hour.** "Rewrite `50-coverage` around `sna2ctl.py`" needs a
+  SkoolKit skill to live in, and `tool-skoolkit` was #127's unmerged file, so
+  #128 put the step in `tool-zesarux` and filed #180. #127 merged while the
+  pass was running; the step moved and the ask closed, but a run cannot
+  know when to wait for a stacked PR and when to place something
+  temporarily.
 
 ## Operating system and tools
 

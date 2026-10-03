@@ -185,37 +185,30 @@ block can be typed. Two cheap sources of truth, used together:
 Save both to the game's `work/` and treat them as a cache: the committed
 `symbols.json` is what counts.
 
-### From the map to a control file
+### The map, as this emulator writes it
 
-`cpu-code-coverage get` returns space-separated hex addresses; SkoolKit's
-`sna2ctl.py` wants **one `$XXXX` per line**, so a one-liner converts it, and
-then the control file is built from the map directly:
+`cpu-code-coverage get` returns space-separated hex addresses - instruction
+starts - and the control-file tools want **one address per line**, so a
+one-liner converts it:
 
 ```sh
 tr ' ' '\n' < work/cov-play.txt | sed 's/^/\$/' > work/map.txt
-python3 tools/skoolkit/bin/sna2ctl.py -m work/map.txt work/entry.sna > work/from-map.ctl
 ```
 
-Two things to know about its output. Its addresses are **decimal** unless you
-pass `-l`, so a diff against the kit's own `.ctl` needs converting. And it
-writes `t` blocks where the bytes look printable, which is a guess: check each
-one before keeping it.
+SkoolKit's `sna2ctl.py -m work/map.txt` builds the first control file from
+that; `kit/skills/spectrum/tool-skoolkit`, "The first control file, from an
+execution map", has the command, the two traps in its output, and the
+requirement that matters: **run it more than once.** A walk decodes only what
+the previous typing gave it, so a stretch filed as data hides every routine
+it calls, in the map sweep and in any trace that trusts the same typing.
+Repeat until a pass adds nothing - on the first game this was done to, one
+pass found 3,320 bytes of reachable code typed as data and the fixpoint
+found 5,934.
 
-**Run it more than once, and let each pass feed the next.** A walk decodes
-only what the previous typing gave it, so a stretch filed as data hides every
-routine it calls, and the map sweep reports that stretch as data in the same
-pass. Rebuild the map from the control file's `call`/`jp`/`jr` targets, run
-`sna2ctl.py` again, and repeat until a pass changes nothing. Measured on the
-first game this was done to: one pass found **3,320** bytes of reachable code
-typed as data; the fixpoint found **5,934**. The 2,600-byte gap was all of it
-behind stretches the first pass still called data - a 13-byte region held a
-`CALL` into a 611-byte routine that neither the map nor the walk could see
-until the 13 bytes were retyped.
-
-A recursive trace of the same kind (`work/agents/a3_trace.py` in that game's
-`work/`) reaches the fixpoint faster than repeated `sna2ctl.py` runs, because
-it adds a target's whole chain as soon as it finds it. Whichever you use, the
-test is the same: a further pass must add nothing.
+A recursive trace reaches the fixpoint faster than repeated `sna2ctl.py`
+runs, because it adds a target's whole chain as soon as it finds it: decode
+from every address the map gives, follow every branch and call target, and
+repeat. The test is the same either way: a further pass must add nothing.
 
 ## Input
 

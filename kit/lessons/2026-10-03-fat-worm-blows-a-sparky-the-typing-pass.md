@@ -13,8 +13,8 @@ stretches the first pass still called data. The clearest case was 13 bytes
 at `$7790` holding `CALL $7C13 ... CALL $D05E`; while it was data, the
 611-byte halt screen at `$D05E` was invisible to the map *and* to the walk.
 `50-coverage` now says to repeat the sweep until a pass adds nothing, and
-the ZX Spectrum's `tool-zesarux` has the commands and the decimal-address
-trap in `sna2ctl.py`'s output.
+the ZX Spectrum's `tool-skoolkit` has the command and the decimal-address
+trap in `sna2ctl.py`'s output, and `tool-zesarux` the map's format.
 
 **Measure a fill; do not count its loop bodies.** `$D37D` builds the halt
 screen's pattern by pushing with `SP=$0000`, working down from `$FFFF`. Its
