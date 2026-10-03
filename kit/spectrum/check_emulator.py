@@ -16,10 +16,11 @@ The test program (assembled below, so it is source and not a binary):
   $8011  loop: passes += 1        (a 16-bit counter at $9000)
   $8019         keys = ~(port $FEFE) & $18   (row 0: bit 4 = V, bit 3 = C)
   $8023         out ($FE),0       (border black; an OUT, and a write to port $FE)
-  $8027         jp loop
-  $802A  dead:  dead_count += 1 ; ret        (never reached: nothing jumps here)
+  $8027         ld ($9010),hl ; ld hl,($9010)   (the 16-bit pair the watchpoint checks count)
+  $8030         jp loop
+  $8033  dead:  dead_count += 1 ; ret        (never reached: nothing jumps here)
 
-  $9000 passes (2)   $9002 keys   $9004 dead_count (always 0)
+  $9000 passes (2)   $9002 keys   $9004 dead_count (always 0)   $9010 watch (2)
 
 Interrupts are off in the default program, so the ROM never runs and every value is
 known in advance: the counter is the measurement, $9002 is what the machine saw of
@@ -44,6 +45,7 @@ WORKAROUNDS = "kit/skills/spectrum/tool-zesarux/workarounds.md"
 
 BASE = 0x8000
 PASSES, KEYS, DEADCOUNT = 0x9000, 0x9002, 0x9004
+WATCH_LO = 0x9010        # a 16-bit variable the loop stores to and loads from, for the watchpoint checks
 FRAMES = 0x5C78          # the ROM's 3-byte frame counter: the ROM's ISR increments it once per interrupt
 STACK = 0xA000
 ROW0 = 0xFEFE            # port $FEFE: V C X Z CapsShift, with A = $FE in `in a,($fe)`
@@ -114,6 +116,9 @@ def program(interrupts=False):
     op(0x2F, 0xE6, 0x18)                      # cpl ; and $18
     op(0x32, KEYS & 0xFF, KEYS >> 8)          # ld ($9002),a    what the machine saw of the keys
     op(0x3E, 0x00, 0xD3, 0xFE)                # ld a,0 ; out ($FE),a    border black
+    op(0x21, 0x34, 0x12)                      # ld hl,$1234
+    op(0x22, WATCH_LO & 0xFF, WATCH_LO >> 8)  # ld ($9010),hl    a 16-bit store the watchpoint checks count
+    op(0x2A, WATCH_LO & 0xFF, WATCH_LO >> 8)  # ld hl,($9010)    and a 16-bit load
     jp("loop")                                # jp loop
     lab("dead"); op(0x21, DEADCOUNT & 0xFF, DEADCOUNT >> 8)   # ld hl,$9004
     op(0x34, 0xC9)                            # inc (hl) ; ret     -- never reached
@@ -437,6 +442,34 @@ def p3(rpc):
     rpc.bp_clear()
 
 
+@phase("watchpoints: a store and a load")
+def p_watch(rpc):
+    """The instrument-is-not-dead tests for memory watchpoints, and how they count.
+
+    The loop stores a 16-bit value to $9010 and loads it back. ZEsarUX fires a memory
+    watchpoint on the address line at the end of the instruction, which for a 2-byte
+    access is the last byte touched: $9011. Watching $9010 counts nothing, and a script
+    that picks the first byte concludes the instrument is dead.
+    """
+    def watch(cond, opcodes=20000):
+        rpc.bp_clear()
+        rpc.bp_set(1, cond)
+        rpc.bp_passcount(1, 10 ** 9)          # a limit nothing reaches: this counts, it does not stop
+        rpc.enter_step()
+        rpc.run(limit=opcodes, timeout=20)
+        return rpc.bp_count(1)[0]
+
+    hi_w, lo_w = watch(f"MWA={WATCH_LO + 1:04X}H"), watch(f"MWA={WATCH_LO:04X}H")
+    check("watch-store", hi_w > 0 and lo_w == 0,
+          "a store watchpoint counts the last byte a 16-bit store touches, and the first byte counts nothing",
+          f"MWA={WATCH_LO + 1:04X}H counted {hi_w}, MWA={WATCH_LO:04X}H counted {lo_w}")
+    hi_r, lo_r = watch(f"MRA={WATCH_LO + 1:04X}H"), watch(f"MRA={WATCH_LO:04X}H")
+    check("watch-load", hi_r > 0 and lo_r == 0,
+          "a load watchpoint counts the last byte a 16-bit load touches, and the first byte counts nothing",
+          f"MRA={WATCH_LO + 1:04X}H counted {hi_r}, MRA={WATCH_LO:04X}H counted {lo_r}")
+    rpc.bp_clear()
+
+
 @phase("interrupts: the rate, and the phase a load loses")
 def p_interrupts(rpc):
     """The ROM's interrupt, running: the tests that need a clock the host cannot move.
@@ -651,7 +684,7 @@ def main():
     if not any(n == "program-runs" and ok for n, ok in results):
         print("\nthe test program never ran; stopping here")
         sys.exit(1)
-    for step in (p1, p3, p_interrupts, p4, p2):
+    for step in (p1, p3, p_watch, p_interrupts, p4, p2):
         fresh(rpc)
         step(rpc)
     rpc = p2_restart(rpc)
