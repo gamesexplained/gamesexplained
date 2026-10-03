@@ -82,13 +82,12 @@ tested. Typical tests:
   watching the routine accept it proves what the *code* does. It does not
   prove a player can get there: the way the loop orders its tests may make
   the state unreachable from any legal one, and that is a fact worth more
-  than the poke. When a corner case turns on a state the player has to fly
-  into, write an exact model of the movement routine, search it for an
-  input sequence from a state the player can plainly reach, then replay
-  that sequence in the emulator with the game's control read redirected to
-  a table (see the platform's tool notes) and compare every pass against
-  the model. Publish the sequence with the result; a route someone else can
-  replay is the evidence.
+  than the poke. Search for an input sequence from a state the player can
+  plainly reach with the game's own movement code ("Negative results",
+  above), then replay it in the emulator with the game's control read
+  redirected to a table (see the platform's tool notes). Publish the
+  sequence with the result; a route someone else can replay is the
+  evidence.
 
 ## Measuring without fooling yourself
 
@@ -161,6 +160,15 @@ wave number that only advances when the player is destroyed, compared
 against the documented number at the point where the game ends. Trace the
 path from the destruction flag to the next start of play before declaring
 the counter absent; the answer is usually one `inc` on that path.
+
+## A number handed through a request byte
+
+When one routine leaves a number in a variable for another to act on (a
+tune to start, a sound to play, a screen to show), the number's meaning
+is decided by the routine that takes it. Read that routine before
+writing what the values mean: it may subtract one, use the value as an
+offset, or treat one value as a different command. The callers alone
+read as the answer and can be off by one throughout.
 
 ## Writing facts.md
 

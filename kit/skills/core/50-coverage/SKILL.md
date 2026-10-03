@@ -89,14 +89,10 @@ same way, so tiers mean the same thing everywhere.
   holds the instruction decides). `listing.py <game dir> --relabel` puts a
   change to `io` into `listing.json` without the snapshot. An instruction
   reached both ways keeps one name; say the other in its comment.
-  A game in VIC bank 3 can keep graphics there without banking anything:
-  the video chip reads the RAM beneath the I/O while the CPU sees the
-  chips. Nothing references those bytes by address, so no symbol points at
-  them and the ledger never counts them. Whenever `$DD00` selects bank 3,
-  look at the snapshot's RAM at `$D000`-`$DFFF` for sprite and character
-  data (one run found 64 sprite shapes there only when its page's gallery
-  asked for a police ship's frames). `listing.py` names that RAM whenever
-  it holds data and `game.json` has not said what it is (below).
+  A game can also keep graphics there without banking anything, for the
+  video chip alone (on the C64, `c64-reference`, "RAM the CPU cannot
+  see"); `listing.py` names that RAM whenever it holds data and
+  `game.json` has not said what it is (below).
 - **Is the picture loaded or drawn?** Compare a snapshot taken before the
   game's first instruction (the loader's hand-over) with one in play. A
   screen or bitmap that is already there before the game runs is authored
@@ -148,6 +144,13 @@ is: label and describe it, or list it in `game.json` under
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
 game reached 100 % with 1.6 KB of its own tables and its picture's
 colours outside the count.
+
+The list only finds data that sits at the same address in both images:
+data the start-up copies elsewhere (out of the way of the I/O area, under
+a ROM, into another bank) differs between them and is never listed.
+Search the play snapshot for the start-up's copy loops' destinations, and
+check each against the ledger; one game reached 100 % with half a
+kilobyte of moved graphics outside every span. <!-- until #146 -->
 
 ## Inline parameters: the reason a flow disassembler stalls
 
@@ -245,28 +248,24 @@ Routines are independent, so the burn-down parallelises. What matters:
   `tools.py stop` leaves the disassembler up while its logs are newer
   than the export, and says so; `--force` is for a session you mean to
   lose.
-- **Renaming an auto symbol keeps its reach.** A label set over one the
-  tracer minted keeps its type, and with it the 64-byte span of an auto
-  symbol, so a long table named that way still leaves its tail uncounted.
-  Give the tail a label of its own, or describe it from the table's
-  start.
 - **One figure per agent.** `coverage.py <game> --live --range $2000 $27FF`
   prints the figure and the work queue for one agent's range alone; the
   whole-image queue is mostly other agents' work.
 - Agents read into neighbours' ranges for context; ranges prevent write
   collisions, not two agents naming the same thing. Catch that when
   merging.
+- **Find the loaded data before you split the image.** Go through the
+  list in "Data the ledger cannot see" before choosing the ranges, not
+  only before calling 100 %. One game's agents finished with 16 KB of map
+  and sprite images still outside the count, left for the lead alone;
+  found first, they are a range in a brief.
 - Brief them cold, from `brief.md` beside this file: copy it to the
   game's `work/BRIEF.md` and fill it in. It asks for the feature list,
   `facts.md` so far, the rules above, the exact client command with each
   agent's own log, and the report you want back.
-- **A brief carries only what has been checked**: traced to the code or
-  seen live. The template has two headings for facts. Under "Established"
-  each line names its evidence; anything without evidence goes under
-  "Guesses", with what would settle it. An agent treats its brief as
-  ground truth, so an unchecked guess there costs every agent that meets
-  it the time to disprove it. The report asks each agent what became of
-  each guess.
+- **A brief carries only what has been checked**: each fact under
+  "Established" names its evidence, and the rest goes under "Guesses"
+  (the template's opening comment says why).
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
 

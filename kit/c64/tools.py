@@ -186,9 +186,14 @@ def vice(machine="x64sc"):
           port=6510, name="emulator")
 
 
-def r2000(path):
+def r2000_exe():
+    """The disassembler: tools/cargo/bin first, then one on the path; None when there is neither."""
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
-    exe = local if os.path.exists(local) else shutil.which("regenerator2000")
+    return local if os.path.exists(local) else shutil.which("regenerator2000")
+
+
+def r2000(path):
+    exe = r2000_exe()
     if not exe:
         sys.exit("no regenerator2000; run: cargo install --root tools/cargo regenerator2000")
     if up(3000):
@@ -205,9 +210,23 @@ def r2000(path):
 # emulator through `script`, and on a macOS release build bin/x64sc is a shell wrapper that execs
 # VICE.app/Contents/Resources/bin/x64sc, so the process holding :6510 has neither of those as its
 # first word. Every match still has to lie under this clone's tools/, so no other clone is touched.
-# The emulator alone is killed: its wrappers (script, bash, xvfb-run) exit with it.
+# The emulator alone is killed (kill_matching): its wrappers (script, xvfb-run) exit with it. Killing
+# xvfb-run as well stops it before it can shut its Xvfb down and delete its folder under /tmp,
+# which left one of each behind per start on Linux (2 October 2026). On macOS the release's two
+# shell wrappers match the pattern and are signalled with the emulator; `script` exits after them,
+# and nothing was left (v3.13.2 dmg, 2 October 2026).
 STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
                  "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
+WRAPPERS = ("script", "xvfb-run")
+
+
+def kill_matching(pattern):
+    """Signal the processes whose command line matches, except the wrappers the launcher put round them."""
+    pids = subprocess.run(["pgrep", "-f", "--", pattern], capture_output=True, text=True).stdout.split()
+    for pid in pids:
+        comm = subprocess.run(["ps", "-o", "comm=", "-p", pid], capture_output=True, text=True).stdout.strip()
+        if os.path.basename(comm) not in WRAPPERS:
+            subprocess.run(["kill", pid], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def elapsed(etime):
@@ -279,7 +298,7 @@ def stop(which="all", force=False):
         if held:
             kinds.remove("r2000")    # the disassembler stays up; anything else asked for still stops
     for k in kinds:
-        subprocess.run(["pkill", "-f", "--", STOP_PATTERNS[k]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        kill_matching(STOP_PATTERNS[k])
     if kinds:
         time.sleep(1)
     status()
@@ -445,9 +464,17 @@ def verify_footprint():
     except Exception:
         where = out[:200]
     print("snapshot written to:", where)
-    if where and os.path.exists(where) and not up(3000):
-        r2000(where)                       # exercise the disassembler too
+    # exercise the disassembler too, where it can be; the check still covers the emulator where it cannot
+    covered = "the emulator only"
+    if not r2000_exe():
+        print("no regenerator2000, so the disassembler is not checked; install it (kit/c64/INSTALL.md) "
+              "and run this again to cover it")
+    elif up(3000):
+        print("a disassembler already answers on :3000, so it is not checked; stop it and run this again to cover it")
+    elif where and os.path.exists(where):
+        r2000(where)
         stop("r2000", force=True)          # its own, on a throwaway snapshot: nothing to export
+        covered = "the emulator and the disassembler"
     stop("vice")
     inside = os.path.realpath(ROOT)
     words = ("vice", "x64", "regenerator", "r2000")
@@ -483,7 +510,7 @@ def verify_footprint():
         except OSError: pass
     if hits or not ok_inside:
         sys.exit("FOOTPRINT NOT CLEAN - contain it (see kit/INSTALL.md, 'The footprint principle') or add it to the Uninstall list")
-    print("OK - the footprint is clean on this machine")
+    print(f"OK - the footprint is clean on this machine, for {covered}")
 
 
 def main():

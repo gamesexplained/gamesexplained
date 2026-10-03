@@ -71,7 +71,11 @@ step needs something only they have.
    The noreply address keeps their real one private and still links each
    commit to their account. GitHub's email settings page shows it,
    sometimes with a number in front (`<id>+<login>@users.noreply.github.com`);
-   either form works. Then prove it with a commit that goes nowhere:
+   either form works. Ask them to tick "Keep my email addresses private"
+   on that page too: a pull request merged with "Squash and merge" is
+   authored with the account's primary address unless it is, and the
+   site cannot credit that commit to them. Then prove it with a commit
+   that goes nowhere:
 
    ```
    git switch -c identity-check
@@ -127,7 +131,7 @@ step needs something only they have.
    `main`, never the fork's own `main`, where it reaches nobody. When
    you cannot open it there (a cloud session on a fork never can), give
    the contributor the link that does,
-   `https://github.com/gamesexplained/gamesexplained/compare/main...<login>:gamesexplained:<branch>`,
+   `https://github.com/gamesexplained/gamesexplained/compare/main...<login>:<fork>:<branch>`,
    and the description to paste. If you cannot push or open it (no fork,
    no login), leave the branch where it is and say exactly what is
    missing.

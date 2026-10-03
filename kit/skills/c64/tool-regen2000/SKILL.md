@@ -73,9 +73,6 @@ the game folder, or pass `--game`, so the log lands in the right place.
   outside the loaded binary range", while `read_region` shows the same
   bytes. Ask `get_cross_references`, `get_symbols`, `get_comments` and
   `read_region` instead.
-- **Never bulk-disassemble every labelled address** to recover coverage.
-  Labels sit on data tables too; disassembling them corrupts the display.
-  Undo with `r2000_set_data_type` to `undefined`.
 - The project file (`.regen2000proj`) embeds the memory image. It stays in
   `work/` and is never committed. `symbols_import.py` rebuilds it from
   `symbols.json` plus a snapshot.

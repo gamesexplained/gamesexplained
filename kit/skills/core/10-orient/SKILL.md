@@ -27,6 +27,12 @@ annotate it byte by byte.
    choose the plain game (no cheats) unless the contributor says
    otherwise, and record the choice in `orientation.md`.
 
+   **Read the file's header before trusting its name.** An extension
+   says what the file was called, not what it is: a file named as a
+   plain sector image can be a GCR image of a protected original, which
+   needs the drive emulation the platform's tool notes describe. Record
+   what the header says in `orientation.md`.
+
    **Ask what the image is before trusting it.** A backup of a running
    game (a snapshot saved by a freezer cartridge, a packed memory dump)
    is the game as it stood when it was saved, not as its loader left it,
@@ -49,7 +55,13 @@ annotate it byte by byte.
    vectors (the platform reference says where they live and what the
    system defaults are). A vector pointing into RAM is the game's own
    handler; that handler is the spine of the engine. Verify against a
-   second known address before trusting it.
+   second known address before trusting it. A game whose interrupt
+   handlers chain, each writing the next one's address into the vector,
+   shows only one of them in a vector read. Record a frame
+   (`kit/c64/frame.py capture` on the C64): its writes to the vector name
+   every handler in the chain, with the line each runs on, and tracing
+   from all of them can reach code that nothing else calls, such as the
+   music driver.
 4. **Save a snapshot** of the machine in play. Name it by state
    (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds
@@ -104,15 +116,12 @@ original worth checking.
   reference), so it can be read directly for sweeps without the emulator.
 - Chip state (video, sound, timers) lives in named modules inside the
   snapshot; the names are readable text, so a string search finds them.
-- On an emulator that fails its check that checkpoints survive a load,
-  a loaded snapshot looks exactly like one that came back without its
-  timer interrupt running; read that workaround first.
-- A loaded snapshot can come back without its timer interrupt running.
-  Symptom: the CPU sits in a wait loop and nothing moves. It can also
-  come back with the processor port `$01` at a different value and the
-  CPU somewhere in the KERNAL with a garbage screen; the file is still
-  good for the disassembler. Autostart the
-  image again rather than fighting it. **Before believing that, sample the
+- A loaded snapshot can seem to come back dead: the CPU in a wait loop
+  and nothing moving, or `$01` changed and the CPU in the KERNAL with a
+  garbage screen. On an emulator that fails its check that checkpoints
+  survive a load, the instrument is off, not the game; read that
+  workaround first. The file is still good for the disassembler; autostart
+  the image again rather than fighting it. **Before believing that, sample the
   program counter several times.** A live machine returns a scatter of
   addresses; one that returns the same address every time is parked in a
   sync loop or is not executing at all, and the second of those is usually

@@ -95,6 +95,7 @@ the chips' registers after `kit/c64/registers.py` (`vic_sprite0_x`,
 | `$D016` | control 2: bit 4 multicolour, bit 3 40/38 columns, bits 0–2 horizontal scroll |
 | `$D018` | memory pointers: high nibble × `$0400` = screen base, bits 3–1 × `$0800` = character base, both within the VIC bank. Work it in binary: `$8E` is `1000 111x`, screen 8 × `$0400` = `$2000`, characters 7 × `$0800` = `$3800`, so with bank 1 that is `$6000` and `$7800`; `$8E` and `$8F` are the same pair, and bit 0 means nothing |
 | `$D019`/`$D01A` | interrupt status / enable |
+| `$D01E`/`$D01F` | sprite-sprite / sprite-background collisions: a bit per sprite, set by the hardware, cleared by reading the register |
 | `$D01C` | sprite multicolour; `$D01D`/`$D017` X/Y expand; `$D01B` priority |
 | `$D020`/`$D021` | border / background colour; `$D022`–`$D024` extra backgrounds |
 | `$D025`–`$D026` | sprite multicolours; `$D027`–`$D02E` sprite colours |
@@ -188,9 +189,6 @@ timer rather than the raster. Compute the rate from the latch: clock /
 (latch + 1). A latch of `$411B` is about 59 Hz on PAL, not 50. Every
 tempo, lifetime and duration derived from a tick count inherits this.
 
-**Count in the unit of the loop that decrements.** A timer decremented once
-per player move lasts moves, not ticks.
-
 **Some games have no tick at all.** A game whose only `cli` is in its
 attract loop runs with interrupts masked while you play, times itself with a
 counting loop, and is synchronised to nothing. Count the `cli` and `sei`
@@ -241,8 +239,8 @@ settles which.
 runs once a pass, not once a frame, and a pass can take several frames.
 Most scanners also keep only one of two held keys and ignore a key equal
 to the last one until a scan has seen none, so a doubled letter needs a
-release in between. Hold each key until the game's own key variable
-changes, release it, and wait for the scan to see no key before the next.
+release in between. `tool-vice-mcp`, "Typing into a game", says how to
+type into one.
 
 ## Interrupts
 
@@ -427,8 +425,6 @@ may use neither (see `30-text`).
   game keeps its own copy of the status line to stamp onto the screen, and
   finding that copy while hunting for the RAM offset gives an offset that is
   wrong by the distance between the two.
-- An unread twin of a table can exist after a relocating loader. Check
-  which copy the code reads.
 - PAL vs NTSC changes the clock and so every derived rate; state which one
   the emulator was set to.
 - **A note table is tuned for one clock.** SID frequencies are clock-

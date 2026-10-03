@@ -5,7 +5,9 @@
   kit/skills/core/       workflow only: no game names
   kit/skills/<platform>/ platform facts only: no game names
   games/*/*/facts.md, features.md   current truth, no narration of past mistakes
-  kit/CHANGELOG.md   lessons only: every entry names the game that taught it
+  games/*/*/kit-feedback.md   the skill text that changed what the run did, named in the
+                     form skill_usage.py counts, or "None." (kit/skills/core/80-retro, step 1)
+  kit/lessons/       one entry a file, under one heading that names the game that taught it
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
   games/*/*/game.json   Silver or above only on proven models, or checked (models.py)
@@ -57,11 +59,24 @@ def main():
     if titles:
         for sk in glob.glob(os.path.join(ROOT, "kit", "skills", "*", "*", "*.md")):
             fails += scan(sk, titles, "a specific game named in a reusable skill")
-        for n, line in enumerate(open(os.path.join(ROOT, "kit", "CHANGELOG.md"), encoding="utf-8"), 1):
-            if line.startswith("## ") and not any(re.search(t, line) for t in titles):
-                print(f"  x  kit/CHANGELOG.md:{n}  a changelog entry that names no game: every lesson comes from one")
-                print(f"        {line.strip()[:88]}")
+        for f in sorted(glob.glob(os.path.join(ROOT, "kit", "lessons", "*.md"))):
+            if os.path.basename(f) == "README.md":
+                continue
+            rel = os.path.relpath(f, ROOT)
+            lines = open(f, encoding="utf-8").read().splitlines()
+            heads = [ln for ln in lines if ln.startswith("## ")]
+            if len(heads) != 1 or not re.match(r"## (next|\d+\.\d+\.\d+) · ", lines[0] if lines else ""):
+                print(f"  x  {rel}  a lesson file is one entry: its first line, and its only '## ' line, is")
+                print(f"        ## next · <date> · <game> · <who>   (the kit-version workflow numbers 'next')")
                 fails += 1
+            elif not any(re.search(t, heads[0]) for t in titles):
+                print(f"  x  {rel}  a lesson that names no game: every lesson comes from one")
+                print(f"        {heads[0].strip()[:88]}")
+                fails += 1
+    if os.path.exists(os.path.join(ROOT, "kit", "CHANGELOG.md")):
+        print("  x  kit/CHANGELOG.md  lessons are one file each in kit/lessons/, so pull requests never")
+        print("        conflict over them: python3 kit/scripts/changelog_to_lessons.py moves this branch's")
+        fails += 1
     for f in glob.glob(os.path.join(ROOT, "games", "*", "*", "facts.md")) + \
              glob.glob(os.path.join(ROOT, "games", "*", "*", "features.md")):
         fails += scan(f, NARRATION, "narrating a past mistake (belongs in agent-history.md)")
@@ -74,6 +89,11 @@ def main():
     for f in sorted(set(published)):
         fails += scan(f, HOME, "a path on the contributor's computer (name where it can be had instead)")
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from skill_usage import parse as named_skill_text
+    for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "kit-feedback.md"))):
+        for n, msg in named_skill_text(f)["problems"]:   # the words themselves: skill_usage.py --game
+            print(f"  x  {os.path.relpath(f, ROOT)}:{n}  skill text that changed what I did: {msg}")
+            fails += 1
     from models import check as models_check
     fails += models_check()
     from maintainer_asks import check as asks_check

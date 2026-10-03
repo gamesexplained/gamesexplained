@@ -114,11 +114,16 @@ def pause(rpc, timeout=5.0):
 
     vice_execution_pause alone can leave the emulator in VICE's own pause loop at the
     vertical sync, part way through an instruction (the pause-at-instruction check). There
-    the registers read stale, a register set is lost, and a snapshot saved or loaded is
-    wrong (workarounds.md). A one-frame vice_frame_advance from there finishes the
-    instruction and stops; from a proper stop it runs one frame. Either way the machine
-    ends on the first instruction after a vertical sync. A stopped machine is left where
-    it is. Returns False if it did not stop within timeout seconds.
+    the registers read stale, a register set is lost at the next instruction, and a snapshot
+    loaded keeps the old registers. A snapshot saved there holds the stale registers and the
+    video chip between two frames: loaded later, it runs the last line twice, and from then on
+    the emulator's pictures sit a line low and each frame ends on line 311 instead of 0, in
+    every snapshot saved after it, until a reset (frame.py measures it as picture_lines_low).
+    The tell is the raster line, which reads the frame's last. The v3.13.2 releases passed
+    the check on 2 October 2026. A one-frame vice_frame_advance from there finishes the
+    instruction and stops; from a proper stop it runs one frame. Either way the machine ends
+    on the first instruction after a vertical sync. A stopped machine is left where it is.
+    Returns False if it did not stop within timeout seconds.
     """
     if paused(rpc):
         return True
