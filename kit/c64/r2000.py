@@ -17,14 +17,23 @@ Parallel agents share one disassembler but must not share one log: appends
 from several processes interleave and the replay is then unusable. Give each
 agent its own --log (or set ANNOTATION_LOG) and merge the files afterwards.
 
-Requires `regenerator2000 --mcp-server <file>` listening on :3000.
+Requires `regenerator2000 --mcp-server <file>` listening on :3000 (or KIT_R2000_PORT; `tools.py r2000` starts either).
 
 Calls that come back as an error are not logged, so a replay does not
 reproduce your mistakes. A batch is logged as a whole, so check its result.
 """
 import json, os, sys, urllib.request
 
-URL = "http://127.0.0.1:3000/mcp"
+def _port():
+    """KIT_R2000_PORT, else the port the launcher last started the disassembler on, else 3000 (kit/c64/tools.py)."""
+    try:
+        return int(os.environ.get("KIT_R2000_PORT") or
+                   open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "r2000-port")).read())
+    except (OSError, ValueError):
+        return 3000
+
+
+URL = f"http://127.0.0.1:{_port()}/mcp"
 MUTATING = {"r2000_set_label_name", "r2000_set_comment", "r2000_set_data_type",
             "r2000_disassemble", "r2000_batch_execute", "r2000_toggle_splitter",
             "r2000_add_scope", "r2000_set_immediate_format", "r2000_apply_enum_usage",
@@ -77,6 +86,20 @@ def call(rpc, name, arguments):
 def failed(out):
     """True when a tool call came back as an error rather than a result."""
     return out.lstrip().startswith("{") and '"error"' in out
+
+
+def read_live():
+    """(blocks, symbols, comments) from the running server, in symbols.json's
+    vocabulary. symbols_export.py calls this for a c64 game."""
+    rpc = make_client()
+    blocks = json.loads(call(rpc, "r2000_get_blocks", {}))
+    syms = json.loads(call(rpc, "r2000_get_symbols", {}))
+    comments = json.loads(call(rpc, "r2000_get_comments", {}))
+    return ([{"start": b["start_address"], "end": b["end_address"], "type": b["type"]} for b in blocks],
+            [{"address": s["address"], "name": s["name"], "type": s["type"],
+              "kind": s.get("kind", "user").lower()} for s in syms],
+            [{"address": c["address"], "type": c["type"], "text": c["comment"]}
+             for c in comments if c["comment"].strip()])
 
 
 def game_dir(explicit=None):

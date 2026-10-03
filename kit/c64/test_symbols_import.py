@@ -7,11 +7,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-spec = importlib.util.spec_from_file_location(
-    "kit_symbols_import", Path(__file__).resolve().parents[1] / "scripts" / "symbols_import.py")
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
-project_blocks = module.project_blocks
+def load(name):
+    """kit/c64/<name>.py by path: regenerator2000's writer and the .vsf reader live here."""
+    spec = importlib.util.spec_from_file_location(
+        "kit_c64_" + name, Path(__file__).resolve().with_name(name + ".py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+project_blocks = load("project").project_blocks
+snapshot_module = load("snapshot")
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "kit/scripts"))
 import ledger
@@ -51,7 +57,8 @@ class ProjectBlocksTests(unittest.TestCase):
             symbols["blocks"] = [b for b in symbols["blocks"] if b["type"] != "Undefined"]
             (work / "symbols.json").write_text(json.dumps(symbols))
             snapshot = work / "synthetic.vsf"
-            snapshot.write_bytes(bytes(module.VSF_RAM_OFFSET + 0x10000))
+            magic = snapshot_module.MAGIC          # the reader refuses a file without it
+            snapshot.write_bytes(magic + bytes(snapshot_module.VSF_RAM_OFFSET - len(magic) + 0x10000))
             project = work / "roundtrip.regen2000proj"
             for script, args in (
                 ("symbols_import.py", [work, snapshot, project]),

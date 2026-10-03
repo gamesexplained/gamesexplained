@@ -37,11 +37,11 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def load(gdir, live):
-    from symbols_export import from_live, regions
+    from symbols_export import read_live, regions, platform_of
     game = json.load(open(os.path.join(gdir, "game.json")))
     reg = regions(game)
     if live:
-        blocks, syms, comments = from_live(game.get("platform", "c64"))
+        blocks, syms, comments = read_live(platform_of(game))
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms, comments = s["blocks"], s["symbols"], s["comments"]

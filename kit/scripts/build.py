@@ -8,6 +8,10 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
+Those are the default tabs. A game that wants others lists all of its tabs, in
+order, in game.json's "tabs" as [file, label] pairs; every authored page it
+names is copied through, and a page in the folder that no tab names is left out
+with a warning (about-layout.html, the game's own About template, aside).
 Every tab but Source lists its sections in the left margin (pagenav).
 Plus a home page with the catalogue and the games most recently added or changed
 (from git history), site/lib/, kit.html (kit/lessons/, newest first),
@@ -29,6 +33,12 @@ import glob, html, html.parser, json, os, re, shutil, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
 PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES"}
+# The footprint widget and the extra script it needs, per platform: a page loads only
+# its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
+PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap"}
+PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"]}
+# How the footprint blurb names the address space, so the C64 pages keep their copy.
+PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 64 KB"}
 TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
         ("play.html", "Play"), ("about.html", "About")]
 _warned = set()
@@ -131,7 +141,7 @@ def hexint(v):
 def footprint(gdir, game):
     """Classify all 65536 bytes. Returns (runs, totals, symbols)."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from symbols_export import regions as cov_regions
+    from symbols_export import regions as cov_regions, PLATFORM_DEFAULTS, platform_of
     lp = os.path.join(gdir, "listing.json")
     if not os.path.isfile(lp):
         rel = os.path.relpath(gdir, ROOT)
@@ -166,11 +176,13 @@ def footprint(gdir, game):
         k = "rom" if re.search(r"\bROMs?\b", name, re.I) else "runtime"   # the word, not "from"
         for a in range(lo, hi + 1):
             cat[a] = k; why[a] = name
-    # video charset: graphics
+    # video charset: graphics. Its size is the machine's (symbols_export.PLATFORM_DEFAULTS):
+    # the C64's font is 2 KB, the Spectrum's ROM font 768 bytes.
     v = game.get("video") or {}
     if v.get("charset"):
         a0 = hexint(v["charset"])
-        for a in range(a0, a0 + 0x800):
+        cs = PLATFORM_DEFAULTS.get(platform_of(game), {}).get("charset_size", 0x800)
+        for a in range(a0, a0 + cs):
             if cat[a] != "unused":
                 cat[a] = "graphics"; why[a] = "character set"
     # declared regions win
@@ -287,13 +299,9 @@ def banner(game, cons):
     return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
 
 
-# the file in the game folder each tab is written from; the Source and About tabs are
-# assembled, so they point at the prose the reader sees most of
-EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "solution.html": "solution.html", "play.html": "play.html",
-                "mechanics.html": "mechanics.html", "music.html": "music.html",
-                "gameplay.html": "gameplay.html", "controls.html": "controls.html", "graphics.html": "graphics.html",
-                "discoveries.html": "discoveries.html",
-                "source.html": "facts.md", "about.html": "features.md"}
+# the tabs build.py assembles, which every game has, and the file each one's edit link opens:
+# the prose the reader sees most of. Every other tab is a page in the game folder, edited as it is
+ASSEMBLED = {"source.html": "facts.md", "about.html": "features.md"}
 
 
 def edit_footer(game, tab):
@@ -304,7 +312,7 @@ def edit_footer(game, tab):
     """
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
     where = f'games/{game["platform"]}/{game["slug"]}'
-    f = EDIT_SOURCES[tab]
+    f = ASSEMBLED.get(tab, tab)
     edit, hist, tree = (f"{repo}/edit/main/{where}/{f}", f"{repo}/commits/main/{where}", f"{repo}/tree/main/{where}")
     return (f'<footer class="editfoot"><div class="in">'
             f'<p><b>Spotted a mistake, or know something we don\u2019t?</b> '
@@ -560,14 +568,38 @@ def fill(tpl, **kw):
     return tpl
 
 
-AUTHORED = ("index.html", "gameplay.html", "controls.html", "levels.html", "solution.html", "play.html", "mechanics.html", "graphics.html",
-            "music.html", "discoveries.html")
 LIB = "../../lib"   # site/lib/ as a game's pages see it
+LAYOUTS = ("about-layout.html",)   # a game's own template for an assembled tab, not a page of its own
+PAGE_NAME = re.compile(r"[a-z0-9-]+\.html")   # a tab is a page beside index.html, never a path
 
 
-def present_tabs(gdir):
-    """The tabs a game has: the three every game gets, and the authored ones it wrote."""
-    return {"index.html", "source.html", "about.html"} | {f for f in AUTHORED if os.path.exists(os.path.join(gdir, f))}
+def authored(gdir, game=None):
+    """The pages a game writes itself, in tab order: index.html, and every page its tabs name
+    (game.json's "tabs", or TABS when it has none) that is not assembled and is in its folder."""
+    if game is None:
+        game = json.load(open(os.path.join(gdir, "game.json")))
+    names = [f for f, _ in game.get("tabs", TABS) if f != "index.html" and f not in ASSEMBLED and PAGE_NAME.fullmatch(f)]
+    return ["index.html"] + [f for f in dict.fromkeys(names) if os.path.isfile(os.path.join(gdir, f))]
+
+
+def present_tabs(gdir, game=None):
+    """The tabs a game has: the assembled ones every game gets, and the pages it wrote."""
+    return set(ASSEMBLED) | set(authored(gdir, game))
+
+
+def check_tabs(gdir, game):
+    """Warn about a tab whose page is missing, and a page no tab names: the build leaves both out."""
+    where = os.path.relpath(gdir, ROOT).replace(os.sep, "/")
+    for f, _ in game.get("tabs", []):
+        if not PAGE_NAME.fullmatch(f):
+            warn(f"{where}: game.json has a tab for {f!r}, which is not a page name like controls.html; the tab is left out")
+        elif f not in ASSEMBLED and not os.path.isfile(os.path.join(gdir, f)):
+            warn(f"{where}: game.json has a tab for {f}, which is not in the folder; the tab is left out")
+    pages = set(authored(gdir, game)) | set(LAYOUTS)
+    for p in sorted(glob.glob(os.path.join(gdir, "*.html"))):
+        if os.path.basename(p) not in pages:
+            warn(f"{where}: {os.path.basename(p)} is not published, because no tab names it: "
+                 "list every tab, this one included, in game.json's \"tabs\"")
 
 
 def authored_page(gdir, game, f, nav, ban, src=None):
@@ -588,16 +620,19 @@ def build_game(gdir, out_root):
     out = os.path.join(out_root, plat, slug)
     os.makedirs(out, exist_ok=True)
     lib = LIB
-    present = present_tabs(gdir)
+    check_tabs(gdir, game)
+    present = present_tabs(gdir, game)
     cons = contributors(gdir)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
+    platform_scripts = "".join(f'<script src="{lib}/{f}"></script>' for f in PLATFORM_MAP_LIBS.get(plat, []))
     common = dict(title=html.escape(game.get("title", slug)), lib=lib, build=html.escape(game.get("build") or ""),
-                  platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
-                  publisher=html.escape(game.get("publisher") or ""))
-    for f in AUTHORED:
-        if f in present:
-            open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
+                  platform=plat, platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
+                  publisher=html.escape(game.get("publisher") or ""),
+                  platform_map=PLATFORM_MAPS.get(plat, "C64Map"), platform_scripts=platform_scripts,
+                  platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
+    for f in authored(gdir, game):
+        open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
     # source
     facts = markdown(read(os.path.join(gdir, "facts.md")))
     cheats = read(os.path.join(gdir, "cheats.md"))
@@ -664,7 +699,7 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 """
 
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js")
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js")
 
 
 def version_lib(out_root):
@@ -1090,8 +1125,9 @@ def cut_blocks(games):
     kit/START.md removes it with everything only it used; until then it is dead weight."""
     out = []
     for g in games:
-        for f in AUTHORED:
-            n = len(re.findall(r"<[a-zA-Z][^<>]*\sdata-cut\b", read(os.path.join(ROOT, "games", g["platform"], g["slug"], f))))
+        gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
+        for f in authored(gdir, g):
+            n = len(re.findall(r"<[a-zA-Z][^<>]*\sdata-cut\b", read(os.path.join(gdir, f))))
             if n:
                 out.append((f'games/{g["platform"]}/{g["slug"]}/{f}', g.get("tier", "none"), n))
     return out

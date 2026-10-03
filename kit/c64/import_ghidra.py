@@ -20,7 +20,8 @@ import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from listing import OPS, LEN
+sys.path.insert(0, str(Path(__file__).resolve().parent))    # kit/c64, where cpu.py holds the table
+from cpu import OPS, LEN
 from symbols_export import regions
 
 ROW = re.compile(r'^(?:(\w+)::)?([0-9a-f]{4})\s+([0-9a-f]+|\?\?)\s+(\S+)(.*)$')

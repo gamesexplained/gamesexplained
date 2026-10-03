@@ -9,7 +9,7 @@ also called tools.py, and a platform's own scripts `import tools` to reach their
     sys.path.append(os.path.join(os.path.dirname(HERE), "scripts"))
     import launcher
 """
-import glob, json, os, shutil, socket, subprocess, sys, tempfile, time
+import glob, json, os, shlex, shutil, socket, subprocess, sys, tempfile, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 WRAPPERS = ("script", "xvfb-run")      # what launchers put round a tool; stopping a tool leaves them to exit
@@ -31,7 +31,7 @@ def with_pty(cmd, log):
     if sys.platform == "darwin":
         return ["script", "-q", log] + cmd
     if shutil.which("script"):
-        return ["script", "-q", "-c", " ".join(f'"{c}"' for c in cmd), log]
+        return ["script", "-q", "-c", shlex.join(cmd), log]
     return cmd  # no `script` (Windows): try without; report what happens in kit-feedback.md
 
 

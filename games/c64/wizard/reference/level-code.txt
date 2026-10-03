@@ -1,0 +1,525 @@
+WIZARD: LEVEL CALLBACK EXCERPTS
+
+Addresses below refer to each separately loaded LnnT overlay at $C300.
+Player and thief collection call $C376 after the configured treasure patch, with X as treasure index.
+Reachable instruction excerpts follow; shared engine routines remain in the main Source tab.
+These traces describe code responses, not complete player routes or puzzle solutions.
+
+LEVEL 00: Playground
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 01: Shadow Lord
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 02: Look Before You Leap
+Treasure clears two three-cell gaps.
+C376 lda #$20
+C378 ldx #$03
+C37A sta $C401,x
+C37D sta $C422,x
+C380 dex
+C381 bne $C37A
+C383 rts
+
+LEVEL 03: Diamond Mine
+Treasure changes the key glyph and places a chalice or diamond.
+C376 ldy #$07
+C378 lda #$00
+C37A sta $C8E8,y
+C37D dey
+C37E bpl $C37A
+C380 cpx #$02
+C382 beq $C38A
+C384 lda #$1F
+C386 sta $C466
+C389 rts
+C38A lda $C318
+C38D sta $FB
+C38F lda $C319
+C392 sta $FC
+C394 ldy #$00
+C396 beq $C3F0
+C3F0 lda #$1C
+C3F2 sta ($FB),y
+C3F4 rts
+
+LEVEL 04: Trash Masher
+Treasure advances one of five crushing columns and writes a rope cell.
+C376 lda #$14
+C378 sta $D404
+C37B sta $D40B
+C37E lda #$1D
+C380 sta $C719
+C383 ldy #$07
+C385 lda #$5A
+C387 sta $CB18,y
+C38A dey
+C38B bpl $C387
+C38D ldy #$04
+C38F ldx #$09
+C391 lda $C306,y
+C394 sta $D000,x
+C397 dex
+C398 lda $C300,y
+C39B sta $D000,x
+C39E dex
+C39F lda #$DE
+C3A1 sta $C7F8,y
+C3A4 dey
+C3A5 bpl $C391
+C3A7 lda $D015
+C3AA ora #$BF
+C3AC sta $D015
+C3AF lda #$1F
+C3B1 sta $D01D
+C3B4 lda $C031
+C3B7 cmp #$CC
+C3B9 bcc $C3BF
+C3BB lda #$04
+C3BD bne $C3C1
+C3BF and #$03
+C3C1 tay
+C3C2 asl a
+C3C3 tax
+C3C4 lda $C306,y
+C3C7 cmp #$CD
+C3C9 bcs $C3FF
+C3CB adc #$08
+C3CD sta $C306,y
+C3D0 sta $D001,x
+C3D3 clc
+C3D4 lda $C316,y
+C3D7 adc #$28
+C3D9 sta $C316,y
+C3DC sta $FB
+C3DE lda $C353,y
+C3E1 adc #$00
+C3E3 sta $C353,y
+C3E6 sta $FC
+C3E8 ldy #$00
+C3EA lda #$63
+C3EC sta ($FB),y
+C3EE lda $FC
+C3F0 clc
+C3F1 adc #$14
+C3F3 sta $FC
+C3F5 lda #$0F
+C3F7 sta ($FB),y
+C3F9 rts
+C3FF rts
+
+LEVEL 05: Key Slime Pie
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 06: Great Balls of Fire
+Treasure replaces an eighteen-cell strip according to charges/index and reactivates disabled actors.
+C376 lda #$C3
+C378 sta $FC
+C37A lda $C7AB
+C37D cmp #$31
+C37F bcs $C385
+C381 lda #$C4
+C383 bne $C38F
+C385 txa
+C386 lsr a
+C387 bcs $C38D
+C389 lda #$D6
+C38B bne $C38F
+C38D lda #$E8
+C38F sta $FB
+C391 ldy #$11
+C393 lda ($FB),y
+C395 sta $C40B,y
+C398 lda #$0D
+C39A sta $D80B,y
+C39D dey
+C39E bpl $C393
+C3A0 lda #$20
+C3A2 sta $D01D
+C3A5 sta $D017
+C3A8 ldx #$05
+C3AA lda $D015
+C3AD lsr a
+C3AE pha
+C3AF bcs $C3BC
+C3B1 lda $C3FA,x
+C3B4 sta $C370,x
+C3B7 lda #$00
+C3B9 sta $C7F8,x
+C3BC pla
+C3BD dex
+C3BE bpl $C3AD
+C3C0 rts
+
+LEVEL 07: Simon Says (display level 08)
+Nonzero low color nibble at $D832 selects BEQ at $C38C: matching the remembered
+symbol is safe. Black selects BNE: a different symbol is safe. Failure sets
+$C02A, but both paths still update the next instruction and its color.
+
+X indexes the treasure slots built by $7BAA. $C400+X gives the collected
+symbol; $C410+X supplies the next requested symbol. The callback copies the
+latter to both the visible $C445 and remembered $C35F. The low two random
+bits select colors black, white, light green and cyan (0,1,13,3).
+
+Startup is special: the wizard at (168,197) automatically collects the pearl
+at $C733 (slot14) before movement. Its patch runs FIRST: seven repeats of
+three cyan bytes, stride3, destination $D832. This makes the words visible,
+so that pearl matches the initial $C35F=$1E and is safe. The callback then
+sets displayed and remembered request to chalice. Neutral-input startup
+was replayed live after selecting L07T at the loader; no pickup state was
+poked. The saved mismatching display/request is an initialization state.
+
+Original-code comparison:4096 cases (16 slots,4 remembered symbols,16 color
+nibbles,4 random low-bit values). Checked death, branch opcode, both next
+symbol stores and all13 color stores. Four isolated live callbacks check
+visible/hidden and matching/mismatching cases. Full completion route open.
+
+C376 lda $D832
+C379 and #$0F
+C37B beq $C381
+C37D lda #$F0
+C37F bne $C383
+C381 lda #$D0
+C383 sta $C38C
+C386 lda $C400,x
+C389 cmp $C35F
+C38C beq $C393
+C38E lda #$01
+C390 sta $C02A
+C393 lda $C410,x
+C396 sta $C445
+C399 sta $C35F
+C39C lda $C031
+C39F and #$03
+C3A1 cmp #$02
+C3A3 bne $C3A7
+C3A5 lda #$0D
+C3A7 ldx #$0C
+C3A9 sta $D832,x
+C3AC dex
+C3AD bpl $C3A9
+C3AF rts
+
+LEVEL 08: Wizard's Pet
+Treasure changes spell color and can create a rat in actor slot zero.
+C376 inc $C351
+C379 lda $C351
+C37C and #$03
+C37E tay
+C37F lda $C3F8,y
+C382 sta $C351
+C385 lda $C370
+C388 beq $C38B
+C38A rts
+C38B lda #$0E
+C38D sta $C370
+C390 lda #$00
+C392 sta $C7F8
+C395 lda #$01
+C397 sta $C052
+C39A sta $C03D
+C39D rts
+
+LEVEL 09: Aeropics
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 10: Haunted Castle
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 11: To Trap A Thief...
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 12: Phantom Archer
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 13: Rat Mountain
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 14: Leapin' Wizards
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 15: Wizard Blizzard
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 16: See Ya Later, Elevator
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 17: Burning Bridges
+Treasure swaps the two cells initially holding the key and upper exit.
+C376 lda $C5BB
+C379 pha
+C37A lda $C5DC
+C37D sta $C5BB
+C380 pla
+C381 sta $C5DC
+C384 rts
+
+LEVEL 18: 'Tons' of Elevators
+Treasure turns actor zero into a falling rock and changes its display mode.
+C376 lda #$06
+C378 sta $C370
+C37B lda $D01C
+C37E and #$FE
+C380 sta $D01C
+C383 rts
+
+LEVEL 19: For Your Ice Only
+Early treasures set the saved collision-color field $C36F to cyan; later calls gradually erase a glyph. The active collision comparison uses the separate $C0A3 value copied during initialization.
+C376 cpx #$03
+C378 bcs $C37F
+C37A lda #$03
+C37C sta $C36F
+C37F ldx $C38F
+C382 beq $C38C
+C384 lda #$00
+C386 sta $CAE0,x
+C389 dec $C38F
+C38C rts
+
+LEVEL 20: Rock 'n' Roll
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 21: The Immortal Portal
+Treasure index modulo four selects a slot and sets its type to 2, 3, 4 or 5. Both normal callers run $8D4B immediately before this callback; that routine leaves carry clear. All twelve spell names, sixteen indices and both earlier carry inputs were checked (384 cases).
+C376 txa
+C377 and #$03
+C379 tax
+C37A adc #$02
+C37C sta $C370,x
+C37F rts
+
+LEVEL 22: Treasure Island
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 23: Twilite Zone
+Treasure clears two actor velocity bytes and changes one row of a glyph.
+C311 txa
+C312 lsr a
+C313 tax
+C314 lda #$55
+C316 bcc $C31A
+C318 lda #$22
+C31A bne $C361
+C361 sta $CAE0,x
+C364 rts
+C376 lda #$00
+C378 sta $C052
+C37B sta $C059
+C37E beq $C311
+
+LEVEL 24: Dark Tower
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 25: Bats In The Belfry
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 26: The Yellow Brick Road
+Every fourth selected treasure index activates an arrow slot.
+C376 dex
+C377 txa
+C378 and #$03
+C37A bne $C385
+C37C txa
+C37D lsr a
+C37E lsr a
+C37F tax
+C380 lda #$01
+C382 sta $C370,x
+C385 rts
+
+LEVEL 27: Is It Live...?
+Treasure restores four actor colors from their header defaults.
+C376 ldx #$03
+C378 lda $C310,x
+C37B jmp $C3D8
+C3D8 sta $D027,x
+C3DB dex
+C3DC bpl $C378
+C3DE rts
+
+LEVEL 28: Friend or Foe?
+Treasure index two advances the key along a row, wrapping after forty cells. Its patch regenerates the gold bar, so repeated collection repeats the key movement.
+C376 cpx #$02
+C378 beq $C3BB
+C37A rts
+C3BB ldx $C3F7
+C3BE lda #$20
+C3C0 sta $C608,x
+C3C3 inx
+C3C4 cpx #$28
+C3C6 bne $C3CA
+C3C8 ldx #$00
+C3CA lda #$1B
+C3CC sta $C608,x
+C3CF lda #$01
+C3D1 sta $DA08,x
+C3D4 stx $C3F7
+C3D7 lda #$00
+C3D9 sta $D404
+C3DC sta $D40B
+C3DF inc $D02C
+C3E2 rts
+
+LEVEL 29: It's the Pits!
+Treasure places two pearls and replaces a glyph bitmap.
+C376 lda #$1E
+C378 sta $C5F0
+C37B sta $C690
+C37E bne $C3A8
+C3A8 ldy #$07
+C3AA lda #$3C
+C3AC jmp $C3D0
+C3D0 sta $CB28,y
+C3D3 dey
+C3D4 bpl $C3D0
+C3D6 rts
+
+LEVEL 30: Ladder Land
+Every pickup changes SID pitch and the saved $C36F collision-color field, not the separate active $C0A3 value. On odd pickup counts, slot1 clears three three-cell runs and advances each pointer one row, up to twenty times. This path requires $C066=0. Its patch regenerates the pearl. The alternate $C066 path changes actor movement fields instead.
+C376 inc $C3FF
+C379 lda $C3FF
+C37C and #$1F
+C37E sta $D401
+C381 sta $C36F
+C384 jmp $C390
+C390 lda $C3FE
+C393 bne $C396
+C395 rts
+C396 lda $C3FF
+C399 and #$01
+C39B bne $C39E
+C39D rts
+C39E lda $C066
+C3A1 bne $C3E0
+C3A3 cpx #$01
+C3A5 beq $C3A8
+C3A7 rts
+C3A8 ldx #$02
+C3AA lda $C3F0,x
+C3AD sta $FB
+C3AF lda $C3F3,x
+C3B2 sta $FC
+C3B4 lda #$20
+C3B6 ldy #$02
+C3B8 sta ($FB),y
+C3BA dey
+C3BB bpl $C3B8
+C3BD lda $FB
+C3BF clc
+C3C0 adc #$28
+C3C2 sta $C3F0,x
+C3C5 bcc $C3CA
+C3C7 inc $C3F3,x
+C3CA dex
+C3CB bpl $C3AA
+C3CD dec $C3FE
+C3D0 rts
+C3E0 lda #$FF
+C3E2 sta $C04E
+C3E5 lda #$00
+C3E7 sta $C055
+C3EA rts
+
+LEVEL 31: Totally Tubular
+The first two treasure indices set an actor support flag.
+C376 cpx #$02
+C378 bcs $C37F
+C37A lda #$01
+C37C sta $C03D,x
+C37F rts
+
+LEVEL 32: Shadows & Spectres
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 33: Madhouse
+Treasure rotates directional-arrow glyphs across the screen.
+C340 lda #$03
+C342 adc #$6D
+C344 sta ($FB),y
+C346 dey
+C347 bne $C382
+C349 dec $FC
+C34B dex
+C34C bne $C382
+C34E rts
+C376 lda #$00
+C378 sta $FB
+C37A lda #$C7
+C37C sta $FC
+C37E ldy #$47
+C380 ldx #$04
+C382 lda ($FB),y
+C384 sec
+C385 sbc #$6E
+C387 beq $C340
+C389 cmp #$04
+C38B bcs $C346
+C38D clc
+C38E bcc $C342
+
+LEVEL 34: T-Time
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 35: Hot Stuff
+Callback begins with RTS. All sixteen indexed treasure pickups, 1,536 timer-counter/phase cases and 4,096 consecutive terrain updates leave that entry unchanged. Bytes after it resemble a disabled routine, but decoding through $C380 enters patch storage (JSR $0000); removing RTS alone does not establish a working routine. No activation is demonstrated on these tested paths; the fragment’s historical purpose remains unknown.
+C376 rts
+
+LEVEL 36: Pyro-mid
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 37: Crispy Critters
+The callback returns immediately; configured terrain patches still apply.
+C376 rts
+
+LEVEL 38: Fire Alarm!
+The first callback changes two glyphs and patches itself to prevent repeating that part.
+C376 lda #$00
+C378 sta $C070
+C37B lda #$60
+C37D sta $C37B
+C380 ldx #$07
+C382 lda $C3A0,x
+C385 sta $CAE0,x
+C388 lda $C3B0,x
+C38B sta $CB28,x
+C38E dex
+C38F bpl $C382
+C391 rts
+
+LEVEL 39: Double Cross
+Treasure indices fourteen and fifteen choose one of two twelve-cell replacement strips.
+C376 lda #$C3
+C378 sta $FC
+C37A cpx #$0E
+C37C beq $C393
+C37E bne $C390
+C390 bcs $C397
+C392 rts
+C393 lda #$A8
+C395 bne $C399
+C397 lda #$E0
+C399 sta $FB
+C39B ldy #$0B
+C39D lda ($FB),y
+C39F sta $C737,y
+C3A2 dey
+C3A3 bpl $C39D
+C3A5 rts
