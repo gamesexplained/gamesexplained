@@ -28,7 +28,8 @@ import json, os, platform, re, shutil, subprocess, sys, tarfile, tempfile, urlli
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import tools   # noqa: E402  the launcher: ZESARUX_DIR, DOWNLOADS, app_path, build, stop, up, PORT
+import tools   # noqa: E402  the launcher, for ZESARUX_DIR, app_path and build
+from tools import up, DOWNLOADS   # noqa: E402
 
 UPSTREAM = "chernandezba/zesarux"
 
