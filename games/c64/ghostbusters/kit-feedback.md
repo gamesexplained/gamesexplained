@@ -58,9 +58,11 @@ This session could reach only the contributor's fork, so no issues were
 filed. The asks are in the pull request's description under
 "Maintainer asks".
 
-- `models.py` rejects the model id as the session names it,
-  `claude-opus-5-5[1m]` (the 1M-context form); the run records
-  `claude-opus-5-5`, with a note in `timings.json`.
+The one ask, that `models.py` rejected the model id as the session names
+it, `claude-opus-5-5[1m]` (the 1M-context form), was settled in the kit
+on 30 September 2026 without an issue: `models.py` reads a
+context-window suffix as the same model. The run records
+`claude-opus-5-5`, with a note in `timings.json`.
 
 ## What took longest
 

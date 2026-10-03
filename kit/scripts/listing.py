@@ -100,6 +100,10 @@ LEN = {"imp": 1, "acc": 1, "imm": 2, "zp": 2, "zpx": 2, "zpy": 2, "rel": 2,
        "abs": 3, "abx": 3, "aby": 3, "ind": 3, "izx": 2, "izy": 2}
 assert len(OPS) == 151, len(OPS)
 
+# Explicitly code-typed NMOS instruction verified in a game. Keep it
+# separate from the documented table used by other tooling.
+UNDOCUMENTED = {0xBF: ("lax", "aby")}
+
 
 def screencode(c):
     c &= 0x7F
@@ -435,8 +439,8 @@ def main():
         t = TYPES[btype[a]]
         if code[a]:
             op = ram[a]
-            if op in OPS:
-                m, mode = OPS[op]
+            if op in OPS or op in UNDOCUMENTED:
+                m, mode = OPS[op] if op in OPS else UNDOCUMENTED[op]
                 n = LEN[mode]
                 bs = list(ram[a:a + n])
                 rec.update({"t": "code", "b": bs, "m": m})

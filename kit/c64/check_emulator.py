@@ -15,6 +15,11 @@ kit/skills/c64/tool-vice-mcp/workarounds.md says, per name, what to do
 instead. Run it before the first game on a machine, and again after any
 new emulator build or release.
 
+Last, it looks for the server's quirks that kit/c64/vice.py absorbs. They
+are not checks and nothing is failed for them: each line says whether this
+build has the quirk, so that a release that loses one shows it. The
+helpers work either way.
+
 The test program runs one pass per frame, synchronised on raster line $F8:
 
   $C100/1  passes    counts up once per pass
@@ -94,11 +99,17 @@ LOOP, STORE_SIDE, WAIT1, END_BODY = LABELS["loop"], LABELS["store_side"], LABELS
 
 results = []
 has = set()            # tool names the server lists
+quirks = {}            # the server quirks vice.py absorbs: name -> this build still has it
 
 
 def check(name, ok, what, detail=""):
     print(f"{'PASS' if ok else 'FAIL'}  {name:28} {what}" + (f"  [{detail}]" if detail else ""), flush=True)
     results.append((name, bool(ok)))
+
+
+def quirk(name, present, what, detail=""):
+    print(f"{'HAS ' if present else 'NOT '}  {name:28} {what}" + (f"  [{detail}]" if detail else ""), flush=True)
+    quirks[name] = bool(present)
 
 
 def j(x):
@@ -523,6 +534,26 @@ def p_transport(rpc):
           "1600 calls with no pacing leave the server up and the machine running", f"{calls / dt:.0f} a second {err or ''}")
 
 
+@phase("server quirks that kit/c64/vice.py absorbs (not checks)")
+def p_quirks(rpc):
+    r = j(call(rpc, "vice_memory_read", {"address": "$0000", "size": 0x10000, "encoding": "hex"}))
+    quirk("read-64k", "data_hex" not in r, "a read of 65,536 bytes is refused; read_mem() reads in pieces")
+    r = j(call(rpc, "vice_memory_read", {"address": addr(PASSES), "size": 2, "encoding": "hex"}))
+    quirk("read-running", "data_hex" not in r, "a read on a running machine fails; read_mem() stops it for the read",
+          json.dumps(r)[:60] if "data_hex" not in r else "")
+    r = j(call(rpc, "vice_keyboard_matrix", {"key": "u", "pressed": False}))
+    quirk("key-lowercase", "unknown key name" in json.dumps(r).lower(), "a key named in lower case is refused; key() sends capitals")
+    r = j(call(rpc, "vice_snapshot_load", {"name": os.path.join(SNAPDIR, "emutest_p1.vsf")}))
+    quirk("snapshot-path", "invalid name" in json.dumps(r).lower(), "a snapshot's path is refused; snapshot_load() takes one")
+    call(rpc, "vice_execution_pause", {}); wait_paused(rpc)
+    call(rpc, "vice_machine_reset", {"mode": "soft", "run_after": True})
+    time.sleep(0.5)
+    st = ping(rpc)
+    quirk("reset-paused", st == "paused", "a reset with run_after leaves a stopped machine stopped; reset() resumes it", st)
+    run(rpc)
+    setup(rpc)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     build = tools("status").splitlines()[0]
@@ -547,7 +578,7 @@ def main():
     rpc = fresh(rpc)
     ref = p2(rpc)
     rpc = p2_restart(ref) if ref else rpc
-    for step in (p_keys, p_transport):
+    for step in (p_keys, p_transport, p_quirks):
         rpc = fresh(rpc)
         step(rpc)
     if "--keep" not in sys.argv:
@@ -562,7 +593,9 @@ def main():
     failed = sorted({n for n, ok in results if not ok})
     passed = sorted({n for n, ok in results if ok} - set(failed))
     summary = {"build": build, "when": time.strftime("%Y-%m-%d %H:%M"), "seconds": round(time.time() - started),
-               "passed": passed, "failed": failed}
+               "passed": passed, "failed": failed,
+               "quirks": {"present": sorted(n for n, v in quirks.items() if v),
+                          "gone": sorted(n for n, v in quirks.items() if not v)}}
     with open(os.path.join(OUT, "result.json"), "w") as f:
         json.dump(summary, f, indent=2)
     print(f"\n=== {len(results) - sum(1 for _, ok in results if not ok)} passed, "
@@ -572,6 +605,9 @@ def main():
         print(f"read {WORKAROUNDS} for each of these, and only these")
     else:
         print(f"nothing failed; {WORKAROUNDS} does not apply to this build")
+    if summary["quirks"]["gone"]:
+        print(f"server quirks this build does not have: {' '.join(summary['quirks']['gone'])} "
+              "(the helpers in kit/c64/vice.py work either way)")
     print(f"written to {os.path.relpath(os.path.join(OUT, 'result.json'), ROOT)}")
 
 

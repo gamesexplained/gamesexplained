@@ -61,7 +61,7 @@ class Ambiguous(Exception):
 
 def _game_platform(path, avail):
     """The platform of games/<platform>/ that `path` lies in, or None."""
-    rel = os.path.relpath(os.path.abspath(path), ROOT).split(os.sep)
+    rel = os.path.relpath(os.path.realpath(path), os.path.realpath(ROOT)).split(os.sep)   # on macOS /var is /private/var
     return rel[1] if len(rel) >= 3 and rel[0] == "games" and rel[1] in avail else None
 
 

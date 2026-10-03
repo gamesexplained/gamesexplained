@@ -31,12 +31,26 @@
 <section id="respawn">
   <p class="fig">Secret</p>
   <h2 class="t">Secret: after thirty defeats, beaten opponents come back</h2>
-  <p>Beating an opponent marks his place done, and a done place stays empty until the hero has beaten 30 opponents in all. After that, each time the game checks a done place as the hero reaches it, it brings the opponent back one time in four (<code>$2820</code>). Scrolls never come back: their records are skipped. A player on Lemon64<sup class="fn"><a href="about.html#src-5" title="A player's comments on Lemon64">5</a></sup> worked this out from play on the cassette version; the <a href="gameplay.html#return">Gameplay</a> tab sets the two side by side.</p>
+  <p>Beating an opponent marks his place done, and a done place stays empty until the hero has beaten 30 opponents in all. After that, each time the game checks a done place as the hero reaches it, it brings the opponent back one time in four (<code>$2820</code>). Scrolls never come back: their records are skipped (<code>$27F5</code>). A player on Lemon64<sup class="fn"><a href="about.html#src-5" title="A player's comments on Lemon64">5</a></sup> worked this out from play on the cassette version; the <a href="gameplay.html#return">Gameplay</a> tab sets the two side by side.</p>
 </section>
 <section id="meditation">
   <p class="fig">Quirk</p>
   <h2 class="t">Meditation counts every defeat, not the ones since last time</h2>
   <p>The manual says meditating raises the energy limit "depending on the number of opponents you have defeated since your last meditation"<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup>. The code reads a counter (<code>$048C</code>) that only a new game clears (<code>$2135</code>), so every defeat in the game counts, and meditating twice in a row gives the same limit. The limit reaches its ceiling of 127 after twenty defeats.</p>
+</section>
+<section id="trapdoor">
+  <p class="fig">Quirk</p>
+  <h2 class="t">The trapdoor below the volcano</h2>
+  <p>Bill McIntosh, who joined Beam in 1985, remembered Fist II for one thing a later rule would forbid: when Nintendo insisted that games be "complete-able", he pointed to the trapdoor in the floor of Fist II's last level, which "killed the player instantly". A player who played through again and jumped it, he said, met nine warriors who could not be beaten.<sup class="fn"><a href="about.html#src-15" title="Helen Stuckey, PhD thesis, 2016">15</a></sup></p>
+  <p>The trapdoor is in the code. Room 76, the last room before the volcano, has two drops in its floor, at columns 10 and 19, and they are the only way down into the volcano (<code>$4AEC</code>). Falling through either one tests the third scroll (<code>$0659</code>): if it has not been delivered, the hero's energy is set to nothing (<code>$0660</code>). With it, the fall is simply the way in. Kan, the trigram of danger that "can also afford protection", is what turns the trap into a door.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup></p>
+  <p>The nine warriors are not in this copy. The game can field a horde, an opponent followed by up to nine more (<code>$2875</code>, <code>$27A1</code>), but none of the 54 encounter records asks for one (<code>$E609</code>), and nothing changes a record except the bit that marks it beaten (<code>$3524</code>). Three of the volcano's four rooms hold one opponent each.</p>
+</section>
+<section id="manual">
+  <p class="fig">Quirk</p>
+  <h2 class="t">Three more places where the manual and the code part</h2>
+  <p>The manual warns that "you will be unable to smash through strong barriers ... with insufficient Chi".<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The test that decides whether a blow breaks a barrier (<code>$0A2E</code>) asks only for the right move at the right frame and the scroll for that kind of barrier, stone heaps (<code>$0A59</code>) or trees (<code>$0A44</code>). It never reads the hero's energy.</p>
+  <p>It also says that a poisoned hero "will not regain Chi" until a meditation cures him.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The routine that gives energy back, a point every 128 frames (<code>$2D14</code>), tests no poison flag; it pauses only while a room's barriers are being read again. The one place energy drains steadily is area 5, and there the drain stops when the eighth scroll is delivered (<code>$2CE4</code>), not after a meditation. No poison state was found anywhere in the code, which is a statement about this search.</p>
+  <p>And F5, the manual says, ends the game and returns to the demo.<sup class="fn"><a href="about.html#src-1" title="The C64 manual">1</a></sup> The Mindscape disk has no demo: F5 starts a new game at once (<code>$2444</code>).</p>
 </section>
 <section id="trap">
   <p class="fig">Quirk</p>
