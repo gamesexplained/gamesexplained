@@ -16,7 +16,7 @@ intel, three Linux distributions, Windows, a source tarball).
 
 Downloading is the contributor's answer to the question the plain command prints, never
 a default (`kit/INSTALL.md`, the footprint principle). Afterwards run
-`tools.py check-emulator`; its checks, not the version, decide what works.
+`tools.py --platform spectrum check-emulator`; its checks, not the version, decide what works.
 
 The release .dmg is the way in on macOS: the project's own download, not a mirror. Its
 Homebrew cask is disabled for failing Gatekeeper (the app is ad-hoc signed), so the

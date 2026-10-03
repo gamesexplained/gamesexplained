@@ -27,6 +27,11 @@ Usage:
   tools.py check-emulator [--keep]          test it against kit/EMULATOR.md (kit/spectrum/check_emulator.py)
   tools.py verify-footprint                 prove it writes nothing outside this repository
 
+Three of those, `snapshots`, `check-emulator` and `verify-footprint`, are not
+reached by a bare command: the C64 launcher serves them too, so name the platform
+for them (`tools.py --platform spectrum check-emulator`). `zesarux`, `get-zesarux`
+and `stop` are unambiguous.
+
 verify-footprint is how the clean-footprint principle (AGENTS.md, kit/INSTALL.md) is
 checked: it starts the emulator, has it write a snapshot, reads memory through ZRCP,
 stops it, and then lists every file outside the repository that changed meanwhile and
