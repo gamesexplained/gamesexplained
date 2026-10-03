@@ -33,8 +33,9 @@ The traps, each measured on ZEsarUX 13.0 and written up in
     so a reply without `Breakpoint fired` is not a checkpoint hit.
   * `snapshot-load` enters cpu-step before loading only if it was already in
     it, and **exits cpu-step after** otherwise: it resumes the machine unless
-    you `enter_step()` first. It also switches the whole breakpoint table
-    off, which `snapshot_load` puts back unless `rearm=False`.
+    you `enter_step()` first. It also used to switch the whole breakpoint table
+    off; the launcher's `--snap-no-change-machine` stops that, and
+    `snapshot_load` re-arms anyway unless `rearm=False`.
   * `set-breakpoint` is refused ("You must enable breakpoints first") unless
     breakpoints are enabled; `bp_set` enables them first.
   * `set-ui-io-ports` takes nine concatenated hex bytes: eight keyboard rows
@@ -216,8 +217,9 @@ class Rpc:
 
         ZEsarUX enters cpu-step, loads, and exits it again when it was not
         already in it, so the machine runs on unless the caller stopped it
-        first. The load also switches the whole breakpoint table off, which
-        `rearm` puts back.
+        first. The launcher's `--snap-no-change-machine` keeps the breakpoint
+        table armed across the load; `rearm` is belt-and-braces for a build or
+        a launch without that flag, and is idempotent.
         """
         self.strict("snapshot-load", os.path.abspath(path))
         if rearm:

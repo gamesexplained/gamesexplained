@@ -173,7 +173,8 @@ def zesarux(extra=()):
     os.makedirs(SNAPSHOTS, exist_ok=True)
     cmd = [os.path.abspath(exe), "--enable-remoteprotocol", "--remoteprotocol-port", str(PORT),
            "--configfile", os.path.join(ZESARUX_HOME, "zesaruxrc"), "--quickexit", "--nosplash",
-           "--stats-disable-check-updates", "--stats-disable-check-yesterday-users"]
+           "--stats-disable-check-updates", "--stats-disable-check-yesterday-users",
+           "--snap-no-change-machine"]
     if not extra:
         cmd += ["--vo", "null", "--ao", "null"]
     start(cmd + list(extra), os.path.join(LOGS, "zesarux.log"), env=emulator_env(),

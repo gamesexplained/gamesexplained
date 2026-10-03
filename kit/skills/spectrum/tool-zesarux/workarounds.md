@@ -6,43 +6,15 @@ Each section names the checks it covers. If nothing failed, none of this
 applies, and following it anyway costs time.
 
 Measured on the **ZEsarUX-13.0** release, file
-`ZEsarUX_macos-silicon-13.0.dmg`, macOS arm64, on **29 September 2026**,
-three runs of 40 checks each (37 passed, 3 failed, in about 10 seconds a
-run). The same three failed in every run. A build that passes a check
-means its section no longer applies; delete the section, not the check.
+`ZEsarUX_macos-silicon-13.0.dmg`, macOS arm64, on **3 October 2026** with the
+launcher's flags: 38 passed, 2 failed, 12 seconds. The same two failed in
+every run; a build that passes a check means its section no longer applies,
+so delete the section, not the check.
 
-Two of these are behaviour the kit works around for you: `kit/spectrum/zesarux.py`
-does the re-arming and the chunked runs itself, so a script that goes
-through the client never meets them. They are written out anyway, because
-the numbers in them decide how a long measurement has to be shaped.
-
-## A load switches the whole checkpoint table off
-
-`checkpoints-survive-load`
-
-`snapshot-load` leaves the machine in the state it likes, and one part of
-that state is the breakpoint table: after a load, `get-breakpoints` answers
-`Breakpoints: Off` and every armed entry reads `Disabled N: ...`. A script
-that loads a snapshot and then runs to a checkpoint waits forever, and the
-symptom — "the loop never runs after a load" — looks like a broken game.
-
-The entries themselves are not lost, only their arming: their conditions
-survive, and `enable-breakpoints` puts all of them back. The pass counters
-are the agent's, not the machine's, and they keep counting across the load
-regardless (measured: 3311 matches over the 5000 opcodes after a load with
-the table switched off).
-
-**What to do instead** — re-arm after every load:
-
-```
-rpc.snapshot_load(path)          # kit/spectrum/zesarux.py: rearm=True is the default
-rpc.bp_enable_all()              # what that default calls
-```
-
-`Rpc.snapshot_load(path, rearm=False)` is the raw emulator call, for the
-one check that measures it. On a raw ZRCP connection, send
-`enable-breakpoints` after the load — it answers `Error. Already enabled`
-when there was nothing to do, which is not a failure.
+One of these is behaviour the kit works around for you: `kit/spectrum/zesarux.py`
+does the chunked runs itself, so a script that goes through the client never
+meets it. It is written out anyway, because the number in it decides how a
+long measurement has to be shaped.
 
 ## A read from a second connection waits for the running one
 
