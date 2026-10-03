@@ -11,9 +11,10 @@ prefix rule.
 SkoolKit is needed only for this test, never to build a listing. If it is
 not importable it is looked for under `tools/skoolkit/` (the launcher's
 `get-skoolkit`); with neither, the oracle half is skipped and the length
-table is checked against its own counts.
+table is checked against its own counts. CI runs it with
+`--require-skoolkit`, which turns that skip into a failure.
 
-Usage: test_z80.py
+Usage: test_z80.py [--require-skoolkit]
 """
 import glob, os, sys
 
@@ -110,6 +111,9 @@ def compare():
 def main():
     check_lengths()
     if not load_skoolkit():
+        if "--require-skoolkit" in sys.argv:
+            sys.exit("SkoolKit is required here and was not found; run "
+                     "`tools.py --platform spectrum get-skoolkit`")
         print("no SkoolKit: oracle half skipped (its home is tools/skoolkit/ once get-skoolkit has run)")
         return
     bad = compare()
