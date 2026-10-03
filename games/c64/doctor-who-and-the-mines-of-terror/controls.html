@@ -34,10 +34,10 @@
 <section id="jump">
   <p class="fig">Jumping and falling</p>
   <h2 class="t">A fixed arc, and a fatal drop of 96 pixels</h2>
-  <p class="lede">A jump always has the same shape, and the direction is fixed at take-off. Move the landing point to see where a jump turns into a fatal fall.</p>
+  <p class="lede">A jump always has the same shape, and the direction is fixed at take-off. Move the landing point to see where a jump turns into a fatal fall, and the Doctor fade away when it does.</p>
   <div class="plate">
     <div class="row"><span class="note" style="min-width:9em">Land below take-off</span><input type="range" id="jdrop" min="-24" max="120" step="4" value="0" aria-label="How far below take-off the Doctor lands, in pixels" style="max-width:320px"><span class="note" id="jdropv"></span></div>
-    <canvas id="jcv" class="scr" role="img" aria-label="The path of a jump, drawn one step per frame"></canvas>
+    <canvas id="jcv" class="scr" role="img" aria-label="The Doctor jumping along the path of a jump, one step per frame, and fading away when the fall is fatal"></canvas>
     <p class="kv" id="jkv"></p>
   </div>
   <p>Each frame of a jump moves the Doctor one pixel across: for 24 frames he also rises a pixel, for the next 16 he stays level, and then he falls a pixel a frame until something stops him (<code>jump_arc_step</code>, <code>$A0D4</code>). The direction comes from the stick at take-off and cannot change in the air.</p>
@@ -45,29 +45,57 @@
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
+<script src="reference/dw-page.js"></script>
 <script>
-(function () {
+(async function () {
   // the jump of jump_arc_step ($A0D4): one pixel across a frame; up for 24, level for 16, then down
-  const cv = document.getElementById('jcv'), S = 3, W = 200, H = 170, ctx = C64.canvas(cv, W * S, H * S);
-  const sl = document.getElementById('jdrop');
-  function draw() {
-    const drop = +sl.value, x0 = 8, y0 = 40;                    // take-off point, in C64 pixels
+  const cv = document.getElementById('jcv'), S = 3, W = 200, H = 200, ctx = C64.canvas(cv, W * S, H * S);
+  const sl = document.getElementById('jdrop'), x0 = 16, y0 = 70;      // take-off point, in C64 pixels
+  let M = null, timer = null;
+  try { M = (await DW.load()).ram; } catch (e) { DW.fail(e); }
+  // the Doctor's walking frames to the right ($CC1E lower, $CC32 upper), picked by x as doctor_pick_frames does
+  const lo = M ? Array.from(M.subarray(0xCC1E, 0xCC26)) : [], up = M ? Array.from(M.subarray(0xCC32, 0xCC3A)) : [];
+  function arc() {
+    const drop = +sl.value, path = [];
+    let x = x0, y = y0, f = 0;
+    while (f < 24) { path.push([x, y]); x++; y--; f++; }
+    while (f < 40) { path.push([x, y]); x++; f++; }
+    while (y < y0 + drop) { path.push([x, y]); x++; y++; }
+    path.push([x, y]);
+    return path;
+  }
+  function scene(path) {
     ctx.fillStyle = C64.PAL[11]; ctx.fillRect(0, 0, cv.width, cv.height);
     // the fatal line: 96 pixels below the top of the jump
     ctx.fillStyle = C64.PAL[2]; ctx.fillRect(0, (y0 - 24 + 96) * S, cv.width, S);
     ctx.fillStyle = C64.PAL[10]; ctx.font = (4 * S) + 'px IBM Plex Mono, monospace'; ctx.fillText('96 px below the top: A FALL', 4 * S, (y0 - 24 + 96 - 2) * S);
     // ground at take-off and where he lands
-    ctx.fillStyle = C64.PAL[9]; ctx.fillRect(0, y0 * S, (x0 + 4) * S, 4 * S);
-    let x = x0, y = y0, f = 0; const path = [];
-    while (f < 24) { path.push([x, y]); x++; y--; f++; }
-    while (f < 40) { path.push([x, y]); x++; f++; }
-    while (y < y0 + drop) { path.push([x, y]); x++; y++; }
-    path.push([x, y]);
-    ctx.fillRect((x - 4) * S, y * S, (W - x + 4) * S, 4 * S);
+    const [lx, ly] = path[path.length - 1];
+    ctx.fillStyle = C64.PAL[9]; ctx.fillRect(0, y0 * S, (x0 + 4) * S, 4 * S); ctx.fillRect((lx - 4) * S, ly * S, (W - lx + 4) * S, 4 * S);
     ctx.fillStyle = '#fff'; path.forEach(([px, py], i) => { if (i % 2 === 0) ctx.fillRect(px * S, py * S - S, S, S); });
-    const fall = y - (y0 - 24), dead = fall >= 96;
+  }
+  // the Doctor stands on the point: his legs (lower sprite) end at the point, the upper sprite eight pixels higher
+  const doctor = (x, y, l, u) => M && DW.doctor(ctx, M, lo[(x >> 1) & 7], up[(x >> 1) & 7], (x - 12) * S, (y - 21) * S, S, l, u);
+  function draw() {
+    clearInterval(timer);
+    const path = arc(), [lx, ly] = path[path.length - 1], fall = ly - (y0 - 24), dead = fall >= 96, drop = +sl.value;
     document.getElementById('jdropv').textContent = drop < 0 ? (-drop) + ' px above' : drop + ' px below';
     document.getElementById('jkv').innerHTML = path.length - 1 + ' frames in the air; the fall from the top of the jump is <b>' + fall + '</b> pixels: ' + (dead ? '<b style="color:var(--coral)">A FALL</b>, a regeneration lost.' : 'he lands safely.');
+    // play the jump at 50 frames a second, then, past the limit, the regeneration fade of doctor_draw ($CB6B)
+    let i = 0, left = -1, n = 1, lo0, up0, cut, img;
+    timer = setInterval(() => {
+      scene(path);
+      if (i < path.length) { const [x, y] = path[i++]; doctor(x, y); return; }
+      if (!dead || !M) { doctor(lx, ly); clearInterval(timer); return; }
+      if (left < 0) { left = 0x7F; lo0 = DW.image(M, lo[(lx >> 1) & 7]); up0 = DW.image(M, up[(lx >> 1) & 7]); cut = DW.dissolver(M, { c60: 1, c61: 1 }); }
+      if (left === 0x7F || !(left & 3)) {
+        n = (n + 6) & 0xFF;
+        img = { lo: lo0.slice(), up: up0.slice() };
+        cut(Array(64).fill(0xFF).concat(img.up.slice(0, 4)), [img.lo, img.up], n);
+      }
+      doctor(lx, ly, img.lo, img.up);
+      if (--left < 0) clearInterval(timer);
+    }, 20);
   }
   sl.oninput = draw; draw();
 })();
