@@ -1,4 +1,4 @@
-## next · 3 October 2026 · Fat Worm Blows a Sparky, the first ZX Spectrum game · yozlet with Pi (DeepSeek 4.1 Flash), then a second pass by air with Claude Code (Claude Opus 5.5)
+## next · 3 October 2026 · Fat Worm Blows a Sparky, the first ZX Spectrum game · yozlet with Pi (DeepSeek 4.1 Flash), over two passes, and a third by air with Claude Code (Claude Opus 5.5)
 
 **A control file is not a flow tracer, and coverage cannot see the
 difference.** The kit's first Spectrum game was annotated through a
@@ -12,6 +12,18 @@ those cannot contain (code that ran before the snapshot, a handler named
 only by a word in data, an operand another instruction writes), and exits
 1 while `symbols.json` types any of it as data. `50-coverage` has the
 step and says to run it after every merge of the annotators' work.
+
+**A code/data sweep has to be repeated until a pass adds nothing, because
+a wrong type hides what it calls.** The contributor's own rework measured
+why one sweep cannot find the mistyped code: a walk decodes only what its
+input says is code, so a stretch filed as data is skipped and so is every
+routine that stretch calls. One `sna2ctl.py -m` pass over this image
+reported 3,320 mistyped bytes; a recursive trace re-run after each retype
+reported 5,934. The clearest case was 13 bytes at `$7790` holding a `CALL`
+to the 611-byte halt screen, which neither the map nor the walk could see
+while those 13 bytes were data. `50-coverage` says to repeat the sweep,
+`tool-skoolkit` has the command and the trap in its output, and
+`codemap.py`'s trace is the repeated sweep in one run.
 
 **When the game overwrites its own start-up code, the hand-over snapshot
 is the disassembly base.** This game's play snapshot differed from its
@@ -32,6 +44,17 @@ inputs before writing the comment, and the page's widgets were held
 against the same runs. A fixed-seed sample of 60 of those comments,
 checked clause by clause by agents on another model, is the measure
 `60-verify` asks for.
+
+Two cases from the contributor's rework show what reading misses. The
+extent of a fill was in dispute (1 KB in the first notes, 4 KB in the
+review), and counting the pushes from the loop's immediates gave a third
+answer; running the routine and reading the lowest stack pointer settled
+it at 4 KB in one call. And the page's port of the perspective multiply
+returned 29 where the routine returns 285, because it masked its
+accumulator before taking the carry out of the top: reading the two side
+by side did not show it, and running both over every boundary value and
+600 random pairs did. `70-minisite` now says to sweep a port's whole
+input space.
 
 **Let the emulator say what the data is for.** ZEsarUX keeps a map of
 every byte read and every byte written (`get-visualmem-read-dump`,

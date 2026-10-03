@@ -77,7 +77,7 @@ lists all 129.
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
 | Machine | `get-current-machine` | `ZX Spectrum 48k` |
 | Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine |
-| Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler |
+| Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler; see "From the map to a control file" below, and iterate that sweep - one pass under-reports |
 
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
 `get-visualmem-read-dump` and `get-visualmem-written-dump` (the memory a
@@ -222,6 +222,32 @@ which is the same point of every frame.
 
 Save these records to the game's `work/` and treat them as a cache: the
 committed `symbols.json` is what counts.
+
+### The map, as this emulator writes it
+
+`cpu-code-coverage get` returns space-separated hex addresses - instruction
+starts - and the control-file tools want **one address per line**, so a
+one-liner converts it:
+
+```sh
+tr ' ' '\n' < work/executed.txt | sed 's/^/\$/' > work/executed.map
+```
+
+SkoolKit's `sna2ctl.py -m work/executed.map` builds the first control file from
+that; `kit/skills/spectrum/tool-skoolkit`, "The first control file, from an
+execution map", has the command, the two traps in its output, and the
+requirement that matters: **run it more than once.** A walk decodes only what
+the previous typing gave it, so a stretch filed as data hides every routine
+it calls, in the map sweep and in any trace that trusts the same typing.
+Repeat until a pass adds nothing - on the first game this was done to, one
+pass found 3,320 bytes of reachable code typed as data and the fixpoint
+found 5,934.
+
+A recursive trace reaches the fixpoint faster than repeated `sna2ctl.py`
+runs, because it adds a target's whole chain as soon as it finds it: decode
+from every address the map gives, follow every branch and call target, and
+repeat. `kit/spectrum/codemap.py` is that trace ("The check", above). The
+test is the same either way: a further pass must add nothing.
 
 ## Input
 

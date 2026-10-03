@@ -3,7 +3,8 @@
 **The v3.13.2 GUI releases need none of this.** On 2 October 2026 they
 passed all 57 checks, in five runs on Linux x86_64 and five on macOS
 arm64. On a build where `check-emulator` reports nothing failed, stop
-reading here.
+reading here, unless its summary says the host is slow: that is a NOTE,
+not a failed check, and "A slow host" below is for it.
 
 Read this only for the checks that `python3 kit/scripts/tools.py
 check-emulator` reported as failed on the build you are using. Each
@@ -281,14 +282,28 @@ five seconds, and some calls can take the server down. Pace a script's
 calls, check `tools.py status` after a closed socket, and do not read a
 timeout as an answer from the game.
 
-## Warp
+## A slow host
 
-`warp`: warp mode turns on and off, but runs the machine little faster
-than normal speed. Seen on 30 September 2026 with the v3.13.1 Linux
-release under `xvfb-run`: 78 passes a second in warp against 51 without.
-Nothing in the workflow needs warp; plan long waits (a depacker, a tune
-to record) in real time, and measure in the machine's time, never the
-host's. Autostart still turns warp on, so turn it off as usual.
+No check fails for the host's speed. `check-emulator` counts against the
+test program's own passes, prints the speed it measured on a `SPEED`
+line, and adds a `NOTE` when the machine runs below real time or warp
+gains little. Both were seen with emulators that work: 78 passes a
+second in warp against 51 without, under `xvfb-run` on 30 September
+2026, and 71 against 46 in a container on 2 October 2026.
+
+On such a host, plan long waits (a depacker, a tune to record) in real
+time or longer, and measure in the machine's time (frames, loop passes,
+the cycle stopwatch), never the host's. A script that waits a fixed
+number of seconds for a stop can give up before the stop arrives: wait
+on the machine's state, with a limit scaled to the speed the check
+reported. Nothing in the workflow needs warp. Autostart still turns
+warp on, so turn it off as usual.
+
+Until 3 October 2026 the check judged `watch-store`, `watch-load`,
+`checkpoints-survive-load` and `warp` against a second of the host's
+clock, and gave a stop 100 passes away five seconds to arrive. A record
+from before then that names only those, or the `determinism` checks and
+`ignore-count` on a host well below real time, describes the host.
 
 ## A phase did not finish
 

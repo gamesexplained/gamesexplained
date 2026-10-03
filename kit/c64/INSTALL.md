@@ -47,7 +47,14 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, Ubuntu 24.04, no display | 2 October 2026 | 54 of 57 after making startup progress independent of host speed: `watch-store`, `watch-load` each counted 39 against a minimum 40; warp reached 71 passes/s against a minimum 100. Exact frame stepping, instruction stops and snapshot/restart determinism passed |
 
 Add a row whenever a build is measured on a machine not listed, and bring
-that machine's `c64` cell in `site/status.json` into line with it. The two
+that machine's `c64` cell in `site/status.json` into line with it. Until
+3 October 2026 `watch-store`, `watch-load`, `checkpoints-survive-load`
+and `warp` were judged against a second of the host's clock: the misses
+of those four in the rows of 30 September and 2 October are slow hosts,
+not the emulator. From that day the check counts against the test program's
+own passes and reports the host's speed on a line of its own; on macOS
+arm64 that day, with the emulator held to 15 passes a second, the older
+check failed nine of 57 and the newer one none. The two
 Linux rows of v3.13.1 failed the same checks, whichever way the build was
 made: `determinism-running-save` and `determinism-restart`, and once
 `step-instruction`, more of them while a compile was loading the host.

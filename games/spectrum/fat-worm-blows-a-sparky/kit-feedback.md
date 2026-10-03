@@ -4,23 +4,51 @@ Written in the retrospective (`kit/skills/core/80-retro`). What the skills
 and kit got wrong or left out, what was changed, what needs a maintainer's
 decision, what took longest, operating system and tool versions.
 
-The game had two passes. The first (30 September 2026, yozlet with Pi on
+The game had three passes. The first (30 September 2026, yozlet with Pi on
 DeepSeek Flash) took it through every step. A maintainer's check on
-1 October found 18 of 39 sampled claims wrong, and a second pass
-(3 October 2026, the maintainer's session, Claude Opus 5.5) redid
-coverage, verify, the page and this retrospective on the same branch.
-What follows is the second pass's, with the first pass's notes kept at
-the end.
+1 October found 18 of 39 sampled claims wrong. On 3 October the
+contributor's session reworked those 18 and the typing, and could not run
+the independent sample the check asks for (its provider refused the
+agents). The same day the maintainer's session (Claude Opus 5.5) redid
+coverage, verify, the page and this retrospective on the same branch, with
+the contributor's agreement, and ran that sample on a second proven model.
+Each section says whose notes it holds.
 
 ## Skill text that changed what I did
 
-- `60-verify`: "Measure the listing before calling it done": I drew a fixed-seed sample of 60 comments, six from each annotator's range, and had two agents on another model check every clause; I would otherwise have relied on my own spot-checks, which is what the first pass did.
-- `70-minisite`: "A widget that runs a mechanic is a claim too": the page's perspective, bug and click-count ports were each run against the game's code in the simulator before they went on the page (102,656 values of the multiply, 3,000 outlines, 556 arrangements of bugs, all 256 dividers).
+- `60-verify`: "Measure the listing before calling it done": the contributor's rework could not run it (its provider refused the agents) and said so in `TODO.md`; the maintainer's session drew a fixed-seed sample of 60 comments, six from each annotator's range, and had two agents on another model check every clause, where it would otherwise have relied on its own spot-checks, as the first pass did.
+- `70-minisite`: "A widget that runs a mechanic is a claim too": in the rework this is why the perspective widget was run against `$811E` over 789 inputs, which found a lost carry (29 where the routine returns 285); in the maintainer's session every port (the multiply, the outlines, the bug rule, the click count) was run against the game's code in the simulator before it went on the page.
+- `60-verify`: "The emulator is a second opinion, not an oracle.": when the review said `$D37D` fills 4 KB and `facts.md` said 1 KB, the rework did not pick one: it ran the routine in the simulator and read the stack pointer, and its own count from the loop's immediates turned out wrong as well.
 - `60-verify`: "Prove reachability with inputs, not pokes": the ending was reached by writing the disk into the worm's path, so the page says what the code does and leaves open whether a player can get there with fewer than 50 spindles.
-- `60-verify`: "Claims about the whole game": every "only" and every count of callers in `facts.md` was taken from an operand scan of the whole code map, not from the routine in front of me; the ports list and the nine instructions that name the score came from it.
-- `tool-zesarux`: "ninth byte is the joystick, `1` bits pressed, and it means whatever": my first Kempston test read `$4F` for every direction; this sentence said why (the second emulator had the default joystick), and the test was rerun with `--joystickemulated Kempston` and a control.
+- `60-verify`: "Claims about the whole game": every "only" and every count of callers in `facts.md` was taken from an operand scan of the whole code map, not from the routine in view; the list of ports and the nine instructions that name the score came from it.
+
+## Skill text, two more
+
+Outside the five above. In the rework, `50-coverage`'s brief ("Distrust
+your own negative results") made it read two stretches its retype had
+exposed instead of calling them an artefact: both were further mistypings.
+In the maintainer's session, `tool-zesarux`'s sentence on what the ninth
+input byte means under each `--joystickemulated` setting explained a
+Kempston test that read `$4F` for every direction, and the test was rerun
+with Kempston emulation and a control.
+
+## Maintainer asks
+
+- #130: `new_game.py` should create an empty `symbols.json` (done: it writes one).
+- #131: `stopwatch` in `check_emulator.py` has no host-load workaround.
+- #178: `check-emulator`'s `cheap-loop` check fails on a loaded host, and the Spectrum half of #131 is unfixed.
+- #179: the kit has no answer for a provider that runs out of credit mid-run.
+- #180: `sna2ctl.py -m <map>` belongs in a SkoolKit tool skill (closed: the step is in `tool-skoolkit`).
+- **Let a Spectrum game commit its code map, so the checks can hold `symbols.json` against it.** `kit/spectrum/codemap.py` needs the snapshot, which is never committed, so the check that would have caught this game's first pass (code typed as data at 100 % coverage) runs only on the contributor's machine. The map itself is a list of addresses with no byte of the game in it. Suggest: `codemap.py` writes `codemap.json` beside `symbols.json`, and `check_listing.py` fails a Spectrum game whose `symbols.json` types as data an address the map has as code. Game: Fat Worm Blows a Sparky, 3 October 2026, branch `game/spectrum/fat-worm-blows-a-sparky`.
+- **Give the Spectrum launcher a port and a no-window option.** `tools.py --platform spectrum zesarux` pins ZRCP to port 10000 and one instance. This run needed three machines at once (a window for the maintainer, the lead's frame-stepped tests, an independent checker's), and started the extra two with the launcher's own code from a script in `work/`. Suggest: `zesarux --port N --headless`, with `stop` taking the port, in `kit/spectrum/tools.py`. Game: Fat Worm Blows a Sparky, 3 October 2026, branch `game/spectrum/fat-worm-blows-a-sparky`.
+
+## What took longest
+
+TIMINGS
 
 ## Where the kit cost time, and where each went
+
+The maintainer's session:
 
 - **A control file with code typed as data reads as finished.** The first
   pass reached 100 % with 5.9 KB of code typed as data. A script now
@@ -68,7 +96,7 @@ Seen in this game only; the next run that meets one makes the edit.
 
 ## What was changed in `kit/`, and why
 
-Second pass:
+The maintainer's session:
 
 - `kit/spectrum/codemap.py` (new): the code map from a static trace and
   executed-address maps, `symbols.json` held against it, and `--refs`.
@@ -95,6 +123,20 @@ Second pass:
 - `.github/workflows/ci.yml`: the self-tests of the three new scripts and
   of `models.py`.
 
+The contributor's rework:
+
+- `kit/skills/core/50-coverage`: the control-file step made
+  platform-neutral, with the rule that a code/data sweep is repeated until
+  a pass adds nothing, because a wrong type hides what it calls (3,320
+  mistyped bytes on one pass, 5,934 at the fixpoint). The two passes' text
+  is merged there. Lesson: the same file.
+- `kit/skills/spectrum/tool-skoolkit`: "The first control file, from an
+  execution map" (`sna2ctl.py -m`, the conversion from
+  `cpu-code-coverage get`, decimal addresses unless `-h` or `-l`, guessed
+  `t` blocks, the fixpoint). `tool-zesarux` keeps the emulator's half.
+- `kit/skills/core/70-minisite`: a widget's port is swept over every
+  boundary value of each input, with the case count in the caption.
+
 First pass:
 
 - `coverage.py` and `kit/c64/opcodes.py` followed the seam lift's rename
@@ -106,43 +148,56 @@ First pass:
 - `kit/template/work/README.md` and the core skills stopped naming a
   `.vsf`: the snapshot's extension is the platform's own.
 
-## What took longest
-
-TIMINGS
-
-## Maintainer asks
-
-- #130: `new_game.py` should create an empty `symbols.json`.
-- #131: `stopwatch` in `check_emulator.py` has no host-load workaround.
-- **Let a Spectrum game commit its code map, so the checks can hold `symbols.json` against it.** `kit/spectrum/codemap.py` needs the snapshot, which is never committed, so the check that would have caught this game's first pass (code typed as data at 100 % coverage) runs only on the contributor's machine. The map itself is a list of addresses with no byte of the game in it. Suggest: `codemap.py` writes `codemap.json` beside `symbols.json`, and `check_listing.py` fails a Spectrum game whose `symbols.json` types as data an address the map has as code. Game: Fat Worm Blows a Sparky, 3 October 2026, branch `game/spectrum/fat-worm-blows-a-sparky`.
-- **Give the Spectrum launcher a port and a no-window option.** `tools.py --platform spectrum zesarux` pins ZRCP to port 10000 and one instance. This run needed three machines at once (a window for the contributor, the lead's frame-stepped tests, an independent checker's), and started the extra two with the launcher's own code from a script in `work/`. Suggest: `zesarux --port N --headless`, with `stop` taking the port, in `kit/spectrum/tools.py`. Game: Fat Worm Blows a Sparky, 3 October 2026, branch `game/spectrum/fat-worm-blows-a-sparky`.
-
 ## The first pass's notes (30 September 2026)
 
 - **The core skills were written for the C64 with no Spectrum branch.**
   `10-orient` said `.vsf` and `$01`; `50-coverage` said a live
   regenerator2000 server and `--relabel`. The snapshot-extension mentions
-  were made generic then; the control-flow step is the second pass's.
+  were made generic then.
 - **`listing.py`'s hand-over default is `work/entry.vsf`.** `--entry` has
   to be passed explicitly for a `.sna`.
+- **The `--live` paths assume a live disassembler.** For the Spectrum there
+  is no live reader, so only the `--ctl` form works.
 - **The annotation agents' provider ran out of balance mid-run.** Three
   cleanup agents died with `402 Insufficient Balance` before writing
   their files, and the remaining 2,119 code bytes and 6.8 KB of data were
   annotated by hand. Failed agents left no partial output.
 - **The minisite was not checked in a browser** in the first pass; no
-  browser was available to that session. The second pass's page was.
+  browser was available to that session.
+
+## The contributor's rework (3 October 2026): what it met
+
+- **A subagent fan-out that cannot start is an unrecorded step.** Four
+  verification agents on a proven model failed on `402 payment_required`
+  before their first token, and the run had to decide by itself what that
+  means for `60-verify` and for `tier`. Filed as #179.
+- **`60-verify`'s "measure the listing" rule has no cheap form.** With the
+  provider unusable, the choices were to skip the sample or to take it
+  with the model whose work was in question, which proves nothing. The
+  maintainer's session took the sample on a second proven model.
+- **Counting a loop's passes from its immediates went wrong twice on one
+  routine** (the halt screen's backdrop, `$D37D`); running the routine in
+  the simulator settled its extent in one call.
+- **`sna2ctl.py -m` writes decimal addresses by default and guesses `t`
+  blocks.** Both are in `tool-skoolkit`.
+- **The seam between two stacked pull requests made a kit ask
+  unanswerable for an hour**: the step had nowhere to live until the
+  platform's pull request merged (#180).
 
 ## Operating system and tools
 
-Both passes: macOS arm64 (darwin), Apple silicon; ZEsarUX-13.0
+All passes: macOS arm64 (darwin), Apple silicon; ZEsarUX-13.0
 (`ZEsarUX_macos-silicon-13.0.dmg`); SkoolKit 10.1.
 
-First pass: Python 3.14.7; `check-emulator` 36 of 40.
+The contributor's passes: Python 3.14.7; `check-emulator` 36 of 40 (the
+three with workarounds plus `stopwatch` under host load). Commit signing
+uses that machine's SSH key.
 
-Second pass: Python 3.9.6 (SkoolKit has no wheel for it and built from
-its source distribution, which `kit/spectrum/INSTALL.md` records);
-`check-emulator` 41 of 45 on 3 October 2026; node 24.21.0 for the page's
-tests; the page checked in the Claude desktop app's browser pane. Extra
-ZEsarUX instances on ports 10001 and 10002 were started from `work/` with
-the launcher's flags, with `--emulatorspeed 800`, and one of them with
-`--joystickemulated Kempston`; all three wrote only under `tools/`.
+The maintainer's session: Python 3.9.6 (SkoolKit has no wheel for it and
+built from its source distribution, which `kit/spectrum/INSTALL.md`
+records); `check-emulator` 41 of 45 on 3 October 2026; node 24.21.0 for
+the page's tests; the page checked in the Claude desktop app's browser
+pane. Extra ZEsarUX instances on ports 10001 and 10002 were started from
+`work/` with the launcher's flags, with `--emulatorspeed 800`, and one of
+them with `--joystickemulated Kempston`; all three wrote only under
+`tools/`.

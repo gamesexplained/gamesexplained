@@ -15,6 +15,11 @@ kit/skills/c64/tool-vice-mcp/workarounds.md says, per name, what to do
 instead. Run it before the first game on a machine, and again after any
 new emulator build or release.
 
+A check fails for what the emulator does, never for how fast the host runs
+it: counts are compared with the test program's own pass counter, not with
+a second of the host's clock. The host's speed is measured apart and
+reported on its own line, a NOTE when it is slow; a NOTE fails nothing.
+
 Last, it looks for the server's quirks that kit/c64/vice.py absorbs. They
 are not checks and nothing is failed for them: each line says whether this
 build has the quirk, so that a release that loses one shows it. The
@@ -100,11 +105,19 @@ LOOP, STORE_SIDE, WAIT1, END_BODY = LABELS["loop"], LABELS["store_side"], LABELS
 results = []
 has = set()            # tool names the server lists
 quirks = {}            # the server quirks vice.py absorbs: name -> this build still has it
+speed = {}             # the host: passes a second at normal speed and in warp. Never a check
+notes = []             # what was said about the host; repeated in the summary
 
 
 def check(name, ok, what, detail=""):
     print(f"{'PASS' if ok else 'FAIL'}  {name:28} {what}" + (f"  [{detail}]" if detail else ""), flush=True)
     results.append((name, bool(ok)))
+
+
+def note(text):
+    """Something about the host, not the emulator: said, kept for the summary, failing nothing."""
+    print(f"NOTE  {text}", flush=True)
+    notes.append(text)
 
 
 def quirk(name, present, what, detail=""):
@@ -155,6 +168,25 @@ def wait_paused(rpc, timeout=5.0):
             return time.time() - t0
         time.sleep(0.01)
     return None
+
+
+def stopped(rpc):
+    """Stop the machine for a reading. One end of an interval measured in the machine's own passes."""
+    call(rpc, "vice_execution_pause", {}); wait_paused(rpc)
+
+
+def saved_word(name, a):
+    """A 16-bit value as a snapshot file holds it: RAM is at offset 209 + address (snapshot-ram-offset)."""
+    with open(os.path.join(SNAPDIR, name + ".vsf"), "rb") as f:
+        d = f.read()
+    return d[209 + a] + 256 * d[209 + a + 1]
+
+
+def patience(n_passes):
+    """Seconds to wait for a stop n_passes away: three times what this host's measured speed needs, and
+    five at least. A fixed five seconds ran out before 100 passes on a host making 15 a second, and
+    every determinism check then compared a machine that had not stopped yet."""
+    return max(5.0, 3 * n_passes / (speed.get("start") or 50))
 
 
 def stop_at(rpc, a):
@@ -226,12 +258,12 @@ def setup(rpc):
     clear_checkpoints(rpc)
     call(rpc, "vice_machine_config_set", {"resources": {"WarpMode": 0}})
     call(rpc, "vice_machine_reset", {"mode": "hard", "run_after": True})
-    for _ in range(100):                 # "READY." in screen codes
+    for _ in range(300):                 # "READY." in screen codes; a host at a third of real time takes 8 s
         if bytes((0x12, 0x05, 0x01, 0x04, 0x19, 0x2E)) in read_mem(rpc, 0x0400, 1000):
             break
         time.sleep(0.1)
     else:
-        raise RuntimeError("no READY. prompt within 10 s of a hard reset; is the machine running?")
+        raise RuntimeError("no READY. prompt within 30 s of a hard reset; is the machine running?")
     poke(rpc, BASE, CODE)
     poke(rpc, 0xC100, [0] * 16)
     call(rpc, "vice_keyboard_type", {"text": "SYS49152\n"})
@@ -264,8 +296,9 @@ def p_start(rpc):
     p = setup(rpc)
     check("write-read", read_mem(rpc, BASE, len(CODE)) == CODE, "memory written reads back the same")
     check("program-running", p > 0, "the test program advances", f"{p} passes in 1 s")
+    speed["start"] = p
     if p and not 40 <= p <= 65:
-        print("NOTE  host throughput is outside real-time speed; frame-advance checks test exact progress", flush=True)
+        note(f"the host ran the test program at {p} passes a second, outside real-time speed (50 PAL, 60 NTSC)")
 
 
 @phase("phase 1: static inspection")
@@ -311,15 +344,21 @@ def p3(rpc):
     check("stopwatch", isinstance(cyc, (int, float)) and np_ > 0 and abs(cyc - np_ * frame) < frame,
           f"the cycle stopwatch agrees with the frame count ({std}: {frame} cycles a pass), to within a frame",
           f"{cyc} cycles, {np_} passes = {np_ * frame}")
-    run(rpc)
+    # Still stopped. The watchpoints are counted the same way, against the program's own passes
+    # between two stops: a pass stores SIDE once and loads VX once, so each count is the passes
+    # made, to within the pass in progress at either stop. Counted against a second of the host's
+    # clock, a container that ran 39 passes in it failed both for want of 40 (2 October 2026).
     ws = j(call(rpc, "vice_watch_add", {"address": addr(SIDE), "store": True, "stop": False}))
     wl = j(call(rpc, "vice_watch_add", {"address": addr(VX), "load": True, "stop": False}))
     check("watch-args", ws.get("stop") is False and wl.get("stop") is False, "vice_watch_add takes load, store, stop", f"{json.dumps(ws)[:60]}")
-    time.sleep(1.0)
-    h = hits(rpc); st = ping(rpc)
-    check("watch-store", 40 <= h.get(SIDE, 0) <= 130 and st == "running", "a store watchpoint counts once a pass and does not stop", f"{h.get(SIDE)} {st}")
-    check("watch-load", h.get(VX, 0) >= 40, "a load watchpoint counts (load is honoured)", h.get(VX))
-    clear_checkpoints(rpc)
+    p0 = word(rpc, PASSES)
+    run(rpc); time.sleep(1.0); st = ping(rpc); stopped(rpc)
+    h = hits(rpc); np_ = (word(rpc, PASSES) - p0) & 0xFFFF
+    check("watch-store", np_ > 0 and abs(h.get(SIDE, 0) - np_) <= 1 and st == "running",
+          "a store watchpoint counts once a pass and does not stop", f"{h.get(SIDE)} in {np_} passes, {st}")
+    check("watch-load", np_ > 0 and abs(h.get(VX, 0) - np_) <= 1, "a load watchpoint counts once a pass (load is honoured)",
+          f"{h.get(VX)} in {np_} passes")
+    clear_checkpoints(rpc); run(rpc)
 
 
 @phase("phase 4: frame stepping with inputs")
@@ -442,7 +481,7 @@ def p2(rpc):
     got = {}
     for tag in "ab":
         n = stop_after_passes(rpc, 100)
-        snap_load(rpc, "emutest_base"); run(rpc); wait_paused(rpc)
+        snap_load(rpc, "emutest_base"); run(rpc); wait_paused(rpc, patience(100))
         got[tag] = (sample(rpc), shot(rpc, "determinism-" + tag), hits(rpc).get(LOOP, 0))
         cp_del(rpc, n)
     (sa, pa, ha), (sb, pb, hb) = got["a"], got["b"]
@@ -454,7 +493,7 @@ def p2(rpc):
     check("snapshot-save-running", snap_save(rpc, "emutest_run").get("status") == "ok", "save from a running machine")
     out = []
     for _ in range(2):
-        n = stop_after_passes(rpc, 100); snap_load(rpc, "emutest_run"); run(rpc); wait_paused(rpc)
+        n = stop_after_passes(rpc, 100); snap_load(rpc, "emutest_run"); run(rpc); wait_paused(rpc, patience(100))
         out.append((sample(rpc), hits(rpc).get(LOOP, 0))); cp_del(rpc, n)
     check("determinism-running-save", out[0] == out[1] and out[0][1] == 1, "the same, from a snapshot saved while running", diff(out[0][0], out[1][0]))
     run(rpc); time.sleep(0.2)
@@ -463,9 +502,18 @@ def p2(rpc):
     clear_checkpoints(rpc); time.sleep(0.2)
     snap_save(rpc, "emutest_nocp")               # saved with no checkpoints at all
     m = cp_add(rpc, LOOP)
-    snap_load(rpc, "emutest_nocp"); run(rpc); time.sleep(0.5)
+    snap_load(rpc, "emutest_nocp"); run(rpc); time.sleep(1.0)
     h = hits(rpc).get(LOOP, 0)
-    check("checkpoints-survive-load", h >= 15, "a checkpoint keeps counting after loading a snapshot saved without any", f"{h} hits in 0.5 s")
+    # Against the passes made since the load: the program's counter now, less the counter in the
+    # snapshot file. Read after the count, so that nothing touches the machine or its checkpoints
+    # inside the window; a dead checkpoint has only the few passes from before the load. Half is
+    # the line because those few, and the passes between the two readings, go by the host's calls.
+    try:
+        np_ = (word(rpc, PASSES) - saved_word("emutest_nocp", PASSES)) & 0xFFFF
+    except (OSError, IndexError):
+        np_ = 0
+    check("checkpoints-survive-load", np_ > 0 and 2 * h >= np_,
+          "a checkpoint keeps counting after loading a snapshot saved without any", f"{h} hits in {np_} passes")
     cp_del(rpc, m)
 
     call(rpc, "vice_machine_config_set", {"resources": {"WarpMode": 1}})
@@ -474,7 +522,18 @@ def p2(rpc):
     call(rpc, "vice_machine_config_set", {"resources": {"WarpMode": 0}})
     off = j(call(rpc, "vice_machine_config_get", {})).get("resources", {}).get("WarpMode")
     time.sleep(0.3); pn = passes(rpc, 1.0)
-    check("warp", on == 1 and off == 0 and pw > 100 and 40 <= pn <= 65, "warp on and off through vice_machine_config_set", f"{pw}/s warp, {pn}/s normal")
+    # The check is that warp goes on, goes off, and that off holds the machine to real time again
+    # (65 passes a second is above NTSC's 60). How much warp gains is the host's doing: 78 a second
+    # against 51 under xvfb-run (30 September 2026) and 71 against 46 in a container (2 October
+    # 2026) both failed a floor of 100 on builds whose warp works.
+    check("warp", on == 1 and off == 0 and pn <= 65, "warp on and off through vice_machine_config_set, and off is real time again",
+          f"{pw}/s warp, {pn}/s normal")
+    speed.update(normal=pn, warp=pw)
+    print(f"SPEED {'host':28} {pn} passes a second at normal speed, {pw} in warp", flush=True)
+    if pn < 40 and not notes:
+        note(f"this host runs the machine below real time ({pn} passes a second; 50 PAL, 60 NTSC)")
+    if pw < 2 * pn:
+        note(f"warp gains little on this host ({pw} passes a second against {pn})")
     return out[0][0]
 
 
@@ -483,7 +542,7 @@ def p2_restart(ref):
     print("  ", tools("stop", "vice"))
     print("  ", tools("vice"))
     rpc = connect()
-    n = stop_after_passes(rpc, 100); r = snap_load(rpc, "emutest_run"); run(rpc); w = wait_paused(rpc)
+    n = stop_after_passes(rpc, 100); r = snap_load(rpc, "emutest_run"); run(rpc); w = wait_paused(rpc, patience(100))
     s = sample(rpc)
     check("determinism-restart", r.get("status") == "ok" and w is not None and s == ref,
           "a new process gives the same 100 passes", diff(ref, s))
@@ -595,7 +654,7 @@ def main():
     failed = sorted({n for n, ok in results if not ok})
     passed = sorted({n for n, ok in results if ok} - set(failed))
     summary = {"build": build, "when": time.strftime("%Y-%m-%d %H:%M"), "seconds": round(time.time() - started),
-               "passed": passed, "failed": failed,
+               "passed": passed, "failed": failed, "speed": speed, "notes": notes,
                "quirks": {"present": sorted(n for n, v in quirks.items() if v),
                           "gone": sorted(n for n, v in quirks.items() if not v)}}
     with open(os.path.join(OUT, "result.json"), "w") as f:
@@ -607,6 +666,11 @@ def main():
         print(f"read {WORKAROUNDS} for each of these, and only these")
     else:
         print(f"nothing failed; {WORKAROUNDS} does not apply to this build")
+    if notes:
+        print("about the host, not the emulator, and no check fails for it:")
+        for n in notes:
+            print(f"  {n}")
+        print(f"  read \"A slow host\" in {WORKAROUNDS}")
     if summary["quirks"]["gone"]:
         print(f"server quirks this build does not have: {' '.join(summary['quirks']['gone'])} "
               "(the helpers in kit/c64/vice.py work either way)")

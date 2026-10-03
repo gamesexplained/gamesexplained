@@ -42,6 +42,44 @@ A committed `symbols.json` plus the contributor's own `.sna` rebuild the
 control file, and the control file rebuilds `symbols.json`; neither holds
 the memory image, so both are safe to commit.
 
+## The first control file, from an execution map
+
+Before any of the above can run, a whole-image game has to have its code
+separated from its data: `sna2skool.py` disassembles the bytes a `c` block
+tells it to, and nothing mints those blocks for you (`50-coverage`, "When the
+disassembler does not follow control flow"). SkoolKit will make a first
+control file from a **code execution map**:
+
+```sh
+tr ' ' '\n' < work/executed.txt | sed 's/^/\$/' > work/executed.map      # one $XXXX per line
+tools/skoolkit/bin/python tools/skoolkit/bin/sna2ctl.py -h -m work/executed.map -s 23296 work/entry.sna > work/first.ctl 2>/dev/null
+```
+
+`-m` takes one `$XXXX` address per line; the map comes from the emulator
+(`kit/skills/spectrum/tool-zesarux`, "Finding a game's code", says how to
+record one). `-h` is "write hexadecimal", not help (`--help` is help);
+without `-h` or `-l` its addresses are **decimal**, so comparing against
+the kit's own `.ctl` needs a conversion. `-s` is the address to start at,
+and the progress it prints for a map goes to stderr. Its `t` and `s` blocks
+are guesses from the byte values (313 `t` blocks on the first game): take
+the `c` blocks from it, and type data from the code that reads it.
+
+**A map holds only what ran, and a wrong type hides what it calls.** Two
+measurements on the first game, both on 3 October 2026. From a map of
+10,491 executed addresses, `sna2ctl.py`'s `c` blocks covered 22,910 of the
+24,147 bytes of code: every executed byte was in one, and the 1,237 it
+left as data were code no session had run (the first screen, which ran
+before the snapshot was taken; two handlers named only by words in data;
+a routine nothing calls). And checked against a typing that already had
+code filed as data, one sweep found 3,320 bytes of mistyped code where a
+sweep repeated until a pass added nothing found 5,934: a stretch filed as
+data hides every routine that stretch calls, and 13 bytes holding a `CALL`
+hid a 611-byte routine from the map and from the walk. So run it more than
+once and let each pass feed the next, or let `kit/spectrum/codemap.py` do
+the repeating: its trace follows every branch and call from every executed
+address and every entry it is given, and it reports what `symbols.json`
+still types as data (`tool-zesarux`, "Finding a game's code").
+
 ## The control file, as far as the kit writes it
 
 Full syntax: the "Control files" chapter of the manual. The subset
@@ -88,30 +126,6 @@ finds one. Leave such a stretch out of the listing (`coverage.exclude` in
 `facts.md` what the copy changes: the bytes that differ are usually the
 interesting part. The ROM it compares with is SkoolKit's own `48.rom`
 under `tools/`; `--rom` takes another.
-
-## A first control file from what executed
-
-`sna2ctl.py` writes a control file for a snapshot, and with `-m` it takes a
-code execution map, so the first split of code from data need not be made
-by hand:
-
-```
-sed 's/^/$/' work/executed.txt > work/executed.map        # one $XXXX per line
-tools/skoolkit/bin/python tools/skoolkit/bin/sna2ctl.py -h -m work/executed.map -s 23296 work/entry.sna > work/first.ctl 2>/dev/null
-```
-
-`-h` is "write hexadecimal", not help (`--help` is help), `-s` is the
-address to start at, and the progress it prints for a map goes to stderr.
-Measured on the first game with 10,491 executed addresses (3 October
-2026): its `c` blocks covered 22,910 of the 24,147 bytes of code. Every
-executed byte was in one. What it left as data was code no session had
-run, 1,237 bytes: among it the first screen (it ran before the snapshot
-was taken), two handlers named only by words in data, and a routine
-nothing calls.
-`kit/spectrum/codemap.py` finds those (`tool-zesarux`, "Finding a game's
-code"). Its `t` and `s` blocks are guesses from the byte values (313 `t`
-blocks on that game): take the `c` blocks from it, and type data from the
-code that reads it.
 
 ## Testing what a routine computes
 

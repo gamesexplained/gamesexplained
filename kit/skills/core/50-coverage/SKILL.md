@@ -48,23 +48,42 @@ same way, so tiers mean the same thing everywhere.
 
 ### When the disassembler does not follow control flow
 
-On the C64 the disassembler walks the code and mints a symbol at every
-branch target, so the coverage queue is populated for you. Where the
-annotation surface is a file of block boundaries that nothing traces
-(the ZX Spectrum's control file), the code has to be separated from the
-data before the loop above can start, and a wrong split does not show
-afterwards: code typed as data has no cross-references, reads as a table
-and is described as one, and coverage still reaches 100 %. The first such
-game was published for review with 5.9 KB of its code typed as data.
+Where the disassembler walks the code and mints a symbol at every branch
+target, the coverage queue is populated for you. Where the annotation
+surface is instead a **control file** - typed blocks the disassembler obeys
+rather than derives - nothing separates the code from the data for you, and
+it has to be done before the loop above can start. A wrong split does not
+show afterwards: code typed as data has no cross-references, reads as a
+table and is described as one, and coverage still reaches 100 %. The first
+such game was published for review with 5.9 KB of its code typed as data.
 
-Build the split from two sources and let a script hold the typing against
-it: the emulator's record of every address that executed, over sessions
-that reach every state you can (each menu, each control, losing, giving
-up), and a static trace from the entries the record cannot contain: code
-that ran before the snapshot was taken, a handler whose address is only
-stored in data, an operand another instruction writes. Run the check again
-after every merge of the annotation agents' work. The platform's tool
-skills name the commands (`kit/skills/<platform>/`).
+Two sources, used together:
+
+- **The emulator's executed-address map**: every address the CPU executed
+  while you drove the game through the states you could reach (each menu,
+  each control, losing, giving up). It finds the code that runs, including
+  what only a computed jump reaches.
+- **A recursive trace**: decode from every address the map gives, and from
+  the entries the map cannot contain (code that ran before the snapshot was
+  taken, a handler whose address is only stored in data, an operand another
+  instruction writes), follow every branch and call target, repeat. It adds
+  the code a static walk can reach that the recorded play never ran.
+
+Everything neither found is data, unless a reference says a routine reads it
+as a table.
+
+**Iterate, because a wrong type hides what it calls.** A walk decodes only
+what it is given, so a stretch filed as data also hides the routines *it*
+calls, and the map sweep on its own will report that stretch as data too.
+Repeat the sweep until a pass adds nothing, then believe the total. A single
+pass under-reports, and the difference is not a rounding error: see the entry
+in `kit/lessons/` for the run that measured both.
+
+**Let a script hold the typing against the map**, and run it again after
+every merge of the annotation agents' work. The platform's tool skills say
+which commands produce the map, how to turn it into the control file's
+format, how to check the result against it, and how to read it back
+(`kit/skills/<platform>/`).
 
 ## Rules that keep the number honest
 
