@@ -87,7 +87,7 @@ class Fake:
             self.cps[n] = a
             return {"status": "ok", "checkpoint_num": n}
         if name == "vice_checkpoint_set_condition":
-            if not re.match(r"(A|X|Y|PC|SP) == ", a["condition"]):
+            if not re.match(r"(A|X|Y|PC|SP) ?==? ?\$?[0-9A-Fa-f]+$", a["condition"]):
                 return self.err(-32602, "Invalid condition")
             return {"status": "ok"}
         if name == "vice_checkpoint_delete":
@@ -251,11 +251,15 @@ def test_arm(fake, rpc):
           seen == [("vice_checkpoint_add", True), ("vice_checkpoint_set_ignore_count", True)] and not fake.paused
           and fake.cps[n]["stop"] and fake.cps[n]["exec"], seen)
     fake.paused, fake.log[:] = True, []
-    vice.arm(rpc, 0xC000, condition="A == $40")
+    vice.arm(rpc, 0xC000, condition="PC == $C000")
     check("arm: a stopped machine stays stopped", fake.paused and not fake.calls("vice_execution_run"))
     fake.paused, fake.log[:] = False, []
+    e = raises(lambda: vice.arm(rpc, 0xC000, condition="A == $40"), vice.ViceError)
+    check("arm: a condition on a register other than PC, which crashes the emulator, is refused unsent",
+          isinstance(e, vice.ViceError) and "crash" in str(e) and not fake.calls(), e)
+    fake.paused, fake.log[:] = False, []
     before = set(fake.cps)
-    e = raises(lambda: vice.arm(rpc, 0xC000, condition="score > 3"), vice.ViceError)
+    e = raises(lambda: vice.arm(rpc, 0xC000, condition="PC > 3"), vice.ViceError)
     check("arm: a condition the server refuses raises, and its checkpoint is deleted, the machine running",
           isinstance(e, vice.ViceError) and set(fake.cps) == before and not fake.paused, e)
     fake.log[:] = []

@@ -33,15 +33,18 @@ These absorb the server's quirks, on any build; the plain tool calls do not:
                                        machine for the read if the server will not answer it
   reset(rpc); autostart(rpc, "work/game.d64", 2)    the second file as the directory lists it;
                                        both resume a paused machine, which otherwise stays paused
-  warp(rpc, False)                     autostart turns warp on
+  warp(rpc, False)                     where the typed MCP tool will not take the argument
   with key(rpc, "u"): ...              any case; released however the block ends
   release_all(rpc)                     after a script that died holding keys or the stick
   arm(rpc, "$E12C", ignore=99)         a stopping checkpoint with an ignore count or condition,
-                                       set on a stopped machine so it cannot fire in between
+                                       set on a stopped machine so it cannot fire in between;
+                                       a condition on A, X, Y or SP, which crashes the emulator,
+                                       is refused
   snapshot_load(rpc, "games/c64/<slug>/work/play.vsf")    a path or a name
   ask(rpc, tool, args)                 the reply as a dict; a refusal raises ViceError
 
 A refused or closed connection raises EmulatorDown, whose one line says to run tools.py status.
+check-emulator reports which of these quirks the build has, after its checks.
 """
 import contextlib, http.client, json, os, re, shutil, sys, time, urllib.error, urllib.request
 
@@ -114,7 +117,7 @@ def _down(url, what, cause):
     if isinstance(cause, TimeoutError) or "timed out" in str(cause):
         return f"the emulator did not answer {what} at {url} within 120 s. Check with {status}"
     return (f"the emulator closed the connection during {what} ({type(cause).__name__}): it may have "
-            f"crashed, and the call did not happen. Check with {status}")
+            f"crashed. Check with {status}")
 
 
 def call(rpc, name, arguments=None):
@@ -178,7 +181,7 @@ def _read(rpc, a, size, bank):
     except (ViceError, KeyError) as e:
         first = e
     if getattr(first, "code", None) == -32602 or paused(rpc):      # a bad argument, or already stopped
-        raise ViceError(f"vice_memory_read at {addr(a)}, {size} bytes: {first}", getattr(first, "code", None))
+        raise first
     call(rpc, "vice_execution_pause", {})
     try:
         t0 = time.time()
@@ -270,8 +273,16 @@ def arm(rpc, a, end=None, ignore=0, condition=None, stop=True, exec=None, load=F
     With an ignore count or a condition, which the server sets in a second call, a running machine
     is stopped with pause() for the two calls and set running again: in between, on a running
     machine, the checkpoint can fire with neither in place, and on a slow host it usually does.
-    The machine loses no time to it, only the frame pause() runs. condition is the server's:
-    "A == $xx", or X, Y, PC or SP."""
+    It costs the one frame pause() runs. The ignore count is used up before hit_count counts, so
+    a checkpoint with ignore=99 stops with hit_count 1, on its hundredth hit.
+
+    condition is "PC == $xxxx". The server also takes A, X, Y and SP, and the v3.13.2 release then
+    crashes at the checkpoint's first hit: parse_simple_condition stores the register without its
+    memory space, and VICE's evaluator calls through a CPU interface that is not there (read in
+    the source, and measured on Linux, 3 October 2026). So those are refused here."""
+    if condition is not None and not re.match(r"\s*PC\b", condition, re.I):
+        raise ViceError(f"arm: condition {condition!r}: only PC conditions are safe; an A, X, Y or SP "
+                        "condition crashes the emulator at the first hit (see arm's comment)")
     args = {"start": addr(a), "stop": stop, "exec": not (load or store) if exec is None else exec,
             "load": load, "store": store}
     if end is not None:
@@ -363,8 +374,9 @@ def key_up(rpc, k):
 def key(rpc, *keys):
     """Hold keys for the body of a with block and release them however it ends.
 
-    A key pressed through the matrix stays down, across snapshot loads, until it is released:
-    one left down by a script that died hides the key the next test presses."""
+    A key pressed through the matrix stays down until it is released, and a snapshot saved
+    meanwhile keeps it: every load of that snapshot puts it down again. Either way it hides the
+    keys pressed after it."""
     held = []
     try:
         for k in keys:
@@ -378,8 +390,8 @@ def key(rpc, *keys):
 
 def release_all(rpc):
     """Release every key of the matrix and centre both joysticks: the clean-up after a script
-    that stopped part way. The tell that one is needed: the KERNAL's current key at $C5 sits on
-    one code with nothing pressed ($40 means none)."""
+    that stopped part way, or after loading a snapshot saved with a key down. The tell that one is
+    needed: the KERNAL's current key at $C5 sits on one code with nothing pressed ($40 means none)."""
     for row in range(8):
         for col in range(8):
             key_up(rpc, (row, col))
@@ -414,8 +426,9 @@ def autostart(rpc, path, file=None, run=True):
     v3.13.2 source, read 3 October 2026). On a stopped machine the call attaches the image and
     nothing loads while it stays stopped; VICE's autostart counts the machine's cycles, not
     seconds (reboot_for_autostart, same source), so a stopped machine is resumed after the call,
-    as reset() does. Autostart turns warp mode on for the load: warp(rpc, False) once the game is
-    up. path is made absolute, so it means the same to the emulator as to the script."""
+    as reset() does; on Linux, 3 October 2026, the file then loaded. Autostart turns warp mode on
+    for the load, and VICE turned it off again when the load ended. path is made absolute, so it
+    means the same to the emulator as to the script."""
     args = {"path": os.path.abspath(path), "run": run}
     if isinstance(file, str):
         args["program"] = file

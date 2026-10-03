@@ -34,13 +34,15 @@ python3 kit/scripts/tools.py --platform c64 check-emulator    # kit/EMULATOR.md'
 If `get-vice` names a newer release than the one installed, tell the
 contributor what it printed and ask before changing anything; an older
 build is not wrong, only measured by its own checks. The check resets
-the machine, so run it before the game is loaded, not during. It runs its own small test program, measures each capability
-this file relies on, and gives every check a name. **Read
-`workarounds.md` for the names that failed, and only those.** Everything
-in this file is written for a build that passes; where a section needs a
-particular check, it says which. Put the build line from `status` and the
-list of failed checks in `orientation.md`, and the build line in
-`game.json` under `tools.emulator`.
+the machine, so run it before the game is loaded, not during. It runs
+its own small test program, measures each capability this file relies
+on, and gives every check a name. **Read `workarounds.md` for the names
+that failed, and only those.** The `HAS` and `NOT` lines after the
+checks are server quirks that `vice.py` absorbs; they need nothing.
+Everything in this file is written for a build that passes; where a
+section needs a particular check, it says which. Put the build line from
+`status` and the list of failed checks in `orientation.md`, and the
+build line in `game.json` under `tools.emulator`.
 
 Which build to have is not a version you pick: `tools.py get-vice` finds
 the newest release and what this machine can have of it, and asks
@@ -64,9 +66,10 @@ passed, by date and system, are the table at the top of that file.
    the first, use `autostart()` in `vice.py`: it takes the file's name,
    or its position as the directory lists it, and like `reset()` it
    resumes a stopped machine, on which the plain call loads nothing.
-2. `vice_machine_config_get` to confirm PAL/NTSC; autostart turns **warp
-   mode on**: `warp(rpc, False)` in `vice.py` turns it off once the game
-   is up.
+2. `vice_machine_config_get` to confirm PAL/NTSC, and that warp mode is
+   off: autostart turns it on for the load, and on the v3.13.2 release
+   VICE turned it off again when the load ended (3 October 2026).
+   `warp(rpc, False)` in `vice.py` turns it off if it is still on.
 3. Send input: `vice_keyboard_type` for text at the BASIC prompt,
    `vice_keyboard_matrix` for games that scan the keyboard themselves,
    `vice_joystick_set` for the stick. Hold an input until the thing that
@@ -256,14 +259,18 @@ the batch.
   stopped machine at both ends, and never compare against `sleep`.
 - **Give a checkpoint its ignore count or condition with `arm()`** in
   `vice.py`. Set in a second call on a running machine, the checkpoint
-  can fire in between, and on a slow host it usually does.
+  can fire in between, and on a slow host it usually does. A condition
+  on A, X, Y or SP crashes the v3.13.2 emulator at the checkpoint's
+  first hit (`PC` conditions work), so `arm()` refuses one.
 - **When a key "does nothing", try the other tool** before concluding
   anything about the game: `vice_keyboard_matrix`, `vice_keyboard_key_press`
   by host name, and `vice_keyboard_type` through the KERNAL buffer reach the
   game by different paths. Keep a hit counter on the routine that should
   react as the instrument.
-- **A key left down by a script that died stays down**, across snapshot
-  loads, and hides every key pressed after it. The tell: the KERNAL's
+- **A snapshot keeps the keys held when it was saved** (v3.13.2, 3
+  October 2026). Every load of one saved while a script held a key puts
+  that key down again, and it hides every key pressed after it; a load
+  of a clean one lets go of whatever was held. The tell: the KERNAL's
   current-key variable `$C5` sitting on one code (`$40` means none).
   `release_all()` in `vice.py` clears it; `key()` never leaves one down.
 - **`vice_machine_config_set` has a six-entry whitelist**:
