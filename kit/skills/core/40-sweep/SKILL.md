@@ -91,7 +91,13 @@ maker is unknown is in the position of a run on an unproven model.
    `listing.py` as usual. A converter may write `symbols.json`; it never
    writes `listing.json`, which comes from `listing.py` alone so that
    every game's Source tab has one format and the next run can continue
-   it.
+   it. `symbols_import.py` fills uncovered memory ranges as `Undefined`;
+   otherwise the disassembler can default omitted runtime buffers to
+   code and invent references from their contents. Do not fill gaps as
+   typed data: that can enlarge annotation spans and inflate coverage.
+   Only explicitly
+   declared code ranges are imported as instructions. Check the imported
+   types against the captured state before trusting regenerated labels.
 3. **Coverage is measured by the same rules** (`50-coverage`): runtime
    state out of the denominator, one description per routine or table,
    spans as the ledger draws them. An imported description counts like

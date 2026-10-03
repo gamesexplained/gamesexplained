@@ -1,10 +1,10 @@
 // The footprint widget: a game's use of the 64 KB address space, one pixel per byte,
 // 512 bytes per row, drawn from memmap.json (written by kit/scripts/build.py).
-window.C64Map = (function () {
+// `makeMemMap` is the drawing, shared by every machine; only the legend words differ,
+// so C64Map and SpectrumMap are two label sets over one implementation.
+globalThis.makeMemMap = function (LABELS) {
   const COLOURS = { code: '#e8a33d', graphics: '#6fc7d4', levels: '#8fd17a', sound: '#d97f6e', text: '#edf171',
                     tables: '#8f7fe0', variables: '#c46c71', runtime: '#3a3d6a', rom: '#2a2c4a', unused: '#12142c' };
-  const LABELS = { code: 'code', graphics: 'graphics', levels: 'level data', sound: 'sound', text: 'text',
-                   tables: 'tables', variables: 'variables', runtime: 'screen, bitmap, colour, stack, I/O', rom: 'ROM the game runs under', unused: 'unused' };
   const hex = a => '$' + a.toString(16).toUpperCase().padStart(4, '0');
   async function render(el, url, opts = {}) {
     const M = await fetch(url).then(r => r.json());
@@ -111,4 +111,9 @@ window.C64Map = (function () {
     return M;
   }
   return { render, strip, COLOURS, LABELS };
-})();
+};
+
+// The Commodore 64's names for the categories.
+window.C64Map = globalThis.makeMemMap({
+  code: 'code', graphics: 'graphics', levels: 'level data', sound: 'sound', text: 'text', tables: 'tables',
+  variables: 'variables', runtime: 'screen, bitmap, colour, stack, I/O', rom: 'ROM the game runs under', unused: 'unused' });

@@ -15,6 +15,7 @@ Deleting the repository removes all of it. See kit/c64/INSTALL.md, "Uninstall".
 Usage:
   tools.py status
   tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
+                                   (or $KIT_VICE_PORT, when something else holds 6510)
   tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
   tools.py stop [vice|r2000|all] [--force]
                                    the disassembler stays up while an annotation log written since
@@ -25,6 +26,7 @@ Usage:
   tools.py use-vice release        go back to the release (kept at tools/vice-mcp-release)
   tools.py check-emulator          test the emulator against kit/EMULATOR.md (kit/c64/check_emulator.py)
   tools.py build-vice <src dir>    build a vice-mcp source tree into <src dir>/install and use it (kit/c64/build_vice.py)
+  tools.py ghidra-fixture <installation>  regenerate the synthetic Ghidra importer fixture
   tools.py snapshots               where emulator snapshots are, and what is there
   tools.py verify-footprint        prove the tools write nothing outside this repository
 
@@ -38,7 +40,7 @@ import os, re, shutil, subprocess, sys, time
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
 COMMANDS = ("status", "vice", "r2000", "stop", "verify-footprint", "use-vice", "check-emulator",
-            "get-vice", "build-vice", "snapshots")
+            "get-vice", "build-vice", "snapshots", "ghidra-fixture")
 TOOL_NAMES = ("vice", "r2000")   # what `stop` takes
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,6 +50,23 @@ VICE_RELEASE = os.path.join(TOOLS, "vice-mcp-release")
 VICE_HOME = os.path.join(TOOLS, "vice-home")
 LOGS = os.path.join(TOOLS, "logs")
 SNAPSHOTS = os.path.join(VICE_HOME, "config", "vice", "mcp_snapshots")
+# The emulator's MCP port: KIT_VICE_PORT when it is set, for a machine where something else already
+# holds 6510, else the port the last `tools.py vice` used (tools/vice-port, which it writes), else
+# 6510. kit/c64/vice.py resolves it the same way, so a shell that loses the variable between two
+# commands still reaches this clone's emulator and not whatever holds 6510.
+PORT_FILE = os.path.join(TOOLS, "vice-port")
+
+
+def vice_port():
+    if os.environ.get("KIT_VICE_PORT"):
+        return int(os.environ["KIT_VICE_PORT"])
+    try:
+        return int(open(PORT_FILE).read())
+    except (OSError, ValueError):
+        return 6510
+
+
+VICE_PORT = vice_port()
 RELEASE_NOTE = ".kit-release"    # written by get-vice into a downloaded release: "<tag> <asset>"
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
@@ -80,11 +99,14 @@ def vice(machine="x64sc"):
     libs = missing_libraries(exe)
     if libs:
         sys.exit(say_missing(libs))
-    detail = foreign_detail(6510)
+    detail = foreign_detail(VICE_PORT)
     if detail:
         # the MCP server and this clone's scripts would drive that machine, and its snapshots land in its own clone
-        sys.exit(f"an emulator started from another folder already answers on :6510:\n{detail}\n"
+        sys.exit(f"an emulator started from another folder already answers on :{VICE_PORT}:\n{detail}\n"
                  "stop it there (its own `tools.py stop vice`) before starting this clone's")
+    os.makedirs(TOOLS, exist_ok=True)
+    with open(PORT_FILE, "w") as f:
+        f.write(str(VICE_PORT))
     env = dict(os.environ)
     for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
                      ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data")):
@@ -96,8 +118,8 @@ def vice(machine="x64sc"):
     data, share = os.path.join(env["XDG_DATA_HOME"], "vice"), os.path.join(VICE_DIR, "share", "vice")
     if os.path.isdir(share) and not os.path.lexists(data):
         os.symlink(os.path.relpath(share, env["XDG_DATA_HOME"]), data)
-    start(virtual_display([exe, "-mcpserver"], env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
-          port=6510, name="emulator")
+    start(virtual_display([exe, "-mcpserver", "-mcpserverport", str(VICE_PORT)], env), os.path.join(LOGS, "vice.log"), env=env, cwd=VICE_DIR,
+          port=VICE_PORT, name="emulator")
 
 
 def r2000_exe():
@@ -306,16 +328,16 @@ def use_vice(target):
             print("the release is kept at tools/vice-mcp-release; `tools.py use-vice release` goes back to it")
         os.makedirs(TOOLS, exist_ok=True)   # a fresh clone with no release downloaded has no tools/ yet
         os.symlink(target, VICE_DIR)
-    if up(6510):
+    if up(VICE_PORT):
         print("the emulator is still running the old build: `tools.py stop vice` and `tools.py vice`")
     print("emulator build:", vice_build())
 
 
 def status():
-    print(f"emulator      :6510  {'up' if up(6510) else 'down'}   build: {vice_build()} (tools/vice-mcp)")
-    detail = foreign_detail(6510)
+    print(f"emulator      :{VICE_PORT}  {'up' if up(VICE_PORT) else 'down'}   build: {vice_build()} (tools/vice-mcp)")
+    detail = foreign_detail(VICE_PORT)
     if detail:
-        print(f"  WARNING: :6510 is answered by an emulator from another folder:\n{detail}")
+        print(f"  WARNING: :{VICE_PORT} is answered by an emulator from another folder:\n{detail}")
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
     where = "tools/cargo/bin" if os.path.exists(local) else (shutil.which("regenerator2000") or "MISSING")
     print(f"disassembler  :3000  {'up' if up(3000) else 'down'}   binary: {where}")
@@ -334,7 +356,7 @@ def verify_footprint():
     import json
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     t0 = time.time() - 1
-    was_up = up(6510)
+    was_up = up(VICE_PORT)
     if was_up:
         sys.exit("stop the emulator first (tools.py stop vice): the check has to see a whole launch-to-exit cycle")
     words = ("vice", "x64", "regenerator", "r2000")
@@ -390,6 +412,9 @@ def main():
         sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "get_vice.py"), *a[1:]]).returncode)
     elif a[0] == "build-vice":
         sys.exit(subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_vice.py"), *a[1:]]).returncode)
+    elif a[0] == "ghidra-fixture":
+        script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ghidra_export", "regenerate_fixture.py")
+        sys.exit(subprocess.run([sys.executable, script, *a[1:]]).returncode)
     elif a[0] == "snapshots":
         print(os.path.relpath(SNAPSHOTS, ROOT))
         for f in sorted(os.listdir(SNAPSHOTS)) if os.path.isdir(SNAPSHOTS) else []:

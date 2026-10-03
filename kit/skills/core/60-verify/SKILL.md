@@ -35,6 +35,33 @@ the 6502 simulator (on the C64, `kit/c64/machine.js`) and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
 
+## Claims about the whole game
+
+"Every room", "the only routine", "never", "the test" in the singular:
+each is a claim about all the instances, and the commonest wrong claim
+on a page is one read off a single instance. Before writing one, list
+them all: every caller of the routine, every reader of the variable,
+every copy of the test (a byte search for the call and for the
+operand, not the tracer's cross-references alone), and say how many
+there are. A live test in one room tests one room. One run's maintainer
+found five such claims in a sample of twelve: a collision list that was
+one test's of four, a tune called one room's that played in all of them,
+a bug whose effect was worked out from counts without reading the
+callers.
+
+## Measure the listing before calling it done
+
+The comments in the listing are claims too, and an annotation agent's
+are rarely all right. Draw a random sample of about 60 (a fixed seed,
+spread over every agent's range) and have an agent that wrote none of
+them check each against the bytes; the error rate with its interval goes
+in `facts.md` or the pull request. One run measured 25 % of its comments
+with a wrong detail (callers, rooms and counts, almost never what a
+routine does); a full pass by fresh agents, each correcting its own range
+and listing callers from the decoded listing rather than from a byte
+search, brought a second, independent sample to 3 %. If the first sample
+is bad, audit the whole listing before the page is published.
+
 ## What a test lets through
 
 For every compare that sorts a value into a class (is this tile a door,

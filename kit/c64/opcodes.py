@@ -32,10 +32,11 @@ The documented set is listing.py's table; this adds the other 105.
 import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(HERE))
 
-sys.path.insert(0, os.path.join(ROOT, "kit", "scripts"))
-from listing import OPS, LEN, VSF_RAM_OFFSET   # the documented set, as the Source tab has it  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))   # symbols_export, read where it is needed
+sys.path.insert(0, HERE)                        # the tables moved here with the seam lift
+from cpu import OPS, LEN                       # the documented set, as the Source tab has it  # noqa: E402
+from snapshot import VSF_RAM_OFFSET            # noqa: E402
 
 UNDOC = {}        # opcode: (mnemonic, mode), with VICE's names
 for base, name in ((0x00, "slo"), (0x20, "rla"), (0x40, "sre"), (0x60, "rra"),
@@ -133,8 +134,8 @@ def image(gdir, vsf=None):
 
 def blocks_of(gdir, live):
     if live:
-        from symbols_export import from_live
-        blocks, syms, _ = from_live("c64")
+        from symbols_export import read_live
+        blocks, syms, _ = read_live("c64")
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms = s["blocks"], s["symbols"]

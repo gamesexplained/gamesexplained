@@ -156,13 +156,13 @@ past its symbol's reach, and anything under a default exclusion.
 `listing.py` lists it after every build. It names the RAM a platform
 default excludes but a game can still use (on the C64, the RAM under the
 I/O area) whenever that RAM holds data and `game.json` has not said what
-it is. With the hand-over snapshot, `work/entry.<snapshot ext>`
-(`10-orient`), it
+it is. With the hand-over snapshot, `work/entry.<ext>` (`10-orient`; the
+extension is the platform's snapshot form, from `PLATFORM_DEFAULTS`), it
 also lists every stretch of loaded data, the same bytes at the hand-over
 and in play, that the ledger neither tracks nor has been told to leave
 out. When the listing is built from the hand-over itself (the start-up
 code exists nowhere else), give it the play snapshot as the second image:
-`--entry work/<play>.<snapshot ext>`. Before calling 100 %, go through that list and say what each stretch
+`--entry work/<play>.<ext>`. Before calling 100 %, go through that list and say what each stretch
 is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
@@ -292,6 +292,17 @@ Routines are independent, so the burn-down parallelises. What matters:
   (the template's opening comment says why).
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
+- **An agent stopped by the account's usage limit keeps its context.**
+  Nine agents at once use up a session's allowance quickly; when they
+  stop on the limit, export at once, wait for the reset and resume each
+  agent with a message (the harness's resume, not a new agent), telling
+  it what is already in the disassembler. A new agent rereads its range
+  from nothing. Stop the clock while the run waits, with a note saying
+  why: the wall clock otherwise counts hours of nothing as the step's.
+- **Correct the brief the moment a fact in it turns out wrong**, and say
+  in it that it was corrected. Agents still running read the old line;
+  their reports will contradict it, which is how one run found that its
+  "Established" control had been read off a snapshot taken mid-jump.
 
 ## Declare what the bytes are
 

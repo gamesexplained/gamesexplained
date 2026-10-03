@@ -2,11 +2,12 @@
 """Build listing.json, the data behind the Source tab, from symbols.json
 and the contributor's own snapshot.
 
-Our own 6502 decoder, so the listing depends on no disassembler. Emits one
-record per instruction or data item for every byte the ledger counts as
-the game (code blocks, typed data blocks, symbol-owned spans), and a gap
-record for each skipped run. Labels, comments and block types come from
-symbols.json; the bytes come from the snapshot; cross-references are
+The platform's own decoder (kit/<platform>/cpu.py), so the listing depends
+on no disassembler. Emits one record per instruction or data item for
+every byte the ledger counts as the game (code blocks, typed data blocks,
+symbol-owned spans), and a gap record for each skipped run. Labels,
+comments and block types come from symbols.json; the bytes come from the
+snapshot, read by kit/<platform>/snapshot.py; cross-references are
 computed here.
 
 Then it lists the data the ledger does not count. RAM that a default
@@ -33,8 +34,8 @@ addresses, the last row that holds the instruction deciding:
 with "registers" for code under the I/O area that banks the chips in.
 
 Usage:
-  listing.py <game dir> <snapshot.vsf> [--entry <hand-over.vsf>]
-                         the hand-over defaults to the game's work/entry.vsf
+  listing.py <game dir> <snapshot> [--entry <hand-over snapshot>]
+                         the hand-over defaults to the platform's work/entry.<ext>
   listing.py <game dir> --relabel
                          name the operands of the existing listing.json again,
                          for a change to "io" or to the register names, without
@@ -61,65 +62,33 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ledger import compute
 
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VSF_RAM_OFFSET = 209
 
-# --- opcode table -----------------------------------------------------------
-OPS = {}
-def _alu(base, name):
-    for off, mode in ((0x09, "imm"), (0x05, "zp"), (0x15, "zpx"), (0x0D, "abs"),
-                      (0x1D, "abx"), (0x19, "aby"), (0x01, "izx"), (0x11, "izy")):
-        OPS[base + off] = (name, mode)
-for base, name in ((0x00, "ora"), (0x20, "and"), (0x40, "eor"), (0x60, "adc"),
-                   (0x80, "sta"), (0xA0, "lda"), (0xC0, "cmp"), (0xE0, "sbc")):
-    _alu(base, name)
-del OPS[0x89]  # sta has no immediate form
-for base, name in ((0x00, "asl"), (0x20, "rol"), (0x40, "lsr"), (0x60, "ror")):
-    for off, mode in ((0x0A, "acc"), (0x06, "zp"), (0x16, "zpx"), (0x0E, "abs"), (0x1E, "abx")):
-        OPS[base + off] = (name, mode)
-for base, name in ((0xC0, "dec"), (0xE0, "inc")):
-    for off, mode in ((0x06, "zp"), (0x16, "zpx"), (0x0E, "abs"), (0x1E, "abx")):
-        OPS[base + off] = (name, mode)
-for op, name in ((0x90, "bcc"), (0xB0, "bcs"), (0xF0, "beq"), (0x30, "bmi"),
-                 (0xD0, "bne"), (0x10, "bpl"), (0x50, "bvc"), (0x70, "bvs")):
-    OPS[op] = (name, "rel")
-for op, name in ((0x00, "brk"), (0x18, "clc"), (0xD8, "cld"), (0x58, "cli"), (0xB8, "clv"),
-                 (0xCA, "dex"), (0x88, "dey"), (0xE8, "inx"), (0xC8, "iny"), (0xEA, "nop"),
-                 (0x48, "pha"), (0x08, "php"), (0x68, "pla"), (0x28, "plp"), (0x40, "rti"),
-                 (0x60, "rts"), (0x38, "sec"), (0xF8, "sed"), (0x78, "sei"), (0xAA, "tax"),
-                 (0xA8, "tay"), (0xBA, "tsx"), (0x8A, "txa"), (0x9A, "txs"), (0x98, "tya")):
-    OPS[op] = (name, "imp")
-OPS.update({0x24: ("bit", "zp"), 0x2C: ("bit", "abs"),
-            0xE0: ("cpx", "imm"), 0xE4: ("cpx", "zp"), 0xEC: ("cpx", "abs"),
-            0xC0: ("cpy", "imm"), 0xC4: ("cpy", "zp"), 0xCC: ("cpy", "abs"),
-            0x4C: ("jmp", "abs"), 0x6C: ("jmp", "ind"), 0x20: ("jsr", "abs"),
-            0xA2: ("ldx", "imm"), 0xA6: ("ldx", "zp"), 0xB6: ("ldx", "zpy"), 0xAE: ("ldx", "abs"), 0xBE: ("ldx", "aby"),
-            0xA0: ("ldy", "imm"), 0xA4: ("ldy", "zp"), 0xB4: ("ldy", "zpx"), 0xAC: ("ldy", "abs"), 0xBC: ("ldy", "abx"),
-            0x86: ("stx", "zp"), 0x96: ("stx", "zpy"), 0x8E: ("stx", "abs"),
-            0x84: ("sty", "zp"), 0x94: ("sty", "zpx"), 0x8C: ("sty", "abs")})
-LEN = {"imp": 1, "acc": 1, "imm": 2, "zp": 2, "zpx": 2, "zpy": 2, "rel": 2,
-       "abs": 3, "abx": 3, "aby": 3, "ind": 3, "izx": 2, "izy": 2}
-assert len(OPS) == 151, len(OPS)
-
-# Explicitly code-typed NMOS instruction verified in a game. Keep it
-# separate from the documented table used by other tooling.
-UNDOCUMENTED = {0xBF: ("lax", "aby")}
+# The ledger, the record format and this whole loop are shared. What the CPU is,
+# how a snapshot is read and what a text byte means are the machine's: each
+# platform keeps a `cpu.py` and a `snapshot.py` beside its other code, and this
+# script loads them by `game.json`'s platform. The interface is in kit/PLATFORMS.md.
+_PLATFORM = {}
 
 
-def screencode(c):
-    c &= 0x7F
-    if c == 0: return "@"
-    if 1 <= c <= 26: return chr(64 + c)
-    if 32 <= c <= 63: return chr(c)
-    if c == 27: return "["
-    if c == 29: return "]"
-    return "."
-
-
-def petscii(c):
-    if 0x20 <= c <= 0x5A: return chr(c)
-    if 0xC1 <= c <= 0xDA: return chr(c - 0x80)
-    if 0x41 <= c <= 0x5A: return chr(c)
-    return "."
+def platform_modules(platform):
+    """(cpu, snapshot) for `platform`, loaded by path from kit/<platform>/."""
+    if platform in _PLATFORM:
+        return _PLATFORM[platform]
+    d = os.path.join(KIT, platform or "")
+    if not platform or not os.path.isdir(d):
+        sys.exit(f'game.json names platform {platform!r}, but kit/{platform}/ does not exist')
+    if d not in sys.path:
+        sys.path.insert(0, d)          # so a platform module can import its own siblings (z80.py)
+    mods = []
+    for name in ("cpu", "snapshot"):
+        path = os.path.join(d, name + ".py")
+        spec = importlib.util.spec_from_file_location(f"{platform}_{name}", path)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = mod
+        spec.loader.exec_module(mod)
+        mods.append(mod)
+    _PLATFORM[platform] = tuple(mods)
+    return _PLATFORM[platform]
 
 
 def symbol_names(sym):
@@ -143,8 +112,8 @@ def register_names(platform):
 def io_meaning(game):
     """chips(target, at): whether the instruction at `at` sees a chip's register at
     `target` rather than the RAM beneath it. The rule is in this file's help."""
-    from symbols_export import PLATFORM_DEFAULTS, hexint
-    plat = PLATFORM_DEFAULTS.get(game.get("platform", "c64"), {})
+    from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
+    plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
     hidden = [(hexint(r[0]), hexint(r[1])) for r in plat.get("hidden", [])]
     rows = []
     for r in game.get("io", []):
@@ -165,41 +134,13 @@ def io_meaning(game):
     return chips
 
 
-FORMAT = {"zp": "{}", "zpx": "{},x", "zpy": "{},y", "izx": "({},x)", "izy": "({}),y",
-          "abs": "{}", "abx": "{},x", "aby": "{},y", "ind": "({})", "rel": "{}"}
-
-
-def operand(a, m, mode, bs, names, regs, chips):
-    """(text, address) of the operand of the instruction at a. The address is None where
-    there is none, and on a chip's register: nothing in the listing is there to link to or
-    to be referenced from."""
-    if mode == "imp":
-        return None, None
-    if mode == "imm":
-        return f"#${bs[1]:02X}", None
-    if mode == "acc":
-        return "a", None
-    if mode == "rel":
-        ta = (a + 2 + (bs[1] - 256 if bs[1] > 127 else bs[1])) & 0xFFFF
-    elif LEN[mode] == 2:
-        ta = bs[1]
-    else:
-        ta = bs[1] | (bs[2] << 8)
-    width = 2 if LEN[mode] == 2 and mode != "rel" else 4
-    plain = f"${ta:0{width}X}"
-    goes = mode == "rel" or (m in ("jsr", "jmp") and mode == "abs")   # code never runs in the chips
-    if not goes and chips(ta, a):
-        return FORMAT[mode].format(regs.get(ta) or plain), None
-    return FORMAT[mode].format(names.get(ta) or plain), ta
-
-
 def uncounted(game, reg, L, ram, entry=None, top=12):
     """The data the ledger does not count, as lines to print (none when there is nothing).
 
     $00 and $FF are not counted as data anywhere here: the emulator fills unwritten RAM
     with them, and a stretch of that pattern is not the game's."""
-    from symbols_export import PLATFORM_DEFAULTS, hexint
-    plat = PLATFORM_DEFAULTS.get(game.get("platform", "c64"), {})
+    from symbols_export import PLATFORM_DEFAULTS, hexint, platform_of
+    plat = PLATFORM_DEFAULTS.get(platform_of(game), {})
     cov = game.get("coverage", {})
 
     def ranges(rows):
@@ -264,6 +205,7 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
 def relabel(gdir):
     """Name the operands of gdir's listing.json again, from the bytes it already holds."""
     game = json.load(open(os.path.join(gdir, "game.json")))
+    cpu = platform_modules(game.get("platform"))[0]
     spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
     out = json.load(open(lpath))
     if out.get("symbols_sha256") != hashlib.sha256(open(spath, "rb").read()).hexdigest():
@@ -275,8 +217,8 @@ def relabel(gdir):
         if r["t"] != "code":
             continue
         code.add(r["a"])
-        m, mode = OPS[r["b"][0]]
-        o, ta = operand(r["a"], m, mode, r["b"], names, regs, chips)
+        m, mode = cpu.decode(r["b"], 0)[:2]
+        o, ta = cpu.operand(r["a"], m, mode, r["b"], names, regs, chips)
         changed += (r.get("o"), r.get("oa")) != (o, ta)
         for k, v in (("o", o), ("oa", ta)):
             r.pop(k, None)
@@ -314,6 +256,7 @@ def recomment(gdir):
     records and cross-references stay as they were built."""
     from symbols_export import regions
     game = json.load(open(os.path.join(gdir, "game.json")))
+    cpu = platform_modules(game.get("platform"))[0]
     spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
     out = json.load(open(lpath))
     sha = hashlib.sha256(open(spath, "rb").read()).hexdigest()
@@ -351,8 +294,8 @@ def recomment(gdir):
             if k in r:
                 r[k] = m[r["a"]]
         if r["t"] == "code":
-            m, mode = OPS[r["b"][0]]
-            o, ta = operand(r["a"], m, mode, r["b"], names, regs, chips)
+            m, mode = cpu.decode(r["b"], 0)[:2]
+            o, ta = cpu.operand(r["a"], m, mode, r["b"], names, regs, chips)
             if ta != r.get("oa"):
                 sys.exit(f"${r['a']:04X}: the operand now points elsewhere: rebuild it from the snapshot")
             r.pop("o", None)
@@ -387,15 +330,19 @@ def main():
         print(__doc__); return
     gdir, vsf = argv[0], argv[1]
     game = json.load(open(os.path.join(gdir, "game.json")))
+    platform = game.get("platform")
+    cpu, snap = platform_modules(platform)
     spath = os.path.join(gdir, "symbols.json")
     sym = json.load(open(spath))
-    ram = open(vsf, "rb").read()[VSF_RAM_OFFSET:VSF_RAM_OFFSET + 0x10000]
-    assert len(ram) == 0x10000, "snapshot too short"
-    epath = argv[argv.index("--entry") + 1] if "--entry" in argv else os.path.join(gdir, "work", "entry.vsf")
+    ram = snap.read(vsf)
+    from symbols_export import PLATFORM_DEFAULTS
+    ext = PLATFORM_DEFAULTS.get(platform, {}).get("snapshot_ext")
+    if not ext:
+        sys.exit(f"{platform!r} has no snapshot_ext in symbols_export.PLATFORM_DEFAULTS; see kit/PLATFORMS.md")
+    epath = argv[argv.index("--entry") + 1] if "--entry" in argv else os.path.join(gdir, "work", f"entry.{ext}")
     entry = None
     if os.path.exists(epath) and os.path.abspath(epath) != os.path.abspath(vsf):
-        entry = open(epath, "rb").read()[VSF_RAM_OFFSET:VSF_RAM_OFFSET + 0x10000]
-        assert len(entry) == 0x10000, "hand-over snapshot too short"
+        entry = snap.read(epath)
     elif "--entry" in argv:
         sys.exit(f"no hand-over snapshot at {epath}")
 
@@ -409,8 +356,9 @@ def main():
     line = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "line"}
     side = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "side"}
     btype = bytearray(0x10000)
-    TYPES = ["Undefined", "Code", "Byte", "Word", "Address", "PETSCII", "Screencode",
-             "Lo/Hi Address", "Hi/Lo Address", "Lo/Hi Word", "Hi/Lo Word", "External File"]
+    TEXT_TYPES = list(cpu.TEXT_TYPES)
+    TYPES = ["Undefined", "Code", "Byte", "Word", "Address"] + TEXT_TYPES + \
+            ["Lo/Hi Address", "Hi/Lo Address", "Lo/Hi Word", "Hi/Lo Word", "External File"]
     for b in sym["blocks"]:
         t = TYPES.index(b["type"]) if b["type"] in TYPES else 0
         for a in range(b["start"], b["end"] + 1):
@@ -438,20 +386,19 @@ def main():
         if a in side: rec["s"] = side[a]
         t = TYPES[btype[a]]
         if code[a]:
-            op = ram[a]
-            if op in OPS or op in UNDOCUMENTED:
-                m, mode = OPS[op] if op in OPS else UNDOCUMENTED[op]
-                n = LEN[mode]
+            d = cpu.decode(ram, a)
+            if d:
+                m, mode, n = d
                 bs = list(ram[a:a + n])
                 rec.update({"t": "code", "b": bs, "m": m})
-                o, ta = operand(a, m, mode, bs, names, regs, chips)
+                o, ta = cpu.operand(a, m, mode, bs, names, regs, chips)
                 if ta is not None:
                     rec["oa"] = ta; xref(ta, a)
                 if o is not None:
                     rec["o"] = o
                 records.append(rec); a += n
             else:
-                rec.update({"t": "byte", "b": [op], "note": "not a legal opcode"})
+                rec.update({"t": "byte", "b": [ram[a]], "note": "not a legal opcode"})
                 records.append(rec); a += 1
             continue
         # data: an item never crosses a labelled address, a comment, a block edge or a state edge
@@ -496,10 +443,10 @@ def main():
                     xref(ta, lo + i)
                 rec["d"] = [sym_or_hex(x) for x in targets]
                 rec["note"] = f"split table: {n} {'lo/hi' if t == 'Lo/Hi Address' else 'hi/lo'} pointers"
-        elif t in ("PETSCII", "Screencode"):
+        elif t in TEXT_TYPES:
             e = run_end(32); bs = list(ram[a:e])
-            f = petscii if t == "PETSCII" else screencode
-            rec.update({"t": "text", "b": bs, "d": "".join(f(c) for c in bs), "enc": t.lower()})
+            rec.update({"t": "text", "b": bs, "d": "".join(cpu.text_decode(t, c) for c in bs),
+                        "enc": t.lower()})
         else:
             e = run_end(8); bs = list(ram[a:e])
             rec.update({"t": "byte", "b": bs})
@@ -540,7 +487,7 @@ def main():
             span += 1
         if code[ad]:
             kind = "routine" if s["type"] in ("Subroutine", "UserDefined") or ad in line else "branch"
-        elif TYPES[btype[ad]] in ("PETSCII", "Screencode"):
+        elif TYPES[btype[ad]] in TEXT_TYPES:
             kind = "string"
         elif span <= 2 and ad < 0x0400:
             kind = "variable"

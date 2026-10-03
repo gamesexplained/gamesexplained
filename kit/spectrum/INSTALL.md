@@ -13,8 +13,10 @@ phase by phase, is `kit/EMULATOR.md`.
 
 SkoolKit is installed under `tools/skoolkit/` by the launcher
 (`python3 kit/scripts/tools.py --platform spectrum get-skoolkit`). It is
-open source (the project's own licence, `skoolkit.ca`), published on PyPI,
-and needs nothing outside `tools/`.
+open source under the GNU General Public License v3
+(`https://github.com/skoolkit/skoolkit`), published on PyPI, and it is a
+virtual environment there: it needs nothing outside `tools/`. The version
+this file describes is SkoolKit 10.1, read from PyPI on 29 September 2026.
 
 ## Where the emulator stands, by phase
 
@@ -134,7 +136,7 @@ Tell the contributor this before installing anything:
 |---|---|---|
 | Emulator, unpacked from the release | `tools/zesarux/` | about 100 MB (the macOS bundle; the Linux build is about 43 MB compressed) |
 | Everything the emulator would put in a home directory: `.zesaruxrc`, any XDG folder it uses, and the kit's snapshots | `tools/zesarux-home/` | small; a 48K snapshot is 49 KB |
-| Disassembler | `tools/skoolkit/` | a Python package with its dependencies; its size is recorded here when it is installed |
+| Disassembler, a Python virtual environment with SkoolKit 10.1 | `tools/skoolkit/` | about 15 MB |
 | Downloads on the way in | `tools/downloads/` | the release file, until it is unpacked and deleted |
 | Logs | `tools/logs/` | small |
 
@@ -201,6 +203,30 @@ A build fetched by hand is unpacked so that `tools/zesarux/zesarux.app`
 exists, and its release and file name go into `tools/zesarux/.kit-release`
 by hand — one line, `<tag> <asset>` — so `game.json` can record what the
 work was measured with.
+
+## Get the disassembler
+
+SkoolKit is the Z80 disassembler, from its own project on PyPI
+(`skoolkit.ca`, `https://github.com/skoolkit/skoolkit`), open source under
+GPLv3. The launcher creates `tools/skoolkit/` as a virtual environment and
+installs unconditionally, so the same command upgrades it:
+
+```
+python3 kit/scripts/tools.py --platform spectrum get-skoolkit
+```
+
+It installs nothing outside `tools/` (the pip cache is pointed there too),
+and writes the version it got into `tools/skoolkit/.kit-version`, which
+`status` prints. `kit/spectrum/skoolkit.py` drives `sna2skool.py` from that
+environment; without it, the kit's own Z80 decoder and snapshot reader
+still build a listing, and only the control-file render is missing.
+
+SkoolKit 10.1 publishes wheels for Python 3.10 to 3.14. On an older Python
+pip takes the source distribution instead (`skoolkit-10.1.tar.gz`, 1.3 MB)
+and builds it, which needs a C compiler: measured on 3 October 2026 with
+the Python 3.9.6 that macOS's command line tools provide, where it built
+and installed (10 MB in `tools/skoolkit/`). The build runs in the system's
+temporary folder and left nothing there.
 
 ## macOS — known to work
 

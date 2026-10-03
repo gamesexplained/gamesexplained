@@ -11,6 +11,9 @@ Everything the kit installs lives under tools/ (gitignored):
                        .zesaruxrc (HOME is pointed here), any XDG folder it uses, and
                        the snapshots the kit saves
   tools/logs/          terminal logs
+  tools/skoolkit/      SkoolKit, the Z80 disassembler and control-file tool (`tools.py
+                       get-skoolkit`): a virtual environment with SkoolKit 10.1 from PyPI
+                       (skoolkit.ca, open source)
 Deleting the repository removes all of it. See kit/spectrum/INSTALL.md, "Uninstall".
 
 ZEsarUX is started with `--vo null --ao null`: a ZX Spectrum screen is not needed to
@@ -28,6 +31,7 @@ Usage:
   tools.py stop                             stop it (only yours: scoped to this clone)
   tools.py get-zesarux [download [tag]]     the newest release for this machine; plain, it
                                             only says what that is (kit/spectrum/get_zesarux.py)
+  tools.py get-skoolkit                     install SkoolKit under tools/skoolkit (PyPI)
   tools.py snapshots                        where snapshots land, and what is there
   tools.py check-emulator [--keep]          test it against kit/EMULATOR.md (kit/spectrum/check_emulator.py)
   tools.py verify-footprint                 prove it writes nothing outside this repository
@@ -47,7 +51,7 @@ import glob, json, os, re, subprocess, sys, time
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
 COMMANDS = ("status", "zesarux", "stop", "snapshots", "verify-footprint", "check-emulator",
-            "get-zesarux")
+            "get-zesarux", "get-skoolkit")
 TOOL_NAMES = ()
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -55,6 +59,8 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 TOOLS = os.path.join(ROOT, "tools")
 ZESARUX_DIR = os.path.join(TOOLS, "zesarux")
 ZESARUX_HOME = os.path.join(TOOLS, "zesarux-home")
+SKOOLKIT_DIR = os.path.join(TOOLS, "skoolkit")
+SKOOLKIT_VERSION = ".kit-version"
 SNAPSHOTS = os.path.join(ZESARUX_HOME, "snapshots")
 LOGS = os.path.join(TOOLS, "logs")
 DOWNLOADS = os.path.join(TOOLS, "downloads")
@@ -93,6 +99,49 @@ def build():
         return f"release {tag}, {asset}"
     except (OSError, ValueError):
         return "release, version not recorded (unpacked by hand): say which in game.json"
+
+
+def skoolkit_build():
+    """Which SkoolKit tools/skoolkit holds, or None when it is not installed."""
+    try:
+        return open(os.path.join(SKOOLKIT_DIR, SKOOLKIT_VERSION)).read().strip()
+    except OSError:
+        return None
+
+
+def _subdir():
+    return "Scripts" if sys.platform.startswith("win") else "bin"
+
+
+def _dir_size(path):
+    total = 0
+    for d, _, files in os.walk(path):
+        for f in files:
+            try:
+                total += os.path.getsize(os.path.join(d, f))
+            except OSError:
+                pass
+    return f"{total / 1048576:.0f} MB"
+
+
+def get_skoolkit():
+    """Install SkoolKit into tools/skoolkit, from PyPI (the project's own release)."""
+    if not os.path.isdir(SKOOLKIT_DIR):
+        print("creating the virtual environment tools/skoolkit")
+        subprocess.run([sys.executable, "-m", "venv", SKOOLKIT_DIR], check=True)
+    pip = os.path.join(SKOOLKIT_DIR, _subdir(), "pip")
+    env = dict(os.environ, PIP_CACHE_DIR=os.path.join(DOWNLOADS, "pip"), PIP_CONFIG_FILE=os.devnull)
+    print("installing SkoolKit from PyPI (skoolkit.ca, open source) into tools/skoolkit, nothing else")
+    subprocess.run([pip, "install", "--disable-pip-version-check", "--no-cache-dir", "--upgrade", "skoolkit"],
+                   check=True, env=env)
+    py = os.path.join(SKOOLKIT_DIR, _subdir(), "python")
+    v = subprocess.run([py if os.path.exists(py) else sys.executable, "-c",
+                        "import importlib.metadata as m; print(m.version('skoolkit'))"],
+                       capture_output=True, text=True, check=True).stdout.strip()
+    os.makedirs(SKOOLKIT_DIR, exist_ok=True)
+    open(os.path.join(SKOOLKIT_DIR, SKOOLKIT_VERSION), "w").write(f"skoolkit {v} (PyPI)")
+    print(f"SkoolKit {v} at tools/skoolkit ({_dir_size(SKOOLKIT_DIR)}); "
+          "kit/spectrum/skoolkit.py drives it, and tools/ is gitignored")
 
 
 def emulator_env():
@@ -167,6 +216,7 @@ def client(command, args=None):
 def status():
     running = up(PORT)
     print(f"emulator  :{PORT}  {'up' if running else 'down'}   build: {build()} (tools/zesarux)")
+    print(f"skoolkit  tools/skoolkit   {skoolkit_build() or 'MISSING (run: tools.py get-skoolkit)'}")
     detail = foreign_detail(PORT)
     if detail:
         print(f"  WARNING: :{PORT} is answered by an emulator from another folder:\n{detail}")
@@ -241,6 +291,8 @@ def main():
         sys.exit(subprocess.run([sys.executable, os.path.join(HERE, "check_emulator.py"), *a[1:]]).returncode)
     elif a[0] == "get-zesarux":
         sys.exit(subprocess.run([sys.executable, os.path.join(HERE, "get_zesarux.py"), *a[1:]]).returncode)
+    elif a[0] == "get-skoolkit":
+        get_skoolkit()
     else:
         sys.exit(__doc__)
 

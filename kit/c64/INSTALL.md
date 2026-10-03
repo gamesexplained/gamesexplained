@@ -40,8 +40,10 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
 | v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 26 September 2026 | 56 of 57, five runs: all but `pause-at-instruction` |
 | v3.13.1 release, `v3.13.1-macos-arm64-gui.dmg` | macOS arm64 | 28 September 2026 | 56 of 57: all but `pause-at-instruction` |
+| v3.13.1 release, GUI; regenerator2000 0.9.20 | Ubuntu 24.04.5 x86_64, desktop | 30 September 2026 | 56 of 57: all but `pause-at-instruction` |
 | v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, no display | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
+| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64 desktop (Ubuntu 24.04), under `xvfb-run` | 30 September 2026 | 56 of 57: all but `warp` |
 
 Add a row whenever a build is measured on a machine not listed, and bring
 that machine's `c64` cell in `site/status.json` into line with it. The two
@@ -117,8 +119,21 @@ fixes", below).
 
 **Prerequisite the kit does not install:** Rust's `cargo`
 (https://rustup.rs), for the disassembler. If the contributor has no
-`cargo`, tell them, and let them decide whether to install Rust; it is the
-one thing here that lives outside this folder.
+`cargo`, tell them, and let them decide whether to install Rust. Rust can
+live inside this folder too, which is worth offering: rustup's own
+installer, pointed into `tools/` and told to leave the shell profile
+alone, puts nothing in the home folder (500 to 700 MB in `tools/`):
+
+```
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o tools/rustup-init.sh
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home sh tools/rustup-init.sh -y --no-modify-path --profile minimal
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --root tools/cargo regenerator2000
+```
+
+Done that way on 30 September 2026 on Ubuntu 24.04; the compile took
+about ten minutes on sixteen cores, most of it one dependency
+(`aws-lc-sys`), and used a temporary folder under `/tmp` that cargo
+removes when it finishes.
 
 ## What goes where, and what is left behind
 
@@ -284,11 +299,30 @@ Apache-2.0, published on crates.io by its author. `cargo install` fetches
 that source from crates.io and compiles it on the contributor's machine;
 no prebuilt binary is downloaded or run.
 
+## Another program on port 6510
+
+The emulator's MCP server listens on 6510. When something else on the
+computer already holds that port (a contributor's own server, not an
+emulator), ask before stopping it, and offer the alternative: start the
+emulator elsewhere with `KIT_VICE_PORT`.
+
+```
+KIT_VICE_PORT=6511 python3 kit/scripts/tools.py vice
+```
+
+The launcher writes the port it used to `tools/vice-port`, and
+`kit/c64/vice.py`, `check_emulator.py` and `check_cpu6502.js` read it back,
+so every later command reaches this emulator even in a shell that has
+lost the variable. Without the file a client falls back to 6510 and talks
+to whatever is there: on 30 September 2026 a contributor's own web server
+answered the kit's first call with a 404. `.mcp.json` still names 6510;
+`vice.py` is the way to the emulator on another port.
+
 ## Start, check, stop
 
 ```
 python3 kit/scripts/tools.py status
-python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510
+python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510 (or KIT_VICE_PORT)
 python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000
 python3 kit/scripts/tools.py --platform c64 snapshots            # where emulator snapshots land
 python3 kit/scripts/tools.py stop vice            # the emulator only
@@ -367,6 +401,31 @@ macOS arm64.
   full.
 - **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
+## Linux — run on a desktop, 30 September 2026
+
+On Ubuntu 24.04 x86_64 with a desktop, from an agent whose shell had no
+`DISPLAY` set, the launcher ran the emulator under `xvfb-run` as on a
+server, and nothing was drawn on the desktop. The release zip needed
+three of the runtime packages below that the desktop lacked
+(`libieee1284-3t64`, `libmicrohttpd12t64`, `libportaudio2`); the contributor
+installed them, since `sudo` asks for a password the agent cannot type.
+`check-emulator` passed 56 of 57: `warp` failed, warp mode giving 78
+passes a second against 51 without, where the check wants over 100. The
+cause is unknown: container runs, also under `xvfb-run`, pass it. `verify-footprint`
+was clean, and regenerator2000 wrote nothing to `~/.config/regenerator2000`.
+
+## Linux — a second desktop run, 30 September 2026, with regenerator2000
+
+On Ubuntu 24.04.5 x86_64, the v3.13.1 GUI release passed 56 of 57
+checks; `pause-at-instruction` failed, so inspection used the documented
+pause workaround. Restoring an existing snapshot reached gameplay.
+regenerator2000 0.9.20 was also exercised. The run reported no external
+changes in the bounded footprint comparison, but did not preserve whether
+`~/.config/regenerator2000/config.toml` was listed as a known leftover.
+That report cannot establish absence of an external settings file:
+a maintainer observed 0.9.20 writing it with opened project paths.
+Check both changed files and known leftovers when repeating the run.
+
 ## Linux — run on a server with no display, 24 September 2026
 
 Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in cloud
@@ -374,8 +433,7 @@ containers with no display (gcc 13.3, Python 3.11, cargo 1.94). The first
 run built v3.13.0 from source and measured `check-emulator` 56 of 56 three
 times, `verify-footprint` clean. A second run the same day used the
 v3.13.1 release zip and then a source build of the same tag (the table at
-the top of this file). No run is recorded on a Linux desktop, on ARM or on
-another distribution.
+the top of this file). No run is recorded on ARM or another distribution.
 
 **A network that refuses the GitHub API.** In those containers the proxy
 answered `api.github.com`, the project's web pages and `codeload` with 403
