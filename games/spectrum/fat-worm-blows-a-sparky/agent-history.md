@@ -85,3 +85,85 @@ The same session added the "Building the same scene twice" section to
 The right-hand picture is the left-hand projection with the rotation left
 out, which is the shape the game's rectangle and trapezoid primitives
 draw. The curve multiply itself stays in the caption and in section 02.
+
+## The check that failed (1 October 2026)
+
+A maintainer's check under `kit/CHECKING.md` sampled 39 claims from the
+first run and found 18 contradicted by the bytes. The run's own
+spot-checks, described above as finding the agents' claims sound, had
+tested three claims that happened to be right. What was wrong was of a
+few kinds: code typed as data (the control file had 18,094 bytes as code;
+there are 24,147), names taken from what a routine looked like (a "board
+outline command table" that fills the hand of the ending, a "level byte"
+that is the frame counter, a "view offset" that is the ending's counter),
+tables cut at round addresses (`$5B00-$63FF` described as board data; it
+is seven sprite shift tables, a bit-reversal table, the perspective curve
+(128 bytes, not 64), a slope table and a sine), and record sizes off by
+one (board items are 7 bytes; 8 is the cell's header).
+
+Several statements earlier in this file went the same way. The tape is
+not protected: it is a BASIC program, a loader and one turbo block. The
+loader loads 49,000 bytes, not 49,001. The "routine identical to the
+loader's second half" at `$FB40` is not a coincidence: the image contains
+the tape utility the game was saved with, and the loader block is that
+utility's loading half.
+
+## The second pass (3 October 2026, Claude Opus 5.5, the maintainer's session)
+
+With the contributor's agreement the maintainer's session redid coverage
+and verify on the pull request's branch.
+
+**The code map first.** A static trace from `$EFD8` reached 23,132 bytes.
+Four recorded sessions' executed-address maps and eight entries the trace
+cannot see (the five board handlers, the tape-making routine, its jump,
+the ROM copy) took it to 24,147. `kit/spectrum/codemap.py` now does this
+and holds `symbols.json` against the result; SkoolKit's own `sna2ctl.py
+-m`, given the same map, found 22,910.
+
+**Ground truth before names.** The emulator's read and write maps
+(`get-visualmem-*-dump`) marked which data bytes play reads and writes,
+and a decoded listing of the whole image with those flags went to every
+annotator. Ten ranges, nine cold-briefed agents and the lead's own, each
+told that the old names were suspect and to test arithmetic in the
+simulator (`kit/spectrum/simulate.py`) against a model. Their nine
+reports list 199 entries of old names and descriptions that the bytes
+contradict (rows counted in `work/verify/reports/`).
+
+**Wrong turns of this pass.**
+
+- The lead's brief said `$EB8D` upward was the display list. The list is
+  linked from a head at `$EB7E` and its records start at `$EB9C`; `$EB8D`
+  is a leftover record that two dead loads name. Three agents corrected
+  it independently.
+- The brief listed the word at `$B7B4` as a patched jump. It is a
+  variable between two routines.
+- A session script loaded a snapshot path that did not exist. ZEsarUX
+  answers nothing and loads nothing, so twenty minutes of "play" were
+  measured on the menu. The client now checks the file.
+- Menu key presses timed by the wall clock were missed. Everything live
+  after that was stepped in whole frames, and then in whole passes of the
+  game's own loop by a stopping checkpoint at `$7638`.
+- The first Kempston test read `$4F` for every direction: the second
+  emulator had been started without Kempston emulation, and the port
+  floated. Restarted with `--joystickemulated Kempston`, with the
+  no-joystick game as the control.
+- "A spindle is taken by a body joint only" came from reading the code.
+  Live, a spindle under a stopped head was taken within 20 passes, because
+  the joints keep closing up. `facts.md` says where the code is and no
+  more.
+- The four-bugs test hung the emulator the first time: the dying worm
+  leaves the frame loop, so a run to the loop's checkpoint never stopped.
+  The stepper now bounds each run and reports when the loop is left.
+- A file named `play-frame.png` among the lead's reference shots was the
+  halt screen. The page's view was compared with a picture rendered from
+  `play-1.sna` itself, which is one pass behind the snapshot's variables:
+  the picture on screen was drawn before the worm's last move.
+- The first draft of `facts.md` said a wall shows on the side away from
+  the middle of the view. It is the side facing the middle; the page's
+  widget, which draws it, showed the slip.
+
+**The ending was found by poking, not by play.** No session collected 50
+spindles. The type `$F6` item was written into the worm's path, with the
+same run without it as the control. That proves what the code does when
+the head touches the disk. It does not prove whether a player can reach
+the disk with fewer than 50 spindles; `features.md` leaves that open.
