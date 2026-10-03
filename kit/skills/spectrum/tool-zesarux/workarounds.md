@@ -7,7 +7,7 @@ applies, and following it anyway costs time.
 
 Measured on the **ZEsarUX-13.0** release, file
 `ZEsarUX_macos-silicon-13.0.dmg`, macOS arm64, on **3 October 2026** with the
-launcher's flags: 41 passed, 4 failed, 17 seconds. The four are below, in the
+launcher's flags: 41 passed, 4 failed, 21 seconds. The four are below, in the
 order they matter; a build that passes a check means its section no longer
 applies, so delete the section, not the check.
 

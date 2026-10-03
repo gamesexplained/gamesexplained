@@ -20,7 +20,7 @@ and needs nothing outside `tools/`.
 
 `python3 kit/scripts/tools.py --platform spectrum check-emulator` measures
 this on whatever build answers, with a Z80 test program of its own
-(`kit/spectrum/check_emulator.py`: no game, about fifteen seconds). It names
+(`kit/spectrum/check_emulator.py`: no game, about twenty seconds). It names
 every check, and `kit/skills/spectrum/tool-zesarux/workarounds.md` says
 what to do about each one that fails. Run it after installing, and again
 after any new release or build.
@@ -31,7 +31,7 @@ can have of it. The measurements, each dated:
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
-| ZEsarUX-13.0 release, `ZEsarUX_macos-silicon-13.0.dmg` | macOS arm64 | 3 October 2026 | 41 of 45, 17 s |
+| ZEsarUX-13.0 release, `ZEsarUX_macos-silicon-13.0.dmg` | macOS arm64 | 3 October 2026 | 41 of 45, 21 s |
 | ZEsarUX-13.0 release, `ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz` | Linux x86_64 (Ubuntu 24.04, no display) | 1 October 2026 | 38 of the 40 checks the suite had then, six runs; `verify-footprint` clean |
 
 The four failures on macOS are `count-while-running`, `input-type-ascii`,
@@ -108,7 +108,7 @@ a day's.
 python3 kit/scripts/tools.py --platform spectrum status
 python3 kit/scripts/tools.py --platform spectrum zesarux            # ZRCP on 127.0.0.1:10000
 python3 kit/scripts/tools.py --platform spectrum snapshots          # where snapshots land
-python3 kit/scripts/tools.py --platform spectrum check-emulator     # 45 named checks, about 15 s
+python3 kit/scripts/tools.py --platform spectrum check-emulator     # 45 named checks, about 20 s
 python3 kit/scripts/tools.py --platform spectrum stop               # the emulator only
 python3 kit/scripts/tools.py --platform spectrum verify-footprint   # what it writes outside the repository
 ```
@@ -205,7 +205,7 @@ work was measured with.
 ## macOS — known to work
 
 Run on macOS arm64 on 3 October 2026 with the ZEsarUX-13.0 release and the
-build above. `check-emulator` passes 41 of 45 in 17 seconds, `verify-footprint`
+build above. `check-emulator` passes 41 of 45 in 21 seconds, `verify-footprint`
 is clean, and the emulator serves ZRCP on `127.0.0.1:10000`. The four failures
 and their workarounds are in `kit/skills/spectrum/tool-zesarux/workarounds.md`.
 

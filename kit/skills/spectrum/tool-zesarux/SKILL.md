@@ -226,7 +226,7 @@ the game's `work/`. A `.sna` is not committed anywhere: it holds the game.
 ```
 python3 kit/scripts/tools.py --platform spectrum stop
 python3 kit/scripts/tools.py --platform spectrum get-zesarux     # what this machine can have
-python3 kit/scripts/tools.py --platform spectrum check-emulator  # 45 named checks, about 15 s
+python3 kit/scripts/tools.py --platform spectrum check-emulator  # 45 named checks, about 20 s
 ```
 
 `check-emulator`'s names are the ones `workarounds.md` is indexed by, and

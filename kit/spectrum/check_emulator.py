@@ -7,7 +7,7 @@
 Needs the emulator up (`tools.py --platform spectrum zesarux`) and nothing else: no
 game, no tape. It hard-resets the machine, writes ~60 bytes of Z80 to $8000, points
 PC at them, and measures the four phases on that. Anything the emulator was doing is
-lost. About twenty seconds on a working build (17 s measured on 13.0). `--keep` leaves
+lost. About twenty seconds on a working build (21 s measured on 13.0). `--keep` leaves
 this run's snapshots in tools/zesarux-home/snapshots.
 
 The test program (assembled below, so it is source and not a binary):
@@ -195,7 +195,7 @@ def setup(rpc, code=None):
     rpc.write_memory(BASE, code)
     rpc.write_memory(PASSES, bytes(6))
     rpc.set_register("PC", BASE)
-    rpc.step()                                   # the program's own `di`
+    rpc.step()                                   # the program's first instruction
     rpc.run(limit=1000, timeout=10)
     if word(rpc, PASSES) == 0:
         raise RuntimeError("the test program did not run: the pass counter is still zero")
@@ -500,12 +500,16 @@ def p_interrupts(rpc):
           "the ROM's interrupt runs once a frame, and the machine can be counted",
           f"{f1 - f0} interrupts in 100 frames, {f1 - f0} a second")
 
-    # the T-state counter, against the interrupts, not against the host's clock (#131)
+    # the T-state counter, against the interrupts, not against the host's clock (#131).
+    # Not through `frames()`: that resets the counter it measures with. The frame
+    # position at each end is subtracted, since the run starts and ends between two
+    # interrupts, not on one.
     rpc.reset_tstates()
-    t0 = rpc.tstates()
+    phase0 = rpc.tstates_in_frame()
     f0 = int.from_bytes(rpc.read_memory(FRAMES, 3), "little")
-    rpc.frames(100, timeout=60)
-    d = rpc.tstates() - t0
+    for _ in range(10):
+        rpc.run(limit=200000, timeout=20)
+    d = rpc.tstates() + phase0 - rpc.tstates_in_frame()
     n = (int.from_bytes(rpc.read_memory(FRAMES, 3), "little") - f0) & 0xFFFFFF
     per = d / n if n else 0
     check("stopwatch", n > 0 and abs(per - FRAME_TSTATES) < 100,
