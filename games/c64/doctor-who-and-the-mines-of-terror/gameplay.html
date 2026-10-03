@@ -58,13 +58,14 @@
 </section>
 <section id="pockets">
   <p class="fig">Pockets and items</p>
-  <h2 class="t">Four pockets and four markers</h2>
-  <p class="lede">The status bar shows the item in the Doctor's hands and four pocket boxes. The function keys move things between them. Choose an item to see how the game names it.</p>
+  <h2 class="t">Everything the Doctor can pick up</h2>
+  <p class="lede">Twenty-four objects lie in the mine when a game starts, and the Doctor can carry any of them, Splinx too. Click one to see its name and find it on the map.</p>
   <div class="plate">
-    <div class="row"><select class="b" id="item" aria-label="Item"></select></div>
+    <div class="items" id="items"></div>
     <div class="out" id="itemout"></div>
-    <p class="cap">Names decoded from the game's own table: ten characters at <code>$1770</code> plus the offset in <code>$1720</code> for each object number, in the game's private alphabet.</p>
+    <p class="cap">Each object drawn from its starting frame (<code>$1D30</code>) in its own colour (<code>$1850</code>), with its name from the game's own table: ten characters at <code>$1770</code> plus the offset in <code>$1720</code>, in the game's private alphabet. Pressing F5 picks up any object from <code>$30</code> to <code>$4F</code> within reach, or Splinx (<code>pickup_nearby</code>, <code>$A929</code>).</p>
   </div>
+  <p>The status bar shows the item in the Doctor's hands and four pocket boxes, and the function keys move things between them. He also has four markers to drop for Splinx to walk to.</p>
   <table class="t" style="margin-top:20px">
     <tr><th>Key</th><th>What it does</th><th>Where</th></tr>
     <tr><td>F1</td><td>moves the selector across the marker box and the four pockets</td><td><code>$A530</code></td></tr>
@@ -195,13 +196,22 @@
   btns.forEach(b => b.onclick = () => { if (b.dataset.pose === 'die') { pose = 'die'; mark(); regenerate(); } else { pose = b.dataset.pose; mark(); walk(); } });
   walk();
 
-  // items
-  const isel = document.getElementById('item'), items = [2, 0x30, 0x31, 0x32, 0x33];
-  for (let o = 0x34; o <= 0x4F; o++) items.push(o);
-  for (const o of items) isel.insertAdjacentHTML('beforeend', '<option value="' + o + '">object ' + C64.hex(o, 2) + ': ' + DW.itemName(M, o) + '</option>');
-  function item() { const o = +isel.value, a = 0x1770 + M[0x1720 + o];
-    document.getElementById('itemout').textContent = DW.itemName(M, o) + '\n(object ' + C64.hex(o, 2) + ': ten characters at ' + C64.hex(a) + ')'; }
-  isel.onchange = item; item();
+  // items: Splinx, then every object a new game places in the mine ($34-$4C; x high $FF is off the map)
+  const box = document.getElementById('items'), out = document.getElementById('itemout'), items = [2];
+  for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) items.push(o);
+  function item(o, el) {
+    box.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel');
+    const x = M[0x1BC0 + o] << 8 | M[0x1B70 + o], y = M[0x1C60 + o] << 8 | M[0x1C10 + o];
+    out.innerHTML = '<b>' + DW.itemName(M, o) + '</b>  object ' + C64.hex(o, 2) + ', sprite ' + C64.hex(M[0x1D30 + o], 2) + '\n' +
+      (o === 2 ? 'Starts beside the Doctor.' : 'Lies at column ' + (x >> 5) + ', row ' + (y >> 5) + ' of the mine.') +
+      ' <a href="levels.html?go=' + o.toString(16) + '#mine">Show it on the map</a>'; }
+  for (const o of items) {
+    const el = document.createElement('button'), cv = document.createElement('canvas');
+    el.type = 'button'; el.className = 'it';
+    DW.drawSprite(cv, M, M[0x1D30 + o], 3, M[0x1850 + o]);
+    el.append(cv, DW.itemName(M, o)); el.onclick = () => item(o, el); box.appendChild(el);
+  }
+  item(items[1], box.children[1]);
 
   // deaths
   const causes = [[6, 'an explosion'], [8, 'the rising level'], [10, 'a controller'], [12, 'a fall'], [14, 'a stalagmite'], [16, 'suffocating'], [18, 'forced regeneration'], [20, 'a madrag bite'], [22, 'a baby madrag']];

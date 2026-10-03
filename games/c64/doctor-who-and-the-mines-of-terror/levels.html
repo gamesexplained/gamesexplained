@@ -81,8 +81,8 @@
   const name = o => DW.itemName(M, o);
   // objects $34-$4C where a new game places them (the markers $30-$33 wait with Splinx; x high $FF is off the map)
   const objs = [];
-  objs.push({ at: P(M[0x1BC2], M[0x1B72], M[0x1C62], M[0x1C12]), t: 'SPLINX' });      // object 2, beside the Doctor
-  for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) objs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t: name(o) });
+  objs.push({ at: P(M[0x1BC2], M[0x1B72], M[0x1C62], M[0x1C12]), t: 'SPLINX', o: 2 });      // object 2, beside the Doctor
+  for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) objs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t: name(o), o });
   // where objects act: each list read from the table the code tests the Doctor's position against
   const uses = [];
   for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBC1C + i], M[0xBC1F + i], M[0xBC22 + i], M[0xBC25 + i]), t: 'PICK AXE: dig here (3 hits)' });        // $BC11
@@ -195,9 +195,9 @@
   pkDg.onchange = () => choose(pkDg.value === '' ? null : all[+pkDg.value]);
   pkPl.onchange = () => choose(pkPl.value === '' ? null : all[+pkPl.value]);
   document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
-  // a link from the Solution tab: ?go= names a mark's label
+  // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
-  if (go) { const k = all.find(k => k.label === go || k.t === go); if (k) choose(k); }
+  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) choose(k); }
   zm.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(Z === 2 ? 4 : 2); centre(sel ? sel.at : c); draw(); };
   // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
   mv.addEventListener('click', e => {
