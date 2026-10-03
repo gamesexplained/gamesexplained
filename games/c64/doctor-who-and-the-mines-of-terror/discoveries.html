@@ -8,13 +8,13 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
   <h1>Doctor Who and the Mines of Terror</h1>
-  <p class="sub">A time bonus that barely moves, a save that ends the game, tests that want one exact pixel, and questions the code leaves open.</p>
+  <p class="sub">A time bonus that barely moves, a save that ends the game, tests that want one exact pixel, leftovers, and questions the code leaves open.</p>
 </header>
 <main class="wrap">
 <section id="countdown">
   <p class="fig">Bug</p>
   <h2 class="t">Bug: the time bonus goes down once every 21.8 minutes</h2>
-  <p class="lede">The game keeps a time counter that starts at 10,800 and is added to the score when the Doctor escapes. It was meant to fall steadily as he plays. <b>It falls by one every 65,536 frames.</b> Step the frame counter to see when it moves.</p>
+  <p class="lede">The game keeps a time counter that starts at 10,800 and is added to the score when the Doctor escapes. The counter was meant to fall steadily as he plays. <b>Instead, the counter falls by one every 65,536 frames.</b> Step the frame counter to see when the time counter moves.</p>
   <div class="plate">
     <div class="row">
       <button class="b" type="button" data-n="1">+1 frame</button>
@@ -24,33 +24,38 @@
       <button class="b" type="button" data-n="0">Reset</button>
     </div>
     <p class="kv" id="cd"></p>
-    <p class="cap">The test at <code>$80E8</code>-<code>$810C</code>, followed exactly: the frame counter's three bytes, <code>$53</code>-<code>$55</code>, and the time counter, <code>$1B</code>-<code>$1D</code>. A PAL Commodore shows 50 frames a second.</p>
+    <p class="cap">The test at <code>$80E8</code>-<code>$810C</code>: the frame counter's three bytes, <code>$53</code>-<code>$55</code>, and the time counter, <code>$1B</code>-<code>$1D</code>. A PAL Commodore shows 50 frames a second.</p>
   </div>
   <p>Once a frame, <code>wait_frame_and_update_sprites</code> (<code>$80DA</code>) adds one to a three-byte frame counter. The code after it tests <code>AND #$3F</code>, which is true once every 64 frames, and then takes one off the time counter in decimal. But two branches before that test skip it unless the counter's two lower bytes have both just rolled over to zero, which happens once every 65,536 frames. By then the <code>AND #$3F</code> test always passes.</p>
-  <p>The time counter starts at 10,800 on the first game (<code>$4996</code>, watched live) and at 10,805 on every game after it (<code>$9408</code>). No routine prints it. At the end it is added to the score (<code>$91BC</code>), unless the Doctor is low in the mine, so a player who escapes within 21 minutes gets all of it.</p>
+  <p>The time counter starts at 10,800 on the first game (<code>$4996</code>) and at 10,805 on every game after it (<code>$9408</code>). No routine prints the counter. The game adds the counter to the score at the end (<code>$91BC</code>), unless the Doctor is low in the mine, so a player who escapes within 21 minutes gets all of it.</p>
 </section>
 <section id="save">
-  <p class="fig">Secret</p>
-  <h2 class="t">Secret: saving the game ends it</h2>
+  <p class="fig">Quirk</p>
+  <h2 class="t">Saving the game ends it</h2>
   <p class="lede">The save menu writes the game to tape or disc. Then it drops to the BASIC prompt, and the game is gone.</p>
-  <p>The save routine (<code>save_menu</code>, <code>$94FF</code>) copies the game's working memory, the table of objects and the status bar into one block at <code>$7800</code>-<code>$7D7F</code>, marks it with <code>$FF</code> and saves it as DRWHO. To use the Commodore's own save routine, it switches the ROMs back in. When the save is done it jumps through the address at <code>$A000</code>. With the ROMs in, that address is BASIC's cold start, which resets BASIC, so the player is back at READY.</p>
-  <p>Nothing in the game loads a saved file. The way back is to load DRWHO over a fresh copy and start the game: as it starts, it looks at <code>$7800</code>, and if the marker is there it restores everything from the block and skips the TARDIS landing (<code>$49C6</code>, <code>$745C</code>).</p>
+  <p>The save routine (<code>save_menu</code>, <code>$94FF</code>) copies the game's working memory, the table of objects, and the status bar into one block at <code>$7800</code>-<code>$7D7F</code>, marks it with <code>$FF</code>, and saves it as DRWHO. To use the Commodore's own save routine, <code>save_menu</code> switches the ROMs back in. When the save is done, <code>save_menu</code> jumps through the address at <code>$A000</code>. With the ROMs in, that address is BASIC's cold start, which resets BASIC, so the player is back at READY.</p>
+  <p>The game never loads a saved file itself: the disk's boot program does. Before the game loads, the boot program asks LOAD A SAVED POSITION (Y/N)? and clears <code>$7800</code>, so a game started without a save starts fresh. Answering Y loads DRWHO into <code>$7800</code>-<code>$7D7F</code>, where none of the game's three parts lands, and the game then loads around it.<sup class="fn"><a href="about.html#src-10" title="The original Commodore 64 disk, run in VICE, 3 October 2026">10</a></sup> As the game starts, it looks at <code>$7800</code>, and if the marker is there it restores everything from the block and skips the TARDIS landing (<code>$49C6</code>, <code>$745C</code>).</p>
 </section>
 <section id="save-place">
-  <p class="fig">Secret</p>
-  <h2 class="t">Secret: the save keys work in one place only</h2>
-  <p>D, CTRL+D and L all ask for the save menu, by putting a negative number in the game's event byte, <code>$E8</code>. The routine that updates the Doctor clears that byte again every pass unless he is standing on character <code>$23</code> (<code>$C902</code>-<code>$C909</code>). Pressed beside the TARDIS, D does nothing (tested in an emulator). Where in the mine the Doctor can stand on character <code>$23</code> has not been found yet.</p>
+  <p class="fig">Quirk</p>
+  <h2 class="t">The save keys work in one place only</h2>
+  <p>D, CTRL+D, and L all ask for the save menu, by putting a negative number in the game's event byte, <code>$E8</code>. The routine that updates the Doctor clears that byte again every pass unless he is standing on character <code>$23</code> (<code>$C902</code>-<code>$C909</code>). Pressed beside the TARDIS, D does nothing. Where in the mine the Doctor can stand on character <code>$23</code> is not known.</p>
 </section>
 <section id="exact">
   <p class="fig">Quirk</p>
   <h2 class="t">Tests that want one exact pixel</h2>
-  <p>The carrier takes the Doctor aboard only when his height is exactly <code>$0450</code> (<code>$A395</code>). The lift takes him only when he is exactly eight pixels from its floor (<code>$A294</code>). One pixel either way and he stays where he is. Both look like tests where the programmer meant a range. Whether a player can arrive at the wrong height, and miss the ride, has not been tested.</p>
+  <p>The carrier takes the Doctor aboard only when his height is exactly <code>$0450</code> (<code>$A395</code>). The lift takes him only when he is exactly eight pixels from its floor (<code>$A294</code>). One pixel either way and he stays where he is. Both look like tests where the programmer meant a range. Whether a player can arrive at the wrong height, and miss the ride, is not known.</p>
+</section>
+<section id="lock-flag">
+  <p class="fig">Quirk</p>
+  <h2 class="t">The code lock sets a flag that changes nothing</h2>
+  <p>Entering the code sets the flag at <code>$4E</code> (<code>$BF59</code>). The routine that decides whether character <code>$A0</code>, the security gate, can be walked through tests that flag, but the PASS CARD test straight after it overwrites the result every time (<code>$BB05</code>-<code>$BB25</code>). So the flag never opens the gate, and only the PASS CARD does.</p>
 </section>
 <section id="messages">
   <p class="fig">Quirk</p>
   <h2 class="t">A death message nothing prints, and GAME OVER as a cause</h2>
   <p>The game's messages include EXPOSURE TO RADIATION, but the table of causes of death (<code>$90EF</code>) has no entry that points to it, so it is never shown.</p>
-  <p>One cause points to the wrong message. When the rising level reaches the Doctor (<code>$C0C2</code>), the table sends the game to GAME OVER instead of a cause. A Doctor with lives left would read THE DOCTOR REGENERATES AFTER GAME OVER and carry on. This has not been seen in play.</p>
+  <p>One cause points to the wrong message. When the rising level reaches the Doctor (<code>$C0C2</code>), the table sends the game to GAME OVER instead of a cause. A Doctor with lives left would read THE DOCTOR REGENERATES AFTER GAME OVER and carry on.</p>
 </section>
 <section id="leftovers">
   <p class="fig">Leftovers</p>
@@ -68,10 +73,8 @@
   <p class="fig">Open questions</p>
   <h2 class="t">What the code does not settle</h2>
   <ul class="odd">
-    <li><b>Who takes the crystal.</b> One creature, object <code>$0C</code>, goes after the crystal and carries it away (<code>$B48A</code>). The code does not say whether it is the Master.</li>
     <li><b>A score that is not a number.</b> The first time the Doctor reaches a restart point, the game stores <code>$64</code> into the lowest byte of the score (<code>$90CC</code>). The score is kept in decimal, and <code>$64</code> is not a decimal digit pair.</li>
     <li><b>Controllers that stop.</b> A controller in state 6 ends the loop over all controllers for that pass (<code>$CE77</code>), so the ones after it do not move.</li>
-    <li><b>Spikes.</b> Descriptions of the game online mention death on spikes. The only ground that kills in this version is the stalagmite characters, <code>$74</code> and <code>$51</code>.</li>
   </ul>
 </section>
 </main>

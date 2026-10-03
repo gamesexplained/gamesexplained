@@ -1,0 +1,102 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doctor Who and the Mines of Terror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/dw-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
+  <h1>Doctor Who and the Mines of Terror</h1>
+  <p class="sub">The joystick, the keys, and how far the Doctor can jump and fall.</p>
+</header>
+<main class="wrap">
+<section id="keys">
+  <p class="fig">Controls</p>
+  <h2 class="t">A joystick for moving, the keyboard for everything else</h2>
+  <p class="lede">The joystick in port 2 moves the Doctor and makes him jump. The keyboard can move him too, and it holds every other command: the pockets, Splinx, giving up a regeneration, and saving.</p>
+  <table class="t" style="margin-top:0">
+    <tr><th>Input</th><th>What it does</th><th>Where</th></tr>
+    <tr><td>Stick left and right, or Z and X</td><td>walk</td><td><code>$8F47</code></td></tr>
+    <tr><td>Stick up and down, or <b>;</b> and <b>/</b></td><td>climb a ladder</td><td><code>$8F64</code></td></tr>
+    <tr><td>Fire, or RETURN</td><td>jump</td><td><code>jump_arc_step</code> <code>$A0D4</code></td></tr>
+    <tr><td>F1</td><td>moves the selector across the marker box and the four pockets</td><td><code>$A530</code></td></tr>
+    <tr><td>F3</td><td>puts the item in the Doctor's hands into the first empty pocket; drops a marker; with empty hands, takes out the selected item</td><td><code>$A575</code>, <code>pocket_take</code> <code>$A60C</code></td></tr>
+    <tr><td>F5</td><td>standing still, picks up the object in front of him; holding an item, uses it</td><td><code>pickup_nearby</code> <code>$A929</code>, <code>use_item_update</code> <code>$BACC</code></td></tr>
+    <tr><td>F7 and a direction</td><td>throws the item in his hands; two can be in flight at once</td><td><code>throw_start</code> <code>$A7D7</code></td></tr>
+    <tr><td>S</td><td>the <a href="gameplay.html#splinx">Splinx Programmer</a></td><td><code>$AF58</code></td></tr>
+    <tr><td>R</td><td>forced regeneration: give up a life and start again</td><td><code>$9051</code></td></tr>
+    <tr><td>D, CTRL+D, L</td><td>the save menu, in one place only (<a href="discoveries.html#save-place">Discoveries</a>)</td><td><code>$8FA4</code></td></tr>
+  </table>
+  <p>The input routine (<code>read_input</code>, <code>$8F24</code>) runs once every pass of the game's main loop. It reads the joystick and six rows of the keyboard, and turns them into flags that the rest of the game reads: one for left or right, one for up or down, one for jump, and one each for the keys.</p>
+  <p>What each object does when the Doctor uses it is on the <a href="gameplay.html#pockets">Gameplay</a> tab, and his walking and climbing frames are on the <a href="graphics.html#doctor">Graphics</a> tab.</p>
+</section>
+<section id="jump">
+  <p class="fig">Jumping and falling</p>
+  <h2 class="t">A fixed arc, and a fatal drop of 96 pixels</h2>
+  <p class="lede">A jump always has the same shape, and the direction is fixed at take-off. Move the landing point to see where a jump turns into a fatal fall, and the Doctor fade away when it does.</p>
+  <div class="plate">
+    <div class="row"><span class="note" style="min-width:9em">Land below take-off</span><input type="range" id="jdrop" min="-24" max="80" step="4" value="0" aria-label="How far below take-off the Doctor lands, in pixels" style="max-width:320px"><span class="note" id="jdropv"></span></div>
+    <canvas id="jcv" class="scr" role="img" aria-label="The Doctor jumping along the path of a jump, one step per frame, and fading away when the fall is fatal"></canvas>
+    <p class="kv" id="jkv"></p>
+  </div>
+  <p>Each frame of a jump moves the Doctor one pixel across: for 24 frames he also rises a pixel, for the next 16 he stays level, and then he falls a pixel a frame until something stops him (<code>jump_arc_step</code>, <code>$A0D4</code>). The direction comes from the stick at take-off and cannot change in the air.</p>
+  <p>The game measures a fall from where the Doctor starts moving down to where he stops (<code>fall_track</code>, <code>$CD3A</code>). A drop of 96 pixels or more kills him, with the message A FALL (<code>fall_check</code>, <code>$CD62</code>). The rise of a jump is measured separately and never counts, so the fall of a jump starts at its highest point: landing 72 pixels or more below take-off is fatal.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/dw-page.js"></script>
+<script>
+(async function () {
+  // the jump of jump_arc_step ($A0D4): one pixel across a frame; up for 24, level for 16, then down
+  const cv = document.getElementById('jcv'), S = 3, W = 200, H = 148, ctx = C64.canvas(cv, W * S, H * S);
+  const sl = document.getElementById('jdrop'), x0 = 16, y0 = 60;      // take-off point, in C64 pixels
+  let M = null, timer = null;
+  try { M = (await DW.load()).ram; } catch (e) { DW.fail(e); }
+  // the Doctor's walking frames to the right ($CC1E lower, $CC32 upper), picked by x as doctor_pick_frames does
+  const lo = M ? Array.from(M.subarray(0xCC1E, 0xCC26)) : [], up = M ? Array.from(M.subarray(0xCC32, 0xCC3A)) : [];
+  function arc() {
+    const drop = +sl.value, path = [];
+    let x = x0, y = y0, f = 0;
+    while (f < 24) { path.push([x, y]); x++; y--; f++; }
+    while (f < 40) { path.push([x, y]); x++; f++; }
+    while (y < y0 + drop) { path.push([x, y]); x++; y++; }
+    path.push([x, y]);
+    return path;
+  }
+  function scene(path) {
+    ctx.fillStyle = C64.PAL[11]; ctx.fillRect(0, 0, cv.width, cv.height);
+    // the fatal line: 96 pixels below the top of the jump
+    ctx.fillStyle = C64.PAL[2]; ctx.fillRect(0, (y0 - 24 + 96) * S, cv.width, S);
+    ctx.fillStyle = C64.PAL[10]; ctx.font = (4 * S) + 'px IBM Plex Mono, monospace'; ctx.fillText('96 px below the top: A FALL', 4 * S, (y0 - 24 + 96 - 2) * S);
+    // ground at take-off and where he lands
+    const [lx, ly] = path[path.length - 1];
+    ctx.fillStyle = C64.PAL[9]; ctx.fillRect(0, y0 * S, (x0 + 4) * S, 4 * S); ctx.fillRect((lx - 4) * S, ly * S, (W - lx + 4) * S, 4 * S);
+    ctx.fillStyle = '#fff'; path.forEach(([px, py], i) => { if (i % 2 === 0) ctx.fillRect(px * S, py * S - S, S, S); });
+  }
+  // the Doctor stands on the point: his legs (lower sprite) end at the point, the upper sprite eight pixels higher
+  const doctor = (x, y, l, u) => M && DW.doctor(ctx, M, lo[(x >> 1) & 7], up[(x >> 1) & 7], (x - 12) * S, (y - 21) * S, S, l, u);
+  function draw() {
+    clearInterval(timer);
+    const path = arc(), [lx, ly] = path[path.length - 1], fall = ly - (y0 - 24), dead = fall >= 96, drop = +sl.value;
+    document.getElementById('jdropv').textContent = drop < 0 ? (-drop) + ' px above' : drop + ' px below';
+    document.getElementById('jkv').innerHTML = path.length - 1 + ' frames in the air; the fall from the top of the jump is <b>' + fall + '</b> pixels: ' + (dead ? '<b style="color:var(--coral)">A FALL</b>, a regeneration lost.' : 'he lands safely.');
+    // play the jump at 50 frames a second, then, past the limit, the regeneration fade of doctor_draw ($CB6B)
+    let i = 0, left = -1, n = 1, lo0, up0, cut, img;
+    timer = setInterval(() => {
+      scene(path);
+      if (i < path.length) { const [x, y] = path[i++]; doctor(x, y); return; }
+      if (!dead || !M) { doctor(lx, ly); clearInterval(timer); return; }
+      if (left < 0) { left = 0x7F; lo0 = DW.image(M, lo[(lx >> 1) & 7]); up0 = DW.image(M, up[(lx >> 1) & 7]); cut = DW.dissolver(M, { c60: 1, c61: 1 }); }
+      if (left === 0x7F || !(left & 3)) {
+        n = (n + 6) & 0xFF;
+        img = { lo: lo0.slice(), up: up0.slice() };
+        cut(Array(64).fill(0xFF).concat(img.up.slice(0, 4)), [img.lo, img.up], n);
+      }
+      doctor(lx, ly, img.lo, img.up);
+      if (--left < 0) clearInterval(timer);
+    }, 20);
+  }
+  sl.oninput = draw; draw();
+})();
+</script>

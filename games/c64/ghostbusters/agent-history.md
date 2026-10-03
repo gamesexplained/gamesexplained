@@ -48,3 +48,14 @@ the hearse's pictures (`$0400`-`$07FF`) and 32 bytes of phrase 3 (`$FD30`, the K
 vector table written over it), which the two shop screenshots and the speech port showed. Two
 VICE scripts run at once against the one emulator drew the same screen into both files; the
 pictures were taken again one at a time.
+
+## 3 October 2026
+
+The pages were reworked into the layout of Fist II and Doctor Who: How it works became
+Gameplay, Controls, and Graphics, The city became the Map tab, and the sources became footnotes
+listed on About. For the Graphics tab the page unpacks the sprite stream at `$B408` the way
+`rle_unpack` (`$610B`) does; the result matched every sprite byte held in the nine recorded
+frames. The old How it works text said eight shapes were mirrored "for walking left"; the
+mirrored shapes are the proton stream's six and the two after them (`$4640`-`$483F`), and the
+men have their own left-facing frames, so the Graphics text says that instead. Item 4's shape,
+drawn for the first time, looks like the trap with its flaps raised.

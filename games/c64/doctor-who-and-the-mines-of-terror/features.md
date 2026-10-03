@@ -75,7 +75,7 @@ Sources:
 | Death by falling too far | traced: a drop of `$60` or more | `$CD62` |
 | Death on stalagmites | live | `$CA67` |
 | Oxygen needed outside | traced; live: no drain in the start cavern | `$CA90` |
-| Spikes | open: the only terrain deaths found are stalagmite tiles `$74`/`$51`; every `$E8` writer was read | |
+| Spikes | confirmed as the stalagmites: the game's own message says STALAGMITE, and the only terrain deaths are tiles `$74`/`$51` (every `$E8` writer was read); the steward confirmed descriptions' "spikes" mean these | |
 | Forced regeneration | live (key R) | `$9051` |
 | Explosions | traced | `$C09A`-`$C260` |
 | Heatonite mining, TIRU, recovering the plans | traced: the end bonus asks whether production was halted and whether the CAPSULE (TIRU plans) was brought back | `$9102`-`$920F`, `$B9B6` |

@@ -100,32 +100,104 @@
       spriteMC(ctx, G, p + 16 * who, 12 + j * 58 + (j >> 2) * 8, 6 + who * 68, 2, [10, 9, 1]));
   }
 
-  // ---- 07: the enemies of each screen ----
+  // ---- the enemies of each screen, animated ----
+  // Each slot steps from its first frame (record +$1D) to its last (+$22) and back to the first, as
+  // enemy_move ($CCAB) does. Colours are the ones the game sets on arrival ($D029-$D02D);
+  // multicolour sprites share $D025 and $D026.
   const LIVE_COL = [[2,3,4,5,6],[6,7,7,5,7],[11,11,11,5,12],[2,3,4,5,9],[0,3,4,5,6],
                     [0,11,1,5,11],[2,3,14,5,9],[11,11,11,5,1],[11,7,7,5,7],[2,3,4,5,0]];
+  const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const movers = [];
+  let ticking = false;
+  function animate(m) {
+    movers.push(m);
+    if (ticking || still) return;
+    ticking = true; let t = 0;
+    setInterval(() => { t++; for (const x of movers) x(t); }, 160);
+  }
+  function slotFrames(G, R, k) {
+    const first = G.ram[R + 0x1D + k], last = G.ram[R + 0x22 + k], f = [first];
+    for (let p = first; p !== last && f.length < 256; ) { p = (p + 1) & 255; f.push(p); }
+    return { first, last, f };
+  }
+  const rec = (G, n) => G.ram[0x7290 + 2 * n] | G.ram[0x7291 + 2 * n] << 8;
   function enemies(G) {
     const cv = $('#en'), pick = $('#en-pick'); if (!need(cv)) return;
-    let cur = 0;
+    let cur = 0, slots = [];
     NAMES.forEach((nm, i) => pick.insertAdjacentHTML('beforeend',
       `<button class="b" type="button" data-n="${i}" aria-pressed="${i === 0}">${nm}</button>`));
-    function draw() {
-      const R = G.ram[0x7290 + 2 * cur] | G.ram[0x7291 + 2 * cur] << 8;
-      const ctx = C64.canvas(cv, 720, 132);                // five columns of 2 x 2 frames
+    const ctx = C64.canvas(cv, 720, 90);
+    function frame(t) {
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
-      const txt = [];
-      for (let k = 0; k < 5; k++) {
-        const first = G.ram[R + 0x1D + k], last = G.ram[R + 0x22 + k];
-        const frames = [];
-        for (let p = first; frames.length < 4; p = p >= last ? first : p + 1) frames.push(p);
-        frames.forEach((p, j) => spriteMC(ctx, G, p, 12 + k * 144 + (j % 2) * 60, 8 + (j >> 1) * 62, 2,
-          [LIVE_COL[cur][k], 9, 1]));
-        txt.push(`slot ${k}: <b>${hex(first, 2)}</b>-<b>${hex(last, 2)}</b> at <b>${hex(first * 64)}</b>`);
-      }
-      $('#en-kv').innerHTML = `Settings at <b>${hex(R)}</b> · ` + txt.join(' · ');
+      slots.forEach((sl, k) => spriteMC(ctx, G, sl.f[t % sl.f.length], 36 + k * 144, 12, 3, [LIVE_COL[cur][k], 9, 1]));
     }
-    pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#en-pick button', b); draw(); });
-    draw();
+    function pickScreen() {
+      const R = rec(G, cur);
+      slots = [0, 1, 2, 3, 4].map(k => slotFrames(G, R, k));
+      $('#en-kv').innerHTML = `Settings at <b>${hex(R)}</b> · ` + slots.map((sl, k) =>
+        `slot ${k}: <b>${hex(sl.first, 2)}</b>-<b>${hex(sl.last, 2)}</b>, ${sl.f.length} frame${sl.f.length > 1 ? 's' : ''}`).join(' · ');
+      frame(0);
+    }
+    let t0 = 0;
+    animate(t => { t0 = t; frame(t); });
+    pick.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; cur = +b.dataset.n; press('#en-pick button', b); pickScreen(); frame(t0); });
+    pickScreen();
   }
+
+  // ---- every enemy animation in the game, once each, with the screens that use it ----
+  function gallery(G) {
+    const root = $('#gal'); if (!need(root)) return;
+    const seen = new Map();
+    for (let n = 0; n < 10; n++) {
+      const R = rec(G, n);
+      for (let k = 0; k < 5; k++) {
+        const sl = slotFrames(G, R, k), key = sl.first + '-' + sl.last;
+        if (!seen.has(key)) seen.set(key, { ...sl, col: LIVE_COL[n][k], where: [] });
+        const w = seen.get(key).where, nm = NAMES[n].replace(/^The /, w.length ? 'the ' : 'The ');
+        if (!w.some(x => x.toLowerCase() === nm.toLowerCase())) w.push(nm);
+      }
+    }
+    for (const a of seen.values()) {
+      const cell = document.createElement('figure'); cell.className = 'gal-cell';
+      const cv = document.createElement('canvas');
+      cv.setAttribute('role', 'img');
+      cv.setAttribute('aria-label', `Enemy frames ${hex(a.first, 2)} to ${hex(a.last, 2)}`);
+      const cap = document.createElement('figcaption');
+      cap.innerHTML = `<code>${hex(a.first * 64)}</code> · ${a.f.length} frame${a.f.length > 1 ? 's' : ''}<br>${a.where.join('; ')}`;
+      cell.append(cv, cap); root.append(cell);
+      const ctx = C64.canvas(cv, 24 * 3, 21 * 3);
+      const draw = t => { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height); spriteMC(ctx, G, a.f[t % a.f.length], 0, 0, 3, [a.col, 9, 1]); };
+      draw(0);
+      if (a.f.length > 1) animate(draw);
+    }
+  }
+
+  // ---- the way-home forest's slot 1: frames $88 to $F2, through whatever memory they point at ----
+  function shifter(G) {
+    const cv = $('#shift'); if (!need(cv)) return;
+    const sl = slotFrames(G, rec(G, 9), 1), kv = $('#shift-kv');
+    const what = p => p < 0xA8 ? 'an enemy shape' : p < 0xC0 ? 'program code' : p < 0xD8 ? 'the character set' : p < 0xE8 ? "one of the boy's frames" : "one of the girl's frames";
+    const ctx = C64.canvas(cv, 24 * 4, 21 * 4);
+    const draw = t => {
+      const p = sl.f[t % sl.f.length];
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+      spriteMC(ctx, G, p, 0, 0, 4, [LIVE_COL[9][1], 9, 1]);
+      kv.innerHTML = `frame <b>${hex(p, 2)}</b>, read from <b>${hex(p * 64)}</b>: ${what(p)} · ${t % sl.f.length + 1} of ${sl.f.length}`;
+    };
+    draw(0); animate(draw);
+  }
+
+  // ---- links that open the Maps tab on a screen show a map pin ----
+  (function pins() {
+    const PIN = '<svg viewBox="0 0 16 20" width="14" height="18" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8 1a6 6 0 0 0-6 6c0 4.5 6 12 6 12s6-7.5 6-12a6 6 0 0 0-6-6zm0 3.8a2.2 2.2 0 1 1 0 4.4a2.2 2.2 0 1 1 0-4.4z"/></svg>';
+    const go = () => $$('a[href*="levels.html?screen="]:not(.pin)').forEach(el => {
+      el.classList.add('pin');
+      if (!el.textContent.trim()) { el.innerHTML = PIN; if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Show on the map'); }
+      else el.insertAdjacentHTML('afterbegin', PIN);
+    });
+    if (typeof document === 'undefined') return;
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+  })();
 
   // ---- 03: the music driver ($60A0-$61F1), ported; see work/music_port.js and test_music.js ----
   function createDriver(M) {
@@ -227,12 +299,12 @@
 
   // ---- start: the game image from listing.json ----
   if (!globalThis.C64) {                                   // opened from disk: say so beside each picture
-    ['#pl', '#xc', '#eb', '#jc', '#en', '#silver', '#ctrl'].forEach(id => need($(id)));
+    ['#pl', '#xc', '#eb', '#en', '#gal', '#silver', '#ctrl', '#shift'].forEach(id => need($(id)));
     if ($('#sid')) $('#sid').textContent = 'The player needs the site’s shared sound script, ../../lib/sid.js: open this page from the built site.';
     return;
   }
   C64.load('listing.json').then(G => {
-    for (const f of [music, crosses, energy, players, enemies, texts]) {
+    for (const f of [music, crosses, energy, players, enemies, gallery, shifter, texts]) {
       try { f(G); } catch (e) { console.error(f.name, e); }
     }
   }).catch(e => {
