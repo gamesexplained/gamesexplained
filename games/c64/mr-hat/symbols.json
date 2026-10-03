@@ -22465,7 +22465,7 @@
   {
    "address": 31856,
    "type": "line",
-   "text": "Common IRQ tail (from $8C12, reached from every room's IRQ through $8215 -> $BF30): when the KERNAL's current-key byte $C5 is 4 (F1), flips the music-off flag $1019 and waits at $1790 so one press counts once; while $1019 = 1 the chain leaves at the KERNAL's $EA31 before $8C33, the in-play tune, so F1 switches room 1's music off and on. It is not a pause: live (work/pausetest.py, 2 October 2026) the guardians kept moving with $1019 = 1 and the tune pointer $8C58 stood still. $1019 is cleared at $6F2F when a game starts."
+   "text": "Common IRQ tail (from $8C12, reached from every room's IRQ through $8215 -> $BF30): when the KERNAL's current-key byte $C5 is 4 (F1), flips the music-off flag $1019 and waits at $1790 so one press counts once; while $1019 = 1 the chain leaves at the KERNAL's $EA31 before $8C33, the in-play tune, so F1 switches the music of play off and on in every room. It is not a pause: live (work/pausetest.py, 2 October 2026) the guardians kept moving with $1019 = 1 and the tune pointer $8C58 stood still. $1019 is cleared at $6F2F when a game starts."
   },
   {
    "address": 31886,
@@ -22985,7 +22985,7 @@
   {
    "address": 35840,
    "type": "line",
-   "text": "Tune 1's IRQ tail, reached from $B5BD/$B5CA when $1015 is 0. Mr Hat's pointer $27 (the death frame) \u2192 rewind the tune ($8C58/$8C5E/$8C64 = $90/$30/$90) and JMP $B4C0. Otherwise colour cell $0400 not $20, or $06AB = $6E \u2192 $7C70 (F1 toggles $1019, the music on or off, then $8C33 or $EA31); $0400 = $20 with $06AB not $6E \u2192 rewind and $B4C0. In room 1 $0400 holds $6E (play snapshot), and the tune pointer had moved there."
+   "text": "The in-play tune's IRQ tail, at the end of the chain every room's handler finishes with ($8215 -> $BF30 -> $B530 -> here), reached from $B5BD/$B5CA when $1015 is 0. Mr Hat's pointer $27 (the death frame) \u2192 rewind the tune ($8C58/$8C5E/$8C64 = $90/$30/$90) and JMP $B4C0. Otherwise colour cell $0400 not $20, or $06AB = $6E \u2192 $7C70 (F1 toggles $1019, the music on or off, then $8C33 or $EA31); $0400 = $20 with $06AB not $6E \u2192 rewind and $B4C0. Live, the tune pointer $8C58 moved on in rooms 1, 2, 3, 5, 8, 9 and 11 (2 and 3 October 2026): it is the tune of play, not of one room."
   },
   {
    "address": 35888,
@@ -23995,7 +23995,7 @@
   {
    "address": 43388,
    "type": "line",
-   "text": "Is Mr Hat at a spot? A = flags, X = left, Y = right edge (exclusive) for $D008 (kept in $1E06/$1E07). $1020 stores A's low nybble in $1009 and was meant to return the high nybble, $10 asking for the X high bit; it reads $400B (always $FC) instead of $40BB, so the high-bit test never runs. Carry set if X is in the window and either $1009 = 1 or the stick reads $7D (down)."
+   "text": "Is Mr Hat at a spot? A = flags, X = left, Y = right edge (exclusive) for $D008 (kept in $1E06/$1E07). $1020 stores A's low nybble in $1009 and returns a high nybble that should say whether to test the X high bit ($10); it reads $400B (always $FC) where it wrote $40BB, so it returns $F0 and the high-bit test at $A986 never runs. The 18 calls with A = $01 never asked for it; the 24 with $10 or $11 also match at the same low X byte on the left half. Which address was meant is open: with the test working, 14 of those 24 windows would lie at X 344 or more. Carry set if X is in the window and either $1009 = 1 or the stick reads $7D (down)."
   },
   {
    "address": 43448,

@@ -68,7 +68,9 @@ addresses called differing. Rooms 3 and 4/7 differ more. What each room
 adds is its own floor rules, hazards, guardians and objects.
 
 Exits, from the room code: room 1 to room 3 (`$44C0` → `$4722`); room 2
-right to 3 (`$4642`) and down its ladder to 6 (`$5E10`); room 5 left to 4
+right to 3 (`$4642`); room 3 to room 2 with entry code `$08` and to room 4
+with `$10` (`$4C34`, dispatched at `$483A`), and room 4 back to room 3
+(`$94FB`-`$9500`, `JMP $4642`); and down its ladder to 6 (`$5E10`); room 5 left to 4
 and down its ladder to 9; room 6's ladder up to 2, bottom right to 7;
 room 8 to 7, to 9 and down its shaft to 10; room 9 left to 8, up to 5,
 down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
@@ -94,20 +96,25 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   `$935E` rooms 4 and 7).
 - The title waits at `$1770` for `$DC00` to read exactly `$6F`. *live*
 - F1 (the KERNAL's key byte `$C5` = 4) toggles `$1019` at `$7C70`; while it
-  is 1 the interrupt chain leaves at `$EA31` before `$8C33`, so room 1's
+  is 1 the interrupt chain leaves at `$EA31` before `$8C33`, so the
   in-play tune stops. It is not a pause. *live* (`work/pausetest.py`: with
   `$1019` = 1 the guardians kept moving and the tune pointer `$8C58` stood
   still; a second F1 started it again)
-- Some code writes `$DC00` itself: `$7B` at `$87F4`, `$9450`, `$77F4`; `$77`
-  at `$5338`; `$69` at `$5D3E`. The effect on the next stick read was not
+- Some code writes `$DC00` itself, at `$533A`, `$5D3E`, `$6366`, `$77F6`,
+  `$87F6` and `$9466` (`$77` at `$533A`, `$69` at `$5D3E`, `$7B` at the
+  other four). The effect on the next stick read was not
   tested.
 
 ## Mechanics
 
 - **Death**: a touch is the VIC's sprite-sprite collision register `$D01E`,
-  read as exact values at `$55B0` (`$11`, `$12`, `$14`, `$18`, `$50`, `$90`:
-  Mr Hat, sprite 4, with one of sprites 0-3, 6, 7), which sets `$4ACE` =
-  `$20`; `$D01F` (sprite against background) is never read. Fixed hazards
+  compared with exact values; each test has its own list. `$55B0` (rooms 5,
+  6, 8, 9 and `$8E10`): `$11`, `$12`, `$14`, `$18` (twice), `$50`, `$90`, Mr
+  Hat with one of sprites 0-3, 6, 7, which sets `$4ACE` = `$20`. Room 1's
+  `$1F70` (from `$1ED6`, `$1F69`, `$41A1`): `$11`, `$12`, `$14`, `$18` and
+  `$58`, sprites 3 and 6 together. The ladder climb's `$5028`: `$14`, `$18`.
+  `$B666` (through `$4C40`): `$90`. No list holds `$30`, the lift cabin.
+  `$D01F` (sprite against background) is never read. Fixed hazards
   are positions: `$BB10` kills Mr Hat on a room's deadly spots only at an
   exact standing height (`$B4` bottom floor, `$5C` upper floor). `$A877` is
   the death: it copies the death shape from `$ACD8`, sinks him to the floor
@@ -201,7 +208,7 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
 - *Live*: one frame of room 1 rebuilt by `C64.renderFrame` from memory and
   the frame's register writes matches the emulator's picture in all
   104,448 pixels (`kit/c64/frame.py`, `work/frame-room1.json`).
-- 122 writes go to `$D022` (69 `STA`, 49 `INC`), which hires bitmap mode
+- 119 writes go to `$D022` (69 `STA`, 49 `INC`, 1 `DEC`), which hires bitmap mode
   does not show. Several sit where a colour store or a call belongs (room
   9's door fills `$71CF`, `$794A` and treasure colours `$73CD`-`$73DD`, room
   8's `$666C`, `$66E2`, room 6's `$5EF3`): stores retargeted to switch
@@ -242,20 +249,23 @@ and 6.
 - A disabled editor feature: the flag `$C439` is only ever written 0; set,
   `$C1CF` would read keys (F7 all voices, 1, 2, 3 one voice alone) and call
   `$CB51`, which is note data. `$CAF4` holds the text `MUZA1`.
-- In play, room 1 has a tune of its own and a second tune has a player
-  nothing calls. The two players are twins (`$8C00`-`$8C89` with the
+- In play one tune runs in every room, and a second tune has a player
+  nothing reaches (the `JMP $89D0` at `$8A00` is itself never reached). The two players are twins (`$8C00`-`$8C89` with the
   note-off `$85DF`; `$89D0`-`$8A5B` with `$85D0`): voice 3 alone, triangle
   (`$11`), attack/decay `$20`, every note retriggered after the note-off
   zeroes `$D40D`-`$D414`; three tables read through pointers kept in the
-  code's own operands, room 1's at `$8C90`/`$8D30`/`$8D90` (95 notes, back
+  code's own operands, the in-play tune's at `$8C90`/`$8D30`/`$8D90` (95 notes, back
   to the first at pointer `$EF`), the unused one's at `$8A60`/`$8B00`/`$8B90`
   (105 notes, back to the second at `$C9`); a note lasts the length byte in
   interrupts (`$64F9` counts up to `$64FA`). The unused player sends its
-  first column to the frequency's low byte; room 1's sends it to `$D022`, so
+  first column to the frequency's low byte; the in-play one sends it to `$D022`, so
   its notes sound at the high byte alone. That column's values differ
   between repeats of one note (`$2188`, `$2164`, `$213D`), so it may not be a
-  tuning at all. Room 1's tune rewinds while Mr Hat's pointer is the death
-  frame `$27` (`$8C03`); F1 stops it (above). *live* in the simulator: both
+  tuning at all. The in-play player runs from the interrupt tail every
+  room's handler ends in (`$8215` → `$BF30` → `$B530` → `$8C00` → `$7C70`,
+  19 jumps to `$8215`); it rewinds while Mr Hat's pointer is the death
+  frame `$27` (`$8C03`); F1 stops it (above). *live*: its pointer `$8C58`
+  moved on over 150 frames in rooms 1, 2, 3, 5, 8, 9 and 11. *live* in the simulator: both
   ported players match the game's code, every SID write of 3,000 calls
   each (`work/voice3-test.js`).
 - Effects on voice 3, each run at the end of an interrupt (`$B4C0`-`$B653`):
@@ -316,8 +326,13 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
 
 - `$1020` stores A at `$40BB` and takes its low nibble from `$40BB`, but
   its high nibble from `$400B`, which is the operand of an `STA $07FC` and
-  always `$FC` (checked in four snapshots): the right-half test in `$A97C`
-  never applies, so a spot there matches at X and at X + 256.
+  always `$FC` (checked in four snapshots), so it returns `$F0`. `$A97C`
+  compares that with `$10`, which never matches, so its check of the X
+  high bit (`$A986`) never runs. Of the 42 calls, 18 pass the flag `$01`,
+  which never asked for the check; 24 pass `$10` or `$11`, meant for the
+  right half, and so also match at the same low X byte on the left half.
+  Which address was meant is open: with the check working, 14 of those 24
+  spots would lie at X 344 or more, in the right border.
 - "Mr Hat is past X 255" is tested as the whole of `$D010` against `$29`
   or `$2F` (`$4BCC`, `$4C06`, `$6350`, `$647F`, `$6C09`, `$9450`, `$94BA`,
   `$7866`), so the answer depends on the other sprites' high bits too; room
@@ -349,7 +364,7 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
 | `$D016` | never written | |
 | `$D020`, `$D021`, `$D022` | border; `$D021` and `$D022` written but not shown in hires bitmap mode | |
 | `$D027`-`$D02E` | sprite colours, flashed during immunity | |
-| `$D400`-`$D418` | the music player (`$C11D`, `$C1FC`), room 1's tune (`$8C00`), effects (`$B4C0`-`$B653`, `$41B0`) | |
+| `$D400`-`$D418` | the music player (`$C11D`, `$C1FC`), the in-play tune (`$8C00`), effects (`$B4C0`-`$B653`, `$41B0`) | |
 | `$DC00` | the joystick, read at 63 places as exact values; written at six | |
 | `$DC04`/`$DC05`, `$DC0E` | CIA 1 timer A, the music's tempo | `$C106`-`$C1A0` |
 | `$DC08`-`$DC0B` | the time-of-day clock, zeroed by the music's first interrupt `$C2EB`, never read | |
@@ -366,7 +381,7 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
   `$BD`-`$C3`. The monitor's pages and Lupenio's text did not run.
 - `work/goroom.py`: every room's set-up started from play draws its room
   with the expected ROOM and STAGE digits.
-- `work/pausetest.py`: F1 stops room 1's tune and not the guardians.
+- `work/pausetest.py`: F1 stops the in-play tune and not the guardians.
 - `work/scoretest.js`: the point adders, run on the snapshot's memory.
 - `work/goroom.py ... 40`: rooms 6 and 9 with the light switch on.
 - `kit/c64/frame.py capture` and `compare` on all eleven rooms, the dark

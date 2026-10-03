@@ -409,8 +409,8 @@ three of the runtime packages below that the desktop lacked
 (`libieee1284-3t64`, `libmicrohttpd12t64`, `libportaudio2`); the contributor
 installed them, since `sudo` asks for a password the agent cannot type.
 `check-emulator` passed 56 of 57: `warp` failed, warp mode giving 78
-passes a second against 51 without, where the check wants over 100 (the
-software renderer under `xvfb-run` is the likely limit). `verify-footprint`
+passes a second against 51 without, where the check wants over 100. The
+cause is unknown: container runs, also under `xvfb-run`, pass it. `verify-footprint`
 was clean, and regenerator2000 wrote nothing to `~/.config/regenerator2000`.
 
 ## Linux — run on a server with no display, 24 September 2026

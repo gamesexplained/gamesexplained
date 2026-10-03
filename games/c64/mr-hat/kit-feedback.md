@@ -75,16 +75,22 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
 
 ## Maintainer asks
 
-The contributor asked to see the pull request before it is opened, so
-nothing was filed. The asks are in the pull request's description under
-"Maintainer asks", for whoever merges it to file:
-
-- `clock.py` should be able to leave out a wait (a usage limit, a
-  contributor away), so that a run's step times stay comparable.
-- `.mcp.json` could take the port from the environment (Claude Code
-  expands `${VAR:-default}` in it), or `tools.py vice` could write it.
-- `check-emulator`'s `warp` threshold fails on a software-rendered
-  display, though nothing needs warp; perhaps a warning, not a failure.
+- **`clock.py` should be able to leave out a wait.** The account's usage
+  limits stopped all nine annotation agents twice; the coverage step's
+  wall clock (2,513 minutes) is mostly waiting for limits to reset, about
+  two hours of it work. A `clock.py pause`/`resume`, or a `--wait N` on
+  `stop`, would keep step times comparable across runs:
+  `kit/scripts/clock.py` and the `50-coverage` skill.
+- **`.mcp.json` cannot follow `KIT_VICE_PORT`.** It names 6510. Claude
+  Code expands `${VAR:-default}` in `.mcp.json`, so
+  `"url": "http://127.0.0.1:${KIT_VICE_PORT:-6510}/mcp"` might do, or
+  `tools.py vice` could write the file; `kit/c64/vice.py` works either way.
+- **`check-emulator`'s `warp` check failed on a Linux desktop under
+  `xvfb-run`.** On Ubuntu 24.04 with the v3.13.1 release, warp gave 78
+  passes a second against 51 without (the check wants over 100), though
+  container runs under `xvfb-run` pass it, so the cause is unknown.
+  Nothing in the workflow needs warp; perhaps a warning rather than a
+  failure, in `kit/c64/check_emulator.py`.
 
 ## What took longest
 

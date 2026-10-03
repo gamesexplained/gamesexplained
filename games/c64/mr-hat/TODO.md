@@ -27,7 +27,6 @@ Open work, by value:
 - **Who patched the `$D022` stores.** A second copy of the game (another
   crack, or the issue 14 reissue) compared byte for byte would tell
   whether the disabled doors and fills are Chiola's or a cracker's.
-- Article ideas: Lupenio's room 9 doors drawn as they were meant to be
-  (put the patched calls back in the simulator and draw the room); the
+- Article ideas: the
   title tune's unused order entries; the Supermon copy, and why a monitor
   would ride along in a magazine game.

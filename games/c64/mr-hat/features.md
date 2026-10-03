@@ -32,7 +32,7 @@ German both 404), and no manual beyond the magazine's blurb was found.
   music, 114 blocks, PAL.
 - Ready64, <https://ready64.org/giochi/scheda_gioco/id/1643/mr.-hat>,
   through the Wayback copy of 13 May 2025: issue 6, September 1988, twelve
-  screenshots (six saved as `reference/web-*.png`), two comments.
+  screenshots (six kept in the gitignored `work/web-reference/`, not published: they are other people's), two comments.
 - Ready64's 2008 interview with Francesco Chiola (Wayback copy), and
   <https://www.edicolac64.com/public/francesco-chiola.php>: the origin of
   the character, and that Lupenio (SIPE, 1988) came first and shares
@@ -74,10 +74,10 @@ German both 404), and no manual beyond the magazine's blurb was found.
 
 Found in the code, not in the manual.
 
-- **F1 switches room 1's in-play tune off and on** (`$7C70`, `$1019`), live.
+- **F1 switches the in-play tune off and on** (`$7C70`, `$1019`), live.
   It does not pause the game.
-- **Room 1 has a tune of its own** in play (`$8C00`), besides the title
-  tune, and a second in-play tune at `$89D0` that nothing plays; both
+- **An in-play tune** runs in every room (`$8C00`), besides the title
+  tune, and a second tune at `$89D0` that nothing plays; both
   ported and checked against the game's code, write for write.
 - **Lupenio's room 9, as designed**: with five instructions put back, the
   room draws two doors and a treasure that its bitmap held all along.
@@ -85,11 +85,12 @@ Found in the code, not in the manual.
   calls to `CHRIN` and `CHROUT`.
 - **Lupenio's ending and instructions**, in Italian, never printed, and a
   dead ending routine with a 200,000-point replay bonus (`$7D70`, `$8000`).
-- **The X high-bit slip at `$1020`**: the test reads `$400B` (a code
-  operand, always `$FC`) for `$40BB`.
+- **The X high-bit slip at `$1020`**: it reads `$400B` (a code operand,
+  always `$FC`) where it wrote `$40BB`, so 24 spots meant for the right
+  half also match on the left.
 - **A store missing its index at `$18B3`** (`STA $2BF8` where its twin at
   `$916A` has `STA $35D8,Y`): only part of that drawing is done.
-- **122 writes to `$D022`**, invisible in hires bitmap mode, several where a
+- **119 writes to `$D022`**, invisible in hires bitmap mode, several where a
   colour store or a call was switched off.
 
 ## Open questions
