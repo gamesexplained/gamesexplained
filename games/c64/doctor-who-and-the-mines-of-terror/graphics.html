@@ -14,12 +14,14 @@
 <section id="cast">
   <p class="fig">The cast</p>
   <h2 class="t">Every sprite in the mine</h2>
-  <p class="lede">The Doctor, Splinx, the controllers, the madrag, and every item, drawn from the bytes at <code>$5000</code>-<code>$73FF</code> in the colours the game gives them. Click one to see where it is stored and who shows it.</p>
+  <p class="lede">The Doctor, Splinx, the controllers, the madrag, and every item, drawn from the bytes at <code>$5000</code>-<code>$73FF</code> in the colours the game gives them. Click one to see where it is stored and who shows it. The <a href="gameplay.html#pockets">Gameplay</a> tab says what each one is for.</p>
   <div class="plate">
     <div class="gal" id="gal"></div>
     <p class="cap" id="galcap">Multicolour sprites in the colours the game gives them: the shared red and orange (<code>$D025</code>, <code>$D026</code>) and each object's own colour from <code>$1850</code>, for the object whose animation table or starting frame uses the image. Grey marks the few images no table names. The Doctor's own colour is black, which is why he shows only red and orange, as in the game.</p>
   </div>
-  <p>The game's sprite images sit in the second 16 KB of memory, which the video chip shows during play, so a frame number from <code>$40</code> to <code>$CF</code> points straight at 64 bytes from <code>$5000</code> to <code>$73FF</code>. What each creature does is on the <a href="gameplay.html#dangers">Gameplay</a> tab, which also shows <a href="gameplay.html#pockets">every object the Doctor can pick up</a> by name.</p>
+  <p>The game's sprite images sit in the second 16 KB of memory, which the video chip shows during play, so a frame number from <code>$40</code> to <code>$CF</code> points straight at 64 bytes from <code>$5000</code> to <code>$73FF</code>.</p>
+  <p>At most eight objects appear at once, because the C64 has eight hardware sprites. Each pass, the game collects the visible ones and leaves out any ninth (<code>sprite_list_add_object</code>, <code>$81DA</code>).</p>
+  <p>Some items can be drawn into the scenery as well as flying as sprites. The game blends their shapes into 32 spare characters, pixel pair by pixel pair, so they sit on the rock without covering it (<code>charobj_composite_char</code>, <code>$8652</code>).</p>
 </section>
 <section id="doctor">
   <p class="fig">The Doctor</p>
@@ -49,7 +51,7 @@
     <p class="cap">The six sprites at the positions in <code>$FC70</code>, all showing one image (<code>$7400</code>) in the colours set at <code>$FF2F</code>. The image starts as one of two at <code>$09E4</code>; the second is used when the Doctor is high in the mine (<code>$FE60</code>).</p>
   </div>
   <p>Every fourth frame the game copies the whole image afresh and then clears some of its pixel pairs (<code>arrival_frame</code>, <code>$FD1F</code>). The pairs go in a fixed shuffle: 68 byte offsets at <code>$09A0</code>, each tried with one of five masks in turn, so every copy loses a different scatter of pixels (<code>dissolve_sprite</code>, <code>$FEA9</code>). Each image has 128 coloured pixel pairs. The number cleared starts at two, holds while a counter runs down, and then grows by three each time up to 125 (<code>$FCAF</code>), so the last copy keeps three. For the departure it starts at 127 and falls by three (<code>departure_sequence</code>, <code>$FE23</code>), so the shimmer thickens instead.</p>
-  <p>The same routine fades the Doctor when he loses a regeneration, on his own two frames (<code>$CB6B</code>), as <a href="#doctor">the Doctor</a> above shows.</p>
+  <p>The same routine fades the Doctor when he loses a regeneration, on his own two frames (<code>$CB6B</code>), as the Regenerate button in <a href="#doctor">the Doctor</a> above shows.</p>
 </section>
 <section id="screen">
   <p class="fig">The screen</p>
