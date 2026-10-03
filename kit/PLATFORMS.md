@@ -41,21 +41,30 @@ These already read `platform` from `game.json` and need one entry each:
   live export. A different disassembler needs its own client and its own
   live and project readers.
 
-## Where the shared scripts are the C64 in all but name
+## What the shared scripts load from a platform
 
-The second platform is the one that lifts these seams, and should do it
-then rather than copy the code:
+The second platform lifted these seams, so a new machine fills them rather
+than lifting them again. Each row is a file in `kit/<platform>/` and the
+functions `kit/scripts/` calls on it; the ledger, the record format and the
+contract `check_listing.py` enforces stay shared. A row that lists two
+files is satisfied by either: `symbols_export.platform_fn` takes the first
+one that exists, so a machine brings its own disassembler rather than a
+copy of the C64's.
 
-- `kit/scripts/listing.py` reads a VICE snapshot (RAM at a fixed offset, 64
-  KB) and decodes 6502. Another machine has another snapshot format and
-  another CPU. The snapshot reader and the decoder belong in
-  `kit/<platform>/`; the ledger, the output format and the contract that
-  `check_listing.py` enforces stay shared.
-- `kit/scripts/symbols_import.py` has the same snapshot reader and writes
-  regenerator2000's project format. Whether regenerator2000 handles other
-  CPUs is not established; check before assuming.
-- `site/lib/memmap.js` draws the C64's memory layout and is named for it.
-- `kit/template/index.html` names its colour tokens after the C64.
+| `kit/<platform>/` | Provides | Called by |
+|---|---|---|
+| `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES` | `listing.py`, through `platform_modules(platform)` |
+| `snapshot.py` | `read(path) -> bytes`, one flat 64 KB image; exits, naming the format it saw, on anything else | `listing.py` (the snapshot and the hand-over), `symbols_import.py` |
+| `project.py` or `skoolkit.py` | `read_file(path) -> (blocks, symbols, comments)`, `write(gdir, snapshot, out=None) -> path` | `symbols_export.py` (`read_file`, `--project`/`--ctl`), `symbols_import.py` (`write`) |
+| `r2000.py` or `skoolkit.py` | `read_live() -> (blocks, symbols, comments)` from the running disassembler | `symbols_export.py` (`read_live`), `coverage.py --live` |
+| `registers.py` | `NAMES`, the I/O registers by name, so an operand that sees the chips shows one | `listing.py` |
+
+The C64's `cpu.py` holds the 6502 and PETSCII together; the Spectrum's
+`cpu.py` re-exports `z80.py`, which is where a third Z80 machine would
+point. A `kit/cpu/` layer that splits them is cut when a third machine
+arrives, not before. Two pieces are still the C64's: `site/lib/memmap.js`
+is one drawing for every machine but `kit/template/index.html` still names
+its colour tokens after the C64.
 
 ## The order of work
 
@@ -69,7 +78,9 @@ then rather than copy the code:
    workaround is the moment to pick another emulator, not after the
    first game.
 3. The entries in the shared scripts, above.
-4. Lift the seams in `listing.py` and the symbols scripts.
+4. Provide the platform's `cpu.py`, `snapshot.py` and its disassembler's
+   `read_live`/`read_file`, as the table above sets out. The seams already
+   exist; the machine fills them.
 5. `site/lib/<platform>.js`, and whatever the memory map needs. Add the
    platform's cells to `site/status.json`: the build gives the status page
    a column for every kit it finds, and a host with no cell for yours reads
