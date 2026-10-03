@@ -5,10 +5,10 @@
     python3 kit/spectrum/check_emulator.py [--keep]
 
 Needs the emulator up (`tools.py --platform spectrum zesarux`) and nothing else: no
-game, no tape. It hard-resets the machine, writes ~50 bytes of Z80 to $8000, points
+game, no tape. It hard-resets the machine, writes ~60 bytes of Z80 to $8000, points
 PC at them, and measures the four phases on that. Anything the emulator was doing is
-lost. About a minute on a working build. `--keep` leaves this run's snapshots in
-tools/zesarux-home/snapshots.
+lost. About twenty seconds on a working build (17 s measured on 13.0). `--keep` leaves
+this run's snapshots in tools/zesarux-home/snapshots.
 
 The test program (assembled below, so it is source and not a binary):
 
