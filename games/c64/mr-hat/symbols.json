@@ -8314,7 +8314,7 @@
   },
   {
    "address": 19655,
-   "name": "room2_guardian_hit",
+   "name": "room3_ladder_guardian_hit",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -10648,13 +10648,13 @@
   },
   {
    "address": 25849,
-   "name": "sfx_count_64f9",
+   "name": "tune_note_count",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 25850,
-   "name": "sfx_limit_64fa",
+   "name": "tune_note_length",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -20400,7 +20400,7 @@
   {
    "address": 16202,
    "type": "line",
-   "text": "Copy of the rectangle's row kept by $A631, reused by $A664 and $A690."
+   "text": "Copy of the rectangle's row kept by $A631 (in $A620), reused by $A690 to address the bitmap. The reader at $A667 is in the dead colour-RAM half ($A665-$A67E, unreachable since $A663 became RTS)."
   },
   {
    "address": 16203,
@@ -20475,7 +20475,7 @@
   {
    "address": 16576,
    "type": "line",
-   "text": "Room 1: per-step handler for the top floor, called through $08A1/$1D33 when Mr Hat's Y < $5D. X=$20: pushes him right (left wall). X=$40 with colour cell $051B = $0C (the black 3x3 object at columns 3-5, rows 5-7 still there): takes it: JSR $1CB0 (voice 1 off), JSR $1CE2 (an RTS), six INC $D022 (no visible effect in hires bitmap), erases cells $04CB/$04F3/$051B (x3) with $CC, shows it in the status line (cells $07BC-$07BD, $07E3-$07E5 = $0C) and sets $BD=$60, which the bottom-floor handler checks at $1EC5 to open the way out ($44C0). X in $A0-$C7 with Y $5C-$7B (standing, not jumping): dies (JSR $1D50). X=$F8 with $39=$40 (set at $1F15 by the middle-floor pickup) and cell $0492 = $7C: recolours cells $0492-$0493, $04BA-$04BB, $050A-$050B to $1C (yellow object at column 26 turns white), voice 1 off; X=$F8 without it: one extra step right. X=$FF off the floor level ($5C): six steps left (the right wall stops jumps). X=0 or 1 at Y=$5C: the lift (room1_lift_ride). Ends with JSR $1F70, the guardian collision test."
+   "text": "Room 1: per-step handler for the top floor, called through $08A1/$1D33 when Mr Hat's Y < $5D. X=$20: pushes him right (left wall). X=$40 with colour cell $051B = $0C (the black 3x3 object at columns 3-5, rows 5-7 still there): takes it: JSR $1CB0 (voice 1 off), JSR $1CE2 (an RTS), six INC $D022 (no visible effect in hires bitmap), erases cells $04CB/$04F3/$051B (x3) with $CC, shows it in the status line (cells $07BC-$07BD, $07E3-$07E5 = $0C) and sets $BD=$60, which the bottom-floor handler checks at $1EC5 to open the way out ($44C0). X in $A0-$C7 with Y $5C-$7B (standing, not jumping): dies (JSR $1D50). X=$F8 with $39=$40 (set at $1F15 by the middle-floor pickup) and cell $0492 = $7C: recolours cells $0492-$0493, $04BA-$04BB, $050A-$050B to $1C (yellow object at column 26 turns white), voice 1 off; X=$F8 without it: one extra step right. The $F8 branch also does five INC $D022 and JSR $1CD2 (an RTS). X=$FF off the floor level ($5C): six steps left (the right wall stops jumps). X=0 at Y=$5C, or X=1 at any Y: the lift (room1_lift_ride). X=0 off the floor level: six steps left. Ends with JSR $1F70, the guardian collision test."
   },
   {
    "address": 16597,
@@ -20915,7 +20915,7 @@
   {
    "address": 19152,
    "type": "line",
-   "text": "Room 3 top floor (Y < $5D), per step: JSR $AB24 (crosses X=256 through mrhat_cross_x256, hazard tests through $A97C that can cost a life at $AB62, returns X in A). X=$30: pushed one step right (left wall). X below $B3 or from $C1: guardian test (JSR $8E08 = guardian_hit_check). X $B3-$C0 with stick down ($7D): climbs down the ladder (room3_climb_down)."
+   "text": "Room 3 top floor (Y < $5D), per step: JSR $AB24 (crosses X=256 through mrhat_cross_x256, hazard tests through $A97C that can cost a life at $AB62, returns X in A). X=$30: pushed one step right (left wall). Otherwise (X < $B3, X >= $C1, or X $B3-$C0 without the stick down): JSR $8E08 (guardian_hit_check $4C40, then the object pick-ups $8E13). X $B3-$C0 with stick down ($7D): climbs down the ladder (room3_climb_down)."
   },
   {
    "address": 19163,
@@ -21045,7 +21045,7 @@
   {
    "address": 19655,
    "type": "line",
-   "text": "Guardian hit in room 2 (from $502F/$5037 when $D01E is $14 or $18) and on room 3's ladder ($4B0F through $5028). If $A877 holds $AD (the death routine is not switched off by the invulnerability code): JSR $A877 (death), Mr Hat to X=$50, Y=$5C, lives_mark_remove, sprite 4 off, clear_died_flag. Otherwise only reads $D01E."
+   "text": "Guardian hit on room 3's ladder: called from $502F/$5037 in $5028 when $D01E is $14 or $18; $5028's only caller is $4B0F, inside room 3's climb $4B0C (from $48FF). If $A877 holds $AD (the death routine is not switched off by the invulnerability code): JSR $A877 (death), Mr Hat to X=$50, Y=$5C, lives_mark_remove, sprite 4 off, clear_died_flag. Otherwise only reads $D01E."
   },
   {
    "address": 19701,
@@ -21415,7 +21415,7 @@
   {
    "address": 22333,
    "type": "line",
-   "text": "Room 5 (stage 2) set-up, jumped to from $7AF4 and $954B: $8137 draws the ROOM digit 5 ($4DA0) and the STAGE digit 2 ($8100); room_blank_and_fill with $BA; colour fills ($81B0, fill_colour_rect): lower corridor $0608 (rows 13-18, columns 0-31) and upper corridor $0456 (rows 2-7, columns 6-38) in $CC, ladders $04FA (3 by 13) and $0512 (3 by 17) in $3C; ladder bitmaps at $2550 (15 rows) and $2890 (17 rows) from $4802. A fill of $06C0 with $7C (operand $57E6) is prepared but its call is NOPed out. $ABAE draws the chest of drawers at column 15, row 4; $100C = 5; sprite 3 Y $B4; six bytes of ladder pattern at $3618; two red-and-white objects at columns 4 and 6, rows 16-18 ($A7D9/$A7F8); the plant ($AB74, $8C) at column 24, row 15 and its pot ($AB93, $6C) at row 18; the colour $2C (operand $586C) goes only to $D022; $1109/$1111 copied to bitmap cells row 4 and row 5, column 24; cones $58CB (pointing down) at rows 13-15 and $58BB (up) at rows 16-18, columns 16-19 ($5D95, $5DA4); JMP room5_place_sprites."
+   "text": "Room 5 (stage 2) set-up, jumped to from $7AF4 and $954B: $8137 draws the ROOM digit 5 ($4DA0) and the STAGE digit 2 ($8100); room_blank_and_fill with $BA; colour fills ($81B0, fill_colour_rect): lower corridor $0608 (rows 13-18, columns 0-31) and upper corridor $0456 (rows 2-7, columns 6-38) in $CC, ladders $04FA (3 by 13) and $0512 (3 by 17) in $3C; ladder bitmaps at $2550 (15 rows) and $2890 (17 rows) from $4802. A fill of $06C0 with $7C (operand $57E6) is prepared but its call is NOPed out. $ABAE draws the chest of drawers at column 15, row 4; $100C = 5; sprite 3 Y $B4; six bytes of the ladder pattern $4802 in each of two bitmap rows, $3618 and $3758 ($FD = 2 left over from the NOPed fill); two red-and-white objects at columns 4 and 6, rows 16-18 ($A7D9/$A7F8); the plant ($AB74, $8C) at column 24, row 15 and its pot ($AB93, $6C) at row 18; the colour $2C (operand $586C) goes only to $D022; $1109/$1111 copied to bitmap cells row 4 and row 5, column 24; cones $58CB (pointing down) at rows 13-15 and $58BB (up) at rows 16-18, columns 16-19 ($5D95, $5DA4); JMP room5_place_sprites."
   },
   {
    "address": 22502,
@@ -21755,12 +21755,12 @@
   {
    "address": 25849,
    "type": "line",
-   "text": "Counter in the sound code of the IRQ tail ($8A03 and $8C33): bumped per call and compared with sfx_limit_64fa; cleared when the next note is taken ($8A3B, $8C6B)."
+   "text": "Note-length counter of the tunes' IRQ tails (tune 2 $8A03, unreached; the in-play tune $8C33): bumped per IRQ and compared with the note length $64FA; cleared when the next note is taken ($8A3B, $8C6B)."
   },
   {
    "address": 25850,
    "type": "line",
-   "text": "Length for sfx_count_64f9, loaded from a table ($8C63 LDA $8D90, self-advancing) at $8A36 and $8C66."
+   "text": "Note length for tune_note_count ($64F9), in IRQs: stored at $8A36 (tune 2, from its table at $8B90) and $8C66 (the in-play tune, from $8D90), each read through an operand the player steps itself."
   },
   {
    "address": 25851,
@@ -21800,7 +21800,7 @@
   {
    "address": 25988,
    "type": "line",
-   "text": "Collision check used on room 6's ladder: $55B0 (sprite-sprite collision $D01E = $11, sprite 0 against Mr Hat, sets $4ACE = $20); on a hit runs the death sequence $55F5, sets Y = $B4 and clears $4ACE."
+   "text": "Collision check used on room 6's ladder: $55B0 (sets $4ACE = $20 when $D01E is exactly $11, $12, $14, $18, $50 or $90; in room 6, sprite 0 or sprite 3 against Mr Hat); on a hit runs the death sequence $55F5, sets Y = $B4 and clears $4ACE."
   },
   {
    "address": 26012,
@@ -22180,7 +22180,7 @@
   {
    "address": 29760,
    "type": "line",
-   "text": "Room 9, every entry (from $A862, after room9_setup_part2): when the light switch $22 is not $40 (written $40 at $5519 in another room, cleared at $61E1 for a new game) the room is dark: lower and upper corridors filled with colour $00 (black on black, so the paintings, plant and lamps' surroundings vanish), sprite 0's Y = 0 ($81CD), the ladders recoloured $30 (cyan on black), the lamps $B0; one more fill set up at $0649 ($FB, 3x2) is replaced by INC $D022 (no effect). Falls through to room9_place_sprites."
+   "text": "Room 9, every entry (from $A862, after room9_setup_part2): when $22 is not $40 (set at $5519 when room 2's candle at $04B7 is taken, cleared at $61E1 for a new game) the room is dark: lower and upper corridors filled with colour $00 (black on black, so the paintings, plant and lamps' surroundings vanish), sprite 0's Y = 0 ($81CD), the ladders recoloured $30 (cyan on black), the lamps $B0; one more fill set up at $0649 ($FB, 3x2) is replaced by INC $D022 (no effect). Falls through to room9_place_sprites."
   },
   {
    "address": 29914,
@@ -22225,7 +22225,7 @@
   {
    "address": 30367,
    "type": "line",
-   "text": "Unreachable (after the JMP at $769C): CMP #$40, BCC, enable sprite 7, JMP $7B70. A dropped variant of the sprite 7 test above."
+   "text": "Unreachable ($769F-$76AA, after the JMP $76AB at $769C): CMP #$40, BCC, enable sprite 7. The JMP $7B70 at $76AB that follows is the live end of room9_irq, reached from $769C and the BCC at $76A1."
   },
   {
    "address": 30382,
@@ -22580,7 +22580,7 @@
   {
    "address": 32931,
    "type": "line",
-   "text": "Switches every sprite off (AND #$00 into $D015). Called from $7DED, at the start of the end sequence at $7DEA that sets text mode and prints Lupenio's congratulation text."
+   "text": "Switches every sprite off (AND #$00 into $D015). Its only caller is the JSR at $7DED, inside the dead Lupenio ending $7D70-$7E27 (typed as bytes; nothing reaches it), so this never runs; it would start the end sequence at $7DEA that sets text mode and prints Lupenio's congratulation text."
   },
   {
    "address": 32944,
@@ -22745,7 +22745,7 @@
   {
    "address": 33920,
    "type": "line",
-   "text": "Room 11 set-up (STAGE 4): JMP $8480 from $7B17 (code at $7B00, the ladder at X $88 climbed down past Y $D8, entry code $4ACD = $78). $56B0 as in every room; colour fills ($56ED) from $045A, $043C, $060C and $0471; sprite 1 X $7E; $AA45 at (34,21); room id $100C = $11; $FE/$FF = $061A, $FC = 2, $FD = 6, $FB = the operand at $8503 (fill parameters, but no fill is called before $5713 overwrites $FC-$FF); $D022 = $6C; STAGE 4 and ROOM 11 ('1' in columns 24 and 25); the bitmap pattern at $4802 copied to $2070, 3 cells by 8 rows ($5713); $AA64 at (34,2), $AB70/$AB93 at (22,4)/(22,7) and (25,4)/(25,7), $7C50 at (6,16); continues at $85A5."
+   "text": "Room 11 set-up (STAGE 4): JMP $8480 from $7B17 (code at $7B00, the ladder at X $88 climbed down past Y $D8, entry code $4ACD = $78). $56B0 as in every room; colour fills ($56ED) from $045A, $040E (the ladder, $3C), $060C and $0471; sprite 1 X $7E; $AA45 at (34,21); room id $100C = $11; $FE/$FF = $061A, $FC = 2, $FD = 6, $FB = the operand at $8503 (fill parameters, but no fill is called before $5713 overwrites $FC-$FF); $D022 = $6C; STAGE 4 and ROOM 11 ('1' in columns 24 and 25); the bitmap pattern at $4802 copied to $2070, 3 cells by 8 rows ($5713); $AA64 at (34,2), $AB70/$AB93 at (22,4)/(22,7) and (25,4)/(25,7), $7C50 at (6,16); continues at $85A5."
   },
   {
    "address": 34051,
@@ -23020,7 +23020,7 @@
   {
    "address": 35984,
    "type": "line",
-   "text": "Tune 1's first column, one byte a note ($8C90-$8CEE; zeros from $8CD8), written to background colour 1 $D022 by $8C57. Its values are those of tune 2's frequency-low table, $8A60."
+   "text": "Tune 1's first column, one byte a note ($8C90-$8CEE; zeros from $8CD8), written to background colour 1 $D022 by $8C57. Apart from $60 ($8CC4-$8CC5), its values all occur in tune 2's frequency-low table $8A60."
   },
   {
    "address": 36079,
@@ -23990,7 +23990,7 @@
   {
    "address": 43360,
    "type": "line",
-   "text": "Called by the room 1 IRQ ($1C30) when sprite 1 comes back at X = $20: Y = $5C if $D012 is below $88, else $4E, and A into $D015 (bit 1 set). Also entered at $A964 from $643F."
+   "text": "Called by the room 1 IRQ ($1C30) when sprite 1 comes back at X = $20: Y = $5C if $D012 is below $88, else $4E, and A into $D015 (bit 1 set)."
   },
   {
    "address": 43388,
@@ -24185,7 +24185,7 @@
   {
    "address": 44688,
    "type": "line",
-   "text": "2x1 cells ($AE90-$AE9F): an arrow pointing up, by $AA83 (room 1's IRQ, column 35 row 20)."
+   "text": "2x1 cells ($AE90-$AE9F): an arrow pointing up, drawn by $AA83 at column 35, row 20, from the IRQs of room 1 ($AAB2) and room 11 ($8840)."
   },
   {
    "address": 44704,
@@ -24950,132 +24950,132 @@
   {
    "address": 50243,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): IRQ ticks per step; pattern 1 and 2: 8. Read at $C0A6, $C0BA, $C2EE."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): IRQ ticks per step; pattern 1 and 2: 8. Read at $C0A6, $C0BA, $C2EE."
   },
   {
    "address": 50307,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 1 waveform byte for $D404 (the gate bit is added per note): patterns 1-2 $41, pulse."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 1 waveform byte for $D404 (the gate bit is added per note): patterns 1-2 $41, pulse."
   },
   {
    "address": 50371,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 2 waveform byte for $D40B: patterns 1-2 $11, triangle."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 2 waveform byte for $D40B: patterns 1-2 $11, triangle."
   },
   {
    "address": 50435,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 3 waveform byte for $D412: patterns 1-2 $41, pulse."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 3 waveform byte for $D412: patterns 1-2 $41, pulse."
   },
   {
    "address": 50499,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 1 attack/decay for $D405: patterns 1-2 $16."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 1 attack/decay for $D405: patterns 1-2 $16."
   },
   {
    "address": 50563,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 2 attack/decay for $D40C: patterns 1-2 $4C."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 2 attack/decay for $D40C: patterns 1-2 $4C."
   },
   {
    "address": 50627,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 3 attack/decay for $D413: patterns 1-2 $4A."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 3 attack/decay for $D413: patterns 1-2 $4A."
   },
   {
    "address": 50691,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 1 sustain/release for $D406: patterns 1-2 $0F."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 1 sustain/release for $D406: patterns 1-2 $0F."
   },
   {
    "address": 50755,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 2 sustain/release for $D40D: patterns 1-2 $09."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 2 sustain/release for $D40D: patterns 1-2 $09."
   },
   {
    "address": 50819,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 3 sustain/release for $D414: patterns 1-2 $71."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 3 sustain/release for $D414: patterns 1-2 $71."
   },
   {
    "address": 50883,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 1 pulse width low byte for $D402: patterns 1-2 $32 (width $0732)."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 1 pulse width low byte for $D402: patterns 1-2 $32 (width $0732)."
   },
   {
    "address": 50947,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 2 pulse width low byte for $D409: patterns 1-2 $E8 (voice 2 plays triangle, so no effect)."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 2 pulse width low byte for $D409: patterns 1-2 $E8 (voice 2 plays triangle, so no effect)."
   },
   {
    "address": 51011,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 3 pulse width low byte for $D410: patterns 1-2 $33 (width $0333)."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 3 pulse width low byte for $D410: patterns 1-2 $33 (width $0333)."
   },
   {
    "address": 51075,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 1 pulse width high byte for $D403: patterns 1-2 $07."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 1 pulse width high byte for $D403: patterns 1-2 $07."
   },
   {
    "address": 51139,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 2 pulse width high byte for $D40A: patterns 1-2 $03."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 2 pulse width high byte for $D40A: patterns 1-2 $03."
   },
   {
    "address": 51203,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): voice 3 pulse width high byte for $D411: patterns 1-2 $03."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): voice 3 pulse width high byte for $D411: patterns 1-2 $03."
   },
   {
    "address": 51267,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): filter resonance and voice routing for $D417: patterns 1-2 $F0, resonance 15 with no voice routed through the filter."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): filter resonance and voice routing for $D417: patterns 1-2 $F0, resonance 15 with no voice routed through the filter."
   },
   {
    "address": 51331,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): filter mode and volume for $D418: patterns 1-2 $1F, low-pass, volume 15."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): filter mode and volume for $D418: patterns 1-2 $1F, low-pass, volume 15."
   },
   {
    "address": 51395,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): filter cutoff low bits for $D415: patterns 1-2 $07."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): filter cutoff low bits for $D415: patterns 1-2 $07."
   },
   {
    "address": 51459,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): filter cutoff high byte for $D416: patterns 1-2 $96."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): filter cutoff high byte for $D416: patterns 1-2 $96."
   },
   {
    "address": 51523,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): first note block of the pattern (music_block at $C1A6): pattern 1 block 1, pattern 2 block 1. Patterns 3-13 name blocks 1 to 39; blocks 11 and up would lie from $CDB3 on, over the code at $CDC0 and the font, so those are not in this image."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): first note block of the pattern (music_block at $C1A6): pattern 1 block 1, pattern 2 block 1. Patterns 3-13 name blocks 1 to 39; blocks 11 and up would lie from $CDB3 on, over the code at $CDC0 and the font, so those are not in this image."
   },
   {
    "address": 51587,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): last note block of the pattern (compared at $C0C3): pattern 1 block 10, pattern 2 block 8."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): last note block of the pattern (compared at $C0C3): pattern 1 block 10, pattern 2 block 8."
   },
   {
    "address": 51651,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): step the pattern starts on ($C1AC): 1 for patterns 1-2."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): step the pattern starts on ($C1AC): 1 for patterns 1-2."
   },
   {
    "address": 51715,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): last step played in the pattern's last block ($C0CB): 16 for patterns 1-2."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): last step played in the pattern's last block ($C0CB): 16 for patterns 1-2."
   },
   {
    "address": 51779,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): CIA 1 timer A latch low byte for the pattern ($C18F -> $DC04): patterns 1-2 $6A."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): CIA 1 timer A latch low byte for the pattern ($C18F -> $DC04): patterns 1-2 $6A."
   },
   {
    "address": 51843,
    "type": "line",
-   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (3-13 are named by the unused order entries), and entry 0 is unused): CIA 1 timer A latch high byte ($C195 -> $DC05): patterns 1-2 $3E, so latch $3E6A = 15978 cycles, about 61.7 IRQs a second on PAL; with 8 ticks a step, a step is about 0.13 s and a 16-step block about 2.1 s."
+   "text": "Music, per-pattern table (64 bytes, index = music_pattern; the title tune uses entries 1 and 2; entries 3-63 hold values for patterns the song never reaches (patterns 2-3 and 5-13 are named by the unused order entries, pattern 4 by none), and entry 0 is unused): CIA 1 timer A latch high byte ($C195 -> $DC05): patterns 1-2 $3E, so latch $3E6A = 15978 cycles, about 61.7 IRQs a second on PAL; with 8 ticks a step, a step is about 0.13 s and a 16-step block about 2.1 s."
   },
   {
    "address": 51907,
