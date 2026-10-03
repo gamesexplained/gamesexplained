@@ -209,6 +209,8 @@ def phase(samples, lines, cycles):
     frame or more apart (a stop that ran on past a frame boundary) show no drop in the line, and
     counting drops then put every later sample a frame out (seen on 2 October 2026 in a game's
     room with no raster interrupt of its own)."""
+    if not samples:
+        raise ValueError("phase needs at least one beam sample")
     lo, hi = -10**9, 10**9
     s0, L0 = samples[0]
     total = lines * cycles
