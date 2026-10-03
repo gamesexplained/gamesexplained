@@ -35,7 +35,7 @@ with "registers" for code under the I/O area that banks the chips in.
 
 Usage:
   listing.py <game dir> <snapshot> [--entry <hand-over snapshot>]
-                         the hand-over defaults to the game's work/entry.vsf
+                         the hand-over defaults to the platform's work/entry.<ext>
   listing.py <game dir> --relabel
                          name the operands of the existing listing.json again,
                          for a change to "io" or to the register names, without
@@ -334,11 +334,16 @@ def main():
         print(__doc__); return
     gdir, vsf = argv[0], argv[1]
     game = json.load(open(os.path.join(gdir, "game.json")))
-    cpu, snap = platform_modules(game.get("platform"))
+    platform = game.get("platform")
+    cpu, snap = platform_modules(platform)
     spath = os.path.join(gdir, "symbols.json")
     sym = json.load(open(spath))
     ram = snap.read(vsf)
-    epath = argv[argv.index("--entry") + 1] if "--entry" in argv else os.path.join(gdir, "work", "entry.vsf")
+    from symbols_export import PLATFORM_DEFAULTS
+    ext = PLATFORM_DEFAULTS.get(platform, {}).get("snapshot_ext")
+    if not ext:
+        sys.exit(f"{platform!r} has no snapshot_ext in symbols_export.PLATFORM_DEFAULTS; see kit/PLATFORMS.md")
+    epath = argv[argv.index("--entry") + 1] if "--entry" in argv else os.path.join(gdir, "work", f"entry.{ext}")
     entry = None
     if os.path.exists(epath) and os.path.abspath(epath) != os.path.abspath(vsf):
         entry = snap.read(epath)

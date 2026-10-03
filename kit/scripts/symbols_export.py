@@ -30,6 +30,7 @@ PLATFORM_DEFAULTS = {
         "extra": [],
         "screen_size": 0x400,      # 1000 cells plus the sprite pointers
         "charset_size": 0x800,
+        "snapshot_ext": "vsf",     # the hand-over default, work/entry.<ext> (listing.py)
         # for listing.py's check of data the ledger does not count: RAM that a default
         # exclusion covers but a game can still use, and the machine's own work area,
         # which is never reported as the game's data
@@ -45,6 +46,7 @@ PLATFORM_DEFAULTS = {
         "extra": [],
         "screen_size": 0x1B00,     # $4000-$5AFF: bitmap, attributes, printer buffer, sysvars
         "charset_size": 0x300,     # the ROM font in $3D00-$3FFF
+        "snapshot_ext": "sna",     # the hand-over default, work/entry.<ext> (listing.py)
         "hidden": [],              # I/O is port-mapped, so no address has two meanings
         "system": [["$0000", "$3FFF", "ROM and the machine's own routines"]],
     },

@@ -140,12 +140,13 @@ past its symbol's reach, and anything under a default exclusion.
 `listing.py` lists it after every build. It names the RAM a platform
 default excludes but a game can still use (on the C64, the RAM under the
 I/O area) whenever that RAM holds data and `game.json` has not said what
-it is. With the hand-over snapshot, `work/entry.vsf` (`10-orient`), it
+it is. With the hand-over snapshot, `work/entry.<ext>` (`10-orient`; the
+extension is the platform's snapshot form, from `PLATFORM_DEFAULTS`), it
 also lists every stretch of loaded data, the same bytes at the hand-over
 and in play, that the ledger neither tracks nor has been told to leave
 out. When the listing is built from the hand-over itself (the start-up
 code exists nowhere else), give it the play snapshot as the second image:
-`--entry work/<play>.vsf`. Before calling 100 %, go through that list and say what each stretch
+`--entry work/<play>.<ext>`. Before calling 100 %, go through that list and say what each stretch
 is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
