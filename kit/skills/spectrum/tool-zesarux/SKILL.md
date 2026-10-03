@@ -238,21 +238,10 @@ one-liner converts it:
 tr ' ' '\n' < work/executed.txt | sed 's/^/\$/' > work/executed.map
 ```
 
-SkoolKit's `sna2ctl.py -m work/executed.map` builds the first control file from
-that; `kit/skills/spectrum/tool-skoolkit`, "The first control file, from an
-execution map", has the command, the two traps in its output, and the
-requirement that matters: **run it more than once.** A walk decodes only what
-the previous typing gave it, so a stretch filed as data hides every routine
-it calls, in the map sweep and in any trace that trusts the same typing.
-Repeat until a pass adds nothing - on the first game this was done to, one
-pass found 3,320 bytes of reachable code typed as data and the fixpoint
-found 5,934.
-
-A recursive trace reaches the fixpoint faster than repeated `sna2ctl.py`
-runs, because it adds a target's whole chain as soon as it finds it: decode
-from every address the map gives, follow every branch and call target, and
-repeat. `kit/spectrum/codemap.py` is that trace ("The check", above). The
-test is the same either way: a further pass must add nothing.
+What to do with the map is in `kit/skills/spectrum/tool-skoolkit`, "The
+first control file, from an execution map": `sna2ctl.py -m`, the traps in
+its output, and why one sweep is not enough. `kit/spectrum/codemap.py`
+("The check", above) reads `cpu-code-coverage get`'s output as it is.
 
 ## Input
 
