@@ -33,6 +33,13 @@ addresses, the last row that holds the instruction deciding:
 
 with "registers" for code under the I/O area that banks the chips in.
 
+A part of a game that is several loads (kit/scripts/parts.py) is listed
+from its own folder and its own snapshot, and holds only the addresses it
+owns. Where it lies over another part, an operand that points out of it
+takes that part's name: when one of those changes, `--relabel` names the
+part's operands again (check_listing.py says when). The Source tab lays
+the part over the listings beneath it.
+
 Usage:
   listing.py <game dir> <snapshot> [--entry <hand-over snapshot>]
                          the hand-over defaults to the platform's work/entry.<ext>
@@ -55,6 +62,7 @@ Record fields (short, the file is large):
   l  label at this address                         c  line comment
   s  side comment       x  addresses that reference this one
   d  decoded text (text records) / value list (word, addr)
+  ta the targets of a split table, on its first row, as addresses
 """
 import hashlib, importlib.util, json, os, sys
 
@@ -95,6 +103,17 @@ def symbol_names(sym):
     names = {}
     for s in sym["symbols"]:
         names.setdefault(s["address"], s["name"])     # first name wins
+    return names
+
+
+def all_names(gdir, game, sym):
+    """The symbol map's own names and, for a part that lies over others, the names those give
+    the addresses this part does not own: how an operand that points out of the part reads."""
+    names = symbol_names(sym)
+    if (game.get("part") or {}).get("over"):
+        from parts import names_under
+        for a, n in names_under(gdir, game).items():
+            names.setdefault(a, n)
     return names
 
 
@@ -149,7 +168,8 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
     def inside(a, rs):
         return any(lo <= a <= hi for lo, hi in rs)
 
-    said = ranges(cov.get("include", []) + cov.get("exclude", []))
+    away = [(lo, hi) for lo, hi, _ in game.get("elsewhere") or []]   # another part's, in a game of several
+    said = ranges(cov.get("include", []) + cov.get("exclude", [])) + away
     found = []                                  # (start, end, bytes of data, what)
     hidden = []
     for row in plat.get("hidden", []):          # RAM a default exclusion covers: reported by the page
@@ -166,7 +186,7 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
     found += hidden
     if entry is not None:
         state, owner = L["state"], L["owner"]
-        left_out = ranges(cov.get("exclude", [])) + ranges(plat.get("system", [])) + [(s, e) for s, e, *_ in hidden]
+        left_out = ranges(cov.get("exclude", [])) + ranges(plat.get("system", [])) + [(s, e) for s, e, *_ in hidden] + away
         free = [not state[a] and not inside(a, left_out) for a in range(0x10000)]
         loaded = [free[a] and ram[a] == entry[a] and ram[a] not in (0, 0xFF) for a in range(0x10000)]
         a = 0
@@ -202,18 +222,52 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
     return lines
 
 
-def relabel(gdir):
-    """Name the operands of gdir's listing.json again, from the bytes it already holds."""
-    game = json.load(open(os.path.join(gdir, "game.json")))
+def beneath(gdir, game, ram):
+    """Whether the parts this one lies over are the same program in this part's snapshot, as
+    lines to print (none when they are, or when it lies over none). Their code, as their own
+    listings hold it, is compared with the snapshot: data changes as a game runs, code does not,
+    but for an instruction that rewrites itself."""
+    from parts import home, parts as all_parts, under
+    top, pid = home(gdir)
+    if pid is None:
+        return []
+    P = all_parts(top)
+    lines = []
+    for q in under(P, next(p for p in P if p["id"] == pid)):
+        lp = os.path.join(q["dir"], "listing.json")
+        if not os.path.isfile(lp):
+            continue
+        code = [r for r in json.load(open(lp))["records"] if r["t"] == "code"]
+        bad = [r["a"] + i for r in code for i, b in enumerate(r["b"]) if ram[r["a"] + i] != b]
+        if bad:
+            lines += ["", f"{len(bad)} of the {sum(len(r['b']) for r in code)} code bytes of {q['id']}, the part beneath, "
+                          f"differ in this snapshot: {', '.join(f'${a:04X}' for a in bad[:12])}"
+                          + (" ..." if len(bad) > 12 else ""),
+                      "A few are instructions that rewrite themselves. Many mean this load replaces that code:",
+                      'widen "ranges" in this part\'s part.json to take in every address its load writes.']
+    return lines
+
+
+def relabel(gdir, write=True):
+    """Name the operands of gdir's listing.json again, from the bytes it already holds.
+    Returns how many read differently; write=False only counts them (check_listing.py)."""
+    from parts import load_game
+    game = load_game(gdir)
     cpu = platform_modules(game.get("platform"))[0]
     spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
     out = json.load(open(lpath))
     if out.get("symbols_sha256") != hashlib.sha256(open(spath, "rb").read()).hexdigest():
         sys.exit(f"{lpath} was built from a different symbols.json: rebuild it from the snapshot")
-    names = symbol_names(json.load(open(spath)))
+    names = all_names(gdir, game, json.load(open(spath)))
     regs, chips = register_names(game.get("platform")), io_meaning(game)
     code, xrefs, changed = set(), {}, 0
     for r in out["records"]:
+        if r["t"] == "addr":               # a pointer, and a split table's targets: named as they were built
+            o = names.get(r["oa"]) or f"${r['oa']:04X}"
+            changed += r.get("o") != o; r["o"] = o
+        elif "ta" in r:
+            d = [names.get(x) or f"${x:04X}" for x in r["ta"]]
+            changed += r.get("d") != d; r["d"] = d
         if r["t"] != "code":
             continue
         code.add(r["a"])
@@ -226,6 +280,8 @@ def relabel(gdir):
                 r[k] = v
         if ta is not None:
             xrefs.setdefault(ta, []).append(r["a"])
+    if not write:
+        return changed
     for r in out["records"]:          # references from data (.addr, split tables) stand as built
         for src in r.get("x", []):
             if src not in code:
@@ -237,6 +293,7 @@ def relabel(gdir):
     with open(lpath, "w") as f:
         json.dump(out, f, separators=(",", ":"))
     print(f"wrote {lpath}: {changed} operands named differently")
+    return changed
 
 
 def built_from(gdir, sha):
@@ -255,7 +312,8 @@ def recomment(gdir):
     """Put symbols.json's comments and label names into gdir's listing.json, whose bytes,
     records and cross-references stay as they were built."""
     from symbols_export import regions
-    game = json.load(open(os.path.join(gdir, "game.json")))
+    from parts import load_game
+    game = load_game(gdir)
     cpu = platform_modules(game.get("platform"))[0]
     spath, lpath = os.path.join(gdir, "symbols.json"), os.path.join(gdir, "listing.json")
     out = json.load(open(lpath))
@@ -280,7 +338,8 @@ def recomment(gdir):
         sys.exit(f"symbols.json has changed more than comments and names ({', '.join(moved)}): "
                  "rebuild it from the snapshot")
 
-    names, before = symbol_names(new), symbol_names(old)
+    names, before = all_names(gdir, game, new), all_names(gdir, game, old)
+    own = symbol_names(new)                          # a row's label is the part's own, never one from beneath
     at = {}                                          # an old name's address, for split tables
     for a, n in before.items():
         at[n] = a if n not in at else None
@@ -290,7 +349,7 @@ def recomment(gdir):
     changed = 0
     for r in out["records"]:
         was_r = dict(r)
-        for k, m in (("l", names), ("c", line), ("s", side)):
+        for k, m in (("l", own), ("c", line), ("s", side)):
             if k in r:
                 r[k] = m[r["a"]]
         if r["t"] == "code":
@@ -313,7 +372,7 @@ def recomment(gdir):
             r["d"] = d
         changed += r != was_r
     for i in out["index"]:
-        i["n"] = names[i["a"]]
+        i["n"] = own[i["a"]]
     out["symbols_sha256"] = sha
     with open(lpath, "w") as f:
         json.dump(out, f, separators=(",", ":"))
@@ -329,7 +388,11 @@ def main():
     if len(argv) < 2 or argv[0] in ("-h", "--help"):
         print(__doc__); return
     gdir, vsf = argv[0], argv[1]
-    game = json.load(open(os.path.join(gdir, "game.json")))
+    from parts import load_game, parts
+    if parts(gdir):
+        sys.exit(f"{gdir} is a game of several parts: list one, {os.path.join(gdir, 'parts', '<id>')}, "
+                 "from that part's own snapshot")
+    game = load_game(gdir)
     platform = game.get("platform")
     cpu, snap = platform_modules(platform)
     spath = os.path.join(gdir, "symbols.json")
@@ -351,7 +414,7 @@ def main():
     L = compute(sym["blocks"], sym["symbols"], sym["comments"], reg)
     state, code = L["state"], L["code"]
 
-    names = symbol_names(sym)
+    names = all_names(gdir, game, sym)
     regs, chips = register_names(game.get("platform")), io_meaning(game)
     line = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "line"}
     side = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "side"}
@@ -442,6 +505,7 @@ def main():
                 for i, ta in enumerate(targets):
                     xref(ta, lo + i)
                 rec["d"] = [sym_or_hex(x) for x in targets]
+                rec["ta"] = targets
                 rec["note"] = f"split table: {n} {'lo/hi' if t == 'Lo/Hi Address' else 'hi/lo'} pointers"
         elif t in TEXT_TYPES:
             e = run_end(32); bs = list(ram[a:e])
@@ -497,12 +561,14 @@ def main():
             kind = "table"
         index.append({"a": ad, "n": s["name"], "k": kind, "len": span, "c": ad in line})
 
-    out = {
-        "schema": 1, "platform": game.get("platform"), "game": game.get("slug"),
+    out = {"schema": 1, "platform": game.get("platform"), "game": game.get("slug")}
+    if game.get("part"):
+        out["part"] = game["part"]["id"]
+    out.update({
         "title": game.get("title"), "build": game.get("build"),
         "symbols_sha256": hashlib.sha256(open(spath, "rb").read()).hexdigest(),
         "index": index, "records": records,
-    }
+    })
     path = os.path.join(gdir, "listing.json")
     with open(path, "w") as f:
         json.dump(out, f, separators=(",", ":"))
@@ -510,7 +576,7 @@ def main():
     for i in index: kinds[i["k"]] = kinds.get(i["k"], 0) + 1
     print(f"wrote {path}: {len(records)} records, {sum(1 for r in records if r['t']=='code')} instructions, "
           f"index {kinds}, {os.path.getsize(path)//1024} KB")
-    for line in uncounted(game, reg, L, ram, entry):
+    for line in uncounted(game, reg, L, ram, entry) + beneath(gdir, game, ram):
         print(line)
 
 

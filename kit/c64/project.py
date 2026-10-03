@@ -70,11 +70,13 @@ def read_file(path):
 
 
 def write(gdir, snapshot, out=None):
-    """Write a .regen2000proj from gdir's symbols.json and the snapshot. Returns the path."""
-    game = json.load(open(os.path.join(gdir, "game.json")))
+    """Write a .regen2000proj from gdir's symbols.json and the snapshot. Returns the path.
+    gdir is a game's folder or, for a game of several loads, a part's (kit/scripts/parts.py)."""
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+    from parts import seed
+    game, sym = seed(gdir)
     if out is None:
         out = os.path.join(gdir, "work", f"{game['slug']}.regen2000proj")
-    sym = json.load(open(os.path.join(gdir, "symbols.json")))
     ram = read(snapshot)
     labels = {}
     for s in sym["symbols"]:

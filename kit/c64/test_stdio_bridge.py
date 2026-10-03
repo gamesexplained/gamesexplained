@@ -38,6 +38,36 @@ class BridgeTests(unittest.TestCase):
     def test_client_and_launcher_agree_on_the_port(self):
         self.assertEqual(r2000.URL, f"http://127.0.0.1:{tools.R2000_PORT}/mcp")
 
+    def test_a_part_has_a_port_of_its_own(self):
+        # kit/scripts/parts.py: each part of a game can have a disassembler running, and a script
+        # given a part's folder reaches that part's, never another's
+        with tempfile.TemporaryDirectory() as folder, patch.dict(os.environ):
+            os.environ.pop("KIT_R2000_PORT", None)
+            park, street = Path(folder) / "parts" / "park", Path(folder) / "parts" / "street"
+            for part in (park, street):
+                (part / "work").mkdir(parents=True)
+                (part / "part.json").write_text("{}")
+            snap = str(park / "work" / "play.vsf")
+            self.assertEqual(tools.part_dir(snap), str(park))
+            self.assertIsNone(tools.part_dir(str(Path(folder) / "play.vsf")))
+            busy = {3000}
+            with patch.object(tools, "up", lambda port: port in busy), patch.object(tools, "r2000_instances", lambda: []):
+                self.assertEqual(tools.part_port(str(park)), 3001)          # the first free one
+                (park / "work" / "r2000-port").write_text("3004")
+                self.assertEqual(tools.part_port(str(park)), 3004)          # the one it had, while that is free
+                busy.add(3004)
+                self.assertEqual(tools.part_port(str(park)), 3001)          # taken by something else since
+            with patch.object(tools, "up", lambda port: port in busy), \
+                    patch.object(tools, "r2000_instances", lambda: [(3004, snap, 0)]):
+                self.assertEqual(tools.part_port(str(park)), 3004)          # still its own, running
+            # the client: the part's port from its folder; a part with none is refused, not sent elsewhere
+            self.assertEqual(r2000._port(str(park)), 3004)
+            with self.assertRaises(SystemExit) as refused:
+                r2000._port(str(street))
+            self.assertIn("--from", str(refused.exception))
+            os.environ["KIT_R2000_PORT"] = "3009"
+            self.assertEqual(r2000._port(str(street)), 3009)
+
     def test_snapshot_conversion_preserves_ram_and_previous_project(self):
         with tempfile.TemporaryDirectory() as folder:
             snapshot = Path(folder) / "entry.vsf"

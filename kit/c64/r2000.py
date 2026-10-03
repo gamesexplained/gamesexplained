@@ -24,13 +24,23 @@ reproduce your mistakes. A batch is logged as a whole, so check its result.
 """
 import json, os, sys, urllib.request
 
-def _port():
-    """KIT_R2000_PORT, else the port the launcher last started the disassembler on, else 3000 (kit/c64/tools.py)."""
-    try:
-        return int(os.environ.get("KIT_R2000_PORT") or
-                   open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "r2000-port")).read())
-    except (OSError, ValueError):
-        return 3000
+def _port(gdir=None):
+    """KIT_R2000_PORT; else the port the disassembler was started on for this game or part
+    (its work/r2000-port); else the one the launcher last started on; else 3000 (kit/c64/tools.py)."""
+    if os.environ.get("KIT_R2000_PORT"):
+        return int(os.environ["KIT_R2000_PORT"])
+    here = os.path.dirname(os.path.abspath(__file__))
+    for f in ([os.path.join(gdir, "work", "r2000-port")] if gdir else []) + [os.path.join(here, "..", "..", "tools", "r2000-port")]:
+        try:
+            return int(open(f).read())
+        except (OSError, ValueError):
+            # one part of a game (kit/scripts/parts.py) never falls back to the clone's last
+            # disassembler: that is another part's session, and it would be read as this one's
+            if gdir and f.startswith(os.path.join(gdir, "")) and os.path.isfile(os.path.join(gdir, "part.json")):
+                sys.exit(f"no disassembler is running on a snapshot of {gdir} (`tools.py r2000 <its snapshot>` starts one).\n"
+                         "To read this part's share of another part's session, name that part's folder:\n"
+                         "  symbols_export.py <this part> --from <that part>      coverage.py <this part> --live --from <that part>")
+    return 3000
 
 
 URL = f"http://127.0.0.1:{_port()}/mcp"
@@ -40,7 +50,10 @@ MUTATING = {"r2000_set_label_name", "r2000_set_comment", "r2000_set_data_type",
             "r2000_create_project_enum", "r2000_update_project_enum", "r2000_delete_project_enum"}
 
 
-def make_client():
+def make_client(gdir=None):
+    """A session with the disassembler: the one started on gdir's snapshot when a game of
+    several parts runs one each (kit/scripts/parts.py), else the clone's."""
+    url = f"http://127.0.0.1:{_port(gdir)}/mcp" if gdir else URL
     session = [None]
     _id = [0]
 
@@ -55,7 +68,7 @@ def make_client():
                    "Accept": "application/json, text/event-stream"}
         if session[0]:
             headers["Mcp-Session-Id"] = session[0]
-        req = urllib.request.Request(URL, data=json.dumps(body).encode(), headers=headers)
+        req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=headers)
         r = urllib.request.urlopen(req, timeout=60)
         if not session[0]:
             session[0] = dict(r.getheaders()).get("mcp-session-id")
@@ -88,10 +101,10 @@ def failed(out):
     return out.lstrip().startswith("{") and '"error"' in out
 
 
-def read_live():
+def read_live(gdir=None):
     """(blocks, symbols, comments) from the running server, in symbols.json's
-    vocabulary. symbols_export.py calls this for a c64 game."""
-    rpc = make_client()
+    vocabulary. symbols_export.py calls this for a c64 game, with the game's or the part's folder."""
+    rpc = make_client(gdir)
     blocks = json.loads(call(rpc, "r2000_get_blocks", {}))
     syms = json.loads(call(rpc, "r2000_get_symbols", {}))
     comments = json.loads(call(rpc, "r2000_get_comments", {}))
@@ -104,8 +117,8 @@ def read_live():
 
 def game_dir(explicit=None):
     for cand in (explicit, os.environ.get("GAME_DIR"), os.getcwd()):
-        if cand and os.path.exists(os.path.join(cand, "game.json")):
-            return cand
+        if cand and any(os.path.exists(os.path.join(cand, f)) for f in ("game.json", "part.json")):
+            return cand      # a game's folder, or the folder of one part of it (kit/scripts/parts.py)
     return None
 
 
@@ -128,7 +141,7 @@ def log_call(gdir, name, arguments, log=None):
 
 
 def replay(path):
-    rpc = make_client()
+    rpc = make_client(game_dir(os.path.dirname(os.path.dirname(os.path.abspath(path)))))
     entries = [json.loads(l) for l in open(path) if l.strip()]
     calls = []
     for e in entries:
@@ -153,7 +166,7 @@ def main():
             log, argv = argv[1], argv[2:]
     if argv[0] == "--replay":
         replay(argv[1]); return
-    rpc = make_client()
+    rpc = make_client(game_dir(explicit))
     if argv[0] == "--list":
         for t in rpc("tools/list", {})["result"]["tools"]:
             print(f"{t['name']}: {t.get('description','')[:110]}")
