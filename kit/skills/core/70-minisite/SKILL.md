@@ -18,7 +18,10 @@ from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
 (`levels.html`, authored, only when the game has level data worth a page),
 **Play** (`play.html`, authored, only when a JavaScript version exists),
 **About** (generated from `game.json`, `features.md`, `orientation.md`, git).
-`kit/scripts/build.py` assembles them; you write the authored ones.
+`kit/scripts/build.py` assembles them; you write the authored ones. A game
+that needs other tabs lists all of its tabs, in order, as `[file, label]`
+pairs in `game.json`'s `"tabs"`; the build publishes the pages named there
+and warns about any other `.html` in the folder.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
