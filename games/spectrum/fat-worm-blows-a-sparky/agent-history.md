@@ -110,8 +110,12 @@ utility's loading half.
 
 ## The second pass (3 October 2026, Claude Opus 5.5, the maintainer's session)
 
-With the contributor's agreement the maintainer's session redid coverage
-and verify on the pull request's branch.
+The maintainer's session redid coverage and verify on the pull request's
+branch, which allows maintainers to push. The contributor's own session
+was reworking the review's 18 findings on the same day, and the two met
+only when the branch was fetched again before pushing: its four commits
+were merged in, the game's files taken from the redo, and the kit's
+lessons and skill text from both.
 
 **The code map first.** A static trace from `$EFD8` reached 23,132 bytes.
 Four recorded sessions' executed-address maps and eight entries the trace

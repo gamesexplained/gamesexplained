@@ -10,8 +10,8 @@ DeepSeek Flash) took it through every step. A maintainer's check on
 contributor's session reworked those 18 and the typing, and could not run
 the independent sample the check asks for (its provider refused the
 agents). The same day the maintainer's session (Claude Opus 5.5) redid
-coverage, verify, the page and this retrospective on the same branch, with
-the contributor's agreement, and ran that sample on a second proven model.
+coverage, verify, the page and this retrospective on the same branch, and
+ran that sample on a second proven model.
 Each section says whose notes it holds.
 
 ## Skill text that changed what I did
