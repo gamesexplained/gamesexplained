@@ -89,7 +89,7 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   | `$DC00` | Action |
   |---|---|
   | `$6F` (fire alone) | jump, the way Mr Hat faces (`$438D` room 1, `$5227`, `$76E3`, `$86E3` and the other loops) |
-  | `$67` / `$6B` (fire with right / left) | another jump straight after one |
+  | `$67` / `$6B` (fire with right / left) | jump, the way he faces, from standing or straight after a jump (`$444F` room 1, `$4A69` room 3, `$52F0` room 2) *live*: fire with right from standing jumped at once (`work/track.py death1`) |
   | `$77` / `$7B` | walk right / left |
   | `$7D` (down) | crouch (frame `$2A`), climb down, and take a treasure |
   | `$7E` (up) | climb a ladder or ride a lift up; nothing on a floor |
@@ -116,10 +116,11 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
 - **Death**: a touch is the VIC's sprite-sprite collision register `$D01E`,
   compared with exact values; each test has its own list. `$55B0` (rooms 5,
   6, 8, 9 and `$8E10`): `$11`, `$12`, `$14`, `$18` (twice), `$50`, `$90`, Mr
-  Hat with one of sprites 0-3, 6, 7, which sets `$4ACE` = `$20`. Room 1's
+  Hat with one of sprites 0-3, 6, 7, which sets the touch flag `$4ACE` = `$20`. Room 1's
   `$1F70` (from `$1ED6`, `$1F69`, `$41A1`): `$11`, `$12`, `$14`, `$18` and
   `$58`, sprites 3 and 6 together. Room 3's ladder test `$5028` (from
-  `$4B0C`, called at `$48FF`): `$14`, `$18`. `$4C40` (from `$8E08`, reached
+  `$4B0C`, called at `$48FF` and fallen into from `$4AFD` when climbing
+  down): `$14`, `$18`. `$4C40` (from `$8E08`, reached
   from `$4AE7` and `$4B8D`) calls `$B666`, which kills on `$90`, then tests
   a second read of the register for `$14` and `$18`. `$55B0` runs each step
   in every room but 1, 3 and 10, through `$5590` → `$BB10` → `$8E10`. Room
@@ -171,6 +172,14 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   (written at `$B357`, read at `$B3AF`), `$1383` (`$B384`, `$B31E`), `$1384`
   (`$B3E7`, `$B43F`), `$1386` (`$B414`, `$B46B`), `$1380` (`$B2FE`, `$B4A2`).
   Traced; not tested live.
+- **Room 9 in the dark**: the upper-floor door test stops early; unless Mr
+  Hat carries room 6's object (`$F5` = `$28`), nothing left of X `$E8` on that
+  floor reaches the chaser kill (`$7909`/`$81D6`) or the upper-floor exit to
+  room 8 (`$7931`); the lower-floor exit (`$795C`) still works. Traced, not
+  tested live.
+- **Room 11 past X 255**: walking right past X 255 puts Mr Hat at X `$124`
+  and switches his sprite off (`$B8B8`), inside the lift sprite's area;
+  walking back left past 256 switches him on again at X `$0FE`. Traced.
 - **Light**: rooms 6 and 9 are drawn dark (colour `$00`) unless `$22` =
   `$40`, which `$5519` sets when room 2's candle is taken and `$61E1`
   clears for a new game (`$5E10` room 6, `$7440` room 9). Room 6 draws its
@@ -195,8 +204,9 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
 - **Room 1's way out**: take the black object on the top floor (X `$40`;
   sets `$BD` = `$60`), then walk to X `$50` on the bottom floor, which sets
   up room 3 (`$44C0`).
-- **The end**: in room 11, on the bottom floor (Y `$B4`) with X below `$80`,
-  under the Golden Hat (the bitmap `$7C00`, drawn at cell 6,16 by `$7C50`).
+- **The end**: in room 11, on the bottom floor (Y `$B4`) anywhere left of X
+  `$80`, level with the Golden Hat (the bitmap `$7C00`, drawn in cells 6-8 of
+  rows 16-17 by `$7C50`).
   Room 11's rules (`$8265`) push Mr Hat back to the right on that floor
   unless X is `$B8` or more or the block at colour cell `$061A` is open
   (`$CC`); carrying room 5's object (`$F5` = `$EE`) opens it and scores
@@ -267,7 +277,8 @@ own `INC`/`DEC` opcodes to turn round: room 6's patroller (`$608A`, X
 patroller (`$7627`/`$762A`), its chaser on the upper floor that follows Mr
 Hat one pixel an interrupt, about 62 a second (`$7B70`), and the drops that fall from its lamps
 (sprites 6, 7); room 11 moves sprite 3 towards Mr Hat on its top floor
-(`$8660`). `$7000` flips the frames of sprites 0 and 1 for rooms 1, 2, 5
+(`$8660`); room 8's interrupt also sways sprite 7 one pixel left and right
+with frames `$3D`/`$3E` (`$B993` → `$B97A` → `$B92D`). `$7000` flips the frames of sprites 0 and 1 for rooms 1, 2, 5
 and 6.
 
 ## Sound
@@ -289,8 +300,9 @@ and 6.
   2 (blocks 1-8) play, about 37 seconds a loop, 8 interrupts a step;
   voice 1 the melody (pulse), voice 2 a trill (triangle), voice 3 the bass
   (pulse). Order entries 3 and 6 name blocks that are not in the image
-  (11-24 and 25-39); entries 2, 4 and 5 replay patterns 2 and 3, whose
-  blocks are present.
+  (11-24 and 25-39), besides patterns whose blocks are present (pattern 5,
+  blocks 2-4, in entry 3; patterns 10-12, blocks 1-9, in entry 6); entries
+  2, 4 and 5 replay patterns 2 and 3, whose blocks are present.
 - The frequency table is about a quarter of a semitone flat at the PAL
   clock: A4 is `$1CD6`, 433.5 Hz (checked); at the NTSC clock it is 450 Hz.
 - A disabled editor feature: the flag `$C439` is only ever written 0; set,
@@ -317,7 +329,8 @@ and 6.
   each (`work/voice3-test.js`).
 - Effects on voice 3, each run at the end of an interrupt (`$B4C0`-`$B653`):
   one whose pitch is the raster line, the noise during immunity, a score
-  tick; and the jump sound `$41B0`.
+  tick. The jump sound `$41B0` is separate: it writes voice 2 (`$D408`,
+  `$D40B`, `$D40C`) from the main loops, on the 21 rising steps of a jump.
 
 ## Text
 
@@ -348,7 +361,8 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
 - **A dead ending**: the only pointer to the text is an immediate pair at
   `$7E19`/`$7E1D`, in `$7D70`-`$7E26` (a tune, the print, `JMP $8000`, which
   waits for F1 and restarts with a replay bonus of 200,000 points, then
-  400,000), reached only from a `JMP $7D70` at `$7CF7` that follows an
+  400,000: `$80B0` and `$8590`, which therefore never run; `$75F0` is 0 in
+  every snapshot, and `$802D` only ever takes its redraw-000000 path), reached only from a `JMP $7D70` at `$7CF7` that follows an
   unconditional `JMP $0870`; it calls `$A000`, which is all zeros. Live code
   still writes into the text: the restart after the last life (`$4486` →
   `$8020`) puts '2' into `$7FC1`. The dead fragments `$7D01` and `$7D36`

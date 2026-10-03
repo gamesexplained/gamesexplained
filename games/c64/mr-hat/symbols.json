@@ -4480,13 +4480,13 @@
   },
   {
    "address": 2560,
-   "name": "spr_28_screen",
+   "name": "spr_28_lift_cabin",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 2624,
-   "name": "spr_29_unused",
+   "name": "spr_29_walker_d",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -5752,13 +5752,13 @@
   },
   {
    "address": 7324,
-   "name": "sprite3_shape_rising",
+   "name": "sprite3_turn_left_shape",
    "type": "Jump",
    "kind": "user"
   },
   {
    "address": 7332,
-   "name": "sprite3_shape_falling",
+   "name": "sprite3_turn_right_shape",
    "type": "Jump",
    "kind": "user"
   },
@@ -6886,15 +6886,15 @@
   },
   {
    "address": 16661,
-   "name": "unused_4115",
+   "name": "room1_top_floor_stray_rts",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 16662,
-   "name": "b_4116",
+   "name": "room1_top_floor_right",
    "type": "Branch",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 16676,
@@ -8044,7 +8044,7 @@
   },
   {
    "address": 19150,
-   "name": "room_state_4ace",
+   "name": "guardian_touch_flag",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -9226,7 +9226,7 @@
   },
   {
    "address": 21904,
-   "name": "guardian_touch_check",
+   "name": "hazards_and_pickups",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -9922,7 +9922,7 @@
   },
   {
    "address": 23877,
-   "name": "room5_respawn_if_off",
+   "name": "respawn_left_if_off",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -18900,17 +18900,17 @@
   {
    "address": 1,
    "type": "line",
-   "text": "6510 port: memory banking. The game writes $36 (RAM at $A000-$BFFF, I/O at $D000, KERNAL ROM at $E000) at $0878 in the start-up and again at $9267 (bitmap-mode switch), $92F9 and $96F5, and never changes it afterwards."
+   "text": "6510 port: memory banking. The game writes $36 (RAM at $A000-$BFFF, I/O at $D000, KERNAL ROM at $E000) at $0878 in the start-up and again at $9267 (bitmap-mode switch) and $92F9, and never changes it afterwards; the Supermon monitor's entry also writes $36, at $96F5."
   },
   {
    "address": 2,
    "type": "line",
-   "text": "A zero-page flag of one room's object: cleared at $61EA, set to $20 at $645A (with the status cells $07BE lit, as for an item picked up), tested for $20 at $6425. $0003-$0011 after it: BASIC workspace the game's traced code does not touch."
+   "text": "Room 6's object flag: cleared at $61EA (the new-game reset of rooms 6 and 8), set to $20 at $645A when Mr Hat takes room 6's object (with $D8 = $50, $F5 = $28 and the status cells $07BE/$07E6 lit), tested for $20 at $6425 so the object can be taken only once. $0003-$0011 after it: BASIC workspace the game's traced code does not touch."
   },
   {
    "address": 18,
    "type": "line",
-   "text": "A zero-page byte only ever cleared by the game (at $681A and $9594); no reader was found in the traced code. $0013-$001B after it: BASIC workspace, untouched."
+   "text": "Room 6's interrupt counter: room 6's handler increments it every IRQ ($6099) and, while the room is lit, compares it with $40, $80 and $B0 ($615A-$6188) to time extra writes to $D022. Cleared at $681A (room 8's set-up) and $9594 ($9590, called from room 6's set-up end $5FBD). $0013-$001B after it: BASIC workspace, untouched."
   },
   {
    "address": 28,
@@ -18945,12 +18945,12 @@
   {
    "address": 34,
    "type": "line",
-   "text": "A room object's flag: set to $40 at $5519 (after the sound call $1CE2), cleared at $61E1, and tested for $40 at $5ED8, $5FC0 and $7440 and for $00 at $8F1E and $BDE2. Which object it stands for is not established."
+   "text": "Room 2's candle flag: set to $40 at $5519 when Mr Hat takes the candle in room 2 (after the sound call $1CE2), cleared at $61E1 by the new-game reset. Tested for $40 at $5ED8 and $5FC0 (room 6 drawn lit) and $7440 (room 9 lit), and for $00 at $8F1E (room 6's objects can be taken only with it) and $BDE2 (room 6's objects are drawn only with it)."
   },
   {
    "address": 35,
    "type": "line",
-   "text": "Drawing-routine parameter: bytes (fill $A451) or cells (the rectangle routines $A67F and $A690, which multiply it by 8 for the bitmap) per row. Set by every caller before $A67F/$A690/$A451 (e.g. $17F0, $1803); the block copy $A400 also adds it to the source pointer each row. The Supermon monitor does not use it."
+   "text": "Drawing-routine parameter: the width of a row. In bytes for the fill $A451 and the block copies $A400/$A42E (cpy $23; $A400 also adds it to the source pointer each row). In cells for the rectangle routines: $A67F fills that many screen-RAM cells per row (through $A620 and $A451), and $A690 multiplies it by 8 in place ($A6DE-$A6FC) before its bitmap copy $A400. Set by every caller before $A67F/$A690/$A451 (e.g. $17F0, $1803). The Supermon monitor does not use it."
   },
   {
    "address": 36,
@@ -18975,7 +18975,7 @@
   {
    "address": 40,
    "type": "line",
-   "text": "Drawing-routine parameter: the colour-RAM fill byte of the rectangle routine $A67F, or the high byte of the block copies' source pointer $27/$28 (e.g. $AC or $AD for pictures kept at $AC00-$ADFF, $3F for the picture at $3F60/$3F80). Also used by the Supermon monitor ($9B28-$9E5D)."
+   "text": "Drawing-routine parameter: the high byte of the block copies' source pointer $27/$28 (e.g. $AC or $AD for pictures kept at $AC00-$ADFF, $3F for the picture at $3F60/$3F80), or the colour-RAM fill byte of the whole-screen colour fill $A48B (copied to $27 there). Callers also set it before the rectangle routine $A67F, whose colour-RAM half would have read it, but that half is switched off by the RTS at $A663. Also used by the Supermon monitor ($9B28-$9E5D)."
   },
   {
    "address": 41,
@@ -19015,7 +19015,7 @@
   {
    "address": 153,
    "type": "line",
-   "text": "Jump step counter, reused by every room's movement code: each phase of a jump (up, across, down) counts it from 0 to $15 (21 steps) and clears it (room 1: $43A9-$444A; another copy at $49C3-$4A64; and in the other rooms' copies). Also read at $41BA/$41C0. On a stock machine $99 is the KERNAL's input device number, which the game never uses."
+   "text": "Jump step counter, reused by every room's movement code: each phase of a jump (up, across, down) counts it from 0 to $15 (21 steps) and clears it (room 1: $43A9-$444A; another copy at $49C3-$4A64; and in the other rooms' copies). Also read at $41BA/$41C0 (the jump sound) and, as a column, by the unreached routine $9100 ($9110-$914F). On a stock machine $99 is the KERNAL's input device number, which the game never uses."
   },
   {
    "address": 162,
@@ -19035,7 +19035,7 @@
   {
    "address": 183,
    "type": "line",
-   "text": "Cleared by the room-1 set-up at $1B97 and never read by the traced code (the KERNAL's file-name length on a stock machine)."
+   "text": "Cleared by the room-1 set-up at $1B97 and never read by the game's code (the KERNAL's file-name length on a stock machine). The Supermon monitor writes it ($999D) and increments it ($99C7) when it parses a file name."
   },
   {
    "address": 185,
@@ -19050,7 +19050,7 @@
   {
    "address": 187,
    "type": "line",
-   "text": "A room variable: cleared at $707E, set to $26 at $78D3, read at $78DE. Purpose not established (the KERNAL's file-name pointer on a stock machine; the game does no file I/O)."
+   "text": "Room 9's upper-door flag: cleared at $707E by the new-game reset, set to $26 at $78D3 once the upper door has been opened, and tested at $78DE, where $26 skips the door check (which otherwise opens the door when $F5 = $28, room 6's object, is carried). The Supermon monitor also uses it as the file-name pointer ($99A5, $99C5), its KERNAL meaning on a stock machine."
   },
   {
    "address": 188,
@@ -19060,7 +19060,7 @@
   {
    "address": 189,
    "type": "line",
-   "text": "A room flag: set to $60 at $410B, cleared at $1BDF (room-1 set-up) and at $6061, $67FF, $7567, $7CD7, $839A, $8635, $967F; tested for $60 by the room-1 bottom-floor check $1EC5, which at X = $50 then jumps to $44C0. $00BE-$00BF: untouched."
+   "text": "Room 1's exit flag: set to $60 at $410B when Mr Hat takes the object on room 1's top floor (handler $40C0), cleared at $1BDF (room-1 set-up) and at $6061, $67FF, $7567, $7CD7, $839A, $8635, $967F; tested for $60 by the room-1 bottom-floor check $1EC5, which at X = $50 then jumps to $44C0 (room 1's way out). $00BE-$00BF: untouched."
   },
   {
    "address": 192,
@@ -19090,57 +19090,57 @@
   {
    "address": 197,
    "type": "line",
-   "text": "KERNAL: the matrix number of the key its scan last saw (64 for none). The game reads it at $7C70, where 4 (F1) toggles $1019, and at $C35F."
+   "text": "KERNAL: the matrix number of the key its scan last saw (64 for none). The game reads it at $7C70, where 4 (F1) toggles $1019, at $C35F, and in the unreferenced F1 wait at $8000."
   },
   {
    "address": 199,
    "type": "line",
-   "text": "Footstep sound counter: $1D04 increments it each walking step and every 11th step ($0B) plays a click on voice 2 and resets it to 0 (the KERNAL's reverse-mode flag on a stock machine). $00C8-$00D7: untouched KERNAL screen-editor workspace."
+   "text": "Footstep sound counter: $1D04, called on each walking step and each ladder step ($4B50, $4B84), increments it and every 11th call ($0B) plays a click on voice 2 and resets it to 0 (the KERNAL's reverse-mode flag on a stock machine). $00C8-$00D7: untouched KERNAL screen-editor workspace."
   },
   {
    "address": 216,
    "type": "line",
-   "text": "Game state flag. $40 = no lives left: set by $1734 when the last life mark is gone; every room loop tests it at its head ($4469, $51F4, $5A60, $6220, $6A20, $76B0, $86B0, $9320, ...) and jumps to $4475 (back to the title), and $1FDA does the same after a death. $50 = set by several rooms when their task is done ($4E3B, $5CC8, $6467, $6D7D) and tested at $4E0F; $00 = cleared at $540F, $78CF, $7992, $82B2. $00D9-$00F4: the KERNAL screen line-link table, untouched by the game."
+   "text": "Game state flag. $40 = no lives left: set by $1734 when the last life mark is gone; every room loop tests it ($4469, $4A94, $51F4, $5A60, $6220, $6A20, $6DF3, $76B0, $8424, $86B0, $9320) and jumps to the game over $4475 (room 10's loop first points the IRQ back at $8215), and $1FDA, after a respawn, jumps to its second entry $447D. $50 = an object carried: set when a room's object is taken ($4E3B, $5CC8, $6467, $6D7D) and tested by each of those four takes ($4E0F, $5CAC, $642C, $6D61), so only one object is carried at a time; $00 = cleared when it is used ($540F, $78CF, $7992, $82B2). $00D9-$00F4: the KERNAL screen line-link table, untouched by the game."
   },
   {
    "address": 245,
    "type": "line",
-   "text": "A room variable: set to $20 ($4E18), $EE ($5CD9), $28 ($646B) and $AF ($70AA); read at $549C, $78A0, $78E4, $796F, $82AA. Purpose not established."
+   "text": "Which object Mr Hat carries (with $D8 = $50): set when it is taken to $20 (room 2, $4E18), $EE (room 5, $5CD9), $28 (room 6, $646B) or $AF (room 8, $70AA); read where it is used: $549C (room 2, for $20), $78A0 and $78E4 (room 9's upper door, for $28), $796F (room 9's lower floor, for $AF) and $82AA (room 11, for $EE). The unreferenced ending fragment at $7D68 increments it."
   },
   {
    "address": 246,
    "type": "line",
-   "text": "Death-in-progress flag: $30 while Mr Hat is being killed (set at $4C71 and by the unused routine $1D53), $00 otherwise (cleared by the respawn $4D50, and at $4AA5, $5955, $1F9C, and the loop at $50DF that clears $F6-$FE). Room 1's loop tests it at $42EF and then calls $1FD7 (respawn, or the title if no lives are left)."
+   "text": "Death-in-progress flag: $30 while Mr Hat is being killed (set at $4C71 and by the unreachable routine $1D53), $00 otherwise (cleared by the respawn $4D50 at $4D63, and at $4AA5, $5955, $1F9C, and by the loop at $50DF that clears $F6-$FE). Room 1's loop tests it at $42EF and then calls $1FD7 (respawn, or the title if no lives are left); room 3's loop tests it at $4C9A. The byte has other uses too: room 5's interrupt handler increments it every frame ($597C) and recolours the cones' cells at $40, $80, $B0 and $F0 ($598D-$59F8); the unreached routine $451F counts it up to $18 ($4542)."
   },
   {
    "address": 247,
    "type": "line",
-   "text": "Cleared by the start-up at $0887; when it reads $20 the room-1 code jumps to $44B9 ($44AD, $6FEA). Nothing in the traced code sets it to $20, so what it stands for is open."
+   "text": "Cleared by the start-up at $0887; when it reads $20 the room-1 code jumps to $44B9 ($44AD, $6FEA). Its only other user is room 6's interrupt handler, which counts it from $00 every frame ($609C) and puts it back to 0 when it reaches $20 ($60EE-$60F7), so nothing leaves it at $20 and the room-1 tests cannot match; what it stands for is open."
   },
   {
    "address": 248,
    "type": "line",
-   "text": "Two uses. In room 1 it counts play frames: the IRQ increments it at $1C90, and $1FAC-$1FB8/$449E-$44AA/$6FDB fire the event $44E0 when $F9:$F8 reaches $20:$F0. In the lift ($4B27-$4B6A) it is the animation delay, counted to 5 before $F9 steps. Cleared at $0889, $44C6, $4894."
+   "text": "Two uses. In room 1 it counts play frames: room 1's IRQ increments it at $1C90, and $1FAC-$1FB8/$449E-$44AA/$6FDB fire the event $44E0 when $F9:$F8 reaches $20:$F0. On ladders (the shared climbing step $4B20, used by rooms 2-11: $4B27-$4B6A) it is the animation delay, counted to 5 before $F9 steps. Cleared at $0889, $44C6, $4894."
   },
   {
    "address": 249,
    "type": "line",
-   "text": "Two uses. Paired with $F8 as the room-1 timer (set to $20 at $44C2; the event at $44E0 fires at $20:$F0). In the lift it is Mr Hat's sprite frame, $32-$33 (his front view), stepped at $4B38/$4B6C and copied to $07FC; set to $32 at $489D and $33 at $50F2. Cleared at $088B."
+   "text": "Two uses. Paired with $F8 as the room-1 timer (set to $20 at $44C2; the event at $44E0 fires at $20:$F0). On ladders it is Mr Hat's climbing frame, $32-$33, stepped by the shared climbing step $4B20 at $4B38/$4B6C and copied to $07FC; set to $32 at $489D and $33 at $50F2, and copied to $07FC by room 6's sprite set-up at $6040. Cleared at $088B; also written by the unreferenced $816E ($8173)."
   },
   {
    "address": 250,
    "type": "line",
-   "text": "Cleared by the start-up at $088D and set to $20 by the timed event at $44F9; no reader found in the traced code."
+   "text": "Cleared by the start-up at $088D and set to $20 by the timed event at $44F9 (and to 0 by the unreferenced $816E at $8175); no reader found in the traced code."
   },
   {
    "address": 251,
    "type": "line",
-   "text": "Two uses. In play: the walking animation delay, incremented each step and reset at 9, when the walk frame advances (room 1 at $4307/$435B; cleared by the set-up $1B85 and at $400F). In the room drawing routines: the fill byte of the screen-RAM rectangle fill $56ED (e.g. $CC at $6E17)."
+   "text": "Several uses. In play: the walking animation delay, incremented each step and reset at 9, when the walk frame advances (room 1 at $4307/$435B; cleared by the set-up $1B85 and at $400F), and the lift's delay counter ($4036, $406E). In the room drawing routines: the fill byte of the screen-RAM rectangle fill $56ED (e.g. $CC at $6E17). In the title music ($C1FC): the low byte of the note pointer $FB/$FC (lda ($FB),y at $C214, $C255, $C299)."
   },
   {
    "address": 252,
    "type": "line",
-   "text": "Two uses. In room 1 it is the door flag: cleared by the set-up at $1B87, set to $20 when Mr Hat takes the object at X = $78 on the bottom floor ($1E79), and tested at $1E8F, where $20 lets him open the door at X = $A0. In the room drawing routines it is the width of the rectangle fill $56ED (cpy $FC)."
+   "text": "Several uses. In room 1 it is the door flag: cleared by the set-up at $1B87, set to $20 when Mr Hat takes the object at X = $78 on the bottom floor ($1E79), and tested at $1E8F, where $20 lets him open the door at X = $A0. In the room drawing routines it is the width of the rectangle fill $56ED (cpy $FC). In the title music ($C1FC) it is the high byte of the note pointer $FB/$FC ($C20F, $C250, $C294)."
   },
   {
    "address": 253,
@@ -19205,7 +19205,7 @@
   {
    "address": 788,
    "type": "line",
-   "text": "KERNAL IRQ vector, low byte (CINV, with $0315). The game points it at its own interrupt routines: $EA31 (KERNAL only) at $16A6 and $177A, room 1's $1C00 at $1BF3, the other rooms' routines at $48A2 ($48B0), $50FC ($510A), $595A ($596A), $606F ($608A), $6831 ($683D), $75D1 ($7600), $820B/$842D/$8462 ($8215), $8647 ($8660), $90F3 ($B9AD), and the title music $C0AF at $C30A. In the snapshot it holds $C0AF."
+   "text": "KERNAL IRQ vector, low byte (CINV, with $0315). The game points it at its own interrupt routines: $EA31 (KERNAL only) at $16A6, $177A and $B678 (from $7CE8, after the last room), room 1's $1C00 at $1BF3, the other rooms' routines at $48A2 ($48B0), $50FC ($510A), $595A ($596A), $606F ($608A), $6831 ($683D), $75D1 ($7600), $820B/$842D/$8462 ($8215), $8647 ($8660), $90F3 ($B9AD); for the title music, $CB14 saves it and installs $C2EB ($CB22), which installs $C0AF at $C30A, and $CB0A puts the saved vector back. In the snapshot it holds $C0AF."
   },
   {
    "address": 789,
@@ -19235,12 +19235,12 @@
   {
    "address": 1977,
    "type": "line",
-   "text": "The four lives marks are colour cells of the status line: $07B9 and $07BA (row 23, columns 33-34) and $07E1 and $07E2 (row 24). A mark shows while its cell holds $BC and is hidden by $CC, grey on grey. $1D86 (room 1) and $4C73 take the upper ones, $1700 the lower ones; $1734 sets $D8 = $40 when the last is gone."
+   "text": "The four lives marks are colour cells of the status line: $07B9 and $07BA (row 23, columns 33-34) and $07E1 and $07E2 (row 24), set by room 1's start of play ($6E6E, $6E71). A mark shows while its cell holds $BC and is hidden by $CC, grey on grey. $1D86, at the end of every death ($A8E6) and from $1D79/$1D82, takes the upper ones ($07B9, then $07BA at $1DB5) and then calls $1700 for the lower ones; room 3's $4C73 tests the upper cells for $6C, which never matches, and so goes straight to $1700; $1734 sets $D8 = $40 when the last is gone."
   },
   {
    "address": 2040,
    "type": "line",
-   "text": "Sprite pointers $07F8-$07FF (screen $0400 + $3F8): shape number x 64 in VIC bank 0, so $24-$3F are the shapes at $0900-$0FFF. $07FC is Mr Hat's (sprite 4), the most-written byte of the game: walking $2C-$2E and $2F-$31, climbing $32/$33, crouching $2A, dying $27."
+   "text": "Sprite pointers $07F8-$07FF (screen $0400 + $3F8): shape number x 64 in VIC bank 0, so $24-$3F are the shapes at $0900-$0FFF. $07FC is Mr Hat's (sprite 4), the most-written byte of the game: walking $2C-$2E and $2F-$31, climbing $32/$33, crouching $2A, dying $27; room 3 also gives him $22 (the bytes at $0880, inside the start-up code) as he steps onto its ladder ($48F2, $4AFF)."
   },
   {
    "address": 2049,
@@ -19255,7 +19255,7 @@
   {
    "address": 2160,
    "type": "line",
-   "text": "Start a new game: $9265 switches the screen to bitmap mode, then $087E resets the game variables and enters room 1. Jumped to after the title at game over ($802A, via $8020), and from $8012, $801A, $5BA4 and $7CF3."
+   "text": "Start a new game: $9265 switches the screen to bitmap mode, then $087E resets the game variables and enters room 1. Jumped to at game over ($802A, at the end of $8020, which $4486 reaches after the title), after the win ($7CF3), from $5BA4 (room 5, a path whose reachability is open), and from $8012/$801A in the F1 wait $8000, which only the dead Lupenio ending reaches ($7E24)."
   },
   {
    "address": 2166,
@@ -19270,12 +19270,12 @@
   {
    "address": 2209,
    "type": "line",
-   "text": "Called from room 1's jump loops ($43AB-$4466) and $6FFC: when the sprite-enable register $D015 is $30 or more (sprite 4, Mr Hat, or a higher sprite enabled) it runs the room-1 floor handler $1D33; otherwise it returns. The compare is on the whole register value, not on bit 4."
+   "text": "Called from room 1's jump loops ($43AB-$443F, $4466), from $6FFC, and from the unreachable $1D20 ($1D30): when the sprite-enable register $D015 is $30 or more it runs the room-1 floor handler $1D33; otherwise it returns. The compare is on the whole register value, not on bit 4: it passes when sprites 4 and 5 are both on, or sprite 6 or 7 is on, and fails with Mr Hat (sprite 4) on alone."
   },
   {
    "address": 2221,
    "type": "line",
-   "text": "Turns off every sprite but 4 (Mr Hat) and 5 ($D015 AND #$30). Called from $45D0."
+   "text": "Turns off every sprite but 4 (Mr Hat) and 5 ($D015 AND #$30). Its only caller, $45D0, is inside the unreached routine $451F, so it never runs."
   },
   {
    "address": 2230,
@@ -19285,12 +19285,12 @@
   {
    "address": 2232,
    "type": "line",
-   "text": "Bitmap graphics, three 8-byte cells ($08B8-$08CF, a shape sloping down to the left) that $4573-$457E copies to the bitmap at $36A0; read as one 24-byte block."
+   "text": "Bitmap graphics, three 8-byte cells ($08B8-$08CF, a shape sloping down to the left), read as one 24-byte block by $4573-$457E, which copies it to the bitmap at $36A0 (character row 18, columns 4-6); that copy is inside the unreached routine $451F."
   },
   {
    "address": 2256,
    "type": "line",
-   "text": "Bitmap graphics, six 8-byte cells ($08D0-$08FF: wedge shapes, left and right halves) that the loop $4580-$45A9 copies in pairs to the bitmap at $37E0/$37F0, $3920/$3930 and $3A60/$3A70 (three rows of a two-cell picture)."
+   "text": "Bitmap graphics, six 8-byte cells ($08D0-$08FF: the left and right edges of a picture, in pairs) that the loop $4580-$45A9 copies to the bitmap at $37E0/$37F0, $3920/$3930 and $3A60/$3A70: character rows 19-21, columns 4 and 6 (16 bytes apart, so column 5 between them is not written). The loop is inside the unreached routine $451F."
   },
   {
    "address": 2264,
@@ -19320,17 +19320,17 @@
   {
    "address": 2304,
    "type": "line",
-   "text": "Sprite shape $24 (64 bytes at $0900, multicolour): a figure with a round head and a long arm or stick held forward, legs below. Room 1's set-up puts it on sprite 6 ($1BC8); also set on sprite 2 at $BAB2/$BB06."
+   "text": "Sprite shape $24 (64 bytes at $0900, multicolour): a figure with a round head and a long arm or stick held forward, legs below. Room 1's set-up puts it on sprite 6 ($1BC8); also set on sprite 2 at $BAB2/$BB06, where room 2's walker alternates it with $29 while walking right ($BAF3-$BB02)."
   },
   {
    "address": 2368,
    "type": "line",
-   "text": "Sprite shape $25 (multicolour): a creature with a small head and a wide body on many short legs. Sprites 0 and 1 in room 1 ($1B19-$1B1E), alternating with shape $35 for their animation ($7007-$7033)."
+   "text": "Sprite shape $25 (multicolour): a creature with a small head and a wide body on many short legs. Sprites 0 and 1 in room 1 ($1B19-$1B1E) and sprite 0 in room 6 ($10A7); the shared IRQ tail $7000, used by several rooms' handlers, alternates it with shape $35 for their animation ($7007-$7033). Also sprite 3 on the title ($B7B7)."
   },
   {
    "address": 2432,
    "type": "line",
-   "text": "Sprite shape $26 (multicolour): a small dagger-like shape pointing right. Sprite 3 in room 1 ($1B26); the IRQ swaps it with its mirror image $34 when the sprite turns ($1C9C, $1CA4)."
+   "text": "Sprite shape $26 (multicolour): a small dagger-like shape pointing right. Sprite 3 in room 1 ($1B26), the IRQ swapping it with its mirror image $34 when the sprite turns ($1C9C, $1CA4); also sprite 3 in rooms 3 ($463B), 5 ($592D), 9 ($7596 and its IRQ) and 11 ($8630, $8686), and sprite 4 on the title ($B7BC)."
   },
   {
    "address": 2496,
@@ -19355,12 +19355,12 @@
   {
    "address": 2560,
    "type": "line",
-   "text": "Sprite shape $28 (multicolour): a rectangular screen in a cabinet with a patterned base, the television of room 1. Sprite 5 in room 1 ($1B32) and at $824F."
+   "text": "Sprite shape $28 (multicolour): a cabin with a window above a patterned base, the lift cabin: sprite 5 in room 1 ($1B32), moved with Mr Hat by the lift $4000, and in room 11 ($824F, the lift between its floors)."
   },
   {
    "address": 2624,
    "type": "line",
-   "text": "Sprite shape $29 (multicolour): the walker of shape $24 drawn in another pose. No store of the pointer value $29 to $07F8-$07FF was found in the traced code."
+   "text": "Sprite shape $29 (multicolour): the walker of shape $24 drawn in another pose. Room 2's walker, sprite 2, alternates it with $24 while walking right ($BAF3-$BAFC, through set_sprite2_pointer $BB06, from room 2's IRQ at $5110 via $BA7D); no immediate store of $29 to $07F8-$07FF exists, which is why it looked unused."
   },
   {
    "address": 2688,
@@ -19370,7 +19370,7 @@
   {
    "address": 2752,
    "type": "line",
-   "text": "Sprite shape $2B (multicolour): a cup or trophy on a stem. Sprite 2 in room 1 ($1B23); also used at $4888 and $75AD/$75B0."
+   "text": "Sprite shape $2B (multicolour): a cup or trophy on a stem, a guardian's shape. Sprite 2 in room 1 ($1B23) and in room 3 ($4888, a falling guardian), and sprite 6 in room 9 ($75AD/$75B0)."
   },
   {
    "address": 2816,
@@ -19405,17 +19405,17 @@
   {
    "address": 3200,
    "type": "line",
-   "text": "Sprite shape $32: Mr Hat seen from the front, legs apart: his frame in the lift, alternating with $33 ($4B27-$4B76, in $F9)."
+   "text": "Sprite shape $32: Mr Hat seen from the front, legs apart: his climbing frame on ladders, alternating with $33 in the shared climbing step $4B20 ($4B27-$4B76, through $F9); also set directly when he arrives on a ladder ($50B6, $753A, $8602 and others)."
   },
   {
    "address": 3264,
    "type": "line",
-   "text": "Sprite shape $33: Mr Hat from the front, second lift frame (see $32)."
+   "text": "Sprite shape $33: Mr Hat from the front, second climbing frame (see $32)."
   },
   {
    "address": 3328,
    "type": "line",
-   "text": "Sprite shape $34 (multicolour): the dagger shape of $26 pointing left, set on sprite 3 by the IRQ at $1CA4 when it turns."
+   "text": "Sprite shape $34 (multicolour): the dagger shape of $26 pointing left, set on sprite 3 by room 1's IRQ at $1CA4 when it turns, and by room 9's ($7652) and room 11's ($869B) handlers."
   },
   {
    "address": 3392,
@@ -19425,7 +19425,7 @@
   {
    "address": 3456,
    "type": "line",
-   "text": "Sprite shape $36 (multicolour): a round fruit hanging from a stalk, first of four such shapes $36-$39 (cherries). No store of the pointer values $36-$39 was found in the traced code."
+   "text": "Sprite shape $36 (multicolour): a round body with a pointed tip, first of four such shapes $36-$39. They are room 9's upper-floor guardian, sprite 0, which walks towards Mr Hat: $36/$37 walking right, $38/$39 walking left (room 9's IRQ, $7BA3-$7BD5)."
   },
   {
    "address": 3497,
@@ -19435,17 +19435,17 @@
   {
    "address": 3520,
    "type": "line",
-   "text": "Sprite shape $37 (multicolour): the fruit of $36 seen another way (second of $36-$39)."
+   "text": "Sprite shape $37 (multicolour): second frame of room 9's guardian walking right (with $36; stored at $7BAF)."
   },
   {
    "address": 3584,
    "type": "line",
-   "text": "Sprite shape $38 (multicolour): the fruit hanging from a stalk, third of $36-$39."
+   "text": "Sprite shape $38 (multicolour): first frame of room 9's guardian walking left ($7BC9; see $36)."
   },
   {
    "address": 3648,
    "type": "line",
-   "text": "Sprite shape $39 (multicolour): fourth of the fruit shapes $36-$39."
+   "text": "Sprite shape $39 (multicolour): second frame of room 9's guardian walking left ($7BD5; see $36)."
   },
   {
    "address": 3712,
@@ -19455,7 +19455,7 @@
   {
    "address": 3776,
    "type": "line",
-   "text": "Sprite shape $3B (multicolour): an octopus, eyes in a round head, tentacles below. Sprite 7 in room 1, alternating with $3C in the IRQ chain at $A74B-$A75C."
+   "text": "Sprite shape $3B (multicolour): an octopus, eyes in a round head, tentacles below. Sprite 7 in room 1 ($A733), alternating with $3C in the IRQ chain at $A74B-$A75C; also sprite 3, the guardian stepped by $B877 (alternating with $3C every 5 frames) in rooms 3 ($4821), 4 ($9079) and 5 and wherever $B877 runs, and sprite 1 on the title ($B7AD)."
   },
   {
    "address": 3840,
@@ -19465,12 +19465,12 @@
   {
    "address": 3904,
    "type": "line",
-   "text": "Sprite shape $3D (multicolour): the long-armed walker of $24/$29 in another frame; set on sprite 7 ($4793, $47BE, $B939, $B956) and sprite 2 ($B7B2), alternating with $3E."
+   "text": "Sprite shape $3D (multicolour): the long-armed walker of $24/$29 in another frame; set on sprite 7 ($4793, $47BE, $B939, $B956) and sprite 2 ($B7B2), alternating with $3E; room 2's walker, sprite 2, also alternates $3D/$3E while walking left ($BAE0-$BAEF)."
   },
   {
    "address": 3968,
    "type": "line",
-   "text": "Sprite shape $3E (multicolour): the walker's frame paired with $3D ($B946)."
+   "text": "Sprite shape $3E (multicolour): the walker's frame paired with $3D ($B946, and $BAED for room 2's sprite 2)."
   },
   {
    "address": 4032,
@@ -19495,7 +19495,7 @@
   {
    "address": 4106,
    "type": "line",
-   "text": "Animation delay of sprite 3's octopus frames in the routine at $B87A: incremented each call, and at 5 the pointer $07FB swaps between $3B and $3C and the count restarts. Cleared at $4EB4 and $906F."
+   "text": "Animation delay of sprite 3's octopus frames in the routine at $B87A: incremented each call, and at 5 the pointer $07FB swaps between $3B and $3C and the count restarts. Also the frame delay of room 2's walker, sprite 2: incremented at $BA86, tested for 5 at $BAD0 and cleared by $BB06 ($BB0B) when the frame changes. Cleared at $4EB4 and $906F."
   },
   {
    "address": 4107,
@@ -19525,12 +19525,12 @@
   {
    "address": 4117,
    "type": "line",
-   "text": "Set to 1 by $8AD0 each time it adds points (before calling $41DA); while it is set the IRQ code at $B5C3 runs a flash of $D022 for $40 frames counted in $1016, then clears it ($B64B). Cleared at $6F26 at the game's start; if clear, $B5B6/$B5C3 go on to $8C00."
+   "text": "Set to 1 by $8AD0 each time it adds points (before calling $41DA); while it is set the IRQ code at $B5B6/$B5C3 runs the score-tick effect $B5D1 instead of the in-play tune $8C00: for $40 frames counted in $1016 it restarts a voice-3 tone every tenth frame and steps $D022 (not shown in bitmap mode), then clears it ($B64B). Cleared at $6F26 at the game's start."
   },
   {
    "address": 4118,
    "type": "line",
-   "text": "Frame counter of the flash that follows a score increase ($B5D4-$B5DA, ends at $40; cleared at $6F29 and $B64E). $1017 after it is unused."
+   "text": "Frame counter of the score-tick effect that follows a score increase ($B5D4-$B5DA, ends at $40; cleared at $6F29 and $B64E). $1017 after it is unused."
   },
   {
    "address": 4120,
@@ -19545,12 +19545,12 @@
   {
    "address": 4128,
    "type": "line",
-   "text": "Helper of the X-range test $A97C: stores the mode byte A into $40BB (an operand inside the code at $40xx), keeps its low nibble in $1009 and returns A = ($400B AND $F0). $400B is the byte $FC of the instruction STA $07FC at $400A, so it returns $F0, and $A97C's test for $10 never matches: the X high-bit check at $A986 is dead."
+   "text": "Helper of the X-range test $A97C: stores the mode byte A into the scratch byte $40BB (in the zero padding after the RTS at $40B8) and reads it back, keeps its low nibble in $1009 and returns A = ($400B AND $F0). $400B is the byte $FC of the instruction STA $07FC at $400A, so it returns $F0, and $A97C's test for $10 never matches: the X high-bit check at $A986 is dead."
   },
   {
    "address": 4145,
    "type": "line",
-   "text": "Tail of a room's drawing code, jumped to from $4E0C: draws two pictures with $1191 (column $16, row $0E) and $A9D2 (column $1C, row $0E), then jumps on to $4E6E."
+   "text": "Tail of room 2's drawing code, jumped to from $4E0C (room2_setup_2): draws two pictures with $1191 (column $16, row $0E) and $A9D2 (column $1C, row $0E), then jumps on to $4E6E."
   },
   {
    "address": 4162,
@@ -19560,7 +19560,7 @@
   {
    "address": 4163,
    "type": "line",
-   "text": "Hazard check of one room, called from $4ABB when Mr Hat's Y is $5D or more (below the top floor): calls $4B8D, returns if his X is past 255 ($D010 bit 4), and otherwise, if his X lies in $68-$87 or in $38-$53 ($A97C with mode 1) while his Y is exactly $B4, kills him through $4C52."
+   "text": "Room 3's hazard check, called from $4ABB (room3_step_checks) when Mr Hat's Y is $5D or more (below the top floor): calls $4B8D, returns if his X is past 255 ($D010 bit 4), and otherwise, if his X lies in $68-$87 or in $38-$53 ($A97C with mode 1) while his Y is exactly $B4, kills him through $4C52."
   },
   {
    "address": 4220,
@@ -19620,7 +19620,7 @@
   {
    "address": 4497,
    "type": "line",
-   "text": "Draws a picture with $A9D2 at column X, row Y (a 5 x 4 cell rectangle filled with colour pair $9C, and more), then makes sprite 0 multicolour and gives sprite 1 colour $0B. Called from $1035. Its bytes are also read as graphics: room 1's set-up copies from $1191 at $18B0, and $9167 copies $1191-$1280 to the bitmap at $35D8."
+   "text": "Draws a picture with $A9D2 at column X, row Y (a 5 x 4 cell rectangle filled with colour pair $9C, and more), then makes sprite 0 multicolour and gives sprite 1 colour $0B. Called from $1035. Its bytes are also read as graphics: room 1's set-up reads $1191-$1280 at $18B0 (its store, STA $2BF8, is not indexed, so of each 48-byte run only the last byte stays in the bitmap), and the uncalled leftover $9163 would copy them to the bitmap at $35D8."
   },
   {
    "address": 4514,
@@ -19675,17 +19675,17 @@
   {
    "address": 4709,
    "type": "line",
-   "text": "An unused copy of the invulnerability IRQ routine at $BF30 (same bytes, but it exits through the KERNAL's $EA31 instead of $B54B/$B530): while $A877 holds RTS it counts $100F and steps $D025/$D026 each frame, and at $FE restores $4C52 = JSR and $A877 = LDA and the colours $0D/$02. Nothing refers to $1265 (byte scan for the address and for a LDA/STA pair making it a vector). Room 1's set-up and $91A6 read $1281-$12B0 as bitmap graphics, so this copy sits on top of older picture data."
+   "text": "An unused copy of the invulnerability IRQ routine at $BF30 (same bytes, but it exits through the KERNAL's $EA31 instead of $B54B/$B530): while $A877 holds RTS it counts $100F and steps $D025/$D026 each frame, and at $FE restores $4C52 = JSR and $A877 = LDA and the colours $0D/$02. Nothing refers to $1265 (byte scan for the address and for a LDA/STA pair making it a vector). Room 1's set-up reads $1281-$12B0 as bitmap graphics, so this copy sits on top of older picture data."
   },
   {
    "address": 4737,
    "type": "line",
-   "text": "Also read as graphics: the 48 bytes $1281-$12B0 (the end of this routine and zeros) are copied into the bitmap as six cells, at $3238 by room 1's set-up ($18E1-$18EC) and at $36C8 by $91A4-$91AF, so those cells show the code's bit patterns."
+   "text": "Also read as graphics: the 48 bytes $1281-$12B0 (the end of this routine and zeros) are copied into the bitmap as six cells at $3238 by room 1's set-up ($18E1-$18EC), so those cells show the code's bit patterns. The copy at $91A4-$91AF names $1281 too, but it belongs to the uncalled leftover $9163 and its source operand is rewritten ($9190) before it runs."
   },
   {
    "address": 4758,
    "type": "line",
-   "text": "Unused zero bytes (read as the tail of the 48-byte graphics block at $1281 by $18E3 and $91A6)."
+   "text": "Unused zero bytes (read as the tail of the 48-byte graphics block at $1281 by room 1's set-up, $18E3)."
   },
   {
    "address": 4788,
@@ -19695,7 +19695,7 @@
   {
    "address": 4977,
    "type": "line",
-   "text": "First of the per-game progress flags $1371-$137D: each is 0 until Mr Hat takes the object it stands for, when the room checks ($8E24-$8F9E and $B11C-$B1A7, with the X-range test $A97C) set it to 1 and add points, so an object scores only once; other room code ($B1B0-$B2C9, $BD88-$BE4B) reads them. $1371: set at $8E3F, read at $8E2F and $B1E7. Cleared with the whole block $1371-$13B0 by $BD5B at the start of a game."
+   "text": "First of the per-game progress flags $1371-$137D: each is 0 until Mr Hat takes the object it stands for, when the room checks ($8E24-$8F9E and $B11C-$B1A7, with the X-range test $A97C) set it to 1 and reward him, so an object counts only once: most add points ($1219, $1224 and the like), but $1373 and $1379 make him invulnerable instead ($1250 at $8E94, $8F9E). Other room code ($B1B0-$B2C9, $BD88-$BE4B) reads them. $1371: set at $8E3F, read at $8E2F and $B1E7. Cleared with the whole block $1371-$13B0 by $BD5B (from room 1's start of play, $6F1C) at the start of a game."
   },
   {
    "address": 4978,
@@ -19705,7 +19705,7 @@
   {
    "address": 4979,
    "type": "line",
-   "text": "Room object flag $1373: 0 until set to 1 at $8E91, read at $8E81, $B1FA. Cleared with the whole block $1371-$13B0 by $BD5B at the start of a game."
+   "text": "Room object flag $1373: 0 until set to 1 at $8E91 (that take makes Mr Hat invulnerable, $1250, instead of adding points), read at $8E81, $B1FA. Cleared with the whole block $1371-$13B0 by $BD5B at the start of a game."
   },
   {
    "address": 4980,
@@ -19735,7 +19735,7 @@
   {
    "address": 4985,
    "type": "line",
-   "text": "Room object flag $1379: 0 until set to 1 at $8F9B, read at $8F8B, $BE09. Cleared with the whole block $1371-$13B0 by $BD5B at the start of a game."
+   "text": "Room object flag $1379: 0 until set to 1 at $8F9B (that take makes Mr Hat invulnerable, $1250, instead of adding points), read at $8F8B, $BE09. Cleared with the whole block $1371-$13B0 by $BD5B at the start of a game."
   },
   {
    "address": 4986,
@@ -19760,7 +19760,7 @@
   {
    "address": 4992,
    "type": "line",
-   "text": "First of a second group of progress flags, $1380-$1389, set by the room checks at $B2EA-$B4AB when Mr Hat touches a spot (mode $11 of $A97C); some require another flag first ($1381 needs $1383). $1380 until set to 1 at $B2FE, read at $B1B0, $B2EA, $B4A2. Cleared with the whole block $1371-$13B0 by $BD5B at the start of a game."
+   "text": "First of a second group of progress flags, $1380-$1389, set by the room checks at $B2EA-$B4AB when Mr Hat touches a spot (mode $11 of $A97C); some require another flag first ($1381 needs $1383). $1380: 0 until set to 1 at $B2FE, read at $B1B0, $B2EA, $B4A2. Cleared with the whole block $1371-$13B0 by $BD5B at the start of a game."
   },
   {
    "address": 4993,
@@ -19815,12 +19815,12 @@
   {
    "address": 5105,
    "type": "line",
-   "text": "One bitmap cell, a 2-pixel vertical bar at the right edge: room 1's set-up writes it 14 times ($19B2-$19DB), at $2750 and then every 64 bytes (the store's operand $19BA/$19BB is raised by $38 and the index by 8 per cell), i.e. every eighth cell along character rows 5-8 from column 34."
+   "text": "One bitmap cell, a 1-pixel vertical line at its right edge: room 1's set-up writes it 14 times ($19B2-$19D4), one under another from $2750 down column 34, character rows 5-18. Each pass raises the store's operand $19BA/$19BB by $138 and Y by 8, 320 bytes in all (one character row), so the cells make one vertical line."
   },
   {
    "address": 5113,
    "type": "line",
-   "text": "One bitmap cell, a 2-pixel vertical bar at the left edge, written 14 times by $19E7-$1A1B starting at $2768 with the same 64-byte step as $13F1."
+   "text": "One bitmap cell, a 1-pixel vertical line at its left edge, written 14 times by $19E7-$1A0F one under another from $2768 down column 37, character rows 5-18, with the same 320-byte step as $13F1."
   },
   {
    "address": 5121,
@@ -19885,7 +19885,7 @@
   {
    "address": 5632,
    "type": "line",
-   "text": "Status-line digit 0, top half: 8 bytes of a two-cell-high glyph (16 bytes per digit from $1600, the top cell then the bottom cell). The score code steps a self-modified pointer through this table by 16 to show the next digit. Also used to reset a digit to 0 by the score carry ($4208, $424E)."
+   "text": "Status-line digit 0, top half: 8 bytes of a two-cell-high glyph (16 bytes per digit from $1600, the top cell then the bottom cell). The score code steps a self-modified pointer through this table by 16 to show the next digit. Also used to reset a digit to 0 by the score carry ($4208, $424E), to draw the six zeros of a fresh score ($8044) and the 0 of room 10's ROOM number ($83DB)."
   },
   {
    "address": 5640,
@@ -20050,12 +20050,12 @@
   {
    "address": 6111,
    "type": "line",
-   "text": "Room 1's set-up, the second half of the game start (jumped to from $6FB2 after $6E00 has drawn the walls and floors). It draws the room's objects as bitmap pictures with their screen colours: $AA26 at column 2, row 18; a 3 x 2 colour block ($FF) at 3,19 and a 1 x 1 block ($8C) at 7,21 through $A67F; $AA45 at $22,$15; $AA64 at $22,2; then copies the hook picture $10D1 twice ($1820-$184E) and the slab $1119 to row 2 ($186A); $A79F/$A7BC colour pairs at $1A,2/$1A,5 and $14,$10/$14,$13; sets $D022; the odd copy loop at $18AC; the 48 bytes from $1281 to $3238; $A763 at 3,5; $A782 at $0B,$13; the 14-cell bar patterns from $13F1/$13F9 ($19B2-$1A1B); and goes on at $1A2A with the status line and the sprites. Long runs of NOPs ($1850-$1869, $18F5-$193F, $1953-$19B1) do nothing."
+   "text": "Room 1's set-up, the second half of the game start (jumped to from $6FB2 after $6E00 has drawn the walls and floors). It draws the room's objects as bitmap pictures with their screen colours: $AA26 at column 2, row 18; a 3 x 2 colour block ($FF) at 3,19 and a 1 x 1 block ($8C) at 7,21 through $A67F; $AA45 at $22,$15; $AA64 at $22,2; then copies the hook picture $10D1 twice ($1820-$184E) and the slab $1119 to row 2 ($186A); the cone pictures $A79F/$A7BC with colour $7C at $1A,2/$1A,5 and with colour $2C at $14,$10/$14,$13; sets $D022; the odd copy loop at $18AC; the 48 bytes from $1281 to $3238; $A763 at 3,5; $A782 at $0B,$13; the 14-cell bar patterns from $13F1/$13F9 ($19B2-$1A1B); and goes on at $1A2A with the status line and the sprites. Long runs of NOPs ($1850-$1869, $18F5-$193F with a stray LDY #$34 at $191D, $1953-$19B1) do nothing."
   },
   {
    "address": 6324,
    "type": "line",
-   "text": "Low byte of the operand of STA $2BF8 at $18B3 (self-modified). The loop $18AC-$18D4 reads 48 bytes from $1191,Y but stores them all to this one unindexed address, so only every 48th byte ($11C0, $11F0, $1220, $1250, $1280) survives, at $2BF8, $2C08, $2C18, $2C28 and $2C38: the operand is raised by $10 after each group, five groups. The same loop at $9167 has STA $35D8,Y; here the index is missing. $18D7 puts the operand back to $2BF8."
+   "text": "Low byte of the operand of STA $2BF8 at $18B3 (self-modified). The loop $18AC-$18D4 reads 48 bytes from $1191,Y (bytes that are also code: $1191 is the routine draw_pic_mc_sprite1) but stores them all to this one unindexed address, so only the last byte of each group of 48 ($11C0, $11F0, $1220, $1250, $1280) survives. After each group the high byte $18B5 is incremented and this low byte raised by $10 (one more increment of $18B5 on a carry), $110 in all, so the five survivors land at $2BF8, $2D08, $2E18, $2F28 and $3038. The same loop at $9167 has STA $35D8,Y, which with the index advancing places each group of 48 one character row ($140 bytes) below the last; here the index is missing. $18D7 puts the operand back to $2BF8."
   },
   {
    "address": 6325,
@@ -20075,7 +20075,7 @@
   {
    "address": 6586,
    "type": "line",
-   "text": "Low byte of the operand of STA $2750,Y at $19B9 (self-modified): after each 8-byte cell the loop $19B2-$19DB adds $38 to it, and with Y advancing by 8 the cells land 64 bytes apart (every eighth character cell). Reset to $50 at $19DF."
+   "text": "Low byte of the operand of STA $2750,Y at $19B9 (self-modified): after each 8-byte cell the loop $19B2-$19DB adds $38 to it and increments the high byte $19BB (plus once more on a carry); with Y advancing by 8 each cell lands $140 = 320 bytes after the last, one character row lower in the same column. The 14 cells make a vertical bar in column 34, character rows 5-18 (bitmap $2750, $2890, ... $3790). Reset to $50 at $19DF."
   },
   {
    "address": 6587,
@@ -20100,7 +20100,7 @@
   {
    "address": 6698,
    "type": "line",
-   "text": "Second part of room 1's set-up (jumped to from $1A1E). Draws more objects ($A7D9 at $1A,$13 and at $14,5, $A7F8 at $14,7, $A782 at 2,$0C), the logo ($1A21), the status line: life marks $1449, the words SCORE, ROOM and STAGE, the score 000000 and the digits 1 for room and stage (from the tables at $1449-$1618 into bitmap rows 23-24). Then it sets up the sprites: enable $B2 (sprites 1, 4, 5, 7), multicolour $B7, X high bit for sprite 5, sprite 5 double size, pointers ($25 $25 $2B $26 $2C $28 for sprites 0-5, $24 for 6), colours and start positions (Mr Hat, sprite 4, at X $85, Y $CC). It initialises the play variables (walk counters $FB-$FF, flags $B7, $39, $40, $45, $BD; the score digit pointers $41DD-$4261, so the score starts at zero), sets sprite 3's direction to DEC ($1C12), calls $802D, installs the IRQ $1C00 and jumps through $A817 to room 1's main loop at $42EF."
+   "text": "Second part of room 1's set-up (jumped to from $1A1E). Draws more objects ($A7D9 at $1A,$13 and at $14,5, $A7F8 at $14,7, $A782 at 2,$0C), the logo ($1A21), the status line: life marks $1449, the words SCORE, ROOM and STAGE, the score 000000 and the digits 1 for room and stage (from the tables at $1449-$1618 into bitmap rows 23-24). Then it sets up the sprites: enable $B2 (sprites 1, 4, 5, 7), multicolour $B7 (sprite 6 added at $1BD8), X high bit for sprite 5, sprite 5 double size, pointers ($25 $25 $2B $26 $2C $28 for sprites 0-5, $24 for 6), colours and start positions (Mr Hat, sprite 4, at X $85, Y $CC). It initialises the play variables (walk counters $FB-$FF, flags $B7, $39, $40, $45, $BD; the score digit pointers $41DD-$4261, so the score starts at zero), sets sprite 3's direction to DEC ($1C12), calls $802D, installs the IRQ $1C00 and jumps through $A817 to room 1's main loop at $42EF."
   },
   {
    "address": 7070,
@@ -20110,12 +20110,12 @@
   {
    "address": 7168,
    "type": "line",
-   "text": "Room 1's interrupt routine, installed in $0314/$0315 by $1BF3. It runs a chain of jumps, each part ending in a JMP to the next: $AAB2 (redraws two screen cells in column $23 when sprite 1's X is $80 or $00), $A73F (sprite 7's octopus frames, $3B/$3C every 8 ticks of $64F0), $1C03 here (the guardians' motion), $7000 (sprites 0 and 1 frames), $8215 and $BF30 onward, and finally the KERNAL's $EA31."
+   "text": "Room 1's interrupt routine, installed in $0314/$0315 by $1BF3. It runs a chain of jumps, each part ending in a JMP to the next: $AAB2 (when sprite 1's X is $80 or $00, redraws the two arrow pictures at column $23, rows 3 and $14, through $AA9A/$AA83, with screen colour $DC or $4C), $A73F (sprite 7's octopus frames, $3B/$3C every 8 ticks of $64F0), $1C03 here (the guardians' motion), $7000 (sprites 0 and 1 frames), $8215 and $BF30 onward, and finally the KERNAL's $EA31."
   },
   {
    "address": 7171,
    "type": "line",
-   "text": "Moves room 1's guardians once per interrupt: sprite 0 one pixel right, sprite 1 two pixels right, sprite 2 one pixel down, sprite 3 one pixel up or down (the opcode at $1C12). A sprite that reaches X $20 is switched on with a new height chosen from the raster line ($A944: sprite 0 at Y $94 or $86, $A960: sprite 1 at $5C or $4E), so it comes in on one of two floors at random; sprite 0 is switched off at X $D6, sprite 1 at X $E0. Sprite 2 is switched on at Y $46 and off at $D3. Sprite 3 turns at Y $FD (DEC, shape $26) and below $20 (INC, shape $34). Also counts sprite 1's animation timer $64F1. Ends with $1C90: INC $F8, JMP $7000."
+   "text": "Moves room 1's guardians once per interrupt: sprite 0 one pixel right, sprite 1 two pixels right, sprite 2 one pixel down ($D005), sprite 3 one pixel left or right ($D006, its X; the opcode at $1C12 is DEC or INC). A sprite that reaches X $20 is switched on with a new height chosen from the raster line ($A944: sprite 0 at Y $94 or $86, $A960: sprite 1 at $5C or $4E), so it comes in on one of two floors at random; sprite 0 is switched off at X $D6, sprite 1 at X $E0. Sprite 2 is switched on at Y $46 and off at $D3. Sprite 3 turns at X $FD or more (DEC, now moving left, shape $26) and at X below $20 (INC, moving right, shape $34); this routine never switches sprite 3 on. Also counts sprite 1's animation timer $64F1. Ends with $1C90: INC $F8, JMP $7000."
   },
   {
    "address": 7186,
@@ -20135,12 +20135,12 @@
   {
    "address": 7324,
    "type": "line",
-   "text": "Sets sprite 3's shape to $26 when it starts moving up ($1C4E), and returns to the checks at $1C51."
+   "text": "Sets sprite 3's shape to $26 when it turns to move left (X reached $FD, $1C4E), and returns to the checks at $1C51."
   },
   {
    "address": 7332,
    "type": "line",
-   "text": "Sets sprite 3's shape to $34 when it starts moving down ($1C8D), and goes on to $1C90."
+   "text": "Sets sprite 3's shape to $34 when it turns to move right (X below $20, $1C8D), and goes on to $1C90."
   },
   {
    "address": 7340,
@@ -20150,7 +20150,7 @@
   {
    "address": 7344,
    "type": "line",
-   "text": "Silences SID voice 1: zeroes $D400-$D406 (frequency, pulse width, control, envelope) and sets the volume $D418 to 15. Called before most of the game's effects (22 callers, $1E7E-$87BD)."
+   "text": "Silences SID voice 1: zeroes $D400-$D406 (frequency, pulse width, control, envelope) and sets the volume $D418 to 15. Called before most of the game's effects (23 callers, $1E7E-$87BD)."
   },
   {
    "address": 7362,
@@ -20175,7 +20175,7 @@
   {
    "address": 7410,
    "type": "line",
-   "text": "Silences SID voice 2: zeroes $D407-$D40D and sets the volume $D418 to 15. Called on every walking step before the click $1D04 (29 callers)."
+   "text": "Silences SID voice 2: zeroes $D407-$D40D and sets the volume $D418 to 15. 29 callers: the walking and climbing steps (room 1 and room 3's loops, the shared walk $5360/$5390, the ladder step $4B4D/$4B81, room 8's walk), which then play the footstep click $1D04; the main loops of rooms 2, 5, 6, 8 and 9; the jump routines of rooms 1, 11 and 4/7; and the lift check $1FA9."
   },
   {
    "address": 7428,
@@ -20225,7 +20225,7 @@
   {
    "address": 7645,
    "type": "line",
-   "text": "Starts the death picture: saves Mr Hat's current frame in $1E05, copies the 64-byte shape at $ACD8 into the sprite block $27 ($09C0), and points sprite 4 at it. Called by the death routine at $A87D."
+   "text": "Starts the death picture: saves Mr Hat's current frame in $1E05, copies the 64-byte shape at $ACD8 into the sprite block $27 ($09C0), and points sprite 4 at it. Called by the death routine at $A87D (and from the unreachable old death routine at $1D61)."
   },
   {
    "address": 7671,
@@ -20240,17 +20240,17 @@
   {
    "address": 7685,
    "type": "line",
-   "text": "Mr Hat's sprite frame at the moment of death, saved by $1DDD. The death routine reads it at $A880: if it was $32 or $33 (his front view in the lift) he is not made to sink to the floor."
+   "text": "Mr Hat's sprite frame at the moment of death, saved by $1DDD. The death routine reads it at $A880: if it was $32 or $33 (his climbing frames, set by the ladder step $4B20 and the room set-ups that place him on a ladder) he is not made to sink to the floor ($A8A0 is skipped)."
   },
   {
    "address": 7686,
    "type": "line",
-   "text": "Shared parameter, two uses: the left end of the X range tested by $A97C (X register in, compared with Mr Hat's $D008), and the saved column X of the picture routines $A9D2, $B800, $B83B and $BE60, which draw a picture in several passes."
+   "text": "Shared parameter, two uses: the left end of the X range tested by $A97C (X register in, compared with Mr Hat's $D008), and the saved column X of the picture routines $A9D2, $B800, $B83B, $BE60 and $BEAB, which draw a picture in several passes."
   },
   {
    "address": 7687,
    "type": "line",
-   "text": "Shared parameter: the right end (exclusive) of $A97C's X range, or the saved row Y of the picture routines $A9D2, $B800, $B83B and $BE60."
+   "text": "Shared parameter: the right end (exclusive) of $A97C's X range, or the saved row Y of the picture routines $A9D2, $B800, $B83B, $BE60 and $BEAB."
   },
   {
    "address": 7688,
@@ -20265,17 +20265,17 @@
   {
    "address": 7712,
    "type": "line",
-   "text": "Room 1, bottom floor (Y $CC), run on each step: first $A9B8 kills Mr Hat if his X is in $C4-$F3 while he stands on the floor, then by his X ($D008, 8-bit): at $20 he is pushed back right (the left wall); at $FF in the air he is moved back 6 pixels (the right wall), and when the 8-bit X has wrapped to $00 or $01 on the floor $4000 runs (the lift) and his colour $D02C becomes 3; at $78, while the screen cell $072B is $B2, he takes the object there: cells $072B/$0703 are blanked ($CC), $FC = $20 and a sound plays; at $A0, while cell $06BC is $2C (the closed door), he opens it if $FC = $20 (cells $06BC/$06BD and $0734/$0735 become $1C) or is held back a pixel; at $50 with $BD = $60 it writes $D015 OR $C0 into the background colour $D022 (probably meant for $D015) and jumps to $44C0. Otherwise the guardian check $1F70."
+   "text": "Room 1, bottom floor (Y $CC), run on each step: first $A9B8 kills Mr Hat if his X is in $C4-$F3 while he stands on the floor, then by his X ($D008, 8-bit): at $20 he is pushed back right (the left wall); at $FF in the air he is moved back 6 pixels (the right wall); when the 8-bit X has wrapped to $00 on the floor, or is $01 at any height, $4000 runs (the lift) and sprite 5's colour $D02C (the lift cabin) is set to 3, while X $00 in the air moves him back 6 pixels; at $78, while the screen cell $072B is $B2, he takes the object there: cells $072B/$0703 are blanked ($CC), $FC = $20, $D022 is written ($2C, then INC), and $1CB0 (voice 1 off) and $1CC2 (an empty RTS) are called, so no sound plays; at $A0, while cell $06BC is $2C (the closed door), he opens it if $FC = $20 (cells $06BC/$06BD and $0734/$0735 become $1C; $1CB0 and the empty $1CD2 again) or is held back a pixel; at $50 with $BD = $60 it writes $D015 OR $C0 into the background colour $D022 (probably meant for $D015) and jumps to $44C0. Otherwise the guardian check $1F70."
   },
   {
    "address": 7898,
    "type": "line",
-   "text": "Room 1, middle floor (Y $94), run on each step: at X $20 pushed back right; at X $30, while cell $060A is $B7, he takes the object there: background colour $D022 stepped, cells $05E2/$060A blanked, the status cells $07BE/$07E6 lit ($7C) and $39 = $40. With X in $80-$A7 and Y in $94-$A9 he is killed ($1D50, a hazard). At X $FF in the air he is moved back 6 pixels; at X $00 or $01 on the floor $4000 (the lift) runs. Then the guardian check $1F70."
+   "text": "Room 1, middle floor (Y $94), run on each step: at X $20 pushed back right; at X $30, while cell $060A is $B7, he takes the object there: $1CB0 (voice 1 off) and the empty $1CC2, background colour $D022 stepped three times, cells $05E2/$060A blanked, the status cells $07BE/$07E6 lit ($7C) and $39 = $40. With X in $80-$A7 and Y in $94-$A9 he is killed ($1D50, a hazard). At X $FF in the air he is moved back 6 pixels; X $00 on the floor, or $01 at any height, runs $4000 (the lift) and sets sprite 5's colour $D02C to 3; X $00 in the air moves him back 6 pixels. Then the guardian check $1F70."
   },
   {
    "address": 7990,
    "type": "line",
-   "text": "The right-edge part of the middle-floor check $1EDA (jumped to from $1F1D/$1F2B when Mr Hat is outside the hazard): wall at X $FF unless he is at floor height $94, lift ($4000) at X $00/$01 on the floor, then the guardian check."
+   "text": "The right-edge part of the middle-floor check $1EDA (reached from $1F1D, $1F22, $1F2B and $1F30 when Mr Hat is outside the hazard): wall at X $FF unless he is at floor height $94, lift ($4000) at X $00 on the floor or X $01 at any height, X $00 in the air moved back 6 pixels, then the guardian check."
   },
   {
    "address": 8048,
@@ -20290,7 +20290,7 @@
   {
    "address": 8105,
    "type": "line",
-   "text": "Called first by the lift routine $4000: silences voice 2, fires the room-1 timed event $44E0 when the timer $F9:$F8 reads $20:$F0, and, once that event has run (its first byte rewritten to RTS) and Mr Hat is on the bottom floor (Y $CC), sets sprite 5's colour to 3, writes RTS over $1FBB so this part runs only once (put back to LDA by $706A), and jumps to $4469 in room 1's loop."
+   "text": "Called first by the lift routine $4000: silences voice 2, fires the room-1 timed event $44E0 when the timer $F9:$F8 reads $20:$F0, and, once that event has run (its first byte rewritten to RTS) and Mr Hat is on the bottom floor (Y $CC), sets sprite 5's colour to 3, writes RTS over $1FBB so this part runs only once (put back to LDA by $706A), and jumps to $4469 in room 1's loop. The wait for $44E0 to become RTS ($1FBB-$1FD3) looks unreachable in play: $44E0 turns into RTS only through timer_oneshot_44e0, which needs $F9 = $20, and in room 1 $F9 gets $20 only at $44C2, on the path that leaves at once for room 3 (whose set-up clears $F8-$FF at $4894); room 1 has no ladder to step $F9 ($4B38, $4B6C). Traced, not tested."
   },
   {
    "address": 8123,
@@ -20325,7 +20325,7 @@
   {
    "address": 8176,
    "type": "line",
-   "text": "Unreachable copy of a floor-edge check like $1F4F: if Mr Hat's Y is $5C it calls the lift $4000 and sets $D02C = 3, otherwise its BNE goes to $1FDF, the middle of an instruction, so it would crash. No call to $1FF0 was found."
+   "text": "Unreachable copy of a floor-edge check like $1F4F: if Mr Hat's Y is $5C it calls the lift $4000 and sets $D02C = 3; otherwise its BNE goes to $1FDF, the operand byte of the BNE at $1FDE, where the bytes would run as INC $4C,X / ADC $6044,X / RTS. No call to $1FF0 was found."
   },
   {
    "address": 15656,
@@ -20395,7 +20395,7 @@
   {
    "address": 16201,
    "type": "line",
-   "text": "Copy of the rectangle's column kept by $A650, so that the colour-RAM pass $A664 and the bitmap pass $A690 can start again from it."
+   "text": "Copy of the rectangle's column kept by $A650, so that the bitmap pass $A690 can start again from it. The colour-RAM pass at $A665 that would also reread it ($A66D) is unreachable since $A663 became RTS."
   },
   {
    "address": 16202,
@@ -20415,7 +20415,7 @@
   {
    "address": 16256,
    "type": "line",
-   "text": "The 'Mr.Hat' logo at the left of the status line: a bitmap picture of 8 x 2 cells (128 bytes, $3F80-$3FBF the top row, $3FC0-$3FFF the bottom row). $A702 fills its screen and colour bytes ($9C, $4C) and copies it with $A690 to column X, row Y; room 1's set-up calls it through $1A21 with column 0, row $17 (23)."
+   "text": "The 'Mr.Hat' logo at the left of the status line: a bitmap picture of 8 x 2 cells (128 bytes, $3F80-$3FBF the top row, $3FC0-$3FFF the bottom row). $A702 fills its screen bytes with $9C (it also passes $4C for colour RAM, but that pass, after the RTS at $A663, never runs) and copies it with $A690 to column X, row Y; room 1's set-up calls it through $1A21 with column 0, row $17 (23)."
   },
   {
    "address": 16320,
@@ -20430,7 +20430,7 @@
   {
    "address": 16395,
    "type": "line",
-   "text": "Operand low byte ($FC) of STA $07FC at $400A. Also read as data by LDA $400B at $102B (masked with $F0), in a routine at $1020 whose purpose is not established."
+   "text": "Operand low byte ($FC) of STA $07FC at $400A. Also read as data by LDA $400B at $102B in $1020 (called only from $A97C), masked with $F0: so $1020 always returns $F0, and $A97C's following CMP #$10 never matches."
   },
   {
    "address": 16411,
@@ -20445,7 +20445,7 @@
   {
    "address": 16546,
    "type": "line",
-   "text": "Called once per lift step ($402B, $4063): INC $D021. In the play screen's hires bitmap mode ($D011=$3B, $D016=$C8 in play-room1.vsf) $D021 is not shown, so this has no visible effect."
+   "text": "Called once at the start of each lift ride, before the 56-step move (down at $402B, up at $4063): INC $D021. In the play screen's hires bitmap mode ($D011=$3B, $D016=$C8 in play-room1.vsf) $D021 is not shown, so this has no visible effect."
   },
   {
    "address": 16550,
@@ -20485,12 +20485,12 @@
   {
    "address": 16661,
    "type": "line",
-   "text": "Unused: a lone RTS between the room 1 top-floor branches; nothing reaches it."
+   "text": "A stray RTS ($60) inside room1_top_floor, between the JMP $412C at $4112 and $4116: nothing transfers to $4115 itself. The code after it is live: $4116-$41A4 (room1_top_floor_right) is the rest of room 1's top-floor handler, reached by the BCS $4116 at $4110 when X >= $A0."
   },
   {
    "address": 16662,
    "type": "line",
-   "text": "room1_top_floor, X at $A0 or more: from $C8 on to the X=$F8 tests; between $A0 and $C7 the floor hazard, deadly unless Mr Hat is in the air (Y < $5C)."
+   "text": "room1_top_floor_right, the rest of room 1's top-floor handler, entered by the BCS at $4110 when X is $A0 or more (below $A0 the JMP at $4112 goes straight to the X tests at $412C). From $C8 on, and between $A0 and $C7 while Mr Hat is in the air (Y < $5C), on to the X tests; otherwise, between $A0 and $C7, the floor hazard: JSR $1D50 at $4128 for Y $5C-$7B (Y >= $7C, which the top floor never has, goes to $4139). The X tests at $412C, reached for every X but the hazard: X=$F8 the column-26 object when $39=$40 (else pushed right); X low byte $FF, or 0, with Y not $5C pushed six pixels left; X 0 at Y $5C, or X 1, rides the lift (JSR $4000 at $4195); then the guardian test JSR $1F70 at $41A1."
   },
   {
    "address": 16680,
@@ -20510,7 +20510,7 @@
   {
    "address": 16816,
    "type": "line",
-   "text": "Jump sound, called on every rising and falling step of a jump in rooms 1 and 3 and in the jump copies of the other rooms ($5241, $5AAD, $626D, $6A6D, $76FD, $86FD, $936D and their partners). Sets SID voice 2 control $D40B=$25 and attack/decay $D40C=$88, then adds the jump step counter $99 to A 25 times (ADC, carry not cleared), storing each sum in voice 2's frequency high byte $D408: the pitch follows the step count $99 (0-$14)."
+   "text": "Jump sound, called on each of the 21 rising steps of a jump (the first phase only; the level and falling phases are silent), two call sites per room: room 1 ($43A0, $43FD), room 3 ($49BA, $4A17) and the jump copies of the other rooms ($5241, $5AAD, $626D, $6A6D, $76FD, $86FD, $936D and their partners). Sets SID voice 2 control $D40B=$25 and attack/decay $D40C=$88, then adds the jump step counter $99 to A 25 times (ADC, carry not cleared), storing each sum in voice 2's frequency high byte $D408: the pitch follows the step count $99 (0-$14). Runs in the main loop, not in an interrupt."
   },
   {
    "address": 16843,
@@ -20525,7 +20525,7 @@
   {
    "address": 16858,
    "type": "line",
-   "text": "Adds 1000 points to the score shown on the status line (six digits at columns 13-18 of character rows 23-24, drawn into the bitmap: the thousands digit is column 15, bitmap $3D38/$3E78). Digit glyphs are 16 bytes each at $1600 (top 8 bytes, then bottom 8; '0' at $1600 ... '9' at $1690). Copies the glyph whose address sits in the self-modified operands $41DD/$41E3 into column 15, counts the thousands in $40 and moves the operands on by $10. At the tenth step it redraws column 15 as '0', resets the operands to $10/$18, clears $40 and draws the next ten-thousands glyph (operands $4215/$421B) into column 14 ($3D30/$3E70), counted in $45; at ten of those, column 14 back to '0' and the next hundred-thousands glyph (operands $425B/$4261) into column 13 ($3D28/$3E68). Nothing carries past column 13: a tenth carry there would draw the 16 bytes at $16A0, which are not a digit. Called by many rooms (15 call sites, $5C2F-$8AD5); $1BA2-$1BBC resets the operands and $40/$45 at the start of a game."
+   "text": "Adds 1000 points to the score shown on the status line (six digits at columns 13-18 of character rows 23-24, drawn into the bitmap: the thousands digit is column 15, bitmap $3D38/$3E78). Digit glyphs are 16 bytes each at $1600 (top 8 bytes, then bottom 8; '0' at $1600 ... '9' at $1690). Copies the glyph whose address sits in the self-modified operands $41DD/$41E3 into column 15, counts the thousands in $40 and moves the operands on by $10. At the tenth step it redraws column 15 as '0', resets the operands to $10/$18, clears $40 and draws the next ten-thousands glyph (operands $4215/$421B) into column 14 ($3D30/$3E70), counted in $45; at ten of those, column 14 back to '0' and the next hundred-thousands glyph (operands $425B/$4261) into column 13 ($3D28/$3E68). Nothing carries past column 13: a tenth carry there would draw the 16 bytes at $16A0, which are not a digit. Called directly from 15 sites ($5C2F-$8AD5), one of them $8AD5 in $8AD0, through which the 10,000-75,000 adders $120E-$1247 call it; $1BA2-$1BBC resets the operands and $40/$45 at the start of a game."
   },
   {
    "address": 16861,
@@ -20545,7 +20545,7 @@
   {
    "address": 16917,
    "type": "line",
-   "text": "Self-modified operand: low byte of LDA $16x0,X for the next ten-thousands digit's top half (reset to $10 at $1BA7 and $426D, moved on at $4233-$4238: ADC #$0F with the carry the CMP #$0A at $41F1 left set)."
+   "text": "Self-modified operand: low byte of LDA $16x0,X for the next ten-thousands digit's top half (reset to $10 at $1BA7 and $426D, moved on at $4233-$4238: ADC #$0F with the carry that the CPX #$08 ending the copy loop at $4221 leaves set, so +$10)."
   },
   {
    "address": 16923,
@@ -20575,7 +20575,7 @@
   {
    "address": 17120,
    "type": "line",
-   "text": "Busy-wait: 80 passes of a 256-step X loop (about 0.1 s). Called between the three phases of every jump, in rooms 1 and 3 and in the jump copies of the other rooms (48 call sites)."
+   "text": "Busy-wait: 80 passes of a 256-step X loop (about 0.1 s). Called after each of the three phases of a jump in rooms 1, 2, 3, 5, 6, 9, 11 and 4/7 (48 call sites, six per jump copy; room 8's jump uses its own copy, room8_jump_pause $6BC7), and once more from the disabled routine at $451F ($453F)."
   },
   {
    "address": 17133,
@@ -20585,7 +20585,7 @@
   {
    "address": 17135,
    "type": "line",
-   "text": "Room 1 (stage 1): one pass of the main loop, entered from $A81A (the room table's first entry, reached by JMP $A817 at $1BFC after room 1 is set up, and again at the end of every pass, $4601/$4609). If $F6=$30 (Mr Hat has just died) JSR $1FD7 puts him back (room1_respawn_position) and goes to game over if $D8=$40. Turns sprite 4 (Mr Hat) on. Joystick port 2, each test an exact value of $DC00: right ($77) one step right (INC $D008), walking frames $2C-$2E from $FD changing every 9 steps (counter $FB), voice 2 off ($1CF2), footstep tick ($1D04), 5x256 delay; down ($7D) shows the crouch frame $2A and stays while down is held, calling $6FDB (the timer and exit checks plus the floor handler) each pass; left ($7B) as right with frames $2F-$31 from $FF; fire ($6F) jumps (room1_jump). Stick up is not tested here: outside the lift it does nothing. Diagonals and fire with a direction match none of these tests. Then room1_loop_tail."
+   "text": "Room 1 (stage 1): one pass of the main loop, entered from $A81A (the room table's first entry, reached by JMP $A817 at $1BFC after room 1 is set up, and again at the end of every pass, $4601/$4609). If $F6=$30 (Mr Hat has just died) JSR $1FD7 puts him back (room1_respawn_position) and goes to game over if $D8=$40. Turns sprite 4 (Mr Hat) on. Joystick port 2, each test an exact value of $DC00: right ($77) one step right (INC $D008), walking frames $2C-$2E from $FD changing every 9 steps (counter $FB), voice 2 off ($1CF2), footstep tick ($1D04), 5x256 delay; down ($7D) shows the crouch frame $2A and stays while down is held, calling $6FDB (the timer and exit checks plus the floor handler) each pass; left ($7B) as right with frames $2F-$31 from $FF; fire ($6F) jumps (room1_jump). Stick up is not tested here: outside the lift it does nothing. Diagonals match none of the tests. Every pass then goes on to room1_rejump_check (JMP $444F at $43F2 when fire alone is not held), which tests fire with right ($67) or left ($6B), so those jump too, even from standing."
   },
   {
    "address": 17209,
@@ -20600,12 +20600,12 @@
   {
    "address": 17297,
    "type": "line",
-   "text": "Room 1 jump, on fire alone ($DC00=$6F). Facing right (frame below $2F): frame $2D and 21 ($15) steps up and right, frame $2C and 21 steps right, frame $2E and 21 steps down and right; facing left: frames $30, $2F, $31 with the X steps reversed. Each step is one pixel each way, plays jump_step_sound with the step count $99, and calls $08A1 (the room 1 floor handler, so hazards and the lift work in the air); delay_80x256 after each phase. So a jump is 63 pixels across and 21 high."
+   "text": "Room 1 jump, on fire alone ($DC00=$6F). Facing right (frame below $2F): frame $2D and 21 ($15) steps up and right, frame $2C and 21 steps right, frame $2E and 21 steps down and right; facing left: frames $30, $2F, $31 with the X steps reversed. Each step moves one pixel each way and calls $08A1 (the room 1 floor handler, so hazards and the lift work in the air); only the 21 rising steps play jump_step_sound with the step count $99 (voice 2 silenced once before them facing right, before each step facing left); delay_80x256 after each phase. So a jump is 63 pixels across and 21 high."
   },
   {
    "address": 17487,
    "type": "line",
-   "text": "After a room 1 jump: fire held with right ($67) or with left ($6B) jumps again at once (JSR $6FDB, back to room1_jump; the direction comes from the current frame, not from the stick). Then $08A1 (floor handler) and room1_gameover_check."
+   "text": "Room 1, after every pass of the main loop (from $43F2, or falling through after a left-facing jump), not only after a jump: fire held with right ($67) or with left ($6B) jumps (JSR $6FDB, back to room1_jump; the direction comes from the current frame, not from the stick), so fire with a direction jumps even from standing. Then $08A1 (floor handler) and room1_gameover_check."
   },
   {
    "address": 17513,
@@ -20640,7 +20640,7 @@
   {
    "address": 17551,
    "type": "line",
-   "text": "Unreachable leftover: voice 3 sustain/release $D412 from A, $D413=$77, voice 3 frequency high $D40F=$10, RTS. Nothing references $448F (searched by bytes)."
+   "text": "Unreachable leftover: voice 3 control $D412 from A, attack/decay $D413=$77, voice 3 frequency high $D40F=$10, RTS. Nothing references $448F (searched by bytes)."
   },
   {
    "address": 17565,
@@ -20650,7 +20650,7 @@
   {
    "address": 17566,
    "type": "line",
-   "text": "Room 1 loop tail, after the game-over test. If $F9=$20 and $F8=$F0 (the timer that $44C0 starts and room 1's IRQ counts in $F8 at $1C90) runs timer_oneshot_44e0. If $F7=$20 leaves the room (room1_exit_by_f7); otherwise room1_stand_and_loop. In room 1 nothing writes $F7 after the start-up clears it ($0887); only another room's IRQ counts it ($609C), so this exit is not known to be reachable from room 1."
+   "text": "Room 1 loop tail, after the game-over test. If $F9=$20 and $F8=$F0 runs timer_oneshot_44e0. If $F7=$20 leaves the room (room1_exit_by_f7); otherwise room1_stand_and_loop. Neither test is known to pass in room 1: $F9 is 0 from the start-up ($088B) and room 1 sets it to $20 only at $44C2, which leaves for room 3 at once (room 3's set-up clears $F8-$FF at $4894); room 1's IRQ counts only $F8 ($1C90). Nothing in room 1 writes $F7 after the start-up clears it ($0887); only room 6's IRQ counts it ($609C)."
   },
   {
    "address": 17593,
@@ -20665,7 +20665,7 @@
   {
    "address": 17600,
    "type": "line",
-   "text": "Room 1's way out, reached by JMP from the bottom-floor handler at $1ED3 when Mr Hat is at X=$50 and $BD=$60 (the black object on the top floor was taken, $4109). Starts the timer ($F9=$20, $F8=0), JSR $AAF0 (drawing calls to $A763 and $A67F with X,Y = 7,$12 and 3,$13, not analysed here, then a pause of seven 65,536-pass loops at $AB0A-$AB23), then room1_exit_to_room3. The JMP leaves the floor handler's return addresses on the stack."
+   "text": "Room 1's way out, reached by JMP from the bottom-floor handler at $1ED3 when Mr Hat is at X=$50 and $BD=$60 (the black object on the top floor was taken, $4109). Sets the timer $F9=$20, $F8=0 (it never fires: the code goes straight on to room 3, whose set-up clears $F8-$FF at $4894), JSR $AAF0 (drawing calls to $A763 and $A67F with X,Y = 7,$12 and 3,$13, not analysed here, then a pause of seven 65,536-pass loops at $AB0A-$AB23), then room1_exit_to_room3. The JMP leaves the floor handler's return addresses on the stack."
   },
   {
    "address": 17617,
@@ -20685,7 +20685,7 @@
   {
    "address": 17632,
    "type": "line",
-   "text": "One-shot routine run when the timer reaches $F9=$20, $F8=$F0 (from $1FB8, $44AA, $6FE7). Its first byte is self-modified: the start-up stores $20 (JSR) here at $0891, and $44F2 stores $60 (RTS) so later calls return at once. Writes $D022 three times (no visible effect), sets $FA=$20 (nothing found reads $FA), calls $451E, which is a bare RTS (so the animation at $451F stays disabled), and kills Mr Hat (JSR $1D50) only if his Y is 0. $1FBB tests this byte for $60."
+   "text": "One-shot routine for the timer $F9=$20, $F8=$F0, called from $1FB8, $44AA and $6FE7 (all room 1 code). No call is known to happen in play: $F9 is $20 only after $44C2, which leaves room 1 at once for room 3, whose set-up clears $F8-$FF ($4894). Its first byte is self-modified: the start-up stores $20 (JSR) here at $0891, and $44F2 stores $60 (RTS) so later calls return at once. Writes $D022 four times ($2A through set_d022_2a, then $81, $2D, $04; no visible effect), sets $FA=$20 (nothing found reads $FA), calls $451E, which is a bare RTS (so the routine at $451F stays disabled), and kills Mr Hat (JSR $1D50) only if his Y is 0. $1FBB tests this byte for $60."
   },
   {
    "address": 17650,
@@ -20700,7 +20700,7 @@
   {
    "address": 17674,
    "type": "line",
-   "text": "A bare RTS, called from $65C5."
+   "text": "A bare RTS, called from $65C5 (call_empty_450a), $7B40 (unused_crouch_and_die) and $81FB (unref_silence_v1_81f8)."
   },
   {
    "address": 17675,
@@ -20725,7 +20725,7 @@
   {
    "address": 17695,
    "type": "line",
-   "text": "Disabled routine: nothing calls it (the only nearby call, $44FB, targets the RTS at $451E; no other reference by bytes). As written it would JSR $1F9C (clears $F6, turns every sprite off), cycle the colour of cells rows 17-21, columns 3-7 (value $A6, self-modified at $4527 and incremented each pass, with delay_80x256) until $F6 reaches $18, colour row 17 columns 3-7 $6E and rows 18-21 columns 4-6 $E0, turn sprite 6 off, copy bitmap bytes from $08B8-$08FF into bitmap $36A0, $37E0-$37F7, $3920-$3937, $3A60-$3A77 (rows 18-21, columns 4-6), set a few colour cells and JSR $08AD (keeps only sprites 4 and 5 on). What it showed is not known."
+   "text": "Disabled routine: nothing calls it (the only nearby call, $44FB, targets the RTS at $451E; no other reference by bytes). As written it would JSR $1F9C (clears $F6, turns every sprite off), cycle the colour of cells rows 17-21, columns 3-7 (value $A6, self-modified at $4527 and incremented each pass, with delay_80x256) until $F6 reaches $18, colour row 17 columns 3-7 $6E and rows 18-21 columns 4-6 $E0, turn sprite 6 off, copy bitmap bytes from $08B8-$08FF: 24 into $36A0-$36B7 (row 18, columns 4-6) and 8 each into $37E0/$37F0, $3920/$3930, $3A60/$3A70 (rows 19-21, columns 4 and 6 only), colour columns 3 and 7 of rows 18-21 $6E and column 5 of rows 19-21 $00, and JSR $08AD (keeps only sprites 4 and 5 on). What it showed is not known."
   },
   {
    "address": 17703,
@@ -20760,7 +20760,7 @@
   {
    "address": 17936,
    "type": "line",
-   "text": "Carries Mr Hat across the X=256 boundary of the sprite coordinate (bit 4 of $D010 is his X bit 8). Called when his X low byte is $00 or $FF: low byte $00 (stepping left from 256) clears the bit and sets X=$FE (254); anything else (low byte $FF, stepping right from 255) sets the bit and sets X=1 (257). 13 callers in rooms 2, 3 and later ($4B97, $53CB, $5C6D, $6475, $6D28, $7857, $94AE, $AB2B ...)."
+   "text": "Carries Mr Hat across the X=256 boundary of the sprite coordinate (bit 4 of $D010 is his X bit 8). Called when his X low byte is $00 or $FF: low byte $00 (he has stepped left from 257 to 256) clears the bit and sets X=$FE (254); anything else (low byte $FF: he has stepped right from 254 to 255) sets the bit and sets X=1 (257). 13 callers in rooms 2, 3 and later ($4B97, $53CB, $5C6D, $6475, $6D28, $7857, $94AE, $AB2B ...)."
   },
   {
    "address": 17971,
@@ -20770,7 +20770,7 @@
   {
    "address": 17977,
    "type": "line",
-   "text": "Room 3 set-up helper: sprite 3's pointer $07FB=$26, then JSR $56B0 (sprites off and IRQ $8215 via $45D5, screen blanked by $A4FD, and the room picture drawn by $A573 with Y=$FD, which room3_setup sets to $BA)."
+   "text": "Room 3 set-up helper: sprite 3's pointer $07FB=$26, then JSR $56B0 (sprites off and IRQ $8215 via $45D5, screen blanked by $A4FD, then $A573 fills the colour cells with the byte in $FD, which room3_setup sets to $BA). The picture itself is drawn afterwards by room3_setup and its continuations."
   },
   {
    "address": 17986,
@@ -20790,7 +20790,7 @@
   {
    "address": 18229,
    "type": "line",
-   "text": "Room 3 set-up, continued: copies 24 bitmap bytes from $1119 to $2320 (row 2, columns 20-22, the ladder's top), draws four objects through $A7D9/$A7F8 at X,Y = 15,5 / 17,5 / 15,7 / 17,7, has one call replaced by INC $D022 ($4762, no visible effect), draws more through $AB70, $AB8F, $AB97 (with $27=$4C) and $ABAE, sets $100C=3 (room 2 sets 2; meaning not established), sprite 7 (a guardian) pointer $3D, colour 1, on, at X=$FF Y=$5C with its X bit 8 cleared, all sprites multicolour ($D01C=$FF), $100D=0, and draws the ladder: gfx_ladder_row copied into the bitmap 13 times from $2820 down (rows 6-18, columns 20-22, sprite X $B8)."
+   "text": "Room 3 set-up, continued: copies 24 bitmap bytes from $1119 (gfx_shelf, a shelf or table top that room 1 also draws) to $2320 (row 2, columns 20-22), draws four objects through $A7D9/$A7F8 at X,Y = 15,5 / 17,5 / 15,7 / 17,7, has one call replaced by INC $D022 ($4762, no visible effect), draws more through $AB70, $AB8F, $AB97 (with $27=$4C) and $ABAE, sets $100C=3 (the room number; room 2 sets 2), sprite 7 (a guardian) pointer $3D, colour 1, on, at X=$FF Y=$5C with its X bit 8 cleared, all sprites multicolour ($D01C=$FF), $100D=0, and draws the ladder: gfx_ladder_row copied into the bitmap 13 times from $2820 down (rows 6-18, columns 20-22, sprite X $B8)."
   },
   {
    "address": 18434,
@@ -20800,7 +20800,7 @@
   {
    "address": 18458,
    "type": "line",
-   "text": "Room 3 set-up, continued: sprite 5 colour $0A, sprite 3 pointer $3B, the ROOM digit '3' (glyph $1630/$1638) into the status line at $3D80/$3EC0 (column 24), then room3_setup_4."
+   "text": "Room 3 set-up, continued: sprite 3 colour $0A ($D02A), sprite 3 pointer $3B, the ROOM digit '3' (glyph $1630/$1638) into the status line at $3D80/$3EC0 (column 24), then room3_setup_4."
   },
   {
    "address": 18490,
@@ -20840,7 +20840,7 @@
   {
    "address": 18608,
    "type": "line",
-   "text": "Room 3's IRQ handler (installed at $489F-$48AA; nothing calls it directly). JSR $B92D and JSR $B877 (not analysed here); moves sprite 2 down one pixel and sprite 3 left one pixel per interrupt; turns sprite 2 on when its Y reaches $44 and off from Y $B8 (it falls down the ladder's column, X=$B9); when sprite 3's X low byte reaches 0, flips its X bit 8 ($D010 bit 3) and sets X=$FE, so it walks right to left across the whole bottom floor repeatedly. Ends JMP $8215 (JMP $BF30, the shared IRQ tail)."
+   "text": "Room 3's IRQ handler (installed at $489F-$48AA; nothing calls it directly). JSR $B92D (sprite 7, frames $3D/$3E, 8 pixels left then 7 right in turn, counted in $100D) and JSR $B877 (sprite 3 one pixel left, its frame toggled $3B/$3C every 5 interrupts by $100A); then moves sprite 2 down one pixel and sprite 3 a second pixel left, so sprite 3 walks two pixels per interrupt; turns sprite 2 on when its Y reaches $44 and off from Y $B8 (it falls down the ladder's column, X=$B9); when sprite 3's X low byte reaches 0, flips its X bit 8 ($D010 bit 3) and sets X=$FE, so it walks right to left across the whole bottom floor repeatedly. Ends JMP $8215 (JMP $BF30, the shared IRQ tail)."
   },
   {
    "address": 18670,
@@ -20865,7 +20865,7 @@
   {
    "address": 18717,
    "type": "line",
-   "text": "One pass of room 3's loop (also JMP from $6DFC, inside a subroutine). room3_respawn_check first; then, as in room 1 but calling room3_step_checks after every movement: right ($DC00=$77) walks right with frames $2C-$2E, left ($7B) left with $2F-$31 (voice 2 off, footstep tick, a 5x256 delay at $501B); down ($7D) crouches (frame $2A) while held; fire alone ($6F) jumps 63 pixels across and 21 up in three 21-step phases (frames $2D/$2C/$2E right, $30/$2F/$31 left, jump_step_sound, delay_80x256 between phases); fire with right ($67) or left ($6B) after a jump jumps again. Ends with the standing frame, the game-over test ($D8=$40 to game_over) and room3_step_checks, then loops. Stick up is not tested here; it climbs only at the ladder (room3_bottom_floor)."
+   "text": "One pass of room 3's loop (also JMP from $6DFC, inside a subroutine). room3_respawn_check first; then, as in room 1 but calling room3_step_checks after every movement: right ($DC00=$77) walks right with frames $2C-$2E, left ($7B) left with $2F-$31 (voice 2 off, footstep tick, a 5x256 delay at $501B); down ($7D) crouches (frame $2A) while held; fire alone ($6F) jumps 63 pixels across and 21 up in three 21-step phases (frames $2D/$2C/$2E right, $30/$2F/$31 left, jump_step_sound on the rising steps only, delay_80x256 after each phase). Every pass then tests fire with right ($67) or left ($6B) at $4A69 (reached by JMP from $4A0C whenever fire alone is not held), which jumps again, even from standing. Ends with the standing frame, the game-over test ($D8=$40 to game_over) and room3_step_checks, then loops. Stick up is not tested here; it climbs only at the ladder's foot (room3_bottom_floor), and stick down at its top (room3_top_floor) climbs down."
   },
   {
    "address": 18855,
@@ -20905,7 +20905,7 @@
   {
    "address": 19150,
    "type": "line",
-   "text": "A second room-state byte: cleared at game start ($567D), read and written by room 2 ($5593, $55A2, $55E7) and other rooms ($5D7F, $6587, $6DDC, $7092, $7B23). $20 in the hand-over, $00 in play-room1.vsf. Meaning not established."
+   "text": "Guardian-touch flag: the shared collision test $55B0 sets it to $20 ($55E7) when $D01E holds one of its exact values; its callers read it and, when $20, kill Mr Hat ($55F5) and clear it: $5593/$55A2 (the shared check $5590), $5D7F/$5D90 (room 5's ladders), $6587/$6598 (room6_ladder_hit), $6DDC (room8_shaft_ride), $7B23/$7B34 (room9_ladder_collision). Cleared at game start ($567D) and at $7092. $20 in the hand-over, $00 in play-room1.vsf."
   },
   {
    "address": 19151,
@@ -20940,7 +20940,7 @@
   {
    "address": 19212,
    "type": "line",
-   "text": "Ladder loop for room 3: ladder_climb_step, then $5028 (sprite collision $D01E = $14 or $18 kills through room2_guardian_hit), repeated until Mr Hat's Y is $B4 (bottom) or $5C (top). Also called from room3_climb_up ($48FF)."
+   "text": "Ladder loop for room 3: ladder_climb_step, then $5028 (sprite collision $D01E = $14 or $18 kills through room3_ladder_guardian_hit $4CC7), repeated until Mr Hat's Y is $B4 (bottom) or $5C (top). Entered by falling through from room3_climb_down ($4AFD) and called from room3_climb_up ($48FF)."
   },
   {
    "address": 19231,
@@ -20960,7 +20960,7 @@
   {
    "address": 19341,
    "type": "line",
-   "text": "Room 3 bottom floor (Y >= $5D), per step, from $1043: guardian_hit_check (JSR $8E08); X low byte $FF or $00: mrhat_cross_x256. X $B3-$C0 with stick up ($7E): onto the ladder (room3_climb_up). With $D010 below $29 (taken to mean Mr Hat's X bit 8 clear): X=$40 with cell $06AB = $7C (the yellow object at rows 17-18, columns 3-5) takes it: dummy $D022 writes, voice1_off, voice1_off_b, cells $06AB-$06AD, $06D3-$06D5 blanked ($CC); X below $18 leaves by the left: room_exit_code=$08, X bit 8 set and X=$FE (room3_exit_left_place). With $D010 at $29 or more and X low byte $50 (X=$150): room_exit_code=$10. The exits themselves happen in room3_exit_dispatch."
+   "text": "Room 3 bottom floor (Y >= $5D), per step, from $1043: JSR $8E08 (guardian_hit_check, then the object pick-ups $8E13); X low byte $FF or $00: mrhat_cross_x256. X $B3-$C0 with stick up ($7E): onto the ladder (room3_climb_up). With $D010 below $29 (taken to mean Mr Hat's X bit 8 clear): X=$40 with cell $06AB = $7C (the yellow object at rows 17-18, columns 3-5) takes it: dummy $D022 writes, voice1_off, voice1_off_b, cells $06AB-$06AD, $06D3-$06D5 blanked ($CC); X below $18 leaves by the left: room_exit_code=$08, X bit 8 set and X=$FE (room3_exit_left_place). With $D010 at $29 or more and X low byte $50 (X=$150): room_exit_code=$10. The exits themselves happen in room3_exit_dispatch."
   },
   {
    "address": 19367,
@@ -21005,12 +21005,12 @@
   {
    "address": 19520,
    "type": "line",
-   "text": "Guardian collision for room 3 and others, called through $8E08: JSR $B666 (loses a life by lose_life if $D01E = $90, sprites 4 and 7, then returns $D01E again); A = $14 (sprites 2 and 4) or $18 (sprites 3 and 4) also loses a life. Exact values: a hit while a third sprite also touches gives another value and does not kill."
+   "text": "Guardian collision for room 3 only: its one caller is $8E08, which only room 3 calls (top floor $4AE7, bottom floor $4B8D). JSR $B666 (loses a life by lose_life if $D01E = $90, sprites 4 and 7, then returns $D01E again); A = $14 (sprites 2 and 4) or $18 (sprites 3 and 4) also loses a life. Exact values: a hit while a third sprite also touches gives another value and does not kill."
   },
   {
    "address": 19538,
    "type": "line",
-   "text": "Mr Hat dies and loses one life mark (called from $1061, $1077, $AB62, $B66D and guardian_hit_check). JSR $A877 (the death sequence: he sinks into the floor), reads $D01E to clear it, hides sprite 4, one dummy $D022 write, sets $F6=$30 (the 'just died' flag the room loop tests), then lives_mark_remove. Its first byte is switched between JSR ($20, $BF4C) and RTS ($60, $1258) by the timed invulnerability code at $1250/$1265/$BF4A, which does the same to $A877."
+   "text": "Mr Hat dies and loses one life mark (called from $1061, $1077, $AB62, $B66D and guardian_hit_check). JSR $A877 (the death sequence: he sinks into the floor), reads $D01E to clear it, hides sprite 4, one dummy $D022 write, sets $F6=$30 (the 'just died' flag the room loop tests), then lives_mark_remove. Its first byte is switched between JSR ($20, stored at $BF4C and $1281) and RTS ($60, $1258) by the timed invulnerability code at $1250/$1265/$BF4A, which does the same to $A877."
   },
   {
    "address": 19571,
@@ -21045,7 +21045,7 @@
   {
    "address": 19655,
    "type": "line",
-   "text": "Guardian hit on room 3's ladder: called from $502F/$5037 in $5028 when $D01E is $14 or $18; $5028's only caller is $4B0F, inside room 3's climb $4B0C (from $48FF). If $A877 holds $AD (the death routine is not switched off by the invulnerability code): JSR $A877 (death), Mr Hat to X=$50, Y=$5C, lives_mark_remove, sprite 4 off, clear_died_flag. Otherwise only reads $D01E."
+   "text": "Guardian hit on room 3's ladder: called from $502F/$5037 in $5028 when $D01E is $14 or $18; $5028's only caller is $4B0F, inside room 3's ladder loop $4B0C (called from room3_climb_up at $48FF and entered by falling through from room3_climb_down $4AFD). If $A877 holds $AD (the death routine is not switched off by the invulnerability code): JSR $A877 (death), Mr Hat to X=$50, Y=$5C, lives_mark_remove, sprite 4 off, clear_died_flag. Otherwise only reads $D01E."
   },
   {
    "address": 19701,
@@ -21070,7 +21070,7 @@
   {
    "address": 19840,
    "type": "line",
-   "text": "Set-up of ROOM 2 when it is reached from room 3's left exit (JMP from $4841, and from $6340, $9520, $9530, $956B, $957B). Draws the room picture with $FD=$BA (JSR $56B0, as room 3) and continues at room2_setup_2."
+   "text": "Set-up of ROOM 2, from every way in: room 3's left exit (JMP at $4841), room 6's exit ($6340, room6_exit_check) and the code rooms 4 and 7 share ($9520, $9530, $956B in room47_edges_exits; $957B in dead_cmp_956e). Draws the room picture with $FD=$BA (JSR $56B0, as room 3) and continues at room2_setup_2."
   },
   {
    "address": 19850,
@@ -21080,7 +21080,7 @@
   {
    "address": 19872,
    "type": "line",
-   "text": "Draws the ROOM digit '5' (glyph $1650/$1658) into the status line at $3D80/$3EC0 (column 24). Called only from $8137, which then calls $8100 (the STAGE digit '2'); which room that set-up belongs to is for the owner of $8000-$8FFF."
+   "text": "Draws the ROOM digit '5' (glyph $1650/$1658) into the status line at $3D80/$3EC0 (column 24). Called only from $8137, which room 5's set-up calls first ($573D JSR $8137) and which then calls $8100 (the STAGE digit '2')."
   },
   {
    "address": 19892,
@@ -21095,7 +21095,7 @@
   {
    "address": 19983,
    "type": "line",
-   "text": "Room 2: Mr Hat takes the object at rows 16-17, column 4 (called from $5406 at X=$40 when cell $0684 is $6C). Unless already done ($D8=$50): $F5=$20, $4F0B=$CC (only feeds dummy $D022 writes), cells $0684 and $06AC blanked, the item shown in the status line (cells $07BE/$07E6 = $6C, column 38), two dummy $D022 writes, voice 1 off, and $D8=$50 to mark it taken. $D8 is also the game-over flag ($40)."
+   "text": "Room 2: Mr Hat takes the object at rows 16-17, column 4 (called from $5406 at X=$40 when cell $0684 is $6C). Unless an object is already carried ($D8=$50, set by any of the four object takes): $F5=$20, $4F0B=$CC (only feeds dummy $D022 writes), cells $0684 and $06AC blanked, the item shown in the status line (cells $07BE/$07E6 = $6C, column 38), two dummy $D022 writes, voice 1 off, and $D8=$50 to mark an object carried. $D8 is also the game-over flag ($40)."
   },
   {
    "address": 20030,
@@ -21115,7 +21115,7 @@
   {
    "address": 20234,
    "type": "line",
-   "text": "Room 2 set-up: a run of NOPs left from removed code, holding the patched bytes $4F0B and $4F28, then the colour cells of the object at rows 4-6, columns 31-33 from the operands $4F6E and $4F7E (so a taken object stays gone), and room2_draw_shapes."
+   "text": "Room 2 set-up: LDA #$6C and two dummy STA $D022, then a run of NOPs left from removed code that holds the patched byte $4F28, then the colour cells of room 2's candle at rows 4-6, columns 23-25 ($04B7-$04B9, $04DF-$04E1, $0508) from the operands $4F6E and $4F7E (so the candle stays gone once taken), and room2_draw_shapes."
   },
   {
    "address": 20235,
@@ -21125,17 +21125,17 @@
   {
    "address": 20264,
    "type": "line",
-   "text": "A byte in the NOP run that other code rewrites: $90 at game start ($5695) and $CC when an object is taken ($54AA). As an instruction $CC is CPY $EAEA (harmless), but $90 is BCC $4F14, which loops on these NOPs for ever unless carry is set on arrival (after JSR $A7F8). That carry was not established; the game evidently passes."
+   "text": "A byte in the NOP run that other code rewrites: $90 at game start ($5695) and $CC when room 2's barrier at $0464 is opened ($54AA, which needs the carried object $F5=$20). As an instruction $CC is CPY $EAEA (harmless), but $90 is BCC $4F14, which would loop on these NOPs for ever if carry were clear on arrival (after JSR $A7F8 at $4EFC); facts.md traces it as set, so it never branches (not re-traced here)."
   },
   {
    "address": 20334,
    "type": "line",
-   "text": "Self-modified operand: colour for cells $04B7-$04B9, $04DF, $04E1 (rows 4-5, columns 31-33): $7C (yellow) at game start ($5688), $CC once taken ($54EA)."
+   "text": "Self-modified operand: colour for cells $04B7-$04B9, $04DF, $04E1 (rows 4-5, columns 23-25, room 2's candle): $7C (yellow) at game start ($5688), $CC once the candle is taken ($54EA)."
   },
   {
    "address": 20350,
    "type": "line",
-   "text": "Self-modified operand: colour for cells $04E0 and $0508 (rows 5-6, column 32): $1C at game start ($569A), $CC once taken ($54ED)."
+   "text": "Self-modified operand: colour for cells $04E0 and $0508 (rows 5-6, column 24, the candle's middle): $1C at game start ($569A), $CC once the candle is taken ($54ED)."
   },
   {
    "address": 20358,
@@ -21180,7 +21180,7 @@
   {
    "address": 20481,
    "type": "line",
-   "text": "Second byte of room2_cell_graphic_tail. Also the operand of LDA $5001,X at $760C, which copies 24 bytes from here ($5001-$5018, this graphic and the start of room2_setup_finish) into $D022, a register bitmap mode does not show."
+   "text": "Second byte of room2_cell_graphic_tail. Also the starting value of the self-modified operand of LDA $5001,X at $760C in room 9's IRQ, which copies 24 bytes to $D022 (a register bitmap mode does not show) and then adds $27 to its own low byte ($761A-$761F), so only the first pass reads $5001-$5018; later passes read elsewhere in page $50 ($50E1 in room9.vsf, $5009 in room9-lit.vsf, $5001 in the snapshots of other rooms)."
   },
   {
    "address": 20491,
@@ -21195,7 +21195,7 @@
   {
    "address": 20520,
    "type": "line",
-   "text": "Collision test used by room 3 (called at $4B0F in the routine $4B0C, which $48FF calls; room 3 by the $100C = 3 its set-up stores at $478E): reads $D01E and only when it is exactly $14 (sprites 2 and 4) or $18 (sprites 3 and 4; Mr Hat is sprite 4) calls $4CC7, which runs the death sequence $A877 if $A877 still begins with $AD. Any other value, three sprites at once included, is ignored."
+   "text": "Collision test of room 3's ladder: its one caller is $4B0F in the ladder loop $4B0C, which room3_climb_up calls ($48FF) and room3_climb_down falls into ($4AFD). Reads $D01E and only when it is exactly $14 (sprites 2 and 4) or $18 (sprites 3 and 4; Mr Hat is sprite 4) calls $4CC7, which runs the death sequence $A877 if $A877 still begins with $AD. Any other value, three sprites at once included, is ignored."
   },
   {
    "address": 20537,
@@ -21215,7 +21215,7 @@
   {
    "address": 20554,
    "type": "line",
-   "text": "Writes $503B+X and then $5043+X to $D022 (background colour 1) for X = 0-6, leaving $D022 = $00. Called by $8130 (from room 2's $5076 and room 3's $4850). Play runs in bitmap mode, which does not display $D022 (c64-reference), so these writes have no visible effect found."
+   "text": "Writes $503B+X and then $5043+X to $D022 (background colour 1) for X = 0-6, leaving $D022 = $00. Called only by $8130, which only room 2's room2_place_sprites calls ($5076); room 3's $4850 calls $8128, which skips it. Play runs in bitmap mode, which does not display $D022 (c64-reference), so these writes have no visible effect found."
   },
   {
    "address": 20574,
@@ -21235,7 +21235,7 @@
   {
    "address": 20746,
    "type": "line",
-   "text": "Room 2's IRQ handler (put in $0314 by $5076). Counts $64F0 and $64F1 (frame timers read at $7000), JSR $BA7D (sprite 2's patrol and, through $B877, sprite 3 one pixel left with its frame toggle), DEC $D006 (sprite 3 a second pixel), then the self-modified step at $5116 moves the sprite-0 guardian one pixel. Sprite 3 is switched on while $D010 >= $31 or = $28, otherwise off once its X reaches $9A; at X 0 its X high bit flips and X = $FE. Sprite 0's turns: X $48 -> X $4A, sprite 0 on, INC, Y $4E; X $A0 (operand $5177) -> DEC, Y $51; X $68 with Y $51 -> INC on Y (down); X $66 with Y < $51 -> back to X; Y $AF -> DEC, X $66 (up); Y >= $B0 -> Y $AE; X >= $A0 (operand $51DC) as at $A0; X < $46 as at $48. Every path ends JMP $7000."
+   "text": "Room 2's IRQ handler (put in $0314 by $5076). Counts $64F0 and $64F1 (frame timers read at $7000), JSR $BA7D (sprite 2's patrol and, through $B877, sprite 3 one pixel left with its frame toggle), DEC $D006 (sprite 3 a second pixel), then the self-modified step at $5116 moves the sprite-0 guardian one pixel. Sprite 3 is switched on while $D010 >= $31 or = $28, otherwise off once its X reaches $9A; at X 0 its X high bit flips and X = $FE. Sprite 0's turns: X $48 -> X $4A, sprite 0 on, INC, Y $4E; X $A0 (operand $5177) -> DEC, Y $51; X $68 with Y $51 -> INC on Y (down); X $66 with Y < $51 -> back to X; Y $AF -> DEC, X $66 (up); Y >= $B0 -> Y $AE; X >= $A0 (operand $51DC) as at $A0; X < $46 -> INC, Y $4E (as at $48 but without moving X or switching the sprite on). Every path ends JMP $7000."
   },
   {
    "address": 20758,
@@ -21260,7 +21260,7 @@
   {
    "address": 20980,
    "type": "line",
-   "text": "Room 2 main loop, entered from $A847 (which turns the screen on) and re-entered through it each pass. $D8 = $40 (lives used up, $1736) -> $4475, back to the title. Else respawn ($5628), room checks ($53B8), then the stick on $DC00: $77 right -> walk_right, exit test $530A; $7B left -> walk_left, $5660; $7D down -> duck ($53A0); $6F fire (read twice) -> a jump the way he faces (frame below $2F faces right): 21 one-pixel steps up and across, 21 across, 21 down and across, each step calling $41B0 (jump sound from $99) and $53B8, with $42E0's pause between the thirds. $52F0: $67 (fire + right) or $6B (fire + left) -> $5324. Copy of one template shared with the loops at $5A60, $6220, $6A20, $76B0, $86B0, $9320, which differ in the routines called."
+   "text": "Room 2 main loop, entered from $A847 (which turns the screen on) and re-entered through it each pass. $D8 = $40 (lives used up, $1736) -> $4475, back to the title. Else respawn ($5628), room checks ($53B8), then the stick on $DC00: $77 right -> walk_right, exit test $530A; $7B left -> walk_left, $5660; $7D down -> duck ($53A0); $6F fire (read twice) -> a jump the way he faces (frame below $2F faces right): 21 one-pixel steps up and across, 21 across, 21 down and across, each step calling $53B8 and the 21 rising steps also $41B0 (jump sound from $99), with $42E0's pause after each third. Every pass but a walk then reaches $52F0: $67 (fire + right) or $6B (fire + left) -> $5324, which jumps unless $D010 >= $2F (the whole register, taken as Mr Hat past X 255) and X >= $50, where it writes $77 to $DC00 and takes the exit test. Copy of one template shared with the loops at $5A60, $6220, $6A20, $76B0, $86B0, $9320, which differ in the routines called."
   },
   {
    "address": 21258,
@@ -21280,12 +21280,12 @@
   {
    "address": 21408,
    "type": "line",
-   "text": "Room 2, stick down: saves sprite 4's frame, then while $DC00 stays $7D shows frame $2A and runs guardian_touch_check ($5590); puts the saved frame back when the stick is let go."
+   "text": "Room 2, stick down: saves sprite 4's frame, then while $DC00 stays $7D shows frame $2A and runs hazards_and_pickups ($5590); puts the saved frame back when the stick is let go."
   },
   {
    "address": 21432,
    "type": "line",
-   "text": "Room 2 position checks, called by room2_main_loop and after every jump step: nothing while $D015 < $0F (Mr Hat's sprite off); at X $00 or $FF calls $4610, which carries his X across 256 by flipping his high bit; otherwise goes on at $53D0."
+   "text": "Room 2 position checks, called by room2_main_loop and after every jump step: nothing while $D015 < $0F (Mr Hat's sprite off); at X $00 or $FF calls $4610, which carries his X across 256 (X $00 -> $FE with the high bit cleared, X $FF -> $01 with it set); otherwise goes on at $53D0."
   },
   {
    "address": 21456,
@@ -21315,7 +21315,7 @@
   {
    "address": 21543,
    "type": "line",
-   "text": "Room 2: X $28 -> INC X (wall); $3C <= X < $5C with Y >= $B0 -> death ($55F5: the lower floor's deadly object at columns 7-8). $5445: Y >= $70 (lower floor) -> guardian_touch_check only. Upper floor: X $48 -> INC X, X $F8 -> DEC X (walls); X $60 with colour cell $04F7 = $7C -> erases that object (3 by 2 cells) with $CC, sets the set-up's operand $4EA1 = $CC, $448A and $4517; X $A0 with $0464 = $90: carried object $F5 = $20 opens the barrier (2 by 6 cells from $0464 to $CC, $4F28 = $CC, $1CB0, empty_hands, guardian turn X $5177/$51DC = $D8), else DEC X (blocked); X $C8 with $04B7 = $7C takes the candle (3 by 4 cells from $04B7 to $CC, set-up operands $4F6E/$4F7E/$4F86 = $CC, icon $7C/$6C at $07BC/$07E4, $22 = $40); anything else -> $5590."
+   "text": "Room 2: X $28 -> INC X (wall); $3C <= X < $5C with Y >= $B0 -> death ($55F5: the lower floor's deadly object at columns 7-8). $5445: Y >= $70 (lower floor) -> hazards_and_pickups only. Upper floor: X $48 -> INC X, X $F8 -> DEC X (walls); X $60 with colour cell $04F7 = $7C -> erases that object (3 by 2 cells) with $CC, sets the set-up's operand $4EA1 = $CC, $448A and $4517; X $A0 with $0464 = $90: carried object $F5 = $20 opens the barrier (2 by 6 cells from $0464 to $CC, $4F28 = $CC, $1CB0, empty_hands, guardian turn X $5177/$51DC = $D8), else DEC X (blocked); X $C8 with $04B7 = $7C takes the candle (3 by 4 cells from $04B7 to $CC, set-up operands $4F6E/$4F7E/$4F86 = $CC, icon $7C/$6C at $07BC/$07E4, $22 = $40); anything else -> $5590."
   },
   {
    "address": 21792,
@@ -21325,7 +21325,7 @@
   {
    "address": 21824,
    "type": "line",
-   "text": "Room 2 ladder: snaps Mr Hat to X $68, then loops: one climbing step by the stick ($4B20: $7D down, $7E up, frames $32/$33), guardian_touch_check, respawn test ($563C). Leaves at the top (Y $5C); on the lower floor (Y $B1-$B4) when the stick is pushed right ($77) or left ($7B), with Y set to $B4; otherwise $5576/$5588."
+   "text": "Room 2 ladder: snaps Mr Hat to X $68, then loops: one climbing step by the stick ($4B20: $7D down, $7E up, frames $32/$33), hazards_and_pickups, respawn test ($563C). Leaves at the top (Y $5C); on the lower floor (Y $B1-$B4) when the stick is pushed right ($77) or left ($7B), with Y set to $B4; otherwise $5576/$5588."
   },
   {
    "address": 21878,
@@ -21340,7 +21340,7 @@
   {
    "address": 21904,
    "type": "line",
-   "text": "Shared guardian check, called from rooms 2 and 5 and from $6580, $6B5C, $7848, $890B, $94A3: JSR $BB10 (the guardians' per-room behaviour chosen by $100C, which first runs hat_collision_test through $8E10); when that has set $4ACE = $20, JSR kill_mr_hat and clear $4ACE. ($55A6-$55AC is the rest of room2_ladder_test.)"
+   "text": "Shared per-step check, called from rooms 2 and 5 and from $6580 (room 6), $6B5C (room 8), $7848 (room 9), $890B (room 11) and $94A3 (rooms 4 and 7): JSR $BB10, which runs $8E10 (hat_collision_test: Mr Hat touching another sprite sets $4ACE = $20; then $8E13, the stick-down object pick-ups of rooms 2-7) and then, by the room id $100C, the deadly floor spots, which kill directly through $A877 or kill_hat. When $4ACE = $20 afterwards, JSR kill_hat and clear $4ACE. ($55A6-$55AC is the rest of room2_ladder_test.)"
   },
   {
    "address": 21936,
@@ -21350,7 +21350,7 @@
   {
    "address": 22005,
    "type": "line",
-   "text": "JMP $A877, the death sequence. Every deadly touch in the room code ends here: $5441, $559A, $5C62, $5D86, $64A0, $658E, $6CE8, $6DE3, $7ACD, $7B2A, $81DD, $A9CA, $BBAE-$BCB8 and more."
+   "text": "JMP $A877, the death sequence. Most deadly touches in the room code come here: $5441, $559A, $5C62, $5D86, $64A0, $658E, $6CE8, $6DE3, $7ACD, $7B2A, $81DD, $A9CA, $BBAE-$BCB8 and more ($7B63 among them). Not all: $1D50 (room 1), $4C52, $4CD2 and $BB35-$BB84 (check_floor_hazards) call $A877 directly."
   },
   {
    "address": 22032,
@@ -21380,27 +21380,27 @@
   {
    "address": 22192,
    "type": "line",
-   "text": "Shared start of a room's drawing: JSR $45D5 (-> $8200), JSR $A4FD (flips $D011 bit 4: the screen goes off), then $A573 with X = $62, Y = the colour byte in $FD and $27/$28 = $60/$3F, which fills the colour matrix with that byte (simulated: $BA for rooms 2 and 5, $98 for room 6). Called by the set-ups at $463E, $4D84, $5744, $5E14, $65E4, $6E09, $7144, $8304, $8484, $9034, $95A4."
+   "text": "Shared start of a room's drawing: JSR $45D5 (-> $8200), JSR $A4FD (draw_room_objects $BD6A, which does nothing while the screen is on, then flips $D011 bit 4: the screen goes off), then $A573 with X = $62, Y = the colour byte in $FD and $27/$28 = $60/$3F, which fills the colour matrix with that byte (simulated: $BA for rooms 2 and 5, $98 for room 6). Called by the set-ups at $463E, $4D84, $5744, $5E14, $65E4, $6E09, $7144, $8304, $8484, $9034, $95A4."
   },
   {
    "address": 22215,
    "type": "line",
-   "text": "JSR $822E, then JSR $A4FD (flips $D011 bit 4, screen on or off). Called from $8641."
+   "text": "JSR $822E, then JSR $A4FD ($BD6A draws the room's untaken objects if the screen is off, then $D011 bit 4 is flipped). Called from $8641."
   },
   {
    "address": 22224,
    "type": "line",
-   "text": "Jumped to from $66A5: if sprite 4's frame is $32 or $33 (the climbing frames) flips the screen with $A4FD; then JMP $66E0 either way."
+   "text": "Jumped to from $66A5: if sprite 4's frame is $32 or $33 (the climbing frames) flips the screen with $A4FD (which first draws the room's untaken objects, $BD6A, if the screen is off); then JMP $66E0 either way."
   },
   {
    "address": 22253,
    "type": "line",
-   "text": "Shared: fills a rectangle of the colour matrix: $FD rows of $FC bytes, value $FB, from the address in $FE/$FF, adding 40 per row. Used by every room set-up for floors, walls and ladders (about 60 calls)."
+   "text": "Shared: fills a rectangle of the colour matrix: $FD rows of $FC bytes, value $FB, from the address in $FE/$FF, adding 40 per row. Used for floors, walls and ladders by the set-ups of every room but room 3 (51 call sites, some through helpers at $813E, $81B0, $81E1, $A721, $A737)."
   },
   {
    "address": 22291,
    "type": "line",
-   "text": "Shared: draws a column of repeated bitmap: $FD rows, each a copy of the same $FC bytes read from the address in the operand at $5718/$5719, to the bitmap address in $FE/$FF, adding $140 (one character row) per row. Callers set the pattern first: $4802 (ladder), $58BB/$58CB (cones), $1151, $1161, $1119, $7265-$72F5, $47A2, $48BA."
+   "text": "Shared: draws a column of repeated bitmap: $FD rows, each a copy of the same $FC bytes read from the address in the operand at $5718/$5719, to the bitmap address in $FE/$FF, adding $140 (one character row) per row. Callers set the pattern first: $4802 (ladder), $58BB/$58CB (cones), $1151, $1161, $1119, $7265-$72F5, $47A2, $47BA (room 9, $742E). Room 5's set-up also stores $BA at $5826 (source $48BA) but makes no call with it."
   },
   {
    "address": 22296,
@@ -21430,7 +21430,7 @@
   {
    "address": 22715,
    "type": "line",
-   "text": "Two 8-byte bitmap cells, a cone pointing up (08 1C 3E 49 ... / 10 38 7C 92 ...), drawn by copy_pattern_rows as columns of floor cones: room 5 at $3480/$3490 ($58AB), room 6 at $34C0/$34D0 ($5EC0) and others ($672B)."
+   "text": "Two 8-byte bitmap cells, a cone pointing up (08 1C 3E 49 ... / 10 38 7C 92 ...), drawn by copy_pattern_rows as columns of floor cones: room 5 at $3480/$3490 ($58AB), room 6 at $34C0/$34D0 ($5EC0); room 8's set-up selects it at $672B but draws nothing with it (INC $D022 stands where the call would be)."
   },
   {
    "address": 22731,
@@ -21525,7 +21525,7 @@
   {
    "address": 23877,
    "type": "line",
-   "text": "Room 5: when $D015 < $10 (sprite 4 off, as after a death) puts Mr Hat back at the left entry: colour $0B ($D02B), frame $2C, Y $B4, X $20 with the high bit clear, sprite 4 on. Called each pass by room5_main_loop."
+   "text": "Room 5: when $D015 < $10 (sprite 4 off, as after a death) puts Mr Hat back at the left entry: colour $0B ($D02B), frame $2C, Y $B4, X $20 with the high bit clear, sprite 4 on. Called each pass by room5_main_loop ($5A69) and by the loop that rooms 4 and 7 share ($9329 in room47_loop), so those rooms also put him back at this point."
   },
   {
    "address": 23922,
@@ -21535,12 +21535,12 @@
   {
    "address": 23925,
    "type": "line",
-   "text": "Room 5's per-step work: room5_checks_if_visible ($5BE0) and guardian_touch_check ($5590). Called by the loop, the duck and every jump step."
+   "text": "Room 5's per-step work: room5_checks_if_visible ($5BE0) and hazards_and_pickups ($5590). Called by the loop, the duck and every jump step."
   },
   {
    "address": 23932,
    "type": "line",
-   "text": "Room 5's ladder loops: hat_collision_test; if it set $4ACE = $20, kill_mr_hat, then Y = $5C (so the ladder loop ends) and $4ACE cleared."
+   "text": "Room 5's ladder loops: hat_collision_test; if it set $4ACE = $20, kill_hat, then Y = $5C (so the ladder loop ends) and $4ACE cleared."
   },
   {
    "address": 23957,
@@ -21560,7 +21560,7 @@
   {
    "address": 24080,
    "type": "line",
-   "text": "Room 6 (stage 3, the cave) set-up, jumped to from room 2's ladder ($531E, $5582) and from $9510: room_blank_and_fill with $98; $6200 fills the lower corridor ($060C, 36 by 6, $CC) and draws the ROOM digit 6 ($1660 to $3D80); upper corridor $0452 (29 by 6, $CC); ladder colours $040A (3 by 19, $3C) with the STAGE digit 3 ($813E -> $8114); a 6 by 2 fill at $0553 is prepared but replaced by INC $D022; ladder bitmap at $2050 (19 rows of $4802); ceiling cones at $3100/$3110 and floor cones at $34C0/$34D0 (columns 24-27). Only if $22 = $40 (room 2's candle carried): $AA26 draws a 6 by 4 object at column 18, row 4, $1080 adds more ($5F80, $B800, $A7D9/$A7F8, sprite 0 multicolour, $B83B) and $100C = 6. Then $5EF1 (colour to $D022), $1109/$1111 to bitmap cells rows 4-5, column 29, and on through NOPs to $5F62 and room6_finish_setup ($5FBA)."
+   "text": "Room 6 (stage 3, the cave) set-up, jumped to from room 2's ladder ($531E, $5582) and from $9510: room_blank_and_fill with $98; $6200 fills the lower corridor ($060C, 36 by 6, $CC) and draws the ROOM digit 6 ($1660 to $3D80); upper corridor $0452 (29 by 6, $CC); ladder colours $040A (3 by 19, $3C) with the STAGE digit 3 ($813E -> $8114); a 6 by 2 fill at $0553 is prepared but replaced by INC $D022; ladder bitmap at $2050 (19 rows of $4802); ceiling cones at $3100/$3110 and floor cones at $34C0/$34D0 (columns 24-27). Only if $22 = $40 (room 2's candle taken): $AA26 draws a 6 by 4 object at column 18, row 4, $1080 adds more ($5F80, $B800, $A7D9/$A7F8, sprite 0 multicolour, $B83B) and $100C = 6. Then $5EF1 (colour to $D022), $1109/$1111 to bitmap cells rows 4-5, column 29, and on through NOPs to $5F62 and room6_finish_setup ($5FBA)."
   },
   {
    "address": 24306,
@@ -21585,12 +21585,12 @@
   {
    "address": 24458,
    "type": "line",
-   "text": "Inside room6_lit_objects (the LDA #$03 operand onward). Also the starting operand of LDA $5F8A,X at $60A6, which copies 16 bytes from here into $D022 (not shown in bitmap mode)."
+   "text": "Inside room6_lit_objects (from the STA $23 at $5F8A, just after the LDA #$03 at $5F88, onward). Also the starting operand of LDA $5F8A,X at $60A6, which copies 16 bytes from here into $D022 (not shown in bitmap mode)."
   },
   {
    "address": 24474,
    "type": "line",
-   "text": "Inside room6_lit_objects (the LDA #$8C at $5F97 onward). Also the operand of LDA $5F9A,X at $60DA, another 16-byte copy of code bytes into $D022."
+   "text": "Inside room6_lit_objects (from the operand byte $27 of the STA $27 at $5F99 onward). Also the operand of LDA $5F9A,X at $60DA, another 16-byte copy of code bytes into $D022."
   },
   {
    "address": 24490,
@@ -21600,12 +21600,12 @@
   {
    "address": 24506,
    "type": "line",
-   "text": "Room 6 set-up, end: JSR $9590 (clears $FB, $12, $99). If $22 = $40 (candle carried) goes straight to $600B; otherwise repaints the room dark: lower corridor ($060C) and upper corridor ($0452) in $00, the ladder ($040A) in $30. Continues at $6000 (sprites, entry by $4ACD: $20 from room 2's ladder puts him at the top of the ladder, X $68, Y $30; IRQ $608A)."
+   "text": "Room 6 set-up, end: JSR $9590 (clears $FB, $12, $99). If $22 = $40 (room 2's candle taken) goes straight to $600B; otherwise repaints the room dark: lower corridor ($060C) and upper corridor ($0452) in $00, the ladder ($040A) in $30. Continues at $6000 (sprites, entry by $4ACD: $20 from room 2's ladder puts him at the top of the ladder, X $68, Y $30; IRQ $608A)."
   },
   {
    "address": 24576,
    "type": "line",
-   "text": "Room 6 set-up, second half (falls in from $5FBA in room 6's drawing, which starts at $5E10; skipped from $5FC4 straight to $600B when $22 = $40). A last colour fill with $56ED (3 cells wide, $13 rows; pointer and colour set at $5FF4). Enables sprites 0 and 4 ($D015 |= $11), puts sprite 3 at X = $171 ($D006 = $71, $D010 bit 3) and the guardian, sprite 0, at X = $B0, Y = $A4 (the lower floor). Mr Hat (sprite 4) is placed by the entry code $4ACD: $20 (set at $557F, outside this range) gives X = $68, Y = $30 with the climbing frame in $F9, at the top of the ladder, coming down from the room above; anything else gives X = $145 ($D010 |= $18), Y = $B4, frame $2F (bottom floor, right-hand side, facing left). Clears $BD and the walk sub-counter $FB, sets the walk frame bases with $8080 ($FD = $2C right, $FF = $2F left), points the IRQ vector $0314 at room6_irq ($608A) and goes on at $6082."
+   "text": "Room 6 set-up, second half (falls in from $5FBA in room 6's drawing, which starts at $5E10; skipped from $5FC4 straight to $600B when $22 = $40). A last colour fill with $56ED (3 cells wide, $13 rows; pointer and colour set at $5FF4). Enables sprites 0 and 4 ($D015 |= $11), puts sprite 3 at X = $171 ($D006 = $71, $D010 bit 3) and the guardian, sprite 0, at X = $B0, Y = $A4 (the lower floor). Mr Hat (sprite 4) is placed by the entry code $4ACD: $20 (set at $557F, room 2's ladder exit) gives X = $68, Y = $30 with the climbing frame in $F9, at the top of the ladder, coming down from the room above; anything else gives X = $145 ($D010 |= $18), Y = $B4, frame $2F (bottom floor, right-hand side, facing left). Clears $BD and the walk sub-counter $FB, sets the walk frame bases with $8080 ($FD = $2C right, $FF = $2F left), points the IRQ vector $0314 at room6_irq ($608A) and goes on at $6082."
   },
   {
    "address": 24699,
@@ -21620,7 +21620,7 @@
   {
    "address": 24714,
    "type": "line",
-   "text": "Room 6's interrupt handler (installed in $0314 at $606C). Every IRQ: bumps the sprite animation counters $64F0/$64F1 (read at $7000); moves the guardian, sprite 0, one pixel along X with the instruction at $6096 (DEC or INC $D000, rewritten at $6105/$610E), turning it at X >= $FE and X < $80, so it patrols $80-$FE on the lower floor (Y = $A4); counts $12 and $F7 ($00-$1F, reset at $20) and, by $F7's quarter, runs a delay loop that writes 16 bytes of code at $5F8A, $5FAA or $5F9A three times each to $D022. In play the VIC is in hires bitmap mode ($D011 = $3B, $D016 = $C8 in play-room1.vsf), where $D022 is not displayed, so these writes only spend time. Then wraps sprite 3 across the X high bit when $D006 reaches 1 (sets it to $FF), shows sprite 3 only while $D010 is $28 or $38 or $D006 >= $51 (nothing in this handler moves sprite 3), and when colour cell $060C is non-zero (room lit) spends more time on $D022 at $12 = $40, $80, $B0. Always leaves through $7000 (sprite 0/1 frame flips), $8215 and $BF30 to the KERNAL's $EA31."
+   "text": "Room 6's interrupt handler (installed in $0314 at $606C). Every IRQ: bumps the sprite animation counters $64F0/$64F1 (read at $7000); moves the guardian, sprite 0, one pixel along X with the instruction at $6096 (DEC or INC $D000, rewritten at $6105/$610E), turning it at X >= $FE and X < $80, so it patrols $80-$FE on the lower floor (Y = $A4); counts $12 and $F7 ($00-$1F, reset at $20) and, by $F7's quarter, runs a delay loop that writes 16 bytes of code at $5F8A, $5FAA or $5F9A three times each to $D022. In play the VIC is in hires bitmap mode ($D011 = $3B, $D016 = $C8 in play-room1.vsf), where $D022 is not displayed, so these writes only spend time. On a frame where the guardian turns at X < $80 it goes straight to $7000 ($6111), skipping the rest. Otherwise it then wraps sprite 3 across the X high bit when $D006 reaches 1 (sets it to $FF), shows sprite 3 only while $D010 is $28 or $38 or $D006 >= $51 (nothing in this handler moves sprite 3), and when colour cell $060C is non-zero (room lit) spends more time on $D022 at $12 = $40, $80, $B0. Always leaves through $7000 (sprite 0/1 frame flips), $8215 and $BF30 to the KERNAL's $EA31."
   },
   {
    "address": 24726,
@@ -21635,7 +21635,7 @@
   {
    "address": 25050,
    "type": "line",
-   "text": "New-game reset for rooms 6 and 8, called from $56AA in the start-of-play reset $5678: $586C = $2C (an operand elsewhere, also written at $5CCC), $22 = 0 (room 6 drawn dark again), $5EF2 = $7C (operand of room 6's item colour at $5EF1), $02 = 0 (room 6's item not taken), $6661 = $6C and $6672 = $9C (room 8's bonus colour operands), writing $6C and $9C to $D022 on the way, then $705E (further resets outside this range)."
+   "text": "New-game reset for rooms 5, 6 and 8 (the label names only 6 and 8), called from $56AA in the start-of-play reset $5678: $586C = $2C (room 5's item colour operand, set to $CC at $5CCC when that item is taken), $22 = 0 (room 2's candle not taken, so room 6 is drawn dark again), $5EF2 = $7C (operand of room 6's item colour at $5EF1), $02 = 0 (room 6's item not taken), $6661 = $6C and $6672 = $9C (room 8's bonus colour operands), writing $6C and $9C to $D022 on the way, then $705E (further resets outside this range)."
   },
   {
    "address": 25088,
@@ -21650,7 +21650,7 @@
   {
    "address": 25120,
    "type": "line",
-   "text": "Room 6's main loop, one pass per round through the stub at $A829. $D8 = $40 (lives used up, set at $1734) goes to $4475, the end of the game. Then room6_respawn ($6550) and room6_step_checks ($657D), and the stick on port 2, compared exactly: $77 right walks with $5340, $7B left with $5370 (both outside this range), then room6_exit_check; $7D down crouches (room6_crouch); $6F fire alone, read twice, jumps: facing right ($07FC < $2F) with frames $2D, $2C, $2E and X rising, facing left (from $62C2) with frames $30, $2F, $31 and X falling, in three phases of 21 ($15) one-pixel steps (rise, level, fall: 63 pixels across, 21 up), each step silencing voice 2 ($1CF2), sounding the jump tone ($41B0, pitch from the step count $99) and running room6_step_checks, with the pause $42E0 between phases. Fire with right ($67) or left ($6B) goes to $6350: a jump, unless $D010 >= $29 and $D008 >= $4E, where it stores $7B into $DC00 (CIA 1 port A) and stands instead."
+   "text": "Room 6's main loop, one pass per round through the stub at $A829. $D8 = $40 (lives used up, set at $1734) goes to $4475, the end of the game. Then room6_respawn ($6550) and room6_step_checks ($657D), and the stick on port 2, compared exactly: $77 right walks with walk_right ($5340), $7B left with walk_left ($5370), then room6_exit_check; $7D down crouches (room6_crouch); $6F fire alone, read twice, jumps: facing right ($07FC < $2F) with frames $2D, $2C, $2E and X rising, facing left (from $62C2) with frames $30, $2F, $31 and X falling, in three phases of 21 ($15) one-pixel steps (rise, level, fall: 63 pixels across, 21 up), each step running room6_step_checks; only the rising phase sounds the jump tone ($41B0, pitch from the step count $99) on every step, with voice 2 silenced ($1CF2) once before it when facing right and on every step when facing left. The pause $42E0 comes between phases. Fire with right ($67) or left ($6B) goes to $6350: a jump, unless $D010 >= $29 and $D008 >= $4E, where it stores $7B into $DC00 (CIA 1 port A) and stands instead."
   },
   {
    "address": 25395,
@@ -21710,12 +21710,12 @@
   {
    "address": 25840,
    "type": "line",
-   "text": "Animation timer for sprite 0's two frames: cleared by the game's entry at $0896, bumped once per IRQ by the room handlers ($608A, $7057, $510A, $596A, $A73F) and read at $7000, which at 8 or more flips sprite 0's pointer $07F8 between $25 and $35 and clears both timers."
+   "text": "Animation timer for sprite 0's two frames: cleared by the game's entry at $0896, bumped once per IRQ by the room handlers ($608A, $7057, $510A, $596A, $A73F) and read at $7000, which at 8 or more flips sprite 0's pointer $07F8 between $25 and $35; a flip to $25 clears both timers ($7036), a flip to $35 only when sprite 1 flips in the same pass."
   },
   {
    "address": 25841,
    "type": "line",
-   "text": "Animation timer for sprite 1's two frames: cleared at $089B, bumped per IRQ with sprite0_anim_count (and at $1C03 in room 1's handler), read at $701B, which flips $07F9 between $25 and $35; as $7000 clears both timers on every sprite-0 flip, sprite 1 flips on every second one."
+   "text": "Animation timer for sprite 1's two frames: cleared at $089B, bumped per IRQ with sprite0_anim_count (and at $1C03 in room 1's handler), read at $701B, which flips $07F9 between $25 and $35; $7000 tests it only after a sprite-0 flip to $35 (or no flip), so while the two timers are bumped together sprite 1 flips on every second sprite-0 flip."
   },
   {
    "address": 25842,
@@ -21745,7 +21745,7 @@
   {
    "address": 25847,
    "type": "line",
-   "text": "$AF when Mr Hat enters room 8 climbing up from below ($4ACD = $88, set at $67FA): room 8's set-up then goes straight into the shaft ride ($7130 tests it, JMP $6DA0). Cleared by $81E1 in room 8's drawing (and wherever else $81E1 is used)."
+   "text": "$AF when Mr Hat enters room 8 climbing up from below (entry code $4ACD = $88; the $AF is stored at $67FA): room 8's set-up then goes straight into the shaft ride ($7130 tests it, JMP $6DA0). Cleared at $81EB in $81E1, which the set-ups of rooms 8 ($6621), 1 ($6EB3) and 9 ($717D) call."
   },
   {
    "address": 25848,
@@ -21810,7 +21810,7 @@
   {
    "address": 26023,
    "type": "line",
-   "text": "Second entry into room6_upper_strip, called from $70C2 and $70CE (outside this range): bumps and clears scratch_64ed, writes $D022, sets Mr Hat's colour $D02B = $0B."
+   "text": "Second entry into room6_upper_strip, called from room8_upper_floor_colour ($70C2, $70CE), so room 8 uses it too: bumps and clears scratch_64ed, writes $D022, sets Mr Hat's colour $D02B = $0B."
   },
   {
    "address": 26053,
@@ -21865,7 +21865,7 @@
   {
    "address": 26336,
    "type": "line",
-   "text": "Room 8's set-up, second part (from $56D0, after room8_draw): LDA #$7C (operand $66E1) written twice to $D022, where room 8's item check at $6D5A expects cells $04A4/$04CC to hold $7C; the objects $AB70 and $AB8F at column 20, rows 15 and 18; a tile column with $5713 at bitmap $3130 and $3140 (source $58CB, 16 bytes by 3 rows); bitmap pointers $34F0 and $3500 with source $58BB set up but not drawn (INC $D022 where the calls would be); the objects $A7D9 at columns 32 and 34, row 5, and $A7F8 at columns 32 and 34, row 7; sprite 0's colour $0B; then room8_place_sprites."
+   "text": "Room 8's set-up, second part (from $56D0, after room8_draw): LDA #$7C (operand $66E1) written twice to $D022, where room 8's item check at $6D5A expects cell $04A4 to hold $7C (it reads only $04A4 and clears $04CC with it); the objects $AB70 and $AB8F at column 20, rows 15 and 18; a tile column with $5713 at bitmap $3130 and $3140 (source $58CB, 16 bytes by 3 rows); bitmap pointers $34F0 and $3500 with source $58BB set up but not drawn (INC $D022 where the calls would be); the objects $A7D9 at columns 32 and 34, row 5, and $A7F8 at columns 32 and 34, row 7; sprite 0's colour $0B; then room8_place_sprites."
   },
   {
    "address": 26337,
@@ -21885,7 +21885,7 @@
   {
    "address": 26685,
    "type": "line",
-   "text": "Room 8's interrupt handler (installed at $682E). Bumps the animation timers ($7057). Moves the guardian, sprite 0, diagonally: two X steps (the instructions at $6840 and $6843, INC or DEC $D000) and one or two Y steps ($6846 on $D001; $6849 on $D001 or, harmlessly, $D021, chosen by its operand byte $684A). $B993 sets sprite 0's frame by height ($3A from Y $54 down, else $3F) and returns its X: at X >= $F8 it turns left, below $5C right; at Y >= $5D it turns up, below $44 down; it moves 1 pixel a frame vertically above Y = $48 and 2 from $48 down (the write of $21 at $6886 for Y >= $58 is always overwritten at $689C). So it bounces around X $5C-$F8, Y $44-$5D, over the upper floor. Leaves through the shared tail $8215. The code after the JMP at $68A2 (room8_belt_unused) is not reached."
+   "text": "Room 8's interrupt handler (installed at $682E). Bumps the animation timers ($7057). Moves the guardian, sprite 0, diagonally: two X steps (the instructions at $6840 and $6843, INC or DEC $D000) and one or two Y steps ($6846 on $D001; $6849 on $D001 or, harmlessly, $D021, chosen by its operand byte $684A). $B993 sets sprite 0's frame by height ($3A from Y $54 down, else $3F), steps sprite 7 (placed at X $FF, Y $B4 by $B954) one pixel left or right with frames $3D/$3E through $B92D, and returns sprite 0's X: at X >= $F8 it turns left, below $5C right; at Y >= $5D it turns up, below $44 down; it moves 1 pixel a frame vertically above Y = $48 and 2 from $48 down (the write of $21 at $6886 for Y >= $58 is always overwritten at $689C). So it bounces around X $5C-$F8, Y $44-$5D, over the upper floor. Leaves through the shared tail $8215. The code after the JMP at $68A2 (room8_belt_unused) is not reached."
   },
   {
    "address": 26688,
@@ -21930,7 +21930,7 @@
   {
    "address": 27168,
    "type": "line",
-   "text": "Room 8's main loop, one pass per round through the stub at $A82F. A copy of room6_main_loop: the 278 bytes $6A20-$6B35 differ from $6220-$6335 only in the call and jump targets. $D8 = $40 ends the game ($4475); $70EE respawns Mr Hat if he is off; room8_step_checks; stick right $77 room8_walk_right, left $7B room8_walk_left, down $7D room8_crouch, fire $6F (read twice) the three-phase jump (frames $2D/$2C/$2E or $30/$2F/$31, 21 steps each, pause room8_jump_pause between); fire with right $67 or left $6B always jumps, after room8_exit_and_step_checks. Ends with JMP $17C0 (standing frame $2C or $2F, then $A82F)."
+   "text": "Room 8's main loop, one pass per round through the stub at $A82F. A copy of room6_main_loop: the 278 bytes $6A20-$6B35 differ from $6220-$6335 in 54 bytes: all but one are call, jump and branch operands; the last is the opcode at $6B33, a JMP where room 6 has a JSR ($6333). $D8 = $40 ends the game ($4475); $70EE respawns Mr Hat if he is off; room8_step_checks; stick right $77 room8_walk_right, left $7B room8_walk_left, down $7D room8_crouch, fire $6F (read twice) the three-phase jump (frames $2D/$2C/$2E or $30/$2F/$31, 21 steps each, pause room8_jump_pause between); fire with right $67 or left $6B always jumps, after room8_exit_and_step_checks. Ends with JMP $17C0 (standing frame $2C or $2F, then $A82F)."
   },
   {
    "address": 27446,
@@ -21970,7 +21970,7 @@
   {
    "address": 27591,
    "type": "line",
-   "text": "Busy-wait of $50 x 256 inner loops between the three phases of a jump in room 8 (the same code as $42E0, used by room 6)."
+   "text": "Busy-wait of $50 x 256 inner loops between the three phases of a jump in room 8 (the same delay as $42E0 with X and Y swapped; $42E0 serves the jumps of rooms 1, 2, 3, 4/7, 5, 6, 9 and 11)."
   },
   {
    "address": 27604,
@@ -21990,7 +21990,7 @@
   {
    "address": 27632,
    "type": "line",
-   "text": "Room 8's rules for where Mr Hat stands, every step (room8_step_checks); nothing while sprite 4 is off ($B98C). First room8_exit_dispatch, so an exit code set on the last step is taken now. Bottom half (Y >= $80), left part (X < $60, high bit clear): X < 8 switches him off and sets $4ACD = $48 (exit left); X = $52 pushes him back to $51 (he cannot pass it going right); X = $30 takes a bonus if cell $0686 is $6C: five calls of $41DA (the score digit at $3D38), $6661 and $6672 set to $CC, cells $0686/$06AE/$06D6 and the next column hidden, sound reset $1CB0. The drawing leaves $0686 = $CC (simulated), so this bonus is never given as far as found. Further right: X wraps across the high bit at $00/$FF; X = $158 switches him off with $4ACD = $58 (exit right); X = $8F pushes him on to $90; X $100-$137 drifts him right one pixel every $38 steps (drift_counter); X $F0-$FF (high bit clear) kills ($55F5) unless cell $0626 is $CC, which the drawing leaves it (simulated); the same test for the high part below $128 ($6CEC) is never reached, since X < $138 there has already returned through the drift. Then, and for the upper half: drift_push; the shaft at X $8F-$9E is entered (room8_shaft_ride) from the upper floor (Y = $5C) with down, from the bottom floor (Y = $B4) with down or up; X $00/$FF goes to $4610; high part X >= $158 switches him off with $4ACD = $50 (exit right); X < $28 is pushed right (left wall); X = $38 takes the room's item if cell $04A4 is $7C and $D8 is not $50: cells $04A4/$04CC hidden, two calls of $41DA, sound reset, $D8 = $50, $66E1 = $CC, $70A0 (carried-item cells $07BE/$07E6 = $7C, $F5 = $AF). The drawing leaves $04A4 = $2C (simulated; the $7C meant for it goes to $D022 at $66E0), so this pickup is never made as far as found. Ends with $70B0 (outside this range: on the upper floor at X $48-$6F, hat_colour_reset)."
+   "text": "Room 8's rules for where Mr Hat stands, every step (room8_step_checks); nothing while sprite 4 is off ($B98C). First room8_exit_dispatch, so an exit code set on the last step is taken now. Bottom half (Y >= $80), left part (X < $60, high bit clear): X < 8 switches him off and sets $4ACD = $48 (exit left); X = $52 pushes him back to $51 (he cannot pass it going right); X = $30 takes a bonus if cell $0686 is $6C: five calls of $41DA (the score digit at $3D38), $6661 and $6672 set to $CC, cells $0686/$06AE/$06D6 and the next column hidden, sound reset $1CB0. The drawing leaves $0686 = $CC (simulated), so this bonus is never given as far as found. Further right: X wraps across the high bit at $00/$FF; X = $158 switches him off with $4ACD = $58 (exit right); X = $8F pushes him on to $90; X $100-$137 drifts him right one pixel every $38 steps (drift_counter); X $F0-$FF (high bit clear) kills ($55F5) unless cell $0626 is $CC, which the drawing leaves it (simulated); the same test for the high part below $128 ($6CEC) is never reached, since X < $138 there has already returned through the drift. Then, and for the upper half: drift_push; the shaft at X $8F-$9E is entered (room8_shaft_ride) from the upper floor (Y = $5C) with down, from the bottom floor (Y = $B4) with down or up; X $00/$FF goes to $4610; high part X >= $158 switches him off with $4ACD = $50 (exit right); X < $28 is pushed right (left wall); X = $38 takes the room's item if cell $04A4 is $7C and $D8 is not $50: cells $04A4/$04CC hidden, two calls of $41DA, sound reset, $D8 = $50, $66E1 = $CC, $70A0 (carried-item cells $07BE/$07E6 = $7C, $F5 = $AF). The drawing leaves $04A4 = $2C (simulated; the $7C meant for it goes to $D022 at $66E0), so this pickup is never made as far as found. Ends with JMP room8_upper_floor_colour ($70B0: on the upper floor at X $40-$77 or $AC-$DF it sets Mr Hat's colour $0B, through hat_colour_reset in $48-$6F and $B0-$DB)."
   },
   {
    "address": 27812,
@@ -22005,7 +22005,7 @@
   {
    "address": 28048,
    "type": "line",
-   "text": "Serves room 3, not room 8: called from $4AAD, which room 3's main loop ($491D) calls after its moves. While $D015 >= $8F (sprites 0-3 and 7 on) it runs $483A, room 3's exit dispatch ($4ACD = $08 to $4D80, $10 to $9000), and returns; otherwise it goes to $6DF3: the end of the game if $D8 = $40, else JMP $491D, back to the top of room 3's loop without returning (four bytes of return addresses left on the stack each time)."
+   "text": "Serves room 3, not room 8: called from $4AAD, which room 3's main loop ($491D) calls after its moves. While $D015 >= $8F (the whole enable byte compared as one number) it runs $483A, room 3's exit dispatch ($4ACD = $08 to $4D80, $10 to $9000), and returns; otherwise it goes to $6DF3: the end of the game if $D8 = $40, else JMP $491D, back to the top of room 3's loop without returning (four bytes of return addresses left on the stack each time)."
   },
   {
    "address": 28062,
@@ -22035,7 +22035,7 @@
   {
    "address": 28160,
    "type": "line",
-   "text": "Start of play (JMP $6E00 from $089E, after the title): draws room 1 of stage 1. $D022 = $0C; $56B0 with $FD = $6E (room-change prologue); $5678, the new-game reset ($4ACD = $4ACE = 0, room flags, reset_rooms_6_8). Then the colour matrix at $0400: grey $CC fills with $A721 (which also puts sprite 7 at $94,$94 with pointer $3B and colour $0A), $56ED, room1_fill_right_columns, $81E1, $A737 and $56ED again; the status rows 23-24 coloured $1C; the carried-item cells $07BE/$07E6 hidden ($CC); $07B9/$07BA/$07E1/$07E2 (the lives marks) $BC; the score cells $07A5-$07AA/$07CD-$07D2 and the ROOM and STAGE digit cells $07B0/$07D8 and $07B7/$07DF blue $6C; $07BC/$07E4/$07E3 hidden. Objects drawn with $A7F8 at column 26, row 21, $A7D9 at 24,19, $A7F8 at 24,21 and $A9D2 at 23,10, more fills ($046A, $0694 in $20, $04F3-$04F5/$051B-$051D in $0C, $04CC = $7C, $04CD = $2C, rows of $CC at $057F-$061F and $0647). $BD5B; $100C, $1015, $1016, $1018, $1019 cleared. Continues at $17DF, which finishes room 1, installs the IRQ $1C00 and enters room 1's loop through $A817 (simulated)."
+   "text": "Start of play (JMP $6E00 from $089E, after the title): draws room 1 of stage 1. $D022 = $0C; $56B0 with $FD = $6E (room-change prologue); $5678, the new-game reset ($4ACD = $4ACE = 0, room flags, reset_rooms_6_8). Then the colour matrix at $0400: grey $CC fills with $A721 ($0451, 31 by 6; it also puts sprite 7 at $94,$94 with pointer $3B and colour $0A), $56ED twice ($0569, $0681) and room1_fill_right_columns; the status rows 23-24 coloured $1C; the carried-item cells $07BE/$07E6 hidden ($CC); $07B9/$07BA/$07E1/$07E2 (the lives marks) $BC; the score cells $07A5-$07AA/$07CD-$07D2 and the ROOM and STAGE digit cells $07B0/$07D8 and $07B7/$07DF blue $6C; $07BC/$07E4/$07E3 hidden; then $81E1 ($06AB, 5 by 5, $CC), $A737 ($04DC, 2 by 3, colour $DC) and $56ED ($05F0, 2 by 3, $CC). Objects drawn with $A7F8 at column 26, row 21, $A7D9 at 24,19, $A7F8 at 24,21 and $A9D2 at 23,10, more fills ($045A-$045C $BC, $05E2/$060A $7C, $046A and $0694 in $20, $04F3-$04F5/$051B-$051D in $0C, $04CC = $7C, $04CD = $2C, rows of $CC at $057F-$061F and $0647, $0703/$072B $CC). $BD5B; $100C, $1015, $1016, $1018, $1019 cleared. Continues at $17DF, which finishes room 1, installs the IRQ $1C00 and enters room 1's loop through $A817 (simulated)."
   },
   {
    "address": 28597,
@@ -22060,12 +22060,12 @@
   {
    "address": 28672,
    "type": "line",
-   "text": "Shared IRQ tail that animates sprites 0 and 1 (guardians): when counter $64F0 has reached 8, sprite 0's pointer $07F8 is swapped between frames $25 and $35; when $64F1 has reached 8, sprite 1's pointer $07F9 likewise. Both counters are cleared only on the paths through $7036 (a flip of sprite 0 to $25, or any flip of sprite 1), so the timing is irregular. Ends JMP $8215 (the common IRQ tail, JMP $BF30). Reached by JMP, not JSR, from the IRQ handlers of room 1 ($1C92), room 2 (code at $5133-$51EF), room 5 ($59F0, $5A49) and room 6 ($6111-$61BD); the counters are stepped at $1C03, $A73F and $7057."
+   "text": "Shared IRQ tail that animates sprites 0 and 1 (guardians): when counter $64F0 has reached 8, sprite 0's pointer $07F8 is swapped between frames $25 and $35; when $64F1 has reached 8, sprite 1's pointer $07F9 likewise. Both counters are cleared only on the paths through $7036 (a flip of sprite 0 to $25, or any flip of sprite 1), so the timing is irregular. Ends JMP $8215 (the common IRQ tail, JMP $BF30). Reached by JMP, not JSR, from the IRQ handlers of room 1 ($1C92), room 2 (code at $5133-$51EF), room 5 ($59F0, $5A49) and room 6 ($6111-$61BD); the counters are stepped by the handlers: $64F0 at $510A, $596D, $608A, $A73F and $7057, $64F1 at $1C03, $510D, $596A, $608D and $7057 (room 8's $7057 bumps both, but room 8's handler never reaches $7000)."
   },
   {
    "address": 28737,
    "type": "line",
-   "text": "Room 6 main-loop patch, jumped to from $6538: sets the entry code $4ACD (which side the next room places Mr Hat on) to $38, calls $653B (a bare RTS) and returns to room 6's main loop caller."
+   "text": "Room 6's ladder, top exit: jumped to from $6538 in room6_ladder when Mr Hat climbs above Y $28. Sets the entry code $4ACD (which side the next room places Mr Hat on) to $38, calls $653B (a bare RTS) and returns to room6_ladder's caller, room6_position_rules; room6_exit_check ($6336) then takes code $38 to room 2 ($4D80)."
   },
   {
    "address": 28746,
@@ -22075,12 +22075,12 @@
   {
    "address": 28759,
    "type": "line",
-   "text": "Room 8's IRQ ($683D) calls this first: INC $64F0 and $64F1, the frame counters that irq_flip_guardian_frames ($7000) tests."
+   "text": "Room 8's IRQ ($683D) calls this first: INC $64F0 and $64F1, the frame counters that irq_flip_guardian_frames ($7000) tests. Room 8's handler leaves through $8215 and never reaches $7000, so in room 8 nothing tests them."
   },
   {
    "address": 28766,
    "type": "line",
-   "text": "New-game reset of values that the rooms' code patches into itself: $66E1 = $7C, $D006 (sprite 3 X) = $FA, $1FBB = $AD, $4AC9 (ladder delay count) = $0C, $1E08 = $FA, $71C4 and $7947 = $E0 (room 9's two door colours, operands of LDA # in its setup), $BB = 0 (room 9 upper-door state), $73CE = $0C (room 9 treasure colour operand), then JSR $92C0 for more of the same ($73D3 and room data at $8A28-$8C58). Called from $61FC at the end of the chain $6E00 -> $5678 -> $61DA that starts a game."
+   "text": "New-game reset of values that the rooms' code patches into itself: $66E1 = $7C, $D006 (sprite 3 X) = $FA, $1FBB = $AD, $4AC9 (ladder delay count) = $0C, $1E08 = $FA, $71C4 and $7947 = $E0 (room 9's two door colours, operands of LDA # in its setup), $BB = 0 (room 9 upper-door state), $73CE = $0C (room 9 treasure colour operand), then JSR $92C0 for more of the same ($73D3, the in-play tune players' pointer operands $8A28/$8A2E/$8A34 and $8C58/$8C5E/$8C64, room 11's block colour $8503, the BRK vector $0316/$0317, $D021 and $01). Called from $61FC at the end of the chain $6E00 -> $5678 -> $61DA that starts a game."
   },
   {
    "address": 28814,
@@ -22110,7 +22110,7 @@
   {
    "address": 28848,
    "type": "line",
-   "text": "Room 8, jumped to from $6D87 (so it returns to room 8's main loop caller): only when Mr Hat is on the upper floor (Y $D009 = $5C) and his X ($D008, low byte) is in $40-$77 or $AC-$DF, it sets his sprite colour $D02B to $0B (through $65A7 in the bands $48-$6F and $B0-$DB, which also bumps the counter $64ED and writes $D022). Mr Hat's colour is $0B already elsewhere, so the visible effect is nil; its purpose is unknown."
+   "text": "Room 8, jumped to from $6D87 at the end of room8_position_rules (so its RTS ends that routine): only when Mr Hat is on the upper floor (Y $D009 = $5C) and his X ($D008, low byte) is in $40-$77 or $AC-$DF, it sets his sprite colour $D02B to $0B (through $65A7 in the bands $48-$6F and $B0-$DB, which also bumps the counter $64ED and writes $D022). Mr Hat's colour is $0B already elsewhere, so the visible effect is nil; its purpose is unknown."
   },
   {
    "address": 28910,
@@ -22185,7 +22185,7 @@
   {
    "address": 29914,
    "type": "line",
-   "text": "Room 9: draws the ROOM digit 9 (glyph $1690/$1698 to bitmap $3D80/$3EC0), enables sprites 0, 3, 4, then places Mr Hat by the entry code $4ACD: $58 -> X $18, Y $B4 (lower floor, left); $50 -> X $18, Y $5C (upper floor, left); $30 -> X $128, Y $35, climbing frame $32 (top of the right ladder); $78 -> X $88, Y $D0, frame $32 (bottom of the lower ladder); any other value leaves him where he is. Clears the walk counters $BD/$FB, frames $FD = $2C and $FF = $2F; guardian sprite 3 (lower floor patrol): Y $B8, X $E0, frame $26, moving left (opcode $CE patched into $7627/$762A); sprite 0 (upper-floor chaser): X $A0, colour 1; Mr Hat colour $0B; sprites 6 and 7 (drops from the lamps): X $38/$68, Y $16, frame $2B, colours $0F/$07; multicolour for sprites 0, 6, 7; ladder delay $4AC9 = $0C; JSR $809D; installs room 9's IRQ $7600; when Mr Hat is at Y >= $B4 (came from below) runs the ladder loop $7B05 first; then JMP $A835 to the main loop $76B0."
+   "text": "Room 9: draws the ROOM digit 9 (glyph $1690/$1698 to bitmap $3D80/$3EC0), enables sprites 0, 3, 4, then places Mr Hat by the entry code $4ACD: $58 -> X $18, Y $B4 (lower floor, left); $50 -> X $18, Y $5C (upper floor, left); $30 -> X $128, Y $35, climbing frame $32 (top of the right ladder); $78 -> X $88, Y $D0, frame $32 (bottom of the lower ladder); any other value leaves him where he is. Clears the walk counters $BD/$FB, frames $FD = $2C and $FF = $2F; guardian sprite 3 (lower floor patrol): Y $B8, X $E0, frame $26, moving left (opcode $CE patched into $7627/$762A); sprite 0 (upper-floor chaser): X $A0, colour 1; Mr Hat colour $0B; sprites 6 and 7 (drops from the lamps): X $38/$68, Y $16, frame $2B, colours $07/$0F; multicolour for sprites 0, 6, 7; ladder delay $4AC9 = $0C; JSR $809D ($1E08 = $FA, sprite 3 colour 6); installs room 9's IRQ $7600; when Mr Hat is at Y >= $B4 runs the ladder loop $7B05 first (entry $78 from below, Y $D0, and also entry $58, which sets Y = $B4); then JMP $A835 to the main loop $76B0."
   },
   {
    "address": 30183,
@@ -22195,7 +22195,7 @@
   {
    "address": 30192,
    "type": "line",
-   "text": "A state byte of the 200,000-point replay bonus that Lupenio's text at $7FB1 announces (\"ORA RIPROVA CON 200.000 PUNTI\"): $00 = none, $20 = bonus due, $40 = bonus given. Read by $802D (called from $1BED when a game starts): $00 resets the score digits ($8042), $20 adds 1,000 points 200 times and sets $40 and the text's digit $7FC1 to '4' ($80B0). Set $20 or $40 only by the F1 wait at $8000, which nothing in Mr. Hat reaches; cleared by $8020 (from $4486, the restart after the last life). So in Mr. Hat it stays $00. 0 in both snapshots."
+   "text": "A state byte of the 200,000-point replay bonus that Lupenio's text at $7FB1 announces (\"ORA RIPROVA CON 200.000 PUNTI\"): $00 = none, $20 = bonus due, $40 = bonus given. Read by $802D (called from $1BED when a game starts): $00 resets the score digits ($8042), $20 adds 1,000 points 200 times and sets $40 and the text's digit $7FC1 to '4' ($80B0), $40 adds 1,000 points 400 times ($8590). Set to $20 or $40 by the F1 wait at $8000, which nothing in Mr. Hat reaches, and to $40 by $80B0, which runs only when it is already $20; cleared by $8020 (from $4486, the restart after the last life), which also puts '2' in $7FC1. So in Mr. Hat it stays $00: 0 in handover.vsf, play-room1.vsf, room9.vsf and title.vsf."
   },
   {
    "address": 30193,
@@ -22205,17 +22205,17 @@
   {
    "address": 30208,
    "type": "line",
-   "text": "Room 9's IRQ handler (installed at $75CE): a loop of 24 x 2 stores of $5001,x to $D022 (no visible effect in hires mode; the source operand $760D is advanced by $27 each time, counter $64F2); moves guardian sprite 3 (lower floor) two pixels a frame, the opcodes at $7627/$762A switched between INC ($EE) and DEC ($CE): turns left with frame $26 at X >= $FA and right with frame $34 below $78; moves the lamp drops, sprites 6 and 7, down one pixel a frame: sprite 6 is shown only for Y $40-$62, sprite 7 is shown at Y = $40 and hidden at $64, where it jumps to $9A (so the two fall out of step); then JMP $7B70, the upper-floor chaser."
+   "text": "Room 9's IRQ handler (installed at $75CE): a loop of 24 x 2 stores of $5001,x to $D022 (no visible effect in hires mode; the source operand $760D is advanced by $28 each time, $27 plus the carry the loop leaves set; counter $64F2 is reset after each pass, so the loop runs every interrupt); moves guardian sprite 3 (lower floor) two pixels a frame, the opcodes at $7627/$762A switched between INC ($EE) and DEC ($CE): turns left with frame $26 at X >= $FA and right with frame $34 below $78; moves the lamp drops, sprites 6 and 7, down one pixel a frame: sprite 6 is shown only for Y $40-$62, sprite 7 is shown at Y = $40 and hidden at $64, where it jumps to $9A (so the two fall out of step); then JMP $7B70, the upper-floor chaser."
   },
   {
    "address": 30221,
    "type": "line",
-   "text": "Low byte of the operand of LDA $5001,X at $760C in room9_irq, advanced by $27 (with the carry left by the loop) after every pass: the values go only to $D022."
+   "text": "Low byte of the operand of LDA $5001,X at $760C in room9_irq, advanced after every pass by $27 plus the carry the loop's last CPX leaves set, so by $28: the values go only to $D022."
   },
   {
    "address": 30247,
    "type": "line",
-   "text": "Opcode of the first INC/DEC $D006 in room9_irq: $EE (INC, sprite 3 walks right) or $CE (DEC, walks left), patched at $7634/$7648 and by room9_place_sprites ($7584)."
+   "text": "Opcode of the first INC/DEC $D006 in room9_irq: $EE (INC, sprite 3 walks right) or $CE (DEC, walks left), patched at $7636/$764A and by room9_place_sprites ($7584)."
   },
   {
    "address": 30250,
@@ -22225,7 +22225,7 @@
   {
    "address": 30367,
    "type": "line",
-   "text": "Unreachable ($769F-$76AA, after the JMP $76AB at $769C): CMP #$40, BCC, enable sprite 7. The JMP $7B70 at $76AB that follows is the live end of room9_irq, reached from $769C and the BCC at $76A1."
+   "text": "Unreachable ($769F-$76AA, after the JMP $76AB at $769C): CMP #$40, BCC, enable sprite 7. The JMP $7B70 at $76AB that follows is the live end of room9_irq, reached from $769C (the BCC at $76A1 also targets it, but is itself unreachable)."
   },
   {
    "address": 30382,
@@ -22260,7 +22260,7 @@
   {
    "address": 30688,
    "type": "line",
-   "text": "Room 9: when fire is still held after a jump, jumps again ($76EE) if $D010 >= $29 (the X high bits of all sprites compared as one number) or Mr Hat's X >= $4E; otherwise writes $7B to $DC00 (CIA 1 port A, the keyboard column output: until the KERNAL's scan rewrites it, a read of port 2 probably sees 'left') and goes to room9_stand_frame."
+   "text": "Room 9: when fire is still held after a jump, jumps again ($76EE) unless $D010 >= $29 (the X high bits of all sprites compared as one number) and Mr Hat's X low byte is $4E or more; in that case it writes $7B to $DC00 (CIA 1 port A, the keyboard column output: until the KERNAL's scan rewrites it, a read of port 2 probably sees 'left') and goes to room9_stand_frame."
   },
   {
    "address": 30716,
@@ -22315,7 +22315,7 @@
   {
    "address": 30822,
    "type": "line",
-   "text": "Room 9, Mr Hat on the upper floor (Y $38-$7F). Right half (when $D010 >= $2F, the sprite X high bits compared as one number): at X >= $138 he is pushed back one pixel (the right wall); at X $120-$12F, Y $5C, stick exactly $7E (up) he climbs the top-right ladder (room9_climb_top_ladder). Left half: at X below $E8, the upper door (screen cell $0468, columns 24-25 of rows 2-7): shut ($E0) and key $F5 = $28 held: opened (cells $CC, room9_upper_door_opened); shut without the key: only INC $D022; open ($CC) or $BB = $26: on to the chaser test at $7909; any other colour with the key: cells painted $00 and room9_upper_door_opened again. The setup never paints the door $E0, so it is never shut. At $7909: when his X equals the chaser's (sprite 0, $D000) $81D6 kills him if screen cell $0460 is $00 (the dark room); X $28-$47 at Y $5C does only INC $D022; X below $10 leaves left to room 8 ($4ACD = $68, JMP $65E0)."
+   "text": "Room 9, Mr Hat on the upper floor (Y $38-$7F). Right half (when $D010 >= $2F, the sprite X high bits compared as one number): at X >= $138 he is pushed back one pixel (the right wall); at X $120-$12F, Y $5C, stick exactly $7E (up) he climbs the top-right ladder (room9_climb_top_ladder). Left half: at X below $E8, the upper door (screen cell $0468, columns 24-25 of rows 2-7): shut ($E0) and key $F5 = $28 held: opened (cells $CC, room9_upper_door_opened); shut without the key: only INC $D022; open ($CC) or $BB = $26: on to the chaser test at $7909; any other colour with the key: cells painted $00 and room9_upper_door_opened again; any other colour without the key: only INC $D022. The setup never paints the door $E0, so it is never shut: lit, the cell is $CC and the code goes on to $7909; dark, room9_enter leaves it $00 (room9.vsf), so without room 6's object ($F5 = $28) everything left of X $E8 on this floor stops at the INC $D022 (no chaser test, no exit to room 8 this way). At $7909: when his X equals the chaser's (sprite 0, $D000) $81D6 kills him if screen cell $0460 is $00 (the dark room); X $28-$47 at Y $5C does only INC $D022; X below $10 leaves left to room 8 ($4ACD = $68, JMP $65E0)."
   },
   {
    "address": 30913,
@@ -22325,7 +22325,7 @@
   {
    "address": 31037,
    "type": "line",
-   "text": "Room 9: silences voice 1 ($1CB0) and patches room9_upper_door_colour_op ($71C4) to $CC, so the door stays open when the room is drawn again."
+   "text": "Room 9, called from $78C1 when the upper door is opened: silences voice 1 ($1CB0) and patches room9_upper_door_colour_op ($71C4) to $CC, the colour the set-up would paint the door with on the next visit. The set-up's fill call is gone ($71CF is INC $D022), so the patch has no visible effect."
   },
   {
    "address": 31046,
@@ -22365,7 +22365,7 @@
   {
    "address": 31312,
    "type": "line",
-   "text": "Room 9's main loop calls this first: when $D015 is $49, $89, $C9 or $09 (Mr Hat's sprite 4 off after a death) it puts him back on the floor he died on: Y below $80 -> upper floor right, X $110, Y $5C, frame $2F; else lower floor left, X $30, Y $B4, frame $2C; colour $0B; sprite 4 on."
+   "text": "Room 9's main loop calls this first after its lives test ($76B9): when $D015 is $49, $89, $C9 or $09 (Mr Hat's sprite 4 off after a death) it puts him back on the floor he died on: Y below $80 -> upper floor right, X $110, Y $5C, frame $2F; else lower floor left, X $30, Y $B4, frame $2C; colour $0B; sprite 4 on."
   },
   {
    "address": 31413,
@@ -22435,7 +22435,7 @@
   {
    "address": 31600,
    "type": "line",
-   "text": "Room 9's IRQ, last part (from $76AB): the upper-floor guardian, sprite 0, walks one pixel a frame towards Mr Hat's X, comparing only the low bytes $D000 and $D008 (so it ignores which side of X 256 he is on): right while below $F0, with frames $36/$37 (counter $64F4, two frames each), left while at $20 or above, with frames $38/$39 (counter $64F5); level with him it keeps the right-walking frames. Ends JMP $8215 (the common IRQ tail)."
+   "text": "Room 9's IRQ, last part (from $76AB): the upper-floor guardian, sprite 0, walks one pixel a frame towards Mr Hat's X, comparing only the low bytes $D000 and $D008 (so it ignores which side of X 256 he is on): right while below $F0, with frames $36/$37 (counter $64F4), left while at $20 or above, with frames $38/$39 (counter $64F5); each counter runs 1-4, giving the first frame for one interrupt and the second for three (count 4 resets it without a store). Level with him, or held at either limit, it shows the right-walking frames. Ends JMP $8215 (the common IRQ tail)."
   },
   {
    "address": 31718,
@@ -22445,7 +22445,7 @@
   {
    "address": 31744,
    "type": "line",
-   "text": "The Golden Hat: a 3x3-cell hires bitmap (rows of 24 bytes; a top hat with a band and a wide brim in the middle two cell rows), drawn by draw_golden_hat ($7C50) in yellow on grey."
+   "text": "The Golden Hat: a 3x3-cell hires bitmap (rows of 24 bytes; a top hat, crown over a wide brim, in the bottom two pixel lines of the top cell row and the whole middle cell row; the bottom cell row, $7C30-$7C47, is blank), drawn by draw_golden_hat ($7C50) in yellow on grey."
   },
   {
    "address": 31816,
@@ -22455,7 +22455,7 @@
   {
    "address": 31824,
    "type": "line",
-   "text": "Room 11's set-up ($8589, X = 6, Y = 16): colours a 3x3-cell block yellow on grey ($7C via $A67F) and copies golden_hat_bitmap ($7C00) into the bitmap at that cell ($A690). The win test win_check_golden_hat ($7CC0) fires on the floor below it."
+   "text": "Room 11's set-up ($8589, X = 6, Y = 16): colours a 3x3-cell block yellow on grey ($7C via $A67F) and copies golden_hat_bitmap ($7C00) into the bitmap at that cell ($A690). The win test win_check_golden_hat ($7CC0) fires on the bottom floor (Y $B4), level with it, at X below $80."
   },
   {
    "address": 31855,
@@ -22475,12 +22475,12 @@
   {
    "address": 31904,
    "type": "line",
-   "text": "A 2x2-cell hires bitmap (16 bytes for the top two cells, then 16 for the bottom two; its last byte is the RTS at $7CBF): a small spiky creature or spark. Copied in yellow ($7C) by room 11's code at $88A0-$88F8 to three places in turn (bitmap $3458/$3598, $3580/$36C0, $3308/$3448)."
+   "text": "A 2x2-cell hires bitmap (16 bytes for the top two cells, then 16 for the bottom two; its last byte is the RTS at $7CBF): a small spiky creature or spark. Read only by three unreferenced IRQ fragments at $88A0-$88FD (no path reaches them), which would copy it to bitmap $3458/$3598, $3580/$36C0 or $3308/$3448; the last two also colour their cells $7C (yellow on grey). It never reaches the screen."
   },
   {
    "address": 31920,
    "type": "line",
-   "text": "Bottom half (two cells, 16 bytes) of small_figure_bitmap, read as $7CB0,X by room 11's code at $88A8, $88CD and $88F2; its last byte, $60, is also the RTS at $7CBF."
+   "text": "Bottom half (two cells, 16 bytes) of small_figure_bitmap, read as $7CB0,X at $88A8, $88CD and $88F2, inside unreferenced IRQ fragments that never run; its last byte, $60, is also the RTS at $7CBF."
   },
   {
    "address": 31935,
@@ -22490,7 +22490,7 @@
   {
    "address": 31936,
    "type": "line",
-   "text": "Room 11 (called through $82E9): the win test. When Mr Hat is on the floor at Y = $B4 with X below $80 (under the Golden Hat drawn at cell 6,16), clears $BD and $FB, sets $FD = $2C, $FF = $2F and $64FF = 0, gives the IRQ back to the KERNAL ($B675: $0314 = $EA31), sets $1018 = 1 and calls $16A0 (screen blanking toggle, then the title routine $16A3, whose $CDEE then draws \"WONDERFUL\" / \"YOU HAVE FINISHED YOUR MISSION\" through $BFA8 instead of the cast, before the title's fire wait $1770), then JMP $0870: a new game."
+   "text": "Room 11 (called through $82E9): the win test. When Mr Hat is on the bottom floor at Y = $B4 with X below $80 (level with the Golden Hat drawn at cell 6,16, from the left wall to some way right of it), clears $BD and $FB, sets $FD = $2C, $FF = $2F and $64FF = 0, gives the IRQ back to the KERNAL ($B675: $0314 = $EA31), sets $1018 = 1 and calls $16A0 (screen blanking toggle, then the title routine $16A3, whose $CDEE then draws \"WONDERFUL\" / \"YOU HAVE FINISHED YOUR MISSION\" through $BFA8 instead of the cast, before the title's fire wait $1770), then JMP $0870: a new game."
   },
   {
    "address": 31990,
@@ -22525,7 +22525,7 @@
   {
    "address": 32112,
    "type": "line",
-   "text": "Dead code, typed as bytes because it calls into data: Lupenio-style ending. $7D70 holds $15 $D5 $AE (probably a JSR $AED5 whose opcode byte was overwritten). From $7D73: LDA #$0F STA $D418 (volume), sets ADSR and sawtooth waveforms on all three voices, then a loop over X that plays frequencies from a table at $B100 with delays from $B000 (Y), leaving when X reaches $86 or when $F5 = 2 (JMP $7DEA). $7DEA: JSR $AED5, JSR $80A3 (all sprites off), four NOPs; $7DF4: SEI, $0314/$0315 = $EA31, CLI, $D018 = $15, $D011 = $1B (text mode), $01 = $36, prints CHR$(147) and CHR$(31) with $FFD2, sets $FE/$FF = $7E28 (the congratulation text) and JSR $A000, then JMP $8000 (wait for F1, restart). In this image $AED5 is graphics, $B000 is zero, $B100 is Mr. Hat code and $A000-$A0FF is empty, so the routine could not work; the only way in is the unreachable JMP at $7CF7."
+   "text": "Dead code, typed as bytes because it calls into data: Lupenio-style ending. $7D70 holds $15 $D5 $AE (probably a JSR $AED5 whose opcode byte was overwritten). From $7D73: LDA #$0F STA $D418 (volume); attack/decay $38 on voices 1, 2 and 3 ($D405, $D40C, $D413), sustain/release $38 on voices 1 and 2 ($D406, $D40D; the third store goes to $1514, not $D414); sawtooth with gate ($21) on voices 1 and 3 only ($D404, $D412; voice 2's $D40B is not written). Then a loop that plays frequencies from a table at $B100,X on all three voices with delays from $B000,Y; X steps by 2 and at $86 the loop starts again from 0 ($7DE7 JMP $7DA1); it leaves only when $F5 = 2 (JMP $7DEA). $7DEA: JSR $AED5, JSR $80A3 (all sprites off), four NOPs; $7DF4: SEI, $0314/$0315 = $EA31, CLI, $D018 = $15, $D011 = $1B (text mode), $01 = $36, prints CHR$(147) and CHR$(31) with $FFD2, sets $FE/$FF = $7E28 (the congratulation text) and JSR $A000, then JMP $8000 (wait for F1, restart). In this image $AED5 and $B000 are graphics (tile_band_bottom, gfx_lamp_tail), $B100 is Mr. Hat code and $A000-$A1F5 is all zero, so the routine could not work; the only way in is the unreachable JMP at $7CF7."
   },
   {
    "address": 32296,
@@ -22545,7 +22545,7 @@
   {
    "address": 32768,
    "type": "line",
-   "text": "End of the game, after Lupenio's congratulation text: JMP $8000 at $7E24 comes here once $7E0F-$7E21 has printed the text at $7E28 ('ORA RIPROVA CON 200.000 PUNTI ... PREMI F1'). Loops until the KERNAL's current-key byte $C5 reads 4 (F1), then sets the replay bonus flag $75F0 to $20 if it was 0, or to $40 if it was not, and restarts play at $0870 ($9265 bitmap on, $087E, $6E00) without the title."
+   "text": "End of Lupenio's ending, never reached in Mr. Hat: its only way in is JMP $8000 at $7E24, after $7E0F-$7E21 would have printed the text at $7E28 ('ORA RIPROVA CON 200.000 PUNTI ... PREMI F1'), inside the dead old_ending_tune. Loops until the KERNAL's current-key byte $C5 reads 4 (F1), then sets the replay bonus flag $75F0 to $20 if it was 0, or to $40 if it was not, and restarts play at $0870 ($9265 bitmap on, $087E, $6E00) without the title."
   },
   {
    "address": 32800,
@@ -22555,7 +22555,7 @@
   {
    "address": 32813,
    "type": "line",
-   "text": "Score at the start of play: called from $1BED, at the end of room 1's set-up chain ($6E05 \u2192 $6FB2 JMP $17DF \u2192 $1A1E \u2192 $1A2A). $8145 first (sprite 2 at Y $35, $99 = 0); then by the replay bonus flag $75F0: 0 \u2192 $8042, the six SCORE digits redrawn as 000000; $20 \u2192 $80B0, 200 steps of 1,000 points; anything else ($40) \u2192 $8590, 400 steps."
+   "text": "Score at the start of play: called from $1BED, at the end of room 1's set-up chain ($6E05 \u2192 $6FB2 JMP $17DF \u2192 $1A1E \u2192 $1A2A). $8145 first (sprite 2 at Y $35, $99 = 0); then by the replay bonus flag $75F0: 0 \u2192 $8042, the six SCORE digits redrawn as 000000; $20 \u2192 $80B0, 200 steps of 1,000 points; anything else ($40) \u2192 $8590, 400 steps. In Mr. Hat only the first path runs: $75F0 is set to $20/$40 only at $800F/$8017 (wait_f1_replay, dead) and $80BC (inside bonus_200k), and it is 0 in every snapshot."
   },
   {
    "address": 32884,
@@ -22580,12 +22580,12 @@
   {
    "address": 32931,
    "type": "line",
-   "text": "Switches every sprite off (AND #$00 into $D015). Its only caller is the JSR at $7DED, inside the dead Lupenio ending $7D70-$7E27 (typed as bytes; nothing reaches it), so this never runs; it would start the end sequence at $7DEA that sets text mode and prints Lupenio's congratulation text."
+   "text": "Switches every sprite off (AND #$00 into $D015). Its only caller is the JSR at $7DED, inside the dead Lupenio ending $7D70-$7E27 (typed as bytes; nothing reaches it), so this never runs; there it is the first step of the end sequence at $7DEA, which then sets text mode and prints Lupenio's congratulation text."
   },
   {
    "address": 32944,
    "type": "line",
-   "text": "Replay bonus for flag $20: adds 200 x 1,000 points (200 calls of $41DA, which steps the score's thousands digit), then sets $75F0 = $40 and the end text's digit at $7FC1 to '4', so the next completion offers '400.000'."
+   "text": "Replay bonus for flag $20: adds 200 x 1,000 points (200 calls of $41DA, which steps the score's thousands digit), then sets $75F0 = $40 and the end text's digit at $7FC1 to '4', so the next completion would offer '400.000'. Never runs in Mr. Hat: $75F0 = $20 is set only at $8017 in wait_f1_replay, which only the dead Lupenio ending reaches."
   },
   {
    "address": 32968,
@@ -22635,12 +22635,12 @@
   {
    "address": 33103,
    "type": "line",
-   "text": "Clears $99 and runs $4AA3 ($F6 = 0, Mr Hat's pointer $07FC = $2C, standing facing right). Called from $4CB2, after the code at $4CA8 has put Mr Hat at X $50, Y $5C; which room that code serves is not known."
+   "text": "Clears $99 and runs $4AA3 ($F6 = 0, Mr Hat's pointer $07FC = $2C, standing facing right). Called from $4CB2 in room 3's code: room3_respawn_check ($4C9A, run at the start of each pass of room 3's loop $491D) puts Mr Hat back at X $50, Y $5C (the top floor) when $F6 = $30 after a death."
   },
   {
    "address": 33111,
    "type": "line",
-   "text": "By Mr Hat's Y ($D009): $C0 or more \u2192 $5D20, below $80 \u2192 $5C66, otherwise $5BEF (one routine for each of three heights; each starts by testing $D008). Called from $5BE8 in room 5's code, when $D015 is $10 or more."
+   "text": "By Mr Hat's Y ($D009): $C0 or more \u2192 $5D20, below $80 \u2192 $5C66, otherwise $5BEF (one routine for each of three heights; $5C66 and $5BEF start by testing his X $D008, $5D20 by setting it to $28). Called from $5BE8 in room 5's code, when $D015 is $10 or more."
   },
   {
    "address": 33134,
@@ -22685,12 +22685,12 @@
   {
    "address": 33280,
    "type": "line",
-   "text": "Switches all sprites off and points the IRQ vector $0314/$0315 at $8215. Called only through $45D5, whose callers are $56B0 (the first call of every room set-up), $4483 (game over, $4475) and $44B9, $5311, $531B, $5B7D, $5B87, $5B97, $5BA1, $633D, $6347, $6FF6 (not examined here)."
+   "text": "Switches all sprites off and points the IRQ vector $0314/$0315 at $8215. Called only through $45D5, whose callers are $56B0 (the first call of every room set-up), $4483 (game over, $4475), $44B9 (room1_exit_by_f7), $5311/$531B (room 2's exit test), $5B7D/$5B87/$5B97/$5BA1 (room 5's exit tests) and $633D/$6347 (room 6's exit check). A further JSR $45D5 at $6FF6 is in an unreachable copy of $44B9."
   },
   {
    "address": 33301,
    "type": "line",
-   "text": "IRQ handler: JMP $BF30. Installed by $8209, $842B (room 10, when the lives are gone) and $8460 (room 10 set-up); room IRQ handlers end by jumping here ($48EB, $68A2, $6939, $703E, $7BA6-$7BE0, $96DE, $BA22, and room 11 at $885D/$887A)."
+   "text": "IRQ handler: JMP $BF30. Installed by $8209, $842B (room 10, when the lives are gone) and $8460 (room 10 set-up); live room IRQ handlers end by jumping here ($48EB, $68A2, $703E, $7BA6-$7BE0, $96DE, $BA22, and room 11 at $885D/$887A). Of the other JMP $8215s, $6939 is in the unreached room8_belt_unused and $8891-$88FD in unreferenced room-11 fragments; the $15 $82 at $69A4 has no opcode in front."
   },
   {
    "address": 33304,
@@ -22720,7 +22720,7 @@
   {
    "address": 33536,
    "type": "line",
-   "text": "Room 10 set-up (STAGE 4): JMP $8300 from $6B52, room 8's exit dispatch, when the entry code $4ACD is $60. $56B0 as in every room (sprites off, IRQ $8215, screen blanked, $A573 with Y = $6E); colour fills ($56ED) from $0610 (via $8453), $043C and $0478..; the bitmap pattern at $4802 copied to $2078, 3 cells wide and 7 rows ($5713, source operand $5718/$5719 patched); two pictures ($A9D4, colour $DC) at cells (25,14) and (20,14), $AA26 at (10,15), $ABD5 at (11,16) (the web screenshot of room 10 shows a television and two pictures there). Then walk frames $2C/$2F, Mr Hat on at X $8F, Y $30, pointer $32, colour $0B, $99 = 0; ROOM 10 ('1' in column 24, '0' in column 25, cells $07B1/$07D9 coloured $6C to show it) and STAGE 4; entry code $4ACD = $88; then $845F."
+   "text": "Room 10 set-up (STAGE 4): JMP $8300 from $6B52, room 8's exit dispatch, when the entry code $4ACD is $60. $56B0 as in every room (sprites off, IRQ $8215, screen blanked, $A573 with Y = $6E); colour fills ($56ED): from $0610, 24 cells by 6 rows, $CC (via $8453), then twice from $040F, 3 cells wide: 16 rows, then 5 rows in $3C (cyan); the bitmap pattern at $4802 copied to $2078, 3 cells wide and 7 rows ($5713, source operand $5718/$5719 patched); two pictures ($A9D4, colour $DC) at cells (25,14) and (20,14), $AA26 at (10,15), $ABD5 at (11,16) (the web screenshot of room 10 shows a television and two pictures there). Then $BD = $FB = 0, walk frames $2C/$2F, Mr Hat on at X $8F, Y $30, pointer $32, colour $0B, $99 = 0; ROOM 10 ('1' in column 24, '0' in column 25, cells $07B1/$07D9 coloured $6C to show it) and STAGE 4; entry code $4ACD = $88; then $845F."
   },
   {
    "address": 33808,
@@ -22755,7 +22755,7 @@
   {
    "address": 34192,
    "type": "line",
-   "text": "Replay bonus for flag $40: adds 400 x 1,000 points, two runs of 200 calls of $41DA. Called from $803E."
+   "text": "Replay bonus for flag $40: adds 400 x 1,000 points, two runs of 200 calls of $41DA. Called from $803E when $75F0 is neither 0 nor $20. Never runs in Mr. Hat: $75F0 = $40 is set only at $800F (wait_f1_replay) and $80BC (bonus_200k), neither of which runs."
   },
   {
    "address": 34213,
@@ -22870,7 +22870,7 @@
   {
    "address": 34976,
    "type": "line",
-   "text": "IRQ fragment with no reference found: copies the 2 x 2 cells of graphics at $7CA0/$7CB0 into the bitmap at $3458/$3598 (column 11, rows 16-17), then JMP $8215."
+   "text": "IRQ fragment with no reference found: copies the 2 x 2 cells of graphics at $7CA0/$7CB0 into the bitmap at $3458/$3598 (columns 11-12, rows 16-17), without colouring the cells, then JMP $8215."
   },
   {
    "address": 34998,
@@ -22880,12 +22880,12 @@
   {
    "address": 35035,
    "type": "line",
-   "text": "IRQ fragment reached only from $883D, itself unreferenced: colours cells $0661/$0662 and $0689/$068A $7C and copies $7CA0/$7CB0 into the bitmap at $3308/$3448 (columns 9-10, rows 15-16), then JMP $8215. The same colour $7C and graphics as the object $7C50 draws."
+   "text": "IRQ fragment reached only from $883D, itself unreferenced: colours cells $0661/$0662 and $0689/$068A $7C and copies $7CA0/$7CB0 into the bitmap at $3308/$3448 (columns 9-10, rows 15-16), then JMP $8215. The same colour $7C (yellow on grey) as the Golden Hat that $7C50 draws, but other graphics ($7CA0, not $7C00)."
   },
   {
    "address": 35072,
    "type": "line",
-   "text": "JMP $B8F0, which goes on to $8908 (room 11's rules) if sprite 4 is on or its X high bit is set. Called once a pass of the loop and after every step of a jump, crouch or climb."
+   "text": "JMP $B8F0, which goes on to $8908 (room 11's rules) if sprite 4 is on or its X high bit is set. Called twice a pass of the loop ($86BC, and $86DA before a crouch), after every step of a jump and of a crouch, and on fire with right ($87B3); the ladder climb $8949 and the lift rides do not call it."
   },
   {
    "address": 35080,
@@ -22895,7 +22895,7 @@
   {
    "address": 35090,
    "type": "line",
-   "text": "Where Mr Hat is in room 11. X low byte 0 or $FF \u2192 $B8B8 (moves him across the 256 boundary). Y $5D or more \u2192 $8265. Top floor, left half ($D010 below $2F): X below $68 \u2192 INC $D008 (the left wall); X $80-$8F with the stick up ($7E) \u2192 $8949, the ladder. Top floor, right half ($896A): not exactly at Y $5C \u2192 $89A1; X $22-$33 (in the lift) with the stick down ($7D) \u2192 rides it down until Y $B4: $B910 (Y + 1, X low byte set to 1), sprite 5 Y + 1, delay $7AD1; X $34 or more \u2192 DEC $D008 while X is $30 or more (the right wall)."
+   "text": "Where Mr Hat is in room 11. X low byte 0 or $FF \u2192 $B8B8, which moves him across the 256 boundary: X 0 becomes $0FE (high bit cleared) with sprite 4 switched on; X $FF becomes $124 (high bit set) with sprite 4 switched off, so he is not shown on the right side, where the lift sprite 5 stands (X $120). Y $5D or more \u2192 $8265. Top floor, left half ($D010 below $2F): X below $68 \u2192 INC $D008 (the left wall); X $80-$8F with the stick up ($7E) \u2192 $8949, the ladder. Top floor, right half ($896A): not exactly at Y $5C \u2192 $89A1; X $22-$33 (in the lift) with the stick down ($7D) \u2192 rides it down until Y $B4: $B910 (Y + 1, X low byte set to 1), sprite 5 Y + 1, delay $7AD1; X $34 or more \u2192 DEC $D008 while X is $30 or more (the right wall)."
   },
   {
    "address": 35145,
@@ -22910,12 +22910,12 @@
   {
    "address": 35248,
    "type": "line",
-   "text": "Unused: 32 zero bytes after room11_rules ($89B0-$89CF); nothing reads them."
+   "text": "Unused: 32 zero bytes after room11_right_wall's tail ($89AC JSR $8265 / RTS), $89B0-$89CF; nothing reads them."
   },
   {
    "address": 35280,
    "type": "line",
-   "text": "Tune 2's IRQ tail, the same shape as tune 1's $8C00 but with tables $8A60/$8B00/$8B90. No jump to $89D0 or $8A00 was found (byte search of the image, absolute and as split immediates); $92C7-$92D1 resets its pointers at game start. If Mr Hat's pointer is $27 (the death frame), or cell $0500 is $21 and cell $06AB is not $6E, it rewinds to the second note ($8A61/$8B01/$8B91) and JMP $B4C0; otherwise $8A03."
+   "text": "Tune 2's IRQ tail, the same shape as tune 1's $8C00 but with tables $8A60/$8B00/$8B90. Its only jump is JMP $89D0 at $8A00, and nothing jumps to $8A00 (byte search of the image, absolute and as split immediates), so it never runs; $92C7-$92D1 resets its pointers at game start. If Mr Hat's pointer is $27 (the death frame; tested twice), or cell $0500 is $21 and cell $06AB is not $6E, it rewinds to the second note ($8A61/$8B01/$8B91) and JMP $B4C0; otherwise $8A03."
   },
   {
    "address": 35328,
@@ -22975,12 +22975,12 @@
   {
    "address": 35728,
    "type": "line",
-   "text": "Tune 2, note lengths in IRQs ($08 or $10, one $20), one a note, read by $8A33 through the pointer $8A34 into $64FA ($8B90-$8BF8). The effects at $B4F0, $B57B and $B60E also read these bytes, through their own pointer $B4F1, as colours for $D022."
+   "text": "Tune 2, note lengths in IRQs ($08 or $10, one $20), one a note, read by $8A33 through the pointer $8A34 into $64FA ($8B90-$8BF8). One byte of it, $8BE4 ($10), is also read by the effects at $B4F0, $B57B and $B60E and stored to $D022 (see tune2_len_b4f0)."
   },
   {
    "address": 35812,
    "type": "line",
-   "text": "Inside tune 2's length table: the byte the operand of LDA $8BE4 at $B4F0 (and at $B57B, $B60E) held when the image was saved; those effects patch the low byte ($B4F1, reset to $91 at $B511 and $B59C) and send what they read to $D022."
+   "text": "Inside tune 2's length table: the byte ($10) that LDA $8BE4 at $B4F0, $B57B and $B60E reads and stores to $D022. Only $B4F0's operand low byte $B4F1 is ever written, always to $91 ($B513, $B59E, $B631; nothing increments it), and it holds $E4 in all twelve snapshots; the operands at $B57C and $B60F are never written. So the effects always read this one byte."
   },
   {
    "address": 35840,
@@ -23020,7 +23020,7 @@
   {
    "address": 35984,
    "type": "line",
-   "text": "Tune 1's first column, one byte a note ($8C90-$8CEE; zeros from $8CD8), written to background colour 1 $D022 by $8C57. Apart from $60 ($8CC4-$8CC5), its values all occur in tune 2's frequency-low table $8A60."
+   "text": "Tune 1's first column, one byte a note ($8C90-$8CEE; zeros from $8CD8), written to background colour 1 $D022 by $8C57. Apart from $60 ($8CC4-$8CC5 and $8CCC-$8CCD), its values all occur in tune 2's frequency-low table $8A60."
   },
   {
    "address": 36079,
@@ -23040,22 +23040,22 @@
   {
    "address": 36360,
    "type": "line",
-   "text": "$4C40 (a collision test: $B666, then $4C52 \u2192 $A877 when it returns $14 or $18), then the object pick-ups at $8E13 without $55B0. Called from $4AE7 and $4B8D, in the ladder code $4AC0/$4B20."
+   "text": "$4C40 (a collision test: $B666, which kills through $4C52 when $D01E = $90, then $4C52 \u2192 $A877 when a second read of $D01E is $14 or $18), then the object pick-ups at $8E13 without $55B0. Room 3's per-step test: called from $4AE7 (room 3's top-floor code $4AD0) and $4B8D (room 3's bottom-floor code, itself called from $1043)."
   },
   {
    "address": 36368,
    "type": "line",
-   "text": "Called from $BB10 (through $5590, each step of every room). $55B0 first: Mr Hat's sprite-sprite collisions in $D01E ($11, $12, $14, $18, ... $90) set the death flag $4ACE = $20 ($55E5). Then the pick-ups, $8E13."
+   "text": "Called from $BB10, which $5590 calls in the per-step checks of rooms 2, 4, 5, 6, 7, 8, 9 and 11 (not 1, 3 or 10). $55B0 first: Mr Hat's sprite-sprite collisions in $D01E equal to $11, $12, $14, $18, $50 or $90 set the death flag $4ACE = $20 ($55E5). Then the pick-ups, $8E13."
   },
   {
    "address": 36371,
    "type": "line",
-   "text": "Objects collected by standing over them and pulling the stick down, rooms 2-7 by the room id $100C (other ids: $B100). Each one: a gate routine (Z or C), the floor ($1208: carry clear above Y $60), $A97C (X low byte in [X, Y) and $DC00 = $7D), a once-only flag, then the cells cleared ($BD1D 2 x 3 cells or $BCFE 2 x 2, colour $CC) and points. Room 2: top X $74-$93, $1371, (14,5), 10,000 ($120E); lower X $84-$A3, $1372, (16,17), 25,000 ($1224). Room 3: lower X $04-$23, $1373, (32,17), $1250. Room 4 (left half only): lower X $24-$43, $1374, (4,16), 25,000; X $DC-$FB, $1375, (27,17), 25,000. Room 5: top X $D4-$F3, $1376, (26,5), 20,000 ($1219). Room 6 (only when $22 is not 0): top X $1C-$3B, $1377, (3,5), 20,000; lower X $7C-$9B, $1378, (15,17), 25,000. Room 7 (left half only): lower X $84-$A3, $1379, (16,17), $1250."
+   "text": "Objects collected by standing over them and pulling the stick down, rooms 2-7 by the room id $100C (other ids: $B100). Each one: a gate (room 2 $B2E0, room 3 $B339, room 5 $B366, room 6 $B393, rooms 4 and 7 $1200), whose Z flag from $1200 limits the pick-ups to one half of the room: X past 255 in room 3, below 256 in the others; the floor ($1208: carry clear above Y $60); $A97C with A = $10 (X low byte in [X, Y) and $DC00 = $7D); a once-only flag; the cells cleared ($BD1D 2 x 3 cells or $BCFE 2 x 2, colour $CC); then points, or in rooms 3 and 7 the immunity $1250 (RTS written over $A877 and $4C52). Room 2: top X $74-$93, $1371, (14,5), 10,000 ($120E); lower X $84-$A3, $1372, (16,17), 25,000 ($1224). Room 3 (right half): lower X $104-$123, $1373, (32,17), $1250. Room 4: lower X $24-$43, $1374, (4,16), 25,000; X $DC-$FB, $1375, (27,17), 25,000. Room 5: top X $D4-$F3, $1376, (26,5), 20,000 ($1219). Room 6 (only when $22 is not 0): top X $1C-$3B, $1377, (3,5), 20,000; lower X $7C-$9B, $1378, (15,17), 25,000. Room 7: lower X $84-$A3, $1379, (16,17), $1250."
   },
   {
    "address": 36776,
    "type": "line",
-   "text": "Draws an object at cell (15,5) ($A763: colour $0C, 3 x 3 cells) and runs $B22B (an object at (19,5), colour $50). Called from $B3B6."
+   "text": "Draws the keyhole tile ($A763: $AC00, colour $0C, 3 x 3 cells) at cell (15,5) and runs $B22B, which only colours 3 x 2 cells at (19,5) with $50 (no graphics). Called from $B3B6, when room 6's lock opens."
   },
   {
    "address": 36787,
@@ -23100,7 +23100,7 @@
   {
    "address": 37120,
    "type": "line",
-   "text": "Colours four rectangles of the colour screen through $56ED (value $FB, width $FC, height $FD, at ($FE/$FF)), each placed at page $06 plus the column in $99: $0C 6x1, then the value in $64F3 6x5, then $64F3-5 4x4, then $66 2x2. No caller found (JSR/JMP bytes, pointers and immediate pairs searched over the whole image)."
+   "text": "Colours four rectangles of the colour screen through $56ED (value $FB, width $FC, height $FD, at ($FE/$FF)), placed by the column in $99: $0C 6x1 at $0600+$99, then the value in $64F3 6x5 at $0627+$99, then $64F3-5 4x4 at $0628+$99, then $66 2x2 at $0679+$99. No caller found (JSR/JMP bytes, pointers and immediate pairs searched over the whole image)."
   },
   {
    "address": 37219,
@@ -23150,7 +23150,7 @@
   {
    "address": 37477,
    "type": "line",
-   "text": "Called once from the entry ($0870) after the title: $01 = $36, prints CHR$(147) (clear screen), border $0C, INC $D022, sets $D018 bit 3 (bitmap at $2000) and $D011 bit 5 (bitmap mode), and sets $FB/$FC = $2000."
+   "text": "Called from $0870, the start of every new game: reached after the title from the entry ($086D), and by JMP $0870 from $5BA4, $7CF3, $8012, $801A and $802A. $01 = $36, prints CHR$(147) (clear screen), border $0C, INC $D022, sets $D018 bit 3 (bitmap at $2000) and $D011 bit 5 (bitmap mode), and sets $FB/$FC = $2000."
   },
   {
    "address": 37535,
@@ -23170,7 +23170,7 @@
   {
    "address": 37632,
    "type": "line",
-   "text": "Reached from the room IRQ at $B9AD when $100C is not 7 (JMP $9300 at $B9B4): JSR $B877, moves sprite 3 one pixel left ($D006), and when it reaches 0 flips its X high bit in $D010 and restarts it at $FE; then jumps to $96B0."
+   "text": "Reached from the room IRQ at $B9AD when $100C is not 7 (JMP $9300 at $B9B4): JSR $B877 (which moves sprite 3 one pixel left), moves sprite 3 one more pixel left ($D006), and when it reaches 0 flips its X high bit in $D010 and restarts it at $FE; then jumps to $96B0."
   },
   {
    "address": 37661,
@@ -23220,7 +23220,7 @@
   {
    "address": 38055,
    "type": "line",
-   "text": "Mr Hat at the room's sides. X = $00 or $FF: $4610 moves him across the X high bit. While $D010 < $2F (tested as a whole register): the $0400 = $E0 test calls $9689 at X $D0-$DF; X below $10 leaves by the left: door code $10/$28 becomes $14 and jumps to $4642, $40/$48 becomes $44 and jumps to $5E10. $D010 >= $2F and X >= $56 leaves by the right: $10/$28 becomes $24 and jumps to $573D, $40/$48 becomes $46 and jumps to $65E0. The second $0400 test (INC $D020 at $94E9) and the second set of door tests ($9517-$9537, $9562-$9582) can never run: the same cases have already left."
+   "text": "Mr Hat at the room's sides. X = $00 or $FF: $4610 moves him across the X high bit. While $D010 < $2F (tested as a whole register): the $0400 = $E0 test calls $9689 at X $D0-$DF; X below $10 leaves by the left: door code $10/$28 becomes $14 and jumps to $4642, $40/$48 becomes $44 and jumps to $5E10. $D010 >= $2F and X >= $56 leaves by the right: $10/$28 becomes $24 and jumps to $573D, $40/$48 becomes $46 and jumps to $65E0. The second $0400 test (INC $D020 at $94E9) can never match, and the second set of door tests ($9517-$9537, $9562-$9582) never matches: the same codes have already left, so its JMP $4D80s never run."
   },
   {
    "address": 38254,
@@ -23235,7 +23235,7 @@
   {
    "address": 38275,
    "type": "line",
-   "text": "$99 = 0 (the step counter of the jump and the walk). Called from $96A9."
+   "text": "$99 = 0 (the jump's step counter; the walk counts in $FB). Called from $96A9."
   },
   {
    "address": 38280,
@@ -23290,7 +23290,7 @@
   {
    "address": 38656,
    "type": "line",
-   "text": "$9700-$97EC: a repeating pattern (00 00 32 32 ... 08 08 3A 3A) just below the monitor. Nothing reads or writes it; not known what wrote it."
+   "text": "$9700-$97EC, just below the monitor: 32 irregular bytes ($9700-$971F: 99 CD F7 7F ...), then a repeating pattern, 00 00 32 32 to $977F and 08 08 3A 3A from $9780. Nothing reads or writes it; not known what wrote it."
   },
   {
    "address": 38893,
@@ -23430,12 +23430,12 @@
   {
    "address": 39545,
    "type": "line",
-   "text": "Reads a four-digit hex address into $C2 (high) and $C1 (low); carry clear if a field was empty. $9A7C reads only the low byte."
+   "text": "Reads a four-digit hex address: the first byte into $C2 (high), the second into $C1 (low), each stored only if typed; carry clear if a field was empty. $9A7C, entered with the high byte already in A, stores it when carry is set and then reads the low byte."
   },
   {
    "address": 39548,
    "type": "line",
-   "text": "Second half of $9A79: reads a hex byte into $C1 (entered directly by $9ADF)."
+   "text": "Entry of $9A79 with the high byte already read into A (from $9ADF, after $9A8F): stores it in $C2 if carry is set, then reads a hex byte into $C1."
   },
   {
    "address": 39560,
@@ -23600,7 +23600,7 @@
   {
    "address": 40357,
    "type": "line",
-   "text": "Prints the character in A unless it equals $28 (used to skip a repeated addressing-mode character)."
+   "text": "Prints the character in A unless it equals the byte in zero page $28 (CMP $28, not an immediate). Called only by the disassembler ($9CA6, $9CAE), after $9D35 has shifted the mnemonic out of $28 and left $00 or $80 there, so the addressing-mode characters it is given are always printed."
   },
   {
    "address": 40365,
@@ -23615,7 +23615,7 @@
   {
    "address": 40632,
    "type": "line",
-   "text": "Assembler: compares the characters in A and Y with the next two of the typed operand ($9EB9, $9EBF)."
+   "text": "Assembler: TAY, then $9EB9, so it matches the character in A twice against the next two typed operand characters. Used at $9E53 and $9E58 with A = '0' ($30)."
   },
   {
    "address": 40633,
@@ -23835,7 +23835,7 @@
   {
    "address": 42623,
    "type": "line",
-   "text": "Colours a tile's cells: $A620 (screen cells at X, Y, $23 x $20, value $27) and $A663 (disabled colour-RAM fill). Called by every tile drawer, in $1700-$1800, $5F90, $7C60, $A700-$ABEC, $B23F and $B816-$BF92."
+   "text": "Colours a tile's cells: $A620 (screen cells at X, Y, $23 x $20, value $27) and $A663 (disabled colour-RAM fill). Called by every tile drawer: $17F6, $1809, $5F90, $5FA3, $7C60, $A68C-$ABEC, $B23F and $B816-$BF92."
   },
   {
    "address": 42630,
@@ -23900,7 +23900,7 @@
   {
    "address": 43031,
    "type": "line",
-   "text": "Table of room-loop re-entries, six bytes each: JSR $A84E (display on) and JMP to a room's loop: $A817 $42EF, $A81D $4910, $A823 $5A60, $A829 $6220, $A82F $6A20, $A835 $76B0, $A83B $9320, $A841 $86B0, $A847 $51F4; $A85B $8410 after the gap. Each room loop ends by jumping to its own entry."
+   "text": "Table of room-loop re-entries, six bytes each: JSR $A84E (display on) and JMP to a room's loop: $A817 $42EF, $A81D $4910, $A823 $5A60, $A829 $6220, $A82F $6A20, $A835 $76B0, $A83B $9320, $A841 $86B0, $A847 $51F4; $A85B $8410 after the gap. Each room loop ends by jumping to its own entry, and several set-ups enter their loop through it. $A817 itself is reached from $1BFC, $4601 and $4609."
   },
   {
    "address": 43037,
@@ -23960,7 +23960,7 @@
   {
    "address": 43127,
    "type": "line",
-   "text": "Mr Hat's death: keeps his Y in $ABFF, swaps in the death shape ($1DDD: frame $27, shape $ACD8 copied to $09C0), lets him sink to the floor ($A8A0) unless his frame was $32/$33, flashes and dissolves him ($A92D), hides sprite 4 and ends with $A8D6. Its first byte is a switch: $1255 writes $60 (RTS) here and into $4C52, so he cannot die, and $BF4F writes $AD back; $4CC7 and $B530 read it. Called from $4C52 (the kill on collision), $1D50, $55F5, $BB35-$BB84."
+   "text": "Mr Hat's death: keeps his Y in $ABFF, swaps in the death shape ($1DDD: frame $27, shape $ACD8 copied to $09C0), lets him sink to the floor ($A8A0) unless his frame was $32/$33, flashes and dissolves him ($A92D), hides sprite 4 and ends with $A8D6. Its first byte is a switch: $1255 writes $60 (RTS) here and into $4C52, so he cannot die, and $BF4F writes $AD back; $4CC7, $B530 and $BF30 read it (and the unused copy at $1265). Called from $4C52 (the kill on collision), $4CD2 (room 3's ladder guardian), $1D50, $55F5, $BB35-$BB84."
   },
   {
    "address": 43168,
@@ -23995,7 +23995,7 @@
   {
    "address": 43388,
    "type": "line",
-   "text": "Is Mr Hat at a spot? A = flags, X = left, Y = right edge (exclusive) for $D008 (kept in $1E06/$1E07). $1020 stores A's low nybble in $1009 and returns a high nybble that should say whether to test the X high bit ($10); it reads $400B (always $FC) where it wrote $40BB, so it returns $F0 and the high-bit test at $A986 never runs. Of the 42 calls, 18 pass A = $01, which never asks for the check; 24 pass $10 or $11, but 23 of their callers test the X high bit themselves first ($1200): 4 call only on the right half ($8E7C, $B192, $B350, $B37D) and behave the same either way, 19 only on the left half, where they match only because the check never runs. $AB47 is not gated. Carry set if X is in the window and either $1009 = 1 or the stick reads $7D (down)."
+   "text": "Is Mr Hat at a spot? A = flags, X = left, Y = right edge (exclusive) for $D008 (kept in $1E06/$1E07). $1020 stores A's low nybble in $1009 and returns a high nybble that should say whether to test the X high bit ($10); it reads $400B (always $FC) where it wrote $40BB, so it returns $F0 and the high-bit test at $A986 never runs. Of the 42 calls, 18 pass A = $01, which never asks for the check; 24 pass $10 or $11 ($AB47 passes $10 only after $4610 has moved him across the high bit; on its other path A still holds his X, whose low nybble becomes $1009). 23 of the 24 callers test the X high bit themselves first ($1200): 4 call only on the right half ($8E7C, $B192, $B350, $B37D) and behave the same either way, 19 only on the left half, where they match only because the check never runs. $AB47 is not gated. Carry set if X is in the window and either $1009 = 1 or the stick reads $7D (down)."
   },
   {
    "address": 43448,
@@ -24035,12 +24035,12 @@
   {
    "address": 43651,
    "type": "line",
-   "text": "Draws the 2x1 up-arrow tile ($AE90) at X, Y with the colour in $27. Called from room 1's IRQ ($AACC, $AAE9)."
+   "text": "Draws the 2x1 up-arrow tile ($AE90) at X, Y with the colour in $27. Called from room 1's IRQ ($AACC, $AAE9) and room 11's ($885A, $8877)."
   },
   {
    "address": 43674,
    "type": "line",
-   "text": "Draws the 2x1 down-arrow tile ($AE80) at X, Y with the colour in $27. Called from room 1's IRQ ($AAC1, $AADE)."
+   "text": "Draws the 2x1 down-arrow tile ($AE80) at X, Y with the colour in $27. Called from room 1's IRQ ($AAC1, $AADE) and room 11's ($884F, $886C)."
   },
   {
    "address": 43698,
@@ -24055,7 +24055,7 @@
   {
    "address": 43812,
    "type": "line",
-   "text": "From $4AD0: $ABCE ($6CA4, then Mr Hat's X); X = $FF or 0 moves him across the X high bit ($4610). Then: at X $20-$2F pulling down, X - 1; at X $80-$AF with Y = $5C, the kill ($4C52)."
+   "text": "From $4AD0: $ABCE ($6CA4, then Mr Hat's X); X = $FF or 0 moves him across the X high bit ($4610) and sets A = $10. Then: at X $20-$2F, X - 1 (after a crossing, A = $10, only while pulling down; otherwise A still holds his X, so the stick is needed except at X $21, whose low nybble is 1); at X $80-$AF with Y = $5C, the kill ($4C52)."
   },
   {
    "address": 43835,
@@ -24075,7 +24075,7 @@
   {
    "address": 43919,
    "type": "line",
-   "text": "Draws the 3x1 pot tile ($AF28, under the plant) at X, Y with colour $9C; $AB93 takes the colour in $27 (from $5866, $8570, $95F1), $AB97 the size already set."
+   "text": "Draws the 3x1 pot tile ($AF28, under the plant) at X, Y with colour $9C; $AB93 takes the colour in $27 (from $5866, $8570, $8582, $95F1), $AB97 the colour in $27 without clearing $28 (the size set-up on)."
   },
   {
    "address": 43923,
@@ -24090,12 +24090,12 @@
   {
    "address": 43950,
    "type": "line",
-   "text": "Draws the chest of drawers ($AF40, 4x4) at X, Y with colour $9C; $ABB2 with the colour in A ($6683), $ABB6 in $27 ($95C5). Called from $4789, $57F8."
+   "text": "Draws the chest of drawers ($AF40, 4x4) at X, Y with colour $9C; $ABB2 with the colour already in $27 ($6683), $ABB6 with it in $27 and $28 not cleared ($95C5). Called from $4789, $57F8."
   },
   {
    "address": 43954,
    "type": "line",
-   "text": "Entry of $ABAE with the colour in A."
+   "text": "Entry of $ABAE with the colour already in $27 (the caller at $6683 stores $2C there first)."
   },
   {
    "address": 43958,
@@ -24165,12 +24165,12 @@
   {
    "address": 44443,
    "type": "line",
-   "text": "A byte inside the painting tile (row 3, $AD18 + $83): $FF in the image, overwritten with $EE by $8179 (together with $AD9E, $00 -> $EE), so later paintings are drawn with a changed picture; the tile continues to $ADB7."
+   "text": "A byte inside the painting tile (row 3, $AD18 + $83): $FF in the image. $8179 would overwrite it with $EE (together with $AD9E, $00 -> $EE), changing the picture of paintings drawn later, but $8179 lies in $816E, which has no caller found; in every snapshot (handover, play-room1, room2-room11) it still holds $FF. The tile continues to $ADB7."
   },
   {
    "address": 44446,
    "type": "line",
-   "text": "Second byte of the painting tile changed to $EE by $817C (in the image $00); the rest of the painting tile, to $ADB7."
+   "text": "Second byte of the painting tile that $817C would change to $EE (in the image $00); $817C is in $816E, which has no caller found, and every snapshot still holds $00. The rest of the painting tile, to $ADB7."
   },
   {
    "address": 44480,
@@ -24180,7 +24180,7 @@
   {
    "address": 44672,
    "type": "line",
-   "text": "2x1 cells ($AE80-$AE8F): an arrow pointing down, by $AA9A (room 1's IRQ, column 35 row 3)."
+   "text": "2x1 cells ($AE80-$AE8F): an arrow pointing down, by $AA9A at column 35, row 3, from the IRQs of room 1 ($AAB2) and room 11 ($8840)."
   },
   {
    "address": 44688,
@@ -24350,7 +24350,7 @@
   {
    "address": 46272,
    "type": "line",
-   "text": "Sound effect A, the tail of an IRQ: entered by JMP from $8C2B (and from $89FB, in code not yet traced), leaves by JMP $EA31 (the KERNAL IRQ end). Counts $1011 up (it is reset to 0 each time, so every call passes), then $B51B silences voice 3 and $B4CE sets volume 15 ($D418), voice 3 triangle with gate ($D412 = $11), attack/decay $20, and a frequency taken from the raster line $D012 (a varying value) for both $D40E and $D40F; then it stores $8BE4 into $D022 (an extra background colour register) and steps $D022 three times. Built on the same pattern as the tune step at $8C41, with fixed operands."
+   "text": "Sound effect A, the tail of an IRQ: entered by JMP from $8C2B in the in-play tune's tail (and from $89FB in tune 2's tail $89D0, which nothing found reaches), leaves by JMP $EA31 (the KERNAL IRQ end). Counts $1011 up (it is reset to 0 each time, so every call passes), then $B51B silences voice 3 and $B4CE sets volume 15 ($D418), voice 3 triangle with gate ($D412 = $11), attack/decay $20, and a frequency taken from the raster line $D012 (a varying value) for both $D40E and $D40F; then it stores $8BE4 into $D022 (an extra background colour register) and steps $D022 three times. Built on the same pattern as the tune step at $8C41, with fixed operands."
   },
   {
    "address": 46309,
@@ -24390,7 +24390,7 @@
   {
    "address": 46518,
    "type": "line",
-   "text": "IRQ tail used by sfx_select for rooms below 5 (a second copy at $B5C3 for rooms 5 and up, same code): if the score-tick flag $1015 is 0, goes on to $8C00 (another IRQ stage, which ends at $7C70 or in effect A, $B4C0); if it is set, plays sfx_score_tick ($B5D1)."
+   "text": "IRQ tail used by sfx_select for rooms below 5 (a second copy at $B5C3 for rooms 5 and up, same code): if the score-tick flag $1015 is 0, goes on to $8C00, the in-play tune's IRQ tail (which ends at $7C70 or in effect A, $B4C0); if it is set, plays sfx_score_tick ($B5D1) instead."
   },
   {
    "address": 46545,
@@ -24425,7 +24425,7 @@
   {
    "address": 46723,
    "type": "line",
-   "text": "Draws the title screen text and sprites, called from $CDF9 when $1018 = 0. Sprite X high bits off, prints CHR$(31) and CHR$(147) (clear screen), border and background $0C, clears $0400-$07FF ($1744). Copies the screen-code words from $C000 to the screen, each letter twice (code on one row, code+$20 on the row below, the two-row font): MR.HAT (row 10, col 2), OCTOPUS (7 of the 9 letters of OCTOPUSSY, row 12 col 16), SNAILY (row 10 col 30), DYNKY (row 18 col 9), KNIFFY (row 18 col 24), AND ALL OTHERS (row 23 col 12, colour 7), SYSTEMS PRESENTS A NEW GAME WITH (row 2 col 3, colour $0D). The word DOUBLE at $C007 is not drawn. Enables sprites 0-4, all multicolour, places each beside a name with pointers $2C, $3B, $3D, $25, $26 and colours $0B, $0A, $01, $0B, $06. $B72F and $B732 both store to $D001 ($D003 is set later at $B763)."
+   "text": "Draws the title screen text and sprites, called from $CDF9 when $1018 = 0. Sprite X high bits off, prints CHR$(31) and CHR$(147) (clear screen), border and background $0C, clears $0400-$07FF ($1744). Copies the screen-code words from $C000 to the screen, each letter twice (code on one row, code+$20 on the row below, the two-row font): MR HAT (row 10, col 2; code 0 is a blank, so no dot), OCTOPUS (7 of the 9 letters of OCTOPUSSY, row 12 col 16), SNAILY (row 10 col 30), DYNKY (row 18 col 9), KNIFFY (row 18 col 24), AND ALL OTHERS (row 23 col 12, colour 7), SYSTEMS PRESENTS A NEW GAME WITH (row 2 col 3, colour $0D). The word DOUBLE at $C007 is not drawn. Enables sprites 0-4, all multicolour, places each just above a name (sprite 2 at X $115, its $D010 bit set at $B75E) with pointers $2C, $3B, $3D, $25, $26 and colours $0B, $0A, $01, $0B, $06. $B72F and $B732 both store to $D001 ($D003 is set later at $B763)."
   },
   {
    "address": 47040,
@@ -24490,7 +24490,7 @@
   {
    "address": 47386,
    "type": "line",
-   "text": "JMP from $6531: Mr Hat pointer $07FC = $2C (the frame the title shows beside MR.HAT) and Y = $5C, the height the hazard checks () use for the upper floor."
+   "text": "JMP from $6531: Mr Hat pointer $07FC = $2C (the frame the title shows above MR HAT) and Y = $5C, the height the hazard checks ($BB10) use for the upper floor."
   },
   {
    "address": 47398,
@@ -24630,7 +24630,7 @@
   {
    "address": 48382,
    "type": "line",
-   "text": "Removes a 2x2-cell object at cell X,Y: colour byte $CC (both nibbles $C) over the cells, drawn with the brick graphics at $AF40. Used to remove taken 2x2 treasures and switches."
+   "text": "Removes a 2x2-cell object at cell X,Y: colour byte $CC (both nibbles $C) over the cells, drawn with the first bytes of the chest-of-drawers tile at $AF40 (invisible, since both colours are $C). Used to remove taken 2x2 treasures and switches."
   },
   {
    "address": 48413,
@@ -24935,12 +24935,12 @@
   {
    "address": 50236,
    "type": "line",
-   "text": "Music constant: steps in a full block, $10 (16); compared at $C0D9. Only this reader found."
+   "text": "Music constant: steps in a full block, $10 (16); read at $C0D6 and compared with music_step at $C0D9. Only this reader found."
   },
   {
    "address": 50237,
    "type": "line",
-   "text": "Music constant: the number of order positions the song plays, 1; compared at $C0FB. So only order entry 1 (patterns 1-2) plays; entries 2-6 of the order tables are never reached."
+   "text": "Music constant: the number of order positions the song plays, 1; read at $C0F8 and compared with music_position at $C0FB. So only order entry 1 (patterns 1-2) plays; entries 2-6 of the order tables are never reached."
   },
   {
    "address": 50238,
@@ -25175,12 +25175,12 @@
   {
    "address": 52595,
    "type": "line",
-   "text": "Music: note block 10 of the title tune, $CD73-$CDB2: 16 lead bytes the player does not read, then voice 1 $CD83, voice 2 $CD93, voice 3 $CDA3, 16 steps each (note 1-94, 0 hold, $64 gate off). the same notes as block 4 (E, octave up). Played by pattern 1 only."
+   "text": "Music: note block 10 of the title tune, $CD73-$CDB2: 16 lead bytes the player does not read, then voice 1 $CD83, voice 2 $CD93, voice 3 $CDA3, 16 steps each (note 1-94, 0 hold, $64 gate off). The same notes as block 4 (E, octave up), except voice 3's last step ($CDB2) is 0, hold, where block 4 has $64, gate off. Played by pattern 1 only."
   },
   {
    "address": 52659,
    "type": "line",
-   "text": "13 bytes $CDB3-$CDBF after the last note block: five zeros, then A9 00 8D 18 D0 EA EA EA, which would read LDA #$00 / STA $D418 / NOP x3 (SID volume off). No JSR, JMP or pointer to $CDB8 found in the image; a leftover, typed as data."
+   "text": "13 bytes $CDB3-$CDBF after the last note block: five zeros, then A9 00 8D 18 D0 EA EA EA, which would read LDA #$00 / STA $D018 / NOP x3 (the VIC-II memory-pointer register, not the SID volume $D418). No JSR, JMP or pointer to $CDB8 found in the image (no decoded transfer; byte search for B8 CD finds nothing); a leftover, typed as data."
   },
   {
    "address": 52672,
