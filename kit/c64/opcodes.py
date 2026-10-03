@@ -33,6 +33,7 @@ import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))   # symbols_export, read where it is needed
 sys.path.insert(0, HERE)                        # the tables moved here with the seam lift
 from cpu import OPS, LEN                       # the documented set, as the Source tab has it  # noqa: E402
 from snapshot import VSF_RAM_OFFSET            # noqa: E402
