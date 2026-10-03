@@ -8,6 +8,7 @@ Everything the kit installs lives under tools/ (gitignored):
                      or a link to a build (`get-vice build`, or `use-vice <dir>` for one of your own)
   tools/src/         vice-mcp source and its build, when built here
   tools/vice-home/   the emulator's config, log and snapshots (XDG paths pointed here)
+  tools/r2000-home/  the disassembler's settings, where it follows the XDG paths (Linux)
   tools/cargo/bin/   the disassembler, from `cargo install --root tools/cargo regenerator2000`
   tools/logs/        terminal logs of both
 Deleting the repository removes all of it. See kit/c64/INSTALL.md, "Uninstall".
@@ -17,6 +18,8 @@ Usage:
   tools.py vice [x64sc]            start the emulator with its MCP server on 127.0.0.1:6510
                                    (or $KIT_VICE_PORT, when something else holds 6510)
   tools.py r2000 <file>            start the disassembler's MCP server on :3000 on a .vsf/.prg/project
+                                   (or $KIT_R2000_PORT, when something else holds 3000: a .vsf or a
+                                   project then, served through kit/c64/stdio_bridge.py)
   tools.py stop [vice|r2000|all] [--force]
                                    the disassembler stays up while an annotation log written since
                                    it started is newer than the game's symbols.json: export first,
@@ -35,7 +38,7 @@ checked on any operating system: it starts the emulator, makes it write a snapsh
 stops it, and then lists every file outside the repository that changed meanwhile and
 looks like it belongs to one of the tools. An empty list is the pass.
 """
-import os, re, shutil, subprocess, sys, time
+import os, re, shlex, shutil, subprocess, sys, time
 
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
@@ -67,6 +70,25 @@ def vice_port():
 
 
 VICE_PORT = vice_port()
+# The disassembler's, resolved the same way: KIT_R2000_PORT, else the port the last `tools.py r2000`
+# used (tools/r2000-port), else 3000. kit/c64/r2000.py reads it back, so an annotation never goes to
+# another clone's disassembler on 3000. regenerator2000 0.9.20 serves HTTP on 3000 only: any other
+# port is its stdio server behind kit/c64/stdio_bridge.py.
+R2000_PORT_FILE = os.path.join(TOOLS, "r2000-port")
+BRIDGE = os.path.join(ROOT, "kit", "c64", "stdio_bridge.py")
+
+
+def r2000_port():
+    if os.environ.get("KIT_R2000_PORT"):
+        return int(os.environ["KIT_R2000_PORT"])
+    try:
+        with open(R2000_PORT_FILE) as f:
+            return int(f.read())
+    except (OSError, ValueError):
+        return 3000
+
+
+R2000_PORT = r2000_port()
 RELEASE_NOTE = ".kit-release"    # written by get-vice into a downloaded release: "<tag> <asset>"
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
@@ -132,13 +154,26 @@ def r2000(path):
     exe = r2000_exe()
     if not exe:
         sys.exit("no regenerator2000; run: cargo install --root tools/cargo regenerator2000")
-    if up(3000):
-        detail = foreign_detail(3000)
+    if up(R2000_PORT):
+        detail = foreign_detail(R2000_PORT)
         if detail:
-            sys.exit(f"a disassembler started from another folder already answers on :3000:\n{detail}\n"
-                     "stop it there (its own `tools.py stop r2000`) before starting this clone's")
-        sys.exit("something already answers on :3000; only one disassembler can run. `tools.py stop r2000` first")
-    start([exe, "--mcp-server", os.path.abspath(path)], os.path.join(LOGS, "r2000.log"), port=3000, name="disassembler")
+            sys.exit(f"a disassembler started from another folder already answers on :{R2000_PORT}:\n{detail}\n"
+                     "stop it there (its own `tools.py stop r2000`) before starting this clone's, or start this\n"
+                     "clone's on another port with KIT_R2000_PORT (kit/c64/INSTALL.md, 'Another program on port 3000')")
+        sys.exit(f"something already answers on :{R2000_PORT}; only one disassembler can run on a port. "
+                 "`tools.py stop r2000` first")
+    os.makedirs(TOOLS, exist_ok=True)
+    with open(R2000_PORT_FILE, "w") as f:
+        f.write(str(R2000_PORT))
+    env = dict(os.environ)
+    for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
+                     ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data")):
+        env[var] = os.path.join(TOOLS, "r2000-home", sub)
+        os.makedirs(env[var], exist_ok=True)
+    cmd = [exe, "--mcp-server", os.path.abspath(path)]
+    if R2000_PORT != 3000:
+        cmd = [sys.executable, BRIDGE, exe, os.path.abspath(path), str(R2000_PORT)]
+    start(cmd, os.path.join(LOGS, "r2000.log"), env=env, port=R2000_PORT, name="disassembler")
 
 
 # only this clone's tools: another clone on the same machine keeps its emulator and disassembler
@@ -152,7 +187,8 @@ def r2000(path):
 # shell wrappers match the pattern and are signalled with the emulator; `script` exits after them,
 # and nothing was left (v3.13.2 dmg, 2 October 2026).
 STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
-                 "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
+                 "r2000": ("regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))
+                           if R2000_PORT == 3000 else re.escape(BRIDGE))}
 
 
 def r2000_running():
@@ -161,7 +197,7 @@ def r2000_running():
     try:
         out = subprocess.run(["ps", "-A", "-ww", "-o", "etime=,command="], capture_output=True, text=True).stdout
     except OSError:
-        return ("", 0) if up(3000) else None
+        return ("", 0) if up(R2000_PORT) else None
     for line in out.splitlines():
         m = re.search(STOP_PATTERNS["r2000"] + ".*$", line)
         if m:
@@ -169,7 +205,12 @@ def r2000_running():
                 started = time.time() - elapsed(line.split()[0]) - 1   # etime drops the fraction
             except ValueError:
                 started = 0
-            return m.group(0).split(" --mcp-server ", 1)[1], started
+            if R2000_PORT == 3000:
+                return m.group(0).split(" --mcp-server ", 1)[1], started
+            try:                                   # the bridge's arguments: the binary, the file, the port
+                return shlex.split(m.group(0))[2], started
+            except (ValueError, IndexError):
+                return "", started
     return None
 
 
@@ -340,10 +381,10 @@ def status():
         print(f"  WARNING: :{VICE_PORT} is answered by an emulator from another folder:\n{detail}")
     local = os.path.join(TOOLS, "cargo", "bin", "regenerator2000")
     where = "tools/cargo/bin" if os.path.exists(local) else (shutil.which("regenerator2000") or "MISSING")
-    print(f"disassembler  :3000  {'up' if up(3000) else 'down'}   binary: {where}")
-    detail = foreign_detail(3000)
+    print(f"disassembler  :{R2000_PORT}  {'up' if up(R2000_PORT) else 'down'}   binary: {where}")
+    detail = foreign_detail(R2000_PORT)
     if detail:
-        print(f"  WARNING: :3000 is answered by a disassembler from another folder:\n{detail}")
+        print(f"  WARNING: :{R2000_PORT} is answered by a disassembler from another folder:\n{detail}")
 
 
 # Leftovers we know about and list under "Uninstall" in kit/c64/INSTALL.md. Anything else is a failure.
@@ -376,8 +417,8 @@ def verify_footprint():
     if not r2000_exe():
         print("no regenerator2000, so the disassembler is not checked; install it (kit/c64/INSTALL.md) "
               "and run this again to cover it")
-    elif up(3000):
-        print("a disassembler already answers on :3000, so it is not checked; stop it and run this again to cover it")
+    elif up(R2000_PORT):
+        print(f"a disassembler already answers on :{R2000_PORT}, so it is not checked; stop it and run this again to cover it")
     elif where and os.path.exists(where):
         r2000(where)
         stop("r2000", force=True)          # its own, on a throwaway snapshot: nothing to export

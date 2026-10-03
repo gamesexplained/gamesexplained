@@ -44,6 +44,7 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, no display | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
 | v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64 desktop (Ubuntu 24.04), under `xvfb-run` | 30 September 2026 | 56 of 57: all but `warp` |
+| v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, Ubuntu 24.04, no display | 2 October 2026 | 54 of 57 after making startup progress independent of host speed: `watch-store`, `watch-load` each counted 39 against a minimum 40; warp reached 71 passes/s against a minimum 100. Exact frame stepping, instruction stops and snapshot/restart determinism passed |
 
 Add a row whenever a build is measured on a machine not listed, and bring
 that machine's `c64` cell in `site/status.json` into line with it. The two
@@ -145,14 +146,16 @@ Tell the contributor this before installing anything:
 | Emulator source and build, when built from source (`get-vice build`) | `tools/src/vice-mcp/`, with `tools/vice-mcp` a link into it | 550 MB (Linux) to 700 MB (macOS) |
 | Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
 | Disassembler binary | `tools/cargo/` | about 20 MB |
+| Disassembler XDG settings (Linux) | `tools/r2000-home/` | small |
 | Logs | `tools/logs/` | small |
 
 **Uninstall:** delete the repository folder. These can be left outside
 it, and that is the complete list:
 
-- regenerator2000 writes a settings file of a few hundred bytes to its own
-  config folder (`~/Library/Application Support/regenerator2000` on macOS).
-  Delete it if you want no trace.
+- On macOS, regenerator2000 writes a settings file of a few hundred bytes to its own
+  config folder (`~/Library/Application Support/regenerator2000`). Delete it
+  if you want no trace. On Linux the launcher points its XDG paths at
+  `tools/r2000-home/`.
 - Rust itself, if the contributor installed it for this (`rustup self
   uninstall` removes it).
 - When the emulator was built from source: the build packages, if they
@@ -318,12 +321,44 @@ to whatever is there: on 30 September 2026 a contributor's own web server
 answered the kit's first call with a 404. `.mcp.json` still names 6510;
 `vice.py` is the way to the emulator on another port.
 
+## Another program on port 3000
+
+The disassembler's MCP server listens on 3000, and regenerator2000 0.9.20
+has no option to move it. When another clone's disassembler holds the
+port and should keep running, start this clone's elsewhere with
+`KIT_R2000_PORT`:
+
+```
+KIT_R2000_PORT=3001 python3 kit/scripts/tools.py r2000 <snapshot.vsf>
+```
+
+On any port but 3000 the launcher starts the disassembler's stdio server
+behind `kit/c64/stdio_bridge.py`, which answers on that port on 127.0.0.1
+only. The stdio server opens projects only: the bridge takes a
+`.regen2000proj` as it is, and turns a `.vsf` into a new project beside
+the snapshot, under a name of its own each time, so a project an earlier
+session saved is never overwritten. Keep both under the game's ignored
+`work/`. A `.prg` needs the server on 3000.
+
+The launcher writes the port it used to `tools/r2000-port` and
+`kit/c64/r2000.py` reads it back, as for the emulator: the client, the
+exporter and `tools.py stop` reach this clone's disassembler in a shell
+that has lost the variable, and never the other clone's on 3000. The
+port holds until a start names another; `KIT_R2000_PORT=3000` goes back
+to the disassembler's own server. Stop the disassembler before changing
+it. An editor's own MCP registration still names 3000.
+
+Used for a whole run on Linux x86_64 (Wizard, 2 October 2026). On macOS
+arm64 on 3 October 2026 a start on 3001, calls through `r2000.py`, the
+stop that refuses while annotations are unexported and a forced stop
+behaved as on 3000.
+
 ## Start, check, stop
 
 ```
 python3 kit/scripts/tools.py status
 python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510 (or KIT_VICE_PORT)
-python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000
+python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000 (or KIT_R2000_PORT)
 python3 kit/scripts/tools.py --platform c64 snapshots            # where emulator snapshots land
 python3 kit/scripts/tools.py stop vice            # the emulator only
 python3 kit/scripts/tools.py stop                 # both tools
@@ -378,7 +413,8 @@ macOS arm64.
   also carries the joystick workaround; see
   `kit/skills/c64/tool-vice-mcp/workarounds.md`.
 - **The disassembler** binds port 3000 with no option to change it, and
-  only one instance can run at a time. Drive it with
+  only one instance can run on a port ("Another program on port 3000" is
+  the way to a second). Drive it with
   `python3 kit/c64/r2000.py <tool> '<json args>'`, which also logs
   every mutating call to the game's `work/annotations.jsonl`.
 

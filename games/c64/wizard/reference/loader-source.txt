@@ -1,0 +1,23 @@
+WIZARD LOADER (LODR): STARTUP SCORE-CLEAR EXCERPT
+
+This is the separately loaded disk loader, not GAME at these addresses.
+After the protected-load path rejoins at $19A0, JMP $10FC loads SCOR at $C100.
+The ordinary loader then reaches the following key check. In the live run,
+CIA1 port A was $7F, selecting keyboard row 7, and port B was $FF released
+or $DF with Commodore (row7/column5) held. The comparison is exact.
+
+1117 lda $DC01
+111A cmp #$DF
+111C bne $1128
+111E ldx #$4F
+1120 lda #$00
+1122 sta $C100,x
+1125 dex
+1126 bpl $1122
+1128 jmp $6400
+
+The loop clears exactly $C100-$C14F (80 bytes). The tail $C150-$C17F of
+the 128-byte saved record is untouched. This branch changes RAM; it does
+not save the cleared table to disk. Both physical-key states were tested
+at the naturally reached check, and all 256 possible port bytes were
+compared with the original routine in the instruction simulator.

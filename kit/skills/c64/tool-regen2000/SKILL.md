@@ -40,9 +40,12 @@ python3 kit/c64/r2000.py --list
 python3 kit/c64/r2000.py --game games/<platform>/<slug> r2000_disassemble '{"address": 57399}'
 ```
 
-It binds port 3000 with no option to change it; one instance at a time;
-it needs a pseudo-terminal even headless. Addresses in arguments are
-decimal integers.
+Its native HTTP server binds port 3000 with no option to change it;
+it needs a pseudo-terminal even headless. A second clone's disassembler
+goes on a port of its own with `KIT_R2000_PORT`, through the stdio server
+and a loopback bridge (`kit/c64/INSTALL.md`, "Another program on port
+3000"); the client, the exporter and the launcher find it through
+`tools/r2000-port`. Addresses in arguments are decimal integers.
 
 The client script logs every mutating call to
 `games/<platform>/<slug>/work/annotations.jsonl`. That log is crash
@@ -55,7 +58,7 @@ the game folder, or pass `--game`, so the log lands in the right place.
 |---|---|
 | `r2000_disassemble` `{address}` | mark and decode code from an address |
 | `r2000_read_region` `{start_address, end_address}` | show a region; **disassembles as a side effect**, which the log does not capture unless you also log a disassemble |
-| `r2000_set_label_name` `{address, name}` | name a routine, variable or table; an empty `name` removes the label |
+| `r2000_set_label_name` `{address, name}` | name a routine, variable or table; an empty `name` clears a user name (check automatic symbols afterward) |
 | `r2000_set_comment` `{address, type: "line"|"side", comment}` | a line comment on the entry is the description that coverage counts |
 | `r2000_set_data_type` `{start_address, end_address, data_type}` | type a data block. The values are **lower case**: `code`, `byte`, `word`, `address`, `petscii`, `screencode`, `lo_hi_address`, `hi_lo_address`, `lo_hi_word`, `hi_lo_word`, `external_file`, `undefined` |
 | `r2000_get_cross_references` `{address}` | who reads, writes, calls or jumps to an address; the fastest way to attribute a table |
@@ -109,20 +112,26 @@ the game folder, or pass `--game`, so the log lands in the right place.
   only reached from inside themselves back to `undefined`.
 - **A `JSR` into ROM traces the RAM underneath.** The snapshot holds the
   RAM below the BASIC and KERNAL ROMs, so a call to `$E544` or `$FFD2` makes
-  the tracer disassemble whatever the game keeps there. Set those ranges
-  back to `undefined`, and list the entry byte under `coverage.exclude` in
-  `game.json`, so the auto symbol at it stops owning the RAM beneath (the
-  ledger skips a symbol whose address is excluded).
+  the tracer disassemble whatever the game keeps there. Restore the real
+  data type and describe any authored bytes underneath, such as sprites
+  the video chip reads. Explain the ROM meaning at the call site: a data
+  label on the RAM does not mean the CPU calls that data. Only use
+  `coverage.exclude` for bytes proved not to be the game's authored data;
+  excluding an entry just to remove its automatic ROM label can hide a
+  byte of the game's picture.
 - Auto-generated symbols (branch targets) are minted on every load; the
   export keeps them because the coverage denominator uses them, and the
   import drops them because the tool regenerates them.
-- **Clearing a label removes the symbol under it.** `set_label_name` with
+- **Clearing a renamed label can remove the symbol under it.** `set_label_name` with
   an empty name on a renamed automatic symbol (0.9.20) deletes it
   outright: the address has no symbol until the code that names it is
   disassembled again, and the coverage denominator shrinks meanwhile.
   That is also the way to turn an automatic symbol into a user label with
   the longer span (`kit/scripts/ledger.py`): clear it and set the new name
-  in the next call, never the one without the other.
+  in the next call, never the one without the other. An automatic symbol
+  that has not been renamed may remain, and retracing can mint it again.
+  Check `get_symbols` after clearing; do not assume the denominator or
+  ownership changed just because the call succeeded.
 - **A placeholder operand sends the tracer into zero page.** A `JSR` or
   `JMP` whose target the program writes before it runs is often assembled
   as `JSR $0000`; the flow tracer follows it and marks `$0000` onward as
