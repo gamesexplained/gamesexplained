@@ -40,6 +40,9 @@ rules below mechanically, paragraph by paragraph, as described in
 - No tidy triplets for rhythm. Two things or four things are fine when
   there are two or four things.
 - No em-dashes as the default joint between clauses. Write two sentences.
+- Use the Oxford comma: a list of three or more items takes a comma before
+  the final "and" or "or" ("the Doctor, a robot cat, and a mine"). The
+  comma removes the doubt over whether the last two items are a pair.
 - No summary paragraph that restates the section.
 - Do not describe the tooling or the process ("we pointed an AI at the
   bytes"). The reader is here for the game.
