@@ -228,6 +228,12 @@ checklist mechanically, paragraph by paragraph:
 6. State it positively. A one-beat correction is fine when the reader would
    genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
    but never "it's not X, it's Y" as the sentence's whole move.
+7. Give every paragraph its purpose, in a line written to yourself
+   (`kit/style.md`, "Paragraphs"). Read each sentence against it. Move or
+   cut any sentence that serves another point, however interesting; split
+   a paragraph whose purpose needs an "and"; reorder sentences until each
+   follows from the one before. Do this before the other steps polish
+   sentences that are about to move.
 
 Before/after, from real drafts:
 
@@ -243,6 +249,13 @@ Before/after, from real drafts:
   multiplexing and no in-between frames."
 - "Listen to the last note: it's held twice as long as the rest."
   → "The last note is held twice as long as the rest."
+- A story paragraph doing four jobs: the plot, where it is set, who else is
+  there, and why one enemy looks the way it does (a licensing detail placed
+  in the middle of the plot).
+  → Two paragraphs. The first is the plot, each sentence the cause of the
+  next: what was stolen, why the villain needs the place, what the hero is
+  sent to do. The second is who else is there, ending on that enemy and
+  why it looks the way it does.
 
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
 and no human has read it yet, `agent` once a human has read it and left it

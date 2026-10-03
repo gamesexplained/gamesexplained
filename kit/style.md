@@ -44,6 +44,25 @@ rules below mechanically, paragraph by paragraph, as described in
 - Do not describe the tooling or the process ("we pointed an AI at the
   bytes"). The reader is here for the game.
 
+### Paragraphs
+
+A paragraph makes one point, and the reader should be able to say what it
+was. Before keeping a paragraph, state its purpose in a line: "why the
+villain needs the base", "how the game picks a walking frame". Then:
+
+- Every sentence serves that purpose. A sentence that is true and
+  interesting but supports a different point moves to the paragraph or
+  section whose point it serves, or to Discoveries, or is cut. Interesting
+  is not a reason to stay.
+- The first sentence says what the paragraph is about, so a reader who
+  stops there still has it.
+- Each sentence picks up something from the one before: the same subject,
+  a consequence, a cause, a contrast. If two neighbouring sentences could be
+  swapped without anyone noticing, the paragraph is a list. Order them, or
+  make it a list or a table.
+- One paragraph, one purpose. When the purpose line has an "and" in it,
+  it is two paragraphs.
+
 The test is a human reading the page without noticing how it was made.
 
 ### Section headings
