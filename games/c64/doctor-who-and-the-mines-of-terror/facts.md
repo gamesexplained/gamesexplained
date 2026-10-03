@@ -129,7 +129,12 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   Doctor sets `$E8` = `$16` (death by a baby madrag) and places object
   `$0D` at the egg (`$B861`); the madrag returns moved eggs to the nests at
   `$B665` and takes one from Splinx (`$B752`). No routine was found that
-  tests for the BOX (`$3B`) or the CHEMICALS (`$49`) by number.
+  tests for the BOX (`$3B`) by number. The CHEMICALS (`$49`) are tested at
+  `$BA8D`: lying at y exactly `$0588` and within `$50` of x `$0290`, they set
+  the states of controllers `$1A` and `$1B` (`$1CCA`, `$1CCB`) to 3, which
+  only draws them, in colour 2 (`$CD92`), and set the colours of characters
+  `$A1` and `$3A` (`$2FA1`, `$2F3A`) to `$0C`, recolouring the pool (`$AE81`).
+  The restore after a lost life skips objects `$1A` and `$1B` (`$93C7`-`$93CD`).
 - Messages are chains of strings through the pointer tables
   `$95CB`/`$9626`, printed by a scroller on status row `$0450` in step with
   raster `$C8` (`$92E3`).
@@ -201,8 +206,8 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   (`$0E60`, `$0068`) start a rising level `$51`, one step every 128
   frames.
 - **The machinery** (`$B9B6`): circuits set exactly in their slots at Y
-  `$0390` stop four moving objects (`$4F`); chemicals brought to
-  (`$0290`, `$0588`) change the map.
+  `$0390` stop four moving objects (`$4F`); chemicals left at
+  (`$0290`, `$0588`) recolour the pool and stop two controllers.
 - **The code lock** (`$BD35`-`$BFD9`): three buttons, a six-press sequence
   dealt from a 186-byte deck with seeds from the frame counter; a wrong
   press deals a new one; success sets `$4E`. The clue panel (F5 with empty

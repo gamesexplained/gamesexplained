@@ -86,6 +86,8 @@
   uses.push({ at: [28 * 32 + 16, Y(9 * 32 + 16)], t: 'TARDIS: where it lands (leaves at x $0800)' });  // switch cell 8, $BADD
   // the machinery's five circuit slots, y $0390 (machine_slot_x_lo $B99C)
   for (let i = 0; i < 5; i++) uses.push({ at: P(M[0xB992 + i], M[0xB99C + i], 0x03, 0x90), t: 'MACHINERY: circuit slot ' + (i + 1) });
+  // CHEMICALS left here (x within $50, y exactly $0588) recolour the pool and stop controllers $1A and $1B ($BA8D)
+  uses.push({ at: P(0x02, 0x90, 0x05, 0x88), t: 'CHEMICALS: drop them in the pool' });
   // the code lock (code_lock_press, $BE29): F5 with empty hands, Doctor's x high $0A
   uses.push({ at: P(0x0A, 0x24, 0x05, 0xD8), t: 'CODE LOCK: clue panel' });                            // x low $14-$33, y $05C6 up ($BE56)
   for (let i = 0; i < 3; i++) uses.push({ at: P(0x0A, 0x30 + 0x20 * i, 0x04, 0xC8), t: 'CODE LOCK: button ' + (i + 1) });   // y $04C8, 32-pixel zones from x low $20
@@ -112,9 +114,10 @@
     : uses.filter(k => k.t.startsWith(n + ':'));
   const WHY = { 'CRYSTAL': 'carried out of the mine, it doubles the bonus', 'CAPSULE': 'carried out of the mine, it doubles the bonus', 'SPLINX': 'carried out of the mine, it doubles the bonus',
     'PASS CARD': 'held, it makes character $A0 passable, which reads as the security gate; no table gives the gate a place', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up',
-    'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'once the Doctor jumps up beside it, he can move up and down above it, up to 80 pixels', 'EGG': 'going near it while it lies free hatches a deadly baby madrag' };
+    'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'once the Doctor jumps up beside it, he can move up and down above it, up to 80 pixels', 'EGG': 'going near it while it lies free hatches a deadly baby madrag',
+    'CHEMICALS': 'dropped in the pool, they turn it purple and stop two controllers for good' };
   const sel1 = (id, list, text) => { const el = document.getElementById(id); list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = text ? text(k) : k.label; el.append(o); }); return el; };
-  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY)/.test(k.t)));
+  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS)/.test(k.t)));
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
   function marks(list, colour, round) {
