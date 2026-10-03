@@ -35,6 +35,12 @@ the 6502 simulator (on the C64, `kit/c64/machine.js`) and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
 
+## Retained bytes from earlier phases
+
+A non-fill page in a play snapshot need not be play data. Trace its producer before assigning ownership: a boot decompressor may copy a whole page but consume only a short repair table within it. A play-only search misses that producer. Arm the watch before the relevant boot phase and stop at the write; separate startup RAM testing from the program’s own writes. Compare the whole copied extent with its source, then trace the consumer’s actual bound.
+
+On a banked machine, distinguish physical RAM from the I/O or ROM that occupies the same CPU address. Condition RAM watches on the bank selector. Include both a read and a store that must trigger as positive controls before trusting an empty watch log, and report the observed trajectory rather than inferring absence in every phase.
+
 ## What a test lets through
 
 For every compare that sorts a value into a class (is this tile a door,
