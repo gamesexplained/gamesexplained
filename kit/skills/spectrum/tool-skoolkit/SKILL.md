@@ -70,6 +70,61 @@ a boundary but not a block.
 ever work from a rendered file. The kit does not: the `.ctl` is the source,
 and `disassemble` only renders it.
 
+## Is any of it the ROM?
+
+A turbo loader, and a tape utility saved along with a game, are often the
+ROM's cassette routines moved into RAM with their timing changed. Read
+cold they pass for the game's own loader, and listed they publish the ROM
+(`AGENTS.md`, "No binaries, ever"). Before typing any block:
+
+```
+python3 kit/spectrum/romcopy.py work/entry.sna
+```
+
+prints every stretch of 64 bytes or more that follows the ROM at one
+offset, with the offset and how many bytes differ, and exits 1 when it
+finds one. Leave such a stretch out of the listing (`coverage.exclude` in
+`game.json`, naming the ROM, its addresses and the offset), and say in
+`facts.md` what the copy changes: the bytes that differ are usually the
+interesting part. The ROM it compares with is SkoolKit's own `48.rom`
+under `tools/`; `--rom` takes another.
+
+## A first control file from what executed
+
+`sna2ctl.py` writes a control file for a snapshot, and with `-m` it takes a
+code execution map, so the first split of code from data need not be made
+by hand:
+
+```
+sed 's/^/$/' work/executed.txt > work/executed.map        # one $XXXX per line
+tools/skoolkit/bin/python tools/skoolkit/bin/sna2ctl.py -h -m work/executed.map -s 23296 work/entry.sna > work/first.ctl 2>/dev/null
+```
+
+`-h` is "write hexadecimal", not help (`--help` is help), `-s` is the
+address to start at, and the progress it prints for a map goes to stderr.
+Measured on the first game with 10,491 executed addresses (3 October
+2026): its `c` blocks covered 22,910 of the 24,147 bytes of code. Every
+executed byte was in one. What it left as data was code no session had
+run, 1,237 bytes: among it the first screen (it ran before the snapshot
+was taken), two handlers named only by words in data, and a routine
+nothing calls.
+`kit/spectrum/codemap.py` finds those (`tool-zesarux`, "Finding a game's
+code"). Its `t` and `s` blocks are guesses from the byte values (313 `t`
+blocks on that game): take the `c` blocks from it, and type data from the
+code that reads it.
+
+## Testing what a routine computes
+
+`python3 kit/spectrum/simulate.py work/entry.sna 811E HL=00BF B=3F` runs
+the routine at `$811E` in SkoolKit's Z80 simulator on the snapshot's own
+memory, entered as if by `CALL` with the registers given, and prints the
+registers it returned, the flags and every byte of RAM it changed.
+`@9000=01,02` pokes memory first and `--show F000:32` prints a range
+afterwards. It needs no emulator, so any number can run at once, and it
+is the test for every claim of the form "this routine returns": a
+multiply, a clamp, a table lookup, what a fill writes into a buffer. It
+does not model ports or interrupts.
+
 ## Traps
 
 - **Annotations outside the RAM image are refused on the way back.** A

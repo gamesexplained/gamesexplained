@@ -9,8 +9,13 @@ its coverage and verify steps was already proven, or when a maintainer has
 checked it (kit/CHECKING.md) and recorded the check as `verification` in
 its game.json. A game built on an imported analysis (`imported` in
 game.json) also counts the models that wrote it, `unknown` when unsaid,
-and proves no model itself. The models kit/models.json declares are proven from the start. Any model may run the kit (AGENTS.md, "Model"); a game that
-is not trusted cannot be Silver.
+and proves no model itself. Nor does a game prove a model whose own work
+on it failed a check: when a sample was refuted and a proven model then
+redid the coverage and verify steps, the passing `verification` keeps the
+failed sample under `failed`, and the models named there are left out. The
+models kit/models.json declares are proven from the start. Any model may
+run the kit (AGENTS.md, "Model"); a game that is not trusted cannot be
+Silver.
 
 Ids are recorded exactly as the session names them, and compared without
 a context-window suffix: claude-opus-5-5[1m] is the same model as
@@ -20,6 +25,7 @@ Usage:
   models.py                  the proven models, each with the games that proved it
   models.py is-proven <id>   exit 0 if proven, 1 if not
   models.py check            exit 1 if a Silver-or-above game needs a check it lacks
+  models.py --test           self-check on made-up games (writes only to a temp dir)
 """
 import glob, json, os, re, sys
 
@@ -100,6 +106,14 @@ def import_problem(g):
     return f"`imported` has no {', '.join('`' + k + '`' for k in missing)}" if missing else ""
 
 
+def failed_models(g):
+    """The models whose own work on this game a maintainer's check refuted: `verification.failed`,
+    a list of the samples that did not pass, each with the `model` whose claims it tested."""
+    v = g.get("verification")
+    failed = v.get("failed") if isinstance(v, dict) else None
+    return {base(f.get("model")) for f in failed if isinstance(f, dict)} if isinstance(failed, list) else set()
+
+
 def verification_problem(v, P):
     """Why a game.json `verification` record does not pass, or '' when it does."""
     if not isinstance(v, dict):
@@ -135,7 +149,8 @@ def settle():
             changed = True
             if g.get("imported"):
                 continue    # finishing another's analysis proves nothing about the model that finished it
-            for m in (step_models(t, PROVING_STEPS[0]) & step_models(t, PROVING_STEPS[1])) - {"unknown"}:
+            # a model whose claims on this game were refuted, and then replaced by another's, proved nothing here
+            for m in (step_models(t, PROVING_STEPS[0]) & step_models(t, PROVING_STEPS[1])) - {"unknown"} - failed_models(g):
                 P.setdefault(m, []).append(os.path.relpath(gdir, ROOT))
         pending = left
     untrusted = []
@@ -168,10 +183,47 @@ def check():
     return len(untrusted) + len(bad)
 
 
+def test():
+    """Three made-up games: one a proven model made, one checked, one checked after a failed sample."""
+    import tempfile
+    global ROOT
+    keep = ROOT
+    steps = lambda *models: {"entries": [{"step": s, "model": m} for m in models for s in PROVING_STEPS]}
+    check_ok = {"by": "someone", "model": "old-hand", "date": "2026-01-01", "checked": 33, "wrong": 0}
+    made = {
+        "first":  ({"tier": "silver", "kit_version": "0.0.20"}, steps("old-hand")),                # before the rule
+        "second": ({"tier": "silver", "kit_version": "0.0.60", "verification": check_ok}, steps("newcomer")),
+        "third":  ({"tier": "silver", "kit_version": "0.0.60",
+                    "verification": dict(check_ok, failed=[{"model": "guesser[1m]", "date": "2026-01-01",
+                                                            "checked": 39, "wrong": 18}])},
+                   steps("guesser", "old-hand")),
+        "fourth": ({"tier": "silver", "kit_version": "0.0.60"}, steps("guesser")),                  # never checked
+    }
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            ROOT = tmp
+            os.makedirs(os.path.join(tmp, "kit"))
+            for slug, (g, t) in made.items():
+                d = os.path.join(tmp, "games", "x", slug)
+                os.makedirs(d)
+                json.dump(g, open(os.path.join(d, "game.json"), "w"))
+                json.dump(t, open(os.path.join(d, "timings.json"), "w"))
+            P, untrusted = settle()
+            assert set(P) == {"old-hand", "newcomer"}, P                  # a passed check proves the run's model
+            assert "guesser" not in P                                      # a refuted one's does not
+            assert os.path.join("games", "x", "third") in P["old-hand"], P  # the model that redid it is counted
+            assert [os.path.relpath(u[0], tmp) for u in untrusted] == [os.path.join("games", "x", "fourth")], untrusted
+    finally:
+        ROOT = keep
+    print("ok - models.py self-check: a passed check proves the run's model, a refuted sample's model stays unproven")
+
+
 def main():
     a = sys.argv[1:]
     if a and a[0] in ("-h", "--help"):
         print(__doc__); return
+    if a and a[0] == "--test":
+        test(); return
     if not a:
         P = proven()
         if not P:

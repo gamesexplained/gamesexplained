@@ -49,16 +49,22 @@ same way, so tiers mean the same thing everywhere.
 ### When the disassembler does not follow control flow
 
 On the C64 the disassembler walks the code and mints a symbol at every
-branch target, so the coverage queue is populated for you. A platform whose
-annotation surface is a **control file** (the ZX Spectrum's SkoolKit
-`.ctl`) has no such tracer: `sna2skool.py` disassembles only the bytes a
-`c` block tells it to. Before the loop above can start, the code and data
-have to be separated by hand. Two cheap sources, used together: the
-emulator's **executed-address map** (ZEsarUX's `cpu-code-coverage get`),
-which finds the code that runs including everything reached by `jp (hl)`;
-and a **recursive trace** from the entry points, which adds the code a
-static walk can reach. Everything neither found is data, unless `refs` on
-it says a routine reads it as a table. The platform's tool skill says how.
+branch target, so the coverage queue is populated for you. Where the
+annotation surface is a file of block boundaries that nothing traces
+(the ZX Spectrum's control file), the code has to be separated from the
+data before the loop above can start, and a wrong split does not show
+afterwards: code typed as data has no cross-references, reads as a table
+and is described as one, and coverage still reaches 100 %. The first such
+game was published for review with 5.9 KB of its code typed as data.
+
+Build the split from two sources and let a script hold the typing against
+it: the emulator's record of every address that executed, over sessions
+that reach every state you can (each menu, each control, losing, giving
+up), and a static trace from the entries the record cannot contain: code
+that ran before the snapshot was taken, a handler whose address is only
+stored in data, an operand another instruction writes. Run the check again
+after every merge of the annotation agents' work. The platform's tool
+skills name the commands (`kit/skills/<platform>/`).
 
 ## Rules that keep the number honest
 

@@ -25,7 +25,9 @@ or aliasing could hide it. A negative result is a claim about your search,
 not about the binary. Prefer "unknown" to a plausible guess. Before saying
 that nothing reads or writes an address, search with every opcode and
 every index that can reach it: on the C64,
-`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`.
+`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`; on
+the ZX Spectrum, `python3 kit/spectrum/codemap.py <game> <snapshot> --refs
+<address>`, which also lists where the address is stored as a word.
 
 "Unreachable" is a negative result too. A search over a model of the
 movement rules finds only what the model allows, and a model re-derived

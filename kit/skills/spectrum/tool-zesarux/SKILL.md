@@ -164,26 +164,64 @@ rpc.registers()["PC"]                  # exactly 0x800F: the stop is on the inst
   `snapshot-load` enters cpu-step, loads, and exits it again. Stop first
   (`enter_step`) to come back to the state you saved and stay there.
 
-## Finding a game's code
+## Finding a game's code, and what its data is for
 
-The kit's Z80 decoder is a decoder, not a flow follower, and SkoolKit's
-`sna2skool.py` disassembles the bytes it is given linearly. A whole-image
-game therefore needs its code separated from its data by hand before any
-block can be typed. Two cheap sources of truth, used together:
+A control file is traced by nothing, so the split between code and data is
+yours to build (`kit/skills/core/50-coverage`, "When the disassembler does
+not follow control flow"). The emulator gives three records of what the
+game did, and `kit/spectrum/codemap.py` turns the first into a check.
 
-- **The executed-address map.** `cpu-code-coverage enabled yes` while the
-  machine runs, drive the game through as many states as you can reach,
-  then `cpu-code-coverage get`. Every address it returns is an executed
-  instruction; decoding the instruction there marks the code bytes. This
-  finds the code that runs, including everything reached by `jp (hl)` and
-  `jp (iy)`, which no static walk of `call`/`jp` operands finds.
-- **A recursive trace** from the entry points (the game's own start, and
-  the targets of the tables the executed map shows) marks the rest, and
-  names the bytes nothing reached either way. Those bytes are data, and
-  `refs` on their addresses says which routine reads them.
+- **What executed.** `cpu-code-coverage enabled yes` while the machine
+  runs, play, then `cpu-code-coverage get`: every address returned is the
+  first byte of an instruction that ran, in hex with no prefix. Save it to
+  a file in `work/`.
+- **What was read and what was written.** `get-visualmem-read-dump compact`
+  and `get-visualmem-written-dump compact` list every address read and
+  written since the last dump (the dump clears the record, so call each
+  once before the session to empty it; `get-visualmem-opcode-dump` is the
+  same for fetched opcodes). A reply line is `7C74H 12 3 255 ...`, an
+  address and the values for it and the addresses after it. Use the
+  values as flags only: they are not counts. Reads include the bytes of
+  the instructions themselves, so subtract every executed instruction's
+  bytes; what is left of the read record is data the game consulted, and
+  the written record is its variables and buffers. Data that play neither
+  read nor wrote is unused, or the session did not reach it: say which you
+  can show.
+- **The check.** `python3 kit/spectrum/codemap.py <game> work/entry.sna
+  --entry <hand-over address> --map work/executed.txt` joins a static trace
+  with the executed list and reports every byte of code that `symbols.json`
+  types as data, and every `Code` block neither source reached. Run it
+  before the annotation starts and after every merge. On the first game the
+  executed list alone gave 21,551 bytes of code and the trace from the
+  hand-over 23,132; the two together, 23,672; the last 475 bytes were two
+  handlers named only by words stored in data, and a routine nothing calls
+  with the code it jumps into, given as `--entry` once the code that reads
+  those words had been read (3 October 2026).
 
-Save both to the game's `work/` and treat them as a cache: the committed
-`symbols.json` is what counts.
+**Record sessions that replay.** A session timed by the wall clock presses
+its keys at different moments on each run. Stop the machine and count in
+frames: `set_input`, `frames(n)`, `release_input`, `frames(n)`. Every run
+from the same snapshot then does the same thing, a menu that ignored a
+short press ignores it every time, and the session is a route someone else
+can replay. A key held for 10 frames and released for 20 was read by every
+menu of the first game; 6 frames was not always enough. `--emulatorspeed
+800` at launch makes frame stepping about five times real speed
+(measured: 250 frames in 0.94 s).
+
+**Step a game that ignores the display by its own loop.** A game that
+runs with interrupts off takes as long over a frame as the frame needs,
+so a key held for ten display frames lands on a different number of the
+game's frames each time. Put a stopping checkpoint on the first
+instruction of the game's frame loop (`bp_set(1, "PC=<addr>H")`), and
+step one game frame with `set_input(...)` then `run(limit=N)`, N a few
+times the instructions a frame takes. Check `PC` after each run: the game
+leaves its loop when the player dies, halts or finishes, the run then
+stops on the limit somewhere else, and a run with no limit would never
+come back. Poke and read variables only while stopped at the checkpoint,
+which is the same point of every frame.
+
+Save these records to the game's `work/` and treat them as a cache: the
+committed `symbols.json` is what counts.
 
 ## Input
 
