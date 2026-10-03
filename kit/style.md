@@ -71,6 +71,11 @@ villain needs the base", "how the game picks a walking frame". Then:
   mean. Name the thing again.
 - One paragraph, one purpose. When the purpose line has an "and" in it,
   it is two paragraphs.
+- The paragraph serves its page. Each tab has a purpose of its own, the
+  one its subtitle states (Gameplay: what the player does; Graphics: how
+  the picture is made). A paragraph whose purpose belongs to another tab
+  moves there and leaves a link behind, however well it reads where it is.
+  The same holds one level down: a paragraph serves its section's heading.
 
 The test is a human reading the page without noticing how it was made.
 

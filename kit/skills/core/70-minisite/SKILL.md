@@ -229,7 +229,10 @@ checklist mechanically, paragraph by paragraph:
    genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
    but never "it's not X, it's Y" as the sentence's whole move.
 7. Give every paragraph its purpose, in a line written to yourself
-   (`kit/style.md`, "Paragraphs"). Read each sentence against it. Move or
+   (`kit/style.md`, "Paragraphs"). First check that purpose against the
+   page's subtitle and the section's heading, and move the paragraph to the
+   tab or section it serves if it serves another. Then read each sentence
+   against it. Move or
    cut any sentence that serves another point, however interesting; split
    a paragraph whose purpose needs an "and"; put the point first or last;
    reorder sentences until each opens with something the last one gave the
