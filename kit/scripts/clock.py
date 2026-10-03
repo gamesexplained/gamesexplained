@@ -13,14 +13,17 @@ Usage:
 
 <step> is the skill folder name: 10-orient, 20-features, ... 80-retro. A step
 may be started more than once (a second session); the report sums them.
-The clock times the agent's own work, which the next run can beat. Work on a
-game after its run is timed only when it is that kind of work:
+The clock times pure machine work, with no person in it, because that is what
+the next run can beat. Before you hand the turn to the contributor and wait
+(a question, a download to approve, a page to look at), stop it, and start
+the same step again when they answer. Work on a game after its run is timed
+only when it is that kind of work:
   play      a Play tab added to a game whose run had none (70-minisite, "Play"):
             the port, its lockstep and its pacing
 It ends with 80-retro, as a run does, and that retro is counted with it, apart
 from the run's hours. The Gold pass (kit/START.md) is not timed, nor is the
-retro that ends it: the contributor paces it, reading, deciding and coming back
-days later, so its hours say nothing about the kit. clock.py refuses both.
+retro that ends it: a person paces it, reading, deciding and coming back days
+later. clock.py refuses both.
 --model is the id of the model doing the step, as your system prompt names
 it (claude-opus-5, claude-fable-5-1, claude-opus-5-5[1m], ...), suffix and
 all: models.py reads a context-window suffix such as [1m] as the same
@@ -118,8 +121,8 @@ def tier(gdir):
 
 def start(step, model, gdir):
     if step == CURATE:
-        sys.exit("the Gold pass is not timed: the contributor paces it, so its hours say nothing the next run\n"
-                 "could beat. Work without the clock. A Play tab added in it is timed: clock.py start play.")
+        sys.exit("the Gold pass is not timed: the clock times pure machine work, and a person paces this.\n"
+                 "Work without the clock. A Play tab added in it is timed: clock.py start play.")
     known = steps_known()
     if step not in known:
         sys.exit(f"no step {step!r}: the steps are {', '.join(known)}")
