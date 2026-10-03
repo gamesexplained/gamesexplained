@@ -515,8 +515,16 @@ excludes both with the reason.
   decremented every step and the pitch drops about 256 a step instead of
   rising.
 - **The title flicker misses a register.** `title_flicker` `$7580`
-  should flicker `$D022` and `$D023`; its second store goes to `$7523`, a
-  byte in level record 9's tail, so only `$D022` flickers.
+  should flicker `$D022` and `$D023`; its second store goes to `$7523`, so
+  only `$D022` flickers. `$7523` is record 9's last frame for enemy slot 1
+  (`+$23`): it holds `$F2`, where the outward forest's slot 1 ends at `$8B`,
+  so on the way home that enemy steps `$88`-`$F2` (107 frames) through the
+  other enemies' shapes, the code at `$2A00`, the character set at `$3000`
+  and the players' frames (`enemy_move` `$CCAB`). Checked on the port: over
+  3,000 frames of the way-home forest, slot 1's pointer took every value
+  from `$88` to `$F2`. The byte is already `$F2` in the analysed image, taken
+  before any game over; what the flicker writes is `$D023` read back (top
+  nibble set) with bit 1 flipped, so it is always `$F0` or more.
 - **Dead reads in GAME OVER.** `show_game_over` `$CFC0` reads `$CFA1`,
   `$0617` and `$D81A` and throws them away, left from a copy of
   `level_banner`.

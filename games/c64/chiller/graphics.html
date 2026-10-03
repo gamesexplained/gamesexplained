@@ -1,0 +1,38 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/chiller-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The boy's and the girl's frames, and every enemy animation in the game, drawn from the game's own sprites.</p>
+</header>
+<main class="wrap">
+<section id="players">
+  <p class="fig">The boy and the girl</p>
+  <h2 class="t">One set of moves, drawn twice</h2>
+  <p class="lede">The boy and the girl share one set of moves: four frames walking each way, two in the air, and two standing.</p>
+  <div class="plate">
+    <canvas id="pl" width="720" height="140" class="scr" style="max-width:720px" role="img" aria-label="The boy's and the girl's sprite frames"></canvas>
+    <p class="cap">The boy's frames at <code>$3600</code> (pointers <code>$D8</code>-<code>$E7</code>), the girl's at <code>$3A00</code> (<code>$E8</code>-<code>$F7</code>), in the order the game uses them: walking left, walking right, jumping, and standing.</p>
+  </div>
+  <p>The girl's frames sit exactly 16 pointers after the boy's, so one set of routines can draw either. <code>player_swap</code> (<code>$576B</code>) adds or takes away that 16 in the three places the frame numbers are kept.</p>
+</section>
+<section id="enemies">
+  <p class="fig">The enemies</p>
+  <h2 class="t">Seventeen animations for fifty enemies</h2>
+  <p class="lede">Ten screens with five enemies each make fifty enemies, but the game draws them with only seventeen animations, shared between the screens. Each one below plays through its frames, with the screens that use it.</p>
+  <div class="plate">
+    <div class="gal" id="gal"></div>
+    <p class="cap">Each animation in the colours of the first screen that uses it (<code>$D029</code>-<code>$D02D</code>), with the shared multicolours of <code>$D025</code> and <code>$D026</code>, at three times the C64's pixels.</p>
+  </div>
+  <p>Each screen's settings name the first and last frame of each of its five enemies (<code>setup_screen</code>, <code>$5E19</code>). Most animations have four frames, but four of the cinema's five enemies have one frame each and never change shape, and one of the ghetto's has eight. Most of the shapes are stored at <code>$2000</code>-<code>$29FF</code>, and seven of the ten screens also use a second store at <code>$0B00</code>-<code>$0FFE</code>.</p>
+  <p>The last entry is not a seventeenth animation but a slip. One enemy in the forest on the way home is told to run from frame <code>$88</code> to frame <code>$F2</code>, so it plays 107 frames, most of them memory that was never meant to be a sprite. The <a href="discoveries.html#shape-shifter">Discoveries</a> tab shows why.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/chiller-page.js"></script>

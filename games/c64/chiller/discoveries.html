@@ -8,15 +8,15 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">Unused routines, a disputed claim that the game could not be finished, and questions the code cannot settle.</p>
+  <p class="sub">Unused routines, an enemy that wears every sprite in the game, a disputed claim that the game could not be finished, and questions the code cannot settle.</p>
 </header>
 <main class="wrap">
 <section id="completion">
   <p class="fig">A disputed memory</p>
   <h2 class="t">Was a cross impossible to collect?</h2>
-  <p class="lede">A <a href="https://www.lemon64.com/game/chiller">2022 Lemon64 comment</a> recalls a cross that could not be reached and a crack the player believed fixed it. The first-release copy analysed here was taken through all ten screens in testing: its full outward-and-return journey can be completed. That is not a final ending; the game loops back to the forest.</p>
-  <p>The three lowest crosses, in the graveyard, the ghetto and the cinema on the way home, sit in the bottom two rows. In tests using the game's own code, the boy took each by walking left along the ground. He cannot stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but <code>probe_offset</code> (<code>$5145</code>) checks below and beside him, reaching rows 23 and 24.</p>
-  <p>These tests do not establish whether a different release or crack changed a cross, or whether a particular collection order can leave a player stuck.</p>
+  <p class="lede">A 2022 comment on Lemon64 recalls a cross that could not be reached, and a crack that the player believed fixed it.<sup class="fn"><a href="about.html#src-8" title="Lemon64's entry for Chiller">8</a></sup> In the copy studied, every cross can be taken and the whole journey out and back can be finished, although the game then loops back to the forest.</p>
+  <p>The three lowest crosses, in the graveyard, the ghetto, and the cinema on the way home, sit in the bottom two rows. The boy cannot stand lower than row 22 (<code>move_sprite</code> stops him at Y <code>$E3</code>), but the test for what he touches looks below and beside him, reaching rows 23 and 24 (<code>probe_offset</code>, <code>$5145</code>). So he takes each of the three by walking left along the ground.</p>
+  <p>Whether another release or a crack moved a cross, or whether some order of play can leave a player stuck, is not known.</p>
 </section>
 <section id="unused">
   <p class="fig">Secret</p>
@@ -31,7 +31,7 @@
     <tr><td>Fire putting a second sprite on top of the boy, facing his way, with a sound, and that sprite switched off when it hits the scenery</td><td><code>switch_check</code> <code>$C7D4</code>, <code>sprite1_hit_scenery</code> <code>$C4FB</code></td><td>the first works only on a screen with no jumping, and every screen has jumping; the second is switched off on every screen (<code>$45FE</code> = 0)</td></tr>
     <tr><td>Screen-editor tools: a box drawer, a character plotter, fills</td><td><code>unused_editor_tools</code> <code>$5198</code>, <code>unused_screen_tools</code> <code>$C038</code></td><td>they call only each other</td></tr>
   </table>
-  <p>We first read the kill code as part of a shooting game, which is why the first routine is named for a shot. The code does not say how an enemy was hit. <code>unused_kill_enemy</code> takes the enemy from the boy's last collision (<code>$CF5E</code>, <code>$CF5F</code>, written by <code>sprite_touch</code>), so it may once have been enough to touch an enemy. The row above may be a shot's beginning: fire puts a second sprite on the boy, facing his way, with a sound, and it vanishes when it hits the scenery. No code has been found that moves that sprite along, so nothing left in the game settles which.</p>
+  <p>The code does not say how an enemy was hit; the first routine is named for a shot only because a shot is one possibility. <code>unused_kill_enemy</code> takes the enemy from the boy's last collision (<code>$CF5E</code>, <code>$CF5F</code>, written by <code>sprite_touch</code>), so it may once have been enough to touch an enemy. The row above may be a shot's beginning: fire puts a second sprite on the boy, facing his way, with a sound, and it vanishes when it hits the scenery. No code has been found that moves that sprite along, so nothing left in the game settles which.</p>
   <p>The sound player was silenced without being removed. Its stores all point at the last byte of memory, so it still steps through its notes and makes no sound.</p>
 </section>
 <section id="silver-crosses">
@@ -49,15 +49,24 @@
       <p class="cap">The text at <code>$574A</code>, drawn here as it would have looked. The routine loops 19 times over <code>LDA $574A,X</code>, <code>LDA $07CA,X</code>, <code>LDA $D805</code>, <code>LDA $DBCA,X</code>: four loads and no store.</p></div>
   <p>An older forest card is left behind the same way: <code>card_forest_title</code> (<code>$5D0D</code>) is still there, and its printer, <code>$5E00</code>, is never called.</p>
 </section>
+<section id="shape-shifter">
+  <p class="fig">Quirk</p>
+  <h2 class="t">Quirk: an enemy that wears every sprite in the game</h2>
+  <p class="lede">In the forest on the way home, one enemy never settles on a shape. <b>The enemy plays 107 frames</b>, and most of them are memory that was never meant to be a sprite: program code, the character set, and the boy's and the girl's own frames.</p>
+  <div class="plate"><canvas id="shift" class="scr" style="max-width:192px" role="img" aria-label="The shape-shifting enemy, stepping through its 107 frames"></canvas>
+    <p class="kv" id="shift-kv"></p>
+    <p class="cap">The enemy in slot 1 of the forest on the way home, stepping through its frames as <code>enemy_move</code> (<code>$CCAB</code>) does, in the colour the game gives it.</p></div>
+  <p>Each screen's settings name the first and last frame of each enemy, and the enemy steps from one to the other and starts again. On the way out, the forest's slot 1 runs from frame <code>$88</code> to <code>$8B</code>. On the way home, the last frame is <code>$F2</code> (<code>$7523</code>), so the enemy carries on past its own four frames, through the other enemies' shapes, into the code at <code>$2A00</code>, then the character set at <code>$3000</code>, and then the players' frames, before it starts again.</p>
+  <p><code>$7523</code> is the byte that the title screen's flicker writes to by mistake, in place of the video chip's <code>$D023</code> (<code>title_flicker</code>, <code>$7580</code>). The flicker reads <code>$D023</code>, whose top four bits always read as 1, flips one bit, and stores the result, so whatever it writes is <code>$F0</code> or more. The flicker runs on the title after every game over, so the enemy keeps its 107 frames however often you play. The copy studied holds <code>$F2</code> there even before the first game, which suggests the game was saved from memory after its title had already run.</p>
+</section>
 <section id="odd">
   <p class="fig">Odds and ends</p>
   <h2 class="t">Things the manual never told you</h2>
-  <p class="lede">Small things found in the code.</p>
+  <p class="lede">Small slips and leftovers in the code.</p>
   <ul class="odd">
-    <li><b>Fall damage was written, then switched off twice.</b> Falls are counted, and on landing the count is compared with a limit. The branch after that compare has been overwritten with <code>NOP</code>s, and the limit is <code>$FF</code> anyway. (<code>land</code> <code>$53EF</code>; the limit at <code>$457A</code>)</li>
     <li><b>The enemies can speed up, but nobody has seen it.</b> Each enemy slot has a count the code calls lives. A life here is one entrance: coming back on screen uses one, and leaving by an edge gives it back. When every slot has used up its count and all five are off the screen, a LEVEL counter goes up, is shown over the play area, and every enemy's movement and animation delays are halved. Edges refund a life and most slots start with 200, so play does not seem to get there. (<code>level_up</code> <code>$2C19</code>; <code>speed_up</code> <code>$5681</code>; counts at <code>$CF76</code>, from <code>$45E7</code>)</li>
     <li><b>The jump sound should rise as he falls.</b> The routine adds 5 to the frequency's low byte, but its carry test branches to the very next instruction. The high byte goes down by one every step regardless, and the pitch keeps dropping. (<code>jump_pitch_fall</code> <code>$5518</code>; the branch at <code>$5524</code>)</li>
-    <li><b>The title should flicker two colours.</b> On the title after a game, the flicker routine is meant to change both multicolour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last screen's settings, so only one flickers. (<code>title_flicker</code> <code>$7580</code>)</li>
+    <li><b>The title should flicker two colours.</b> On the title after a game, the flicker routine is meant to change both multicolour registers, <code>$D022</code> and <code>$D023</code>. Its second store goes to <code>$7523</code>, a byte in the last screen's settings, so only one flickers, and an enemy in the forest changes shape (<a href="#shape-shifter">above</a>). (<code>title_flicker</code> <code>$7580</code>)</li>
   </ul>
 </section>
 <section id="unsure">
