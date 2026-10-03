@@ -347,6 +347,13 @@ the snapshot, under a name of its own each time, so a project an earlier
 session saved is never overwritten. Keep both under the game's ignored
 `work/`. A `.prg` needs the server on 3000.
 
+One part of a game of several (`kit/scripts/parts.py`) needs none of
+this: a disassembler started on a file in a part's folder takes the
+first free port from 3000 by itself and keeps it in the part's
+`work/r2000-port`, so each part can have one running. The scripts find
+it by the part's folder, and `tools.py stop r2000 <part folder>` stops
+that one alone.
+
 The launcher writes the port it used to `tools/r2000-port` and
 `kit/c64/r2000.py` reads it back, as for the emulator: the client, the
 exporter and `tools.py stop` reach this clone's disassembler in a shell

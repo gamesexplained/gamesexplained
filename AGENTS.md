@@ -57,7 +57,10 @@ in order:
    listing the Source tab renders from it and your snapshot:
    `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot.vsf>`.
    Both are committed; the snapshot and disassembler project stay in
-   `work/`. Preview the whole minisite with `python3 kit/scripts/build.py`
+   `work/`. A game that is several loads has a symbol map and a listing
+   for each part, and both scripts take the part's folder
+   (`kit/skills/core/10-orient`, "A game of several parts"). Preview the
+   whole minisite with `python3 kit/scripts/build.py`
    and `python3 -m http.server -d _site 8000` (or any free port).
 5. **Check, commit on a branch, open a pull request.** Name the branch
    `game/<platform>/<slug>`. Contributors never commit to `main`:
@@ -219,6 +222,7 @@ follows `kit/PLATFORMS.md`.
 | `kit/skills/core/` | the workflow, platform-independent |
 | `kit/skills/<platform>/` | platform facts and tool notes |
 | `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, timings, reference images, gitignored `work/` |
+| `games/<platform>/<slug>/parts/<id>/` | one part of a game that is several loads: its own symbols, listing, facts, ledger settings and gitignored `work/` (`kit/scripts/parts.py`) |
 | `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
 Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
@@ -233,6 +237,11 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
+
+A game that is several loads is at a tier when every one of its parts
+is. Its coverage is the sum over the parts listed in `game.json`, each
+byte counted once, and a part that is listed and not analysed keeps the
+game at Bronze, with the page saying how many of its parts are done.
 
 Silver is the default goal and the normal path: the contributor pastes the
 one line, answers a few questions, walks away, and comes back to a Silver

@@ -210,6 +210,13 @@ it comes from. It never narrates how understanding developed; that goes in
 `agent-history.md`. Where the code disagrees with documentation, the code
 wins and `features.md` says **differs**.
 
+In a game of several parts (`10-orient`), an address means nothing
+without its part. What is true of one part goes in that part's
+`parts/<id>/facts.md`, where every address is that part's and links into
+its listing. The game's own `facts.md` holds what spans the parts (how
+one leads to the next, what they share), and names the part beside every
+address it gives.
+
 ## Outputs
 
 `facts.md` complete for the tier; `features.md` with no row left at

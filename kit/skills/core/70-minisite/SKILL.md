@@ -206,6 +206,25 @@ can open with that instead.
   picture claims to show.
 - Reference images go in `reference/`; the page refers to them by
   relative path from the game folder (`reference/<name>.png`).
+- **A game of several parts** (`10-orient`) gets a Source page for each
+  part that has a listing, `source-<id>.html`, with the parts named above
+  the listing and a control beside it that steps from one to the next.
+  `source.html` is the first part's. The build makes these; the page's
+  part is to say which part an address belongs to. The site links a bare
+  `<code>$1234</code>` to `source.html`, so put `data-part="<id>"` on the
+  section (or any element) whose addresses are one part's, and
+  `data-part=""` where they are several parts' and should link nowhere.
+  Write a link by the part's own page, `source-<id>.html#1234`, never
+  `source.html#1234`: the first part changes when a part is added before
+  it. A part that lies over another is shown laid over it, its own rows
+  marked. An About layout of the game's own writes `{{data_links}}`
+  where the symbol maps and listings are named; `{{footprint}}` is a map
+  for each part.
+- **Stepping through things of one kind**, the rooms of a levels page as
+  much as the parts of a game, uses one control: the one before, a list
+  of them all, the one after. Write it as the build writes the parts'
+  (`<div class="pick">`, a `step` either side of a `select`; `site.css`
+  styles it), so the reader meets the same control on every page.
 
 ## Copy
 

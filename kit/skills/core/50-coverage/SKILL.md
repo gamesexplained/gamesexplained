@@ -128,6 +128,34 @@ same way, so tiers mean the same thing everywhere.
   or most of it stays out of the count however well you have explained
   the whole.
 
+## A game of several parts
+
+Each part (`10-orient`, "A game of several parts") has a ledger of its
+own: give `coverage.py`, `symbols_export.py` and `listing.py` the part's
+folder. The game's figure is the sum, `coverage.py <game dir>`, and it
+counts each byte once, because each byte has one owner: a part that lies
+over another counts only its `"ranges"`, and the part beneath does not
+count them. 100 % means every part in `game.json`'s list. A part listed
+and not analysed is not in the figure, and the page says so beside it.
+
+A part that lies over another is annotated in one session with it: the
+snapshot holds both. `symbols_import.py <part> <snapshot>` puts the
+names of the part beneath into the session, so the code the part calls
+is readable. Export each part's share from that session:
+
+```
+python3 kit/scripts/symbols_export.py games/<platform>/<slug>/parts/<level>
+python3 kit/scripts/symbols_export.py games/<platform>/<slug>/parts/<engine> --from games/<platform>/<slug>/parts/<level>
+```
+
+The export says when the session holds a label or a comment of yours at
+an address the part does not own and no other part has it: export the
+part that owns it, or it is lost. Build the listing of the part beneath
+from any snapshot that holds it, and of each part over it from that
+part's own. `listing.py` names what the part calls by the names of the
+part beneath, and `check_listing.py` says when one of those has changed
+(`listing.py <part> --relabel`, no snapshot needed).
+
 ## Data the ledger cannot see
 
 The ledger counts what code, symbols and `game.json` name. Data that
@@ -282,6 +310,14 @@ Routines are independent, so the burn-down parallelises. What matters:
   (the template's opening comment says why).
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
+- **A game of several parts splits by part before it splits by range**:
+  one agent to a part, each with a disassembler of its own on that
+  part's snapshot. The platform's tool notes say how several run at
+  once. Give each agent its part's folder, and have every command name
+  it: a command that names no folder reaches whichever session the clone
+  started last, and an export from the wrong session writes one part's
+  names into another's map. Stop the clock with the number of parts as
+  `--agents`.
 - **An agent stopped by the account's usage limit keeps its context.**
   Nine agents at once use up a session's allowance quickly; when they
   stop on the limit, export at once, wait for the reset and resume each
