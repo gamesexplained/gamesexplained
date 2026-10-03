@@ -33,7 +33,7 @@ checked on any operating system: it starts the emulator, makes it write a snapsh
 stops it, and then lists every file outside the repository that changed meanwhile and
 looks like it belongs to one of the tools. An empty list is the pass.
 """
-import glob, json, os, re, shutil, socket, subprocess, sys, time
+import os, re, shutil, subprocess, sys, time
 
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
@@ -50,24 +50,14 @@ LOGS = os.path.join(TOOLS, "logs")
 SNAPSHOTS = os.path.join(VICE_HOME, "config", "vice", "mcp_snapshots")
 RELEASE_NOTE = ".kit-release"    # written by get-vice into a downloaded release: "<tag> <asset>"
 
-
-def up(port):
-    s = socket.socket(); s.settimeout(0.5)
-    try:
-        s.connect(("127.0.0.1", port)); return True
-    except OSError:
-        return False
-    finally:
-        s.close()
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+from launcher import (up, start, foreign_detail, missing_libraries, kill_matching,   # noqa: E402
+                      elapsed, footprint_signatures, written_outside, judge_footprint)
+import launcher  # noqa: E402
 
 
-def with_pty(cmd, log):
-    """Both tools need a pseudo-terminal even when driven over MCP."""
-    if sys.platform == "darwin":
-        return ["script", "-q", log] + cmd
-    if shutil.which("script"):
-        return ["script", "-q", "-c", " ".join(f'"{c}"' for c in cmd), log]
-    return cmd  # no `script` (Windows): try without; report what happens in kit-feedback.md
+def say_missing(libs):
+    return launcher.say_missing(libs, "kit/c64/INSTALL.md, 'The release zip'")
 
 
 def virtual_display(cmd, env):
@@ -81,82 +71,6 @@ def virtual_display(cmd, env):
         sys.exit("no display and no xvfb-run: install Xvfb (Debian/Ubuntu: xvfb), or run with a desktop session")
     env["NO_AT_BRIDGE"] = "1"      # no accessibility bus in a container; GTK waits for it otherwise
     return ["xvfb-run", "-a", "-s", "-screen 0 1280x1024x24"] + cmd
-
-
-def start(cmd, log, env=None, cwd=None, port=None, name=""):
-    os.makedirs(LOGS, exist_ok=True)
-    if port and up(port):
-        print(f"{name} already answering on :{port}"); return
-    subprocess.Popen(with_pty(cmd, log), cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-    for _ in range(40):
-        if up(port):
-            print(f"{name} up on :{port}  (log: {os.path.relpath(log, ROOT)})"); return
-        time.sleep(0.5)
-    sys.exit(f"{name} did not come up on :{port}; read {os.path.relpath(log, ROOT)}")
-
-
-def port_owner(port):
-    """The command line of whatever listens on a local port, or None when it cannot be told (no lsof)."""
-    try:
-        pids = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"],
-                              capture_output=True, text=True).stdout.split()
-        if not pids:
-            return None
-        return subprocess.run(["ps", "-o", "command=", "-p", pids[0]], capture_output=True, text=True).stdout.strip()
-    except OSError:
-        return None
-
-
-def foreign(owner):
-    """True when a listening tool was started from somewhere other than this clone."""
-    return bool(owner) and os.path.join(ROOT, "") not in owner and os.path.join(os.path.realpath(ROOT), "") not in owner
-
-
-def foreign_detail(port):
-    """For a tool on `port` started from another clone: its command line, the clone's folder, how long the
-    process has been up, and any step open on the clock there, so leftovers can be told from someone's live
-    run. Empty when the tool is this clone's, or nothing listens."""
-    owner = port_owner(port) if up(port) else None
-    if not foreign(owner):
-        return ""
-    lines = [f"  {owner}"]
-    try:
-        pid = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"],
-                             capture_output=True, text=True).stdout.split()[0]
-        etime = subprocess.run(["ps", "-o", "etime=", "-p", pid], capture_output=True, text=True).stdout.strip()
-        if etime:
-            lines.append(f"  process {pid}, up {etime} ([[days-]hours:]minutes:seconds)")
-    except (OSError, IndexError):
-        pass
-    head = owner[:owner.find("/tools/")] if "/tools/" in owner else ""
-    clone = head[head.rfind(" /") + 1:] if head else ""
-    if clone and os.path.isfile(os.path.join(clone, "AGENTS.md")):
-        lines.append(f"  from the clone at {clone}")
-        for t in sorted(glob.glob(os.path.join(clone, "games", "*", "*", "timings.json"))):
-            try:
-                open_steps = [e for e in json.load(open(t)).get("entries", []) if e.get("end") is None]
-            except (OSError, ValueError):
-                continue
-            for e in open_steps:
-                lines.append(f"  a run is on the clock there: {e.get('step')} on {os.path.relpath(os.path.dirname(t), clone)}, "
-                             f"started {e.get('start')}; ask before stopping it")
-    return "\n".join(lines)
-
-
-def missing_libraries(exe):
-    """Shared libraries the dynamic linker cannot find for exe: the release zip bundles none, so a
-    Linux machine may lack some. Empty where there is no ldd to ask (macOS, Windows)."""
-    if not sys.platform.startswith("linux") or not shutil.which("ldd"):
-        return []
-    out = subprocess.run(["ldd", exe], capture_output=True, text=True).stdout
-    return sorted({line.split("=>")[0].strip() for line in out.splitlines() if "not found" in line})
-
-
-def say_missing(libs):
-    return ("the emulator needs shared libraries this machine does not have:\n  " + " ".join(libs) +
-            "\ninstalling them is outside this repository, so ask the contributor first; on Ubuntu 24.04 "
-            "the whole set is one apt-get line in kit/c64/INSTALL.md, 'The release zip'")
 
 
 def vice(machine="x64sc"):
@@ -217,25 +131,6 @@ def r2000(path):
 # and nothing was left (v3.13.2 dmg, 2 October 2026).
 STOP_PATTERNS = {"vice": re.escape(VICE_DIR + os.sep) + ".*-mcpserver",
                  "r2000": "regenerator2000 --mcp-server " + re.escape(os.path.join(ROOT, ""))}
-WRAPPERS = ("script", "xvfb-run")
-
-
-def kill_matching(pattern):
-    """Signal the processes whose command line matches, except the wrappers the launcher put round them."""
-    pids = subprocess.run(["pgrep", "-f", "--", pattern], capture_output=True, text=True).stdout.split()
-    for pid in pids:
-        comm = subprocess.run(["ps", "-o", "comm=", "-p", pid], capture_output=True, text=True).stdout.strip()
-        if os.path.basename(comm) not in WRAPPERS:
-            subprocess.run(["kill", pid], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-
-def elapsed(etime):
-    """Seconds in a ps etime, [[dd-]hh:]mm:ss."""
-    days, _, clock = etime.rpartition("-")
-    secs = 0
-    for part in clock.split(":"):
-        secs = secs * 60 + int(part)
-    return secs + int(days or 0) * 86400
 
 
 def r2000_running():
@@ -429,18 +324,6 @@ def status():
         print(f"  WARNING: :3000 is answered by a disassembler from another folder:\n{detail}")
 
 
-def home_candidates():
-    """Where tools habitually leave things, per operating system."""
-    h = os.path.expanduser("~")
-    if sys.platform == "darwin":
-        return [os.path.join(h, d) for d in (".config", ".local", ".cache", "Library/Preferences", "Library/Caches",
-                                             "Library/Application Support", "Library/Saved Application State", "Library/Logs")]
-    if sys.platform.startswith("win"):
-        return [p for p in (os.environ.get("APPDATA"), os.environ.get("LOCALAPPDATA"),
-                            os.path.join(h, ".config"), os.path.join(h, "Documents")) if p]
-    return [os.path.join(h, d) for d in (".config", ".local", ".cache")] + [h]
-
-
 # Leftovers we know about and list under "Uninstall" in kit/c64/INSTALL.md. Anything else is a failure.
 KNOWN_RESIDUE = ("Library/Application Support/regenerator2000/",   # macOS
                  ".config/regenerator2000/",                        # Linux, expected; unverified
@@ -454,6 +337,8 @@ def verify_footprint():
     was_up = up(6510)
     if was_up:
         sys.exit("stop the emulator first (tools.py stop vice): the check has to see a whole launch-to-exit cycle")
+    words = ("vice", "x64", "regenerator", "r2000")
+    before = footprint_signatures(words)
     vice()
     from vice import connect, call
     rpc = connect()
@@ -476,41 +361,11 @@ def verify_footprint():
         stop("r2000", force=True)          # its own, on a throwaway snapshot: nothing to export
         covered = "the emulator and the disassembler"
     stop("vice")
-    inside = os.path.realpath(ROOT)
-    words = ("vice", "x64", "regenerator", "r2000")
-    hits = []
-    for base in home_candidates():
-        depth0 = base.rstrip(os.sep).count(os.sep)
-        for d, dirs, files in os.walk(base):
-            if os.path.realpath(d).startswith(inside):
-                dirs[:] = []; continue
-            if d.count(os.sep) - depth0 >= 4:
-                dirs[:] = []
-            for f in files:
-                p = os.path.join(d, f)
-                if any(w in p.lower() for w in words):
-                    try:
-                        if os.path.getmtime(p) >= t0:
-                            hits.append(p)
-                    except OSError:
-                        pass
-    ok_inside = os.path.realpath(where).startswith(inside) if where else False
-    print("snapshot inside the repository:", "yes" if ok_inside else "NO")
-    known = [p for p in hits if any(k in p.replace(os.sep, "/") or k in p for k in KNOWN_RESIDUE)]
-    hits = [p for p in hits if p not in known]
-    for p in known:
-        print("known leftover (listed under Uninstall):", p)
-    if hits:
-        print("files written OUTSIDE the repository during the run, not on the Uninstall list:")
-        for p in hits: print("  ", p)
-    else:
-        print("unexpected files written outside the repository: none")
+    hits = written_outside(before, words)
     for f in (name + ".vsf", name + ".json"):
         try: os.remove(os.path.join(SNAPSHOTS, f))
         except OSError: pass
-    if hits or not ok_inside:
-        sys.exit("FOOTPRINT NOT CLEAN - contain it (see kit/INSTALL.md, 'The footprint principle') or add it to the Uninstall list")
-    print(f"OK - the footprint is clean on this machine, for {covered}")
+    judge_footprint(hits, KNOWN_RESIDUE, where, covered)
 
 
 def main():

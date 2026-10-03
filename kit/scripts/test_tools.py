@@ -135,7 +135,8 @@ def test_end_to_end():
     with tempfile.TemporaryDirectory() as tmp:
         kit = os.path.join(tmp, "kit")
         os.makedirs(os.path.join(kit, "scripts"))
-        shutil.copy(os.path.join(HERE, "tools.py"), os.path.join(kit, "scripts"))
+        for f in ("tools.py", "launcher.py"):       # the dispatcher, and what the launchers share
+            shutil.copy(os.path.join(HERE, f), os.path.join(kit, "scripts"))
         for p in tools.platforms():
             shutil.copytree(os.path.join(KIT, p), os.path.join(kit, p))
         os.makedirs(os.path.join(kit, "stub"))

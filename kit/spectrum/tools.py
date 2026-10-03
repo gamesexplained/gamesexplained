@@ -42,7 +42,7 @@ checked: it starts the emulator, has it write a snapshot, reads memory through Z
 stops it, and then lists every file outside the repository that changed meanwhile and
 looks like it belongs to ZEsarUX. An empty list is the pass.
 """
-import glob, json, os, re, shutil, socket, subprocess, sys, time
+import glob, json, os, re, subprocess, sys, time
 
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
@@ -62,6 +62,15 @@ RELEASE_NOTE = ".kit-release"    # written by get-zesarux into a downloaded rele
 PORT = 10000                     # pinned, loopback only: the launcher always uses it, and so does zesarux.py
 FRAME_TSTATES = 69888
 
+sys.path.append(os.path.join(os.path.dirname(HERE), "scripts"))
+from launcher import (up, start, port_owner, foreign_detail, missing_libraries,   # noqa: E402
+                      kill_matching, footprint_signatures, written_outside, judge_footprint)
+import launcher  # noqa: E402
+
+
+def say_missing(libs):
+    return launcher.say_missing(libs, "kit/spectrum/INSTALL.md, 'Linux'")
+
 
 def app_path():
     """The emulator binary for this machine, or None when nothing is installed."""
@@ -75,22 +84,6 @@ def app_path():
     return found[0] if found else None
 
 
-def missing_libraries(exe):
-    """Shared libraries the dynamic linker cannot find for exe. Empty where there is no
-    ldd to ask (macOS, Windows). The Ubuntu build needs SDL 1.2, which Ubuntu 24.04 does
-    not install by default."""
-    if not sys.platform.startswith("linux") or not shutil.which("ldd"):
-        return []
-    out = subprocess.run(["ldd", exe], capture_output=True, text=True).stdout
-    return sorted({line.split("=>")[0].strip() for line in out.splitlines() if "not found" in line})
-
-
-def say_missing(libs):
-    return ("the emulator needs shared libraries this machine does not have:\n  " + " ".join(libs) +
-            "\ninstalling them is outside this repository, so ask the contributor first; on Ubuntu 24.04 "
-            "the whole set is one apt-get line in kit/spectrum/INSTALL.md, 'Linux'")
-
-
 def build():
     """Which release tools/zesarux is, as a line that can go into game.json."""
     if not app_path():
@@ -100,65 +93,6 @@ def build():
         return f"release {tag}, {asset}"
     except (OSError, ValueError):
         return "release, version not recorded (unpacked by hand): say which in game.json"
-
-
-def up(port):
-    s = socket.socket(); s.settimeout(0.5)
-    try:
-        s.connect(("127.0.0.1", port)); return True
-    except OSError:
-        return False
-    finally:
-        s.close()
-
-
-def with_pty(cmd, log):
-    """ZEsarUX wants a terminal even when driven over ZRCP."""
-    if sys.platform == "darwin":
-        return ["script", "-q", log] + cmd
-    if shutil.which("script"):
-        return ["script", "-q", "-c", " ".join(f'"{c}"' for c in cmd), log]
-    return cmd  # no `script` (Windows): try without; say what happens in kit-feedback.md
-
-
-def port_owner(port):
-    """The command line of whatever listens on a local port, or None when it cannot be told."""
-    try:
-        pids = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"],
-                              capture_output=True, text=True).stdout.split()
-        if not pids:
-            return None
-        return subprocess.run(["ps", "-o", "command=", "-p", pids[0]], capture_output=True, text=True).stdout.strip()
-    except OSError:
-        return None
-
-
-def foreign_detail(port):
-    """A tool on `port` started from another clone: its command line and where it came from.
-    Empty when it is this clone's, or nothing listens."""
-    owner = port_owner(port) if up(port) else None
-    if not owner or os.path.join(ROOT, "") in owner or os.path.join(os.path.realpath(ROOT), "") in owner:
-        return ""
-    lines = [f"  {owner}"]
-    if "/tools/" in owner:
-        clone = owner[:owner.find("/tools/")]
-        clone = clone[clone.rfind(" /") + 1:]
-        if clone and os.path.isfile(os.path.join(clone, "AGENTS.md")):
-            lines.append(f"  from the clone at {clone}")
-    return "\n".join(lines)
-
-
-def start(cmd, log, env=None, cwd=None, port=None, name=""):
-    os.makedirs(LOGS, exist_ok=True)
-    if port and up(port):
-        print(f"{name} already answering on :{port}"); return
-    subprocess.Popen(with_pty(cmd, log), cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-    for _ in range(40):
-        if up(port):
-            print(f"{name} up on :{port}  (log: {os.path.relpath(log, ROOT)})"); return
-        time.sleep(0.5)
-    sys.exit(f"{name} did not come up on :{port}; read {os.path.relpath(log, ROOT)}")
 
 
 def emulator_env():
@@ -207,7 +141,7 @@ STOP_PATTERN = re.escape(os.path.abspath(ZESARUX_DIR) + os.sep) + ".*zesarux"
 
 
 def stop(quiet=False):
-    subprocess.run(["pkill", "-f", "--", STOP_PATTERN], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    kill_matching(STOP_PATTERN)
     time.sleep(1)
     left = port_owner(PORT) if up(PORT) else None
     if left:      # not ours: the pattern is this clone's absolute path, and a launcher is not the only way in
@@ -263,19 +197,6 @@ def snapshots():
         print("  ", f, os.path.getsize(os.path.join(SNAPSHOTS, f)), "bytes")
 
 
-def home_candidates():
-    """Where tools habitually leave things, per operating system."""
-    h = os.path.expanduser("~")
-    if sys.platform == "darwin":
-        return [os.path.join(h, d) for d in (".config", ".local", ".cache", "Library/Preferences", "Library/Caches",
-                                             "Library/Application Support", "Library/Saved Application State",
-                                             "Library/Logs", "Desktop", "Documents")]
-    if sys.platform.startswith("win"):
-        return [p for p in (os.environ.get("APPDATA"), os.environ.get("LOCALAPPDATA"),
-                            os.path.join(h, ".config"), os.path.join(h, "Documents")) if p]
-    return [os.path.join(h, d) for d in (".config", ".local", ".cache")] + [h]
-
-
 # Leftovers we know about and list under "Uninstall" in kit/spectrum/INSTALL.md.
 KNOWN_RESIDUE = ()
 
@@ -285,6 +206,8 @@ def verify_footprint():
     t0 = time.time() - 1
     if up(PORT):
         sys.exit("stop the emulator first (tools.py stop): the check has to see a whole launch-to-exit cycle")
+    words = ("zesarux", "zsf")
+    before = footprint_signatures(words)
     zesarux()
     os.makedirs(SNAPSHOTS, exist_ok=True)
     snap = os.path.join(SNAPSHOTS, f"footprint_check_{int(t0)}.sna")
@@ -292,44 +215,12 @@ def verify_footprint():
     print("snapshot written to:", os.path.relpath(where, ROOT))
     print("memory read through ZRCP:", client("read-memory", {"addr": "4000H", "len": 8})[:32], "...")
     stop(quiet=True)
-    inside = os.path.realpath(ROOT)
-    words = ("zesarux", "zsf")
-    hits = []
-    for base in home_candidates():
-        depth0 = base.rstrip(os.sep).count(os.sep)
-        for d, dirs, files in os.walk(base):
-            if os.path.realpath(d).startswith(inside):
-                dirs[:] = []; continue
-            if d.count(os.sep) - depth0 >= 4:
-                dirs[:] = []
-            for f in files:
-                p = os.path.join(d, f)
-                if any(w in p.lower() for w in words):
-                    try:
-                        if os.path.getmtime(p) >= t0:
-                            hits.append(p)
-                    except OSError:
-                        pass
-    ok_inside = os.path.realpath(snap).startswith(inside)
-    print("snapshot inside the repository:", "yes" if ok_inside else "NO")
-    known = [p for p in hits if any(k in p for k in KNOWN_RESIDUE)]
-    hits = [p for p in hits if p not in known]
-    for p in known:
-        print("known leftover (listed under Uninstall):", p)
-    if hits:
-        print("files written OUTSIDE the repository during the run, not on the Uninstall list:")
-        for p in hits:
-            print("  ", p)
-    else:
-        print("unexpected files written outside the repository: none")
+    hits = written_outside(before, words)
     try:
         os.remove(snap)
     except OSError:
         pass
-    if hits or not ok_inside:
-        sys.exit("FOOTPRINT NOT CLEAN - contain it (see kit/INSTALL.md, 'The footprint principle') "
-                 "or add it to the Uninstall list")
-    print("OK - the footprint is clean on this machine")
+    judge_footprint(hits, KNOWN_RESIDUE, snap)
 
 
 def main():

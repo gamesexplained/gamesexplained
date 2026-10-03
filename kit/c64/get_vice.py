@@ -28,7 +28,7 @@ for the organization's admins, who review each entry and pin it to a commit: the
 with the GitHub CLI, that the person running it is an admin of the repository in site/config.json,
 and refuses otherwise. Never pass it on a contributor's behalf.
 """
-import json, os, platform, re, shutil, subprocess, sys, tempfile, urllib.request, zipfile
+import json, os, platform, re, shutil, subprocess, sys, urllib.request, zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -39,6 +39,7 @@ UPSTREAM = "barryw/vice-mcp"
 PRS = os.path.join(HERE, "vice-prs.json")
 sys.path.insert(0, HERE)
 import tools   # noqa: E402  the launcher: VICE_DIR, use_vice, vice_build
+from launcher import unpack_dmg   # noqa: E402  kit/scripts, which the launcher put on the path
 
 
 def this_machine():
@@ -186,21 +187,7 @@ def unpack(path, dest):
             if os.path.basename(root) == "bin":
                 for f in files: os.chmod(os.path.join(root, f), 0o755)
     elif path.endswith(".dmg"):
-        mnt = tempfile.mkdtemp(dir=DOWNLOADS)
-        subprocess.run(["hdiutil", "attach", "-nobrowse", "-readonly", "-mountpoint", mnt, path], check=True,
-                       stdout=subprocess.DEVNULL)
-        try:
-            for f in os.listdir(mnt):
-                src = os.path.join(mnt, f)
-                # A drag-to-install dmg carries an `Applications -> /Applications`
-                # symlink; ditto follows a symlink to a directory, which copied the
-                # whole real /Applications (19 GB) into tools/downloads.
-                if f.startswith(".") or os.path.islink(src):
-                    continue
-                subprocess.run(["ditto", src, os.path.join(dest, f)], check=True)
-        finally:
-            subprocess.run(["hdiutil", "detach", mnt], stdout=subprocess.DEVNULL)
-            os.rmdir(mnt)
+        unpack_dmg(path, dest, DOWNLOADS)      # skips the drag-to-install symlink (kit/scripts/launcher.py)
     else:
         sys.exit(f"do not know how to unpack {os.path.basename(path)}")
     for root, dirs, _ in os.walk(dest):             # the folder with bin/x64sc in it, however deep the archive put it

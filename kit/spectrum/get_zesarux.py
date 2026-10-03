@@ -24,12 +24,13 @@ kit clears the quarantine flag on the copy inside tools/ rather than changing an
 system-wide. Never launch the bundle with Finder or `open`; the launcher execs the
 binary inside tools/.
 """
-import json, os, platform, re, shutil, subprocess, sys, tarfile, tempfile, urllib.request, zipfile
+import json, os, platform, re, shutil, subprocess, sys, tarfile, urllib.request, zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import tools   # noqa: E402  the launcher, for ZESARUX_DIR, app_path and build
 from tools import up, DOWNLOADS   # noqa: E402
+from launcher import unpack_dmg   # noqa: E402  kit/scripts, which the launcher put on the path
 
 UPSTREAM = "chernandezba/zesarux"
 
@@ -159,20 +160,7 @@ def unpack(path, dest):
     """Unpack a release file into dest; returns the folder holding the emulator."""
     os.makedirs(dest, exist_ok=True)
     if path.endswith(".dmg"):
-        mnt = tempfile.mkdtemp(dir=DOWNLOADS)
-        subprocess.run(["hdiutil", "attach", "-nobrowse", "-readonly", "-mountpoint", mnt, path], check=True,
-                       stdout=subprocess.DEVNULL)
-        try:
-            for f in sorted(os.listdir(mnt)):
-                src = os.path.join(mnt, f)
-                # A drag-to-install dmg carries an `Applications -> /Applications`
-                # symlink; ditto follows a symlink to a directory, which copied the
-                # whole real /Applications (19 GB) into tools/downloads.
-                if not f.startswith(".") and not os.path.islink(src):
-                    subprocess.run(["ditto", src, os.path.join(dest, f)], check=True)
-        finally:
-            subprocess.run(["hdiutil", "detach", mnt], stdout=subprocess.DEVNULL)
-            os.rmdir(mnt)
+        unpack_dmg(path, dest, DOWNLOADS)      # skips the drag-to-install symlink (kit/scripts/launcher.py)
     elif path.endswith(".tar.gz") or path.endswith(".tgz"):
         with tarfile.open(path) as t:
             t.extractall(dest)
