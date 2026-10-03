@@ -7586,7 +7586,7 @@
   },
   {
    "address": 58508,
-   "name": "distance_scale_table",
+   "name": "worm_width_table",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -11104,7 +11104,7 @@
   {
    "address": 36930,
    "type": "line",
-   "text": "Decides which end of a trapezoid the fill at $90F9 can start from, looking only at the high bytes of the four x values: ($802D) and ($8031), the right edge at the start and end rows, then ($802B) and ($802F), the left edge. A high byte of zero means the x is inside the buffer's 256 pixels. It returns A = $80 when an edge starts inside and ends outside (start from the start row), $81 when an edge starts outside and ends inside (start from the end row) and $82 when neither edge settles it. The right edge is tested first and its answer stands; the left edge is consulted only when the right edge is inside at both ends or starts at 256 or more and ends outside. In two cases it returns a coordinate's high byte in A instead, which matches none of the three values and makes the callers draw nothing: both right x values negative ($904D), and a left x that starts at 256 or more and ends outside ($9077). Three calls, from $9114, $912D and $917E. All 81 combinations of negative, inside and 256-or-more were simulated against this reading."
+   "text": "Decides which end of a trapezoid the fill at $90F9 can start from, looking only at the high bytes of the four x values: ($802D) and ($8031), the right edge at the start and end rows, then ($802B) and ($802F), the left edge. A high byte of zero means the x is inside the buffer's 256 pixels. It returns A = $80 when an edge starts inside and ends outside (start from the start row), $81 when an edge starts outside and ends inside (start from the end row), as it also does for a right edge that starts negative and ends at 256 or more, and $82 when neither edge settles it. The right edge is tested first and its answer stands; the left edge is consulted only when the right edge is inside at both ends or starts at 256 or more and ends outside. In two cases it returns a coordinate's high byte in A instead, which matches none of the three values and makes the callers draw nothing: both right x values negative ($904D), and a left x that starts at 256 or more and ends outside ($9077). Three calls, from $9114, $912D and $917E. All 81 combinations of negative, inside and 256-or-more were simulated against this reading."
   },
   {
    "address": 37003,
@@ -11134,7 +11134,7 @@
   {
    "address": 37311,
    "type": "line",
-   "text": "Trapezoid whose start row is above the buffer and whose end row is below it. The code repeats $918E-$91BC and ends with JP $912B, so the bottom ends are interpolated first and the top-clip code finishes the job. Unlike $9127 it does not undo the doubling of DE done at $9174-$9176, so the height it divides by is y_end - 2 * y_start, the factor is 128 - 2 * y_start, and the doubled DE later also reaches $9270 as part of the row count the slopes are computed from. Simulated with a trapezoid from y = -20 to y = 147 the sides came out 3 and 7 pixels from their true positions on row 0. Reached only by the JP C at $9178, and not executed in the recorded sessions."
+   "text": "Trapezoid whose start row is above the buffer and whose end row is below it. The code repeats $918E-$91BC and ends with JP $912B, so the bottom ends are interpolated first and the top-clip code finishes the job. Unlike $9127 it does not undo the doubling of DE done at $9174-$9176, so the height it divides by is y_end - 2 * y_start, the factor is 128 - 2 * y_start, and the doubled DE later also reaches $9270 as part of the row count the slopes are computed from. Simulated with a trapezoid from y = -20 to y = 147, the sides came out several pixels from their true positions on row 0. Reached only by the JP C at $9178, and not executed in the recorded sessions."
   },
   {
    "address": 37360,
@@ -12409,7 +12409,7 @@
   {
    "address": 58508,
    "type": "line",
-   "text": "34 bytes falling from $FF to $12. $AC61, the only reference, indexes it with the high byte of the sum of two magnitudes, the absolute values of the words at $8033 and $8035 (plus the byte at $8003 on the pass where the counter at $8067 runs out), held to a maximum of $1E, and scales both magnitudes by the byte it reads, over 256, through $A8DB. So entries 0 to 30 can be read and the last three, $14, $13 and $12 at $E4AB-$E4AD, cannot."
+   "text": "The worm's width table: 34 bytes falling from $FF to $12, the longer a section the smaller the factor. $AC61, the only reference, indexes it with the high byte of the sum of two magnitudes, the absolute values of the words at $8033 and $8035 (plus the byte at $8003 on the pass where the counter at $8067 runs out), held to a maximum of $1E, and scales both magnitudes by the byte it reads, over 256, through $A8DB. So entries 0 to 30 can be read and the last three, $14, $13 and $12 at $E4AB-$E4AD, cannot."
   },
   {
    "address": 58542,
@@ -12519,7 +12519,7 @@
   {
    "address": 58811,
    "type": "line",
-   "text": "Returns HL = $E89B + 11 * A, the first byte of row A of the key redefiner's nine 11-byte rows inside message $87, with D = 0 and E = 11 * A. Called from $E550, $E564 and $E582."
+   "text": "Returns HL = $E89B + 11 * A, the first byte of row A of the key redefiner's nine rows inside message $87, which it steps through 11 bytes at a time (the ninth row, EXIT, is 10 bytes long), with D = 0 and E = 11 * A. Called from $E550, $E564 and $E582."
   },
   {
    "address": 58828,

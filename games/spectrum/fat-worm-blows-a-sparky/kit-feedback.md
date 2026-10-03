@@ -44,7 +44,39 @@ with Kempston emulation and a control.
 
 ## What took longest
 
-TIMINGS
+```
+| Step | Minutes | Model | Sessions | What dominated |
+|---|---:|---|---:|---|
+| 10-orient | 23 | deepseek-flash | 1 | booted the tape, reached play, took entry and play snapshots, wrote orientation |
+| 20-features | 6 | deepseek-flash | 1 | features.md from the inlay, CRASH review, Wikipedia and the author's own page; reference screenshots saved |
+| 30-text | 0 | deepseek-flash | 1 | no custom charset: the game uses the ROM font, text is plain ZX codes |
+| 40-sweep | 0 | deepseek-flash | 1 | I/O census (ULA $FE, Kempston $1F); ZX-code string sweep found the forgery, menu and redefine text |
+| 50-coverage | 622 | deepseek-flash, claude-opus-5-5 | 3 | layout from a recursive trace plus the emulator's executed-address map; 7 agents over disjoint ranges, then the bare runs and untracked data by hand after the cleanup agents failed on a provider balance error; 100% coverage; paused: the maintainer session went back to PR 127; code map from a static trace plus an executed-address map; a second pass on a proven model: the code map rebuilt from a static trace and four recorded sessions (24,147 bytes of code against 18,094 typed), then nine agents on disjoint ranges re-deriving every name and description from the bytes, a tenth range by the lead; 100 % of 39,631 tracked bytes |
+| 60-verify | 66 | deepseek-flash, claude-opus-5-5 | 4 | perspective multiply, the $6300 curve and the draw-list quirk read from the image; sparkie count, firing and the HUD counters observed live; Blocked: OpenRouter credits exhausted (402 payment_required, in_flight_budget_exhausted) three children failed at dispatch; independent verification sample deferred pending the contributor's decision. Byte checks against the maintainer's own citations done so far: $D6AE is the high byte of $D6AC JP Z,$DB0C; curve $6300-$637F is 128 bytes $00->$FA; mulScale(191,63)=285 by simulation; $FF00-$FF3F unchanged and $FFC0 scaled (not '$C0-$FF unchanged').; lead's part of verify: nine range reports checked and merged, live tests frame-stepped, facts.md and features.md rewritten; three independent checkers on claude-fable-5-1 still running; Redid the 2026-10-01 review's verify pass: all 18 contradicted claims re-read against the image (listing.json + SkoolKit 10.1's simulator), the retyping pass rebuilt layout.json -> merge.py -> ctl -> symbols.json + listing.json (5,934 bytes of code rescued, routines 230->349, coverage 100% with 0 bare bytes), and the page's mulScale port differential-tested against $811E (789 cases, 0 mismatches). Four read-only verification children on claude-opus-5.5 never ran: OpenRouter 402 payment_required, so no independent sample - recorded in TODO.md. Dominated by the manual byte reads; no single claim took long. |
+| 70-minisite | 31 | deepseek-flash, claude-opus-5-5 | 2 | index.html with the rebuilt screen, a port of the perspective curve and multiply, the board map, controls, boot and the draw-list quirk; page rebuilt from the bytes: a view on a port of the projection, the board map from its 129 cells, six sound lists and the menu tune played from simulator-measured tone shapes, a stepper for the bug rule; each port tested against the game's code in the simulator; checked in a browser; three checkers on claude-fable-5-1 ran alongside |
+| 80-retro | 3 | deepseek-flash, claude-opus-5-5 | 2 | retro: kit edits made, kit-feedback written, game.json complete; retro for the maintainer's pass: kit feedback for three passes, one lesson file, the contributor's parallel rework merged, the independent check's caveats folded in, verification recorded |
+| total | 750 | deepseek-flash, claude-opus-5-5 | | 12.5 h of work, over 87.5 h |
+
+Portable figures:
+  minutes to play : 22.6
+  min per KB      : 16.1  (621.7 min for 39,631 tracked bytes, 10 agents)
+  hours           : 12.5
+```
+
+The table adds all three passes together, and it is wall clock. The 543
+minutes of the first `50-coverage` were mostly annotation agents running
+and re-running after their provider's balance ran out. The maintainer's
+session's own steps were 78 minutes of coverage (nine agents in parallel),
+26 of verify, 31 on the page and 3 on this retrospective; the three
+checking agents ran for about half an hour each alongside the page work,
+and a first stretch of that session, on the platform's own pull request,
+was not on this game's clock.
+
+**The one change to the kit that would have saved the most minutes:**
+`kit/spectrum/codemap.py` at the first pass's coverage step. A check that
+fails while code is typed as data would have stopped the first annotation
+in its first hour, before nine hours of descriptions were written on a
+wrong split and then written again.
 
 ## Where the kit cost time, and where each went
 

@@ -37,9 +37,10 @@ and compared byte for byte with the snapshots, 3 October 2026.
 - **The loader is the ROM's `LD-BYTES` with different numbers.** Its 190
   bytes are a nine-byte preamble (`XOR A`, `SCF`, `LD IX,$4000`,
   `LD DE,$BF68`) followed by a copy of the ROM's loading routine from
-  `$0556`, with its timing constants changed and the return address it
-  pushes changed from the ROM's `$053F` to `$EFD8`, the game's entry
-  (traced in the tape block; ROM read from the emulator).
+  `$0556`, with its timing constants changed, its border mask changed
+  from `AND $07` to `AND $02`, and the return address it pushes changed
+  from the ROM's `$053F` to `$EFD8`, the game's entry (traced in the tape
+  block; ROM read from the emulator).
 - **The image contains the loader that is loading it.** The 49,000 bytes
   cover `$FAF2-$FBAF`, where the loader is running. They hold the same
   code: the image and the loader differ only at `$FAF2-$FAFA` (the
@@ -103,11 +104,13 @@ and compared byte for byte with the snapshots, 3 October 2026.
   at `$EB9C` (operand scan of `work/codemap.json`).
 - **The frame loop is `$7638`.** Two instructions jump to it: `$7635` at
   the end of the new-game code and `$779D` at the end of the loop.
-- **A pass takes six to nine display frames.** Live, 120 consecutive
-  passes from the start of a game (60 straight, 60 turning): 403,280 to
-  597,120 T-states a pass, mean 494,056, which is 5.9 to 8.7 passes a
-  second and 5.8 to 8.5 display frames. The game does not wait for the
-  display.
+- **A pass takes about six to nine display frames**, depending on what is
+  in view. Live, 120 consecutive passes from the start of a game (60
+  straight, 60 turning): 403,280 to 597,120 T-states a pass, mean
+  494,056, which is 5.9 to 8.7 passes a second and 5.8 to 8.5 display
+  frames. The independent check's 120 passes (60 with no key, 60 turning
+  the other way) ran from 403,145 to 651,650, mean 487,145. The game does
+  not wait for the display.
 - The 16-bit frame counter at `$8059` gains 1 a pass (`$7638`).
 - The copy of the buffer to the screen costs 72,826 T-states with no
   clicks, and the fill part of the clear 25,242 (simulated).
@@ -367,10 +370,11 @@ A board item's type byte (`$827B`, `$89B8-$8A0F`):
   When the hand reaches the disk `$BB25` sets bit 7 of the counter, and
   from then it falls by 3 a pass, the disk rising with the hand, until
   it is under `$80`; then the hi-score is kept and the menu returns.
-- Live, with a type `$F6` item written into the worm's path: the counter
-  went `$01` to `$40`, then `$C1`, `$BE`, ... `$82`, 86 passes in all,
-  and the screen showed a hand closing on a disk lettered DURELL and
-  lifting it out of view.
+- Live, with a type `$F6` item written into the worm's path: in one run
+  the counter went `$01` to `$40`, then `$C1`, `$BE`, ... `$82`, 86 passes
+  in all, and the screen showed a hand closing on a disk lettered DURELL
+  and lifting it out of view. Where the hand meets the disk depends on
+  where the worm stopped: the independent check's run turned at `$C0`.
 
 ## Mechanics
 
@@ -488,7 +492,8 @@ A board item's type byte (`$827B`, `$89B8-$8A0F`):
   to 0 and the entries are pulled together, and an entry closer than 2
   units to the one in front has its count cleared (`$A43B-$A472`). The
   game ends when the four counts are 0 or the byte reaches `$7F`
-  (`$7821-$783A`). Live: 26 passes from the fourth bug to the end.
+  (`$7821-$783A`). Live: 26 passes from the fourth bug to the end in one
+  run, 19 and 23 in two others that began from other poses.
 - **End of game** (`$783B`): the worm's list records are made type `$E6`
   and shown as explosions for 8 passes, and then `$788F` keeps the
   hi-score and jumps to the menu. The four pairs of stores at
@@ -764,7 +769,7 @@ keys held for whole passes by a stopping checkpoint at `$7638`
 | Q, A, O, P | no key | speed and heading as under "Controls" |
 | each key's bit in `$8057` | each against the others | P 1, O 2, Q 4, A 8, SPACE `$20`, 1 `$40` |
 | Kempston | option 2 not chosen: all 0 | as under "Controls" |
-| four bugs | three bugs: no death | `$FF` next pass; 26 passes to the end |
+| four bugs | three bugs: no death | `$FF` next pass; 19 to 26 passes to the end |
 | de-bugger pad written into the path | the same run with no pad: death | counts cleared |
 | type `$F6` item written into the path | the same run with no item: play goes on | the ending, with no spindles |
 | score 1234, then death | the stored word | drawn `00234` |
@@ -772,4 +777,26 @@ keys held for whole passes by a stopping checkpoint at `$7638`
 | checkpoint at `$7940` | the frame counter at each stop | `$0064`, `$0264` |
 | checkpoint at `$AAFD`, `$AAFF` | the ROM bytes after | `HL` 0, 1; ROM unchanged |
 | H, then another key, then G | the frame counter | stops; runs; menu |
-| pass length | 120 passes | 403,280 to 597,120 T-states |
+| pass length | 120 passes, twice | 403,280 to 597,120 T-states; 403,145 to 651,650 |
+
+## How this file and the listing were checked
+
+Two checks by agents that wrote none of it, on a second proven model
+(`claude-fable-5-1`), on 3 October 2026.
+
+- **The maintainer's check** (`kit/CHECKING.md`): 39 claims of the
+  checker's own choosing, 20 from this file, 10 names from `symbols.json`
+  and 9 facts from `orientation.md`, each traced in the bytes or run in
+  the simulator, and the nine marked live repeated live. All 39 held.
+  `game.json` records it.
+- **The listing's sample** (`kit/skills/core/60-verify`, "Measure the
+  listing before calling it done"): 60 of the 937 descriptions, drawn
+  with a fixed seed, six from each of the ten ranges the annotation was
+  split into, checked clause by clause: about 520 clauses read, searched
+  or run in the simulator. No description had a clause the bytes
+  contradict. Five clauses were left unchecked: three need a screen (what
+  a picture looks like, which digit is drawn on the right, which way +x
+  and +y run on the screen), one was a figure the checker could not
+  reproduce, which has been taken out of the comment, and one was the
+  numbering of a routine's parts. With none wrong in 60, the share of
+  descriptions with a wrong clause is under 5 % at 95 % confidence.

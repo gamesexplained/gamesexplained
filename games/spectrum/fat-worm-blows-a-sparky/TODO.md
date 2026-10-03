@@ -4,10 +4,11 @@ The tier, what is missing for the next one, and ideas for the page.
 
 ## Tier
 
-`game.json` records the tier. Coverage is 100 % of the 39,631 bytes the
-ledger tracks (`coverage.py`), every row of `features.md` is live,
-confirmed, traced, differs or open with the search described, and
-`facts.md` lists its live tests.
+`game.json` records `silver`, with the maintainer's check that allows it
+(`verification`). Coverage is 100 % of the 39,631 bytes the ledger tracks
+(`coverage.py`), every row of `features.md` is live, confirmed, traced,
+differs or open with the search described, and `facts.md` lists its live
+tests and how it was checked.
 
 ## For Gold
 
