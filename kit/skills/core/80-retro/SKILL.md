@@ -6,6 +6,8 @@ description: The last step of every run. Name the skill text that changed what y
 # Retrospective: improve the kit
 
 Start the clock: `python3 kit/scripts/clock.py start 80-retro --model <your model id> games/<platform>/<slug>`.
+After a Gold pass, leave it off, here and in step 4: the pass is not
+timed, and `clock.py` refuses its retro.
 
 You have just used the kit on a real game. Nobody knows better than you,
 right now, where it was wrong, missing or unclear, and which of it
