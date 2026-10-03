@@ -75,6 +75,9 @@ def _read_reply(sock, buf, command=""):
         if lines and PROMPT.match(lines[-1]):
             return "\n".join(lines[:-1]), b""
         try:
+            if hasattr(socket, "TCP_QUICKACK"):
+                # Linux clears QUICKACK after use, so it is re-armed before every read (see connect())
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
             chunk = sock.recv(65536)
         except socket.timeout:
             raise ZesaruxError(f"no reply to {command or 'the command'} within the socket timeout"
@@ -382,7 +385,9 @@ def connect(host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=30.0):
         # Linux only. Each ZRCP reply arrives in two pieces (the text, then the
         # prompt), the server's Nagle holds the second until the client ACKs, and
         # Linux delays that ACK about 40 ms: 23 calls a second instead of 5000+.
-        # QUICKACK stops the delay; the server still gets its ACK.
+        # QUICKACK stops the delay; the server still gets its ACK. Linux drops
+        # out of quickack mode after use, so _read_reply sets it again before
+        # every read; set once here, it lasted a single reply (23 calls a second).
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
     sock.settimeout(timeout)
     banner, buf = _read_reply(sock, b"", "the connect banner")

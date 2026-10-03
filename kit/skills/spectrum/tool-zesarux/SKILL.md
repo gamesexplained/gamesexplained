@@ -111,8 +111,9 @@ One call per invocation for the agent, and the same calls from a script
 Anything with a loop in it belongs in a script: a round trip is about
 0.13 ms, and 800 unpaced calls take 0.1 s (measured), but an agent
 thinking between two calls takes seconds. On Linux the client sets
-`TCP_QUICKACK` on the connection first; without it the server's Nagle
-waits for a delayed ACK and a round trip is about 40 ms there.
+`TCP_QUICKACK` before every read (Linux clears it after use); without it the
+server's Nagle waits for a delayed ACK and a round trip is about 40 ms there.
+A client of your own on Linux must do the same.
 
 ## Steps, checkpoints and frames
 

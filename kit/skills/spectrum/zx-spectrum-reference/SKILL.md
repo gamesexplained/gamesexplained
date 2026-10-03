@@ -8,21 +8,23 @@ description: ZX Spectrum facts for reverse engineering, memory map, ULA port $FE
 Consult this file. If a fact you need is not here, say so in the game's
 `kit-feedback.md` and derive it from the emulator, not from memory.
 
-The first profile the kit scores is the **48K machine**. The 128K facts
-are here because games use them, but `PLATFORM_DEFAULTS["spectrum"]`
-covers 48K until a 128K game is actually run.
+The first profile the kit reads is the **48K machine**: `kit/spectrum/snapshot.py`
+reads only the 48K `.sna`. The 128K facts are here because games use them;
+the kit does not read a banked snapshot until a 128K game is actually run.
 
 ## Where to read about a game first
 
 Before any code, and before the emulator, when the contributor has said
 yes to looking the game up online (`kit/START.md`): the game's page on
 **Spectrum Computing**, `https://spectrumcomputing.co.uk/` (search by
-title; it merged the old World of Spectrum and ZXArt catalogues), and the
+title; its catalogue is ZXDB, the open database that carries on the World of
+Spectrum archive), and the
 **comp.sys.sinclair FAQ** at `https://worldofspectrum.net/faq/` for the
 machine itself. Read the entry as a form:
 
 - **Credits**: developer, publisher, year, genre. Fills `game.json`.
-- **Controls**: keys or joystick, and on the 128K the joystick port. Say
+- **Controls**: keys or joystick, and on the +2 and later which joystick
+  port (the original 128K has none of its own). Say
   which input the game actually reads before driving it.
 - **Reviews and the manual**: what the game does, the scoring, the
   screens. The manual, when a scan or OCR exists, outranks the summary.
@@ -45,13 +47,13 @@ same searches list game images, which are never downloaded.
 | `$0000`–`$3FFF` | the 16K ROM. The character set is its last 768 bytes, `$3D00`–`$3FFF` (codes `$20`–`$7F`, eight bytes each, MSB first) |
 | `$4000`–`$57FF` | the screen bitmap, 6144 bytes, 256×192, one bit per pixel. **Not** stored in raster order (below) |
 | `$5800`–`$5AFF` | the 768 attribute bytes, one per 8×8 cell, 32 columns × 24 rows, in raster order |
-| `$5B00`–`$5BFF` | printer buffer; many games reuse it. `$5B5C` is BANKM, the copy of the last value written to `$7FFD` on a 128K |
+| `$5B00`–`$5BFF` | printer buffer on the 48K; many games reuse it. On a 128K, ROM 0 copies its paging routines here (its IM 1 handler jumps to `$5B00`), so a game that reuses it must not run with ROM 0 paged in and the ROM's interrupt on. `$5B5C` is BANKM, the copy of the last value written to `$7FFD` on a 128K |
 | `$5C00`–`$5CB5` | the 48K system variables. `$5C78`–`$5C7A` is the 3-byte frame counter the ROM's interrupt increments |
-| `$5CB6`–`$FFFF` | free RAM. Games typically load at `$5CCB`, `$6000`, `$8000` or `$C000`, and move the stack out of the ROM's |
-| stack | the ROM sets `SP` just below RAMTOP at the top of RAM (RAM-SET, `$1219`: `LD (RAMTOP),HL`, `LD (HL),$3E`, `DEC HL`, `LD SP,HL`); games move it (a common spot is `$7FFE` or the top of their own block) |
+| `$5CB6`–`$FFFF` | the BASIC areas: channel data at `$5CB6` (CHANS), the program from `$5CCB` (PROG), its variables and workspace, the machine stack below RAMTOP, and the user-defined graphics from RAMTOP+1 (`$FF58`) to `$FFFF`. A game that takes over the machine treats all of it as its own |
+| stack | the ROM sets `SP` just below RAMTOP at the top of RAM (RAM-SET, `$1219`: `LD (RAMTOP),HL`, `LD (HL),$3E`, `DEC HL`, `LD SP,HL`); games usually move it into their own block |
 
-`$0000`–`$3FFF` is ROM, so the kit excludes it and never counts it as the
-game's. Only the snapshot's RAM from `$4000` is the game.
+`$0000`–`$3FFF` is ROM: `kit/spectrum/snapshot.py` zeroes it, and it is never
+the game's. Only the snapshot's RAM from `$4000` is the game.
 
 ## The screen
 
@@ -80,16 +82,16 @@ fast check; `kit/spectrum` renders nothing itself.
 
 ### `$FE` — the ULA (border, speaker, keyboard)
 
-Every **even** port addresses the ULA: it decodes **A0 only** (A15 is the
-128K's paging port, below); use `$FE` (`254`) to avoid clashing with other
-hardware.
+Every **even** port addresses the ULA: it decodes **A0 only**. (The 128K's
+paging port, below, is decoded by A1 and A15 both low.) Use `$FE` (`254`) to
+avoid clashing with other hardware.
 
 **Write** (`OUT ($FE),A`):
 
 | Bit | Meaning |
 |---|---|
 | 0–2 | border colour, 0–7 as above |
-| 3 | MIC output |
+| 3 | MIC output (active when the bit is **0**) |
 | 4 | EAR output / internal speaker (bit 3 and 4 toggle the same pin; EAR is the louder) |
 | 5–7 | unused |
 
@@ -108,18 +110,24 @@ bit in the high byte selects one half-row of five keys:
 | `$7F` | B, N, M, SYMBOL SHIFT, SPACE |
 
 A **0** in a result bit means that key is pressed. Reading with several
-address lines low ANDs the rows together, so two keys can be told apart
-but three cannot (the "ghost key" the ROM reports as a break). Bits 5 and
-7 always read 1; bit 6 is the EAR input, which an active speaker output
-also drives.
+address lines low ANDs those half-rows together. Any two keys read
+uniquely; three that make three corners of a rectangle in the matrix also
+read the fourth corner as pressed (CAPS SHIFT+B+V reads SPACE too, which
+with CAPS SHIFT the ROM takes as BREAK). The ROM's own scan ignores more
+than two keys, or two that are not a shift and a key. Bits 5 and 7 always
+read 1 on the 48K, 128K and +2; bit 6 is the EAR input, which an active
+speaker output also drives, and it differs between Issue 2 and Issue 3
+boards (on the +2A/+3 it reads 0 with no signal).
 
 The kit drives input through the emulator's keyboard/joystick matrix, not
 by poking `$FE`, so the game's own read is what receives it.
 
 ### `$7FFD` — 128K paging
 
-Write-only (reads return the floating bus). Also responds to any port
-with bits 1 and 15 clear; use `$7FFD`.
+Write-only, and never read it: on the original 128K and early +2 a read
+also latches the floating bus into the paging register (Sinclair Wiki, "ZX
+Spectrum 128"). It responds to any port with bits 1 and 15 clear (on the
++2A/+3, bit 14 must also be set); use `$7FFD`.
 
 | Bit | Meaning |
 |---|---|
@@ -129,9 +137,12 @@ with bits 1 and 15 clear; use `$7FFD`.
 | 5 | set: disable paging until reset |
 
 `$8000`–`$BFFF` is always **bank 2**, not bank 5; `$C000` is whichever bank
-bits 0–2 name. Keep `$5B5C` (BANKM) in step with the port, as the FAQ notes,
-or the ROM's interrupt paging corrupts the display. Banks 1, 3, 5 and 7 are
-**contended** (the ULA steals cycles from them).
+bits 0–2 name. Keep `$5B5C` (BANKM) in step with the port: while ROM 0 is
+paged in and the ROM's IM 1 handler runs, each interrupt rewrites the port
+from BANKM, so the `$C000` bank, the displayed screen and the ROM all snap
+back to BANKM's values. Banks 1, 3, 5 and 7 are **contended** on the 128K
+and +2 (the ULA steals cycles from them); on the +2A/+3 it is banks 4, 5, 6
+and 7. On the 48K, `$4000`–`$7FFF` is contended (Timing, below).
 
 ### The AY-3-8912 (128K/+2/+2A/+3)
 
@@ -141,14 +152,25 @@ IN  ($FFFD)     read the selected register
 OUT ($BFFD),v   write v to the selected register
 ```
 
-Registers 0–13 are the three tone channels, noise and envelope; register
-14 (`$FFFD` select, then `IN`) is the I/O port. The 48K has no AY.
+R0–R5 are the tone periods of channels A, B and C (fine, coarse), R6 the
+noise period, R7 the mixer (tone and noise enables, I/O direction), R8–R10
+the amplitudes of A, B and C (bit 4 set: use the envelope), R11–R12 the
+envelope period and R13 its shape; R14 (`$FFFD` select, then `IN`) is the I/O
+port. The 48K has no AY.
 
 ## Timing
 
-A 48K frame is **69888 T-states**: 224 T-states per line × (64 top border
-+ 192 picture + 56 bottom border). The CPU runs at 3.5 MHz, so the "50 Hz"
-interrupt is 50.08 Hz. A 128K frame is **70908 T-states** (50.01 Hz).
+A 48K frame is **69888 T-states**: 224 T-states per line × 312 lines (64
+line times before the picture, border or vertical retrace, 192 picture
+lines, 56 after). The CPU runs at 3.5 MHz, so the "50 Hz" interrupt is
+50.08 Hz. A 128K frame is **70908 T-states** (228 per line × 311 lines, 63
+of them before the picture) at 3.5469 MHz, so 50.02 Hz.
+
+Memory contention: on the 48K, an access to `$4000`–`$7FFF` while the ULA
+fetches the picture is delayed by 6, 5, 4, 3, 2, 1, 0, 0 T-states in an
+eight-T-state pattern, from T-state 14335 of the frame (14361 on the 128K,
+in the contended banks); the comp.sys.sinclair FAQ has the full rule. It is
+why the same loop runs slower with its code or data in that range.
 
 The interrupt is generated by the ULA at the start of the frame and, on
 the 48K, is the only one. Games that pace themselves by the frame wait
@@ -166,8 +188,8 @@ graphics (the ZX80/ZX81 quadrant patterns). Codes `$90`–`$A4` are the 21
 followed by two tokens for `SPECTRUM` and `PLAY`. Codes `$A5`–`$FF` are
 the BASIC **keyword tokens** (`RND`, `INKEY$`, `AT`, `TAB` and so on), with
 `$C7`–`$C9` standing for the two-character operators `<=`, `>=` and `<>`.
-That is why a screen of BASIC text reads as a run of one- and two-character
-words rather than as the source a player typed.
+That is why a BASIC program viewed as bytes shows one high byte where each
+keyword was, not the text the player typed.
 
 The font is the ROM's last 768 bytes (`$3D00`–`$3FFF`), eight bytes per
 character, code `$20` first. Render it to read text that is stored in the
@@ -187,35 +209,45 @@ against the ROM disassembly in use**, not as fixed truth:
 | `RST $00` | restart |
 | `RST $08` | error handler; the code is **the byte after the `RST`**, not A (`$0008` → `JR $0053`, which does `POP HL` / `LD L,(HL)`) |
 | `RST $10` | print the character in A |
-| `RST $18` | get the next character from the current stream |
-| `RST $20` | next character / skip whitespace |
+| `RST $18` | GET-CHAR: the character at CH_ADD (`$5C5D`) in the BASIC line being interpreted, skipping spaces and colour codes |
+| `RST $20` | NEXT-CHAR: advance CH_ADD, then as `RST $18` |
 | `RST $28` | the floating-point calculator |
-| `RST $30` | make BC bytes of space on the stack |
-| `RST $38` | (the eighth vector) |
-| `$1601` | CHAN-OPEN: open channel A ('S'=2 screen, 'K'=1 keyboard) |
+| `RST $30` | BC-SPACES: open BC bytes in the workspace, just below the calculator stack (DE points at the first) |
+| `RST $38` | MASK-INT, the IM 1 interrupt handler: increments FRAMES `$5C78`–`$5C7A` (through `INC (IY+$40)`, so IY must be `$5C3A`) and calls KEYBOARD (`$02BF`) |
+| `$1601` | CHAN-OPEN: make stream A current (2 = 'S' upper screen, 0 or 1 = 'K' lower screen, 3 = 'P' printer) |
 
-A call to `$1601` followed by `RST $10` is the ROM's "print this string"
-idiom; a game that keeps the ROM in place uses it for all its text.
+A call to `$1601` followed by `RST $10` is a common way to print; PR-STRING at
+`$203C` (DE the text, BC its length) is the other. A game that keeps the ROM
+may use them, and many print with code of their own.
 
 ## The mistakes that bite
 
 - **The bitmap is not linear.** See "The screen". `$5800` is the
   attributes, not the tail of the bitmap.
-- **The floating bus.** Reading a port no hardware answers returns the
-  last byte the ULA fetched, so a snapshot's I/O reads are meaningless
-  unless the address was the ULA's.
+- **The floating bus.** Reading a port nothing answers returns whatever is
+  on the bus: on the 48K, 128K and +2, the screen or attribute byte the ULA
+  is fetching at that moment, or `$FF` in the border and retrace; on the
+  +2A/+3, always `$FF`. Some games sync to the raster this way (the FAQ
+  names Arkanoid), so an emulator that does not model it changes their
+  timing.
 - **Keyboard ghosting.** Three simultaneous keys can be decoded as a
   fourth; "not pressed" is a 1, and reading a single half-row needs its
   address line low.
 - **182 bytes of system variables are not free RAM.** `$5C00`–`$5CB5` is
-  the ROM's; a game that keeps the ROM alive and stores there breaks the
+  the ROM's. With the ROM's IM 1 handler running, FRAMES, the keyboard
+  variables (`$5C00`–`$5C0A`) and IY, which must stay `$5C3A`, are used
+  every frame; a game that stores there, or changes IY, breaks the
   interrupt.
 - **A 128K snapshot is not the 48K one.** `.sna` and `.z80` carry the
   banked memory too, and the byte lengths differ; the kit's reader accepts
   exactly the 48K `.sna` (49179 bytes) and refuses the rest, naming what
   it saw.
-- **Contended banks are slow.** Code in banks 1, 3, 5 or 7 loses cycles
-  to the ULA, which changes what a timing measurement means.
+- **Contended memory is slow.** Code or data in `$4000`–`$7FFF` on the 48K,
+  or in a contended bank on a 128K (Ports, `$7FFD`), loses cycles to the
+  ULA, which changes what a timing measurement means.
+- **A 48K `.sna` has no PC field.** The PC is pushed on the stack at the
+  saved SP, so the two RAM bytes there are the snapshot's, not the game's
+  (Snapshot formats, below).
 
 ## Snapshot formats
 
@@ -223,8 +255,15 @@ The kit's canonical snapshot is a 48K `.sna`: a **27-byte header** then
 **49152 bytes** of RAM for `$4000`–`$FFFF`, no compression.
 
 Header bytes, in order: `I` (1), `HL'` `DE'` `BC'` `AF'` (2 each), `HL`
-`DE` `BC` `IY` `IX` (2 each), `IFF2` (1), `R` (1), `AF` `SP` (2 each),
-interrupt mode (1), border (1). All multi-byte values are little-endian.
-A 128K `.sna` is longer and appends the port value, a PC and the extra
-banks; `.z80` is a different layout, optionally compressed. The reader in
-`kit/spectrum/snapshot.py` is the authority for what the kit accepts.
+`DE` `BC` `IY` `IX` (2 each), the interrupt byte (1; IFF2 is **bit 2**), `R`
+(1), `AF` `SP` (2 each), interrupt mode (1), border (1). All multi-byte
+values are little-endian. There is no PC: it is pushed on the stack, so the
+word at the header's SP is the PC, and those two RAM bytes are not the
+game's.
+
+A 128K `.sna` keeps that layout for its first 48K (banks 5, 2 and the paged
+bank), then appends the PC (2 bytes, no longer on the stack), the last
+`$7FFD` value (1), a TR-DOS flag (1) and the other banks in ascending order:
+131103 or 147487 bytes. `.z80` is a different layout, optionally compressed
+with an `ED ED` run-length scheme. The reader in `kit/spectrum/snapshot.py`
+is the authority for what the kit accepts.

@@ -53,7 +53,7 @@ def read(path):
     blob = open(path, "rb").read()
     n = len(blob)
     if blob[:2] == b"\x1f\x8b":
-        sys.exit(f"{path}: gzip data, not a 48K .sna (perhaps a compressed .z80).")
+        sys.exit(f"{path}: gzip data, not a 48K .sna (a .z80 is never gzip: its compression is ED ED run-length).")
     if n == SNA_48K_SIZE:
         ram = blob[SNA_HEADER:]
     elif n == SNA_128K_SIZE:

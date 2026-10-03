@@ -25,10 +25,12 @@ def check(name, ok, detail=""):
         failures.append(name)
 
 
-# A synthetic second platform, for the rules. Its commands are its own: a real
-# second platform (kit/spectrum) serves the same command names, and a fixture that
-# shared them would make a one-platform command look ambiguous.
-SECOND = {"COMMANDS": ("status", "stop", "second-only"), "TOOL_NAMES": ()}
+# A synthetic second platform, for the rules. It serves the shared commands, so the
+# ambiguity rules are tested whatever else is under kit/, and one command of its own;
+# it never copies another platform's own commands (kit/spectrum's), which would make a
+# one-platform command look ambiguous.
+SECOND = {"COMMANDS": ("status", "stop", "check-emulator", "verify-footprint", "snapshots", "second-only"),
+          "TOOL_NAMES": ()}
 
 
 def decls():

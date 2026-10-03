@@ -32,7 +32,7 @@ can have of it. The measurements, each dated:
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
 | ZEsarUX-13.0 release, `ZEsarUX_macos-silicon-13.0.dmg` | macOS arm64 | 3 October 2026 | 41 of 45, 21 s |
-| ZEsarUX-13.0 release, `ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz` | Linux x86_64 (Ubuntu 24.04, no display) | 1 October 2026 | 38 of the 40 checks the suite had then, six runs; `verify-footprint` clean |
+| ZEsarUX-13.0 release, `ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz` | Linux x86_64 (Ubuntu 24.04, no display) | 3 October 2026 | 41 of 45, 20 s, three runs (the same four failures as macOS); `verify-footprint` clean |
 
 The four failures on macOS are `count-while-running`, `input-type-ascii`,
 `load-keeps-frame-phase` and `warp`; the Linux run had the first two, and
@@ -217,14 +217,19 @@ carries no path on this computer.
 ## Linux
 
 `check-emulator` and `verify-footprint` were run on Linux x86_64 (Ubuntu
-24.04, no display) on 1 October 2026. Six runs of the 40 checks the suite had
-then: 37 passed, the same three failures the macOS row had before
-`--snap-no-change-machine` (38 with it). `verify-footprint` was clean:
-`.zesaruxrc` lands in `tools/zesarux-home/` and nothing in `$HOME`. The
-`ubuntu24` build needs SDL 1.2, which Ubuntu does not install by default; see
-"What goes where". ZRCP is about 40 ms a call on Linux without `TCP_QUICKACK`,
-which `kit/spectrum/zesarux.py` now sets: 23 calls a second before, 5 000 to
-6 000 after, and the suite 68 s to 12 s.
+24.04, no display) on 3 October 2026, from a fresh `get-zesarux download`:
+41 of 45 in each of three runs, about 20 s a run, the same four failures as
+the macOS row. `verify-footprint` was clean: `.zesaruxrc` lands in
+`tools/zesarux-home/` and nothing in `$HOME`, and with the launcher's flags
+the emulator opens no network connection. The `ubuntu24` build needs SDL
+1.2, which Ubuntu does not install by default; see "What goes where".
+
+ZRCP is about 40 ms a call on Linux without `TCP_QUICKACK`: each reply comes
+in two pieces, the server's Nagle holds the second until the client ACKs,
+and Linux delays the ACK. `kit/spectrum/zesarux.py` sets it before **every**
+read, because Linux clears it after use; set once at connect it lasted one
+reply. Measured: 23 calls a second without it, 4 600 to 5 300 with it, frame
+steps 8 a second against 50, and the suite 78 s against 20 s.
 
 ## Untried systems
 
