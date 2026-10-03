@@ -145,8 +145,8 @@
   // A creature made of two sprites names the upper one's table as well (data-fb): the madrag's head and body sit 21 pixels above her legs ($B861).
   // An object whose expansion flag ($18A0) is set is drawn at twice the height, as the game shows it ($8179).
   // Cropped to the rows and columns its frames use, at three times size.
-  // In the creatures' table every picture gets the same box, the largest any of them needs, with the sprite
-  // at the same scale, centred and standing on the bottom edge, so the rows line up.
+  // Within each table every picture gets the same width, the widest any of them needs, with the sprite
+  // at the same scale and centred, so the column lines up; each keeps its own height.
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches, movers = [], specs = [];
   document.querySelectorAll('canvas[data-o]').forEach(cv => {
     const o = +cv.dataset.o, S = 3, tall = M[0x18A0 + o] ? 2 : 1, n = +cv.dataset.n || 1, cols = [2, M[0x1850 + o], 8];
@@ -164,11 +164,11 @@
     for (const rows of frames) rows.forEach((b, r) => { for (let k = 0; k < 12; k++) if (px(b, k)) { x0 = Math.min(x0, k); x1 = Math.max(x1, k); y0 = Math.min(y0, r); y1 = Math.max(y1, r); } });
     specs.push({ cv, frames, x0, x1, y0, y1, cols, n, S, px });
   });
-  const npc = specs.filter(s => s.cv.closest('table.npcs'));
-  const bw = Math.max(...npc.map(s => s.x1 - s.x0 + 3)), bh = Math.max(...npc.map(s => s.y1 - s.y0 + 3));
+  const bw = new Map();
+  for (const s of specs) { const t = s.cv.closest('table'); bw.set(t, Math.max(bw.get(t) || 0, s.x1 - s.x0 + 3)); }
   specs.forEach(({ cv, frames, x0, x1, y0, y1, cols, n, S, px }) => {
-    const box = cv.closest('table.npcs'), w = box ? bw : x1 - x0 + 3, h = box ? bh : y1 - y0 + 3;
-    const ox = Math.floor((w - (x1 - x0 + 3)) / 2), oy = h - (y1 - y0 + 3);
+    const w = bw.get(cv.closest('table')), h = y1 - y0 + 3;
+    const ox = Math.floor((w - (x1 - x0 + 3)) / 2), oy = 0;
     const ctx = C64.canvas(cv, w * 2 * S, h * S);
     const draw = rows => {
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
