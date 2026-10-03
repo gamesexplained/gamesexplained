@@ -45,10 +45,10 @@ same searches list game images, which are never downloaded.
 | `$0000`–`$3FFF` | the 16K ROM. The character set is its last 768 bytes, `$3D00`–`$3FFF` (codes `$20`–`$7F`, eight bytes each, MSB first) |
 | `$4000`–`$57FF` | the screen bitmap, 6144 bytes, 256×192, one bit per pixel. **Not** stored in raster order (below) |
 | `$5800`–`$5AFF` | the 768 attribute bytes, one per 8×8 cell, 32 columns × 24 rows, in raster order |
-| `$5B00`–`$5BFF` | printer buffer; many games reuse it |
-| `$5C00`–`$5CB5` | the 48K system variables. `$5C78`–`$5C7A` is the 3-byte frame counter the ROM's interrupt increments; `$5C5C` is the last value written to `$7FFD` on a 128K |
+| `$5B00`–`$5BFF` | printer buffer; many games reuse it. `$5B5C` is BANKM, the copy of the last value written to `$7FFD` on a 128K |
+| `$5C00`–`$5CB5` | the 48K system variables. `$5C78`–`$5C7A` is the 3-byte frame counter the ROM's interrupt increments |
 | `$5CB6`–`$FFFF` | free RAM. Games typically load at `$5CCB`, `$6000`, `$8000` or `$C000`, and move the stack out of the ROM's |
-| stack | the ROM uses `$5C00`-down; games move it (a common spot is `$7FFE` or the top of their own block) |
+| stack | the ROM sets `SP` just below RAMTOP at the top of RAM (RAM-SET, `$1219`: `LD (RAMTOP),HL`, `LD (HL),$3E`, `DEC HL`, `LD SP,HL`); games move it (a common spot is `$7FFE` or the top of their own block) |
 
 `$0000`–`$3FFF` is ROM, so the kit excludes it and never counts it as the
 game's. Only the snapshot's RAM from `$4000` is the game.
@@ -80,8 +80,9 @@ fast check; `kit/spectrum` renders nothing itself.
 
 ### `$FE` — the ULA (border, speaker, keyboard)
 
-Every **even** port addresses the ULA (only address bits 0 and 15 are
-decoded); use `$FE` (`254`) to avoid clashing with other hardware.
+Every **even** port addresses the ULA: it decodes **A0 only** (A15 is the
+128K's paging port, below); use `$FE` (`254`) to avoid clashing with other
+hardware.
 
 **Write** (`OUT ($FE),A`):
 
@@ -127,10 +128,10 @@ with bits 1 and 15 clear; use `$7FFD`.
 | 4 | ROM select: 0 the 128K editor/menu, 1 the 48K BASIC ROM |
 | 5 | set: disable paging until reset |
 
-`$8000` is always bank 5, `$C000` is whichever bank bits 0–2 name. Keep
-`$5C5C` in step with the port, as the FAQ notes, or the ROM's interrupt
-paging corrupts the display. Banks 1, 3, 5 and 7 are **contended** (the
-ULA steals cycles from them).
+`$8000`–`$BFFF` is always **bank 2**, not bank 5; `$C000` is whichever bank
+bits 0–2 name. Keep `$5B5C` (BANKM) in step with the port, as the FAQ notes,
+or the ROM's interrupt paging corrupts the display. Banks 1, 3, 5 and 7 are
+**contended** (the ULA steals cycles from them).
 
 ### The AY-3-8912 (128K/+2/+2A/+3)
 
@@ -184,7 +185,7 @@ against the ROM disassembly in use**, not as fixed truth:
 | Entry | Routine |
 |---|---|
 | `RST $00` | restart |
-| `RST $08` | error handler (A = error code) |
+| `RST $08` | error handler; the code is **the byte after the `RST`**, not A (`$0008` → `JR $0053`, which does `POP HL` / `LD L,(HL)`) |
 | `RST $10` | print the character in A |
 | `RST $18` | get the next character from the current stream |
 | `RST $20` | next character / skip whitespace |
@@ -206,7 +207,7 @@ idiom; a game that keeps the ROM in place uses it for all its text.
 - **Keyboard ghosting.** Three simultaneous keys can be decoded as a
   fourth; "not pressed" is a 1, and reading a single half-row needs its
   address line low.
-- **32 bytes of system variables are not free RAM.** `$5C00`–`$5CB5` is
+- **182 bytes of system variables are not free RAM.** `$5C00`–`$5CB5` is
   the ROM's; a game that keeps the ROM alive and stores there breaks the
   interrupt.
 - **A 128K snapshot is not the 48K one.** `.sna` and `.z80` carry the
