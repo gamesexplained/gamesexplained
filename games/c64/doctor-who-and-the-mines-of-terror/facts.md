@@ -120,9 +120,12 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
 - What the less obvious objects do, traced: a MAT lying free (`$1B55` = 0)
   level with a controller and within 10 pixels in x stops it (`$CDD6`,
   `controller_stop` `$CE78`). The Doctor jumping up within 20 x 8 pixels
-  of the PLATFORM is put in ladder mode `$0A` with `$E7` = `$FF`
-  (`$C975`-`$C9A2`), handled by `doctor_ride_platform` (`$CCE2`); `$A9E8`
-  refuses to pick it up meanwhile. A free EGG within 20 x 12 pixels of the
+  of the PLATFORM is put in the airborne state `$0A` with `$E7` = `$FF`
+  (`$C975`-`$C9A2`). `doctor_ride_platform` (`$CCE2`) then moves him by
+  the stick: up until he is `$50` (80) pixels above it, down until level
+  with it, which ends the ride, as does a horizontal distance of `$14` or
+  more or reaching a ladder (state 8). `$A9E8` refuses to pick it up
+  meanwhile. A free EGG within 20 x 12 pixels of the
   Doctor sets `$E8` = `$16` (death by a baby madrag) and places object
   `$0D` at the egg (`$B861`); the madrag returns moved eggs to the nests at
   `$B665` and takes one from Splinx (`$B752`). No routine was found that

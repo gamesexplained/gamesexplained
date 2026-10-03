@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
   <h1>Doctor Who and the Mines of Terror</h1>
-  <p class="sub">How the Doctor moves, what he carries, how Splinx is programmed, what kills him, and how the game marks his escape.</p>
+  <p class="sub">What the Doctor must do, what he carries, how Splinx is programmed, what kills him, and how the game marks his escape.</p>
 </header>
 <main class="wrap">
 <section id="quest">
@@ -26,23 +26,6 @@
   </table>
   <p style="margin-top:20px">Rock, clamped ladders, bad air, a security gate and a code lock stand in the way, and the tools that clear them lie around the mine.</p>
   <p>The mine is one map of 56 rows of 128 blocks (<code>$E000</code>). The <a href="levels.html">Maps</a> tab draws all of it, and the <a href="solution.html">Solution</a> tab takes the steps in order.</p>
-</section>
-<section id="moves">
-  <p class="fig">The Doctor</p>
-  <h2 class="t">Walk, climb, jump, and don't fall too far</h2>
-  <p class="lede">The joystick in port 2 moves the Doctor and makes him jump. Everything else is on the keyboard, and the keyboard can move him too. His walking and climbing frames are on the <a href="graphics.html#doctor">Graphics</a> tab.</p>
-  <table class="t" style="margin-top:20px">
-    <tr><th>Input</th><th>What it does</th><th>Where</th></tr>
-    <tr><td>Stick left and right, or Z and X</td><td>walk</td><td><code>$8F47</code></td></tr>
-    <tr><td>Stick up and down, or <b>;</b> and <b>/</b></td><td>climb a ladder</td><td><code>$8F64</code></td></tr>
-    <tr><td>Fire, or RETURN</td><td>jump</td><td><code>jump_arc_step</code> <code>$A0D4</code></td></tr>
-    <tr><td>F1, F3, F5, F7</td><td>pockets and items (<a href="#pockets">below</a>)</td><td><code>status_and_pockets</code> <code>$A4EE</code></td></tr>
-    <tr><td>S</td><td>the Splinx Programmer</td><td><code>$AF58</code></td></tr>
-    <tr><td>R</td><td>forced regeneration: give up a life and start again</td><td><code>$9051</code></td></tr>
-    <tr><td>D, CTRL+D, L</td><td>the save menu, in one place only (<a href="discoveries.html#save-place">Discoveries</a>)</td><td><code>$8FA4</code></td></tr>
-  </table>
-  <p>The input routine (<code>read_input</code>, <code>$8F24</code>) runs once every pass of the game's main loop. It reads the joystick and six rows of the keyboard, and turns them into flags that the rest of the game reads: one for left or right, one for up or down, one for jump and one each for the keys.</p>
-  <p>A jump lasts 24 frames going up, 16 level and then a fall, and the direction is fixed at take-off (<code>jump_arc_step</code>). The game measures each fall from where it starts to where it ends, and a drop of 96 pixels or more kills the Doctor (<code>fall_check</code>, <code>$CD62</code>).</p>
 </section>
 <section id="pockets">
   <p class="fig">Pockets and items</p>
@@ -63,20 +46,13 @@
     <tr><td><canvas data-o="54"></canvas></td><td>CRYSTAL</td><td>Carried out at the end, it doubles the bonus (<code>$916F</code>). A creature comes to take it back, even from a pocket (<code>$B48A</code>).</td><td><a href="levels.html?go=36#mine">map</a></td></tr>
     <tr><td><canvas data-o="62"></canvas></td><td>CAPSULE</td><td>The TIRU plans the Master stole. Carried out at the end, it doubles the bonus (<code>$9177</code>).</td><td><a href="levels.html?go=3e#mine">map</a></td></tr>
     <tr><td><canvas data-o="53"></canvas></td><td>MAT</td><td>Left lying in a controller's path, it stops the controller when the two are level and within ten pixels (<code>$CDD6</code>).</td><td><a href="levels.html?go=35#mine">map</a></td></tr>
-    <tr><td><canvas data-o="57"></canvas></td><td>PLATFORM</td><td>When he jumps up to it where it lies, the game puts him in his ladder mode, so he can climb from it (<code>$C975</code>, <code>doctor_ride_platform</code>, <code>$CCE2</code>). He cannot pick it up while he is on it.</td><td><a href="levels.html?go=39#mine">map</a></td></tr>
+    <tr><td><canvas data-o="57"></canvas></td><td>PLATFORM</td><td>Left lying in the mine, it works like an invisible ladder. Once he jumps up beside it, he can move up and down anywhere up to 80 pixels above it, until he comes back down onto it or steps more than 20 pixels away (<code>$C975</code>, <code>doctor_ride_platform</code>, <code>$CCE2</code>). He cannot pick it up while he is using it.</td><td><a href="levels.html?go=39#mine">map</a></td></tr>
     <tr><td><canvas data-o="70"></canvas></td><td>EGG</td><td>The madrag's two eggs. Going near one that lies free hatches a baby madrag, which kills (<code>$B861</code>). The madrag carries a moved egg back to its nest, and takes one from Splinx if he holds it (<code>$B752</code>).</td><td><a href="levels.html?go=46#mine">1</a> <a href="levels.html?go=47#mine">2</a></td></tr>
     <tr><td><canvas data-o="59"></canvas></td><td>BOX</td><td>What it is for is not known.</td><td><a href="levels.html?go=3b#mine">map</a></td></tr>
     <tr><td><canvas data-o="73"></canvas></td><td>CHEMICALS</td><td>What they are for is not known.</td><td><a href="levels.html?go=49#mine">map</a></td></tr>
   </table>
   <p class="cap">Each object drawn from its starting frame (<code>$1D30</code>) in its own colour (<code>$1850</code>), with its name from the game's own table: ten characters at <code>$1770</code> plus the offset in <code>$1720</code>, in the game's private alphabet. Pressing F5 picks up any object from <code>$30</code> to <code>$4F</code> within reach, or Splinx (<code>pickup_nearby</code>, <code>$A929</code>). Using one that only works in certain places compares the Doctor's position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>).</p>
-  <p>The status bar shows the item in the Doctor's hands and four pocket boxes, and the function keys move things between them. He also has four markers to drop for Splinx to walk to.</p>
-  <table class="t" style="margin-top:20px">
-    <tr><th>Key</th><th>What it does</th><th>Where</th></tr>
-    <tr><td>F1</td><td>moves the selector across the marker box and the four pockets</td><td><code>$A530</code></td></tr>
-    <tr><td>F3</td><td>puts the item in the Doctor's hands into the first empty pocket; drops a marker; with empty hands, takes out the selected item</td><td><code>$A575</code>, <code>pocket_take</code> <code>$A60C</code></td></tr>
-    <tr><td>F5</td><td>standing still, picks up the object in front of him; holding an item, uses it</td><td><code>pickup_nearby</code> <code>$A929</code>, <code>use_item_update</code> <code>$BACC</code></td></tr>
-    <tr><td>F7 and a direction</td><td>throws the item in his hands; two can be in flight at once</td><td><code>throw_start</code> <code>$A7D7</code></td></tr>
-  </table>
+  <p>The status bar shows the item in the Doctor's hands and four pocket boxes, and the function keys move things between them. He also has four markers to drop for Splinx to walk to. The keys are on the <a href="controls.html">Controls</a> tab.</p>
   <p>Some items can be drawn into the scenery as well as flying as sprites. The game blends their shapes into 32 spare characters, pixel pair by pixel pair, so they sit on the rock without covering it (<code>charobj_composite_char</code>, <code>$8652</code>).</p>
 </section>
 <section id="splinx">
