@@ -37,18 +37,8 @@
     <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
     <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code> and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. Parts of the mine swap in their own shapes for sixteen characters (<code>zone_graphics</code>); this picture draws every part with the starting cavern's.</p>
   </div>
-  <h3 id="objects">What the objects are for</h3>
-  <p>Each object works only at certain points. When the Doctor uses the object he holds (F5), the game compares his position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>).</p>
-  <table class="t">
-    <tr><th>Object</th><th>Where it works</th><th>What it does</th></tr>
-    <tr><td>PICK AXE</td><td>three dig sites (<code>$BC1C</code>)</td><td>three hits wear the rock away and open the passage</td></tr>
-    <tr><td>SPANNER</td><td>eight bolts high in the mine (<code>$BB94</code>)</td><td>each bolt is a clamp on a ladder; undoing it redraws that block with the clamp open (block <code>$E0</code> becomes <code>$E1</code>, <code>use_spanner</code>, <code>$BBBC</code>). Bolt 6 works only from below.</td></tr>
-    <tr><td>ACTIVATOR</td><td>three points at the top of the mine (<code>$BCDA</code>)</td><td>launches the escape pod, one of the two ways to leave (<code>$BCE0</code>)</td></tr>
-    <tr><td>EXPLOSIVES</td><td>anywhere, once armed; two places matter</td><td>a blast near one point starts the level rising (<code>$C202</code>); a blast near another opens a wall (<code>$C22E</code>)</td></tr>
-    <tr><td>nothing (empty hands)</td><td>the code lock's clue panel and its three buttons</td><td>see <a href="solution.html#lock">the code lock</a> on the Solution tab</td></tr>
-    <tr><td>AIR MASK</td><td>carried in the hand</td><td>keeps the air countdown full (<code>$CAB1</code>)</td></tr>
-  </table>
-  <p>What the MAT, PLATFORM, BOX, CHEMICALS and the eggs are for is not known. The CIRCUITs count when they sit in their slots in the machinery (<code>machinery_update</code>, <code>$B9B6</code>), and the CRYSTAL and the CAPSULE double the bonus at the end (<code>item_bonus_check</code>, <code>$928C</code>).</p>
+  <h3 id="objects">Where the objects work</h3>
+  <p>Most objects work only at certain points. When the Doctor uses the one he holds (F5), the game compares his position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>): the dig sites at <code>$BC1C</code>, the bolts at <code>$BB94</code> and the escape pod's launch points at <code>$BCDA</code>. Choose an object above and press Where it is used to step through its points. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). What every object is for is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
   <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. The map holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
   <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
 </section>
@@ -120,7 +110,8 @@
     : /^(CRYSTAL|CAPSULE|SPLINX)$/.test(n) ? uses.filter(k => /way home/.test(k.t))
     : uses.filter(k => k.t.startsWith(n + ':'));
   const WHY = { 'CRYSTAL': 'carried out of the mine, it doubles the bonus', 'CAPSULE': 'carried out of the mine, it doubles the bonus', 'SPLINX': 'carried out of the mine, it doubles the bonus',
-    'PASS CARD': 'held, it makes character $A0 passable, which reads as the security gate; no table gives the gate a place', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up' };
+    'PASS CARD': 'held, it makes character $A0 passable, which reads as the security gate; no table gives the gate a place', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up',
+    'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'jumping up to it puts the Doctor in his ladder mode', 'EGG': 'going near it while it lies free hatches a deadly baby madrag' };
   const sel1 = (id, list, text) => { const el = document.getElementById(id); list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = text ? text(k) : k.label; el.append(o); }); return el; };
   const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY)/.test(k.t)));
   const pkUse = document.getElementById('pk-use');
@@ -184,7 +175,7 @@
       : useIx + 1 >= list.length ? 'Back to the ' + curObj.t : 'Next place (' + (useIx + 2) + ' of ' + list.length + ')';
     if (!k) { document.getElementById('rpkv').textContent = ''; draw(); return; }
     let note = k.label + ': ' + where(k) + '.';
-    if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not traced.';
+    if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not known.';
     if (curObj && k !== curObj) note = curObj.t + ', place ' + (useIx + 1) + ' of ' + list.length + ': ' + k.label + ', ' + where(k) + '.';
     document.getElementById('rpkv').textContent = note;
     setZoom(4); centre(k.at); draw();

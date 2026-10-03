@@ -117,6 +117,16 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   `$3C`/`$48`/`$4C` DETONATOR, `$3D` EXPLOSIVES, `$3E` CAPSULE, `$3F`
   ACTIVATOR, `$40`-`$45` and `$4A` CIRCUIT, `$46`/`$47` EGG, `$49`
   CHEMICALS, `$4B` GEM, `$4D`-`$4F` SPANNER.
+- What the less obvious objects do, traced: a MAT lying free (`$1B55` = 0)
+  level with a controller and within 10 pixels in x stops it (`$CDD6`,
+  `controller_stop` `$CE78`). The Doctor jumping up within 20 x 8 pixels
+  of the PLATFORM is put in ladder mode `$0A` with `$E7` = `$FF`
+  (`$C975`-`$C9A2`), handled by `doctor_ride_platform` (`$CCE2`); `$A9E8`
+  refuses to pick it up meanwhile. A free EGG within 20 x 12 pixels of the
+  Doctor sets `$E8` = `$16` (death by a baby madrag) and places object
+  `$0D` at the egg (`$B861`); the madrag returns moved eggs to the nests at
+  `$B665` and takes one from Splinx (`$B752`). No routine was found that
+  tests for the BOX (`$3B`) or the CHEMICALS (`$49`) by number.
 - Messages are chains of strings through the pointer tables
   `$95CB`/`$9626`, printed by a scroller on status row `$0450` in step with
   raster `$C8` (`$92E3`).

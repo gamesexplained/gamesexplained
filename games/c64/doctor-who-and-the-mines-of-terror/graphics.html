@@ -21,6 +21,23 @@
   </div>
   <p>The game's sprite images sit in the second 16 KB of memory, which the video chip shows during play, so a frame number from <code>$40</code> to <code>$CF</code> points straight at 64 bytes from <code>$5000</code> to <code>$73FF</code>. What each creature does is on the <a href="gameplay.html#dangers">Gameplay</a> tab, which also shows <a href="gameplay.html#pockets">every object the Doctor can pick up</a> by name.</p>
 </section>
+<section id="doctor">
+  <p class="fig">The Doctor</p>
+  <h2 class="t">Two sprites, and a frame for every two pixels</h2>
+  <p class="lede">The Doctor is drawn from two sprites, one above the other. Press a move to see the frames the game shows for it.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" data-pose="left">Walk left</button>
+      <button class="b" type="button" data-pose="right" aria-pressed="true">Walk right</button>
+      <button class="b" type="button" data-pose="climb">Climb</button>
+      <button class="b" type="button" data-pose="hold">Carry</button>
+      <button class="b" type="button" data-pose="die">Regenerate</button>
+    </div>
+    <canvas id="doc" class="scr" style="max-width:384px" role="img" aria-label="The Doctor, drawn from the game's sprite frames on dark grey"></canvas>
+    <p class="cap" id="doccap"></p>
+  </div>
+  <p>The lower sprite draws his coat and legs, and the upper one, eight pixels higher, his head and arms (<code>$CB48</code>). The frame comes from where he stands, not from a timer. Walking, the game takes his x position, keeps the lowest four bits and halves them, so each two pixels of ground pick the next of eight frames. Facing left he uses a second table of frames, and as x falls he steps through it in reverse order (<code>doctor_pick_frames</code>, <code>$CC4C</code>). On a ladder his height picks one of four frames, a new one every four pixels (<code>$CCBE</code>). Carrying something, he keeps one upper frame with his arms full (<code>$CC96</code>, <code>$CCB2</code>).</p>
+</section>
 <section id="tardis">
   <p class="fig">The TARDIS</p>
   <h2 class="t">Landing in a shimmer of pixels</h2>
@@ -32,7 +49,7 @@
     <p class="cap">The six sprites at the positions in <code>$FC70</code>, all showing one image (<code>$7400</code>) in the colours set at <code>$FF2F</code>. The image starts as one of two at <code>$09E4</code>; the second is used when the Doctor is high in the mine (<code>$FE60</code>).</p>
   </div>
   <p>Every fourth frame the game copies the whole image afresh and then clears some of its pixel pairs (<code>arrival_frame</code>, <code>$FD1F</code>). The pairs go in a fixed shuffle: 68 byte offsets at <code>$09A0</code>, each tried with one of five masks in turn, so every copy loses a different scatter of pixels (<code>dissolve_sprite</code>, <code>$FEA9</code>). Each image has 128 coloured pixel pairs. The number cleared starts at two, holds while a counter runs down, and then grows by three each time up to 125 (<code>$FCAF</code>), so the last copy keeps three. For the departure it starts at 127 and falls by three (<code>departure_sequence</code>, <code>$FE23</code>), so the shimmer thickens instead.</p>
-  <p>The same routine fades the Doctor when he loses a regeneration, on his own two frames (<code>$CB6B</code>), as the <a href="gameplay.html#moves">Gameplay</a> tab shows.</p>
+  <p>The same routine fades the Doctor when he loses a regeneration, on his own two frames (<code>$CB6B</code>), as <a href="#doctor">the Doctor</a> above shows.</p>
 </section>
 <section id="screen">
   <p class="fig">The screen</p>
@@ -80,6 +97,54 @@ const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","v
 
   let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
   const M = G.ram;
+
+  // the Doctor ($CC4C): the frame comes from his position, (x & 15) >> 1 walking, (y & 15) >> 2 climbing;
+  // facing left reads $CC16/$CC2A, right $CC1E/$CC32; carrying keeps upper frame $CC3F (right) or $CC3E (left)
+  (function () {
+    const cv = document.getElementById('doc'), S = 4, W = 96, ctx = C64.canvas(cv, W * S, 40 * S);
+    const T = a => Array.from(M.subarray(a, a + 8));
+    const POSE = {
+      left:  { lo: T(0xCC16), up: T(0xCC2A), dx: -1, cap: 'Walking left: lower frames from <code>$CC16</code>, upper from <code>$CC2A</code>, picked by x.' },
+      right: { lo: T(0xCC1E), up: T(0xCC32), dx: 1, cap: 'Walking right: lower frames from <code>$CC1E</code>, upper from <code>$CC32</code>, picked by x.' },
+      climb: { lo: T(0xCC26), up: T(0xCC3A), dy: 1, cap: 'On a ladder: four frames from <code>$CC26</code> and <code>$CC3A</code>, picked by height.' },
+      hold:  { lo: T(0xCC1E), up: Array(8).fill(M[0xCC3F]), dx: 1, cap: 'Carrying an item: the legs walk as usual and the upper sprite stays on frame <code>' + C64.hex(M[0xCC3F], 2) + '</code> (<code>$CC3F</code>).' },
+    };
+    let pose = 'right', x = 36, y = 0, timer = null, death = null;
+    const at = () => ((x % (W - 24)) + (W - 24)) % (W - 24);
+    function draw() {
+      ctx.fillStyle = C64.PAL[11]; ctx.fillRect(0, 0, cv.width, cv.height);
+      if (death) { DW.doctor(ctx, M, 0, 0, at() * S, 15 * S, S, death.lo, death.up); return; }
+      const p = POSE[pose], i = p.dy ? (y & 15) >> 2 : (x & 15) >> 1;
+      DW.doctor(ctx, M, p.lo[i], p.up[i], (p.dy ? 36 : at()) * S, 15 * S, S);
+      document.getElementById('doccap').innerHTML = p.cap + ' Position ' + (p.dy ? 'y = ' + (y & 0xFF) : 'x = ' + (x & 0xFF)) + ', frame ' + i + ': <code>' + C64.hex(p.lo[i], 2) + '</code> and <code>' + C64.hex(p.up[i], 2) + '</code>.';
+    }
+    function walk() { clearInterval(timer); death = null;
+      timer = setInterval(() => { const p = POSE[pose]; if (p.dy) y += p.dy; else x += p.dx; draw(); }, 20); draw(); }
+    // regeneration: doctor_draw ($CB6B) from countdown $7F, every fourth frame, $FC62 += 6, fresh copies, dissolve
+    function regenerate() {
+      clearInterval(timer);
+      const i = (x & 15) >> 1, lo0 = DW.image(M, POSE.right.lo[i]), up0 = DW.image(M, POSE.right.up[i]);
+      const cut = DW.dissolver(M, { c60: 1, c61: 1 });                  // $FC60 and $FC61 as normal_sprite_colours leaves them
+      let n = 1, left = 0x7F;
+      death = { lo: lo0.slice(), up: up0.slice() };
+      document.getElementById('doccap').innerHTML = 'Regenerating: every fourth frame the two frames are copied afresh and more pixel pairs cleared, in the order of <code>$09A0</code> (<code>$CB7F</code>).';
+      timer = setInterval(() => {
+        if (left === 0x7F || !(left & 3)) {
+          n = (n + 6) & 0xFF;
+          death.lo = lo0.slice(); death.up = up0.slice();
+          const test = Array(64).fill(0xFF).concat(death.up.slice(0, 4));
+          cut(test, [death.lo, death.up], n);
+        }
+        draw();
+        if (--left < 0) { clearInterval(timer); setTimeout(() => { if (death) { death = null; pose = 'right'; mark(); walk(); } }, 900); }
+      }, 20);
+      draw();
+    }
+    const btns = document.querySelectorAll('[data-pose]');
+    function mark() { btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.pose === pose)); }
+    btns.forEach(b => b.onclick = () => { if (b.dataset.pose === 'die') { pose = 'die'; mark(); regenerate(); } else { pose = b.dataset.pose; mark(); walk(); } });
+    walk();
+  })();
 
   // sprites, each in the own colour ($1850) of the object that shows it: first the frame tables
   // the animation code reads, then each object's starting frame ($1D30)

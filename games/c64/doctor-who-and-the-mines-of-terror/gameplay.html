@@ -30,18 +30,7 @@
 <section id="moves">
   <p class="fig">The Doctor</p>
   <h2 class="t">Walk, climb, jump, and don't fall too far</h2>
-  <p class="lede">The joystick in port 2 moves the Doctor and makes him jump. Everything else is on the keyboard, and the keyboard can move him too. Press a move to see the frames the game shows for it.</p>
-  <div class="plate">
-    <div class="row">
-      <button class="b" type="button" data-pose="left">Walk left</button>
-      <button class="b" type="button" data-pose="right" aria-pressed="true">Walk right</button>
-      <button class="b" type="button" data-pose="climb">Climb</button>
-      <button class="b" type="button" data-pose="hold">Carry</button>
-      <button class="b" type="button" data-pose="die">Regenerate</button>
-    </div>
-    <canvas id="doc" class="scr" style="max-width:384px" role="img" aria-label="The Doctor, drawn from the game's sprite frames on dark grey"></canvas>
-    <p class="cap" id="doccap"></p>
-  </div>
+  <p class="lede">The joystick in port 2 moves the Doctor and makes him jump. Everything else is on the keyboard, and the keyboard can move him too. His walking and climbing frames are on the <a href="graphics.html#doctor">Graphics</a> tab.</p>
   <table class="t" style="margin-top:20px">
     <tr><th>Input</th><th>What it does</th><th>Where</th></tr>
     <tr><td>Stick left and right, or Z and X</td><td>walk</td><td><code>$8F47</code></td></tr>
@@ -53,18 +42,33 @@
     <tr><td>D, CTRL+D, L</td><td>the save menu, in one place only (<a href="discoveries.html#save-place">Discoveries</a>)</td><td><code>$8FA4</code></td></tr>
   </table>
   <p>The input routine (<code>read_input</code>, <code>$8F24</code>) runs once every pass of the game's main loop. It reads the joystick and six rows of the keyboard, and turns them into flags that the rest of the game reads: one for left or right, one for up or down, one for jump and one each for the keys.</p>
-  <p>The Doctor is two sprites. The lower one draws his coat and legs, and the upper one, eight pixels higher, his head and arms (<code>$CB48</code>). Walking, the game picks one of eight frames from his position, a new frame for every two pixels, and on a ladder one of four (<code>doctor_pick_frames</code>, <code>$CC4C</code>). Carrying something, he keeps one upper frame with his arms full (<code>$CCB2</code>).</p>
   <p>A jump lasts 24 frames going up, 16 level and then a fall, and the direction is fixed at take-off (<code>jump_arc_step</code>). The game measures each fall from where it starts to where it ends, and a drop of 96 pixels or more kills the Doctor (<code>fall_check</code>, <code>$CD62</code>).</p>
 </section>
 <section id="pockets">
   <p class="fig">Pockets and items</p>
   <h2 class="t">Everything the Doctor can pick up</h2>
-  <p class="lede">Twenty-four objects lie in the mine when a game starts, and the Doctor can carry any of them, Splinx too. Click one to see its name and find it on the map.</p>
-  <div class="plate">
-    <div class="items" id="items"></div>
-    <div class="out" id="itemout"></div>
-    <p class="cap">Each object drawn from its starting frame (<code>$1D30</code>) in its own colour (<code>$1850</code>), with its name from the game's own table: ten characters at <code>$1770</code> plus the offset in <code>$1720</code>, in the game's private alphabet. Pressing F5 picks up any object from <code>$30</code> to <code>$4F</code> within reach, or Splinx (<code>pickup_nearby</code>, <code>$A929</code>).</p>
-  </div>
+  <p class="lede">Twenty-four objects lie in the mine when a game starts, and the Doctor can carry any of them, Splinx too. Each <b>map</b> link opens the Maps tab on that object.</p>
+  <table class="t items">
+    <tr><th></th><th>Object</th><th>What it is for</th><th>Where it lies</th></tr>
+    <tr><td><canvas data-o="2"></canvas></td><td>SPLINX</td><td>The Doctor's robot cat. It follows him, or runs a program of up to ten commands to fetch things he cannot reach (<a href="#splinx">below</a>). Carried out at the end, it doubles the bonus (<code>$917F</code>).</td><td>beside the Doctor at the start <a href="levels.html?go=2#mine">map</a></td></tr>
+    <tr><td><canvas data-o="52"></canvas></td><td>PICK AXE</td><td>Digs through rock. Three blows at any of three dig sites wear the rock away and open a passage (<code>$BC1C</code>).</td><td><a href="levels.html?go=34#mine">map</a></td></tr>
+    <tr><td><canvas data-o="56"></canvas></td><td>SPANNER</td><td>Undoes the eight bolts that clamp ladders high in the mine, so he can climb them. Each bolt redraws its block with the clamp open (block <code>$E0</code> becomes <code>$E1</code>, <code>use_spanner</code>, <code>$BBBC</code>). Bolt 6 works only from below.</td><td><a href="levels.html?go=38#mine">map</a></td></tr>
+    <tr><td><canvas data-o="58"></canvas></td><td>AIR MASK</td><td>Held in his hands, it fills his air again, so he can cross the bad-air blocks high in the mine without suffocating (<code>$CAB1</code>).</td><td><a href="levels.html?go=3a#mine">map</a></td></tr>
+    <tr><td><canvas data-o="55"></canvas></td><td>PASS CARD</td><td>Held in his hands, it opens the security gate (<code>$BB15</code>).</td><td><a href="levels.html?go=37#mine">map</a></td></tr>
+    <tr><td><canvas data-o="63"></canvas></td><td>ACTIVATOR</td><td>Used at one of three points at the top of the mine, it launches the escape pod, one of the two ways out (<code>$BCDA</code>, <code>use_activator</code>, <code>$BCE0</code>).</td><td><a href="levels.html?go=3f#mine">map</a></td></tr>
+    <tr><td><canvas data-o="61"></canvas></td><td>EXPLOSIVES</td><td>Set with F5, they go off after a fuse, and the blast destroys anything close, the Doctor too. Blown at one point low on the right, they start a level rising that counts as halting the machine but drowns him if it reaches him (<code>$C202</code>). Blown at another, they open a wall (<code>$C22E</code>).</td><td><a href="levels.html?go=3d#mine">map</a></td></tr>
+    <tr><td><canvas data-o="60"></canvas></td><td>DETONATOR</td><td>Three of them. Set with F5, each goes off after a fuse; a blast in the right place opens a wall (<code>$C22E</code>).</td><td><a href="levels.html?go=3c#mine">1</a> <a href="levels.html?go=48#mine">2</a> <a href="levels.html?go=4c#mine">3</a></td></tr>
+    <tr><td><canvas data-o="64"></canvas></td><td>CIRCUIT</td><td>Five sit in the heatonite machine at the start, and while they are all in place it runs. Taking out the two in slots 3 and 4 is half of stopping it. Carrying one of <code>$41</code>, <code>$42</code>, <code>$43</code> or <code>$4A</code> out at the end counts too (<code>$9190</code>).</td><td><a href="levels.html?go=40#mine">1</a> <a href="levels.html?go=41#mine">2</a> <a href="levels.html?go=42#mine">3</a> <a href="levels.html?go=43#mine">4</a> <a href="levels.html?go=4a#mine">5</a></td></tr>
+    <tr><td><canvas data-o="68"></canvas></td><td>CIRCUIT</td><td>Two more lie elsewhere in the mine. Put into slots 3 and 4, they stop the machine (<code>machinery_update</code>, <code>$B9B6</code>; <a href="solution.html#step-machine">Solution</a>).</td><td><a href="levels.html?go=44#mine">1</a> <a href="levels.html?go=45#mine">2</a></td></tr>
+    <tr><td><canvas data-o="54"></canvas></td><td>CRYSTAL</td><td>Carried out at the end, it doubles the bonus (<code>$916F</code>). A creature comes to take it back, even from a pocket (<code>$B48A</code>).</td><td><a href="levels.html?go=36#mine">map</a></td></tr>
+    <tr><td><canvas data-o="62"></canvas></td><td>CAPSULE</td><td>The TIRU plans the Master stole. Carried out at the end, it doubles the bonus (<code>$9177</code>).</td><td><a href="levels.html?go=3e#mine">map</a></td></tr>
+    <tr><td><canvas data-o="53"></canvas></td><td>MAT</td><td>Left lying in a controller's path, it stops the controller when the two are level and within ten pixels (<code>$CDD6</code>).</td><td><a href="levels.html?go=35#mine">map</a></td></tr>
+    <tr><td><canvas data-o="57"></canvas></td><td>PLATFORM</td><td>When he jumps up to it where it lies, the game puts him in his ladder mode, so he can climb from it (<code>$C975</code>, <code>doctor_ride_platform</code>, <code>$CCE2</code>). He cannot pick it up while he is on it.</td><td><a href="levels.html?go=39#mine">map</a></td></tr>
+    <tr><td><canvas data-o="70"></canvas></td><td>EGG</td><td>The madrag's two eggs. Going near one that lies free hatches a baby madrag, which kills (<code>$B861</code>). The madrag carries a moved egg back to its nest, and takes one from Splinx if he holds it (<code>$B752</code>).</td><td><a href="levels.html?go=46#mine">1</a> <a href="levels.html?go=47#mine">2</a></td></tr>
+    <tr><td><canvas data-o="59"></canvas></td><td>BOX</td><td>What it is for is not known.</td><td><a href="levels.html?go=3b#mine">map</a></td></tr>
+    <tr><td><canvas data-o="73"></canvas></td><td>CHEMICALS</td><td>What they are for is not known.</td><td><a href="levels.html?go=49#mine">map</a></td></tr>
+  </table>
+  <p class="cap">Each object drawn from its starting frame (<code>$1D30</code>) in its own colour (<code>$1850</code>), with its name from the game's own table: ten characters at <code>$1770</code> plus the offset in <code>$1720</code>, in the game's private alphabet. Pressing F5 picks up any object from <code>$30</code> to <code>$4F</code> within reach, or Splinx (<code>pickup_nearby</code>, <code>$A929</code>). Using one that only works in certain places compares the Doctor's position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>).</p>
   <p>The status bar shows the item in the Doctor's hands and four pocket boxes, and the function keys move things between them. He also has four markers to drop for Splinx to walk to.</p>
   <table class="t" style="margin-top:20px">
     <tr><th>Key</th><th>What it does</th><th>Where</th></tr>
@@ -73,7 +77,6 @@
     <tr><td>F5</td><td>standing still, picks up the object in front of him; holding an item, uses it</td><td><code>pickup_nearby</code> <code>$A929</code>, <code>use_item_update</code> <code>$BACC</code></td></tr>
     <tr><td>F7 and a direction</td><td>throws the item in his hands; two can be in flight at once</td><td><code>throw_start</code> <code>$A7D7</code></td></tr>
   </table>
-  <p>What an item does depends on where the Doctor stands when he uses it (<code>use_item_update</code>). The PICK AXE digs at three places, three blows each, and the SPANNER undoes eight bolts. DETONATORs and EXPLOSIVES are set, and go off after a fuse; the blast destroys anything close, the Doctor included. The ACTIVATOR launches the escape pod. The PASS CARD matters only while it is in his hands (<code>$BB15</code>). The Maps tab shows <a href="levels.html#objects">where each one works</a>.</p>
   <p>Some items can be drawn into the scenery as well as flying as sprites. The game blends their shapes into 32 spare characters, pixel pair by pixel pair, so they sit on the rock without covering it (<code>charobj_composite_char</code>, <code>$8652</code>).</p>
 </section>
 <section id="splinx">
@@ -116,7 +119,7 @@
     <tr><td>Forced regeneration</td><td>the player presses R</td><td><code>$9051</code></td></tr>
   </table>
   <p>The Doctor starts with five lives. They are drawn as five figures in the status bar's item field, which is why the figures disappear when he picks something up (<code>$94AC</code>). After the last one, the game is over.</p>
-  <p>The fade is the TARDIS's own effect turned on the Doctor (<code>doctor_draw</code>, <code>$CB6B</code>). For the last 127 frames of the death, every fourth frame, the game copies his two frames afresh and clears more of their pixel pairs, six more each time, in the shuffled order the <a href="graphics.html#tardis">TARDIS landing</a> uses (<code>dissolve_sprite</code>, <code>$FEA9</code>).</p>
+  <p>The fade is the TARDIS's own effect turned on the Doctor (<code>doctor_draw</code>, <code>$CB6B</code>). For the last 127 frames of the death, every fourth frame, the game copies his two frames afresh and clears more of their pixel pairs, six more each time, in the shuffled order the <a href="graphics.html#tardis">TARDIS landing</a> uses (<code>dissolve_sprite</code>, <code>$FEA9</code>). The <a href="graphics.html#doctor">Graphics</a> tab plays it.</p>
   <p>The air runs out only after the Doctor has breathed bad air. Walking into one of the four bad-air blocks high in the mine starts a countdown of 50 (<code>$F1</code>). It keeps running while he is high in the mine (<code>$1C60</code> of 2 or more), except in open cavern, and he suffocates when it reaches 0 (<code>doctor_tile_checks</code>, <code>$CA58</code>). Holding the AIR MASK fills it again every time (<code>$CAB1</code>). A fifth bad-air block lies lower down, where the test is never made.</p>
   <h3 style="margin-top:28px">Who else is in the mine</h3>
   <p>Controllers follow fixed routes through the mine, 25 of them stored as lists of waypoints at <code>$764A</code> (<code>controllers_update</code>, <code>$CD9A</code>). Touching one is fatal. Other creatures patrol their own routes (<code>$C404</code>) or walk between waypoints (<code>trio_update</code>, <code>$C28E</code>).</p>
@@ -153,65 +156,16 @@
   let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
   const M = G.ram;
 
-  // the Doctor: frames from doctor_pick_frames ($CC4C); lower sprite object 0, upper object 1
-  const cv = document.getElementById('doc'), S = 4, ctx = C64.canvas(cv, 96 * S, 40 * S);
-  const T = a => Array.from(M.subarray(a, a + 8));
-  const POSE = {
-    left:  { lo: T(0xCC16), up: T(0xCC2A), step: 2, n: 8, cap: 'Walking one way: lower frames from <code>$CC16</code>, upper from <code>$CC2A</code>, a new frame every two pixels.' },
-    right: { lo: T(0xCC1E), up: T(0xCC32), step: 2, n: 8, cap: 'Walking the other way: lower frames from <code>$CC1E</code>, upper from <code>$CC32</code>.' },
-    climb: { lo: T(0xCC26).slice(0, 4), up: T(0xCC3A).slice(0, 4), step: 4, n: 4, cap: 'On a ladder: four frames from <code>$CC26</code> and <code>$CC3A</code>, a new one every four pixels of climb.' },
-    hold:  { lo: T(0xCC1E), up: Array(8).fill(M[0xCC3F]), step: 2, n: 8, cap: 'Carrying an item: the legs walk as usual and the upper sprite stays on frame <code>$75</code> (<code>$CC3F</code>).' },
-  };
-  let pose = 'right', t = 0, timer = null, death = null;
-  function draw() {
-    ctx.fillStyle = C64.PAL[11]; ctx.fillRect(0, 0, cv.width, cv.height);
-    if (death) { DW.doctor(ctx, M, 0, 0, 36 * S, 15 * S, S, death.lo, death.up); return; }
-    const p = POSE[pose], i = (t / p.step | 0) % p.n;
-    DW.doctor(ctx, M, p.lo[i], p.up[i], 36 * S, 15 * S, S);
-    document.getElementById('doccap').innerHTML = p.cap + ' Frames <code>' + C64.hex(p.lo[i], 2) + '</code> and <code>' + C64.hex(p.up[i], 2) + '</code>.';
-  }
-  function walk() { clearInterval(timer); death = null; timer = setInterval(() => { t++; draw(); }, 20); draw(); }
-  // regeneration: doctor_draw ($CB6B) from countdown $7F, every fourth frame, $FC62 += 6, fresh copies, dissolve
-  function regenerate() {
-    clearInterval(timer);
-    const lo0 = DW.image(M, POSE.right.lo[0]), up0 = DW.image(M, POSE.right.up[0]);
-    const cut = DW.dissolver(M, { c60: 1, c61: 1 });                    // $FC60 and $FC61 as normal_sprite_colours leaves them
-    let n = 1, left = 0x7F;
-    death = { lo: lo0.slice(), up: up0.slice() };
-    document.getElementById('doccap').innerHTML = 'Regenerating: every fourth frame the two frames are copied afresh and more pixel pairs cleared, in the order of <code>$09A0</code> (<code>$CB7F</code>).';
-    timer = setInterval(() => {
-      if (left === 0x7F || !(left & 3)) {
-        n = (n + 6) & 0xFF;
-        death.lo = lo0.slice(); death.up = up0.slice();
-        const test = Array(64).fill(0xFF).concat(death.up.slice(0, 4));
-        cut(test, [death.lo, death.up], n);
-      }
-      draw();
-      if (--left < 0) { clearInterval(timer); setTimeout(() => { if (death) { death = null; pose = 'right'; mark(); walk(); } }, 900); }
-    }, 20);
-    draw();
-  }
-  const btns = document.querySelectorAll('[data-pose]');
-  function mark() { btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.pose === pose)); }
-  btns.forEach(b => b.onclick = () => { if (b.dataset.pose === 'die') { pose = 'die'; mark(); regenerate(); } else { pose = b.dataset.pose; mark(); walk(); } });
-  walk();
-
-  // items: Splinx, then every object a new game places in the mine ($34-$4C; x high $FF is off the map)
-  const box = document.getElementById('items'), out = document.getElementById('itemout'), items = [2];
-  for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) items.push(o);
-  function item(o, el) {
-    box.querySelectorAll('.sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel');
-    const x = M[0x1BC0 + o] << 8 | M[0x1B70 + o], y = M[0x1C60 + o] << 8 | M[0x1C10 + o];
-    out.innerHTML = '<b>' + DW.itemName(M, o) + '</b>  object ' + C64.hex(o, 2) + ', sprite ' + C64.hex(M[0x1D30 + o], 2) + '\n' +
-      (o === 2 ? 'Starts beside the Doctor.' : 'Lies at column ' + (x >> 5) + ', row ' + (y >> 5) + ' of the mine.') +
-      ' <a href="levels.html?go=' + o.toString(16) + '#mine">Show it on the map</a>'; }
-  for (const o of items) {
-    const el = document.createElement('button'), cv = document.createElement('canvas');
-    el.type = 'button'; el.className = 'it';
-    DW.drawSprite(cv, M, M[0x1D30 + o], 3, M[0x1850 + o]);
-    el.append(cv, DW.itemName(M, o)); el.onclick = () => item(o, el); box.appendChild(el);
-  }
-  item(items[1], box.children[1]);
+  // items: each drawn from its starting frame ($1D30) in its own colour ($1850)
+  // cropped to the rows and columns the image uses, at three times size
+  document.querySelectorAll('canvas[data-o]').forEach(cv => {
+    const o = +cv.dataset.o, img = DW.image(M, M[0x1D30 + o]), S = 3;
+    let x0 = 12, x1 = -1, y0 = 21, y1 = -1;
+    for (let r = 0; r < 21; r++) for (let k = 0; k < 12; k++) if ((img[r * 3 + (k >> 2)] >> (6 - 2 * (k & 3))) & 3) { x0 = Math.min(x0, k); x1 = Math.max(x1, k); y0 = Math.min(y0, r); y1 = Math.max(y1, r); }
+    const ctx = C64.canvas(cv, (x1 - x0 + 3) * 2 * S, (y1 - y0 + 3) * S);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    DW.sprite(ctx, img, (1 - x0) * 2 * S, (1 - y0) * S, S, [2, M[0x1850 + o], 8]);
+  });
 
   // deaths
   const causes = [[6, 'an explosion'], [8, 'the rising level'], [10, 'a controller'], [12, 'a fall'], [14, 'a stalagmite'], [16, 'suffocating'], [18, 'forced regeneration'], [20, 'a madrag bite'], [22, 'a baby madrag']];
