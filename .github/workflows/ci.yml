@@ -26,6 +26,12 @@ jobs:
         run: node kit/c64/test_lockstep.js
       - name: The launcher dispatcher picks one platform per command
         run: python3 kit/scripts/test_tools.py
+      - name: Every kit script imports
+        run: |
+          for f in $(git ls-files 'kit/*.py' 'kit/**/*.py'); do
+            dir=$(dirname "$f"); mod=$(basename "$f" .py)
+            (cd "$dir" && python3 -c "import $mod") || exit 1
+          done
       - name: The emulator client absorbs the server's quirks
         run: python3 kit/c64/test_vice.py
       - name: The page editor's self-test

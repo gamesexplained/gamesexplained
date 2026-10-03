@@ -326,7 +326,9 @@ for (const [m, z, c, n] of [[0x40, 1, 1, 0], [0x41, 0, 0, 1], [0x3F, 0, 1, 0], [
     py = JSON.parse(require('child_process').execFileSync('python3', ['-c',
       'import json, sys; sys.path.insert(0, sys.argv[1]); from opcodes import ALL; print(json.dumps(ALL))', __dirname],
       { encoding: 'utf8' }));
-  } catch (e) { console.log('(python3 did not answer: the table was not compared with opcodes.py)'); }
+  } catch (e) {
+    expect('the table agrees with kit/c64/opcodes.py', { error: String(e).split('\n')[0] }, { error: null });
+  }
   if (py) {
     const differ = OPCODES.map(([n, m], op) => (py[op] || []).join(' ') === n + ' ' + m ? null : hex(op)).filter(Boolean);
     expect('the table agrees with kit/c64/opcodes.py', { differ: differ.join(' ') }, { differ: '' });

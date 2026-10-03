@@ -32,10 +32,10 @@ The documented set is listing.py's table; this adds the other 105.
 import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(os.path.dirname(HERE))
 
-sys.path.insert(0, os.path.join(ROOT, "kit", "scripts"))
-from listing import OPS, LEN, VSF_RAM_OFFSET   # the documented set, as the Source tab has it  # noqa: E402
+sys.path.insert(0, HERE)                        # the tables moved here with the seam lift
+from cpu import OPS, LEN                       # the documented set, as the Source tab has it  # noqa: E402
+from snapshot import VSF_RAM_OFFSET            # noqa: E402
 
 UNDOC = {}        # opcode: (mnemonic, mode), with VICE's names
 for base, name in ((0x00, "slo"), (0x20, "rla"), (0x40, "sre"), (0x60, "rra"),
