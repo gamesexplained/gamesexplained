@@ -83,7 +83,9 @@ ZRCP has more than the kit uses. Worth knowing for finding data tables:
 range was read from and written to), `cpu-transaction-log` and
 `cpu-history` (an instruction trace, for the run-up to a stop), the
 `snapshot-inram-*` commands (save and restore a snapshot in memory, no
-file), and `get-ocr` (text off the screen). None is wired into the client;
+file), `get-ocr` (text off the screen), and for a windowed run
+`get-text-overlay` and `close-all-menus` (what an open menu or dialog
+says, and shutting it). None is wired into the client;
 `help <command>` gives their syntax.
 
 ZEsarUX's own expressions are worth knowing: `IN(<port>)` reads a port
@@ -213,6 +215,20 @@ the game's `work/`. A `.sna` is not committed anywhere: it holds the game.
   for anything measured over time.
 - **`run` is refused outside cpu-step mode** — including right after a
   `snapshot-load` that resumed the machine.
+- **Stopping can be refused, and the refusal is a line of text.** For a
+  moment after the machine leaves cpu-step (measured: up to 0.7 s on 13.0,
+  3 October 2026), `enter-cpu-step`, `snapshot-load` and `smartload`
+  answer `Error. Can not enter cpu step mode. You can try closing the
+  menu`, with no menu anywhere, and the load then loads nothing. The
+  client asks again and raises if it is still refused (`Rpc.entering`),
+  and `enter_step` checks the prompt says `cpu-step` before it returns. A
+  client of your own must do both: a poke into a machine that never
+  stopped is overwritten by the game, and reads as a failed experiment.
+- **A file that is not there gets no error.** `snapshot-load` and
+  `smartload` of a missing file, and `save-screen` into a missing folder,
+  answer an empty reply and do nothing. The client checks the path first
+  (and after a save), so a wrong path raises instead of leaving the
+  previous state running under a script that thinks it loaded.
 - **Menus cannot open** with `--vo null` ("this video driver does not
   support menu"), which is a reason the kit never arms a stopping
   checkpoint and then leaves the machine running: with nothing driving the

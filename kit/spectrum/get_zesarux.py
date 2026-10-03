@@ -178,6 +178,19 @@ def unpack(path, dest):
     sys.exit(f"no ZEsarUX binary in {os.path.basename(path)}")
 
 
+def place(top, dest):
+    """Put what `unpack` found where the launcher and INSTALL.md say it is.
+
+    A macOS bundle keeps its name, tools/zesarux/zesarux.app, the same layout as a build
+    unpacked by hand; moving the bundle itself onto tools/zesarux left its Contents/ there
+    with no .app around it, which only the launcher's last-resort search still found."""
+    if top.endswith(".app"):
+        os.makedirs(dest, exist_ok=True)
+        shutil.move(top, os.path.join(dest, os.path.basename(top)))
+    else:
+        shutil.move(top, dest)
+
+
 def download(tag=None):
     rs = releases()
     rel = next((r for r in rs if r["tag_name"] == tag), None) if tag else rs[0]
@@ -203,7 +216,7 @@ def download(tag=None):
     shutil.rmtree(old, ignore_errors=True)
     if os.path.isdir(tools.ZESARUX_DIR):
         os.rename(tools.ZESARUX_DIR, old)
-    shutil.move(top, tools.ZESARUX_DIR)
+    place(top, tools.ZESARUX_DIR)
     shutil.rmtree(old, ignore_errors=True)
     shutil.rmtree(stage, ignore_errors=True)
     with open(os.path.join(tools.ZESARUX_DIR, tools.RELEASE_NOTE), "w") as f:

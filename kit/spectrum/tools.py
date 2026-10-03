@@ -18,12 +18,17 @@ Deleting the repository removes all of it. See kit/spectrum/INSTALL.md, "Uninsta
 
 ZEsarUX is started with `--vo null --ao null`: a ZX Spectrum screen is not needed to
 drive it over ZRCP, and no window opens over whatever the contributor is doing. Pass
-`--vo cocoa` (macOS) or `--vo stdout` to watch it.
+`--vo cocoa` (macOS) or `--vo stdout` to watch it; any option of your own replaces both
+defaults, so a window comes with sound unless `--ao null` is passed too.
 
 It is also started with `--stats-disable-check-updates` and
 `--stats-disable-check-yesterday-users`: by default ZEsarUX opens two plain-HTTP
 connections at start-up, its update check and a "yesterday users" count, and an
-undisclosed network call is what the footprint rule does not allow.
+undisclosed network call is what the footprint rule does not allow. For the same reason
+`--stats-send-already-asked` keeps a windowed start from asking whether to send usage
+statistics (they stay off: nobody, person or agent, answers that question by accident),
+and `--disable-all-first-aid` keeps its first-run help boxes shut: an open dialog refuses
+cpu-step, so ZRCP could not stop the machine until something closed it.
 
 Usage:
   tools.py status
@@ -176,6 +181,7 @@ def zesarux(extra=()):
     cmd = [os.path.abspath(exe), "--enable-remoteprotocol", "--remoteprotocol-port", str(PORT),
            "--configfile", os.path.join(ZESARUX_HOME, "zesaruxrc"), "--quickexit", "--nosplash",
            "--stats-disable-check-updates", "--stats-disable-check-yesterday-users",
+           "--stats-send-already-asked", "--disable-all-first-aid",
            "--snap-no-change-machine"]
     if not extra:
         cmd += ["--vo", "null", "--ao", "null"]
@@ -230,7 +236,7 @@ def status():
             rpc.close()
         except Exception as e:
             print(f"  ZRCP did not answer: {e}")
-    result = os.path.join(LOGS, "check-emulator", "result.json")
+    result = os.path.join(LOGS, "check-emulator", "spectrum.json")     # its own file: the C64's check writes result.json there
     if os.path.exists(result):
         try:
             r = json.load(open(result))

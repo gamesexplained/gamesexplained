@@ -119,9 +119,21 @@ The emulator runs with `--vo null --ao null`: no window, no sound, and no
 menu (a null video driver cannot open one). Add video options after
 `zesarux` to watch it instead — `tools.py --platform spectrum zesarux --vo
 cocoa` on macOS, `--vo stdout` elsewhere — and remember that a menu opened
-under a run loop stops it. A second clone's emulator is never touched:
-`stop` matches this clone's path only, and says so when something else
-answers on the port.
+under a run loop stops it. Options of your own replace both defaults, so a
+window plays the game's sound; add `--ao null` to keep it quiet. A second
+clone's emulator is never touched: `stop` matches this clone's path only,
+and says so when something else answers on the port.
+
+**A window can open dialogs, and an open dialog refuses cpu-step.** On its
+first windowed start ZEsarUX 13.0 showed a "First aid" help box and then
+asked "Do you want to send anonymous statistics use?" (3 October 2026).
+While either was up, `enter-cpu-step` and `snapshot-load` answered `Error.
+Can not enter cpu step mode. You can try closing the menu`. The launcher
+now passes `--disable-all-first-aid` and `--stats-send-already-asked`, so
+neither opens and the statistics stay off. If a person opens the menu (F5)
+while an agent is driving, `close-all-menus` over ZRCP shuts it and
+`get-text-overlay` reads what it said. Never answer a dialog on the
+contributor's behalf.
 
 `--joystickemulated` is not pinned by the launcher: the ZEsarUX default,
 `Cursor&Shift`, presses keys on the keyboard matrix, which is what
