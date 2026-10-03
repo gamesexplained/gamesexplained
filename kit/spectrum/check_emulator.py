@@ -303,6 +303,18 @@ def p1(rpc):
 
 @phase("phase 2: state management")
 def p2(rpc):
+    # EMULATOR.md phase 2 wants warp, and a way to turn it off that works. ZEsarUX's
+    # warp is `--emulatorspeed`, a launch option; ZRCP exposes get-cpu-turbo-speed and
+    # no setter, so a running emulator cannot be warped. Probe for a setter so a build
+    # that adds one passes here; until then the workaround is a restart with the flag.
+    try:
+        rpc.cmd("set-cpu-turbo-speed", 50)
+        warp = True
+    except ZesaruxError:
+        warp = False
+    check("warp", warp,
+          "warp can be turned on and off through ZRCP (if not, restart the launcher with --emulatorspeed N)",
+          f"ZRCP reports get-cpu-turbo-speed {safe(lambda: rpc.cmd('get-cpu-turbo-speed').strip())} and has no setter")
     rpc.bp_clear()
     rpc.bp_set(1, f"PC={LOOP:04X}H")
     rpc.run(timeout=10)
