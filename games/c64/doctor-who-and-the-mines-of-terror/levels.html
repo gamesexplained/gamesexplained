@@ -26,7 +26,7 @@
       <select class="b" id="pk-pl" aria-label="Other places"><option value="">Other places</option></select>
     </div>
     <div class="row">
-      <span class="note">Zoom</span><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
+      <span class="note">Zoom</span><button class="b" type="button" data-z="1" aria-pressed="false">×1</button><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
       <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
       <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
       <span class="note" id="mappos"></span>
@@ -35,7 +35,7 @@
     <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
     <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn in the magnifier as their own sprites from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
-    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. Parts of the mine swap in their own shapes for sixteen characters (<code>zone_graphics</code>); this picture draws every part with the starting cavern's.</p>
+    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. The mine has seven zones, and each zone swaps in one of three sets of shapes and colours for sixteen characters (<code>zone_classify</code>, <code>$AA3D</code>; <code>zone_graphics</code>, <code>$ABCF</code>). This picture draws every zone with its own set.</p>
   </div>
   <h3 id="objects">Where the objects work</h3>
   <p>Most objects work only at certain points. When the Doctor uses the one he holds (F5), the game compares his position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>): the dig sites at <code>$BC1C</code>, the bolts at <code>$BB94</code>, and the escape pod's launch points at <code>$BCDA</code>. Choose an object above and press Where it is used to step through its points. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). What every object is for is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
@@ -169,7 +169,7 @@
   document.getElementById('home').onclick = () => { choose(null); centre(start); draw(); };
   const zbs = document.querySelectorAll('[data-z]');
   function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
-    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + ['', '', 'twice', 'three times', 'four times'][Z] + ' the C64\'s pixels'); }
+    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + ['', 'the size of', 'twice', 'three times', 'four times'][Z] + ' the C64\'s pixels'); }
   const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
   // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
@@ -197,7 +197,7 @@
   document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
-  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
+  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
   zbs.forEach(b => b.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
   // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
   mv.addEventListener('click', e => {

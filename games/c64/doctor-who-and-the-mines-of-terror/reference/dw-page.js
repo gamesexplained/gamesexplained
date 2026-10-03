@@ -14,6 +14,15 @@ const DW = (function () {
     // those 16 shapes (codes $A1-$A5, $F5-$FF, swap_char_codes $ABAC) before the start zone's replace them.
     game.lockGlyphs = {};
     for (const c of M.subarray(0xABAC, 0xABBC)) game.lockGlyphs[c] = Array.from(M.subarray(0x4000 + c * 8, 0x4008 + c * 8));
+    // The three graphics sets of those 16 characters (zone_graphics, $ABCF): in the hand-over image set 2 is
+    // installed (charset_bank_slot $ABA0 = 0, 8, $FF), sets 0 and 1 wait in the store, shapes at
+    // $2E00 + 16 * n + slot and colours at $3E60 + 2 * slot + n. Each is code -> [8 shape bytes, colour].
+    game.sets = [0, 1, 2].map(() => ({}));
+    M.subarray(0xABAC, 0xABBC).forEach((c, n) => {
+      game.sets[0][c] = [Array.from(M.subarray(0x2E00 + 16 * n, 0x2E08 + 16 * n)), M[0x3E60 + n]];
+      game.sets[1][c] = [Array.from(M.subarray(0x2E08 + 16 * n, 0x2E10 + 16 * n)), M[0x3E70 + n]];
+      game.sets[2][c] = [game.lockGlyphs[c], M[0x2F00 + c]];
+    });
     // Start-up writes the 17 switchable cells into the map from cell_states $1D00 (switch_restore_all,
     // $AECA, called at $4A3C): row from $ADBC, column from $ADAB. The hand-over image is from before that.
     for (let i = 0; i < 17; i++) M[0xFB80 - 0x80 * M[0xADBC + i] + M[0xADAB + i]] = M[0x1D00 + i];
@@ -25,7 +34,17 @@ const DW = (function () {
 
   // The whole mine at one C64 pixel a pixel: 128 x 56 blocks of 4 x 4 characters.
   // Row r of the map starts at $FB80 - $80 * r, row 0 at the bottom; a block's rows are stored bottom first.
+  // zone_classify ($AA3D): which of the seven zones a point is in, from the same thresholds the code tests
+  // against the Doctor's position; zone_charset_bank ($ABA3) gives each zone its graphics set.
+  function zoneAt(x, y) {
+    if (y < 0x2A0) return x < 0x820 ? 0 : 1;
+    if (y < 0x440) return x < 0x800 ? 2 : 4;
+    if (y < 0x5E0) return x < 0x700 ? 2 : x < 0x900 ? 6 : 3;
+    return x < 0x640 ? 2 : x < 0x9C0 ? 5 : 3;
+  }
+  // Each part of the mine is drawn with its own zone's set of the 16 swapped characters.
   function drawMine(M) {
+    const sets = game && game.sets, SW = new Set(M.subarray(0xABAC, 0xABBC));
     const W = 128, H = 56, full = document.createElement('canvas');
     full.width = W * 32; full.height = H * 32;
     const ctx = full.getContext('2d'), img = ctx.createImageData(full.width, full.height), P = rgb(), bg = [0, 9, 8];
@@ -35,9 +54,10 @@ const DW = (function () {
       for (let c = 0; c < W; c++) {
         const b = M[row + c], ba = M[0x1400 + b] | M[0x1500 + b] << 8;
         for (let i = 0; i < 16; i++) {
-          const ch = M[ba + i], col = M[0x2F00 + ch] & 15, px = c * 32 + (i & 3) * 8, py = (H - 1 - r) * 32 + (3 - (i >> 2)) * 8;
+          const ch = M[ba + i], px = c * 32 + (i & 3) * 8, py = (H - 1 - r) * 32 + (3 - (i >> 2)) * 8;
+          const z = sets && SW.has(ch) ? sets[M[0xABA3 + zoneAt(px + 4, r * 32 + (i >> 2) * 8 + 4)]][ch] : null, col = (z ? z[1] : M[0x2F00 + ch]) & 15;
           for (let y = 0; y < 8; y++) {
-            const g = M[0x4000 + ch * 8 + y];
+            const g = z ? z[0][y] : M[0x4000 + ch * 8 + y];
             if (col & 8) for (let x = 0; x < 4; x++) { const v = (g >> (6 - 2 * x)) & 3, k = v === 3 ? col & 7 : bg[v]; plot(px + 2 * x, py + y, k); plot(px + 2 * x + 1, py + y, k); }
             else for (let x = 0; x < 8; x++) plot(px + x, py + y, (g & (0x80 >> x)) ? col : 0);
           }
@@ -101,5 +121,16 @@ const DW = (function () {
     };
   }
   function fail(e) { document.querySelectorAll('canvas').forEach(c => c.insertAdjacentHTML('afterend', '<p class="cap">' + e.message + '</p>')); }
-  return { load, drawMine, drawSprite, sprite, image, doctor, dissolver, str, message, itemName, fail };
+  return { load, zoneAt, drawMine, drawSprite, sprite, image, doctor, dissolver, str, message, itemName, fail };
+})();
+// Every link that opens the Maps tab on a place shows a map pin: a link that only said "map" becomes
+// the pin alone, and one that names something keeps its name beside the pin.
+(function () {
+  const PIN = '<svg viewBox="0 0 16 20" width="14" height="18" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8 1a6 6 0 0 0-6 6c0 4.5 6 12 6 12s6-7.5 6-12a6 6 0 0 0-6-6zm0 3.8a2.2 2.2 0 1 1 0 4.4a2.2 2.2 0 1 1 0-4.4z"/></svg>';
+  const pin = () => document.querySelectorAll('a[href*="levels.html?go="]:not(.pin), button[data-go]').forEach(el => {
+    el.classList.add('pin');
+    if (el.textContent.trim() === 'map') { el.innerHTML = PIN; el.title = el.title || 'Show on the map'; el.setAttribute('aria-label', 'Show on the map'); }
+    else el.insertAdjacentHTML('afterbegin', PIN);
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pin); else pin();
 })();

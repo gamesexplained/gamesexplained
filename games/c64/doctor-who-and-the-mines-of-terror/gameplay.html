@@ -17,10 +17,10 @@
   <p class="lede">The game has one goal it insists on: leave the mine alive, in the TARDIS or in an escape pod (<code>game_event_handler</code>, <code>$9102</code>). Everything else is optional. Each optional goal doubles the escape bonus, which decides how well the Time Lords think the Doctor did (<a href="#end">scoring</a>), and each links to how it is done on the Solution tab:</p>
   <table class="t">
     <tr><th></th><th>Goal</th><th>How</th><th>Code</th></tr>
-    <tr><td><b>Must</b></td><td>Leave the mine</td><td>By <a href="solution.html#step-tardis">the TARDIS</a>, with empty hands and F5 on the second TARDIS, halfway up on the far right (<a href="levels.html?go=TARDIS%3A%20the%20way%20home%20(empty%20hands)#mine">map</a>), or by <a href="solution.html#step-pod">an escape pod</a>, launched with the ACTIVATOR at the top of the mine. Losing the last regeneration ends the game instead.</td><td><code>$9102</code></td></tr>
-    <tr><td>Optional</td><td><a href="solution.html#step-machine">Halt the heatonite machine</a></td><td>Swap the CIRCUITs in slots 3 and 4 of the machine, halfway up on the left, for two CIRCUITs found elsewhere, then carry out one of the CIRCUITs taken out (<a href="levels.html?go=MACHINERY%3A%20circuit%20slot%201#mine">map</a>).</td><td><code>$B9B6</code></td></tr>
-    <tr><td>Optional</td><td><a href="solution.html#step-crystal">Carry out the CRYSTAL</a></td><td>It lies on the left, two thirds of the way up the mine (<a href="levels.html?go=CRYSTAL#mine">map</a>). A creature comes to take it back.</td><td><code>$916F</code></td></tr>
-    <tr><td>Optional</td><td><a href="solution.html#step-capsule">Carry out the CAPSULE</a></td><td>The capsule holds the TIRU plans the Master stole; the end screen names it THE TIRU PLANS. It lies near the top right corner of the mine (<a href="levels.html?go=CAPSULE#mine">map</a>).</td><td><code>$9177</code></td></tr>
+    <tr><td><b>Must</b></td><td>Leave the mine</td><td>By <a href="solution.html#step-tardis">the TARDIS</a>, with empty hands and F5 on the second TARDIS, halfway up on the far right <a href="levels.html?go=TARDIS%3A%20the%20way%20home%20(empty%20hands)#mine">map</a>, or by <a href="solution.html#step-pod">an escape pod</a>, launched with the ACTIVATOR at the top of the mine. Losing the last regeneration ends the game instead.</td><td><code>$9102</code></td></tr>
+    <tr><td>Optional</td><td><a href="solution.html#step-machine">Halt the heatonite machine</a></td><td>Swap the CIRCUITs in slots 3 and 4 of the machine, halfway up on the left, for two CIRCUITs found elsewhere, then carry out one of the CIRCUITs taken out <a href="levels.html?go=MACHINERY%3A%20circuit%20slot%201#mine">map</a>.</td><td><code>$B9B6</code></td></tr>
+    <tr><td>Optional</td><td><a href="solution.html#step-crystal">Carry out the CRYSTAL</a></td><td>It lies on the left, two thirds of the way up the mine <a href="levels.html?go=CRYSTAL#mine">map</a>. A creature comes to take it back.</td><td><code>$916F</code></td></tr>
+    <tr><td>Optional</td><td><a href="solution.html#step-capsule">Carry out the CAPSULE</a></td><td>The capsule holds the TIRU plans the Master stole; the end screen names it THE TIRU PLANS. It lies near the top right corner of the mine <a href="levels.html?go=CAPSULE#mine">map</a>.</td><td><code>$9177</code></td></tr>
     <tr><td>Optional</td><td><a href="solution.html#step-splinx">Bring Splinx home</a></td><td>The Doctor carries Splinx out like any other item: the game checks that Splinx is in his hands or one of his pockets when he leaves (<code>item_bonus_check</code>). Following him to the exit is not enough.</td><td><code>$917F</code></td></tr>
     <tr><td>Optional</td><td><a href="solution.html#step-tardis">Leave in the TARDIS</a></td><td>The TARDIS rather than an escape pod.</td><td><code>$918D</code></td></tr>
   </table>
@@ -97,9 +97,18 @@
   <p>The fade is the TARDIS's own effect turned on the Doctor (<code>doctor_draw</code>, <code>$CB6B</code>). For the last 127 frames of the death, every fourth frame, the game copies his two frames afresh and clears more of their pixel pairs, six more each time, in the shuffled order the <a href="graphics.html#tardis">TARDIS landing</a> uses (<code>dissolve_sprite</code>, <code>$FEA9</code>). The <a href="graphics.html#doctor">Graphics</a> tab plays it.</p>
   <p>The air runs out only after the Doctor has breathed bad air. Walking into one of the four bad-air blocks high in the mine starts a countdown of 50 (<code>$F1</code>). It keeps running while he is high in the mine (<code>$1C60</code> of 2 or more), except in open cavern, and he suffocates when it reaches 0 (<code>doctor_tile_checks</code>, <code>$CA58</code>). Holding the AIR MASK fills it again every time (<code>$CAB1</code>). A fifth bad-air block lies lower down, where the test is never made.</p>
   <h3 style="margin-top:28px">Who else is in the mine</h3>
-  <p>Controllers follow fixed routes through the mine, 25 of them stored as lists of waypoints at <code>$764A</code> (<code>controllers_update</code>, <code>$CD9A</code>). Touching one is fatal. Other creatures patrol their own routes (<code>$C404</code>), and three Rijan miners walk between waypoints, passing the PICK AXE from one to the next (<code>trio_update</code>, <code>$C28E</code>).<sup class="fn"><a href="about.html#src-9" title="Euan (unorig), the page's steward, from playing the game">9</a></sup></p>
-  <p>The madrag guards two eggs. If an egg is moved, she fetches it and carries it back to its nest, and she will take an egg from Splinx too (<code>$B752</code>). If the Doctor goes near an egg lying free, a baby madrag hatches from it and kills him (<code>$B861</code>). The madrag bites him herself if she reaches him, and she is fast: her code runs twice in every pass of the main loop, where other creatures' runs once (<code>madrag_update</code>, <code>$B680</code>).</p>
-  <p>One creature, object <code>$0C</code>, goes after the CRYSTAL. The creature takes the crystal from the Doctor's hands or even from his pockets, and carries it away (<code>$B48A</code>). The code does not say what the creature is.</p>
+  <table class="t items npcs">
+    <tr><th></th><th>Who</th><th>How many</th><th>What they do</th></tr>
+    <tr><td><canvas data-o="2" data-fa="B197"></canvas></td><td>Splinx</td><td>1</td><td>The Doctor's robot cat, which follows him or runs its program (<a href="#splinx">above</a>).</td></tr>
+    <tr><td><canvas data-o="3" data-fa="C4F5"></canvas></td><td>Rijan miners</td><td>3</td><td>Mine at the bottom left of the mine and pass the PICK AXE from one to the next (<code>trio_update</code>, <code>$C28E</code>).<sup class="fn"><a href="about.html#src-9" title="Euan (unorig), the page's steward, from playing the game">9</a></sup> They do the Doctor no harm.</td></tr>
+    <tr><td><canvas data-o="6" data-fa="C4F6"></canvas></td><td>Patrolling creatures</td><td>4</td><td>Walk their own routes (<code>patrol_think</code>, <code>$C45E</code>). They are drawn from the same frames as the miners, and they do the Doctor no harm either.</td></tr>
+    <tr><td><canvas data-o="16" data-fa="77B3"></canvas></td><td>Controllers</td><td>25</td><td>Follow fixed routes, stored as lists of waypoints at <code>$764A</code>, and kill the Doctor if he touches one (<code>controllers_update</code>, <code>$CD9A</code>).</td></tr>
+    <tr><td><canvas data-o="10" data-fa="B66D"></canvas></td><td>The madrag</td><td>1</td><td>Guards her two eggs and bites (below).</td></tr>
+    <tr><td><canvas data-o="13"></canvas></td><td>Baby madrag</td><td>up to 1</td><td>Hatches from an egg lying free when the Doctor comes near, and kills him (<code>$B861</code>).</td></tr>
+    <tr><td><canvas data-o="12" data-fa="B46F"></canvas></td><td>The crystal thief</td><td>1</td><td>Comes for the CRYSTAL (below).</td></tr>
+  </table>
+  <p>The madrag guards two eggs. If an egg is moved, she fetches it and carries it back to its nest, and she will take an egg from Splinx too (<code>$B752</code>). The madrag bites him herself if she reaches him, and she is fast: her code runs twice in every pass of the main loop, where other creatures' runs once (<code>madrag_update</code>, <code>$B680</code>).</p>
+  <p>One creature, object <code>$0C</code>, goes after the CRYSTAL. The creature takes the crystal from the Doctor's hands or even from his pockets, and carries it away (<code>$B48A</code>). The code does not say what the creature is. Players remember the Master being somewhere in the mine,<sup class="fn"><a href="about.html#src-9" title="Euan (unorig), the page's steward, from playing the game">9</a></sup> but nothing in the code names him.</p>
 </section>
 <section id="end">
   <p class="fig">Escape</p>
@@ -130,10 +139,10 @@
   let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
   const M = G.ram;
 
-  // items: each drawn from its starting frame ($1D30) in its own colour ($1850)
+  // items: each drawn from its starting frame ($1D30), or a creature from the first entry of its frame table (data-fa), in its own colour ($1850)
   // cropped to the rows and columns the image uses, at three times size
   document.querySelectorAll('canvas[data-o]').forEach(cv => {
-    const o = +cv.dataset.o, img = DW.image(M, M[0x1D30 + o]), S = 3;
+    const o = +cv.dataset.o, img = DW.image(M, M[cv.dataset.fa ? parseInt(cv.dataset.fa, 16) : 0x1D30 + o]), S = 3;
     let x0 = 12, x1 = -1, y0 = 21, y1 = -1;
     for (let r = 0; r < 21; r++) for (let k = 0; k < 12; k++) if ((img[r * 3 + (k >> 2)] >> (6 - 2 * (k & 3))) & 3) { x0 = Math.min(x0, k); x1 = Math.max(x1, k); y0 = Math.min(y0, r); y1 = Math.max(y1, r); }
     const ctx = C64.canvas(cv, (x1 - x0 + 3) * 2 * S, (y1 - y0 + 3) * S);
