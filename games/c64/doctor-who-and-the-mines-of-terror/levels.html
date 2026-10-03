@@ -26,7 +26,7 @@
       <select class="b" id="pk-pl" aria-label="Other places"><option value="">Other places</option></select>
     </div>
     <div class="row">
-      <button class="b" type="button" id="zm" aria-pressed="false">Zoom ×4</button>
+      <span class="note">Zoom</span><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
       <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
       <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
       <span class="note" id="mappos"></span>
@@ -163,9 +163,9 @@
   rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
     document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
   document.getElementById('home').onclick = () => { choose(null); centre(start); draw(); };
-  const zm = document.getElementById('zm');
-  function setZoom(z) { Z = z; zm.setAttribute('aria-pressed', Z === 4);
-    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + (Z === 4 ? 'four' : 'twice') + ' times the C64\'s pixels'); }
+  const zbs = document.querySelectorAll('[data-z]');
+  function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
+    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + ['', '', 'twice', 'three times', 'four times'][Z] + ' the C64\'s pixels'); }
   const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
   // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
@@ -182,7 +182,8 @@
     if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not known.';
     if (curObj && k !== curObj) note = curObj.t + ', place ' + (useIx + 1) + ' of ' + list.length + ': ' + k.label + ', ' + where(k) + '.';
     document.getElementById('rpkv').textContent = note;
-    setZoom(4); centre(k.at); draw();
+    if (Z === 2) setZoom(4);
+    centre(k.at); draw();
   }
   pkUse.onclick = () => { const list = usedAt(curObj.t);
     if (useIx + 1 >= list.length) { useIx = -1; choose(curObj, true); } else choose(list[++useIx], true); };
@@ -192,8 +193,8 @@
   document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
-  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) choose(k); }
-  zm.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(Z === 2 ? 4 : 2); centre(sel ? sel.at : c); draw(); };
+  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
+  zbs.forEach(b => b.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
   // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
   mv.addEventListener('click', e => {
     const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;

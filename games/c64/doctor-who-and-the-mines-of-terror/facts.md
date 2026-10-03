@@ -129,7 +129,9 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   Doctor sets `$E8` = `$16` (death by a baby madrag) and places object
   `$0D` at the egg (`$B861`); the madrag returns moved eggs to the nests at
   `$B665` and takes one from Splinx (`$B752`). No routine was found that
-  tests for the BOX (`$3B`) by number. The CHEMICALS (`$49`) are tested at
+  tests for the BOX (`$3B`) by number, and no absolute operand in the code
+  addresses its entries in the object tables (`$1850`-`$1DF0` + `$3B`); only the
+  indexed routines shared by all items touch it. The CHEMICALS (`$49`) are tested at
   `$BA8D`: lying at y exactly `$0588` and within `$50` of x `$0290`, they set
   the states of controllers `$1A` and `$1B` (`$1CCA`, `$1CCB`) to 3, which
   only draws them, in colour 2 (`$CD92`), and set the colours of characters
