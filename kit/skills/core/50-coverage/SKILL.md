@@ -287,8 +287,9 @@ Routines are independent, so the burn-down parallelises. What matters:
   stop on the limit, export at once, wait for the reset and resume each
   agent with a message (the harness's resume, not a new agent), telling
   it what is already in the disassembler. A new agent rereads its range
-  from nothing. Stop the clock while the run waits, with a note saying
-  why: the wall clock otherwise counts hours of nothing as the step's.
+  from nothing. `clock.py pause` while the run waits, with a note saying
+  why: the wall clock otherwise counts hours of nothing as the step's, and
+  a step left open past 16 h is refused when it is closed (#170).
 - **Correct the brief the moment a fact in it turns out wrong**, and say
   in it that it was corrected. Agents still running read the old line;
   their reports will contradict it, which is how one run found that its

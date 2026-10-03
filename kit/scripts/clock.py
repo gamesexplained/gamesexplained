@@ -7,9 +7,20 @@ the runs table on the site's kit page. The agent never computes a time.
 
 Usage:
   clock.py start <step> --model <id> [<game dir>] start a step; any open step is stopped first
-  clock.py stop [--note "..."] [--agents N] [<game dir>]
+  clock.py stop [--note "..."] [--agents N] [--long] [<game dir>]
                                                   stop the open step; say what dominated it
+  clock.py pause [--note "..."] [--long] [<game dir>]
+                                                  close the open step for a wait; resume it later
+  clock.py resume --model <id> [<game dir>]       start the last paused step again
   clock.py report [<game dir>]                    the table for kit-feedback.md, and the portable figures
+
+A step left open over a gap - a shut-down machine, an overnight wait nobody
+clocked out of - would record the gap as work, and the next run plans from
+those figures (one run's `70-minisite` read 1,592 minutes for an hour's
+work). So `pause` closes the open step now and `resume` opens it again when
+the wait is over, and a step whose span passes MAX_STEP_MINUTES is refused
+until `--long` says the number is real. `--long` accepts it as it stands; it
+never invents a smaller one.
 
 <step> is the skill folder name: 10-orient, 20-features, ... 80-retro. A step
 may be started more than once (a second session); the report sums them.
@@ -57,6 +68,12 @@ def steps_known():
     return sorted(d for d in os.listdir(core) if os.path.isfile(os.path.join(core, d, "SKILL.md"))) + list(LATER)
 
 
+# A step longer than this is a gap - a shut-down machine, a wait nobody
+# paused for - rather than work. 50-coverage is the longest step on record
+# (543 minutes), so the ceiling is generous and still catches a night.
+MAX_STEP_MINUTES = 960
+
+
 def now():
     return datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
@@ -92,13 +109,21 @@ def save(gdir, T):
         json.dump(T, f, indent=1)
 
 
-def close_open(T, t, note="", agents=None):
+def close_open(T, t, note="", agents=None, allow_long=False):
     for e in T["entries"]:
         if e.get("end") is None:
-            e["end"] = iso(t)
             mins = (t - parse(e["start"])).total_seconds() / 60
             if mins < 0:
                 print(f"warning: {e['step']} started after it stopped (clock skew?); recording 0 min", file=sys.stderr); mins = 0
+            if mins > MAX_STEP_MINUTES and not allow_long:
+                sys.exit(
+                    f"{e['step']} has been open {mins / 60:.1f} h, past the {MAX_STEP_MINUTES / 60:.0f} h ceiling.\n"
+                    "That is a gap, not work - a machine that was shut down or a wait nobody paused for - and\n"
+                    "recording it would put a number in timings.json that the next run plans from.\n"
+                    "Say which it was:\n"
+                    f"  clock.py stop --long --note \"why ...\"   record it as it stands\n"
+                    "  ...or start the step again and let this entry go")
+            e["end"] = iso(t)
             e["minutes"] = round(mins, 1)
             if note: e["note"] = note
             if agents is not None: e["agents"] = agents
@@ -146,13 +171,40 @@ def start(step, model, gdir):
               "a maintainer has checked it (kit/CHECKING.md). Until then its tier is bronze (AGENTS.md, \"Model\").")
 
 
-def stop(gdir, note, agents):
+def stop(gdir, note, agents, long=False):
     T = load(gdir); t = now()
-    closed = close_open(T, t, note, agents)
+    closed = close_open(T, t, note, agents, long)
     if not closed:
         sys.exit("no open step to stop")
     save(gdir, T)
     print(f"stopped {closed['step']} after {closed['minutes']} min" + (f": {note}" if note else ""))
+
+
+def pause(gdir, note, long=False):
+    """Close the open step for a wait, and say how to start it again.
+
+    `stop` says a step is finished; `pause` says the machine is stopping
+    (a question for the contributor, a download, a night) and the step is
+    not. Both record the minutes honestly, which is the point: the gap
+    between a pause and its resume is in no entry's span.
+    """
+    T = load(gdir); t = now()
+    closed = close_open(T, t, note, None, long)
+    if not closed:
+        sys.exit("no open step to pause")
+    closed["paused"] = True
+    save(gdir, T)
+    print(f"paused {closed['step']} after {closed['minutes']} min" + (f": {note}" if note else ""))
+    print("  clock.py resume --model <id>   starts the same step again when the wait is over")
+
+
+def resume(gdir, model):
+    T = load(gdir)
+    if not T["entries"] or not T["entries"][-1].get("paused"):
+        sys.exit("nothing to resume: no step is paused. `clock.py pause` closes the open one;\n"
+                 "`clock.py start <step> --model <id>` starts a step that was stopped.")
+    step = T["entries"][-1]["step"]
+    start(step, model, gdir)
 
 
 def tracked_bytes(gdir):
@@ -249,7 +301,17 @@ def main():
     elif cmd == "stop":
         note = rest[rest.index("--note") + 1] if "--note" in rest else ""
         agents = int(rest[rest.index("--agents") + 1]) if "--agents" in rest else None
-        stop(game_dir([r for r in rest if r not in (note, str(agents))]), note, agents)
+        stop(game_dir([r for r in rest if r not in (note, str(agents), "--long")]), note, agents,
+             "--long" in rest)
+    elif cmd == "pause":
+        note = rest[rest.index("--note") + 1] if "--note" in rest else ""
+        pause(game_dir([r for r in rest if r not in (note, "--long")]), note, "--long" in rest)
+    elif cmd == "resume":
+        if "--model" not in rest or rest.index("--model") + 1 >= len(rest):
+            sys.exit("clock.py resume needs --model <id>, as `start` does: a time means nothing "
+                     "without the model that took it.")
+        model = rest[rest.index("--model") + 1]
+        resume(game_dir([r for r in rest if r != model]), model)
     elif cmd == "report":
         report(game_dir(rest))
     else:

@@ -25,7 +25,9 @@ in order:
    that took it, are what let the next run be shorter. `timings.json` is
    committed with the game. The clock times pure machine work, with no
    person in it: before you hand the turn to the contributor and wait,
-   run `clock.py stop`, and start the same step again when they answer.
+   run `clock.py pause`, and `clock.py resume --model <id>` when they
+   answer. A step left open over a gap is refused when it is closed rather
+   than recorded as hours of work.
 
    | Step | Skill | Produces |
    |---|---|---|
