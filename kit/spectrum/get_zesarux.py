@@ -164,8 +164,12 @@ def unpack(path, dest):
                        stdout=subprocess.DEVNULL)
         try:
             for f in sorted(os.listdir(mnt)):
-                if not f.startswith("."):
-                    subprocess.run(["ditto", os.path.join(mnt, f), os.path.join(dest, f)], check=True)
+                src = os.path.join(mnt, f)
+                # A drag-to-install dmg carries an `Applications -> /Applications`
+                # symlink; ditto follows a symlink to a directory, which copied the
+                # whole real /Applications (19 GB) into tools/downloads.
+                if not f.startswith(".") and not os.path.islink(src):
+                    subprocess.run(["ditto", src, os.path.join(dest, f)], check=True)
         finally:
             subprocess.run(["hdiutil", "detach", mnt], stdout=subprocess.DEVNULL)
             os.rmdir(mnt)
