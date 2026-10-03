@@ -17,6 +17,11 @@ ZEsarUX is started with `--vo null --ao null`: a ZX Spectrum screen is not neede
 drive it over ZRCP, and no window opens over whatever the contributor is doing. Pass
 `--vo cocoa` (macOS) or `--vo stdout` to watch it.
 
+It is also started with `--stats-disable-check-updates` and
+`--stats-disable-check-yesterday-users`: by default ZEsarUX opens two plain-HTTP
+connections at start-up, its update check and a "yesterday users" count, and an
+undisclosed network call is what the footprint rule does not allow.
+
 Usage:
   tools.py status
   tools.py zesarux [more ZEsarUX options]   start it, ZRCP on 127.0.0.1:10000
@@ -167,7 +172,8 @@ def zesarux(extra=()):
     os.makedirs(ZESARUX_HOME, exist_ok=True)
     os.makedirs(SNAPSHOTS, exist_ok=True)
     cmd = [os.path.abspath(exe), "--enable-remoteprotocol", "--remoteprotocol-port", str(PORT),
-           "--configfile", os.path.join(ZESARUX_HOME, "zesaruxrc"), "--quickexit", "--nosplash"]
+           "--configfile", os.path.join(ZESARUX_HOME, "zesaruxrc"), "--quickexit", "--nosplash",
+           "--stats-disable-check-updates", "--stats-disable-check-yesterday-users"]
     if not extra:
         cmd += ["--vo", "null", "--ao", "null"]
     start(cmd + list(extra), os.path.join(LOGS, "zesarux.log"), env=emulator_env(),
