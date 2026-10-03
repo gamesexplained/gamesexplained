@@ -54,12 +54,18 @@ villain needs the base", "how the game picks a walking frame". Then:
   interesting but supports a different point moves to the paragraph or
   section whose point it serves, or to Discoveries, or is cut. Interesting
   is not a reason to stay.
-- The first sentence says what the paragraph is about, so a reader who
-  stops there still has it.
-- Each sentence picks up something from the one before: the same subject,
-  a consequence, a cause, a contrast. If two neighbouring sentences could be
-  swapped without anyone noticing, the paragraph is a list. Order them, or
-  make it a list or a table.
+- The point goes first or last, never in the middle. First suits an
+  explanation, so a reader who stops there still has it. Last suits a story
+  or a discovery, where each sentence builds towards it.
+- Each sentence flows from the one before. Open it with something the
+  reader already has (the subject of the last sentence, or a word from its
+  end) and end it with what is new. That puts each new fact where the next
+  sentence can pick it up. If two neighbouring sentences could be swapped
+  without anyone noticing, the paragraph is a list. Order them, or make it
+  a list or a table.
+- A pronoun has one possible antecedent. Do not open a sentence with "it"
+  or "they" when the sentence before names two or more things it could
+  mean. Name the thing again.
 - One paragraph, one purpose. When the purpose line has an "and" in it,
   it is two paragraphs.
 

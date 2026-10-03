@@ -231,9 +231,10 @@ checklist mechanically, paragraph by paragraph:
 7. Give every paragraph its purpose, in a line written to yourself
    (`kit/style.md`, "Paragraphs"). Read each sentence against it. Move or
    cut any sentence that serves another point, however interesting; split
-   a paragraph whose purpose needs an "and"; reorder sentences until each
-   follows from the one before. Do this before the other steps polish
-   sentences that are about to move.
+   a paragraph whose purpose needs an "and"; put the point first or last;
+   reorder sentences until each opens with something the last one gave the
+   reader; and replace any "it" that could mean more than one thing. Do
+   this before the other steps polish sentences that are about to move.
 
 Before/after, from real drafts:
 
