@@ -113,3 +113,22 @@ before it was changed, and one of its suggestions (naming a room for
 `$4C40`) was not taken because the callers did not support it. The web
 screenshots left `reference/`, where the build would have published
 them.
+
+Then, before replying, two more audits by fresh agents. `facts.md` and
+`features.md`, every claim: eleven rows wrong, most of them lists given
+as complete from a partial search (a fifth switch-and-barrier pair, a
+fourth carried object, room 3's deaths that cost two marks by the code)
+or one instance generalised (room 9's loop, the STAGE digits), and the
+RUN/STOP vector read from the loader rather than from the game's own
+memory. The audit also connected two findings that had sat in different
+sections: the "impossible" pickups include room 5's object, which the
+ending needs. Tried live, the object cannot be taken; but the ending was
+reached anyway, with Mr Hat carrying nothing, because room 11's block is
+missing its colour fill too and counts as open. A random sample of 60 of
+the 1,268 listing comments, about seven from each annotation agent's
+range: 15 with an error (25 %, 95 % interval 16-37 %), 14 of them details
+(callers, rooms, counts) and one a misattribution (`room2_guardian_hit`,
+which runs on room 3's ladder). All fifteen were corrected, the same
+wrong sentence in agent 9's other table comments with them, and every
+explicit caller citation in the listing (221) was checked mechanically:
+one more was misleading.

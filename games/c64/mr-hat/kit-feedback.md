@@ -104,10 +104,10 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
 | 30-text | 4 | claude-opus-5-5 | 1 |  |
 | 40-sweep | 2 | claude-opus-5-5 | 1 |  |
 | 50-coverage | 2513 | claude-opus-5-5 | 2 | all nine annotation agents stopped at once on the account's session usage limit (HTTP 429) and did no work; the step sat idle about six hours until the limit reset at midnight, then was restarted; nine annotation agents on disjoint ranges, all claude-opus-5-5 (inherited from the lead), interrupted twice by the account's usage limits (a five-hour session limit, then the weekly limit) and resumed from their own contexts; the wall clock includes those waits |
-| 60-verify | 44 | claude-opus-5-5 | 2 | after the maintainer's review: merge of main, the asks reformatted, five wrong claims checked and fixed, a verifier agent (claude-opus-5-5) auditing all ~120 page claims and re-checking the fixes, kit lesson on generalised claims |
+| 60-verify | 337 | claude-opus-5-5 | 3 | after the maintainer's review: merge of main, the asks reformatted, five wrong claims checked and fixed, a verifier agent (claude-opus-5-5) auditing all ~120 page claims and re-checking the fixes, kit lesson on generalised claims; audits of facts.md and features.md (every claim) and of 60 sampled listing comments, by two claude-opus-5-5 agents (one interrupted by the usage limit and resumed); corrections; live tests showing room 5's object cannot be taken and the ending is reached without it |
 | 70-minisite | 19 | claude-opus-5-5 | 1 |  |
 | 80-retro | 3 | claude-opus-5-5 | 1 | retro: kit edits (port, contained Rust, Linux desktop notes, brief and coverage skill on usage limits, reference notes on freezer stacks and PETSCII cursor controls, features note on testing controls), game records |
-| total | 2604 | claude-opus-5-5 | | 43.4 h of work, over 61.2 h |
+| total | 2898 | claude-opus-5-5 | | 48.3 h of work, over 66.2 h |
 
 The tools' set-up before the clock started took about twenty minutes,
 most of it the disassembler's compile and waiting for the contributor's
@@ -122,7 +122,9 @@ The work added after the retrospective on 2 October (the in-play tunes,
 the sprite gallery, room 9 as designed, room 10's frame and the
 consistency pass) was not clocked: the clock was stopped, and a time for
 it cannot be made up afterwards. The fixes after the maintainer's review
-on 3 October are clocked as a second `60-verify` session.
+on 3 October are clocked as further `60-verify` sessions: the review's
+fixes and a full audit of the page, then audits of `facts.md`,
+`features.md` and a random sample of 60 listing comments.
 
 The one change to the kit that would have saved the most minutes:
 telling annotation agents to write each routine as they understand it,

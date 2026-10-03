@@ -216,10 +216,12 @@ $102E  AND #$F0</pre>
 
 <section>
   <p class="fig">11 · The end</p>
-  <h2 class="t">The Golden Hat and the end</h2>
-  <p class="lede">The Golden Hat is a 3×3-cell bitmap at <code>$7C00</code>, drawn at the bottom left of room 11.</p>
-  <p>Room 11's rules (<code>$8265</code>) end the game when Mr Hat stands on its bottom floor to the left of X <code>$80</code>, but only once a block two cells wide at colour cell <code>$061A</code> is open. That needs the object from room 5 (<code>$F5</code> = <code>$EE</code>, set at <code>$5CD7</code>), and opening it is worth 10,000. Then <code>$7CC0</code> hands the interrupt back to the KERNAL, sets <code>$1018</code> and runs the title routine, which sees the flag and draws "WONDERFUL / YOU HAVE FINISHED YOUR MISSION" (<code>$BFA8</code>, text at <code>$B7D8</code>) to the title tune, waits for fire and starts again.</p>
-  <p class="cap">Read from the code; the end was not reached in the emulator.</p>
+  <h2 class="t">Secret: in this copy the Golden Hat needs nothing</h2>
+  <p class="lede">The Golden Hat is a 3×3-cell bitmap at <code>$7C00</code>, drawn at the bottom left of room 11. By design, reaching it takes an object from room 5. In this copy that object cannot be taken, and the game can be finished without it.</p>
+  <div class="plate"><img class="c64" src="reference/end-screen.png" alt="WONDERFUL / YOU HAVE FINISHED YOUR MISSION">
+  <p class="cap">The end screen in VICE, reached with Mr Hat carrying nothing (<code>$F5</code> = <span class="v">$81</span>). He was set on room 11's bottom floor and walked left; the route there by play was not tried.</p></div>
+  <p>Room 11's rules (<code>$8265</code>) push Mr Hat back to the right on the bottom floor unless he is at X <code>$B8</code> or more, or the block at colour cell <code>$061A</code> is open (<code>$CC</code>). Carrying room 5's object (<code>$F5</code> = <code>$EE</code>, set at <code>$5CD7</code>) opens the block and is worth 10,000. On the floor to the left of X <code>$80</code>, <code>$7CC0</code> hands the interrupt back to the KERNAL, sets <code>$1018</code> and runs the title routine, which sees the flag and draws "WONDERFUL / YOU HAVE FINISHED YOUR MISSION" (<code>$BFA8</code>, text at <code>$B7D8</code>) to the title tune, waits for fire and starts again.</p>
+  <p>Two of the switched-off colour stores decide it. Room 5's set-up stores the colour <span class="v">$2C</span> that the object's pickup tests for into <code>$D022</code> (<code>$586B</code>) instead of the object's cells, so the cell stays the corridor's grey and the pickup never fires. Tried live: standing on the spot with the stick down took nothing, and with that one cell poked to <span class="v">$2C</span> the object was taken at once. Room 11's set-up loads the parameters for filling the block and never calls the fill, so its cell keeps the corridor's <code>$CC</code>, which is what "open" looks like. The two cancel out.</p>
 </section>
 
 <section>
@@ -255,7 +257,7 @@ const VOICE3 = [190,100,61,136,136,136,63,194,136,136,190,100,61,136,136,136,0,0
     { n: 2, stage: 2, f: 'room2', setup: '$4D80', irq: '$510A', loop: '$51F4', what: 'The candle that lights rooms 6 and 9, and a barrier that room 5’s switch opens.', exits: [3, 6] },
     { n: 3, stage: 2, f: 'room3', setup: '$4642', irq: '$48B0', loop: '$4910', what: 'An object that makes Mr Hat immune for a while: it writes RTS over the death routine.', exits: [1, 2, 4] },
     { n: 4, stage: 2, f: 'room4', setup: '$9000', irq: '$B9AD', loop: '$9320', what: 'Shares its block of code with room 7; the entry code chooses which room <code>$9000</code> builds.', exits: [3, 5] },
-    { n: 5, stage: 2, f: 'room5', setup: '$573D', irq: '$596A', loop: '$5A60', what: 'A switch that opens room 2’s barrier, and the object that opens the way to the Golden Hat.', exits: [4, 9] },
+    { n: 5, stage: 2, f: 'room5', setup: '$573D', irq: '$596A', loop: '$5A60', what: 'A switch that opens room 2\u2019s barrier, and the object meant to open the way to the Golden Hat, which in this copy cannot be taken.', exits: [4, 9] },
     { n: 6, stage: 3, f: 'room6-lit', setup: '$5E10', irq: '$608A', loop: '$6220', what: 'The cave. Drawn black unless the candle has been taken; a guardian patrols the bottom floor.', exits: [2, 7] },
     { n: 7, stage: 3, f: 'room7', setup: '$95A0', irq: '$B9AD', loop: '$9320', what: 'Built by the same code as room 4. Another immunity object.', exits: [6, 8] },
     { n: 8, stage: 3, f: 'room8', setup: '$65E0', irq: '$683D', loop: '$6A20', what: 'A key, a diagonal bouncer, and a shaft down to room 10.', exits: [7, 9, 10] },
