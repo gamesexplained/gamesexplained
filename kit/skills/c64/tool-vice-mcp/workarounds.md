@@ -1,13 +1,20 @@
 # vice-mcp workarounds, by failed check
 
+**The v3.13.2 GUI releases need none of this.** On 2 October 2026 they
+passed all 57 checks, in five runs on Linux x86_64 and five on macOS
+arm64. On a build where `check-emulator` reports nothing failed, stop
+reading here.
+
 Read this only for the checks that `python3 kit/scripts/tools.py
 check-emulator` reported as failed on the build you are using. Each
-section starts with the names it covers. If nothing failed, none of this
-applies, and following it anyway costs time: several of these
-workarounds are slower than the thing they replace.
+section starts with the names it covers. Following one you do not need
+costs time: several of these workarounds are slower than the thing they
+replace. The sections below are for the older and headless builds that
+fail checks.
 
 When a new build or release passes a check, delete that check's
-section. When every check passes on the release, delete this file.
+section. Keep this file when every check passes: a new check, or a
+release that breaks an old one, puts a section back here.
 
 Measured on the v3.11.0 release (macOS arm64 GUI build), 22 September
 2026. These failed: `ping-running`, `watch-args`, `watch-store`,

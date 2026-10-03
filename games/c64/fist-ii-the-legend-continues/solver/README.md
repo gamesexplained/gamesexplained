@@ -9,7 +9,7 @@ a solution"; this file is how to pick the work up.
 
 ## The world map
 
-`maplayout.py` places every room for the map on the Maps and solution
+`maplayout.py` places every room for the map on the Maps
 tab and prints the layout; `levels.html` carries a copy as `LAYOUT`.
 Run it again if the rules change, and paste the output over the old one.
 

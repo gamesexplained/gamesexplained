@@ -101,7 +101,10 @@ unnoticed.
    the delivery or to another game. An ask written only into
    `kit-feedback.md` waits there until someone happens to read it, so each
    one becomes an issue on the repository, labelled `kit-ask`: the
-   maintainers' one inbox.
+   maintainers' one inbox. A limitation the kit already records (the
+   platform's `workarounds.md`, its `INSTALL.md` table of tested
+   releases) is not an ask: your run met it, and `kit-feedback.md` says
+   so.
    - **Title**: the ask, in one line.
    - **Body**: the problem and what it cost this run; what you suggest,
      and where in the kit it would go; the game, the date and the branch;
@@ -127,15 +130,28 @@ unnoticed.
    gh issue create --repo gamesexplained/gamesexplained --label kit-ask --title "<the ask>" --body-file <file>
    ```
 
-   Then list them in `kit-feedback.md` under "Maintainer asks", one line
-   each with its number. Filing an issue publishes, so it takes the
-   contributor's yes, and the one they gave at the start to your opening
-   the pull request yourself (`kit/START.md`) covers it. With a no, or
-   when this environment cannot reach the GitHub API (some hosted
-   sessions' networks refuse it), file nothing: put the asks in the pull
-   request's description under the heading **Maintainer asks**, one
-   paragraph each, and say in `kit-feedback.md` that they are there.
-   Whoever merges the pull request files them.
+   Then list them in `kit-feedback.md` under `## Maintainer asks`, one
+   bullet each, `- #123: the ask in one line`. Filing an issue publishes,
+   so it takes the contributor's yes, and the one they gave at the start
+   to your opening the pull request yourself (`kit/START.md`) covers it.
+
+   **When you cannot file**, because they said no, because a cloud
+   session on their fork cannot reach this repository (`kit/START.md`,
+   step 1), or because filing is refused, write each ask there in full
+   instead, and the repository files it when the pull request merges
+   (`.github/workflows/maintainer-asks.yml`):
+
+   ```
+   - **<the ask, in one line>.** <the problem and what it cost this run;
+     what you suggest, and where in the kit it would go>
+   ```
+
+   The bold opening becomes the issue's title and the bullet its body.
+   Every bullet in the section takes one of the two forms, and
+   `check_docs.py` fails one in neither; prose around them is free. Where
+   you can read the issues, search first, as above: an ask another issue
+   already holds gets that issue's number, not a second copy. Where you
+   cannot, the repository skips an ask whose title an issue already has.
 6. **Write to `kit/lessons/` only what the next game will do
    differently.** That folder is the record of what the kit learned about
    reverse engineering, from which game and whom, not of what changed. If
@@ -183,5 +199,6 @@ Skill and kit edits committed on the branch and included in the pull
 request; the run's entry in `kit/lessons/`, if it taught one;
 `kit-feedback.md` naming the skill text that changed what you did, with
 the timings table; each ask for a
-maintainer filed as a `kit-ask` issue, or in the pull request's
-description; `timings.json`; `game.json` complete; `TODO.md` current.
+maintainer filed as a `kit-ask` issue, or written in full in
+`kit-feedback.md` for the repository to file on merge; `timings.json`;
+`game.json` complete; `TODO.md` current.

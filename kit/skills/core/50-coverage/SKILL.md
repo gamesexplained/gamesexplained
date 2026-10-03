@@ -100,6 +100,13 @@ same way, so tiers mean the same thing everywhere.
 - **Never bulk-disassemble every labelled address** to "recover"
   coverage. Many labels sit on data; disassembling them misclassifies the
   bytes as code. Undo by setting the data type back to undefined.
+- **A gap can hold a different record type.** A frame directory can point
+  to a short sprite descriptor followed by animation commands before the
+  next frame. Check every other directory and constant pointer load before
+  calling the gap unused. Parse the candidate format through its actual
+  end and establish a consumer or a live execution check. A spare tuple
+  after a counted record can also be a retained extra component: describe
+  the read limit and keep its purpose open rather than guessing padding.
 - **Reading a region may disassemble it as a side effect** in some
   disassemblers. Log an explicit disassemble entry for every new code
   region you explore, or a replay under-restores.

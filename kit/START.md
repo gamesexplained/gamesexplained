@@ -9,7 +9,16 @@ step needs something only they have.
 
 1. **Make sure you are inside a clone of this repository.** If you have
    none yet, `git clone https://github.com/gamesexplained/gamesexplained`
-   and continue inside it.
+   and continue inside it. In a hosted cloud session the checkout is
+   already made, from the repository the contributor picked when they
+   started it, and a fork of this one counts (`git remote -v` shows
+   which). Write access here is kept to maintainers, so a contributor's
+   cloud session must start on their fork: started on this repository,
+   it can push nothing, and you tell them now to fork it on GitHub and
+   start a new session on the fork. A session on a fork pushes to the
+   fork and cannot reach this repository at all, so you open neither
+   the pull request nor issues here: step 7 says how the contributor
+   opens the pull request, and the retrospective how the asks are filed.
 2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
 3. **Ask the contributor six things** if they have not already told you:
@@ -44,9 +53,9 @@ step needs something only they have.
    they say you may open it yourself, the run ends with the pull request
    open and a link to it. The same yes lets the retrospective file what
    needs a maintainer's decision as issues on the repository
-   (`kit/skills/core/80-retro`); with a no, those asks go in the pull
-   request's description for whoever merges it. Either answer holds for
-   the whole run; do not ask again at the end.
+   (`kit/skills/core/80-retro`); with a no, those asks are written in
+   full in `kit-feedback.md`, and the repository files them on merge.
+   Either answer holds for the whole run; do not ask again at the end.
 
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
@@ -88,7 +97,10 @@ step needs something only they have.
    authored before the first real one. If they said you may open the pull
    request, check now that you can: `gh auth status` should show their
    login, which opens the pull request and files the issues, or your
-   environment should have its own way to open one.
+   environment should have its own way to open one. A cloud session on
+   a fork has none (step 1): tell them now that you will give them a
+   link to open the pull request, and that the repository files the
+   asks once it merges.
 
    **The branch is usually yours to name; ask only if it is not.** Where
    you create the branch yourself, call it `game/<platform>/<slug>` as
@@ -114,7 +126,13 @@ step needs something only they have.
    pull request, as `AGENTS.md` says. Nothing goes to `main` directly. If
    the contributor said at the start that you may open it, open it, file
    the retrospective's asks as issues, and give them the link; otherwise
-   push the branch, tell them it is ready, and open it when they say so. If you cannot push or open it (no fork,
+   push the branch, tell them it is ready, and open it when they say so.
+   From a fork, the pull request goes into `gamesexplained/gamesexplained`'s
+   `main`, never the fork's own `main`, where it reaches nobody. When
+   you cannot open it there (a cloud session on a fork never can), give
+   the contributor the link that does,
+   `https://github.com/gamesexplained/gamesexplained/compare/main...<login>:<fork>:<branch>`,
+   and the description to paste. If you cannot push or open it (no fork,
    no login), leave the branch where it is and say exactly what is
    missing.
 
