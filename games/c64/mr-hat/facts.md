@@ -62,7 +62,8 @@ code>`), draws its room with the ROOM and STAGE digits of the table
 
 The main loops are copies of one template. Rooms 6 and 8's loops
 (`$6220`-`$6335`, `$6A20`-`$6B35`) are 278 bytes each and differ in 54, all
-of them call and jump operands (checked byte for byte); room 9's loop
+but one of them call, jump and branch operands, the last a `JSR` at `$6333`
+where room 8 has a `JMP` at `$6B33` (checked byte for byte); room 9's loop
 matches rooms 2, 5, 6, 8 and 11 instruction for instruction, with only the
 addresses called differing. Rooms 3 and 4/7 differ more. What each room
 adds is its own floor rules, hazards, guardians and objects.
@@ -112,8 +113,12 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   6, 8, 9 and `$8E10`): `$11`, `$12`, `$14`, `$18` (twice), `$50`, `$90`, Mr
   Hat with one of sprites 0-3, 6, 7, which sets `$4ACE` = `$20`. Room 1's
   `$1F70` (from `$1ED6`, `$1F69`, `$41A1`): `$11`, `$12`, `$14`, `$18` and
-  `$58`, sprites 3 and 6 together. The ladder climb's `$5028`: `$14`, `$18`.
-  `$B666` (through `$4C40`): `$90`. No list holds `$30`, the lift cabin.
+  `$58`, sprites 3 and 6 together. Room 3's ladder test `$5028` (from
+  `$4B0C`, called at `$48FF`): `$14`, `$18`. `$4C40` (from `$8E08`, reached
+  from `$4AE7` and `$4B8D`) calls `$B666`, which kills on `$90`, then tests
+  a second read of the register for `$14` and `$18`. `$55B0` runs each step
+  in every room but 1, 3 and 10, through `$5590` → `$BB10` → `$8E10`. Room
+  10 runs no collision test. No list holds `$30`, the lift cabin.
   `$D01F` (sprite against background) is never read. Fixed hazards
   are positions: `$BB10` kills Mr Hat on a room's deadly spots only at an
   exact standing height (`$B4` bottom floor, `$5C` upper floor). `$A877` is
@@ -137,10 +142,14 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   `play-room1.vsf`, the score's digits read back from the bitmap, gave
   001000, 010000, 025000 and 075000). The web screenshots' scores (25,000,
   150,000, 250,000) fit.
+- Two 5,000-point pickups (`$5C2F`, `$6C3D`) look impossible to take (see
+  "Corner cases").
 - **Treasures** are taken by standing over them with the stick pulled down
   (`$7D`) (`$8E10`, `$B100`-`$B4BB`); switches and barriers work on touch.
   A taken object stays gone for the rest of the game: its colour is kept
-  as an operand inside the room's set-up code and overwritten with `$CC`,
+  as an operand inside the room's set-up code and overwritten with `$CC`;
+  the shared treasures and switches are remembered by flags at
+  `$1371`-`$1389`, which `$BD5B` clears for a new game;
   and `$5678`, `$705E`, `$61DA` and `$92C0`, reached from the start of play
   `$6E00`, put the operands back.
 - **Barriers and switches**: a barrier pushes Mr Hat back until the switch
@@ -152,7 +161,10 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   tested live.
 - **Light**: rooms 6 and 9 are drawn dark (colour `$00`) unless `$22` =
   `$40`, which `$5519` sets when room 2's candle is taken and `$61E1`
-  clears for a new game (`$5E10` room 6, `$7440` room 9). *live*: rooms 6
+  clears for a new game (`$5E10` room 6, `$7440` room 9). Room 6 draws its
+  television and treasures only when lit (`$5ED8`, `$BDE2`), and its
+  treasures can be taken only then (`$8F1E`); room 9's objects are drawn
+  in the dark too. *live*: rooms 6
   and 9 set up with `$22` = 0 drew their corridors black, and with `$22` =
   `$40` lit, with their objects (`reference/room06-setup.png`,
   `room06-lit-setup.png`, `room09-setup.png`, `room09-lit-setup.png`). In the dark, room 6 has a hazard on its
@@ -329,10 +341,12 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
   always `$FC` (checked in four snapshots), so it returns `$F0`. `$A97C`
   compares that with `$10`, which never matches, so its check of the X
   high bit (`$A986`) never runs. Of the 42 calls, 18 pass the flag `$01`,
-  which never asked for the check; 24 pass `$10` or `$11`, meant for the
-  right half, and so also match at the same low X byte on the left half.
-  Which address was meant is open: with the check working, 14 of those 24
-  spots would lie at X 344 or more, in the right border.
+  which never asks for the check; 24 pass `$10` or `$11`, but 23 of their
+  callers test the X high bit themselves first (`$1200`): 4 call only on
+  the right half (`$8E7C`, `$B192`, `$B350`, `$B37D`) and behave the same
+  either way; 19 call only on the left half and match there only because
+  the check never runs. `$AB47` is not gated. The slip is load-bearing;
+  what the flag was meant for is open.
 - "Mr Hat is past X 255" is tested as the whole of `$D010` against `$29`
   or `$2F` (`$4BCC`, `$4C06`, `$6350`, `$647F`, `$6C09`, `$9450`, `$94BA`,
   `$7866`), so the answer depends on the other sprites' high bits too; room

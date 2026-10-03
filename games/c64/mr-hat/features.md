@@ -86,8 +86,9 @@ Found in the code, not in the manual.
 - **Lupenio's ending and instructions**, in Italian, never printed, and a
   dead ending routine with a 200,000-point replay bonus (`$7D70`, `$8000`).
 - **The X high-bit slip at `$1020`**: it reads `$400B` (a code operand,
-  always `$FC`) where it wrote `$40BB`, so 24 spots meant for the right
-  half also match on the left.
+  always `$FC`) where it wrote `$40BB`, so the X high-bit check in `$A97C`
+  never runs; 19 spots whose callers have chosen the left half work only
+  because of it.
 - **A store missing its index at `$18B3`** (`STA $2BF8` where its twin at
   `$916A` has `STA $35D8,Y`): only part of that drawing is done.
 - **119 writes to `$D022`**, invisible in hires bitmap mode, several where a

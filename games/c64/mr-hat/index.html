@@ -63,7 +63,7 @@ svg.map .n{cursor:pointer}
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1988 · Systems Editoriale (Commodore 64 Club)</p>
   <h1>Mr. Hat</h1>
-  <p class="sub">Eleven rooms, each with its own copy of the same game loop, and under them the remains of the game it was built from: Francesco Chiola's Lupenio, with its keys, its doors and its ending still in memory, switched off.</p>
+  <p class="sub">Eleven rooms, most with their own copy of the same game loop, and under them the remains of the game it was built from: Lupenio, by Francesco Chiola and Andrea Cucchetto, with its keys, its doors and its ending still in memory, switched off.</p>
 </header>
 <main class="wrap">
 
@@ -79,8 +79,8 @@ svg.map .n{cursor:pointer}
     </div>
     <p class="cap" id="roomcap"></p>
   </div>
-  <p>Every room is its own block of code: a set-up routine that draws it and places the sprites, an interrupt handler that moves its guardians, and a main loop that reads the joystick and applies the room's rules. The room number lives at <code>$100C</code>, and the room Mr Hat leaves writes an entry code to <code>$4ACD</code> that the next room reads to put him in the right doorway.</p>
-  <p>The main loops are copies of one template. Rooms 6 and 8's loops are 278 bytes each and differ in 54 of them, every one an address the loop calls or jumps to. What a room adds is its own floors, hazards, guardians and objects.</p>
+  <p>Ten blocks of code serve the eleven rooms: rooms 4 and 7 share one, built by <code>$9000</code> according to the entry code. A block holds a set-up routine that draws the room and places the sprites, usually an interrupt handler that moves its guardians (room 10 has none of its own), and a main loop that reads the joystick and applies the room's rules. The room number lives at <code>$100C</code> (0 for room 1; <code>$10</code> and <code>$11</code> for rooms 10 and 11), and the room Mr Hat leaves writes an entry code to <code>$4ACD</code> that the next room reads to put him in the right doorway.</p>
+  <p>Most of the main loops are copies of one template. Rooms 6 and 8's loops are 278 bytes each and differ in 54 of them: all but one in the addresses called, jumped or branched to, and the last a <code>JSR</code> in room 6 where room 8 has a <code>JMP</code>. Rooms 1 and 3 walk Mr Hat with code of their own instead of the shared walk routines. What a room adds is its own floors, hazards, guardians and objects.</p>
   <div class="plate">
     <svg class="map" id="map" viewBox="0 0 760 250" role="img" aria-label="Which rooms lead to which"></svg>
     <p class="cap">The exits found in the room code. A line joins two rooms when one room's code sets up the other. Press a room to show it above.</p>
@@ -98,7 +98,7 @@ svg.map .n{cursor:pointer}
     <tr><th>Byte</th><th>What the song holds</th></tr>
     <tr><td><code>$C43D</code> = 1</td><td>the song is one position long, so only patterns 1 and 2 play. The order table names patterns 3 to 13 and blocks up to 39, most of which are not in the image.</td></tr>
     <tr><td><code>$C443</code>+1 = 8</td><td>tempo: eight interrupts a step, about 0.13 seconds</td></tr>
-    <tr><td><code>$CA43</code>/<code>$CA83</code> = <span class="v">$3E6A</span></td><td>the timer latch each pattern sets: 61.7 interrupts a second on PAL</td></tr>
+    <tr><td><code>$CA44</code>/<code>$CA84</code> = <span class="v">$3E6A</span></td><td>the timer latch each pattern sets: 61.7 interrupts a second on PAL</td></tr>
     <tr><td><code>$C439</code> = 0</td><td>a switch nothing turns on: set, the player would read the keyboard (F7 all voices, 1, 2 or 3 one voice alone) and call an editor routine at <code>$CB51</code> that is now note data. The text <code>MUZA1</code> at <code>$CAF4</code> is the editor's too.</td></tr>
   </table>
   <p>The frequency table sits about a quarter of a semitone flat at the PAL clock: its A4 is <span class="v">$1CD6</span>, 433.5 Hz.</p>
@@ -110,7 +110,7 @@ svg.map .n{cursor:pointer}
   <p class="lede">Play has its own music, on one voice: a short loop that runs in every room, and a longer tune whose player nothing in the game reaches.</p>
   <div class="plate"><div id="sid2"></div>
   <p class="cap">Both players ported and run through the site's model of the SID, at the 61.7 interrupts a second the game runs in play. Checked against the game's own code in a 6502 simulator, 3,000 calls of each, every SID write in order: no difference. One triangle voice with a short pluck is much quieter than the title tune's three, so this player plays it four times louder. Nothing in the game plays the second tune. The only jump to its player at <code>$89D0</code> is the one at <code>$8A00</code>, which nothing reaches, and the only other code that touches it resets its pointers when a game starts (<code>$92C7</code>).</p></div>
-  <p>The two players are twins. Each plays voice 3 alone on a triangle wave, one note every 8 or 16 interrupts, from three tables read through pointers kept inside the code's own operands: the in-play tune's at <code>$8C90</code>, <code>$8D30</code> and <code>$8D90</code> (95 notes), the unused one's at <code>$8A60</code>, <code>$8B00</code> and <code>$8B90</code> (105 notes). The unused tune sends its first column to the voice's frequency low byte. The in-play player sends the same column to <code>$D022</code> instead, a colour register that shows nothing in this screen mode, so its notes sound at the high byte alone, in steps of 256. The column's values change between repeats of the same note (<span class="v">$2188</span>, <span class="v">$2164</span>, <span class="v">$213D</span>), which a tuning would not do; they may have been meant as colours all along.</p>
+  <p>The two players are twins. Each plays voice 3 alone on a triangle wave, the in-play tune one note every 8 interrupts and the unused one every 8 or 16 (once 32), from three tables read through pointers kept inside the code's own operands: the in-play tune's at <code>$8C90</code>, <code>$8D30</code> and <code>$8D90</code> (95 notes), the unused one's at <code>$8A60</code>, <code>$8B00</code> and <code>$8B90</code> (105 notes). The unused tune sends its first column to the voice's frequency low byte. The in-play player sends the same column to <code>$D022</code> instead, a colour register that shows nothing in this screen mode, so its notes sound at the high byte alone, in steps of 256. The column's values change between repeats of the same note (<span class="v">$2188</span>, <span class="v">$2164</span>, <span class="v">$213D</span>), which a tuning would not do; they may have been meant as colours all along.</p>
   <p>The player runs at the end of the interrupt that every room's handler finishes with (<code>$8215</code>, <code>$BF30</code>, <code>$B530</code>, <code>$8C00</code>), so the tune plays in all eleven rooms; recorded in the emulator, its pointer moved on in rooms 1, 2, 3, 5, 8, 9 and 11. It starts again from its first note while Mr Hat dies, and F1 switches it off and on (see "Odds and ends").</p>
 </section>
 
@@ -124,7 +124,7 @@ svg.map .n{cursor:pointer}
   </div>
   <p class="cap">Drawn from the sprite shapes at <code>$0900</code>-<code>$0FFF</code> with room 1's colours (sprite 4: dark grey <code>$D02B</code>, red <code>$D025</code> and light green <code>$D026</code>, multicolour). The walk changes frame every nine one-pixel steps (<code>$5340</code>, <code>$5370</code>). The death is the game's own routine, <code>$A877</code>, run in a 6502 simulator: <code>$1DDD</code> copies the death shape from <code>$ACD8</code>, <code>$A92D</code> steps the colour 256 times, and <code>$A8F0</code> ANDs each byte of the shape once with the raster line, four bytes a pass, 16 passes of about 84 ms. In the simulator the raster comes from the cycle count with no interrupts, so a real death's mask differs.</p></div>
   <div class="plate" style="margin-top:22px"><canvas id="allspr" width="640" height="200" style="width:100%;image-rendering:pixelated;background:#7b7b7b;border-radius:4px"></canvas>
-  <p class="cap">All 28 sprite shapes, pointers <code>$24</code> to <code>$3F</code>, each in the colours of the first recorded room that shows it. Mr Hat's own frames, <code>$27</code> and <code>$2A</code>-<code>$33</code>, take his colours from room 1 (in play they go in sprite 4's pointer <code>$07FC</code>; the title's cast shows <code>$2C</code> on sprite 0, <code>$B7A6</code>); the rest that no recorded frame showed are drawn in white and greys, two bits a pixel.</p></div>
+  <p class="cap">All 28 sprite shapes, pointers <code>$24</code> to <code>$3F</code>, each in the colours of the first recorded room that shows it. Mr Hat's own frames, <code>$27</code>, <code>$2A</code> and <code>$2C</code>-<code>$33</code>, take his colours from room 1 (in play they go in sprite 4's pointer <code>$07FC</code>; the title's cast shows <code>$2C</code> on sprite 0, <code>$B7A6</code>); the rest that no recorded frame showed are drawn in white and greys, two bits a pixel.</p></div>
 </section>
 
 <section>
@@ -147,15 +147,15 @@ svg.map .n{cursor:pointer}
     <div><div class="btns" id="coltests" role="group" aria-label="Which test"></div><div class="checks" id="col"></div></div>
     <div class="readout" id="colout"></div>
   </div>
-  <p class="cap">Choose a test, then tick the sprites that overlap Mr Hat (sprite 4) in one frame. The video chip sets one bit for every sprite in any overlap. <code>$55B0</code> (rooms 5, 6, 8 and 9, and the pickup and hazard checks through <code>$8E10</code>) kills on <code>$11</code>, <code>$12</code>, <code>$14</code>, <code>$18</code>, <code>$50</code> or <code>$90</code>, and tests <code>$18</code> twice. Room 1's <code>$1F70</code> takes the same values but <code>$50</code> and <code>$90</code>, and adds <code>$58</code>: sprites 3 and 6 together. The ladder climb's <code>$5028</code> takes <code>$14</code> and <code>$18</code>, and <code>$B666</code> (through <code>$4C40</code>) only <code>$90</code>. None takes <code>$30</code>, so sprite 5, the lift cabin, is harmless.</p></div>
-  <p>Two guardians touching him in the same frame set three bits, and only one pair appears in any list: sprites 3 and 6 in room 1. Any other pair lets him live for that frame. A live attempt could not stage it, because the rooms switch their guardian sprites on and off from frame to frame, and the next frame with only one of them on kills. Fixed hazards are positions instead: <code>$BB10</code> kills on a room's deadly spots only when Mr Hat stands at an exact height, <code>$B4</code> on a bottom floor and <code>$5C</code> on an upper one.</p>
+  <p class="cap">Choose a test, then tick the sprites that overlap Mr Hat (sprite 4) in one frame. The video chip sets one bit for every sprite in any overlap. <code>$55B0</code>, the test in every room but 1, 3 and 10 (each step through <code>$5590</code>, <code>$BB10</code> and <code>$8E10</code>, and on the ladders of rooms 5, 6 and 9 and room 8's shaft), kills on <code>$11</code>, <code>$12</code>, <code>$14</code>, <code>$18</code>, <code>$50</code> or <code>$90</code>, and tests <code>$18</code> twice. Room 1's <code>$1F70</code> takes the same values but <code>$50</code> and <code>$90</code>, and adds <code>$58</code>: sprites 3 and 6 together. Room 3's ladder test <code>$5028</code> takes <code>$14</code> and <code>$18</code>. <code>$4C40</code> calls <code>$B666</code>, which kills on <code>$90</code>, then tests a second read of the register for <code>$14</code> and <code>$18</code>; the widget treats both reads as one. None takes <code>$30</code>, so sprite 5, the lift cabin, is harmless.</p></div>
+  <p>Two guardians touching him in the same frame set three bits, and only one pair appears in any list: sprites 3 and 6 in room 1. Any other pair lets him live for that frame. A live attempt could not stage it, because the rooms switch their guardian sprites on and off from frame to frame, and a frame with only one of them on him would kill. Most fixed hazards are positions: <code>$BB10</code> kills on a room's deadly spots only when Mr Hat stands at an exact height, <code>$B4</code> on a bottom floor and <code>$5C</code> on an upper one.</p>
   <p>The death itself (<code>$A877</code>, animated in section 04) swaps in a death shape, sinks him to the floor line, flashes him and dissolves him, using the raster line as a random mask. Then a lives mark goes. The four marks at the bottom right are colour cells <code>$07B9</code>, <code>$07BA</code>, <code>$07E1</code> and <code>$07E2</code>; a lost life recolours one grey on grey.</p>
 </section>
 
 <section>
   <p class="fig">07 · Score</p>
   <h2 class="t">Points come a thousand at a time</h2>
-  <p class="lede">The score has six digits, and the lowest three never move. The only routine that changes it, <code>$41DA</code>, steps the thousands digit in the bitmap and carries.</p>
+  <p class="lede">The score has six digits, and the lowest three never move. The only routine that adds to it, <code>$41DA</code>, steps the thousands digit in the bitmap and carries; <code>$8042</code> draws 000000 at the start of each game.</p>
   <table class="d">
     <tr><th>Routine</th><th>Calls of the +1,000 step</th><th>Score after, from 000000</th></tr>
     <tr><td><code>$8AD0</code></td><td>1</td><td>001000</td></tr>
@@ -166,24 +166,24 @@ svg.map .n{cursor:pointer}
     <tr><td><code>$123A</code></td><td>75</td><td>075000</td></tr>
   </table>
   <p class="cap">Each adder run in a 6502 simulator on a snapshot of room 1, with the score's digits read back from the bitmap (the 20,000 and 50,000 adders were read from the code). The digits are drawn from glyphs at <code>$1600</code>, and there is no carry past the hundred-thousands digit.</p>
-  <p>Treasures pay 10,000 to 75,000; a key or a door 2,000. A treasure is taken by standing on it and pulling the stick down. A taken object stays gone for the rest of the game because its colour is kept inside the room's own set-up code, overwritten when it is taken, and put back by the start of a new game.</p>
+  <p>Treasures pay 10,000 to 75,000; a key or a door 2,000; and there are two 5,000-point pickups (<code>$5C2F</code>, <code>$6C3D</code>) that look impossible to take. A treasure is taken by standing on it and pulling the stick down. A taken object stays gone for the rest of the game: room objects because their colour is kept inside the room's own set-up code and overwritten when taken, the treasures and switches through flags at <code>$1371</code>-<code>$1389</code>. Both are reset when a new game starts.</p>
 </section>
 
 <section>
   <p class="fig">08 · Light</p>
   <h2 class="t">Secret: a candle in room 2 lights two other rooms</h2>
-  <p class="lede">Rooms 6 and 9 are drawn black until the candle is taken in room 2. Their objects are still there in the dark.</p>
+  <p class="lede">Rooms 6 and 9 are drawn black until the candle is taken in room 2. Room 9's objects are still there in the dark; room 6 draws its television and treasures only when lit (<code>$5ED8</code>, <code>$BDE2</code>), and its treasures can only be taken then (<code>$8F1E</code>).</p>
   <div class="plate">
     <div class="btns" id="litbtns" role="group" aria-label="Light"></div>
     <canvas class="c64" id="litcv" width="384" height="272"></canvas>
     <p class="cap">Both rooms drawn from memory, with the flag <code>$22</code> as each set-up found it: 0 at the start of a game, <code>$40</code> once <code>$5519</code> has run in room 2. Room 6's set-up is at <code>$5E10</code>, room 9's darkening at <code>$7440</code>.</p>
   </div>
-  <p>The dark changes the rules as well as the picture. Room 6 has a hazard on its bottom floor that kills only while the room is dark, and a bonus that can only be taken then. Nothing found records that the bonus was taken, so it may be drawn again on a later dark visit; that was not tested.</p>
+  <p>The dark changes room 6's rules as well as its picture. A stretch of the bottom floor kills only while the room is dark, and a 10,000-point bonus at X <code>$108</code> counts only while its colour cell <code>$06A0</code> is anything but <code>$CC</code> (<code>$63B0</code>). Set up in the emulator, the dark room holds <code>$00</code> there and the lit one <code>$CC</code>; taking the bonus was not tried. The room's treasures work the other way round: they appear and can be taken only when lit. Nothing found records that the bonus was taken, so it may count again on a later dark visit; that was not tested either.</p>
 </section>
 
 <section>
   <p class="fig">09 · Bug</p>
-  <h2 class="t">Bug: one wrong digit makes 24 spots ignore the screen's right half</h2>
+  <h2 class="t">Bug: a wrong digit the game depends on</h2>
   <p class="lede">The routine at <code>$1020</code> stores a value at <code>$40BB</code>, takes its low half back from <code>$40BB</code>, and takes its high half from <code>$400B</code>.</p>
   <pre class="it">$1020  STA $40BB
 $1023  LDA $40BB
@@ -192,8 +192,8 @@ $1028  STA $1009
 $102B  LDA $400B     ; not $40BB
 $102E  AND #$F0</pre>
   <p><code>$400B</code> is not a variable. It is the second byte of an <code>STA $07FC</code> in the code at <code>$400A</code>, and it reads <code>$FC</code> in every snapshot of the game. So the high half always comes back as <code>$F0</code>. The caller, <code>$A97C</code>, asks whether Mr Hat stands at a given spot, and its flag byte's high half says whether the spot is on the right half of the screen, past X 255. It compares the returned value with <code>$10</code>, which never matches, so the check of the X high bit at <code>$A986</code> never runs.</p>
-  <p>Of the 42 spots the game tests this way, 18 pass the flag <code>$01</code>, which never asked for the check, so for those nothing changes. The other 24 pass <code>$10</code> or <code>$11</code>, and because of the slip each also matches at the same low X byte on the left half. Which address was meant is open: with the check working, 14 of those 24 spots would lie at X 344 or beyond, in the right border.</p>
-  <p>A second slip is a store that lost its index. <code>$18B3</code> writes <code>STA $2BF8</code> inside a copy loop, where its twin at <code>$916A</code> has <code>STA $35D8,Y</code>, so that drawing puts every byte in the same place.</p>
+  <p>Of the 42 spots the game tests this way, 18 pass the flag <code>$01</code>, which never asks for the check. The other 24 pass <code>$10</code> or <code>$11</code> (one of them, <code>$AB47</code>, only on two of its three paths), but 23 of their callers have already tested the X high bit themselves (through <code>$1200</code>) and chosen a half. Four call only when Mr Hat is on the right half, and behave the same with or without the slip. Nineteen call only when he is on the left half: they match there only because the check never runs, and with the slip fixed they could never match. One more, <code>$AB47</code>, is not gated. So the slip is load-bearing, and what the flag was meant for is open.</p>
+  <p>A second slip is a store that lost its index. <code>$18B3</code> writes <code>STA $2BF8</code> inside a copy loop, where its twin at <code>$916A</code> has <code>STA $35D8,Y</code>, so that drawing puts each 48-byte row of it into a single byte.</p>
 </section>
 
 <section>
@@ -206,7 +206,7 @@ $102E  AND #$F0</pre>
     <p class="cap" id="lupcap"></p>
   </div>
   <p>Nothing prints either text. The only pointer to the ending is a pair of immediate loads at <code>$7E19</code> and <code>$7E1D</code>, inside a routine that plays a tune, prints the text and jumps to <code>$8000</code>, which waits for F1 and restarts with a bonus. That routine is reached only from a jump at <code>$7CF7</code> that follows an unconditional jump elsewhere. It also calls <code>$A000</code>, which is now all zeros. Live code still writes into the text: losing the last life sets the '2' of "200.000 PUNTI".</p>
-  <p>"Each key opens one door and one only" survives as code too. Room 9 keeps two doors and the keys for them, one handed out in room 8, and a 20,000-point treasure. Their tests look for colours that nothing ever writes: the calls that drew them were replaced with <code>INC $D022</code>, and the treasure's colours go to <code>$D022</code>, a register that does nothing in the hires bitmap mode the game plays in. The image has 119 such writes. Who switched them off, Chiola or a cracker, is unknown.</p>
+  <p>"Each key opens one door and one only" survives as code too. Room 9 keeps two doors that test for keys carried in from rooms 6 and 8, and a 20,000-point treasure. Their tests look for colours that nothing ever writes: the calls that drew them were replaced with <code>INC $D022</code>, and the treasure's colours go to <code>$D022</code>, a register that does nothing in the hires bitmap mode the game plays in. The image has 119 writes to <code>$D022</code> in all, several of them where a colour store or a call belongs. Who switched them off, Chiola or a cracker, is unknown.</p>
   <div class="plate">
     <div class="btns" id="r9btns" role="group" aria-label="Room 9"></div>
     <canvas class="c64" id="r9cv" width="384" height="272"></canvas>
@@ -218,7 +218,7 @@ $102E  AND #$F0</pre>
   <p class="fig">11 · The end</p>
   <h2 class="t">The Golden Hat and the end</h2>
   <p class="lede">The Golden Hat is a 3×3-cell bitmap at <code>$7C00</code>, drawn at the bottom left of room 11.</p>
-  <p>Room 11's rules (<code>$8265</code>) end the game when Mr Hat stands on its bottom floor to the left of X <code>$80</code>, but only once a two-cell block at colour cell <code>$061A</code> is open. That needs the object from room 5 (<code>$F5</code> = <code>$EE</code>, set at <code>$5CD7</code>), and opening it is worth 10,000. Then <code>$7CC0</code> hands the interrupt back to the KERNAL, sets <code>$1018</code> and runs the title routine, which sees the flag and draws "WONDERFUL / YOU HAVE FINISHED YOUR MISSION" (<code>$BFA8</code>, text at <code>$B7D8</code>) to the title tune, waits for fire and starts again.</p>
+  <p>Room 11's rules (<code>$8265</code>) end the game when Mr Hat stands on its bottom floor to the left of X <code>$80</code>, but only once a block two cells wide at colour cell <code>$061A</code> is open. That needs the object from room 5 (<code>$F5</code> = <code>$EE</code>, set at <code>$5CD7</code>), and opening it is worth 10,000. Then <code>$7CC0</code> hands the interrupt back to the KERNAL, sets <code>$1018</code> and runs the title routine, which sees the flag and draws "WONDERFUL / YOU HAVE FINISHED YOUR MISSION" (<code>$BFA8</code>, text at <code>$B7D8</code>) to the title tune, waits for fire and starts again.</p>
   <p class="cap">Read from the code; the end was not reached in the emulator.</p>
 </section>
 
@@ -226,8 +226,8 @@ $102E  AND #$F0</pre>
   <p class="fig">12 · Odds and ends</p>
   <h2 class="t">A music switch, a monitor and a frozen tape</h2>
   <p><b>F1 switches the in-play music off and on.</b> <code>$7C70</code>, at the end of every room's interrupt, flips <code>$1019</code> when the KERNAL's key byte reads F1. While the flag is set, the interrupt stops short of <code>$8C33</code>, which plays the in-play tune. The guardians keep moving. The tune and its silent twin are in section 03.</p>
-  <p><b>A machine-code monitor rides along.</b> <code>$97ED</code>-<code>$9FFF</code> is Jim Butterfield's Supermon, 2,067 bytes with its fifteen commands, patched to set the memory map back as it returns. No instruction outside it refers to it and no vector points into it.</p>
-  <p><b>The tape here is a snapshot.</b> This copy is a freezer backup: a cartridge stopped the game on its title screen and saved memory, and a depacker in front of it restores the video and sound chips, the timers and colour memory, then returns into the title's fire loop at <code>$1773</code>. The game's own start is still there, a BASIC line <code>10 SYS 2157</code> at <code>$0801</code>, and restarting at <code>$086D</code> rebuilds the same machine.</p>
+  <p><b>A machine-code monitor rides along.</b> <code>$97ED</code>-<code>$9FFF</code> is Jim Butterfield's Supermon, 2,067 bytes with its fifteen commands, patched so that its start-up call to SETMSG also sets <code>$01</code> back to <code>$36</code>. No instruction outside it refers to it and no vector points into it.</p>
+  <p><b>The tape here is a snapshot.</b> This copy is a freezer backup: a freezer, typically a cartridge, stopped the game on its title screen and saved memory, and a depacker in front of it restores the video and sound chips, the timers and colour memory, then returns into the title's fire loop at <code>$1773</code>. The game's own start is still there, a BASIC line <code>10 SYS 2157</code> at <code>$0801</code>, and restarting at <code>$086D</code> rebuilds the same machine.</p>
 </section>
 
 </main>
@@ -260,7 +260,7 @@ const VOICE3 = [190,100,61,136,136,136,63,194,136,136,190,100,61,136,136,136,0,0
     { n: 7, stage: 3, f: 'room7', setup: '$95A0', irq: '$B9AD', loop: '$9320', what: 'Built by the same code as room 4. Another immunity object.', exits: [6, 8] },
     { n: 8, stage: 3, f: 'room8', setup: '$65E0', irq: '$683D', loop: '$6A20', what: 'A key, a diagonal bouncer, and a shaft down to room 10.', exits: [7, 9, 10] },
     { n: 9, stage: 3, f: 'room9-lit', setup: '$7140', irq: '$7600', loop: '$76B0', what: 'Dark until the candle is taken. A chaser on the upper floor, drops from the lamps, and two doors that can never open.', exits: [5, 8, 11] },
-    { n: 10, stage: 4, f: 'room10', setup: '$8300', irq: 'none', loop: '$8410', what: 'Only a ladder. Climbing down it past the bottom of the screen sinks Mr Hat to his death.', exits: [8] },
+    { n: 10, stage: 4, f: 'room10', setup: '$8300', irq: 'none', loop: '$8410', what: 'A short ladder at the top of a shaft, with a television and two paintings below. Climbing off the foot of the ladder, at Y <code>$40</code>, drops him down the shaft to his death (<code>$7AC0</code>). No collision test runs here.', exits: [8] },
     { n: 11, stage: 4, f: 'room11', setup: '$8480', irq: '$8660', loop: '$86B0', what: 'A lift, a guardian that tracks Mr Hat on the top floor, and the Golden Hat at the bottom left.', exits: [9] },
   ];
   const cv = document.getElementById('roomcv'), img = document.getElementById('roomimg');
@@ -278,7 +278,7 @@ const VOICE3 = [190,100,61,136,136,136,63,194,136,136,190,100,61,136,136,136,0,0
       `<dt>Joined to</dt><dd>${R.exits.map(e => 'room ' + e).join(', ')}</dd></dl><p>${R.what}</p>`;
     cap.innerHTML = R.f
       ? (C ? 'One frame of the game, drawn by the site’s renderer from the memory and video-chip writes recorded in VICE. It matches the emulator’s own picture of the same frame in all 104,448 pixels.' + (R.n === 1 ? ' Room 1 as play reaches it from the title.' : ' The room was reached by starting its set-up routine directly, not by playing there.') : 'The drawing needs the site’s shared script, ../../lib/c64.js: open this page from the built site.')
-      : 'A screenshot from VICE: the frame recorder could not settle the beam’s position in this room, which has no interrupt handler of its own. Reached by starting its set-up routine directly.';
+      : '';
     drawMap();
   }
   ROOMS.forEach((R, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Room ' + R.n; b.onclick = () => showRoom(i); btns.appendChild(b); });
@@ -485,7 +485,7 @@ const VOICE3 = [190,100,61,136,136,136,63,194,136,136,190,100,61,136,136,136,0,0
       const ptr = 0x24 + k, x = (k % 10) * 64 + 4, y = Math.floor(k / 10) * 66 + 4, col = SPRCOL[ptr];
       if (col && col.mc) C.drawSpriteMC(ctx, shape(ptr), x + 8, y, 2, P[col.c], P[col.m1], P[col.m2]);
       else if (col) C.drawSprite(ctx, shape(ptr), x + 8, y, 2, P[col.c]);
-      else if (ptr === 0x27 || (ptr >= 0x2A && ptr <= 0x33)) C.drawSpriteMC(ctx, shape(ptr), x + 8, y, 2, P[HAT.c], P[HAT.m1], P[HAT.m2]);
+      else if (ptr === 0x27 || ptr === 0x2A || (ptr >= 0x2C && ptr <= 0x33)) C.drawSpriteMC(ctx, shape(ptr), x + 8, y, 2, P[HAT.c], P[HAT.m1], P[HAT.m2]);
       else C.drawSpriteMC(ctx, shape(ptr), x + 8, y, 2, P[1], P[15], P[11]);
       ctx.fillStyle = '#fff'; ctx.fillText(hex(ptr), x, y + 56);
     }
@@ -516,14 +516,14 @@ const VOICE3 = [190,100,61,136,136,136,63,194,136,136,190,100,61,136,136,136,0,0
   // ---- 06 collisions: each test's list of exact values that kill
   const col = document.getElementById('col'), colout = document.getElementById('colout'), ct = document.getElementById('coltests');
   const TESTS = [['$55B0', [0x11, 0x12, 0x14, 0x18, 0x50, 0x90]], ['$1F70 (room 1)', [0x11, 0x12, 0x14, 0x18, 0x58]],
-    ['$5028 (ladders)', [0x14, 0x18]], ['$B666', [0x90]]];
+    ['$5028 (room 3)', [0x14, 0x18]], ['$4C40', [0x90, 0x14, 0x18]]];
   let test = 0;
   const touch = new Set();
   TESTS.forEach(([t], i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.onclick = () => { test = i; showCol(); }; ct.appendChild(b); });
   [0, 1, 2, 3, 5, 6, 7].forEach(s => {
     const l = document.createElement('label'), c = document.createElement('input'); c.type = 'checkbox';
     c.onchange = () => { c.checked ? touch.add(s) : touch.delete(s); showCol(); };
-    l.appendChild(c); l.appendChild(document.createTextNode('sprite ' + s + (s === 5 ? ' (the lift)' : '')));
+    l.appendChild(c); l.appendChild(document.createTextNode('sprite ' + s + (s === 5 ? ' (the lift in rooms 1 and 11)' : '')));
     col.appendChild(l);
   });
   function showCol() {
@@ -555,7 +555,7 @@ const VOICE3 = [190,100,61,136,136,136,63,194,136,136,190,100,61,136,136,136,0,0
 
   // ---- 08 Lupenio's text
   const lt = document.getElementById('luptext'), lcap = document.getElementById('lupcap'), lbt = document.getElementById('lupbtns');
-  const LT = [['The ending', 'end', '$7E28', 'The PETSCII at $7E28-$7FE9, as the image holds it, line breaks where the text has carriage returns. In English: SIPE is astonished to announce that you are an exceptional and brilliant player, one of the few to have solved this difficult game, based on the dangerous and stealthy adventures of Lupenio. It was not easy to find the relation between the keys and the doors. Well done, very well done! A handshake to the king of video games, with the congratulations of SIPE. Now try again with 200,000 points. Press F1.'],
+  const LT = [['The ending', 'end', '$7E28', 'The PETSCII at $7E28-$7FE9, as the image holds it, line breaks where the text has carriage returns. In English: SIPE Copyright, astonished, announces: what an exceptional and brilliant player! You are one of the few who have solved this difficult game, based on the dangerous and stealthy adventures of Lupenio. It was not easy to discover the relation between the keys and the doors... Good, very good!! A handshake to the king of video games, with the congratulations of S I P E. Now try again with 200,000 points. Press F1.'],
     ['The introduction', 'intro', '$A1F6', 'The PETSCII at $A1F6-$A35A; its first words are lost. In English: … a house full of very dangerous guardians and deadly traps. Careful, my friend, and remember: every key opens one door and one door only, so pay attention and try to find the right strategy. Created, drawn and programmed by Andrea Cucchetto and Francesco Chiola. Special thanks to Anna, Cinzia, Marco and Mario.']];
   function showLup(i) {
     lbt.querySelectorAll('button').forEach((b, k) => b.setAttribute('aria-pressed', k === i));

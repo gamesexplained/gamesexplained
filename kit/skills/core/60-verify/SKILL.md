@@ -35,6 +35,20 @@ the 6502 simulator (on the C64, `kit/c64/machine.js`) and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
 
+## Claims about the whole game
+
+"Every room", "the only routine", "never", "the test" in the singular:
+each is a claim about all the instances, and the commonest wrong claim
+on a page is one read off a single instance. Before writing one, list
+them all: every caller of the routine, every reader of the variable,
+every copy of the test (a byte search for the call and for the
+operand, not the tracer's cross-references alone), and say how many
+there are. A live test in one room tests one room. One run's maintainer
+found five such claims in a sample of twelve: a collision list that was
+one test's of four, a tune called one room's that played in all of them,
+a bug whose effect was worked out from counts without reading the
+callers.
+
 ## What a test lets through
 
 For every compare that sorts a value into a class (is this tile a door,

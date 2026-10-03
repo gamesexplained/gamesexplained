@@ -42,6 +42,9 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
   return addresses above the `RTI`'s lead to the game's own entry.
 - **PETSCII spaced with cursor controls** (`c64-reference`).
 - **Test a control from a standing start** (`20-features`).
+- **Count the instances before a claim about all of them** (`60-verify`),
+  after the maintainer's review found that most wrong claims were one
+  room or one test written up as the game's.
 
 ## Where the kit was silent or wrong
 
@@ -101,10 +104,10 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
 | 30-text | 4 | claude-opus-5-5 | 1 |  |
 | 40-sweep | 2 | claude-opus-5-5 | 1 |  |
 | 50-coverage | 2513 | claude-opus-5-5 | 2 | all nine annotation agents stopped at once on the account's session usage limit (HTTP 429) and did no work; the step sat idle about six hours until the limit reset at midnight, then was restarted; nine annotation agents on disjoint ranges, all claude-opus-5-5 (inherited from the lead), interrupted twice by the account's usage limits (a five-hour session limit, then the weekly limit) and resumed from their own contexts; the wall clock includes those waits |
-| 60-verify | 2 | claude-opus-5-5 | 1 |  |
+| 60-verify | 44 | claude-opus-5-5 | 2 | after the maintainer's review: merge of main, the asks reformatted, five wrong claims checked and fixed, a verifier agent (claude-opus-5-5) auditing all ~120 page claims and re-checking the fixes, kit lesson on generalised claims |
 | 70-minisite | 19 | claude-opus-5-5 | 1 |  |
 | 80-retro | 3 | claude-opus-5-5 | 1 | retro: kit edits (port, contained Rust, Linux desktop notes, brief and coverage skill on usage limits, reference notes on freezer stacks and PETSCII cursor controls, features note on testing controls), game records |
-| total | 2562 | claude-opus-5-5 | | 42.7 h of work |
+| total | 2604 | claude-opus-5-5 | | 43.4 h of work, over 61.2 h |
 
 The tools' set-up before the clock started took about twenty minutes,
 most of it the disassembler's compile and waiting for the contributor's
@@ -114,6 +117,12 @@ reset. The live tests of the verify step were mostly done during
 coverage, while the agents worked, so `60-verify`'s two minutes understate
 it. The research subagent ran on the Agent tool's `sonnet` alias, for web
 sources only.
+
+The work added after the retrospective on 2 October (the in-play tunes,
+the sprite gallery, room 9 as designed, room 10's frame and the
+consistency pass) was not clocked: the clock was stopped, and a time for
+it cannot be made up afterwards. The fixes after the maintainer's review
+on 3 October are clocked as a second `60-verify` session.
 
 The one change to the kit that would have saved the most minutes:
 telling annotation agents to write each routine as they understand it,

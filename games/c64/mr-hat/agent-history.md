@@ -93,3 +93,23 @@ the F1 routine's label no longer says pause; room 9's loop no longer
 calls `$D8` = `$40` a kill (it is the last life gone, `$1734`). The
 switch-to-barrier table, which rested on one agent's reading, was
 checked flag by flag.
+
+## 3 October 2026, after the maintainer's review (claude-opus-5-5)
+
+The review traced twelve of the page's claims and found five wrong; each
+was checked here against the bytes and held. All five were claims
+generalised from one test or one room: the collision values of `$55B0`
+given as the game's (four tests have four lists, and room 1's kills on
+sprites 3 and 6 together); the `$1020` slip's effect worked out from the
+counts without reading the callers; "room 1's tune", from a live test in
+room 1 only, when the player sits on the interrupt tail of every room
+(live, its pointer moved on in seven rooms); a map edge missed although
+the notes held it; and a caption's "only ever" contradicted by the
+title's cast. A fresh verifier agent then checked every claim on the
+page, about 120: six more wrong (the worst, the slip again: 23 of the 24
+right-half spots are gated by their callers, so 19 of them work only
+because of it), one unsupported, twenty imprecise. Each was checked
+before it was changed, and one of its suggestions (naming a room for
+`$4C40`) was not taken because the callers did not support it. The web
+screenshots left `reference/`, where the build would have published
+them.
