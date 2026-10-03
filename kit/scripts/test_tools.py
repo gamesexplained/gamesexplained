@@ -171,10 +171,71 @@ def test_end_to_end():
         check("e2e: no command lists every platform's commands", code == 0 and "c64:" in out and "stub:" in out, out)
 
 
+BUNDLE = r"""
+import os, sys, tempfile
+sys.path.insert(0, sys.argv[1])
+import get_zesarux
+with tempfile.TemporaryDirectory() as d:
+    top = os.path.join(d, "stage", "zesarux.app")
+    os.makedirs(os.path.join(top, "Contents", "MacOS"))
+    open(os.path.join(top, "Contents", "MacOS", "zesarux"), "w").close()
+    dest = os.path.join(d, "tools", "zesarux")
+    os.makedirs(os.path.dirname(dest))
+    get_zesarux.place(top, dest)
+    assert os.path.isfile(os.path.join(dest, "zesarux.app", "Contents", "MacOS", "zesarux")), os.listdir(dest)
+    flat = os.path.join(d, "stage2")
+    os.makedirs(flat)
+    open(os.path.join(flat, "zesarux"), "w").close()
+    dest = os.path.join(d, "tools2", "zesarux")
+    os.makedirs(os.path.dirname(dest))
+    get_zesarux.place(flat, dest)
+    assert os.path.isfile(os.path.join(dest, "zesarux")), os.listdir(dest)
+print("ok")
+"""
+
+
+def test_spectrum_bundle_layout():
+    """get-zesarux leaves a macOS bundle at tools/zesarux/zesarux.app, where the launcher looks first."""
+    if "spectrum" not in tools.platforms():
+        return
+    r = subprocess.run([sys.executable, "-c", BUNDLE, os.path.join(KIT, "spectrum")], capture_output=True, text=True)
+    check("spectrum: an unpacked bundle keeps its .app name; a flat build lands as it is",
+          r.returncode == 0 and "ok" in r.stdout, r.stdout + r.stderr)
+
+
+STATS = r"""
+import importlib.util, os, sys, tempfile
+kit_spectrum = sys.argv[1]
+sys.path.insert(0, os.path.join(os.path.dirname(kit_spectrum), "scripts"))
+spec = importlib.util.spec_from_file_location("spectrum_tools", os.path.join(kit_spectrum, "tools.py"))
+t = importlib.util.module_from_spec(spec); spec.loader.exec_module(t)
+with tempfile.TemporaryDirectory() as d:
+    cfg = os.path.join(d, ".zesaruxrc")
+    open(cfg, "w").write("--zoom 2 \n--stats-send-already-asked \n--stats-send-enabled \n--stats-uuid 1.5 \n")
+    assert t.statistics_enabled(cfg)
+    assert t.keep_statistics_off(cfg) is True
+    assert open(cfg).read() == "--zoom 2 \n--stats-send-already-asked \n--stats-uuid 1.5 \n", open(cfg).read()
+    assert not t.statistics_enabled(cfg) and t.keep_statistics_off(cfg) is False
+    assert not t.statistics_enabled(os.path.join(d, "missing")) and t.keep_statistics_off(os.path.join(d, "missing")) is False
+print("ok")
+"""
+
+
+def test_spectrum_statistics_stay_off():
+    """The launcher takes --stats-send-enabled out of a saved configuration and leaves the rest alone."""
+    if "spectrum" not in tools.platforms():
+        return
+    r = subprocess.run([sys.executable, "-c", STATS, os.path.join(KIT, "spectrum")], capture_output=True, text=True)
+    check("spectrum: a saved configuration cannot turn usage statistics on",
+          r.returncode == 0 and "ok" in r.stdout, r.stdout + r.stderr)
+
+
 if __name__ == "__main__":
     test_declarations()
     test_rules()
     test_documented_commands()
     test_end_to_end()
+    test_spectrum_bundle_layout()
+    test_spectrum_statistics_stay_off()
     print(f"\n{'all passed' if not failures else str(len(failures)) + ' failed'}")
     sys.exit(1 if failures else 0)
