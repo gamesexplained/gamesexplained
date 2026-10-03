@@ -333,6 +333,9 @@ the batch.
   takes this session's calls, and its snapshots land in its own folder.
   `tools.py status` warns when the emulator on the port came from another
   folder, and `tools.py vice` refuses to start beside it; stop it from the
-  clone that started it, or ask the contributor to close it.
+  clone that started it, or ask the contributor to close it. When the
+  port is held by something that is not an emulator, start this clone's
+  on another with `KIT_VICE_PORT` (`kit/c64/INSTALL.md`, "Another program
+  on port 6510"); `vice.py` finds it through `tools/vice-port`.
 - The emulator needs a pseudo-terminal and dies with the session that
   started it.

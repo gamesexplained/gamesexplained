@@ -49,6 +49,17 @@ from another machine's version), say under Sources that they are
 second-hand and give the date, and leave open whatever they cannot
 settle. The game's own screens are then the main source.
 
+## Testing a control
+
+Test each control from a moment you have looked at, with nothing in
+motion: the player standing still, the same snapshot run once with the
+input and once without. A snapshot saved just after some input shows the
+result of that input, and reading the next one off it misnames the
+control. One run held the stick up on a snapshot that happened to be
+mid-jump, wrote down "up jumps", and briefed nine agents with it; in
+that game fire jumps and up only climbs. Record the frames and the
+values (the player's sprite position, frame by frame) rather than a screenshot.
+
 ## Status words
 
 Every row in `features.md` carries one:

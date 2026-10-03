@@ -48,7 +48,16 @@ check-emulator reports which of these quirks the build has, after its checks.
 """
 import contextlib, http.client, json, os, re, shutil, sys, time, urllib.error, urllib.request
 
-URL = "http://127.0.0.1:6510/mcp"
+def _port():
+    """KIT_VICE_PORT, else the port the launcher last started the emulator on, else 6510 (kit/c64/tools.py)."""
+    try:
+        return int(os.environ.get("KIT_VICE_PORT") or
+                   open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "vice-port")).read())
+    except (OSError, ValueError):
+        return 6510
+
+
+URL = f"http://127.0.0.1:{_port()}/mcp"
 _SNAPSHOTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                           "tools", "vice-home", "config", "vice", "mcp_snapshots")
 
@@ -62,7 +71,7 @@ class ViceError(RuntimeError):
 
 
 class EmulatorDown(ConnectionError):
-    """Nothing answers on :6510, or the server closed the connection: it is not running, or it crashed."""
+    """Nothing answers on the emulator's port (6510 unless KIT_VICE_PORT), or the server closed the connection: it is not running, or it crashed."""
 
 
 def connect(url=URL):

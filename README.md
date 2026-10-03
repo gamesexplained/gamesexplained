@@ -34,4 +34,5 @@ games/           one folder per game under its platform
 ```
 
 **Licence.** Write-ups, facts and symbol maps: CC BY-SA 4.0. Code, scripts
-and skills: MIT. See `LICENSE` and `LICENSE-CONTENT.md`.
+and skills: MIT, except the vendored Ghidra exporter in
+`kit/c64/ghidra_export/`, which is Apache-2.0 (see its `LICENSE` and `NOTICE`). See `LICENSE` and `LICENSE-CONTENT.md`.

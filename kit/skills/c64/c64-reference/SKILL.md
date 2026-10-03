@@ -299,6 +299,17 @@ not as its own loader left it, and two things follow.
   machine, or the code the release's loader jumps to), set the program
   counter there and the stack pointer to a sane value, and snapshot
   that as the hand-over. Record the whole recipe in `orientation.md`.
+- **Read the stack the resume returns with.** A freezer resumes with an
+  `RTI` (often from a routine it builds on the stack page), and the
+  return address is where the game was frozen. Above it on the stack are
+  the game's own return addresses at that moment, a chain back through
+  the routines that called the frozen one, often to BASIC's `SYS`, whose
+  pushed return address reads `$46 $E1` (`$E146`; `RTS` goes on at `$E147`):
+  the return address next to it leads to the game's own entry. One game frozen in its title's fire loop led this way to its
+  `SYS` target, and the game's own BASIC line was still at `$0801`.
+  Restarting there and stopping again at the frozen address rebuilt the
+  machine byte for byte, which is the test that the freezer lost nothing
+  the start-up needs.
 
 ## RAM the VIC cannot see
 
@@ -382,6 +393,13 @@ files) is a different encoding: A–Z at `$41`–`$5A` (or `$C1`–`$DA`),
 digits `$30`–`$39`, `$0D` is return. A string block that reads as garbage
 in one encoding may be perfect in the other, and a custom character set
 may use neither (see `30-text`).
+
+Text printed through `CHROUT` can carry cursor controls in place of
+spacing: `$1D` (cursor right) between words, `$11` (cursor down) and
+`$0D` between lines, `$91` (cursor up). A sweep for printable PETSCII then
+finds every word but no spaces, the words run together, and a run
+breaks at each control. Read the bytes between the words before calling
+a block's layout garbled.
 
 ## Mistakes that bite
 

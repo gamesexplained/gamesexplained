@@ -281,6 +281,15 @@ five seconds, and some calls can take the server down. Pace a script's
 calls, check `tools.py status` after a closed socket, and do not read a
 timeout as an answer from the game.
 
+## Warp
+
+`warp`: warp mode turns on and off, but runs the machine little faster
+than normal speed. Seen on 30 September 2026 with the v3.13.1 Linux
+release under `xvfb-run`: 78 passes a second in warp against 51 without.
+Nothing in the workflow needs warp; plan long waits (a depacker, a tune
+to record) in real time, and measure in the machine's time, never the
+host's. Autostart still turns warp on, so turn it off as usual.
+
 ## A phase did not finish
 
 `no-exception`

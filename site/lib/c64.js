@@ -63,6 +63,22 @@ globalThis.C64 = (function () {
     }
   }
 
+  // A 24x21 multicolour sprite from 63 bytes: each pair of bits is one double-wide pixel, %01 the
+  // first shared colour ($D025), %10 the sprite's own ($D027 + n), %11 the second shared ($D026),
+  // %00 transparent. Colours are CSS strings (PAL[n]).
+  function drawSpriteMC(ctx, data, px, py, s, colour, mc1, mc2, expandX = 1, expandY = 1) {
+    const cols = [null, mc1, colour, mc2];
+    for (let y = 0; y < 21; y++) for (let bx = 0; bx < 3; bx++) {
+      const row = data[y * 3 + bx];
+      for (let x = 0; x < 4; x++) {
+        const c = cols[(row >> (6 - 2 * x)) & 3];
+        if (!c) continue;
+        ctx.fillStyle = c;
+        ctx.fillRect(px + (bx * 8 + 2 * x) * s * expandX, py + y * s * expandY, 2 * s * expandX, s * expandY);
+      }
+    }
+  }
+
   // A grid of every glyph in a charset, n glyphs, `per` per row.
   function drawCharset(ctx, charset, n = 256, per = 32, s = 2, colour = PAL[1], bg = PAL[6]) {
     for (let i = 0; i < n; i++) drawGlyph(ctx, charset, i, (i % per) * 9 * s, Math.floor(i / per) * 9 * s, s, colour, bg);
@@ -287,6 +303,6 @@ globalThis.C64 = (function () {
   }
 
   const hex = (n, w = 4) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-  return { PAL, load, drawGlyph, drawGlyphMC, drawScreen, drawSprite, drawCharset, canvas, hex,
+  return { PAL, load, drawGlyph, drawGlyphMC, drawScreen, drawSprite, drawSpriteMC, drawCharset, canvas, hex,
            renderFrame, drawFrame };
 })();

@@ -40,7 +40,7 @@ import json, os, subprocess, sys, time, traceback
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
-from vice import connect, call, read_mem, poke, addr, clear_checkpoints, pause  # noqa: E402
+from vice import URL, connect, call, read_mem, poke, addr, clear_checkpoints, pause  # noqa: E402
 
 SNAPDIR = os.path.join(ROOT, "tools", "vice-home", "config", "vice", "mcp_snapshots")
 OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
@@ -564,8 +564,8 @@ def main():
             except FileNotFoundError: pass
     try:
         rpc = connect()
-    except OSError:                                  # URLError: nothing listens on :6510
-        sys.exit("the emulator is not answering on :6510. Start it first:\n"
+    except OSError:                                  # URLError: nothing listens on the port
+        sys.exit(f"the emulator is not answering at {URL}. Start it first:\n"
                  "  python3 kit/scripts/tools.py vice\n"
                  "then run check-emulator again.")
     started = time.time()

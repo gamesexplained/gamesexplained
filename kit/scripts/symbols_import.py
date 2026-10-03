@@ -24,6 +24,27 @@ TO_PROJECT = {
 }
 
 
+def project_blocks(blocks):
+    """Keep declared types; gaps must neither decode as code nor gain typed-data coverage."""
+    result = []
+    cursor = 0
+    for block in sorted(blocks, key=lambda b: b["start"]):
+        start, end = block["start"], block["end"]
+        if not cursor <= start <= end < 0x10000:
+            raise ValueError("symbol blocks overlap or lie outside C64 RAM")
+        if cursor < start:
+            result.append({"start": cursor, "end": start - 1,
+                           "type_": "Undefined", "collapsed": False})
+        result.append({"start": start, "end": end,
+                       "type_": TO_PROJECT.get(block["type"], block["type"]),
+                       "collapsed": False})
+        cursor = end + 1
+    if cursor < 0x10000:
+        result.append({"start": cursor, "end": 0xFFFF,
+                       "type_": "Undefined", "collapsed": False})
+    return result
+
+
 def main():
     argv = sys.argv[1:]
     if len(argv) < 2 or argv[0] in ("-h", "--help"):
@@ -43,8 +64,7 @@ def main():
     project = {
         "version": 1, "origin": 0,
         "raw_data_base64": base64.b64encode(gzip.compress(ram, mtime=0)).decode(),
-        "blocks": [{"start": b["start"], "end": b["end"], "type_": TO_PROJECT.get(b["type"], b["type"]),
-                    "collapsed": False} for b in sym["blocks"]],
+        "blocks": project_blocks(sym["blocks"]),
         "labels": labels,
         "user_line_comments": {str(c["address"]): c["text"] for c in sym["comments"] if c["type"] == "line"},
         "user_side_comments": {str(c["address"]): c["text"] for c in sym["comments"] if c["type"] == "side"},
