@@ -249,7 +249,11 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   to `$FF` and saves that block as "DRWHO"; the start-up restores it when
   `$7800` is not zero (`$49C6`). After saving it jumps through `$A000`,
   which with the BASIC ROM in is a BASIC cold start: the game does not
-  resume.
+  resume. The original disk's BASIC boot program DWMT loads the save: it
+  POKEs `$7800` to 0, asks LOAD A SAVED POSITION (Y/N)?, on Y loads
+  "DRWHO",8,1, then loads P2 (`$8000`-`$CFFF`), P3 (`$E000`-`$FF6F`) and
+  P1 (`$0800`-`$77FF`) and types SYS18509 (`$484D`) into the keyboard
+  buffer (disk image, 3 October 2026).
 
 ## Sound
 
@@ -298,7 +302,6 @@ stop. `STA $D400,Y` at `$755D` reaches the SID through an index.
 - `$881D` does not clear the drawn flag of object `$4F`.
 - `$8652` reads the overlay glyphs from `$0000`-`$07FF`, not `$4000`: is
   that where they are?
-- How a saved game is loaded: nothing in the program calls LOAD.
 
 ## Live tests
 
@@ -314,3 +317,8 @@ stop. `STA $D400,Y` at `$755D` reaches the SID through an index.
 | D pressed beside the TARDIS | nothing; `$E8` back to 0 |
 | Walk right until a fall | FALLING ON A STALAGMITE, a life lost |
 | Twelve frames stepped in play, SID and `$E1` read | music plays; `$E1` stays 1 |
+| Original disk, stopped at `$484D`, RAM compared with the listing | equal in all bytes the listing holds except zero page and `$FF70`-`$FFFF` (3 October 2026) |
+| Restart point moved to the crystal room, a life lost | the room on screen matches the Maps tab, railing gap included |
+| CIRCUITs `$44` and `$45` put at x `$0208` and `$0228`, y `$0390` | slots read S T O P T; `$4F` = `$FF`; `$42`/`$43` put back: `$4F` = 0 |
+| Restart beside the madrag | head and body drawn above the legs, as on Gameplay |
+| Title screen, after N | SID voice 2 plays the title tune; stops when space is pressed |
