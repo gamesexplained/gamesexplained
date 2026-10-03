@@ -25,9 +25,10 @@ def check(name, ok, detail=""):
         failures.append(name)
 
 
-# A second platform shaped like the ZX Spectrum's launcher, for the rules.
-SECOND = {"COMMANDS": ("status", "zesarux", "stop", "snapshots", "verify-footprint", "check-emulator",
-                       "get-zesarux", "get-skoolkit"), "TOOL_NAMES": ()}
+# A synthetic second platform, for the rules. Its commands are its own: a real
+# second platform (kit/spectrum) serves the same command names, and a fixture that
+# shared them would make a one-platform command look ambiguous.
+SECOND = {"COMMANDS": ("status", "stop", "second-only"), "TOOL_NAMES": ()}
 
 
 def decls():
@@ -63,14 +64,14 @@ def test_rules():
     check("KIT_PLATFORM wins", resolves(["vice"], env="c64") == ["c64"])
     check("unknown explicit platform is refused", str(resolves(["status"], explicit="nope")).startswith("refused"))
     check("a command one platform serves picks it", resolves(["vice"]) == ["c64"])
-    check("... and the other's picks the other", resolves(["get-zesarux", "download"]) == ["second"])
+    check("... and the other's picks the other", resolves(["second-only"]) == ["second"])
     check("a tool argument picks its platform", resolves(["stop", "r2000", "--force"]) == ["c64"])
     check("a game folder argument picks its platform",
           resolves(["snapshots", os.path.join(games, "second", "x", "work")]) == ["second"])
     check("a working directory in a game picks its platform",
           resolves(["check-emulator"], cwd=os.path.join(games, "c64", "x")) == ["c64"])
-    check("status alone covers every platform", resolves(["status"]) == ["c64", "second"])
-    check("stop alone covers every platform", resolves(["stop"]) == ["c64", "second"])
+    check("status alone covers every platform", resolves(["status"]) == sorted(decls()))
+    check("stop alone covers every platform", resolves(["stop"]) == sorted(decls()))
     for cmd in ("check-emulator", "verify-footprint", "snapshots"):
         r = resolves([cmd])
         check(f"{cmd} alone is refused, naming the flag", isinstance(r, str) and "--platform" in r, r)
