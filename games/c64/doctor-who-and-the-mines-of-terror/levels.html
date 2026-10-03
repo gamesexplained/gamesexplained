@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
   <h1>Doctor Who and the Mines of Terror</h1>
-  <p class="sub">The whole mine, 4,096 by 1,792 pixels, drawn from the map the game keeps under its operating system, with every object, danger and restart point on it.</p>
+  <p class="sub">The whole mine, 4,096 by 1,792 pixels, drawn from the map the game keeps under its operating system, with every object, danger, and restart point on it.</p>
 </header>
 <main class="wrap">
 <section id="mine">
@@ -35,10 +35,10 @@
     <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
     <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
-    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code> and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. Parts of the mine swap in their own shapes for sixteen characters (<code>zone_graphics</code>); this picture draws every part with the starting cavern's.</p>
+    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. Parts of the mine swap in their own shapes for sixteen characters (<code>zone_graphics</code>); this picture draws every part with the starting cavern's.</p>
   </div>
   <h3 id="objects">Where the objects work</h3>
-  <p>Most objects work only at certain points. When the Doctor uses the one he holds (F5), the game compares his position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>): the dig sites at <code>$BC1C</code>, the bolts at <code>$BB94</code> and the escape pod's launch points at <code>$BCDA</code>. Choose an object above and press Where it is used to step through its points. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). What every object is for is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
+  <p>Most objects work only at certain points. When the Doctor uses the one he holds (F5), the game compares his position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>): the dig sites at <code>$BC1C</code>, the bolts at <code>$BB94</code>, and the escape pod's launch points at <code>$BCDA</code>. Choose an object above and press Where it is used to step through its points. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). What every object is for is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
   <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. The map holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
   <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
 </section>
@@ -46,7 +46,7 @@
   <p class="fig">Scrolling</p>
   <h2 class="t">Two screens, drawn in turn</h2>
   <p>The game keeps two copies of the play screen, at <code>$7800</code> and <code>$7C00</code>. While one is shown, the game builds the next position of the mine in the other, spread over three frames (<code>coarse_scroll_step</code>, <code>$8C32</code>), and then swaps them. Between those steps the video chip's fine scroll moves the picture a pixel at a time, so the view glides in all eight directions.</p>
-  <p>The mine is split into seven zones by the Doctor's position, checked every eighth frame (<code>zone_classify</code>, <code>$AA3D</code>). Entering a zone puts the creatures of other zones to sleep, wakes that zone's own and swaps in its shapes for sixteen characters (<code>zone_graphics</code>, <code>$ABCF</code>).</p>
+  <p>The mine is split into seven zones by the Doctor's position, checked every eighth frame (<code>zone_classify</code>, <code>$AA3D</code>). Entering a zone puts the creatures of other zones to sleep, wakes that zone's own, and swaps in its shapes for sixteen characters (<code>zone_graphics</code>, <code>$ABCF</code>).</p>
 </section>
 <section id="restart">
   <p class="fig">Restart points</p>
@@ -163,7 +163,7 @@
   function setZoom(z) { Z = z; zm.setAttribute('aria-pressed', Z === 4);
     zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + (Z === 4 ? 'four' : 'twice') + ' times the C64\'s pixels'); }
   const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
-  // choosing a mark: zoom in, centre the magnifier on it and ring it; an object also arms Where it is used
+  // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
     sel = k;
     for (const el of [pkOb, pkDg, pkPl]) el.value = k && el.querySelector('option[value="' + all.indexOf(k) + '"]') ? all.indexOf(k) : '';
