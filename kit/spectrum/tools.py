@@ -34,6 +34,12 @@ looks like it belongs to ZEsarUX. An empty list is the pass.
 """
 import glob, json, os, re, shutil, socket, subprocess, sys, time
 
+# What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
+# platforms have a launcher. Keep in step with main() below.
+COMMANDS = ("status", "zesarux", "stop", "snapshots", "verify-footprint", "check-emulator",
+            "get-zesarux")
+TOOL_NAMES = ()
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 TOOLS = os.path.join(ROOT, "tools")
