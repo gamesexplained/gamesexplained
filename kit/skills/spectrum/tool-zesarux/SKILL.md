@@ -86,7 +86,10 @@ range was read from and written to), `cpu-transaction-log` and
 file), `get-ocr` (text off the screen), and for a windowed run
 `get-text-overlay` and `close-all-menus` (what an open menu or dialog
 says, and shutting it). None is wired into the client;
-`help <command>` gives their syntax.
+`help <command>` gives their syntax. `close-all-menus` is not neutral:
+with the emulator's send-statistics question pending it answers "yes"
+(`kit/spectrum/INSTALL.md`). The launcher's flags keep that question from
+being asked, so use it only on an emulator the launcher started.
 
 ZEsarUX's own expressions are worth knowing: `IN(<port>)` reads a port
 (sixteen bits, so the keyboard rows decode as `IN(65278)` for `$FEFE`),

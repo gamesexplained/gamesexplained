@@ -203,11 +203,39 @@ def test_spectrum_bundle_layout():
           r.returncode == 0 and "ok" in r.stdout, r.stdout + r.stderr)
 
 
+STATS = r"""
+import importlib.util, os, sys, tempfile
+kit_spectrum = sys.argv[1]
+sys.path.insert(0, os.path.join(os.path.dirname(kit_spectrum), "scripts"))
+spec = importlib.util.spec_from_file_location("spectrum_tools", os.path.join(kit_spectrum, "tools.py"))
+t = importlib.util.module_from_spec(spec); spec.loader.exec_module(t)
+with tempfile.TemporaryDirectory() as d:
+    cfg = os.path.join(d, ".zesaruxrc")
+    open(cfg, "w").write("--zoom 2 \n--stats-send-already-asked \n--stats-send-enabled \n--stats-uuid 1.5 \n")
+    assert t.statistics_enabled(cfg)
+    assert t.keep_statistics_off(cfg) is True
+    assert open(cfg).read() == "--zoom 2 \n--stats-send-already-asked \n--stats-uuid 1.5 \n", open(cfg).read()
+    assert not t.statistics_enabled(cfg) and t.keep_statistics_off(cfg) is False
+    assert not t.statistics_enabled(os.path.join(d, "missing")) and t.keep_statistics_off(os.path.join(d, "missing")) is False
+print("ok")
+"""
+
+
+def test_spectrum_statistics_stay_off():
+    """The launcher takes --stats-send-enabled out of a saved configuration and leaves the rest alone."""
+    if "spectrum" not in tools.platforms():
+        return
+    r = subprocess.run([sys.executable, "-c", STATS, os.path.join(KIT, "spectrum")], capture_output=True, text=True)
+    check("spectrum: a saved configuration cannot turn usage statistics on",
+          r.returncode == 0 and "ok" in r.stdout, r.stdout + r.stderr)
+
+
 if __name__ == "__main__":
     test_declarations()
     test_rules()
     test_documented_commands()
     test_end_to_end()
     test_spectrum_bundle_layout()
+    test_spectrum_statistics_stay_off()
     print(f"\n{'all passed' if not failures else str(len(failures)) + ' failed'}")
     sys.exit(1 if failures else 0)

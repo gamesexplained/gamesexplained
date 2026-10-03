@@ -135,6 +135,24 @@ while an agent is driving, `close-all-menus` over ZRCP shuts it and
 `get-text-overlay` reads what it said. Never answer a dialog on the
 contributor's behalf.
 
+**`close-all-menus` answers the statistics question "yes".** Measured on
+ZEsarUX 13.0 on 3 October 2026, with a new home and the network denied to
+the process: started in a window without `--stats-send-already-asked`, the
+second start's question was up behind the main menu, `close-all-menus`
+shut both, and the configuration ZEsarUX saved on exit had
+`--stats-send-enabled`. Every start after that reads the line and sends.
+That is how one maintainer's contained home came to have sending switched
+on for part of a day, with nobody having chosen it. ZEsarUX has no option
+that turns sending off, so the launcher does three things: it passes
+`--stats-send-already-asked`, so the question is never asked; it removes
+`--stats-send-enabled` from `tools/zesarux-home/.zesaruxrc` before every
+start, whatever put it there; and `status` and `verify-footprint` say so
+if the line is in the file. With the first in force `close-all-menus`
+changes no setting (three starts measured), which is what lets the
+launcher close the main menu that the very first start with a new home
+opens. Do not send `close-all-menus` to a ZEsarUX that something other
+than this launcher started.
+
 `--joystickemulated` is not pinned by the launcher: the ZEsarUX default,
 `Cursor&Shift`, presses keys on the keyboard matrix, which is what
 `check-emulator` measures; pass `--joystickemulated Kempston` to a run
