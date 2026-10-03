@@ -7,14 +7,24 @@ applies, and following it anyway costs time.
 
 Measured on the **ZEsarUX-13.0** release, file
 `ZEsarUX_macos-silicon-13.0.dmg`, macOS arm64, on **3 October 2026** with the
-launcher's flags: 38 passed, 2 failed, 12 seconds. The same two failed in
-every run; a build that passes a check means its section no longer applies,
-so delete the section, not the check.
+launcher's flags: 41 passed, 4 failed, 17 seconds. The four are below, in the
+order they matter; a build that passes a check means its section no longer
+applies, so delete the section, not the check.
 
-One of these is behaviour the kit works around for you: `kit/spectrum/zesarux.py`
-does the chunked runs itself, so a script that goes through the client never
-meets it. It is written out anyway, because the number in it decides how a
-long measurement has to be shaped.
+## A load lands at the start of a frame
+
+`load-keeps-frame-phase`
+
+`snapshot-load` restores RAM, the registers and the interrupt count, but not
+where in the frame the machine was. Measured on 13.0: a snapshot saved 29452
+T-states into a frame loads back at 6. The ROM's interrupt counter at `$5C78`
+comes back with the file, so "how many interrupts have happened" is safe to
+compare across a load; "where in the frame" is not.
+
+**What to do instead** — start every experiment from a load, and never compare a
+live run with a loaded one. Two runs that both begin with `snapshot_load` land at
+the same phase and are repeatable (`determinism-at-stop` gets three identical
+runs).
 
 ## A read from a second connection waits for the running one
 
@@ -71,3 +81,38 @@ each sent and the ULA port polled every 150 ms for two seconds afterwards
   Key events are pumped by the *running* machine: sent while the machine
   is stopped in cpu-step mode they are never processed at all, so let it
   run and poll the game's own variable.
+
+It also releases **every** key and the joystick when it finishes — including
+anything held with `set-ui-io-ports` — so a script that holds a direction across
+a call to it loses the hold. Never use it: `set_input` and `key_event` are the
+two paths that work.
+
+## A watchpoint counts only the last byte it touches
+
+`watch-store`, `watch-load`
+
+A memory watchpoint fires on the address line at the end of the instruction, and
+a multi-byte access has one address line at the end: its last byte. Measured on
+13.0 with `LD ($9010),HL` and `LD HL,($9010)` in a loop: `MWA=9011H` counted 1425
+matches and `MWA=9010H` counted zero, and the same for `MRA`. A script that
+watches the first byte of a 16-bit variable reads a counter that never moves and
+concludes the instrument is dead, which is exactly the trap `kit/EMULATOR.md`
+warns about.
+
+**What to do instead** — watch the **last** byte: `MWA=<addr+len-1>H` for a store,
+`MRA=<addr+len-1>H` for a load. A single-byte variable is its own last byte.
+
+## Warp is set when the emulator starts
+
+`warp`
+
+ZEsarUX's warp is `--emulatorspeed`, a command-line option. ZRCP has
+`get-cpu-turbo-speed` and no setter, so a running emulator cannot be warped or
+unwarped from a script.
+
+**What to do instead** — pass `--emulatorspeed N` to the launcher, which means a
+restart; it is off again at the next launch:
+
+```
+python3 kit/scripts/tools.py --platform spectrum zesarux --emulatorspeed 20
+```
