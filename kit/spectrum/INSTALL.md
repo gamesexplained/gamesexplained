@@ -217,10 +217,16 @@ python3 kit/scripts/tools.py --platform spectrum get-skoolkit
 
 It installs nothing outside `tools/` (the pip cache is pointed there too),
 and writes the version it got into `tools/skoolkit/.kit-version`, which
-`status` prints. `kit/spectrum/skoolkit.py` drives `sna2skool.py` and
-`skool2ctl.py` from that environment; without it, the kit's own Z80 decoder
-and snapshot reader still build a listing, and only the control-file render
-is missing.
+`status` prints. `kit/spectrum/skoolkit.py` drives `sna2skool.py` from that
+environment; without it, the kit's own Z80 decoder and snapshot reader
+still build a listing, and only the control-file render is missing.
+
+SkoolKit 10.1 publishes wheels for Python 3.10 to 3.14. On an older Python
+pip takes the source distribution instead (`skoolkit-10.1.tar.gz`, 1.3 MB)
+and builds it, which needs a C compiler: measured on 3 October 2026 with
+the Python 3.9.6 that macOS's command line tools provide, where it built
+and installed (10 MB in `tools/skoolkit/`). The build runs in the system's
+temporary folder and left nothing there.
 
 ## macOS — known to work
 

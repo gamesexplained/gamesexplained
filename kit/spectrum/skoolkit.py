@@ -26,7 +26,7 @@ Control-file vocabulary used here, from SkoolKit's own manual
   i $ADDR              ignored from here (used to close a block exactly)
   @ $ADDR label=NAME   a label
   N $ADDR text         a line comment
-Addresses are written `$XXXX`; read back as `$` hex, `0x` hex or decimal.
+Addresses are written `$XXXX`; read back as `$` hex or decimal, as SkoolKit reads them.
 SkoolKit gates on import/run only where it is genuinely needed (disassemble);
 the round trip itself is plain Python, so a listing never depends on it.
 
@@ -80,12 +80,13 @@ def need_bin(name):
 
 
 def addr(s):
-    """A control-file address: `$` or `0x` is hex, anything else decimal."""
+    """A control-file address as SkoolKit reads one: `$` is hex, anything else decimal.
+
+    `0x` is not hex there: sna2skool.py 10.1 ignores such a line ("invalid address"), so
+    it raises here too, and the line is left out of symbols.json as it is of the render."""
     s = s.strip()
     if s.startswith("$"):
         return int(s[1:], 16)
-    if s.lower().startswith("0x"):
-        return int(s[2:], 16)
     return int(s)
 
 
@@ -104,8 +105,11 @@ def symbols_from_ctl(path):
     types = {}                            # kit-block tags: a control-file letter cannot tell
                                           # Address from Word, so ctl_from_symbols writes the
                                           # symbols.json type in a comment for those it cannot
+    def ignored(n, line):
+        print(f"WARNING: ignoring line {n} in {path} (invalid address): {line}", file=sys.stderr)
+
     with open(path) as f:
-        for raw in f:
+        for n, raw in enumerate(f, 1):
             line = raw.rstrip("\n")
             tag = re.match(r";\s*kit-block\s+(\S+)\s+(\S+)\s*$", line)
             if tag:
@@ -123,7 +127,7 @@ def symbols_from_ctl(path):
                     try:
                         a = addr(fields[0])
                     except ValueError:
-                        continue
+                        ignored(n, line); continue
                     name = fields[1][len("label="):].strip()
                     if name and RAM_LO <= a <= RAM_HI:
                         symbols.append({"address": a, "name": name, "type": "UserDefined", "kind": "user"})
@@ -135,7 +139,7 @@ def symbols_from_ctl(path):
                 try:
                     a = addr(fields[0])
                 except ValueError:
-                    continue
+                    ignored(n, line); continue
                 text = fields[1].strip() if len(fields) > 1 else ""
                 if text and RAM_LO <= a <= RAM_HI:
                     comments.append({"address": a, "type": "line", "text": text})
@@ -147,7 +151,7 @@ def symbols_from_ctl(path):
                 try:
                     a = addr(fields[0].split(",")[0])
                 except ValueError:
-                    continue
+                    ignored(n, line); continue
                 title = fields[1].strip() if len(fields) > 1 else ""
                 directives.append((a, first, title))
     directives.sort(key=lambda d: d[0])
@@ -260,6 +264,9 @@ def test():
                           {"start": 0x8006, "end": 0x8009, "type": "Address"}], blocks
         assert [s["name"] for s in symbols] == ["start"], symbols      # the ROM label is refused
         assert {c["address"]: c["text"] for c in comments} == {0x8000: "entry point", 0x8003: "counter"}, comments
+        hand = os.path.join(d, "hand.ctl")       # SkoolKit ignores a 0x address, and so does the reader
+        open(hand, "w").write(open(ctl).read() + "b 0x9000 hand-written\n@ 0x9000 label=hand\n")
+        assert read_file(hand) == (blocks, symbols, comments), read_file(hand)
         if skoolkit_bin("sna2skool.py"):
             skool = disassemble(os.path.join(d, "x.sna"), ctl)
             text = open(skool).read()

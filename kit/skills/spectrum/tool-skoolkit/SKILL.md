@@ -7,9 +7,9 @@ description: How to drive SkoolKit 10.1 for ZX Spectrum disassembly — the cont
 
 SkoolKit is the open-source ZX Spectrum disassembly toolkit (GPLv3,
 `https://github.com/skoolkit/skoolkit`, docs at `https://skoolkit.ca`). The
-kit uses exactly two of its commands, `sna2skool.py` and `skool2ctl.py`,
-and only to render and exchange annotations. It is installed under
-`tools/skoolkit/`:
+kit runs one of its commands, `sna2skool.py`, and only to render
+annotations; `kit/spectrum/skoolkit.py` writes and reads the control file
+itself. It is installed under `tools/skoolkit/`:
 
 ```
 python3 kit/scripts/tools.py --platform spectrum get-skoolkit   # install or upgrade (PyPI)
@@ -57,10 +57,14 @@ Full syntax: the "Control files" chapter of the manual. The subset
 | `@ $ADDR label=NAME` | a label at ADDR |
 | `N $ADDR text` | a line comment above the instruction at ADDR |
 
-Addresses are written `$XXXX`. When you hand-write one, `$` or `0x` means
-hex; a bare number is **decimal** — SkoolKit's own default. A line starting
-`;`, `#` or `%` is a comment. A block of a type the kit does not track
-(`i`, `u`, `s`, `g`) is a boundary but not a block.
+Addresses are written `$XXXX`. When you hand-write one, `$` means hex and a
+bare number is **decimal**, SkoolKit's own default. `0x` is not hex in a
+control file: `sna2skool.py` ignores the whole line with a warning
+("invalid address"), and so does the kit's reader, so a block written
+`b 0x8010` exists in neither the render nor `symbols.json` (measured on
+SkoolKit 10.1, 3 October 2026). A line starting `;`, `#` or `%` is a
+comment. A block of a type the kit does not track (`i`, `u`, `s`, `g`) is
+a boundary but not a block.
 
 `skool2ctl.py` goes the other way, from a `.skool` back to a `.ctl`, if you
 ever work from a rendered file. The kit does not: the `.ctl` is the source,
@@ -74,14 +78,16 @@ and `disassemble` only renders it.
   drops anything below `$4000`, so a ROM address never becomes a symbol in
   the ledger and never covers a byte the game does not own. Keep a ROM
   reference as a comment, or put it in `features.md`, not in a `@` line.
-- **A control file with no block directive leaves everything as data.**
-  SkoolKit disassembles what a `c` block tells it to; without one,
-  `sna2skool.py` shows bytes. Start from `symbols_import.py`, which writes
-  a `c` block for every code symbol already in `symbols.json`.
-- **`sna2skool.py` writes to stdout.** There is no `-o`; `skoolkit.py`
-  captures it. Do not expect a file from the bare command.
+- **A control file with no block directive renders nothing.** SkoolKit
+  disassembles what the directives cover: with none, `sna2skool.py` prints
+  an empty disassembly and no error (measured on 10.1). Start from
+  `symbols_import.py`, which writes a `c` block for every code block
+  already in `symbols.json`.
+- **`sna2skool.py` writes to stdout.** Its `-o` is the origin address of a
+  raw binary, not an output file; `skoolkit.py` captures stdout. Do not
+  expect a file from the bare command.
 - **The `.sna` is a 48K snapshot.** SkoolKit's `-p` page flag is for 128K
-  only; the kit reads no 128K snapshot yet (`kit/spectrum/snapshot.py`).
+  only, and `kit/spectrum/snapshot.py` refuses a 128K snapshot.
 - **The first directive starts the real map.** Everything before it is
   ignored, so a control file that begins at `$8000` never tries to
   disassemble the ROM the .sna does not hold.
