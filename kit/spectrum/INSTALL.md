@@ -20,7 +20,7 @@ and needs nothing outside `tools/`.
 
 `python3 kit/scripts/tools.py --platform spectrum check-emulator` measures
 this on whatever build answers, with a Z80 test program of its own
-(`kit/spectrum/check_emulator.py`: no game, about ten seconds). It names
+(`kit/spectrum/check_emulator.py`: no game, about fifteen seconds). It names
 every check, and `kit/skills/spectrum/tool-zesarux/workarounds.md` says
 what to do about each one that fails. Run it after installing, and again
 after any new release or build.
@@ -31,22 +31,24 @@ can have of it. The measurements, each dated:
 
 | Build | Machine | Measured | Checks passed |
 |---|---|---|---|
-| ZEsarUX-13.0 release, `ZEsarUX_macos-silicon-13.0.dmg` | macOS arm64 | 29 September 2026 | 37 of 40, six runs |
+| ZEsarUX-13.0 release, `ZEsarUX_macos-silicon-13.0.dmg` | macOS arm64 | 3 October 2026 | 41 of 45, 17 s |
+| ZEsarUX-13.0 release, `ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz` | Linux x86_64 (Ubuntu 24.04, no display) | 1 October 2026 | 38 of the 40 checks the suite had then, six runs; `verify-footprint` clean |
 
-On that release the three failures were `checkpoints-survive-load`,
-`count-while-running` and `input-type-ascii`. A fourth, `counting-checkpoint`,
-failed once in six runs before it was changed: it required the checkpoint's count
-and the program's own counter to agree to within two passes, and a run loop's
-opcode limit can fall inside a pass at either end of the window, so it now allows
-a pass per boundary. The same three failures have a workaround the kit already
-uses, or that is written out in `workarounds.md`; none of them costs a phase.
+The four failures on macOS are `count-while-running`, `input-type-ascii`,
+`load-keeps-frame-phase` and `warp`; the Linux run had the first two, and
+`checkpoints-survive-load`, which the launcher's `--snap-no-change-machine` then
+fixed. Each has a section in `workarounds.md`. `counting-checkpoint` failed once
+in six runs before it was changed: it required the checkpoint's count and the
+program's own counter to agree to within two passes, and a run loop's opcode
+limit can fall inside a pass at either end of the window, so it now allows a pass
+per boundary. None of the failures costs a phase.
 
 | Phase | Passes | Fails | Workaround |
 |---|---|---|---|
 | 1 static inspection | all: reads of any size in one call; the ROM and RAM named as pages; the full register set; a 48K `.sna` whose RAM, SP, pushed PC and interrupt mode match the live machine, which `kit/spectrum/snapshot.py` reads | | |
-| 2 state management | save from a running or a stopped machine; load and stay stopped at the loaded state; deterministic at a stop and across a restart of the emulator; a load with the machine running resumes it and says so | a load switches the whole checkpoint table off | `snapshot_load(..., rearm=True)`, the client's default, calls `enable-breakpoints` after every load; `checkpoints-rearmed` proves it. The conditions and the pass counters survive the load — only the arming goes. Nothing offers warp over ZRCP: `--emulatorspeed` is a command-line setting, and the emulator runs at real speed anyway (measured 3.50 MHz of emulated clock per 3.53 MHz of wall clock), which is what a tape loader wants |
-| 3 live measurement | non-stopping checkpoints that count and agree with the program's own counter; a checkpoint on a routine that never runs stays at zero; the T-state counter, validated against the wall clock | a second connection's read waits for the run loop to finish (1.12 s of a 1.28 s run) | run in bounded chunks (`run <limit>`) and read the counts between them; the machine never stops while a chunk runs |
-| 4 frame stepping | the exact stop, on the checkpoint's own instruction; N frames in one call, on the boundary (69890 T-states for a 69888-T-state frame, 20 ms a step, 50 a second); input that lands before the next instruction, is seen by the program, and is released on request; the joystick byte; a step that returns with its PC; thirty stops at varied moments with nothing lost | `send-keys-ascii` (and `send-keys-string`) presses no key the machine can see | `set_input` for anything held, and `key_event` per character for typing; key events only land while the machine is running |
+| 2 state management | save from a running or a stopped machine; load and stay stopped at the loaded state; deterministic at a stop and across a restart of the emulator; the checkpoint table and its counts survive a load; a load with the machine running resumes it and says so | a load lands at the start of a frame, not at the frame position it was saved at (`load-keeps-frame-phase`); warp is a launch option, with no ZRCP command to change it (`warp`) | start every experiment from a load, never comparing a live run with a loaded one; pass `--emulatorspeed N` to the launcher for warp |
+| 3 live measurement | non-stopping checkpoints that count and agree with the program's own counter; a checkpoint on a routine that never runs stays at zero; the T-state counter, validated against the ROM's frame interrupt (69888 T-states each); store and load watchpoints count | a second connection's read waits for the run loop to finish (1.12 s of a 1.28 s run) | run in bounded chunks (`run <limit>`) and read the counts between them; the machine never stops while a chunk runs. Watch the **last** byte of a multi-byte variable: `MWA`/`MRA` on the first byte counts nothing |
+| 4 frame stepping | the exact stop, on the checkpoint's own instruction; N frames in one call, on the boundary (one frame is 69888 T-states); input that lands before the next instruction, is seen by the program, and is released on request; the joystick byte; a step that returns with its PC; thirty stops at varied moments with nothing lost | `send-keys-ascii` (and `send-keys-string`) presses no key the machine can see, and releases the joystick when it ends | `set_input` for anything held, and `key_event` per character for typing; key events only land while the machine is running |
 | transport | a call made as a checkpoint stops the machine answers; 800 unpaced calls, 7 000 to 8 400 a second across runs, leave ZRCP up and the machine running | | |
 
 ## Why ZEsarUX, and the MAME alternative
@@ -60,7 +62,8 @@ command runs any debugger command over the same protocol, so one client would
 serve many platforms. It passes all four phases of `kit/EMULATOR.md`, and it is
 **better** than ZEsarUX at two of them: whole-machine save states that land
 paused and leave the checkpoints' counters alone, where ZEsarUX switches the
-checkpoint table off on every load; and a non-stopping counting checkpoint that
+checkpoint table off on every load unless the launcher's
+`--snap-no-change-machine` is passed; and a non-stopping counting checkpoint that
 can be read while the machine runs, where ZEsarUX's `run` blocks every other
 connection until it returns.
 
@@ -105,7 +108,7 @@ a day's.
 python3 kit/scripts/tools.py --platform spectrum status
 python3 kit/scripts/tools.py --platform spectrum zesarux            # ZRCP on 127.0.0.1:10000
 python3 kit/scripts/tools.py --platform spectrum snapshots          # where snapshots land
-python3 kit/scripts/tools.py --platform spectrum check-emulator     # 40 named checks, about 10 s
+python3 kit/scripts/tools.py --platform spectrum check-emulator     # 45 named checks, about 15 s
 python3 kit/scripts/tools.py --platform spectrum stop               # the emulator only
 python3 kit/scripts/tools.py --platform spectrum verify-footprint   # what it writes outside the repository
 ```
@@ -201,21 +204,32 @@ work was measured with.
 
 ## macOS — known to work
 
-Run on macOS arm64 on 29 September 2026 with the ZEsarUX-13.0 release and
-the build above. `check-emulator` passes 37 of 40 in about ten seconds,
-`verify-footprint` is clean, and the emulator serves ZRCP on
-`127.0.0.1:10000`. The three failures and their workarounds are in
-`kit/skills/spectrum/tool-zesarux/workarounds.md`.
+Run on macOS arm64 on 3 October 2026 with the ZEsarUX-13.0 release and the
+build above. `check-emulator` passes 41 of 45 in 17 seconds, `verify-footprint`
+is clean, and the emulator serves ZRCP on `127.0.0.1:10000`. The four failures
+and their workarounds are in `kit/skills/spectrum/tool-zesarux/workarounds.md`.
 
 Record what a run used in `game.json` under `tools.emulator`: the line
 `tools.py status` prints (`release ZEsarUX-13.0,
 ZEsarUX_macos-silicon-13.0.dmg`), which names the release and the file and
 carries no path on this computer.
 
+## Linux
+
+`check-emulator` and `verify-footprint` were run on Linux x86_64 (Ubuntu
+24.04, no display) on 1 October 2026. Six runs of the 40 checks the suite had
+then: 37 passed, the same three failures the macOS row had before
+`--snap-no-change-machine` (38 with it). `verify-footprint` was clean:
+`.zesaruxrc` lands in `tools/zesarux-home/` and nothing in `$HOME`. The
+`ubuntu24` build needs SDL 1.2, which Ubuntu does not install by default; see
+"What goes where". ZRCP is about 40 ms a call on Linux without `TCP_QUICKACK`,
+which `kit/spectrum/zesarux.py` now sets: 23 calls a second before, 5 000 to
+6 000 after, and the suite 68 s to 12 s.
+
 ## Untried systems
 
-No run is recorded on Linux, on Windows, or on an Intel Mac. Two things to
-know before the first one: `get-zesarux` picks the project's own file for
-the machine it is run on, and the launcher keeps every path the emulator
-writes inside `tools/zesarux-home/` on any system. Run `verify-footprint`
-on a new system and write the section here, as `kit/INSTALL.md` says.
+No run is recorded on Windows or on an Intel Mac. Two things to know before
+the first one: `get-zesarux` picks the project's own file for the machine it
+is run on, and the launcher keeps every path the emulator writes inside
+`tools/zesarux-home/` on any system. Run `verify-footprint` on a new system
+and write the section here, as `kit/INSTALL.md` says.
