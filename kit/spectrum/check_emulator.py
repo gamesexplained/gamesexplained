@@ -434,18 +434,6 @@ def p3(rpc):
     check("count-while-running", min(seen) >= 0 and max(waited) < 0.2,
           "a second connection reads the count without waiting for the run to end",
           f"reads {seen}, waited {waited}s against the run's {run_time:.2f}s")
-
-    # the T-state counter, against the wall clock and against the program's own rate
-    rpc.reset_tstates()
-    own0 = word(rpc, PASSES)
-    t0 = time.time()
-    rpc.run(limit=200000, timeout=20)
-    dt = time.time() - t0
-    d = rpc.tstates()
-    own = (word(rpc, PASSES) - own0) & 0xFFFF          # a 16-bit counter: it wraps on a long run
-    check("stopwatch", 0.5 <= d / (3.5e6 * dt) <= 2.0 and own > 0,
-          "the T-state counter advances at the machine's 3.5 MHz, not the host's",
-          f"{d} T-states in {dt:.2f} s = {d / dt / 1e6:.2f} MHz, {own} passes")
     rpc.bp_clear()
 
 
@@ -466,6 +454,18 @@ def p_interrupts(rpc):
     check("interrupt-rate", 95 <= f1 - f0 <= 105,
           "the ROM's interrupt runs once a frame, and the machine can be counted",
           f"{f1 - f0} interrupts in 100 frames, {f1 - f0} a second")
+
+    # the T-state counter, against the interrupts, not against the host's clock (#131)
+    rpc.reset_tstates()
+    t0 = rpc.tstates()
+    f0 = int.from_bytes(rpc.read_memory(FRAMES, 3), "little")
+    rpc.frames(100, timeout=60)
+    d = rpc.tstates() - t0
+    n = (int.from_bytes(rpc.read_memory(FRAMES, 3), "little") - f0) & 0xFFFFFF
+    per = d / n if n else 0
+    check("stopwatch", n > 0 and abs(per - FRAME_TSTATES) < 100,
+          "the T-state counter and the interrupts agree: one interrupt is one frame of 69888 T-states",
+          f"{d} T-states over {n} interrupts = {per:.0f} T-states an interrupt (a frame is {FRAME_TSTATES})")
 
     # stop mid-frame, save, load, and see whether the machine came back where it was
     rpc.bp_set(1, f"PC={LOOP:04X}H")
