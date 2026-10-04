@@ -8,7 +8,7 @@ Host: Linux x86_64, Ubuntu 24.04, no display. Emulator: official vice-mcp v3.13.
 
 ## Skill text that changed what I did
 
-- `60-verify`: "Measure the listing before calling it done": completed the original fixed-seed sixty-comment review with an agent who wrote none of the annotations, preserving all four baseline errors, then extending cold review to the interpreter, GAME and BLDR with separately defined populations and unchanged baseline samples.
+- `60-verify`: "Prove reachability with inputs, not pokes": replayed Simon Says from its loaded start with neutral input, discovering the automatic pearl and its preceding color patch before labelling the saved instruction state a bug.
 - `70-minisite`: "A widget that runs a mechanic is a claim too": compared the actual page acceptance function with the original level callback across every color nibble, remembered symbol, treasure index and random low-bit value.
 - `50-coverage`: "Know how far a description reaches": typed the authored tables and described ownership at their actual boundaries, including automatic symbols inside sprite RAM, instead of treating one nearby comment as explaining the whole block.
 - `50-coverage`: "Is the picture loaded or drawn?": compared entry and play images, retaining the loaded charset and relocated sprites while excluding generated screen/workspace bytes.
@@ -59,15 +59,15 @@ Existing open and closed issues were searched before commenting; no duplicate is
 | 50-coverage | 51 | gpt-6-astra | 1 | Single agent: compiled GAME interpreter and script, shared engine, assets, separate BLDR trace and forty level overlays. Canonical resident ledger 45560 bytes; overlay findings documented separately. |
 | 60-verify | 14 | gpt-6-astra | 1 | Deterministic input pairs, key/score/extra-life/Freeze forced states, six-player menu, editor load, pause/resume, 158 original-code comparisons and exact 104448-pixel reconstruction. Fixed sparse-frame phase inference. |
 | 70-minisite | 12 | gpt-6-astra | 1 | Interactive article, forty-level atlas, five SID previews, separate copy rewrite, desktop/mobile browser controls and full-site build. |
-| 80-retro | 32 | gpt-6-astra | 12 | One agent; kit fixes for independent tool ports, quiet-frame capture, compiled programs and ROM aliases; regression checks and maintainer feedback.; Rebased onto kit 0.0.57; preserved upstream tool cleanup and measurements, moved the lesson into its own file and added verified skill-usage passages.; Recorded sprite-default evidence and the visual curation pass; no new kit change or maintainer ask.; Recorded the second research pass, corrections, source verification and live puzzle initialization. Existing verification and reachability rules covered the failures; no new kit change or maintainer ask.; Recorded third curation evidence, corrected save-guard and terrain-test interpretations, checked source navigation and original controls. Existing verification rules sufficed; no new shared-kit change or maintainer ask.; Recorded movement and protection corrections, checkpointed room completion, RAM-correct sprite capture, mobile/keyboard checks and final source validation; existing kit rules covered the findings.; Recorded the user’s review finding and checked the clarified terminal-state presentation; no new kit changes.; Replaced the fatal-drop banner with a live original-code death recording; verified full playback, both sprite bounds, controls and responsive layouts.; Corrected the prepared wizard color, regenerated movement and full death states, and checked purple start/end frames in the browser.; Recorded audit findings, portable validation commands and evidence limits; corrected canonical input labels/comments and provenance; checked data, actual page mechanics, live probes, source navigation, death playback and packaging. Remaining independent review and live persistence/boot checks are explicit.; Recorded corrected boot guard, live persistence and accounting evidence, independent decoder scope and remaining review limits. Updated canonical comments and public turn explanation; required checks, 19-game build and desktop/phone page checks pass. No shared-kit change or new maintainer ask.; Recorded tie attribution, ineffective load-error timeout and transfer-status limits; shared portable harness with 303 existing plus thirty focused cases; live input, persistence, retry and wait controls. Updated six canonical comments and article. Data, repository, skill-usage, full build and desktop/phone checks pass; no new kit rule or maintainer ask. |
-| curate | 230 | gpt-6-astra | 10 | Illustrated all 21 behaviors with original sprites; 86 appearance options and 181 frame selections checked in the browser, plus keyboard and mobile layout.; Verified projectile hits, cat contact, shared Freeze timers and Simon Says, including its automatic starting pearl. Added an illustrated puzzle rule explorer, corrected two atlas counts and expanded source comments. 11450 new original-code cases/timelines, live controls and responsive browser checks.; 700 treasure states and 960 actor states; hidden-thief neutral-input demonstrations and Burning Bridges input sequence; loader score clearing, private editor save/reload, carry provenance and bounded dormant-code tests; 42-view source browser.; 25 player/travel scenes, 494 states and 205 live comparisons; 84 Invisibility and 48 elevator cases; completed checkpointed Burning Bridges route to L18T; original-graphics walkthrough, navigation and mobile controls.; Review correction: explain the four-pixel fatal fall, label the replay endpoint and omitted death animation, check play/reset and phone presentation; motion data unchanged.; Self-audit: all forty disk level records, resident bytes and assets; actual public mechanic functions; fresh live movement, input and protection probes. Corrected high-score name/title routines, removed unused external images, documented evidence limits and added repeatable validation scripts.; Further self-audit: fresh assisted boot and marker writers; all 45560 resident bytes and 9180 VICE-decoded instructions; 303 accounting cases, live bonus/death/turn/milestone paths and full prepared-score name/save/reload; original spell/actor/default tables. Corrected first-attempt boot guard and clarified ranking ties and turn rules.; Further audit: thirty ranking/attribution and disk-control cases; three live typed-score saves including six players and top/bottom ties; real save error/recovery and expiry; missing-file level wait with 600 PAL-frame watchpoints and FIRE control. Corrected tie-name attribution and false level-timeout claim; documented READST versus persistence. |
+| 80-retro | 20 | gpt-6-astra | 6 | One agent; kit fixes for independent tool ports, quiet-frame capture, compiled programs and ROM aliases; regression checks and maintainer feedback.; Rebased onto kit 0.0.57; preserved upstream tool cleanup and measurements, moved the lesson into its own file and added verified skill-usage passages.; Recorded sprite-default evidence and the visual curation pass; no new kit change or maintainer ask.; Recorded the second research pass, corrections, source verification and live puzzle initialization. Existing verification and reachability rules covered the failures; no new kit change or maintainer ask.; Recorded third curation evidence, corrected save-guard and terrain-test interpretations, checked source navigation and original controls. Existing verification rules sufficed; no new shared-kit change or maintainer ask.; Recorded movement and protection corrections, checkpointed room completion, RAM-correct sprite capture, mobile/keyboard checks and final source validation; existing kit rules covered the findings. |
+| curate | 128 | gpt-6-astra | 4 | Illustrated all 21 behaviors with original sprites; 86 appearance options and 181 frame selections checked in the browser, plus keyboard and mobile layout.; Verified projectile hits, cat contact, shared Freeze timers and Simon Says, including its automatic starting pearl. Added an illustrated puzzle rule explorer, corrected two atlas counts and expanded source comments. 11450 new original-code cases/timelines, live controls and responsive browser checks.; 700 treasure states and 960 actor states; hidden-thief neutral-input demonstrations and Burning Bridges input sequence; loader score clearing, private editor save/reload, carry provenance and bounded dormant-code tests; 42-view source browser.; 25 player/travel scenes, 494 states and 205 live comparisons; 84 Invisibility and 48 elevator cases; completed checkpointed Burning Bridges route to L18T; original-graphics walkthrough, navigation and mobile controls. |
 | total | 132 | gpt-6-astra | | 2.2 h of work |
-| after the run | 250 | | | curate, play and their retros: 4.2 h, not in the total |
+| after the run | 136 | | | curate, play and their retros: 2.3 h, not in the total |
 
 Portable figures:
   minutes to play : 25.5
   min per KB      : 1.2  (51.3 min for 45,560 tracked bytes, 1 agents)
-  hours           : 2.2  (and 4.2 h after the run)
+  hours           : 2.2  (and 2.3 h after the run)
 
 The one change that would have saved the most minutes: identify and decode the interpreted program before treating the unexplained tail as ordinary data; its control flow exposes the menus, round progression and editor commands together.
 
@@ -103,108 +103,8 @@ The interpreter harness's wrong dispatch stop and the first wrong death-routine 
 
 The final visual review also caught CPU-visible ROM data used as sprite art in a draft walkthrough. Raw snapshot RAM supplied the correct VIC-visible images; all 46 sprite records were matched to their saved pointers before publishing. The existing bank-awareness guidance already covers the distinction, so the fix stays in the capture and game notes.
 
-The contributor’s spell-preview review found that a trace ending at a death flag looked like an incomplete fall, and requested the full animation. The comparison continues through the original death script and both animated sprites to the final effect. The existing widget-verification and platform banking guidance apply: the capture restores the omitted VIC display settings in the movement-only fixture, pauses room interrupts to keep the prepared terrain fixed, and reads sprite artwork from raw RAM. The visible capture failures and their corrections are recorded in agent-history.md. Full playback, controls, sprite bounds and phone layouts pass; no additional shared-kit change or maintainer ask is needed.
+## Audit and review follow-up, 3–4 October 2026
 
+The `60-verify` instruction to “Measure the listing before calling it done” drove four frozen source samples. Existing caller-enumeration and live-verification rules led to the callback, score and disk checks; the failures required game-specific fixes, not another general kit rule. The sample results and limits are recorded in `facts.md`.
 
-The purple-wizard review correction fixes an artificial own-color override in the prepared examples. Regeneration confirms the motion and artwork are unchanged; the complete live death capture retains purple throughout. This is a local fixture and presentation correction under the existing verification rule, with no shared-kit change or maintainer ask.
-
-## Self-audit, 3 October 2026
-
-The existing caller-tracing and widget-verification rules exposed the
-champion-name/construction-title mix-up and guided checks of the public
-functions themselves. The corrected names, bounds and timeout modes were
-confirmed in VICE. Unused external screenshots were removed from published
-reference storage. Reusable game-specific checks now compare the forty disk
-levels, listing and asset bytes with the private inputs, and original
-instructions with the actual scoring, sound and Simon functions.
-
-`audit.md` separates shared-table consistency checks, CPU-harness tests, live
-forced probes, natural-input controls and earlier captures. Neither 100%
-coverage nor the number of passing cases is presented as full semantic
-validation. The self-audit cannot satisfy the independently selected check in
-`kit/CHECKING.md`. Existing verification rules already cover these failures;
-this pass adds no shared-kit rule or maintainer ask. The further pass below completes the live persistence and fresh-boot provenance
-checks; the audit and TODO retain their remaining review and route limits.
-
-The death-browser test needed an event-aware wait after changing the browser's
-reduced-motion preference; the initial immediate assertion raced the media
-event. This visible harness failure is recorded in the agent history, with no
-new skill rule.
-
-
-## Further audit, 3 October 2026
-
-Replaying the documented boot from hard reset caught its missing first-attempt
-guard. The corrected recipe reproduces the full resident image and both marker
-writers. Game-specific portable checks now cover 303 accounting cases, original
-spell/behavior/default tables and every native instruction through VICE's
-separate decoder. Live prepared probes cover bonus, player turns, death retries,
-band transitions and typed high-score save/reload on a disposable disk; the
-retained Burning Bridges exit checkpoint also settles its bonus and reaches the
-next file load.
-
-The original verify and reachability rules already require these checks. The
-boot defect is fixed in orientation, and the new checks live with the game;
-there is no new shared-kit change or maintainer ask. Input-buffer clearing,
-incorrect probe entry/stop assumptions and disk initialization after a snapshot
-restore produced visible failures, recorded with their fixes in agent-history.
-The author's additional checks do not satisfy the separate reviewer requirement
-in `kit/CHECKING.md`; the tier and copy provenance are unchanged.
-
-
-## Attribution and error-path audit, 3 October 2026
-
-The existing verification rules led beyond numeric score insertion into name
-attribution, exposing the tie behavior, and beyond the presence of a timeout
-comparison into its back edge, exposing a counter that does not advance. Thirty
-new original-code cases and live keyboard/disk/control tests cover these paths.
-The save-status observation reinforces the existing requirement to check the
-actual saved record: READST zero alone did not establish persistence.
-
-The watchpoint ignore-count assumption and restored-drive setup produced visible
-probe failures. Their corrections and bounded results are recorded in
-agent-history.md. Fixed-frame observation plus a positive FIRE control supplies
-the live wait evidence. These are game/tool observations under existing rules;
-no shared-kit edit or new maintainer ask is needed. Six canonical comments and
-the score section now reflect the tested behavior. The author’s work remains a
-self-audit, with the independent-review requirement unchanged.
-
-## Semantic and reproducibility follow-up, 4 October 2026
-
-Applied the updated `60-verify` whole-game and accepted-value rules to room
-callbacks, and its fresh-sample rule to a separate reviewer. The original
-sixty-comment sample is complete: 56 supported, four incorrect, none unresolved
-against its baseline. The error fraction is 6.67%, with an approximate pooled
-Wilson 95% interval of 2.62–15.93%, limited to the eligible resident-comment
-frame. All four revised comments have supported targeted rechecks. The full
-report is under `validation/`; it does not estimate errors in unsampled claims
-or supply independent maintainer certification.
-
-Five offline validators and a live runner make the selected evidence repeatable
-without private session helpers. Setup comes from the contributor's private
-original inputs, not the datasets being checked. Existing rules already cover
-these failure modes, so no shared-kit edit or maintainer ask is needed.
-
-
-## Compiler and real disk audit follow-up — 4 October 2026
-
-Existing `60-verify` rules prompted separate caller inventories, frozen samples,
-positive controls and cheap live checks. The clean BLDR statement sample did
-not validate its prose: a separate review of all 43 descriptions found four
-wrong details. Those are different units and are reported separately. The
-coverage ledger had already counted the described checked-fetch bytes, so its
-100% did not establish that their code/data classification was right.
-
-The new game-local validators catch the actual instruction and I/O claims;
-no general kit policy change or new maintainer ask is needed. Disk fixtures
-check both zero free blocks and the full file chain. Testing a full disk with
-and without the old score file prevents a false universal failure claim when
-the original writer scratches its old file first. A read-only image alone is
-not the observation: actual DOS errors and unchanged extracted/image data are.
-
-The external status-reader timeout was visible and belongs in the run history.
-The final reader clears selected KERNAL channels before opening its diagnostic
-channel, exits on transfer status or CR, and has a bounded host timeout; the
-complete suite passes. It remains a test instrument, not simulated game code.
-The frozen source reports and portable original-code/live runners are in
-`validation/`; shared skills already cover the underlying verification rules.
+The first PR follow-up committed extensive private-input validators and duplicated audit reports. Maintainer feedback on #193 requested a concise result: keep sample paragraphs and named checks in `facts.md`, with scripts, ledgers and reports in ignored `work/`. The evidence remains available locally without dominating the review diff. No shared-kit change or new maintainer ask is needed.

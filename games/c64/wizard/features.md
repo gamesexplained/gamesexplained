@@ -56,6 +56,6 @@ Sources read 2 October 2026:
 
 Open rows describe what was searched and what remains unverified. Traced facts have source evidence; live facts also have an emulator observation. Forced-state tests establish a code response, not a player route.
 
-## Semantic verification follow-up
+## Verification scope
 
-The 4 October 2026 audit distinguishes the 839-cell Madhouse rotation from its skipped arrow at $C700, and confirms that For Your Ice Only erodes its glyph on early indices too. All forty callback entries and both treasure callers are inventoried in `semantic-audit.md`. Portable validators cover pickup deltas, actor motion, prepared movement and native register/boundary details; isolated fixtures do not establish full room routes.
+Madhouse rotates 839 cells and skips the arrow at $C700; For Your Ice Only erodes its glyph on early indices too. `work/audit_room_rules.js` checks all forty callback entries and both treasure callers. The checks listed in `facts.md` also cover pickup deltas, actor motion, prepared movement and native register/boundary details; isolated fixtures do not establish full room routes.

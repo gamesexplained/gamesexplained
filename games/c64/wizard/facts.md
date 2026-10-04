@@ -22,7 +22,7 @@ The compiled program's strings use shifted PETSCII: stored `$41–$5A` become lo
 
 The separate title/menu writer at `$686C` writes screen codes itself. Its source is ($FB), destination ($FD), source cursor `$8D`, destination cursor `$8E`, letter offset `$8B`. Byte zero terminates. `$3F` selects lowercase by subtracting `$40`; `$40` selects uppercase with offset zero. Space, ampersand and period draw unchanged; other small bytes advance the destination cursor. `$68B8` begins the publisher and credit streams. Thus those streams need their formatting commands decoded, not PETSCII transliteration.
 
-Spell names at `$8D73–$8E0E` are twelve 13-byte screen-code fields, padded with spaces. The order is Fireball, Magic Missile, Disintegrate, Enchantment, Freeze, Invisibility, Teleport, Feather Fall, Levitate, Haste, Slow, None. All twelve public spell labels match these fields. `validation/audit_data.py` also compares all 21 public behavior names and the 20 default shape/animation/color triples with BLDR’s packed DATA tables at `$296A–$2ADE`. These comparisons validate names and defaults; behavior is checked separately.
+Spell names at `$8D73–$8E0E` are twelve 13-byte screen-code fields, padded with spaces. The order is Fireball, Magic Missile, Disintegrate, Enchantment, Freeze, Invisibility, Teleport, Feather Fall, Levitate, Haste, Slow, None. All twelve public spell labels match these fields. `work/audit_data.py` also compares all 21 public behavior names and the 20 default shape/animation/color triples with BLDR’s packed DATA tables at `$296A–$2ADE`. These comparisons validate names and defaults; behavior is checked separately.
 
 ## Initial live control check
 
@@ -87,7 +87,7 @@ The initials and champion-name fields use different shared-editor entries: GAME 
 
 ### Accounting and persistence checks
 
-The portable `validation/audit_accounting.js` checks 303 prepared original-code cases, including all 25 starting bonus values for six selected scores, all 64 survivor masks, score-byte boundaries, ranking ties and save flags. It suppresses printing and supplies system calls; actual disk persistence is established by the separate live test below.
+The portable `work/audit_accounting.js` checks 303 prepared original-code cases, including all 25 starting bonus values for six selected scores, all 64 survivor masks, score-byte boundaries, ranking ties and save flags. It suppresses printing and supplies system calls; actual disk persistence is established by the separate live test below.
 
 **Live, 3 October 2026:** four prepared bonus cases include 0 plus 24 units = 1,200, and 9,950 plus one unit = 10,000 with lives 6→7. Three six-player account cases store 123,450, skip eliminated players and wrap to the next round. Two death-settlement probes retain player 1 after lives 2→1, but restore player 2 after player 1's last life. Prepared ten-level milestones at bases 0 and 30 confirm the life additions, eight-bit wrap and Expert→Mystery transition; a forced Mystery load at base 153 resets round 9 to zero and requests file 25. These prepared milestones do not establish a normally reachable ten-level Mystery milestone.
 
@@ -103,7 +103,7 @@ at $444F increments before testing >75, giving 76 delays without FIRE.
 
 ### Ranking attribution and disk-error paths
 
-`validation/audit_score_paths.js` adds thirty prepared original-code cases: eight ranking/attribution scenarios, twelve save-retry outcomes, six load-retry/wait scenarios and four native-saver status combinations. It executes both ranking passes, supplies input fields and I/O results, and checks the original decisions and record writes. The native-saver cases run `$8B1E` while supplying KERNAL results; they distinguish SAVE’s accumulator/carry from the later READST value.
+`work/audit_score_paths.js` adds thirty prepared original-code cases: eight ranking/attribution scenarios, twelve save-retry outcomes, six load-retry/wait scenarios and four native-saver status combinations. It executes both ranking passes, supplies input fields and I/O results, and checks the original decisions and record writes. The native-saver cases run `$8B1E` while supplying KERNAL results; they distinguish SAVE’s accumulator/carry from the later READST value.
 
 **Live, 3 October 2026:** a prepared old ranking of 1,000 down to 550 points in steps of 50 was combined with six accounts `[1050,1000,1000,750,550,0]`. The prompts assign players 1,2,3,4 to ranks 1,2,3,9. The saved score units are `[21,20,20,20,19,18,17,16,15,15]`. Separate single-player cases confirm a 1,000-point tie receives the champion-name prompt and a 550-point tie receives tenth-place initials without changing any score. All three typed-input runs save with status zero, and separate disk extraction matches every one of their 128 record bytes. These are prepared end-of-session records, not an uninterrupted six-player playthrough.
 
@@ -120,7 +120,7 @@ extraction. The external DOS diagnostics were respectively 67 (full/absent),
 00 (full/existing), 26 (protected/absent), and 63 (protected/existing). These are
 observed drive results; the game does not read that error channel. Full fixtures
 have zero free data blocks and independently checked filler sector chains.
-The original G64 remains unchanged. `validation/audit_disk_failures.py` repeats
+The original G64 remains unchanged. `work/audit_disk_failures.py` repeats
 these five cases and three real retry-exhaustion cases.
 
 
@@ -240,7 +240,7 @@ at p-41 or p-40 is overwritten by the upper-left or upper-middle portal glyph.
 Seven complete placement tests cover blank success and obstacles at each of the
 six footprint cells: the other four occupied cells reject placement. Eight live
 character predicates confirm the numeric filter, including rejected minus and
-accepted comma/digits. `validation/audit_live_compiled.py` repeats these tests.
+accepted comma/digits. `work/audit_live_compiled.py` repeats these tests.
 
 The editor’s save preparation at BLDR `$45EF` overwrites all six packed velocity fields with `$1F`, the shared duration with `$90` (144), and the Y position of each type-7 actor with 197. The save path calls this after title entry (`$41F2`). A live CTRL-S save with distinct injected parameter values produced those reset values in the saved L99T file; the original loader recovered the same values after the working header was cleared. The separate parameter command stores its inputs at `$3BA7/$3BDC`, but the later save preparation overwrites them. The test verifies the save interaction, not every possible route through the parameter UI.
 
@@ -299,6 +299,19 @@ The atlas counts **indexed treasure and fire cells**, using the original `$7BAA`
 - **Live hit controls:** from the same Playground snapshot, queued spell IDs 0,1,2,3 each remove actor zero within twelve frames; ID 4 leaves its type and changes its color to cyan. The no-hit control retains the original actors.
 - **Simon Says comparisons:** 4,096 original-code callback cases cover sixteen indexed positions, four remembered treasure symbols, all sixteen color nibbles and four random low-bit values. They check the page's actual acceptance function, death flag, self-modified branch, next displayed/remembered symbol and all thirteen changed colors. Four isolated live callback cases check match/mismatch with visible/hidden words. The separate startup replay above tests the automatic pearl through the real pickup path and its terrain/color patch.
 
+
+- **Resident data and decoding:** `work/audit_data.py` checks all 45,560 tracked bytes, forty rooms, 240 actor slots, 58 shapes, names and defaults. `work/audit_vice_listing.py` independently compares all 9,188 native instructions with VICE in 117 batches; decoder agreement does not validate comment meaning.
+- **Article mechanics:** `work/audit_mechanics.js` compares the page's actual functions with 80 original-code scoring cases, sixty SID cases and 4,096 Simon cases; it also checks all 256 key values, three text-entry setups and forty object-index scans.
+- **Accounting and score paths:** `work/audit_accounting.js` checks 303 prepared cases; `work/audit_score_paths.js` adds thirty ranking, attribution, retry and status cases. Supplied I/O results test decisions, not disk persistence. Live checks use `work/audit_accounting_live.py`, `work/audit_death_turns.py`, `work/audit_progression_live.py`, `work/audit_scores_live.py` and `work/audit_scores_multi_live.py`.
+- **Room rules and callers:** `work/audit_room_rules.js` checks forty callbacks, 1,931 prepared cases and all 608 indexed saved treasure cells through each of the two actual collection paths. These are not 608 player routes; the atlas offers 606 choices after Simon startup and removal of its display cell.
+- **Published replays:** `work/audit_pickups.js` compares 700 states for 606 choices; `work/audit_actor_motion.js` compares 960 states; `work/audit_movement.js` checks 25 prepared scenes and 494 controller states. That last count includes only the first two fatal-drop states, not a recapture of the following 264 death-animation samples.
+- **Display and sound:** `work/audit_native_details.js` checks native display/SID setup and all 256 packed-note inputs. `work/audit_live_rooms.py` supplies sixteen prepared VICE checks for pickups, callback boundaries, display/SID setup and packed notes.
+- **Compiled programs:** `work/audit_interpreter.js` runs 22 groups with 66,810 prepared cases, including all 65,536 signed integer values; `work/audit_game_script.js` runs fifteen groups. `work/audit_editor_script.js` checks input filtering, 230 initialized DATA destinations, placement, erasure, cursor movement, numeric bounds and all 256 load/save status values. These original-instruction fixtures share the kit CPU implementation.
+- **Live compiled-code checks:** `work/audit_live_compiled.py` runs twenty prepared VICE cases covering seven portal placements, eight input-filter controls, glyph restoration, IRQ setup, a Slow boundary, checked-fetch dispatch and BASIC NEW.
+- **Actual disk failures:** `work/audit_disk_failures.py` checks five SAVE conditions plus three retry-exhaustion cases. Separately extracted successful records match all 128 prepared bytes; the supplied G64 is unchanged. `work/audit_level_wait_live.py` checks the level-error FIRE wait. Successful-fourth-LOAD handling has controlled-code evidence only.
+
+These checks were run with the private edition and snapshots identified in `orientation.md`; their scripts and detailed results stay under ignored `work/`. Prepared states establish the named responses, not complete gameplay routes.
+
 The emulator qualification recorded 54 passing checks and 3 wall-clock-sensitive failures on this host (watchpoint throughput and warp-rate thresholds). Exact frame counts, stopping, input, and snapshot/restart determinism passed. Claims above use exact frames, register values, or original-code comparisons rather than those failed wall-clock measurements.
 
 
@@ -340,14 +353,7 @@ The no-spell comparison starts at (120,101) above the same prepared platform as 
 
 The death sequence rotates wizard shapes `$A8–$AB`, then runs the final `$AC/$AD` effect at the bottom. Its second sprite begins with `$DD` and settles to `$CA` on the platform. Both sprites' positions, colors, multicolor flags and raw RAM artwork are recorded. The wizard’s own color is 4 (purple) from the initial pose through the death sequence. Shared colors are 14 and 1, and neither sprite is expanded. The replay uses a taller common view for the travel examples so both sprites remain visible through the final effect. It advances captured video frames at 20 ms, with a short initial hold; the other spell illustrations retain their slowed controller-update timing. The death routine completing is distinct from the initial fatal flag, which its script clears during setup.
 
-## Semantic checks and repeatable fixtures, 4 October 2026
-
-`semantic-audit.md` records the bounded claim/caller audit and
-its limits. `validation/audit_room_rules.js` enumerates all forty callback entries,
-checks both actual collection paths for 608 indexed saved treasure cells each,
-and runs 1,931 prepared callback cases. The Simon acceptance matrix is checked
-separately by `audit_mechanics.js`. These prepared cells are not 608 player routes;
-the atlas offers 606 choices after Simon startup and removal of its display cell.
+## Native sound details
 
 SID setup $839A writes control $15 to all three voices: triangle, ring modulation
 and gate, without noise. Type-1 collision sound $982F writes $13 to voice two:
@@ -357,42 +363,14 @@ nibble $F subtracts four. All 256 byte inputs were checked. The only decoded
 resident caller is $824D after INC $B1; normal reachability of the $FC case has
 not been established. These are code properties, not analog sound-quality claims.
 
-The portable pickup, actor-motion and player-motion checks read private level,
-font and snapshot inputs independently of the published page, then compare the
-shipped datasets/functions. Their inputs and commands are in
-`validation/README.md`. The movement check covers 494
-controller states, including the first two fatal-drop states; it does not
-re-capture the following 264 death-animation samples.
+## Fixed-seed source samples, 4 October 2026
 
-**Resident-comment sample, 4 October 2026:** a separate reviewer who wrote none
-of the sampled annotations assessed sixty comments from baseline `a2c3192`.
-The results are 56 supported, 4/60 incorrect (6.67%), and zero unresolved;
-the approximate pooled Wilson 95% interval is 2.62–15.93%. Seed `20261004`
-selects proportionally from 358 comments of at least six words in six address
-bands spanning `$5800–$9FFF`. The exact sample is reproducible. Rounded
-allocation makes the interval approximate; its scope excludes compiled GAME,
-room overlays and other page claims. The four descriptions at `$6C77`, `$839A`,
-`$841C` and `$982F` in `50dbcec` have supported targeted rechecks, which do not
-estimate the remaining error rate. The complete evidence and baseline texts
-are in `validation/semantic-review-20261004.md` and its JSON companion.
+**Resident comments:** seed `20261004` selects 60 of 358 comments containing at least six words at `$5800–$9FFF`, proportionally across six address bands, from baseline `a2c3192`. A reviewer who wrote none of those annotations found 56 supported, 4/60 incorrect (6.67%), and none unresolved; the approximate pooled Wilson 95% interval is **2.62–15.93%**. The four descriptions now identify standard characters at `$6C77`, triangle/ring/gate rather than noise at `$839A`, triangle/sync/gate without ring modulation at `$982F`, and the skipped store on `$FC` wrap at `$841C`. All four have supported targeted rechecks. Rounded band allocation makes the interval approximate; it measures baseline comments, not the remaining error rate after those edits.
 
+**Interpreter comments:** seed `202610041` selects 20 of 244 line comments containing at least six words at `$0801–$27FF`, from baseline `db7640a`. The cold review found 19 supported and 1/20 incorrect (5%); Wilson 95% interval **0.89–23.61%**. The `$133F` ON description now includes the doubled-byte wrap that lets indices 128–255 alias table offsets. The two GAME and four BLDR callers identified in the review supply indices below 128, so this finding establishes a boundary behavior rather than a reachable player defect. Broader targeted review also clarified MID's empty-result exits, the BASIC transfer, heap allocation floor and literal dispatch, and classified eight instructions at `$19DE–$19EF` as code.
 
-## Interpreter and overlay review, 4 October 2026
+**GAME comments:** seed `202610042` selects 20 of 83 comments of at least 100 Unicode characters, across all comment types at `$296E–$4A88`, from baseline `db7640a`. The cold review found 18 supported and 2/20 incorrect (10%); Wilson 95% interval **2.79–30.10%**. The `$3831` description now identifies restoration of six mutable glyphs, rather than stopping demo playback; `$3E6C` enables game interrupts before clearing accounts and ending the session. Reviewing all 76 high-level comments also established that the statistics update precedes the final-score wait, that the ordinary end-session path calls it twice, and that the zero-initialized timeout takes 76 delay iterations.
 
-Three separate cold reviewers cover native $0801–$27FF, compiled GAME and
-BLDR. Their frozen baseline samples contain 1/20 incorrect interpreter comments
-(244 eligible; Wilson 95% 0.89–23.61%), 2/20 incorrect GAME comments
-(83 eligible; 2.79–30.10%), and 0/20 incorrect BLDR statement decodings
-(3,830 eligible; 0–16.11%). Seeds are 202610041, 202610042, and 202610043.
-The frames differ, so these are separate approximate estimates, not a pooled
-whole-page error rate. All 43 BLDR region descriptions were also reviewed;
-four contain a wrong baseline detail. Reports preserve the sampled baseline
-texts and verdicts alongside the targeted evidence in `validation/`.
+**BLDR statements:** seed `202610043` selects 20 of 3,830 decoded statements at `$3320–$530C`, from baseline `db7640a`. All twenty sampled decodings agree with the original instructions: 0/20 incorrect (0%); Wilson 95% interval **0–16.11%**. No sampled statement needed an edit. A separate review of all 43 region descriptions found four wrong details: ordinary cursor steps are four pixels in X and one in Y, minus signs are rejected, portal placement can overwrite the unchecked upper-left and upper-middle cells, and the title loop allows 7,501 passes. Those descriptions now state these behaviors. The zero-error statement sample is not a measurement of the region prose.
 
-The canonical listing contains 9,188 native instructions, including the eight
-at $19DE–$19EF. The coverage ledger still describes all 45,560 tracked bytes.
-The source validators exercise the original interpreter and each loaded script;
-twenty prepared VICE cases cross-check selected findings and supported claims.
-Eighteen interpreter entries retain explicit static-review limits. Full scope,
-reproduction commands, and evidence are in `compiled-disk-audit.md` and
-`validation/README.md`. These agent checks are not maintainer certification.
+The four populations differ; their intervals are not pooled into a whole-page error rate. Full selections, baseline texts, evidence and scripts are retained privately in `work/`. Eighteen interpreter entries retain limits from static review. These agent checks are not maintainer certification.
