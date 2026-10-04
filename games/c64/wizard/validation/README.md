@@ -1,8 +1,8 @@
 # Repeating the Wizard audit
 
 These checks compare committed data and the functions actually used by the
-article with private copies of the original program. They do not download,
-write, or publish game binaries. Results and limits of the 3 October 2026 pass
+article with private copies of the original program. They do not download or publish game binaries. The live disk suite writes only
+new disposable private images. Results and limits of the 3 October 2026 pass
 are in [audit.md](../audit.md).
 
 ## Inputs
@@ -48,7 +48,7 @@ node games/c64/wizard/validation/audit_native_details.js
 Each accepts a private-directory path as its optional first argument. Do not
 run Python with `-O`, which disables assertions. A missing input or failed
 comparison exits unsuccessfully; success prints a small JSON result without
-game bytes. None of these nine scripts needs a running emulator, browser or server.
+game bytes. None of these offline scripts needs a running emulator, browser or server.
 
 `audit_data.py` parses the snapshot's C64MEM module and checks the resident
 listing, loaded assets and known loader mutations; all forty saved playfields,
@@ -56,7 +56,7 @@ actor slots and selected header fields; both pages' maps and fonts; and all
 58 published actor shapes. It also reads all twelve spell names from the
 resident table and all 21 behavior names plus twenty default shape/animation/
 color triples from BLDR’s packed DATA records, comparing them with the article.
-The 9,180 mnemonic/length checks use the kit's
+The 9,188 mnemonic/length checks use the kit's
 opcode tables, which are also used by the listing generator. They check
 consistency, not an independent disassembler's agreement or the meaning of
 every annotation.
@@ -101,7 +101,7 @@ python3 games/c64/wizard/validation/audit_vice_listing.py
 ```
 
 It verifies the entire listed image before asking VICE to disassemble all
-9,180 native instructions in 117 batches. It checks bytes, instruction
+9,188 native instructions in 117 batches. It checks bytes, instruction
 boundaries and mnemonics; it neither writes memory nor resumes execution.
 The bytecode side comments and the meaning of routine labels are outside this
 check. VICE decoder agreement is independent of the kit's opcode table, but
@@ -225,3 +225,72 @@ They check packaging and structure, not factual truth. For independent review,
 follow [kit/CHECKING.md](../../../../kit/CHECKING.md): reviewer-selected facts,
 named routines/tables and orientation claims, traced and observed live. The
 author's own passing test list is not a substitute for that sample.
+
+
+## Shared interpreter, GAME and construction source
+
+The 4 October compiler/overlay reports and their frozen samples are indexed in
+[compiled-disk-audit.md](../compiled-disk-audit.md). Run the original-instruction
+probes with the same optional private-directory and ROM-directory arguments:
+
+```sh
+node games/c64/wizard/validation/audit_interpreter.js
+node games/c64/wizard/validation/audit_game_script.js
+node games/c64/wizard/validation/audit_editor_script.js
+```
+
+The interpreter validator needs `entry.vsf`, `game.prg`, and `bldr.prg`; GAME
+also needs `play-round1.vsf`; the editor needs `editor-menu.vsf` and `bldr.prg`.
+Create `editor-menu.vsf` after choosing Construction, pressing FIRE at its title,
+and loading screen 0 to reach the main editor menu, as recorded in `facts.md`.
+Use the same private BASIC/KERNAL ROM files listed above. The editor harness
+restores original BLDR runtime bytes over initialized RAM before each probe.
+The validators write no files and require no emulator. They preserve the
+original selection/report evidence rather than resampling it.
+
+The interpreter suite has 22 groups and 66,810 prepared cases (65,536 exhaust
+signed integer values). GAME has fifteen groups. BLDR covers all 256 input
+characters, eight complete numeric inputs, 230 initialized DATA destinations,
+seven portal occupancy and seven full-placement controls, six shapes,
+26 erasure glyphs, ten cursor cases, 76 numeric bounds, all 256 load/save status
+values, five callbacks, and title/save-reset controls. Neither the number of
+cases nor decoder agreement proves every source claim.
+
+## Live compiled-code and disk checks
+
+Point `KIT_VICE_PORT` at this clone's qualified VICE instance; do not use another
+project's emulator. Both scripts require it to be paused with no checkpoints.
+They save the machine/disks and warp setting, then restore them even when a
+check fails. Scratch trampolines and prepared data are written, but original
+game instructions are unchanged. Run these serially, not alongside other
+emulator work. Do not use Python `-O`.
+
+```sh
+KIT_VICE_PORT=6511 python3 games/c64/wizard/validation/audit_live_compiled.py
+KIT_VICE_PORT=6511 python3 games/c64/wizard/validation/audit_disk_failures.py
+```
+
+`audit_live_compiled.py [private-dir]` needs `play-round1.vsf` and
+`editor-menu.vsf`. Twenty cases cover portal placement and numeric filtering,
+GAME glyph restoration and IRQ setup, a Slow boundary, checked-fetch dispatch,
+and BASIC NEW. Results go only to `live-compiled-audit-result.json` in the
+private directory.
+
+`audit_disk_failures.py [private-dir] --original PATH --c1541 PATH` needs
+`play-round1.vsf`, the supplied original G64 for a before/after hash check,
+and the kit's installed `c1541`. Defaults find `wizard.g64` beside the checkout
+and `c1541` under `tools/vice-mcp/bin/`. The original is never attached or written.
+The script creates/replaces its own `disk-audit-*.d64`/`.prg` fixtures in the
+private directory. Full fixtures have zero free data blocks and checked sector
+chains; protected fixtures are read-only while attached. Successful score files
+are separately extracted and compared with all 128 prepared bytes.
+
+Five SAVE conditions cover writable/full/protected disks with and without SCOR.
+Two failure conditions are then retried to three-SAVE exhaustion, and a missing
+level is retried to four-LOAD exhaustion. The external DOS-channel diagnostic
+runs after the game's decision and starts by clearing selected KERNAL channels;
+it is evidence about the drive, not an action the game performs. Results go to
+`disk-failures-result.json` in the private directory. The eight-case report dated
+4 October is retained in `disk-failures-20261004.json`. DOS codes are bounded to
+this emulator/edition/fixture, and successful-fourth-LOAD handling remains a
+controlled-code test.

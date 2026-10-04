@@ -242,3 +242,57 @@ pixels show the review summary, matching source data and all 266 purple-wizard
 states without page errors, failed requests or horizontal overflow. Full death
 playback, pause/restart, keyboard scrubbing, reduced-motion behavior and sprite
 bounds pass; 320-, 390- and 768-pixel layouts also pass.
+
+
+## Interpreter, GAME, BLDR and real disk failures — 4 October 2026
+
+The contributor selected the further source review and real disk-failure work,
+with delivery still limited to local updated-page review. Three cold subagents
+on the declared GPT-6 Astra Extra High model received disjoint interpreter,
+GAME and BLDR ranges. Each saved a fixed-seed sample and its own report before
+verdicts. The parent reproduced all three selections from db7640a and checked
+substantive supported claims and every actionable finding against source or
+live execution. The saved samples remain baseline evidence after repairs.
+
+Changed seventeen canonical comments through the logged regenerator client,
+classified $19DE–$19EF as code, exported symbols and rebuilt the listing.
+Revised four BLDR region descriptions and the generated companion. The native
+count rises from 9,180 to 9,188; VICE independently matches all 45,560 bytes and
+9,188 instructions in 117 batches. Coverage remains 100% of 45,560 bytes.
+The live compiler/editor runner passes twenty prepared cases, including the
+portal overwrite and blank/blocked controls, numeric input, glyph restoration,
+IRQ setup, supported Slow and NEW claims, and checked-fetch enable/disable.
+
+The disk runner creates only disposable images. Five initial SAVE conditions
+and three retry sequences pass: full/existing SCOR succeeds after scratch;
+full/absent and write-protected saves fail; existing protected SCOR survives.
+Three SAVE attempts and four missing-level LOAD attempts exhaust the original
+loops with held FIRE. Separate extraction verifies every successful record.
+The supplied G64 hash is unchanged, and all live runners restore the original
+paused emulator/disks/warp state. No publication action was taken.
+
+Probe failures were kept distinct from game findings. The first private RPC
+wrapper used a parameter named name that collided with snapshot_save's name;
+it was renamed before that attempt changed state. An external DOS reader first
+waited only for CR and stalled inside KERNAL IEC input; adding a READST exit
+bounded the read. During the portable rerun a protected-existing diagnostic
+again exceeded its 15-second budget at $EE5A. The final diagnostic starts with
+CLRCHN and allows 45 seconds, and the full eight-case suite then passed. This
+instrument change does not prove which factor caused that timeout. External
+DOS reads follow the game's decision and are not attributed to the game.
+
+The original-instruction checks pass: 22 interpreter groups/66,810 prepared
+cases, fifteen GAME groups, the BLDR matrix, the previous 303 accounting cases,
+and thirty score-path cases. The data audit passes for all forty level files,
+240 actor slots, 58 published shapes and the full resident image. Reports,
+portable commands, actual live results, and remaining limits are retained in
+compiled-disk-audit.md and validation/. A successful fourth LOAD discarded by
+the caller remains a supplied-status test. No full multiplayer run or new
+room-completion route is claimed.
+
+The 24-game build and required repository checks pass. Desktop/phone browser
+checks at 1280 and 390 pixels verify the new score/portal prose, all four editor
+notes, working overlay links, the source copy's 9,188 native instructions, and
+all 266 purple fatal-drop states. No page errors, failed requests or horizontal
+overflow were observed. The only build warning is the existing historical
+contributor alias; no unrelated mailmap edit was made. Changes remain local.

@@ -191,8 +191,9 @@ decodings, or every routine/table label.
    and selected routines, not every semantic assertion about all forty rooms.
 3. Keep the remaining accounting/I/O scope explicit: an uninterrupted
    multiplayer gameplay session, naturally reached progression beyond the
-   checkpointed room, a physically full or write-protected disk, and live
-   exhaustion of all retry attempts remain outside these tests. Multi-player
+   checkpointed room, and a successful fourth LOAD tested on a real disk remain
+   outside these tests. Full/write-protected images and live retry exhaustion
+   are covered in the 4 October compiled/disk follow-up. Multi-player
    end-of-session attribution, selected actual transport/file failures and
    their controls are covered above.
 4. For any new completion claim, supply a reproducible input route. Other than
@@ -214,7 +215,18 @@ The new live runner repeats five pickup scenarios, checks Madhouse's skipped
 cell, checks three For Your Ice Only controls and verifies seven native register/boundary cases. Its sixteen cases
 restore the original paused emulator state and execute no disk I/O.
 
-A separate source-comment reviewer produced four concrete findings, which the
-author checked and corrected, but its planned sixty-comment sample did not
-finish before a service usage limit. No sample pass, statistical error rate or
-formal independent verification is claimed.
+The separate sixty-comment native-engine sample is complete: 56 supported and
+four incorrect at its baseline, with all four descriptions subsequently repaired.
+Its saved sample, bounded interval and targeted rechecks are retained in
+[the review report](validation/semantic-review-20261004.md). This agent review
+is not a formal independent maintainer verification.
+
+## Interpreter, GAME, BLDR and disk follow-up, 4 October 2026
+
+[compiled-disk-audit.md](compiled-disk-audit.md) records the three additional
+source reviews, seventeen canonical comment changes, four editor description
+changes, and classification of the eight checked-fetch instructions. It also
+records twenty live compiler/editor cases, five real disk-save conditions and
+three complete retry-exhaustion cases. All original instructions and the supplied
+disk remain unchanged. The earlier dated 9,180-instruction result describes its
+baseline; the expanded listing has 9,188 native instructions.

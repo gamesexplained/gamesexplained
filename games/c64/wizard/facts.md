@@ -62,6 +62,14 @@ A complete sequential parse of GAME `$296E–$4A88`, including inline function b
 
 BLDR's machine runtime `$0826–$27F1` is byte-for-byte identical to GAME's. Its separate script `$3320–$530C` also parses end to end (3,830 instructions). Its strings, DATA records and behavior must be checked as a separate loaded program; the GAME snapshot does not contain that overlay.
 
+The final compiled header word is a program-end pointer: $4A89 in GAME and
+$530D in BLDR. Startup $2252–$225B adds $0100 to obtain allocation floor
+$4B89 or $540D. The optional checked fetch at $19DE is executable; extended
+opcode $80,$11 enables it by patching $0926. $19D2 restores normal fetching.
+ON $133F doubles its byte index modulo 256, so values 128–255 can alias earlier
+offsets. The two GAME and four BLDR callers identified in the decoded scripts
+stay below 128; no player-visible wrap failure is established.
+
 ## Players, rounds and score
 
 Traced in bytecode:
@@ -87,15 +95,34 @@ Resuming the retained `bridges-solved` exit checkpoint without new state edits r
 
 For high scores, a prepared 1,000-point account enters the original ranking and input sequence. Typed champion name `AUDITCHECK` and initials `XYZ` reach `$8B1E`; SAVE returns status zero on a disposable D64. After replacing all 128 record bytes in RAM, LODR `$10FC` reloads an identical record. Separate `c1541` extraction also matches all 128 bytes. The original supplied G64 hash is unchanged. Restoring the loader snapshot and swapping disks requires the resident `$8B62` disk-initialization command before this reload. The score was prepared for this test, not earned through a full playthrough.
 
+The ordinary final-score path calls $48F0 at $3EB3 and $444C before waiting.
+Each call adds the selected player count to one of the counter pairs at
+$C15C–$C15F; six players therefore add twelve. These bytes persist when SCOR
+is saved, but their display or threshold meaning is unestablished. The wait
+at $444F increments before testing >75, giving 76 delays without FIRE.
+
 ### Ranking attribution and disk-error paths
 
 `validation/audit_score_paths.js` adds thirty prepared original-code cases: eight ranking/attribution scenarios, twelve save-retry outcomes, six load-retry/wait scenarios and four native-saver status combinations. It executes both ranking passes, supplies input fields and I/O results, and checks the original decisions and record writes. The native-saver cases run `$8B1E` while supplying KERNAL results; they distinguish SAVE’s accumulator/carry from the later READST value.
 
 **Live, 3 October 2026:** a prepared old ranking of 1,000 down to 550 points in steps of 50 was combined with six accounts `[1050,1000,1000,750,550,0]`. The prompts assign players 1,2,3,4 to ranks 1,2,3,9. The saved score units are `[21,20,20,20,19,18,17,16,15,15]`. Separate single-player cases confirm a 1,000-point tie receives the champion-name prompt and a 550-point tie receives tenth-place initials without changing any score. All three typed-input runs save with status zero, and separate disk extraction matches every one of their 128 record bytes. These are prepared end-of-session records, not an uninterrupted six-player playthrough.
 
-Score saving `$8B1E` returns KERNAL READST in `$FB`; it does not inspect the drive’s DOS error channel or use the accumulator/carry returned by SAVE. The compiled caller `$4801` treats zero as success. A live test with no disk attached returned zero, so that value alone does not prove a file was stored. A second probe selected unavailable device 9 in the KERNAL parameter after the original SETLFS, leaving all instructions unchanged; it returned `$80` and reached the error prompt. Inserting a disposable disk and pressing FIRE reran the original saver, which selected device 8 and wrote an exact 128-byte record. With no FIRE, the same error prompt’s fractional counter at `$4851` exceeds 2 and returns. Controlled original-code tests limit held-FIRE failure to three SAVE calls.
+Score saving `$8B1E` returns KERNAL READST in `$FB`; it does not inspect the drive’s DOS error channel or use the accumulator/carry returned by SAVE. The compiled caller `$4801` treats zero as success. A live test with no disk attached returned zero, so that value alone does not prove a file was stored. A second probe selected unavailable device 9 in the KERNAL parameter after the original SETLFS, leaving all instructions unchanged; it returned `$80` and reached the error prompt. Inserting a disposable disk and pressing FIRE reran the original saver, which selected device 8 and wrote an exact 128-byte record. With no FIRE, the same error prompt’s fractional counter at `$4851` exceeds 2 and returns. Live full-disk and write-protected tests with held FIRE each perform three failed SAVE calls, with READST $80 on every attempt, then return with counter 3.
 
-Level loading has different rules. `$2A23` accepts status `$40`. The error wait `$2A34` increments its fractional counter once at `$2A7A`, then loops back to `$2A84`, bypassing the increment. From its ordinary initial counter it therefore does not expire to the title. A real missing-file LOAD returns `$42`; over 600 PAL frames, live watchpoints count 8,049 reads of the wait entry and none of the skipped increment opcode, with the counter unchanged. FIRE then exits to another LOAD with counter 1. The original-code test also exercises 10,000 polls with a FIRE exit control. With repeated FIRE retries, a fourth LOAD occurs before the counter-limit check at `$2A1A`; controlled status cases show that even a successful fourth result reaches session termination `$3E6C`. That final retry boundary is a control-flow test, not four live disk failures.
+Level loading has different rules. `$2A23` accepts status `$40`. The error wait `$2A34` increments its fractional counter once at `$2A7A`, then loops back to `$2A84`, bypassing the increment. From its ordinary initial counter it therefore does not expire to the title. A real missing-file LOAD returns `$42`; over 600 PAL frames, live watchpoints count 8,049 reads of the wait entry and none of the skipped increment opcode, with the counter unchanged. FIRE then exits to another LOAD with counter 1. The original-code test also exercises 10,000 polls with a FIRE exit control. With repeated FIRE retries, a fourth LOAD occurs before the counter-limit check at `$2A1A`; controlled status cases show that even a successful fourth result reaches session termination `$3E6C`. A live blank-disk test also observes all four missing-file LOAD failures ($42 each), then reaches $3E6C with counter 3. Discarding a successful fourth result remains controlled-code evidence.
+
+**Live, 4 October 2026:** a full disposable D64 without SCOR returns $80 and
+reaches DISK ERROR. A full disk with an existing SCOR succeeds: the native saver
+scratches the old file before replacing it. A write-protected blank image fails;
+a protected image with SCOR fails and preserves its old record. Writable controls
+and the full-existing case produce exact 128-byte records verified by separate
+extraction. The external DOS diagnostics were respectively 67 (full/absent),
+00 (full/existing), 26 (protected/absent), and 63 (protected/existing). These are
+observed drive results; the game does not read that error channel. Full fixtures
+have zero free data blocks and independently checked filler sector chains.
+The original G64 remains unchanged. `validation/audit_disk_failures.py` repeats
+these five cases and three real retry-exhaustion cases.
+
 
 ## Timing and movement
 
@@ -200,6 +227,20 @@ Attract mode uses the real engine. Input pages `$58/$99/$9A` each hold 128 joyst
 `reference/editor-source.txt` describes the separately loaded BLDR image in 43 program regions, with all 3,830 decoded instructions and 232 packed DATA records. Every control-flow destination lands on an instruction boundary. The shared interpreter is described once in the canonical GAME listing.
 
 BLDR selects screen numbers 0–99 (`$33CF`), actor slots 0–5 (`$36B8`), behavior IDs 0–20 (`$3906`), sprite images 0–127 (`$3A66`) and animation spans 0–4 (`$3AB0`, with 1 converted to static 0). It stores charges as a display digit, not a binary count: `$3C4D` writes 48+n to `$C31D`. The terrain palette has 24 objects and compound shapes have explicit footprint checks (`$4CEF`). Independent treasure/fire counters refuse a new item when equal to sixteen (`$5088`). These are equality tests; a corrupt count greater than sixteen is not rejected by that limit alone.
+
+BLDR cursor positioning $463A moves X by four pixels and Y by one; terrain
+mode moves both by eight. The numeric input $48B6 accepts digits and one comma,
+with separate RETURN/DELETE handling; minus signs and decimal points are ignored,
+so entering `-1` yields 1 and `1.2` yields 12. Its title counter increments before
+the >7500 test, expiring after 7,501 passes.
+
+**Live, prepared editor states:** portal placement $4C54 reaches a space check
+at $4CEF whose reverse-bound FOR loop executes once, checking only p-39. Terrain
+at p-41 or p-40 is overwritten by the upper-left or upper-middle portal glyph.
+Seven complete placement tests cover blank success and obstacles at each of the
+six footprint cells: the other four occupied cells reject placement. Eight live
+character predicates confirm the numeric filter, including rejected minus and
+accepted comma/digits. `validation/audit_live_compiled.py` repeats these tests.
 
 The editor’s save preparation at BLDR `$45EF` overwrites all six packed velocity fields with `$1F`, the shared duration with `$90` (144), and the Y position of each type-7 actor with 197. The save path calls this after title entry (`$41F2`). A live CTRL-S save with distinct injected parameter values produced those reset values in the saved L99T file; the original loader recovered the same values after the working header was cleared. The separate parameter command stores its inputs at `$3BA7/$3BDC`, but the later save preparation overwrites them. The test verifies the save interaction, not every possible route through the parameter UI.
 
@@ -334,3 +375,24 @@ room overlays and other page claims. The four descriptions at `$6C77`, `$839A`,
 `$841C` and `$982F` in `50dbcec` have supported targeted rechecks, which do not
 estimate the remaining error rate. The complete evidence and baseline texts
 are in `validation/semantic-review-20261004.md` and its JSON companion.
+
+
+## Interpreter and overlay review, 4 October 2026
+
+Three separate cold reviewers cover native $0801–$27FF, compiled GAME and
+BLDR. Their frozen baseline samples contain 1/20 incorrect interpreter comments
+(244 eligible; Wilson 95% 0.89–23.61%), 2/20 incorrect GAME comments
+(83 eligible; 2.79–30.10%), and 0/20 incorrect BLDR statement decodings
+(3,830 eligible; 0–16.11%). Seeds are 202610041, 202610042, and 202610043.
+The frames differ, so these are separate approximate estimates, not a pooled
+whole-page error rate. All 43 BLDR region descriptions were also reviewed;
+four contain a wrong baseline detail. Reports preserve the sampled baseline
+texts and verdicts alongside the targeted evidence in `validation/`.
+
+The canonical listing contains 9,188 native instructions, including the eight
+at $19DE–$19EF. The coverage ledger still describes all 45,560 tracked bytes.
+The source validators exercise the original interpreter and each loaded script;
+twenty prepared VICE cases cross-check selected findings and supported claims.
+Eighteen interpreter entries retain explicit static-review limits. Full scope,
+reproduction commands, and evidence are in `compiled-disk-audit.md` and
+`validation/README.md`. These agent checks are not maintainer certification.

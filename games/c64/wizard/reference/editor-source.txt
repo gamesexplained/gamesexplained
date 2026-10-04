@@ -5,7 +5,7 @@ No executable program is included. A/B mean interpreter accumulators; Vn are reu
 Runtime $0826-$27F1 is byte-identical to the annotated GAME runtime in the main Source tab.
 $0801-$0818: BASIC SYS entry stub; $0819-$0825: JMP plus five image-header pointers.
 $27F2-$27FF: shared runtime end padding; $2800-$291B: scalar template records.
-$291C-$2DA1: packed DATA described below; $2DA2-$330B: cleared array storage.
+$291C-$2DA1: packed DATA described below; $2DA2-$330B: array storage, cleared at startup.
 $330C-$331F: two five-byte array dimension initializers, type-$64 terminator and retained padding.
 $3320-$530C: complete decoded script below (3830 instructions).
 
@@ -2229,7 +2229,7 @@ COMPILED SCRIPT
 4636 NEXT variable $2808
 4639 RETURN
 
-; Joystick cursor helper. Select four-pixel positioning or eight-pixel cell movement, handle repeat delay and wrap X/Y at editor bounds; FIRE ends positioning.
+; Joystick cursor helper. Use four-pixel horizontal and one-pixel vertical positioning, or eight-pixel movement on both axes. Handle repeat delay and wrap at editor bounds; FIRE ends positioning.
 463A A=4 ($04)
 463C V22=A
 463D A=V6
@@ -2599,7 +2599,7 @@ COMPILED SCRIPT
 48B2 NEXT variable $2808
 48B5 RETURN
 
-; Read a numeric field or comma-separated pair using GET. Handle deletion, optional minus signs, a single comma, RETURN, VAL conversion and empty input.
+; Read a nonnegative integer field or comma-separated pair using GET. Handle deletion, a single comma, RETURN, VAL conversion and empty input; minus signs are rejected.
 48B6 A=0
 48B7 V23=A
 48B8 A=198 ($C6)
@@ -3289,7 +3289,7 @@ COMPILED SCRIPT
 4CEB POKE pop(),A
 4CEC GOTO $4B64
 
-; Check the extra cells needed for ladders, portals and two-/three-cell slopes before placement.
+; Check neighboring cells for compound objects. The portal loop checks only its upper-right cell, leaving the upper-left and upper-middle cells unchecked before placement overwrites them.
 4CEF A=18 ($12)
 4CF1 B=V4
 4CF2 A=B-A
@@ -4093,7 +4093,7 @@ COMPILED SCRIPT
 51C2 POKE pop(),A
 51C3 GOTO $3483
 
-; Construction title with publisher/author credits and port-two instructions. Cycle title colors and wait for FIRE or a 7500-pass timeout.
+; Construction title with publisher/author credits and port-two instructions. Cycle title colors and wait for FIRE or a 7501-pass timeout.
 51C6 A=53248 ($D000)
 51CD V6=A
 51CE A=51192 ($C7F8)

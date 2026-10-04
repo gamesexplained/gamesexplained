@@ -8,7 +8,7 @@ Host: Linux x86_64, Ubuntu 24.04, no display. Emulator: official vice-mcp v3.13.
 
 ## Skill text that changed what I did
 
-- `60-verify`: "Measure the listing before calling it done": completed the original fixed-seed sixty-comment review with an agent who wrote none of the annotations, preserving all four baseline errors, the selection method and per-comment evidence instead of replacing the sample after fixes.
+- `60-verify`: "Measure the listing before calling it done": completed the original fixed-seed sixty-comment review with an agent who wrote none of the annotations, preserving all four baseline errors, then extending cold review to the interpreter, GAME and BLDR with separately defined populations and unchanged baseline samples.
 - `70-minisite`: "A widget that runs a mechanic is a claim too": compared the actual page acceptance function with the original level callback across every color nibble, remembered symbol, treasure index and random low-bit value.
 - `50-coverage`: "Know how far a description reaches": typed the authored tables and described ownership at their actual boundaries, including automatic symbols inside sprite RAM, instead of treating one nearby comment as explaining the whole block.
 - `50-coverage`: "Is the picture loaded or drawn?": compared entry and play images, retaining the loaded charset and relocated sprites while excluding generated screen/workspace bytes.
@@ -184,3 +184,27 @@ Five offline validators and a live runner make the selected evidence repeatable
 without private session helpers. Setup comes from the contributor's private
 original inputs, not the datasets being checked. Existing rules already cover
 these failure modes, so no shared-kit edit or maintainer ask is needed.
+
+
+## Compiler and real disk audit follow-up — 4 October 2026
+
+Existing `60-verify` rules prompted separate caller inventories, frozen samples,
+positive controls and cheap live checks. The clean BLDR statement sample did
+not validate its prose: a separate review of all 43 descriptions found four
+wrong details. Those are different units and are reported separately. The
+coverage ledger had already counted the described checked-fetch bytes, so its
+100% did not establish that their code/data classification was right.
+
+The new game-local validators catch the actual instruction and I/O claims;
+no general kit policy change or new maintainer ask is needed. Disk fixtures
+check both zero free blocks and the full file chain. Testing a full disk with
+and without the old score file prevents a false universal failure claim when
+the original writer scratches its old file first. A read-only image alone is
+not the observation: actual DOS errors and unchanged extracted/image data are.
+
+The external status-reader timeout was visible and belongs in the run history.
+The final reader clears selected KERNAL channels before opening its diagnostic
+channel, exits on transfer status or CR, and has a bounded host timeout; the
+complete suite passes. It remains a test instrument, not simulated game code.
+The frozen source reports and portable original-code/live runners are in
+`validation/`; shared skills already cover the underlying verification rules.

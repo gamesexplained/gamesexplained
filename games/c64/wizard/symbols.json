@@ -123,13 +123,8 @@
   },
   {
    "start": 6590,
-   "end": 6621,
-   "type": "Code"
-  },
-  {
-   "start": 6622,
    "end": 6639,
-   "type": "Undefined"
+   "type": "Code"
   },
   {
    "start": 6640,
@@ -3955,6 +3950,18 @@
    "name": "checked_bytecode_fetch",
    "type": "UserDefined",
    "kind": "user"
+  },
+  {
+   "address": 6634,
+   "name": "b_19EA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 6637,
+   "name": "b_19ED",
+   "type": "Branch",
+   "kind": "auto"
   },
   {
    "address": 6640,
@@ -12983,12 +12990,12 @@
   {
    "address": 2076,
    "type": "line",
-   "text": "Five little-endian addresses: scalar-table end/DATA pointer $291C; array-clear start $291D; array-clear end/initializer list $2964; bytecode cursor $296D (one byte before first opcode); heap start $4A89."
+   "text": "Five little-endian addresses: scalar-table end/DATA pointer $291C; array-clear start $291D; array-clear end/initializer list $2964; bytecode cursor $296D (one byte before first opcode); program-end pointer $4A89; startup adds $0100 to obtain allocation floor $4B89."
   },
   {
    "address": 2077,
    "type": "line",
-   "text": "High-byte access into the five compiled-image header words. Five little-endian addresses: scalar-table end/DATA pointer $291C; array-clear start $291D; array-clear end/initializer list $2964; bytecode cursor $296D (one byte before first opcode); heap start $4A89."
+   "text": "High-byte access into the five compiled-image header words. Five little-endian addresses: scalar-table end/DATA pointer $291C; array-clear start $291D; array-clear end/initializer list $2964; bytecode cursor $296D (one byte before first opcode); program-end pointer $4A89; startup adds $0100 to obtain allocation floor $4B89."
   },
   {
    "address": 2078,
@@ -13023,22 +13030,22 @@
   {
    "address": 2084,
    "type": "line",
-   "text": "Low byte of compiled header word 4 (heap start). Five consecutive little-endian pointers at $081C-$0825 configure startup and the interpreter."
+   "text": "Low byte of compiled header word 4 (program-end pointer / heap-floor basis). Five consecutive little-endian pointers at $081C-$0825 configure startup and the interpreter."
   },
   {
    "address": 2085,
    "type": "line",
-   "text": "High byte of compiled header word 4 (heap start). Five consecutive little-endian pointers at $081C-$0825 configure startup and the interpreter."
+   "text": "High byte of compiled header word 4 (program-end pointer / heap-floor basis). Five consecutive little-endian pointers at $081C-$0825 configure startup and the interpreter."
   },
   {
    "address": 2086,
    "type": "line",
-   "text": "128 little-endian handler addresses, selected by doubling a bytecode opcode with bit 7 set. The interpreter at $0926 maps opcodes $80-$FF to this table, writes the chosen vector into $3F/$40, and jumps indirectly. Lower opcodes encode variable access without this table."
+   "text": "128 little-endian handler addresses, selected by doubling a bytecode opcode with bit 7 set. The interpreter at $0926 maps opcodes $80-$FF to this table, writes the chosen vector into $3F/$40, and jumps indirectly. Lower opcodes use direct scalar load/store or inline literal/control paths instead of this table."
   },
   {
    "address": 2087,
    "type": "line",
-   "text": "High-byte access into the interleaved handler words at $0826; not a separate table. 128 little-endian handler addresses, selected by doubling a bytecode opcode with bit 7 set. The interpreter at $0926 maps opcodes $80-$FF to this table, writes the chosen vector into $3F/$40, and jumps indirectly. Lower opcodes encode variable access without this table."
+   "text": "High-byte access into the interleaved handler words at $0826; not a separate table. 128 little-endian handler addresses, selected by doubling a bytecode opcode with bit 7 set. The interpreter at $0926 maps opcodes $80-$FF to this table, writes the chosen vector into $3F/$40, and jumps indirectly. Lower opcodes use direct scalar load/store or inline literal/control paths instead of this table."
   },
   {
    "address": 2342,
@@ -13113,7 +13120,7 @@
   {
    "address": 2792,
    "type": "line",
-   "text": "Literal/control dispatch slot 8: JMP to the handler selected by the patched branch at $0ACE. The target consumes its own inline data and returns to the bytecode dispatcher."
+   "text": "Literal/control dispatch slot 8: JMP $0BAE. Read an inline little-endian address into $39/$3A and transfer to BASIC statement processing at $A8E3."
   },
   {
    "address": 2795,
@@ -13373,7 +13380,7 @@
   {
    "address": 4927,
    "type": "line",
-   "text": "Primary is a one-based branch index. Read table byte length and GOTO/GOSUB selector, select an inline destination or skip the table if zero/outside its entries; GOSUB also pushes the post-table continuation."
+   "text": "Primary is a byte branch index. Zero skips the table; otherwise double the index modulo 256 and compare that offset with the table byte length. Offsets at/above length skip; smaller offsets select GOTO/GOSUB destinations, so indices 128\u2013255 alias wrapped offsets. GOSUB pushes the post-table continuation."
   },
   {
    "address": 5013,
@@ -13893,7 +13900,7 @@
   {
    "address": 7874,
    "type": "line",
-   "text": "Use length saved in $60 and one-based position in secondary to clip/copy a substring of primary string; invalid zero/large positions raise quantity error."
+   "text": "Use length saved in $60 and a one-based secondary position to copy a substring of primary. Requested length zero returns empty before position checks. Otherwise a nonzero position high byte is invalid; an empty source returns empty before the zero-position check, and positions beyond the string return empty."
   },
   {
    "address": 7881,
@@ -14023,7 +14030,7 @@
   {
    "address": 8773,
    "type": "line",
-   "text": "Initialize the compiled GAME program from its header: bytecode cursor from $0822/$0823, allocation pointer from $0824/$0825, variable-table limit from $081C/$081D. On the first entry clear variables and arrays through $2281, close KERNAL channels, reset the 6502 stack to $F8, and enter the bytecode dispatcher at $0926."
+   "text": "Initialize the compiled GAME program from its header: bytecode cursor from $0822/$0823, allocation floor $31/$32 from header word $0824/$0825 plus $0100, variable-table limit from $081C/$081D. On the first entry clear variables and arrays through $2281, close KERNAL channels, reset the 6502 stack to $F8, and enter the bytecode dispatcher at $0926."
   },
   {
    "address": 8812,
@@ -14238,7 +14245,7 @@
   {
    "address": 10596,
    "type": "line",
-   "text": "Initializer list begins with type marker $64, causing startup to return without copying any five-byte descriptor records; following $81 fill precedes the first opcode at $296E."
+   "text": "The first initializer record at $2964 has type $64 at $2966, causing startup to return without copying any descriptor records. The following $81 fill extends through $296D before the first opcode at $296E."
   },
   {
    "address": 10606,
@@ -23058,7 +23065,7 @@
   {
    "address": 14385,
    "type": "line",
-   "text": "Stop demo mode, sum surviving accounts and end the session when none remain. Otherwise advance round; after ten completed levels show the bonus screen. Mystery chooses another random level before continuing."
+   "text": "Restore six mutable character images through SYS $7054, sum surviving accounts and end the session when none remain. Otherwise advance round; after ten completed levels show the bonus screen. Mystery chooses another random level before continuing. This call does not disable demo playback."
   },
   {
    "address": 14385,
@@ -27203,7 +27210,7 @@
   {
    "address": 15980,
    "type": "line",
-   "text": "After repeated disk failures stop game activity, index the display, clear bonus and all six life accounts, force turn progression and end the session."
+   "text": "After repeated disk failures, enable game interrupts through SYS $7015 and index animated cells through SYS $7009. Clear bonus and all six life accounts, set player to the selected player count and round to 10, then enter account settlement at $3744 to end the session."
   },
   {
    "address": 15980,
@@ -30673,7 +30680,7 @@
   {
    "address": 17286,
    "type": "line",
-   "text": "Position each final-score row, choose alternating reverse text and one of six colors, and print the unscaled player score. Wait for FIRE/timeout, update statistics, then save and display the rankings."
+   "text": "Position each final-score row, choose alternating reverse text and one of six colors, and print the unscaled player score. Call the statistics updater at $444C before waiting for FIRE or timeout, then save and display the rankings. The ordinary end-session path also called that updater at $3EB3."
   },
   {
    "address": 17286,
@@ -31173,7 +31180,7 @@
   {
    "address": 17487,
    "type": "line",
-   "text": "Delay/poll FIRE with a 75-iteration timeout, reset border/background, wait for button release and enter high-score save/display."
+   "text": "Delay and poll FIRE until the counter exceeds 75: from its zero initialization this takes 76 delay iterations without FIRE. Reset border/background, wait for button release and enter high-score save/display."
   },
   {
    "address": 17487,
@@ -33473,7 +33480,7 @@
   {
    "address": 18672,
    "type": "line",
-   "text": "Choose ordinary/custom statistic pair by difficulty_base>=40, add selected player count into the low byte and propagate carry into its paired high byte at $C15C-$C15F."
+   "text": "Choose counter pair $C15C/$C15E when difficulty_base<40, otherwise $C15D/$C15F. Add selected player count modulo 256 to the low byte and carry to the high byte. The ordinary end-session path calls this at $3EB3 and $444C, adding twice the player count before the final-score wait; the demo display path bypasses both. These fields are included in SCOR when that record is saved. No display or threshold meaning is established here."
   },
   {
    "address": 18672,
@@ -34683,7 +34690,7 @@
   {
    "address": 19002,
    "type": "line",
-   "text": "Decrement demo selection. If it reaches zero return; otherwise reset one player with one life and zero score, copy the selected resident demonstration level/input stream via SYS $7033 and return."
+   "text": "Decrement demo selection. If it reaches zero return; otherwise reset one selected player and one life, clear the three stored score bytes for player 1, and initialize the selected resident demo through SYS $7033. This block does not clear scalar V12."
   },
   {
    "address": 19002,
