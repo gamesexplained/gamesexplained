@@ -5,6 +5,8 @@
   kit/skills/core/       workflow only: no game names
   kit/skills/<platform>/ platform facts only: no game names
   games/*/*/facts.md, features.md   current truth, no narration of past mistakes
+  games/*/*/*.md     the template's notes and no others: a check's result goes in facts.md,
+                     its working record in work/ (kit/skills/core/60-verify)
   games/*/*/kit-feedback.md   the skill text that changed what the run did, named in the
                      form skill_usage.py counts, or "None." (kit/skills/core/80-retro, step 1)
   kit/lessons/       one entry a file, under one heading that names the game that taught it
@@ -80,6 +82,12 @@ def main():
     for f in glob.glob(os.path.join(ROOT, "games", "*", "*", "facts.md")) + \
              glob.glob(os.path.join(ROOT, "games", "*", "*", "features.md")):
         fails += scan(f, NARRATION, "narrating a past mistake (belongs in agent-history.md)")
+    notes = sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, "kit", "template", "*.md")))
+    for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.md"))):
+        if os.path.basename(f) not in notes:
+            print(f"  x  {os.path.relpath(f, ROOT)}  a game folder's notes are the template's: {', '.join(notes)}.")
+            print(f"        A check's result goes in facts.md, its working record in work/ (kit/skills/core/60-verify)")
+            fails += 1
     published = [os.path.join(ROOT, f) for f in ("AGENTS.md", "README.md")]
     for top in ("games", "kit", "site"):
         for d, dirs, files in os.walk(os.path.join(ROOT, top)):
