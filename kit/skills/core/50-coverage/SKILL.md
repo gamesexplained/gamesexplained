@@ -5,7 +5,7 @@ description: The annotation loop. Measure comprehension with the shared coverage
 
 # Measure comprehension, not disassembly
 
-Start the clock: `python3 kit/scripts/clock.py start 50-coverage --model <your model id> games/<platform>/<slug>`. The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes of wall clock with nine agents on disjoint ranges. One agent is several times slower per kilobyte. Note the agent count when you stop the clock, and their model in the note if it differs from yours.
+Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game proves the model or needs a maintainer's check (`kit/CHECKING.md`). The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes with nine agents on disjoint ranges. One agent is several times slower per kilobyte.
 
 Disassembly coverage flatters you. Bytes can be decoded, labelled, even
 commented nearby, and still understood by nobody. The shared metric
@@ -31,7 +31,9 @@ same way, so tiers mean the same thing everywhere.
 3. Update `features.md` statuses and `facts.md` as facts firm up.
 4. Every 30 minutes or so, and at the end of every session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
-   `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.vsf`
+   `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.<snapshot ext>`
+   (the platform's snapshot extension: a `.vsf` on the C64, a `.sna` on the
+   ZX Spectrum; `kit/skills/<platform>/` names it)
    so the committed listing never drifts from the symbols.
    A later session that has neither the snapshot nor the disassembler
    project (a hosted one starts in a fresh container) can still correct a
@@ -43,6 +45,45 @@ same way, so tiers mean the same thing everywhere.
    back, so name each hand edit in `TODO.md` for whoever holds the project
    to carry into it.
 5. Repeat until the tier you are aiming for is met.
+
+### When the disassembler does not follow control flow
+
+Where the disassembler walks the code and mints a symbol at every branch
+target, the coverage queue is populated for you. Where the annotation
+surface is instead a **control file** - typed blocks the disassembler obeys
+rather than derives - nothing separates the code from the data for you, and
+it has to be done before the loop above can start. A wrong split does not
+show afterwards: code typed as data has no cross-references, reads as a
+table and is described as one, and coverage still reaches 100 %. The first
+such game was published for review with 5.9 KB of its code typed as data.
+
+Two sources, used together:
+
+- **The emulator's executed-address map**: every address the CPU executed
+  while you drove the game through the states you could reach (each menu,
+  each control, losing, giving up). It finds the code that runs, including
+  what only a computed jump reaches.
+- **A recursive trace**: decode from every address the map gives, and from
+  the entries the map cannot contain (code that ran before the snapshot was
+  taken, a handler whose address is only stored in data, an operand another
+  instruction writes), follow every branch and call target, repeat. It adds
+  the code a static walk can reach that the recorded play never ran.
+
+Everything neither found is data, unless a reference says a routine reads it
+as a table.
+
+**Iterate, because a wrong type hides what it calls.** A walk decodes only
+what it is given, so a stretch filed as data also hides the routines *it*
+calls, and the map sweep on its own will report that stretch as data too.
+Repeat the sweep until a pass adds nothing, then believe the total. A single
+pass under-reports, and the difference is not a rounding error: see the entry
+in `kit/lessons/` for the run that measured both.
+
+**Let a script hold the typing against the map**, and run it again after
+every merge of the annotation agents' work. The platform's tool skills say
+which commands produce the map, how to turn it into the control file's
+format, how to check the result against it, and how to read it back
+(`kit/skills/<platform>/`).
 
 ## Rules that keep the number honest
 
@@ -287,8 +328,7 @@ Routines are independent, so the burn-down parallelises. What matters:
   stop on the limit, export at once, wait for the reset and resume each
   agent with a message (the harness's resume, not a new agent), telling
   it what is already in the disassembler. A new agent rereads its range
-  from nothing. Stop the clock while the run waits, with a note saying
-  why: the wall clock otherwise counts hours of nothing as the step's.
+  from nothing.
 - **Correct the brief the moment a fact in it turns out wrong**, and say
   in it that it was corrected. Agents still running read the old line;
   their reports will contradict it, which is how one run found that its
@@ -296,9 +336,10 @@ Routines are independent, so the burn-down parallelises. What matters:
 
 ## Declare what the bytes are
 
-The About tab draws the game's footprint in the 64 KB space and counts
-code, graphics, level data, sound, text, tables and variables. The build
-classifies from the listing (code, text, data), the video bases in
+The About tab draws the game's footprint in the 64 KB space (on the
+Spectrum, the 48 KB of RAM above the ROM) and counts code, graphics,
+level data, sound, text, tables and variables. The build classifies
+from the listing (code, text, data), the video bases in
 `game.json` (the character set) and symbol-name hints (`str_`, `tune_`,
 `sprite`, `maze`, and the like). Anything larger than a few bytes that
 those cannot see, declare in `game.json` under `regions`:

@@ -19,13 +19,7 @@ in order:
    creates `games/<platform>/<slug>/` from the template. Copy the
    contributor's image into its `work/` folder; `work/` is gitignored.
 3. **Run the skills in this order.** Each is a folder under `kit/skills/` with a
-   `SKILL.md`; open the file when you reach that step. Each one begins
-   by starting the clock (`kit/scripts/clock.py start <step> --model
-   <id>`); a run takes hours, and the per-step times, each with the model
-   that took it, are what let the next run be shorter. `timings.json` is
-   committed with the game. The clock times pure machine work, with no
-   person in it: before you hand the turn to the contributor and wait,
-   run `clock.py stop`, and start the same step again when they answer.
+   `SKILL.md`; open the file when you reach that step.
 
    | Step | Skill | Produces |
    |---|---|---|
@@ -37,9 +31,6 @@ in order:
    | verify | `kit/skills/core/60-verify` | every fact traced or observed live; `facts.md` |
    | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
    | retrospective | `kit/skills/core/80-retro` | the skill text that helped, named; fixes to the kit; `kit-feedback.md`; `game.json` complete |
-
-   A Play tab added after the run is clocked apart, as `play`. The Gold
-   pass is not clocked at all: a person paces it (`clock.py -h`).
 
    A Bronze run stops after `40-sweep`. It exports the symbol map and
    builds the listing (step 4), cuts `index.html` down to the header plus
@@ -118,7 +109,8 @@ follows `kit/PLATFORMS.md`.
   record `tier` as `bronze` until the check passes. The failures are
   silent: address arithmetic goes wrong in ways that read as confident,
   which is why the check tests claims against the game rather than
-  reading the page. `clock.py start` warns when the model is not proven.
+  reading the page. `python3 kit/scripts/models.py is-proven <id>` says
+  whether yours is.
 - **An imported analysis is a starting point, not a run.** Work the
   contributor did outside the kit seeds the disassembler; the listing
   still comes from a snapshot through `listing.py`, coverage and verify
@@ -129,9 +121,9 @@ follows `kit/PLATFORMS.md`.
   your session states (the system prompt, the harness). Never deduce it
   from files, chat transcripts, environment variables or how you seem to
   behave: a transcript on disk may belong to another window, and a
-  guessed id both hides a model that is not proven and puts a false row
-  in the runs table. When the session does not name the model, ask the
-  contributor before starting the clock. If they cannot tell either,
+  guessed id both hides a model that is not proven and puts a false
+  record in `game.json`. When the session does not name the model, ask
+  the contributor before the first step. If they cannot tell either,
   record `unknown` and say in the pull request that the model could not
   be checked.
 - **No binaries, ever.** Disk images, program files, cartridge dumps,
@@ -171,12 +163,12 @@ follows `kit/PLATFORMS.md`.
 - **Record what you used.** `game.json` names the tools, the model and the
   kit version. It is honest and it makes the work reproducible. Some
   hosted sessions tell the agent to keep model identifiers out of
-  everything pushed to a repository. The kit's own records of the run
-  are the exception: `game.json`, `timings.json` and the timings table
-  in `kit-feedback.md` keep the model id, exactly as the session names
-  it, because a time or a result is not comparable without the model
-  that produced it. Commit messages, pull request text and code comments
-  follow the environment.
+  everything pushed to a repository. The kit's own record of the run is
+  the exception: `game.json` keeps the model id, exactly as the session
+  names it, because a result is not comparable without the model that
+  produced it, and `models.py` reads its `step_models` to decide which
+  models are proven. Commit messages, pull request text and code
+  comments follow the environment.
 - **Leave the cleanest footprint you can.** A contributor is trusting this
   repository with their computer. Everything the kit installs goes under
   the gitignored `tools/` folder, tools are started only through
@@ -218,7 +210,7 @@ follows `kit/PLATFORMS.md`.
 | `kit/template/` | the game folder, stubbed and commented |
 | `kit/skills/core/` | the workflow, platform-independent |
 | `kit/skills/<platform>/` | platform facts and tool notes |
-| `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, timings, reference images, gitignored `work/` |
+| `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
 | `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
 Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.

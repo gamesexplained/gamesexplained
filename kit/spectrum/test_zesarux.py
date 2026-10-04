@@ -86,10 +86,10 @@ def _connect(port):
 
 def check_read_reply_banner():
     f = Fake({})
-    got, rest = _read_reply(_connect(f.port), b"", "banner")
+    got, rest, prompt = _read_reply(_connect(f.port), b"", "banner")
     assert got == ("Welcome to ZEsarUX remote command protocol (ZRCP)\n"
                    "Write help for available commands\n"), repr(got)
-    assert rest == b""
+    assert rest == b"" and prompt == "command> ", (rest, prompt)
     f.close()
 
 
@@ -111,6 +111,71 @@ def check_cpu_step_prompt():
     rpc.enter_step()
     out = rpc.step()
     assert out["PC"] == 0x0039 and out["disasm"] == "0039 PUSH HL", out
+    rpc.close(); f.close()
+
+
+BUSY = "Error. Can not enter cpu step mode. You can try closing the menu"
+
+
+def check_enter_step_asks_again_then_knows_it_stopped():
+    """ZEsarUX refuses cpu-step for a moment after leaving it; the refusal is text, not an error."""
+    state = {"asked": 0}
+
+    def enter(cmd):
+        state["asked"] += 1
+        if state["asked"] < 3:
+            return BUSY
+        f.prompt = "command@cpu-step> "
+        return ""
+    f = Fake({"enter-cpu-step": enter})
+    rpc = connect(port=f.port)
+    assert not rpc.stepping
+    rpc.enter_step()
+    assert rpc.stepping and state["asked"] == 3, (rpc.prompt, state)
+    rpc.close(); f.close()
+
+
+def check_enter_step_raises_when_the_machine_runs_on():
+    """An accepted enter-cpu-step whose prompt is still `command> ` is a machine that never stopped."""
+    for answers in ({"enter-cpu-step": ""}, {"enter-cpu-step": BUSY}):
+        f = Fake(answers)
+        rpc = connect(port=f.port)
+        try:
+            rpc.entering("enter-cpu-step", tries=3, wait=0.01) if answers["enter-cpu-step"] else rpc.enter_step()
+        except ZesaruxError as e:
+            assert "still running" in str(e) or "Can not enter" in str(e), e
+        else:
+            raise AssertionError("a machine that did not stop must raise")
+        rpc.close(); f.close()
+
+
+def check_loads_refuse_a_missing_file():
+    """ZEsarUX answers a missing file with nothing and loads nothing: the client says so first."""
+    f = Fake({"snapshot-load": "", "smartload": "", "enable-breakpoints": ""})
+    rpc = connect(port=f.port)
+    for call in (rpc.snapshot_load, rpc.smartload):
+        try:
+            call(os.path.join(os.path.dirname(__file__), "no-such-file.sna"))
+        except ZesaruxError as e:
+            assert "no such file" in str(e), e
+        else:
+            raise AssertionError("a missing file must raise")
+    assert f.seen == [], f.seen                       # nothing was sent
+    rpc.snapshot_load(__file__)                       # an existing path goes through
+    assert f.seen[0].startswith("snapshot-load "), f.seen
+    rpc.close(); f.close()
+
+
+def check_load_asks_again_while_busy():
+    state = {"asked": 0}
+
+    def load(cmd):
+        state["asked"] += 1
+        return BUSY if state["asked"] == 1 else ""
+    f = Fake({"smartload": load})
+    rpc = connect(port=f.port)
+    rpc.smartload(__file__)
+    assert state["asked"] == 2, state
     rpc.close(); f.close()
 
 

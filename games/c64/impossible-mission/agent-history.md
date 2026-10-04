@@ -72,3 +72,31 @@ and speech, and Discoveries (the protection, the phone, the PAL ending,
 the claims the code contradicts and the open questions). The content is
 the verified material of the single page, regrouped; each page embeds
 only the memory excerpts its widgets draw from.
+
+## 4 October 2026: the speech player
+
+The frame headers had been left as an open question: parsing the data by
+the listing's reading gave one frame per line. Instead of parsing the
+data, the game's own driver was run for each line on the kit's C64 model
+with its CIA timers, recording every write to `$D418`, and a port of the
+driver was written against that record until both gave the same levels
+on the same NMIs for all eight lines. The port showed where the reading
+had gone wrong: a header's end-of-line test is bit 7 of the previous
+header's byte 3, not of byte 0, and a header covers several decodes of
+its samples. Two other slips were corrected on the way: the timer is
+CIA 2's timer B, not A, and the comment on `$0BE3` described a decoder
+no line uses. The page's first build decoded silence: it embedded the
+speech data but not the sample base at `$0CFE`/`$0CFF`, which the port
+reads; the browser test now compares whole streams with the checked
+ones, not their lengths.
+
+## 4 October 2026: The release and Reception
+
+The contributor asked for two Overview sections on the game's release and
+reception from the web. The environment's network policy refused every
+source page, before and after the contributor tried to widen it, so the
+sections were drafted, at the contributor's request, from web search
+summaries alone, keeping what several agreed on. The summaries
+contradicted each other on Zzap!64's score and poll placings, which is
+why no review score appears; they also differed on the British price.
+`features.md` lists the sources to check.

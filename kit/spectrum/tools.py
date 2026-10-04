@@ -18,12 +18,22 @@ Deleting the repository removes all of it. See kit/spectrum/INSTALL.md, "Uninsta
 
 ZEsarUX is started with `--vo null --ao null`: a ZX Spectrum screen is not needed to
 drive it over ZRCP, and no window opens over whatever the contributor is doing. Pass
-`--vo cocoa` (macOS) or `--vo stdout` to watch it.
+`--vo cocoa` (macOS) or `--vo stdout` to watch it; any option of your own replaces both
+defaults, so a window comes with sound unless `--ao null` is passed too.
 
 It is also started with `--stats-disable-check-updates` and
 `--stats-disable-check-yesterday-users`: by default ZEsarUX opens two plain-HTTP
 connections at start-up, its update check and a "yesterday users" count, and an
-undisclosed network call is what the footprint rule does not allow.
+undisclosed network call is what the footprint rule does not allow. For the same reason
+`--stats-send-already-asked` keeps a windowed start from asking whether to send usage
+statistics, and the launcher takes `--stats-send-enabled` out of the saved configuration
+before every start: without the first, ZRCP's `close-all-menus` answers that question
+"yes" on the second windowed start (measured on ZEsarUX 13.0, 3 October 2026, with the
+network denied), and the saved file then turns sending on for every start after it.
+`--disable-all-first-aid` keeps its first-run help boxes shut. On the very first start
+with a new home ZEsarUX still opens its main menu, and an open menu refuses cpu-step, so
+the launcher closes it: that is safe only because the statistics question cannot be
+pending.
 
 Usage:
   tools.py status
@@ -159,6 +169,56 @@ def emulator_env():
     return env
 
 
+CONFIG = os.path.join(ZESARUX_HOME, ".zesaruxrc")
+STATS_ON = "--stats-send-enabled"
+
+
+def statistics_enabled(config=None):
+    """Whether the saved configuration would send usage statistics at the next start."""
+    try:
+        with open(config or CONFIG, encoding="utf-8", errors="replace") as f:
+            return any(line.strip() == STATS_ON for line in f)
+    except OSError:
+        return False
+
+
+def keep_statistics_off(config=None):
+    """Take `--stats-send-enabled` out of the saved configuration; True when it was there.
+
+    ZEsarUX has no option that turns sending off: it is off unless this line is in the
+    file it reads at start, and it writes the file itself on exit. Anything that answered
+    its question "yes" (a click, or `close-all-menus` over ZRCP while the question was up)
+    leaves the line there for every later start, so the launcher removes it each time."""
+    config = config or CONFIG
+    if not statistics_enabled(config):
+        return False
+    with open(config, encoding="utf-8", errors="replace") as f:
+        lines = f.read().splitlines(keepends=True)
+    with open(config, "w", encoding="utf-8") as f:
+        f.write("".join(line for line in lines if line.strip() != STATS_ON))
+    return True
+
+
+def close_opening_menu():
+    """Close the main menu ZEsarUX opens on its first start with a new home.
+
+    An open menu refuses cpu-step, so nothing over ZRCP could stop the machine. Closing it
+    here is safe because the launcher always passes `--stats-send-already-asked`: with the
+    statistics question pending, `close-all-menus` would answer it "yes"."""
+    try:
+        sys.path.insert(0, HERE)
+        import zesarux as zx
+        rpc = zx.connect(port=PORT, timeout=5)
+        if "Can not enter cpu step mode" in rpc.cmd("enter-cpu-step"):
+            rpc.cmd("close-all-menus")
+            print("closed the menu ZEsarUX opens on its first start")
+        else:
+            rpc.cmd("exit-cpu-step")
+        rpc.close()
+    except Exception as e:                      # the emulator is up; a probe that fails is reported, not fatal
+        print(f"  could not check for an open menu: {e}")
+
+
 def zesarux(extra=()):
     exe = app_path()
     if not exe:
@@ -176,11 +236,15 @@ def zesarux(extra=()):
     cmd = [os.path.abspath(exe), "--enable-remoteprotocol", "--remoteprotocol-port", str(PORT),
            "--configfile", os.path.join(ZESARUX_HOME, "zesaruxrc"), "--quickexit", "--nosplash",
            "--stats-disable-check-updates", "--stats-disable-check-yesterday-users",
+           "--stats-send-already-asked", "--disable-all-first-aid",
            "--snap-no-change-machine"]
     if not extra:
         cmd += ["--vo", "null", "--ao", "null"]
+    if keep_statistics_off():
+        print(f"removed {STATS_ON} from {os.path.relpath(CONFIG, ROOT)}: usage statistics stay off")
     start(cmd + list(extra), os.path.join(LOGS, "zesarux.log"), env=emulator_env(),
           cwd=ROOT, port=PORT, name="emulator")
+    close_opening_menu()
 
 
 # only this clone's emulator: another clone on the same machine keeps its own.
@@ -220,6 +284,9 @@ def status():
     detail = foreign_detail(PORT)
     if detail:
         print(f"  WARNING: :{PORT} is answered by an emulator from another folder:\n{detail}")
+    if statistics_enabled():
+        print(f"  WARNING: {os.path.relpath(CONFIG, ROOT)} has {STATS_ON}: ZEsarUX would send usage "
+              "statistics at its next start. Starting it through this launcher removes the line.")
     if running:
         try:
             sys.path.insert(0, HERE)
@@ -230,7 +297,7 @@ def status():
             rpc.close()
         except Exception as e:
             print(f"  ZRCP did not answer: {e}")
-    result = os.path.join(LOGS, "check-emulator", "result.json")
+    result = os.path.join(LOGS, "check-emulator", "spectrum.json")     # its own file: the C64's check writes result.json there
     if os.path.exists(result):
         try:
             r = json.load(open(result))
@@ -270,6 +337,10 @@ def verify_footprint():
         os.remove(snap)
     except OSError:
         pass
+    if statistics_enabled():
+        sys.exit(f"FAILED - {os.path.relpath(CONFIG, ROOT)} has {STATS_ON} after a launch-to-exit cycle: "
+                 "the emulator would send usage statistics at its next start")
+    print("usage statistics: off in the saved configuration")
     judge_footprint(hits, KNOWN_RESIDUE, snap)
 
 

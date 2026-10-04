@@ -5,7 +5,7 @@ description: Turn traced claims into verified facts. Test cheaply testable claim
 
 # Verify before publishing
 
-Start the clock: `python3 kit/scripts/clock.py start 60-verify --model <your model id> games/<platform>/<slug>`. No figure yet. Both retros to 19 September 2026 name single features that ate more time here than whole steps did; when one does, say which in the stop note.
+Record your model id in `game.json` under `step_models`, as `"60-verify": ["<your model id>"]`, the same way as for `50-coverage`.
 
 Most serious errors come from trusting an absence, or from a claim that
 sounded right and was never tested.
@@ -25,7 +25,9 @@ or aliasing could hide it. A negative result is a claim about your search,
 not about the binary. Prefer "unknown" to a plausible guess. Before saying
 that nothing reads or writes an address, search with every opcode and
 every index that can reach it: on the C64,
-`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`.
+`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`; on
+the ZX Spectrum, `python3 kit/spectrum/codemap.py <game> <snapshot> --refs
+<address>`, which also lists where the address is stored as a word.
 
 "Unreachable" is a negative result too. A search over a model of the
 movement rules finds only what the model allows, and a model re-derived

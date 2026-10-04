@@ -268,10 +268,19 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
 - **Speech:** a one-bit player (`speech_irq`, `$311A`) toggles the SID's
   master volume between 15 and 0 on each CIA 1 timer B interrupt, the
   next period coming from the table at `$0200`/`$0300` indexed by the
-  sample byte. Four samples (`$F540` table): sample 2 is started with
-  every attack (`$2B54`), others with hit reactions and the bull round.
-  Every raster handler first passes a pending CIA 1 interrupt to the
-  speech player. `$CF` non-zero skips speech (DEL).
+  sample byte. Every raster handler first passes a pending CIA 1
+  interrupt to the speech player. `$CF` non-zero skips speech (DEL).
+  The time from one flip to the next is 9 cycles per unit of the period
+  plus about 108 (*live*, cycles between speech interrupts against the
+  period used). Four samples (`$F540` table), started by `speech_say_0`
+  to `_3` (`$3158`-`$316A`):
+
+  | Sample | Bytes | When | Started at |
+  |---|---|---|---|
+  | 0 | 227 | the defender is hit by a forward blow other than `$18`, 7 or `$0C`, and falls (reaction `$16`) | `$2CE7` |
+  | 1 | 790 | the defender is hit by `$18`, 7 or `$0C` (reaction `$1B`) or by a backward blow (reaction `$1A`); the bull hits the player | `$2CDC`, `$2CF2`, `$13B7` |
+  | 2 | 858 | every attack, as its animation starts (moves flagged in `$1176`) | `$2B54` |
+  | 3 | 266 | a floored fighter reaches frame `$2C` or `$28`, the last of the two falls (animations `$16` and `$1A`), on a new step; the bull's charge begins, once the last sample has ended | `$29E9`, `$141F` |
 
 ## Oddities
 

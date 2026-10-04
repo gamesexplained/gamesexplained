@@ -55,3 +55,36 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the scenery rows, enemy fire, the sound effects, open questions.
 - A section id equal to a widget's id (`music`) let the music player
   replace its whole section; the section was renamed.
+
+## 4 October 2026, the attack waves tab
+
+- The Attack waves section moved from How it works to a tab of its own,
+  `waves.html`, in four sections.
+- The `path_segments` comment said bit 7 of a segment's fourth byte
+  mirrors the velocity list. The mover copies it to `$1219` at `$8369`
+  (1 when set, X being 1 from `$8326`) and starts the form change at
+  `$8449` only when `$1219` is not 0, so it is the change-form flag, as
+  `facts.md` already said. The comment was corrected.
+
+## 4 October 2026, the attack-wave player
+
+- Chose to record the game's own wave code rather than port it: Delta runs
+  from the hand-over in `kit/c64/machine.js`, starts on one press of fire,
+  and plays its groups in the order VICE shows.
+- With nobody playing, stage 1 never ended: its last group (`$0D`) is a
+  boss with an escort that never leaves. The stand-in shots had to go in
+  through a hook at `$9024`, because `enemies_flags_clear` wipes the hit
+  flags each frame; had to skip exploding and final enemies, or each hit
+  restarted the explosion; and had to set `$129D` as a weapon hit does,
+  or the escort never exploded.
+- VICE's runs from `wave1_start` restarted the wave list several times:
+  the parked ship was rammed (VICE reports sprite collisions, the kit's
+  machine does not). Both runs then got `$2C44` = 0 so collisions never
+  hit the ship, plus the trainer's two patches. The snapshot `stage2_rows`
+  turned out to hold stage 1's wave list under stage 2's banner, being
+  made by forcing the stage clear, so stage 2 was played into in VICE.
+- The enemy sprite pointers are at `$30` + slot (read by the multiplexer
+  at `$2A99`), not at `$B8` or `$C6`, which are the scenery rows'.
+- "Invisible" was checked across all 32 stages: the empty sprite `$9B`
+  shows only for an enemy's first one to three frames and at the end of
+  an explosion.

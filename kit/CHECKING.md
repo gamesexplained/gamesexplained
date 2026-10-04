@@ -70,7 +70,18 @@ When the check passes, add to the game's `game.json`:
 }
 ```
 
-and set `tier` to `silver`. `check_docs.py` (through `models.py check`)
+and set `tier` to `silver`. When an earlier sample failed and a proven
+model then redid the run's coverage and verify steps, keep the failed
+sample in the same record, so the game's history is in one place and the
+model it tested is not credited with the result:
+
+```
+  "failed": [{"model": "<the model whose claims were tested>", "date": "YYYY-MM-DD",
+              "checked": 39, "wrong": 18, "note": "what was sampled, in a line"}]
+```
+
+A model named under `failed` is not proven by this game, whatever
+`step_models` in its `game.json` says it ran. `check_docs.py` (through `models.py check`)
 fails any game at Silver or above that ran on an unproven model and has
 no passing `verification`. Once the game is merged, its models count as
 proven for every run after it.

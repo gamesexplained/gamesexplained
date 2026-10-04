@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1984 · Epyx</p>
   <h1>Impossible Mission</h1>
-  <p class="sub">Protection that keeps checking during play, a phone that dials real touch tones, an ending timed separately for Europe, the claims the code contradicts, and the questions still open.</p>
+  <p class="sub">Protection that keeps checking during play, the claims the code contradicts, and the questions still open.</p>
 </header>
 <main class="wrap">
 
@@ -30,46 +30,8 @@ $7F75        bne $7F70</pre>
   <p>The first instructions that set up <code>$DD03</code> no longer exist by the time the game is running. The start-up clears its own first 17 bytes in the same loop that clears the sprite registers, so a memory dump taken during play shows zeros where the setting-up was.</p>
 </section>
 
-<section id="phone">
-  <p class="fig">02 · The phone</p>
-  <h2 class="t">Secret: the phone dials real touch tones</h2>
-  <p class="lede">The pocket computer's phone key calls for help. The game dials one of two numbers, plays real touch-tone pairs, rings the line and answers.</p>
-  <div class="plate">
-    <div class="ctl">
-      <button id="dial1">Dial 767-8900 (orientation help)</button>
-      <button id="dial2">Dial 555-4213 (enough pieces?)</button>
-      <label><input type="radio" name="clk" value="ntsc" checked> NTSC clock</label>
-      <label><input type="radio" name="clk" value="pal"> PAL clock</label>
-    </div>
-    <div class="keys" id="keys"></div>
-    <p class="cap" id="kcap">Each key plays the two frequencies from the table at <code>$7E6E</code>. Sound plays in your browser through Web Audio.</p>
-  </div>
-  <p>The table holds two SID frequency values per key, one for voice 2 and one for voice 3. Converted at the American NTSC clock they come out as the touch-tone standard (DTMF): rows at 697, 770, 852 and 941 Hz, columns at 1209, 1336 and 1477 Hz. A PAL machine runs its SID 3.7% slower, so a European C64 dials slightly flat. The numbers are in <code>$7E36</code>; 555 is the prefix American films and television use for fictional numbers.</p>
-  <p>One number turns the two pieces in the memory window the right way up, and the other says whether the leftmost piece's puzzle can be finished (<a href="mechanics.html#computer">How it works</a>).</p>
-</section>
-
-<section id="elvin">
-  <p class="fig">03 · The ending</p>
-  <h2 class="t">Secret: the ending is the only thing timed for PAL</h2>
-  <p class="lede">Win, and the screen switches to a full-screen picture of Professor Elvin Atombender, who talks while the lights of his control room twinkle.</p>
-  <div class="plate">
-    <div class="ctl">
-      <button id="eplay">Play the mouth</button>
-      <label><input type="radio" name="etime" value="pal" checked> PAL timings</label>
-      <label><input type="radio" name="etime" value="ntsc"> NTSC timings</label>
-      <button id="eopen">Open mouth</button>
-      <button id="eclose">Closed mouth</button>
-    </div>
-    <canvas id="ecv" class="c64" width="320" height="200"></canvas>
-    <p class="cap">Drawn from the bytes the game keeps under the I/O area: the glyphs at <code>$D000</code>, the screen at <code>$DC00</code> and the colours at <code>$F800</code>, in multicolour with the three colours the game sets at <code>$AADF</code>. The mouth is 13 cells; the game swaps them between the glyphs at <code>$AB93</code> and <code>$ABA0</code>. The emulator's own picture of the same moment is <a href="reference/end-elvin.png">here</a>.</p>
-  </div>
-  <p>The picture lives where the program cannot easily read it. At start-up the game switches every ROM and chip out of the way and moves three blocks into the RAM beneath them (<code>$71C0</code>): 2 KB of glyphs to <code>$D000</code>, the screen to <code>$DC00</code> and its colours to <code>$F800</code>. The ending points the video chip at the last 16 KB of memory, where it can see that RAM, and copies the screen and colours into place (<code>$AA40</code>).</p>
-  <p>The mouth moves in seven steps whose lengths come from a table, and there are two tables. On a PAL machine, the start-up patches three instructions so that the ending reads <code>$AB6E</code> instead of <code>$AB67</code> (<code>$3FB9</code>). The PAL durations are five sixths of the NTSC ones, because the PAL picture runs at 50 frames a second, not 60, while the speech plays from a timer that counts processor cycles, and the two machines run their processors at almost the same speed.</p>
-  <p>Nothing else is adjusted. The game clock still counts 60 frames to the second, so on a PAL machine the six hours last 7 hours 12 minutes (<a href="mechanics.html#clock">How it works</a>).</p>
-</section>
-
 <section id="claims">
-  <p class="fig">04 · Checked against the descriptions</p>
+  <p class="fig">02 · Checked against the descriptions</p>
   <h2 class="t">Where the code and the descriptions disagree</h2>
   <p class="lede">Descriptions of the game, read in web search summaries on 1 October 2026, make claims that the code settles.</p>
   <table class="d">
@@ -82,95 +44,12 @@ $7F75        bne $7F70</pre>
 </section>
 
 <section id="open">
-  <p class="fig">05 · Open questions</p>
+  <p class="fig">03 · Open questions</p>
   <h2 class="t">What these pages have not settled</h2>
   <ul>
-    <li>The words of the eight voice lines: the samples were not listened to.</li>
-    <li>The format of the headers in the speech data is not fully understood.</li>
+    <li>The words of the eight voice lines. The <a href="music.html#speech">Sound and speech</a> tab plays them; nobody has transcribed them.</li>
     <li>The code rooms' puzzle was read in the code but not played.</li>
   </ul>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
-<script>
-// Data: excerpts of the game's memory from listing.json (address, base64), see the build in work/.
-const DATA = [[43879, "QCgoICwgEDUhIRslGw2iDL2gq7ytq5m2wsoQ9GCiDL2Tq7ytq5m2wsoQ9GAbHDlDREVrbG1ulJWWent8oqOkysvMzfb3UAABAigpKlBRUlN5ens="], [53248, "BBARRVBAEBCpKmANDQsqKq6uLg56eurqpqamqampue4PgKqqqqqqavwCqqqqqammampqamqqqqqqqqqqqqqrrqqqqqq66qqqkqSkpKSZmaqYmKiio6KLj97rXNt333//AICAgMDAwOBAFXw9fD18FVVUVFBQQUFFVQAVX19/f/9VAFT19f39/wAAAAAAAgoqAAAAAiqqqqoAACqqqqqqqgCqqqqqqqqqAICoqqqqqqoAAACAqKqqqgAAAAAAgKCoalpqampqal+q9aqqqqqqVfpVqlZWVlZVuq+oqKgqKgqqqgoCAgICigAAAAAAAAAAd9111HTUdNR11nbWdtZ13Velp6WnpVfdVQD/ACgAwwBXHRcdFx0XHXfdd9133XfdAAAAAAAAAAICCQkmJpmZZapVqlVVVQBVgGBgmJhmZlkQEAQEAQAAACorKysnWysr6qqqqqqqqqirq6urjgoqqpqlqqqqqqqqmmqqqqqqqqqqqqqqqqqqqq6uurq6uurqqqqqqqqqqqqqqqqqq6+//46Lj7/////////////////g4ODg4ODg4FUAVf///wAARQdX////AAD8/PDwwMAAAAACCgoqKqqqqqqqqqqqqqpqampqampqaqqqqqWqqqqqqv//Vaqq+vqqqqqqqqqvqqqqqqWqqlqqqamppampqakAgKCgqKiqqqqlqqpaqqqlqaWpqampqaUCAwMDAwAAAOqqqqqr/qqqqqqqqqqqqv6qqqqqqqqqqr+/v7+/v7+/AAAAAAAAAAAAw8PDwwAAVRcdFx0XHRddd9133VVVVVUAAAAAAAAAAGWVl11XXXfdAAAAAAAAAIBZ1lbVdd113VVVVVVVVVVVKyoqKgoKCgqq+qrq6rq6uqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq///qqqqr7////+vv////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODg4ODg4MDAVRUVBQVBQVEAAAAAAAAAAAICCgoKKioqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqurq66qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6qqqqu77/7vAACAAGCYZFYAAAAAAAAAAAAAAgICAgICq66uurq6urqqqqqqqqqqqqqqqqqqqaWVv7+///////8AAAAAAAAAAP//9/fH9/f3ddR01HTUdNRVAQHxAQHxAQAAAAAAAAAAVVVwcExMQ0NVVQAAAAAAAFVVDQ0xMcHBVVXV1dXV9fUCAgAAAAAAALqvqqqqKy4Or///gICgqqrq+voCAgIKqqqqqqqqqqqq//+/v7+/v7/C+f3//////2WVlFHU/f//RBFEEUQRxPEAAAAAAAAAAAAAAAAAAAAAwMDAwICAgIA/Pw8PAwMAAAAAAAAAAAAAKiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrq6uqqurq6qqqqurqqqqqqqqqqqqqqqqqqqqrqq6vu67vu+//vv+7/v+77//a3Wa67TXXeoBg0LDgOOxsqqqqqqr1qamqqioKAAAAA6qqq6MPP///lVVVVVVVVVX////49+/f3/////9/v9/f//////////901HTUdNR01AEB8fHx8QEBd92qCgqqd91AQEBAQEBAQKqqqqqqVaqqAQEBAQEBAQH1/f39/////39/f19fX19fDgMAAAAAAgKqrvqqq666uqqqqv6rqqqqqqqqqqqqqqq/v7+/v7+/vwAAAAAAAAAAr1+/f3/////8/////////0BKysr6+vz8AAAAAAAAAADAwMDA8PDw8FHQ1f///wAAAAAAAAAAAACqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqutaqqqqq67r97urqurq6rq6uqqqqqqqqqqa+ur66rrZVb777v/ZRSiirv/v/uC6OoaHXebbpu811sTPo2zXCs9FCqqqqqqqWqqsf39/fH9/f3/////////////////v3zz7+/f3//////7+/v9/f39/v//////////3TUdNR01HTVATExwcEBAVV33aqgoKp33UNDTExwcFVVAAAAAAAAVVXBwTExDQ1VVQAAAAAAAAAA19fX1/f39/cCAgICAgIAAOrq6urqqqoqqqqqqqqqqY2qqqqppZVVVb+/v///////AAAAAAAAAAA/Pz8/Dw8PXwAAAAAAAAAA//////////8UERTR1NHU0fz8////////AAAAAMDw/P8AAAMDAAABBKq67rv+v1umqqqqurrq1Vqrq629t7ZWpt9+u+qqqqiBn7apqaoCBF/qudVaempqapVaqqqqqqqqrqusqL66rromJqammpqampqapqampqaaLjM7LXQ6XPDgYIDAgEBAgKqqqqqqVWpqx/f38PD////+8Q//AHf//z////8Ad////////wB3///7/f7/AHf/////f4cHd///VUBPT09KSkBXHRcdFx0XHUBPQE9AT0BAFx0XHRcdFx133apQUKp33XfdqgUFqnfdAAAAAAAAAAD39/39/f39/f//////f39/AAAAAAAAAAAAAAAAAAAAAAMDP///////AAAAAAAAAAMNDwMDDz///08fRxNXV1dXf39/f19fX18AAAAAAAAAAPTx9PH8/fz9/P38/f////8AAAAAAAAAAAQQEUVQQBAQqSpgDQ0LKio="], [56320, "DQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ4PNTU1NTUQXQ0NDQ0NDQ0NDQ0NDQ0NDQ0NNTU1NTU1NTU1NTU1NTU2N/Dw8PDwha01NTU1NTU1NTU1NTU1NTU1NfDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PAREhMUFRYX8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8FlZWVnw8PA4OTk5OTk5OUDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDwWVlZWfBfY2NjY2RjY2doafDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8FlZWVnwh4qJiYuMjY6PkJGS8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8LGxsbKztLW2t7i5uvDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8NbX2Nna29zd3t/g4eLw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PAA/wIDBAUGBwgJCgsM8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDwKCkqKywtLi8wMTIzNPDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PBRUlVVVVZXWDMzM1zw8PDw8PDw8PDw8PDw8PAmJiYmJiYmJiYmJ07weXp7fH1+MzMzMzOE8PDwJCUmJiYmJiYmJiYmI8Tv7u/u7+6cI08nTvCio6SlpjMzMzMzrPDwJCVNI8Tv7u/u7+6cIyN1dnZ2dnZ2d3JzTydOysvMzc4zMzMzM9TVJCVN6ut1dnZ2dnZ2dyMjneO7np6ek5+amyNPJ07291AzMzMzMzMzM3+AgeztnXGZmZeYmZ8jI506Ozw9Pj+fmpsfIE8mqDN48jMzMzMzMzMzM9Kq7Z28vb6/wMGfIyOdGBkaYUFCn5qbciEiHjMzoKEzMzMzMzMzMzMzM9Od5OXm5+jpnyMjxcbGxsbGxsfCw8JJSsLQMzPJMzMzMzMzMzMzMzP7xcbGxsbGxscjS0tLS0tLS0tLS0tLS0tL+DMz8TMzMzMzM/kzMzMz/EtLS0tLS0tLSw=="], [63488, "GBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGA4ODg4ODg4ODhgYGBgYGBgYGBgYGBgYGBgYDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODh8ODhkZEQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODh8fDhkZGRERDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODhkZHw4ZGRkREQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODhkZGRkZGRkOGQ4OEREODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OGR8fGRkOHx8fGRERDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODh8fHw4ODh8OGRkZEQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4fHw4ODhkZGRkZGREODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODh8ZGQ4ZGRkZGRkRDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4fHx8OGRkZGRkZEQ4ODg4ODg4ODg4ODg4ODg4ZDg4ODg4OGQ4fDg4ODh8ODhkZGRkZGRkZDg4OCw4ZDg4ODg4OGQ4ODg4ODg4OHw4ODQ4ODg4ZGR8ZGRkZGRkZGRkZGQ8ODhUVFRUVFQ4ODg4ODhofDg4ODg8ODg4OGRkZGRkZGRkZGRkZGRkZDg4VFRUVFR0ODg4OHx8KDg4ODg4LDgsODhkZGRkZGRkZGRkZGRkZGRkOFRUVFRUVDg4OGQ4ODg4ODhkOCQ4PDg4ZGRkZGRkZGRkZGRkZGRkZGQ4ODg4ODhkODg4ODg4ODg4ODg4ODg4OGRkZGRkZGRkZGRkZGRkZGQ4ODg4ODg4ODg=="], [32366, "dZihdZihdZihdZihTVVeTVVeTVVeTVVep6enVVVVlpaWSkpKLCwsMTExNjY2PDw8"]];
-const M = new Uint8Array(65536);
-for (const [a, b] of DATA) { const s = atob(b); for (let i = 0; i < s.length; i++) M[a + i] = s.charCodeAt(i); }
-const PAL = ['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171','#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
-const hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
-
-
-
-// ---- drawing ----
-function ctx2(cv) { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }
-function cellMC(c, charset, code, x, y, cols) {
-  for (let r = 0; r < 8; r++) { const b = M[charset + code * 8 + r];
-    for (let p = 0; p < 4; p++) { const v = (b >> (6 - 2 * p)) & 3; c.fillStyle = PAL[cols[v]]; c.fillRect(x + p * 2, y + r, 2, 1); } }
-}
-function cellHi(c, charset, code, x, y, fg, bg) {
-  for (let r = 0; r < 8; r++) { const b = M[charset + code * 8 + r];
-    for (let p = 0; p < 8; p++) { c.fillStyle = PAL[(b & (0x80 >> p)) ? fg : bg]; c.fillRect(x + p, y + r, 1, 1); } }
-}
-function drawTextMC(c, charset, scr, col, bg, mc1, mc2) {          // multicolour text mode, 40x25
-  for (let i = 0; i < 1000; i++) {
-    const cc = col[i] < 0 ? 0 : col[i] & 15, x = (i % 40) * 8, y = Math.floor(i / 40) * 8;
-    if (cc & 8) cellMC(c, charset, scr[i], x, y, [bg, mc1, mc2, cc & 7]);
-    else cellHi(c, charset, scr[i], x, y, cc & 7, bg);
-  }
-}
-function sprite(c, addr, sx, sy, colour, mc, m1, m2) {               // sprite at VIC coordinates
-  const x0 = sx - 24, y0 = sy - 50;
-  for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) {
-    const v = M[addr + r * 3 + b];
-    if (mc) for (let p = 0; p < 4; p++) { const k = (v >> (6 - 2 * p)) & 3; if (!k) continue;
-      c.fillStyle = PAL[[0, m1, colour, m2][k]]; c.fillRect(x0 + b * 8 + p * 2, y0 + r, 2, 1); }
-    else for (let p = 0; p < 8; p++) if (v & (0x80 >> p)) { c.fillStyle = PAL[colour]; c.fillRect(x0 + b * 8 + p, y0 + r, 1, 1); }
-  }
-}
-// ---- sound ----
-let AC = null;
-const audio = () => AC || (AC = new (window.AudioContext || window.webkitAudioContext)());
-function tones(freqs, start, dur) {
-  const a = audio(), g = a.createGain(); g.gain.value = 0.12; g.connect(a.destination);
-  for (const f of freqs) { const o = a.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.connect(g); o.start(a.currentTime + start); o.stop(a.currentTime + start + dur); }
-}
-const clockHz = () => document.querySelector('input[name=clk]:checked').value === 'pal' ? 985248 : 1022727;
-const sidHz = (v, clk) => v * clk / 16777216;
-const keyHz = (n, clk) => [sidHz(M[0x7E6E + n] | M[0x7E7A + n] << 8, clk), sidHz(M[0x7E86 + n] | M[0x7E92 + n] << 8, clk)];
-
-// ---- the ending ----
-const ecv = document.getElementById('ecv'), ec = ctx2(ecv);
-const escr = M.slice(0xDC00, 0xDC00 + 1000), ecol = Array.from(M.slice(0xF800, 0xF800 + 1000));
-const mouthCells = Array.from(M.slice(0xABAD, 0xABBA)).map(o => 0x2B6 + o);
-function mouth(open) { mouthCells.forEach((c, i) => escr[c] = M[(open ? 0xAB93 : 0xABA0) + i]); }
-function drawElvin() { ec.fillStyle = PAL[11]; ec.fillRect(0, 0, 320, 200); drawTextMC(ec, 0xD000, escr, ecol, 0x0B, 0x0F, 0x0A); }
-let etimer = null;
-function twinkle() { let a; do { a = Math.floor(Math.random() * 240); } while (a >= 0xD6 && a < 0xDF); ecol[a] = 8 | Math.floor(Math.random() * 8); }   // $ABBA: one cell a tick
-document.getElementById('eopen').onclick = () => { mouth(true); drawElvin(); };
-document.getElementById('eclose').onclick = () => { mouth(false); drawElvin(); };
-document.getElementById('eplay').onclick = () => {
-  if (etimer) { clearInterval(etimer); etimer = null; }
-  const pal = document.querySelector('input[name=etime]:checked').value === 'pal';
-  const T = Array.from(M.slice(pal ? 0xAB6E : 0xAB67, (pal ? 0xAB6E : 0xAB67) + 7));
-  const steps = []; for (let y = 6; y >= 0; y--) steps.push({ ticks: T[y] * 6, open: y > 0 ? (y % 2 === 0) : null });
-  const fps = pal ? 50 : 60; let i = 0, left = steps[0].ticks;
-  mouth(false); drawElvin();
-  etimer = setInterval(() => {
-    twinkle();
-    if (--left <= 0) { const s = steps[i]; if (s.open !== null) mouth(s.open); i++; if (i >= steps.length) { clearInterval(etimer); etimer = null; } else left = steps[i].ticks; }
-    drawElvin();
-  }, 1000 / fps);
-};
-drawElvin();
-const KEYS = ['1','2','3','4','5','6','7','8','9','*','0','#'];
-const kdiv = document.getElementById('keys');
-KEYS.forEach((k, n) => { const b = document.createElement('button'); b.textContent = k; b.onclick = () => { const f = keyHz(n, clockHz()); tones(f, 0, .25);
-  document.getElementById('kcap').innerHTML = `Key ${k}: voice 2 at ${f[0].toFixed(1)} Hz, voice 3 at ${f[1].toFixed(1)} Hz on the ${clockHz() === 985248 ? 'PAL' : 'NTSC'} clock (table <code>$7E6E</code>).`; }; kdiv.appendChild(b); });
-function dial(number) {                         // 4 frames of tone, 2 of silence, at 60 a second
-  const digits = number.replace(/-/g, '').split(''); const clk = clockHz(); let t = 0;
-  for (const d of digits) { tones(keyHz(KEYS.indexOf(d), clk), t, 4 / 60); t += 6 / 60; }
-}
-document.getElementById('dial1').onclick = () => dial('767-8900');
-document.getElementById('dial2').onclick = () => dial('555-4213');
-</script>

@@ -18,10 +18,11 @@ A human curates the page section by section (`kit/START.md`, the
 
 ## Ideas for the page
 
-- A flight-path viewer for the attack waves: a port of `enemy_spawn`
-  `$811F` and the movers `$82CC`, drawing each group's paths. Its test
-  needs a trace recorded while a group is on screen; the one taken from
-  `play-wave1.vsf` caught no enemies.
+- The attack-wave player on `waves.html` carries stages 1 to 3. The
+  recording run (`work/waves/record.js`, `pack.js`) covers all 32 stages;
+  stages 4-32 each need their VICE comparison (`work/waves/vice_stage.py`,
+  `compare.js`) before they go in, by copying the stage's file into
+  `reference/waves/` and raising `STAGES` in `reference/delta-waves.js`.
 - A sound-effect player for the 21 effects at `$0406`.
 - The hazard rows (rocks, bubbles, machinery) drawn from the spawn lists
   under the I/O area, stage by stage.

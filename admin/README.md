@@ -18,7 +18,6 @@ python3 -m http.server -d /tmp/pr-preview/_site 8001
 gh pr view <n> --files                 # what arrived: one game, plus the retro's kit fixes
 gh pr checks <n>                       # red here means stop
 python3 /tmp/pr-preview/kit/scripts/coverage.py /tmp/pr-preview/games/<platform>/<slug>
-python3 /tmp/pr-preview/kit/scripts/clock.py report /tmp/pr-preview/games/<platform>/<slug>
 ```
 
 ## Merge and clean up
