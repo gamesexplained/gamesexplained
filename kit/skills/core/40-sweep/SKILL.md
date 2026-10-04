@@ -31,10 +31,11 @@ credits in seconds. If the game has a custom character set, follow with
 ## Twin-copy check
 
 Relocating loaders can leave a second copy of code or tables in memory.
-Before describing a region, check whether the code reads it or reads a
-twin elsewhere: compare the two byte for byte. A byte that differs is
-usually a variable written at run time. Describe the copy the code reads
-and mark the other as an unread duplicate.
+Before describing a region, compare the two byte for byte and trace their
+producers and consumers separately. Equality establishes a twin, not an
+unread copy: runtime dictionaries, buffers and saved frames can still match
+an initialization seed. A changed byte can identify a runtime write, but an
+unchanged byte is not proof of non-use. Name an unproved consumer as open.
 
 ## A documented version on another machine
 
@@ -104,6 +105,9 @@ maker is unknown is in the position of a run on an unproven model.
 4. **Verify as usual** (`60-verify`). A claim the analysis makes is
    unverified until it is traced or observed here. The analysis's own
    notes of what it tested are a lead to a check, not the check.
+   Rerunning a decoder the analysis came with shows that it reproduces,
+   not what it means: test a decoded format with a decoder of your own,
+   against whole records.
 5. **Record the import** in `game.json`, beside the run's own model:
 
    ```

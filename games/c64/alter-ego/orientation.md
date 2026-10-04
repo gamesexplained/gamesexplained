@@ -6,7 +6,7 @@ Male edition disk 01a, first directory entry. Hard reset, autostart, run until t
 
 ## Captures and comparison
 
-`work/name-prompt.vsf` is the canonical Source snapshot. A second cold boot stopped on execution at $4000 before startup and saved `work/entry.vsf`. Both snapshots retain all 9,794 imported code bytes unchanged. At the prompt, all 2,718 imported word bytes match the contributor capture and 30 byte-data bytes differ as state. Between hand-over and prompt, 338 word bytes and 14,598 byte-data bytes change; 7,593 bitmap bytes differ. No imported code is lost at the hand-over.
+`work/name-prompt.vsf` is the canonical Source snapshot. A second cold boot stopped on execution at $4000 before startup and saved `work/entry.vsf`. Both snapshots retain all 9,794 imported code bytes unchanged. At the prompt, all 2,718 imported word bytes match the contributor capture. Between hand-over and prompt, 338 word bytes and 14,598 byte-data bytes change; 7,593 bitmap bytes differ. No imported code is lost at the hand-over.
 
 The Source listing uses the fresh prompt and `--entry work/entry.vsf` for the untracked-data audit. Its physical RAM begins at offset 209. Snapshots, original exports and replacement-phase leads are private under `work/`.
 
