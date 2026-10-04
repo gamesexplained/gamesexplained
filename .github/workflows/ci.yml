@@ -56,7 +56,12 @@ jobs:
           for g in games/*/*/; do
             echo "== $g"; python3 kit/scripts/coverage.py "$g" | head -3
           done
+      # With the token, build.py asks GitHub which account an author's address
+      # belongs to: a squash merge is authored under the account's primary
+      # address, which nothing in the repository links to a login.
       - name: Build the site
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python3 kit/scripts/build.py
       - uses: actions/upload-pages-artifact@v3
         with:

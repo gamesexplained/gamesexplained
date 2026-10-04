@@ -73,9 +73,9 @@ step needs something only they have.
    sometimes with a number in front (`<id>+<login>@users.noreply.github.com`);
    either form works. Ask them to tick "Keep my email addresses private"
    on that page too: a pull request merged with "Squash and merge" is
-   authored with the account's primary address unless it is, and the
-   site cannot credit that commit to them. Then prove it with a commit
-   that goes nowhere:
+   authored with the account's primary address unless it is, and that
+   address then stays in this repository's public history. Then prove
+   it with a commit that goes nowhere:
 
    ```
    git switch -c identity-check

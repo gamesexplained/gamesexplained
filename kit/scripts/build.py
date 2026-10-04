@@ -34,10 +34,13 @@ It lists pages with blocks hidden by the page editor (kit/scripts/edit.py), and
 fails on a Gold or Platinum page that still has one.
 
 Usage: build.py [--out _site]
+With GITHUB_TOKEN (or GH_TOKEN) set, as in CI, the build asks GitHub which account
+an author's address belongs to when the address is not a GitHub noreply one; without
+it the build makes no request and shows that author's name unlinked.
 Preview: python3 -m http.server -d _site 8000   (8000, or any free port)
 No dependencies. The markdown converter handles the subset the templates use.
 """
-import glob, html, html.parser, json, os, re, shutil, subprocess, sys
+import glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.error, urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import parts, load_game, started, under, above   # noqa: E402  a game of several loads
@@ -573,16 +576,88 @@ BOT_EMAILS = ("noreply@anthropic.com",      # Claude Code
               "+Copilot@users.noreply.github.com",   # GitHub Copilot's coding agent, which can be the commit author
               "[bot]@users.noreply.github.com")
 GITHUB_NOREPLY = re.compile(r"^(?:\d+\+)?([A-Za-z0-9-]+)@users\.noreply\.github\.com$")
+# The accounts GitHub names for an agent's own address. They are users like any other, so
+# an author resolved to one would be credited as a person: on 4 October 2026 GitHub gave
+# claude for noreply@anthropic.com and codex for noreply@openai.com. An agent that commits
+# under another address of its account is still an agent.
+AGENT_LOGINS = ("claude", "codex")
+_accounts = {}   # author address -> (login, type), or None where GitHub names no account: asked once a build
+_github_off = []   # why GitHub is not asked again this build, once a request has failed
+_unasked = set()   # authors a build with no token left unlinked, for the one line main() prints
 
 
-def is_agent(email):
-    return any(email.endswith(b) for b in BOT_EMAILS)
+def github_repo():
+    """owner/name of the repository GitHub is asked about: the one the build runs in, else the site's."""
+    return (os.environ.get("GITHUB_REPOSITORY")
+            or json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/").split("github.com/")[-1])
 
 
-def github_login(email):
-    """The login in a canonical <login>@users.noreply.github.com address, else None."""
+def ask_github(sha, token):
+    """(login, type) of the account GitHub credits commit sha's author as, or None: one request."""
+    req = urllib.request.Request(f"https://api.github.com/repos/{github_repo()}/commits/{sha}",
+                                 headers={"Accept": "application/vnd.github+json", "User-Agent": "gamesexplained-build",
+                                          "Authorization": f"Bearer {token}"})
+    with urllib.request.urlopen(req, timeout=10) as r:
+        a = json.load(r).get("author") or {}
+    return (a["login"], a.get("type") or "User") if a.get("login") else None
+
+
+def github_account(email, sha):
+    """The account GitHub says an author's address belongs to, as (login, type), else None.
+
+    GitHub links a commit to the account its author address is registered to, and only
+    GitHub can: a pull request merged with "Squash and merge" is authored under the
+    account's primary address, not the noreply one its branch was committed under. So the
+    build asks about one commit per address, and no file has to list a contributor's
+    address. It asks only when it has a token (GITHUB_TOKEN or GH_TOKEN; CI's build step
+    sets one), so a build on a contributor's computer makes no request and shows such an
+    author unlinked. A commit GitHub does not have is an author it cannot name; any other
+    failure is the last request of the build, and the build says so."""
+    if email in _accounts:
+        return _accounts[email]
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not token or not sha or _github_off:
+        return None
+    try:
+        _accounts[email] = ask_github(sha, token)
+    except urllib.error.HTTPError as e:
+        if e.code not in (404, 422):   # 404, 422: a commit that was never pushed
+            _github_off.append(f"HTTP {e.code}")
+        else:
+            _accounts[email] = None
+    except Exception as e:
+        _github_off.append(str(getattr(e, "reason", e)) or type(e).__name__)
+    if _github_off:
+        warn(f"GitHub could not be asked who authored {sha[:7]} ({_github_off[0]}): "
+             "authors it has to name are unlinked in this build")
+    return _accounts.get(email)
+
+
+def is_agent(email, sha=None):
+    """An agent or a bot, never credited: by its address, or by the account behind the address.
+
+    The address is the usual sign, and such an address is never put to GitHub. The account
+    is the other sign: an author GitHub resolves to an agent's account (AGENT_LOGINS), or to
+    one that is not a user's, is an agent whatever address it committed under."""
+    if any(email.endswith(b) for b in BOT_EMAILS):
+        return True
     m = GITHUB_NOREPLY.match(email)
-    return m.group(1) if m else None
+    login, kind = (m.group(1), "User") if m else github_account(email, sha) or (None, "User")
+    return kind != "User" or (login or "").lower() in AGENT_LOGINS
+
+
+def github_login(email, sha=None):
+    """The author's GitHub login, else None.
+
+    Read from a canonical <login>@users.noreply.github.com address; for any other address it
+    is the account GitHub names for commit sha (github_account). Never an agent's: is_agent
+    is asked here as well as by the callers, so a caller that forgot cannot credit one."""
+    if is_agent(email, sha):
+        return None
+    m = GITHUB_NOREPLY.match(email)
+    if m:
+        return m.group(1)
+    return (github_account(email, sha) or (None,))[0]
 
 
 def person_html(name, login):
@@ -591,34 +666,43 @@ def person_html(name, login):
 
 
 def contributors(gdir):
-    """(commits, name, github login or None) per human author of this game folder.
-
-    Git authors only, through .mailmap, so every alias a person has committed under
-    collapses to one GitHub account. Agents are co-authors in trailers, never authors,
-    so they do not appear. The login comes from the GitHub noreply address, in either
-    form: <login>@users.noreply.github.com, or <id>+<login>@ as GitHub writes on commits
-    made on the web, merges from its pull request page among them. Both forms of one
-    login are one row. An author with another address is shown unlinked and the build
-    says so, so a .mailmap line can be added.
-    """
+    """(commits, name, github login or None) per human author of this game folder (credit)."""
     try:
-        out = subprocess.run(["git", "log", "--no-merges", "--format=%aN\t%aE", "HEAD", "--", gdir],
+        out = subprocess.run(["git", "log", "--no-merges", "--format=%aN\t%aE\t%H", "HEAD", "--", gdir],
                              cwd=ROOT, capture_output=True, text=True).stdout
     except Exception:
         out = ""
-    counts = {}
-    for ln in out.splitlines():
-        if "\t" not in ln:
-            continue
-        name, email = ln.split("\t", 1)
-        if is_agent(email):
-            continue
+    return credit(ln.split("\t") for ln in out.splitlines() if ln.count("\t") == 2)
+
+
+def credit(authors):
+    """(commits, name, github login or None) per person among (name, address, commit) authors,
+    listed newest commit first as git log gives them.
+
+    Git authors only, through .mailmap. Agents are co-authors in trailers, never authors,
+    and one that authored a commit anyway is left out (is_agent). The login comes from the
+    GitHub noreply address, in either form: <login>@users.noreply.github.com, or
+    <id>+<login>@ as GitHub writes on commits made on the web. An author under any other
+    address is whoever GitHub says that address belongs to (github_account), asked about
+    their newest commit. Every address of one login is one row. An author GitHub cannot
+    name is shown unlinked and the build says so, so a .mailmap line can be added; one it
+    was not asked about is shown unlinked too, and main() says how many.
+    """
+    counts, newest = {}, {}
+    for name, email, sha in authors:
         counts[(name, email)] = counts.get((name, email), 0) + 1
+        newest.setdefault(email, sha)
     rows = {}
     for (name, email), n in sorted(counts.items(), key=lambda kv: -kv[1]):
-        login = github_login(email)
-        if not login:
-            warn(f"contributor {name} <{email}> has no GitHub login; add a .mailmap line mapping them to <login>@users.noreply.github.com")
+        sha = newest[email]
+        if is_agent(email, sha):
+            continue
+        login = github_login(email, sha)
+        if not login and email in _accounts:
+            warn(f"contributor {name} (commit {sha[:7]}) has no GitHub login: GitHub names no account for that "
+                 "commit's author; add a .mailmap line mapping their address to <login>@users.noreply.github.com")
+        elif not login and not _github_off:
+            _unasked.add(name)
         c, shown, _ = rows.get(login or (name, email), (0, name, login))   # the name of the alias with most commits
         rows[login or (name, email)] = (c + n, shown, login)
     return sorted(rows.values(), key=lambda r: -r[0])
@@ -1113,9 +1197,9 @@ def recent_changes(games, n=4):
     counts when it alters what readers see of exactly one game, a file the build
     publishes from one game folder: a sweep across every game, or a change to the kit
     alone, is left out. It is "contributed" when it adds the game's game.json, else
-    "updated". The people are the git authors of the change, through .mailmap (for a
-    merge, the authors of the commits it brought in, not whoever merged it), agents and
-    bots left out as on the About tab."""
+    "updated". The people are the git authors of the change, named as on the About tab
+    (credit; for a merge, the authors of the commits it brought in, not whoever merged
+    it), agents and bots left out as there."""
     by_key = {(g["platform"], g["slug"]): g for g in games}
     git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
     try:
@@ -1143,14 +1227,14 @@ def recent_changes(games, n=4):
             continue
         key = next(iter(touched))
         if len(parents) > 1:   # a merge: the people whose commits it brought in, most commits first
-            authors = [ln.split("\x1f") for ln in git("log", "--no-merges", "--format=%aN%x1f%aE",
+            authors = [ln.split("\x1f") for ln in git("log", "--no-merges", "--format=%aN%x1f%aE%x1f%H",
                                                       f"{parents[0]}..{sha}", "--", "games/%s/%s" % key).splitlines()]
         else:
-            authors = [(name, email)]
+            authors = [(name, email, sha)]
         counts = {}
-        for nm, em in authors:
-            if not is_agent(em):
-                who = (nm, github_login(em))
+        for nm, em, at in authors:
+            if not is_agent(em, at):
+                who = (nm, github_login(em, at))
                 counts[who] = counts.get(who, 0) + 1
         row = rows.setdefault(key + (date,), {"game": by_key[key], "date": date, "kind": "updated", "who": {}})
         if key in added:
@@ -1430,6 +1514,9 @@ def main():
     if done:
         sys.exit(f"{', '.join(done)}: a Gold or Platinum page with blocks still hidden with the page editor. "
                  "Do the cleanup pass in kit/START.md before setting the tier.")
+    if _unasked:
+        print(f"{len(_unasked)} contributor(s) are unlinked in this build: GitHub says whose address a commit "
+              "is under, and the build asks it only when GITHUB_TOKEN is set, as it is in CI")
     print(f"built {len(games)} game(s) into {os.path.relpath(out_root, ROOT)}/" + (f"; analytics on {tagged} pages" if tagged else "; analytics off (no id in site/config.json)"))
 
 
