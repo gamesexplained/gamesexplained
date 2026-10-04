@@ -110,12 +110,20 @@ var FIST = (function () {
     return out;
   }
 
-  return { unpackBitmap, unpackColour, pose, anim, grade, speech };
+  // The same sample as the cycles between flips, for any clock: 9 x period + 108.
+  function speechCycles(ram, k) {
+    const s = 0xF540 + w16(ram, 0xF540 + 4 * k), e = 0xF540 + w16(ram, 0xF542 + 4 * k), out = [];
+    for (let a = s; a < e; a++) out.push(9 * (ram[0x0200 + ram[a]] | ram[0x0300 + ram[a]] << 8) + 108);
+    return out;
+  }
+
+  return { unpackBitmap, unpackColour, pose, anim, grade, speech, speechCycles };
 })();
 
 // createDriver for site/lib/sid.js: runs the game's own music driver ($09A5, called once a frame
 // by the line-255 interrupt) in a small 6502 interpreter over the bytes $0400-$1159 and the zero
-// page it uses, as the game loads them. $FF is the song request: 1-4, or 0 for silence.
+// page it uses, as the game loads them. $FF is the song request: 1-4, or 0 for silence. site/lib/sid.js
+// calls init with the tune's position in its list, 0-3, so init(t) asks for song t + 1.
 // The interpreter is Delta's page's, with reads of $D41B/$D41C answered from readback().
 function createDriver(M) {
   const mem = new Uint8Array(0x10000);
@@ -205,7 +213,7 @@ function createDriver(M) {
   const active = () => (mem[0x0CA1] | mem[0x0CA2] | mem[0x0CA3]) & 0x80;
   let on = false;
   return {
-    init(t) { for (let r = 0; r < 25; r++) sid[r] = 0; writes = []; mem[0x0D3A] = 0; mem[0xFF] = t; call(0x09A5); on = true; },
+    init(t) { for (let r = 0; r < 25; r++) sid[r] = 0; writes = []; mem[0x0D3A] = 0; mem[0xFF] = t + 1; call(0x09A5); on = true; },
     stop() { writes = []; mem[0xFF] = 0; call(0x09A5); on = false; },
     play() { writes = []; if (!on) return; call(0x09A5); if (!active()) on = false; },
     readback(e, o) { env3 = e; osc3 = o; },
@@ -382,38 +390,79 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
 
     }
     if ($('spCv')) {
-    /* 05 speech */
+    /* 05 speech: the four samples as the speech player times them ($311A) */
     {
-      const sc = $('spCv'), sctx = sc.getContext('2d');
-      let actx = null;
-      const draw = k => {
-        const h = FIST.speech(ram, k), total = h.reduce((a, b) => a + b, 0);
-        sctx.fillStyle = '#fff'; sctx.fillRect(0, 0, sc.width, sc.height);
-        sctx.strokeStyle = '#1f5fa8'; sctx.beginPath();
-        let t = 0, lvl = 1; sctx.moveTo(0, 15);
-        for (const d of h) { const x = t / total * sc.width; sctx.lineTo(x, lvl ? 15 : 95); lvl ^= 1; sctx.lineTo(x, lvl ? 15 : 95); t += d; }
-        sctx.stroke();
-        sctx.fillStyle = '#80838a'; sctx.font = '12px IBM Plex Mono, monospace';
-        sctx.fillText('sample ' + k + ': ' + h.length + ' flips, ' + total.toFixed(2) + ' s', 8, 108);
-        return h;
-      };
-      for (let k = 0; k < 4; k++) {
-        const b = document.createElement('button'); b.className = 'fx-btn'; b.textContent = 'Sample ' + k;
-        b.onclick = () => {
-          const h = draw(k);
-          actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-          const rate = actx.sampleRate, total = h.reduce((a, c) => a + c, 0);
-          const buf = actx.createBuffer(1, Math.ceil(total * rate) + 1, rate), d = buf.getChannelData(0);
-          let t = 0, lvl = 0.25;
-          for (const dur of h) { const a = Math.floor(t * rate), e = Math.floor((t + dur) * rate); for (let i = a; i < e; i++) d[i] = lvl; lvl = lvl ? 0 : 0.25; t += dur; }
-          let mean = 0; for (let i = 0; i < d.length; i++) mean += d[i]; mean /= d.length; for (let i = 0; i < d.length; i++) d[i] -= mean;
-          const src = actx.createBufferSource(); src.buffer = buf; src.connect(actx.destination); src.start();
-        };
-        $('spBtns').appendChild(b);
+      const USE = ['the defender hit by a forward blow', 'the defender hit by a punch, a backward blow or the bull', 'every attack', 'a floored fighter landing; the bull\u2019s charge'];
+      const sc = $('spCv'), sx = sc.getContext('2d'), zc = $('spZoom'), zx = zc.getContext('2d');
+      let actx = null, node = null, anim = null, cur = 2;
+      const clock = () => document.querySelector('input[name=spclk]:checked').value === 'pal' ? 985248 : 1022727;
+      const cyc = [0, 1, 2, 3].map(k => FIST.speechCycles(ram, k));
+      function times(k) {            // the time of every flip from the start, in seconds, and the total
+        const c = cyc[k], hz = clock(), t = [0];
+        for (let i = 0; i < c.length; i++) t.push(t[i] + c[i] / hz);
+        return t;
       }
-      draw(2);
+      function draw(k, at) {
+        const c = cyc[k], t = times(k), total = t[t.length - 1], W = sc.width, H = sc.height;
+        sx.fillStyle = '#000'; sx.fillRect(0, 0, W, H);
+        const max = Math.ceil(Math.max(...c) * 1.08 / 250) * 250;   // cycles at the top of the strip
+        sx.strokeStyle = '#333'; sx.font = '11px IBM Plex Mono, monospace'; sx.fillStyle = '#80838a';
+        for (const g of [250, 500, 1000, 2000, 4000].filter(v => v < max)) { const y = H - 10 - g / max * (H - 26); sx.beginPath(); sx.moveTo(0, y); sx.lineTo(W, y); sx.stroke(); sx.fillText(g + ' cycles', 4, y - 3); }
+        for (let i = 0; i < c.length; i++) {
+          const x = t[i] / total * W, w = Math.max(1, c[i] / clock() / total * W);
+          const h = Math.min(c[i], max) / max * (H - 26);
+          sx.fillStyle = t[i] / total < at ? '#ffd54a' : '#75cec8';
+          sx.fillRect(x, H - 10 - h, Math.max(1, w - 0.3), Math.max(1, h));
+        }
+        sx.fillStyle = '#ffd54a'; sx.fillRect(Math.min(W - 1, at * W), 0, 1, H);
+        // the close-up: 30 ms of the wave from the playhead, volume 15 or 0
+        const ZW = zc.width, ZH = zc.height, span = 0.03, t0 = Math.max(0, Math.min(total - span, at * total));
+        zx.fillStyle = '#000'; zx.fillRect(0, 0, ZW, ZH);
+        const Y = v => v ? 18 : ZH - 18;
+        let i = 0; while (i < c.length && t[i + 1] <= t0) i++;
+        let lvl = i % 2 ? 1 : 0;           // byte i plays at volume 0 when i is even: the player starts at 15 and flips first
+        zx.strokeStyle = '#75cec8'; zx.lineWidth = 2; zx.beginPath(); zx.moveTo(0, Y(lvl));
+        for (; i < c.length && t[i] < t0 + span; i++) {
+          const x = (t[i + 1] - t0) / span * ZW;
+          zx.lineTo(Math.min(ZW, x), Y(lvl)); lvl ^= 1; if (x <= ZW) zx.lineTo(x, Y(lvl));
+        }
+        zx.lineTo(ZW, Y(lvl)); zx.stroke();
+        zx.fillStyle = '#80838a'; zx.font = '11px IBM Plex Mono, monospace';
+        zx.fillText((t0 * 1000).toFixed(1) + ' to ' + ((t0 + span) * 1000).toFixed(1) + ' ms \u00b7 volume 15 / 0', 6, 12);
+        return total;
+      }
+      function caption(k, total) {
+        const c = cyc[k], mean = c.reduce((a, b) => a + b, 0) / c.length;
+        const s0 = 0xF540 + (ram[0xF540 + 4 * k] | ram[0xF541 + 4 * k] << 8);
+        $('spCap').innerHTML = '<b>Sample ' + k + '</b>, ' + USE[k] + ': ' + c.length.toLocaleString('en') + ' bytes from <code>' + hex(s0, 4) + '</code>, ' +
+          total.toFixed(2) + ' seconds at the ' + (clock() === 985248 ? 'PAL' : 'NTSC') + ' clock; the flips come on average every ' + Math.round(mean) +
+          ' cycles, a wave of about ' + Math.round(clock() / mean / 2) + ' Hz. The bars are the time from each flip of <code>$D418</code> to the next, from the table at <code>$0200</code>/<code>$0300</code>.';
+      }
+      function play(k) {
+        cur = k;
+        if (node) { try { node.stop(); } catch (e) {} node = null; }
+        if (anim) cancelAnimationFrame(anim);
+        const t = times(k), total = t[t.length - 1];
+        actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+        const rate = actx.sampleRate, buf = actx.createBuffer(1, Math.ceil(total * rate) + 1, rate), d = buf.getChannelData(0);
+        let lvl = 1;                                     // the player starts at volume 15 and flips first ($31CB, $311D)
+        for (let i = 0; i + 1 < t.length; i++) { lvl ^= 1; const a = Math.floor(t[i] * rate), e = Math.floor(t[i + 1] * rate); for (let j = a; j < e; j++) d[j] = lvl ? 0.3 : -0.3; }
+        const src = actx.createBufferSource(), hp = actx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 40;
+        src.buffer = buf; src.connect(hp); hp.connect(actx.destination);
+        const start = actx.currentTime + 0.05; src.start(start); node = src;
+        caption(k, total);
+        $('spBtns').querySelectorAll('button').forEach((b, j) => b.classList.toggle('on', j === k));
+        const step = () => { const at = (actx.currentTime - start) / total; draw(k, Math.max(0, Math.min(1, at))); if (at < 1) anim = requestAnimationFrame(step); };
+        step();
+      }
+      for (let k = 0; k < 4; k++) {
+        const b = document.createElement('button'); b.className = 'fx-btn'; b.textContent = 'Sample ' + k + ': ' + ['hit', 'hit hard', 'attack', 'fall'][k];
+        b.onclick = () => play(k); $('spBtns').appendChild(b);
+      }
+      document.querySelectorAll('input[name=spclk]').forEach(r => r.onchange = () => { if (node) { try { node.stop(); } catch (e) {} } const tot = draw(cur, 0); caption(cur, tot); });
+      const tot = draw(2, 0.35); caption(2, tot);
     }
-
     }
     if ($('gBar')) {
     /* 06 scoring */

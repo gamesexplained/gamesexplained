@@ -6,8 +6,8 @@ Tier: Silver. For Gold, a human curates the page section by section
 
 Open questions (`facts.md`):
 
-- The frame header format of the speech data at `$E000` is not fully
-  understood; a Sound section that plays the voice lines needs it.
+- The words of the eight voice lines: the Sound and speech tab plays
+  them; nobody has transcribed them.
 - The clock poke in `cheats.md` (`$D3`/`$D4`) is a candidate that
   was not tried live.
 

@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
   <h1>{{title}}</h1>
-  <p class="sub">An inverted character set, bullets cut out of glyphs, hits found by reading the screen, and a shop that is an attack wave.</p>
+  <p class="sub">An inverted character set, bullets cut out of glyphs, hits found by reading the screen, and a shop that is an attack wave (<a href="waves.html">The attack waves</a>).</p>
 </header>
 <main class="wrap">
 <section id="charset">
@@ -81,18 +81,8 @@
   <p>Weapons change the enemies too. Owning the shield brings out the homing bombs, and the double laser and slow-down change how finely they aim (<code>enemy_fire_setup</code>, <code>$9100</code>; <a href="#fire">enemy fire</a>). Every weapon is lost when the ship dies (<code>$397E</code>).</p>
 </section>
 
-<section id="waves">
-  <p class="fig">04 · The enemies</p>
-  <h2 class="t">Attack waves</h2>
-  <p class="lede">Up to seven enemies at once, each following a path of straight segments, with hit points and sometimes a second form.</p>
-  <p>Each stage is a list of groups (<code>$B800</code> for stages 1 to 21, <code>$B900</code> after), and each group points at an eight-byte record in <code>wave_records</code> at <code>$AB00</code>. <code>enemy_spawn</code> (<code>$811F</code>) decodes it: hit points, animation, colour, which side to enter from, points, path, starting height and delay. One enemy enters per frame into a free sprite, up to seven.</p>
-  <p>A path (<code>$B500</code>) is a list of segments (<code>$A880</code>), and each segment runs a list of (dx, dy) steps from <code>$B000</code> for so many frames a step, mirrored as the record says (<code>enemy_move_1</code>, <code>$82CC</code>, and six copies, one per sprite). An enemy that leaves the play area is gone, and a group with an escapee earns no credit.</p>
-  <p>Hit points come from <code>$A100</code>. An enemy with 0 or 1 dies at the first hit, and one with <code>$FF</code> cannot be destroyed. When a segment says so, an enemy whose hits run out changes into a new form instead of dying. In waves led by an indestructible enemy in the first sprite, destroying the one in the last sprite blows up the whole wave (<code>enemies_wave_timers</code>, <code>$9024</code>).</p>
-  <p>Enemies are worth 5, 7, 10, 15, 20, 25, 50 or 100, and the panel shows ten times that: the score is kept in five digits and printed with a 0 after them. An extra life comes each time the panel's ten-thousands digit goes up (<code>extra_life_check</code>, <code>$9CD6</code>), so every 10,000 points, up to nine lives.</p>
-</section>
-
 <section id="fire">
-  <p class="fig">05 · Enemy fire</p>
+  <p class="fig">04 · Enemy fire</p>
   <h2 class="t">Three kinds of fire, paid for from one budget</h2>
   <p>Enemies fire three ways, all drawn with characters (<code>enemy_fire_decide</code>, <code>$9208</code>): aimed shots that travel along a row, six at most; homing bombs two characters square, two at most; and bullets, the character <code>$ED</code> moving in one of eight directions, seven at most.</p>
   <p>Each frame one enemy, taking the seven in turn, may fire. It must be alive, past its entrance and allowed to fire by its wave, and its own counter must have reached the stage's fire rate. New fire is allowed only while the fire already in flight costs less than the stage's budget: a shot counts 5, a bomb 10 and a bullet 1 (<a href="levels.html#table">every stage's numbers</a>).</p>
@@ -100,7 +90,7 @@
 </section>
 
 <section id="controls">
-  <p class="fig">06 · Controls</p>
+  <p class="fig">05 · Controls</p>
   <h2 class="t">Controls</h2>
   <div class="scroll"><table>
     <tr><th>Input</th><th>Where</th><th>Effect</th></tr>

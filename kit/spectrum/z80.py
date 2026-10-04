@@ -20,8 +20,11 @@ address (a cross-reference target), `{r}` a relative jump target,
 numbers, condition codes — is written out in the table. A template of
 None means the instruction takes no operand.
 
-The undocumented opcodes are not decoded: SkoolKit shows them as DEFB and
-so does the listing, byte by byte.
+The undocumented instructions are decoded the way SkoolKit's fullest setting
+decodes them (the halves of IX and IY, the DDCB/FDCB register copies, `sll`,
+the ED aliases of NEG, RETN and IM, and ED63, ED6B, ED70 and ED71);
+`test_z80.py` holds the two tables against each other. A byte neither
+decodes is one record of its own in the listing.
 """
 import sys
 

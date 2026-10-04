@@ -25,9 +25,21 @@
   <p class="fig">02 · Sound</p>
   <h2 class="t">Sound: the shouts are played by switching the volume on and off</h2>
   <p class="lede">The grunts and cries of the fight are recordings, played while the music runs. The sound chip has no way to play a sample, so the game flips its master volume between full and silent thousands of times a second.</p>
-  <div class="plate"><div class="fx-ctl" id="spBtns"></div><canvas id="spCv" width="900" height="110"></canvas>
-    <p class="cap">Each sample byte picks a delay from a 256-entry table (<code>$0200</code>/<code>$0300</code>), and when the delay runs out a timer interrupt flips the volume (<code>$311A</code>). Played here as those flips, with the delay measured in the emulator: 9 cycles per table unit plus 108. The raster interrupts that delay the timer on the real machine are not reproduced.</p></div>
-  <p>The volume register also sets the music's loudness, so the samples ride on top of the tune and the tune briefly disappears while the volume is at zero. Sample 2 is played with every attack (<code>$2B54</code>), the others with the reactions to a blow. DEL in the attract mode turns them off (<code>$CF</code>); the menu calls them sound effects.</p>
+  <div class="plate">
+    <div class="fx-ctl" id="spBtns"></div>
+    <div class="fx-ctl"><label><input type="radio" name="spclk" value="pal" checked> PAL clock</label><label><input type="radio" name="spclk" value="ntsc"> NTSC clock</label></div>
+    <canvas id="spCv" width="960" height="160" style="width:100%;height:auto;background:#000"></canvas>
+    <canvas id="spZoom" width="960" height="140" style="width:100%;height:auto;background:#000;margin-top:8px"></canvas>
+    <p class="cap" id="spCap">Pick a sample. Sound plays in your browser through Web Audio.</p>
+  </div>
+  <table class="fx-tab" style="margin-top:18px">
+    <tr><th>Sample</th><th>When the game plays it</th><th>Started by</th></tr>
+    <tr><td>0</td><td>The defender is hit by most forward blows, and falls (reaction <code>$16</code>)</td><td><code>$2CE7</code></td></tr>
+    <tr><td>1</td><td>The defender is hit by move <code>$18</code>, 7 or <code>$0C</code> (reaction <code>$1B</code>) or by a backward blow (reaction <code>$1A</code>); the bull hits the player</td><td><code>$2CDC</code>, <code>$2CF2</code>, <code>$13B7</code></td></tr>
+    <tr><td>2</td><td>Every attack, as its animation starts</td><td><code>$2B54</code></td></tr>
+    <tr><td>3</td><td>A floored fighter lands, on the last frame of either fall (<code>$29E9</code>); the bull begins its charge</td><td><code>$29E9</code>, <code>$141F</code></td></tr>
+  </table>
+  <p>The volume register also sets the music's loudness, so the samples ride on top of the tune and the tune briefly disappears while the volume is at zero. Each sample byte is one half of a wave: the volume stays where it is for 9 cycles per unit of the table entry the byte picks, plus about 108 for the interrupt itself (measured in the emulator), then flips. The upper strip plots that time for every byte of the sample, so a stretch of short flips is a high, buzzing sound and a run of long ones a low one; the lower strip is the wave itself, 30 milliseconds of it at the playhead. DEL in the attract mode turns the samples off (<code>$CF</code>); the menu calls them sound effects.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

@@ -142,7 +142,7 @@ Filed where the session could; the rest below.
 1. a numbered detail, not an ask
    that runs on
 
-## What took longest
+## What cost the most time
 
 - **Not an ask.** Another section.
 """

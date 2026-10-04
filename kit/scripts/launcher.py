@@ -9,7 +9,7 @@ also called tools.py, and a platform's own scripts `import tools` to reach their
     sys.path.append(os.path.join(os.path.dirname(HERE), "scripts"))
     import launcher
 """
-import glob, json, os, shlex, shutil, socket, subprocess, sys, tempfile, time
+import os, shlex, shutil, socket, subprocess, sys, tempfile, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 WRAPPERS = ("script", "xvfb-run")      # what launchers put round a tool; stopping a tool leaves them to exit
@@ -85,9 +85,9 @@ def foreign(owner):
 
 
 def foreign_detail(port):
-    """For a tool on `port` started from another clone: its command line, the clone's folder, how long the
-    process has been up, and any step open on the clock there, so leftovers can be told from someone's live
-    run. Empty when the tool is this clone's, or nothing listens."""
+    """For a tool on `port` started from another clone: its command line, the clone's folder and how long the
+    process has been up, so leftovers can be told from someone's live run. Empty when the tool is this
+    clone's, or nothing listens."""
     owner = port_owner(port) if up(port) else None
     if not foreign(owner):
         return ""
@@ -104,14 +104,6 @@ def foreign_detail(port):
     clone = head[head.rfind(" /") + 1:] if head else ""
     if clone and os.path.isfile(os.path.join(clone, "AGENTS.md")):
         lines.append(f"  from the clone at {clone}")
-        for t in sorted(glob.glob(os.path.join(clone, "games", "*", "*", "timings.json"))):
-            try:
-                open_steps = [e for e in json.load(open(t)).get("entries", []) if e.get("end") is None]
-            except (OSError, ValueError):
-                continue
-            for e in open_steps:
-                lines.append(f"  a run is on the clock there: {e.get('step')} on {os.path.relpath(os.path.dirname(t), clone)}, "
-                             f"started {e.get('start')}; ask before stopping it")
     return "\n".join(lines)
 
 

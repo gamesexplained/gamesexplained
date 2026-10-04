@@ -24,8 +24,8 @@ adding two parts never write the same file.
 Every script that takes a <game dir> takes a part's folder in its place:
 symbols_export.py, symbols_import.py, listing.py, coverage.py,
 check_listing.py. The game folder keeps what is about the game as a whole
-(game.json, index.html, features.md, orientation.md, its own facts.md,
-timings.json), and its game.json says nothing of the parts.
+(game.json, index.html, features.md, orientation.md, its own facts.md),
+and its game.json says nothing of the parts.
 
 Every byte has one owner. A part owns every address its ledger tracks,
 unless it names the part it lies "over": then it owns only its "ranges"

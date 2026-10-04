@@ -58,7 +58,7 @@ def load(gdir, live, session=None):
 
 
 def tracked_count(gdir):
-    """(tracked bytes, explained bytes) from symbols.json, for clock.py and build.py.
+    """(tracked bytes, explained bytes) from symbols.json, for parts.py and build.py.
     A game of several parts counts the sum of the parts that have been started."""
     from parts import parts, started
     P = parts(gdir)

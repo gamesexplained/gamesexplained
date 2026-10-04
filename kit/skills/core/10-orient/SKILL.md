@@ -5,7 +5,7 @@ description: First step for any game. Boot it in the emulator, get past the load
 
 # Orient: boot, get past the loader, capture the game
 
-Start the clock: `python3 kit/scripts/clock.py start 10-orient --model <your model id> games/<platform>/<slug>`, the model id as your system prompt names it, and again at every step, because a run may change model. If nothing in the session names the model, ask the contributor; never infer it (`AGENTS.md`, "Know your model; never infer it"). Runs to 19 September 2026: twenty minutes to an hour, nearly all of it reaching play. Past an hour, the retro wants to know what ate it.
+Check your model first: `python3 kit/scripts/models.py is-proven <your model id>`, the model id as your system prompt names it. If nothing in the session names the model, ask the contributor; never infer it (`AGENTS.md`, "Know your model; never infer it"). If it is not proven, tell the contributor before going further, as the script says (`AGENTS.md`, "Model").
 
 The goal is the game engine: mechanics, graphics, sound, input, level
 data. The loader, decompressor, trainer menu or copy-protection in front
@@ -65,13 +65,17 @@ annotate it byte by byte.
    or a handler earlier than the one the named handler runs on; read the
    handler's own write to the raster register for that.
 4. **Save a snapshot** of the machine in play. Name it by state
-   (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
+   (`work/play-round1.vsf`, not by timestamp) with the platform's own
+   snapshot extension (`kit/<platform>/INSTALL.md` and
+   `kit/skills/<platform>/` name it: a `.vsf` on the C64, a `.sna` on the
+   ZX Spectrum). This snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds
    more of the program. Save more at each distinct state you can reach:
    title, first frame of play, each interlude, death, game over.
 
    **Save the hand-over too**: a stopping checkpoint on the game's first
-   instruction (the loader's jump into it), then `work/entry.vsf`. Compare
+   instruction (the loader's jump into it), then `work/entry.<ext>` with
+   the same extension. Compare
    it with the play snapshot byte for byte. Code that exists only at the
    hand-over (an initialisation that runs from what becomes screen
    memory), or authored data the game overwrites once it runs (a title

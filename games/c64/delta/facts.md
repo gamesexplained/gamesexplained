@@ -145,6 +145,21 @@ hazard shapes in the VIC bank are exchanged with the second set at
   marked to carry a credit (most are) adds one (`wave_spawn_step`
   `$8010`, `$80B5`); a group marked with bit 6 takes one away.
 
+- *Recorded* (the game's code run in the kit's machine with nobody
+  playing, `waves.html`; stages 1-20 compared with VICE frame by frame; stages 14, 15, 19 and 20
+  differ in places, `TODO.md`):
+  - stage 1 ends with a boss, record `$0D`: slot 7 has 8 hit points and
+    parks at X `$CF`, Y `$8C` while six indestructible escorts circle it.
+    The group waits for all seven (`$1298`) and the escorts never leave, so
+    the stage ends only when the boss is destroyed; destroying slot 7 while
+    the wave timer `$129E` runs and a weapon has hit (`$129D`) explodes the
+    escort (`enemies_wave_timers`, `$904D`);
+  - across the 32 stages, 36 of the 424 groups stay on screen until shot;
+    the rest fly off on their own;
+  - the shop is one of records `$45`-`$4D`, 30 shops in the 32 stages;
+  - an enemy shows the empty sprite `$9B` for its first one to three frames
+    and at the end of its explosion, and at no other time.
+
 ## The shop
 
 - The shop is a group like the others (`$1288`, bit 4 of the record's
