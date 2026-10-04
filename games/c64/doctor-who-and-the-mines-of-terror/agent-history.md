@@ -44,8 +44,9 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   `$CE28`, `$C9A5` and `$CF24` together showed controller `$22` taking
   the Doctor prisoner and walling up switch cell 11, the cell the blast
   at `$C22E` reopens. Traced from the listing only; not played live.
-- The same notes mention a sensor beside the code lock. No code tests
-  for one; the nearest mechanic is the PASS CARD gate (`$BB15`).
+- The same notes say to "avoid the sensor" in the locked room. The
+  steward explained that players call the code lock's wall of shapes the
+  sensor, which the Solution tab already covers.
 - The steward's third route has the Master knocking the Doctor down. The
   code sets the Doctor's `$1CB0` to `$79` as the crystal is taken
   (`$B544`), and the sprite drawn meanwhile, frame `$55`, is a figure
