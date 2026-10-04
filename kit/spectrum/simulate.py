@@ -40,9 +40,17 @@ SINGLE = {"A": 0, "F": 1, "B": 2, "C": 3, "D": 4, "E": 5, "H": 6, "L": 7, "A'": 
 SP, PC = 12, 24
 
 
+_simulator = None
+
+
 def simulator():
     """SkoolKit's Simulator class. kit/spectrum/skoolkit.py shadows the package while HERE is
     on sys.path, so it is found the way test_z80.py finds it: tools/skoolkit first."""
+    global _simulator
+    if _simulator:
+        # once found, kept: finding it again pops the package, and a Simulator made
+        # after that imports skoolkit.simtables from the shim
+        return _simulator
     sys.modules.pop("skoolkit", None)
     path = [p for p in sys.path if os.path.abspath(p or ".") != HERE]
     for p in glob.glob(os.path.join(ROOT, "tools", "skoolkit", "lib", "python*", "site-packages")):
@@ -50,6 +58,7 @@ def simulator():
     old, sys.path = sys.path, path
     try:
         from skoolkit.simulator import Simulator
+        _simulator = Simulator
         return Simulator
     except ImportError:
         sys.exit("SkoolKit is not installed: run `python3 kit/scripts/tools.py --platform spectrum get-skoolkit`")
