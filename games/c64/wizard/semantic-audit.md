@@ -17,13 +17,28 @@ The original disk, private snapshots and extracted programs remain private.
 | Type-1 collision sound `$982F` enables ring modulation. | Voice two receives `$13`: triangle, sync and gate; ring modulation is clear. Corrected the canonical comment. |
 | Packed-note adjustment `$841C` always adds four to low nibble `$C`. | `$FC+4` wraps to zero, so BNE bypasses the store and leaves `$FC` unchanged. Other low-`$C` bytes add four; low-`$F` bytes subtract four. All 256 inputs were tested. `$824D` is the decoded resident caller, following INC `$B1`; normal gameplay reachability of the exception remains unproven. Corrected the comment without presenting it as a gameplay exploit. |
 
-The last four findings were raised by a separate reviewer and then checked
-against the instructions and original-code tests by the author. The reviewer
-reported selecting 60 comments with seed `20261004`, but hit a service usage
-limit before returning the complete sample or verdicts. **That sample is
-incomplete: there is no valid error-rate estimate, confidence interval or
-passing independent-review claim.** Its four concrete findings were retained
-and verified rather than treating the interrupted review as a pass.
+The separate reviewer completed the original sixty-comment sample without
+redrawing it after the four findings. Against baseline `a2c3192`, **56 comments
+are supported, four are incorrect and none are unresolved**: 4/60, or 6.67%,
+with an approximate pooled Wilson 95% interval of 2.62–15.93%. All four revised
+comments in `50dbcec` are supported by targeted rechecks. This is not a new
+random sample of the revised listing or an estimate of its remaining errors.
+
+The [complete per-comment report](validation/semantic-review-20261004.md) and
+[structured evidence](validation/semantic-review-20261004.json) preserve the
+baseline texts, verdicts, instructions, callers, scope notes and hashes.
+Seed `20261004` selects 60 of 358 comments containing at least six words within
+resident `$5800–$9FFF`, proportionally across six address bands. The saved
+selection reproduces exactly from the baseline. The interval is approximate
+because rounded allocation gives slightly unequal inclusion probabilities;
+it does not apply to compiled GAME, room overlays or all page claims.
+
+The reviewer wrote none of the sampled baseline annotations. The author
+independently checked the four errors, the even-X centering contract at
+`$75C2`, the boot-marker source/runtime distinction and all 1,136 bytes of a
+saved editor level against its archived snapshot. Historical live evidence
+was inspected, not rerun for this sample. This is an agent source review,
+not an independent maintainer certification.
 
 ## Callers and room scope
 
@@ -96,8 +111,8 @@ provides a second execution mechanism for the selected cases, not independent
 review of all semantics. The existing supplied-disk identity and canonical
 image audit remain prerequisites.
 
-Remaining limits: finish the separate reviewer-selected comment sample;
-uninterrupted gameplay and additional full puzzle routes; the physical disk
+Remaining limits: unsampled source claims; uninterrupted gameplay and
+additional full puzzle routes; the physical disk
 conditions listed in [audit.md](audit.md); meanings of unsampled bytecode
 annotations and dormant historical fragments. This pass does not change tier,
 copy provenance or the distinction between classified bytes and proven claims.

@@ -204,3 +204,41 @@ Focused browser checks at 1280 and 390 pixels pass for the visible Madhouse
 explanation, both changed atlas entries, the program companion and canonical
 source comments. The 266-state fatal-drop replay retains its purple start.
 No browser errors, failed requests or horizontal overflow were observed.
+
+
+## Completed source-comment review, 4 October 2026
+
+Resumed the separate reviewer through all sixty original selections. The saved
+selection exactly matches a2c3192 and reproduces with seed 20261004, six address
+bands and proportional allocation from 358 eligible resident comments. No
+comments were replaced after the four known findings. Final baseline results:
+56 supported, four incorrect, zero unresolved; 6.67%, with an approximate
+pooled Wilson 95% interval of 2.62–15.93%. All four revised comments in 50dbcec
+have supported targeted rechecks. There were no additional confirmed errors.
+This sample does not measure the remaining error rate after those edits, nor
+the semantics of compiled GAME, room overlays or every page claim.
+
+Saved the full per-comment Markdown and JSON evidence in validation/, including
+baseline text, instruction/caller evidence, assumptions and hashes. The parent
+reproduced the selection and independently checked all 256 packed-note inputs,
+149 even-X centering positions, forty authored even-X starts and an odd-X
+control. Private saved editor data matches all 1,136 bytes of its archived RAM
+image. Raw LODR bytes differ from the runtime protection routine; two archived
+boot snapshots independently decode the documented marker writers, matching
+the earlier watchpoint record. These are fresh file/source checks, not a new
+live boot or editor-save run. No emulator state was changed.
+
+The reviewer's sandbox retained an older network-namespace restriction, so
+read-only checks and report-assembly commands ran through the parent. The
+reviewer supplied the evidence and verdicts; the parent cross-checks are
+identified separately. Existing verification rules cover the work;
+no shared-kit change or new maintainer ask is introduced. Work remains local
+through the contributor's updated-page review.
+
+The complete 24-game site build passes. The review artifacts contain sixty
+unique completed records, exactly match the source comments, and have an
+independently recomputed confidence interval. Browser checks at 1280 and 390
+pixels show the review summary, matching source data and all 266 purple-wizard
+states without page errors, failed requests or horizontal overflow. Full death
+playback, pause/restart, keyboard scrubbing, reduced-motion behavior and sprite
+bounds pass; 320-, 390- and 768-pixel layouts also pass.

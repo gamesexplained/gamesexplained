@@ -8,7 +8,7 @@ Host: Linux x86_64, Ubuntu 24.04, no display. Emulator: official vice-mcp v3.13.
 
 ## Skill text that changed what I did
 
-- `60-verify`: "Claims about the whole game": enumerated all forty room callback entries and both collection callers; tested exact loop bounds and alternate conditions, finding the skipped Madhouse arrow and the shared early-index erosion path.
+- `60-verify`: "Measure the listing before calling it done": completed the original fixed-seed sixty-comment review with an agent who wrote none of the annotations, preserving all four baseline errors, the selection method and per-comment evidence instead of replacing the sample after fixes.
 - `70-minisite`: "A widget that runs a mechanic is a claim too": compared the actual page acceptance function with the original level callback across every color nibble, remembered symbol, treasure index and random low-bit value.
 - `50-coverage`: "Know how far a description reaches": typed the authored tables and described ownership at their actual boundaries, including automatic symbols inside sprite RAM, instead of treating one nearby comment as explaining the whole block.
 - `50-coverage`: "Is the picture loaded or drawn?": compared entry and play images, retaining the loaded charset and relocated sprites while excluding generated screen/workspace bytes.
@@ -172,9 +172,13 @@ self-audit, with the independent-review requirement unchanged.
 ## Semantic and reproducibility follow-up, 4 October 2026
 
 Applied the updated `60-verify` whole-game and accepted-value rules to room
-callbacks, and its fresh-sample rule to a separate reviewer. The reviewer was
-interrupted by a service usage limit; four reported findings were verified and
-corrected, but no complete independent sample or error rate is claimed.
+callbacks, and its fresh-sample rule to a separate reviewer. The original
+sixty-comment sample is complete: 56 supported, four incorrect, none unresolved
+against its baseline. The error fraction is 6.67%, with an approximate pooled
+Wilson 95% interval of 2.62–15.93%, limited to the eligible resident-comment
+frame. All four revised comments have supported targeted rechecks. The full
+report is under `validation/`; it does not estimate errors in unsampled claims
+or supply independent maintainer certification.
 
 Five offline validators and a live runner make the selected evidence repeatable
 without private session helpers. Setup comes from the contributor's private

@@ -322,3 +322,15 @@ shipped datasets/functions. Their inputs and commands are in
 `validation/README.md`. The movement check covers 494
 controller states, including the first two fatal-drop states; it does not
 re-capture the following 264 death-animation samples.
+
+**Resident-comment sample, 4 October 2026:** a separate reviewer who wrote none
+of the sampled annotations assessed sixty comments from baseline `a2c3192`.
+The results are 56 supported, 4/60 incorrect (6.67%), and zero unresolved;
+the approximate pooled Wilson 95% interval is 2.62–15.93%. Seed `20261004`
+selects proportionally from 358 comments of at least six words in six address
+bands spanning `$5800–$9FFF`. The exact sample is reproducible. Rounded
+allocation makes the interval approximate; its scope excludes compiled GAME,
+room overlays and other page claims. The four descriptions at `$6C77`, `$839A`,
+`$841C` and `$982F` in `50dbcec` have supported targeted rechecks, which do not
+estimate the remaining error rate. The complete evidence and baseline texts
+are in `validation/semantic-review-20261004.md` and its JSON companion.

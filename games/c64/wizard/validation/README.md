@@ -201,6 +201,17 @@ older scripts and binary-dependent captures not replaced by the portable checks
 above are not a portable checkout test suite. A reviewer can repeat the public checks above using their own inputs,
 then choose fresh claims to test in the emulator.
 
+### Resident source-comment sample
+
+[The sixty-comment review](semantic-review-20261004.md) and its
+[JSON evidence record](semantic-review-20261004.json) preserve the exact
+baseline comments, fixed-seed selection method, per-address evidence,
+scope qualifications and input hashes. They contain no private game files.
+All sixty verdicts are complete: 56 supported, four incorrect, zero unresolved
+against baseline `a2c3192`. The four revised descriptions in `50dbcec` have
+targeted rechecks; these are not a second independent random sample. The sample
+covers eligible resident comments at `$5800–$9FFF`, not the whole listing.
+
 The repository checks remain necessary:
 
 ```sh
