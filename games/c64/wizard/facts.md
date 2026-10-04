@@ -4,11 +4,11 @@ Facts below refer to the canonical `work/entry.vsf` or the named live observatio
 
 ## Build and initial image
 
-PP&S disk edition, 1984. Disk GAME loads at `$0801` and starts at `$0819` with `JMP $2245`. The directory and boot recipe are in `orientation.md`.
+PP&S disk edition, 1984. Disk GAME loads at `$0801` and starts at `$0819` with `JMP $2245`. The directory and boot recipe are in `orientation.md`. A hard-reset assisted boot reproduced all 45,560 listed bytes at the GAME entry. Store watchpoints observed LODR `$1986` write `$FA` to `$99F0` and `$1989` write `$FA` to `$58FF`; the disk M.L. file has `$01` at both markers. The assist must respect the first-attempt rejection guard documented in the boot recipe.
 
 ## Display and alphabets
 
-**Live:** `$DD00=$C4`, `$D018=$13` in Playground select screen `$C400` and character shapes `$C800`. The 2048-byte charset matches CHRW on disk exactly. Rendering all 256 glyphs established this table:
+**Live:** `$DD00=$C4`, `$D018=$13` in Playground select screen `$C400` and character shapes `$C800`. The 2048-byte charset matches CHRW on disk exactly. Display setup $6C77 writes $C8 to $D016: standard character mode, with multicolor bit 4 clear. Sprite multicolor is controlled separately through $D01C. Rendering all 256 glyphs established this table:
 
 | Screen codes | Meaning |
 |---|---|
@@ -22,7 +22,7 @@ The compiled program's strings use shifted PETSCII: stored `$41–$5A` become lo
 
 The separate title/menu writer at `$686C` writes screen codes itself. Its source is ($FB), destination ($FD), source cursor `$8D`, destination cursor `$8E`, letter offset `$8B`. Byte zero terminates. `$3F` selects lowercase by subtracting `$40`; `$40` selects uppercase with offset zero. Space, ampersand and period draw unchanged; other small bytes advance the destination cursor. `$68B8` begins the publisher and credit streams. Thus those streams need their formatting commands decoded, not PETSCII transliteration.
 
-Spell names at `$8D73–$8E0E` are twelve 13-byte screen-code fields, padded with spaces. The order is Fireball, Magic Missile, Disintegrate, Enchantment, Freeze, Invisibility, Teleport, Feather Fall, Levitate, Haste, Slow, None. A label in this table proves its presence as text; behavior is checked separately.
+Spell names at `$8D73–$8E0E` are twelve 13-byte screen-code fields, padded with spaces. The order is Fireball, Magic Missile, Disintegrate, Enchantment, Freeze, Invisibility, Teleport, Feather Fall, Levitate, Haste, Slow, None. All twelve public spell labels match these fields. `validation/audit_data.py` also compares all 21 public behavior names and the 20 default shape/animation/color triples with BLDR’s packed DATA tables at `$296A–$2ADE`. These comparisons validate names and defaults; behavior is checked separately.
 
 ## Initial live control check
 
@@ -68,11 +68,34 @@ Traced in bytecode:
 
 - `$34EC–$355C` selects **one through six players**, incrementing on a new joystick direction and wrapping seven to one. This agrees with the supplied manual; the wiki's four-player figure does not match this build.
 - `$36D2–$36E8` initializes six life slots `$02C0–$02C5` to **six lives**, and eighteen score bytes `$02C6–$02D7` to zero. Score columns are low, middle and high bytes for six accounts. `$315B` restores them; `$373D` writes them back.
-- `$36AE` maps the difficulty menu to level bases 0,10,20,30,40. Mystery sets bit 7 and a time-dependent initial level. `$3831` advances players/rounds, choosing another random level in Mystery. Ten completed levels call `$3BA5`: surviving accounts receive `INT(base/10+2)` lives, wrapping through eight bits; `$3D85` advances the difficulty and changes base 40 to Mystery 128.
+- Death settlement at `$2DA3` deducts a life and retries the same player while lives remain. Room completion or final-life loss reaches account settlement `$373D`; it saves the account, skips eliminated players, and advances the round when wrapping the selected player list. With no survivors the session ends.
+- `$36AE` maps the difficulty menu to level bases 0,10,20,30,40. Mystery sets bit 7 and a time-dependent initial level. Its load path `$29C6` clears the round to zero and uses the low seven base bits, invoking FN30 when they exceed 39. `$3831` advances players/rounds, choosing another random level in Mystery. Ten completed levels call `$3BA5`: surviving accounts receive `INT(base/10+2)` lives, wrapping through eight bits; `$3D85` advances the difficulty and changes base 40 to Mystery 128.
 - The key is glyph `$1B`; `$7ACE` removes it, sets `$C030` and restores the level's charge count to the HUD. Exit glyph `$40` is accepted only when that key flag is nonzero.
 - Treasure classes `$1C–$1F` plus difficulty select 50,100,200,300,400,500 or 750 points through `$84D8/$84DF`. The machine routine updates seven leading digits of an eight-digit HUD field, whose last digit remains zero. A change in the ten-thousands digit at `$C7BA` grants another life (`$850A`).
 - The bonus starts at 24 (`$8EE4`). CIA timer updates decrement it according to level period `$C350` (`$9270`). Completion bytecode `$3D96` awards **50 points per remaining unit**, up to 1,200. It also grants a life at each exact 10,000 threshold crossed while adding that bonus.
-- Disk SCOR stores ten three-byte values in split columns `$C11E/$C128/$C132`, scaled in units of 50. Three initials columns begin at `$C100/$C10A/$C114`, and the top player's sixteen-character name at `$C13C`. The whole saved record is 128 bytes (`$8B1E`). Ranking inserts only a strictly higher value (`$419A`).
+- Disk SCOR stores ten three-byte values in split columns `$C11E/$C128/$C132`, scaled in units of 50. Three initials columns begin at `$C100/$C10A/$C114`, and the top player's sixteen-character name at `$C13C`. The whole saved record is 128 bytes (`$8B1E`). Ranking inserts before the first strictly lower entry (`$419A`). A tied score can therefore enter below an equal score when a lower entry remains. Name attribution is a separate pass at `$42A5`: it matches each player to the first unclaimed equal score, including pre-existing entries. A champion tie can replace the champion name, and a tenth-place tie can replace that entry’s initials even when no numeric insertion occurred.
+
+The initials and champion-name fields use different shared-editor entries: GAME `$4541` calls `$7078 → $8FA6` with a three-character bound; GAME `$4602` calls `$706F → $8FB5` with a sixteen-character bound. Both set `$FE=0`, enabling inactivity expiry at `$9081`. BLDR `$41D4` calls `$7066 → $8FC4` for a construction title, with `$FE=1` disabling that timeout. Live checks at the shared-editor entry confirm all three bound tables and mode values.
+
+### Accounting and persistence checks
+
+The portable `validation/audit_accounting.js` checks 303 prepared original-code cases, including all 25 starting bonus values for six selected scores, all 64 survivor masks, score-byte boundaries, ranking ties and save flags. It suppresses printing and supplies system calls; actual disk persistence is established by the separate live test below.
+
+**Live, 3 October 2026:** four prepared bonus cases include 0 plus 24 units = 1,200, and 9,950 plus one unit = 10,000 with lives 6→7. Three six-player account cases store 123,450, skip eliminated players and wrap to the next round. Two death-settlement probes retain player 1 after lives 2→1, but restore player 2 after player 1's last life. Prepared ten-level milestones at bases 0 and 30 confirm the life additions, eight-bit wrap and Expert→Mystery transition; a forced Mystery load at base 153 resets round 9 to zero and requests file 25. These prepared milestones do not establish a normally reachable ten-level Mystery milestone.
+
+Resuming the retained `bridges-solved` exit checkpoint without new state edits runs the original completion path: score 2,550 and 17 bonus units become 3,400, with six lives retained, round 7→8 and the next file L18T. This reruns the route's completion tail, not the entire room from a fresh start.
+
+For high scores, a prepared 1,000-point account enters the original ranking and input sequence. Typed champion name `AUDITCHECK` and initials `XYZ` reach `$8B1E`; SAVE returns status zero on a disposable D64. After replacing all 128 record bytes in RAM, LODR `$10FC` reloads an identical record. Separate `c1541` extraction also matches all 128 bytes. The original supplied G64 hash is unchanged. Restoring the loader snapshot and swapping disks requires the resident `$8B62` disk-initialization command before this reload. The score was prepared for this test, not earned through a full playthrough.
+
+### Ranking attribution and disk-error paths
+
+`validation/audit_score_paths.js` adds thirty prepared original-code cases: eight ranking/attribution scenarios, twelve save-retry outcomes, six load-retry/wait scenarios and four native-saver status combinations. It executes both ranking passes, supplies input fields and I/O results, and checks the original decisions and record writes. The native-saver cases run `$8B1E` while supplying KERNAL results; they distinguish SAVE’s accumulator/carry from the later READST value.
+
+**Live, 3 October 2026:** a prepared old ranking of 1,000 down to 550 points in steps of 50 was combined with six accounts `[1050,1000,1000,750,550,0]`. The prompts assign players 1,2,3,4 to ranks 1,2,3,9. The saved score units are `[21,20,20,20,19,18,17,16,15,15]`. Separate single-player cases confirm a 1,000-point tie receives the champion-name prompt and a 550-point tie receives tenth-place initials without changing any score. All three typed-input runs save with status zero, and separate disk extraction matches every one of their 128 record bytes. These are prepared end-of-session records, not an uninterrupted six-player playthrough.
+
+Score saving `$8B1E` returns KERNAL READST in `$FB`; it does not inspect the drive’s DOS error channel or use the accumulator/carry returned by SAVE. The compiled caller `$4801` treats zero as success. A live test with no disk attached returned zero, so that value alone does not prove a file was stored. A second probe selected unavailable device 9 in the KERNAL parameter after the original SETLFS, leaving all instructions unchanged; it returned `$80` and reached the error prompt. Inserting a disposable disk and pressing FIRE reran the original saver, which selected device 8 and wrote an exact 128-byte record. With no FIRE, the same error prompt’s fractional counter at `$4851` exceeds 2 and returns. Controlled original-code tests limit held-FIRE failure to three SAVE calls.
+
+Level loading has different rules. `$2A23` accepts status `$40`. The error wait `$2A34` increments its fractional counter once at `$2A7A`, then loops back to `$2A84`, bypassing the increment. From its ordinary initial counter it therefore does not expire to the title. A real missing-file LOAD returns `$42`; over 600 PAL frames, live watchpoints count 8,049 reads of the wait entry and none of the skipped increment opcode, with the counter unchanged. FIRE then exits to another LOAD with counter 1. The original-code test also exercises 10,000 polls with a FIRE exit control. With repeated FIRE retries, a fourth LOAD occurs before the counter-limit check at `$2A1A`; controlled status cases show that even a successful fourth result reaches session termination `$3E6C`. That final retry boundary is a control-flow test, not four live disk failures.
 
 ## Timing and movement
 
@@ -193,10 +216,11 @@ Examples traced directly in the level overlays (zero-based disk file numbers; th
 - Level 2, Look Before You Leap: clears two three-cell screen runs.
 - Level 3, Diamond Mine: clears the key's eight glyph rows and may replace a cell with a chalice or diamond according to treasure index.
 - Level 7, Simon Says: visible instruction words require a matching treasure; black words require a mismatch. The automatic starting pearl initializes the rule before movement. The detailed callback and startup evidence are below.
+- Level 19, For Your Ice Only: indices 0–2 change saved collision color $C36F, but glyph erosion is a separate shared tail and also runs for those indices while $C38F is nonzero. Active collision exemption $C0A3 is unchanged.
 - Level 17, Burning Bridges: swaps `$C5BB/$C5DC`, initially the key and upper exit. The automatic starting gold (index10) swaps them before joystick movement; later treasure pickups swap them again.
 - Level 28, Friend or Foe?: treasure index 2 advances the key one cell along a forty-cell row, wrapping at the end.
 - Level 30, Ladder Land: changes pitch and the **saved** collision-color field `$C36F`; the active collision comparison reads `$C0A3`, initialized from that field at `$8EFA`. With `$C066=0`, odd pickup counts of slot 1 erase three three-cell runs, move the pointers down one row and consume one of twenty passes. The patch regenerates the pearl. A nonzero `$C066` takes a separate actor-state branch.
-- Level 33, Madhouse: cycles directional-arrow glyphs across the playable screen, scanning backwards.
+- Level 33, Madhouse: rotates glyphs $6E–$71 through $6E→$71→$70→$6F→$6E. It visits 839 addresses in $C400–$C747, omitting $C700 (row 20, column 9, counting from one). That saved cell contains arrow $6F and is left out of the callback’s rotation. A filled-screen live probe confirms the skipped cell; this is not a route through the room.
 - Level 38, Fire Alarm!: alters two glyphs once and replaces part of its callback with RTS to prevent repeating the operation.
 
 The Immortal Portal callback’s ADC receives carry clear in normal player and thief collection: each calls `$8D4B` immediately before `$C376`, and the spell-name address arithmetic clears carry for IDs 0–11. Thus slot `(treasure index & 3)` receives type `2 + (index & 3)`. All twelve spell IDs, sixteen indices and both carry inputs before `$8D4B` were checked (384 cases).
@@ -262,8 +286,39 @@ In L17T, the first neutral-input callback comes from player collection (`$849A` 
 
 ## Movement, protection and a completed room route
 
-The player explorer records 25 prepared scenes and 494 states from the original controller. Eleven representative traces were compared with the emulator at every update: 205 position/jump/death/contact/effect states agree, covering standing and running jumps, a failed wide gap, a fatal walk, rope and ladder catches, a plain fall, Feather Fall, Levitate, Teleport and a supplied-contact elevator ride. Prepared scenes omit other actors and timers. The 48 elevator-height tests supply collision latches; neither they nor the ride illustration claim to reproduce collision geometry.
+The player explorer contains 25 prepared scenes: 492 controller states and 266 states in the full fatal-drop replay described below. Eleven representative traces were compared with the emulator at every update: 205 position/jump/death/contact/effect states agree, covering standing and running jumps, a failed wide gap, a fatal walk, rope and ladder catches, a plain fall, Feather Fall, Levitate, Teleport and a supplied-contact elevator ride. Prepared scenes omit other actors and timers. The 48 elevator-height tests supply collision latches; neither they nor the ride illustration claim to reproduce collision geometry.
 
 Burning Bridges (disk L17T, level 18) has a completed **checkpointed input route**. Preparation selects that room through the original loader, sets Intermediate behavior `$C007=1`, and gives the compiled script difficulty base 10 and round 7. Speed is 5. Arrows, the elevator, collision IRQs and room timers remain active; no pickup, key or exit state is injected. The five treasures are the automatic starting gold, the nearby right pearl, nearby left pearl, far-left pearl and far-right pearl. The outer pearls create ropes. The first four treasure swaps leave the key on the left; after the key is collected, the fifth swaps the enabled exit into its vacant cell. Thus the cell swap continues after key collection.
 
 The route climbs the short left rope, reaches the far-left pearl by a standing jump, descends the new rope and climbs the outer ladder to the key. It returns up the new rope, crosses to the far-right pearl, and returns to the outer-left ladder and exit. The successful tail starts from the saved key checkpoint and reaches `$8C8F` at wizard (40,130), with key flag 1, difficulty 1 and upper cells `[64,32]`. Continuing that saved exit state through the normal script reaches loader `$8A66` requesting file 18. `reference/bridges-after-completion.png` records that transition. The ten article illustrations use room states captured across live attempts. Saved checkpoints were resumed; this is not a claim of an uninterrupted full-game run. Arrow timing caused deaths in other attempts, so the prose gives landmarks and warns readers to time the crossings rather than presenting fixed update counts as a universal input script.
+
+
+## Full fatal-drop replay
+
+The no-spell comparison starts at (120,101) above the same prepared platform as Feather Fall. Original controller `$707B` moves Y to 105 and sets `$C02A=1` on its first neutral-input update. Continuing the compiled gate at `$2B45` reaches the normal death setup at `$2B90`, its loop at `$2CDC`, and animation routine `$9526`. A live capture takes 264 successive frame-advance samples after that initial update, with the last stopped at `$96A3` with `$C066=0` and wizard Y=199, before the script restores the room. Including the initial and fatal-update states gives 266 replay states. The preparation removes other actors, disables demo control and pauses IRQ-driven room timers/terrain animation; VIC drawing and sprite/background collision latches remain live. The scene is a controlled comparison, not an unmodified room playthrough.
+
+The death sequence rotates wizard shapes `$A8–$AB`, then runs the final `$AC/$AD` effect at the bottom. Its second sprite begins with `$DD` and settles to `$CA` on the platform. Both sprites' positions, colors, multicolor flags and raw RAM artwork are recorded. The wizard’s own color is 4 (purple) from the initial pose through the death sequence. Shared colors are 14 and 1, and neither sprite is expanded. The replay uses a taller common view for the travel examples so both sprites remain visible through the final effect. It advances captured video frames at 20 ms, with a short initial hold; the other spell illustrations retain their slowed controller-update timing. The death routine completing is distinct from the initial fatal flag, which its script clears during setup.
+
+## Semantic checks and repeatable fixtures, 4 October 2026
+
+`semantic-audit.md` records the bounded claim/caller audit and
+its limits. `validation/audit_room_rules.js` enumerates all forty callback entries,
+checks both actual collection paths for 608 indexed saved treasure cells each,
+and runs 1,931 prepared callback cases. The Simon acceptance matrix is checked
+separately by `audit_mechanics.js`. These prepared cells are not 608 player routes;
+the atlas offers 606 choices after Simon startup and removal of its display cell.
+
+SID setup $839A writes control $15 to all three voices: triangle, ring modulation
+and gate, without noise. Type-1 collision sound $982F writes $13 to voice two:
+triangle, sync and gate, without ring modulation. Packed-note adjustment $841C
+adds four to low nibble $C except $FC, where the zero result skips the store; low
+nibble $F subtracts four. All 256 byte inputs were checked. The only decoded
+resident caller is $824D after INC $B1; normal reachability of the $FC case has
+not been established. These are code properties, not analog sound-quality claims.
+
+The portable pickup, actor-motion and player-motion checks read private level,
+font and snapshot inputs independently of the published page, then compare the
+shipped datasets/functions. Their inputs and commands are in
+`validation/README.md`. The movement check covers 494
+controller states, including the first two fatal-drop states; it does not
+re-capture the following 264 death-animation samples.

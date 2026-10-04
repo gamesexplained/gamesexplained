@@ -27,47 +27,63 @@
     const canvas = $(prefix + '-canvas'), c = canvas.getContext('2d');
     const range = $(prefix + '-time'), play = $(prefix + '-play');
     const background = document.createElement('canvas');
+    const crop = { x: 64, y: 32, width: 160, height: prefix === 'travel' ? 144 : 80 };
+    canvas.width = crop.width * 4; canvas.height = crop.height * 4;
+    const screenX = x => (x - 24 - crop.x) * 4;
+    const screenY = y => (y - 50 - crop.y) * 4;
     let scene, timer = null;
     function stop() { clearTimeout(timer); timer = null; play.textContent = 'Play'; }
     stops.push(stop);
     function draw() {
       const t = +range.value, f = scene.frames[t];
       c.imageSmoothingEnabled = false;
-      c.drawImage(background, 128, 64, 320, 160, 0, 0, 640, 320);
-      c.strokeStyle = '#ffffff55'; c.lineWidth = 2; c.beginPath();
-      for (let i = 0; i <= t; i++) {
-        const v = scene.frames[i].v, x = (v[0] - 76) * 4, y = (v[1] - 72) * 4;
-        i ? c.lineTo(x, y) : c.moveTo(x, y);
+      c.drawImage(background, crop.x * 2, crop.y * 2, crop.width * 2, crop.height * 2,
+        0, 0, canvas.width, canvas.height);
+      if (!scene.videoFrames) {
+        c.strokeStyle = '#ffffff55'; c.lineWidth = 2; c.beginPath();
+        for (let i = 0; i <= t; i++) {
+          const v = scene.frames[i].v, x = screenX(v[0] + 12), y = screenY(v[1] + 10);
+          i ? c.lineTo(x, y) : c.moveTo(x, y);
+        }
+        c.stroke();
       }
-      c.stroke();
       if (scene.elevator) {
         const e = scene.elevator[t];
-        sprite(c, elevator, (e[0] - 88) * 4, (e[1] - 82) * 4, 8, true);
+        sprite(c, elevator, screenX(e[0]), screenY(e[1]), 8, true);
       }
-      sprite(c, sprites[f.p], (f.v[0] - 88) * 4, (f.v[1] - 82) * 4, f.color, f.multi);
-      const state = f.v[3] ? 'Death reported' : f.v[5] ? 'Spell active'
+      sprite(c, sprites[f.p], screenX(f.v[0]), screenY(f.v[1]), f.color, f.multi);
+      if (f.ghost) {
+        const g = f.ghost;
+        sprite(c, sprites[g.p], screenX(g.x), screenY(g.y), g.color, g.multi);
+      }
+      const state = f.phase === 'complete' ? 'Death animation complete'
+        : f.phase === 'death' ? 'Death animation' : f.v[3] ? 'Death before landing' : f.v[5] ? 'Spell active'
         : f.v[2] ? 'Jumping' : f.v[4] ? 'Riding' : 'Jump inactive';
       $(prefix + '-count').textContent = t + ' / ' + (scene.frames.length - 1);
       $(prefix + '-readout').textContent = state + ' · X ' + f.v[0] + ' · Y ' + f.v[1]
         + (f.v[2] ? ' · ' + f.v[2] + ' jump steps remaining' : '');
-      canvas.setAttribute('aria-label', scene.title + ', update ' + t + ': ' + state
+      canvas.setAttribute('aria-label', scene.title + (scene.videoFrames ? ', frame ' : ', update ') + t + ': ' + state
         + ', X ' + f.v[0] + ', Y ' + f.v[1] + '.');
     }
     function choose() {
       stop(); scene = byId.get(selection());
       range.max = scene.frames.length - 1; range.value = 0;
+      document.querySelector('label[for="' + prefix + '-time"]').textContent = scene.videoFrames ? 'Frame' : 'Update';
       paintMap(background, scene, false);
       $(prefix + '-note').textContent = scene.note;
       draw();
     }
     function tick() {
       if (+range.value >= +range.max) { stop(); return; }
-      range.value = +range.value + 1; draw(); timer = setTimeout(tick, 160);
+      range.value = +range.value + 1; draw();
+      if (+range.value === +range.max) stop();
+      else timer = setTimeout(tick, delay());
     }
+    function delay() { return scene.frames[+range.value].duration ?? scene.frameMs ?? 160; }
     play.onclick = () => {
       if (timer !== null) { stop(); return; }
-      if (+range.value === +range.max) range.value = 0;
-      play.textContent = 'Pause'; timer = setTimeout(tick, 160);
+      if (+range.value === +range.max) { range.value = 0; draw(); }
+      play.textContent = 'Pause'; timer = setTimeout(tick, delay());
     };
     $(prefix + '-reset').onclick = () => { stop(); range.value = 0; draw(); };
     range.oninput = () => { stop(); draw(); };
