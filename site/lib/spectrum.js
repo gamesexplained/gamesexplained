@@ -82,6 +82,6 @@ globalThis.Spectrum = (function () {
 if (globalThis.makeMemMap) {
   globalThis.SpectrumMap = globalThis.makeMemMap({
     code: 'code', graphics: 'graphics', levels: 'level data', sound: 'sound', text: 'text', tables: 'tables',
-    variables: 'variables', runtime: 'screen, attributes, system variables', rom: "ROM (the machine's routines)",
+    variables: 'variables', runtime: 'screen, attributes and working memory', rom: "ROM (the machine's routines)",
     unused: 'unused' });
 }

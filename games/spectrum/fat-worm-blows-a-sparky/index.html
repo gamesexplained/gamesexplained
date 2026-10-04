@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fat Worm Blows a Sparky</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#fff; --line:#d5d3cc;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a; --link:#1f5fa8;
+  --fd:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fd);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;padding:0 0 4rem}
+h1,h2{font-weight:900;letter-spacing:-.01em;text-wrap:balance;margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);margin:22px 0}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink)}
+code{font-family:var(--fm);font-size:.82em;background:#2f3136;color:#fff;border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{image-rendering:pixelated;display:block;max-width:100%}
+img.fw-shot{image-rendering:pixelated;display:block;max-width:100%;height:auto}
+table{border-collapse:collapse;font-family:var(--fm);font-size:14px}
+td,th{border-bottom:1px solid var(--line);padding:6px 12px 6px 0;text-align:left;vertical-align:top}
+.fw-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+@media(max-width:760px){.fw-grid{grid-template-columns:1fr}}
+.fw-ctl{font-family:var(--fm);font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.fw-ctl input[type=range]{flex:1 1 200px}
+button.fw-b{font-family:var(--fm);font-size:13px;background:var(--ink);color:#fff;border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
+button.fw-b:disabled{background:var(--line);color:var(--ink-mute);cursor:default}
+button.fw-b.on{background:#1f5fa8}
+.fw-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin-top:10px;min-height:1.4em;white-space:pre-wrap}
+.fw-worm{display:flex;gap:8px;margin:6px 0 4px}
+.fw-seg{flex:1;border:2px solid var(--ink);border-radius:8px;padding:10px 6px;text-align:center;font-family:var(--fm);font-size:13px;background:#eef7e8}
+.fw-seg b{display:block;font-size:26px;line-height:1.2}
+.fw-seg.bug{background:#f6d9c9}
+.fw-seg.dead{background:#2f3136;color:#fff}
+.fw-key{display:inline-block;width:12px;height:12px;margin:0 5px 0 12px;vertical-align:-1px;border:1px solid #2f3136}
+.fw-need{font-family:var(--fm);font-size:13px;color:#a33}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">ZX Spectrum · 1986 · Durell Software</p>
+  <h1>Fat Worm Blows a Sparky</h1>
+  <p class="sub">A worm crosses a circuit board of 129 squares, drawn in solid
+  perspective about seven times a second. Every block on the board is two
+  rectangles, the sound effects are played by the loop that copies the picture
+  to the screen, and the tape still carries the routine that made it.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The view</p>
+  <h2 class="t">Every block is two rectangles</h2>
+  <p>The board is seen from straight above, and a block shows its sides only
+  when it is away from the middle of the picture. The game gets that look from
+  one table and one multiply.</p>
+  <p>A block is stored as an outline and two heights. The game draws the
+  outline twice, once at the height of the block's foot and once at the height
+  of its top, and magnifies each copy about the middle of the view by an amount
+  the table gives for that height. A higher rectangle grows more, so a block's
+  top slides away from its foot as the block nears the edge of the picture. The
+  walls are the gaps between the two rectangles. A wall is drawn only where the
+  top's edge has moved inward past the foot's, which happens on the side facing
+  the middle.</p>
+  <div class="plate">
+    <canvas id="fwView" width="256" height="128" style="width:100%;background:#000" tabindex="0"></canvas>
+    <div class="fw-ctl">
+      <button class="fw-b" data-mv="-1,0">&larr;</button>
+      <button class="fw-b" data-mv="0,-1">&uarr;</button>
+      <button class="fw-b" data-mv="0,1">&darr;</button>
+      <button class="fw-b" data-mv="1,0">&rarr;</button>
+      <label><input type="checkbox" id="fwOutlines"> show the two rectangles</label>
+      <label><input type="checkbox" id="fwFlat"> no perspective</label>
+      <span id="fwWhere"></span>
+    </div>
+    <p class="cap"><b>The view, rebuilt from the board's own bytes</b> with a
+    port of the game's projection (<code>$811E</code>, <code>$81DB</code>).
+    Move with the buttons, or click the picture and use the arrow keys. The
+    port was held against the game's code in a Z80 simulator for 102,656
+    values of the multiply and 3,000 outlines, with no difference. The
+    filling is the page's own: it uses the game's pattern bytes
+    (<code>$80CB</code>) and draws lower things first, which is simpler than
+    the game's ordering. The worm, the creatures, and the spindles' pictures
+    are not drawn, a spindle is a small ring, and the seven boxes cut on a
+    diagonal are drawn whole.</p>
+  </div>
+  <div class="fw-grid">
+    <div>
+      <p>The table is 128 bytes at <code>$6300</code>, one for every two units
+      of height. A coordinate v becomes v &times; (128 + byte) / 128. The bytes
+      stay within 1.2 of 128h / (384 &minus; h), which is the perspective of an
+      eye 384 units above the board, where a square of the board is 256 units
+      across.</p>
+      <p>The view never turns. Steering turns the worm, and the board only
+      slides under it.</p>
+    </div>
+    <table id="fwCurve"><thead><tr><th>Height</th><th>Table byte</th><th>Magnified by</th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<section>
+  <p class="fig">02 · The board</p>
+  <h2 class="t">The board: 129 squares, with two links a flat board could not have</h2>
+  <p>The board is a linked list. Each square names its four neighbours by
+  address, and the game keeps track of only the 5 by 5 squares round the worm.
+  Laid out from those links, the squares fit a grid 16 wide and 22 deep, except
+  at two links. Going east from one square marked A arrives at the other A,
+  which the grid puts 13 columns away, and the two squares marked B are joined
+  the same way across 7 columns.</p>
+  <div class="plate">
+    <div class="fw-grid">
+      <canvas id="fwMap" width="416" height="572" style="width:100%;max-width:416px;cursor:pointer;background:#23262d"></canvas>
+      <div>
+        <div id="fwLegend" style="font-family:var(--fm);font-size:13px;line-height:2"></div>
+        <div class="fw-read" id="fwCell">Point at a square.</div>
+      </div>
+    </div>
+    <p class="cap"><b>All 129 squares</b>, drawn from the bytes at
+    <code>$6464</code> to <code>$757B</code> and placed by following each
+    square's links from the start square. Click a square to put the view
+    above there.</p>
+  </div>
+  <p>A square holds a list of items of seven bytes each: the height of the
+  top, the height of the foot, a position, a size, and a type.</p>
+  <table>
+    <thead><tr><th>Items</th><th>Count</th><th>Type</th></tr></thead>
+    <tbody>
+      <tr><td>plain boxes</td><td>176</td><td><code>$C0</code> to <code>$DF</code></td></tr>
+      <tr><td>data buses</td><td>102</td><td><code>$E2</code></td></tr>
+      <tr><td>spindles</td><td>58</td><td><code>$F7</code>, 12 units deep</td></tr>
+      <tr><td>chequered blocks</td><td>36</td><td><code>$E8</code> to <code>$EF</code></td></tr>
+      <tr><td>ramps</td><td>34</td><td><code>$40</code> to <code>$BF</code></td></tr>
+      <tr><td>handler records</td><td>23</td><td><code>$F7</code>, any other depth</td></tr>
+      <tr><td>eruption pads</td><td>7</td><td><code>$F4</code></td></tr>
+      <tr><td>boxes cut on a diagonal</td><td>7</td><td><code>$00</code> to <code>$3F</code></td></tr>
+      <tr><td>blocks with a counter on top</td><td>6</td><td><code>$E0</code></td></tr>
+      <tr><td>de-bugger blocks, and the pads under them</td><td>4 and 4</td><td><code>$E3</code>, <code>$F5</code></td></tr>
+      <tr><td>pyramid, and the disk</td><td>1 and 1</td><td><code>$E1</code>, <code>$F6</code></td></tr>
+    </tbody>
+  </table>
+  <p>The 23 handler records are instructions to the game. Each is a
+  routine's address and four numbers, placed in the list just before the item
+  the routine moves. One routine raises and lowers a block. Another sets a block's
+  height from a sine wave. Thirteen blocks carry that one, and where several
+  stand in a row with their phases staggered, the row ripples. A third sinks
+  an eruption pad, waits,
+  raises the pad again, and releases a Crawly from it. The handlers run only
+  for the nine squares round the worm (<code>$AF49</code>), so the rest of
+  the board stands still until the worm arrives.</p>
+  <p>Six blocks carry a three-digit counter in seven-segment digits
+  (<code>$BD12</code>). The counter goes up when a sparky riding a data bus
+  reaches one of four terminal blocks (<code>$DEB8</code>). The manual does
+  not mention it.</p>
+</section>
+
+<section>
+  <p class="fig">03 · Sound</p>
+  <h2 class="t">Sound: the loop that copies the picture plays the effects</h2>
+  <p>The Spectrum's speaker is a single bit, and a program makes a tone by
+  flipping the bit at a steady rate. In play the game has no time to spare for
+  that, since drawing one frame takes about six to nine fiftieths of a
+  second. The tone is made inside the drawing. The loop that copies the
+  finished picture to the screen counts rows, and after every n rows it flips
+  the speaker (<code>$EA82</code>). A small n gives many flips and a buzz, and
+  a large n gives a few clicks.</p>
+  <p>The loop that fills the buffer before drawing does the same with a second
+  number (<code>$EACC</code>). Filling a row is about three times quicker than
+  copying one, so the same n sounds about three times higher there.</p>
+  <div class="plate">
+    <div class="fw-ctl" id="fwLists"></div>
+    <div class="fw-ctl">
+      <span>one frame with n =</span>
+      <input type="range" id="fwN" min="1" max="64" value="7">
+      <span id="fwNval"></span>
+      <button class="fw-b" id="fwNplay">Play</button>
+    </div>
+    <div class="fw-read" id="fwSndRead"></div>
+    <p class="cap"><b>The six effect lists</b>, read from the bytes at
+    <code>$E4B2</code> to <code>$E4F6</code>. A list gives the copy loop one
+    value of n for each frame. The page plays a frame as the loop would: the
+    whole part of 128 / n flips, one every n rows of 564 T-states, and frames
+    a seventh of a second apart. The count of flips was checked against the
+    game's loop in a simulator for all 256 values of n.</p>
+  </div>
+  <table id="fwListTable"><thead><tr><th>List</th><th>Started by</th><th>Values of n</th><th>Then</th></tr></thead><tbody></tbody></table>
+</section>
+
+<section>
+  <p class="fig">04 · Music</p>
+  <h2 class="t">Music: 55 seconds on the menu, and a noise voice nothing uses</h2>
+  <p>The menu plays a tune of 490 tones that lasts 55 seconds and then starts
+  again. While a tone sounds the player holds the processor, so the menu's
+  keys are read only between tones (<code>$E791</code>).</p>
+  <div class="plate">
+    <div class="fw-ctl">
+      <button class="fw-b" id="fwTune">Play the tune</button>
+      <canvas id="fwTuneBar" width="640" height="48" style="flex:1 1 300px;height:48px;background:#2f3136;border-radius:6px"></canvas>
+    </div>
+    <p class="cap"><b>The tune as the game's own player produced it</b> in a
+    Z80 simulator: 75,491 flips of the speaker in 193,970,724 T-states. The
+    page holds it as 43 shapes of tone and the order they come in. The bar
+    shows each tone's pitch, and the pitch of every tone falls over its last
+    44 flips.</p>
+  </div>
+  <p>The tune is ten scripts of notes, half-length notes, and slides
+  (<code>$E5F8</code>). The player also has a noise voice, switched on by a
+  script byte of <code>$C8</code> that rewrites one instruction of the tone
+  loop (<code>$E75D</code>). None of the ten scripts contains that byte.</p>
+</section>
+
+<section>
+  <p class="fig">05 · Bugs on the worm</p>
+  <h2 class="t">Four bugs: one on each section of the worm</h2>
+  <p>A Crawly that touches the worm is counted onto the section it touched,
+  and the worm has four sections. Every frame the counts shuffle. A bug moves
+  one section toward the tail when the next section has none, and a second bug
+  on a section moves one section toward the head. The worm dies when every
+  section holds a bug, so four bugs are always enough.</p>
+  <div class="plate">
+    <div class="fw-worm" id="fwWorm"></div>
+    <div class="fw-ctl">
+      <button class="fw-b" data-bug="0">Bug on the head</button>
+      <button class="fw-b" data-bug="1">on section 2</button>
+      <button class="fw-b" data-bug="2">on section 3</button>
+      <button class="fw-b" data-bug="3">on the tail</button>
+      <button class="fw-b" id="fwPass">One frame</button>
+      <button class="fw-b" id="fwClean">De-bugger</button>
+    </div>
+    <div class="fw-read" id="fwBugRead"></div>
+    <p class="cap"><b>The routine at <code>$77A0</code></b>, ported and held
+    against the game's code in a simulator for 556 arrangements of bugs, with
+    no difference.</p>
+  </div>
+  <p>The de-bugger is a striped block held off the board with a pad under it
+  that is never drawn (<code>$F5</code>). Each section of the worm that
+  crosses the pad has its count cleared (<code>$A5DD</code>). The head's own
+  touch clears nothing.</p>
+  <p>A dying worm slows by 4 a frame and draws itself together, and each
+  section that closes up loses its bugs. The game ends when the last bug has
+  gone. The four sections should then turn into four explosions, but the code
+  addresses the worm's records one place too low (<code>$7841</code>), so
+  three sections explode and the tail stays as it was.</p>
+</section>
+
+<section>
+  <p class="fig">06 · The disk</p>
+  <h2 class="t">Secret: the disk does not count your spindles</h2>
+  <p>The manual asks for 50 spindles and then the disk drive. The board has
+  58 spindles. The code that ends the game when the worm's head touches the
+  disk reads no count at all (<code>$9E66</code>).</p>
+  <p>The count is read in one place, by the routine that works the disk drive
+  (<code>$BED8</code>). At 50 spindles that routine raises one block from
+  height 32 to height 80. The block is the middle of a bridge. A ramp leads up
+  to the block from the west, a platform stands at the same height to its
+  east, and from the platform the drive's arm runs north over the wall round
+  the disk. With the block down, the worm drops 48 units off the ramp and
+  faces a step of 48, and the head can climb 10. Whether the disk can be
+  reached another way was not tested.</p>
+  <div class="plate">
+    <img class="fw-shot" src="reference/17-ending.png" alt="Four moments of the ending: a hand comes down, closes on the disk, and lifts it away">
+    <p class="cap"><b>The ending</b>, reached here with no spindles
+    collected by writing a disk item into the worm's path. A hand made of 15
+    four-sided shapes (<code>$BAAE</code>) comes down one row a frame, takes
+    the disk, which is lettered DURELL, and lifts it out three rows a frame.
+    The sequence ran for 86 frames.</p>
+  </div>
+  <p>The panel's SPINDLES figure counts spindles taken, from 0 upward. Each
+  spindle gives five sparkies and scores its own number, so the fiftieth is
+  worth 50 points and the first fifty are worth 1,275
+  (<code>$A5AC</code>).</p>
+</section>
+
+<section>
+  <p class="fig">07 · The tape</p>
+  <h2 class="t">The tape still holds the routine that made it</h2>
+  <div class="fw-grid">
+    <div>
+      <p>The game was saved from the author's machine as it stood, 49,000
+      bytes from the start of the screen upward, and two leftovers came with
+      it.</p>
+      <p>The first is the routine that made the tape (<code>$EB9C</code>). The
+      routine writes the handler addresses into the board, builds the tables
+      the sprites use, puts the game's entry address on the stack, and jumps
+      to a save routine. The saved image therefore holds a stack that returns
+      into the game. One jump leads to the routine, at <code>$757C</code>,
+      three bytes before the game's real start, and nothing reaches that
+      jump.</p>
+      <p>The second is the save routine's home, a tape utility signed
+      &ldquo;&copy; 1983 NMS&rdquo; (<code>$FA56</code>). Most of the utility
+      is the Spectrum ROM's own cassette code, moved up in memory with its
+      timing changed: 1,174 of 1,245 bytes are the ROM's.</p>
+      <p>The loader on the tape is the same ROM routine with the same faster
+      timing. Every way out of the loader, the error exits included, returns
+      to the game's entry, so a load that fails starts the game anyway, with
+      whatever arrived.</p>
+    </div>
+    <div>
+      <img class="fw-shot" src="reference/11-forgery-screen.png" alt="The first screen: a 100 pound reward for information about forgeries">
+      <p class="cap"><b>The first screen.</b> The game shows the warning when
+      the byte at <code>$FC00</code> is not zero (<code>$7C92</code>). That
+      byte is part of an instruction inside the tape utility, so it is always
+      <code>$FF</code> on the tape.</p>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>On the tape</th><th>Bytes</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td>BASIC program FAT</td><td>96</td><td>clears memory, loads WORM, calls 64242</td></tr>
+      <tr><td>WORM</td><td>190</td><td>the loader, for <code>$FAF2</code></td></tr>
+      <tr><td>turbo block</td><td>49,000</td><td><code>$4000</code> to <code>$FF67</code>, with bits 453 and 709 T-states long where the ROM's are 855 and 1,710</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <p class="fig">08 · Controls</p>
+  <h2 class="t">Eight controls, named by the game</h2>
+  <div class="fw-grid">
+    <table>
+      <thead><tr><th>Bit</th><th>Key</th><th>The game's name</th><th>Each frame</th><th>Kempston</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>P</td><td>RIGHTER</td><td>heading &minus; 12 of 256</td><td>right</td></tr>
+        <tr><td>1</td><td>O</td><td>LEFTER</td><td>heading + 12</td><td>left</td></tr>
+        <tr><td>2</td><td>Q</td><td>FASTER</td><td>speed + 1, to 10</td><td>up</td></tr>
+        <tr><td>3</td><td>A</td><td>SLOWER</td><td>speed &minus; 3, to 0</td><td>down</td></tr>
+        <tr><td>4</td><td>H</td><td>BOUNCER</td><td>the halt screen</td><td></td></tr>
+        <tr><td>5</td><td>SPACE</td><td>BLASTER</td><td>fires a sparky forward</td><td>fire</td></tr>
+        <tr><td>6</td><td>1</td><td>BURPER</td><td>lays a sparky and turns the worm round</td><td>fire and down</td></tr>
+        <tr><td>7</td><td>G</td><td>ABORTER</td><td>ends the game</td><td></td></tr>
+      </tbody>
+    </table>
+    <div>
+      <img class="fw-shot" src="reference/15-key-redefiner.png" alt="The key redefiner, listing the eight controls by name">
+      <p class="cap">The redefiner (<code>$E544</code>) accepts any of the 40
+      keys for any control, the same key twice included.</p>
+    </div>
+  </div>
+  <p>The controls are collected into one byte a frame (<code>$7C13</code>).
+  The manual lists Protek and Interface 2 joysticks as well as Kempston. The
+  game reads one joystick port, the Kempston's, and only after the menu's
+  option 2. The other interfaces work by pressing keys, which the redefiner
+  covers.</p>
+  <p>A burper is a mine. A burper waits 160 frames, about 22 seconds, and then
+  rises, and a Sputnik passing over the burper sets it rising at once
+  (<code>$DDDC</code>). A sparky of either kind can be picked up again 55
+  frames after it was fired.</p>
+</section>
+
+<section>
+  <p class="fig">09 · Left in the code</p>
+  <h2 class="t">Bug: a hi-score above 999 loses its thousands</h2>
+  <div class="fw-grid">
+    <div>
+      <p>The game keeps the hi-score correctly and draws it wrongly. The
+      routine that draws one digit leaves a register at zero, and the hi-score
+      code reads that register for the two leading digits without saving it
+      first (<code>$78B8</code>). The score line beside it saves the register
+      and is right.</p>
+      <p>Other things the game shipped with:</p>
+      <ul>
+        <li>With 129 sparkies or more the worm cannot fire. The test before a
+        shot treats the count as a signed byte (<code>$7708</code>), and
+        spindles give five sparkies each with no ceiling.</li>
+        <li>Each frame the routine that builds the list of things to draw
+        writes two zeros to addresses 0 and 1 (<code>$AAF3</code>). Those
+        addresses are ROM, so nothing happens.</li>
+        <li>The trapezoid fill has a return behind two pushes
+        (<code>$93E5</code>). An edge 256 pixels or more across would send the
+        processor into the picture buffer. Of 900,000 shapes tried, none
+        narrower than that did it, and whether play can draw one that wide is
+        not established.</li>
+        <li>Nothing seeds the random numbers (<code>$E472</code>), so the
+        first game after loading always meets the same creatures at the same
+        moments if the player does the same things.</li>
+      </ul>
+    </div>
+    <div>
+      <img class="fw-shot" src="reference/18-hi-score.png" alt="The menu after a game that scored 1234: the hi-score reads 00234">
+      <p class="cap">After a game that scored 1,234. The stored hi-score is
+      1,234 and the panel shows 00234. MY-SCORE reads 78 because the panel
+      counts up to the real score three points a frame, and the game ended 26
+      frames after the score was set.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="fig">10 · The halt screen</p>
+  <h2 class="t">H stops the game and bounces a ball</h2>
+  <div class="fw-grid">
+    <div>
+      <p>The manual calls the halt key's screen a bouncing ball routine. The
+      ball is chequered, with eight gores and six bands, and it spins and
+      bounces over a dotted grid with a shadow to its right
+      (<code>$D05E</code>). Any key goes back to the game.</p>
+      <p>The ball's position and spin are never reset, so each halt carries on
+      from where the last one stopped. H itself also leaves the screen, and
+      then enters it again as soon as the key is let go.</p>
+    </div>
+    <div>
+      <img class="fw-shot" src="reference/16-halt-ball.png" alt="The halt screen: a chequered ball over a dotted grid">
+    </div>
+  </div>
+</section>
+
+</main>
+<script src="../../lib/spectrum.js"></script>
+<script>
+// The page's ports of the game's own arithmetic. Inlined into index.html by assemble.py and
+// tested against the game's code by test_core.py (node runs this file; the simulator runs the game).
+const FW = (function () {
+  // $811E: one coordinate scaled by (128 + c) / 128, c the perspective curve's byte for a height.
+  // Values outside -192..191 come back unchanged, and the product keeps only 16 bits before the
+  // last add, which is the lost carry at great heights.
+  function scale(v, c) {
+    if (v < -192 || v > 191) return v;
+    const m = Math.abs(v);
+    const r = ((((2 * m * c) & 0xFFFF) + 256 * m) >> 8) & 0xFFFF;
+    return v < 0 ? -r : r;
+  }
+
+  // $81DB's projection of one display-list record: the outline at its bottom height and at its
+  // top height, each scaled about the middle of the view, then moved to the middle of the buffer.
+  // rec = {x1, y1, x2, y2, top, bottom, type}; curve = the 128 bytes at $6300.
+  function project(rec, curve) {
+    const at = h => {
+      const c = curve[h >> 1];
+      return [scale(rec.x1, c), scale(rec.x2, c), scale(rec.y1, c), scale(rec.y2, c)];
+    };
+    const base = (rec.bottom === 0 || rec.type === 0xE5) ? [rec.x1, rec.x2, rec.y1, rec.y2] : at(rec.bottom);
+    const top = at(rec.top);
+    const mid = r => ({ x1: r[0] + 128, x2: r[1] + 128, y1: r[2] + 64, y2: r[3] + 64 });
+    return { base: mid(base), top: mid(top) };
+  }
+
+  // $AF73's window test: is a record (relative to the worm) listed at all?
+  function inWindow(rec) {
+    return rec.x1 <= 127 && rec.x2 >= -128 && rec.y1 <= 63 && rec.y2 >= -64;
+  }
+
+  // $77A0: one pass of the bugs on the worm's four sections. Returns the new counts, or null
+  // when every section holds a bug: the fatal case, $7815.
+  function bugsPass(c) {
+    let h = c[0] - 1, l = c[1] - 1, d = c[2] - 1, e = c[3] - 1;
+    if (h >= 0 && l >= 0 && d >= 0 && e >= 0) return null;
+    let pc = 0x77D0;
+    for (;;) {
+      if (pc === 0x77D0) { if (e >= 0) pc = 0x77DA; else if (d < 0) pc = 0x77DE; else { d--; e++; pc = 0x77DA; } }
+      else if (pc === 0x77DA) pc = d >= 0 ? 0x77E4 : 0x77DE;
+      else if (pc === 0x77DE) { if (l < 0) pc = 0x77E8; else { l--; d++; pc = 0x77E4; } }
+      else if (pc === 0x77E4) pc = l >= 0 ? 0x77EE : 0x77E8;
+      else if (pc === 0x77E8) { if (h >= 0) { h--; l++; } pc = 0x77EE; }
+      else break;
+    }
+    const out = [0, 0, 0, 0];
+    let a = e + 1; if (a >= 2) { a--; d++; } out[3] = a;
+    a = d + 1; if (a >= 2) { a--; l++; } out[2] = a;
+    a = l + 1; if (a >= 2) { a--; h++; } out[1] = a;
+    out[0] = h + 1;
+    return out;
+  }
+
+  // The board: cells from $6464, each four link words and then 7-byte items to a zero byte;
+  // the walk ends before the 00 FF at $757A.
+  function walkBoard(ram) {
+    const w = a => ram[a] | ram[a + 1] << 8;
+    const cells = new Map();
+    let a = 0x6464;
+    while (a < 0x757A) {
+      const links = { e: w(a), n: w(a + 2), w: w(a + 4), s: w(a + 6) };
+      const items = [];
+      let r = a + 8;
+      while (ram[r] !== 0) {
+        items.push({ addr: r, top: ram[r], bottom: ram[r + 1], x: ram[r + 2], xs: ram[r + 3], y: ram[r + 4], ys: ram[r + 5], type: ram[r + 6] });
+        r += 7;
+      }
+      cells.set(a, { addr: a, links, items });
+      a = r + 1;
+    }
+    return cells;
+  }
+
+  // Grid positions from the link words, the start cell at (0, 0). The two links that join
+  // far-apart parts of the board are not followed.
+  const JOINS = [[0x670E, 'e'], [0x7571, 'w'], [0x68EB, 'e'], [0x6C25, 'w']];
+  function layout(cells, start) {
+    const step = { e: [1, 0], n: [0, -1], w: [-1, 0], s: [0, 1] };
+    const pos = new Map([[start, [0, 0]]]), todo = [start];
+    const cut = (c, k) => JOINS.some(j => j[0] === c && j[1] === k);
+    while (todo.length) {
+      const c = todo.pop();
+      for (const k of ['e', 'n', 'w', 's']) {
+        const n = cells.get(c).links[k];
+        if (!n || cut(c, k) || pos.has(n)) continue;
+        pos.set(n, [pos.get(c)[0] + step[k][0], pos.get(c)[1] + step[k][1]]);
+        todo.push(n);
+      }
+    }
+    return pos;
+  }
+
+  // What an item is, for the map and the view. A type $F7 item is a spindle when its y size is
+  // $0C and otherwise a handler record: an address and four parameters, not a thing on the board.
+  function kind(it) {
+    const t = it.type;
+    if (t === 0xF7) return it.ys === 0x0C ? 'spindle' : 'handler';
+    if (t === 0xF6) return 'disk';
+    if (t === 0xF5) return 'pad';
+    if (t === 0xF4) return 'eruption';
+    if (t === 0xE3) return 'debugger';
+    if (t === 0xE2) return 'bus';
+    if (t === 0xE0) return 'readout';
+    if (t === 0xE1) return 'pyramid';
+    if (t >= 0xE8 && t <= 0xEF) return 'chequer';
+    if ((t & 0xC0) === 0x80) return 'rampx';
+    if ((t & 0xC0) === 0x40) return 'rampy';
+    if ((t & 0xC0) === 0x00) return 'diagonal';
+    return 'box';
+  }
+
+  // Speaker writes in one copy of the buffer ($E9E8) or one clear ($EAA9) for a divider n.
+  function clicks(n) {
+    return n >= 1 && n <= 128 ? Math.floor(128 / n) : 0;
+  }
+
+  return { scale, project, inWindow, bugsPass, walkBoard, layout, kind, clicks, JOINS };
+})();
+const FW_TUNE = {"shapes":[[467050,99,4564,4570,4570,4568,4580,4663,4800,4952],[462748,200,2281,2283,2283,2286,2283,2283,2318,2463],[478959,74,6098,6115,6123,6139,6964,6505,6721,6949],[461948,240,1897,1901,1899,1901,1899,1901,1913,2063],[466695,100,4558,4570,4574,4570,4576,4657,4800,4952],[452303,296,1507,1513,1511,1513,1511,1511,1514,1625],[469893,94,4854,4871,4868,4871,4903,5036,5172,5316],[458428,224,2018,2020,2020,2020,2020,2020,2041,2188],[477971,70,6447,6504,6504,6580,6793,6997,7201,7417],[456863,280,1605,1608,1608,1608,1608,1608,1615,1772],[476119,90,5142,5156,5162,5156,5207,5331,5468,5604],[451068,208,2136,2141,2139,2141,2139,2141,2168,2315],[476847,66,6831,6888,6891,7021,7213,7405,7597,7767],[456853,264,1705,1707,1707,1710,1707,1707,1715,1863],[481076,80,5762,5783,5783,5788,5880,6000,6120,6883],[151424,90,1600,1614,1607,1607,1640,1701,1773,1840],[316237,206,1509,1512,1512,1515,1512,1512,1531,1654],[231866,52,4281,4314,4369,4415,4463,4512,4567,4615],[235986,56,4041,4074,4104,4159,4225,4272,4327,4393],[237129,60,3812,3823,3839,3888,3943,4010,4063,4130],[232112,62,3596,3604,3628,3673,3746,3799,3866,3929],[233159,66,3402,3422,3412,3458,3521,3577,3650,3715],[233780,70,3210,3226,3230,3251,3323,3385,3459,3531],[113446,90,1192,1206,1199,1199,1223,1275,1335,1384],[354923,310,1124,1127,1127,1129,1129,1127,1130,1249],[463476,112,4059,4063,4068,4068,4063,4128,4240,4348],[466130,320,1435,1438,1440,1440,1440,1440,1441,1559],[456220,400,1124,1125,1125,1128,1128,1128,1128,1223],[458932,132,3412,3417,3420,3417,3417,3437,3549,3684],[230653,188,1198,1198,1201,1202,1198,1201,1237,1347],[235950,160,1437,1440,1440,1440,1440,1443,1510,1607],[458422,148,3046,3054,3053,3050,3054,3053,3140,3285],[238733,50,4545,4599,4647,4708,4776,4848,4920,4993],[229162,148,1510,1510,1513,1514,1510,1517,1583,1688],[231451,132,1703,1708,1707,1708,1708,1721,1810,1912],[233995,120,1892,1901,1901,1901,1896,1930,2018,2108],[232235,112,2013,2023,2017,2023,2017,2064,2144,2232],[199096,90,2135,2135,2142,2142,2168,2229,2301,2368],[277035,134,2015,2019,2020,2019,2023,2038,2131,2232],[465133,60,7639,7704,7750,7772,7772,7772,7772,7772],[468855,180,2567,2574,2573,2570,2574,2570,2623,2756],[454523,56,8108,8119,8108,8108,8108,8108,8108,8108],[469357,84,5424,5447,5450,5447,5520,5643,5772,5900]],"order":[0,1,2,3,4,5,2,3,4,1,2,3,4,5,2,3,6,7,8,9,10,11,12,13,14,15,16,2,15,16,15,16,17,18,19,20,21,22,4,1,2,3,4,5,2,3,4,1,2,3,4,5,2,3,6,7,8,9,10,11,12,13,2,15,16,15,16,15,16,4,23,24,4,4,25,13,2,26,25,27,2,26,25,13,2,26,25,27,2,26,6,7,8,9,6,5,8,9,6,7,8,9,6,5,8,9,28,29,30,4,29,30,28,29,30,4,29,30,31,23,24,23,24,4,31,23,24,32,18,19,20,28,29,30,4,29,30,28,29,30,4,29,30,18,4,18,8,23,24,2,33,30,33,34,35,36,4,1,2,3,4,5,2,3,4,1,2,3,4,5,2,3,6,7,8,9,10,11,12,13,14,15,16,2,15,16,15,16,17,18,19,20,21,22,4,1,2,3,4,5,2,3,4,1,2,3,4,5,2,3,6,7,8,9,10,11,12,13,2,15,16,15,16,15,16,4,23,24,4,4,25,13,2,26,25,27,2,26,25,13,2,26,25,27,2,26,6,7,8,9,6,5,8,9,6,7,8,9,6,5,8,9,28,29,30,4,29,30,28,29,30,4,29,30,31,23,24,23,24,4,31,23,24,32,18,19,20,28,29,30,4,29,30,28,29,30,4,29,30,18,4,18,8,23,24,2,33,30,33,34,35,36,2,5,4,3,2,13,4,7,2,5,4,3,2,13,4,7,4,1,12,9,4,11,12,5,2,13,4,1,2,37,38,37,38,37,38,4,5,12,3,6,1,12,5,6,9,39,11,14,40,39,9,10,13,41,1,12,31,41,13,42,3,42,3,42,15,16,15,16,15,16,4,1,12,9,4,11,12,5,2,13,4,1,2,37,38,37,38,37,38,2,5,4,3,2,13,4,7,2,5,4,3,2,13,4,7,4,1,12,9,4,11,12,5,2,13,4,1,2,37,38,37,38,37,38,4,5,12,3,6,1,12,5,6,9,39,11,14,40,39,9,10,13,41,1,12,31,41,13,42,3,42,3,42,15,16,15,16,15,16,4,1,12,9,4,11,12,5,2,13,4,1,2,37,38,37,38,37,38]};
+</script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n || 2, '0');
+  const need = (el, why) => { const p = document.createElement('p'); p.className = 'fw-need'; p.textContent = why; el.replaceWith(p); };
+
+  // ---- 05: bugs on the worm (needs no data) ----
+  (function () {
+    let c = [0, 0, 0, 0], dead = false;
+    const names = ['head', 'section 2', 'section 3', 'tail'];
+    function show(msg) {
+      $('fwWorm').innerHTML = c.map((n, i) => `<div class="fw-seg${dead ? ' dead' : n ? ' bug' : ''}">${names[i]}<b>${n}</b></div>`).join('');
+      $('fwBugRead').textContent = msg || '';
+    }
+    document.querySelectorAll('[data-bug]').forEach(b => b.onclick = () => {
+      if (dead) { c = [0, 0, 0, 0]; dead = false; }
+      c[+b.dataset.bug]++; show('A bug lands. Counts: ' + c.join(', '));
+    });
+    $('fwPass').onclick = () => {
+      if (dead) { c = [0, 0, 0, 0]; dead = false; show('A new worm.'); return; }
+      const r = FW.bugsPass(c);
+      if (r === null) { dead = true; show('Every section holds a bug: the fatal case. The game sets $8058 to $FF and the worm starts to die.'); }
+      else { const was = c.join(', '); c = r; show(was + '  becomes  ' + c.join(', ')); }
+    };
+    $('fwClean').onclick = () => { c = [0, 0, 0, 0]; dead = false; show('Every section has crossed the pad: all counts cleared.'); };
+    show('Put bugs on the worm, then step a frame at a time.');
+  })();
+
+  // ---- 03: sound from the copy loop (WebAudio; lists need the listing) ----
+  let actx = null;
+  const audio = () => actx || (actx = new (window.AudioContext || window.webkitAudioContext)());
+  let playing = null;
+  function stopSound() { if (playing) { try { playing.stop(); } catch (e) {} playing = null; } }
+  // edges: times in T-states at which the speaker bit flips; total: length in T-states
+  function playEdges(edges, total, onend) {
+    const ac = audio(), rate = ac.sampleRate, n = Math.ceil(total / 3500000 * rate) + 1;
+    const buf = ac.createBuffer(1, n, rate), d = buf.getChannelData(0);
+    let level = -0.2, k = 0;
+    for (let i = 0; i < n; i++) {
+      const t = i / rate * 3500000;
+      while (k < edges.length && edges[k] <= t) { level = -level; k++; }
+      d[i] = level;
+    }
+    stopSound();
+    const src = ac.createBufferSource(); src.buffer = buf; src.connect(ac.destination);
+    src.onended = () => { if (playing === src) playing = null; if (onend) onend(); };
+    src.start(); playing = src; return src;
+  }
+  const ROW = 564, FLIP = 22, FRAME = 494056;       // T-states: a copied row, the flip, a frame (the mean measured)
+  function frameEdges(n, at) {
+    const e = [];
+    for (let k = 1; k <= FW.clicks(n); k++) e.push(at + k * (n * ROW + FLIP));
+    return e;
+  }
+  (function () {
+    const N = $('fwN'), V = $('fwNval');
+    const upd = () => { const n = +N.value; V.textContent = n + ': ' + FW.clicks(n) + ' flips, ' + Math.round(3500000 / (2 * (n * ROW + FLIP))) + ' Hz'; };
+    N.oninput = upd; upd();
+    $('fwNplay').onclick = () => { const n = +N.value; playEdges(frameEdges(n, 20000), 200000); };
+  })();
+
+  // ---- 04: the tune ----
+  (function () {
+    const bar = $('fwTuneBar'), ctx = bar.getContext('2d');
+    const K = 8, shapes = FW_TUNE.shapes, order = FW_TUNE.order;
+    let total = 0; const starts = order.map(i => { const s = total; total += shapes[i][0]; return s; });
+    function draw(pos) {
+      ctx.fillStyle = '#2f3136'; ctx.fillRect(0, 0, bar.width, bar.height);
+      order.forEach((i, k) => {
+        const s = shapes[i], f = 3500000 / (2 * s[2]);
+        const x = starts[k] / total * bar.width, w = Math.max(1, s[0] / total * bar.width - 0.5);
+        const y = bar.height - 4 - Math.log2(f / 150) / Math.log2(2400 / 150) * (bar.height - 8);
+        ctx.fillStyle = pos !== undefined && starts[k] <= pos && pos < starts[k] + s[0] ? '#ffd24a' : '#7fd77f';
+        ctx.fillRect(x, y, w, 3);
+      });
+      if (pos !== undefined) { ctx.fillStyle = '#fff'; ctx.fillRect(pos / total * bar.width, 0, 1, bar.height); }
+    }
+    draw();
+    let timer = null;
+    $('fwTune').onclick = function () {
+      if (timer) { stopSound(); return; }
+      const edges = [];
+      order.forEach((i, k) => {
+        const s = shapes[i], n = s[1] - 1;
+        let t = starts[k] + 500; edges.push(t);
+        for (let j = 0; j < n; j++) { t += s[2 + Math.min(K - 1, Math.floor(j * K / n))]; edges.push(t); }
+      });
+      const t0 = audio().currentTime;
+      this.textContent = 'Stop';
+      playEdges(edges, total, () => { clearInterval(timer); timer = null; this.textContent = 'Play the tune'; draw(); });
+      timer = setInterval(() => draw((audio().currentTime - t0) * 3500000), 60);
+    };
+  })();
+
+  // ---- everything below draws from the game's bytes, through the listing ----
+  if (typeof Spectrum === 'undefined') {
+    need($('fwView'), 'This picture is drawn from the game\'s bytes by the site\'s shared script, which loads only in the built site.');
+    need($('fwMap'), 'The map needs the built site too.');
+    return;
+  }
+  Spectrum.load('listing.json').then(G => {
+    const ram = G.ram, cells = FW.walkBoard(ram), START = 0x64AE, pos = FW.layout(cells, START);
+    const curve = ram.subarray(0x6300, 0x6380);
+
+    // the curve table
+    $('fwCurve').querySelector('tbody').innerHTML = [0x10, 0x30, 0x50, 0x90, 0xDA, 0xF8].map(h =>
+      `<tr><td>${h}</td><td>${curve[h >> 1]}</td><td>${((128 + curve[h >> 1]) / 128).toFixed(2)}</td></tr>`).join('');
+
+    // the sound lists
+    const LISTS = [[0xE4B2, 'the menu'], [0xE4B7, 'the fourth bug'], [0xE4C2, 'a new game'], [0xE4E1, 'a bug landing on the worm, and the de-bugger'],
+                   [0xE4E8, 'a large Crawly hit by a sparky'], [0xE4EE, 'the end of a game']];
+    const readList = a => { const v = []; while (ram[a]) v.push(ram[a++]); const next = ram[a + 1] | ram[a + 2] << 8; return { v, next }; };
+    const tb = $('fwListTable').querySelector('tbody');
+    LISTS.forEach(([a, what]) => {
+      const L = readList(a);
+      tb.insertAdjacentHTML('beforeend', `<tr><td><code>${hex(a, 4)}</code></td><td>${what}</td><td>${L.v.join(' ')}</td><td>${L.next ? 'repeats' : 'stops'}</td></tr>`);
+      const b = document.createElement('button'); b.className = 'fw-b'; b.textContent = what;
+      b.onclick = () => {
+        let seq = L.v.slice(); if (L.next) while (seq.length < 22) seq = seq.concat(L.v);
+        let e = []; seq.forEach((n, i) => { e = e.concat(frameEdges(n, i * FRAME + 20000)); });
+        playEdges(e, seq.length * FRAME);
+        $('fwSndRead').textContent = hex(a, 4) + ': ' + seq.length + ' frames, n = ' + seq.join(' ');
+      };
+      $('fwLists').appendChild(b);
+    });
+
+    // ---- 01: the view ----
+    const view = $('fwView'), vctx = view.getContext('2d');
+    const me = { cell: START, x: 0x80, y: 0x60 };
+    const bits = new Uint8Array(256 * 128);
+    const pat = (P, M, x, y) => ((((y & 1) ? ~P : (~P ^ M)) & 0xFF) >> (7 - (x & 7))) & 1;
+    // a convex polygon, filled with a pattern, its edge pixels cleared as the game's fills leave them
+    function poly(pts, P, M) {
+      let y0 = Infinity, y1 = -Infinity;
+      pts.forEach(p => { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
+      y0 = Math.max(0, Math.ceil(y0)); y1 = Math.min(127, Math.floor(y1));
+      for (let y = y0; y <= y1; y++) {
+        let a = Infinity, b = -Infinity;
+        for (let i = 0; i < pts.length; i++) {
+          const p = pts[i], q = pts[(i + 1) % pts.length];
+          if (p[1] === q[1]) { if (p[1] === y) { a = Math.min(a, p[0], q[0]); b = Math.max(b, p[0], q[0]); } continue; }
+          if ((y - p[1]) * (y - q[1]) > 0) continue;
+          const x = p[0] + (q[0] - p[0]) * (y - p[1]) / (q[1] - p[1]);
+          a = Math.min(a, x); b = Math.max(b, x);
+        }
+        if (a > b) continue;
+        a = Math.round(a); b = Math.round(b);
+        const edgeRow = y === Math.ceil(Math.min(...pts.map(p => p[1]))) || y === Math.floor(Math.max(...pts.map(p => p[1])));
+        for (let x = Math.max(0, a); x <= Math.min(255, b); x++)
+          bits[y * 256 + x] = (x === a || x === b || edgeRow) ? 0 : pat(P, M, x, y);
+      }
+    }
+    const rect = (r, P, M) => poly([[r.x1, r.y1], [r.x2, r.y1], [r.x2, r.y2], [r.x1, r.y2]], P, M);
+    function nine(c) {
+      const at = (a, k) => a && cells.get(a) ? cells.get(a).links[k] : 0;
+      const n = at(c, 'n'), s = at(c, 's'), w = at(c, 'w'), e = at(c, 'e');
+      return [[at(n, 'w') || at(w, 'n'), n, at(n, 'e') || at(e, 'n')], [w, c, e], [at(s, 'w') || at(w, 's'), s, at(s, 'e') || at(e, 's')]];
+    }
+    function drawView() {
+      bits.fill(1);
+      const flat = $('fwFlat').checked, cv = flat ? new Uint8Array(128) : curve;
+      const grid = nine(me.cell), list = [];
+      for (let r = 0; r < 3; r++) for (let q = 0; q < 3; q++) {
+        const a = grid[r][q], ox = (q - 1) * 256 - me.x, oy = (r - 1) * 256 - me.y;
+        if (!a) { rect({ x1: ox + 128, x2: ox + 383, y1: oy + 64, y2: oy + 319 }, 0xFF, 0); continue; }
+        // the floor's specks: 7 to 14 cleared pixels, seeded by the square's address ($EB2B, $B350)
+        let v = (1509 * a + 41) & 0xFFFF; const dots = (v & 7) + 7;
+        for (let i = 0; i < dots; i++) {
+          v = (1509 * v + 41) & 0xFFFF;
+          const x = ox + 128 + (v & 255), y = oy + 64 + (v >> 8);
+          if (x >= 0 && x < 256 && y >= 0 && y < 128) bits[y * 256 + x] = 0;
+        }
+        for (const it of cells.get(a).items) {
+          const k = FW.kind(it);
+          if (k === 'handler' || k === 'pad') continue;
+          const rec = { x1: ox + it.x, x2: ox + it.x + it.xs, y1: oy + it.y, y2: oy + it.y + it.ys, top: it.top, bottom: it.bottom, type: it.type, k };
+          if (FW.inWindow(rec)) list.push(rec);
+        }
+      }
+      list.sort((p, q) => p.bottom - q.bottom || (Math.hypot(q.x1 + q.x2, q.y1 + q.y2) - Math.hypot(p.x1 + p.x2, p.y1 + p.y2)));
+      const outl = [];
+      for (const rec of list) {
+        const pr = FW.project(rec, cv), b = pr.base, t = pr.top;
+        outl.push(pr);
+        if (rec.k === 'spindle') {
+          const cx = (t.x1 + t.x2) >> 1, cy = (t.y1 + t.y2) >> 1;
+          for (let i = 0; i < 16; i++) { const x = Math.round(cx + 4 * Math.cos(i * Math.PI / 8)), y = Math.round(cy + 4 * Math.sin(i * Math.PI / 8)); if (x >= 0 && x < 256 && y >= 0 && y < 128) bits[y * 256 + x] = 0; }
+          continue;
+        }
+        // the three pattern pairs: y walls, top, x walls
+        let set = 0x80CB + 8 * (rec.type & 3);
+        let pw = [[ram[set], ram[set + 1]], [ram[set + 2], ram[set + 3]], [ram[set + 4], ram[set + 5]]];
+        if (rec.k === 'bus') pw = [[0xDD, 0xAA], [0xFF, 0x00], [0xDD, 0xAA]];
+        if (rec.k === 'chequer') pw = [[0xAA, 0xFF], [0xAA, 0xFF], [0xAA, 0xFF]];
+        if (rec.k === 'debugger') pw = [[0xF0, 0x00], [0xF0, 0x00], [0xF0, 0x00]];
+        let lo = { x1y1: 't', x2y1: 't', x2y2: 't', x1y2: 't' };            // which corners are at the top height
+        if (rec.k === 'rampx') { const hi = (rec.type & 0x30) === 0x10 ? 'x1' : 'x2'; for (const c in lo) if (!c.startsWith(hi)) lo[c] = 'b'; }
+        if (rec.k === 'rampy') { const hi = (rec.type & 0x30) === 0x10 ? 'y1' : 'y2'; for (const c in lo) if (!c.endsWith(hi)) lo[c] = 'b'; }
+        const P = c => { const s = lo[c] === 't' ? t : b; return [s[c.slice(0, 2)], s[c.slice(2)]]; };
+        const B = c => [b[c.slice(0, 2)], b[c.slice(2)]];
+        const face = rec.k === 'box' ? (rec.type >> 2) & 7 : 0;
+        const wall = (c1, c2, p, show) => { if (show) poly([B(c1), B(c2), P(c2), P(c1)], pw[p][0], pw[p][1]); };
+        wall('x1y1', 'x2y1', 0, b.y1 < t.y1 && face !== 4 && face !== 7);
+        wall('x1y2', 'x2y2', 0, t.y2 < b.y2 && face !== 5 && face !== 7);
+        wall('x1y1', 'x1y2', 2, b.x1 < t.x1 && face !== 2 && face !== 6);
+        wall('x2y1', 'x2y2', 2, t.x2 < b.x2 && face !== 3 && face !== 6);
+        if (face !== 1) poly([P('x1y1'), P('x2y1'), P('x2y2'), P('x1y2')], pw[1][0], pw[1][1]);
+      }
+      const img = vctx.createImageData(256, 128);
+      for (let i = 0; i < bits.length; i++) { img.data[i * 4 + 1] = bits[i] ? 255 : 0; img.data[i * 4 + 3] = 255; }
+      vctx.putImageData(img, 0, 0);
+      if ($('fwOutlines').checked) for (const pr of outl) {
+        vctx.strokeStyle = '#3aa0ff'; vctx.strokeRect(pr.base.x1 + .5, pr.base.y1 + .5, pr.base.x2 - pr.base.x1, pr.base.y2 - pr.base.y1);
+        vctx.strokeStyle = '#ff5a4a'; vctx.strokeRect(pr.top.x1 + .5, pr.top.y1 + .5, pr.top.x2 - pr.top.x1, pr.top.y2 - pr.top.y1);
+      }
+      vctx.fillStyle = '#ffe14a'; vctx.fillRect(126, 62, 5, 5);
+      const p = pos.get(me.cell);
+      $('fwWhere').textContent = 'square ' + hex(me.cell, 4) + (p ? ' (' + p[0] + ', ' + p[1] + ')' : '') + '  x ' + me.x + '  y ' + me.y;
+      drawMap();
+    }
+    function move(dx, dy) {
+      const step = 12;
+      let x = me.x + dx * step, y = me.y + dy * step, c = me.cell;
+      const L = cells.get(c).links;
+      if (x < 0) { if (!L.w) return; c = L.w; x += 256; } else if (x > 255) { if (!L.e) return; c = L.e; x -= 256; }
+      if (y < 0) { if (!L.n) return; c = L.n; y += 256; } else if (y > 255) { if (!L.s) return; c = L.s; y -= 256; }
+      me.cell = c; me.x = x; me.y = y; drawView();
+    }
+    document.querySelectorAll('[data-mv]').forEach(b => b.onclick = () => { const [dx, dy] = b.dataset.mv.split(',').map(Number); move(dx, dy); });
+    view.addEventListener('keydown', e => {
+      const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+      if (k) { e.preventDefault(); move(k[0], k[1]); }
+    });
+    $('fwOutlines').onchange = drawView; $('fwFlat').onchange = drawView;
+    window.fwGo = (c, x, y) => { me.cell = c; me.x = x; me.y = y; drawView(); };
+
+    // ---- 02: the map ----
+    const map = $('fwMap'), mctx = map.getContext('2d'), CS = 26;
+    let minX = 0, minY = 0; pos.forEach(p => { minX = Math.min(minX, p[0]); minY = Math.min(minY, p[1]); });
+    const COL = { box: '#6fae5f', bus: '#20242a', spindle: '#ffffff', chequer: '#9fc08f', rampx: '#c9b458', rampy: '#c9b458', diagonal: '#6fae5f',
+                  eruption: '#d8553c', debugger: '#b48be0', readout: '#58b6d8', pyramid: '#6fae5f', disk: '#ff9d2e' };
+    const LEG = [['box', 'box'], ['bus', 'data bus'], ['spindle', 'spindle'], ['chequer', 'chequered block'], ['rampx', 'ramp'], ['eruption', 'eruption pad'],
+                 ['debugger', 'de-bugger'], ['readout', 'counter block'], ['disk', 'the disk']];
+    $('fwLegend').innerHTML = LEG.map(([k, n]) => `<span class="fw-key" style="background:${COL[k]}"></span>${n}`).join('<br>');
+    const where = c => { const p = pos.get(c); return [(p[0] - minX) * CS, (p[1] - minY) * CS]; };
+    function drawMap(hover) {
+      mctx.fillStyle = '#23262d'; mctx.fillRect(0, 0, map.width, map.height);
+      cells.forEach((cell, a) => {
+        const [X, Y] = where(a);
+        mctx.fillStyle = a === hover ? '#2f8f3f' : '#1f6f2f'; mctx.fillRect(X + 1, Y + 1, CS - 1, CS - 1);
+        for (const it of cell.items) {
+          const k = FW.kind(it); if (!COL[k]) continue;
+          mctx.fillStyle = COL[k];
+          const s = CS / 256;
+          if (k === 'spindle') mctx.fillRect(X + (it.x + 6) * s - 1, Y + (it.y + 6) * s - 1, 2.5, 2.5);
+          else mctx.fillRect(X + 1 + it.x * s, Y + 1 + it.y * s, Math.max(1.5, it.xs * s), Math.max(1.5, it.ys * s));
+        }
+      });
+      mctx.font = 'bold 13px IBM Plex Mono, monospace'; mctx.fillStyle = '#ffe14a'; mctx.textBaseline = 'middle'; mctx.textAlign = 'center';
+      [[0x670E, 'A'], [0x7571, 'A'], [0x68EB, 'B'], [0x6C25, 'B']].forEach(([a, t]) => { const [X, Y] = where(a); mctx.fillText(t, X + CS / 2, Y + CS / 2); });
+      const [sx, sy] = where(START); mctx.strokeStyle = '#fff'; mctx.lineWidth = 1.5; mctx.strokeRect(sx + 1.5, sy + 1.5, CS - 2, CS - 2);
+      const [X, Y] = where(me.cell); mctx.strokeStyle = '#ffe14a'; mctx.lineWidth = 2; mctx.strokeRect(X + 1, Y + 1, CS - 1, CS - 1);
+    }
+    function cellAt(ev) {
+      const r = map.getBoundingClientRect(), s = map.width / r.width;
+      const gx = Math.floor((ev.clientX - r.left) * s / CS) + minX, gy = Math.floor((ev.clientY - r.top) * s / CS) + minY;
+      for (const [a, p] of pos) if (p[0] === gx && p[1] === gy) return a;
+      return 0;
+    }
+    map.onmousemove = ev => {
+      const a = cellAt(ev); drawMap(a);
+      if (!a) { $('fwCell').textContent = 'Point at a square.'; return; }
+      const n = {}; cells.get(a).items.forEach(it => { const k = FW.kind(it); n[k] = (n[k] || 0) + 1; });
+      const L = cells.get(a).links, nm = { box: 'boxes', bus: 'data buses', spindle: 'spindles', chequer: 'chequered blocks', rampx: 'ramps along x', rampy: 'ramps along y',
+        diagonal: 'diagonal boxes', eruption: 'eruption pads', debugger: 'de-bugger blocks', pad: 'de-bugger pads', readout: 'counter blocks', pyramid: 'pyramid', disk: 'the disk', handler: 'handler records' };
+      $('fwCell').textContent = 'square ' + hex(a, 4) + (a === START ? ' (the start)' : '') + '\n' +
+        'east ' + (L.e ? hex(L.e, 4) : 'none') + '  north ' + (L.n ? hex(L.n, 4) : 'none') + '\nwest ' + (L.w ? hex(L.w, 4) : 'none') + '  south ' + (L.s ? hex(L.s, 4) : 'none') + '\n' +
+        (Object.keys(n).length ? Object.keys(n).map(k => n[k] + ' ' + nm[k]).join('\n') : 'empty');
+    };
+    map.onmouseleave = () => drawMap();
+    map.onclick = ev => { const a = cellAt(ev); if (a) { me.cell = a; me.x = 128; me.y = 128; drawView(); view.scrollIntoView({ behavior: 'smooth', block: 'center' }); } };
+    drawView();
+  }).catch(e => { need($('fwView'), 'The game\'s listing did not load: ' + e.message); });
+})();
+</script>

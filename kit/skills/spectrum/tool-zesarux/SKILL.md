@@ -77,14 +77,20 @@ lists all 129.
 | Expressions | `evaluate <expr>` | `PEEK`, `IN`, registers, `TSTATESP`, arithmetic and comparisons |
 | Machine | `get-current-machine` | `ZX Spectrum 48k` |
 | Memory pages | `get-memory-pages` | `ROM RAM` on a 48K machine |
+| Code coverage | `cpu-code-coverage clear\|enabled yes\|enabled no\|get` | enable it with `enabled yes`, play the game, then `get` returns every address the CPU executed (instruction starts, space separated hex). It must be enabled while the machine is **running**: issued in cpu-step mode it answers `Error. Can not enter cpu step mode. You can try closing the menu`, and a `snapshot-load` afterwards can switch it off, so `get` then answers `Error. It's not enabled`. Clear and re-enable after a load. This is how a game's code is separated from its data without a flow-following disassembler; see "From the map to a control file" below, and iterate that sweep - one pass under-reports |
 
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
 `get-visualmem-read-dump` and `get-visualmem-written-dump` (the memory a
 range was read from and written to), `cpu-transaction-log` and
 `cpu-history` (an instruction trace, for the run-up to a stop), the
 `snapshot-inram-*` commands (save and restore a snapshot in memory, no
-file), and `get-ocr` (text off the screen). None is wired into the client;
-`help <command>` gives their syntax.
+file), `get-ocr` (text off the screen), and for a windowed run
+`get-text-overlay` and `close-all-menus` (what an open menu or dialog
+says, and shutting it). None is wired into the client;
+`help <command>` gives their syntax. `close-all-menus` is not neutral:
+with the emulator's send-statistics question pending it answers "yes"
+(`kit/spectrum/INSTALL.md`). The launcher's flags keep that question from
+being asked, so use it only on an emulator the launcher started.
 
 ZEsarUX's own expressions are worth knowing: `IN(<port>)` reads a port
 (sixteen bits, so the keyboard rows decode as `IN(65278)` for `$FEFE`),
@@ -163,6 +169,80 @@ rpc.registers()["PC"]                  # exactly 0x800F: the stop is on the inst
   `snapshot-load` enters cpu-step, loads, and exits it again. Stop first
   (`enter_step`) to come back to the state you saved and stay there.
 
+## Finding a game's code, and what its data is for
+
+A control file is traced by nothing, so the split between code and data is
+yours to build (`kit/skills/core/50-coverage`, "When the disassembler does
+not follow control flow"). The emulator gives three records of what the
+game did, and `kit/spectrum/codemap.py` turns the first into a check.
+
+- **What executed.** `cpu-code-coverage enabled yes` while the machine
+  runs, play, then `cpu-code-coverage get`: every address returned is the
+  first byte of an instruction that ran, in hex with no prefix. Save it to
+  a file in `work/`.
+- **What was read and what was written.** `get-visualmem-read-dump compact`
+  and `get-visualmem-written-dump compact` list every address read and
+  written since the last dump (the dump clears the record, so call each
+  once before the session to empty it; `get-visualmem-opcode-dump` is the
+  same for fetched opcodes). A reply line is `7C74H 12 3 255 ...`, an
+  address and the values for it and the addresses after it. Use the
+  values as flags only: they are not counts. Reads include the bytes of
+  the instructions themselves, so subtract every executed instruction's
+  bytes; what is left of the read record is data the game consulted, and
+  the written record is its variables and buffers. Data that play neither
+  read nor wrote is unused, or the session did not reach it: say which you
+  can show.
+- **The check.** `python3 kit/spectrum/codemap.py <game> work/entry.sna
+  --entry <hand-over address> --map work/executed.txt` joins a static trace
+  with the executed list and reports every byte of code that `symbols.json`
+  types as data, and every `Code` block neither source reached. Run it
+  before the annotation starts and after every merge. On the first game the
+  executed list alone gave 21,551 bytes of code and the trace from the
+  hand-over 23,132; the two together, 23,672; the last 475 bytes were two
+  handlers named only by words stored in data, and a routine nothing calls
+  with the code it jumps into, given as `--entry` once the code that reads
+  those words had been read (3 October 2026).
+
+**Record sessions that replay.** A session timed by the wall clock presses
+its keys at different moments on each run. Stop the machine and count in
+frames: `set_input`, `frames(n)`, `release_input`, `frames(n)`. Every run
+from the same snapshot then does the same thing, a menu that ignored a
+short press ignores it every time, and the session is a route someone else
+can replay. A key held for 10 frames and released for 20 was read by every
+menu of the first game; 6 frames was not always enough. `--emulatorspeed
+800` at launch makes frame stepping about five times real speed
+(measured: 250 frames in 0.94 s).
+
+**Step a game that ignores the display by its own loop.** A game that
+runs with interrupts off takes as long over a frame as the frame needs,
+so a key held for ten display frames lands on a different number of the
+game's frames each time. Put a stopping checkpoint on the first
+instruction of the game's frame loop (`bp_set(1, "PC=<addr>H")`), and
+step one game frame with `set_input(...)` then `run(limit=N)`, N a few
+times the instructions a frame takes. Check `PC` after each run: the game
+leaves its loop when the player dies, halts or finishes, the run then
+stops on the limit somewhere else, and a run with no limit would never
+come back. Poke and read variables only while stopped at the checkpoint,
+which is the same point of every frame.
+
+Save these records to the game's `work/` and treat them as a cache: the
+committed `symbols.json` is what counts.
+
+### The map, as this emulator writes it
+
+`cpu-code-coverage get` returns space-separated hex addresses - instruction
+starts - and the control-file tools want **one address per line**, so a
+one-liner converts it:
+
+```sh
+tr ' ' '\n' < work/executed.txt | sed 's/^/\$/' > work/executed.map
+```
+
+What to do with the map is in `kit/skills/spectrum/tool-skoolkit`, "The
+first control file, from an execution map": `sna2ctl.py -m`, the traps in
+its output, and why one sweep is not enough. `kit/spectrum/codemap.py`
+("The check", above) reads `cpu-code-coverage get`'s output as it is.
+
 ## Input
 
 Two paths, and they are not interchangeable:
@@ -213,6 +293,20 @@ the game's `work/`. A `.sna` is not committed anywhere: it holds the game.
   for anything measured over time.
 - **`run` is refused outside cpu-step mode** — including right after a
   `snapshot-load` that resumed the machine.
+- **Stopping can be refused, and the refusal is a line of text.** For a
+  moment after the machine leaves cpu-step (measured: up to 0.7 s on 13.0,
+  3 October 2026), `enter-cpu-step`, `snapshot-load` and `smartload`
+  answer `Error. Can not enter cpu step mode. You can try closing the
+  menu`, with no menu anywhere, and the load then loads nothing. The
+  client asks again and raises if it is still refused (`Rpc.entering`),
+  and `enter_step` checks the prompt says `cpu-step` before it returns. A
+  client of your own must do both: a poke into a machine that never
+  stopped is overwritten by the game, and reads as a failed experiment.
+- **A file that is not there gets no error.** `snapshot-load` and
+  `smartload` of a missing file, and `save-screen` into a missing folder,
+  answer an empty reply and do nothing. The client checks the path first
+  (and after a save), so a wrong path raises instead of leaving the
+  previous state running under a script that thinks it loaded.
 - **Menus cannot open** with `--vo null` ("this video driver does not
   support menu"), which is a reason the kit never arms a stopping
   checkpoint and then leaves the machine running: with nothing driving the

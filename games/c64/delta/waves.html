@@ -1,0 +1,64 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/delta-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Up to seven enemies at once, entering one a frame, each flying a path of straight segments, some taking several hits and some changing shape.</p>
+</header>
+<main class="wrap">
+<section id="replay">
+  <p class="fig">01 · Every attack, replayed</p>
+  <h2 class="t">The attack waves of stages 1 to 18, played by the game's own code</h2>
+  <p class="lede">Every group of stages 1 to 18 except 14 and 15, each enemy drawn with its own sprite and colour, with the state the code keeps for it.</p>
+  <div class="plate">
+    <div class="stages" id="wvStages"></div>
+    <canvas id="wvCv" style="width:100%;margin-top:14px"></canvas>
+    <div class="row"><button id="wvPlay">Play</button><button id="wvBack">&lt; frame</button><button id="wvFwd">frame &gt;</button>
+      <span class="lab">Speed</span><button data-wvspeed="0.25">¼</button><button data-wvspeed="1" class="on">1×</button><button data-wvspeed="4">4×</button><button data-wvspeed="16">16×</button>
+      <button id="wvTrails" class="on">Paths</button></div>
+    <div class="row"><input id="wvFrame" type="range" min="0" max="0" value="0" style="width:100%"></div>
+    <div class="row"><span class="lab" id="wvTime"></span></div>
+    <div class="out" id="wvGroup"></div>
+    <div class="row" id="wvList" style="gap:6px"></div>
+    <div class="scroll"><table id="wvLive"></table></div>
+    <p class="cap" id="wvCap"><b>Recorded, not imitated.</b> Delta's own code, the bytes on the Source code tab, was run in the kit's simulated C64 with nobody at the controls, and every enemy's position, sprite and state was written down once a frame from the start of the game (stages 1 to 18 less 14 and 15: 51,251 frames, about seventeen minutes, 192 groups, 1,329 enemies). Two stand-ins replace a player, both through the game's own variables: enemy fire is made harmless with the game's own trainer patch, so the ship survives, and a group still on screen after 15 seconds is shot the way a laser hit marks it, which is the only way a boss stage ends (marked "shot" in the group list). Nothing else is changed, so each group flies its whole path; the boss's aim follows the ship, which stays parked at its start. <b>Checked against VICE:</b> each stage was also played in VICE from a snapshot with the same stand-ins, and every enemy's position, life and hit points matched the recording on every frame of every group, up to where the stand-in shots began: 267,931 enemy-frames with no difference. In the heaviest frames (31 times in these stages) the game's interrupts run past the main loop's once-a-frame call on a real C64, so VICE takes one sample fewer there while the enemies move on as usual; the kit's machine, which does not model the cycles the video chip takes from the processor, never runs late. Stages 14 and 15 are left out: in stage 14 two enemies leaving the top edge are freed in the other order in VICE, and in stage 15 the stand-in shots leave a different enemy alive between two groups, so neither can be shown to match. The scenery rows and the player's ship are not drawn. A dashed box is an enemy showing the empty sprite <code>$9B</code>: present and moving, with nothing drawn. That happens for an enemy's first one to three frames, before its animation starts, and at the end of an explosion; in the recordings of all 32 stages no enemy is invisible for longer.</p>
+  </div>
+</section>
+
+<section id="groups">
+  <p class="fig">02 · Groups</p>
+  <h2 class="t">A stage is a list of groups</h2>
+  <p class="lede">Enemies arrive in groups of up to seven, and each group is one eight-byte record.</p>
+  <p>Each stage is a list of groups (<code>$B800</code> for stages 1 to 21, <code>$B900</code> after), and each group points at an eight-byte record in <code>wave_records</code> at <code>$AB00</code>. <code>enemy_spawn</code> (<code>$811F</code>) decodes it: hit points, animation, colour, which side to enter from, points, path, starting height and delay. One enemy enters per frame into a free sprite, up to seven.</p>
+  <p>The shop is a group too: a record with bit 4 of its third byte set turns its sprites into the weapon icons (<a href="mechanics.html#shop">How it works</a>). When a group ends and none of its enemies escaped, most groups add a credit (<code>wave_spawn_step</code>, <code>$8010</code>).</p>
+</section>
+
+<section id="paths">
+  <p class="fig">03 · Paths</p>
+  <h2 class="t">Paths made of straight segments</h2>
+  <p class="lede">Every enemy flies a path, and every path is a list of short straight runs.</p>
+  <p>A path (<code>$B500</code>) is a list of segments (<code>$A880</code>), and each segment runs a list of (dx, dy) steps from <code>$B000</code> for so many frames a step, mirrored as the record says (<code>enemy_move_1</code>, <code>$82CC</code>, and six copies, one per sprite). An enemy that leaves the play area is gone, and a group with an escapee earns no credit.</p>
+</section>
+
+<section id="hits">
+  <p class="fig">04 · Hit points</p>
+  <h2 class="t">Hit points and second forms</h2>
+  <p class="lede">Some enemies take several hits, some cannot be destroyed, and some turn into something else.</p>
+  <p>Hit points come from <code>$A100</code>. An enemy with 0 or 1 dies at the first hit, and one with <code>$FF</code> cannot be destroyed. When bit 7 of its segment's fourth byte is set, an enemy whose hits run out changes into a new form instead of dying: the mover copies the bit at <code>$8369</code> and tests it at <code>$8449</code>.</p>
+  <p>In waves led by an indestructible enemy in the first sprite, destroying the one in the last sprite blows up the whole wave (<code>enemies_wave_timers</code>, <code>$9024</code>).</p>
+</section>
+
+<section id="points">
+  <p class="fig">05 · Points</p>
+  <h2 class="t">Points and extra lives</h2>
+  <p>Enemies are worth 5, 7, 10, 15, 20, 25, 50 or 100, and the panel shows ten times that: the score is kept in five digits and printed with a 0 after them. An extra life comes each time the panel's ten-thousands digit goes up (<code>extra_life_check</code>, <code>$9CD6</code>), so every 10,000 points, up to nine lives.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="reference/delta-waves.js"></script>

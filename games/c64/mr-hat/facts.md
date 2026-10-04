@@ -9,12 +9,43 @@ Times assume PAL, 50.12 frames a second.
 
 ## Build
 
-No version or build string was found. The image is a freezer backup of
-the game on its title screen (`orientation.md`); the game's own BASIC line
-survives at `$0801`: `10 SYS 2157` and the text `SYSTEM EDITOR<<<E **`
-(`$0810`). Chiola's earlier game Lupenio (SIPE, 1988) left text and dead
-code in the image ("Leftovers", below), and a copy of the Supermon
-machine-code monitor sits at `$97ED`-`$9FFF`.
+No version or build string was found. The image is the game as *Commodore
+64 Club* issue 14 shipped it on side B of its disk (`orientation.md`): a
+freezer backup of the game on its title screen, loaded by a fast loader.
+The tape image `mrhat.t64`, which the contributor took from the GameBase
+collection, holds the same file byte for byte. The
+game's own BASIC line survives at `$0801`: `10 SYS 2157` and the text
+`SYSTEM EDITOR<<<E **` (`$0810`). Chiola's earlier game Lupenio (SIPE,
+1988) left text and dead code in the image ("Leftovers", below), and a
+copy of the Supermon machine-code monitor sits at `$97ED`-`$9FFF`.
+
+## Versions
+
+Three copies were compared, each started in VICE and stopped at the
+game's first instruction (`work/versions/bootcmp.py`), memory read whole.
+
+- **The disk** (`work/original.d64`, issue 14) and **the tape image**
+  (`mrhat.t64`, the contributor's copy from the GameBase collection): the same file, and the same RAM, all 65,536 bytes, at
+  `$1773`.
+- **A fixed version by botowrap** (`work/boto.prg`, 20,548 bytes with
+  its load address, `$0801`-`$5842`, `SYS 2061`): a packed file that unpacks the game and
+  enters it cold at `$086D`, the game's own entry, instead of resuming a
+  frozen title. Against the disk's game restarted at `$086D` the same way
+  and stopped at `$1773` (`work/versions/d64-restart.vsf`), the game's
+  memory differs in these places only, and no instruction differs:
+  - the title font, `$CE48`-`$CE55`: 14 bytes put back ("The title font
+    is damaged in the image", below), and so its copy at `$2848`-`$2855`,
+    which the restart has just made;
+  - the ladder, `gfx_ladder_row` `$4802`-`$4809` and `$4812`-`$4819`: its
+    left and right cells redrawn, the rung cell `$480A`-`$4811` left as it
+    was ("The ladder", below).
+
+  The rest is start-up: zero page, the stack page and the KERNAL's
+  variables and vectors (`$0287`, `$028C`, `$02AF`, `$0304`-`$030B`;
+  `$2D`-`$32` point at `$5843`, the end of botowrap's file), RAM the game
+  never uses under I/O and the KERNAL, and tables at `$0334`-`$03CB` that are already there before
+  the game starts, so belong to the unpacker; no instruction in the game
+  refers to `$0334`-`$03CB`.
 
 ## Memory layout
 
@@ -267,7 +298,62 @@ down to 11; room 10 up its ladder to 8; room 11 up its ladder to 9.
   does not show. Several sit where a colour store or a call belongs (room
   9's door fills `$71CF`, `$794A` and treasure colours `$73CD`-`$73DD`, room
   8's `$666C`, `$66E2`, room 6's `$5EF3`): stores retargeted to switch
-  things off. Who did it, author or cracker, is unknown.
+  things off. Who did it is unknown; they are in the image the magazine
+  shipped.
+
+- **The title font is damaged in the image.** The title set-up `$CDC0`
+  copies the font `$CE00`-`$CFFF` to `$2800` every time the title is set
+  up. In the image as shipped, 14 bytes of the source, `$CE48`-`$CE55`
+  (the top halves of glyph 9, I, and of glyph 10, J, but its last two
+  rows), hold `48 3C 32 26 2B 23 27 20 3F 36 51 22 22 22`, which is not a
+  letter, while the copy at `$2800` still holds the glyphs
+  (`00 00 3C 34 3C 18 18 18 00 00 07 05 07 07`): the copy was made before
+  the damage, and the freezer saved both. So the first title is right,
+  and every title after a game over (`$4475`), or after a cold start at
+  `$086D` (which reaches `$CDC0` through `$0876`, `$16A3` and `$16D5`),
+  copies the damaged bytes and
+  draws the top halves of I and J as noise ("WITH", "SNAILY", "KNIFFY";
+  the title's screen codes `$C000`-`$C058` use I but not J). The end
+  message is drawn by the same set-up (`$BFA8`, text at `$B7D8`), so it
+  always shows all four I's of "FINISHED" and "MISSION" broken
+  (`reference/end-screen.png`). These are the only bytes in which source and
+  copy differ. Nothing in the game writes them: no instruction stores to
+  `$CE00`-`$CFFF` directly or through an index (`kit/c64/opcodes.py
+  --refs`, reach 255); the indirect stores (`($FE),Y`, `($24),Y`) only
+  ever get pointer high bytes of `$04`-`$06`, `$20`-`$37`, `$A0` and
+  `$D8`, and the other pointers are Supermon's; the immediate loads of
+  `$CE` are opcode bytes (`DEC`) written into self-modifying code; and the
+  byte pattern appears nowhere else in memory. Where it came from is unknown. *live*, both
+  ways (`work/versions/gotest.py`, store checkpoint on `$CE00`-`$CEFF`
+  from the title through a whole game to the next title): in the disk's
+  copy no store hit the font and the next title showed the broken
+  letters (`reference/title-after-game-over.png`); in botowrap's version,
+  whose `$CE48`-`$CE55` equal the clean copy at `$2848`, the same run
+  ended on a clean title. *live*: the disk's game restarted at `$086D`
+  showed the broken I on its very first title
+  (`work/versions/d64-restart.png`); its memory at `$1773` differs from the
+  frozen image only in `$2848`-`$2855` and the music counter `$C436`.
+- **The ladder.** `gfx_ladder_row` (`$4802`, 24 bytes, three cells) is
+  the one row the ladders of rooms 2, 3, 5, 6, 8, 9, 10 and 11 are made of. Room 3 (`$47DE`, 13
+  rows) and room 2 (`$4E7A`, 17 rows) copy it down the bitmap themselves;
+  rooms 5, 6, 8, 9, 10 and 11 aim the shared copy `$5713`'s operand
+  (`$5718`/`$5719`) at it and call it (`$57B3` and `$57D0`, `$5E83`,
+  `$664B`, `$719F`, `$8354`, `$854D`). Room 6's snapshot shows the bytes in
+  19 rows. In the image the side cells are irregular from
+  row to row (left `A8 1A 1A 1A 7A 1A 1A AA`, right
+  `1A A8 1A 18 AE A8 A8 12`), which draws ragged rails with stray pixels
+  (`reference/ladder-original-and-botowrap.png`: room 3 in VICE, left as
+  the game draws it, right with botowrap's bytes put into the bitmap).
+  Botowrap's version has three straight rails a side, with the rung
+  carried into them (left `54 54 54 54 57 54 54 54`, right
+  `2A 2A 2A 2A EA 2A 2A 2A`). That pattern is nowhere in the original's
+  memory, so it is a redraw, not something restored from the game.
+  Whether the original's ladder was damaged like the font or drawn that
+  way is open: the damage would have had to spare the 8 bytes between
+  the two cells, and nothing in the game writes `$4802`-`$4819` (two
+  direct reads and the seven through `$5713`'s patched operand, which
+  `opcodes.py --refs` does not see); *live*, no store hit it through a
+  whole game in either version.
 
 ## Guardians
 
@@ -438,6 +524,17 @@ STAGE are bitmap graphics, not text; the end message is at `$B7D8`.
 
 ## Live tests
 
+- `work/versions/bootcmp.py <image> <name>`: power-cycle, autostart one
+  of the three copies, stop at `$1773` or `$086D`, save RAM and a
+  snapshot (4 October 2026).
+- `work/versions/gotest.py <snapshot> <name>`: from the title, start a
+  game, play it out with seeded random stick input until the title set-up
+  `$CDC0` runs again, with store checkpoints on `$CE00`-`$CEFF` and
+  `$4802`-`$4819`; prints the font and ladder bytes and saves a
+  screenshot. If no game over comes in 240 seconds it ends the game by
+  poking `$D8` = `$40`; both runs lost every life before that. Disk copy:
+  no store, broken letters; botowrap's: no store, clean letters (4
+  October 2026).
 - `work/track.py`: Mr Hat's sprite per frame under scripted input (walk,
   jump, stick up).
 - `work/pages.py handover ...`: one non-stopping execute checkpoint per

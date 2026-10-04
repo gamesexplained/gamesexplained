@@ -5,7 +5,7 @@ description: Turn traced claims into verified facts. Test cheaply testable claim
 
 # Verify before publishing
 
-Start the clock: `python3 kit/scripts/clock.py start 60-verify --model <your model id> games/<platform>/<slug>`. No figure yet. Both retros to 19 September 2026 name single features that ate more time here than whole steps did; when one does, say which in the stop note.
+Record your model id in `game.json` under `step_models`, as `"60-verify": ["<your model id>"]`, the same way as for `50-coverage`.
 
 Most serious errors come from trusting an absence, or from a claim that
 sounded right and was never tested.
@@ -25,7 +25,9 @@ or aliasing could hide it. A negative result is a claim about your search,
 not about the binary. Prefer "unknown" to a plausible guess. Before saying
 that nothing reads or writes an address, search with every opcode and
 every index that can reach it: on the C64,
-`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`.
+`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`; on
+the ZX Spectrum, `python3 kit/spectrum/codemap.py <game> <snapshot> --refs
+<address>`, which also lists where the address is stored as a word.
 
 "Unreachable" is a negative result too. A search over a model of the
 movement rules finds only what the model allows, and a model re-derived
@@ -55,12 +57,18 @@ The comments in the listing are claims too, and an annotation agent's
 are rarely all right. Draw a random sample of about 60 (a fixed seed,
 spread over every agent's range) and have an agent that wrote none of
 them check each against the bytes; the error rate with its interval goes
-in `facts.md` or the pull request. One run measured 25 % of its comments
+in `facts.md`. One run measured 25 % of its comments
 with a wrong detail (callers, rooms and counts, almost never what a
 routine does); a full pass by fresh agents, each correcting its own range
 and listing callers from the decoded listing rather than from a byte
 search, brought a second, independent sample to 3 %. If the first sample
 is bad, audit the whole listing before the page is published.
+
+What the repository keeps is the result: one paragraph in `facts.md`
+naming the seed, the population and the sample's size, how many comments
+were wrong, what was wrong with them and what was changed, and the
+interval. The draw, the verdict on each comment and the checker's notes
+are the working record, and stay in `work/reports/`.
 
 ## What a test lets through
 
@@ -201,6 +209,25 @@ is decided by the routine that takes it. Read that routine before
 writing what the values mean: it may subtract one, use the value as an
 offset, or treat one value as a different command. The callers alone
 read as the answer and can be off by one throughout.
+
+## What the repository keeps
+
+A check is done to change what the page and `facts.md` say, and that
+change is what a reader and the next agent need. Commit the corrections,
+and a line in `facts.md`'s list of live tests naming what was run and
+what it showed. The scripts and what they print stay in `work/`, with the
+snapshots they read. Code is committed when a page depends on it, such as
+a port behind a Play tab and its tests, or a solver behind a solution,
+each with a README naming the private inputs it needs.
+
+Never commit a copy of what the repository already holds (the listing's
+comments or bytes), an inventory of every routine or every input value, a
+file of verdicts, or an audit report beside `facts.md`; `check_docs.py`
+fails a game folder with Markdown the template does not have. A second
+audit of the same game is a correction to `facts.md`, `symbols.json` and
+the page, not a new file. `reference/` is published as it stands, so it
+holds only what a page shows or loads, and a caption points at the
+listing or at `facts.md`, not at a JSON file.
 
 ## Writing facts.md
 

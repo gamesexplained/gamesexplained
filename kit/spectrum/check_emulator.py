@@ -41,6 +41,7 @@ from zesarux import ZesaruxError, connect, FRAME_TSTATES   # noqa: E402
 
 SNAPDIR = os.path.join(ROOT, "tools", "zesarux-home", "snapshots")
 OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
+RESULT = "spectrum.json"     # the C64's check writes result.json in the same folder, and `status` prints the last one
 WORKAROUNDS = "kit/skills/spectrum/tool-zesarux/workarounds.md"
 
 BASE = 0x8000
@@ -720,7 +721,7 @@ def main():
     passed = sorted({n for n, ok in results if ok} - set(failed))
     summary = {"build": build, "when": time.strftime("%Y-%m-%d %H:%M"), "seconds": round(time.time() - started),
                "passed": passed, "failed": failed}
-    with open(os.path.join(OUT, "result.json"), "w") as f:
+    with open(os.path.join(OUT, RESULT), "w") as f:
         json.dump(summary, f, indent=2)
     print(f"\n=== {len(results) - sum(1 for _, ok in results if not ok)} passed, "
           f"{sum(1 for _, ok in results if not ok)} failed, {summary['seconds']} s")
@@ -729,7 +730,7 @@ def main():
         print(f"read {WORKAROUNDS} for each of these, and only these")
     else:
         print(f"nothing failed; {WORKAROUNDS} does not apply to this build")
-    print(f"written to {os.path.relpath(os.path.join(OUT, 'result.json'), ROOT)}")
+    print(f"written to {os.path.relpath(os.path.join(OUT, RESULT), ROOT)}")
 
 
 if __name__ == "__main__":

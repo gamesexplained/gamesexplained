@@ -49,7 +49,7 @@ The traps, each measured on ZEsarUX 13.0 and written up in
     measurement. Setting an action as well (`let var0=var0+1`) gives a
     second, independent counter the run can act on.
 """
-import json, os, re, socket, sys
+import json, os, re, socket, sys, time
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 10000
@@ -66,14 +66,15 @@ def _read_reply(sock, buf, command=""):
     """The reply text up to (not including) the ZRCP prompt line.
 
     A reply ends with a line ending in `> `, whether that is `command> ` or
-    `command@cpu-step> `. Returns (text, leftover); the leftover is empty in
-    practice because nothing follows the prompt.
+    `command@cpu-step> `. Returns (text, leftover, prompt); the leftover is
+    empty in practice because nothing follows the prompt, and the prompt is
+    how ZEsarUX says whether the machine is stopped.
     """
     while True:
         text = buf.decode("latin-1")
         lines = text.split("\n")
         if lines and PROMPT.match(lines[-1]):
-            return "\n".join(lines[:-1]), b""
+            return "\n".join(lines[:-1]), b"", lines[-1]
         try:
             if hasattr(socket, "TCP_QUICKACK"):
                 # Linux clears QUICKACK after use, so it is re-armed before every read (see connect())
@@ -96,6 +97,7 @@ class Rpc:
         self.sock = sock
         self.host, self.port, self.banner = host, port, banner
         self.buf = b""
+        self.prompt = ""            # the last prompt read: `command@cpu-step> ` while stopped
 
     # -- the wire -----------------------------------------------------------
     def cmd(self, command, *args, timeout=None):
@@ -115,7 +117,7 @@ class Rpc:
         except OSError as e:
             raise ZesaruxError(f"cannot send {line!r}: {e}")
         try:
-            reply, self.buf = _read_reply(self.sock, self.buf, line)
+            reply, self.buf, self.prompt = _read_reply(self.sock, self.buf, line)
         finally:
             self.sock.settimeout(old)
         if "Unknown command" in reply or "No help for that command" in reply:
@@ -128,6 +130,33 @@ class Rpc:
         if reply.strip().startswith("Error"):
             raise ZesaruxError(f"{command}: {reply.strip()}")
         return reply
+
+    BUSY = "Can not enter cpu step mode"
+
+    def entering(self, command, *args, tries=40, wait=0.1):
+        """A command that enters cpu-step itself: `enter-cpu-step`, `snapshot-load`, `smartload`.
+
+        For a moment after the machine has left cpu-step ZEsarUX refuses to enter it
+        again, and the refusal reads `Error. Can not enter cpu step mode. You can try
+        closing the menu` even with no menu anywhere (13.0, `--vo null`; measured 0.7 s on
+        3 October 2026). `snapshot-load` and `smartload` then load nothing. So ask again
+        for up to `tries * wait` seconds, and raise on any refusal that is left: a
+        machine that never stopped, or a load that never happened, must not look like
+        success (`kit/skills/core/60-verify`, "The machine never stopped").
+        """
+        for _ in range(tries):
+            reply = self.cmd(command, *args)
+            if self.BUSY not in reply:
+                break
+            time.sleep(wait)
+        if reply.strip().startswith("Error"):
+            raise ZesaruxError(f"{command}: {reply.strip()}")
+        return reply
+
+    @property
+    def stepping(self):
+        """Whether the last reply's prompt was cpu-step's: the machine is stopped."""
+        return "cpu-step" in self.prompt
 
     def close(self):
         try:
@@ -186,7 +215,10 @@ class Rpc:
 
     # -- phase 2: state management ------------------------------------------
     def enter_step(self):
-        self.cmd("enter-cpu-step")
+        """Stop the machine on an instruction boundary, and know that it stopped."""
+        self.entering("enter-cpu-step")
+        if not self.stepping:
+            raise ZesaruxError(f"enter-cpu-step answered with the prompt {self.prompt!r}: the machine is still running")
 
     def exit_step(self):
         self.cmd("exit-cpu-step")
@@ -224,13 +256,18 @@ class Rpc:
         table armed across the load; `rearm` is belt-and-braces for a build or
         a launch without that flag, and is idempotent.
         """
-        self.strict("snapshot-load", os.path.abspath(path))
+        if not os.path.isfile(path):
+            # ZEsarUX answers a missing file with an empty reply and loads nothing
+            raise ZesaruxError(f"snapshot-load {path}: no such file")
+        self.entering("snapshot-load", os.path.abspath(path))
         if rearm:
             self.bp_enable_all()
         return path
 
     def save_screen(self, path):
         self.strict("save-screen", os.path.abspath(path))
+        if not os.path.exists(path):          # a folder that is not there gets an empty reply too
+            raise ZesaruxError(f"save-screen {path} wrote nothing")
         return path
 
     def smartload(self, path):
@@ -241,7 +278,9 @@ class Rpc:
         leaves it again when the machine was running, so the loader starts by
         itself. A tape plays at real speed — the machine keeps running while this
         returns — so watch the screen (or poll the PC) until the game is up."""
-        return self.cmd("smartload", os.path.abspath(path))
+        if not os.path.isfile(path):
+            raise ZesaruxError(f"smartload {path}: no such file")
+        return self.entering("smartload", os.path.abspath(path))
 
     # -- phase 3: live measurement ------------------------------------------
     def run(self, limit=0, timeout=60.0, stop_on_data=False):
@@ -400,7 +439,7 @@ def connect(host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=30.0):
         # every read; set once here, it lasted a single reply (23 calls a second).
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
     sock.settimeout(timeout)
-    banner, buf = _read_reply(sock, b"", "the connect banner")
+    banner, buf, _ = _read_reply(sock, b"", "the connect banner")
     rpc = Rpc(sock, host, port, banner)
     rpc.buf = buf
     return rpc

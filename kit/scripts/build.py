@@ -17,7 +17,10 @@ Plus a home page with the catalogue and the games most recently added or changed
 (from git history), site/lib/, kit.html (kit/lessons/, newest first),
 status.html (from site/status.html + site/status.json: which kits work on which
 computers, and the work needed) and about.html (from site/about-site.html: who
-runs the site and the principles it follows; static).
+runs the site and the principles it follows; static). And what lets a phone
+install the site as an app: manifest.webmanifest, icons/ (kit/scripts/icons.py
+draws them) and sw.js at the root, with lines in every page's head that point
+at them.
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
 filled from game.json. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
@@ -37,8 +40,16 @@ PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES"
 # its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
 PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap"}
 PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"]}
-# How the footprint blurb names the address space, so the C64 pages keep their copy.
-PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 64 KB"}
+# The addresses the footprint draws, [start, end): all 64 KB, except on a machine whose ROM
+# sits at a fixed place no game can write to. The 48K Spectrum's ROM is $0000-$3FFF
+# (kit/skills/spectrum/zx-spectrum-reference, "Memory map (48K)"), so its map is the 48 KB of RAM.
+PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000)}
+# How the footprint blurb names what it draws, so the C64 pages keep their copy.
+PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM"}
+# The footprint table's names for the machine's own areas, in the same words as the map's
+# legend above it (memmap.js for the C64, spectrum.js for the Spectrum).
+PLATFORM_FOOT_WORDS = {"c64": {"runtime": "Screen, bitmap, colour, stack, I/O", "rom": "ROM the game runs under"},
+                       "spectrum": {"runtime": "Screen, attributes and working memory"}}
 TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
         ("play.html", "Play"), ("about.html", "About")]
 _warned = set()
@@ -139,7 +150,8 @@ def hexint(v):
 
 
 def footprint(gdir, game):
-    """Classify all 65536 bytes. Returns (runs, totals, symbols)."""
+    """Classify every byte the platform's map draws (PLATFORM_MAP_SPAN, else all 65536).
+    Returns (runs, totals, symbols, span)."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from symbols_export import regions as cov_regions, PLATFORM_DEFAULTS, platform_of
     lp = os.path.join(gdir, "listing.json")
@@ -190,33 +202,38 @@ def footprint(gdir, game):
         for a in range(hexint(lo), hexint(hi) + 1):
             if cat[a] != "unused":
                 cat[a] = k; why[a] = name
+    lo, hi = PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000))
+    if lo:   # the ROM is off this map, so RAM that a game.json names after the ROM is working memory
+        cat[lo:hi] = ["runtime" if k == "rom" else k for k in cat[lo:hi]]
     runs, totals = [], {k: 0 for k in CATS}
-    a = 0
-    while a < 0x10000:
+    a = lo
+    while a < hi:
         b = a
-        while b < 0x10000 and cat[b] == cat[a] and why[b] == why[a]:
+        while b < hi and cat[b] == cat[a] and why[b] == why[a]:
             b += 1
         totals[cat[a]] += b - a
         if cat[a] != "unused":
             runs.append([a, b - a, cat[a], why[a]])
         a = b
     symbols = [[e["a"], e["n"]] for e in L["index"] if e["k"] != "branch"]
-    return runs, totals, symbols
+    return runs, totals, symbols, (lo, hi)
 
 
-def footprint_table(totals):
+def footprint_table(totals, plat="c64", span=(0, 0x10000)):
+    names = PLATFORM_FOOT_WORDS.get(plat, PLATFORM_FOOT_WORDS["c64"])
     program = sum(totals[k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
     rows = [("Program", program)] + [(html.escape({"code": "Code", "graphics": "Graphics", "levels": "Level data", "sound": "Sound",
              "text": "Text", "tables": "Tables", "variables": "Variables"}[k]), totals[k]) for k in
              ("code", "graphics", "levels", "sound", "text", "tables", "variables") if totals[k]]
-    rows += [("Screen, bitmap, colour, stack, I/O", totals["runtime"])]
+    rows += [(html.escape(names["runtime"]), totals["runtime"])]
     if totals["rom"]:
-        rows += [("ROM the game runs under", totals["rom"])]
+        rows += [(html.escape(names.get("rom", "ROM")), totals["rom"])]
     rows += [("Unused", totals["unused"])]
-    out = "<div class='tablewrap'><table><tr><th>What</th><th>Bytes</th><th>Of 64 KB</th></tr>"
+    size = span[1] - span[0]
+    out = f"<div class='tablewrap'><table><tr><th>What</th><th>Bytes</th><th>Of {size // 1024} KB</th></tr>"
     for i, (name, n) in enumerate(rows):
         b = "<b>" if i == 0 else ""; e = "</b>" if i == 0 else ""
-        out += f"<tr><td>{b}{name}{e}</td><td>{b}{n:,}{e}</td><td>{b}{100*n/65536:.1f} %{e}</td></tr>"
+        out += f"<tr><td>{b}{name}{e}</td><td>{b}{n:,}{e}</td><td>{b}{100*n/size:.1f} %{e}</td></tr>"
     return out + "</table></div>"
 
 
@@ -657,13 +674,16 @@ def build_game(gdir, out_root):
     links = {k: u for k, u in (game.get("links") or {}).items() if u}   # empty slots from the template are not links
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
-    runs, totals, symbols = footprint(gdir, game)
-    json.dump({"runs": runs, "totals": totals, "symbols": symbols}, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
+    runs, totals, symbols, span = footprint(gdir, game)
+    memmap = {"runs": runs, "totals": totals, "symbols": symbols}
+    if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
+        memmap.update(base=span[0], size=span[1] - span[0])
+    json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
     game["_totals"] = totals
     about_template = os.path.join(gdir, "about-layout.html")
     if not os.path.isfile(about_template):
         about_template = os.path.join(SITE, "about.html")
-    about = fill(read(about_template), **common, footprint=footprint_table(totals),
+    about = fill(read(about_template), **common, footprint=footprint_table(totals, plat, span), map_row=(span[1] - span[0]) // 128,
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=f"{game.get('coverage_percent') or 0:g} %",
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
@@ -702,12 +722,17 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js")
 
 
+def lib_versions(out_root):
+    """{lib file: the first 8 hex digits of its SHA-1}, for the lib files the build versions."""
+    import hashlib
+    return {f: hashlib.sha1(open(os.path.join(out_root, "lib", f), "rb").read()).hexdigest()[:8]
+            for f in LIB_FILES if os.path.isfile(os.path.join(out_root, "lib", f))}
+
+
 def version_lib(out_root):
     """Append ?v=<content hash> to every reference to a lib file, so a redeploy is never
     paired with a stylesheet or script the browser cached from the previous one."""
-    import hashlib
-    ver = {f: hashlib.sha1(open(os.path.join(out_root, "lib", f), "rb").read()).hexdigest()[:8]
-           for f in LIB_FILES if os.path.isfile(os.path.join(out_root, "lib", f))}
+    ver = lib_versions(out_root)
     pat = re.compile(r'(lib/(' + "|".join(re.escape(f) for f in ver) + r'))(["\'])')
     n = 0
     for d, _, files in os.walk(out_root):
@@ -718,6 +743,47 @@ def version_lib(out_root):
                 if new != page:
                     open(p, "w", encoding="utf-8").write(new); n += 1
     return n
+
+
+PWA_HEAD = """<link rel="manifest" href="{root}manifest.webmanifest">
+<meta name="theme-color" content="#23262d">
+<link rel="icon" href="{root}icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="icon" href="{root}icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{root}icons/apple-touch-icon.png">
+<script>
+if ("serviceWorker" in navigator && (location.hostname === "{domain}" || location.hostname === "www.{domain}"))
+  addEventListener("load", function () { navigator.serviceWorker.register("{root}sw.js"); });
+</script>
+"""
+
+
+def add_pwa(out_root):
+    """Make the site installable as an app: the manifest, the icons and the service worker at
+    the root, and the lines in every page's head that point at them, relative to the page.
+
+    The service worker sits at the root because it can only answer for pages at or below its
+    own folder. It goes to the network first (site/sw.js), so a deploy shows at once. Its
+    list of files to save on install names the lib files by their hashes, so the worker's
+    bytes change when a lib file does, and that is what makes browsers install the new one.
+    Pages register it only on the live domain: on a preview it would stay in the browser and
+    answer for whatever is served on that port next, the page editor included."""
+    shutil.copytree(os.path.join(SITE, "icons"), os.path.join(out_root, "icons"))
+    shutil.copy(os.path.join(SITE, "manifest.webmanifest"), out_root)
+    pre = ["./", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png"]
+    pre += [f"lib/{f}?v={v}" for f, v in lib_versions(out_root).items()]
+    open(os.path.join(out_root, "sw.js"), "w").write(fill(read(os.path.join(SITE, "sw.js")), precache=json.dumps(pre)))
+    domain = json.load(open(os.path.join(SITE, "config.json")))["domain"]
+    for d, _, files in os.walk(out_root):
+        for f in files:
+            if f.endswith(".html"):
+                p = os.path.join(d, f); page = open(p, encoding="utf-8").read()
+                if 'rel="manifest"' in page:
+                    continue
+                up = os.path.relpath(out_root, d).replace(os.sep, "/")
+                head = PWA_HEAD.replace("{root}", "" if up == "." else up + "/").replace("{domain}", domain)
+                marker = '<meta charset="utf-8">'
+                page = page.replace(marker, marker + "\n" + head, 1) if marker in page else head + page
+                open(p, "w", encoding="utf-8").write(page)
 
 
 def add_analytics(out_root):
@@ -740,32 +806,6 @@ def add_analytics(out_root):
                 page = page.replace(marker, marker + "\n" + snippet, 1) if marker in page else snippet + page
                 open(p, "w", encoding="utf-8").write(page); n += 1
     return n
-
-
-def runs_table(games):
-    """Every game with a timings.json, one row each: the figures a run can try to beat."""
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from clock import summarize
-    rows = []
-    for g in games:
-        gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
-        if not os.path.isfile(os.path.join(gdir, "timings.json")) or g.get("imported"):
-            continue    # an imported analysis's hours leave out the work it started from
-        S = summarize(gdir)
-        program = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
-        fmt = lambda v, unit="": (f"{v:g}{unit}" if v is not None else "")
-        rows.append(f'<tr><td><a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a></td>'
-                    f'<td>{program // 1024} KB</td><td>{html.escape(tier_name(g.get("tier", "none")))}</td><td>{fmt(S["hours"])}</td>'
-                    f'<td>{fmt(S["minutes_to_play"])}</td><td>{fmt(S["min_per_kb"])}</td><td>{fmt(S["agents"])}</td>'
-                    f'<td>{html.escape(", ".join(S["models"]))}</td></tr>')
-    if not rows:
-        return ""
-    return ('<h2>Runs</h2><p>How long each run took, in figures that carry across games and machines: '
-            'hours of work in total, minutes from boot to steady-state play, and minutes of the coverage step per kilobyte '
-            'the ledger tracks, each beside the model that took it. Every run starts the clock at each step; the retro reports it. '
-            'These are the numbers to beat.</p>'
-            '<div class="tablewrap"><table><tr><th>Game</th><th>Program</th><th>Tier</th><th>Hours</th><th>To play (min)</th>'
-            '<th>Coverage (min/KB)</th><th>Agents</th><th>Model</th></tr>' + "".join(rows) + '</table></div>')
 
 
 PROGRAM = ("code", "graphics", "levels", "sound", "text", "tables", "variables")
@@ -1151,7 +1191,7 @@ def main():
                 recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
     # what the kit learned, game by game
-    log = markdown(lessons(), drop_h1=False, addr=False) + runs_table(games)
+    log = markdown(lessons(), drop_h1=False, addr=False)
     page = fill(read(os.path.join(SITE, "page.html")), site_title="How the kit has changed", lib="lib", body=log,
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "kit.html"), "w").write(page)
@@ -1163,6 +1203,7 @@ def main():
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
     version_lib(out_root)
+    add_pwa(out_root)
     tagged = add_analytics(out_root)
     bad = broken_links(out_root)
     for page, url in bad:

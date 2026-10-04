@@ -78,24 +78,24 @@ The lessons, told once: `kit/lessons/2026-10-02-mr-hat.md`.
   on a copy of the page that clicks every control and reports). The skill
   could name that fallback.
 
+## After the merge: three copies compared (4 October 2026)
+
+- `40-sweep`, "Twin-copy check": a source and its copy that differ where
+  no instruction can write mean damage from outside the game; the copy
+  made earlier is the right one. Mr. Hat's title font differs from its
+  copy in 14 bytes, which is the broken I after a game over; the run had
+  excluded the copy as output and never compared them.
+- `tool-regen2000`: the saved project is not kept up to date. Restarted
+  on it after the full audit, the disassembler held the comments from
+  before it (275 differ), and an export would have undone the audit.
+  Start each later session from `symbols_import.py`, or compare the
+  comments with `symbols.json` before the first write.
+
 ## Maintainer asks
 
-- **`clock.py` should be able to leave out a wait.** The account's usage
-  limits stopped all nine annotation agents twice; the coverage step's
-  wall clock (2,513 minutes) is mostly waiting for limits to reset, about
-  two hours of it work. A `clock.py pause`/`resume`, or a `--wait N` on
-  `stop`, would keep step times comparable across runs:
-  `kit/scripts/clock.py` and the `50-coverage` skill.
-- **`.mcp.json` cannot follow `KIT_VICE_PORT`.** It names 6510. Claude
-  Code expands `${VAR:-default}` in `.mcp.json`, so
-  `"url": "http://127.0.0.1:${KIT_VICE_PORT:-6510}/mcp"` might do, or
-  `tools.py vice` could write the file; `kit/c64/vice.py` works either way.
-- **`check-emulator`'s `warp` check failed on a Linux desktop under
-  `xvfb-run`.** On Ubuntu 24.04 with the v3.13.1 release, warp gave 78
-  passes a second against 51 without (the check wants over 100), though
-  container runs under `xvfb-run` pass it, so the cause is unknown.
-  Nothing in the workflow needs warp; perhaps a warning rather than a
-  failure, in `kit/c64/check_emulator.py`.
+- #174: `clock.py` should be able to leave out a wait (the coverage step's 2,513 minutes were mostly usage-limit waits)
+- #175: `.mcp.json` cannot follow `KIT_VICE_PORT`
+- #176: `check-emulator`'s `warp` check failed on a Linux desktop under `xvfb-run`
 
 ## What took longest
 
@@ -116,8 +116,9 @@ most of it the disassembler's compile and waiting for the contributor's
 `apt-get`. Of the coverage step's 2,513 minutes, the agents worked for
 roughly two hours in all; the rest was waiting for usage limits to
 reset. The live tests of the verify step were mostly done during
-coverage, while the agents worked, so `60-verify`'s two minutes understate
-it. The research subagent ran on the Agent tool's `sonnet` alias, for web
+coverage, while the agents worked, so the first `60-verify` session took
+two minutes and understates it; the 643 in the table are mostly the
+work after the maintainer's review. The research subagent ran on the Agent tool's `sonnet` alias, for web
 sources only.
 
 The work added after the retrospective on 2 October (the in-play tunes,

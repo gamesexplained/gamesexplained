@@ -1,0 +1,185 @@
+{
+ "schema": 1,
+ "platform": "spectrum",
+ "slug": "fat-worm-blows-a-sparky",
+ "title": "Fat Worm Blows a Sparky",
+ "year": 1986,
+ "publisher": "Durell Software Ltd",
+ "developer": "Julian G. Todd",
+ "title_image": "reference/02-loading-ours.png",
+ "build": "original Durell Software release, a tape image made with Ramsoft MakeTZX; a BASIC program loads a 190-byte turbo loader to $FAF2, which loads 49,000 bytes to $4000-$FF67 and returns to $EFD8",
+ "tier": "silver",
+ "coverage_percent": 100.0,
+ "verification": {
+  "by": "air",
+  "model": "claude-fable-5-1",
+  "date": "2026-10-03",
+  "checked": 39,
+  "wrong": 0,
+  "note": "the checker's own sample: 20 claims from facts.md (the nine marked live repeated live in the emulator), 10 names from symbols.json and 9 orientation facts, each traced in the bytes or run in a Z80 simulator; and, separately, a fixed-seed sample of 60 listing comments checked clause by clause with none wrong",
+  "failed": [
+   {
+    "model": "deepseek-flash",
+    "date": "2026-10-01",
+    "checked": 39,
+    "wrong": 18,
+    "note": "the first pass: 20 claims from facts.md, 10 names from symbols.json and the orientation facts, checked statically from listing.json; coverage and verify were then redone on claude-opus-5-5"
+   }
+  ]
+ },
+ "copy": "agent-draft",
+ "steward": "",
+ "credits": [
+  {
+   "by": "Julian G. Todd",
+   "role": "design and programming"
+  },
+  {
+   "by": "Tim Hayward",
+   "role": "contributor (Spectrum Computing lists him; his role there is unstated)"
+  }
+ ],
+ "tools": {
+  "emulator": "release ZEsarUX-13.0, ZEsarUX_macos-silicon-13.0.dmg; check-emulator 41 of 45 on 3 October 2026 (each of the four failures has a workaround in kit/skills/spectrum/tool-zesarux)",
+  "disassembler": "SkoolKit 10.1 (control file, snapshot tools, and its Z80 simulator through kit/spectrum/simulate.py)",
+  "host": "macOS arm64 (darwin 25.5.0), Apple silicon",
+  "python": "3.9.6",
+  "node": "24.21.0, for the page's tests"
+ },
+ "model": "claude-opus-5-5 (Claude Code: coverage, verify, minisite and retro, with nine annotation subagents on the same model and three checking subagents on claude-fable-5-1); deepseek-flash (Pi: orient, features, text, sweep, and a first coverage and verify that a maintainer's check refuted)",
+ "step_models": {"50-coverage": ["deepseek-flash", "claude-opus-5-5"], "60-verify": ["deepseek-flash", "claude-opus-5-5"]},
+ "kit_version": "0.0.69",
+ "created": "2026-09-29",
+ "video": {
+  "screen": "$4000",
+  "charset": ""
+ },
+ "coverage": {
+  "exclude": [
+   [
+    "$EC6B",
+    "$EFD7",
+    "empty on the tape: the display list and the stack grow into it in play"
+   ],
+   [
+    "$EFF9",
+    "$EFFF",
+    "the stack"
+   ],
+   [
+    "$F900",
+    "$FA23",
+    "empty on the tape: part of the frame buffer in play"
+   ],
+   [
+    "$FA67",
+    "$FF67",
+    "the tape utility's copy of the ROM's cassette routines and the top of BASIC's memory: not the game's, never run by it, and not listed because it is the machine's ROM"
+   ],
+   [
+    "$FF68",
+    "$FFFF",
+    "not loaded from the tape"
+   ]
+  ],
+  "extra": [],
+  "include": []
+ },
+ "io": [],
+ "regions": [
+  [
+   "$6432",
+   "$6463",
+   "variables",
+   "the live grid: the 5 by 5 cells round the worm"
+  ],
+  [
+   "$6464",
+   "$757B",
+   "levels",
+   "the board: 129 cells, each four link words and a list of 7-byte items"
+  ],
+  [
+   "$7951",
+   "$7A04",
+   "levels",
+   "six object records copied into play every 512 passes"
+  ],
+  [
+   "$7C71",
+   "$7C91",
+   "variables",
+   "the object list's count, end pointer and first record"
+  ],
+  [
+   "$7F43",
+   "$80CA",
+   "variables",
+   "the worm's sections, its head, the fills' working words, counters and flags"
+  ],
+  [
+   "$BAAE",
+   "$BB05",
+   "graphics",
+   "the hand of the ending, as two scripts of four-sided shapes"
+  ],
+  [
+   "$BFBD",
+   "$CC0A",
+   "graphics",
+   "pictures: sparks and discs in twenty sizes, explosions, legs, the disk, the Sputnik, the small Crawly, spindles"
+  ],
+  [
+   "$CC0B",
+   "$CCCA",
+   "variables",
+   "the counter display's two pictures, built in play"
+  ],
+  [
+   "$CCCB",
+   "$CE05",
+   "graphics",
+   "seven-segment masks and strokes, and ten digits for the panel"
+  ],
+  [
+   "$D046",
+   "$D05D",
+   "variables",
+   "the halt screen's ball"
+  ],
+  [
+   "$D3EA",
+   "$D429",
+   "graphics",
+   "eight tiles for the halt screen"
+  ],
+  [
+   "$E4AE",
+   "$E4F6",
+   "sound",
+   "the sound list's pointer and counter, and six lists of click dividers"
+  ],
+  [
+   "$E5CC",
+   "$E69E",
+   "sound",
+   "the tune: twelve pitch pairs, ten script addresses, ten scripts"
+  ],
+  [
+   "$EB7E",
+   "$EB9B",
+   "variables",
+   "the display list's head and a leftover record"
+  ],
+  [
+   "$F000",
+   "$F8FF",
+   "graphics",
+   "the bottom panel's picture, copied to the screen once"
+  ]
+ ],
+ "links": {
+  "wiki": "https://en.wikipedia.org/wiki/Fat_Worm_Blows_a_Sparky",
+  "manual": "https://worldofspectrum.net/pub/sinclair/games-info/f/FatWormBlowsASparky.txt"
+ }
+}

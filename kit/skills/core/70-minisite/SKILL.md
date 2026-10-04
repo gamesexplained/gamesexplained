@@ -5,8 +5,6 @@ description: Build the game's minisite. The "How it works" page (index.html) fro
 
 # The minisite
 
-Start the clock: `python3 kit/scripts/clock.py start 70-minisite --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
-
 The minisite is the deliverable: a small site that explains the game, where
 the writing is the spine but anything that explains the game can live
 (widgets, level browsers, tune players, even a full JavaScript port of the
@@ -197,6 +195,16 @@ can open with that instead.
   the snapshots.
   Porting is work that splits well across agents: one mechanic each, each
   with its own trace and its own files.
+  **Sweep the whole input space, not a few plausible values.** A port that
+  is right on the game's own numbers can still be wrong at the edges of the
+  arithmetic. Run the routine and the port over every boundary value of each
+  input register, plus a few hundred random ones, and say in the caption how
+  many cases there were. One port of a shift-and-add masked its accumulator
+  to 16 bits *before* taking the carry out of the top for the routine's
+  final fold, so the carry was always zero: it agreed with the game on the
+  page's own inputs and returned 29 where the routine returns 285. A sweep
+  of 789 cases found it in one run; reading the two implementations side by
+  side had not.
 - **Draw from the memory the game draws from.** A renderer fed from the
   listing reads the hand-over image, and a game that swaps character
   shapes per area or per level has different glyphs there than in play:
@@ -294,9 +302,7 @@ This is a first-class part of the minisite, not an extra: a reader who
 can play the game while reading how it works understands it better than
 one who only reads. The page's mechanic widgets are usually the seed.
 Omit the tab only if there is genuinely nothing playable to put on it.
-No tier requires the Play tab, so it never blocks Silver or Gold. A Play
-tab added to a game after its run is timed as its own step:
-`clock.py start play`.
+No tier requires the Play tab, so it never blocks Silver or Gold.
 
 Before you start one, read `play.md` beside this file: how to check the
 port against the game's own demonstration, or against the game's code in

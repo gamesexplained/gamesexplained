@@ -5,8 +5,6 @@ description: Cheap mechanical sweeps that convert large regions from unknown to 
 
 # Sweeps that find what code-reading misses
 
-Start the clock: `python3 kit/scripts/clock.py start 40-sweep --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
-
 All of them are cheap and mechanical. Run them from the snapshot's RAM image
 directly (Python over the file) or through the disassembler.
 
@@ -35,7 +33,12 @@ credits in seconds. If the game has a custom character set, follow with
 Relocating loaders can leave a second copy of code or tables in memory.
 Before describing a region, check whether the code reads it or reads a
 twin elsewhere: compare the two byte for byte. A byte that differs is
-usually a variable written at run time. Describe the copy the code reads
+usually a variable written at run time. When no instruction can write the bytes
+that differ (`opcodes.py --refs`, and no pointer built to them), they
+were changed from outside the game, often before a freezer saved it.
+Then the copy made earlier is the right one, and the next time the game
+copies again the damage reaches the screen: a bug the player sees, worth
+running live. Describe the copy the code reads
 and mark the other as an unread duplicate.
 
 ## A documented version on another machine
@@ -121,9 +124,7 @@ maker is unknown is in the position of a run on an unproven model.
 
    `models.py check` holds a Silver game with an import to a maintainer's
    check (`kit/CHECKING.md`) unless every model named there is proven;
-   `none` and `unknown` never are. Clock only the steps this run does. An imported
-   game stays off the site's runs table, since its hours leave out the
-   analysis they started from.
+   `none` and `unknown` never are.
 
 The analysis file itself is not committed: `symbols.json` and the
 listing carry its names, comments and bytes, and its hash in `game.json`
