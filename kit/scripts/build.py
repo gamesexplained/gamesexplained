@@ -686,19 +686,21 @@ def part_pills(P, cur):
 
 
 def part_step(P, cur):
-    """The control beside a listing: the part before, a list of them all, the part after.
-    The same three pieces, in the same markup, are what a levels page steps through rooms
-    with (site.css, .pick)."""
+    """The control beside a listing: the part before, a list of the parts that have a listing,
+    the part after. Nothing when this is the only one: there is nowhere to step to, and the
+    parts not analysed are named above the listing, or counted there. The same three pieces,
+    in the same markup, are what a levels page steps through rooms with (site.css, .pick)."""
     shown = [p for p in P if listed(p)]
+    if len(shown) < 2:
+        return ""
     i = shown.index(cur)
     def arrow(p, ch, rel, word):
         if p is None:
             return f'<span class="step off" aria-hidden="true">{ch}</span>'
         return (f'<a class="step" rel="{rel}" href="{part_page(p)}" title="{html.escape(p["title"])}" '
                 f'aria-label="{word} part: {html.escape(p["title"])}">{ch}</a>')
-    opts = "".join(
-        f'<option value="{part_page(p)}"{" selected" if p is cur else ""}>{html.escape(p["title"])}</option>' if listed(p)
-        else f'<option disabled>{html.escape(p["title"])} (not analysed)</option>' for p in P)
+    opts = "".join(f'<option value="{part_page(p)}"{" selected" if p is cur else ""}>{html.escape(p["title"])}</option>'
+                   for p in shown)
     return ('<div class="pick">' + arrow(shown[i - 1] if i else None, "\u2039", "prev", "Previous")
             + f'<select data-go aria-label="Part of the game">{opts}</select>'
             + arrow(shown[i + 1] if i + 1 < len(shown) else None, "\u203a", "next", "Next") + "</div>")
@@ -722,8 +724,13 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats):
             note = (f'<p class="mute">{html.escape(p["title"])} is loaded over {html.escape(" and ".join(q["title"] for q in beneath))}. '
                     "The listing shows them together, as the machine holds them; the rows of this part are marked.</p>")
         pills = part_pills(P, p)
+        if len(shown) == len(P):
+            each = "Each part has a listing of its own" + ("." if pills else ", chosen from the list beside it.")
+        else:       # say how many, where the row of parts is too long to show which
+            each = (f"{len(shown)} of them {'has' if len(shown) == 1 else 'have'} a listing"
+                    + ("." if pills or len(shown) < 2 else ", chosen from the list beside it."))
         lead = (f'<p class="mute">This game is in {len(P)} parts, and the same addresses hold something else in each. '
-                "Each part has a listing of its own" + ("." if pills else ", chosen from the list beside it.") + "</p>")
+                + each + "</p>")
         info = {"id": p["id"], "title": p["title"], "listing": f"parts/{p['id']}/listing.json",
                 "under": [{"id": q["id"], "title": q["title"], "listing": f"parts/{q['id']}/listing.json"} for q in beneath]}
         src = tpl.replace("<!-- facts -->", facts + whole)
@@ -776,7 +783,7 @@ def game_footprint(P, out, plat):
             said += f"The other {len(apart) if len(apart) > 1 else 'part'}{' are' if len(apart) > 1 else ' is'} not on this map. "
     else:
         said = f"This game is in {len(P)} parts, and the map is of one of them: {name}. "
-    said += f'The <a href="{part_page(root)}">Source tab</a> has every part\u2019s listing.'
+    said += f'The <a href="{part_page(root)}">Source tab</a> has the listing of each part that has one.'
     return totals, footprint_table(t, plat, span) + f'<p class="mute">{said}</p>', span
 
 

@@ -13,13 +13,15 @@ small game folder, and the folder says everything about the part. No file
 lists the parts: a game has the parts it has folders for, so two people
 adding two parts never write the same file.
 
-  part.json      what the part is: "title", as the page names it; "order",
+  part.json      all a part needs to exist. What the part is: "title", as the page names it; "order",
                  a number, its place among the parts as they are played;
                  "over", the id of the part it lies over, when it does, and
                  then "ranges"; and what the scripts read for one image:
                  "video", "coverage", "io", "regions"
   symbols.json, listing.json, facts.md, and a gitignored work/ with the
-  part's snapshots (work/entry.<ext> is the hand-over, as for any game)
+  part's snapshots (work/entry.<ext> is the hand-over, as for any game):
+  these come with the work on the part. A part nobody has opened is its
+  part.json alone, and shows as not analysed.
 
 Every script that takes a <game dir> takes a part's folder in its place:
 symbols_export.py, symbols_import.py, listing.py, coverage.py,
@@ -39,8 +41,8 @@ address space of its own.
 Usage:
   parts.py <game dir>                  list the parts, with each one's coverage
   parts.py add <game dir> <id> [--title "..."] [--over <id>] [--adopt]
-                                       add a part, after the ones there are: its folder.
-                                       To move it, change "order" in its part.json.
+                                       add a part, after the ones there are: its folder,
+                                       with its part.json. To move it, change "order" there.
                                        --adopt makes the game folder's own symbols.json,
                                        listing.json, facts.md and ledger settings this
                                        part's, for a game that turned out to have more
@@ -195,7 +197,8 @@ def seed(gdir):
     and, where it lies over other parts, theirs for the addresses it does not own, so that the
     code it calls and the variables it shares are named."""
     game = load_game(gdir)
-    sym = json.load(open(os.path.join(gdir, "symbols.json")))
+    f = os.path.join(gdir, "symbols.json")     # none for a part that has only been named
+    sym = json.load(open(f)) if os.path.isfile(f) else {"blocks": [], "symbols": [], "comments": []}
     top, pid = home(gdir)
     if pid is None:
         return game, sym
@@ -277,7 +280,7 @@ def add(gdir, pid, title=None, over=None, adopt=False):
                  "Make it this part's with --adopt, or add the part it describes first, with --adopt.")
     if adopt and not has:
         sys.exit(f"--adopt: {gdir} has no symbol map of its own to adopt")
-    os.makedirs(os.path.join(d, "work"))
+    os.makedirs(d)
     name = title or pid.replace("-", " ").capitalize()
     part = {"title": name, "order": max([p["order"] for p in P] + [0]) + 1}
     if over:
@@ -303,21 +306,10 @@ def add(gdir, pid, title=None, over=None, adopt=False):
     else:
         if "symbols.json" in own:   # the empty symbol map new_game.py wrote: the parts hold them
             os.remove(os.path.join(gdir, "symbols.json"))
-        with open(os.path.join(d, "symbols.json"), "w") as f:
-            json.dump({"schema": 1, "platform": game.get("platform"), "game": game.get("slug"), "part": pid,
-                       "build": game.get("build"), "source": "parts.py", "blocks": [], "symbols": [], "comments": []},
-                      f, indent=1)
-        with open(os.path.join(d, "facts.md"), "w") as f:
-            f.write(f"# {game.get('title') or game.get('slug')}: {name} — verified technical facts\n\n"
-                    "What is true of this part alone. An address here is an address in this part.\n")
+    # A part that is only named is this one file. Its symbol map, its facts and its work/ come
+    # with the work on it, so a game can name forty parts it has not opened without forty stubs.
     with open(os.path.join(d, "part.json"), "w") as f:
         json.dump(part, f, indent=2)
-    with open(os.path.join(d, "work", "README.md"), "w") as f:
-        f.write("# work/\n\nGitignored, like the game's own `work/`: this part's snapshots, its disassembler\n"
-                "project and its annotation log. Nothing in this folder is ever committed or uploaded.\n\n"
-                "To rebuild it from your own copy of the game, follow the route to this part in the\n"
-                "game's `orientation.md`, then\n"
-                "`python3 kit/scripts/symbols_import.py <this part's folder> <your snapshot>`.\n")
     print(f"added {os.path.relpath(d)}" + (f", over {over}" if over else "")
           + (": the game's own symbol map, listing, facts and ledger settings are this part's now" if adopt else ""))
     if stale:

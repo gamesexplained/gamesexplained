@@ -215,6 +215,8 @@ class Parts(unittest.TestCase):
             before = (g / 'game.json').read_bytes()
             run(KIT / 'scripts' / 'parts.py', 'add', g, 'sewers', '--title', 'The sewers', '--over', 'engine')
             self.assertEqual((g / 'game.json').read_bytes(), before)
+            self.assertEqual([f.name for f in (g / 'parts' / 'sewers').iterdir()], ['part.json'])   # named, and no more
+            self.assertIn('nothing is analysed there', run(KIT / 'scripts' / 'coverage.py', g / 'parts' / 'sewers', ok=False).stderr)
             self.assertEqual([(p['id'], p['order'], p['over']) for p in P.parts(str(g))],
                              [('engine', 1, None), ('park', 2, 'engine'), ('street', 3, 'engine'), ('sewers', 4, 'engine')])
             f = g / 'parts' / 'sewers' / 'part.json'
@@ -224,8 +226,11 @@ class Parts(unittest.TestCase):
             self.assertEqual([p['id'] for p in P.parts(str(g))], ['engine', 'park', 'sewers', 'street'])
             out = run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout
             self.assertIn('parts park and sewers have the same "order" (2)', out)
-            f.write_text(json.dumps(dict(own, order=1.5)))
+            f.write_text(json.dumps(dict(own, order=1.5, ranges=[['$4000', '$40FF']])))
             self.assertIn('OK', run(KIT / 'scripts' / 'check_listing.py', g).stdout)
+            # work can start on it from there: its session is seeded with the engine it lies over
+            names = {s['name'] for s in P.seed(str(g / 'parts' / 'sewers'))[1]['symbols']}
+            self.assertEqual(names, {'engine_main', 'engine_get', 'engine_var'})
             # the list an earlier layout kept in game.json is said to be in the wrong place
             (g / 'game.json').write_text(json.dumps(dict(json.loads(before), parts=[{'id': 'engine'}])))
             self.assertIn('the parts are their folders', run(KIT / 'scripts' / 'check_listing.py', g, ok=False).stdout)

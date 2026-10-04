@@ -47,6 +47,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 def load(gdir, live, session=None):
     from symbols_export import read_live, regions, platform_of
     from parts import load_game
+    if not live and not os.path.isfile(os.path.join(gdir, "symbols.json")):     # a part that is only named
+        sys.exit(f"{gdir} has no symbols.json: nothing is analysed there (symbols_export.py writes one)")
     game = load_game(gdir)
     reg = regions(game)
     if live:
