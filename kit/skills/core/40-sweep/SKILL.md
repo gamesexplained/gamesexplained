@@ -33,7 +33,12 @@ credits in seconds. If the game has a custom character set, follow with
 Relocating loaders can leave a second copy of code or tables in memory.
 Before describing a region, check whether the code reads it or reads a
 twin elsewhere: compare the two byte for byte. A byte that differs is
-usually a variable written at run time. Describe the copy the code reads
+usually a variable written at run time. When no instruction can write the bytes
+that differ (`opcodes.py --refs`, and no pointer built to them), they
+were changed from outside the game, often before a freezer saved it.
+Then the copy made earlier is the right one, and the next time the game
+copies again the damage reaches the screen: a bug the player sees, worth
+running live. Describe the copy the code reads
 and mark the other as an unread duplicate.
 
 ## A documented version on another machine

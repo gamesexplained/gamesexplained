@@ -102,6 +102,11 @@ the game folder, or pass `--game`, so the log lands in the right place.
 - The project file (`.regen2000proj`) embeds the memory image. It stays in
   `work/` and is never committed. `symbols_import.py` rebuilds it from
   `symbols.json` plus a snapshot.
+  Nothing writes annotations back into it: a project that sat in `work/`
+  while a session annotated holds the comments from before that session.
+  Started on it again, the next export quietly undoes everything since.
+  So start every later session from `symbols_import.py`, or compare
+  `r2000_get_comments` with `symbols.json` before the first write.
 - After any bulk recovery, verify with a clean process, a full replay and
   a block-count check, not "the replay didn't error".
 - **The flow tracer can wander into text.** `$20` is `JSR`, so a run of

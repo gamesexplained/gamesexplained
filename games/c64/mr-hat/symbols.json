@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "c64",
  "game": "mr-hat",
- "build": "",
+ "build": "Commodore 64 Club issue 14, disk side B (a freezer backup of the title screen)",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -20795,7 +20795,7 @@
   {
    "address": 18434,
    "type": "line",
-   "text": "Bitmap bytes of one character row of a ladder, 3 cells (24 bytes: left cell, middle cell with the rung byte $FF, right cell). Copied down the screen by room 3 ($47DE, 13 rows at column 20) and room 2 ($4E7A, 17 rows at column 10). Called a ladder because Mr Hat climbs at exactly that X ($4AFD, $48F0, sprite X $B8 = column 20) with the climbing frames $32/$33."
+   "text": "Bitmap bytes of one character row of a ladder, 3 cells (24 bytes: left cell, middle cell with the rung byte $FF, right cell). The ladders of rooms 2, 3, 5, 6, 8, 9, 10 and 11 are this row repeated: room 3 ($47DE, 13 rows at column 20) and room 2 ($4E7A, 17 rows at column 10) copy it themselves; rooms 5, 6, 8, 9, 10 and 11 set the operand of the shared copy $5713 ($5718/$5719) to $4802 and call it ($57B3, $57D0, $5E83, $664B, $719F, $8354, $854D). Called a ladder because Mr Hat climbs at exactly that X ($4AFD, $48F0, sprite X $B8 = column 20) with the climbing frames $32/$33. The side cells are irregular from row to row (left A8 1A 1A 1A 7A 1A 1A AA, right 1A A8 1A 18 AE A8 A8 12) and draw ragged rails; botowrap's fixed version replaces them with three straight rails a side, the rung carried into them (54 54 54 54 57 54 54 54 / 2A 2A 2A 2A EA 2A 2A 2A), a pattern found nowhere in the original. Whether the original was drawn so or damaged is open."
   },
   {
    "address": 18458,
@@ -25185,7 +25185,7 @@
   {
    "address": 52672,
    "type": "line",
-   "text": "Title (and ending) screen set-up, called from $16D5 in the title routine $16A3: JSR music_init ($C09B, the title tune starts on the next IRQ); copies the two-cell font $CE00-$CFFF to $2800-$29FF; clears $D018 bit 3 and $D011 bit 5 (bitmap mode off), prints CHR$(147) (clear screen, $FFD2), sets $D018 = $1B (screen $0400, characters $2800). Then, by the flag $1018: 0 -> JSR $B683, the title screen with the cast and the words at $C000; non-zero -> JSR $BFA8, which writes \"WONDERFUL\" / \"YOU HAVE FINISHED YOUR\" / \"MISSION\" from $B7D8-$B7FF in the same font ($1018 is set to 1 at $7CED just before JSR $16A0, and cleared at $6F2C)."
+   "text": "Title (and ending) screen set-up, called from $16D5 in the title routine $16A3: JSR music_init ($C09B, the title tune starts on the next IRQ); copies the two-cell font $CE00-$CFFF to $2800-$29FF; clears $D018 bit 3 and $D011 bit 5 (bitmap mode off), prints CHR$(147) (clear screen, $FFD2), sets $D018 = $1B (screen $0400, characters $2800). Then, by the flag $1018: 0 -> JSR $B683, the title screen with the cast and the words at $C000; non-zero -> JSR $BFA8, which writes \"WONDERFUL\" / \"YOU HAVE FINISHED YOUR\" / \"MISSION\" from $B7D8-$B7FF in the same font ($1018 is set to 1 at $7CED just before JSR $16A0, and cleared at $6F2C). Because the font is copied afresh each time, damage to $CE48-$CE55 in the shipped image (see $CE40) shows on every title after a game over, on the first title after a cold start at $086D, and on the end message."
   },
   {
    "address": 52733,
@@ -25200,7 +25200,7 @@
   {
    "address": 52800,
    "type": "line",
-   "text": "Title font (copied to $2800 by title_setup $CDC0; letters two cells high, top half at code n, bottom half at n+32; 8 bytes a glyph, one bit per pixel): glyphs 8-15, $CE40-$CE7F: the top halves of H-O."
+   "text": "Title font (copied to $2800 by title_setup $CDC0; letters two cells high, top half at code n, bottom half at n+32; 8 bytes a glyph, one bit per pixel): glyphs 8-15, $CE40-$CE7F: the top halves of H-O. In the image as shipped (and in the tape copy), $CE48-$CE55, glyph 9 (I) and the first six rows of glyph 10 (J), hold 48 3C 32 26 2B 23 27 20 3F 36 51 22 22 22, not a letter; the copy at $2848 still holds the glyphs (00 00 3C 34 3C 18 18 18 00 00 07 05 07 07), so the damage came after the first title was set up and before the image was frozen. Nothing in the game writes here. Every title after a game over, and the end message, copies the damaged bytes and shows a broken I. botowrap's fixed version holds the clean bytes (facts.md, \"Versions\")."
   },
   {
    "address": 52864,

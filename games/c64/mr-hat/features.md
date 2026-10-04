@@ -37,6 +37,11 @@ German both 404), and no manual beyond the magazine's blurb was found.
   <https://www.edicolac64.com/public/francesco-chiola.php>: the origin of
   the character, and that Lupenio (SIPE, 1988) came first and shares
   Mr. Hat's layout and jump routines.
+- German C64-Wiki, <https://www.c64-wiki.de/wiki/Commodore_64_Club>,
+  read again on 4 October 2026: issue 6 (September 1988) "Cover, Work
+  Games, Raptor, Mr. Hat, Dama, Code Compiler, Super Extender"; issue 14
+  (aka 64/128 Ultra-Spiele #5) "Seite B: Mr Hat, Hawk Mission, Dalto,
+  Sprite Scanner", which is the directory of the contributor's disk.
 - CSDb release pages 90535, 146567, 165550, 178985 and 204034: five cracks,
   dated from April 1988 to 1992.
 
@@ -56,6 +61,7 @@ German both 404), and no manual beyond the magazine's blurb was found.
 | Deadly spots in the rooms | traced | `$BB10`, by position and exact standing height; room 6's dark-only hazard |
 | Lives, four marks at the bottom right | live | `$07B9`, `$07BA`, `$07E1`, `$07E2`: one recoloured to `$CC` per death (by the code, two for a death in room 3; not tried); after five deaths in room 1 the title came back |
 | Game over | live | after the last life `$4475` returns to the title, which waits for fire for a new game; there is no game-over screen of its own |
+| After a game over, the title's I is broken | live | the title set-up `$CDC0` copies the font again from `$CE00`, whose `$CE48`-`$CE55` are damaged in the image; the I in "WITH", "SNAILY" and "KNIFFY", and in the end message, shows noise in its top half (`reference/title-after-game-over.png`, `reference/end-screen.png`); botowrap's fixed version puts the bytes back (facts.md, "Versions") |
 | Status line: SCORE, ROOM, STAGE | live | bitmap rows 23-24, glyphs at `$1600`; `reference/stage1-room1.png` |
 | Score in thousands | live | `$41DA`/`$8AD0` step the thousands digit; the 1,000, 10,000, 25,000 and 75,000 adders run in the simulator gave exactly those scores (`work/scoretest.js`); the 20,000 and 50,000 adders by the code |
 | Eleven rooms in four stages (web screenshots reach ROOM 10, STAGE 4) | live | rooms 1-11 drawn by starting each set-up (`reference/room02-setup.png` to `room11-setup.png`); stage 1 room 1, stage 2 rooms 2-5, stage 3 rooms 6-9, stage 4 rooms 10-11 (rooms 4 and 7 keep the STAGE digit of the room before, so started from room 1 they show STAGE 1) |
@@ -109,8 +115,9 @@ Found in the code, not in the manual.
   take to reach room 11's bottom floor. In this copy room 5's object is
   not needed (facts.md, "The ending needs no object"); nobody has played
   the route through here.
-- Who patched the stores to `$D022`, Chiola or a cracker? Comparing another
-  copy of the game would tell.
-- The owner's copy is a freezer backup of the title screen
-  (`orientation.md`). Which issue it came from (n. 6, or the reissue in
-  n. 14) is unknown.
+- Who switched off the stores to `$D022`, and who damaged the title
+  font? Both are in the image *Commodore 64 Club* issue 14 shipped, a
+  freezer backup. Issue 6's copy, the first printing, compared byte for
+  byte would tell whether they were already there.
+- Was the ladder's irregular pattern drawn that way, or damaged like the
+  font? botowrap's version redraws it (facts.md, "The ladder").
