@@ -55,3 +55,13 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   the scenery rows, enemy fire, the sound effects, open questions.
 - A section id equal to a widget's id (`music`) let the music player
   replace its whole section; the section was renamed.
+
+## 4 October 2026, the attack waves tab
+
+- The Attack waves section moved from How it works to a tab of its own,
+  `waves.html`, in four sections.
+- The `path_segments` comment said bit 7 of a segment's fourth byte
+  mirrors the velocity list. The mover copies it to `$1219` at `$8369`
+  (1 when set, X being 1 from `$8326`) and starts the form change at
+  `$8449` only when `$1219` is not 0, so it is the change-form flag, as
+  `facts.md` already said. The comment was corrected.

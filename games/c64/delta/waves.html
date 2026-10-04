@@ -1,0 +1,44 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/delta-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Up to seven enemies at once, entering one a frame, each flying a path of straight segments, some taking several hits and some changing shape.</p>
+</header>
+<main class="wrap">
+<section id="groups">
+  <p class="fig">01 · Groups</p>
+  <h2 class="t">A stage is a list of groups</h2>
+  <p class="lede">Enemies arrive in groups of up to seven, and each group is one eight-byte record.</p>
+  <p>Each stage is a list of groups (<code>$B800</code> for stages 1 to 21, <code>$B900</code> after), and each group points at an eight-byte record in <code>wave_records</code> at <code>$AB00</code>. <code>enemy_spawn</code> (<code>$811F</code>) decodes it: hit points, animation, colour, which side to enter from, points, path, starting height and delay. One enemy enters per frame into a free sprite, up to seven.</p>
+  <p>The shop is a group too: a record with bit 4 of its third byte set turns its sprites into the weapon icons (<a href="mechanics.html#shop">How it works</a>). When a group ends and none of its enemies escaped, most groups add a credit (<code>wave_spawn_step</code>, <code>$8010</code>).</p>
+</section>
+
+<section id="paths">
+  <p class="fig">02 · Paths</p>
+  <h2 class="t">Paths made of straight segments</h2>
+  <p class="lede">Every enemy flies a path, and every path is a list of short straight runs.</p>
+  <p>A path (<code>$B500</code>) is a list of segments (<code>$A880</code>), and each segment runs a list of (dx, dy) steps from <code>$B000</code> for so many frames a step, mirrored as the record says (<code>enemy_move_1</code>, <code>$82CC</code>, and six copies, one per sprite). An enemy that leaves the play area is gone, and a group with an escapee earns no credit.</p>
+</section>
+
+<section id="hits">
+  <p class="fig">03 · Hit points</p>
+  <h2 class="t">Hit points and second forms</h2>
+  <p class="lede">Some enemies take several hits, some cannot be destroyed, and some turn into something else.</p>
+  <p>Hit points come from <code>$A100</code>. An enemy with 0 or 1 dies at the first hit, and one with <code>$FF</code> cannot be destroyed. When bit 7 of its segment's fourth byte is set, an enemy whose hits run out changes into a new form instead of dying: the mover copies the bit at <code>$8369</code> and tests it at <code>$8449</code>.</p>
+  <p>In waves led by an indestructible enemy in the first sprite, destroying the one in the last sprite blows up the whole wave (<code>enemies_wave_timers</code>, <code>$9024</code>).</p>
+</section>
+
+<section id="points">
+  <p class="fig">04 · Points</p>
+  <h2 class="t">Points and extra lives</h2>
+  <p>Enemies are worth 5, 7, 10, 15, 20, 25, 50 or 100, and the panel shows ten times that: the score is kept in five digits and printed with a 0 after them. An extra life comes each time the panel's ten-thousands digit goes up (<code>extra_life_check</code>, <code>$9CD6</code>), so every 10,000 points, up to nine lives.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

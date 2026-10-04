@@ -13331,7 +13331,7 @@
   {
    "address": 2273,
    "type": "line",
-   "text": "NMI handler installed when a phrase ends: stops CIA 2 timer A ($DD0F = $90), leaves the volume at 7 and returns. No further NMIs follow until the next phrase starts the timer."
+   "text": "NMI handler installed when a phrase ends: stops CIA 2 timer B ($DD0F = $90), leaves the volume at 7 and returns. No further NMIs follow until the next phrase starts the timer."
   },
   {
    "address": 2289,
@@ -13391,7 +13391,7 @@
   {
    "address": 2486,
    "type": "line",
-   "text": "Reads the next 4-byte frame header from ($A5): byte 0 = frame count ($0CF5, ORed with $C0) and flags, byte 1 = repeat count and encoding (bits 0-1 select the decoder: 0/1 the 1-bit decoders, 2/3 the 2-bit and 4-bit), bytes 2-3 = offset of the frame's sample data from the sample base ($0CFE/$0CFF) into $A9/$AA. A first byte with bit 7 clear (the operand at $09B7 is patched to $7B) ends the phrase. Patches the decoder `jsr` at $092E and the `jmp` at $0910, then steps $A5 by 4."
+   "text": "Reads the next 4-byte frame header from ($A5), unless bit 7 of the previous header's byte 3 (kept as the operand at $09B7) says that frame was the last: then it patches the decoder `jsr` at $092E to speech_set_end ($097B). Byte 0: bits 0-5 the number of decodes this header covers ($0CF5, ORed with $C0 and counted up to 0); bit 6 the window (64 or 32 entries) for the 1-bit encodings; bits 6-7 the phase length for the 4-bit and 2-bit ones (tbl_speech_len). Byte 1: bits 3-7 the periods each decode plays ($0CF6, ORed with $E0); bit 2 a silent frame (speech_frame_repeat); bits 0-1 the encoding: 0 the 2-bit loop with the narrow levels (via $0BE3), 1 one bit a sample ($0B73), 2 four bits ($0AE5), 3 two bits ($0A68). Bytes 2-3: the offset of the sample data from the sample base, into $A9/$AA; byte 3's bit 6 plays the next decode without blending (speech_frame_end) and bit 7 marks the last frame. Patches the `jmp` at $0910, then steps $A5 by 4. Checked by a port that gives the game's volume writes for all eight lines."
   },
   {
    "address": 2487,
@@ -13471,7 +13471,7 @@
   {
    "address": 3043,
    "type": "line",
-   "text": "Continues a 1-bit frame: sets the window start and length, then rejoins the 2-bit decoder's loop at $0A75 with a flag that keeps the levels."
+   "text": "Decoder for encoding 0: sets the window start and length as for a 1-bit frame ($0CF8), then runs the 2-bit loop at $0A75 with the first byte's low two bits forced to 1, so the narrow level table at $0AD9 is used. None of the eight voice lines has a frame in this encoding."
   },
   {
    "address": 3069,
@@ -13501,12 +13501,12 @@
   {
    "address": 3168,
    "type": "line",
-   "text": "Stops CIA 2 timer A ($DD0F = $90)."
+   "text": "Stops CIA 2 timer B ($DD0F = $90)."
   },
   {
    "address": 3185,
    "type": "line",
-   "text": "Starts CIA 2 timer A in continuous mode with a latch of 100 ($64): an NMI every 101 cycles, 9,755 a second on PAL. Enables the timer NMI ($DD0D = $82) and clears any pending one."
+   "text": "Starts CIA 2 timer B in continuous mode with a latch of 100 ($64): an NMI every 101 cycles, 9,755 a second on PAL. Enables the timer NMI ($DD0D = $82) and clears any pending one."
   },
   {
    "address": 3209,
@@ -16301,7 +16301,7 @@
   {
    "address": 58022,
    "type": "line",
-   "text": "The voice lines' frame headers, four bytes each, read by speech_frame_header: the encoding of the frame's samples (1-bit, 2-bit or 4-bit), repeat counts and flags, and the offset of the frame's sample data from $E000. Line 0's headers start here, the others at $E31A, $E35E, $E392, $E3C6, $E3E6, $E46E and $E476."
+   "text": "The voice lines' frame headers, four bytes each, read by speech_frame_header ($09B6 gives the format): how many decodes and periods each covers, the encoding (1-bit or 4-bit in these lines; the driver also has 2-bit decoders that no line uses), silent frames, the blend and last-frame flags, and the offset of the samples from $E000. Line 0's headers start here, the others at $E31A, $E35E, $E392, $E3C6, $E3E6, $E46E and $E476."
   },
   {
    "address": 58669,

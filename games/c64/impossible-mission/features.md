@@ -80,5 +80,5 @@ Found in the code, not in the manual.
 
 ## Open questions
 
-- The words of the eight voice lines (not listened to in this run).
+- The words of the eight voice lines: the Sound and speech tab plays them, and nobody has transcribed them.
 - The code rooms' puzzle was not played live.
