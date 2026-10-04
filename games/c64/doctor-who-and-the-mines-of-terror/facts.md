@@ -230,6 +230,20 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   (by eye, from the contributor's photograph). Success also sets switch
   cell 13 to block `$D5` (`$BF62`). The `$4E` test at `$BB05` is
   overwritten by the PASS CARD test at `$BB15`.
+- **The prisoner** (`$CE28`, `$C9A5`, `$CF24`): controller `$22` is the
+  only one whose flag `$778A`,X is 1 (it starts at `$0C40`, `$0588`).
+  Touching the Doctor while `$50` is not negative and his Y AND `$0F` = 8,
+  it goes to state 9 and sets `$50` = `$79`. While `$50` is positive the
+  Doctor's fire is cleared, `$E0` = `$FF` blocks the pockets, and
+  `chase_direction` steers him to (`$0BBC`, `$0588`); within `$10` x `$08`
+  of it `$50` = `$FF` (`$C9D4`). Controller state 9 then sets switch cell
+  11 to block `$F1` (a column of class-1 characters) and returns to state
+  0 (`$CF44`). Start-up writes cell 11 from `$1D0B` = `$04`, open (the
+  hand-over map holds `$F1`). A blast within `$20` x `$20` of (`$0BE0`,
+  `$0588`) sets it to `$FF`, open (`$C22E`). While `$50` is non-zero and
+  cell 11 is not `$FF`, patrolling controllers do not turn to the Doctor
+  (`$CE8A`). Bit 7 of `$50` survives a regeneration (`$937F`), so with
+  `$50` negative every later touch is a shock.
 - **Spanner bolts** (`$BBBC`): each of the eight points is switch cell 0-7,
   block `$E0` (a clamp on a ladder); undoing it writes `$E1`, the clamp
   drawn open. Point 5 needs the Doctor below it (`$BBB4`).

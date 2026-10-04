@@ -35,3 +35,14 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   stalactites: zones swap in their own shapes for 16 characters, and the
   hand-over image holds a different set. The page embeds the running
   game's 16 glyphs.
+
+## 4 October 2026, the prisoner
+
+- The steward's notes from a video walkthrough described a door "locked
+  with the controller" that a detonator opens. The comments on `$50` and
+  on the flag table at `$778A` had left both unexplained. Reading
+  `$CE28`, `$C9A5` and `$CF24` together showed controller `$22` taking
+  the Doctor prisoner and walling up switch cell 11, the cell the blast
+  at `$C22E` reopens. Traced from the listing only; not played live.
+- The same notes mention a sensor beside the code lock. No code tests
+  for one; the nearest mechanic is the PASS CARD gate (`$BB15`).
