@@ -767,14 +767,15 @@ def game_footprint(P, out, plat):
     over = above(P, root)
     apart = [p for p in P if p is not root and p not in over]
     name = html.escape(root["title"])
-    said = f"This game is in {len(P)} parts. "
+    # What the map is of, and no more: a part that names none beneath it may replace all of memory
+    # or may only not have been split from what stays, and the folders do not say which.
     if over:
-        said += (f"The map is of {name}, which stays in memory; the band marked as varying holds whichever of the "
-                 f"{len(over)} part{'s' if len(over) != 1 else ''} loaded over it is there. ")
+        said = (f"This game is in {len(P)} parts. The map is of {name}, which stays in memory; the band marked as "
+                f"varying holds whichever of the {len(over)} part{'s' if len(over) != 1 else ''} loaded over it is there. ")
         if apart:
-            said += f"{len(apart)} more replace{'s' if len(apart) == 1 else ''} the whole of memory and {'is' if len(apart) == 1 else 'are'} not on this map. "
+            said += f"The other {len(apart) if len(apart) > 1 else 'part'}{' are' if len(apart) > 1 else ' is'} not on this map. "
     else:
-        said += f"Each replaces the whole of memory, so the map is of one of them: {name}. "
+        said = f"This game is in {len(P)} parts, and the map is of one of them: {name}. "
     said += f'The <a href="{part_page(root)}">Source tab</a> has every part\u2019s listing.'
     return totals, footprint_table(t, plat, span) + f'<p class="mute">{said}</p>', span
 
