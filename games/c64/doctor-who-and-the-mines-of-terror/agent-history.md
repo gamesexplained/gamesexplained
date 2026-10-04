@@ -46,3 +46,8 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   at `$C22E` reopens. Traced from the listing only; not played live.
 - The same notes mention a sensor beside the code lock. No code tests
   for one; the nearest mechanic is the PASS CARD gate (`$BB15`).
+- The steward's third route has the Master knocking the Doctor down. The
+  code sets the Doctor's `$1CB0` to `$79` as the crystal is taken
+  (`$B544`), and the sprite drawn meanwhile, frame `$55`, is a figure
+  lying down. The crystal's drop point after a theft (`$B587`) was in the
+  comments but not on the pages.

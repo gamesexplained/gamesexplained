@@ -200,6 +200,12 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   pocket, and carries it off (`$B48A`). It is one sprite, frames `$9A`-`$A1`
   (`$B46F`), drawn at double height (`$18AC` = 1). The code does not name
   it; players know it as the Master.
+- **The Master's theft** (`$B500`, `$B571`): taking the crystal from the
+  Doctor sets his `$1CB0` = `$79` (`$B544`); while it is positive he is
+  drawn in frame `$55`, lying down, and it counts down (`$CB60`). At his
+  home point (`$0DA8`, `$0380`) the Master moves the crystal to (`$06C8`,
+  `$06A8`) as a free item (`$B587`), sets switch cell 12 to block `$1C`
+  for `$FF` counts, then back to `$BC` (`$B477`).
 - **Using items** (`$BACC`): the pick axe digs at three sites, three hits
   each; the spanner works at eight points; detonators and explosives are
   armed; the activator at three points ends the game (`$E8` = 2, the
