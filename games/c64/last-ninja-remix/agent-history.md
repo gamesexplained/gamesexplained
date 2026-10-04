@@ -22,3 +22,7 @@ Backport review found that the Source writer split the native-checked C096 LAX i
 ## 1 October 2026 — annotation review correction
 
 Qualified the enemy-meter slot comment: $B5C3 writes the hit-processing result and can clear it; it does not clear the slot on every hit. The native calculation and article remain unchanged.
+
+## 4 October 2026 — the game in parts
+
+The kit gained a layout for a game that loads in parts, and this game was the case that asked for it: the page showed 99.6 % for one level of seven, with the other six in a to-do line. The analysed image became the part `central-park` as it stood, with no rebuild: its listing still matches its symbol map. The six later levels were given folders that hold their names and nothing else, so the page counts them. Nothing new was analysed. The image still holds the engine and Central Park together, and telling them apart is the next step, in `TODO.md`.
