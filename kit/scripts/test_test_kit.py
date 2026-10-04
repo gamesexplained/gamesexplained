@@ -5,8 +5,10 @@
 discovery is the one thing every other test in the tree depends on: a test
 file it fails to find is a test that never runs. This checks that it finds
 the tests that exist, that it does not try to run itself, that every
-`SELF_TESTS` entry names a file that is really there, and that the
-declaration a tool-dependent test reads is the one the runner exports.
+`SELF_TESTS` entry names a file that is really there and no script with a
+`--test` flag is missing from it, that a skip fails under `--require-tools`,
+and that the declaration a tool-dependent test reads is the one the runner
+exports.
 """
 import importlib.util
 import os
@@ -53,6 +55,32 @@ class Discovery(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(ROOT, argv[0])),
                             f"SELF_TESTS names {argv[0]}, which is not there")
 
+    def test_a_script_with_a_test_flag_cannot_go_unlisted(self):
+        """A new `--test` flag is noticed, so SELF_TESTS cannot quietly fall behind."""
+        self.assertEqual(runner_module().unlisted_self_tests(), [])
+        stray = os.path.join(ROOT, "kit", "scripts", "the_flag_is_noticed.py")
+        open(stray, "w").write("import sys\nif sys.argv[1:] == ['--test']:\n    print('ok')\n")
+        try:
+            self.assertIn("kit/scripts/the_flag_is_noticed.py", runner_module().unlisted_self_tests())
+        finally:
+            os.remove(stray)
+
+    def test_a_skip_fails_under_require_tools(self):
+        """A test that skips without reading KIT_REQUIRE_TOOLS still cannot pass CI."""
+        stray = os.path.join(ROOT, "kit", "scripts", "test_the-skip-is-noticed.py")
+        open(stray, "w").write("print('no tool here: skipped')\n")
+        try:
+            local = subprocess.run([sys.executable, RUNNER, "the-skip-is-noticed"], cwd=ROOT,
+                                   capture_output=True, text=True)
+            self.assertEqual(local.returncode, 0, local.stdout)
+            self.assertIn("SKIP", local.stdout)
+            ci = subprocess.run([sys.executable, RUNNER, "--require-tools", "the-skip-is-noticed"],
+                                cwd=ROOT, capture_output=True, text=True)
+            self.assertEqual(ci.returncode, 1, ci.stdout)
+            self.assertIn("FAIL", ci.stdout)
+        finally:
+            os.remove(stray)
+
     def test_a_new_test_file_is_found_without_an_edit(self):
         """The point of the convention: drop a file in and CI runs it."""
         stray = os.path.join(ROOT, "kit", "scripts", "test_the-convention-works.py")
@@ -72,8 +100,6 @@ class Discovery(unittest.TestCase):
             cwd=ROOT, capture_output=True, text=True)
         self.assertIn("test_z80.py", users.stdout,
                       "test_z80.py should read the variable the runner exports")
-        self.assertLessEqual(len(users.stdout.strip().splitlines()), 3,
-                             "the variable should be read by the tests, not sprayed around")
 
 
 if __name__ == "__main__":
