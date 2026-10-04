@@ -5,11 +5,10 @@
 // so C64Map and SpectrumMap are two label sets over one implementation.
 globalThis.makeMemMap = function (LABELS) {
   const COLOURS = { code: '#e8a33d', graphics: '#6fc7d4', levels: '#8fd17a', sound: '#d97f6e', text: '#edf171',
-                    tables: '#8f7fe0', variables: '#c46c71', runtime: '#3a3d6a', rom: '#2a2c4a', other: '#24424a', unused: '#12142c' };
+                    tables: '#8f7fe0', variables: '#c46c71', runtime: '#3a3d6a', rom: '#2a2c4a', other: '#2e6672', unused: '#12142c' };
   const hex = a => '$' + a.toString(16).toUpperCase().padStart(4, '0');
-  LABELS = Object.assign({ other: 'another part of the game' }, LABELS);   // in a game of several parts: the bytes this part does not own
+  LABELS = Object.assign({ other: 'varies with the part loaded' }, LABELS);   // a game of several parts: what the parts loaded over this one hold
   async function render(el, url, opts = {}) {
-    if (!el) return null;   // a game of several parts has a map for each, and none for the game
     const M = await fetch(url).then(r => r.json());
     const base = M.base || 0, size = M.size || 0x10000, mini = !!opts.mini;
     // Vertical fill by default: each column is 128 bytes, so the picture reads as a ruler
@@ -83,7 +82,7 @@ globalThis.makeMemMap = function (LABELS) {
       tip.textContent = `${hex(a)} · ${what}${sy && r && r[2] !== 'unused' && a - sy[0] < 1024 ? ' · ' + sy[1] + (a !== sy[0] ? '+' + (a - sy[0]) : '') : ''}`;
       cv.style.cursor = r && r[2] !== 'unused' ? 'pointer' : 'default';
     });
-    cv.addEventListener('click', e => { const a = addrOf(e); if (at(a)) location.href = (opts.source || 'source.html') + '#' + a.toString(16).toUpperCase().padStart(4, '0'); });
+    cv.addEventListener('click', e => { const a = addrOf(e); if (at(a)) location.href = (opts.source || M.source || 'source.html') + '#' + a.toString(16).toUpperCase().padStart(4, '0'); });
     return M;
   }
   // The strip: the same addresses left to right in one row, each column the colour of whatever

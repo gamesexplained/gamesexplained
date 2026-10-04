@@ -225,9 +225,10 @@ can open with that instead.
   Write a link by the part's own page, `source-<id>.html#1234`, never
   `source.html#1234`: the first part changes when a part is added before
   it. A part that lies over another is shown laid over it, its own rows
-  marked. An About layout of the game's own writes `{{data_links}}`
-  where the symbol maps and listings are named; `{{footprint}}` is a map
-  for each part.
+  marked. The About tab keeps one map of memory, as for any game:
+  the part the others are loaded over, with what they load marked as
+  varying with the part. An About layout of the game's own writes
+  `{{data_links}}` where the symbol maps and listings are named.
 - **Stepping through things of one kind**, the rooms of a levels page as
   much as the parts of a game, uses one control: the one before, a list
   of them all, the one after. Write it as the build writes the parts'

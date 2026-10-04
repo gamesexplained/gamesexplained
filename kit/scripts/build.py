@@ -11,8 +11,9 @@ For every games/<platform>/<slug>/game.json:
 A game of several parts (kit/scripts/parts.py) gets a Source page for each part
 that has a listing, source-<id>.html, with source.html the first of them; the
 parts above each listing, and a control beside it, step from one to the next.
-parts/<id>/ carries each part's listing, symbols and memmap, and About draws a
-footprint for each.
+parts/<id>/ carries each part's listing and symbols. About draws one footprint,
+as for any game: the part the others are loaded over, with what they load
+marked as varying with the part.
 Those are the default tabs. A game that wants others lists all of its tabs, in
 order, in game.json's "tabs" as [file, label] pairs; every authored page it
 names is copied through, and a page in the folder that no tab names is left out
@@ -39,7 +40,7 @@ No dependencies. The markdown converter handles the subset the templates use.
 import glob, html, html.parser, json, os, re, shutil, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from parts import parts, load_game, started, under   # noqa: E402  a game of several loads
+from parts import parts, load_game, started, under, above   # noqa: E402  a game of several loads
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
@@ -146,7 +147,8 @@ def markdown(text, drop_h1=True, addr=True, shift=0):
 
 
 # --- footprint: every byte of the 64 KB space in one category -----------------
-# "other" is a game of several parts' alone: the bytes that belong to another part of it.
+# "other" is a game of several parts' alone: the bytes that belong to another part of it,
+# which the one map of the game shows as varying with the part loaded.
 CATS = ["code", "graphics", "levels", "sound", "text", "tables", "variables", "runtime", "rom", "other", "unused"]
 NAME_HINTS = [  # symbol-name fallbacks for small things nobody declares as a region
     (("str_", "text_", "msg_", "string"), "text"),
@@ -244,7 +246,7 @@ def footprint_table(totals, plat="c64", span=(0, 0x10000)):
     if totals["rom"]:
         rows += [(html.escape(names.get("rom", "ROM")), totals["rom"])]
     if totals["other"]:
-        rows += [("Another part of the game", totals["other"])]
+        rows += [("Varies with the part loaded", totals["other"])]
     rows += [("Unused", totals["unused"])]
     size = span[1] - span[0]
     out = f"<div class='tablewrap'><table><tr><th>What</th><th>Bytes</th><th>Of {size // 1024} KB</th></tr>"
@@ -742,36 +744,39 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats):
                 shutil.copy(os.path.join(p["dir"], f), dst)
 
 
-def part_footprints(P, out, plat_map, plat):
-    """Each part's footprint, for the About tab; the first's map is the game's memmap.json,
-    which the catalogue draws. Returns the parts' summed totals and the About tab's section."""
-    from coverage import tracked_count
-    totals, body, calls, first = {k: 0 for k in CATS}, [], [], True
-    for p in P:
-        head = f'<h3>{html.escape(p["title"])}</h3>'
-        if not listed(p):
-            body.append(head + '<p class="mute">Not analysed.</p>'); continue
-        runs, t, symbols, span = footprint(p["dir"], load_game(p["dir"]))
-        doc = {"runs": runs, "totals": t, "symbols": symbols}
-        if span != (0, 0x10000):
-            doc.update(base=span[0], size=span[1] - span[0])
-        os.makedirs(os.path.join(out, "parts", p["id"]), exist_ok=True)
-        json.dump(doc, open(os.path.join(out, "parts", p["id"], "memmap.json"), "w"), separators=(",", ":"))
-        if first:
-            json.dump(doc, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":")); first = False
-        for k in CATS:
-            totals[k] += t[k]
-        tr, ex = tracked_count(p["dir"])
-        body.append(head + f'<p class="mute">{ex:,} of the {tr:,} bytes this part uses have a description'
-                    + (f" ({100 * ex / tr:.1f} %)." if tr else ".") + "</p>"
-                    + f'<div class="memmap" id="memmap-{html.escape(p["id"])}"></div>' + footprint_table(t, plat, span))
-        calls.append(f"M.render(document.getElementById('memmap-{p['id']}'), 'parts/{p['id']}/memmap.json', "
-                     f"{{source: '{part_page(p)}'}});")
-    intro = (f'<p class="mute">This game is in {len(P)} parts, and the same addresses hold something else in each, '
-             "so each has a map of its own. A part that is loaded over another shows its own bytes; "
-             "the rest are the other part\u2019s.</p>")
-    return totals, (intro + "".join(body) + "<script>addEventListener('DOMContentLoaded',function(){var M=window."
-                    + plat_map + "||C64Map;" + "".join(calls) + "});</script>")
+def game_footprint(P, out, plat):
+    """The one map of a game of several parts, for the About tab and the catalogue: the part
+    the others are loaded over (the first that lies over none), with the addresses the other
+    parts own as one band, "varies with the part loaded". Which part holds what is the Source
+    tab's to show, part by part; here a reader wants the shape of the game, once.
+    Returns the game's totals (its program summed over the parts, for the catalogue's size),
+    and the About tab's table with a line saying what the map is of."""
+    shown = [p for p in P if listed(p)]
+    root = next((p for p in shown if not p["over"]), shown[0])
+    runs, t, symbols, span = footprint(root["dir"], load_game(root["dir"]))
+    doc = {"runs": runs, "totals": t, "symbols": symbols, "source": part_page(root)}
+    if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
+        doc.update(base=span[0], size=span[1] - span[0])
+    json.dump(doc, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
+    totals = dict(t)
+    for p in shown:
+        if p is not root:
+            other = footprint(p["dir"], load_game(p["dir"]))[1]
+            for k in PROGRAM:
+                totals[k] += other[k]
+    over = above(P, root)
+    apart = [p for p in P if p is not root and p not in over]
+    name = html.escape(root["title"])
+    said = f"This game is in {len(P)} parts. "
+    if over:
+        said += (f"The map is of {name}, which stays in memory; the band marked as varying holds whichever of the "
+                 f"{len(over)} part{'s' if len(over) != 1 else ''} loaded over it is there. ")
+        if apart:
+            said += f"{len(apart)} more replace{'s' if len(apart) == 1 else ''} the whole of memory and {'is' if len(apart) == 1 else 'are'} not on this map. "
+    else:
+        said += f"Each replaces the whole of memory, so the map is of one of them: {name}. "
+    said += f'The <a href="{part_page(root)}">Source tab</a> has every part\u2019s listing.'
+    return totals, footprint_table(t, plat, span) + f'<p class="mute">{said}</p>', span
 
 
 def data_links(P):
@@ -779,6 +784,9 @@ def data_links(P):
     if not P:
         return ('The symbol map for this game is <a href="symbols.json">symbols.json</a>; the listing behind the '
                 'Source tab is <a href="listing.json">listing.json</a>.')
+    if len(P) > PILLS:   # too many to name: say where they are
+        return ("Each part of the game has its own symbol map and listing, <code>parts/&lt;id&gt;/symbols.json</code> and "
+                "<code>parts/&lt;id&gt;/listing.json</code>; the ids are the ones in its Source pages\u2019 addresses.")
     return "Each part of the game has its own symbol map and listing: " + "; ".join(
         f'{html.escape(p["title"])}, <a href="parts/{p["id"]}/symbols.json">symbols.json</a> and '
         f'<a href="parts/{p["id"]}/listing.json">listing.json</a>' for p in P if listed(p)) + "."
@@ -836,9 +844,8 @@ def build_game(gdir, out_root):
     links = {k: u for k, u in (game.get("links") or {}).items() if u}   # empty slots from the template are not links
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
-    span = PLATFORM_MAP_SPAN.get(plat, (0, 0x10000))
     if P:
-        totals, foot = part_footprints(P, out, common["platform_map"], plat)
+        totals, foot, span = game_footprint(P, out, plat)
     else:
         runs, totals, symbols, span = footprint(gdir, game)
         memmap = {"runs": runs, "totals": totals, "symbols": symbols}
@@ -856,10 +863,7 @@ def build_game(gdir, out_root):
     # in a game of several parts an address means nothing without its part, so the files about
     # the whole game link none (site.js leaves the addresses inside data-part="" alone)
     whole = (lambda h: f'<div data-part="">{h}</div>') if P else (lambda h: h)
-    layout = read(about_template)
-    if P:
-        layout = layout.replace('<div id="memmap"></div>', "")   # each part's map is in {{footprint}}
-    about = fill(layout, **common, footprint=foot, data_links=data_links(P), map_row=(span[1] - span[0]) // 128,
+    about = fill(read(about_template), **common, footprint=foot, data_links=data_links(P), map_row=(span[1] - span[0]) // 128,
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov,
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
