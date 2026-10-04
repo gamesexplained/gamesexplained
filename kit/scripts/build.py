@@ -17,7 +17,10 @@ Plus a home page with the catalogue and the games most recently added or changed
 (from git history), site/lib/, kit.html (kit/lessons/, newest first),
 status.html (from site/status.html + site/status.json: which kits work on which
 computers, and the work needed) and about.html (from site/about-site.html: who
-runs the site and the principles it follows; static).
+runs the site and the principles it follows; static). And what lets a phone
+install the site as an app: manifest.webmanifest, icons/ (kit/scripts/icons.py
+draws them) and sw.js at the root, with lines in every page's head that point
+at them.
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
 filled from game.json. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
@@ -719,12 +722,17 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js")
 
 
+def lib_versions(out_root):
+    """{lib file: the first 8 hex digits of its SHA-1}, for the lib files the build versions."""
+    import hashlib
+    return {f: hashlib.sha1(open(os.path.join(out_root, "lib", f), "rb").read()).hexdigest()[:8]
+            for f in LIB_FILES if os.path.isfile(os.path.join(out_root, "lib", f))}
+
+
 def version_lib(out_root):
     """Append ?v=<content hash> to every reference to a lib file, so a redeploy is never
     paired with a stylesheet or script the browser cached from the previous one."""
-    import hashlib
-    ver = {f: hashlib.sha1(open(os.path.join(out_root, "lib", f), "rb").read()).hexdigest()[:8]
-           for f in LIB_FILES if os.path.isfile(os.path.join(out_root, "lib", f))}
+    ver = lib_versions(out_root)
     pat = re.compile(r'(lib/(' + "|".join(re.escape(f) for f in ver) + r'))(["\'])')
     n = 0
     for d, _, files in os.walk(out_root):
@@ -735,6 +743,47 @@ def version_lib(out_root):
                 if new != page:
                     open(p, "w", encoding="utf-8").write(new); n += 1
     return n
+
+
+PWA_HEAD = """<link rel="manifest" href="{root}manifest.webmanifest">
+<meta name="theme-color" content="#23262d">
+<link rel="icon" href="{root}icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="icon" href="{root}icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{root}icons/apple-touch-icon.png">
+<script>
+if ("serviceWorker" in navigator && (location.hostname === "{domain}" || location.hostname === "www.{domain}"))
+  addEventListener("load", function () { navigator.serviceWorker.register("{root}sw.js"); });
+</script>
+"""
+
+
+def add_pwa(out_root):
+    """Make the site installable as an app: the manifest, the icons and the service worker at
+    the root, and the lines in every page's head that point at them, relative to the page.
+
+    The service worker sits at the root because it can only answer for pages at or below its
+    own folder. It goes to the network first (site/sw.js), so a deploy shows at once. Its
+    list of files to save on install names the lib files by their hashes, so the worker's
+    bytes change when a lib file does, and that is what makes browsers install the new one.
+    Pages register it only on the live domain: on a preview it would stay in the browser and
+    answer for whatever is served on that port next, the page editor included."""
+    shutil.copytree(os.path.join(SITE, "icons"), os.path.join(out_root, "icons"))
+    shutil.copy(os.path.join(SITE, "manifest.webmanifest"), out_root)
+    pre = ["./", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png"]
+    pre += [f"lib/{f}?v={v}" for f, v in lib_versions(out_root).items()]
+    open(os.path.join(out_root, "sw.js"), "w").write(fill(read(os.path.join(SITE, "sw.js")), precache=json.dumps(pre)))
+    domain = json.load(open(os.path.join(SITE, "config.json")))["domain"]
+    for d, _, files in os.walk(out_root):
+        for f in files:
+            if f.endswith(".html"):
+                p = os.path.join(d, f); page = open(p, encoding="utf-8").read()
+                if 'rel="manifest"' in page:
+                    continue
+                up = os.path.relpath(out_root, d).replace(os.sep, "/")
+                head = PWA_HEAD.replace("{root}", "" if up == "." else up + "/").replace("{domain}", domain)
+                marker = '<meta charset="utf-8">'
+                page = page.replace(marker, marker + "\n" + head, 1) if marker in page else head + page
+                open(p, "w", encoding="utf-8").write(page)
 
 
 def add_analytics(out_root):
@@ -1154,6 +1203,7 @@ def main():
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
     version_lib(out_root)
+    add_pwa(out_root)
     tagged = add_analytics(out_root)
     bad = broken_links(out_root)
     for page, url in bad:
