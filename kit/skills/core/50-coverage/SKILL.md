@@ -138,6 +138,13 @@ format, how to check the result against it, and how to read it back
   game's first instruction (the loader's hand-over) with one in play. A
   screen or bitmap that is already there before the game runs is authored
   data, to be described; one the game builds is output, to be excluded.
+  A plane can contain both. Declare its complete authored extent, then
+  exclude only the generated cells or rows. `coverage.include` overrides
+  custom exclusions as well as platform defaults: a broad include of the
+  whole plane gives the output back. Include only its authored gaps when
+  the plane sits under a platform exclusion. Re-run the loaded-data audit
+  after changing the scope or recovering code: new operand references can
+  split an already described allocation into undescribed aliases.
 - **Never bulk-disassemble every labelled address** to "recover"
   coverage. Many labels sit on data; disassembling them misclassifies the
   bytes as code. Undo by setting the data type back to undefined.
