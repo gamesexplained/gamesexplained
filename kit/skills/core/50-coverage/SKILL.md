@@ -5,7 +5,7 @@ description: The annotation loop. Measure comprehension with the shared coverage
 
 # Measure comprehension, not disassembly
 
-Start the clock: `python3 kit/scripts/clock.py start 50-coverage --model <your model id> games/<platform>/<slug>`. The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes of wall clock with nine agents on disjoint ranges. One agent is several times slower per kilobyte. Note the agent count when you stop the clock, and their model in the note if it differs from yours.
+Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game proves the model or needs a maintainer's check (`kit/CHECKING.md`). The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes with nine agents on disjoint ranges. One agent is several times slower per kilobyte.
 
 Disassembly coverage flatters you. Bytes can be decoded, labelled, even
 commented nearby, and still understood by nobody. The shared metric
@@ -31,7 +31,9 @@ same way, so tiers mean the same thing everywhere.
 3. Update `features.md` statuses and `facts.md` as facts firm up.
 4. Every 30 minutes or so, and at the end of every session:
    `python3 kit/scripts/symbols_export.py games/<platform>/<slug>`, then
-   `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.vsf`
+   `python3 kit/scripts/listing.py games/<platform>/<slug> work/<state>.<snapshot ext>`
+   (the platform's snapshot extension: a `.vsf` on the C64, a `.sna` on the
+   ZX Spectrum; `kit/skills/<platform>/` names it)
    so the committed listing never drifts from the symbols.
    A later session that has neither the snapshot nor the disassembler
    project (a hosted one starts in a fresh container) can still correct a
@@ -43,6 +45,45 @@ same way, so tiers mean the same thing everywhere.
    back, so name each hand edit in `TODO.md` for whoever holds the project
    to carry into it.
 5. Repeat until the tier you are aiming for is met.
+
+### When the disassembler does not follow control flow
+
+Where the disassembler walks the code and mints a symbol at every branch
+target, the coverage queue is populated for you. Where the annotation
+surface is instead a **control file** - typed blocks the disassembler obeys
+rather than derives - nothing separates the code from the data for you, and
+it has to be done before the loop above can start. A wrong split does not
+show afterwards: code typed as data has no cross-references, reads as a
+table and is described as one, and coverage still reaches 100 %. The first
+such game was published for review with 5.9 KB of its code typed as data.
+
+Two sources, used together:
+
+- **The emulator's executed-address map**: every address the CPU executed
+  while you drove the game through the states you could reach (each menu,
+  each control, losing, giving up). It finds the code that runs, including
+  what only a computed jump reaches.
+- **A recursive trace**: decode from every address the map gives, and from
+  the entries the map cannot contain (code that ran before the snapshot was
+  taken, a handler whose address is only stored in data, an operand another
+  instruction writes), follow every branch and call target, repeat. It adds
+  the code a static walk can reach that the recorded play never ran.
+
+Everything neither found is data, unless a reference says a routine reads it
+as a table.
+
+**Iterate, because a wrong type hides what it calls.** A walk decodes only
+what it is given, so a stretch filed as data also hides the routines *it*
+calls, and the map sweep on its own will report that stretch as data too.
+Repeat the sweep until a pass adds nothing, then believe the total. A single
+pass under-reports, and the difference is not a rounding error: see the entry
+in `kit/lessons/` for the run that measured both.
+
+**Let a script hold the typing against the map**, and run it again after
+every merge of the annotation agents' work. The platform's tool skills say
+which commands produce the map, how to turn it into the control file's
+format, how to check the result against it, and how to read it back
+(`kit/skills/<platform>/`).
 
 ## Rules that keep the number honest
 
@@ -89,14 +130,10 @@ same way, so tiers mean the same thing everywhere.
   holds the instruction decides). `listing.py <game dir> --relabel` puts a
   change to `io` into `listing.json` without the snapshot. An instruction
   reached both ways keeps one name; say the other in its comment.
-  A game in VIC bank 3 can keep graphics there without banking anything:
-  the video chip reads the RAM beneath the I/O while the CPU sees the
-  chips. Nothing references those bytes by address, so no symbol points at
-  them and the ledger never counts them. Whenever `$DD00` selects bank 3,
-  look at the snapshot's RAM at `$D000`-`$DFFF` for sprite and character
-  data (one run found 64 sprite shapes there only when its page's gallery
-  asked for a police ship's frames). `listing.py` names that RAM whenever
-  it holds data and `game.json` has not said what it is (below).
+  A game can also keep graphics there without banking anything, for the
+  video chip alone (on the C64, `c64-reference`, "RAM the CPU cannot
+  see"); `listing.py` names that RAM whenever it holds data and
+  `game.json` has not said what it is (below).
 - **Is the picture loaded or drawn?** Compare a snapshot taken before the
   game's first instruction (the loader's hand-over) with one in play. A
   screen or bitmap that is already there before the game runs is authored
@@ -104,6 +141,13 @@ same way, so tiers mean the same thing everywhere.
 - **Never bulk-disassemble every labelled address** to "recover"
   coverage. Many labels sit on data; disassembling them misclassifies the
   bytes as code. Undo by setting the data type back to undefined.
+- **A gap can hold a different record type.** A frame directory can point
+  to a short sprite descriptor followed by animation commands before the
+  next frame. Check every other directory and constant pointer load before
+  calling the gap unused. Parse the candidate format through its actual
+  end and establish a consumer or a live execution check. A spare tuple
+  after a counted record can also be a retained extra component: describe
+  the read limit and keep its purpose open rather than guessing padding.
 - **Reading a region may disassemble it as a side effect** in some
   disassemblers. Log an explicit disassemble entry for every new code
   region you explore, or a replay under-restores.
@@ -137,17 +181,31 @@ past its symbol's reach, and anything under a default exclusion.
 `listing.py` lists it after every build. It names the RAM a platform
 default excludes but a game can still use (on the C64, the RAM under the
 I/O area) whenever that RAM holds data and `game.json` has not said what
-it is. With the hand-over snapshot, `work/entry.vsf` (`10-orient`), it
+it is. With the hand-over snapshot, `work/entry.<ext>` (`10-orient`; the
+extension is the platform's snapshot form, from `PLATFORM_DEFAULTS`), it
 also lists every stretch of loaded data, the same bytes at the hand-over
 and in play, that the ledger neither tracks nor has been told to leave
 out. When the listing is built from the hand-over itself (the start-up
 code exists nowhere else), give it the play snapshot as the second image:
-`--entry work/<play>.vsf`. Before calling 100 %, go through that list and say what each stretch
+`--entry work/<play>.<ext>`. Before calling 100 %, go through that list and say what each stretch
 is: label and describe it, or list it in `game.json` under
 `coverage.extra` (authored data), `coverage.include` (RAM under a default
 exclusion) or `coverage.exclude` (not the game's, with the reason). One
 game reached 100 % with 1.6 KB of its own tables and its picture's
 colours outside the count.
+
+The list only finds data that sits at the same address in both images:
+data the start-up copies elsewhere (out of the way of the I/O area, under
+a ROM, into another bank) differs between them and is never listed.
+Search the play snapshot for the start-up's copy loops' destinations, and
+check each against the ledger; one game reached 100 % with half a
+kilobyte of moved graphics outside every span. <!-- until #146 -->
+
+## Interpreted programs and code loaded as level data
+
+If a CPU trace reaches an interpreter or calls into a loaded level,
+follow the program it dispatches too. Read [compiled-programs.md](compiled-programs.md)
+for operand decoding, branch checks and separate loaded-image meanings.
 
 ## Inline parameters: the reason a flow disassembler stalls
 
@@ -245,41 +303,48 @@ Routines are independent, so the burn-down parallelises. What matters:
   `tools.py stop` leaves the disassembler up while its logs are newer
   than the export, and says so; `--force` is for a session you mean to
   lose.
-- **Renaming an auto symbol keeps its reach.** A label set over one the
-  tracer minted keeps its type, and with it the 64-byte span of an auto
-  symbol, so a long table named that way still leaves its tail uncounted.
-  Give the tail a label of its own, or describe it from the table's
-  start.
 - **One figure per agent.** `coverage.py <game> --live --range $2000 $27FF`
   prints the figure and the work queue for one agent's range alone; the
   whole-image queue is mostly other agents' work.
 - Agents read into neighbours' ranges for context; ranges prevent write
   collisions, not two agents naming the same thing. Catch that when
   merging.
+- **Find the loaded data before you split the image.** Go through the
+  list in "Data the ledger cannot see" before choosing the ranges, not
+  only before calling 100 %. One game's agents finished with 16 KB of map
+  and sprite images still outside the count, left for the lead alone;
+  found first, they are a range in a brief.
 - Brief them cold, from `brief.md` beside this file: copy it to the
   game's `work/BRIEF.md` and fill it in. It asks for the feature list,
   `facts.md` so far, the rules above, the exact client command with each
   agent's own log, and the report you want back.
-- **A brief carries only what has been checked**: traced to the code or
-  seen live. The template has two headings for facts. Under "Established"
-  each line names its evidence; anything without evidence goes under
-  "Guesses", with what would settle it. An agent treats its brief as
-  ground truth, so an unchecked guess there costs every agent that meets
-  it the time to disprove it. The report asks each agent what became of
-  each guess.
+- **A brief carries only what has been checked**: each fact under
+  "Established" names its evidence, and the rest goes under "Guesses"
+  (the template's opening comment says why).
 - Force the model explicitly. Spot-check one claim per agent against the
   source before believing the report.
 - **A game of several programs** (`10-orient`, "A game of several
   programs") splits by part: one agent per part, each with its own
   disassembler on that part's snapshot. The disassembler has a fixed port,
   so several instances need somewhere apart to listen; the tool's notes
-  say how. Stop the clock with the number of parts as `--agents`.
+  say how.
+- **An agent stopped by the account's usage limit keeps its context.**
+  Nine agents at once use up a session's allowance quickly; when they
+  stop on the limit, export at once, wait for the reset and resume each
+  agent with a message (the harness's resume, not a new agent), telling
+  it what is already in the disassembler. A new agent rereads its range
+  from nothing.
+- **Correct the brief the moment a fact in it turns out wrong**, and say
+  in it that it was corrected. Agents still running read the old line;
+  their reports will contradict it, which is how one run found that its
+  "Established" control had been read off a snapshot taken mid-jump.
 
 ## Declare what the bytes are
 
-The About tab draws the game's footprint in the 64 KB space and counts
-code, graphics, level data, sound, text, tables and variables. The build
-classifies from the listing (code, text, data), the video bases in
+The About tab draws the game's footprint in the 64 KB space (on the
+Spectrum, the 48 KB of RAM above the ROM) and counts code, graphics,
+level data, sound, text, tables and variables. The build classifies
+from the listing (code, text, data), the video bases in
 `game.json` (the character set) and symbol-name hints (`str_`, `tune_`,
 `sprite`, `maze`, and the like). Anything larger than a few bytes that
 those cannot see, declare in `game.json` under `regions`:

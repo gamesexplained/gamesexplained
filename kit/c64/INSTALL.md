@@ -19,7 +19,11 @@ program of its own (`kit/c64/check_emulator.py`: no game needed, under a
 minute). It names every check it makes, and
 `kit/skills/c64/tool-vice-mcp/workarounds.md` says what to do about each
 one that fails. Run it once after installing, and again after any new
-build or release.
+build or release. After the checks it reports, without counting them,
+which of the server's quirks the build has that `kit/c64/vice.py`
+absorbs. On 3 October 2026 the v3.13.2 Linux release had `read-64k`,
+`key-lowercase`, `snapshot-path` and `reset-paused`, and not
+`read-running`, which the v3.13.1 macOS release had on 28 September.
 
 **Which build: the newest, always.** The kit pins no version of vice-mcp.
 `tools.py get-vice` finds the newest release and says what this machine
@@ -36,9 +40,21 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
 | v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 26 September 2026 | 56 of 57, five runs: all but `pause-at-instruction` |
 | v3.13.1 release, `v3.13.1-macos-arm64-gui.dmg` | macOS arm64 | 28 September 2026 | 56 of 57: all but `pause-at-instruction` |
+| v3.13.1 release, GUI; regenerator2000 0.9.20 | Ubuntu 24.04.5 x86_64, desktop | 30 September 2026 | 56 of 57: all but `pause-at-instruction` |
+| v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, no display | 2 October 2026 | 57 of 57, five runs |
+| v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
+| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64 desktop (Ubuntu 24.04), under `xvfb-run` | 30 September 2026 | 56 of 57: all but `warp` |
+| v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, Ubuntu 24.04, no display | 2 October 2026 | 54 of 57 after making startup progress independent of host speed: `watch-store`, `watch-load` each counted 39 against a minimum 40; warp reached 71 passes/s against a minimum 100. Exact frame stepping, instruction stops and snapshot/restart determinism passed |
 
 Add a row whenever a build is measured on a machine not listed, and bring
-that machine's `c64` cell in `site/status.json` into line with it. The two
+that machine's `c64` cell in `site/status.json` into line with it. Until
+3 October 2026 `watch-store`, `watch-load`, `checkpoints-survive-load`
+and `warp` were judged against a second of the host's clock: the misses
+of those four in the rows of 30 September and 2 October are slow hosts,
+not the emulator. From that day the check counts against the test program's
+own passes and reports the host's speed on a line of its own; on macOS
+arm64 that day, with the emulator held to 15 passes a second, the older
+check failed nine of 57 and the newer one none. The two
 Linux rows of v3.13.1 failed the same checks, whichever way the build was
 made: `determinism-running-save` and `determinism-restart`, and once
 `step-instruction`, more of them while a compile was loading the host.
@@ -49,7 +65,10 @@ instruction, where the registers read stale and a load keeps the old
 ones. From 26 September 2026 `check-emulator` measures
 that as `pause-at-instruction`, and the three stop with `pause()` in
 `kit/c64/vice.py`; on the release they then passed in five runs out of
-five. Stop the machine the same way (`workarounds.md`). What the
+five. Stop the machine the same way on a build that fails it. Pull
+request #30 on `barryw/vice-mcp` fixes the pause in the server, and
+v3.13.2 carries it: on 2 October 2026 its Linux and macOS arm64 releases
+lost no register set in thirty pauses, in each of five runs. What the
 v3.11.0 release fails, by phase, is below. A contributor who declines to
 build is offered the newest release with a build for their machine, and
 on 24 September 2026 that was v3.11.0 for a Mac. On an emulator that has
@@ -108,8 +127,21 @@ fixes", below).
 
 **Prerequisite the kit does not install:** Rust's `cargo`
 (https://rustup.rs), for the disassembler. If the contributor has no
-`cargo`, tell them, and let them decide whether to install Rust; it is the
-one thing here that lives outside this folder.
+`cargo`, tell them, and let them decide whether to install Rust. Rust can
+live inside this folder too, which is worth offering: rustup's own
+installer, pointed into `tools/` and told to leave the shell profile
+alone, puts nothing in the home folder (500 to 700 MB in `tools/`):
+
+```
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o tools/rustup-init.sh
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home sh tools/rustup-init.sh -y --no-modify-path --profile minimal
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --root tools/cargo regenerator2000
+```
+
+Done that way on 30 September 2026 on Ubuntu 24.04; the compile took
+about ten minutes on sixteen cores, most of it one dependency
+(`aws-lc-sys`), and used a temporary folder under `/tmp` that cargo
+removes when it finishes.
 
 ## What goes where, and what is left behind
 
@@ -121,14 +153,16 @@ Tell the contributor this before installing anything:
 | Emulator source and build, when built from source (`get-vice build`) | `tools/src/vice-mcp/`, with `tools/vice-mcp` a link into it | 550 MB (Linux) to 700 MB (macOS) |
 | Emulator's config, log and snapshots | `tools/vice-home/` | small; snapshots are 200 KB each |
 | Disassembler binary | `tools/cargo/` | about 20 MB |
+| Disassembler XDG settings (Linux) | `tools/r2000-home/` | small |
 | Logs | `tools/logs/` | small |
 
 **Uninstall:** delete the repository folder. These can be left outside
 it, and that is the complete list:
 
-- regenerator2000 writes a settings file of a few hundred bytes to its own
-  config folder (`~/Library/Application Support/regenerator2000` on macOS).
-  Delete it if you want no trace.
+- On macOS, regenerator2000 writes a settings file of a few hundred bytes to its own
+  config folder (`~/Library/Application Support/regenerator2000`). Delete it
+  if you want no trace. On Linux the launcher points its XDG paths at
+  `tools/r2000-home/`.
 - Rust itself, if the contributor installed it for this (`rustup self
   uninstall` removes it).
 - When the emulator was built from source: the build packages, if they
@@ -138,7 +172,7 @@ it, and that is the complete list:
 - When the Linux release zip was used: its runtime libraries, if they
   were installed for this (apt packages; the list is under Linux, below).
 
-Verified on macOS with `tools.py verify-footprint`: the emulator wrote its
+Verified on macOS with `tools.py --platform c64 verify-footprint`: the emulator wrote its
 log, settings and snapshots under `tools/vice-home/` and nothing under the
 home directory, at launch, in use and on exit. Verified the same way on
 Linux, in a container with no display (below). No Windows run is
@@ -147,10 +181,12 @@ recorded.
 ## Get the emulator
 
 Always the newest vice-mcp release. Nobody pins a version, because the
-project does not build every platform for every release: in September
-2026, v3.12.1 and v3.13.1 had Linux and Windows builds and no macOS one,
-and v3.11.0 was the newest release with a macOS build. So find out what
-this machine can have, with nothing changed:
+project does not build every platform for every release, and a build can
+appear partway through a release's life: on 24 September 2026 v3.13.1 had
+Linux and Windows builds only and v3.11.0 was the newest a Mac could have,
+and by 28 September 2026 v3.13.1 had a macOS arm64 GUI build (the table
+above). On 2 October 2026 v3.13.2 had all five of the files below. So
+find out what this machine can have, with nothing changed:
 
 ```
 python3 kit/scripts/tools.py get-vice
@@ -194,11 +230,19 @@ published on its GitHub releases page,
 https://github.com/barryw/vice-mcp/releases; the source is cloned from
 the same repository. Nothing comes from anywhere else.
 
+A macOS release file is a `.dmg` with the usual drag-to-install
+`Applications -> /Applications` symlink at its root. `get-vice` unpacks
+only the release's own folder, skipping dotfiles and symlinks. Following
+that link — which an earlier `get-vice` did, until it was fixed on 29
+September 2026 — copies the contributor's whole real `/Applications` into
+`tools/downloads/`: 19 GB there, for a 40 MB file. Delete any
+`tools/downloads/unpacked/Applications` you find.
+
 The builds the project publishes, when a release has them:
 
 | Operating system | Asset | Notes |
 |---|---|---|
-| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | **what the first three games were done with** (v3.11.0) |
+| macOS, Apple silicon | `...-macos-arm64-gui.dmg` | the first three games used v3.11.0; v3.13.1's measured 56 of 57 on 28 September 2026 and v3.13.2's 57 of 57 on 2 October 2026 (table above) |
 | macOS, Apple silicon | `...-macos-arm64-headless.zip` | no window; **nothing stops the CPU**, see below; no run recorded |
 | Linux x86_64 | `...-linux-x86_64-gui.zip` or `-headless.zip` | the GUI zip run on 24 September 2026 in a container with no display (Linux, below) |
 | Windows x86_64 | `...-windows-x86_64-headless.zip` | headless, so **stops do not work in it** at all; no run recorded |
@@ -255,7 +299,7 @@ the way to one where none exists, and no run of it is recorded on either.
 cargo install --root tools/cargo regenerator2000
 ```
 
-That compiles it (about a minute on a recent machine) and puts the binary at
+That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
 
 What it is, and say so when you ask: regenerator2000 is an open-source
@@ -265,13 +309,64 @@ Apache-2.0, published on crates.io by its author. `cargo install` fetches
 that source from crates.io and compiles it on the contributor's machine;
 no prebuilt binary is downloaded or run.
 
+## Another program on port 6510
+
+The emulator's MCP server listens on 6510. When something else on the
+computer already holds that port (a contributor's own server, not an
+emulator), ask before stopping it, and offer the alternative: start the
+emulator elsewhere with `KIT_VICE_PORT`.
+
+```
+KIT_VICE_PORT=6511 python3 kit/scripts/tools.py vice
+```
+
+The launcher writes the port it used to `tools/vice-port`, and
+`kit/c64/vice.py`, `check_emulator.py` and `check_cpu6502.js` read it back,
+so every later command reaches this emulator even in a shell that has
+lost the variable. Without the file a client falls back to 6510 and talks
+to whatever is there: on 30 September 2026 a contributor's own web server
+answered the kit's first call with a 404. `.mcp.json` still names 6510;
+`vice.py` is the way to the emulator on another port.
+
+## Another program on port 3000
+
+The disassembler's MCP server listens on 3000, and regenerator2000 0.9.20
+has no option to move it. When another clone's disassembler holds the
+port and should keep running, start this clone's elsewhere with
+`KIT_R2000_PORT`:
+
+```
+KIT_R2000_PORT=3001 python3 kit/scripts/tools.py r2000 <snapshot.vsf>
+```
+
+On any port but 3000 the launcher starts the disassembler's stdio server
+behind `kit/c64/stdio_bridge.py`, which answers on that port on 127.0.0.1
+only. The stdio server opens projects only: the bridge takes a
+`.regen2000proj` as it is, and turns a `.vsf` into a new project beside
+the snapshot, under a name of its own each time, so a project an earlier
+session saved is never overwritten. Keep both under the game's ignored
+`work/`. A `.prg` needs the server on 3000.
+
+The launcher writes the port it used to `tools/r2000-port` and
+`kit/c64/r2000.py` reads it back, as for the emulator: the client, the
+exporter and `tools.py stop` reach this clone's disassembler in a shell
+that has lost the variable, and never the other clone's on 3000. The
+port holds until a start names another; `KIT_R2000_PORT=3000` goes back
+to the disassembler's own server. Stop the disassembler before changing
+it. An editor's own MCP registration still names 3000.
+
+Used for a whole run on Linux x86_64 (Wizard, 2 October 2026). On macOS
+arm64 on 3 October 2026 a start on 3001, calls through `r2000.py`, the
+stop that refuses while annotations are unexported and a forced stop
+behaved as on 3000.
+
 ## Start, check, stop
 
 ```
 python3 kit/scripts/tools.py status
-python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510
-python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000
-python3 kit/scripts/tools.py snapshots            # where emulator snapshots land
+python3 kit/scripts/tools.py vice                 # emulator, MCP on 127.0.0.1:6510 (or KIT_VICE_PORT)
+python3 kit/scripts/tools.py r2000 <snapshot.vsf> # disassembler, MCP on :3000 (or KIT_R2000_PORT)
+python3 kit/scripts/tools.py --platform c64 snapshots            # where emulator snapshots land
 python3 kit/scripts/tools.py stop vice            # the emulator only
 python3 kit/scripts/tools.py stop                 # both tools
 ```
@@ -300,7 +395,8 @@ loaded. On 24 September 2026, on macOS arm64 with vice-mcp 3.13.1 and
 JavaScriptCore, it passed: every pixel matched but the handful at a
 mid-line change of mode or scroll that the renderer does not follow to
 the pixel. On 26 September, on Linux x86_64 with the v3.13.1 release and
-node, the same.
+node, the same, and on 2 October with the v3.13.2 release, there and on
+macOS arm64.
 
 ## macOS — known to work
 
@@ -324,7 +420,8 @@ node, the same.
   also carries the joystick workaround; see
   `kit/skills/c64/tool-vice-mcp/workarounds.md`.
 - **The disassembler** binds port 3000 with no option to change it, and
-  only one instance can run at a time. Drive it with
+  only one instance can run on a port ("Another program on port 3000" is
+  the way to a second). Drive it with
   `python3 kit/c64/r2000.py <tool> '<json args>'`, which also logs
   every mutating call to the game's `work/annotations.jsonl`.
 
@@ -347,6 +444,31 @@ node, the same.
   full.
 - **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
+## Linux — run on a desktop, 30 September 2026
+
+On Ubuntu 24.04 x86_64 with a desktop, from an agent whose shell had no
+`DISPLAY` set, the launcher ran the emulator under `xvfb-run` as on a
+server, and nothing was drawn on the desktop. The release zip needed
+three of the runtime packages below that the desktop lacked
+(`libieee1284-3t64`, `libmicrohttpd12t64`, `libportaudio2`); the contributor
+installed them, since `sudo` asks for a password the agent cannot type.
+`check-emulator` passed 56 of 57: `warp` failed, warp mode giving 78
+passes a second against 51 without, where the check wants over 100. The
+cause is unknown: container runs, also under `xvfb-run`, pass it. `verify-footprint`
+was clean, and regenerator2000 wrote nothing to `~/.config/regenerator2000`.
+
+## Linux — a second desktop run, 30 September 2026, with regenerator2000
+
+On Ubuntu 24.04.5 x86_64, the v3.13.1 GUI release passed 56 of 57
+checks; `pause-at-instruction` failed, so inspection used the documented
+pause workaround. Restoring an existing snapshot reached gameplay.
+regenerator2000 0.9.20 was also exercised. The run reported no external
+changes in the bounded footprint comparison, but did not preserve whether
+`~/.config/regenerator2000/config.toml` was listed as a known leftover.
+That report cannot establish absence of an external settings file:
+a maintainer observed 0.9.20 writing it with opened project paths.
+Check both changed files and known leftovers when repeating the run.
+
 ## Linux — run on a server with no display, 24 September 2026
 
 Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in cloud
@@ -354,8 +476,7 @@ containers with no display (gcc 13.3, Python 3.11, cargo 1.94). The first
 run built v3.13.0 from source and measured `check-emulator` 56 of 56 three
 times, `verify-footprint` clean. A second run the same day used the
 v3.13.1 release zip and then a source build of the same tag (the table at
-the top of this file). No run is recorded on a Linux desktop, on ARM or on
-another distribution.
+the top of this file). No run is recorded on ARM or another distribution.
 
 **A network that refuses the GitHub API.** In those containers the proxy
 answered `api.github.com`, the project's web pages and `codeload` with 403
@@ -387,6 +508,7 @@ sudo apt-get install --no-install-recommends libpulse0 libpcap0.8t64 libusb-1.0-
   libglew2.2 libevdev2 libmicrohttpd12t64 libportaudio2 libmpg123-0t64
 ```
 
+The v3.13.2 zip needed nothing outside that set on 2 October 2026.
 `ldd tools/vice-mcp/bin/x64sc | grep "not found"` lists what another
 machine lacks. `verify-footprint` was clean with the release zip and with
 the source build. Its `SHA256SUMS` file checks every file but itself (it lists

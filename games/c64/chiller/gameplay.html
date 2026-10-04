@@ -1,0 +1,103 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/chiller-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">What the boy and the girl must do on each of the ten screens, the crosses only one of them can take, the energy bar that stands in for lives, and the enemies in the way.</p>
+</header>
+<main class="wrap">
+<section id="quest">
+  <p class="fig">The quest</p>
+  <h2 class="t">Ten screens to the haunted house and back</h2>
+  <p class="lede">The boy crosses a forest, a cinema, a ghetto, and a graveyard to reach his girlfriend in the haunted house, then brings her home through the same places in reverse.<sup class="fn"><a href="about.html#src-1" title="The cassette inlay, scanned on the Internet Archive">1</a></sup> Each screen ends when its last cross is taken, and a card before it sets the scene in a line of verse. Each pin opens that screen on the Maps tab.</p>
+  <table class="t">
+    <tr><th></th><th>Screen</th><th>Who plays</th><th>Crosses</th><th>What the card says</th></tr>
+    <tr><td><a href="levels.html?screen=0#map" aria-label="Show the forest on the map"></a></td><td>The forest</td><td>the boy</td><td>5 blue</td><td>MOVE THE BOY AROUND THE FOREST COLLECTING THE BLUE MAGIC CROSSES.</td></tr>
+    <tr><td><a href="levels.html?screen=1#map" aria-label="Show the cinema on the map"></a></td><td>The cinema</td><td>the boy</td><td>5 blue</td><td>THERE'S A MESSAGE SCRAWLED IN BLOOD...</td></tr>
+    <tr><td><a href="levels.html?screen=2#map" aria-label="Show the ghetto on the map"></a></td><td>The ghetto</td><td>the boy</td><td>5 blue</td><td>SAVE YOUR ENERGY, YOU'LL NEED IT.</td></tr>
+    <tr><td><a href="levels.html?screen=3#map" aria-label="Show the graveyard on the map"></a></td><td>The graveyard</td><td>the boy</td><td>5 blue</td><td>THE MIDNIGHT HOUR IS CLOSE AT HAND, YOUR DEATH AWAITS IN THIS EVIL LAND.</td></tr>
+    <tr><td><a href="levels.html?screen=4#map" aria-label="Show the haunted house on the map"></a></td><td>The haunted house</td><td>the boy</td><td>5 blue</td><td>YOUR GIRLFRIEND YOU ARE SEARCHING FOR, WHEN YOU HAVE THE CROSSES SHE'LL APPEAR BY THE DOOR.</td></tr>
+    <tr><td><a href="levels.html?screen=5#map" aria-label="Show the haunted house, on the way back, on the map"></a></td><td>The haunted house, back</td><td>the boy and the girl</td><td>5 blue, 5 red</td><td>BOTH BOY AND GIRL MUST TURN AROUND, BECAUSE YOUR QUEST IS HOMEWARD BOUND.</td></tr>
+    <tr><td><a href="levels.html?screen=6#map" aria-label="Show the graveyard, on the way back, on the map"></a></td><td>The graveyard, back</td><td>the boy and the girl</td><td>5 blue, 5 red</td><td>BY NOW YOUR ENERGY MUST BE LOW, SO FIND A MUSHROOM BEFORE YOU SLOW.</td></tr>
+    <tr><td><a href="levels.html?screen=7#map" aria-label="Show the ghetto, on the way back, on the map"></a></td><td>The ghetto, back</td><td>the boy and the girl</td><td>5 blue, 5 red</td><td>THE GHETTO IS A LONELY PLACE, SO GET YOUR CROSSES WITH GREAT HASTE.</td></tr>
+    <tr><td><a href="levels.html?screen=8#map" aria-label="Show the cinema, on the way back, on the map"></a></td><td>The cinema, back</td><td>the boy and the girl</td><td>5 blue, 5 red</td><td>THE FINAL MINUTES ARE WITH YOU, USE THEM WELL.</td></tr>
+    <tr><td><a href="levels.html?screen=9#map" aria-label="Show the forest, on the way back, on the map"></a></td><td>The forest, back</td><td>the boy and the girl</td><td>5 blue, 5 red</td><td>THE END IS NIGH, YOU'RE GOING TO DIE.</td></tr>
+  </table>
+  <p>The game plays the ten screens from a list, in order (<code>level_records</code>, <code>$7290</code>). A screen's own settings say how many crosses it needs, five going out and ten coming back, and the count runs down as they are taken (<code>crosses_left</code>, <code>$7F00</code>). The way home is not a fresh copy of the outward screens: each place comes back as the boy left it, so a mushroom eaten on the way out is still gone (<code>next_screen</code>, <code>$7680</code>).</p>
+</section>
+<section id="crosses">
+  <p class="fig">The crosses</p>
+  <h2 class="t">Blue for him, red for her</h2>
+  <p class="lede">Every cross is the same character, tile <code>$57</code>. The only thing that makes it the boy's or the girl's is its colour. Pick a character and a cross colour to see what <code>cross_touch</code> does.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" data-who="0" aria-pressed="true">The boy</button>
+      <button class="b" type="button" data-who="1" aria-pressed="false">The girl</button>
+      <span class="note">touches a</span>
+      <button class="b" type="button" data-col="14" aria-pressed="true">blue cross</button>
+      <button class="b" type="button" data-col="10" aria-pressed="false">red cross</button>
+    </div>
+    <canvas id="xc" width="384" height="120" class="scr" style="max-width:384px" role="img" aria-label="The character and the cross"></canvas>
+    <p class="kv" id="xc-kv"></p>
+  </div>
+  <p><code>cross_touch</code> (<code>$7F50</code>) reads the colour under the cross and tests one bit. Light blue is 14 (<code>%1110</code>) and light red is 10 (<code>%1010</code>), so bit 2 tells them apart. A match replaces the cross with a space and counts it off the MAGIC CROSSES counter (<code>cross_count</code>, <code>$5B5E</code>). The crosses flash because every 40th pass <code>colour_cycle</code> (<code>$7F80</code>) takes 8 off each cross's colour and then puts it back.</p>
+  <p>Going out, only the boy plays, and each screen needs its five blue crosses. On the way back the girl comes too, and all ten are needed. Fire, or the <code>?</code> key, swaps who you control, but not before the first way-back screen (<code>switch_allowed</code>, <code>$7280</code>). The border shows who is playing: blue for the boy, light red for the girl.</p>
+  <p>A swap does not move anyone. <code>player_swap</code> exchanges the two sprites, positions and all, so whoever you control is always sprite 0. The one left behind stands still, and still loses energy when an enemy touches it (<code>girl_touch</code>, <code>$CD9D</code>).</p>
+</section>
+<section id="energy">
+  <p class="fig">Energy</p>
+  <h2 class="t">No lives, and every step costs</h2>
+  <p class="lede">Chiller has no lives. You have one energy bar to manage, and when it empties the game is over. Enemies and toadstools drain it and mushrooms fill it. Walking and jumping cost energy too. Try each on the bar below, which uses the game's own step sizes.</p>
+  <div class="plate">
+    <div class="row">
+      <button class="b" type="button" data-e="walk">Walk 1,000 passes</button>
+      <button class="b" type="button" data-e="touch">An enemy runs into you</button>
+      <button class="b" type="button" data-e="toad">Eat a toadstool</button>
+      <button class="b" type="button" data-e="mush">Eat a mushroom</button>
+      <button class="b" type="button" data-e="reset">Full bar</button>
+    </div>
+    <canvas id="eb" width="560" height="32" class="scr" style="max-width:560px" role="img" aria-label="The energy bar as the game draws it"></canvas>
+    <p class="kv" id="eb-kv"></p>
+    <p class="cap">Drawn with the game's own bar characters, <code>$A1</code>-<code>$A9</code>, in the forest's colours: 33 cells of eight steps. An empty bar ends the game.</p>
+  </div>
+  <table class="t">
+    <tr><th>What</th><th>Effect on the bar</th><th>Where</th></tr>
+    <tr><td>Walking</td><td>one step every 765 passes of the main loop with a direction held</td><td><code>walk_drain</code> <code>$5A20</code></td></tr>
+    <tr><td>Jumping</td><td>one step each time a counter runs out in the air</td><td><code>drain_step</code> <code>$59E6</code></td></tr>
+    <tr><td>Standing still</td><td>nothing</td><td><code>drain_step</code></td></tr>
+    <tr><td>An enemy sprite overlapping yours</td><td>two steps, again every pass it stays</td><td><code>sprite_touch</code> <code>$CE87</code></td></tr>
+    <tr><td>A toadstool, tile <code>$55</code></td><td>24 steps, one every 18 calls, each with a border flash</td><td><code>poison_tick</code> <code>$5B2C</code></td></tr>
+    <tr><td>A mushroom, tile <code>$54</code></td><td>23 steps back, one every 16 calls; on a full bar, 10 points each instead</td><td><code>energy_tick</code> <code>$5B00</code></td></tr>
+    <tr><td>A bonus, tile <code>$56</code></td><td>100 points, no energy</td><td><code>tile_touch_b</code> <code>$5AC7</code></td></tr>
+  </table>
+  <p>The inlay warns that walking, running, and jumping each cost more than the last.<sup class="fn"><a href="about.html#src-1" title="The cassette inlay, scanned on the Internet Archive">1</a></sup> The code has no running. There is one walking speed, and it gets slower as the bar empties: once the bar's seventh cell is no longer full, <code>bar_speed</code> (<code>$5961</code>) patches the main loop to read the controls every 128 passes instead of every 32. An empty bar goes straight to GAME OVER (<code>out_of_energy</code>, <code>$5A70</code>).</p>
+</section>
+<section id="cast">
+  <p class="fig">Creatures</p>
+  <h2 class="t">Five enemies on every screen, and none can be killed</h2>
+  <p class="lede">Every screen brings five enemies, each looping through its own frames as it follows its path. An enemy that runs into the character you control costs energy and nothing else: it carries on along its path, and nothing in play can kill it. Pick a screen to see its five.</p>
+  <div class="plate" id="enemies">
+    <div class="row" id="en-pick"></div>
+    <canvas id="en" width="720" height="90" class="scr" style="max-width:720px" role="img" aria-label="The five enemies of the chosen screen, animated"></canvas>
+    <p class="kv" id="en-kv"></p>
+    <p class="cap">Each enemy steps from its first frame to its last and starts again (<code>enemy_move</code>, <code>$CCAB</code>), in the colours the game sets when the screen begins (<code>$D029</code>-<code>$D02D</code>). Every enemy shape in the game is on the <a href="graphics.html#enemies">Graphics</a> tab.</p>
+  </div>
+  <p>The game has no hit test of its own. <code>sprite_touch</code> (<code>$CE87</code>) reads the hardware's sprite collision register, <code>$D01E</code>, and when your sprite and exactly one enemy sprite overlap, two steps of poison go on the bar. Stand still at the start of the forest and the bar holds for 16 seconds, until an enemy wanders onto the boy and takes 69 steps in a single visit.</p>
+  <p>The enemies follow scripts of direction bytes (0 up, 1 down, 2 left, 3 right), each ended by <code>$FF</code>, at <code>path_scripts</code> (<code>$4A00</code>-<code>$4A8F</code>). <code>path_step</code> (<code>$CC12</code>) moves an enemy one pixel every few passes and reads the next byte every eighth move. Nine scripts serve all fifty slots. Three walk down and back up, four hold one direction for ever, and three are long runs down with one stray byte that matches none of the four directions, so it does nothing. Step through any enemy's script on the <a href="levels.html#paths">Maps</a> tab.</p>
+  <p>The five enemies are sprites 2 to 6, and now and then one of them throws a sixth onto sprite 7. An enemy that walks off an edge comes back later: <code>respawn_timer</code> (<code>$2FB2</code>) gives an empty slot a chance out of 128 (<code>$45E2</code>) to return.</p>
+</section>
+<section id="loop">
+  <p class="fig">The journey home</p>
+  <h2 class="t">Home again, then back to the forest</h2>
+  <p class="lede">Take the last cross on the way home and Chiller starts again in the forest, with its five crosses restored and your score kept. There is no ending screen or message, and the game does not count how many times you have made the trip.</p>
+  <p>When a screen's last cross is taken, <code>crosses_left</code> (<code>$7F00</code>) passes the next screen number from its settings to <code>next_screen</code> (<code>$7680</code>). After the final return screen, the number is <code>$12</code>; the game changes it to <code>$FE</code>, which starts the outward journey in the forest again.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/chiller-page.js"></script>

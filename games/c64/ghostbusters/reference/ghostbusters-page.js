@@ -932,9 +932,104 @@ return module.exports;
   }
 
   // one script for every tab: each part runs only where its elements are
+
+  // ---- the sprites: unpacked from the game's own stream, as the cold start does ----
+  function spriteBank(G) {                       // rle_unpack $610B: $11 n = n zero bytes (0 = 256)
+    const out = new Uint8Array(0x1000), m = G.ram;
+    let src = 0xB408, d = 0;
+    while (!((src & 0xFF) >= 0xF8 && (src >> 8) >= 0xBF)) {
+      const v = m[src];
+      if (v !== 0x11) { out[d++] = v; src++; }
+      else { for (let n = m[src + 1] || 256; n > 0; n--) out[d++] = 0; src += 2; }
+    }
+    return out;
+  }
+  function drawShape(ctx, bank, n, o) {          // o: x, y, s(cale), mc, col, m1, m2, xe, ye
+    const sx = o.s * (o.xe ? 2 : 1), sy = o.s * (o.ye ? 2 : 1);
+    for (let y = 0; y < 21; y++) for (let x = 0; x < 24; x++) {
+      const byte = bank[n * 64 + y * 3 + (x >> 3)];
+      let c = null;
+      if (o.mc) { const v = (byte >> (6 - (x & 6))) & 3; c = [null, o.m1, o.col, o.m2][v]; }
+      else if ((byte >> (7 - (x & 7))) & 1) c = o.col;
+      if (c == null) continue;
+      ctx.fillStyle = C64COL[c]; ctx.fillRect(o.x + x * sx, o.y + y * sy, sx, sy);
+    }
+  }
+  const SHAPE_COLOUR = G => n => G.ram[0xA949 + n] & 15;   // the colour the IRQ gives each shape ($8F99)
+  const MAP = { bg: 12, mc: false, m1: 0, m2: 0 }, SHOP = { bg: 8, mc: true, m1: 1, m2: 0 }, BUST = { bg: 12, mc: true, m1: 0, m2: 1 };
+  const GALLERY = [
+    { name: 'The Ghostbusters logo on the city map, two sprites in one place', ...MAP, layers: [[5, true], [4, false]] },
+    { name: 'The Keymaster', ...MAP, side: [7] },
+    { name: 'The Gatekeeper', ...MAP, side: [6] },
+    { name: 'The Roamers’ two shapes', ...MAP, side: [8, 9] },
+    { name: 'The Slimer\u2019s two shapes', ...MAP, anim: [10, 11] },
+    { name: 'A Ghostbuster walking right', ...BUST, anim: [14, 16, 18, 20] },
+    { name: 'A Ghostbuster walking left', ...BUST, anim: [15, 17, 19, 21] },
+    { name: 'The two men at the top of the tower', ...BUST, side: [22, 23] },
+    { name: 'A man slimed, or caught at Zuul', ...BUST, side: [24] },
+    { name: 'A proton stream, in six steps', ...BUST, anim: [25, 26, 27, 28, 29, 30] },
+    { name: 'The light that rises from the trap, in two six-step animations', ...BUST, anim2: [[37, 38, 39, 40, 41, 42], [31, 32, 33, 34, 35, 36]] },
+    { name: 'The Marshmallow Man stomping a building: four sprites, two of them changing legs', ...MAP, mm: true },
+    { name: 'A lane dash on the road', bg: 12, mc: true, m1: 0, m2: 0, side: [12] },
+    { name: 'The sing-along ball', bg: 0, mc: false, side: [13] },
+    { name: 'The forklift’s two shapes, and its fork', ...SHOP, side: [1, 2, 3] },
+    { name: 'PK energy detector', ...SHOP, side: [51] },
+    { name: 'Image intensifier', ...SHOP, side: [52] },
+    { name: 'Marshmallow sensor', ...SHOP, side: [53] },
+    { name: 'Ghost bait', ...SHOP, side: [54] },
+    { name: 'Item 4, which no shelf holds', ...SHOP, side: [55] },
+    { name: 'Ghost trap', ...SHOP, side: [56] },
+    { name: 'Ghost vacuum', ...SHOP, side: [57] },
+    { name: 'Portable laser confinement system', ...SHOP, side: [58] },
+    { name: 'The Activision logo that rides the bottom scroller, eight rows of a shape', bg: 0, mc: false, side: [59] },
+  ];
+  const ticks = [];
+  function animate() {
+    if (!ticks.length || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    let t = 0;
+    setInterval(() => { t++; for (const f of ticks) f(t); }, 160);
+  }
+  function gallery(G) {
+    const root = $('#gal'), bank = spriteBank(G), colour = SHAPE_COLOUR(G), S = 3;
+    for (const g of GALLERY) {
+      const fig = document.createElement('figure'); fig.className = 'gal-cell';
+      const cv = document.createElement('canvas'), ctx = cv.getContext('2d');
+      const n = g.side ? g.side.length : g.anim2 ? 2 : 1, big = g.mm ? 2 : 1;
+      cv.width = (24 * S * big + 6) * n - 6; cv.height = 21 * S * big;
+      cv.style.width = cv.width / 1.5 + 'px';
+      cv.style.background = C64COL[g.bg];
+      fig.appendChild(cv);
+      const cap = document.createElement('figcaption'); cap.textContent = g.name; fig.appendChild(cap);
+      root.appendChild(fig);
+      const o = (k, mc) => ({ s: S, mc: mc == null ? g.mc : mc, col: colour(k), m1: g.m1, m2: g.m2 });
+      const draw = t => {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        if (g.layers) for (const [k, mc] of g.layers) drawShape(ctx, bank, k, { ...o(k, mc), x: 0, y: 0 });
+        else if (g.side) g.side.forEach((k, i) => drawShape(ctx, bank, k, { ...o(k), x: i * (24 * S + 6), y: 0 }));
+        else if (g.anim) { const k = g.anim[t % g.anim.length]; drawShape(ctx, bank, k, { ...o(k), x: 0, y: 0 }); }
+        else if (g.anim2) g.anim2.forEach((a, i) => { const k = a[t % a.length]; drawShape(ctx, bank, k, { ...o(k), x: i * (24 * S + 6), y: 0 }); });
+        else if (g.mm) {                          // st25_mm_stomps $8970: legs from $A909 and $A90D by step
+          const step = t & 3;
+          const parts = [[0x2B, 0, 0], [[0x2C, 0x2C, 0x31, 0x31][step], 0, 1], [0x2D, 1, 0], [[0x2E, 0x32, 0x32, 0x2E][step], 1, 1]];
+          for (const [k, cx, cy] of parts) drawShape(ctx, bank, k, { ...o(k), x: cx * 24 * S, y: cy * 21 * S });
+        }
+      };
+      draw(0);
+      if (g.anim || g.anim2 || g.mm) ticks.push(draw);
+    }
+    animate();
+  }
+  // ---- Discoveries: item 4 beside the trap, the other $600 item ----
+  function item4(G) {
+    const cv = $('#item4'), ctx = cv.getContext('2d'), bank = spriteBank(G), colour = SHAPE_COLOUR(G), S = 4;
+    ctx.fillStyle = C64COL[8]; ctx.fillRect(0, 0, cv.width, cv.height);
+    [[56, 'Ghost trap'], [55, 'Item 4']].forEach(([k], i) =>
+      drawShape(ctx, bank, k, { s: S, mc: true, col: colour(k), m1: 1, m2: 0, x: 16 + i * (24 * S + 32), y: 8 }));
+  }
   const has = id => !!document.getElementById(id);
   const parts = G => [screens, has('lyr') && (() => singalong(G)), has('ph') && (() => speech(G)),
-    has('ac-name') && account, has('bl-t') && (() => building(G)), has('st') && streams].filter(Boolean);
+    has('ac-name') && account, has('bl-t') && (() => building(G)), has('st') && streams,
+    has('gal') && (() => gallery(G)), has('item4') && (() => item4(G))].filter(Boolean);
   function run(G) {
     for (const f of parts(G)) { try { f(); } catch (e) { console.error(e); } }
   }
@@ -945,7 +1040,7 @@ return module.exports;
     if ($('#sid')) $('#sid').textContent = 'The player needs the site’s shared scripts: open this page from the built site.';
     return;
   }
-  const needsMemory = has('lyr') || has('ph') || has('bl-t') || $$('canvas[id^="scr-"]').length;
+  const needsMemory = has('lyr') || has('ph') || has('bl-t') || has('gal') || has('item4') || $$('canvas[id^="scr-"]').length;
   if (!needsMemory) { plain(); return; }
   C64.load('listing.json').then(run).catch(e => { console.error(e); plain(); });
 })();

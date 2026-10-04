@@ -94,3 +94,21 @@ the playthrough showed in their place is that the game has no ending:
 after the last level it loads the forest again. The lesson for the kit
 is that a reachability search should call the game's own movement code,
 not a model of it; a model that leaves out one table reads as proof.
+
+## 2026-10-03: the Fist II layout, and the shape-shifting enemy
+
+The steward asked for Chiller to match the layout of Fist II and Doctor
+Who. How it works was split into Gameplay (the ten screens and their
+cards, the crosses, energy, and the enemies, now animated), Controls (the
+keys and the jump, with the disabled fall damage moved there from
+Discoveries) and Graphics (the players' frames and a gallery of every
+enemy animation). The Overview and Discoveries lost their inline source
+notes and process notes, and sources became footnotes listed on About.
+
+Building the gallery turned up an animation of 107 frames. The way-home
+forest's slot 1 ends at `$F2` (`$7523`), the byte `title_flicker` writes
+to by mistake. The symbol map had called it record 9's unused tail; it is
+the slot's last frame (`+$23`). The enemy was watched in the port over
+3,000 frames and took every pointer from `$88` to `$F2`. The earlier
+pages had drawn four frames for every enemy, which hid both this and the
+cinema's one-frame enemies.

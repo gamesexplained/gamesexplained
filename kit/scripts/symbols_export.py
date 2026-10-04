@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Write a game's symbols.json, the canonical, tool-independent symbol map.
 
-Reads from the running regenerator2000 MCP server, or from a
-.regen2000proj file with --project. Never includes the memory image.
+Reads from the running disassembler (c64: regenerator2000 over MCP), or
+from one of its own files: a .regen2000proj with --project, or a SkoolKit
+control file with --ctl. Never includes the memory image.
 
 Usage:
-  symbols_export.py <game dir>                      from the live server
-  symbols_export.py <game dir> --project <file>     from a project file
+  symbols_export.py <game dir>                      from the live disassembler
+  symbols_export.py <game dir> --project <file>     from a regenerator2000 project (c64)
+  symbols_export.py <game dir> --ctl <file>         from a SkoolKit control file (spectrum)
 
 Coverage regions come from game.json. The platform rule is the same for
 every game: "video" names the screen base (excluded: it is output) and the
@@ -18,7 +20,7 @@ the game really uses (RAM under the I/O area, in a game that banks the I/O
 out to run code or keep tables there). Addresses are hex strings like
 "$0400".
 """
-import json, os, sys
+import importlib.util, json, os, sys
 
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -28,22 +30,73 @@ PLATFORM_DEFAULTS = {
         "extra": [],
         "screen_size": 0x400,      # 1000 cells plus the sprite pointers
         "charset_size": 0x800,
+        "snapshot_ext": "vsf",     # the hand-over default, work/entry.<ext> (listing.py)
         # for listing.py's check of data the ledger does not count: RAM that a default
         # exclusion covers but a game can still use, and the machine's own work area,
         # which is never reported as the game's data
         "hidden": [["$D000", "$DFFF", "the RAM under the I/O area",
                     "kit/skills/c64/c64-reference, \"RAM the CPU cannot see\""]],
         "system": [["$0000", "$03FF", "zero page, stack and the KERNAL's work area"]],
-    }
+    },
+    "spectrum": {
+        # The 48K machine's ROM owns $0000-$3FFF: the machine's own routines, never
+        # the game's. The picture (the bitmap and the attributes) is added from
+        # video.screen below, so it is not repeated here. The printer buffer and the
+        # system variables above it ($5B00-$5CB5) are not excluded: a game that runs
+        # with the ROM's interrupt off keeps its own data there.
+        "exclude": [["$0000", "$3FFF", "ROM"]],
+        "extra": [],
+        "screen_size": 0x1B00,     # $4000-$5AFF: the bitmap ($1800) and the attributes ($300)
+        "charset_size": 0x300,     # the ROM font in $3D00-$3FFF
+        "snapshot_ext": "sna",     # the hand-over default, work/entry.<ext> (listing.py)
+        "hidden": [],              # I/O is port-mapped, so no address has two meanings
+        "system": [["$0000", "$3FFF", "ROM and the machine's own routines"]],
+    },
 }
 
-PROJECT_BLOCK_TYPES = {
-    "Code": "Code", "DataByte": "Byte", "DataWord": "Word", "Address": "Address",
-    "PetsciiText": "PETSCII", "ScreencodeText": "Screencode",
-    "LoHiAddress": "Lo/Hi Address", "HiLoAddress": "Hi/Lo Address",
-    "LoHiWord": "Lo/Hi Word", "HiLoWord": "Hi/Lo Word",
-    "ExternalFile": "External File", "Undefined": "Undefined",
-}
+
+def load_by_path(path, name):
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def platform_fn(plat, fname, modules):
+    """The first function called fname in kit/<plat>/<module>.py, by presence."""
+    for m in modules:
+        path = os.path.join(KIT, plat or "", m + ".py")
+        if not os.path.exists(path):
+            continue
+        fn = getattr(load_by_path(path, f"{plat}_{m}"), fname, None)
+        if fn:
+            return fn
+    sys.exit(f"kit/{plat}/ has no module with {fname}() (looked for {', '.join(modules)}.py); "
+             f"see kit/PLATFORMS.md")
+
+
+def read_live(plat):
+    """(blocks, symbols, comments) from a live disassembler, per platform."""
+    return platform_fn(plat, "read_live", ("r2000", "skoolkit"))()
+
+
+def read_file(plat, path, kind="project"):
+    """(blocks, symbols, comments) from a disassembler's project or control file.
+
+    `kind` selects the reader: "project" for the disassembler's own project file,
+    "ctl" for a SkoolKit control file. A platform without that reader says so
+    rather than parsing the wrong format as the right one."""
+    return platform_fn(plat, "read_file", ("skoolkit",) if kind == "ctl" else ("project",))(path)
+
+
+def platform_of(game):
+    """game.json's platform, which every game must name (kit/PLATFORMS.md)."""
+    plat = game.get("platform")
+    if not plat:
+        sys.exit(f"{game.get('slug') or game.get('title') or 'game.json'} names no platform; "
+                 "every game must (kit/PLATFORMS.md)")
+    return plat
 
 
 def hexint(s):
@@ -51,7 +104,7 @@ def hexint(s):
 
 
 def regions(game):
-    plat = game.get("platform", "c64")
+    plat = platform_of(game)
     d = PLATFORM_DEFAULTS.get(plat, {"exclude": [], "extra": []})
     exclude = [[hexint(a), hexint(b), n] for a, b, n in d["exclude"]]
     extra = [[hexint(a), hexint(b), n] for a, b, n in d["extra"]]
@@ -76,43 +129,21 @@ def regions(game):
     return {"exclude": exclude, "extra": extra}
 
 
-def from_live(plat):
-    sys.path.insert(0, os.path.join(KIT, plat))   # kit/<platform>/r2000.py, the disassembler client
-    from r2000 import make_client, call
-    rpc = make_client()
-    blocks = json.loads(call(rpc, "r2000_get_blocks", {}))
-    syms = json.loads(call(rpc, "r2000_get_symbols", {}))
-    comments = json.loads(call(rpc, "r2000_get_comments", {}))
-    return ([{"start": b["start_address"], "end": b["end_address"], "type": b["type"]} for b in blocks],
-            [{"address": s["address"], "name": s["name"], "type": s["type"],
-              "kind": s.get("kind", "user").lower()} for s in syms],
-            [{"address": c["address"], "type": c["type"], "text": c["comment"]}
-             for c in comments if c["comment"].strip()])
-
-
-def from_project(path):
-    p = json.load(open(path))
-    blocks = [{"start": b["start"], "end": b["end"], "type": PROJECT_BLOCK_TYPES.get(b["type_"], b["type_"])}
-              for b in p["blocks"]]
-    syms = [{"address": int(a), "name": l["name"], "type": l["label_type"], "kind": l.get("kind", "User").lower()}
-            for a, ls in p["labels"].items() for l in ls]
-    comments = ([{"address": int(a), "type": "line", "text": t} for a, t in p.get("user_line_comments", {}).items() if t.strip()]
-                + [{"address": int(a), "type": "side", "text": t} for a, t in p.get("user_side_comments", {}).items() if t.strip()])
-    return blocks, syms, comments
-
-
 def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__); return
     gdir = argv[0]
     game = json.load(open(os.path.join(gdir, "game.json")))
-    if "--project" in argv:
-        blocks, syms, comments = from_project(argv[argv.index("--project") + 1])
-        source = "regen2000proj"
+    plat = platform_of(game)
+    key = next((k for k in ("--project", "--ctl") if k in argv), None)
+    if key:
+        blocks, syms, comments = read_file(plat, argv[argv.index(key) + 1],
+                                           "ctl" if key == "--ctl" else "project")
+        source = "regen2000proj" if key == "--project" else "control file"
     else:
-        blocks, syms, comments = from_live(game.get("platform", "c64"))
-        source = "regenerator2000 live"
+        blocks, syms, comments = read_live(plat)
+        source = "regenerator2000 live" if plat == "c64" else "live"
     syms.sort(key=lambda s: s["address"])
     comments.sort(key=lambda c: (c["address"], c["type"]))
     out = {

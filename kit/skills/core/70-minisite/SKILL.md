@@ -5,13 +5,10 @@ description: Build the game's minisite. The "How it works" page (index.html) fro
 
 # The minisite
 
-Start the clock: `python3 kit/scripts/clock.py start 70-minisite --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
-
 The minisite is the deliverable: a small site that explains the game, where
-the writing is the spine but anything can live. Interactivity is the point,
-and the minisite can hold anything that explains the game — widgets, level
-browsers, tune players, even a full JavaScript port of the game itself. If
-you can build it, build it.
+the writing is the spine but anything that explains the game can live
+(widgets, level browsers, tune players, even a full JavaScript port of the
+game itself). If you can build it, build it.
 
 Every game is a small site with the same tabs in the same order: **How it
 works** (`index.html`, authored), **Source code** (`source.html`, generated
@@ -19,7 +16,10 @@ from `listing.json` plus `facts.md` and `cheats.md`), **Maps / levels**
 (`levels.html`, authored, only when the game has level data worth a page),
 **Play** (`play.html`, authored, only when a JavaScript version exists),
 **About** (generated from `game.json`, `features.md`, `orientation.md`, git).
-`kit/scripts/build.py` assembles them; you write the authored ones.
+`kit/scripts/build.py` assembles them; you write the authored ones. A game
+that needs other tabs lists all of its tabs, in order, as `[file, label]`
+pairs in `game.json`'s `"tabs"`; the build publishes the pages named there
+and warns about any other `.html` in the folder.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
@@ -88,10 +88,9 @@ address links into the Source tab, and the house style in `kit/style.md`.
 - **Secrets, quirks and bugs.** The best part. Things a player who
    finished the game would not know, each verified live, with the
    evidence beside it. One kind deserves a special look: a state the code
-   accepts but the programmer never meant anyone to reach. It shows up as
-   an exact-match test where a range was intended, a comparison that
-   assumes a sign, an eight-bit sum that can wrap, a test run in an order
-   that leaves a gap, and it is classic tool-assisted-speedrun material,
+   accepts but the programmer never meant anyone to reach (the open
+   questions `50-coverage` notes and `60-verify`, "What a test lets
+   through", settles). It is classic tool-assisted-speedrun material,
    invisible in play and plain in the listing. Landing while climbing, and
    being paid more for it, is one. When you find one, do not stop at the
    poke: prove a player could get there (`60-verify`, reachability), and
@@ -137,6 +136,11 @@ can open with that instead.
   `build.py` stops on one. It reads every `src=` and `href=` in the page,
   the comments of an inlined script included, so a comment that names a
   file should not put it in an attribute.
+- The built page also loads the site's stylesheet, `site/lib/site.css`,
+  which has class names of its own (`.strip` is one). A page class with
+  the same name picks up its rules and the layout breaks only in the
+  built site. Check the stylesheet before naming a class, or prefix the
+  page's own. <!-- until #143 -->
 - Start from `kit/template/index.html` for the design tokens and layout.
   Keep its `<!-- tabs -->` marker; the build puts the tab bar there.
   A finished example to borrow patterns from is any Gold game in `games/`:
@@ -167,7 +171,10 @@ can open with that instead.
 - A widget that runs a mechanic is a claim too. Port the routine, then
   test the port against the game itself before it goes on the page:
   against a pass-by-pass trace of the game's own variables recorded in
-  the emulator (the platform's tool notes say how), or, for a routine that
+  the emulator (the platform's tool notes say how) while the mechanic
+  runs, its objects alive and its counters moving, since a trace taken
+  between waves passes any port (`60-verify`, "A test must contain cases
+  that have to succeed"); or, for a routine that
   only computes, against the original code run in a 6502 simulator on the
   snapshot's memory. Write node tests that do the comparison and say in
   the caption how it was checked. On the C64 use the kit's simulator,
@@ -188,6 +195,23 @@ can open with that instead.
   the snapshots.
   Porting is work that splits well across agents: one mechanic each, each
   with its own trace and its own files.
+  **Sweep the whole input space, not a few plausible values.** A port that
+  is right on the game's own numbers can still be wrong at the edges of the
+  arithmetic. Run the routine and the port over every boundary value of each
+  input register, plus a few hundred random ones, and say in the caption how
+  many cases there were. One port of a shift-and-add masked its accumulator
+  to 16 bits *before* taking the carry out of the top for the routine's
+  final fold, so the carry was always zero: it agreed with the game on the
+  page's own inputs and returned 29 where the routine returns 285. A sweep
+  of 789 cases found it in one run; reading the two implementations side by
+  side had not.
+- **Draw from the memory the game draws from.** A renderer fed from the
+  listing reads the hand-over image, and a game that swaps character
+  shapes per area or per level has different glyphs there than in play:
+  one map drawn that way showed letters where the stalactites belong.
+  Compare the character set and the colour table of the hand-over with a
+  play snapshot, and embed the bytes that differ for the state the
+  picture claims to show.
 - Reference images go in `reference/`; the page refers to them by
   relative path from the game folder (`reference/<name>.png`).
 - **A game of several programs** gets one Source page per part: the
@@ -225,6 +249,16 @@ checklist mechanically, paragraph by paragraph:
 6. State it positively. A one-beat correction is fine when the reader would
    genuinely expect the wrong thing ("A reconstruction, not a screenshot"),
    but never "it's not X, it's Y" as the sentence's whole move.
+7. Give every paragraph its purpose, in a line written to yourself
+   (`kit/style.md`, "Paragraphs"). First check that purpose against the
+   page's subtitle and the section's heading, and move the paragraph to the
+   tab or section it serves if it serves another. Then read each sentence
+   against it. Move or
+   cut any sentence that serves another point, however interesting; split
+   a paragraph whose purpose needs an "and"; put the point first or last;
+   reorder sentences until each opens with something the last one gave the
+   reader; and replace any "it" that could mean more than one thing. Do
+   this before the other steps polish sentences that are about to move.
 
 Before/after, from real drafts:
 
@@ -240,6 +274,13 @@ Before/after, from real drafts:
   multiplexing and no in-between frames."
 - "Listen to the last note: it's held twice as long as the rest."
   → "The last note is held twice as long as the rest."
+- A story paragraph doing four jobs: the plot, where it is set, who else is
+  there, and why one enemy looks the way it does (a licensing detail placed
+  in the middle of the plot).
+  → Two paragraphs. The first is the plot, each sentence the cause of the
+  next: what was stolen, why the villain needs the place, what the hero is
+  sent to do. The second is who else is there, ending on that enemy and
+  why it looks the way it does.
 
 Set `copy` in `game.json` honestly: `agent-draft` when the agent wrote it
 and no human has read it yet, `agent` once a human has read it and left it
@@ -267,130 +308,16 @@ rather than pad it.
 A behavioural port of the full game in JavaScript, built from the
 documented mechanics and the extracted data, not a transpile.
 
-If the game has a demonstration that replays recorded input, that is the
-test for the whole port. Record the real demonstration in the emulator,
-one record per pass of the game loop with every variable the port keeps,
-then feed the port the demonstration's own input, poll by poll, exactly
-where the game reads the controls, and compare every pass. Menus,
-movement, fights and spells all come in one run, and a port that
-matches it byte for byte is the game's logic, not a likeness of it. For
-what the demonstration never does, write short input scripts in the same
-format and run them through both the port and the game's code in a 6502
-simulator. The port must count polls, not time: the game's delay loops do
-not read the controls, so a port paced by the clock drifts off the
-recording within a menu or two. This is a
-first-class part of the minisite, not an extra: a reader who can play the
-game while reading how it works understands it better than one who only
-reads. The page's mechanic widgets are usually the seed. Omit the tab only
-if there is genuinely nothing playable to put on it. No tier requires the Play tab, so it never blocks Silver or Gold. A Play tab added to a game after its run is timed as its own step: `clock.py start play`.
+This is a first-class part of the minisite, not an extra: a reader who
+can play the game while reading how it works understands it better than
+one who only reads. The page's mechanic widgets are usually the seed.
+Omit the tab only if there is genuinely nothing playable to put on it.
+No tier requires the Play tab, so it never blocks Silver or Gold.
 
-### A whole game, checked against its own code
-
-With no demonstration to replay, run the game's own code beside the port
-and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
-machine for it: the simulator with a raster interrupt, the keyboard, the
-joystick and colour RAM around it, started from the listing's memory,
-counting passes where the main loop begins. `kit/c64/lockstep.js` runs a
-port beside it and says what the port gives it: the checkpoints it
-yields, its raster waits, its polling loops and its interrupt handlers.
-Write the port to that from the start. Each file's header is its manual.
-
-- **Port routine by routine, on the game's own memory.** One function per
-  listing label, reading and writing the game's variables where the game
-  keeps them, self-modified operands included. A routine that waits for
-  the raster or for time becomes a generator that yields where time
-  passes. Split the routines into groups, one agent each, with the routine
-  addresses in the prompt.
-- **Test each routine alone first**, against the game's routine run by the
-  simulator (`cpu.call`) on thousands of random states made from real
-  moments of play. Start calls with the stack pointer at `$FF`: a deep
-  call chain started lower can run down into tables the game keeps in the
-  stack page, and the failures look like the game's.
-- **Then the whole loop in lockstep.** Make the port's main loop yield at
-  checkpoints, the address of each call in its body. The lockstep runs the
-  game to the same address and runs the interrupts it took on the way in
-  the port there. It compares memory at the start of every pass, from
-  saved moments of play with recorded input: `onPass` for input held over
-  passes, `onFrame` for a key the game waits for in the middle of one. A
-  checkpoint the game reaches that the port did not yield stops the run
-  with both named. While a group is unfinished, the game's own code stands
-  in for its routines (`standIn`). A polling loop in the port yields at
-  each turn and the game moves on a raster line, so the port sees the
-  line and the flags the game's loop does. A wait for a line yields the
-  line, and the game runs to the loop's exit.
-- **What lockstep cannot match is the game's own races.** The port runs an
-  interrupt between two steps; the machine runs it wherever it falls. The
-  lockstep closes most of that gap: each handler runs on the bytes the
-  game's read, at the values it read them, and the game's last writer of
-  each byte stands. What is left is the main code reading, in the middle
-  of a stretch, what an interrupt wrote there: a scratch byte both use, a
-  value the interrupt moves on. The results then depend on where the
-  interrupt fell. When a difference survives, hook the machine at the
-  addresses involved and look for an interrupt between the store and the
-  read before calling it a port bug. Leave those bytes out of the
-  comparison only once the race is shown, and say on the page what the
-  port shows instead. A byte the port does not keep the game's way (a
-  register a routine saves, where the port calls it without that
-  register) differs now and then; name it and leave it out too.
-  A raster wait that reads the line and then `$D011`'s bit 7 in two
-  instructions is one such race: an interrupt between the reads makes
-  the game leave on a later line than the port.
-- **Read what the interrupt writes through one function.** The KERNAL's
-  jiffy clock, its key code and its shift flag change under the main
-  program, which may read one several times in a stretch between
-  checkpoints and see different values. Have the port read each such
-  byte through `P.io.irqByte(a)`, and list the bytes in the lockstep's
-  `irqBytes`: it hands the port, one read at a time, every value the
-  game read from each in the same stretch, in order (`kit/c64/lockstep.js`
-  says how, and what it cannot see). On the page, `irqByte` is
-  `a => M[a]`. Handing the port only the first value leaves every later
-  read stale.
-- **Pace it by the machine's clock.** A game that moves a fixed step per
-  pass is only the same game at the same passes per second. The port
-  executes no instructions, so fit their cost: the lockstep's `timing`
-  gives, for each stretch between checkpoints, the cycles the game took
-  (its interrupts excluded) and how often the port called each routine.
-  Add the pixels drawn and rows filled from the port's own counters, and
-  fit each routine's own cycles by non-negative least squares. Check the
-  fit on sessions it was not fitted on, and on every kind of play the
-  page offers: a scene the fit never saw can run fast by a routine it
-  never costed. Then check the pace itself: passes in the same frames from
-  the same moment, on the machine and on the page.
-  Where one pass's cost follows mostly from the game's state (a state
-  byte the main loop dispatches on), measure instead of fitting: hook the
-  machine where each pass begins and ends, leave out the interrupt
-  handler's own cycles, and take the median per state over the lockstep
-  sessions. It needs no model of the routines, and a state the sessions
-  never reached shows up as missing rather than as a wrong fit.
-- **A level picker leaves the game as playing there would.** Jumping to a
-  level by loading its record skips whatever finishing the ones before it
-  left behind: items taken, counters, stored screens. Set that state
-  first, the way the game's own code would, or the page shows a level no
-  player could see (in one game, items left from a skipped level counted
-  towards the next).
-  A game with no level records can still have a picker: script a player
-  through the game's own start (the menus, the name, the purchases) and
-  run it faster than real time without drawing, setting by hand only what
-  keys cannot reach, and only where the game itself would have set it.
-  The state it hands over is then one play reached.
-- **Inlining code with `String.replace`.** A build script that pastes the
-  port into the page with a string replacement expands `$'`, `$&` and
-  `$1` in it, and 6502 comments are full of `$`. Pass a function as the
-  replacement.
-- **A clock, not a frame loop.** Each stretch moves a virtual PAL clock on
-  by its cost, running the raster interrupts on their lines as it goes; a
-  raster wait moves the clock to its line and the interrupts on the way
-  take their own time, not the wait's. Let the page move a target one
-  frame per real frame and run the port until the clock reaches it. Never
-  "run to the next frame boundary": one long stretch then carries the clock
-  frames ahead of real time and the game runs fast.
-- **The page's own chips.** The page runs the port on chips of its own,
-  not on `machine.js`, so it needs the chip behaviour the game leans on:
-  the raster latch (the platform reference), the timers a speech or
-  sample player counts on, sprite collisions if the game reads them.
-  Run the page's runtime in node from the cold start before opening a
-  browser: a game that stalls there (waiting for an interrupt the page
-  never raises) stalls in the browser with nothing to say why.
+Before you start one, read `play.md` beside this file: how to check the
+port against the game's own demonstration, or against the game's code in
+lockstep, pace it by the machine's clock, give it a level picker and the
+chips it leans on.
 
 ## Check it in a browser
 
@@ -411,6 +338,18 @@ then open `http://127.0.0.1:8000/<platform>/<slug>/index.html`; if 8000
 is taken, any free port will do. The agent
 needs a browser it can screenshot and click: either a browser extension
 that exposes the page to it, or a harness desktop app with a built-in browser. Without one you are writing a visual artefact blind.
+
+When the session's browser connector lacks its bundled executable but Firefox
+is already installed, the shared launcher offers `python3 kit/scripts/tools.py
+browser`. It starts an isolated headless profile under `tools/firefox/`,
+with the WebDriver BiDi endpoint at `ws://127.0.0.1:9222/session`.
+Use a BiDi client to navigate, exercise controls and capture screenshots,
+and record its name/version and Firefox package origin. The 30 September
+2026 run did not record its client or package origin; see the containment
+limits in `kit/INSTALL.md`.
+`tools.py stop browser` stops only this clone's test browser. It downloads
+nothing and does not use the contributor's personal browser session. See
+`kit/INSTALL.md`, "Browser checks", for the tested host and containment.
 
 Check, at least: every canvas has drawn something; the console has no
 errors; every control does something when clicked; and the rebuilt screen

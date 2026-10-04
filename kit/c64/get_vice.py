@@ -21,14 +21,14 @@ release (a release can have Linux and Windows builds and no macOS one).
 Every path asks first. `download` and `build` are the contributor's answer to the question the
 plain command prints, never a default: a download is a file from the internet, and a build installs
 system packages outside this repository (kit/INSTALL.md, the footprint principle). Afterwards run
-`tools.py check-emulator`; its checks, not the version, decide which workarounds apply.
+`tools.py --platform c64 check-emulator`; its checks, not the version, decide which workarounds apply.
 
 --prs runs code nobody has merged, from whoever opened the pull request, on this computer. It is
 for the organization's admins, who review each entry and pin it to a commit: the script checks,
 with the GitHub CLI, that the person running it is an admin of the repository in site/config.json,
 and refuses otherwise. Never pass it on a contributor's behalf.
 """
-import json, os, platform, re, shutil, subprocess, sys, tempfile, urllib.request, zipfile
+import json, os, platform, re, shutil, subprocess, sys, urllib.request, zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -39,6 +39,7 @@ UPSTREAM = "barryw/vice-mcp"
 PRS = os.path.join(HERE, "vice-prs.json")
 sys.path.insert(0, HERE)
 import tools   # noqa: E402  the launcher: VICE_DIR, use_vice, vice_build
+from launcher import unpack_dmg   # noqa: E402  kit/scripts, which the launcher put on the path
 
 
 def this_machine():
@@ -119,10 +120,10 @@ def gui_asset(rel, plat):
 
 
 def emulator_running():
-    """Why a download or build refuses while :6510 answers: this clone's emulator, or another folder's."""
-    detail = tools.foreign_detail(6510)
+    """Why a download or build refuses while the emulator's port answers: this clone's emulator, or another folder's."""
+    detail = tools.foreign_detail(tools.VICE_PORT)
     if detail:
-        return (f"an emulator started from another folder answers on :6510:\n{detail}\n"
+        return (f"an emulator started from another folder answers on :{tools.VICE_PORT}:\n{detail}\n"
                 "stop it there (its own `tools.py stop vice`) first")
     return "the emulator is running; `tools.py stop vice` first"
 
@@ -186,16 +187,7 @@ def unpack(path, dest):
             if os.path.basename(root) == "bin":
                 for f in files: os.chmod(os.path.join(root, f), 0o755)
     elif path.endswith(".dmg"):
-        mnt = tempfile.mkdtemp(dir=DOWNLOADS)
-        subprocess.run(["hdiutil", "attach", "-nobrowse", "-readonly", "-mountpoint", mnt, path], check=True,
-                       stdout=subprocess.DEVNULL)
-        try:
-            for f in os.listdir(mnt):
-                if not f.startswith("."):
-                    subprocess.run(["ditto", os.path.join(mnt, f), os.path.join(dest, f)], check=True)
-        finally:
-            subprocess.run(["hdiutil", "detach", mnt], stdout=subprocess.DEVNULL)
-            os.rmdir(mnt)
+        unpack_dmg(path, dest, DOWNLOADS)      # skips the drag-to-install symlink (kit/scripts/launcher.py)
     else:
         sys.exit(f"do not know how to unpack {os.path.basename(path)}")
     for root, dirs, _ in os.walk(dest):             # the folder with bin/x64sc in it, however deep the archive put it
@@ -213,7 +205,7 @@ def download(tag=None):
     a = gui_asset(rel, plat) if plat else None
     if not a:
         sys.exit(f"{rel['tag_name']} has no GUI build for {plat}; run `tools.py get-vice` for the choices")
-    if tools.up(6510):
+    if tools.up(tools.VICE_PORT):
         sys.exit(emulator_running())
     os.makedirs(DOWNLOADS, exist_ok=True)
     path = os.path.join(DOWNLOADS, a["name"])
@@ -294,7 +286,7 @@ def build(prs=False):
         ok, why = is_admin()
         if not ok:
             sys.exit(f"--prs is for the organization's admins, and {why}. Build without it.")
-    if tools.up(6510):
+    if tools.up(tools.VICE_PORT):
         sys.exit(emulator_running())
     tag = releases()[0]["tag_name"]
     if not os.path.isdir(os.path.join(SRC, ".git")):

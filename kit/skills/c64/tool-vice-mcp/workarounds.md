@@ -1,13 +1,21 @@
 # vice-mcp workarounds, by failed check
 
+**The v3.13.2 GUI releases need none of this.** On 2 October 2026 they
+passed all 57 checks, in five runs on Linux x86_64 and five on macOS
+arm64. On a build where `check-emulator` reports nothing failed, stop
+reading here, unless its summary says the host is slow: that is a NOTE,
+not a failed check, and "A slow host" below is for it.
+
 Read this only for the checks that `python3 kit/scripts/tools.py
 check-emulator` reported as failed on the build you are using. Each
-section starts with the names it covers. If nothing failed, none of this
-applies, and following it anyway costs time: several of these
-workarounds are slower than the thing they replace.
+section starts with the names it covers. Following one you do not need
+costs time: several of these workarounds are slower than the thing they
+replace. The sections below are for the older and headless builds that
+fail checks.
 
 When a new build or release passes a check, delete that check's
-section. When every check passes on the release, delete this file.
+section. Keep this file when every check passes: a new check, or a
+release that breaks an old one, puts a section back here.
 
 Measured on the v3.11.0 release (macOS arm64 GUI build), 22 September
 2026. These failed: `ping-running`, `watch-args`, `watch-store`,
@@ -20,47 +28,14 @@ Measured on the v3.11.0 release (macOS arm64 GUI build), 22 September
 checks: 28, on a freshly started emulator. It has also crashed partway
 through the check (`no-exception`, at the end of this file). The headless
 builds fail more: their pause is a stub, so nothing stops at all
-(`kit/c64/INSTALL.md`). The v3.13.1 release on Linux failed one check on
-26 September 2026, in five runs: `pause-at-instruction`.
-
-## A pause that stops inside the vertical sync
-
-`pause-at-instruction`
-
-`vice_execution_pause` raises VICE's own pause, which takes hold at the
-next vertical sync, and asks for a stop at the next instruction as well.
-Usually the instruction comes first. When the call lands as a frame ends,
-the sync does, and the machine stops part way through an instruction: on
-the v3.13.1 release under Linux, four to seven pauses in thirty (26
-September 2026). `vice_ping` says `paused` and memory reads true; the
-tell is the raster line, which reads the frame's last, 311 on a PAL
-machine. What goes wrong there:
-
-- **The registers read stale.** The CPU hands out its registers only at a
-  stop between two instructions, so `vice_registers_get` returns them as
-  they were at an earlier one.
-- **A register set is lost** at the next instruction, overwritten by the
-  CPU's own copy. A `PC` set to start a routine starts nothing.
-- **A snapshot loaded there keeps the old registers.** Memory comes from
-  the file, and the program that was running carries on in it.
-- **A snapshot saved there** holds the stale registers, and the video chip
-  caught between two frames: it has finished the picture, and its raster
-  still reads the last line. Loaded later from a proper stop, it runs
-  that line twice, and from then on the emulator draws every line one row
-  low in its pictures and ends every frame, where each frame advance
-  stops, on line 311 instead of line 0. Every snapshot saved after that
-  carries the offset; a reset clears it, and so does loading a snapshot
-  saved before it. `frame.py capture` measures it (`picture_lines_low` in
-  the frame file, and it says so) and `compare` allows for it.
-
-So never read or set registers, step, or save or load a snapshot straight
-after `vice_execution_pause`. Stop with `pause()` in `kit/c64/vice.py`: it
-follows the pause with a one-frame `vice_frame_advance`, which from inside
-the sync only finishes the instruction and stops, and from a proper stop
-runs one frame. After a `vice_execution_pause` of your own, make that
-advance yourself. A stop at a checkpoint, a step and a frame advance are
-already between two instructions, and so is a snapshot saved while the
-machine runs.
+(`kit/c64/INSTALL.md`). The v3.13.1 release failed one check,
+`pause-at-instruction`: on Linux on 26 September 2026, in five runs, and
+on macOS arm64 on 28 September. The v3.13.2 release failed none on 2
+October 2026, in five runs on Linux and five on macOS arm64, both GUI
+builds. `pause-at-instruction` has no section here: on a build that fails
+it, stop with `pause()` in `kit/c64/vice.py`, never with
+`vice_execution_pause` alone; the comment on `pause()` says what goes
+wrong.
 
 ## Stops land late
 
@@ -113,6 +88,15 @@ nothing. Close the monitor window, or restart the emulator
 (`tools.py stop vice`, `tools.py vice`), and never ask for a stop on a
 watchpoint: count instead.
 
+## A reset acknowledgment can precede execution
+
+A paused session can acknowledge `vice_machine_reset` with
+`run_after: true` before the queued reset has actually run. Follow it
+with `vice_execution_run`. Carry a checkpoint on the reset entry from
+the platform reference as a positive control before interpreting another
+entry's zero hit count. Confirm the processor-port direction register at
+the stopped entry; the acknowledgment alone is not a measurement of it.
+
 ## Watchpoints
 
 `watch-args`, `watch-store`, `watch-load`, `watch-stop`
@@ -164,8 +148,9 @@ On v3.13.1 on Linux (24 September 2026) the stops were exact and only
 `determinism-running-save` and `determinism-restart` failed, in most runs
 but not all, whether the build was the release or compiled from source.
 Both loaded a snapshot straight after `vice_execution_pause`, and failed
-whenever that pause had stopped inside the vertical sync
-(`pause-at-instruction`, above), where a load keeps the old registers.
+whenever that pause had stopped inside the vertical sync, part way
+through an instruction (`pause-at-instruction`), where a load keeps the
+old registers.
 They now stop with `pause()`, and passed in five runs out of five on 26
 September 2026.
 
@@ -296,6 +281,29 @@ A call made while a checkpoint is stopping the machine can time out after
 five seconds, and some calls can take the server down. Pace a script's
 calls, check `tools.py status` after a closed socket, and do not read a
 timeout as an answer from the game.
+
+## A slow host
+
+No check fails for the host's speed. `check-emulator` counts against the
+test program's own passes, prints the speed it measured on a `SPEED`
+line, and adds a `NOTE` when the machine runs below real time or warp
+gains little. Both were seen with emulators that work: 78 passes a
+second in warp against 51 without, under `xvfb-run` on 30 September
+2026, and 71 against 46 in a container on 2 October 2026.
+
+On such a host, plan long waits (a depacker, a tune to record) in real
+time or longer, and measure in the machine's time (frames, loop passes,
+the cycle stopwatch), never the host's. A script that waits a fixed
+number of seconds for a stop can give up before the stop arrives: wait
+on the machine's state, with a limit scaled to the speed the check
+reported. Nothing in the workflow needs warp. Autostart still turns
+warp on, so turn it off as usual.
+
+Until 3 October 2026 the check judged `watch-store`, `watch-load`,
+`checkpoints-survive-load` and `warp` against a second of the host's
+clock, and gave a stop 100 passes away five seconds to arrive. A record
+from before then that names only those, or the `determinism` checks and
+`ignore-count` on a host well below real time, describes the host.
 
 ## A phase did not finish
 

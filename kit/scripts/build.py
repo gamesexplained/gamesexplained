@@ -10,12 +10,16 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
+Those are the default tabs. A game that wants others lists all of its tabs, in
+order, in game.json's "tabs" as [file, label] pairs; every authored page it
+names is copied through, and a page in the folder that no tab names is left out
+with a warning (about-layout.html, the game's own About template, aside).
 A game that is several programs (kit/scripts/parts.py) gets a Source page and a
 footprint per part instead: source.html is the first part, source-<id>.html the
 others, and parts/<id>/ carries each part's listing, symbols and memmap.
 Every tab but Source lists its sections in the left margin (pagenav).
 Plus a home page with the catalogue and the games most recently added or changed
-(from git history), site/lib/, kit.html (the kit changelog),
+(from git history), site/lib/, kit.html (kit/lessons/, newest first),
 status.html (from site/status.html + site/status.json: which kits work on which
 computers, and the work needed) and about.html (from site/about-site.html: who
 runs the site and the principles it follows; static).
@@ -36,8 +40,36 @@ from parts import parts, part_game   # noqa: E402  a game that is several progra
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
 PLATFORM_NAMES = {"c64": "Commodore 64", "spectrum": "ZX Spectrum", "nes": "NES"}
+# The footprint widget and the extra script it needs, per platform: a page loads only
+# its own, so a C64 page does not fetch spectrum.js and a third platform adds a row.
+PLATFORM_MAPS = {"c64": "C64Map", "spectrum": "SpectrumMap"}
+PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"]}
+# The addresses the footprint draws, [start, end): all 64 KB, except on a machine whose ROM
+# sits at a fixed place no game can write to. The 48K Spectrum's ROM is $0000-$3FFF
+# (kit/skills/spectrum/zx-spectrum-reference, "Memory map (48K)"), so its map is the 48 KB of RAM.
+PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000)}
+# How the footprint blurb names what it draws, so the C64 pages keep their copy.
+PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM"}
+# The footprint table's names for the machine's own areas, in the same words as the map's
+# legend above it (memmap.js for the C64, spectrum.js for the Spectrum).
+PLATFORM_FOOT_WORDS = {"c64": {"runtime": "Screen, bitmap, colour, stack, I/O", "rom": "ROM the game runs under"},
+                       "spectrum": {"runtime": "Screen, attributes and working memory"}}
 TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
         ("play.html", "Play"), ("about.html", "About")]
+_warned = set()
+
+
+def warn(msg):
+    """A warning, once per build. In GitHub Actions it is an annotation, so it shows on the
+    run's summary and a pull request's checks instead of only in the step's log."""
+    if msg in _warned:
+        return
+    _warned.add(msg)
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        esc = msg.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print(f"::warning title=build.py::{esc}", file=sys.stderr)
+    else:
+        print(f"warning: {msg}", file=sys.stderr)
 
 
 # --- markdown (the subset our files use) ------------------------------------
@@ -125,9 +157,10 @@ def hexint(v):
 
 
 def footprint(gdir, game):
-    """Classify all 65536 bytes. Returns (runs, totals, symbols)."""
+    """Classify every byte the platform's map draws (PLATFORM_MAP_SPAN, else all 65536).
+    Returns (runs, totals, symbols, span)."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from symbols_export import regions as cov_regions
+    from symbols_export import regions as cov_regions, PLATFORM_DEFAULTS, platform_of
     lp = os.path.join(gdir, "listing.json")
     if not os.path.isfile(lp):
         rel = os.path.relpath(gdir, ROOT)
@@ -162,11 +195,13 @@ def footprint(gdir, game):
         k = "rom" if re.search(r"\bROMs?\b", name, re.I) else "runtime"   # the word, not "from"
         for a in range(lo, hi + 1):
             cat[a] = k; why[a] = name
-    # video charset: graphics
+    # video charset: graphics. Its size is the machine's (symbols_export.PLATFORM_DEFAULTS):
+    # the C64's font is 2 KB, the Spectrum's ROM font 768 bytes.
     v = game.get("video") or {}
     if v.get("charset"):
         a0 = hexint(v["charset"])
-        for a in range(a0, a0 + 0x800):
+        cs = PLATFORM_DEFAULTS.get(platform_of(game), {}).get("charset_size", 0x800)
+        for a in range(a0, a0 + cs):
             if cat[a] != "unused":
                 cat[a] = "graphics"; why[a] = "character set"
     # declared regions win
@@ -174,39 +209,57 @@ def footprint(gdir, game):
         for a in range(hexint(lo), hexint(hi) + 1):
             if cat[a] != "unused":
                 cat[a] = k; why[a] = name
+    lo, hi = PLATFORM_MAP_SPAN.get(platform_of(game), (0, 0x10000))
+    if lo:   # the ROM is off this map, so RAM that a game.json names after the ROM is working memory
+        cat[lo:hi] = ["runtime" if k == "rom" else k for k in cat[lo:hi]]
     runs, totals = [], {k: 0 for k in CATS}
-    a = 0
-    while a < 0x10000:
+    a = lo
+    while a < hi:
         b = a
-        while b < 0x10000 and cat[b] == cat[a] and why[b] == why[a]:
+        while b < hi and cat[b] == cat[a] and why[b] == why[a]:
             b += 1
         totals[cat[a]] += b - a
         if cat[a] != "unused":
             runs.append([a, b - a, cat[a], why[a]])
         a = b
     symbols = [[e["a"], e["n"]] for e in L["index"] if e["k"] != "branch"]
-    return runs, totals, symbols
+    return runs, totals, symbols, (lo, hi)
 
 
-def footprint_table(totals):
+def footprint_table(totals, plat="c64", span=(0, 0x10000)):
+    names = PLATFORM_FOOT_WORDS.get(plat, PLATFORM_FOOT_WORDS["c64"])
     program = sum(totals[k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
     rows = [("Program", program)] + [(html.escape({"code": "Code", "graphics": "Graphics", "levels": "Level data", "sound": "Sound",
              "text": "Text", "tables": "Tables", "variables": "Variables"}[k]), totals[k]) for k in
              ("code", "graphics", "levels", "sound", "text", "tables", "variables") if totals[k]]
-    rows += [("Screen, bitmap, colour, stack, I/O", totals["runtime"])]
+    rows += [(html.escape(names["runtime"]), totals["runtime"])]
     if totals["rom"]:
-        rows += [("ROM the game runs under", totals["rom"])]
+        rows += [(html.escape(names.get("rom", "ROM")), totals["rom"])]
     rows += [("Unused", totals["unused"])]
-    out = "<div class='tablewrap'><table><tr><th>What</th><th>Bytes</th><th>Of 64 KB</th></tr>"
+    size = span[1] - span[0]
+    out = f"<div class='tablewrap'><table><tr><th>What</th><th>Bytes</th><th>Of {size // 1024} KB</th></tr>"
     for i, (name, n) in enumerate(rows):
         b = "<b>" if i == 0 else ""; e = "</b>" if i == 0 else ""
-        out += f"<tr><td>{b}{name}{e}</td><td>{b}{n:,}{e}</td><td>{b}{100*n/65536:.1f} %{e}</td></tr>"
+        out += f"<tr><td>{b}{name}{e}</td><td>{b}{n:,}{e}</td><td>{b}{100*n/size:.1f} %{e}</td></tr>"
     return out + "</table></div>"
 
 
 # --- pieces -----------------------------------------------------------------
 def read(p):
     return open(p, encoding="utf-8").read() if os.path.exists(p) else ""
+
+
+def lessons():
+    """kit/lessons/ as one page: its README, then a file per lesson, newest first. A lesson's
+    heading starts with the kit version it went into, or with `next` until the bump after its
+    merge; those sort first."""
+    d = os.path.join(ROOT, "kit", "lessons")
+
+    def key(f):
+        m = re.match(r"## (\d+(?:\.\d+)*) · ", read(os.path.join(d, f)))
+        return (tuple(map(int, m.group(1).split("."))) if m else (float("inf"),), f)
+    files = sorted((f for f in os.listdir(d) if f.endswith(".md") and f != "README.md"), key=key, reverse=True)
+    return "\n\n".join(read(os.path.join(d, f)) for f in ["README.md"] + files)
 
 
 TIER_NAMES = {"silver-claimed": "silver (claimed)"}
@@ -258,7 +311,7 @@ def banner(game, cons):
         lead = f'This minisite was contributed by {who}. ' if who else 'This minisite was contributed. '
         st = game.get("steward") or ""
         if not st:
-            print(f"warning: {where} is silver-claimed with no steward; set steward in game.json to the editor's GitHub login", file=sys.stderr)
+            warn(f"{where} is silver-claimed with no steward; set steward in game.json to the editor's GitHub login")
         ed = f'<a href="https://github.com/{html.escape(st)}">{html.escape(st)}</a>' if st else 'an editor'
         body = lead + f'It\u2019s currently claimed by {ed} who is editing it to reach a Gold tier standard.'
     else:
@@ -270,12 +323,9 @@ def banner(game, cons):
     return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
 
 
-# the file in the game folder each tab is written from; the Source and About tabs are
-# assembled, so they point at the prose the reader sees most of
-EDIT_SOURCES = {"index.html": "index.html", "levels.html": "levels.html", "play.html": "play.html",
-                "mechanics.html": "mechanics.html", "music.html": "music.html",
-                "discoveries.html": "discoveries.html", "maps.html": "maps.html",
-                "source.html": "facts.md", "about.html": "features.md"}
+# the tabs build.py assembles, which every game has, and the file each one's edit link opens:
+# the prose the reader sees most of. Every other tab is a page in the game folder, edited as it is
+ASSEMBLED = {"source.html": "facts.md", "about.html": "features.md"}
 
 
 def edit_footer(game, tab, f=None):
@@ -286,7 +336,7 @@ def edit_footer(game, tab, f=None):
     """
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "").rstrip("/")
     where = f'games/{game["platform"]}/{game["slug"]}'
-    f = f or EDIT_SOURCES[tab]
+    f = f or ASSEMBLED.get(tab, tab)
     edit, hist, tree = (f"{repo}/edit/main/{where}/{f}", f"{repo}/commits/main/{where}", f"{repo}/tree/main/{where}")
     return (f'<footer class="editfoot"><div class="in">'
             f'<p><b>Spotted a mistake, or know something we don\u2019t?</b> '
@@ -530,7 +580,7 @@ def contributors(gdir):
     for (name, email), n in sorted(counts.items(), key=lambda kv: -kv[1]):
         login = github_login(email)
         if not login:
-            print(f"warning: contributor {name} <{email}> has no GitHub login; add a .mailmap line mapping them to <login>@users.noreply.github.com", file=sys.stderr)
+            warn(f"contributor {name} <{email}> has no GitHub login; add a .mailmap line mapping them to <login>@users.noreply.github.com")
         c, shown, _ = rows.get(login or (name, email), (0, name, login))   # the name of the alias with most commits
         rows[login or (name, email)] = (c + n, shown, login)
     return sorted(rows.values(), key=lambda r: -r[0])
@@ -542,13 +592,38 @@ def fill(tpl, **kw):
     return tpl
 
 
-AUTHORED = ("index.html", "levels.html", "maps.html", "play.html", "mechanics.html", "music.html", "discoveries.html")
 LIB = "../../lib"   # site/lib/ as a game's pages see it
+LAYOUTS = ("about-layout.html",)   # a game's own template for an assembled tab, not a page of its own
+PAGE_NAME = re.compile(r"[a-z0-9-]+\.html")   # a tab is a page beside index.html, never a path
 
 
-def present_tabs(gdir):
-    """The tabs a game has: the three every game gets, and the authored ones it wrote."""
-    return {"index.html", "source.html", "about.html"} | {f for f in AUTHORED if os.path.exists(os.path.join(gdir, f))}
+def authored(gdir, game=None):
+    """The pages a game writes itself, in tab order: index.html, and every page its tabs name
+    (game.json's "tabs", or TABS when it has none) that is not assembled and is in its folder."""
+    if game is None:
+        game = json.load(open(os.path.join(gdir, "game.json")))
+    names = [f for f, _ in game.get("tabs", TABS) if f != "index.html" and f not in ASSEMBLED and PAGE_NAME.fullmatch(f)]
+    return ["index.html"] + [f for f in dict.fromkeys(names) if os.path.isfile(os.path.join(gdir, f))]
+
+
+def present_tabs(gdir, game=None):
+    """The tabs a game has: the assembled ones every game gets, and the pages it wrote."""
+    return set(ASSEMBLED) | set(authored(gdir, game))
+
+
+def check_tabs(gdir, game):
+    """Warn about a tab whose page is missing, and a page no tab names: the build leaves both out."""
+    where = os.path.relpath(gdir, ROOT).replace(os.sep, "/")
+    for f, _ in game.get("tabs", []):
+        if not PAGE_NAME.fullmatch(f):
+            warn(f"{where}: game.json has a tab for {f!r}, which is not a page name like controls.html; the tab is left out")
+        elif f not in ASSEMBLED and not os.path.isfile(os.path.join(gdir, f)):
+            warn(f"{where}: game.json has a tab for {f}, which is not in the folder; the tab is left out")
+    pages = set(authored(gdir, game)) | set(LAYOUTS)
+    for p in sorted(glob.glob(os.path.join(gdir, "*.html"))):
+        if os.path.basename(p) not in pages:
+            warn(f"{where}: {os.path.basename(p)} is not published, because no tab names it: "
+                 "list every tab, this one included, in game.json's \"tabs\"")
 
 
 def authored_page(gdir, game, f, nav, ban, src=None):
@@ -607,7 +682,7 @@ def part_footprints(P, out):
     which the catalogue draws. Returns the parts' summed totals and the About tab's section."""
     totals, body, calls = {k: 0 for k in CATS}, [], []
     for i, p in enumerate(P):
-        runs, t, symbols = footprint(p["dir"], part_game(p))
+        runs, t, symbols, _ = footprint(p["dir"], part_game(p))
         doc = {"runs": runs, "totals": t, "symbols": symbols}
         json.dump(doc, open(os.path.join(out, "parts", p["id"], "memmap.json"), "w"), separators=(",", ":"))
         if i == 0:
@@ -656,16 +731,19 @@ def build_game(gdir, out_root):
     out = os.path.join(out_root, plat, slug)
     os.makedirs(out, exist_ok=True)
     lib = LIB
-    present = present_tabs(gdir)
+    check_tabs(gdir, game)
+    present = present_tabs(gdir, game)
     cons = contributors(gdir)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
+    platform_scripts = "".join(f'<script src="{lib}/{f}"></script>' for f in PLATFORM_MAP_LIBS.get(plat, []))
     common = dict(title=html.escape(game.get("title", slug)), lib=lib, build=html.escape(game.get("build") or ""),
-                  platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
-                  publisher=html.escape(game.get("publisher") or ""))
-    for f in AUTHORED:
-        if f in present:
-            open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
+                  platform=plat, platform_name=PLATFORM_NAMES.get(plat, plat), year=game.get("year") or "",
+                  publisher=html.escape(game.get("publisher") or ""),
+                  platform_map=PLATFORM_MAPS.get(plat, "C64Map"), platform_scripts=platform_scripts,
+                  platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
+    for f in authored(gdir, game):
+        open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
     # source: one page, or one per part of a game that is several programs
     P = parts(gdir, game)
     cheats = read(os.path.join(gdir, "cheats.md"))
@@ -695,16 +773,19 @@ def build_game(gdir, out_root):
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
     if not P:
-        runs, totals, symbols = footprint(gdir, game)
-        json.dump({"runs": runs, "totals": totals, "symbols": symbols}, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
-        foot_html = footprint_table(totals)
+        runs, totals, symbols, span = footprint(gdir, game)
+        memmap = {"runs": runs, "totals": totals, "symbols": symbols}
+        if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
+            memmap.update(base=span[0], size=span[1] - span[0])
+        json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
     else:
         totals, foot_html = part_footprints(P, out)
+        span = (0, 0x10000)
     game["_totals"] = totals
     about_template = os.path.join(gdir, "about-layout.html")
     if not os.path.isfile(about_template):
         about_template = os.path.join(SITE, "about.html")
-    about = fill(read(about_template), **common, footprint=footprint_table(totals),
+    about = fill(read(about_template), **common, footprint=footprint_table(totals, plat, span), map_row=(span[1] - span[0]) // 128,
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=f"{game.get('coverage_percent') or 0:g} %",
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
@@ -715,7 +796,7 @@ def build_game(gdir, out_root):
     about = under_title(about, ban)
     about = fill(about, data_links=data_links(P))
     if P:
-        about = parts_about(about.replace(footprint_table(totals), foot_html), P)
+        about = parts_about(about.replace(footprint_table(totals, plat, span), foot_html), P)
     open(os.path.join(out, "about.html"), "w").write(pagenav(at_end(about, edit_footer(game, "about.html"))))
     for f in ("listing.json", "symbols.json"):
         if os.path.exists(os.path.join(gdir, f)):
@@ -743,7 +824,7 @@ ANALYTICS = """<!-- Google Analytics 4. Only on the live domain, never on a loca
 """
 
 
-LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js")
+LIB_FILES = ("site.css", "site.js", "memmap.js", "c64.js", "sid.js", "spectrum.js")
 
 
 def version_lib(out_root):
@@ -786,32 +867,6 @@ def add_analytics(out_root):
     return n
 
 
-def runs_table(games):
-    """Every game with a timings.json, one row each: the figures a run can try to beat."""
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from clock import summarize
-    rows = []
-    for g in games:
-        gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
-        if not os.path.isfile(os.path.join(gdir, "timings.json")) or g.get("imported"):
-            continue    # an imported analysis's hours leave out the work it started from
-        S = summarize(gdir)
-        program = sum(g["_totals"][k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
-        fmt = lambda v, unit="": (f"{v:g}{unit}" if v is not None else "")
-        rows.append(f'<tr><td><a href="{g["platform"]}/{g["slug"]}/">{html.escape(g.get("title", g["slug"]))}</a></td>'
-                    f'<td>{program // 1024} KB</td><td>{html.escape(tier_name(g.get("tier", "none")))}</td><td>{fmt(S["hours"])}</td>'
-                    f'<td>{fmt(S["minutes_to_play"])}</td><td>{fmt(S["min_per_kb"])}</td><td>{fmt(S["agents"])}</td>'
-                    f'<td>{html.escape(", ".join(S["models"]))}</td></tr>')
-    if not rows:
-        return ""
-    return ('<h2>Runs</h2><p>How long each run took, in figures that carry across games and machines: '
-            'hours of work in total, minutes from boot to steady-state play, and minutes of the coverage step per kilobyte '
-            'the ledger tracks, each beside the model that took it. Every run starts the clock at each step; the retro reports it. '
-            'These are the numbers to beat.</p>'
-            '<div class="tablewrap"><table><tr><th>Game</th><th>Program</th><th>Tier</th><th>Hours</th><th>To play (min)</th>'
-            '<th>Coverage (min/KB)</th><th>Agents</th><th>Model</th></tr>' + "".join(rows) + '</table></div>')
-
-
 PROGRAM = ("code", "graphics", "levels", "sound", "text", "tables", "variables")
 
 
@@ -826,8 +881,8 @@ def shot_html(g, cls="shot"):
         return (f'<img class="{cls}" src="{plat}/{slug}/{html.escape(ti, quote=True)}" '
                 f'alt="{html.escape(g.get("title", slug))} title screen" loading="lazy">')
     what = f"title_image {ti!r} is not a file in the game folder" if ti else "has no title_image"
-    print(f"warning: {plat}/{slug} {what} "
-          f"(set it in game.json to a path from the game folder, e.g. reference/title-screen.png)", file=sys.stderr)
+    warn(f"{plat}/{slug} {what} "
+         f"(set it in game.json to a path from the game folder, e.g. reference/title-screen.png)")
     return f'<div class="{cls} missing" aria-hidden="true"></div>'
 
 
@@ -1003,6 +1058,13 @@ def kits():
 TIER_ORDER = ("platinum", "gold", "silver-claimed", "silver", "bronze", "none")
 
 
+def by_tier(games):
+    """The games best first, as the home page lists them: Platinum and Gold at the top,
+    Bronze and no tier at the bottom; within a tier, the order they came in."""
+    rank = lambda g: TIER_ORDER.index(g.get("tier", "none")) if g.get("tier", "none") in TIER_ORDER else len(TIER_ORDER)
+    return sorted(games, key=rank)
+
+
 def tier_stamps(gs):
     counts = {}
     for g in gs:
@@ -1162,8 +1224,9 @@ def cut_blocks(games):
     kit/START.md removes it with everything only it used; until then it is dead weight."""
     out = []
     for g in games:
-        for f in AUTHORED:
-            n = len(re.findall(r"<[a-zA-Z][^<>]*\sdata-cut\b", read(os.path.join(ROOT, "games", g["platform"], g["slug"], f))))
+        gdir = os.path.join(ROOT, "games", g["platform"], g["slug"])
+        for f in authored(gdir, g):
+            n = len(re.findall(r"<[a-zA-Z][^<>]*\sdata-cut\b", read(os.path.join(gdir, f))))
             if n:
                 out.append((f'games/{g["platform"]}/{g["slug"]}/{f}', g.get("tier", "none"), n))
     return out
@@ -1183,11 +1246,11 @@ def main():
         games.append(build_game(os.path.dirname(gj), out_root))
     feat = featured_game(games)
     home = fill(read(os.path.join(SITE, "index.html")), site_title="Games Explained", lib="lib",
-                cards="".join(card_html(g) for g in games), featured=featured_html(feat) if feat else "",
+                cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
                 recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
-    # the kit changelog, game by game
-    log = markdown(read(os.path.join(ROOT, "kit", "CHANGELOG.md")), drop_h1=False, addr=False) + runs_table(games)
+    # what the kit learned, game by game
+    log = markdown(lessons(), drop_h1=False, addr=False)
     page = fill(read(os.path.join(SITE, "page.html")), site_title="How the kit has changed", lib="lib", body=log,
                 version=read(os.path.join(ROOT, "kit", "VERSION")).strip())
     open(os.path.join(out_root, "kit.html"), "w").write(page)
@@ -1208,8 +1271,7 @@ def main():
                  "listing.json, symbols.json and reference/, nothing else; site/lib/ is at ../../lib/")
     cut = cut_blocks(games)
     for page, tier, n in cut:
-        print(f"warning: {page} has {n} block(s) hidden with the page editor; the cleanup pass in kit/START.md removes them",
-              file=sys.stderr)
+        warn(f"{page} has {n} block(s) hidden with the page editor; the cleanup pass in kit/START.md removes them")
     done = [page for page, tier, n in cut if tier in ("gold", "platinum")]
     if done:
         sys.exit(f"{', '.join(done)}: a Gold or Platinum page with blocks still hidden with the page editor. "

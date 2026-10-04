@@ -1,0 +1,251 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impossible Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/impossible-mission-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1984 · Epyx</p>
+  <h1>Impossible Mission</h1>
+  <p class="sub">Every room of Elvin Atombender's stronghold, drawn from the game's own records, and how a game shuffles them into a new map.</p>
+</header>
+<main class="wrap">
+<section id="rooms">
+  <p class="fig">01 · The rooms</p>
+  <h2 class="t">All 32 rooms, drawn from their records</h2>
+  <p class="lede">Every room in Elvin Atombender's stronghold is a short list of bytes: floors, walls, robots, furniture and lifting platforms.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button id="rprev">◀</button>
+      <select id="rsel"></select>
+      <button id="rnext">▶</button>
+      <label><input type="checkbox" id="rsprites" checked> robots, ball and agent</label>
+      <label><input type="checkbox" id="rcontents"> what this game hid in the furniture</label>
+    </div>
+    <canvas id="rcv" class="c64" width="320" height="200"></canvas>
+    <p class="cap" id="rcap"></p>
+  </div>
+  <p>The room table at <code>$0E70</code> points at 32 records packed into <code>$0EB0</code>-<code>$1D63</code>. Their format is <a href="#record">below</a>.</p>
+  <p>The game draws a room into a buffer at <code>$C100</code> while the screen is blanked (<code>$A39C</code>), then reveals it with two black bands that open from the middle of the screen outwards (<code>$A2F7</code>). Furniture comes from a table of 27 types at <code>$232C</code>: a shape, its size and how long it takes to search. The floors alternate between two glyphs, and the walls are one glyph down each side.</p>
+</section>
+
+<section id="random">
+  <p class="fig">02 · A new stronghold every game</p>
+  <h2 class="t">The rooms stay the same; the map, the robots and the hiding places are rolled for each game</h2>
+  <p class="lede">Pressing fire at the start runs <code>$7236</code>, which rolls the whole game.</p>
+  <table class="d">
+    <tr><th>What</th><th>How</th><th>Routine</th></tr>
+    <tr><td>The map</td><td>The 32 rooms shuffled in four groups of eight and laid out on a 9 × 6 grid joined by lift shafts and corridors</td><td><code>$B2BD</code></td></tr>
+    <tr><td>The robots</td><td>Every robot gets one of 32 behaviour scripts; rooms with a ball choose from a different 16</td><td><code>$B088</code></td></tr>
+    <tr><td>The password</td><td>One of eight words: SWORDFISH, ASPARAGUS, ARTICHOKE, CROCODILE, ALLIGATOR, ALBATROSS, BUTTERFLY, CORMORANT</td><td><code>$B0CD</code></td></tr>
+    <tr><td>The nine puzzles</td><td>Each picture is 18 blocks chosen from 16 patterns at random, with a frame round it</td><td><code>$B0F3</code></td></tr>
+    <tr><td>The 36 pieces</td><td>Four per puzzle, cut with masks so that no pair of masks is used twice</td><td><code>$B180</code></td></tr>
+    <tr><td>Hiding places</td><td>The 36 pieces, nine snooze passwords and nine lift-init passwords go into random pieces of furniture among 128</td><td><code>$B26D</code></td></tr>
+  </table>
+  <p>The room layouts are fixed. Which room sits where, who patrols it and what is hidden in it change every game. How the pieces are cut is on the <a href="mechanics.html#pieces">How it works</a> tab, and the robots' scripts are there too.</p>
+</section>
+
+<section id="record">
+  <p class="fig">03 · The room record</p>
+  <h2 class="t">A room is a list of lists</h2>
+  <p class="lede">The game reads a record from the start in one pass, and most of its parts end with a byte of <code>$FF</code>. In the order they are read:</p>
+  <table class="d">
+    <tr><th>Part</th><th>Bytes</th></tr>
+    <tr><td>Colours: background, the two shared multicolours, the floor</td><td>4</td></tr>
+    <tr><td>Floors: where each segment starts on the screen, and its length</td><td>3 each, then <code>$FF</code></td></tr>
+    <tr><td>Gaps: a place on the screen that is cleared for five rows, and the glyph drawn under them</td><td>3 each, then <code>$FF</code></td></tr>
+    <tr><td>The two places the agent can enter</td><td>6</td></tr>
+    <tr><td>Robots: a script number, a row and a column</td><td>3 each, then <code>$FF</code></td></tr>
+    <tr><td>The ball: a script number and a position, or nothing</td><td>3, or <code>$FF</code></td></tr>
+    <tr><td>Sprite colours and which sprites are on</td><td>5</td></tr>
+    <tr><td>Lifting platforms: a row, a column and how many platforms are stacked there, then bytes the platform code reads</td><td>a list per platform, ended by a byte of <code>$80</code> or more</td></tr>
+    <tr><td>Furniture: row, column, type and contents</td><td>4 each, ended by a byte of <code>$80</code> or more</td></tr>
+  </table>
+  <p>A new game gives every robot a new script (<code>$B088</code>) and writes new contents into the furniture (<code>$B26D</code>). The overlay on the room browser shows the hiding places of the one game this page's data was taken from.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script>
+// Data: excerpts of the game's memory from listing.json (address, base64), see the build in work/.
+const DATA = [[3508, "SUpLTE1OT1BR"], [3696, "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"], [9004, "syMLAlDLIwUBMNcjCAL/6SMTBCDZJAsFkPEkCALAESQIAmAjJA8DcEMkFAbwbSQFAUB5JCMI0MEkCwJwAyUXBRAzJQ8DoFMlAABAVSUFAjB5JQUBIGElCwWQhSUFAUCRJQMBIJklDgLgtyUdBQAvJhEF4FMmCwKwayYLAwCDJgsDAJsmIwUADAwPDAwPDAwPDg4OFBMSFxYVGhkYHBwbDg4ODg0NHh0gHyEhCAgIDg4OCAgIJCMiJyYlKSooDg4ODg4ODg4ODggICAgIDg4ODg4rKysrK1JSUlIsLS4uLi8wMDAwMAgICAgICAgICFMxUzQzMjc2NQEBAQEBAQEBDA8NDggICAg7Ojk4UlJSPEA/Pj1DQkJBCAgICAgICAgIDAwMCAgICAwMDAgIU1dWVVRTU15dXFtaWVhlZGNiYWBfDg4ODggIZ2ZpaGtqAQEBAQEBAQEBCQkJCQkJCQkJCAgICAgICAgICAgICAgICAgIbm1tbW1tbW1sc3BycXBycXBvU3V6eXh3dnV0U3yBgH9+fXx7AQEBBg4GBg4GDg4Og4JTU4WEiIeGi4qJBgYGBgYGCAgICAgIjI2NjY6PkJGRkZGSCAgICAgICAgIk5SVlpeYmZqbCQkJCQkJCQkJCQkJCQkJCQkBCQkJCQkJqVNTU1NTqlNTq1NTrK2trq2vUlJSUlJSAQEBAQkJCQkJCQkJCQkJCVOcnVNTnp9ToKGio6SlpqcOqAkJCQkJAbCxsrO0tQMGBgYGAwsLCwsLC7a3UlK4ubq7u7u7vAAAAAAAAL1TU75TvwgICAgICMDBwsPExQgICAjGx8jJCAoNDgoNDg4KDQ8JDQ8JysvMzc7P0NHS09TV1tfYCA4ODg4ICA4ODg4ICA4ODg4ICA4ODg4ICA4ODg4I2URERETd3lJSUlLj3lJSUlLj3lJSUlLj6f/////sCAEBAQEICAEBAQEICAEBAQEICAEBAQEICAEBAQEI2drb29zd3t/g4eLj3lLkUu3j3uXm5+jj6epSUuvsCAgICAgLCwsLCwsLCwsLCwsLU1Pu7/DxoPLz9PX2pKWm9/j5CAgLCAgLCAgLCAgI+vr7/Pz9+vr+QUFBCAgICAgICAgICAgIUlJSUlJSUlJSUlJSCQkJCQkJCQkJCQkJUlJSUlJSUlJSUlJSAAABAQAAAAABAQAAAAABAQAAAAAODgAACAgICAgIDAwMDAwMU1MODlNTU1MODlNTU1MODlNTU1MPD1NTCAkKCgsMUw0NDQ1T"], [12387, "AACqalpfX18AAKqqqv///wAAqqqq+vr6X19fX19fX1/6+vr6+vr6+l9fX1VVVQAA////VVVVAAD6+vpaVlUAAFVdVVdVVRUAVdVVdVXVVapVVVVVVVVVqlVXVV1VV1WqVXVV1VVVVAD/AAAAAAAAABgYGBgYGBgYPP88/zz/PP+q////////qv///1VVVf8U"], [18368, "AKoAAqqACqqgCqmgKqVoKqloqqpqqqqqqqqqqqqqqqqqqqqqqqqqKqqoKqpoCqmgCqqgAqqAAKoAAAAAAAAAAA=="], [20624, "AAAAAFRU7OwAAAAAVVX/vwAAAABVVX963Nzs3Nzs3Nyvq66tvf39vWpra2p6f3967Nzc7Nzc7Oytrquvv////2pra2p6f39/VFRUVFSo/PxVVVVVVar//wAAAFTVqdWpAAAAFVdqV2rVqdWp/2Zm/1dqV2r/pqb///////+q//8AAEBAQEBAQAAAVf//////AAABAQEBAQFAAEDQ0FCqqlX/Vf39VaqqAQABBwcFqqoICAgICAgICCAgICAgICAgAAAAAAAAAAAAAFX////////////39///VWp3and3alVVqneqd3eqVVWpfal9falV//////9V//8AAAAAVVVVVQDo66uoVLRUVf//qqpVu1UAK+vqKhUaFSAgICAgoMDAAAAAAAAAAAAICAgICCgwMAD/u7vX7+//AP9jbW1tY/8A/zvZ2Brb/wD/597e3ub////39/f///9VVVVVfX19fWdnZ2dVZmZVd3d3d1VmZlV2dnZ2VWZmVVVVVVVVqqqq//+qVVWqqqp/f2pVVaqqqgBVVVX/////VVVV/+rq6v9VVVX/q6ur//+rq6urq6v//+rq6urq6v////+r6vr+v/////r+v6+r////v6+r6voAAAAA////qwAAAAD////6AAAAAP///7/q+v6/AAAAAP6/r6sAAAAAr6vq+gAAAAD//////////wAAAAAAAAAAAADw8AAAAAAAoP//AAAAAACqDw8AAAAAUKpQgICAgIAAAABVqWmp/QAAAFWqqar/AMDA1erqwNAA/////////wADA1erqwMHgKCoVapqqv8AAABVamlqf6mpaampqQEBqqqpqqqqAADQENDQAAAAQP8A//8UFBRVBwQHBwAAAAGqqmqqqqoAAGpqaWpqakBAAABQVFVVVVUAAAEBAQEBAVTwVFRUVP//AQAFFVUV////DwMDAwMP/w8AAAAAAAAPAAAAAP/88PAAAAAA/////wAAAAA/DwMD8ICAQICAQID/qqpVpqZVqv+pqVVqalWp/5qaVaqqVZoDAAAAAAAAAIBAgIBAgIBAqlWmplWqqlWp1erq1enp1Zr/////////qv////////+p/////////5pVqqpVmppVgIBAgIBAgICmplWqqlWmpurq1enp1erq////d3dff9////93d1V///////f3/f/9qqpVmppVqqr4+Pz8/v7//wcHDw8fHz8/AA4fHz8/Pn5AQEBAQEBAQH58/Pz4+PjwQEBAQH9/f38AAAAAHx8fH/Dw8PDw8PAQf39/f39/f1QPDw8PDw8PBQAAAAAAAAA/AAAAAAAAAP8AAAAAAA8//wAAAAAAwPD8qqqqqqoDAwOqqqqqqv///6qqqqqqwMDAAAAAqqqqv6oAAACqWqr/qgAAAKCgoOCgqqq/qqqqqr9aqv+qWqqq/6Cg4KCgoKDgqqqqqr+qPz+qWqqq/6r//6CgoKDgoMDAPz07Nz8+PTv/79+/e/f//z8/Pz8AAAAI/////wAAgIgAABUVCwsLCwg/VVX/////iP9VVb+/v78AAFVV+Pj4+AsLCwsLCwoB/f3/////qlWfn7+/v7+qVfj4+Pj4+KhQAPxUVFRUVPyAoCoKCAAAAAAAAAAAIKAgAAAAAABVqlUAqKgIAAD//wAAAAAAAP//VVV9AAAA//8AAAAAAAD+////Pzo/Pz89/////////1fw8MDAwMDAwwUPAwMDAAADVf/8/Pzw8PwHBwMAAAAAAAAAAAAOHx8PP39////////8/v7//////wAAAABw+PjwAwMDAwMDAwGqqqr/////AMDAwMDAwMBAAAAADBj0YiGAgEBAICAgEBAQEBAQEBD+AAAAABUVPz8AAAAAVFT8/EB/dX9Af3V1Af1d/QH93f1/QEBAQEBAQP0BAQEBAQEBVf////////9U/Pz8/Pz8/P//////VVVV/Pz8/PxUVFQAAACqqpCWlgAAAKqqA+fnAAAAqqoe3t6WlqqEt7e3t+fnqnB5eXl53t6qQm5ubm6qh5eXl5eqgapMfX19faoAqg6+vr6+qga1tbW1taqMnKampqamqgHhZmZmZmaqDs6enp6enqqqqu3t7e3tqqqq3t7e3t6qqqoAFSUpKioqKgD///9/v9/vAP////////8A/////v379wBUWGioqKioKioqKioqKir3+/3+//////////9/v8Df////////AP/v379/f39/f6ioqKioqKio39/f39/f39///////v3799/Av3///////wD///////9/f39/f7/f7yoqKioqKSUV79+/f//////3+/3+/////6ioqKioaFhUf39/f39/f38AAAAAAACAgAUFBQUFBQUFVVVVqampqVVoaHy8lLy8aAgqVVX/////iKpVVb+/v78FClVV+/v7+1WqVVXv7e/qfKpVVfh4+Kj5+fv7+/uqVe/t7+rv7a9V+Hj4qPh4+FBVVVVVVVVVVVVVVVVXV1dXVVVVqlVVVVVXV1eqV1dXV1dXV1dXVVVV/////1VVVVU="], [26368, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcAAAGAAACAAACAAAAAAAPAAAPAAgAD4AAD4AAB4AAB4AAA8AAA8AAA+AAB+AAD+AAH8AAP8AAP4AAe4AAe8AAPeAAHOAAHHAADjgABxgABzgAHvAIAAAAAAAAAAAAABgAADwAABwAAA4AAAYAAAcAAAeAAAOAAAOAAAeAAA8AABwAAHgAAGAAAAAAAAAAAAAAAAAACA"], [28672, "AIAAAIAAAVDAD1HAD//AAVHAABDAAFQAA3cABVVADZnADWVABVXABf1ADf3ADf1ABVVAAd0AAPwAAPwAACAAAA=="]];
+const M = new Uint8Array(65536);
+for (const [a, b] of DATA) { const s = atob(b); for (let i = 0; i < s.length; i++) M[a + i] = s.charCodeAt(i); }
+const PAL = ['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171','#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
+const hex = (n, w = 2) => '$' + n.toString(16).toUpperCase().padStart(w, '0');
+
+// Port of draw_room ($A39C) and its helpers: a room record into a 40x25 screen and colour map.
+// M is the game's memory (a Uint8Array of 65536, e.g. rebuilt from listing.json); room is 0-31.
+// Returns { scr, col, bg, mc1, mc2, robots, ball, spr } where scr/col are 1000-cell arrays as the
+// game leaves them in its buffer at $C100 and in colour RAM (col cells it never writes stay -1).
+function drawRoom(M, room) {
+  const ptr = M[0x0E70 + 2 * room] | M[0x0E71 + 2 * room] << 8;
+  const rec = i => M[(ptr + i) & 0xFFFF];
+  const scr = new Int16Array(1024).fill(0x53), col = new Int16Array(1024).fill(-1);
+  const bg = rec(0), mc1 = rec(1), mc2 = rec(2), floorCol = rec(3);
+  let y = 4;
+  // floors: (address in the buffer, length) until $FF; glyphs $46 and $45 alternate from the right end
+  for (;;) {
+    const lo = rec(y++); if (lo === 0xFF) break;
+    const hi = rec(y++), len = rec(y++), off = ((hi << 8) | lo) - 0xC100;
+    for (let t = len; t >= 0; t -= 2) {
+      scr[off + t] = 0x46; col[off + t] = floorCol;
+      if (t - 1 >= 0) { scr[off + t - 1] = 0x45; col[off + t - 1] = floorCol; }
+    }
+  }
+  // side walls, 25 rows
+  for (let r = 0; r < 25; r++) {
+    scr[r * 40] = 0x47; col[r * 40] = floorCol; scr[r * 40 + 39] = 0x48; col[r * 40 + 39] = floorCol;
+  }
+  // gaps: (address, glyph) until $FF: five blanks above the glyph
+  for (;;) {
+    const lo = rec(y++); if (lo === 0xFF) break;
+    const hi = rec(y++), g = rec(y++), off = ((hi << 8) | lo) - 0xC100;
+    for (let i = 0; i < 5; i++) scr[off + 40 * i] = 0x53;
+    scr[off + 200] = g;
+  }
+  const entry = [rec(y), rec(y + 1), rec(y + 2), rec(y + 3), rec(y + 4), rec(y + 5)];
+  y += 6;                                                      // place_agent's two entry points
+  const robots = [];
+  for (;;) {                                                   // setup_robots: script, row, column
+    const s = rec(y); if (s === 0xFF) { y++; break; }
+    const row = rec(y + 1), c = rec(y + 2);
+    robots.push({ script: s, y: row * 8 + 0x1F, x: (c + 2) * 8 }); y += 3;
+  }
+  let ball = null;
+  if (rec(y) === 0xFF) y++;
+  else { ball = { script: rec(y), x: rec(y + 1), y: rec(y + 2) }; y += 3; }
+  const spr = { mc1: rec(y), mc2: rec(y + 1), robot: rec(y + 2), robot2: rec(y + 3), enable: rec(y + 4) };
+  y += 5;
+  const plist = ptr + y, P = i => M[(plist + i) & 0xFFFF];
+  const platCol = bg === 7 ? 9 : 0x0F;
+  let p = 0;
+  while (P(p) < 0x80) {                                        // lifting platforms
+    let off = P(p) * 40 + P(p + 1);
+    for (let k = P(p + 2); k >= 0; k--) {
+      for (let j = 0; j < 3; j++) { scr[off + j] = M[0x0DB4 + j]; col[off + j] = platCol; }
+      off -= 240;
+    }
+    p += 2;
+    do p++; while (P(p) < 0x80);
+    p++;
+  }
+  for (;;) {                                                   // furniture: row, column, type, contents
+    p++; if (P(p) >= 0x80) break;
+    const off = P(p) * 40 + P(p + 1), type = P(p + 2), contents = P(p + 3);
+    p += 3;
+    const x = type * 5, S = M[0x232C + x] | M[0x232D + x] << 8, total = M[0x232E + x], w = M[0x232F + x] + 1;
+    const C = S + total + 1;
+    let t = total;
+    for (let r = 0; t >= 0; r++)
+      for (let j = w - 1; j >= 0 && t >= 0; j--, t--) {
+        scr[off + r * 40 + j] = contents === 0xF0 ? 0x53 : M[C + r * w + j];
+        col[off + r * 40 + j] = M[S + r * w + j];
+      }
+  }
+  if (room === 0x11 || room === 0x1B) {                         // draw_code_room's big screen
+    scr[123] = 0; scr[156] = 2; scr[683] = 5; scr[716] = 7;
+    for (let i = 0; i < 32; i++) {
+      scr[124 + i] = 1; scr[644 + i] = 0x10; scr[684 + i] = 6;
+      col[644 + i] = 0x0C; col[124 + i] = 0x0E; col[684 + i] = 0x0E;
+    }
+    scr[699] = 0x11; scr[700] = 0x11;
+    col[123 + 33] = 0x0E; col[123] = 0x0E;
+    for (let r = 0; r < 13; r++) {
+      const off = 163 + 40 * r;
+      scr[off] = 3; col[off] = 0x0E; scr[off + 33] = 4; col[off + 33] = 0x0E;
+    }
+    col[163 + 40 * 13 + 33] = 0x0E; col[163 + 40 * 13] = 0x0E;
+  }
+  return { scr, col, bg, mc1, mc2, entry, robots, ball, spr };
+}
+
+
+// ---- drawing ----
+function ctx2(cv) { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }
+function cellMC(c, charset, code, x, y, cols) {
+  for (let r = 0; r < 8; r++) { const b = M[charset + code * 8 + r];
+    for (let p = 0; p < 4; p++) { const v = (b >> (6 - 2 * p)) & 3; c.fillStyle = PAL[cols[v]]; c.fillRect(x + p * 2, y + r, 2, 1); } }
+}
+function cellHi(c, charset, code, x, y, fg, bg) {
+  for (let r = 0; r < 8; r++) { const b = M[charset + code * 8 + r];
+    for (let p = 0; p < 8; p++) { c.fillStyle = PAL[(b & (0x80 >> p)) ? fg : bg]; c.fillRect(x + p, y + r, 1, 1); } }
+}
+function drawTextMC(c, charset, scr, col, bg, mc1, mc2) {          // multicolour text mode, 40x25
+  for (let i = 0; i < 1000; i++) {
+    const cc = col[i] < 0 ? 0 : col[i] & 15, x = (i % 40) * 8, y = Math.floor(i / 40) * 8;
+    if (cc & 8) cellMC(c, charset, scr[i], x, y, [bg, mc1, mc2, cc & 7]);
+    else cellHi(c, charset, scr[i], x, y, cc & 7, bg);
+  }
+}
+function sprite(c, addr, sx, sy, colour, mc, m1, m2) {               // sprite at VIC coordinates
+  const x0 = sx - 24, y0 = sy - 50;
+  for (let r = 0; r < 21; r++) for (let b = 0; b < 3; b++) {
+    const v = M[addr + r * 3 + b];
+    if (mc) for (let p = 0; p < 4; p++) { const k = (v >> (6 - 2 * p)) & 3; if (!k) continue;
+      c.fillStyle = PAL[[0, m1, colour, m2][k]]; c.fillRect(x0 + b * 8 + p * 2, y0 + r, 2, 1); }
+    else for (let p = 0; p < 8; p++) if (v & (0x80 >> p)) { c.fillStyle = PAL[colour]; c.fillRect(x0 + b * 8 + p, y0 + r, 1, 1); }
+  }
+}
+// ---- sound ----
+let AC = null;
+const audio = () => AC || (AC = new (window.AudioContext || window.webkitAudioContext)());
+function tones(freqs, start, dur) {
+  const a = audio(), g = a.createGain(); g.gain.value = 0.12; g.connect(a.destination);
+  for (const f of freqs) { const o = a.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.connect(g); o.start(a.currentTime + start); o.stop(a.currentTime + start + dur); }
+}
+const clockHz = () => document.querySelector('input[name=clk]:checked').value === 'pal' ? 985248 : 1022727;
+const sidHz = (v, clk) => v * clk / 16777216;
+const keyHz = (n, clk) => [sidHz(M[0x7E6E + n] | M[0x7E7A + n] << 8, clk), sidHz(M[0x7E86 + n] | M[0x7E92 + n] << 8, clk)];
+
+// ---- the rooms ----
+const rsel = document.getElementById('rsel'), rcv = document.getElementById('rcv'), rc = ctx2(rcv);
+for (let i = 0; i < 32; i++) { const o = document.createElement('option'); o.value = i; o.textContent = 'Room ' + hex(i) + (i === 0x11 || i === 0x1B ? ' (code room)' : i === 0x05 ? " (Elvin's control)" : ''); rsel.appendChild(o); }
+rsel.value = 0x1C;
+const CONT = v => v === 0xFF ? null : v === 0xFC ? 'snooze' : v === 0xFD ? 'lift init' : v === 0xFE ? 'Elvin' : v === 0xFB ? 'computer' : v < 0x24 ? 'piece ' + v : null;
+function objectsOf(room) {                                             // furniture positions for the overlay
+  const ptr = M[0x0E70 + 2 * room] | M[0x0E71 + 2 * room] << 8, out = [];
+  const r = drawRoom(M, room); let y = 4; const rec = i => M[ptr + i];
+  while (rec(y) !== 0xFF) y += 3; y++; while (rec(y) !== 0xFF) y += 3; y += 7;
+  while (rec(y) !== 0xFF) y += 3; y++; y += rec(y) === 0xFF ? 1 : 3; y += 5;
+  let p = 0; const P = i => M[ptr + y + i];
+  while (P(p) < 0x80) { p += 2; do p++; while (P(p) < 0x80); p++; }
+  for (;;) { p++; if (P(p) >= 0x80) break; const row = P(p), cl = P(p + 1), t = P(p + 2), v = P(p + 3); p += 3;
+    out.push({ row, col: cl, w: M[0x232F + t * 5] + 1, h: Math.floor((M[0x232E + t * 5] + 1) / (M[0x232F + t * 5] + 1)), type: t, v }); }
+  return { r, objs: out };
+}
+function drawRoomCanvas() {
+  const room = +rsel.value, { r, objs } = objectsOf(room);
+  const cs = 0x5000;
+  const save = M.slice(0x5000, 0x5090);
+  if (room === 0x11 || room === 0x1B) M.set(M.slice(0x3063, 0x30F3), 0x5000);   // the code room's picture
+  rc.fillStyle = PAL[r.bg & 15]; rc.fillRect(0, 0, 320, 200);
+  drawTextMC(rc, cs, r.scr, r.col, r.bg & 15, r.mc1 & 15, r.mc2 & 15);
+  M.set(save, 0x5000);
+  if (document.getElementById('rsprites').checked) {
+    for (const b of r.robots) sprite(rc, 0x7000, b.x, b.y, r.spr.robot & 15, true, r.spr.mc1 & 15, r.spr.mc2 & 15);
+    if (r.ball) sprite(rc, 0x47C0, r.ball.x, r.ball.y, 0, true, r.spr.mc1 & 15, r.spr.mc2 & 15);
+    const ax = r.entry[0], ay = r.entry[2], hi = r.entry[4];
+    [[0x9E, 1, 12, 2], [0x9C, 11, 0, 4], [0x9D, 11, 21, 8]].forEach(([pt, cl, dy, bit]) =>
+      sprite(rc, pt * 64 + 0x4000, ax + (hi & bit ? 256 : 0), ay + dy, cl, false));
+  }
+  if (document.getElementById('rcontents').checked) {
+    rc.font = '7px monospace'; rc.textBaseline = 'top';
+    for (const o of objs) { const t = CONT(o.v); if (!t) continue;
+      const x = o.col * 8, y = o.row * 8; rc.fillStyle = 'rgba(255,240,194,.88)'; rc.fillRect(x, y - 8, t.length * 4.3 + 4, 8);
+      rc.strokeStyle = '#ffd54a'; rc.strokeRect(x + .5, y + .5, o.w * 8 - 1, Math.max(1, o.h) * 8 - 1);
+      rc.fillStyle = '#000'; rc.fillText(t, x + 2, y - 7); }
+  }
+  const fur = objs.filter(o => o.type !== 0x18 && o.type !== 0x19).length;
+  document.getElementById('rcap').innerHTML = `<b>Room ${hex(room)}</b>, record at <code>${hex(M[0x0E70 + 2 * room] | M[0x0E71 + 2 * room] << 8, 4)}</code>: ` +
+    `${r.robots.length} robot${r.robots.length === 1 ? '' : 's'}${r.ball ? ', a ball' : ''}, ${fur} piece${fur === 1 ? '' : 's'} of furniture. ` +
+    'Drawn by a port of <code>$A39C</code> that gives the same screen and colour bytes as the game for all 32 rooms (checked in a 6502 simulator). ' +
+    'The labels show where the game in this page\'s snapshot hid its pieces and passwords; every new game hides them again.';
+}
+rsel.onchange = drawRoomCanvas;
+document.getElementById('rprev').onclick = () => { rsel.value = (+rsel.value + 31) % 32; drawRoomCanvas(); };
+document.getElementById('rnext').onclick = () => { rsel.value = (+rsel.value + 1) % 32; drawRoomCanvas(); };
+document.getElementById('rsprites').onchange = drawRoomCanvas;
+document.getElementById('rcontents').onchange = drawRoomCanvas;
+drawRoomCanvas();
+</script>

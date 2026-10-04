@@ -1,0 +1,259 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doctor Who and the Mines of Terror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/dw-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
+  <h1>Doctor Who and the Mines of Terror</h1>
+  <p class="sub">The whole mine, 4,096 by 1,792 pixels, drawn from the map the game keeps under its operating system, with every object, danger, and restart point on it.</p>
+</header>
+<main class="wrap">
+<section id="mine">
+  <p class="fig">The mine</p>
+  <h2 class="t">One map, seven kilobytes</h2>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier. Choose an object to zoom in on it, then press Where it is used to step through the places it works. The dangers have a list of their own, and <a href="gameplay.html#dangers">Gameplay</a> says what each does. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
+  <div class="plate">
+    <div class="row">
+      <select class="b" id="pk-ob" aria-label="Object"><option value="">Choose an object</option></select>
+      <button class="b" type="button" id="pk-use" disabled>Where it is used</button>
+    </div>
+    <div class="row">
+      <select class="b" id="pk-dg" aria-label="Danger"><option value="">Choose a danger</option></select>
+      <button class="b" type="button" id="pk-dgn">Next danger</button>
+      <select class="b" id="pk-pl" aria-label="Other places"><option value="">Other places</option></select>
+    </div>
+    <div class="row">
+      <span class="note">Zoom</span><button class="b" type="button" data-z="1" aria-pressed="false">×1</button><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
+      <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
+      <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
+      <span class="note" id="mappos"></span>
+    </div>
+    <canvas id="map" class="scr" style="max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
+    <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
+    <p class="kv" id="rpkv"></p>
+    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn in the magnifier as their own sprites from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
+    <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. The mine has seven zones, and each zone swaps in one of three sets of shapes and colours for sixteen characters (<code>zone_classify</code>, <code>$AA3D</code>; <code>zone_graphics</code>, <code>$ABCF</code>). This picture draws every zone with its own set.</p>
+  </div>
+  <h3 id="objects">Where the objects work</h3>
+  <p>Most objects work only at certain points. When the Doctor uses the one he holds (F5), the game compares his position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>): the dig sites at <code>$BC1C</code>, the bolts at <code>$BB94</code>, and the escape pod's launch points at <code>$BCDA</code>. Choose an object above and press Where it is used to step through its points. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). What every object is for is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
+  <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. The map holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
+  <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
+</section>
+<section id="scroll">
+  <p class="fig">Scrolling</p>
+  <h2 class="t">Two screens, drawn in turn</h2>
+  <p>The game keeps two copies of the play screen, at <code>$7800</code> and <code>$7C00</code>. While one is shown, the game builds the next position of the mine in the other, spread over three frames (<code>coarse_scroll_step</code>, <code>$8C32</code>), and then swaps them. Between those steps the video chip's fine scroll moves the picture a pixel at a time, so the view glides in all eight directions.</p>
+  <h3 style="margin-top:28px">Seven zones</h3>
+  <p>The mine is split into seven zones by the Doctor's position, checked every eighth frame (<code>zone_classify</code>, <code>$AA3D</code>). Entering a zone puts the creatures of other zones to sleep, wakes that zone's own, and swaps in its shapes for sixteen characters (<code>zone_graphics</code>, <code>$ABCF</code>).</p>
+</section>
+<section id="restart">
+  <p class="fig">Restart points</p>
+  <h2 class="t">Nine places to come back to</h2>
+  <p>The mine has nine restart points, stored as four tables of nine bytes at <code>$9059</code>-<code>$907C</code>. When the Doctor comes close to one, that point becomes the current one (<code>check_restart_points</code>, <code>$907D</code>). After he loses a regeneration, the game puts him back at the current point.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/dw-page.js"></script>
+<script>
+(async function () {
+  let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
+  const M = G.ram, full = DW.drawMine(M), S = 4;
+  const mv = document.getElementById('map'), mctx = C64.canvas(mv, full.width / S, full.height / S);
+  const zv = document.getElementById('zoom'), zctx = C64.canvas(zv, 768, 384);
+  let Z = 2, sel = null;                         // magnification, and the mark chosen from the list
+  const Y = y => full.height - y;
+  const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
+  const pts = [...Array(9)].map((_, i) => [M[0x9059 + i] << 8 | M[0x9062 + i], Y(M[0x906B + i] << 8 | M[0x9074 + i])]);
+  let view, showRp = false;
+  const P = (xh, xl, yh, yl) => [xh << 8 | xl, Y(yh << 8 | yl)];
+  const name = o => DW.itemName(M, o);
+  // objects $34-$4C where a new game places them (the markers $30-$33 wait with Splinx; x high $FF is off the map)
+  const objs = [];
+  objs.push({ at: P(M[0x1BC2], M[0x1B72], M[0x1C62], M[0x1C12]), t: 'SPLINX', o: 2 });      // object 2, beside the Doctor
+  for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) objs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t: name(o), o });
+  // where objects act: each list read from the table the code tests the Doctor's position against
+  const uses = [];
+  for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBC1C + i], M[0xBC1F + i], M[0xBC22 + i], M[0xBC25 + i]), t: 'PICK AXE: dig here (3 hits)' });        // $BC11
+  for (let i = 0; i < 8; i++) uses.push({ at: P(M[0xBB94 + i], M[0xBB9C + i], M[0xBBA4 + i], M[0xBBAC + i]), t: 'SPANNER: bolt ' + (i + 1) + (i === 5 ? ' (from below)' : '') + ', opens a clamp' });             // use_spanner $BBBC
+  for (let i = 0; i < 3; i++) uses.push({ at: P(M[0xBCDA + i], M[0xBCDD + i], 0x06, 0x48), t: 'ACTIVATOR: escape pod' });                                 // use_activator $BCE0
+  uses.push({ at: P(0x0E, 0x60, 0x00, 0x68), t: 'EXPLOSIVES blown here: the level starts rising' });   // blast_damage $C202
+  uses.push({ at: P(0x0B, 0xE0, 0x05, 0x88), t: 'a blast here opens the wall' });                      // $C22E, switch cell $0B
+  // the way home: F5 with empty hands on the TARDIS block $B2 (use_empty_hands, $BD1B)
+  uses.push({ at: [114 * 32 + 16, Y(28 * 32 + 16)], t: 'TARDIS: the way home (empty hands)' });       // switch cell 16
+  uses.push({ at: [28 * 32 + 16, Y(9 * 32 + 16)], t: 'TARDIS: where it lands (leaves at x $0800)' });  // switch cell 8, $BADD
+  // the machinery's five circuit slots, y $0390 (machine_slot_x_lo $B99C)
+  for (let i = 0; i < 5; i++) uses.push({ at: P(M[0xB992 + i], M[0xB99C + i], 0x03, 0x90), t: 'MACHINERY: circuit slot ' + (i + 1) });
+  // CHEMICALS left here (x within $50, y exactly $0588) recolour the pool and stop controllers $1A and $1B ($BA8D)
+  uses.push({ at: P(0x02, 0x90, 0x05, 0x88), t: 'CHEMICALS: drop them in the pool' });
+  // the code lock (code_lock_press, $BE29): F5 with empty hands, Doctor's x high $0A
+  uses.push({ at: P(0x0A, 0x24, 0x05, 0xD8), t: 'CODE LOCK: clue panel' });                            // x low $14-$33, y $05C6 up ($BE56)
+  for (let i = 0; i < 3; i++) uses.push({ at: P(0x0A, 0x30 + 0x20 * i, 0x04, 0xC8), t: 'CODE LOCK: button ' + (i + 1) });   // y $04C8, 32-pixel zones from x low $20
+  uses.push({ at: [84 * 32 + 16, Y(38 * 32 + 16)], t: 'CODE LOCK: changes this block' });               // switch cell 13, $BF62
+  // dangers: map blocks the Doctor's centre is tested against (doctor_tile_checks, $CA58)
+  const dangers = [];
+  for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) {
+    const b = M[0xFB80 - 0x80 * r + c], at = [c * 32 + 16, Y(r * 32 + 16)];
+    if (b === 0x74 || b === 0x51) dangers.push({ at, t: 'stalagmite: fatal' });
+    else if (b === 0x3F && r * 32 >= 0x200) dangers.push({ at, t: 'bad air: hold the AIR MASK' });
+  }
+  for (const [list, kind] of [[objs, 'Objects'], [uses, 'Where they are used'], [dangers, 'Dangers']]) {
+    const seen = {}, total = {};
+    for (const k of list) total[k.t] = (total[k.t] || 0) + 1;
+    for (const k of list) { k.kind = kind; seen[k.t] = (seen[k.t] || 0) + 1; k.label = total[k.t] > 1 && !/bolt/.test(k.t) ? k.t + ' (' + seen[k.t] + ' of ' + total[k.t] + ')' : k.t; }
+  }
+  const all = [...objs, ...uses, ...dangers];
+  // where each object does something: the marks above, by the object's name
+  const usedAt = n => n === 'AIR MASK' ? dangers.filter(k => /bad air/.test(k.t))
+    : n === 'EXPLOSIVES' ? uses.filter(k => /EXPLOSIVES|blast/.test(k.t))
+    : n === 'DETONATOR' ? uses.filter(k => /blast/.test(k.t))
+    : n === 'CIRCUIT' ? uses.filter(k => /MACHINERY/.test(k.t))
+    : /^(CRYSTAL|CAPSULE|SPLINX)$/.test(n) ? uses.filter(k => /way home/.test(k.t))
+    : uses.filter(k => k.t.startsWith(n + ':'));
+  const WHY = { 'CRYSTAL': 'carried out of the mine, it doubles the bonus', 'CAPSULE': 'carried out of the mine, it doubles the bonus', 'SPLINX': 'carried out of the mine, it doubles the bonus',
+    'PASS CARD': 'held, it makes character $A0 passable, which reads as the security gate; no table gives the gate a place', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up',
+    'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'once the Doctor jumps up beside it, he can move up and down above it, up to 80 pixels', 'EGG': 'going near it while it lies free hatches a deadly baby madrag',
+    'CHEMICALS': 'dropped in the pool, they turn it purple and stop two controllers for good' };
+  const sel1 = (id, list, text) => { const el = document.getElementById(id); list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = text ? text(k) : k.label; el.append(o); }); return el; };
+  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS)/.test(k.t)));
+  const pkUse = document.getElementById('pk-use');
+  let curObj = null, useIx = -1;
+  function marks(list, colour, round, sprites) {
+    for (const k of list) {
+      const [x, y] = k.at; mctx.fillStyle = colour; mctx.strokeStyle = '#000'; mctx.lineWidth = 1.5;
+      mctx.beginPath(); if (round) mctx.arc(x / S, y / S, 4.5, 0, 7); else mctx.rect(x / S - 4.5, y / S - 4.5, 9, 9); mctx.fill(); mctx.stroke();
+      const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
+      if (zx > -40 && zx < 808 && zy > -20 && zy < 404) {
+        // an object is drawn as its own sprite, standing on its point: starting frame $1D30, colour $1850
+        if (sprites) DW.sprite(zctx, DW.image(M, M[0x1D30 + k.o]), zx - 12 * Z, zy - 21 * Z, Z, [2, M[0x1850 + k.o], 8]);
+        else { zctx.strokeStyle = colour; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 6 * Z, 0, 7); zctx.stroke(); }
+        zctx.font = 'bold 14px IBM Plex Mono, monospace'; zctx.lineWidth = 4; zctx.strokeStyle = '#000'; const lx = zx + (sprites ? 13 * Z : 16); zctx.strokeText(k.t, lx, zy + 5); zctx.fillStyle = colour; zctx.fillText(k.t, lx, zy + 5);
+      }
+    }
+  }
+  const centre = ([x, y]) => view = [Math.min(full.width - 768 / Z, Math.max(0, x - 384 / Z)), Math.min(full.height - 384 / Z, Math.max(0, y - 192 / Z))];
+  centre(start);
+  function cross(ctx, x, y, s, c) { ctx.fillStyle = c; ctx.fillRect(x - 4 * s, y - s / 2, 8 * s, s); ctx.fillRect(x - s / 2, y - 4 * s, s, 8 * s); }
+  function draw() {
+    mctx.imageSmoothingEnabled = true; mctx.drawImage(full, 0, 0, mv.width, mv.height);
+    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 768 / Z / S, 384 / Z / S);
+    cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
+    zctx.imageSmoothingEnabled = false; zctx.drawImage(full, view[0], view[1], 768 / Z, 384 / Z, 0, 0, 768, 384);
+    marks(dangers, '#ff6b5b', false);
+    marks(objs, '#e8c547', true, true);
+    marks(uses, '#5fd068', false);
+    if (showRp) pts.forEach(([x, y], i) => {
+      mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill();
+      mctx.fillStyle = '#000'; mctx.font = 'bold 9px IBM Plex Mono, monospace'; mctx.fillText(i, x / S - 3, y / S + 3);
+      const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
+      if (zx > -20 && zx < 788 && zy > -20 && zy < 404) { zctx.strokeStyle = '#fff'; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 14, 0, 7); zctx.stroke(); zctx.fillStyle = '#fff'; zctx.font = 'bold 16px IBM Plex Mono, monospace'; zctx.fillText('restart ' + i, zx + 18, zy + 5); }
+    });
+    if (sel) {                                   // the chosen mark: a white ring on both maps, drawn last
+      const [x, y] = sel.at, zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
+      mctx.strokeStyle = '#fff'; mctx.lineWidth = 2.5; mctx.beginPath(); mctx.arc(x / S, y / S, 9, 0, 7); mctx.stroke();
+      zctx.strokeStyle = '#fff'; zctx.lineWidth = 4; zctx.beginPath();
+      if (sel.kind === 'Objects') zctx.arc(zx, zy - 10 * Z, 16 * Z, 0, 7); else zctx.arc(zx, zy, 10 * Z, 0, 7);   // an object's ring goes round its sprite
+      zctx.stroke();
+    }
+    const col = view[0] / 32 | 0, row = 55 - ((view[1] + 384 / Z - 1) / 32 | 0);
+    document.getElementById('mappos').textContent = 'block column ' + col + ', map row ' + row + ' at ' + C64.hex(0xFB80 - 0x80 * row);
+  }
+  function at(e) { const b = mv.getBoundingClientRect(); centre([(e.clientX - b.left) * mv.width / b.width * S, (e.clientY - b.top) * mv.height / b.height * S]); draw(); }
+  let drag = false;
+  mv.onpointerdown = e => { drag = true; at(e); }; mv.onpointermove = e => { if (drag) at(e); }; window.addEventListener('pointerup', () => drag = false);
+  const rp = document.getElementById('rp');
+  rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
+    document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
+  document.getElementById('home').onclick = () => { choose(null); centre(start); draw(); };
+  const zbs = document.querySelectorAll('[data-z]');
+  function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
+    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + ['', 'the size of', 'twice', 'three times', 'four times'][Z] + ' the C64\'s pixels'); }
+  const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
+  // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
+  function choose(k, keepObj) {
+    sel = k;
+    for (const el of [pkOb, pkDg, pkPl]) el.value = k && el.querySelector('option[value="' + all.indexOf(k) + '"]') ? all.indexOf(k) : '';
+    if (!keepObj) { curObj = k && k.kind === 'Objects' ? k : null; useIx = -1; }
+    if (curObj) pkOb.value = all.indexOf(curObj);
+    const list = curObj ? usedAt(curObj.t) : [];
+    pkUse.disabled = !list.length;
+    pkUse.textContent = !curObj ? 'Where it is used' : !list.length ? 'No place of use traced' : useIx < 0 ? 'Where it is used (' + list.length + ')'
+      : useIx + 1 >= list.length ? 'Back to the ' + curObj.t : 'Next place (' + (useIx + 2) + ' of ' + list.length + ')';
+    if (!k) { document.getElementById('rpkv').textContent = ''; draw(); return; }
+    let note = k.label + ': ' + where(k) + '.';
+    if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not known.';
+    if (curObj && k !== curObj) note = curObj.t + ', place ' + (useIx + 1) + ' of ' + list.length + ': ' + k.label + ', ' + where(k) + '.';
+    document.getElementById('rpkv').textContent = note;
+    if (Z === 2) setZoom(4);
+    centre(k.at); draw();
+  }
+  pkUse.onclick = () => { const list = usedAt(curObj.t);
+    if (useIx + 1 >= list.length) { useIx = -1; choose(curObj, true); } else choose(list[++useIx], true); };
+  pkOb.onchange = () => choose(pkOb.value === '' ? null : all[+pkOb.value]);
+  pkDg.onchange = () => choose(pkDg.value === '' ? null : all[+pkDg.value]);
+  pkPl.onchange = () => choose(pkPl.value === '' ? null : all[+pkPl.value]);
+  document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
+  // a link from another tab: ?go= names a mark's label, or an object's number in hex
+  const go = new URLSearchParams(location.search).get('go');
+  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
+  zbs.forEach(b => b.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
+  // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
+  mv.addEventListener('click', e => {
+    const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;
+    let best = null, bd = 6 * S;
+    for (const k of all) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
+    if (best) choose(best);
+  });
+  draw();
+  function lock(M, full) {
+    const glyph = G.lockGlyphs, INK = [1, 2, 6, 5, 7];               // W R B G Y as C64 colours
+    const SHAPE = Array.from(M.subarray(0xBD64, 0xBD6A)), LETTER = Array.from(M.subarray(0xBD5F, 0xBD64)), NUM = Array.from(M.subarray(0xBD6A, 0xBD6F));
+    const DECK = Array.from(M.subarray(0xBD6F, 0xBD6F + 186));
+    function put(ctx, ch, x, y, s, ink, bg) {
+      ctx.fillStyle = C64.PAL[bg]; ctx.fillRect(x, y, 8 * s, 8 * s); ctx.fillStyle = C64.PAL[ink];
+      glyph[ch].forEach((g, r) => { for (let b = 0; b < 8; b++) if (g & 0x80 >> b) ctx.fillRect(x + b * s, y + r * s, s, s); });
+    }
+    function chip(ch, ink) { const c = document.createElement('canvas'); c.width = c.height = 32; const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 32, 32); put(x, ch, 4, 4, 3, ink, 0); c.style.verticalAlign = 'middle'; return c; }
+    let seed = [0, 0, 0];
+    const groups = [['lk-col', 'Letter', LETTER, i => INK[i]], ['lk-shp', 'Shape', SHAPE.slice(0, 5), () => 1], ['lk-num', 'Number', NUM, () => 1]];
+    groups.forEach(([id, label, chars, ink], g) => {
+      const row = document.getElementById(id); row.insertAdjacentHTML('beforeend', '<span class="note" style="min-width:5em">' + label + '</span>');
+      chars.forEach((ch, i) => { const b = document.createElement('button'); b.className = 'b'; b.type = 'button'; b.append(chip(ch, ink(i)));
+        b.setAttribute('aria-label', label + ' ' + (i + 1)); b.onclick = () => { seed[g] = i; show(); }; row.append(b); });
+    });
+    function find() {                                                   // the dealer, $BFA1-$BFC5
+      const want = 8 * seed[0] + seed[1]; let k = -1;
+      for (let i = 0; i < DECK.length; i++) if (DECK[i] === want && ++k === seed[2]) return i;
+      return -1;
+    }
+    const ans = document.getElementById('lk-ans'), actx = C64.canvas(ans, 6 * 40 + 8, 48);
+    const card = document.getElementById('lk-card'), cctx = C64.canvas(card, 31 * 26 + 4, 6 * 26 + 4);
+    function show() {
+      groups.forEach(([id], g) => document.querySelectorAll('#' + id + ' button').forEach((b, i) => b.setAttribute('aria-pressed', i === seed[g])));
+      const at = find(), code = DECK.slice(at, at + 6).map(v => v & 7);
+      actx.fillStyle = '#000'; actx.fillRect(0, 0, ans.width, ans.height);
+      code.forEach((v, i) => put(actx, SHAPE[v], 4 + i * 40, 6, 4, 1, 0));
+      cctx.fillStyle = '#000'; cctx.fillRect(0, 0, card.width, card.height);
+      DECK.forEach((v, i) => put(cctx, SHAPE[v & 7], 2 + (i % 31) * 26 + 1, 2 + (i / 31 | 0) * 26 + 1, 3, INK[v >> 3], 0));
+      cctx.strokeStyle = '#fff'; cctx.lineWidth = 2;
+      for (let i = at; i < at + 6; i++) cctx.strokeRect(2 + (i % 31) * 26, 2 + (i / 31 | 0) * 26, 26, 26);
+      document.getElementById('lk-kv').textContent = 'Occurrence ' + (seed[2] + 1) + ' of that coloured shape is entry ' + at + ' of 186; press these six in order.';
+    }
+    document.getElementById('lk-deal').onclick = () => {                // seeds from the frame counter $53, as $BF6E-$BF9E
+      const f = Math.random() * 256 | 0, m5 = v => v >= 5 ? v - 5 : v;
+      seed = [m5(f & 7), m5(~f & 7), m5((f << 1 & 6) | f >> 7)];       // the third: ROL twice, the first ROL's carry is bit 7
+      show();
+    };
+    show();
+    // before and after: switch cell 13 (row 38, column 84) set to $D5
+    const door = document.getElementById('lk-door'), dctx = C64.canvas(door, 2 * 9 * 32 + 16, 10 * 32);
+    dctx.imageSmoothingEnabled = false;
+    const crop = (src, x) => dctx.drawImage(src, 77 * 32, (55 - 47) * 32, 9 * 32, 10 * 32, x, 0, 9 * 32, 10 * 32);
+    crop(full, 0);
+    const cell = 0xFB80 - 0x80 * 38 + 84, was = M[cell]; M[cell] = 0xD5; const after = DW.drawMine(M); M[cell] = was;
+    crop(after, 9 * 32 + 16);
+  }
+})();
+</script>

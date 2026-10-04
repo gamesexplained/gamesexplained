@@ -5,7 +5,7 @@ description: First step for any game. Boot it in the emulator, get past the load
 
 # Orient: boot, get past the loader, capture the game
 
-Start the clock: `python3 kit/scripts/clock.py start 10-orient --model <your model id> games/<platform>/<slug>`, the model id as your system prompt names it, and again at every step, because a run may change model. If nothing in the session names the model, ask the contributor; never infer it (`AGENTS.md`, "Know your model; never infer it"). Runs to 19 September 2026: twenty minutes to an hour, nearly all of it reaching play. Past an hour, the retro wants to know what ate it.
+Check your model first: `python3 kit/scripts/models.py is-proven <your model id>`, the model id as your system prompt names it. If nothing in the session names the model, ask the contributor; never infer it (`AGENTS.md`, "Know your model; never infer it"). If it is not proven, tell the contributor before going further, as the script says (`AGENTS.md`, "Model").
 
 The goal is the game engine: mechanics, graphics, sound, input, level
 data. The loader, decompressor, trainer menu or copy-protection in front
@@ -16,7 +16,7 @@ annotate it byte by byte.
 
 0. **Check the emulator** before the game goes in:
    `python3 kit/scripts/tools.py status`, then
-   `python3 kit/scripts/tools.py check-emulator`. It resets the machine and
+   `python3 kit/scripts/tools.py --platform <platform> check-emulator`. It resets the machine and
    takes about a minute. Copy the build line from `status` into
    `game.json` under `tools.emulator`, and the list of failed checks into
    `orientation.md`. Then read the emulator's tool skill, and of its
@@ -26,6 +26,12 @@ annotate it byte by byte.
    Screenshot. If a trainer or cracktro menu appears, note the options,
    choose the plain game (no cheats) unless the contributor says
    otherwise, and record the choice in `orientation.md`.
+
+   **Read the file's header before trusting its name.** An extension
+   says what the file was called, not what it is: a file named as a
+   plain sector image can be a GCR image of a protected original, which
+   needs the drive emulation the platform's tool notes describe. Record
+   what the header says in `orientation.md`.
 
    **Ask what the image is before trusting it.** A backup of a running
    game (a snapshot saved by a freezer cartridge, a packed memory dump)
@@ -49,15 +55,27 @@ annotate it byte by byte.
    vectors (the platform reference says where they live and what the
    system defaults are). A vector pointing into RAM is the game's own
    handler; that handler is the spine of the engine. Verify against a
-   second known address before trusting it.
+   second known address before trusting it. A game whose interrupt
+   handlers chain, each writing the next one's address into the vector,
+   shows only one of them in a vector read. Record a frame
+   (`kit/c64/frame.py capture` on the C64): its writes to the vector name
+   every handler in the chain, and tracing from all of them can reach code
+   that nothing else calls, such as the music driver. The line beside each
+   write is where the handler before it wrote the vector, usually a line
+   or a handler earlier than the one the named handler runs on; read the
+   handler's own write to the raster register for that.
 4. **Save a snapshot** of the machine in play. Name it by state
-   (`work/play-round1.vsf`, not by timestamp). This snapshot is the image
+   (`work/play-round1.vsf`, not by timestamp) with the platform's own
+   snapshot extension (`kit/<platform>/INSTALL.md` and
+   `kit/skills/<platform>/` name it: a `.vsf` on the C64, a `.sna` on the
+   ZX Spectrum). This snapshot is the image
    everything downstream is read from, unless the hand-over (next) holds
    more of the program. Save more at each distinct state you can reach:
    title, first frame of play, each interlude, death, game over.
 
    **Save the hand-over too**: a stopping checkpoint on the game's first
-   instruction (the loader's jump into it), then `work/entry.vsf`. Compare
+   instruction (the loader's jump into it), then `work/entry.<ext>` with
+   the same extension. Compare
    it with the play snapshot byte for byte. Code that exists only at the
    hand-over (an initialisation that runs from what becomes screen
    memory), or authored data the game overwrites once it runs (a title
@@ -82,7 +100,16 @@ annotate it byte by byte.
 6. **Start the disassembler on the snapshot** and confirm it answers. Note
    which processor-port or banking configuration was active when the
    snapshot was taken: what is visible at a given address depends on it.
-7. **Understand the loader well enough to describe it in a paragraph**,
+7. **Map the disk's files onto memory.** Extract every file (on the C64,
+   `c1541` from the emulator's build reads a G64 or D64), then search the
+   hand-over and play snapshots for each file's bytes in 16-byte pieces,
+   take the offset most pieces agree on, and count the bytes equal there.
+   A file that lands whole says what a region is before any code is read
+   (one run found its speech samples and its speech timing table this way,
+   and caught a table it had credited to the wrong file); a file that is
+   found nowhere is the loader's, or is built from. Put the table in
+   `orientation.md`.
+8. **Understand the loader well enough to describe it in a paragraph**,
    then stop. If the game reloads data per level (overlays), say so in
    `orientation.md`: it means one snapshot per state.
 
@@ -121,15 +148,12 @@ original worth checking.
   reference), so it can be read directly for sweeps without the emulator.
 - Chip state (video, sound, timers) lives in named modules inside the
   snapshot; the names are readable text, so a string search finds them.
-- On an emulator that fails its check that checkpoints survive a load,
-  a loaded snapshot looks exactly like one that came back without its
-  timer interrupt running; read that workaround first.
-- A loaded snapshot can come back without its timer interrupt running.
-  Symptom: the CPU sits in a wait loop and nothing moves. It can also
-  come back with the processor port `$01` at a different value and the
-  CPU somewhere in the KERNAL with a garbage screen; the file is still
-  good for the disassembler. Autostart the
-  image again rather than fighting it. **Before believing that, sample the
+- A loaded snapshot can seem to come back dead: the CPU in a wait loop
+  and nothing moving, or `$01` changed and the CPU in the KERNAL with a
+  garbage screen. On an emulator that fails its check that checkpoints
+  survive a load, the instrument is off, not the game; read that
+  workaround first. The file is still good for the disassembler; autostart
+  the image again rather than fighting it. **Before believing that, sample the
   program counter several times.** A live machine returns a scatter of
   addresses; one that returns the same address every time is parked in a
   sync loop or is not executing at all, and the second of those is usually

@@ -1,0 +1,40 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Fuji, a lake, a dojo and the Buddha: four pictures packed into 13 kilobytes and unpacked into the bitmap at the start of each stage.</p>
+</header>
+<main class="wrap">
+<section id="backdrops">
+  <p class="fig">01 · The backdrops</p>
+  <h2 class="t">Four pictures in 13 kilobytes</h2>
+  <p class="lede">The backdrop changes every stage, and the disk is never read after loading. All four pictures sit in memory packed, and are unpacked into the bitmap when the stage begins.</p>
+  <div class="plate">
+    <div class="fx-ctl" id="bdBtns"></div>
+    <canvas id="bdCv" width="640" height="192"></canvas>
+    <div class="fx-ctl" style="margin-top:12px"><button class="fx-btn" id="bdPlay">Replay the unpacking</button><input type="range" id="bdIn" min="0" max="3840" value="3840"><span class="fx-out" id="bdOut"></span></div>
+    <p class="cap">Unpacked on this page from the game's bytes by ports of <code>bitmap_unpack</code> (<code>$17BB</code>) and <code>colour_unpack</code> (<code>$1849</code>); for the first backdrop the result matches the snapshot's bitmap and screen colours byte for byte. The slider replays the bitmap writes in the order the game makes them.</p>
+  </div>
+  <table class="fx-tab" id="bdTab"></table>
+  <p>The bitmap is packed as runs, read from the end of the stream backwards and written from the bottom of the picture up (<code>$F53F</code> down to <code>$E640</code>): a control byte below <code>$80</code> copies that many bytes, one above repeats a single byte. The colours are packed separately as four-bit values, in three passes over the 480 colour cells. Each picture covers character rows 5 to 16, the band between the score panel and the floor.</p>
+  <p>The floor below never changes. Its colours are all set to yellow (<code>$192F</code>), so whatever the bitmap holds there is invisible, and the game keeps its speech samples in that hidden part of the bitmap (<code>$F540</code>-<code>$FFDC</code>).</p>
+</section>
+
+<section id="judge">
+  <p class="fig">02 · The judge</p>
+  <h2 class="t">The seated judge is painted into every picture</h2>
+  <p class="lede">Each backdrop has a small seated figure at one side. When a bout is decided, the game puts two sprites over him, at a position kept for each backdrop, to signal the winner.</p>
+  <img src="reference/judge-decision.png" alt="The seated judge raising a flag at the end of a two-player game, in front of the Buddha" style="width:384px;max-width:100%;image-rendering:pixelated">
+  <p class="cap">The end of a two-player game, captured in the emulator. <code>judge_decision</code> (<code>$1F93</code>) takes the sprite pointer and the position from four-entry tables indexed by the backdrop (<code>$1FFA</code>-<code>$2009</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/fist-page.js"></script>

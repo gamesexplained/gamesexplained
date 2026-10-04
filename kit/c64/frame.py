@@ -162,7 +162,7 @@ def capture(out, shot=None):
     # VICE draws each line into its picture at the row its own line counter names, and runs the
     # vertical sync when that counter wraps. The counter can be out of step with the beam: a
     # snapshot saved in a pause that stopped in the vertical sync, and loaded later, leaves it a
-    # line ahead (kit/skills/c64/tool-vice-mcp/workarounds.md, pause-at-instruction). Then every
+    # line ahead (pause() in kit/c64/vice.py, the pause-at-instruction check). Then every
     # picture sits that many lines low, and the sync, where the frame ended, comes that many
     # lines before the top of the frame. That is where it comes in step on the 312-line chips;
     # an NTSC one runs it lower down, where its picture ends, so there it is not measured.
@@ -203,12 +203,19 @@ def phase(samples, lines, cycles):
     Each sample says the beam was on raster line L at stopwatch s, so the origin o lies in
     [L*cycles - s, L*cycles + cycles - 1 - s]; the samples' lines are unwrapped past the
     frame's last line in order. The video chip resets its counter to 0 a cycle later than it
-    steps the others, so the first cycle of line 0 still reads as the last line."""
-    lo, hi, prev, wraps = -10**9, 10**9, None, 0
+    steps the others, so the first cycle of line 0 still reads as the last line.
+
+    The wraps are counted from the stopwatch, not from the line going down: two samples a whole
+    frame or more apart (a stop that ran on past a frame boundary) show no drop in the line, and
+    counting drops then put every later sample a frame out (seen on 2 October 2026 in a game's
+    room with no raster interrupt of its own)."""
+    if not samples:
+        raise ValueError("phase needs at least one beam sample")
+    lo, hi = -10**9, 10**9
+    s0, L0 = samples[0]
+    total = lines * cycles
     for s, L in samples:
-        if prev is not None and L < prev:
-            wraps += 1
-        prev = L
+        wraps = round(((s - s0) - (L - L0) * cycles) / total)
         u = L + wraps * lines
         first = u * cycles + (1 if L == 0 else 0)
         last = u * cycles + cycles - 1 + (1 if L == lines - 1 else 0)
@@ -361,8 +368,8 @@ def compare(frame_path, shot_path=None, quiet=False):
             n, s = abs(low), "s" if abs(low) > 1 else ""
             print(f"the emulator's picture sits {n} line{s} {'lower' if low > 0 else 'higher'} than the frame: "
                   f"its frame ended on line {cap.get('frame_ended_on_line')}, not 0, because its line counter "
-                  "is out of step with the beam (kit/skills/c64/tool-vice-mcp/workarounds.md, "
-                  f"pause-at-instruction). Each line of the drawing is compared with the picture's line {n} "
+                  "is out of step with the beam (pause() in kit/c64/vice.py, the "
+                  f"pause-at-instruction check). Each line of the drawing is compared with the picture's line {n} "
                   f"{'below' if low > 0 else 'above'} it; the drawing's {'last' if low > 0 else 'first'} "
                   f"{'line has' if n == 1 else f'{n} lines have'} none, and {'is' if n == 1 else 'are'} not compared")
         print(f"{w * h - unseen - bad - grey - near} of {w * h - unseen} pixels match the emulator's picture; {bad} differ"
@@ -541,4 +548,4 @@ if __name__ == "__main__":
                   f"{'low' if c['picture_lines_low'] > 0 else 'high'}: its line counter is out of step with the "
                   "beam. The frame file is right, and compare allows for the offset; every screenshot of this "
                   "machine state is offset the same way, and so is every snapshot saved from it "
-                  "(kit/skills/c64/tool-vice-mcp/workarounds.md, pause-at-instruction)")
+                  "(pause() in kit/c64/vice.py, the pause-at-instruction check)")

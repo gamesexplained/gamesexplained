@@ -1,0 +1,591 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "mr-hat",
+  "title": "Mr. Hat",
+  "year": 1988,
+  "publisher": "Systems Editoriale (Commodore 64 Club)",
+  "developer": "Francesco Chiola",
+  "title_image": "reference/title.png",
+  "build": "",
+  "tier": "silver",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Francesco Chiola",
+      "role": "code, graphics and music (Lemon64, GameBase64, Ready64)"
+    },
+    {
+      "by": "Andrea Cucchetto",
+      "role": "co-author of Lupenio, named in the Lupenio credits left in the image ($A1F6), not credited for Mr. Hat"
+    }
+  ],
+  "tools": {
+    "host": "Linux 6.8 x86_64, Ubuntu 24.04 desktop with sixteen cores; the emulator ran under xvfb-run (no display in the agent's shell)",
+    "emulator": "VICE, release v3.13.1, v3.13.1-linux-x86_64-gui.zip, MCP on port 6511 (KIT_VICE_PORT)",
+    "disassembler": "regenerator2000 0.9.20",
+    "python": "3.12.3",
+    "node": "20.19.5",
+    "subagents": "nine annotation agents on disjoint address ranges and one page verifier, all claude-opus-5-5; one research agent for the web sources only, on the Agent tool's `sonnet` alias, exact model id not stated",
+    "widget tests": "node 20.19.5: the title tune's port checked against the game's player in kit/c64/cpu6502.js, write by write (work/music-test.js); the point adders run in the simulator (work/scoretest.js)",
+    "browser check": "Chromium headless shell 1243 (Playwright's cache), a full-page screenshot of the built page"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {"50-coverage": ["claude-opus-5-5"], "60-verify": ["claude-opus-5-5"]},
+  "kit_version": "0.0.46",
+  "created": "2026-09-30",
+  "video": {
+    "screen": "$0400",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$2000",
+        "$3EFF",
+        "the bitmap of play and, on the title, the copy of the font at $CE00 that $CDC0 makes at $2800: output, cleared by the title routine at $16B3"
+      ],
+      [
+        "$E000",
+        "$FFFF",
+        "KERNAL ROM, banked in throughout ($01 = $36); the RAM beneath is all zero in the image"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0801",
+      "$086C",
+      "text",
+      "the game's BASIC line 10 SYS 2157 and leftover loader text"
+    ],
+    [
+      "$086D",
+      "$08B5",
+      "code",
+      "entry, new game, reset of variables"
+    ],
+    [
+      "$08B8",
+      "$08FF",
+      "graphics",
+      "bitmap cells for $4573"
+    ],
+    [
+      "$0900",
+      "$0FFF",
+      "graphics",
+      "sprite shapes $24-$3F"
+    ],
+    [
+      "$1000",
+      "$101F",
+      "variables",
+      "game variables (room number $100C, flags)"
+    ],
+    [
+      "$1020",
+      "$1260",
+      "code",
+      "helpers: X-range mode, room helpers, point adders, invulnerability"
+    ],
+    [
+      "$10C9",
+      "$1130",
+      "graphics",
+      "room scenery cells (hook, key, slab)"
+    ],
+    [
+      "$1265",
+      "$1295",
+      "code",
+      "unused copy of the IRQ $BF30"
+    ],
+    [
+      "$12B4",
+      "$1370",
+      "graphics",
+      "unreferenced bitmap cells"
+    ],
+    [
+      "$1371",
+      "$13B0",
+      "variables",
+      "per-game object and event flags"
+    ],
+    [
+      "$13B1",
+      "$13FF",
+      "graphics",
+      "bitmap cells (bars used by room 1)"
+    ],
+    [
+      "$1449",
+      "$169F",
+      "graphics",
+      "status line: life marks, SCORE ROOM STAGE, digits"
+    ],
+    [
+      "$16A0",
+      "$17D6",
+      "code",
+      "title, fire wait, lives, screen clear"
+    ],
+    [
+      "$17DF",
+      "$1BFE",
+      "code",
+      "room 1 set-up"
+    ],
+    [
+      "$1C00",
+      "$1FFF",
+      "code",
+      "room 1 IRQ, sound, floors, death, respawn"
+    ],
+    [
+      "$3F40",
+      "$3F4B",
+      "variables",
+      "drawing-routine scratch"
+    ],
+    [
+      "$3F60",
+      "$3FFF",
+      "graphics",
+      "brick pattern and Mr.Hat logo"
+    ],
+    [
+      "$4000",
+      "$4641",
+      "code",
+      "room 1's lift, floors, main loop and jump; the shared score adder $41DA, delay $42E0, end of game $4475"
+    ],
+    [
+      "$4642",
+      "$4D7F",
+      "code",
+      "room 3: set-up, IRQ $48B0, main loop $4910, ladders; the shared ladder step $4B20 and life loss $4C52"
+    ],
+    [
+      "$4D80",
+      "$4FFF",
+      "code",
+      "room 2's set-up"
+    ],
+    [
+      "$5000",
+      "$5677",
+      "code",
+      "Room 2 (stage 2): set-up tail, sprites, IRQ, main loop, checks, ladder, respawn"
+    ],
+    [
+      "$5340",
+      "$539F",
+      "code",
+      "walk_right / walk_left, shared"
+    ],
+    [
+      "$5590",
+      "$560F",
+      "code",
+      "hazards_and_pickups, hat_collision_test, kill_hat (shared)"
+    ],
+    [
+      "$5678",
+      "$573C",
+      "code",
+      "reset_room_objects and room-drawing helpers (fill_colour_rect, copy_pattern_rows)"
+    ],
+    [
+      "$573D",
+      "$5DB2",
+      "code",
+      "Room 5 (stage 2): set-up, sprites, IRQ, main loop, checks, ladders"
+    ],
+    [
+      "$58BB",
+      "$58DA",
+      "graphics",
+      "cone patterns (up, down)"
+    ],
+    [
+      "$5DBA",
+      "$5E0F",
+      "tables",
+      "unreferenced bytes"
+    ],
+    [
+      "$5E10",
+      "$5FFF",
+      "code",
+      "Room 6 (stage 3, cave): set-up, lit-by-candle objects"
+    ],
+    [
+      "$5F32",
+      "$5F61",
+      "graphics",
+      "unreferenced bitmap cells"
+    ],
+    [
+      "$6000",
+      "$65DF",
+      "code",
+      "room 6 (stage 3): sprites, IRQ $608A, main loop $6220, floors, ladder"
+    ],
+    [
+      "$64ED",
+      "$64FF",
+      "variables",
+      "sprite animation timers, room 8 entry flag, push counter, sound timer"
+    ],
+    [
+      "$65E0",
+      "$6DFF",
+      "code",
+      "room 8 (stage 3): drawing, set-up, IRQ $683D, main loop $6A20, shaft to room 10"
+    ],
+    [
+      "$66A8",
+      "$66C7",
+      "tables",
+      "room 8's belt patterns"
+    ],
+    [
+      "$6E00",
+      "$6FFF",
+      "code",
+      "start of play: room 1's set-up, new-game reset"
+    ],
+    [
+      "$7000",
+      "$713C",
+      "code",
+      "Patches and tails for rooms 1, 2, 5, 6, 8: guardian frame flip (IRQ tail), room 8 key, respawn, set-up tails; new-game reset of room state ($705E)"
+    ],
+    [
+      "$7140",
+      "$7B37",
+      "code",
+      "Room 9 (stage 3): set-up, IRQ $7600, main loop $76B0, floors, ladders"
+    ],
+    [
+      "$7265",
+      "$7324",
+      "graphics",
+      "Room 9's television bitmap, 6x4 cells"
+    ],
+    [
+      "$75F0",
+      "$75F0",
+      "variables",
+      "Replay-bonus state (Lupenio leftover, stays 0)"
+    ],
+    [
+      "$7B40",
+      "$7B66",
+      "code",
+      "Dead routine (crouch, delay, kill)"
+    ],
+    [
+      "$7B70",
+      "$7BE5",
+      "code",
+      "Room 9's IRQ: the upper-floor chaser"
+    ],
+    [
+      "$7C00",
+      "$7C47",
+      "graphics",
+      "The Golden Hat, 3x3 cells"
+    ],
+    [
+      "$7C50",
+      "$7C8D",
+      "code",
+      "Draw the Golden Hat; the F1 music switch at the end of the play IRQ"
+    ],
+    [
+      "$7CA0",
+      "$7CBF",
+      "graphics",
+      "A 2x2-cell figure for room 11"
+    ],
+    [
+      "$7CC0",
+      "$7CF5",
+      "code",
+      "Win test in room 11"
+    ],
+    [
+      "$7CF6",
+      "$7E27",
+      "code",
+      "Dead Lupenio-style ending: IRQ walk fragments, tune, text print"
+    ],
+    [
+      "$7E28",
+      "$7FE9",
+      "text",
+      "Lupenio's congratulation text (PETSCII), never printed"
+    ],
+    [
+      "$8000",
+      "$802C",
+      "code",
+      "end-of-game F1 replay and game-over reset of the replay bonus"
+    ],
+    [
+      "$802D",
+      "$80B0",
+      "code",
+      "score set-up by replay bonus; status-line digit helpers"
+    ],
+    [
+      "$8100",
+      "$822D",
+      "code",
+      "per-room status and sprite helpers; sprites-off and the shared IRQ $8215"
+    ],
+    [
+      "$8265",
+      "$82F6",
+      "code",
+      "room 11 lower-floor rules (lift up, block, end check)"
+    ],
+    [
+      "$8300",
+      "$847F",
+      "code",
+      "room 10 set-up and loop"
+    ],
+    [
+      "$8480",
+      "$8907",
+      "code",
+      "room 11 set-up, IRQ, loop, jump, crouch"
+    ],
+    [
+      "$8908",
+      "$89AF",
+      "code",
+      "room 11 position rules, ladder, walls"
+    ],
+    [
+      "$89D0",
+      "$8A5B",
+      "sound",
+      "tune 2 player (no caller found)"
+    ],
+    [
+      "$8A60",
+      "$8BFF",
+      "sound",
+      "tune 2 tables: freq lo $8A60, freq hi $8B00, lengths $8B90"
+    ],
+    [
+      "$8C00",
+      "$8C8B",
+      "sound",
+      "tune 1 player (room 1's in-play music)"
+    ],
+    [
+      "$8C90",
+      "$8E07",
+      "sound",
+      "tune 1 tables: $D022 column $8C90, freq hi $8D30, lengths $8D90"
+    ],
+    [
+      "$8E08",
+      "$8FA5",
+      "code",
+      "collisions and object pick-ups by room id $100C"
+    ],
+    [
+      "$8FA8",
+      "$8FFF",
+      "code",
+      "object drawing helpers; room 4/7 entry dispatch"
+    ],
+    [
+      "$9000",
+      "$96DF",
+      "code",
+      "room block for $100C = 4 and 7: set-up, play loop, exits, IRQ tail; leftovers $9100-$92B9"
+    ],
+    [
+      "$96F0",
+      "$96F7",
+      "code",
+      "Supermon's SETMSG call, patched to set $01 = $36"
+    ],
+    [
+      "$9700",
+      "$97EC",
+      "tables",
+      "fill pattern, unreferenced"
+    ],
+    [
+      "$97ED",
+      "$9ED8",
+      "code",
+      "Supermon machine-code monitor (never called)"
+    ],
+    [
+      "$9ED9",
+      "$9FFF",
+      "tables",
+      "Supermon's tables: addressing modes, mnemonics, commands, register header"
+    ],
+    [
+      "$A000",
+      "$A1F5",
+      "tables",
+      "zero; target of the dead calls to $A000"
+    ],
+    [
+      "$A1F6",
+      "$A35A",
+      "text",
+      "Lupenio's introduction and credits, Italian PETSCII"
+    ],
+    [
+      "$A35B",
+      "$A3FF",
+      "tables",
+      "zeros and fill pattern, unreferenced"
+    ],
+    [
+      "$A400",
+      "$A6FF",
+      "code",
+      "graphics library: bitmap block copy, cell fills, tile draw"
+    ],
+    [
+      "$A700",
+      "$ABEF",
+      "code",
+      "room-object drawers, room-loop re-entries, death sequence, room 1 IRQ"
+    ],
+    [
+      "$AC00",
+      "$AFFF",
+      "graphics",
+      "tile graphics (8 bytes per cell, row-major) and the death sprite at $ACD8"
+    ],
+    [
+      "$B000",
+      "$B0FF",
+      "graphics",
+      "object cells: sparkle ball, ring, trophy, immunity object"
+    ],
+    [
+      "$B100",
+      "$B4BB",
+      "code",
+      "treasures, switches and barriers, room by room"
+    ],
+    [
+      "$B4C0",
+      "$B653",
+      "sound",
+      "sound effects on voice 3"
+    ],
+    [
+      "$B654",
+      "$B7FF",
+      "code",
+      "title cast drawing $B683 and helpers"
+    ],
+    [
+      "$B7D8",
+      "$B7FF",
+      "text",
+      "the end message, screen codes"
+    ],
+    [
+      "$B800",
+      "$BB0E",
+      "code",
+      "room set-up helpers and guardian movement"
+    ],
+    [
+      "$BB10",
+      "$BFFF",
+      "code",
+      "floor hazards, object drawing, immunity countdown, end screen $BFA8"
+    ],
+    [
+      "$C000",
+      "$C07F",
+      "text",
+      "title words in screen codes for the two-cell font (MR HAT, OCTOPUS, SNAILY, DYNKY, KNIFFY, AND ALL OTHERS, SYSTEMS PRESENTS A NEW GAME WITH), unused DOUBLE and SY, zero fill"
+    ],
+    [
+      "$C080",
+      "$C373",
+      "code",
+      "title music player: init, first IRQ, IRQ $C0AF, pattern/block/step sequencer, SID sound set, note play, disabled editor key controls"
+    ],
+    [
+      "$C374",
+      "$C432",
+      "sound",
+      "SID frequency tables lo $C374 / hi $C3D3, notes 0-94"
+    ],
+    [
+      "$C433",
+      "$C442",
+      "variables",
+      "music player state: position, pattern, block, step, voice mode, tick count, keys flag, block pointer, block length, song length"
+    ],
+    [
+      "$C443",
+      "$CAF2",
+      "sound",
+      "26 per-pattern tables of 64 (tempo, waveforms, ADSR, pulse width, filter, volume, block range, step range, CIA timer) and the order tables $CAC3/$CADB"
+    ],
+    [
+      "$CAF3",
+      "$CB06",
+      "sound",
+      "block-0 leftovers (PETSCII MUZA1) and the saved IRQ vector $CB05"
+    ],
+    [
+      "$CB07",
+      "$CB2A",
+      "code",
+      "music: save/restore the IRQ vector"
+    ],
+    [
+      "$CB2B",
+      "$CDBF",
+      "sound",
+      "title tune note blocks 1-10 at $CAF2 + 64n (3 voices x 16 steps), then an unreferenced tail"
+    ],
+    [
+      "$CDC0",
+      "$CDFF",
+      "code",
+      "title/ending screen set-up: music on, font copy, text mode, $1018 selects title or end message"
+    ],
+    [
+      "$CE00",
+      "$CFFF",
+      "graphics",
+      "title font: 64 glyphs, letters two cells high (top n, bottom n+32)"
+    ]
+  ],
+  "links": {
+    "wiki": "",
+    "manual": "https://archive.org/details/commodore-64-club",
+    "lemon64": "https://www.lemon64.com/game/mr-hat",
+    "gamebase64": "https://gb64.com/game.php?id=5053",
+    "ready64": "https://ready64.org/giochi/scheda_gioco/id/1643/mr.-hat"
+  }
+}

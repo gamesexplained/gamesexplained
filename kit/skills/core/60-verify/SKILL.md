@@ -5,7 +5,7 @@ description: Turn traced claims into verified facts. Test cheaply testable claim
 
 # Verify before publishing
 
-Start the clock: `python3 kit/scripts/clock.py start 60-verify --model <your model id> games/<platform>/<slug>`. No figure yet. Both retros to 19 September 2026 name single features that ate more time here than whole steps did; when one does, say which in the stop note.
+Record your model id in `game.json` under `step_models`, as `"60-verify": ["<your model id>"]`, the same way as for `50-coverage`.
 
 Most serious errors come from trusting an absence, or from a claim that
 sounded right and was never tested.
@@ -25,7 +25,9 @@ or aliasing could hide it. A negative result is a claim about your search,
 not about the binary. Prefer "unknown" to a plausible guess. Before saying
 that nothing reads or writes an address, search with every opcode and
 every index that can reach it: on the C64,
-`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`.
+`python3 kit/c64/opcodes.py games/<platform>/<slug> --refs <address>`; on
+the ZX Spectrum, `python3 kit/spectrum/codemap.py <game> <snapshot> --refs
+<address>`, which also lists where the address is stored as a word.
 
 "Unreachable" is a negative result too. A search over a model of the
 movement rules finds only what the model allows, and a model re-derived
@@ -34,6 +36,33 @@ with the game's own movement code instead: drive the player with input on
 the 6502 simulator (on the C64, `kit/c64/machine.js`) and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
+
+## Claims about the whole game
+
+"Every room", "the only routine", "never", "the test" in the singular:
+each is a claim about all the instances, and the commonest wrong claim
+on a page is one read off a single instance. Before writing one, list
+them all: every caller of the routine, every reader of the variable,
+every copy of the test (a byte search for the call and for the
+operand, not the tracer's cross-references alone), and say how many
+there are. A live test in one room tests one room. One run's maintainer
+found five such claims in a sample of twelve: a collision list that was
+one test's of four, a tune called one room's that played in all of them,
+a bug whose effect was worked out from counts without reading the
+callers.
+
+## Measure the listing before calling it done
+
+The comments in the listing are claims too, and an annotation agent's
+are rarely all right. Draw a random sample of about 60 (a fixed seed,
+spread over every agent's range) and have an agent that wrote none of
+them check each against the bytes; the error rate with its interval goes
+in `facts.md` or the pull request. One run measured 25 % of its comments
+with a wrong detail (callers, rooms and counts, almost never what a
+routine does); a full pass by fresh agents, each correcting its own range
+and listing callers from the decoded listing rather than from a byte
+search, brought a second, independent sample to 3 %. If the first sample
+is bad, audit the whole listing before the page is published.
 
 ## What a test lets through
 
@@ -82,18 +111,22 @@ tested. Typical tests:
   counter) and poll, or read the state variables that prove it happened.
 - **Time it.** Read the timer latch and compute the tick rate from the
   platform's clock; count in the unit of the loop that decrements the
-  counter before converting anything to seconds.
+  counter before converting anything to seconds. A clock decremented
+  from the main loop is only as regular as the loop: put a non-stopping
+  checkpoint on a routine that certainly runs once a frame (the last
+  raster handler) and one on the counter's routine, advance a few hundred
+  frames, and compare the counts. One game's "30 seconds" ran 195 passes
+  in 250 frames and lasted up to 40 seconds.
 - **Prove reachability with inputs, not pokes.** Poking a state and
   watching the routine accept it proves what the *code* does. It does not
   prove a player can get there: the way the loop orders its tests may make
   the state unreachable from any legal one, and that is a fact worth more
-  than the poke. When a corner case turns on a state the player has to fly
-  into, write an exact model of the movement routine, search it for an
-  input sequence from a state the player can plainly reach, then replay
-  that sequence in the emulator with the game's control read redirected to
-  a table (see the platform's tool notes) and compare every pass against
-  the model. Publish the sequence with the result; a route someone else can
-  replay is the evidence.
+  than the poke. Search for an input sequence from a state the player can
+  plainly reach with the game's own movement code ("Negative results",
+  above), then replay it in the emulator with the game's control read
+  redirected to a table (see the platform's tool notes). Publish the
+  sequence with the result; a route someone else can replay is the
+  evidence.
 
 ## Measuring without fooling yourself
 
@@ -166,6 +199,15 @@ wave number that only advances when the player is destroyed, compared
 against the documented number at the point where the game ends. Trace the
 path from the destruction flag to the next start of play before declaring
 the counter absent; the answer is usually one `inc` on that path.
+
+## A number handed through a request byte
+
+When one routine leaves a number in a variable for another to act on (a
+tune to start, a sound to play, a screen to show), the number's meaning
+is decided by the routine that takes it. Read that routine before
+writing what the values mean: it may subtract one, use the value as an
+offset, or treat one value as a different command. The callers alone
+read as the answer and can be off by one throughout.
 
 ## Writing facts.md
 

@@ -20,8 +20,8 @@ takes the zero-page form where the instruction has one. The documented instructi
 """
 import os, re, sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "kit", "scripts"))
-from listing import OPS, LEN  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # kit/c64, where cpu.py holds the table
+from cpu import OPS, LEN  # noqa: E402
 
 CODE = {(m, mode): op for op, (m, mode) in OPS.items()}
 

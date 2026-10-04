@@ -1,0 +1,41 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ghostbusters-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every sprite in the game, unpacked from the game's own data, and the one interrupt a frame that puts them on the screen.</p>
+</header>
+<main class="wrap">
+<section id="sprites">
+  <p class="fig">The sprites</p>
+  <h2 class="t">Sixty sprite shapes, packed into 3,056 bytes</h2>
+  <p class="lede">The Slimers, the Roamers, the men, the proton streams, the Marshmallow Man, and every item in the shop are sprites. All of them are drawn below from the game's own data, unpacked the way the game unpacks them at start-up.</p>
+  <div class="plate">
+    <div class="gal" id="gal"></div>
+    <p class="cap">Each shape in the colour the game gives it (<code>$A949</code>), at three times the C64's pixels, on the background of the screen it appears on. The animated ones step through their shapes in the order the game uses them.</p>
+  </div>
+  <p>None of the shapes is stored as it appears. The start-up clears the video bank and rebuilds it from a run-length stream (<code>$B408</code>-<code>$BFF7</code>), in which a <code>$11</code> byte and a count stand for a run of zero bytes (<code>$610B</code>). Sprites are mostly empty space, so 3,800 bytes of shapes pack into 3,056. The stream stops eight rows into shape 59, the Activision logo, which needs no more.</p>
+  <p>The men have their own frames for walking each way, but the proton stream is drawn once. After unpacking, the start-up copies the stream's six shapes, and the two after them, flipped left to right (<code>$6151</code>), so a stream can point either way.</p>
+  <p>The Marshmallow Man is four sprites. On the city map he stomps with two of them changing shape (<code>$A909</code>, <code>$A90D</code>), and on the street outside Zuul the same four are doubled in size.</p>
+</section>
+
+<section id="screen">
+  <p class="fig">The screens</p>
+  <h2 class="t">One raster interrupt a frame runs everything but the game's logic</h2>
+  <div class="plate">
+    <canvas id="scr-title" class="scr" width="384" height="272"></canvas>
+    <p class="cap">The title, drawn from the game's memory by the site's renderer. All 104,448 pixels match the emulator. The lyric window's smooth scroll is a raster split (<code>$8EB7</code>).</p>
+  </div>
+  <p>The game draws everything in video bank 1 (<code>$4000</code>-<code>$7FFF</code>): the screen at <code>$5400</code>, the character set at <code>$5800</code>, and the sprite shapes from <code>$4000</code>. The character set starts as the upper-case letters copied from the character ROM, with the Activision logo and a few symbols over the top.</p>
+  <p>The raster interrupt fires at line <code>$B8</code>. In play it steps the random number, counts the tick, scrolls the bottom line, waits for lines <code>$DF</code> and <code>$EC</code> to colour the status band, writes all eight sprites from the positions the game keeps halved, sets the frame flag the main loop waits for, and runs the music and the sound effects. The main loop (<code>$6FEC</code>) does one pass of the game each time the flag is set, ending with the handler for the current state from a table of 64 (<code>$381A</code>).</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/ghostbusters-page.js"></script>

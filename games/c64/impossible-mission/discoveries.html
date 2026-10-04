@@ -1,0 +1,55 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impossible Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/impossible-mission-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1984 · Epyx</p>
+  <h1>Impossible Mission</h1>
+  <p class="sub">Protection that keeps checking during play, the claims the code contradicts, and the questions still open.</p>
+</header>
+<main class="wrap">
+
+<section id="protection">
+  <p class="fig">01 · Copy protection</p>
+  <h2 class="t">Secret: two protection checks keep running during play</h2>
+  <p class="lede">Most protection runs once, while the game loads. This game carries two more checks into the game itself, and each would stop a copy that slipped past the loader.</p>
+  <table class="d">
+    <tr><th>Check</th><th>What it does</th><th>Evidence</th></tr>
+    <tr><td>The disk</td><td>The program on the disk is broken in three bytes. The loader asks the drive about the disk, and only a good answer writes the correct bytes in. A copy that fails crashes once loading finishes.</td><td><code>$C300</code>; the loader is described on the <a href="about.html">About</a> tab</td></tr>
+    <tr><td>A chip register as an instruction</td><td>The start-up writes <code>$60</code> into CIA 2's data direction register B at <code>$DD03</code>. <code>$60</code> is the opcode of <code>rts</code>, and the game's delay routine calls <code>$DD03</code> as a subroutine on every pass.</td><td><code>$7F6D</code>; tested: 47,272 calls in 120 frames, and a crash when the register holds anything else</td></tr>
+    <tr><td>A colour the loader left</td><td>The loader's last stage sets a background colour register, <code>$D024</code>, to <code>$0A</code>. Every frame the interrupt checks it, and if it has changed it jumps into the middle of an instruction where the byte <code>$02</code> halts the processor.</td><td><code>$84FA</code>; tested: the machine froze at <code>$799A</code> within 30 frames</td></tr>
+  </table>
+<pre class="asm">wait_ticks   clc
+$7F6E        adc $E0        ; the frame counter
+$7F70        jsr $DD03      ; CIA 2's register, holding $60: rts
+$7F73        cmp $E0
+$7F75        bne $7F70</pre>
+  <p>The first instructions that set up <code>$DD03</code> no longer exist by the time the game is running. The start-up clears its own first 17 bytes in the same loop that clears the sprite registers, so a memory dump taken during play shows zeros where the setting-up was.</p>
+</section>
+
+<section id="claims">
+  <p class="fig">02 · Checked against the descriptions</p>
+  <h2 class="t">Where the code and the descriptions disagree</h2>
+  <p class="lede">Descriptions of the game, read in web search summaries on 1 October 2026, make claims that the code settles.</p>
+  <table class="d">
+    <tr><th>The claim</th><th>What the code does</th></tr>
+    <tr><td>The pieces of a puzzle overlap, so three can fit before you find you must start again.</td><td>The four pieces divide the picture exactly, and only their common frame may overlap (<code>$B180</code>, <code>$8037</code>, <a href="mechanics.html#pieces">How it works</a>).</td></tr>
+    <tr><td>There are six speech lines.</td><td>The data holds eight, and the game plays seven of them (<code>$BED9</code>, <a href="music.html#speech">Sound and speech</a>).</td></tr>
+    <tr><td>The stronghold has 31 rooms, or 32.</td><td>32 room records, two of them the code rooms (<code>$0E70</code>, <a href="levels.html#rooms">The stronghold</a>).</td></tr>
+    <tr><td>A cheat site: <code>POKE 26831,169</code> for a cheat mode, and four pokes for no opponents.</td><td>In this copy 26831 and 27028 are inside the agent's sprites, 31005 is in the routine that flips a piece, and 21006 is in the room character set. The pokes must be for another version.</td></tr>
+  </table>
+</section>
+
+<section id="open">
+  <p class="fig">03 · Open questions</p>
+  <h2 class="t">What these pages have not settled</h2>
+  <ul>
+    <li>The words of the eight voice lines. The <a href="music.html#speech">Sound and speech</a> tab plays them; nobody has transcribed them.</li>
+    <li>The code rooms' puzzle was read in the code but not played.</li>
+  </ul>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

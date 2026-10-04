@@ -19,11 +19,7 @@ in order:
    creates `games/<platform>/<slug>/` from the template. Copy the
    contributor's image into its `work/` folder; `work/` is gitignored.
 3. **Run the skills in this order.** Each is a folder under `kit/skills/` with a
-   `SKILL.md`; open the file when you reach that step. Each one begins
-   by starting the clock (`kit/scripts/clock.py start <step> --model
-   <id>`); a run takes hours, and the per-step times, each with the model
-   that took it, are what let the next run be shorter. `timings.json` is
-   committed with the game.
+   `SKILL.md`; open the file when you reach that step.
 
    | Step | Skill | Produces |
    |---|---|---|
@@ -34,10 +30,7 @@ in order:
    | annotate and measure | `kit/skills/core/50-coverage` | the burn-down loop until coverage is where the tier needs it |
    | verify | `kit/skills/core/60-verify` | every fact traced or observed live; `facts.md` |
    | minisite | `kit/skills/core/70-minisite` | `index.html` (How it works), `listing.json` (Source code), optional `levels.html` and `play.html` |
-   | retrospective | `kit/skills/core/80-retro` | fixes to the skills, `kit-feedback.md`, `game.json` complete |
-
-   Work on a game after its run is clocked apart: `curate` for the
-   Gold pass, `play` for a Play tab added later (`clock.py -h`).
+   | retrospective | `kit/skills/core/80-retro` | the skill text that helped, named; fixes to the kit; `kit-feedback.md`; `game.json` complete |
 
    A Bronze run stops after `40-sweep`. It exports the symbol map and
    builds the listing (step 4), cuts `index.html` down to the header plus
@@ -91,14 +84,16 @@ the same review a game does, not less. Describe the change in the pull
 request.
 Admins of the `gamesexplained` organization can skip the pull request: when
 they ask for a change, commit straight to `main` if they wish.
-`kit/CHANGELOG.md` is not a list of changes: it records what the
-kit learned about reverse engineering, from which game and whom, and a
-change that does not alter what the next agent does when it opens a game
-stays out of it. When the workflow changes, put `[kit-bump]` in the pull
-request's description (or the commit message, on a push to `main`) and
-leave `kit/VERSION` alone: after the merge, `.github/workflows/kit-version.yml`
-moves it on and gives a CHANGELOG entry headed `## next · ...` the new
-number, so two pull requests never conflict over it. A new platform
+`kit/lessons/` is not a list of changes: it records what the kit
+learned about reverse engineering, from which game and whom, one entry
+to a file (`kit/skills/core/80-retro`), and a change that does not alter
+what the next agent does when it opens a game stays out of it. When the
+workflow changes, put `[kit-bump]` in the pull request's description (or
+the commit message, on a push to `main`) and leave `kit/VERSION` alone:
+after the merge, `.github/workflows/kit-version.yml` moves it on and
+gives each entry headed `## next · ...` the new number. A pull request
+adds a lesson file of its own and edits no other, so two pull requests
+never conflict over either. A new platform
 follows `kit/PLATFORMS.md`.
 
 ## Rules that are not negotiable
@@ -114,7 +109,8 @@ follows `kit/PLATFORMS.md`.
   record `tier` as `bronze` until the check passes. The failures are
   silent: address arithmetic goes wrong in ways that read as confident,
   which is why the check tests claims against the game rather than
-  reading the page. `clock.py start` warns when the model is not proven.
+  reading the page. `python3 kit/scripts/models.py is-proven <id>` says
+  whether yours is.
 - **An imported analysis is a starting point, not a run.** Work the
   contributor did outside the kit seeds the disassembler; the listing
   still comes from a snapshot through `listing.py`, coverage and verify
@@ -125,9 +121,9 @@ follows `kit/PLATFORMS.md`.
   your session states (the system prompt, the harness). Never deduce it
   from files, chat transcripts, environment variables or how you seem to
   behave: a transcript on disk may belong to another window, and a
-  guessed id both hides a model that is not proven and puts a false row
-  in the runs table. When the session does not name the model, ask the
-  contributor before starting the clock. If they cannot tell either,
+  guessed id both hides a model that is not proven and puts a false
+  record in `game.json`. When the session does not name the model, ask
+  the contributor before the first step. If they cannot tell either,
   record `unknown` and say in the pull request that the model could not
   be checked.
 - **No binaries, ever.** Disk images, program files, cartridge dumps,
@@ -156,17 +152,23 @@ follows `kit/PLATFORMS.md`.
   the reader applies at the time ("take the newest release").
 - **Consult the platform reference, don't recall it.** Register addresses,
   timing constants and memory maps come from `kit/skills/<platform>/`.
+- **Search what earlier runs wrote before working it out again.** The
+  skills keep what goes wrong without anyone noticing. What shows itself
+  (a loader that hangs, a tool that refuses, a script that breaks) stays
+  where the run that met it wrote it down: each game's `agent-history.md`
+  and `kit-feedback.md`, and `kit/lessons/`. When something will not
+  behave, search those for the symptom before spending an hour on it.
 - **Copy is not analysis.** Article text follows `kit/style.md`. Write it
   as a separate, final pass, and declare who wrote it in `game.json`.
 - **Record what you used.** `game.json` names the tools, the model and the
   kit version. It is honest and it makes the work reproducible. Some
   hosted sessions tell the agent to keep model identifiers out of
-  everything pushed to a repository. The kit's own records of the run
-  are the exception: `game.json`, `timings.json` and the timings table
-  in `kit-feedback.md` keep the model id, exactly as the session names
-  it, because a time or a result is not comparable without the model
-  that produced it. Commit messages, pull request text and code comments
-  follow the environment.
+  everything pushed to a repository. The kit's own record of the run is
+  the exception: `game.json` keeps the model id, exactly as the session
+  names it, because a result is not comparable without the model that
+  produced it, and `models.py` reads its `step_models` to decide which
+  models are proven. Commit messages, pull request text and code
+  comments follow the environment.
 - **Leave the cleanest footprint you can.** A contributor is trusting this
   repository with their computer. Everything the kit installs goes under
   the gitignored `tools/` folder, tools are started only through
@@ -201,13 +203,14 @@ follows `kit/PLATFORMS.md`.
 | `kit/EMULATOR.md` | what an emulator must do, by phase of use, and the test for each |
 | `kit/style.md` | house style for minisite copy |
 | `kit/CHECKING.md` | the maintainer's check that lets a run on an unproven model be Silver |
+| `kit/lessons/` | what the kit learned, from which game and whom: one entry to a file, the site's kit page |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
 | `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |
 | `kit/PLATFORMS.md` | what a platform owns, and how to add one |
 | `kit/template/` | the game folder, stubbed and commented |
 | `kit/skills/core/` | the workflow, platform-independent |
 | `kit/skills/<platform>/` | platform facts and tool notes |
-| `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, timings, reference images, gitignored `work/` |
+| `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
 | `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
 Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
@@ -255,17 +258,20 @@ claim per agent against the source before believing the report.
 
 ## Finishing
 
-The last step of every run is `kit/skills/core/80-retro`: where did the skills
-fall short, and what is the diff that would have saved the next
-contributor the trouble. Make the edits to `kit/` in the same
-branch and describe them in `games/<platform>/<slug>/kit-feedback.md`.
-That is how the kit improves.
+The last step of every run is `kit/skills/core/80-retro`: which skill text
+changed what the run did, where the kit fell short, and the smallest diff
+that would have saved the next contributor the trouble. A script that
+catches the failure comes first, and a skill takes what would otherwise
+go wrong unnoticed. Make the edits to `kit/` in the same branch and
+describe them in `games/<platform>/<slug>/kit-feedback.md`. That is how
+the kit improves.
 
 What needs a maintainer's decision, and so was not changed, goes to the
 issue tracker: one issue per ask, labelled `kit-ask`, the maintainers'
 one inbox. Put `<!-- kit-ask -->` in the body as well: a label from an
 author without triage access is dropped, and the marker makes the
 repository add it. Filing needs the same yes as opening the pull
-request. A run without that yes, or without a way to reach GitHub, puts its asks in the
-pull request's description under "Maintainer asks" instead, and whoever
-merges it files them.
+request. A run without that yes, or that cannot file (a cloud session on
+the contributor's fork never can), writes each ask in full in
+`kit-feedback.md` instead, and the repository files them when the pull
+request merges (`kit/skills/core/80-retro`).

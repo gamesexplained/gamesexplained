@@ -5,8 +5,6 @@ description: Cheap mechanical sweeps that convert large regions from unknown to 
 
 # Sweeps that find what code-reading misses
 
-Start the clock: `python3 kit/scripts/clock.py start 40-sweep --model <your model id> games/<platform>/<slug>`. No figure yet; yours goes on the runs table.
-
 All of them are cheap and mechanical. Run them from the snapshot's RAM image
 directly (Python over the file) or through the disassembler.
 
@@ -91,7 +89,13 @@ maker is unknown is in the position of a run on an unproven model.
    `listing.py` as usual. A converter may write `symbols.json`; it never
    writes `listing.json`, which comes from `listing.py` alone so that
    every game's Source tab has one format and the next run can continue
-   it.
+   it. `symbols_import.py` fills uncovered memory ranges as `Undefined`;
+   otherwise the disassembler can default omitted runtime buffers to
+   code and invent references from their contents. Do not fill gaps as
+   typed data: that can enlarge annotation spans and inflate coverage.
+   Only explicitly
+   declared code ranges are imported as instructions. Check the imported
+   types against the captured state before trusting regenerated labels.
 3. **Coverage is measured by the same rules** (`50-coverage`): runtime
    state out of the denominator, one description per routine or table,
    spans as the ledger draws them. An imported description counts like
@@ -115,9 +119,7 @@ maker is unknown is in the position of a run on an unproven model.
 
    `models.py check` holds a Silver game with an import to a maintainer's
    check (`kit/CHECKING.md`) unless every model named there is proven;
-   `none` and `unknown` never are. Clock only the steps this run does. An imported
-   game stays off the site's runs table, since its hours leave out the
-   analysis they started from.
+   `none` and `unknown` never are.
 
 The analysis file itself is not committed: `symbols.json` and the
 listing carry its names, comments and bytes, and its hash in `game.json`

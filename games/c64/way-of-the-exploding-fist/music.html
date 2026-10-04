@@ -1,0 +1,48 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/fist-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Four tunes on three voices, played by a driver the page runs as the game does, and shouts played by switching the volume on and off.</p>
+</header>
+<main class="wrap">
+<section id="tunes">
+  <p class="fig">01 · Music</p>
+  <h2 class="t">Music: four tunes, tuned for an American machine</h2>
+  <p class="lede">The attract mode, the one-player game, the two-player game and the high-score table each have a tune, played on three voices by a driver called once a frame from the raster interrupt at line 255.</p>
+  <div class="plate"><div id="music"></div>
+    <p class="cap">The game's own driver (<code>$09A5</code>) running in a 6502 interpreter on this page, over the music bytes as the game loads them; its writes to the sound chip match the game's code run in a simulator, every register of every frame for 3,000 frames of each tune. Played through the site's model of the SID, filter on (the cutoff is one 6581's). Each voice shows the note the tune asks for and, under Frequency, the note a PAL machine actually plays.</p></div>
+  <p>Each voice follows its own order list of patterns, with commands to play a pattern, jump and repeat (<code>$0D31</code>). There are 25 instruments, with pulse-width and filter sweeps driven by three slow oscillators and by voice 3's output read back from the chip (<code>$0DFC</code>).</p>
+  <p>The note table (<code>$0D14</code>) gives each semitone's frequency for the clock of an NTSC machine: every note is within 5 cents of pitch at 1,022,727 Hz. A PAL Commodore 64 runs at 985,248 Hz, so on this PAL release every note sounds 65 to 70 cents flat, two-thirds of a semitone.</p>
+</section>
+
+<section id="speech">
+  <p class="fig">02 · Sound</p>
+  <h2 class="t">Sound: the shouts are played by switching the volume on and off</h2>
+  <p class="lede">The grunts and cries of the fight are recordings, played while the music runs. The sound chip has no way to play a sample, so the game flips its master volume between full and silent thousands of times a second.</p>
+  <div class="plate">
+    <div class="fx-ctl" id="spBtns"></div>
+    <div class="fx-ctl"><label><input type="radio" name="spclk" value="pal" checked> PAL clock</label><label><input type="radio" name="spclk" value="ntsc"> NTSC clock</label></div>
+    <canvas id="spCv" width="960" height="160" style="width:100%;height:auto;background:#000"></canvas>
+    <canvas id="spZoom" width="960" height="140" style="width:100%;height:auto;background:#000;margin-top:8px"></canvas>
+    <p class="cap" id="spCap">Pick a sample. Sound plays in your browser through Web Audio.</p>
+  </div>
+  <table class="fx-tab" style="margin-top:18px">
+    <tr><th>Sample</th><th>When the game plays it</th><th>Started by</th></tr>
+    <tr><td>0</td><td>The defender is hit by most forward blows, and falls (reaction <code>$16</code>)</td><td><code>$2CE7</code></td></tr>
+    <tr><td>1</td><td>The defender is hit by move <code>$18</code>, 7 or <code>$0C</code> (reaction <code>$1B</code>) or by a backward blow (reaction <code>$1A</code>); the bull hits the player</td><td><code>$2CDC</code>, <code>$2CF2</code>, <code>$13B7</code></td></tr>
+    <tr><td>2</td><td>Every attack, as its animation starts</td><td><code>$2B54</code></td></tr>
+    <tr><td>3</td><td>A floored fighter lands, on the last frame of either fall (<code>$29E9</code>); the bull begins its charge</td><td><code>$29E9</code>, <code>$141F</code></td></tr>
+  </table>
+  <p>The volume register also sets the music's loudness, so the samples ride on top of the tune and the tune briefly disappears while the volume is at zero. Each sample byte is one half of a wave: the volume stays where it is for 9 cycles per unit of the table entry the byte picks, plus about 108 for the interrupt itself (measured in the emulator), then flips. The upper strip plots that time for every byte of the sample, so a stretch of short flips is a high, buzzing sound and a run of long ones a low one; the lower strip is the wave itself, 30 milliseconds of it at the playhead. DEL in the attract mode turns the samples off (<code>$CF</code>); the menu calls them sound effects.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script src="reference/fist-page.js"></script>

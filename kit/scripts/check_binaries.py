@@ -13,10 +13,14 @@ import os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 EXT = {".d64", ".d71", ".d81", ".g64", ".prg", ".p00", ".t64", ".tap", ".crt", ".vsf",
        ".regen2000proj", ".nes", ".sfc", ".smc", ".gb", ".gbc", ".gba", ".z80", ".sna",
-       ".tzx", ".adf", ".dsk", ".rom", ".bin"}
-SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 349696: "d71", 819200: "d81"}
+       ".tzx", ".adf", ".dsk", ".rom", ".bin",
+       ".szx", ".zsf", ".pzx", ".scr", ".rzx", ".csw", ".trd", ".scl"}
+SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 349696: "d71", 819200: "d81",
+         49179: "48K .sna snapshot", 131103: "128K .sna snapshot", 147487: "128K .sna snapshot with an extra bank"}
 MAGIC = [(b"VICE Snapshot File", "VICE snapshot"), (b"C64 CARTRIDGE", "cartridge image"),
-         (b"C64File", "P00 file"), (b"C64S tape image file", "T64 image"), (b"NES\x1a", "NES ROM")]
+         (b"C64File", "P00 file"), (b"C64S tape image file", "T64 image"), (b"NES\x1a", "NES ROM"),
+         (b"ZXST", "SZX snapshot"), (b"ZSF", "ZEsarUX snapshot"), (b"PZXT", "PZX tape image"),
+         (b"ZXTape!", "TZX tape image")]
 SKIP_DIRS = {".git", "__pycache__", "node_modules", "tools", "_site"}
 
 

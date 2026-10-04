@@ -28,28 +28,26 @@ call costs a round trip.
 ```
 python3 kit/scripts/tools.py status            # which build: release <tag>, or own build of <repo>, commit ...
 python3 kit/scripts/tools.py get-vice          # is there a newer one for this machine? changes nothing
-python3 kit/scripts/tools.py check-emulator    # kit/EMULATOR.md's four phases, under a minute
+python3 kit/scripts/tools.py --platform c64 check-emulator    # kit/EMULATOR.md's four phases, under a minute
 ```
 
 If `get-vice` names a newer release than the one installed, tell the
 contributor what it printed and ask before changing anything; an older
 build is not wrong, only measured by its own checks. The check resets
-the machine, so run it before the game is loaded, not during. It runs its own small test program, measures each capability
-this file relies on, and gives every check a name. **Read
-`workarounds.md` for the names that failed, and only those.** Everything
-in this file is written for a build that passes; where a section needs a
-particular check, it says which. Put the build line from `status` and the
-list of failed checks in `orientation.md`, and the build line in
-`game.json` under `tools.emulator`.
+the machine, so run it before the game is loaded, not during. It runs
+its own small test program, measures each capability this file relies
+on, and gives every check a name. **Read `workarounds.md` for the names
+that failed, and only those.** The `HAS` and `NOT` lines after the
+checks are server quirks that `vice.py` absorbs; they need nothing.
+Everything in this file is written for a build that passes; where a
+section needs a particular check, it says which. Put the build line from
+`status` and the list of failed checks in `orientation.md`, and the
+build line in `game.json` under `tools.emulator`.
 
 Which build to have is not a version you pick: `tools.py get-vice` finds
 the newest release and what this machine can have of it, and asks
-(`kit/c64/INSTALL.md`, "Get the emulator"). The dated measurements are
-the table at the top of that file: on 22 September 2026 the v3.11.0
-release failed 28 of the 56 checks, most of phase 4 among them; on 24
-September v3.13 built from source passed all 56; on 26 September, with
-a 57th added, the v3.13.1 release on Linux passed all but
-`pause-at-instruction`.
+(`kit/c64/INSTALL.md`, "Get the emulator"). The checks each build has
+passed, by date and system, are the table at the top of that file.
 
 ## The sequence that works
 
@@ -64,11 +62,14 @@ a 57th added, the v3.13.1 release on Linux passed all but
    window (`AutostartPrgMode`, disk image by default; `autostart_prg` in
    `vice/src/autostart.c`, read in the v3.13.1 source on 29 September
    2026). If the screen stays on `SEARCHING FOR`, prove the machine is
-   running (step 3) before blaming the load.
-2. `vice_machine_config_get` to confirm PAL/NTSC; autostart turns **warp
-   mode on**. Turn it off through the generic `tools_call` with
-   `{"name": "vice_machine_config_set", "arguments": {"resources": {"WarpMode": 0}}}`
-   (the typed wrapper rejects its argument).
+   running (step 3) before blaming the load. To pick a file other than
+   the first, use `autostart()` in `vice.py`: it takes the file's name,
+   or its position as the directory lists it, and like `reset()` it
+   resumes a stopped machine, on which the plain call loads nothing.
+2. `vice_machine_config_get` to confirm PAL/NTSC, and that warp mode is
+   off: autostart turns it on for the load, and on the v3.13.2 release
+   VICE turned it off again when the load ended (3 October 2026).
+   `warp(rpc, False)` in `vice.py` turns it off if it is still on.
 3. Send input: `vice_keyboard_type` for text at the BASIC prompt,
    `vice_keyboard_matrix` for games that scan the keyboard themselves,
    `vice_joystick_set` for the stick. Hold an input until the thing that
@@ -81,18 +82,17 @@ a 57th added, the v3.13.1 release on Linux passed all but
    (an open monitor window, `workarounds.md`, "Resuming after a stop")
    however `vice_ping` reads, and every input sent looks ignored.
    `tools.py stop vice` and `tools.py vice` clear it; the snapshot is
-   fine. Separately, `vice_memory_read` on a running machine (v3.13.1
-   release, macOS, 28 September 2026) returns no `data_hex`, so
-   `read_mem()` raises `KeyError`: stop with `pause()`, read, run on.
-   `vice_snapshot_load` takes the snapshot's `name`, not a path.
+   fine.
 4. Confirm play with a screenshot, then `vice_snapshot_save` with a name
    that describes the state, on the running machine or after `pause()` in
    `vice.py`, never straight after `vice_execution_pause`
    (`pause-at-instruction`). Snapshots are written to
    `tools/vice-home/config/vice/mcp_snapshots/`
-   (`python3 kit/scripts/tools.py snapshots` lists them); copy the `.vsf`
-   into the game's `work/`.
-5. `vice_memory_read` (hex encoding, any size), `vice_memory_write`,
+   (`python3 kit/scripts/tools.py --platform c64 snapshots` lists them); copy the `.vsf`
+   into the game's `work/`. `snapshot_load()` in `vice.py` loads it from
+   there by its path.
+5. `vice_memory_read` (hex encoding; `read_mem()` in `vice.py` for any
+   size), `vice_memory_write`,
    `vice_memory_search`, `vice_disassemble` for live inspection.
    `vice_registers_get` for the PC. `vice_backtrace` for who called this.
 6. `vice_checkpoint_add` for breakpoints (exec) and for load and store
@@ -136,10 +136,9 @@ in-game input hook below does the same job.
   watchpoints on what you want to see written, visits every such write of
   one frame and ends at its boundary. After a store the machine stops on
   the next instruction, with the value already written. The raster line at
-  each stop and the cycle stopwatch place each write on its line and cycle:
-  the raster register steps in the first cycle of a line, except that line
-  0's first cycle still reads 311. `kit/c64/frame.py capture` does all of
-  this for the video chip.
+  each stop and the cycle stopwatch place each write on its line and cycle
+  (`c64-reference`, "The video chip, cycle by cycle"). `kit/c64/frame.py
+  capture` does all of this for the video chip.
 - **The stick.** `vice_joystick_set` with `port` 1 is control port 1
   (`$DC01`), 2 is `$DC00`. A value set while stopped is in the register
   before the call returns, seen by the next instruction, and stays until
@@ -155,9 +154,9 @@ in-game input hook below does the same job.
   release (`hold_ms`, `hold_frames`) has been seen to miss a game that
   scans the matrix itself (`workarounds.md`, Keys). A key the tool has no name
   for, such as `:`, takes its `row` and `col` from the matrix in
-  `c64-reference`. Letters are named in capitals: on the v3.13.1 release
-  `"U"` works and `"u"` comes back as "Unknown key name", which a script
-  that ignores the reply takes for a key the game did not answer.
+  `c64-reference`. In a script, `with key(rpc, "u"):` in `vice.py` holds
+  keys (a name in any case, or a row and column) and releases them however
+  the block ends.
 - **Typing into a game.** A game that scans the keyboard from its main
   loop misses a press shorter than a pass, and a fixed `hold_frames` is
   either too short or slow. Put a non-stopping checkpoint on the
@@ -238,22 +237,17 @@ the batch.
   absence in the game. The test is a hit count that grows on a routine
   known to run, such as the loop or the interrupt handler. Two reads of the
   program counter are not the test: a game idling in a two-instruction
-  delay loop returns the same address twice while running.
-- **Keep a control checkpoint.** In every batch of hit counts, count one
-  routine you know runs. If the control reads zero, the instrument is dead
-  and no other number in the batch means anything. It costs one call, and
-  on a build that fails `checkpoints-survive-load` it is the only thing
-  that tells you.
-- **Prove the machine is stopped before you poke it.** `vice_ping`, or a
-  read of the PC twice. A write to a running game is overwritten by the
-  game.
-- **Poke, then read a derived value, and a whole update may have run in
-  between.** Stop at a point *after* the update and before the code you are
-  testing, or expect the game's own per-frame change to be added to whatever
-  you wrote. Numbers that are consistently one step out are this.
-- **Screenshots are seconds apart on a running machine.** To catch a
-  short-lived screen, stop and step to it, or read the state variables that
-  prove it happened.
+  delay loop returns the same address twice while running. Keep that
+  count in every batch as the control (`60-verify`, "Carry a control"): on
+  a build that fails `checkpoints-survive-load` it is the only thing that
+  tells you the instrument is dead.
+- **A store watch can stay silent where the code plainly writes.** On 2
+  October 2026 a stopping store checkpoint on `$0200`-`$03FF`, armed
+  straight after loading a hand-over snapshot, never fired, though the
+  game's set-up copies 512 bytes there within its first frame; why was
+  not found. Arm an execute checkpoint on a routine that must run in the
+  same batch as the control, and read the copy loop in the code before
+  believing the silence.
 - **Memory reads honour banking.** Use the bank argument
   (`vice_memory_banks` lists them) when you need RAM under I/O or ROM. The
   banks are `default`, `cpu`, `ram`, `rom`, `io` and `cart`; reading a
@@ -265,31 +259,27 @@ the batch.
   flaky tool and it is not. Read the interrupt handler to work out what
   each band does, and record the frame with `kit/c64/frame.py capture`,
   which stops at every write of one frame instead of sampling.
-- **Validate a measuring tool before you trust a figure from it**, against
-  a known quantity (a timer latch you can compute, a loop you can count),
-  and record in `features.md` when an input path could not be exercised
-  rather than calling it confirmed.
 - **Measure in the machine's time, not the host's.** A non-stopping
   checkpoint on a busy loop can slow the machine below real time, and VICE
   then runs faster than real time until it has caught up: half a second of
   wall clock read 700,000 cycles once. Count passes, frames or cycles on a
   stopped machine at both ends, and never compare against `sleep`.
-- **Arm a stopping checkpoint on a stopped machine** when you set its
-  ignore count or condition in a second call. On a running machine it can
-  fire in between, and on a slow host it usually does.
+- **Give a checkpoint its ignore count or condition with `arm()`** in
+  `vice.py`. Set in a second call on a running machine, the checkpoint
+  can fire in between, and on a slow host it usually does. A condition
+  on A, X, Y or SP crashes the v3.13.2 emulator at the checkpoint's
+  first hit (`PC` conditions work), so `arm()` refuses one.
 - **When a key "does nothing", try the other tool** before concluding
   anything about the game: `vice_keyboard_matrix`, `vice_keyboard_key_press`
   by host name, and `vice_keyboard_type` through the KERNAL buffer reach the
   game by different paths. Keep a hit counter on the routine that should
   react as the instrument.
-- **A key held through `vice_keyboard_matrix` stays down until released,
-  across snapshot loads**: it is the emulator's keyboard, not the machine's
-  state. A script that dies between the press and the release leaves it
-  held, and every key test after it is wrong: the KERNAL's scan keeps the
-  last key it finds in its scan order, so the stuck key hides the one you
-  press, and a working key reads as dead. Release in a `finally`, and after
-  any failed script release every key it pressed. The tell: the KERNAL's
+- **A snapshot keeps the keys held when it was saved** (v3.13.2, 3
+  October 2026). Every load of one saved while a script held a key puts
+  that key down again, and it hides every key pressed after it; a load
+  of a clean one lets go of whatever was held. The tell: the KERNAL's
   current-key variable `$C5` sitting on one code (`$40` means none).
+  `release_all()` in `vice.py` clears it; `key()` never leaves one down.
 - **`vice_machine_config_set` has a six-entry whitelist**:
   `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
   `CIA2Model`. Joystick port assignment is not among them.
@@ -302,34 +292,15 @@ the batch.
   it.
 - **A snapshot save name cannot be reused.** Save **without** ROMs so the
   RAM image lands where the platform reference says it does.
-- **Some calls can take the server down.** If a call returns a closed
-  socket, check `tools.py status` before assuming the answer meant anything.
-- **`vice_machine_reset` leaves a paused machine paused**, `run_after`
-  or not. Resume it with `vice_execution_run` before waiting for `READY.`.
-  So does `vice_autostart`: on a paused machine it attaches and returns,
-  and nothing loads. `frame.py test` leaves the machine paused, so
-  resume it before the first autostart; `tools.py check-emulator` resumes
-  it at the end.
-- **`vice_autostart`'s `index` counts from 1, not from 0.** The tool's
-  schema says 0-based, but the server hands the number to VICE's own
-  autostart unchanged, and VICE counts directory entries from 1 and
-  reads 0 as "the first file" (`autostart_disk` and
-  `image_contents_filename_by_number` in `vice/src`, read in the v3.13.1
-  source on 26 September 2026). So `index: 0` and `index: 1` both load
-  the first file; the second file is `index: 2`.
-- **`program` is typed as given.** The server passes it to VICE, which
-  types `LOAD"<program>",8,1` at `READY.` and matches the directory name
-  exactly: use the name as the directory shows it, in capitals (the C64's
-  unshifted letters), with no quotes and no `,8,1`. A wildcard (`NAME*`)
-  loads the first file that matches. To see what autostart actually
-  typed, read VICE's `Loading program '…'` line in `tools/logs/vice.log`.
-  One run (25 September 2026) reported that neither argument chose the
-  second of two files; the second file there was itself a freezer backup
-  that restores a running game, so the report may not show what was
-  loaded. If a file will not autostart, resume the machine at `READY.`
-  and type `LOAD"NAME",8,1` and `RUN` with `vice_keyboard_type`.
-- **`vice_memory_read` takes at most 65,535 bytes**, so a whole 64 KB is
-  two reads.
+- **`vice_autostart`'s `program` is typed as given.** The server passes
+  it to VICE, which types `LOAD"<program>",8,1` at `READY.` and matches
+  the directory name exactly: use the name as the directory shows it, in
+  capitals (the C64's unshifted letters), with no quotes and no `,8,1`.
+  A wildcard (`NAME*`) loads the first file that matches. To see what
+  autostart actually typed, read VICE's `Loading program '…'` line in
+  `tools/logs/vice.log`. If a file will not autostart, resume the
+  machine at `READY.` and type `LOAD"NAME",8,1` and `RUN` with
+  `vice_keyboard_type`.
 - **Every MCP call stops the emulated machine for a moment.** A script
   that polls in a tight loop slows the game it is watching. Sleep between
   polls, or let a stopping checkpoint do the waiting.
@@ -353,13 +324,18 @@ the batch.
   Try the image before writing the file: VICE's own defaults already run
   the drive's processor. On 26 September 2026 the v3.13.1 Linux release,
   with no `vicerc` at all, autostarted a publisher's original G64 through
-  its custom loader to the game in 143 seconds; the file is for an image
+  its custom loader to the game in 143 seconds (on 2 October 2026 another
+  publisher's G64 took about four minutes of warp from a cold boot to its
+  menu, in a four-core container); the file is for an image
   that hangs.
 - **One emulator answers on :6510, whoever started it.** A second clone of
   the kit on the same computer, or an emulator left from an earlier run,
   takes this session's calls, and its snapshots land in its own folder.
   `tools.py status` warns when the emulator on the port came from another
   folder, and `tools.py vice` refuses to start beside it; stop it from the
-  clone that started it, or ask the contributor to close it.
+  clone that started it, or ask the contributor to close it. When the
+  port is held by something that is not an emulator, start this clone's
+  on another with `KIT_VICE_PORT` (`kit/c64/INSTALL.md`, "Another program
+  on port 6510"); `vice.py` finds it through `tools/vice-port`.
 - The emulator needs a pseudo-terminal and dies with the session that
   started it.
