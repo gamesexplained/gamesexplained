@@ -6,26 +6,31 @@ a file matching `kit/**/test_*.py` or `kit/**/test_*.js`. Run as a script it
 exercises its own subject and exits non-zero on failure. A Python test that
 needs an installed tool reads `KIT_REQUIRE_TOOLS` from the environment and,
 when it is set, FAILS with a clear message instead of skipping when the tool
-is missing - so CI cannot pass because an oracle was absent. Adding a test
-needs no edit here and no edit to `.github/workflows/ci.yml`: it is found.
+is missing - so CI cannot pass because an oracle was absent. Under
+`--require-tools` a test that skips anyway is a failure too, so a test that
+does not read the variable cannot pass CI by skipping. Adding a test needs no
+edit here and no edit to `.github/workflows/ci.yml`: it is found.
 
 The older self-tests are `--test` flags on the tools themselves. They stay
-where they are and are listed in `SELF_TESTS` below; a missing entry is a
-failure here, so a renamed tool is caught. New tests belong in a `test_*.py`
-file rather than a new flag, so that this list does not grow.
+where they are and are listed in `SELF_TESTS` below. An entry naming a
+script that is not there is a failure here, and so is a kit script that
+handles `--test` with no entry, so a renamed tool and a new flag are both
+caught. New tests belong in a `test_*.py` file rather than a new flag, so
+that this list does not grow.
 
 Usage:
   test_kit.py [--require-tools] [--list] [--until PATH] [substring ...]
 
   --require-tools   export KIT_REQUIRE_TOOLS=1 to every test (CI), so a
-                    missing tool fails rather than skips
+                    missing tool fails rather than skips, and count any
+                    skip as a failure
   --list            print what would run, and where it lives, without running
   --until PATH      run in discovery order and stop after this one (debugging)
   substring ...     run only the tests whose path contains one of these
 
 Exit status is 1 if any test failed, 0 otherwise. A test that exits 0 but
-says it skipped is reported as SKIP, which is not a failure - locally it is
-the reason to install the tool.
+says it skipped is reported as SKIP, which is not a failure without
+`--require-tools` - locally it is the reason to install the tool.
 """
 import glob
 import os
@@ -41,14 +46,19 @@ SELF_TESTS = [
     ["kit/scripts/edit.py", "--test"],
     ["kit/scripts/skill_usage.py", "--test"],
     ["kit/scripts/maintainer_asks.py", "--test"],
+    ["kit/scripts/models.py", "--test"],
     ["kit/c64/snapshot.py", "--test"],
     ["kit/c64/project.py", "--roundtrip"],
     ["kit/spectrum/snapshot.py", "--test"],
     ["kit/spectrum/skoolkit.py", "--test"],
+    ["kit/spectrum/codemap.py", "--test"],
+    ["kit/spectrum/simulate.py", "--test"],    # needs SkoolKit
+    ["kit/spectrum/romcopy.py", "--test"],
     ["kit/spectrum/z80.py"],          # its self-check is what it does with no arguments
 ]
 
 SKIPPED = re.compile(r"\bskip(ped|ping)?\b", re.I)
+HAS_TEST_FLAG = re.compile(r"""["']--test["']""")
 
 
 def discovered():
@@ -65,13 +75,33 @@ def discovered():
     return out
 
 
+def unlisted_self_tests():
+    """Kit scripts that handle `--test` but have no SELF_TESTS entry."""
+    listed = {a[0] for a in SELF_TESTS}
+    out = []
+    for path in sorted(glob.glob(os.path.join(ROOT, "kit", "**", "*.py"), recursive=True)):
+        rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
+        if os.path.basename(path).startswith("test_") or rel in listed:
+            continue        # a test_*.py file is discovered, not listed
+        with open(path, encoding="utf-8") as fh:
+            if HAS_TEST_FLAG.search(fh.read()):
+                out.append(rel)
+    return out
+
+
 def check_self_tests():
+    ok = True
     missing = [a[0] for a in SELF_TESTS if not os.path.exists(os.path.join(ROOT, a[0]))]
     if missing:
         print("  x  SELF_TESTS names a script that is not there: " + ", ".join(missing))
         print("     fix SELF_TESTS in kit/scripts/test_kit.py")
-        return False
-    return True
+        ok = False
+    unlisted = unlisted_self_tests()
+    if unlisted:
+        print("  x  these handle --test but SELF_TESTS does not list them: " + ", ".join(unlisted))
+        print("     add them to SELF_TESTS in kit/scripts/test_kit.py, or move the test into a test_*.py file")
+        ok = False
+    return ok
 
 
 def run(label, argv, require_tools, capture=False):
@@ -87,7 +117,9 @@ def run(label, argv, require_tools, capture=False):
     if p.returncode != 0:
         verdict = "FAIL"
     elif tail and SKIPPED.search(tail[-1]):
-        verdict = "SKIP"
+        # under --require-tools a skip fails, whether or not the test read
+        # KIT_REQUIRE_TOOLS itself: CI cannot pass because a tool was absent
+        verdict = "FAIL" if require_tools else "SKIP"
     return verdict, p.returncode, took, tail, out if capture else ""
 
 
@@ -128,7 +160,8 @@ def main(argv):
         results.append((verdict, label, took, tail, out))
         if verdict == "FAIL":
             failed += 1
-            print(f"  FAIL  {label}  ({took:.1f}s, exit {rc})")
+            why = f"exit {rc}" if rc else "it skipped, and --require-tools allows no skips"
+            print(f"  FAIL  {label}  ({took:.1f}s, {why})")
             for ln in tail[-25:]:
                 print("        " + ln)
         else:

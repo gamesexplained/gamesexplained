@@ -92,6 +92,15 @@ def hexarg(s):
 
 def test():
     import tempfile
+    try:
+        simulator()
+    except SystemExit:
+        # without SkoolKit there is nothing to check; KIT_REQUIRE_TOOLS makes that a failure
+        # (kit/scripts/test_kit.py --require-tools, which is how CI runs it)
+        if os.environ.get("KIT_REQUIRE_TOOLS"):
+            raise
+        print("no SkoolKit: simulate.py self-check skipped (its home is tools/skoolkit/ once get-skoolkit has run)")
+        return
     mem = bytearray(0x10000)
     # $8000: HL = HL * 3, then store L at ($9000); $8010: a routine that never returns
     mem[0x8000:0x800B] = bytes([0x5D, 0x54, 0x29, 0x19, 0x7D, 0x32, 0x00, 0x90, 0xC9, 0x00, 0x00])

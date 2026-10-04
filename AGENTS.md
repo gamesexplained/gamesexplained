@@ -84,15 +84,6 @@ to confirm every existing game still builds, and open a pull request. A
 change under `kit/` or `site/` reaches every page on the site, so it gets
 the same review a game does, not less. Describe the change in the pull
 request.
-
-A kit test is a file matching `kit/**/test_*.py` or `kit/**/test_*.js`:
-run as a script it exercises its own subject and exits non-zero on failure,
-and `test_kit.py` finds it, so a new test needs no edit to CI. A test that
-needs an installed tool reads `KIT_REQUIRE_TOOLS` from the environment and
-fails rather than skips when it is set - which is how CI runs - so an oracle
-that is missing cannot pass for a green run. The older `--test` self-tests on
-the tools stay where they are and are listed in `test_kit.py`; a new test is
-a `test_*.py` file, not a new flag.
 Admins of the `gamesexplained` organization can skip the pull request: when
 they ask for a change, commit straight to `main` if they wish.
 `kit/lessons/` is not a list of changes: it records what the kit
@@ -106,6 +97,16 @@ gives each entry headed `## next · ...` the new number. A pull request
 adds a lesson file of its own and edits no other, so two pull requests
 never conflict over either. A new platform
 follows `kit/PLATFORMS.md`.
+
+A kit test is a file matching `kit/**/test_*.py` or `kit/**/test_*.js`:
+run as a script it exercises its own subject and exits non-zero on failure,
+and `test_kit.py` finds it, so a new test needs no edit to CI. A test that
+needs an installed tool reads `KIT_REQUIRE_TOOLS` from the environment and
+fails rather than skips when it is set. CI sets it, and there a test that
+skips anyway fails too, so an oracle that is missing cannot pass for a green
+run. The older `--test` self-tests on the tools stay where they are and are
+listed in `test_kit.py`, which fails on a script with the flag that the list
+leaves out; a new test is a `test_*.py` file, not a new flag.
 
 ## Rules that are not negotiable
 
