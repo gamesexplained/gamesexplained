@@ -160,3 +160,14 @@ the pages themselves, and a script carried them back into the sources
 before the pages were assembled again. The decoder that wrote the
 generated comments, in `work/`, was not corrected, since nothing runs it
 again.
+
+**The second sample.** The first draw had let three comments stand for
+the decoder's 7,973, so the second, with seed 6510, drew 20 from them
+and three from each hand-written range, and four agents that had written
+and audited none of the 80 checked them. They found 3 with a wrong
+detail and none wrong: a list of the game's instructions that address a
+byte with one left out, an omission five neighbouring comments of the
+death screen turned out to share; the skill list's header put on the row
+above the one it prints on; and play_sound's last write said to start
+the note, which for sound 11 it does not, the gate bit of its control
+byte being clear. Each was corrected.

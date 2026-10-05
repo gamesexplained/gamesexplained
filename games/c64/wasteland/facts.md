@@ -414,3 +414,53 @@ lines into view for a moment, and the programs load from `$7E00`.
   flags, and the channels stepped 7 times, about 7 steps a second; in a
   later stretch of the same sequence 2,624 to 3,176 calls and 5 or 6
   steps. Between the two the flag at engine `$AC` was 0 and nothing moved.
+
+## Comment sample
+
+- Before the audit: seed 1988 drew three comments from each of 21 strata
+  out of the 11,532 line and side comments that the 64 parts' listings
+  hold as their own (`work/lead/sample.py`): one stratum for each
+  annotator's range, and one for the maps' descriptions that a decoder
+  wrote, 7,973 comments (69%). Three agents that wrote none of the 63
+  checked them against the bytes: 48 were right, 14 had a wrong detail
+  and 1 had the code wrong, so 15 of 63, 23.8% (Wilson 95% interval
+  15.0-35.6%). Weighted by the strata's sizes the rate was about 52%,
+  because two of the three generated descriptions drawn carried an error
+  of their template. The details were callers and paths left out,
+  counts, the keys a prompt takes, and a field read alike for every
+  value of a flag; the one wrong comment had taken an operand's value in
+  the snapshot for a constant (map 49's poisoned needle, said to miss
+  its target: the member comes from an operand the game writes when a
+  Use begins). All 15 were rewritten to agree with the code.
+- The audit: 22 agents that wrote none of the comments then checked all
+  11,532 against the bytes, the hand-written ones by range and the
+  generated ones by template, and rewrote 2,441: 424 of the 3,559
+  hand-written comments and 2,017 of the 7,973 generated ones. Of those,
+  627 had the code wrong and the rest a detail. The generated
+  descriptions' errors came from their templates: a check square's tests
+  said to run when the party arrives, where with bit 7 of its flags
+  clear they run on a move onto the square, and with bit 6 clear only on
+  a Use; readers cited for a field they read only for some values of a
+  flag; encounter ranges given without their unit (feet, ten to a
+  square); exits said to lead to maps 128 and above, where the game
+  loads map 5 or 11; the armour roll that bit 0 of a record's first byte
+  decides left out; and map bytes that a BIT in the game or the engine
+  addresses, said to be read by nothing, where the BIT runs and reads
+  them, to no effect. The hand-written ones' were the sample's kinds.
+  The lines of these facts files and of the pages that repeated such a
+  claim were rewritten with them.
+- After the audit: seed 6510 drew a second sample the same way, three
+  from each of the 20 hand-written strata and 20 from the generated one,
+  and four more agents that had written and audited none of it checked
+  the 80: 77 were right, 3 had a wrong detail and none had the code
+  wrong, 3.75% (Wilson 95% interval 1.3-10.5%). Of the hand-written
+  comments 3 of 60 were wrong in a detail, 5.0% (1.7-13.7%); of the
+  generated ones none of 20 (0-16.1%); weighted by the strata's sizes,
+  1.25%. The three: one of the game's three instructions that address a
+  byte left out (death `$7E0C`); the skill list's header said to print
+  on row 2, where the new line it opens with puts it on row 3 (module 2
+  `$CC63`); and play_sound's last write said to start the note, which
+  sound 11's does not, its control byte `$A4` having the gate bit clear
+  (engine `$C993`). All three were rewritten, and so were five
+  neighbouring comments of the death screen that left out the game's
+  instructions in the same way.
