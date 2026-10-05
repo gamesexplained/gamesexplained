@@ -61,6 +61,10 @@ evidence.
 - **Distrust your own negative results.** "Nothing references this" is a
   claim about your search. Indexed, indirect and self-modified accesses
   exist, and so do instructions the disassembler shows as data.
+- **A value in the snapshot is the last one written.** Where code stores
+  into an instruction's operand or into a variable, the snapshot holds
+  whatever the last store left. Find the writers before you call a value
+  fixed or build anything on it.
 - <The emulator: whether agents may use it; usually not, and never start
   or stop a tool.>
 - **Do not edit** game.json, facts.md, features.md, symbols.json or any
