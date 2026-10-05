@@ -10,6 +10,7 @@ phase by phase, is `kit/EMULATOR.md`.
 |---|---|---|
 | Emulator with an agent interface | run, stop on an instruction, read and write memory, count breakpoints without stopping, advance a frame, hold the keyboard and the joystick, save and load a snapshot, save the screen | ZEsarUX 13.0 over ZRCP (https://github.com/chernandezba/zesarux) |
 | Disassembler with an agent interface | read a 48K snapshot, disassemble, label, comment, type data, round-trip a control file | SkoolKit (`sna2skool.py`, `skool2ctl.py`; https://skoolkit.ca) |
+| A JavaScript runtime | run the site's screen renderer outside a browser, for `kit/spectrum/frame.py` | node. For that one check, macOS's own JavaScriptCore does when node is not on the path, so nothing is installed |
 
 SkoolKit is installed under `tools/skoolkit/` by the launcher
 (`python3 kit/scripts/tools.py --platform spectrum get-skoolkit`). It is
@@ -171,6 +172,24 @@ than this launcher started.
 `Cursor&Shift`, presses keys on the keyboard matrix, which is what
 `check-emulator` measures; pass `--joystickemulated Kempston` to a run
 whose game reads port `$1F`.
+
+`python3 kit/spectrum/frame.py test` checks the site's screen renderer,
+`Spectrum.drawScreen` in `site/lib/spectrum.js`, against the emulator with
+a test screen of its own: 768 bytes of attributes covering all 64
+ink/paper pairs with BRIGHT and FLASH in both states, a bitmap whose three
+64-line thirds all differ, and a magenta border. It saves the emulator's
+picture of it over ZRCP (`save-screen`, a .bmp), draws the same video
+memory with the site's own code under node (or macOS's JavaScriptCore) and
+compares the two pixel by pixel. It needs no game image and no snapshot,
+and like `check-emulator` it resets the machine, so run it before a game
+is loaded. On 5 October 2026, on macOS arm64 with ZEsarUX 13.0 and node
+22.22, it passed: 0 of 64512 pixels differed, in both FLASH phases. The
+pictures are compared as the Spectrum's colour numbers rather than as RGB,
+because ZEsarUX renders the ULA's levels 0, `#c0` and `#ff` where the
+site's palette says 0, `#d7` and `#ff`; the output prints both.
+`kit/spectrum/test_frame.py` is the part of that check which needs no
+emulator, and is what CI runs; `frame.py test` itself needs an emulator and
+is run by hand.
 
 ## What goes where, and what is left behind
 
