@@ -88,7 +88,15 @@ its colour tokens after the C64.
 6. Run one game through the whole workflow to Silver. The retrospective on
    that game (`kit/skills/core/80-retro`) is where the seams you missed show
    up; fix them in the same pull request.
-7. Open the pull request as `AGENTS.md` says, with `[kit-bump]` in its
+7. When the platform was written by a model that is not on the proven list
+   (`kit/models.json`, `kit/scripts/models.py`), a maintainer checks the machine
+   reference's facts and this platform's `INSTALL.md` measurements as
+   `kit/CHECKING.md` sets out, and records the check beside those measurements.
+   Do it before a game on the platform goes to Silver: every later run consults
+   the reference instead of recalling the machine, so a wrong fact there is
+   copied into all of them. The games a platform produces prove its models, not
+   its reference.
+8. Open the pull request as `AGENTS.md` says, with `[kit-bump]` in its
    description. The
    entry in `kit/lessons/` is not "added the platform" but what the
    first game on the new platform taught the kit about reverse engineering that the

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Refuse a listing.json that does not match its symbols.json.
+"""Refuse a listing.json that does not match its symbols.json or its own bytes.
 
-listing.json is derived from symbols.json plus a private snapshot, so CI
-cannot rebuild it; it checks instead that every user label and every
-comment in symbols.json appears in the listing unchanged, and that the
-listing records the hash of the symbols.json it was built from. The empty
-symbols.json that new_game.py writes needs no listing yet.
+Two parts. Every user label and every comment in symbols.json appears in the listing
+unchanged, and the listing records the hash of the symbols.json it was built from.
+And every code record re-decodes, from the memory image the listing's own bytes
+describe, to the same length, mnemonic, bytes and operand (listing.decode_problems):
+the permanent guard against a decoder that drifts under a listing, and against an
+off-by-one record (#142). It needs no snapshot. The empty symbols.json that
+new_game.py writes needs no listing yet.
 
 A game of several parts (kit/scripts/parts.py) is checked part by part,
 and so is the layout itself: every folder under parts/ is a part, each
@@ -36,6 +38,14 @@ def check(gdir):
     sha = hashlib.sha256(open(sp, "rb").read()).hexdigest()
     if L.get("symbols_sha256") != sha:
         errs.append("listing.json was built from a different symbols.json; rebuild it")
+    else:
+        # every code record must re-decode, from the listing's own bytes, unchanged (#142)
+        from listing import decode_problems
+        bad = decode_problems(gdir)
+        if bad:
+            a, why = bad[0]
+            errs.append(f"listing.json no longer agrees with the decoder at ${a:04X}: {why}"
+                        + (f" (and {len(bad) - 1} more)" if len(bad) > 1 else ""))
     labels = {r["a"]: r.get("l") for r in L["records"] if "l" in r}
     comments = {r["a"]: r.get("c") for r in L["records"] if "c" in r}
     for s in S["symbols"]:
