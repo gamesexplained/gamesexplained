@@ -39,13 +39,17 @@ decision, what took longest, operating system and tool versions.
 
 ## Maintainer asks
 
-The run could not file issues; the asks are in the pull request's
-description under "Maintainer asks".
+The run could not file issues from the fork, so each ask is written in
+full and the repository files it when the pull request merges.
 
-- `tools.py` could start one disassembler per part, each on its own
-  port, if regenerator2000 gains a port option, or in its own namespace
-  where the system allows it.
-- `new_game.py` could create the `parts/` folders from a list.
+- **Let tools.py start one disassembler per part.** A game of several
+  programs needs one regenerator2000 per part, and the tool listens on a
+  fixed port, so this run put each in its own network namespace by hand.
+  `tools.py` could start each on its own port, if regenerator2000 gains a
+  port option, or in its own namespace where the system allows it.
+- **Let new_game.py create the parts/ folders from a list.** Five parts
+  meant making five folders with their own snapshots, symbols and facts
+  by hand; `new_game.py` could take the part names and create them.
 
 ## What took longest
 
