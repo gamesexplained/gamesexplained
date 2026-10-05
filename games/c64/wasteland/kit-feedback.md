@@ -11,6 +11,7 @@ time, operating system and tool versions.
 - `60-verify`: "When you measure with breakpoints, put one on a routine you know runs": every counted live test (the idle turn, the main loop's pace, the pictures' pace, the joystick) carried a checkpoint on the interrupt handler, and the joystick's 0 reads of port A meant something only because the same counter showed 203 interrupts in each hold.
 - `40-sweep`: "check whether the code reads it or reads a twin elsewhere": the Ranger Center's last 2.5 KB proved to be the radio's program and the radio's tail the game's own bytes, so both are described as leftovers of the disk's build, not as code of the part they load with.
 - `50-coverage`: "The skip idiom (a two-byte or three-byte opcode used to skip the next instruction)": the game's `BIT` skips name addresses inside the map parts' ranges, and the map agents were briefed to explain each as an operand; none was given a meaning.
+- `60-verify`: "If the first sample is bad, audit the whole listing before the page is published": the first sample found 15 of 63 comments wrong or wrong in a detail, so before the pull request 22 agents that wrote none of the comments checked all 11,532 against the bytes and corrected 2,441, and a second sample, drawn with another seed and checked by four more agents, measured what was left.
 
 ## What was changed in the kit
 
@@ -23,6 +24,9 @@ time, operating system and tool versions.
 - `kit/skills/core/10-orient`: a load that several parts share and that stays while they change is a part of its own; `kit/lessons/2026-10-05-wasteland.md`.
 - `kit/skills/core/50-coverage`: an unpacked load can run on past its own data; `kit/lessons/2026-10-05-wasteland.md`.
 - `kit/skills/core/50-coverage`, "A game of several parts": automatic symbols that only the part beneath refers to are deleted, a stopgap until #213.
+- `kit/skills/core/50-coverage/brief.md`: every annotation agent is told that a value in the snapshot is the last one written, and to find the writers before calling a value fixed. Map 49's poisoned needle had been described as missing its target from an operand the game writes when a Use begins; `kit/lessons/2026-10-05-wasteland.md`.
+- `kit/skills/core/50-coverage`, "Rules that keep the number honest": a script that writes a comment for every record of a format has each template sentence tested against every path that reads the field before it writes, and chooses the sentence from the record's bytes. The decoder of this run's maps wrote 7,973 comments, and the audit changed 2,017 of them.
+- `kit/skills/core/60-verify`: comments a program wrote are a stratum of their own, with about 20 drawn from it and the rate weighted by the strata's sizes given beside the plain one, and a bad stratum is audited by template, with the corrections made by a script and in the decoder; `kit/lessons/2026-10-05-wasteland.md`.
 
 ## Candidates
 
@@ -78,6 +82,13 @@ the game's own font as well as in text mode (#218), would have saved the
 most: the masters refuse to play, the game's copier asks for each side's
 master and copy in turn, and its prompts could not be scripted until the
 run had written a reader for Wasteland's six-pixel font.
+
+After the reader, the audit. The decoder that described the maps'
+records wrote 7,973 comments from templates, and 2,017 of them were
+corrected after the first sample. Checking each template sentence
+against the code before the decoder runs is the cheaper place to catch
+them: after it, the audit of all 11,532 comments took 22 agents and
+about two hours, half an hour of it stopped at a usage limit.
 
 ## Operating system and tools
 

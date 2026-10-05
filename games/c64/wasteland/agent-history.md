@@ -6,7 +6,7 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 
 ## 5 October 2026, the Silver run (claude-opus-5-5[1m])
 
-One session in a hosted Linux container, starting at 02:55 UTC, with 35
+One session in a hosted Linux container, starting at 02:55 UTC, with 61
 subagents on the same model. Aaron uploaded the four sides of the
 Electronic Arts release as G64 images and chose Silver, the lookup, the
 pull request and the push.
@@ -133,3 +133,30 @@ minted in its range; they were deleted, and #213 asks for the export to
 leave them out. Three listings rebuilt late from another snapshot of the
 same part came out with different bytes, and were restored from git;
 #214 asks for a listing to name its snapshot.
+
+**The comment sample and the audit.** Three agents that wrote none of
+the comments checked 63 drawn with seed 1988, and 15 had a wrong detail
+or were wrong; a first tally said 16, counting one comment's two
+problems twice. The kit's answer to a bad sample is to audit the whole
+listing, so 22 more agents checked all 11,532 comments: seventeen the
+hand-written ones by range, five the generated map descriptions by
+template. Twenty could run at once, so the last two started as the first
+finished, and a usage limit stopped everything for half an hour. They
+corrected 2,441 comments, 424 of the 3,559 hand-written and 2,017 of the
+7,973 generated. The generated descriptions fared worst: the check
+squares' template had described every record by its flags' commonest
+case, and 548 of its 708 comments changed; another template said that
+nothing read a byte which a BIT of the game's does read, to no effect,
+and four hand-written comments had copied the claim. The corrections
+went into a second checkout of the branch and were copied back file by
+file, so that no auditor still reading a listing saw it half written.
+Each auditor also listed the lines of the facts files and pages that
+repeated a claim it had corrected. One claim recurred across them, the
+armour roll that a check square or radiation square takes when bit 0 of
+its first byte is clear, and the maps' facts were then searched for it
+from the records' bytes: 30 lines gave a cost without it. The pages are
+assembled from sources in `work/site`; the first corrections went into
+the pages themselves, and a script carried them back into the sources
+before the pages were assembled again. The decoder that wrote the
+generated comments, in `work/`, was not corrected, since nothing runs it
+again.

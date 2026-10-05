@@ -31,7 +31,7 @@ to find the end before describing what follows it.
 thirds of Wasteland's 11,532 comments were written by a program that
 described every record of the map format from templates. The comment
 sample drew three of them and found two wrong, and the audit that
-followed found why: the check squares' template said
+followed corrected 2,017 of the 7,973: the check squares' template said
 their tests ran on arrival for squares whose flags make them run as the
 party steps in, cited readers that run only for some values of a flag,
 and left out the armour roll that one flag bit gives. A sentence that

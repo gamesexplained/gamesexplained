@@ -82,7 +82,7 @@ reads this"), then the records whose values change what the sentence
 means, and make the corrections with a script from the records' bytes,
 in the decoder too, or its next run puts the errors back. One run's
 decoder wrote 7,973 of its 11,532 comments, and the sample drew three of
-them and found two wrong.
+them and found two wrong; the audit that followed corrected 2,017.
 
 If the checking agent cannot run (its provider is out of credit, say:
 `50-coverage`, "Splitting the work across subagents"), run it on another
