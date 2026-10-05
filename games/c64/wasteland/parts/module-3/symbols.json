@@ -1,0 +1,140 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "wasteland",
+ "part": "module-3",
+ "build": "Electronic Arts disk release, two double-sided disks as four G64 side images; play copies made with the game's own Copy utility",
+ "source": "regenerator2000 live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    53248,
+    57343,
+    "I/O and colour RAM"
+   ],
+   [
+    51749,
+    52092,
+    "not module 3: its packed bytes are the first 48 of its stretch of T25/L8 (37 bytes, $CA00-$CA24); the unpacker reads on to the end of its one-sector window, so these are the sector's zero filler (the run of $00 to $CA97) and then tile set 0's packed bytes from T25/L7, decoded with module 3's table. Nothing reads them"
+   ],
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32256,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    51711,
+    "Resident engine and loader"
+   ],
+   [
+    52093,
+    65535,
+    "Resident engine and loader"
+   ]
+  ],
+  "extra": [],
+  "elsewhere": [
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32256,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    51711,
+    "Resident engine and loader"
+   ],
+   [
+    52093,
+    65535,
+    "Resident engine and loader"
+   ]
+  ]
+ },
+ "blocks": [
+  {
+   "start": 51712,
+   "end": 51748,
+   "type": "Code"
+  },
+  {
+   "start": 51749,
+   "end": 52092,
+   "type": "Byte"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 51712,
+   "name": "enter_ranger_center",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 51722,
+   "name": "b_CA0A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 51733,
+   "name": "wait_side_1",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 51749,
+   "name": "module3_unpack_overrun",
+   "type": "UserDefined",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 51712,
+   "type": "line",
+   "text": "Module 3, the way into the Ranger Center: 37 bytes ($CA00-$CA24) decoded from the first 48 bytes of its packed stream (side 1 only, track 25, logical sector 8 from byte 76). The only record that calls it in the 42 map snapshots is the world map's class-6 record 0 ($4D5F in map 0: action $83, then $FF $FF, then \"Ranger Ctr.\" and a zero); the Ranger Center's entrance square (55,62), class 10 number 39 (record $4EB7: $D8, 0, 0, map 0, then 6, 0), turns itself into that record once the party answers Y to \"Enter new location (Y/N)?\", and the game's class-6 handler loads this module ($8839-$884E). It writes the current map back (save_map $03B9, the world map, with the square still class 6 number 0), saves the game state to the disk in the drive (save_game $02D8), copies the record's 12 bytes +3..+$0E (the name and its zero) over the location name at $F4D0, which the Ranger Center shows under its picture, waits for side 1 (check_side_1 $02D5; the BCS after it never branches, since the side check returns only with carry clear) and loads and starts the Ranger Center program from track 27, logical sector 7 ($10, $11; load_program $03AD) over the game at $7E00. It never returns to the game, so the record's +1/+2 ($FF $FF) are never applied."
+  },
+  {
+   "address": 51749,
+   "type": "line",
+   "text": "Not part of module 3, whose own bytes end with the JMP at $CA22. The module directory gives the unpacker a window of one sector (the entry's third byte), and it decodes the rest of that sector with module 3's value table: its 130 zero bytes give the $00 run to $CA97 (nine zero bits make a literal $00), its last two bytes ($19 $11) $CA98-$CA99, and from $CA9A on it decodes tile set 0's packed stream, which starts at track 25, logical sector 7 (tile-set directory T35/L12, entry 0). A literal decodes the same under any table, so the literal stretches at $CB54 (8 bytes) and $CB71 (10 bytes) equal tile set 0's bytes at $D02E and $D04B; the rest, the $AB run at $CAA6-$CB3F included, is not tile data. Nothing reads these bytes."
+  }
+ ]
+}

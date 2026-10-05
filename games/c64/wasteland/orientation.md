@@ -71,8 +71,8 @@ game always boots from the master, side 1, as the card says.
    `parts/game/work/entry.vsf`, then the world map. The party stands
    outside the Ranger Center and the game asks "Enter new location
    (Y/N)?".
-5. **Y** enters the Ranger Center (module 0, then the Ranger Center
-   program, below). There, with the default party: **D**, **4**, **Y**
+5. **Y** enters the Ranger Center (module 3, which loads the Ranger
+   Center program, below). There, with the default party: **D**, **4**, **Y**
    deleted the fourth Ranger; **C** created a character (attributes
    accepted with RETURN, name KIT, sex F, nationality 1, skills bought
    with the number keys), kept with **Y**; **S** left. The game reloads
@@ -116,10 +116,16 @@ attached:
   the stop at `$5905` is the module's `entry.vsf`. Modules 0, 1 and 3 come
   from side 1, module 2 from side 2 and module 4 from side 4 (each
   directory entry names its side), so that side's copy is attached first.
-  Each module's extent is where the load wrote over `$CA00-$CFFF` filled
+  Each part's range is where the load wrote over `$CA00-$CFFF` filled
   first with `$55`, then with `$AA`: module 0 `$CA00-$CE53`, 1
   `$CA00-$CE78`, 2 `$CA00-$CF3E`, 3 `$CA00-$CB7C`, 4 `$CA00-$CFFF` (its
-  load stops at the `$D000` limit).
+  load stops at the `$D000` limit). That is the unpacker's read window,
+  not the module: a stream's directory entry gives the sectors to read,
+  and the unpacker decodes them all, so the window also decodes the
+  bytes after the stream on the disk. The modules' own bytes, where the
+  sides that carry them agree or the packed bytes end, are module 0
+  `$CA00-$CDE6`, 1 `$CA00-$CE24`, 2 `$CA00-$CDA5`, 3 `$CA00-$CA24`; the
+  rest of each window is in its `coverage.exclude`, with what it is.
 - **Radio.** The program counter set to the Radio command (`$8802`),
   **Y** at its prompt: the engine loads T26/L17; `entry.vsf` at the jump,
   `play-radio.vsf` after the promotion check.

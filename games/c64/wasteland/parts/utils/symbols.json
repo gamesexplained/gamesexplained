@@ -1490,7 +1490,7 @@
   {
    "address": 32262,
    "type": "line",
-   "text": "Main loop of the utilities: utils_menu_show (menu 0, 'Copy Restart Start'), utils_screen, word-wrapped output ($0302), then forever read_key ($022A, the key in $18) and menu_key ($02DE), which runs the selected item's handler from the tables at utils_menu_handlers. Copy and Restart come back here; Start ends in load_program and never does."
+   "text": "Main loop of the utilities: utils_menu_show (menu 0, 'Copy Restart Start'), utils_screen, word-wrapped output ($0302), then forever read_key ($022A, the key in $18) and menu_key ($02DE), which runs the selected item's handler from the tables at utils_menu_handlers. Copy and Restart come back here, and so does Start after a back-arrow at its prompts; once Start has a side it ends in load_program and does not come back."
   },
   {
    "address": 32280,
@@ -1560,7 +1560,7 @@
   {
    "address": 32542,
    "type": "line",
-   "text": "Shows menu 1, the copy menu '1 2 3 4 Exit' (copy_menu_text): $3B = 1, $39 = 0, $3A = 4 (the last visible item, Exit), draw_menu_bar. Called by copy_command and, after a copy, by copy_end_quiet ($7F97)."
+   "text": "Shows menu 1, the copy menu '1 2 3 4 Exit' (copy_menu_text): $3B = 1, $39 = 0, $3A = 4 (the last visible item, Exit), draw_menu_bar. Entered from copy_command, which falls into it, and called by copy_end_quiet ($7F97) after a copy."
   },
   {
    "address": 32556,
@@ -1615,7 +1615,7 @@
   {
    "address": 32673,
    "type": "line",
-   "text": "Operand of the LDA # at $7FA0: the loader operation copy_disk_op was called with (0 read, 2 write), so a retry from $7FA0 repeats it. The code after it: on an error keeps the window ($0247), widens it to column 39, prints message 29 'I/O error' (message 30 'Write protected' when the status $FC is $10) and message 32 '. (RETURN)' at column 0, row 23 with direct output; RETURN or space redraws the bar and retries, back-arrow redraws it and returns carry set. The drive code reports a write-protected disk as $2B (the engine's disk_io tests $2B at $2817), so 'Write protected' never appears here."
+   "text": "Operand of the LDA # at $7FA0: the loader operation copy_disk_op was called with (0 read, 2 write), so a retry from $7FA0 repeats it. The code after it: on an error keeps the window ($0247), widens it to column 39, prints message 29 'I/O error' (message 30 'Write protected' when the status $FC is $10) and message 32 '. (RETURN)' at column 0, row 23 with direct output; RETURN or space redraws the bar and retries, back-arrow redraws it and returns carry set. The drive code sets its status to $2B for a write-protected disk (drive $061E; the engine's disk_io tests $2B at $2817) and otherwise only to 0 or $27, so with that drive code a write-protected destination gets 'I/O error' here."
   },
   {
    "address": 32756,
@@ -1685,17 +1685,17 @@
   {
    "address": 33022,
    "type": "line",
-   "text": "Restart, item 1 of menu 0: message 54 'WARNING!!! Restarting will remove all items and cash and place all parties near Ranger Center. Continue (Y/N)?'; N or back-arrow leave (clear_window), other keys but Y are ignored. Y: load_party_side_1 (the save of the disk in the drive; leaves when $0A, the characters in use, is 0). Then for records 1 to $0A (restart_record) every item slot +$BD..+$F8 (30 item/count pairs), the weapon slot +$1F, AC +$1A, armour slot +$25 and cash +$15..+$17 become 0."
+   "text": "Restart, item 1 of menu 0: message 54 'WARNING!!! Restarting will remove all items and cash and place all parties near Ranger Center. Continue (Y/N)?'; N or back-arrow leave (clear_window), other keys but Y are ignored. Y: load_party_side_1 (the save of the disk in the drive; leaves when $0A, the characters in use, is 0). Then for records 1 up to the count in zero page $0A (restart_record) every item slot +$BD..+$F8 (30 item/count pairs), the weapon slot +$1F, AC +$1A, armour slot +$25 and cash +$15..+$17 become 0; names, attributes and skills are left alone."
   },
   {
    "address": 33089,
    "type": "line",
-   "text": "Operand of the LDA # at $8140: the record restart_command is clearing, 1 to $0A (written at $8119). The code after it steps it and then, for each party from 0, points $68/$69 at the party's table (party_table_ptr $029F)."
+   "text": "Operand of the LDA # at $8140: the record restart_command is clearing, from 1 (written at $8119) up to zero page $0A, the characters in use (CMP $0A at $8145). The code after it steps it and then, for each party from 0, points $68/$69 at the party's table (party_table_ptr $029F)."
   },
   {
    "address": 33126,
    "type": "line",
-   "text": "Operand of the LDA # at $8165: the party restart_command is moving, 0 to $0B (the highest party index; written at $814D). For each party the table's +$0A = 0 and +8/+9 (the party's position) = 62, 62; $09 (the map) = 0. After the loop $02/$03 (the view's top-left square) = 53, 58, so the party stands at 62, 62 of the world map (in play-map the party outside the Ranger Center is at 55, 62). Then message 50 'Please put destination Wasteland character disk in drive 1.', wait_return_prompt and, unless back-arrow, save_game ($02D8) to whatever disk is in the drive, with no side check."
+   "text": "Operand of the LDA # at $8165: the party restart_command is moving, 0 up to zero page $0B, the highest party index (written at $814D). For each party the table's +$0A = 0 and +8/+9 (the party's square, agent 2) = 62, 62; $09 (the map) = 0, the world map. After the loop $02/$03 (the view's top-left square, agent 1) = 53, 58, which with the view offset 9, 4 that enter_map sets in $59/$5A is square 62, 62 again (in play-map the party outside the Ranger Center is at 55, 62). Then message 50 'Please put destination Wasteland character disk in drive 1.', wait_return_prompt and, unless back-arrow, save_game ($02D8) to whatever disk is in the drive, with no side check."
   },
   {
    "address": 33162,
@@ -1705,7 +1705,7 @@
   {
    "address": 33234,
    "type": "line",
-   "text": "Operand of the CMP # at $81D1: low byte of the highest count found so far by start_command's scan (from $04; cleared at $81BB). The count is $F4FD:$06:$05:$04, which the game raises every step by the map header's byte $36 (game $AF61-$AF72)."
+   "text": "Operand of the CMP # at $81D1: low byte of the highest count found so far by start_command's scan (from $04; cleared at $81BB). The count is the 32-bit $F4FD:$06:$05:$04 of each side's saved game, which the game raises by byte $36 of the map's record (ADC ($61),Y at game $AF61-$AF72); the side with the largest count was saved last."
   },
   {
    "address": 33238,
@@ -1885,7 +1885,7 @@
   {
    "address": 33866,
    "type": "line",
-   "text": "Character report for a printer, never run: no JSR, JMP or menu table word anywhere in the snapshot holds $844A, and the menu has no item for it. load_party_side_1 (back-arrow or no characters: report_exit), message 51 '\\n\\nGenerating report. Press ESC to abort.', report buffer from $9000 (report_write_lo/hi), hook_print_char so that every printed character goes to report_char; then for each record 1 to $0A (report_record_number): select_character, back-arrow (check_abort_key) leaves, report_lines_left = 33, message 11 'Name: ' and the name, tab_to_column 25, message 12 'Rank: ' and the string at record +$32, field width $30 = 3, then the attribute labels from message 13 (report_label_msg)."
+   "text": "Character report for a printer, never run: no JSR, JMP or menu table word anywhere in the snapshot holds $844A, and the menu has no item for it. load_party_side_1 (back-arrow or no characters: report_exit), message 51 '\\n\\nGenerating report. Press ESC to abort.', report buffer from $9000 (report_write_lo/hi), hook_print_char so that every printed character goes to report_char; then for each record from 1 up to zero page $0A, the characters in use (report_record_number): select_character, back-arrow (check_abort_key) leaves, report_lines_left = 33, message 11 'Name: ' and the name, tab_to_column 25, message 12 'Rank: ' and the string at record +$32, field width $30 = 3, then the attribute labels from message 13 (report_label_msg)."
   },
   {
    "address": 33974,
@@ -1905,7 +1905,7 @@
   {
    "address": 34290,
    "type": "line",
-   "text": "Operand of the LDA # at $85F1: the record being reported, 1 to $0A (written at $846F); the code after it steps it, back to report_record while it is at most $0A, then send_report; the JMP at $85FF is the item and skill loops' back-arrow exit to report_exit."
+   "text": "Operand of the LDA # at $85F1: the record being reported, from 1 (written at $846F) up to zero page $0A, the characters in use; the code after it steps it, back to report_record while it is at most $0A (CMP $0A at $85F6), then send_report; the JMP at $85FF is the item and skill loops' back-arrow exit to report_exit."
   },
   {
    "address": 34306,

@@ -1,0 +1,231 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "wasteland",
+ "part": "order",
+ "build": "Electronic Arts disk release, two double-sided disks as four G64 side images; play copies made with the game's own Copy utility",
+ "source": "regenerator2000 live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    53248,
+    57343,
+    "I/O and colour RAM"
+   ],
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32256,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    51711,
+    "Resident engine and loader"
+   ],
+   [
+    51968,
+    65535,
+    "Resident engine and loader"
+   ]
+  ],
+  "extra": [],
+  "elsewhere": [
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32256,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    51711,
+    "Resident engine and loader"
+   ],
+   [
+    51968,
+    65535,
+    "Resident engine and loader"
+   ]
+  ]
+ },
+ "blocks": [
+  {
+   "start": 51712,
+   "end": 51714,
+   "type": "Code"
+  },
+  {
+   "start": 51715,
+   "end": 51717,
+   "type": "Byte"
+  },
+  {
+   "start": 51718,
+   "end": 51873,
+   "type": "Code"
+  },
+  {
+   "start": 51874,
+   "end": 51967,
+   "type": "Byte"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 51712,
+   "name": "order_start",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 51715,
+   "name": "order_header",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 51718,
+   "name": "order_main",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 51720,
+   "name": "b_CA08",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 51748,
+   "name": "order_next_pick",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 51756,
+   "name": "order_wait_pick",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 51778,
+   "name": "order_placed",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 51795,
+   "name": "b_CA53",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 51803,
+   "name": "b_CA5B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 51813,
+   "name": "order_left_arrow",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 51820,
+   "name": "b_CA6C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 51831,
+   "name": "order_list_unplaced",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 51837,
+   "name": "b_CA7D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 51866,
+   "name": "b_CA9A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 51874,
+   "name": "order_leftover",
+   "type": "UserDefined",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 51712,
+   "type": "line",
+   "text": "Party order program (the Order item of the game's menu bar): one page from track 34, logical sector 15, the same sector on all four disk sides. The game's Order command (game $BF33) runs it only for a party of two or more and after \"Order (Y/N)?\" is answered Y: it marks the unpacked portrait as gone ($0505 = $FF, since the program lands in the $CA00 picture buffer), reads the sector to $CA00 with read_pages ($03B0, no side check, so whichever side is in the drive serves) and jumps here ($BF5C). This JMP steps over the header to order_main."
+  },
+  {
+   "address": 51715,
+   "type": "line",
+   "text": "Program header in the format load_program ($2890) reads: +3/+4 the load address $CA00, +5 the page count 1. The Order command loads the sector with read_pages instead, so nothing reads these three bytes on its route; the JMP at $CA00 steps over them."
+  },
+  {
+   "address": 51718,
+   "type": "line",
+   "text": "Re-sequences the current party. Copies bytes 0-7 of the party table at ($68/$69) (positions 1-7 hold record numbers; the engine's party routines leave the pointer on the current party's table, $F400 in both order snapshots) to $80-$87 and zeroes them, byte 0 included, which only a cancel puts back (it is 0 in every snapshot taken in play). Draws the roster with the party size $07 forced to 0 (roster_show $02B7, which clears every member line), then restores $07. Until all but one member are placed: game message 15 \"Pick a player:\" (its code 7 opens and clears the text window), the members not yet placed listed under their old position numbers (order_list_unplaced), and pick_member ($02AE) for a number 1-$07. A member already placed ($80+n now 0) is ignored; otherwise the record goes to the next position (order_placed) and that roster line is drawn (roster_line $0297). The last member goes to position $07 by itself ($CA51-$CA5D). Ends with the game's screen redraw ($AC8C) and roster_show, whose RTS ends the Order command. Left-arrow at the first pick puts the eight bytes back from $80-$87 and leaves through $AC8C alone, as an N to \"Order (Y/N)?\" does ($BF39), so the roster stays hidden ($AC8C clears roster_shown $6A at $AEF0); after a pick it is ignored, so an order once begun must be finished."
+  },
+  {
+   "address": 51778,
+   "type": "line",
+   "text": "Operand of the LDY #imm at $CA41: how many members have been placed so far (0-6). Zeroed at $CA19, raised by one for each accepted pick ($CA3D) just before the LDY uses it as the new member's position; $CA49 compares it plus one with the party size $07 to stop picking, and $CA65 refuses a left-arrow once it is non-zero."
+  },
+  {
+   "address": 51831,
+   "type": "line",
+   "text": "Lists the members not yet placed in the text window: for each old position n = 1-7 whose record is still in $80+n, list_line_label ($03A7) prints \"n>\" at the window's left column ($25) on row 3 + n - 1 ($42 = 3, $50 = n - 1; $D1 = $FF, so that no line is marked \"_\", which list_line_label does when $D0 equals $D1; it also clears $4D, list_item_limit, which list_line_label does not read), then the member's name (select_character $0338, print_name $029C). A placed member leaves its row blank, so each name keeps the number the player presses for it. Changes $42, $4D, $50, $D1 and the current character."
+  },
+  {
+   "address": 51874,
+   "type": "line",
+   "text": "The 94 bytes after the program's last instruction (the RTS at $CAA1) are never executed or read: they equal bytes $A2-$FF of the game's first sector as stored on the disk (track 31, logical sector 9 of side 1, which the game loads to $7E00: the end of its main loop's key test and its end-of-game test, so $CAC0 holds a copy of the game's CMP $5BA3,X that never runs here). In memory the game's page differs only at $7EF4, the operand it rewrites at $7EDB; $CAF4 holds the stored $00. Stale contents of the sector, the same on all four sides."
+  }
+ ]
+}

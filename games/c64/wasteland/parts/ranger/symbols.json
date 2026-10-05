@@ -1191,7 +1191,7 @@
   },
   {
    "address": 36864,
-   "name": "unwritten_sectors_t26_l7_l6",
+   "name": "filler_sectors_t26_l7_l6",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1209,7 +1209,7 @@
   },
   {
    "address": 38912,
-   "name": "unwritten_sectors_t25_l17_l16",
+   "name": "filler_sectors_t25_l17_l16",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1350,6 +1350,11 @@
    "text": "Start-up: ranger_menu_setup (the bar Create Delete Start); keeps $AB (picture shown) and $AC (picture animation flag) in saved_picture and saved_picture_anim for Start to put back; shows picture 3 from the $E000 buffer (show_picture_e000, $041C), framed and captioned with the location name at $F4D0; shows the roster (roster_show, $02B7) and opens the text window (text_window_open, $0353). Then the main loop at $7E1E: wait_key ($022F), menu_key ($02DE), for ever; menu_key runs the handlers in ranger_menu_handlers."
   },
   {
+   "address": 32286,
+   "type": "line",
+   "text": "Main loop: wait_key ($022F), then menu_key ($02DE) with that key, which runs the handler of the item it selects; back here for ever. Only Start leaves, through load_program, which does not return."
+  },
+  {
    "address": 32295,
    "type": "line",
    "text": "Sets up the Ranger Center's menu: $3E/$3F = ranger_menu_text_table ($7F17), $40/$41 = ranger_menu_handler_tables ($7F19), menu 0 ($3B), item 0 (Create) selected ($39), bar on row 23 ($3D = $17), last visible item 2 ($3A: Start; hot keys 1-7 are items 3-9); then draw_menu_bar ($02E7) and highlight_menu_item ($02E1)."
@@ -1480,6 +1485,11 @@
    "text": "Creates a character. Counts the player characters, records 1 to $0A whose byte +$29 is 0 (an NPC's is not; with $0A = 0 record 1 is still looked at); with 4 or more prints message 1, 'You cannot create any more characters.', and returns. Otherwise raises $0A, adds the new record to the current party (party_add_current, $02A4, which does not check for room), keeps its position (find_party_of, $02B1) in new_member_position, selects it and zeroes its 256 bytes; gives it gear_kit_45 or gear_kit_9mm (random_1_to_a(2), $0242) and gear_common (give_items). Then message 2, 'Create a character.', the attributes (roll_attributes), name, sex, nationality and skills; left-arrow at those prompts, or N at the end, removes it again (cancel_creation)."
   },
   {
+   "address": 32646,
+   "type": "line",
+   "text": "Room for one more: $0A (characters in use) goes up by one and is the new record's number; party_add_current ($02A4) adds it to the current party, find_party_of ($02B1) leaves its position there in Y (new_member_position), select_member makes it current and its 256 bytes are zeroed ($7F99-$7F9F)."
+  },
+  {
    "address": 32728,
    "type": "line",
    "text": "Attribute screen: four rounds (create_scratch_a = 4), each rolling ST, IQ, LK, SP, AGL, DEX and CHR (+$0E-$14) with roll_attribute and MAXCON and CON (+$1B, +$1D) as one more roll + 18 (21-36; the high bytes +$1C/+$1E stay 0), setting rank 1 (+$24), skill points = IQ (+$20) and the rank name 'Private' (+$32), and printing the block at column 14, row 3 (print_attributes, $032F, which does not use the A it is given). Then reroll_prompt_text: SPACE rolls four more rounds, RETURN accepts (enter_name), left-arrow cancels, other keys are ignored."
@@ -1512,7 +1522,7 @@
   {
    "address": 32949,
    "type": "line",
-   "text": "Taken when list_choose returns $FE, the list's extra key in $BE: clears the 30 skill pairs (+$80-$BC) and gives every point back (skills_reset_points). show_skill_list puts $92 in $BE, a code the keyboard table at $C953 does not hold ('R' is $D2), so no key reaches this."
+   "text": "Taken when list_choose returns $FE, the list's extra key in $BE: zeroes +$80-$BC, the 30 skill pairs and the byte after them, and gives every point back (skills_reset_points). show_skill_list puts $92 in $BE, a code the keyboard table at $C953 does not hold ('R' is $D2), so no key reaches this."
   },
   {
    "address": 32960,
@@ -1540,6 +1550,16 @@
    "text": "Buys skill $49: searches the skill pairs (skill number, level) from +$80 two bytes at a time for it or for an empty pair (no limit: past +$BB it would read the items; at creation no more than 18 skills fit the points). A new skill takes the empty pair at level 1 for its base cost ($8151). A known one ($8123) costs skill_price (base cost x 2^level, 255 when that overflows) and goes up one level, unless points - price is negative (BMI at $813C, a signed test that holds while the price is under points + 129). list_flash_line ($03A1) flashes the line; then after_purchase."
   },
   {
+   "address": 33059,
+   "type": "line",
+   "text": "The skill is known: Y (the pair's offset) goes to create_scratch_a; the price of the next level is skill_price of the base cost with X = level + 1, kept in create_scratch_b. When points - price is negative (BMI at $813C) it is refused (not_enough_points); otherwise the points drop by the price and the level rises by one ($813E-$8149); list_flash_line ($03A1), then after_purchase."
+  },
+  {
+   "address": 33105,
+   "type": "line",
+   "text": "The skill is new: the empty pair (Y on its first byte) gets the skill ($49) at level 1, and the base cost (skill_base_cost, kept in create_scratch_a) comes off the points (+$20); skills_choose has already made sure they cover it. list_flash_line ($03A1), then on into after_purchase."
+  },
+  {
    "address": 33133,
    "type": "line",
    "text": "After a purchase: with no points left goes to keep_prompt; otherwise list_show_page ($03A4) redraws the page from its first item and skills_choose waits again."
@@ -1547,7 +1567,7 @@
   {
    "address": 33145,
    "type": "line",
-   "text": "'You are not smart enough!' (not_smart_text) at column 14, row 2, then complain_pause. Taken when the chosen skill's minimum IQ (skill_min_iq) is above the IQ, which a skill on the list cannot be: print_skill_row leaves those out."
+   "text": "'You are not smart enough!' (not_smart_text) at column 14, row 2, then complain_pause. Taken when the chosen skill's minimum IQ (skill_min_iq) is above the IQ, which a skill on the list cannot be: ranger_skill_row leaves those out."
   },
   {
    "address": 33160,
@@ -1560,9 +1580,14 @@
    "text": "Message 3, 'Keep this char (Y/N) ?' (its code 7 reopens the text window): Y returns to create_handler with the character kept, N removes it (cancel_creation), left-arrow goes back to skills_screen; other keys are ignored."
   },
   {
+   "address": 33195,
+   "type": "line",
+   "text": "RTS shared by give_items (the list's $FF reached, $81B3) and keep_prompt (Y, $81A2): from keep_prompt it returns from create_character to create_handler, with the character kept."
+  },
+  {
    "address": 33196,
    "type": "line",
-   "text": "Copies an item list into the new character's item slots: items from ($14) at index create_scratch_a up to an $FF, each stored at record offset create_scratch_b with a count byte from the item's record (item_record $03C8, then item_record_byte4 $036E: the clip for a gun, 40 for Matches, 1 for a Rope, 0 for clips and most others). Both indexes move on (by 1 and 2), so a second call continues after the first list."
+   "text": "Copies an item list into the new character's item slots: items from ($14) at index create_scratch_a up to an $FF, each stored at record offset create_scratch_b with a count byte from the item's record (item_record $03C8, then item_record_byte4 $036E: the clip for a gun, 40 for Matches, 1 for a Rope, 0 for clips and most others). The list index moves on by 1 and the slot offset by 2; create_character sets the index back to 0 for the second list but not the offset, so gear_common's items follow the pistol and clips."
   },
   {
    "address": 33232,
@@ -1667,7 +1692,7 @@
   {
    "address": 33666,
    "type": "line",
-   "text": "One attribute roll: five roll_d6 ($023A) into roll_dice, an exchange loop meant to move the larger dice up, then A = the sum of slots 4, 3 and 2 (3-18); Y is kept (roll_saved_y_op). After an exchange the loop goes on comparing the die it started with (BPL at $83AB goes back to the CMP, not to the LDA at $8397), so a later exchange overwrites the die just moved up and the small one is copied twice: the sum is not the best three of five. Over all 7,776 throws the mean is 10.62 (best three of five 13.43, 3d6 10.5), 4 and 5 come 3.3 % and 3.5 % of the time (work/agent13/rollsim.py)."
+   "text": "One attribute roll: five roll_d6 ($023A) into roll_dice, an exchange loop meant to move the larger dice up, then A = the sum of slots 4, 3 and 2 (3-18); Y is kept (roll_saved_y_op). After an exchange the loop goes on comparing the die it started with (BPL at $83AB goes back to the CMP, not to the LDA at $8397), so a later exchange overwrites the die just moved up and the small one is copied twice: the sum is not the best three of five. Over all 7,776 throws the mean is 10.62 (best three of five 13.43, 3d6 10.5); 3 comes once, 18 81 times (1.0 %), 4 and 5 3.3 % and 3.4 % of the time against 1.4 % and 2.8 % for 3d6 (work/agent13/rollsim.py)."
   },
   {
    "address": 33727,
@@ -1687,7 +1712,12 @@
   {
    "address": 33743,
    "type": "line",
-   "text": "Deletes a member: nothing when the party is empty ($07 = 0). Message 5, 'Which player do you want to delete?', then pick_member ($02AE: keys 1 to the party size; left-arrow gives 0 and returns); selects the member and asks message 6, 'Are you sure you want to delete <name>?': Y removes it (remove_member, $02C6: the record goes, later ones move down), any other key returns. No check of +$29: an NPC can be deleted too, and so can the last member."
+   "text": "Deletes a member: nothing when the party is empty ($07 = 0). Message 5, 'Which player do you want to delete?', then pick_member ($02AE: keys 1 to the party size; left-arrow gives 0 and returns); selects the member and asks message 6, 'Are you sure you want to delete <name>?': Y removes it (remove_member, $02C6: the record goes, later ones move down), any other key returns. No check of +$29: an NPC can be deleted too, and so can the party's only member."
+  },
+  {
+   "address": 33778,
+   "type": "line",
+   "text": "Y pressed: remove_member ($02C6) with the position kept in delete_position; its RTS returns to delete_handler."
   },
   {
    "address": 33784,
@@ -1757,7 +1787,7 @@
   {
    "address": 34087,
    "type": "line",
-   "text": "Packed text block of the Ranger Center (base for $43/$44, print_ranger_message): the 60-byte alphabet. Codes 0-$1D: ' eatroc', CR, 'yl', the end code ($0A, entry 0), 'nhusiwpd?', $04, 'k.', $07, 'vqm/)('; escaped codes $1E and $1F give $0B and $06; the 28 entries after them are $7F, unused."
+   "text": "Packed text block of the Ranger Center (base for $43/$44, print_ranger_message): the 60-byte alphabet. Codes 0-$1D: ' eatroc', CR, 'yl', the end code ($0A, entry 0), 'nhusiwpd?', $04, 'k.', $07, 'vqm/)('; entries $1E and $1F, reached through the escape code $1F followed by 0 or 1, are $0B and $06; the 28 entries after them are $7F, unused."
   },
   {
    "address": 34147,
@@ -1767,7 +1797,7 @@
   {
    "address": 34153,
    "type": "line",
-   "text": "Messages 0-3 of ranger_text, one bit stream: 0 empty; 1 $04 'You cannot create any more characters.' CR $06 (create_character); 2 $07 'Create a character.' CR (create_character); 3 $07 'Keep this char (Y/N) ?' CR (keep_prompt). The stream ends in $85A4; $85A5, a zero, is not read."
+   "text": "Messages 0-3 of ranger_text, one bit stream: 0 empty; 1 $04 'You cannot create any more characters.' CR $06 (create_character); 2 $07 'Create a character.' CR (create_character); 3 $07 'Keep this char (Y/N) ?' CR (keep_prompt). The stream ends with the last bit of $85A4; $85A5 ($48), before group 1, is not read."
   },
   {
    "address": 34214,
@@ -1782,27 +1812,27 @@
   {
    "address": 34304,
    "type": "line",
-   "text": "From here to $8FFF: the radio program's file (T26/L17, 10 pages), byte for byte, read by this program's 72-page load because it follows T27/L0 on the disk. It is assembled for $7E00 (radio address = this address - $800) and never runs here: no instruction, menu word or pointer of the Ranger Center reaches $8600-$8FFF, and its own JSRs and JMPs would land in the Ranger Center's code. This stretch is radio $7E00-$7EA2: JMP $7EA3, its header ($7E00, 10 pages), the jingle routine at radio $7E06 with its note tables and the SID writer at $7E4F with its register bytes ($7E98-$7EA2)."
+   "text": "From here to $8FFF: the radio program's file ('Radio and promotion', T26/L17, 10 pages), byte for byte, read by this program's 72-page load because it follows T27/L0 on the disk (the whole load is described at $9000, unwritten_sectors_t26_l7_l6). It is assembled for $7E00 (radio address = this address - $800) and never runs here: no instruction, menu word or pointer of the Ranger Center reaches $8600-$8FFF, and its own calls would land in the Ranger Center (its JSR $7E4F at $8616 in ranger_menu_text). This stretch is radio $7E00-$7EA2: JMP $7EA3, the header ($7E00, 10 pages), a six-note tune at radio $7E06 (frequency and length tables $7E34-$7E45, delay loop $7E46) and the SID writer at $7E4F with its register bytes ($7E98-$7EA2)."
   },
   {
    "address": 34467,
    "type": "line",
-   "text": "Copy of radio $7EA3-$80C1, the code its JMP $7EA3 starts (resets the stack, shows the roster, copies the name at radio $8184 to $F4D0, then the promotion pass over the characters); see parts/radio for what it does. Never run here."
+   "text": "Copy of radio $7EA3-$80C1: the code its JMP $7EA3 starts (stack reset, roster, the location name 'Ranger Ctr.' copied from radio $8184 to $F4D0, then a pass over the characters that promotes them) and its routine for distributing attribute points (radio $801C-$80C1). What it does is the radio part's to describe; never run here."
   },
   {
    "address": 35010,
    "type": "line",
-   "text": "Copy of radio $80C2-$818F: the key list '12345678', the attribute-point texts ('<name> has n point(s) to distribute.', 'Choose an attribute:', '1) Strength :' to '8) Maxcon :'), a few bytes, and the location name 'Ranger Ctr.' (radio $8184) that the radio copies to $F4D0."
+   "text": "Copy of radio $80C2-$818F: the keys 1-8 as key codes ($B1-$B8) and a zero; the strings $04 $0B ' has ' $0F ' point' $0A $0A 's' $0A ' to distribute.' CR CR 'Choose an attribute:' CR '1) Strength  :', then CR '2) IQ/Skill  :' to CR '8) Maxcon    :', each ending in a zero; $08 and a zero; and 'Ranger Ctr.' and a zero (radio $8184-$818F), the name the radio copies to $F4D0."
   },
   {
    "address": 35216,
    "type": "line",
-   "text": "Copy of radio $8190-$81D7, a second stretch of the radio's code (its JMP $8190 at radio $8013 leads there). Never run here."
+   "text": "Copy of radio $8190-$81D7: the radio's exit, which its JMP $8190 at radio $8013 reaches (clears $AC and $92, waits for side 1, loads the game program, T31/L9, with load_program), and its message helpers: radio $81A4 and $81A8 print radio message A word-wrapped, $81B3 sets the text base $82D9, and $81BC decodes a message into the record from +$32, the rank name. Never run here."
   },
   {
    "address": 35288,
    "type": "line",
-   "text": "Copy of radio $81D8-$82D8: a 256-byte table of rising values (1, 1, 2, 3 ... up to $37) and the $EA before the radio's text block; what the radio reads it for is the radio part's to say."
+   "text": "Copy of radio $81D8-$82D8: a 256-byte table, one byte per rank 0-255, giving the radio message that names the rank (1 'Private' for ranks 0 and 1, rising to 50 'General Argent' at rank 131; above that 50, except 51-55 at ranks 141, 151 ... 231 and 251-255), and the $EA before the radio's text block. The radio reads it at its $7FC9 and $7FCE."
   },
   {
    "address": 35545,
@@ -1817,12 +1847,12 @@
   {
    "address": 36681,
    "type": "line",
-   "text": "Copy of radio $8749-$87FF, the radio file's last bytes after its text: they read as 6502 code with JSRs to the game program's $AFD6, $BB71 and $9E52; whether the radio runs them is for the radio part. Never run here. The Ranger Center's load goes on at $9000 with T26/L7."
+   "text": "Copy of radio $8749-$87FF, the radio file's last bytes after its text. From radio $874B on they equal the game program's bytes at the same addresses (part of its code from $874D), except two operands, $BB71 and $BAE2 where the game program has $BB75 and $BAE6: apparently memory left from another build of the game program when the radio file was written, as the Ranger Center's own $85F1-$85FF are. Never run here. The Ranger Center's load goes on at $9000 with T26/L7."
   },
   {
    "address": 36864,
    "type": "line",
-   "text": "First of the disk sectors the Ranger Center's load sweeps in after its own file. The program's header asks for 72 pages ($7E05 = $48), so load_program ($2890) reads T27/L7 and the 71 logical sectors after it to $7E00-$C5FF; the program itself is only T27/L7-L0 ($7E00-$85FF), and $8600-$C5FF is side 1 from T26/L17 (the radio program) down to T23/L9, byte for byte (read from the disk image with the loader's own stepping, the 72 sectors equal the hand-over). These two, T26/L7 and T26/L6, were never written: $4B, then 255 bytes of $01, the same 256 bytes as 146 sectors of side 1, among them all of tracks 2, 3, 6 and 7 and those the loader's stepping skips (T24/L18, T30/L17, track 17's L1-L20). Nothing reads $9000-$C5FF while the Ranger Center runs: its code ($7E00-$8501, traced from $7E00, the handler table $7E69 and the list routine $8468) names no address above $84EA and points nowhere past $85EF; of the 5,566 instructions of the engine's code and this program's, only two name an address here: the loader's store at $FF34, which wrote the load, and the picture reader at $06C4, left at $A211, inside the title picture's buffer ($B9/$BA = $8A00), with the animation off ($AC = 0), and moved into $E000 when the Ranger Center shows its portrait ($7E15); and the range is the same in play-ranger, play-create and play-skills as at the hand-over. Start loads the game (T31/L9) over all of it."
+   "text": "From here to $C5FF: disk sectors the Ranger Center's load sweeps in after its own file and the radio program ($8600-$8FFF). The program's header asks for 72 pages ($7E05 = $48), so load_program ($2890) reads T27/L7 and the 71 logical sectors after it to $7E00-$C5FF; the program itself is only T27/L7-L0 ($7E00-$85FF), and $8600-$C5FF is side 1 from T26/L17 (the radio program) down to T23/L9, byte for byte (read from the disk image with the loader's own stepping, the 72 sectors equal the hand-over). These two, T26/L7 and T26/L6, hold no file's data: $4B, then 255 bytes of $01, the filler of 146 sectors of side 1, among them all of tracks 2, 3, 6 and 7 and every sector the loader's stepping passes over (T24/L18, T30/L17, track 17's L1-L20). Nothing reads $9000-$C5FF while the Ranger Center runs: its code ($7E00-$8501, traced from $7E00, the handler table $7E69 and the list routine $8468) names no address above $84EA and points nowhere past $85EF; of the 5,566 instructions of the engine's code and this program's, only two name an address here: the loader's store at $FF34, which wrote the load, and the picture reader at $06C4, left at $A211, inside the title picture's buffer ($B9/$BA = $8A00), with the animation off ($AC = 0), and moved into $E000 when the Ranger Center shows its portrait ($7E15); and the range is the same in play-ranger, play-create and play-skills as at the hand-over. Start loads the game (T31/L9) over all of it."
   },
   {
    "address": 37376,
@@ -1832,12 +1862,12 @@
   {
    "address": 38144,
    "type": "line",
-   "text": "Side 1's T26/L2-L0, swept in by the 72-page load (see $9000): item table file 1, entry 1 of T35/L15, the other item table on side 1. The same 768 bytes as file 0 at $9200 except byte 2 of three records: Engine (item 46, $957A) is $00 here and $FF in file 0; Shovel (55, $95C2) and Snake squeezin (57, $95D2) are $FF here and $00 there. Apart from those, byte 2 is $FF in both files for items 43-56 (Book to Sledge hammer) and 91-93 (Clay pot, Fruit, Jewelry), 17 in record 94 and 0 in the rest; what the game does with byte 2 is the item table owner's to settle. Nothing reads this copy."
+   "text": "Side 1's T26/L2-L0, swept in by the 72-page load (see $9000): item table file 1, entry 1 of T35/L15, the other item table on side 1. The same 768 bytes as file 0 at $9200 except byte 2 of three records: Engine (item 46, $967A) is $00 here and $FF in file 0; Shovel (55, $96C2) and Snake squeezin (57, $96D2) are $FF here and $00 there. Apart from those, byte 2 is $FF in both files for items 43-56 (Book to Sledge hammer) and 91-93 (Clay pot, Fruit, Jewelry), 17 in record 94 (Cash) and 0 in the rest; what the game does with byte 2 is the item table owner's to settle. Nothing reads this copy."
   },
   {
    "address": 38912,
    "type": "line",
-   "text": "Side 1's T25/L17 and T25/L16, swept in by the 72-page load (see $9000): two more never-written sectors, $4B and 255 bytes of $01 each as at $9000, between side 1's item table files (T26/L5-L0, $9200-$97FF) and its module area, which starts at T25/L15 ($9A00). Nothing reads them."
+   "text": "Side 1's T25/L17 and T25/L16, swept in by the 72-page load (see $9000): two more sectors of filler, $4B and 255 bytes of $01 each as at $9000, between side 1's item table files (T26/L5-L0, $9200-$97FF) and its module area, which starts at T25/L15 ($9A00). Nothing reads them."
   },
   {
    "address": 39424,
@@ -1857,7 +1887,7 @@
   {
    "address": 41292,
    "type": "line",
-   "text": "Module 3's packed stream, swept in by the 72-page load (see $9000): entry 3 of T34/L16, on side 1 only, $A14C-$A17C, 49 bytes (value table $A14C-$A15F, then codes). They decode to module 3's 37 bytes of code, $CA00-$CA24, the routine that brings up the Ranger Center: JSR $03B9 (save_map), JSR $02D8 (save_game), the 12-byte place name from ($5F)+3 to $F4D0 ('Ranger Ctr.' in play-ranger), wait for side 1 ($02D5), then $10/$11 = 27/7 and JMP $03AD, which loads this program. Its count byte, 1, makes the unpacker read 256 bytes, to $A24B, through the zero bytes after it and the first 76 of tile set 0, so it writes $CA25-$CB7C too: zeros to $CA97, then bytes decoded from the tile set. This copy is never read."
+   "text": "Module 3's packed stream, swept in by the 72-page load (see $9000): entry 3 of T34/L16, on side 1 only, $A14C-$A17C, 49 bytes (value table $A14C-$A15F, then codes). They decode to module 3's 37 bytes of code, $CA00-$CA24, the routine that brings up the Ranger Center: JSR $03B9 (save_map), JSR $02D8 (save_game), the 12-byte place name from ($5F)+3 to $F4D0 ('Ranger Ctr.' in play-ranger), wait for side 1 ($02D5), then $10/$11 = 27/7 and JMP $03AD, which loads this program. Its count byte, 1, makes the unpacker read 256 bytes, to $A24B, through the 129 zero bytes after it, the sector's last two ($19 $11) and the first 76 of tile set 0, so it writes $CA25-$CB7C too: zeros to $CA97, then bytes decoded from $A1FE on. This copy is never read."
   },
   {
    "address": 41341,
@@ -1867,7 +1897,7 @@
   {
    "address": 41472,
    "type": "line",
-   "text": "Tile set 0's packed stream, swept in by the 72-page load (see $9000): entry 0 of the tile-set directory T35/L12, side 1, at its base T25/L7; the tile set of map 0, the world map (its header byte $30 = 0; the game's own load of map 0, as in play-map, leaves exactly this stream's decode at $D000). $A200-$AB07, 2,312 bytes, in module 0's format (see $9A00), value table 00 10 04 40 01 AA 44 30 80 11 41 6A FF 9A AB A6 06 02 F0 B0; $A200-$A5FF decode to $D000-$D605. unpack_tile_set ($2722) unpacks it from the disk to $D000: its own bytes give exactly the 3,456 bytes $D000-$DD7F, then the decode reads tile set 1's first 124 bytes (to $AB83) into $DD80-$DDFF, which the engine puts back from the stack. This copy is never read."
+   "text": "Tile set 0's packed stream, swept in by the 72-page load (see $9000): entry 0 of the tile-set directory T35/L12, side 1, at its base T25/L7; the world map's tile set: of 42 maps snapshotted as enter_map returned, only map 0 has header byte $30 (read through $61/$62 at $25EE) = 0, and its $D000-$DD7F then equals this stream's decode. $A200-$AB07, 2,312 bytes, in module 0's format (see $9A00), value table 00 10 04 40 01 AA 44 30 80 11 41 6A FF 9A AB A6 06 02 F0 B0; $A200-$A5FF decode to $D000-$D605. unpack_tile_set ($2722) unpacks it from the disk to $D000: its own bytes give exactly the 3,456 bytes $D000-$DD7F, then the decode reads tile set 1's first 124 bytes (to $AB83) into $DD80-$DDFF, which the engine puts back from the stack. This copy is never read."
   },
   {
    "address": 42496,
@@ -1882,12 +1912,12 @@
   {
    "address": 43784,
    "type": "line",
-   "text": "Tile set 1's packed stream, swept in by the 72-page load (see $9000): entry 1 of T35/L12, side 1, nine sectors on from the base and 8 bytes in; the tile set of maps 8, 9, 10 and 29 (header byte $30 = 1; the game's own loads of maps 8, 9 and 10 leave exactly this stream's decode at $D000). $AB08-$B462, 2,395 bytes, in module 0's format (see $9A00), value table 00 55 AA 10 40 56 01 65 59 44 50 04 15 54 95 80 05 20 45 11; $AB08-$AEFF decode to $D000-$D543. Its own bytes give the 3,456 bytes $D000-$DD7F; the decode then reads the zero bytes after it to $B4F2, writing zeros to $DD80-$DDFF, which unpack_tile_set ($2722) puts back from the stack. This copy is never read."
+   "text": "Tile set 1's packed stream, swept in by the 72-page load (see $9000): entry 1 of T35/L12, side 1, nine sectors on from the base and 8 bytes in; the tile set of maps 8, 9, 10, 29, 43 and 49, the maps of those 42 (see $A200) whose header byte $30 is 1, each then holding exactly this stream's decode at $D000-$DD7F. $AB08-$B462, 2,395 bytes, in module 0's format (see $9A00), value table 00 55 AA 10 40 56 01 65 59 44 50 04 15 54 95 80 05 20 45 11; $AB08-$AEFF decode to $D000-$D543. Its own bytes give the 3,456 bytes $D000-$DD7F; the decode then reads the zero bytes after it to $B4F2, writing zeros to $DD80-$DDFF, which unpack_tile_set ($2722) puts back from the stack. This copy is never read."
   },
   {
    "address": 44800,
    "type": "line",
-   "text": "Tile set 1's packed stream continued from $AB08 (a label every 1,024 bytes): $AF00-$B2FF, side 1's T24/L12-L9, the codes that decode to $D544-$DAC5 of the tile set of maps 8, 9, 10 and 29. Unpacked from the disk, never from this copy."
+   "text": "Tile set 1's packed stream continued from $AB08 (a label every 1,024 bytes): $AF00-$B2FF, side 1's T24/L12-L9, the codes that decode to $D544-$DAC5 of the tile set of maps 8, 9, 10, 29, 43 and 49. Unpacked from the disk, never from this copy."
   },
   {
    "address": 45824,

@@ -1,0 +1,262 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "wasteland",
+ "part": "death",
+ "build": "Electronic Arts disk release, two double-sided disks as four G64 side images; play copies made with the game's own Copy utility",
+ "source": "regenerator2000 live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    53248,
+    57343,
+    "I/O and colour RAM"
+   ],
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32512,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    65535,
+    "Resident engine and loader"
+   ]
+  ],
+  "extra": [],
+  "elsewhere": [
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32512,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    65535,
+    "Resident engine and loader"
+   ]
+  ]
+ },
+ "blocks": [
+  {
+   "start": 32256,
+   "end": 32258,
+   "type": "Code"
+  },
+  {
+   "start": 32259,
+   "end": 32261,
+   "type": "Byte"
+  },
+  {
+   "start": 32262,
+   "end": 32302,
+   "type": "Code"
+  },
+  {
+   "start": 32303,
+   "end": 32511,
+   "type": "Byte"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 32256,
+   "name": "death_start",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 32259,
+   "name": "death_header",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 32262,
+   "name": "death_main",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 32264,
+   "name": "b_7E08",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 32265,
+   "name": "f_7E09",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 32268,
+   "name": "f_7E0C",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 32269,
+   "name": "f_7E0D",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 32274,
+   "name": "f_7E12",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 32297,
+   "name": "death_wait_forever",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 32303,
+   "name": "death_caption",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 32304,
+   "name": "f_7E30",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 32307,
+   "name": "f_7E33",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 32316,
+   "name": "death_text",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 32355,
+   "name": "j_7E63",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 32357,
+   "name": "death_leftover",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 32382,
+   "name": "s_7E7E",
+   "type": "Subroutine",
+   "kind": "auto"
+  }
+ ],
+ "comments": [
+  {
+   "address": 32256,
+   "type": "line",
+   "text": "Death program: one page from track 4, logical sector 2 of side 1, the end of the game. The game's main loop ($7ED5-$7EFC) tests the character records 1 to $0A (records_in_use): one that is conscious (CON 1 or more), or only unconscious (condition UNC, CON -1 to -10) with no disease bits (+$28 = 0), counts as alive. When none does, or $0A is 0, it asks for side 1 (check_side_1 $02D5) and loads this sector with load_program ($03AD, $10 = 4, $11 = 2) over the game's own first page; load_program reads the header at death_header and jumps here. This JMP steps over the header to death_main."
+  },
+  {
+   "address": 32259,
+   "type": "line",
+   "text": "Program header read by load_program ($2890): +3/+4 the load address $7E00, +5 the page count 1. The JMP at $7E00 steps over it."
+  },
+  {
+   "address": 32262,
+   "type": "line",
+   "text": "Shows the end of the game and stops there. Copies the 12 bytes of death_caption (\"Grim Reaper \", not the zero after them) over the location name at $F4D0 (the byte after them, $F4DC, is 0 in both death snapshots, so the name ends there); shows picture $3B from the buffer at $E000 (show_picture_e000 $041C, which frames the picture window and prints that name under it); redraws the roster (roster_show $02B7); opens the text window (text_window_open $0353) and prints death_text word-wrapped (print_string_wrapped $026F with $31/$32 = $7E3C). Then it reads keys for ever (wait_key $022F and JMP back, death_wait_forever): every key is taken and ignored, and RESTORE does nothing either (the NMI vector leads to an RTI, $04F6 to $2966), so only a reset leaves this screen. Nothing here writes to the disk, so the last saved game stays as it was."
+  },
+  {
+   "address": 32265,
+   "type": "line",
+   "text": "Low byte ($2F) of the operand of LDA $7E2F,X at $7E08, inside death_main. The automatic symbol comes from the game's INC $7E09,X at $A6E7, which addresses a table in the game's own page $7E00; this program has replaced that page, and that game code never runs again once it is loaded."
+  },
+  {
+   "address": 32268,
+   "type": "line",
+   "text": "Low byte ($D0) of the operand of STA $F4D0,X at $7E0B, inside death_main. The symbol comes from the game's LDA and STA $7E0C,Y ($A695, $A6AC), written for a table of the game's own page $7E00, which this program has replaced."
+  },
+  {
+   "address": 32269,
+   "type": "line",
+   "text": "High byte ($F4) of the operand of STA $F4D0,X at $7E0B, inside death_main. The symbol comes from the game's LDA and STA $7E0D,Y ($A69D, $A6A8), another table of the game's own page $7E00, gone while this program is loaded."
+  },
+  {
+   "address": 32274,
+   "type": "line",
+   "text": "Offset ($F5) of the BNE at $7E11 that loops the caption copy back to $7E08. The symbol comes from the game's LDA $7E12,Y ($A251) and INC $7E12,X ($A659), which address its own page $7E00, not this program."
+  },
+  {
+   "address": 32303,
+   "type": "line",
+   "text": "Caption for the picture window: \"Grim Reaper \" in ASCII, the order of the game's font (glyph c at $C600 + (c - $20) * 8), 12 bytes ($7E2F-$7E3A), then a zero at $7E3B that the copy loop in death_main does not take."
+  },
+  {
+   "address": 32304,
+   "type": "line",
+   "text": "Second byte of death_caption, the \"r\" of \"Grim\". Its automatic symbol comes from the game's AND and STA $7E30,X ($A726, $A729), an access to the game's own page $7E00 that does not apply to this program."
+  },
+  {
+   "address": 32307,
+   "type": "line",
+   "text": "Fifth byte of death_caption, the space after \"Grim\". Its automatic symbol comes from the game's STA $7E33,X ($A72E), meant for the game's own page $7E00, not this caption."
+  },
+  {
+   "address": 32316,
+   "type": "line",
+   "text": "The message of the death screen, in ASCII: \"Your life has ended in The Wasteland...\", RETURN ($0D at $7E63, a new line) and a zero ($7E64). death_main prints it word-wrapped in the text window. (The automatic symbol at $7E63 is the target of the game's JMP $7E63 at $7F14, its own main loop, which this program has replaced.)"
+  },
+  {
+   "address": 32357,
+   "type": "line",
+   "text": "The 155 bytes after death_text are never read by this program: an exact copy of bytes $65-$FF of track 4, logical sector 1, the first page of the logo font that the start-up reads to $CA00-$CBFF ($7FA4; play-title.vsf holds it there). Stale contents of the sector, not part of the death screen."
+  },
+  {
+   "address": 32382,
+   "type": "line",
+   "text": "Byte $19 of death_leftover. The automatic symbol comes from the engine's menu call (the JSR at $1C71), whose operand still held $7E7E, the Ranger Center's Start handler, when the snapshot was taken; the death program never calls menu_key ($02DE), so nothing jumps here."
+  }
+ ]
+}

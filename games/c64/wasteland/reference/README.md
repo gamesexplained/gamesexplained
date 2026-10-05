@@ -22,6 +22,7 @@ on 5 October 2026 while driving the game through the states named in
 | death.png | the death screen: the Grim Reaper, "Your life has ended in The Wasteland..." |
 | utils.png | the Utilities menu: Copy Restart Start |
 | copy-side-1.png | the Copy utility after copying side 1 |
+| side-3-start-up.png | side 3's own start-up (track 4, logical sector 16 of side 3), run over side 1's engine with side 3 in the drive: its title picture from side 3's track 3, stopped at "Computer defense initiative activated." |
 
 `web/` holds C64 screenshots from other sites, saved on 5 October 2026 for
 states this run has not reached in the emulator:

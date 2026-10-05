@@ -33,7 +33,7 @@ The manual is shared by every version and names keys as `<ESC>` and
 |---|---|---|
 | Boots with `LOAD "*",8,1` (a C128 boots itself) [CC] | live | `orientation.md`; side 1's PRODOS and 2.0 files |
 | Title: picture, credits, "Start" and "Utils" on the bottom line, "Written by Alan Pavlish" [CC, GB64] | live | `reference/title.png`; startup part |
-| Introductory story text on the title screen [C64S] | open | |
+| Introductory story text on the title screen [C64S] | traced | the start-up's title sequence types "Place : EARTH", "Year  : 1998", "Status: DEFCON 1" over the picture, then messages 8-17 ("Computer defense initiative activated." to "...continues in the Wasteland!"), with a siren, falling whistles and 14 explosions; startup `$800E-$8130`, and run offline on the 6502 simulator |
 | Utils menu: Copy and Restart [CC] | live | utils part; Copy used to make the play disks |
 | Copy menu 1 2 3 4 Exit; each side copied once, with prompts [CC] | live | `work/copy.py` drove it for all four sides |
 | Only disks made by Copy are accepted [CC] | live | masters are refused in play; see `orientation.md` |
@@ -41,7 +41,6 @@ The manual is shared by every version and names keys as `<ESC>` and
 | Restart: same characters, without items and cash, near the Ranger Center [CC, NUWG] | open | |
 | "Use last saved game (Y/N)?"; Y loads the party saved on side 1, N searches every side for the last autosave [CC] | open | Y is live (`play-map`); N not tried |
 | Prompts to insert a side, "Insert side 1. (RETURN)" [CC] | live | |
-| Side 3 is bootable too (a second start-up and a C128 boot sector) [notes] | open | side 3's T4/L16 |
 
 ### Saving and the persistent world
 
@@ -88,7 +87,7 @@ The manual is shared by every version and names keys as `<ESC>` and
 | Roster header "# NAME AC AMM MAX CON WEAPON" [C64W] | live | |
 | Condition words UNC, SER, CRT, MRT, COM [MAN] | open | |
 | Clock on screen [screenshots] | live | |
-| Space hides the roster for a full-width map [CC] | open | |
+| Space hides the roster for a full-width map [CC] | live | Space in `play-map` set `$6A` from 0 to 1 and drew the roster over the bottom of the map window; game `$7F32` |
 | Portraits with captions, limited animation, "nearly 100" [CMP, CGW] | open | 60 entries in the directory at T35/L10 (`orientation.md`) |
 | The screen shakes when an explosion goes off (C64 only); routine at `$0746` writes `$D011` without masking bit 7 [NUWG, CSDb] | open | engine jump table entry `$044C` points at `$0746` |
 
@@ -96,7 +95,7 @@ The manual is shared by every version and names keys as `<ESC>` and
 
 | Feature | Status | Where |
 |---|---|---|
-| I, J, K, L move one square [CC] | open | |
+| I, J, K, L move one square [CC] | live | north, west, south and east: from `play-map`, I took the party from 55,62 to 55,61, J from there to 54,61, L from 55,62 to 56,62, and K from 56,62 was refused ("...progress would be hazardous to your health."); handlers game `$AE19`, `$AE46`, `$AE84`, `$AE65` |
 | Maps nest: world map, towns, buildings, levels [CC, MAN] | open | 42 maps in the directory at T35/L14 |
 | Every map has 1,024 squares, each able to do something [DA] | open | |
 | Squares hold messages, skill checks, loot and radiation [NUWG] | open | |
@@ -174,13 +173,17 @@ The manual is shared by every version and names keys as `<ESC>` and
 
 | Feature | Status | Where |
 |---|---|---|
-| Sound: sources disagree (none, per C64W, CU and ASM; some, per NUWG and FAN) | open | the register census settles it |
+| Sound: sources disagree (none, per C64W, CU and ASM; some, per NUWG and FAN) | traced | the title has its own SID code (startup `$7E03-$7F29`: a two-voice siren, a falling whistle, noise explosions) and every typed title character clicks; in play the engine's player `$C993` has three sounds, an explosion with the screen shake, a click for the Geiger counter and for typed text, and one whose gate bit is clear, so it makes no sound |
 | Joystick in port 2 [C64W, GB64]; the card lists keys only | open | the register census settles it |
 | ← cancels any action [CC] | live | `work/drive.py` uses it |
 
 ## Beyond the documentation
 
 Found in the code, not in the manual.
+
+| Feature | Status | Where |
+|---|---|---|
+| Side 3 carries the boot files, a C128 boot sector named "A JERKVISION PRODUCTION" and a start-up of its own | live | booted on its own, side 3's 2.0 loads side 3's track 34, which holds something else where side 1 has the engine, and the first raster interrupt after the hand-over jumps into it and halts the processor on a `JAM` at `$2931`. Its start-up (T4/L16, entry `$7E06`) is an older build of side 1's: its credits read "Copyright 1986,87" where side 1's read "1986-88", and where side 1's calls its title sounds it calls three `RTS` stubs at `$7E03-$7E05`, so it has no sound; run over side 1's engine it draws a garbled title picture from side 3's track 3 and stops at "Computer defense initiative activated." (`reference/side-3-start-up.png`) |
 
 ## Open questions
 
