@@ -23,7 +23,7 @@ The inside of Base Cochise: "The base interior is cavernous. Escalators north of
 Record byte 3 is the map an exit leads to (game `square_exit`, `$89A3`).
 
 - To map 16, outside: exit 8 (`$3C6A`) on (14,31), (15,31) and (16,31), to (16,17), asking first. Up the ropes: exits 0, 2, 4 and 6 (`$3C42`, `$3C4C`, `$3C56`, `$3C60`), to (18,10), (18,12), (15,11) and (16,14) inside the dome; each one's change, `$FE`, trades the rope's check square back (engine `alter_square`, `$0A28`).
-- To map 19, robot assembly, both with message 49, "You find yourself suddenly falling through a long slippery tunnel.", and asking first: exit 13 (`$3C83`), to (1,30), and exit 14 (`$3C88`), to (19,10). No square holds either as stored (below).
+- To map 19, robot assembly: exit 13 (`$3C83`), to (1,30), and exit 14 (`$3C88`), to (19,10), both with message 49, "You find yourself suddenly falling through a long slippery tunnel.", and the bit that asks first. The game asks only when the party steps onto an exit (game `$AD83`); an exit that a change makes under the party runs at once without the question (`$ACC1`). So exit 13 asks at (15,10) and (16,10) but not on the party's own square, where remote change 7 makes it, and exit 14, which tile square 7 makes under the party, never asks. No square holds either as stored (below).
 - On this map: the escalators, exit 9 (`$3C6F`) on (16,20)-(17,26), which moves the party a row north, and exit 10 (`$3C74`) on (13,21)-(14,27), a row south; exits 1, 3, 5 and 7 (`$3C47`, `$3C51`, `$3C5B`, `$3C65`), to the four ropes; and exits 15-18 (`$3C8E-$3CA5`), to (2,17) or (29,17).
 - Exit 12 (`$3C7E`), to map 20 (16,10), stands on no square, and no change in the map's records names it.
 

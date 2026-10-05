@@ -26,3 +26,27 @@ packed bytes, or a sector's filler, decoded with the wrong table: module
 disk sides agreed on its code and differed after it, and a trace of the
 unpacker's input gave where each stream ends. `50-coverage` now says how
 to find the end before describing what follows it.
+
+**A decoder's comments are a few claims made thousands of times.** Two
+thirds of Wasteland's 11,532 comments were written by a program that
+described every record of the map format from templates. The comment
+sample drew three of them and found two wrong, and the audit that
+followed found why: the check squares' template said
+their tests ran on arrival for squares whose flags make them run as the
+party steps in, cited readers that run only for some values of a flag,
+and left out the armour roll that one flag bit gives. A sentence that
+held for the commonest flags had been copied onto every record.
+`50-coverage` now has a template's sentences tested against every path
+before the script writes them, and `60-verify` samples such comments as a
+stratum of their own, weighs the rate by the strata's sizes, and audits
+them by template, with the corrections made by a script and in the
+decoder.
+
+**A value in the snapshot is the last one written.** Map 49's poisoned
+needle was described as missing its target, because the operand that
+names the member held 0 in the snapshot; the game writes it when a Use
+begins. The audit found the same mistake elsewhere: a call said to pass
+0, from operands that the calling routine writes on entry, and a map's
+encounter chance called fixed where the game writes the map's header back
+to the disk. The annotation brief in `50-coverage` now tells every agent
+to find the writers before calling a value fixed.

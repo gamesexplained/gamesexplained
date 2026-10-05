@@ -113,6 +113,15 @@ format, how to check the result against it, and how to read it back
   trace the unpacker and count what it takes, or compare the same file
   loaded from two disks or sides, which agree on the data and can differ
   after it. Exclude the rest, with that reason, once nothing reads it.
+- **A comment a program writes is one claim made for every record.**
+  Level data of a known format is quickest described by a script that
+  writes each record's comment from templates. Before it writes, test
+  each sentence a template produces against the code on every path that
+  reads the field: a flag can change which routine reads it, when that
+  runs, or whether anything does, and a sentence written from the
+  commonest case is wrong for every other. Make the template choose its
+  sentence from the record's own bytes (`60-verify` says how such
+  comments are sampled).
 - **Runtime state is excluded** from the denominator: stack, screen
   memory, I/O. Authored data nothing references by address (a character
   set, a packed string block) is **added** through the `coverage` object
