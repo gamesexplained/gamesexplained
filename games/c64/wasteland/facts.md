@@ -49,13 +49,13 @@ routine at `$25BD`.
   - map 38 message 90, a wall at column 1, row 12: a poster of a man
     typing at a computer, "STANCE THE GREAT MAP MAKER";
   - and Ken St. Andre's gravestone, above.
-- Side 3 holds an older build of the start-up at track 4, logical
-  sector 16 (entry `$7E06`, against side 1's `$7F2A`; 2,766 of its 4,096
-  bytes differ), and its own boot sector, named "A JERKVISION
-  PRODUCTION". Its credits read "Copyright 1986,87 Interplay
-  Productions." where side 1's read "1986-88", and where side 1's
-  start-up calls its title sounds, side 3's calls three `RTS` stubs
-  (`$7E03-$7E05`) and writes no SID register. Booted, side 3 cannot run: its `2.0` loads side 3's track
+- Side 3 holds an older build of the start-up at track 4, logical sector
+  16 (entry `$7E06`, against side 1's `$7F2A`; 2,766 of its 4,096 bytes
+  differ), and its own boot sector, named "A JERKVISION PRODUCTION". Its
+  credits read "Copyright 1986,87 Interplay Productions." where side 1's
+  read "1986-88", and where side 1's start-up calls its title sounds,
+  side 3's calls three `RTS` stubs (`$7E03-$7E05`) and writes no SID
+  register. Booted, side 3 cannot run: its `2.0` loads side 3's track
   34, logical sector 10 to `$0200-$30FF`, where side 1 has the engine
   and side 3 has other bytes, and the first raster interrupt after the
   hand-over goes through engine `$04F9` into them and halts the
@@ -98,10 +98,10 @@ but the I/O area, both ROMs out.
 | `$F400-$FBFF` | the game state: party tables, saved zero page, line buffer, character records from `$F500`, written to the disk as the save | engine |
 | `$FC00-$FFFF` | the fast loader's computer side, and the hardware vectors in RAM | engine |
 
-The bitmap's 25th character row would be `$7E00-$7F3F`; with `$D011` set to `$37` (24 rows, startup `$7F55-$7F57`) it is hidden,
-  except that screen_shake's random vertical scroll (engine `$077A`)
-  brings its top lines into view for a moment, and the programs load
-  from `$7E00`.
+The bitmap's 25th character row would be `$7E00-$7F3F`; with `$D011` set
+to `$37` (24 rows, startup `$7F55-$7F57`) it is hidden, except that
+screen_shake's random vertical scroll (engine `$077A`) brings its top
+lines into view for a moment, and the programs load from `$7E00`.
 
 ## The disks and the loader
 
@@ -210,16 +210,18 @@ The bitmap's 25th character row would be `$7E00-$7F3F`; with `$D011` set to `$37
   arrives on it, its class's handler (game `$ACF3`, a table of 16 words)
   runs on the record that word *number* of the class's list names
   (engine `$09B8`): class 1 shows a message, 2 tests the party (skills,
-  attributes, items, cash, party size), 3 and 15 are encounters, 4
-  shows another tile and a message, 5 is loot, 6 an action, 8 a
-  question, 9 radiation, 10 an exit, 11 a wall that shows its message
-  when walked into (game `$915E`), and 12 changes other squares. Classes 0, 7, 13 and 14 do
-  nothing, and no map uses 7, 13 or 14.
+  attributes, items, cash, party size), 3 and 15 are encounters, 4 shows
+  another tile and a message, 5 is loot, 6 an action, 8 a question, 9
+  radiation, 10 an exit, 11 a wall that shows its message when walked
+  into (game `$915E`), and 12 changes other squares. Classes 0, 7, 13
+  and 14 do nothing, and no map uses 7, 13 or 14.
 - Radiation shows only at night: a class 9 square is drawn as tile 8,
-  the radiation sign, from 18:00 to 05:59, and as its ground the rest
-  of the day (engine `$0B80-$0B8A`; *live*). Tiles 0-8, the party,
-  the creatures, the loot bag and the sign, are the same bytes in all
-  nine tile sets (the nine sets compared byte for byte).
+  the radiation sign, from 18:00 to 05:59, and as its ground the rest of
+  the day (engine `$0B80-$0B8A`; *live*). Tiles 0-8, the party, the
+  creatures, the loot bag and the sign, are the same bytes in all nine
+  tile sets as they load (the nine sets compared byte for byte); maps 0
+  and 26 exchange tile 7's bytes with the jeep's or the train's for
+  their rides (map-00 `$4FCD`, map-26 `$4EF9`).
 - Whether armour stops radiation depends on the square's message
   number. The radiation handler sets `$A0`, "ignore armour", to 1
   (game `$82E7`), but the routine that applies the damage replaces it,
@@ -263,11 +265,12 @@ The bitmap's 25th character row would be `$7E00-$7F3F`; with `$D011` set to `$37
 ## Screen and controls
 
 - The screen is a multicolour bitmap at `$6000` with its colours at
-  `$5C00`, in VIC bank `$4000` (*live*: `$DD00` = `$86`, `$D018` = `$79`,
-  `$D011` = `$B7`, `$D016` = `$D8`). The start-up writes `$D011` as `$37`
-  (startup `$7F55-$7F57`, `$7F91-$7F93`); bit 7 reads back as the high bit
-  of the raster line, which was past 255 when it was read. Text is drawn into the bitmap from
-  the 6-pixel font at `$C600` (engine `$1F03`).
+  `$5C00`, in VIC bank `$4000` (*live*: `$DD00` = `$86`, `$D018` =
+  `$79`, `$D011` = `$B7`, `$D016` = `$D8`). The start-up writes `$D011`
+  as `$37` (startup `$7F55-$7F57`, `$7F91-$7F93`); bit 7 reads back as
+  the high bit of the raster line, which was past 255 when it was read.
+  Text is drawn into the bitmap from the 6-pixel font at `$C600` (engine
+  `$1F03`).
 - The one interrupt is the raster interrupt (engine `$2947`), which
   scans the keyboard; the NMI vector ends in an `RTI`, so RESTORE does
   nothing (engine `$2966`).

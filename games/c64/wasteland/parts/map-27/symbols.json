@@ -1405,7 +1405,7 @@
   {
    "address": 14761,
    "type": "line",
-   "text": "The number of square (9, 29): game `$B4F0` `bit $39A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$39` the code enters at `$B4F1`; nothing reads this byte through it."
+   "text": "The number of square (9, 29). Game `$B4F0` `bit $39A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$39` the code enters at `$B4F1`. On choose_attack's path through the LDA #$50 at $B4EE (api_is_ranged_class at $B4E4 returning carry clear and weapon_rounds at $B4E9 returning 0) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA #$92 at $1DC4, V by the ADC at $28E5, both on game_msg's path), so its value never matters."
   },
   {
    "address": 14848,
@@ -1415,7 +1415,7 @@
   {
    "address": 14892,
    "type": "line",
-   "text": "Map settings: +$2C size 32 (width = height, enter_map $25D3); +$2D/+$2E $06 $1A (no reader found); +$2F random encounter chance 1 in 80 ($B017); +$30 tile set 2 ($25EE); +$31 4 monster types for random encounters ($B047); +$32 6 class-15 records for random encounters ($B040); +$33 off-map tile 58 ($0B5E); +$34/+$35 time per step 64 ($AF32); +$36 ticks per step 1 ($AF58)."
+   "text": "Map settings: +$2C size 32 (width = height, enter_map $25D3); +$2D/+$2E $06 $1A (no reader found); +$2F random encounter chance 1 in 80 as loaded ($B017; the map's code changes it at $3C9B); +$30 tile set 2 ($25EE); +$31 4 monster types for random encounters ($B047); +$32 6 class-15 records for random encounters ($B040); +$33 off-map tile 58 ($0B5E); +$34/+$35 time per step 64 ($AF32); +$36 ticks per step 1 ($AF58)."
   },
   {
    "address": 14903,
@@ -1540,17 +1540,17 @@
   {
    "address": 15066,
    "type": "line",
-   "text": "Check square, class 2 number 0: +0 flags $08 (bits 3: a change per check, $8F4C); +1 message on arrival 9 ($8E2B), +2 success message 10 ($9026), +3 failure message 11 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 4; attribute ST difficulty 4; item 45 (Crowbar): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 53 (Pick ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 56 (Sledge hammer): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 5 (Proton ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$24; +$25 change for check 0 ($9108): change to class 4 number 11; +$27 change for check 1 ($9108): change to class 4 number 0; +$29 change for check 2 ($9108): change to class 4 number 0; +$2B change for check 3 ($9108): change to class 4 number 0; +$2D change for check 4 ($9108): change to class 4 number 0; +$2F change for check 5 ($9108): change to class 4 number 0; +$31 change for check 6 ($9108): change to class 4 number 1; +$33 change for check 7 ($9108): change to class 4 number 1; +$35 change for check 8 ($9108): change to class 4 number 1; +$37 change for check 9 ($9108): change to class 4 number 1; +$39 change for check 10 ($9108): change to class 4 number 1; +$3B change for check 11 ($9108): change to class 4 number 1; +$3D change for check 12 ($9108): change to class 4 number 1."
+   "text": "Check square, class 2 number 0: +0 flags $08 (bits 3: a change per check, $8C83); +1 message 9, shown on a move onto it ($8E2B), +2 success message 10 ($9026), +3 failure message 11 ($9029); +$04 success (never read: bit 6 is clear, and a successful Use makes the passing pair's own change, bit 3, $8C83-$8C89): change to class 0 number 0; +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 4; attribute ST difficulty 4; item 45 (Crowbar): Use of it ($8F84); item 53 (Pick ax): Use of it ($8F84); item 56 (Sledge hammer): Use of it ($8F84); item 5 (Proton ax): Use of it ($8F84); item 7 (Plastic explosive): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$24; +$25 change for check 0 ($9108): change to class 4 number 11; +$27 change for check 1 ($9108): change to class 4 number 0; +$29 change for check 2 ($9108): change to class 4 number 0; +$2B change for check 3 ($9108): change to class 4 number 0; +$2D change for check 4 ($9108): change to class 4 number 0; +$2F change for check 5 ($9108): change to class 4 number 0; +$31 change for check 6 ($9108): change to class 4 number 1; +$33 change for check 7 ($9108): change to class 4 number 1; +$35 change for check 8 ($9108): change to class 4 number 1; +$37 change for check 9 ($9108): change to class 4 number 1; +$39 change for check 10 ($9108): change to class 4 number 1; +$3B change for check 11 ($9108): change to class 4 number 1; +$3D change for check 12 ($9108): change to class 4 number 1."
   },
   {
    "address": 15129,
    "type": "line",
-   "text": "Check square, class 2 number 1: +0 flags $40 (bits 6: the checks run on arrival, $8E33); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 65 ($9029); +$04 success ($8F66): change to class 2 number 8; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): party of 1; $FF at +$0C."
+   "text": "Check square, class 2 number 1: +0 flags $40 (bits 6: the checks run on a move onto it, $8E33); +1 message 0, shown on a move onto it ($8E2B), +2 success message 0 ($9026), +3 failure message 65 ($9029); +$04 success ($8F66): change to class 2 number 8; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): party of 1; $FF at +$0C."
   },
   {
    "address": 15142,
    "type": "line",
-   "text": "Check square, class 2 number 2: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 64 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change to class 10 number 11; +8/+9 effect ($9039): CON - 5; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 2: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 64 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change to class 10 number 11; +8/+9 effect ($9039): CON - 5; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15155,
@@ -1565,47 +1565,47 @@
   {
    "address": 15181,
    "type": "line",
-   "text": "Check square, class 2 number 5: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 29 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change to class 12 number 1; +8/+9 effect ($9039): CON - 5; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 5: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 29 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change to class 12 number 1; +8/+9 effect ($9039): CON - 5; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15194,
    "type": "line",
-   "text": "Check square, class 2 number 6: +0 flags $E0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 44 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 6: +0 flags $E0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 44 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15207,
    "type": "line",
-   "text": "Check square, class 2 number 7: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 45 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 5; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 7: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 45 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 5; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15220,
    "type": "line",
-   "text": "Check square, class 2 number 8: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 47 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FD (swap back with $AD/$AE, carry clear); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 8: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 47 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FD (swap back with $AD/$AE, carry clear); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15233,
    "type": "line",
-   "text": "Check square, class 2 number 9: +0 flags $E0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 44 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change to class 12 number 10; +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 9: +0 flags $E0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 44 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change to class 12 number 10; +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15246,
    "type": "line",
-   "text": "Check square, class 2 number 10: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 54 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 10: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 54 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15259,
    "type": "line",
-   "text": "Check square, class 2 number 11: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 63 ($9029); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 11: +0 flags $E1 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 0: CON damage ignores armour, $90B2 $A8B2); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 63 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 0 number 0; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15272,
    "type": "line",
-   "text": "Check square, class 2 number 12: +0 flags $80 (bits 7: may be walked onto without the checks, $8F72); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 70 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 9 (Perception) difficulty 5; $FF at +$0C."
+   "text": "Check square, class 2 number 12: +0 flags $80 (bits 7: may be walked onto without the checks, $8F72); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 70 ($9029); +$04 success of a Use ($8CA2): change $FF $FF (bit 7: nothing written); +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 9 (Perception) difficulty 5; $FF at +$0C."
   },
   {
    "address": 15285,
    "type": "line",
-   "text": "Check square, class 2 number 13: +0 flags $D0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 4: effect on everybody, $8EC6); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 74 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change to class 12 number 3; +8/+9 effect ($9039): CON - 20d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 13: +0 flags $D0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 4: effect on everybody, $8EC6); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 74 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change to class 12 number 3; +8/+9 effect ($9039): CON - 20d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB) only when that NPC is the first conscious member, the only one tested with bit 5 clear ($8EF2, $8F0B, $8F5F), though at a difficulty above 0 that NPC still rolls, and dice under 5 fail ($0C73-$0C75)) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15298,
@@ -1615,22 +1615,22 @@
   {
    "address": 15308,
    "type": "line",
-   "text": "Encounter, class 3 number 0: +0 seen within 50 ($95C9), +1 engages within 50 ($9618, $97BA), +2 message 4 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 2 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 0."
+   "text": "Encounter, class 3 number 0: +0 seen within 50 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 50 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 4 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 2 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 0."
   },
   {
    "address": 15320,
    "type": "line",
-   "text": "Encounter, class 3 number 1: +0 seen within 29 ($95C9), +1 engages within 29 ($9618, $97BA), +2 message 18 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 2 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 2."
+   "text": "Encounter, class 3 number 1: +0 seen within 29 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 29 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 18 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 2 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 2."
   },
   {
    "address": 15332,
    "type": "line",
-   "text": "Encounter, class 3 number 2: +0 seen within 29 ($95C9), +1 engages within 29 ($9618, $97BA), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 4; 1 x monster 4; +9 flags $07 (bits 0 identified: names shown, $9E5D, 1 peaceful and hireable, $9EF6, 2 stationary, $8428), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 5."
+   "text": "Encounter, class 3 number 2: +0 seen within 29 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 29 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 4; 1 x monster 4; +9 flags $07 (bits 0 identified: names shown, $9E5D, 1 peaceful, $9EF6 (hiring also needs an NPC number, $A41D), 2 stationary, $8428), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 5."
   },
   {
    "address": 15344,
    "type": "line",
-   "text": "Encounter, class 3 number 4: +0 seen within 30 ($95C9), +1 engages within 30 ($9618, $97BA), +2 message 41 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 6; +9 flags $03 (bits 0 identified: names shown, $9E5D, 1 peaceful and hireable, $9EF6), NPC 1 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
+   "text": "Encounter, class 3 number 4: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 30 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 41 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 6; +9 flags $03 (bits 0 identified: names shown, $9E5D, 1 peaceful and hireable, $9EF6), NPC 1 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
   },
   {
    "address": 15356,
@@ -1640,77 +1640,77 @@
   {
    "address": 15386,
    "type": "line",
-   "text": "Tile square, class 4 number 0: +0 message 13 ($833F, $9181), +1 tile 53 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $0D (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_01."
+   "text": "Tile square, class 4 number 0: +0 message 13 ($833F), +1 tile 53 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $0D (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_01."
   },
   {
    "address": 15389,
    "type": "line",
-   "text": "Tile square, class 4 number 1: +0 message 13 ($833F, $9181), +1 tile 54 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $26 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_02."
+   "text": "Tile square, class 4 number 1: +0 message 13 ($833F), +1 tile 54 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $26 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_02."
   },
   {
    "address": 15392,
    "type": "line",
-   "text": "Tile square, class 4 number 2: +0 message 38 ($833F, $9181), +1 tile 13 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $26 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_03."
+   "text": "Tile square, class 4 number 2: +0 message 38 ($833F), +1 tile 13 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $26 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_03."
   },
   {
    "address": 15395,
    "type": "line",
-   "text": "Tile square, class 4 number 3: +0 message 38 ($833F, $9181), +1 tile 13 (draw_square $0B8E); +$02 ($8342, $9177): change to class 2 number 9."
+   "text": "Tile square, class 4 number 3: +0 message 38 ($833F), +1 tile 13 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change to class 2 number 9."
   },
   {
    "address": 15399,
    "type": "line",
-   "text": "Tile square, class 4 number 4: +0 message 0 ($833F, $9181), +1 tile 0 (draw_square $0B8E); +$02 ($8342, $9177): change to class 10 number 2."
+   "text": "Tile square, class 4 number 4: +0 message 0 ($833F), +1 tile 0 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change to class 10 number 2."
   },
   {
    "address": 15403,
    "type": "line",
-   "text": "Tile square, class 4 number 5: +0 message 0 ($833F, $9181), +1 tile 95 (draw_square $0B8E); +$02 ($8342, $9177): change to class 10 number 3."
+   "text": "Tile square, class 4 number 5: +0 message 0 ($833F), +1 tile 95 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change to class 10 number 3."
   },
   {
    "address": 15407,
    "type": "line",
-   "text": "Tile square, class 4 number 6: +0 message 0 ($833F, $9181), +1 tile 0 (draw_square $0B8E); +$02 ($8342, $9177): change to class 10 number 4."
+   "text": "Tile square, class 4 number 6: +0 message 0 ($833F), +1 tile 0 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change to class 10 number 4."
   },
   {
    "address": 15411,
    "type": "line",
-   "text": "Tile square, class 4 number 7: +0 message 0 ($833F, $9181), +1 tile 23 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_08."
+   "text": "Tile square, class 4 number 7: +0 message 0 ($833F), +1 tile 23 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_08."
   },
   {
    "address": 15414,
    "type": "line",
-   "text": "Tile square, class 4 number 8 (nothing names it: no square, change or code): +0 message 0 ($833F, $9181), +1 tile 40 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_09."
+   "text": "Tile square, class 4 number 8 (nothing names it: no square, change or code): +0 message 0 ($833F), +1 tile 40 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_09."
   },
   {
    "address": 15417,
    "type": "line",
-   "text": "Tile square, class 4 number 9: +0 message 0 ($833F, $9181), +1 tile 44 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_10."
+   "text": "Tile square, class 4 number 9: +0 message 0 ($833F), +1 tile 44 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_10."
   },
   {
    "address": 15420,
    "type": "line",
-   "text": "Tile square, class 4 number 10 (nothing names it: no square, change or code): +0 message 0 ($833F, $9181), +1 tile 60 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_11."
+   "text": "Tile square, class 4 number 10 (nothing names it: no square, change or code): +0 message 0 ($833F), +1 tile 60 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_11."
   },
   {
    "address": 15423,
    "type": "line",
-   "text": "Tile square, class 4 number 11: +0 message 0 ($833F, $9181), +1 tile 58 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_12."
+   "text": "Tile square, class 4 number 11: +0 message 0 ($833F), +1 tile 58 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_12."
   },
   {
    "address": 15426,
    "type": "line",
-   "text": "Tile square, class 4 number 12: +0 message 0 ($833F, $9181), +1 tile 95 (draw_square $0B8E); +$02 ($8342, $9177): change to class 10 number 10."
+   "text": "Tile square, class 4 number 12: +0 message 0 ($833F), +1 tile 95 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change to class 10 number 10."
   },
   {
    "address": 15430,
    "type": "line",
-   "text": "Tile square, class 4 number 13: +0 message 0 ($833F, $9181), +1 tile 54 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_14."
+   "text": "Tile square, class 4 number 13: +0 message 0 ($833F), +1 tile 54 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_14."
   },
   {
    "address": 15433,
    "type": "line",
-   "text": "Tile square, class 4 number 14: +0 message 0 ($833F, $9181), +1 tile 25 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $58 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of loot_list."
+   "text": "Tile square, class 4 number 14: +0 message 0 ($833F), +1 tile 25 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $58 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of loot_list."
   },
   {
    "address": 15436,
@@ -1810,7 +1810,7 @@
   {
    "address": 15519,
    "type": "line",
-   "text": "Map code entry 2 (action 2): JMP screen_shake ($044C), the explosion's sound and shaking screen. It returns with the carry that random_byte's last addition left ($24EC), so whether the game redraws the view afterwards ($8872) is left to chance. Class-6 square 2 ($3C8B) runs it, which question square 5 at (14,3) and (15,4) becomes for the answers MORTAR and ATOM (messages 72, 73) to message 55, \"Please help me! I have been trying to figure out the launch code for months. If you know what it is, please tell me.\" The record then makes the square check square 13, which on arrival fails for any party without the skill-37 marker in the first place and costs everybody 20d6 CON, with message 74, \"You've entered the self destruct code by mistake.\" The right answer, MOTEKIM (message 56), goes to remote-change square 14 instead."
+   "text": "Map code entry 2 (action 2): JMP screen_shake ($044C), the explosion's sound and shaking screen. It returns with the carry that random_byte's last addition left ($24EC), so whether the game redraws the view afterwards ($8872) is left to chance. Class-6 square 2 ($3C8B) runs it, which question square 5 at (14,3) and (15,4) becomes for the answers MORTAR and ATOM (messages 72, 73) to message 55, \"Please help me! I have been trying to figure out the launch code for months. If you know what it is, please tell me.\" The record then makes the square check square 13, which on arrival fails for any party without the skill-37 marker in the first place and costs everybody 20d6 CON, less an armour roll of each member's AC (+$1A) in d6 since flag bit 0 is clear ($A8B2-$A8C5), with message 74, \"You've entered the self destruct code by mistake.\" The right answer, MOTEKIM (message 56), goes to remote-change square 14 instead."
   },
   {
    "address": 15519,
@@ -1825,7 +1825,7 @@
   {
    "address": 15529,
    "type": "line",
-   "text": "Byte +$7 of question_list: game `$81DE` `bit $3CA9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$3C` the code enters at `$81DF`; nothing reads this byte through it."
+   "text": "Byte +$7 of question_list. Game `$81DE` `bit $3CA9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$3C` the code enters at `$81DF`. On melee_monster_attacks's path for a target member whose order is not 5 (from the LDA #$28 at $81D9 or the LDA #$32 at $81DC) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDX #$00 at $81E1, V by the ADC at $07D5 in num2_add, through melee_chance), so its value never matters."
   },
   {
    "address": 15534,
@@ -1980,7 +1980,7 @@
   {
    "address": 15785,
    "type": "line",
-   "text": "Byte +$2B of remote_01: game `$8DB8` `bit $3DA9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$3D` the code enters at `$8DB9`; nothing reads this byte through it."
+   "text": "Byte +$2B of remote_01. Game `$8DB8` `bit $3DA9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$3D` the code enters at `$8DB9`. On msg_nothing_special's path (its LDA #$26 at $8DB6, called from $8C40 and reached from $8DB4) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N, V and Z by the BIT at $8DBB), so its value never matters."
   },
   {
    "address": 15909,
@@ -2085,7 +2085,7 @@
   {
    "address": 16370,
    "type": "line",
-   "text": "NPC 1: 256-byte character record, copied whole when the NPC joins ($A42C-$A433; offsets as in the party's records): name \"RALF\" (+$00), ST 12 IQ 8 LK 14 SP 9 AGL 16 DEX 12 CHR 6 (+$0E-+$14), cash 0, CON 7 of 18, rank 3 \"Specialist\" (+$24, +$32), NPC flag $01 (+$29), refusal bytes 02 01 02 05 (+$2B-+$2E, npc_obey_check $0D61), +$31 $02; skills: Brawling 2, Knife fight 1, Swim 1, Clip pistol 1; +$BA/+$BB skill 42 at level $FF: a marker, not one of the 35 skills; check squares that test skill 42 find this NPC (skill_level $1392); items: none."
+   "text": "NPC 1: 256-byte character record, copied whole when the NPC joins ($A42C-$A433; offsets as in the party's records): name \"RALF\" (+$00), ST 12 IQ 8 LK 14 SP 9 AGL 16 DEX 12 CHR 6 (+$0E-+$14), cash 0, CON 7 of 18, rank 3 \"Specialist\" (+$24, +$32), NPC flag $01 (+$29), refusal bytes 02 01 02 05 (+$2B-+$2E, npc_obey_check $0D61), +$31 $02; skills: Brawling 2, Knife fight 1, Swim 1, Clip pistol 1; +$BA/+$BB skill 42 at level $FF: a marker, not one of the 35 skills; skill_level ($1392) would find it, but no check square of the 42 maps tests skill 42; items: none."
   },
   {
    "address": 16384,
@@ -2160,12 +2160,12 @@
   {
    "address": 16740,
    "type": "line",
-   "text": "Monster 5, 8 bytes at header word 2 + 8 * 5 (monster_record $9EA4): hit-point seed 20 (+0/+1, $9EE6), to-hit 4 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 2d6 (+4 low, $A735), random groups of up to 2 (+4 high, $B0AD), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 5 (+7, $B91E, $9EB8)."
+   "text": "Monster 5, 8 bytes at header word 2 + 8 * 5 (monster_record $9EA4): hit-point seed 20 (+0/+1, $9EE6), to-hit 4 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 2d6 (+4 low, $A735), random groups of up to 2 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 4), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 5 (+7, $B91E, $9EB8)."
   },
   {
    "address": 16748,
    "type": "line",
-   "text": "Monster 6, 8 bytes at header word 2 + 8 * 6 (monster_record $9EA4): hit-point seed 20 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 0d6 (+4 low, $A735), random groups of up to 2 (+4 high, $B0AD), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 46 (+7, $B91E, $9EB8)."
+   "text": "Monster 6, 8 bytes at header word 2 + 8 * 6 (monster_record $9EA4): hit-point seed 20 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 0d6 (+4 low, $A735), random groups of up to 2 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 4), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 46 (+7, $B91E, $9EB8)."
   },
   {
    "address": 16756,
@@ -2190,7 +2190,7 @@
   {
    "address": 17065,
    "type": "line",
-   "text": "Byte +$79 of text_group_01: game `$A3A8` `bit $42A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$A3A9`; nothing reads this byte through it; game `$B75A` `bit $42A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$B75B`; nothing reads this byte through it."
+   "text": "Byte +$79 of text_group_01. Game `$A3A8` `bit $42A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$A3A9`. On order_load_unjam's path through the LDA #$41 at $A3A6 (api_find_item at $A3A1 returning carry set) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA #$92 at $1DC4, V by the ADC at $28E5, both on game_msg's path), so its value never matters. Game `$B75A` `bit $42A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$B75B`. On choose_load's path through the LDA #$41 at $B758 (api_find_item at $B751 returning carry set) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA #$04 at $B75E, V by the BIT at $226A, which printing control code $04 reaches through clear_window, or, when the code is not printed ($A1 set, or a text filter returns 0), by the ADC at $28E5 in the game_msg that follows), so its value never matters."
   },
   {
    "address": 17074,
@@ -2230,7 +2230,7 @@
   {
    "address": 17833,
    "type": "line",
-   "text": "Byte +$12 of text_group_08: engine `$226A` `bit $45A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$45` the code enters at `$226B`; nothing reads this byte through it."
+   "text": "Byte +$12 of text_group_08. Engine `$226A` `bit $45A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$45` the code enters at `$226B`. On clear_to_eol's path the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA $24 at $2270, V by the BIT at $239A), so its value never matters."
   },
   {
    "address": 17982,
@@ -2240,7 +2240,7 @@
   {
    "address": 18082,
    "type": "line",
-   "text": "Messages 40-43 (no record, code or header names 42): 40: THIRTY | 41: \"Thank you for rescuing me.\"\\n | 42: \\n\"Now I shall help you for saving my life.\"\\n | 43: \\nThere is a man here, dressed in rags. He is held captive by an ever-lowering laser beam.\\n"
+   "text": "Messages 40-43: 40: THIRTY | 41: \"Thank you for rescuing me.\"\\n | 42: \\n\"Now I shall help you for saving my life.\"\\n | 43: \\nThere is a man here, dressed in rags. He is held captive by an ever-lowering laser beam.\\n"
   },
   {
    "address": 18199,

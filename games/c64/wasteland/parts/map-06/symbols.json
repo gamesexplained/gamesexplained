@@ -2023,7 +2023,7 @@
   {
    "address": 14761,
    "type": "line",
-   "text": "The number of square (9, 29): game `$B4F0` `bit $39A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$39` the code enters at `$B4F1`; nothing reads this byte through it."
+   "text": "The number of square (9, 29). Game `$B4F0` `bit $39A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$39` the code enters at `$B4F1`. On choose_attack's path through the LDA #$50 at $B4EE (api_is_ranged_class at $B4E4 returning carry clear and weapon_rounds at $B4E9 returning 0) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA #$92 at $1DC4, V by the ADC at $28E5, both on game_msg's path), so its value never matters."
   },
   {
    "address": 14848,
@@ -2033,7 +2033,7 @@
   {
    "address": 14892,
    "type": "line",
-   "text": "Map settings: +$2C size 32 (width = height, enter_map $25D3); +$2D/+$2E $F8 $19 (no reader found); +$2F random encounter chance 1 in 80 ($B017); +$30 tile set 2 ($25EE); +$31 5 monster types for random encounters ($B047); +$32 4 class-15 records for random encounters ($B040); +$33 off-map tile 58 ($0B5E); +$34/+$35 time per step 64 ($AF32); +$36 ticks per step 1 ($AF58)."
+   "text": "Map settings: +$2C size 32 (width = height, enter_map $25D3); +$2D/+$2E $F8 $19 (no reader found); +$2F random encounter chance 1 in 80 as loaded ($B017; the map's code changes it at $4164 and $416B); +$30 tile set 2 ($25EE); +$31 5 monster types for random encounters ($B047); +$32 4 class-15 records for random encounters ($B040); +$33 off-map tile 58 ($0B5E); +$34/+$35 time per step 64 ($AF32); +$36 ticks per step 1 ($AF58)."
   },
   {
    "address": 14903,
@@ -2223,12 +2223,12 @@
   {
    "address": 15177,
    "type": "line",
-   "text": "Check square, class 2 number 1: +0 flags $08 (bits 3: a change per check, $8F4C); +1 message on arrival 10 ($8E2B), +2 success message 11 ($9026), +3 failure message 12 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute ST difficulty 3; item 56 (Sledge hammer): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 55 (Shovel): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 53 (Pick ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 4 (Knife): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 45 (Crowbar): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 2 (Club): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 1 (Ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$28; +$29 change for check 0 ($9108): change to class 2 number 2; +$2B change for check 1 ($9108): change to class 2 number 2; +$2D change for check 2 ($9108): change to class 2 number 2; +$2F change for check 3 ($9108): change to class 2 number 2; +$31 change for check 4 ($9108): change to class 2 number 2; +$33 change for check 5 ($9108): change to class 2 number 2; +$35 change for check 6 ($9108): change to class 2 number 2; +$37 change for check 7 ($9108): change to class 2 number 2; +$39 change for check 8 ($9108): change to class 6 number 0; +$3B change for check 9 ($9108): change to class 6 number 0; +$3D change for check 10 ($9108): change to class 6 number 0; +$3F change for check 11 ($9108): change to class 6 number 0; +$41 change for check 12 ($9108): change to class 6 number 0; +$43 change for check 13 ($9108): change to class 6 number 0; +$45 change for check 14 ($9108): change to class 6 number 0."
+   "text": "Check square, class 2 number 1: +0 flags $08 (bits 3: a change per check, $8C83); +1 message 10, shown on a move onto it ($8E2B), +2 success message 11 ($9026), +3 failure message 12 ($9029); +$04 success (never read: bit 6 is clear, and a successful Use makes the passing pair's own change, bit 3, $8C83-$8C89): change $FF $FF (bit 7: nothing written); +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): attribute ST difficulty 3; item 56 (Sledge hammer): Use of it ($8F84); item 55 (Shovel): Use of it ($8F84); item 53 (Pick ax): Use of it ($8F84); item 4 (Knife): Use of it ($8F84); item 45 (Crowbar): Use of it ($8F84); item 2 (Club): Use of it ($8F84); item 1 (Ax): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 7 (Plastic explosive): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$28; +$29 change for check 0 ($9108): change to class 2 number 2; +$2B change for check 1 ($9108): change to class 2 number 2; +$2D change for check 2 ($9108): change to class 2 number 2; +$2F change for check 3 ($9108): change to class 2 number 2; +$31 change for check 4 ($9108): change to class 2 number 2; +$33 change for check 5 ($9108): change to class 2 number 2; +$35 change for check 6 ($9108): change to class 2 number 2; +$37 change for check 7 ($9108): change to class 2 number 2; +$39 change for check 8 ($9108): change to class 6 number 0; +$3B change for check 9 ($9108): change to class 6 number 0; +$3D change for check 10 ($9108): change to class 6 number 0; +$3F change for check 11 ($9108): change to class 6 number 0; +$41 change for check 12 ($9108): change to class 6 number 0; +$43 change for check 13 ($9108): change to class 6 number 0; +$45 change for check 14 ($9108): change to class 6 number 0."
   },
   {
    "address": 15248,
    "type": "line",
-   "text": "Check square, class 2 number 2: +0 flags $E0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2); +1 message on arrival 0 ($8E2B), +2 success message 13 ($9026), +3 failure message 14 ($9029); +$04 success ($8F66): change to class 2 number 15; +$06 failure ($8F42): change to class 2 number 15; +8/+9 effect ($9039): CON - 3d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute LK difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 2: +0 flags $E0 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2); +1 message on arrival 0 ($8E2B), +2 success message 13 ($9026), +3 failure message 14 (square_message_slow $9130, shown with the effect); +$04 success ($8F66): change to class 2 number 15; +$06 failure ($8F42): change to class 2 number 15; +8/+9 effect ($9039): CON - 3d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute LK difficulty 1; $FF at +$0C."
   },
   {
    "address": 15261,
@@ -2248,32 +2248,32 @@
   {
    "address": 15310,
    "type": "line",
-   "text": "Check square, class 2 number 8: +0 flags $A8 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2; 3: a change per check, $8F4C); +1 message on arrival 39 ($8E2B), +2 success message 124 ($9026), +3 failure message 125 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; item 54 (Rope): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$10; +$11 change for check 0 ($9108): change to class 10 number 8; +$13 change for check 1 ($9108): change to class 10 number 8; +$15 change for check 2 ($9108): change to class 1 number 15."
+   "text": "Check square, class 2 number 8: +0 flags $A8 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2 (not read for this square: bit 6 is clear); 3: a change per check, $8C83); +1 message on arrival 39 ($8E2B), +2 success message 124 ($9026), +3 failure message 125 (square_message_slow $9130, shown with the effect); +$04 success (never read: bit 6 is clear, and a successful Use makes the passing pair's own change, bit 3, $8C83-$8C89): change $FF $FF (bit 7: nothing written); +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 effect ($9039): CON - 1d6; +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; item 54 (Rope): Use of it ($8F84); $FF at +$10; +$11 change for check 0 ($9108): change to class 10 number 8; +$13 change for check 1 ($9108): change to class 10 number 8; +$15 change for check 2 ($9108): change to class 1 number 15."
   },
   {
    "address": 15333,
    "type": "line",
-   "text": "Check square, class 2 number 9: +0 flags $A0 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2); +1 message on arrival 89 ($8E2B), +2 success message 124 ($9026), +3 failure message 125 ($9029); +$04 success ($8F66): change to class 10 number 8; +$06 failure ($8F42): change to class 10 number 9; +8/+9 effect ($9039): CON - 3d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; $FF at +$0E."
+   "text": "Check square, class 2 number 9: +0 flags $A0 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2 (not read for this square: bit 6 is clear)); +1 message on arrival 89 ($8E2B), +2 success message 124 ($9026), +3 failure message 125 (square_message_slow $9130, shown with the effect); +$04 success of a Use ($8CA2): change to class 10 number 8; +$06 failure of a Use ($8CFD): change to class 10 number 9; +8/+9 effect ($9039): CON - 3d6; +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; $FF at +$0E."
   },
   {
    "address": 15348,
    "type": "line",
-   "text": "Check square, class 2 number 10: +0 flags $A0 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2); +1 message on arrival 43 ($8E2B), +2 success message 44 ($9026), +3 failure message 45 ($9029); +$04 success ($8F66): change to class 10 number 10; +$06 failure ($8F42): change to class 10 number 9; +8/+9 effect ($9039): CON - 2d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; $FF at +$0E."
+   "text": "Check square, class 2 number 10: +0 flags $A0 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2 (not read for this square: bit 6 is clear)); +1 message on arrival 43 ($8E2B), +2 success message 44 ($9026), +3 failure message 45 (square_message_slow $9130, shown with the effect); +$04 success of a Use ($8CA2): change to class 10 number 10; +$06 failure of a Use ($8CFD): change to class 10 number 9; +8/+9 effect ($9039): CON - 2d6; +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; $FF at +$0E."
   },
   {
    "address": 15363,
    "type": "line",
-   "text": "Check square, class 2 number 11: +0 flags $A0 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2); +1 message on arrival 43 ($8E2B), +2 success message 46 ($9026), +3 failure message 45 ($9029); +$04 success ($8F66): change to class 10 number 10; +$06 failure ($8F42): change to class 10 number 9; +8/+9 effect ($9039): CON - 4d6; +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; $FF at +$0E."
+   "text": "Check square, class 2 number 11: +0 flags $A0 (bits 7: may be walked onto without the checks, $8F72; 5: every conscious member tested, $8EF2 (not read for this square: bit 6 is clear)); +1 message on arrival 43 ($8E2B), +2 success message 46 ($9026), +3 failure message 45 (square_message_slow $9130, shown with the effect); +$04 success of a Use ($8CA2): change to class 10 number 10; +$06 failure of a Use ($8CFD): change to class 10 number 9; +8/+9 effect ($9039): CON - 4d6; +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): attribute AGL difficulty 2; skill 2 (Climb) difficulty 1; $FF at +$0E."
   },
   {
    "address": 15378,
    "type": "line",
-   "text": "Check square, class 2 number 12: +0 flags $08 (bits 3: a change per check, $8F4C); +1 message on arrival 48 ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; attribute ST difficulty 15; item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$1E; +$1F change for check 0 ($9108): change to class 4 number 6; +$21 change for check 1 ($9108): change to class 4 number 6; +$23 change for check 2 ($9108): change to class 12 number 9; +$25 change for check 3 ($9108): change to class 12 number 9; +$27 change for check 4 ($9108): change to class 12 number 9; +$29 change for check 5 ($9108): change to class 12 number 9; +$2B change for check 6 ($9108): change to class 12 number 9; +$2D change for check 7 ($9108): change to class 12 number 9; +$2F change for check 8 ($9108): change to class 12 number 9; +$31 change for check 9 ($9108): change to class 12 number 9."
+   "text": "Check square, class 2 number 12: +0 flags $08 (bits 3: a change per check, $8C83); +1 message 48, shown on a move onto it ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success (never read: bit 6 is clear, and a successful Use makes the passing pair's own change, bit 3, $8C83-$8C89): change $FF $FF (bit 7: nothing written); +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; attribute ST difficulty 15; item 7 (Plastic explosive): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$1E; +$1F change for check 0 ($9108): change to class 4 number 6; +$21 change for check 1 ($9108): change to class 4 number 6; +$23 change for check 2 ($9108): change to class 12 number 9; +$25 change for check 3 ($9108): change to class 12 number 9; +$27 change for check 4 ($9108): change to class 12 number 9; +$29 change for check 5 ($9108): change to class 12 number 9; +$2B change for check 6 ($9108): change to class 12 number 9; +$2D change for check 7 ($9108): change to class 12 number 9; +$2F change for check 8 ($9108): change to class 12 number 9; +$31 change for check 9 ($9108): change to class 12 number 9."
   },
   {
    "address": 15429,
    "type": "line",
-   "text": "Check square, class 2 number 13: +0 flags $08 (bits 3: a change per check, $8F4C); +1 message on arrival 48 ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; attribute ST difficulty 1; item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$1E; +$1F change for check 0 ($9108): change to class 4 number 1; +$21 change for check 1 ($9108): change to class 4 number 1; +$23 change for check 2 ($9108): change to class 4 number 1; +$25 change for check 3 ($9108): change to class 6 number 1; +$27 change for check 4 ($9108): change to class 6 number 1; +$29 change for check 5 ($9108): change to class 6 number 1; +$2B change for check 6 ($9108): change to class 6 number 1; +$2D change for check 7 ($9108): change to class 6 number 1; +$2F change for check 8 ($9108): change to class 6 number 1; +$31 change for check 9 ($9108): change to class 6 number 1."
+   "text": "Check square, class 2 number 13: +0 flags $08 (bits 3: a change per check, $8C83); +1 message 48, shown on a move onto it ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success (never read: bit 6 is clear, and a successful Use makes the passing pair's own change, bit 3, $8C83-$8C89): change $FF $FF (bit 7: nothing written); +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; attribute ST difficulty 1; item 7 (Plastic explosive): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$1E; +$1F change for check 0 ($9108): change to class 4 number 1; +$21 change for check 1 ($9108): change to class 4 number 1; +$23 change for check 2 ($9108): change to class 4 number 1; +$25 change for check 3 ($9108): change to class 6 number 1; +$27 change for check 4 ($9108): change to class 6 number 1; +$29 change for check 5 ($9108): change to class 6 number 1; +$2B change for check 6 ($9108): change to class 6 number 1; +$2D change for check 7 ($9108): change to class 6 number 1; +$2F change for check 8 ($9108): change to class 6 number 1; +$31 change for check 9 ($9108): change to class 6 number 1."
   },
   {
    "address": 15480,
@@ -2293,22 +2293,22 @@
   {
    "address": 15527,
    "type": "line",
-   "text": "Check square, class 2 number 17: +0 flags $C4 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 2: one pass is enough, $8F20); +1 message on arrival 0 ($8E2B), +2 success message 60 ($9026), +3 failure message 59 ($9029); +$04 success ($8F66): change to class 12 number 13; +$06 failure ($8F42): change to class 12 number 4; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute ST difficulty 2; attribute LK difficulty 2; skill 16 (Silent move) difficulty 1; attribute AGL difficulty 2; $FF at +$12."
+   "text": "Check square, class 2 number 17: +0 flags $C4 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 2: one pass is enough, $8F20 (not read for this square: with bits 5 and 4 clear the checks end on the first conscious member's result, $8EF2, $8F0B, $8F5F)); +1 message on arrival 0 ($8E2B), +2 success message 60 ($9026), +3 failure message 59 ($9029); +$04 success ($8F66): change to class 12 number 13; +$06 failure ($8F42): change to class 12 number 4; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute ST difficulty 2; attribute LK difficulty 2; skill 16 (Silent move) difficulty 1; attribute AGL difficulty 2; $FF at +$12."
   },
   {
    "address": 15529,
    "type": "line",
-   "text": "Byte +$2 of check_17: game `$81DE` `bit $3CA9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$3C` the code enters at `$81DF`; nothing reads this byte through it."
+   "text": "Byte +$2 of check_17. Game `$81DE` `bit $3CA9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$3C` the code enters at `$81DF`. On melee_monster_attacks's path for a target member whose order is not 5 (from the LDA #$28 at $81D9 or the LDA #$32 at $81DC) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDX #$00 at $81E1, V by the ADC at $07D5 in num2_add, through melee_chance), so its value never matters."
   },
   {
    "address": 15546,
    "type": "line",
-   "text": "Check square, class 2 number 18: +0 flags $00 (none); +1 message on arrival 71 ($8E2B), +2 success message 72 ($9026), +3 failure message 73 ($9029); +$04 success ($8F66): change to class 1 number 25; +$06 failure ($8F42): change to class 2 number 19; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): item 44 (Canteen): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 57 (Snake squeezin): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$0E."
+   "text": "Check square, class 2 number 18: +0 flags $00 (none); +1 message 71, shown on a move onto it ($8E2B), +2 success message 72 ($9026), +3 failure message 73 ($9029); +$04 success of a Use ($8CA2): change to class 1 number 25; +$06 failure of a Use ($8CFD): change to class 2 number 19; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): item 44 (Canteen): Use of it ($8F84); item 57 (Snake squeezin): Use of it ($8F84); $FF at +$0E."
   },
   {
    "address": 15561,
    "type": "line",
-   "text": "Check square, class 2 number 19: +0 flags $64 (bits 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 2: one pass is enough, $8F20); +1 message on arrival 0 ($8E2B), +2 success message 0 ($9026), +3 failure message 74 ($9029); +$04 success ($8F66): change to class 2 number 18; +$06 failure ($8F42): change to class 4 number 4; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute LK difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 19: +0 flags $64 (bits 6: the checks run on a move onto it, $8E33; 5: every conscious member tested, $8EF2; 2: one pass is enough, $8F20); +1 message 0, shown on a move onto it ($8E2B), +2 success message 0 ($9026), +3 failure message 74 ($9029); +$04 success ($8F66): change to class 2 number 18; +$06 failure ($8F42): change to class 4 number 4; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute LK difficulty 1; $FF at +$0C."
   },
   {
    "address": 15574,
@@ -2318,7 +2318,7 @@
   {
    "address": 15587,
    "type": "line",
-   "text": "Check square, class 2 number 21: +0 flags $E8 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 3: a change per check, $8F4C); +1 message on arrival 126 ($8E2B), +2 success message 0 ($9026), +3 failure message 127 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change to class 8 number 3; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 0; attribute LK difficulty 1; attribute CHR difficulty 1; skill 18 (Confidence) difficulty 1; skill 23 (Bureaucracy) difficulty 1; $FF at +$14; +$15 change for check 0 ($9108): change to class 1 number 26; +$17 change for check 1 ($9108): change to class 1 number 27; +$19 change for check 2 ($9108): change to class 1 number 27; +$1B change for check 3 ($9108): change to class 1 number 27; +$1D change for check 4 ($9108): change to class 1 number 27."
+   "text": "Check square, class 2 number 21: +0 flags $E8 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, until one passes (bit 3), $8EF2; 3: a change per check, $8F4C); +1 message on arrival 126 ($8E2B), +2 success message 0 ($9026), +3 failure message 127 ($9029); +$04 success ($8F66, reached only when the checks test nobody: with bit 3 a passing pair makes its own change, $8F4C-$8F59): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change to class 8 number 3; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 0; attribute LK difficulty 1; attribute CHR difficulty 1; skill 18 (Confidence) difficulty 1; skill 23 (Bureaucracy) difficulty 1; $FF at +$14; +$15 change for check 0 ($9108): change to class 1 number 26; +$17 change for check 1 ($9108): change to class 1 number 27; +$19 change for check 2 ($9108): change to class 1 number 27; +$1B change for check 3 ($9108): change to class 1 number 27; +$1D change for check 4 ($9108): change to class 1 number 27."
   },
   {
    "address": 15618,
@@ -2328,37 +2328,37 @@
   {
    "address": 15633,
    "type": "line",
-   "text": "Check square, class 2 number 23: +0 flags $EC (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 3: a change per check, $8F4C; 2: one pass is enough, $8F20); +1 message on arrival 130 ($8E2B), +2 success message 131 ($9026), +3 failure message 132 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change to class 3 number 29; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 0; skill 18 (Confidence) difficulty 2; skill 23 (Bureaucracy) difficulty 2; attribute LK difficulty 3; $FF at +$12; +$13 change for check 0 ($9108): change to class 1 number 30; +$15 change for check 1 ($9108): change to class 1 number 31; +$17 change for check 2 ($9108): change to class 1 number 31; +$19 change for check 3 ($9108): change to class 1 number 31."
+   "text": "Check square, class 2 number 23: +0 flags $EC (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, until one passes (bit 3), $8EF2; 3: a change per check, $8F4C; 2: one pass is enough, $8F20); +1 message on arrival 130 ($8E2B), +2 success message 131 ($9026), +3 failure message 132 ($9029); +$04 success ($8F66, reached only when the checks test nobody: with bit 3 a passing pair makes its own change, $8F4C-$8F59): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change to class 3 number 29; +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 37 (not one of the 35 skills: the marker that DAN CITRINE (map 6 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 0; skill 18 (Confidence) difficulty 2; skill 23 (Bureaucracy) difficulty 2; attribute LK difficulty 3; $FF at +$12; +$13 change for check 0 ($9108): change to class 1 number 30; +$15 change for check 1 ($9108): change to class 1 number 31; +$17 change for check 2 ($9108): change to class 1 number 31; +$19 change for check 3 ($9108): change to class 1 number 31."
   },
   {
    "address": 15660,
    "type": "line",
-   "text": "Check square, class 2 number 24: +0 flags $00 (none); +1 message on arrival 87 ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success ($8F66): change to class 4 number 1; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 1; attribute ST difficulty 2; item 45 (Crowbar): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 53 (Pick ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 56 (Sledge hammer): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 1 (Ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$24."
+   "text": "Check square, class 2 number 24: +0 flags $00 (none); +1 message 87, shown on a move onto it ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success of a Use ($8CA2): change to class 4 number 1; +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 1; attribute ST difficulty 2; item 45 (Crowbar): Use of it ($8F84); item 53 (Pick ax): Use of it ($8F84); item 56 (Sledge hammer): Use of it ($8F84); item 1 (Ax): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 7 (Plastic explosive): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$24."
   },
   {
    "address": 15697,
    "type": "line",
-   "text": "Check square, class 2 number 26: +0 flags $00 (none); +1 message on arrival 87 ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success ($8F66): change to class 4 number 1; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 2; attribute ST difficulty 3; item 45 (Crowbar): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 53 (Pick ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 56 (Sledge hammer): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 1 (Ax): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$24."
+   "text": "Check square, class 2 number 26: +0 flags $00 (none); +1 message 87, shown on a move onto it ($8E2B), +2 success message 49 ($9026), +3 failure message 12 ($9029); +$04 success of a Use ($8CA2): change to class 4 number 1; +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 2; attribute ST difficulty 3; item 45 (Crowbar): Use of it ($8F84); item 53 (Pick ax): Use of it ($8F84); item 56 (Sledge hammer): Use of it ($8F84); item 1 (Ax): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 7 (Plastic explosive): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$24."
   },
   {
    "address": 15734,
    "type": "line",
-   "text": "Check square, class 2 number 27: +0 flags $80 (bits 7: may be walked onto without the checks, $8F72); +1 message on arrival 91 ($8E2B), +2 success message 92 ($9026), +3 failure message 93 ($9029); +$04 success ($8F66): change to class 5 number 26; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 9 (Perception) difficulty 1; $FF at +$0C."
+   "text": "Check square, class 2 number 27: +0 flags $80 (bits 7: may be walked onto without the checks, $8F72); +1 message on arrival 91 ($8E2B), +2 success message 92 ($9026), +3 failure message 93 ($9029); +$04 success of a Use ($8CA2): change to class 5 number 26; +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 9 (Perception) difficulty 1; $FF at +$0C."
   },
   {
    "address": 15747,
    "type": "line",
-   "text": "Check square, class 2 number 28: +0 flags $00 (none); +1 message on arrival 99 ($8E2B), +2 success message 101 ($9026), +3 failure message 102 ($9029); +$04 success ($8F66): change to class 12 number 20; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute ST difficulty 10; skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$1E."
+   "text": "Check square, class 2 number 28: +0 flags $00 (none); +1 message 99, shown on a move onto it ($8E2B), +2 success message 101 ($9026), +3 failure message 102 ($9029); +$04 success of a Use ($8CA2): change to class 12 number 20; +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): attribute ST difficulty 10; skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; item 7 (Plastic explosive): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$1E."
   },
   {
    "address": 15778,
    "type": "line",
-   "text": "Check square, class 2 number 29: +0 flags $00 (none); +1 message on arrival 99 ($8E2B), +2 success message 101 ($9026), +3 failure message 102 ($9029); +$04 success ($8F66): change to class 4 number 1; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): attribute ST difficulty 10; skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$1E."
+   "text": "Check square, class 2 number 29: +0 flags $00 (none); +1 message 99, shown on a move onto it ($8E2B), +2 success message 101 ($9026), +3 failure message 102 ($9029); +$04 success of a Use ($8CA2): change to class 4 number 1; +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): attribute ST difficulty 10; skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; item 7 (Plastic explosive): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$1E."
   },
   {
    "address": 15785,
    "type": "line",
-   "text": "Byte +$7 of check_29: game `$8DB8` `bit $3DA9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$3D` the code enters at `$8DB9`; nothing reads this byte through it."
+   "text": "Byte +$7 of check_29. Game `$8DB8` `bit $3DA9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$3D` the code enters at `$8DB9`. On msg_nothing_special's path (its LDA #$26 at $8DB6, called from $8C40 and reached from $8DB4) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N, V and Z by the BIT at $8DBB), so its value never matters."
   },
   {
    "address": 15809,
@@ -2368,7 +2368,7 @@
   {
    "address": 15822,
    "type": "line",
-   "text": "Check square, class 2 number 31: +0 flags $08 (bits 3: a change per check, $8F4C); +1 message on arrival 99 ($8E2B), +2 success message 0 ($9026), +3 failure message 102 ($9029); +$04 success ($8F66): change $FF $FF (bit 7: nothing written); +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; skill 22 (Alarm disarm) difficulty 2; attribute ST difficulty 10; item 7 (Plastic explosive): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 6 (Grenade): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 8 (TNT): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 11 (LAW rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 9 (Mangler): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 10 (Sabot rocket): Use of it ($8F84), or carried on arrival (a charge used, $8E65); item 12 (RPG-7): Use of it ($8F84), or carried on arrival (a charge used, $8E65); $FF at +$20; +$21 change for check 0 ($9108): change to class 12 number 3; +$23 change for check 1 ($9108): change to class 12 number 3; +$25 change for check 2 ($9108): change to class 12 number 3; +$27 change for check 3 ($9108): change to class 1 number 33; +$29 change for check 4 ($9108): change to class 1 number 33; +$2B change for check 5 ($9108): change to class 1 number 33; +$2D change for check 6 ($9108): change to class 1 number 33; +$2F change for check 7 ($9108): change to class 1 number 33; +$31 change for check 8 ($9108): change to class 1 number 33; +$33 change for check 9 ($9108): change to class 1 number 33; +$35 change for check 10 ($9108): change to class 1 number 33."
+   "text": "Check square, class 2 number 31: +0 flags $08 (bits 3: a change per check, $8C83); +1 message 99, shown on a move onto it ($8E2B), +2 success message 0 ($9026), +3 failure message 102 ($9029); +$04 success (never read: bit 6 is clear, and a successful Use makes the passing pair's own change, bit 3, $8C83-$8C89): change $FF $FF (bit 7: nothing written); +$06 failure of a Use ($8CFD): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; with bit 6 clear only a Use tests them: $8F84, $8FB9, $8FEF): skill 15 (Picklock) difficulty 3; skill 26 (Safecrack) difficulty 2; skill 22 (Alarm disarm) difficulty 2; attribute ST difficulty 10; item 7 (Plastic explosive): Use of it ($8F84); item 6 (Grenade): Use of it ($8F84); item 8 (TNT): Use of it ($8F84); item 11 (LAW rocket): Use of it ($8F84); item 9 (Mangler): Use of it ($8F84); item 10 (Sabot rocket): Use of it ($8F84); item 12 (RPG-7): Use of it ($8F84); $FF at +$20; +$21 change for check 0 ($9108): change to class 12 number 3; +$23 change for check 1 ($9108): change to class 12 number 3; +$25 change for check 2 ($9108): change to class 12 number 3; +$27 change for check 3 ($9108): change to class 1 number 33; +$29 change for check 4 ($9108): change to class 1 number 33; +$2B change for check 5 ($9108): change to class 1 number 33; +$2D change for check 6 ($9108): change to class 1 number 33; +$2F change for check 7 ($9108): change to class 1 number 33; +$31 change for check 8 ($9108): change to class 1 number 33; +$33 change for check 9 ($9108): change to class 1 number 33; +$35 change for check 10 ($9108): change to class 1 number 33."
   },
   {
    "address": 15877,
@@ -2378,187 +2378,187 @@
   {
    "address": 15951,
    "type": "line",
-   "text": "Encounter, class 3 number 0: +0 seen within 100 ($95C9), +1 engages within 100 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 4 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 0."
+   "text": "Encounter, class 3 number 0: +0 seen within 100 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 100 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 4 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 0."
   },
   {
    "address": 15963,
    "type": "line",
-   "text": "Encounter, class 3 number 1: +0 seen within 100 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 109 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-4 x monster 3; 1-4 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 1."
+   "text": "Encounter, class 3 number 1: +0 seen within 100 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 109 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-4 x monster 3; 1-4 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 1."
   },
   {
    "address": 15975,
    "type": "line",
-   "text": "Encounter, class 3 number 2: +0 seen within 75 ($95C9), +1 engages within 75 ($9618, $97BA), +2 message 110 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 2; 1 x monster 2; 1 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
+   "text": "Encounter, class 3 number 2: +0 seen within 75 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 75 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 110 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 2; 1 x monster 2; 1 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
   },
   {
    "address": 15987,
    "type": "line",
-   "text": "Encounter, class 3 number 3: +0 seen within 120 ($95C9), +1 engages within 150 ($9618, $97BA), +2 message 111 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 2."
+   "text": "Encounter, class 3 number 3: +0 seen within 120 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 150 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 111 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 2."
   },
   {
    "address": 15999,
    "type": "line",
-   "text": "Encounter, class 3 number 4: +0 seen within 50 ($95C9), +1 engages within 50 ($9618, $97BA), +2 message 117 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-2 x monster 2; 1-2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
+   "text": "Encounter, class 3 number 4: +0 seen within 50 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 50 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 117 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-2 x monster 2; 1-2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
   },
   {
    "address": 16011,
    "type": "line",
-   "text": "Encounter, class 3 number 5: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 118 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-4 x monster 5; 1-4 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
+   "text": "Encounter, class 3 number 5: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 118 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-4 x monster 5; 1-4 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
   },
   {
    "address": 16023,
    "type": "line",
-   "text": "Encounter, class 3 number 6 (only changes in records nothing reaches name it): +0 seen within 75 ($95C9), +1 engages within 75 ($9618, $97BA), +2 message 122 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 2 x monster 2; 2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 3."
+   "text": "Encounter, class 3 number 6 (only changes in records nothing reaches name it): +0 seen within 75 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 75 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 122 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 2 x monster 2; 2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 3."
   },
   {
    "address": 16035,
    "type": "line",
-   "text": "Encounter, class 3 number 7: +0 seen within 75 ($95C9), +1 engages within 75 ($9618, $97BA), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 4; 1 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 12 number 7."
+   "text": "Encounter, class 3 number 7: +0 seen within 75 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 75 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 4; 1 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 12 number 7."
   },
   {
    "address": 16047,
    "type": "line",
-   "text": "Encounter, class 3 number 8: +0 seen within 30 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 23 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 3; 3 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
+   "text": "Encounter, class 3 number 8: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 23 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 3; 3 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
   },
   {
    "address": 16059,
    "type": "line",
-   "text": "Encounter, class 3 number 9: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 3; 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 8."
+   "text": "Encounter, class 3 number 9: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 3; 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 8."
   },
   {
    "address": 16071,
    "type": "line",
-   "text": "Encounter, class 3 number 10: +0 seen within 50 ($95C9), +1 engages within 50 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-2 x monster 2; 1-2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 9."
+   "text": "Encounter, class 3 number 10: +0 seen within 50 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 50 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-2 x monster 2; 1-2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 9."
   },
   {
    "address": 16083,
    "type": "line",
-   "text": "Encounter, class 3 number 11: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 118 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 10."
+   "text": "Encounter, class 3 number 11: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 118 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 5; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 10."
   },
   {
    "address": 16095,
    "type": "line",
-   "text": "Encounter, class 3 number 12: +0 seen within 40 ($95C9), +1 engages within 40 ($9618, $97BA), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 11."
+   "text": "Encounter, class 3 number 12: +0 seen within 40 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 40 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 11."
   },
   {
    "address": 16107,
    "type": "line",
-   "text": "Encounter, class 3 number 13: +0 seen within 30 ($95C9), +1 engages within 30 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 12."
+   "text": "Encounter, class 3 number 13: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 30 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-2 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 12."
   },
   {
    "address": 16119,
    "type": "line",
-   "text": "Encounter, class 3 number 14: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 3; 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 13."
+   "text": "Encounter, class 3 number 14: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 3; 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 13."
   },
   {
    "address": 16131,
    "type": "line",
-   "text": "Encounter, class 3 number 15: +0 seen within 40 ($95C9), +1 engages within 40 ($9618, $97BA), +2 message 63 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-2 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 14."
+   "text": "Encounter, class 3 number 15: +0 seen within 40 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 40 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 63 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-2 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 14."
   },
   {
    "address": 16143,
    "type": "line",
-   "text": "Encounter, class 3 number 16: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 15."
+   "text": "Encounter, class 3 number 16: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 15."
   },
   {
    "address": 16155,
    "type": "line",
-   "text": "Encounter, class 3 number 17: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 16."
+   "text": "Encounter, class 3 number 17: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 16."
   },
   {
    "address": 16167,
    "type": "line",
-   "text": "Encounter, class 3 number 18: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 1 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
+   "text": "Encounter, class 3 number 18: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 1 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
   },
   {
    "address": 16179,
    "type": "line",
-   "text": "Encounter, class 3 number 19: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 17."
+   "text": "Encounter, class 3 number 19: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 17."
   },
   {
    "address": 16191,
    "type": "line",
-   "text": "Encounter, class 3 number 20: +0 seen within 30 ($95C9), +1 engages within 30 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 18."
+   "text": "Encounter, class 3 number 20: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 30 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 18."
   },
   {
    "address": 16203,
    "type": "line",
-   "text": "Encounter, class 3 number 21: +0 seen within 20 ($95C9), +1 engages within 20 ($9618, $97BA), +2 message 61 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 8; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 4."
+   "text": "Encounter, class 3 number 21: +0 seen within 20 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 20 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 61 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 8; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 4."
   },
   {
    "address": 16215,
    "type": "line",
-   "text": "Encounter, class 3 number 22: +0 seen within 120 ($95C9), +1 engages within 120 ($9618, $97BA), +2 message 62 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 6; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 5."
+   "text": "Encounter, class 3 number 22: +0 seen within 120 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 120 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 62 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 6; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 5."
   },
   {
    "address": 16227,
    "type": "line",
-   "text": "Encounter, class 3 number 23: +0 seen within 120 ($95C9), +1 engages within 120 ($9618, $97BA), +2 message 63 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 4; 1 x monster 4; 1 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
+   "text": "Encounter, class 3 number 23: +0 seen within 120 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 120 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 63 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 4; 1 x monster 4; 1 x monster 4; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 0 number 0."
   },
   {
    "address": 16239,
    "type": "line",
-   "text": "Encounter, class 3 number 24: +0 seen within 20 ($95C9), +1 engages within 20 ($9618, $97BA), +2 message 64 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 6; 1 x monster 7; 1 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 7."
+   "text": "Encounter, class 3 number 24: +0 seen within 20 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 20 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 64 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 6; 1 x monster 7; 1 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 7."
   },
   {
    "address": 16251,
    "type": "line",
-   "text": "Encounter, class 3 number 25: +0 seen within 20 ($95C9), +1 engages within 20 ($9618, $97BA), +2 message 65 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 7; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 6."
+   "text": "Encounter, class 3 number 25: +0 seen within 20 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 20 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 65 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 7; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 6."
   },
   {
    "address": 16263,
    "type": "line",
-   "text": "Encounter, class 3 number 26: +0 seen within 30 ($95C9), +1 engages within 30 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 19."
+   "text": "Encounter, class 3 number 26: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 30 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 19."
   },
   {
    "address": 16275,
    "type": "line",
-   "text": "Encounter, class 3 number 27: +0 seen within 30 ($95C9), +1 engages within 30 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 20."
+   "text": "Encounter, class 3 number 27: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 30 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 20."
   },
   {
    "address": 16287,
    "type": "line",
-   "text": "Encounter, class 3 number 28: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 3; +9 flags $05 (bits 0 identified: names shown, $9E5D, 2 stationary, $8428), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 21."
+   "text": "Encounter, class 3 number 28: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 3; +9 flags $05 (bits 0 identified: names shown, $9E5D, 2 stationary, $8428), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 21."
   },
   {
    "address": 16299,
    "type": "line",
-   "text": "Encounter, class 3 number 29: +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 22."
+   "text": "Encounter, class 3 number 29: +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 22."
   },
   {
    "address": 16311,
    "type": "line",
-   "text": "Encounter, class 3 number 30 (only changes in records nothing reaches name it): +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 23."
+   "text": "Encounter, class 3 number 30 (only changes in records nothing reaches name it): +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 88 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 3; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 23."
   },
   {
    "address": 16323,
    "type": "line",
-   "text": "Encounter, class 3 number 31 (only changes in records nothing reaches name it): +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 24."
+   "text": "Encounter, class 3 number 31 (only changes in records nothing reaches name it): +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 22 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 1; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 24."
   },
   {
    "address": 16335,
    "type": "line",
-   "text": "Encounter, class 3 number 32 (only changes in records nothing reaches name it): +0 seen within 15 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 25."
+   "text": "Encounter, class 3 number 32 (only changes in records nothing reaches name it): +0 seen within 15 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 108 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1-3 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 25."
   },
   {
    "address": 16347,
    "type": "line",
-   "text": "Encounter, class 3 number 33: +0 seen within 30 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 94 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 4 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 27."
+   "text": "Encounter, class 3 number 33: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 94 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 4 x monster 2; +9 flags $01 (bits 0 identified: names shown, $9E5D), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 5 number 27."
   },
   {
    "address": 16359,
    "type": "line",
-   "text": "Encounter, class 3 number 34: +0 seen within 30 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 97 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 10; +9 flags $03 (bits 0 identified: names shown, $9E5D, 1 peaceful and hireable, $9EF6), NPC 2 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 4 number 5."
+   "text": "Encounter, class 3 number 34: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 97 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 10; +9 flags $03 (bits 0 identified: names shown, $9E5D, 1 peaceful and hireable, $9EF6), NPC 2 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 4 number 5."
   },
   {
    "address": 16371,
    "type": "line",
-   "text": "Encounter, class 3 number 35: +0 seen within 30 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 98 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 9; +9 flags $03 (bits 0 identified: names shown, $9E5D, 1 peaceful and hireable, $9EF6), NPC 1 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 1 number 0."
+   "text": "Encounter, class 3 number 35: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 98 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 9; +9 flags $03 (bits 0 identified: names shown, $9E5D, 1 peaceful and hireable, $9EF6), NPC 1 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 1 number 0."
   },
   {
    "address": 16383,
    "type": "line",
-   "text": "Encounter, class 3 number 36: +0 seen within 30 ($95C9), +1 engages within 15 ($9618, $97BA), +2 message 103 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, $9422-$943E): 1 x monster 11; +9 flags $05 (bits 0 identified: names shown, $9E5D, 2 stationary, $8428), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 1 number 0."
+   "text": "Encounter, class 3 number 36: +0 seen within 30 ($95C9), also the farthest the party can attack it from ($962C, group_in_reach $B6C5), +1 engages within 15 ($9618, $97BA), both in feet, ten to a square ($04CF), +2 message 103 ($9449); lines (+3/+4, +5/+6, +7/+8: monster, count; bit 7: 1 to n at random, rolled when the group is placed and written back, $9422-$943E): 1 x monster 11; +9 flags $05 (bits 0 identified: names shown, $9E5D, 2 stationary, $8428), NPC 0 (high nibble, $ABC0); +$0A when wiped out ($BA71): change to class 1 number 0."
   },
   {
    "address": 16384,
@@ -2573,22 +2573,22 @@
   {
    "address": 16409,
    "type": "line",
-   "text": "Tile square, class 4 number 0: +0 message 15 ($833F, $9181), +1 tile 53 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_01."
+   "text": "Tile square, class 4 number 0: +0 message 15 ($833F), +1 tile 53 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_01."
   },
   {
    "address": 16412,
    "type": "line",
-   "text": "Tile square, class 4 number 1: +0 message 0 ($833F, $9181), +1 tile 58 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_02."
+   "text": "Tile square, class 4 number 1: +0 message 0 ($833F), +1 tile 58 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_02."
   },
   {
    "address": 16415,
    "type": "line",
-   "text": "Tile square, class 4 number 2: +0 message 0 ($833F, $9181), +1 tile 7 (draw_square $0B8E); +$02 ($8342, $9177): change to class 2 number 17."
+   "text": "Tile square, class 4 number 2: +0 message 0 ($833F), +1 tile 7 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change to class 2 number 17."
   },
   {
    "address": 16419,
    "type": "line",
-   "text": "Tile square, class 4 number 3 (nothing names it: no square, change or code): +0 message 0 ($833F, $9181), +1 tile 7 (draw_square $0B8E); +$02 ($8342, $9177): change to class 12 number 12."
+   "text": "Tile square, class 4 number 3 (nothing names it: no square, change or code): +0 message 0 ($833F), +1 tile 7 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change to class 12 number 12."
   },
   {
    "address": 16423,
@@ -2598,12 +2598,12 @@
   {
    "address": 16426,
    "type": "line",
-   "text": "Tile square, class 4 number 5: +0 message 0 ($833F, $9181), +1 tile 10 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_06."
+   "text": "Tile square, class 4 number 5: +0 message 0 ($833F), +1 tile 10 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $00 (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of tile_06."
   },
   {
    "address": 16429,
    "type": "line",
-   "text": "Tile square, class 4 number 6: +0 message 0 ($833F, $9181), +1 tile 61 (draw_square $0B8E); +$02 ($8342, $9177): change $FF $6C (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of loot_list."
+   "text": "Tile square, class 4 number 6: +0 message 0 ($833F), +1 tile 61 (draw_square $0B8E; bit 7 clear, so bump_blocking_square reads only this byte, at $9173, and lets the party in at $9175); +$02 ($8342): change $FF $6C (bit 7: nothing written). The last change's number byte, read with its class byte, is the first byte of loot_list."
   },
   {
    "address": 16432,
@@ -2788,7 +2788,7 @@
   {
    "address": 16729,
    "type": "line",
-   "text": "Map code entry 0 (action 0): noise draws the guards. Lowers the map record's byte +$2F, the random encounter chance of 1 in N per step (game $B015-$B020; 80 when the map is loaded), by 2, unless the result would be 0 or negative, so N stops at 2. Returns with the carry the subtraction left, set when N was 2 or more, so the game then redraws ($8872). Class-6 square 0 runs it ($414C) and then becomes tile square 0 (debris, message 15 \"Your boots crunch on the debris.\"). It comes from the glass walls (check square 1, 36 squares, \"This is a ceiling to floor glass wall.\"): broken with explosives or a rocket (its checks 8-14), or broken any other way and then failing check 15 (LK 2; message 55, \"You made so much noise that you'll be lucky if no one comes after you.\")."
+   "text": "Map code entry 0 (action 0): noise draws the guards. Lowers the map record's byte +$2F, the random encounter chance of 1 in N per step (game $B015-$B020; 80 in the snapshot, as on the disk; the map's pages, this record among them, are written back when the party leaves, save_map $2856 from enter_map $25C3, so a lowered N stays), by 2, unless the result would be 0 or negative, so N stops at 2. Returns with the carry the subtraction left, set when N was 2 or more, so the game then redraws ($8872). Class-6 square 0 runs it ($414C) and then becomes tile square 0 (debris, message 15 \"Your boots crunch on the debris.\"). It comes from the glass walls (check square 1, 36 squares, \"This is a ceiling to floor glass wall.\"): broken with explosives or a rocket (its checks 8-14), or broken any other way and then failing check 15 (LK 2; message 55, \"You made so much noise that you'll be lucky if no one comes after you.\")."
   },
   {
    "address": 16729,
@@ -2808,7 +2808,7 @@
   {
    "address": 16743,
    "type": "line",
-   "text": "Map code entry 1 (action 1): sets the map record's random encounter chance (+$2F, 1 in N per step, game $B015) to 1 in 20, from the 80 the map starts with. Leaves the carry as run_action entered it, clear (map_class_entry's ASL of an action number below $80, $09D5), so the game does not redraw. Class-6 squares 1 and 2 run it ($414F, $4152). Square 1: the steel vault door at (7,3) (check square 13, \"This is a locked steel vault door.\") blown open with explosives or a rocket (its checks 3-9); it then becomes tile square 1. Square 2: the cell opened at (28,2) (check square 31, then message square 33: \"You open the cell and set off an alarm. Uh oh!\"); it then becomes remote change 3, which puts encounter 35 at (30,1)."
+   "text": "Map code entry 1 (action 1): sets the map record's random encounter chance (+$2F, 1 in N per step, game $B015) to 1 in 20, from the 80 the map starts with. Leaves the carry as run_action entered it, clear (map_class_entry's ASL of an action number below $80, $09D5), so the game does not redraw. Class-6 squares 1 and 2 run it ($414F, $4152). Square 1: the steel vault door at (7,3) (check square 13, \"This is a locked steel vault door.\") blown open with explosives or a rocket (its checks 3-9); it then becomes tile square 1. Square 2: the cell at (28,2) forced with ST 10, explosives or a rocket (check square 31's checks 3-10, then message square 33: \"You open the cell and set off an alarm. Uh oh!\"); it then becomes remote change 3, which puts encounter 35 at (30,1). Picklock 3, Safecrack 2 or Alarm disarm 2 (checks 0-2) make the cell remote change 3 directly, without the alarm."
   },
   {
    "address": 16743,
@@ -2988,7 +2988,7 @@
   {
    "address": 17065,
    "type": "line",
-   "text": "Byte +$3 of remote_07: game `$A3A8` `bit $42A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$A3A9`; nothing reads this byte through it; game `$B75A` `bit $42A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$B75B`; nothing reads this byte through it."
+   "text": "Byte +$3 of remote_07. Game `$A3A8` `bit $42A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$A3A9`. On order_load_unjam's path through the LDA #$41 at $A3A6 (api_find_item at $A3A1 returning carry set) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA #$92 at $1DC4, V by the ADC at $28E5, both on game_msg's path), so its value never matters. Game `$B75A` `bit $42A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$42` the code enters at `$B75B`. On choose_load's path through the LDA #$41 at $B758 (api_find_item at $B751 returning carry set) the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA #$04 at $B75E, V by the BIT at $226A, which printing control code $04 reaches through clear_window, or, when the code is not printed ($A1 set, or a text filter returns 0), by the ADC at $28E5 in the game_msg that follows), so its value never matters."
   },
   {
    "address": 17090,
@@ -3068,7 +3068,7 @@
   {
    "address": 17568,
    "type": "line",
-   "text": "NPC 2: 256-byte character record, copied whole when the NPC joins ($A42C-$A433; offsets as in the party's records): name \"DAN CITRINE\" (+$00), ST 11 IQ 12 LK 11 SP 13 AGL 10 DEX 12 CHR 12 (+$0E-+$14), cash 0, CON 14 of 16, rank 2 \"Private 1st class\" (+$24, +$32), NPC flag $01 (+$29), refusal bytes 01 02 02 01 (+$2B-+$2E, npc_obey_check $0D61), +$31 $00; skills: Clip pistol 1, Knife fight 1, Pugilism 2, Swim 1, AT weapon 1, Gamble 2, Confidence 1; +$BA/+$BB skill 37 at level $FF: a marker, not one of the 35 skills; check squares that test skill 37 find this NPC (skill_level $1392); items: none."
+   "text": "NPC 2: 256-byte character record, copied whole when the NPC joins ($A42C-$A433; offsets as in the party's records): name \"DAN CITRINE\" (+$00), ST 11 IQ 12 LK 11 SP 13 AGL 10 DEX 12 CHR 12 (+$0E-+$14), cash 0, CON 14 of 16, rank 2 \"Private 1st class\" (+$24, +$32), NPC flag $01 (+$29), refusal bytes 01 02 02 01 (+$2B-+$2E, npc_obey_check $0D61), +$31 $00; skills: Clip pistol 1, Knife fight 1, Pugilism 2, Swim 1, AT weapon 1, Gamble 2, Confidence 1; +$BA/+$BB skill 37 at level $FF: a marker, not one of the 35 skills; check squares that test skill 37 find this NPC when he is the member they test (skill_level $1392): every conscious member where the square's flags have bit 5 ($8EF2), otherwise only the first conscious member ($8E3A-$8E44); items: none."
   },
   {
    "address": 17824,
@@ -3083,7 +3083,7 @@
   {
    "address": 17833,
    "type": "line",
-   "text": "Byte +$1 of randenc_00: engine `$226A` `bit $45A9` names it only because of the BIT-skip idiom: the operand's bytes are the `lda #$45` the code enters at `$226B`; nothing reads this byte through it."
+   "text": "Byte +$1 of randenc_00. Engine `$226A` `bit $45A9` names it because of the BIT-skip idiom: the operand's bytes are the `lda #$45` the code enters at `$226B`. On clear_to_eol's path the BIT does execute and read this byte, but its flags are replaced before anything tests them (N and Z by LDA $24 at $2270, V by the BIT at $239A), so its value never matters."
   },
   {
    "address": 17844,
@@ -3198,32 +3198,32 @@
   {
    "address": 18055,
    "type": "line",
-   "text": "Monster 6, 8 bytes at header word 2 + 8 * 6 (monster_record $9EA4): hit-point seed 16 (+0/+1, $9EE6), to-hit 14 (+2, $9EEF), damage 3d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 1 (+4 high, $B0AD), weapon class 2 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 47 (+7, $B91E, $9EB8)."
+   "text": "Monster 6, 8 bytes at header word 2 + 8 * 6 (monster_record $9EA4): hit-point seed 16 (+0/+1, $9EE6), to-hit 14 (+2, $9EEF), damage 3d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 1 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 5), weapon class 2 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 47 (+7, $B91E, $9EB8)."
   },
   {
    "address": 18063,
    "type": "line",
-   "text": "Monster 7, 8 bytes at header word 2 + 8 * 7 (monster_record $9EA4): hit-point seed 16 (+0/+1, $9EE6), to-hit 14 (+2, $9EEF), damage 3d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 1 (+4 high, $B0AD), weapon class 2 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 47 (+7, $B91E, $9EB8)."
+   "text": "Monster 7, 8 bytes at header word 2 + 8 * 7 (monster_record $9EA4): hit-point seed 16 (+0/+1, $9EE6), to-hit 14 (+2, $9EEF), damage 3d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 1 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 5), weapon class 2 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 47 (+7, $B91E, $9EB8)."
   },
   {
    "address": 18071,
    "type": "line",
-   "text": "Monster 8, 8 bytes at header word 2 + 8 * 8 (monster_record $9EA4): hit-point seed 16 (+0/+1, $9EE6), to-hit 14 (+2, $9EEF), damage 3d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 1 (+4 high, $B0AD), weapon class 2 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 47 (+7, $B91E, $9EB8)."
+   "text": "Monster 8, 8 bytes at header word 2 + 8 * 8 (monster_record $9EA4): hit-point seed 16 (+0/+1, $9EE6), to-hit 14 (+2, $9EEF), damage 3d6 (+3, $9EC5) + 0 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 1 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 5), weapon class 2 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 47 (+7, $B91E, $9EB8)."
   },
   {
    "address": 18079,
    "type": "line",
-   "text": "Monster 9, 8 bytes at header word 2 + 8 * 9 (monster_record $9EA4): hit-point seed 14 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 4 (+4 high, $B0AD), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 12 (+7, $B91E, $9EB8)."
+   "text": "Monster 9, 8 bytes at header word 2 + 8 * 9 (monster_record $9EA4): hit-point seed 14 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 4 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 5), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 12 (+7, $B91E, $9EB8)."
   },
   {
    "address": 18087,
    "type": "line",
-   "text": "Monster 10, 8 bytes at header word 2 + 8 * 10 (monster_record $9EA4): hit-point seed 14 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 4 (+4 high, $B0AD), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 12 (+7, $B91E, $9EB8)."
+   "text": "Monster 10, 8 bytes at header word 2 + 8 * 10 (monster_record $9EA4): hit-point seed 14 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 4 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 5), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 12 (+7, $B91E, $9EB8)."
   },
   {
    "address": 18095,
    "type": "line",
-   "text": "Monster 11, 8 bytes at header word 2 + 8 * 11 (monster_record $9EA4): hit-point seed 20 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 4 (+4 high, $B0AD), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 5 (+7, $B91E, $9EB8)."
+   "text": "Monster 11, 8 bytes at header word 2 + 8 * 11 (monster_record $9EA4): hit-point seed 20 (+0/+1, $9EE6), to-hit 1 (+2, $9EEF), damage 2d6 (+3, $9EC5) + 1 (+5 high, $9ECE), armour 1d6 (+4 low, $A735), random groups of up to 4 (+4 high, $B0AD; unread for this monster: random encounters here pick monsters 1 to header +$31, 5), weapon class 1 (+5 low, $9ED4), kind 3 (+6: kind word and scan tile, $9E6D, $95F5), picture and pronoun 5 (+7, $B91E, $9EB8)."
   },
   {
    "address": 18103,
@@ -3353,12 +3353,12 @@
   {
    "address": 21256,
    "type": "line",
-   "text": "Messages 92-95 (no record, code or header names 95): 92: \\nYou open the drawers and see...\\n | 93: \\nThis drawer is empty.\\n | 94: You interrupt a very serious game of poker.\\n | 95: \\n\"C'mon, let's go.\"\\n"
+   "text": "Messages 92-95: 92: \\nYou open the drawers and see...\\n | 93: \\nThis drawer is empty.\\n | 94: You interrupt a very serious game of poker.\\n | 95: \\n\"C'mon, let's go.\"\\n"
   },
   {
    "address": 21337,
    "type": "line",
-   "text": "Messages 96-99 (no record, code or header names 96): 96: \\n\"Thank you for rescuing me.\"\\n | 97: \"Hi. I'm Danny Citrine.\"\\n | 98: \"Hi. I'm Mayor Pedros. Please rescue me.\"\\n | 99: \\nThe cell is locked.\\n"
+   "text": "Messages 96-99: 96: \\n\"Thank you for rescuing me.\"\\n | 97: \"Hi. I'm Danny Citrine.\"\\n | 98: \"Hi. I'm Mayor Pedros. Please rescue me.\"\\n | 99: \\nThe cell is locked.\\n"
   },
   {
    "address": 21421,

@@ -23,7 +23,7 @@ The tiles the map window draws maps 8, 9, 10, 29, 43 and 49 with, unpacked to `$
 
 Counted in the tile layers of maps 8, 9, 10, 29, 43 and 49 as each comes off the disk, loaded by the game's own `enter_map`; a map changes in play.
 
-- 6,144 squares (all 32 x 32). 79 of the 96 tiles are in a layer. Of the 17 in none, 1-6, 8-9 are drawn by the game's code (the figures, the bag, the sign, the other parties), and 9 are in no class 4 record either: 0, 12, 16, 35, 43, 72, 74-75, 95. A map's own code could still draw them. 4 bitmaps are blank, all zero bytes: 0, 12, 72, 95.
+- 6,144 squares (all 32 x 32). 79 of the 96 tiles are in a layer. Of the 17 in none, 1-6, 8-9 are drawn by the game's code (the figures, the bag, the sign, the other parties); 16 by a class 4 record, map 43's cube once opened and emptied (map-43 `$3D44`), and 8 are in no class 4 record either: 0, 12, 35, 43, 72, 74-75, 95. A map's own code could still draw them. 4 bitmaps are blank, all zero bytes: 0, 12, 72, 95.
 - The commonest: tile 58 (1,552 squares), tile 70 (1,541 squares), tile 50 (550 squares), tile 71 (307 squares).
 - Drawn off the edge of the map (the record's byte `+$33`, engine `draw_square` `$0B5E`): tile 0 on map 29; tile 50 on map 43; tile 58 on maps 10 and 49; tile 70 on maps 8 and 9.
 - Loot bags (class 5), drawn as tile 5 whatever the layer holds (engine `$0B68`): 3 on map 9, 3 on map 49.

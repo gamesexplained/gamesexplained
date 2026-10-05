@@ -1330,7 +1330,7 @@ globalThis.WLMaps = (function () {
       d.exit = e;
       row('Leads to', e.back ? 'the square the party last left by an exit' : (e.to === e.map ? 'map ' + e.to : 'map ' + e.to + ' (entered as number ' + hex(e.map, 2) + ')')
         + (e.back ? '' : ', column ' + e.x + ', row ' + e.y + (e.rel ? ' (this square ' + (e.dx < 128 ? '+' + e.dx : '-' + (256 - e.dx)) + ', ' + (e.dy < 128 ? '+' + e.dy : '-' + (256 - e.dy)) + ')' : '')));
-      row('Message', msg(e.msg) + (e.ask ? '; then asks “Enter new location (Y/N)?” when the party steps onto it ($AD83), not when a change makes it under the party, which runs it at once ($ACC1)' : ''));
+      row('Message', msg(e.msg) + (e.ask ? '; then asks “Enter new location (Y/N)?” when the party steps onto it or spends a turn on it ($AD83), not when a change makes it under the party, which runs it at once ($ACC1)' : ''));
       row('Then', 'the square ' + changeText(e.change[0], e.change[1]));
       d.msgs = [e.msg];
     } else if (c === 11) {
@@ -1620,6 +1620,12 @@ globalThis.WLMaps = (function () {
       const m = S.M.m, r = S.M.rec, f = o => m[r + o], w = o => w16(m, r + o);
       const at = a => a ? '<code>' + hex(a) + '</code>' : '<span class="wl-mute">none ($0000)</span>';
       const lists = Array.from({ length: 16 }, (_, c) => w(6 + 2 * c));
+      // the settings a map's own code changes with STA (map_header),Y; save_map writes them back
+      const WRITES = { 6: { 0x2F: [0x4164, 0x416B] }, 19: { 0x2F: [0x3D08, 0x3D33], 0x31: [0x3D17, 0x3D42], 0x32: [0x3CF9, 0x3D26] },
+        20: { 0x2F: [0x4027, 0x4038, 0x4049, 0x4083], 0x31: [0x4058, 0x4067] }, 22: { 0x2F: [0x4EAC] }, 27: { 0x2F: [0x3C9B] },
+        43: { 0x2F: [0x3E35], 0x31: [0x3E44] } };
+      const set = (o, t) => (WRITES[S.n] || {})[o] ? t + ' <span class="wl-mute">as stored; the map’s code changes it ('
+        + WRITES[S.n][o].map(a => '<code>' + hex(a) + '</code>').join(', ') + ')</span>' : t;
       const rows = [
         ['word +0', 'The text block', at(w(0)), 'engine', 0x1E4F],
         ['word +2', 'The monster names', at(w(2)), 'game', 0x9E76],
@@ -1630,10 +1636,10 @@ globalThis.WLMaps = (function () {
         ['word +$2A', 'Unknown', at(w(0x2A)), '', 0],
         ['+$2C', 'Size', S.M.w + ' × ' + S.M.w + ' squares', 'engine', 0x25D3],
         ['+$2D, +$2E', 'Unknown', hex(f(0x2D), 2) + ' ' + hex(f(0x2E), 2), '', 0],
-        ['+$2F', 'Random encounters', f(0x2F) ? '1 chance in ' + f(0x2F) + ' a step' : 'none', 'game', 0xB017],
+        ['+$2F', 'Random encounters', set(0x2F, f(0x2F) ? '1 chance in ' + f(0x2F) + ' a step' : 'none'), 'game', 0xB017],
         ['+$30', 'Tile set', String(f(0x30)), 'engine', 0x25EE],
-        ['+$31', 'A random encounter’s monster', f(0x2F) ? '1 to ' + f(0x31) : f(0x31), 'game', 0xB047],
-        ['+$32', 'Group records random encounters may use', f(0x2F) ? 'the first ' + f(0x32) : f(0x32), 'game', 0xB040],
+        ['+$31', 'A random encounter’s monster', set(0x31, f(0x2F) ? '1 to ' + f(0x31) : String(f(0x31))), 'game', 0xB047],
+        ['+$32', 'Group records random encounters may use', set(0x32, f(0x2F) ? 'the first ' + f(0x32) : String(f(0x32))), 'game', 0xB040],
         ['+$33', 'The tile off the map', 'tile ' + f(0x33), 'engine', 0x0B5E],
         ['+$34, +$35', 'A step takes', f(0x35) + ' min' + (f(0x34) ? ' + ' + f(0x34) + '/256' : ''), 'game', 0xAF32],
         ['+$36', 'Ticks a step adds', String(f(0x36)), 'game', 0xAF58],
@@ -1872,7 +1878,7 @@ globalThis.WLPictures = (function () {
   class Engine {
     constructor(m) {
       this.m = m;                          // 64 KB: the picture's buffer, and the bitmap it draws in
-      this.base = 0;                       // $B9/$BA unpack_base, the picture's buffer
+      this.base = 0;                       // $B9/$BA picture_base, the picture's buffer
       this.left = 0; this.top = 0;         // $C1 picture_left, $BF picture_top
       this.right = 0; this.bottom = 0;     // $C2 picture_right, $C0 picture_bottom
       this.ptr = [0, 0, 0, 0];             // $0549-$0550 picture_channel_ptr, each script's next entry

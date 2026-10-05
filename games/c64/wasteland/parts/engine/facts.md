@@ -222,7 +222,7 @@ The resident engine, the code every program of the game calls. It holds two tabl
 - animate_picture_tick `$05C5` does nothing while `$AC` is 0. Otherwise:
   - Unless `$C5` is set, it reloads the picture when a load has replaced it (load_portrait, then start_picture), and redraws the window when `$B8` AND `$DF` is 0 (`$05C9-$05D8`).
   - The prescaler `$B1/$B2` lets the channels move once in 512 calls (`$05DA-$05E4`).
-  - A channel moves when its enable byte in timer_enables `$5BFB` and its script offset are not 0 and its countdown runs out (`$05EB-$060B`). Then it reads the next script entry: a delay and a frame offset; a delay of `$FF` restarts the script. The frame is XORed onto the bitmap (`$0648`).
+  - A channel moves when its enable byte in anim_channel_enables `$5BFB` and its script offset are not 0 and its countdown runs out (`$05EB-$060B`). Then it reads the next script entry: a delay and a frame offset; a delay of `$FF` restarts the script. The frame is XORed onto the bitmap (`$0648`).
 - decode_picture_frame `$0651` draws a frame into the bitmap at `$6000` column by column.
   - Byte 0 is a count of bytes to write first with the value of the run decoded last (`$065A`, `$06A8`). Then come blocks of column, line and escape value; `$FF` as the column ends the frame.
   - Each block is followed by data bytes written down the column, wrapping from the bottom line to the top at the next column. Writing the last column's bottom line also ends the frame (`$06B3-$06C3`).

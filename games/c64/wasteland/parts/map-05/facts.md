@@ -31,7 +31,7 @@ The code list, header word 19 (`$3A26`), is at `$3C9C` and has one entry, `$3C9E
 
 - `$3C9E` infect_first_member, action 0: selects party position 1 (engine `api_select_member` `$0335` with A = 1) and ORs into its byte +`$28` the mask for disease number record +3, from `$3CB3` (`$3CA3-$3CAF`). Returns the carry clear: no redraw (game `$8872`).
 - `$3CB3` disease_masks: `01 02 04 08 10 20 40 80`, the mask of bit n for disease n.
-- Line `$3CA9`, m05_bit_skip_3CA9: the low byte of the operand of the LDA at `$3CA8`. Its label comes from the game's `BIT $3CA9` at game `$81DE`, which only hides the `LDA #$3C` at game `$81DF`; nothing reads this byte through it.
+- Line `$3CA9`, m05_bit_skip_3CA9: the low byte of the operand of the LDA at `$3CA8`. Its label comes from the game's `BIT $3CA9` at game `$81DE`, which hides the `LDA #$3C` at game `$81DF`. The BIT also runs, in melee_monster_attacks for a target whose order is not 5, and reads this byte, but its flags are replaced before anything tests them (game `$81E1`, engine `$07D5`), so the byte's value never matters.
 - The bits are the doctor's diseases (module-0 `$CCC2-$CCFC`): 2 Bug byte, 4 Desert dust, 5 Rabies. Any set bit of +`$28` stops a character healing (game `con_heal_one` `$B854-$B858`), and bits 4-7 cost a point of CON whenever `$D2` AND 63 is 0 (game `health_tick`, `$B7A2-$B7A8`, `$B816-$B81A`).
 - Record byte 3 is not checked; every record here holds 2, 4 or 5.
 
