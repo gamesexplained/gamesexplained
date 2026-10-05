@@ -503,7 +503,7 @@
   {
    "address": 51911,
    "type": "line",
-   "text": "S)ell, for the trading member at ($66). count_items_of_classes ($037A, the class list at $9D) counts the items the shop will take; none: message 5, 'You don't have anything they want!'. Otherwise message 7 (window cleared, the '$$$ ITEM' header) and the list at $CADC: its items are the member's slots 1-30 ($4D = 31, $4E = count + 1), sell_list_line prints each through $47/$48, 'P' is the extra key ($BE = $D0), then the P)ool line and list_choose. A slot chosen: unequip_slot ($0362), its item and count bytes zeroed, sell_price added to the cash (cash_add $0356, which saturates), the line flashed ($03A1), the item's stock (byte 2 of its record) raised by one unless it is already 255, item_table_changed and party_changed set, and the list shown again until nothing is left to sell. 'P' pools the party's cash on the member ($038F); left-arrow returns, through save_item_table ($03C2) when the table changed ($CB51)."
+   "text": "S)ell, for the trading member at ($66). count_items_of_classes ($037A, the class list at $9D) counts the items the shop will take; none: message 5, 'You don't have anything they want!'. Otherwise message 7 (window cleared, the '$$$ ITEM' header) and the list at $CADC: its items are the member's slots 1-30 ($4D = 31, $4E = count + 1), sell_list_line prints each through $47/$48, 'P' is the extra key ($BE = $D0), then the P)ool line and list_choose. A slot chosen: unequip_slot ($0362), its item and count bytes zeroed, sell_price added to the cash (cash_add $0356, which saturates), the line flashed ($03A1), the item's stock (byte 2 of its record) raised by one unless it is already 255, item_table_changed and party_changed set, and the list shown again; when the sale leaves nothing the shop takes ($CB41-$CB49), the routine leaves at once through $CB51, which writes the table back. 'P' pools the party's cash on the member ($038F); left-arrow returns, through save_item_table ($03C2) when the table changed ($CB51)."
   },
   {
    "address": 52067,
@@ -568,7 +568,7 @@
   {
    "address": 52495,
    "type": "line",
-   "text": "Puts the text cursor at column 14, row 2: the first line inside the text window, where the P)ool line and 'That costs too much!' are printed above the list."
+   "text": "Puts the text cursor at column 14, row 2: the first line inside the text window, where the P)ool line and 'That costs too much!' are printed above the list, and 'Your inventory is full.' after a purchase that fills the last free slot ($CC30)."
   },
   {
    "address": 52504,
@@ -588,7 +588,7 @@
   {
    "address": 52539,
    "type": "line",
-   "text": "1 after a sale ($CB3B) or a purchase ($CC1D), cleared each time round the shop's loop ($CA53): when set, leaving the sell or the buy list writes the item table at $3100 back to its file (JMP $03C2 at $CB56 and $CC3D), so the stock the shop keeps in byte 2 of each record lasts."
+   "text": "1 after a sale ($CB3B) or a purchase ($CC1D), cleared each time round the shop's loop ($CA53): when set, leaving the sell or the buy list writes the item table at $3100 back to its file (JMP $03C2 at $CB56 and $CC3D), so the stock the shop keeps in byte 2 of each record lasts. A purchase that sells out the last item in stock is the exception: the buy list is then left through message 1 ($CBD3, $CBBA) without the test, the table is not written, and the next time round the loop clears the flag."
   },
   {
    "address": 52540,
@@ -598,7 +598,7 @@
   {
    "address": 52541,
    "type": "line",
-   "text": "The shop's packed text block (the engine's format; shop_print_wrapped points $43/$44 here). These 60 bytes are its alphabet: codes $00-$23 are ' ', t, o, n, y, e, a, newline, the end code ($00, code $08), u, r, h, s, l, i, w, m, c, $, {06}, '.', ')', v, p, g, f, d, b, '?', ''', '!', {04}, {03}, k, '=', {0B}; $24-$3B are unused $7F."
+   "text": "The shop's packed text block (the engine's format; shop_print_wrapped points $43/$44 here). These 60 bytes are its alphabet: entries $00-$23 are ' ', t, o, n, y, e, a, newline, the end code ($00, code $08), u, r, h, s, l, i, w, m, c, $, {06}, '.', ')', v, p, g, f, d, b, '?', ''', '!', {04}, {03}, k, '=', {0B}; codes $00-$1D give entries $00-$1D, the escape code $1F followed by 0-5 gives entries $1E-$23, and code $1E is the capital shift; $24-$3B are unused $7F."
   },
   {
    "address": 52601,
@@ -628,7 +628,7 @@
   {
    "address": 52773,
    "type": "line",
-   "text": "$CE25-$CE78: not module 1. The unpacker decodes a 4-page read window ($CE), not the stream's length, and on side 1 (this snapshot) module 3's stream begins 947 bytes into module 1's, so these are module 3's packed bytes decoded with module 1's table. Nothing reads them."
+   "text": "$CE25-$CE78: not module 1. The unpacker decodes a 4-page read window ($CE), not the stream's length, and on side 1 (this snapshot) module 3's stream begins 947 bytes into module 1's, so $CE25-$CE60 are module 3's packed bytes decoded with module 1's table, and $CE61-$CE78, 24 zeros, come from the zero bytes after module 3's stream (T25/L8 bytes $7D-$98), where the window ends. Nothing reads them."
   }
  ]
 }

@@ -93,8 +93,10 @@ Waits are in units of 255 menu polls (`$8156`).
 - Every wait polls the keyboard and the menu (`$8164`: engine `$022A`,
   then `$02DE`), so Start and Utils act at any point. The siren polls
   once a step (`$7E96`, `$7EBD`) and typing once a character (`$8438`);
-  the whistle (`$7EFA-$7F10`) and the explosion's own sound
-  (`$7F13-$7F1C`) poll nothing.
+  the siren's pause at its top (`$7EA9-$7EB1`, about 1.3 seconds) and
+  its fade (`$7ECE-$7EDA`, about 1.0 second), the whistle
+  (`$7EFA-$7F10`) and the explosion's own sound (`$7F13-$7F1C`) poll
+  nothing. A key pressed then waits in `$EC` for the next poll.
 
 ## Sound
 

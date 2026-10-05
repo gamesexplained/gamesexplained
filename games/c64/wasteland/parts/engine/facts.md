@@ -15,7 +15,7 @@ The resident engine, the code every program of the game calls. It holds two tabl
 - Table 1 is `$0202-$044E`: 181 three-byte `JMP`s from `$0204`, and 46 bytes between them that are not entries.
   - 30 are the game's variables, which only the game reads or writes: `$0215`, `$0216`, `$021D`, `$021E`, `$0225`, `$0226`, `$022D`, `$022E`, `$0235`, `$0236`, `$0245`, `$0246`, `$024A`, `$024B`, `$0252`, `$0253`, `$025A`, `$025B`, `$0262`, `$0263`, `$026A`, `$026B`, `$0272`, `$0273`, `$027A`, `$027B`, `$0282`, `$0283`, `$028A` and `$02AA`.
   - Four are the engine's: picture_ticks_left `$028B`, newline_wait_count `$0292`, scroll_step_count `$0293` and write_page_count `$029B`.
-  - Twelve are not used: `$0202-$0203`, `$020D-$020E`, `$023D-$023E`, `$029A`, `$02A2-$02A3` and `$0446-$0448`. The only instruction that names `$02A2` is the `BIT $02A2` at `$1874`, which hides an `LDX #$02`.
+  - Twelve are not used: `$0202-$0203`, `$020D-$020E`, `$023D-$023E`, `$029A`, `$02A2-$02A3` and `$0446-$0448`. The only instruction in any part's code that names `$02A2` is the `BIT $02A2` at `$1874`, which hides an `LDX #$02`.
 - `$0200-$0201` holds `$29E4`, the address of the engine's text block.
 - Table 2 is `$04CF-$0504`: 18 `JMP`s with no gaps. `$04F6` and `$04F9` are the NMI and IRQ entries that the RAM vectors at `$FFFA` and `$FFFE` name; no `JSR` or `JMP` in any part goes to them.
 - Two pairs of entries lead to one routine: `$02CC` and `$02D5` to check_side_1 `$1895`, and `$0332` and `$033B` to view_character `$0DFC`.
@@ -119,7 +119,7 @@ The resident engine, the code every program of the game calls. It holds two tabl
 - item_action_menu `$0EA6` offers what fits the slot.
   - When the slot holds the item named by the weapon's record byte 7, its clip, it asks "Reload (Y/N)?" (message 141). Y reloads; N or left-arrow goes on to the next offer; other keys are ignored (`$0EC2-$0ECD`).
   - When the slot's count byte has bit 7 set, it asks "Unjam (Y/N)?" with the Y drawn as glyph `$7C` (message 134). get_key_not_n `$1562` sets carry only for N and left-arrow, so any other key tries to unjam (`$0EDD-$0EE8`).
-  - Otherwise, or after N, it offers D)rop, T)rade and unE)quip (message 142); left-arrow leaves.
+    - Otherwise, or after N or left-arrow at either question, it offers D)rop, T)rade and unE)quip (message 142); left-arrow at that menu leaves (`$0EF6`).
 - item_drop `$0F04` clears the pair, then unequips the slot.
 - equip_toggle `$10A2` unequips a slot that is the weapon or the armour. A class 15 item becomes the armour (`+$25`) and sets the armour class `+$1A` to its record byte 6; any other item becomes the weapon (`+$1F`).
 - unequip_slot `$10D8` clears `+$1F`, or `+$25` and `+$1A`.
@@ -241,7 +241,7 @@ The resident engine, the code every program of the game calls. It holds two tabl
   - The plural form is a common start, then `$0A`, the singular ending, `$0A`, the plural ending, `$0A`, as in message 37, "Ax{0A}{0A}es{0A}". A count `$38` of 1 keeps the singular ending, any other the plural (filter_plural `$2063`).
   - The his/her form keeps the first of its two parts for sex 0, the second otherwise (filter_sex `$2099`). The three-way form keeps part `$CA`, 0-2 (filter_choice `$20C3`).
 - ctl_print_count `$1F9D`, code `$0F`, prints a count of 0 as 1.
-- Code `$06` (ctl_return_prompt `$1FC3`) prints "(RETURN)" at column 23, row 13 and waits for RETURN or space. Code `$07` opens the text window (`$12B0`). Code `$09` moves the cursor right by the next byte (`$1FAE`).
+- Code `$06` (ctl_return_prompt `$1FC3`) prints "(RETURN)" at column 23, row 13 and waits for RETURN, space or back-arrow (wait_return `$2501`). Code `$07` opens the text window (`$12B0`). Code `$09` moves the cursor right by the next byte (`$1FAE`).
 - In wrapped output, letters go to the line buffer at `$F49C` (`$1FEA`). A line is drawn up to its last space, and the rest is carried to the next line (draw_buffered_line `$200C`).
 - The windows:
   - The text window's frame is columns 13-39, rows 1-14 (text_window_open `$12B0`).
@@ -250,7 +250,7 @@ The resident engine, the code every program of the game calls. It holds two tabl
   - The frames are glyphs `$81` and `$83` (top corners), `$84` (sides), `$85` and `$7D` (bottom corners) and `$5C` (top and bottom) (draw_frame `$130B`).
 - show_message `$1E60` prints a message in the window of rows 18-22, pixel lines `$90-$B7`, columns 0-39. It goes on from the column and row where the last message ended, kept in the operands at `$1E78` and `$1E7C` (column 0, row 22 in play-map.vsf). It holds `$A8` at 0 and sets `$B0` while it prints.
 - newline `$20F9`:
-  - With `$B0` set it counts lines in `$AF`. At 6 it prints the bar's "(RETURN)" (bar_return_prompt `$21E8`, row 23, text `$220A`), whose code `$05` waits for RETURN or space. read_key clears `$AF` on every key.
+  - With `$B0` set it counts lines in `$AF`. At 6 it prints the bar's "(RETURN)" (bar_return_prompt `$21E8`, row 23, text `$220A`), whose code `$05` waits for RETURN, space or back-arrow. read_key clears `$AF` on every key.
   - On the window's last row it scrolls the window up eight lines.
   - With slow scrolling (`$A8` set), each new line first pauses newline_pause_counts `$21E1` rounds of delay_a(11) and three animation ticks. The scroll is then scroll_step_counts `$21D3` steps of scroll_step_lines `$21DA` lines each, both indexed by the speed `$0F`.
   - Without slow scrolling there is no pause, and the scroll is one step of eight lines (`$213B`).

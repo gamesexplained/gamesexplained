@@ -1440,7 +1440,7 @@
   {
    "address": 32375,
    "type": "line",
-   "text": "A rising and falling two-voice tone, a siren by its shape, played after 'war erupts' (attract_loop $809F): record 1 on voice 1 and record 3 on voice 2 (start_sound); then the pitch X/Y rises one step at a time from $1C31 (siren_start_freq) to $2187 (siren_top_freq), each step set by set_siren_pitch (voice 2 $0556 above voice 1, then delay_a($19)) with one menu poll (poll_menu, X = 1); a pause of delay_x_times(8); a fall one step at a time from $2187 until the count reaches $1838 (the last pitch set is $1839); then the master volume $D418 counts down from record 1's $0A to 0 with delay_a($C0) between steps, and voices 1 and 2 are silenced. The fall's decrement (DEX, BNE, DEY at $7EB5-$7EB8) lowers the high byte when the low byte reaches 0 instead of when it wraps, so at each of the nine high-byte boundaries one step is 256 too low: $2101, $2000, $20FF instead of $2101, $2100, $20FF. The rise's INX, BNE, INY is right. The title keys act throughout, from inside the polls."
+   "text": "A rising and falling two-voice tone, a siren by its shape, played after 'war erupts' (attract_loop $809F): record 1 on voice 1 and record 3 on voice 2 (start_sound); then the pitch X/Y rises one step at a time from $1C31 (siren_start_freq) until the count reaches $2187 (siren_top_freq; the last pitch set is $2186), each step set by set_siren_pitch (voice 2 $0556 above voice 1, then delay_a($19)) with one menu poll (poll_menu, X = 1); a pause of delay_x_times(8); a fall one step at a time from $2187 until the count reaches $1838 (the last pitch set is $1839); then the master volume $D418 counts down from record 1's $0A to 0 with delay_a($C0) between steps, and voices 1 and 2 are silenced. The fall's decrement (DEX, BNE, DEY at $7EB5-$7EB8) lowers the high byte when the low byte reaches 0 instead of when it wraps, so at each of the nine high-byte boundaries one step is 256 too low: $2101, $2000, $20FF instead of $2101, $2100, $20FF. The rise's INX, BNE, INY is right. The title keys act from inside the polls of the rise and the fall; the pause and the fade poll nothing, so a key pressed during either waits in $EC for the next poll: the fall's first, or set_gauge_wait's after the siren (attract_loop $80B1)."
   },
   {
    "address": 32482,
@@ -1470,7 +1470,7 @@
   {
    "address": 32554,
    "type": "line",
-   "text": "The start-up from the hand-over: SEI, CLD, stack at $01FF, CLI; zero page $02-$FF and the engine's variables $EE00-$F3FF cleared; colour $EB = $6F; bitmap mode with the screen on and 24 rows ($D011 = $37); the whole screen cleared (clear_window, columns 0-39, pixel rows 0-$BF), then the text window set to pixel rows 8-$77; $6A = 1 (the roster-shown flag: with $C9 still 0, the first show_message clears the message area before printing, $1EA9); the menu bar (setup_title_menu); the picture area's colours (colour_picture_area); a frame from column 0, row 0 to column 37, row 17 (draw_frame); the gauge drawn empty (set_gauge, $FF); $D011 = $37 again. Then the logo: its font read from T4/L1-L0 to $CA00-$CBFF (read_pages), swapped in (swap_logo_font), logo_glyph_block printed at column 33, row 1 in colour $86 (window left edge $25 = 33, so each $0D returns there, and bottom $28 = $C0 meanwhile), swapped out. Then the title picture: T5/L16 read to $5A00 ($FD1D), $CE = $14 (20: the unpack reads T5/L16-L0 and T4/L20-L18) and unpack_stream ($04F3) to $8A00 with limit $A300; header byte 2 ($8A02) set to $20; $B8, $AC and $C5 = 1: $AC turns the picture animation on, and $C5 keeps animate_picture_tick from reloading a portrait or redrawing the portrait window over the title (engine $05C9). Falls into attract_loop."
+   "text": "The start-up from the hand-over: SEI, CLD, stack at $01FF, CLI; zero page $02-$FF and the engine's variables $EE00-$F3FF cleared; colour $EB = $6F; bitmap mode with the screen on and 24 rows ($D011 = $37); the whole screen cleared (clear_window, columns 0-39, pixel rows 0-$BF), then the text window set to pixel rows 8-$77; $6A = 1 (the roster-shown flag, so show_message calls clear_message_area_once, $1EA9, which clears only while $C9 is 0; attract_loop's clear_text_area sets $C9 to 1 before the first show_message, and nothing in the title sets it back to 0); the menu bar (setup_title_menu); the picture area's colours (colour_picture_area); a frame from column 0, row 0 to column 37, row 17 (draw_frame); the gauge drawn empty (set_gauge, $FF); $D011 = $37 again. Then the logo: its font read from T4/L1-L0 to $CA00-$CBFF (read_pages), swapped in (swap_logo_font), logo_glyph_block printed at column 33, row 1 in colour $86 (window left edge $25 = 33, so each $0D returns there, and bottom $28 = $C0 meanwhile), swapped out. Then the title picture: T5/L16 read to $5A00 ($FD1D), $CE = $14 (20: the unpack reads T5/L16-L0 and T4/L20-L18) and unpack_stream ($04F3) to $8A00 with limit $A300; header byte 2 ($8A02) set to $20; $B8, $AC and $C5 = 1: $AC turns the picture animation on, and $C5 keeps animate_picture_tick from reloading a portrait or redrawing the portrait window over the title (engine $05C9). Falls into attract_loop."
   },
   {
    "address": 32782,
@@ -1665,7 +1665,7 @@
   {
    "address": 33561,
    "type": "line",
-   "text": "Operand of the LDA # at $8318: the page being read, 0-7, stored at $8310; the ADC/CMP/BCC after it reads the next page until all eight are in."
+   "text": "Operand of the LDA # at $8318: the page being read, 0-7, stored at $8310; the ADC/CMP/BCC after it reads the next page until all eight are in. saved_game_bad_checksum keeps its page, 0-7, in the same byte (stored at $8331, read at $8344)."
   },
   {
    "address": 33569,
@@ -1680,7 +1680,7 @@
   {
    "address": 33614,
    "type": "line",
-   "text": "Copies the saved zero page $F478-$F485 back to $02-$0F (among them the position $02/$03 and the map $09, which the game sets before enter_map at game $8A1E-$8A28; the game-time count $04-$06, whose top byte is $F4FD; the clock's minutes $0D and hours $0E, game $AF3D-$AF56; and the text speed $0F), empties the line buffer (clear_line_buffer $04ED, which zeroes $F49C-$F4C4 inside the save's first page) and returns carry clear."
+   "text": "Copies the saved zero page $F478-$F485 back to $02-$0F (among them the view's top-left square $02/$03 and the map $09, which the game sets before enter_map at game $8A1E-$8A28; the game-time count $04-$06, whose top byte is $F4FD; the clock's minutes $0D and hours $0E, game $AF3D-$AF56; and the text speed $0F), empties the line buffer (clear_line_buffer $04ED, which zeroes $F49C-$F4C4 inside the save's first page) and returns carry clear."
   },
   {
    "address": 33632,
@@ -1705,7 +1705,7 @@
   {
    "address": 33644,
    "type": "line",
-   "text": "Colours the picture area: screen matrix rows 1-16, columns 1-36 (screen_row_address $0502 for each row) = $86, so in multicolour bitmap mode its pixel pairs %01 show colour 8 and %10 colour 6 (the matrix byte's high and low nibbles). Called after each redraw of the picture (startup_main $7F78, attract_loop $8033, $806A)."
+   "text": "Colours the picture area: screen matrix rows 1-16, columns 1-36 (screen_row_address $0502 for each row) = $86, so in multicolour bitmap mode its pixel pairs %01 show colour 8 and %10 colour 6 (the matrix byte's high and low nibbles). Called by startup_main ($7F78) before the frame, the logo and the picture are drawn, and after each redraw of the picture by attract_loop ($8033, $806A)."
   },
   {
    "address": 33675,
@@ -2145,12 +2145,12 @@
   {
    "address": 41508,
    "type": "line",
-   "text": "Channel 2's frame 2 of 4, $A224-$A234, used by its script ($8AC1) at entry 3 at $8AC7 (delay 2). Drawn by animate_picture_tick ($05C5, its JSR at $0638) through draw_frame_xor ($0648) and decode_picture_frame ($0651), XORed onto the bitmap: run count 0, 3 blocks (column 4, pixel row 95, escape $01, 1 byte; column 6, pixel row 66, escape $01, 1 byte; column 6, pixel row 103, escape $01, 1 byte), each later block opened by a $00, and $00 $FF at the end. Changes 3 bitmap bytes, columns 4-6, pixel rows 66-103; by its look stars twinkling: pixel pairs at star positions of the base picture change colour or blink."
+   "text": "Channel 2's frame 2 of 4, $A224-$A234, used by its script ($8AC1) at entry 3 at $8AC7 (delay 2). Drawn by animate_picture_tick ($05C5, its JSR at $0638) through draw_frame_xor ($0648) and decode_picture_frame ($0651), XORed onto the bitmap: run count 0, 3 blocks (column 4, pixel row 95, escape $01, 1 byte; column 6, pixel row 66, escape $01, 1 byte; column 6, pixel row 103, escape $01, 1 byte), each later block opened by a $00, and $00 $FF at the end. Changes 3 bitmap bytes, columns 4-6, pixel rows 66-103; by its look stars twinkling: the two pixel pairs at star positions of the base picture that frame 1 changed (column 4, pixel row 95; column 6, pixel row 66) change colour back, and a pixel pair of colour 6 (%10) lights at column 6, pixel row 103, where the base picture has none."
   },
   {
    "address": 41525,
    "type": "line",
-   "text": "Channel 2's frame 3 of 4, $A235-$A23B, used by its script ($8AC1) at entry 4 at $8ACA (delay 7), entry 7 at $8AD3 (delay 4), entry 8 at $8AD6 (delay 5). Drawn by animate_picture_tick ($05C5, its JSR at $0638) through draw_frame_xor ($0648) and decode_picture_frame ($0651), XORed onto the bitmap: run count 0, 1 block (column 6, pixel row 103, escape $01, 1 byte), then $00 $FF. Changes 1 bitmap byte, column 6, pixel row 103; by its look stars twinkling: pixel pairs at star positions of the base picture change colour or blink."
+   "text": "Channel 2's frame 3 of 4, $A235-$A23B, used by its script ($8AC1) at entry 4 at $8ACA (delay 7), entry 7 at $8AD3 (delay 4), entry 8 at $8AD6 (delay 5). Drawn by animate_picture_tick ($05C5, its JSR at $0638) through draw_frame_xor ($0648) and decode_picture_frame ($0651), XORed onto the bitmap: run count 0, 1 block (column 6, pixel row 103, escape $01, 1 byte), then $00 $FF. Changes 1 bitmap byte, column 6, pixel row 103; by its look a star blinking: the pixel pair that frame 2 lights at column 6, pixel row 103, where the base picture has none, goes off at entry 4, on at entry 7 and off at entry 8."
   },
   {
    "address": 41532,

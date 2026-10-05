@@ -9989,7 +9989,7 @@
   {
    "address": 0,
    "type": "line",
-   "text": "The 6510's data direction register for the port at $01. No part changes it: the start-up's clear loop ($7F30-$7F37) zeroes $02-$FF only, and the utility program's printer code, which nothing reaches (send_report $8602), would copy $00-$FF to $CA00 and write the same values back ($860E, $86A5), so it keeps the KERNAL's setting. Not code: the disassembler marked $0000-$0002 as code only because its image starts here; no JMP, JSR, branch or vector in any part leads to $0000 (the RAM RESET vector at $FFFC holds $0000, but a reset brings the KERNAL ROM and its own vector back)."
+   "text": "The 6510's data direction register for the port at $01. No part changes it: the start-up's clear loop ($7F30-$7F37) zeroes $02-$FF only, and the utility program's printer code, which nothing reaches (send_report $8602), would copy $00-$FF to $CA00 and write the same values back ($860E, $86A5), so it keeps the KERNAL's setting. Not code: no JMP, JSR, branch or vector in any part leads to $0000 (the RAM RESET vector at $FFFC holds $0000, but a reset brings the KERNAL ROM and its own vector back)."
   },
   {
    "address": 1,
@@ -9999,57 +9999,57 @@
   {
    "address": 2,
    "type": "line",
-   "text": "Map column of the map window's left edge: the party's column $57 less $59 (9), so the party stands in the window's tenth column of $54 (19). Negative near the map's west edge (the game tests it with BMI at $AF8E). The game's moves change it (J: DEC at $AE4E, L: INC at $AE6D), switching parties sets it from the party table (+8, $9C2A-$9C31), module 4 sets it ($CBF8); read by $0A87 (entry $043A, back to the party's column), $0B2D (a square's window column) and the game's redraws ($955B, $AD5B, $AF99, $B11B). Saved with the game (zero page $02-$0F at $F478)."
+   "text": "Map column of the map window's left edge: the party's column $57 less $59 (9), so the party stands in the window's tenth column of $54 (19). Negative near the map's west edge (the game tests the columns it scans from it with BMI at $9562 and $AFA0). The game's moves change it (J: DEC at $AE4E, L: INC at $AE6D), switching parties sets it from the party table (+8, $9C2A-$9C31), an exit to another map sets it from the exit's square ($89F7, $8A1E), module 4 ($CBF8), the Ranger Center ($7ED1) and the utilities' Restart ($8172) set it; read by $0A87 (entry $043A, back to the party's column), $0B2D (a square's window column) and the game: its redraws ($AEA7, $AED1, $AF99), the encounter scan ($955B), the move checks ($AD5B, $AD93) and square_in_view ($B11B). Saved with the game (zero page $02-$0F at $F478)."
   },
   {
    "address": 3,
    "type": "line",
-   "text": "Map row of the map window's top edge: the party's row $58 less $5A (4), so the party stands in the window's fifth row of nine. Negative near the map's north edge (BMI at $AF8E). The game's moves change it (I: DEC at $AE2F, K: INC at $AE8C), switching parties sets it from the party table (+9, $9C35-$9C3C), module 4 sets it ($CC03); read by $0A87 (entry $043A), $0B36 (a square's window line) and the game ($9546, $AD5D, $AF87, $B123). Saved with the game."
+   "text": "Map row of the map window's top edge: the party's row $58 less $5A (4), so the party stands in the window's fifth row of nine. Negative near the map's north edge (BMI at $AF8E). The game's moves change it (I: DEC at $AE2F, K: INC at $AE8C), switching parties sets it from the party table (+9, $9C35-$9C3C), an exit to another map sets it from the exit's square ($89F9, $8A20), module 4 ($CC03), the Ranger Center ($7EDC) and the utilities' Restart ($8176) set it; read by $0A87 (entry $043A), $0B36 (a square's window line) and the game ($9546, $AD5D, $AD95, $AEAC, $AECC, $AF87, $B123). Saved with the game."
   },
   {
    "address": 4,
    "type": "line",
-   "text": "Low byte of a 32-bit count of elapsed game time: $04, $05, $06 and $F4FD, low first. Each step adds the map header's byte +$36 (game $AF61-$AF72, with the carries into $05, $06 and $F4FD). The start-up's 'N' (search every side for the last autosave) loads each side's save and keeps the one with the largest count (startup $8243-$8268); the game's countdown at $82B5 measures $F0 units from the count saved at $F4FA-$F4FC. Saved with the game; 0 to 255."
+   "text": "Low byte of a 32-bit count of elapsed game time: $04, $05, $06 and $F4FD, low first. Each step adds the map header's byte +$36 (game $AF61-$AF72, with the carries into $05, $06 and $F4FD). The start-up's 'N' (search every side for the last autosave) loads each side's save and keeps the one with the largest count (startup $8243-$8268), and the utilities' Start does the same ($81CF-$81F1); the game's countdown at $82B5 measures $F0 units from the count map 20's arm_self_destruct copies to $F4FA-$F4FC ($406B; its show_countdown reads it too, $408B); map 13's clone pods stamp it and measure from it ($3E27, $4258). Saved with the game; 0 to 255."
   },
   {
    "address": 5,
    "type": "line",
-   "text": "Second byte of the 32-bit elapsed-time count ($04-$06, $F4FD): incremented by the game when $04 carries ($AF6A), read by the countdown ($82C1) and the start-up's search for the latest save ($8247). Saved with the game."
+   "text": "Second byte of the 32-bit elapsed-time count ($04-$06, $F4FD): incremented by the game when $04 carries ($AF6A), read by the countdown ($82C1), the start-up's and the utilities' searches for the latest save ($8247, $81D3), map 20's arm_self_destruct and show_countdown ($4070, $4094) and map 13's clone pods ($3E2C, $425F). Saved with the game."
   },
   {
    "address": 6,
    "type": "line",
-   "text": "Third byte of the 32-bit elapsed-time count ($04-$06, $F4FD): incremented when $05 carries ($AF6E), read by the countdown ($82C7) and the start-up's search ($824B). Its own carry goes into $F4FD in the saved page. Saved with the game."
+   "text": "Third byte of the 32-bit elapsed-time count ($04-$06, $F4FD): incremented when $05 carries ($AF6E), read by the countdown ($82C7), the start-up's and the utilities' searches ($824B, $81D7), map 20's arm_self_destruct ($4075) and map 13's clone pods ($3E31, $4267). Its own carry goes into $F4FD in the saved page. Saved with the game."
   },
   {
    "address": 7,
    "type": "line",
-   "text": "Number of members in the current party, 0-7: the positions 1-$07 of the party table at ($68) that hold a record. party_add adds one ($1753), remove_member takes one away ($1831), the game sets it when the party changes ($9C26 from party_size_of $02AB) or a member joins or leaves ($94FF, $999B, $9B54, $9B89); Order, module 4 and map 13's release_clone ($42A8) write it too. Read wherever members are counted: the digit keys of the main loop ($7EAE), the roster ($15C9, $1655), pick_member ($178B), the divide and pool loops ($0E57, $15A1). Saved with the game."
+   "text": "Number of members in the current party, 0-7: the positions 1-$07 of the party table at ($68) that hold a record. party_add adds one ($1753), remove_member takes one away ($1831), the game sets it when the party changes ($9C26, and the encounter scan's $94FF, from party_size_of $02AB) or a member joins or leaves ($999B, $A47C, $9B89; $9B54 takes back the one party_add adds when a member is copied into another party); Order, module 4, the Ranger Center ($7EC6) and map 13's release_clone ($42A8) write it too. Read wherever members are counted: the digit keys of the main loop ($7EAE), the roster ($15C9, $1655), pick_member ($178B), the divide and pool loops ($0E57, $15A1). Saved with the game."
   },
   {
    "address": 8,
    "type": "line",
-   "text": "Number of the current party, 0-3 (Disband splits the group into up to four parties; View switches between them). Picks the party table $F400 + 14*$08 (party_table_ptr, $1768) for select_member ($11F8), the roster ($15DA, $1637), party_add_current ($1746), find_party_of ($1798) and remove_member ($17FB). Written by the game ($94EA, $9521, $9527, $99B6, $9C21) and module 4 ($CBC6, after its countdown). Saved with the game."
+   "text": "Number of the current party, 0-3 (Disband splits the group into up to four parties; View switches between them). Picks the party table $F400 + 14*$08 (party_table_ptr, $1768) for select_member ($11F8), the roster ($15DA, $1637), party_add_current ($1746), find_party_of ($1798) and remove_member ($17FB). Written by the game ($94EA, $9521, $9527, $99B6, $9C21), module 4 ($CA73 and $CB09 while it walks the parties caught in the blast, $CBC6 after it) and the Ranger Center ($7EC1). Saved with the game."
   },
   {
    "address": 9,
    "type": "line",
-   "text": "Map or directory entry number: the current party's map in play (also kept at +10 of each party table, game $9C40), and the argument of the engine's directory routines: enter_map ($25BD, compared with $91, the map in memory), load_map_pages ($2608: bit 7 set means a substitute number from T35/L8 byte $80+), load_module, load_item_table, load_portrait and unpack_map_stream (each saves it, uses it and puts it back: $2664/$2678, $26AA/$26B4, $26CD/$26D3, $26FE/$271F), unpack_entry ($2763) and load_dir_entry ($2841). The tile set number passes through it at $25F7. Saved with the game; 0 on the world map."
+   "text": "Map or directory entry number: the current party's map in play (also kept at +10 of each party table, game $9C40), and the argument of the engine's directory routines: enter_map ($25BD, compared with $91, the map in memory), load_map_pages ($2608: bit 7 set means a substitute number from T35/L8 byte $80+), load_portrait, load_module and load_item_table (each saves it, uses it and puts it back: $2664/$2678, $26AA/$26B4, $26CD/$26D3), unpack_map_stream (which, like load_map_pages, stores the substitute for a negative number, $26FE, and ends with $09 = $91, $271F), unpack_entry ($2763) and load_dir_entry ($2841). The tile set number passes through it at $25F7. Saved with the game; 0 on the world map."
   },
   {
    "address": 10,
    "type": "line",
-   "text": "Number of character records in use, 0-7, all parties together: records 1-$0A at $F500-$FBFF. Raised when a character is created (Ranger Center, ranger $7F86) or joins (game $A47A) and when map 13's release_clone adds a clone ($42A6), lowered by remove_member ($1833). The game's main loop ends the game when it is 0, or when no record 1-$0A is alive ($7ED5-$7EFC): alive is conscious ($02C3), or unconscious (condition 0 from $0371, CON -1 to -10) with byte +$28, the afflictions, at 0 ($7EED-$7EF1). So a member who is unconscious and afflicted counts as lost, as do the seriously wounded and worse. The radio program ($7F05, $800D), the game ($9A12, $9BE2, $B1A8, $B7E2) and module 4 ($CA18) loop over the records with it. Saved with the game."
+   "text": "Number of character records in use, 0-7, all parties together: records 1-$0A at $F500-$FBFF. Raised when a character is created (Ranger Center, ranger $7F86) or joins (game $A47A) and when map 13's release_clone adds a clone ($42A6), lowered by remove_member ($1833). The game's main loop ends the game when it is 0, or when no record 1-$0A is alive ($7ED5-$7EFC): alive is conscious ($02C3), or unconscious (condition 0 from $0371, CON -1 to -10) with byte +$28, the afflictions, at 0 ($7EED-$7EF1). So a member who is unconscious and afflicted counts as lost, as do the seriously wounded and worse. The radio program ($7F05, $800D), the game ($9A12, $9BE2, $B1A8, $B542, $B7E2), module 4 ($CA18), maps 4 and 39 ($421B, $3C73), the Ranger Center ($7F73, $81FF) and the utilities ($8145, $85F6) loop over the records with it. Saved with the game."
   },
   {
    "address": 11,
    "type": "line",
-   "text": "Highest party number in use, 0-3: the number of parties less one (Disband splits the group). The roster header prints it plus one after the current party's number plus one (roster_draw $15E5); remove_member walks the party tables 0 to $0B ($1835); the game reads it when it switches or merges parties ($840E, $87E4, $94F6, $9917, $99E2, $9AD4 ...). Saved with the game."
+   "text": "Highest party number in use, 0-3: the number of parties less one (Disband splits the group). The roster header prints it plus one after the current party's number plus one (roster_draw $15E5); remove_member walks the party tables 0 to $0B ($1835); the game reads it when it switches or merges parties ($840E, $87E4, $94F6, $9917 ...), raises it when a runner splits off ($993D) or a member disbands ($9AD4) and lowers it after a merge ($99E2); module 4 ($CB05) and the Ranger Center ($7EBD) lower it when they delete a party. Saved with the game."
   },
   {
    "address": 12,
    "type": "line",
-   "text": "Fraction of a minute of the game clock (0-255): each step adds the map header's byte +$34 here, and the carry goes into the minutes $0D (game $AF32-$AF39). Saved with the game; only the game reads and writes it."
+   "text": "Fraction of a minute of the game clock (0-255): each step adds the map header's byte +$34 here, and the carry goes into the minutes $0D (game $AF32-$AF39). Saved with the game; apart from the copies of $02-$0F that save it and load it back (engine $18EC, startup $8353, utils $80F1), only the game reads and writes it."
   },
   {
    "address": 13,
@@ -10059,27 +10059,27 @@
   {
    "address": 14,
    "type": "line",
-   "text": "Hour of the game clock, 0-23 (wraps at 24, game $AF4B-$AF56). The engine's map square drawer ($0B80-$0B8A) shows squares of class 9, radiation (the game's handler for the class is square_radiation $82E0), as tile 8 at night, hours 0-5 and 18-23, and as their map tile otherwise; the game prints it as the clock's first two digits ($B15D). Saved with the game; 1 in play-map."
+   "text": "Hour of the game clock, 0-23 (wraps at 24, game $AF4B-$AF56). The engine's map square drawer ($0B80-$0B8A) shows squares of class 9, radiation (the game's handler for the class is square_radiation $82E0), as tile 8 at night, hours 0-5 and 18-23, and as their map tile otherwise; the game prints it as the clock's first two digits ($B15D); map 0's desert_heat takes its day check from 6:00 to 17:59 and its night check otherwise ($5074). Saved with the game; 1 in play-map."
   },
   {
    "address": 15,
    "type": "line",
-   "text": "Speed of the text window's smooth scroll, 0-6: indexes the step tables at $21D3/$21DA and the pause table $21E1 in newline ($20FD-$2157) and scroll_window_step ($216A, $21A3). While $A8 is set, CRSR down lowers and CRSR right raises it (speed_keys, $254A-$255B). The game keeps the player's value and substitutes its own for some texts ($914D-$915B sets it with $A8 = 1, $9144 puts both back). Saved with the game; 2 in play-map."
+   "text": "Speed of the text window's smooth scroll, 0-6: indexes the step tables at $21D3/$21DA and the pause table $21E1 in newline ($20FD, $2141). While newline scrolls, it holds the step's pixel lines from $21DA instead ($214C; the speed is put back at $2157), which scroll_window_step reads ($216A, $21A3). While $A8 is set, CRSR down lowers and CRSR right raises it (speed_keys, $254A-$255B). The game keeps the player's value and substitutes its own for some texts ($914D-$915B sets it with $A8 = 1, $9144 puts both back). Saved with the game; 2 in play-map."
   },
   {
    "address": 16,
    "type": "line",
-   "text": "Track of a file's first sector, 1-35: byte 0 of a directory entry (read_dir_entry, $27D0), the input of load_program ($28B5) and read_sector_10_11 ($FD1B), used by load_dir_entry ($2848) and save_dir_entry ($2864). For a packed stream byte 0 is the start byte in the sector, which unpack_entry keeps ($276A) before it overwrites $10 with the stream's track ($2780). check_disk_side sets 35 for T35/L8 ($18A4); the game ($7F03, $8814), the start-up ($7FEF), the radio program ($819B) and modules 3 and 4 set it before loading a program."
+   "text": "Track of a file's first sector, 1-35: byte 0 of a directory entry (read_dir_entry, $27D0), the input of load_program ($28B5) and read_sector_10_11 ($FD1B), used by load_dir_entry ($2848) and save_dir_entry ($2864). For a packed stream byte 0 is the start byte in the sector, which unpack_entry keeps ($276A) before it overwrites $10 with the stream's track ($2780). check_disk_side sets 35 for T35/L8 ($18A4); the game ($7F03, $8814), the start-up ($81F1, $8298), the radio program ($819B), the Ranger Center ($7EFA), the utilities ($8220) and module 3 ($CA1C) set it before loading a program, the start-up ($7FEF) and module 4 ($CCA9) before reading a picture's first sector. The utilities' disk copier keeps the track it is copying here, with the sector in $11 ($83CA-$8408)."
   },
   {
    "address": 17,
    "type": "line",
-   "text": "Logical sector of a file's first sector: byte 1 of a directory entry (read_dir_entry, $27D5), the input of load_program ($28B3) and read_sector_10_11 ($FD19); load_dir_entry and save_dir_entry pass it as X ($2846, $2862). For a packed stream byte 1 counts the sectors to step down from the directory's base: unpack_entry steps and counts it to 0 ($2775-$277E), then stores the stream's sector ($2782). check_disk_side sets 8 ($18A0); the game, start-up, radio and modules 3 and 4 set it with $10."
+   "text": "Logical sector of a file's first sector: byte 1 of a directory entry (read_dir_entry, $27D5), the input of load_program ($28B3) and read_sector_10_11 ($FD19); load_dir_entry and save_dir_entry pass it as X ($2846, $2862). For a packed stream byte 1 counts the sectors to step down from the directory's base: unpack_entry steps and counts it to 0 ($2775-$277E), then stores the stream's sector ($2782). check_disk_side sets 8 ($18A0); the game, the start-up, the radio program, the Ranger Center, the utilities and modules 3 and 4 set it with $10, and the utilities' disk copier keeps the sector it is copying here ($83CF-$840A)."
   },
   {
    "address": 18,
    "type": "line",
-   "text": "General pointer (with $13), low byte. Its main users: the bitmap address of a glyph, tile cell or line (bitmap_line_address $2390, next_cell $23A0, add_column $23AD, draw_glyph $2243), the source of a scroll copy (scroll_window_step $2174, copy_cells $DD9D), the record copied over by copy_character ($1726), the picture decoder ($067F, $095C-$09DC), and a jump vector: JMP ($0012) at jump_via_12 ($1EFD) for item_effect ($145F) and the print dispatcher ($1F05-$1F36), run_menu_item's handler table ($1C5B), the game's JMP ($0012) at $AC69."
+   "text": "General pointer (with $13), low byte. Its main users: the bitmap address of a glyph, tile cell or line (bitmap_line_address $2390, next_cell $23A0, add_column $23AD, draw_glyph $2243), the scroll copies (the source in copy_cells $DD9D; in scroll_window_step the destination, once $2174 has moved the source line's address to $14), the record copied over by copy_character ($1726), the picture decoder ($067F), the map lookups map_class_at, map_number_row, action_record and map_tile_row ($095C-$09DC, $0B06-$0B18), run_menu_item's handler table ($1C5B), and a jump vector: JMP ($0012) at jump_via_12 ($1EFD) for item_effect ($145F) and the print dispatcher ($1F05-$1F36), and the game's JMP ($0012) at $AC69."
   },
   {
    "address": 19,
@@ -10089,7 +10089,7 @@
   {
    "address": 20,
    "type": "line",
-   "text": "Second pointer (with $15), low byte: the destination of a scroll copy (scroll_window_step $2176-$2191, copy_cells and its step slots $DD9F-$DDC2), and in draw_tile_cells the address of the tile's four colour bytes, $DC00 + tile*4 ($22EC-$231C; read at $2376, stepped at $237C/$237F). The tile's bitmap bytes are read through the operand at $2368/$2369 instead. Map code uses it too: the loot-bag refill of maps 21, 32, 33, 41 and 43 keeps the template bag's record address here (map 21: STA $14/$15 at $3CA4/$3CA8, LDA ($14),Y at $3CB4)."
+   "text": "Second pointer (with $15), low byte: the source of the text window's scroll copy (scroll_window_step $2176-$2191, which leaves the destination in $12) and the destination of the map window's (copy_cells and its step slots $DD9F-$DDC2, set by the game's $BEF7), and in draw_tile_cells the address of the tile's four colour bytes, $DC00 + tile*4 ($22EC-$231C; read at $2376, stepped at $237C/$237F). The tile's bitmap bytes are read through the operand at $2368/$2369 instead. Map code uses it too: the loot-bag refill of maps 13, 21, 33, 41 and 43 (and map 32's copy, which nothing runs) keeps the template bag's record address here (map 21: STA $14/$15 at $3CA4/$3CA8, LDA ($14),Y at $3CB4); the Ranger Center points it at a new character's item lists (give_items, $7FB2-$7FC9, $81AF)."
   },
   {
    "address": 21,
@@ -10099,7 +10099,7 @@
   {
    "address": 22,
    "type": "line",
-   "text": "Record pointer (with $17), low byte: the result of record_address ($1B10: $45/$46 + A*$4C), most often an item's eight-byte record at $3108 + 8*A ($0BCD, used by item_skill_number $0DD5, item_class $144C, item_effect $1456, reload_weapon $129F); also skill_attr_ptr's entry in the skill table ($0C61) and the second string of strings_equal ($240C). Read as ($16),Y by the game ($95F7, $9ED9-$9EF1, $A89E, $B0AF, $BC8C) and modules 1 and 2."
+   "text": "Record pointer (with $17), low byte: the result of record_address ($1B10: $45/$46 + A*$4C), most often an item's eight-byte record at $3108 + 8*A ($0BCD, used by item_skill_number $0DD5, item_class $144C, item_effect $1456, reload_weapon $129F); also skill_attr_ptr's entry in the skill table ($0C61) and the second string of strings_equal ($240C). Read as ($16),Y by the game ($928E, $95F7, $9EC7-$9EF1, $A89E, $AA27, $AA2C, $AC3E, $B0AF, $BC8C), modules 1 and 2 and the Ranger Center ($8354, $835B: its skill table, from point_at_skill $84ED)."
   },
   {
    "address": 23,
@@ -10109,7 +10109,7 @@
   {
    "address": 24,
    "type": "line",
-   "text": "The key read_key ($2514) returned last: the code from $EC (ASCII with bit 7 set, from key_table) or 0 for none, stored at $252D. menu_key handles it ($1BBF, $1BDF, $1C04), wait_listed_key compares the list with it ($1B2B), and the game's main loop tests it against the member function keys ($7EBA). $19 and $1A after it are the game's scroll counters."
+   "text": "The key read_key ($2514) returned last: the code from $EC (ASCII with bit 7 set, from key_table) or 0 for none, stored at $252D and returned from there ($2537). menu_key handles it ($1BBF, $1BDF, $1C04), wait_listed_key compares the list with it ($1B2B), the game's main loop tests it against the member function keys ($7EBA), and the utilities' prompts return it as the key that ended the wait ($8292, $82D2). $19 and $1A after it are the game's scroll counters."
   },
   {
    "address": 25,
@@ -10119,7 +10119,7 @@
   {
    "address": 26,
    "type": "line",
-   "text": "Used only by the game: the character row its map-window scroll copies into next, handed in Y to the row-address routines $BEEE/$BEF0 and $BF0F/$BF12 (which use $049F/$04B7 and screen_row_address $0502): rows 1 to 16 down the screen for the sideways scrolls and the up scroll ($BE2F, $BE5D, $BE79; for up the source is two rows lower), 16 down to 4 for the down scroll ($BE93-$BEA4, the source two rows higher). From the game part's use."
+   "text": "Used only by the game: the character row its map-window scroll copies into next, handed in Y to the row-address routines $BEEE/$BEF0 and $BF0F/$BF12 (which use $049F/$04B7 and screen_row_address $0502): rows 1 to 16 down the screen for the sideways scrolls ($BE2F, $BE5D), 1 to 13 for the up scroll ($BE79; the source two rows lower), 16 down to 4 for the down scroll ($BE93-$BEA4, the source two rows higher). From the game part's use."
   },
   {
    "address": 27,
@@ -10164,7 +10164,7 @@
   {
    "address": 35,
    "type": "line",
-   "text": "Text cursor column, 0-39: where the next glyph is drawn (draw_glyph $2219, $224D). set_cursor writes it ($1EEC), draw_char_advance moves it on ($1F8C), newline puts it at the window's left edge ($212A), get_cursor ($22E5) and push_zp23/pull_zp23 ($2582, $2577) read and restore it with the window. Written by nearly every printing routine and by the game, modules, start-up and utils before they print."
+   "text": "Text cursor column, 0-39: where the next glyph is drawn (draw_glyph $2219, $224D). set_cursor writes it ($1EEC), draw_char_advance moves it on ($1F8C), newline puts it at the window's left edge ($212A), get_cursor ($22E5) and push_zp23/pull_zp23 ($2582, $2577) read and restore it with the window. Written by nearly every printing routine and by the game, modules, start-up, utils, the Ranger Center and the radio program before they print, and by map 13 before a line input ($42C7)."
   },
   {
    "address": 36,
@@ -10174,12 +10174,12 @@
   {
    "address": 37,
    "type": "line",
-   "text": "Left column of the text window, inclusive: where newline returns the cursor ($2128) and where word wrap measures from (draw_buffered_line $200E-$2021, window_width $21C5). 14 for the text window (text_window_open $12B2), 1 for the picture window ($12D4), 0 for the message area ($1E89, $1ECF); 14 in play-map."
+   "text": "Left column of the text window, inclusive: where newline returns the cursor ($2128) and where word wrap measures from (draw_buffered_line $200E-$2021, window_width $21C5). 14 for the text window (text_window_open: 13, the frame's column, at $12B2, then one more at $12C5), 1 for the picture window (0 at $12D4, then $12E3), 0 for the message area ($1E89, $1ECF), and the game ($AF0B, $B8DE), module 4, the start-up and utils set their own; 14 in play-map."
   },
   {
    "address": 38,
    "type": "line",
-   "text": "Right column of the text window, inclusive: glyphs past it are not drawn (draw_glyph $221B), word wrap breaks before it (buffer_char $1FF2, break_column $2037), clear and invert stop there ($2282, $22A2). 38 for the text window ($12C7), 11 for the picture window ($12E7), 39 for full-width text: draw_frame ($130D), the menu bar ($1B41), the message area ($1E8D), the side prompt ($18C9) and the disk error ($2811)."
+   "text": "Right column of the text window, inclusive: glyphs past it are not drawn (draw_glyph $221B), word wrap breaks before it (buffer_char $1FF2, draw_buffered_line $2037), clear and invert stop there ($2282, $22A2). 38 for the text window ($12C7), 11 for the picture window ($12E7), 39 for full-width text: draw_frame ($130D), the Geiger gauge ($0AA6), the roster ($15F2, $1646), the side prompt ($18C9), the menu bar ($1B41, $1B68), the message area ($1E8D, $1ECB), the '(RETURN)' prompt ($21F0) and the disk error ($2811). Outside the engine the game's clock ($B14B), the start-up ($7F5C, $7F67), utils ($7FBE, $818F) and module 4 ($CCF7) set 39, and utils and module 4 set 36 inside their frames ($7E36, $CD17)."
   },
   {
    "address": 39,
@@ -10189,12 +10189,12 @@
   {
    "address": 40,
    "type": "line",
-   "text": "Bottom pixel line of the text window, exclusive: newline scrolls when the cursor would reach it ($212C), scroll_window_step stops there ($219F), clear_window clears up to it ($22C1). $70 for the windows (window_clear $1306, lines 16-111), $78 after draw_frame ($1311); module 4 and the start-up set their own."
+   "text": "Bottom pixel line of the text window, exclusive: newline scrolls when the cursor would reach it ($212C), scroll_window_step stops there ($219F), clear_window clears up to it ($22C1). $70 for the windows (window_clear $1306, lines 16-111), $78 after draw_frame ($1311); module 4, the start-up and utils ($7E3E) set their own."
   },
   {
    "address": 41,
    "type": "line",
-   "text": "Reverse video: 0 normal, $FF reversed. EORed into each glyph byte (draw_glyph $225B) and each tile cell byte (draw_tile_cell $236A), and used by clear_or_invert ($2291). Text codes $01/$02 set and clear it (inverse_on $1FA6, inverse_off $1FA9); the roster ($1666) and the menu bar ($1B61) set it per item. $2A-$2B after it: no reference found in any part's snapshot."
+   "text": "Reverse video: 0 normal, $FF reversed. EORed into each glyph byte (draw_glyph $225B) and each tile cell byte (draw_tile_cell $236A), and used by clear_or_invert ($2291). Text codes $01/$02 set and clear it (inverse_on $1FA6, inverse_off $1FA9); the roster ($1666) and the menu bar ($1B61) set it per item. $2A-$2B after it: no instruction in any part's listing names them; only the start-up's clearing of $02-$FF writes them ($7F34), apart from utils' copy of zero page in send_report, which never runs ($860E, $86A5)."
   },
   {
    "address": 44,
@@ -10209,7 +10209,7 @@
   {
    "address": 46,
    "type": "line",
-   "text": "Character printed for a leading zero by print_bcd_digit ($1CE2): $20 (space) for the padded printers ($1CA1), 0 for the unpadded ones ($1CAF; character 0 is not printed, $1CF3). The game's clock pads the hour with character $5C, the frame's horizontal bar, since the clock sits in the top border, and the minutes with '0' ($B15B, $B16C)."
+   "text": "Character printed for a leading zero by print_bcd_digit ($1CE2): $20 (space) for the padded printers ($1CA1), 0 for the unpadded ones ($1CAF; character 0 is not printed, $1CF3). The game's clock pads the hour with character $5C, the frame's horizontal bar, since the clock sits in the top border, and the minutes with '0' ($B15B, $B16C); map 20's countdown pads its minutes with '0' too ($40DD)."
   },
   {
    "address": 47,
@@ -10219,7 +10219,7 @@
   {
    "address": 48,
    "type": "line",
-   "text": "Width of a printed number, in digits (1-8): print_bcd_field prints only positions up to it, so a padded number is right-aligned in this many columns and longer numbers lose their leading digits. Set by the callers: 3 for the attributes ($10F3), the skill levels ($11B0) and the roster fields ($167C, $16B9), 8 for the unpadded printers ($1CAB), 2 for the game's clock ($B14F); print_slot_number sets its own ($1867)."
+   "text": "Width of a printed number, in digits (1-8): print_bcd_field prints only positions up to it, so a padded number is right-aligned in this many columns and longer numbers lose their leading digits. Set by the callers: 3 for the attributes ($10F3) and the skill levels ($11B0), 8 for the unpadded printers ($1CAB), 2 for the game's clock ($B14F); print_slot_number sets 1 ($1867), which the roster line raises to 2 for AC and AMM ($167C) and to 3 for MAX ($16B9). The game elsewhere ($9343, $B682, $BAB6, $BAD6), map 20's countdown ($40D6), modules 0, 1 and 2 and the Ranger Center set it too, and so does utils' print_report, which never runs."
   },
   {
    "address": 49,
@@ -10234,7 +10234,7 @@
   {
    "address": 51,
    "type": "line",
-   "text": "Number of characters typed so far in input_line (0 up to $35): cleared at $1D13, raised for each key ($1D75), lowered by DEL ($1D68), used to place the cursor ($1D5A-$1D77) and to trim trailing spaces at RETURN ($1D82-$1D8F)."
+   "text": "Number of characters typed so far in input_line (0 up to $35): cleared at $1D13, raised for each key ($1D68), lowered by DEL ($1D75), the buffer index at which a key is stored and a deleted one blanked ($1D5A, $1D77), and used to trim trailing spaces at RETURN ($1D82-$1D8F)."
   },
   {
    "address": 52,
@@ -10244,7 +10244,7 @@
   {
    "address": 53,
    "type": "line",
-   "text": "Longest line input_line accepts ($1D5C), and the number of buffer bytes it clears first ($1D0E). Set by the callers: 13 for a name (ranger $836C), 16 for the game's typed words ($892F)."
+   "text": "Longest line input_line accepts ($1D5C), and the number of buffer bytes it clears first ($1D0E). Set by the callers: 13 for a name (ranger $836C, and map 13 for a clone's name, $42C3), 16 for the game's typed words ($892F)."
   },
   {
    "address": 54,
@@ -10259,7 +10259,7 @@
   {
    "address": 56,
    "type": "line",
-   "text": "The count the text's plural switch (code $0A, filter_plural $206B, $2083) tests, 1 meaning singular, and which code $0F prints ($1F9D). set_count_one makes it 1 ($1EFA, entry $04DE); item_list_show sets it ($1083); the game sets it before texts about a number of things ($87C4, $AA86, $BAD2), the radio program ($7EF8, $7FF2)."
+   "text": "The count the text's plural switch (code $0A, filter_plural $206B, $2083) tests, 1 meaning singular, and which code $0F prints ($1F9D). set_count_one makes it 1 ($1EFA, entry $04DE); item_list_show sets it ($1083); the game sets it before texts about a number of things ($87C4, $AA86, $BAD2 and others), as do module 1 ($CCBE) and utils for its copy messages ($7F34-$8059). The radio program sets it to the points a character is given ($7EF8, $7FF2) and counts them down in it as they are spent ($801F-$80A9)."
   },
   {
    "address": 57,
@@ -10274,7 +10274,7 @@
   {
    "address": 59,
    "type": "line",
-   "text": "Number of the current menu: picks the text (word $3B of the table at $3E, menu_text_pointer $1BB1) and the handler table (word $3B of the table at $40, run_menu_item $1C55). load_program sets 0 with its empty menu ($289A); the game, Ranger Center, title and utils set 0 for their own."
+   "text": "Number of the current menu: picks the text (word $3B of the table at $3E, menu_text_pointer $1BB1) and the handler table (word $3B of the table at $40, run_menu_item $1C55). load_program sets 0 with its empty menu ($289A); the game, Ranger Center, title and utils set 0 for their own, and utils also shows menus 1-4 (its copy menu, $7F20; Reading. and Writing., $7FFD; Formatting., $7F60)."
   },
   {
    "address": 60,
@@ -10314,7 +10314,7 @@
   {
    "address": 67,
    "type": "line",
-   "text": "Address (with $44) of the packed text block messages are taken from: $29E4, the engine's own (print_engine_msg $051B), the current map's (select_map_text $1E54, the word at ($61)), or one a program brings (game $7F5D, modules 0-2 and 4, the radio program, the start-up). find_message reads it ($1E0F) and copies it to $52/$53; clear_message_area saves and restores it around its engine message ($1EC3, $1EE4)."
+   "text": "Address (with $44) of the packed text block messages are taken from: $29E4, the engine's own (print_engine_msg $051B), the current map's (select_map_text $1E54, the word at ($61)), or one a program brings (game $7F5D, modules 0-2 and 4, the radio program, the Ranger Center, utils, the start-up). find_message reads it ($1E0F) and copies it to $52/$53; clear_message_area saves and restores it around its engine message ($1EC3, $1EE4)."
   },
   {
    "address": 68,
@@ -10329,12 +10329,12 @@
   {
    "address": 70,
    "type": "line",
-   "text": "High byte of record_address's table base at $45 ($0BD3 sets $31, the game $9EAE its own)."
+   "text": "High byte of record_address's table base at $45 ($0BD3 sets $31, the game $9EAE and the Ranger Center $84FB their own)."
   },
   {
    "address": 71,
    "type": "line",
-   "text": "Address (with $48) of a list's per-item routine, called through JMP ($0047) at call_list_item ($1968) for every line the list shows: print_item_row for the item list ($1087), print_skill_row for skills ($142B); modules 1 and 2 set their own. The routine prints the line or returns carry set to skip the item."
+   "text": "Address (with $48) of a list's per-item routine, called through JMP ($0047) at call_list_item ($1968) for every line the list shows: print_item_row for the item list ($1087), print_skill_row for skills ($142B); the game (its loot and group lists, $9323, $B634), modules 1 and 2 and the Ranger Center ($840A) set their own. The routine prints the line or returns carry set to skip the item."
   },
   {
    "address": 72,
@@ -10344,12 +10344,12 @@
   {
    "address": 73,
    "type": "line",
-   "text": "Item chosen in a list: list_choose stores the item of the line whose digit was pressed ($19BB, from list_line_items $196B); item_list_show returns it ($109E), skill_reorder uses it ($13E5). list_show_page borrows it as a line counter while it clears the unused lines ($1A22-$1A2C)."
+   "text": "Item chosen in a list: list_choose stores the item of the line whose digit was pressed ($19BB, from list_line_items $196B); item_list_show returns it ($109E), skill_reorder uses it ($13E5). list_show_page borrows it as a line counter while it clears the unused lines ($1A22-$1A2C). Module 2 and the Ranger Center set it to 1 before their skill lists ($CA57, $8406), and they and module 1 read the choice from it ($CAD0, $CB1F; $811B, $8151; $CC04)."
   },
   {
    "address": 74,
    "type": "line",
-   "text": "Item shown on the first line of the list page: 1 for a new list (item_list_show $1081, skill_list_show $13FD), the item after the last one shown when paging forward ($19DB, wrapping to 1 at $4D), and the new top when paging back ($1A75). list_show_page offers items from it ($19F4)."
+   "text": "Item shown on the first line of the list page: 1 for a new list (item_list_show $1081, skill_list_show $13FD; also the game's loot and group lists $931F, $B630, module 1 $CA57, module 2 $CA55 and the Ranger Center $8404), the item after the last one shown when paging forward ($19DB, wrapping to 1 at $4D), and the new top when paging back ($1A75). list_show_page offers items from it ($19F4)."
   },
   {
    "address": 75,
@@ -10364,12 +10364,12 @@
   {
    "address": 77,
    "type": "line",
-   "text": "One past the highest item number a list offers: item numbering wraps from it back to 1 ($19D5, $1A18, $1A6C). 31 for the 30 item slots ($107D); skill_list_show counts the skills into it ($13FA-$140B); the game ($9198-$9214, $B628), modules 1 ($CAE8, $CBDB) and 2 ($CB5B-$CB7C) and the Ranger Center (counted to 36, skills 1-35, $8414-$8416) set their own. The Order program only clears it ($CA8C): it calls list_line_label alone, which reads $25, $42, $50, $D0 and $D1, not this."
+   "text": "One past the highest item number a list offers: item numbering wraps from it back to 1 ($19D5, $1A18, $1A6C). 31 for the 30 item slots ($107D); skill_list_show raises it once for each of the 31 skill pairs it scans, so 31 too ($13FA, $1401); the game ($9198-$9214, $B628), modules 1 ($CAE8, $CBDB) and 2 ($CB5B-$CB7C) and the Ranger Center (counted to 36, skills 1-35, $8414-$8416) set their own. The Order program only clears it ($CA8C): it calls list_line_label alone, which reads $25, $42, $50, $D0 and $D1, not this."
   },
   {
    "address": 78,
    "type": "line",
-   "text": "Number of items in the list plus one, by the engine's convention ($1066-$106F, $1416-$141D; game $9194-$9212): list_fits_page compares it with the page length $4F ($19E3) to allow paging, and the MORE line appears when it is above $4F+1 ($1A97). item_reorder and skills_page read it ($100F, $13B1). Module 1's list of goods for sale ($CBCC-$CBD7, the count from $CC5D) and the Ranger Center's skill list ($8410-$8428) store the count itself, without the one (module 1's other two lists keep the convention, $CAE3, $CB43): both tests then move by one, so such a list of exactly ten items can be paged but shows no MORE line. Whether a shop or the skill list ever has exactly ten was not checked."
+   "text": "Number of items in the list plus one, by the engine's convention ($1066-$106F, $1416-$141D; game $9194-$9212, $B61F; module 2 $CB57-$CB76): list_fits_page compares it with the page length $4F ($19E3) to allow paging, and the MORE line appears when it is above $4F+1 ($1A97). item_reorder and skills_page read it ($100F, $13B1); the game lowers it as loot is taken ($92CE) and, before group_list_show, keeps the plain number of lines in reach in it ($B500, read at $B55A and $B59B). Module 1's list of goods for sale ($CBCC-$CBD7, the count from $CC5D) and the Ranger Center's skill list ($8410-$8428) store the count itself, without the one (module 1's other two lists keep the convention, $CAE3, $CB44): both tests then move by one, so such a list of exactly ten items can be paged but shows no MORE line. The Ranger Center's list never has ten: for a rolled IQ of 3-18 it holds 7, 9, 12, 16 or more skills (skill_table $8502). Whether a shop's list ever has exactly ten was not traced further."
   },
   {
    "address": 79,
@@ -10399,7 +10399,7 @@
   {
    "address": 84,
    "type": "line",
-   "text": "Number of map columns the map window shows: enter_map sets 19 ($25CF) and nothing changes it. The game counts its square loops with it ($9556, $AED6, $AF94 into the spare jump-table byte $0225, $B11D); the window shows 9 rows ($AF82)."
+   "text": "Number of map columns the map window shows: enter_map sets 19 ($25CF) and nothing changes it. The game counts its square loops with it ($9556, $AED6, $AF94 into the spare jump-table byte $0225) and square_in_view tests columns against it ($B11D); the window shows 9 rows ($AF82)."
   },
   {
    "address": 85,
@@ -10414,22 +10414,22 @@
   {
    "address": 87,
    "type": "line",
-   "text": "Map column of the current party: $02 + $59, set after each move by $0A7F (entry $0437, $0A82), loaded from the party table (+8) when the party changes (game $9C2C) and stored back there ($9C47). The distance routine at $08F5 measures from it ($090F); the game reads it for distances and events ($8347, $836C, $85B6, $997F, $AF2D, $B07C). Module 4 and the Ranger Center set it ($CBF3, ranger $7ECC)."
+   "text": "Map column of the current party: $02 + $59, set after each move by $0A7F (entry $0437, $0A82), loaded from the party table (+8) when the party changes (game $9C2C) and stored back there ($9C47); the game also puts a new square in it before select_party stores it, for a party that moves in a fight ($A332) and for a runner ($994C). The distance routine at $08F5 measures from it ($090F); the game reads it for distances and events ($8347, $836C, $837A, $85B6, $8890, $89C1, $89E7, $997F, $AF2D, $B07C, $B105), and so does map 26's train ($4FA2). Module 4 and the Ranger Center set it ($CBF3, ranger $7ECC)."
   },
   {
    "address": 88,
    "type": "line",
-   "text": "Map row of the current party: $03 + $5A ($0A84, entry $0437), loaded from the party table (+9, game $9C37) and stored back ($9C4D); read by the distance routine ($08FA) and the game ($834B, $8351, $835F, $9987, $AF2B, $B07E). Module 4 and the Ranger Center set it ($CBFE, ranger $7ED7)."
+   "text": "Map row of the current party: $03 + $5A ($0A84, entry $0437), loaded from the party table (+9, game $9C37) and stored back ($9C4D), and set by the game with $57 for a party that moves in a fight and for a runner ($A334, $9950); read by the distance routine ($08FA), the game ($834B, $8351, $835F, $8892, $89CB, $89E9, $9987, $AF2B, $B07E, $B107) and map 26's train ($4FA9). Module 4 and the Ranger Center set it ($CBFE, ranger $7ED7)."
   },
   {
    "address": 89,
    "type": "line",
-   "text": "Column of the party inside the map window: 9 (enter_map $25DB), the middle of 19. The view's left edge is $57 - $59 (game $9C2F) and the party's column $02 + $59 ($0A8D); $0A96 (entry $0440) subtracts it ($0A98). Module 4 reads it ($CBF6)."
+   "text": "Column of the party inside the map window: 9 (enter_map $25DB), the middle of 19. The view's left edge is $57 - $59 (game $9C2F) and the party's column $02 + $59 ($0A8D); $0A96 (entry $0440) subtracts it ($0A98). Module 4 and the Ranger Center read it ($CBF6, ranger $7ECF)."
   },
   {
    "address": 90,
    "type": "line",
-   "text": "Row of the party inside the map window: 4 (enter_map $25DF), the middle of 9 rows. The view's top edge is $58 - $5A (game $9C3A), the party's row $03 + $5A ($0A92); $0A9D subtracts it."
+   "text": "Row of the party inside the map window: 4 (enter_map $25DF), the middle of 9 rows. The view's top edge is $58 - $5A (game $9C3A), the party's row $03 + $5A ($0A92); $0A9D subtracts it. Module 4 and the Ranger Center read it ($CC01, ranger $7EDA)."
   },
   {
    "address": 91,
@@ -10454,7 +10454,7 @@
   {
    "address": 95,
    "type": "line",
-   "text": "Pointer (with $60) to a record of the current map: $09B8 (entry $0428) takes word Y of the map header's table list at +6 (a table's address) and then word A of that table ($09D9-$09DE). $0A00 (entry $042E) reads a square change from it ($0A07-$0A14) and the square drawer reads its byte 1 ($0B93). The game's event code works through it all the time ($8A3F-$9186, $B02D-$B0BF) and swaps it with $77/$78 ($BB61-$BB9C); modules 0-3 read their parameters through it."
+   "text": "Pointer (with $60) to a record of the current map: $09B8 (entry $0428) takes word Y of the map header's table list at +6 (a table's address) and then word A of that table ($09D9-$09DE). $0A00 (entry $042E) reads a square change from it ($0A07-$0A14) and the square drawer reads its byte 1 ($0B93). The game works through it all the time, reading and changing records ($82FF-$9354, $A42E, $B02D-$B0BF, $BE02-$BE1E), keeps it across run_action's table lookup and draw_view ($8855-$886D, $AC8F-$ACB2) and swaps it with $77/$78 ($BB61-$BB9C); modules 0-3 read their parameters through it. The own code of maps 0, 4, 5, 8, 11, 13, 21, 23-26, 32, 33, 35, 38-41, 43 and 49 reads records through it as well, and all of them but maps 5, 11, 24 and 39 write through it; maps 4, 8, 13, 21, 32, 33, 38, 40, 41, 43 and 49 keep it, point it at other records through $0428 and put it back."
   },
   {
    "address": 96,
@@ -10464,12 +10464,12 @@
   {
    "address": 97,
    "type": "line",
-   "text": "Address (with $62) of the current map's header: $4C00 for a 64x64 map, $3A00 for a smaller one, by the map's flag in T35/L8 (load_map_pages $2606-$261A; the low byte is always 0). Its first word is the map's text block (select_map_text $1E52); +6 on, the table list ($09BD); +$2C the size ($25D3); +$30 the tile set ($25EE); +$33 the border tile ($0B5E); +$34/+$35 time per step and +$36 the count per step (game $AF32-$AF64). Module 4 changes it ($CC67-$CC75)."
+   "text": "Address (with $62) of the current map's header: $4C00 for a 64x64 map, $3A00 for a smaller one, by the map's flag in T35/L8 (load_map_pages $2606-$261A; the low byte is always 0). Its first word is the map's text block (select_map_text $1E52); +6 on, the table list ($09BD); +$2C the size ($25D3); +$30 the tile set ($25EE); +$33 the border tile ($0B5E); +$34/+$35 time per step and +$36 the count per step (game $AF32-$AF64); the game also reads the monster names at word +2 ($9E78), the monster records at word +4 ($9EA7), the random-encounter bytes +$2F, +$31 and +$32 ($B017-$B047) and message numbers ($BCE5), and the own code of maps 6, 19, 20, 22, 27 and 43 changes +$2F, +$31 or +$32 through it. Module 4 changes it ($CC67-$CC75)."
   },
   {
    "address": 98,
    "type": "line",
-   "text": "High byte of the map header address at $61: $4C or $3A (load_map_pages $2616)."
+   "text": "High byte of the map header address at $61: $4C or $3A (load_map_pages $2616); module 4 sets $CC for one call ($CC6B) and puts it back ($CC72)."
   },
   {
    "address": 99,
@@ -10479,7 +10479,7 @@
   {
    "address": 100,
    "type": "line",
-   "text": "Class a square is changed to by $0A00 (entry $042E): the first byte of a change record at ($5F) ($0A11), or the saved $AD for record byte $FE ($0A2A); bit 7 set leaves the square as it is ($0A3D). The game sets it for its own square changes ($8788, $87A8, $956E, $B0C3) and module 4 ($CBD5)."
+   "text": "Class a square is changed to by $0A00 (entry $042E): the first byte of a change record at ($5F) ($0A11), or the saved $AD for record byte $FE ($0A2A); bit 7 set leaves the square as it is ($0A3D). The game sets it for its own square changes ($8788, $87A8, $B0C3) and module 4 ($CBD5); the game's encounter scan also keeps the class of the square it is looking at in it ($956E, read at $95B9)."
   },
   {
    "address": 101,
@@ -10499,7 +10499,7 @@
   {
    "address": 104,
    "type": "line",
-   "text": "Address (with $69) of a party table: $F400, $F40E, $F41C or $F42A for party 0-3 (party_table_ptr $1768, entry $029F). A table is 14 bytes: +1 to +7 the record numbers of positions 1-7, +8/+9 the party's column and row, +10 its map (game $9C17-$9C55), +11/+12/+13 the column, row and map it last left by an exit (game $89BA-$89D7). Read by select_member ($11FF), party_add ($1751), party_size ($175B), party_has_record ($17BD) and remove_member ($1802-$1849); the game and Order rearrange the tables through it, and map 13's release_clone writes a clone's record number into the party through it ($42AE)."
+   "text": "Address (with $69) of a party table: $F400, $F40E, $F41C or $F42A for party 0-3 (party_table_ptr $1768, entry $029F). A table is 14 bytes: +1 to +7 the record numbers of positions 1-7, +8/+9 the party's column and row, +10 its map (game $9C17-$9C55), +11/+12/+13 the column, row and map it last left by an exit (game $89BA-$89D7). Used by select_member ($11FF), party_add ($1751), party_size ($175B), party_has_record ($17BD) and remove_member ($1802-$1849); the game and Order rearrange the tables through it, module 4 and the Ranger Center read and change tables through it too ($CA7A-$CC8C; $7EA1-$7F24), utils' restart_command writes every party's square and map through it ($8157-$8163), map 13's release_clone writes a clone's record number into the party through it ($42AE), and map 33 reads other parties' maps and squares through it ($3E6B-$3E8E)."
   },
   {
    "address": 105,
@@ -10509,12 +10509,12 @@
   {
    "address": 106,
    "type": "line",
-   "text": "Non-zero while the roster occupies the bottom of the screen: roster_show sets 1 ($17CD); the game clears it when it draws the map full width ($AEF0, from $AC8C: at its start and when Space hides the roster, $7F32; Space with the roster hidden calls roster_show). The roster routines do nothing without it ($15A9, $15D5, $1632); show_message prints at the bottom only when it is 0 or after clearing ($1E70); the square position routine keeps squares out of the roster's rows while it is set ($0B3F)."
+   "text": "Non-zero while the roster occupies the bottom of the screen: roster_show sets 1 ($17CD), as does the start-up ($7F73); the game clears it when it draws the map full width ($AEF0, from $AC8C: at its start and when Space hides the roster, $7F32; Space with the roster hidden calls roster_show). The roster routines do nothing without it ($15A9, $15D5, $1632); show_message prints at the bottom only when it is 0 or after clearing ($1E70); the square position routine keeps squares out of the roster's rows while it is set ($0B3F), as does draw_other_parties ($AD3F), and restore_view_if_covered redraws the view when it or $B7 is set ($B112)."
   },
   {
    "address": 107,
    "type": "line",
-   "text": "Disk side check_disk_side wants (1-4): set from A on entry ($1897), printed in 'INSERT SIDE n.' ($18BC) and compared with the side byte of T35/L8 ($18C0)."
+   "text": "Disk side check_disk_side wants (1-4): set from A on entry ($1897), when A also goes, as a digit, into the 'INSERT SIDE n.' prompt ($189B); compared with the side byte of T35/L8 ($18BC), and stored again, unchanged, when they match ($18C0)."
   },
   {
    "address": 108,
@@ -10534,7 +10534,7 @@
   {
    "address": 111,
    "type": "line",
-   "text": "Low byte of a 16-bit total (with $70) for the engine's checks: cleared by $078D, added to by $079D (a signed add held between 0 and $FFFF), compared with the target $71/$72 by $07EF. skill_roll_total puts roll + attribute + 4*level here ($0C6A on); the game uses the same routines for its own rolls ($871C, $909F-$90E6)."
+   "text": "Low byte of a 16-bit total (with $70) for the engine's checks: cleared by $078D, added to by $079D (a signed add held between 0 and $FFFF), compared with the target $71/$72 by $07EF. skill_roll_total puts roll + attribute + 4*level here ($0C6A on); the game uses the same routines for its own rolls ($871C, $909F-$90E6) and also stores into it directly: each initiative slot in turn while melee_pick_next looks for the highest ($8061-$806D), and 100, the limit melee_chance holds its chance to ($829A)."
   },
   {
    "address": 112,
@@ -10544,7 +10544,7 @@
   {
    "address": 113,
    "type": "line",
-   "text": "Low byte of the 16-bit target (with $72) a check must reach: cleared by $0795, added to by $07C6 (held between 0 and $FFFF); skill_check and attribute_check set 15 + 5 * difficulty ($0867). The game halves it for some rolls ($8458-$845A) and keeps its own targets here ($8534, $86AD)."
+   "text": "Low byte of the 16-bit target (with $72) a check must reach: cleared by $0795, added to by $07C6 (held between 0 and $FFFF); skill_check and attribute_check set 15 + 5 * difficulty ($0867). The game halves it for some rolls ($8458-$845A) and keeps its own targets here ($8534, $86AD); it also keeps in it the highest initiative melee_pick_next has found ($806F-$8084), the melee chance tested against a d100 ($8103, $81EE) and the damage monster_takes_damage deals ($AAC8; set at $A057 for explosives)."
   },
   {
    "address": 114,
@@ -10569,12 +10569,12 @@
   {
    "address": 118,
    "type": "line",
-   "text": "Number of the item table file now at $3100: set by load_item_table after a load ($26C3) and used by save_item_table to write the table back to its own file ($26DC). The start-up and utils lower it by one just before load_item_table ($828E, $8216), which forces the table to be read again."
+   "text": "Number of the item table file now at $3100: set by load_item_table when it loads one, before the read ($26C3), and used by save_item_table to write the table back to its own file ($26DC). The start-up and utils lower it by one just before load_item_table ($828E, $8216), which forces the table to be read again."
   },
   {
    "address": 119,
    "type": "line",
-   "text": "Pointer (with $78), used only by the game: the map record (from $5F/$60) its event and encounter code is working on, most often the record of an encounter group's square, found from the group's column and row (group_square_record $BB75). From it the game reads the monster numbers and counts of the group's three lines (bytes 3, 5, 7 and 4, 6, 8: $BAE9, $BAE6) and byte 9: bit 0 the monsters are identified, so their names are shown ($9E5D), bit 1 peaceful ($9EF6), both changed once either side attacks ($ABC9, $ABD6), and bits 4-7 the NPC that can be hired there, in the map's list 17 ($ABC0, Hire $A3F1). Swapped with $5F/$60 around the engine's map routines ($BB5F-$BB9C) and read as ($77),Y at $8428-$8717, $9425-$946C, $95C9-$962C, $9E5F-$9EF8, $B65A-$BACE. From the game part's use."
+   "text": "Pointer (with $78), used only by the game: the map record (from $5F/$60) its event and encounter code is working on, most often the record of an encounter group's square, found from the group's column and row (group_square_record $BB75). From it the game reads the monster numbers and counts of the group's three lines (bytes 3, 5, 7 and 4, 6, 8: $BAE9, $BAE6) and byte 9: bit 0 the monsters are identified, so their names are shown ($9E5D), bit 1 peaceful ($9EF6), both changed once either side attacks ($ABC9, $ABD6), and bits 4-7 the NPC that can be hired there, in the map's list 17 ($ABC0, Hire $A3F1). Swapped with $5F/$60 around the engine's map routines ($BB5F-$BB9C) and read as ($77),Y at $8428-$8717, $87BB, $9425-$946C, $95C9-$962C, $97BA, $9C9C, $9E5F-$9EF8, $B65A-$BACE and $BC1B; the game also writes the lines through it, their monster numbers and counts rolled when its groups are placed ($942E, $943E) and the live counts, with type 0 for a line left empty, written back by group_write_back ($BA47, $BA59). From the game part's use."
   },
   {
    "address": 120,
@@ -10584,7 +10584,7 @@
   {
    "address": 121,
    "type": "line",
-   "text": "Pointer (with $7A), used only by the game: an encounter group's record, $EE00 + 376*party + 94*group (the game's $BBC7, A = party, X = group), or one of the group's 30-byte lines at +4 + 30*line ($BB9F); see encounter_groups at $EE00. The group's column and row at ($79)+0/+1 are passed to the engine's square routines $042B/$042E ($BB68-$BB7E) and stepped by the group pass ($84EA-$84F2). From the game part's use."
+   "text": "Pointer (with $7A), used only by the game: an encounter group's record, $EE00 + 376*party + 94*group (the game's $BBC7, A = party, X = group), or one of the group's 30-byte lines at +4 + 30*line ($BB9F); see encounter_groups at $EE00. The group's column and row at ($79)+0/+1 are passed to the engine's square routines $042B/$042E ($BB68-$BB7E), read by the group pass when it plans a step ($84EA-$84F2) and rewritten when the group moves ($879E, $87A2). From the game part's use."
   },
   {
    "address": 122,
@@ -10609,12 +10609,12 @@
   {
    "address": 126,
    "type": "line",
-   "text": "Class of the weapon in use (item_class, entry $0365), used by the game only: set at $A54E and per member before an attack ($BC4E; 1 when the weapon fails $0413, $BC5F); compared with 13, the explosives, at $A56F and $A5D8. From the game part's use. After it, $80-$87 are the Order program's copy of party table bytes 0-7, the old marching order, emptied as members are picked (order $CA08-$CA6F); $7F and $88: no reference found."
+   "text": "Class of the weapon in use (item_class, entry $0365), used by the game only: set at $A54E and per member before an attack ($BC4E; 1 when the weapon fails $0413, $BC5F); compared with 13, the explosives, at $A024, $A048, $A56F, $A5D8, $AAAC and $AB22. From the game part's use. After it, $80-$87 are the Order program's copy of party table bytes 0-7, the old marching order, emptied as members are picked (order $CA08-$CA6F); $7F and $88: no instruction in any part's listing names them; only the start-up's clearing of $02-$FF writes them ($7F34), apart from utils' copy of zero page in send_report, which never runs ($860E, $86A5)."
   },
   {
    "address": 137,
    "type": "line",
-   "text": "Pointer (with $8A), used only by the game: party A's order table, the first eight bytes of its block in party_orders ($F438 + 16 * party; order_tables_ptr $BCC0), one byte per party position 1-$07: the combat order chosen for the round, the index of its key in the game's order_keys ($B4BD, space H A W R E L U S): 0 none, 1 Hire, 2 Attack, 3 Weapon, 4 Run, 5 Evade, 6 Load/Unjam, 7 Use, 8 the party's Run. The space key shows the map and asks again ($B489); S, not named in the prompt, is Attack with the group list and stores 2 ($B4A0); 8 is stored only by set_party_move_orders ($B3C7), for every member when Run is answered P)arty ($B461-$B469). get_party_orders clears it ($B3BB), orders_member_loop stores the key's index ($B449); resolve_orders runs each order's handler from the table at $9F2E ($9EFD-$9F0F), party_ranged_attacks ($9F82) and melee_round ($8026, $808A, $81CF) read it, the shot at a member tests it for Evade ($9E0A), and resolve_runs_and_moves tests it for 8 and 4 and clears it ($A293-$A2B8); also written at $8092, $A36E and $A53D and read at $B26C. From the game part's use (its names)."
+   "text": "Pointer (with $8A), used only by the game: party A's order table, the first eight bytes of its block in party_orders ($F438 + 16 * party; order_tables_ptr $BCC0), one byte per party position 1-$07: the combat order chosen for the round, the index of its key in the game's order_keys ($B4BD, space H A W R E L U S): 0 none, 1 Hire, 2 Attack, 3 Weapon, 4 Run, 5 Evade, 6 Load/Unjam, 7 Use, 8 the party's Run. The space key shows the map and asks again ($B489); S, not named in the prompt, is Attack with the group list: its index 8, stored at $B449 like any key's, is replaced by 2 at once (choose_attack_listed $B4A0 goes back to $B443); apart from that, 8 is stored only by set_party_move_orders ($B3C7), for every member when Run is answered P)arty ($B461-$B469). get_party_orders clears it ($B3BB), orders_member_loop stores the key's index ($B449); resolve_orders runs each order's handler from the table at $9F2E ($9EFD-$9F0F), party_ranged_attacks ($9F82) and melee_round ($8026, $808A, $81CF) read it, the shot at a member tests it for Evade ($9E0A), and resolve_runs_and_moves tests it for 8 and 4 and clears it ($A293-$A2B8); also written at $8092, $A36E and $A53D and read at $B26C. From the game part's use (its names)."
   },
   {
    "address": 138,
@@ -10634,7 +10634,7 @@
   {
    "address": 141,
    "type": "line",
-   "text": "Map number, used only by the game: the map a fight or an encounter scan is on (the game's 'battle map'). for_each_battle_party ($9F40) visits every party whose table names this map (+10), selects it and calls the routine at ($8E) ($9F48-$9F58). The game copies $09 in before its call at $94CF ($B197-$B19B; $ACA1-$ACA9 keeps the old value around it) and reads it elsewhere ($83F0, $94E3, $A604, $B211-$B30A). From the game part's use."
+   "text": "Map number, used only by the game: the map a fight or an encounter scan is on (the game's 'battle map'). for_each_battle_party ($9F40) visits every party whose table names this map (+10), selects it and calls the routine at ($8E) ($9F48-$9F58). The game copies $09 in before its call at $94CF ($B197-$B19B; $AC9E-$ACA9 keeps the old value around it) and for each party of an encounter round ($B201-$B203), and reads it elsewhere ($83F0, $94E3, $A604, $B211-$B30A). From the game part's use."
   },
   {
    "address": 142,
@@ -10644,22 +10644,22 @@
   {
    "address": 143,
    "type": "line",
-   "text": "High byte of the routine address at $8E ($B87C, $B88B, $B896, $B8A1). $90 after it: no reference in the parts' reachable code; the utility program's unreached printer code (send_report $8602) would clear $90-$AF for the KERNAL ($8645-$864C), with zero page saved before and put back after ($860E, $86A5)."
+   "text": "High byte of the routine address at $8E ($B87C, $B88B, $B896, $B8A1). $90 after it: no reference in the parts' reachable code apart from the start-up's clearing of $02-$FF ($7F30-$7F37); the utility program's unreached printer code (send_report $8602) would clear $90-$AF for the KERNAL ($8645-$864C), with zero page saved before and put back after ($860E, $86A5)."
   },
   {
    "address": 145,
    "type": "line",
-   "text": "Number of the map now at $3400, $FF for none: enter_map compares $09 with it and does nothing for the same map ($25BF), otherwise writes the old one back (save_map $2856, which skips $FF) and records the new number ($25C8); unpack_map_stream and the tile set check use it ($25FC, $271D). The game sets $FF at its start so the first map loads ($7E48); save_item_table borrows it ($26D9-$26E4). Module 4 writes it."
+   "text": "Number of the map now at $3400, $FF for none: enter_map compares $09 with it and does nothing for the same map ($25BF), otherwise writes the old one back (save_map $2856, which skips $FF and every other number from $80 up, BMI at $2858) and records the new number ($25C8), a negative one as it is (load_map_pages translates it through T35/L8); load_map_pages, unpack_map_stream and the tile set check put it back in $09 ($262C, $271D, $25FC), save_dir_entry reads it ($285D) and the game compares the battle map with it ($B213). The game sets $FF at its start so the first map loads ($7E48); save_item_table borrows it ($26D9-$26E4). Module 4 sets $FF ($CBCA, $CC1A)."
   },
   {
    "address": 146,
    "type": "line",
-   "text": "Set to 1 by the start-up before it loads the game ($8301) and to 0 by the radio program and the Ranger Center before they load it back (radio $8194, ranger $7EF6). At its start the game runs the left-arrow handler once when it is set ($7E5C-$7E60): a step in place, which lets the square under the party act at once; the 'Enter new location (Y/N)?' seen after loading a save fits this (not traced further). The STA $92 at ranger $8994 is in the copy of the radio program that the Ranger Center's load carries at $8600-$8FFF, which never runs."
+   "text": "Set to 1 by the start-up's prepare_for_disk ($8301), which runs before it loads the game (load_save_from_side $82D0) or the utility program (menu_utils $81E1), and to 0 by the radio program and the Ranger Center before they load the game back (radio $8194, ranger $7EF6). The utility program leaves it as it is, so its Start loads the game with it still 1 (start_with_side $8213-$8226). At its start the game runs the left-arrow handler once when it is set ($7E5C-$7E60): a step in place, which lets the square under the party act at once; the 'Enter new location (Y/N)?' seen after loading a save fits this (not traced further). The STA $92 at ranger $8994 is in the copy of the radio program that the Ranger Center's load carries at $8600-$8FFF, which never runs."
   },
   {
    "address": 147,
    "type": "line",
-   "text": "Row of the square the game's line-of-sight walk ($8347-$83D6) has reached: starts at the party's row $58 and steps towards the target row Y (INC or DEC patched in at $83AC/$83B2). The walk stops with carry set at a square of class 11 ($83CC-$83D3). Used only by the game. $95 after $94: only the utility program's unreached printer code uses it, as the KERNAL's serial output byte ($8669, $867B)."
+   "text": "Row of the square the game's line-of-sight walk ($8347-$83D6) has reached: starts at the party's row $58 and steps towards the target row Y (INC or DEC patched in at $83AC/$83B2). The walk stops with carry set at a square of class 11 ($83CC-$83D3). Used only by the game. $95 after $94: apart from the start-up's clearing of $02-$FF ($7F30-$7F37), only the utility program's unreached printer code uses it, as the KERNAL's serial output byte ($8669, $867B)."
   },
   {
    "address": 148,
@@ -10679,7 +10679,7 @@
   {
    "address": 152,
    "type": "line",
-   "text": "Column steps left in the line-of-sight walk ($8383, counted down at $839D/$83B6); the walk ends when it and $9C are both 0 ($83C2). Used only by the game; $99 after it: no reference found."
+   "text": "Column steps left in the line-of-sight walk ($8383, counted down at $839D/$83B6); the walk ends when it and $9C are both 0 ($83C2). Used only by the game; $99 after it: no reference found apart from loops over zero page (the start-up's clearing of $02-$FF at $7F30-$7F37, and the utility program's unreached printer code)."
   },
   {
    "address": 154,
@@ -10704,7 +10704,7 @@
   {
    "address": 159,
    "type": "line",
-   "text": "Distance to the nearest visible radiation square (class 9: the game's square_radiation $82E0 handles that class, damaging members without a Rad suit), 10 a square: the game sets $FF (none) before it redraws the window ($AF7E-$AF80) and the square drawer lowers it to each such square's distance from the party as it draws it ($0B74-$0B7E), from the table at $0921 (50 bytes, |dy| 0-4 by |dx| 0-9, indexed 10*|dy| + |dx|: 2 on the party's square, 10 one square off, 14 diagonally, up to 98; $08F5, entry $04CF). The bar at columns 38-39 ($0AA1, entry $04E1) fills 18 - $9F/8 of rows 0-17 from the bottom, and the main loop clicks (sound 22, $04D2) after a random 1 to $9F+1 rounds of five passes ($7E63-$7E84): the Geiger counter. Module 4, the start-up and utils set it too. The class's meaning comes from the game part's use."
+   "text": "Distance to the nearest visible radiation square (class 9: the game's square_radiation $82E0 handles that class, damaging members without a Rad suit), 10 a square: the game sets $FF (none) before it redraws the window ($AF7E-$AF80) and the square drawer lowers it to each such square's distance from the party as it draws it ($0B74-$0B7E), from the table at $0921 (50 bytes, |dy| 0-4 by |dx| 0-9, indexed 10*|dy| + |dx|: 2 on the party's square, 10 one square off, 14 diagonally, up to 98; $08F5, entry $04CF). The bar at columns 38-39 ($0AA1, entry $04E1) fills 18 - $9F/8 of rows 0-17 from the bottom, and the main loop clicks (sound 22, $04D2) after a random 1 to $9F+1 rounds of five passes ($7E63-$7E84), and not at all while it is $FF: the Geiger counter. print_clock sets $FF when no member carries item $30, a Geiger counter ($B176-$B192); draw_markers calls it ($ACBB) just before the gauge ($ACBE), and V)iew after the clock moves on ($9BB1). Module 4, the start-up and utils set it too. The class's meaning comes from the game part's use."
   },
   {
    "address": 160,
@@ -10714,17 +10714,17 @@
   {
    "address": 161,
    "type": "line",
-   "text": "Text output switch: while non-zero, print_char_dispatch prints nothing ($1F0B) and flush_line does nothing ($1FFB). Set and cleared only by the game ($B924, $B940, $B94B; $B564/$B57B; $82E9 sets 1 with $A0, $832E clears it), to run text routines without showing them. $A2-$A7 after it: no reference in the parts' code apart from the clearing of $90-$AF in the utility program's unreached printer code ($8645-$864C)."
+   "text": "Text output switch: while non-zero, print_char_dispatch prints nothing ($1F0B) and flush_line does nothing ($1FFB). Set and cleared only by the game ($B924, $B940, $B94B; $B564/$B57B; $82E9 sets 1 with $A0, $832E clears it), to run text routines without showing them. $A2-$A7 after it: no reference in the parts' code apart from loops over zero page: the start-up's clearing of $02-$FF ($7F30-$7F37) and, in the utility program's unreached printer code, the clearing of $90-$AF ($8645-$864C) and the save and restore of the whole page ($860E, $86A5)."
   },
   {
    "address": 168,
    "type": "line",
-   "text": "Slow-scroll mode of the text window: while non-zero, newline pauses $21E1[$0F] rounds per line and scrolls in the steps of speed $0F ($20F9-$2149), and the cursor keys change the speed ($253A). 0 gives one 8-line step. show_message and clear_message_area hold it at 0 while they print and put it back ($1E66-$1EA4, $1EBC-$1EE7); the game sets 1 for its scrolling texts ($914D-$9159, $B9E8) and 0 after ($914A)."
+   "text": "Slow-scroll mode of the text window: while non-zero, newline pauses $21E1[$0F] rounds per line and scrolls in the steps of speed $0F ($20F9-$2149), and the cursor keys change the speed ($253A). 0 gives one 8-line step. show_message and clear_message_area hold it at 0 while they print and put it back ($1E66-$1EA4, $1EBC-$1EE7); the game sets 1 for its scrolling texts (slow_scroll_on $914D-$9159, slow_scroll_set $B9E3) and afterwards puts back the value slow_scroll_on saved (slow_scroll_restore $9144-$914A) or sets 0 (slow_scroll_clear $B9E6; both store at $B9E8)."
   },
   {
    "address": 169,
    "type": "line",
-   "text": "Not a variable as far as the traced code goes: every reference found is the operand of BIT $00A9, the skip idiom whose $2C hides an LDA #$00 ($1383, $1FA8; the game's $85C4, $AA57, $B8CA, $B9E5, $BB37; utils $80A7). No instruction found reads or writes $A9 or $AA, apart from the clearing of $90-$AF in the utility program's unreached printer code ($8645-$864C)."
+   "text": "Not a variable as far as the traced code goes: every reference found is the operand of BIT $00A9, the skip idiom whose $2C hides an LDA #$00 ($1384, $1FA8; the game's $85C4, $AA57, $B8CA, $B9E5, $BB37; utils $80A7). No instruction found reads or writes $A9 or $AA, apart from loops over zero page: the start-up's clearing of $02-$FF ($7F30-$7F37) and, in the utility program's unreached printer code, the clearing of $90-$AF ($8645-$864C) and the save and restore of the whole page ($860E, $86A5)."
   },
   {
    "address": 171,
@@ -10734,17 +10734,17 @@
   {
    "address": 172,
    "type": "line",
-   "text": "Picture animation on (non-zero) or off: show_picture sets 1 ($0566), and animate_picture_tick does nothing while it is 0 ($05C5). load_portrait holds it at 0 during an unpack ($2666-$2675). The game, modules, radio, Ranger Center and start-up set and read it around their screens."
+   "text": "Picture animation on (non-zero) or off: show_picture sets 1 ($0566), and animate_picture_tick does nothing while it is 0 ($05C5). load_portrait holds it at 0 during an unpack ($2666-$2675). The game, modules 0, 1, 2 and 4, the Ranger Center and the start-up set and read it around their screens; the radio program only clears it before it loads the game back ($8192)."
   },
   {
    "address": 173,
    "type": "line",
-   "text": "Class of the square $0A00 (entry $042E) last changed, kept before the change ($0A1E) so that a change record byte of $FE can put it back ($0A28)."
+   "text": "Class of the square $0A00 (entry $042E) last changed, kept before the change ($0A1E) so that a change record byte of $FE or $FD can put it back ($0A28; $FD through $0A0D and $0A38). The game's square_remote_changes keeps $AD/$AE on the stack around its list of changes and puts them back before the party's own square changes ($887F-$8884, $88CB-$88CF), so a $FE or $FD there trades with the square changed before the list."
   },
   {
    "address": 174,
    "type": "line",
-   "text": "Square byte of the square $0A00 last changed, kept before the change ($0A20) and put back for a record byte of $FE ($0A2C)."
+   "text": "Square byte of the square $0A00 last changed, kept before the change ($0A20) and put back for a record byte of $FE or $FD ($0A2C; $FD through $0A0D and $0A38). The game's square_remote_changes keeps it on the stack around its list of changes and puts it back before the party's own square changes ($8882, $88CC)."
   },
   {
    "address": 175,
@@ -10769,7 +10769,7 @@
   {
    "address": 179,
    "type": "line",
-   "text": "State of the text's singular/plural switch (code $0A): ctl_plural_start sets it ($2060), filter_plural steps it through the two choices ($208D), and print_char_dispatch runs the filter while it is non-zero ($1F1D)."
+   "text": "State of the text's singular/plural switch (code $0A): ctl_plural_start sets it ($2060), filter_plural clears it when the third $0A ends the choice ($208D; its position in the choice is the operand at $2064), and print_char_dispatch runs the filter while it is non-zero ($1F1D)."
   },
   {
    "address": 180,
@@ -10794,12 +10794,12 @@
   {
    "address": 184,
    "type": "line",
-   "text": "Non-zero while the picture window is framed: picture_window_open sets 1 ($12EE); the animation tick redraws the window when $B8 AND $DF is 0 ($05D4). The game clears it with the full-width map ($AEF4); the start-up sets it ($8008)."
+   "text": "Non-zero while the picture window is framed: picture_window_open sets 1 ($12EE); the animation tick redraws the window when $B8 AND $DF is 0 ($05D4). The game clears it with the full-width map ($AEF4); the start-up sets it for the title ($8008) and clears it in prepare_for_disk ($8307), before it loads the game or the utility program."
   },
   {
    "address": 185,
    "type": "line",
-   "text": "Base address (with $BA) of the buffer the last unpack went to, from set_unpack_destination ($267E) together with $FE/$FF; set_unpack_limit adds the page count to it ($268C). The picture code reads the buffer through it: start_picture's header ($0588-$05BB) and the scripts' offsets, which are relative to it ($0606-$0621, $06D0-$06DB). Module 4 and the start-up set it for their own unpacks."
+   "text": "Base address (with $BA) of the buffer the last picture was unpacked to, from set_unpack_destination ($267E) together with $FE/$FF, which only load_portrait calls ($264B, $2656): load_module, unpack_map_stream and unpack_tile_set set $FE/$FF alone and leave it; set_unpack_limit adds the page count to it ($268C). The picture code reads the buffer through it: start_picture's header ($0588-$05BB) and the scripts' offsets, which are relative to it ($0606-$0621, $06D0-$06DB). Module 4 and the start-up set it for their own picture unpacks ($CCAD, $7FDC)."
   },
   {
    "address": 186,
@@ -10814,7 +10814,7 @@
   {
    "address": 188,
    "type": "line",
-   "text": "State of the his/her switch (code $0C): ctl_sex_start sets it ($2096), filter_sex steps it ($20B8), and print_char_dispatch runs the filter while it is non-zero ($1F0F)."
+   "text": "State of the his/her switch (code $0C): ctl_sex_start sets it ($2096), filter_sex clears it when the third $0C ends the choice ($20B8; its position in the choice is the operand at $209A), and print_char_dispatch runs the filter while it is non-zero ($1F0F)."
   },
   {
    "address": 189,
@@ -10844,17 +10844,17 @@
   {
    "address": 194,
    "type": "line",
-   "text": "Last column of the picture's area, header byte 2 (start_picture $0594); the frame decoder stops after it ($06BA). $C3-$C4 after it: no reference found."
+   "text": "Last column of the picture's area, header byte 2 (start_picture $0594); the frame decoder stops after it ($06BA). $C3-$C4 after it: no reference found apart from loops over zero page (the start-up's clearing of $02-$FF at $7F30-$7F37, and the utility program's unreached printer code)."
   },
   {
    "address": 197,
    "type": "line",
-   "text": "When non-zero, animate_picture_tick skips its checks for a replaced picture and a missing window ($05C9) and only animates. Set by the start-up ($800C) and module 4 ($CCE0)."
+   "text": "When non-zero, animate_picture_tick skips its checks for a replaced picture and a missing window ($05C9) and only animates. Set to 1 by the start-up for the title ($800C) and by module 4 ($CCE0); the start-up's prepare_for_disk clears it ($830B) before it loads the game or the utility program."
   },
   {
    "address": 198,
    "type": "line",
-   "text": "Class of the party's square when the game last looked ($B138-$B13E, from $042B); with $C7 it is compared with the square's present state at $BDEC-$BDF9 to see whether the square has changed. Cleared after a move ($8CC3). Used only by the game."
+   "text": "Class of the party's square when the game last looked ($B138-$B13E, from $042B); with $C7 it is compared with the square's present state at $BDEC-$BDF9 to see whether the square has changed. Cleared at $8CC3, which runs when a Use has changed the square it was aimed at ($8CB0, or $8D02 after a failed Use) and the party then steps into it (try_move_party returns carry clear, $8CBC-$8CBF), not after other moves. Used only by the game."
   },
   {
    "address": 199,
@@ -10879,17 +10879,17 @@
   {
    "address": 203,
    "type": "line",
-   "text": "State of the three-way switch (code $0E): ctl_choice_start sets it ($20C0), filter_choice steps it ($20F3), print_char_dispatch runs the filter while it is non-zero ($1F16); filter_plural also reads it ($2073)."
+   "text": "State of the three-way switch (code $0E): ctl_choice_start sets it ($20C0), filter_choice clears it when the fourth $0E ends the choice ($20F3; its position in the choice is the operand at $20C4), print_char_dispatch runs the filter while it is non-zero ($1F16); filter_plural also reads it ($2073)."
   },
   {
    "address": 204,
    "type": "line",
-   "text": "Low byte of the address an unpack must stop at (with $CD): set_unpack_limit ($268E) and load_module, unpack_map_stream and unpack_tile_set ($26A0, $270A, $2738). The unpacker from T35/L16 never reads it: it compares the high byte alone (CMP $CD at $C834, the same on all four sides)."
+   "text": "Low byte of the address an unpack must stop at (with $CD): set_unpack_limit ($268E) and load_module, unpack_map_stream and unpack_tile_set ($26A0, $270A, $2738); module 4 ($CCAF) and the start-up ($7FDE) store 0 for their picture unpacks. The unpacker from T35/L16 never reads it: it compares the high byte alone (CMP $CD at $C834, the same on all four sides)."
   },
   {
    "address": 205,
    "type": "line",
-   "text": "High byte of the unpack limit: $D0 for a module ($26A4), $EE for the map stream ($270E), $DE for a tile set ($273C), base + pages for a portrait ($268A). The unpacker at $C800 (from T35/L16) compares its output page with it (CMP $CD, $C834)."
+   "text": "High byte of the unpack limit: $D0 for a module ($26A4), $EE for the map stream ($270E), $DE for a tile set ($273C), base + pages for a portrait ($268A); module 4 sets $34 plus picture_buffer_pages[X], $42, $45 or $44 ($CCBB), and the start-up $A3 for the title picture ($7FE7). The unpacker at $C800 (from T35/L16) compares its output page with it (CMP $CD, $C834)."
   },
   {
    "address": 206,
@@ -10909,17 +10909,17 @@
   {
    "address": 209,
    "type": "line",
-   "text": "Item number list_line_label marks with '_' instead of '>' ($1ACB); count_items_of_classes leaves the last matching slot here ($123A), skill_list_show the last skill ($140D). Modules 1 and 2 and Order set it."
+   "text": "Item number list_line_label marks with '_' instead of '>' ($1ACB); count_items_of_classes leaves the last matching slot here and count_items the last occupied one ($123A), skill_list_show the last skill ($140D). The game ($919A, $9216, $B62C), modules 1 and 2, Order and the Ranger Center ($842C) set it."
   },
   {
    "address": 210,
    "type": "line",
-   "text": "Used only by the game: a count of time units that paces healing. Each step adds the map header's count per step (+$36), as for $04-$06 ($AF58-$AF5F); whenever its low four bits come to 0 the game runs health_tick ($B795, from $AF75-$AF7B; battle rounds call it too), which heals a point of CON when $D2 AND $3F is 0, or $D2 AND $7F for a member of the current party ($B803-$B80E), and takes a point from an afflicted character when $D2 AND $3F is 0 ($B816). enter_map clears it ($25E3)."
+   "text": "Read only by the game: a count of time units that paces healing. Each step adds the map header's count per step (+$36), as for $04-$06 ($AF58-$AF5F; advance_clock runs for a step, $AE0A, for each encounter round, $B393, and when V)iew comes back to its first party, $9BAE); whenever its low four bits come to 0 the game runs health_tick ($B795, from $AF75-$AF7B; battle rounds call it too), which heals a point of CON when $D2 AND $3F is 0, or $D2 AND $7F for a member of the current party ($B803-$B80E), and takes a point from an afflicted character when $D2 AND $3F is 0 ($B816). enter_map clears it ($25E3)."
   },
   {
    "address": 211,
    "type": "line",
-   "text": "Low byte of the remainder of divide_24_by_8 ($06F3-$0722; $D3-$D6 are its working bytes, cleared at $06F3-$06F9); view_divide_cash gives the remainder to the member who divided ($0E63)."
+   "text": "Low byte of the remainder of divide_24_by_8 ($06F3-$0722; $D3-$D6 are its working bytes, cleared at $06F3-$06F9); view_divide_cash gives the remainder to the member who divided ($0E63), and map 20's show_countdown prints it as the minutes ($40DF, after minutes_to_hours divides through $0410)."
   },
   {
    "address": 212,
@@ -10944,37 +10944,37 @@
   {
    "address": 216,
    "type": "line",
-   "text": "Used only by the game: Enc sets 1 ($B1AF) and it is cleared at $B381; while it is set the moves do not scroll the map window ($AE31, $AE50, $ADFD) and the game reads it at $8DDC, $B10C. Reads as 'an encounter is under way'."
+   "text": "Used only by the game: Enc sets 1 ($B1AF) and it is cleared at $B381; while it is set the moves do not scroll the map window ($AE31, $AE50, $AE6F, $AE8E) or redraw the party's square without its marker ($ADFD), and the game reads it at $8DDC, $8DE3 and $B10C. Reads as 'an encounter is under way'."
   },
   {
    "address": 217,
    "type": "line",
-   "text": "Used only by the game: set_overkill ($ABF1-$AC01) sets 1 when a killed monster's hit points end below -14, 0 when they end at 0 to -14 (the two bytes are tested apart); $A1EA sets it from the game's table at $7E30. print_killing ($ABE1) then prints message 98 (' killing ...') when it is 0, or one of the map's messages from record +$5A/+$5B when it is 1 ($ABE3-$ABEE). From the game part's use."
+   "text": "Used only by the game: set_overkill ($ABF1-$AC01) sets 1 when a killed monster's hit points end below -14, 0 when they end at 0 to -14 (the two bytes are tested apart); $A1EA-$A1ED sets it from the game's table at $7E30, which holds the AND of set_overkill's results over the hit-list entry's kills ($A720-$A729). print_killing ($ABE1) then prints message 98 (' killing ...') when it is 0, or one of the map's messages from record +$5A/+$5B when it is 1 ($ABE3-$ABEE). From the game part's use."
   },
   {
    "address": 218,
    "type": "line",
-   "text": "Countdowns of the picture's four animation channels, $DA+X for channel X = 0-3 ($DA-$DD): start_picture sets 1 each ($05A8); the tick counts the channel's down ($05F0) and, at 0, takes the next script entry's delay ($0615). $DE after them: no reference found in any part's traced code."
+   "text": "Countdowns of the picture's four animation channels, $DA+X for channel X = 0-3 ($DA-$DD): start_picture sets 1 each ($05A8); the tick counts the channel's down ($05F0) and, at 0, takes the next script entry's delay ($0615). $DE after them: no reference found in any part's traced code apart from loops over zero page (the start-up's clearing of $02-$FF at $7F30-$7F37, and the utility program's unreached printer code)."
   },
   {
    "address": 223,
    "type": "line",
-   "text": "Picture flag: start_picture sets 1 ($05A4), picture_window_open clears it ($12EB); the animation tick redraws the window when $B8 AND $DF is 0 ($05D6). $E0-$E5 after it: no reference in any snapshot's code, but the unpacker loaded from T35/L16 to $C800 while a stream unpacks uses $E1-$E5 as its work bytes (read from the disk image)."
+   "text": "Picture flag: start_picture sets 1 ($05A4), picture_window_open clears it ($12EB); the animation tick redraws the window when $B8 AND $DF is 0 ($05D6). $E0-$E5 after it: no reference in any snapshot's code apart from loops over zero page (the start-up's clearing of $02-$FF at $7F30-$7F37, and the utility program's unreached printer code), but the unpacker loaded from T35/L16 to $C800 while a stream unpacks uses $E1-$E5 as its work bytes (read from the disk image)."
   },
   {
    "address": 230,
    "type": "line",
-   "text": "Used only by the game: set to 1 only by use_first_skill ($8A9E-$8AA0, LDA #$01 / STA $E6), an entry to use_by_member that nothing in any part or map calls. While it is set, use_choose ($8AD5) asks nothing and takes the character's first skill, record +$80 ($8ADB, $8B0D, $8B31); it clears it at $8B3B. So in play it stays 0 and Use always asks. $E7 after it: no reference found."
+   "text": "Used only by the game: set to 1 only by use_first_skill ($8A9E-$8AA0, LDA #$01 / STA $E6), an entry to use_by_member that nothing in any part or map calls. While it is set, use_choose ($8AD5) asks nothing and takes the character's first skill, record +$80 ($8ADB, $8B0D, $8B31); it clears it at $8B3B. So in play it stays 0 and Use always asks. $E7 after it: no reference found apart from loops over zero page (the start-up's clearing of $02-$FF at $7F30-$7F37, and the utility program's unreached printer code)."
   },
   {
    "address": 232,
    "type": "line",
-   "text": "Used only by the game: non-zero once a sentence about the current attack has been printed, so the next one starts with message 62, '...' ($9D71-$9D77, $A230-$A236, $AABA-$AAC0); cleared at $8147, $9D6F, $A05D and $A142, raised at $9D8D, $A228 (print_band_name_marked) and $AAC3. From the game part's use."
+   "text": "Used only by the game: non-zero once a sentence about the current attack has been printed, so the next one starts with message 62, '...' ($9D71-$9D77, $A230-$A236, $AABA-$AAC0); cleared at $8147, $9D6F, $A05D and $A142, raised at $9D8D, $A228 (print_line_name_marked) and $AAC3. From the game part's use."
   },
   {
    "address": 233,
    "type": "line",
-   "text": "Address (with $EA) of a row of the screen matrix at $5C00: screen_row_address sets $5C00 + row*40 ($23C6, entry $0502); draw_glyph, clear_or_invert and draw_tile_cell store colours through it ($2251, $229C, $237A). The start-up uses it too ($8379), and the game's scrolls read it for scroll_copy_row's colour addresses ($BF04-$BF2D)."
+   "text": "Address (with $EA) of a row of the screen matrix at $5C00: screen_row_address sets $5C00 + row*40 ($23C6, entry $0502); draw_glyph, the loop of clear_to_eol and invert_to_eol, and draw_tile_cell store colours through it ($2251, $229C, $237A). The start-up uses it too ($8379), and the game's scrolls read it for scroll_copy_row's colour addresses ($BF04-$BF2D)."
   },
   {
    "address": 234,
@@ -10984,7 +10984,7 @@
   {
    "address": 235,
    "type": "line",
-   "text": "Colour byte stored in the screen matrix for each glyph drawn (draw_glyph $224F, clear_or_invert $229A): in multicolour bitmap mode its high nibble colours the cell's bit pairs %01 and its low nibble the pairs %10. The start-up sets $6F ($7F3B); picture_window_open uses $26 and puts the caller's back ($12F0-$12FB); the gauge at $0AA1 draws in $62; module 4 sets its own."
+   "text": "Colour byte stored in the screen matrix for each glyph drawn (draw_glyph $224F; the loop of clear_to_eol and invert_to_eol, $229A): in multicolour bitmap mode its high nibble colours the cell's bit pairs %01 and its low nibble the pairs %10. The start-up sets $6F ($7F3B); picture_window_open uses $26 and puts the caller's back ($12F0-$12FB); the gauge at $0AA1 draws in $62; module 4 sets its own."
   },
   {
    "address": 236,
@@ -10994,7 +10994,7 @@
   {
    "address": 237,
    "type": "line",
-   "text": "Byte check_disk_side wants before the side number in T35/L8 ($18AE against $5AFD): 0 in play, which only copies made by the game's Copy carry; the start-up sets $D7, the masters' byte, only around loading Utils from the master (startup $81E4-$81ED). $EE-$F2 after it: no reference found."
+   "text": "Byte check_disk_side wants before the side number in T35/L8 ($18AE against $5AFD): 0 in play, which only copies made by the game's Copy carry; the start-up sets $D7, the masters' byte, only around loading Utils from the master (startup $81E4-$81ED). $EE-$F2 after it: no reference found apart from loops over zero page (the start-up's clearing of $02-$FF at $7F30-$7F37, and the utility program's unreached printer code)."
   },
   {
    "address": 243,
@@ -11014,7 +11014,7 @@
   {
    "address": 246,
    "type": "line",
-   "text": "Address (with $F7) of raster_safe_table plus 3 + (7 - the vertical scroll), set by loader_send_command ($FD6D) and read as ($F6),Y with Y = the raster line by loader_receive_byte ($FDA3)."
+   "text": "Address (with $F7) of raster_safe_table ($FC03) plus 7 - the vertical scroll ($F6 = 3 + (7 - scroll), $F7 = $FC), set by loader_send_command ($FD6D) and read as ($F6),Y with Y = the raster line by loader_receive_byte ($FDA3)."
   },
   {
    "address": 247,
@@ -11029,12 +11029,12 @@
   {
    "address": 249,
    "type": "line",
-   "text": "Logical sector of the loader's current sector, X on entry ($FF02), stepped between sectors ($FF5B-$FF62); logical_to_physical turns it into the physical sector ($FFC5). $FA-$FB after it: no reference found."
+   "text": "Logical sector of the loader's current sector, X on entry ($FF02), stepped between sectors ($FF5B-$FF62); logical_to_physical turns it into the physical sector ($FFC5). $FA-$FB after it: no reference found apart from loops over zero page (the start-up's clearing of $02-$FF at $7F30-$7F37, and the utility program's unreached printer code)."
   },
   {
    "address": 252,
    "type": "line",
-   "text": "Drive status byte of the last job: 0 for success; loader_main returns it compared with 1 ($FF41-$FF8A). disk_io reports 'Write protected' for $2B and 'I/O ERROR' for anything else ($2815)."
+   "text": "Drive status byte of the last job: 0 for success; loader_main returns it compared with 1 ($FF41-$FF8A). disk_io reports 'Write protected' for $2B and 'I/O ERROR' for anything else ($2815); the utility program's copy_disk_op reads it too and prints its 'Write protected' for $10, 'I/O error' otherwise ($7FC2-$7FC8)."
   },
   {
    "address": 253,
@@ -11044,12 +11044,12 @@
   {
    "address": 254,
    "type": "line",
-   "text": "Buffer address (with $FF) of the loader's next job, patched into loader_main's STA/LDA ($FF0D): $5A00 for single sectors (read_sector_xy $FD22, read_dir_entry keeps the caller's), $C800 for the unpacker swap ($053E), the save pages ($1882), the unpack destinations (set_unpack_destination $2682, load_module, unpack_map_stream, unpack_tile_set), $3100 and $3400 for item tables and maps ($28C3, $28D0), the program's load address (load_program $28A2)."
+   "text": "Buffer address (with $FF) of the loader's next job, patched into loader_main's STA/LDA ($FF0D): $5A00 for single sectors (read_sector_xy $FD22, read_dir_entry keeps the caller's), $C800 for the unpacker swap ($053E), the save pages ($1882), the unpack destinations (set_unpack_destination $2682, load_module, unpack_map_stream, unpack_tile_set), $3100 and $3400 for item tables and maps ($28C3, $28D0), the program's load address (load_program $28A2); disk_io keeps it across a retry ($27F6, $2834). Other parts set it directly: the game's Order command $CA00 ($BF51), module 4 $3400 ($CB2E), the start-up $CA00 ($7F98), and the utility program $5A00 for its identity check, put back after ($8074, $8085), $3400 on for its copy passes ($835D, $83D8); its unreached report code also uses it as a pointer to patch the print vector (hook_print_char $86EA-$86FA)."
   },
   {
    "address": 255,
    "type": "line",
-   "text": "High byte of the loader's buffer address: stepped a page per sector by write_pages ($2887) and read by read_pages for the last page ($284B), by loader_main ($FF15) and unpack_entry ($275E)."
+   "text": "High byte of the loader's buffer address: stepped a page per sector by write_pages ($2887) and, jumping over $5A00-$8FFF, $C600-$C9FF, $D000-$DFFF and $EE00-$F4FF, by the utility program's copy passes ($83FF, $8418-$8441); read by read_pages for the last page ($284B), by loader_main ($FF15) and unpack_entry ($275E)."
   },
   {
    "address": 512,
@@ -11059,7 +11059,7 @@
   {
    "address": 514,
    "type": "line",
-   "text": "Two zero bytes in front of the first jump-table entry. No code in any part's snapshot (the 43 maps and 9 tile sets included) reads, writes or calls them: every match of a byte scan lies in data, among them module 4's JMP $0202 at $CDEB and $CF28, map 26's JSR $0202 inside runs of $02 bytes ($3DE8, $4295, $55E8) and the ORA $0203,X at Radio $85D3 and Ranger $8DD3."
+   "text": "Two zero bytes in front of the first jump-table entry. No code in any part's snapshot (the 42 maps and 9 tile sets included) reads, writes or calls them: every match of a byte scan lies in data, among them module 4's JMP $0202 at $CDEB and $CF28, map 26's JSR $0202 inside runs of $02 bytes ($3DE8, $4295, $55E8) and the ORA $0203,X at Radio $85D3 and Ranger $8DD3."
   },
   {
    "address": 516,
@@ -11204,7 +11204,7 @@
   {
    "address": 581,
    "type": "line",
-   "text": "Game work byte: the shots a monster's ranged attack has left, the passes of the game's loop at $9D6A-$9D99, counted down at $9D94. Set at $9D6A from A: one shot, 1 to 3 (random_1_to_a(3) at $9D67, fire mode 1) or the 3d4 of $A992 (fire mode 2, entering at $9D5D). Map 26's bytes 20 6A 9D at its $425B, which read as JSR $9D6A, are in its number layer: data nothing runs."
+   "text": "Game work byte: the shots a monster's ranged attack has left, the passes of the game's loop at $9D6A-$9D99, counted down at $9D94. Set at $9D6A from A: 1 to 3 (random_1_to_a(3) at $9D67, fire mode 1) or the 3d4 of $A992 (fire mode 2, entering at $9D5D). Fire mode 0, a single shot, goes to $9D9C and leaves it alone. Map 26's bytes 20 6A 9D at its $425B, which read as JSR $9D6A, are in its number layer: data nothing runs."
   },
   {
    "address": 582,
@@ -11239,12 +11239,12 @@
   {
    "address": 594,
    "type": "line",
-   "text": "Game work byte: how many more successes of game $B63D are wanted in the loop at $B55A-$B577: choose_attack's random pick of the n-th line in reach, n = random_1_to_a($4E) at $B55C, counted down at $B56E."
+   "text": "Game work byte: how many more successes of game $B63D are wanted in the loop at $B55A-$B577: choose_attack's random pick of the n-th line in reach, n = random_1_to_a($4E) at $B55C, counted down at $B56E. n = 1, the first line in reach, when entered at $B58A (from $B50F for an NPC's melee reach and from $B593 for a player's only line)."
   },
   {
    "address": 595,
    "type": "line",
-   "text": "Game work byte: tries left in the game's loop at $B9A0-$B9B9, which calls $B9DB for successive values until one returns carry clear."
+   "text": "Game work byte: items left in the game's loop at $B9A0-$B9B9 (nearest_line, A = $0C from $B932 and $30 from $B93B), which calls $B9DB for each item in turn; the loop does not stop at a carry clear but keeps, of the items in reach, the one whose group's stored distance (byte 3) is smallest ($B9C4-$B9D5)."
   },
   {
    "address": 596,
@@ -11279,7 +11279,7 @@
   {
    "address": 610,
    "type": "line",
-   "text": "Game work byte: the member position (1 to $07, then 1-7) the game's loops at $A28E-$A2BF and $A2CD-$A318 go through, also used at $A328."
+   "text": "Game work byte: the member position (1 to $07) the game's loop at $A28E-$A2BF goes through, also used at $A328, and the character record number (1-7) the loop at $A2CD-$A318 goes through."
   },
   {
    "address": 611,
@@ -11364,7 +11364,7 @@
   {
    "address": 643,
    "type": "line",
-   "text": "Game work byte: cells left in a row while game $9541-$958B scans the view for cells of class 3 or 15 ($54 per row, through $0422 and $0425), and the inner count of the 3 x 3 loop at $970C-$976D."
+   "text": "Game work byte: cells left in a row while game $9541-$958B scans the view for cells of class 3 or 15 ($54 per row, through $0422 and $0425), and the group (3 down to 0) in the 4 x 4 loop over parties and groups at $970C-$9772."
   },
   {
    "address": 644,
@@ -11379,7 +11379,7 @@
   {
    "address": 650,
    "type": "line",
-   "text": "Game work byte: rows left in that view scan (9, set at $9543, counted down at $9588), and the outer count of the 3 x 3 loop at $970C-$976D."
+   "text": "Game work byte: rows left in that view scan (9, set at $9543, counted down at $9588), and the party (3 down to 0) in the 4 x 4 loop over parties and groups at $970C-$9772."
   },
   {
    "address": 651,
@@ -11419,7 +11419,7 @@
   {
    "address": 666,
    "type": "line",
-   "text": "Gap byte, zero in every snapshot; no code in any part names it (the byte-scan match at map 11's $41F6 lies in map data)."
+   "text": "Gap byte, zero in every snapshot; no code in any part names it (the byte-scan matches lie in map 11's map data at $41F6 and, at $F039, in the copy of the KERNAL ROM that fills RAM $E000-$FBFF in the engine's hand-over snapshot)."
   },
   {
    "address": 667,
@@ -11439,7 +11439,7 @@
   {
    "address": 674,
    "type": "line",
-   "text": "Gap $02A2-$02A3, zero in every snapshot. The BIT $02A2 at $1874 only hides a LDX #$02 (the second entry of read_save_page) and reads nothing; every other byte-scan match (the game's $8BA8 and $8C16, Ranger $A78B and $C51A, module 4 $CB83, maps 13, 15 and 33) is misaligned or lies in data."
+   "text": "Gap $02A2-$02A3, zero in every snapshot. The BIT $02A2 at $1874 only hides a LDX #$02 (the second entry of read_save_page); nothing uses the flags it sets. Every other byte-scan match (the game's $8BA8 and $8C16, Ranger $A78B and $C51A, module 4 $CB83, maps 13, 15 and 33) is misaligned or lies in data, and the STA $02A2 at $F887 belongs to the copy of the KERNAL ROM that fills RAM $E000-$FBFF in the engine's hand-over snapshot."
   },
   {
    "address": 676,
@@ -11454,7 +11454,7 @@
   {
    "address": 682,
    "type": "line",
-   "text": "Game flag: 1 at $8A69 when the question of game message $67 is answered no, 0 at $8A5B for yes and at $ACD5; game $89A3 goes to $8A00 while it is set."
+   "text": "Game flag: 1 at $8A69 when the question of game message $67 is answered no, 0 at $8A5B for yes and for a square that asks no question (class not $0A, or record byte 0 bit 6 clear), and at $ACD5; game $89A3 goes to $8A00 while it is set."
   },
   {
    "address": 683,
@@ -11939,7 +11939,7 @@
   {
    "address": 968,
    "type": "line",
-   "text": "JMP $0BCD A = item number: $16/$17 = its eight-byte record, $3108 + 8 x A (also A low, Y high), through $1AFE with $45/$46 = $3108, $4C = 8; X = 8."
+   "text": "JMP $0BCD A = item number: $16/$17 = its eight-byte record, $3108 + 8 x A (also A low, Y high), through $1AFE with $45/$46 = $3108, $4C = 8; X = 0."
   },
   {
    "address": 971,
@@ -12159,7 +12159,7 @@
   {
    "address": 1100,
    "type": "line",
-   "text": "JMP $0746 screen_shake: sound 0 and twelve random fine-scroll jolts of the screen; also item use effect 1 (the explosives) through item_effect_vectors. Returns a random carry (see $0746)."
+   "text": "JMP $0746 screen_shake: sound 0 and twelve random fine-scroll jolts of the screen; also item use effect 1 (the explosives and rockets, items 6-12) through item_effect_vectors. Returns a random carry (see $0746)."
   },
   {
    "address": 1103,
@@ -12229,7 +12229,7 @@
   {
    "address": 1255,
    "type": "line",
-   "text": "JMP $1944 scramble_save: EORs the saved game $F400-$FBFF with key A, the same operation both ways."
+   "text": "JMP $1944 scramble_save: EORs the saved game $F400-$FBFF with key A EOR twice the byte's offset in its page, the same operation both ways; byte $FF of each page is left out."
   },
   {
    "address": 1258,
@@ -12334,7 +12334,7 @@
   {
    "address": 1353,
    "type": "line",
-   "text": "Script pointers of the picture's four animation channels, one word each (channel X at $0549 + 2X, low byte first): set from the picture header by $06D0 when a picture starts, saved after each step by the tick at $05C5 ($0627/$062D), loaded into the stream reader's operand ($06C5/$06C6) before the next step."
+   "text": "Script pointers of the picture's four animation channels, one word each (channel X at $0549 + 2X, low byte first): set from the picture header by $06D0 when a picture starts and when a channel's script ends ($0643), saved after each step by the tick at $05C5 ($0627/$062D), loaded into the stream reader's operand ($06C5/$06C6) before the next step."
   },
   {
    "address": 1361,
@@ -12404,7 +12404,7 @@
   {
    "address": 1696,
    "type": "line",
-   "text": "Not a variable: the low byte ($C4) of the JSR $06C4 at $069F. The automatic symbol comes from the game's BIT $06A0 at $9EE0, which only hides a LDY #$06 (entered at $9EE1)."
+   "text": "Not a variable: the low byte ($C4) of the JSR $06C4 at $069F. The automatic symbol comes from the game's BIT $06A0 at $9EE0, which only hides a LDY #$06 (entered at $9EE1). Map 13 uses the same idiom: BIT $06A0 at $42E6 hides the LDY #$06 entered at $42E7 from $4283."
   },
   {
    "address": 1705,
@@ -12459,12 +12459,12 @@
   {
    "address": 1761,
    "type": "line",
-   "text": "Divides A (low) and X (high) by Y: clears the dividend's top byte $073F and goes on at $06E8. Jump table $0410; the game calls it at $86E3 and $8723."
+   "text": "Divides A (low) and X (high) by Y: clears the dividend's top byte $073F and goes on at $06E8. Jump table $0410; the game calls it at $86E3 and $8723, and map 20's minutes_to_hours jumps to it at $40FF."
   },
   {
    "address": 1768,
    "type": "line",
-   "text": "Divides the 24-bit number A (low), X (middle), $073F (high, set by the caller) by Y: 24 rounds of shift and subtract with the remainder in $D3-$D6. Returns the quotient in $073D-$073F (A = low, X = middle) and the remainder in $D3. A divisor of 0 gives a quotient of all ones. Entered here by $0E38 with the 24-bit sum in $1C-$1E and Y = $07, the number of party members."
+   "text": "Divides the 24-bit number A (low), X (middle), $073F (high, set by the caller) by Y: 24 rounds of shift and subtract with the remainder in $D3-$D6. Returns the quotient in $073D-$073F (A = low, X = middle) and the remainder in $D3. A divisor of 0 gives a quotient of all ones. Entered here by $0E38 with the viewed member's 24-bit cash (loaded into $1C-$1E by cash_load and passed as A, X and $073F) and Y = $07, the number of party members."
   },
   {
    "address": 1853,
@@ -12494,7 +12494,7 @@
   {
    "address": 1862,
    "type": "line",
-   "text": "Shakes the screen: plays sound 0 ($C993 with X = 0), saves $D011 and $D016, then 12 times waits ($242B with A = $80) and gives both registers a random fine scroll in bits 0-2 ($077A); restores $D016 and $D011 as saved and turns voice 1's gate off ($D404 = 0). Item use effect 1 (entry $146B of item_effect_vectors) and jump table $044C (module 4 at $CA4C, map 20 at $4085, and the end of twelve maps' code). Both registers keep their other bits as read, $D011's bit 7 included (the raster's high bit when read, the raster compare's when written). Returns with the carry random_byte ($24E3) left from its ADC #$E6 at $24EC in the last jolt: nothing after the last JSR $077A ($0764) touches it. Map code that ends JMP $044C (maps 3, 4, 9, 12, 18, 20, 27, 31, 33, 35, 36 and 39) hands that carry to run_action (game $8872), which redraws the view only when it is set, so the redraw after a blast is chance."
+   "text": "Shakes the screen: plays sound 0 ($C993 with X = 0), saves $D011 and $D016, then 12 times waits ($242B with A = $80) and gives both registers a random fine scroll in bits 0-2 ($077A); restores $D016 and $D011 as saved and turns voice 1's gate off ($D404 = 0). Item use effect 1 (entry $146B of item_effect_vectors) and jump table $044C (module 4 at $CA4C, map 20 at $4085, and the end of twelve maps' code). Both registers keep their other bits as read, $D011's bit 7 included (the raster's high bit when read, the raster compare's when written). Returns with the carry random_byte ($24E3) left from its ADC of the seed rnd_seed (the operand at $24ED, which every call rewrites) at $24EC in the last jolt: nothing after the last JSR $077A ($0764) touches it. Map code that ends JMP $044C (maps 3, 4, 9, 12, 18, 20, 27, 31, 33, 35, 36 and 39) hands that carry to run_action (game $8872), which redraws the view only when it is set, so the redraw after a blast is chance."
   },
   {
    "address": 1896,
@@ -12669,7 +12669,7 @@
   {
    "address": 2280,
    "type": "line",
-   "text": "Item classes counted as ranged weapons by class_is_ranged ($08D6), ended by $FF: 13, 10, 11, 12, 2, 3, 4, 5, 6, 7, 8, 9, that is every class from 2 to 13. In the item table at $3108 those are pistols and thrown weapons (2), flamethrower and rifles (3-7), rockets (8-9), energy weapons (10-12) and explosives (13); not in the list are 1 (fists and melee weapons), 14 (clips, shells, power packs), 15 (armour) and 16 up (other items, cash)."
+   "text": "Item classes counted as ranged weapons by class_is_ranged ($08D6), ended by $FF: 13, 10, 11, 12, 2, 3, 4, 5, 6, 7, 8, 9, that is every class from 2 to 13. In the item table at $3108 those are pistols and thrown weapons (2), the flamethrower, rifles, SMGs and assault rifles (3-7; no item has class 5), rockets (8-9), energy weapons (10-12) and explosives (13); not in the list are 1 (fists and melee weapons), 14 (clips, shells, power packs), 15 (armour) and 16 up (other items, cash)."
   },
   {
    "address": 2293,
@@ -12734,12 +12734,12 @@
   {
    "address": 2488,
    "type": "line",
-   "text": "Entry $0428. Points $5F/$60 at the action record for class Y (0-15) and number A: the map record at $61/$62 holds at +6 + 2*Y the address of class Y's table (one word per number), and word A of that table is the record's address. $12/$13 is left on the class's table. A number of 128 or more wraps (2*A is eight bits), and a class whose table word is 0 reads from $0000. Callers: square_record ($0BC5), the game ($885E, $A426, $B028, $B133, $BB8B)."
+   "text": "Entry $0428. Points $5F/$60 at the action record for class Y (0-15) and number A: the map record at $61/$62 holds at +6 + 2*Y the address of class Y's table (one word per number), and word A of that table is the record's address. $12/$13 is left on the class's table. A number of 128 or more wraps (2*A is eight bits), and a class whose table word is 0 reads from $0000. Callers: square_record ($0BC5), the game ($885E, $A426, $B028, $B133, $BB8B) and the code of maps 4 ($41B5, $41E6), 8 ($3EE2), 13 ($433E, $434E), 21 ($3C9F, $3CAF), 32 ($3ED1, $3EE1, $3F2A), 33 ($3E1C, $3E2C), 38 ($3FC4), 40 ($3E86), 41 ($4230, $4240, $4280), 43 ($3E61, $3E71) and 49 ($3E3B)."
   },
   {
    "address": 2529,
    "type": "line",
-   "text": "Entry $042B. Reads both layers of map square X, Y: returns A = its class (map_class_at), X = its number from the number layer (map_number_at), Y = the column. Changes $5B/$5C, $5D/$5E, $63 and $12/$13. Callers: alter_square ($0A1B), the game ($8780, $B12D, $B13B, $BB7E, $BDEC; at $ACDB-$ACF0 the class of the party's square picks the game's handler from its table at $ACF3)."
+   "text": "Entry $042B. Reads both layers of map square X, Y: returns A = its class (map_class_at), X = its number from the number layer (map_number_at), Y = the column. Changes $5B/$5C, $5D/$5E, $63 and $12/$13. Callers: alter_square ($0A1B), the game ($8780, $B12D, $B13B, $BB7E, $BDEC; at $ACDB-$ACF0 the class of the party's square picks the game's handler from its table at $ACF3) and map 25's code ($3FB4, $3FC3, $3FD2)."
   },
   {
    "address": 2540,
@@ -12849,7 +12849,7 @@
   {
    "address": 2710,
    "type": "line",
-   "text": "Entry $0440. Subtracts the view offsets from the square in X/Y: X - $59, Y - $5A, the step from the party's square to the view's top-left square. The game uses it before storing $02/$03 when the party is put on a square ($89F4, $8A1B: the exit record's x and y)."
+   "text": "Entry $0440. Subtracts the view offsets from the square in X/Y: X - $59, Y - $5A, the step from the party's square to the view's top-left square. The game uses it before storing $02/$03 when the party is put on a square ($89F4: the party's previous return point, party table +$0B/+$0C, for an exit to map $FF; $8A1B: the exit record's x and y, added to the party's square when the record's byte 0 has bit 7 set)."
   },
   {
    "address": 2721,
@@ -12974,7 +12974,7 @@
   {
    "address": 3021,
    "type": "line",
-   "text": "Entry $03C8. Points $16/$17 at item A's eight-byte record in the item table, $3108 + 8*A, through record_address ($1AFE): sets $45/$46 = $3108 and $4C = 8, which stay set for the paged-list routines. Returns A = $16, Y = $17, X = 0. Item numbers are 0-94 (to $33FF); nothing checks A. Callers: the engine ($0DD0, $10BC, $122B, $1270, $1451), the game, module 1 and the Ranger Center."
+   "text": "Entry $03C8. Points $16/$17 at item A's eight-byte record in the item table, $3108 + 8*A, through record_address ($1AFE): sets $45/$46 = $3108 and $4C = 8, which stay set for later calls of record_address ($039E), their only reader: module 1's buy code calls it at $CBF2 for the item picked from its list, relying on item_record's setting ($CC62). Returns A = $16, Y = $17, X = 0. Item numbers are 0-94 (to $33FF); nothing checks A. Callers: the engine ($0DD0, $10BC, $122B, $1270, $1451), the game, module 1 and the Ranger Center."
   },
   {
    "address": 3036,
@@ -13124,7 +13124,7 @@
   {
    "address": 3544,
    "type": "line",
-   "text": "skill_attribute_table: 36 bytes, one per skill number 0-35 (read through skill_attr_ptr): the record offset of the attribute added to a skill roll. $0E ST, $0F IQ, $10 LK, $11 SP, $12 AGL, $13 DEX, $14 CHR; entry 0 is $00 (none). Brawling LK, Climb AGL, the gun and knife skills DEX, Pugilism and Swim ST, Combat shooting (17) SP, Confidence and Bureaucracy CHR, the technical skills IQ."
+   "text": "skill_attribute_table: 36 bytes, one per skill number 0-35 (read through skill_attr_ptr): the record offset of the attribute added to a skill roll. $0E ST, $0F IQ, $10 LK, $11 SP, $12 AGL, $13 DEX, $14 CHR; entry 0 is $00 (none). Brawling and Gamble LK; Climb, Acrobat and Silent move AGL; Pugilism and Swim ST; Combat shooting (17) SP; Confidence and Bureaucracy CHR; DEX for the weapon skills (Clip pistol, Knife fight, Rifle, Knife throw, Assault rifle, AT weapon, SMG, Energy weapon) and for Picklock, Sleight of hand, Forgery, Safecrack and Helicopter pilot; IQ for Perception and the technical skills (Demolitions, Alarm disarm, Bomb disarm, Medic, Cryptology, Metallurgy, Electronics, Toaster repair, Doctor, Clone tech, Cyborg tech)."
   },
   {
    "address": 3580,
@@ -13149,7 +13149,7 @@
   {
    "address": 3750,
    "type": "line",
-   "text": "Item menu for slot A of the current character, called from view_items_loop. When the slot holds the ammunition of the equipped weapon (weapon record byte 7) it asks \"Reload (Y/N)?\" and Y reloads (reload_weapon). When the item's count byte has bit 7 set (jammed) it asks \"Unjam (Y/N)?\", the Y drawn as glyph $7C (a reverse-video Y), and any key but N or left-arrow tries unjam_weapon. Otherwise it offers D)rop, T)rade and unE)quip (equip_toggle)."
+   "text": "Item menu for slot A of the current character, called from view_items_loop. When the slot holds the ammunition of the equipped weapon (weapon record byte 7) it asks \"Reload (Y/N)?\" and Y reloads (reload_weapon). When the item's count byte has bit 7 set (jammed) it asks \"Unjam (Y/N)?\", the Y drawn as glyph $7C (a reverse-video Y), and any key but N or left-arrow tries unjam_weapon. Otherwise, and after N or left-arrow at either question, it offers D)rop, T)rade and unE)quip (equip_toggle)."
   },
   {
    "address": 3757,
@@ -13184,7 +13184,7 @@
   {
    "address": 4017,
    "type": "line",
-   "text": "Items page of the character screen: item_list_page for the member at $0E20; each item chosen goes to item_action_menu and the member's roster line is redrawn. RETURN, space or left-arrow ends it, and so does a member with no items, returned in A (0 no items, $FD RETURN or space, $FF left-arrow) with carry set. R reorders the list inside item_list_page and the list comes back; other keys are ignored (list_choose $19A4-$19B3)."
+   "text": "Items page of the character screen: item_list_page for the member at $0E20; each item chosen goes to item_action_menu and the member's roster line is redrawn. RETURN, space or left-arrow ends it, and so does a member with no items, returned in A (0 no items, $FD RETURN or space, $FF left-arrow) with carry set. R reorders the list inside item_list_page and the list comes back; when the items fill more than one page the paging keys of list_choose turn it ($19C2-$19E0); other keys are ignored (list_choose $19A4-$19B3)."
   },
   {
    "address": 4037,
@@ -13199,7 +13199,7 @@
   {
    "address": 4101,
    "type": "line",
-   "text": "R on the item list: clears the 60-byte buffer at $5A00, then lists \" Reorder\" repeatedly; each item picked moves to the next buffer pair, and the slot number it will get ($103F) is noted when it is the weapon or the armour. Keys other than an item number also advance $103F (see $1015)."
+   "text": "R on the item list: clears the 60-byte buffer at $5A00, then lists \" Reorder\" repeatedly; each item picked moves to the next buffer pair, and the slot number it will get ($103F) is noted when it is the weapon or the armour. Left-arrow, RETURN, space and R also advance $103F without moving an item (see $1015); other keys stay inside list_choose (ignored, or turning the page)."
   },
   {
    "address": 4134,
@@ -13214,7 +13214,7 @@
   {
    "address": 4159,
    "type": "line",
-   "text": "Operand of LDX #imm at $103E: the slot number the next picked item will have (1, 2, ...), cleared at $0FF9 and raised at $1015 before each list, including after keys that move nothing."
+   "text": "Operand of LDX #imm at $103E: the slot number the next picked item will have (1, 2, ...), cleared at $0FF9 and raised at $1015 before each list, including after left-arrow, RETURN, space or R, which move nothing."
   },
   {
    "address": 4183,
@@ -13224,7 +13224,7 @@
   {
    "address": 4192,
    "type": "line",
-   "text": "Item list: counts the current character's items (count_items); none returns A = 0, carry set. Otherwise opens the text window with \"Item\" (message 151) and title message A (0 none, 168 \" Reorder\"), draws rows 1-30 through print_item_row (vector $47/$48, list code $19ED, $4D = 31) with R as the extra key ($BE = $D2), and waits ($1975). Returns carry clear with A = the chosen slot ($49), or carry set with A = $FD (RETURN/space), $FE (R) or $FF (left-arrow)."
+   "text": "Item list: counts the current character's items (count_items); none returns A = 0, carry set. Otherwise opens the text window with \"Item\" (message 151) and title message A (0 none, 168 \" Reorder\"), draws the first page, at most nine lines, of the items in slots 1-30 through print_item_row (vector $47/$48, list code $19ED, $4D = 31) with R as the extra key ($BE = $D2), and waits ($1975). Returns carry clear with A = the chosen slot ($49), or carry set with A = $FD (RETURN/space), $FE (R) or $FF (left-arrow)."
   },
   {
    "address": 4215,
@@ -13244,7 +13244,7 @@
   {
    "address": 4312,
    "type": "line",
-   "text": "Entry $0362. A = slot: if it is the current character's weapon (+$1F) that field becomes 0; if it is the armour (+$25) that field and the AC (+$1A) become 0. Called after an item leaves a slot (drop, trade, last charge used) and by module 1 ($CB0C)."
+   "text": "Entry $0362. A = slot: if it is the current character's weapon (+$1F) that field becomes 0; if it is the armour (+$25) that field and the AC (+$1A) become 0. Called after an item leaves a slot (drop, trade, last charge used), by equip_toggle ($10B1) to unequip, and by module 1 ($CB0C)."
   },
   {
    "address": 4334,
@@ -13444,7 +13444,7 @@
   {
    "address": 5047,
    "type": "line",
-   "text": "R on the skill list: copies the 30 skill pairs (+$80..+$BB) to $5A00-$5A3B, then lists \" Reorder\" until every skill has been picked; keys other than a number just list again, so left-arrow does not cancel. The empty list copies the buffer back."
+   "text": "R on the skill list: copies the 30 skill pairs (+$80..+$BB) to $5A00-$5A3B, then lists \" Reorder\" until every skill has been picked; left-arrow, RETURN, space and R just list again (other keys stay inside list_choose), so left-arrow does not cancel. The empty list copies the buffer back."
   },
   {
    "address": 5100,
@@ -13474,7 +13474,7 @@
   {
    "address": 5194,
    "type": "line",
-   "text": "Entry $0365. A = the class of the item whose record is at ($16): record byte 3 shifted right three times ($098A). Classes seen in the table at $3108: 1 melee, 2 pistols and thrown weapons, 3-7 rifles, SMGs and assault rifles, 8-9 rockets, 10-12 energy weapons, 13 explosives, 14 ammunition, 15 armour, 16-18 equipment and quest items."
+   "text": "Entry $0365. A = the class of the item whose record is at ($16): record byte 3 shifted right three times ($098A). Classes seen in the table at $3108: 1 melee, 2 pistols and thrown weapons, 3-7 the flamethrower, rifles, SMGs and assault rifles (none has 5), 8-9 rockets, 10-12 energy weapons, 13 explosives, 14 ammunition, 15 armour, 16-18 equipment and quest items."
   },
   {
    "address": 5201,
@@ -13484,7 +13484,7 @@
   {
    "address": 5204,
    "type": "line",
-   "text": "Entry $0368. Runs the use effect of the item whose record is at ($16): bits 0-2 of record byte 3 index item_effect_vectors and the routine there is jumped to through $12/$13 ($1EFD, JMP ($0012)). Effect 0 is an RTS; effect 1 is the screen shake at $0746, set on the grenades, explosives and rockets (items 6-12). No item record uses 2-7, which would read code bytes after the table as addresses."
+   "text": "Entry $0368. Runs the use effect of the item whose record is at ($16): bits 0-2 of record byte 3 index item_effect_vectors and the routine there is jumped to through $12/$13 ($1EFD, JMP ($0012)). Effect 0 is an RTS; effect 1 is the screen shake at $0746, set on the grenades, explosives and rockets (items 6-12). Of the records only item 94's (Cash, which differs between the item files) can have another: byte 3 $FB in the snapshot, effect 3, which would read code bytes after the table as the address $A02C; the loot code pays item 94 out as money (game $9263) instead of putting it in a slot."
   },
   {
    "address": 5225,
@@ -13529,7 +13529,7 @@
   {
    "address": 5285,
    "type": "line",
-   "text": "Entry $0380. Uses one charge of the item at record offset Y (the game, $8E6D and $8FAD): a count of 0 in bits 0-5 of its count byte means unlimited; otherwise the count drops by one, and the last charge removes the item, unequipping it first. Then the item's use effect runs (item_effect_of), so throwing a grenade shakes the screen."
+   "text": "Entry $0380. Uses one charge of the item at record offset Y (the game, $8E6D and $8FAD): a count of 0 in bits 0-5 of its count byte means unlimited; otherwise the count drops by one, and the last charge removes the item, unequipping it first. Then the item's use effect runs (item_effect_of), so a grenade, explosive or rocket (effect 1, items 6-12) shakes the screen when a check square takes a charge of it; both callers are the game's check-square code (square_checks $8E6D, find_item_check $8FAD), and throwing one in combat does not come here."
   },
   {
    "address": 5313,
@@ -13554,7 +13554,7 @@
   {
    "address": 5355,
    "type": "line",
-   "text": "Zeroes the pair at ($66)+Y and ($66)+Y+1 (item number and count, or skill number and level); Y ends one higher."
+   "text": "Zeroes the pair at ($66)+Y and ($66)+Y+1 (an item number and its count byte: its callers $0F0C, $1291 and $14D4 all clear item slots); Y ends one higher."
   },
   {
    "address": 5363,
@@ -13659,7 +13659,7 @@
   {
    "address": 5672,
    "type": "line",
-   "text": "Entry $0297. Redraws the roster line of party member A with the current highlight $CF (the LDY $CF here is hidden behind the BIT at $1627); selects the member (select_member). Nothing when the roster is hidden ($6A = 0); the whole roster (roster_show) when it shows another party than $08. The line is row 15 + A; positions beyond $07 are only cleared (control code 3). Position 0 is not refused: it selects the record in byte 0 of the party table and would draw on row 15, the header. The game passes A = 0 at $A5BD and $A963 (open question)."
+   "text": "Entry $0297. Redraws the roster line of party member A with the current highlight $CF (the LDY $CF here is hidden behind the BIT at $1627); selects the member (select_member). Nothing when the roster is hidden ($6A = 0); the whole roster (roster_show) when it shows another party than $08. The line is row 15 + A; positions beyond $07 are only cleared (control code 3). Position 0 is not refused: it selects the record in byte 0 of the party table and would draw on row 15, the header. The game's calls at $A5BF and $A965 pass the member in a self-modified operand (hit_roll_member_op $A5BE, written at $A584; damaged_member_op $A964, written at $A861), not 0."
   },
   {
    "address": 5705,
@@ -13824,7 +13824,7 @@
   {
    "address": 6295,
    "type": "line",
-   "text": "(= $02DB) Waits until disk side A (1-4) is in the drive: reads track 35 logical sector 8 to $5A00 ($FD19) and wants $5AFD = $ED, $5AFE = $CC and $5AFF = A; on a read error or a mismatch prints 'INSERT SIDE n. (RETURN)' at the left of the bottom line (engine messages $A6, $A7), waits for RETURN, redraws the menu bar ($1B36) and tries again. Returns carry clear, $6B = A. $ED is 0 in play; the start-up sets it to $D7 only around its side-1 check before loading Utils from the master (startup $81E4-$81ED), so masters are refused everywhere else. Also called by $27C3 with a directory entry's side."
+   "text": "(= $02DB) Waits until disk side A (1-4) is in the drive: reads track 35 logical sector 8 to $5A00 ($FD19) and wants $5AFD = $ED, $5AFE = $CC and $5AFF = A; on a mismatch prints 'INSERT SIDE n. (RETURN)' at the left of the bottom line (engine messages $A6, $A7), waits for RETURN, space or back-arrow ($2501, whose carry it ignores), redraws the menu bar ($1B36) and tries again. A read error does not reach that prompt: $FD19 reads through disk_io ($03AA, $27E8), which prints its own error message and retries until the read succeeds, returning carry clear, so the BCS at $18A9 is never taken. Returns carry clear, $6B = A. $ED is 0 in play; the start-up sets it to $D7 only around its side-1 check before loading Utils from the master (startup $81E4-$81ED), so masters are refused everywhere else. Also called by $27C3 with a directory entry's side."
   },
   {
    "address": 6357,
@@ -13889,12 +13889,12 @@
   {
    "address": 6517,
    "type": "line",
-   "text": "(= $039B) Waits for a choice from the list page: keys 1-9 pick a line shown (A = that line's item from $196B, also in $49; the line in $51; carry clear); other digits and keys are ignored. When the list is longer than a page ($19E3), I or DEL (or code $8B) show the previous page, K, either cursor key or C= the next. Carry set with A = $FF for the left-arrow key (cancel), $FE for the extra key the caller puts in $BE ('R' at $1092 and $1436, 'P' in module 1), $FD for RETURN or space."
+   "text": "(= $039B) Waits for a choice from the list page: keys 1-9 pick a line shown (A = that line's item from $196B, also in $49; the line in $51; carry clear); other digits and keys are ignored. When the list is longer than a page ($19E3), I or DEL (or code $8B) show the previous page, K, either cursor key or C= the next. Carry set with A = $FF for the left-arrow key (cancel), $FE for the extra key in $BE ('R' at $1092 and $1436, 'P' in module 1; the Ranger Center stores $92, which no key gives, at $8400, and the game's lists and module 2's leave $BE as it was), $FD for RETURN or space."
   },
   {
    "address": 6627,
    "type": "line",
-   "text": "Carry set when the list fits on one page: the item count $4E (the callers keep it one above the number of items, as at game $9194) is no more than the page length $4F. Carry clear when paging is possible."
+   "text": "Carry set when the list fits on one page: the item count $4E (most callers keep it one above the number of items, as at game $9194; module 1's buy list, $CBD7, and the Ranger Center's skill list, $8412-$8428, keep the number itself) is no more than the page length $4F. Carry clear when paging is possible."
   },
   {
    "address": 6637,
@@ -13904,7 +13904,7 @@
   {
    "address": 6714,
    "type": "line",
-   "text": "Shows the page before the current one: from the bottom line (8, fixed) upwards, offers the items before $4A (below 1 back to $4D-1) to the per-item routine until line 0 is filled; $4B = the item on the bottom line, $4A = the item on line 0. It has no stop of its own: $19E3 lets it run only when there are more items than lines. Ends with the MORE line ($1A89)."
+   "text": "Shows the page before the current one: from the bottom line (8, fixed) upwards, offers the items before $4A (below 1 back to $4D-1) to the per-item routine until line 0 is filled; $4B = the item on the bottom line, $4A = the item on line 0. It has no stop of its own: $19E3 lets it run only when $4E is above $4F, that is with more items than lines, or with as many where $4E is kept one above the number of items (most callers). Ends with the MORE line ($1A89)."
   },
   {
    "address": 6778,
@@ -13929,7 +13929,7 @@
   {
    "address": 6876,
    "type": "line",
-   "text": "(= $03A1) Flashes the chosen list line $51: inverts it from column 14 to the window's right edge three times with a pause after each ($1AEB), so it ends inverted; normal video afterwards. The game calls it after acting on a choice (game $927C, $929D)."
+   "text": "(= $03A1) Flashes the chosen list line $51: inverts it from column 14 to the window's right edge three times with a pause after each ($1AEB), so it ends inverted; normal video afterwards. The game calls it after acting on a choice (game $927C, $929D), straight after the choice at $B5B2 and $B710, and at $8B35; the engine ($109B, $13E2), modules 1 ($CB29, $CC0F) and 2 ($CB16, $CB3E) and the Ranger Center ($814B, $816A) call it too."
   },
   {
    "address": 6891,
@@ -13969,7 +13969,7 @@
   {
    "address": 7007,
    "type": "line",
-   "text": "Second entry of $1B5C (the BIT at $1B5E hides its LDX #$00): X = $FF, so the menu item is drawn in inverse, as part of the bar, when the selection moves off it."
+   "text": "Second entry of $1B5C (the BIT at $1B5E hides its LDX #$FF): X = $FF, so the menu item is drawn in inverse, as part of the bar, when the selection moves off it."
   },
   {
    "address": 7048,
@@ -14149,7 +14149,7 @@
   {
    "address": 7649,
    "type": "line",
-   "text": "(= $0308) Prints the zero-terminated string at ($31/$32) from the text cursor through the current output; control codes act as in $1F03. Leaves $31/$32 past the zero and X/Y = the cursor."
+   "text": "(= $0308) Prints the zero-terminated string at ($31/$32) from the text cursor through the current output; control codes act as in that output's table ($1F42 for $1F03, $1F64 for $1F92, which differ at $08 and $0D). Leaves $31/$32 past the zero and X/Y = the cursor."
   },
   {
    "address": 7670,
@@ -14274,7 +14274,7 @@
   {
    "address": 8002,
    "type": "line",
-   "text": "Handlers for direct output, 17 words read at $1F2D: control codes $00-$0F, then entry 16 for every code from $10 (draw the glyph, $1F86). $00 nothing, $01 inverse on, $02 inverse off, $03 clear to end of line, $04 clear the window, $05 wait for RETURN, $06 '(RETURN)' prompt, $07 open the text window ($12B0), $08 nothing, $09 tab, $0A singular/plural, $0B name, $0C his/her, $0D new line, $0E three-way choice, $0F the count $38."
+   "text": "Handlers for direct output, 17 words read at $1F2D: control codes $00-$0F, then entry 16 for every code from $10 (draw the glyph, $1F86). $00 nothing, $01 inverse on, $02 inverse off, $03 clear to end of line, $04 clear the window, $05 wait for RETURN, space or back-arrow ($2501), $06 '(RETURN)' prompt, $07 open the text window ($12B0), $08 nothing, $09 tab, $0A singular/plural, $0B name, $0C his/her, $0D new line, $0E three-way choice, $0F the count $38."
   },
   {
    "address": 8036,
@@ -14329,12 +14329,12 @@
   {
    "address": 8131,
    "type": "line",
-   "text": "Control code $06: prints '(RETURN)' at column 23, row 13 through the current output (text at $1FDE: the prompt, $08, $05, $03), waits for RETURN or space, then clears the row from the cursor: in word-wrapped output the $08 has sent the cursor back to the window's left edge, so the prompt is wiped; in direct output it stays. Keeps the window and $31/$32."
+   "text": "Control code $06: prints '(RETURN)' at column 23, row 13 through the current output (text at $1FDE: the prompt, $08, $05, $03), waits for RETURN, space or back-arrow, then clears the row from the cursor: in word-wrapped output the $08 has sent the cursor back to the window's left edge, so the prompt is wiped; in direct output it stays. Keeps the window and $31/$32."
   },
   {
    "address": 8158,
    "type": "line",
-   "text": "Text of control $06's prompt ($1FC3): '(RETURN)', $08 (draw a word-wrapped line), $05 (wait for RETURN or space), $03 (clear to the end of the line), $00 (end)."
+   "text": "Text of control $06's prompt ($1FC3): '(RETURN)', $08 (draw a word-wrapped line), $05 (wait for RETURN, space or back-arrow), $03 (clear to the end of the line), $00 (end)."
   },
   {
    "address": 8170,
@@ -14459,17 +14459,17 @@
   {
    "address": 8680,
    "type": "line",
-   "text": "Asks '(RETURN)' in inverse at the left of the bottom line (text at $220A), waits for RETURN or space, then redraws the menu bar ($1B36). Keeps the window and $31/$32."
+   "text": "Asks '(RETURN)' in inverse at the left of the bottom line (text at $220A), waits for RETURN, space or back-arrow, then redraws the menu bar ($1B36). Keeps the window and $31/$32."
   },
   {
    "address": 8714,
    "type": "line",
-   "text": "Text of the bottom-line prompt ($21E8): $03 (clear to the end of the line), $01 (inverse), '(RETURN)', $02 (normal), $05 (wait for RETURN or space), $00 (end)."
+   "text": "Text of the bottom-line prompt ($21E8): $03 (clear to the end of the line), $01 (inverse), '(RETURN)', $02 (normal), $05 (wait for RETURN, space or back-arrow), $00 (end)."
   },
   {
    "address": 8727,
    "type": "line",
-   "text": "Draws glyph A (a character code less $20; the font at $C600 holds 96) at the text cursor without moving it: copies its eight bytes from $C600+A*8 into the bitmap cell, EORed with $29 (inverse), and sets the cell's colour in the screen matrix to $EB. Nothing past the window's right edge $26."
+   "text": "Draws glyph A (a character code less $20; the font at $C600 holds 102, codes $20-$85, up to $C92F) at the text cursor without moving it: copies its eight bytes from $C600+A*8 into the bitmap cell, EORed with $29 (inverse), and sets the cell's colour in the screen matrix to $EB. Nothing past the window's right edge $26."
   },
   {
    "address": 8793,
@@ -14544,7 +14544,7 @@
   {
    "address": 9087,
    "type": "line",
-   "text": "Skips a tile cell that is clipped: steps the colour pointer $14 and the data index X by 8 as if it had been drawn."
+   "text": "Skips a tile cell that is clipped: steps the colour pointer $14 by one and the data index X by 8 as if it had been drawn."
   },
   {
    "address": 9095,
@@ -14594,7 +14594,7 @@
   {
    "address": 9244,
    "type": "line",
-   "text": "Calls the sound player $C993 with X = $0B: record 1 at $C9C7 (frequency $2000, pulse width $06A4, sustain 6), whose final control byte $A4 has the gate bit clear, so as written it starts no note. Entry $0232; the game ($92BC), the Ranger Center ($8188) and modules 1 and 2 call it after printing a message."
+   "text": "Calls the sound player $C993 with X = $0B: record 1 at $C9C7 (frequency $2000, pulse width $06A4, sustain 6), whose final control byte $A4 has the gate bit clear, so as written it starts no note. Entry $0232; the game ($92BC), the Ranger Center ($8188) and modules 1 ($CC52) and 2 ($CAB5) call it after printing a message, and module 1 also at $CC2D, just before printing one (message 8, $CC33-$CC35)."
   },
   {
    "address": 9249,
@@ -14609,7 +14609,7 @@
   {
    "address": 9259,
    "type": "line",
-   "text": "Busy-wait: an outer count from A down to 1, each step counting its own value down in a five-cycle SBC/BNE loop, A*(A+1)/2 turns in all; A = 0 returns at once. Returns A = 0; X, Y kept. Entry $04F0; the scroll waits delay_a(11) per step ($2107)."
+   "text": "Busy-wait: an outer count from A down to 1, each step counting its own value down in a five-cycle SBC/BNE loop, A*(A+1)/2 turns in all; A = 0 returns at once. Returns A = 0; X, Y kept. Entry $04F0; newline's slow-scroll pause waits delay_a(11) per round ($2107, the rounds from $21E1); a scroll step waits $C0 animation ticks instead ($215F)."
   },
   {
    "address": 9275,
@@ -14699,7 +14699,7 @@
   {
    "address": 9567,
    "type": "line",
-   "text": "Tail exit: a routine that began with JSR push_zp23 ends with JMP here; pull_zp23 puts $23-$28 back and the RTS returns from that routine to its caller. Entry $0254; $1E60 and $1EA9 are two that end this way."
+   "text": "Tail exit: a routine that began with JSR push_zp23 ends with JMP here; pull_zp23 puts $23-$28 back and the RTS returns from that routine to its caller. Entry $0254; $1E60 and $1EAE are two that end this way."
   },
   {
    "address": 9571,
@@ -14714,7 +14714,7 @@
   {
    "address": 9625,
    "type": "line",
-   "text": "Keep the text bit pointer $31/$32 in saved_bit_ptr_lo/hi, the operands of restore_bit_pointer: one saved value, not a stack. Used around printing a name in a message ({0B}, $1FBA), the (RETURN) prompt ($1FC3) and the string at $F4D0 ($056B)."
+   "text": "Keep the text bit pointer $31/$32 in saved_bit_ptr_lo/hi, the operands of restore_bit_pointer: one saved value, not a stack. Used around printing a name in a message ({0B}, $1FBA), the (RETURN) prompts ($1FC3, and $21E8 on the bottom line) and the string at $F4D0 ($056B)."
   },
   {
    "address": 9636,
@@ -15024,7 +15024,7 @@
   {
    "address": 10784,
    "type": "line",
-   "text": "43 words, each the offset from $2A20 to a group of four messages: group g holds messages 4g to 4g+3. $1E0E finds message n at group n/4 and skips n AND 3 messages with text_char. The first word, $0056, is also the table's length. Groups fill $2A76-$30FF."
+   "text": "43 words, each the offset from $2A20 to a group of four messages: group g holds messages 4g to 4g+3. $1E0E finds message n at group n/4 and skips n AND 3 messages with text_char. The first word, $0056, is also the table's length. Groups fill $2A76-$30FE; $30FF, after message 169, is in none."
   },
   {
    "address": 10870,
@@ -15249,17 +15249,17 @@
   {
    "address": 12526,
    "type": "line",
-   "text": "Messages 168-169 ($A8-$A9), interface text: (168) \" Reorder\\n\"; (169) \"{03}\\n{03}\\n{03}\\n{03}\\n{03}\". Message 169 ends in bits 0-1 of $30FF, the last byte of the engine's 47 pages: this group has no messages 170-171 (decoding on would read the table at $3100)."
+   "text": "Messages 168-169 ($A8-$A9), interface text: (168) \" Reorder\\n\"; (169) \"{03}\\n{03}\\n{03}\\n{03}\\n{03}\". Message 169 ends in bits 0-1 of $30FE; $30FF ($A0), the last byte of the engine's 47 pages, is in no message: this group has no messages 170-171 (decoding on would read the table at $3100)."
   },
   {
    "address": 23040,
    "type": "line",
-   "text": "The sector buffer, one page: read_sector_xy and read_sector_10_11 read each single sector here (directories, program headers, the side identity, packed streams as they unpack), so what it holds is the last sector read; in play-map it holds stream data. Layouts by sector: a directory, four-byte entries (track, logical sector, count or pages, side; $27CD-$27DD); T35/L8, one byte per map number ($40 tested at $260D; for a map number with bit 7 set, the real number, $2621) and the identity at $5AFD-$5AFF. Borrowed as work space: the engine holds part of a character record in its first 60 bytes ($1005-$103A, $13B7-$13DE, $1440); the game's melee_round builds its initiative list here, a 16-bit value in each two-byte slot ($7F72-$8063, $823A-$8252), and range_target a table of 21 three-byte entries, distance, base value and base + 7 ($BD5C-$BD90); the Ranger Center copies a new character's name here to compare it with the others ($81D4). It is also the buffer of typed lines: the Ranger Center's names ($8364-$836C, 13 characters), the game's typed words ($8927-$8931, 16; another at $5A80, $8964-$896A) and map 13's 13-character answer ($42BB-$42D9 in map-13.vsf). The uses outside the engine come from the other parts' names."
+   "text": "The sector buffer, one page: read_sector_xy and read_sector_10_11 read each single sector here (directories, program headers, the side identity, packed streams as they unpack), so what it holds is the last sector read; in play-map it holds stream data. Layouts by sector: a directory, four-byte entries (track, logical sector, count or pages, side; in a stream directory the first two are the start byte and the sector count from the base at $5AFE/$5AFF; $27CD-$27DD); T35/L8, one byte per map number ($40 tested at $260D; for a map number with bit 7 set, the real number, $2621) and the identity at $5AFD-$5AFF. Borrowed as work space: the engine holds part of a character record in its first 60 bytes ($1005-$103A, $13B7-$13DE, $1440); the game's melee_round builds its initiative list here, a 16-bit value in each two-byte slot ($7F72-$8063, $823A-$8252), and range_target a table of 21 three-byte entries, distance, base value and base + 7 ($BD5C-$BD90); the Ranger Center copies a new character's name here to compare it with the others ($81D4). It is also the buffer of typed lines: the Ranger Center's names ($8364-$836C, 13 characters), the game's answers to a question square ($8927-$8931, 16; a one-key answer is stored as a one-character string, $8913-$891A), each compared with the answer messages the game decodes to $5A80 ($895A, $8964-$8974), and map 13's 13-character name for a cloned character ($42BB-$42D9 in map-13.vsf). The uses outside the engine come from the other parts' names."
   },
   {
    "address": 23041,
    "type": "line",
-   "text": "Byte 1 of the sector buffer: a directory entry's logical sector ($5A01,Y at $27D2, to $11); the second byte of a slot of the game's initiative list ($823E, $8252, read at $8063) and of an entry of range_target's table ($BD65)."
+   "text": "Byte 1 of the sector buffer: a directory entry's logical sector, or in a stream directory its sector count from the base ($5A01,Y at $27D2, to $11); the second byte of a slot of the game's initiative list ($823E, $8252, read at $8063) and of an entry of range_target's table ($BD65)."
   },
   {
    "address": 23042,
@@ -15299,12 +15299,12 @@
   {
    "address": 23296,
    "type": "line",
-   "text": "Page the boot file copies to $5B00 (from its $C17B): game tables and work space, the same at the hand-over and in play-map. This first table: 79 pronoun classes, 0 he/him, 1 she/her, 2 it, read only at the game's $9EBC with Y = byte 7 of an eight-byte record ($16, found by $9E9F through $039E) into $CA, which the text filter at $20C3 uses to keep one of three {0E}-separated forms, as in the game's '{0E}he{0E}she{0E}it{0E}' (message 34). Byte 7 of a monster's record is also the picture encounter_portrait shows (game $B965: $9EDE, then show_picture $0419 at $B99D), so each pronoun goes with a picture."
+   "text": "Page the boot file copies to $5B00 (from its $C17B): game tables and work space, the same at the hand-over and in play-map. This first table: 79 pronoun classes, 0 he/him, 1 she/her, 2 it, read only at the game's $9EBC with Y = byte 7 of an eight-byte record ($16, found by monster_record $9EA4, which $9E9F falls into, through $039E) into $CA, which the text filter at $20C3 uses to keep one of three {0E}-separated forms, as in the game's '{0E}he{0E}she{0E}it{0E}' (message 34). Byte 7 of a monster's record is also the picture encounter_portrait shows (game $B965: $9EDE, then show_picture $0419 at $B99D), so each pronoun goes with a picture."
   },
   {
    "address": 23375,
    "type": "line",
-   "text": "Sixteen four-byte records, four per party (party n's at $5B4F + 16n, the game's party_record_block $98BC): the column, row and map of an encounter square (class 3 or 15) for which the party is the nearest that can engage, and its distance from the party, 10 a square (store_position_record $97F2: $983F, $9841, $09, $9672). scan_for_encounters wipes all 16 ($94D4-$94DC) and fills them anew. When the party's four records are full, a nearer square replaces the first of them that is farther away, not the farthest ($9671-$967D, $96E3-$96F0); when none is, the next nearest party is tried ($967F-$9687, $96F2-$96FA). clear_position_record ($980F) frees one; find_position_record ($9843) and $9877 search them by column, row and map. Byte 0 = 0 marks a free record; all free in both snapshots. From the game part's use."
+   "text": "Sixteen four-byte records, four per party (party n's at $5B4F + 16n, the game's party_record_block $98BC): the column, row and map of an encounter square (class 3 or 15) for which the party is the nearest that can engage, and its distance from the party, 10 a square (store_position_record $97F2: $983F, $9841, $09, $9672), or a party number 0-3 when the square already had a record ($963C-$9652; see $5B52). scan_for_encounters wipes all 16 ($94D4-$94DC) and fills them anew. When the party's four records are full, a nearer square replaces the first of them that is farther away, not the farthest ($9671-$967D, $96E3-$96F0); when none is, the next nearest party is tried ($967F-$9687, $96F2-$96FA). clear_position_record ($980F) frees one; find_position_record ($9843) searches them by column, row and map, and find_group_at_record ($9877) searches the battle groups of parties 0-3 for the one at a record's column, row and map. Byte 0 = 0 marks a free record; all free in both snapshots. From the game part's use."
   },
   {
    "address": 23376,
@@ -15319,12 +15319,12 @@
   {
    "address": 23378,
    "type": "line",
-   "text": "Fourth byte of each position_records entry: the square's distance from the party, 10 a square ($9672, stored at $9806). $9673 and $96E6 compare a new square's distance with it, record by record: the first record that holds a larger one is replaced."
+   "text": "Fourth byte of each position_records entry: the square's distance from the party, 10 a square ($9672, stored at $9806), when the record is made for a square that had none ($96C1); for a square that already had one, $9649 loads the party chosen in an earlier pass ($964A) and $964F stores it in $9672, so the byte is a party number, 0-3. $96E6 compares a new square's distance with it, and $9673, for a square that already had a record, that party number, record by record: the first record that holds a larger one is replaced."
   },
   {
    "address": 23439,
    "type": "line",
-   "text": "Four map numbers, $FF for an empty slot ($FF $FF $FF $FF in both snapshots): the game's Enc command ($B1A3) puts the current map ($09) in slot 0 ($B1E4) and checks the slots against $09 ($B207); $B2C3-$B2F3 adds map $8D to a free slot or frees its slot, and $B318 asks whether any slot is in use."
+   "text": "Four map numbers, $FF for an empty slot ($FF $FF $FF $FF in both snapshots): the game's fight routine encounter ($B1A3; the main menu's Enc at $7F1A and encounter_if_engaged $B197) puts the current map ($09) in slot 0 ($B1E4) and checks the slots against $09 ($B207); $B2C3-$B2F3 adds map $8D to a free slot or frees its slot, and $B318 asks whether any slot is in use."
   },
   {
    "address": 23443,
@@ -15364,7 +15364,7 @@
   {
    "address": 23541,
    "type": "line",
-   "text": "Tile numbers by creature kind, six values (0, 6, 3, 4, 2, 1): when scan_for_encounters runs with drawing on (entry $94CF; the flag is the LDX # operand at $95FE) it draws tile $5BF5 + kind on each encounter square in the party's view (draw_tile through $025F, $95FA-$960B). The kind is byte 6 of the creature's eight-byte record (the table at the map header's word +4, $9EA4), or 3 for a creature number with bit 7 set ($95EC-$95F0). Tiles 0-9 are the same in every tile set, so the pictures are too: kind 0 the blank tile 0 (no figure), 1 the horned creature 6, 2 the runner 3, 3 the man in a cyan shirt 4, 4 the one-eyed hulk 2, 5 the robot-like figure 1. From the game part's use."
+   "text": "Tile numbers by creature kind, six values (0, 6, 3, 4, 2, 1): when scan_for_encounters runs with drawing on (entry $94CF; the flag is the LDX # operand at $95FE) it draws tile $5BF5 + kind on each encounter square in the party's view (draw_tile through $025F, $95FA-$960B). The kind is byte 6 of the creature's eight-byte record (the table at the map header's word +4, $9EA4), or 3 for a creature number with bit 7 set ($95EC-$95F0). Tiles 0-8 are the same in every tile set, so the pictures are too: kind 0 the blank tile 0 (no figure), 1 the horned creature 6, 2 the runner 3, 3 the man in a cyan shirt 4, 4 the one-eyed hulk 2, 5 the robot-like figure 1. From the game part's use."
   },
   {
    "address": 23547,
@@ -15374,7 +15374,7 @@
   {
    "address": 25929,
    "type": "line",
-   "text": "Not a variable: a byte of the bitmap ($6000-$7F3F, VIC bank $4000 with $D018 = $79; the screen matrix is $5C00-$5FE7). The symbol comes from decode_picture_frame's EOR (or BIT) $6549 and STA $6549 ($06AD, $06B0), whose operands it patches with each bitmap address it writes; $6549 is where the last frame stopped in play-map. The 24-row display never shows bitmap row 24, $7E00-$7F3F, which is where the programs load."
+   "text": "Not a variable: a byte of the bitmap ($6000-$7F3F, VIC bank $4000 with $D018 = $79; the screen matrix is $5C00-$5FE7). The symbol comes from decode_picture_frame's EOR (or BIT) $6549 and STA $6549 ($06AD, $06B0), whose operands it patches with each bitmap address it writes; $6549 is where the last frame stopped in play-map. The 24-row display ($D011 = $37 from the start-up, $7F57 and $7F93) hides bitmap row 24, $7E00-$7F3F, which is where the programs load; only screen_shake's random vertical scroll ($077A) can bring its top lines into view for a moment."
   },
   {
    "address": 50688,
@@ -15409,7 +15409,7 @@
   {
    "address": 51504,
    "type": "line",
-   "text": "Top logical sector for a file that steps down onto a track, read by next_logical_sector as LDA $C930,X with X = the new, lower track ($FD14): 35 bytes, tracks 0-16 20, 17 0, 18-23 18, 24-29 17, 30-34 16. Apart from track 17's 0, each value is the top sector of the track one higher (zones of 21, 19, 18 and 17 sectors give 20, 18, 17 and 16), so it is right inside a speed zone and wrong where a file crosses into the next zone: a file running from track 25 into 24 continues at sector 17 (track 24's sector 18 is never reached that way), from 31 into 30 at 16 (sector 17 never reached), and from 19 into 17 (18 skipped) at sector 0 only, then on to track 16 at sector 20. Writes step through the same routine, so the disks are consistent with it: the game program (T31/L9, 72 pages, through track 30) matches the loaded $7E00-$C5FF byte for byte only when read this way, and so do all 42 maps as enter_map loads them."
+   "text": "Top logical sector for a file that steps down onto a track, read by next_logical_sector as LDA $C930,X with X = the new, lower track ($FD14): 35 bytes, tracks 0-16 20, 17 0, 18-23 18, 24-29 17, 30-34 16. Apart from track 17's 0, each value is the top sector of the track one higher (zones of 21, 19, 18 and 17 sectors give 20, 18, 17 and 16), so it is right inside a speed zone and wrong where a file crosses into the next zone: a file running from track 25 into 24 continues at sector 17 (track 24's sector 18 is never reached that way), from 31 into 30 at 16 (sector 17 never reached), and from 19 into 17 (18 skipped) at sector 0 only, then on to track 16 at sector 20. Writes step through the same routine, so the disks are consistent with it: the game program (T31/L9, 72 pages, down to track 27) matches the loaded $7E00-$C5FF byte for byte only when read this way, and so do all 42 maps as enter_map loads them."
   },
   {
    "address": 51539,
@@ -15419,17 +15419,17 @@
   {
    "address": 51603,
    "type": "line",
-   "text": "Plays sound X on SID voice 1: control $D404 = 0 (gate off), volume $D418 = $0F, then record X of sound_table: seven bytes to $D406 down to $D400 (sustain/release, attack/decay, control, pulse width high and low, frequency high and low), three to $D417 down to $D415 (filter registers; no voice routed through it) and the last to $D404, the control byte that starts the note. X = 0 explosion (screen_shake, $0748; entry $044C, called by module 4 at $CA4C, and the use effect 1 of item_effect), 11 ($241C, through $0232), 22 ($0741, through $04D2)."
+   "text": "Plays sound X on SID voice 1: control $D404 = 0 (gate off), volume $D418 = $0F, then record X of sound_table: seven bytes to $D406 down to $D400 (sustain/release, attack/decay, control, pulse width high and low, frequency high and low), three to $D417 down to $D415 (filter registers; no voice routed through it) and the last to $D404, the control byte that starts the note. X = 0 explosion (screen_shake, $0748; entry $044C, called by module 4 at $CA4C and by the code of maps 3, 4, 9, 12, 18, 20, 27, 31, 33, 35, 36 and 39, and the use effect 1 of item_effect), 11 ($241C, through $0232), 22 ($0741, through $04D2)."
   },
   {
    "address": 51644,
    "type": "line",
-   "text": "Three 11-byte records for play_sound, at offsets 0, 11 and 22 (layout: $D406, $D405, $D404, $D403, $D402, $D401, $D400, $D417, $D416, $D415, then $D404 again). 0: noise at frequency $2000, attack 1, decay $A, sustain 0, gate on ($85): the explosion. 11: frequency $2000, pulse width $06A4, sustain 6, release 0, but its final control byte $A4 has the gate bit clear, so as written it starts no note; it is called through $0232 by the game ($92BC), the Ranger Center ($8188) and modules 1 ($CC2D, $CC52) and 2 ($CAB5). 22: noise at $1000, attack, decay and sustain 0, gate on ($81): a click, sounded through $04D2 by the game's main loop ($7E84), after every move that succeeds and every left-arrow step in place (game $AE26, reached from I, J, L and K at $AE1E, $AE4B, $AE6A and $AE89 and from left-arrow at $AE21) and by the start-up ($8427)."
+   "text": "Three 11-byte records for play_sound, at offsets 0, 11 and 22 (layout: $D406, $D405, $D404, $D403, $D402, $D401, $D400, $D417, $D416, $D415, then $D404 again). 0: noise at frequency $2000, attack 1, decay $A, sustain 0, gate on ($85): the explosion. 11: frequency $2000, pulse width $06A4, sustain 6, release 0, but its final control byte $A4 has the gate bit clear, so as written it starts no note; it is called through $0232 by the game ($92BC), the Ranger Center ($8188) and modules 1 ($CC2D, $CC52) and 2 ($CAB5). 22: noise at $1000, attack, decay and sustain 0, gate on ($81): a click, sounded through $04D2 by the game's main loop ($7E84), after every move that succeeds and every left-arrow step in place (game $AE26, reached from I, J, L and K at $AE1E, $AE4B, $AE6A and $AE89 and from left-arrow at $AE21, which the game's start also calls when $92 is set, $7E60) and by the start-up ($8427)."
   },
   {
    "address": 51677,
    "type": "line",
-   "text": "35 bytes after the last sound record ($C9DD-$C9FF) that no instruction in any part reads (operand scan of every part's snapshot, and play_sound only takes offsets 0, 11 and 22). $C9E0-$C9E7 has the shape of a glyph, a bracket in %01, where glyph $9C would be; no caller passes that code. Loaded with the font's last page (T34/L11); the rest is zero."
+   "text": "35 bytes after the last sound record ($C9DD-$C9FF) that no instruction in any part reads (operand scan of every part's snapshot, and play_sound only takes offsets 0, 11 and 22). $C9E0-$C9E7 has the shape of a glyph, a bracket in %01, where glyph $9C would be; no caller passes that code. Loaded with the font's last page (T34/L11); $C9DD-$C9DE hold $14 $15 and the rest is zero."
   },
   {
    "address": 56704,
@@ -15524,7 +15524,7 @@
   {
    "address": 62432,
    "type": "line",
-   "text": "Four bytes, one per party 0-3, used only by the game: encounter_party_distances ($977E) stores each party's distance to the square the encounter scan is on ($983F/$9841), 10 a square from the engine's table at $0921 (entry $04CF), or $FF when the party does not exist, has nobody conscious, is on another map, has the square outside its view ($B119), cannot see it ($8347), or is farther than both the encounter record's byte 1 at ($77) and its own reach, party_reach ($F4E1). nearest_engaging_party ($97D8) picks the smallest; $9684 and $96F7 set a party's entry to $FF when none of its four position records ($5B4F) holds a farther square, so the next nearest is tried. Zero in play-map. From the game part's use."
+   "text": "Four bytes, one per party 0-3, used only by the game: encounter_party_distances ($977E) stores each party's distance to the square the encounter scan is on ($983F/$9841), 10 a square from the engine's table at $0921 (entry $04CF), or $FF when the party does not exist, has nobody conscious, is on another map, has the square outside its view ($B119), cannot see it ($8347), or is farther than both the encounter record's byte 1 at ($77) and its own reach, party_reach ($F4E1). nearest_engaging_party ($97D8) picks the smallest; $9684 and $96F7 set a party's entry to $FF when none of its four position records ($5B4F) holds a farther square, and $9684 also when that party already holds the square's record ($9689-$968F), so the next nearest is tried. Zero in play-map. From the game part's use."
   },
   {
    "address": 62436,
@@ -15544,7 +15544,7 @@
   {
    "address": 62520,
    "type": "line",
-   "text": "Saved page 0, $F438-$F477: four 16-byte blocks, one per party at $F438 + 16*party (order_table_offsets $BCDD), used only by the game: eight order bytes, one per party position, where order_tables_ptr points $89/$8A, then eight parameter bytes ($8B/$8C): the combat orders of an encounter round, numbered 0-8 as the game's order_keys index them (see $89 and $8B). The orders are cleared after each round ($A2B8, $A323) and before a party is asked again ($B3B2); the parameters are left as they were. In play-map party 0's orders are 0 and the other bytes are left over from earlier rounds or parties. Saved with the game."
+   "text": "Saved page 0, $F438-$F477: four 16-byte blocks, one per party at $F438 + 16*party (order_table_offsets $BCDD), used only by the game: eight order bytes, one per party position, where order_tables_ptr points $89/$8A, then eight parameter bytes ($8B/$8C): the combat orders of an encounter round, numbered 0-8 as the game's order_keys index them (see $89 and $8B). The orders are cleared after each round ($A2B8; all eight at $A36A-$A371 after a party move, which a blocked square or a party with nobody conscious skips, leaving the mover's order and those after it, $A326-$A330) and before a party is asked again ($B3B2); the parameters are left as they were. In play-map party 0's orders are 0 and the other bytes are as the saved game on the disk images holds them (T35/L7, unscrambled). Saved with the game."
   },
   {
    "address": 62584,
@@ -15554,7 +15554,7 @@
   {
    "address": 62598,
    "type": "line",
-   "text": "Used only by the game: Enc ($B1A3) stores $0A, the records in use, at $F486 and the 24-bit experience of records 1-7 (exp_load, entry $038C) in three bytes each from $F487 ($B1AD-$B1D4, up to $F49B). When the encounter ends, $B32E-$B374 subtracts these from each record's experience and prints '<name> gains n experience.' (messages 39 and 40) for every record up to the count with a non-zero gain. Saved with the game."
+   "text": "Used only by the game: the fight routine encounter ($B1A3, run by Enc and by encounter_if_engaged $B197) stores $0A, the records in use, at $F486 and the 24-bit experience of records 1-7 (exp_load, entry $038C) in three bytes each from $F487 ($B1AD-$B1D4, up to $F49B). When the encounter ends, $B32E-$B374 subtracts these from each record's experience and prints '<name> gains n experience.' (messages 39 and 40) for every record up to the count with a non-zero gain. Saved with the game."
   },
   {
    "address": 62620,
@@ -15564,17 +15564,17 @@
   {
    "address": 62672,
    "type": "line",
-   "text": "Caption under the picture window: a zero-ended string of up to 11 characters in the 12 bytes $F4D0-$F4DB. draw_picture_window prints it at column 1, row 13 ($0571-$057D). The game builds it centred from what it printed into the line buffer ($B960-$B99A: eleven spaces, the zero at $F4DB, then the text). Modules 0-3 copy the location's name into it, 12 bytes of the square's record at ($5F): module 0 (the doctor) and module 1 (the shop) from byte 7 ($CA06-$CA13, $CA0F-$CA1C), module 2 (the library) from byte 4 and module 3 (the way into the Ranger Center) from byte 3 ($CA06-$CA13 in both); module 3's is the caption the Ranger Center shows. The radio program (from its $8184, $7EAA-$7EB5) and the death screen (from its $7E2F, $7E06-$7E11) copy in captions of their own; module 4 empties it with a zero ($CA87-$CA89). The STA $F4D0,X at start-up $8C0B and at ranger $86AF never run: the first is in the copy of the death program that the title picture overwrites, the second in the Ranger Center's copy of the radio program. 'Ranger Ctr.' in play-map."
+   "text": "Caption under the picture window: a zero-ended string of up to 11 characters in the 12 bytes $F4D0-$F4DB, except where all 12 are characters, as in the death screen's 'Grim Reaper ', which ends at the zero in $F4DC. draw_picture_window prints it at column 1, row 13 ($0571-$057D). The game builds it centred from what it printed into the line buffer ($B960-$B99A: eleven spaces, the zero at $F4DB, then the text). Modules 0-3 copy the location's name into it, 12 bytes of the square's record at ($5F): module 0 (the doctor) and module 1 (the shop) from byte 7 ($CA06-$CA13, $CA0F-$CA1C), module 2 (the library) from byte 4 and module 3 (the way into the Ranger Center) from byte 3 ($CA06-$CA13 in both); module 3's is the caption the Ranger Center shows. The radio program (from its $8184, $7EAA-$7EB5) and the death screen (from its $7E2F, $7E06-$7E11) copy in captions of their own; module 4 empties it with a zero ($CA87-$CA89). The STA $F4D0,X at start-up $8C0B and at ranger $86AF never run: the first is in the copy of the death program that the title picture overwrites, the second in the Ranger Center's copy of the radio program. 'Ranger Ctr.' in play-map."
   },
   {
    "address": 62683,
    "type": "line",
-   "text": "Zero ending the picture caption, written by the game after it fills $F4D0-$F4DA with spaces ($B973-$B974); the other parts' 12-byte copies include it. $F4DC: no reference found."
+   "text": "Zero ending the picture caption, written by the game after it fills $F4D0-$F4DA with spaces ($B973-$B974); the other parts' 12-byte copies include it, except the death screen's, which puts the space of 'Grim Reaper ' here, so its caption ends at $F4DC. $F4DC: no instruction addresses it, but the caption print reads it through $31/$32 ($0571-$057D) whenever $F4DB is not zero; 0 in both death snapshots and in the save on the disk images."
   },
   {
    "address": 62685,
    "type": "line",
-   "text": "Four bytes, one per party, used only by Enc: cleared at the start ($B1E7-$B1EF); Enc then works through the parties still at 0 ($B1F5), and after each one sets 1 for every party whose map is $8D ($B2F6-$B314). From the game part's use."
+   "text": "Four bytes, one per party, used only by the fight routine encounter ($B1A3; Enc and encounter_if_engaged): cleared at the start of every round (encounter_round $B1E7-$B1EF, entered again from $B3AC); encounter then works through the parties still at 0 ($B1F5), and after each one sets 1 for every party whose map is $8D ($B2F6-$B314). From the game part's use."
   },
   {
    "address": 62689,
@@ -15619,7 +15619,7 @@
   {
    "address": 62720,
    "type": "line",
-   "text": "Character records 1-7, 256 bytes each at $F400 + 256 * record (record 1 here; pages 1-7 of the saved game). The engine's fields are listed at $66. The other programs add, each checked in their code: +$1B/+$1C the maximum CON (health_tick $B7E9-$B7FB); +$1F the equipped slot, as (its item offset - $BB) / 2 (game $A569, $A57A-$A581); +$26/+$27 the CON before the blow that downed the member, half of which it wakes with (game $A934, $B7C2-$B7D2); +$28 afflictions: with any of bits 4-7 set the member loses a point of CON every 64 time units, two while down, and any non-zero value stops healing and waking (game $B7A2-$B7A8, $B816-$B853, $B854); +$2B-+$2E an NPC's refusal bytes, tested by the engine's willingness check ($0D61; +$2E for a trade) and lowered after a good hire (game $A4A4-$A4AE); +$30 an NPC's message on joining (game $A484); +$31 an NPC's hire difficulty, 0 joining at once (game $A43E), set to the hirer's CHR (+$14) when it joins ($A490-$A494, the operand written at $A406); +$32 on the rank's name, zero-ended (radio $81BC-$81CC, ranger $8005-$8012); +$4B bit 0 Base Cochise destroyed, set in every record by module 4 ($CA03-$CA1C) and read by the radio ($7EC9); +$4C bit 0 the radio has given the reward for it ($7ED1-$7EDD). What bits 0-3 of +$28 mean is open."
+   "text": "Character records 1-7, 256 bytes each at $F400 + 256 * record (record 1 here; pages 1-7 of the saved game). The engine's fields are listed at $66. The other programs add, each checked in their code: +$1B/+$1C the maximum CON (health_tick $B7E9-$B7FB); +$1F the equipped slot, as (its item offset - $BB) / 2 (game $A569, $A57A-$A581); +$26/+$27 the CON before the blow that downed the member, half of which it wakes with (game $A934, $B7C2-$B7D2); +$28 afflictions: with any of bits 4-7 set the member loses a point of CON every 64 time units, two while down, and any non-zero value stops healing and waking (game $B7A2-$B7A8, $B816-$B853, $B854); +$2B-+$2E an NPC's refusal bytes, tested by the engine's willingness check ($0D61; +$2E for a trade) and lowered after a good hire (game $A4A4-$A4AE); +$30 an NPC's message on joining (game $A484); +$31 an NPC's hire difficulty, 0 joining at once (game $A43E), set to the hirer's CHR (+$14) when it joins ($A490-$A494, the operand written at $A406); +$32 on the rank's name, zero-ended (radio $81BC-$81CC, ranger $8005-$8012); +$4B bit 0 Base Cochise destroyed, set in every record by module 4 ($CA03-$CA1C) and read by the radio ($7EC9); +$4C bit 0 the radio has given the reward for it ($7ED1-$7EDD). Bits 0-3 of +$28 are diseases as well: the doctor lists bit n as message n + 1 of its text (module 0, $CC04-$CC28), 0 Radiation poisoning (set by a radiation square, game $8313-$831C), 1 Wasteland Herpes, 2 Bug byte, 3 Sewer rot, and 4-7 Desert dust, Rabies, D6 and D7."
   },
   {
    "address": 64256,
@@ -15634,32 +15634,32 @@
   {
    "address": 64515,
    "type": "line",
-   "text": "264 bytes loader_receive_byte reads as ($F6),Y with Y = the raster line ($D012) and $F6 = 3 + (7 - the vertical scroll), set by loader_send_command, so the pattern follows the scroll: $0F (safe; also the mask that clears bits 4-7 of $DD00) everywhere except $00 on the raster lines whose low three bits equal the scroll, from $30 + scroll on, and on the line before each, where the video chip's character-row fetch would steal cycles from the timed two-bit read. The last two bytes are past any index used."
+   "text": "264 bytes loader_receive_byte reads as ($F6),Y with Y = the raster line ($D012) and $F6 = 3 + (7 - the vertical scroll), set by loader_send_command, so the pattern follows the scroll: $0F (safe; also the mask that clears bits 4-7 of $DD00) everywhere except $00 on the raster lines whose low three bits equal the scroll, from $30 + scroll on, and on the line before each, where the video chip's character-row fetch would steal cycles from the timed two-bit read. Only the last byte, $FD0A, is past every index: $F6 is at most 10 (a vertical scroll of 0), so with $D012 at $FF the reads reach $FD09."
   },
   {
    "address": 64779,
    "type": "line",
-   "text": "Steps X = track, Y = logical sector to a file's next sector: Y - 1, or when that goes below 0 the track below (track 18, the directory track, is skipped) at the sector top_sector_of_track_above gives for that lower track ($C930,X at $FD14). Inside a speed zone that is the track's top sector; across a zone boundary it is not: 25 into 24 starts at 17, 31 into 30 at 16, 19 into 17 at 0, below those tracks' real tops (18, 17 and 20). Files run downwards. Called by loader_main between sectors, by the engine's directory and stream code ($2779, $279D, $287E) and the utility program."
+   "text": "Steps X = track, Y = logical sector to a file's next sector: Y - 1, or when that goes below 0 the track below (track 18, the directory track, is skipped) at the sector top_sector_of_track_above gives for that lower track ($C930,X at $FD14). Inside a speed zone that is the track's top sector; across a zone boundary it is not: 25 into 24 starts at 17, 31 into 30 at 16, 19 into 17 at 0, below those tracks' real tops (18, 17 and 20). Files run downwards. Called by loader_main between sectors, by the engine's directory and stream code ($2779, $279D, $287E), by the stream unpacker loaded at $C800 ($C8D6) and by the utility program ($8405)."
   },
   {
    "address": 64793,
    "type": "line",
-   "text": "Reads one sector into the sector buffer at $5A00: track from $10, logical sector from $11, then as read_sector_xy. Used for program header sectors (load_program at $289C), stream directories ($2784), the side check ($18A6) and module 4."
+   "text": "Reads one sector into the sector buffer at $5A00: track from $10, logical sector from $11, then as read_sector_xy. Used for program header sectors (load_program at $289C), a packed stream's first sector ($2784) and, from the unpacker at $C800, its later ones ($C8DD), the side check ($18A6) and module 4 ($CCBD)."
   },
   {
    "address": 64797,
    "type": "line",
-   "text": "Reads one sector, Y = track and X = logical sector, into the sector buffer at $5A00: $FE/$FF = $5A00 and A = 0 (one sector), through the engine's retrying disk call at $03AA. The PHA/PLA of the 0 around setting $FE/$FF has no effect. Entered by JMP from $27E5 (T35/L13) and $28DF (T35/L8) and by the start-up at $7FF1."
+   "text": "Reads one sector, Y = track and X = logical sector, into the sector buffer at $5A00: $FE/$FF = $5A00 and A = 0 (one sector), through the engine's retrying disk call at $03AA. The PHA/PLA of the 0 around setting $FE/$FF has no effect. Entered by JMP from $27E5 (the directory read_dir_entry names; T35/L13 in play-map) and $28DF (T35/L8) and by the start-up at $7FF1."
   },
   {
    "address": 64812,
    "type": "line",
-   "text": "Sends A to the drive, bit 7 first: waits (interrupts allowed between polls) until bit 6 of $DD00 reads 1, then for each bit writes $DD00 twice, bit 5 = the data bit and bit 4 set then clear as its clock ($36 or $16, then $26 or $06; bits 0-1 keep VIC bank $4000), with NOPs for timing. $F5 is the shift register. Leaves $DD00 = $26 and interrupts enabled."
+   "text": "Sends A to the drive, bit 7 first: waits (interrupts allowed between polls) until bit 6 of $DD00 reads 1, then writes $DD00 once for each bit, bit 5 = the data bit and bit 4 the clock, which changes with every bit (set for bits 7, 5, 3 and 1: $36 or $16; clear for bits 6, 4, 2 and 0: $26 or $06; bits 0-1 keep VIC bank $4000), with NOPs for timing. $F5 is the shift register. Leaves $DD00 = $26 and interrupts enabled."
   },
   {
    "address": 64867,
    "type": "line",
-   "text": "Starts a disk job: points $F6/$F7 at raster_safe_table plus 3 + (7 - the vertical scroll in $D011 bits 0-2), so the table lines up with this frame's character rows; writes $26 to $DD00 and keeps in $F4 the correction for the bits of $DD00 that carry no data; sends the command $F3, the track $F8 and the physical sector (logical_to_physical) with loader_send_byte, then runs on into loader_release_bus."
+   "text": "Starts a disk job: points $F6/$F7 at $FC00 + 3 + (7 - the vertical scroll in $D011 bits 0-2), raster_safe_table plus 7 - the scroll, so the table lines up with this frame's character rows; writes $26 to $DD00 and keeps in $F4 the correction for the bits of $DD00 that carry no data; sends the command $F3, the track $F8 and the physical sector (logical_to_physical) with loader_send_byte, then runs on into loader_release_bus."
   },
   {
    "address": 64920,

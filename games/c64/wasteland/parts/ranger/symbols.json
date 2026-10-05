@@ -1352,7 +1352,7 @@
   {
    "address": 32541,
    "type": "line",
-   "text": "Zeroes the 14 bytes of party table A ($F400 + 14*A; party_table_ptr, $029F, leaves $68/$69 on it): positions 1-7, column, row, map and the rest. start_handler calls it for table 3 after moving the tables down."
+   "text": "Zeroes the 14 bytes of party table A ($F400 + 14*A; party_table_ptr, $029F, leaves $68/$69 on it): positions 1-7, column, row, map and the rest. start_handler calls it for table 3 after moving the tables down, or at once when the empty party is the last ($7E8B)."
   },
   {
    "address": 32554,
@@ -1397,7 +1397,7 @@
   {
    "address": 32599,
    "type": "line",
-   "text": "Creates a character. Counts the player characters, records 1 to $0A whose byte +$29 is 0 (an NPC's is not; with $0A = 0 record 1 is still looked at); with 4 or more prints message 1, 'You cannot create any more characters.', and returns. Otherwise raises $0A, adds the new record to the current party (party_add_current, $02A4, which does not check for room), keeps its position (find_party_of, $02B1) in new_member_position, selects it and zeroes its 256 bytes; gives it gear_kit_45 or gear_kit_9mm (random_1_to_a(2), $0242) and gear_common (give_items). Then message 2, 'Create a character.', the attributes (roll_attributes), name, sex, nationality and skills; left-arrow at those prompts, or N at the end, removes it again (cancel_creation)."
+   "text": "Creates a character. Counts the player characters, records 1 to $0A whose byte +$29 is 0 (an NPC's is not; with $0A = 0 record 1 is still looked at); with 4 or more prints message 1, 'You cannot create any more characters.', and returns. Otherwise raises $0A, adds the new record to the current party (party_add_current, $02A4, which does not check for room), keeps its position (find_party_of, $02B1) in new_member_position, selects it and zeroes its 256 bytes; gives it gear_kit_45 or gear_kit_9mm (random_1_to_a(2), $0242) and gear_common (give_items). Then message 2, 'Create a character.', the attributes (roll_attributes), name, sex, nationality and skills; left-arrow at those prompts, or N at the end, removes it again (cancel_creation), except in the skill list, where left-arrow shows the character sheet (skills_show_sheet)."
   },
   {
    "address": 32646,
@@ -1607,7 +1607,7 @@
   {
    "address": 33666,
    "type": "line",
-   "text": "One attribute roll: five roll_d6 ($023A) into roll_dice, an exchange loop meant to move the larger dice up, then A = the sum of slots 4, 3 and 2 (3-18); Y is kept (roll_saved_y_op). After an exchange the loop goes on comparing the die it started with (BPL at $83AB goes back to the CMP, not to the LDA at $8397), so a later exchange overwrites the die just moved up and the small one is copied twice: the sum is not the best three of five. Over all 7,776 throws the mean is 10.62 (best three of five 13.43, 3d6 10.5); 3 comes once, 18 81 times (1.0 %), 4 and 5 3.3 % and 3.4 % of the time against 1.4 % and 2.8 % for 3d6 (work/agent13/rollsim.py)."
+   "text": "One attribute roll: five roll_d6 ($023A) into roll_dice, an exchange loop meant to move the larger dice up, then A = the sum of slots 4, 3 and 2 (3-18); Y is kept (roll_saved_y_op). After an exchange the loop goes on comparing the die it started with (BPL at $83AB goes back to the CMP, not to the LDA at $8397), so a later exchange overwrites the die just moved up and the small one is copied twice: the sum is not the best three of five. Over all 7,776 throws the mean is 10.62 (best three of five 13.43, 3d6 10.5); 3 comes once, 18 81 times (1.0 %), 4 and 5 3.3 % and 3.4 % of the time against 1.4 % and 2.8 % for 3d6."
   },
   {
    "address": 33727,
@@ -1657,7 +1657,7 @@
   {
    "address": 33896,
    "type": "line",
-   "text": "Per-line routine of the skill list (list_show_page calls it through $47/$48 with A = the skill): carry set and nothing printed when the skill's minimum IQ is above the IQ (+$0F). Otherwise list_line_label ($03A7: the line's digit and '>'), then, with $43/$44 on the engine's text block (the word at $0200, $29E4): the minimum IQ in two columns, the price of the next level in three (skill_price of the base cost and the character's level from skill_level, $0359), the level in three, and the skill's name (engine message n, print_message $0311); carry clear."
+   "text": "Per-line routine of the skill list (list_show_page calls it through $47/$48 with A = the skill): carry set and nothing printed when the skill's minimum IQ is above the IQ (+$0F). Otherwise list_line_label ($03A7: the line's digit and '>', or '_' on the last skill the IQ allows, which show_skill_list keeps in $D1), then, with $43/$44 on the engine's text block (the word at $0200, $29E4): the minimum IQ in two columns, the price of the next level in three (skill_price of the base cost and the character's level from skill_level, $0359), the level in three, and the skill's name (engine message n, print_message $0311); carry clear."
   },
   {
    "address": 33962,
@@ -1702,7 +1702,7 @@
   {
    "address": 34087,
    "type": "line",
-   "text": "Packed text block of the Ranger Center (base for $43/$44, print_ranger_message): the 60-byte alphabet. Codes 0-$1D: ' eatroc', CR, 'yl', the end code ($0A, entry 0), 'nhusiwpd?', $04, 'k.', $07, 'vqm/)('; entries $1E and $1F, reached through the escape code $1F followed by 0 or 1, are $0B and $06; the 28 entries after them are $7F, unused."
+   "text": "Packed text block of the Ranger Center (base for $43/$44, print_ranger_message): the 60-byte alphabet. Codes 0-$1D: ' eatroc', CR, 'yl', the end code ($0A, whose entry is $00), 'nhusiwpd?', $04, 'k.', $07, 'vqm/)('; entries $1E and $1F, reached through the escape code $1F followed by 0 or 1, are $0B and $06; the 28 entries after them are $7F, unused."
   },
   {
    "address": 34147,
@@ -1787,12 +1787,12 @@
   {
    "address": 39424,
    "type": "line",
-   "text": "Module 0's packed stream, swept in by the 72-page load (see $9000): entry 0 of the module directory T34/L16, on all four sides; side 1's copy opens the module area at T25/L15, the base in that directory sector's last two bytes. $9A00-$9D98, 921 bytes. The unpacker (T35/L16, run at $C800) takes a 20-byte value table first ($9A00-$9A13, to $F4E5-$F4F8), then codes, most significant bit first: 0 + 8 bits, a literal; 1 + a prefix code for one of the 20 values (000-001 values 0-1, 0100-1010 values 2-8, 10110-11101 values 9-16, 111100-111110 values 17-19); 1 + 111111 + a count byte + a value, a run. These bytes decode to module 0's 999 bytes, $CA00-$CDE6, the same from all four sides. The entry's third byte, 4, counted down in $CE for every 256 bytes read, makes the unpacker read 1,024 bytes, through module 1's first 103 ($9D99-$9DFF), so it writes 109 more ($CDE7-$CE53) that depend on the side. load_module ($2691) unpacks it from the disk; this copy is never read."
+   "text": "Module 0's packed stream, swept in by the 72-page load (see $9000): entry 0 of the module directory T34/L16, on all four sides; side 1's copy opens the module area at T25/L15, the base in that directory sector's last two bytes. $9A00-$9D98, 921 bytes. The unpacker (T35/L16, run at $C800) takes a 20-byte value table first ($9A00-$9A13, to $F4E5-$F4F8), then codes, most significant bit first: 0 + 8 bits, a literal; 1 + a prefix code for one of the 20 values (000-001 values 0-1, 0100-1010 values 2-8, 10110-11101 values 9-16, 111100-111110 values 17-19); 1 + 111111 + a count byte + a value, a run. These bytes decode to module 0's 999 bytes, $CA00-$CDE6, the same from all four sides. The entry's third byte, 4, counted down in $CE for every 256 bytes read, makes the unpacker read 1,024 bytes, through the first 103 of the stream that follows (module 1's on sides 1, 2 and 4, here $9D99-$9DFF; module 2's on side 3), so it writes more bytes that depend on the side: 109 ($CDE7-$CE53) from sides 1, 2 and 4, 117 ($CDE7-$CE5B) from side 3. load_module ($2691) unpacks it from the disk; this copy is never read."
   },
   {
    "address": 40345,
    "type": "line",
-   "text": "Module 1's packed stream, swept in by the 72-page load (see $9000): entry 1 of T34/L16 (sides 1, 2 and 4), right after module 0's: $9D99-$A14B, 947 bytes, in module 0's format (see $9A00), value table $9D99-$9DAC (20 03 A9 85 CC 02 CD 00 F0 C9 B1 A0 4C D0 60 FF 48 16 01 8D). Up to $9FFF it decodes to $CA00-$CCBA; the rest is under $A000. Its bytes give module 1's 1,061 bytes ($CA00-$CE24), the same from all three sides; the 1,024-byte window runs on into module 3's stream to $A198 and writes 84 more bytes ($CE25-$CE78); from sides 2 and 4 the window writes 85 other bytes ($CE25-$CE79). load_module unpacks it from the disk; this copy is never read."
+   "text": "Module 1's packed stream, swept in by the 72-page load (see $9000): entry 1 of T34/L16 (sides 1, 2 and 4), right after module 0's: $9D99-$A14B, 947 bytes, in module 0's format (see $9A00), value table $9D99-$9DAC (20 03 A9 85 CC 02 CD 00 F0 C9 B1 A0 4C D0 60 FF 48 16 01 8D). Up to $9FFF it decodes to $CA00-$CCBA; the rest is under $A000. Its bytes give module 1's 1,061 bytes ($CA00-$CE24), the same from all three sides; the 1,024-byte window runs on through module 3's stream ($A14C-$A17C) and the zero bytes after it, to $A198, and writes 84 more bytes ($CE25-$CE78, the last 24 of them zeros from those zero bytes); from sides 2 and 4 the window writes 85 other bytes ($CE25-$CE79). load_module unpacks it from the disk; this copy is never read."
   },
   {
    "address": 40960,
@@ -1807,7 +1807,7 @@
   {
    "address": 41341,
    "type": "line",
-   "text": "End of side 1's module area, swept in by the 72-page load (see $9000): the rest of sector T25/L8 after module 3's stream, 129 zero bytes ($A17D-$A1FD), then $19 $11 (25, 17) in the sector's last two bytes, whose purpose is not known: the engine reads a sector's last bytes only in the side check ($18B2, $18B9: T35/L8) and for a stream directory's base ($276F, $2772), never in this sector. The unpacker reads the sector only as the tail of module 3's 256-byte window, the zeros coming out as zeros ($CA25-$CA97). The tile sets start on the next sector, T25/L7 ($A200)."
+   "text": "End of side 1's module area, swept in by the 72-page load (see $9000): the rest of sector T25/L8 after module 3's stream, 129 zero bytes ($A17D-$A1FD), then $19 $11 (25, 17) in the sector's last two bytes, whose purpose is not known: the engine reads a sector's last bytes only in the side check ($18B2, $18B9: T35/L8) and for a stream directory's base ($276F, $2772), never in this sector. The unpacker reads these bytes only as the tails of read windows: module 3's 256-byte window takes them all, the zeros coming out as zeros ($CA25-$CA97), and module 1's 1,024-byte window on side 1 takes the first 28, to $A198 (zeros at $CE61-$CE78). The tile sets start on the next sector, T25/L7 ($A200)."
   },
   {
    "address": 41472,
@@ -1847,7 +1847,7 @@
   {
    "address": 46336,
    "type": "line",
-   "text": "Portrait 0's packed stream, swept in by the 72-page load (see $9000): entry 0 of the portrait directory T35/L10, on all four sides; side 1's copy opens the portrait area at its base T24/L6. $B500-$B828, 809 bytes, in module 0's format (see $9A00). load_portrait ($2631) unpacks it from the disk to $CA00 or $E000; its own bytes give 965 bytes, the same from every side: header 01 10 0B 63 (columns 1-11, pixel rows 16-99, the picture window), base frame at +$54, animation scripts at +$0E, +$1B, +$3D and +$4A (start_picture $0586). The four-block window then decodes portrait 1's first bytes as well. This copy is never read."
+   "text": "Portrait 0's packed stream, swept in by the 72-page load (see $9000): entry 0 of the portrait directory T35/L10, on all four sides; side 1's copy opens the portrait area at its base T24/L6. $B500-$B828, 809 bytes, in module 0's format (see $9A00). load_portrait ($2631) unpacks it from the disk to $CA00 or $E000; its own bytes give 965 bytes, the same from every side: header 01 10 0B 63 (columns 1-11, pixel rows 16-99, the picture window), base frame at +$54, animation scripts at +$0E, +$1B, +$3D and +$4A (start_picture $0586). The four-block window then decodes the first bytes of the next stream as well: portrait 1's on sides 1, 2 and 4, portrait 2's on side 3. This copy is never read."
   },
   {
    "address": 47145,

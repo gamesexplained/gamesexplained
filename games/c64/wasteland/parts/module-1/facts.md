@@ -109,7 +109,9 @@ The square's record, read through `$5F/$60`:
 ## Stock, pooling and the item tables
 
 - When anything was traded, the item table is written back to its file on
-  leaving the list (`$CB51-$CB56`, `$CC38-$CC3D`, engine `$03C2`), and the
+  leaving the list (`$CB51-$CB56`, `$CC38-$CC3D`, engine `$03C2`), except
+  after a purchase that sells out the shop's stock, which leaves the buy list
+  through message 1 without writing it (`$CBD3`, `$CBBA`); the
   party only on leaving the shop (`$CA85-$CA8A`). Selling and then
   resetting before leaving the shop keeps the items in both places.
 - P in either list moves every other member's cash to the trading member
@@ -170,6 +172,6 @@ a class list ended by `$FF`):
   buy anything.", 4 "P)ool Money = $", 5 "You don't have anything they
   want!", 6 "Do you want to B)uy or S)ell?", 7 the list header "$$$
   ITEM", 8 "Your inventory is full.", 9 "That costs too much!".
-  Alphabet codes `$24-$3B` are `$7F`.
+  Alphabet entries `$24-$3B` are `$7F`.
 - Every message the code prints is a number from 1 to 9 in A before one
   of the three print entries (`$CCF8`, `$CCFF`, `$CD03`).

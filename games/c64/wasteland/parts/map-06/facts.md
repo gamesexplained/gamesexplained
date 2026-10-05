@@ -8,7 +8,7 @@ The courthouse of Quartz, which holds the town's jail: map 1's exit 20 says "Ent
 - `$3A2C`, the size: 32 (engine `enter_map`, `$25D3`).
 - `$3A30`, the tile set: 2 (engine `$25EE`).
 - `$3A33`, the tile drawn off the map: 58 (engine `draw_square`, `$0B5E`).
-- `$3A2F`, random encounters: 1 chance in 80 after each step as loaded (game `random_encounter`, `$B017`); the map's own code lowers it (below). `$3A31`: monster types 1 to 5 (game `$B047`). `$3A32`: the groups take the first 4 class-15 records (game `$B040`).
+- `$3A2F`, random encounters: 1 chance in 80 after each step as stored on the disk (game `random_encounter`, `$B017`; save_map, engine `$2856`, from enter_map `$25C3`, writes the header back when the party leaves, so a lowered chance stays); the map's own code lowers it (below). `$3A31`: monster types 1 to 5 (game `$B047`). `$3A32`: the groups take the first 4 class-15 records (game `$B040`).
 - `$3A34`/`$3A35`, the time a step takes: a quarter of a minute (fraction 64, minutes 0; game `advance_clock` `$AF32`).
 - `$3A36`, ticks: 1 a step, added to `$D2` and to the elapsed count `$04-$06` (game `$AF58-$AF72`), so game `health_tick` (`$B795`) runs every 16th step (game `$AF75-$AF7B`).
 - Squares, 1,024: 488 blocking squares (class 11), 299 of class 0, 137 message squares (1), 80 check squares (2), 15 exits (10), 3 remote-change squares (12), 1 tile square (4) and 1 question square (8). No square holds an encounter as loaded; changes place them.
@@ -18,7 +18,7 @@ The courthouse of Quartz, which holds the town's jail: map 1's exit 20 says "Ent
 - Two characters can join, from the NPC list at `$439A` (header word 20, `$3A28`). A Hire copies the 256-byte record of the NPC that a peaceful group's encounter record names in the high nibble of byte +9 (game `order_hire` `$A3F1`, `$A418-$A433`).
   - NPC 1, Mayor Pedros (`$43A0`), offered by encounter 35 (`$3FF3`, monster 9), which remote change 3 puts at (30,1) when his cell is opened.
   - NPC 2, Dan Citrine (`$44A0`), offered by encounter 34 (`$3FE7`, monster 10), which check square 20 puts at (30,13).
-  - The last skill pair of each record (+`$BA`/+`$BB`) holds a number above the 35 skills at level `$FF`: 36 for Mayor Pedros (`$445A`), 37 for Dan Citrine (`$455A`). Engine `skill_level` (`$1392`) searches all 30 pairs, so a check on skill 36 or 37 finds that character in the party.
+  - The last skill pair of each record (+`$BA`/+`$BB`) holds a number above the 35 skills at level `$FF`: 36 for Mayor Pedros (`$445A`), 37 for Dan Citrine (`$455A`). Engine `skill_level` (`$1392`) searches all 30 pairs, so a check on skill 36 or 37 finds that character when he is the member tested; on a square whose flags lack bit 5 that is only the first conscious member (game `$8E3A-$8E44`).
 
 ## Exits
 
@@ -28,7 +28,7 @@ Record byte 3 is the map an exit leads to (game `square_exit`, `$89A3`).
 - To map 3, the Stagecoach Inn: exit 1 (`$41BD`) on (16,31), to (31,1), message 21, "A hidden tunnel disappears under some rocks.". Map 3's exit 7 leads back to (16,29).
 - The stairs, exits 2-7 (`$41C2-$41DF`): (12,26) to (11,12), message 27, "You climb the stairs to the second floor."; (12,12) to (11,26), message 30, "You descend to the first floor."; (12,14) to (12,2), message 31, "You climb to the third floor."; (12,1) to (11,14), message 34, "You descend to the second floor."; (6,1) to (12,29), message 30; and (12,28) to (7,1), message 35, "You climb to the top.".
 - Exits 8, 9 and 10 (`$41E0`, `$41E5`, `$41EA`) stand on no square; the vines make them. Exit 8 leads eleven rows north of the party's square and exit 10 eleven rows south (byte 0 bit 7, relative, game `$89E3`); exit 9 leads to (16,27), message 42, "You fall and land hard!".
-- The vines are check squares 8-11 (`$3BCE-$3C11`, tile 37), climbed by a Use of AGL 2 or Climb 1. Check square 8, six squares in rows 26 and 27 ("You see vines that climb up.", message 39), becomes exit 8, and a Use of a Rope there gives message 40, "You can't tie a rope here.". Check square 9, seven squares in rows 15 and 16, becomes exit 8, or exit 9 on a failure. Check squares 10, (15,16)-(17,16), and 11, (15,5)-(17,5), become exit 10, or exit 9 on a failure. A member who fails loses 1d6, 3d6, 2d6 or 4d6 CON, by check square.
+- The vines are check squares 8-11 (`$3BCE-$3C11`, tile 37), climbed by a Use of AGL 2 or Climb 1. Check square 8, six squares in rows 26 and 27 ("You see vines that climb up.", message 39), becomes exit 8, and a Use of a Rope there gives message 40, "You can't tie a rope here.". Check square 9, seven squares in rows 15 and 16, becomes exit 8, or exit 9 on a failure. Check squares 10, (15,16)-(17,16), and 11, (15,5)-(17,5), become exit 10, or exit 9 on a failure. A member who fails loses 1d6, 3d6, 2d6 or 4d6 CON, by check square, less the member's armour roll (flag bit 0 clear, game `$90AF-$90B4`).
 
 ## Its own code
 
@@ -41,7 +41,7 @@ The code list, header word 19 (`$3A26`), is at `$4155` and has two entries: 0 `$
 ### The glass walls
 
 - Check square 1 (`$3B49`, flags `$08`) is the glass wall on 36 squares: walking into it shows message 10, "This is a ceiling to floor glass wall.". A Use breaks it, with a change for each pair (`$3B72-$3B8F`):
-  - ST 3, a Sledge hammer, a Shovel, a Pick ax, a Knife, a Crowbar, a Club or an Ax: check square 2 (`$3B90`), where every conscious member is tested against LK 1 and each who fails loses 3d6 CON ("The unlucky ones are picking chunks of glass out of themselves.", message 14). Either way it becomes check square 15 (`$3C89`), which tests every conscious member against LK 2. When all pass, message 54, "Amazingly, no one heard you.", and the square becomes tile square 0 (`$4019`), the broken glass ("Your boots crunch on the debris.", message 15). When one fails, message 55, "You made so much noise that you'll be lucky if no one comes after you.", and the square becomes action square 0 (`$414C`).
+  - ST 3, a Sledge hammer, a Shovel, a Pick ax, a Knife, a Crowbar, a Club or an Ax: check square 2 (`$3B90`), where every conscious member is tested against LK 1 and each who fails loses 3d6 CON less the member's armour roll, flag bit 0 being clear (game `$90AF-$90B4`; "The unlucky ones are picking chunks of glass out of themselves.", message 14). Either way it becomes check square 15 (`$3C89`), which tests every conscious member against LK 2. When all pass, message 54, "Amazingly, no one heard you.", and the square becomes tile square 0 (`$4019`), the broken glass ("Your boots crunch on the debris.", message 15). When one fails, message 55, "You made so much noise that you'll be lucky if no one comes after you.", and the square becomes action square 0 (`$414C`).
   - A Grenade, Plastic explosive, TNT, a LAW rocket, a Mangler, a Sabot rocket or an RPG-7: action square 0 at once.
 - Action square 0 runs more_random_encounters, and its change is tile square 0.
 

@@ -53,8 +53,8 @@ none is, and the game then loads the death screen (game `$7ED5`).
   explosion sound (`$CA4C`, engine `$0746`) and prints message 1, four
   screens beginning "Shuddering explosions rock the base, fire blossoms
   throughout every doorway." (`$CA1E-$CA66`).
-- Every party whose map (table byte `+$0A`) is 16 to 20, the levels of
-  Base Cochise, dies (`$CA73-$CA82`): picture 1, a dark figure against a
+- Every party whose map (table byte `+$0A`) is 16 to 20, the five maps of Base Cochise (the outside, 16, and the levels
+  inside, 17-20), dies (`$CA73-$CA82`): picture 1, a dark figure against a
   white glare, then for each member CON set to 0, "*name* was killed in
   the blast." and the engine's remove_member, which deletes the record
   (`$CA87-$CABA`). The party's table is removed and the tables after it

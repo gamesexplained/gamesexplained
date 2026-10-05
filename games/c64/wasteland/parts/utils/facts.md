@@ -134,7 +134,8 @@ title.
   goes on, N or back-arrow leaves, other keys are ignored
   (`$80FE-$8110`).
 - It asks "Please put side 1 in drive 1." and reads the save of whatever
-  disk is in the drive, with no side or identity check (`$82ED-$82FB`).
+  disk is in the drive, with no side or identity check (`$82ED-$82FB`);
+  back-arrow there leaves instead (`$82F5-$82FA`, then `$8115`).
   With no characters (`$0A` = 0) it prints the report's "No players to
   print." and stops (`$82FE-$830B`).
 - For each character record 1 up to `$0A` it zeroes the 30 item and count

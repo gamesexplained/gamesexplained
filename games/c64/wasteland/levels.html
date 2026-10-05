@@ -389,7 +389,7 @@ globalThis.WLMaps = (function () {
 
   // The engine's text controls (print_char_direct $1F03 and its table $1F42), shown as the
   // choices they are: {0A} singular/plural on a count, {0C} his/her, {0E} him/her/it, {0B} the
-  // current character's name, {0F} a count, {0D} a new line, {05}/{06} a wait for RETURN.
+  // current character's name, {0F} a count, {0D} a new line, {05}/{06} a wait for RETURN, space or back-arrow.
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   function textHTML(codes) {
     let html = '', alt = null;                    // alt: { code, parts: [], cur }
@@ -441,8 +441,9 @@ globalThis.WLMaps = (function () {
   // A change pair: the class and number written over a square (alter_square engine $0A00). $FE
   // gives the square the pair the last change replaced, kept in $AD/$AE, and keeps the square's
   // own there instead ($0A28); $FD does the same and returns carry clear, so the game does not
-  // run the square again; any other byte with bit 7 set writes nothing ($0A3D). Read after
-  // "the square".
+  // run the square again; any other byte with bit 7 set writes nothing ($0A3D). After a class 12
+  // square's list of changes, the game puts $AD/$AE back as they were before the list ($887F-$8884,
+  // $88CB-$88CF), so there the last change is the one before the list. Read after "the square".
   function changeText(c, n) {
     if (c === 0xFE) return 'takes the class and number the last change replaced';
     if (c === 0xFD) return 'takes the class and number the last change replaced, and is not run';
@@ -536,26 +537,28 @@ globalThis.WLMaps = (function () {
       // $8F20, bit 1 $8DCB, bit 0 $90B2 (work/mapfmt.md, section 5)
       const f = at(0), bits = [];
       bits.push(f & 0x80 ? 'run once the party is on the square' : 'run as the party steps in: the step is refused unless the tests pass');
-      if (!(f & 0x40)) bits.push(f & 0x80 ? 'no tests: only the message' : 'no tests, so the step is always refused');
-      if (f & 0x20) bits.push('every conscious member is tested, not only the first');
+      if (!(f & 0x40)) bits.push((f & 0x80 ? 'no tests: only the message' : 'no tests, so the step is always refused') + '; only a Use tests the pairs');
+      if (f & 0x20) bits.push('every conscious member is tested, not only the first' + (f & 0x08 ? (f & 0x10 ? ', until one passes or fails' : ', until one passes') : f & 0x10 ? ', until one fails' : ''));
       if (f & 0x10) bits.push('the effect falls on everybody');
       if (f & 0x08) bits.push('each test that passes makes its own change');
-      if (f & 0x04) bits.push('one pass is enough');
-      if (f & 0x02) bits.push('a failed Use shows the failure message');
+      if (f & 0x04) bits.push(f & 0x30 ? 'one pass is enough' : 'bit 2, which changes nothing without bit 5 or 4');
+      if (f & 0x02) bits.push(at(8) ? 'bit 1, which is not read when the square has an effect' : 'a Use that no test matches shows the failure message instead of “That doesn’t seem to work.”');
       if (f & 0x01) bits.push('armour does not soften the effect');
       row('Flags', hex(f, 2) + ': ' + bits.join('; '));
       row('Every time', msg(at(1)));
       row('Success', msg(at(2)) + '; the square ' + changeText(at(4), at(5)));
-      row('Failure', msg(at(3)) + '; the square ' + changeText(at(6), at(7)));
-      // apply_square_effect $9039: +8 a character-record offset (0: none), bit 7 a plain amount
-      // (else that many d6); +9 the amount, bit 7 subtract
+      // apply_square_effect $9039: +8 a character-record offset (a whole byte of 0: none, $9046; $80
+      // would act on field 0, which no map's record has), bit 7 a plain amount (else that many d6);
+      // +9 the amount, bit 7 subtract. A failed test shows +3 only with no effect, or one on CON
+      // ($1D) or cash ($15) ($8ECA-$8EE4, $8F28-$8F2D); a failed Use shows it either way ($8CDC).
       const fx = at(8) & 0x7F, amt = at(9) & 0x7F;
+      row('Failure', msg(at(3)) + (fx && fx !== 0x1D && fx !== 0x15 ? ' (after a failed Use only: a failed test shows no message)' : '') + '; the square ' + changeText(at(6), at(7)));
       if (fx) row('Effect', (fx === 0x1D ? 'CON' : ATTR[fx] || 'character byte +' + hex(fx, 2)) + ' ' + (at(9) & 0x80 ? '−' : '+') + (at(8) & 0x80 ? amt : amt + 'd6'));
       const pairs = [];
       let o = 10;
       for (; o < 200 && at(o) !== 0xFF; o += 2) {
         const k = at(o) >> 5, diff = at(o) & 31, v = at(o + 1);
-        pairs.push(k === 0 ? 'skill ' + v + (diff ? ', difficulty ' + diff : ', known') : k === 1 ? 'item ' + v + ', used on the square or carried'
+        pairs.push(k === 0 ? 'skill ' + v + (diff ? ', difficulty ' + diff : ', known') : k === 1 ? 'item ' + v + (f & 0x40 ? ', used on the square or carried' : ', used on the square')
           : k === 2 ? (ATTR[v] || 'attribute +' + hex(v, 2)) + ', difficulty ' + diff : k === 3 ? 'a party of exactly ' + v
           : k === 4 ? 'cash below ' + v : 'item ' + v + ' carried (a charge used)');
       }
@@ -565,7 +568,8 @@ globalThis.WLMaps = (function () {
       d.msgs = [at(1), at(2), at(3)];
     } else if (c === 3) {
       const lines = [];
-      // three lines, monster and count; bit 7 of either makes it 1 to n at random ($9422-$943E)
+      // three lines, monster and count; bit 7 of either makes it 1 to n at random, rolled once when
+      // the group is placed and written back ($9422-$943E)
       for (let i = 0; i < 3; i++) {
         const t = at(3 + 2 * i), k = at(4 + 2 * i);
         if (!t) continue;
@@ -574,7 +578,7 @@ globalThis.WLMaps = (function () {
           : (nm.length ? textHTML(nm) : 'monster ' + t) + ' <span class="wl-mute">(monster ' + t + ')</span>'));
       }
       row('Group', lines.join('<br>') || '<span class="wl-mute">empty: filled by a random encounter</span>');
-      row('Seen from', at(0) + ' squares, engages within ' + at(1));
+      row('Range', 'seen within ' + at(0) + ' feet, engages within ' + at(1) + ' feet (ten feet a square); the party can attack it from ' + at(0) + ' feet or nearer');
       row('Message', msg(at(2)));
       const f = at(9);
       row('Flags', hex(f, 2) + (f & 1 ? ': names shown' : ': kinds shown') + (f & 2 ? ', peaceful' : '') + (f & 4 ? ', stays put' : '') + (f >> 4 ? ', NPC ' + (f >> 4) + ' to hire' : ''));
@@ -587,7 +591,7 @@ globalThis.WLMaps = (function () {
       d.msgs = [at(0)];
     } else if (c === 5) {
       // loot_square $9194: item and count to an $FF. Bit 7 names an item, else an item class made
-      // a random item of it at the first opening; $5E is cash, its two bytes each rolled from 1
+      // a random item of it at the first opening (emptied when no item has the class, $91CF); $5E is cash, its two bytes each rolled from 1
       // to themselves ($DE once rolled); a count with bit 7 is 1 to n; item byte 0 is empty.
       const items = [];
       for (let o = 2; o < 200 && at(o) !== 0xFF;) {
@@ -615,7 +619,7 @@ globalThis.WLMaps = (function () {
       d.msgs = [at(0) & 0x7F].concat(ans);
     } else if (c === 9) {
       row('Message', msg(at(0)));
-      row('Costs', at(1) + 'd6 CON to each member not wearing a Rad suit');
+      row('Costs', at(1) + 'd6 CON to each member not wearing a Rad suit' + (at(0) & 1 ? '; armour does not help (the message number is odd)' : ', less the member\'s AC rolled in d6 (the message number is even)'));
       row('Then', 'the square ' + changeText(at(2), at(3)));
       d.msgs = [at(0)];
     } else if (c === 10) {
@@ -1048,7 +1052,7 @@ globalThis.WLMaps = (function () {
       let h = '';
       if (d.c === 1) h = d.msgs.filter(k => k).map(q).join('');
       else if (d.c === 2) h = (at(1) ? q(at(1)) : '') + (at(0) & 0x40 ? '<span class="wl-mute">The game now tests the party: ' + (d.checks || []).join('; ') + '.</span>' : '');
-      else if (d.c === 9) h = (at(0) ? q(at(0)) : '') + '<span class="wl-mute">Radiation: ' + at(1) + 'd6 CON damage to each member not wearing a Rad suit.</span>';
+      else if (d.c === 9) h = (at(0) ? q(at(0)) : '') + '<span class="wl-mute">Radiation: ' + at(1) + 'd6 CON damage to each member not wearing a Rad suit' + (at(0) & 1 ? '; armour does not help' : ', less its AC rolled in d6') + '.</span>';
       else if (d.c === 10) h = exitHTML(d.exit, S.x, S.y, true);
       else if (d.c === 6) h = mute('An action square. The game runs ' + d.rows[0][1] + '.');
       else if (!d.plain) h = '<span class="wl-mute">' + C.name[0].toUpperCase() + C.name.slice(1) + ' square: ' + C.does + '</span>';

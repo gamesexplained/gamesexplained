@@ -81,7 +81,7 @@ but the I/O area, both ROMs out.
 | Range | What | Part |
 |---|---|---|
 | `$0000-$00FF` | the engine's zero page; `$02-$0F` are saved with the game | engine |
-| `$0200-$30FF` | the engine: two jump tables (`$0204-$044E`, `$04CF-$0504`), its code and its text block (`$29E4-$30FF`) | engine |
+| `$0200-$30FF` | the engine: two jump tables (`$0204-$044E`, `$04CF-$0504`), its code and its text block (`$29E4-$30FE`) | engine |
 | `$3100-$33FF` | the item table: eight bytes an item | game |
 | `$3400-$59FF` | the map the party is in: class layer, number layer, record, lists, text and code | map-*nn* |
 | `$5A00-$5AFF` | the sector buffer | engine |
@@ -98,9 +98,10 @@ but the I/O area, both ROMs out.
 | `$F400-$FBFF` | the game state: party tables, saved zero page, line buffer, character records from `$F500`, written to the disk as the save | engine |
 | `$FC00-$FFFF` | the fast loader's computer side, and the hardware vectors in RAM | engine |
 
-The bitmap's 25th character row would be `$7E00-$7F3F`; with `$D011`
-set to `$37` (24 rows, startup `$7F55-$7F57`) it is not shown, and the
-programs load from `$7E00`.
+The bitmap's 25th character row would be `$7E00-$7F3F`; with `$D011` set to `$37` (24 rows, startup `$7F55-$7F57`) it is hidden,
+  except that screen_shake's random vertical scroll (engine `$077A`)
+  brings its top lines into view for a moment, and the programs load
+  from `$7E00`.
 
 ## The disks and the loader
 
@@ -247,7 +248,7 @@ programs load from `$7E00`.
 
 - Every program has its own packed text block; the engine prints from
   the one `$43/$44` points at (engine `$1DFB`). The engine's is
-  `$29E4-$30FF`, messages 0-169.
+  `$29E4-$30FE`, messages 0-169, and `$30FF` is a spare byte.
 - A block is a 60-byte alphabet, then a table of words, each the offset
   from the table to a group of four messages, then the groups. Codes
   are five bits, lowest bit first (engine `$291D`): code `$1E`
@@ -256,7 +257,8 @@ programs load from `$7E00`.
 - Control codes in the text (engine `$1F42`, `$1F64`): `$0A` singular
   or plural on the count `$38`, `$0B` the current character's name,
   `$0C` his or her, `$0E` him, her or it, `$0F` the count, `$0D` a new
-  line, `$05` and `$06` wait for RETURN.
+  line, `$05` and `$06` wait for RETURN, space or back-arrow (wait_return,
+  engine `$2501`).
 
 ## Screen and controls
 
