@@ -35,7 +35,7 @@
    [
     13312,
     23039,
-    "42 parts: Map 29, Map 7, Map 5 and others"
+    "42 parts: Agricultural Center, the Root Cellar, Sleeper Base, level 1, Quartz, the abandoned buildings and others"
    ],
    [
     51712,
@@ -45,7 +45,7 @@
    [
     56832,
     60927,
-    "42 parts: Map 15, Map 25, Map 7 and others"
+    "42 parts: Sleeper Base, level 3, Las Vegas sewers, the lab, Sleeper Base, level 1 and others"
    ]
   ],
   "extra": [],
@@ -68,7 +68,7 @@
    [
     13312,
     23039,
-    "42 parts: Map 29, Map 7, Map 5 and others"
+    "42 parts: Agricultural Center, the Root Cellar, Sleeper Base, level 1, Quartz, the abandoned buildings and others"
    ],
    [
     51712,
@@ -78,7 +78,7 @@
    [
     56832,
     60927,
-    "42 parts: Map 15, Map 25, Map 7 and others"
+    "42 parts: Sleeper Base, level 3, Las Vegas sewers, the lab, Sleeper Base, level 1 and others"
    ]
   ]
  },
@@ -4070,9 +4070,9 @@
   },
   {
    "address": 38182,
-   "name": "a_9526",
+   "name": "scan_party_op",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38190,
@@ -4178,9 +4178,9 @@
   },
   {
    "address": 38398,
-   "name": "a_95FE",
+   "name": "scan_draw_flag_op",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 38414,
@@ -10516,7 +10516,7 @@
   {
    "address": 32382,
    "type": "line",
-   "text": "Not an entry point: $7E7E is the high byte of STA $7F17's operand. The tracer minted a subroutine symbol here from the engine's run_menu_item, whose JSR at $1C70 has its operand rewritten before each menu handler is called; in the play-map snapshot that operand holds $7E7E, left by the program that ran before the game ($81FA in the entry snapshot)."
+   "text": "Not an entry point: $7E7E is the high byte of STA $7F17's operand. The tracer minted a subroutine symbol here from the engine's run_menu_item, whose JSR at $1C71 has its operand ($1C72/$1C73) rewritten before each menu handler is called; in the play-map snapshot that operand holds $7E7E, left by the program that ran before the game ($81FA in the entry snapshot)."
   },
   {
    "address": 32469,
@@ -10596,7 +10596,7 @@
   {
    "address": 32612,
    "type": "line",
-   "text": "The melee of a battle round for the current party $08, run by the battle round ($B867) through the vector at $8E (set at $B890/$B894; $9F40 calls it once for each party on map $8D). Builds an initiative list at $5A00-$5AFF, a 16-bit value per two-byte slot (slot index in the operand $8239): slots $00-$EF the monsters, 60 bytes a group (three lines of ten), slot $F0 + 2n member n. A monster joins when its group stands within 15 feet of the party ($04CF below 16), is hostile (encounter record +9 bit 1 clear, $9EF6), its line's weapon class is not a ranged one ($0413), it is alive and its act flag (line +$14 + n) is set, which is cleared here: initiative 2d6 + 8 x its record byte +2 (multiplied in 8 bits). A member joins when conscious with order 2 (A)ttack; members whose weapon reaches farther fired earlier in the round, $9F77-$9F9B, and attack_done $A53A cleared their order): 2d6 + SP (+$11) + 4 x Brawling. Then the highest value acts (melee_pick_next) until none is left, and at the end the order 2 of every member is cleared in both order tables ($89, $8B)."
+   "text": "The melee of a battle round for the current party $08, run by the battle round ($B867) through the vector at $8E (set at $B890/$B894; $9F40 calls it once for each party on map $8D). Builds an initiative list at $5A00-$5AFF, a 16-bit value per two-byte slot (slot index in the operand $8239): slots $00-$EF the monsters, 60 bytes a group (three lines of ten), slot $F0 + 2n member n. A monster joins when its group stands within 15 feet of the party ($04CF below 16), is hostile (encounter record +9 bit 1 clear, $9EF6), its line's weapon class is not a ranged one ($0413), it is alive and its act flag (line +$14 + n) is set, which is cleared here: initiative 2d6 + 8 x its record byte +2 (multiplied in 8 bits, which would wrap from byte +2 = 32; the melee monster types in the map snapshots have 7 at most, map 15's Titanium Clawer and map 35's Brother Goliath). A member joins when conscious with order 2 (A)ttack; members whose weapon reaches farther fired earlier in the round, $9F77-$9F9B, and attack_done $A53A cleared their order): 2d6 + SP (+$11) + 4 x Brawling. Then the highest value acts (melee_pick_next) until none is left, and at the end every member whose order is 2 has the order and its argument cleared (the tables at ($89) and ($8B), $8082-$809D)."
   },
   {
    "address": 32675,
@@ -10686,7 +10686,7 @@
   {
    "address": 33366,
    "type": "line",
-   "text": "Melee chance in $71/$72, which holds 0 on entry: adds the base in X:A, 4 x the current character's Brawling (brawling_times_4) and its AGL bonus (agl_bonus $A7BE), and takes off the skill term of the monster line in $80D6 (the line struck, or the attacking monster's): 4 x its record byte +2 when the line's weapon class is 1 (melee weapons), otherwise byte +2 less 5. Kept within 0 ($03E9 stops there) and 100. For a member's strike it is the chance to hit; for a monster's attack the member's chance to avoid it."
+   "text": "Melee chance in $71/$72, which holds 0 on entry: adds the base in X:A, 4 x the current character's Brawling (brawling_times_4) and its AGL bonus (agl_bonus $A7BE), and takes off the skill term of the monster line in $80D6 (the line struck, or the attacking monster's): 4 x its record byte +2 when the line's weapon class is 1 (melee weapons), otherwise byte +2 less 5. Kept within 0 ($03E9 stops there) and 100. A monster type whose byte +2 is 0 makes it 0 whatever the rest: the term is negated in 8 bits with $FF as the high byte ($828B-$8290), so 0 becomes -256 (in the map snapshots only map 16's type 3, a ranged one, has 0). For a member's strike it is the chance to hit; for a monster's attack the member's chance to avoid it."
   },
   {
    "address": 33451,
@@ -10971,7 +10971,7 @@
   {
    "address": 34885,
    "type": "line",
-   "text": "Runs action A of the square whose record is at ($5F): with bit 7 set, module A AND $7F is unpacked to $CA00 ($03BF) and called at $CA00; otherwise word A of the map's list 16 (header +$26; $0428 with Y = $10) is the address of a routine of the map's own, called through $12/$13 (jump_work_ptr $AC69) with $5F/$60 still on the record. When the action returns carry set, the screen is redrawn (redraw_view $AC8C). Callers: square_action and countdown_check (module 4). By the module agents' reports, module 0 is the doctor, 1 the shop, 2 the library, 3 the Ranger Center's entrance and 4 the Base Cochise ending."
+   "text": "Runs action A of the square whose record is at ($5F): with bit 7 set, module A AND $7F is unpacked to $CA00 ($03BF) and called at $CA00; otherwise word A of the map's list 16 (header +$26; $0428 with Y = $10) is the address of a routine of the map's own, called through $12/$13 (jump_work_ptr $AC69) with $5F/$60 still on the record. When the action returns carry set, the screen is redrawn (redraw_view $AC8C). Callers: square_action and countdown_check (module 4). Module 0 is the doctor, 1 the shop, 2 the library, 3 the Ranger Center's entrance and 4 the Base Cochise ending."
   },
   {
    "address": 34936,
@@ -11031,7 +11031,7 @@
   {
    "address": 35235,
    "type": "line",
-   "text": "Handler of class 10 squares, exits (square_class_handlers $ACF3): nothing (carry clear) while $02AA says the player answered N in exit_confirm. Otherwise shows the exit's message unless exit_confirm has ($022E), changes the exit square by the pair at record +4/+5 (alter_party_square $B105), keeps the party's column, row and map in its party table +$0B/+$0C/+$0D as the return point (the previous one kept in the operands $8A12, $8A19 and $89FC) and moves the party, setting the view's corner $02/$03 from the square ($0440): to map byte 3 at the column and row in bytes 1 and 2, taken relative to the party's square when byte 0 has bit 7 set, returning carry set (exit_enter_map); or, when byte 3 is $FF, back to the previous return point, returning carry clear ($8A00). run_square_action ($ACC1) acts on the party's square again while a handler returns carry set, so the square an ordinary exit arrives on is acted on at once and the one a return exit arrives on is not. Shop, doctor and library entrances use this: an asking (bit 6), relative exit to 0, 0 on its own map whose change makes the square class 6, so its service runs at once; that record's change $FD $FD trades the exit back (map 10: exit $402A, E7 00 00 0A 06 01, and service $3F6F, 81 FD FD)."
+   "text": "Handler of class 10 squares, exits (square_class_handlers $ACF3): nothing (carry clear) while $02AA says the player answered N in exit_confirm. Otherwise shows the exit's message unless exit_confirm has ($022E), changes the exit square by the pair at record +4/+5 (alter_party_square $B105), keeps the party's column, row and map in its party table +$0B/+$0C/+$0D as the return point (the previous one kept in the operands $8A12, $8A19 and $89FC) and moves the party, setting the view's corner $02/$03 from the square ($0440): to map byte 3 at the column and row in bytes 1 and 2, taken relative to the party's square when byte 0 has bit 7 set, returning carry set (exit_enter_map); or, when byte 3 is $FF, back to the previous return point, returning carry clear ($8A00). run_square_action ($ACC1) acts on the party's square again while a handler returns carry set, so the square an ordinary exit arrives on is acted on at once and the one a return exit arrives on is not: that square is the return point, the square of the exit the party came in by (the party's $57/$58, stored at $89C1-$89D7), so acting on it would take that exit again. Shop, doctor and library entrances use this: an asking (bit 6), relative exit to 0, 0 on its own map whose change makes the square class 6, so its service runs at once; that record's change $FD $FD trades the exit back (map 10: exit $402A, E7 00 00 0A 06 01, and service $3F6F, 81 FD FD)."
   },
   {
    "address": 35324,
@@ -11166,7 +11166,7 @@
   {
    "address": 36101,
    "type": "line",
-   "text": "Healing with Medic (X = 2) or Doctor (X = 3) on the patient's record (operand $8CBB): nothing for one at CON 0 or a conscious one. The healer rolls the skill ($020A: 2d6 + its attribute + 4 x level; dice under 5 fail) against 15 + 5 x (|CON| >> X), only CON's low byte counting; failure: 'You didn't help <name>.' (game message 9); success: the patient's CON is halved towards 0 (an arithmetic shift with the sign kept, so it never rises above -1), '<name> is improving.' (message 10), and the healer's skill may rise ($020F). Carry set, A = 0."
+   "text": "Healing with Medic (X = 2) or Doctor (X = 3) on the patient's record (operand $8CBB): nothing for one at CON 0 or a conscious one. The healer rolls the skill ($020A: 2d6 + its attribute + 4 x level; dice under 5 fail) against 15 + 5 x (|CON| >> X), only CON's low byte counting; failure: 'You didn't help <name>.' (game message 9); success: the patient's CON is halved, rounded down (an arithmetic shift with the sign kept: -3 becomes -2, and -1 stays -1, so it never rises above -1), '<name> is improving.' (message 10), and the healer's skill may rise ($020F). Carry set, A = 0."
   },
   {
    "address": 36127,
@@ -11181,7 +11181,7 @@
   {
    "address": 36193,
    "type": "side",
-   "text": "ROR with the carry set: CON halved towards 0, staying negative"
+   "text": "ROR with the carry set: CON halved, rounded down, staying negative"
   },
   {
    "address": 36217,
@@ -11266,7 +11266,7 @@
   {
    "address": 36332,
    "type": "line",
-   "text": "Move test for the square at column X, row Y (try_move's $AD7B; kept in checked_square's operands): carry clear when it is not a check square (class 2) or its checks wait until the party is on it (flags bit 7). Otherwise its checks run (square_checks), again for as long as they change the square: carry clear when they pass (A = 0), carry set when they fail or it has no checks (bit 6 clear): the move is refused."
+   "text": "Move test for the square at column X, row Y (square_blocked's $AD7B; kept in checked_square's operands): carry clear when it is not a check square (class 2) or its checks wait until the party is on it (flags bit 7). Otherwise its checks run (square_checks), again for as long as they change the square: carry clear when they pass (A = 0), carry set when they fail or it has no checks (bit 6 clear): the move is refused."
   },
   {
    "address": 36367,
@@ -11286,12 +11286,12 @@
   {
    "address": 36372,
    "type": "line",
-   "text": "Handler of class 2 squares, check squares (square_class_handlers $ACF3), X, Y = the square: run for the party's own square by run_square_action ($ACC1) when the flags (record byte 0) have bit 7, otherwise for the square the party tries to enter (blocking_check_square). Shows map message +1, then, when the flags have bit 6, tests the party's conscious members against the pairs from record +$0A (two bytes each, $FF after the last; kind = first byte >> 5: 0 skill (difficulty 0: knowing it is enough), 2 attribute, 3 party size (equal to the second byte), 4 cash (passes when the member has less than the second byte; one who has that much fails at once, and nothing is paid, $8E73-$8E83), others an item that is carried and loses a charge; low five bits the difficulty). A member passes with the first pair it passes; one who passes none gets the effect at +8/+9 (bit 4: on everybody, which ends the tests). Bit 5: every conscious member is tested, else the first one decides; bit 2: one pass is enough. Success: message +2 and the square changes by the pair at +4/+5 (with bit 3, by the passing pair's own change, at the first pass). Failure: the pair at +6/+7 and message +3, which an effect brings with it instead: slowly for one on CON (+$1D) or on everybody, plainly for one on cash (+$15), not at all for one on another field ($8ED3-$8EE4, $8F28-$8F3C). Returns A = 0 success, 1 failure, or 1 with carry clear and nothing changed when there are no checks (bit 6 clear), with $042E's carry (set when the square changed)."
+   "text": "Handler of class 2 squares, check squares (square_class_handlers $ACF3), X, Y = the square: run for the party's own square by run_square_action ($ACC1) when the flags (record byte 0) have bit 7, otherwise for the square the party tries to enter (blocking_check_square). Shows map message +1, then, when the flags have bit 6, tests the party's conscious members against the pairs from record +$0A (two bytes each, $FF after the last; kind = first byte >> 5: 0 skill (difficulty 0: knowing it is enough), 2 attribute, 3 party size (equal to the second byte), 4 cash (passes when the member has less than the second byte, fails at once, without trying the other pairs, when the member has that much, $8E73-$8E83; the check takes no money: the maps write a purchase as the failure, whose effect takes it, as in map 2's bar, which fails a member with 10 or more and takes 10 with the effect cash - 10 at +8/+9, its success message being 'You don't have enough money.'), others an item that is carried and loses a charge; low five bits the difficulty). A member passes with the first pair it passes; one who passes none gets the effect at +8/+9 (bit 4: on everybody, which ends the tests). Bit 5: every conscious member is tested, else the first one decides; bit 2: one pass is enough. Success: message +2 and the square changes by the pair at +4/+5 (with bit 3, by the passing pair's own change, at the first pass). Failure: the pair at +6/+7 and message +3, which an effect brings with it instead: slowly for one on CON (+$1D) or on everybody, plainly for one on cash (+$15), not at all for one on another field ($8ED3-$8EE4, $8F28-$8F3C). Returns A = 0 success, 1 failure, or 1 with carry clear and nothing changed when there are no checks (bit 6 clear), with $042E's carry (set when the square changed)."
   },
   {
    "address": 36478,
    "type": "side",
-   "text": "carry set (cash at least the amount) fails this member outright; nothing is paid"
+   "text": "carry set (cash at least the amount) fails this member at once; the failure's effect, not this check, takes the money (map 2's bar)"
   },
   {
    "address": 36522,
@@ -11386,12 +11386,12 @@
   {
    "address": 36864,
    "type": "line",
-   "text": "Inside the attribute-pair scan whose entry is agent 7's $8FEF (A = the record offset of an attribute, kept at $9008): a check pair of kind 2 (check_pair_kind) whose second byte is that offset is the one; any other pair is skipped ($900B, two bytes on). The match goes to $9013: check_pair_low5 gives the difficulty and attribute_check ($0212) makes the check against that attribute; Y = the pair's offset ($900C), A = 0. No match before the $FF: carry set ($9011)."
+   "text": "Inside the attribute-pair scan whose entry is $8FEF (A = the record offset of an attribute, kept at $9008): a check pair of kind 2 (check_pair_kind) whose second byte is that offset is the one; any other pair is skipped ($900B, two bytes on). The match goes to $9013: check_pair_low5 gives the difficulty and attribute_check ($0212) makes the check against that attribute; Y = the pair's offset ($900C), A = 0. No match before the $FF: carry set ($9011)."
   },
   {
    "address": 36872,
    "type": "line",
-   "text": "Operand of the CMP #imm at $9007, written at $8FEF (agent 7's attribute scan of a check square's pairs): the record offset of the attribute the player chose, compared with the second byte of each kind-2 pair."
+   "text": "Operand of the CMP #imm at $9007, written at $8FEF (the attribute scan of a check square's pairs): the record offset of the attribute the player chose, compared with the second byte of each kind-2 pair."
   },
   {
    "address": 36876,
@@ -11711,7 +11711,7 @@
   {
    "address": 38474,
    "type": "line",
-   "text": "Operand of the LDA #imm at $9649: the party nearest_engaging_party chose, stored at $9652 and $96C4. On the path for a square that already has a record, $9649 loads it before this pass stores the new choice (at $9652), so the party compared with the record's holder ($964C) and the value kept as the new record's distance ($964F into $9672) is the one chosen for an earlier square. Recorded as found; see agent 8's report."
+   "text": "Operand of the LDA #imm at $9649: the party nearest_engaging_party chose, stored at $9652 and $96C4. On the path for a square that already has a record, $9649 loads it before this pass stores the new choice (at $9652), so the party compared with the record's holder ($964C) is the one chosen in an earlier pass, and the new record's distance ($964F into $9672) is that party's number, 0 to 3, not a distance."
   },
   {
    "address": 38476,
@@ -11941,12 +11941,12 @@
   {
    "address": 39785,
    "type": "line",
-   "text": "Three bytes where copy_member_to_party keeps bytes +13, +12 and +11 of the source party's table ($9B3C) while it switches tables, then writes them to the destination's +13 to +11 ($9B5D). The engine reads +11/+12 as a second position (purpose open). Work space, 0 in the snapshots."
+   "text": "Three bytes where copy_member_to_party keeps bytes +13, +12 and +11 of the source party's table ($9B3C) while it switches tables, then writes them to the destination's +13 to +11 ($9B5D). Bytes +11 to +13 are the return point of the last exit, its column, row and map: square_exit writes them ($89BA-$89D7), and an exit whose byte +3 is $FF reads them back ($89EE-$89FC). Work space, 0 in the snapshots."
   },
   {
    "address": 39788,
    "type": "line",
-   "text": "A = a character record: takes it out of the current party's table, moving the later positions up one and clearing position 7, and lowers $07. The record must be in the table: when it is not, party_has_record leaves Y = 8 and the loop runs Y round from 9 through 255 and 0 to 7, moving the 256 bytes from the table on down one (see agent 8's report). Callers: runner_split_off ($993A) and disband_command ($9AE5), both with a record known to be there."
+   "text": "A = a character record: takes it out of the current party's table, moving the later positions up one and clearing position 7, and lowers $07. The record must be in the table: when it is not, party_has_record leaves Y = 8 and the loop runs Y round from 9 through 255 and 0 to 7, moving the 256 bytes from the table on down one. Callers: runner_split_off ($993A) and disband_command ($9AE5), both with a record known to be there."
   },
   {
    "address": 39820,
@@ -12296,12 +12296,12 @@
   {
    "address": 41472,
    "type": "line",
-   "text": "member_attack (agent 8's routine from $9FA9), continued: the end of its report of one hit-list entry. With a ranged kill kind, $38 = the kills and message 34, 'just as he peels off a final shot'; then '.' (90), attack_skill_improve for the entry's line ($A23A) and flush_line. The next entry (up to 3) goes back to $A144; after the last, $A220 takes the rounds the attack used from the weapon (weapon_use_rounds $BC75) and $A225 jumps to $9FE0 (attack_done)."
+   "text": "member_attack (from $9FA9), continued: the end of its report of one hit-list entry. With a ranged kill kind, $38 = the kills and message 34, 'just as he peels off a final shot'; then '.' (90), attack_skill_improve for the entry's line ($A23A) and flush_line. The next entry (up to 3) goes back to $A144; after the last, $A220 takes the rounds the attack used from the weapon (weapon_use_rounds $BC75) and $A225 jumps to $9FE0 (attack_done)."
   },
   {
    "address": 41505,
    "type": "line",
-   "text": "Operand of LDA #imm at $A220, the end of member_attack's result loop (agent 8's routine from $9FA9), written at $A13D: the rounds the attack used, 1 for a single shot ($A0EB), 3 for a burst ($A0CE) or every round left for automatic fire ($A130, $BC73); $A220 hands it to $BC75, which takes it from the weapon's count."
+   "text": "Operand of LDA #imm at $A220, the end of member_attack's result loop (from $9FA9), written at $A13D: the rounds the attack used, 1 for a single shot ($A0EB), 3 for a burst ($A0CE) or every round left for automatic fire ($A130, $BC73); $A220 hands it to $BC75, which takes it from the weapon's count."
   },
   {
    "address": 41512,
@@ -12376,12 +12376,12 @@
   {
    "address": 41954,
    "type": "line",
-   "text": "Operand of LDY #imm at $A3E1: the byte at $5BDB + the member's record number, written at $A3D1, passed to the Use routine $8BEF in Y (agent 10's $B787 stores it when the U)se order is given)."
+   "text": "Operand of LDY #imm at $A3E1: the byte at $5BDB + the member's record number, written at $A3D1, passed to the Use routine $8BEF in Y ($B787 stores it when the U)se order is given)."
   },
   {
    "address": 41969,
    "type": "line",
-   "text": "Order 1, H)ire, for member A, the hirer. Nothing when its target line is dead. Needs room (records_in_use $0A below 7, else message 95 'No room in roster.') and a group whose map record ($77) has bit 1 of byte 9 set (peaceful: agent 8's encounter_is_peaceful $9EF6) and an NPC number in its high nibble (group_npc_number), else the failure message. Copies that NPC's 256-byte record (word n of the map's list 17) to record $0A + 1; unless its byte +$31 is 0 the hirer needs (its CHR + IQ) / 2 + CHR + rank + 2d6 (open) at least the NPC's (CHR + IQ) / 2 + byte +$31 + rank, and a 2d6 under 5 fails at once (the NPC copy's bytes +$2B-+$2D are raised, but that copy is not kept). Success: the NPC joins ($0A and $07 + 1, party table), its message (+$30, map text) is shown, +$31 = the hirer's CHR, +$2B-+$2D drop once per 4 points of margin (acc1 - acc2, which on the no-roll path holds whatever acc1 was), its line's HP words are cleared (it leaves the fight) and each item slot's count gets the item's full load (record byte 4). Failure: messages 44 and 81, '<name> tries to hire the <monster> but fails.'"
+   "text": "Order 1, H)ire, for member A, the hirer. Nothing when its target line is dead. Needs room (records_in_use $0A below 7, else message 95 'No room in roster.') and a group whose map record ($77) has bit 1 of byte 9 set (peaceful: encounter_is_peaceful $9EF6) and an NPC number in its high nibble (group_npc_number), else the failure message. Copies that NPC's 256-byte record (word n of the map's list 17) to record $0A + 1; unless its byte +$31 is 0 the hirer needs (its CHR + IQ) / 2 + CHR + rank + 2d6 (open) at least the NPC's (CHR + IQ) / 2 + byte +$31 + rank, and a 2d6 under 5 fails at once (the NPC copy's bytes +$2B-+$2D are raised, but that copy is not kept). Success: the NPC joins ($0A and $07 + 1, party table), its message (+$30, map text) is shown, +$31 = the hirer's CHR, +$2B-+$2D drop once per 4 points of margin (acc1 - acc2, which on the no-roll path holds whatever acc1 was), its line's HP words are cleared (it leaves the fight) and each item slot's count gets the item's full load (record byte 4). Failure: messages 44 and 81, '<name> tries to hire the <monster> but fails.'"
   },
   {
    "address": 42064,
@@ -12461,7 +12461,7 @@
   {
    "address": 42488,
    "type": "line",
-   "text": "A = member Y's fire mode, bits 6-7 of its order parameter ($8B),Y shifted down: 0 single shot, 1 burst, 2 automatic (member_attack and agent 8's $A02E/$A0AA; $9031 jumps to shift_right_4 inside it)."
+   "text": "A = member Y's fire mode, bits 6-7 of its order parameter ($8B),Y shifted down: 0 single shot, 1 burst, 2 automatic (member_attack's $A02E/$A0AA; $9031 jumps to shift_right_4 inside it)."
   },
   {
    "address": 42492,
@@ -12481,7 +12481,7 @@
   {
    "address": 42520,
    "type": "line",
-   "text": "One hit of member A on monster line Y (0-47): picks one of the line's ten monsters at random (random_monster); carry set when that one is already dead (the caller tries again). Otherwise adds the line to the hit list $7E06 (3 entries, $FF ends it) and counts the hit ($7E12 + 10 * entry + monster), rolls the damage (weapon_damage, with the line's armour dice), sets $D7 for classes 8-9, takes off the armour (monster_armour_absorb) and adds the damage to the line's total ($7E0C, a word per entry, stops at $FFFF). Returns carry clear: A = $FF when the monster lives (or the damage was 0); A = 0 when it died: HP word cleared, $7E09 kill count + 1, its flag byte (+$14 + monster, agent 10's group_flags_set) set to $FF when it was set, experience (kill_experience) given to the member, overkill flag $D9 (set_overkill), $7E30 &= $D9 and $7E33 = kill_kind_op."
+   "text": "One hit of member A on monster line Y (0-47): picks one of the line's ten monsters at random (random_monster); carry set when that one is already dead (the caller tries again). Otherwise adds the line to the hit list $7E06 (3 entries, $FF ends it) and counts the hit ($7E12 + 10 * entry + monster), rolls the damage (weapon_damage, with the line's armour dice), sets $D7 for classes 8-9, takes off the armour (monster_armour_absorb) and adds the damage to the line's total ($7E0C, a word per entry, stops at $FFFF). Returns carry clear: A = $FF when the monster lives (or the damage was 0); A = 0 when it died: HP word cleared, $7E09 kill count + 1, its flag byte (+$14 + monster, group_flags_set) set to $FF when it was set, experience (kill_experience) given to the member, overkill flag $D9 (set_overkill), $7E30 &= $D9 and $7E33 = kill_kind_op."
   },
   {
    "address": 42589,
@@ -12631,7 +12631,7 @@
   {
    "address": 43099,
    "type": "line",
-   "text": "Party member Y takes X:A points of damage, with the messages ($C8 non-zero: not from a monster; $A0 non-zero: armour ignored). Carry set, nothing done, when the member is dead (CON 0). A member already down (CON negative) is always hit by $C8 damage; otherwise a monster whose weapon class (record byte 5 bits 0-3) is ranged misses ('but misses.'), a melee one hits when 2d6 (open) is below its record byte 3. Armour: AC (+$1A) in d6 off the damage. Then CON is reduced (con_subtract): reaching 0 makes it -1, below -49 makes it 0 (dead); a member going down keeps its CON from before the hit in +$26/+$27 and gets ' and ' + its condition (wound_messages). Ends with '.' and the roster line; carry clear."
+   "text": "Party member Y takes X:A points of damage, with the messages ($C8 non-zero: not from a monster; $A0 non-zero: armour ignored). Carry set, nothing done, when the member is dead (CON 0). A member already down (CON negative) is always hit by $C8 damage; otherwise a monster whose weapon class (record byte 5 bits 0-3) is ranged misses ('but misses.'), a melee one hits when 2d6 (open) is below its record byte 3; that test is never reached, since a monster's melee picks only conscious members ($81B7-$81C7) and member_takes_damage has three callers, $821D, $90BC and $9E23. Armour: AC (+$1A) in d6 off the damage. Then CON is reduced (con_subtract): reaching 0 makes it -1, below -49 makes it 0 (dead); a member going down keeps its CON from before the hit in +$26/+$27 and gets ' and ' + its condition (wound_messages). Ends with '.' and the roster line; carry clear."
   },
   {
    "address": 43155,
@@ -12881,7 +12881,7 @@
   {
    "address": 44036,
    "type": "line",
-   "text": "Carry clear for weapon classes 10-12 (class_10_to_12) and 5-7 (class_5_to_7), the classes that offer B)urst and A)uto fire (agent 10's $B513, $B5C7); carry set otherwise."
+   "text": "Carry clear for weapon classes 10-12 (class_10_to_12) and 5-7 (class_5_to_7), the classes that offer B)urst and A)uto fire ($B513, $B5C7); carry set otherwise."
   },
   {
    "address": 44042,
@@ -13431,12 +13431,12 @@
   {
    "address": 46002,
    "type": "line",
-   "text": "Orders of the current party: clears its members' orders; with someone conscious, asks each member (agent 10's orders_member_loop $B40A) when any of its four groups is in use (group byte 0 non-zero), else messages 20 and 76 ('This party is not being attacked. Do you want them to execute a battle round (Y/N)?', $B3F0 on). Carry clear when nobody is conscious."
+   "text": "Orders of the current party: clears its members' orders; with someone conscious, asks each member (orders_member_loop $B40A) when any of its four groups is in use (group byte 0 non-zero), else messages 20 and 76 ('This party is not being attacked. Do you want them to execute a battle round (Y/N)?', $B3F0 on). Carry clear when nobody is conscious."
   },
   {
    "address": 46023,
    "type": "line",
-   "text": "Gives every member of the party order 8 (move the party) with parameter A AND $7F, the direction (agent 10's $B469); carry clear."
+   "text": "Gives every member of the party order 8 (move the party) with parameter A AND $7F, the direction ($B469); carry clear."
   },
   {
    "address": 46031,

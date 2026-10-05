@@ -35,7 +35,7 @@
    [
     12544,
     23039,
-    "43 parts: The game, Map 29, Map 7 and others"
+    "43 parts: The game, Agricultural Center, the Root Cellar, Sleeper Base, level 1 and others"
    ],
    [
     32256,
@@ -50,7 +50,7 @@
    [
     56832,
     60927,
-    "42 parts: Map 15, Map 25, Map 7 and others"
+    "42 parts: Sleeper Base, level 3, Las Vegas sewers, the lab, Sleeper Base, level 1 and others"
    ]
   ],
   "extra": [],
@@ -58,7 +58,7 @@
    [
     12544,
     23039,
-    "43 parts: The game, Map 29, Map 7 and others"
+    "43 parts: The game, Agricultural Center, the Root Cellar, Sleeper Base, level 1 and others"
    ],
    [
     32256,
@@ -73,7 +73,7 @@
    [
     56832,
     60927,
-    "42 parts: Map 15, Map 25, Map 7 and others"
+    "42 parts: Sleeper Base, level 3, Las Vegas sewers, the lab, Sleeper Base, level 1 and others"
    ]
   ]
  },
@@ -9866,9 +9866,9 @@
   },
   {
    "address": 65415,
-   "name": "KERNAL_RAMTAS",
+   "name": "loader_exit",
    "type": "Predefined",
-   "kind": "system"
+   "kind": "user"
   },
   {
    "address": 65423,
@@ -10024,7 +10024,7 @@
   {
    "address": 7,
    "type": "line",
-   "text": "Number of members in the current party, 0-7: the positions 1-$07 of the party table at ($68) that hold a record. party_add adds one ($1753), remove_member takes one away ($1831), the game sets it when the party changes ($9C26 from party_size_of $02AB) or a member joins or leaves ($94FF, $999B, $9B54, $9B89); Order and module 4 write it too. Read wherever members are counted: the digit keys of the main loop ($7EAE), the roster ($15C9, $1655), pick_member ($178B), the divide and pool loops ($0E57, $15A1). Saved with the game."
+   "text": "Number of members in the current party, 0-7: the positions 1-$07 of the party table at ($68) that hold a record. party_add adds one ($1753), remove_member takes one away ($1831), the game sets it when the party changes ($9C26 from party_size_of $02AB) or a member joins or leaves ($94FF, $999B, $9B54, $9B89); Order, module 4 and map 13's release_clone ($42A8) write it too. Read wherever members are counted: the digit keys of the main loop ($7EAE), the roster ($15C9, $1655), pick_member ($178B), the divide and pool loops ($0E57, $15A1). Saved with the game."
   },
   {
    "address": 8,
@@ -10039,7 +10039,7 @@
   {
    "address": 10,
    "type": "line",
-   "text": "Number of character records in use, 0-7, all parties together: records 1-$0A at $F500-$FBFF. Raised when a character is created (Ranger Center, ranger $7F86) or joins (game $A47A), lowered by remove_member ($1833). The game's main loop ends the game when it is 0, or when no record 1-$0A is alive ($7ED5-$7EFC): alive is conscious ($02C3), or unconscious (condition 0 from $0371, CON -1 to -10) with byte +$28, the afflictions, at 0 ($7EED-$7EF1). So a member who is unconscious and afflicted counts as lost, as do the seriously wounded and worse. The radio program ($7F05, $800D), the game ($9A12, $9BE2, $B1A8, $B7E2) and module 4 ($CA18) loop over the records with it. Saved with the game."
+   "text": "Number of character records in use, 0-7, all parties together: records 1-$0A at $F500-$FBFF. Raised when a character is created (Ranger Center, ranger $7F86) or joins (game $A47A) and when map 13's release_clone adds a clone ($42A6), lowered by remove_member ($1833). The game's main loop ends the game when it is 0, or when no record 1-$0A is alive ($7ED5-$7EFC): alive is conscious ($02C3), or unconscious (condition 0 from $0371, CON -1 to -10) with byte +$28, the afflictions, at 0 ($7EED-$7EF1). So a member who is unconscious and afflicted counts as lost, as do the seriously wounded and worse. The radio program ($7F05, $800D), the game ($9A12, $9BE2, $B1A8, $B7E2) and module 4 ($CA18) loop over the records with it. Saved with the game."
   },
   {
    "address": 11,
@@ -10089,12 +10089,12 @@
   {
    "address": 20,
    "type": "line",
-   "text": "Second pointer (with $15), low byte: the destination of a scroll copy (scroll_window_step $2176-$2191, copy_cells and its step slots $DD9F-$DDC2), and in draw_tile_cells the address of the tile's four colour bytes, $DC00 + tile*4 ($22EC-$231C; read at $2376, stepped at $237C/$237F). The tile's bitmap bytes are read through the operand at $2368/$2369 instead."
+   "text": "Second pointer (with $15), low byte: the destination of a scroll copy (scroll_window_step $2176-$2191, copy_cells and its step slots $DD9F-$DDC2), and in draw_tile_cells the address of the tile's four colour bytes, $DC00 + tile*4 ($22EC-$231C; read at $2376, stepped at $237C/$237F). The tile's bitmap bytes are read through the operand at $2368/$2369 instead. Map code uses it too: the loot-bag refill of maps 21, 32, 33, 41 and 43 keeps the template bag's record address here (map 21: STA $14/$15 at $3CA4/$3CA8, LDA ($14),Y at $3CB4)."
   },
   {
    "address": 21,
    "type": "line",
-   "text": "High byte of the pointer at $14: the scroll copy's destination page, stepped by scroll_copy_row's patched INC/DEC at $DD99; the tile set page in draw_tile_cells ($22EE, $2321)."
+   "text": "High byte of the pointer at $14: the scroll copy's destination page, stepped by scroll_copy_row's patched INC/DEC at $DD99; the tile set page in draw_tile_cells ($22EE, $2321); the template bag's page in map code's loot-bag refill (see $14)."
   },
   {
    "address": 22,
@@ -10499,7 +10499,7 @@
   {
    "address": 104,
    "type": "line",
-   "text": "Address (with $69) of a party table: $F400, $F40E, $F41C or $F42A for party 0-3 (party_table_ptr $1768, entry $029F). A table is 14 bytes: +1 to +7 the record numbers of positions 1-7, +8/+9 the party's column and row, +10 its map (game $9C17-$9C55), +11/+12/+13 the column, row and map it last left by an exit (game $89BA-$89D7). Read by select_member ($11FF), party_add ($1751), party_size ($175B), party_has_record ($17BD) and remove_member ($1802-$1849); the game and Order rearrange the tables through it."
+   "text": "Address (with $69) of a party table: $F400, $F40E, $F41C or $F42A for party 0-3 (party_table_ptr $1768, entry $029F). A table is 14 bytes: +1 to +7 the record numbers of positions 1-7, +8/+9 the party's column and row, +10 its map (game $9C17-$9C55), +11/+12/+13 the column, row and map it last left by an exit (game $89BA-$89D7). Read by select_member ($11FF), party_add ($1751), party_size ($175B), party_has_record ($17BD) and remove_member ($1802-$1849); the game and Order rearrange the tables through it, and map 13's release_clone writes a clone's record number into the party through it ($42AE)."
   },
   {
    "address": 105,
@@ -10819,7 +10819,7 @@
   {
    "address": 189,
    "type": "line",
-   "text": "Written 0 by the game's use_failed at $8CCC (a Use that failed or matched no pair), before square_effect_field ($9124); no instruction that reads it was found in any part's traced code or in the maps' own code. Purpose open."
+   "text": "Written 0 by the game's use_failed at $8CCC (a Use that failed or matched no pair), before square_effect_field ($9124). Read by map 49's poison-needle routine as a party position (LDA $BD at $3E57, then select_member $0335): with the 0 the game leaves there it selects position 0, the party table's byte +0 (map 49's facts). No other reader in any part's traced code or the maps' own code; indexed or indirect reads are not ruled out."
   },
   {
    "address": 190,
@@ -10884,7 +10884,7 @@
   {
    "address": 204,
    "type": "line",
-   "text": "Low byte of the address an unpack must stop at (with $CD): set_unpack_limit ($268E) and load_module, unpack_map_stream and unpack_tile_set ($26A0, $270A, $2738). The unpacker from T35/L16 compares against it."
+   "text": "Low byte of the address an unpack must stop at (with $CD): set_unpack_limit ($268E) and load_module, unpack_map_stream and unpack_tile_set ($26A0, $270A, $2738). The unpacker from T35/L16 never reads it: it compares the high byte alone (CMP $CD at $C834, the same on all four sides)."
   },
   {
    "address": 205,
@@ -11869,7 +11869,7 @@
   {
    "address": 928,
    "type": "line",
-   "text": "Not a variable: the high byte of the JMP $1AFE operand of entry $039E. The automatic symbol comes from the game's BIT $03A0 at $9028, which only hides a LDY #$03 (entered at $9029)."
+   "text": "Not a variable: the high byte of the JMP $1AFE operand of entry $039E. The automatic symbol comes from the game's BIT $03A0 at $9028, which only hides a LDY #$03 (entered at $9029). Map 35's citadel_gear_check uses the same idiom: BIT $03A0 at $3F03 hides the LDY #$03 entered at $3F04 from $3EEF."
   },
   {
    "address": 929,
@@ -12159,7 +12159,7 @@
   {
    "address": 1100,
    "type": "line",
-   "text": "JMP $0746 screen_shake: sound 0 and twelve random fine-scroll jolts of the screen; also item use effect 1 (the explosives) through item_effect_vectors."
+   "text": "JMP $0746 screen_shake: sound 0 and twelve random fine-scroll jolts of the screen; also item use effect 1 (the explosives) through item_effect_vectors. Returns a random carry (see $0746)."
   },
   {
    "address": 1103,
@@ -12314,7 +12314,7 @@
   {
    "address": 1316,
    "type": "line",
-   "text": "Unpacks a packed stream (jump table $04F3; $2759 at $278D). Keeps A, X and Y, reads the unpacker's code from track 35, logical sector 16 into $C800 (over the font's last page) through $053C, calls it at $C800 with A, X and Y as they came, then reads track 35, logical sector 11 back into $C800 (the font page) and returns through the disk read."
+   "text": "Unpacks a packed stream (jump table $04F3; $2759 at $278D). Keeps A, X and Y, reads the unpacker's code from track 35, logical sector 16 into $C800 (over the third of the font's four pages, $C800-$C8FF: glyphs $60-$7F, the lower-case letters) through $053C, calls it at $C800 with A, X and Y as they came, then reads track 35, logical sector 11 back into $C800 (the font's own page) and returns through the disk read."
   },
   {
    "address": 1340,
@@ -12494,7 +12494,7 @@
   {
    "address": 1862,
    "type": "line",
-   "text": "Shakes the screen: plays sound 0 ($C993 with X = 0), saves $D011 and $D016, then 12 times waits ($242B with A = $80) and gives both registers a random fine scroll in bits 0-2 ($077A); restores $D016 and $D011 as saved and turns voice 1's gate off ($D404 = 0). Item use effect 1 (entry $146B of item_effect_vectors) and jump table $044C (module 4 at $CA4C; map code such as map 20's at $4085 and $4088). Both registers keep their other bits as read, $D011's bit 7 included (the raster's high bit when read, the raster compare's when written)."
+   "text": "Shakes the screen: plays sound 0 ($C993 with X = 0), saves $D011 and $D016, then 12 times waits ($242B with A = $80) and gives both registers a random fine scroll in bits 0-2 ($077A); restores $D016 and $D011 as saved and turns voice 1's gate off ($D404 = 0). Item use effect 1 (entry $146B of item_effect_vectors) and jump table $044C (module 4 at $CA4C, map 20 at $4085, and the end of twelve maps' code). Both registers keep their other bits as read, $D011's bit 7 included (the raster's high bit when read, the raster compare's when written). Returns with the carry random_byte ($24E3) left from its ADC #$E6 at $24EC in the last jolt: nothing after the last JSR $077A ($0764) touches it. Map code that ends JMP $044C (maps 3, 4, 9, 12, 18, 20, 27, 31, 33, 35, 36 and 39) hands that carry to run_action (game $8872), which redraws the view only when it is set, so the redraw after a blast is chance."
   },
   {
    "address": 1896,
@@ -12854,7 +12854,7 @@
   {
    "address": 2721,
    "type": "line",
-   "text": "Entry $04E1. Draws the Geiger counter's gauge at columns 38-39 (the window's right edge $26 set to 39), from row 17 up to row 0, two glyphs a row through print_char_direct ($1F03). The lowest 18 - $9F/8 rows are drawn with glyphs $80/$82 in colour byte $62, the rows above with glyphs $7E/$5B in the colour $EB (kept). $9F is the distance, in tenths of a square, to the nearest class-9 square drawn in the view (draw_square, $0B7A), $FF when nobody carries a Geiger counter (game $B176-$B192): $9F/8 of 18 or more draws none. The cursor and window $23-$28 are kept (push_zp23, then JMP $255F). Callers: the game ($ACBE), the start-up ($814B, with $9F from $40 down to 1), the utilities ($7E1C) and module 4 ($CB24), both with $9F = $FF."
+   "text": "Entry $04E1. Draws the Geiger counter's gauge at columns 38-39 (the window's right edge $26 set to 39), from row 17 up to row 0, two glyphs a row through print_char_direct ($1F03). The lowest 18 - $9F/8 rows are drawn with glyphs $80/$82 in colour byte $62, the rows above with glyphs $7E/$5B in the colour $EB (kept). $9F is the distance, in tenths of a square, to the nearest class-9 square drawn in the view (draw_square, $0B7A), $FF when nobody carries a Geiger counter (game $B176-$B192): $9F/8 of 18 or more draws none. The cursor and window $23-$28 are kept (push_zp23, then JMP $255F). Callers: the game ($ACBE), the start-up ($814B: $FF at $7F8C and $800E, then $40 down to 1 as the title's bombs fall), the utilities ($7E1C) and module 4 ($CB24), both with $9F = $FF."
   },
   {
    "address": 2743,
@@ -12914,7 +12914,7 @@
   {
    "address": 2899,
    "type": "line",
-   "text": "Entry $04DB. Draws map square X, Y of the view. The tile: off the map, byte +$33 of the map record ($61); class 5, tile 5; class 4, byte 1 of its action record (square_record) AND $7F; class 9, its distance to the party (distance_to_party) lowers $9F, the Geiger reading, and from 18:00 to 5:59 (hour $0E) it is tile 8, the radiation sign in the world's tile set; otherwise the tile layer's number ($0B06, read with all RAM banked in). Then square_to_screen and draw_tile ($22D8), or carry set when off the screen. Changes $5F/$60 for class 4. Callers: the game's view drawing ($AEBA a column, $AEDF a row, $AFBB the special squares, $AF2F, $9837)."
+   "text": "Entry $04DB. Draws map square X, Y of the view. The tile: off the map, byte +$33 of the map record ($61); class 5, tile 5; class 4, byte 1 of its action record (square_record) AND $7F; class 9, its distance to the party (distance_to_party) lowers $9F, the Geiger reading, and from 18:00 to 5:59 (hour $0E) it is tile 8, the radiation sign, the same bytes in all nine tile sets; otherwise the tile layer's number ($0B06, read with all RAM banked in). Then square_to_screen and draw_tile ($22D8), or carry set when off the screen. Changes $5F/$60 for class 4. Callers: the game's view drawing ($AEBA a column, $AEDF a row, $AFBB the special squares, $AF2F, $9837)."
   },
   {
    "address": 2908,
@@ -13819,7 +13819,7 @@
   {
    "address": 6293,
    "type": "line",
-   "text": "(= $02CC and $02D5) Waits until side 1 is in the drive: A = 1, then the side check $1897. Called through $02D5 before a program is loaded from side 1 (the game's Radio $880F and death branch $7EFE, the start-up $8293, the Ranger Center $7EF1, module 3 $CA15) and by the Save command before it saves ($882A). Nothing calls $02CC."
+   "text": "(= $02CC and $02D5) Waits until side 1 is in the drive: A = 1, then the side check $1897. Called through $02D5 before a program is loaded from side 1 (the game's Radio $880F and death branch $7EFE, the start-up $81E8 and $8293, the utilities $821B, the radio $8196, the Ranger Center $7EF1, module 3 $CA15) and by the Save command before it saves ($882A). Nothing calls $02CC."
   },
   {
    "address": 6295,
@@ -15364,7 +15364,7 @@
   {
    "address": 23541,
    "type": "line",
-   "text": "Tile numbers by creature kind, six values (0, 6, 3, 4, 2, 1): when scan_for_encounters runs with drawing on (entry $94CF; the flag is the LDX # operand at $95FE) it draws tile $5BF5 + kind on each encounter square in the party's view (draw_tile through $025F, $95FA-$960B). The kind is byte 6 of the creature's eight-byte record (the table at the map header's word +4, $9EA4), or 3 for a creature number with bit 7 set ($95EC-$95F0). From the game part's use."
+   "text": "Tile numbers by creature kind, six values (0, 6, 3, 4, 2, 1): when scan_for_encounters runs with drawing on (entry $94CF; the flag is the LDX # operand at $95FE) it draws tile $5BF5 + kind on each encounter square in the party's view (draw_tile through $025F, $95FA-$960B). The kind is byte 6 of the creature's eight-byte record (the table at the map header's word +4, $9EA4), or 3 for a creature number with bit 7 set ($95EC-$95F0). Tiles 0-9 are the same in every tile set, so the pictures are too: kind 0 the blank tile 0 (no figure), 1 the horned creature 6, 2 the runner 3, 3 the man in a cyan shirt 4, 4 the one-eyed hulk 2, 5 the robot-like figure 1. From the game part's use."
   },
   {
    "address": 23547,
@@ -15389,7 +15389,7 @@
   {
    "address": 51160,
    "type": "line",
-   "text": "Glyph $5B ('['): not a bracket but the right half of a filled block, a %01 outline round a %11 core; with $7E as its left half it is the filled step of the vertical gauge drawn at $0AF0-$0AF7. The LDA $C7D8,Y at $2258 points here only because $5B was the last glyph drawn when the snapshot was taken: $2233 and $223B rewrite that operand for every character."
+   "text": "Glyph $5B ('['): not a bracket but the right half of a block, a %01 outline round a %11 core; with $7E as its left half it is the unlit step of the vertical gauge, the rows above the lit ones, all of them when nobody carries a Geiger counter ($0AF0-$0AF7). The LDA $C7D8,Y at $2258 points here only because $5B was the last glyph drawn when the snapshot was taken: $2233 and $223B rewrite that operand for every character."
   },
   {
    "address": 51168,
@@ -15404,7 +15404,7 @@
   {
    "address": 51416,
    "type": "line",
-   "text": "Graphic glyphs $7B-$85: $7B an inverse P and $7C an inverse Y in %11 boxes ('|' in the text, 'Unjam (|/N)?' at $2F44); $7D the frame's bottom-right corner; $7E the left half of the gauge's filled step (with $5B); $7F a rounded shape over a short bar (message 132, $2F3B); $80 and $82 the halves of the gauge's empty step in %10 ($0AD2-$0AD9); $81 and $83 the frame's top corners, $84 its sides, $85 its bottom-left corner (frame routine $130B). Glyphs $80-$85 lie past $C900, so an unpack leaves them in place."
+   "text": "Graphic glyphs $7B-$85: $7B an inverse P and $7C an inverse Y in %11 boxes ('|' in the text, 'Unjam (|/N)?' at $2F44); $7D the frame's bottom-right corner; $7E the left half of the gauge's unlit step (with $5B); $7F a rounded shape over a short bar (message 132, $2F3B); $80 and $82 the halves of the gauge's lit step, all %10 pixels, the rows that grow as radiation nears ($0AD2-$0AD9); $81 and $83 the frame's top corners, $84 its sides, $85 its bottom-left corner (frame routine $130B). Glyphs $80-$85 lie past $C900, so an unpack leaves them in place."
   },
   {
    "address": 51504,
@@ -15740,6 +15740,11 @@
    "address": 65390,
    "type": "line",
    "text": "High byte of that operand, the page written, set from $FF at $FF1A."
+  },
+  {
+   "address": 65415,
+   "type": "line",
+   "text": "Common exit of loader_main: puts back the memory map it saved on entry ($FF06-$FF08; PLA, STA $01) and returns the drive's status from $FC compared with 1, so carry is clear only for status 0. Reached when a read's status is not 0 ($FF48), after a one-sector read ($FF4D), when command 1 has filled page $FD ($FF54), and after a write or a drive command ($FF84). The platform's predefined symbol KERNAL_RAMTAS names this address, the ROM's jump-table entry; here it is RAM under the KERNAL, which is switched out whenever the loader runs."
   },
   {
    "address": 65423,

@@ -5,9 +5,16 @@ globalThis.C64 = (function () {
   const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
                '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
 
+  // Listings fetched so far, by URL: a page whose widgets load the same listing fetches and
+  // parses it once. Each call still gets ram and has of its own, which a widget may change; the
+  // listing object is shared, and nothing should change it.
+  const listings = new Map();
   // Rebuild a 64 KB image from listing.json records. Bytes the game does not use stay 0 and has[a] is false.
   async function load(url) {
-    const L = await fetch(url || 'listing.json').then(r => r.json());
+    url = url || 'listing.json';
+    if (!listings.has(url))
+      listings.set(url, fetch(url).then(r => r.json()).catch(e => { listings.delete(url); throw e; }));
+    const L = await listings.get(url);
     const ram = new Uint8Array(0x10000), has = new Uint8Array(0x10000);
     for (const r of L.records) {
       if (!r.b) continue;

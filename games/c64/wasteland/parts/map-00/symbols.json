@@ -913,67 +913,67 @@
   },
   {
    "address": 20429,
-   "name": "code_00",
+   "name": "swap_tiles",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
   {
    "address": 20529,
-   "name": "code_sub_5031",
+   "name": "swap_tile_bytes",
    "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 20530,
-   "name": "a_5032",
+   "name": "swap_load_a",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20531,
-   "name": "a_5033",
+   "name": "swap_load_a_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20533,
-   "name": "a_5035",
+   "name": "swap_load_b",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20534,
-   "name": "a_5036",
+   "name": "swap_load_b_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20536,
-   "name": "a_5038",
+   "name": "swap_store_a",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20537,
-   "name": "a_5039",
+   "name": "swap_store_a_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20540,
-   "name": "a_503C",
+   "name": "swap_store_b",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20541,
-   "name": "a_503D",
+   "name": "swap_store_b_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20546,
-   "name": "code_sub_5042",
+   "name": "tile_colour_address",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -985,13 +985,13 @@
   },
   {
    "address": 20565,
-   "name": "a_5055",
+   "name": "colour_addr_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20570,
-   "name": "code_sub_505A",
+   "name": "tile_bitmap_address",
    "type": "Subroutine",
    "kind": "user"
   },
@@ -1003,13 +1003,13 @@
   },
   {
    "address": 20589,
-   "name": "a_506D",
+   "name": "bitmap_addr_hi",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 20594,
-   "name": "code_01",
+   "name": "desert_heat",
    "type": "AbsoluteAddress",
    "kind": "user"
   },
@@ -1342,7 +1342,7 @@
   {
    "address": 19586,
    "type": "line",
-   "text": "Check square, class 2 number 0: +0 flags $E4 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 2: one pass is enough, $8F20); +1 message on arrival 29 ($8E2B), +2 success message 30 ($9026), +3 failure message 31 ($9029); +$04 success ($8F66): change to class 6 number 4; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 38 (not one of the 35 skills, engine messages 1-35; a member without it fails, $8EA2-$8EA7) difficulty 0; $FF at +$0C."
+   "text": "Check square, class 2 number 0: +0 flags $E4 (bits 7: may be walked onto without the checks, $8F72; 6: the checks run on arrival, $8E33; 5: every conscious member tested, $8EF2; 2: one pass is enough, $8F20); +1 message on arrival 29 ($8E2B), +2 success message 30 ($9026), +3 failure message 31 ($9029); +$04 success ($8F66): change to class 6 number 4; +$06 failure ($8F42): change $FF $FF (bit 7: nothing written); +8/+9 no effect ($00 $00); +$0A check pairs (kind<<5 | difficulty, value; $8E47-$8EBE, Use: $8F84, $8FB9, $8FEF): skill 38 (not one of the 35 skills: the marker that ACE (map 4 npc_02) holds in the last skill pair at level $FF, so the check finds that NPC ($1392 searches +$80 to +$BB)) difficulty 0; $FF at +$0C."
   },
   {
    "address": 19599,
@@ -1802,27 +1802,132 @@
   {
    "address": 20429,
    "type": "line",
-   "text": "Map code, code list entry 0 (action 0): run by run_action $8845 through jump_work_ptr $AC69 with $5F/$60 on the square's record; action squares (class 6) number 4-5; calls $04FC api_all_ram_in, $04FF api_io_back_in; calls the map's $5031, $5042, $505A; uses $5032, $5033, $5035, $5036, $5038, $5039, $503C, $503D."
+   "text": "Map code entry 0 (action 0): swaps the pictures of two tiles of the world's tile set, the tile numbers in the square's record bytes +3 and +4: their 32 bitmap bytes at $D000 + 32*tile (addresses from $505A) and their 4 colour bytes at $DC00 + 4*tile (from $5042), exchanged by $5031 with all RAM banked in ($04FC/$04FF), the set lying under the I/O area. Returns carry clear, so the game does not redraw ($8872). Class-6 squares 4 and 5 run it; both records ($4D83, $4D88) name tiles 7 and 86. Tile 7 is the marker the game draws on the party's square ($AF1D), tile 86 the broken jeep at (29,41). That square is check square 0 (\"You see a broken down jeep.\"); its success (\"Ace fixes the jeep and you're on your way.\") makes it class 6 number 4, so from then on the party is drawn as the jeep, and the square becomes remote change 0 ($4EDD). That one turns (29,40)-(29,32) into exits one square north, (29,31)-(27,31) into exits one square west and (26,31) into class 6 number 5, and the jeep drives itself there: this routine swaps the tiles back and the square becomes exit 21, to map 34 (Needles, the police and gas stations) at column 1, row 17."
+  },
+  {
+   "address": 20431,
+   "type": "side",
+   "text": "record +3: the first tile"
+  },
+  {
+   "address": 20450,
+   "type": "side",
+   "text": "record +4: the second tile"
+  },
+  {
+   "address": 20467,
+   "type": "side",
+   "text": "the tile set lies under the I/O area"
+  },
+  {
+   "address": 20470,
+   "type": "side",
+   "text": "32 bitmap bytes"
+  },
+  {
+   "address": 20519,
+   "type": "side",
+   "text": "4 colour bytes"
+  },
+  {
+   "address": 20527,
+   "type": "side",
+   "text": "carry clear: the game does not redraw"
   },
   {
    "address": 20529,
    "type": "line",
-   "text": "Map code, subroutine called from $4FF8, $5029; addresses $FFFF."
+   "text": "Swaps bytes 0 to Y of two tiles' tables, Y counting down: X = byte of the first ($5031), A = byte of the second ($5034), A goes to the first ($5037) and X to the second ($503B). All four operands are written by swap_tiles before each call: the bitmaps with Y = $1F (32 bytes, $4FD4-$4FF0), then the colour bytes with Y = 3 (4 bytes, $5005-$5021). Runs with all RAM banked in. Returns Y = $FF."
+  },
+  {
+   "address": 20530,
+   "type": "line",
+   "text": "Low byte of the LDX abs,Y operand at $5031: the first tile's table. swap_tiles writes the bitmap address of tile +3 here at $4FD4, then its colour address at $5005."
+  },
+  {
+   "address": 20531,
+   "type": "line",
+   "text": "High byte of the LDX operand at $5031, the first tile's table: written at $4FD7 (bitmap, $D0-$DB) and $5008 (colours, $DC-$DD)."
+  },
+  {
+   "address": 20533,
+   "type": "line",
+   "text": "Low byte of the LDA abs,Y operand at $5034: the second tile's table, the bitmap address of tile +4 (written at $4FE7) and then its colour address ($5018)."
+  },
+  {
+   "address": 20534,
+   "type": "line",
+   "text": "High byte of the LDA operand at $5034, the second tile's table: written at $4FEA (bitmap) and $501B (colours)."
+  },
+  {
+   "address": 20536,
+   "type": "line",
+   "text": "Low byte of the STA abs,Y operand at $5037: the first tile's table again, which takes the second tile's byte; written at $4FDA and $500B with the address that goes to $5032."
+  },
+  {
+   "address": 20537,
+   "type": "line",
+   "text": "High byte of the STA operand at $5037 (the first tile's table): written at $4FDD and $500E."
+  },
+  {
+   "address": 20540,
+   "type": "line",
+   "text": "Low byte of the STA abs,Y operand at $503B: the second tile's table, which takes the first tile's byte kept in X; written at $4FED and $501E with the address that goes to $5035."
+  },
+  {
+   "address": 20541,
+   "type": "line",
+   "text": "High byte of the STA operand at $503B (the second tile's table): written at $4FF0 and $5021."
   },
   {
    "address": 20546,
    "type": "line",
-   "text": "Map code, subroutine called from $5002, $5015; uses $5055."
+   "text": "X/Y = $DC00 + 4*A, where tile A's four colour bytes lie in the tile set (draw_tile reads them there): A shifted left twice ($5049-$504E), the bits shifted out rotated into the operand at $5055, then $DC added to them for the high byte. Called by swap_tiles for record bytes +3 ($5002) and +4 ($5015)."
+  },
+  {
+   "address": 20561,
+   "type": "side",
+   "text": "low byte of the base: 0"
+  },
+  {
+   "address": 20565,
+   "type": "line",
+   "text": "Operand of the LDA # at $5054: cleared at $5044, then takes the two bits shifted out of A ($504A), the high byte of 4*A, to which $5056 adds $DC."
   },
   {
    "address": 20570,
    "type": "line",
-   "text": "Map code, subroutine called from $4FD1, $4FE4; uses $506D."
+   "text": "X/Y = $D000 + 32*A, where tile A's 32 bitmap bytes lie in the tile set (draw_tile's $D000 + 32*tile): A shifted left five times ($5061-$5066), the bits shifted out rotated into the operand at $506D, then $D0 added to them for the high byte. Called by swap_tiles for record bytes +3 ($4FD1) and +4 ($4FE4)."
+  },
+  {
+   "address": 20585,
+   "type": "side",
+   "text": "low byte of the base: 0"
+  },
+  {
+   "address": 20589,
+   "type": "line",
+   "text": "Operand of the LDA # at $506C: cleared at $505C, then takes the five bits shifted out of A ($5062), the high byte of 32*A, to which $506E adds $D0."
   },
   {
    "address": 20594,
    "type": "line",
-   "text": "Map code, code list entry 1 (action 1): run by run_action $8845 through jump_work_ptr $AC69 with $5F/$60 on the square's record; action squares (class 6) number 1-3."
+   "text": "Map code entry 1 (action 1): the desert's heat, harder by day. Copies record bytes +3/+4 to +1/+2 from 6:00 to 17:59 (clock hour $0E 6-17, $5074-$507C), +5/+6 at other hours, and returns carry clear; the game then writes that class and number over the party's square ($8840: alter_square with offset 1). Class-6 squares 1, 2 and 3 run it, 439, 384 and 523 squares, nearly all of red ground (tiles 27, 29 and 31). Their records ($4D6E, $4D75, $4D7C) name check squares 7, 8 and 9 by day and 10, 11 and 12 by night, and the game runs that check at once (alter_square returned carry set): a ST check of difficulty 1, 2 or 4, passed with a Canteen (item 44), announced by message 19 \"It is very warm.\", 20 \"It's getting warmer.\" or 22 \"It's VERY hot!\"; failing it (message 21, \"You are overcome by heat exhaustion.\") costs 2d6, 4d6 or 6d6 CON by day, 1d6, 2d6 or 3d6 by night. Each check ends by swapping the action square back ($FD)."
+  },
+  {
+   "address": 20596,
+   "type": "side",
+   "text": "hour of the game clock"
+  },
+  {
+   "address": 20606,
+   "type": "side",
+   "text": "6:00-17:59: the day pair at +3/+4"
+  },
+  {
+   "address": 20616,
+   "type": "side",
+   "text": "the pair becomes the change the game applies ($8840)"
   },
   {
    "address": 20624,

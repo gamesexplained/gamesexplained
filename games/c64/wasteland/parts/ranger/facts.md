@@ -46,6 +46,10 @@ The program behind the Ranger Center's menu, Create, Delete and Start. Module 3 
 - A roll is five d6 in `$83C1-$83C5` (filled from slot 4 down), an exchange sort, and the sum of slots 2, 3 and 4 (`$8382-$83C0`).
 - The sort is broken. After an exchange the loop goes on comparing the value it started with, not the one now in its slot (the `BPL` at `$83AB` goes back to the `CMP` at `$839A`), so a later exchange overwrites the die just moved and copies the small one twice: thrown in the order 1, 2, 3, 4, 5, the slots end as 1 1 1 1 5 and the roll is 7, where the best three would give 12.
 - Run on the 6502 simulator over all 7,776 throws, a roll is 3 to 18 with a mean of 10.62 (the best three of five would average 13.43, 3d6 10.5). Counts: 3: 1, 4: 260, 5: 268, 6: 334, 7: 633, 8: 743, 9: 652, 10: 938, 11: 769, 12: 790, 13: 743, 14: 638, 15: 386, 16: 396, 17: 144, 18: 81.
+- *Live*: with a new character's attributes on the screen, SPACE rolled four more rounds, 32 rolls,
+  with checkpoints after the five dice were thrown (`$8390`) and at the sum (`$83BE`). All 32 ended as the loop above predicts,
+  slot for slot, and 21 of them came out below the best three of their five dice: 3 5 5 6 2 gave
+  7 where the best three make 16, and 1 4 6 4 1 gave 6 against 14.
 - MAXCON and CON start at 21 to 36; 21 comes only from the one throw in 7,776 that gives 3 (`$7FE9-$7FF5`).
 - The name is at most 13 characters (`$35` = 13 at `$836C`), typed at column 14 into `$5A00` and copied to `+$00`-`+$0D` (`$8361-$8381`). The engine's line input stores key codes without bit 7, so the letters are capitals (engine `$1D58`).
 - An empty name is asked for again (`$8059-$805D`). A name that another record from 1 to `$0A` has, compared exactly, gets "<name> is already in the game. Enter a new name." and a new input (`$81D0-$8236`), so "HELL RAZOR" is accepted beside the pre-made "Hell Razor".

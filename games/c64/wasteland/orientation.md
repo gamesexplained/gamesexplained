@@ -195,7 +195,8 @@ at T35/L7-L0 (`$F400-$FBFF`), read and written as the party saves.
   keyboard (`$2967`) and acknowledges CIA 1.
 - Video (live, `play-map`): VIC bank `$4000` (`$DD00` = `$86`), `$D018` =
   `$79` (screen matrix `$5C00`, bitmap `$6000`), `$D011` = `$B7`
-  (bitmap mode, 24 rows), `$D016` = `$D8` (multicolour).
+  (bitmap mode, 24 rows; written as `$37`, bit 7 reads back as the raster
+  line's high bit), `$D016` = `$D8` (multicolour).
 - What sits where in play is in `facts.md`, "Memory layout".
 
 ## The loader, in a paragraph

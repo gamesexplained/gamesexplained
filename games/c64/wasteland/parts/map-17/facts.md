@@ -1,0 +1,49 @@
+# Map 17, Base Cochise, the computer — verified technical facts
+
+The inside of Base Cochise: "The base interior is cavernous. Escalators north of you go up to the second level. A wall plaque is east of your position." (message 29). Its north wall is "the world's largest parallel processing computer" (message 1), whose voice answers at a terminal (messages 30-48). Map 16's ways down all say "Climbing down." (map 16's message 30). It is 32 x 32 squares, stored on side 4 of the disks as 22 pages from T21/L2 (track 21, logical sector 2), entry 17 of the map directory at T35/L14 (engine `point_at_maps`, `$28CE`). Engine `enter_map` (`$25BD`) loads it to `$3400-$49FF` and unpacks its tile layer to `$DE00-$E1FF`. It is drawn with tile set 8 (tiles-8). Squares are given as (column, row). Every address here is this map's unless a part is named beside it.
+
+## The map
+
+- The class layer is `$3400-$35FF` and the number layer `$3600-$39FF`. The map record is at `$3A00`, since the map's byte in T35/L8 is not `$40` (engine `load_map_pages`, `$2606-$2616`).
+- `$3A2C`, the size: 32 (engine `enter_map`, `$25D3`).
+- `$3A30`, the tile set: 8 (engine `$25EE`).
+- `$3A33`, the tile drawn off the map: 0 (engine `draw_square`, `$0B5E`).
+- `$3A2F`, random encounters: 1 chance in 70 after each step (game `random_encounter`, `$B017`). `$3A31`: monster types 1 to 5 (game `$B047`). `$3A32`: the groups take the first 3 class-15 records (game `$B040`).
+- `$3A34`/`$3A35`, the time a step takes: a quarter of a minute (fraction 64, minutes 0; game `advance_clock` `$AF32`).
+- `$3A36`, ticks: 1 a step, added to `$D2` and to the elapsed count `$04-$06` (game `$AF58-$AF72`), so game `health_tick` (`$B795`) runs every 16th step (game `$AF75-$AF7B`).
+- Squares, 1,024: 622 of class 0, 261 blocking squares (class 11), 89 check squares (2), 31 exits (10), 10 message squares (1), 6 tile squares (4) and 5 remote-change squares (12).
+- Records, named by the class lists of header words 3-18 (`$3A06-$3A25`, engine `action_record` `$09B8`): 19 exits, 15 message squares, 12 check squares, 8 remote changes, 5 blocking squares, 4 encounters, 4 tile squares, 3 random-encounter slots (class 15), 2 loot bags and 2 question squares.
+- Text: messages 0-83, packed from `$3E25` (header word 0, engine `select_map_text` `$1E4F`); 51-83 are the combat phrases the header's bytes +`$37`-+`$5B` name. Nothing names messages 10-12, the remains of a door and "The door is open".
+- Monsters: the names from `$3D6D` (header word 1, game `print_monster_name` `$9E5D`) are 1 Steel Reaver, 2 Silicon Sniper, 3 Silver Strangler, 4 VTOL Auto-fire Robot, 5 Threshing Crawler and 6 Laser Pod Blaster; name 0 is empty. The seven monster records start at `$3DED` (game `monster_record` `$9EA4`).
+- Nobody can join here and the map has no code. Header words 19 and 20 (`$3A26`, `$3A28`), the code list and the NPC list, hold `$3D6D`, the monster names' address. The class-6 list word holds the question list's address and no square or change is of class 6, and every encounter record's NPC nibble (+9, high) is 0, so neither list is read (game `run_action` `$885C`, `order_hire` `$A424`).
+- The walls: "The titanium alloy walls are very strong and polished enough to resist even laser damage." and the silvery wall "so clean you can see your own reflection in it" (blocking squares 0 and 1, `$3CB2`, `$3CB4`, messages 7 and 8), and the computer itself on 176 squares (blocking square 3, `$3CB6`, message 1). The railings are check square 1 (`$3AC4`, flags `$00`) on 89 squares, "A polished steel railing that bears no evidence of neglect prevents further passage." (message 4). Its one pair is skill 37 at difficulty 4, the marker only Dan Citrine's record holds (map-06 `$44A0` + `$BA`/`$BB`); but both its changes are `$FF $FF` and it has no effect, so a pass writes nothing.
+
+## Exits
+
+Record byte 3 is the map an exit leads to (game `square_exit`, `$89A3`).
+
+- To map 16, outside: exit 8 (`$3C6A`) on (14,31), (15,31) and (16,31), to (16,17), asking first. Up the ropes: exits 0, 2, 4 and 6 (`$3C42`, `$3C4C`, `$3C56`, `$3C60`), to (18,10), (18,12), (15,11) and (16,14) inside the dome; each one's change, `$FE`, trades the rope's check square back (engine `alter_square`, `$0A28`).
+- To map 19, robot assembly, both with message 49, "You find yourself suddenly falling through a long slippery tunnel.", and asking first: exit 13 (`$3C83`), to (1,30), and exit 14 (`$3C88`), to (19,10). No square holds either as stored (below).
+- On this map: the escalators, exit 9 (`$3C6F`) on (16,20)-(17,26), which moves the party a row north, and exit 10 (`$3C74`) on (13,21)-(14,27), a row south; exits 1, 3, 5 and 7 (`$3C47`, `$3C51`, `$3C5B`, `$3C65`), to the four ropes; and exits 15-18 (`$3C8E-$3CA5`), to (2,17) or (29,17).
+- Exit 12 (`$3C7E`), to map 20 (16,10), stands on no square, and no change in the map's records names it.
+
+## The ways in
+
+- Map 16's exit 8 and map 19's exit 2 (map-16 `$3D00`, map-19 `$3DA0`) lead to (15,30), message square 2 (`$3A7E`) on (14,30)-(16,30), message 29. It runs remote change 5 (`$3D05`), which makes the three squares message square 0, which shows nothing. Message square 14 (`$3A9D`) at (18,30) is the plaque: "Base Cochise was built in 1984 and that John I. Finster was the first director." (message 9).
+- Map 16's three pod holes lead to (0,0), (11,0) and (21,0), remote changes 0, 1 and 2 (`$3CCE`, `$3CD6`, `$3CDE`). Each puts a rope, check square 3, 4 or 5, on (16,16), (17,17) or (14,17), without a redraw, and makes the party's square exit 1, 3 or 5, which moves the party onto it. Remote change 3 (`$3CE6`) at (31,0) does the same for check square 6 on (15,18) through exit 7, but no exit record in the 42 maps leads to (31,0). As stored the four rope squares are tile square 6 (`$3BDF`, tile 39).
+- The ropes, check squares 3-6 (`$3ADE`, `$3AED`, `$3AFC`, `$3B0B`, flags `$80`), say "A rope from above hangs down here." (message 5). A Use of AGL 5, or of Climb 3 on check square 3 and Climb 4 on the others, gives "You successfully climb hand over hand and reach the surface." (message 6) and makes the square exit 0, 2, 4 or 6; a failure costs 3 CON, "You slip off the rope, land hard, and hurt yourself." (message 13).
+- Map 20's exit 16 (map-20 `$4220`) leads to (16,8), remote change 4 (`$3CEE`), which makes (15,9), (16,9), (15,10) and (16,10) tile square 0 (`$3BD9`, tile 72), "The railing here has been destroyed." (message 50), and the party's square plain.
+
+## The terminal
+
+- At (16,19) and (17,19), message square 4 (`$3A84`) gives the voice: "So, you are the one who finished him. You should have left well enough alone." and "Lights flash across the vast wall north of you in time with the voice." (messages 31 and 33). Remote change 6 (`$3D16`) then makes both squares plain, without a redraw.
+- At (16,10), message square 3 (`$3A81`), "A computer terminal stands before you. It is operational, but nothing is on the screen." (message 30), becomes question square 0 (`$3BFA`), which takes a typed line: "You may communicate with me if you wish, but understand, My mission will not fail." (message 32). FINSTER, MISSION and CHAT give messages 39, 40 and 41; anything else, "Trouble me not with trivialities!" (message 44); each trades the question back. BASE COCHISE gives message 42, "Cochise was a second Sleeper Base, but you know that. ...", and question square 1 (`$3C0E`), "You know you cannot stop me. There is no way to break me. My mission will be completed." (message 45), which answers MISSION and BASE COCHISE (messages 46 and 47).
+- BREAK, on either question, gives "Ha! Such a simple trick was not meant to work on me. But here is my trick for you!" (message 43) or "It takes more than that to stop me. But I can, and will, stop you more easily." (message 48), then remote change 7 (`$3D22`). It puts encounters 2 and 3 on (1,17) and (31,17), encounter 4 on (10,17) and encounter 5 on (21,17), makes (15,10) and (16,10) exit 13, without a redraw, and makes the party's square exit 13, which runs at once.
+- Encounters 2 and 3 (`$3B99`, `$3BA5`) are three Laser Pod Blasters each, stationary; encounter 4 (`$3BB1`) is a Threshing Crawler, which leaves loot bag 0 (`$3BEA`, Power packs and RPG-7s), and encounter 5 (`$3BBD`) a Silicon Sniper, which leaves loot bag 1 (`$3BF1`, Power packs).
+
+## The ways down
+
+- Wiped out, encounters 2 and 3 become check squares 10 and 11 (`$3B63`, `$3B78`, flags `$00`): "The destroyed carcass of the lasers jam the weapon pod open. It might provide an entrance further into the base!" (message 26). A Use of Plastic explosive, TNT, a LAW rocket, a Sabot rocket or an RPG-7 gives message 27 and makes the square exit 17 or 18, to (2,17) or (29,17).
+- The walls at (0,17) and (31,17), blocking squares 4 and 5 (`$3CB8`, `$3CBB`), say "This wall panel sounds a bit hollow." (message 22), and a bump makes the square check square 8 or 9 (`$3B29`, `$3B46`): "You have located a 3 foot by 6 foot panel." (message 23). A Use of ST 6, a Crowbar, a Sledge hammer, Plastic explosive, TNT, a LAW rocket, a Mangler, a Sabot rocket or an RPG-7 gives "Your efforts successfully pry it open and you find..." (message 24) and makes the square exit 15 or 16, to (2,17) or (29,17).
+- Exits 15-18 leave tile square 7 (`$3BE2`, tile 79) behind them, and its change makes it exit 14 when the party steps onto it. Exit 14's own change puts tile square 7 back.
+- No square, change or code names check squares 0, 2 and 7 (`$3AB7`, `$3AD1`, `$3B1A`) or exit 11 (`$3C79`), which name each other: a climb over a damaged railing ("The railing above you is damaged and you can get over it, if you can somehow get up to it.", message 3) with a Rope, or, for a party of exactly two, by Acrobat 3 or AGL 4 from a comrade's shoulders (messages 16, 18 and 20), ending in exit 11, two columns west.
