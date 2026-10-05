@@ -24,8 +24,8 @@ time, operating system and tool versions.
 - `kit/skills/core/10-orient`: a load that several parts share and that stays while they change is a part of its own; `kit/lessons/2026-10-05-wasteland.md`.
 - `kit/skills/core/50-coverage`: an unpacked load can run on past its own data; `kit/lessons/2026-10-05-wasteland.md`.
 - `kit/skills/core/50-coverage`, "A game of several parts": automatic symbols that only the part beneath refers to are deleted, a stopgap until #213.
-- `kit/skills/core/50-coverage/brief.md`: every annotation agent is told that a value in the snapshot is the last one written, and to find the writers before calling a value fixed. Map 49's poisoned needle had been described as missing its target from an operand the game writes when a Use begins; `kit/lessons/2026-10-05-wasteland.md`.
-- `kit/skills/core/50-coverage`, "Rules that keep the number honest": a script that writes a comment for every record of a format has each template sentence tested against every path that reads the field before it writes, and chooses the sentence from the record's bytes. The decoder of this run's maps wrote 7,973 comments, and the audit changed 2,017 of them.
+- `kit/skills/core/50-coverage/brief.md`: every annotation agent is told that a value in the snapshot is the last one written, and to find the writers before calling a value fixed; `kit/lessons/2026-10-05-wasteland.md`.
+- `kit/skills/core/50-coverage`, "Rules that keep the number honest": a script that writes a comment for every record of a format has each template sentence tested against every path that reads the field before it writes, and chooses the sentence from the record's bytes; `kit/lessons/2026-10-05-wasteland.md`.
 - `kit/skills/core/60-verify`: comments a program wrote are a stratum of their own, with about 20 drawn from it and the rate weighted by the strata's sizes given beside the plain one, and a bad stratum is audited by template, with the corrections made by a script and in the decoder; `kit/lessons/2026-10-05-wasteland.md`.
 
 ## Candidates
@@ -50,6 +50,11 @@ next agent searching for the symptom.
   side 1 in the drive: the side check wants bytes the game's own copier
   writes. Make the play disks with Utils, Copy, in the emulator
   (`orientation.md`, "The play disks").
+- **The copier's prompts are drawn into a bitmap**, in the game's own
+  six-pixel font, which no screen-text tool reads. The game's Copy asks
+  for each side's master and copy in turn, and its prompts could not be
+  scripted until the run had written a reader for the font (#218 asks
+  for one in `kit/c64`).
 - **A script hangs at `$FF00`.** A stop checkpoint left armed by an earlier
   script stopped the machine inside the loader, and the next script waited
   on it for ten minutes. Clear the checkpoints (`vice.clear_checkpoints`)
@@ -77,18 +82,12 @@ next agent searching for the symptom.
 
 ## What cost the most time
 
-A helper in `kit/c64` that reads the screen's text, in a bitmap drawn with
-the game's own font as well as in text mode (#218), would have saved the
-most: the masters refuse to play, the game's copier asks for each side's
-master and copy in turn, and its prompts could not be scripted until the
-run had written a reader for Wasteland's six-pixel font.
-
-After the reader, the audit. The decoder that described the maps'
-records wrote 7,973 comments from templates, and 2,017 of them were
-corrected after the first sample. Checking each template sentence
-against the code before the decoder runs is the cheaper place to catch
-them: after it, the audit of all 11,532 comments took 22 agents and
-about two hours, half an hour of it stopped at a usage limit.
+The rule now in `50-coverage`, to test each sentence of a decoder's
+templates against the code before it writes a comment for every record,
+would have saved the most: the maps' decoder wrote 7,973 comments, and
+after the first sample 22 agents spent about two hours, half an hour of
+it stopped at a usage limit, auditing all 11,532 comments, which
+corrected 2,017 of the decoder's (`kit/lessons/2026-10-05-wasteland.md`).
 
 ## Operating system and tools
 
