@@ -7,9 +7,12 @@
 
 Each program is a 48K `.tap` that loads itself, runs and prints its own verdict on the
 Spectrum's screen, so this needs no game and no snapshot of ours. The script plays the
-tape through ZRCP (`smartload`), reads the machine's screen ten times a second
-until the program's own last line appears, and prints PASS, FAIL or UNKNOWN with that
-line as it stands. Nothing is judged by wall clock: PASS is the words the program
+tape through ZRCP (`smartload`), reads the machine's screen ten times a second until the
+program's own last line is there in full, and prints PASS, FAIL or UNKNOWN with that
+line as it stands. The stop is that kind's own verdict parser, so a poll that catches the
+line half-written (`Result: 002 of 160 tests`, say) is not mistaken for the end of the
+run; a line that arrives in pieces is believed once its last character is there. Nothing
+is judged by wall clock: PASS is the words the program
 printed, and a program that does not reach its last line in `--timeout` seconds is
 UNKNOWN, which is what it is. What is on screen apart from that line goes to
 `tools/logs/z80-accuracy/`: every distinct screen line the polls saw, the last screen
@@ -94,10 +97,9 @@ SOURCES = {
             "licence": "GPL-2.0-or-later"},
 }
 
-# The verdict each kind of program prints, and the text that ends its run.
+# The text each kind of program prints to end its run: the last line it writes itself,
+# and what `clear_screen` looks for in a screen it has emptied.
 ENDS = ("Result:", "Tests complete")
-KINDS = {"z80test": {"end": ENDS[0], "verdict": "z80test_verdict"},
-         "zex": {"end": ENDS[1], "verdict": "zex_verdict"}}
 
 PROGRAMS = [
     {"name": "z80full", "source": "z80test", "tap": "z80full.tap", "kind": "z80test",
@@ -354,28 +356,39 @@ def press_scroll_key(rpc):
     time.sleep(0.3)
 
 
-def watch(rpc, end_text, timeout):
-    """Read the screen until `end_text` has been printed, or the time is up.
+def watch(read, kind, timeout, on_scroll=None):
+    """Read the screen until the program's own last line is there in full, or the time is up.
 
-    (lines seen, final screen, seconds, ended, key presses). The lines accumulate
-    because the screen holds 24 at a time and each program prints more; the final screen
-    is kept whole, so the raw text of the end of the run is in the log as well as the
-    lines the polls happened to catch.
+    (lines seen, final screen, seconds, ended, key presses). `read` returns the machine's
+    screen as text (in a run, `lambda: read_screen(rpc)`), so this half can be driven from
+    a script of screens with no emulator.
+
+    The stop is the kind's own verdict parser (`VERDICTS`): the run is over when a verdict
+    can be read out of what the screen has shown, not when the words `Result:` appear,
+    because a poll can catch that line while it is still being written and stopping there
+    reports a run that printed its verdict as one that never did. Measured on ZEsarUX 13.0,
+    5 October 2026: z80memptr's `Result: 002 of 160 tests failed.` was read at its first 24
+    columns, and the run was called UNKNOWN for a line the program had printed. A line that
+    arrives in pieces is believed once its last character is there.
+
+    The lines accumulate because the screen holds 24 at a time and each program prints more,
+    so a line stays readable after it has scrolled away; the final screen is kept whole, so
+    the raw text of the end of the run is in the log as well as the lines the polls caught.
     """
     seen, screen, presses = [], "", 0
     started = time.time()
     while True:
-        screen = read_screen(rpc)
+        screen = read()
         for line in screen.split("\n"):
             line = line.rstrip()
             if line and line not in seen:
                 seen.append(line)
-        if any(end_text in line for line in seen):
+        if VERDICTS[kind](seen)[0] != "UNKNOWN":
             return seen, screen, time.time() - started, True, presses
         if time.time() - started >= timeout:
             return seen, screen, time.time() - started, False, presses
-        if "scroll?" in screen:
-            press_scroll_key(rpc)
+        if "scroll?" in screen and on_scroll:
+            on_scroll()
             presses += 1
         time.sleep(POLL)
 
@@ -385,7 +398,8 @@ def run_program(rpc, program, timeout):
     rpc.cmd("hard-reset-cpu")
     clear_screen(rpc)
     rpc.smartload(tap_path(program))
-    lines, screen, seconds, ended, presses = watch(rpc, KINDS[program["kind"]]["end"], timeout)
+    lines, screen, seconds, ended, presses = watch(
+        lambda: read_screen(rpc), program["kind"], timeout, lambda: press_scroll_key(rpc))
     verdict, summary, named = VERDICTS[program["kind"]](lines)
     if verdict == "UNKNOWN" and not ended:
         summary += f" (the read timed out after {timeout:.0f} s)"

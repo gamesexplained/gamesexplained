@@ -4,7 +4,8 @@
 No emulator and no network: `kit/spectrum/z80_accuracy.py` runs a Spectrum, downloads
 two projects and reads a screen over ZRCP, and this tests everything in it that does not
 need any of the three. The verdict parsers are run on text the programs really printed
-(copied from a run on ZEsarUX 13.0, 4 October 2026 — z80full's own words), the unpacking
+(copied from a run on ZEsarUX 13.0, 4 October 2026 — z80full's own words), the read loop
+on a script of screens that catch the program's last line half-written, the unpacking
 of the z80test release on a zip built here in the release's own shape, and the manifest
 on the facts it exists to record: where each program comes from and under which licence.
 
@@ -100,6 +101,56 @@ class Verdicts(unittest.TestCase):
         self.assertEqual(verdict, "UNKNOWN")
 
 
+class TheLastLineRace(unittest.TestCase):
+    """A poll can catch the program's own last line while it is still being written.
+
+    Measured on ZEsarUX 13.0, 5 October 2026: z80memptr's `Result: 002 of 160 tests
+    failed.` (32 columns) was read at its first 24 columns, and because the loop stopped
+    the moment the words `Result:` appeared, the run was reported UNKNOWN for a line the
+    program had printed. The loop reads `read()` on its own, so it is driven here through
+    a script of screens and needs no emulator.
+    """
+
+    def _screen(self, result_line):
+        return "\n".join(["159 IM N                      OK", "", result_line, "", ""])
+
+    def _run(self, screens, timeout=30):
+        """Drive watch() through `screens`, repeating the last one; no emulator, no network."""
+        calls = {"n": 0}
+
+        def read():
+            calls["n"] += 1
+            self.assertLess(calls["n"], 50, "watch kept polling and never stopped")
+            return screens[min(calls["n"] - 1, len(screens) - 1)]
+
+        return za.watch(read, "z80test", timeout=timeout)
+
+    def test_a_last_line_caught_at_24_columns_is_not_the_end_of_the_run(self):
+        # the line is 32 columns; an early poll sees only its first 24 and must not stop
+        partial = self._screen("Result: 002 of 160 tests")
+        whole = self._screen("Result: 002 of 160 tests failed.")
+        seen, _, _, ended, _ = self._run([partial, partial, whole])
+        self.assertTrue(ended)
+        verdict, summary, _ = za.z80test_verdict(seen)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("2 of 160 tests failed", summary)
+
+    def test_a_last_line_that_arrives_in_pieces_is_believed_only_whole(self):
+        screens = [self._screen("Result: 002 of 160 te"),
+                   self._screen("Result: 002 of 160 tests fail"),
+                   self._screen("Result: 002 of 160 tests failed.")]
+        seen, _, _, ended, _ = self._run(screens)
+        self.assertTrue(ended)
+        self.assertEqual(za.z80test_verdict(seen)[0], "FAIL")
+
+    def test_a_run_that_never_prints_its_last_line_times_out(self):
+        # a line that stays a fragment for the whole read is what UNKNOWN is for
+        fragment = self._screen("Result: 002 of 160 tests")
+        seen, _, _, ended, _ = self._run([fragment], timeout=0.05)
+        self.assertFalse(ended)
+        self.assertEqual(za.z80test_verdict(seen)[0], "UNKNOWN")
+
+
 class Manifest(unittest.TestCase):
     def test_every_program_says_where_it_comes_from_and_under_which_licence(self):
         self.assertEqual([p["name"] for p in za.PROGRAMS],
@@ -110,7 +161,7 @@ class Manifest(unittest.TestCase):
                 self.assertTrue(source["url"].startswith("http"), source["url"])
                 self.assertTrue(source["licence"], program["source"])
                 self.assertEqual(program["tap"], program["name"] + ".tap")
-                self.assertIn(program["kind"], za.KINDS)
+                self.assertIn(program["kind"], za.VERDICTS)
 
     def test_the_fuse_core_tests_are_reported_and_not_run(self):
         self.assertFalse(za.FUSE["runnable"])

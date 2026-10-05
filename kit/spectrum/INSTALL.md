@@ -72,28 +72,45 @@ does; `--no-fetch` refuses to download, and then only what is already there can 
 `check_binaries.py` has nothing to find because nothing is committed.
 
 Measured on macOS arm64 on 4 and 5 October 2026 (the long runs crossed midnight), on the
-ZEsarUX-13.0 release (`ZEsarUX_macos-silicon-13.0.dmg`), with the launcher's
-`--emulatorspeed 5000`: these programs are compute-bound, and ZEsarUX ran them at 5 to 7
-times real speed, which each run prints (the multiplier is what the host allowed, not
-what was asked for). Speed changes nothing about what is measured — the Z80 emulation is
-the same however fast the host drives it — but it decides whether a suite finishes
-inside `--timeout` (default 1800 s a program).
+ZEsarUX-13.0 release (`ZEsarUX_macos-silicon-13.0.dmg`), at 1x real speed and with the
+launcher's `--emulatorspeed 5000`, where ZEsarUX ran at 5.3 to 5.6 times real speed (the
+multiplier is what the host allowed, not what was asked for; each run prints it). These
+programs are compute-bound, so the speed decides whether a suite finishes inside
+`--timeout` (default 1800 s a program) — and for `z80full` and `z80flags` it decides more
+than that: how many tests they say failed depends on it. Each count below reproduced in
+every run tried at its speed (four runs at 1x, three at about 5x), so what is recorded
+is the count and the speed together, not the count alone.
 
 | Program | What it checks | Result on ZEsarUX 13.0 |
 |---|---|---|
-| `z80full` | every flag and every register | **FAIL: 20 of its 160 tests failed** — `SCF`, `CCF`, `SCF (ST)`, `CCF (ST)`, `BIT N,A`, `BIT N,[R,(HL)]`, `LDI`, `LDD`, `LDIR`, `LDDR`, `LDIR->NOP'`, `LDDR->NOP'`, `IN R,(C)`, `IN (C)`, `INI`, `IND`, `INIR`, `INDR`, `INIR->NOP'`, `INDR->NOP'` |
+| `z80full` | every flag and every register | **FAIL: 16 of its 160 tests failed at 1x, 20 at about 5x** — the four that move with the speed are named below |
 | `z80doc` | every register, documented flags only | **PASS: all tests passed** |
-| `z80flags` | every flag, registers ignored | **FAIL: 20 of its 160 tests failed**, the same instructions as `z80full` |
-| `z80memptr` | flags after `BIT N,(HL)`, where MEMPTR shows | **FAIL: 2 of its 160 tests failed** — `INIR->NOP'` and `INDR->NOP'`; every `BIT N,(HL)` test passes, so MEMPTR is right and only those two combinations are not |
+| `z80flags` | every flag, registers ignored | **FAIL: the same sixteen at 1x and the same twenty at about 5x, on the same instructions as `z80full`** |
+| `z80memptr` | flags after `BIT N,(HL)`, where MEMPTR shows | **FAIL: 2 of its 160 tests failed** — `INIR->NOP'` and `INDR->NOP'`, the same at 1x and at about 5x; every `BIT N,(HL)` test passes, so MEMPTR is right and only those two combinations are not |
 | `z80ccf` | flags after `CCF`, which only a genuine Zilog part passes | **FAIL: 67 of its 160 tests failed**, its own `000 SELF TEST` among them. The release's readme says this variant "assumes the genuine Zilog behavior and it will fail half of the tests on CPUs which use other variant, so don't bother": the count is which CPU variant the emulated part behaves as, not 67 separate faults |
 | `zexdoc` | the instruction exerciser, documented flags | **UNKNOWN: did not finish in 240 s** — the three instructions it reached all ended `OK`, and it was part-way through the fourth |
 | `zexall` | the instruction exerciser, all flags | **UNKNOWN: did not finish in 240 s** — the same three instructions ended `OK` and the fourth was part-way through |
 
+**The two counts, and the four tests that move.** At 1x real speed `z80full` and
+`z80flags` fail sixteen tests: `SCF`, `CCF`, `SCF (ST)`, `CCF (ST)`, `BIT N,A`,
+`BIT N,[R,(HL)]`, `LDI`, `LDD`, `LDIR`, `LDDR`, `LDIR->NOP'`, `LDDR->NOP'`, `IN R,(C)`,
+`IN (C)`, `INIR->NOP'` and `INDR->NOP'`. With `--emulatorspeed 5000` the four block-input
+instructions `INI`, `IND`, `INIR` and `INDR` fail as well, making twenty; at 1x those
+four pass. They are the four tests that read a port inside a block instruction, so a port
+read made at the wrong moment is the obvious suspect — but the suspect is not shown.
+Reading the machine's ports by hand (`$00FE`, `$00FF`, `$001F`, `$0000`, `$0080`) returns
+the same byte at 1x and at about 5x, and the two single `IN` tests that do read `$FE`
+print the same `IN FE:BE Expected:BF` at both speeds. What is shown is narrower: for
+every failing test whose CRC line the polls caught at both speeds (twelve of them) the
+CRC is identical, and identical from run to run, so the emulator's answer for those is
+deterministic — and the speed setting was the only thing that differed between the
+sixteen and the twenty. Why it decides those four is recorded as unknown, not guessed at.
+
 What that says: every **documented** flag and register is right (`z80doc`), and what
 fails is the undocumented behaviour — the two SCF/CCF flag variants, the flags `LDI`,
-`LDD`, `LDIR`, `LDDR`, `INI`, `IND`, `INIR`, `INDR` and `IN R,(C)` leave behind, the
-`BIT` result in an accumulator, and the `NOP'` suffix forms. `z80memptr` passing its
-`BIT` tests while failing `INIR->NOP'` is the same set seen from another angle.
+`LDD`, `LDIR`, `LDDR` and `IN R,(C)` leave behind, the block-input flags, the `BIT`
+result in an accumulator, and the `NOP'` suffix forms. `z80memptr` passing its `BIT`
+tests while failing `INIR->NOP'` is the same set seen from another angle.
 
 **ZEXDOC and ZEXALL did not finish.** They are exhaustive exercisers — every operand
 value of every instruction, checked against a CRC — and in 240 s, at 6.2 to 6.6 times
@@ -102,7 +119,8 @@ part-way through the fourth. A full run is hours at that speed, so both are UNKN
 rather than passed or failed. What they did reach is in their logs, instruction line by
 instruction line; raise `--timeout` (a program that reaches its last line at all is a
 verdict, however long it took), or run with a higher `--emulatorspeed` if the host
-allows one.
+allows one — but a higher speed is not neutral: it changed the count `z80full` reports,
+so a run at another speed is a different measurement, not the same one run faster.
 
 | Program | Comes from | Licence | Fetched at run time |
 |---|---|---|---|
@@ -118,7 +136,7 @@ against FUSE's own CPU core, with no `.tap`, no release asset and nothing a 48K
 Spectrum can load — what they exercise is FUSE's core, not the CPU of the machine under
 test. The run prints that in place of a result rather than reporting it as a pass.
 
-Three things the harness has to do that are worth knowing before changing it, each
+Four things the harness has to do that are worth knowing before changing it, each
 measured on 13.0:
 
 - **Read the screen out of memory, not through `get-ocr`.** `get-ocr` kept answering
@@ -126,6 +144,12 @@ measured on 13.0:
   read the previous program's `Result:` line as their own verdict. The screen file at
   `$4000` (decoded against the ROM's character set at `$3D00`) is the machine's own
   memory, and the script empties it before each run.
+- **Judge the run by the program's whole last line, not by the word it begins with.**
+  A poll can catch `Result:` while the line is still being written (measured on 13.0, 5
+  October 2026: `z80memptr`'s 32-column `Result: 002 of 160 tests failed.` was read at
+  its first 24 columns), and a harness that stops there reports UNKNOWN for a line the
+  program had printed. The read loop stops only when the kind's own verdict parser can
+  read the line in full, so a line that arrives in pieces is believed once it is whole.
 - **Press ENTER, never SPACE, at the ROM's `scroll?`.** Each program prints more than the
   screen holds, and the ROM then asks `scroll?` and waits for a key. SPACE broke the
   tape's own BASIC loader (`D BREAK - CONT repeats`), so ENTER it is; the count of
