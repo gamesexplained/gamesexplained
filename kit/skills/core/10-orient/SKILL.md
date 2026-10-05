@@ -161,7 +161,12 @@ parts either; they stand in front of the game.
    them by watching the load (a store checkpoint over all of memory
    while the loader runs), or by comparing the snapshots either side of
    it. The part beneath then owns everything else, each byte has one
-   owner, and the game's coverage counts it once. A stretch that matches
+   owner, and the game's coverage counts it once. A load can also lie
+   over a part that has ranges of its own and write some of them again:
+   a program that replaces the game's first pages for a while, and
+   calls the rest of the game. The part beneath keeps its own ranges
+   then: its snapshot holds its own bytes there, the other part's holds
+   others, and each counts what its own load wrote. A stretch that matches
    another part's where nothing calls it is a leftover of an earlier
    build, not shared code.
 5. **A program that replaces the whole of memory** needs no `over`. Run

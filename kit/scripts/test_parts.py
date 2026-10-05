@@ -194,9 +194,19 @@ class Parts(unittest.TestCase):
             by = {p['id']: p for p in ps}
             self.assertEqual([q['id'] for q in P.under(ps, by['room'])], ['park', 'engine'])
             self.assertEqual({q['id'] for q in P.above(ps, by['engine'])}, {'park', 'street', 'room'})
-            self.assertEqual(tracked_count(str(g / 'parts' / 'park')), (6, 6))    # the room took the pointer
+            # the room writes the park's pointer again, but in the park's snapshot it is still the park's:
+            # each part counts the bytes its own load wrote (a program that replaces the first pages of
+            # the game for a while does not take the game's own code from it)
+            self.assertEqual(tracked_count(str(g / 'parts' / 'park')), (8, 8))
+            self.assertNotIn(0x4010, [a for lo, hi, _ in P.elsewhere(ps, by['park']) for a in (lo, hi)])
             names = P.names_under(str(g / 'parts' / 'room'))
             self.assertEqual((names[0x4000], names[0x1003]), ('park_entry', 'engine_get'))
+            # what the room does not own is named after the part whose load wrote it, not the nearest
+            away = {(lo, hi): who for lo, hi, who in P.elsewhere(ps, by['room'])}
+            self.assertEqual(away[(0x0000, 0x3FFF)], 'The engine')
+            self.assertEqual(away[(0x4000, 0x400F)], 'Park')
+            self.assertEqual(away[(0x4012, 0x40FF)], 'Park')
+            self.assertEqual(away[(0x4100, 0xFFFF)], 'The engine')
 
     def test_the_layout_is_checked(self):
         with tempfile.TemporaryDirectory() as d:

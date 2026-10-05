@@ -36,7 +36,10 @@ and the rest of memory is the other part's, which in turn does not own
 them. So a game's coverage, the sum over its parts, counts each byte once:
 a resident engine once, however many levels are loaded over it. Parts
 that name no other share nothing, whatever their addresses: each is an
-address space of its own.
+address space of its own. A part that lies over another keeps its own
+ranges even where a load over it writes some of them again: a program
+that replaces the first pages of the game for a while holds other bytes
+than the game does there, so each counts its own, in its own snapshot.
 
 Usage:
   parts.py <game dir>                  list the parts, with each one's coverage
@@ -120,23 +123,48 @@ def started(p):
     return bool(S.get("blocks") or S.get("symbols") or S.get("comments"))
 
 
+def _gaps(lo, hi, taken):
+    """The stretches of lo..hi that no (first, last) pair of taken covers."""
+    out, a = [], lo
+    for t_lo, t_hi in sorted(taken):
+        if t_hi < a or t_lo > hi:
+            continue
+        if t_lo > a:
+            out.append((a, t_lo - 1))
+        a = max(a, t_hi + 1)
+    if a <= hi:
+        out.append((a, hi))
+    return out
+
+
 def elsewhere(P, p):
     """[[first, last, whose]] for every address p does not own: all but its own ranges when it
-    lies over another part, and the ranges of the parts that lie over it."""
+    lies over another part, and the ranges of the parts that lie over it, except where they
+    fall in p's own ranges (p's load wrote those bytes; a load over it writes others there)."""
     out, lower = [], under(P, p)
+    own = ranges(p) if lower else []
     if lower:
-        own = ranges(p)
         if not own:
             sys.exit(f'part {p["id"]} lies over {lower[0]["id"]} but its part.json has no "ranges": say which '
                      "addresses its load owns, or every byte of the part beneath is counted twice")
-        a = 0
-        for lo, hi in own:
-            if lo > a:
-                out.append([a, lo - 1, lower[0]["title"]])
-            a = max(a, hi + 1)
-        if a < 0x10000:
-            out.append([a, 0xFFFF, lower[0]["title"]])
+        for g_lo, g_hi in _gaps(0, 0xFFFF, own):
+            a = g_lo            # each stretch is named after the part beneath whose load wrote it
+            while a <= g_hi:
+                for q in lower:
+                    q_own = ranges(q) if q is not lower[-1] else []
+                    hit = [(lo, hi) for lo, hi in q_own if lo <= a <= hi]
+                    if hit or q is lower[-1]:
+                        break
+                if hit:
+                    end = min(g_hi, hit[0][1])
+                else:           # the part at the bottom: up to the next address a part above it loads
+                    nxt = [lo for q2 in lower[:-1] for lo, hi in ranges(q2) if lo > a]
+                    end = min([g_hi] + [x - 1 for x in nxt])
+                out.append([a, end, q["title"]])
+                a = end + 1
     lent = sorted((lo, hi, q["title"]) for q in above(P, p) for lo, hi in ranges(q))
+    if own:
+        lent = [(a, b, who) for lo, hi, who in lent for a, b in _gaps(lo, hi, own)]
     merged = []
     for lo, hi, who in lent:    # several parts at the same addresses (one level after another) are one range
         if merged and lo <= merged[-1][1] + 1:

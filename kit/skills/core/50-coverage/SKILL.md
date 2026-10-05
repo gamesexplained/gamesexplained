@@ -183,7 +183,8 @@ own: give `coverage.py`, `symbols_export.py` and `listing.py` the part's
 folder. The game's figure is the sum, `coverage.py <game dir>`, and it
 counts each byte once, because each byte has one owner: a part that lies
 over another counts only its `"ranges"`, and the part beneath does not
-count them. 100 % means every part the game has a folder for. A part
+count them, unless they fall in ranges of its own (its snapshot holds its
+own bytes there). 100 % means every part the game has a folder for. A part
 with a folder and no analysis is not in the figure, and the page says so
 beside it.
 
