@@ -79,6 +79,11 @@ next agent searching for the symptom.
   layer's 64-byte reach, leaving 23 bytes of map 4 undescribed; renaming
   minted symbols to user names gives the longer reach (`50-coverage`,
   "Know how far a description reaches", says so).
+- **`check_docs.py` rejects the comment sample's paragraph** in
+  `facts.md` when it says that comments were "corrected" or that one
+  "was wrong": it reads those words as a narrated mistake, while
+  `60-verify` asks the paragraph for what was changed. "Rewritten" and
+  "had the code wrong" pass.
 
 ## What cost the most time
 
