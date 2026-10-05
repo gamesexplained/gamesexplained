@@ -33,7 +33,7 @@ The base outside Darwin Village, where the village sends the party ("I think you
 - The code list, header word 19, is at `$4E9B` (`run_action` reads it at game `$885C`): routine 0 null; routine 1 null; routine 2 `$4EA1`.
 - The text, header word 0, is at `$5215` (`select_map_text`, engine `$1E4F`): an alphabet of 60 characters, a table of 24 group offsets at `$5251`, and messages 0 to 93 in groups of four, `$5281-$59D9`. Message 93 is the last that a record, the map's code or a combat phrase names, and none of them names a message in the 38 bytes after it, `$59DA-$59FF`. Messages 11, 30, 37 and 55, below it, are named by none of them either.
 - 8 monster names at `$5131` (header word 1; `print_monster_name`, game `$9E5D`, reads it at game `$9E78`) and their eight-byte records at `$51CD`, monster *n* at `$51CD` + 8*n* (header word 2; `monster_record`, game `$9EA4`, reads it at game `$9EA7`): 1 Spawn Wolf, 2 Rodento Grosso, 3 Spineback Puma, 4 Shadow Panther, 5 Carapaced Coyote, 6 Humongous Coyote, 7 Spawnmaster and 8 Irwin John Finster.
-- Characters who can join: none. Header word 20, `$4C28`, holds `$4EB0`, the address of the class 8 list, and no encounter record names an NPC (byte +9, high nibble).
+- Characters who can join: none. Header word 20, `$4C28`, holds `$4EB0`, the address at which the class 8 and 9 lists begin, and no encounter record names an NPC (byte +9, high nibble).
 - Exits (class 10, list `$4F1B`; `square_exit`, game `$89A3`): to Darwin Village, map 21 (exit 22, to (15,28), asking first); to Finster's mind maze, map 23 (exit 21, to (10,16)); 22 within the map (exits 0-17, 19, 20, 23 and 24; 4 of them relative to the party's square). No square, and no change the squares lead to, names exits 18 and 20.
 
 ## Its own code

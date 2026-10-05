@@ -287,6 +287,16 @@ programs load from `$7E00`.
   bottom of the map window.
 - I, J, K and L in play move the party north, west, south and east
   (party position `$57/$58` before and after each key).
+- The joystick: from play-map.vsf, a stick held on control port 2 for
+  two seconds in each of the four directions and on fire, with
+  checkpoints that do not stop on reads of CIA 1's port A (`$DC00`) and
+  port B (`$DC01`) and, as the control, on the interrupt handler
+  (engine `$2947`). The party stayed at column 55, row 62 (`$57/$58`),
+  and in each hold port A was read 0 times against 203 or 204 reads of
+  port B and as many interrupts; I then moved the party north, to row
+  61. The same stick on port 1, whose lines are port B's, moved nothing
+  either, but up brought up the first member's character sheet and fire
+  turned it to the items page, as keys of the keyboard would.
 - The click of a step: from play-map.vsf, L, L, K and J pressed with
   checkpoints that do not stop on step_done (game `$AE26`), play_sound_16
   (engine `$0741`) and play_sound (engine `$C993`). The three steps the

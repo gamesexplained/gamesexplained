@@ -282,21 +282,27 @@ def beneath(gdir, game, ram):
     lines to print (none when they are, or when it lies over none). Their code, as their own
     listings hold it, is compared with the snapshot: data changes as a game runs, code does not,
     but for an instruction that rewrites itself."""
-    from parts import home, parts as all_parts, under
+    from parts import home, parts as all_parts, ranges, under
     top, pid = home(gdir)
     if pid is None:
         return []
     P = all_parts(top)
+    me = next(p for p in P if p["id"] == pid)
+    chain = under(P, me)
     lines = []
-    for q in under(P, next(p for p in P if p["id"] == pid)):
+    for n, q in enumerate(chain):
         lp = os.path.join(q["dir"], "listing.json")
         if not os.path.isfile(lp):
             continue
-        code = [r for r in json.load(open(lp))["records"] if r["t"] == "code"]
-        bad = [r["a"] + i for r in code for i, b in enumerate(r["b"]) if ram[r["a"] + i] != b]
+        # this part's load, and the loads of the parts between it and q, replace q's code in their own ranges
+        mine = [r for p in [me] + chain[:n] for r in ranges(p)]
+        code = {r["a"] + i: b for r in json.load(open(lp))["records"] if r["t"] == "code" for i, b in enumerate(r["b"])
+                if not any(lo <= r["a"] + i <= hi for lo, hi in mine)}
+        bad = sorted(a for a, b in code.items() if ram[a] != b)
         if bad:
-            lines += ["", f"{len(bad)} of the {sum(len(r['b']) for r in code)} code bytes of {q['id']}, the part beneath, "
-                          f"differ in this snapshot: {', '.join(f'${a:04X}' for a in bad[:12])}"
+            lines += ["", f"{len(bad)} of the {len(code)} code bytes of {q['id']}, the part beneath, "
+                          + ("outside this load's ranges, " if mine else "")
+                          + f"differ in this snapshot: {', '.join(f'${a:04X}' for a in bad[:12])}"
                           + (" ..." if len(bad) > 12 else ""),
                       "A few are instructions that rewrite themselves. Many mean this load replaces that code:",
                       'widen "ranges" in this part\'s part.json to take in every address its load writes.']
@@ -440,8 +446,12 @@ def main():
         relabel(argv[0]); return
     if len(argv) == 2 and argv[1] == "--recomment":
         recomment(argv[0]); return
-    if len(argv) < 2 or argv[0] in ("-h", "--help"):
+    if not argv or argv[0] in ("-h", "--help"):
         print(__doc__); return
+    if len(argv) < 2:
+        sys.exit(f"listing.py {argv[0]}: no snapshot, so no listing. Build it from one, "
+                 "listing.py <game dir> <snapshot>, or rename and recomment the one there is "
+                 "with --relabel or --recomment (-h says more)")
     gdir, vsf = argv[0], argv[1]
     from parts import load_game, parts
     if parts(gdir):

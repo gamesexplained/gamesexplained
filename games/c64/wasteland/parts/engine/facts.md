@@ -82,7 +82,7 @@ The resident engine, the code every program of the game calls. It holds two tabl
 | `+$21-$23` | experience, 24 bits | add_experience `$0825` |
 | `+$24` | rank | `$0CAD` |
 | `+$25` | armour slot, 0 for none | `$1273` |
-| `+$28` | MAX shown in reverse when not 0 | `$16AC` |
+| `+$28` | the disease bits, 0 for none (module-0's facts); any set prints MAXCON in reverse | `$16AC` |
 | `+$29` | not 0 for a non-player character | `$0F63` |
 | `+$2E` | refusal byte for trading | `$0F7F` |
 | `+$32` | the rank's name | `$111B` |

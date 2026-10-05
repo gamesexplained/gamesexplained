@@ -1875,17 +1875,17 @@
   {
    "address": 15959,
    "type": "line",
-   "text": "Map code entry 3 (action 3): meant to give a disease to the member the chest's poisoned needle has just hit, but it misses. It takes the member from $BD (LDA $BD; select_member $0335), ORs the bit for disease n, n = the square's record byte +3, into the disease byte +$28 through the masks at $3E6C, and returns carry clear. Class-6 square 5 ($3E1B: 03 05 10 04, n = 4, Desert dust in module 0's names, one of the diseases that cost CON over time) runs it. It is what the chest at (3,12), check square 5 (message 45, \"This chest is locked. The message painted on the top says 'Warning! Death to all thieves!'\"), becomes when a Use on it fails: message 46, \"You feel a sudden stab of pain. You've been hit by a poisoned needle.\", 2d6 CON to that member, then this square, whose record then makes the square loot bag 16 (a Mac 17 SMG and up to 100 in cash), so the chest is open all the same. Perception 3 only shows the needles (message 22); Picklock 5, Bomb disarm 2, ST 5, a Crowbar, Pick ax or Sledge hammer open it safely (message 38) and explosives destroy it. Of all the parts' traced code, only the STA $BD at $8CCC writes $BD, and it stores 0 on the very path that leads here (use_failed $8CC7), and every snapshot holds 0 there; so select_member reads position 0, the party table's byte +0, which is 0, and the character pointer becomes $F400: the ORA/STA at $3E66/$3E68 change $F428, byte +$0C of party 2's table (the row that party last left by an exit), and no character gets the disease. Checked in kit/c64/cpu6502.js on map-49.vsf: the routine changes $67 (to $F4), $BB and $F428 (0 to $10), and no character record."
+   "text": "Map code entry 3 (action 3): gives a disease to the member the chest's poisoned needle has just hit. It takes the member from $BD (LDA $BD; select_member $0335): use_failed stores there ($8CCC) the operand of its LDA # at $8CCA, which use_on_square sets from $12 at $8BFA on every Use, so $BD is the position of the member who made the failed Use, the one apply_square_effect hurts ($8CEC). It ORs the bit for disease n, n = the square's record byte +3, into that member's disease byte +$28 through the masks at $3E6C, and returns carry clear. Class-6 square 5 ($3E1B: 03 05 10 04, n = 4, Desert dust in module 0's names, one of the afflictions that cost CON over time, health_tick $B816) runs it. It is what the chest at (3,12), check square 5 (message 45, \"This chest is locked. The message painted on the top says 'Warning! Death to all thieves!'\"), becomes when a Use on it fails: message 46, \"You feel a sudden stab of pain. You've been hit by a poisoned needle.\", 2d6 CON to that member, then this square, whose record then makes the square loot bag 16 (a Mac 17 SMG and up to 100 in cash), so the chest is open all the same. Perception 3 only shows the needles (message 22); Picklock 5, Bomb disarm 2, ST 5, a Crowbar, Pick ax or Sledge hammer open it safely (message 38) and explosives destroy it. The snapshots hold $BD = 0 only because none was taken during a Use. Checked in kit/c64/cpu6502.js on map-49's entry.vsf with ($5F) = $3E1B: $BD = 1 sets $F528, record 1's +$28, from 0 to $10."
   },
   {
    "address": 15959,
    "type": "side",
-   "text": "$BD: 0, stored by the STA $BD at $8CCC"
+   "text": "the member whose Use failed, stored by the STA $BD at $8CCC"
   },
   {
    "address": 15961,
    "type": "side",
-   "text": "position 0: the character pointer becomes $F400"
+   "text": "that member becomes the current character"
   },
   {
    "address": 15964,
@@ -1900,7 +1900,7 @@
   {
    "address": 15972,
    "type": "side",
-   "text": "+$28 of 'record 0': $F428, party 2's table"
+   "text": "+$28: the disease byte"
   },
   {
    "address": 15978,

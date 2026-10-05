@@ -1460,10 +1460,13 @@ def broken_links(out_root):
     reader's browser, because a game folder publishes only what build_game copies."""
     bad = []
     for page in sorted(glob.glob(os.path.join(out_root, "**", "*.html"), recursive=True)):
-        for m in re.finditer(r'\b(?:src|href)\s*=\s*(["\'])(.*?)\1', open(page, encoding="utf-8").read()):
+        text = open(page, encoding="utf-8").read()
+        for m in re.finditer(r'\b(?:src|href)\s*=\s*(["\'])(.*?)\1', text):
             url = m.group(2)
             if re.search(r"\$\{|\{\{|\s\+|\+\s", url) or re.match(r"[a-z][a-z0-9+.-]*:|//|#", url, re.I):
                 continue   # built by a script at run time, or not a file of ours
+            if re.compile(r"\s*\+").match(text, m.end()):
+                continue   # the first piece of a string a script puts together: href = 'source-' + part
             path = url.split("#")[0].split("?")[0]
             if not path:
                 continue

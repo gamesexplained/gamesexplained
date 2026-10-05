@@ -45,14 +45,18 @@ Ranger Center program over the game and starts it; it never returns.
   the square becomes class 6 number 0 (game `$89B5`). Entering the map
   already in memory does nothing (engine `$25C1`), the handler returns
   with the carry set, and the game runs the new square at once.
-- Nothing puts the entrance back: the exit handler changes the square
-  before the module runs, and the module saves the world map with it. On
-  the play disks `copy-s1.g64` and `save-s1.g64` the world map's square
-  55,62 is class 6 number 0; on the masters and a fresh copy it is class
-  10 number 39. The game's `play-map.vsf`, and the radio, order and death
-  snapshots taken from it, hold 6, 0 there, with the pair 10, 39 that the
-  change replaced still in `$AD/$AE`.
-- So from the second visit on, stepping on the square runs module 3
-  straight away: the move check asks "Enter new location (Y/N)?" only for
-  a class-10 square (game `$8A36-$8A3B`), and "Entering Ranger Center."
-  belongs to the exit record (traced, not tried).
+- The exit handler changes the square before the module runs, and the
+  module saves the world map with it. On the play disks `copy-s1.g64` and
+  `save-s1.g64` the world map's square 55,62 is class 6 number 0; on the
+  masters and a fresh copy it is class 10 number 39. The game's
+  `play-map.vsf`, and the radio, order and death snapshots taken from it,
+  hold 6, 0 there, with the pair 10, 39 that the change replaced still in
+  `$AD/$AE`.
+- The world map puts the exit back. The party steps only north, south,
+  west and east (the main menu's I, K, J and L, game `$AE19-$AE84`). Of
+  the four squares beside 55,62, two are class 11 (54,62 and 55,63), and
+  the other two, 55,61 and 56,62, are remote-change square 2 of the world
+  map (map-00 `$4F2E`), which writes class 10 number 39 back on 55,62
+  without a redraw. So a party that comes back finds the exit, and the
+  move check asks "Enter new location (Y/N)?" for a class-10 square (game
+  `$8A36-$8A3B`), as on the first visit (traced, not tried).

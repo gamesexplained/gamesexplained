@@ -9989,12 +9989,12 @@
   {
    "address": 0,
    "type": "line",
-   "text": "The 6510's data direction register for the port at $01. No part changes it: the start-up's clear loop ($7F30-$7F37) zeroes $02-$FF only, and the utility program's printer code, which the utilities agent found unreached (send_report $8602), would copy $00-$FF to $CA00 and write the same values back ($860E, $86A5), so it keeps the KERNAL's setting. Not code: the disassembler marked $0000-$0002 as code only because its image starts here; no JMP, JSR, branch or vector in any part leads to $0000 (the RAM RESET vector at $FFFC holds $0000, but a reset brings the KERNAL ROM and its own vector back)."
+   "text": "The 6510's data direction register for the port at $01. No part changes it: the start-up's clear loop ($7F30-$7F37) zeroes $02-$FF only, and the utility program's printer code, which nothing reaches (send_report $8602), would copy $00-$FF to $CA00 and write the same values back ($860E, $86A5), so it keeps the KERNAL's setting. Not code: the disassembler marked $0000-$0002 as code only because its image starts here; no JMP, JSR, branch or vector in any part leads to $0000 (the RAM RESET vector at $FFFC holds $0000, but a reset brings the KERNAL ROM and its own vector back)."
   },
   {
    "address": 1,
    "type": "line",
-   "text": "The 6510's processor port, the memory map: $35 in play (RAM, the I/O area at $D000, no BASIC or KERNAL ROM), $34 all RAM, so the RAM under $D000-$DFFF can be read and written. Written by all_ram_in ($25B8, $34, interrupts off), io_back_in ($2751, $35), irq_handler (saved at $294C, $35 at $2951, restored at $295F) and loader_main ($FF06-$FF88: $35 while it talks to the drive, $34 around each buffer access, the caller's value back at the end). The utility program's printer code sets $36 (KERNAL ROM in) to print through the KERNAL ($863B-$8695), but nothing reaches that code (send_report $8602, by the utilities agent's trace)."
+   "text": "The 6510's processor port, the memory map: $35 in play (RAM, the I/O area at $D000, no BASIC or KERNAL ROM), $34 all RAM, so the RAM under $D000-$DFFF can be read and written. Written by all_ram_in ($25B8, $34, interrupts off), io_back_in ($2751, $35), irq_handler (saved at $294C, $35 at $2951, restored at $295F) and loader_main ($FF06-$FF88: $35 while it talks to the drive, $34 around each buffer access, the caller's value back at the end). The utility program's printer code sets $36 (KERNAL ROM in) to print through the KERNAL ($863B-$8695), but nothing reaches that code (send_report $8602)."
   },
   {
    "address": 2,
@@ -10364,12 +10364,12 @@
   {
    "address": 77,
    "type": "line",
-   "text": "One past the highest item number a list offers: item numbering wraps from it back to 1 ($19D5, $1A18, $1A6C). 31 for the 30 item slots ($107D); skill_list_show counts the skills into it ($13FA-$140B); the game ($9198-$9214, $B628), modules 1 ($CAE8, $CBDB) and 2 ($CB5B-$CB7C) and the Ranger Center (counted to 36, skills 1-35, $8414-$8416) set their own. The Order program only clears it ($CA8C): it calls list_line_label alone, which reads $25, $42, $50, $D0 and $D1, not this (Order's annotator; checked)."
+   "text": "One past the highest item number a list offers: item numbering wraps from it back to 1 ($19D5, $1A18, $1A6C). 31 for the 30 item slots ($107D); skill_list_show counts the skills into it ($13FA-$140B); the game ($9198-$9214, $B628), modules 1 ($CAE8, $CBDB) and 2 ($CB5B-$CB7C) and the Ranger Center (counted to 36, skills 1-35, $8414-$8416) set their own. The Order program only clears it ($CA8C): it calls list_line_label alone, which reads $25, $42, $50, $D0 and $D1, not this."
   },
   {
    "address": 78,
    "type": "line",
-   "text": "Number of items in the list plus one, by the engine's convention ($1066-$106F, $1416-$141D; game $9194-$9212): list_fits_page compares it with the page length $4F ($19E3) to allow paging, and the MORE line appears when it is above $4F+1 ($1A97). item_reorder and skills_page read it ($100F, $13B1). Module 1's list of goods for sale ($CBCC-$CBD7, the count from $CC5D) and the Ranger Center's skill list ($8410-$8428) store the count itself, without the one (module 1's other two lists keep the convention, $CAE3, $CB43): both tests then move by one, so such a list of exactly ten items can be paged but shows no MORE line. Whether a shop or the skill list ever has exactly ten was not checked. Found by the shop's annotator (agent 16)."
+   "text": "Number of items in the list plus one, by the engine's convention ($1066-$106F, $1416-$141D; game $9194-$9212): list_fits_page compares it with the page length $4F ($19E3) to allow paging, and the MORE line appears when it is above $4F+1 ($1A97). item_reorder and skills_page read it ($100F, $13B1). Module 1's list of goods for sale ($CBCC-$CBD7, the count from $CC5D) and the Ranger Center's skill list ($8410-$8428) store the count itself, without the one (module 1's other two lists keep the convention, $CAE3, $CB43): both tests then move by one, so such a list of exactly ten items can be paged but shows no MORE line. Whether a shop or the skill list ever has exactly ten was not checked."
   },
   {
    "address": 79,
@@ -10559,7 +10559,7 @@
   {
    "address": 116,
    "type": "line",
-   "text": "Used only by module 1, the shop: byte 3 of the shop's map record ($CA3B-$CA3F), the same shift for what the shop charges (buy_price $CCCF, LDX $74 at $CCD2): 0 charges the full price, which module 1's agent found in every shop record. From module 1's use (its names)."
+   "text": "Used only by module 1, the shop: byte 3 of the shop's map record ($CA3B-$CA3F), the same shift for what the shop charges (buy_price $CCCF, LDX $74 at $CCD2): 0 charges the full price, which every shop record holds. From module 1's use (its names)."
   },
   {
    "address": 117,
@@ -10654,7 +10654,7 @@
   {
    "address": 146,
    "type": "line",
-   "text": "Set to 1 by the start-up before it loads the game ($8301) and to 0 by the radio program and the Ranger Center before they load it back (radio $8194, ranger $7EF6). At its start the game runs the left-arrow handler once when it is set ($7E5C-$7E60): a step in place, which lets the square under the party act at once; the 'Enter new location (Y/N)?' seen after loading a save fits this (not traced further). The STA $92 at ranger $8994 is in the copy of the radio program that the Ranger Center's load carries at $8600-$8FFF, which never runs (the Ranger Center's annotator; checked)."
+   "text": "Set to 1 by the start-up before it loads the game ($8301) and to 0 by the radio program and the Ranger Center before they load it back (radio $8194, ranger $7EF6). At its start the game runs the left-arrow handler once when it is set ($7E5C-$7E60): a step in place, which lets the square under the party act at once; the 'Enter new location (Y/N)?' seen after loading a save fits this (not traced further). The STA $92 at ranger $8994 is in the copy of the radio program that the Ranger Center's load carries at $8600-$8FFF, which never runs."
   },
   {
    "address": 147,
@@ -10784,7 +10784,7 @@
   {
    "address": 182,
    "type": "line",
-   "text": "Party that was current when the fight began: Enc copies $08 here ($B1DE) and encounter_end selects it again ($B320). merge_parties_here ($9959, which battle rounds call at $A30C, $A364 and $B8B4) closes the party tables up over the party merged away, but lowers $B6 only when it is at or above both the current party and the merged one ($99A2-$99AD), where the tables need it lowered whenever it is above the merged one. With current party 3, merged party 1 and $B6 = 2 it stays 2, which is now the old party 3, and encounter_end selects the wrong party. Agent 8's finding, checked against the code here; not seen in play. Used only by the game."
+   "text": "Party that was current when the fight began: Enc copies $08 here ($B1DE) and encounter_end selects it again ($B320). merge_parties_here ($9959, which battle rounds call at $A30C, $A364 and $B8B4) closes the party tables up over the party merged away, but lowers $B6 only when it is at or above both the current party and the merged one ($99A2-$99AD), where the tables need it lowered whenever it is above the merged one. With current party 3, merged party 1 and $B6 = 2 it stays 2, which is now the old party 3, and encounter_end selects the wrong party. Traced in the code, not seen in play. Used only by the game."
   },
   {
    "address": 183,
@@ -10819,7 +10819,7 @@
   {
    "address": 189,
    "type": "line",
-   "text": "Written 0 by the game's use_failed at $8CCC (a Use that failed or matched no pair), before square_effect_field ($9124). Read by map 49's poison-needle routine as a party position (LDA $BD at $3E57, then select_member $0335): with the 0 the game leaves there it selects position 0, the party table's byte +0 (map 49's facts). No other reader in any part's traced code or the maps' own code; indexed or indirect reads are not ruled out."
+   "text": "Written by the game's use_failed at $8CCC (a Use that failed or matched no pair), before square_effect_field ($9124): the member who made the Use, which use_on_square puts into the operand at $8CCB from $12 ($8BF8-$8BFA). Read by map 49's poison-needle routine (LDA $BD at $3E57, then select_member $0335), which gives that member a disease (map 49's facts). 0 in every snapshot, the last value written. No other reader in any part's traced code or the maps' own code; indexed or indirect reads are not ruled out."
   },
   {
    "address": 190,
@@ -10939,7 +10939,7 @@
   {
    "address": 215,
    "type": "line",
-   "text": "Used only by the game: set to 1 by damage_monster when the attacking weapon's class ($7E) is 8 or 9 ($A675-$A67E, test at $AC28), otherwise 0; monster_armour_absorb then leaves the monster's armour roll out of the damage and clears it ($A9C0-$A9DF). From the game part's use (the game agents' names)."
+   "text": "Used only by the game: set to 1 by damage_monster when the attacking weapon's class ($7E) is 8 or 9 ($A675-$A67E, test at $AC28), otherwise 0; monster_armour_absorb then leaves the monster's armour roll out of the damage and clears it ($A9C0-$A9DF). From the game part's use (its names)."
   },
   {
    "address": 216,
@@ -10964,7 +10964,7 @@
   {
    "address": 230,
    "type": "line",
-   "text": "Used only by the game: set to 1 only by use_first_skill ($8A9E-$8AA0, LDA #$01 / STA $E6), an entry to use_by_member that, by the game agents' search of every part and map, nothing calls. While it is set, use_choose ($8AD5) asks nothing and takes the character's first skill, record +$80 ($8ADB, $8B0D, $8B31); it clears it at $8B3B. So in play it stays 0 and Use always asks. $E7 after it: no reference found."
+   "text": "Used only by the game: set to 1 only by use_first_skill ($8A9E-$8AA0, LDA #$01 / STA $E6), an entry to use_by_member that nothing in any part or map calls. While it is set, use_choose ($8AD5) asks nothing and takes the character's first skill, record +$80 ($8ADB, $8B0D, $8B31); it clears it at $8B3B. So in play it stays 0 and Use always asks. $E7 after it: no reference found."
   },
   {
    "address": 232,
@@ -13094,7 +13094,7 @@
   {
    "address": 3451,
    "type": "line",
-   "text": "Operand of LDA #imm at $0D7A, written at entry (STA $0D7B): the value A that npc_obey_check adds to its roll (the asking character's CHR)."
+   "text": "Operand of LDA #imm at $0D7A, written at entry (STA $0D7B): the value A that npc_obey_check adds to its roll. In a trade it is the taker's CHR (+$14, $0F70-$0F7E); in the game's Use refusals ($8D8E-$8D95) it is the NPC's own byte +$31, which hiring set to the hirer's CHR ($A403, $A492)."
   },
   {
    "address": 3484,
@@ -13184,7 +13184,7 @@
   {
    "address": 4017,
    "type": "line",
-   "text": "Items page of the character screen: item_list_page for the member at $0E20; each item chosen goes to item_action_menu and the member's roster line is redrawn; any other key ends it and is returned in A (0 no items, $FD RETURN or space, $FF left-arrow) with carry set."
+   "text": "Items page of the character screen: item_list_page for the member at $0E20; each item chosen goes to item_action_menu and the member's roster line is redrawn. RETURN, space or left-arrow ends it, and so does a member with no items, returned in A (0 no items, $FD RETURN or space, $FF left-arrow) with carry set. R reorders the list inside item_list_page and the list comes back; other keys are ignored (list_choose $19A4-$19B3)."
   },
   {
    "address": 4037,
@@ -15304,7 +15304,7 @@
   {
    "address": 23375,
    "type": "line",
-   "text": "Sixteen four-byte records, four per party (party n's at $5B4F + 16n, the game's party_record_block $98BC): the column, row and map of an encounter square (class 3 or 15) for which the party is the nearest that can engage, and its distance from the party, 10 a square (store_position_record $97F2: $983F, $9841, $09, $9672). scan_for_encounters wipes all 16 ($94D4-$94DC) and fills them anew. When the party's four records are full, a nearer square replaces the first of them that is farther away, not the farthest ($9671-$967D, $96E3-$96F0); when none is, the next nearest party is tried ($967F-$9687, $96F2-$96FA). clear_position_record ($980F) frees one; find_position_record ($9843) and $9877 search them by column, row and map. Byte 0 = 0 marks a free record; all free in both snapshots. From the game part's use; the replacement rule is agent 8's reading, checked here."
+   "text": "Sixteen four-byte records, four per party (party n's at $5B4F + 16n, the game's party_record_block $98BC): the column, row and map of an encounter square (class 3 or 15) for which the party is the nearest that can engage, and its distance from the party, 10 a square (store_position_record $97F2: $983F, $9841, $09, $9672). scan_for_encounters wipes all 16 ($94D4-$94DC) and fills them anew. When the party's four records are full, a nearer square replaces the first of them that is farther away, not the farthest ($9671-$967D, $96E3-$96F0); when none is, the next nearest party is tried ($967F-$9687, $96F2-$96FA). clear_position_record ($980F) frees one; find_position_record ($9843) and $9877 search them by column, row and map. Byte 0 = 0 marks a free record; all free in both snapshots. From the game part's use."
   },
   {
    "address": 23376,
@@ -15334,7 +15334,7 @@
   {
    "address": 23459,
    "type": "line",
-   "text": "Key codes of the function keys by party member, read only by the game's main loop, as CMP $5BA3,X for X = the number of members down to 1 ($7EBE-$7EC6): members 1-4 F1, F3, F5, F7 ($F1 $F3 $F5 $F7), members 5-7 none; a match calls the game's $8AA2 with the member number (Use for that character). $5BA3 itself (X = 0) is never compared. The same CMP at order $CAC0 is in the stale copy of the game's first sector that follows the Order program's last instruction, and never runs (Order's annotator; checked: order $CAA2-$CAFF equals game $7EA2-$7EFF in 93 of its 94 bytes)."
+   "text": "Key codes of the function keys by party member, read only by the game's main loop, as CMP $5BA3,X for X = the number of members down to 1 ($7EBE-$7EC6): members 1-4 F1, F3, F5, F7 ($F1 $F3 $F5 $F7), members 5-7 none; a match calls the game's $8AA2 with the member number (Use for that character). $5BA3 itself (X = 0) is never compared. The same CMP at order $CAC0 is in the stale copy of the game's first sector that follows the Order program's last instruction, and never runs (order $CAA2-$CAFF equals game $7EA2-$7EFF in 93 of its 94 bytes)."
   },
   {
    "address": 23467,
@@ -15359,7 +15359,7 @@
   {
    "address": 23532,
    "type": "line",
-   "text": "The numbers 0-8, read only by the game, as LDA $5BEC,X before its step dispatcher $AD9C ($84F8, $8583, $87F0): direction n is n. The same instruction at radio $87F0 is in the radio file's unused tail, a leftover of the game's own bytes there, and at ranger $8FF0 in the Ranger Center's copy of that file; neither runs (the Ranger Center's annotator; checked)."
+   "text": "The numbers 0-8, read only by the game, as LDA $5BEC,X before its step dispatcher $AD9C ($84F8, $8583, $87F0): direction n is n. The same instruction at radio $87F0 is in the radio file's unused tail, a leftover of the game's own bytes there, and at ranger $8FF0 in the Ranger Center's copy of that file; neither runs."
   },
   {
    "address": 23541,
@@ -15409,7 +15409,7 @@
   {
    "address": 51504,
    "type": "line",
-   "text": "Top logical sector for a file that steps down onto a track, read by next_logical_sector as LDA $C930,X with X = the new, lower track ($FD14): 35 bytes, tracks 0-16 20, 17 0, 18-23 18, 24-29 17, 30-34 16. Apart from track 17's 0, each value is the top sector of the track one higher (zones of 21, 19, 18 and 17 sectors give 20, 18, 17 and 16), so it is right inside a speed zone and wrong where a file crosses into the next zone: a file running from track 25 into 24 continues at sector 17 (track 24's sector 18 is never reached that way), from 31 into 30 at 16 (sector 17 never reached), and from 19 into 17 (18 skipped) at sector 0 only, then on to track 16 at sector 20. Writes step through the same routine, so the disks are consistent with it: the game program (T31/L9, 72 pages, through track 30) matches the loaded $7E00-$C5FF byte for byte only when read this way, and the lead's check of the 24 maps enter_map loaded found the same."
+   "text": "Top logical sector for a file that steps down onto a track, read by next_logical_sector as LDA $C930,X with X = the new, lower track ($FD14): 35 bytes, tracks 0-16 20, 17 0, 18-23 18, 24-29 17, 30-34 16. Apart from track 17's 0, each value is the top sector of the track one higher (zones of 21, 19, 18 and 17 sectors give 20, 18, 17 and 16), so it is right inside a speed zone and wrong where a file crosses into the next zone: a file running from track 25 into 24 continues at sector 17 (track 24's sector 18 is never reached that way), from 31 into 30 at 16 (sector 17 never reached), and from 19 into 17 (18 skipped) at sector 0 only, then on to track 16 at sector 20. Writes step through the same routine, so the disks are consistent with it: the game program (T31/L9, 72 pages, through track 30) matches the loaded $7E00-$C5FF byte for byte only when read this way, and so do all 42 maps as enter_map loads them."
   },
   {
    "address": 51539,
@@ -15419,7 +15419,7 @@
   {
    "address": 51603,
    "type": "line",
-   "text": "Plays sound X on SID voice 1: control $D404 = 0 (gate off), volume $D418 = $0F, then record X of sound_table: seven bytes to $D406 down to $D400 (sustain/release, attack/decay, control, pulse width high and low, frequency high and low), three to $D417 down to $D415 (filter registers; no voice routed through it) and the last to $D404, the control byte that starts the note. X = 0 explosion (screen_shake, $0748; entry $044C, called by module 4 at $CA4C, and the use effect 1 of item_effect (agent 2)), 11 ($241C, through $0232), 22 ($0741, through $04D2)."
+   "text": "Plays sound X on SID voice 1: control $D404 = 0 (gate off), volume $D418 = $0F, then record X of sound_table: seven bytes to $D406 down to $D400 (sustain/release, attack/decay, control, pulse width high and low, frequency high and low), three to $D417 down to $D415 (filter registers; no voice routed through it) and the last to $D404, the control byte that starts the note. X = 0 explosion (screen_shake, $0748; entry $044C, called by module 4 at $CA4C, and the use effect 1 of item_effect), 11 ($241C, through $0232), 22 ($0741, through $04D2)."
   },
   {
    "address": 51644,
@@ -15534,12 +15534,12 @@
   {
    "address": 62444,
    "type": "line",
-   "text": "Sixteen bytes, one per encounter group, index party*4 + group, used only by the game: the groups' move plans for a battle round. plan_group_moves sets all to $FF, no plan ($83D7-$83E1), and stores the plan of each hostile group that can move at $856D: a direction 0-8 in bits 0-5 (the numbering of direction_by_cell $5BE3) and the kind in bits 6-7, 0 a better square, 1 flee ($40), 2 close in ($80), by the game agents' reading. move_groups ($872D) carries them out, splitting kind and direction ($87CA, $87EF); melee_round's hit chance is higher against a group with a plan ($80E7 tests for $FF). $F3FC-$F3FF after them: no reference found. From the game part's use (its names)."
+   "text": "Sixteen bytes, one per encounter group, index party*4 + group, used only by the game: the groups' move plans for a battle round. plan_group_moves sets all to $FF, no plan ($83D7-$83E1), and stores the plan of each hostile group that can move at $856D: a direction 0-8 in bits 0-5 (the numbering of direction_by_cell $5BE3) and the kind in bits 6-7, 0 a better square, 1 flee ($40), 2 close in ($80). move_groups ($872D) carries them out, splitting kind and direction ($87CA, $87EF); melee_round's hit chance is higher against a group with a plan ($80E7 tests for $FF). $F3FC-$F3FF after them: no reference found. From the game part's use (its names)."
   },
   {
    "address": 62464,
    "type": "line",
-   "text": "Page 0 of the saved game ($F400-$FBFF, eight pages written to T35/L7 down to L0 by save_game), starting with the four party tables, 14 bytes each at $F400, $F40E, $F41C and $F42A (party_table_ptr $1768, party_table_offsets $1778). In a table, +1 to +7 are the record numbers of positions 1-7 (0 for none), +8/+9 the party's map column and row, +10 its map (game $9C17-$9C55), +11/+12/+13 the column, row and map it last left by an exit (game $89BA-$89D7), to which an exit whose map byte is $FF takes it back ($89DD-$89FD); +0 has no use found except as position 0 (agent 2). In play-map party 0 holds records 1-4 at column 55, row 62 of map 0."
+   "text": "Page 0 of the saved game ($F400-$FBFF, eight pages written to T35/L7 down to L0 by save_game), starting with the four party tables, 14 bytes each at $F400, $F40E, $F41C and $F42A (party_table_ptr $1768, party_table_offsets $1778). In a table, +1 to +7 are the record numbers of positions 1-7 (0 for none), +8/+9 the party's map column and row, +10 its map (game $9C17-$9C55), +11/+12/+13 the column, row and map it last left by an exit (game $89BA-$89D7), to which an exit whose map byte is $FF takes it back ($89DD-$89FD); +0 has no use found. In play-map party 0 holds records 1-4 at column 55, row 62 of map 0."
   },
   {
    "address": 62520,
@@ -15559,12 +15559,12 @@
   {
    "address": 62620,
    "type": "line",
-   "text": "Line buffer of the word-wrapped output, one byte per screen column (41 bytes, $F49C-$F4C4), each character less $20 so that 0 is a space where a line may break ($1FEB, $2015): buffer_char puts each character at its column ($1FEF), break_column and draw_buffered_line wrap and draw it ($2012-$2055), clear_line_buffer zeroes it ($22CF). It lies inside saved page 0, so the start-up and utils clear it after loading a save ($835B, $80F9 call $04ED). The game also prints into it with the output off and copies the result out, for the picture caption ($B98D). $F4C5-$F4CF after it: no reference found in any part's code; play-map holds 00 EF B2 00 B0 00 B0 00 B0 00 00 there, carried in the save."
+   "text": "Line buffer of the word-wrapped output, one byte per screen column (41 bytes, $F49C-$F4C4), each character less $20 so that 0 is a space where a line may break ($1FEB, $2015): buffer_char puts each character at its column ($1FEF), draw_buffered_line finds the break column (break_column_op $202F), draws the line and carries the cut word over ($2012-$2055), clear_line_buffer zeroes it ($22CF). It lies inside saved page 0, so the start-up and utils clear it after loading a save ($835B, $80F9 call $04ED). The game also prints into it for the picture caption: encounter_portrait turns the output back on ($B94B, $B940) and prints the name word-wrapped without ending the line, so nothing is drawn, then copies the buffer out ($B98D). $F4C5-$F4CF after it: no reference found in any part's code; play-map holds 00 EF B2 00 B0 00 B0 00 B0 00 00 there, carried in the save."
   },
   {
    "address": 62672,
    "type": "line",
-   "text": "Caption under the picture window: a zero-ended string of up to 11 characters in the 12 bytes $F4D0-$F4DB. draw_picture_window prints it at column 1, row 13 ($0571-$057D). The game builds it centred from what it printed into the line buffer ($B960-$B99A: eleven spaces, the zero at $F4DB, then the text). Modules 0-3 copy the location's name into it, 12 bytes of the square's record at ($5F): module 0 (the doctor) and module 1 (the shop) from byte 7 ($CA06-$CA13, $CA0F-$CA1C), module 2 (the library) from byte 4 and module 3 (the way into the Ranger Center) from byte 3 ($CA06-$CA13 in both); module 3's is the caption the Ranger Center shows. The radio program (from its $8184, $7EAA-$7EB5) and the death screen (from its $7E2F, $7E06-$7E11) copy in captions of their own; module 4 empties it with a zero ($CA87-$CA89). The STA $F4D0,X at start-up $8C0B and at ranger $86AF never run: the first is in the copy of the death program that the title picture overwrites, the second in the Ranger Center's copy of the radio program (the start-up's and the Ranger Center's annotators; checked). 'Ranger Ctr.' in play-map."
+   "text": "Caption under the picture window: a zero-ended string of up to 11 characters in the 12 bytes $F4D0-$F4DB. draw_picture_window prints it at column 1, row 13 ($0571-$057D). The game builds it centred from what it printed into the line buffer ($B960-$B99A: eleven spaces, the zero at $F4DB, then the text). Modules 0-3 copy the location's name into it, 12 bytes of the square's record at ($5F): module 0 (the doctor) and module 1 (the shop) from byte 7 ($CA06-$CA13, $CA0F-$CA1C), module 2 (the library) from byte 4 and module 3 (the way into the Ranger Center) from byte 3 ($CA06-$CA13 in both); module 3's is the caption the Ranger Center shows. The radio program (from its $8184, $7EAA-$7EB5) and the death screen (from its $7E2F, $7E06-$7E11) copy in captions of their own; module 4 empties it with a zero ($CA87-$CA89). The STA $F4D0,X at start-up $8C0B and at ranger $86AF never run: the first is in the copy of the death program that the title picture overwrites, the second in the Ranger Center's copy of the radio program. 'Ranger Ctr.' in play-map."
   },
   {
    "address": 62683,
@@ -15579,7 +15579,7 @@
   {
    "address": 62689,
    "type": "line",
-   "text": "Four bytes, one per party, used only by the game: the longest reach in feet of the party's members (0, 15 or $FE; see $7D). scan_for_encounters calls member_reach ($BC39) for each member and keeps the largest in the operand of its own CMP at $9510, zeroed at $94EE and raised at $9514, then stores it here ($94EC-$951E); a party number above $0B gets 0. In play-map that CMP shows #$FE: the last maximum, not a constant. encounter_party_distances ($97C2) and $9620 compare a square's distance with it after byte 1 of the square's record at ($77): a party with a loaded gun reaches every square it can see, one with only melee weapons the squares around it. From the game part's use; the running maximum was found by agent 8 and checked here."
+   "text": "Four bytes, one per party, used only by the game: the longest reach in feet of the party's members (0, 15 or $FE; see $7D). scan_for_encounters calls member_reach ($BC39) for each member and keeps the largest in the operand of its own CMP at $9510, zeroed at $94EE and raised at $9514, then stores it here ($94EC-$951E); a party number above $0B gets 0. In play-map that CMP shows #$FE: the last maximum, not a constant. encounter_party_distances ($97C2) and $9620 compare a square's distance with it after byte 1 of the square's record at ($77): a party with a loaded gun reaches every square it can see, one with only melee weapons the squares around it. From the game part's use."
   },
   {
    "address": 62693,

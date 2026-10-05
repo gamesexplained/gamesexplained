@@ -455,6 +455,7 @@ h2.t.wl-sub{margin-top:44px}
   <p>The party never leaves the middle of the window, so each step moves the world under it. The game does not draw the window again. Instead, the game moves the picture one square and draws the two rows or columns on the side the picture moved towards: the new edge, and the one beside it that was cut in half before (<code>$AE2F</code>, <code>$AE4E</code>, <code>$AE6D</code>, <code>$AE8C</code>). The window here draws all 171 squares every time, which gives the same picture.</p>
   <p>Before each step the game asks whether the square ahead lets the party in (<code>$AD5B</code>). An edge of the map, a group of monsters, a failed check, an exit answered N, and an obstacle all say no. The window asks the same question, with a port checked against the game's code for every square of every map in all four directions. The window answers N when an exit asks, and never passes a check, because it has no party.</p>
   <p>A step on the world map takes four minutes (the map record's byte <code>+$35</code>), so 15 steps make an hour (<code>$AF32</code>). From 18:00 to 05:59 the world map's 36 radiation squares are drawn as the radiation sign (<span data-part="engine"><code>$0B80</code></span>): press Midnight to see them. On the world map, one step in 100 can also bring a random encounter (<code>$B015</code>). The window does not roll for one.</p>
+  <p>There is no joystick. C64-Wiki and GameBase64 say the game takes one in port 2, but the only code that reads the control ports is the keyboard scan (<span data-part="engine"><code>$2967</code></span>), and it never reads the port that stick is on. Held there in play, a stick moves nothing. A stick in port 1 shares its lines with the keyboard, so pushing it types keys: up brought up the first character's sheet.</p>
 </section>
 
 <section data-part="engine" id="wl-pictures">
@@ -3598,8 +3599,7 @@ globalThis.WLText = (function () {
   // read for a part whose listing does not hold its block, and opts.listings, the parts whose
   // listings do (the others are not fetched).
 
-  // Names for the block picker: the programs' from their parts' titles and the annotators'
-  // reports, the maps' places from the lead's notes (work/lead/mapcode) and the parts' titles.
+  // Names for the block picker: the programs', and the places the maps are.
   // A map without one is "Map n".
   const NAMES = { engine: 'The engine', game: 'The game', startup: 'Title and start-up', ranger: 'Ranger Center',
     radio: 'Radio and promotion', utils: 'Utilities', 'module-0': 'Module 0, the doctor', 'module-1': 'Module 1, the shop',

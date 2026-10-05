@@ -10606,7 +10606,7 @@
   {
    "address": 32682,
    "type": "line",
-   "text": "Operand of the LDX #imm at $7FA9: the monster line (0-2) melee_round is working on: the counter of the line loop ($7F9F, $7FFA), then the line a member strikes ($80DA) or the attacking monster's line ($818A); read by line_monster_byte2 ($82AB) and by the attack messages ($81F5, $8206, $8214). Cleared at $7F6B."
+   "text": "Operand of the LDX #imm at $7FA9: the monster line (0-2) melee_round is working on: the counter of the line loop ($7F9F, $7FFA), then the line a member strikes ($80DA) or the attacking monster's line ($818A); read by line_monster_byte2 ($82AB), by the attack messages ($81F5 miss, $8206 hit) and by the damage roll ($8214, monster_damage_roll). Cleared at $7F6B."
   },
   {
    "address": 32845,
@@ -11156,7 +11156,7 @@
   {
    "address": 36039,
    "type": "line",
-   "text": "A Use failed (A = 0) or no pair matched (A = $FF), kept in the operand $8DD0: $BD = 0; with no effect (record +8 AND $7F = 0) shows use_fail_message; with one, shows map message +3 slowly (square_message_slow $9130), applies the effect to the member or, with flags bit 4, to the whole party ($9039, $90F5), and pauses ('(RETURN)', control code 6). Then the square changes by the pair at +6/+7 and, if it changed, the party tries to step into it (try_move_party $ADD1)."
+   "text": "A Use failed (A = 0) or no pair matched (A = $FF), kept in the operand $8DD0: $BD = the member who made the Use (the operand at $8CCB, written from $12 at $8BFA); with no effect (record +8 AND $7F = 0) shows use_fail_message; with one, shows map message +3 slowly (square_message_slow $9130), applies the effect to the member or, with flags bit 4, to the whole party ($9039, $90F5), and pauses ('(RETURN)', control code 6). Then the square changes by the pair at +6/+7 and, if it changed, the party tries to step into it (try_move_party $ADD1)."
   },
   {
    "address": 36043,
@@ -12181,7 +12181,7 @@
   {
    "address": 40750,
    "type": "line",
-   "text": "Nine words, the handler of each combat order 0-8 (the keys space H A W R E L U S, order_keys $B4BD), read by resolve_orders: $9F2D (nothing), order_hire $A3F1, $9F2D, order_weapon $A264, $9F2D, order_evade $A37E, order_load_unjam $A383, order_use $A3BC, $9F2D."
+   "text": "Nine words, the handler of each combat order 0-8, read by resolve_orders: $9F2D (nothing), order_hire $A3F1, $9F2D, order_weapon $A264, $9F2D, order_evade $A37E, order_load_unjam $A383, order_use $A3BC, $9F2D. Orders 0-7 are the indexes of the keys space H A W R E L U in order_keys ($B4BD). Order 8 is the whole party's move, which set_party_move_orders ($B3C7) gives every member. The ninth key, S, never stores 8: choose_attack_listed ($B4A0) turns it into order 2."
   },
   {
    "address": 40751,
@@ -14046,7 +14046,7 @@
   {
    "address": 48185,
    "type": "line",
-   "text": "Reach of member A, in feet: 0 when not conscious; otherwise 15 (melee), or $FE for a weapon of a ranged class with rounds in it. Sets $7D = the reach and $7E = the weapon's class (1 for any weapon not of a ranged class); returns A = $7D."
+   "text": "Reach of member A, in feet: 0 when not conscious (then $7E is left as it was). Otherwise 15 (melee), or $FE for a weapon of a ranged class that has rounds in it and is not jammed (weapon_rounds puts an empty or jammed gun back to 15). Sets $7D = the reach and, for a conscious member, $7E = the weapon's class (1 for any weapon not of a ranged class); returns A = $7D."
   },
   {
    "address": 48196,

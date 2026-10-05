@@ -124,6 +124,15 @@ class Parts(unittest.TestCase):
             self.assertNotIn('l', by.get(0x1003, {}))              # but the name labels no row of this part
             self.assertIn('OK', run(KIT / 'scripts' / 'check_listing.py', g).stdout)
 
+    def test_a_listing_without_a_snapshot_is_refused(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            before = (g / 'parts' / 'park' / 'listing.json').read_text()
+            r = run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'park', ok=False)
+            self.assertNotEqual(r.returncode, 0)
+            self.assertIn('no snapshot', r.stderr)
+            self.assertEqual((g / 'parts' / 'park' / 'listing.json').read_text(), before)
+
     def test_a_name_changed_beneath_is_a_listing_to_relabel(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)
@@ -151,6 +160,22 @@ class Parts(unittest.TestCase):
             self.assertNotIn('code bytes of engine', run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'street',
                                                           g / 'street.vsf').stdout)
 
+    def test_code_beneath_that_this_load_replaces_is_not_reported(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            run(KIT / 'scripts' / 'parts.py', 'add', g, 'patch', '--over', 'engine')
+            f = g / 'parts' / 'patch' / 'part.json'
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), ranges=[['$1000', '$1002']])))
+            symbols(g, 'patch', [(0x1000, 0x1002, 'Code')], [sym(0x1000, 'patch_entry')], [line(0x1000, 'The patch.')])
+            patched = dict(ENGINE)
+            patched[0x1000] = [0xA9, 0x03, 0xEA, 0xAD, 0x10, 0x10, 0x60]    # lda #3 and a nop over the jsr: its own
+            out = run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'patch', snapshot(g / 'patch.vsf', patched)).stdout
+            self.assertNotIn('code bytes of engine', out)
+            patched[0x1000] = [0xA9, 0x03, 0xEA, 0xAD, 0x11, 0x10, 0x60]    # and $1004, which is the engine's
+            out = run(KIT / 'scripts' / 'listing.py', g / 'parts' / 'patch', snapshot(g / 'patch.vsf', patched)).stdout
+            self.assertIn('1 of the 4 code bytes of engine', out)
+            self.assertIn('$1004', out)
+
     def test_a_session_gives_each_part_its_share(self):
         with tempfile.TemporaryDirectory() as d:
             g = fixture(d)
@@ -173,6 +198,20 @@ class Parts(unittest.TestCase):
             out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
             self.assertIn('engine_other', out)
             self.assertIn('no other part', out)
+
+    def test_an_export_that_holds_less_than_the_file_says_so(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            proj = g / 'park.regen2000proj'
+            run(KIT / 'scripts' / 'symbols_import.py', g / 'parts' / 'park', g / 'park.vsf', proj)
+            out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
+            self.assertNotIn('more than this session holds', out)
+            p = json.loads(proj.read_text())
+            del p['labels'][str(0x4010)]                            # a session that lacks one of the park's names
+            proj.write_text(json.dumps(p))
+            out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
+            self.assertIn('had 2 user labels', out)
+            self.assertIn('more than this session holds', out)
 
     def test_clip_cuts_a_block_at_the_edge(self):
         blocks, syms, comments, left = P.clip(
