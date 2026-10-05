@@ -11,6 +11,8 @@
                  'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
   const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
   const FPS = 50.12;
+  // the stage banners (stage_banner_table $F880 and stage_words $EB80, as facts.md lists them)
+  const BANNERS = ["WELCOME 10 YEARS LATER", "ENTERING ROCKS OF DEATH", "LEAVING ROCKS OF DEATH", "ENTERING CAVES OF ILLUSION", "LEAVING CAVES OF ILLUSION", "ENTERING FURTHER SPACE", "ENTERING ANCIENT TEMPLE", "LEAVING ANCIENT TEMPLE", "ENTERING SEA OF DREAMS", "LEAVING SEA OF DREAMS", "ENTERING ASTEROID STORM", "LEAVING ASTEROID STORM", "ENTERING JELLY OF DREAMS", "LEAVING JELLY OF DREAMS", "ENTERING FURTHER SPACE", "ENTERING CITY OF SECRETS", "LEAVING CITY OF SECRETS", "ENTERING ROCKS OF DUST", "LEAVING ROCKS OF DUST", "ENTERING SUN OF DREAMS", "LEAVING SUN OF DREAMS", "ENTERING STORM CLOUDS", "LEAVING STORM CLOUDS", "ENTERING ANCIENT CITY", "LEAVING ANCIENT CITY", "ENTERING ROCKS OF DEATH", "LEAVING ROCKS OF DEATH", "ENTERING FURTHER SPACE", "ENTERING HIDDEN TEMPLE", "LEAVING HIDDEN TEMPLE", "ENTERING FURTHER SPACE", "ENTERING FINAL CITY"];
   // The play area in sprite coordinates: a sprite at X 24, Y 50 has its top left corner at the
   // screen's top left. Enemies are removed when Y leaves $38-$E0 or X passes $158.
   const X0 = 24, Y0 = 50, W = 320, H = 200, S = 2, PAD = 24;
@@ -33,11 +35,11 @@
     J.blank = new Set(Object.entries(J.shapeBytes).filter(([, b]) => b.every(v => v === 0)).map(([id]) => +id));
     return J;
   }
-  // an enemy's state at offset k: [hp, colour, exploding, final, changes form, points, may fire, shape]
+  // an enemy's state at offset k: [hp, colour, exploding, final, changes form, points, may fire, shape, sprite pointer]
   function stateAt(e, k) {
     let s = e.ev[0];
     for (const v of e.ev) { if (v[0] > k) break; s = v; }
-    return { hp: s[1], col: s[2], expl: s[3], fin: s[4], form: s[5], pts: s[6], fire: s[7], shape: s[8] };
+    return { hp: s[1], col: s[2], expl: s[3], fin: s[4], form: s[5], pts: s[6], fire: s[7], shape: s[8], ptr: s[9] };
   }
   function groupAt(f) {
     let g = 0;
@@ -104,12 +106,12 @@
     $('wvTime').textContent = `frame ${frame} of ${D.frames - 1} · ${(frame / FPS).toFixed(1)} s`;
     const inGroup = D.enemies.filter(e => e.g === g);
     const indes = inGroup.filter(e => e.ev[0][1] === 255).length;
-    let h = G[3] === 255 ? `Stage ${D.stage}: between groups` : `Stage ${D.stage}, group ${g + 1} of ${D.groups.length}: record ${hex(G[3])}` +
+    let h = G[3] === 255 ? `Stage ${D.stage} (${BANNERS[D.stage - 1]}): between groups` : `Stage ${D.stage} (${BANNERS[D.stage - 1]}), group ${g + 1} of ${D.groups.length}: record ${hex(G[3])}` +
       (G[4] ? ' · <b>the shop</b>' : '') + ` · ${inGroup.length} sprite${inGroup.length === 1 ? '' : 's'}` +
       (indes ? ` · ${indes} indestructible` : '');
     if (G[5] >= 0) h += frame >= G[5] ? ' · <b>stand-in shots</b> (since frame ' + G[5] + ')' : ` · stand-in shots from frame ${G[5]}`;
     $('wvGroup').innerHTML = h;
-    let t = '<tr><th>Slot</th><th>Colour</th><th>Position</th><th>Hit points</th><th>Points</th><th>States</th></tr>';
+    let t = '<tr><th>Slot</th><th>Colour</th><th>Sprite</th><th>Position</th><th>Hit points</th><th>Points</th><th>States</th></tr>';
     for (const e of live.sort((a, b) => a.slot - b.slot)) {
       const k = frame - e.f, s = stateAt(e, k), flags = [];
       if (G[4]) flags.push('shop icon');
@@ -119,10 +121,11 @@
       if (s.fin) flags.push('final form');
       if (s.fire) flags.push('may fire');
       t += `<tr><td>${e.slot}</td><td><span class="sw" style="background:${PAL[s.col]}"></span> ${NAMES[s.col]}</td>` +
+        `<td title="sprite pointer $30 + slot: the shape at ${hex(0x4000 + s.ptr * 64, 4)}"><code>${hex(s.ptr)}</code></td>` +
         `<td>${e.xs[k]}, ${e.ys[k]}</td><td>${s.hp === 255 ? 'indestructible' : s.hp <= 1 ? s.hp + ' (dies at the first hit)' : s.hp}</td><td>${s.pts && !G[4] ? s.pts * 10 : '-'}</td>` +
         `<td>${flags.join(', ') || '-'}</td></tr>`;
     }
-    if (!live.length) t += '<tr><td colspan="6">No enemy on screen.</td></tr>';
+    if (!live.length) t += '<tr><td colspan="7">No enemy on screen.</td></tr>';
     $('wvLive').innerHTML = t;
     $('wvList').querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === g));
   }
@@ -168,9 +171,13 @@
     requestAnimationFrame(tick);
   }
 
-  const STAGES = 3;                 // stages with a recording in reference/waves
-  for (let s = 1; s <= STAGES; s++) {
-    const b = document.createElement('button'); b.textContent = s; b.onclick = () => load(s);
+  // the stages with a recording in reference/waves; a stage left out (one that differed from VICE)
+  // still gets its button, disabled, so the numbering stays the game's
+  const STAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18];
+  for (let s = 1; s <= Math.max(...STAGES); s++) {
+    const b = document.createElement('button'); b.textContent = s;
+    if (STAGES.includes(s)) { b.title = BANNERS[s - 1]; b.onclick = () => load(s); }
+    else { b.disabled = true; b.title = BANNERS[s - 1] + ': left out, its recording differs from VICE (see the caption)'; b.style.opacity = .35; }
     $('wvStages').appendChild(b);
   }
   $('wvPlay').onclick = () => { if (!D) return; if (frame >= D.frames - 1) frame = 0; playing = !playing; $('wvPlay').textContent = playing ? 'Pause' : 'Play'; };

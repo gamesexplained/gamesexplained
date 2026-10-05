@@ -169,10 +169,11 @@ def symbols_from_ctl(path):
 # --- writing a control file -------------------------------------------------
 def ctl_from_symbols(gdir, snapshot, out=None):
     """Write the control file from gdir's symbols.json, closed exactly by `i` directives."""
-    game = json.load(open(os.path.join(gdir, "game.json")))
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+    from parts import seed     # a game's folder or, for a game of several loads, a part's
+    game, sym = seed(gdir)
     if out is None:
         out = os.path.join(gdir, "work", f"{game['slug']}.ctl")
-    sym = json.load(open(os.path.join(gdir, "symbols.json")))
     blocks = sorted((b for b in sym["blocks"] if b["type"] in TO_CTL
                      and b["end"] >= RAM_LO and b["start"] <= RAM_HI), key=lambda b: b["start"])
     line = {}

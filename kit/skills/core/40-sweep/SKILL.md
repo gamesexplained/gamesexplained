@@ -6,7 +6,9 @@ description: Cheap mechanical sweeps that convert large regions from unknown to 
 # Sweeps that find what code-reading misses
 
 All of them are cheap and mechanical. Run them from the snapshot's RAM image
-directly (Python over the file) or through the disassembler.
+directly (Python over the file) or through the disassembler. A game of
+several parts (`10-orient`) is swept part by part, each from its own
+snapshot.
 
 ## Hardware register census
 
@@ -33,7 +35,12 @@ credits in seconds. If the game has a custom character set, follow with
 Relocating loaders can leave a second copy of code or tables in memory.
 Before describing a region, check whether the code reads it or reads a
 twin elsewhere: compare the two byte for byte. A byte that differs is
-usually a variable written at run time. Describe the copy the code reads
+usually a variable written at run time. When no instruction can write the bytes
+that differ (`opcodes.py --refs`, and no pointer built to them), they
+were changed from outside the game, often before a freezer saved it.
+Then the copy made earlier is the right one, and the next time the game
+copies again the damage reaches the screen: a bug the player sees, worth
+running live. Describe the copy the code reads
 and mark the other as an unread duplicate.
 
 ## A documented version on another machine

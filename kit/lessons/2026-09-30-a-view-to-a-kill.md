@@ -3,9 +3,9 @@
 **A game can be several programs.** *A View to a Kill* is five: an
 intro, three sections and an ending, each loaded from a menu over the
 whole of memory. Treated as one image, four of them would have been
-lost. `10-orient` now says to give each program its own folder under
-`parts/`, with its own snapshots, symbols, listing and facts, and to run
-each file's packer in the simulator over memory filled two ways first:
+lost. `10-orient` says to give each program its own folder under `parts/`,
+with its own snapshots, symbols, listing and facts, and to run each
+file's packer in the simulator over memory filled two ways first:
 the ending's packer writes only half the memory, and the other half is
 whatever the previous program left.
 

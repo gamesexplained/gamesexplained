@@ -15,6 +15,11 @@ python3 kit/scripts/tools.py --platform spectrum status    # which build, which 
 python3 kit/scripts/tools.py --platform spectrum stop      # stop it
 ```
 
+A run that needs several machines at once (a window to watch, a frame-stepped
+test, an independent checker) starts each with `--port N`, and points its
+script at one with `KIT_ZESARUX_PORT=N`: `kit/spectrum/INSTALL.md`, "More than
+one machine at once".
+
 The emulator runs with `--vo null --ao null`: no window and no sound, the
 screen is saved to a file when needed. It runs at real speed — measured
 3.50 MHz of emulated clock in 3.53 MHz of wall clock on a 48K machine
@@ -24,7 +29,7 @@ screen is saved to a file when needed. It runs at real speed — measured
 
 ```
 from zesarux import connect                    # kit/spectrum/zesarux.py
-rpc = connect()                                # 127.0.0.1:10000
+rpc = connect()                                # 127.0.0.1:10000, or KIT_ZESARUX_PORT
 ```
 
 A connection greets you with a two-line banner and then the prompt:

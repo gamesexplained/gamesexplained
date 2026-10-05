@@ -146,7 +146,8 @@ hazard shapes in the VIC bank are exchanged with the second set at
   `$8010`, `$80B5`); a group marked with bit 6 takes one away.
 
 - *Recorded* (the game's code run in the kit's machine with nobody
-  playing, `waves.html`; stages 1-3 compared with VICE frame by frame):
+  playing, `waves.html`; stages 1-20 compared with VICE frame by frame; stages 14, 15, 19 and 20
+  differ in places, `TODO.md`):
   - stage 1 ends with a boss, record `$0D`: slot 7 has 8 hit points and
     parks at X `$CF`, Y `$8C` while six indestructible escorts circle it.
     The group waits for all seven (`$1298`) and the escorts never leave, so

@@ -116,13 +116,27 @@ python3 kit/scripts/tools.py --platform spectrum verify-footprint   # what it wr
 ```
 
 The emulator runs with `--vo null --ao null`: no window, no sound, and no
-menu (a null video driver cannot open one). Add video options after
-`zesarux` to watch it instead — `tools.py --platform spectrum zesarux --vo
-cocoa` on macOS, `--vo stdout` elsewhere — and remember that a menu opened
-under a run loop stops it. Options of your own replace both defaults, so a
-window plays the game's sound; add `--ao null` to keep it quiet. A second
-clone's emulator is never touched: `stop` matches this clone's path only,
-and says so when something else answers on the port.
+menu (a null video driver cannot open one). Add `--vo` after `zesarux` to
+watch it instead — `tools.py --platform spectrum zesarux --vo cocoa` on
+macOS, `--vo stdout` elsewhere — and remember that a menu opened under a
+run loop stops it. `--vo` and `--ao` each replace only their own default,
+so a window stays silent until `--ao` names a driver, and any other option
+still starts it with no window. A second clone's emulator is never
+touched: `stop` matches this clone's path only, and says so when
+something else answers on the port.
+
+**More than one machine at once.** `--port N` (or `KIT_ZESARUX_PORT=N`)
+puts ZRCP on another port: a window to watch on 10000, say, and a test
+stepping frames on 10001. Every command above takes it, and hands it to the
+scripts it starts; `connect()` in `kit/spectrum/zesarux.py` reads
+`KIT_ZESARUX_PORT`. `stop` stops every emulator this clone started, `stop
+--port N` only the one on N, and `status` lists the ports in use.
+
+```
+python3 kit/scripts/tools.py --platform spectrum zesarux --port 10001
+KIT_ZESARUX_PORT=10001 python3 work/my_test.py
+python3 kit/scripts/tools.py --platform spectrum stop --port 10001
+```
 
 **A window can open dialogs, and an open dialog refuses cpu-step.** On its
 first windowed start ZEsarUX 13.0 showed a "First aid" help box and then

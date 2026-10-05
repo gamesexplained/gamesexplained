@@ -47,15 +47,16 @@ and a loopback bridge (`kit/c64/INSTALL.md`, "Another program on port
 3000"); the client, the exporter and the launcher find it through
 `tools/r2000-port`. Addresses in arguments are decimal integers.
 
-Several instances at once, one per part of a game of several programs,
-were run on Linux as root by giving each its own network namespace, so
-each has its own loopback and its own port 3000: `unshare --net=<file>`
-over a bind-mounted empty file, the loopback brought up inside it, the
-disassembler started with `nsenter --net=<file>`, and every client call
-(`r2000.py`, `coverage.py --live`) run through the same `nsenter`.
-`tools.py` does not manage these instances, and nothing outside the
-repository is changed except the namespace files, which go when they are
-unmounted. On other systems, annotate the parts one at a time.
+A game of several parts (`core/10-orient`) can have a disassembler
+running for each part at once. Start each on a file in its part's
+folder (`tools.py r2000 games/<platform>/<slug>/parts/<id>/work/<state>.vsf`):
+the launcher gives the part the first free port from 3000 and keeps it
+in the part's `work/r2000-port`. Every command then names the part's
+folder (`r2000.py --game <part>`, `coverage.py <part> --live`,
+`symbols_export.py <part>`) and reaches that part's session; a part
+with none running is refused, never sent to another part's.
+`tools.py status` lists them, and `tools.py stop r2000 <part>` stops
+one and leaves the rest.
 
 The client script logs every mutating call to
 `games/<platform>/<slug>/work/annotations.jsonl`. That log is crash
@@ -112,6 +113,11 @@ the game folder, or pass `--game`, so the log lands in the right place.
 - The project file (`.regen2000proj`) embeds the memory image. It stays in
   `work/` and is never committed. `symbols_import.py` rebuilds it from
   `symbols.json` plus a snapshot.
+  Nothing writes annotations back into it: a project that sat in `work/`
+  while a session annotated holds the comments from before that session.
+  Started on it again, the next export quietly undoes everything since.
+  So start every later session from `symbols_import.py`, or compare
+  `r2000_get_comments` with `symbols.json` before the first write.
 - After any bulk recovery, verify with a clean process, a full replay and
   a block-count check, not "the replay didn't error".
 - **The flow tracer can wander into text.** `$20` is `JSR`, so a run of

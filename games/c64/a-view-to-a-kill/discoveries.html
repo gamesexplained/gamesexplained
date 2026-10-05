@@ -11,7 +11,7 @@
   <p class="sub">Claims the code contradicts, bugs, and the questions still open. Everything under "Confirmed" was read in the code, and where it says so, seen in the emulator.</p>
 </header>
 <main class="wrap">
-<section id="sources" data-source="">
+<section id="sources" data-part="">
   <p class="fig">01 · Checked against the sources</p>
   <h2 class="t">Where the code and the sources disagree</h2>
   <table class="t">
@@ -23,7 +23,7 @@
   </table>
 </section>
 
-<section id="city-hall" data-source="source-city-hall.html">
+<section id="city-hall" data-part="city-hall">
   <p class="fig">02 · City Hall</p>
   <h2 class="t">Bug: a burning room runs the end test from the middle of an instruction</h2>
   <p>The main loop's test for a burning room branches to <code>$7090</code>, which is the second byte of a branch instruction. From there the processor reads <code>ORA $57AD</code>, then an undocumented instruction that shifts a byte of memory left and ORs it in (<code>SLO</code>, writing <code>$0BFC</code>), and arrives at the load of the code flag in the end test (<code>$7096</code>). Seen in the emulator with Bond's room set on fire: with CCPHJ typed, the next pass showed the mission-complete screen and DB4CT; without it, a new game. The byte at <code>$0BFC</code> went from <code>$40</code> to <code>$80</code>, the undocumented shift at work. Whether the branch was meant to go to the end test and the target is off by a byte, or was changed later, is not known.</p>
@@ -33,26 +33,26 @@
   <p>When the fire spreads to the next floor, the new temperatures are masked with <code>AND $03E9,Y</code> (<code>$95AD</code>), a read of the screen, where an <code>AND #</code> of a fixed value was probably meant. Not tried in the emulator.</p>
 </section>
 
-<section id="intro" data-source="source.html">
+<section id="intro" data-part="intro">
   <p class="fig">03 · The intro</p>
   <h2 class="t">Bug: on some boots the credits never scroll</h2>
   <p>Before the credits the intro writes <code>$97</code> to the video chip's control register (<code>$CB50</code>). Its top bit is also the top bit of the raster line the next interrupt is asked for, which becomes line 496, a line a European screen never reaches. A later read, AND and write of the register clears it (<code>$C540</code>), but reading that bit gives the line the beam is on, so if the beam is below line 255 at that moment the bit is written back set. Then no interrupt ever comes again: the credits, the music and everything else driven from the interrupt stop. Seen in the emulator: of four boots started a tenth of a second apart, three scrolled the credits and in one the scrolling routine never ran.</p>
 </section>
 
-<section id="mine" data-source="source-mine.html">
+<section id="mine" data-part="mine">
   <p class="fig">04 · The mine</p>
   <h2 class="t">A digit counter with no limit</h2>
   <p>Each digit entered is stored at <code>$1B73</code> plus the count so far, and nothing limits the count (<code>$38AA</code>). The numbered objects stay in the list after use, so a digit can be entered again and again. The fourteenth digit would land on the pause flag and stop the clock, and the forty-sixth on the code flag itself, which would make the section winnable without DB4CT once the count wraps round after 256. None of this was tried in the emulator.</p>
   <p>Two smaller slips: the welcome page loads the stack pointer from the byte at <code>$FF</code> where the number <code>$FF</code> was meant (<code>$7D1D</code>), harmless because the next routine sets it again; and the planks' handler tests for an object number no object has (<code>$3970</code>).</p>
 </section>
 
-<section id="leftovers" data-source="">
+<section id="leftovers" data-part="">
   <p class="fig">05 · Left in the files</p>
   <h2 class="t">An older code, an older end screen, and an older menu</h2>
   <p>City Hall holds a code prompt nothing calls, which asks for QRS21 and gives three tries (<a href="source-city-hall.html#967B"><code>$967B</code></a>), and an end screen nothing shows: WEBL DONE 007 YOUR CODE IS 111122 (<a href="source-city-hall.html#7E5A"><code>$7E5A</code></a>). It also holds the mine's end screen, with ILVCT, at the mine's address. The intro holds the menu of an earlier crack of the game: SEE OPENING, PARIS-CHASE, CITY ESCAPE, SILICON MINE, FINALE. The <a href="about.html#copy">About</a> tab lists every layer.</p>
 </section>
 
-<section id="open" data-source="">
+<section id="open" data-part="">
   <p class="fig">06 · Open questions</p>
   <h2 class="t">Questions still open</h2>
   <ul>

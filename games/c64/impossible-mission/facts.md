@@ -174,6 +174,32 @@ At the start of each game `new_game_setup` (`$7236`) randomises:
 - every room's lifting platforms back to their starting positions
   (`reset_room_platforms`, `$B045`).
 
+### The map
+
+`make_map` (`$B2BD`) carves the map into 102 glyphs of one bit a pixel at
+`$FC00`-`$FF2F`, 17 across and 6 down (136 × 48 pixels), all set at the
+start. The room grid at `$FF96` is 9 columns by 6 rows; grid square
+(X, Y) starts at glyph 2X - 1 of row Y (glyph 0 for column 0), so the
+odd glyph columns hold the 8 lift shafts and the even ones the rooms.
+The shuffled room numbers are at `$FFCC`, four groups of eight shuffled
+within the group (16 swaps each). Room masks (`tbl_room_shapes`,
+`$B59D`): rooms `$00`-`$0F` take 3 glyphs (shaft, room, shaft, with a
+door to each), `$10`-`$17` 2 glyphs with the shaft and door on the left,
+`$18`-`$1F` 2 glyphs with them on the right; `may_join` (`$B500`) never
+joins a room from its closed side. `join_rooms` (`$B488`) checks the
+neighbour in the row and, if it may not join it, searches up and then
+down the column from that neighbour's square and cuts shaft segments
+(`$E7`, `$B63D`) in the room's own column. The carving can reach past
+`$FF2F` into the first bytes of the cell table. The display shows 17 × 6
+cells (`draw_map_frame`, `$B699`) from the cell table `$FF30`, glyph
+`$FC` (solid) until `reveal_map_cell` (`$B761`, index (x - `$68`)/8 + 17
+× ((y - `$B8`)/8)) writes the cell's own glyph `$8A` + index. The frame
+is glyphs `$F0`-`$F5`, copied from `$B56D` (corners, striped edges), in
+yellow; the cells in green (colour 5) on the panel's black. *Checked:* a
+port of `make_map` gives the same `$FC00`-`$FFEB` as the game's routine
+run in the kit's 6502 simulator for 200 random byte streams, `random`
+(`$82E3`) answered from the same stream; every roll placed all 32 rooms.
+
 ### Rooms
 
 32 room records (`$0E70` pointers). Rooms `$11` and `$1B` are the code
@@ -381,4 +407,3 @@ Three checks, all verified:
   transcribed the words.
 - The meaning of the agent's frame `$0F` (tested against lifting
   platforms by `platform_at`).
-- What the six glyphs copied from `$B56D` draw on the map.

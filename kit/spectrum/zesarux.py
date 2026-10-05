@@ -52,7 +52,7 @@ The traps, each measured on ZEsarUX 13.0 and written up in
 import json, os, re, socket, sys, time
 
 DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 10000
+DEFAULT_PORT = int(os.environ.get("KIT_ZESARUX_PORT") or 10000)   # the launcher's --port sets it (kit/spectrum/tools.py)
 FRAME_TSTATES = 69888          # one 48K ZX Spectrum frame (kit/skills/spectrum/zx-spectrum-reference)
 FRAME_SLOT = 100              # the breakpoint slot `frames` uses; slots are 1..100
 PROMPT = re.compile(r"^[^\n]*> $")
@@ -559,8 +559,7 @@ def main(argv):
     if name not in COMMANDS:
         raise SystemExit(f"no such command: {name} (try --list)")
     args = json.loads(argv[1]) if len(argv) > 1 else {}
-    port = int(os.environ.get("KIT_ZESARUX_PORT", DEFAULT_PORT))
-    rpc = connect(port=port)
+    rpc = connect()
     try:
         out = call(rpc, name, args)
     finally:

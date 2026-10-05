@@ -144,3 +144,46 @@ on the page), the F1 replay and both replay bonuses never run, the
 had been labelled unused. A second random sample of 60, none from the
 first, checked by another fresh agent: 58 correct, 2 with a minor error
 (3.3 %, 95 % interval 0.9-11.4 %), none wrong; both were corrected.
+
+## 4 October 2026: three copies compared
+
+After the merge, the contributor added two more copies: the disk they
+own, `mr hat (original).D64`, and a fixed version by botowrap. The disk
+is side B of *Commodore 64 Club* issue 14 (its directory matches the
+German C64-Wiki's list for that side), and its `MH` file turned out to be
+the GameBase tape's one file byte for byte: the "freezer backup" the
+analysis had treated as someone's copy is how the magazine shipped the
+game. Started from the disk, the machine at `$1773` equals `handover.vsf`
+in all 65,536 bytes, so the listing stands, and `orientation.md` now
+starts from the disk; its old line that the tape was "not the magazine's
+own" was wrong and is gone.
+
+The contributor had heard that the title's font breaks after a game
+over. The diff with botowrap's version led straight to it: his file puts
+back 14 bytes of the font source at `$CE48`, equal to the copy at
+`$2848` that the frozen image still holds. A full game in each version,
+with a store checkpoint on the font page, confirmed that the game never
+writes there and that only the original comes back with broken I's. The
+end screen captured on 3 October already showed the broken I's in
+"FINISHED" and "MISSION"; nobody had looked. The ladder change is the
+only other difference; its clean pattern exists nowhere in the original,
+so it is recorded as a redraw, and whether the original ladder was
+damaged stays open.
+
+Before the listing comments were edited, the disassembler's saved
+project was found to hold the comments from before the full audit (275
+differ): the project file had not been saved after the audit's last
+edits. It was rebuilt from `symbols.json` with `symbols_import.py`, and
+an export round-tripped without a change before anything was written.
+
+A fresh agent (claude-opus-5-5) checked the 70 new claims against the
+bytes (`work/reports/verify-versions.md`): 4 wrong, 10 imprecise, 1
+unsupported. The worst: `restart-title.vsf`, described since 30 September
+as a restart at `$086D`, is not one; a real restart passes the title
+set-up and copies the damaged font at once. The restart was redone live
+(`versions/d64-restart.vsf`): the first title shows the broken I, and
+memory differs from the frozen image only in the font's copy and a
+music counter, so botowrap's version was compared again against that.
+The agent also found that rooms 5, 6, 8, 9, 10 and 11 draw their ladders
+from the same row through the shared copy `$5713`, whose operand they
+patch, which the reference search cannot see. All were corrected.

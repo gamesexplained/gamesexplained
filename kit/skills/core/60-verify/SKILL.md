@@ -37,6 +37,12 @@ the 6502 simulator (on the C64, `kit/c64/machine.js`) and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
 
+## Retained bytes from earlier phases
+
+A non-fill page in a play snapshot need not be play data. Trace its producer before assigning ownership: a boot decompressor may copy a whole page but consume only a short repair table within it. A play-only search misses that producer. Arm the watch before the relevant boot phase and stop at the write; separate startup RAM testing from the program’s own writes. Compare the whole copied extent with its source, then trace the consumer’s actual bound.
+
+On a banked machine, distinguish physical RAM from the I/O or ROM that occupies the same CPU address. Condition RAM watches on the bank selector. Include both a read and a store that must trigger as positive controls before trusting an empty watch log, and report the observed trajectory rather than inferring absence in every phase.
+
 ## Claims about the whole game
 
 "Every room", "the only routine", "never", "the test" in the singular:
@@ -57,12 +63,26 @@ The comments in the listing are claims too, and an annotation agent's
 are rarely all right. Draw a random sample of about 60 (a fixed seed,
 spread over every agent's range) and have an agent that wrote none of
 them check each against the bytes; the error rate with its interval goes
-in `facts.md` or the pull request. One run measured 25 % of its comments
+in `facts.md`. One run measured 25 % of its comments
 with a wrong detail (callers, rooms and counts, almost never what a
 routine does); a full pass by fresh agents, each correcting its own range
 and listing callers from the decoded listing rather than from a byte
 search, brought a second, independent sample to 3 %. If the first sample
 is bad, audit the whole listing before the page is published.
+
+If the checking agent cannot run (its provider is out of credit, say:
+`50-coverage`, "Splitting the work across subagents"), run it on another
+proven model, or through another provider. If none can run it, the
+listing is unmeasured, and that is a gap, not a pass: draw the sample
+anyway, write in `facts.md`, where the error rate would go, the seed and
+the size and that the sample is not checked yet, say so in the pull
+request, and leave `tier` where it was before this step.
+
+What the repository keeps is the result: one paragraph in `facts.md`
+naming the seed, the population and the sample's size, how many comments
+were wrong, what was wrong with them and what was changed, and the
+interval. The draw, the verdict on each comment and the checker's notes
+are the working record, and stay in `work/reports/`.
 
 ## What a test lets through
 
@@ -209,6 +229,25 @@ writing what the values mean: it may subtract one, use the value as an
 offset, or treat one value as a different command. The callers alone
 read as the answer and can be off by one throughout.
 
+## What the repository keeps
+
+A check is done to change what the page and `facts.md` say, and that
+change is what a reader and the next agent need. Commit the corrections,
+and a line in `facts.md`'s list of live tests naming what was run and
+what it showed. The scripts and what they print stay in `work/`, with the
+snapshots they read. Code is committed when a page depends on it, such as
+a port behind a Play tab and its tests, or a solver behind a solution,
+each with a README naming the private inputs it needs.
+
+Never commit a copy of what the repository already holds (the listing's
+comments or bytes), an inventory of every routine or every input value, a
+file of verdicts, or an audit report beside `facts.md`; `check_docs.py`
+fails a game folder with Markdown the template does not have. A second
+audit of the same game is a correction to `facts.md`, `symbols.json` and
+the page, not a new file. `reference/` is published as it stands, so it
+holds only what a page shows or loads, and a caption points at the
+listing or at `facts.md`, not at a JSON file.
+
 ## Writing facts.md
 
 `facts.md` is current truth for this game: memory layout, timing,
@@ -216,6 +255,13 @@ mechanics, tables, sound, controls. Every fact names the routine or table
 it comes from. It never narrates how understanding developed; that goes in
 `agent-history.md`. Where the code disagrees with documentation, the code
 wins and `features.md` says **differs**.
+
+In a game of several parts (`10-orient`), an address means nothing
+without its part. What is true of one part goes in that part's
+`parts/<id>/facts.md`, where every address is that part's and links into
+its listing. The game's own `facts.md` holds what spans the parts (how
+one leads to the next, what they share), and names the part beside every
+address it gives.
 
 ## Outputs
 

@@ -1,9 +1,6 @@
-# Work toward Silver
+# Silver review and open work
 
-- Finish the coverage burn-down: 56.4% explained (25,343 of 44,973 tracked bytes). Correct remaining runtime-state scope as it is traced; resolve the loaded-data report before calling 100%.
-- Determine what physical `$D800–$DBFF` holds; `listing.py` identifies 1,024 non-fill bytes under I/O. Do not suppress the warning by guessing.
-- Capture the loader’s final hand-over and compare against menu/play to account for initialization-only data.
-- Verify the 65 changed code-typed bytes between menu and play as state-dependent operands or self-modification.
-- Trace projection, clipping, rotations, interpreter, save layout and music from the imported leads. Replay cheaply testable claims live, including save/load and interactions.
-- Restore and expand the drafted interactive article only after its claims are verified. The published page is Bronze form meanwhile.
-- Have a maintainer check the completed work for Silver: the run model is unproven and the imported models are unknown.
+- A maintainer must check the run before Silver: its model is unproven and the imported models are unknown (`kit/CHECKING.md`). Tier remains Bronze pending that review.
+- Coverage is 52,770/52,770 tracked bytes, with no loaded-data audit stretches. This is annotation coverage; it does not mean every input/path has been exhaustively verified.
+- Open behavior: signed rotation/clipping boundaries, complete painter output, ordinary interaction routes, exact sustained audio, tape transfer and a complete rescue input route. Features.md records these explicitly; the article uses checked fixtures.
+- Open provenance/roles: retained text fragments at $0400,$3697,$4803; header parameters $9D4D/$9D4E; render-buffer capacity/overlap limits; full dynamic-face index boundary $1374-$1378. Do not convert these into absence/unreachable claims.

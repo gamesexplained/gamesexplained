@@ -56,7 +56,7 @@ copy of the C64's.
 | `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES` | `listing.py`, through `platform_modules(platform)` |
 | `snapshot.py` | `read(path) -> bytes`, one flat 64 KB image; exits, naming the format it saw, on anything else | `listing.py` (the snapshot and the hand-over), `symbols_import.py` |
 | `project.py` or `skoolkit.py` | `read_file(path) -> (blocks, symbols, comments)`, `write(gdir, snapshot, out=None) -> path` | `symbols_export.py` (`read_file`, `--project`/`--ctl`), `symbols_import.py` (`write`) |
-| `r2000.py` or `skoolkit.py` | `read_live() -> (blocks, symbols, comments)` from the running disassembler | `symbols_export.py` (`read_live`), `coverage.py --live` |
+| `r2000.py` or `skoolkit.py` | `read_live(gdir=None) -> (blocks, symbols, comments)` from the running disassembler; `gdir` is the game's folder or a part's (`kit/scripts/parts.py`), for a client that keeps a disassembler per part | `symbols_export.py` (`read_live`), `coverage.py --live` |
 | `registers.py` | `NAMES`, the I/O registers by name, so an operand that sees the chips shows one | `listing.py` |
 
 The C64's `cpu.py` holds the 6502 and PETSCII together; the Spectrum's

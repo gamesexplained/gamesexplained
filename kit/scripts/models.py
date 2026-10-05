@@ -164,6 +164,18 @@ def proven():
     return settle()[0]
 
 
+def awaits_check(g, P):
+    """The models not yet proven (P, from proven()) that ran a game's coverage or verify step,
+    when no maintainer's check vouches for them: the game is Bronze until one does, and its
+    page says so (build.py's banner). Empty for a game made on proven models, made before the
+    rule, or checked."""
+    sm = g.get("step_models") if isinstance(g.get("step_models"), dict) else {}
+    need = (set().union(*(step_models(sm, s) for s in PROVING_STEPS)) | import_models(g)) - set(P)
+    if not need or before_rule(g) or not verification_problem(g.get("verification"), P):
+        return []
+    return sorted(need)
+
+
 def is_proven(model):
     return base(model) in proven()
 
@@ -209,6 +221,8 @@ def test():
             assert "guesser" not in P                                      # a refuted one's does not
             assert os.path.join("games", "x", "third") in P["old-hand"], P  # the model that redid it is counted
             assert [os.path.relpath(u[0], tmp) for u in untrusted] == [os.path.join("games", "x", "fourth")], untrusted
+            waits = {slug: awaits_check(dict(g, step_models=t), P) for slug, (g, t) in made.items()}
+            assert waits == {"first": [], "second": [], "third": [], "fourth": ["guesser"]}, waits
     finally:
         ROOT = keep
     print("ok - models.py self-check: a passed check proves the run's model, a refuted sample's model stays unproven")

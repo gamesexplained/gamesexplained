@@ -200,6 +200,12 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   pocket, and carries it off (`$B48A`). It is one sprite, frames `$9A`-`$A1`
   (`$B46F`), drawn at double height (`$18AC` = 1). The code does not name
   it; players know it as the Master.
+- **The Master's theft** (`$B500`, `$B571`): taking the crystal from the
+  Doctor sets his `$1CB0` = `$79` (`$B544`); while it is positive he is
+  drawn in frame `$55`, lying down, and it counts down (`$CB60`). At his
+  home point (`$0DA8`, `$0380`) the Master moves the crystal to (`$06C8`,
+  `$06A8`) as a free item (`$B587`), sets switch cell 12 to block `$1C`
+  for `$FF` counts, then back to `$BC` (`$B477`).
 - **Using items** (`$BACC`): the pick axe digs at three sites, three hits
   each; the spanner works at eight points; detonators and explosives are
   armed; the activator at three points ends the game (`$E8` = 2, the
@@ -230,6 +236,20 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   (by eye, from the contributor's photograph). Success also sets switch
   cell 13 to block `$D5` (`$BF62`). The `$4E` test at `$BB05` is
   overwritten by the PASS CARD test at `$BB15`.
+- **The prisoner** (`$CE28`, `$C9A5`, `$CF24`): controller `$22` is the
+  only one whose flag `$778A`,X is 1 (it starts at `$0C40`, `$0588`).
+  Touching the Doctor while `$50` is not negative and his Y AND `$0F` = 8,
+  it goes to state 9 and sets `$50` = `$79`. While `$50` is positive the
+  Doctor's fire is cleared, `$E0` = `$FF` blocks the pockets, and
+  `chase_direction` steers him to (`$0BBC`, `$0588`); within `$10` x `$08`
+  of it `$50` = `$FF` (`$C9D4`). Controller state 9 then sets switch cell
+  11 to block `$F1` (a column of class-1 characters) and returns to state
+  0 (`$CF44`). Start-up writes cell 11 from `$1D0B` = `$04`, open (the
+  hand-over map holds `$F1`). A blast within `$20` x `$20` of (`$0BE0`,
+  `$0588`) sets it to `$FF`, open (`$C22E`). While `$50` is non-zero and
+  cell 11 is not `$FF`, patrolling controllers do not turn to the Doctor
+  (`$CE8A`). Bit 7 of `$50` survives a regeneration (`$937F`), so with
+  `$50` negative every later touch is a shock.
 - **Spanner bolts** (`$BBBC`): each of the eight points is switch cell 0-7,
   block `$E0` (a clamp on a ladder); undoing it writes `$E1`, the clamp
   drawn open. Point 5 needs the Doctor below it (`$BBB4`).

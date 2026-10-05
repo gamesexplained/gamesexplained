@@ -40,9 +40,17 @@ SINGLE = {"A": 0, "F": 1, "B": 2, "C": 3, "D": 4, "E": 5, "H": 6, "L": 7, "A'": 
 SP, PC = 12, 24
 
 
+_simulator = None
+
+
 def simulator():
     """SkoolKit's Simulator class. kit/spectrum/skoolkit.py shadows the package while HERE is
     on sys.path, so it is found the way test_z80.py finds it: tools/skoolkit first."""
+    global _simulator
+    if _simulator:
+        # once found, kept: finding it again pops the package, and a Simulator made
+        # after that imports skoolkit.simtables from the shim
+        return _simulator
     sys.modules.pop("skoolkit", None)
     path = [p for p in sys.path if os.path.abspath(p or ".") != HERE]
     for p in glob.glob(os.path.join(ROOT, "tools", "skoolkit", "lib", "python*", "site-packages")):
@@ -50,6 +58,7 @@ def simulator():
     old, sys.path = sys.path, path
     try:
         from skoolkit.simulator import Simulator
+        _simulator = Simulator
         return Simulator
     except ImportError:
         sys.exit("SkoolKit is not installed: run `python3 kit/scripts/tools.py --platform spectrum get-skoolkit`")
@@ -92,6 +101,15 @@ def hexarg(s):
 
 def test():
     import tempfile
+    try:
+        simulator()
+    except SystemExit:
+        # without SkoolKit there is nothing to check; KIT_REQUIRE_TOOLS makes that a failure
+        # (kit/scripts/test_kit.py --require-tools, which is how CI runs it)
+        if os.environ.get("KIT_REQUIRE_TOOLS"):
+            raise
+        print("no SkoolKit: simulate.py self-check skipped (its home is tools/skoolkit/ once get-skoolkit has run)")
+        return
     mem = bytearray(0x10000)
     # $8000: HL = HL * 3, then store L at ($9000); $8010: a routine that never returns
     mem[0x8000:0x800B] = bytes([0x5D, 0x54, 0x29, 0x19, 0x7D, 0x32, 0x00, 0x90, 0xC9, 0x00, 0x00])

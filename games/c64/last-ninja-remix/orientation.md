@@ -16,6 +16,6 @@ The listing uses the active `central-game.vsf`, whose bytes and CPU state existe
 
 ## Scope and rebuilding
 
-One declared load: Central Park, under the interim policy in RFC #124. The Street, Sewers, Basement, Office, Mansion and Final Battle remain open work. No extra state listings or composed binary image are published.
+The game is in seven parts (`kit/scripts/parts.py`), one for each level as it is loaded: Central Park, The Street, Sewers, Basement, Office, Mansion and Final Battle. One is analysed, `parts/central-park`, and its image holds the engine as well as the level: the two have not been told apart. The other six have a folder and nothing in it but their name; none has been loaded in this analysis, so this file gives no route to them. No composed binary image is published.
 
-Load the committed symbol map into regenerator2000 on your own gameplay snapshot with `symbols_import.py`, export with `symbols_export.py`, and build with `listing.py <game> work/central-game.vsf`. Snapshots, disk images, projects and the original text export stay in `work/`. `game.json.imported` records the original export hash and unknown models.
+Load the committed symbol map into regenerator2000 on your own gameplay snapshot with `symbols_import.py games/c64/last-ninja-remix/parts/central-park <snapshot>`, export with `symbols_export.py`, and build with `listing.py games/c64/last-ninja-remix/parts/central-park <snapshot>`, the snapshot being the one saved above as `central-game.vsf`. Snapshots, disk images, projects and the original text export stay in `work/`. `game.json.imported` records the original export hash and unknown models.

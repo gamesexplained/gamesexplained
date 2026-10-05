@@ -7,49 +7,34 @@ decision, what took longest, operating system and tool versions.
 ## What the kit got wrong or left out, and what was changed
 
 - **One program per game.** The kit assumed a game is one image. This one
-  is five programs loaded from a menu. Added: `kit/scripts/parts.py` (the
-  layout, and coverage per part); `coverage.py` sums the parts;
-  `check_listing.py` checks every part's listing; `build.py` builds one
-  Source page per part (`source.html`, `source-<id>.html`) with a row of
-  part links, one memory map per part on the About tab, and
-  `{{data_links}}` for an About layout. `site/source.html` reads the
-  listing named on its body, `site/lib/site.js` marks the Source tab on a
-  part's page and honours `data-source` for bare address links, and
-  `site/lib/site.css` styles the part links. `10-orient`, `50-coverage`,
-  `70-minisite` and the disassembler's notes say how to use it.
+  is five programs loaded from a menu. The run first added its own
+  support for parts; the kit's own layout for games of several parts
+  (`kit/scripts/parts.py`, merged in PR #202) replaced it before this pull
+  request merged, and the game now uses that: each part is a folder with
+  a `part.json`, its own Source page `source-<id>.html`, and `data-part`
+  on the sections of the authored pages whose addresses are one part's.
+  The five programs each replace the whole of memory, so none lies over
+  another.
 - **The disassembler's fixed port.** Five parts meant five disassemblers.
-  They ran side by side in five Linux network namespaces, which
-  `tools.py` does not know about. The tool notes describe it.
+  They ran side by side in five Linux network namespaces; `tools.py` now
+  starts one on any port with `KIT_R2000_PORT`, which is simpler.
 - **Packers that do not write everything.** The ending's packer writes
   `$0800`-`$80FF` only, so its hand-over snapshot holds the previous
-  program's memory. `10-orient` now says to run each packer over memory
+  program's memory. `10-orient` says to run each packer over memory
   filled two ways.
 - **A flag read only at the end.** `60-verify` now says to find every
   reader of a value the player sets at the start.
-- **Game-wide files and addresses.** In a game of parts, `facts.md`,
-  `features.md`, `orientation.md` and `cheats.md` name addresses in
-  several programs; the build renders them without address links.
 - Subagents could not write their report files (the harness refused the
   write), so the reports lived only in their final messages, as
   `50-coverage` warns.
 - **A tab for maps and solutions.** Here `levels.html` explains the five
-  parts, so the maps and the ways to finish them had nowhere of their own.
-  `build.py` builds only authored pages it names, so it now also builds
-  `maps.html` when a game has one.
+  parts, so the maps and the ways to finish them have `maps.html`.
 
 ## Maintainer asks
 
-The run could not file issues from the fork, so each ask is written in
-full and the repository files it when the pull request merges.
-
-- **Let tools.py start one disassembler per part.** A game of several
-  programs needs one regenerator2000 per part, and the tool listens on a
-  fixed port, so this run put each in its own network namespace by hand.
-  `tools.py` could start each on its own port, if regenerator2000 gains a
-  port option, or in its own namespace where the system allows it.
-- **Let new_game.py create the parts/ folders from a list.** Five parts
-  meant making five folders with their own snapshots, symbols and facts
-  by hand; `new_game.py` could take the part names and create them.
+None. The two this run first wrote (a disassembler per part on its own
+port, and creating the parts' folders from a list) are answered by
+`KIT_R2000_PORT` in `tools.py` and `parts.py add`.
 
 ## What took longest
 

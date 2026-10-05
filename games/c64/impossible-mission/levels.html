@@ -30,8 +30,27 @@
   <p>The game draws a room into a buffer at <code>$C100</code> while the screen is blanked (<code>$A39C</code>), then reveals it with two black bands that open from the middle of the screen outwards (<code>$A2F7</code>). Furniture comes from a table of 27 types at <code>$232C</code>: a shape, its size and how long it takes to search. The floors alternate between two glyphs, and the walls are one glyph down each side.</p>
 </section>
 
+<section id="map">
+  <p class="fig">02 · The map</p>
+  <h2 class="t">Roll a new stronghold and see the map the pocket computer draws</h2>
+  <p class="lede">Every game builds its map from scratch when fire is pressed. Each roll here is made by a port of the game's own map builder.</p>
+  <div class="plate">
+    <div class="ctl">
+      <button id="mroll">Roll a new stronghold</button>
+      <label><input type="radio" name="mview" value="pc"> as the pocket computer shows it</label>
+      <label><input type="radio" name="mview" value="colour" checked> rooms and lifts in colour</label>
+      <label><input type="checkbox" id="mnums"> room numbers</label>
+    </div>
+    <canvas id="mcv" width="672" height="256" style="width:100%;max-width:672px;display:block;margin:0 auto;background:#000;cursor:pointer"></canvas>
+    <p class="cap" id="mcap"></p>
+  </div>
+  <p>The map is a picture of 102 glyphs, 17 across and 6 down, that the game carves out of solid rock at the start of every game (<code>$B2BD</code>). The 32 rooms are first shuffled within four groups of eight. Then they are dropped one at a time onto a grid of 9 columns and 6 rows, at a random row; a room that lands on a taken square moves down the column, and then on to the next column, until it finds a free one (<code>$B450</code>).</p>
+  <p>Each room cuts its own outline into the picture with a mask from a table (<code>$B59D</code>). Eight lift shafts, lines two pixels wide, run between the nine columns of the grid, and the rooms hang beside them. Rooms 0 to 15 open onto the shafts on both sides. Rooms 16 to 23 have a door on their left only and rooms 24 to 31 on their right only, so the builder never joins them from the closed side (<code>$B500</code>). Once a room is placed, the builder looks at its neighbour in the row; if it may not join that one, it looks up and down the column for a room it may join and cuts the shaft between the two (<code>$B488</code>).</p>
+  <p>The pocket computer shows a cell of the map only once the agent has been in it (<code>$B761</code>). Until then it shows glyph <code>$FC</code>, which is solid, so the map fills in as the stronghold is explored. The agent starts at the top of the first shaft, in the map's top-left cell (<code>$B3E9</code>). The striped frame round the map is six glyphs kept with the map code (<code>$B56D</code>). The colour view is ours: the game draws the map in one green. Here the rock is black, each room is filled with its own background colour from its record, and the shafts are the grey behind the lifts in the shaft view. Several rooms are green inside, which is why the rock cannot stay green.</p>
+</section>
+
 <section id="random">
-  <p class="fig">02 · A new stronghold every game</p>
+  <p class="fig">03 · A new stronghold every game</p>
   <h2 class="t">The rooms stay the same; the map, the robots and the hiding places are rolled for each game</h2>
   <p class="lede">Pressing fire at the start runs <code>$7236</code>, which rolls the whole game.</p>
   <table class="d">
@@ -47,7 +66,7 @@
 </section>
 
 <section id="record">
-  <p class="fig">03 · The room record</p>
+  <p class="fig">04 · The room record</p>
   <h2 class="t">A room is a list of lists</h2>
   <p class="lede">The game reads a record from the start in one pass, and most of its parts end with a byte of <code>$FF</code>. In the order they are read:</p>
   <table class="d">
@@ -68,7 +87,7 @@
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script>
 // Data: excerpts of the game's memory from listing.json (address, base64), see the build in work/.
-const DATA = [[3508, "SUpLTE1OT1BR"], [3696, "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"], [9004, "syMLAlDLIwUBMNcjCAL/6SMTBCDZJAsFkPEkCALAESQIAmAjJA8DcEMkFAbwbSQFAUB5JCMI0MEkCwJwAyUXBRAzJQ8DoFMlAABAVSUFAjB5JQUBIGElCwWQhSUFAUCRJQMBIJklDgLgtyUdBQAvJhEF4FMmCwKwayYLAwCDJgsDAJsmIwUADAwPDAwPDAwPDg4OFBMSFxYVGhkYHBwbDg4ODg0NHh0gHyEhCAgIDg4OCAgIJCMiJyYlKSooDg4ODg4ODg4ODggICAgIDg4ODg4rKysrK1JSUlIsLS4uLi8wMDAwMAgICAgICAgICFMxUzQzMjc2NQEBAQEBAQEBDA8NDggICAg7Ojk4UlJSPEA/Pj1DQkJBCAgICAgICAgIDAwMCAgICAwMDAgIU1dWVVRTU15dXFtaWVhlZGNiYWBfDg4ODggIZ2ZpaGtqAQEBAQEBAQEBCQkJCQkJCQkJCAgICAgICAgICAgICAgICAgIbm1tbW1tbW1sc3BycXBycXBvU3V6eXh3dnV0U3yBgH9+fXx7AQEBBg4GBg4GDg4Og4JTU4WEiIeGi4qJBgYGBgYGCAgICAgIjI2NjY6PkJGRkZGSCAgICAgICAgIk5SVlpeYmZqbCQkJCQkJCQkJCQkJCQkJCQkBCQkJCQkJqVNTU1NTqlNTq1NTrK2trq2vUlJSUlJSAQEBAQkJCQkJCQkJCQkJCVOcnVNTnp9ToKGio6SlpqcOqAkJCQkJAbCxsrO0tQMGBgYGAwsLCwsLC7a3UlK4ubq7u7u7vAAAAAAAAL1TU75TvwgICAgICMDBwsPExQgICAjGx8jJCAoNDgoNDg4KDQ8JDQ8JysvMzc7P0NHS09TV1tfYCA4ODg4ICA4ODg4ICA4ODg4ICA4ODg4ICA4ODg4I2URERETd3lJSUlLj3lJSUlLj3lJSUlLj6f/////sCAEBAQEICAEBAQEICAEBAQEICAEBAQEICAEBAQEI2drb29zd3t/g4eLj3lLkUu3j3uXm5+jj6epSUuvsCAgICAgLCwsLCwsLCwsLCwsLU1Pu7/DxoPLz9PX2pKWm9/j5CAgLCAgLCAgLCAgI+vr7/Pz9+vr+QUFBCAgICAgICAgICAgIUlJSUlJSUlJSUlJSCQkJCQkJCQkJCQkJUlJSUlJSUlJSUlJSAAABAQAAAAABAQAAAAABAQAAAAAODgAACAgICAgIDAwMDAwMU1MODlNTU1MODlNTU1MODlNTU1MPD1NTCAkKCgsMUw0NDQ1T"], [12387, "AACqalpfX18AAKqqqv///wAAqqqq+vr6X19fX19fX1/6+vr6+vr6+l9fX1VVVQAA////VVVVAAD6+vpaVlUAAFVdVVdVVRUAVdVVdVXVVapVVVVVVVVVqlVXVV1VV1WqVXVV1VVVVAD/AAAAAAAAABgYGBgYGBgYPP88/zz/PP+q////////qv///1VVVf8U"], [18368, "AKoAAqqACqqgCqmgKqVoKqloqqpqqqqqqqqqqqqqqqqqqqqqqqqqKqqoKqpoCqmgCqqgAqqAAKoAAAAAAAAAAA=="], [20624, "AAAAAFRU7OwAAAAAVVX/vwAAAABVVX963Nzs3Nzs3Nyvq66tvf39vWpra2p6f3967Nzc7Nzc7Oytrquvv////2pra2p6f39/VFRUVFSo/PxVVVVVVar//wAAAFTVqdWpAAAAFVdqV2rVqdWp/2Zm/1dqV2r/pqb///////+q//8AAEBAQEBAQAAAVf//////AAABAQEBAQFAAEDQ0FCqqlX/Vf39VaqqAQABBwcFqqoICAgICAgICCAgICAgICAgAAAAAAAAAAAAAFX////////////39///VWp3and3alVVqneqd3eqVVWpfal9falV//////9V//8AAAAAVVVVVQDo66uoVLRUVf//qqpVu1UAK+vqKhUaFSAgICAgoMDAAAAAAAAAAAAICAgICCgwMAD/u7vX7+//AP9jbW1tY/8A/zvZ2Brb/wD/597e3ub////39/f///9VVVVVfX19fWdnZ2dVZmZVd3d3d1VmZlV2dnZ2VWZmVVVVVVVVqqqq//+qVVWqqqp/f2pVVaqqqgBVVVX/////VVVV/+rq6v9VVVX/q6ur//+rq6urq6v//+rq6urq6v////+r6vr+v/////r+v6+r////v6+r6voAAAAA////qwAAAAD////6AAAAAP///7/q+v6/AAAAAP6/r6sAAAAAr6vq+gAAAAD//////////wAAAAAAAAAAAADw8AAAAAAAoP//AAAAAACqDw8AAAAAUKpQgICAgIAAAABVqWmp/QAAAFWqqar/AMDA1erqwNAA/////////wADA1erqwMHgKCoVapqqv8AAABVamlqf6mpaampqQEBqqqpqqqqAADQENDQAAAAQP8A//8UFBRVBwQHBwAAAAGqqmqqqqoAAGpqaWpqakBAAABQVFVVVVUAAAEBAQEBAVTwVFRUVP//AQAFFVUV////DwMDAwMP/w8AAAAAAAAPAAAAAP/88PAAAAAA/////wAAAAA/DwMD8ICAQICAQID/qqpVpqZVqv+pqVVqalWp/5qaVaqqVZoDAAAAAAAAAIBAgIBAgIBAqlWmplWqqlWp1erq1enp1Zr/////////qv////////+p/////////5pVqqpVmppVgIBAgIBAgICmplWqqlWmpurq1enp1erq////d3dff9////93d1V///////f3/f/9qqpVmppVqqr4+Pz8/v7//wcHDw8fHz8/AA4fHz8/Pn5AQEBAQEBAQH58/Pz4+PjwQEBAQH9/f38AAAAAHx8fH/Dw8PDw8PAQf39/f39/f1QPDw8PDw8PBQAAAAAAAAA/AAAAAAAAAP8AAAAAAA8//wAAAAAAwPD8qqqqqqoDAwOqqqqqqv///6qqqqqqwMDAAAAAqqqqv6oAAACqWqr/qgAAAKCgoOCgqqq/qqqqqr9aqv+qWqqq/6Cg4KCgoKDgqqqqqr+qPz+qWqqq/6r//6CgoKDgoMDAPz07Nz8+PTv/79+/e/f//z8/Pz8AAAAI/////wAAgIgAABUVCwsLCwg/VVX/////iP9VVb+/v78AAFVV+Pj4+AsLCwsLCwoB/f3/////qlWfn7+/v7+qVfj4+Pj4+KhQAPxUVFRUVPyAoCoKCAAAAAAAAAAAIKAgAAAAAABVqlUAqKgIAAD//wAAAAAAAP//VVV9AAAA//8AAAAAAAD+////Pzo/Pz89/////////1fw8MDAwMDAwwUPAwMDAAADVf/8/Pzw8PwHBwMAAAAAAAAAAAAOHx8PP39////////8/v7//////wAAAABw+PjwAwMDAwMDAwGqqqr/////AMDAwMDAwMBAAAAADBj0YiGAgEBAICAgEBAQEBAQEBD+AAAAABUVPz8AAAAAVFT8/EB/dX9Af3V1Af1d/QH93f1/QEBAQEBAQP0BAQEBAQEBVf////////9U/Pz8/Pz8/P//////VVVV/Pz8/PxUVFQAAACqqpCWlgAAAKqqA+fnAAAAqqoe3t6WlqqEt7e3t+fnqnB5eXl53t6qQm5ubm6qh5eXl5eqgapMfX19faoAqg6+vr6+qga1tbW1taqMnKampqamqgHhZmZmZmaqDs6enp6enqqqqu3t7e3tqqqq3t7e3t6qqqoAFSUpKioqKgD///9/v9/vAP////////8A/////v379wBUWGioqKioKioqKioqKir3+/3+//////////9/v8Df////////AP/v379/f39/f6ioqKioqKio39/f39/f39///////v3799/Av3///////wD///////9/f39/f7/f7yoqKioqKSUV79+/f//////3+/3+/////6ioqKioaFhUf39/f39/f38AAAAAAACAgAUFBQUFBQUFVVVVqampqVVoaHy8lLy8aAgqVVX/////iKpVVb+/v78FClVV+/v7+1WqVVXv7e/qfKpVVfh4+Kj5+fv7+/uqVe/t7+rv7a9V+Hj4qPh4+FBVVVVVVVVVVVVVVVVXV1dXVVVVqlVVVVVXV1eqV1dXV1dXV1dXVVVV/////1VVVVU="], [26368, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcAAAGAAACAAACAAAAAAAPAAAPAAgAD4AAD4AAB4AAB4AAA8AAA8AAA+AAB+AAD+AAH8AAP8AAP4AAe4AAe8AAPeAAHOAAHHAADjgABxgABzgAHvAIAAAAAAAAAAAAABgAADwAABwAAA4AAAYAAAcAAAeAAAOAAAOAAAeAAA8AABwAAHgAAGAAAAAAAAAAAAAAAAAACA"], [28672, "AIAAAIAAAVDAD1HAD//AAVHAABDAAFQAA3cABVVADZnADWVABVXABf1ADf3ADf1ABVVAAd0AAPwAAPwAACAAAA=="]];
+const DATA = [[24544, "//////////8="], [46445, "AAAABw4cODAAAAA8fPgwIAQMHD48OAAABAwcOHDgAAAAAAA+fPgAAAQMHDw8ODAg5+fn5+fg5+f/AAAAAAD//+fn5+fnB+fn5+Dn5+fn5+f/AAAAAAD//+cH5+fn5+fn5+Dn5+fn5+f/AAAAAAD//+fn5+fnB+fn5+fn5+fg5+f/AAAAAAD//+cH5+fn5+fn5+Dn5+fn5+f/AAAAAAD//+fn5+fn4Ofn/wAAAAAA////AAAAAAD//+cH5+fn5+fn/wAAAAAA///n5+fn5wfn5+fn5+fn5+fn"], [3508, "SUpLTE1OT1BR"], [3696, "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"], [9004, "syMLAlDLIwUBMNcjCAL/6SMTBCDZJAsFkPEkCALAESQIAmAjJA8DcEMkFAbwbSQFAUB5JCMI0MEkCwJwAyUXBRAzJQ8DoFMlAABAVSUFAjB5JQUBIGElCwWQhSUFAUCRJQMBIJklDgLgtyUdBQAvJhEF4FMmCwKwayYLAwCDJgsDAJsmIwUADAwPDAwPDAwPDg4OFBMSFxYVGhkYHBwbDg4ODg0NHh0gHyEhCAgIDg4OCAgIJCMiJyYlKSooDg4ODg4ODg4ODggICAgIDg4ODg4rKysrK1JSUlIsLS4uLi8wMDAwMAgICAgICAgICFMxUzQzMjc2NQEBAQEBAQEBDA8NDggICAg7Ojk4UlJSPEA/Pj1DQkJBCAgICAgICAgIDAwMCAgICAwMDAgIU1dWVVRTU15dXFtaWVhlZGNiYWBfDg4ODggIZ2ZpaGtqAQEBAQEBAQEBCQkJCQkJCQkJCAgICAgICAgICAgICAgICAgIbm1tbW1tbW1sc3BycXBycXBvU3V6eXh3dnV0U3yBgH9+fXx7AQEBBg4GBg4GDg4Og4JTU4WEiIeGi4qJBgYGBgYGCAgICAgIjI2NjY6PkJGRkZGSCAgICAgICAgIk5SVlpeYmZqbCQkJCQkJCQkJCQkJCQkJCQkBCQkJCQkJqVNTU1NTqlNTq1NTrK2trq2vUlJSUlJSAQEBAQkJCQkJCQkJCQkJCVOcnVNTnp9ToKGio6SlpqcOqAkJCQkJAbCxsrO0tQMGBgYGAwsLCwsLC7a3UlK4ubq7u7u7vAAAAAAAAL1TU75TvwgICAgICMDBwsPExQgICAjGx8jJCAoNDgoNDg4KDQ8JDQ8JysvMzc7P0NHS09TV1tfYCA4ODg4ICA4ODg4ICA4ODg4ICA4ODg4ICA4ODg4I2URERETd3lJSUlLj3lJSUlLj3lJSUlLj6f/////sCAEBAQEICAEBAQEICAEBAQEICAEBAQEICAEBAQEI2drb29zd3t/g4eLj3lLkUu3j3uXm5+jj6epSUuvsCAgICAgLCwsLCwsLCwsLCwsLU1Pu7/DxoPLz9PX2pKWm9/j5CAgLCAgLCAgLCAgI+vr7/Pz9+vr+QUFBCAgICAgICAgICAgIUlJSUlJSUlJSUlJSCQkJCQkJCQkJCQkJUlJSUlJSUlJSUlJSAAABAQAAAAABAQAAAAABAQAAAAAODgAACAgICAgIDAwMDAwMU1MODlNTU1MODlNTU1MODlNTU1MPD1NTCAkKCgsMUw0NDQ1T"], [12387, "AACqalpfX18AAKqqqv///wAAqqqq+vr6X19fX19fX1/6+vr6+vr6+l9fX1VVVQAA////VVVVAAD6+vpaVlUAAFVdVVdVVRUAVdVVdVXVVapVVVVVVVVVqlVXVV1VV1WqVXVV1VVVVAD/AAAAAAAAABgYGBgYGBgYPP88/zz/PP+q////////qv///1VVVf8U"], [18368, "AKoAAqqACqqgCqmgKqVoKqloqqpqqqqqqqqqqqqqqqqqqqqqqqqqKqqoKqpoCqmgCqqgAqqAAKoAAAAAAAAAAA=="], [20624, "AAAAAFRU7OwAAAAAVVX/vwAAAABVVX963Nzs3Nzs3Nyvq66tvf39vWpra2p6f3967Nzc7Nzc7Oytrquvv////2pra2p6f39/VFRUVFSo/PxVVVVVVar//wAAAFTVqdWpAAAAFVdqV2rVqdWp/2Zm/1dqV2r/pqb///////+q//8AAEBAQEBAQAAAVf//////AAABAQEBAQFAAEDQ0FCqqlX/Vf39VaqqAQABBwcFqqoICAgICAgICCAgICAgICAgAAAAAAAAAAAAAFX////////////39///VWp3and3alVVqneqd3eqVVWpfal9falV//////9V//8AAAAAVVVVVQDo66uoVLRUVf//qqpVu1UAK+vqKhUaFSAgICAgoMDAAAAAAAAAAAAICAgICCgwMAD/u7vX7+//AP9jbW1tY/8A/zvZ2Brb/wD/597e3ub////39/f///9VVVVVfX19fWdnZ2dVZmZVd3d3d1VmZlV2dnZ2VWZmVVVVVVVVqqqq//+qVVWqqqp/f2pVVaqqqgBVVVX/////VVVV/+rq6v9VVVX/q6ur//+rq6urq6v//+rq6urq6v////+r6vr+v/////r+v6+r////v6+r6voAAAAA////qwAAAAD////6AAAAAP///7/q+v6/AAAAAP6/r6sAAAAAr6vq+gAAAAD//////////wAAAAAAAAAAAADw8AAAAAAAoP//AAAAAACqDw8AAAAAUKpQgICAgIAAAABVqWmp/QAAAFWqqar/AMDA1erqwNAA/////////wADA1erqwMHgKCoVapqqv8AAABVamlqf6mpaampqQEBqqqpqqqqAADQENDQAAAAQP8A//8UFBRVBwQHBwAAAAGqqmqqqqoAAGpqaWpqakBAAABQVFVVVVUAAAEBAQEBAVTwVFRUVP//AQAFFVUV////DwMDAwMP/w8AAAAAAAAPAAAAAP/88PAAAAAA/////wAAAAA/DwMD8ICAQICAQID/qqpVpqZVqv+pqVVqalWp/5qaVaqqVZoDAAAAAAAAAIBAgIBAgIBAqlWmplWqqlWp1erq1enp1Zr/////////qv////////+p/////////5pVqqpVmppVgIBAgIBAgICmplWqqlWmpurq1enp1erq////d3dff9////93d1V///////f3/f/9qqpVmppVqqr4+Pz8/v7//wcHDw8fHz8/AA4fHz8/Pn5AQEBAQEBAQH58/Pz4+PjwQEBAQH9/f38AAAAAHx8fH/Dw8PDw8PAQf39/f39/f1QPDw8PDw8PBQAAAAAAAAA/AAAAAAAAAP8AAAAAAA8//wAAAAAAwPD8qqqqqqoDAwOqqqqqqv///6qqqqqqwMDAAAAAqqqqv6oAAACqWqr/qgAAAKCgoOCgqqq/qqqqqr9aqv+qWqqq/6Cg4KCgoKDgqqqqqr+qPz+qWqqq/6r//6CgoKDgoMDAPz07Nz8+PTv/79+/e/f//z8/Pz8AAAAI/////wAAgIgAABUVCwsLCwg/VVX/////iP9VVb+/v78AAFVV+Pj4+AsLCwsLCwoB/f3/////qlWfn7+/v7+qVfj4+Pj4+KhQAPxUVFRUVPyAoCoKCAAAAAAAAAAAIKAgAAAAAABVqlUAqKgIAAD//wAAAAAAAP//VVV9AAAA//8AAAAAAAD+////Pzo/Pz89/////////1fw8MDAwMDAwwUPAwMDAAADVf/8/Pzw8PwHBwMAAAAAAAAAAAAOHx8PP39////////8/v7//////wAAAABw+PjwAwMDAwMDAwGqqqr/////AMDAwMDAwMBAAAAADBj0YiGAgEBAICAgEBAQEBAQEBD+AAAAABUVPz8AAAAAVFT8/EB/dX9Af3V1Af1d/QH93f1/QEBAQEBAQP0BAQEBAQEBVf////////9U/Pz8/Pz8/P//////VVVV/Pz8/PxUVFQAAACqqpCWlgAAAKqqA+fnAAAAqqoe3t6WlqqEt7e3t+fnqnB5eXl53t6qQm5ubm6qh5eXl5eqgapMfX19faoAqg6+vr6+qga1tbW1taqMnKampqamqgHhZmZmZmaqDs6enp6enqqqqu3t7e3tqqqq3t7e3t6qqqoAFSUpKioqKgD///9/v9/vAP////////8A/////v379wBUWGioqKioKioqKioqKir3+/3+//////////9/v8Df////////AP/v379/f39/f6ioqKioqKio39/f39/f39///////v3799/Av3///////wD///////9/f39/f7/f7yoqKioqKSUV79+/f//////3+/3+/////6ioqKioaFhUf39/f39/f38AAAAAAACAgAUFBQUFBQUFVVVVqampqVVoaHy8lLy8aAgqVVX/////iKpVVb+/v78FClVV+/v7+1WqVVXv7e/qfKpVVfh4+Kj5+fv7+/uqVe/t7+rv7a9V+Hj4qPh4+FBVVVVVVVVVVVVVVVVXV1dXVVVVqlVVVVVXV1eqV1dXV1dXV1dXVVVV/////1VVVVU="], [26368, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcAAAGAAACAAACAAAAAAAPAAAPAAgAD4AAD4AAB4AAB4AAA8AAA8AAA+AAB+AAD+AAH8AAP8AAP4AAe4AAe8AAPeAAHOAAHHAADjgABxgABzgAHvAIAAAAAAAAAAAAABgAADwAABwAAA4AAAYAAAcAAAeAAAOAAAOAAAeAAA8AABwAAHgAAGAAAAAAAAAAAAAAAAAACA"], [28672, "AIAAAIAAAVDAD1HAD//AAVHAABDAAFQAA3cABVVADZnADWVABVXABf1ADf3ADf1ABVVAAd0AAPwAAPwAACAAAA=="]];
 const M = new Uint8Array(65536);
 for (const [a, b] of DATA) { const s = atob(b); for (let i = 0; i < s.length; i++) M[a + i] = s.charCodeAt(i); }
 const PAL = ['#000000','#ffffff','#813338','#75cec8','#8e3c97','#56ac4d','#2e2c9b','#edf171','#8e5029','#553800','#c46c71','#4a4a4a','#7b7b7b','#a9ff9f','#706deb','#b2b2b2'];
@@ -160,6 +179,127 @@ function drawRoom(M, room) {
   return { scr, col, bg, mc1, mc2, entry, robots, ball, spr };
 }
 
+// Port of make_map ($B2BD): this game's stronghold map from a stream of random bytes. rand() gives
+// the bytes the game's `random` ($82E3) would return. T(a) reads the game's tables (tbl_room_shapes
+// $B59D, tbl_corridor_mask $B62D). Returns the map's memory, $FC00-$FFFF (index 0 = $FC00): the glyph
+// data at $FC00-$FF2F, the cell table at $FF30, the room grid at $FF96 (9 columns by 6 rows, $FF
+// empty) and the shuffled room numbers at $FFCC. Also returns owner: for each bit of the glyph data
+// that a room's shape cleared, the room, so a page can colour it.
+function makeMap(rand, T) {
+  const mem = new Uint8Array(0x400), at = a => a - 0xFC00;
+  const rd = a => mem[at(a)], wr = (a, v) => { mem[at(a)] = v & 0xFF; };
+  const owner = new Int16Array(0x330 * 8).fill(-1);
+  let X = 0, Y = 0, ptr = 0, tmp1 = 0, tmp2 = 0, tmp3 = 0, tmp4 = 0, tmp5 = 0;
+  const randomRow = () => { let a; do a = rand() & 7; while (a >= 6); return a; };   // $B3F2
+  const cellPtr = (x, y) => 0xFC00 + 0x88 * y + (x ? 16 * x - 8 : 0);              // $B516
+  function claim(a) {                                                              // $B450
+    for (;;) {
+      tmp2 = 5;
+      do {
+        tmp1 = X; const i = X + 9 * Y;
+        if (rd(0xFF96 + i) & 0x80) { wr(0xFF96 + i, a); X = tmp1; return; }
+        X = tmp1; Y++; if (Y >= 6) Y = 0;
+      } while (--tmp2 >= 0);
+      X++; if (X >= 8) X = 1;
+    }
+  }
+  function andInto(table, n, base) {          // Y = n-1 .. 0: (ptr),y &= table[base--]
+    for (let y = n - 1; y >= 0; y--, base--) {
+      const a = ptr + y; if (a > 0xFFFF) continue;
+      const m = T(table + base), old = rd(a), v = m & old;
+      if (base !== null && owner && a < 0xFF30) for (let b = 0; b < 8; b++) if ((old >> b & 1) && !(v >> b & 1)) owner[(a - 0xFC00) * 8 + b] = curRoom;
+      wr(a, v);
+    }
+  }
+  let curRoom = -1;
+  function place(a) {                                                              // $B3FC
+    claim(a);
+    ptr = cellPtr(X, Y);
+    tmp4 = Y; tmp1 = X; curRoom = a;
+    if (a < 0x10) {
+      let x = (a & 8) ? 0x47 : 0x17;
+      if (a & 1) x += 0x18;
+      andInto(0xB59D, 24, x);
+    } else {
+      let x = 0x60;
+      if (a >= 0x18) { if (tmp1 !== 0) ptr += 8; x = 0x80; }
+      x = x + ((a & 1) ? 0x10 : 0) + 0x0F;
+      andInto(0xB59D, 16, x);
+    }
+    curRoom = -1;
+    X = tmp1; Y = tmp4;
+  }
+  function mayJoin(a) {                                                            // $B500: true if joinable
+    if (!(tmp5 & 0x40)) return a < 0x18;
+    if (tmp5 & 0x80) return true;
+    return !(a >= 0x10 && a < 0x18);
+  }
+  function cut() {                                                                 // $B538
+    if (tmp5 & 0x40) for (let y = 7; y >= 0; y--) wr(ptr + y, T(0xB63D + y) & rd(ptr + y));
+    if (tmp5 & 0x80) {
+      if (X === 0) ptr -= 8;
+      for (let y = 0x17; y >= 0x10; y--) wr(ptr + y, T(0xB62D + y) & rd(ptr + y));
+    }
+  }
+  function join() {                                                                // $B488
+    let x = X + 9 * Y; tmp1 = X;
+    let vertical = tmp5 === 0xC0;
+    if (!vertical) {
+      x += tmp5 === 0x40 ? -1 : 1;
+      const r = rd(0xFF96 + x);
+      if (r & 0x80) vertical = true;
+      else if (!mayJoin(r)) vertical = true;
+      else { X = tmp1; return; }
+    }
+    tmp3 = x; tmp2 = Y;
+    for (;;) {                                                                     // up the column
+      if (x < 9) break;
+      x -= 9; Y--;
+      const r = rd(0xFF96 + x);
+      if (r & 0x80 || !mayJoin(r)) continue;
+      X = tmp1;
+      for (;;) { Y++; if (Y === tmp2) { X = tmp1; return; } ptr = cellPtr(X, Y); cut(); }
+    }
+    x = tmp3; Y = tmp2;
+    for (;;) {                                                                     // down the column
+      if (x + 9 >= 0x36) { X = tmp1; return; }
+      x += 9; Y++;
+      const r = rd(0xFF96 + x);
+      if (r & 0x80 || !mayJoin(r)) continue;
+      X = tmp1;
+      for (;;) { Y--; if (Y === tmp2) { X = tmp1; return; } ptr = cellPtr(X, Y); cut(); }
+    }
+  }
+  // the shuffle
+  for (let i = 0; i < 32; i++) wr(0xFFCC + i, i);
+  for (let k = 15; k >= 0; k--) for (const g of [0xFFCC, 0xFFD4, 0xFFDC, 0xFFE4]) {
+    const i = rand() & 7, y = rd(g + i); wr(g + i, rd(g)); wr(g, y);
+  }
+  for (let a = 0xFC00; a < 0xFF30; a++) wr(a, 0xFF);
+  for (let i = 0; i < 0x36; i++) wr(0xFF96 + i, 0xFF);
+  for (let i = 0; i < 0x66; i++) wr(0xFF30 + i, 0xFC);
+  for (X = 1; X < 8; X++) {
+    Y = randomRow(); place(rd(0xFFCB + X));
+    if (X >= 2) { tmp5 = 0x40; join(); }
+  }
+  for (let t6 = 8; t6 >= 0; t6--) {
+    const a = rd(0xFFD3 + t6);
+    Y = randomRow();
+    let x; do x = rand() & 7; while (x === 0);
+    X = x; place(a); tmp5 = 0xC0; join();
+  }
+  Y = 0; X = 0; place(rd(0xFFE4)); tmp5 = 0x80; join();
+  Y = randomRow(); X = 8; place(rd(0xFFDC)); tmp5 = 0x40; join();
+  for (let t6 = 7; t6 >= 1; t6--) {
+    let a = rd(0xFFDC + t6), x;
+    do x = rand() & 0x0F; while (x === 0 || x >= 9);
+    X = x; Y = randomRow(); place(a); tmp5 = 0x40; join();
+    a = rd(0xFFE4 + t6);
+    X = rand() & 7; Y = randomRow(); place(a); tmp5 = 0x80; join();
+  }
+  return { mem, owner };
+}
+
 
 // ---- drawing ----
 function ctx2(cv) { const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; return c; }
@@ -248,4 +388,72 @@ document.getElementById('rnext').onclick = () => { rsel.value = (+rsel.value + 1
 document.getElementById('rsprites').onchange = drawRoomCanvas;
 document.getElementById('rcontents').onchange = drawRoomCanvas;
 drawRoomCanvas();
+
+// ---- the map ----
+const mcv = document.getElementById('mcv'), mshow = ctx2(mcv), moff = document.createElement('canvas');
+moff.width = 168; moff.height = 64; const mc = ctx2(moff);           // drawn at the display's own size, then scaled
+const MAPT = a => M[a];
+let mapNow = null;
+function rollMap() {
+  const r = new Uint8Array(1);
+  mapNow = makeMap(() => (crypto.getRandomValues(r), r[0]), MAPT);
+  drawMap();
+}
+function glyph(c, bytes, x, y, fg, bg) {
+  for (let r = 0; r < 8; r++) for (let p = 0; p < 8; p++) { c.fillStyle = PAL[(bytes[r] & (0x80 >> p)) ? fg : bg]; c.fillRect(x + p, y + r, 1, 1); }
+}
+const frameGlyph = k => M.slice(0xB56D + 8 * k, 0xB56D + 8 * k + 8);      // glyphs $F0-$F5 in the display
+const solid = M.slice(0x5800 + 0xFC * 8, 0x5800 + 0xFC * 8 + 8);           // glyph $FC, an unvisited cell
+const roomBg = room => M[M[0x0E70 + 2 * room] | M[0x0E71 + 2 * room] << 8] & 15;
+function drawMap() {
+  const { mem, owner } = mapNow, colour = document.querySelector('input[name=mview]:checked').value === 'colour';
+  mc.fillStyle = PAL[0]; mc.fillRect(0, 0, 168, 64);
+  for (let c = 0; c < 21; c++) {                                            // the frame, as draw_map_frame ($B699) lays it out
+    glyph(mc, frameGlyph(c === 0 ? 0 : c === 20 ? 1 : 4), c * 8, 0, 7, 0);
+    glyph(mc, frameGlyph(c === 0 ? 2 : c === 20 ? 3 : 4), c * 8, 56, 7, 0);
+  }
+  for (let r = 0; r < 6; r++) {
+    glyph(mc, frameGlyph(5), 0, 8 + r * 8, 7, 0); glyph(mc, frameGlyph(5), 160, 8 + r * 8, 7, 0);
+    glyph(mc, solid, 8, 8 + r * 8, colour ? 0 : 5, 0); glyph(mc, solid, 152, 8 + r * 8, colour ? 0 : 5, 0);
+    for (let c = 0; c < 17; c++) {
+      const i = r * 17 + c, x0 = 16 + c * 8, y0 = 8 + r * 8;
+      for (let y = 0; y < 8; y++) { const b = mem[i * 8 + y];
+        for (let p = 0; p < 8; p++) {
+          let k = colour ? 0 : 5;
+          if (!(b & (0x80 >> p))) {
+            k = 0;
+            if (colour) { const o = owner[(i * 8 + y) * 8 + (7 - p)], shaft = (c & 1) && (p === 3 || p === 4);
+              k = !shaft && o >= 0 ? roomBg(o) : 12; }
+          }
+          mc.fillStyle = PAL[k]; mc.fillRect(x0 + p, y0 + y, 1, 1);
+        } }
+    }
+  }
+  mc.fillStyle = PAL[1]; mc.fillRect(16 + 8 + 3, 8, 2, 3);                  // the marker where the agent starts
+  mshow.imageSmoothingEnabled = false; mshow.drawImage(moff, 0, 0, 672, 256);
+  if (document.getElementById('mnums').checked) {
+    mshow.font = 'bold 13px "IBM Plex Mono", monospace'; mshow.textAlign = 'center'; mshow.textBaseline = 'middle';
+    for (let i = 0; i < 54; i++) { const room = mem[0x396 + i]; if (room === 0xFF) continue;
+      const X = i % 9, Y = Math.floor(i / 9), x = (16 + X * 16 + 4) * 4, y = (8 + Y * 8 + 4) * 4;
+      mshow.lineWidth = 3; mshow.strokeStyle = '#000'; mshow.strokeText(room.toString(16).toUpperCase().padStart(2, '0'), x, y);
+      mshow.fillStyle = '#fff'; mshow.fillText(room.toString(16).toUpperCase().padStart(2, '0'), x, y); }
+  }
+  const used = Array.from(mem.slice(0x396, 0x396 + 54)).filter(v => v !== 0xFF).length;
+  document.getElementById('mcap').innerHTML = `${used} rooms on the 9 × 6 grid. Click a room to open it in the room browser above. ` +
+    'The map is made by a port of <code>$B2BD</code> that gives the same bytes as the game\'s own routine for every random stream it was given (200 tested in a 6502 simulator); the rolls here use your browser\'s random numbers, as the game uses its own.';
+}
+function roomAt(ev) {
+  const rc = mcv.getBoundingClientRect(), px = (ev.clientX - rc.left) * 168 / rc.width, py = (ev.clientY - rc.top) * 64 / rc.height;
+  const c = Math.floor((px - 16) / 8), r = Math.floor((py - 8) / 8);
+  if (c < 0 || c > 16 || r < 0 || r > 5 || (c & 1)) return -1;
+  const room = mapNow.mem[0x396 + 9 * r + c / 2];
+  return room === 0xFF ? -1 : room;
+}
+mcv.onmousemove = ev => { const room = roomAt(ev); mcv.title = room >= 0 ? 'Room ' + hex(room) : ''; };
+mcv.onclick = ev => { const room = roomAt(ev); if (room < 0) return;
+  rsel.value = room; drawRoomCanvas(); document.getElementById('rooms').scrollIntoView({ behavior: 'smooth' }); };
+document.getElementById('mroll').onclick = rollMap;
+document.querySelectorAll('input[name=mview]').forEach(r => r.onchange = drawMap);
+document.getElementById('mnums').onchange = drawMap;
+rollMap();
 </script>

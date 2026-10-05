@@ -123,6 +123,12 @@ never runs again": the loop was running and the instrument was off.
 After every load, add a checkpoint and delete it again, and keep a control
 checkpoint in every batch of counts.
 
+## Bank-conditioned RAM watches
+
+On v3.13.1 on Linux, checked on 1 October 2026, the MCP condition setter accepted simple register comparisons rather than the full native monitor expression language. A watch on `$D000-$DFFF` otherwise includes accesses to visible I/O. For physical RAM reads use native condition `(@cpu:$0001 & $03) == $00`; for stores use `((@cpu:$0001 & $03) == $00) || ((@cpu:$0001 & $04) == $00)`. The processor port must be interpreted with the game’s data-direction setup.
+
+The native monitor’s [condition expressions](https://vice-emu.sourceforge.io/vice_12.html) and [binary command 0x22](https://vice-emu.sourceforge.io/vice_13.html) support these memory tests. If enabling the binary monitor, keep its settings in the repository’s private VICE configuration, bind it to loopback, and restart through `tools.py`. The MCP resource setter does not whitelist the binary-monitor resources. An MCP-paused CPU did not service a pending native condition request until execution resumed; an unconditional watch firing during that interval can stall the request. Read back the checkpoints and verify injected positive controls before relying on the resulting watches.
+
 ## Loads and snapshots
 
 `load-held`, `load-stop-checkpoint`, `load-state`, `ignore-count`,
@@ -134,6 +140,7 @@ measured, because the emulation is nondeterministic: the two runs stop a
 few instructions apart and the samples differ by the bytes written in
 between. So:
 
+- A snapshot saved without embedded disks may restore with no disk attached. Before testing a subsequent load, check `vice_disk_list` with its required `unit` argument and reattach the private image with `vice_disk_attach` if needed. A waiting KERNAL serial read is not evidence that the game has hung.
 - A loaded snapshot runs at once. Stop it with a checkpoint armed before
   the load, and expect the machine to be a little past it.
 - To compare two runs, compare what the game wrote (a log from the

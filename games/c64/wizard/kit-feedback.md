@@ -102,3 +102,9 @@ The existing `60-verify` reachability rule prevented publishing the isolated mov
 The interpreter harness's wrong dispatch stop and the first wrong death-routine stop were visible test failures, now documented in agent-history.md. The browser's same-fragment navigation preserved a slider value until the test used an actual reload. These are local research/test corrections; no additional kit change or maintainer issue is warranted. Coverage and copy provenance remain unchanged.
 
 The final visual review also caught CPU-visible ROM data used as sprite art in a draft walkthrough. Raw snapshot RAM supplied the correct VIC-visible images; all 46 sprite records were matched to their saved pointers before publishing. The existing bank-awareness guidance already covers the distinction, so the fix stays in the capture and game notes.
+
+## Audit and review follow-up, 3–4 October 2026
+
+The `60-verify` instruction to “Measure the listing before calling it done” drove four frozen source samples. Existing caller-enumeration and live-verification rules led to the callback, score and disk checks; the failures required game-specific fixes, not another general kit rule. The sample results and limits are recorded in `facts.md`.
+
+The first PR follow-up committed extensive private-input validators and duplicated audit reports. Maintainer feedback on #193 requested a concise result: keep sample paragraphs and named checks in `facts.md`, with scripts, ledgers and reports in ignored `work/`. The evidence remains available locally without dominating the review diff. No shared-kit change or new maintainer ask is needed.

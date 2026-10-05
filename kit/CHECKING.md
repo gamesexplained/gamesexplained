@@ -6,7 +6,9 @@ a game to Silver, or one the maintainers declare good enough in
 games that proved each. When a run's coverage or verify step ran on a
 model that is not on that list, the game cannot be Silver until a
 maintainer has checked it. This file is that check. It is done at review
-time, on the pull request's branch, before the merge.
+time, on the pull request's branch, before the merge. A game merged
+before its check is published whole, with a banner saying it awaits
+this check; the banner goes when its `verification` passes (`build.py`).
 
 The check exists because a weaker model's mistakes are silent. Its
 wrong claims are as confident as its right ones: an address off by a
@@ -41,6 +43,13 @@ are tested.
 3. **The orientation facts**: where the program loads, where the main
    loop is, and which memory configuration is in force during play.
    These are what every later step stood on.
+
+A game of several parts (`kit/skills/core/10-orient`) is sampled across
+its parts: claims from each part's own `facts.md` as well as the game's,
+routines from more than one part's `symbols.json`, and the orientation
+facts of every part the sample touches. Reach at least one part other
+than the first by the route `orientation.md` gives, from your own copy:
+a route that cannot be followed fails the check as a wrong claim does.
 
 Check each one the way `kit/skills/core/60-verify` does: trace it in the
 listing, and where the claim is about behaviour, observe it live in the

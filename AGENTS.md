@@ -48,7 +48,10 @@ in order:
    listing the Source tab renders from it and your snapshot:
    `python3 kit/scripts/listing.py games/<platform>/<slug> <snapshot.vsf>`.
    Both are committed; the snapshot and disassembler project stay in
-   `work/`. Preview the whole minisite with `python3 kit/scripts/build.py`
+   `work/`. A game that is several loads has a symbol map and a listing
+   for each part, and both scripts take the part's folder
+   (`kit/skills/core/10-orient`, "A game of several parts"). Preview the
+   whole minisite with `python3 kit/scripts/build.py`
    and `python3 -m http.server -d _site 8000` (or any free port).
 5. **Check, commit on a branch, open a pull request.** Name the branch
    `game/<platform>/<slug>`. Contributors never commit to `main`:
@@ -77,7 +80,9 @@ in order:
 Not every task is a game. A maintainer's agent may be asked to change
 the kit, the skills, the scripts or the site templates. The rules below
 apply unchanged, and so does the delivery: branch as `kit/<topic>` or
-`site/<topic>`, run the three checks, run `python3 kit/scripts/build.py`
+`site/<topic>`, run the three checks, run
+`python3 kit/scripts/test_kit.py` (every kit test), run
+`python3 kit/scripts/build.py`
 to confirm every existing game still builds, and open a pull request. A
 change under `kit/` or `site/` reaches every page on the site, so it gets
 the same review a game does, not less. Describe the change in the pull
@@ -96,6 +101,16 @@ adds a lesson file of its own and edits no other, so two pull requests
 never conflict over either. A new platform
 follows `kit/PLATFORMS.md`.
 
+A kit test is a file matching `kit/**/test_*.py` or `kit/**/test_*.js`:
+run as a script it exercises its own subject and exits non-zero on failure,
+and `test_kit.py` finds it, so a new test needs no edit to CI. A test that
+needs an installed tool reads `KIT_REQUIRE_TOOLS` from the environment and
+fails rather than skips when it is set. CI sets it, and there a test that
+skips anyway fails too, so an oracle that is missing cannot pass for a green
+run. The older `--test` self-tests on the tools stay where they are and are
+listed in `test_kit.py`, which fails on a script with the flag that the list
+leaves out; a new test is a `test_*.py` file, not a new flag.
+
 ## Rules that are not negotiable
 
 - **Model.** Any model may run the kit, but only a proven one can take a
@@ -110,7 +125,9 @@ follows `kit/PLATFORMS.md`.
   silent: address arithmetic goes wrong in ways that read as confident,
   which is why the check tests claims against the game rather than
   reading the page. `python3 kit/scripts/models.py is-proven <id>` says
-  whether yours is.
+  whether yours is. Such a run still builds its whole minisite, not the
+  cut-down Bronze page: the site publishes it with a banner saying it
+  awaits a maintainer's check, until the check passes.
 - **An imported analysis is a starting point, not a run.** Work the
   contributor did outside the kit seeds the disassembler; the listing
   still comes from a snapshot through `listing.py`, coverage and verify
@@ -211,6 +228,7 @@ follows `kit/PLATFORMS.md`.
 | `kit/skills/core/` | the workflow, platform-independent |
 | `kit/skills/<platform>/` | platform facts and tool notes |
 | `games/<platform>/<slug>/` | one game: article, symbols, listing, facts, features, orientation, cheats, agent history, reference images, gitignored `work/` |
+| `games/<platform>/<slug>/parts/<id>/` | one part of a game that is several loads: its own symbols, listing, facts, ledger settings and gitignored `work/` (`kit/scripts/parts.py`) |
 | `site/` | the shared page templates and `site/lib/` css and js; `kit/scripts/build.py` assembles `_site/` from them |
 
 Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
@@ -225,6 +243,11 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
+
+A game that is several loads is at a tier when every one of its parts
+is. Its coverage is the sum over its parts, each byte counted once, and
+a part that has a folder and no analysis keeps the game at Bronze, with
+the page saying how many of its parts are done.
 
 Silver is the default goal and the normal path: the contributor pastes the
 one line, answers a few questions, walks away, and comes back to a Silver

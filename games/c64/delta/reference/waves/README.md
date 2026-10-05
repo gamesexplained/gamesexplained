@@ -8,7 +8,10 @@ back; anything else may read them too.
 How they were made, and the two stand-ins for a player, is in the caption of
 the player on `waves.html`. Each stage published here was compared with the
 same stage played in VICE, enemy by enemy and frame by frame from the start of
-each group.
+each group, up to the frame the stand-in shots begin. VICE sometimes takes one
+sample fewer, where the game's interrupts run past the main loop's call at
+`$17D0`; those are counted and allowed for. A stage that could not be shown to
+match has no file here (`TODO.md` says which and why).
 
 ## Coordinates
 
@@ -44,13 +47,15 @@ each group.
   of characters per later frame, each the change in X then Y plus 48 as a
   character code.
 - **events**: the enemy's state, written whenever it changes, as
-  `[offset, hp, colour, exploding, final, form, points, fire, shape]`:
+  `[offset, hp, colour, exploding, final, form, points, fire, shape, sprite]`:
   `offset` in frames from the enemy's start; `hp` its hit points (`$1240` +
   slot, 255 indestructible); `colour` 0-15 (`$90` + slot); `exploding`
   (`$12A8` + slot), `final` (`$1208` + slot) and `form` (changes form when
   killed, `$1218` + slot) as 0 or 1; `points` the value the game adds, shown
   ten times larger on the panel (`$1280` + slot); `fire` 1 when it may fire
-  (bit 6 of `$12E8` + slot); `shape` a key of `shapes`.
+  (bit 6 of `$12E8` + slot); `shape` a key of `shapes`; `sprite` the
+  sprite pointer the game gives the video chip (`$30` + slot), the shape at
+  `$4000` + 64 x `sprite` in video bank 1.
 - **shapes**: the 63 bytes of each sprite shape the enemies show, a
   multicolour sprite (`01` the first multicolour, `10` the enemy's colour,
   `11` the second). An all-zero shape is the empty sprite `$9B`: the enemy is

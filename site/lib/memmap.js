@@ -5,8 +5,9 @@
 // so C64Map and SpectrumMap are two label sets over one implementation.
 globalThis.makeMemMap = function (LABELS) {
   const COLOURS = { code: '#e8a33d', graphics: '#6fc7d4', levels: '#8fd17a', sound: '#d97f6e', text: '#edf171',
-                    tables: '#8f7fe0', variables: '#c46c71', runtime: '#3a3d6a', rom: '#2a2c4a', unused: '#12142c' };
+                    tables: '#8f7fe0', variables: '#c46c71', runtime: '#3a3d6a', rom: '#2a2c4a', other: '#2e6672', unused: '#12142c' };
   const hex = a => '$' + a.toString(16).toUpperCase().padStart(4, '0');
+  LABELS = Object.assign({ other: 'varies with the part loaded' }, LABELS);   // a game of several parts: what the parts loaded over this one hold
   async function render(el, url, opts = {}) {
     const M = await fetch(url).then(r => r.json());
     const base = M.base || 0, size = M.size || 0x10000, mini = !!opts.mini;
@@ -64,7 +65,7 @@ globalThis.makeMemMap = function (LABELS) {
     el.appendChild(axis);
     const legend = document.createElement('div');
     legend.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px 16px;font-family:var(--fm);font-size:12px;color:var(--ink-soft)';
-    const order = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'unused'];
+    const order = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'other', 'unused'];
     legend.innerHTML = order.filter(k => M.totals[k]).map(k =>
       `<span><i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:${COLOURS[k]};margin-right:6px;vertical-align:-1px;border:1px solid var(--line)"></i>${LABELS[k]} <span style="color:var(--ink-mute)">${M.totals[k].toLocaleString()}</span></span>`).join('');
     el.appendChild(legend);
@@ -81,14 +82,14 @@ globalThis.makeMemMap = function (LABELS) {
       tip.textContent = `${hex(a)} · ${what}${sy && r && r[2] !== 'unused' && a - sy[0] < 1024 ? ' · ' + sy[1] + (a !== sy[0] ? '+' + (a - sy[0]) : '') : ''}`;
       cv.style.cursor = r && r[2] !== 'unused' ? 'pointer' : 'default';
     });
-    cv.addEventListener('click', e => { const a = addrOf(e); if (at(a)) location.href = (opts.source || 'source.html') + '#' + a.toString(16).toUpperCase().padStart(4, '0'); });
+    cv.addEventListener('click', e => { const a = addrOf(e); if (at(a)) location.href = (opts.source || M.source || 'source.html') + '#' + a.toString(16).toUpperCase().padStart(4, '0'); });
     return M;
   }
   // The strip: the same addresses left to right in one row, each column the colour of whatever
   // most of its bytes are. The catalogue's compact map; the ruler is the same as render's.
   async function strip(el, url) {
     const M = await fetch(url).then(r => r.json());
-    const RANK = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'unused'];
+    const RANK = ['code', 'graphics', 'levels', 'sound', 'text', 'tables', 'variables', 'runtime', 'rom', 'other', 'unused'];
     const cv = document.createElement('canvas'); el.innerHTML = ''; el.appendChild(cv);
     const draw = () => {
       const dpr = window.devicePixelRatio || 1, w = Math.max(64, Math.round((cv.clientWidth || 256) * dpr)), h = Math.max(1, Math.round((cv.clientHeight || 8) * dpr));

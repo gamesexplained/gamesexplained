@@ -18,8 +18,14 @@ Deleting the repository removes all of it. See kit/spectrum/INSTALL.md, "Uninsta
 
 ZEsarUX is started with `--vo null --ao null`: a ZX Spectrum screen is not needed to
 drive it over ZRCP, and no window opens over whatever the contributor is doing. Pass
-`--vo cocoa` (macOS) or `--vo stdout` to watch it; any option of your own replaces both
-defaults, so a window comes with sound unless `--ao null` is passed too.
+`--vo cocoa` (macOS) or `--vo stdout` to watch it, and `--ao` to hear it: each replaces
+only its own default, so other options (`--emulatorspeed 20`) still start it with no window.
+
+ZRCP is on 127.0.0.1:10000. `--port N` (or KIT_ZESARUX_PORT) puts it on another port, for
+a run that needs more than one machine at once: a window to watch, a test stepping frames,
+a checker of its own (#185). Every command takes it, and passes it on to the scripts it
+starts; kit/spectrum/zesarux.py's connect() reads KIT_ZESARUX_PORT too. `stop` stops
+every emulator this clone started, and `stop --port N` only that one.
 
 It is also started with `--stats-disable-check-updates` and
 `--stats-disable-check-yesterday-users`: by default ZEsarUX opens two plain-HTTP
@@ -36,9 +42,10 @@ the launcher closes it: that is safe only because the statistics question cannot
 pending.
 
 Usage:
-  tools.py status
-  tools.py zesarux [more ZEsarUX options]   start it, ZRCP on 127.0.0.1:10000
-  tools.py stop                             stop it (only yours: scoped to this clone)
+  tools.py status [--port N]
+  tools.py zesarux [--port N] [more ZEsarUX options]
+                                            start it, ZRCP on 127.0.0.1:10000, or N
+  tools.py stop [--port N]                  stop this clone's emulators, or the one on N
   tools.py get-zesarux [download [tag]]     the newest release for this machine; plain, it
                                             only says what that is (kit/spectrum/get_zesarux.py)
   tools.py get-skoolkit                     install SkoolKit under tools/skoolkit (PyPI)
@@ -75,7 +82,7 @@ SNAPSHOTS = os.path.join(ZESARUX_HOME, "snapshots")
 LOGS = os.path.join(TOOLS, "logs")
 DOWNLOADS = os.path.join(TOOLS, "downloads")
 RELEASE_NOTE = ".kit-release"    # written by get-zesarux into a downloaded release: "<tag> <asset>"
-PORT = 10000                     # pinned, loopback only: the launcher always uses it, and so does zesarux.py
+PORT = int(os.environ.get("KIT_ZESARUX_PORT") or 10000)   # loopback only; `--port N` in main() sets both
 FRAME_TSTATES = 69888
 
 sys.path.append(os.path.join(os.path.dirname(HERE), "scripts"))
@@ -238,11 +245,13 @@ def zesarux(extra=()):
            "--stats-disable-check-updates", "--stats-disable-check-yesterday-users",
            "--stats-send-already-asked", "--disable-all-first-aid",
            "--snap-no-change-machine"]
-    if not extra:
-        cmd += ["--vo", "null", "--ao", "null"]
+    for opt in ("--vo", "--ao"):           # no window and no sound, unless asked for by name
+        if opt not in extra:
+            cmd += [opt, "null"]
     if keep_statistics_off():
         print(f"removed {STATS_ON} from {os.path.relpath(CONFIG, ROOT)}: usage statistics stay off")
-    start(cmd + list(extra), os.path.join(LOGS, "zesarux.log"), env=emulator_env(),
+    log = "zesarux.log" if PORT == 10000 else f"zesarux-{PORT}.log"
+    start(cmd + list(extra), os.path.join(LOGS, log), env=emulator_env(),
           cwd=ROOT, port=PORT, name="emulator")
     close_opening_menu()
 
@@ -253,12 +262,25 @@ def zesarux(extra=()):
 STOP_PATTERN = re.escape(os.path.abspath(ZESARUX_DIR) + os.sep) + ".*zesarux"
 
 
-def stop(quiet=False):
-    kill_matching(STOP_PATTERN)
+def ours():
+    """The ports this clone's running emulators serve ZRCP on, from their command lines."""
+    r = subprocess.run(["ps", "-axo", "command="], capture_output=True, text=True)
+    found = set()
+    for line in r.stdout.splitlines():   # the emulator's own line starts with its path; a wrapper's does not
+        m = re.search(r"--remoteprotocol-port (\d+)", line)
+        if m and line.strip().startswith(os.path.abspath(ZESARUX_DIR) + os.sep):
+            found.add(int(m.group(1)))
+    return sorted(found)
+
+
+def stop(quiet=False, port=None):
+    """Stop this clone's emulators, or only the one serving `port`."""
+    kill_matching(STOP_PATTERN + (f".*--remoteprotocol-port {port}( |$)" if port else ""))
     time.sleep(1)
-    left = port_owner(PORT) if up(PORT) else None
-    if left:      # not ours: the pattern is this clone's absolute path, and a launcher is not the only way in
-        print(f"something still answers on :{PORT} and it is not this clone's emulator, so it was left alone:\n  {left}")
+    for p in [port] if port else sorted({PORT, *ours()}):
+        left = port_owner(p) if up(p) else None
+        if left:  # not ours: the pattern is this clone's absolute path, and a launcher is not the only way in
+            print(f"something still answers on :{p} and it is not this clone's emulator, so it was left alone:\n  {left}")
     if not quiet:
         status()
 
@@ -280,6 +302,10 @@ def client(command, args=None):
 def status():
     running = up(PORT)
     print(f"emulator  :{PORT}  {'up' if running else 'down'}   build: {build()} (tools/zesarux)")
+    others = [p for p in ours() if p != PORT]
+    if others:
+        print(f"  this clone's emulators also answer on: {', '.join(f':{p}' for p in others)} "
+              "(`status --port N` for one of them)")
     print(f"skoolkit  tools/skoolkit   {skoolkit_build() or 'MISSING (run: tools.py get-skoolkit)'}")
     detail = foreign_detail(PORT)
     if detail:
@@ -344,8 +370,26 @@ def verify_footprint():
     judge_footprint(hits, KNOWN_RESIDUE, snap)
 
 
+def take_port(a):
+    """Take `--port N` out of the arguments: it becomes PORT here and KIT_ZESARUX_PORT for
+    every script started from here. Returns the rest, and N or None."""
+    global PORT
+    if "--port" not in a:
+        return a, None
+    i = a.index("--port")
+    try:
+        n = int(a[i + 1])
+    except (IndexError, ValueError):
+        sys.exit("--port takes a number: tools.py --platform spectrum zesarux --port 10001")
+    if not 1024 <= n <= 65535:
+        sys.exit(f"--port {n}: use a port from 1024 to 65535")
+    PORT = n
+    os.environ["KIT_ZESARUX_PORT"] = str(n)
+    return a[:i] + a[i + 2:], n
+
+
 def main():
-    a = sys.argv[1:]
+    a, port = take_port(sys.argv[1:])
     if not a or a[0] in ("-h", "--help"):
         print(__doc__); return
     if a[0] == "status":
@@ -353,7 +397,7 @@ def main():
     elif a[0] == "zesarux":
         zesarux(a[1:])
     elif a[0] == "stop":
-        stop()
+        stop(port=port)
     elif a[0] == "snapshots":
         snapshots()
     elif a[0] == "verify-footprint":

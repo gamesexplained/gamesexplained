@@ -3,7 +3,9 @@
 Read this only for the checks that `python3 kit/scripts/tools.py --platform
 spectrum check-emulator` reported as failed on the build you are using.
 Each section names the checks it covers. If nothing failed, none of this
-applies, and following it anyway costs time.
+applies, and following it anyway costs time, unless the summary says the
+host is slow: that is a NOTE, not a failed check, and "A slow host" at the
+end is for it.
 
 Measured on the **ZEsarUX-13.0** release, file
 `ZEsarUX_macos-silicon-13.0.dmg`, macOS arm64, on **3 October 2026** with the
@@ -116,3 +118,17 @@ restart; it is off again at the next launch:
 ```
 python3 kit/scripts/tools.py --platform spectrum zesarux --emulatorspeed 20
 ```
+
+## A slow host
+
+No check fails for the host's speed. `cheap-loop` checks that twenty frame
+steps in a row each stop at the end of their frame; what a step costs is
+printed on a `SPEED` line with the host's load average, kept under `speed`
+in the result, and given a `NOTE` when it is over half a second. Until 4
+October 2026 the check failed at half a second, and on a busy Mac it did,
+with a build that passes on the same Mac idle (#178).
+
+On such a host the frame-stepping loop is slower than `kit/EMULATOR.md`
+asks, and nothing in the emulator can fix that: close what else is
+running, or plan for fewer steps a second. Measure in the machine's time
+(frames, T-states, loop passes), never the host's.

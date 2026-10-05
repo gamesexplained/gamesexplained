@@ -127,7 +127,8 @@ def image(gdir, vsf=None):
             for i, b in enumerate(r.get("b", [])):
                 ram[r["a"] + i] = b; known[r["a"] + i] = 1
     from symbols_export import regions
-    for lo, hi, _ in regions(json.load(open(os.path.join(gdir, "game.json"))))["exclude"]:
+    from parts import load_game       # a game's folder or, for a game of several loads, a part's
+    for lo, hi, _ in regions(load_game(gdir))["exclude"]:
         known[lo:hi + 1] = bytes(hi + 1 - lo)
     return ram, known
 
@@ -135,7 +136,7 @@ def image(gdir, vsf=None):
 def blocks_of(gdir, live):
     if live:
         from symbols_export import read_live
-        blocks, syms, _ = read_live("c64")
+        blocks, syms, _ = read_live("c64", gdir)
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms = s["blocks"], s["symbols"]

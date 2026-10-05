@@ -111,24 +111,66 @@ annotate it byte by byte.
    `orientation.md`.
 8. **Understand the loader well enough to describe it in a paragraph**,
    then stop. If the game reloads data per level (overlays), say so in
-   `orientation.md`: it means one snapshot per state.
+   `orientation.md`: it means one snapshot per state, and a game of
+   several parts (below).
 
-## A game of several programs
+## A game of several parts
 
-Some games are several programs that never load each other: a menu, or
-the player, loads each section, and each fills the memory on its own. Do
-not force them into one image. List them in `game.json` as `parts` (id
-and title, in the order they are played) and give each a folder,
-`parts/<id>/`, with its own `game.json` (video, coverage, io, regions),
-`symbols.json`, `listing.json`, `facts.md` and gitignored `work/` with its
-`entry.vsf` and `play.vsf`. `kit/scripts/parts.py` explains the layout
-and prints the coverage per part; `coverage.py`, `check_listing.py` and
-`build.py` follow it. Before any snapshot, run each file's packer in the
-6502 simulator over memory filled with two different values: whatever it
-does not write is the previous program's, not this one's. Then compare
-the programs byte for byte. Code at the same address in two of them is
-shared, and a stretch that matches another program's where nothing calls
-it is a leftover of an earlier build or crack.
+Some games are not one image. The same addresses hold something else at
+different times: an intro, then each level loaded on its own, then an
+ending; or an engine that stays in memory while one level after another
+is loaded over part of it. Each of those is a **part**, with its own
+snapshot, symbol map, listing and facts. Forced into one image, all but
+one of them is lost.
+
+What makes a part is the machine's. On one that loads from disk or tape,
+a part is a load as the player meets it: the program as it stands when
+the loading is over and something happens. Ten files behind one loading
+screen are one part, so count what the player waits for, not what the
+disk holds. A state that differs only in its variables is not a part: a
+title screen and play in one load are one, and step 4 chooses its
+snapshot. The loader, a protection check and a cracker's menu are not
+parts either; they stand in front of the game.
+
+1. **Give every part a folder**, in the order they are played, analysed
+   or not: `python3 kit/scripts/parts.py add <game dir> <id> --title "..."`
+   makes `parts/<id>/` (`parts.py -h` has the layout). The folder says
+   everything about the part, in its `part.json`: its title, its place
+   in the order, the part it lies over. No file lists the parts, so
+   adding one writes nothing another part shares. A part with no symbol
+   map shows as not analysed on the page and in `coverage.py`, and that
+   is what keeps the game's figure honest: the parts with no folder are
+   the ones nobody knows are missing. When the first load was analysed
+   before the others were found, `--adopt` makes the game folder's own
+   symbol map that part's.
+2. **A snapshot for each part**, in the part's own `work/`: the
+   hand-over as `entry.<ext>` and one in play, as above. The game's own
+   loader puts the part in memory. Never assemble an image from the
+   disk's files: the listing must show bytes and a machine that existed
+   together.
+3. **Write the route to each part** in `orientation.md`, from power-on
+   or from the part before, so that someone else can reach every
+   snapshot. Where playing to a late part is not practical, say what was
+   done in its place (a level code, the game's own level select, the
+   level number set and the game's loader called), and add a part
+   column to the table of files in step 7.
+4. **Find what stays.** Compare the parts' snapshots byte for byte. Code
+   that is the same at the same address in every part is resident: make
+   it a part of its own, and add each load with `--over <its id>`, giving
+   the addresses the load writes as `"ranges"` in its `part.json`. Find
+   them by watching the load (a store checkpoint over all of memory
+   while the loader runs), or by comparing the snapshots either side of
+   it. The part beneath then owns everything else, each byte has one
+   owner, and the game's coverage counts it once. A stretch that matches
+   another part's where nothing calls it is a leftover of an earlier
+   build, not shared code.
+5. **A program that replaces the whole of memory** needs no `over`. Run
+   its file's unpacker in the simulator over memory filled with two
+   different values before trusting its snapshot: whatever the unpacker
+   does not write is the program before it, not this one.
+
+From here on, every script that takes a game's folder takes a part's in
+its place.
 
 ## Several versions on one disk
 

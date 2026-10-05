@@ -88,3 +88,28 @@ agent's benefit. This is the only file that narrates; `facts.md` and
 - "Invisible" was checked across all 32 stages: the empty sprite `$9B`
   shows only for an enemy's first one to three frames and at the end of
   an explosion.
+
+## 4 October 2026, stages 4-14 against VICE
+
+- One VICE pass from `wave1_start` recorded stages 4-10 and saved a
+  snapshot at each stage's first frame (`delta_stage04`-`delta_stage11`);
+  stages 11-14 and 15-20 then started from those snapshots.
+- Stage 7 first read as five groups different. VICE was one, then two,
+  then three samples ahead of the machine: in heavy frames the raster
+  interrupts run past line 228, the main loop misses its call at `$17D0`
+  where both sides sample, and two game frames pass between samples. The
+  enemies themselves matched once that was allowed for. `compare2.js`
+  allows a skipped VICE sample and counts it (30 in stages 1-13, 27 of
+  them in stage 9), and stops a group where the stand-in shots begin,
+  since those start a fixed number of samples in.
+- Stage 14 is the first real difference: in group `$32` two enemies leave
+  the top edge on the same frames in both runs, but VICE frees them in
+  the other order, a frame apart, so later enemies take other slots. Left
+  off the page; recorded in `TODO.md`.
+- Stages 15-20 from `delta_stage15`: 16, 17 and 18 matched. Stage 15
+  differs only where the stand-in shots, timed in samples, left a
+  different enemy alive between two runs of the same group. Stage 19's
+  boss group repeats stage 14's symptom at the top edge, and stage 20 has
+  an enemy entering on the right a frame apart; the VICE run's state had
+  also drifted from the machine's since stage 14. 16-18 went on the page;
+  14, 15, 19 and 20 stay off.
