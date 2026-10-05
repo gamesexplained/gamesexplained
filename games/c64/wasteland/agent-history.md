@@ -41,8 +41,10 @@ starts at `$29E4`, three bytes before where the first reading put it.
 **Sixty-four parts.** The first plan had thirteen: the engine, the
 start-up, the utilities, the game, the Ranger Center, the party order,
 five location modules, the radio and the death screen. A decision card
-asked Aaron whether the 42 maps should be parts or be described as data;
-it had no answer, and the work went on with its recommendation, parts.
+asked Aaron whether the 42 maps should be parts or be described as data,
+and the work went on with its recommendation, parts. His message saying
+that a part was likely a location in the game, sent at the start, reached
+the run only at its end; it said the same.
 The nine tile sets became parts too, each between the game and the maps
 that use it, because the game keeps a set while the next map uses the
 same one. Every map was put in memory by a stub that calls the game's
