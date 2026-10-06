@@ -348,7 +348,30 @@ needs a guard inside the script or a background run you poll.
 
 ## Splitting the work across subagents
 
-Routines are independent, so the burn-down parallelises. What matters:
+**One agent is the default.** Every agent starts cold: it reads the
+brief, the game's notes and its neighbours' code before it writes
+anything, so tokens grow with the number of agents, not with the game.
+The record bears it out. Single agents took 20 to 22 KB of code to
+100 % in 30 to 40 minutes; runs of seven to twelve agents took 14 to 62
+minutes and then spent the difference on merging, naming collisions and
+reconciling reports in `60-verify`. Two nine-agent runs used up the
+account's session limit within minutes and sat idle for hours. Fanning
+out bought no quality either: what caught wrong readings was checking by
+an agent that did not write them, not parallel writing.
+
+Split only when one of these holds, and the contributor's answer about
+their usage limit (`kit/START.md`) allows it:
+
+- **The game is several parts**: one agent to a part (below).
+- **What is left after your own first pass is too much for one
+  context**: as a guide, more than about 32 KB of code still undescribed.
+
+Annotate first yourself, then split. Take the main loop, the interrupt
+handlers, the core variables and the naming conventions to described
+before anyone else starts: the brief's "Established" list is then short
+and checked, and the agents inherit names instead of inventing rival
+ones. Start at most four agents, and fewer on a tight limit. When you
+do split, what matters:
 
 - **One shared disassembler.** Concurrent reads are safe; concurrent
   writes are safe only if agents own **disjoint address ranges**. Assign

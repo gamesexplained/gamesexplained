@@ -21,12 +21,13 @@ step needs something only they have.
    opens the pull request, and the retrospective how the asks are filed.
 2. **Read `AGENTS.md` completely.** It is the rulebook and the workflow.
    Everything below assumes you have.
-3. **Ask the contributor six things** if they have not already told you:
+3. **Ask the contributor seven things** if they have not already told you:
    which game, which platform it is for, where their copy of it is on
    disk, **which run they want**, of the two below, **whether you may
    look the game up online**, and **whether you may open the pull request
    yourself when the run is done**, which covers filing the run's asks
-   for the maintainers as issues too. We never download game binaries;
+   for the maintainers as issues too, and **whether their plan's usage
+   limit is tight**. We never download game binaries;
    they supply their own.
 
    - **Silver** (recommended) aims to explain 100 % of the program and
@@ -56,6 +57,15 @@ step needs something only they have.
    (`kit/skills/core/80-retro`); with a no, those asks are written in
    full in `kit-feedback.md`, and the repository files them on merge.
    Either answer holds for the whole run; do not ask again at the end.
+
+   **The usage limit sets how many agents the run may start.** The run
+   works with one agent unless the work is large enough to split
+   (`kit/skills/core/50-coverage`, "Splitting the work across
+   subagents"). If they say the limit is tight, or do not know, it stays
+   at one agent throughout: several agents at once have used up a
+   session's allowance in minutes and left the run waiting hours for the
+   reset. If they say there is room, it may split large work across up to
+   four. The answer holds for the whole run.
 
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
