@@ -80,5 +80,14 @@ def compute(blocks, syms, comments, regions):
             state[a] = 0
         elif state[a] == 0 and (code[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
             state[a] = 1
+    # A per-game coverage.extra description explains authored data that has no
+    # CPU-visible symbol (for example RAM beneath I/O), but cannot explain code.
+    for lo, hi, description in regions.get("described", []):
+        if not str(description).strip():
+            continue
+        for a in range(lo, hi + 1):
+            if not excluded(a) and not code[a]:
+                state[a] = 2
+                owner.setdefault(a, (description, lo))
     return {"state": state, "code": code, "owner": owner, "commented": commented,
             "dups": dups, "excluded": excluded}

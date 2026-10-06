@@ -108,6 +108,17 @@ def say_missing(libs):
     return launcher.say_missing(libs, "kit/c64/INSTALL.md, 'The release zip'")
 
 
+def vice_environment(base=None):
+    """Add this clone's optional VICE compatibility libraries to its child process only."""
+    env = dict(os.environ if base is None else base)
+    if sys.platform.startswith("linux"):
+        libdir = os.path.join(TOOLS, "vice-libs", "usr", "lib", "x86_64-linux-gnu")
+        if os.path.isdir(libdir):
+            env["LD_LIBRARY_PATH"] = os.pathsep.join(
+                p for p in (libdir, env.get("LD_LIBRARY_PATH", "")) if p)
+    return env
+
+
 def virtual_display(cmd, env):
     """The GUI build needs an X display. A Linux server or container has none; give it a virtual one.
 
@@ -125,7 +136,8 @@ def vice(machine="x64sc"):
     exe = os.path.join(VICE_DIR, "bin", machine)
     if not os.path.exists(exe):
         sys.exit(f"no emulator at {os.path.relpath(exe, ROOT)}; see kit/c64/INSTALL.md, 'Get the emulator'")
-    libs = missing_libraries(exe)
+    env = vice_environment()
+    libs = missing_libraries(exe, env)
     if libs:
         sys.exit(say_missing(libs))
     detail = foreign_detail(VICE_PORT)
@@ -136,7 +148,6 @@ def vice(machine="x64sc"):
     os.makedirs(TOOLS, exist_ok=True)
     with open(PORT_FILE, "w") as f:
         f.write(str(VICE_PORT))
-    env = dict(os.environ)
     for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
                      ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data")):
         env[var] = os.path.join(VICE_HOME, sub); os.makedirs(env[var], exist_ok=True)

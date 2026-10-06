@@ -476,6 +476,22 @@ That report cannot establish absence of an external settings file:
 a maintainer observed 0.9.20 writing it with opened project paths.
 Check both changed files and known leftovers when repeating the run.
 
+## Linux — Ubuntu 26.04 desktop, 6 October 2026
+
+On Ubuntu 26.04.1 x86_64 (Python 3.14.4), VICE v3.13.2's GUI release
+passed all 57 `check-emulator` checks, including its restart check. The
+host's newer FLAC runtime ABI did not provide `libFLAC.so.12`, so VICE
+initially could not start. The contributor supplied Ubuntu's
+`libflac12t64` 1.4.3+ds-2.1ubuntu2 amd64 package; it was extracted under
+the clone's ignored `tools/vice-libs/`, not installed system-wide. The C64
+launcher now adds that clone-local library directory to VICE's child
+`LD_LIBRARY_PATH` when present and passes the same environment to `ldd`'s
+dependency check. Both ordinary startup and the complete capability suite,
+including process restart, worked without a manually set environment
+prefix. `regenerator2000` 0.9.20 was compiled offline from cached crates
+into `tools/cargo/`. `verify-footprint` passed: it wrote the emulator
+snapshot under `tools/` and found no unexpected files outside the clone.
+
 ## Linux — run on a server with no display, 24 September 2026
 
 Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in cloud

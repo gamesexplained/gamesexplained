@@ -210,7 +210,7 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
         return any(lo <= a <= hi for lo, hi in rs)
 
     away = [(lo, hi) for lo, hi, _ in game.get("elsewhere") or []]   # another part's, in a game of several
-    said = ranges(cov.get("include", []) + cov.get("exclude", [])) + away
+    said = ranges(cov.get("include", []) + cov.get("exclude", []) + cov.get("extra", [])) + away
     found = []                                  # (start, end, bytes of data, what)
     hidden = []
     for row in plat.get("hidden", []):          # RAM a default exclusion covers: reported by the page

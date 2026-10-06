@@ -12,13 +12,14 @@ state is excluded: stack, screen RAM, I/O, and anything else listed under
 a range under "include" is given back from them (the RAM under I/O, in a
 game that runs code there).
 
-NUMERATOR: a byte is explained when the symbol whose span owns it carries a
+NUMERATOR: a code byte is explained when the symbol whose span owns it carries a
 non-blank line comment. A description belongs to a routine, not to every
 branch target inside it, so only real boundaries (subroutines, data
 symbols, commented symbols) start a span. An identical description pasted
-onto several symbols counts once, at its first address: thirty-two copies
-of "character set" explain nothing about glyphs 32 to 63. Say which glyphs
-a block holds and what they draw, and each description is its own.
+onto several symbols counts once, at its first address. Authored data declared
+in game.json's `coverage.extra` counts as explained by that range's description;
+generic platform extras such as "character set" remain unexplained. A data
+declaration never explains executable code in the same range.
 
 REGIONS come from game.json: "video" (screen and character-set bases, which
 give the platform's standard exclude/extra blocks) and "coverage" (extra
