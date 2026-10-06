@@ -255,7 +255,11 @@ checklist mechanically, paragraph by paragraph:
    the control ("Press a direction").
 4. Headings name the thing, never a tautology ("Every character is a
    character") and never a claim the section still has to prove. Prefer the
-   thing over the claim about the thing.
+   thing over the claim about the thing. Read each heading for a list: two
+   or more things joined by commas or "and", with no verb saying what they
+   do, is an inventory of the section ("Five digits, one key and one
+   column: how the bomb is defused"). Rewrite it as the one finding, or as
+   the plain name of the subject (`kit/style.md`, "Section headings").
 5. Collapse triplets written for rhythm into a plain list or two sentences.
    Three genuine items are fine; three arranged for a drumbeat are not.
 6. State it positively. A one-beat correction is fine when the reader would
