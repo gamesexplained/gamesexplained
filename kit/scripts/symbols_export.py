@@ -134,7 +134,10 @@ def regions(game):
             if lo < a: carved.append([lo, a - 1, n])
             if hi > b: carved.append([b + 1, hi, n])
         exclude = carved
-    out = {"exclude": exclude, "extra": extra}
+    out = {"exclude": exclude, "extra": extra,
+           # Explicit per-game authored-data descriptions can explain bytes with no CPU-visible symbol.
+           # Generic platform extras such as "character set" remain tracked but unexplained.
+           "described": [[hexint(a), hexint(b), n] for a, b, n in cov.get("extra", [])]}
     # a part of a game that is several loads: the addresses another part owns are not this
     # one's to count, whatever "include" says (kit/scripts/parts.py, load_game)
     if game.get("elsewhere"):
