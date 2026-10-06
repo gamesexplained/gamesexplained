@@ -31,7 +31,10 @@ a no, the game's own instruction screens and stored text are the
 documentation; say so under Sources. Whatever you read, record it under
 Sources in `features.md` with its address and the date, and put the wiki
 page and the manual in `links` in `game.json`, where the About tab shows
-them.
+them. Each link is `{"title": ..., "url": ...}`, and the title is the
+linked page's own, as its `<title>` gives it with the site's boilerplate
+trimmed ("<game> – C64-Wiki"): the reader sees the title, never the
+key.
 
 Some fan sites serve plain HTTP only, and an agent's fetch tool may
 upgrade every address to HTTPS and report such a site unreachable. Before

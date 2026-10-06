@@ -913,6 +913,18 @@ def game_footprint(P, out, plat):
     return totals, footprint_table(t, plat, span) + f'<p class="mute">{said}</p>', span
 
 
+def link_list(game):
+    """(title, url) for each of game.json's links, in order. A link is {"title", "url"}, the
+    title being the linked page's own; an empty url is a slot the template left, not a link.
+    A bare url string, the older form, shows its key."""
+    out = []
+    for k, v in (game.get("links") or {}).items():
+        t, u = (v.get("title") or k, v.get("url")) if isinstance(v, dict) else (k, v)
+        if u:
+            out.append((t, u))
+    return out
+
+
 def data_links(P):
     """Where the symbol maps and listings are, for the About tab's {{data_links}}."""
     if not P:
@@ -975,8 +987,8 @@ def build_game(gdir, out_root):
     site_contributors = f"<ul>{site_contributor_items}</ul>"
     game_credits = f"<ul>{game_credit_items}</ul>"
     con_html = f"<ul>{site_contributor_items}{game_credit_items}</ul>"
-    links = {k: u for k, u in (game.get("links") or {}).items() if u}   # empty slots from the template are not links
-    link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(k)}</a></li>' for k, u in links.items()) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
+    links = link_list(game)
+    link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(t)}</a></li>' for t, u in links) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
     if P:
         totals, foot, span = game_footprint(P, out, plat)

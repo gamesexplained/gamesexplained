@@ -14,6 +14,7 @@
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
   games/*/*/game.json   Silver or above only on proven models, or checked (models.py)
+  games/*/*/game.json   each link carries the linked page's title: the About tab shows it
   games/*/*/kit-feedback.md   each maintainer ask filed (#123) or fileable (maintainer_asks.py)
   games/*/*/*.html   no class of the page's own that site/lib/site.css also styles: the build
                      links site.css after the page's <style>, so its rules land too (#143)
@@ -141,6 +142,17 @@ def scan(path, patterns, label, exempt=None, blank=None):
     return bad
 
 
+def untitled_links(game):
+    """The keys of game.json's links that have a url and no title. The About tab shows a
+    link by its title, so a bare url, or a {"url"} without one, reads as "wiki" or "manual"."""
+    bad = []
+    for k, v in (game.get("links") or {}).items():
+        url, title = (v.get("url"), v.get("title")) if isinstance(v, dict) else (v, None)
+        if url and not (title or "").strip():
+            bad.append(k)
+    return bad
+
+
 def main():
     fails = 0
     fails += scan(os.path.join(ROOT, "AGENTS.md"), SUBJECT, "subject matter in the rules file", EXEMPT)
@@ -152,6 +164,15 @@ def main():
                 titles.append(r"\b" + re.escape(t) + r"\b")
         except Exception:
             pass
+    for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
+        try:
+            bad = untitled_links(json.load(open(gj)))
+        except Exception:
+            continue
+        if bad:
+            print(f"  x  {os.path.relpath(gj, ROOT)}  links with no title: {', '.join(bad)}")
+            print('        write each as {"title": "<the page\'s own title>", "url": "..."} (kit/skills/core/20-features)')
+            fails += 1
     if titles:
         for sk in glob.glob(os.path.join(ROOT, "kit", "skills", "*", "*", "*.md")):
             fails += scan(sk, titles, "a specific game named in a reusable skill")
