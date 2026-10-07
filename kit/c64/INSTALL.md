@@ -34,28 +34,28 @@ measures whatever was installed. The measurements, each dated:
 |---|---|---|---|
 | v3.11.0 release, GUI | macOS arm64 | 22 September 2026 | 28 of 56 |
 | v3.11.0 with pull requests #6, #7, #11, #14 to #24 merged, from source | macOS arm64 | 22 September 2026 | 56 of 56 |
-| v3.13.0, from source | Linux x86_64, no display | 24 September 2026 | 56 of 56, three runs |
+| v3.13.0, from source | Linux x86_64 | 24 September 2026 | 56 of 56, three runs |
 | v3.13.1, from source (`get-vice build`) | macOS arm64 | 24 September 2026 | 56 of 56 |
-| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 24 and 25 September 2026 | 56, 55 and 53 of 56, three runs on the 24th; 56 of 56 on the 25th |
-| v3.13.1, from source (`get-vice build`) | Linux x86_64, no display | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
-| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64, no display | 26 September 2026 | 56 of 57, five runs: all but `pause-at-instruction` |
+| v3.13.1, from source (`get-vice build`) | Linux x86_64 | 24 September 2026 | 53, 54, 54 and 56 of 56, four runs |
+| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64 | 26 September 2026 | 56 of 57, five runs: all but `pause-at-instruction` |
 | v3.13.1 release, `v3.13.1-macos-arm64-gui.dmg` | macOS arm64 | 28 September 2026 | 56 of 57: all but `pause-at-instruction` |
-| v3.13.1 release, GUI; regenerator2000 0.9.20 | Ubuntu 24.04.5 x86_64, desktop | 30 September 2026 | 56 of 57: all but `pause-at-instruction` |
-| v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, no display | 2 October 2026 | 57 of 57, five runs |
+| v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64 | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
-| v3.13.1 release, `v3.13.1-linux-x86_64-gui.zip` | Linux x86_64 desktop (Ubuntu 24.04), under `xvfb-run` | 30 September 2026 | 56 of 57: all but `warp` |
-| v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64, Ubuntu 24.04, no display | 2 October 2026 | 54 of 57 after making startup progress independent of host speed: `watch-store`, `watch-load` each counted 39 against a minimum 40; warp reached 71 passes/s against a minimum 100. Exact frame stepping, instruction stops and snapshot/restart determinism passed |
 
-Add a row whenever a build is measured on a machine not listed, and bring
-that machine's `c64` cell in `site/status.json` into line with it. Until
-3 October 2026 `watch-store`, `watch-load`, `checkpoints-survive-load`
-and `warp` were judged against a second of the host's clock: the misses
-of those four in the rows of 30 September and 2 October are slow hosts,
-not the emulator. From that day the check counts against the test program's
-own passes and reports the host's speed on a line of its own; on macOS
-arm64 that day, with the emulator held to 15 passes a second, the older
-check failed nine of 57 and the newer one none. The two
-Linux rows of v3.13.1 failed the same checks, whichever way the build was
+One row per build on each kind of computer, the kinds being the hosts of
+`site/status.json`: Linux x86_64 is one kind, on a desktop, a server or in
+a container, on any distribution. Measuring a build that has a row on your
+kind of computer, with the same result, changes nothing here. A different
+result replaces that row's date and count, and your `kit-feedback.md` says
+what changed. A new build, or a kind of computer with no row, adds one;
+bring that kind's `c64` cell in `site/status.json` into line with it.
+`check_docs.py` fails two rows for the same build on the same kind.
+
+`check-emulator` counts `watch-store`, `watch-load`,
+`checkpoints-survive-load` and `warp` against the test program's own
+passes, not the host's clock, and reports the host's speed on a line of
+its own, so a slow host does not fail them. Before 26 September 2026,
+v3.13.1 on Linux failed the same few checks whichever way the build was
 made: `determinism-running-save` and `determinism-restart`, and once
 `step-instruction`, more of them while a compile was loading the host.
 Each went on straight after `vice_execution_pause`, two to load a
@@ -451,39 +451,12 @@ macOS arm64.
   full.
 - **Assembler (Platinum tier only).** 64tass or ACME, from Homebrew.
 
-## Linux — run on a desktop, 30 September 2026
+## Linux
 
-On Ubuntu 24.04 x86_64 with a desktop, from an agent whose shell had no
-`DISPLAY` set, the launcher ran the emulator under `xvfb-run` as on a
-server, and nothing was drawn on the desktop. The release zip needed
-three of the runtime packages below that the desktop lacked
-(`libieee1284-3t64`, `libmicrohttpd12t64`, `libportaudio2`); the contributor
-installed them, since `sudo` asks for a password the agent cannot type.
-`check-emulator` passed 56 of 57: `warp` failed, warp mode giving 78
-passes a second against 51 without, where the check wants over 100. The
-cause is unknown: container runs, also under `xvfb-run`, pass it. `verify-footprint`
-was clean, and regenerator2000 wrote nothing to `~/.config/regenerator2000`.
-
-## Linux — a second desktop run, 30 September 2026, with regenerator2000
-
-On Ubuntu 24.04.5 x86_64, the v3.13.1 GUI release passed 56 of 57
-checks; `pause-at-instruction` failed, so inspection used the documented
-pause workaround. Restoring an existing snapshot reached gameplay.
-regenerator2000 0.9.20 was also exercised. The run reported no external
-changes in the bounded footprint comparison, but did not preserve whether
-`~/.config/regenerator2000/config.toml` was listed as a known leftover.
-That report cannot establish absence of an external settings file:
-a maintainer observed 0.9.20 writing it with opened project paths.
-Check both changed files and known leftovers when repeating the run.
-
-## Linux — run on a server with no display, 24 September 2026
-
-Run on 24 September 2026 on Ubuntu 24.04, x86_64, four cores, in cloud
-containers with no display (gcc 13.3, Python 3.11, cargo 1.94). The first
-run built v3.13.0 from source and measured `check-emulator` 56 of 56 three
-times, `verify-footprint` clean. A second run the same day used the
-v3.13.1 release zip and then a source build of the same tag (the table at
-the top of this file). No run is recorded on ARM or another distribution.
+Recorded on Ubuntu 24.04 x86_64: in cloud containers with no display from
+24 September 2026 (four cores, gcc 13.3, Python 3.11, cargo 1.94), and on
+desktops from 30 September. What each build measured is the table at the
+top of this file. No run is recorded on ARM or another distribution.
 
 **A network that refuses the GitHub API.** In those containers the proxy
 answered `api.github.com`, the project's web pages and `codeload` with 403
@@ -507,7 +480,8 @@ stops at start-up with "Couldn't load kernal ROM"; the launcher links
 `tools/vice-home/data/vice` (VICE's user data folder, searched first) to
 the build's own `share/vice`, which fixes that and changes nothing outside
 the repository. On Ubuntu 24.04 it needed these runtime packages, which
-live outside the repository like the build packages below:
+live outside the repository like the build packages below. `sudo` asks
+for a password the agent cannot type, so the contributor runs it:
 
 ```
 sudo apt-get install --no-install-recommends libpulse0 libpcap0.8t64 libusb-1.0-0 \
@@ -554,6 +528,8 @@ will not start without one. The launcher sees that (neither `DISPLAY` nor
 `WAYLAND_DISPLAY` is set) and runs the emulator under `xvfb-run`, which
 starts a virtual X server for it and stops it when the emulator exits;
 `tools.py stop` stops the emulator itself so that `xvfb-run` can clean up.
+An agent's shell on a desktop may have no `DISPLAY` either, and then the
+same happens there.
 Nothing is drawn anywhere and screenshots still work, since VICE renders
 them itself. Use the GUI build here too, not the headless one: the
 headless build's pause does not stop the CPU (above). The picture is
@@ -572,9 +548,10 @@ instead.
 **Footprint.** Everything the emulator wrote went under `tools/vice-home/`:
 its snapshots, PulseAudio's runtime directory, GTK's dconf store and Mesa's
 shader cache. `xvfb-run` keeps its X authority file in a temporary folder
-under `/tmp` and removes it on exit. regenerator2000 wrote nothing to
-`~/.config/regenerator2000` in this run; the path stays on the Uninstall
-list until a run shows where it writes. The apt packages above, if they
+under `/tmp` and removes it on exit. regenerator2000's settings go to
+`tools/r2000-home/`, where the launcher points its XDG paths; without
+them 0.9.20 writes `~/.config/regenerator2000/config.toml`, with the
+paths of the projects it opened. The apt packages above, if they
 were installed for this, are the Linux addition to that list, and so are the
 release zip's runtime packages (above).
 

@@ -179,12 +179,14 @@ unnoticed.
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
 8. **Update `TODO.md`** with what is missing for the next tier.
-9. **If you were the first on your operating system**, the install notes
-   are part of your retrospective: run
+9. **If you were the first on your operating system** (its cell in
+   `site/status.json` was missing or `untested`), the install notes are
+   part of your retrospective: run
    `python3 kit/scripts/tools.py --platform <platform> verify-footprint`, contain or list
-   whatever it finds, and write your platform's section in
-   `kit/INSTALL.md` to the standard of "The footprint principle" there,
-   and your system's cell in `site/status.json`.
+   whatever it finds, and write your system's section in
+   `kit/<platform>/INSTALL.md` to the standard of "The footprint
+   principle" in `kit/INSTALL.md`, and your system's cell in
+   `site/status.json`.
 
 ## Do not
 

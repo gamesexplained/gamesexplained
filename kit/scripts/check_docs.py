@@ -20,6 +20,8 @@
   games/*/*/kit-feedback.md   each maintainer ask filed (#123) or fileable (maintainer_asks.py)
   games/*/*/*.html   no class of the page's own that site/lib/site.css also styles: the build
                      links site.css after the page's <style>, so its rules land too (#143)
+  kit/*/INSTALL.md   one section per system, and one measurements row per build on each kind
+                     of computer in site/status.json: a run corrects them in place
 
 Usage: check_docs.py      exit 1 on failure
 """
@@ -155,6 +157,52 @@ def untitled_links(game):
     return bad
 
 
+def platform_notes(paths=None, hosts=None):
+    """A platform's INSTALL.md keeps one section per system and one measurements row per build
+    on each kind of computer, the kinds being site/status.json's hosts. A run that measures
+    again corrects the row or the sentence; a dated section or row of its own each time grew
+    kit/c64/INSTALL.md to three Linux sections and three rows of one release (kit/INSTALL.md)."""
+    if hosts is None:
+        hosts = json.load(open(os.path.join(ROOT, "site", "status.json"), encoding="utf-8"))["hosts"]
+    if paths is None:
+        paths = sorted(glob.glob(os.path.join(ROOT, "kit", "*", "INSTALL.md")))
+    names = sorted({h["name"] for h in hosts}, key=len, reverse=True)
+    bad = 0
+    for path in paths:
+        rel, sections, rows, table = os.path.relpath(path, ROOT), {}, {}, False
+        for n, ln in enumerate(open(path, encoding="utf-8").read().splitlines(), 1):
+            if ln.startswith("## "):
+                system = next((s for s in names if re.match(re.escape(s) + r"\b", ln[3:])), None)
+                if system in sections:
+                    print(f"  x  {rel}:{n}  a second section for {system} (the first is line {sections[system]}):")
+                    print(f"        correct that one in place (kit/INSTALL.md, 'The footprint principle')")
+                    bad += 1
+                sections.setdefault(system or ln, n)
+            cells = [c.strip() for c in ln.strip().strip("|").split("|")] if ln.startswith("|") else []
+            if cells[:2] == ["Build", "Machine"]:
+                table = True
+                continue
+            if not cells:
+                table = False
+            if not table or set(ln) <= set("|-: "):
+                continue
+            kinds = tuple(h["id"] for h in hosts if re.search(h["match"], cells[1]))
+            if not kinds:
+                print(f"  x  {rel}:{n}  a Machine no host in site/status.json matches; name the kind of computer")
+                print(f"        as its hosts' patterns do: {cells[1][:60]!r}")
+                bad += 1
+                continue
+            version = re.search(r"\d+(?:\.\d+)+", cells[0])
+            key = (version.group(0) if version else cells[0], "from source" in cells[0], kinds)
+            if key in rows:
+                print(f"  x  {rel}:{n}  a second row for {cells[0].split(',')[0]} on {', '.join(kinds)} (the first is"
+                      f" line {rows[key]}):")
+                print(f"        replace that row's date and count instead (the rule under the table)")
+                bad += 1
+            rows.setdefault(key, n)
+    return bad
+
+
 def main():
     fails = 0
     fails += scan(os.path.join(ROOT, "AGENTS.md"), SUBJECT, "subject matter in the rules file", EXEMPT)
@@ -200,6 +248,7 @@ def main():
              glob.glob(os.path.join(ROOT, "games", "*", "*", "features.md")):
         fails += scan(f, NARRATION, "narrating a past mistake (belongs in agent-history.md)", blank=GAME_TEXT)
     fails += class_collisions()
+    fails += platform_notes()
     notes = sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, "kit", "template", "*.md")))
     for f in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "*.md"))):
         if os.path.basename(f) not in notes:
