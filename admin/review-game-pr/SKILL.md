@@ -95,8 +95,10 @@ The emulator and disassembler install in a cloud session as for any run
 (`kit/INSTALL.md`). The image is never in the repository. Look for it in
 `/mnt/project-files/uploads/`, then in archive.org's C64 Preservation
 Project collection, which has clean originals of most C64 games, each a
-zip of its own:
-<https://ia800403.us.archive.org/view_archive.php?archive=/3/items/C64_Preservation_Project_10th_Anniversary_Collection/C64_Preservation_Project_10th_Anniversary_Collection_G64.zip>.
+zip of its own. Start from the item,
+<https://archive.org/download/C64_Preservation_Project_10th_Anniversary_Collection>,
+and follow "View Contents" on its `G64.zip`: the listing's own address
+changes from server to server.
 An original can differ from the release the contributor analysed (a
 crack's loader, a trainer, moved code), so match it to `game.json`'s
 `build` and to `orientation.md` before trusting an address in it, and
