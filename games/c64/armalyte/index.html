@@ -303,9 +303,36 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">15 · Loading</p>
   <h2 class="t">One file per level, loaded over the engine</h2>
   <p class="lede">The engine stays in memory for the whole game. Each level is a file of its own on side 2, loaded when the level is reached.</p>
-  <p>Side 1 boots to a menu, and its first entry loads the engine, which unpacks itself and starts at <code>$A000</code>. From then on the engine loads everything else itself, by a one-letter name (<code>$B3E1</code>): D, E, L, H, U, N, A, and R for the eight levels, and M for the ending. The first load looks for D on side 1, does not find it, and puts up "TURN DISK TO SIDE B PRESS FIRE" (<code>$B5CC</code>), which is how the game asks for the other side.</p>
+  <p>Side 1 boots to a menu of three entries, and the first loads the engine, which unpacks itself and starts at <code>$A000</code>. The second is the loading picture on its own, and the third is a music demo of Walker's (section 16). From then on the engine loads everything else itself, by a one-letter name (<code>$B3E1</code>): D, E, L, H, U, N, A, and R for the eight levels, and M for the ending. The first load looks for D on side 1, does not find it, and puts up "TURN DISK TO SIDE B PRESS FIRE" (<code>$B5CC</code>), which is how the game asks for the other side.</p>
   <p>The fast loader (<code>$B3FC</code>) opens the file through the KERNAL, sends 256 bytes of its own code to the disk drive's memory and starts it there, then takes the file two bits at a time over the serial bus's clock and data lines, keeping off the raster lines where the video chip would stall the processor. Each file is packed. It unpacks itself, and a short routine of the engine's (<code>$9680</code>) moves it into place: <code>$0200-$6FFF</code> for the level's object types, paths, waves, map, tiles, and sprites, <code>$9700-$98FF</code> for its script and boss tables, and the memory under the I/O chips at <code>$D000-$D6FF</code> for its characters.</p>
   <p>Between levels the game keeps only the engine's state block (<code>$B000-$B02F</code>): level number, lives, score, batteries, generators, and settings. A game over goes back to <code>$A000</code>, so level 1 is loaded again before the title whenever another level is in memory.</p>
+</section>
+<section data-part="warbles">
+  <p class="fig">16 · Warbles</p>
+  <h2 class="t">Music: Walker's Warbles, the third program on the disk</h2>
+  <p class="lede">Side 1's menu has three entries, and the third is not part of the game. It is Martin Walker's own music demo disk from 1988, and what loads is his music editor's memory as he left it: sixteen tune slots, 128 pattern slots, and 32 instruments, of which four keys reach four tunes.</p>
+  <div class="plate" style="margin-bottom:22px">
+    <img src="reference/warbles.png" alt="The Walker's Warbles screen: a title, a row of four numbered keys with the first highlighted, a bar gauge to the right of them, and bands of colour down the left and right edges" style="width:384px;max-width:100%;image-rendering:pixelated;border-radius:4px;display:block;margin:0 auto">
+    <p class="cap">The demo with key 1 held. The bar at the right is the gauge: the raster lines the music took in this frame, eight lines to a cell. RUN/STOP fades whatever is playing, five frames to a volume step.</p>
+  </div>
+  <div class="plate"><div id="ar-warbles"></div>
+  <p class="cap">All eight tunes the disk holds, the four with a key first. The port of the demo's play routine (<code>$104D</code>) reads them from its own bytes. Run beside the demo's code in a 6502 simulator, the port made the same writes to the SID, in the same order, in every frame of all sixteen headers for twenty thousand frames each, and of 200 random tunes with random instruments, which together run every instruction of the routine. Nothing here uses the SID's filter, though the volume is written as <code>$1F</code>, which selects the low pass.</p></div>
+  <div class="ar-scroll" style="margin:22px 0"><table class="ar-tbl">
+    <tr><th>Tune</th><th>Key</th><th>Patterns</th><th>Comes round after</th></tr>
+    <tr><td>10</td><td>1</td><td>24</td><td>2:09.3</td></tr>
+    <tr><td>3</td><td>2</td><td>17</td><td>5:06.4; the second and third voices repeat at 2:33.2</td></tr>
+    <tr><td>0</td><td>3</td><td>16</td><td>2:50.5</td></tr>
+    <tr><td>1</td><td>4</td><td>18</td><td>1:16.6</td></tr>
+    <tr><td>2</td><td>none</td><td>3</td><td>0:03.8</td></tr>
+    <tr><td>4</td><td>none</td><td>8, and pattern 0 on the first voice</td><td>hours: the other two voices repeat at 0:28.7 and 2:33.2</td></tr>
+    <tr><td>6</td><td>none</td><td>4</td><td>0:12.9</td></tr>
+    <tr><td>13</td><td>none</td><td>8, after pattern 0 four thousand times</td><td>hours</td></tr>
+  </table></div>
+  <p>The demo's whole main loop is the colour bars down the edges of the screen (<code>$2000</code>): it waits for a raster line, writes the next colour from a table to the background, and steps the table on by one a frame so the bands crawl upwards; the top band runs through 32 colours and the bottom one through eight. Everything else happens in the raster interrupt (<code>$1831</code>), which takes the raster line before and after the music and leaves the difference in one byte (<code>$18AE</code>). That byte is the gauge. While key 4's tune played it read 17 to 19 lines most of the time and reached 27, against the 26 scan lines the screen claims; each cell of the bar is eight lines, so a full bar would be 40.</p>
+  <p>The driver is Armalyte's, two years earlier and with less in it. There is no fade: the demo's own code writes the volume register over the driver's setting, one step every five frames (<code>$1914</code>). A track is only repeat counts and pattern numbers, with no loops and no fade command (<code>$13F9</code>), where the game's version has both. A new instrument does not force a note to start again. The frequency table and the vibrato tables are the same 232 bytes in both, and no instrument of the demo's that holds data matches any of the game's 21.</p>
+  <p>The tie bit sits on the other end of the note here. A note byte with bit 7 set means the note runs on into the next one, so the driver reads the slot before overwriting it and starts a new sound only when the note before it was not tied (<code>$10FE</code>); a note that is not tied itself drops its gate for its last beat, which is how the envelope gets its release. Armalyte's driver asks instead whether the new note is tied to the one before, and restarts the envelope by writing the gate off and on inside one frame. Two three-byte variables are cleared and never read (<code>$14B1</code>), which the game's driver does not have at all.</p>
+  <p>Four of the eight tunes have no key. Tune 2 is three patterns and four seconds. Tune 4 is tune 3 with the lead taken out, sharing its third track, and its first voice is a slot of zeros, which the reader takes as pattern 0 played 256 times over and over. Tune 13's track starts with sixteen entries of zeros, so it plays pattern 0 four thousand times before reaching the eight patterns it shares with tune 10. Three patterns in the array, 1, 7, and 8, are music no track plays at all.</p>
+  <p>The screen says a typical piece lasting several minutes occupies 2.5k. The longest tune here, key 1's, packs into 735 bytes of tracks and patterns and uses thirteen instruments, 208 bytes; the driver, its variables and its tables are 1,399. That is 2,342 bytes in all.</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -825,6 +852,9 @@ if (HAS) engine().then(e => {
 <script>
 (function () {
 'use strict';
+// Each music player's port stands in a block of its own, so that the two routines, both written
+// as the createDriver that sid.js takes, do not stand on each other.
+let engineDriver; {
 // <music-driver>
 /* Armalyte's music driver (Martin Walker), ported from the game's 6502 code for the site's shared
    SID player (site/lib/sid.js): music_init ($C000), music_play ($C059) and music_track_next
@@ -1087,12 +1117,15 @@ function createDriver(D) {
   return { init, stop, play, sid, writes, voice, m, playing: () => !!(m[ON] & 0x80) };
 }
 // </music-driver>
+engineDriver = createDriver; }
 
 // ---- 03 the music: the port above, played through the site's SID model (../../lib/sid.js)
 const root = document.getElementById('ar-music');
+const wroot = document.getElementById('ar-warbles');
 const S = globalThis.C64Sid;
 if (!S || typeof C64 === 'undefined') {
-  root.innerHTML = '<p class="ar-miss">The player is built on the site\'s shared scripts, which the built site serves.</p>';
+  const gone = '<p class="ar-miss">The player is built on the site\'s shared scripts, which the built site serves.</p>';
+  root.innerHTML = gone; wroot.innerHTML = gone;
   return;
 }
 const { hex, bytes, noteName } = S;
@@ -1110,7 +1143,7 @@ function sound(b) {                               // an instrument's 16 bytes, i
 }
 C64.load('parts/engine/listing.json').then((E) => {
   S.mount(root, {
-    driver: createDriver, data: E.ram.slice(0xC000, 0xD000),
+    driver: engineDriver, data: E.ram.slice(0xC000, 0xD000),
     tunes: ['Title', 'Demo', 'High scores', 'Loading'],
     rows: [
       { k: 'Track', f: (v) => hex(v.track, 4) + (v.read ? ', pattern ' + v.read.pattern : '') },
@@ -1124,5 +1157,273 @@ C64.load('parts/engine/listing.json').then((E) => {
     mark: (v, p) => !!(v.read && !v.read.rest && v.read.attack && (!p || !p.read || p.read.n !== v.read.n)),
   });
 }).catch((e) => { root.innerHTML = '<p class="ar-miss">The engine\'s listing did not load (' + e.message + ').</p>'; });
+
+// ---- 16 Walker's Warbles: the demo's own driver, ported above, through the same SID model
+let warblesDriver; {
+// <warbles-driver>
+/* Walker's Warbles' music driver, ported from the demo's own code for the site's shared SID
+   player (site/lib/sid.js): its init ($1000), play ($104D) and track reader ($13F9). D is the
+   demo's bytes from $1000 to $6AFF (from parts/warbles/listing.json), laid out in m at their
+   addresses, so every variable sits where the program keeps it ($141A-$14B6) and the tables are
+   read where they are: the pattern addresses at $2FC0/$3040, the tune headers at $30C0, the
+   frequencies at $3140/$31A0, the instruments at $3200/$3300, the tracks at $3400 and the 128
+   pattern slots at $4000. The two pointers the driver keeps in the zero page ($FB/$FC for the
+   track, $FD/$FE for the pattern) are kept here as numbers.
+   This is the same driver as Armalyte's, two years earlier and with less in it: no fade (the
+   demo's own fade writes $D418 over it, $1914), no track loops and no fade command, no rule that
+   a new instrument forces an attack. Its tie bit sits on the other end of the note: a note
+   attacks unless the note before it on that voice was tied, and a note that is not tied itself
+   drops its gate for its last beat, where Armalyte's driver turns the gate off and on again
+   inside the frame a note starts.
+   createDriver(D) returns {init, initTune, stop, play, sid, writes, playing, voice} for sid.js.
+   init takes the player's button (0-7), which is the eight tunes that have music, the four keys'
+   first; initTune takes the tune number the demo's own code is called with. writes is every SID
+   write of the last frame in order, init's or stop's before it.
+   Tested by tests/warbles.js against the driver run in the kit's 6502 simulator, every register
+   and every write of every frame. */
+function createDriver(D) {
+  const m = new Uint8Array(0x10000);
+  if (D) m.set(D, 0x1000);
+  m[0x104C] = 0;                                     // nothing plays until init
+  const sid = new Uint8Array(25), writes = [];
+  let pending = false;
+  const W = (r, v) => { sid[r] = v & 0xFF; writes.push(r, v & 0xFF); };
+  const TUNES = [10, 3, 0, 1, 2, 4, 6, 13];          // keys 1-4, then the four with no key
+  const ON = 0x104C, BEAT = 0x141A, BAR = 0x141B, VREGS = 0x141C, AD = 0x141D, SR = 0x141E,
+    PSTEP = 0x141F, PTOP = 0x1420, PBOT = 0x1421, NREAD = 0x1422, SSTEP = 0x1423,
+    VIBLEN = 0x1424, VIBSHIFT = 0x1434, VIBDELAY = 0x1444,
+    TRLO = 0x144C, TRHI = 0x144F, TEMPO = 0x1452, TEMPOBAR = 0x1453, VOFF = 0x1454;
+  // per voice, three bytes each
+  const IOFF = 0x1457, TPLACE = 0x145A, PPLACE = 0x145D, PAT = 0x1460, REPS = 0x1463,
+    HEAD = 0x1466, LEFT = 0x1469, WAVE = 0x146C, NOTE = 0x146F, ATTDONE = 0x1472, INS = 0x1475,
+    GATE = 0x1478, PDIR = 0x147B, SLIDE = 0x147E, VDIR = 0x1481, VWAIT = 0x1484,
+    VSHIFT = 0x1487, VPHASE = 0x148A, VCOUNT = 0x148D, VLEN = 0x1490, VSLO = 0x1493,
+    VSHI = 0x1496, FLO = 0x1499, FHI = 0x149C, NBYTE = 0x149F, PLO = 0x14A2, PHI = 0x14A5,
+    FX = 0x14A8, ATTN = 0x14AB, NFRAMES = 0x14AE, SPARE_A = 0x14B1, SPARE_B = 0x14B4;
+  const PATLO = 0x2FC0, PATHI = 0x3040, HEADERS = 0x30C0, FREQLO = 0x3140, FREQHI = 0x31A0,
+    INSA = 0x3200, INSB = 0x3300;
+  const dec = (a) => (m[a] = (m[a] - 1) & 0xFF);
+  const inc = (a) => (m[a] = (m[a] + 1) & 0xFF);
+  const freq = (x, n) => { m[FLO + x] = m[FREQLO + n]; m[FHI + x] = m[FREQHI + n]; };
+  const shown = [{}, {}, {}];                       // what each voice last read, for the display
+  let count = 0;                                    // notes read, so the display can tell two apart
+
+  function trackNext(x) {                           // the track reader, $13F9
+    const p = m[TRLO + x] | m[TRHI + x] << 8, at = (y) => m[(p + y) & 0xFFFF];
+    let y = inc(TPLACE + x), a = at(y);
+    if (a < 0x80) {                                 // a repeat count, then the pattern number
+      m[REPS + x] = a;
+      inc(TPLACE + x); y = (y + 1) & 0xFF; a = at(y);
+    }
+    m[PAT + x] = a;                                 // $FF starts the track again, other high
+    return a;                                       // values stop the music
+  }
+
+  function initTune(tune) {                         // the demo's own init, $1000
+    let k = (tune << 3) & 0xFF;
+    for (let y = 0; y < 8; y++, k = (k + 1) & 0xFF) m[TRLO + y] = m[HEADERS + k];
+    if (!pending) { writes.length = 0; pending = true; }
+    for (let x = 2; x >= 0; x--) {
+      m[PPLACE + x] = 0; m[SPARE_A + x] = 0; m[LEFT + x] = 0; m[NBYTE + x] = 0;
+      const y = m[VOFF + x];
+      W(y + 4, 0); W(y + 6, 0);
+      m[TPLACE + x] = 0xFF;                         // the instrument is left as the last tune had it
+      trackNext(x);
+      shown[x] = {};
+    }
+    m[BEAT] = 0; m[BAR] = 0;
+    W(0x17, 0); W(0x18, 0x1F);                      // volume 15, and the low pass selected, which
+    m[ON] = 0xFF;                                   // does nothing while no voice is routed to it
+  }
+
+  function stop() {                                 // as the program silences the music, $192B
+    if (!pending) { writes.length = 0; pending = true; }
+    W(0x18, 0);
+    m[ON] = 0;
+  }
+
+  function newNote(x) {                             // $1077-$118C: the voice's next note
+    let a = m[PAT + x];
+    if (a & 0x80) {
+      if (a !== 0xFF) { W(0x04, 0); W(0x0B, 0); W(0x12, 0); m[ON] = 0; return false; }
+      m[PPLACE + x] = 0; m[TPLACE + x] = 0xFF;
+      a = trackNext(x);
+    }
+    const p = m[PATLO + a] | m[PATHI + a] << 8, at = (y) => m[(p + y) & 0xFFFF];
+    let y = m[PPLACE + x];
+    const from = (p + y) & 0xFFFF;
+    m[GATE + x] = 0xFF;
+    m[HEAD + x] = at(y); m[LEFT + x] = m[HEAD + x] & 0x3F;
+    m[SLIDE + x] = 0; m[ATTDONE + x] = 0;
+    if (m[HEAD + x] & 0x40) m[GATE + x] = 0xFE;     // a rest
+    if (m[HEAD + x] & 0x80) {                       // an extra byte: an instrument or a slide
+      y = (y + 1) & 0xFF; inc(PPLACE + x);
+      const b = at(y);
+      if (b & 0x80) m[SLIDE + x] = b; else m[INS + x] = b;
+    }
+    y = (y + 1) & 0xFF; inc(PPLACE + x);
+    m[NREAD] = at(y); m[NOTE + x] = m[NREAD] & 0x7F;
+    freq(x, m[NOTE + x]);
+    const tied = !!(m[NBYTE + x] & 0x80);           // the note before this one on this voice
+    if (!tied) {                                    // an attack: the instrument from the start
+      const i = m[IOFF + x] = (m[INS + x] << 3) & 0xFF;
+      m[WAVE + x] = m[INSA + 2 + i]; m[FX + x] = m[INSA + 3 + i]; m[PHI + x] = m[INSA + 5 + i];
+      m[ATTN + x] = m[INSB + i];
+      m[AD] = m[INSA + i]; m[SR] = m[INSA + 1 + i];
+      m[VWAIT + x] = m[VIBDELAY + (m[INSB + 4 + i] >> 4)];
+      const r = m[VREGS];
+      m[PDIR + x] = 0; m[PLO + x] = 0;
+      W(r + 2, 0); W(r + 3, m[PHI + x]); W(r + 5, m[AD]); W(r + 6, m[SR]);
+    }
+    m[NBYTE + x] = m[NREAD];
+    const end = inc(PPLACE + x), n = (end - ((from - p) & 0xFF)) & 0xFF;
+    shown[x] = { pattern: m[PAT + x], addr: from, bytes: Array.from({ length: n }, (_, k) => m[(from + k) & 0xFFFF]),
+      rest: !!(m[HEAD + x] & 0x40), beats: m[LEFT + x] + 1, note: m[NOTE + x],
+      tie: !!(m[NREAD] & 0x80), attack: !tied, slide: m[SLIDE + x], n: ++count };
+    if (at(end) === 0xFF) {                         // the pattern's end: again, or the track's next
+      m[PPLACE + x] = 0;
+      if (dec(REPS + x) === 0) trackNext(x);
+    }
+    m[NFRAMES + x] = 0; m[VSHIFT + x] = 0; m[SPARE_B + x] = 0;
+    W(0x17, 0);
+    return true;
+  }
+
+  function effects(x) {                             // $118F-$135B: every frame but a new note's
+    let i = m[IOFF + x];
+    if (m[INSA + 6 + i]) {                          // the pulse sweep
+      m[PSTEP] = m[INSA + 6 + i];
+      m[PBOT] = m[INSA + 7 + i] & 0x0F; m[PTOP] = m[INSA + 7 + i] >> 4;
+      let lo, hi;
+      if (!m[PDIR + x]) {
+        const s = m[PLO + x] + m[PSTEP];
+        lo = s & 0xFF; hi = (m[PHI + x] + (s >> 8)) & 0x0F;
+        if (hi === m[PTOP]) inc(PDIR + x);
+      } else {
+        const s = m[PLO + x] - m[PSTEP];
+        lo = s & 0xFF; hi = (m[PHI + x] - (s < 0 ? 1 : 0)) & 0x0F;
+        if (hi === m[PBOT]) dec(PDIR + x);
+      }
+      const r = m[VREGS];
+      m[PHI + x] = hi; W(r + 3, hi);
+      m[PLO + x] = lo; W(r + 2, lo);
+    }
+    vibrato: {                                      // $11F5: vibrato, after its delay
+      if (m[VWAIT + x]) { dec(VWAIT + x); break vibrato; }
+      if (m[ATTN + x]) break vibrato;
+      const v = m[INSB + 4 + i];
+      if (!v) break vibrato;
+      const k = v & 0x0F;
+      if (!(m[VSHIFT + x] & 0x80)) {                // set up: the step is the gap to the next note, halved
+        m[VLEN + x] = m[VIBLEN + k]; m[VSHIFT + x] = m[VIBSHIFT + k];
+        m[VPHASE + x] = 0; m[VCOUNT + x] = 0;
+        const n = m[NOTE + x];
+        freq(x, n);
+        let d = ((m[FREQLO + n + 1] | m[FREQHI + n + 1] << 8) - (m[FREQLO + n] | m[FREQHI + n] << 8)) & 0xFFFF;
+        while (!(dec(VSHIFT + x) & 0x80)) d >>= 1;
+        m[VSLO + x] = d & 0xFF; m[VSHI + x] = d >> 8;
+        break vibrato;
+      }
+      const f = m[FLO + x] | m[FHI + x] << 8, d = m[VSLO + x] | m[VSHI + x] << 8;
+      const g = (m[VDIR + x] & 0x80 ? f - d : f + d) & 0xFFFF;
+      m[FLO + x] = g & 0xFF; m[FHI + x] = g >> 8;
+      if (m[VPHASE + x] & 0x80) {
+        if (dec(VCOUNT + x) === 0) m[VPHASE + x] = 0;
+      } else if (inc(VCOUNT + x) >= m[VLEN + x]) {
+        m[VPHASE + x] = 0xFF; m[VDIR + x] ^= 0xFF;
+      }
+    }
+    const s = m[SLIDE + x];                         // $12B8: a slide
+    if (s) {
+      const f = m[FLO + x] | m[FHI + x] << 8;
+      let g;
+      if (s >= 0xC0) g = f + (s & 0x3F);
+      else { m[SSTEP] = s & 0x3F; g = f - m[SSTEP]; }
+      g &= 0xFFFF; m[FLO + x] = g & 0xFF; m[FHI + x] = g >> 8;
+    }
+    if (m[FX + x] & 1)                              // $12EC: two waveforms, frame about
+      m[WAVE + x] = m[NFRAMES + x] & 1 ? m[INSB + 3 + i] : m[INSA + 2 + i];
+    if (m[FX + x] & 2) {                            // $1309: a two-note arpeggio, frame about
+      let n = m[NOTE + x];
+      if (m[NFRAMES + x] & 1) {
+        n = m[INSB + 5 + i];
+        if (n & 0x80) n = ((n & 0x7F) + m[NOTE + x]) & 0xFF;
+      }
+      freq(x, n);
+    }
+    if (m[FX + x] & 4) {                            // $1338: a short note that falls in pitch
+      const len = ((m[HEAD + x] & 0x3F) - 1) & 0xFF;
+      if (!(len < m[LEFT + x])) m[GATE + x] = 0xFE;
+      if (dec(FHI + x) & 0x80) inc(FHI + x);
+    }
+  }
+
+  function attack(x) {                              // $135C-$13AD: the attack waveform and note
+    const i = m[IOFF + x];
+    if (m[FX + x] & 0x10) {
+      if (m[ATTN + x]) m[WAVE + x] = m[INSB + 2 + i];
+      else if (!(m[ATTDONE + x] & 0x80)) m[WAVE + x] = m[INSA + 2 + i];
+    }
+    if (m[FX + x] & 0x20) {
+      let n = -1;
+      if (m[ATTN + x]) { n = m[INSB + 1 + i]; if (n & 0x80) n = ((n & 0x7F) + m[NOTE + x]) & 0xFF; }
+      else if (!(m[ATTDONE + x] & 0x80)) n = m[NOTE + x];
+      if (n >= 0) freq(x, n);
+    }
+  }
+
+  function play() {                                 // the demo's play, $104D
+    if (!pending) writes.length = 0;
+    pending = false;
+    if (!(m[ON] & 0x80)) return;
+    for (let x = 2; x >= 0; x--) {
+      m[VREGS] = m[VOFF + x];
+      if (m[BEAT] === 0) {
+        const left = dec(LEFT + x);
+        if (left & 0x80) { if (!newNote(x)) return; } // the track ended: the music stops
+        else {                                       // a note that is not tied releases on its
+          if (left === 0 && !(m[NBYTE + x] & 0x80)) m[GATE + x] = 0xFE;   // last beat
+          effects(x);
+        }
+      } else effects(x);
+      attack(x);
+      const r = m[VREGS];
+      W(r + 4, m[WAVE + x] & m[GATE + x]);
+      W(r + 1, m[FHI + x]); W(r, m[FLO + x]);
+      if (m[ATTN + x] === 0) m[ATTDONE + x] = 0xFF; else dec(ATTN + x);
+      inc(NFRAMES + x);
+    }
+    if (dec(BAR) & 0x80) { m[BAR] = m[TEMPOBAR]; m[BEAT] = m[TEMPO]; }
+    else if (dec(BEAT) & 0x80) m[BEAT] = m[TEMPO];
+  }
+
+  function voice(x) {                               // plain data for the display's rows
+    const i = m[INS + x] < 32 ? m[INS + x] : -1;
+    return { track: m[TRLO + x] | m[TRHI + x] << 8, place: m[TPLACE + x], reps: m[REPS + x],
+      read: shown[x].bytes ? shown[x] : null, instrument: i,
+      ins: i < 0 ? null : Array.from(m.subarray(INSA + 8 * i, INSA + 8 * i + 8)).concat(Array.from(m.subarray(INSB + 8 * i, INSB + 8 * i + 8))) };
+  }
+
+  return { init: (i) => initTune(TUNES[i]), initTune, stop, play, sid, writes, voice, m,
+           playing: () => !!(m[ON] & 0x80) };
+}
+// </warbles-driver>
+warblesDriver = createDriver; }
+C64.load('parts/warbles/listing.json').then((W) => {
+  S.mount(wroot, {
+    driver: warblesDriver, data: W.ram.slice(0x1000, 0x6B00),
+    tunes: ['Key 1', 'Key 2', 'Key 3', 'Key 4', 'Tune 2', 'Tune 4', 'Tune 6', 'Tune 13'],
+    rows: [
+      { k: 'Track', f: (v) => hex(v.track, 4) + (v.read ? ', pattern ' + v.read.pattern : '') },
+      { k: 'Read', f: (v) => v.read ? hex(v.read.addr, 4) + ': ' + bytes(v.read.bytes) : '-' },
+      { in: true, f: (v) => v.read ? (v.read.rest ? 'rest' : noteName(v.read.note) + (v.read.tie ? ', runs on' : '')) +
+          ', ' + v.read.beats + (v.read.beats === 1 ? ' step' : ' steps') +
+          (v.read.slide ? ', slide ' + (v.read.slide >= 0xC0 ? 'up' : 'down') : '') : null },
+      { k: 'Instrument', f: (v) => v.ins ? v.instrument + ': ' + sound(v.ins) : '-' },
+      { in: true, mono: true, f: (v) => v.ins ? bytes(v.ins.slice(0, 8)) + ' \u00b7 ' + bytes(v.ins.slice(8)) : '' },
+    ],
+    mark: (v, p) => !!(v.read && !v.read.rest && v.read.attack && (!p || !p.read || p.read.n !== v.read.n)),
+  });
+}).catch((e) => { wroot.innerHTML = '<p class="ar-miss">The demo\'s listing did not load (' + e.message + ').</p>'; });
 })();
 </script>

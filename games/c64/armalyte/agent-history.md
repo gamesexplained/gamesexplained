@@ -160,3 +160,61 @@ say that a game with music gets a player for every tune it stores.
   frame before the fall lowers it, so they sit one step of the high
   byte below the pair instead; only instrument 5, with no arpeggio,
   falls.
+
+## 7 October 2026: Walker's Warbles
+
+Aaron Bell asked what the disk menu's third entry was, having read that
+the Silver run had not followed it. It is a music demo of Martin
+Walker's, and because a part folder with no analysis holds the whole
+game at Bronze, and because the kit's new rule gives every tune a
+button, it was worked through to 100 % coverage and a player of its own
+(`parts/warbles`, section 16).
+
+- It is not a file: `c1541 -extract` on side 1 writes three files and
+  none of them is this. What loads it is the menu's own loader, and
+  that was not traced; the "DEMO LOADER" string left at `$9FF5` is
+  tempting and proves nothing. The KERNAL's file-name pointer, checked
+  while the demo ran, gave a length of 8 and an address whose bytes the
+  unpacking had already cleared, so it does not corroborate the name
+  either. Both facts files say the route is not known rather than
+  guessing it.
+- The demo is not loaded over the engine, so `part.json` has no `"over"`
+  and the part is its own 64 KB. Coverage then started at 97.1 %
+  because the template's defaults assume a game's layout: the screen at
+  `$0400` was undescribed (no `video.screen`), the ledger's own "start"
+  label spanned 197 bytes of the KERNAL's zero page, and the program's
+  real entry at `$1825` could not be called `start` because the name was
+  taken. Excluding `$0000-$03FF` with carve-outs for the four zero-page
+  bytes the demo uses, `$0291` and the KERNAL's IRQ vector fixed it.
+- The driver turned out to be the game's own, two years earlier: set
+  side by side instruction for instruction, the two differ only in
+  addresses except where `parts/warbles/facts.md` lists. The tie bit is
+  the interesting difference. Armalyte's driver ties a note to the one
+  before it; this one ties it to the one after, which it manages by
+  reading the previous note's stored byte before overwriting it. Both
+  read the same byte in the same place; which note the bit belongs to is
+  a matter of which way round you read the loop.
+- Its test (`tests/warbles.js`) left three instructions unrun after the
+  sixteen tunes and 200 random tunes: the path a relative arpeggio
+  takes, which none of the demo's 32 instruments uses. Randomising all
+  32 instruments as well as the tracks and patterns reached them, and
+  the test says why it does that.
+- Both players then broke: each port declares `createDriver` at the top
+  of the page's one script, so the second hoisted over the first and the
+  game's player showed an empty track. Each port now stands in a block
+  of its own. The Chromium check found it; nothing in the tests would
+  have.
+- The demo's screen claims 2.5k for a tune of several minutes and 26
+  raster lines of interrupt time. Both check out: the longest tune packs
+  into 2,342 bytes with its driver and tables, and the demo's own gauge
+  read 17 to 19 lines most of the time and reached 27.
+- The harness fell back part way through this stretch. Asked directly,
+  the session reports its configured and current model as
+  `claude-opus-5-5[1m]`, which is proven, and the model that served its
+  latest turn as `claude-opus-5`, which is not. A fallback is per turn,
+  so which turns of the curio's coverage and verify it covered cannot be
+  told from here. What the kit should do about a fallback nobody was
+  told about is a maintainer's decision, not a run's, so it was put to
+  Aaron Bell. He decided that the run stays recorded as
+  `claude-opus-5-5[1m]`, since that model did the work, and `game.json`
+  is unchanged.

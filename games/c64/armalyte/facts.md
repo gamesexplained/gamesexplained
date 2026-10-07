@@ -5,13 +5,15 @@ understanding developed lives in `agent-history.md`. Every fact names
 the routine or table it comes from. Unless marked *live*, a fact comes
 from reading the code in the snapshot named in `orientation.md`.
 
-The game is in ten parts (`orientation.md`, "The parts"): the engine,
+The game is in eleven parts (`orientation.md`, "The parts"): the engine,
 which stays in memory throughout, eight levels and the ending, each
-loaded over it. What is true of one part is in that part's own
-`parts/<id>/facts.md`, with that part's addresses: the engine's facts
-hold the play mechanics, the front end, the sound and the loader. This
-file holds what spans the parts, and names the part beside every address
-it gives: "engine `$B3CC`" is the engine's routine at `$B3CC`.
+loaded over it, and the music demo the disk's third menu entry loads,
+which is not the game at all and holds a machine of its own. What is
+true of one part is in that part's own `parts/<id>/facts.md`, with that
+part's addresses: the engine's facts hold the play mechanics, the front
+end, the sound and the loader. This file holds what spans the parts, and
+names the part beside every address it gives: "engine `$B3CC`" is the
+engine's routine at `$B3CC`.
 
 ## Build
 
@@ -19,7 +21,10 @@ it gives: "engine `$B3CC`" is the engine's routine at `$B3CC`.
   reads "© THALAMUS MCMLXXXVIII" and "CYBERDYNE SYSTEMS" (engine
   `$B630`, `$B646`). Side 1 boots to a menu of three programs, "1
   Armalyte, 2 Loading picture, 3 Walker's Warbles"
-  (`reference/disk-menu.png`); only the first was followed.
+  (`reference/disk-menu.png`). The first loads the engine and the third
+  a music demo of Martin Walker's, a part of its own
+  (`parts/warbles/facts.md`); the second, the loading picture on its
+  own, was not followed.
 - The credits are title strings 8-18 (engine `$90B9`): programming and
   game design Dan Phillips; system programming and game design John
   Kemp; graphics, level and game design Robin Levy; music and sound
@@ -167,7 +172,9 @@ screen codes:
   6 read on as one sentence.
 - The ending: five messages, one to a picture (ending `facts.md`).
 - Side 1's boot menu, seen on screen: "1 Armalyte, 2 Loading picture, 3
-  Walker's Warbles". The boot files are not in any part.
+  Walker's Warbles". The boot files are not in any part. The third
+  entry's own text, and the one string left in its memory above it, are
+  in `parts/warbles/facts.md`.
 
 ## Hardware registers
 

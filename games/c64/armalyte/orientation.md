@@ -67,7 +67,10 @@ session from a hard reset, with `include_disks` set, by
 The engine stays in memory from the first load to the end; every level
 and the ending are loaded over it (`parts/<id>/part.json`, `"over":
 "engine"`), each into the same three ranges: `$0200-$6FFF`, `$9700-$98FF`
-and the RAM under the I/O chips at `$D000-$D6FF`.
+and the RAM under the I/O chips at `$D000-$D6FF`. The eleventh part is
+not the game: the music demo behind the menu's third entry arrives over
+the machine the menu leaves, with nothing of the game in memory, so it
+is an address space of its own and has no `"over"`.
 
 | Part | File | Route to its snapshots |
 |---|---|---|
@@ -75,6 +78,7 @@ and the RAM under the I/O chips at `$D000-$D6FF`.
 | `level-1` | D | steps 3 and 4 above |
 | `level-2` to `level-8` | E L H U N A R | from level 1, through the engine's own loader (below) |
 | `ending` | M | the same, after level 8 |
+| `warbles` | none the directory lists | from step 1, press `3`; checkpoint at `$1825`, its first instruction, is `parts/warbles/work/entry.vsf` |
 
 Playing through eight levels for each snapshot was not practical, so the
 later loads were reached with the game's own loader in the same session:
@@ -106,6 +110,12 @@ set, copied to `$7900` at the start of the level). Each level is reloaded
 from disk when it is reached, and level 1 again after a game over that
 happened beyond it.
 
+The music demo is the other way about: `$01` = `$37`, both ROMs in, the
+KERNAL's own interrupt handler running with `$0314` pointing into the
+demo, the screen at `$0400` and the characters from ROM. It owns
+`$1000-$7FFF` and only four bytes of the zero page
+(`parts/warbles/facts.md`).
+
 ## The loader, in a paragraph
 
 The boot files take the machine through the disk menu and load the
@@ -118,5 +128,9 @@ the file two bits at a time on the serial bus's clock and data lines,
 four reads of CIA 2's port A per byte, avoiding the screen's bad lines.
 Each file is stored from `$0801` and jumps to its own unpacker at
 `$0812`, which unpacks to `$0200-$8000` and jumps to the mover at
-`$9680`. The menu's other two entries (the loading picture on its own
-and Martin Walker's music) were not followed.
+`$9680`. The menu's third entry, Martin Walker's music demo
+(`parts/warbles`), is packed from `$0801` in the same shape, with an
+unpacker of its own at `$0812`; the second, the loading picture on its
+own, was not followed. Neither is a file the directory can open, so the
+menu's own loader finds them on the disk itself, and how it does was not
+traced.
