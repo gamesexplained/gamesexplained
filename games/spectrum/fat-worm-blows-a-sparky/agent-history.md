@@ -171,3 +171,36 @@ spindles. The type `$F6` item was written into the worm's path, with the
 same run without it as the control. That proves what the code does when
 the head touches the disk. It does not prove whether a player can reach
 the disk with fewer than 50 spindles; `features.md` leaves that open.
+
+## The view's drawing order (6 October 2026, contributor's session)
+
+The contributor, looking at the page's view with the worm at square `$6F56`
+(-4, 5), x 124, y 164, saw the northern side of the lower-left block drawn
+over the top of the block taking up most of the rest of the picture. The
+game does not do that. `$AAF3` lists the same three records with the same
+edges, heights and types in both cases, but `$B008` puts the big block in
+last, so it paints over the wall; the page sorted the records by bottom
+height and then by distance from the middle, which put the lower-left block
+last instead. Drawn through the game's own fillers (`$EAA9`, then `$B2F4`),
+the two orders differ in 52 pixels, every one of them on that wall.
+
+The page now builds its record list as `$AAF3` walks the nine cells, and
+orders it as `$B008` with `$B045`, `$B0A5` and `$B2C8` (`FW.viewRecords`,
+`FW.orderRecords`). A pad is listed and then not drawn, as `$89B8` returns at
+`$8A08`; a record switched off with a bottom height of `$FF` is not listed.
+The reported view now draws with no pixel of difference from the game.
+
+Two things are knowingly left out, and `test_view_order.py` says so:
+
+- **The records that run a routine as the walk passes them (`$AF49`).** They
+  are what ripples a block's height: in the view above the walk writes one
+  board byte a frame, `$6615`'s top height, 48 to 46. Porting them is a
+  separate job, so the page keeps the height the tape gives.
+- **Nothing the page lists is type `$FA`**, the worm's segments, so the step
+  over them in `$B008` cannot fire for the page's own records.
+
+`test_view_order.py` holds the port to the game for six views, 80,089 record
+pairs through `$B045` and 360 whole lists through `$B008`. The nine cells the
+view is taken from are pinned by the game's own starting window,
+`cell_grid_template` at `$6400`, which the page's reading of the links
+reproduces.

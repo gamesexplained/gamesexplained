@@ -42,6 +42,24 @@ with Kempston emulation and a control.
 - **Let a Spectrum game commit its code map, so the checks can hold `symbols.json` against it.** `kit/spectrum/codemap.py` needs the snapshot, which is never committed, so the check that would have caught this game's first pass (code typed as data at 100 % coverage) runs only on the contributor's machine. The map itself is a list of addresses with no byte of the game in it. Suggest: `codemap.py` writes `codemap.json` beside `symbols.json`, and `check_listing.py` fails a Spectrum game whose `symbols.json` types as data an address the map has as code. Game: Fat Worm Blows a Sparky, 3 October 2026, branch `game/spectrum/fat-worm-blows-a-sparky`.
 - **Give the Spectrum launcher a port and a no-window option.** `tools.py --platform spectrum zesarux` pins ZRCP to port 10000 and one instance. This run needed three machines at once (a window for the maintainer, the lead's frame-stepped tests, an independent checker's), and started the extra two with the launcher's own code from a script in `work/`. Suggest: `zesarux --port N --headless`, with `stop` taking the port, in `kit/spectrum/tools.py`. Game: Fat Worm Blows a Sparky, 3 October 2026, branch `game/spectrum/fat-worm-blows-a-sparky`.
 
+- **The test convention never runs a game's own test, so a page's port is checked once and
+  never again.** `test_kit.py` looks under `kit/` only, which is how the first pass's
+  `test_core.py` came to sit in the gitignored `work/` and vanish while `index.html` went on
+  naming it. Changing the convention is not this game's to make, so it is its own pull
+  request, `kit/game-tests-in-ci`: `test_kit.py` finds
+  `games/<platform>/<slug>/test_*.py` and `.../parts/<id>/test_*.py`, which cannot reach
+  `work/`, `test_test_kit.py` fails if the pattern is dropped, and `AGENTS.md` and the
+  comment in `ci.yml` are brought into line. If CI should not run game tests, drop that pull
+  request and this ask stands on its own. 6 October 2026.
+- **A page's ports are held against the game by one game's own test, and there is no shared
+  fixture for that.** The convention below now runs `games/<platform>/<slug>/test_*.py`, and
+  `test_view_order.py` carries its own way of doing the job: cut the page's script block out
+  of `index.html`, run it under node, run the game's routines in the simulator on the
+  committed `listing.json`, compare. The next page that ports arithmetic or an ordering
+  writes that harness again. Suggest `kit/scripts/port_check.py`, taking a game folder and
+  the name of the block, with the node half shared. Game: Fat Worm Blows a Sparky,
+  6 October 2026, branch `game/spectrum/fat-worm-blows-a-sparky-view-order`.
+
 ## What took longest
 
 ```
@@ -168,6 +186,13 @@ The contributor's rework:
   `t` blocks, the fixpoint). `tool-zesarux` keeps the emulator's half.
 - `kit/skills/core/70-minisite`: a widget's port is swept over every
   boundary value of each input, with the case count in the caption.
+
+The view-order session (6 October 2026):
+
+- Nothing. The one kit change this session needed is the test convention itself,
+  which is a maintainer's decision and not this game's to take, so it is its own
+  pull request, `kit/game-tests-in-ci` (see "Maintainer asks"). This branch
+  changes only this game.
 
 First pass:
 
