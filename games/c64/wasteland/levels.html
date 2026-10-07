@@ -1059,35 +1059,35 @@ globalThis.WLMaps = (function () {
       if (d.c === 1) h = d.msgs.filter(k => k).map(q).join('');
       else if (d.c === 2) h = (at(1) ? q(at(1)) : '') + (at(0) & 0x40 ? '<span class="wl-mute">The game now tests the party: ' + (d.checks || []).join('; ') + '.</span>' : '');
       else if (d.c === 9) h = (at(0) ? q(at(0)) : '') + '<span class="wl-mute">Radiation: ' + at(1) + 'd6 CON damage to each member not wearing a Rad suit' + (at(0) & 1 ? '; armour does not help' : ', less its AC rolled in d6') + '.</span>';
-      else if (d.c === 10) h = exitHTML(d.exit, S.x, S.y, true);
+      else if (d.c === 10) h = exitHTML(d.exit, S.x, S.y);
       else if (d.c === 6) h = mute('An action square. The game runs ' + d.rows[0][1] + '.');
       else if (!d.plain) h = '<span class="wl-mute">' + C.name[0].toUpperCase() + C.name.slice(1) + ' square: ' + C.does + '</span>';
       say(h);
     }
     // An exit (square_exit $89A3) on square ex, ey. One to another square of this map moves the
     // party, as the game does; one to another map is named, with a link to it on the Maps tab.
-    // An exit that asks first (exit_confirm $8A36) gets N: the window stays where it is.
+    // An exit that asks first (exit_confirm $8A36) gets Y, so the party can walk onto a town's
+    // square and on past it; an exit to another map leaves the window on this one.
     const mute = h => '<span class="wl-mute">' + h + '</span>';
-    function exitHTML(e, ex, ey, onIt) {
+    function exitHTML(e, ex, ey) {
       if (e.back) return mute('An exit back to the square the party last left by an exit.');
-      const said = (e.msg ? q(e.msg) : '') + (e.ask ? '<q>Enter new location (Y/N)?</q> ' : ''), no = onIt ? '' : ' The window answers N.';
+      const said = (e.msg ? q(e.msg) : '') + (e.ask ? '<q>Enter new location (Y/N)?</q> ' : '');
       if (e.to === S.M.n) {
-        if (e.x === ex && e.y === ey) return said + mute('This exit leads to the square it is on. The game first changes the square (it ' + changeText(e.change[0], e.change[1]) + ') and then runs what it has become.' + no);
-        return said + mute('This exit leads to column ' + e.x + ', row ' + e.y + ' of this map.' + no);
+        if (e.x === ex && e.y === ey) return said + mute('This exit leads to the square it is on. The game first changes the square (it ' + changeText(e.change[0], e.change[1]) + ') and then runs what it has become.');
+        return said + mute('This exit leads to column ' + e.x + ', row ' + e.y + ' of this map.');
       }
       const t = opts.titles && opts.titles[e.to];
-      return said + mute('This exit leads to map ' + e.to + (t ? ', ' + esc(t) : '') + '.' + (onIt ? ' The window stays on this map.' : no)
+      return said + mute('This exit leads to map ' + e.to + (t ? ', ' + esc(t) : '') + '.' + (e.ask ? ' The window answers Y and stays on this map.' : ' The window stays on this map.')
         + ' <a href="' + (opts.levels || 'levels.html') + '#map-' + e.to + '">Open map ' + e.to + ' on the Maps tab</a>.');
     }
     function step(d) {
       if (!S.M) return;
       const r = tryMove(S.M, S.x, S.y, d), M = S.M;
-      if (!r.ok) {
+      if (!r.ok && r.why !== 'ask') {
         if (r.why === 'edge') say('<span class="wl-mute">The edge of the map: the step is refused.</span>');
         else if (r.why === 'group') say('<span class="wl-mute">A group stands there: the step is refused.</span>');
         else if (r.why === 'bump') say((r.msg ? q(r.msg) : '') + '<span class="wl-mute">' + (r.cls === 11 ? 'An obstacle' : 'An object in the way') + ': the step is refused.</span>');
         else if (r.why === 'checks') say((r.msg ? q(r.msg) : '') + '<span class="wl-mute">' + (r.hasChecks ? 'The game tests the party before it lets it in. The window has no party, so it refuses the step.' : 'There is no test to pass: the step is always refused.') + '</span>');
-        else if (r.why === 'ask') say(exitHTML(exitOf(M, r.x, r.y), r.x, r.y, false));
         flash();
         return;
       }
@@ -1096,7 +1096,7 @@ globalThis.WLMaps = (function () {
       if (classOf(M, S.x, S.y) === 10) {
         const e = exitOf(M, S.x, S.y);
         if (!e.back && e.to === M.n && (e.x !== S.x || e.y !== S.y) && e.x < M.w && e.y < M.w) {
-          paint(); say(exitHTML(e, S.x, S.y, true));
+          paint(); say(exitHTML(e, S.x, S.y));
           S.x = e.x; S.y = e.y; setTimeout(paint, 250);
           return;
         }
