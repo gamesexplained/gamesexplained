@@ -227,3 +227,14 @@ seconds, the title's 43 and the Grim Reaper's 49.
 
 **Wrong turns.** A background chain that waited on `pgrep -f` for a
 batch to finish matched its own shell and waited forever.
+
+**Out of the Source tab.** After the merge, Aaron asked whether a
+portrait is a part at all: the kit's part is a load the player meets,
+and the pictures are there to be enjoyed, not read as listings. The 75
+parts went, and the How it works and Levels pages each carry the
+pictures' bytes as base64, from the buffer's start to the last byte the
+picture code reads, about 100 KB a page. The bytes were checked against
+the load on every side that holds each picture, a port run from them
+alone animated the same as from the whole buffer, and
+`test_portraits.js` reads them from the page. The generated comments,
+and the sample that checked them, went with the parts.

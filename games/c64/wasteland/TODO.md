@@ -5,7 +5,7 @@ Current tier and what is missing for the next one. Coverage gaps from
 
 ## Tier
 
-Silver: 540,155 of 540,155 bytes explained in 139 of 139 parts, every
+Silver: 462,622 of 462,622 bytes explained in 64 of 64 parts, every
 feature confirmed, traced, live or marked as differing, the comment
 samples checked (`facts.md`, "Comment sample"), and the copy
 `agent-draft`.

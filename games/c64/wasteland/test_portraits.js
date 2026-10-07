@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Hold the page's port of the picture code against the game's own, for every portrait part.
+// Hold the page's port of the picture code against the game's own, for every portrait.
 // A port is a claim about the game, so this runs both: start_picture ($0586), then
 // animate_picture_tick ($05C5) call by call on the kit's 6502 simulator, in the engine's
-// committed listing with the portrait's bytes from its part's listing, beside the WLPictures
+// committed listing with the portrait's bytes that index.html carries, beside the WLPictures
 // block of index.html run by node; the bitmap is compared after every pass of the channels.
 // Everything it needs is committed: no disk image, no snapshot, no emulator. It exits 1 if
 // any portrait differs.
@@ -23,7 +23,7 @@ const STEPS = +(process.argv[2] || 400);
   let bad = 0, steps = 0;
   for (const pic of P.PICTURES) {
     if (pic.part === 'startup') continue;
-    const L = await C64.load('parts/' + pic.part + '/listing.json');
+    const [L] = await P.sources('', pic);
     const p = P.prepare(pic, L, E), eng = new P.Engine(p.m);
     const mem = Uint8Array.from(E.ram);
     mem.fill(0, 0x6000, 0x7F40);

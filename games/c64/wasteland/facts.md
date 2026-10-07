@@ -90,10 +90,10 @@ but the I/O area, both ROMs out.
 | `$6000-$7DFF` | the bitmap, 24 character rows | engine (output) |
 | `$7E00-$C5FF` | the program in play: the game, or the start-up, the utilities, the Ranger Center, the radio or the death screen | each its own part |
 | `$C600-$C9FF` | the font, the track table `$C930`, the key table `$C953`, the sound player `$C993` and its three sounds | engine |
-| `$CA00-$CFFF` | a module, the party-order program, or a picture unpacked for the picture window | module-*n*, order, portrait-*nn* |
+| `$CA00-$CFFF` | a module, the party-order program, or a picture unpacked for the picture window | module-*n*, order |
 | `$D000-$DD7F` | the tile set, in RAM under the I/O area | tiles-*n* |
 | `$DD80-$DDFF` | the map window's scroll copy, in RAM under the I/O area | engine |
-| `$DE00-$EDFF` | the tile layer of the map, one byte a square, under the I/O area and above it; from `$E000`, a picture asked for with bit 7 set (engine `$2631`) | map-*nn*; portrait-00 to portrait-03 and portrait-59 |
+| `$DE00-$EDFF` | the tile layer of the map, one byte a square, under the I/O area and above it; from `$E000`, a picture asked for with bit 7 set (engine `$2631`) | map-*nn* |
 | `$EE00-$F3FF` | cleared by the start-up (startup `$7F3D-$7F55`); the game keeps four 376-byte records from `$EE00` (game `$BBC7`) | engine |
 | `$F400-$FBFF` | the game state: party tables, saved zero page, line buffer, character records from `$F500`, written to the disk as the save | engine |
 | `$FC00-$FFFF` | the fast loader's computer side, and the hardware vectors in RAM | engine |
@@ -255,8 +255,10 @@ lines into view for a moment, and the programs load from `$7E00`.
   bytes, which hold the track and sector its offsets count from.
   Sixty-eight pictures are on one side, seven on two to four; where a
   picture is on several sides, its own bytes are the same on each.
-- Each was loaded with the engine's own `load_portrait` (`$2631`) and is a
-  part, `portrait-00` to `portrait-78` (`orientation.md`). Pictures 0-3
+- Each was loaded with the engine's own `load_portrait` (`$2631`) in
+  VICE, on every side that holds it, and the How it works and Levels
+  pages carry its bytes (`PORTRAIT_BYTES`), from the start of its buffer
+  to the last byte the picture code reads. Pictures 0-3
   and 59 are loaded to `$E000`, as their callers ask (`$041C`): the
   doctor (module-0 `$CA15`), the shop (module-1 `$CA1E`), the library
   (module-2 `$CA15`), the Ranger Center (ranger `$7E13`) and the Grim
@@ -265,7 +267,7 @@ lines into view for a moment, and the programs load from `$7E00`.
   and the fights' when no group is in reach (game `$B91E`); picture 11
   the radio's promotion (radio `$7EEB`, `$7FBE`). Every other number but
   37 and 75 is byte 7 of monster records in the maps' tables, 66 numbers
-  in all. No code in the 139 parts' listings shows 37 or 75.
+  in all. No code in the 64 parts' listings shows 37 or 75.
 - All 75 cover columns 1-11 and pixel rows 16-99, the top of the picture
   window, which `picture_window_open` (`$12CF`) clears down to row 111.
   Twelve use one animation channel, 15 two, 28 three and 20 all four,
@@ -285,12 +287,12 @@ lines into view for a moment, and the programs load from `$7E00`.
   nothing reads: picture 39's 15 read as ASCII "SITIONOMONPR#PR",
   picture 60's are `$08` and 17 zeros, and picture 62's are 199 bytes of
   no structure the picture code uses. For the other 8 nothing in the
-  window marks where the picture ends. The rest of each window is in its
-  part's `coverage.exclude`.
+  window marks where the picture ends. The pages carry none of these
+  bytes past the last one read.
 - The engine's picture code (`$0586`, `$05C5`) was run on the kit's 6502
   simulator beside the page's port for every portrait, 400 steps each,
   the bitmap compared after every step: no difference
-  (`test_portraits.js`, which needs only the committed listings).
+  (`test_portraits.js`, which needs only committed files).
 - Byte 7 of a monster's record is also the index of its pronoun in the
   engine's table at `$5B00`, 79 bytes: 0 he, 1 she, 2 it (game `$9EBC`).
 - The GIF a page makes runs from the base frame to the first step from
@@ -517,18 +519,3 @@ lines into view for a moment, and the programs load from `$7E00`.
   (engine `$C993`). All three were rewritten, and so were five
   neighbouring comments of the death screen that left out the game's
   instructions in the same way.
-- The portraits' parts: seed 7581 drew 20 of the 1,059 line comments
-  that the 75 portrait parts hold, all written by one generator from the
-  picture code's reading of each picture, in six strata by the sentence
-  that wrote them: 3 of the 75 headers, 4 of the 206 scripts, 3 of the
-  75 base frames, 6 of the 636 frames, 2 of the 64 last stream bytes and
-  2 of the 3 unread tails. An agent that wrote none of them decoded the
-  pictures with a decoder of its own, written from the instructions at
-  `$0549-$06E0` and `$2631-$2690`, and checked every count, address and
-  ending: 20 right, none wrong (Wilson 95% interval 0-16.1%). What the
-  listing cannot show, that a picture's last bytes are its own on the
-  disk, rests on the window reads above. It ran the same check over all
-  1,059 and found no number wrong. Two wordings it found loose were
-  changed in the generator and in all 75 parts: a byte "855 bytes from
-  `$CA00`" is now the 855th, and the area is inside the picture window,
-  not all of it.

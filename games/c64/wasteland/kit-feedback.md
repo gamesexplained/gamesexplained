@@ -31,7 +31,8 @@ time, operating system and tool versions.
 ## Candidates
 
 - From the portraits (7 October 2026): `listing.py`'s check of the parts
-  beneath reported, for every portrait part made in play, 7 of the game's
+  beneath reported, for every portrait made a part in play (the portraits
+  have since moved into the pages), 7 of the game's
   code bytes and 38 to 44 of the engine's as differing and asked to widen
   the part's ranges. Each of the game's 7 is the operand of an
   instruction the game stores to (`$918C`, `$995F`, `move_dir_op` and
