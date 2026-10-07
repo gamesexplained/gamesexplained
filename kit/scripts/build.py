@@ -20,7 +20,9 @@ names is copied through, and a page in the folder that no tab names is left out
 with a warning (about-layout.html, the game's own About template, aside).
 Every tab but Source lists its sections in the left margin (pagenav).
 Plus a home page with the catalogue and the games most recently added or changed
-(from git history), site/lib/, status.html (from site/status.html +
+(from git history), a page for each platform with games, <platform>/index.html
+(from site/platform.html: its catalogue alone, the page the platform in a game's
+breadcrumb links to), site/lib/, status.html (from site/status.html +
 site/status.json: which kits work on which computers, and the work needed)
 and about.html (from site/about-site.html: who runs the site and the
 principles it follows; static). And what lets a phone
@@ -293,8 +295,9 @@ def tabbar(game, present, lib):
     custom_tabs = "tabs" in game
     inner_class = "in many-tabs" if custom_tabs else "in"
     tabs = f'<span class="tab-list">{tabs}</span>' if custom_tabs else tabs
+    plat = game.get("platform")
     return (f'<nav class="gametabs"><div class="{inner_class}"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
-            f'{PLATFORM_NAMES.get(game.get("platform"), game.get("platform"))} / {html.escape(game.get("title", ""))}</span>'
+            f'<a href="{lib}/../{plat}/">{html.escape(PLATFORM_NAMES.get(plat, plat))}</a> / {html.escape(game.get("title", ""))}</span>'
             f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
 
 
@@ -1126,7 +1129,7 @@ def add_analytics(out_root):
 PROGRAM = ("code", "graphics", "levels", "sound", "text", "tables", "variables")
 
 
-def shot_html(g, cls="shot"):
+def shot_html(g, cls="shot", root=""):
     plat, slug = g["platform"], g["slug"]
     ti = g.get("title_image") or ""
     # title_image stays inside the game folder: no absolute paths, no parent climbs
@@ -1134,7 +1137,7 @@ def shot_html(g, cls="shot"):
         and ".." not in ti.split(os.sep)
     tip = os.path.join(ROOT, "games", plat, slug, ti) if safe else ""
     if tip and os.path.isfile(tip):
-        return (f'<img class="{cls}" src="{plat}/{slug}/{html.escape(ti, quote=True)}" '
+        return (f'<img class="{cls}" src="{root}{plat}/{slug}/{html.escape(ti, quote=True)}" '
                 f'alt="{html.escape(g.get("title", slug))} title screen" loading="lazy">')
     what = f"title_image {ti!r} is not a file in the game folder" if ti else "has no title_image"
     warn(f"{plat}/{slug} {what} "
@@ -1153,10 +1156,10 @@ def hook(g):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip() if m else ""
 
 
-def strip_html(g):
+def strip_html(g, root=""):
     """The one-dimensional memory map, drawn by C64Map.strip from memmap.json."""
     total = sum(g["_totals"][k] for k in PROGRAM)
-    return f'<div class="strip" data-strip="{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
+    return f'<div class="strip" data-strip="{root}{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
 
 
 def stamp_html(g):
@@ -1173,13 +1176,25 @@ def featured_html(g):
             f'<p class="hook">{html.escape(hook(g))}</p></a>')
 
 
-def card_html(g):
-    """Every game, small: thumbnail, title, a line of facts, the memory strip, the tier."""
+def card_html(g, root=""):
+    """Every game, small: thumbnail, title, a line of facts, the memory strip, the tier.
+    root is the way up to the site's top from the page the card is on."""
     plat, slug = g["platform"], g["slug"]
     kb = sum(g["_totals"][k] for k in PROGRAM) / 1024
-    return (f'<a class="tile" href="{plat}/{slug}/" data-platform="{html.escape(plat)}">{shot_html(g, "thumb")}'
+    return (f'<a class="tile" href="{root}{plat}/{slug}/" data-platform="{html.escape(plat)}">{shot_html(g, "thumb", root)}'
             f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b>{stamp_html(g)}</span>'
-            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")} · {kb:.0f} KB</span>{strip_html(g)}</span></a>')
+            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")} · {kb:.0f} KB</span>{strip_html(g, root)}</span></a>')
+
+
+def platform_pages(games, out_root):
+    """<platform>/index.html for each platform with games: the home page's catalogue of
+    that platform's games alone, where the platform in a game's breadcrumb leads."""
+    for plat in sorted({g["platform"] for g in games}):
+        gs = [g for g in by_tier(games) if g["platform"] == plat]
+        name = html.escape(PLATFORM_NAMES.get(plat, plat))
+        open(os.path.join(out_root, plat, "index.html"), "w").write(
+            fill(read(os.path.join(SITE, "platform.html")), site_title=f"{name} · Games Explained", lib="../lib",
+                 platform_name=name, cards="".join(card_html(g, "../") for g in gs), n_games=len(gs)))
 
 
 def platforms_html(games):
@@ -1605,6 +1620,7 @@ def main():
                 cards="".join(card_html(g) for g in by_tier(games)), featured=featured_html(feat) if feat else "",
                 recent=recent_html(recent_changes(games)), platforms=platforms_html(games), n_games=len(games))
     open(os.path.join(out_root, "index.html"), "w").write(home)
+    platform_pages(games, out_root)
     open(os.path.join(out_root, "status.html"), "w").write(status_page(games))
     # the site's About page; site/about.html is the About tab of a game
     repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"))
