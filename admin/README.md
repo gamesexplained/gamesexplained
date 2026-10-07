@@ -3,10 +3,7 @@
 CI runs the three checks, reproduces coverage figures and builds the site.
 
 Claude reviews each pull request that adds or updates a game against the
-checklists in `review-game-pr/`: `SKILL.md` says how, `new-game.md` and
-`game-update.md` are the checklists, and `routine.md` is the hourly
-routine that starts a review for each new one. Edit the checklists to
-change what gets checked.
+checklist in `review-game-pr/SKILL.md`. Edit it to change what gets checked.
 
 ## Preview the site
 

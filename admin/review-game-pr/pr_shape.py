@@ -7,8 +7,6 @@
   areas    lines added and removed, by what the files are (symbols, pages, kit code, ...)
   outside  every file outside the game folder, by area: what a reviewer reads line by line
   layout   files and folders in the game folder that the template does not have
-  history  files the branch added and later removed: they reach main only in a merge
-           that is not a squash
 
 Fetch the pull request first:
   git fetch -q origin main +pull/<n>/head:refs/remotes/pr/<n>
@@ -19,8 +17,6 @@ No dependencies.
 import json, os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.join(ROOT, "kit", "scripts"))
-import check_binaries   # its list of image extensions
 GAME = re.compile(r"^games/([^/]+)/([^/]+)/")
 TEMPLATE_MD = {"TODO.md", "agent-history.md", "cheats.md", "facts.md", "features.md",
                "kit-feedback.md", "orientation.md"}
@@ -131,24 +127,6 @@ def shape(head, base):
             layout.append(path)
     layout = sorted(set(layout))
 
-    # Only the game folders' own files: a fork's branch can carry history main has since
-    # squashed, and other games' files in it are not this pull request's.
-    history = []
-    if touched:
-        added, commit = {}, None
-        for line in git("log", "--full-history", "--format=@%H", "--name-only", "--diff-filter=A",
-                        f"{mb}..{head}", "--", *touched).splitlines():
-            if line.startswith("@"):
-                commit = line[1:]
-            elif line:
-                added.setdefault(line, commit)
-        at_head = set(git("ls-tree", "-r", "--name-only", head, "--", *touched).splitlines())
-        for path in sorted(set(added) - at_head):
-            commit = added[path]
-            size = int(git("cat-file", "-s", f"{commit}:{path}"))
-            binary = os.path.splitext(path)[1].lower() in check_binaries.EXT
-            history.append({"path": path, "commit": commit[:10], "bytes": size, "binary": binary})
-
     return {"kind": kind, "base": mb[:10], "head": git("rev-parse", head).strip()[:10],
             "new_games": new, "updated_games": old,
             "areas": {k: {"added": v[0], "removed": v[1], "files": v[2], "bytes": v[3]} for k, v in
@@ -156,7 +134,7 @@ def shape(head, base):
             "outside": {k: [{"path": p, "added": a, "removed": r} for p, a, r in v]
                         for k, v in sorted(outside.items())},
             "folder_bytes": {g: {"bytes": s, "files": n} for g, (s, n) in sizes.items()},
-            "layout": layout, "history": history}
+            "layout": layout}
 
 
 def main(argv):
@@ -191,17 +169,6 @@ def main(argv):
         print("\nnot in the template's layout (a page must depend on it, or it goes):")
         for p in s["layout"]:
             print(f"  {p}")
-    if s["history"]:
-        print("\nadded by a commit and gone at the head (squash-merge, or they reach main's history):")
-        shown = [h for h in s["history"] if h["binary"]] or s["history"][:10]
-        shown += [h for h in s["history"][:10] if h not in shown][:max(0, 10 - len(shown))]
-        for h in shown:
-            flag = "  BINARY EXTENSION" if h["binary"] else ""
-            print(f"  {h['path']}  ({h['bytes'] / 1e3:.0f} KB, added in {h['commit']}){flag}")
-        rest = len(s["history"]) - len(shown)
-        if rest > 0:
-            total = sum(h["bytes"] for h in s["history"])
-            print(f"  ... and {rest} more ({len(s['history'])} files, {total / 1e6:.1f} MB in all; --json lists them)")
     return 0
 
 
