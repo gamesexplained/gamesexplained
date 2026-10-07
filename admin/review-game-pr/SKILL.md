@@ -5,8 +5,7 @@ description: Review a gamesexplained pull request that adds or updates a game ag
 
 # Reviewing a game pull request
 
-The maintainer's checklist, kept short on purpose: checks are added one at
-a time, when he asks. It lives in `admin/` because `.claude/skills` is the
+This lives in `admin/` because `.claude/skills` is the
 contributor kit.
 
 Report only. Never comment on, push to, approve or merge the pull request;
@@ -21,12 +20,6 @@ python3 admin/review-game-pr/pr_shape.py pr/<n>
 
 `pr_shape.py` says whether it adds a game, updates one, or is something
 else (not this skill's), and breaks its lines down by area.
-
-## The maintainer checks
-
-1. **The site looks reasonable in the Vercel preview.** Give him the link:
-   the `Vercel` status on the head commit (`pull_request_read`,
-   `get_status`).
 
 ## The agent checks
 
@@ -53,7 +46,8 @@ else (not this skill's), and breaks its lines down by area.
    `kit/lessons/` file.
 5. **Urgent kit asks.** Read the run's asks (`kit-feedback.md`,
    "Maintainer asks", and any `kit-ask` issue it filed) and flag any that
-   is urgent: broken for every run, or wrong on the live site.
+   is urgent – measured by things that are broken, or where subsequent runs
+   could be saved significant time by shipping the improvement.
 
 For an update to a game, the same checks apply where the pull request
 touches what they look at.
@@ -61,8 +55,8 @@ touches what they look at.
 ## Report
 
 One reply in the pull request's thread: the next step you recommend
-(merge, fix it ourselves, or send it back), one line per check (fine, or
-what is wrong and the evidence), and the Vercel link. If anything goes
+(merge, fix it ourselves, or send it back), and one line per check (fine, or
+what is wrong and the evidence). If anything goes
 back to the contributor, draft the comment in a `markdown` code block.
 
 Save it as `/mnt/project-files/pr-reviews/pr-<n>.md` (`mkdir -p`),
