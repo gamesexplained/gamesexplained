@@ -5,7 +5,9 @@
 // $0000-$3FFF, the ULA's port $FE and so on) is the machine model's to supply, exactly as the
 // C64's map lives in kit/c64/cpu6502.js around a bare 6502 core. Checked by kit/spectrum/check_z80.js
 // against SingleStepTests/z80 (github.com/SingleStepTests/z80, v1, MIT licence): one step per case,
-// every register, internal and RAM byte compared, 1,604,000 cases in all.
+// every register, internal and RAM byte compared, 1,604,000 cases in all; and against ZEsarUX's Z80
+// by `check_z80.js zesarux`, instruction by instruction with the T-states, which the vectors do not
+// carry.
 //
 // The processor
 // - All documented instructions and the undocumented ones the test vectors exercise: the base

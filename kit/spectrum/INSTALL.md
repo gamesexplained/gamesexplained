@@ -162,6 +162,21 @@ Under the phase table, macOS and Linux were checked on 3 October 2026. The table
 is a separate run, and a new release needs both: `check-emulator` for the interface,
 this for the arithmetic.
 
+**Against the kit's own Z80.** `node kit/spectrum/check_z80.js zesarux` runs random
+cases of every instruction but HALT through ZEsarUX and through `kit/spectrum/z80.js`,
+the kit's JavaScript Z80, and compares them instruction by instruction. On Linux
+x86_64 on 7 October 2026, with the ZEsarUX-13.0 release, its default run compared
+26,075 executions of 1,601 instructions: every T-state agreed, and every register and
+byte of memory apart from places where ZEsarUX also differs from the published test
+vectors the simulator passes. Flag bits 5 and 3 after `SCF`, `CCF`, `BIT n,r`, `LDI`,
+`LDD`, `LDIR` and `LDDR` are `z80full` failures above. So, by name, are the flags and
+MEMPTR a block instruction leaves when it goes round again: `z80full` fails
+`LDIR->NOP'`, `LDDR->NOP'`, `INIR->NOP'` and `INDR->NOP'`. The rest is new: ZEsarUX
+does not set MEMPTR on `RET`, `RET cc`, `RETN`, `RETI`, `RST`, `JP PE`, `JP P` and `JP M`,
+or on `INC`, `DEC` and `LD n` into `(IX+d)` and `(IY+d)`, and after a `RET` its
+own `BIT n,(HL)` reads the old value. The vectors set it there; nothing run here
+settles which is the machine's behaviour.
+
 ## Why ZEsarUX, and the MAME alternative
 
 MAME was measured as an alternative on macOS arm64 on 29 September 2026, with
