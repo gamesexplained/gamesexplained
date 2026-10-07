@@ -1,0 +1,805 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armalyte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+.ar-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.ar-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.ar-row button,.ar-tabs button{font:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.ar-row button:hover,.ar-tabs button:hover{border-color:var(--ink-mute)}
+.ar-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;font-family:var(--fm);font-size:13px}
+.ar-tabs button.ar-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.ar-range{flex:1;min-width:200px}
+.ar-read{font-family:var(--fm);font-size:13px;color:var(--ink);min-width:12em}
+.ar-tbl{width:100%;border-collapse:collapse;font-size:14.5px;margin:6px 0 0}
+.ar-tbl th,.ar-tbl td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.ar-tbl th{font-family:var(--fm);font-size:12px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute)}
+.ar-tbl td.ar-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.ar-pods{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.ar-pod{text-align:center;font-size:13px;line-height:1.35;color:var(--ink-soft)}
+.ar-pod canvas{width:96px;height:84px;image-rendering:pixelated;background:#000;border-radius:4px;display:block;margin:0 auto 6px}
+.ar-pod b{display:block;color:var(--ink);font-size:13.5px}
+.ar-miss{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.ar-key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px;vertical-align:-1px}
+.ar-scroll{overflow-x:auto}
+@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1988 · Thalamus</p>
+  <h1>Armalyte</h1>
+  <p class="sub">A horizontal shoot 'em up for two players, or for one player with a drone that flies beside the ship. Every boss fights against a clock: last out its time and it blows itself up, paying the same as if it had been shot.</p>
+</header>
+<main class="wrap">
+
+<section data-part="engine">
+  <p class="fig">01 · The play screen</p>
+  <h2 class="t">The play screen, rebuilt from memory</h2>
+  <p class="lede">Level 1, at its first stretch of scenery, drawn by this page from one frame of the game's memory and the video chip's registers.</p>
+  <div class="plate"><canvas id="ar-frame" class="ar-cv" width="384" height="272"></canvas>
+  <p class="cap">One frame of level 1 at tile column 36, recorded in VICE with every write to the video chip during the frame, and drawn here line by line with the state in force when the beam got there: 104,448 of 104,448 pixels match the emulator's own picture. Player 1's lives were set to five for the recording, which is why the scoreboard shows a 5.</p></div>
+  <p>The whole screen is playfield: 25 rows of characters, built column by column from the level's map and scrolled left one pixel a frame (<code>$E33E</code>). The scoreboard sits below it, in the lower border. At raster line <code>$FA</code> the interrupt (<code>$A07C</code>) switches to 24-row mode for two lines, which keeps the border open, and lays out all eight hardware sprites as the panel: score, lives, batteries, generator, and weapons, drawn into the sprites' own pixels as they change (<code>$99FA</code>).</p>
+  <p>Space is drawn too. Every blank cell holds a star character that is solid black, and the star itself is one pair of pixels in a shared colour: <code>$D023</code> for the far stars, <code>$D022</code> for the near ones. The VIC's background colour, <code>$D021</code>, is white here and only colours scenery. Each script event can change all three, so the stars and the scenery change colour together as a level goes on.</p>
+</section>
+
+<section data-part="level-1">
+  <p class="fig">02 · The levels</p>
+  <h2 class="t">Every level, scrolled at the game's speed</h2>
+  <p class="lede">A level is a map five tiles high and 256 tiles long. The map below is drawn from the level's own bytes; Play scrolls it one pixel a frame and stops where the game stops for a boss. Each level opens 36 tile columns in, where the scenery has begun.</p>
+  <div class="plate">
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous level">‹</button><select id="ar-lvsel" aria-label="Level"></select><button class="step" data-d="1" aria-label="Next level">›</button></div>
+    <canvas id="ar-view" class="ar-cv" width="640" height="400"></canvas>
+    <div class="ar-row"><button id="ar-play">Play</button><input id="ar-pos" class="ar-range" type="range" min="0" max="10240" step="1" value="0" aria-label="Position along the map"><span id="ar-read" class="ar-read"></span></div>
+    <canvas id="ar-over" class="ar-cv" width="1024" height="60" style="margin-top:12px;cursor:pointer"></canvas>
+    <p class="cap">The whole map in miniature, each tile shaded by how much of it is scenery, with a tick for each tile column that starts an attack wave<span class="ar-key" style="background:#b2b2b2"></span>, a pod for every game<span class="ar-key" style="background:#a9ff9f"></span>, a pod for two-player games only<span class="ar-key" style="background:#edf171"></span>, script events<span class="ar-key" style="background:#706deb"></span>, and the boss fights<span class="ar-key" style="background:#d04a3a"></span>. Click it to jump. Each stretch is drawn in the colours the script sets when the scroll reaches it. The time counts frames at 50.125 a second, with each boss fight taking its whole time limit, as it does when nobody shoots the boss.</p>
+    <div id="ar-evs" class="ar-scroll"></div>
+  </div>
+  <p>A level's map is five rows of 256 tile numbers (<code>$3934</code>), and each tile is five by five characters (its address from <code>$3E34</code> and <code>$3EFC</code>), so the map is 25 characters high, the height of the screen, and 1,280 wide. A tile column passes in 40 frames and the whole map in 10,240, about 204 seconds. Level 7 is the exception: its scroll starts at column 127, halfway along, so it is half as long.</p>
+  <p>Levels 4 and 7 have no scenery at all. Every entry of their maps is tile 0, and tile 0 is 25 gaps, so both are fought in open space with only the stars behind. Level 7 still carries level 1's tiles, byte for byte, which its map never uses.</p>
+  <p>The scenery's characters (<code>$D000</code>, copied to <code>$7900</code> at the start) are solid to the ship: any character from <code>$21</code> to <code>$F5</code> under the ship's nose destroys it. Character <code>$20</code> is a gap, and the column builder puts that row's star character in its place.</p>
+  <p>The enemies are not in the map. A separate table marks the tile columns that start an attack wave (<code>$142C</code>), with the wave's number and size beside it; each wave lists its objects in five bytes: x, y, type, path, and the frames before it appears. The script, eleven events at <code>$9700</code>, changes the colours, sets the enemies' speed and the number of shots they may have on screen, starts the bosses, and stops the scroll for them.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">03 · Bosses</p>
+  <h2 class="t">Every boss can be outlasted</h2>
+  <p class="lede">A boss fight stops the scroll for a time the level sets. When the time is up, the boss blows itself up, and the game pays out as if the player had destroyed it.</p>
+  <div class="plate ar-scroll">
+    <table class="ar-tbl">
+      <thead><tr><th>Level</th><th>Mid-level boss, where and for how long</th><th>Hits to destroy it</th><th>End boss, for how long</th><th>Hits to destroy it</th></tr></thead>
+      <tbody>
+      <tr><td>1</td><td>column 214, 2,880 frames (57 s)</td><td>core 90</td><td>12,288 frames (245 s)</td><td>core 160</td></tr>
+      <tr><td>2</td><td>column 175, 3,840 frames (77 s)</td><td>core 100</td><td>7,680 frames (153 s)</td><td>core 120, after 2 guards of 100</td></tr>
+      <tr><td>3</td><td>column 182, 4,320 frames (86 s)</td><td>core 120</td><td>7,680 frames (153 s)</td><td>core 320</td></tr>
+      <tr><td>4</td><td>column 49, 5,760 frames (115 s)</td><td>core 40, after 2 guards of 120</td><td>12,288 frames (245 s)</td><td>core 40, after 3 guards of 100</td></tr>
+      <tr><td>5</td><td>none</td><td></td><td>12,240 frames (244 s)</td><td>core 480</td></tr>
+      <tr><td>6</td><td>column 180, 2,880 frames (57 s)</td><td>core 8, after 3 guards of 60, 40 and 40</td><td>12,240 frames (244 s)</td><td>core 300</td></tr>
+      <tr><td>7</td><td>none</td><td></td><td>12,288 frames (245 s)</td><td>core 260, after 2 guards of 120</td></tr>
+      <tr><td>8</td><td>column 167, 1,440 frames (29 s); column 242, 4,800 frames (96 s)</td><td>core 230</td><td>12,240 frames (244 s)</td><td>core 100, after 2 guards of 200</td></tr>
+      </tbody>
+    </table>
+    <p class="cap">From each level's script (the stop times, <code>$9730</code> in a level, in units of 48 frames) and its two boss tables (<code>$9778</code> for the end boss, <code>$97D8</code> for the mid-level boss). The core takes no hits until its guards are gone. The seconds are at the PAL frame rate, 50.125 a second.</p>
+  </div>
+  <p>The script runs once every eight frames, at the end of each scroll step, and it keeps running while the scroll is stopped (<code>$A93E</code>). A stop counts down in units of six runs, 48 frames, and 0 counts as 256. When the count runs out the script calls <code>level_end</code> (<code>$AC20</code>), the same routine that destroying the boss's core calls, and every object on the screen explodes.</p>
+  <p>What happens next depends on where the scroll is. Away from the map's end, a mid-level fight pays 50,000 points and the scroll moves on. At the end, the end-of-level sequence plays for 148 frames and <code>level_complete</code> (<code>$AE25</code>) pays one million points and an extra life to each player. A player who hides from the end boss for four minutes gets exactly what a player who shot it gets. In level 1, with no input at all, the mid-level boss went at the end of its 2,880 frames with the score going from 0 to 50,000, and the end boss went after 12,288 frames and the level was completed.</p>
+  <p>Levels 5 and 7 have no mid-level boss: no event in their scripts starts one, though level 7 carries a copy of level 4's in its table. Level 8 starts its mid-level boss twice, at columns 167 and 242.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">04 · Munitions pods</p>
+  <h2 class="t">Shooting a pod changes what it gives</h2>
+  <p class="lede">A munitions pod changes into the next enhancement each time it has taken enough hits. Flown into, it gives the one it shows, with one exception.</p>
+  <div class="plate">
+    <div class="ar-tabs" id="ar-podmode"><button data-p="1" class="ar-on">One player</button><button data-p="2">Two players</button></div>
+    <div id="ar-pods" class="ar-pods"></div>
+    <p class="cap">Each pod drawn from level 1's sprite frames in its own colour: the unshot pod's animation starts at frame <code>$1E</code>; the seven enhancements use the frames at <code>$A64C</code>, need the hits at <code>$A654</code> before the next change, and take the colours at <code>$A65C</code>. The unshot pod's 10 hits come from its object type, 5 (or 6, the pod only two-player games have, which is light red).</p>
+  </div>
+  <p>Flying into a pod (<code>$9A94</code>) adds its enhancement. The first four (forward fire, the tail gun, the vertical cannon, and the trident) add to the ship when there is room and only play a sound. Everything else also makes the ship invulnerable for 255 frames, about five seconds: an enhancement the ship already has in full, converge, a generator, a battery, and a pod that has not been shot at all.</p>
+  <p>The order is fixed: forward fire, the tail gun, the vertical cannon, the trident, converge, a generator, and a battery, and then round again. The wrap has a flaw (<code>$A5FE</code>): it sets the pod's type to 0, an unshot pod's, while giving it forward fire's frame, colour and hits. Flown into, that pod gives only an unshot pod's five seconds of invulnerability. After another 11 hits (6 with two players) it turns into the real forward fire, which looks the same. Converge needs the tail gun and forward fire at its third level; it turns the tail gun's two shots round to fire forwards beside the main gun.</p>
+  <p>Invulnerable ships fly through walls. The scenery test (<code>$9E05</code>) only looks at a ship in normal play, state 2, and a flashing ship is in state 3.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">05 · Weapons</p>
+  <h2 class="t">Every shot is a character on the screen</h2>
+  <p class="lede">The players' shots are not sprites. They are characters written into the screen, so the game finds what they hit by reading the screen back.</p>
+  <div class="plate">
+    <div class="ar-tabs" id="ar-swsel"><button data-w="0" class="ar-on">Super weapon A</button><button data-w="1">Super weapon B</button><button data-w="2">Super weapon C</button></div>
+    <canvas id="ar-sw" class="ar-cv" width="640" height="120"></canvas>
+    <p class="cap" id="ar-swcap">The shots each super weapon puts on the screen around the ship's place (the outlined cell), drawn with level 1's shot characters, each with an arrow the way it moves. Read from the patterns at <code>$F07D</code>.</p>
+  </div>
+  <table class="ar-tbl">
+    <thead><tr><th>Weapon</th><th>What it fires</th><th>Shot slots</th><th>Character</th></tr></thead>
+    <tbody>
+      <tr><td>Forward fire</td><td>two shots in flight at a level's start, four with the enhancement, six with converge</td><td>0-3</td><td class="ar-n">$F6</td></tr>
+      <tr><td>Tail gun</td><td>a pair backwards, a row above and a row below</td><td>4-5</td><td class="ar-n">$F9</td></tr>
+      <tr><td>Trident</td><td>a pair forwards, one column behind, a row above and below</td><td>6-7</td><td class="ar-n">$FA</td></tr>
+      <tr><td>Vertical cannon</td><td>a pair, one up and one down</td><td>8-9</td><td class="ar-n">$F7, $F8</td></tr>
+      <tr><td>Super weapon A</td><td>ten shots across the ship's row, three columns apart, starting beyond any wall; 2 charges</td><td>10 free</td><td class="ar-n">$FE</td></tr>
+      <tr><td>Super weapon B</td><td>five shots: two ahead of the ship, one flying back from its nose, and two from behind it flying forward; 2 charges</td><td>5 free</td><td class="ar-n">$FC, $FD</td></tr>
+      <tr><td>Super weapon C</td><td>two shots side by side; 1 charge</td><td>2 free</td><td class="ar-n">$FF</td></tr>
+    </tbody>
+  </table>
+  <p>Each player has ten shot slots (<code>$EB78</code>). A shot puts back the character it covered, moves one place, and stops at the screen's edge or on a solid character. Pressing fire fires the normal weapons, and so does letting go of it.</p>
+  <p>Held for 15 frames, a third of a second, fire tries the super weapon chosen with the Commodore key (<code>$EC87</code>). The super weapon needs enough free slots and the charges, which it takes from the generator's own charge when that is enough, or else from a battery. The manual says super weapon B costs one charge. It costs two (<code>$F486</code>): fired from a full generator, A and B each took 2 and C took 1.</p>
+  <p>An enemy dies when a shot character, anything from <code>$F6</code> up, is in the cells it covers (<code>$A54C</code>). The test does not ask who fired, so the drone's shots kill as surely as the player's.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">06 · Energy</p>
+  <h2 class="t">How the generator fills the batteries</h2>
+  <p class="lede">Super weapons run on charges. The generator rebuilds them on a clock, and more generators make the clock faster.</p>
+  <table class="ar-tbl">
+    <thead><tr><th>Generators</th><th>A tick every</th><th>A battery, or the generator, filled every</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>61 frames</td><td>488 frames (9.7 s)</td></tr>
+      <tr><td>1</td><td>51 frames</td><td>408 frames (8.1 s)</td></tr>
+      <tr><td>2</td><td>41 frames</td><td>328 frames (6.5 s)</td></tr>
+      <tr><td>3</td><td>31 frames</td><td>248 frames (4.9 s)</td></tr>
+      <tr><td>4</td><td>19 frames</td><td>152 frames (3.0 s)</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">From the table at <code>$EB73</code> (60, 50, 40, 30, 18) and <code>generators_recharge</code> (<code>$EB00</code>). Measured in the emulator from an empty generator: the rebuild count stepped every 61 frames with no generator and every 19 with four, and the charge was full after 488 and 152 frames.</p>
+  <div class="plate" style="margin-top:22px">
+    <div class="ar-tabs" id="ar-gens"><span style="align-self:center;margin-right:4px">Generators</span><button data-g="0" class="ar-on">0</button><button data-g="1">1</button><button data-g="2">2</button><button data-g="3">3</button><button data-g="4">4</button></div>
+    <div class="ar-tabs" id="ar-bats"><span style="align-self:center;margin-right:4px">Empty batteries</span><button data-b="0" class="ar-on">0</button><button data-b="1">1</button><button data-b="2">2</button><button data-b="3">3</button><button data-b="4">4</button></div>
+    <canvas id="ar-gen" class="ar-cv" width="640" height="150"></canvas>
+    <div class="ar-row"><button id="ar-genrun">Run</button><button id="ar-genfast">Speed ×1</button><button id="ar-genreset">Empty everything</button><span id="ar-genread" class="ar-read"></span></div>
+    <p class="cap">The game's <code>generators_recharge</code> ported line for line and run once a frame, for player 1, from an empty generator. Checked against the routine itself on a 6502 simulator from level 1's memory: 1,810 starting states, every counter value from 0 to 255 among them, and 291,200 calls with no difference; with no batteries it charges the generator in 488 frames with no generators and 152 with four, as measured in the emulator.</p>
+  </div>
+  <p>Once a frame a counter runs from 0 up to the table's value and then ticks, so each tick is one frame longer than the number in the table. Seven ticks rebuild the generator's count. The eighth fills a battery that is not full, all six charges at once, and the rebuild starts again; when no battery is left to fill, it gives the generator its own six charges.</p>
+  <p>A player keeps batteries and generators from one level to the next (<code>$B010</code>, <code>$B018</code>), because they live outside the zero page that every level start clears. Not all of them: each load takes away two batteries and two generators (<code>$B723</code>, run twice), and every other enhancement goes with the zero page.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">07 · The drone</p>
+  <h2 class="t">The drone shoots for real</h2>
+  <p class="lede">In a one-player game the second ship is a drone. It cannot be destroyed, soaks up enemy shots, and fires copies of the player's weapons.</p>
+  <p>The drone keeps to the side of the ship opposite the way the stick is pushed, stepping one cell at a time towards its place (<code>$9E78</code>); with the stick released the drone keeps the place the last direction gave it. SPACE detaches it, and the detached drone stays still on the screen until SPACE calls it back. The manual says a detached drone "glides along its own trajectory"; in the game it does not move.</p>
+  <div class="plate" style="margin-bottom:22px">
+    <div class="ar-tabs" id="ar-dpad"></div>
+    <canvas id="ar-drone" class="ar-cv" width="640" height="200"></canvas>
+    <p class="cap">Where the drone heads for each direction of the stick, from the offsets at <code>$9EF8</code> (columns) and <code>$9F03</code> (rows), indexed by the stick's four direction bits. The ship is the white cell and the drone's target the blue one, on the screen's grid of characters; the target is kept between columns 2 and 37 and rows 1 and 23.</p>
+  </div>
+  <p>Enemies never hit the drone, and their shots stop on it (<code>$9CD3</code>). It collects nothing. It fires forward fire, the tail gun, and the trident from its own place, but the vertical cannon starts behind the player's ship (<code>$F0C4</code>). Because hits are read from the screen, its shots destroy enemies, which the C64-Wiki says they do not.</p>
+  <p>The drone's presence changes the level too. Some wave entries are pods of type 6, which get no delay before appearing when the second ship is the drone, and an object with no delay never comes to life (<code>$E3FF</code>). So a two-player game has 123 more pods across the eight levels than the 174 every game has: more, as the manual says, not double, as Wikipedia has it.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">08 · Sprites</p>
+  <h2 class="t">At most thirty sprites in a frame</h2>
+  <p class="lede">The machine has eight sprites. The game shows up to thirty in one frame by using the same ones again further down the screen.</p>
+  <p>The two ships always have sprites 0 and 1 (<code>$E4D6</code>). Up to twenty objects (enemies, pods, bosses, and explosions) share sprites 2 to 7: the multiplexer (<code>$A305</code>) places them in order down the screen, each waiting until the sprite it reuses has finished drawing. Below the playfield the eight scoreboard sprites take all eight again. That makes 22 in the playfield and 8 in the border, thirty in all, short of the "more than 30" one review claims.</p>
+  <p>The objects are sorted by height every frame with the stack page as a bucket table (<code>$F4C8</code>). The page is filled with <code>$FF</code>; each object's number is pushed into the first free byte at its height, and reading them back restores the <code>$FF</code>. The game checks that the page still holds <code>$FF</code> at its top, which is how it notices a freezer cartridge has been used (section 12).</p>
+  <p>The main loop never fell behind: run through all of level 1 in the emulator it made 25,299 passes in 25,298.5 frames, one a frame.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">09 · A bug</p>
+  <h2 class="t">Bug: the music cuts the starting shield short</h2>
+  <p class="lede">Each ship starts a level flashing and invulnerable. The code means it to last 255 frames for both ships. Player 1 gets 102 and player 2 gets 204.</p>
+  <div class="plate" style="margin-bottom:22px">
+    <div class="ar-tabs" id="ar-bugstep"></div>
+    <div class="ar-scroll"><table class="ar-tbl" id="ar-bugtbl"></table></div>
+    <p class="cap" id="ar-bugcap"></p>
+  </div>
+  <p>At a level's start <code>level_setup_vars</code> clears the zero page and then decrements the two invulnerability timers, <code>$56</code> and <code>$57</code>, at <code>$A260</code>, turning their 0 into 255. In between it sets up the demo tune, and <code>music_init</code> reads the tune's tracks through the same two bytes (<code>music_track_next</code>, <code>$C43C</code>), leaving <code>$CD67</code> there. The decrement turns <code>$67</code> into 102 for ship 1 and <code>$CD</code> into 204 for ship 2.</p>
+  <p>In the emulator the shields lasted 103 and 205 frames counted from the main loop's first pass, the extra frame being the one before the countdown's first step. Player 2, or the drone, is covered twice as long as player 1 at the start of every level.</p>
+</section>
+
+<section data-part="level-1">
+  <p class="fig">10 · A secret</p>
+  <h2 class="t">Secret: every level file ends in an insult</h2>
+  <p class="lede">The last sixteen bytes of each level, which no code uses, hold a message in screen codes.</p>
+  <table class="ar-tbl">
+    <thead><tr><th>Level</th><th>Message</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>DISHONEST JOHN</td></tr>
+      <tr><td>2</td><td>DISHONEST JOHN</td></tr>
+      <tr><td>3</td><td>BASTARD JOHN</td></tr>
+      <tr><td>4</td><td>FVCKHEAD JOHN</td></tr>
+      <tr><td>5</td><td>JOHN H IS A</td></tr>
+      <tr><td>6</td><td>HARRIES FVCKER</td></tr>
+      <tr><td>7</td><td>HAWKEYE'S SHIT</td></tr>
+      <tr><td>8</td><td>BASTARD J.W.H.</td></tr>
+    </tbody>
+  </table>
+  <p class="cap">Each level's <code>$98F0-$98FF</code>, in screen codes (A = 1), padded with <code>$FE</code>. The mover copies them into memory with the rest of the level's last page, and nothing reads them.</p>
+  <p>Levels 5 and 6 read on as one sentence. The game's credits name its producers as Paul Cooper and John Harries (section 11). Hawkeye was another Thalamus game of 1988.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">11 · Another secret</p>
+  <h2 class="t">Secret: the producers' credit is never shown</h2>
+  <p class="lede">The title cycles through two pages of credits. A third pair of lines, "PRODUCED BY:" and "PAUL COOPER AND JOHN HARRIES", is in the game's strings but on no page.</p>
+  <div class="plate" style="margin-bottom:22px">
+    <div class="pick" id="ar-tpick"><button class="step" data-d="-1" aria-label="Previous page">‹</button><select id="ar-tsel" aria-label="Title page"></select><button class="step" data-d="1" aria-label="Next page">›</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+      <img id="ar-timg" alt="" style="width:384px;max-width:100%;image-rendering:pixelated;border-radius:4px">
+      <ol id="ar-tlines" start="0" style="font-family:var(--fm);font-size:13px;margin:0;padding-left:2.2em;flex:1;min-width:260px"></ol>
+    </div>
+    <p class="cap" id="ar-tcap">Each page's ten lines, read from <code>$B953</code> and decoded from the strings at <code>$9000</code>, beside a screenshot of that page from the emulator. A line of icons shows as ▪.</p>
+  </div>
+  <p>The title's texts are 41 strings (<code>$9000</code>), and each of the seven title pages lists the strings for its ten lines (<code>$B953</code>). The credit pages show strings 9 to 16: Dan Phillips, programming and game design; John Kemp, system programming and game design; Robin Levy, graphics, level and game design; Martin Walker, music and sound effects. Strings 17 and 18, the producers, appear in no page's list.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">12 · Protection</p>
+  <h2 class="t">The infinite-lives poke freezes the game</h2>
+  <p class="lede">The poke the C64-Wiki gives for infinite lives, <code>POKE 59891,173</code>, stops the machine within five frames. The game checks its own code every second frame.</p>
+  <div class="plate" style="margin-bottom:22px">
+    <div class="ar-tabs" id="ar-pokesel"><button data-p="0" class="ar-on">As loaded</button><button data-p="1">After POKE 59891,173</button></div>
+    <div class="ar-scroll"><table class="ar-tbl" id="ar-poketbl"></table></div>
+    <p class="cap" id="ar-pokecap"></p>
+  </div>
+  <p>A life is lost by a <code>DEC $B005</code> at <code>$E9F3</code> for player 1, and another at <code>$EA57</code> for player 2. The poke changes the first into a load, which takes nothing away. Every second frame <code>anti_cheat_check</code> (<code>$F77D</code>) compares both instructions and the branches after them with what they should be. When they differ the check switches the KERNAL ROM in over the game's own code, so its own next instruction is fetched from the ROM, and the machine runs on into a loop with interrupts off.</p>
+  <p>Two more checks guard the game. At each level's start the stack page is filled with <code>$FF</code>, and if any of <code>$0138-$013F</code> holds anything else, as after a freezer cartridge has used the stack, the game wipes <code>$B000-$FFFF</code> and resets (<code>$AFAE</code>). On the title, CIA 1's timer B must show that one PAL frame has passed since the last check, give or take about 60 cycles (<code>$BDC8</code>), so a machine that has been stopped, or an NTSC machine, clears the engine's code from <code>$E000</code> up and halts (<code>$B845</code>).</p>
+  <p>The wiki's other poke, <code>POKE 53792,96</code> for unlimited energy, writes to <code>$D220</code>. With the I/O chips in that address is a copy of the border colour register, and 96 sets the border to black, which it already is; in the emulator a 5 written there turned the border green. The pokes that do work are in the Source tab's cheats.</p>
+</section>
+
+<section data-part="ending">
+  <p class="fig">13 · The ending</p>
+  <h2 class="t">The ending leads into a faster second round</h2>
+  <p class="lede">Finishing level 8 loads one more file: five pictures in a frame, each with a message typed out beneath it. Then the game goes back to level 1, keeping the score and lives, with the enemies faster.</p>
+  <div class="plate">
+    <div class="ar-tabs" id="ar-endsel"></div>
+    <canvas id="ar-end" class="ar-cv" width="640" height="400"></canvas>
+    <p class="cap">The ending's screen rebuilt from its bytes: the frame (bitmap <code>$5000</code>, colours <code>$6C00</code> and <code>$4D08</code>, all moved up by <code>$1000</code> before the display starts), the picture in the window (<code>$0F00</code> on, 2,280 bytes each), and the message in the ending's own font (<code>$6800</code>) in the picture's three text colours (<code>$0E7B</code>). Pictures 0 to 3 were seen this way in the emulator.</p>
+  </div>
+  <p>The ending is a program of its own (<code>$0801</code>). It takes the machine over and shows the pictures in a window of 20 by 12 cells, splitting the screen with a raster interrupt between bitmap mode for the pictures and text mode for the six rows of text. Each picture fades the window to black, copies its bitmap in, types its message one character a frame, then puts its colours in, which makes it appear. A picture stays for 768 frames, about fifteen seconds, or until fire is pressed; RUN/STOP skips to the last.</p>
+  <p>On the last picture, RUN/STOP continues the game. The ending sets the level back to 1 and enters the front end, which loads level 1 and goes to "PRESS FIRE TO START" with the score and lives as they were (<code>$0923</code>). The title is not shown, and the title is the only thing that clears the count of completed games, which finishing level 8 has raised by one. Every script event with an enemy speed below 3 then has that count added, to at most 3, so the second round's slow waves come faster.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">14 · Loading</p>
+  <h2 class="t">One file per level, loaded over the engine</h2>
+  <p class="lede">The engine stays in memory for the whole game. Each level is a file of its own on side 2, loaded when the level is reached.</p>
+  <p>Side 1 boots to a menu, and its first entry loads the engine, which unpacks itself and starts at <code>$A000</code>. From then on the engine loads everything else itself, by a one-letter name (<code>$B3E1</code>): D, E, L, H, U, N, A, and R for the eight levels, and M for the ending. The first load looks for D on side 1, does not find it, and puts up "TURN DISK TO SIDE B PRESS FIRE" (<code>$B5CC</code>), which is how the game asks for the other side.</p>
+  <p>The fast loader (<code>$B3FC</code>) opens the file through the KERNAL, sends 256 bytes of its own code to the disk drive's memory and starts it there, then takes the file two bits at a time over the serial bus's clock and data lines, keeping off the raster lines where the video chip would stall the processor. Each file is packed. It unpacks itself, and a short routine of the engine's (<code>$9680</code>) moves it into place: <code>$0200-$6FFF</code> for the level's object types, paths, waves, map, tiles, and sprites, <code>$9700-$98FF</code> for its script and boss tables, and the memory under the I/O chips at <code>$D000-$D6FF</code> for its characters.</p>
+  <p>Between levels the game keeps only the engine's state block (<code>$B000-$B02F</code>): level number, lives, score, batteries, generators, and settings. A game over goes back to <code>$A000</code>, so level 1 is loaded again before the title whenever another level is in memory.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+(function () {
+'use strict';
+const HAS = typeof C64 !== 'undefined';
+const $ = id => document.getElementById(id);
+function missing(el) {
+  el.insertAdjacentHTML('afterend', '<p class="ar-miss">This picture is drawn by the site\'s shared script, which the built site serves.</p>');
+}
+const RGB = HAS ? C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16))) : [];
+const part = id => C64.load('parts/' + id + '/listing.json');
+const PAL_HZ = 50.125;
+
+// ---- 01 the frame
+const FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[85,0,109,0,135,0,159,0,183,0,207,0,231,0,255,0,0,28,0,0,0,0,214,0,207,247,241,0,255,0,255,255,240,241,254,246,243,241,251,252,252,252,252,252,252,252,252],"cia2":[194,63],"cpu":[47,53],"writes":[[1,5,53270,213],[36,44,53269,255],[37,3,53248,84],[37,10,53249,116],[37,17,29688,3],[37,21,30712,3],[37,28,53287,245],[37,59,53250,84],[38,3,53251,140],[38,10,29689,14],[38,14,30713,14],[38,21,53288,245],[41,30,53253,66],[41,38,53252,30],[41,46,29690,123],[41,50,30714,123],[42,6,53264,4],[42,14,53289,254],[42,61,53255,66],[43,6,53254,70],[43,14,29691,127],[43,18,30715,127],[43,37,53264,12],[43,45,53290,254],[44,29,53257,131],[44,37,53256,165],[44,45,29692,103],[44,49,30716,103],[45,11,53291,254],[46,46,53259,150],[46,54,53258,165],[46,62,29693,98],[47,3,30717,98],[47,28,53292,254],[48,12,53261,151],[48,20,53260,70],[48,28,29694,34],[48,32,30718,34],[48,51,53264,76],[48,59,53293,254],[49,43,53263,214],[49,51,53262,30],[49,59,29695,130],[49,63,30719,130],[50,19,53264,204],[50,27,53294,254],[89,8,53253,214],[89,16,53252,70],[89,24,29690,134],[89,28,30714,134],[250,46,53265,0],[252,11,53265,28],[252,26,53264,0],[252,30,53249,0],[252,34,53251,0],[252,38,53253,0],[252,42,53255,0],[252,46,53257,0],[252,50,53259,0],[252,54,53261,0],[252,58,53263,0],[253,1,53287,252],[253,5,53288,252],[253,9,53289,252],[253,13,53290,252],[253,17,53291,252],[253,21,53292,252],[253,25,53293,252],[253,29,53294,252],[253,35,53248,85],[253,41,53250,109],[253,47,53252,135],[253,53,53254,159],[253,59,53256,183],[254,2,53258,207],[254,8,53260,231],[254,14,53262,255],[254,20,29688,22],[254,24,30712,22],[254,30,29689,23],[254,34,30713,23],[254,40,29690,24],[254,44,30714,24],[254,50,29691,25],[254,54,30715,25],[254,60,29692,26],[255,1,30716,26],[255,7,29693,27],[255,11,30717,27],[255,17,29694,28],[255,21,30718,28],[255,27,29695,29],[255,31,30719,29],[262,39,53269,0]],"colour":"CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA==","ram":[{"a":16576,"b":"AAAAAAAAAAAAAAAA8AAAXAAAbrAAblsAm5bA5umwJb/8OmqrDpWwP6rA6vwAlZWw6sAAPwAAAAAAAAAAAAAA"},{"a":17280,"b":"AAAAAAAAAPwAA6sAA1ZbD7sAC/wAyiAAtuAAZZwAZZbAZZwAtuAAyiAAC/wAD7sAA1ZbA6sAAPwAAAAAAAAA"},{"a":17792,"b":"AAAAAAAAAAzPAMi6yHZlAMi6AAzPAAAAAzuZAAAAAAAAAAAAAM7mAAAAAADMAAyLDIdmAAyLAADMAAAAAAAA"},{"a":17856,"b":"PP/866qrllVXa6qnvP/3wAA7AP83AJYAW1XDAFUAAFXDAFUAW1XDAJYA8P83rAA7W8z3prun+WZXDrurA8z8"},{"a":17920,"b":"AACYAABMAABEAABEAACEAACEAADoAAAAAAAAAAAMAAAAmADATAB7SAB2ZACtRAAbhAA5yADvAACZAADsAAAA"},{"a":17984,"b":"mJiYTExMREREREREhISEhISE6OjoAAAAAAAAM7plAAAAAAADAJgAwMADsEAC8JjNbAQCwAQDsOgAAAADAAAA"},{"a":18048,"b":"mJiYTExEREREREREhISEhISE6OjoAAAAAAAAZrswAAAAAAAAAJgPAEw5AEQ7zETpAIQPAIQAAOg5AAAAAAAA"},{"a":18112,"b":"mAAARAAARAAARAAAhAAAhAAA6AAAAAAAAAAAwAAAAAAADACYOABM5ABIpABkfABEkACE7ADImAAA7AAAAAAA"},{"a":18176,"b":"P/886qrr1VWW2qrp3/8+7AAD3P8AAJYAw1XlAFUAw1UAAFUAw1XlAJYA3P8P7AA63zPl2u6a1Zlv6u6wPzPA"},{"a":18240,"b":"AAAAAAAA8zAAriMAWZ0jriMA8zAAAAAAZuzAAAAAAAAAAAAAm7MAAAAAMwAA4jAAmdIw4jAAMwAAAAAAAAAA"},{"a":18560,"b":"ABAAADAAAOwAADAAA5sAOACwAs4ADc3AewO0AAAAADAAAAAAewO0Dc3AAs4AOACwA5sAADAAAOwAADAAABAA"},{"a":22656,"b":"AAAAAAAAAA7AAPlwA65gDlucDVvsOVb8OVWwOVWgO5Ww7dawluvAm+6A77nANv8AOrwA5VsAOqrA///w5VWv"},{"a":22976,"b":"5VWv///wOqrA5VsAOrwANv8A77nAm+6AluvA7dawO5WwOVWwOVawOVb8DVvsDq+cA/5gAPrwAA/AAAAAAAAA"},{"a":24256,"b":"P//w5Va8///8+qr8KVawOVawDqrAA/8ADOzAANwAACAAA6cAACAADqnAACAAOqpwACAADqnAACAAA6cAADAA"},{"a":24512,"b":"P//w5Va8///8+qr8KVawOVawDqrAA/8ADOzAANwAACAAA2sAACAADarAACAANqqwACAADarAACAAA2sAADAA"},{"a":24704,"b":"AAAAAAAAAAAAAMwAAMwAA4sAA4sAAnoADnbADXbACWaAOWWwNWWwNbmwP//w5VW8+qv85VW8+qr8P//w5Va8"},{"a":24960,"b":"AAAAAAAAAAAAAAAAAAAAAAAAwAAMsAA4YAAonADc2wOsFsJgJbmwNf2wP//w5VW8+qv85VW8+qr8P//w5Va8"},{"a":28672,"b":"BAUGBwgJCqCyd+HhQI5A4eE80TzhPOF34bx3e716d+FAIwgJClFSUxcYGRobHB0eHxAREhMUFRYXGBkaGxwdHh+a4b/gvuE8PDw8PDw81DwJCgsMDQ4PAQIDBAUGBwgJCgsMDQ4PAQIDBAUGBwgJCgsMDQ4PAQIDICAgICAgICAgICAgICAgICAgICAgIKusrSAgICAgICAgICAgICAgIBESExQVFhegsnfh4UCOQOHhPLE84fNOT1AaGxwdHh8QERITFBUWFxgBAgMEBQYHCAkKCwwNDg82N1ZXdgYHQkNECwwNDg8BAgMEBQYHCAkKBgcICQoLDA0ODwECAzY3Vld2CQoLDFFSUwECAwQFBgcICQoLDA0ODyAgICAgICAgICAgNjdWV3Ygq6ytIGdoaWprICAgICAgICAgICAgICAMDQ4PAQIDBLZ34Tw80Z13805PUPI8PNQ8POF3twsMDQ4PAQIDBAUGERITFBUWFxg9GhskQOGc4UBub3AjFm5vcBobHD0eHxAREhMUFRYXGOHhQI5A4eF31w4PAQIDBAUGBwgJCgsMDQ4PAQLWd+Hhd9LACgsMDQ4bHB0eHxAREhMUFRYXGBkaGxwdHh8QERITFBUWFxgZGhscHR4fEBESICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAIDBAUGBwgJCgsMDQ4PAQIDBAUGBwgJCgsMDQ4PAQIDBAUGBwgJCgvh4UCOQOHhd7cgICAgICAgICAgICAgICAgICAgtnfh4XfSwCAgICAgEBESExQVFhc9GRoiQOGd4UBOT1AhFU5PUBkaGz0dHh8QERITFBUWFwoLDA0ODwEC1nfhPDyxnHfzbm9w8jw81Dw84XfXCQoLDA0ODwECAwQgICAgICAgICAgIHVUVTQ1IOvs7SBnaGlqayAgICAgICAgICAgICAgDg8BAgMEBQYHCAkKC3VUVTQ7AgMEBVFSUwkKCwwNDg8BAgMEBQYHCBkaGxwdHh8QERITFBUWF3VUVTQ1HR5CQ0QSExQVFhcYGRobHB0eHxAEBQYHCAkKoLJ34eFAjkDh4TzRPOHzbm9wDg8BAgMEBQYHCAkKCwwNICAgICAgICAgICAgICAgICAgICAgIOvs7SAgICAgICAgICAgICAgIAcICQoLDA0ODwECAwQFBgcICQoLDA0ODwECAwQFBgcICQoLDA0ODwEfEBESExQVFhcYGRobHB0eHxAREhMUFRYXeuGf4J7hPDw8PDw8PNQ8AgMEBQYHCKCyd+HhQI5A4eE8sTzhPOF34bx3m72ad+FAIQYHCFFSUw=="},{"a":29688,"b":"FhcYGRobHB0="},{"a":30728,"b":"v//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////+////////////////////////////////////////////////////////////////////////////qwtLi8vL///qwMXKy8vLy4sLW6v//8vLysDV6v//"},{"a":31136,"b":"v28bBgEAAED/////v28bBv/////++eSQ/vnkkEAAAAE="},{"a":31192,"b":"/////79vGwaqVQAAVVWqqoaGhoaGhoaG"},{"a":31232,"b":"//+qAFWq//8="},{"a":31248,"b":"lOWU5ZTllOUFZgVmBWYFZmqraqtqq2qr"},{"a":31344,"b":"/pD+pamQlJCqEapmWhEFEb+av6qqmmqalJCUkJSQlJAFEQURBREFEWqaappqmmqaEERRlKXp+v4BAABAEERRlEAAAAEEEUUWBBFFFlprr78="},{"a":31544,"b":"6ZWk6umVpOqVAUBWlQFAVloRBWZaEQVmqhlVaqoZVWqrmmqrq5pqqw=="},{"a":31600,"b":"lJCUpan+kP4FEQVmWqoRqmqaaqqqv5q/"},{"a":31656,"b":"pen6/v////9aa6+///////++aRRpqr7/"},{"a":31696,"b":"/vnkkICBhYa/bxsGBkZGhg=="},{"a":31856,"b":"/9tGRlaa6/8="},{"a":31952,"b":"gYCQlKXp+v5GBgYWWmuvv4ZFAABVVaqqqlUAAEVFhoaqlYCAhYWGhqpWBgZGRoaGv9/z/Pzz378="},{"a":32088,"b":"/////vn05ND//6pVAAEAAP///79vL1sb"},{"a":32136,"b":"qlUAEWZmqqr65dCAleXq+g=="},{"a":32176,"b":"+uXQkIGFhoavWwsGRkaGhg=="},{"a":32224,"b":"hpqGmoaahpqGhtvb29uGhoaFgICVlaqqhkYGBlZWqqr+988/P8/3/g=="},{"a":32392,"b":"qmYREVVVqqqvWwcGVlurrw=="},{"a":32416,"b":"qmYREWZmqqo="},{"a":32432,"b":"hoGQkKXl6vqGRgYGWlurrw=="},{"a":32512,"b":"huuG64brhuu7dyIiZma7uw=="},{"a":32600,"b":"5un6+v7///9mmWaqqqr//2urr6+/////"},{"a":32656,"b":"qpVAQJWVqqqqVgEBVlaqqg=="},{"a":32767,"b":"/w=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":168,"colour_cells_changed_during_frame":0}};
+if (HAS) C64.drawFrame($('ar-frame'), FRAME, 2); else missing($('ar-frame'));
+
+// ---- 02 the levels
+const LEVELS = {};
+const START = { 7: 127 };
+async function level(n) {
+  if (LEVELS[n]) return LEVELS[n];
+  const m = await part('level-' + n), r = m.ram;
+  const ev = [];
+  for (let e = 0; e < 11; e++) {
+    const col = r[0x9700 + e], ch = r[0x9748 + e], fl = r[0x973C + e];
+    const x = (e === 10 ? 256 : col) * 40 + ch * 8;
+    ev.push({ e, col, ch, x, fl, cols: [r[0x970C + e], r[0x9718 + e], r[0x9724 + e]],
+              stop: fl & 2 ? (r[0x9730 + e] || 256) : 0, boss: r[0x9754 + e],
+              speed: r[0x9760 + e], shots: e < 10 ? r[0x976C + e] + 1 : null });
+  }
+  const waves = [];
+  for (let c = 0; c < 256; c++) {
+    if (!r[0x142C + c]) continue;
+    const w = r[0x152C + c], n2 = r[0x162C + c] + 1, a = r[0x182C + w] | r[0x172C + w] << 8;
+    let p5 = 0, p6 = 0;
+    for (let i = 0; i < n2; i++) { const t = r[a + 5 * i + 2]; p5 += t === 5; p6 += t === 6; }
+    waves.push({ c, n: n2, p5, p6 });
+  }
+  // the colours in force as each tile column comes on: the latest event at or before it
+  const colAt = [];
+  for (let c = 0; c < 256; c++) {
+    let cs = ev[0].cols;
+    for (const v of ev) if (v.e < 10 && (v.fl & 1) && v.x <= c * 40) cs = v.cols;
+    colAt.push(cs);
+  }
+  const W = 256 * 40, H = 200, cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(W, H), d = img.data;
+  const tile = t => r[0x3E34 + t] | r[0x3EFC + t] << 8;
+  const first = START[n] || 0;
+  for (let c = 0; c < 256; c++) {
+    const cs = [colAt[c][0], colAt[c][1], colAt[c][2], 0].map(i => RGB[i & 15]);
+    const dim = c < first;
+    for (let tr = 0; tr < 5; tr++) {
+      const ta = tile(r[0x3934 + tr * 256 + c]);
+      for (let cy = 0; cy < 5; cy++) for (let cx = 0; cx < 5; cx++) {
+        const ch = r[ta + cy * 5 + cx], gx = c * 40 + cx * 8, gy = tr * 40 + cy * 8;
+        for (let y = 0; y < 8; y++) {
+          const b = ch <= 0x20 ? 0xFF : r[0xD000 + (ch - 0x20) * 8 + y];
+          for (let p = 0; p < 4; p++) {
+            const k = cs[(b >> (6 - 2 * p)) & 3];
+            for (let q = 0; q < 2; q++) {
+              const o = ((gy + y) * W + gx + p * 2 + q) * 4;
+              d[o] = dim ? k[0] >> 2 : k[0]; d[o + 1] = dim ? k[1] >> 2 : k[1]; d[o + 2] = dim ? k[2] >> 2 : k[2]; d[o + 3] = 255;
+            }
+          }
+        }
+      }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  // for the overview: how much of each tile is scenery rather than gap
+  const occ = [];
+  for (let c = 0; c < 256; c++) for (let tr = 0; tr < 5; tr++) {
+    const ta = tile(r[0x3934 + tr * 256 + c]); let k = 0;
+    for (let i = 0; i < 25; i++) k += r[ta + i] > 0x20;
+    occ.push(k / 25);
+  }
+  LEVELS[n] = { n, ev, waves, cv, first, occ, colAt };
+  return LEVELS[n];
+}
+
+const lv = { cur: null, pos: 0, playing: false, stopLeft: 0, stopEv: null, frames: 0, last: 0, done: new Set() };
+const view = $('ar-view'), over = $('ar-over');
+const vctx = view.getContext('2d'), octx = over.getContext('2d');
+const fmtTime = f => { const s = f / PAL_HZ; return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0'); };
+const hex = (v, w) => '$' + v.toString(16).toUpperCase().padStart(w || 2, '0');
+
+function framesAt(L, pos) {
+  // frames since the level started for the scroll to reach pos, each stop on the way taken whole
+  let f = Math.max(0, pos - L.first * 40);
+  for (const v of L.ev) if (v.stop && v.x < pos) f += v.stop * 48;
+  return f;
+}
+function drawLevel() {
+  const L = lv.cur; if (!L) return;
+  vctx.imageSmoothingEnabled = false;
+  vctx.fillStyle = '#000'; vctx.fillRect(0, 0, 640, 400);
+  const left = lv.pos - 320;
+  const sx = Math.max(0, left), dx = sx - left, w = Math.min(320 - dx, 10240 - sx);
+  if (w > 0) vctx.drawImage(L.cv, sx, 0, w, 200, dx * 2, 0, w * 2, 400);
+  vctx.font = '13px IBM Plex Mono, monospace';
+  for (const v of L.ev) {
+    const x = (v.x - left) * 2;
+    if (x < 0 || x > 640) continue;
+    vctx.strokeStyle = v.stop ? '#d04a3a' : '#706deb'; vctx.setLineDash([6, 5]); vctx.lineWidth = 2;
+    vctx.beginPath(); vctx.moveTo(x, 0); vctx.lineTo(x, 400); vctx.stroke(); vctx.setLineDash([]);
+    vctx.fillStyle = 'rgba(0,0,0,.65)'; vctx.fillRect(x - 128, 4, 124, 20);
+    vctx.fillStyle = '#fff'; vctx.textAlign = 'right';
+    vctx.fillText('event ' + v.e + (v.boss === 1 ? ': end boss' : v.boss === 2 ? ': mid boss' : v.stop ? ': stop' : ''), x - 8, 19);
+  }
+  if (!L.occ.some(f => f)) {
+    vctx.fillStyle = '#b2b2b2'; vctx.textAlign = 'center';
+    vctx.fillText('no scenery in this level: every map entry is tile 0, all gaps', 320, 200);
+  }
+  if (L.first && left < L.first * 40) {
+    const x = (L.first * 40 - left) * 2;
+    vctx.fillStyle = '#fff'; vctx.textAlign = 'left';
+    vctx.fillText('the scroll starts here', Math.max(8, x - 200), 390);
+  }
+  vctx.textAlign = 'left';
+  const col = Math.min(255, Math.floor(lv.pos / 40));
+  let s = 'tile column ' + col + ' · ' + fmtTime(framesAt(L, lv.pos) + (lv.stopEv ? lv.stopEv.stop * 48 - lv.stopLeft : 0));
+  if (lv.stopEv) s += ' · boss: ' + Math.ceil(lv.stopLeft / PAL_HZ) + ' s left';
+  $('ar-read').textContent = s;
+  $('ar-pos').value = lv.pos;
+  // overview
+  octx.imageSmoothingEnabled = true;
+  octx.fillStyle = '#1b1d22'; octx.fillRect(0, 0, 1024, 60);
+  for (let c = 0; c < 256; c++) for (let tr = 0; tr < 5; tr++) {
+    const f = L.occ[c * 5 + tr]; if (!f) continue;
+    octx.globalAlpha = 0.25 + 0.75 * f; octx.fillStyle = C64.PAL[L.colAt[c][1] & 15];
+    octx.fillRect(c * 4, 20 + tr * 4, 4, 4);
+  }
+  octx.globalAlpha = 1;
+  for (const w of L.waves) {
+    const x = w.c * 4;
+    octx.fillStyle = '#b2b2b2'; octx.fillRect(x, 2, 1, 6);
+    if (w.p5) { octx.fillStyle = '#a9ff9f'; octx.fillRect(x, 10, 3, 3); }
+    if (w.p6) { octx.fillStyle = '#edf171'; octx.fillRect(x, 15, 3, 3); }
+  }
+  for (const v of L.ev) {
+    const x = Math.min(1023, v.x / 10);
+    octx.fillStyle = v.stop ? '#d04a3a' : '#706deb';
+    octx.fillRect(x, 42, 2, 16);
+  }
+  octx.strokeStyle = '#fff'; octx.lineWidth = 1;
+  octx.strokeRect(Math.max(0, (lv.pos - 320) / 10) + .5, 19.5, 32, 21);
+}
+function eventsTable(L) {
+  const rows = L.ev.map(v => {
+    const what = [];
+    if (v.fl & 1) what.push('colours ' + v.cols.map(c => hex(c)).join(' '));
+    if (v.boss) what.push(v.boss === 1 ? 'starts the end boss' : 'starts the mid-level boss');
+    const where = v.e === 10 ? 'the end' : (v.col === 0 ? '0, the start' : String(v.col));
+    return '<tr><td class="ar-n">' + v.e + '</td><td class="ar-n">' + where + '</td><td class="ar-n">' + v.speed + '</td><td class="ar-n">' + (v.shots == null ? '-' : v.shots) + '</td><td>' + (what.join('; ') || '-') + '</td><td class="ar-n">' + (v.stop ? (v.stop * 48).toLocaleString('en') + ' frames' : '-') + '</td></tr>';
+  });
+  const p5 = L.waves.reduce((a, w) => a + w.p5, 0), p6 = L.waves.reduce((a, w) => a + w.p6, 0);
+  $('ar-evs').innerHTML = '<table class="ar-tbl"><thead><tr><th>Event</th><th>Tile column</th><th>Enemy speed</th><th>Enemy shots</th><th>Does</th><th>Stops the scroll</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>'
+    + '<p class="cap">Level ' + L.n + "'s script, read from its <code>$9700</code> tables: " + L.waves.length + ' tile columns start a wave; ' + p5 + ' pods appear in every game and ' + p6 + ' more in two-player games. Enemy speed is before the bonus for completed games.</p>';
+}
+async function showLevel(n) {
+  stop();
+  $('ar-lvsel').value = n;
+  try {
+    const L = await level(n);
+    lv.cur = L; lv.pos = L.first * 40 + 1440; lv.stopEv = null; lv.done = new Set(L.ev.filter(v => v.x < lv.pos).map(v => v.e));
+    eventsTable(L); drawLevel();
+  } catch (e) { $('ar-read').textContent = 'The level\'s listing did not load (' + e.message + ').'; }
+}
+function stop() { lv.playing = false; $('ar-play').textContent = 'Play'; }
+function tick(t) {
+  if (!lv.playing) return;
+  const dt = Math.min(0.25, (t - lv.last) / 1000); lv.last = t;
+  let f = dt * PAL_HZ;
+  const L = lv.cur;
+  while (f > 0 && lv.playing) {
+    if (lv.stopEv) {
+      const u = Math.min(f, lv.stopLeft); lv.stopLeft -= u; f -= u;
+      if (lv.stopLeft <= 0) { lv.done.add(lv.stopEv.e); lv.stopEv = null; if (lv.pos >= 10240) stop(); }
+      continue;
+    }
+    const next = L.ev.find(v => v.stop && !lv.done.has(v.e) && v.x >= lv.pos);
+    const lim = next ? next.x : 10240 + 320;
+    const u = Math.min(f, lim - lv.pos); lv.pos += u; f -= u;
+    if (next && lv.pos >= next.x) { lv.stopEv = next; lv.stopLeft = next.stop * 48; }
+    else if (lv.pos >= lim) stop();
+  }
+  drawLevel();
+  if (lv.playing) requestAnimationFrame(tick);
+}
+if (HAS) {
+  const sel = $('ar-lvsel');
+  for (let n = 1; n <= 8; n++) sel.insertAdjacentHTML('beforeend', '<option value="' + n + '">Level ' + n + ' · file ' + 'DELHUNAR'[n - 1] + '</option>');
+  sel.onchange = () => showLevel(+sel.value);
+  document.querySelectorAll('section[data-part="level-1"] .pick .step').forEach(b => b.onclick = () => {
+    const n = Math.min(8, Math.max(1, +sel.value + +b.dataset.d)); showLevel(n);
+  });
+  $('ar-play').onclick = () => {
+    if (lv.playing) { stop(); return; }
+    if (lv.pos >= 10240 && !lv.stopEv) { lv.pos = lv.cur.first * 40; lv.done = new Set(); }
+    lv.playing = true; $('ar-play').textContent = 'Pause'; lv.last = performance.now(); requestAnimationFrame(tick);
+  };
+  $('ar-pos').oninput = e => {
+    stop(); lv.stopEv = null; lv.pos = +e.target.value;
+    lv.done = new Set(lv.cur.ev.filter(v => v.x < lv.pos).map(v => v.e)); drawLevel();
+  };
+  over.onclick = e => {
+    const b = over.getBoundingClientRect(); stop(); lv.stopEv = null;
+    lv.pos = Math.round((e.clientX - b.left) / b.width * 10240) + 160;
+    lv.pos = Math.max(0, Math.min(10240, lv.pos));
+    lv.done = new Set(lv.cur.ev.filter(v => v.x < lv.pos).map(v => v.e)); drawLevel();
+  };
+  showLevel(1);
+} else missing(view);
+
+// ---- 04 pods, 05 super weapons
+let ENG = null, L1 = null;
+const engine = () => ENG || (ENG = part('engine'));
+const level1 = () => L1 || (L1 = level(1).then(() => part('level-1')));
+async function drawPods(players) {
+  const [e, l] = await Promise.all([engine(), part('level-1')]);
+  const E = e.ram, R = l.ram;
+  const gives = ['', 'forward fire', 'the tail gun', 'the vertical cannon', 'the trident', 'converge', 'a generator', 'a battery'];
+  const list = [{ name: 'not yet shot', frame: R[0x0200 + 5], colour: R[0x03E6 + 5] & 15, hits: R[0x0488 + 5], gives: 'invulnerability' }];
+  for (let t = 1; t <= 7; t++) list.push({ name: 'enhancement ' + t, frame: E[0xA64C + t], colour: E[0xA65C + t], hits: E[0xA654 + t] - (players === 2 ? 5 : 0), gives: gives[t] });
+  const box = $('ar-pods'); box.innerHTML = '';
+  list.forEach((p, i) => {
+    const div = document.createElement('div'); div.className = 'ar-pod';
+    const cv = document.createElement('canvas'); cv.width = 96; cv.height = 84;
+    const ctx = cv.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 96, 84);
+    C64.drawSpriteMC(ctx, R.subarray(0x4000 + 64 * p.frame, 0x4000 + 64 * p.frame + 63), 0, 0, 4, C64.PAL[p.colour], C64.PAL[1], C64.PAL[11]);
+    const next = i < 7 ? p.hits + ' hits to change' : p.hits + ' hits, then forward fire\'s look on an unshot pod';
+    div.appendChild(cv);
+    div.insertAdjacentHTML('beforeend', '<b>' + p.gives + '</b>frame ' + hex(p.frame) + '<br>' + next);
+    box.appendChild(div);
+  });
+}
+if (HAS) {
+  drawPods(1).catch(e => $('ar-pods').textContent = 'The listings did not load (' + e.message + ').');
+  document.querySelectorAll('#ar-podmode button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#ar-podmode button').forEach(x => x.classList.toggle('ar-on', x === b));
+    drawPods(+b.dataset.p);
+  });
+} else missing($('ar-pods'));
+
+async function drawSW(w) {
+  const [e, l] = await Promise.all([engine(), part('level-1')]);
+  const E = e.ram, R = l.ram;
+  const start = [0xF07D, 0xF0AF, 0xF0A6][w];
+  const shots = [];
+  for (let a = start; E[a] !== 0x80 && shots.length < 16; a += 4)
+    shots.push({ dir: E[a] > 127 ? E[a] - 256 : E[a], dc: E[a + 1] > 127 ? E[a + 1] - 256 : E[a + 1], dr: E[a + 2] > 127 ? E[a + 2] - 256 : E[a + 2], ch: E[a + 3] });
+  const cv = $('ar-sw'), ctx = cv.getContext('2d');
+  const S = 16, C0 = 6, R0 = 2;   // the ship's cell: column 6, row 2 of a 40 by 5 grid
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 640, 120);
+  ctx.fillStyle = '#16181d'; ctx.fillRect(0, 8, 640, 80);
+  ctx.strokeStyle = '#2a2c33';
+  for (let c = 0; c <= 40; c++) { ctx.beginPath(); ctx.moveTo(c * S + .5, 8); ctx.lineTo(c * S + .5, 88); ctx.stroke(); }
+  for (let r = 0; r <= 5; r++) { ctx.beginPath(); ctx.moveTo(0, 8 + r * S + .5); ctx.lineTo(640, 8 + r * S + .5); ctx.stroke(); }
+  const cs = [1, 14, 6, 0].map(i => C64.PAL[i]);   // level 1's first colours
+  const charset = new Uint8Array(2048); charset.set(R.subarray(0xD000, 0xD700), 0x100);
+  for (const s of shots) {
+    const x = (C0 + s.dc) * S, y = 8 + (R0 + s.dr) * S;
+    C64.drawGlyphMC(ctx, charset, s.ch, x, y, 2, cs);
+    ctx.fillStyle = '#edf171'; ctx.font = '13px IBM Plex Mono, monospace'; ctx.textAlign = 'center';
+    ctx.fillText(s.dir > 0 ? '→' : '←', x + 8 + s.dir * S, y + 12);
+  }
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(C0 * S + 1, 8 + R0 * S + 1, S - 2, S - 2);
+  ctx.fillStyle = '#b2b2b2'; ctx.textAlign = 'left'; ctx.font = '12px IBM Plex Mono, monospace';
+  ctx.fillText(shots.length + ' shot' + (shots.length > 1 ? 's' : '') + ', characters ' + [...new Set(shots.map(s => hex(s.ch)))].join(" "), 8, 112);
+}
+if (HAS) {
+  drawSW(0).catch(e => $('ar-swcap').textContent = 'The listings did not load (' + e.message + ').');
+  document.querySelectorAll('#ar-swsel button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#ar-swsel button').forEach(x => x.classList.toggle('ar-on', x === b));
+    drawSW(+b.dataset.w);
+  });
+} else missing($('ar-sw'));
+
+// ---- 13 the ending
+let END = null;
+async function drawEnding(pic) {
+  const m = await (END || (END = part('ending'))), r = m.ram;
+  const cv = $('ar-end'), ctx = C64.canvas(cv, 320, 200), img = ctx.createImageData(320, 200), d = img.data;
+  const B = 0x0F00 + pic * 2280, S = B + 1920, CR = S + 240;
+  // the message, typed as message_type ($0C42) types it
+  const text = new Uint8Array(200);
+  let a = r[0x0AB7 + pic] | r[0x0ABC + pic] << 8, x = r[a] + 1 & 255;
+  for (let y = 1; y < 400 && x < 200; y++) {
+    const c = r[a + y];
+    if (c === 0x10) break;
+    if (c === 0x11) { let lim = 0x27; while (!(x < lim) && lim < 0xC7) lim += 0x28; x = lim; x++; continue; }
+    text[x] = c; x++;
+  }
+  const tc = [r[0x0E80 + pic], r[0x0E85 + pic], r[0x0E7B + pic], 0];
+  const put = (px, py, ci) => { const k = RGB[ci & 15], o = (py * 320 + px) * 4; d[o] = k[0]; d[o + 1] = k[1]; d[o + 2] = k[2]; d[o + 3] = 255; };
+  for (let row = 0; row < 25; row++) for (let col = 0; col < 40; col++) {
+    let bytes, cols;
+    if (row < 19) {
+      if (row >= 3 && row <= 14 && col >= 10 && col <= 29) {
+        const wr = row - 3, wc = col - 10, sc = r[S + wr * 20 + wc], pk = r[CR + wr * 10 + (wc >> 1)];
+        bytes = r.subarray(B + wr * 160 + wc * 8, B + wr * 160 + wc * 8 + 8);
+        cols = [0, sc >> 4, sc & 15, wc & 1 ? pk >> 4 : pk & 15];
+      } else {
+        const sc = r[0x6C00 + row * 40 + col];
+        bytes = r.subarray(0x5000 + row * 320 + col * 8, 0x5000 + row * 320 + col * 8 + 8);
+        cols = [0, sc >> 4, sc & 15, r[0x4D08 + row * 40 + col] & 15];
+      }
+    } else {
+      const ch = row >= 20 ? text[(row - 20) * 40 + col] : 0;
+      bytes = r.subarray(0x6800 + ch * 8, 0x6800 + ch * 8 + 8);
+      cols = tc;
+    }
+    for (let y = 0; y < 8; y++) for (let p = 0; p < 4; p++) {
+      const v = (bytes[y] >> (6 - 2 * p)) & 3;
+      put(col * 8 + p * 2, row * 8 + y, cols[v]); put(col * 8 + p * 2 + 1, row * 8 + y, cols[v]);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+if (HAS) {
+  const sel = $('ar-endsel');
+  ['Picture 0', 'Picture 1', 'Picture 2', 'Picture 3', 'Picture 4'].forEach((t, i) => sel.insertAdjacentHTML('beforeend', '<button data-i="' + i + '"' + (i ? '' : ' class="ar-on"') + '>' + t + '</button>'));
+  sel.querySelectorAll('button').forEach(b => b.onclick = () => {
+    sel.querySelectorAll('button').forEach(x => x.classList.toggle('ar-on', x === b));
+    drawEnding(+b.dataset.i);
+  });
+  drawEnding(0).catch(e => sel.insertAdjacentHTML('afterend', '<p class="ar-miss">The ending\'s listing did not load (' + e.message + ').</p>'));
+} else missing($('ar-end'));
+// ---- 06 the generator
+// port: generators_recharge
+// generators_recharge ($EB00) for one player, a call a frame. s.gens generators ($B018), s.count
+// the counter ($64), s.rebuild the rebuild count ($60), s.charge the generator's charge ($62),
+// s.slots the four battery slots ($B010-$B013: 0 none, 1-7 a battery with 0-6 charges).
+function genStep(s, limit) {
+  if (s.count < limit[s.gens]) { s.count++; return; }
+  s.count = 0;
+  if (s.rebuild !== 7) { s.rebuild++; return; }
+  for (let x = 3; x >= 0; x--) {
+    const b = s.slots[x];
+    if (b !== 0 && b < 7) { s.slots[x] = 7; s.rebuild = 0; return; }
+  }
+  s.charge = 6;
+}
+// end port
+const gen = { s: null, lim: null, gens: 0, bats: 0, frames: 0, run: false, fast: 1, last: 0 };
+function genReset() {
+  gen.s = { gens: gen.gens, count: 0, rebuild: 0, charge: 0, slots: [0, 1, 2, 3].map(i => i < gen.bats ? 1 : 0) };
+  gen.frames = 0; genDraw();
+}
+function genDraw() {
+  const cv = $('ar-gen'), ctx = cv.getContext('2d'), s = gen.s;
+  ctx.fillStyle = '#16181d'; ctx.fillRect(0, 0, 640, 150);
+  ctx.font = '13px IBM Plex Mono, monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#b2b2b2';
+  ctx.fillText('counter $64', 16, 26);
+  const lim = gen.lim[s.gens];
+  ctx.strokeStyle = '#55585f'; ctx.strokeRect(130.5, 14.5, 300, 16);
+  ctx.fillStyle = '#706deb'; ctx.fillRect(131, 15, 299 * Math.min(1, s.count / lim), 15);
+  ctx.fillStyle = '#b2b2b2'; ctx.fillText(s.count + ' of ' + lim, 444, 27);
+  ctx.fillText('rebuild $60', 16, 62);
+  for (let i = 0; i < 7; i++) {
+    ctx.fillStyle = i < s.rebuild ? '#edf171' : '#2a2c33'; ctx.fillRect(131 + i * 30, 48, 24, 20);
+  }
+  ctx.fillStyle = '#b2b2b2'; ctx.fillText(s.rebuild + ' of 7', 444, 63);
+  ctx.fillText('generator $62', 16, 102);
+  for (let i = 0; i < 6; i++) { ctx.fillStyle = i < s.charge ? '#a9ff9f' : '#2a2c33'; ctx.fillRect(131 + i * 16, 88, 12, 22); }
+  ctx.fillStyle = '#b2b2b2'; ctx.fillText('batteries', 16, 136);
+  for (let b = 0; b < 4; b++) {
+    const v = s.slots[b], x = 131 + b * 110;
+    if (!v) { ctx.fillStyle = '#55585f'; ctx.fillText('none', x, 136); continue; }
+    for (let i = 0; i < 6; i++) { ctx.fillStyle = i < v - 1 ? '#a9ff9f' : '#2a2c33'; ctx.fillRect(x + i * 14, 122, 10, 20); }
+  }
+  const sec = gen.frames / PAL_HZ;
+  $('ar-genread').textContent = 'frame ' + gen.frames.toLocaleString('en') + ' · ' + sec.toFixed(1) + ' s';
+}
+function genTick(t) {
+  if (!gen.run) return;
+  const n = Math.min(400, Math.round((t - gen.last) / 1000 * PAL_HZ * gen.fast));
+  if (n > 0) { for (let i = 0; i < n; i++) { genStep(gen.s, gen.lim); gen.frames++; } gen.last = t; genDraw(); }
+  requestAnimationFrame(genTick);
+}
+if (HAS) {
+  engine().then(e => {
+    gen.lim = Array.from(e.ram.subarray(0xEB73, 0xEB78)); genReset();
+    const pick = (id, key) => document.querySelectorAll('#' + id + ' button').forEach(b => b.onclick = () => {
+      document.querySelectorAll('#' + id + ' button').forEach(x => x.classList.toggle('ar-on', x === b));
+      gen[key] = +b.dataset[key === 'gens' ? 'g' : 'b']; genReset();
+    });
+    pick('ar-gens', 'gens'); pick('ar-bats', 'bats');
+    $('ar-genrun').onclick = () => {
+      gen.run = !gen.run; $('ar-genrun').textContent = gen.run ? 'Pause' : 'Run';
+      if (gen.run) { gen.last = performance.now(); requestAnimationFrame(genTick); }
+    };
+    $('ar-genfast').onclick = () => { gen.fast = gen.fast === 1 ? 10 : 1; $('ar-genfast').textContent = 'Speed ×' + gen.fast; gen.last = performance.now(); };
+    $('ar-genreset').onclick = genReset;
+  }).catch(e => $('ar-genread').textContent = 'The listing did not load (' + e.message + ').');
+} else missing($('ar-gen'));
+
+// ---- 07 the drone's place
+const DIRS = [['up', 1], ['down', 2], ['left', 4], ['right', 8], ['up and left', 5], ['down and left', 6], ['up and right', 9], ['down and right', 10]];
+function droneDraw(E, d) {
+  const cv = $('ar-drone'), ctx = cv.getContext('2d'), S = 16;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 200);
+  ctx.strokeStyle = '#1e2026';
+  for (let c = 0; c <= 40; c++) { ctx.beginPath(); ctx.moveTo(c * S + .5, 0); ctx.lineTo(c * S + .5, 200); ctx.stroke(); }
+  for (let r = 0; r <= 12; r++) { ctx.beginPath(); ctx.moveTo(0, r * S + 4.5); ctx.lineTo(640, r * S + 4.5); ctx.stroke(); }
+  const sc = 14, sr = 5, sb = v => v > 127 ? v - 256 : v;
+  const dc = sb(E[0x9EF8 + d]), dr = sb(E[0x9F03 + d]);
+  const cell = (c, r, col) => { ctx.fillStyle = col; ctx.fillRect(c * S + 1, r * S + 5, S - 1, S - 1); };
+  cell(sc, sr, '#ffffff'); cell(sc + dc, sr + dr, '#706deb');
+  ctx.strokeStyle = '#edf171'; ctx.lineWidth = 2; ctx.beginPath();
+  const ax = { 1: [0, -1], 2: [0, 1], 4: [-1, 0], 8: [1, 0], 5: [-1, -1], 6: [-1, 1], 9: [1, -1], 10: [1, 1] }[d];
+  ctx.moveTo(sc * S + 8, sr * S + 12); ctx.lineTo(sc * S + 8 + ax[0] * 40, sr * S + 12 + ax[1] * 40); ctx.stroke(); ctx.lineWidth = 1;
+  ctx.fillStyle = '#b2b2b2'; ctx.font = '13px IBM Plex Mono, monospace'; ctx.textAlign = 'left';
+  ctx.fillText('stick ' + DIRS.find(x => x[1] === d)[0] + ' (bits ' + d.toString(2).padStart(4, '0') + '): column ' + (dc >= 0 ? '+' : '') + dc + ', row ' + (dr >= 0 ? '+' : '') + dr, 8, 196);
+}
+if (HAS) {
+  const pad = $('ar-dpad');
+  DIRS.forEach(([n, d], i) => pad.insertAdjacentHTML('beforeend', '<button data-d="' + d + '"' + (i ? '' : ' class="ar-on"') + '>' + n + '</button>'));
+  engine().then(e => {
+    droneDraw(e.ram, 1);
+    pad.querySelectorAll('button').forEach(b => b.onclick = () => {
+      pad.querySelectorAll('button').forEach(x => x.classList.toggle('ar-on', x === b));
+      droneDraw(e.ram, +b.dataset.d);
+    });
+  }).catch(() => {});
+} else missing($('ar-drone'));
+
+// ---- 09 the starting shield
+const BUG = [
+  ['Zero page cleared', '<code>$A1DE</code>', 0x00, 0x00, 'level_setup_vars clears $02-$FF, the two timers among them.'],
+  ['Demo tune set up', '<code>$C43C</code>', 0x67, 0xCD, 'music_init reads each voice\'s track through the pointer $56/$57, and the last track\'s address, $CD67, stays there.'],
+  ['Timers decremented', '<code>$A260</code>', 0x66, 0xCC, 'DEC $56 and DEC $57 were written to turn 0 into 255. From $67 and $CD they give 102 and 204.'],
+];
+function bugShow(i) {
+  const [what, where, a, b, note] = BUG[i];
+  $('ar-bugtbl').innerHTML = '<thead><tr><th>Step</th><th>At</th><th>$56, ship 1</th><th>$57, ship 2</th></tr></thead><tbody><tr><td>' + what + '</td><td>' + where +
+    '</td><td class="ar-n">' + hex(a) + ' = ' + a + '</td><td class="ar-n">' + hex(b) + ' = ' + b + '</td></tr></tbody>';
+  $('ar-bugcap').textContent = note + (i === 2 ? ' Each counts down once a frame while its ship flashes (ship1_invulnerable, $EA77).' : '');
+}
+{
+  const st = $('ar-bugstep');
+  BUG.forEach((s, i) => st.insertAdjacentHTML('beforeend', '<button data-i="' + i + '"' + (i ? '' : ' class="ar-on"') + '>' + (i + 1) + '. ' + s[0] + '</button>'));
+  st.querySelectorAll('button').forEach(b => b.onclick = () => {
+    st.querySelectorAll('button').forEach(x => x.classList.toggle('ar-on', x === b)); bugShow(+b.dataset.i);
+  });
+  bugShow(0);
+}
+
+// ---- 11 the title's pages
+const TIMG = ['title-credits-phillips-levy', 'title-credits-kemp-walker', 'title-ship-enhancements-2', 'title-ship-enhancements-1', 'title-high-scores', 'title-keyboard-controls', null];
+function tDecode(E, a) {
+  let s = '';
+  for (let n = 0; E[a] !== 0xFF && n < 64; a++, n++) {
+    const b = E[a];
+    s += b >= 0x40 && b <= 0x59 ? String.fromCharCode(b + 1) : b >= 0x36 && b <= 0x3F ? String(b - 0x36) : b === 0xFE ? ' ' :
+      ({ 0x29: "'", 0x2A: 'C=', 0x2B: '/', 0x2C: '.', 0x2D: ',', 0x2E: ':', 0x2F: ';', 0x30: '?', 0x31: '!', 0x32: '-', 0x33: '(', 0x34: ')', 0x35: '©' })[b] || '▪';
+  }
+  return s.replace(/▪+/g, '▪').trim();
+}
+if (HAS) {
+  const sel = $('ar-tsel');
+  for (let p = 1; p <= 7; p++) sel.insertAdjacentHTML('beforeend', '<option value="' + p + '">Page ' + p + '</option>');
+  engine().then(e => {
+    const E = e.ram, str = i => E[0x9484 + i] | E[0x94AD + i] << 8;
+    const used = new Set();
+    for (let p = 0; p < 7; p++) for (let l = 0; l < 10; l++) used.add(E[0xB953 + 13 * p + l]);
+    const never = []; for (let i = 1; i < 41; i++) if (!used.has(i)) never.push(i);
+    const show = p => {
+      sel.value = p;
+      const lines = [];
+      for (let l = 0; l < 10; l++) {
+        const n = E[0xB953 + 13 * (p - 1) + l];
+        lines.push('<li>' + (n ? 'string ' + n + ': ' + tDecode(E, str(n)) : '<span style="color:var(--ink-mute)">blank</span>') + '</li>');
+      }
+      $('ar-tlines').innerHTML = lines.join('');
+      const img = $('ar-timg');
+      if (TIMG[p - 1]) { img.src = 'reference/' + TIMG[p - 1] + '.png'; img.style.display = ''; } else img.style.display = 'none';
+    };
+    $('ar-tcap').insertAdjacentHTML('beforeend', ' Strings on no page: ' + never.map(n => n + ', "' + tDecode(E, str(n)) + '"').join('; ') + '.');
+    sel.onchange = () => show(+sel.value);
+    document.querySelectorAll('#ar-tpick .step').forEach(b => b.onclick = () => show(Math.min(7, Math.max(1, +sel.value + +b.dataset.d))));
+    show(1);
+  }).catch(() => {});
+}
+
+// ---- 12 the poke
+function pokeShow(E, poked) {
+  const rows = [[0xE9F3, 'DEC $B005, player 1 loses a life', [0xCE, 0x05, 0xB0]], [0xE9F6, 'the BMI after it', [0x30]],
+                [0xEA57, 'DEC $B006, player 2 loses a life', [0xCE, 0x06, 0xB0]], [0xEA5A, 'the BMI after it', [0x30]]];
+  let bad = 0;
+  const html = rows.map(([a, what, want]) => {
+    const got = want.map((_, i) => (poked && a + i === 0xE9F3) ? 0xAD : E[a + i]);
+    const ok = got.every((v, i) => v === want[i]); if (!ok) bad++;
+    return '<tr><td class="ar-n"><code>' + hex(a, 4) + '</code></td><td>' + what + '</td><td class="ar-n">' + got.map(v => hex(v).slice(1)).join(' ') +
+      '</td><td class="ar-n">' + want.map(v => hex(v).slice(1)).join(' ') + '</td><td>' + (ok ? 'same' : '<b style="color:var(--coral)">differs</b>') + '</td></tr>';
+  });
+  $('ar-poketbl').innerHTML = '<thead><tr><th>At</th><th>Instruction</th><th>Bytes</th><th>anti_cheat_check wants</th><th></th></tr></thead><tbody>' + html.join('') + '</tbody>';
+  $('ar-pokecap').textContent = bad ? 'POKE 59891,173 turns DEC (CE) into LDA (AD). anti_cheat_check ($F77D) sees the difference and switches the KERNAL ROM in ($01 = $37): the machine froze within five frames in the emulator.'
+    : 'The bytes as the engine is loaded, and what anti_cheat_check ($F77D) compares them with every second frame. The BMI is checked by its opcode alone: the two branches\' opcodes are ORed and compared with $30.';
+}
+if (HAS) engine().then(e => {
+  pokeShow(e.ram, false);
+  document.querySelectorAll('#ar-pokesel button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#ar-pokesel button').forEach(x => x.classList.toggle('ar-on', x === b)); pokeShow(e.ram, b.dataset.p === '1');
+  });
+}).catch(() => {});
+
+})();
+</script>
