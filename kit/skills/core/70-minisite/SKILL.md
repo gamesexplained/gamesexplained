@@ -311,7 +311,7 @@ a human going through it section by section, whether or not that changes
 anything: `agent` records a pass that found nothing to cut or add.
 
 The page is titled with the game's name and nothing else, in both the
-`<title>` and the `<h1>`, with the platform, year and publisher in the
+`<title>` and the `<h1>`, with the year and publisher in the
 eyebrow above it. Readers arrive looking for a game, and a headline in
 place of the name hides it in a tab, a search result and a link. Say the
 interesting thing in the standfirst under the title, where the template

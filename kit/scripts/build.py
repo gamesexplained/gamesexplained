@@ -30,7 +30,8 @@ install the site as an app: manifest.webmanifest, icons/ (kit/scripts/icons.py
 draws them) and sw.js at the root, with lines in every page's head that point
 at them.
 The authored pages have {{title}}, {{platform}}, {{year}} and {{publisher}}
-filled from game.json. The build fails on a src or href that points at no
+filled from game.json. A game page's eyebrow leaves out the platform, which its
+breadcrumb names: the build drops a platform name at the eyebrow's start. The build fails on a src or href that points at no
 file it published: a page's own .js beside it would otherwise 404 on the site.
 It lists pages with blocks hidden by the page editor (kit/scripts/edit.py), and
 fails on a Gold or Platinum page that still has one. It counts the links into a
@@ -757,8 +758,15 @@ def authored_page(gdir, game, f, nav, ban, src=None):
     plat = game["platform"]
     head = dict(title=html.escape(game.get("title", game["slug"])), platform=PLATFORM_NAMES.get(plat, plat),
                 year=game.get("year") or "", publisher=html.escape(game.get("publisher") or ""))
-    page = fill(read(os.path.join(gdir, f)) if src is None else src, **head)
+    page = drop_platform(fill(read(os.path.join(gdir, f)) if src is None else src, **head), plat)
     return pagenav(at_end(under_title(inject(page, nav, LIB), ban), edit_footer(game, f)))
+
+
+def drop_platform(page, plat):
+    """The page with the platform's name taken off the start of its eyebrow ("Commodore 64 ·
+    1984 · Epyx" reads "1984 · Epyx"): the breadcrumb above it already names the platform."""
+    name = re.escape(PLATFORM_NAMES.get(plat, plat))
+    return re.sub(r'(<p class="eyebrow"[^>]*>)\s*' + name + r'\s*(?:·|&middot;)\s*', r"\1", page)
 
 
 # --- a game of several parts (kit/scripts/parts.py): a Source page and a footprint for each
@@ -1009,7 +1017,7 @@ def build_game(gdir, out_root):
                  features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not P, shift=1, parts=part_pages(P))),
                  orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not P, shift=1,
                                             parts=part_pages(P)))).replace("<!-- tabs -->", nav)
-    about = under_title(about, ban)
+    about = under_title(drop_platform(about, plat), ban)
     open(os.path.join(out, "about.html"), "w").write(pagenav(at_end(about, edit_footer(game, "about.html"))))
     for f in ("listing.json", "symbols.json"):
         if os.path.exists(os.path.join(gdir, f)):
