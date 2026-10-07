@@ -86,10 +86,16 @@ the comment can say why.
 ## 2. Work the checklist
 
 Go through every item in the kind's checklist. Each one ends as passed,
-a finding, not applicable, or not checked (with the reason: a claim that
-needs the game image or the emulator cannot be checked in the cloud). A
-finding names the file and line, or the output, it rests on. An item is
-never reported as passed without having been checked.
+a finding, not applicable, or not checked, with the reason. A finding
+names the file and line, or the output, it rests on. An item is never
+reported as passed without having been checked.
+
+A claim about how the game behaves is tested against the game itself.
+The emulator and disassembler install in a cloud session as for any run
+(`kit/INSTALL.md`). The image is what may be missing: it is never in the
+repository, so look for it in `/mnt/project-files/uploads/`. Without it,
+such a claim is not checked, and the report says the maintainer can
+supply the image.
 
 ## 3. Choose the next step
 
@@ -108,8 +114,8 @@ Recommend one:
   run's own work to redo: content, analysis, a kit change to drop.
 - **Needs the maintainer's check first.** It claims Silver on a model
   that is not proven, with no `verification` recorded
-  (`kit/CHECKING.md`). The check needs the game image and the emulator,
-  so it runs on the maintainer's device.
+  (`kit/CHECKING.md`). The check needs the game's image; the tools
+  install in the cloud as for any run.
 - **Close or split.** Rare; say why.
 
 Say what would change the recommendation. When it is a choice between
