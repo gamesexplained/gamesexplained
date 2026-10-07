@@ -100,11 +100,18 @@ def inline(s, addr=True, parts=None):
         if parts and word in parts:
             return f"{word} <code>{addr_link(body, parts[word])}</code>"
         return (f"{word} " if word else "") + "<code>" + (addr_link(body, page) if addr else body) + "</code>"
-    s = re.sub(r"(?:(?<![\w-])([A-Za-z][\w-]*) )?`([^`]+)`", code, s)
+    # Code spans are set aside while the rest is marked up, so a file name such as
+    # `game[1988](pal).g64` stays text instead of becoming a link.
+    spans = []
+
+    def keep(m):
+        spans.append(code(m))
+        return f"\x00{len(spans) - 1}\x00"
+    s = re.sub(r"(?:(?<![\w-])([A-Za-z][\w-]*) )?`([^`]+)`", keep, s)
     s = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"(?<![\w*])\*([^*\n]+)\*(?!\w)", r"<i>\1</i>", s)
     s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', s)
-    return s
+    return re.sub(r"\x00(\d+)\x00", lambda m: spans[int(m.group(1))], s)
 
 
 def addr_link(s, page="source.html"):
