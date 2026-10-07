@@ -92,10 +92,17 @@ reported as passed without having been checked.
 
 A claim about how the game behaves is tested against the game itself.
 The emulator and disassembler install in a cloud session as for any run
-(`kit/INSTALL.md`). The image is what may be missing: it is never in the
-repository, so look for it in `/mnt/project-files/uploads/`. Without it,
-such a claim is not checked, and the report says the maintainer can
-supply the image.
+(`kit/INSTALL.md`). The image is never in the repository. Look for it in
+`/mnt/project-files/uploads/`, then in archive.org's C64 Preservation
+Project collection, which has clean originals of most C64 games, each a
+zip of its own:
+<https://ia800403.us.archive.org/view_archive.php?archive=/3/items/C64_Preservation_Project_10th_Anniversary_Collection/C64_Preservation_Project_10th_Anniversary_Collection_G64.zip>.
+An original can differ from the release the contributor analysed (a
+crack's loader, a trainer, moved code), so match it to `game.json`'s
+`build` and to `orientation.md` before trusting an address in it, and
+say in the report which release was used. The image stays in
+`<scratch>`. Without an image, such a claim is not checked, and the
+report says so.
 
 ## 3. Choose the next step
 
