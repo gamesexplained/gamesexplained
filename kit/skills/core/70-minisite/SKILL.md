@@ -43,7 +43,8 @@ reconstructed screen.
 ## Sections
 
 Not every game has every section, and the list below is in no order: each
-page chooses its own ("The order", below).
+page chooses its own ("The order", below). The sound is the exception: a
+game with music gets its player, at every tier above Bronze.
 It is a starting set, not a form: the page is open to any structure that
 works for this game, any number of sections at any depth, and the human
 who takes it to Gold will cut what is dull, expand what is interesting and
@@ -78,7 +79,10 @@ address links into the Source tab, and the house style in `kit/style.md`.
 - **Progression and difficulty.** The tables, as tables, and what they
    do to play.
 - **The sound.** The player for the stored tunes and effects, tied to
-   the bytes that produce each note. Port the game's own music driver
+   the bytes that produce each note. When the game has music, the player
+   is required, with a button for every tune the game stores, unused
+   ones too: a run that names the music driver and leaves the player to
+   `TODO.md` has not built the page. Port the game's own music driver
    and play it through the site's model of the SID, `../../lib/sid.js`:
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver

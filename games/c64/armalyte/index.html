@@ -92,7 +92,25 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">03 · Bosses</p>
+  <p class="fig">03 · Music</p>
+  <h2 class="t">Music: Martin Walker's tunes, played by the game's own driver</h2>
+  <p class="lede">Martin Walker wrote four tunes for Armalyte: the title's, the demo's, the high-score page's, and the loading screen's. The player below runs the game's music routine, ported from its code, once a frame through a model of the SID chip.</p>
+  <div class="plate"><div id="ar-music"></div>
+  <p class="cap">The port of <code>music_play</code> (<code>$C059</code>) reads the tunes from the engine's own bytes. Run beside the game's code in a 6502 simulator, the port made the same writes to the SID, in the same order, in every frame of each tune (ten minutes of the two that repeat) and of 200 random tunes, which with the four run every instruction of the routine. The game never uses the SID's filter. The lowest notes, down to 35 Hz in the title tune, are below what laptop and phone speakers play well.</p></div>
+  <div class="ar-scroll" style="margin:22px 0"><table class="ar-tbl">
+    <tr><th>Tune</th><th>Where it plays</th><th>Length</th></tr>
+    <tr><td>Title</td><td>the title pages, and the ending's last screen</td><td>3:32.6, then again from the start</td></tr>
+    <tr><td>Demo</td><td>the demo (F7 on the title), which ends when the tune does</td><td>3:00.9, with a fade in its last 2 s</td></tr>
+    <tr><td>High scores</td><td>the high-score page, and the ending's five pictures</td><td>2:43.5, fading over its last 36 s</td></tr>
+    <tr><td>Loading</td><td>the loading screen, while a level loads</td><td>each voice loops on its own</td></tr>
+  </table></div>
+  <p>Each voice follows a track of its own: a list of pattern numbers, each with a repeat count, which can loop and can set a fade (<code>music_track_next</code>, <code>$C43C</code>). A pattern is a run of notes. Each note is a length byte and a note byte, with a third byte between them when the note changes instrument or starts a slide. Lengths count steps. A step is two frames in the demo and high-score tunes, 25 a second. In the title and loading tunes every fourth step lasts three frames, four steps in nine frames, so those two move unevenly, at about 22 steps a second.</p>
+  <p>The 21 instruments are 16 bytes each, and most of their sound comes from changing the chip's registers every frame. An arpeggio alternates the note with a second one, a frame apiece, which the ear hears as a chord. In five instruments the second note is 7 to 12 semitones above the first, and in instruments 1, 2 and 4 it is a fixed high note. Instruments 1 and 2 also flip between the triangle and noise waveforms every frame. A pulse sweep widens and narrows the pulse wave between two limits, and vibrato starts after a delay of up to 75 frames. A note that begins a new sound turns its voice's gate off and on again within the same frame, so the envelope starts its attack again.</p>
+  <p>The loading tune is three loops of different lengths. Its voices repeat every 576, 1,296 and 720 frames, about 11.5, 25.9 and 14.4 seconds, so the three line up again only after 25,920 frames, 8 minutes 37 seconds. On the first load, the one before the title, the loading screen starts a fade when its block counter reaches 18 (<code>loading_irq</code>, <code>$B702</code>).</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">04 · Bosses</p>
   <h2 class="t">Every boss can be outlasted</h2>
   <p class="lede">A boss fight stops the scroll for a time the level sets. When the time is up, the boss blows itself up, and the game pays out as if the player had destroyed it.</p>
   <div class="plate ar-scroll">
@@ -117,7 +135,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">04 · Munitions pods</p>
+  <p class="fig">05 · Munitions pods</p>
   <h2 class="t">Shooting a pod changes what it gives</h2>
   <p class="lede">A munitions pod changes into the next enhancement each time it has taken enough hits. Flown into, it gives the one it shows, with one exception.</p>
   <div class="plate">
@@ -131,7 +149,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">05 · Weapons</p>
+  <p class="fig">06 · Weapons</p>
   <h2 class="t">Every shot is a character on the screen</h2>
   <p class="lede">The players' shots are not sprites. They are characters written into the screen, so the game finds what they hit by reading the screen back.</p>
   <div class="plate">
@@ -157,7 +175,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">06 · Energy</p>
+  <p class="fig">07 · Energy</p>
   <h2 class="t">How the generator fills the batteries</h2>
   <p class="lede">Super weapons run on charges. The generator rebuilds them on a clock, and more generators make the clock faster.</p>
   <table class="ar-tbl">
@@ -183,7 +201,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">07 · The drone</p>
+  <p class="fig">08 · The drone</p>
   <h2 class="t">The drone shoots for real</h2>
   <p class="lede">In a one-player game the second ship is a drone. It cannot be destroyed, soaks up enemy shots, and fires copies of the player's weapons.</p>
   <p>The drone keeps to the side of the ship opposite the way the stick is pushed, stepping one cell at a time towards its place (<code>$9E78</code>); with the stick released the drone keeps the place the last direction gave it. SPACE detaches it, and the detached drone stays still on the screen until SPACE calls it back. The manual says a detached drone "glides along its own trajectory"; in the game it does not move.</p>
@@ -197,16 +215,16 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">08 · Sprites</p>
+  <p class="fig">09 · Sprites</p>
   <h2 class="t">At most thirty sprites in a frame</h2>
   <p class="lede">The machine has eight sprites. The game shows up to thirty in one frame by using the same ones again further down the screen.</p>
   <p>The two ships always have sprites 0 and 1 (<code>$E4D6</code>). Up to twenty objects (enemies, pods, bosses, and explosions) share sprites 2 to 7: the multiplexer (<code>$A305</code>) places them in order down the screen, each waiting until the sprite it reuses has finished drawing. Below the playfield the eight scoreboard sprites take all eight again. That makes 22 in the playfield and 8 in the border, thirty in all, short of the "more than 30" one review claims.</p>
-  <p>The objects are sorted by height every frame with the stack page as a bucket table (<code>$F4C8</code>). The page is filled with <code>$FF</code>; each object's number is pushed into the first free byte at its height, and reading them back restores the <code>$FF</code>. The game checks that the page still holds <code>$FF</code> at its top, which is how it notices a freezer cartridge has been used (section 12).</p>
+  <p>The objects are sorted by height every frame with the stack page as a bucket table (<code>$F4C8</code>). The page is filled with <code>$FF</code>; each object's number is pushed into the first free byte at its height, and reading them back restores the <code>$FF</code>. The game checks that the page still holds <code>$FF</code> at its top, which is how it notices a freezer cartridge has been used (section 13).</p>
   <p>The main loop never fell behind: run through all of level 1 in the emulator it made 25,299 passes in 25,298.5 frames, one a frame.</p>
 </section>
 
 <section data-part="engine">
-  <p class="fig">09 · A bug</p>
+  <p class="fig">10 · A bug</p>
   <h2 class="t">Bug: the music cuts the starting shield short</h2>
   <p class="lede">Each ship starts a level flashing and invulnerable. The code means it to last 255 frames for both ships. Player 1 gets 102 and player 2 gets 204.</p>
   <div class="plate" style="margin-bottom:22px">
@@ -219,7 +237,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="level-1">
-  <p class="fig">10 · A secret</p>
+  <p class="fig">11 · A secret</p>
   <h2 class="t">Secret: every level file ends in an insult</h2>
   <p class="lede">The last sixteen bytes of each level, which no code uses, hold a message in screen codes.</p>
   <table class="ar-tbl">
@@ -236,11 +254,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     </tbody>
   </table>
   <p class="cap">Each level's <code>$98F0-$98FF</code>, in screen codes (A = 1), padded with <code>$FE</code>. The mover copies them into memory with the rest of the level's last page, and nothing reads them.</p>
-  <p>Levels 5 and 6 read on as one sentence. The game's credits name its producers as Paul Cooper and John Harries (section 11). Hawkeye was another Thalamus game of 1988.</p>
+  <p>Levels 5 and 6 read on as one sentence. The game's credits name its producers as Paul Cooper and John Harries (section 12). Hawkeye was another Thalamus game of 1988.</p>
 </section>
 
 <section data-part="engine">
-  <p class="fig">11 · Another secret</p>
+  <p class="fig">12 · Another secret</p>
   <h2 class="t">Secret: the producers' credit is never shown</h2>
   <p class="lede">The title cycles through two pages of credits. A third pair of lines, "PRODUCED BY:" and "PAUL COOPER AND JOHN HARRIES", is in the game's strings but on no page.</p>
   <div class="plate" style="margin-bottom:22px">
@@ -255,7 +273,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">12 · Protection</p>
+  <p class="fig">13 · Protection</p>
   <h2 class="t">The infinite-lives poke freezes the game</h2>
   <p class="lede">The poke the C64-Wiki gives for infinite lives, <code>POKE 59891,173</code>, stops the machine within five frames. The game checks its own code every second frame.</p>
   <div class="plate" style="margin-bottom:22px">
@@ -269,7 +287,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="ending">
-  <p class="fig">13 · The ending</p>
+  <p class="fig">14 · The ending</p>
   <h2 class="t">The ending leads into a faster second round</h2>
   <p class="lede">Finishing level 8 loads one more file: five pictures in a frame, each with a message typed out beneath it. Then the game goes back to level 1, keeping the score and lives, with the enemies faster.</p>
   <div class="plate">
@@ -282,7 +300,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">14 · Loading</p>
+  <p class="fig">15 · Loading</p>
   <h2 class="t">One file per level, loaded over the engine</h2>
   <p class="lede">The engine stays in memory for the whole game. Each level is a file of its own on side 2, loaded when the level is reached.</p>
   <p>Side 1 boots to a menu, and its first entry loads the engine, which unpacks itself and starts at <code>$A000</code>. From then on the engine loads everything else itself, by a one-letter name (<code>$B3E1</code>): D, E, L, H, U, N, A, and R for the eight levels, and M for the ending. The first load looks for D on side 1, does not find it, and puts up "TURN DISK TO SIDE B PRESS FIRE" (<code>$B5CC</code>), which is how the game asks for the other side.</p>
@@ -292,6 +310,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
 <script>
 (function () {
 'use strict';
@@ -801,5 +820,309 @@ if (HAS) engine().then(e => {
   });
 }).catch(() => {});
 
+})();
+</script>
+<script>
+(function () {
+'use strict';
+// <music-driver>
+/* Armalyte's music driver (Martin Walker), ported from the game's 6502 code for the site's shared
+   SID player (site/lib/sid.js): music_init ($C000), music_play ($C059) and music_track_next
+   ($C43C). m is a 64 KB array laid out as the game's memory, with the engine's bytes from $C000 to
+   $CFFF (D, from parts/engine/listing.json) at their addresses, so every variable sits where the
+   game keeps it ($C4B2-$C554) and the tables are read where they are ($C555-$CF81). The two
+   pointers the driver keeps in the zero page ($56/$57 for the track, $58/$59 for the pattern) are
+   kept here as numbers. Not ported: the sound effects ($F800-$FC43), which the game plays only
+   in play, where it plays no music. A track made of commands alone would restart onto pattern
+   $FF, whose address the driver reads from past its table, from memory the port does not have;
+   no tune has one.
+   createDriver(D) returns {init, stop, play, sid, writes, playing, voice} for sid.js. writes is
+   every SID write of the last frame in order, init's or stop's before it: a new note turns its
+   voice's gate off and on again within one frame ($C3F1, $C3FA), which restarts the envelope.
+   Tested by tests/music.js against the driver run in the kit's 6502 simulator, every register
+   and every write of every frame. */
+function createDriver(D) {
+  const m = new Uint8Array(0x10000);
+  if (D) m.set(D, 0xC000);
+  m[0xC057] = 0;                                     // nothing plays until init
+  const sid = new Uint8Array(25), writes = [];
+  let pending = false;
+  const W = (r, v) => { sid[r] = v & 0xFF; writes.push(r, v & 0xFF); };
+  const ON = 0xC057, FADE = 0xC058, VOL = 0xC4B2, FCOUNT = 0xC4B3, BEAT = 0xC4B4, BAR = 0xC4B5,
+    VREGS = 0xC4B6, NEWINS = 0xC4B7, AD = 0xC4B8, SR = 0xC4B9, PSTEP = 0xC4BA, PTOP = 0xC4BB,
+    PBOT = 0xC4BC, SSTEP = 0xC4BD, TBYTE = 0xC4BE, VIBLEN = 0xC4BF, VIBSHIFT = 0xC4CF, VIBDELAY = 0xC4DF,
+    TRLO = 0xC4E7, TRHI = 0xC4EA, TEMPO = 0xC4ED, TEMPOBAR = 0xC4EE, VOFF = 0xC4EF;
+  // per voice, three bytes each
+  const IOFF = 0xC4F2, TPLACE = 0xC4F5, LOOPON = 0xC4F8, LOOPN = 0xC4FB, LOOPAT = 0xC4FE,
+    PPLACE = 0xC501, PAT = 0xC504, REPS = 0xC507, HEAD = 0xC50A, LEFT = 0xC50D, WAVE = 0xC510,
+    NOTE = 0xC513, ATTDONE = 0xC516, INS = 0xC519, GATE = 0xC51C, PDIR = 0xC51F, SLIDE = 0xC522,
+    VDIR = 0xC525, VWAIT = 0xC528, VSHIFT = 0xC52B, VPHASE = 0xC52E, VCOUNT = 0xC531, VLEN = 0xC534,
+    VSLO = 0xC537, VSHI = 0xC53A, FLO = 0xC53D, FHI = 0xC540, NBYTE = 0xC543, PLO = 0xC546,
+    PHI = 0xC549, FX = 0xC54C, ATTN = 0xC54F, NFRAMES = 0xC552;
+  const FREQLO = 0xC555, FREQHI = 0xC5B5, INSA = 0xC615, INSB = 0xC6BD, HEADERS = 0xC765,
+    PATLO = 0xC785, PATHI = 0xC7D2;
+  const dec = (a) => (m[a] = (m[a] - 1) & 0xFF);
+  const inc = (a) => (m[a] = (m[a] + 1) & 0xFF);
+  const freq = (x, n) => { m[FLO + x] = m[FREQLO + n]; m[FHI + x] = m[FREQHI + n]; };
+  const shown = [{}, {}, {}];                       // what each voice last read, for the display
+  let count = 0;                                    // notes read, so the display can tell two apart
+
+  function trackNext(x) {                           // music_track_next, $C43C
+    const p = m[TRLO + x] | m[TRHI + x] << 8, at = (y) => m[(p + y) & 0xFFFF];
+    let a, y;
+    for (;;) {
+      y = inc(TPLACE + x); a = at(y);
+      if (a < 0x80) break;
+      if (a !== 0xFD) { m[PAT + x] = a; return a; }  // a pattern of $80 up: $FF restarts, others stop
+      inc(TPLACE + x); y = (y + 1) & 0xFF; m[FADE] = at(y);    // $FD: the fade speed
+    }
+    m[TBYTE] = a;
+    if (a & 0x40) {                                 // a loop byte
+      if (!(m[LOOPON + x] & 0x80)) {                // opens the loop
+        m[LOOPON + x] = 0xFF; m[LOOPN + x] = m[TBYTE] & 0x3F;
+        inc(TPLACE + x); y = (y + 1) & 0xFF; m[LOOPAT + x] = y; a = at(y);
+      } else if (dec(LOOPN + x) === 0) {            // the loop is over: on to the entry after it
+        m[LOOPON + x] = 0;
+        return trackNext(x);
+      } else {                                      // back to the loop's start
+        y = m[LOOPAT + x]; m[TPLACE + x] = y; a = at(y);
+      }
+    }
+    m[REPS + x] = a;                                // a repeat count, then the pattern
+    inc(TPLACE + x); y = (y + 1) & 0xFF; a = at(y);
+    m[PAT + x] = a;
+    return a;
+  }
+
+  function init(tune) {                             // music_init, $C000
+    let k = (tune << 3) & 0xFF;
+    for (let y = 0; y < 8; y++, k = (k + 1) & 0xFF) m[TRLO + y] = m[HEADERS + k];
+    if (!pending) { writes.length = 0; pending = true; }
+    for (let x = 2; x >= 0; x--) {
+      m[LOOPON + x] = 0; m[PPLACE + x] = 0; m[LEFT + x] = 0;
+      const y = m[VOFF + x];
+      W(y + 4, 0); W(y + 6, 0);
+      m[INS + x] = 0xFF; m[TPLACE + x] = 0xFF;
+      trackNext(x);
+      shown[x] = {};
+    }
+    m[BEAT] = 0; m[BAR] = 0; m[FCOUNT] = 0;
+    W(0x17, 0); W(0x18, 0x0F);
+    m[VOL] = 0x10; m[FADE] = 0xFF; m[ON] = 0xFF;
+  }
+
+  function stop() {                                 // as the driver stops at a track's end, $C0AA
+    if (!pending) { writes.length = 0; pending = true; }
+    W(0x04, 0); W(0x0B, 0); W(0x12, 0);
+    m[ON] = 0;
+  }
+
+  function newNote(x) {                             // $C0A1-$C1C0: the voice's next note
+    let a = m[PAT + x];
+    if (a & 0x80) {
+      if (a !== 0xFF) { W(0x04, 0); W(0x0B, 0); W(0x12, 0); m[ON] = 0; return false; }
+      m[PPLACE + x] = 0; m[TPLACE + x] = 0xFF;
+      a = trackNext(x);
+    }
+    const p = m[PATLO + a] | m[PATHI + a] << 8, at = (y) => m[(p + y) & 0xFFFF];
+    let y = m[PPLACE + x];
+    const from = (p + y) & 0xFFFF;
+    m[NEWINS] = 0xFF; m[GATE + x] = 0xFF;
+    m[HEAD + x] = at(y); m[LEFT + x] = m[HEAD + x] & 0x3F;
+    m[SLIDE + x] = 0; m[ATTDONE + x] = 0;
+    if (m[HEAD + x] & 0x40) m[GATE + x] = 0xFE;     // a rest
+    if (m[HEAD + x] & 0x80) {                       // an extra byte: an instrument or a slide
+      y = (y + 1) & 0xFF; inc(PPLACE + x);
+      const b = at(y);
+      if (b & 0x80) m[SLIDE + x] = b; else m[NEWINS] = b;
+    }
+    y = (y + 1) & 0xFF; inc(PPLACE + x);
+    const tie = !!(at(y) & 0x80);
+    m[NBYTE + x] = at(y); m[NOTE + x] = m[NBYTE + x] & 0x7F;
+    freq(x, m[NOTE + x]);
+    a = m[NEWINS];
+    if (!(a & 0x80)) {
+      if (a !== m[INS + x]) m[NBYTE + x] = a;       // a new instrument always attacks
+      m[INS + x] = a;
+    }
+    if (!(m[NBYTE + x] & 0x80)) {                   // an attack: the instrument's sound from the start
+      const i = m[IOFF + x] = (m[INS + x] << 3) & 0xFF;
+      m[WAVE + x] = m[INSA + 2 + i]; m[FX + x] = m[INSA + 3 + i]; m[PHI + x] = m[INSA + 5 + i];
+      m[ATTN + x] = m[INSB + i];
+      m[AD] = m[INSA + i]; m[SR] = m[INSA + 1 + i];
+      m[VWAIT + x] = m[VIBDELAY + (m[INSB + 4 + i] >> 4)];
+      const r = m[VREGS];
+      m[PDIR + x] = 0; m[PLO + x] = 0;
+      W(r + 2, 0); W(r + 3, m[PHI + x]); W(r + 5, m[AD]); W(r + 6, m[SR]);
+    }
+    const end = inc(PPLACE + x), n = (end - ((from - p) & 0xFF)) & 0xFF;
+    shown[x] = { pattern: m[PAT + x], addr: from, bytes: Array.from({ length: n }, (_, k) => m[(from + k) & 0xFFFF]),
+      rest: !!(m[HEAD + x] & 0x40), beats: m[LEFT + x] + 1, note: m[NOTE + x], tie,
+      attack: !(m[NBYTE + x] & 0x80), slide: m[SLIDE + x], n: ++count };
+    if (at(end) === 0xFF) {                         // the pattern's end: again, or the track's next
+      m[PPLACE + x] = 0;
+      if (dec(REPS + x) === 0) trackNext(x);
+    }
+    m[NFRAMES + x] = 0; m[VSHIFT + x] = 0;
+    W(0x17, 0);
+    return true;
+  }
+
+  function effects(x) {                             // $C1C3-$C38A: every frame but a new note's
+    let i = m[IOFF + x];
+    if (m[INSA + 6 + i]) {                          // the pulse sweep
+      m[PSTEP] = m[INSA + 6 + i];
+      m[PBOT] = m[INSA + 7 + i] & 0x0F; m[PTOP] = m[INSA + 7 + i] >> 4;
+      let lo, hi;
+      if (!m[PDIR + x]) {
+        const s = m[PLO + x] + m[PSTEP];
+        lo = s & 0xFF; hi = (m[PHI + x] + (s >> 8)) & 0x0F;
+        if (hi === m[PTOP]) inc(PDIR + x);
+      } else {
+        const s = m[PLO + x] - m[PSTEP];
+        lo = s & 0xFF; hi = (m[PHI + x] - (s < 0 ? 1 : 0)) & 0x0F;
+        if (hi === m[PBOT]) dec(PDIR + x);
+      }
+      const r = m[VREGS];
+      m[PHI + x] = hi; W(r + 3, hi);
+      m[PLO + x] = lo; W(r + 2, lo);
+    }
+    vibrato: {                                      // $C229: vibrato, after its delay
+      if (m[VWAIT + x]) { dec(VWAIT + x); break vibrato; }
+      if (m[ATTN + x]) break vibrato;
+      const v = m[INSB + 4 + i];
+      if (!v) break vibrato;
+      const k = v & 0x0F;
+      if (!(m[VSHIFT + x] & 0x80)) {                // set up: the step is the gap to the next note, halved
+        m[VLEN + x] = m[VIBLEN + k]; m[VSHIFT + x] = m[VIBSHIFT + k];
+        m[VPHASE + x] = 0; m[VCOUNT + x] = 0;
+        const n = m[NOTE + x];
+        freq(x, n);
+        let d = ((m[FREQLO + n + 1] | m[FREQHI + n + 1] << 8) - (m[FREQLO + n] | m[FREQHI + n] << 8)) & 0xFFFF;
+        while (!(dec(VSHIFT + x) & 0x80)) d >>= 1;
+        m[VSLO + x] = d & 0xFF; m[VSHI + x] = d >> 8;
+        break vibrato;
+      }
+      const f = m[FLO + x] | m[FHI + x] << 8, d = m[VSLO + x] | m[VSHI + x] << 8;
+      const g = (m[VDIR + x] & 0x80 ? f - d : f + d) & 0xFFFF;
+      m[FLO + x] = g & 0xFF; m[FHI + x] = g >> 8;
+      if (m[VPHASE + x] & 0x80) {
+        if (dec(VCOUNT + x) === 0) m[VPHASE + x] = 0;
+      } else if (inc(VCOUNT + x) >= m[VLEN + x]) {
+        m[VPHASE + x] = 0xFF; m[VDIR + x] ^= 0xFF;
+      }
+    }
+    const s = m[SLIDE + x];                         // $C2EC: a slide
+    if (s) {
+      const f = m[FLO + x] | m[FHI + x] << 8;
+      let g;
+      if (s >= 0xC0) g = f + (s & 0x3F);
+      else { m[SSTEP] = s & 0x3F; g = f - m[SSTEP]; }
+      g &= 0xFFFF; m[FLO + x] = g & 0xFF; m[FHI + x] = g >> 8;
+    }
+    if (m[FX + x] & 1)                              // $C320: two waveforms, frame about
+      m[WAVE + x] = m[NFRAMES + x] & 1 ? m[INSB + 3 + i] : m[INSA + 2 + i];
+    if (m[FX + x] & 2) {                            // $C33D: a two-note arpeggio, frame about
+      let n = m[NOTE + x];
+      if (m[NFRAMES + x] & 1) {
+        n = m[INSB + 5 + i];
+        if (n & 0x80) n = ((n & 0x7F) + m[NOTE + x]) & 0xFF;
+      }
+      freq(x, n);
+    }
+    if (m[FX + x] & 4) {                            // $C36C: a short note that falls in pitch
+      const len = ((m[HEAD + x] & 0x3F) - 1) & 0xFF;
+      if (!(len < m[LEFT + x])) m[GATE + x] = 0xFE;
+      if (dec(FHI + x) & 0x80) inc(FHI + x);
+    }
+  }
+
+  function attack(x) {                              // $C38D-$C3DC: the attack waveform and note
+    const i = m[IOFF + x];
+    if (m[FX + x] & 0x10) {
+      if (m[ATTN + x]) m[WAVE + x] = m[INSB + 2 + i];
+      else if (!(m[ATTDONE + x] & 0x80)) m[WAVE + x] = m[INSA + 2 + i];
+    }
+    if (m[FX + x] & 0x20) {
+      let n = -1;
+      if (m[ATTN + x]) { n = m[INSB + 1 + i]; if (n & 0x80) n = ((n & 0x7F) + m[NOTE + x]) & 0xFF; }
+      else if (!(m[ATTDONE + x] & 0x80)) n = m[NOTE + x];
+      if (n >= 0) freq(x, n);
+    }
+  }
+
+  function play() {                                 // music_play, $C059
+    if (!pending) writes.length = 0;
+    pending = false;
+    if (!(m[ON] & 0x80)) return;
+    if (!(m[FADE] & 0x80) && dec(FCOUNT) & 0x80) {  // a fade
+      m[FCOUNT] = m[FADE];
+      if (dec(VOL) === 0) { m[ON] = 0; W(0x18, 0); return; }
+      W(0x18, m[VOL]);
+    }
+    for (let x = 2; x >= 0; x--) {
+      m[VREGS] = m[VOFF + x];
+      if (m[BEAT] === 0 && dec(LEFT + x) & 0x80) {
+        if (!newNote(x)) return;                    // the track ended: the music stops
+      } else effects(x);
+      attack(x);
+      const r = m[VREGS];
+      if (!(m[NBYTE + x] & 0x80) && m[NFRAMES + x] === 0) W(r + 4, m[WAVE + x] & 0xFE);
+      W(r + 4, m[WAVE + x] & m[GATE + x]);
+      W(r + 1, m[FHI + x]); W(r, m[FLO + x]);
+      if (m[ATTN + x] === 0) m[ATTDONE + x] = 0xFF; else dec(ATTN + x);
+      inc(NFRAMES + x);
+    }
+    if (dec(BAR) & 0x80) { m[BAR] = m[TEMPOBAR]; m[BEAT] = m[TEMPO]; }
+    else if (dec(BEAT) & 0x80) m[BEAT] = m[TEMPO];
+  }
+
+  function voice(x) {                               // plain data for the display's rows
+    const i = m[INS + x] < 21 ? m[INS + x] : -1;
+    return { track: m[TRLO + x] | m[TRHI + x] << 8, place: m[TPLACE + x], reps: m[REPS + x],
+      read: shown[x].bytes ? shown[x] : null, instrument: i,
+      ins: i < 0 ? null : Array.from(m.subarray(INSA + 8 * i, INSA + 8 * i + 8)).concat(Array.from(m.subarray(INSB + 8 * i, INSB + 8 * i + 8))) };
+  }
+
+  return { init, stop, play, sid, writes, voice, m, playing: () => !!(m[ON] & 0x80) };
+}
+// </music-driver>
+
+// ---- 03 the music: the port above, played through the site's SID model (../../lib/sid.js)
+const root = document.getElementById('ar-music');
+const S = globalThis.C64Sid;
+if (!S || typeof C64 === 'undefined') {
+  root.innerHTML = '<p class="ar-miss">The player is built on the site\'s shared scripts, which the built site serves.</p>';
+  return;
+}
+const { hex, bytes, noteName } = S;
+const WAVES = { 1: 'triangle', 2: 'sawtooth', 4: 'pulse', 8: 'noise' };
+const wave = (w) => WAVES[w >> 4] || hex(w, 2);
+function sound(b) {                               // an instrument's 16 bytes, in words
+  const fx = b[3], out = [wave(b[2])];
+  if (fx & 1) out.push('flips with ' + wave(b[11]));
+  if (fx & 2) out.push(b[13] & 0x80 ? 'arpeggio +' + (b[13] & 0x7F) : 'arpeggio with ' + noteName(b[13]));
+  if (fx & 4) out.push('short, falling');
+  if (fx & 0x30) out.push(b[8] + (b[8] === 1 ? ' frame' : ' frames') + ' of attack');
+  if (b[6]) out.push('pulse sweep');
+  if (b[12]) out.push('vibrato');
+  return out.join(', ');
+}
+C64.load('parts/engine/listing.json').then((E) => {
+  S.mount(root, {
+    driver: createDriver, data: E.ram.slice(0xC000, 0xD000),
+    tunes: ['Title', 'Demo', 'High scores', 'Loading'],
+    rows: [
+      { k: 'Track', f: (v) => hex(v.track, 4) + (v.read ? ', pattern ' + v.read.pattern : '') },
+      { k: 'Read', f: (v) => v.read ? hex(v.read.addr, 4) + ': ' + bytes(v.read.bytes) : '-' },
+      { in: true, f: (v) => v.read ? (v.read.rest ? 'rest' : noteName(v.read.note) + (v.read.tie ? ', tied' : '')) +
+          ', ' + v.read.beats + (v.read.beats === 1 ? ' step' : ' steps') +
+          (v.read.slide ? ', slide ' + (v.read.slide >= 0xC0 ? 'up' : 'down') : '') : null },
+      { k: 'Instrument', f: (v) => v.ins ? v.instrument + ': ' + sound(v.ins) : '-' },
+      { in: true, mono: true, f: (v) => v.ins ? bytes(v.ins.slice(0, 8)) + ' \u00b7 ' + bytes(v.ins.slice(8)) : '' },
+    ],
+    mark: (v, p) => !!(v.read && !v.read.rest && v.read.attack && (!p || !p.read || p.read.n !== v.read.n)),
+  });
+}).catch((e) => { root.innerHTML = '<p class="ar-miss">The engine\'s listing did not load (' + e.message + ').</p>'; });
 })();
 </script>
