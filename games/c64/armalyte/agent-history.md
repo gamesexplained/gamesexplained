@@ -137,3 +137,26 @@ issues by the agent, one agent.
   `armalyte_s1[thalamus_1988](pal)(!).g64`, into a link to "pal" on the
   About tab, because its link markup ran inside code spans. Fixed in
   `build.py`, with a test.
+
+## 7 October 2026: the music
+
+The Silver run annotated the music driver and left the player to
+`TODO.md`. Aaron Bell (`air`) asked for it the same evening, and for the
+kit to require one: `70-minisite` and the Silver row of `AGENTS.md` now
+say that a game with music gets a player for every tune it stores.
+
+- The driver is short (`$C000-$C4B1`) and keeps all its state in its own
+  page, so the port lays the engine's `$C000-$CFFF` out at its own
+  addresses and the test compares the variables as well as the SID.
+  The four tunes matched the game's code on the first run, every write
+  in order.
+- The random tunes found one difference: a track made of commands alone,
+  a fade and then the restart, restarts onto pattern `$FF` and reads
+  that pattern's address from past the table, out of memory the port
+  does not hold. No tune has such a track, so the random tracks now end
+  on a pattern, and the port's comment says so.
+- The first draft of the page said that instruments 1 and 2 fall in
+  pitch. Their arpeggio sets the frequency from the note table every
+  frame before the fall lowers it, so they sit one step of the high
+  byte below the pair instead; only instrument 5, with no arpeggio,
+  falls.

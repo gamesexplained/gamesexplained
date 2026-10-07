@@ -401,6 +401,41 @@ read: S in the pause does nothing (*live*).
   vibrato, arpeggio and attack effects (`music_play`, `$C059`). The
   filter is never used: `$D417` is written only with 0, and `$D415`/
   `$D416` never.
+- **Timing.** `music_play` runs once a frame wherever music plays: from
+  the title's frame interrupt (`$B1D6`), `loading_irq` (`$B70D`),
+  `high_score_irq` (`$BA66`), `joysticks_read` in the demo's pass of the
+  main loop (`$ABF9`), and the ending's interrupt (its part's
+  `facts.md`). Note
+  lengths count steps of the beat counter `$C4B4`, reloaded from the
+  tempo `$C4ED` when it runs out, and early whenever the second counter
+  `$C4B5` runs out of `$C4EE`. All four tunes have a tempo of 1, so a
+  step is two frames; with `$C4EE` = 8 (tunes 0 and 3) every fourth step
+  is three frames, four steps in nine frames.
+- **Lengths** (the port, below, run from `music_init`). Tune 0 starts
+  again after 10,656 frames; tune 1 sets a fade of speed 5 (`$FD $05`
+  in its first voice's track) at frame 8,974 and stops at 9,066; tune 2
+  sets one of speed 120 (`$FD $78` at `$CE8C`, also in its first
+  voice's track) at frame 6,376 and stops at 8,193; tune 3's
+  voices each restart on their own, every 576, 1,296 and 720 frames,
+  which line up every 25,920 frames.
+- **Per frame.** A new note that is not tied, or that changes
+  instrument, writes its control register twice in the same frame, gate
+  off and then on, or off twice for a rest (`$C3F1`, `$C3FA`). An
+  arpeggio (effect 2) alternates the note with the instrument's second
+  note frame by frame: 7 to 12 semitones up in instruments 10, 11, 13,
+  18 and 19, a fixed note in 1, 2 and 4. Effect 1 alternates two waveforms the same way (instruments
+  1 and 2, triangle and noise). Effect 4 holds the gate off after the
+  note's first step and lowers the frequency's high byte by one every
+  frame, which falls in pitch only where no arpeggio resets the
+  frequency each frame (instrument 5). Vibrato waits 0 to 75 frames
+  (`$C4DF`).
+- **The port.** The How it works page plays the four tunes through a
+  JavaScript port of `music_init`, `music_play` and `music_track_next`.
+  `tests/music.js` runs it beside the driver in `kit/c64/cpu6502.js` on
+  the engine's listing: every SID write of every frame, in order, and
+  the driver's variables `$C4B2-$C554`, for each tune and for 200 random
+  tunes, which with the four execute every instruction of
+  `$C000-$C4B1`.
 - In play only the effects sound; tune 1 is set up at every level start
   but played only in the demo.
 
