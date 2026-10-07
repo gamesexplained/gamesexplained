@@ -130,7 +130,10 @@ screen are one part, so count what the player waits for, not what the
 disk holds. A state that differs only in its variables is not a part: a
 title screen and play in one load are one, and step 4 chooses its
 snapshot. The loader, a protection check and a cracker's menu are not
-parts either; they stand in front of the game.
+parts either; they stand in front of the game. Nor is data the game
+fetches into a buffer during play, a portrait for each fight or a tune
+for each room: a widget that shows it carries its bytes in the page
+(`70-minisite`).
 
 1. **Give every part a folder**, in the order they are played, analysed
    or not: `python3 kit/scripts/parts.py add <game dir> <id> --title "..."`

@@ -167,8 +167,14 @@ can open with that instead.
   in that list, and nothing else is: the prefix is the only way to get a
   tag. Head the section about the tunes `Music:` and the one about sound
   effects `Sound:`.
-- Embed only the data you need: extracted character set, level data,
-  tables, tune bytes. Small excerpts for commentary; never the program.
+- Embed the data a widget needs in the page: extracted character set,
+  level data, tables, tune bytes, the pictures a viewer shows. That is
+  not what "No binaries" (`AGENTS.md`) forbids, which is files holding
+  the game or the machine whole. Small excerpts for commentary; never the
+  program. Data the game fetches into a buffer during play, a portrait
+  for each fight or a tune for each room, goes in the page that shows
+  it, from the game's own loads in the emulator, and not into a part made
+  to hold it (`10-orient`).
 - A game can read the machine's ROM as data: a table, or code used as
   noise. When a mechanic on the page depends on it, embed only the bytes
   the game reads, or the values it computes from them, and never the
