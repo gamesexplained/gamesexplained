@@ -1,0 +1,222 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "wasteland",
+ "part": "portrait-07",
+ "build": "Electronic Arts disk release, two double-sided disks as four G64 side images; play copies made with the game's own Copy utility",
+ "source": "regenerator2000 live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    53248,
+    57343,
+    "I/O and colour RAM"
+   ],
+   [
+    52843,
+    53247,
+    "after picture 7: the unpacker reads on to the end of its 4-sector window, and no directory entry on side 2 says where the picture's packed bytes end. The picture code stops at $CE6A, and nothing reads these; the unpack stops at $CFFF, the end of the buffer (set_unpack_limit $2687)"
+   ],
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32256,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    51711,
+    "Resident engine and loader"
+   ],
+   [
+    53248,
+    65535,
+    "Resident engine and loader"
+   ]
+  ],
+  "extra": [],
+  "elsewhere": [
+   [
+    0,
+    12543,
+    "Resident engine and loader"
+   ],
+   [
+    12544,
+    13311,
+    "The game"
+   ],
+   [
+    13312,
+    32255,
+    "Resident engine and loader"
+   ],
+   [
+    32256,
+    50687,
+    "The game"
+   ],
+   [
+    50688,
+    51711,
+    "Resident engine and loader"
+   ],
+   [
+    53248,
+    65535,
+    "Resident engine and loader"
+   ]
+  ]
+ },
+ "blocks": [
+  {
+   "start": 51712,
+   "end": 53247,
+   "type": "Byte"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 51712,
+   "name": "p7_header",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 51726,
+   "name": "p7_ch0_script",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 51739,
+   "name": "p7_ch1_script",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 51761,
+   "name": "p7_ch2_script",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 51777,
+   "name": "p7_base_frame",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 52575,
+   "name": "p7_frame_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 52660,
+   "name": "p7_frame_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 52752,
+   "name": "p7_frame_3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 52754,
+   "name": "p7_frame_4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 52789,
+   "name": "p7_frame_5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 52807,
+   "name": "p7_frame_6",
+   "type": "UserDefined",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 51712,
+   "type": "line",
+   "text": "Picture 7's header, read by start_picture ($0586): its area, columns 1 to 11 and pixel rows 16 to 99 (inside the picture window, which picture_window_open $12CF clears from pixel row 16 to 111); then five words counted from the picture's start ($CA00, where load_portrait $2631 unpacks it): the base frame at +$0041, channel 0's script at +$000E, channel 1's script at +$001B, channel 2's script at +$0031 and 0 for channel 3, which it does not use."
+  },
+  {
+   "address": 51726,
+   "type": "line",
+   "text": "Channel 0's script, read by animate_picture_tick ($05F4-$0646): 4 entries of a delay byte and a frame word counted from the picture's start, then the $FF that sends the channel back to its first entry. Each entry XORs its frame onto the picture, then the channel waits that many steps: frame 1 then 25, frame 2 then 5, frame 2 then 30, frame 1 then 12. One pass takes 72 steps."
+  },
+  {
+   "address": 51739,
+   "type": "line",
+   "text": "Channel 1's script, read by animate_picture_tick ($05F4-$0646): 7 entries of a delay byte and a frame word counted from the picture's start, then the $FF that sends the channel back to its first entry. Each entry XORs its frame onto the picture, then the channel waits that many steps: frame 3 then 1, frame 4 then 8, frame 4 then 1, frame 5 then 10, frame 5 then 1, frame 4 then 5, frame 4 then 1. One pass takes 27 steps."
+  },
+  {
+   "address": 51761,
+   "type": "line",
+   "text": "Channel 2's script, read by animate_picture_tick ($05F4-$0646): 5 entries of a delay byte and a frame word counted from the picture's start, then the $FF that sends the channel back to its first entry. Each entry XORs its frame onto the picture, then the channel waits that many steps: frame 3 then 5, frame 6 then 7, frame 6 then 5, frame 6 then 9, frame 6 then 5. One pass takes 31 steps."
+  },
+  {
+   "address": 51777,
+   "type": "line",
+   "text": "Picture 7's base frame, which start_picture draws by storing (draw_frame_store $064E): a run count of 0 to start, then one block from column 1, pixel row 16, with $03 as its escape byte. Its bytes go down each column and on to the top of the next until the area is full: 924 bitmap bytes, written with 23 runs (the escape byte, then a count and a value)."
+  },
+  {
+   "address": 52575,
+   "type": "line",
+   "text": "Frame 1 of picture 7, XORed onto the picture (draw_frame_xor $0648) by channel 0's entries 1 and 4: a run count of 0 to start, then 12 blocks of a column, a pixel row and an escape byte, 35 bitmap bytes in all, in columns 2 to 5. A $00 ends a block, and a column byte of $FF ends the frame."
+  },
+  {
+   "address": 52660,
+   "type": "line",
+   "text": "Frame 2 of picture 7, XORed onto the picture (draw_frame_xor $0648) by channel 0's entries 2 and 3: a run count of 0 to start, then 13 blocks of a column, a pixel row and an escape byte, 38 bitmap bytes in all, in columns 2 to 5. A $00 ends a block, and a column byte of $FF ends the frame."
+  },
+  {
+   "address": 52752,
+   "type": "line",
+   "text": "Frame 3 of picture 7, named by channel 1's entry 1 and channel 2's entry 1: empty, a run count of 0 and the $FF that ends the frame, so draw_frame_xor ($0648) changes nothing and the entry only waits."
+  },
+  {
+   "address": 52754,
+   "type": "line",
+   "text": "Frame 4 of picture 7, XORed onto the picture (draw_frame_xor $0648) by channel 1's entries 2, 3, 6 and 7: a run count of 0 to start, then 5 blocks of a column, a pixel row and an escape byte, 13 bitmap bytes in all, in columns 3 to 5. A $00 ends a block, and a column byte of $FF ends the frame."
+  },
+  {
+   "address": 52789,
+   "type": "line",
+   "text": "Frame 5 of picture 7, XORed onto the picture (draw_frame_xor $0648) by channel 1's entries 4 and 5: a run count of 0 to start, then 2 blocks of a column, a pixel row and an escape byte, 8 bitmap bytes in all, in columns 3 to 4. A $00 ends a block, and a column byte of $FF ends the frame."
+  },
+  {
+   "address": 52807,
+   "type": "line",
+   "text": "Frame 6 of picture 7, XORed onto the picture (draw_frame_xor $0648) by channel 2's entries 2, 3, 4 and 5: a run count of 0 to start, then 5 blocks of a column, a pixel row and an escape byte, 14 bitmap bytes in all, in columns 6 to 8. A $00 ends a block, and a column byte of $FF ends the frame."
+  }
+ ]
+}

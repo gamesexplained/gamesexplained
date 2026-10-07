@@ -80,6 +80,25 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wl-head th,.wl-head td,.wl-classes th,.wl-classes td{text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
 .wl-head th,.wl-classes th{font-family:var(--fm);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
 .wl-scroll{overflow-x:auto}
+
+/* The map's portraits: WLPictures.mount (the How it works page's picture widget) and a row of base frames. */
+.wl-pic-cv{display:block;margin:0 auto;max-width:100%;height:auto;image-rendering:pixelated;background:#000}
+.wl-pic-arrow{padding:0;font-family:inherit}
+.wl-pic-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 0;font-family:var(--fm);font-size:12.5px;color:var(--ink-soft)}
+.wl-pic-b{font:500 13px var(--fm);background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+.wl-pic-b:hover{border-color:var(--ink-mute)}
+.wl-pic-b:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.wl-pic-b:disabled{opacity:.6;cursor:progress}
+.wl-pic-note{font-family:var(--fm);font-size:12.5px;color:var(--coral);margin:8px 0 0}
+.wl-pic-note:empty{display:none}
+#wl-pic-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin:0 0 16px}
+#wl-pic-strip button{background:#000;border:1px solid var(--line);border-radius:6px;padding:6px 4px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+#wl-pic-strip canvas{image-rendering:pixelated;width:88px;height:84px}
+#wl-pic-strip span{font-family:var(--fm);font-size:11px;color:#ccc}
+#wl-pic-strip button[aria-pressed="true"]{outline:3px solid #ff2fd0;outline-offset:1px}
+#wl-pic-who{margin:12px 0 0;font-size:15px}
+#wl-pic-who:empty{display:none}
+.wl-pic-none #wl-pic-main{display:none}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -111,12 +130,40 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap" id="wl-cap"></p>
   </div>
   <p data-part="engine">Each square is drawn the way the game draws it, by a port of <code>$0B53</code>, the engine's routine for one square of the view. A square has three values of its own: a class, a number, and a tile. The class says what the square does, and the tile is its picture. Most squares show their tile, but four kinds show another. A square off the map shows the map's own edge tile. A loot square always shows tile 5. An object square shows the tile its record names. A radiation square shows tile 8 from 18:00 to 05:59, which is why the two times above draw two different maps. A group of monsters is another matter: the game draws a tile for its kind of monster over the square while the party can see it (<span data-part="game"><code>$94CF</code></span>), and these maps show the square beneath.</p>
-  <p data-part="engine">A tile is two character cells wide and two high: 16 by 16 screen pixels of the C64's multicolour bitmap, drawn by <code>$22EA</code>. Its 32 bitmap bytes and 4 colour bytes come from the tile set the map names. There are nine tile sets of 96 tiles. Press a tile in section 05 to see where the map uses it.</p>
+  <p data-part="engine">A tile is two character cells wide and two high: 16 by 16 screen pixels of the C64's multicolour bitmap, drawn by <code>$22EA</code>. Its 32 bitmap bytes and 4 colour bytes come from the tile set the map names. There are nine tile sets of 96 tiles. Press a tile in section 06 to see where the map uses it.</p>
   <p>The port was checked against the game's own code, run in a 6502 simulator on each map as the game loaded it: every square of all 42 maps, and a ring of squares off each map, at seven hours of the day. That is 455,952 squares, with no difference. The tile drawing was checked against every tile of the nine sets, and the view against a frame recorded in play, pixel for pixel.</p>
 </section>
 
+<section id="wl-portraits" data-part="game">
+  <p class="fig">02 · Portraits</p>
+  <h2 class="t">The map's portraits</h2>
+  <p class="lede">Every monster and person in a map's table names a picture, and a fight shows it in the picture window. Press one to watch it move, or save it as a GIF.</p>
+  <div class="plate" id="wl-pic">
+    <div id="wl-pic-strip"></div>
+    <div id="wl-pic-main">
+      <div class="pick">
+        <button type="button" class="step wl-pic-arrow" id="wl-pic-prev" aria-label="Previous portrait">&#8249;</button>
+        <select id="wl-pic-select" aria-label="Portrait"></select>
+        <button type="button" class="step wl-pic-arrow" id="wl-pic-next" aria-label="Next portrait">&#8250;</button>
+      </div>
+      <canvas id="wl-pic-cv" class="wl-pic-cv" width="264" height="252" aria-label="The portrait, drawn and moved by a port of the engine's picture code"></canvas>
+      <div class="wl-pic-bar">
+        <button type="button" class="wl-pic-b" id="wl-pic-play">Pause</button>
+        <button type="button" class="wl-pic-b" id="wl-pic-restart">Restart</button>
+        <button type="button" class="wl-pic-b" id="wl-pic-gif" title="Save the portrait as an animated GIF: from its base frame to the first step after about 15 seconds where it looks the same again, so it loops without a jump">Download GIF</button>
+      </div>
+      <p id="wl-pic-who"></p>
+    </div>
+    <p class="wl-pic-note" id="wl-pic-note" role="status"></p>
+    <p class="cap" id="wl-pic-cap"></p>
+  </div>
+  <p>A monster's record is eight bytes in the map's table, the record's word <code>+4</code> (<code>$9EA4</code>): its hit points, its attack and armour, its kind, and in byte 7 its picture. The same byte picks the pronoun the messages use for it, he, she or it, from a table of 79 at <span data-part="engine"><code>$5B00</code></span>, one for each picture number.</p>
+  <p>When the party must give its orders, the game finds the nearest group and shows the picture of its monster, with the monster's name under it (<code>$B91E</code>). The name is the group's kind, such as Humanoid or Robot, until the group is identified: some groups are from the start, and the rest once a shot is fired either way (<code>$9E5D</code>). With no group at all, the window shows picture 8 and says "Ranger". Every fight's monsters come from the map's table, so the row above holds every portrait a fight on the map can show, apart from that one.</p>
+  <p>Each portrait is a part of its own on the Source tab, the bytes the game's own load left in the picture buffer. How it works shows how a picture moves, frame by frame, and has all 75 portraits, among them the ones no map names: the doctor, the shop, the library, the Ranger Center, the radio, a promotion, the Grim Reaper, and pictures 37 and 75, which no code found shows.</p>
+</section>
+
 <section id="wl-classes-sec" data-part="game">
-  <p class="fig">02 · The squares</p>
+  <p class="fig">03 · The squares</p>
   <h2 class="t">Sixteen classes of square</h2>
   <p class="lede">A square's class picks the routine that runs when the party steps on it. Its number picks the record that routine reads.</p>
   <div class="wl-scroll">
@@ -144,7 +191,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="wl-exits" data-part="game">
-  <p class="fig">03 · Exits</p>
+  <p class="fig">04 · Exits</p>
   <h2 class="t">How an exit names its place</h2>
   <p class="lede">An exit's record is six bytes: a message, a column and a row, a map, and a change to the exit square itself.</p>
   <p>The routine is <code>$89A3</code>. The first byte holds the message in its low six bits. Bit 6 makes the game ask "Enter new location (Y/N)?" before the party steps in (<code>$8A36</code>). Bit 7 makes the column and row an offset from the exit square, not a place (<code>$89E3</code>). The fourth byte is the map. Before moving the party, the game keeps the party's square and map in the party's own table. A map byte of <code>$FF</code> sends the party back to the square it kept last time (<code>$89BA</code>-<code>$89F4</code>). That is how the two maps of houses below send the party back out of the door it came in by.</p>
@@ -154,7 +201,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="wl-text">
-  <p class="fig">04 · Messages</p>
+  <p class="fig">05 · Messages</p>
   <h2 class="t">The map's messages</h2>
   <p class="lede">Every map carries its own text. The squares' records name messages by number. Press the button beside a message to see the squares that show it.</p>
   <div class="plate"><div id="wl-msgs" data-wl-dyn></div><p class="cap">The messages of the map chosen in section 01, decoded by a port of the engine's text decoder (<span data-part="engine"><code>$1E0E</code>, <code>$28F4</code></span>). A dotted underline marks a choice the game makes as it prints: one or more, male or female, or him, her or it. A grey box stands for a name or a number filled in at the time. The list ends with the last message the map names.</p></div>
@@ -162,14 +209,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="wl-tileset">
-  <p class="fig">05 · The tile set</p>
+  <p class="fig">06 · The tile set</p>
   <h2 class="t">The 96 tiles of the map's set</h2>
   <p class="lede">Press a tile to mark every square of the map that shows it.</p>
   <div class="plate"><div id="wl-tiles"></div><p class="cap" data-part="">The tile set of the map chosen in section 01, from <code>$D000</code>-<code>$DD7F</code>: 96 tiles of 32 bitmap bytes, then 96 groups of four colour bytes from <code>$DC00</code>. Tiles the map does not show at the chosen time are dimmed.</p></div>
 </section>
 
 <section id="wl-store" data-part="">
-  <p class="fig">06 · Where a map lives</p>
+  <p class="fig">07 · Where a map lives</p>
   <h2 class="t">Three layers and a record</h2>
   <p class="lede">A map is loaded to <code>$3400</code> and up, and its tile layer to <code>$DE00</code> and up.</p>
   <div class="plate"><div class="wl-scroll" id="wl-head" data-wl-dyn></div><p class="cap">The map record's first 92 bytes, for the map chosen in section 01, and the routine that reads each.</p></div>
@@ -178,7 +225,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section id="wl-bug" data-part="game">
-  <p class="fig">07 · A square without a record</p>
+  <p class="fig">08 · A square without a record</p>
   <h2 class="t">Bug: the check square that reads the processor port</h2>
   <p class="lede">On map 11, the square at column 24, row 13 refuses every step onto it, and says "Ah! Fresh air and open spaces once again."</p>
   <div class="plate"><p style="margin:0"><button type="button" class="wl-go" id="wl-bug-go">Show the square on map 11 &rarr;</button></p><p class="cap">Every step onto the square was run in the 6502 simulator with the game's own code (<code>$AD5B</code>): each is refused, and message 53 is shown.</p></div>
@@ -1139,7 +1186,815 @@ if (typeof module !== 'undefined') module.exports = globalThis.WLMaps;
 /* /wl:maps.js */
 </script>
 <script>
-// The Maps tab: the map browser, drawn from the bytes the Source tab shows (parts/<id>/listing.json).
+/* pictures/pictures.js */
+/* Wasteland (C64): the animated pictures. A port of the engine's picture code, which draws a
+   picture's base frame into the bitmap and then runs up to four animation channels, each a script
+   of XOR frames. The pictures are drawn from the bytes the Source tab shows: the title from the
+   start-up's listing (it unpacks its picture at $8A00 and patches it there), each portrait from
+   its own part's listing, the bytes load_portrait ($2631) unpacked from the disk. Checked against
+   the game's own code on the kit's 6502 simulator by test_pictures.js (in the game's work/
+   folder). Also writes a picture's animation as a GIF. The How it works and Maps pages each
+   carry a copy of this script.
+   Defines one global, WLPictures; needs ../../lib/c64.js (C64.load, C64.PAL) on the page. */
+globalThis.WLPictures = (function () {
+  'use strict';
+
+  // ---- the screen the pictures are drawn into -----------------------------------------------
+  // A multicolour bitmap at $6000 with its colours in the screen matrix at $5C00 (VIC bank 1,
+  // $D018 = $78, $D016 = $18, $D011 = $37): pixel pair %00 shows the background $D021, %01 the
+  // matrix byte's high nibble, %10 its low nibble and %11 the cell's colour RAM nibble.
+  const BITMAP = 0x6000, MATRIX = 0x5C00;
+  // Chip state, in no listing: $D021 = 0 and all 1024 colour RAM nibbles = 1 in play-title,
+  // play-ranger and play-map (the VIC-II module of each snapshot) and in frame-map.json.
+  const BACKGROUND = 0, COLOUR_RAM = 1;
+
+  const hex = (n, w = 4) => '$' + (n >>> 0).toString(16).toUpperCase().padStart(w, '0');
+
+  // The bitmap address of pixel row y of character column x: bitmap_line_address ($2387) takes
+  // $6000 + 320 x (y / 8) from the tables at $049F/$04B7 and adds y AND 7, then add_column
+  // ($23A7) adds 8 x x from the tables at $044F/$0477 (engine part). The tables hold text rows
+  // 0-23 and columns 0-39; past them the engine reads other bytes as addresses, which no picture
+  // asks for, so the port stops there instead.
+  function bitmapAddress(x, y) {
+    if (x > 39 || y > 191) throw new RangeError('picture byte outside the tables: column ' + x + ', pixel row ' + y);
+    return BITMAP + 320 * (y >> 3) + (y & 7) + 8 * x;
+  }
+
+  // ---- the picture code (engine $0549-$06E0) ------------------------------------------------
+  class Engine {
+    constructor(m) {
+      this.m = m;                          // 64 KB: the picture's buffer, and the bitmap it draws in
+      this.base = 0;                       // $B9/$BA picture_base, the picture's buffer
+      this.left = 0; this.top = 0;         // $C1 picture_left, $BF picture_top
+      this.right = 0; this.bottom = 0;     // $C2 picture_right, $C0 picture_bottom
+      this.ptr = [0, 0, 0, 0];             // $0549-$0550 picture_channel_ptr, each script's next entry
+      this.delay = [0, 0, 0, 0];           // $DA-$DD channel_delays
+      this.enable = [1, 1, 1, 1];          // $5BFB-$5BFE, a channel runs only while its byte is not 0
+      this.pre = 0; this.preHi = 0;        // $B1 picture_prescaler, $B2 picture_prescaler_hi
+      this.stream = 0;                     // $06C5/$06C6 stream_ptr, read_picture_byte's operand
+      this.runCount = 0;                   // $068A frame_run_count, an operand the decoder rewrites
+      this.runValue = 0;                   // $06A9 frame_run_value, likewise; kept from frame to frame
+      this.tickChannel = 0;                // $063C tick_channel
+      this.channel = -1;                   // the channel whose frame is being drawn; -1 the base frame
+      this.onWrite = null;                 // f(address, value, channel): every bitmap byte the decoder writes
+      this.ticks = 0; this.steps = 0;      // counts for the page: calls of the tick, passes of the channels
+    }
+
+    // read_picture_byte ($06C4): the byte at the stream pointer, which moves on.
+    read() {
+      const v = this.m[this.stream];
+      this.stream = (this.stream + 1) & 0xFFFF;
+      return v;
+    }
+
+    // The header word at buffer + y, plus the buffer's address, as the engine adds them: the low
+    // bytes with CLC/ADC, then the high bytes with the carry (the reads between keep it).
+    headerWord(y) {
+      const m = this.m, b = this.base;
+      const lo = m[(b + y) & 0xFFFF] + (b & 0xFF);
+      const hi = (m[(b + y + 1) & 0xFFFF] + (b >> 8) + (lo >> 8)) & 0xFF;
+      return hi << 8 | (lo & 0xFF);
+    }
+
+    // reset_channel_script ($06D0): channel x's script pointer = header word 6 + 2x + the buffer.
+    resetScript(x) {
+      this.ptr[x] = this.headerWord(6 + 2 * x);
+      return this.ptr[x] >> 8;              // the BNE after the call at $0646 tests this byte
+    }
+
+    // start_picture ($0586): the area from header bytes 0-3, each channel at the start of its
+    // script with a delay of 1, the prescaler's high count 1, the base frame (header word 4)
+    // drawn by storing; then it falls into one tick ($05C5).
+    start(base) {
+      const m = this.m;
+      this.base = base & 0xFFFF;
+      this.left = m[this.base]; this.top = m[(this.base + 1) & 0xFFFF];
+      this.right = m[(this.base + 2) & 0xFFFF]; this.bottom = m[(this.base + 3) & 0xFFFF];
+      for (let x = 0; x < 4; x++) { this.resetScript(x); this.delay[x] = 1; }
+      this.preHi = 1;
+      this.stream = this.headerWord(4);
+      this.channel = -1;
+      this.decode(false);                  // draw_frame_store ($064E)
+      return this.tick();
+    }
+
+    // animate_picture_tick ($05C5), with the animation on ($AC) and no reload ($C5 set, as the
+    // title has it; in play the reload test at $05C9-$05D8 finds the picture still there). A
+    // prescaler lets one call in 512 through ($B1 counts 256, $B2 two). Then each enabled channel
+    // counts its delay down, and when it reaches 0 reads its next script entry: $FF starts the
+    // script again; otherwise a delay byte and a frame offset, and that frame is XORed onto the
+    // bitmap. Returns what each channel did on a pass, or null when the prescaler held it back.
+    tick() {
+      this.ticks++;
+      this.pre = (this.pre - 1) & 0xFF;
+      if (this.pre) return null;
+      this.preHi = (this.preHi - 1) & 0xFF;
+      if (this.preHi) return null;
+      this.preHi = 2;
+      this.steps++;
+      const done = [];
+      for (let x = 0; x < 4; x++) {
+        this.tickChannel = x;
+        if (!this.enable[x & 3]) continue;                       // $05EB
+        this.delay[x] = (this.delay[x] - 1) & 0xFF;              // $05F0
+        if (this.delay[x]) continue;
+        let restarted = false;
+        for (;;) {                                               // $05F4
+          const y = 6 + 2 * x;
+          this.stream = this.ptr[x];
+          const m = this.m, b = this.base;
+          if (!(m[(b + y) & 0xFFFF] | m[(b + y + 1) & 0xFFFF])) break;   // no script: header word 0
+          const entry = this.stream;
+          const d = this.read();
+          if (d === 0xFF) {                                      // $0643: back to the script's start
+            restarted = true;
+            if (this.resetScript(x)) continue;
+            // A script address with a high byte of 0 falls into draw_frame_xor at $0648, whose
+            // RTS ends the whole tick. No buffer lies in zero page, so no picture gets here.
+            this.channel = x; this.decode(true);
+            done.push({ ch: x, entry, frame: -1, delay: this.delay[x], restarted, ended: true });
+            return done;
+          }
+          this.delay[x] = d;
+          const lo = this.read() + (b & 0xFF);                   // CLC, ADC $B9
+          const hi = (this.read() + (b >> 8) + (lo >> 8)) & 0xFF; // ADC $BA with that carry
+          this.ptr[x] = this.stream;                             // $0624-$062D
+          this.stream = hi << 8 | (lo & 0xFF);                   // $0630-$0635
+          const frame = this.stream;
+          this.channel = x;
+          this.decode(true);                                     // draw_frame_xor ($0648)
+          done.push({ ch: x, entry, frame, delay: d, restarted });
+          break;
+        }
+      }
+      return done;
+    }
+
+    // Ticks until the prescaler lets one through: one pass of the channels. Returns its record.
+    step() {
+      for (let i = 0; i < 0x20000; i++) { const r = this.tick(); if (r) return r; }
+      throw new Error('the prescaler never let a tick through');
+    }
+
+    // decode_picture_frame ($0651), entered from draw_frame_xor ($0648, xor true: EOR abs patched
+    // in at $06AD and a NOP at $0692, so a $00 data byte ends the block) or draw_frame_store
+    // ($064E, xor false: BIT abs at both, so $00 is drawn like any other byte). Byte 0 of a frame
+    // is a run count still to write; then blocks of a column, a pixel row and an escape value,
+    // each followed by data bytes written down the column, wrapping from the area's last pixel
+    // row to its first one column on. A data byte equal to the escape value is followed by a run
+    // count and a run value. A column of $FF ends the frame, and so does writing the area's last
+    // row of its last column.
+    decode(xor) {
+      const m = this.m;
+      this.runCount = this.read();                               // $0657
+      for (;;) {
+        let x = this.read();                                     // $065D: a block
+        if (x === 0xFF) return;
+        let y = this.read();
+        const esc = this.read();
+        for (;;) {                                               // $066F: the next byte of the block
+          const a = bitmapAddress(x, y);
+          let v;
+          for (;;) {                                             // $0689
+            if (this.runCount) {                                 // $06A8: one more of the run
+              v = this.runValue; this.runCount = (this.runCount - 1) & 0xFF; break;
+            }
+            v = this.read();                                     // $068D
+            if (xor && v === 0) { v = -1; break; }               // $0690-$0693: the block ends
+            if (v !== esc) break;                                // $0695
+            this.runCount = this.read();                         // $0699: a run
+            this.runValue = this.read();
+          }
+          if (v < 0) break;
+          const nv = xor ? v ^ m[a] : v;                         // $06AD EOR or BIT, $06B0 STA
+          m[a] = nv;
+          if (this.onWrite) this.onWrite(a, xor ? v : nv, this.channel);
+          if (y !== this.bottom) {                               // $06B3
+            y = (y + 1) & 0xFF;
+            if (y) continue;
+          }
+          if (x === this.right) return;                          // $06BA
+          y = this.top;
+          x = (x + 1) & 0xFF;
+          if (!x) return;                                        // $06C1 BNE not taken: RTS
+        }
+      }
+    }
+
+    // The engine's variables, by their addresses, for the test and the page's readout.
+    vars() {
+      const v = {
+        0xB1: this.pre, 0xB2: this.preHi, 0xB9: this.base & 0xFF, 0xBA: this.base >> 8,
+        0xBF: this.top, 0xC0: this.bottom, 0xC1: this.left, 0xC2: this.right,
+        0x06C5: this.stream & 0xFF, 0x06C6: this.stream >> 8, 0x068A: this.runCount, 0x06A9: this.runValue,
+        0x063C: this.tickChannel,
+      };
+      for (let x = 0; x < 4; x++) {
+        v[0xDA + x] = this.delay[x];
+        v[0x0549 + 2 * x] = this.ptr[x] & 0xFF; v[0x054A + 2 * x] = this.ptr[x] >> 8;
+      }
+      return v;
+    }
+  }
+
+  // ---- what each channel has drawn ----------------------------------------------------------
+  // The page's switches leave a channel's frames out of the picture. Every frame a channel draws
+  // is XORed onto the bitmap, and XOR undoes itself, so the picture without channel x is the
+  // bitmap XOR everything channel x has XORed in since the base frame. Layers keeps that, per
+  // channel, and the bytes each channel's latest frame changed (for the page's marks). The
+  // engine's own switch, $5BFB+X, stops a channel instead: its script and delay stand still.
+  class Layers {
+    constructor(eng) {
+      this.acc = [0, 1, 2, 3].map(() => new Uint8Array(8000));
+      this.reset();
+      eng.onWrite = (a, v, ch) => {
+        if (ch < 0 || !v) return;                // the base frame, or a byte XORed with 0
+        this.acc[ch][a - BITMAP] ^= v;
+        this.pending[ch].push(a);
+      };
+    }
+    reset() {
+      this.acc.forEach(a => a.fill(0));
+      this.pending = [[], [], [], []]; this.last = [[], [], [], []];
+      this.frames = [-1, -1, -1, -1]; this.restarts = [0, 0, 0, 0];
+    }
+    // after a pass (the list tick() returned): each channel that drew keeps its frame's bytes
+    record(done) {
+      if (!done) return;
+      for (const d of done) {
+        this.frames[d.ch] = d.frame;
+        if (d.restarted) this.restarts[d.ch]++;
+        this.last[d.ch] = this.pending[d.ch];
+      }
+      this.pending = [[], [], [], []];
+    }
+    // the bytes to XOR onto the bitmap to take out the channels hidden[x]; null for none
+    mask(hidden) {
+      if (!hidden.some(Boolean)) return null;
+      const m = new Uint8Array(8000);
+      hidden.forEach((h, ch) => { if (h) { const a = this.acc[ch]; for (let i = 0; i < 8000; i++) m[i] ^= a[i]; } });
+      return m;
+    }
+  }
+
+  // ---- the pictures this page can draw ------------------------------------------------------
+  // The title: the start-up unpacks it to $8A00 (startup $7FDA-$7FFE) and sets its last column
+  // to 32 ($8001), so that it stops short of the logo in columns 33-36. The listing holds it as
+  // it is then. The portraits: one part each, parts/portrait-NN, holding the bytes load_portrait
+  // ($2631) leaves in its buffer. A picture number with bit 7 clear goes to $CA00, with bit 7
+  // set to $E000; each part holds its picture where the code that shows it asks for it. Pictures
+  // 0-3 and 59 at $E000: the doctor (module-0 $CA15), the shop (module-1 $CA1E), the library
+  // (module-2 $CA15), the Ranger Center (ranger $7E13) and the Grim Reaper (death $7E13), each
+  // through show_picture_e000 ($041C). Picture 8, the radio (radio $7EB7, $7FA0) and the fights'
+  // picture when no monster is in reach (game $B91E); 11, a promotion (radio $7EEB, $7FBE).
+  // Every other number is named by byte 7 of monster records in the maps (encounter_portrait,
+  // game $B91E), which the name here samples; 37 and 75 by nothing found.
+  // [picture, buffer, what shows it]
+  const PORTRAITS = [
+    [0, 0xE000, "the doctor"],
+    [1, 0xE000, "the shop"],
+    [2, 0xE000, "the library"],
+    [3, 0xE000, "the Ranger Center"],
+    [4, 0xCA00, "Tronodile, Clawer Leader, Clawman…"],
+    [5, 0xCA00, "New Waver, Punker, Spiker…"],
+    [6, 0xCA00, "Wasteland Warrior, Rail Raider, Red Ryder…"],
+    [7, 0xCA00, "Shambler Ghoul, Lost Soul, Pit Ghoul"],
+    [8, 0xCA00, "the radio"],
+    [9, 0xCA00, "Silicon Sniper, Hunter, Killer…"],
+    [10, 0xCA00, "Wild Canine, Dire Coyote, Nuke Pooch…"],
+    [11, 0xCA00, "a promotion, on the radio"],
+    [12, 0xCA00, "Clerk, Ace, Mayor Pedros…"],
+    [13, 0xCA00, "Topekan Woman, Woman"],
+    [14, 0xCA00, "Titanium Clawer, Silver Strangler"],
+    [15, 0xCA00, "Monk Petall, Monk Johan, Monk Russ…"],
+    [16, 0xCA00, "Radioactive Vermin, Bunny, Rat…"],
+    [17, 0xCA00, "Desert Dweller, Drool"],
+    [18, 0xCA00, "Prostitute"],
+    [19, 0xCA00, "Fat Freddy"],
+    [20, 0xCA00, "Casino Guard, Thug, Roving Guard…"],
+    [21, 0xCA00, "Insect"],
+    [22, 0xCA00, "Gambler, Drunk, Man…"],
+    [23, 0xCA00, "Warden Nicholas, Jailer Corbett, Jailer Patrick…"],
+    [24, 0xCA00, "Charmaine"],
+    [25, 0xCA00, "Sister Wrath, Mistress Jennifer, Mistress Krys…"],
+    [26, 0xCA00, "Redhawk, Meditator, Follower…"],
+    [27, 0xCA00, "RadAngel, Radiation Angel"],
+    [28, 0xCA00, "Faran Brygo"],
+    [29, 0xCA00, "Sister Theodosia, Sister Ursula, Sister Grace…"],
+    [30, 0xCA00, "Sister Lucretia, Sister Jade, Sister Isolde…"],
+    [31, 0xCA00, "Brother Raphael, Brother Donatello, Brother Goliath…"],
+    [32, 0xCA00, "Brother Phillip, Brother Juaquin, Brother Thomas…"],
+    [33, 0xCA00, "Android, Psychopathic Android"],
+    [34, 0xCA00, "Tronnosaurus, Cyborg, Hexborg…"],
+    [35, 0xCA00, "Gundroid, Cyborg Commando, Tazel…"],
+    [36, 0xCA00, "Scorpitron"],
+    [37, 0xCA00, ""],
+    [38, 0xCA00, "Biker Scum, Rib Cracker, Cutthroat…"],
+    [39, 0xCA00, "Slicerdicer, Chopter, Combat Hacker"],
+    [40, 0xCA00, "Thug, Scavenger, Guard…"],
+    [41, 0xCA00, "Sniperdroid, Warroid Mark 1, Warroid Mark 2…"],
+    [42, 0xCA00, "Glowing Slime, Desert Tube, Trash Slitherer…"],
+    [43, 0xCA00, "Blood Priest"],
+    [44, 0xCA00, "Gunsel, Gunman, Marksman…"],
+    [45, 0xCA00, "Base Policeman, Policeman"],
+    [46, 0xCA00, "Bum, Sand Bum, Hobo"],
+    [47, 0xCA00, "Huey, Dewey, Louie"],
+    [48, 0xCA00, "Ugly John"],
+    [49, 0xCA00, "Rottweiler, Mongrel, Coydog…"],
+    [50, 0xCA00, "Deserter, Ozoner, Outlaw…"],
+    [54, 0xCA00, "Slithering Iguana, Gila Monitor, Desert Lizard…"],
+    [55, 0xCA00, "Harry"],
+    [56, 0xCA00, "Topekan Child, Baby Topeka, Brat…"],
+    [57, 0xCA00, "Woman, Lady, Young Woman…"],
+    [58, 0xCA00, "Laurie, Housekeeper, Felicia"],
+    [59, 0xE000, "the Grim Reaper"],
+    [60, 0xCA00, "Widowmaker, Marksman, Gunman…"],
+    [61, 0xCA00, "Mailed Wolf, Iron Wolf, Spawn Wolf…"],
+    [62, 0xCA00, "Warbot, VTOL Auto-fire Robot, Stainless Steel Flechette rifle"],
+    [64, 0xCA00, "Titanium Clawer, Threshing Crawler, Plasma Constrictor"],
+    [65, 0xCA00, "Irwin John Finster, Finster Sinister, Finster Dexter"],
+    [66, 0xCA00, "Octotron, Fusion Octotron"],
+    [67, 0xCA00, "Chopter, Steel Reaver, Silicon Sniper…"],
+    [68, 0xCA00, "Desert Scum, Bandit, Biker Thug"],
+    [69, 0xCA00, "Towny, Mad Dog Fargo, Metal Maniac"],
+    [70, 0xCA00, "Spineless Ghoul, Night Screamer, Night Terror"],
+    [71, 0xCA00, "Large Scorparundi, Lie Spider"],
+    [72, 0xCA00, "Finster Leviathan"],
+    [73, 0xCA00, "Turbo Meson Cannon, Mk 10 Turbo Meson Cannon, 7mm Vulcan Cannon…"],
+    [74, 0xCA00, "Vanadium Vulture"],
+    [75, 0xCA00, ""],
+    [76, 0xCA00, "Vax"],
+    [77, 0xCA00, "Master Cylinder, Laser Pod Blaster, Laser Hypermortar…"],
+    [78, 0xCA00, "Woman"],
+  ];
+  const PICTURES = [{ id: 'title', name: 'The title picture', part: 'startup', label: 'title_picture', at: 0x8A00 }]
+    .concat(PORTRAITS.map(([n, at, who]) => ({
+      id: 'p' + n, n, name: 'Portrait ' + n + (who ? ': ' + who : ''), who,
+      part: 'portrait-' + String(n).padStart(2, '0'), label: 'p' + n + '_header', at })));
+  const PORTRAIT_BUFFER = 0xCA00, PORTRAIT_BUFFER_HI = 0xE000;
+
+  // An address in a listing image by its label, or the address it had when this page was made.
+  function addressOf(img, label, at) {
+    if (img && img.byName && img.byName.has(label)) return img.byName.get(label);
+    return at;
+  }
+
+  // colour_picture_area ($836C, startup): matrix rows 1-16, columns 1-36 = the byte its LDA #
+  // loads at $8375 ($86: %01 orange, %10 blue).
+  function colourTitleArea(m, img) {
+    const c = img[0x8375] === 0xA9 ? img[0x8376] : 0x86;
+    for (let r = 1; r <= 16; r++) for (let x = 1; x <= 36; x++) m[MATRIX + 40 * r + x] = c;
+  }
+
+  // The logo, as startup_main prints it ($7FA7-$7FD7): the logo font ($CA00-$CBFF) swapped in
+  // for the font's glyphs $20-$5F ($838B), then the glyph block at $83AD printed from column 33,
+  // row 1 in colour $86 ($7FB7), $0D starting the next row at column 33. Each glyph is drawn by
+  // draw_glyph ($2217, engine): its eight bytes copied into the bitmap cell, the cell's matrix
+  // byte set to the colour.
+  function printLogo(m, img, fontAt, blockAt) {
+    const colour = img[0x7FB7] === 0xA9 ? img[0x7FB8] : 0x86;
+    let col = 33, row = 1;
+    for (let a = blockAt; a < blockAt + 0x100; a++) {
+      const code = img[a];
+      if (code === 0) break;
+      if (code === 0x0D) { row++; col = 33; continue; }
+      const g = fontAt + ((code - 0x20) & 0x7F) * 8, cell = BITMAP + 320 * row + 8 * col;
+      for (let i = 0; i < 8; i++) m[cell + i] = img[g + i];
+      m[MATRIX + 40 * row + col] = colour;
+      col++;
+    }
+  }
+
+  // The colour the engine clears the picture window with: picture_window_open ($12CF) loads it
+  // with the LDA # at $12F3 into text_colour before window_clear (engine part); $26 in the
+  // engine's listing, %01 red and %10 blue. engine: the engine's rebuilt listing image.
+  function windowColour(engine) {
+    if (!engine || engine.ram[0x12F3] !== 0xA9) throw new Error('engine $12F3 is not the LDA # of the window colour');
+    return engine.ram[0x12F4];
+  }
+
+  // The picture window's colours as picture_window_open ($12CF) leaves them: matrix rows 2-12
+  // (the portrait's pixel rows 16-99), columns 1-11, = the window colour.
+  function colourWindow(m, colour) {
+    for (let r = 2; r <= 12; r++) for (let x = 1; x <= 11; x++) m[MATRIX + 40 * r + x] = colour;
+  }
+
+  // A 64 KB machine image ready for start(): the picture in its buffer, the bitmap clear, the
+  // colours set. listing is the picture's part's rebuilt listing image (C64.load's ram and
+  // byName, or plain), and engine the engine's, which a portrait needs for its colours.
+  function prepare(pic, listing, engine) {
+    const img = listing.ram, m = new Uint8Array(0x10000);
+    const at = addressOf(listing, pic.label, pic.at);
+    if (pic.part === 'startup') {
+      m.set(img.subarray(at, 0xA300), at);
+      colourTitleArea(m, img);
+      printLogo(m, img, addressOf(listing, 'logo_font', 0xCA00), addressOf(listing, 'logo_glyph_block', 0x83AD));
+      return { m, base: at, show: { c0: 1, c1: 36, r0: 8, r1: 135 } };
+    }
+    // the buffer as the part holds it: $CA00-$CFFF, or $E000-$EFFF for bit 7 (set_unpack_limit $2687)
+    m.set(img.subarray(at, at + (at === PORTRAIT_BUFFER_HI ? 0x1000 : 0x600)), at);
+    colourWindow(m, windowColour(engine));
+    return { m, base: at, show: null };
+  }
+
+  // The scripts of a picture as the engine would read them: entries of a delay and a frame
+  // offset, up to the $FF (for the readout; the engine itself reads them only as it goes).
+  function scripts(m, base) {
+    const out = [];
+    for (let x = 0; x < 4; x++) {
+      const lo = m[base + 6 + 2 * x], hi = m[base + 7 + 2 * x];
+      if (!(lo | hi)) { out.push(null); continue; }
+      const start = (base + (hi << 8 | lo)) & 0xFFFF, entries = [];
+      for (let a = start; m[a] !== 0xFF && entries.length < 256; a += 3) {
+        entries.push({ at: a, delay: m[a], frame: (base + (m[a + 1] | m[a + 2] << 8)) & 0xFFFF });
+      }
+      out.push({ start, entries });
+    }
+    return out;
+  }
+
+  // ---- drawing ------------------------------------------------------------------------------
+  // The colour of pixel pair p (0-3 from the left) of bitmap byte b in a cell whose matrix byte is mat.
+  function pairColour(b, p, mat) {
+    const v = b >> (6 - 2 * p) & 3;
+    return v === 0 ? BACKGROUND : v === 1 ? mat >> 4 : v === 2 ? mat & 15 : COLOUR_RAM;
+  }
+
+  // The area's pixels as RGBA, s canvas pixels a hires pixel (a multicolour pixel is two wide).
+  // mask: an optional 8000-byte array XORed onto the bitmap as it is drawn (the hidden channels).
+  function render(m, area, s, rgb, mask, img) {
+    const W = (area.c1 - area.c0 + 1) * 8 * s, H = (area.r1 - area.r0 + 1) * s;
+    const d = img.data;
+    for (let y = area.r0; y <= area.r1; y++) {
+      for (let x = area.c0; x <= area.c1; x++) {
+        const a = bitmapAddress(x, y), b = mask ? m[a] ^ mask[a - BITMAP] : m[a];
+        const mat = m[MATRIX + 40 * (y >> 3) + x];
+        for (let p = 0; p < 4; p++) {
+          const c = rgb[pairColour(b, p, mat)];
+          const px0 = ((x - area.c0) * 8 + p * 2) * s, py0 = (y - area.r0) * s;
+          for (let dy = 0; dy < s; dy++) {
+            let o = ((py0 + dy) * W + px0) * 4;
+            for (let dx = 0; dx < 2 * s; dx++) { d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255; o += 4; }
+          }
+        }
+      }
+    }
+    return { W, H };
+  }
+
+  // ---- the widget ---------------------------------------------------------------------------
+  // How often the channels move on the title, in passes a second. read_key ($2514) ticks the
+  // animation once a call, and the title's waits call it 255 times a unit (wait_with_menu $8156,
+  // poll_menu $8164). On the kit's Machine (kit/c64/machine.js), with the raster interrupt, a
+  // pass comes every 134,560 cycles: 7.3 a second at the PAL clock (985,248 Hz). The Machine
+  // takes no cycles for the video chip, and the machine is slower: in the emulator, while the
+  // title's picture moved, the tick ran 3,508 to 3,553 times every 50 frames, 6.9 passes a second.
+  const PASSES_PER_SECOND = 6.9;
+  const CH_COLOURS = ['#ffd60a', '#32d74b', '#ff375f', '#64d2ff'];
+
+  // ---- a GIF of a picture -------------------------------------------------------------------
+  // GIF89a, written here: the C64's 16 colours (c64.js's palette) as the global table, LZW codes
+  // of 5 to 12 bits, and after the first image only the rectangle that changed, left in place
+  // for the next (disposal 1). It runs from the base frame to the first step from GIF_MIN_STEPS
+  // on (about 15 seconds at PASSES_PER_SECOND) where the picture looks exactly as the base frame
+  // drew it, so it loops without a jump; a picture that has not come back to it by
+  // GIF_MAX_STEPS stops at GIF_MIN_STEPS and jumps back to the start. The switches of the page's
+  // table do not reach it: it is the picture as the game shows it.
+  const GIF_MIN_STEPS = 100, GIF_MAX_STEPS = 600;
+
+  function lzw(px, minCode) {
+    const out = [], clear = 1 << minCode, eoi = clear + 1;
+    let cur = 0, nbits = 0, size = minCode + 1, next = eoi + 1, dict = new Map();
+    const emit = c => { cur |= c << nbits; nbits += size; while (nbits >= 8) { out.push(cur & 255); cur >>>= 8; nbits -= 8; } };
+    emit(clear);
+    let prefix = px[0];
+    for (let i = 1; i < px.length; i++) {
+      const k = px[i], key = prefix * 4096 + k;
+      if (dict.has(key)) { prefix = dict.get(key); continue; }
+      emit(prefix);
+      if (next < 4096) { dict.set(key, next++); if (next > (1 << size) && size < 12) size++; }
+      else { emit(clear); dict = new Map(); size = minCode + 1; next = eoi + 1; }
+      prefix = k;
+    }
+    emit(prefix); emit(eoi);
+    if (nbits) out.push(cur & 255);
+    return out;
+  }
+
+  // frames: { x, y, w, h, px (palette indices), delay (hundredths of a second) }
+  function gifFile(W, H, frames) {
+    const b = [], s = t => { for (const c of t) b.push(c.charCodeAt(0)); }, w16 = v => b.push(v & 255, v >> 8);
+    s('GIF89a'); w16(W); w16(H); b.push(0xF3, 0, 0);                    // a global table of 16
+    for (const h of C64.PAL) b.push(...[1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    b.push(0x21, 0xFF, 11); s('NETSCAPE2.0'); b.push(3, 1, 0, 0, 0);    // loop for ever
+    for (const f of frames) {
+      b.push(0x21, 0xF9, 4, 1 << 2, f.delay & 255, f.delay >> 8, 0, 0);
+      b.push(0x2C); w16(f.x); w16(f.y); w16(f.w); w16(f.h); b.push(0, 4);
+      const d = lzw(f.px, 4);
+      for (let i = 0; i < d.length; i += 255) { const n = Math.min(255, d.length - i); b.push(n); for (let j = 0; j < n; j++) b.push(d[i + j]); }
+      b.push(0);
+    }
+    b.push(0x3B);
+    return Uint8Array.from(b);
+  }
+
+  // The area's pixels as palette indices, s pixels a hires pixel, as render() draws them.
+  function indices(m, area, s) {
+    const W = (area.c1 - area.c0 + 1) * 8 * s, H = (area.r1 - area.r0 + 1) * s, out = new Uint8Array(W * H);
+    for (let y = area.r0; y <= area.r1; y++) for (let x = area.c0; x <= area.c1; x++) {
+      const b = m[bitmapAddress(x, y)], mat = m[MATRIX + 40 * (y >> 3) + x];
+      for (let p = 0; p < 4; p++) {
+        const c = pairColour(b, p, mat);
+        for (let dy = 0; dy < s; dy++) out.fill(c, ((y - area.r0) * s + dy) * W + ((x - area.c0) * 8 + p * 2) * s, ((y - area.r0) * s + dy) * W + ((x - area.c0) * 8 + p * 2 + 2) * s);
+      }
+    }
+    return { W, H, px: out };
+  }
+
+  // The scale a picture is shown at: 2 for one 200 or more hires pixels wide, else 3.
+  const scaleOf = area => (area.c1 - area.c0 + 1) * 8 >= 200 ? 2 : 3;
+
+  // Returns { bytes, steps, seamless, W, H }.
+  function gif(pic, listing, engine) {
+    const p = prepare(pic, listing, engine), eng = new Engine(p.m);
+    eng.start(p.base);
+    const area = p.show || { c0: eng.left, c1: eng.right, r0: eng.top, r1: eng.bottom }, s = scaleOf(area);
+    const first = indices(p.m, area, s), W = first.W;
+    const frames = [{ x: 0, y: 0, w: W, h: first.H, px: first.px, steps: 0 }];
+    let prev = first.px, n = 0, seamless = false, atMin = null;
+    for (;;) {
+      eng.step(); n++;
+      const cur = indices(p.m, area, s).px;
+      frames[frames.length - 1].steps++;
+      if (n >= GIF_MIN_STEPS && cur.every((v, j) => v === first.px[j])) { seamless = true; break; }  // the first image again
+      if (n === GIF_MIN_STEPS) atMin = { length: frames.length, steps: frames[frames.length - 1].steps };
+      if (n >= GIF_MAX_STEPS) { frames.length = atMin.length; frames[atMin.length - 1].steps = atMin.steps; n = GIF_MIN_STEPS; break; }
+      let x0 = W, y0 = first.H, x1 = -1, y1 = -1;
+      for (let j = 0; j < cur.length; j++) if (cur[j] !== prev[j]) {
+        const x = j % W, y = j / W | 0;
+        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      }
+      prev = cur;
+      if (x1 < 0) continue;
+      const w = x1 - x0 + 1, h = y1 - y0 + 1, px = new Uint8Array(w * h);
+      for (let y = 0; y < h; y++) px.set(cur.subarray((y0 + y) * W + x0, (y0 + y) * W + x0 + w), y * w);
+      frames.push({ x: x0, y: y0, w, h, px, steps: 0 });
+    }
+    // each frame lasts its steps at PASSES_PER_SECOND, rounded so that the times add up
+    let t = 0, done = 0;
+    for (const f of frames) { t += f.steps * 100 / PASSES_PER_SECOND; f.delay = Math.round(t) - done; done += f.delay; }
+    return { bytes: gifFile(W, first.H, frames), steps: n, seamless, W, H: first.H };
+  }
+
+  // The base frame alone, drawn into a new canvas at scale s (for a row of small pictures).
+  function still(pic, listing, engine, s) {
+    const p = prepare(pic, listing, engine), eng = new Engine(p.m);
+    eng.start(p.base);
+    const area = p.show || { c0: eng.left, c1: eng.right, r0: eng.top, r1: eng.bottom };
+    const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    const cv = document.createElement('canvas');
+    cv.width = (area.c1 - area.c0 + 1) * 8 * s; cv.height = (area.r1 - area.r0 + 1) * s;
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(cv.width, cv.height);
+    render(p.m, area, s, rgb, null, img);
+    ctx.putImageData(img, 0, 0);
+    return cv;
+  }
+
+  // The listings, each fetched once a page.
+  const listingCache = new Map();
+  function loadPart(base, part) {
+    const url = base + 'parts/' + part + '/listing.json';
+    if (!listingCache.has(url)) listingCache.set(url, C64.load(url).catch(e => { listingCache.delete(url); throw e; }));
+    return listingCache.get(url);
+  }
+
+  // The widget in root, by the ids of its parts: the canvas wl-pic-cv and the select
+  // wl-pic-select, and as the page has them wl-pic-prev/-next, -play, -step, -restart, -mark,
+  // -clock, -rows (the channels' table), -note and -gif (Download GIF). opts.pictures: the list
+  // to choose from (default every picture); opts.picture: the first one's id. Returns
+  // { choose(id), setPictures(list, id) }.
+  function mount(root, opts = {}) {
+    const base = opts.base || '';
+    const $ = id => root.querySelector('#' + id);
+    const cv = $('wl-pic-cv'), sel = $('wl-pic-select'), rows = $('wl-pic-rows');
+    const playB = $('wl-pic-play'), stepB = $('wl-pic-step'), restartB = $('wl-pic-restart');
+    const markC = $('wl-pic-mark'), clock = $('wl-pic-clock'), note = $('wl-pic-note');
+    const prevB = $('wl-pic-prev'), nextB = $('wl-pic-next'), gifB = $('wl-pic-gif');
+    if (!globalThis.C64) { if (note) note.textContent = 'This widget needs the site\'s c64.js, which did not load.'; return null; }
+    const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    const partsOf = pic => pic.part === 'startup' ? [pic.part] : [pic.part, 'engine'];   // a portrait's window colour is the engine's
+    let list = opts.pictures || PICTURES;
+
+    let cur = null;               // { pic, eng, m, area, s, layers, scr, hidden }
+    let playing = true, acc = 0, lastT = 0, visible = true, token = 0;
+    const ctx = cv.getContext('2d');
+
+    function build(pic, L, E) {
+      const p = prepare(pic, L, E);
+      const eng = new Engine(p.m), layers = new Layers(eng);
+      const st = { pic, eng, m: p.m, layers, hidden: [false, false, false, false] };
+      layers.record(eng.start(p.base));
+      const area = p.show || { c0: eng.left, c1: eng.right, r0: eng.top, r1: eng.bottom };
+      st.area = area;
+      st.s = scaleOf(area);
+      st.scr = scripts(p.m, p.base);
+      if (note) note.textContent = '';
+      return st;
+    }
+
+    // The picture from its base frame again. The counts start again too, and so does the
+    // prescaler, which the game leaves running (start_picture does not set $B1).
+    function restart() {
+      const eng = cur.eng;
+      eng.ticks = 0; eng.steps = 0; eng.pre = 0;
+      cur.layers.reset();
+      cur.layers.record(eng.start(eng.base));
+      draw();
+    }
+
+    function draw() {
+      const st = cur;
+      if (!st) return;
+      const { area, s } = st;
+      const W = (area.c1 - area.c0 + 1) * 8 * s, H = (area.r1 - area.r0 + 1) * s;
+      if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; cv.style.width = W + 'px'; }
+      const img = ctx.createImageData(W, H);
+      render(st.m, area, s, rgb, st.layers.mask(st.hidden), img);
+      ctx.putImageData(img, 0, 0);
+      if (markC && markC.checked) {
+        ctx.lineWidth = Math.max(1, s - 1);
+        st.layers.last.forEach((cells0, ch) => {
+          if (st.hidden[ch]) return;
+          ctx.strokeStyle = CH_COLOURS[ch];
+          const cells = new Set(cells0.map(a => { const o = a - BITMAP; return (o / 320 | 0) * 40 + ((o % 320) >> 3); }));
+          for (const c of cells) {
+            const row = c / 40 | 0, col = c % 40;
+            const x = (col - area.c0) * 8 * s, y = (row * 8 - area.r0) * s;
+            ctx.strokeRect(x + 0.5, y + 0.5, 8 * s - 1, 8 * s - 1);
+          }
+        });
+      }
+      readout();
+    }
+
+    // Per channel: the script entry it last read (its pointer less one entry), the passes its
+    // delay still has to run ($DA+X), and the frame that entry named.
+    function readout() {
+      const st = cur, eng = st.eng, title = st.pic.part === 'startup';
+      if (clock) clock.textContent = 'step ' + eng.steps.toLocaleString('en-GB') + ' · tick ' + eng.ticks.toLocaleString('en-GB');
+      if (!rows) return;
+      const where = a => title ? hex(a) : '+' + hex((a - eng.base) & 0xFFFF, 2);
+      for (let ch = 0; ch < 4; ch++) {
+        const tr = rows.children[ch], sc = st.scr[ch], cells = tr.children;
+        const box = cells[0].querySelector('input');
+        box.disabled = !sc; box.checked = !!sc && !st.hidden[ch];
+        tr.classList.toggle('wl-pic-off', !sc);
+        if (!sc) { cells[1].textContent = 'no script'; cells[2].textContent = ''; cells[3].textContent = ''; continue; }
+        const k = Math.round((eng.ptr[ch] - sc.start) / 3);
+        cells[1].textContent = '';
+        if (k <= 0) cells[1].textContent = 'not started';
+        else {
+          cells[1].append(k + ' of ' + sc.entries.length + ' ');
+          const s = document.createElement('span'); s.className = 'wl-pic-at'; s.textContent = where(eng.ptr[ch] - 3);
+          cells[1].appendChild(s);
+        }
+        cells[2].textContent = String(eng.delay[ch]);
+        const f = st.layers.frames[ch];
+        cells[3].textContent = '';
+        if (f < 0) cells[3].textContent = 'none yet';
+        else {
+          const a = document.createElement('a');
+          a.href = `${base}source-${st.pic.part}.html#${hex(f).slice(1)}`;
+          a.textContent = title ? hex(f) : where(f);
+          cells[3].appendChild(a);
+        }
+      }
+    }
+
+    function buildRows() {
+      if (!rows) return;
+      rows.textContent = '';
+      for (let ch = 0; ch < 4; ch++) {
+        const tr = document.createElement('tr');
+        const td0 = document.createElement('td');
+        const lab = document.createElement('label');
+        const box = document.createElement('input');
+        box.type = 'checkbox'; box.checked = true;
+        box.setAttribute('aria-label', 'Show channel ' + ch + '\'s frames');
+        box.addEventListener('change', () => { if (cur) { cur.hidden[ch] = !box.checked; draw(); } });
+        const sw = document.createElement('span');
+        sw.className = 'wl-pic-sw'; sw.style.background = CH_COLOURS[ch];
+        lab.append(box, sw, document.createTextNode(' ' + ch));
+        td0.appendChild(lab);
+        tr.appendChild(td0);
+        for (let i = 0; i < 3; i++) tr.appendChild(document.createElement('td'));
+        rows.appendChild(tr);
+      }
+    }
+
+    function arrows() {
+      const i = list.findIndex(p => p.id === sel.value);
+      if (prevB) prevB.classList.toggle('off', i <= 0);
+      if (nextB) nextB.classList.toggle('off', i < 0 || i === list.length - 1);
+    }
+
+    async function choose(id) {
+      const pic = list.find(p => p.id === id) || list[0];
+      const my = ++token;
+      if (!pic) { cur = null; cv.width = 0; return; }
+      const parts = partsOf(pic);
+      if (note) note.textContent = 'Loading ' + parts.join(' and ') + ' listings…';
+      let L, E;
+      try { [L, E] = await Promise.all(parts.map(q => loadPart(base, q))); } catch (e) {
+        if (note && my === token) note.textContent = 'Could not load a listing (' + parts.map(q => 'parts/' + q + '/listing.json').join(', ') + '): ' + e.message;
+        return;
+      }
+      if (my !== token) return;
+      try { cur = build(pic, L, E); } catch (e) {
+        if (note) note.textContent = 'Could not draw ' + pic.name + ': ' + e.message;
+        return;
+      }
+      sel.value = pic.id;
+      arrows();
+      if (opts.onChoose) opts.onChoose(pic);
+      draw();
+    }
+
+    function fill() {
+      sel.textContent = '';
+      for (const p of list) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o); }
+    }
+
+    function setPictures(next, id) {
+      list = next;
+      fill();
+      return choose(id || (list[0] && list[0].id));
+    }
+
+    function setPlaying(p) {
+      playing = p;
+      if (playB) playB.textContent = p ? 'Pause' : 'Play';
+    }
+
+    function frame(t) {
+      requestAnimationFrame(frame);
+      if (!lastT) lastT = t;
+      const dt = Math.min(500, t - lastT); lastT = t;
+      if (!playing || !visible || !cur) return;
+      acc += dt * PASSES_PER_SECOND / 1000;
+      let moved = false;
+      while (acc >= 1) { acc--; cur.layers.record(cur.eng.step()); moved = true; }
+      if (moved) draw();
+    }
+
+    // Download GIF: the picture from its base frame, made here and saved as a file.
+    async function download() {
+      if (!cur) return;
+      const pic = cur.pic, label = gifB.textContent;
+      gifB.disabled = true; gifB.textContent = 'Making the GIF…';
+      try {
+        await new Promise(r => setTimeout(r, 20));                     // let the button change first
+        const [L, E] = await Promise.all(partsOf(pic).map(q => loadPart(base, q)));
+        const g = gif(pic, L, E);
+        const url = URL.createObjectURL(new Blob([g.bytes], { type: 'image/gif' }));
+        const a = document.createElement('a');
+        a.href = url; a.download = 'wasteland-' + (pic.part === 'startup' ? 'title' : 'portrait-' + pic.n) + '.gif';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (e) {
+        if (note) note.textContent = 'Could not make the GIF: ' + e.message;
+      }
+      gifB.disabled = false; gifB.textContent = label;
+    }
+
+    buildRows();
+    fill();
+    sel.addEventListener('change', () => choose(sel.value));
+    const by = d => () => { const i = list.findIndex(p => p.id === sel.value); if (list[i + d]) choose(list[i + d].id); };
+    if (prevB) prevB.addEventListener('click', by(-1));
+    if (nextB) nextB.addEventListener('click', by(1));
+    if (playB) playB.addEventListener('click', () => setPlaying(!playing));
+    if (stepB) stepB.addEventListener('click', () => { setPlaying(false); if (cur) { cur.layers.record(cur.eng.step()); draw(); } });
+    if (restartB) restartB.addEventListener('click', () => { if (cur) restart(); });
+    if (markC) markC.addEventListener('change', draw);
+    if (gifB) gifB.addEventListener('click', download);
+    if ('IntersectionObserver' in globalThis) {
+      new IntersectionObserver(es => { visible = es.some(e => e.isIntersecting); }).observe(cv);
+    }
+    setPlaying(true);
+    requestAnimationFrame(frame);
+    if (list.length) choose(opts.picture || list[0].id);
+    return { choose, setPictures };
+  }
+
+  return { Engine, Layers, bitmapAddress, prepare, scripts, colourTitleArea, printLogo, windowColour, colourWindow, render,
+           gif, still, loadPart, scaleOf, PICTURES, PORTRAITS, PORTRAIT_BUFFER, PORTRAIT_BUFFER_HI, BITMAP, MATRIX,
+           BACKGROUND, COLOUR_RAM, PASSES_PER_SECOND, GIF_MIN_STEPS, GIF_MAX_STEPS, mount };
+})();
+</script>
+<script>
+// The Maps tab: the map browser, drawn from the bytes the Source tab shows (parts/<id>/listing.json),
+// and the portraits of the chosen map's monsters (section 02), drawn by WLPictures from parts/portrait-NN.
 (function () {
   var root = document.getElementById('wl-maps');
   if (!window.C64 || !window.WLMaps) {
@@ -1148,9 +2003,107 @@ if (typeof module !== 'undefined') module.exports = globalThis.WLMaps;
   }
   var titles = {};
   try { titles = JSON.parse(document.getElementById('wl-titles').textContent); } catch (e) { /* names only */ }
-  var B = WLMaps.mountBrowser(root, { base: '', titles: titles });
+  var portraits = mountPortraits(document.getElementById('wl-portraits'), titles);
+  var B = WLMaps.mountBrowser(root, { base: '', titles: titles, onShow: function (M) { if (portraits) portraits.show(M); } });
   function go(n, at) { return function () { B.show(n, at); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; }
   document.getElementById('wl-bug-go').addEventListener('click', go(11, [24, 13]));
   document.getElementById('wl-door-go').addEventListener('click', go(0, [55, 62]));
+
+  // A monster's name as print_monster_name prints one of them (game $9E76): the first of each
+  // {0A} choice, the singular.
+  function singular(codes) {
+    var s = '', alt = 0, part = 0;
+    codes.forEach(function (c) {
+      if (c === 0x0A) { if (!alt) { alt = 1; part = 0; } else if (part === 0) part = 1; else alt = 0; return; }
+      if ((!alt || part === 0) && c >= 0x20 && c < 0x7F) s += String.fromCharCode(c);
+    });
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
+  // The map's monsters by the picture each names: record t is eight bytes at the record's word
+  // +4 plus 8t (monster_record, game $9EA4), its picture byte 7 (encounter_portrait, $B91E).
+  // Monster 0 is no monster. The names (word +2) run up to the records in all 42 maps, one
+  // zero-ended name a monster, so the zeros between the two words count the monsters.
+  function portraitsOf(M) {
+    var m = M.m, r = M.rec, names = WLMaps.w16(m, r + 2), recs = WLMaps.w16(m, r + 4), count = 0, by = new Map();
+    if (names && recs > names) for (var a = names; a < recs; a++) if (m[a] === 0) count++;
+    for (var t = 1; t < count; t++) {
+      var pic = m[(recs + 8 * t + 7) & 0xFFFF];
+      if (!by.has(pic)) by.set(pic, []);
+      by.get(pic).push({ t: t, name: singular(WLMaps.monsterName(M, t)) });
+    }
+    return { count: Math.max(0, count - 1), recs: recs, list: Array.from(by).sort(function (x, y) { return x[0] - y[0]; }) };
+  }
+
+  function mountPortraits(sec, titles) {
+    var P = window.WLPictures;
+    var note = sec.querySelector('#wl-pic-note'), strip = sec.querySelector('#wl-pic-strip');
+    var who = sec.querySelector('#wl-pic-who'), cap = sec.querySelector('#wl-pic-cap');
+    if (!P) { note.textContent = 'The portraits are drawn by a script that did not load here. Open this page on the built site.'; return null; }
+    var hex = WLMaps.hex, M = null, pending = null, seen = false, list = [], token = 0;
+    var PRONOUN = ['he', 'she', 'it'];
+    var W = P.mount(sec, { base: '', pictures: [], onChoose: chosen });
+
+    function chosen(pic) {
+      Array.prototype.forEach.call(strip.children, function (b) { b.setAttribute('aria-pressed', b.dataset.pic === pic.id ? 'true' : 'false'); });
+      who.textContent = '';
+      var ms = pic.monsters || [];
+      who.append('On map ' + M.n + ': ' + ms.map(function (x) { return x.name + ' (monster ' + x.t + ')'; }).join(', ') + '. ');
+      var a = document.createElement('a');
+      a.href = 'source-' + pic.part + '.html'; a.textContent = pic.part;
+      who.append('Its bytes: ', a, '.');
+      P.loadPart('', 'engine').then(function (E) {
+        var k = E.ram[0x5B00 + pic.n];
+        if (who.firstChild && PRONOUN[k] && sec.querySelector('#wl-pic-select').value === pic.id)
+          who.insertBefore(document.createTextNode('Pronoun in the messages: \u201c' + PRONOUN[k] + '\u201d. '), a.previousSibling);
+      }).catch(function () { /* the pronoun only */ });
+    }
+
+    function thumbs(my) {
+      strip.textContent = '';
+      list.forEach(function (pic) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.dataset.pic = pic.id; b.title = pic.name;
+        b.setAttribute('aria-pressed', 'false');
+        var s = document.createElement('span'); s.textContent = String(pic.n);
+        b.appendChild(s);
+        b.addEventListener('click', function () { W.choose(pic.id); });
+        strip.appendChild(b);
+        Promise.all([P.loadPart('', pic.part), P.loadPart('', 'engine')]).then(function (LE) {
+          if (my !== token) return;
+          b.insertBefore(P.still(pic, LE[0], LE[1], 1), s);
+        }).catch(function () { s.textContent = pic.n + ' (no listing)'; });
+      });
+    }
+
+    function apply(map) {
+      M = map;
+      var my = ++token, r = portraitsOf(M), keep = sec.querySelector('#wl-pic-select').value;
+      list = r.list.map(function (e) {
+        var base = P.PICTURES.find(function (p) { return p.n === e[0]; });
+        var names = e[1].map(function (x) { return x.name; }).filter(function (x, i, all) { return all.indexOf(x) === i; });
+        return base && Object.assign({}, base, { name: 'Portrait ' + e[0] + ': ' + names.join(', '), monsters: e[1] });
+      }).filter(Boolean);
+      sec.classList.toggle('wl-pic-none', !list.length);
+      var t = titles[M.n] || 'Map ' + M.n;
+      cap.innerHTML = list.length
+        ? '<b>' + t.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</b>: ' + r.count + ' monster' + (r.count === 1 ? '' : 's') + ' in the table at <code><a href="source-map-' + String(M.n).padStart(2, '0') + '.html#' + hex(r.recs).slice(1) + '">' + hex(r.recs) + '</a></code>, naming '
+          + list.length + ' picture' + (list.length === 1 ? '' : 's') + '. Each is drawn and moved by a port of the engine’s picture code (<code><a href="source-engine.html#0549">$0549</a></code> to <code><a href="source-engine.html#06E0">$06E0</a></code>) from its part’s listing.'
+        : '<b>' + t.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</b>: the map’s table holds no monsters, so no fight there shows a portrait.';
+      if (!list.length) { strip.textContent = ''; who.textContent = ''; W.setPictures([]); return; }
+      thumbs(my);
+      W.setPictures(list, list.some(function (p) { return p.id === keep; }) ? keep : list[0].id);
+    }
+
+    // The portraits' listings load once the section comes near the screen.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        if (!es.some(function (e) { return e.isIntersecting; })) return;
+        seen = true;
+        if (pending) { var p = pending; pending = null; apply(p); }
+      }, { rootMargin: '400px' }).observe(sec);
+    } else seen = true;
+    return { show: function (map) { if (seen) apply(map); else pending = map; } };
+  }
 })();
 </script>

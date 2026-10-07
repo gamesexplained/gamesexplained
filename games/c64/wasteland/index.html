@@ -74,6 +74,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .wl-pic-b{font:500 13px var(--fm);background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
 .wl-pic-b:hover{border-color:var(--ink-mute)}
 .wl-pic-b:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.wl-pic-b:disabled{opacity:.6;cursor:progress}
 .wl-pic-clock{margin-left:auto;color:var(--ink-mute);font-variant-numeric:tabular-nums}
 .wl-pic-tab{width:100%;border-collapse:collapse;margin:12px 0 0;font-family:var(--fm);font-size:12.5px}
 .wl-pic-tab th{text-align:left;font-weight:500;color:var(--ink-mute);border-bottom:1px solid var(--line);padding:4px 10px 4px 0}
@@ -474,6 +475,7 @@ h2.t.wl-sub{margin-top:44px}
       <button type="button" class="wl-pic-b" id="wl-pic-step" title="Run the tick until the channels step once: 512 ticks">Step</button>
       <button type="button" class="wl-pic-b" id="wl-pic-restart">Restart</button>
       <label><input type="checkbox" id="wl-pic-mark"> Outline each channel's last frame</label>
+      <button type="button" class="wl-pic-b" id="wl-pic-gif" title="Save the picture as an animated GIF: from its base frame to the first step after about 15 seconds where it looks the same again, so it loops without a jump">Download GIF</button>
       <span class="wl-pic-clock" id="wl-pic-clock"></span>
     </div>
     <table class="wl-pic-tab">
@@ -481,16 +483,16 @@ h2.t.wl-sub{margin-top:44px}
       <tbody id="wl-pic-rows"></tbody>
     </table>
     <p class="wl-pic-note" id="wl-pic-note" role="status"></p>
-    <p class="cap">The <b>title</b> and five <b>portraits</b>, drawn and moved by a port of the engine's picture code (<code>$0549</code> to <code>$06E0</code>) from the bytes in the Source tab. <b>Step</b> runs the tick until the channels step once. The table gives each channel's script entry, the steps before it reads the next one, and the frame it drew last. A box switches a channel's frames off. The port was run beside the engine's own code on the kit's 6502 simulator: 1,088 cases and 5,649,956 ticks, the bitmap compared after every tick or every step, no difference. The emulator's screenshots of the <a href="reference/title.png">title</a> and the <a href="reference/ranger-center.png">Ranger Center</a> show the same pictures.</p>
+    <p class="cap">The <b>title</b> and all 75 <b>portraits</b>, drawn and moved by a port of the engine's picture code (<code>$0549</code> to <code>$06E0</code>) from the bytes in the Source tab. <b>Step</b> runs the tick until the channels step once. The table gives each channel's script entry, the steps before it reads the next one, and the frame it drew last. A box switches a channel's frames off. The port was run beside the engine's own code on the kit's 6502 simulator, the bitmap compared after every tick or every step: 1,088 cases and 5,649,956 ticks on the title and portraits 0, 1, 3, 6 and 8, and 400 steps of every one of the 75 portraits, with no difference. The emulator's screenshots of the <a href="reference/title.png">title</a> and the <a href="reference/ranger-center.png">Ranger Center</a> show the same pictures. <b>Download GIF</b> saves the picture as an animated GIF, made in the page: it runs from the base frame to the first step after about 15 seconds where the picture looks as it started, so it loops without a jump.</p>
   </div>
-  <p>A picture is a header and its frames. The header's first four bytes give its area: first column, first pixel row, last column and last pixel row. Five words follow, each counted from the start of the picture: the base frame, then the scripts of up to four channels, with 0 for a channel the picture does not use. Starting a picture (<code>$0586</code>) draws the base frame over the whole area and puts each channel at the start of its script. Each of the five portraits here covers columns 1 to 11 and pixel rows 16 to 99. The title covers columns 1 to 32 and pixel rows 8 to 135. Its own header says column 36, and the start-up cuts that to 32 after unpacking it (<span data-part="startup"><code>$8001</code></span>), which leaves the logo in columns 33 to 36 alone.</p>
+  <p>A picture is a header and its frames. The header's first four bytes give its area: first column, first pixel row, last column and last pixel row. Five words follow, each counted from the start of the picture: the base frame, then the scripts of up to four channels, with 0 for a channel the picture does not use. Starting a picture (<code>$0586</code>) draws the base frame over the whole area and puts each channel at the start of its script. Every one of the 75 portraits covers columns 1 to 11 and pixel rows 16 to 99, the top of the picture window, which the engine clears down to row 111 (<code>$12CF</code>). The title covers columns 1 to 32 and pixel rows 8 to 135. Its own header says column 36, and the start-up cuts that to 32 after unpacking it (<span data-part="startup"><code>$8001</code></span>), which leaves the logo in columns 33 to 36 alone.</p>
   <p>A frame is stored column by column. Each block gives a column, a pixel row, and an escape byte, then the bytes that go down that column. At the bottom of the area they carry on at the top of the next column. The escape byte followed by a count and a value makes a run. A block whose column is $FF ends the frame. The base frame is stored over what was there. Every other frame is combined with the screen by exclusive or (XOR). The decoder (<code>$0651</code>) rewrites two of its own instructions to choose between the two (<code>$0648</code>, <code>$064E</code>).</p>
   <p>XOR undoes itself: drawing the same frame twice puts back what was there. One frame both makes a change and takes it away. The doctor's channel 1 draws the same four bytes six times in a row, and his mouth opens and closes three times. A byte of 0 would change nothing, so in these frames a 0 ends the block, and the next block says where to carry on.</p>
   <p>Each channel follows a script of three-byte entries: a delay and a frame. When its delay runs out, the channel draws the next entry's frame and takes that entry's delay. A $FF where the next entry would be sends the channel back to the start of its script (<code>$05F0</code> to <code>$0646</code>).</p>
   <p>The channels step once in every 512 calls of the animation tick (<code>$05C5</code>), which counts them in <code>$B1</code> and <code>$B2</code>. The engine calls the tick each time it polls the keyboard (<code>$2534</code>) and 192 times for each step of the text window's scrolling (<code>$2161</code>), so a picture moves while the game waits for a key or prints. On the title that comes to about seven steps a second.</p>
   <p>The boxes in the table take a channel's frames out of the picture. The page keeps what each channel has XORed in so far and XORs it out again, which leaves the picture as if that channel had never run. The game has a switch of its own for each channel, <code>$5BFB</code> to <code>$5BFE</code>, which stops a channel where it is (<code>$05EB</code>). The destruction of Base Cochise uses them. Module 4 holds channel 1 still while the picture of the base is shown, then, after the screen shakes, stops channel 0 and lets channel 1 run (<span data-part="module-4"><code>$CA27</code>, <code>$CA54</code></span>).</p>
   <p>On the title, channels 1 to 3 make ten stars twinkle by flipping one bit of each. Channel 0's 51 entries are the satellite, and they do not quite cancel out. One run through them, 74 steps, leaves five pixels near the top of the planet a different colour, and the next run changes them back.</p>
-  <p>The title is drawn from the start-up's copy, which it unpacks at <span data-part="startup"><code>$8A00</code></span>. The portraits are packed on the disk. The Ranger Center's header asks for 72 pages (<span data-part="ranger"><code>$7E05</code></span>) and the loader (<code>$2890</code>) reads them all, but the program is only the first eight. The rest is what follows it on side 1, five packed portraits among it (<span data-part="ranger"><code>$B500</code> to <code>$C5D1</code></span>). The unpacker is not kept in memory: each time, the engine reads it from track 35 over the third of the font's four pages, the lower-case letters at <code>$C800</code>, runs it, and reads the font's page back (<code>$0524</code>). The page unpacks the portraits with a port of that code, into the buffer at <span data-part=""><code>$CA00</code></span> where the engine unpacks them (<code>$2631</code>).</p>
+  <p>The title is drawn from the start-up's copy, which it unpacks at <span data-part="startup"><code>$8A00</code></span>. The portraits are packed on the disk, and a directory on track 35 says where each one starts, how many sectors to read and which side holds it (<code>$2790</code>). The unpacker is not kept in memory: each time, the engine reads it from track 35 over the third of the font's four pages, the lower-case letters at <code>$C800</code>, runs it, and reads the font's page back (<code>$0524</code>). A picture number with bit 7 clear is unpacked to <span data-part=""><code>$CA00</code></span>, and with bit 7 set to <span data-part=""><code>$E000</code></span> (<code>$2631</code>). The doctor, the shop, the library, the Ranger Center and the Grim Reaper ask for <span data-part=""><code>$E000</code></span>, and a fight for <span data-part=""><code>$CA00</code></span>. Each portrait has a part of its own on the Source tab, holding the bytes the game's own load left in the buffer. The load reads whole sectors and the unpacker decodes all of them, so after a picture comes the start of the next one on the disk, decoded with the wrong table. The Source tab marks those bytes, and the picture code never reads them.</p>
 </section>
 
 <section data-part="engine" id="wl-sound">
@@ -1845,11 +1847,12 @@ if (typeof module !== 'undefined') module.exports = globalThis.WLMaps;
 /* pictures/pictures.js */
 /* Wasteland (C64): the animated pictures. A port of the engine's picture code, which draws a
    picture's base frame into the bitmap and then runs up to four animation channels, each a script
-   of XOR frames; and of the unpacker that turns a packed portrait into the form that code reads.
-   The pictures are drawn from the bytes the Source tab shows: the title from the start-up's
-   listing (it unpacks its picture at $8A00 and patches it there), the portraits from the packed
-   copies the Ranger Center's load leaves in its listing. Checked against the game's own code on
-   the kit's 6502 simulator by test_pictures.js (in the game's work/ folder).
+   of XOR frames. The pictures are drawn from the bytes the Source tab shows: the title from the
+   start-up's listing (it unpacks its picture at $8A00 and patches it there), each portrait from
+   its own part's listing, the bytes load_portrait ($2631) unpacked from the disk. Checked against
+   the game's own code on the kit's 6502 simulator by test_pictures.js (in the game's work/
+   folder). Also writes a picture's animation as a GIF. The How it works and Maps pages each
+   carry a copy of this script.
    Defines one global, WLPictures; needs ../../lib/c64.js (C64.load, C64.PAL) on the page. */
 globalThis.WLPictures = (function () {
   'use strict';
@@ -2092,100 +2095,101 @@ globalThis.WLPictures = (function () {
     }
   }
 
-  // ---- the unpacker -------------------------------------------------------------------------
-  // unpack_stream ($0524, engine) reads the unpacker's code from track 35, logical sector 16 to
-  // $C800 and calls it. That sector is in no listing, so this port of it is checked against the
-  // sector's own code in the test. Its code table, the 20 bytes at $C8EC-$C8FF of that sector,
-  // copied from side 1's disk (all four sides hold the same sector):
-  const CODES = [0x00, 0x01, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x16, 0x17, 0x18, 0x19, 0x1A,
-                 0x1B, 0x1C, 0x1D, 0x3C, 0x3D, 0x3E];
-
-  // Unpacks the stream that starts at mem[start]: 20 values read eight bits each (the value
-  // table the unpacker keeps at $F4E5), then codes read high bit first: 0 and eight bits is a
-  // byte as it is; 1 and a code of three to six bits is one of the 20 values; 1, 111111, a count
-  // and a value is a run (count 0: 256). Stops where the engine's unpack stops:
-  //   opts.window  the read window in 256-byte units from the start byte ($CE): the unpacker
-  //                stops before writing once it has read that many units (default 256)
-  //   opts.limit   the bytes the buffer holds: it stops after writing the last of them ($CD)
-  //   opts.end     and, for the page: before any code that would read mem[end] or beyond, so
-  //                that only the stream's own bytes are decoded
-  // Returns { out (Uint8Array), read (bytes read), table (the 20 values) }.
-  function unpack(mem, start, opts = {}) {
-    const limit = opts.limit === undefined ? 0x10000 : opts.limit;
-    const end = opts.end === undefined ? Infinity : opts.end;
-    let pos = start, e3 = 0xFF, e2 = 0, e5 = 0;
-    let ce = opts.window === undefined ? -1 : opts.window & 0xFF;   // -1: no window
-    const OWN_END = {};
-    function byte() {                                            // $C8C5
-      if (pos >= end) throw OWN_END;
-      const v = mem[pos & 0xFFFF]; pos++;
-      e5 = (e5 - 1) & 0xFF;                                      // $C8E5: every 256 bytes,
-      if (!e5 && ce >= 0) ce = (ce - 1) & 0xFF;                  // one unit of the window
-      return v;
-    }
-    function bit(a) {                                            // $C8B0: A = A << 1 | the next bit
-      if (e3 & 0x80) { e3 = 7; e2 = byte(); }
-      const c = e2 >> 7 & 1;
-      e2 = (e2 << 1) & 0xFF; e3 = (e3 - 1) & 0xFF;
-      return (a << 1 | c) & 0xFF;
-    }
-    function bits(n) { let a = 0; for (let i = 0; i < n; i++) a = bit(a); return a; }   // $C896
-    const table = [];
-    // $C848-$C886: three bits, 0 or 1 naming values 0 and 1; else one more bit at a time,
-    // compared with the code table's entries 8-2, then 16-9, then 19-17; no match is a run.
-    function value() {
-      let a = bits(3);
-      if (a <= 1) return table[a];
-      a = bit(a);
-      for (let y = 8; y > 1; y--) if (a === CODES[y]) return table[y];
-      a = bit(a);
-      for (let y = 16; y > 8; y--) if (a === CODES[y]) return table[y];
-      a = bit(a);
-      for (let y = 19; y > 16; y--) if (a === CODES[y]) return table[y];
-      return -1;
-    }
-    const out = [];
-    let e1 = 0, e4 = 0;
-    try {
-      for (let y = 0; y < 20; y++) table.push(bits(8));          // $C814
-      for (;;) {
-        let v;                                                   // $C839: the next value
-        if (e1) { e1--; v = e4; }                                // the rest of a run
-        else if (!bit(0)) v = bits(8);                           // a byte as it is
-        else {
-          v = value();
-          if (v < 0) {                                           // $C887: a run
-            e1 = (bits(8) - 1) & 0xFF;
-            e4 = bits(8); v = e4;
-          }
-        }
-        if (ce === 0) break;                                     // $C822: the window is used up
-        out.push(v);
-        if (out.length >= limit) break;                          // $C82E-$C836
-      }
-    } catch (e) { if (e !== OWN_END) throw e; }
-    return { out: Uint8Array.from(out), read: pos - start, table };
-  }
-
   // ---- the pictures this page can draw ------------------------------------------------------
   // The title: the start-up unpacks it to $8A00 (startup $7FDA-$7FFE) and sets its last column
   // to 32 ($8001), so that it stops short of the logo in columns 33-36. The listing holds it as
-  // it is then. The portraits: packed copies in the Ranger Center's load, $B500-$C5D1, which
-  // nothing in that program reads (the loader reads 72 sectors for an 8-sector file, so the
-  // load runs on over what follows it on side 1); each runs to the next one's label. Who shows
-  // them: picture 0 the doctor (module-0 $CA15), 1 the shop (module-1 $CA1E), 3 the Ranger
-  // Center (ranger $7E13), 8 the radio (radio $7EB7, $7FA0); 6 not traced.
-  const PICTURES = [
-    { id: 'title', name: 'The title picture', part: 'startup', label: 'title_picture', at: 0x8A00 },
-    { id: 'p0', name: 'Portrait 0, the doctor', part: 'ranger', label: 'portrait_0_packed_copy', at: 0xB500, end: 'portrait_1_packed_copy', endAt: 0xB829 },
-    { id: 'p1', name: 'Portrait 1, the shop', part: 'ranger', label: 'portrait_1_packed_copy', at: 0xB829, end: 'portrait_3_packed_copy', endAt: 0xBB64 },
-    { id: 'p3', name: 'Portrait 3, the Ranger Center', part: 'ranger', label: 'portrait_3_packed_copy', at: 0xBB64, end: 'portrait_6_packed_copy', endAt: 0xBED3 },
-    { id: 'p6', name: 'Portrait 6', part: 'ranger', label: 'portrait_6_packed_copy', at: 0xBED3, end: 'portrait_8_packed_copy', endAt: 0xC260 },
-    { id: 'p8', name: 'Portrait 8, the radio', part: 'ranger', label: 'portrait_8_packed_copy', at: 0xC260, end: 'portrait_10_packed_head', endAt: 0xC5D2 },
+  // it is then. The portraits: one part each, parts/portrait-NN, holding the bytes load_portrait
+  // ($2631) leaves in its buffer. A picture number with bit 7 clear goes to $CA00, with bit 7
+  // set to $E000; each part holds its picture where the code that shows it asks for it. Pictures
+  // 0-3 and 59 at $E000: the doctor (module-0 $CA15), the shop (module-1 $CA1E), the library
+  // (module-2 $CA15), the Ranger Center (ranger $7E13) and the Grim Reaper (death $7E13), each
+  // through show_picture_e000 ($041C). Picture 8, the radio (radio $7EB7, $7FA0) and the fights'
+  // picture when no monster is in reach (game $B91E); 11, a promotion (radio $7EEB, $7FBE).
+  // Every other number is named by byte 7 of monster records in the maps (encounter_portrait,
+  // game $B91E), which the name here samples; 37 and 75 by nothing found.
+  // [picture, buffer, what shows it]
+  const PORTRAITS = [
+    [0, 0xE000, "the doctor"],
+    [1, 0xE000, "the shop"],
+    [2, 0xE000, "the library"],
+    [3, 0xE000, "the Ranger Center"],
+    [4, 0xCA00, "Tronodile, Clawer Leader, Clawman…"],
+    [5, 0xCA00, "New Waver, Punker, Spiker…"],
+    [6, 0xCA00, "Wasteland Warrior, Rail Raider, Red Ryder…"],
+    [7, 0xCA00, "Shambler Ghoul, Lost Soul, Pit Ghoul"],
+    [8, 0xCA00, "the radio"],
+    [9, 0xCA00, "Silicon Sniper, Hunter, Killer…"],
+    [10, 0xCA00, "Wild Canine, Dire Coyote, Nuke Pooch…"],
+    [11, 0xCA00, "a promotion, on the radio"],
+    [12, 0xCA00, "Clerk, Ace, Mayor Pedros…"],
+    [13, 0xCA00, "Topekan Woman, Woman"],
+    [14, 0xCA00, "Titanium Clawer, Silver Strangler"],
+    [15, 0xCA00, "Monk Petall, Monk Johan, Monk Russ…"],
+    [16, 0xCA00, "Radioactive Vermin, Bunny, Rat…"],
+    [17, 0xCA00, "Desert Dweller, Drool"],
+    [18, 0xCA00, "Prostitute"],
+    [19, 0xCA00, "Fat Freddy"],
+    [20, 0xCA00, "Casino Guard, Thug, Roving Guard…"],
+    [21, 0xCA00, "Insect"],
+    [22, 0xCA00, "Gambler, Drunk, Man…"],
+    [23, 0xCA00, "Warden Nicholas, Jailer Corbett, Jailer Patrick…"],
+    [24, 0xCA00, "Charmaine"],
+    [25, 0xCA00, "Sister Wrath, Mistress Jennifer, Mistress Krys…"],
+    [26, 0xCA00, "Redhawk, Meditator, Follower…"],
+    [27, 0xCA00, "RadAngel, Radiation Angel"],
+    [28, 0xCA00, "Faran Brygo"],
+    [29, 0xCA00, "Sister Theodosia, Sister Ursula, Sister Grace…"],
+    [30, 0xCA00, "Sister Lucretia, Sister Jade, Sister Isolde…"],
+    [31, 0xCA00, "Brother Raphael, Brother Donatello, Brother Goliath…"],
+    [32, 0xCA00, "Brother Phillip, Brother Juaquin, Brother Thomas…"],
+    [33, 0xCA00, "Android, Psychopathic Android"],
+    [34, 0xCA00, "Tronnosaurus, Cyborg, Hexborg…"],
+    [35, 0xCA00, "Gundroid, Cyborg Commando, Tazel…"],
+    [36, 0xCA00, "Scorpitron"],
+    [37, 0xCA00, ""],
+    [38, 0xCA00, "Biker Scum, Rib Cracker, Cutthroat…"],
+    [39, 0xCA00, "Slicerdicer, Chopter, Combat Hacker"],
+    [40, 0xCA00, "Thug, Scavenger, Guard…"],
+    [41, 0xCA00, "Sniperdroid, Warroid Mark 1, Warroid Mark 2…"],
+    [42, 0xCA00, "Glowing Slime, Desert Tube, Trash Slitherer…"],
+    [43, 0xCA00, "Blood Priest"],
+    [44, 0xCA00, "Gunsel, Gunman, Marksman…"],
+    [45, 0xCA00, "Base Policeman, Policeman"],
+    [46, 0xCA00, "Bum, Sand Bum, Hobo"],
+    [47, 0xCA00, "Huey, Dewey, Louie"],
+    [48, 0xCA00, "Ugly John"],
+    [49, 0xCA00, "Rottweiler, Mongrel, Coydog…"],
+    [50, 0xCA00, "Deserter, Ozoner, Outlaw…"],
+    [54, 0xCA00, "Slithering Iguana, Gila Monitor, Desert Lizard…"],
+    [55, 0xCA00, "Harry"],
+    [56, 0xCA00, "Topekan Child, Baby Topeka, Brat…"],
+    [57, 0xCA00, "Woman, Lady, Young Woman…"],
+    [58, 0xCA00, "Laurie, Housekeeper, Felicia"],
+    [59, 0xE000, "the Grim Reaper"],
+    [60, 0xCA00, "Widowmaker, Marksman, Gunman…"],
+    [61, 0xCA00, "Mailed Wolf, Iron Wolf, Spawn Wolf…"],
+    [62, 0xCA00, "Warbot, VTOL Auto-fire Robot, Stainless Steel Flechette rifle"],
+    [64, 0xCA00, "Titanium Clawer, Threshing Crawler, Plasma Constrictor"],
+    [65, 0xCA00, "Irwin John Finster, Finster Sinister, Finster Dexter"],
+    [66, 0xCA00, "Octotron, Fusion Octotron"],
+    [67, 0xCA00, "Chopter, Steel Reaver, Silicon Sniper…"],
+    [68, 0xCA00, "Desert Scum, Bandit, Biker Thug"],
+    [69, 0xCA00, "Towny, Mad Dog Fargo, Metal Maniac"],
+    [70, 0xCA00, "Spineless Ghoul, Night Screamer, Night Terror"],
+    [71, 0xCA00, "Large Scorparundi, Lie Spider"],
+    [72, 0xCA00, "Finster Leviathan"],
+    [73, 0xCA00, "Turbo Meson Cannon, Mk 10 Turbo Meson Cannon, 7mm Vulcan Cannon…"],
+    [74, 0xCA00, "Vanadium Vulture"],
+    [75, 0xCA00, ""],
+    [76, 0xCA00, "Vax"],
+    [77, 0xCA00, "Master Cylinder, Laser Pod Blaster, Laser Hypermortar…"],
+    [78, 0xCA00, "Woman"],
   ];
-  // A portrait is unpacked to the buffer at $CA00, as load_portrait ($2631) does for a picture
-  // number with bit 7 clear (bit 7 set: $E000). Every address the engine uses is relative to it.
-  const PORTRAIT_BUFFER = 0xCA00;
+  const PICTURES = [{ id: 'title', name: 'The title picture', part: 'startup', label: 'title_picture', at: 0x8A00 }]
+    .concat(PORTRAITS.map(([n, at, who]) => ({
+      id: 'p' + n, n, name: 'Portrait ' + n + (who ? ': ' + who : ''), who,
+      part: 'portrait-' + String(n).padStart(2, '0'), label: 'p' + n + '_header', at })));
+  const PORTRAIT_BUFFER = 0xCA00, PORTRAIT_BUFFER_HI = 0xE000;
 
   // An address in a listing image by its label, or the address it had when this page was made.
   function addressOf(img, label, at) {
@@ -2238,18 +2242,17 @@ globalThis.WLPictures = (function () {
   // byName, or plain), and engine the engine's, which a portrait needs for its colours.
   function prepare(pic, listing, engine) {
     const img = listing.ram, m = new Uint8Array(0x10000);
+    const at = addressOf(listing, pic.label, pic.at);
     if (pic.part === 'startup') {
-      const at = addressOf(listing, pic.label, pic.at);
       m.set(img.subarray(at, 0xA300), at);
       colourTitleArea(m, img);
       printLogo(m, img, addressOf(listing, 'logo_font', 0xCA00), addressOf(listing, 'logo_glyph_block', 0x83AD));
-      return { m, base: at, show: { c0: 1, c1: 36, r0: 8, r1: 135 }, packed: null };
+      return { m, base: at, show: { c0: 1, c1: 36, r0: 8, r1: 135 } };
     }
-    const at = addressOf(listing, pic.label, pic.at), end = addressOf(listing, pic.end, pic.endAt);
-    const u = unpack(img, at, { end, limit: 0x0600 });
-    m.set(u.out, PORTRAIT_BUFFER);
+    // the buffer as the part holds it: $CA00-$CFFF, or $E000-$EFFF for bit 7 (set_unpack_limit $2687)
+    m.set(img.subarray(at, at + (at === PORTRAIT_BUFFER_HI ? 0x1000 : 0x600)), at);
     colourWindow(m, windowColour(engine));
-    return { m, base: PORTRAIT_BUFFER, show: null, packed: { at, end, read: u.read, size: u.out.length } };
+    return { m, base: at, show: null };
   }
 
   // The scripts of a picture as the engine would read them: entries of a delay and a frame
@@ -2307,17 +2310,138 @@ globalThis.WLPictures = (function () {
   const PASSES_PER_SECOND = 6.9;
   const CH_COLOURS = ['#ffd60a', '#32d74b', '#ff375f', '#64d2ff'];
 
+  // ---- a GIF of a picture -------------------------------------------------------------------
+  // GIF89a, written here: the C64's 16 colours (c64.js's palette) as the global table, LZW codes
+  // of 5 to 12 bits, and after the first image only the rectangle that changed, left in place
+  // for the next (disposal 1). It runs from the base frame to the first step from GIF_MIN_STEPS
+  // on (about 15 seconds at PASSES_PER_SECOND) where the picture looks exactly as the base frame
+  // drew it, so it loops without a jump; a picture that has not come back to it by
+  // GIF_MAX_STEPS stops at GIF_MIN_STEPS and jumps back to the start. The switches of the page's
+  // table do not reach it: it is the picture as the game shows it.
+  const GIF_MIN_STEPS = 100, GIF_MAX_STEPS = 600;
+
+  function lzw(px, minCode) {
+    const out = [], clear = 1 << minCode, eoi = clear + 1;
+    let cur = 0, nbits = 0, size = minCode + 1, next = eoi + 1, dict = new Map();
+    const emit = c => { cur |= c << nbits; nbits += size; while (nbits >= 8) { out.push(cur & 255); cur >>>= 8; nbits -= 8; } };
+    emit(clear);
+    let prefix = px[0];
+    for (let i = 1; i < px.length; i++) {
+      const k = px[i], key = prefix * 4096 + k;
+      if (dict.has(key)) { prefix = dict.get(key); continue; }
+      emit(prefix);
+      if (next < 4096) { dict.set(key, next++); if (next > (1 << size) && size < 12) size++; }
+      else { emit(clear); dict = new Map(); size = minCode + 1; next = eoi + 1; }
+      prefix = k;
+    }
+    emit(prefix); emit(eoi);
+    if (nbits) out.push(cur & 255);
+    return out;
+  }
+
+  // frames: { x, y, w, h, px (palette indices), delay (hundredths of a second) }
+  function gifFile(W, H, frames) {
+    const b = [], s = t => { for (const c of t) b.push(c.charCodeAt(0)); }, w16 = v => b.push(v & 255, v >> 8);
+    s('GIF89a'); w16(W); w16(H); b.push(0xF3, 0, 0);                    // a global table of 16
+    for (const h of C64.PAL) b.push(...[1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    b.push(0x21, 0xFF, 11); s('NETSCAPE2.0'); b.push(3, 1, 0, 0, 0);    // loop for ever
+    for (const f of frames) {
+      b.push(0x21, 0xF9, 4, 1 << 2, f.delay & 255, f.delay >> 8, 0, 0);
+      b.push(0x2C); w16(f.x); w16(f.y); w16(f.w); w16(f.h); b.push(0, 4);
+      const d = lzw(f.px, 4);
+      for (let i = 0; i < d.length; i += 255) { const n = Math.min(255, d.length - i); b.push(n); for (let j = 0; j < n; j++) b.push(d[i + j]); }
+      b.push(0);
+    }
+    b.push(0x3B);
+    return Uint8Array.from(b);
+  }
+
+  // The area's pixels as palette indices, s pixels a hires pixel, as render() draws them.
+  function indices(m, area, s) {
+    const W = (area.c1 - area.c0 + 1) * 8 * s, H = (area.r1 - area.r0 + 1) * s, out = new Uint8Array(W * H);
+    for (let y = area.r0; y <= area.r1; y++) for (let x = area.c0; x <= area.c1; x++) {
+      const b = m[bitmapAddress(x, y)], mat = m[MATRIX + 40 * (y >> 3) + x];
+      for (let p = 0; p < 4; p++) {
+        const c = pairColour(b, p, mat);
+        for (let dy = 0; dy < s; dy++) out.fill(c, ((y - area.r0) * s + dy) * W + ((x - area.c0) * 8 + p * 2) * s, ((y - area.r0) * s + dy) * W + ((x - area.c0) * 8 + p * 2 + 2) * s);
+      }
+    }
+    return { W, H, px: out };
+  }
+
+  // The scale a picture is shown at: 2 for one 200 or more hires pixels wide, else 3.
+  const scaleOf = area => (area.c1 - area.c0 + 1) * 8 >= 200 ? 2 : 3;
+
+  // Returns { bytes, steps, seamless, W, H }.
+  function gif(pic, listing, engine) {
+    const p = prepare(pic, listing, engine), eng = new Engine(p.m);
+    eng.start(p.base);
+    const area = p.show || { c0: eng.left, c1: eng.right, r0: eng.top, r1: eng.bottom }, s = scaleOf(area);
+    const first = indices(p.m, area, s), W = first.W;
+    const frames = [{ x: 0, y: 0, w: W, h: first.H, px: first.px, steps: 0 }];
+    let prev = first.px, n = 0, seamless = false, atMin = null;
+    for (;;) {
+      eng.step(); n++;
+      const cur = indices(p.m, area, s).px;
+      frames[frames.length - 1].steps++;
+      if (n >= GIF_MIN_STEPS && cur.every((v, j) => v === first.px[j])) { seamless = true; break; }  // the first image again
+      if (n === GIF_MIN_STEPS) atMin = { length: frames.length, steps: frames[frames.length - 1].steps };
+      if (n >= GIF_MAX_STEPS) { frames.length = atMin.length; frames[atMin.length - 1].steps = atMin.steps; n = GIF_MIN_STEPS; break; }
+      let x0 = W, y0 = first.H, x1 = -1, y1 = -1;
+      for (let j = 0; j < cur.length; j++) if (cur[j] !== prev[j]) {
+        const x = j % W, y = j / W | 0;
+        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      }
+      prev = cur;
+      if (x1 < 0) continue;
+      const w = x1 - x0 + 1, h = y1 - y0 + 1, px = new Uint8Array(w * h);
+      for (let y = 0; y < h; y++) px.set(cur.subarray((y0 + y) * W + x0, (y0 + y) * W + x0 + w), y * w);
+      frames.push({ x: x0, y: y0, w, h, px, steps: 0 });
+    }
+    // each frame lasts its steps at PASSES_PER_SECOND, rounded so that the times add up
+    let t = 0, done = 0;
+    for (const f of frames) { t += f.steps * 100 / PASSES_PER_SECOND; f.delay = Math.round(t) - done; done += f.delay; }
+    return { bytes: gifFile(W, first.H, frames), steps: n, seamless, W, H: first.H };
+  }
+
+  // The base frame alone, drawn into a new canvas at scale s (for a row of small pictures).
+  function still(pic, listing, engine, s) {
+    const p = prepare(pic, listing, engine), eng = new Engine(p.m);
+    eng.start(p.base);
+    const area = p.show || { c0: eng.left, c1: eng.right, r0: eng.top, r1: eng.bottom };
+    const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    const cv = document.createElement('canvas');
+    cv.width = (area.c1 - area.c0 + 1) * 8 * s; cv.height = (area.r1 - area.r0 + 1) * s;
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(cv.width, cv.height);
+    render(p.m, area, s, rgb, null, img);
+    ctx.putImageData(img, 0, 0);
+    return cv;
+  }
+
+  // The listings, each fetched once a page.
+  const listingCache = new Map();
+  function loadPart(base, part) {
+    const url = base + 'parts/' + part + '/listing.json';
+    if (!listingCache.has(url)) listingCache.set(url, C64.load(url).catch(e => { listingCache.delete(url); throw e; }));
+    return listingCache.get(url);
+  }
+
+  // The widget in root, by the ids of its parts: the canvas wl-pic-cv and the select
+  // wl-pic-select, and as the page has them wl-pic-prev/-next, -play, -step, -restart, -mark,
+  // -clock, -rows (the channels' table), -note and -gif (Download GIF). opts.pictures: the list
+  // to choose from (default every picture); opts.picture: the first one's id. Returns
+  // { choose(id), setPictures(list, id) }.
   function mount(root, opts = {}) {
     const base = opts.base || '';
     const $ = id => root.querySelector('#' + id);
     const cv = $('wl-pic-cv'), sel = $('wl-pic-select'), rows = $('wl-pic-rows');
     const playB = $('wl-pic-play'), stepB = $('wl-pic-step'), restartB = $('wl-pic-restart');
     const markC = $('wl-pic-mark'), clock = $('wl-pic-clock'), note = $('wl-pic-note');
-    const prevB = $('wl-pic-prev'), nextB = $('wl-pic-next');
-    if (!globalThis.C64) { if (note) note.textContent = 'This widget needs the site\'s c64.js, which did not load.'; return; }
+    const prevB = $('wl-pic-prev'), nextB = $('wl-pic-next'), gifB = $('wl-pic-gif');
+    if (!globalThis.C64) { if (note) note.textContent = 'This widget needs the site\'s c64.js, which did not load.'; return null; }
     const rgb = C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
-    const listings = {};
-    const loadPart = part => listings[part] || (listings[part] = C64.load(base + 'parts/' + part + '/listing.json'));
+    const partsOf = pic => pic.part === 'startup' ? [pic.part] : [pic.part, 'engine'];   // a portrait's window colour is the engine's
+    let list = opts.pictures || PICTURES;
 
     let cur = null;               // { pic, eng, m, area, s, layers, scr, hidden }
     let playing = true, acc = 0, lastT = 0, visible = true, token = 0;
@@ -2326,11 +2450,11 @@ globalThis.WLPictures = (function () {
     function build(pic, L, E) {
       const p = prepare(pic, L, E);
       const eng = new Engine(p.m), layers = new Layers(eng);
-      const st = { pic, eng, m: p.m, packed: p.packed, layers, hidden: [false, false, false, false] };
+      const st = { pic, eng, m: p.m, layers, hidden: [false, false, false, false] };
       layers.record(eng.start(p.base));
       const area = p.show || { c0: eng.left, c1: eng.right, r0: eng.top, r1: eng.bottom };
       st.area = area;
-      st.s = (area.c1 - area.c0 + 1) * 8 >= 200 ? 2 : 3;
+      st.s = scaleOf(area);
       st.scr = scripts(p.m, p.base);
       if (note) note.textContent = '';
       return st;
@@ -2357,10 +2481,10 @@ globalThis.WLPictures = (function () {
       ctx.putImageData(img, 0, 0);
       if (markC && markC.checked) {
         ctx.lineWidth = Math.max(1, s - 1);
-        st.layers.last.forEach((list, ch) => {
+        st.layers.last.forEach((cells0, ch) => {
           if (st.hidden[ch]) return;
           ctx.strokeStyle = CH_COLOURS[ch];
-          const cells = new Set(list.map(a => { const o = a - BITMAP; return (o / 320 | 0) * 40 + ((o % 320) >> 3); }));
+          const cells = new Set(cells0.map(a => { const o = a - BITMAP; return (o / 320 | 0) * 40 + ((o % 320) >> 3); }));
           for (const c of cells) {
             const row = c / 40 | 0, col = c % 40;
             const x = (col - area.c0) * 8 * s, y = (row * 8 - area.r0) * s;
@@ -2375,7 +2499,8 @@ globalThis.WLPictures = (function () {
     // delay still has to run ($DA+X), and the frame that entry named.
     function readout() {
       const st = cur, eng = st.eng, title = st.pic.part === 'startup';
-      clock.textContent = 'step ' + eng.steps.toLocaleString('en-GB') + ' · tick ' + eng.ticks.toLocaleString('en-GB');
+      if (clock) clock.textContent = 'step ' + eng.steps.toLocaleString('en-GB') + ' · tick ' + eng.ticks.toLocaleString('en-GB');
+      if (!rows) return;
       const where = a => title ? hex(a) : '+' + hex((a - eng.base) & 0xFFFF, 2);
       for (let ch = 0; ch < 4; ch++) {
         const tr = rows.children[ch], sc = st.scr[ch], cells = tr.children;
@@ -2395,16 +2520,17 @@ globalThis.WLPictures = (function () {
         const f = st.layers.frames[ch];
         cells[3].textContent = '';
         if (f < 0) cells[3].textContent = 'none yet';
-        else if (title) {
+        else {
           const a = document.createElement('a');
-          a.href = `source-${st.pic.part}.html#${hex(f).slice(1)}`;
-          a.textContent = hex(f);
+          a.href = `${base}source-${st.pic.part}.html#${hex(f).slice(1)}`;
+          a.textContent = title ? hex(f) : where(f);
           cells[3].appendChild(a);
-        } else cells[3].textContent = where(f);
+        }
       }
     }
 
     function buildRows() {
+      if (!rows) return;
       rows.textContent = '';
       for (let ch = 0; ch < 4; ch++) {
         const tr = document.createElement('tr');
@@ -2424,14 +2550,20 @@ globalThis.WLPictures = (function () {
       }
     }
 
+    function arrows() {
+      const i = list.findIndex(p => p.id === sel.value);
+      if (prevB) prevB.classList.toggle('off', i <= 0);
+      if (nextB) nextB.classList.toggle('off', i < 0 || i === list.length - 1);
+    }
+
     async function choose(id) {
-      const pic = PICTURES.find(p => p.id === id) || PICTURES[0];
+      const pic = list.find(p => p.id === id) || list[0];
       const my = ++token;
-      // a portrait takes its window colour from the engine's listing
-      const parts = pic.part === 'startup' ? [pic.part] : [pic.part, 'engine'];
+      if (!pic) { cur = null; cv.width = 0; return; }
+      const parts = partsOf(pic);
       if (note) note.textContent = 'Loading ' + parts.join(' and ') + ' listings…';
       let L, E;
-      try { [L, E] = await Promise.all(parts.map(loadPart)); } catch (e) {
+      try { [L, E] = await Promise.all(parts.map(q => loadPart(base, q))); } catch (e) {
         if (note && my === token) note.textContent = 'Could not load a listing (' + parts.map(q => 'parts/' + q + '/listing.json').join(', ') + '): ' + e.message;
         return;
       }
@@ -2441,14 +2573,25 @@ globalThis.WLPictures = (function () {
         return;
       }
       sel.value = pic.id;
-      const i = PICTURES.indexOf(pic);
-      prevB.classList.toggle('off', i === 0); nextB.classList.toggle('off', i === PICTURES.length - 1);
+      arrows();
+      if (opts.onChoose) opts.onChoose(pic);
       draw();
+    }
+
+    function fill() {
+      sel.textContent = '';
+      for (const p of list) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o); }
+    }
+
+    function setPictures(next, id) {
+      list = next;
+      fill();
+      return choose(id || (list[0] && list[0].id));
     }
 
     function setPlaying(p) {
       playing = p;
-      playB.textContent = p ? 'Pause' : 'Play';
+      if (playB) playB.textContent = p ? 'Pause' : 'Play';
     }
 
     function frame(t) {
@@ -2462,27 +2605,49 @@ globalThis.WLPictures = (function () {
       if (moved) draw();
     }
 
+    // Download GIF: the picture from its base frame, made here and saved as a file.
+    async function download() {
+      if (!cur) return;
+      const pic = cur.pic, label = gifB.textContent;
+      gifB.disabled = true; gifB.textContent = 'Making the GIF…';
+      try {
+        await new Promise(r => setTimeout(r, 20));                     // let the button change first
+        const [L, E] = await Promise.all(partsOf(pic).map(q => loadPart(base, q)));
+        const g = gif(pic, L, E);
+        const url = URL.createObjectURL(new Blob([g.bytes], { type: 'image/gif' }));
+        const a = document.createElement('a');
+        a.href = url; a.download = 'wasteland-' + (pic.part === 'startup' ? 'title' : 'portrait-' + pic.n) + '.gif';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (e) {
+        if (note) note.textContent = 'Could not make the GIF: ' + e.message;
+      }
+      gifB.disabled = false; gifB.textContent = label;
+    }
+
     buildRows();
-    sel.textContent = '';
-    for (const p of PICTURES) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o); }
+    fill();
     sel.addEventListener('change', () => choose(sel.value));
-    prevB.addEventListener('click', () => { const i = PICTURES.findIndex(p => p.id === sel.value); if (i > 0) choose(PICTURES[i - 1].id); });
-    nextB.addEventListener('click', () => { const i = PICTURES.findIndex(p => p.id === sel.value); if (i < PICTURES.length - 1) choose(PICTURES[i + 1].id); });
-    playB.addEventListener('click', () => setPlaying(!playing));
-    stepB.addEventListener('click', () => { setPlaying(false); if (cur) { cur.layers.record(cur.eng.step()); draw(); } });
-    restartB.addEventListener('click', () => { if (cur) restart(); });
+    const by = d => () => { const i = list.findIndex(p => p.id === sel.value); if (list[i + d]) choose(list[i + d].id); };
+    if (prevB) prevB.addEventListener('click', by(-1));
+    if (nextB) nextB.addEventListener('click', by(1));
+    if (playB) playB.addEventListener('click', () => setPlaying(!playing));
+    if (stepB) stepB.addEventListener('click', () => { setPlaying(false); if (cur) { cur.layers.record(cur.eng.step()); draw(); } });
+    if (restartB) restartB.addEventListener('click', () => { if (cur) restart(); });
     if (markC) markC.addEventListener('change', draw);
+    if (gifB) gifB.addEventListener('click', download);
     if ('IntersectionObserver' in globalThis) {
       new IntersectionObserver(es => { visible = es.some(e => e.isIntersecting); }).observe(cv);
     }
     setPlaying(true);
     requestAnimationFrame(frame);
-    return choose(opts.picture || 'title');
+    if (list.length) choose(opts.picture || list[0].id);
+    return { choose, setPictures };
   }
 
-  return { Engine, Layers, unpack, bitmapAddress, prepare, scripts, colourTitleArea, printLogo, windowColour, colourWindow, render,
-           PICTURES, PORTRAIT_BUFFER, BITMAP, MATRIX, BACKGROUND, COLOUR_RAM, CODES,
-           PASSES_PER_SECOND, mount };
+  return { Engine, Layers, bitmapAddress, prepare, scripts, colourTitleArea, printLogo, windowColour, colourWindow, render,
+           gif, still, loadPart, scaleOf, PICTURES, PORTRAITS, PORTRAIT_BUFFER, PORTRAIT_BUFFER_HI, BITMAP, MATRIX,
+           BACKGROUND, COLOUR_RAM, PASSES_PER_SECOND, GIF_MIN_STEPS, GIF_MAX_STEPS, mount };
 })();
 </script>
 <script>

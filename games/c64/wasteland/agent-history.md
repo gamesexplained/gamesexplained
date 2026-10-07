@@ -171,3 +171,59 @@ death screen turned out to share; the skill list's header put on the row
 above the one it prints on; and play_sound's last write said to start
 the note, which for sound 11 it does not, the gate bit of its control
 byte being clear. Each was corrected.
+
+## 7 October 2026, the portraits (claude-opus-5-5[1m])
+
+One session in a hosted Linux container, no subagents but the one that
+checked the comment sample. Aaron asked for a portrait browser beside
+each map on the Levels page and a way to download a picture as an
+animated GIF, with loops of about 15 seconds. The Silver run had only
+five portraits, as packed copies in the Ranger Center's file, so every
+picture the maps name had to come in from the disks.
+
+**The disks.** Aaron's images were not in this container, so the four
+sides came from the C64 Preservation Project's G64s on archive.org, the
+Electronic Arts release marked good. Two checks that they are the same
+build: the five packed copies in the Ranger Center part unpack to the
+same bytes as those pictures loaded from these disks, and the game's
+code in play differs from the game part's listing only in 7 bytes the
+game writes. Rather than make play copies with Copy, the run poked `$ED`
+to `$D7` around the side check (`$1897`) and back to 0 in play.
+
+**Finding the pictures.** `read_dir_entry` (`$2790`) reads entries from
+`$40` up from T35/L9 rather than T35/L10, so the four sides hold 75
+pictures among numbers 0 to 78. Each was loaded on every side that holds
+it by calling `load_portrait` from a stub, three times: once plain and
+twice over buffers filled with `$55` and `$AA`, which give the extent
+the load writes. Pictures 0-3 and 59 went to `$E000`, where their
+callers ask for them. Each became a part, annotated from the picture
+code's own reading of it by a generator in `work/portraits`.
+
+**Where a picture ends.** The unpacker decodes its whole read window,
+so a part's bytes run on past the picture into whatever follows on the
+disk. The first attempt to say what followed compared directory offsets
+across L9 and L10, whose base sectors differ, and named the wrong next
+picture for 14 of them; the sector each picture starts in, found in the
+window, named the right one for all. The generator's assertion that the
+picture's own stream ends one byte past what the code reads failed for
+pictures 39, 60 and 62, which carry bytes nothing reads; they are named
+as such.
+
+**The checks.** A port of the unpacker turned every window's sectors
+into the bytes the load wrote, and `test_portraits.js` runs the engine's
+picture code beside the page's port for 400 steps of each portrait.
+Neither found a difference. An agent that wrote none of the parts'
+comments checked 20 drawn with seed 7581 with a decoder of its own, and
+found all 20 right; two wordings it called loose were changed in the
+generator, and the comments written again from it into each part's
+`symbols.json`, so the disassembler projects in `work/` hold the old
+wording until `symbols_import.py` seeds them again.
+
+**The GIF.** The channels of a picture come back to their start only
+after tens of thousands of steps, so a GIF runs from the base frame to
+the first step from 100 on where the picture looks like the base frame
+again. Every picture has one within 600 steps; most loops are 14.5 to 23
+seconds, the title's 43 and the Grim Reaper's 49.
+
+**Wrong turns.** A background chain that waited on `pgrep -f` for a
+batch to finish matched its own shell and waited forever.

@@ -104,6 +104,7 @@ that jump (`$28BA`) and saves the hand-over.
 | 12 | radio | game | `$7E00-$87FF` | T26/L17 | the Radio command run (below) |
 | 13 | death | game | `$7E00-$7EFF` | T4/L2 | the death branch run (below) |
 | 14-64 | tiles-0 to tiles-8, map-00 to map-49 | game (tile sets); the map's tile set (maps) | `$D000-$DD7F`; the map's pages from `$3400` and its stream from `$DE00` | T35/L12; T35/L14 and T35/L13 | the game's `enter_map` called (below, "The maps") |
+| 65-139 | portrait-00 to portrait-78 | game | `$CA00` up to the end of the load, or `$E000` up for pictures 0-3 and 59 | packed, entries of the directory at T35/L10 and, from `$40`, T35/L9 | the engine's `load_portrait` called (below, "The portraits") |
 
 Three routes are not played but use the game's own code from a stop at
 the top of its main loop (`$7E63`) in `play-map`, with `copy-s1.g64`
@@ -182,9 +183,49 @@ Every map part was reached the same way, with the game's own loader:
 `work/mapsnap.py all` does steps 2-4 for every map and writes the extents
 to `work/maps.json`.
 
-Not parts: the sixty portrait entries of T35/L10, pictures unpacked into a
-window buffer at `$CA00` or `$E000` while play goes on, and the game state
-at T35/L7-L0 (`$F400-$FBFF`), read and written as the party saves.
+### The portraits
+
+Seventy-five pictures for the picture window, each a part over the game
+(`portrait-00` to `portrait-78`). The engine's `load_portrait` (`$2631`)
+unpacks picture A AND `$7F`, entry A of the directory at T35/L10, or for
+a number from `$40` entry A AND `$3F` of T35/L9 (`$2790`), to `$CA00`
+when bit 7 of A is clear and to `$E000` when it is set. Every part was
+reached the same way, from the masters, with `work/portraits/` holding
+the scripts:
+
+1. Load `work/portraits/play-map.vsf`, a snapshot of its own made from
+   the masters: `master-s1.g64` booted (`boot.py`), Start at the title,
+   and a stop at the top of the game's main loop (`$7E63`). Run it
+   briefly and attach `master-s<side>.g64` for the first side the
+   directory names (`holders.json`).
+2. Set `$0505` = `$FF` (no picture in memory, so the load is not
+   skipped) and `$ED` = `$D7`, the identity byte the masters carry, so
+   that the side check (`$1897`) accepts them; poke `LDA #n` /
+   `JSR $2631` / `JMP $5905` at `$5900` and run from there. *n* has bit
+   7 set for pictures 0-3 and 59, which their callers load to `$E000`
+   (`show_picture_e000`, `$041C`): the doctor, the shop, the library, the
+   Ranger Center and the Grim Reaper.
+3. At the stop on `$5905`, set `$ED` back to 0 and save: the part's
+   `entry.vsf` (`snap.py`).
+4. The extent: the same run with the buffer filled first with `$55` and
+   then with `$AA` (`$CA00-$CFFF`, or `$E000-$EFFF`); every load wrote
+   from the buffer's start with no gap, the same bytes as the run without
+   a fill, and the same on every side that holds the picture.
+5. The packed bytes: `window.py` calls `read_dir_entry` and the engine's
+   sector routines (`$FD0B`, `$FD19`) as `unpack_entry` (`$2759`) does,
+   and saves the sectors of each picture's read window. The page's port
+   of the unpacker turns every window into the bytes the load wrote, and
+   the bytes up to where the next picture on the disk starts give the
+   picture's own length (`windows.json`). What the window decodes past
+   that is in each part's `coverage.exclude`.
+6. `gen.py` reads the picture the way the engine's picture code does and
+   writes the labels and comments; `apply.py` makes the part, runs
+   regenerator2000 on its `entry.vsf`, exports the symbols and builds the
+   listing.
+
+Not parts: the game state at T35/L7-L0 (`$F400-$FBFF`), read and written
+as the party saves, and module 4's three pictures, which it reads from
+side 4's sectors to `$3400` (module-4 `$CC92`).
 
 ## Steady state
 
@@ -238,7 +279,7 @@ Not annotated further than one description per routine, by policy.
 | T35/L14 entry *n* | `$3400` up | map-*nn* |
 | T35/L13 entry *n*, packed | `$DE00` up | map-*nn* |
 | T35/L12 entries 0-8, packed | `$D000-$DD7F` | tiles-0 to tiles-8 |
-| T35/L10 entries, packed | `$CA00` or `$E000` | portraits (data) |
+| T35/L10 and T35/L9 entries, packed | `$CA00` or `$E000` | portrait-00 to portrait-78 |
 | T35/L16, T35/L11, 1 each | `$C800-$C8FF` | engine (swapped in and out by the unpacker) |
 | T35/L8, 1 | `$5A00` | the disk's per-map flags and its identity (read only) |
 | T35/L7 to L0, 1 each | `$F400-$FBFF` | the saved game (read and written) |

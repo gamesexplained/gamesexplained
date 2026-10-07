@@ -30,7 +30,14 @@ time, operating system and tool versions.
 
 ## Candidates
 
-None.
+- From the portraits (7 October 2026): `listing.py`'s check of the parts
+  beneath reported, for every portrait part made in play, 7 of the game's
+  code bytes and 38 to 44 of the engine's as differing and asked to widen
+  the part's ranges. Each of the game's 7 is the operand of an
+  instruction the game stores to (`$918C`, `$995F`, `move_dir_op` and
+  others), the value of play, not a load. The check could list the bytes
+  that some store in the part beneath names apart from the rest, so
+  that only the others ask for wider ranges.
 
 ## Maintainer asks
 
