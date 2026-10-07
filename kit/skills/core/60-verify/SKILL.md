@@ -63,7 +63,10 @@ The comments in the listing are claims too, and an annotation agent's
 are rarely all right. Draw a random sample of about 60 (a fixed seed,
 spread over every agent's range) and have an agent that wrote none of
 them check each against the bytes; the error rate with its interval goes
-in `facts.md`. One run measured 25 % of its comments
+in `facts.md`. Start that one checker without asking, on a run that keeps
+to one agent as on any other: the contributor's answer about agents
+(`kit/START.md`) is about fanning work out, and by this step the run is
+meant to be unattended. One run measured 25 % of its comments
 with a wrong detail (callers, rooms and counts, almost never what a
 routine does); a full pass by fresh agents, each correcting its own range
 and listing callers from the decoded listing rather than from a byte
@@ -150,7 +153,17 @@ tested. Typical tests:
   checkpoint on a routine that certainly runs once a frame (the last
   raster handler) and one on the counter's routine, advance a few hundred
   frames, and compare the counts. One game's "30 seconds" ran 195 passes
-  in 250 frames and lasted up to 40 seconds.
+  in 250 frames and lasted up to 40 seconds. A rate read from the code
+  ("each frame", "for 20 frames") needs the same count, or every branch
+  between the loop's top and the call: one main loop ran its path and
+  animation routines only on alternate passes, by a byte its interrupt
+  flipped, and the listing's comments and the decoder that described
+  every path said "frames" where each was two; another run read a
+  counter as falling every 64 frames from its `AND #$3F` and missed the
+  two branches before it, which made it 65,536. A counter compared with
+  `CMP`/`BCS` against a table value ticks every value + 1 frames, and a
+  measurement that comes out "about" the prediction is a failed test
+  until the gap is explained.
 - **Prove reachability with inputs, not pokes.** Poking a state and
   watching the routine accept it proves what the *code* does. It does not
   prove a player can get there: the way the loop orders its tests may make

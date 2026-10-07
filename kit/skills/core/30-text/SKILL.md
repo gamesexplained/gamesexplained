@@ -24,7 +24,12 @@ What works when that fails too:
    register says where; the platform reference explains the encoding).
 2. Render the glyph table to an image (a PNG, or a text dump of 8×8 cells)
    and *read* it.
-3. Build the substitution table from what you see: glyph index → letter.
+3. Build the substitution table from what you see: glyph index → letter,
+   for every glyph the strings use, the punctuation as well as the
+   letters. A font whose letters and digits keep a familiar order can
+   still put its full stop, comma and colon somewhere else, and a mark
+   read by its ASCII place changes a quoted string without making it
+   look wrong.
 4. Decode candidate string regions with that table. Runs of 5 or more
    letters that read as words are strings; keep going until the region
    ends.
