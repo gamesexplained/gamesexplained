@@ -172,7 +172,7 @@ const DW = (function () {
   const PIN = '<svg viewBox="0 0 16 20" width="14" height="18" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M8 1a6 6 0 0 0-6 6c0 4.5 6 12 6 12s6-7.5 6-12a6 6 0 0 0-6-6zm0 3.8a2.2 2.2 0 1 1 0 4.4a2.2 2.2 0 1 1 0-4.4z"/></svg>';
   const pin = () => document.querySelectorAll('a[href*="levels.html?go="]:not(.pin), button[data-go]').forEach(el => {
     el.classList.add('pin');
-    if (el.textContent.trim() === 'map') { el.innerHTML = PIN; el.title = el.title || 'Show on the map'; el.setAttribute('aria-label', 'Show on the map'); }
+    if (el.textContent.trim() === 'map') { el.classList.add('pin-only'); el.innerHTML = PIN; el.title = el.title || 'Show on the map'; el.setAttribute('aria-label', 'Show on the map'); }
     else el.insertAdjacentHTML('afterbegin', PIN);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pin); else pin();
