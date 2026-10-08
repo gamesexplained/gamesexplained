@@ -36,12 +36,6 @@
   <p>The save routine (<code>save_menu</code>, <code>$94FF</code>) copies the game's working memory, the table of objects, and the status bar into one block at <code>$7800</code>-<code>$7D7F</code>, marks it with <code>$FF</code>, and saves it as DRWHO. To use the Commodore's own save routine, <code>save_menu</code> switches the ROMs back in. When the save is done, <code>save_menu</code> jumps through the address at <code>$A000</code>. With the ROMs in, that address is BASIC's cold start, which resets BASIC, so the player is back at READY.</p>
   <p>The game never loads a saved file itself: the disk's boot program does. Before the game loads, the boot program asks LOAD A SAVED POSITION (Y/N)? and clears <code>$7800</code>, so a game started without a save starts fresh. Answering Y loads DRWHO into <code>$7800</code>-<code>$7D7F</code>, where none of the game's three parts lands, and the game then loads around it.<sup class="fn"><a href="about.html#src-10" title="The original Commodore 64 disk, run in VICE, 3 October 2026">10</a></sup> As the game starts, it looks at <code>$7800</code>, and if the marker is there it restores everything from the block and skips the TARDIS landing (<code>$49C6</code>, <code>$745C</code>).</p>
 </section>
-<section id="save-place">
-  <p class="fig">Quirk</p>
-  <h2 class="t">The game can be saved only from inside a CSC</h2>
-  <p>D, CTRL+D, and L all ask for the save menu, by putting a negative number in the game's event byte, <code>$E8</code>. The routine that updates the Doctor clears that byte again every pass unless the block at his middle is block <code>$23</code> (<code>$C902</code>-<code>$C909</code>). Block <code>$23</code> is a narrow booth marked CSC, a cryostasis chamber, and the map holds eight of them. Each stands on one of the game's restart points (<code>$9059</code>), so the CSC the Doctor last passed is where he comes back after losing a regeneration. Pressed beside the TARDIS, D does nothing. Pressed inside a CSC, D opens the save menu.</p>
-  <figure class="dw-shot"><img src="reference/save-booth.png" width="384" height="272" alt="The Doctor standing inside a narrow green-framed booth with a yellow sign above it, beside a ladder and a slope of steps"><figcaption>The Doctor in the CSC at map row 28, column 120. D opens the save menu here.</figcaption></figure>
-</section>
 <section id="exact">
   <p class="fig">Quirk</p>
   <h2 class="t">Tests that want one exact pixel</h2>
