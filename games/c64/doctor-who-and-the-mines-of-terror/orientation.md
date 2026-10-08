@@ -37,6 +37,13 @@ before space is pressed catches the hand-over; there its memory equals the
 listing everywhere the listing has bytes, except zero page and
 `$FF70`-`$FFFF`. Snapshot `work/dw-disk-entry.vsf`.
 
+Since 8 October 2026 the listing is built from `work/dw-disk-entry.vsf`,
+made this way with the vice-mcp v3.13.2 release: hard reset, autostart
+the disk's first file (DWMT), a stopping checkpoint on `$484D`, then N at
+the saved-position question and space at the title. The disk's SHA-256 is
+`dde0ed338262c0e35ac082b5a4f1e14bb834d29e867435721d4ecb3c53f20115`. The
+program-file snapshots above are kept only for comparison.
+
 ## Steady state
 
 The start-up at `$484D` blanks the screen, stops CIA1 timer A, sets `$01`

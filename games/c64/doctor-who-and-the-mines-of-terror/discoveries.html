@@ -8,7 +8,7 @@
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
   <h1>Doctor Who and the Mines of Terror</h1>
-  <p class="sub">A time bonus that barely moves, a save that ends the game, tests that want one exact pixel, leftovers, and questions the code leaves open.</p>
+  <p class="sub">A time bonus that barely moves, a save that ends the game, tests that want one exact pixel, code that never runs, and questions the code leaves open.</p>
 </header>
 <main class="wrap">
 <section id="countdown">
@@ -38,18 +38,19 @@
 </section>
 <section id="save-place">
   <p class="fig">Quirk</p>
-  <h2 class="t">The save keys work in one place only</h2>
-  <p>D, CTRL+D, and L all ask for the save menu, by putting a negative number in the game's event byte, <code>$E8</code>. The routine that updates the Doctor clears that byte again every pass unless he is standing on character <code>$23</code> (<code>$C902</code>-<code>$C909</code>). Pressed beside the TARDIS, D does nothing. Where in the mine the Doctor can stand on character <code>$23</code> is not known.</p>
+  <h2 class="t">The game can be saved only from inside eight booths</h2>
+  <p>D, CTRL+D, and L all ask for the save menu, by putting a negative number in the game's event byte, <code>$E8</code>. The routine that updates the Doctor clears that byte again every pass unless the block at his middle is block <code>$23</code> (<code>$C902</code>-<code>$C909</code>). Block <code>$23</code> is a narrow booth with a sign over its door, and the map holds eight of them. Pressed beside the TARDIS, D does nothing. Pressed inside a booth, D opens the save menu.</p>
+  <figure class="shot"><img src="reference/save-booth.png" width="384" height="272" alt="The Doctor standing inside a narrow green-framed booth with a yellow sign above it, beside a ladder and a slope of steps"><figcaption>The Doctor in the booth at map row 28, column 120. D opens the save menu here.</figcaption></figure>
 </section>
 <section id="exact">
   <p class="fig">Quirk</p>
   <h2 class="t">Tests that want one exact pixel</h2>
-  <p>The carrier takes the Doctor aboard only when his height is exactly <code>$0450</code> (<code>$A395</code>). The lift takes him only when he is exactly eight pixels from its floor (<code>$A294</code>). One pixel either way and he stays where he is. Both look like tests where the programmer meant a range. Whether a player can arrive at the wrong height, and miss the ride, is not known.</p>
+  <p>The carrier takes the Doctor aboard only when his height is exactly $0450 (<code>$A395</code>). The lift takes him only when he is exactly eight pixels from its floor (<code>$A294</code>). One pixel either way and he stays where he is. Both look like tests where the programmer meant a range. Whether a player can arrive at the wrong height, and miss the ride, is not known.</p>
 </section>
 <section id="lock-flag">
   <p class="fig">Quirk</p>
-  <h2 class="t">The code lock sets a flag that changes nothing</h2>
-  <p>Entering the code sets the flag at <code>$4E</code> (<code>$BF59</code>). The routine that decides whether character <code>$A0</code>, the security gate, can be walked through tests that flag, but the PASS CARD test straight after it overwrites the result every time (<code>$BB05</code>-<code>$BB25</code>). So the flag never opens the gate, and only the PASS CARD does.</p>
+  <h2 class="t">The code lock sets a flag the security gate never uses</h2>
+  <p>Entering the code opens the wall in front of the PASS CARD, and it also sets the flag at <code>$4E</code> (<code>$BF59</code>). The routine that decides whether character <code>$A0</code>, the security gate, can be walked through tests that flag, but the PASS CARD test straight after it overwrites the result every time (<code>$BB05</code>-<code>$BB25</code>). So the flag never opens a gate. The code opens them only by letting the Doctor reach the PASS CARD (<a href="solution.html#lock">Solution</a>).</p>
 </section>
 <section id="messages">
   <p class="fig">Quirk</p>
@@ -59,14 +60,11 @@
 </section>
 <section id="leftovers">
   <p class="fig">Leftovers</p>
-  <h2 class="t">What the loader and older builds left behind</h2>
+  <h2 class="t">Code the game never runs</h2>
   <table class="t">
     <tr><th>What</th><th>Where</th><th>Why it never runs</th></tr>
-    <tr><td>A loader routine that printed PLEASE WAIT -- STILL LOADING and started the game</td><td><code>$7F00</code>-<code>$7F52</code></td><td>the unpacker starts the game itself; the routine is overwritten by the second play screen</td></tr>
-    <tr><td>The release's loading picture</td><td><code>$0400</code></td><td>overwritten by the status bar at start-up</td></tr>
     <tr><td>A prologue that clears a page of memory</td><td><code>$4800</code>-<code>$484C</code></td><td>the game starts at <code>$484D</code>, just after it</td></tr>
     <tr><td>Sixteen bytes of code</td><td><code>orphan_fragment_2d40</code> <code>$2D40</code></td><td>nothing calls it</td></tr>
-    <tr><td>A copy of the shape of the operating system's jump table</td><td><code>loader_leftover_ff82</code> <code>$FF82</code></td><td>the game switches the ROM out and never jumps there</td></tr>
   </table>
 </section>
 <section id="open">
