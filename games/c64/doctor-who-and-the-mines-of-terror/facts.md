@@ -76,7 +76,7 @@ rows, each into its own zero-page byte, and sets movement flags
 | F7 | `$D1` | with a direction, throw the held item (`$A68A`) |
 | S | `$D3` | the Splinx Programmer (*live*) |
 | R | `$E8` = `$12` | forced regeneration (*live*: message, lives 5 to 4) |
-| D, CTRL+D, L | `$E8` = `$80`, `$C0`, `$FF` | the save menu, but only where the map block at the Doctor's middle (`$9A09` stores it in `$78`) is block `$23`, a booth that appears eight times (rows/columns 8/95, 17/33, 20/67, 24/42, 28/120, 34/59, 50/17, 50/121): everywhere else `doctor_update` clears `$E8` (`$C902`-`$C909`; *live*, original disk, 8 October 2026: D beside the TARDIS does nothing; D in the booths at 28/120 and 17/33 reaches `save_menu` `$94FF`) |
+| D, CTRL+D, L | `$E8` = `$80`, `$C0`, `$FF` | the save menu, but only where the map block at the Doctor's middle (`$9A09` stores it in `$78`) is block `$23`, the booth marked CSC (a cryostasis chamber, per the steward), which appears eight times, each on restart point 1-8 (`$9059`; point 0 is beside the TARDIS) (rows/columns 8/95, 17/33, 20/67, 24/42, 28/120, 34/59, 50/17, 50/121): everywhere else `doctor_update` clears `$E8` (`$C902`-`$C909`; *live*, original disk, 8 October 2026: D beside the TARDIS does nothing; D in the booths at 28/120 and 17/33 reaches `save_menu` `$94FF`) |
 
 ## Graphics
 
