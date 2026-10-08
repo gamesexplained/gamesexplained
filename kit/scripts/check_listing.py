@@ -12,8 +12,8 @@ format that moved under a listing fails here until the listing is rebuilt (#210)
 bytes the ledger counts that the listing has no snapshot for are named. It needs no
 snapshot. The empty symbols.json that new_game.py writes needs no listing yet.
 
-Where a game commits a code map (codemap.json, from kit/spectrum/codemap.py),
-every byte of it that ran is typed Code in symbols.json: code typed as data
+Where a game commits a code map (codemap.json, from kit/<platform>/codemap.py),
+every byte of it that ran, outside the ledger's exclusions, is typed Code in symbols.json: code typed as data
 has no cross-references and still reads as explained (#184). Code only the
 map's trace reached, typed as data, is listed to be read, since a trace can
 walk into data.
@@ -45,7 +45,10 @@ def untyped_code(gdir, S):
         return [], []
     cm = json.load(open(f))
     span = lambda key: {a for s, e in cm.get(key, []) for a in range(s, e + 1)}
-    loose = span("code") - {a for b in S["blocks"] if b["type"] == "Code" for a in range(b["start"], b["end"] + 1)}
+    # what the ledger excludes is declared not the game's, with a reason: the boot's own code
+    # in RAM (BASIC's CHRGET at $0073 runs during RUN) is the machine's, not untyped game code
+    out = {a for lo, hi, *_ in (S.get("regions") or {}).get("exclude", []) for a in range(lo, hi + 1)}
+    loose = span("code") - out - {a for b in S["blocks"] if b["type"] == "Code" for a in range(b["start"], b["end"] + 1)}
     ran = loose & span("ran")
     return sorted(ran), sorted(loose - ran)
 

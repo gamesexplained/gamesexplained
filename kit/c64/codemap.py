@@ -6,7 +6,10 @@ CPU fetched an instruction from is marked execute, while reads and writes are
 marked separately. It is a complete record, not a sample -- the map is always
 on, costs nothing measurable, and unlike the cpuhistory ring buffer (8,192
 entries, ~28 ms) it covers the whole session. `memmapzap` clears it;
-`memmapshow 9` (mask 9 = ROM+RAM execute) lists what ran.
+`memmapshow 1` (mask 1 = RAM execute) lists what ran in RAM. What ran in the
+ROMs is left out: it is the machine's code, never the game's, and a boot runs a
+great deal of it (LOAD and RUN pass through BASIC and the KERNAL). A game that
+banks a ROM out runs from the RAM beneath, which the map records.
 
   codemap.py <game dir> zap     clear the record at the start of a play session
   codemap.py <game dir> dump    read the record and write <game dir>/codemap.json:
@@ -35,7 +38,7 @@ from tools import MONITOR_PORT  # noqa: E402
 from opcodes import decode, LEN  # noqa: E402
 from vice import connect, read_mem  # noqa: E402
 
-EXEC_MASK = 9  # memmap mask bits "ioRWXrwx": X (ROM execute) + x (RAM execute)
+EXEC_MASK = 1  # memmap mask bits "ioRWXrwx": x (RAM execute) alone; X (8) is ROM execute
 
 
 def monitor(cmd, timeout=30):
@@ -99,7 +102,7 @@ def zap():
 
 def dump(gdir):
     try:
-        executed = parse_executed(monitor("memmapshow 9"))
+        executed = parse_executed(monitor(f"memmapshow {EXEC_MASK}"))
     except OSError as exc:
         sys.exit(f"no monitor on 127.0.0.1:{MONITOR_PORT}: {exc} (run `tools.py vice` first)")
     if not executed:

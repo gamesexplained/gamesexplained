@@ -67,6 +67,11 @@ PLATFORM_DEFAULTS = {
 
 
 def load_by_path(path, name):
+    # a platform module imports its own siblings (kit/c64/r2000.py imports ports.py); appended,
+    # so kit/<platform>/tools.py cannot shadow kit/scripts/tools.py
+    d = os.path.dirname(os.path.abspath(path))
+    if d not in sys.path:
+        sys.path.append(d)
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
