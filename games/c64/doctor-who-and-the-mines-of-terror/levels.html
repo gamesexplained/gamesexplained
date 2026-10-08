@@ -33,7 +33,7 @@
       <span class="note" id="mappos"></span>
     </div>
     <canvas id="map" class="scr" style="max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
-    <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
+    <canvas id="zoom" class="scr" style="margin-top:14px;max-width:100%" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
     <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn in the magnifier as their own sprites from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. <b style="color:#6fc3ff">Blue</b>: the creatures where a new game puts them, from the same position tables; the controllers then follow their routes. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
     <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. The mine has seven zones, and each zone swaps in one of three sets of shapes and colours for sixteen characters (<code>zone_classify</code>, <code>$AA3D</code>; <code>zone_graphics</code>, <code>$ABCF</code>). This picture draws every zone with its own set.</p>
@@ -61,9 +61,9 @@
 <script>
 (async function () {
   let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
-  const M = G.ram, full = DW.drawMine(M), S = 4;
+  const M = G.ram, full = DW.drawMine(M), S = 6, ZW = 1024, ZH = 512;
   const mv = document.getElementById('map'), mctx = C64.canvas(mv, full.width / S, full.height / S);
-  const zv = document.getElementById('zoom'), zctx = C64.canvas(zv, 768, 384);
+  const zv = document.getElementById('zoom'), zctx = C64.canvas(zv, ZW, ZH);
   let Z = 2, sel = null;                         // magnification, and the mark chosen from the list
   const Y = y => full.height - y;
   const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
@@ -139,14 +139,14 @@
       }
     }
   }
-  const centre = ([x, y]) => view = [Math.min(full.width - 768 / Z, Math.max(0, x - 384 / Z)), Math.min(full.height - 384 / Z, Math.max(0, y - 192 / Z))];
+  const centre = ([x, y]) => view = [Math.min(full.width - ZW / Z, Math.max(0, x - ZW / 2 / Z)), Math.min(full.height - ZH / Z, Math.max(0, y - ZH / 2 / Z))];
   centre(start);
   function cross(ctx, x, y, s, c) { ctx.fillStyle = c; ctx.fillRect(x - 4 * s, y - s / 2, 8 * s, s); ctx.fillRect(x - s / 2, y - 4 * s, s, 8 * s); }
   function draw() {
     mctx.imageSmoothingEnabled = true; mctx.drawImage(full, 0, 0, mv.width, mv.height);
-    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 768 / Z / S, 384 / Z / S);
+    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, ZW / Z / S, ZH / Z / S);
     cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
-    zctx.imageSmoothingEnabled = false; zctx.drawImage(full, view[0], view[1], 768 / Z, 384 / Z, 0, 0, 768, 384);
+    zctx.imageSmoothingEnabled = false; zctx.drawImage(full, view[0], view[1], ZW / Z, ZH / Z, 0, 0, ZW, ZH);
     marks(dangers, '#ff6b5b', false);
     marks(objs, '#e8c547', true, true);
     marks(uses, '#5fd068', false);
@@ -164,7 +164,7 @@
       if (sel.kind === 'Objects') zctx.arc(zx, zy - 10 * Z, 16 * Z, 0, 7); else zctx.arc(zx, zy, 10 * Z, 0, 7);   // an object's ring goes round its sprite
       zctx.stroke();
     }
-    const col = view[0] / 32 | 0, row = 55 - ((view[1] + 384 / Z - 1) / 32 | 0);
+    const col = view[0] / 32 | 0, row = 55 - ((view[1] + ZH / Z - 1) / 32 | 0);
     document.getElementById('mappos').textContent = 'block column ' + col + ', map row ' + row + ' at ' + C64.hex(0xFB80 - 0x80 * row);
   }
   function at(e) { const b = mv.getBoundingClientRect(); centre([(e.clientX - b.left) * mv.width / b.width * S, (e.clientY - b.top) * mv.height / b.height * S]); draw(); }
@@ -206,7 +206,7 @@
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
   if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
-  zbs.forEach(b => b.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
+  zbs.forEach(b => b.onclick = () => { const c = [view[0] + ZW / 2 / Z, view[1] + ZH / 2 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
   // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
   mv.addEventListener('click', e => {
     const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;
