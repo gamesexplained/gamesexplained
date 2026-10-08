@@ -120,8 +120,51 @@ const DW = (function () {
       }
     };
   }
+  // An animated GIF, written as the Wasteland page writes one (games/c64/wasteland): the C64's 16
+  // colours as the global table, every frame whole, looping for ever. frames: { x, y, w, h, px, delay }.
+  function lzw(px, minCode) {
+    const out = [], clear = 1 << minCode, eoi = clear + 1;
+    let cur = 0, nbits = 0, size = minCode + 1, next = eoi + 1, dict = new Map();
+    const emit = c => { cur |= c << nbits; nbits += size; while (nbits >= 8) { out.push(cur & 255); cur >>>= 8; nbits -= 8; } };
+    emit(clear);
+    let prefix = px[0];
+    for (let i = 1; i < px.length; i++) {
+      const k = px[i], key = prefix * 4096 + k;
+      if (dict.has(key)) { prefix = dict.get(key); continue; }
+      emit(prefix);
+      if (next < 4096) { dict.set(key, next++); if (next > (1 << size) && size < 12) size++; }
+      else { emit(clear); dict = new Map(); size = minCode + 1; next = eoi + 1; }
+      prefix = k;
+    }
+    emit(prefix); emit(eoi);
+    if (nbits) out.push(cur & 255);
+    return out;
+  }
+
+  // frames: { x, y, w, h, px (palette indices), delay (hundredths of a second) }
+  function gifFile(W, H, frames) {
+    const b = [], s = t => { for (const c of t) b.push(c.charCodeAt(0)); }, w16 = v => b.push(v & 255, v >> 8);
+    s('GIF89a'); w16(W); w16(H); b.push(0xF3, 0, 0);                    // a global table of 16
+    for (const h of C64.PAL) b.push(...[1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+    b.push(0x21, 0xFF, 11); s('NETSCAPE2.0'); b.push(3, 1, 0, 0, 0);    // loop for ever
+    for (const f of frames) {
+      b.push(0x21, 0xF9, 4, 1 << 2, f.delay & 255, f.delay >> 8, 0, 0);
+      b.push(0x2C); w16(f.x); w16(f.y); w16(f.w); w16(f.h); b.push(0, 4);
+      const d = lzw(f.px, 4);
+      for (let i = 0; i < d.length; i += 255) { const n = Math.min(255, d.length - i); b.push(n); for (let j = 0; j < n; j++) b.push(d[i + j]); }
+      b.push(0);
+    }
+    b.push(0x3B);
+    return Uint8Array.from(b);
+  }
+
+  // Offers bytes as a file to save.
+  function save(bytes, name, type) {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type })); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
   function fail(e) { document.querySelectorAll('canvas').forEach(c => c.insertAdjacentHTML('afterend', '<p class="cap">' + e.message + '</p>')); }
-  return { load, zoneAt, drawMine, drawSprite, sprite, image, doctor, dissolver, str, message, itemName, fail };
+  return { load, zoneAt, drawMine, drawSprite, sprite, image, doctor, dissolver, str, message, itemName, fail, gifFile, save };
 })();
 // Every link that opens the Maps tab on a place shows a map pin: a link that only said "map" becomes
 // the pin alone, and one that names something keeps its name beside the pin.

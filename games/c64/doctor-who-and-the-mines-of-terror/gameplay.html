@@ -191,6 +191,19 @@
     };
     draw(frames[0]);
     if (n > 1 && !still) movers.push({ frames, draw });
+    // a creature that moves can be saved as an animated GIF of its frames, at the page's size and pace
+    if (n > 1) {
+      const W = cv.width, H = cv.height, d = S * 2;
+      const indices = rows => { const p = new Uint8Array(W * H);
+        rows.forEach((b, r) => { for (let k = 0; k < 12; k++) { const v = px(b, k); if (!v) continue;
+          for (let yy = 0; yy < S; yy++) p.fill(cols[v - 1], ((r - y0 + 1 + oy) * S + yy) * W + (k - x0 + 1 + ox) * d, ((r - y0 + 1 + oy) * S + yy) * W + (k - x0 + 2 + ox) * d); } });
+        return p; };
+      const name = (cv.closest('tr').children[1].textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')) + '.gif';
+      const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'b gifb'; bt.textContent = 'GIF';
+      bt.title = 'Download this animation as a GIF'; bt.setAttribute('aria-label', bt.title);
+      bt.onclick = () => DW.save(DW.gifFile(W, H, frames.map(f => ({ x: 0, y: 0, w: W, h: H, px: indices(f), delay: 16 }))), name, 'image/gif');
+      cv.parentNode.appendChild(bt);
+    }
   });
   let tick = 0;
   if (movers.length) setInterval(() => { tick++; for (const m of movers) m.draw(m.frames[tick % m.frames.length]); }, 160);
