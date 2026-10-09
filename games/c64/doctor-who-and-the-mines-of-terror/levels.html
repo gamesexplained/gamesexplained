@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="reference/dw-page.css">
+<style>.solo header, .solo nav, .solo footer, .solo main > section:not(#mine), .solo #mine > :not(.plate), .solo #pick, .solo #pk-next, .solo #pk-use, .solo #dl-map, .solo #rpkv, .solo .cap, .solo .pagenav-btn, .solo .pagenav-scrim { display: none !important } .solo main.wrap { padding: 0; margin: 0 } html.solo, .solo body { background: transparent } .solo #mine { padding: 0; margin: 0 } .solo #mine .plate { margin: 0 }</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
@@ -14,7 +15,7 @@
 <section id="mine">
   <p class="fig">The mine</p>
   <h2 class="t">One map, seven kilobytes</h2>
-  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag the map to move around it, and zoom out to see the whole mine. Choose an object, creature, danger, or place from the menu to go to it; an object also gets a Where it is used button that steps through the places it works. <a href="gameplay.html#dangers">Gameplay</a> says what each danger does. The menu's walkthroughs step through parts of the <a href="solution.html">Solution</a> on the map.</p>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag the map to move around it, and zoom out to see the whole mine. Choose an object, creature, danger, or place from the menu to go to it; an object also gets a Where it is used button that steps through the places it works. <a href="gameplay.html#dangers">Gameplay</a> says what each danger does. The <a href="solution.html#route">Solution</a> tab steps through the whole route on this map.</p>
   <div class="plate">
     <div class="row">
       <select class="b" id="pick" aria-label="Choose something to find on the map"><option value="">Choose something to find</option></select> <button class="b" type="button" id="pk-next" hidden>Next</button> <button class="b" type="button" id="dl-map" title="Download the whole map as a PNG" aria-label="Download the whole map as a PNG" style="line-height:0;padding:6px"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M7 1h2v7l2.5-2.5 1.4 1.4L8 11.8 3.1 6.9l1.4-1.4L7 8zM2 13h12v2H2z"/></svg></button>
@@ -53,6 +54,9 @@
 <script src="../../lib/c64.js"></script>
 <script src="reference/dw-page.js"></script>
 <script>
+  // ?solo: the Solution tab frames this page to show only the map and the walkthrough
+  const SOLO = new URLSearchParams(location.search).has('solo');
+  if (SOLO) { document.documentElement.classList.add('solo'); document.addEventListener('click', e => { const a = e.target.closest('a[href]'); if (a) a.target = '_top'; }); }
 (async function () {
   let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
   const M = G.ram, full = DW.drawMine(M), S = 10, ZW = 1024, ZH = 512;
@@ -129,7 +133,7 @@
     const shown = new Set();   // one entry per kind of mark; Next steps through the rest
     list.forEach(k => { const n = gk(k); if (shown.has(n)) return; shown.add(n); const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = n; g.append(o); }); menu.append(g);
   }
-  { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
+  if (SOLO) { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
     for (const [v, t] of [['all', 'The whole solution']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
@@ -316,7 +320,7 @@
   wkBack.onclick = () => wkGo(Math.max(0, wkI - 1));
   // a link from another tab: ?walk= names a stage of the solution, opened at its first step
   const walk = new URLSearchParams(location.search).get('walk');
-  if (ROUTES[walk]) { wkStart = STAGES.slice(0, Math.max(0, STAGES.findIndex(([, l]) => l === ROUTES[walk]))).reduce((n, [, l]) => n + l.length, 0); menu.value = 'walk:all'; menu.onchange(); wkStart = 0; setTimeout(() => document.getElementById('walk').scrollIntoView({ block: 'start' }), 0); }
+  if (ROUTES[walk]) { wkStart = STAGES.slice(0, Math.max(0, STAGES.findIndex(([, l]) => l === ROUTES[walk]))).reduce((n, [, l]) => n + l.length, 0); menu.value = 'walk:all'; menu.onchange(); wkStart = 0; if (!SOLO) setTimeout(() => document.getElementById('walk').scrollIntoView({ block: 'start' }), 0); }
   draw();
   function lock(M, full) {
     const glyph = G.lockGlyphs, INK = [1, 2, 6, 5, 7];               // W R B G Y as C64 colours
