@@ -46,3 +46,22 @@ whose WSLg display lets the GUI build open a window.
 - Setting the level index `$CF89` before the title does nothing; the
   new-game entry `$CBA5` resets it. Setting it after the `INC $CF89` at
   `$CBB0` loads any land, and index 5 loads the ending.
+
+## 9 October 2026: the executed-address record
+
+`kit/c64/codemap.py` could not record what ran. Any connection to VICE's
+remote monitor made after a snapshot load or after MCP had paused the
+machine left VICE writing its prompt into the closed socket ("Broken
+pipe", thousands of lines in its log) and refusing later connections, so
+`dump` read nothing. Sending the monitor's `x` before closing fixed it
+only on a machine that had never been loaded or paused: after a load, `x`
+was answered with a fresh prompt instead of leaving the monitor. The run
+went on without a code map, on regenerator2000's own control-flow trace.
+
+## 9 October 2026: coverage, first wave
+
+The lead annotated the start-up, the interrupt plumbing, the raster
+chain with its VSP scroll and the top of the play loop (`work/ann/core1.txt`),
+then started four agents on the Opus model with `work/BRIEF.md`: three on
+disjoint ranges of the engine in one shared disassembler, one on the
+intro in its own.
