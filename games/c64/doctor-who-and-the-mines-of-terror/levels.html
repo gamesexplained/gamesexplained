@@ -128,7 +128,7 @@
     list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = k.label; g.append(o); }); menu.append(g);
   }
   { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
-    for (const [v, t] of [['air', 'To the AIR MASK'], ['span', 'The SPANNER'], ['mat', 'The MAT'], ['pass', 'The PASS CARD']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
+    for (const [v, t] of [['air', 'To the AIR MASK'], ['span', 'The SPANNER'], ['mat', 'The SPANNER, CHEMICALS, and MAT'], ['pass', 'The PASS CARD']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
   function marks(list, colour, round, sprites) {
@@ -270,10 +270,12 @@
     { at: lockAt('changes this block'), say: 'The right code opens the wall here, in front of the PASS CARD.' },
     { at: byT('PASS CARD').at, say: 'Take the <a href="gameplay.html#pockets">PASS CARD</a>. Held, it opens the five security gates.' },
   ];
+  const pool = byT('CHEMICALS: drop them in the pool').at;
   const MATW = [
-    { at: [2109, 637], say: 'From the central shaft, go left and up the stairs.' },
-    { via: [[2042, 571], [1900, 571], [1815, 504], [1762, 506], [1691, 442], [1508, 441], [1433, 379], [1151, 379], [1076, 318]], at: [766, 316], say: 'Keep climbing the stairs up and left.' },
-    { via: [[832, 251]], at: byT('MAT').at, say: 'Go up and right along the top floor, and take the <a href="gameplay.html#pockets">MAT</a>.' },
+    { at: [2109, 637], say: 'With the <a href="gameplay.html#pockets">SPANNER</a> in hand, go from the central shaft left and up the stairs.' },
+    { via: [[2042, 571], [1900, 571], [1815, 504], [1762, 506], [1691, 442], [1508, 441], [1433, 379], [1151, 379], [1076, 318]], at: byT('CHEMICALS').at, say: 'Take the <a href="gameplay.html#pockets">CHEMICALS</a>.' },
+    { via: [[1076, 318], [766, 316]], at: pool, say: 'Drop the CHEMICALS in the pool with F3. It turns purple, and two controllers stop for good.' },
+    { via: [[766, 316], [832, 251]], at: byT('MAT').at, say: 'Go up and right along the top floor, and take the <a href="gameplay.html#pockets">MAT</a>.' },
     { via: [[832, 251], [766, 316], [1076, 318], [1151, 379], [1433, 379], [1508, 441], [1691, 442], [1762, 506], [1815, 504], [1900, 571], [2042, 571]], at: [2109, 637], say: 'Carry the MAT back down the stairs to the central shaft.' },
   ];
   const SPAN = [
@@ -283,7 +285,7 @@
     { via: [[1516, 1010], [1516, 877], [1464, 877], [1464, 819], [1716, 819], [1731, 752]], at: [2038, 752], say: 'Go back the same way to the central shaft.' },
   ];
   document.getElementById('dl-map').onclick = () => { const a = document.createElement('a'); a.href = full.toDataURL('image/png'); a.download = 'doctor-who-mines-map.png'; a.click(); };
-  const ROUTES = { air: AIR, pass: PASS, span: SPAN, mat: MATW };
+  const ROUTES = { air: AIR, pass: PASS, span: SPAN, mat: SPAN.slice(0, 3).concat([{ via: SPAN[3].via, at: SPAN[3].at, say: 'Go back the same way to the central shaft.' }], MATW) };
   let STEPS = AIR;
   const wkMarks = () => { const m = []; if (STEPS !== AIR) return m; if (wkI >= 2) m.push({ at: egg, n: 1 }); if (wkI >= 3) m.push({ at: AIR[3].at, n: 2 }); return m; };
   const wkNext = document.getElementById('wk-next'), wkBack = document.getElementById('wk-back');
