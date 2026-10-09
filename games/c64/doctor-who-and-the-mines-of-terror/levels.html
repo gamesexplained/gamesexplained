@@ -212,6 +212,16 @@
   function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
     zv.setAttribute('aria-label', 'The mine, at ' + ({ 0.25: 'a quarter of', 0.5: 'half', 1: 'the size of', 2: 'twice', 3: 'three times', 4: 'four times' })[Z] + ' the C64\'s pixels'); }
   const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
+  // glide the map from where it is to a point, then run done (zooming in on a chosen mark)
+  let panAnim = 0;
+  function panTo(to, done) {
+    cancelAnimationFrame(panAnim);
+    const from = [view[0] + ZW / 2 / Z, view[1] + ZH / 2 / Z], t0 = performance.now(), ms = 700;
+    const tick = now => { const f = Math.min(1, (now - t0) / ms), e = f * f * (3 - 2 * f);
+      centre([from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e]); draw();
+      if (f < 1) panAnim = requestAnimationFrame(tick); else if (done) done(); };
+    panAnim = requestAnimationFrame(tick);
+  }
   // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
     sel = k;
@@ -227,8 +237,7 @@
     if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not known.';
     if (curObj && k !== curObj) note = curObj.t + ', place ' + (useIx + 1) + ' of ' + list.length + ': ' + k.label + ', ' + where(k) + '.';
     document.getElementById('rpkv').textContent = note;
-    if (Z === 2) setZoom(4);
-    centre(k.at); draw();
+    panTo(k.at, () => { if (Z <= 2) { setZoom(4); centre(k.at); draw(); } });
   }
   pkUse.onclick = () => { const list = usedAt(curObj.t);
     if (useIx + 1 >= list.length) { useIx = -1; choose(curObj, true); } else choose(list[++useIx], true); };
@@ -239,7 +248,7 @@
   document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
-  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
+  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); cancelAnimationFrame(panAnim); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
   zbs.forEach(b => b.onclick = () => { const c = [view[0] + ZW / 2 / Z, view[1] + ZH / 2 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
   // the walkthrough: one step at a time, the Doctor's icon gliding from the last spot to the next
   const byT = t => all.find(k => k.t === t), mad = crs.find(k => k.t === 'MADRAG').at;
