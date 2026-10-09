@@ -8,7 +8,7 @@ layout; each one's `facts.md` gives only what differs. Unless marked
 
 | Range | What |
 |---|---|
-| `$5A00`-`$77FF` | sprite frames `$68`-`$DF`; `$5A00`-`$62FF` is the same in all five lands |
+| `$5A00`-`$77FF` | sprite frames `$68`-`$DF`; `$5A00`-`$62FF` is the same in Jellyland, Pipeland, Spottyland and Rockland, and differs in Cherryland in frames `$72`-`$74` and `$76`-`$78` |
 | `$7800`-`$7FFF` | the sad character set |
 | `$8009`-`$88F8` | 143 tiles of 4×4 glyphs at `$8009` + 16 × tile; tile 1 is the star tile |
 | `$8900` | glyph colours, sad (swapped with `$A800`, happy) |
