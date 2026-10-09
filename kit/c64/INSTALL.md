@@ -41,6 +41,7 @@ measures whatever was installed. The measurements, each dated:
 | v3.13.1 release, `v3.13.1-macos-arm64-gui.dmg` | macOS arm64 | 28 September 2026 | 56 of 57: all but `pause-at-instruction` |
 | v3.13.2 release, `v3.13.2-linux-x86_64-gui.zip` | Linux x86_64 | 2 October 2026 | 57 of 57, five runs |
 | v3.13.2 release, `v3.13.2-macos-arm64-gui.dmg` | macOS arm64 | 2 October 2026 | 57 of 57, five runs |
+| v3.13.2, from source (`get-vice build`) | Linux x86_64 | 9 October 2026 | 57 of 57, Ubuntu 26.04.1 under WSL2 |
 
 One row per build on each kind of computer, the kinds being the hosts of
 `site/status.json`: Linux x86_64 is one kind, on a desktop, a server or in
@@ -502,8 +503,11 @@ package installation was needed for that run.
 
 Recorded on Ubuntu 24.04 x86_64: in cloud containers with no display from
 24 September 2026 (four cores, gcc 13.3, Python 3.11, cargo 1.94), and on
-desktops from 30 September. What each build measured is the table at the
-top of this file. No run is recorded on ARM or another distribution.
+desktops from 30 September. On 9 October 2026 a whole game was run on
+Ubuntu 26.04.1 under WSL2 on Windows 11 (eight threads, gcc from
+`build-essential`, Python 3.14; "Under WSL2 on Windows", below). What each
+build measured is the table at the top of this file. No run is recorded on
+ARM or another distribution.
 
 **A network that refuses the GitHub API.** In those containers the proxy
 answered `api.github.com`, the project's web pages and `codeload` with 403
@@ -536,7 +540,12 @@ sudo apt-get install --no-install-recommends libpulse0 libpcap0.8t64 libusb-1.0-
   libglew2.2 libevdev2 libmicrohttpd12t64 libportaudio2 libmpg123-0t64
 ```
 
-The v3.13.2 zip needed nothing outside that set on 2 October 2026.
+The v3.13.2 zip needed nothing outside that set on 2 October 2026. On
+Ubuntu 26.04 it cannot run: it is linked against `libFLAC.so.12`, and
+26.04 ships only `libflac14` (`libFLAC.so.14`); `get-vice download` names
+it as missing. Build it from source there (below); the build links
+against the system's own libraries, and on 9 October 2026 the v3.13.2
+source build passed 57 of 57.
 `ldd tools/vice-mcp/bin/x64sc | grep "not found"` lists what another
 machine lacks. `verify-footprint` was clean with the release zip and with
 the source build. Its `SHA256SUMS` file checks every file but itself (it lists
@@ -569,6 +578,29 @@ sudo apt-get install --no-install-recommends build-essential autoconf automake \
   libmicrohttpd-dev libevdev-dev libpng-dev libcurl4-openssl-dev \
   libasound2-dev libpulse-dev xvfb xauth
 ```
+
+**Under WSL2 on Windows.** Every Windows build of the emulator is
+headless (Windows, below), so a Windows contributor can run the kit in
+WSL2 instead, as one did on 9 October 2026 with Ubuntu 26.04.1; WSLg
+gives the GUI build a window (`DISPLAY=:0`), so no Xvfb is needed. Three
+things to know:
+
+- Clone the repository inside the WSL file system (`~/...`), not on a
+  Windows drive under `/mnt`. WSL mounts those without Linux metadata, so
+  every file shows as root's with mode 777 and `chmod` fails, which stops
+  `get-vice download` at its first `os.chmod`; rustup and cargo would
+  also be slow there.
+- An agent running in Windows and calling `wsl.exe -- bash -c '...'`
+  loses `$` variables and quotes, because `wsl.exe` parses the command
+  line again. Put the commands in a script file and pass only its path;
+  from Git Bash, set `MSYS_NO_PATHCONV=1` so that it leaves `/mnt/...`
+  paths alone.
+- The emulator twice fell to about 4 % of real time while using 7 % of a
+  core, its log full of "Sync is ... ms behind", and once a cold boot hung
+  at `LOADING`; a restart cured it each time. With sound off, through
+  `tools/vice-home/config/vice/vicerc` holding `[C64SC]` and `Sound=0`, it
+  ran at full speed for the rest of the run (several hours), and warp ran
+  at 7× instead of about 4.5×. The kit needs no sound from the emulator.
 
 **No display.** A server or container has no X display, and the GUI build
 will not start without one. The launcher sees that (neither `DISPLAY` nor
