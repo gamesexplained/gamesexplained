@@ -251,6 +251,12 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   38/67, 50/61, 50/67; `$16A0` is 0 (open) only while the Doctor holds
   `$37` in his hands (`$1D80`, `$BB15`). The `$4E` test at `$BB05` is
   overwritten by the PASS CARD test at `$BB15`.
+- **The floor sensor** (`$CA6B`-`$CA85`): when the block under the
+  Doctor's centre (`$9A09`) is `$BD`, the game starts sound `$0F`, sets
+  `$CC44` = 1 so `doctor_draw` flashes object `$29` (the circle on the
+  wall), and puts controller `$23` into state `$0F`, the chase, unless its
+  state is already `$14`. Jumping over it did not avoid it (*live*, the
+  steward); jumping to `$CA87` disables it (*live*).
 - **The prisoner** (`$CE28`, `$C9A5`, `$CF24`): controller `$22` is the
   only one whose flag `$778A`,X is 1 (it starts at `$0C40`, `$0588`).
   Touching the Doctor while `$50` is not negative and his Y AND `$0F` = 8,
