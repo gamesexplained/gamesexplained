@@ -44,11 +44,13 @@ same image is attached again before the snapshot is loaded.
 
 1. Hard reset, attach `side1.g64` and autostart the first file (`boot`).
    Turn warp on.
-2. The intro runs: "APEX COMPUTER PRODUCTIONS", the credits, then a page
-   for each dinosaur ("stegosaurus (spikius chargicus)" and so on). About
-   two and a half minutes of warp in, one press of fire on port 2 (held a
-   second) leaves the intro and loads `game`. Pressing fire every second
-   from the start did not leave it.
+2. The intro runs: the "Mayhem TV" ident, "APEX COMPUTER PRODUCTIONS",
+   then ten dinosaur pages, each followed by a credits page. Fire on port
+   2 is read only during the dinosaur pages (`$827B`-`$8282` in `menu`),
+   not during the ident and the Apex logo, which is why pressing fire from
+   the start did nothing. One press (held a second) during the pages
+   leaves the intro; only then does the loader blank the screen and load
+   `game` (`$5410`-`$541C`, the loader copied to `$C000`).
 3. "MAYHEM PROTECTION SEQUENCE" asks for the five-digit code at a square
    of the protection sheet ("F27" on every boot here), typed as the digits
    1 to 5 for blue, red, green, cyan and yellow. Without the sheet, the
@@ -124,15 +126,18 @@ Memory as the game runs: the engine at `$0200`-`$59FF` and `$B100`-`$FFFF`
 `$5A00`-`$B0FF`. Each level is loaded from side 2 when it starts. The
 title swaps pages of the level area with another buffer and swaps them
 back for play (`$3F6F`-`$3F77` exchanges bytes through `($7E)` and
-`($80)`). Whether turning a land happy loads anything is not yet known.
+`($80)`). Turning a land happy loads nothing: the land's file holds both
+moods, and `$B785` swaps them in memory (`facts.md`).
 
 ## The loader, in a paragraph
 
-`boot` loads over the stack page, so the KERNAL's `LOAD` returns into it.
-It brings in a fast loader at `$C000` (`2`), which loads `menu`, the
-intro, to `$4B00`. The intro runs from there and from a copy of part of
-itself at `$0300`-`$0BFF`, and while it plays the loader brings `game` in
-over the rest. A small routine on the stack page (from `$0180`, beside the
+`boot` loads over the stack page, so the KERNAL's `LOAD` returns into it
+(it enters `2` through `JMP ($01FF)`). It brings in a fast loader at
+`$C000` (`2`), which loads `menu`, the intro, to `$4B00`. The intro copies
+its music driver to `$033C`-`$0B3B`, its own game loader to `$C000` and
+the copier to `$0180`, and plays. When fire is pressed during the
+dinosaur pages, that loader blanks the screen and loads `game` over the
+intro. The copier on the stack page (from `$0180`, beside the
 protection's answer bytes) copies `game`'s `$5A00`-`$A8FF` to
 `$B100`-`$FFFF` with all RAM switched in, sets `$01` to `$35` and jumps to
 `$1800`. The game's protection screen runs from `$4400`-`$47FF` and, given

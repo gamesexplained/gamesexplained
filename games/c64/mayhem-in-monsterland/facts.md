@@ -86,12 +86,21 @@ bytes there), larger tables at `$8900`-`$8FFF`, and its character set at
 
 ## Text
 
-The game stores its text as ASCII capitals (`$20`-`$5F`) and draws it
-through its own fonts; no screen-code copy of a string was found by the
-letter-difference search (`30-text`). Every part carries the same
-47-byte table at its own address (`$B705` in the engine, `$7530` in the
-intro, `$B080` in the ending) that looks like a character-to-glyph order;
-its reader is not yet traced.
+The engine stores its text as ASCII capitals (`$20`-`$5F`) and draws it
+in a big font of 2×2 characters: `$B817` turns each letter into an
+index (digits + `$2B`, punctuation through `$B80D`/`$B812`, M and W wide)
+and takes the letter's four character codes from the glyph map at
+`$B6D5`. No screen-code copy of a string was found by the
+letter-difference search (`30-text`). The same glyph map is in the intro
+at `$7500` (read by `$8964`-`$897B`) and in the ending; the 47 bytes the
+string sweep first noticed (`$B705`, `$7530`, `$B080`) are its letters m
+to x.
+
+The intro has two fonts of its own, both drawn as holes in hires cells
+over black colour RAM, so the raster colour bars colour the letters: the
+big font (characters `$00`-`$68`, glyph map `$7500`, printed by `$88D8`,
+proportional) and a small one (characters `$90`-`$AB`, `$888F`). Its
+strings are screen codes, with `1` and `2` drawn as brackets.
 
 String sweep, engine: `$B93B` "STATUS : HAPPY!", `$B94B` "STATUS : SAD",
 `$B95B` "GAME OVER", `$B965` "CONTINUES : *", `$B973`/`$B982` "CONTINUE :
