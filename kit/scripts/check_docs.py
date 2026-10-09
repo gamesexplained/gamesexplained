@@ -249,12 +249,15 @@ def platform_notes(paths=None, hosts=None):
 def main():
     fails = 0
     fails += scan(os.path.join(ROOT, "AGENTS.md"), SUBJECT, "subject matter in the rules file", EXEMPT)
-    titles = []
+    titles, heading_titles = [], []
     for gj in glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json")):
         try:
             t = json.load(open(gj)).get("title")
-            if t and len(t) > 3:
-                titles.append(r"(?<!\w)" + re.escape(t) + r"(?!\w)")
+            if t:
+                pat = r"(?<!\w)" + re.escape(t) + r"(?!\w)"
+                heading_titles.append(pat)  # a lesson's heading names its game, however short
+                if len(t) > 3:
+                    titles.append(pat)
         except Exception:
             pass
     for gj in sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "game.json"))):
@@ -278,7 +281,7 @@ def main():
                 print(f"  x  {rel}  a lesson file is one entry: its first line, and its only '## ' line, is")
                 print(f"        ## next · <date> · <game> · <who>   (the kit-version workflow numbers 'next')")
                 fails += 1
-            elif not any(re.search(t, heads[0]) for t in titles):
+            elif not any(re.search(t, heads[0]) for t in heading_titles):
                 print(f"  x  {rel}  a lesson that names no game: every lesson comes from one")
                 print(f"        {heads[0].strip()[:88]}")
                 fails += 1

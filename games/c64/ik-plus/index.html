@@ -1,0 +1,763 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IK+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px}}
+.ik-pics{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ik-pics img,.ik-scr{width:100%;height:auto;image-rendering:pixelated;display:block;border-radius:4px}
+@media (max-width:700px){.ik-pics{grid-template-columns:1fr}}
+.ik-tbl{border-collapse:collapse;width:100%;font-size:14px}
+.ik-tbl th,.ik-tbl td{border-bottom:1px solid var(--line-soft);padding:6px 8px;text-align:left;vertical-align:middle}
+.ik-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.ik-tbl td.n{font-family:var(--fm);text-align:right}
+.ik-tbl tr.ik-odd td{background:var(--hl)}
+.ik-scroll{overflow-x:auto}
+.ik-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.ik-btn{font-family:var(--fm);font-size:12.5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:6px 10px;cursor:pointer}
+.ik-btn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ik-joy{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:6px}
+.ik-joy button{font-size:20px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;cursor:pointer;color:var(--ink)}
+.ik-joy button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.ik-joywrap{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.ik-out{flex:1;min-width:240px;font-size:15px}
+.ik-out .ik-k{font-family:var(--fm);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute)}
+.ik-mono{font-family:var(--fm);font-size:13.5px}
+.ik-slots{display:flex;gap:14px;margin:8px 0 4px}
+.ik-slot{width:46px;text-align:center;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.ik-ball{width:30px;height:30px;border-radius:50%;margin:0 auto 6px;background:#6c5eb5;border:2px solid #40318d}
+.ik-ball.ik-flash{animation:ik-blink .5s steps(1) infinite}
+.ik-ball.ik-none{background:transparent;border-style:dashed;border-color:var(--line)}
+@keyframes ik-blink{50%{background:#fff;border-color:#000}}
+@media (prefers-reduced-motion:reduce){.ik-ball.ik-flash{animation:none;background:#fff;border-color:#000}}
+.ik-frame{position:relative}
+.ik-frame canvas{width:100%;height:auto;image-rendering:pixelated;display:block}
+.ik-digits{image-rendering:pixelated;vertical-align:middle;background:#686868;border-radius:3px}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · System 3</p>
+  <h1>IK+</h1>
+  <p class="sub">Three karateka share one floor, and the C64 draws only two of them with sprites. The third is built from the floor's own characters and moves two pixels at a time, which is how the pause can stand five fighters in a row.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The game</p>
+  <h2 class="t">The game</h2>
+  <p>IK+ puts three karateka on one floor. Player one fights in white and player two in red, and the computer takes every fighter nobody is playing. A hit scores a full point (two dots) or a half point (one dot), depending on which way the two fighters face, and between 100 and 1,000 points by the blow.</p>
+  <p>A round ends when a fighter has six dots or the clock runs down from 30, and a human who comes last alone drops out of the game. Every third round is a bonus round: one fighter with a shield deflects balls thrown from both sides. A judge stands in the widest gap between the fighters and comments in a speech bubble.</p>
+  <div class="plate"><div class="ik-pics">
+    <img src="reference/play-round-1-start.png" alt="A round about to start: three karateka on the floor below a torii gate at sunset, the judge between them" width="384" height="272">
+    <img src="reference/wiki-bonus-round.gif" alt="The bonus round: a fighter with a shield deflecting bouncing balls" width="318" height="202">
+  </div><p class="cap">Left: the first round of a one-player game, in the emulator. Right: the bonus round, from the C64-Wiki.</p></div>
+</section>
+
+<section>
+  <p class="fig">02 · The music</p>
+  <h2 class="t">Music: Rob Hubbard's tune, played by its own driver</h2>
+  <p class="lede">The tune is Rob Hubbard's, and it plays through every fight unless F5 turns it off. The player runs a port of the game's own driver once a frame, so each note it plays is the note the C64 plays.</p>
+  <div class="plate"><div id="ik-sid"></div><p class="cap">The tune and the sound effects, played by a JavaScript port of the music driver (<code>$E00F</code>) and the effect player (<code>$EE45</code>). The port matched the original code, run in a 6502 simulator on the game's memory, register write for register write over 82,400 frames, with effects started at 119 random moments over the tune. The 6581 setting of the filter switch uses one chip's cutoff curve, as measured for the reSID emulator; real chips differ from one another. Effects 4 and 5 are in the game's tables, but nothing starts them.</p></div>
+  <p>The tune runs for 7 minutes 40 seconds before its three tracks start again, together. Each track is a list of pattern numbers and transpositions (<code>$EABB</code>, <code>$EB44</code>, <code>$EC0E</code>), and the 40 patterns hold the notes. A tick is three frames, and one tick in every 113 frames takes four (<code>$E696</code>). Each of the fifteen instruments is two records of eight bytes (<code>$E975</code>, <code>$E9ED</code>): waveform, envelope, vibrato, a pulse-width sweep and a byte of effect flags that turn on drums, arpeggios, the filter sweep and a noise burst.</p>
+  <p>Voice 3 carries the bass, and it is the only voice the filter touches (<code>$D417</code> is always <code>$F4</code>). Instruments 1, 7 and 8 lower the cutoff by 12 a frame from each note's start, wrapping round to the top, and add a one-frame burst of noise to voice 3 about every sixth frame, switching the filter from low-pass to band-pass for that frame (<code>note_flags</code>, <code>$E41A</code>). Over the whole tune that tick sounds 3,741 times.</p>
+</section>
+
+<section>
+  <p class="fig">03 · One frame</p>
+  <h2 class="t">One frame, rebuilt from memory</h2>
+  <p class="lede">The picture below is drawn by this page from the game's memory, the way the video chip draws it, line by line.</p>
+  <div class="plate">
+    <div class="ik-row"><button type="button" class="ik-btn" id="ik-splits" aria-pressed="false">Show where the screen changes mode</button></div>
+    <div class="ik-frame"><canvas id="ik-frame" width="384" height="272" role="img" aria-label="A frame of a fight drawn from the game's memory"></canvas></div>
+    <p class="cap">A frame of a one-player fight, recorded in the emulator with every write to the video chip and the line it happened on, then drawn by <code>site/lib/c64.js</code>. All 104,448 pixels match the emulator's own picture of the same frame. The button marks the lines where the frame interrupts change the screen's mode, memory or background colour.</p>
+  </div>
+  <p>The screen is three screens stacked. Rows 0 and 1, the scores, the dots and the clock, are text in a character set of their own. From line 66 the arena is a multicolour bitmap: the sky, the torii gate, the tree in blossom and the sun going down over the bay. Inside the bitmap two more interrupts change the background colour, the one colour every cell shares: pink for the sky, purple from line 121 at the horizon and blue from line 128 for the sea. At line 162 the screen switches back to text for the floor, in a second character set that holds the judge, the speech bubble's letters and the third fighter. A chain of raster interrupts makes the switches, and the frame interrupt, an NMI from CIA 2's timer timed to one PAL frame (<code>$0BE6</code>), restarts the chain each frame.</p>
+  <p>Two fighters are sprites, each three sprites wide, with the six hardware sprites used again in three bands down the fighters' height (<code>$1551</code>). The third is drawn in the floor's characters (<code>$4042</code>), so it moves two pixels at a time with the floor's fine scroll and needs no sprites at all. Each fighter's feet are reflected in the floor as a one-colour silhouette: the sprite fighters' in the lower rows of their lowest sprites (<code>$F150</code>), the third fighter's in characters (<code>$F1F9</code>). The floor has two screens, and each step is drawn into the one not on view before the two swap, so the third fighter is never seen half drawn.</p>
+</section>
+
+<section>
+  <p class="fig">04 · Controls</p>
+  <h2 class="t">What each stick position does</h2>
+  <p class="lede">Eight directions, with and without fire, give sixteen moves. Press a direction to see the move it starts, the poses it runs through and what each attack is worth.</p>
+  <div class="plate">
+    <div class="ik-joywrap">
+      <div>
+        <div class="ik-joy" id="ik-joy" role="group" aria-label="Joystick direction"></div>
+        <div class="ik-row" style="margin-top:10px"><button type="button" class="ik-btn" id="ik-fire" aria-pressed="false">Fire</button></div>
+      </div>
+      <div class="ik-out" id="ik-joyout" aria-live="polite"></div>
+    </div>
+    <p class="cap">From the game's tables: the move for each stick position (<code>$1BBB</code>), each move's first frame (<code>$1F41</code>) and the pose of each frame (<code>$1F6B</code>), and the ten poses that can land a blow (<code>$2D0A</code>). The directions are for a fighter facing right; facing left, the game reads a mirrored table (<code>$1BDB</code>). The painted numbers are drawn from the game's own digit bytes (<code>$3C11</code>).</p>
+  </div>
+  <p>The stick is read once a step (<code>$1AFE</code>). When an opponent is close, forward and its two diagonals start move 20 instead, four frames of pose <code>$13</code>, which cannot land a blow (<code>$1BFB</code>). Up and back runs the punch of up and forward after a pose of its own, <code>$3A</code>, and fire and down does the same with the low kick of down; the C64-Wiki calls the first a punch backward with a turn. A move in progress can be broken into only on frames whose flags allow it (<code>$211D</code>).</p>
+</section>
+
+<section>
+  <p class="fig">05 · Points</p>
+  <h2 class="t">Bug: two attacks paint half the points they score</h2>
+  <p class="lede">When a fighter goes down, the points of the hit appear in the air above him. For two of the ten attacks the number shown is half the number added to the score.</p>
+  <div class="plate"><div class="ik-scroll"><table class="ik-tbl" id="ik-points"></table></div>
+    <p class="cap">The points each attack scores (<code>$2D33</code>, <code>$2D3D</code>) beside the number painted for it, drawn from the first digit each attack picks (<code>$2D47</code>, <code>$2D51</code>) and the digit bytes (<code>$3C11</code>). Highlighted rows paint a number that differs from the score.</p></div>
+  <p>The painted number comes from a table of its own. While a felled fighter lies on the floor, <code>knock_marks</code> (<code>$3BA3</code>) paints digits into the fallen pose's graphics: “1000”, or one digit followed by “00”. The digit comes from a table that runs alongside the points table, and for attacks 3 and 6 it holds the digit for half the points. The punch on up and forward scores 800 and paints 400; the low kick from a crouch scores 400 and paints 200. Checked in the emulator, the score went up by 800 for every punch that painted 400, and by 400 and 200 for low kicks that painted 200 and 100.</p>
+  <div class="plate" style="margin-top:20px"><img class="ik-scr" src="reference/painted-200-scored-400.png" alt="A fallen fighter with 200 painted above him while the red fighter's score reads 400" width="384" height="272">
+    <p class="cap">In the emulator, half a second after a low kick from a crouch felled the blue fighter: 200 hangs over him, and the red fighter's score has gone from 0 to 400.</p></div>
+</section>
+
+<section>
+  <p class="fig">06 · The computer fighters</p>
+  <h2 class="t">How the computer fighters get harder</h2>
+  <p class="lede">The computer's fighters improve at each bonus round. A difficulty step, 0 at the start of a game and up by one at each bonus round to at most 5, sets how often they defend and attack and how long anyone stays down.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" id="ik-dprev" aria-label="Previous difficulty step">&#8249;</button><select id="ik-dsel" aria-label="Difficulty step"></select><button type="button" class="step" id="ik-dnext" aria-label="Next difficulty step">&#8250;</button></div>
+    <table class="ik-tbl" id="ik-diff"></table>
+    <p class="cap">The difficulty step's entry in each table. A chance is a random byte at or above the table's value. Against moves 2, 5 and 6 a computer fighter tries the first defence chance and, failing it, the second.</p>
+  </div>
+  <p>Each round the level can override the step (<code>$2998</code>). The table is read by LV AND 7, and LV is kept in binary-coded decimal, so level 10 (<code>$10</code>) reads the same entry as level 8. On the levels that read entry 0, the computer defends every time it has an answer and never attacks by chance: it starts a move only after 48 steps of standing idle (<code>$2ACD</code>).</p>
+  <div class="plate" style="margin-top:20px"><div class="ik-scroll"><table class="ik-tbl" id="ik-levels"></table></div><p class="cap">The level overrides (<code>$2980</code>, <code>$2988</code>), with the first levels that read each entry.</p></div>
+</section>
+
+<section>
+  <p class="fig">07 · The bonus round</p>
+  <h2 class="t">The bonus round</h2>
+  <p class="lede">In the bonus round 64 balls fly in from both sides, and the player deflects them with a shield for 100 points each. Some rounds throw flashing balls that bounce low and high in turn.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" id="ik-bprev" aria-label="Previous bonus round">&#8249;</button><select id="ik-bsel" aria-label="Bonus round"></select><button type="button" class="step" id="ik-bnext" aria-label="Next bonus round">&#8250;</button></div>
+    <div class="ik-slots" id="ik-slots"></div>
+    <p class="ik-mono" id="ik-bout"></p>
+    <p class="cap">Which of the six throwing slots throw flashing balls in each bonus round of eight (<code>$F71D</code>, by the bonus count AND 7), and where the launch rate stops growing (<code>$F725</code>).</p>
+  </div>
+  <p>A bonus round goes to each human player in turn (<code>$F2AB</code>). Balls come faster as the round goes on: the launch rate starts at <code>$0080</code> and grows by 8 a ball up to the round's limit, and each ball is heavier than the last, up to a limit. A ball that reaches the fighter knocks the shield out of his hands. Surviving all 64 balls is worth 5,000 points.</p>
+</section>
+
+<section>
+  <p class="fig">08 · The keyboard</p>
+  <h2 class="t">Secret: R, T and X change how the sun’s reflection ripples</h2>
+  <p class="lede">The C64-Wiki gives D, O and M together for new sky colours, and the game's own high-score table ends its hint with “and others”. The game checks a second combination the same way, and none of the sources names it.</p>
+  <div class="plate"><div class="ik-scroll"><table class="ik-tbl">
+    <tr><th>Keys</th><th>What they do</th><th>Where</th></tr>
+    <tr><td>F1, or fire on joystick 2</td><td>a one-player game</td><td><code>$18D2</code></td></tr><tr><td>F3, or fire on joystick 1</td><td>a two-player game</td><td><code>$18C2</code></td></tr><tr><td>F5</td><td>music off or on</td><td><code>$186C</code></td></tr><tr><td>F7</td><td>shouts and bonus-round effects off or on</td><td><code>$18A1</code></td></tr><tr><td>1 to 5</td><td>game speed</td><td><code>$17E9</code></td></tr><tr><td>*</td><td>the sun's reflection, four colour sets</td><td><code>$1807</code></td></tr><tr><td>D, O and M together</td><td>sky and water, eight colour sets</td><td><code>$1837</code></td></tr><tr><td>one key from each of R I P, T O @ and X N /</td><td>how the sun's reflection drifts, four patterns</td><td><code>$1855</code></td></tr><tr><td>S and E together</td><td>the trousers fall (first two levels)</td><td><code>$1C40</code></td></tr><tr><td>RUN/STOP</td><td>pause</td><td><code>$116D</code></td></tr>
+  </table></div><p class="cap">Every key the game reads (<code>$17AD</code>). A key acts once it has been held for twelve frames.</p></div>
+  <p>Both three-key checks drive three keyboard rows at once and need all three column bits to read low (<code>$1922</code>). Any key from each of the three columns passes, so D, O and M is one choice of 27 for the first check. The second check, at <code>$1855</code>, steps the pattern the sun's reflection ripples in; in the emulator P, O and N stepped it, and so did R, T and X. The trousers also fall without the keys: a fighter left idle for 128 steps has a 1 in 32 chance each step of dropping them.</p>
+</section>
+
+<section>
+  <p class="fig">09 · Copy protection</p>
+  <h2 class="t">The loader's stack pointer is the key</h2>
+  <p class="lede">Besides the disk's own protection, the game checks after loading that the original loader ran, using the stack pointer the loader leaves behind.</p>
+  <p>The last stage of the loader leaves the stack pointer at <code>$0A</code>. The game stores it with two indexed writes (<code>$1020</code>) that land on the main loop's stack pointer and on a second copy only when it is <code>$0A</code>, so a game runs with its stack in the same place as the loader's. During a fight the game checks a byte that a <code>JSR</code> leaves on that stack (<code>$106D</code>): if it is not <code>$CF</code>, the game calls the frame interrupt's exit as a subroutine. In the emulator, with that byte poked, the CPU returned into the stack page and stopped on an illegal opcode at <code>$01C5</code>.</p>
+  <p>The same stack pointer is a decryption key. At the first reset (<code>$1957</code>), part of the pose layouts is XORed with the game's own code, starting at an offset taken from the stored stack pointer. Any other value XORs another stretch with other bytes, and the layouts stay scrambled. A byte the loader left at <code>$010B</code> is checked again each time the third fighter's reflection is drawn (<code>$F1F9</code>).</p>
+  <p>The reset that clears the game's variables (<code>$16E1</code>) is aimed by the same value: it clears the stack page from just above the loader's bytes (<code>$010C</code>-<code>$01E8</code>) and leaves those bytes alone.</p>
+</section>
+
+<section>
+  <p class="fig">10 · The shouts</p>
+  <h2 class="t">Sound: every shout at a random pitch</h2>
+  <p>The shouts are six digitised samples of four bits, played through the volume register from CIA 1's timer interrupt (<code>$0934</code>). The six share their bytes: three sit in the high nibbles of <code>$BF00</code>-<code>$CFFF</code> and three in the low.</p>
+  <p>Each shout plays at a sample rate picked at random when it starts (<code>$0EE3</code>): every 224 to 255 cycles on PAL, about 3.9 to 4.4 kHz, so the same cry comes out a little higher or lower each time. A new pose picks the shout (<code>$0E86</code>): an attack, a scoring hit or a fall. F7 turns the shouts off.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* Bytes from the game as it loads (work/start.vsf), by address: the tables the widgets read. */
+const IK = {"7099":"0000000000040203000608070005010000000000000c0a0b000e100f000d0900","7424":"7d644b321900","8001":"0002080c12161a1e242930343a40454d585f63676c7072737475787d829091939baaafb0b8c2caced2d8","8043":"00000516171605000f140f000102033b0c000d150d0021202100111211000c3b030201003a0f140f0005164545170500191b1a000d070e070d000d0610060d003a212021003c3d3e1010060d001d1e1f08090a0b041c0500414243444241002c2d2e2f28292a2b2424252627131313133a3a0000003a3a000102033b0c0c3b0302013030303030313131313130303030010c0028292a2b2b2b2b2b00323333334040404040404040400016171605000036372222222222003938363722222222220035352222222222002c2d2e2f28292a2b16454517050000","10624":"80000002800180008000000500050505","11084":"f0a060200800e0c080401010e8d0603010000c0a08080606","11530":"0e101214151b20434544","11571":"02080408041004100810010402040205021004100104020202050105040500020101010300050205","12087":"ffc896644b32","15377":"0c3c0c0c0cfc0cfcc0fcccccfc0c0cfcc0fc0cfcfcccfcccfcfcccccccfc","63261":"06060506040602068080c0c0e0e0f0ff"};
+/* One frame of a fight, recorded in the emulator and trimmed to the memory the drawing reads
+   (kit/c64/frame.py); drawn by C64.drawFrame. */
+const IK_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[112,132,228,128,252,125,114,128,80,125,44,125,172,128,160,128,0,27,0,209,0,255,200,0,187,126,241,196,0,128,0,6,240,240,250,240,243,250,240,247,254,254,254,254,254,247,244],"cia2":[194,63],"cpu":[47,53],"writes":[[66,40,65534,16],[66,49,53270,216],[66,55,53265,59],[66,61,53272,177],[67,5,53281,250],[121,60,53281,244],[122,25,65534,28],[128,36,53281,246],[128,48,65534,40],[134,41,53294,250],[135,16,65534,102],[162,49,53272,181],[162,55,53281,251],[162,61,53265,27],[164,11,53270,218],[164,17,53275,0],[164,38,53276,255],[164,45,53277,0],[164,59,53248,208],[165,3,53250,232],[165,10,53252,0],[165,17,53254,26],[165,24,53256,50],[165,31,53258,74],[165,37,53249,168],[165,41,53251,168],[165,45,53253,168],[165,49,53255,168],[165,53,53257,168],[165,57,53259,168],[166,17,53264,4],[166,24,53287,242],[166,28,53288,242],[166,32,53289,242],[166,39,53290,241],[166,43,53291,241],[166,47,53292,241],[167,2,28664,115],[167,8,28665,116],[167,14,28666,117],[167,26,28667,99],[167,32,28668,100],[167,38,28669,101],[167,58,65534,215],[188,33,53249,189],[188,37,53251,189],[188,41,53253,189],[188,45,53255,189],[188,49,53257,189],[188,53,53259,189],[189,11,28664,118],[189,17,28665,119],[189,23,28666,120],[189,29,28667,102],[189,35,28668,103],[189,41,28669,104],[209,39,53249,210],[209,43,53251,210],[209,47,53253,210],[209,51,53255,210],[209,55,53257,210],[210,10,53259,210],[210,16,28664,121],[210,22,28665,122],[210,28,28666,123],[210,34,28667,105],[210,40,28668,106],[210,46,28669,107],[230,38,53249,231],[230,42,53251,231],[230,46,53253,231],[230,50,53255,231],[230,54,53257,231],[231,10,53259,231],[231,16,28664,124],[231,22,28665,125],[231,28,28666,126],[231,34,28667,108],[231,40,28668,109],[231,46,28669,110],[233,19,65534,4],[244,30,53292,240],[244,34,53291,240],[244,38,53290,240],[244,42,53289,240],[244,46,53288,240],[244,50,53287,240],[274,8,53270,200],[274,14,53272,187],[274,20,53281,240],[278,4,53251,128],[278,8,53255,128],[278,22,53253,125],[278,26,53257,125],[278,30,53259,125],[278,36,53288,254],[278,40,53289,254],[278,44,53290,254],[278,48,53291,254],[278,52,53292,254],[279,1,53294,244],[279,7,28665,129],[279,13,28666,130],[279,19,28667,127],[279,25,28668,128],[279,31,28669,97],[279,47,53250,228],[279,53,53252,252],[279,59,53254,114],[280,2,53256,80],[280,8,53258,44],[280,36,53275,196],[280,42,53277,128],[280,52,53276,0],[280,62,53264,0],[281,7,53248,112],[281,15,53249,132],[281,23,53287,247],[281,29,28664,96]],"colour":"CwsLCwsLAQEPDwoKCgoLCwAADw8LCwsLCwsPDwQEDw8EBAQEBA8ODgEBAQEBAQEBDw8KCgoKCgoAAA8PDg4ODg4ODw8EBA8PAQEBAQEBDw8CDAwMAgILCwICDAsLDAsMAgsMCwICCw8CCwsLCwsNAgUCAgICAgICAgwCCwwMAgwMDw8MAgICDw8ACQAJCQIPDw8PAgsHBw0NBQUFAgUFAgILDAwCAg8PDA8MDwAAAAAAAAAAAAAAAQ8AAAACAgcHBwAABQAFBQULCwwMDA8PDA8MDw8JAAwJCQwMCQkJCQwJCQAADA8NBwAABQAABQUCDAwMDAwMDw8PDw8PAAEAAAAAAAAAAAAAAAAMAQ8MCw8HBwIACQUFAgUAAAkPDw8PDw8PAQAAAAkJAAEJAAAACQkJAAwMDA8PDwwHBwgJAgUACQAAAAAAAAEMCwEBAQAJBwEBAQcBAQMDCQEPAQwLCwsNDQAACAICCQkJCAkJCQAJAAkLDAAMCQEBAQcHAAAABgYADw8MDAsHBwUFCAkLCwsLCwkGCwsLAAsAAAAABgkJBgYGBgYGBgYGAwYGBgsABwcFCAkGCwsABgYGAAAABgYGBgYGBgYJCQYGBgYGBgYGBgYGBgYGBgYGBgkIBgYLDw8GBgYGBgYGBgAGAAAACQUFAAAAAAQAAAsACwALBg8ACwsLCAkFCwMICQkICAcHBgAAAAAAAAkJAAAAAAAAAAkJAAAAAA4FBwcAAAkAAAMODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAAPDw8PDw8PDwAADwEIDwAAAAAAAAAAAA==","ram":[{"a":17024,"b":"VVX+X1VVVWpVVdW+VVVf+qqvlWqqv9VV/6qlVVX1r6r///+rp1VX/+rW/apa9f////6r//6qVarrv//+qpVValdVWqr//6rq+f5///9/V1VV1bqqqqu/r/r/f5qqqmlVV/X5pVVVqqqqVldVVVX9////r6pqVVWVqqqqqv9fVVV/VVVVqq///1dfV9fWVlZaVVVVf///+qD1//+qqapVAP9Xf//66v8A9dWq/qqqqwD///+qqqapAKqptdVWWlff/fXVVV9Vlar//+WWVaWVVVX/qZVVVVVqVVdfX15fWqlr2v2//f+qb/+3m2pWVVn/VVVXWu6fuupV+2677+6/6+6bpmmn5ZZp/75XXvXuuef/73rvetv9a6r/33fdd3fdVV2v/ru77ruqqv/+d/ffdVVplVXV/en/qqqqpVqqatW/uqqqqpqp/6paVlVVX/qq//X+f2uv/+pV/qqqWlVVpar//1Vqq7+qqv1Wa6r+/5Xqdf+q6v2vautaqv7/f5Wr/7Wpqvr///2v//1VVaqv/+v6qqqq+v3or2maqqqq//WqqdX///+qValVVf/+qqpVXl77uuqqlVWq/3CqqqrXAKjAAICw/MAA8P//////VxcAUFVVVVV/fwMP//78/6+rQFBV1RVVX38ACqqqqqr+/gVVVVVVVWpoPwAAAAorPwD6qgBVVfABD1ZVVaqqqqv/qlVqqaep//yp/v6pV/9VD///VVaqqq2p67qr3tb1ndXNfVV33fdf3dfZd/ltyVZlpZ1rVZlmWmlf9db333dd9f2WeXX391/d5nf5XbdVabrvuq9uu7qfa+677qu+6q/t+qnuuv+7tvv9/d+/7buvv/rV/qqpV3///6lV/ZVVVd//f1VVVWmqr///laqqqv7//6qv//3W/n/+v//VVVWl6v+qqmpWVVX16qpVr6pqVleqv/9fr6r8v6qgUFX/DwBQAAAAwKiqAAD/AAAAAPCoAAA/Pz8/Pz8/AAD8//////8AAAD//////wAAAMD/////AAAAAP////8DAwMDA////+Dg4ODg////AwMDDz///vrAwMDw/P+/rwsLCwsL////wMDAwMD///8AAwAAqqqqqv/4AAFVVVVVUAAA//////8AAP///////wD8/Pz8/Pz0zjsKAAIAAADvZtt59ss7Dre9552337nefDL5Lmu+rgnmGv7pu/XPrFtl1vb973+u5tX5f2+X6fZd12mn35edtfn2fb51vp21d3193Xfdd1flrf7prbbque77/uuv+u6/f/5VqlVVpan5VqpVlaqplf9fVf/6Vf3///+Vqlqqr+r9+qqqV////1XV9VWpqqqq/1dRFECgq791VQAAAAAAUPr/FwAAPwAA//pqAKqmAAAA8P8P/P/rAAAAwFAAAPDUBQUFAwAAAAr///9VVQAAqKqqqlZWAgICqqquq6urq6uqqqr//wAAVaqqqlVVAAAAqqqqVVUAAACsqKrq+g4qIDoqqquvsKgIqqqq//8AAACqqqr//wABVaqqqlVVAPD8qqq66urq6uqqqqq/v4CAgP///1VVAAAA8PDyQAAAAqo/qoAAAA/6qrUBAQCpq/AAzgwjiCJiAAD23d031x0HDweMZqmWZWlq12vZmuabm2XqWmWdq/rfpv3/b+tWev/u+bX15rX57/t21nraaamlp9f91V133f9X66qr/rvv6/7/q6pqVVVVVf//qqhAVVVV/+qqAABAVFX/qqoAAAMDQP8AlAA8//8q6gAAAADw/6n/+wAAAAEAsPygAAAAVQEAKqs/AACqqgOA/P8PAKC//QAA/P8DAPyvAAAA/OoAAMBVAQAAAAADA6qrAAAAAFVVU4MDA8P////+/v7+/v///1UFAAAM/f//qlUVAAAA//8AoAAAAAD////M/zA/D//+/zP/DPzw/38qAgAAAAD//2pVVAAAAP//oAAAADB///9/f39/f////8DCxcDD/////1VVAAAAqqqqoKo8AABDQPAAwAAC//wAAAAAD/6gAAoAAAC/WgAqqgAAAACAAKqq7j4LAAAAkKnv+u6f1/89F/tquepuCJpU/+pW3hBEwRxV1fW1va0vK6mp6eVmel5W+fmaqtr5efXqq76q+7/uu6qqqqqqqqqq//7////////fd////f///6iqqqqq6rqqA4Coqqpqmqb/AAAAgKCoqvoAAA8AAAAAAACq/g8AAAAAAKqq/w8AAAAAqL//9QAAAAAAAPxAAADUAAAAAFwAAAMDAAAAAAAA//+qAAAAAAD////XUwMDA6qqqq+rq6urqqqr+w8AAAD//1UAAAAAAKqqVQAAAAAAqKr6DgMAAAU///XQQAAAoP//VQAAAAAA//+qAAAAAACqqurv8AAAAKqqqvrq6urqqqqqvo+AgID//1UAAioAAEBDDz+ogAIqAP/wAD8PqiACAAD8//AAAP8AAABAAAoA6AAAAAL/fwAAAAAAqqr+AD4LBgHQ/cAA7/47zD+AEEH8DzPPMAzMAO8LA0MAEERU6er6ent+fn752urbpa+3v7Wtq+pm7VdV+uqv//7////6/6uqqqqqqv+/q/r/+///////v6vq+u////qv//+vq////+/7/v//yvD/////f/eqCgDA8P///wDyAgICAqKqAAA/DwAAAKAAAFRVqgAANgAAAFRVqgAAqAoAAID8AAAAsAAAAAAAAAMDAwMDAwMDq6urq6urq6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqKqqqqqqqqvz8////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlZWVlZWVlZWAgICAgICAgA8AAAAAAAAA/AAAAwoAAAAAAApVFQAAAAAA/1UAAAAAAPxXVQAAAAAAAPAAAAIllQAAAAAKuqqqAAADlWVVVVU8wzCumaqqagAAP/zs8///866q6vre+vrl5eXlZdWVlYAA6qqqpZpqPwCqqlmqpqqqqurquq6rq6qqqqqquq6uqqr6q6qqqqqqqqqqapqmpb+/76uuq6qrqqr6vv/777qrq6qqqur6////r/r/r/v+uuqqqvqvqoD8/////3//AAAAoKqmqqoAPz8AAIDqqCrAwAAAAKoAqAAAAAAA/wAAAgICAgKqAgKrq6urq6urqwAAAAAAqgAAAAAAAACqAAAAAAAAAKoAAD8/DwAAqgAA/PzwAACqAAAAAAAAAP8AAAAAAAAA/wAAAAAAAAD/AABqampqampqaoCAgICAqoCAAAAAAAD/AD8PCwAAAFUBVP7qAAAFVVUF8AAO6q76qqoO6aqqqqqppqrqqqqrvuqqqqu6r7+rvq/uu+6vvu36rruq7qq77vuuqqrqqqq6quqvr6+9vb65rerqquqqqqmqqqqqqqv6qqqqqqqv6qqqq6mqAKquuuqqpgCqrq66qqqqAKqqqqqrqqsAqqmmmqqgAKqqqqqqoAAAqqqrqoAAAAC66qqgAAAAAKuuqAAAAAA///8DAwMAAKqqoAAAAAAA//AAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAgICAqurq6urq6urAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJWVlZWVlZWVgICAgICAgIAAAAAAAAAAAAoAAAAAAAAAoKoAAAAAAAAAqqoAAAAAALoAqqoAAAAA/wP8//8AAAC6ryeuqyoAAPm5XumiiSoAr7vqvqu6qgKquv5eX1eWpZeXll6eXl5+qqqqoKqqpqqrrq4Arquqqq6uqgCqrquq//8AAAAAA/1VAAAAAAVZqaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAgICAgICq6urq6urq6sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlZWVlZWVlZWAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgIAAAAAAKqVaQAAAAAAqlVVAAAAAAAAqlUAAAAAAACoVgsDAAAAAACq6Zl5+fn59emgoKCgoKCgqioAAAICAgKqqgAAqmtWVaqqqqqqqaefVaWdfd3d3f1dAAAAAAAAAFUAAAAAAABVqgAAAAAAAKpVAAAAAABVqqoAAAAAAKpllQAAAAAqlVVVAAIJpVVVVVUAVKmqqqqqqgAA/1VVVVVVAAAAVaqqqqoAAAAA/9VVVQAAAAD/VVVVAwMDA/9XV1dXV1dXV1dXVwAAAABVqqqqAAAABVqqqqoAAD/VVVVVVQAA8K+qqqqqAAAA/6qqqqoAADzrqqqqqgAAAFSpqqqqAAAAAD/VVVV/f39/f39/f0BAQEFXf39/AAAA/FdVVVUAAAAAUPX9/wAAAAAAAP9VAAAAAAAAEXcCAgICAgKqVfr+/v7+/q9aVdW1r66urv//////f5+nVf/+7///v/9vf/f///799trp2elp5eWllqW1paXp6a2qqqaqmqqqqqn////v/v///lVVVVVVVVVVWlVVVVVVVVVZVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrq6urq6urq1dXV1dXV1ZaVVVVVVVVVVWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqurq6urq6mpalZWVlZWVlZWqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrqqqqpqqqqqqqqqmqqqq6qmqpqqqqqqqqqquqqqqqqq6qqqqquqqq+6++qquqqmrqrvvvfu9Vleuuvrrqq5Zd7u//u77/3VXqet/9f/f/q6qqelpVVVXV"},{"a":20872,"b":"AAAAAAAAAAA="},{"a":21280,"b":"AAAAAAAAAgIAAAAAAKiqqgAAAAAAAACAAQIGBQECAQBqmlpmZlZWVYCAgICAgAAAEFRUVFUVJQsAAAAAA8///wMPP///////VVdfX39/f3/w/P///////wAAAADAwMDADwMAAAAAAAD//v++AAAAAP/9tTU1PT8r/39fl1VV/v7v77+//////MDAwMDAAAAAAAAAAAMDDw8qPz/+/v7+/qqvq/v7+/v/8IDA8PD8/P8AAAAAAAAAAw8/Pz/////////8+Pjg4ID//w8DAwAAAP////////8/AADAwMDA8PADAw8PCwYVVf/8/PzwsGBAgAAAAAAAAAAAAAAAAAAAAD8PDwMDAAAA8PD8/PikVVU="},{"a":22424,"b":"/z8PDw8PAwPA8PDw/Pz8/wAAAAAAAADAAAAAAAAAAAAAAAADAw8PP////Pz8/PDw"},{"a":22528,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":22592,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":22720,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":22784,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":22848,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":22912,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":22976,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":23040,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":23104,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAA"},{"a":23168,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":23232,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":23296,"b":"DV0PN1UJNVVaPdUqP9rqPdq+PeqrP+quP+qqP/qqD/6qD///P///P///P///P///P///P///P/8/AAAAAAAA"},{"a":23360,"b":"qqgAqq6qqq6qqr+7qr6qqr+q/7uqrZuqrVWqrVVaq1Va////////////////////////////////AAAAAAAA"},{"a":23424,"b":"AAAAAAAAqgAEqqt0+qpUr+tUulVUqpVUqpV8qpV86nVw///w///8///8///8///8///8///8///8AAAAAAAA"},{"a":23744,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":23808,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":23872,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":23936,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24000,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACAAACAAAB"},{"a":24064,"b":"AAAAAAAAD8AAP/AAP/wAF/wAPfwAdfwAV3wAF3wANXwAFXAAFUAABWAAJagApqoApqoAlqqAmqqAmuqAauqA"},{"a":24128,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24192,"b":"AAAFAAAFAAAFAAAdAAATAAARAAAVAAAFAAAAAAACAAACAAAKAAALAAArAAArAACqAACqAACqAAKqAAKqAAKq"},{"a":24256,"b":"fuqAW/qAWqqAWqqA3qoAvqoAq6gA6v8A//wAuqgA/qgA7qoArqoArqoArqoAqqqAuqqArqqAoqqAgKqAAKqg"},{"a":24320,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24384,"b":"AAKqAAKqAAKrAAKqAAKqAAKqAADqAABeAABUAAFUAAVUAA/8AAP8AAD8AAD/AAD/AAP/AAP/AAP/AAAAAAAA"},{"a":24448,"b":"ACqgACqgACqgAAqoAAqoAAqoAAKoAAK8AADUAAAVAABVAAD/AAA/AAD8AAP8AAP8AA/8AA/8AA/8AAAAAAAA"},{"a":24512,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24576,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8AAB/AAAAAAAA/wAAAAAAgAAAAAAAAAAA"},{"a":24640,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":24704,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAfwAAAAAAAP8AAAAAAIAAAAAAAAAA"},{"a":26560,"b":"AP8AAf+AAf+AAf+AAP8AAP8AB//gB//gAP8AA//AA//AH//4H//4P//8AP8AAP8AAf+AAP8Af//+////f///"},{"a":26624,"b":"ADxmbnZmPAAAGDgYGBh+AAA8ZgwYMH4A"},{"a":26672,"b":"ADxgfGZmPAA="},{"a":26720,"b":"AHz+/v7+fAA="},{"a":26752,"b":"AAAAAAAAAAA="},{"a":26792,"b":"AH5geGBgfgA="},{"a":26816,"b":"AGZmfmZmZgAAfhgYGBh+AA=="},{"a":26848,"b":"AGBgYGBgfgAAY3d/a2NjAA=="},{"a":26912,"b":"AH4YGBgYGAA="},{"a":26928,"b":"AGZmZn48GAAAY2Nrf3djAA=="},{"a":27016,"b":"AAAAAAAAAAAAAQYWO1tbXADY3II8P4d3Yz8/Hx8PDwDPvnz48PDwAA=="},{"a":27648,"b":"DAwMDAwMMjMxMQwMDAwMDDIzMTEMDAwMDAwxMRwmMTEkGR0VMTECATExMTExADQ1MTExMQEGAAA0NTExMTExMTEAMTEAATExJxgZJBUQMTG8siuyy8ssLLzLssIsKywrvCy/LLy8LCu/LCwsLCyyvdJd1Vu1W7zLy7K8LPLy/PLyLMLy/Pz8HCycC8kMIAkswiws/PLLLSUlLS0C1bKytcssK/LPz8LC8sLf0Syf3x/xH9mJiYmY0AHyLCy91yxQUCUlIFksILIswi/yLyws9xwfcRwPn5DAwJCQwDAwwJDAgJ+cH3z3ICcnICUlICy1AgIPDx8fwcHcHNHR/A/x+cn8z8iDj/ycnB/wDwy//Ly8wod4CAIIxSApmHCQcMEcHBwc/M/5kfAwk5Bwl5E5MDAwnw8f0cEc3LfbkHCAUCApIImJ2dmcvMCwz8/Pz9HAg9Nz19FzQ8QJMH/B/PvJDJALsPvYCbCwwCCwkGBgYGlglsBgYGFgwDAwcGBgYWHhkDBhAQxgsGBgUHDQkLDAkJCQYLCQYGBgtmD21tbW0NBg1D0dPVTU1AkwYPDQsGC2UFBgkICwYGC2C7CQhmu2sLBw0NDc2NDQYNTUHR1U1NQJMDCwULDQsLCwsPAJ0LDwCwsLC7ALsLCwC7YLtra2CwsLtGtLSwu1mwa2BrYGsLC/Dw0ICbCrBbCwsLCwsAvbS9vb29vb2wuw29vb29vb27Cwa9v766ur29t7uLC5mwsxMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMWRlZjExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTFnaGkxMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMWprbG1ubzExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTFwcXJzdHUxMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMXZ3eHkxMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMXp7fH1+fzExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTGAgYKDhIUxMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEx8/T19vf4MTExMTExMQ=="},{"a":28664,"b":"YIGCf4Bhn58="},{"a":32767,"b":"AA=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19653,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":194,"colour_cells_changed_during_frame":0}};
+/* The tune, the driver's variables and the effects' tables as the game loads them ($E000-$E008,
+   $E478-$EE30, $EF9D-$EFDB, $F07E-$F147): [address, hex bytes]. */
+const IK_MUSIC = [[57344,"000000000000000000"],[58488,"45ee1601270138014b015f0173018a01a101ba01d401f0010e022d024e0271029602bd02e702130342037403a903e0031b045a049b04e2042c057b05ce0527068506e8065107c1073708b4083709c409570af50a9c0b4e0c090dd00da30e820f6e1068116e128813af14eb1539179c18131aa11b461d041fdc20d022dc2410275e29d62b722e3831263442378c3a083eb841a045b849204ebc52ac57e45c70624c68846e1875107c7083408b7093409c78a558afc8b9e0c498d008dd30ea20f82efd000000070e0000000000000000000000000083043d073a133a5f033d073a173a033f0f3d013d013d013d013d033d073a0b3a033a033d033f033f173d033d073a133a033f033d033f033d0738013a013a013a013aff000000000000053c053a073c0141013f01410141033f053c053a073c01410143014801480346ff130901053e053c073e014101430141014301410143053e053c053e0139013c0139013c013e013e013eff000000000000000000000000000000000000000000000000000000000341013f0341013f07410144014101460144014601440341013f0341013f07410141013f01410141013f013cff03430141034301410743014301410143014301410143ff81053c0141013f013c013f013c013a013f013c013a0b3cff0139013e013c0139013c013901370139013701350b32ff033e013e013c013e0141013e013c033e013e013c013e0141013e013cff00000000000000000002000200c0000000000000800b32a18030b228b303b247212ea18050ae03b04f073307350032a18030b228b303b247a1806b3321b503b34f072e07300032a18030b228b303b247212ea18050ae03b0472130a18059b003b247a180502e21b00fae0f330f38033a4fff00000047a380183223b30732032e032b032e033047233203b3233521b701b0ff00000047a3803b3523b707350333033247a380353323b50733032e073003330333a38033330bb503b5033803380338a380473807ba033c0337ff00000083063843810230438106384301384181023045ff008306384181034481023043810638430138810344810230418103440144ff000000810a33013001330130033303350337033a033703350133013001330130033303350337033503330330ff013201350132013503320335033703350332033501320135013201350332033503320330032e032bff0000004181003c013c43013c013041013c013045013c43ff0000004181003c013c4181023081003c013041013c01304381023081003c43ff00000081063881003c013c4181023081003c013081063881003c01308106384181023081003c43ff000000810232013001300130013201300130013001320130013001300132013001300130ff0000000000000081043c013c013c013c033a033a03370337033a435fff43870c35073b074003458b0d4c034a174c074a074f07510b4c034a0f4cff870c340739073e07433f283fa81fa8ff00000043870c470741073b03358b0d51034f1751074f075107530351034a174cff870c4a0745074007393f283fa81fa8ff000000a7011ca7801c9c2ba883c056a81f1cff1318070c0409050881034001440140014001440140014003440144014001440140014401400140ff83063843013845013845013845ff813011000241c0038030801580208010802080208010802085813011000440400e8030801580208010802085000000000000000000001180fc1180fd1180011180038510000285000041060600c40080004109c80040a400081109f80000080008810505000008d007510a56000414800841007820100000061108d800000880000109c80000a080000109c80000a4000000000000000000014109991088000000510d39230000800151095913430400001100c92300084000410b090040b44881810240f0f4fc248141023c30f4f42ee9410140fd000047e9410140fd00000011810340f0f4fd4881810240f0000047e9410140fd0000248141023c30f4f4248141023c30f4f40221110300fc00000321110300fc0000001181014090f4fd004100020081000064e9000c0031f4ff041141023cfd0000bb440eeaebece23de45d7cc1e00995b9fc2940586f9bc39f4c5b7091e7ff1f47bba001217086a4b7d5e80020a310ecedecededededeee5e5e5e6e6e6e6ededede5e7e7e7e7e7e8e8e7e6e7e7e8e8e8e8e8e8e9e9eded8012121212060000060000070000070000060607070800000900000a00000b0b0b0b0c000d000c000e008c000c000d000c0e0e80151a151a00008c151a151a80242424242424242424242424242424242424242424242424242424241e00001e00001f000000001e23000000002100000000a41a00001a008000128212801b1b1c1c1d1c1c1d1b1bff131313131313131313131313131313131313131313131313141414141414141916161616161616161717171718181818020202271913131414141402020202191902020202132713271327020202020200000202020225252525252525192525252525252525252525252525252525252519141414141313131320131313130000231313131322000000002424242424242424882424242424242424242424242424248019131313131313131318181818181818181818181818181819020202020202020202020202ff0f10030303030303031110030303030303038501010101010101010101010101010101802626262603030303030303032626030303032626040404040101010103030303010104040101030301010404010103032603032603038711100301018003032603030f10052611100526011e050f10050305011e05262611100526010101011110052626262626000026262623231110052626268201800303038501018326850101832680262603030303262603030101262603030101262603030101262603030101262603030101262603030101ff5fff81063881003c013c81034481023081003c013081063881003c013081063881034481023081003c810344014481063881003c013c81034481023081003c013081063881003c013081063881034481023081003c8103440144ff81011d0129011d011d0129011d01220324011d0127011d01290129011d0127ff011f012b011f011f012b011f01240326011f0129011f012b012b011f0129ff011a0126011a011a0126011a011f0321011a0121011a01260126011a0121ff810718ff810818ff011801240118011801240118011d031f0118012201180124012401180122011801240118011801240118011d031f0118012201180124012401180122ff81043a013c033c033c013c013a033c013c013a013c013f033c013a013c033c033c013a013c073747ff013a01410343034301430141014301460143014603430341013e0141013e0141033e033c073e47ff"],[61341,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7e898b9aa3a8cdd7f0f0f0f0f0f0f0f0"],[61566,"01010101010101020202ff01ff0101010101010102020202010101800202020201010101ff02020280ff010102010101020201010101020202010101010102020202010101010101020202020280ff020202020202020280ff01010101010101010101010101010180ff05003000410a091ff0024002170a1a4502003000810a072820004002150c0a2d10010008810a090800080008410ac94840414111700000004041811170f0ff004041411170000000414181617000000040414110502f0000404141400c000000"]];
+// createDriver begins
+/* IK+'s music driver ($E009 start, $E00C stop, $E00F once a frame) and its sound-effect player
+   ($EE45, run at the end of every frame of the music), ported from the 6502 code for the site's
+   shared SID player (site/lib/sid.js). M is a list of [address, hex bytes]: the tune, the driver's
+   variables and the effects' tables as the game loads them. The port keeps the game's memory
+   layout, so the driver's pointers into its own tables work unchanged; the four operands the code
+   patches into itself ($E2BB, $E2D5, $E308, $E322) and the script address of LDA $C000,Y ($EE89)
+   are locals here. Tunes: 0 is the tune; 1-4 start sound effects on the two effect channels, as
+   the game's writes to $EFC9 and $EFCA do, with the music stopped. */
+function createDriver(M) {
+  'use strict';
+  const m = new Uint8Array(65536);
+  for (const [a, h] of M || []) for (let i = 0; i < h.length; i += 2) m[a + i / 2] = parseInt(h.substr(i, 2), 16);
+  const sid = new Uint8Array(25);
+  let writes = [], fromInit = false;
+  const w = (r, v) => { v &= 255; sid[r] = v; writes.push(r, v); };
+  const p16 = (a) => m[a] | m[a + 1] << 8;
+  const at = (zp, y) => m[(p16(zp) + (y & 255)) & 0xFFFF];
+
+  // $E071-$E464: one voice of one frame
+  function voice(x) {
+    let y = m[0xE53C + x], a;
+    m[0xE53F] = y;
+    let to = 'effects';
+    if (m[0xE696] !== 0 && m[0xE694] === m[0xE695]) {          // a tick starts this frame
+      m[0x40] = m[0xEA65 + x]; m[0x41] = m[0xEA68 + x];        // the voice's track
+      m[0xE546 + x] = (m[0xE546 + x] - 1) & 255;
+      to = m[0xE546 + x] & 0x80 ? 'next' : 'release';
+    }
+    if (to === 'next') {                                       // $E09A next_note
+      for (;;) {
+        a = at(0x40, m[0xE540 + x]);
+        if (!(a & 0x80)) break;
+        if (a === 0xFF) { m[0xE546 + x] = 0; m[0xE540 + x] = 0; m[0xE543 + x] = 0; }
+        else { m[0xE8B4 + x] = a & 0x7F; m[0xE540 + x]++; }    // a transposition
+      }
+      m[0x42] = m[0xEA6B + a]; m[0x43] = m[0xEA93 + a];        // the pattern
+      m[0xE71E + x] = 0; m[0xE81C + x] = 0; m[0xE86C + x] = 0;
+      m[0xE869 + x] = 0x40;
+      y = m[0xE543 + x];
+      m[0xE5E0 + x] = 0xFF;
+      a = at(0x42, y);
+      m[0xE549 + x] = a; m[0xE5F8] = a;
+      m[0xE546 + x] = a & 0x1F;
+      if (m[0xE5F8] & 0x40) {                                  // $E135 a rest
+        m[0xE5E0 + x] = (m[0xE5E0 + x] - 1) & 255;
+        y = m[0xE53F];
+        m[0xE5E9 + y] = 0; m[0xE5E8 + y] = 0;
+        a = 0x08;
+      } else {
+        m[0xE543 + x]++;
+        if (m[0xE5F8] & 0x80) {                                // a slide or an instrument
+          y = (y + 1) & 255; a = at(0x42, y);
+          if (a & 0x80) {
+            m[0xE71E + x] = a;
+            y = (y + 1) & 255; m[0xE6FE + x] = at(0x42, y);
+            m[0xE543 + x]++;
+          } else m[0xE5B6 + x] = a;
+          m[0xE543 + x]++;
+        }
+        y = (y + 1) & 255; a = at(0x42, y);                    // the note
+        m[0xE75A] = a;
+        a = ((a & 0x7F) + m[0xE8B4 + x]) & 255;
+        m[0xE592 + x] = a;
+        y = (a << 1) & 255;
+        m[0xE69D + x] = m[0xE47A + y]; m[0xE69A + x] = m[0xE47B + y];
+        // $E148 note_instrument
+        y = m[0xE53F];
+        m[0xE5FA] = x;
+        const i = (m[0xE5B6 + x] << 3) & 255;
+        m[0xE5FB] = m[0xE977 + i];
+        if (!(m[0xE75A] & 0x80)) {                             // not slurred: the whole instrument
+          const p1 = m[0xE975 + i], p2 = m[0xE976 + i], p3 = m[0xE9F0 + i];
+          m[0xE5E5 + y] = p1; m[0xE5E6 + y] = p2;
+          m[0xE5E8 + y] = m[0xE978 + i]; m[0xE5E9 + y] = m[0xE979 + i];
+          m[0xE691 + x] = 0; m[0xE68E + x] = 0;
+          m[0xE7FC + x] = p3; m[0xE7E4 + x] = p2; m[0xE78E + x] = p1;
+        }
+        a = m[0xE5FB];
+      }
+      // $E19B
+      m[0xE58F + x] = a;
+      m[0xE543 + x]++;
+      if (at(0x42, m[0xE543 + x]) === 0xFF) { m[0xE543 + x] = 0; m[0xE540 + x]++; }
+      return out(x);
+    }
+    if (to === 'release') {                                    // $E1B5 note_release
+      if (!(m[0xE549 + x] & 0x20) && m[0xE546 + x] === 0) m[0xE5E0 + x] = 0xFE;
+    }
+    // $E1C9 note_effects
+    y = (m[0xE5B6 + x] << 3) & 255;
+    m[0xE698] = y;
+    m[0xE758] = m[0xE97C + y];
+    m[0xE68D] = m[0xE97B + y];
+    a = m[0xE97A + y];
+    if (a !== 0) {                                             // vibrato
+      m[0xE003 + x] = (a & 0x78) >> 3;
+      m[0xE68C] = a & 7;
+      let up = !(m[0xE006 + x] & 0x80);
+      if (!up) {
+        m[0xE000 + x] = (m[0xE000 + x] - 1) & 255;
+        if (m[0xE000 + x] === 0) {
+          m[0xE006 + x] = (m[0xE006 + x] + 1) & 255;
+          if (m[0xE006 + x] & 0x80) up = true;
+        }
+      }
+      if (up) {                                                // $E205
+        m[0xE000 + x] = (m[0xE000 + x] + 1) & 255;
+        a = m[0xE003 + x];
+        if (a < m[0xE000 + x]) {
+          m[0xE000 + x] = a;
+          m[0xE006 + x] = (m[0xE006 + x] - 1) & 255;
+          m[0xE000 + x] = (m[0xE000 + x] - 1) & 255;
+        }
+      }
+      if (m[0xE71E + x] === 0) {                               // $E221, no slide running
+        y = (m[0xE592 + x] << 1) & 255;
+        let d = m[0xE47A + y] - m[0xE478 + y], b = d < 0 ? 1 : 0;
+        m[0x41] = d & 255;
+        a = (m[0xE47B + y] - m[0xE479 + y] - b) & 255;         // the step down to the note below
+        for (;;) {
+          m[0xE68C] = (m[0xE68C] - 1) & 255;
+          if (m[0xE68C] & 0x80) break;
+          const c = a & 1; a >>= 1;
+          m[0x41] = (m[0x41] >> 1) | (c << 7);
+        }
+        m[0x40] = a;
+        m[0x42] = m[0xE47A + y]; m[0x43] = m[0xE47B + y];
+        for (let n = m[0xE003 + x] >> 1; ;) {                  // down by half the width
+          n = (n - 1) & 255;
+          if (n & 0x80) break;
+          d = m[0x42] - m[0x41]; b = d < 0 ? 1 : 0;
+          m[0x42] = d & 255; m[0x43] = (m[0x43] - m[0x40] - b) & 255;
+        }
+        if (m[0xE81C + x] >= 4) {                              // up by the position
+          for (let n = m[0xE000 + x]; ;) {
+            n = (n - 1) & 255;
+            if (n & 0x80) break;
+            const s = m[0x42] + m[0x41];
+            m[0x42] = s & 255; m[0x43] = (m[0x43] + m[0x40] + (s >> 8)) & 255;
+          }
+          m[0xE69D + x] = m[0x42]; m[0xE69A + x] = m[0x43];
+        }
+      }
+    }
+    if (m[0xE68D] !== 0) {                                     // $E28B pulse_sweep
+      y = m[0xE698];
+      const bottom = m[0xE9F2 + y] & 0x0F, top = m[0xE9F2 + y] >> 4;
+      let lo, hi;
+      if (m[0xE691 + x] === 0) {
+        const s = m[0xE68D] + m[0xE78E + x];
+        lo = s & 255; hi = (m[0xE7E4 + x] + (s >> 8)) & 0x0F;
+        if (hi === top) m[0xE691 + x]++;
+      } else {
+        const d = m[0xE78E + x] - m[0xE68D];
+        lo = d & 255; hi = (m[0xE7E4 + x] - (d < 0 ? 1 : 0)) & 0x0F;
+        if (hi === bottom) m[0xE691 + x] = (m[0xE691 + x] - 1) & 255;
+      }
+      y = m[0xE53F];
+      m[0xE7E4 + x] = hi; m[0xE5E6 + y] = hi;
+      m[0xE78E + x] = lo; m[0xE5E5 + y] = lo;
+    }
+    a = m[0xE71E + x];                                         // $E2EC note_slide
+    if (a !== 0) {
+      if (a >= 0xBF) {
+        const d = m[0xE69D + x] - m[0xE6FE + x];
+        m[0xE69D + x] = d & 255; m[0xE69A + x] = (m[0xE69A + x] - (a & 0x3F) - (d < 0 ? 1 : 0)) & 255;
+      } else {
+        const s = m[0xE69D + x] + m[0xE6FE + x];
+        m[0xE69D + x] = s & 255; m[0xE69A + x] = (m[0xE69A + x] + (a & 0x3F) + (s >> 8)) & 255;
+      }
+    }
+    y = m[0xE698];                                             // $E326 note_flags
+    const f = m[0xE758];
+    if (!(m[0xE549 + x] & 0x40) && (f & 0x08)) {               // a drum, from its frame table
+      m[0xE5FA] = x;
+      m[0x40] = m[0xE9ED + y]; m[0x41] = m[0xE9EE + y];
+      y = m[0xE86C + x];
+      a = at(0x40, y);
+      if (a & 0x80) {
+        if (a === 0x85) return out(x);                         // the table's end: hold
+        const r = m[0xE53F];
+        m[0xE5E7 + r] = a;
+        y = (y + 1) & 255; m[0xE5E4 + r] = at(0x40, y);
+        m[0xE86C + x] = (y + 1) & 255;
+        return next(x);
+      }
+      m[0xE58F + x] = a;
+      y = (y + 1) & 255;
+      const d = m[0xE69D + x] - at(0x40, y);
+      m[0xE69D + x] = d & 255;
+      y = (y + 1) & 255;
+      m[0xE69A + x] = (m[0xE69A + x] - at(0x40, y) - (d < 0 ? 1 : 0)) & 255;
+      m[0xE86C + x] = (y + 1) & 255;
+      return out(x);
+    }
+    if (f & 0x04) {                                            // a waveform for the first frames
+      if (m[0xE7FC + x] !== 0) { m[0xE7FC + x]--; a = m[0xE9EE + y]; } else a = m[0xE977 + y];
+      m[0xE58F + x] = a;
+    }
+    if (f & 0x10) {                                            // an arpeggio
+      const c = (m[0xE9ED + y] << 1) & 255;
+      m[0xE8E6] = m[0xE8F8 + c]; m[0xE8E7] = m[0xE8F9 + c];
+      a = (m[0xE592 + x] + m[0xE8E5 + m[0xE86F]]) & 255;
+      const n = (a << 1) & 255;
+      m[0xE69D + x] = m[0xE47A + n]; m[0xE69A + x] = m[0xE47B + n];
+      y = m[0xE698];
+    }
+    if (f & 0x20) {                                            // the filter sweep
+      a = (m[0xE869 + x] + m[0xE9F4 + y]) & 255;
+      m[0xE869 + x] = a;
+      w(0x16, a);
+      w(0x17, m[0xE9F3 + y]);
+    }
+    if (f & 0x40) {                                            // a fixed note for the first frames
+      a = -1;
+      if (m[0xE7FC + x] !== 0) { m[0xE7FC + x]--; a = m[0xE9ED + y]; }
+      else if (m[0xE97A + y] === 0) a = m[0xE592 + x];
+      if (a >= 0) {
+        const n = (a << 1) & 255;
+        m[0xE69D + x] = m[0xE47A + n]; m[0xE69A + x] = m[0xE47B + n];
+      }
+    }
+    if (f & 0x80) {                                            // voice 3's noise burst
+      a = m[0xE81E];
+      if (a === 1) {
+        m[0xE5F2] = 0x48; m[0xE5F5] = 0x81;
+        w(0x16, 0x60); w(0x18, 0x24);
+        return next(x);
+      }
+      w(0x18, 0x14);
+      if (a >= 6) m[0xE81E] = 0;
+    }
+    return out(x);
+  }
+  function out(x) {                                            // $E44C note_out
+    const y = m[0xE53F];
+    m[0xE5E7 + y] = m[0xE58F + x] & m[0xE5E0 + x];
+    m[0xE5E4 + y] = m[0xE69A + x];
+    m[0xE5E3 + y] = m[0xE69D + x];
+    return next(x);
+  }
+  function next(x) { m[0xE81C + x] = (m[0xE81C + x] + 1) & 255; }
+
+  // $EE45 effects_play
+  function effects() {
+    m[0xEF9E] = (m[0xEF9E] + 1) & 255;
+    for (let x = 1; x >= 0; x--) {
+      m[0xEF9F] = x;
+      const y = m[0xE53C + x];
+      m[0xEF9D] = y;
+      const cmd = m[0xEFC9 + x];
+      if (cmd & 0x80) continue;                                // idle
+      if (cmd & 0x40) { effectStart(x, y); continue; }
+      m[0xEFC6 + x] = (m[0xEFC6 + x] - 1) & 255;
+      if (m[0xEFC6 + x] & 0x80) {                              // a script step
+        m[0xEFC6 + x] = m[0xEFB2 + x];
+        m[0xEFBC + x] = (m[0xEFBC + x] - 1) & 255;
+        const sc = m[0xEFC4 + x], script = m[0xEFCC + sc] | m[0xEFD4 + sc] << 8;
+        let a;
+        for (;;) {
+          a = m[(script + m[0xEFB8 + x]) & 0xFFFF];
+          if (a === 0xFF) { m[0xEFB8 + x] = 0; continue; }
+          if (!(a & 0x80)) break;
+          m[0xEFA0 + x] = m[0xEFA4 + x]; m[0xEFA2 + x] = m[0xEFA6 + x];
+          m[0xEFB8 + x]++;
+        }
+        m[0xEFB8 + x]++;
+        if (a === 1) {
+          const s = m[0xEFA0 + x] + m[0xEFAC + x];
+          m[0xEFA0 + x] = s & 255; w(y, s);
+          m[0xEFA2 + x] = (m[0xEFA2 + x] + m[0xEFAE + x] + (s >> 8)) & 255; w(y + 1, m[0xEFA2 + x]);
+        } else if (a === 2) {
+          const d = m[0xEFA0 + x] - m[0xEFAC + x];
+          m[0xEFA0 + x] = d & 255; w(y, d);
+          m[0xEFA2 + x] = (m[0xEFA2 + x] - m[0xEFAE + x] - (d < 0 ? 1 : 0)) & 255; w(y + 1, m[0xEFA2 + x]);
+        }
+        const s = m[0xEFAC + x] + m[0xEFA8 + x];
+        m[0xEFAC + x] = s & 255;
+        m[0xEFAE + x] = (m[0xEFAE + x] + m[0xEFAA + x] + (s >> 8)) & 255;
+      }
+      if (m[0xEFB0 + x] & 0x80) m[0xEFC2 + x] = m[0xEF9E] & 1 ? m[0xEFB4 + x] : m[0xEFBE + x];
+      if (m[0xEFB0 + x] & 0x40) {
+        if (m[0xEFBA + x] !== 0) { m[0xEFBA + x]--; m[0xEFC2 + x] = m[0xEFB6 + x]; }
+        else { m[0xEFB0 + x] &= 0xBF; m[0xEFC2 + x] = m[0xEFBE + x]; }
+      }
+      if (m[0xEFBC + x] === 0) { w(y + 4, 0); m[0xEFC9 + x] = 0xFF; }
+      else w(y + 4, (m[0xEFC0 + x] >> 1) >= m[0xEFBC + x] ? m[0xEFC2 + x] & 0xFE : m[0xEFC2 + x]);
+    }
+    if (m[0xEFC9] & 0x80) for (let r = 0x0D; r >= 0; r--) w(r, m[0xE5E3 + r]);   // voices 1 and 2
+    for (let r = 7; r >= 0; r--) w(0x0E + r, m[0xE5F1 + r]);                   // voice 3, $D415
+  }
+  function effectStart(x, y) {                                 // $EFDC effect_start
+    m[0xEFB8 + x] = 0; m[0xEFC6 + x] = 0;
+    w(y + 4, 0); w(y + 6, 0);
+    const e = m[0xEFC9 + x] & 0x1F;
+    m[0xEFC9 + x] = e;
+    const i = (e << 3) & 255;
+    m[0xEFC8] = i;
+    m[0xEFAC + x] = m[0xF0E8 + i]; m[0xEFAE + x] = m[0xF0E9 + i];
+    m[0xEFA8 + x] = m[0xF11D + i]; m[0xEFAA + x] = m[0xF11E + i];
+    m[0xEFB0 + x] = m[0xF118 + i]; m[0xEFB2 + x] = m[0xF118 + i] & 0x0F;
+    m[0xEFB4 + x] = m[0xF119 + i];
+    m[0xEFB6 + x] = m[0xF11A + i];
+    m[0xEFC4 + x] = m[0xF11B + i] >> 4; m[0xEFBA + x] = m[0xF11B + i] & 0x0F;
+    m[0xEFBC + x] = m[0xF11C + i]; m[0xEFC0 + x] = m[0xF11C + i];
+    m[0xEFBE + x] = m[0xF0EC + i];
+    const n = (m[0xF0EF + i] << 1) & 255;
+    m[0xEFA0 + x] = m[0xEFA4 + x] = m[0xE47A + n];
+    m[0xEFA2 + x] = m[0xEFA6 + x] = m[0xE47B + n];
+    for (let k = 0; k < 7; k++) w(m[0xEF9D] + k, m[0xF0E8 + i + k]);
+    m[0xEFC8] = 0xFF;
+  }
+
+  // $E00F music_play, then $E46D and the effects
+  function play() {
+    if (!fromInit) writes = [];                                // init's writes lead the first frame's
+    fromInit = false;
+    const st = m[0xE699];
+    if (!(st & 0x80) && !(st & 0x40)) {                        // playing
+      let x = m[0xE697];
+      m[0xE696] = (m[0xE696] - 1) & 255;
+      if (m[0xE696] & 0x80) m[0xE696] = 0x70;                  // the nudge: the tempo waits a frame
+      else {
+        m[0xE694] = (m[0xE694] - 1) & 255;
+        if (m[0xE694] & 0x80) m[0xE694] = m[0xE695];
+      }
+      do { voice(x); x = (x - 1) & 255; } while (!(x & 0x80));
+    } else if (!(st & 0x80)) {                                 // $40: back to the start
+      let x = m[0xE697];
+      do {
+        const y = m[0xE53C + x];
+        m[0xE5E7 + y] = 0; m[0xE540 + x] = 0; m[0xE543 + x] = 0; m[0xE546 + x] = 0;
+        m[0xE58F + x] = 0; m[0xE5E9 + y] = 0; m[0xE5B6 + x] = 9;
+        x = (x - 1) & 255;
+      } while (!(x & 0x80));
+      m[0xE699] = 9;
+    } else if (st & 0x40) {                                    // $C0: stop
+      for (let x = m[0xE697]; !(x & 0x80); x = (x - 1) & 255) m[0xE5E7 + m[0xE53C + x]] = 0;
+      m[0xE699] = 0x80;
+    }
+    m[0xE86F] = (m[0xE86F] - 1) & 255;                         // $E46D the arpeggio's step
+    if (m[0xE86F] & 0x80) m[0xE86F] = 2;
+    effects();
+  }
+
+  // The player's tunes: the music, and the effects in the pairs the game starts them in
+  const EFFECTS = [null, [0x40, 0x41], [0x42, 0x43], [0x44, 0xFF], [0x45, 0xFF]];
+  let tune = 0;
+  return {
+    sid,
+    get writes() { return writes; },
+    init(t) {
+      tune = t;
+      writes = []; fromInit = true;
+      if (t === 0) { w(0x18, 0x14); m[0xE699] = 0x40; return; }   // $EE31 music_start
+      m[0xE699] = 0xC0;                                            // $EE3C music_stop
+      w(0x18, 0x14);              // the volume music_start set at the game's first reset
+      m[0xEFC9] = EFFECTS[t][0]; m[0xEFCA] = EFFECTS[t][1];
+    },
+    stop() { m[0xE699] = 0xC0; m[0xEFC9] = m[0xEFCA] = 0xFF; },
+    play,
+    playing() {
+      if (tune === 0) return !(m[0xE699] & 0x80);
+      return !(m[0xEFC9] & 0x80) || !(m[0xEFCA] & 0x80);
+    },
+    voice(x) {
+      const track = m[0xEA65 + x] | m[0xEA68 + x] << 8, e = m[0xE540 + x];
+      const p = m[(track + e) & 0xFFFF];
+      return {
+        instrument: m[0xE5B6 + x], note: m[0xE592 + x], transpose: m[0xE8B4 + x],
+        pattern: p < 0x80 ? p : null, entry: e, flags: m[0xE97C + ((m[0xE5B6 + x] << 3) & 255)],
+        effect: x < 2 && !(m[0xEFC9 + x] & 0x80) ? m[0xEFC9 + x] & 0x1F : null,
+      };
+    },
+    mem: m,
+  };
+}
+// createDriver ends
+</script>
+<script>
+(function () {
+  'use strict';
+  const B = (a, n) => { for (const k in IK) { const s = +k, h = IK[k]; if (a >= s && a + n <= s + h.length / 2) { const r = []; for (let i = 0; i < n; i++) r.push(parseInt(h.substr((a - s + i) * 2, 2), 16)); return r; } } throw new Error('no bytes at ' + a); };
+  const hx = (v, w = 2) => '$' + v.toString(16).toUpperCase().padStart(w, '0');
+  const bcd = (v) => (v >> 4) * 10 + (v & 15);
+  const pts = (v) => (bcd(v) * 100).toLocaleString('en-GB');
+  const $ = (id) => document.getElementById(id);
+
+  // ---------------------------------------------------------------- the tables
+  const JOY = B(0x1BBB, 32), MOVE_AT = B(0x1F41, 42), POSE = B(0x1F6B, 217);
+  const HIT_POSES = B(0x2D0A, 10), FULL = B(0x2D33, 10), HALF = B(0x2D3D, 10);
+  const KNOCK_FULL = B(0x2D47, 10), KNOCK_HALF = B(0x2D51, 10), DIGITS = B(0x3C11, 30);
+  const DIRS = [['↖', 0x0A, 'up and back'], ['↑', 0x0E, 'up'], ['↗', 0x06, 'up and forward'],
+    ['←', 0x0B, 'back'], ['○', 0x0F, 'centred'], ['→', 0x07, 'forward'],
+    ['↙', 0x09, 'down and back'], ['↓', 0x0D, 'down'], ['↘', 0x05, 'down and forward']];
+  const poses = (m) => POSE.slice(MOVE_AT[m], m + 1 < MOVE_AT.length ? MOVE_AT[m + 1] : 217);
+  const attackOf = (m) => { for (const p of poses(m)) { const a = HIT_POSES.indexOf(p); if (a >= 0) return a; } return -1; };
+  const attacksOf = (m) => poses(m).map((p) => HIT_POSES.indexOf(p)).filter((a, i, l) => a >= 0 && l.indexOf(a) === i);
+  // the number knock_marks ($3BA3) paints for a mark value: 5 or more is 1000, else digit then 00
+  const SHAPE_DIGIT = [1, 2, 4, 5, 8, 0];
+  const painted = (k) => k >= 5 ? '1000' : SHAPE_DIGIT[k] + '00';
+  // digits drawn from mark_bytes ($3C11): five bytes, four multicolour pixels a byte
+  function digits(k, scale = 3) {
+    const shapes = k >= 5 ? [0, 5, 5, 5] : [k, 5, 5];
+    const c = document.createElement('canvas');
+    c.width = (shapes.length * 9 + 2) * scale; c.height = 9 * scale;
+    c.className = 'ik-digits';
+    c.setAttribute('role', 'img'); c.setAttribute('aria-label', painted(k));
+    const g = c.getContext('2d');
+    g.fillStyle = '#ffffff';
+    shapes.forEach((s, i) => {
+      for (let r = 0; r < 5; r++) {
+        const b = DIGITS[s * 5 + r];
+        for (let px = 0; px < 4; px++) if ((b >> (6 - 2 * px)) & 3) g.fillRect((2 + i * 9 + px * 2) * scale, (2 + r) * scale, 2 * scale, scale);
+      }
+    });
+    return c;
+  }
+
+  // ---------------------------------------------------------------- the joystick
+  const joy = $('ik-joy'), out = $('ik-joyout'), fire = $('ik-fire');
+  let dir = 2;
+  function joyShow() {
+    joy.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', String(i === dir)));
+    const f = fire.getAttribute('aria-pressed') === 'true';
+    const idx = (f ? 16 : 0) + DIRS[dir][1], m = JOY[idx];
+    const name = (f ? 'fire and ' : '') + DIRS[dir][2];
+    let h = `<p class="ik-k">${name}</p>`;
+    if (!m) { out.innerHTML = h + '<p>No move: the fighter stands. <span class="ik-mono">joy_moves</span> entry ' + idx + ' is 0.</p>'; return; }
+    const ps = poses(m), as = attacksOf(m);
+    h += `<p>Move <b>${m}</b> (<code>${hx(0x1BBB + idx, 4)}</code>), frames from <code>${hx(0x1F6B + MOVE_AT[m], 4)}</code>: poses <span class="ik-mono">${ps.map((p) => hx(p)).join(' ')}</span></p>`;
+    if (!as.length) h += '<p>No pose in it can land a blow.</p>';
+    out.innerHTML = h;
+    for (const a of as) {
+      const p = document.createElement('p');
+      p.innerHTML = `Pose <span class="ik-mono">${hx(HIT_POSES[a])}</span> is attack ${a}: a full point scores <b>${pts(FULL[a])}</b> and paints `;
+      p.appendChild(digits(KNOCK_FULL[a], 2));
+      p.insertAdjacentHTML('beforeend', `, a half point scores <b>${pts(HALF[a])}</b> and paints `);
+      p.appendChild(digits(KNOCK_HALF[a], 2));
+      p.insertAdjacentHTML('beforeend', '.');
+      out.appendChild(p);
+    }
+  }
+  DIRS.forEach(([ch, , label], i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = ch; b.setAttribute('aria-label', label);
+    b.onclick = () => { dir = i; joyShow(); };
+    joy.appendChild(b);
+  });
+  fire.onclick = () => { fire.setAttribute('aria-pressed', String(fire.getAttribute('aria-pressed') !== 'true')); joyShow(); };
+  joyShow();
+
+  // ---------------------------------------------------------------- points scored and painted
+  const moveName = (m) => (m > 8 ? 'fire and ' : '') + DIRS.find((d) => JOY[(m > 8 ? 16 : 0) + d[1]] === m)[2];
+  const tbl = $('ik-points');
+  tbl.innerHTML = '<tr><th>Attack</th><th>Pose</th><th>Joystick (facing right)</th><th>Full point</th><th>Painted</th><th>Half point</th><th>Painted</th></tr>';
+  for (let a = 0; a < 10; a++) {
+    const moves = []; for (let m = 1; m <= 16; m++) if (attacksOf(m).includes(a)) moves.push(moveName(m));
+    const tr = document.createElement('tr');
+    const odd = painted(KNOCK_FULL[a]) !== String(bcd(FULL[a]) * 100) || painted(KNOCK_HALF[a]) !== String(bcd(HALF[a]) * 100);
+    if (odd) tr.className = 'ik-odd';
+    tr.innerHTML = `<td class="n">${a}</td><td class="ik-mono">${hx(HIT_POSES[a])}</td><td>${moves.join('; ')}</td><td class="n">${pts(FULL[a])}</td><td></td><td class="n">${pts(HALF[a])}</td><td></td>`;
+    tr.children[4].appendChild(digits(KNOCK_FULL[a], 2));
+    tr.children[6].appendChild(digits(KNOCK_HALF[a], 2));
+    tbl.appendChild(tr);
+  }
+
+  // ---------------------------------------------------------------- difficulty
+  const DOWN = B(0x2F37, 6), GETUP = B(0x1D00, 6), DEF1 = B(0x2B4C, 6), DEF2 = B(0x2B52, 6), ATT = B(0x2B58, 6), SPREAD = B(0x2B5E, 6);
+  const pc = (v) => Math.round((256 - v) / 2.56) + ' %';
+  const dsel = $('ik-dsel'), dtbl = $('ik-diff');
+  const DNAME = ['0: the first two rounds', '1: after the first bonus round', '2: after the second', '3: after the third', '4: after the fourth', '5: after the fifth, and from then on'];
+  DNAME.forEach((n, i) => dsel.add(new Option('Difficulty step ' + n, i)));
+  function dShow() {
+    const s = +dsel.value;
+    dtbl.innerHTML = [
+      ['A knocked-down fighter stays down', DOWN[s] + ' frames', 'down_time', 0x2F37],
+      ['A computer fighter gets up once that count is down to', GETUP[s] + ' frames', 'getup_delay', 0x1D00],
+      ['Defends against moves 2, 5 and 6, first try', pc(DEF1[s]) + ' (' + hx(DEF1[s]) + ')', 'defend_chance', 0x2B4C],
+      ['Defends against the other moves, or the second try', pc(DEF2[s]) + ' (' + hx(DEF2[s]) + ')', 'defend_chance_2', 0x2B52],
+      ['Starts a move, each step it could', pc(ATT[s]) + ' (' + hx(ATT[s]) + ')', 'attack_chance', 0x2B58],
+      ['Chooses its attack from the band’s first', SPREAD[s] + ' entries', 'attack_spread', 0x2B5E],
+    ].map(([k, v, n, a]) => `<tr><td>${k}</td><td class="n">${v}</td><td><code>${hx(a + s, 4)}</code></td></tr>`).join('');
+  }
+  dsel.onchange = dShow;
+  $('ik-dprev').onclick = () => { dsel.value = Math.max(0, +dsel.value - 1); dShow(); };
+  $('ik-dnext').onclick = () => { dsel.value = Math.min(5, +dsel.value + 1); dShow(); };
+  dShow();
+  const LDEF = B(0x2980, 8), LATT = B(0x2988, 8);
+  const lv = (v, kind) => v === 0 ? 'the step’s' : v === 0x80 ? (kind ? 'never by chance' : 'every time') : 'step ' + v;
+  $('ik-levels').innerHTML = '<tr><th>LV AND 7</th><th>Levels</th><th>Defence</th><th>Attack</th></tr>' +
+    [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+      const ls = []; for (let n = 1; n <= 30 && ls.length < 4; n++) { const b = Math.floor(n / 10) * 16 + n % 10; if ((b & 7) === i) ls.push(n); }
+      return `<tr><td class="n">${i}</td><td>${ls.join(', ')} …</td><td>${lv(LDEF[i], 0)}</td><td>${lv(LATT[i], 1)}</td></tr>`;
+    }).join('');
+
+  // ---------------------------------------------------------------- the bonus round
+  const FLASH = B(0xF71D, 8), RATE = B(0xF725, 8), bsel = $('ik-bsel');
+  for (let i = 0; i < 8; i++) bsel.add(new Option('Bonus round ' + (i + 1) + (i ? '' : ' (and 9, 17 …)'), i));
+  function bShow() {
+    const r = +bsel.value, f = FLASH[r];
+    $('ik-slots').innerHTML = [0, 1, 2, 3, 4, 5].map((s) => `<div class="ik-slot"><div class="ik-ball${s >= f ? ' ik-flash' : ''}"></div>slot ${s}${s >= f ? '<br>flashing' : ''}</div>`).join('');
+    $('ik-bout').innerHTML = `flash_slot ${hx(f)} at <code>${hx(0xF71D + r, 4)}</code>: ${f >= 6 ? 'no slot flashes' : f === 5 ? 'slot 5 flashes' : 'slots ' + f + '-5 flash'}. ` +
+      `Launch rate stops growing at ${hx(0x100 + RATE[r], 4)} (<code>${hx(0xF725 + r, 4)}</code>).`;
+  }
+  bsel.onchange = bShow;
+  $('ik-bprev').onclick = () => { bsel.value = Math.max(0, +bsel.value - 1); bShow(); };
+  $('ik-bnext').onclick = () => { bsel.value = Math.min(7, +bsel.value + 1); bShow(); };
+  bShow();
+
+  // ---------------------------------------------------------------- one frame
+  const cv = $('ik-frame'), splitsBtn = $('ik-splits');
+  const C = window.C64;
+  if (!C || !C.drawFrame) { cv.replaceWith(Object.assign(document.createElement('p'), { textContent: 'The frame needs the site’s shared script, ../../lib/c64.js: open this page from the built site.' })); }
+  else {
+    const SPLITS = { 0xD011: 'mode', 0xD016: 'mode', 0xD018: 'memory', 0xD021: 'background colour' };
+    function frameShow() {
+      const r = C.drawFrame(cv, IK_FRAME, 2);
+      cv.style.width = '100%'; cv.style.height = 'auto';
+      if (splitsBtn.getAttribute('aria-pressed') !== 'true') return;
+      const g = cv.getContext('2d'), groups = [];
+      for (const [line, , a, v] of IK_FRAME.writes) {
+        if (!(a in SPLITS) || line < r.line0 || line >= r.line0 + r.h) continue;
+        const what = a === 0xD021 ? 'background ' + v % 16 : a === 0xD011 ? (v & 0x20 ? 'bitmap' : 'text') :
+          a === 0xD018 ? '$D018 = ' + hx(v) : (v & 16 ? 'multicolour' : 'hires');
+        let grp = groups[groups.length - 1];
+        if (!grp || line - grp.last > 8) groups.push(grp = { first: line, last: line, what: [] });
+        grp.last = line;
+        if (!grp.what.includes(what)) grp.what.push(what);
+      }
+      g.font = '600 14px ' + getComputedStyle(document.body).getPropertyValue('--fm');
+      let below = 0;
+      for (const grp of groups) {
+        const y = (grp.first - r.line0) * 2;
+        g.fillStyle = '#ffd400'; g.fillRect(0, y, cv.width, 2);
+        const t = (grp.first === grp.last ? 'line ' + grp.first : 'lines ' + grp.first + '-' + grp.last) + ': ' + grp.what.join(', ');
+        const w = g.measureText(t).width + 10, ty = Math.min(Math.max(y + 3, below), cv.height - 20);
+        g.fillStyle = 'rgba(0,0,0,.78)'; g.fillRect(4, ty, w, 19);
+        g.fillStyle = '#ffd400'; g.fillText(t, 9, ty + 14);
+        below = ty + 21;
+      }
+    }
+    splitsBtn.onclick = () => { splitsBtn.setAttribute('aria-pressed', String(splitsBtn.getAttribute('aria-pressed') !== 'true')); frameShow(); };
+    frameShow();
+  }
+
+  // ---------------------------------------------------------------- the music
+  const S = window.C64Sid, root = $('ik-sid');
+  if (!S) { root.textContent = 'The player needs the site’s shared sound script, ../../lib/sid.js: open this page from the built site.'; return; }
+  const FLAGS = [[8, 'drum'], [16, 'arpeggio'], [32, 'filter sweep'], [4, 'first frames'], [128, 'noise burst']];
+  S.mount(root, {
+    driver: createDriver, data: IK_MUSIC, filter: '6581',
+    tunes: ['IK+', 'Ball bounces', 'Ball deflected, game starts', 'Effect 4 (unused)', 'Effect 5 (unused)'],
+    rows: [
+      { k: 'Instrument', f: (v) => v.instrument == null ? null : v.instrument + (FLAGS.filter(([b]) => v.flags & b).map(([, n]) => ', ' + n).join('')) },
+      { k: 'Pattern', f: (v) => v.pattern == null ? '-' : hx(v.pattern) + ' (entry ' + v.entry + ')' },
+      { k: 'Effect', f: (v) => v.effect == null ? '-' : 'effect ' + v.effect },
+    ],
+  });
+})();
+</script>
