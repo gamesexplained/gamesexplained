@@ -12,3 +12,4 @@ code monitor or an emulator while the game runs, not before `RUN`.
 | Full Splinx battery | `$1F` = 24 | candidate (24 read live at the start) |
 | Air | `$F1` = 50 | candidate (`$CA90`) |
 | Time bonus | `$1B`-`$1D`, BCD, low byte first | candidate (`$91BC`) |
+| Controllers never chase or shock | `$CE85` = `$EA`, `$CE86` = `$EA` (NOPs the `BEQ` in `controller_patrol`, so it always patrols) | live: the steward walked past controllers unharmed, 9 October 2026 |
