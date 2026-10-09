@@ -76,3 +76,9 @@ a control run.
 level 4's name as Chad, whose caption "Wot, no ...?" the name is, and
 read ABMON as the author's monitor; the title tune he took to be
 original. The first two went into the pages.
+
+Aaron then asked for an introduction ahead of the interrupts, the
+creatures animated, and the sound higher up the page, as 70-minisite's
+"The order" already asks. The page now opens with what the game is,
+the music and the effects are its second and third sections, and the
+creature strip steps each sprite through its frames at its mover's rate.
