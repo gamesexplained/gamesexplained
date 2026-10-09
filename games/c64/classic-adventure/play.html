@@ -43,10 +43,10 @@ code a{color:inherit;text-decoration:none}
 /* the game's screen and what the last command did */
 .ca-term{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
 .ca-left{min-width:0}
-.ca-screen{margin:0;background:#2e2c9b;color:#fff;font-family:var(--fm);font-size:13px;line-height:1.22;white-space:pre;padding:16px 18px;border-radius:6px;overflow:hidden;cursor:text;width:max-content;max-width:100%}
+.ca-screen{margin:0;background:#2e2c9b;color:#fff;font-family:var(--fm);font-size:13px;line-height:1.22;white-space:pre;padding:16px 18px;border-radius:6px;cursor:text;width:max-content;max-width:100%;box-sizing:content-box;height:calc(var(--rows,25) * 1.22em);overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:#8583e0 #2e2c9b}
 .ca-input{display:block;width:100%;margin-top:10px;font:15px var(--fm);padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
 .ca-input:focus{outline:2px solid var(--accent);outline-offset:1px}
-.ca-status{min-height:1.4em;font-size:14px;color:var(--amber);margin:6px 0 0;line-height:1.45}
+.ca-status{min-height:1.4em;font-size:14px;color:var(--amber);margin:6px 0 0;line-height:1.45;contain:inline-size}
 .ca-insp{font-size:14.5px;line-height:1.5;max-height:560px;overflow:auto;padding-right:4px}
 .ca-insp h4{font:500 12px var(--fm);text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mute);margin:16px 0 4px}
 .ca-insp h4:first-child{margin-top:0}
@@ -63,6 +63,18 @@ code a{color:inherit;text-decoration:none}
 .ca-bar button:hover,.ca-btn:hover{border-color:var(--ink-mute)}
 .ca-bar .ca-chip{border-radius:14px}
 .ca-bar span{font:12px var(--fm);color:var(--ink-mute);margin-right:2px}
+.ca-leg{margin:26px 0 0}
+.ca-leghead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.ca-leghead h3{margin:0}
+.ca-leghead .ca-bar{margin:0}
+.ca-leghead span{font:12.5px var(--fm);color:var(--ink-mute)}
+.ca-leg>p{margin:6px 0 8px}
+.ca-steps{margin:0;padding-left:22px}
+.ca-steps li{margin:0 0 10px;padding:2px 6px;border-radius:5px}
+.ca-steps li.ca-now{background:var(--hl)}
+.ca-cmds{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 3px}
+.ca-cmds code{font-size:12.5px;padding:1px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);color:var(--ink);white-space:nowrap}
+.ca-cmds code.ca-now{background:var(--accent);border-color:var(--accent);color:#fff}
 @media (max-width:860px){.ca-term{grid-template-columns:1fr}.ca-screen{font-size:min(13px,2.85vw);padding:12px}.ca-insp{max-height:none}}
 @media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
 </style>
@@ -94,19 +106,27 @@ code a{color:inherit;text-decoration:none}
     <p class="cap">The game's screen, printed by a port of its interpreter from the bytes in <code>listing.json</code>. Type as on the C64: lower case is the keyboard's unshifted letters. Beside it, what the last command did: the words the parser found, the exit or the rules it tried, each rule's conditions and the actions that ran. <b>SAVE</b> and <b>RESTORE</b> use a tape kept in this browser.</p>
   </div>
 </section>
+<section id="walkthrough">
+  <p class="fig">01 · Walkthrough</p>
+  <h2 class="t">Every treasure home in 193 commands</h2>
+  <p class="lede">One route from the road to the closing of the cave, with all fifteen treasures in the building and 150 points, the most the score can reach. It takes three trips, because the hands hold seven objects at most, and no command on it depends on chance. Each part plays into the game above, starting from where the parts before it leave the game.</p>
+  <div id="ca-walk"></div>
+  <script type="application/json" id="ca-walk-data">[{"title":"Trip 1: the upper cave","intro":"The six treasures nearest the surface, and the lamp to see them by: 60 points.","groups":[{"cmds":["ENTER","GET LAMP","ON"],"note":"The lamp is in the building, and ON lights it."},{"cmds":["XYZY"],"note":"XYZY is the magic word the note in the debris room gives, and in the building it is an exit straight to that room. The vocabulary spells it the same way, so XYZZY gets “I dont understand!”."},{"cmds":["CRAWL","GET CAGE","PIT","PASSAGE","GET BIRD"],"note":"The cage is in the cobble crawl. The bird in the splendid chamber goes into the cage only while the black rod is not carried (rule 201), so the bird comes first."},{"cmds":["DEBRIS","GET ROD","PIT","DOWN","FORWARD","GET FLUTE"],"note":"Back in the debris room for the rod with the rusty star, then down the steps into the hall of mists and across to the east bank of the fissure, where the flute lies."},{"cmds":["WAVE ROD","DROP ROD","W","GET DIAMONDS"],"note":"Waving the rod builds a crystal bridge over the fissure (rule 318). The rod has no other use, and the hands hold seven objects at most, so it stays on the bank."},{"cmds":["N","S","E","S","S","S","N","E","E","NW","GET CHEST"],"note":"North of the diamonds is the west end of the hall of mists, and south of that the maze of twisty little passages, all alike. Nine moves through it reach the dead end with the pirate’s chest."},{"cmds":["SE","N","DOWN","PASSAGE","DOWN","LEFT","GET GOLD"],"note":"Out past the brink of a pit and down its orange column into the splendid chamber, down the steps again, and left to the gold nugget. The note beside it says “You won’t get it up the steps”: carrying the nugget, UP from the hall of mists ends under a dome that cannot be climbed (rules 26 to 29), and DOWN into the small pit breaks the player’s neck (rules 20 to 22)."},{"cmds":["HALL","STAIRS","PLAY FLUTE","DROP BIRD","DROP CAGE","DROP FLUTE"],"note":"The stairs lead to the hall of the mountain king, where the snake bars every way on. The flute makes it drowsy (rule 294), and the bird, let out of its cage, drives a drowsy snake away (status rule 25). Let out beside the aroused snake, the bird is eaten instead (status rule 24). The cage and the flute are not needed again."},{"cmds":["S","GET JEWELLERY","HALL","W","GET COINS","HALL","N","GET SILVER"],"note":"The jewellery, the coins, and the silver lie in three chambers off the hall."},{"cmds":["N","PLUGH"],"note":"North of the silver is the room with Y2 on a rock, where PLUGH leads back to the building: the way out for the nugget."},{"cmds":["DROP DIAMONDS","DROP CHEST","DROP GOLD","DROP JEWELLERY","DROP COINS","DROP SILVER"],"note":"SCORE counts 10 for each treasure in the building."}]},{"title":"Trip 2: up the beanstalk and over the troll’s bridge","intro":"Five more treasures, for 110 points. The plant has to be watered twice before it can be climbed, and the rusty door beyond it needs oil.","groups":[{"cmds":["GET BOTTLE","GET FOOD","PLUGH","S","DOWN","BEDQUILT","SLAB","S","DOWN","POUR WATER"],"note":"The bottle of water and the food from the building, then down through Bedquilt and the slab room to the west pit of the twopit room. Watered, the plant there grows into a 12-foot beanstalk (status rule 13)."},{"cmds":["UP","W","UP","S","KILL DRAGON","GET RUG"],"note":"Up past the slab room to the secret canyon where the dragon lies on the rug. KILL DRAGON is enough, bare hands and all (rule 332), and the player is moved on to the rug beside the body."},{"cmds":["N","RESERVOIR","GET WATER","S","S","DOWN","S","DOWN","POUR WATER"],"note":"The reservoir refills the bottle. The second watering makes a gigantic beanstalk that reaches the hole above the pit (status rule 14)."},{"cmds":["UP","E","DOWN","GET OIL","UP","W","DOWN"],"note":"The east pit of the twopit room has oil, and the empty bottle takes it (rule 199)."},{"cmds":["CLIMB","W","GET EGGS","N","POUR OIL","N","GET TRIDENT"],"note":"Up the beanstalk to the giant room and its eggs. The oil frees the rusty door to the north (status rule 18), and the cavern beyond holds the trident."},{"cmds":["W","DOWN","SW","UP","THROW EGGS"],"note":"Down the steep incline and up the winding corridor to the chasm. The troll takes a treasure as its toll, and a treasure thrown to it is gone for good (rules 350 to 379), except the eggs, which FEE FIE calls back."},{"cmds":["NE","FORK","NE","E","GET SPICES"],"note":"Over the bridge to the fork, and the spices in the chamber of boulders."},{"cmds":["FORK","BARREN","E","FEED BEAR","OPEN CHAIN","GET CHAIN","GET BEAR"],"note":"Fed, the bear turns gentle (rule 390), and OPEN, with the gentle bear there, unlocks its golden chain (rule 309). Taken, the bear follows."},{"cmds":["W","FORK","W","W","DROP BEAR","SW"],"note":"This side of the bridge has a troll of its own. Put down beside it, the bear chases it off (status rule 28). Led across, the bear would break the bridge and take the player down with it (rules 170 to 173)."},{"cmds":["SW","DOWN","BEDQUILT","E","N","OPEN CLAM","DOWN","DOWN","GET PEARL"],"note":"The trident opens the clam (rule 303), and the pearl rolls away to the cul-de-sac two rooms down."},{"cmds":["SHELL","S","UP","E","UP","N","PLUGH"],"note":"Back up to the room with Y2, and PLUGH."},{"cmds":["DROP RUG","DROP TRIDENT","DROP SPICES","DROP CHAIN","DROP PEARL"],"note":"Ten more points for each."}]},{"title":"Trip 3: the eggs again, and the plover room","intro":"The last four treasures, and the pillow the vase needs: 150 points.","groups":[{"cmds":["FEE FIE","PLUGH","S","DOWN","BEDQUILT","SLAB","S","DOWN","CLIMB","W","GET EGGS"],"note":"FEE FIE, said anywhere, puts the eggs back in the giant room (rule 395), and the beanstalk is still there to climb."},{"cmds":["N","N","W","DOWN","SE","GET VASE"],"note":"Through the cavern and down the steep incline, then the Ming vase in the oriental room."},{"cmds":["UP","W","DROP LAMP","E","GET EMERALD","NE","GET PYRAMID","S","W","GET LAMP"],"note":"The tunnel from the alcove into the plover room lets nobody through with the lamp (rules 106 to 115), so the lamp waits in the alcove. The plover room is lit and the dark room beyond it is not: taking the pyramid costs one of the four dark descriptions the game starts with (<a href=\"index.html#dark\">How it works<\/a>)."},{"cmds":["NW","S","SE","E","GET PILLOW"],"note":"The velvet pillow is in the soft room."},{"cmds":["W","NE","E","UP","E","UP","N","PLUGH"],"note":"Back through Bedquilt to the room with Y2, and PLUGH."},{"cmds":["DROP EGGS","DROP EMERALD","DROP PYRAMID","DROP PILLOW","DROP VASE","GET PILLOW"],"note":"Dropped anywhere else the vase breaks (rule 287). Dropped on the pillow it rests there, as object 67, which scores in its place (rule 286). Then the pillow goes again, because the cave closes only with exactly fifteen objects in the building."}]},{"title":"The cave closes","intro":"","groups":[{"cmds":["GET KEYS","SCORE"],"note":"The keys are the last object in the building that is not a treasure. SCORE with exactly fifteen objects there shows 150 and sets the flag that closes the cave."},{"cmds":["XYZY","PIT","DOWN"],"note":"The next arrival in the hall of mists closes the cave and moves the player to the north-east end of the repository."}]},{"title":"The six commands that should win","intro":"","groups":[{"cmds":["SW","GET ROD","NE","DROP ROD","SW","BLAST"],"note":"The rules’ own way to win, and why it fails, are in <a href=\"index.html#unwinnable\">How it works<\/a>: DROP ROD keeps the rod in hand, and the blast at the south-west end kills the player instead."}]}]</script>
+  <p class="cap">Every command here was played by the port and by the game's own code in <code>test_play.js</code>, with the same output from both, and the test fails if any command on the route tests a chance condition. A part played here starts a new game and plays the parts before it at once: scroll the screen back to read them.</p>
+</section>
 <section id="port">
-  <p class="fig">01 · The port</p>
+  <p class="fig">02 · The port</p>
   <h2 class="t">The game's interpreter, checked against its own code</h2>
   <p>Nothing on this page emulates a 6502. The game's interpreter is written out in JavaScript, one function for each routine in the listing, and runs on the game's own 64 KB of memory, loaded from the bytes the Source code tab shows. The rooms, the words, the rules, and the messages are the game's own tables, read where the game reads them, and the port keeps every variable where the game keeps it.</p>
   <h3>How it was checked</h3>
   <p>The port ran beside the game's own code, run in the kit's 6502 simulator with the KERNAL's screen and keyboard routines answered by the test, on the same typed lines. After every line, the text sent to the screen, the objects, and the variables from <code>$0BBB</code> to <code>$0F97</code> were compared.</p>
   <table>
     <tr><th>Sessions</th><th>Typed lines</th><th>Result</th></tr>
-    <tr><td>A walk through the first half of the cave with SAVE and RESTORE; quitting, and answering “Another game”; the 10,000th command; a score past 200; and 500 sessions of 150 to 400 random lines built from the game's own words and exits, with the jiffy clock aimed at the chance thresholds the rules test</td><td>137,126 in 504 sessions</td><td>identical after every line</td></tr>
+    <tr><td>A walk through the first half of the cave with SAVE and RESTORE; quitting, and answering “Another game”; the 10,000th command; a score past 200; the walkthrough above, to the blast at the end; and 500 sessions of 150 to 400 random lines built from the game's own words and exits, with the jiffy clock aimed at the chance thresholds the rules test</td><td>137,621 in 505 sessions</td><td>identical after every line</td></tr>
   </table>
   <p>The game ran 1,426 of its 1,440 instructions. The rest are carries into a high byte that no value reaches, the end of an action list, which no list reaches because each one ends by leaving the rule, the one handler no rule uses, and the jump to the reset, where the test stops.</p>
   <h3>What the page does differently</h3>
-  <p>The chance conditions read the low seven bits of the C64's jiffy clock, which counts 60 a second; the page counts it from the browser's clock at the same rate. SAVE and RESTORE use a tape kept in this browser. Answering N to “Another game” resets a C64 to BASIC, and the page stops there instead: <b>Start again</b> loads the game afresh. The 10,000th command stops the page too, where on the C64 every text after it is a blank line (<a href="index.html#turns">How it works</a>).</p>
+  <p>The chance conditions read the low seven bits of the C64's jiffy clock, which counts 60 a second; the page counts it from the browser's clock at the same rate. The screen keeps the last 2,000 lines that scrolled off its top, which a C64 loses: scroll it, or press Page Up and Page Down in the line below it, to read back. SAVE and RESTORE use a tape kept in this browser. Answering N to “Another game” resets a C64 to BASIC, and the page stops there instead: <b>Start again</b> loads the game afresh. The 10,000th command stops the page too, where on the C64 every text after it is a blank line (<a href="index.html#turns">How it works</a>).</p>
 </section>
 </main>
 <footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
@@ -773,33 +793,42 @@ globalThis.CAUI = (function () {
     if (b >= 0x20 && b <= 0x40) return String.fromCharCode(b);
     return ({ 0x5B: '[', 0x5C: '£', 0x5D: ']', 0x5E: '↑', 0x5F: '←' })[b] || ' ';
   }
+  // The C64's 40 by 25 screen, and above it the lines that scrolled off the top, kept so that the
+  // reader can scroll back: the C64 had no scrollback, and the screen element shows `rows` lines.
   function Screen(el, rows = 25) {
-    const grid = [], blank = () => Array(40).fill(' ');
+    const grid = [], blank = () => Array(40).fill(' '), back = [], KEEP = 2000;
     let r = 0, c = 0;
-    const clear = () => { grid.length = 0; for (let k = 0; k < rows; k++) grid.push(blank()); r = 0; c = 0; };
-    const down = () => { r++; if (r === rows) { grid.shift(); grid.push(blank()); r = rows - 1; } };
+    const keep = line => { back.push(line.join('')); if (back.length > KEEP) back.splice(0, back.length - KEEP); };
+    const wipe = () => { grid.length = 0; for (let k = 0; k < rows; k++) grid.push(blank()); r = 0; c = 0; };
+    // the game's clear screen: what was on it goes to the scrollback, down to the cursor's line
+    const cls = () => { if (grid.some(l => l.some(ch => ch !== ' '))) for (let k = 0; k <= r; k++) keep(grid[k]); wipe(); };
+    const down = () => { r++; if (r === rows) { keep(grid.shift()); grid.push(blank()); r = rows - 1; } };
     const put = ch => { grid[r][c] = ch; c++; if (c === 40) { c = 0; down(); } };
-    clear();
+    wipe();
+    el.style.setProperty('--rows', rows);
     return {
       chrout(b) {
         if (b === 0x0D) { c = 0; down(); return; }
-        if (b === 0x93) { clear(); return; }
+        if (b === 0x93) { cls(); return; }
         if (b < 0x20 || (b >= 0x80 && b < 0xA0)) return;   // colour, case and other controls
         put(petscii(b));
       },
       echo(s) { for (const ch of s) put(ch); },
-      // The screen with the line being typed at the cursor, wrapped and scrolled as the editor would.
+      // The screen with the line being typed at the cursor, wrapped and scrolled as the editor would,
+      // under the scrollback, and scrolled to the bottom.
       render(cursor, typing = '') {
-        const g = grid.map(l => l.slice()), at = [r, c];
-        let [y, x] = at;
+        const g = grid.map(l => l.slice()), above = back.slice();
+        let y = r, x = c;
         for (const ch of typing + (cursor ? '█' : '')) {
-          if (y === rows) { g.shift(); g.push(blank()); y = rows - 1; }
+          if (y === rows) { above.push(g.shift().join('')); g.push(blank()); y = rows - 1; }
           g[y][x] = ch; x++;
           if (x === 40) { x = 0; y++; }
         }
-        el.textContent = g.map(l => l.join('')).join('\n');
+        el.textContent = above.concat(g.map(l => l.join(''))).join('\n');
+        el.scrollTop = el.scrollHeight;
       },
-      clear,
+      // A new game: the screen and its scrollback both empty.
+      clear() { back.length = 0; wipe(); },
     };
   }
   // A typed line: lower case is the C64's unshifted letters, capitals its shifted ones.
@@ -889,6 +918,8 @@ globalThis.CAUI = (function () {
     }
     if (input) {
       input.addEventListener('keydown', e => {
+        // Page Up and Page Down scroll the screen back and forth without pressing the pager's key
+        if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); screenEl.scrollBy(0, (e.key === 'PageUp' ? -1 : 1) * screenEl.clientHeight * 0.9); return; }
         if (waiting === 'key') { e.preventDefault(); send(''); return; }
         if (e.key === 'Enter') { e.preventDefault(); const t = input.value; input.value = ''; send(t); }
       });
@@ -1001,6 +1032,50 @@ globalThis.CAUI = (function () {
       try { localStorage.removeItem('ca-tape'); } catch (e) { /* nothing was kept */ }
       root.querySelector('.ca-status').textContent = 'The saved game is forgotten: RESTORE will find an empty tape.';
     };
+    // the walkthrough: a part starts a new game, plays the parts before it at once, then types its own
+    const walk = JSON.parse(document.getElementById('ca-walk-data').textContent), esc = CAUI.esc;
+    const input = root.querySelector('.ca-input');
+    document.getElementById('ca-walk').innerHTML = walk.map((leg, i) => {
+      const n = leg.groups.reduce((a, g) => a + g.cmds.length, 0);
+      return `<div class="ca-leg"><div class="ca-leghead"><h3>${esc(leg.title)}</h3><span>${n} command${n > 1 ? 's' : ''}</span>`
+        + `<div class="ca-bar"><button type="button" data-leg="${i}">Play this part</button></div></div>`
+        + (leg.intro ? `<p>${esc(leg.intro)}</p>` : '')
+        + '<ol class="ca-steps">' + leg.groups.map((g, k) => `<li data-g="${i}.${k}"><span class="ca-cmds">${g.cmds.map((c, j) => `<code data-c="${i}.${k}.${j}">${esc(c)}</code>`).join('')}</span>${g.note}</li>`).join('') + '</ol></div>';
+    }).join('');
+    let run = 0, playing = false;
+    const mark = (sel, cls) => { document.querySelectorAll('#ca-walk .' + cls).forEach(e => e.classList.remove(cls)); const e = sel && document.querySelector(sel); if (e) e.classList.add(cls); };
+    const send = c => { while (game.waiting === 'key') game.send(''); game.send(c); };
+    function playLeg(i) {
+      const r = ++run; playing = true;
+      game.restart();
+      for (let k = 0; k < i; k++) for (const g of walk[k].groups) for (const c of g.cmds) send(c);
+      const steps = [];
+      walk[i].groups.forEach((g, k) => g.cmds.forEach((c, j) => steps.push([c, k, j])));
+      document.getElementById('game').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      let n = 0;
+      const later = (f, ms) => setTimeout(() => { if (r === run) f(); }, ms);
+      const next = () => {
+        if (game.waiting === 'key') { game.say('Hit any key: the game’s pager, pressed for you.'); later(() => { game.send(''); next(); }, 600); return; }
+        if (n >= steps.length || game.waiting !== 'line') {
+          playing = false; mark(null, 'ca-now');
+          game.say(walk[i].title + ': played. The game is yours from here.'); return;
+        }
+        const [text, k, j] = steps[n++];
+        mark(`#ca-walk [data-g="${i}.${k}"]`, 'ca-now');
+        document.querySelectorAll('#ca-walk code.ca-now').forEach(e => e.classList.remove('ca-now'));
+        const chip = document.querySelector(`#ca-walk [data-c="${i}.${k}.${j}"]`); if (chip) chip.classList.add('ca-now');
+        const where = `${walk[i].title}: command ${n} of ${steps.length}.`;
+        game.say(where);
+        let t = 0;
+        const key = () => { game.show(text.slice(0, t)); if (t++ < text.length) later(key, 40); else later(() => { game.show(''); game.send(text); if (game.waiting === 'line') game.say(where); later(next, 500); }, 200); };
+        later(key, 250);
+      };
+      next();
+    }
+    const stop = () => { if (playing) { run++; playing = false; mark(null, 'ca-now'); document.querySelectorAll('#ca-walk code.ca-now').forEach(e => e.classList.remove('ca-now')); } };
+    document.querySelectorAll('#ca-walk [data-leg]').forEach(b => { b.onclick = () => playLeg(+b.dataset.leg); });
+    document.getElementById('ca-restart').addEventListener('click', stop);
+    input.addEventListener('keydown', e => { if (playing && e.isTrusted && e.key !== 'PageUp' && e.key !== 'PageDown') { stop(); game.say('The walkthrough stopped: the game is yours from here.'); } }, true);
     window.CAPlay = game;
   }, err => { screen.textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
 })();

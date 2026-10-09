@@ -43,10 +43,10 @@ code a{color:inherit;text-decoration:none}
 /* the game's screen and what the last command did */
 .ca-term{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
 .ca-left{min-width:0}
-.ca-screen{margin:0;background:#2e2c9b;color:#fff;font-family:var(--fm);font-size:13px;line-height:1.22;white-space:pre;padding:16px 18px;border-radius:6px;overflow:hidden;cursor:text;width:max-content;max-width:100%}
+.ca-screen{margin:0;background:#2e2c9b;color:#fff;font-family:var(--fm);font-size:13px;line-height:1.22;white-space:pre;padding:16px 18px;border-radius:6px;cursor:text;width:max-content;max-width:100%;box-sizing:content-box;height:calc(var(--rows,25) * 1.22em);overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:#8583e0 #2e2c9b}
 .ca-input{display:block;width:100%;margin-top:10px;font:15px var(--fm);padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
 .ca-input:focus{outline:2px solid var(--accent);outline-offset:1px}
-.ca-status{min-height:1.4em;font-size:14px;color:var(--amber);margin:6px 0 0;line-height:1.45}
+.ca-status{min-height:1.4em;font-size:14px;color:var(--amber);margin:6px 0 0;line-height:1.45;contain:inline-size}
 .ca-insp{font-size:14.5px;line-height:1.5;max-height:560px;overflow:auto;padding-right:4px;overflow-wrap:anywhere}
 .ca-insp h4{font:500 12px var(--fm);text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mute);margin:16px 0 4px}
 .ca-insp h4:first-child{margin-top:0}
@@ -83,6 +83,8 @@ code a{color:inherit;text-decoration:none}
 .ca-word .ca-role{display:block;font:11px var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute)}
 .ca-ptable td:first-child{white-space:nowrap}
 .ca-rtable{font-size:14px}
+.ca-endcmds{font-size:14.5px}
+.ca-endcmds td:first-child{font-family:var(--fm);font-size:13.5px;white-space:nowrap}
 .ca-rtable td:nth-child(1),.ca-rtable td:nth-child(2){white-space:nowrap}
 .ca-scroll{max-height:440px;overflow:auto;border:1px solid var(--line-soft);border-radius:6px;background:var(--surface)}
 .ca-codes{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
@@ -129,13 +131,23 @@ summary{cursor:pointer;font-weight:700;color:var(--ink-soft)}
   <p class="fig">02 · The end of the cave</p>
   <h2 class="t">Bug: the game cannot be won</h2>
   <p class="lede">The cave closes when exactly fifteen objects lie in the building, and the player is moved to the repository at its far end. Blasting the wall there wins the game, but only when the rod with the rusty mark is not in the room, and that rod can never be put down anywhere else.</p>
+  <p>The rules spell out the win. BLAST at the south-west end runs rule 406 when rod 10 is carried or lies there, and rule 407, the win, otherwise. The closing puts rod 10 at the south-west end, so the rod has to be carried to the north-east end and left there. From the north-east end, where the closing leaves the player, that takes six commands:</p>
+  <table class="ca-endcmds">
+    <tr><th>Command</th><th>Meant to</th><th>What the game does</th></tr>
+    <tr><td>SW</td><td>go to the south-west end, where rod 10 lies</td><td>the same</td></tr>
+    <tr><td>GET ROD</td><td>pick up rod 10</td><td>the same, by rule 211</td></tr>
+    <tr><td>NE</td><td>carry rod 10 back to the north-east end</td><td>the same</td></tr>
+    <tr><td>DROP ROD</td><td>leave rod 10 there</td><td>"You have it already": rule 263 takes the rod instead of dropping it</td></tr>
+    <tr><td>SW</td><td>go back to the south-west end without the rod</td><td>goes back with the rod still in hand</td></tr>
+    <tr><td>BLAST</td><td>blow a hole into the main office and win, message 133</td><td>"you are suddenly splashed across the walls of the room": rule 406, message 135</td></tr>
+  </table>
   <div class="plate" id="ca-end">
     <div class="ca-term">
       <div class="ca-left">
         <pre class="ca-screen" aria-live="polite" aria-label="The game's screen">Loading the game's bytes…</pre>
         <input class="ca-input" type="text" maxlength="78" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command" placeholder="Type a command and press Return" disabled>
         <p class="ca-status" aria-live="polite"></p>
-        <div class="ca-bar"><button type="button" data-run>Close the cave and blast</button></div>
+        <div class="ca-bar"><button type="button" data-run>Close the cave and type the six commands</button></div>
       </div>
       <div class="ca-insp" aria-live="polite"></div>
     </div>
@@ -1018,33 +1030,42 @@ globalThis.CAUI = (function () {
     if (b >= 0x20 && b <= 0x40) return String.fromCharCode(b);
     return ({ 0x5B: '[', 0x5C: '£', 0x5D: ']', 0x5E: '↑', 0x5F: '←' })[b] || ' ';
   }
+  // The C64's 40 by 25 screen, and above it the lines that scrolled off the top, kept so that the
+  // reader can scroll back: the C64 had no scrollback, and the screen element shows `rows` lines.
   function Screen(el, rows = 25) {
-    const grid = [], blank = () => Array(40).fill(' ');
+    const grid = [], blank = () => Array(40).fill(' '), back = [], KEEP = 2000;
     let r = 0, c = 0;
-    const clear = () => { grid.length = 0; for (let k = 0; k < rows; k++) grid.push(blank()); r = 0; c = 0; };
-    const down = () => { r++; if (r === rows) { grid.shift(); grid.push(blank()); r = rows - 1; } };
+    const keep = line => { back.push(line.join('')); if (back.length > KEEP) back.splice(0, back.length - KEEP); };
+    const wipe = () => { grid.length = 0; for (let k = 0; k < rows; k++) grid.push(blank()); r = 0; c = 0; };
+    // the game's clear screen: what was on it goes to the scrollback, down to the cursor's line
+    const cls = () => { if (grid.some(l => l.some(ch => ch !== ' '))) for (let k = 0; k <= r; k++) keep(grid[k]); wipe(); };
+    const down = () => { r++; if (r === rows) { keep(grid.shift()); grid.push(blank()); r = rows - 1; } };
     const put = ch => { grid[r][c] = ch; c++; if (c === 40) { c = 0; down(); } };
-    clear();
+    wipe();
+    el.style.setProperty('--rows', rows);
     return {
       chrout(b) {
         if (b === 0x0D) { c = 0; down(); return; }
-        if (b === 0x93) { clear(); return; }
+        if (b === 0x93) { cls(); return; }
         if (b < 0x20 || (b >= 0x80 && b < 0xA0)) return;   // colour, case and other controls
         put(petscii(b));
       },
       echo(s) { for (const ch of s) put(ch); },
-      // The screen with the line being typed at the cursor, wrapped and scrolled as the editor would.
+      // The screen with the line being typed at the cursor, wrapped and scrolled as the editor would,
+      // under the scrollback, and scrolled to the bottom.
       render(cursor, typing = '') {
-        const g = grid.map(l => l.slice()), at = [r, c];
-        let [y, x] = at;
+        const g = grid.map(l => l.slice()), above = back.slice();
+        let y = r, x = c;
         for (const ch of typing + (cursor ? '█' : '')) {
-          if (y === rows) { g.shift(); g.push(blank()); y = rows - 1; }
+          if (y === rows) { above.push(g.shift().join('')); g.push(blank()); y = rows - 1; }
           g[y][x] = ch; x++;
           if (x === 40) { x = 0; y++; }
         }
-        el.textContent = g.map(l => l.join('')).join('\n');
+        el.textContent = above.concat(g.map(l => l.join(''))).join('\n');
+        el.scrollTop = el.scrollHeight;
       },
-      clear,
+      // A new game: the screen and its scrollback both empty.
+      clear() { back.length = 0; wipe(); },
     };
   }
   // A typed line: lower case is the C64's unshifted letters, capitals its shifted ones.
@@ -1134,6 +1155,8 @@ globalThis.CAUI = (function () {
     }
     if (input) {
       input.addEventListener('keydown', e => {
+        // Page Up and Page Down scroll the screen back and forth without pressing the pager's key
+        if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); screenEl.scrollBy(0, (e.key === 'PageUp' ? -1 : 1) * screenEl.clientHeight * 0.9); return; }
         if (waiting === 'key') { e.preventDefault(); send(''); return; }
         if (e.key === 'Enter') { e.preventDefault(); const t = input.value; input.value = ''; send(t); }
       });
@@ -1263,7 +1286,7 @@ globalThis.CAUI = (function () {
       for (const n of TREASURES) M[OBJ(n)] = 3;                       // all fifteen delivered
       litLamp(M); carry(M, 1, 28, 29);                                // the rest carried out again
       M[T.ROOM] = 3;
-    }, ['score', 'xyzy', 'w', 'w', 'w', 'd', 'sw', 'get rod', 'drop rod', 'blast'], 'In the building, with the fifteen treasures there. Press the button, or type SCORE and go to the hall of mists yourself.');
+    }, ['score', 'xyzy', 'pit', 'd', 'sw', 'get rod', 'ne', 'drop rod', 'sw', 'blast'], 'In the building, with the fifteen treasures there. Press the button, or type SCORE and go to the hall of mists yourself.');
     demo('#ca-dark', null, ['in', 'get lamp', 'xyzy', 'look', 'on', 'look', 'off', 'look', 'look']);
     demo('#ca-bear', M => { litLamp(M); carry(M, 28); M[T.ROOM] = 130; }, ['look', 'feed bear', 'get bear', 'invent', 'look'], 'In the bear’s room, with the lit lamp and the food. Press the button, or type.');
     demo('#ca-troll', M => { litLamp(M); carry(M, 64); M[T.ROOM] = 117; }, ['look', 'throw eggs', 'fee fie', 'look'], 'At the troll’s bridge, with the lit lamp and the eggs. Press the button, or type.');

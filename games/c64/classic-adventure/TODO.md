@@ -18,6 +18,7 @@ Open, for anyone with the tape:
 
 For the page:
 
-- The Play tab has no way to start partway through; a picker that plays
-  a scripted start to the repository or the bear would follow
-  `play.md`, "A level picker leaves the game as playing there would".
+- The map on the Maps / levels tab is laid out by hand. A layout that
+  follows the compass more closely, or that draws the place words
+  (PIT, DEBRIS, VIEW and the rest) on demand, would show more of how
+  the game's own directions run.

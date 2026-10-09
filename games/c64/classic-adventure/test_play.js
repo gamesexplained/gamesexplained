@@ -5,9 +5,10 @@
 // game reads they must have sent the same bytes to CHROUT and hold the same variables
 // ($0BBB-$0F97: the starting objects, the line buffer, the variables, the handler tables and the
 // built-in messages with their digits; $8AA2-$8B3D, the objects; print_record's opcode at $1067;
-// and the zero-page bytes the game keeps between routines). The lines come from a walkthrough and
-// from seeded random sessions built from the game's own vocabulary, exits and rules, some of them
-// after the same poke of the room into both. The KERNAL's CHROUT, CHRIN, SETLFS, SETNAM, SAVE and
+// and the zero-page bytes the game keeps between routines). The lines come from a short walk, from
+// the Play tab's walkthrough (which must also close the cave at 150 without testing a chance
+// condition), and from seeded random sessions built from the game's own vocabulary, exits and
+// rules, some of them after the same poke of the room into both. The KERNAL's CHROUT, CHRIN, SETLFS, SETNAM, SAVE and
 // LOAD are hooks; $C5 holds a key, so the pager never waits. Everything it needs is committed: no
 // disk image, no snapshot, no emulator. It exits 1 on any difference.
 //   node games/c64/classic-adventure/test_play.js [sessions]
@@ -159,6 +160,34 @@ const typed = s => [...s].map(ch => /[a-z]/.test(ch) ? ch.charCodeAt(0) - 32 : /
     'drop jewellery', 'score', 'save', 'drop lamp', 'restore', 'invent', 'off', 'w', 'sw', 'look', 'look',
     'look', 'look', 'look', 'quit', 'y', 'y'].map(typed);
   if (session(ram, walk, 'walkthrough', executed)) lines += walk.length;
+  // The Play tab's walkthrough, run on the port alone: no command on it may test a chance condition,
+  // the cave must close with the score at 150, and the six commands after it must end in the blast
+  // that kills. Then the same lines in step with the game.
+  const wa = html.indexOf('id="ca-walk-data"'), route = JSON.parse(html.slice(html.indexOf('>', wa) + 1, html.indexOf('</script>', wa)));
+  const legs = route.map(l => l.groups.flatMap(g => g.cmds));
+  {
+    const M = Uint8Array.from(ram), said = [];
+    M[0xC5] = 0x3C;
+    let chance = [];
+    const port = P.machine(M, { chrout: b => said.push(b), irqByte: a => M[a], border: () => {},
+                               trace: (...e) => { if (e[0] === 'cond' && e[1] === 2) chance.push(e); } });
+    const g = port.run();
+    let st = g.next();
+    const digits = a => String.fromCharCode(...M.subarray(a, a + 3));
+    legs.forEach((cmds, k) => {
+      for (const c of cmds) {
+        st = g.next(typed(c));
+        if (chance.length) fail('walkthrough:', c, 'tests a chance condition in room', M[T.ROOM]);
+        chance = [];
+      }
+      if (k === legs.length - 2 && (M[T.ROOM] !== 115 || !M[T.FLAGS + 12] || digits(0x0F48) !== '150'))
+        fail('walkthrough: after closing, room', M[T.ROOM], 'flag 12', M[T.FLAGS + 12], 'score', digits(0x0F48));
+    });
+    if (M[T.ROOM] !== 116 || !M[T.FLAGS + 10] || !/splashed/i.test(ascii(said)))
+      fail('walkthrough: the end is room', M[T.ROOM], 'flag 10', M[T.FLAGS + 10]);
+  }
+  const route1 = legs.flat().map(typed);
+  if (session(ram, route1, 'walkthrough', executed)) lines += route1.length;
   // quitting, another game, and N to it
   const quit = ['quit', 'n', 'quit', 'y', 'y', 'look', 'quit', 'Y', 'quit', 'yes', 'N', 'look', 'quit', 'y', 'n'].map(typed);
   if (session(ram, quit, 'quit', executed)) lines += quit.length;
@@ -182,6 +211,6 @@ const typed = s => [...s].map(ch => /[a-z]/.test(ch) ? ch.charCodeAt(0) - 32 : /
     if (executed[r.a]) ran++; else missed.push(r.a.toString(16));
   }
   if (process.env.SHOW_MISSED) console.log('not run:', missed.join(' '));
-  console.log(`${bad ? 'FAIL' : 'ok'}: ${lines} lines in ${sessions + 4} sessions; the game ran ${ran} of its ${code} instructions`);
+  console.log(`${bad ? 'FAIL' : 'ok'}: ${lines} lines in ${sessions + 5} sessions; the game ran ${ran} of its ${code} instructions`);
   process.exit(bad ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

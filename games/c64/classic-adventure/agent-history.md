@@ -79,3 +79,26 @@ were identical. The pages run the same port: a rule inspector on the
 How it works tab, six demonstrations set up as play would leave the
 game, the score routine on ticked objects, the room browser and the Play
 tab.
+
+### 9 October 2026: scrollback, a walkthrough and the map
+
+Asked for after the merge of #261. The screens keep the lines that
+scroll off their top. The walkthrough on the Play tab was planned in
+node on the port, with a breadth-first search over the exit table and
+the rule moves, and then played on the port with a trace: the first
+plan failed at the closing, because arriving in room 15 with flag 12
+set moves the player to room 115, so the last leg goes to room 14 and
+then DOWN. Typing XYZZY gave "I dont understand!": the vocabulary keeps
+four letters and spells the word XYZY. The route of 193 commands closes
+the cave at 150 without testing a chance condition, and `test_play.js`
+now plays it, with the six commands that should win, beside the game's
+code; 505 sessions, 137,621 lines, were identical.
+
+The map was first laid out by a directional force layout, which left
+the all-different maze floating and crossed most lines; the rooms were
+then placed by hand around the loop from Bedquilt through the giant room
+and back, with the lines bent away from rooms they would cross and the
+labels placed by a script that scores overlaps. The SVG is in the page;
+`test_map.js` holds its lines, its lit rooms and its treasure marks
+against the exit table, the rules and the starting objects.
+
