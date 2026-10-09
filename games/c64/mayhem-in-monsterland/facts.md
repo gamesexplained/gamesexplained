@@ -83,6 +83,20 @@ bytes there), larger tables at `$8900`-`$8FFF`, and its character set at
   by +2 and -2 and set `$1B5E` to `$01` and `$FF`; down sets
   `$1B62`/`$1B63`; fire alone changes nothing tracked; right+fire, without
   the charge power-up, gives exactly what right does.
+- The clock (`work/verify`, from `parts/engine/work/play.vsf`): over 750
+  frames, with non-stopping checkpoints on the time routine `$37E9`, the
+  last raster handler `$20F8` (control) and the play loop, `$37E9` ran
+  750 times and `$20F8` 749, and TIME fell from 206 to 196. One unit of
+  TIME is 75 frames, 1.5 seconds on PAL: Jellyland's 250 units are 6
+  minutes 15 seconds.
+- The title's lives cheat (Jellyland `$9EF9`, `work/verify/cheat2.py`),
+  two runs from `work/title.vsf`. Control: a game started, TIME poked to
+  001, the clock ran out, and lives went from 03 to 02. Test: with the
+  cheat's position (the operand at `$9F18`) set to 24, the 25th key of the
+  sequence (1) wrote `$60` over `$BDC1`; the same clock run-out left lives
+  at 03. Typing all 25 keys through the emulator's key matrix registered
+  too unreliably to finish the sequence, so the first 24 steps were taken
+  from the code, not typed.
 
 ## Text
 
