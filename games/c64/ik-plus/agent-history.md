@@ -107,3 +107,19 @@ wrong. While applying the corrections, the disassembler was started on
 wrote a symbol map of four comments; `symbols_export.py` said so, the
 file was restored from git and the project rebuilt with
 `symbols_import.py` before the corrections went in again.
+
+**Every background key, and the moves joined to the poses.** The contributor
+remembered a key that sends a caterpillar across the screen and asked
+for every key that changes the background, drawn. Listing every
+instruction in the listing that addresses `$DC00`-`$DCFF` found the
+keyboard read in three places only, and the creature code reads none
+of them: the worm comes on its own. The three combinations that change
+the arena are drawn live on the Overview, from the recorded frame with
+its colour writes changed and the reflection moved by a port of
+`antics_step` that matched the game's code in the 6502 simulator over
+4,000 steps. The port reads its tables and state from `ram-play.bin`,
+not from the frame, whose RAM differs from it in 400 bytes: the glints'
+shapes and their places have to come from the same moment. On Fighters
+the joystick now drives the pose viewer, and the move's frames play in
+order. The keyboard table had X, N and slash for the drift check's third
+column; it is X, N and comma (row 5, column 7), as `facts.md` had it.

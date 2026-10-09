@@ -129,6 +129,35 @@ The two three-key checks read rows 2, 4 and 5 at once, so any key from
 each of three columns passes: D, O and M is the documented choice of
 the first, and the second has no documented letters.
 
+The keyboard is read in three places and no others: `read_keys` (with
+`key_pressed`, `$17AD`-`$1937`), the RUN/STOP check (`$116D`, through
+`key_pressed`) and the S and E check (`$1C54`). Every other read of
+`$DC00`/`$DC01` in the code (`$1B19`, `$25B8`, `$F844`) drives no keyboard
+row and reads a joystick. Only `*`, the sky check and the drift check
+change anything the arena is drawn from:
+
+- `*` steps `$FD53` (AND 3) and copies four colours from
+  `reflection_colours` into `$FD54`-`$FD57`: sets 0-3 are 4/7/10/7,
+  14/7/14/7, 6/7/6/7, 6/14/6/14. Raster interrupt 2 (`$0AE8`, line 121)
+  gives `$FD54` to sprite 7 and `$FD55` to sprite 6, interrupt 4 (`$0B27`,
+  line 134) `$FD56` and `$FD57`: the sun's reflection is sprite 7, X
+  expanded, with sprite 6 inside it, one shape (`$9F`), both behind the
+  picture (`antics_sprites`, `$7241`).
+- The sky check steps `$F5` (AND 7) and copies `sky_water_colours`
+  (`$179B`: `$6A`, `$6E`, `$63`, `$66`, `$2A`, `$2E`, `$23`, `$26`) into
+  `$F3`, its high nibble into `$F4`. `irq_picture_on` writes `$F3` to
+  `$D021` at line 67 (`$0A85`), `irq_water` `$F4` at line 128 (`$0B10`);
+  the band from line 121 is purple, a constant (`$0AEC`).
+- The drift check steps the operand at `$7665` by 4 (AND `$0C`).
+- The start-up sets the colours once (`$0F5D`-`$0F90`: set 0 of each).
+  `game_reset` clears `$4B`-`$F2` and `$FD58`-`$FDB2` and nothing between,
+  so the choices last through every new game; nothing else writes
+  `$F3`-`$F5`, `$FD53`-`$FD57` or `$7665`.
+
+No key starts the creatures: `antics_creature` (`$767E`) starts one on
+the calls where `$BE8B` AND `$FD` is 0 (two in every 256) when
+`antics_random` (`$7556`) returns less than `$80`, and reads no input.
+
 ## The fight
 
 - **Three fighters, two drawn with sprites.** Fighters 0 and 1 are each
@@ -274,6 +303,17 @@ each human player in turn (player 2 first):
   water; and now and then one of four creatures appears on one of eight
   routes each (`antics_creature`, `$767E`): a bird (sometimes two),
   a spider on its thread, a worm and a leaping fish with a splash.
+  Each step every row's phase (`$BEA0` + 3 × row) gains its speed (`$1F`
+  for every row, so one step back) and picks the row's two outer bytes
+  of the shape at `$67C0` from `$7352` and `$745A` through the wave at
+  `$72F3`. When the step counter `$BE85` comes round to 0, every 512
+  frames, `$7649` adds to row r's phase entry (r AND 3) + `$7665` of the
+  steps at `$7639` (signed steps of the 32-step wave: −1 +1 −1 −1, +2 −4 +6
+  −2, +2 −2 +1 −1, −1 +1 +3 −3). The page's port of the glints, the rows
+  and the drift (`work/page/antics.js`) wrote the same bytes as the
+  game's code, run in the kit's 6502 simulator from `work/ram-play.bin`,
+  over 4,000 steps with the drift operand changed every 700
+  (`work/page/test_antics.js`).
 
 ## Text
 

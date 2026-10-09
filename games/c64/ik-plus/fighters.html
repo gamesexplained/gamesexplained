@@ -12,47 +12,39 @@
 </header>
 <main class="wrap">
 
-<section>
-  <p class="fig">01 · Controls</p>
-  <h2 class="t">What each stick position does</h2>
-  <p class="lede">Eight directions, with and without fire, give sixteen moves. Press a direction to see the move it starts, the poses it runs through and what each attack is worth.</p>
+<section id="poses">
+  <p class="fig">01 · Moves and poses</p>
+  <h2 class="t">Every move, pose by pose</h2>
+  <p class="lede">Eight directions, with and without fire, give sixteen moves. Press a direction to see the move it starts, each of its frames drawn from the tiles the game stores, and what each attack is worth.</p>
   <div class="plate">
     <div class="ik-joywrap">
       <div>
         <div class="ik-joy" id="ik-joy" role="group" aria-label="Joystick direction"></div>
-        <div class="ik-row" style="margin-top:10px"><button type="button" class="ik-btn" id="ik-fire" aria-pressed="false">Fire</button></div>
+        <div class="ik-row" style="margin-top:10px"><button type="button" class="ik-btn" id="ik-fire" aria-pressed="false">Fire</button><button type="button" class="ik-btn" id="ik-play" aria-pressed="false">Play the move</button></div>
       </div>
-      <div class="ik-out" id="ik-joyout" aria-live="polite"></div>
+      <canvas id="ik-pose" class="ik-posecv" width="216" height="288" role="img" aria-label="The pose, drawn from its tiles"></canvas>
+      <div class="ik-out">
+        <div id="ik-joyout" aria-live="polite"></div>
+        <div id="ik-pout" aria-live="polite"></div>
+      </div>
     </div>
-    <p class="cap">From the game's tables: the move for each stick position (<code>$1BBB</code>), each move's first frame (<code>$1F41</code>) and the pose of each frame (<code>$1F6B</code>), and the ten poses that can land a blow (<code>$2D0A</code>). The directions are for a fighter facing right; facing left, the game reads a mirrored table (<code>$1BDB</code>). The painted numbers are drawn from the game's own digit bytes (<code>$3C11</code>). A pose number opens it in the viewer below.</p>
-  </div>
-  <p>The stick is read once a step (<code>$1AFE</code>). When an opponent is close, forward and its two diagonals start move 20 instead, four frames of pose <code>$13</code>, which cannot land a blow (<code>$1BFB</code>). Up and back runs the punch of up and forward after a pose of its own, <code>$3A</code>, and fire and down does the same with the low kick of down; the C64-Wiki calls the first a punch backward with a turn. A move in progress can be broken into only on frames whose flags allow it (<code>$211D</code>).</p>
-</section>
-
-<section id="poses">
-  <p class="fig">02 · Poses</p>
-  <h2 class="t">Each pose stores only the tiles it fills</h2>
-  <p class="lede">A sprite fighter is drawn in a box nine tiles wide and twelve tall, three sprites across, but no pose fills the box. Each of the 70 poses keeps only the 8-by-8 tiles it covers, and the game copies them into sprite memory whenever a fighter changes pose.</p>
-  <div class="plate">
-    <div class="ik-row">
+    <div class="ik-strip ik-frames" id="ik-frames" role="group" aria-label="The move's frames"></div>
+    <div class="ik-row" style="margin-top:16px">
       <div class="pick"><button type="button" class="step" id="ik-pprev" aria-label="Previous pose">&#8249;</button><select id="ik-psel" aria-label="Pose"></select><button type="button" class="step" id="ik-pnext" aria-label="Next pose">&#8250;</button></div>
       <select id="ik-pcol" aria-label="Fighter colour"><option value="0">White</option><option value="1">Red</option><option value="2">Blue</option></select>
       <button type="button" class="ik-btn" id="ik-pleft" aria-pressed="false">Facing left</button>
       <button type="button" class="ik-btn" id="ik-pgrid" aria-pressed="false">Show the tiles</button>
     </div>
-    <div class="ik-pose">
-      <canvas id="ik-pose" width="216" height="288" role="img" aria-label="The pose, drawn from its tiles"></canvas>
-      <div class="ik-out" id="ik-pout" aria-live="polite"></div>
-    </div>
     <div class="ik-strip" id="ik-strip" role="group" aria-label="All 70 poses"></div>
-    <p class="cap">Drawn the way <code>draw_sprite_fighter</code> (<code>$3D15</code>) builds a fighter: each of the pose's twelve layout bytes (<code>$7E00</code>) gives a row of tiles a count and a starting column, and the game's offset tables (<code>$3CB3</code>-<code>$3D10</code>) place the tiles' bytes (<code>$7D00</code>, <code>$7DA0</code>, <code>$8280</code>-<code>$BE7F</code>) in the sprite blocks. Rebuilt this way, the two sprite fighters of a game in progress match the bytes in the emulator's sprite memory. Colours are each fighter's sprite colour (<code>$0131</code>) with the two shared multicolours of the recorded frame, light red and black. Facing left, the game mirrors every byte through a table at <code>$0400</code> and starts each row from the other side.</p>
+    <p class="cap">From the game's tables: the move for each stick position (<code>$1BBB</code>), each move's first frame (<code>$1F41</code>), the pose of each frame (<code>$1F6B</code>) and the ten poses that can land a blow (<code>$2D0A</code>). The directions are for a fighter facing right; facing left, the game reads a mirrored table (<code>$1BDB</code>). Play shows the frames in the script's order, one a step: at the normal speed (key 3) a step is five video frames, a tenth of a second. Each pose is drawn the way <code>draw_sprite_fighter</code> (<code>$3D15</code>) builds a fighter: each of the pose's twelve layout bytes (<code>$7E00</code>) gives a row of tiles a count and a starting column, and the game's offset tables (<code>$3CB3</code>-<code>$3D10</code>) place the tiles' bytes (<code>$7D00</code>, <code>$7DA0</code>, <code>$8280</code>-<code>$BE7F</code>) in the sprite blocks. Rebuilt this way, the two sprite fighters of a game in progress match the bytes in the emulator's sprite memory. Colours are each fighter's sprite colour (<code>$0131</code>) with the two shared multicolours of the recorded frame, light red and black. Facing left, the game mirrors every byte through a table at <code>$0400</code> and starts each row from the other side. The strip at the bottom holds all 70 poses; the painted numbers are drawn from the game's own digit bytes (<code>$3C11</code>).</p>
   </div>
-  <p>The 70 poses take 1,920 tiles, 15,360 bytes (<code>$8280</code>-<code>$BE7F</code>), between 15 and 43 tiles each. Stored as full boxes of 108 tiles they would take 60,480 bytes, nearly all of the C64's 64 KB. Six more pose numbers, <code>$46</code> to <code>$4B</code>, have no tiles at all, and the bonus round and the high-score table put all three fighters in <code>$4B</code>, which draws nothing (<code>$F3CC</code>, <code>$235F</code>). The layouts are the bytes the copy protection keeps scrambled until the original loader has run (<a href="./">Overview</a>, copy protection).</p>
-  <p>Three poses are drawn over before they are shown. When a fighter lies in one of the falls (<code>$27</code>, <code>$2B</code>, <code>$2F</code>), the game clears the first 56 bytes of the pose's tiles and paints the points of the hit there (<code>$3B5F</code>), which is how the number above a felled fighter moves with him.</p>
+  <p>The stick is read once a step (<code>$1AFE</code>). When an opponent is close, forward and its two diagonals start move 20 instead, four frames of pose <code>$13</code>, which cannot land a blow (<code>$1BFB</code>). Up and back runs the punch of up and forward after a pose of its own, <code>$3A</code>, and fire and down does the same with the low kick of down; the C64-Wiki calls the first a punch backward with a turn. A move in progress can be broken into only on frames whose flags allow it (<code>$211D</code>).</p>
+  <p>A sprite fighter is drawn in a box nine tiles wide and twelve tall, three sprites across, but no pose fills the box. Each of the 70 poses keeps only the 8-by-8 tiles it covers, 1,920 tiles in all, 15,360 bytes (<code>$8280</code>-<code>$BE7F</code>), between 15 and 43 tiles each, and the game copies them into sprite memory whenever a fighter changes pose. Stored as full boxes of 108 tiles they would take 60,480 bytes, nearly all of the C64's 64 KB. Six more pose numbers, <code>$46</code> to <code>$4B</code>, have no tiles at all, and the bonus round and the high-score table put all three fighters in <code>$4B</code>, which draws nothing (<code>$F3CC</code>, <code>$235F</code>). The layouts are the bytes the copy protection keeps scrambled until the original loader has run (<a href="./">Overview</a>, copy protection).</p>
+  <p>Three poses are drawn over before they are shown. When a fighter lies in one of the falls (<code>$27</code>, <code>$2B</code>, <code>$2F</code>), the game clears the first 56 bytes of the pose's tiles and paints the points of the hit there (<code>$3B5F</code>), which is how the number above a felled fighter moves with the fighter.</p>
 </section>
 
 <section>
-  <p class="fig">03 · Points</p>
+  <p class="fig">02 · Points</p>
   <h2 class="t">Bug: two attacks paint half the points they score</h2>
   <p class="lede">When a fighter goes down, the points of the hit appear in the air above him. For two of the ten attacks the number shown is half the number added to the score.</p>
   <div class="plate"><div class="ik-scroll"><table class="ik-tbl" id="ik-points"></table></div>
@@ -63,7 +55,7 @@
 </section>
 
 <section>
-  <p class="fig">04 · The computer fighters</p>
+  <p class="fig">03 · The computer fighters</p>
   <h2 class="t">How the computer fighters get harder</h2>
   <p class="lede">The computer's fighters improve at each bonus round. A difficulty step, 0 at the start of a game and up by one at each bonus round to at most 5, sets how often they defend and attack and how long anyone stays down.</p>
   <div class="plate">
@@ -134,39 +126,6 @@ const IK_MC = [10,0];
     return c;
   }
 
-  // ---------------------------------------------------------------- the joystick
-  const joy = $('ik-joy'), out = $('ik-joyout'), fire = $('ik-fire');
-  let dir = 2;
-  function joyShow() {
-    joy.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', String(i === dir)));
-    const f = fire.getAttribute('aria-pressed') === 'true';
-    const idx = (f ? 16 : 0) + DIRS[dir][1], m = JOY[idx];
-    const name = (f ? 'fire and ' : '') + DIRS[dir][2];
-    let h = `<p class="ik-k">${name}</p>`;
-    if (!m) { out.innerHTML = h + '<p>No move: the fighter stands. <span class="ik-mono">joy_moves</span> entry ' + idx + ' is 0.</p>'; return; }
-    const ps = poses(m), as = attacksOf(m);
-    h += `<p>Move <b>${m}</b> (<code>${hx(0x1BBB + idx, 4)}</code>), frames from <code>${hx(0x1F6B + MOVE_AT[m], 4)}</code>: poses ${ps.map(poseLink).join(' ')}</p>`;
-    if (!as.length) h += '<p>No pose in it can land a blow.</p>';
-    out.innerHTML = h;
-    for (const a of as) {
-      const p = document.createElement('p');
-      p.innerHTML = `Pose ${poseLink(HIT_POSES[a])} is attack ${a}: a full point scores <b>${pts(FULL[a])}</b> and paints `;
-      p.appendChild(digits(KNOCK_FULL[a], 2));
-      p.insertAdjacentHTML('beforeend', `, a half point scores <b>${pts(HALF[a])}</b> and paints `);
-      p.appendChild(digits(KNOCK_HALF[a], 2));
-      p.insertAdjacentHTML('beforeend', '.');
-      out.appendChild(p);
-    }
-  }
-  DIRS.forEach(([ch, , label], i) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.textContent = ch; b.setAttribute('aria-label', label);
-    b.onclick = () => { dir = i; joyShow(); };
-    joy.appendChild(b);
-  });
-  fire.onclick = () => { fire.setAttribute('aria-pressed', String(fire.getAttribute('aria-pressed') !== 'true')); joyShow(); };
-  joyShow();
-
   // ---------------------------------------------------------------- the poses
   const GFX0 = 0x8280, GFX = B(GFX0, 0xBE80 - GFX0), PTR = B(0x7D00, 152), TILES = B(0x7DA0, 76), LAYOUT = B(0x7E00, 912);
   const SLOTS0 = 0x3CB3, SLOTS = B(SLOTS0, 0x3D11 - SLOTS0), S = (a) => SLOTS[a - SLOTS0];
@@ -225,7 +184,7 @@ const IK_MC = [10,0];
     const b = document.createElement('button'), c = document.createElement('canvas');
     b.type = 'button'; b.setAttribute('aria-label', 'Pose ' + hx(p)); b.title = 'Pose ' + hx(p);
     b.appendChild(c); strip.appendChild(b); thumbs.push([b, c]);
-    b.onclick = () => { psel.value = p; pShow(true); };
+    b.onclick = () => { stopPlay(); psel.value = p; pShow(true); };
   }
   function movesWith(p) {
     const ms = [];
@@ -240,34 +199,115 @@ const IK_MC = [10,0];
     if (SH_DOWN[y] !== 0xFF) s.push('knocked down into it: shout ' + SH_DOWN[y]);
     return s;
   }
+  // a move on the stick, as a link that sets the joystick to it
+  const moveLink = (m) => { const n = stickName(m); return n ? `<a href="#" class="ik-mv" data-m="${m}">${m} (${n})</a>` : String(m); };
   function pShow(setHash) {
     const p = +psel.value, colour = COLOURS[+pcol.value];
     drawPose($('ik-pose'), p, 3, colour, pressed(pleft), pressed(pgrid));
-    thumbs.forEach(([b, c], i) => { b.setAttribute('aria-pressed', String(i === p)); });
+    thumbs.forEach(([b], i) => { b.setAttribute('aria-pressed', String(i === p)); });
+    frameBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(i === frame && framePoses[i] === p)));
     const at = PTR[2 * p] | PTR[2 * p + 1] << 8, ms = movesWith(p), a = HIT_POSES.indexOf(p), sh = shoutsOf(p);
     let h = `<p class="ik-k">Pose ${hx(p)}</p><p>${TILES[p]} tiles at <code>${hx(at, 4)}</code>, layout at <code>${hx(0x7E00 + 12 * p, 4)}</code>: <span class="ik-mono">${LAYOUT.slice(12 * p, 12 * p + 12).map((v) => v.toString(16).toUpperCase().padStart(2, '0')).join(' ')}</span></p>`;
-    h += ms.length ? `<p>In ${ms.length > 1 ? 'moves' : 'move'} ${ms.map((m) => { const n = stickName(m); return n ? m + ' (' + n + ')' : m; }).join(', ')}.</p>` : '<p>No move’s frame script uses it.</p>';
+    h += ms.length ? `<p>In ${ms.length > 1 ? 'moves' : 'move'} ${ms.map(moveLink).join(', ')}.</p>` : '<p>No move’s frame script uses it.</p>';
     if (a >= 0) h += `<p>Attack ${a}: a full point scores ${pts(FULL[a])}, a half point ${pts(HALF[a])}.</p>`;
     if ([0x27, 0x2B, 0x2F].includes(p)) h += '<p>A fall: the points of the hit are painted over its first tiles.</p>';
     if (sh) h += `<p>Shouts (<a href="sound.html#shouts">Sound</a>), ${sh.join('; ')}.</p>`;
     $('ik-pout').innerHTML = h;
     if (setHash) history.replaceState(null, '', '#pose-' + p.toString(16).toUpperCase().padStart(2, '0'));
   }
-  function thumbsDraw() { thumbs.forEach(([, c], i) => drawPose(c, i, 1, COLOURS[+pcol.value], false, false)); }
-  psel.onchange = () => pShow(true);
+  function thumbsDraw() {
+    thumbs.forEach(([, c], i) => drawPose(c, i, 1, COLOURS[+pcol.value], false, false));
+    frameBtns.forEach((b, i) => drawPose(b.firstChild, framePoses[i], 1, COLOURS[+pcol.value], pressed(pleft), false));
+  }
+  psel.onchange = () => { stopPlay(); pShow(true); };
   pcol.onchange = () => { thumbsDraw(); pShow(); };
-  pleft.onclick = () => toggle(pleft);
+  pleft.onclick = () => { toggle(pleft); thumbsDraw(); };
   pgrid.onclick = () => toggle(pgrid);
-  $('ik-pprev').onclick = () => { psel.value = Math.max(0, +psel.value - 1); pShow(true); };
-  $('ik-pnext').onclick = () => { psel.value = Math.min(NPOSE - 1, +psel.value + 1); pShow(true); };
+  $('ik-pprev').onclick = () => { stopPlay(); psel.value = Math.max(0, +psel.value - 1); pShow(true); };
+  $('ik-pnext').onclick = () => { stopPlay(); psel.value = Math.min(NPOSE - 1, +psel.value + 1); pShow(true); };
+  $('ik-pout').addEventListener('click', (e) => {
+    const a = e.target.closest('a.ik-mv'); if (!a) return;
+    e.preventDefault();
+    const m = +a.dataset.m, i = JOY.indexOf(m);
+    fire.setAttribute('aria-pressed', String(i >= 16));
+    dir = DIRS.findIndex((d) => d[1] === (i & 15));
+    joyShow(false);
+  });
+
+  // ---------------------------------------------------------------- the joystick
+  const joy = $('ik-joy'), out = $('ik-joyout'), fire = $('ik-fire'), play = $('ik-play'), frames = $('ik-frames');
+  let dir = 2, frame = 0, framePoses = [], frameBtns = [], timer = 0;
+  function stopPlay() { clearInterval(timer); timer = 0; play.setAttribute('aria-pressed', 'false'); }
+  function showFrame(i, setHash) { frame = i; psel.value = framePoses[i]; pShow(setHash); }
+  function joyShow(keepPose, setHash = true) {
+    stopPlay();
+    joy.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', String(i === dir)));
+    const f = pressed(fire);
+    const idx = (f ? 16 : 0) + DIRS[dir][1], m = JOY[idx];
+    const name = (f ? 'fire and ' : '') + DIRS[dir][2];
+    let h = `<p class="ik-k">${name}</p>`;
+    frames.textContent = ''; frameBtns = []; framePoses = m ? poses(m) : [0];
+    play.disabled = !m;
+    if (!m) { out.innerHTML = h + '<p>No move: the fighter stands, in pose <code>$00</code>. <span class="ik-mono">joy_moves</span> entry ' + idx + ' is 0.</p>'; showFrame(0, setHash); return; }
+    const as = attacksOf(m);
+    h += `<p>Move <b>${m}</b> (<code>${hx(0x1BBB + idx, 4)}</code>): ${framePoses.length} frames from <code>${hx(0x1F6B + MOVE_AT[m], 4)}</code>, below.</p>`;
+    if (!as.length) h += '<p>No pose in it can land a blow.</p>';
+    out.innerHTML = h;
+    for (const a of as) {
+      const p = document.createElement('p');
+      p.innerHTML = `Pose ${poseLink(HIT_POSES[a])} is attack ${a}: a full point scores <b>${pts(FULL[a])}</b> and paints `;
+      p.appendChild(digits(KNOCK_FULL[a], 2));
+      p.insertAdjacentHTML('beforeend', `, a half point scores <b>${pts(HALF[a])}</b> and paints `);
+      p.appendChild(digits(KNOCK_HALF[a], 2));
+      p.insertAdjacentHTML('beforeend', '.');
+      out.appendChild(p);
+    }
+    framePoses.forEach((p, i) => {
+      const b = document.createElement('button'), c = document.createElement('canvas'), n = document.createElement('span');
+      b.type = 'button'; b.title = 'Frame ' + (i + 1) + ': pose ' + hx(p); b.setAttribute('aria-label', b.title);
+      n.textContent = hx(p);
+      b.append(c, n); frames.appendChild(b); frameBtns.push(b);
+      drawPose(c, p, 1, COLOURS[+pcol.value], pressed(pleft), false);
+      b.onclick = () => { stopPlay(); showFrame(i, true); };
+    });
+    const at = keepPose ? framePoses.indexOf(+psel.value) : -1;
+    showFrame(at >= 0 ? at : 0, setHash && !keepPose);
+  }
+  DIRS.forEach(([ch, , label], i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = ch; b.setAttribute('aria-label', label);
+    b.onclick = () => { dir = i; joyShow(false); };
+    joy.appendChild(b);
+  });
+  fire.onclick = () => { fire.setAttribute('aria-pressed', String(!pressed(fire))); joyShow(false); };
+  play.onclick = () => {
+    if (timer) { stopPlay(); return; }
+    play.setAttribute('aria-pressed', 'true');
+    let i = -1, rest = 0;
+    timer = setInterval(() => {
+      if (rest) { rest--; return; }
+      i = (i + 1) % framePoses.length;
+      showFrame(i, false);
+      if (i === framePoses.length - 1) rest = 4;          // a pause before it starts again
+    }, 100);
+  };
   function fromHash() {
     const m = /^#pose-([0-9A-Fa-f]{2})$/.exec(location.hash);
-    if (m && parseInt(m[1], 16) < NPOSE) { psel.value = parseInt(m[1], 16); pShow(); return true; }
+    if (m && parseInt(m[1], 16) < NPOSE) {
+      stopPlay(); psel.value = parseInt(m[1], 16);
+      const i = framePoses.indexOf(+psel.value); frame = i >= 0 ? i : -1;
+      pShow(); return true;
+    }
     return false;
   }
-  window.addEventListener('hashchange', () => { if (fromHash()) $('poses').scrollIntoView(); });
+  window.addEventListener('hashchange', () => {
+    if (!fromHash()) return;
+    const r = $('ik-pose').getBoundingClientRect();
+    if (r.top < 0 || r.bottom > innerHeight) $('poses').scrollIntoView();
+  });
+  joyShow(false, false);
   thumbsDraw();
-  if (!fromHash()) { psel.value = 0x14; pShow(); }
+  fromHash();
 
   // ---------------------------------------------------------------- points scored and painted
   const moveName = (m) => (m > 8 ? 'fire and ' : '') + DIRS.find((d) => JOY[(m > 8 ? 16 : 0) + d[1]] === m)[2];

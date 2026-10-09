@@ -33,5 +33,7 @@ and the five unused shapes from code `$39`.
 
 - The judge as he talks and waits: the six face cells `judge_talk`
   (`$0D01`) animates and the foot `judge_foot` (`$0DB4`) taps.
-- The antics: the bird, spider, worm and fish on their eight routes each
-  (`antics_creature`, `$767E`), drawn from their frames.
+- The creatures in the Overview's live arena: a port of `antics_creature`
+  (`$767E`) so the bird, spider, worm and fish come on their routes as in
+  the game. Its random numbers read the program's own bytes (`$7556`), so
+  a port either carries those bytes or picks its own.
