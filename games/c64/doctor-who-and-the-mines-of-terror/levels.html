@@ -212,7 +212,7 @@
   function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
     zv.setAttribute('aria-label', 'The mine, at ' + ({ 0.25: 'a quarter of', 0.5: 'half', 1: 'the size of', 2: 'twice', 3: 'three times', 4: 'four times' })[Z] + ' the C64\'s pixels'); }
   const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
-  // glide the map from where it is to a point, then run done (zooming in on a chosen mark)
+  // glide the map from where it is to a point, keeping the zoom
   let panAnim = 0;
   function panTo(to, done) {
     cancelAnimationFrame(panAnim);
@@ -222,7 +222,7 @@
       if (f < 1) panAnim = requestAnimationFrame(tick); else if (done) done(); };
     panAnim = requestAnimationFrame(tick);
   }
-  // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
+  // choosing a mark: pan the map to it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
     sel = k;
     for (const el of [pkOb, pkDg, pkPl, pkCr]) el.value = k && el.querySelector('option[value="' + all.indexOf(k) + '"]') ? all.indexOf(k) : '';
@@ -237,7 +237,7 @@
     if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not known.';
     if (curObj && k !== curObj) note = curObj.t + ', place ' + (useIx + 1) + ' of ' + list.length + ': ' + k.label + ', ' + where(k) + '.';
     document.getElementById('rpkv').textContent = note;
-    panTo(k.at, () => { if (Z <= 2) { setZoom(4); centre(k.at); draw(); } });
+    panTo(k.at);
   }
   pkUse.onclick = () => { const list = usedAt(curObj.t);
     if (useIx + 1 >= list.length) { useIx = -1; choose(curObj, true); } else choose(list[++useIx], true); };
