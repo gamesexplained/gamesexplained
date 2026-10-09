@@ -32,6 +32,7 @@ and the five unused shapes from code `$39`.
 
 ## Article ideas
 
+- A player for the six shouts, at the random pitches the game picks.
 - The judge's speech bubble: which results bring which of the 29
   messages, and the three spare ones the game never shows.
 - A viewer for the 70 poses, drawn from their tiles and layouts.
