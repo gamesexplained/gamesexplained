@@ -201,18 +201,21 @@ const IK_MC = [10,0];
   }
   // a move on the stick, as a link that sets the joystick to it
   const moveLink = (m) => { const n = stickName(m); return n ? `<a href="#" class="ik-mv" data-m="${m}">${m} (${n})</a>` : String(m); };
-  function pShow(setHash) {
-    const p = +psel.value, colour = COLOURS[+pcol.value];
-    drawPose($('ik-pose'), p, 3, colour, pressed(pleft), pressed(pgrid));
-    thumbs.forEach(([b], i) => { b.setAttribute('aria-pressed', String(i === p)); });
-    frameBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(i === frame && framePoses[i] === p)));
+  function poseHtml(p) {
     const at = PTR[2 * p] | PTR[2 * p + 1] << 8, ms = movesWith(p), a = HIT_POSES.indexOf(p), sh = shoutsOf(p);
     let h = `<p class="ik-k">Pose ${hx(p)}</p><p>${TILES[p]} tiles at <code>${hx(at, 4)}</code>, layout at <code>${hx(0x7E00 + 12 * p, 4)}</code>: <span class="ik-mono">${LAYOUT.slice(12 * p, 12 * p + 12).map((v) => v.toString(16).toUpperCase().padStart(2, '0')).join(' ')}</span></p>`;
     h += ms.length ? `<p>In ${ms.length > 1 ? 'moves' : 'move'} ${ms.map(moveLink).join(', ')}.</p>` : '<p>No move’s frame script uses it.</p>';
     if (a >= 0) h += `<p>Attack ${a}: a full point scores ${pts(FULL[a])}, a half point ${pts(HALF[a])}.</p>`;
     if ([0x27, 0x2B, 0x2F].includes(p)) h += '<p>A fall: the points of the hit are painted over its first tiles.</p>';
     if (sh) h += `<p>Shouts (<a href="sound.html#shouts">Sound</a>), ${sh.join('; ')}.</p>`;
-    $('ik-pout').innerHTML = h;
+    return h;
+  }
+  function pShow(setHash) {
+    const p = +psel.value, colour = COLOURS[+pcol.value];
+    drawPose($('ik-pose'), p, 3, colour, pressed(pleft), pressed(pgrid));
+    thumbs.forEach(([b], i) => { b.setAttribute('aria-pressed', String(i === p)); });
+    frameBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(i === frame && framePoses[i] === p)));
+    $('ik-pout').innerHTML = poseHtml(p);
     if (setHash) history.replaceState(null, '', '#pose-' + p.toString(16).toUpperCase().padStart(2, '0'));
   }
   function thumbsDraw() {
@@ -305,9 +308,24 @@ const IK_MC = [10,0];
     const r = $('ik-pose').getBoundingClientRect();
     if (r.top < 0 || r.bottom > innerHeight) $('poses').scrollIntoView();
   });
+  // The readout keeps the height of its tallest pose, so the frames and the strip below it
+  // stay where they are while a move plays or the reader steps through the poses.
+  const pout = $('ik-pout');
+  let poutW = 0;
+  function poutFit() {
+    const w = pout.clientWidth; if (!w || w === poutW) return;
+    poutW = w; pout.style.minHeight = '';
+    let tall = 0;
+    for (let p = 0; p < NPOSE; p++) { pout.innerHTML = poseHtml(p); tall = Math.max(tall, pout.offsetHeight); }
+    pout.innerHTML = poseHtml(+psel.value); pout.style.minHeight = tall + 'px';
+  }
+  let fitting = 0;
+  addEventListener('resize', () => { cancelAnimationFrame(fitting); fitting = requestAnimationFrame(poutFit); });
+  if (document.fonts) document.fonts.ready.then(() => { poutW = 0; poutFit(); });
   joyShow(false, false);
   thumbsDraw();
   fromHash();
+  poutFit();
 
   // ---------------------------------------------------------------- points scored and painted
   const moveName = (m) => (m > 8 ? 'fire and ' : '') + DIRS.find((d) => JOY[(m > 8 ? 16 : 0) + d[1]] === m)[2];
