@@ -87,3 +87,23 @@ write. The tune alone left the effect paths unrun, so the test starts
 with one byte changed each, to reach the note flags nothing in the tune
 sets. 82,400 frames agree; the one routine never reached, `$EF88`, is
 one nothing calls.
+
+**Three tabs and four widgets.** Asked the same evening for the four
+article ideas and a split into tabs, the page became Overview, Fighters
+and Sound, as Wasteland's had. Porting `print_message` for the judge's
+table showed that `$9A`/`$9E` double the letters' height, not their
+width as the listing and `facts.md` had it, and that message `$0A` is
+never shown: the demo's random pick reads entries 1 to 16 of `$11C8`,
+and `$0A` is entry 0. Building the shout player showed that a sample
+plays every latch plus one cycles, so the listing's 224-255 cycles on
+PAL were one short. The pose viewer rebuilds each pose from its tiles
+the way `$3D15` does, and matched the two sprite fighters in
+`ram-play.bin` byte for byte before it went on the page.
+
+**The second sample.** A fresh agent checked 80 more comments, drawn
+from those the first sample left out: 5 wrong, each with one detail
+wrong. While applying the corrections, the disassembler was started on
+`start.vsf` rather than on the project, and the export that followed
+wrote a symbol map of four comments; `symbols_export.py` said so, the
+file was restored from git and the project rebuilt with
+`symbols_import.py` before the corrections went in again.

@@ -141,11 +141,22 @@ the first, and the second has no documented letters.
 - **Double buffering.** The floor has two screens (`$6800` and `$6C00`)
   and two sets of sprite blocks; each step draws into the pair not
   shown and `next_step` flips them (`buffer_d018`, `$16CD`).
-- **Poses.** 76 poses (`pose_width`, `$1CB0`), 70 with graphics. A pose
-  is up to twelve rows of 8-byte tiles: the layout at `$7E00` + 12 ×
-  pose gives each row's tile count and starting column. Facing left is
-  drawn by mirroring every byte through `$0400` (`build_mirror`,
-  `$41CF`).
+- **Poses.** 76 poses (`pose_width`, `$1CB0`), 70 with graphics
+  (`$00`-`$45`; `$46`-`$4B` have no tiles). A pose stores only the 8-byte
+  tiles it fills, 15 to 43 of them (`pose_tiles`, `$7DA0`), from the
+  address in `pose_gfx_ptrs` (`$7D00`): 1,920 tiles at `$8280`-`$BE7F`.
+  Its layout (`$7E00` + 12 × pose) has a byte for each of twelve rows of
+  tiles, the starting column (of nine, three to a sprite) in the high
+  nibble and the count in the low. `draw_sprite_fighter` (`$3D15`) puts
+  each tile's eight bytes on eight lines of one sprite column, through the
+  row offsets at `$3CF9`, the column offsets at `$3CE7` and the byte
+  offsets at `$3CBF`: the rows start on lines 0, 7, 15, 23 and so on to
+  87 of the fighter's three-sprite bands, and no pose uses the first
+  row. Rebuilt this way from `work/ram-play.bin`, the poses the two
+  sprite fighters stand in match their sprite memory byte for byte (200
+  and 272 bytes). Facing left is drawn by mirroring every byte through
+  `$0400` (`build_mirror`, `$41CF`) and starting each row from the other
+  side.
 - **Moves.** A move is a run of the frame script (`move_frames`,
   `$1F41`; 217 entries of `frame_pose` `$1F6B`, `frame_step` `$2044`,
   `frame_flags` `$211D`). Flag bits (`fighter_anim`, `$1D06`): 3 holds
@@ -272,7 +283,7 @@ Three alphabets:
 |---|---|---|
 | Top two rows | character set `$6800` | `$00`-`$09` digits, `$0B` +, `$0C`/`$0D` point dots, `$0F` ?, `$11`-`$2A` A-Z, `$2C` -, `$2D` /, `$2E` ©, `$31` space, `$32`-`$35` the fist icon |
 | 5-row font | glyphs at `$7000`, built into floor characters `$BA`-`$EA` (`build_font`, `$240A`) | floor code = ASCII + `$8A`, from `0`; `@` is blank, `:` is a comma |
-| Message text | `message_text` (`$348A`), printed by `print_message` (`$38BF`) | ASCII with codes: 0-9 that many spaces; `$0A`-`$0C` the name of the fighter placed first, second, third; `$9A`/`$9E` double-width on and off; `$9C` new line; `$9D` the TIME bonus; `$9B` end; `<` prints as !, `=` as + |
+| Message text | `message_text` (`$348A`), printed by `print_message` (`$38BF`) | ASCII with codes: 0-9 that many spaces; `$0A`-`$0C` the name of the fighter placed first, second, third; `$9A`/`$9E` double height on and off; `$9C` new line; `$9D` the TIME bonus; `$9B` end; `<` prints as !, `=` as + |
 
 Belt and fighter names and the table's headings are ASCII with `@` for a
 space (`belt_names` `$25FE`, `fighter_names` `$3473`, `table_header`
@@ -284,14 +295,14 @@ The 29 bubble messages (`message_ptrs`, `$3881`; `@` shown as a space,
 | No. | Text | Shown |
 |---|---|---|
 | `$00`-`$09` | round results, for example "{1st} WINS / {2nd} STAYS IN / {3rd} IS OUT", "YOU ARE ALL OF / EQUAL ABILITY, / SO PLAY ON" | `round_result` |
-| `$0A` | {1st} IS BEST / {2nd} IS SECOND / {3rd} IS WORST | demo rounds |
+| `$0A` | {1st} IS BEST / {2nd} IS SECOND / {3rd} IS WORST | never: the first entry of `demo_messages`, which the random pick skips |
 | `$0B` | PRESS F5 FOR MUSIC ON OR OFF / F7 FOR SOUND FX | demo rounds |
 | `$0C` | PLAYERS ARE / NEEDED!!!! | demo rounds |
 | `$0D` | IK+ / COPYRIGHT 1987 / ARCHER MACLEAN | demo rounds |
 | `$0E` | WHERES EVERYBODY / GONE!!!!! | demo rounds |
 | `$0F` | USE FIRE BUTTONS / OR F1 AND F3 KEYS / TO START A GAME | demo rounds |
-| `$10` | {1st} IS AWARDED / {TIME}00 POINTS / AS A TIME BONUS | `round_end` |
-| `$11` | MATCH OVER (double width) | `$13A7` |
+| `$10` | {1st} IS AWARDED / {TIME}00 POINTS / AS A TIME BONUS | `round_end`, with time left and a human playing, unless a lone human came last with no tie (`$FDA4` = 1) |
+| `$11` | MATCH OVER (double height) | `$13A7`, when no human keeps playing |
 | `$12` | {3rd} HAS ACHIEVED / HALL OF FAME / ENTRY STATUS | `game_over` |
 | `$13` | {3rd} DID WELL BUT / HAS NOT QUALIFIED / FOR HALL OF FAME | `game_over` |
 | `$14` | PRACTICE IS / DEFINITELY / RECOMMENDED | `game_over` |
@@ -302,7 +313,27 @@ The 29 bubble messages (`message_ptrs`, `$3881`; `@` shown as a space,
 | `$1A` | USE RUN STOP KEY / TO GO INTO / PAUSE MODE | demo rounds |
 | `$1B` | DO YOU FEEL LIKE / A LOST NINJA!!!! / TRY IK+ FOR ACTION | demo rounds |
 
-The demo rounds pick at random from `demo_messages` (`$11C8`).
+The demo rounds pick at random from `demo_messages` (`$11C8`): a random
+number AND 15, plus 1 (`$1286`), so entries 1 to 16 and never entry 0,
+message `$0A`. Message `$19` is three of the sixteen, `$1B` one, the
+others two each.
+
+With a human playing, `round_end` adds the human bits of the ranking
+(`$83`: first 4, second 2, third 1) to the tie case (`$FDA4`: 0 all
+different, 7 second and third level, 14 first and second level, 21 all
+level) and reads `round_result` (`$11AC`): the high nibble is the
+message, the low three bits which places keep playing. The four
+messages that say "IS OUT" (`$00`, `$02`, `$04`, `$07`) are the ones
+for a human placed last alone; a computer fighter last is told "COME
+ON" (`$01`) or "MUST IMPROVE" (`$05`, `$08`).
+
+`print_message` (`$38BF`) prints into a bubble of 18 characters of 24
+bytes at `$55D0`, cleared by `clear_bubble_chars` (`$3A03`) and closed by
+rounded ends at `$52B0`-`$52DF`. `print_letter` (`$39C6`) writes each
+letter's five glyph bytes from `$7000`, inverted, down one column of
+three characters, each byte twice between `$9A` and `$9E` (double
+height, `bubble_double`, `$01DA`). The bubble's width is `$3863`, the
+columns of text, plus 2.
 
 ## Sound
 
@@ -342,12 +373,24 @@ The demo rounds pick at random from `demo_messages` (`$11C8`).
   effects 4 and 5 are never started.
 - **The shouts.** Six digitised shouts, 4-bit samples written to the
   volume register `$D418` from CIA 1's timer interrupt (`sample_play`,
-  `$0934`) at 224-255 cycles a sample on PAL (about 3.9-4.4 kHz at
-  985,248 Hz) and 272-303 on NTSC (about 3.4-3.8 kHz); each shout plays at a randomly chosen rate in that
-  range (`sample_start`, `$0EE3`). They share their bytes: three in the
-  high nibbles of `$BF00`-`$CFFF`, three in the low. A fighter's new pose
-  picks the shout (`shout_for_move`, `$0E86`): an attack, a scoring hit
-  (sometimes with a second shout a few frames later) or a fall.
+  `$0934`), one sample every latch plus one cycles. `sample_start`
+  (`$0EE3`) sets the latch for each shout to a base (`$0F48`, `$0F4A`)
+  plus a random 0 to 31 from the frame counter and the raster line: on
+  PAL `$E0`-`$FF`, 225 to 256 cycles a sample (about 3.8-4.4 kHz at
+  985,248 Hz); on NTSC `$0110`-`$012F`, 273 to 304 cycles (about
+  3.4-3.7 kHz at 1,022,727 Hz). The player steps its address before it
+  reads, so a shout runs from its start address plus one to the byte
+  before its end page. The shouts share their bytes: three in the high
+  nibbles of `$BF00`-`$CDFF`, three in the low nibbles of `$BF00`-`$CFFF`
+  (`shout_start` `$0ED1`, `shout_end_page` `$0ECB`, `shout_nibble`
+  `$0EDD`). A fighter's new pose picks the shout (`shout_for_move`,
+  `$0E86`) when it is one of seventeen (`shout_moves`, `$0E1F`): a
+  fighter who has just scored gets `shout_scored` (`$0E42`) and, for
+  some poses, a second shout a few frames later (`$0E53`, `$0E64`); one
+  who is down gets `shout_floored` (`$0E75`, only the three falls); any
+  other in a striking frame gets `shout_attack` (`$0E31`). A new shout
+  takes over the player's address, so one plays at a time, and none
+  plays while F7 has the effects off (`shouts_on`, `$FD51`).
 
 ## Hardware registers
 
@@ -450,7 +493,21 @@ shield's shape, a carry read from the wrong byte, a flag's condition too
 narrow, a fish row said to be read that is not, and the digits painted on
 a fallen fighter described as generic marks. The listing's comments for
 all seven, and for twelve others that shared their errors, match the
-bytes. The rest of the listing has had no check beyond this sample.
+bytes.
+
+A second sample of 80 drawn from the comments the first left out (seed
+20261010; 60 of the 926 hand-written, 20 of the 107 from templates),
+checked the same way after those corrections, found 5 wrong: 6.3 % (95 %
+interval 2.7 % to 14 %), 7.5 % weighted by the strata (hand 5 of 60,
+templates 0 of 20). Again each had one detail wrong: a shape number
+called a loop count, a game mode 0 described as a title screen that the
+main loop never reaches, the name-entry letter said to step on up and
+down that steps on left and right, the six attacker-target pairs in the
+wrong order, and a reflection row's phase called the row before's
+speed. Those five comments, and three others that shared their errors,
+match the bytes. Over both samples, 12 of 160 comments were wrong
+(7.5 %, 95 % interval 4.3 % to 13 %); the rest of the listing has had no
+check beyond them (`work/reports/verdicts.json`, `verdicts2.json`).
 
 ## Live tests
 

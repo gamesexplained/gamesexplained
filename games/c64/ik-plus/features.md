@@ -61,7 +61,11 @@ Found in the code, not in the sources above.
 - **The judge talks**: 29 speech-bubble messages, among them "IK+ /
   COPYRIGHT 1987 / ARCHER MACLEAN", "DO YOU FEEL LIKE / A LOST NINJA!!!!
   / TRY IK+ FOR ACTION" and three "SPARE BUBBLE"s the game never shows.
-  He stands in the widest gap between the fighters and taps his foot.
+  A fourth is never shown either: "{1st} IS BEST / {2nd} IS SECOND /
+  {3rd} IS WORST", the first entry of the demo's table, which its random
+  pick skips (`$1286`). He says "IS OUT" only to a human placed last
+  alone (`round_result`, `$11AC`). He stands in the widest gap between
+  the fighters and taps his foot.
 - **Another three-key combination** (`$1855`): a key from each of R/I/P,
   T/O/@ and X/N/, together changes how the sun's reflection ripples, in
   four patterns (`drift_set`, `$7665`).
@@ -72,7 +76,7 @@ Found in the code, not in the sources above.
   page; one decrypts part of the pose layouts. A failed check jams the
   processor (facts.md, "Protection").
 - **The shouts change pitch**: each plays at a random sample rate within
-  about 3.9-4.4 kHz on PAL (`sample_start`, `$0EE3`).
+  about 3.8-4.4 kHz on PAL (`sample_start`, `$0EE3`).
 - **NTSC**: the game step is one frame longer and the music skips every
   sixth frame, so the speed and the tune match a PAL machine.
 - **Bonus-round detail**: in the third, fifth and seventh bonus rounds

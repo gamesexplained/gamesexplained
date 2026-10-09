@@ -17,11 +17,10 @@ proven model.
 
 ## Worth doing first
 
-- The listing's sample found 8.8 % of comments with a wrong detail
-  (`facts.md`, "Listing accuracy"). The seven and the twelve that shared
-  their errors are corrected; the other comments were not audited again.
-  A second sample, or a pass by fresh agents over the hand-written
-  comments, would say how many are left.
+- Two samples of the listing found 12 of 160 comments with a wrong
+  detail, 7.5 % (`facts.md`, "Listing accuracy"). All twelve, and the
+  fifteen that shared their errors, are corrected; a pass by fresh
+  agents over the hand-written comments would find more of the rest.
 
 ## Open questions
 
@@ -32,7 +31,7 @@ and the five unused shapes from code `$39`.
 
 ## Article ideas
 
-- A player for the six shouts, at the random pitches the game picks.
-- The judge's speech bubble: which results bring which of the 29
-  messages, and the three spare ones the game never shows.
-- A viewer for the 70 poses, drawn from their tiles and layouts.
+- The judge as he talks and waits: the six face cells `judge_talk`
+  (`$0D01`) animates and the foot `judge_foot` (`$0DB4`) taps.
+- The antics: the bird, spider, worm and fish on their eight routes each
+  (`antics_creature`, `$767E`), drawn from their frames.

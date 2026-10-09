@@ -1250,7 +1250,7 @@
   },
   {
    "address": 101,
-   "name": "bonus_loop",
+   "name": "bonus_shape",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "user"
   },
@@ -2282,9 +2282,9 @@
   },
   {
    "address": 474,
-   "name": "a_01DA",
+   "name": "bubble_double",
    "type": "AbsoluteAddress",
-   "kind": "auto"
+   "kind": "user"
   },
   {
    "address": 475,
@@ -12913,6 +12913,12 @@
    "kind": "user"
   },
   {
+   "address": 64848,
+   "name": "KERNAL_RAMTASj",
+   "type": "Predefined",
+   "kind": "system"
+  },
+  {
    "address": 64849,
    "name": "shouts_on",
    "type": "AbsoluteAddress",
@@ -13127,6 +13133,12 @@
    "name": "judge_foot_step",
    "type": "AbsoluteAddress",
    "kind": "user"
+  },
+  {
+   "address": 64931,
+   "name": "KERNAL_IOINITj",
+   "type": "Predefined",
+   "kind": "system"
   },
   {
    "address": 64932,
@@ -13613,12 +13625,12 @@
   {
    "address": 101,
    "type": "line",
-   "text": "bonus_sprites' loop count."
+   "text": "The shape number bonus_sprites writes into the bonus round's sprite pointers: set to $15F6 plus 9 ($0AA1) and counted down by one for each sprite, from sprite 6 to sprite 0, on both screens ($6FF8 and $6BF8). The loop itself counts in X."
   },
   {
    "address": 102,
    "type": "line",
-   "text": "The game's mode: 0 the title, run by the frame interrupt; 1 a fight; 3 a round's end; 4 the attract mode; 5 the bonus round; 6 the pause. The main loop runs the routine for it."
+   "text": "The game's mode, which the main loop ($08BB) dispatches on: 1 a fight; 3 a round's end; 4 the attract mode; 5 the bonus round; 6 the pause. It is 0 only while game_reset runs (it stores 0 at $16E3 and 1 at its end, $1785), so the dispatch never sees 0; wait_frames ($1ACD) returns at once in mode 0."
   },
   {
    "address": 103,
@@ -13926,6 +13938,11 @@
    "text": "Which of the eight sky and water colour sets is in use, stepped by D, O and M together; $F6-$FF are not used."
   },
   {
+   "address": 474,
+   "type": "line",
+   "text": "Nonzero between the codes $9A and $9E of a bubble message: print_letter writes each glyph byte twice, so the letters are double height."
+  },
+  {
    "address": 678,
    "type": "line",
    "text": "The KERNAL's PAL flag (1 PAL, 0 NTSC), set at reset and read once by game_init into $FD52."
@@ -14143,7 +14160,7 @@
   {
    "address": 2235,
    "type": "line",
-   "text": "The game's main loop. Clears the key-repeat counter $4A and the frame counter $44, resets the stack pointer (the operand at $08C2 is the stack pointer the loader left, $0A, on the first pass; game_reset puts $F0 back), calls game_reset ($16E1), then dispatches on the game mode $66 for ever: 1 a fight ($106D), 3 a round's end ($11E3), 6 the pause ($10BB), 4 the attract mode ($2247 then $13E5), 5 the bonus round ($F2AB, counting $FDA1, then $13E5). Mode 0 does nothing here: the frame interrupt runs the title until a game starts."
+   "text": "The game's main loop. Clears the key-repeat counter $4A and the frame counter $44, resets the stack pointer (the operand at $08C2 is the stack pointer the loader left, $0A, on the first pass; game_reset puts $F0 back), calls game_reset ($16E1), then dispatches on the game mode $66 for ever: 1 a fight ($106D), 3 a round's end ($11E3), 6 the pause ($10BB), 4 the attract mode ($2247 then $13E5), 5 the bonus round ($F2AB, counting $FDA1, then $13E5). game_reset ends by setting mode 1 ($1785), so the dispatch never sees mode 0."
   },
   {
    "address": 2308,
@@ -14253,7 +14270,7 @@
   {
    "address": 2572,
    "type": "line",
-   "text": "Operand of LDA #$00: the shape number for sprite 3 in this band (sprites 4 and 5 take the next two). Written each band from the last shape number plus one."
+   "text": "Operand of LDA #$00: the shape number for sprite 3 in this band (sprites 4 and 5 take the next two). Written each band from the last shape number plus one, and by fighter_sprites each frame ($0BD7)."
   },
   {
    "address": 2575,
@@ -14498,7 +14515,7 @@
   {
    "address": 3912,
    "type": "line",
-   "text": "CIA 1's timer high byte for the shouts, set once by $1034 and indexed by the PAL flag $FD52: $01 on NTSC, $00 on PAL. With the low byte from $0F4A plus 0 to 31, the period is 272 to 303 cycles on NTSC and 224 to 255 on PAL."
+   "text": "CIA 1's timer high byte for the shouts, set once by $1034 and indexed by the PAL flag $FD52: $01 on NTSC, $00 on PAL. With the low byte from $0F4A plus 0 to 31, the latch is $0110-$012F on NTSC and $00E0-$00FF on PAL, and one sample plays every latch plus one cycles: 273 to 304 on NTSC, 225 to 256 on PAL."
   },
   {
    "address": 3914,
@@ -14903,7 +14920,7 @@
   {
    "address": 6861,
    "type": "line",
-   "text": "Waits X frames of the frame counter $44; returns at once in mode 0, so a game started from the keys cuts the wait short."
+   "text": "Waits X frames of the frame counter $44; returns at once in mode 0, the mode only while game_reset runs."
   },
   {
    "address": 6877,
@@ -15078,7 +15095,7 @@
   {
    "address": 9399,
    "type": "line",
-   "text": "Lets the player whose game ended ($01AC: 0 the joystick in port 2, 1 port 1) type three letters: up and down step the letter $01B0 through codes $CA-$E4 (the alphabet in the 5-row font, wrapping), fire takes it and moves on. The letter flashes while being chosen. After three letters, or 6 x 256 frames, the initials go into the table at $FE2F/$FE4E/$FE6D for the new place $01AD."
+   "text": "Lets the player whose game ended ($01AC: 0 the joystick in port 2, 1 port 1) type three letters: left and right step the letter $01B0 back and forward through codes $CA-$E4 (the alphabet in the 5-row font, wrapping; bits 2 and 3 of the port, $251E and $2534), fire takes it and moves on. The letter flashes while being chosen. After three letters, or 6 x 256 frames, the initials go into the table at $FE2F/$FE4E/$FE6D for the new place $01AD."
   },
   {
    "address": 9654,
@@ -15173,7 +15190,7 @@
   {
    "address": 10305,
    "type": "line",
-   "text": "Clears the floor rows of both screens ($6C00 and $6800) with $285A."
+   "text": "Clears the floor rows of both screens ($6C00 and $6800) with $285A, which does nothing while $FDA8 is set."
   },
   {
    "address": 10330,
@@ -15448,7 +15465,7 @@
   {
    "address": 12081,
    "type": "line",
-   "text": "Target of each pair: 1, 2, 0, 2, 0, 1."
+   "text": "Target of each pair: 2, 1, 2, 0, 1, 0. With the attackers at $2F2B, the six pairs are 0 on 2, 0 on 1, 1 on 2, 1 on 0, 2 on 1 and 2 on 0."
   },
   {
    "address": 12087,
@@ -15603,7 +15620,7 @@
   {
    "address": 13450,
    "type": "line",
-   "text": "The bubble messages in ASCII: codes 0-9 give that many spaces, $0A-$0C the name of the fighter placed first, second or third, $9A and $9E start and end double-width letters, $9C the next line, $9D the TIME bonus, $9B the end. '<' prints as '!', '=' as '+'. This one: \"first WINS, second STAYS IN, third IS OUT\"."
+   "text": "The bubble messages in ASCII: codes 0-9 give that many spaces, $0A-$0C the name of the fighter placed first, second or third, $9A and $9E start and end double-height letters, $9C the next line, $9D the TIME bonus, $9B the end. '<' prints as '!', '=' as '+'. This one: \"first WINS, second STAYS IN, third IS OUT\"."
   },
   {
    "address": 14435,
@@ -15628,7 +15645,7 @@
   {
    "address": 14790,
    "type": "line",
-   "text": "Prints ASCII letter A into the bubble's character data at $60/$61, inverted from the 5-byte glyph at $7000+5*(A-$30), doubled across when $01DA is set."
+   "text": "Prints ASCII letter A into the bubble's character data at $60/$61: the 5-byte glyph at $7000+5*(A-$30), inverted, down one column of the bubble, each byte written twice (double height) when $01DA is set. Then moves $60/$61 on $18 bytes to the next column."
   },
   {
    "address": 14851,
@@ -17083,12 +17100,12 @@
   {
    "address": 48815,
    "type": "line",
-   "text": "The fifth row's speed, mixed in when the fifth glint moves."
+   "text": "The sixth reflection row's phase (three bytes a row from $BEA0), mixed into the fifth glint's new place when it moves ($762B)."
   },
   {
    "address": 48818,
    "type": "line",
-   "text": "The sixth row's speed, mixed in when the fifth glint moves."
+   "text": "The seventh reflection row's phase, added into the fifth glint's new place when it moves ($762E)."
   },
   {
    "address": 48851,
@@ -18548,7 +18565,7 @@
   {
    "address": 64849,
    "type": "line",
-   "text": "The digitised shouts and the bonus round's bounce sounds: non-zero on (F7 toggles)."
+   "text": "The digitised shouts and the bonus round's bounce and deflection sounds ($F45F): non-zero on (F7 toggles)."
   },
   {
    "address": 64850,
