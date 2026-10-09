@@ -124,11 +124,21 @@ globalThis.C64 = (function () {
   //   F.keep    an object kept from frame to frame: the chip's state carries over from the last
   //             call, so the frame is run once, not twice
   // Returns {w, h, px, x0, line0, reads, romReads}: px holds w * h colour indices of VICE's
-  // visible PAL area (raster lines 16-287, sprite X -8 to 375); reads marks each RAM address the
+  // visible area (PAL raster lines 16-287, NTSC 28-262 and 0-11; sprite X -8 to 375); reads marks each RAM address the
   // drawing read.
   function renderFrame(F) {
-    const LINES = F.lines || 312, CYC = F.cycles || 63, W = 384, H = 272, LINE0 = 16, X0 = -8;
-    if (LINES !== 312 || CYC !== 63) throw new Error('renderFrame models the PAL chip: 312 lines of 63 cycles');
+    const LINES = F.lines || 312, CYC = F.cycles || 63;
+    // the PAL chip (6569: 312 lines of 63 cycles) or the NTSC one (6567R8: 263 lines of 65); VICE
+    // shows 272 lines from 16 on PAL and 247 from 28 on NTSC, the last of them lines 0-11 of the
+    // next frame, drawn here from this one's
+    const NTSC = LINES === 263 && CYC === 65;
+    if (!NTSC && (LINES !== 312 || CYC !== 63))
+      throw new Error('renderFrame models the PAL chip (312 lines of 63 cycles) and the NTSC 6567R8 (263 of 65)');
+    const W = 384, H = NTSC ? 247 : 272, LINE0 = NTSC ? 28 : 16, X0 = -8, SPR0 = NTSC ? 60 : 58;
+    // VICE's NTSC frame begins where its picture ends, at line 12 (frame.py records it as
+    // capture.frame_ended_on_line): the registers in F.vic are those at that line, and the writes
+    // on lines 0-11 come at the end of the frame, so the lines are run from there round
+    const FIRST = NTSC ? ((F.capture && F.capture.frame_ended_on_line) || 12) : 0;
     let start = F.mem;
     if (!start) { start = new Uint8Array(0x10000); for (const r of F.ram) start.set(bytes64(r.b), r.a); }
     const colour = F.colourMem || bytes64(F.colour), rom = F.charrom ? bytes64(F.charrom) : null;
@@ -162,10 +172,11 @@ globalThis.C64 = (function () {
         reads[x] = 1;
         return mem[x];
       };
-      for (let y = 0; y < LINES; y++) {
-        const ws = byLine[y] || [];
+      for (let yi = 0; yi < LINES; yi++) {
+        const y = (yi + FIRST) % LINES, ws = byLine[y] || [];
         let wi = 0, badline = false, slot = -1;
-        const out = y >= LINE0 && y < LINE0 + H ? (y - LINE0) * W : -1;
+        const vis = y >= LINE0 ? y - LINE0 : y + LINES - LINE0;
+        const out = vis < H ? vis * W : -1;
         if (y === 0) { S.vcbase = 0; S.den30 = false; }
         for (let c = 1; c <= CYC; c++) {
           // the chip's half of cycle c, before the processor's write in it
@@ -191,7 +202,7 @@ globalThis.C64 = (function () {
             }
             if (c === 58) { s.mc = s.mcbase; if (s.dma && R[2 * n + 1] === (y & 0xFF)) s.on = true; }
             // pointer and data: sprites 0-2 at the end of this line, 3-7 early in the next
-            if (c === (n < 3 ? 58 + 2 * n : 2 * n - 5)) {
+            if (c === (n < 3 ? SPR0 + 2 * n : 2 * n - 5)) {
               const sp = n < 3 ? 'next' : 'row';
               if (s.dma) {
                 const ptr = vmem((R[0x18] >> 4) * 0x400 + 0x3F8 + n) * 64;

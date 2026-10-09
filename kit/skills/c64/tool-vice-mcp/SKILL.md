@@ -237,8 +237,20 @@ the batch.
 record (#236): `zap` clears it at the start of a play session, `dump` writes
 `games/c64/<slug>/codemap.json` at the end. The record is VICE's monitor
 memmap, a per-address access map that marks every address the CPU fetched an
-instruction from; it is always on and complete, unlike the cpuhistory ring
-buffer (8,192 entries, ~28 ms). The emulator listens for its monitor on the
+instruction from. Unlike the cpuhistory ring buffer (8,192 entries, ~28 ms)
+it covers a whole session, but only while the machine is left alone: on
+vice-mcp v3.13.2 (9 October 2026) loading a snapshot, or stopping the
+machine through the MCP server, ended the record, and the map dumped later
+lacked everything that ran after it while looking complete. Record a code
+map in one session from boot: load the game, `zap` once it runs, drive it
+with joystick and key calls separated by wall-clock waits rather than
+`frames()` (which stops the machine), and `dump` at the end. The memmap's
+ROM and RAM columns follow the address, not the banking, so code run from
+RAM under the KERNAL or BASIC is listed as ROM execution, and `dump` leaves
+it out unless given `--under-rom`; it says how many such instructions it
+saw. For a game that runs code under a ROM, zap only after the game has
+banked the ROM out, or the KERNAL's interrupt handler from its start-up is
+kept as game code. The emulator listens for its monitor on the
 port above the MCP port (6511 by default). `check_listing.py` fails the game
 while `symbols.json` types any ran byte as data. Do not use `trace exec`
 tracepoints for this: a full-address-space trace floods the monitor faster

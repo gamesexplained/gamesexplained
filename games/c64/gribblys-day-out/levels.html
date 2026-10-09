@@ -43,6 +43,10 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gdl-tbl td.n{font-family:var(--fm);font-size:13px;text-align:right;white-space:nowrap}
 .gdl-tbl tr.cur td{background:var(--hl)}
 .gdl-pic{width:18px;height:18px;vertical-align:-3px;background:#000;border-radius:2px}
+.gdl-chad{display:grid;grid-template-columns:320fr 136fr;gap:16px;align-items:center}
+.gdl-chad img,.gdl-chad canvas{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000}
+.gdl-chad canvas{max-width:136px}
+@media (max-width:640px){.gdl-chad{grid-template-columns:1fr}}
 .gdl-msg{font-size:13px;color:var(--coral)}
 </style>
 <!-- tabs -->
@@ -76,8 +80,22 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <p class="fig">02 · The tables</p>
   <h2 class="t">What each level is made of</h2>
   <table class="gdl-tbl" id="gdl-tbl"></table>
-  <p class="cap">Level 4's name is a Chad joke: the face peering over a wall at each end is the British wartime doodle whose caption is always "Wot, no ...?", drawn here from the game's panel font (<code>$7E</code>-<code>$7F</code>, with <code>$FE</code>-<code>$FF</code> below).</p>
   <p class="cap">Scene list: the address of the level's list of ground columns and templates (<code>scene_lists</code> <code>$E010</code>). Ground words: the column shapes that make the ground. Templates: the records of floating scenery that follow. Web: the address of its 70 layout bytes (<code>web_layouts</code> <code>$E030</code>). Start: the map column at the left of the view as the level begins (<code>start_cols</code> <code>$E050</code>, times 8 in pixels). Colours come from the level number's low three bits (<code>level_bg_colours</code> <code>$7DBF</code>), so levels 8-15 repeat the colours of 0-7.</p>
+</section>
+
+<section>
+  <p class="fig">03 · Level 4's name</p>
+  <h2 class="t">Mr Chad peers over level 4's name</h2>
+  <p class="lede">Level 4 is called "Wot, no ground?", and the game draws a little face looking over a wall at each end of the name. The face is Mr Chad, and the name is his catchphrase.</p>
+  <div class="plate">
+    <div class="gdl-chad">
+      <img src="reference/level4-name.png" width="320" height="136" alt="The screen before level 4: Psi-energy Transfer Stage, then Mr Chad, Wot, no ground?, Mr Chad, then Eight Gribblets to rescue and At least six must survive">
+      <canvas id="gdl-chad" width="128" height="128" role="img" aria-label="Mr Chad, enlarged from the four characters of the panel font that draw him"></canvas>
+    </div>
+    <p class="cap">The screen before level 4 begins, from the emulator, with the name on its second line, and Mr Chad as the game stores him, enlarged: two characters of the panel font at <code>$2000</code>, <code>$7E</code> and <code>$7F</code>, with <code>$FE</code> and <code>$FF</code> below them, as for every double-height letter. The name is at <code>$E198</code>.</p>
+  </div>
+  <p>Mr Chad is a British doodle of the Second World War and the years just after it: a face peering over a wall, often with a single curling hair like a question mark and crosses for eyes, over a complaint that begins "Wot, no": "Wot, no sugar?", "Wot, no char?". The complaints were about whatever was short under rationing, and he faded as rationing eased. He may first have been drawn by the cartoonist George Edward Chatterton in 1938, and at some point he merged with the American "Kilroy was here". <a href="https://en.wikipedia.org/wiki/Kilroy_was_here#Chad">Wikipedia's article on Kilroy</a> tells his story. In the game's drawing his nose hangs over the wall, and the fingers of both hands hook over it.</p>
+  <p>The complaint fits the level. Level 4 is the one map without ground: every other level's bottom row is ground from the wall to the right-hand end, while level 4's bottom rows are open sky, down to the strip the game lays under every map. Its scene list has 14 ground words, where every other level has 35 to 65 (the table above).</p>
 </section>
 
 </main>
@@ -96,9 +114,9 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   const sel = document.getElementById('gdl-sel'), cap = document.getElementById('gdl-cap'), cv = document.getElementById('gdl-map');
   const tbl = document.getElementById('gdl-tbl');
   const ov = { grib: true, view: true, cave: true };
-  // Level 4's name has Chad at each end, two characters of the panel font, $7E and $7F, with
+  // Level 4's name has Mr Chad at each end, two characters of the panel font, $7E and $7F, with
   // $FE and $FF below them as for every double-height glyph; drawn when the listing has loaded
-  const PIC = '<canvas class="gdl-pic" role="img" aria-label="Chad, a face peering over a wall, from $7E-$7F in the panel font"></canvas>';
+  const PIC = '<canvas class="gdl-pic" role="img" aria-label="Mr Chad, a face peering over a wall, from $7E-$7F in the panel font"></canvas>';
   const named = L => L.name.replace(/\[7E\]\[7F\]/g, PIC), plain = L => L.name.replace(/\[7E\]\[7F\]/g, '').trim();
   let panel = null;
   function drawPics() {
@@ -107,6 +125,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       const ctx = C64.canvas(el, 16, 16);
       [[0x7E, 0, 0], [0x7F, 8, 0], [0xFE, 0, 8], [0xFF, 8, 8]].forEach(([k, x, y]) => C64.drawGlyph(ctx, panel, k, x, y, 1, PALC[1], PALC[0]));
     });
+    const big = document.getElementById('gdl-chad');
+    if (big) {
+      const ctx = C64.canvas(big, 128, 128);
+      [[0x7E, 0, 0], [0x7F, 8, 0], [0xFE, 0, 8], [0xFF, 8, 8]].forEach(([k, x, y]) => C64.drawGlyph(ctx, panel, k, x * 8, y * 8, 8, PALC[1], PALC[0]));
+    }
   }
   sel.innerHTML = LEVELS.map(L => `<option value="${L.level}">${L.level}: ${plain(L)}</option>`).join('');
   let h = '<tr><th>Level</th><th>Name</th><th>Scene list</th><th>Ground words</th><th>Templates</th><th>Web</th><th>Start</th><th>Background</th></tr>';

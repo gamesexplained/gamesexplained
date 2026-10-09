@@ -8,7 +8,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from codemap import parse_executed, runs  # noqa: E402
+from codemap import banked_out_ram, parse_executed, runs  # noqa: E402
 
 SAMPLE = """\
 (C:$1005) addr: IO  ROM RAM
@@ -29,6 +29,24 @@ class ParseTests(unittest.TestCase):
     def test_runs(self):
         self.assertEqual(runs({0x1000, 0x1001, 0x1002, 0x1005}), [[0x1000, 0x1002], [0x1005, 0x1005]])
         self.assertEqual(runs(set()), [])
+
+
+class BankingTests(unittest.TestCase):
+    """The memmap marks execution ROM or RAM by address, so code run from the RAM under BASIC or
+    the KERNAL is marked ROM execute; dump keeps it where the port has that ROM banked out."""
+    MARKED = [0x9FFF, 0xA000, 0xA00B, 0xBFFF, 0xC000, 0xD000, 0xE000, 0xFFFF]
+    UNDER_BASIC, UNDER_KERNAL = [0xA000, 0xA00B, 0xBFFF], [0xE000, 0xFFFF]
+
+    def test_banking(self):
+        for port, ddr, want in (
+                (0x37, 0x2F, []),                                   # BASIC and KERNAL in
+                (0x36, 0x2F, self.UNDER_BASIC),                     # BASIC out
+                (0x35, 0x2F, self.UNDER_BASIC + self.UNDER_KERNAL),  # both out, I/O in
+                (0x34, 0x2F, self.UNDER_BASIC + self.UNDER_KERNAL),  # all RAM
+                (0x33, 0x2F, []),                                   # character ROM, BASIC, KERNAL
+                (0x30, 0x28, []),                                   # bits 0-2 inputs read 1: ROMs in
+                (0x35, 0x2D, [])):                                  # bit 1 an input reads 1
+            self.assertEqual(banked_out_ram(self.MARKED, port, ddr), want, f"${port:02X}/${ddr:02X}")
 
 
 class FormatTests(unittest.TestCase):

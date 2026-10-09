@@ -234,7 +234,7 @@ const read = node ? p => require('fs').readFileSync(p, 'utf8') : p => readFile(p
 const say = node ? t => process.stdout.write(t + '\n') : t => print(t);
 if (node) (0, eval)(read(args[0])); else load(args[0]);
 const r = C64.renderFrame(JSON.parse(read(args[1])));
-say(JSON.stringify({ w: r.w, h: r.h, romReads: r.romReads }));
+say(JSON.stringify({ w: r.w, h: r.h, line0: r.line0, romReads: r.romReads }));
 let h = '';
 for (let i = 0; i < r.px.length; i++) h += r.px[i].toString(16);
 say(h);
@@ -339,14 +339,19 @@ def compare(frame_path, shot_path=None, quiet=False):
     # two kinds of difference the drawing does not try to reproduce: the grey pixel VICE draws
     # where a colour register changes within a line, and the first pixels after a mid-line change
     # of mode, scroll, character base or video bank, where the chip's own delays apply
+    line0, lines = meta.get("line0", 16), F.get("lines", 312)
+    # a write's cycle is known only as well as the capture knew the beam (phase_cycles_uncertain):
+    # the window after a mid-line change widens by eight pixels for each cycle of doubt
+    near_px = 16 + 8 * (cap.get("phase_cycles_uncertain") or 0)
     dots, switches = set(), {}
     for line, cyc, a, v in F["writes"]:
-        if not 16 <= line < 16 + h:
+        y = (line - line0) % lines            # the picture's line (NTSC's last lines wrap past 0)
+        if not 0 <= y < h:
             continue
         if 0xD020 <= a <= 0xD02E:
-            dots.add((line - 16, 8 * (cyc - 13)))
+            dots.add((y, 8 * (cyc - 13)))
         elif a in (0xD011, 0xD016, 0xD018, 0xDD00, 0xDD02):
-            switches.setdefault(line - 16, []).append(8 * (cyc - 13))
+            switches.setdefault(y, []).append(8 * (cyc - 13))
     bad, grey, near, unseen, per_line, out = 0, 0, 0, 0, {}, []
     for y in range(h):
         for x in range(w):
@@ -357,9 +362,9 @@ def compare(frame_path, shot_path=None, quiet=False):
                 out.append(tuple(v // 3 for v in rgb)); continue
             if (y, x) in dots:
                 grey += 1; out.append((255, 255, 0)); continue
-            if any(0 <= x - s < 16 for s in switches.get(y, [])):
+            if any(0 <= x - s < near_px for s in switches.get(y, [])):
                 near += 1; out.append((255, 160, 0)); continue
-            bad += 1; per_line[y + 16] = per_line.get(y + 16, 0) + 1
+            bad += 1; per_line[(y + line0) % lines] = per_line.get((y + line0) % lines, 0) + 1
             out.append((255, 0, 64))
     diff = os.path.splitext(frame_path)[0] + "-diff.png"
     write_png(diff, w, h, out)
@@ -374,7 +379,7 @@ def compare(frame_path, shot_path=None, quiet=False):
                   f"{'line has' if n == 1 else f'{n} lines have'} none, and {'is' if n == 1 else 'are'} not compared")
         print(f"{w * h - unseen - bad - grey - near} of {w * h - unseen} pixels match the emulator's picture; {bad} differ"
               + (f"; {grey} are VICE's grey dot where a colour register changed mid-line" if grey else "")
-              + (f"; {near} are within 16 pixels of a mid-line change of mode, scroll or memory, "
+              + (f"; {near} are within {near_px} pixels of a mid-line change of mode, scroll or memory, "
                  f"which the drawing does not follow to the pixel" if near else "")
               + f" ({diff}: differences red, grey dots yellow, mode changes orange"
               + (", lines not compared blue)" if unseen else ")"))
@@ -389,7 +394,7 @@ def compare(frame_path, shot_path=None, quiet=False):
                 d = low + dy
                 off = sum(1 for y in range(max(0, -d), min(h, h - d)) for x in range(w)
                           if colour_of.get(rows[y + d][x], -1) != px[y * w + x] and (y, x) not in dots
-                          and not any(0 <= x - s < 16 for s in switches.get(y, [])))
+                          and not any(0 <= x - s < near_px for s in switches.get(y, [])))
                 if off == 0:
                     print(f"  the emulator's picture sits {abs(d)} line{'s' if abs(d) > 1 else ''} "
                           f"{'lower' if d > 0 else 'higher'} than the drawing, and there it matches at every "
@@ -453,9 +458,15 @@ BANDS = [
 ]
 
 
-def test_program():
+def test_bands(lines=312):
+    """The bands for a chip of this many lines. NTSC's 263 lines have no line 290: the band that
+    closes the borders again moves to five lines before the frame's end, still after line 251."""
+    return [b if b[0] < lines else (lines - 5, b[1]) for b in BANDS]
+
+
+def test_program(lines=312):
     src = ["        sei", "        lda #$35", "        sta $01"]
-    for n, (line, writes) in enumerate(BANDS):
+    for n, (line, writes) in enumerate(test_bands(lines)):
         src += [f"w{n}:     bit $d011", f"        {'bpl' if line > 255 else 'bmi'} w{n}",
                 "        lda $d012", f"        cmp #{line & 0xFF}", f"        bne w{n}"]
         for a, v in writes:
@@ -498,7 +509,10 @@ def test(keep=False):
     for a, data in test_memory():
         for o in range(0, len(data), 4096):
             poke(m.rpc, a + o, data[o:o + 4096])
-    poke(m.rpc, 0xC000, test_program())
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    lines = STANDARDS.get(std, STANDARDS["PAL"])[0]
+    print(f"the machine is {std}: {lines} lines")
+    poke(m.rpc, 0xC000, test_program(lines))
     m.j("vice_registers_set", {"register": "PC", "value": 0xC000})
     m._call(m.rpc, "vice_execution_run", {})
     time.sleep(0.5)
@@ -511,8 +525,8 @@ def test(keep=False):
           + ("to the cycle" if not c['phase_cycles_uncertain'] else f"to within {c['phase_cycles_uncertain'] + 1} cycles")
           + f", the writes {'account for' if c['writes_account_for_end_state'] else 'DO NOT account for'} "
           f"the registers at the end")
-    if len(f["writes"]) < len(BANDS):            # every band changes a register: fewer writes means
-        print(f"FAIL: {len(f['writes'])} writes captured, at least {len(BANDS)} expected: "   # the program
+    if len(f["writes"]) < len(test_bands(lines)):   # every band changes a register: fewer writes means
+        print(f"FAIL: {len(f['writes'])} writes captured, at least {len(test_bands(lines))} expected: "   # the program
               "the test program did not run (was the machine left paused?)")                 # never ran
         return False
     bad = compare(path)

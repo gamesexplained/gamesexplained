@@ -59,9 +59,11 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .gdo-msg{font-size:13px;color:var(--coral)}
 ul.gdo-list li{margin:0 0 .5em}
 .gdo-v{font-family:var(--fm);font-size:.9em}
+.gdo-face-row{display:grid;grid-template-columns:320fr 448fr}
+.gdo-face-row canvas{width:100%;height:auto}
 .gdo-shots{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .gdo-shots img{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000}
-@media (max-width:640px){.gdo-shots{grid-template-columns:1fr}}
+@media (max-width:640px){.gdo-shots,.gdo-face-row{grid-template-columns:1fr}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -116,7 +118,36 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">04 · The play screen</p>
+  <p class="fig">04 · Gribbly's face</p>
+  <h2 class="t">Gribbly's face moves in pieces, each on its own timer</h2>
+  <p class="lede">Gribbly is one sprite, and his face is not a series of pictures. The game redraws pieces of it inside the sprite while he plays: his antennae, his eyes, and his mouth, each at its own rate and for its own reason.</p>
+  <div class="plate">
+    <div class="gdo-face-row">
+      <canvas id="gdo-face" class="gdo-cv" width="320" height="224" role="img" aria-label="Gribbly's sprite, enlarged, with his face redrawn as the game does it"></canvas>
+      <canvas id="gdo-face-parts" class="gdo-cv" width="448" height="224" role="img" aria-label="Every piece the game can draw into Gribbly's face, with the one in place outlined"></canvas>
+    </div>
+    <canvas id="gdo-face-time" class="gdo-cv" width="768" height="100" role="img" aria-label="When each piece is redrawn during one cycle of 128 frames"></canvas>
+    <div class="gdo-ctl">
+      <button type="button" id="gdo-face-play" aria-pressed="true">Pause</button>
+      <button type="button" id="gdo-face-step">Step</button>
+      <button type="button" data-face="194" aria-pressed="false">Facing left</button>
+      <button type="button" data-face="193" aria-pressed="true">Facing you</button>
+      <button type="button" data-face="195" aria-pressed="false">Facing right</button>
+      <button type="button" data-pts="100">Save a Gribblet (+100)</button>
+      <button type="button" data-pts="-20">Put one down (−20)</button>
+      <button type="button" id="gdo-face-outline" aria-pressed="true">Outline the pieces</button>
+    </div>
+    <p class="gdo-out" id="gdo-face-out">&nbsp;</p>
+    <p class="cap">The shape on screen, enlarged, in level 0's colours, and every piece the game can draw into it, from its tables at <code>$7DF5</code>-<code>$7F33</code>, with the one in place outlined. Under them: one cycle of 128 frames, about two and a half seconds, and where the picture is in it. The face is drawn by a port of <code>animate_face</code> (<code>$6AAD</code>), run beside the game's own routine on the kit's 6502 simulator for 2,048 calls, every frame number eight times with random noise and points; the three shapes matched after every call. In the emulator, on level 0, the antennae changed only on frame 2 of every 8 and the eyes only on frames 2, 8, 10 and 16 of every 128.</p>
+  </div>
+  <p>The antennae change on every eighth frame, about six times a second. Rows 0-4 of all three of Gribbly's shapes get one of four poses, picked from the noise of the sound chip's third voice added to the raster line (<code>$6AC2</code>), so the antennae wave whichever way he faces. A pick can land on the pose already there, which makes the waving uneven.</p>
+  <p>The eyes run on a cycle of 128 frames, and only in the shape that faces you (<code>eyes</code> <code>$6B36</code>). On frame 2 of the cycle the lids come half down, on frame 8 they shut, on frame 10 they are half open again, and on frame 16 the eyes open wide, looking one of six ways. That look stays for the rest of the cycle, so Gribbly blinks every two and a half seconds and glances somewhere new as he opens his eyes. The look comes from the sound chip's noise as well. Its values 6 and 7 both give look 0, so look 0 comes up three times in eight.</p>
+  <p>The mouth is redrawn on every other frame, from the score (<code>$6AE5</code>). Gribbly smiles while points are waiting to be added and frowns while points are waiting to be taken off; otherwise his mouth is straight. Points reach the score at one a step, 25 a second (<code>score_tick</code> <code>$6FF0</code>), so the expression lasts as long as the points take to count: four seconds of smile for the 100 that saving a Gribblet earns, and under a second of frown for the 20 that putting one down away from the cave costs.</p>
+  <p>The joystick picks which of the three shapes is shown: left shows <code>$C2</code>, right <code>$C3</code>, and once he has stopped moving sideways, <code>$C1</code>, the shape that faces you (<code>gribbly_physics</code> <code>$68F5</code>). All three get the same antennae and mouth, so nothing jumps when he turns. The side shapes keep the eyes they were drawn with. The face goes on moving while the game is paused (<code>pause</code> <code>$72E5</code>) and between levels (<code>wait_frame</code> <code>$5BBD</code>).</p>
+</section>
+
+<section>
+  <p class="fig">05 · The play screen</p>
   <h2 class="t">An invalid video mode hides the switch to the panel</h2>
   <p class="lede">The play view and the status panel are two different character screens with two different fonts. Four raster interrupts switch between them on every frame.</p>
   <div class="plate">
@@ -140,7 +171,7 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">05 · Gribblets</p>
+  <p class="fig">06 · Gribblets</p>
   <h2 class="t">Gribblets are characters until they jump</h2>
   <p class="lede">A Gribblet sitting on a ledge is two tiles in the map, drawn by the character screen like the scenery. Only when it hops, falls from a Flyer, or rides inside one does it borrow a hardware sprite.</p>
   <div class="plate">
@@ -153,7 +184,7 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">06 · The creatures</p>
+  <p class="fig">07 · The creatures</p>
   <h2 class="t">From seed pod to Flyer</h2>
   <p class="lede">One creature grows into the next. Seed pods fall and land as Topsies, which flip Gribblets onto their backs. A Topsy can turn into a chrysalis, the chrysalis hatches a Stomper, and a Stomper that walks onto a flipped Gribblet absorbs it and flies off as a Flyer.</p>
   <div class="plate">
@@ -172,7 +203,7 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">07 · Psi energy</p>
+  <p class="fig">08 · Psi energy</p>
   <h2 class="t">Every level starts with exactly 40 psi</h2>
   <p class="lede">Gribbly's energy, psi, is a number from 0 to 64. Before each level the transfer stage moves energy one unit at a time between psi and the bank until psi is 40 (<code>transfer_stage</code> <code>$5FC1</code>).</p>
   <table class="gdo-tbl">
@@ -188,7 +219,7 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">08 · Progress</p>
+  <p class="fig">09 · Progress</p>
   <h2 class="t">The better you play, the further ahead the next level can be</h2>
   <p class="lede">A level is over when each of its eight Gribblets is saved or lost. Save fewer than six and the same level is built again. Save six or more and the next level is chosen by <code>level_result</code> (<code>$64F3</code>).</p>
   <div class="plate">
@@ -207,7 +238,7 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">09 · Seon and the web</p>
+  <p class="fig">10 · Seon and the web</p>
   <h2 class="t">Seon stays still for minutes unless you wake him</h2>
   <p class="lede">Seon, the guardian, is a creature like the others but waits before he moves. His timer starts at (28 - level) x 2 and counts down once every 256 frames, so on level 0 he waits nearly five minutes.</p>
   <table class="gdo-tbl" id="gdo-seon"></table>
@@ -217,7 +248,7 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">10 · A leftover</p>
+  <p class="fig">11 · A leftover</p>
   <h2 class="t">Secret: a memory editor that nothing calls</h2>
   <p class="lede">The game's code begins with a small memory editor, <code>$4000</code>-<code>$41F7</code>. <code>start_game</code> sets it up, but no instruction anywhere in the program calls or jumps to the routine that runs it, <code>monitor_step</code> at <code>$4011</code>. Its line in the status panel is headed ABMON, most likely the author's monitor: Andrew Braybrook's own development tool, left in the shipped game.</p>
   <div class="plate">
@@ -228,7 +259,7 @@ ul.gdo-list li{margin:0 0 .5em}
 </section>
 
 <section>
-  <p class="fig">11 · Quirks</p>
+  <p class="fig">12 · Quirks</p>
   <h2 class="t">Things the manual does not mention</h2>
   <ul class="gdo-list">
     <li>In the pause, f7 freezes the screen and prints "Cheese" in the message field until f8 (<code>freeze_keys</code> <code>$73C9</code>).</li>
@@ -418,6 +449,38 @@ ul.gdo-list li{margin:0 0 .5em}
   }
 // end of createDriver
 
+  // animate_face ($6AAD) and eyes ($6B36), ported: draws Gribbly's face into his three sprite shapes
+  // in m (the 64K of memory: $C1 front at $3040, $C2 left at $3080, $C3 right at $30C0). f is the
+  // frame counter $2E, sid the byte the call reads from the SID's voice 3 oscillator ($D41B) and
+  // raster the line it reads from $D012; add and sub are the points waiting to be added ($26) and
+  // taken off ($30). Returns which parts it drew, and the picks it made.
+  function animateFace(m, f, sid, raster, add, sub) {
+    const did = { eyes: null, look: null, head: null, mouth: null };
+    const step = f & 0x7E;
+    if (!step) return did;                               // frames 0, 1, 128 and 129: nothing
+    if (step < 0x11) {                                   // steps 2-$10 of 128 frames: the front eyes
+      let src = 0x7EEB;                                  // open
+      if (step === 0x10) {                               // a look, one of six; 6 and 7 count as 0
+        let n = sid & 7; if (n >= 6) n = 0;
+        src = 0x7EFD + 9 * n; did.look = n;
+      } else if (step === 8) src = 0x7EF4;               // the blink
+      did.eyes = src === 0x7EEB ? 'open' : src === 0x7EF4 ? 'blink' : 'look';
+      for (let i = 0; i < 9; i++) m[0x304F + i] = m[src + i];
+    }
+    if ((f & 7) === 2) {                                 // rows 0-4 of all three: one of four heads
+      const k = (sid + raster + 1) & 0x30;               // ADC after CMP #$02 left the carry set
+      for (let i = 0; i < 15; i++) {
+        m[0x3040 + i] = m[0x7E2B + k + i]; m[0x3080 + i] = m[0x7E6B + k + i]; m[0x30C0 + i] = m[0x7EAB + k + i];
+      }
+      did.head = k >> 4;
+    }
+    const [fr, lf, rt] = add ? [0x7E07, 0x7E0D, 0x7E13] : sub ? [0x7E19, 0x7E1F, 0x7E25] : [0x7DF5, 0x7DFB, 0x7E01];
+    for (let i = 0; i < 6; i++) { m[0x3064 + i] = m[fr + i]; m[0x30A4 + i] = m[lf + i]; m[0x30E4 + i] = m[rt + i]; }
+    did.mouth = add ? 'smile' : sub ? 'frown' : 'plain';
+    return did;
+  }
+// end of animateFace
+
   // the frame, with the interrupt lines and the tile grid laid over it
   const fcv = document.getElementById('gdo-frame'), ov = { lines: true, grid: false };
   let base = null;
@@ -461,7 +524,7 @@ ul.gdo-list li{margin:0 0 .5em}
   }));
 
   if (!window.C64) {
-    ['gdo-grib', 'gdo-life', 'gdo-mon'].forEach(id => { const c = document.getElementById(id); if (c) c.insertAdjacentHTML('afterend', '<p class="gdo-msg">This drawing needs the site’s script and the listing, which load when the page is served with the rest of the site.</p>'); });
+    ['gdo-face', 'gdo-grib', 'gdo-life', 'gdo-mon'].forEach(id => { const c = document.getElementById(id); if (c) c.insertAdjacentHTML('afterend', '<p class="gdo-msg">This drawing needs the site’s script and the listing, which load when the page is served with the rest of the site.</p>'); });
   }
 
   // the next level, from the port of level_result
@@ -529,6 +592,125 @@ ul.gdo-list li{margin:0 0 .5em}
       ctx.fillStyle = '#fff'; ctx.font = '12px "IBM Plex Mono", monospace';
       ctx.fillText('tiles $38-$41 on a ledge ($2E)', 20, 120); ctx.fillText('sprites $CC-$D3', 360, 196);
     }
+    // Gribbly's face, drawn by the port of animate_face into a copy of memory, a frame at a time
+    {
+      const cv = document.getElementById('gdo-face'), ctx = C64.canvas(cv, 320, 224);
+      const pv = document.getElementById('gdo-face-parts'), pctx = C64.canvas(pv, 448, 224);
+      const tv = document.getElementById('gdo-face-time'), tctx = C64.canvas(tv, 768, 100);
+      const fm = Uint8Array.from(ram);
+      const GREEN = PALC[5], MC1 = PALC[1], MC2 = PALC[0], SKY = PALC[6];   // $D027 $F5; $D025/$D026 $F1/$F0 ($455F)
+      const HEAD = { 0xC1: 0x7E2B, 0xC2: 0x7E6B, 0xC3: 0x7EAB };
+      const MOUTH = { 0xC1: [0x7DF5, 0x7E07, 0x7E19], 0xC2: [0x7DFB, 0x7E0D, 0x7E1F], 0xC3: [0x7E01, 0x7E13, 0x7E25] };
+      const EYES = [0x7EEB, 0x7EF4, 0x7EFD, 0x7F06, 0x7F0F, 0x7F18, 0x7F21, 0x7F2A];
+      const EYENAME = ['half shut', 'shut', 'look 0', 'look 1', 'look 2', 'look 3', 'look 4', 'look 5'];
+      const same = (a, b, n) => { for (let i = 0; i < n; i++) if (fm[a + i] !== fm[b + i]) return false; return true; };
+      const st = { f: 120, shape: 0xC1, add: 0, sub: 0, parts: true, last: null,
+                   head: [0, 1, 2, 3].find(k => same(0x3040, 0x7E2B + 16 * k, 15)),
+                   eye: EYES.findIndex(a => same(0x304F, a, 9)) };
+      const rnd = () => Math.floor(Math.random() * 256);
+      // one frame of main_loop: score_tick ($6FF0) on odd frames, animate_face on even ones
+      function frame() {
+        st.f++;
+        if (st.f & 1) {
+          while (st.add && st.sub) { st.add--; st.sub--; }
+          if (st.add) st.add--; else if (st.sub) st.sub--;
+          return;
+        }
+        const did = animateFace(fm, st.f & 0xFF, rnd(), rnd(), st.add, st.sub);
+        if (did.head !== null) st.head = did.head;
+        if (did.eyes) st.eye = did.eyes === 'open' ? 0 : did.eyes === 'blink' ? 1 : 2 + did.look;
+        if (did.mouth) st.last = did;
+      }
+      function piece(src, n, x, y, s, on) {
+        const d = new Uint8Array(63); d.set(fm.subarray(src, src + 3 * n));
+        pctx.fillStyle = SKY; pctx.fillRect(x, y, 24 * s, n * s);
+        C64.drawSpriteMC(pctx, d, x, y, s, GREEN, MC1, MC2);
+        if (on) { pctx.strokeStyle = PALC[7]; pctx.lineWidth = 2; pctx.strokeRect(x - 3, y - 3, 24 * s + 6, n * s + 6); }
+      }
+      function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 320, 224);
+        pctx.fillStyle = '#000'; pctx.fillRect(0, 0, 448, 224);
+        pctx.font = '11px "IBM Plex Mono", monospace';
+        ctx.fillStyle = SKY; ctx.fillRect(16, 12, 232, 200);
+        const a = st.shape * 64, front = st.shape === 0xC1;
+        C64.drawSpriteMC(ctx, fm.subarray(a, a + 63), 36, 28, 8, GREEN, MC1, MC2);
+        ctx.font = '11px "IBM Plex Mono", monospace'; ctx.lineWidth = 2;
+        if (st.parts) {
+          const bands = [[0, 5, 'antennae'], [5, 3, 'eyes'], [12, 2, 'mouth']].filter(b => front || b[2] !== 'eyes');
+          for (const [r0, n, name] of bands) {
+            ctx.strokeStyle = PALC[7]; ctx.strokeRect(32, 28 + r0 * 8, 200, n * 8);
+            ctx.beginPath(); ctx.moveTo(232, 28 + (r0 + n / 2) * 8); ctx.lineTo(258, 28 + (r0 + n / 2) * 8); ctx.stroke();
+            ctx.fillStyle = PALC[7]; ctx.fillText(name, 262, 32 + (r0 + n / 2) * 8);
+          }
+        }
+        const X = 16, S = 4;
+        pctx.fillStyle = '#fff';
+        pctx.fillText('antennae: every 8th frame, one of four', X, 22);
+        for (let k = 0; k < 4; k++) piece(HEAD[st.shape] + 16 * k, 5, X + 104 * k, 32, S, k === st.head);
+        pctx.globalAlpha = front ? 1 : 0.35;
+        pctx.fillStyle = '#fff'; pctx.fillText('eyes: once in 128 frames, facing you only', X, 72);
+        EYES.forEach((src, k) => {
+          const x = X + 104 * (k % 4), y = 82 + 34 * Math.floor(k / 4);
+          piece(src, 3, x, y, S, front && k === st.eye);
+          pctx.fillStyle = '#ccc'; pctx.fillText(EYENAME[k], x, y + 24);
+        });
+        pctx.globalAlpha = 1;
+        pctx.fillStyle = '#fff'; pctx.fillText('mouth: every other frame, from the score', X, 166);
+        const m = st.last ? ['plain', 'smile', 'frown'].indexOf(st.last.mouth) : 0;
+        MOUTH[st.shape].forEach((src, k) => {
+          piece(src, 2, X + 104 * k, 176, S, k === m);
+          pctx.fillStyle = '#ccc'; pctx.fillText(['straight', 'smile', 'frown'][k], X + 104 * k, 198);
+        });
+        // the cycle of 128 frames: eyes, antennae, mouth, and where the picture is
+        const X0 = 120, W = 5;
+        tctx.fillStyle = '#000'; tctx.fillRect(0, 0, 768, 100);
+        tctx.font = '11px "IBM Plex Mono", monospace';
+        tctx.fillStyle = '#fff'; tctx.fillText('eyes', 8, 21); tctx.fillText('antennae', 8, 49); tctx.fillText('mouth', 8, 77);
+        const seg = (p, q, c) => { tctx.fillStyle = c; tctx.fillRect(X0 + p * W, 8, (q - p) * W - 1, 18); };
+        seg(0, 2, '#e9e9e9'); seg(2, 8, '#8a8a8a'); seg(8, 10, '#3a3a3a'); seg(10, 16, '#8a8a8a'); seg(16, 128, '#e9e9e9');
+        tctx.fillStyle = '#000'; tctx.fillText('wide open, looking one of six ways', X0 + 20 * W, 21);
+        tctx.fillStyle = PALC[13]; for (let k = 2; k < 128; k += 8) tctx.fillRect(X0 + k * W, 36, W - 1, 18);
+        tctx.fillStyle = PALC[7]; for (let k = 2; k < 128; k += 2) tctx.fillRect(X0 + k * W, 64, W - 1, 18);
+        tctx.fillStyle = '#999'; for (const k of [0, 16, 32, 64, 96]) tctx.fillText(String(k), X0 + k * W, 96);
+        const p = st.f & 0x7F; tctx.strokeStyle = PALC[10]; tctx.lineWidth = 2; tctx.strokeRect(X0 + p * W - 1, 4, W + 1, 82);
+        const d = st.last;
+        let msg = `Frame ${p} of the cycle.`;
+        if (d && d.eyes) msg += d.eyes === 'look' ? ` The eyes open wide: look ${d.look}.` : d.eyes === 'blink' ? ' The eyes shut.' : ' The lids are half shut.';
+        if (d && d.head !== null) msg += ` Antennae: pose ${d.head}.`;
+        msg += ` Points waiting: ${st.add} to add, ${st.sub} to take off.`;
+        document.getElementById('gdo-face-out').textContent = msg;
+      }
+      let t0 = performance.now(), f0 = st.f, playing = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function tick(now) {
+        if (!playing) return;
+        const target = f0 + Math.floor((now - t0) * 50 / 1000);          // 50 frames a second on PAL
+        let n = 0;
+        while (st.f < target && n++ < 256) frame();
+        if (n) draw();
+        requestAnimationFrame(tick);
+      }
+      const play = document.getElementById('gdo-face-play');
+      const setPlay = on => {
+        playing = on; play.setAttribute('aria-pressed', String(on)); play.textContent = on ? 'Pause' : 'Play';
+        if (on) { t0 = performance.now(); f0 = st.f; requestAnimationFrame(tick); }
+      };
+      play.addEventListener('click', () => setPlay(!playing));
+      document.getElementById('gdo-face-step').addEventListener('click', () => {
+        setPlay(false); frame(); if (st.f & 1) frame(); draw();
+      });
+      document.querySelectorAll('[data-face]').forEach(b => b.addEventListener('click', () => {
+        st.shape = +b.dataset.face;
+        document.querySelectorAll('[data-face]').forEach(c => c.setAttribute('aria-pressed', String(c === b)));
+        draw();
+      }));
+      document.querySelectorAll('[data-pts]').forEach(b => b.addEventListener('click', () => {
+        const v = +b.dataset.pts; if (v > 0) st.add += v; else st.sub -= v; draw();
+      }));
+      const pb = document.getElementById('gdo-face-outline');
+      pb.addEventListener('click', () => { st.parts = !st.parts; pb.setAttribute('aria-pressed', String(st.parts)); draw(); });
+      draw();
+      setPlay(playing);
+    }
     // the life cycle, each creature stepping its frames as its mover does
     {
       const cv = document.getElementById('gdo-life'), ctx = C64.canvas(cv, 768, 150);
@@ -560,7 +742,7 @@ ul.gdo-list li{margin:0 0 .5em}
         LIFE.forEach(([name, c, multi, ex, , frame], k) => {
           const n = frame(t), d = ram.subarray(n * 64, n * 64 + 63);
           const dx = name === 'seed pod' && n <= 0xD6 ? 16 : 0;          // $5CDB: 8 pixels right on $D4, back on $D7
-          if (multi) C64.drawSpriteMC(ctx, d, at[k] + dx, 20, 2, PALC[c], PALC[3], PALC[1], ex, 1);
+          if (multi) C64.drawSpriteMC(ctx, d, at[k] + dx, 20, 2, PALC[c], PALC[1], PALC[0], ex, 1);   // $D025/$D026 = white, black ($455F)
           else C64.drawSprite(ctx, d, at[k] + dx, 20, 2, PALC[c], ex, 1);
           ctx.fillStyle = '#fff'; ctx.fillText(name, at[k], 110); ctx.fillText(hex(n), at[k], 126);
         });

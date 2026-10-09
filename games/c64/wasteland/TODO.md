@@ -12,10 +12,10 @@ samples checked (`facts.md`, "Comment sample"), and the copy
 
 ## For Gold
 
-A human pass over every section of the How it works page, the Levels
-page and the facts, rewriting, cutting and adding; `copy` then records
-what the pass did, and `steward` names whoever starts it (`silver-claimed`
-while it runs).
+A human pass over every section of the seven authored tabs, from the
+Overview to Disks and saves, and of the facts, rewriting, cutting and
+adding; `copy` then records what the pass did, and `steward` names
+whoever starts it (`silver-claimed` while it runs).
 
 ## For Platinum
 

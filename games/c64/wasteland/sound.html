@@ -1,0 +1,699 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/wasteland-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The game itself has three sounds on one voice of the SID, and one of them is never heard. The title and the radio bring sounds of their own.</p>
+</header>
+<main class="wrap">
+<section data-part="engine" id="wl-sound">
+  <p class="fig">01 · Sound</p>
+  <h2 class="t">Sound: three effects, and one of them never sounds</h2>
+  <p class="lede">Every sound the game itself makes comes from a table of three records, played on one voice of the SID: an explosion, a click, and a third that is never heard. The title and the radio program bring sounds of their own.</p>
+  <div class="plate">
+    <div id="wl-snd"><p class="wl-snd-msg">Loading the sounds…</p></div>
+    <p class="cap">Every sound in the game, played by a port of the routine that makes it through the site's model of the SID, with the bytes each one is made from. The slider sets the Geiger counter's distance to the radiation. Each port keeps the routine's timing to the cycle: a test ran the game's own code on the kit's 6502 simulator beside the port, 1,789 runs and 172,557 SID writes, and every write came in the same frame, at the same cycle, with the same value. The player changes the SID's registers once a frame (20 ms), and three sounds lose something to that. The whistle's 243 steps are heard as four. The fanfare's 7 ms gaps between notes last 20 ms or vanish. Close to radiation, two clicks in one frame play as one. <b>The title's explosions are a low rumble</b>, nearly a third of it below 100 Hz, which laptop and phone speakers barely play: listen with headphones. The pitches are a PAL machine's.</p>
+  </div>
+  <p>The engine has one short routine for sound (<code>$C993</code>), and it plays on the first of the SID's three voices. A sound is an 11-byte record in a table of three (<code>$C9BC</code>): the voice's frequency, pulse width and envelope, the three filter registers, and a control byte. The routine turns the voice's gate off, sets the volume to 15, and writes the record: bytes 0 to 6 to the voice's registers from the top down, bytes 7 to 9 to the filter's, and the control byte last. The control byte picks the waveform, and its bit 0, the gate, starts the sound.</p>
+  <p>Record 0 is an explosion: noise that dies away. It plays while the screen shakes for half a second (<code>$0746</code>), which happens when the party uses one of seven items, from the grenade to the RPG-7, at events in twelve of the maps, and when Base Cochise is destroyed (<span data-part="module-4"><code>$CA4C</code></span>).</p>
+  <p>Record 22 is a short click of noise. Every step the party takes clicks with it (<span data-part="game"><code>$AE26</code></span>), the Geiger counter clicks with it, and so does the title as it types its story (<span data-part="startup"><code>$8427</code></span>).</p>
+  <p>Record 11 never makes a sound. Its control byte, $A4, asks for noise and sawtooth with the gate bit clear, and a voice whose gate stays shut stays silent. The Ranger Center plays record 11 when it refuses a choice, then waits 1.2 seconds (<span data-part="ranger"><code>$8188</code></span>), and the game does the same after one of its messages (<span data-part="game"><code>$92BC</code></span>). Modules 1 and 2 call it too. The what-if button plays the record with the gate bit set. Noise mixed with another waveform is something the model only approximates, so the result is a guess.</p>
+  <p>The Geiger counter clicks from the game's main loop (<span data-part="game"><code>$7E63</code></span>). Every fifth pass of the loop counts a number down. At 0 the counter clicks, and the next pass draws a new number from 1 to the distance plus 1 (<code>$24C4</code>). The distance is to the nearest radiation square in view, about 10 for each square, from a table of 50 (<code>$0921</code>). The loop goes round about a thousand times a second, 20 times a frame by a count in the emulator, so the clicks come at random, faster as the radiation gets nearer. With none in view, or nobody carrying a Geiger counter, the distance is $FF and nothing clicks. The bar beside the slider is the game's gauge (<code>$0AA1</code>): 18 segments, one fewer lit for every 8 of the distance.</p>
+  <table class="wl-snd-rates">
+    <thead><tr><th>Distance</th><th>Where the radiation is</th><th>Clicks a second</th></tr></thead>
+    <tbody>
+      <tr><td>2</td><td>on the party's square</td><td>72</td></tr>
+      <tr><td>10</td><td>one square away</td><td>32</td></tr>
+      <tr><td>14</td><td>one square diagonally</td><td>24</td></tr>
+      <tr><td>50</td><td>five squares away</td><td>8.0</td></tr>
+      <tr><td>98</td><td>the corner of the view</td><td>3.9</td></tr>
+    </tbody>
+  </table>
+  <p>The title has sounds of its own, from a routine in the start-up program that can use any voice (<span data-part="startup"><code>$7E03</code></span>). The routine adds the voice's offset, 0 for voice 1 and 7 for voice 2, to every register it writes but the volume, the filter's included, as if each voice had a filter of its own. The SID has one, at <span data-part=""><code>$D415</code></span> to <span data-part=""><code>$D417</code></span>. For voice 2 the three filter bytes land at <span data-part=""><code>$D41C</code></span> to <span data-part=""><code>$D41E</code></span>, past the volume register, the last of the chip's sound registers. Nothing is lost. They are the same three bytes that voice 1's record has just written to the real filter registers, and those send no voice through the filter.</p>
+  <p>The siren comes as the title's story turns to war (<span data-part="startup"><code>$7E77</code></span>). Two sawtooth voices climb slowly together, hold, fall, and fade, eleven seconds in all. Then the gauge on the right fills, two whistles fall from 3,806 Hz to 168 Hz in 75 ms each (<span data-part="startup"><code>$7EFA</code></span>), and 14 explosions follow at the intervals of a table (<span data-part="startup"><code>$8133</code></span>). The title's explosion is not the game's record 0. The title plays noise at so low a frequency that the noise changes only about 750 times a second, a rumble rather than a crack (<span data-part="startup"><code>$7F13</code></span>).</p>
+  <p>The radio program plays a six-note fanfare before the Cochise reward and before each promotion (<span data-part="radio"><code>$7E06</code></span>). Its frequencies are tuned to the American machine's clock, on which the notes are C5, C5, C5, E5, F5, and G5. A PAL machine plays every note 65 cents flat.</p>
+  <p>The Ranger Center's program loads with SID code in it (<span data-part="ranger"><code>$8621</code></span> to <span data-part="ranger"><code>$8694</code></span>), but the code is the fanfare's. The load reads past the end of the Ranger Center's program into the radio program's file, which follows it on the disk, and nothing in the Ranger Center calls it. The Ranger Center's only sound is the silent record 11.</p>
+  <p>Players remembered these sounds for years. The <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#sound">Wasteland Ranger HQ-Grid's Underground</a> gathered what C64 players recalled on Snake Squeezins: beeps, the <q>air raid siren during the beginning sequence</q>, a Geiger counter <q>more realistic sounding</q> than the other versions', explosions that <q>sound like explosions</q>, and the promotion jingle. Four of them are on this page: the title's siren, the Geiger counter's clicks, the explosions of record 0 and of the title, and the radio's fanfare. Which sound the beeps were is not known.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+/* sound/sound.js */
+/* Wasteland's sounds through the site's model of the SID (../../lib/sid.js). Defines WLSound.
+
+   WLSound.createDriver(D) is the driver sid.js runs once a frame (its header is the contract). It
+   refers to nothing outside itself, since sid.js runs its source text in an AudioWorklet. D holds
+   bytes read from the game's listings (WLSound.load): the engine's sound_table ($C9BC),
+   distance_table ($0921) and the seed of random_byte ($24ED), the start-up's sound_records ($7E4B)
+   and explosion_delays ($8133), and the radio's note tables ($7E34-$7E45) and voice record ($7E98).
+
+   Each sound is a port of the routine that makes it, timed instruction by instruction: a clock
+   counts the routine's cycles and takes the raster interrupt (182 cycles with no key down) at every
+   frame boundary, so each SID write lands in the frame the game makes it in. The busy-wait loops
+   (delay_a, delay_x_times, the keyboard polls) are ported as their cycle counts. A test
+   (test_sound.js, beside this file) runs the game's own code in kit/c64/cpu6502.js with the same
+   interrupt and compares every write, its frame and its cycle. */
+(function () {
+  'use strict';
+
+  function createDriver(D) {
+    'use strict';
+    const FRAME = 19656;      // one PAL frame: 312 lines of 63 cycles
+    const IRQ = 182;          // the raster interrupt, no key down: 7 to enter, then engine $04F9 JMP,
+                              // irq_handler $2947-$2966 and scan_keyboard's no-key path $2967-$297B
+    const GEIGER = 256;       // tune GEIGER + d: the Geiger counter at distance d ($9F)
+    const VIC = 1075;         // cycles a frame the video chip takes from the processor, for the Geiger
+                              // counter: with it the port makes 20.02 passes of the main loop a frame
+                              // with no radiation in view, as the machine did when counted live
+                              // (game $7E63, play-map.vsf: 1,001 or 1,002 passes every 50 frames;
+                              // 21.19 without it)
+
+    // ---- the clock: cycles since the first frame began; frames[f] = [register, value, cycle, code]
+    // vic: cycles a frame the video chip takes from the processor, added with the interrupt's. The
+    // ports run with none, as the 6502 simulator does; the Geiger counter's player passes VIC.
+    function clock(phase, vic) {
+      const c = { t: phase || 0, B: FRAME, f: 0, frames: [[]], code: '' };
+      // The interrupt is taken at the first instruction boundary at or past the frame's end.
+      c.sync = () => { while (c.t >= c.B) { c.t += IRQ + (vic || 0); c.B += FRAME; c.f++; c.frames.push([]); } };
+      c.run = (n) => { c.t += n; };                                   // instructions that touch no chip
+      c.store = (n, r, v) => { c.sync(); c.t += n; c.frames[c.f].push([r, v & 255, c.t, c.code]); };
+      c.read = (n) => { c.sync(); c.t += n; return c.t; };             // a chip read, at its last cycle
+      return c;
+    }
+
+    // delay_a $242B (engine): A x (A + 1) / 2 turns of SBC/BNE; cycles from CMP #$00 to its RTS
+    const delayA = (a) => a ? 5 * a * (a + 1) / 2 + 11 * a + 11 : 11;
+    // delay_x_times $2422 (engine): X rounds of LDA #$FF, JSR delay_a, DEX, BNE (X = 0: 256), RTS
+    const delayX = (x) => { const n = x || 256; return n * (13 + delayA(255)) - 1 + 6; };
+    const rec = (a, x) => a.slice(x, x + 11);
+
+    // ---- engine $C993 play_sound: one 11-byte record of sound_table on voice 1. Gate off, volume 15,
+    // bytes 0-6 to $D406 down to $D400, bytes 7-9 to $D417 down to $D415, byte 10 to $D404 last.
+    function playSound(c, r) {
+      c.code = '$C993 play_sound';
+      c.run(2); c.store(4, 4, 0);                   // $C993 LDA #$00, STA $D404
+      c.run(2); c.store(4, 24, 0x0F);               // $C998 LDA #$0F, STA $D418
+      c.run(2);                                     // $C99D LDY #$06
+      for (let y = 6, i = 0; y >= 0; y--, i++) {    // $C99F LDA sound_table,X  STA $D400,Y  INX DEY BPL
+        c.run(4); c.store(5, y, r[i]); c.run(y ? 7 : 6);
+      }
+      c.run(2);                                     // $C9A9 LDY #$02
+      for (let y = 2, i = 7; y >= 0; y--, i++) {    // $C9AB LDA sound_table,X  STA $D415,Y  INX DEY BPL
+        c.run(4); c.store(5, 21 + y, r[i]); c.run(y ? 7 : 6);
+      }
+      c.run(4); c.store(4, 4, r[10]);               // $C9B5 LDA sound_table,X  STA $D404
+      c.run(6);                                     // $C9BB RTS
+    }
+
+    // engine $0746 screen_shake: sound 0, then 12 jolts of delay_a($80) and two random fine scrolls
+    // ($077A, 57 cycles each, writing the VIC only), then voice 1's gate and wave off.
+    function screenShake(c) {
+      c.run(2 + 6);                                 // $0746 LDX #$00, JSR play_sound
+      playSound(c, rec(D.engine.table, 0));
+      c.code = '$0746 screen_shake';
+      c.run(4 + 3 + 4 + 3 + 2);                     // $074B LDA $D011 PHA LDA $D016 PHA LDX #$0C
+      for (let k = 12; k > 0; k--) {
+        c.run(4 + 2 + 6 + delayA(0x80));            // $0755 STX, LDA #$80, JSR delay_a
+        c.run(2 + 6 + 57 + 2 + 6 + 57);             // $075D LDX #0 JSR $077A, LDX #5 JSR $077A
+        c.run(2 + 2 + (k > 1 ? 3 : 2));             // $0767 LDX #n DEX BNE
+      }
+      c.run(4 + 4 + 4 + 4 + 2);                     // $076C PLA STA $D016 PLA STA $D011 LDA #$00
+      c.store(4, 4, 0);                             // $0776 STA $D404
+      c.run(6);                                     // RTS
+    }
+
+    // ranger $8188 complain_pause (and game $92BC): play_sound_1 ($0232 -> $241C: record 11), then
+    // seven rounds of delay_x_times. gate: the what-if, record 11 with bit 0 of its last byte set.
+    function complain(c, gate) {
+      const r = rec(D.engine.table, 11);
+      if (gate) r[10] |= 1;
+      c.run(6 + 3 + 2 + 3);                         // JSR $0232, JMP $241C, LDX #$0B, JMP play_sound
+      playSound(c, r);
+      c.code = '$8188 complain_pause';
+      c.run(2 + 6 + 3 + delayX(7));                 // $818B LDX #$07, JSR $0237, JMP delay_x_times
+    }
+    // The what-if ends where the pause does: the page, not the game, then turns the gate off.
+    function whatIf(c) {
+      complain(c, true);
+      c.code = 'the page: gate off';
+      c.store(4, 4, D.engine.table[21] & 0xFE);
+    }
+
+    // ---- start-up $7E03 start_sound: record X of sound_records on the voice at $D400 + Y. Gate off,
+    // frequency (bytes 8, 9), volume $D418 (byte 10), bytes 5-7 to $D415+Y, pulse (3, 4), attack/decay
+    // (0), sustain/release (1), control (2) last. With Y = 7, bytes 5-7 land at $D41C-$D41E.
+    function startSound(c, x, y) {
+      const b = (i) => D.startup.records[x + i];
+      c.code = '$7E03 start_sound';
+      c.run(2); c.store(5, 4 + y, 0);               // LDA #$00, STA $D404,Y
+      c.run(4); c.store(5, 0 + y, b(8));            // LDA $7E53,X  STA $D400,Y
+      c.run(4); c.store(5, 1 + y, b(9));
+      c.run(4); c.store(4, 24, b(10));              // STA $D418
+      c.run(4); c.store(5, 21 + y, b(5));
+      c.run(4); c.store(5, 22 + y, b(6));
+      c.run(4); c.store(5, 23 + y, b(7));
+      c.run(4); c.store(5, 2 + y, b(3));
+      c.run(4); c.store(5, 3 + y, b(4));
+      c.run(4); c.store(5, 5 + y, b(0));
+      c.run(4); c.store(5, 6 + y, b(1));
+      c.run(4); c.store(5, 4 + y, b(2));
+      c.run(6);                                     // $7E4A RTS
+    }
+    // $7F22 silence_voice_1 (LDY #$00 inside the BIT at $7F21) and $7F1F silence_voice_2
+    function silence(c, y) {
+      c.code = y ? '$7F1F silence_voice_2' : '$7F22 silence_voice_1';
+      c.run(y ? 2 + 4 + 2 : 2 + 2); c.store(5, 4 + y, 0); c.run(6);   // LDY #, (BIT $00A0), LDA #0, STA $D404,Y, RTS
+    }
+    // engine $2514 read_key with no key down, $A8 = 0, through JMP $022A: random_byte, speed_keys,
+    // delay_a(4), animate_picture_tick ($05C5), LDA $18, RTS. The tick, picture animation off: 13
+    // cycles (its BEQ crosses a page). On (the start-up sets $C5 = 1, so no reload): the prescaler
+    // $B1/$B2, and every 512th call the animation's channels, which the port leaves out: it sets $B2
+    // back to 2 and returns. test_sound.js puts the same stand-in into the game's code at $05E2.
+    function readKey(c, s) {
+      c.run(6 + 26 + 6 + 3 + 3 + 6 + 3 + 3 + 2 + 3 + 2 + 6 + delayA(4) + 6);
+      if (!s || !s.anim) c.run(3 + 4 + 6);
+      else {
+        c.run(3 + 2 + 3 + 3 + 5); s.b1 = (s.b1 - 1) & 255;            // LDA $AC BEQ LDA $C5 BNE DEC $B1
+        if (s.b1) c.run(4 + 6);                                         // BNE (page), RTS
+        else {
+          c.run(2 + 5); s.b2 = (s.b2 - 1) & 255;                        // DEC $B2
+          if (s.b2) c.run(4 + 6);
+          else { c.run(2 + 2 + 3 + 6); s.b2 = 2; s.runs = (s.runs || 0) + 1; }   // LDA #$02 STA $B2, (channels), RTS
+        }
+      }
+      c.run(3 + 6);                                 // $2537 LDA $18, RTS
+    }
+    // start-up $8164 poll_menu with X polls (0 = 256): STX, JSR $022A read_key, JSR $02DE menu_key
+    // (no key: LDA $18, BEQ across a page, RTS), LDX #n, DEX, BNE ... RTS
+    function pollMenu(c, x, s) {
+      for (let n = x || 256; n > 0; n--) {
+        c.run(4 + 6 + 3); readKey(c, s);
+        c.run(6 + 3 + 3 + 4 + 6 + 2 + 2 + (n > 1 ? 3 : 2));
+      }
+      c.run(6);
+    }
+    // start-up $7EE2 set_siren_pitch: voice 1 = X/Y, voice 2 = X/Y + $0556, then delay_a($19)
+    function sirenPitch(c, lo, hi) {
+      c.code = '$7EE2 set_siren_pitch';
+      c.store(4, 0, lo); c.store(4, 1, hi);         // STX $D400, STY $D401
+      c.run(2 + 2 + 2); const s = lo + 0x56;        // TXA CLC ADC #$56
+      c.store(4, 7, s);                             // STA $D407
+      c.run(2 + 2); c.store(4, 8, hi + 5 + (s >> 8));   // TYA ADC #$05, STA $D408
+      c.run(2 + 3 + 3 + delayA(0x19));              // LDA #$19, JMP $04F0, JMP delay_a (its RTS returns)
+    }
+    // start-up $7E77 siren_sound: records 11 (voice 1) and 33 (voice 2), the pitch X/Y up one step at a
+    // time from record 11's frequency with a poll each, until the count reaches record 33's (the last
+    // pitch set is one below it), delay_x_times(8), down one step
+    // at a time until the count reaches $1838 (DEX BNE DEY: the high byte drops when the low byte
+    // reaches 0), then $D418 from record 11's volume down to 0 with delay_a($C0), and both voices off.
+    function siren(c) {
+      const R = D.startup.records;
+      c.run(2 + 2 + 6); startSound(c, 0x0B, 0);
+      c.run(2 + 2 + 6); startSound(c, 0x21, 7);
+      let lo = R[0x0B + 8], hi = R[0x0B + 9];
+      c.run(4 + 4);                                 // $7E85 LDX $7E5E, LDY $7E5F
+      for (;;) {                                    // $7E8B
+        c.run(6); sirenPitch(c, lo, hi);
+        lo = (lo + 1) & 255;                        // INX BNE INY
+        if (lo) c.run(2 + 3); else { c.run(2 + 2 + 2); hi = (hi + 1) & 255; }
+        c.run(2 + 3 + 2 + 3 + 2 + 6); pollMenu(c, 1); c.run(4 + 2 + 4 + 2);   // TXA PHA TYA PHA LDX #1, poll, PLA TAY PLA TAX
+        c.run(4);                                   // CPX $7E74
+        if (lo !== R[0x21 + 8]) { c.run(3); continue; }
+        c.run(2 + 4);                               // CPY $7E75
+        if (hi !== R[0x21 + 9]) { c.run(3); continue; }
+        c.run(2); break;
+      }
+      c.run(2 + 3 + 2 + 6 + 3 + delayX(8) + 4 + 2); // $7EA9 TXA PHA LDX #8 JSR $0237, PLA TAX
+      for (;;) {                                    // $7EB2
+        c.run(6); sirenPitch(c, lo, hi);
+        lo = (lo - 1) & 255;                        // DEX BNE DEY
+        if (lo) c.run(2 + 3); else { c.run(2 + 2 + 2); hi = (hi - 1) & 255; }
+        c.run(2 + 3 + 2 + 3 + 2 + 6); pollMenu(c, 1); c.run(4 + 2 + 4 + 2);
+        c.run(2);                                   // CPX #$38
+        if (lo !== 0x38) { c.run(3); continue; }
+        c.run(2 + 2);                               // CPY #$18
+        if (hi !== 0x18) { c.run(3); continue; }
+        c.run(2); break;
+      }
+      let v = R[0x0B + 10];
+      c.run(4);                                     // $7ECE LDX $7E60
+      c.code = '$7ED1 siren fade';
+      for (;;) {
+        c.store(4, 24, v);                          // $7ED1 STX $D418
+        c.run(2 + 6 + 3 + delayA(0xC0) + 2);        // LDA #$C0 JSR $04F0, DEX
+        v = (v - 1) & 255;
+        if (v & 0x80) { c.run(2); break; }          // BPL
+        c.run(3);
+      }
+      c.run(6); silence(c, 0);                      // JSR silence_voice_1
+      c.run(3); silence(c, 7);                      // JMP silence_voice_2
+    }
+    // start-up $7EFA whistle_sound: record 22 on voice 1, then $D401 from $FD down to $0B with
+    // delay_a(8) between, then voice 1 off
+    function whistle(c) {
+      c.run(2 + 2 + 6); startSound(c, 0x16, 0);
+      c.code = '$7F03 whistle_sound';
+      c.run(2);                                     // LDX #$FD
+      for (let x = 0xFD; ; ) {
+        c.store(4, 1, x);                           // $7F03 STX $D401
+        c.run(2 + 6 + 3 + delayA(8) + 2 + 2);       // LDA #$08 JSR $04F0, DEX, CPX #$0A
+        x = (x - 1) & 255;
+        if (x === 0x0A) { c.run(2); break; }
+        c.run(3);
+      }
+      c.run(3); silence(c, 0);                      // $7F10 JMP silence_voice_1
+    }
+    // start-up $7F13 explosion_sound: record 0 on voice 1, then delay_a($80)
+    function explosion(c) {
+      c.run(2 + 2 + 6); startSound(c, 0, 0);
+      c.run(2 + 3 + 3 + delayA(0x80));
+    }
+    // start-up $80DC-$80F0 (attract_loop): for each entry of explosion_delays until $FF,
+    // wait_with_menu ($8156: units of 255 polls) and explosion_sound. The polls tick the picture
+    // animation, which is on here ($80A2).
+    function bombs(c, s) {
+      const W = D.startup.delays;
+      c.run(2);                                     // $80DC LDX #$00
+      for (let i = 0; ; i++) {
+        c.run(4 + 4);                               // STX $80EE, LDA $8133,X
+        if (W[i] & 0x80) { c.run(3); break; }       // BMI attract_condition
+        c.run(2 + 2 + 6);                           // TAX, JSR wait_with_menu
+        for (let u = W[i] || 256; ; ) {             // $8156 STX, LDX #$FF, JSR poll_menu, LDX #n DEX BNE
+          c.run(4 + 2 + 6); pollMenu(c, 0xFF, s);
+          c.run(2 + 2); u--;
+          if (!u) { c.run(2 + 6); break; }
+          c.run(3);
+        }
+        c.run(6); explosion(c);                     // JSR explosion_sound
+        c.run(2 + 2 + 3);                           // LDX #n INX BNE
+      }
+    }
+
+    // ---- radio $7E06 play_fanfare: six notes from $7E34/$7E3A, each started by sid_start_note,
+    // held fanfare_note_lengths rounds of delay_a($C0), then $D404 = 0 and delay_a($30)
+    function startNote(c, lo, hi) {                 // $7E4F sid_start_note, from the record at $7E98
+      const r = D.radio.record;
+      c.code = '$7E4F sid_start_note';
+      c.run(2 + 2); c.store(4, 4, 0);               // LDA #$00 TAX STA $D404
+      const seq = [[0, lo], [1, hi], [24, r[10]], [21, r[5]], [22, r[6]], [23, r[7]], [2, r[3]], [3, r[4]],
+        [5, r[0]], [6, r[1]], [4, r[2]]];
+      for (const [reg, v] of seq) { c.run(4); c.store(4, reg, v); }
+      c.run(6);
+    }
+    function fanfare(c) {
+      const R = D.radio;
+      c.run(2);                                     // LDY #$00
+      for (let y = 0; ; ) {
+        c.run(4 + 4 + 4 + 4 + 2 + 6); startNote(c, R.lo[y], R.hi[y]);
+        c.run(4 + 6);                               // LDX $7E40,Y JSR fanfare_hold
+        for (let x = R.len[y] || 256; x > 0; x--) c.run(2 + 6 + 3 + delayA(0xC0) + 2 + (x > 1 ? 3 : 2));
+        c.run(6);
+        c.code = '$7E21 play_fanfare';
+        c.run(2); c.store(4, 4, 0);                 // LDA #$00 STA $D404
+        c.run(2 + 6 + 3 + delayA(0x30) + 2 + 2);    // LDA #$30 JSR $04F0, INY CPY #$06
+        if (++y === 6) { c.run(2); break; }
+        c.run(3);
+      }
+      c.run(2); c.store(4, 4, 0); c.run(6);         // $7E2E LDA #$00 STA $D404 RTS
+    }
+
+    // ---- game $7E63-$7E84, the main loop's Geiger counter, and the rest of the pass. Every pass
+    // with $9F < $FF counts $7F17 down; every fifth counts $7E6A down, and at 0 the click (play_sound
+    // record 22 through $04D2 and $0741); the pass after a click draws $7E6A = random_1_to_a($9F + 1).
+    // The rest of the pass ($7EA1-$7F14: read_key after its random_byte, no key, countdown_check
+    // $82B5, the end-of-game test) is a constant of the port, 862 cycles: the time it takes in the
+    // kit's simulator with the play snapshot's party, four records, the first of them conscious, so
+    // the end-of-game test stops at it. test_sound.js runs the game's own pass beside it. Every
+    // 16,384 passes without a key a turn passes on the spot ($7E93); the port leaves that out.
+    //
+    // engine $24E3 random_byte: the raster line ($D012) + CIA 1's timer A low byte ($DC04) + the
+    // carry + the seed ($24ED, incremented first), kept as the next seed. The line is counted from
+    // line 0 at the interrupt (the compare value is 0); the timer counts down from its latch $4025,
+    // at the phase s.tphase against the frame.
+    function randomByte(c, s, carry) {
+      c.run(6 + 6); s.seed = (s.seed + 1) & 255;    // JSR $24E3, INC $24ED
+      const ras = (Math.floor(c.read(4) / 63) % 312) & 255;            // LDA $D012
+      const tim = (0x4025 - ((c.read(4) + s.tphase) % 0x4026)) & 255;  // ADC $DC04
+      let a = ras + tim + carry;
+      a = ((a & 255) + s.seed + (a >> 8)) & 255;    // ADC #seed
+      c.run(2 + 4 + 6); s.seed = a;                 // STA $24ED, RTS
+      return a;
+    }
+    function geigerPass(c, s) {
+      let carry;
+      c.code = '$7E63 main loop';
+      c.run(3 + 2);                                 // $7E63 LDX $9F, CPX #$FF
+      if (s.d === 0xFF) { c.run(3); carry = 1; }
+      else {
+        c.run(2 + 2); carry = 0;                    // BEQ, LDA #cd ($7E6A)
+        if (s.cd) c.run(3);
+        else {
+          c.run(2 + 2 + 2 + 6 + 3 + 4 + 2 + 2);     // BNE INX TXA JSR $0242 JMP; $24C4 STA CMP #0 BEQ
+          for (;;) {                                // $24CB JSR random_byte, CMP #bound, BCS
+            const v = randomByte(c, s, 1); c.run(2);
+            if (v > s.d) { c.run(3); continue; }
+            c.run(2 + 2 + 2 + 6); s.cd = v + 1; break;   // CLC ADC #1 RTS
+          }
+          c.run(4);                                 // STA $7E6A
+        }
+        c.run(6); s.c5 = (s.c5 - 1) & 255;          // $7E75 DEC $7F17
+        if (s.c5) c.run(3);
+        else {
+          c.run(2 + 2 + 4 + 6); s.c5 = 5; s.cd = (s.cd - 1) & 255;   // LDA #5 STA $7F17 DEC $7E6A
+          if (s.cd) c.run(3);
+          else { c.run(2 + 6 + 3 + 2 + 3); playSound(c, rec(D.engine.table, 22)); s.clicks++; c.code = '$7E63 main loop'; }
+        }
+      }
+      c.run(5); s.b4 = (s.b4 + 1) & 255;           // $7E87 INC $B4
+      if (s.b4) c.run(3);
+      else { c.run(2 + 5 + 3 + 2); s.b5 = (s.b5 + 1) & 255; c.run(s.b5 & 0x3F ? 3 : 2); }
+      c.run(6 + 3); randomByte(c, s, carry);       // $7EA1 JSR $022A JMP read_key: random_byte
+      c.run(862);
+    }
+
+    // ---- the sounds, in the player's order
+    const TRACKS = [
+      { name: 'Explosion', ring: 2, build: (c) => screenShake(c) },
+      { name: 'Click', ring: 2, build: (c) => { c.run(2 + 3); playSound(c, rec(D.engine.table, 22)); } },
+      { name: 'Silent (record 11)', ring: 2, build: (c) => complain(c, false) },
+      { name: 'What-if: gate set', ring: 2, build: (c) => whatIf(c) },
+      { name: 'Siren', ring: 2, build: (c) => siren(c) },
+      { name: 'Whistle', ring: 2, build: (c) => whistle(c) },
+      { name: 'Bombs', ring: 80, build: (c) => bombs(c, { anim: 1, b1: D.prescaler[0], b2: D.prescaler[1] }) },
+      { name: 'Fanfare', ring: 2, build: (c) => fanfare(c) },
+      { name: 'Geiger counter', geiger: true },
+    ];
+    // A sound's frames as the game writes them: [[register, value, cycle, code], ...] a frame.
+    // run() leaves the clock where the routine returns, before any interrupt still to come.
+    function run(t, phase) { const c = clock(phase); TRACKS[t].build(c); return c; }
+    function schedule(t, phase) { const c = run(t, phase); c.sync(); return c.frames; }
+    // The Geiger counter's state, as the game holds it: $9F, $7E6A, $7F17, $B4, $B5, the seed
+    function geigerState(d, o) {
+      return Object.assign({ d, cd: 0, c5: 5, b4: 0, b5: 0, seed: D.engine.seed, tphase: 0, clicks: 0 }, o || {});
+    }
+    function geigerFrames(s, n, phase, vic) {   // the first n frames
+      const c = clock(phase, vic);
+      while (c.f < n) geigerPass(c, s);
+      return c.frames.slice(0, n);
+    }
+    // Clicks a second at distance d, in the game and as this player plays them (two clicks in
+    // one frame are one here): the port run until it has clicked n times, or for at most max frames.
+    function geigerRate(d, n, max, vic) {
+      const s = geigerState(d), c = clock(0, vic);
+      n = n || 400; max = max || 20000;
+      let heard = 0, f0 = 0;
+      while (s.clicks < n && c.f < max) {
+        geigerPass(c, s);
+        for (; f0 < c.f; f0++) { if (c.frames[f0].some((w) => w[0] === 4 && w[1] & 1)) heard++; c.frames[f0] = null; }
+      }
+      const secs = c.t / 985248;
+      return { game: s.clicks / secs, heard: heard / (c.f * 19656 / 985248), clicks: s.clicks, frames: c.f };
+    }
+
+    // ---- the driver
+    const sid = new Uint8Array(25);
+    // The page's own writes. SILENCE, before each sound: the three voices' control and frequency
+    // registers 0, so nothing of the last sound plays on. STIR, once, a silent frame before the
+    // first sound: the model's noise registers start as the chip's do at power-on, all ones, and
+    // a noise sound from there opens with a thump; in the game the title's siren and whistle have
+    // run voice 1 long before. One frame with every voice on noise at the top frequency, the gates
+    // shut and the envelopes still at zero, shifts each noise register about 1,200 times.
+    const SILENCE = [4, 0, 11, 0, 18, 0, 0, 0, 1, 0, 7, 0, 8, 0, 14, 0, 15, 0];
+    const STIR = [4, 0x80, 11, 0x80, 18, 0x80, 0, 0xFF, 1, 0xFF, 7, 0xFF, 8, 0xFF, 14, 0xFF, 15, 0xFF];
+    let frames = [], at = 0, end = 0, on = false, gc = null, gs = null, pre = null, stir = true;
+    const code = ['', '', ''], count = [0, 0, 0];
+    const d = {
+      sid, writes: [], tracks: TRACKS.map((t) => t.name), rings: TRACKS.map((t) => t.ring), GEIGER,
+      schedule, geigerState, geigerFrames, geigerRate, delayA, delayX, VIC,
+      // the routines one by one, for test_sound.js
+      port: { clock, run, playSound, screenShake, complain, startSound, silence, readKey, pollMenu, siren,
+        whistle, explosion, bombs, startNote, fanfare, randomByte, geigerPass, rec },
+      init(t) {
+        at = 0; on = true; gc = null; pre = SILENCE.slice();
+        code.fill(''); count.fill(0);
+        if (t >= GEIGER || TRACKS[t].geiger) {
+          gs = geigerState(t >= GEIGER ? t - GEIGER : 10);
+          gc = clock(0, VIC); frames = gc.frames; end = Infinity;
+        } else { frames = schedule(t, 0); end = frames.length + TRACKS[t].ring; }
+      },
+      stop() { pre = SILENCE.slice(); on = false; end = at; },
+      play() {
+        if (stir && on) {                           // once, before the first sound
+          stir = false; count.fill(0);
+          for (let k = 0; k < STIR.length; k += 2) sid[STIR[k]] = STIR[k + 1];
+          d.writes = STIR.slice();
+          return;
+        }
+        if (gc && on) while (gc.f <= at) geigerPass(gc, gs);
+        const w = pre || [];
+        pre = null;
+        count.fill(0);
+        const f = on && at < frames.length ? frames[at] : null;
+        // Writes past $D418 (start_sound with Y = 7) reach no register of the model: left out.
+        if (f) for (const [r, v, , who] of f) {
+          if (r < 25) w.push(r, v);
+          if (r < 21) { const x = (r / 7) | 0; code[x] = who; count[x]++; }
+        }
+        if (gc && at > 0) frames[at - 1] = null;      // the Geiger counter's frames, once played
+        for (let k = 0; k + 1 < w.length; k += 2) if (w[k] < 25) sid[w[k]] = w[k + 1];
+        d.writes = w;
+        if (on) at++;
+        if (at >= end) on = false;
+      },
+      playing: () => on,
+      voice: (x) => ({ code: code[x], n: count[x] }),
+    };
+    return d;
+  }
+
+  // ------------------------------------------------------------------ the page
+  // The bytes the driver needs, from the listings the Source tab shows (C64.load, ../../lib/c64.js).
+  // base is the path from the page to the game's folder ('' on the built page). One value is no
+  // listing's: the picture animation's prescaler $B1/$B2 when the explosions start ($80DC), $64/$02,
+  // the state a run of the title from the start-up's snapshot reaches in the kit's simulator
+  // (test_sound.js derives it). Nothing resets $B1 (start_picture sets only $B2, $05A6), so on the
+  // machine it depends on everything since the load. It decides on which polls the tick takes its
+  // longer paths, a few cycles each.
+  async function load(base) {
+    const [E, S, R] = await Promise.all(['engine', 'startup', 'radio'].map((p) => C64.load(base + 'parts/' + p + '/listing.json')));
+    const b = (img, a, n) => Array.from(img.ram.subarray(a, a + n));
+    return {
+      engine: { table: b(E, 0xC9BC, 33), seed: E.ram[0x24ED], distances: b(E, 0x0921, 50) },
+      startup: { records: b(S, 0x7E4B, 44), delays: b(S, 0x8133, 15) },
+      radio: { lo: b(R, 0x7E34, 6), hi: b(R, 0x7E3A, 6), len: b(R, 0x7E40, 6), record: b(R, 0x7E98, 11) },
+      prescaler: [0x64, 0x02],
+    };
+  }
+
+  const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
+  const WAVES = [[0x80, 'noise'], [0x40, 'pulse'], [0x20, 'sawtooth'], [0x10, 'triangle']];
+  function wave(c) {                            // a control byte ($D404) in words
+    const w = WAVES.filter(([b]) => c & b).map(([, n]) => n);
+    return (w.length ? w.join(' + ') : 'no waveform') + (c & 4 ? ', ring' : '') + (c & 2 ? ', sync' : '') +
+      (c & 8 ? ', test' : '') + ', gate ' + (c & 1 ? 'on' : 'off');
+  }
+  const VREG = ['frequency, low', 'frequency, high', 'pulse width, low', 'pulse width, high', 'control',
+    'attack / decay', 'sustain / release'];
+  const GREG = ['filter cutoff, low', 'filter cutoff, high', 'resonance / filter routing', 'filter mode / volume'];
+  function goesTo(r, v) {                       // what a byte does in the register it is written to
+    const at = hex(0xD400 + r, 4);
+    if (r > 24) return at + ', past $D418: no register there';
+    if (r > 20) {
+      const what = GREG[r - 21];
+      if (r === 23) return `${at} ${what}: resonance ${v >> 4}, ${v & 7 ? 'voices ' + [1, 2, 3].filter((x) => v >> (x - 1) & 1).join(', ') + ' filtered' : 'no voice filtered'}`;
+      if (r === 24) return `${at} ${what}: volume ${v & 15}${v & 0x70 ? ', filter mode ' + hex(v & 0x70, 2) : ''}`;
+      return `${at} ${what}`;
+    }
+    const k = r % 7, where = `${at} voice ${(r / 7 | 0) + 1} ${VREG[k]}`;
+    if (k === 4) return `${where}: ${wave(v)}`;
+    if (k === 5) return `${where}: attack ${v >> 4}, decay ${v & 15}`;
+    if (k === 6) return `${where}: sustain ${v >> 4}, release ${v & 15}`;
+    return where;
+  }
+
+  // What each button plays. at: the routine (its part). rec: [part, address, source, offset,
+  // the register each byte goes to, the order the routine writes them in]. Addresses in [$XXXX]
+  // or [$XXXX part] become links; values stay plain text.
+  const PLAY_SOUND = [6, 5, 4, 3, 2, 1, 0, 23, 22, 21, 4];
+  const START_SOUND = [5, 6, 4, 2, 3, 21, 22, 23, 0, 1, 24];
+  const ORDER = {
+    play: 'play_sound [$C993 engine] writes $D404 = 0 (gate off), $D418 = 15, bytes 0 to 6 to $D406 down to $D400, bytes 7 to 9 to $D417 down to $D415, and byte 10 to $D404 last.',
+    start: 'start_sound [$7E03 startup] writes $D404 = 0, then bytes 8 and 9 (frequency), 10 ($D418), 5 to 7 ($D415 to $D417), 3 and 4 (pulse width), 0, 1, and 2 (control) last, each voice register at $D400 + Y.',
+    note: 'sid_start_note [$7E4F radio] writes $D404 = 0, the note’s frequency, then $D418, $D415 to $D417, the pulse width, $D405, $D406 and $D404 last.',
+  };
+  const INFO = [
+    { part: 'engine', at: 0x0746, name: 'screen_shake', order: 'play',
+      rec: ['engine', 0xC9BC, 'table', 0, PLAY_SOUND],
+      what: 'Record 0 of sound_table: noise. screen_shake plays it, jolts the screen twelve times in about half a second and turns the gate off ([$0776]). Seven items set it off, from the grenade to the RPG-7 (item effect 1, [$1469]), and so do events in a few maps.',
+      loss: 'The gate goes off at the start of its frame here, up to 20 ms early.' },
+    { part: 'engine', at: 0x0741, name: 'play_sound_16', order: 'play',
+      rec: ['engine', 0xC9D2, 'table', 22, PLAY_SOUND],
+      what: 'Record 22: noise with the shortest attack and decay and no sustain: a click. The Geiger counter clicks with it, and so does the title as it types ([$8427 startup]).',
+      loss: '' },
+    { part: 'engine', at: 0x241C, name: 'play_sound_1', order: 'play',
+      rec: ['engine', 0xC9C7, 'table', 11, PLAY_SOUND],
+      what: 'Record 11. Its last byte, $A4, is the control byte that should start the note, and its gate bit (bit 0) is clear, so nothing sounds. The Ranger Center plays it after a refusal and then waits 1.2 seconds ([$8188 ranger]). The game ([$92BC game]) and modules 1 and 2 call it too.',
+      loss: '' },
+    { part: 'engine', at: 0x241C, name: 'play_sound_1', order: 'play', gate: true,
+      rec: ['engine', 0xC9C7, 'table', 11, PLAY_SOUND],
+      what: 'What-if: record 11 with the gate bit set, $A5 for $A4. The game never plays this. Its control byte mixes noise and sawtooth, which the model plays as the AND of the two, its own approximation, so this is the model’s guess at the sound. The page closes the gate where the pause ends.',
+      loss: '' },
+    { part: 'startup', at: 0x7E77, name: 'siren_sound', order: 'start',
+      rec: ['startup', 0x7E56, 'records', 11, START_SOUND],
+      rec2: ['startup', 0x7E6C, 'records', 33, [12, 13, 11, 9, 10, 28, 29, 30, 7, 8, 24]],
+      what: 'Two sawtooth voices. Voice 1 climbs one step at a time from $1C31 to $2187 (424 to 504 Hz), with voice 2 always $0556 above it, holds for 1.35 seconds, falls to $1839 and fades out as the volume goes from 10 to 0 ([$7ED1]). About 11 seconds.',
+      loss: 'The game moves the pitch about nine steps a frame and this player once a frame. A step is 0.06 Hz, too small to hear.' },
+    { part: 'startup', at: 0x7EFA, name: 'whistle_sound', order: 'start',
+      rec: ['startup', 0x7E61, 'records', 22, START_SOUND],
+      what: 'Triangle on voice 1. The frequency’s high byte falls from $FD to $0B, one step every 301 cycles ([$7F03]): 243 steps in 75 ms, from 3,806 Hz down to 168 Hz. The title plays it twice as the gauge fills ([$80C7], [$80D9]).',
+      loss: 'The 243 steps fall inside four frames, and this player changes the pitch once a frame, so it plays four of them.' },
+    { part: 'startup', at: 0x80DC, name: 'the title’s explosions', order: 'start',
+      rec: ['startup', 0x7E4B, 'records', 0, START_SOUND],
+      what: 'Fourteen explosions on voice 1 (explosion_sound, [$7F13]). Record 0 is noise at frequency $0320, so low that the noise changes only about 750 times a second: a rumble. Before each one the title waits the units of explosion_delays ([$8133]), 4 5 2 3 6 5 1 3 4 3 4 2 4 3, a unit being 255 keyboard polls, about 67 ms.',
+      loss: 'The port leaves out the title picture’s animation, which steps between polls: in the game the explosions come a little later, 2.5 frames (50 ms) by the last.',
+      warn: 'Most of this rumble is low: through the model, 29 % of its energy is below 100 Hz and 78 % below 400 Hz. Laptop and phone speakers barely play that, so listen with headphones.' },
+    { part: 'radio', at: 0x7E06, name: 'play_fanfare', order: 'note',
+      rec: ['radio', 0x7E98, 'radio', 0, START_SOUND],
+      what: 'Six notes on voice 1, triangle: $2187 three times, $2A3E, $2CC1 and $323C ([$7E34]), held 2, 1, 1, 2, 2 and 4 rounds of 96 ms ([$7E40]), each followed by a gap of 6.5 ms. On the American machine’s clock they are C5 C5 C5 E5 F5 G5. On a PAL machine, as here, every note is 65 cents flat. The radio plays it before the Cochise reward and before each promotion.',
+      loss: 'Here a gap between notes lasts until the next frame, 20 ms, when the next note starts in the next frame, and vanishes when it starts in the same one: the first two gaps last 20 ms, the last three vanish.' },
+    { part: 'game', at: 0x7E63, name: 'the main loop', order: 'play',
+      rec: ['engine', 0xC9D2, 'table', 22, PLAY_SOUND],
+      what: 'Every fifth pass of the main loop counts down [$7E6A]. At 0 the counter clicks (record 22), and the next pass draws a new count, from 1 to the distance + 1 ([$24C4 engine]). The distance, [$009F engine], is to the nearest radiation in view, in tenths of a square ([$0921 engine]); with none in view, or no Geiger counter in the party, it is $FF and nothing clicks.',
+      loss: 'Close in, the game clicks more often than once a frame. Clicks in one frame play as one here. The rates are for a party of four whose first member is conscious, and a pass takes longer when the first members are unconscious. The port gives the video chip the cycles it takes on the machine, set so that the loop goes round as often as it did when counted live, 20 times a frame.' },
+  ];
+
+  // mount(root, {base, links}): the player, the Geiger counter's distance and the bytes of each
+  // sound. links: true on the built page, where an address becomes a link into its part's Source
+  // page (the site links the page's own <code> once, at load, before this markup exists).
+  async function mount(root, o) {
+    o = o || {};
+    if (!window.C64 || !window.C64Sid) {
+      root.innerHTML = '<p class="wl-snd-msg">This player needs the site’s scripts c64.js and sid.js, which the built site serves.</p>';
+      return null;
+    }
+    const D = await load(o.base || '');
+    const drv = createDriver(D);
+    const addr = (a, part) => {
+      const t = hex(a, 4);
+      return o.links ? `<code><a href="source-${part}.html#${t.slice(1)}" data-auto="">${t}</a></code>` : `<code>${t}</code>`;
+    };
+    const fmt = (s, part) => s.replace(/\[\$([0-9A-F]{4})(?: ([a-z0-9-]+))?\]/g, (m, a, p) => addr(parseInt(a, 16), p || part));
+    root.innerHTML =
+      '<div class="wl-snd-player"></div>' +
+      '<div class="wl-snd-geiger">' +
+      '<span class="wl-snd-gauge" role="img"></span>' +
+      '<div class="wl-snd-gctl"><label class="wl-snd-dl" for="wl-snd-range">Geiger counter: the distance to the nearest radiation</label>' +
+      '<input type="range" id="wl-snd-range" class="wl-snd-range" min="0" step="1">' +
+      '<p class="wl-snd-dv"></p><p class="wl-snd-rate"></p></div></div>' +
+      '<div class="wl-snd-bytes" aria-live="polite"></div>';
+    const playerEl = root.querySelector('.wl-snd-player');
+    const ROWS = [
+      { k: 'Control', f: (v) => wave(v.ctrl) },
+      { k: 'Attack / decay', f: (v) => `${v.ad >> 4} / ${v.ad & 15}` },
+      { k: 'Sustain / release', f: (v) => `${v.sr >> 4} / ${v.sr & 15}` },
+      { k: 'Written by', f: (v) => v.code || '-' },
+      { k: 'Writes this frame', f: (v) => String(v.n) },
+    ];
+    C64Sid.mount(playerEl, { driver: createDriver, data: D, tunes: drv.tracks, rows: ROWS });
+    const G = drv.tracks.length - 1;
+    const gbtn = playerEl.querySelector(`[data-tune="${G}"]`);
+
+    // The Geiger counter. The slider steps through the distances distance_table holds, nearest
+    // first, and $FF, none in view. The gauge is the game's: 18 - distance / 8 of 18 segments lit
+    // from the bottom ($0AA1).
+    const dist = [...new Set(D.engine.distances)].sort((a, b) => a - b).concat([0xFF]);
+    const squares = (v) => {                    // where in the view a square at distance v lies
+      const s = [];
+      D.engine.distances.forEach((x, i) => {
+        if (x !== v) return;
+        const dx = i % 10, dy = (i / 10) | 0, sq = (n) => n + (n === 1 ? ' square' : ' squares');
+        s.push(!dx && !dy ? 'on the party\u2019s own square' : !dy ? sq(dx) + ' across' : !dx ? sq(dy) + ' up or down'
+          : `${dx} across and ${dy} up or down`);
+      });
+      return s.join(', or ');
+    };
+    const range = root.querySelector('.wl-snd-range'), dv = root.querySelector('.wl-snd-dv');
+    const gauge = root.querySelector('.wl-snd-gauge'), rate = root.querySelector('.wl-snd-rate');
+    range.max = String(dist.length - 1);
+    range.value = String(dist.indexOf(10));
+    gauge.innerHTML = '<i></i>'.repeat(18);
+    const cells = [...gauge.querySelectorAll('i')];
+    const rates = new Map();
+    function setDistance(restart) {
+      const v = dist[+range.value];
+      gbtn.dataset.tune = String(drv.GEIGER + v);
+      const lit = v >> 3 < 18 ? 18 - (v >> 3) : 0;
+      cells.forEach((el, i) => el.classList.toggle('wl-snd-lit', 17 - i < lit));
+      gauge.setAttribute('aria-label', `The game's gauge: ${lit} of 18 segments lit`);
+      range.setAttribute('aria-valuetext', v === 0xFF ? 'none in view' : String(v));
+      if (v === 0xFF) {
+        dv.textContent = 'Distance $FF: no radiation in view.';
+        rate.textContent = 'No clicks.';
+      } else {
+        dv.textContent = `Distance ${v}: radiation ${squares(v)}.`;
+        if (!rates.has(v)) rates.set(v, drv.geigerRate(v, 4000, 200000, drv.VIC));
+        const r = rates.get(v), one = (x) => x >= 10 ? x.toFixed(0) : x.toFixed(1);
+        rate.textContent = `In the game, about ${one(r.game)} clicks a second. This player, ${one(r.heard)}` +
+          (r.game - r.heard > 0.05 * r.game ? ': at most one a frame.' : '.');
+      }
+      if (restart && gbtn.getAttribute('aria-pressed') === 'true') gbtn.click();
+    }
+    range.addEventListener('input', () => setDistance(false));
+    range.addEventListener('change', () => setDistance(true));
+    setDistance(false);
+
+    // The bytes of the sound last chosen, register by register.
+    const bytesEl = root.querySelector('.wl-snd-bytes');
+    function table(spec, gate) {
+      const [part, a, src, x, regs] = spec;
+      const bytes = src === 'table' ? D.engine.table.slice(x, x + 11)
+        : src === 'records' ? D.startup.records.slice(x, x + 11) : D.radio.record.slice();
+      if (gate) bytes[10] |= 1;
+      const rows = bytes.map((v, i) => {
+        const note = src === 'radio' && (i === 8 || i === 9) ? 'each note’s frequency, put here from [$7E34]' : goesTo(regs[i], v);
+        return `<tr${gate && i === 10 ? ' class="wl-snd-hi"' : ''}><td>${i}</td><td>${addr(a + i, part)}</td>` +
+          `<td>${hex(v, 2)}</td><td>${fmt(note, part)}</td></tr>`;
+      }).join('');
+      return '<table class="wl-snd-t"><thead><tr><th>Byte</th><th>At</th><th>Value</th><th>Goes to</th></tr></thead>' +
+        `<tbody>${rows}</tbody></table>`;
+    }
+    function show(t) {
+      const I = INFO[t];
+      bytesEl.innerHTML =
+        `<p class="wl-snd-what"><b>${drv.tracks[t]}</b> ${addr(I.at, I.part)} ${I.name}. ${fmt(I.what, I.part)}</p>` +
+        (I.warn ? `<p class="wl-snd-warn">${fmt(I.warn, I.part)}</p>` : '') +
+        (I.loss ? `<p class="wl-snd-loss">In this player: ${fmt(I.loss, I.part)}</p>` : '') +
+        `<p class="wl-snd-order">${fmt(ORDER[I.order], I.part)}</p>` +
+        (I.rec2 ? '<p class="wl-snd-sub">Voice 1, record 11:</p>' : '') + table(I.rec, I.gate) +
+        (I.rec2 ? '<p class="wl-snd-sub">Voice 2, record 33, Y = 7: bytes 5 to 7 go past the volume register, $D418.</p>' + table(I.rec2) : '');
+    }
+    playerEl.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-tune]');
+      if (b) show(+b.dataset.tune >= drv.GEIGER ? G : +b.dataset.tune);
+    });
+    show(0);
+    return { driver: drv, data: D };
+  }
+
+  globalThis.WLSound = { createDriver, load, mount };
+})();
+</script>
+<script>
+/* page.js */
+// The Sound tab's widget.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+
+  // ---- the sounds ----
+  if (window.WLSound && window.C64Sid && $('wl-snd')) WLSound.mount($('wl-snd'), { base: '', links: true });
+  else if ($('wl-snd')) $('wl-snd').innerHTML = '<p class="wl-snd-msg">The sounds are played by the site’s sid.js and c64.js, which did not load here. Open this page on the built site.</p>';
+})();
+</script>

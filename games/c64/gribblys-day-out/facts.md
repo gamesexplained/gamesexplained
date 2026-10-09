@@ -157,9 +157,18 @@ row.
   the water moves, the flipped Gribblets wave their legs and the
   psi-grub pulses.
 - Gribbly's face is drawn into his three sprite shapes (`animate_face`
-  `$6AAD`): random head patterns every eighth frame, a blink and a look
-  round every 128 frames (`eyes` `$6B36`), and a smile while points are
-  being added or a frown while they are being taken off.
+  `$6AAD`, on even frames, after `animate_chars`). On frame 2 of every
+  8, rows 0-4 of all three shapes get one of four antenna poses, picked
+  by (`$D41B` + `$D012` + 1) & `$30` (`$6AC2`). Rows 5-7 of the front
+  shape `$C1` only run a cycle of 128 frames (`eyes` `$6B36`): the lids
+  two rows down on frames 2-7 and 10-15 (`$7EEB`), shut on frames 8-9
+  (`$7EF4`), and from frame 16 one of six looks with a pupil (`$7EFD` +
+  9 x n, n = `$D41B` & 7, 6 and 7 giving 0), held until frame 2 of the
+  next cycle. Frames 0 and 128 draw nothing. Rows 12-13 of all three get
+  the mouth on every call: a smile while `pending_add` `$26` is not 0,
+  else a frown while `pending_sub` `$30` is not 0, else straight. The
+  shared sprite colours are white and black (`$D025`/`$D026` = `$F1`/`$F0`,
+  set once by `new_game` at `$455F`).
 - Level colours come from four eight-entry tables by level & 7
   (`level_bg_colours` `$7DBF` to `level_cram` `$7DD7`); f8 on the title
   swaps them for grey shades.
@@ -254,11 +263,19 @@ row.
   (`scatter_rocks` `$4BFD`).
 - Level names by level from `level_names` `$E060`; starting view
   columns from `start_cols` `$E050`.
-- Level 4's name (`$E198`) is "Wot, no ground?" with a Chad at each
+- Level 4's name (`$E198`) is "Wot, no ground?" with a Mr Chad at each
   end: the British wartime doodle of a face peering over a wall, whose
-  caption is always "Wot, no ...?". Chad is two characters of the panel
-  font, `$7E` and `$7F`, with `$FE` and `$FF` below them as for every
-  double-height glyph. (Identified by Aaron Bell from the drawing.)
+  caption is always "Wot, no ...?". Mr Chad is two characters of the
+  panel font, `$7E` and `$7F`, with `$FE` and `$FF` below them as for
+  every double-height glyph. (Identified by Aaron Bell from the drawing.)
+  Observed: the "Psi-energy Transfer Stage" screen before level 4 prints
+  the name with both faces (`reference/level4-name.png`, from
+  `work/py/live_name4.py`).
+- Level 4 is the only map whose bottom row (row 63) has no ground: of
+  its 224 cells right of the wall, 196 are sky and 28 the web's tiles,
+  where every other level has ground in all 224, and its scene list has 14 ground words where the
+  others have 35 to 65 (`work/pagedata.json`, read from the maps in
+  memory at the first frame of play).
 - `collide_table` `$1000`: row = type of the sprite affected - 2,
   column = type of the other - 2; bit 7 kill, 6 reverse, 5 stun Seon, 4
   the Topsy rule, 3 drop a Gribblet.
@@ -327,13 +344,18 @@ interrupt handler) as the control in every count.
   `level_start`; each reached `main_loop` with 8 Gribblets in the table.
 - **Title timing** (`work/py/live_title.py`, `work/py/live_pages.py`):
   the counts under Timing.
+- **Gribbly's face** (`work/py/live_face.py`): `$3040`-`$30FF` read
+  after each of 400 frames from level 0's snapshot, standing still: the
+  antennae changed only on frames with `$2E` & 7 = 2, and the eyes only
+  on frames 2, 8, 10 and 16 of each 128 (half shut, shut, half shut, a
+  look).
 - **Title keys**: f1, f3-f8 on the title pages printed "Set clock",
   stepped the hours and minutes, "50 Hertz", "Started", "Volume nn",
   "Colour" and "Blk~Whte".
 
 ## The pages' ports
 
-Both run the game's own routine in `kit/c64/cpu6502.js` on the bytes of
+Each runs the game's own routine in `kit/c64/cpu6502.js` on the bytes of
 `listing.json` beside the port taken from `index.html`, and run in the
 kit's tests.
 
@@ -344,3 +366,7 @@ kit's tests.
 - **The next level** (`test_level.js`): `level_result` `$64F3` over
   every performance, saved count and every seventh random byte, from
   three levels, on 45 sets of levels done: 674,325 cases, all the same.
+- **Gribbly's face** (`test_face.js`): `animate_face` `$6AAD` on every
+  frame counter 0-255, eight times over, with random `$D41B` and `$D012`
+  bytes and points to add, take off, both or neither: 2,048 calls, the
+  three shapes `$3040`-`$30FF` the same after each.

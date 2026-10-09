@@ -62,8 +62,8 @@ Found in the code, not in the manual.
   M, comma and full stop. ABMON most likely stands for the author's
   monitor, Andrew Braybrook's development tool left in the game (Aaron
   Bell's reading of the name; nothing in the code says so).
-- Level 4, "Wot, no ground?", has a Chad drawn at each end of its name,
-  the wartime doodle whose caption that is.
+- Level 4, "Wot, no ground?", has a Mr Chad drawn at each end of its
+  name, the wartime doodle whose caption that is.
 - RESTORE does nothing: the NMI vector points at a bare `RTI` (`$7412`).
 - In the pause, f7 freezes the screen and prints "Cheese" (`freeze_keys`).
 - A best-score signature overwrites "(c) ST Software 1985." on the

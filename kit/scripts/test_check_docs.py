@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The narration rule reads the agent's words, not the text the game prints (#145), a page's
-own class that site.css also styles is caught before the built site collapses it (#143), a
+own class that site.css also styles is caught before the built site collapses it (#143), an id
+on two elements of a page is caught before a button's handler lands on the other one, a
 platform's install notes keep one section per system and one row per build and kind of computer,
 and a skill names no game in the lines a branch adds, whatever it said before the game arrived."""
 import contextlib
@@ -86,6 +87,35 @@ class ClassCollisions(unittest.TestCase):
                       '.strip canvas{width:100%}'):      # .strip used, not styled, by the page
             n, out = collisions(style)
             self.assertEqual(n, 0, (style, out))
+
+
+def duplicates(body):
+    """What check_docs.py reports for one page with this markup."""
+    with tempfile.TemporaryDirectory() as d:
+        page = Path(d) / 'index.html'
+        page.write_text(body, encoding='utf-8')
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            n = check_docs.duplicate_ids([str(page)])
+        return n, out.getvalue()
+
+
+class DuplicateIds(unittest.TestCase):
+    def test_an_id_on_two_elements_fails(self):
+        # Gribbly's Day Out: the parts canvas, then the button meant to be found by the same id
+        n, out = duplicates('<canvas id="gdo-face-parts"></canvas>\n<div>\n<button id="gdo-face-parts">Outline</button>')
+        self.assertEqual(n, 1, out)
+        self.assertIn('index.html:3', out)
+        self.assertIn('line 1', out)
+        self.assertEqual(duplicates("<p id='a'></p><p class=\"x\" id='a'></p><p id=\"a\"></p>")[0], 2)
+
+    def test_what_is_not_a_duplicate(self):
+        for body in ('<p id="a"></p><p id="b"></p>',
+                     '<p id="a"></p><script>el.innerHTML = \'<p id="a"></p>\';</script>',   # a script's markup
+                     '<p id="a"></p><!-- <p id="a"></p> -->',                              # a comment
+                     '<p id="a"></p><p data-id="a"></p><p aria-describedby="a"></p>'):    # not an id
+            n, out = duplicates(body)
+            self.assertEqual(n, 0, (body, out))
 
 
 HOSTS = [{'id': 'macos-arm64', 'name': 'macOS', 'match': 'macOS.*(Apple silicon|arm64)'},

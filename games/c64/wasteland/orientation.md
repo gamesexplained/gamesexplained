@@ -186,7 +186,7 @@ to `work/maps.json`.
 
 Seventy-five pictures for the picture window, which are not parts: the
 engine unpacks one into its picture buffer when a fight or a building
-needs it, and the How it works and Levels pages carry each one's bytes
+needs it, and the Pictures and text and Maps tabs carry each one's bytes
 (`PORTRAIT_BYTES`). The engine's `load_portrait` (`$2631`)
 unpacks picture A AND `$7F`, entry A of the directory at T35/L10, or for
 a number from `$40` entry A AND `$3F` of T35/L9 (`$2790`), to `$CA00`

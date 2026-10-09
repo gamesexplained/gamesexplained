@@ -1,0 +1,949 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/wasteland-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Wasteland finds every file on its four disk sides by track and sector, and writes each map back as the party leaves it, so the disks hold the world as the party left it. Side 3 also carries an older build of the title program.</p>
+</header>
+<main class="wrap">
+<section data-part="engine">
+  <p class="fig">01 · The disks</p>
+  <h2 class="t">Four disk sides and no file names</h2>
+  <p class="lede">Apart from its two boot files, Wasteland keeps nothing on its disks that a directory listing would show. Its own loader reads sectors by number, and every map, program, and save has a fixed track and sector on the four sides.</p>
+  <div class="plate"><div id="wl-dm">This picture needs JavaScript and the site’s c64.js.</div><p class="cap"><b>The four sides.</b> A row for each track, track 35 at the top, and a box for each sector, coloured by what the side holds there. Pick a file and its sectors light up in the order the loader reads them. <i>Logical numbers</i> lines the sectors up as the files count them, <i>Physical order</i> as they pass the drive’s head. The places come from the directories on the four master sides. The order is the engine’s own arithmetic (<code>$FFAC</code>, <code>$FD0B</code>), ported and run against the original on a 6502 simulator for every pair of track and sector bytes, 131,072 cases, and for every file through the game’s own read and write calls, with no difference.</p></div>
+  <p>A file is three numbers: a track, a logical sector, and a count of 256-byte pages. The loader reads that sector, steps to the next, and stops when the count runs out (<code>$FF00</code>). The numbers for the maps and the item tables are kept in two directories on track 35, four bytes a file: the track, the sector, the count, and the side (<code>$2790</code>). Every side carries both directories, but only the side that holds a file fills in its place. Elsewhere the entry is three zeros and the side. The game reads the side first, prints INSERT SIDE and that number until the side is in the drive, and then reads the directory again from it (<code>$27C3</code>).</p>
+  <p>Logical sectors are the files’ own numbering. A table for each speed zone turns them into the drive’s physical sectors, which are numbered in the order they pass the head: logical <i>n</i> is physical 10<i>n</i> mod 21 on tracks 1-17, 8<i>n</i> mod 19 on tracks 18-24, 7<i>n</i> mod 18 on tracks 25-30, and 6<i>n</i> mod 17 on tracks 31-35 (<code>$FFD3</code>, <code>$FDEA</code>, <code>$FDD8</code>, <code>$FFE8</code>). A file runs down from its first logical sector, and in every zone the next one is 11 physical places further round. Ten other sectors pass the head between two of a file’s.</p>
+  <p>The count is all a load knows of a file’s length, and the Ranger Center’s is too big. The program is eight pages, but its header asks for 72, so the load also brings in the 64 sectors after it: the radio program, side 1’s two item tables, packed modules, tile sets, and portraits. Nothing in the Ranger Center reads them, and the game program loads over all of it when the party leaves (<span data-part="ranger"><code>$7EEE</code></span>).</p>
+
+  <h2 class="t wl-sub">One place off</h2>
+  <p>After logical sector 0 the loader moves down a track, skipping track 18, and starts the new track at the logical sector a 35-byte table gives (<code>$FD0B</code>, table <code>$C930</code>). The table holds each track’s top sector, track 1’s first. The loader reads it by the track number, which counts from 1, so it gets the entry for the track above: the one it has just left. Within a speed zone the tracks have the same top sector, and this changes nothing. At three zone edges it does. Track 30 is entered at logical sector 16, track 31’s top, where its own is 17. Track 24 is entered at 17 where its own is 18. Track 17 gets the entry for track 18, which the step never enters, and that entry is 0. The strip under the map shows the 35 bytes, and the three that differ open a file that crosses them.</p>
+  <p>The disks were written by the same rule, so the game reads what was meant. The world map starts at track 20, logical sector 9, runs through track 19, takes the one sector of track 17 the step gives it, and goes on at track 16. The other 20 sectors of track 17 hold filler on every side, and so do the top sectors of tracks 24 and 30. Read with each track entered at its top, the world map would come out with 1,477 wrong bytes, and maps 2, 5, 11, and 19, the game program, and the Ranger Center would go wrong as well. The game writes through the same routine, so a map saved back lands where it will next be read.</p>
+
+  <h2 class="t wl-sub">The world is written back</h2>
+  <p>The maps on a side are the world as the party left it. Leaving a map writes its pages back to the sectors they were read from (<code>$2856</code>, called from <code>$25BD</code>). A loot bag’s contents are rolled the first time it is opened, and the roll goes back to the disk with the map (<span data-part="game"><code>$9194</code></span>). A shop writes its item table back after a sale or a purchase, so its stock lasts (<span data-part="module-1"><code>$CB56</code></span>), except after a purchase that sells out its stock, which leaves without writing it (<span data-part="module-1"><code>$CBBA</code></span>). Maps 5 and 11 can escape this. The flags sector, track 35 logical sector 8, sends every map number from $80 to $BF to map 5 and from $C0 to $FC to map 11 (<code>$2621</code>), and a map entered by one of those numbers is never written back (<code>$2858</code>).</p>
+  <p>Players turned this into a copier. T. Maki told the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#diskswapping">Wasteland Ranger HQ-Grid's Underground</a> (22 April 1996) to keep an unused copy of a side, put it in the drive before entering a place, take everything there, and put the used disk back before leaving. J. Dunlap (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#dupequip">26 September 1998</a>) did the same with a backup of a data disk. A map is read from the disk in the drive on the way in and written to the disk in the drive on the way out, so the copy keeps the place as it was before the party took anything, and every visit with it finds the loot again.</p>
+  <p>The party's own records are the one thing a fresh disk does not reset. Clem the Hick (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#diskswapping">24 October 1996</a>) won the game more than once this way and found that <q>the second time through and on, you won't get the huge bonus from Ranger Center at the end</q>. Destroying Base Cochise sets a bit in every Ranger's record (<span data-part="module-4"><code>$CA03-$CA1C</code></span>). The radio pays the reward, 10 points to spend and 10 more MAXCON, only to a Ranger whose record has that bit set and a second bit clear, and it sets the second bit as it pays (<span data-part="radio"><code>$7EBC-$7EDD</code></span>). Both bits travel with the Ranger, so the base can fall again on a fresh disk, and the radio pays nobody twice.</p>
+
+  <h2 class="t wl-sub">The save and its sum</h2>
+  <p>The party itself lives in memory at <code>$F400-$FBFF</code>: the party tables on the first page, then a page for each character. Saving copies the fourteen zero-page bytes that hold the map number, the party’s place, the clock, and the game time into the first page. The save then adds the eight pages up into a one-byte sum, scrambles them with it, and writes page <i>n</i> to track 35, logical sector 7 − <i>n</i> (<code>$18EA</code>).</p>
+  <div class="plate"><div id="wl-sv">This widget needs JavaScript and the site’s c64.js.</div><p class="cap"><b>One page of the save.</b> Left, the page in memory as the play snapshot holds it. Right, the same page as the last save wrote it to the disk, made by the port’s scramble. Change a member’s cash in the game and save, patch it on the disk with the old sum left in place, or write the whole save unscrambled with 0 for the sum, and the start-up’s reading of the result appears below. The port matched a save the game made in the emulator, byte for byte (cash 12,345, sum $6B). The sum, the scramble, the save and the start-up’s check were each run against the game’s own code on a 6502 simulator, 1,549 cases, with no difference.</p></div>
+  <p>The sum (<code>$1918</code>) runs over bytes 0 to 254 of each page. Each byte is added to it, then the byte’s offset, with the carry from the first addition going into the second. The scramble (<code>$1944</code>) EORs each of those bytes with twice its offset and with the sum. Byte 255 of each page is left out of both, and the sum itself is kept there on the first page, in clear, at <code>$F4FF</code>.</p>
+  <p>There is no slot to choose. The game saves at the end of every change of map, when the new map’s side is in the drive (<code>$2600</code>), and Save asks for side 1 first (<span data-part="game"><code>$8820</code></span>). The save goes to whichever side is in the drive, with no side check, so each side keeps a save of its own. At the title, Start asks "Use last saved game (Y/N)?". Y loads side 1’s save (<span data-part="startup"><code>$8284</code></span>), and N reads all four sides and takes the save with the longest game time (<span data-part="startup"><code>$8228</code></span>).</p>
+  <p data-part="startup">The start-up reads the eight sectors back, unscrambles them with the byte at <span data-part="engine"><code>$F4FF</code></span>, and sums them again (<code>$830E</code>, <code>$8321</code>). A save whose sum does not match is not refused. The start-up EORs every byte with twice its offset once more and goes on (<code>$832F</code>), which leaves each byte as it was stored on the disk, EORed with the byte at <span data-part="engine"><code>$F4FF</code></span> alone. A party whose cash was changed on the disk comes back with its names and numbers garbled. A save written unscrambled, with 0 at <span data-part="engine"><code>$F4FF</code></span>, comes back exactly as written, unless its sum happens to be 0. What the second EOR was meant for is not known.</p>
+
+  <h2 class="t wl-sub">Masters and play disks</h2>
+  <p>The game will not play on its master disks. Track 35, logical sector 8 of every side ends in three bytes: <code>$D7 $CC</code> and the side number on a master, <code>$00 $CC</code> and the side on a copy. Before the game uses a side, it compares them with the byte in <code>$ED</code>, then <code>$CC</code>, then the side it wants (<code>$1897</code>). In play <code>$ED</code> is 0, so only a copy passes. The start-up sets <code>$ED</code> to <code>$D7</code> only around its check of side 1 before it loads the utilities (<span data-part="startup"><code>$81E4</code></span>), which is how Utils loads from a master.</p>
+  <div class="plate"><div id="wl-sc">This widget needs JavaScript.</div><p class="cap"><b>The side check.</b> The last three bytes of track 35, logical sector 8, against the three the check wants. The game’s check ran on a 6502 simulator over 6,912 combinations of the three bytes, <code>$ED</code> and the side asked for, then from the start-up’s Utils and in play on all four sides of the masters and the copies. The port gave the same answer every time.</p></div>
+  <p data-part="utils">The utilities’ Copy reads the identity itself and copies only a master (<code>$8068</code>). It moves a side as 642 sectors, from track 35, logical sector 16 down to track 1, logical sector 0, with the loader’s own step (<code>$833F</code>), and writes <code>$00</code> where the master has <code>$D7</code> (<code>$83E7</code>). The step never reaches 41 sectors: all of track 18, track 17 above logical sector 0, and the top sectors of tracks 24 and 30. On sides 1 and 3 track 18 holds the directory that names the boot files, so a copy cannot be booted, and the game always starts from the master. The last choice in the picker above shows a whole copy.</p>
+</section>
+
+<section id="wl-side3" data-part="">
+  <p class="fig">02 · Disk side 3</p>
+  <h2 class="t">Secret: side 3 carries an older version of the title program</h2>
+  <p class="lede">The second disk's first side has a boot sector of its own, named "A JERKVISION PRODUCTION", and an earlier build of the program that shows the title. The older build shows a different picture, has none of the title's sounds, and cannot run from its own disk.</p>
+  <div class="plate">
+    <div class="wl-s3-grid">
+      <figure><img src="reference/title.png" width="384" height="272" alt="Side 1's title: the planet and the WASTELAND logo, the story text, and Start, Utils and Written by Alan Pavlish on the bar."><figcaption>Side 1's start-up, as the game boots.</figcaption></figure>
+      <figure><img src="reference/side-3-start-up.png" width="384" height="272" alt="Side 3's start-up: a planet in blue and grey with no logo, stripes at the right of the picture, and Computer defense initiative activated."><figcaption>Side 3's start-up, run over side 1's engine with side 3 in the drive.</figcaption></figure>
+    </div>
+    <div class="wl-s3-tw"><table class="wl-s3-t">
+      <thead><tr><th></th><th>Side 1</th><th>Side 3</th></tr></thead>
+      <tbody>
+        <tr><td>Where</td><td colspan="2">track 4, logical sector 16, 16 pages loaded to <code>$7E00</code></td></tr>
+        <tr><td>Where <code>$7E00</code> jumps</td><td><span data-part="startup"><code>$7F2A</code></span></td><td><code>$7E06</code></td></tr>
+        <tr><td>Bytes that differ</td><td colspan="2">2,766 of 4,096</td></tr>
+        <tr><td>Copyright line</td><td>Copyright 1986-88 Interplay Productions.</td><td>Copyright 1986,87 Interplay Productions.</td></tr>
+        <tr><td>Title sounds</td><td>the siren, the whistles and the explosions</td><td>three calls to <code>RTS</code> stubs (<code>$7E03-$7E05</code>); no SID register is written</td></tr>
+        <tr><td>Boot sector's name</td><td>WASTELAND</td><td>A JERKVISION PRODUCTION</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Both screens are from the emulator. Side 3's program was put in place of side 1's at the moment the boot hands over to it, with side 3 in the drive. It unpacks its picture from side 3's track 3 and stops at "Computer defense initiative activated." Side 3's addresses are its own, at the load address side 1's start-up shares, and have no Source page.</p>
+  </div>
+  <p>Booted on its own, side 3 does not get as far. Its boot file loads track 34, logical sector 10 of side 3 to <code>$0200-$30FF</code>, where side 1 keeps the engine and side 3 keeps other bytes. The first raster interrupt after the hand-over jumps through the engine's table at <span data-part="engine"><code>$04F9</code></span> into them, and the processor halts on a <code>JAM</code> instruction at <code>$2931</code>.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* disks/disks.js */
+/* Wasteland (C64): the disks and the save. One global, WLDisks.
+ *
+ * The port: the fast loader's sector arithmetic (engine $FFAC logical_to_physical, $FD0B
+ * next_logical_sector and its table $C930), the save (engine $18EA save_game, $1918
+ * save_checksum, $1944 scramble_save), the start-up's reading of a save (startup $830E-$835E)
+ * and the side check (engine $1897). test_disks.js runs the game's own code on
+ * kit/c64/cpu6502.js against each of these.
+ *
+ * The drawing: mountMap (the four sides, a file lit sector by sector in the loader's order),
+ * mountSave (one page of the save in memory and on the disk, editable), mountSide (the side
+ * check). mountAll(root, { base }) mounts whichever of #wl-dm, #wl-sv and #wl-sc are on the page.
+ * The bytes come from the engine's listing (base + 'parts/engine/listing.json', through C64.load
+ * in ../../lib/c64.js): the loader's tables, $C930, the save area $F400-$FBFF and zero page
+ * $02-$0F, all as the play snapshot holds them. What no listing holds is embedded below, each
+ * table with its source.
+ */
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------------------------------------
+  // Embedded data. No listing holds a disk sector, so these come from the four master sides
+  // (work/wasteland-s1.g64 to -s4.g64); test_disks.js decodes the images and checks each table.
+
+  // The map directory, track 35 logical sector 14. Every side carries all 64 entries, but an entry
+  // gives a map's place only on the side that stores it (elsewhere it is 0, 0, 0 and the side):
+  // [map, side, track, logical sector, pages].
+  const MAPS = [[0,1,20,9,35],[1,2,26,6,20],[2,2,25,4,36],[3,2,23,5,38],[4,2,21,5,31],[5,2,19,12,17],
+    [6,2,16,17,38],[7,4,25,15,16],[8,1,16,15,27],[9,1,15,9,26],[10,1,14,4,36],[11,3,25,2,20],
+    [12,3,24,0,38],[13,4,24,17,31],[15,4,23,5,20],[16,4,22,4,21],[17,4,21,2,22],[18,4,19,18,18],
+    [19,4,19,0,24],[20,4,15,19,35],[21,4,14,5,22],[22,4,13,4,38],[23,4,11,8,38],[24,3,22,0,29],
+    [25,3,20,9,29],[26,2,15,0,34],[27,2,13,8,25],[28,2,12,4,19],[29,1,12,10,16],[31,2,11,6,20],
+    [32,2,10,7,26],[33,2,9,2,35],[34,2,7,9,30],[35,3,17,0,34],[36,3,15,8,32],[38,3,13,18,37],
+    [39,3,12,2,21],[40,3,11,2,35],[41,3,9,9,34],[42,3,7,17,23],[43,1,11,15,22],[49,1,10,14,25]];
+
+  // The item-table directory, track 35 logical sector 15, the same way: [table, side, track, sector, pages].
+  const ITEMS = [[0,1,26,5,3],[1,1,26,2,3],[2,2,33,16,3],[4,4,33,16,3]];
+
+  // Filler: sectors whose bytes 1-255 are all $01, one bit per sector in the order track 1-35,
+  // logical sector 0 up, high bit first. One string per side.
+  const FILLER = [
+    '7fffeffffffffffe3e00800007ffffffffffffc000ffe0000000000000000000000000000000000000007ffff808100000000000000000000000000000400030300002000000000000000400f8000000000000000000',
+    'ffffffffffffffffffffffffffc0000000000000000000000000000000000000000000000000000000007ffffbffbf000000000000000000000000000040000000000000000000000000040000000000007ff0000000',
+    '7fffeffffe00001fffc0ffffffffff8000000000000000000000000000000000000000000000000000007ffff90a10000000000000000000000000000040000000000000000000000000040000000000000000000000',
+    'ff0000000001fffffffffffffffffffffffffffffffff8000000000000000000000000000000000000007ffffbffbf000000000000000000000000000040000000000000000000000000040000000000007fff000000'];
+
+  // The last three bytes of track 35 logical sector 8, the side's identity: the masters hold
+  // $D7 $CC side, the copies the Copy utility makes $00 $CC side (work/copy-s1.g64 to -s4.g64).
+  const IDENTITY = { master: 0xD7, copy: 0x00 };
+
+  // The save area the engine's listing does not hold. The play snapshot has 0 in every byte of
+  // these (records 5-7 are empty); test_disks.js checks it.
+  const SAVE_ZERO = [[0xF900, 0xFAFF], [0xFB40, 0xFBFF]];
+
+  // Sectors on a track of each zone, in the zone numbering of logical_to_physical (0 = tracks
+  // 31-35 ... 3 = tracks 1-17): the lengths of its four interleave tables, and what each side's
+  // image decodes (683 sectors).
+  const ZONE_SECTORS = [17, 18, 19, 21];
+  // Logical n is physical k*n mod N, by zone: what the tables hold (test_disks.js checks it).
+  const ZONE_STEP = [6, 7, 8, 10];
+
+  // ---------------------------------------------------------------------------------------------
+  // The port: the fast loader's sector arithmetic. ram is a 64 KB image of the engine.
+
+  // logical_to_physical (engine $FFAC-$FFB4): the zone of a track, by comparing it with
+  // zone_first_tracks $FDD4-$FDD7 (36, 31, 25, 18) from the end: CMP $FDD3,X / DEX / BCS.
+  // A track byte no lower than every byte the search can meet ($FDD3-$FED2) never ends it: the
+  // routine loops for ever, and zoneOf returns -1. No track of a disk comes near that.
+  function zoneOf(ram, track) {
+    let x = 4;
+    for (let n = 0; n < 256; n++) {
+      const carry = (track & 0xFF) >= ram[0xFDD3 + x];
+      x = (x - 1) & 0xFF;
+      if (!carry) return x;
+    }
+    return -1;
+  }
+
+  // logical_to_physical (engine $FFAC-$FFCA): the zone picks a table from zone_table_pointers
+  // ($FFCB, a word per zone: $FFE8, $FDD8, $FDEA, $FFD3), and the logical sector indexes it.
+  // (TXA / ASL / TAX keeps eight bits, and the table's address is patched into the operand of
+  // the LDA at $FFC7, so a read that lands on $FFC8/$FFC9 finds it there.)
+  function physical(ram, track, logical) {
+    const z = zoneOf(ram, track);
+    if (z < 0) return -1;
+    const x2 = (z << 1) & 0xFF;
+    const lo = ram[(0xFFCB + x2) & 0xFFFF], hi = ram[(0xFFCC + x2) & 0xFFFF];
+    const a = ((lo | (hi << 8)) + (logical & 0xFF)) & 0xFFFF;
+    return a === 0xFFC8 ? lo : a === 0xFFC9 ? hi : ram[a];
+  }
+
+  // next_logical_sector (engine $FD0B): DEY; while it stays positive that is the next sector.
+  // Otherwise DEX, a second DEX when that gives track 18, and the sector is $C930,X: the table
+  // indexed by the new track.
+  function nextSector(ram, track, logical) {
+    const y = (logical - 1) & 0xFF;
+    if (!(y & 0x80)) return [track & 0xFF, y];
+    let x = (track - 1) & 0xFF;
+    if (x === 18) x = 17;
+    return [x, ram[0xC930 + x]];
+  }
+
+  // A file's sectors in the order they are read or written: loader_main reads a sector and,
+  // until the last page, steps with next_logical_sector ($FF56-$FF64); write_pages writes a page
+  // and steps the same way ($2875-$2884). [[track, logical], ...]
+  function chain(ram, track, logical, pages) {
+    const out = [];
+    let t = track, l = logical;
+    for (let i = 0; i < pages; i++) {
+      out.push([t, l]);
+      [t, l] = nextSector(ram, t, l);
+    }
+    return out;
+  }
+
+  function sectorsOn(ram, track) { return ZONE_SECTORS[zoneOf(ram, track) & 3]; }
+
+  // Not the game's: the same file if each track were entered at its own top sector, which is
+  // what $C930 would give were it indexed by the track less one. For the comparison only.
+  function fullTrackChain(ram, track, logical, pages) {
+    const out = [];
+    let t = track, l = logical;
+    for (let i = 0; i < pages; i++) {
+      out.push([t, l]);
+      l -= 1;
+      if (l < 0) { t -= 1; if (t === 18) t = 17; l = sectorsOn(ram, t) - 1; }
+    }
+    return out;
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // The port: the save. state is the 2,048 bytes $F400-$FBFF, page n at state[256n].
+
+  // save_checksum (engine $1918-$1943): for each page and Y = 0-254, CLC / ADC (byte) / ADC #Y:
+  // the carry out of the first add goes into the second, the carry out of the second is lost
+  // to the next CLC. Byte 255 of each page is left out.
+  function checksum(state) {
+    let s = 0;
+    for (let p = 0; p < 8; p++) {
+      for (let y = 0; y < 255; y++) {
+        const t = s + state[p * 256 + y];
+        s = (t + y + (t >> 8)) & 0xFF;
+      }
+    }
+    return s;
+  }
+
+  // scramble_save (engine $1944-$1967): TYA / ASL / EOR (byte) / EOR #key for Y = 0-254 of each
+  // page. Its own inverse; byte 255 of each page is not touched, so the key at $F4FF stays clear.
+  function scramble(state, key) {
+    for (let p = 0; p < 8; p++) {
+      for (let y = 0; y < 255; y++) state[p * 256 + y] ^= ((y << 1) & 0xFF) ^ key;
+    }
+    return state;
+  }
+
+  // save_game (engine $18EA-$1917): zero page $02-$0F to $F478-$F485, the checksum to $F4FF,
+  // then the pages scrambled with it are written, page n to track 35 logical sector 7-n
+  // (write_save_page $1875), and unscrambled again. Changes state as the game changes memory;
+  // returns the key and the 2,048 bytes as they go to the disk.
+  function saveGame(state, zp) {
+    for (let i = 0; i < 14; i++) state[0x78 + i] = zp[i];
+    const key = checksum(state);
+    state[0xFF] = key;
+    const disk = scramble(Uint8Array.from(state), key);
+    return { key, disk };
+  }
+
+  // read_saved_game (startup $830E-$835E): the eight sectors into $F400-$FBFF, unscrambled
+  // with the key in $F4FF, the checksum compared with it ($8321-$832D). A mismatch is not
+  // refused: every byte 0-254 is EORed with twice its offset once more ($832F-$834C), which
+  // leaves the bytes as stored EORed with the key alone. Then $F478-$F485 back to $02-$0F and
+  // the line buffer $F49C-$F4C4 emptied ($834E-$835B).
+  function startupLoad(disk) {
+    const state = Uint8Array.from(disk), key = state[0xFF];
+    scramble(state, key);
+    const sum = checksum(state), ok = sum === key;
+    if (!ok) {
+      for (let p = 0; p < 8; p++) for (let y = 0; y < 255; y++) state[p * 256 + y] ^= (y << 1) & 0xFF;
+    }
+    const zp = state.slice(0x78, 0x86);
+    state.fill(0, 0x9C, 0xC5);
+    return { key, sum, ok, state, zp };
+  }
+
+  // check_disk_side (engine $1897-$18C3): track 35 logical sector 8 is read to $5A00, and the
+  // side is accepted when $5AFD = $ED, $5AFE = $CC and $5AFF = the side asked for; otherwise
+  // 'INSERT SIDE n. (RETURN)' and the read again. tail = the sector's last three bytes.
+  function sideAccepted(tail, ed, side) {
+    return tail[0] === (ed & 0xFF) && tail[1] === 0xCC && tail[2] === (side & 0xFF);
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // The files, per side.
+
+  const fillerBit = (side, index) => (parseInt(FILLER[side - 1][index >> 2], 16) >> (3 - (index & 3))) & 1;
+
+  // [group, id, label, side (0: every side), track, logical sector, pages, own pages, load address, kind]
+  function fileList() {
+    const F = [];
+    for (const [n, side, t, l, p] of MAPS) {
+      F.push({ group: 'Maps', id: 'map-' + n, label: 'Map ' + n + (n === 0 ? ', the world map' : ''), side, t, l, pages: p,
+        own: p, load: 0x3400, kind: 'map', n });
+    }
+    const P = (id, label, t, l, pages, own, load, how) =>
+      F.push({ group: 'Programs', id, label, side: 1, t, l, pages, own, load, kind: 'prog', how });
+    P('engine', 'The engine', 34, 10, 47, 47, 0x0200, 'boot');
+    P('font', 'The font', 34, 14, 4, 4, 0xC600, 'boot');
+    P('startup', 'The start-up', 4, 16, 16, 9, 0x7E00, 'boot');
+    P('logo', 'The title logo’s font', 4, 1, 2, 2, 0xCA00, 'startup');
+    P('utils', 'The utilities', 8, 20, 14, 14, 0x7E00, 'header');
+    P('game', 'The game', 31, 9, 72, 72, 0x7E00, 'header');
+    P('ranger', 'The Ranger Center', 27, 7, 72, 8, 0x7E00, 'header');
+    P('radio', 'The radio', 26, 17, 10, 10, 0x7E00, 'header');
+    P('death', 'The death screen', 4, 2, 1, 1, 0x7E00, 'header');
+    F.push({ group: 'Programs', id: 'order', label: 'Party order', side: 0, t: 34, l: 15, pages: 1, own: 1, load: 0xCA00,
+      kind: 'prog', how: 'game' });
+    F.push({ group: 'Programs', id: 'unpacker', label: 'The stream unpacker', side: 0, t: 35, l: 16, pages: 1, own: 1,
+      load: 0xC800, kind: 'prog', how: 'unpacker' });
+    F.push({ group: 'Programs', id: 'fontpage', label: 'The font’s third page, read back after an unpack', side: 0,
+      t: 35, l: 11, pages: 1, own: 1, load: 0xC800, kind: 'prog', how: 'fontpage' });
+    for (const [n, side, t, l, p] of ITEMS) {
+      F.push({ group: 'Item tables', id: 'items-' + n, label: 'Item table ' + n, side, t, l, pages: p, own: p, load: 0x3100,
+        kind: 'items', n });
+    }
+    const D = (id, label, t, l, what) =>
+      F.push({ group: 'Directories', id, label, side: 0, t, l, pages: 1, own: 1, load: 0x5A00, kind: 'dir', what });
+    D('dir-maps', 'Map directory', 35, 14, 'file');
+    D('dir-items', 'Item-table directory', 35, 15, 'file');
+    D('dir-modules', 'Module directory', 34, 16, 'stream');
+    D('dir-streams', 'Map-stream directory', 35, 13, 'stream');
+    D('dir-tiles', 'Tile-set directory', 35, 12, 'stream');
+    D('dir-pictures', 'Picture directory', 35, 10, 'stream');
+    F.push({ group: 'The save', id: 'flags', label: 'Map flags and the side’s identity', side: 0, t: 35, l: 8, pages: 1,
+      own: 1, load: 0x5A00, kind: 'save' });
+    F.push({ group: 'The save', id: 'save', label: 'The save', side: 0, t: 35, l: 7, pages: 8, own: 8, load: 0xF400, kind: 'save' });
+    F.push({ group: 'The whole side', id: 'copy', label: 'Copy: the whole side, as the utility copies it', side: 0, t: 35,
+      l: 16, pages: 642, own: 0, load: null, kind: 'copy' });
+    return F;
+  }
+
+  // For one side: each sector's files (with the page each reads it as) and what is stored there.
+  function sideLayout(ram, files, side) {
+    const at = new Map(), store = new Map();
+    const key = (t, l) => t * 32 + l;
+    for (const f of files) {
+      if (f.side && f.side !== side) continue;
+      chain(ram, f.t, f.l, f.pages).forEach(([t, l], i) => {
+        const k = key(t, l);
+        if (!at.has(k)) at.set(k, []);
+        at.get(k).push({ f, page: i });
+        if (i < f.own) store.set(k, f);
+      });
+    }
+    let index = 0;
+    const cells = [];
+    for (let t = 1; t <= 35; t++) {
+      const n = sectorsOn(ram, t);
+      for (let l = 0; l < n; l++, index++) {
+        const k = key(t, l), f = store.get(k);
+        const kind = t === 18 ? 'skip' : f ? f.kind : fillerBit(side, index) ? 'filler' : 'other';
+        cells.push({ t, l, p: physical(ram, t, l), n, kind, files: at.get(k) || [], key: k });
+      }
+    }
+    return { side, cells, byKey: new Map(cells.map(c => [c.key, c])) };
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // Loading the bytes.
+
+  const hex2 = v => '$' + (v & 0xFF).toString(16).toUpperCase().padStart(2, '0');
+  const hex4 = v => '$' + (v & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+
+  let enginePromise = null;
+  function loadEngine(base) {
+    if (!globalThis.C64 || !C64.load) return Promise.reject(new Error('this widget needs the site’s c64.js'));
+    if (!enginePromise) enginePromise = C64.load((base || '') + 'parts/engine/listing.json');
+    return enginePromise;
+  }
+
+  // The tables the port reads, all from the engine's listing.
+  function checkHas(img) {
+    const need = [[0xFDD3, 0xFDD7], [0xFFCB, 0xFFD2], [0xFFD3, 0xFFF8], [0xFDD8, 0xFDFC], [0xC930, 0xC952], [0x0002, 0x000F]];
+    for (const [a, b] of need) for (let x = a; x <= b; x++) if (!img.has[x]) throw new Error('the listing lacks ' + hex4(x));
+  }
+
+  // $F400-$FBFF as the play snapshot holds it: the listing's bytes, and 0 where SAVE_ZERO says.
+  function saveArea(img) {
+    const s = new Uint8Array(0x800);
+    for (let a = 0xF400; a < 0xFC00; a++) {
+      if (img.has[a]) s[a - 0xF400] = img.ram[a];
+      else if (!SAVE_ZERO.some(([lo, hi]) => a >= lo && a <= hi)) throw new Error('the listing lacks ' + hex4(a));
+    }
+    return s;
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // Small DOM helpers.
+
+  function h(tag, attrs, ...kids) {
+    const e = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === 'class') e.className = attrs[k];
+      else if (k === 'text') e.textContent = attrs[k];
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    }
+    for (const k of kids) if (k != null) e.append(k);
+    return e;
+  }
+  function fail(el, err) {
+    el.textContent = '';
+    el.append(h('p', { class: 'wl-err', text: 'This widget could not start: ' + (err && err.message || err) + '.' }));
+  }
+  function pick(labelText, onStep) {
+    const prev = h('a', { class: 'step', role: 'button', tabindex: '0', 'aria-label': 'Previous', text: '‹' });
+    const next = h('a', { class: 'step', role: 'button', tabindex: '0', 'aria-label': 'Next', text: '›' });
+    const sel = h('select', { 'aria-label': labelText });
+    const go = d => { onStep(d); };
+    for (const [b, d] of [[prev, -1], [next, 1]]) {
+      b.addEventListener('click', () => go(d));
+      b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(d); } });
+    }
+    return { el: h('div', { class: 'pick' }, prev, sel, next), sel, prev, next };
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // The disk map.
+
+  const KIND_LABEL = { map: 'map', prog: 'program', items: 'item table', dir: 'directory', save: 'the save and the side’s identity',
+    filler: 'filler (no file: bytes 1-255 all $01)', other: 'other data, not one of the files listed', skip: 'track 18' };
+  const ZONE_TRACKS = ['tracks 31-35', 'tracks 25-30', 'tracks 18-24', 'tracks 1-17'];
+
+  function fileWord(f, page) {
+    const of = ' page ' + (page + 1) + ' of ' + f.pages;
+    if (f.kind === 'copy') return 'Copy’s sector ' + (page + 1) + ' of 642';
+    if (f.kind === 'map') return 'map ' + f.n + ',' + of;
+    if (f.kind === 'items') return 'item table ' + f.n + ',' + of;
+    if (f.pages === 1) return f.label.toLowerCase().replace(/^the /, 'the ');
+    return f.label + ',' + of + (page >= f.own ? ' (swept in after its own ' + f.own + ')' : '');
+  }
+
+  // A run list: 'T20 L9-0, T19 L18-0, T17 L0, T16 L20-16'.
+  function runs(ch) {
+    const out = [];
+    for (const [t, l] of ch) {
+      const r = out[out.length - 1];
+      if (r && r.t === t && r.b === l + 1) r.b = l; else out.push({ t, a: l, b: l });
+    }
+    return out.map(r => 'T' + r.t + ' L' + (r.a === r.b ? r.a : r.a + '–' + r.b)).join(', ');
+  }
+
+  function describe(ram, f, side, layout) {
+    const ch = chain(ram, f.t, f.l, f.pages), full = fullTrackChain(ram, f.t, f.l, f.pages);
+    const where = 'Track ' + f.t + ', logical sector ' + f.l;
+    const sideWord = f.side ? 'side ' + f.side : 'every side';
+    const end = f.load != null ? hex4(f.load) + '–' + hex4(f.load + 256 * f.pages - 1) : '';
+    const lines = [];
+    if (f.kind === 'map') {
+      lines.push(where + ', ' + f.pages + ' pages, ' + sideWord + ', loaded to ' + end + '. Its place is entry ' + f.n +
+        ' of the map directory.');
+      lines.push(f.n === 5 || f.n === 11
+        ? 'Written back to these sectors when the party leaves it, unless the game entered it through a number from $80 up, which track 35 logical sector 8 turns into map ' + f.n + ': that way it is never written back.'
+        : 'Written back to these same sectors when the party leaves it, so the side keeps the map as the party left it.');
+    } else if (f.kind === 'items') {
+      lines.push(where + ', ' + f.pages + ' pages, ' + sideWord + ', loaded to ' + end + '. Its place is entry ' + f.n +
+        ' of the item-table directory. A shop writes it back after a sale or a purchase, so the shop’s stock lasts.');
+    } else if (f.kind === 'prog') {
+      const how = {
+        boot: 'The boot file 2.0 loads it before the engine runs.',
+        startup: 'The start-up reads it to draw the title logo.',
+        header: 'Its length is byte 5 of its first sector, which the engine’s program loader reads first.',
+        game: 'The game’s Order command reads it, for a party of two or more, with no side check: every side has the same sector.',
+        unpacker: 'Read over the font’s last-but-one page for every packed stream, on whichever side is in the drive.',
+        fontpage: 'The font’s page as it belongs at that address, read back over the unpacker afterwards.' }[f.how];
+      lines.push(where + ', ' + f.pages + (f.pages === 1 ? ' page' : ' pages') + ', ' + sideWord + ', loaded to ' + end + '. ' + how);
+      if (f.own < f.pages) {
+        const swept = new Set();
+        ch.slice(f.own).forEach(([t, l]) => {
+          const c = layout.byKey.get(t * 32 + l);
+          for (const x of c.files) if (x.f !== f && x.f.kind !== 'copy' && x.f.side) swept.add(x.f.label[0].toLowerCase() + x.f.label.slice(1));
+          if (c.kind === 'filler') swept.add('filler');
+          if (c.kind === 'other') swept.add('other data');
+        });
+        lines.push('The program is its first ' + f.own + ' pages. The other ' + (f.pages - f.own) +
+          ' are the sectors that follow on the disk, read and never used: ' + [...swept].join(', ') + '.');
+      }
+    } else if (f.kind === 'dir') {
+      const n = f.id === 'dir-maps' ? MAPS.filter(m => m[1] === side).length : f.id === 'dir-items' ? ITEMS.filter(m => m[1] === side).length : null;
+      lines.push(where + ', one sector of 64 four-byte entries, on every side. ' + (f.what === 'file'
+        ? 'An entry is a track, a logical sector, a page count and a side.' + (n != null ? ' On side ' + side + ', ' + n + ' entries give a place here. The other files’ entries are three zeros and the side to ask for.' : '')
+        : 'An entry is a start byte, a count of sectors on from a base place kept in the sector’s last two bytes, a count of pages to read and a side.'));
+    } else if (f.id === 'flags') {
+      lines.push(where + ', on every side, the same but for its last byte. A byte per map number: $40 for a 64 by 64 map. Then, for the numbers $80-$FC, the map each stands for: 5 up to $BF, 11 from $C0. The last three bytes are the side’s identity. The game only reads it.');
+    } else if (f.id === 'save') {
+      lines.push('Track 35, logical sectors 7 down to 0: page n of ' + hex4(0xF400) + '–' + hex4(0xFBFF) +
+        ' is logical sector 7−n. Written a sector at a time, on whichever side is in the drive, at every change of map and by Save and Radio.');
+    } else if (f.kind === 'copy') {
+      const dark = layout.cells.filter(c => !c.files.some(x => x.f === f));
+      lines.push('The Copy utility copies a side from track 35 logical sector 16 down to track 1 logical sector 0 with the same step: ' +
+        '642 sectors. The ' + dark.length + ' it never reaches stay dark: ' + runs(dark.map(c => [c.t, c.l]).sort((a, b) => b[0] - a[0] || b[1] - a[1])) +
+        '. A copy made with Format holds 0 in all of them. Track 18 is among them, and on sides 1 and 3 it holds the directory that names the boot files, so a copy cannot be booted: the game always starts from the master.');
+    }
+    if (f.kind !== 'copy') lines.push('Read in this order: ' + runs(ch) + '.');
+    // where the table at $C930 makes the file differ from a full track
+    const diff = ch.reduce((n, x, i) => n + (x[0] !== full[i][0] || x[1] !== full[i][1] ? 1 : 0), 0);
+    const steps = [];
+    for (let i = 1; i < ch.length; i++) {
+      const [t0] = ch[i - 1], [t1, l1] = ch[i];
+      if (t1 !== t0 && l1 !== sectorsOn(ram, t1) - 1) steps.push([t0, t1, l1, sectorsOn(ram, t1) - 1]);
+    }
+    if (steps.length && f.kind !== 'copy') {
+      for (const [t0, t1, l1, top] of steps) {
+        lines.push('From track ' + t0 + ' the loader goes on to track ' + t1 + ' at logical sector ' + l1 + ', the byte at $C930 + ' + t1 +
+          '. Track ' + t1 + '’s top sector is ' + top + '.');
+      }
+      lines.push(diff ? 'Entered at each track’s top, ' + diff + ' of the ' + f.pages + ' pages would come from other sectors (dashed: the sectors a full track would give that this file never uses).'
+        : 'Entered at each track’s top, the same sectors would be read.');
+    }
+    return lines;
+  }
+
+  function mountMap(el, opts) {
+    opts = opts || {};
+    el.classList.add('wl-dm');
+    el.textContent = 'Loading the engine’s listing…';
+    return loadEngine(opts.base).then(img => {
+      checkHas(img);
+      buildMap(el, img.ram, opts);
+    }).catch(err => fail(el, err));
+  }
+
+  function buildMap(el, ram, opts) {
+    const files = fileList();
+    const layouts = [1, 2, 3, 4].map(s => sideLayout(ram, files, s));
+    let side = 1, cur = files.find(f => f.id === (opts.file || 'map-0')), mode = 'logical', timer = null;
+
+    el.textContent = '';
+    const pk = pick('File on the disk', d => choose(files[(files.indexOf(cur) + d + files.length) % files.length]));
+    const groups = {};
+    files.forEach((f, i) => {
+      if (!groups[f.group]) { groups[f.group] = h('optgroup', { label: f.group }); pk.sel.append(groups[f.group]); }
+      groups[f.group].append(h('option', { value: String(i), text: f.label + (f.side ? ' · side ' + f.side : f.kind === 'copy' ? '' : ' · every side') }));
+    });
+    pk.sel.addEventListener('change', () => choose(files[+pk.sel.value]));
+
+    const sideBtns = [1, 2, 3, 4].map(s => h('button', { type: 'button', class: 'wl-btn', 'data-side': s, text: 'Side ' + s,
+      onclick: () => { side = s; if (cur.side && cur.side !== s) cur = files.find(f => f.side === 0 && f.kind === 'save') || cur; render(); } }));
+    const modeBtns = ['logical', 'physical'].map(m => h('button', { type: 'button', class: 'wl-btn', 'data-mode': m,
+      text: m === 'logical' ? 'Logical numbers' : 'Physical order', onclick: () => { mode = m; place(); press(); } }));
+    const again = h('button', { type: 'button', class: 'wl-btn wl-again', text: 'Read it again', onclick: () => light() });
+    const bar = h('div', { class: 'wl-dm-bar' },
+      h('span', { class: 'wl-seg' }, ...sideBtns), h('span', { class: 'wl-seg' }, ...modeBtns), again);
+
+    const head = h('div', { class: 'wl-dm-head' });
+    const area = h('div', { class: 'wl-dm-area' });
+    const labels = h('div', { class: 'wl-dm-labels' });
+    const grid = h('div', { class: 'wl-dm-grid' }, labels, area);
+    const info = h('p', { class: 'wl-dm-info', 'aria-live': 'polite' });
+    const card = h('div', { class: 'wl-dm-card' });
+    const strip = h('div', { class: 'wl-dm-c930' });
+    const legend = h('div', { class: 'wl-dm-legend' });
+    el.append(pk.el, bar, head, grid, info, card, strip, legend);
+
+    // geometry: track 35 at the top, a gap between speed zones
+    const ROW = 13, GAP = 7;
+    const top = t => (35 - t) * ROW + ((t <= 30) + (t <= 24) + (t <= 17)) * GAP;
+    const height = top(1) + ROW;
+    grid.style.height = height + 'px';
+    for (let t = 35; t >= 1; t--) {
+      labels.append(h('span', { class: 'wl-dm-tl', style: 'top:' + top(t) + 'px', text: String(t) }));
+    }
+
+    let cellEls = new Map();
+    function build() {
+      area.textContent = '';
+      cellEls = new Map();
+      const L = layouts[side - 1];
+      for (const c of L.cells) {
+        const e = h('div', { class: 'wl-dm-c wl-k-' + c.kind });
+        e.style.top = top(c.t) + 'px';
+        e.style.height = ROW + 'px';
+        e._c = c;
+        cellEls.set(c.key, e);
+        area.append(e);
+      }
+      place();
+    }
+    function place() {
+      for (const e of cellEls.values()) {
+        const c = e._c;
+        const x = mode === 'logical' ? (20 - c.l) / 21 : c.p / c.n, w = mode === 'logical' ? 1 / 21 : 1 / c.n;
+        e.style.left = (x * 100) + '%';
+        e.style.width = (w * 100) + '%';
+      }
+      head.textContent = '';
+      if (mode === 'logical') {
+        for (let l = 20; l >= 0; l--) head.append(h('span', { style: 'left:' + ((20 - l) / 21 * 100) + '%;width:' + (100 / 21) + '%', text: String(l) }));
+        head.title = 'Logical sector numbers, as the files count them';
+      } else {
+        head.append(h('span', { class: 'wl-dm-ph', text: 'physical sectors 0, 1, 2 … in the order they pass the head →' }));
+      }
+      el.classList.toggle('wl-phys', mode === 'physical');
+    }
+    function press() {
+      sideBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.side === side)));
+      modeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    }
+    function showInfo(c) {
+      const z = zoneOf(ram, c.t) & 3;
+      let s = 'Side ' + side + ', track ' + c.t + ', logical sector ' + c.l + ' = physical sector ' + c.p +
+        ' (' + ZONE_STEP[z] + ' × ' + c.l + ' mod ' + c.n + ', ' + ZONE_TRACKS[z] + ')';
+      if (c.t === 18) s += '. The loader’s step skips track 18';
+      const fs = c.files.filter(x => x.f.kind !== 'copy');
+      if (fs.length) s += '. ' + fs.map(x => fileWord(x.f, x.page)).join('; ');
+      else if (c.t !== 18) s += '. ' + KIND_LABEL[c.kind][0].toUpperCase() + KIND_LABEL[c.kind].slice(1);
+      info.textContent = s + '.';
+    }
+    area.addEventListener('pointerover', e => { const c = e.target._c; if (c) showInfo(c); });
+    area.addEventListener('click', e => { const c = e.target._c; if (c) showInfo(c); });
+
+    function light() {
+      if (timer) { clearInterval(timer); timer = null; }
+      for (const e of cellEls.values()) { e.classList.remove('wl-on', 'wl-ghost'); e.textContent = ''; }
+      el.classList.toggle('wl-copy', cur.kind === 'copy');
+      const ch = chain(ram, cur.t, cur.l, cur.pages);
+      const full = fullTrackChain(ram, cur.t, cur.l, cur.pages);
+      const inChain = new Set(ch.map(([t, l]) => t * 32 + l));
+      if (cur.kind !== 'copy') {
+        for (const [t, l] of full) {
+          const k = t * 32 + l;
+          if (!inChain.has(k) && cellEls.has(k)) cellEls.get(k).classList.add('wl-ghost');
+        }
+      }
+      const numbers = area.clientWidth / 21 >= 17 && cur.kind !== 'copy';
+      const per = Math.max(1, Math.ceil(ch.length / 90)), dt = Math.max(16, Math.min(70, 1800 / ch.length * per));
+      let i = 0;
+      const step = () => {
+        for (let k = 0; k < per && i < ch.length; k++, i++) {
+          const e = cellEls.get(ch[i][0] * 32 + ch[i][1]);
+          if (!e) continue;
+          e.classList.add('wl-on');
+          if (numbers) e.textContent = String(i + 1);
+        }
+        if (i >= ch.length) { clearInterval(timer); timer = null; }
+      };
+      step();
+      timer = setInterval(step, dt);
+    }
+
+    function render() {
+      press();
+      build();
+      pk.sel.value = String(files.indexOf(cur));
+      card.textContent = '';
+      card.append(h('p', { class: 'wl-dm-title', text: cur.label + (cur.side ? ' · side ' + cur.side : cur.kind === 'copy' ? ' · side ' + side : ' · side ' + side + ' shown') }));
+      for (const line of describe(ram, cur, side, layouts[side - 1])) card.append(h('p', { text: line }));
+      info.textContent = 'Point at or tap a sector to see what is there.';
+      light();
+      drawStrip();
+    }
+    function choose(f) {
+      cur = f;
+      if (f.side) side = f.side;
+      render();
+    }
+
+    // $C930: the byte the loader reads for each track it steps down into
+    function drawStrip() {
+      strip.textContent = '';
+      strip.append(h('p', { class: 'wl-dm-sh', text: 'The 35 bytes at $C930, each under the track it is read for' }));
+      const row = h('div', { class: 'wl-dm-srow' });
+      for (let t = 0; t <= 34; t++) {
+        const v = ram[0xC930 + t], topSec = t >= 1 ? sectorsOn(ram, t) - 1 : null;
+        const bad = t >= 1 && t !== 18 && v !== topSec;
+        const cls = 'wl-dm-sc' + (bad ? ' wl-bad' : '') + (t === 18 || t === 0 ? ' wl-mute' : '');
+        const tip = t === 0 ? 'Read only when a step goes below track 1, as at the end of a Copy' :
+          t === 18 ? 'Never read: the step skips track 18' :
+          'Track ' + t + ': the loader enters it at logical sector ' + v + '; its top sector is ' + topSec +
+            (bad ? '. ' + v + ' is the top sector of track ' + (t + 1 === 18 ? '18, which the step skips' : t + 1) : '');
+        const cell = h('button', { type: 'button', class: cls, title: tip, 'aria-label': tip },
+          h('span', { class: 'wl-v', text: String(v) }), h('span', { class: 'wl-t', text: String(t) }));
+        if (bad) {
+          const ex = { 17: 'map-0', 24: 'map-2', 30: 'game' }[t];
+          cell.addEventListener('click', () => choose(files.find(f => f.id === ex)));
+        }
+        cell.addEventListener('pointerover', () => { info.textContent = tip + '.'; });
+        row.append(cell);
+      }
+      strip.append(h('div', { class: 'wl-dm-sbox' }, h('div', { class: 'wl-dm-slab' }, h('span', { text: 'byte' }), h('span', { text: 'track' })), row));
+    }
+
+    const chip = (k, text) => h('span', { class: 'wl-li' }, h('i', { class: 'wl-sw wl-k-' + k }), text);
+    legend.append(chip('map', 'map'), chip('prog', 'program'), chip('items', 'item table'), chip('dir', 'directory'),
+      chip('save', 'save and identity'), chip('filler', 'filler'), chip('other', 'other data'), chip('skip', 'track 18'),
+      h('span', { class: 'wl-li' }, h('i', { class: 'wl-sw wl-on-sw' }), 'the file, in reading order'),
+      h('span', { class: 'wl-li' }, h('i', { class: 'wl-sw wl-ghost-sw' }), 'a full track’s sector it never uses'));
+
+    render();
+    return { choose: id => choose(files.find(f => f.id === id)), setMode: m => { mode = m; place(); press(); }, files };
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // The save.
+
+  const PRINT = v => (v >= 0x20 && v < 0x7F ? String.fromCharCode(v) : '·');
+  const nameOf = (state, rec) => {
+    let s = '';
+    for (let i = 0; i < 13; i++) { const v = state[rec * 256 + i]; if (!v) break; s += PRINT(v); }
+    return s;
+  };
+  const cashOf = (state, rec) => state[rec * 256 + 0x15] | (state[rec * 256 + 0x16] << 8) | (state[rec * 256 + 0x17] << 16);
+  // Zero page $02-$0F, which save_game keeps at $F478-$F485: the engine's own names for them.
+  const ZP_NAMES = ['view column', 'view row', 'game time, low byte', 'game time', 'game time', 'party size', 'party number',
+    'map number', 'records in use', 'last party', 'clock, fraction of a minute', 'clock, minutes', 'clock, hours', 'scroll speed'];
+
+  function mountSave(el, opts) {
+    opts = opts || {};
+    el.classList.add('wl-sv');
+    el.textContent = 'Loading the engine’s listing…';
+    return loadEngine(opts.base).then(img => {
+      checkHas(img);
+      buildSave(el, saveArea(img), img.ram.slice(0x02, 0x10));
+    }).catch(err => fail(el, err));
+  }
+
+  function buildSave(el, state0, zp) {
+    // As the play snapshot holds it, which is what the game's last save wrote: its key at $F4FF
+    // matches the checksum (test_disks.js), so the disk held these bytes scrambled with it.
+    let mem, disk, page = 1, sel = null, lastDisk = null, note = '';
+    const reset = () => {
+      mem = Uint8Array.from(state0);
+      disk = scramble(Uint8Array.from(mem), mem[0xFF]);
+      lastDisk = Uint8Array.from(disk);
+      sel = null;
+      note = 'As the play snapshot holds it: the state the game’s last save wrote, with its key ' + hex2(mem[0xFF]) + ' at $F4FF.';
+    };
+    reset();
+
+    el.textContent = '';
+    const pk = pick('Page of the save', d => { page = (page + d + 8) % 8; sel = null; render(); });
+    for (let p = 0; p < 8; p++) pk.sel.append(h('option', { value: String(p) }));
+    pk.sel.addEventListener('change', () => { page = +pk.sel.value; sel = null; render(); });
+
+    const what = h('select', { class: 'wl-sv-what', 'aria-label': 'What to change' });
+    const val = h('input', { class: 'wl-sv-val', type: 'text', inputmode: 'numeric', 'aria-label': 'New value', size: '9' });
+    const bGame = h('button', { type: 'button', class: 'wl-btn', text: 'Change it in the game, then save' });
+    const bDisk = h('button', { type: 'button', class: 'wl-btn', text: 'Patch it on the disk' });
+    const bClear = h('button', { type: 'button', class: 'wl-btn', text: 'Write the save in clear, key 0' });
+    const bReset = h('button', { type: 'button', class: 'wl-btn wl-quiet', text: 'Start again' });
+    const ctl = h('div', { class: 'wl-sv-ctl' }, what, val, bGame, bDisk, bClear, bReset);
+    const memBox = h('div', { class: 'wl-sv-hex' }), diskBox = h('div', { class: 'wl-sv-hex' });
+    const memHead = h('p', { class: 'wl-sv-h' }), diskHead = h('p', { class: 'wl-sv-h' });
+    const memRead = h('p', { class: 'wl-sv-read' }), diskRead = h('p', { class: 'wl-sv-read' });
+    const dumps = h('div', { class: 'wl-sv-dumps' },
+      h('div', { class: 'wl-sv-dump' }, memHead, memBox, memRead), h('div', { class: 'wl-sv-dump' }, diskHead, diskBox, diskRead));
+    const status = h('div', { class: 'wl-sv-status', 'aria-live': 'polite' });
+    const key = (cls, text, label) => h('span', { class: 'wl-li' }, h('i', { class: 'wl-sv-b ' + cls, text }), label);
+    const legend = h('div', { class: 'wl-sv-legend' }, key('wl-cash', '39', 'cash, three bytes'),
+      key('wl-zp', '2E', 'zero page, saved with the game'), key('wl-clear', 'C7', 'byte 255 of a page, never scrambled'),
+      key('wl-chg', '00', 'changed by the last button'));
+    el.append(pk.el, ctl, dumps, legend, status);
+
+    function cells(box, which) {
+      box.textContent = '';
+      const src = which === 'mem' ? mem : disk, old = which === 'disk' ? lastDisk : null;
+      for (let r = 0; r < 16; r++) {
+        const row = h('div', { class: 'wl-sv-row' }, h('span', { class: 'wl-sv-off', text: (r * 16).toString(16).toUpperCase().padStart(2, '0') }));
+        for (let c = 0; c < 16; c++) {
+          const o = r * 16 + c, i = page * 256 + o;
+          let cls = 'wl-sv-b';
+          if (o === 255) cls += ' wl-clear';
+          if (page > 0 && o >= 0x15 && o <= 0x17) cls += ' wl-cash';
+          if (page === 0 && o >= 0x78 && o <= 0x85) cls += ' wl-zp';
+          if (old && old[i] !== src[i]) cls += ' wl-chg';
+          if (sel && sel.o === o && sel.which === which) cls += ' wl-sel';
+          const b = h('button', { type: 'button', class: cls, text: src[i].toString(16).toUpperCase().padStart(2, '0'),
+            title: hex4(0xF400 + i) + (which === 'disk' ? ' as stored on the disk' : ' in memory') });
+          b.addEventListener('click', () => { sel = { o, which }; render(); val.focus(); });
+          row.append(b);
+        }
+        box.append(row);
+      }
+    }
+
+    function render() {
+      pk.sel.value = String(page);
+      for (let p = 0; p < 8; p++) {
+        const nm = p ? nameOf(mem, p) : '';
+        pk.sel.options[p].textContent = 'Page ' + p + ' · ' + hex4(0xF400 + 256 * p) + ' · T35 L' + (7 - p) + ' · ' +
+          (p === 0 ? 'party tables, saved zero page, key' : nm ? 'record ' + p + ', ' + nm : 'record ' + p + ', empty');
+      }
+      // the field
+      what.textContent = '';
+      if (page > 0) what.append(h('option', { value: 'cash', text: 'Cash of record ' + page + (nameOf(mem, page) ? ' (' + nameOf(mem, page) + ')' : '') }));
+      if (sel) what.append(h('option', { value: 'byte', text: 'Byte ' + hex4(0xF400 + page * 256 + sel.o) + (sel.which === 'disk' ? ' on the disk' : ' in memory') }));
+      if (!what.options.length) what.append(h('option', { value: 'none', text: 'Click a byte to change it' }));
+      what.value = sel ? 'byte' : (page > 0 ? 'cash' : 'none');
+      syncVal();
+      memHead.textContent = 'In memory, ' + hex4(0xF400 + 256 * page) + '–' + hex4(0xF4FF + 256 * page);
+      diskHead.textContent = 'On the disk, track 35 logical sector ' + (7 - page);
+      cells(memBox, 'mem'); cells(diskBox, 'disk');
+      if (page > 0) {
+        memRead.textContent = 'Name ' + JSON.stringify(nameOf(mem, page)) + ', cash ' + cashOf(mem, page).toLocaleString('en-US');
+        diskRead.textContent = 'The same bytes read ' + JSON.stringify(nameOf(disk, page)) + ', cash ' + cashOf(disk, page).toLocaleString('en-US');
+      } else {
+        memRead.textContent = 'Key ' + hex2(mem[0xFF]) + ' at $F4FF, in clear';
+        diskRead.textContent = 'Key ' + hex2(disk[0xFF]) + ' at offset FF, in clear';
+      }
+      // what the start-up makes of the disk
+      const L = startupLoad(disk);
+      status.textContent = '';
+      status.append(h('p', { class: 'wl-sv-note', text: note }));
+      status.append(h('p', { class: 'wl-sv-check ' + (L.ok ? 'wl-ok' : 'wl-no'),
+        text: 'The start-up reads the eight sectors back and unscrambles them with ' + hex2(L.key) + ', the byte at $F4FF. Their sum is ' + hex2(L.sum) +
+          (L.ok ? ': it matches, and the save loads as written.'
+            : ', not ' + hex2(L.key) + '. The start-up does not refuse the save. It EORs every byte with twice its offset again and goes on, so each byte loads as stored on the disk EORed with ' +
+              hex2(L.key) + (L.key ? '.' : ': with 0 there, exactly as stored.')) }));
+      const party = [];
+      for (let r = 1; r <= 7; r++) {
+        const nm = nameOf(L.state, r);
+        if (nm || cashOf(L.state, r) || !L.ok) party.push((nm ? nm : '(no name)') + ', cash ' + cashOf(L.state, r).toLocaleString('en-US'));
+        if (L.ok && !nm) break;
+      }
+      status.append(h('p', { class: 'wl-sv-party', text: 'Loaded: ' + party.slice(0, L.ok ? 7 : 4).join(' · ') + (L.ok ? '' : ' …') }));
+    }
+
+    function syncVal() {
+      if (what.value === 'cash') { val.value = String(cashOf(mem, page)); val.setAttribute('inputmode', 'numeric'); }
+      else if (what.value === 'byte' && sel) {
+        const src = sel.which === 'disk' ? disk : mem;
+        val.value = src[page * 256 + sel.o].toString(16).toUpperCase().padStart(2, '0');
+        val.setAttribute('inputmode', 'text');
+      } else val.value = '';
+      const onDisk = sel && what.value === 'byte' && sel.which === 'disk', inMem = sel && what.value === 'byte' && sel.which === 'mem';
+      bGame.disabled = what.value === 'none' || onDisk;
+      bDisk.disabled = what.value === 'none' || inMem;
+      bDisk.textContent = what.value === 'cash' ? 'Patch it on the disk, key left alone' : 'Write it on the disk';
+    }
+    what.addEventListener('change', () => { if (what.value === 'cash') sel = null; syncVal(); });
+
+    function parse() {
+      const s = val.value.trim().replace(/[,\s]/g, '');
+      if (what.value === 'cash') {
+        const n = Number(s);
+        return Number.isInteger(n) && n >= 0 && n <= 0xFFFFFF ? n : null;
+      }
+      const n = parseInt(s.replace(/^\$/, ''), 16);
+      return /^\$?[0-9a-fA-F]{1,2}$/.test(s) && n >= 0 && n <= 255 ? n : null;
+    }
+    function bad() { val.classList.add('wl-badval'); setTimeout(() => val.classList.remove('wl-badval'), 600); }
+
+    bGame.addEventListener('click', () => {
+      const v = parse();
+      if (v == null) return bad();
+      const before = Uint8Array.from(disk), oldKey = mem[0xFF];
+      if (what.value === 'cash') for (let k = 0; k < 3; k++) mem[page * 256 + 0x15 + k] = (v >> (8 * k)) & 0xFF;
+      else mem[page * 256 + sel.o] = v;
+      const zpBefore = mem.slice(0x78, 0x86);
+      const r = saveGame(mem, zp);
+      disk = r.disk;
+      lastDisk = before;
+      const changed = disk.reduce((n, x, i) => n + (x !== before[i] ? 1 : 0), 0);
+      const zpChanged = [...zpBefore].map((x, i) => x !== mem[0x78 + i] ? hex2(2 + i) + ' (' + ZP_NAMES[i] + ')' : null).filter(Boolean);
+      note = 'Saved as save_game does it' + (zpChanged.length ? '. It first copied zero page $02-$0F to $F478-$F485, and ' +
+        zpChanged.length + (zpChanged.length === 1 ? ' byte there had' : ' bytes there had') + ' changed since the last save: ' +
+        (zpChanged.length < 3 ? zpChanged.join(' and ') : zpChanged.slice(0, -1).join(', ') + ', and ' + zpChanged[zpChanged.length - 1]) : '') + '. The sum is ' + hex2(r.key) +
+        (r.key === oldKey ? ', the same key as before. ' : ', a new key (it was ' + hex2(oldKey) + '). ') + changed.toLocaleString('en-US') +
+        ' of the 2,048 bytes on the disk changed (marked on this page).';
+      render();
+    });
+    bDisk.addEventListener('click', () => {
+      const v = parse();
+      if (v == null) return bad();
+      const before = Uint8Array.from(disk), key = disk[0xFF];
+      if (what.value === 'cash') {
+        for (let k = 0; k < 3; k++) {
+          const y = 0x15 + k;
+          disk[page * 256 + y] = ((v >> (8 * k)) & 0xFF) ^ ((y << 1) & 0xFF) ^ key;
+        }
+        note = 'Patched on the disk: the three cash bytes written scrambled as the game would scramble them, with the key ' + hex2(key) +
+          ' left as it was.';
+      } else {
+        disk[page * 256 + sel.o] = v;
+        note = 'Written on the disk at offset ' + sel.o.toString(16).toUpperCase().padStart(2, '0') + ' of logical sector ' + (7 - page) +
+          ', behind the game’s back.';
+      }
+      lastDisk = before;
+      render();
+    });
+    // Not the game's: a save written unscrambled, with 0 in place of the key. The start-up's sum then
+    // fails (unless it happens to be 0) and its second EOR (startup $832F) undoes its own unscramble.
+    bClear.addEventListener('click', () => {
+      lastDisk = Uint8Array.from(disk);
+      disk = Uint8Array.from(mem);
+      disk[0xFF] = 0;
+      sel = null;
+      note = 'Written on the disk in clear: all eight pages as they are in memory, unscrambled, and 0 at $F4FF where the key goes.';
+      render();
+    });
+    bReset.addEventListener('click', () => { reset(); render(); });
+    val.addEventListener('keydown', e => { if (e.key === 'Enter') (bGame.disabled ? bDisk : bGame).click(); });
+
+    render();
+    return { setPage: p => { page = p; render(); } };
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // The side check.
+
+  function mountSide(el) {
+    el.classList.add('wl-sc');
+    el.textContent = '';
+    let disk = 'master', dside = 1, ask = 1, ed = 0;
+    const seg = (items, get, set) => h('span', { class: 'wl-seg' }, ...items.map(([v, text]) => {
+      const b = h('button', { type: 'button', class: 'wl-btn', text });
+      b._v = v;
+      b.addEventListener('click', () => { set(v); render(); });
+      return b;
+    }));
+    const sDisk = seg([['master', 'Master'], ['copy', 'Play copy']], () => disk, v => { disk = v; });
+    const sSide = seg([1, 2, 3, 4].map(n => [n, String(n)]), () => dside, v => { dside = v; });
+    const sAsk = seg([1, 2, 3, 4].map(n => [n, String(n)]), () => ask, v => { ask = v; });
+    const sEd = seg([[0, '0, in play'], [0xD7, '$D7, the start-up’s Utils']], () => ed, v => { ed = v; });
+    const out = h('div', { class: 'wl-sc-out', 'aria-live': 'polite' });
+    el.append(
+      h('div', { class: 'wl-sc-row' }, h('span', { class: 'wl-sc-l', text: 'In the drive' }), sDisk, h('span', { class: 'wl-sc-l', text: 'side' }), sSide),
+      h('div', { class: 'wl-sc-row' }, h('span', { class: 'wl-sc-l', text: 'Asked for side' }), sAsk, h('span', { class: 'wl-sc-l', text: '$ED' }), sEd),
+      out);
+    function render() {
+      const mark = disk === 'master' ? IDENTITY.master : IDENTITY.copy, tail = [mark, 0xCC, dside], want = [ed, 0xCC, ask];
+      for (const [s, v] of [[sDisk, disk], [sSide, dside], [sAsk, ask], [sEd, ed]]) {
+        for (const b of s.children) b.setAttribute('aria-pressed', String(b._v === v));
+      }
+      out.textContent = '';
+      const row = (label, bytes, other) => h('div', { class: 'wl-sc-bytes' }, h('span', { class: 'wl-sc-l', text: label }),
+        ...bytes.map((v, i) => h('code', { class: v === other[i] ? '' : 'wl-sc-miss', text: hex2(v) })));
+      out.append(row('T35/L8 ends', tail, want), row('The check wants', want, tail));
+      const ok = sideAccepted(tail, ed, ask);
+      out.append(h('p', { class: 'wl-sc-res ' + (ok ? 'wl-ok' : 'wl-no'), text: ok ? 'Accepted: the game goes on.' : 'Refused: “INSERT SIDE ' + ask + '. (RETURN)”, and the same check again after RETURN, space or back-arrow.' }));
+    }
+    render();
+  }
+
+  function mountAll(root, opts) {
+    root = root || document;
+    const a = root.querySelector('#wl-dm'), b = root.querySelector('#wl-sv'), c = root.querySelector('#wl-sc');
+    const jobs = [];
+    if (a) jobs.push(mountMap(a, opts));
+    if (b) jobs.push(mountSave(b, opts));
+    if (c) mountSide(c);
+    return Promise.all(jobs);
+  }
+
+  globalThis.WLDisks = {
+    // the port
+    zoneOf, physical, nextSector, chain, fullTrackChain, sectorsOn, checksum, scramble, saveGame, startupLoad, sideAccepted,
+    // the data
+    MAPS, ITEMS, FILLER, IDENTITY, SAVE_ZERO, ZONE_SECTORS, ZONE_STEP, fileList, sideLayout, fillerBit, saveArea, checkHas,
+    // the drawing
+    mountMap, mountSave, mountSide, mountAll,
+  };
+})();
+</script>
+<script>
+/* page.js */
+// The Disks and saves tab's widgets.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const note = (el, t) => { if (el) el.innerHTML = '<span class="wl-err">' + t + '</span>'; };
+
+  // ---- the disks, the save and the side check ----
+  if (window.WLDisks && window.C64) WLDisks.mountAll(document, { base: '' });
+  else ['wl-dm', 'wl-sv', 'wl-sc'].forEach(id => note($(id), 'This widget needs the site’s c64.js, which did not load here. Open this page on the built site.'));
+})();
+</script>

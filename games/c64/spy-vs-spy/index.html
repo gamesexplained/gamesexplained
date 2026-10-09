@@ -1,0 +1,678 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spy vs Spy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.svs-cv{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:6px}
+.svs-stack{position:relative}
+.svs-stack canvas+canvas{position:absolute;left:0;top:0}
+.svs-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px;font-family:var(--fm);font-size:12.5px}
+.svs-bar button,.svs-bar select{font:inherit;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;cursor:pointer}
+.svs-bar button:hover{border-color:var(--ink-mute)}
+.svs-bar button.svs-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.svs-bar label{color:var(--ink-mute)}
+.svs-read{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.6em}
+.svs-tbl{border-collapse:collapse;width:100%;font-size:14.5px;margin:6px 0 0}
+.svs-tbl th,.svs-tbl td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.svs-tbl th{font-family:var(--fm);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.svs-tbl td.svs-n{font-family:var(--fm);text-align:right;white-space:nowrap}
+.svs-scroll{overflow-x:auto}
+.svs-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.svs-grid button{font:inherit;font-size:14px;text-align:left;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--ink)}
+.svs-grid button:hover{border-color:var(--ink-mute)}
+.svs-grid button small{display:block;font-family:var(--fm);font-size:11.5px;color:var(--ink-mute)}
+.svs-panel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 6px}
+.svs-panel div{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.svs-panel b{display:block;font-family:var(--fm);font-size:22px;font-weight:500;color:var(--ink)}
+.svs-panel span{font-family:var(--fm);font-size:11.5px;color:var(--ink-mute);letter-spacing:.04em;text-transform:uppercase}
+.svs-miss{font-size:14px;color:var(--coral)}
+@media (max-width:720px){:root{--gx:16px;--h1:36px;--pp:14px}.svs-grid,.svs-panel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1984 · First Star Software</p>
+  <h1>Spy vs Spy</h1>
+  <p class="sub">Two spies search the same embassy at the same moment, each on their own half of the screen. The computer's spy plays with the map in front of it: it plans every route with a breadth-first search and knows from the start where every item and trap is.</p>
+</header>
+<main class="wrap">
+<section>
+  <p class="fig">01 · Simulvision</p>
+  <h2 class="t">Two monitors drawn into one bitmap</h2>
+  <p class="lede">Each spy has a monitor of their own, white above and black below, and both play at once.</p>
+  <div class="plate">
+    <div class="svs-bar" id="svs-frame-bar">
+      <button class="svs-on" data-k="pic">The frame</button>
+      <button data-k="irq">Where the interrupts fire</button>
+      <button data-k="bitmap">Sprites off</button>
+    </div>
+    <div class="svs-stack"><canvas id="svs-frame" class="svs-cv" width="768" height="494"></canvas><canvas id="svs-frame-ov" class="svs-cv"></canvas></div>
+    <p class="cap"><b>One frame of a two-player game, rebuilt from memory</b> by the site's renderer from the video chip's registers, the bitmap at <code>$4000</code> and the screen matrix at <code>$6000</code>, recorded in the emulator (NTSC). 94,840 of its 94,848 pixels match the emulator's picture. The 8 that differ are two bitmap bytes in the trapulators, <code>$43AD</code> and <code>$52AD</code>, which the game rewrote while the frame was being drawn; the rebuild uses memory as the frame began.</p>
+  </div>
+  <p>The whole play screen is one multicolour bitmap. The monitor frames, the trapulators and the panels come from the disk as a finished picture (the file <code>S2</code>), and the game draws the two room views into it: nine character rows each, one above the other.</p>
+  <p>Two raster interrupts split the frame (<code>irq_handler</code> <code>$8FA6</code>, lines from <code>$1C5C</code>). At line 51 the first sets the top monitor's background colour and moves sprites 0-3 to the white spy's trapulator; at line 151 the second sets the bottom monitor's colour and moves the same four sprites down to the black spy's. "Where the interrupts fire" marks both lines on the frame.</p>
+  <p>The spies are not sprites. "Sprites off" removes every sprite from the frame, and both spies stay where they were. They are drawn into the bitmap from strips of shape data (<code>draw_strip_line</code> <code>$794C</code>), shifted to any pixel through pre-built tables and masked so the room shows around them. Moving a spy means copying a clean piece of the room back over the old position (<code>restore_box</code> <code>$7A03</code>) before drawing the new one. Sprites are kept for small things: the trapulator's arrow and inventory, the object in a spy's hand, and the aeroplane at the airport.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The music</p>
+  <h2 class="t">Music: two voices that loop at different lengths</h2>
+  <p class="lede">The theme plays all through a game, on two of the chip's three voices; the third is kept for the sound effects.</p>
+  <div class="plate">
+    <div id="svs-music"></div>
+    <p class="cap"><b>The game's own music driver, ported</b> from <code>play_music</code> (<code>$954E</code>) and played through the site's model of the SID at the NTSC clock, from the tune bytes <code>$23DA</code>-<code>$254C</code>. Checked against the original code run in a 6502 simulator: 20,000 frames, with the music switched off and on again with S, every register write the same and in the same order. The filter is never used. The lowest notes, below 100 Hz, barely sound on laptop and phone speakers.</p>
+  </div>
+  <p>A note is three bytes: the pitch and octave, the length, and the instrument. The pitch indexes twelve frequencies of the top octave (<code>$23E2</code>, <code>$23EE</code>) and the octave says how many times to halve them. The length picks one of eight durations, from 5 to 80 interrupts (<code>$23DA</code>); a length code of 8 or more ties the note on without striking it again. Each of 16 instruments is eight bytes (<code>$240A</code>): a waveform, a pulse width, an envelope, and a slide or vibrato that nudges the frequency every few interrupts.</p>
+  <p>The two voices loop at different lengths. Voice 2 reads 29 notes and starts again every 320 interrupts; voice 3 reads 41 notes in 960, exactly three of voice 2's loops. The whole theme therefore repeats every 960 interrupts, 16 seconds on an NTSC machine. The piano roll shows it: voice 2's notes repeat three times for every pass of voice 3.</p>
+  <p>Pressing S switches the music off (<code>music_off</code> <code>$0263</code>). Switching it back on starts both voices from the top rather than where they stopped.</p>
+</section>
+
+<section>
+  <p class="fig">03 · The embassy</p>
+  <h2 class="t">Every level's embassy has a fixed map</h2>
+  <p class="lede">The manual calls the embassy "selectable, yet randomly generated". The rooms and the doors between them are the same in every game of a level; what changes is what is in them.</p>
+  <div class="plate">
+    <div class="pick"><a class="step" id="svs-map-prev" role="button" aria-label="Previous level">&lsaquo;</a><select id="svs-map-level" aria-label="Level"></select><a class="step" id="svs-map-next" role="button" aria-label="Next level">&rsaquo;</a></div>
+    <canvas id="svs-map" class="svs-cv" width="800" height="300"></canvas>
+    <p class="svs-read" id="svs-map-read"></p>
+    <p class="cap"><b>Each level's map, drawn from the level tables</b> in the listing: six door links for each room (<code>level_layout_lo</code> <code>$BC61</code>), and where the map button draws it (<code>level_map_lo</code> <code>$BC71</code>; the low four bits are the column, the next three the row, the top bit the floor). Rooms outlined in orange are the four that can hold the exit; &#8645; marks a ladder or a hole to the other floor. Click a room for its doors.</p>
+  </div>
+  <p>Each new game, <code>build_embassy</code> (<code>$7EF8</code>) copies the level's door links into the room records and then rolls the rest: which of four rooms has the exit, each room's colour, where along its wall each door stands, up to three pieces of furniture, one per wall, and which pieces hide the five items. The remedies go with the furniture: every piece of two kinds on the left wall holds a fire bucket, two kinds on the right hold wire cutters, and one kind each on the back wall holds the scissors or the umbrella (<code>furniture_contents</code> <code>$0900</code>). A spy who knows the furniture knows where the remedies are.</p>
+  <div class="svs-scroll"><table class="svs-tbl">
+    <thead><tr><th>Level</th><th>Rooms</th><th>Minutes</th><th>Traps shown</th><th>Traps allowed</th><th>Item chance</th><th>Exit rooms</th><th>Floors</th></tr></thead>
+    <tbody id="svs-levels"></tbody>
+  </table></div>
+  <p class="cap">From <code>level_rooms</code> <code>$BC91</code>, <code>level_minutes</code> <code>$1B0E</code>, <code>item_chance</code> <code>$BCA9</code> (the chance that an empty piece of furniture gets an item as they are dealt out) and <code>exit_choices</code> <code>$BCC1</code>, from which one entry is picked at random: level 1 lists room 3 twice, so its exit is in room 3 half the time. "Traps allowed" is section 07.</p>
+</section>
+
+<section>
+  <p class="fig">04 · The computer's spy</p>
+  <h2 class="t">The computer's spy plans its routes with a breadth-first search</h2>
+  <p class="lede">In a one-player game the black spy is the computer, and it moves through the embassy as if it had the map in front of it.</p>
+  <div class="plate">
+    <div class="svs-bar"><select id="svs-route-level" aria-label="Level"></select>
+      <button id="svs-route-step">Step a round</button><button id="svs-route-run">Run</button><button id="svs-route-reset">Reset</button></div>
+    <canvas id="svs-route" class="svs-cv" width="800" height="300"></canvas>
+    <p class="svs-read" id="svs-route-read"></p>
+    <p class="cap"><b>The search, ported from <code>route_search</code> (<code>$A9EF</code>).</b> Click a room to set the goal (red outline), then another for the start (green). Each round, the search looks through every door of every room it reached in the round before, highest room number first and the doors from the last to the first, and marks the rooms behind them; the darker the blue, the later the round. Checked against the game's own routine in a 6502 simulator, with every level built by the game itself: all 6,667 pairs of start and goal give the same rounds and the same route.</p>
+  </div>
+  <p>The computer keeps a stack of tasks and picks its next goal from what each spy carries and what is already in the briefcase (<code>cpu_choose_goal</code> <code>$A847</code>). A goal can be a room, a room whose furniture holds a particular remedy, or a room where one of the items lies. The search runs until it reaches a room that passes the test, then walks back through the "came from" list to make the route (<code>route_to_waypoints</code> <code>$AB03</code>), one waypoint at each door.</p>
+  <p>The test reads the game's own tables of where the items are (<code>$0210</code>) and what each piece of furniture holds. The computer never has to search: it knows where every item, remedy and trap is from the start.</p>
+  <p>The IQ setting decides what the computer does with that knowledge. It checks IQ − 1 rooms of its route ahead for traps, and below IQ 3 skips the check three times in four (<code>cpu_check_route</code> <code>$9D01</code>). The IQ also sets how often it thinks of running from a fight (<code>cpu_flee</code> <code>$A30F</code>) and how fast it swings the club, from every 13 turns at IQ 1 to every 2 at IQ 5 (<code>iq_swing_rate</code> <code>$1B1E</code>).</p>
+</section>
+
+<section>
+  <p class="fig">05 · Score and rank</p>
+  <h2 class="t">The airport pays 7 points for every second left</h2>
+  <p class="lede">Points come from fighting, trapping and stealing, but the escape is worth more than all of them.</p>
+  <div class="plate">
+    <div class="svs-bar"><label for="svs-score-level">Level</label><select id="svs-score-level"></select><button id="svs-score-escape">Escape to the airport</button><button id="svs-score-reset">Reset</button></div>
+    <div class="svs-grid" id="svs-score-btns"></div>
+    <div class="svs-panel">
+      <div><span>Score</span><b id="svs-score-val">0</b></div>
+      <div><span>Held as</span><b id="svs-score-raw">0000</b></div>
+      <div><span>Clock</span><b id="svs-score-clock">7:00</b></div>
+      <div><span>Rank</span><b id="svs-score-rank" style="font-size:15px">-</b></div>
+    </div>
+    <p class="svs-read" id="svs-score-log"></p>
+    <p class="cap"><b>The game's scoring, ported</b> from <code>score_event</code> (<code>$8937</code>, tables at <code>$1D23</code>) and <code>final_score</code> (<code>$89AE</code>). Checked against both routines in a 6502 simulator over 600,000 random events and 3,000 escapes, including scores below zero and above 9,900.</p>
+  </div>
+  <p>The score is four decimal digits. A spy who escapes gets 7 points for each second left on the clock, which on a 24-minute level can be over 10,000 by itself; every event in the table is worth 80 points or less, and most of them cost clock time too. The rank is just the thousands digit of the final score, one of ten from A KNEE HIGH SPY to GRAND MASTER SPY. On level 1, with 7 minutes, an instant escape would be worth 2,940.</p>
+  <p>Scores below zero are kept as the ten's complement with a sign flag, so a spy can climb back out of the hole, and the airport shows a negative score as 0. The top end is capped clumsily: an addition that runs past 9,999 sets the top two digits to 99 and keeps the bottom two, so 9,990 plus 80 for a won fight becomes 9,970.</p>
+</section>
+
+<section>
+  <p class="fig">06 · The clock</p>
+  <h2 class="t">Secret: a second on the clock lasts 1.67 real seconds</h2>
+  <p class="lede">Level 1 gives each spy 7 minutes. They last 11 minutes 40 seconds.</p>
+  <div class="plate">
+    <div class="svs-bar"><button id="svs-clock-go">Start both clocks</button></div>
+    <div class="svs-panel">
+      <div><span>Real time</span><b id="svs-clock-real">0:00</b></div>
+      <div><span>Spy's clock</span><b id="svs-clock-game">0:00</b></div>
+      <div><span>Frames</span><b id="svs-clock-frames">0</b></div>
+      <div><span>Frames a second</span><b>100</b></div>
+    </div>
+    <p class="cap"><b>The game's clock against a real one,</b> at the NTSC frame rate of 59.83 a second. <code>tick_clock</code> (<code>$9362</code>) counts a hundredths digit from 99 down to 0 once a frame before it takes a second off. Measured in the emulator: in 600 frames the interrupt ran 600 × 2 times and a spy's clock lost 6 seconds.</p>
+  </div>
+  <p>The clock counts in hundredths of a second, and counts one hundredth each frame. That would be right on a machine running at 100 frames a second; on a 60 Hz machine every game second is 100 frames, 1.67 seconds long. Every time in the game stretches by the same factor, the penalties included: the 15 seconds for looking at the map cost 25 real seconds. A penalty does not come off the clock at once; it is queued and paid one second every ten frames, with a beep for each.</p>
+</section>
+
+<section>
+  <p class="fig">07 · Traps</p>
+  <h2 class="t">Bug: the trapulator gives one trap fewer than the options screen promises</h2>
+  <p class="lede">The options screen offers "TOTAL TRAPS AVAILABLE..12" on level 1. A spy can set 11.</p>
+  <div class="plate">
+    <div class="svs-scroll"><table class="svs-tbl"><thead><tr><th>Level</th><th>Rooms</th><th>Shown</th><th>Allowed</th></tr></thead><tbody id="svs-traps"></tbody></table></div>
+    <p class="cap"><b>Shown</b> is twice the room count, as the options screen draws it (<code>options_loop</code>, <code>$A0DD</code>). <b>Allowed</b> is what the trapulator hands out (<code>$9949</code>). Tested in the emulator on level 1: with the trap count set to 10 the trapulator handed over a bomb; with 11 it refused.</p>
+  </div>
+  <p>The two numbers come from different variables. The options screen doubles the level's room count. The trapulator doubles <code>$0225</code>, which holds the room count less one, and refuses a trap once the spy's count is past that, so the count can reach twice the rooms less one. Time bombs are not counted, but once the limit is passed the trapulator refuses them too.</p>
+  <p>Each trap has one remedy, carried from the furniture: the fire bucket for the bomb, the wire cutters for the spring, the umbrella for the bucket of water over a door, the scissors for the gun on a string. Bombs and springs go into furniture; the bucket and the gun go on a closed door. A spy who walks into a trap without its remedy loses 80 points and 20 seconds and lies stunned for a while; with the remedy, the trap is used up and the spy gains 40 points for 10 seconds.</p>
+</section>
+
+<section>
+  <p class="fig">08 · The manual</p>
+  <h2 class="t">Where the manual and the code disagree</h2>
+  <p class="lede">The manual was written for three computers. On the Commodore, the code does these things differently.</p>
+  <div class="svs-scroll"><table class="svs-tbl">
+    <thead><tr><th>The manual says</th><th>The code does</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td>The embassy is randomly generated</td><td>Each level has one fixed map; furniture, items, colours, door places and the exit are random</td><td><code>build_embassy</code> <code>$7EF8</code></td></tr>
+      <tr><td>About 7 blows of the club kill</td><td>Ten hits knock a spy out</td><td><code>spy_walk</code> <code>$6B3D</code></td></tr>
+      <tr><td>12 traps on level 1</td><td>11 (section 07)</td><td><code>$9949</code></td></tr>
+      <tr><td>Bread crumbs show the way back up to 9 rooms</td><td>Ten places are kept, on levels 1-4 only</td><td><code>trail_step</code> <code>$8A93</code></td></tr>
+      <tr><td>Space or fire starts the game</td><td>Only fire starts it; space is not read</td><td><code>options_loop</code> <code>$A00B</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <p class="fig">09 · NTSC</p>
+  <h2 class="t">Secret: on a PAL machine the game never starts</h2>
+  <p class="lede">Outside North America, the disk loads and then the border keeps changing colour for ever.</p>
+  <p>Before play, <code>wait_ntsc_sync</code> (<code>$8E38</code>) turns interrupts off and waits for eleven raster interrupts in a row, each within 1,536 polls of the video chip's interrupt register, about 18,400 cycles. An American NTSC frame, 17,095 processor cycles, arrives in time. A PAL frame, 19,656 cycles, does not, and the routine starts again, changing the border colour each time. The game never reads the flag the Commodore's own ROM keeps for PAL or NTSC. Seen in the emulator: on PAL the load ends in that loop; on NTSC the same image plays.</p>
+</section>
+
+<section>
+  <p class="fig">10 · Leftovers</p>
+  <h2 class="t">The assembler's symbol table is still on the disk</h2>
+  <p class="lede">The end of the main program file holds part of the symbol table from the computer that assembled it, with the original programmer's names for the computer player's fighting code.</p>
+  <div class="plate">
+    <div class="svs-scroll"><table class="svs-tbl"><thead><tr><th>Where</th><th>Name</th><th>Value</th><th>The listing's name</th></tr></thead><tbody id="svs-syms"></tbody></table></div>
+    <p class="cap"><b>Decoded on this page from the listing's bytes</b> at <code>$BEC4</code>-<code>$BFEF</code>: each entry a length byte (the length, mostly with <code>$80</code> added), the name and a two-byte value; the first and the last are cut off. Where a value is the address of a routine the listing names, its name is beside it.</p>
+  </div>
+  <p>The names fit the code they point at: <code>HOMECMBT</code> at <code>$A2B6</code> steers the computer's spy towards the other in a fight, <code>UNHOMCMB</code> at <code>$A30F</code> moves it away, and <code>UNHOMIQ1</code> and <code>UNHOMIQ2</code> are that routine's branches for IQ 1 and IQ 2. A second fragment at <code>$254D</code> holds names from an earlier build. The routine at <code>$BFF0</code> was written over the table's last entries, a late fix squeezed into spare room.</p>
+  <p>Three more things were left in. A switch at <code>$6603</code>, 0 on the disk, would make every game record both joysticks into the tables the attract demo replays, which is presumably how the demo's moves were made. The computer player writes the number of each step it reaches into <code>$D024</code>, a colour register that the screen mode in use never shows: a debug trace left switched on. And <code>$2DAC</code>-<code>$2DFF</code> is a byte-for-byte copy of code from <code>$8AAC</code>, saved into the end of a data file.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="../../lib/sid.js"></script>
+<script>
+const SVS_MUSIC = {base: 9178, hex: "050a0f1423283c501e188b7efa06acf3e68ff82e868e969fa8b3bdc8d4e1eefd0000000000000000070ed4d45ad22424fa2a323a424a525a626a727a828a929a2324242424242424242424242424242400000fff4004150000000000800112000000000040000000cc0f0fff10261400008d824c49db1d824c4ae08d824c1be52210003210003910004210002210003210007022001a10002a10003510003a10001a10002a10007022001710002710003210003710001710002710007022002010003010003710004010001910002910003410003910000000000000371100004011000019110000291100003411000039110000000000006546036245036542005a45036040005a4000594603554780554e035741015a4401574101594602221000321000391000421000221000321000702200221000321000391000421000221000321000702200221000321000391000421000221000321000702200221000321000391000421000221000321000702200"};
+</script>
+<script>
+/* svs-music */
+// Spy vs Spy's music for the SID player (../../lib/sid.js): a port of play_music ($954E), which the
+// game runs once a frame on the lower half's interrupt, and of the start it makes in reset_play_state
+// ($8F57). D is { base, hex }: the bytes of $23DA-$254C as the game loads them (lengths,
+// frequencies, voices, tune pointers, instruments, the two voices' notes). Refers to nothing outside
+// itself. Checked against the game's own code by test_music.js.
+function createDriver(D) {
+  'use strict';
+  const m = new Uint8Array(0x10000);
+  for (let i = 0; i < D.hex.length / 2; i++) m[D.base + i] = parseInt(D.hex.substr(2 * i, 2), 16);
+  const sid = new Uint8Array(25);
+  let writes = [], held = [], on = false;
+  // the driver's variables, by voice x (0 = SID voice 2, 1 = SID voice 3), as $0266-$0281 hold them
+  const pos = [0, 0], len = [0, 0], left = [0, 0], slide = [0, 0], stepLo = [0, 0], stepHi = [0, 0];
+  const wait = [0, 0], every = [0, 0], fLo = [0, 0], fHi = [0, 0], ctrl = [0, 0], gap = [0, 0];
+  const instr = [0, 0];
+  const put = (x, r, v) => { const i = m[0x2402 + x] + r; sid[i] = v; held.push(i, v); };
+  function release(x) {                                    // release_voice $96F1
+    if (ctrl[x] & 1) { ctrl[x] &= 0xFE; put(x, 4, ctrl[x]); }
+  }
+  function start() {                                       // $8F67: both voices from the top
+    left[0] = left[1] = 1; pos[0] = pos[1] = 0xFD; len[0] = 0x54; len[1] = 0x78;
+    gap[0] = gap[1] = 0; ctrl[0] = ctrl[1] = 0;
+  }
+  function voice(x) {
+    const tune = m[0x2406 + x] | m[0x2408 + x] << 8;
+    left[x] = (left[x] - 1) & 255;
+    if (left[x]) {                                         // the note sounds on: slide or vibrato
+      if (!slide[x]) return;
+      wait[x] = (wait[x] - 1) & 255;
+      if (!(wait[x] & 0x80)) return;
+      slide[x] ^= 0x80;
+      const mode = slide[x] & 3;
+      const down = mode === 2 || (mode === 3 && (slide[x] & 0x80));
+      let f = fLo[x] | fHi[x] << 8, s = stepLo[x] | stepHi[x] << 8;
+      f = (down ? f - s : f + s) & 0xFFFF;
+      fLo[x] = f & 255; fHi[x] = f >> 8;
+      put(x, 0, fLo[x]); put(x, 1, fHi[x]);
+      wait[x] = every[x];
+      return;
+    }
+    if (gap[x]) {                                          // a note has ended: a rest after it?
+      const b = m[(tune + ((pos[x] + 2) & 255)) & 0xFFFF];
+      if (!(b & 0x80)) {
+        left[x] = m[0x23DA + (b & 7)]; gap[x] = 0; release(x); return;
+      }
+    }
+    let y = (pos[x] + 3) & 255;                            // the next note, looping past the last
+    if (y > len[x]) y = 0;
+    pos[x] = y; gap[x] = 1;
+    const b1 = m[(tune + ((y + 1) & 255)) & 0xFFFF];
+    left[x] = m[0x23DA + (b1 & 7)];
+    if ((b1 & 0x0F) >= 8) return;                          // a tie: the note goes on
+    release(x);
+    const n = b1 >> 4;
+    if (!n) return;                                        // instrument 0: a rest
+    const ip = m[0x240A + n] | m[0x241A + n] << 8;
+    instr[x] = n;
+    const b0 = m[ip];
+    stepHi[x] = b0 & 3; every[x] = wait[x] = (b0 >> 2) & 15; slide[x] = b0 >> 6;
+    stepLo[x] = m[ip + 1];
+    put(x, 6, m[ip + 6]); put(x, 5, m[ip + 5]); put(x, 3, m[ip + 3]); put(x, 2, m[ip + 2]);
+    const p = m[(tune + y) & 0xFFFF];
+    let lo = m[0x23E2 + (p & 15)], hi = m[0x23EE + (p & 15)];
+    for (let k = ((p >> 4) & 7) ^ 7; k; k--) { lo = (lo >> 1) | (hi & 1) << 7; hi >>= 1; }
+    put(x, 0, lo); fLo[x] = lo; put(x, 1, hi); fHi[x] = hi;
+    ctrl[x] = m[ip + 4] | 1; put(x, 4, ctrl[x]);
+  }
+  return {
+    init() {                                               // reset_play_state: the filter off, volume 15
+      for (const [r, v] of [[0x15, 0], [0x16, 0], [0x17, 0], [0x18, 0x0F]]) { sid[r] = v; held.push(r, v); }
+      start(); on = true;
+    },
+    again() { start(); on = true; },                       // S pressed to turn the music back on ($950F)
+    stop() { release(1); release(0); on = false; },
+    play() { if (on) { voice(1); voice(0); } writes = held; held = []; },  // stop()'s writes go out with the next frame
+    sid, get writes() { return writes; }, playing: () => on,
+    voice(x) {                                             // SID voice 1 is the game's sound effects
+      if (x === 0) return { fx: true };
+      const v = x - 1;
+      return { at: (m[0x2406 + v] | m[0x2408 + v] << 8) + pos[v], note: (pos[v] / 3) | 0, instr: instr[v], gate: ctrl[v] & 1 };
+    },
+  };
+}
+</script>
+<script>
+/* svs-route */
+// route_search ($A9EF) for the page: the computer spy's breadth-first search over an embassy's
+// rooms. links[r] is room r's six door links (left, right, back, front, the two floor openings;
+// $FF none), exit the exit room (its back door is the way out, never a way through). Returns the
+// search as the game leaves it: dist[r] (0 unreached, 255 the start, else the round that reached
+// it, from 1), from[r] and slot[r], the order in which rooms were reached, and found, the goal's
+// round (-1 when it gave up after 35 rounds).
+function svsRoute(links, exit, start, goal) {
+  const n = 36, dist = new Array(n).fill(0), from = new Array(n).fill(0), slot = new Array(n).fill(0);
+  const order = [];
+  if (start === goal) return { dist, from, slot, order, found: 0 };
+  dist[start] = 255;
+  const expand = (r, d) => {                               // doors 5 down to 0, as $AA2E
+    for (let x = 5; x >= 0; x--) {
+      const y = (links[r] ? links[r][x] : 0xFF) & 0x7F;
+      if (y === 0x7F) continue;
+      if (r === exit && x === 2) continue;
+      if (dist[y] === 0) { from[y] = r; dist[y] = d; slot[y] = x; order.push(y); }
+      if (y === goal) return true;
+    }
+    return false;
+  };
+  if (expand(start, 1)) return { dist, from, slot, order, found: 1 };
+  for (let round = 1; round < 35; round++) {               // rooms 35 down to 0 at this distance
+    for (let r = 35; r >= 0; r--) {
+      if (dist[r] !== round) continue;
+      if (expand(r, round + 1)) return { dist, from, slot, order, found: round + 1 };
+    }
+  }
+  return { dist, from, slot, order, found: -1 };
+}
+</script>
+<script>
+/* svs-score */
+// score_event ($8937) and final_score ($89AE) for the page. A spy's score is four BCD digits,
+// lo ($02BB) and hi ($02BD), with neg ($02BF) $80 while it is below zero, held as its ten's
+// complement; pend ($95) is the time still to pay, bit 7 set for time taken away.
+const SVS_POINTS = [0x80, 0x30, 0x60, 0x40, 0x80, 0x20, 0x70, 0x00];       // $1D23
+const SVS_TAKE = [0, 0, 0, 0, 0x80, 0x80, 0x80, 0];                        // $1D2B
+const SVS_TIME = [0, 0xF6, 0, 0xF6, 0xEC, 0xF6, 0xF1, 0xFD];               // $1D33, seconds
+function svsBcdAdd(a, b, c) {                              // ADC in decimal mode, valid digits
+  let lo = (a & 15) + (b & 15) + c, hi = (a >> 4) + (b >> 4);
+  if (lo > 9) { lo -= 10; hi++; }
+  const carry = hi > 9 ? 1 : 0;
+  if (carry) hi -= 10;
+  return [(hi << 4) | lo, carry];
+}
+function svsBcdSub(a, b, c) {                              // SBC in decimal mode, c = 1 for no borrow
+  let lo = (a & 15) - (b & 15) - (1 - c), hi = (a >> 4) - (b >> 4);
+  if (lo < 0) { lo += 10; hi--; }
+  const carry = hi < 0 ? 0 : 1;
+  if (hi < 0) hi += 10;
+  return [(hi << 4) | lo, carry];
+}
+function svsAddPoints(s, p) {                              // $8942-$8967, and final_score's add
+  let c;
+  [s.lo, c] = svsBcdAdd(s.lo, p, 0);
+  [s.hi, c] = svsBcdAdd(s.hi, 0, c);
+  if (c) { if (s.neg & 0x80) s.neg = 0; else s.hi = 0x99; }
+}
+function svsScoreEvent(s, cause) {
+  if (SVS_TAKE[cause] & 0x80) {                            // $8969-$898B
+    let c;
+    [s.lo, c] = svsBcdSub(s.lo, SVS_POINTS[cause], 1);
+    [s.hi, c] = svsBcdSub(s.hi, 0, c);
+    if (!c) { if (s.neg & 0x80) s.hi = 0; else s.neg = 0x80; }
+  } else svsAddPoints(s, SVS_POINTS[cause]);
+  let a = s.pend;                                          // $898F: sign and size to a number
+  if (a & 0x80) a = (-(a & 0x7F)) & 255;
+  a = (a + SVS_TIME[cause]) & 255;
+  if (a & 0x80) a = ((-a) & 255) | 0x80;
+  s.pend = a;
+}
+function svsFinalScore(s, min, sec) {                      // min, sec in BCD, as $93 and $91
+  if (min | sec) {
+    let m = min, t = sec, c;
+    for (;;) {
+      [t, c] = svsBcdSub(t, 1, 1);
+      if (!c) t = 0x59;
+      [m, c] = svsBcdSub(m, 0, c);
+      if (!c) break;
+      svsAddPoints(s, 7);
+    }
+  }
+  if (s.neg & 0x80) { s.lo = 0; s.hi = 0; }
+}
+</script>
+<script>
+(function () {
+'use strict';
+const HAS = typeof C64 !== 'undefined';
+const $ = id => document.getElementById(id);
+const say = (el, t) => { el.insertAdjacentHTML('afterend', '<p class="svs-miss">' + t + '</p>'); };
+const SHARED = 'This is drawn by the site\'s shared script, which the built site serves.';
+const hx = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 4, '0');
+
+// ---- 01 the frame
+const FRAME = {"schema":1,"standard":"NTSC","lines":263,"cycles":65,"about":"","vic":[10,214,22,214,40,214,59,214,0,0,0,0,170,194,0,0,15,59,12,0,0,68,216,0,129,112,241,0,255,0,0,96,246,255,241,242,251,241,240,246,245,242,248,245,246,250,252],"cia2":[62,3],"cpu":[47,53],"writes":[[51,1,53281,247],[52,5,53249,118],[52,9,53251,118],[52,13,53253,118],[52,17,53255,118],[53,4,53269,64],[151,3,53281,255],[151,29,53249,214],[151,33,53251,214],[151,37,53253,214],[151,41,53255,214],[152,28,53269,68]],"colour":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","ram":[{"a":16384,"b":"VVVVVVVXXnpVV1566qqqquqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqquqqqqqqqqqVdW1rauqqqpVVVVVVdW1rVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/6u/u7u7u7v+q/6qqqqut/6r/qr/dd93/qv+q/911Vf+q/6r/3VVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/3dVVf+q/6r/d11V/6r/qv533Xf/qv+qqqrqev+r+7u7u7u7VVVVVVdfeu9VVVX/qv+q/1VVVf+q/6r/VVVV/6r6r/pVVVVV/6r/qlVVVVX/qv+qVVVVVf+q/qtVVVVV1b+q/1VXV1dX/6v//1VVVVVV//pV1dXV1fXtq+7u7u7u7u7ur723vfXd9dV11VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV1xww//M8MMPM8MD/wD//wAAAAD/AP//AAAAAP8A//8AAAAA/wD//wAAAAD/AP//AAAAAP8A//8AAAAA/wD//wAAAAD/AP//AAAAAP8A//8AAAAA/wD//wAAAAD/AP//AAAAAP8A//8AAAAA/wD//wAAAAD/AP//AAAAAP8A//8AAAAA/zMPw/DMw8BVVVVV1TUNw1VVVVVVVVVVVVVVVVVVVVVdV1VVVVVVVfp+3n5fd19Xu7u7u7u7u7u/v7W/v7+q/9Xd3d3V/6r/1d/V3dX/qv////f/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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAwMAAAAAAKqq6vo6Pg8DwMDAwMDAwMAMDAwMDAwMDNfX19fX19fXu7u7u7u7u7uqqquvr6+vr6qq/1VVVVVVqqr/VVVVVVWvqvpfVVVVVf+qqv9VVVVV/qqq/1VVVVWtq6r6X1VVVVX/qqr/VVVVV/+qqv9VVVXqqqqq6np6euvr6+vr6+vr7u7u7u7u7u7X19fX19fX1zAwMDAwMDAzAAMMDDDAwADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAADAwDAwDAMDAAwMDAwMDAzM19fX19fX19e7u7u7u7u7u6+vr+/7el5XVVVV//+qqv9VVVX//6qq/1VVVfX/r6r6VVVVVf//qqpVVVVV//+qqlVVVVX1/6+qVVVVVVX//6pVVVVVVf//qnp6enp6+uqr6+vr6+311VXu7u7u7u7u7tfX19fX9bW1Pz8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV/PwAAP9VVVXX19fX119eXru7u7u7u7u7VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX1VVVVVVVVX/en96f3r+6/+t7b2t7b21+l9VVVVVVVWq/1VVVVVVVar/VVVVVVVVrfVVVVVVVVVVVVVVVVVVVe7u7u7u7u7uva+tq6qqqqpVVdV33b+qqlVVVXXd/6qqVVVVVdX/qqpVVVVVVf+qqlVVVVVV/6qqVVVVVVX/qqpVVVVVVf+qqlVVVVVV/6qqVVVVVVX/qqpVVVVVVfu7u1VVVVVV/7+7VVVVVVX/u7tVVVVVVf+7u1VVVVVV/6vvVVVVVVX/q79VVVVVVb+6ulVVVVVV/6qqVVVVVVX/qqpVVVVVVf+qqlVVVVVV/6qqVVVVVVX/qqpVVVVVVf+qqlVVVVVV/6qqVVVVXXf/qqpVVVfdd/6qqn76euqqqqqqu7u7u7u7u7tVVVV/bm5ublVVVf/u7u7uVVVV/+7u67tXX/ru67u6r7uu7ru7rfVVtdXVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV7u/qf1VXXnqq/6r/6qqqqqr/qv+qqqqqqv+q/6qqqqqq/6r/qqqqqqr/qv+qqqqqqv+q/6qqqqqq/6r/qqqqqqr/qv+qqqqqqv+q/6qqqqqq/6r/qqqqqrv7u/uqqqqqu7vu/6qqqqq6u/v/qqqqqru7u/+qqqqq7+/v/6qqqqqvv6v/qqqqqrq/ur+qqqqqqv+q/6qqqqqq/6r/qqqqqqr/qv+qqqqqqv+q/6qqqqqq/6r/qqqqqqr/qv+qqqqqqv+q/6qqqqqq/6r/qqqqqqr/qv+qqqqqqv+q/6uqqqq7+6v/VdW1rW5/VVVVVVVV7/9VVVVVVVW7/VVVVVVVVfVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/6u/u7u7u7v+q/6qqqqut/6r/qr/dd93/qv+q/911Vf+q/6r/3VVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/1VVVf+q/6r/VVVV/6r/qv9VVVX/qv+q/3dVVf+q/6r/d11V/6r/qv533Xf/qv+qqqrqev+r+7u7u7u7VVVVVVdfeu9VVVX/qv+q/1VVVf+q/6r/VVVV/6r6r/pVVVVV/6r/qlVVVVX/qv+qVVVVVf+q/qtVVVVV1b+q/1VXV1dX/6v//1VVVVVV//pV1dXV1fXtq+7u7u7u7u7ur723vfXd9dV11VVV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//8AAP9VVVX//wAA/1VVVf//AAD/VVVV//8AAP9VVVX//wAA/1VVVf//AAD/VVVV/PwAAP9VVVXX19fX119eXru7u7u7u7u7VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX1VVVVVVVVX/en96f3r+6/+t7b2t7b21+l9VVVVVVVWq/1VVVVVVVar/VVVVVVVVrfVVVVVVVVVVVVVVVVVVVe7u7u7u7u7uva+tq6qqqqpVVdV33b+qqlVVVXXd/6qqVVVVVdX/qqpVVVVVVf+qqlVVVVVV/6qqVVVVVVX/qqpVVVVVVf+qqlVVVVVV/6qqVVVVVVX/qqpVVVVVVf6urlVVVVVVqv7uVVVVVVWq6upVVVVVVar+7lVVVVVVqv7qVVVVVVWq6+5VVVVVVb+6ulVVVVVV/6qqVVVVVVX/qqpVVVVVVf+qqlVVVVVV/6qqVVVVVVX/qqpWVapVVv+qqlWVpZVV/6qqVVVVXXf/qqpVVVfdd/6qqn76euqqqqqqu7u7u7u7u7tVVVV/bm5ublVVVf/u7u7uVVVV/+7u67tXX/ru67u6r7uu7ru7rfVVtdXVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV7u/q/1VVVVWq/6r/VVVVVar/qv9XVVVVqv+q//1VVVWq/6r/VVVVVar/qv9VVVVVqv+q/1VVVVWq/6r/VVVVVar/qv9VVVVVqv+q/1VVVVWq/6r/VVVVVa7+rv5VVVVV/u7+qlVVVVXq6v6qVVVVVf7u7qpVVVVV6ur+qlVVVVX67uuqVVVVVbq/ur9VVVVVqv+q/1VVVVWq/6r/VVVVVar/qv9VVVVVqv+q/1VVVVWq/6r/VVVVVar/qv9VVVVVqv+q/1VVVVWq/6r/X1VVVar/qv/1VVVVqv+q/1VVVVW7+6v/VVVVVW5/VVVVVVVV7/9VVVVVVVW7/VVVVVVVVfVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU="},{"a":24576,"b":"bGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxubm5ubm5ubm5ubiwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsbm5ubm5ubm5uLm4sLCwsLCwaGhoaGhoaGhoaGhoaGhoaGiwsLCwsLK6urq6urq6urq6uLCwsLBoaGhoaGhoaGhoaGhoaGhoaGhoaGiwsLCweHh4eHh4eHh4eHiwsGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGiwsHh4eHh4eHh4eHh4sLBoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhosLB4eHh4eHh4eHh4eLCwaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaLCweHh4eHh4eHh4eHiwsGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGiwsHh4eHh4eHh4eHh4sLBoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhosLB4eHh4eHh4eHh4eLCwaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaLCxuHh4eHh4eHh4ebiwsKioqKioqKioqKioqKioqKioqKioqKioqKiwsbm5ubm5ubm5ubm4sLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLG5ubm5ubm5ubm5ubGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxubm5ubm5ubm5ubiwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsbm5ubm5ubm5uLm4sLCwsLCwaGhoaGhoaGhoaGhoaGhoaGiwsLCwsLK6urq6urq6urq6uLCwsLBoaGhoaGhoaGhoaGhoaGhoaGhoaGiwsLCweHh4eHh4eHh4eHiwsGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGiwsHh4eHh4eHh4eHh4sLBoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhosLB4eHh4eHh4eHh4eLCwaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaLCweHh4eHh4eHh4eHiwsGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGiwsHh4eHh4eHh4eHh4sLBoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhosLB4eHh4eHh4eHh4eLCwaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaLCxuHh4eHh4eHh4ebiwsKioqKioqKioqKioqKioqKioqKioqKioqKiwsbm5ubm5ubm5ubm4sLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLG5ubm5ubm5ubm5ubGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxubm5ubm5ubm5ubg=="},{"a":25594,"b":"kg=="},{"a":25598,"b":"lg=="},{"a":25728,"b":"AAAAAAAAIIgAiqoAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":25984,"b":"DMAAN3AADcAAD8AAN3AANXAA1VwA1VwANXAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":32767,"b":"IA=="}],"capture":{"phase_cycles_uncertain":2,"frame_cycles":17094,"frame_ended_on_line":12,"picture_lines_low":null,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":52,"colour_cells_changed_during_frame":0}};
+(function frame() {
+  const cv = $('svs-frame'), ov = $('svs-frame-ov');
+  if (!HAS) { say(cv, SHARED); return; }
+  const noSprites = JSON.parse(JSON.stringify(FRAME));
+  noSprites.vic[0x15] = 0;
+  noSprites.writes = noSprites.writes.filter(w => w[2] !== 0xD015);
+  let r = C64.drawFrame(cv, FRAME, 2);
+  const ctx = ov.getContext('2d');
+  ov.width = cv.width; ov.height = cv.height;
+  const marks = () => {
+    ctx.clearRect(0, 0, ov.width, ov.height);
+    ctx.font = '600 22px ' + getComputedStyle(document.body).getPropertyValue('--fm');
+    for (const w of FRAME.writes.filter(w => w[2] === 0xD021)) {
+      const y = (w[0] - r.line0) * 2;
+      ctx.fillStyle = 'rgba(208,74,58,.9)'; ctx.fillRect(0, y - 1, ov.width, 3);
+      ctx.fillStyle = '#fff'; ctx.fillRect(8, y + 4, ctx.measureText('interrupt, line ' + w[0] + ': ' + hx(w[2]) + ' = ' + (w[3] & 15)).width + 12, 30);
+      ctx.fillStyle = '#d04a3a'; ctx.fillText('interrupt, line ' + w[0] + ': ' + hx(w[2]) + ' = ' + (w[3] & 15), 14, y + 27);
+    }
+  };
+  const bar = $('svs-frame-bar');
+  bar.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    for (const o of bar.querySelectorAll('button')) o.classList.toggle('svs-on', o === b);
+    const k = b.dataset.k;
+    r = C64.drawFrame(cv, k === 'bitmap' ? noSprites : FRAME, 2);
+    if (k === 'irq') marks(); else ctx.clearRect(0, 0, ov.width, ov.height);
+  });
+})();
+
+// ---- 02 the music
+(function music() {
+  const root = $('svs-music'), S = globalThis.C64Sid;
+  if (!S) { root.innerHTML = '<p class="svs-miss">The player is built on the site\'s shared scripts, which the built site serves.</p>'; return; }
+  S.mount(root, {
+    driver: createDriver, data: SVS_MUSIC, tunes: ['The theme'], ntsc: true,
+    rows: [
+      { k: 'Played by', f: (v) => v.fx ? 'the sound effects' : 'the music' },
+      { k: 'Reading', f: (v) => v.fx ? '-' : hx(v.at) + ', note ' + v.note },
+      { k: 'Instrument', f: (v) => v.fx ? '-' : v.instr ? v.instr + ' (' + hx(0x242A + 8 * (v.instr - 1)) + ')' : '-' },
+    ],
+  });
+})();
+
+// ---- 03 and 04 the embassy and the route search
+const SLOTS = ['left', 'right', 'back', 'front', 'floor opening', 'floor opening'];
+let LV = null;
+function levels(D) {
+  const b = (a) => D.ram[a], out = [];
+  for (let v = 0; v < 8; v++) {
+    const lay = b(0xBC61 + v) | b(0xBC69 + v) << 8, mp = b(0xBC71 + v) | b(0xBC79 + v) << 8;
+    const n = b(0xBC91 + v), ex = b(0xBCB1 + v) | b(0xBCB9 + v) << 8;
+    const links = [], cells = [];
+    for (let r = 0; r < n; r++) { links.push(Array.from(D.bytes(lay + 6 * r, 6))); cells.push(b(mp + r)); }
+    out.push({ n, lay, mp, links, cells, exits: Array.from(D.bytes(ex, 4)), cols: b(0xBC99 + v) + 1, rows: b(0xBCA1 + v) + 1,
+      minutes: +b(0x1B0E + v).toString(16), chance: b(0xBCA9 + v) });
+  }
+  return out;
+}
+const CW = 74, CH = 52, PAD = 18, GAP = 40;
+function geometry(L) {                                     // floor 2, when there is one, below floor 1
+  const two = L.cells.some(c => c & 0x80), fh = 26 + L.rows * CH;
+  const w = PAD * 2 + L.cols * CW, h = PAD * 2 + fh + (two ? GAP + fh : 0);
+  const at = (r) => { const c = L.cells[r]; return [PAD + (c & 15) * CW, PAD + 26 + ((c >> 4) & 7) * CH + (c & 0x80 ? fh + GAP : 0)]; };
+  return { two, w, h, at, fh };
+}
+const DCOL = ['#e9e7e1', '#cfe3f7', '#b4d2f0', '#98bfe8', '#7dabdf', '#6597d4', '#4f83c7', '#3d70b8', '#2f5fa6'];
+function drawMap(cv, L, o) {
+  const g = geometry(L), ctx = cv.getContext('2d');
+  cv.width = g.w * 2; cv.height = g.h * 2; ctx.setTransform(2, 0, 0, 2, 0, 0);
+  cv.style.maxWidth = Math.round(g.w * 1.4) + 'px';
+  const fm = getComputedStyle(document.body).getPropertyValue('--fm');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, g.w, g.h);
+  ctx.font = '500 11px ' + fm; ctx.fillStyle = '#80838a';
+  ctx.fillText('FLOOR 1', PAD, PAD + 10);
+  if (g.two) ctx.fillText('FLOOR 2', PAD, PAD + g.fh + GAP + 10);
+  const centre = (r) => { const [x, y] = g.at(r); return [x + CW / 2, y + CH / 2]; };
+  ctx.lineWidth = 3;
+  for (let r = 0; r < L.n; r++) for (let s = 0; s < 4; s++) {
+    const t = L.links[r][s]; if (t === 0xFF || t < r) continue;
+    const [x1, y1] = centre(r), [x2, y2] = centre(t);
+    const onPath = o.path && o.path.some(([a, b]) => (a === r && b === t) || (a === t && b === r));
+    ctx.strokeStyle = onPath ? '#d04a3a' : '#c9c6bd';
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  for (let r = 0; r < L.n; r++) {
+    const [x, y] = g.at(r), d = o.dist ? o.dist[r] : 0;
+    ctx.fillStyle = d === 255 ? '#2a8a4a' : d ? DCOL[Math.min(d, 8)] : '#f1efea';
+    ctx.strokeStyle = r === o.sel ? '#2f3136' : L.exits.includes(r) ? '#c25a00' : '#d5d3cc';
+    ctx.lineWidth = r === o.sel ? 3 : L.exits.includes(r) ? 2.5 : 1.5;
+    ctx.fillRect(x + 8, y + 7, CW - 16, CH - 14); ctx.strokeRect(x + 8, y + 7, CW - 16, CH - 14);
+    ctx.fillStyle = d === 255 || d > 4 ? '#fff' : '#2f3136';
+    ctx.font = '500 13px ' + fm; ctx.textAlign = 'center';
+    ctx.fillText(String(r), x + CW / 2, y + CH / 2 + 4);
+    if (r === o.goal) { ctx.strokeStyle = '#d04a3a'; ctx.lineWidth = 3; ctx.strokeRect(x + 4, y + 3, CW - 8, CH - 6); }
+    const up = L.links[r][4] !== 0xFF || L.links[r][5] !== 0xFF;
+    if (up) { ctx.fillStyle = '#4a5bd6'; ctx.font = '700 11px ' + fm; ctx.fillText('⇅', x + CW - 16, y + 18); }
+    ctx.textAlign = 'left';
+  }
+  return g;
+}
+function roomAt(L, g, cv, e) {
+  const b = cv.getBoundingClientRect(), px = (e.clientX - b.left) * g.w / b.width, py = (e.clientY - b.top) * g.h / b.height;
+  for (let r = 0; r < L.n; r++) { const [x, y] = g.at(r); if (px >= x && px < x + CW && py >= y && py < y + CH) return r; }
+  return -1;
+}
+function describe(L, r) {
+  const parts = [];
+  L.links[r].forEach((t, s) => { if (t !== 0xFF) parts.push(SLOTS[s] + ' → ' + t); });
+  return 'Room ' + r + ' (' + hx(L.lay + 6 * r) + ', map code ' + hx(L.cells[r], 2) + '): ' + parts.join(', ') +
+    (L.exits.includes(r) ? '. One of the four rooms that can hold the exit.' : '.');
+}
+function fillLevels(sel) {
+  sel.innerHTML = LV.map((L, v) => '<option value="' + v + '">Level ' + (v + 1) + ': ' + L.n + ' rooms</option>').join('');
+}
+function embassy() {
+  const cv = $('svs-map'), sel = $('svs-map-level'), read = $('svs-map-read');
+  fillLevels(sel);
+  let v = 0, pick = -1, g = null;
+  const draw = () => { g = drawMap(cv, LV[v], { sel: pick }); read.textContent = pick < 0 ? 'Click a room.' : describe(LV[v], pick); };
+  sel.onchange = () => { v = +sel.value; pick = -1; draw(); };
+  $('svs-map-prev').onclick = () => { if (v > 0) { sel.value = --v; pick = -1; draw(); } };
+  $('svs-map-next').onclick = () => { if (v < 7) { sel.value = ++v; pick = -1; draw(); } };
+  cv.onclick = (e) => { pick = roomAt(LV[v], g, cv, e); draw(); };
+  draw();
+  const tb = $('svs-levels');
+  tb.innerHTML = LV.map((L, i) => '<tr><td>' + (i + 1) + '</td><td class="svs-n">' + L.n + '</td><td class="svs-n">' + L.minutes +
+    '</td><td class="svs-n">' + 2 * L.n + '</td><td class="svs-n">' + (2 * L.n - 1) + '</td><td class="svs-n">' + L.chance + ' in 32</td><td>' +
+    L.exits.join(', ') + '</td><td>' + (L.cells.some(c => c & 0x80) ? 'two' : 'one') + '</td></tr>').join('');
+  $('svs-traps').innerHTML = LV.map((L, i) => '<tr><td>' + (i + 1) + '</td><td class="svs-n">' + L.n + '</td><td class="svs-n">' + 2 * L.n +
+    '</td><td class="svs-n">' + (2 * L.n - 1) + '</td></tr>').join('');
+}
+function route() {
+  const cv = $('svs-route'), sel = $('svs-route-level'), read = $('svs-route-read');
+  fillLevels(sel);
+  let v = 0, start = 0, goal = 0, res = null, shown = 0, g = null, timer = 0, next = 'goal';
+  const pathOf = () => {
+    const p = []; if (res.found < 0 || shown < res.found) return p;
+    for (let r = goal; r !== start; r = res.from[r]) p.push([res.from[r], r]);
+    return p;
+  };
+  const draw = () => {
+    const L = LV[v], dist = res ? res.dist.map(d => d === 255 || (d && d <= shown) ? d : 0) : null;
+    g = drawMap(cv, L, { dist, goal, sel: start, path: res ? pathOf() : null });
+    if (!res) { read.textContent = 'Start: room ' + start + '. Goal: room ' + goal + '. Click a room to set the ' + next + '.'; return; }
+    const reached = res.order.filter(r => res.dist[r] === shown);
+    const done = res.found >= 0 && shown >= res.found;
+    read.textContent = shown === 0 ? 'The search starts in room ' + start + '.' :
+      'Round ' + shown + ': ' + (reached.length ? 'reaches room' + (reached.length > 1 ? 's ' : ' ') + reached.join(', ') : 'nothing new') +
+      (done ? '. Goal found after ' + res.found + (res.found > 1 ? ' rounds' : ' round') + '; the route back follows the "came from" list: ' +
+        pathOf().map(([a]) => a).reverse().concat(goal).join(' → ') + '.' : '.');
+  };
+  const reset = () => { clearInterval(timer); res = null; shown = 0; draw(); };
+  // the level's links as the layout holds them: the exit door is a wall there, as in a game with
+  // the airport hidden, so no exit room is passed
+  const run = () => { if (!res) { res = svsRoute(LV[v].links, -1, start, goal); shown = 0; } };
+  const step = () => {
+    run();
+    const end = res.found >= 0 ? res.found : 35;
+    if (shown < end) shown++;
+    draw();
+    return shown < end;
+  };
+  sel.onchange = () => { v = +sel.value; start = 0; goal = Math.min(LV[v].n - 1, LV[v].exits[0]); reset(); };
+  cv.onclick = (e) => {
+    const r = roomAt(LV[v], g, cv, e); if (r < 0) return;
+    if (next === 'goal') { goal = r; next = 'start'; } else { start = r; next = 'goal'; }
+    reset();
+  };
+  $('svs-route-step').onclick = () => { clearInterval(timer); step(); };
+  $('svs-route-run').onclick = () => { clearInterval(timer); timer = setInterval(() => { if (!step()) clearInterval(timer); }, 450); };
+  $('svs-route-reset').onclick = reset;
+  goal = LV[0].exits[0];
+  draw();
+}
+if (HAS) C64.load('listing.json').then((D) => { LV = levels(D); embassy(); route(); })
+  .catch((e) => { say($('svs-map'), 'The listing did not load (' + e.message + ').'); });
+else { say($('svs-map'), SHARED); say($('svs-route'), SHARED); }
+
+// ---- 05 scoring
+(function scoring() {
+  const CAUSES = ['Win a fight', 'Set a trap', 'Take the other spy\'s item', 'Use a remedy', 'Caught by a trap or the guard',
+    'Lose a fight', 'Look at the map', 'Take a club hit'];
+  const RANKS = ['A KNEE HIGH SPY', 'A SMALL FRY SPY', 'AVERAGE GUY SPY', 'SPY SPY AGAIN', 'YOU SPY HARDER', 'QUITE A SLY SPY',
+    'A WISE GUY SPY', 'WHAT A GUY SPY', 'A SKY HIGH SPY', 'GRAND MASTER SPY'];
+  const MIN = [7, 12, 15, 20, 22, 24, 24, 24];
+  const grid = $('svs-score-btns'), lvl = $('svs-score-level');
+  lvl.innerHTML = MIN.map((m, i) => '<option value="' + i + '">Level ' + (i + 1) + ': ' + m + ' minutes</option>').join('');
+  let s, secs, log;
+  const reset = () => { s = { lo: 0, hi: 0, neg: 0, pend: 0 }; secs = MIN[+lvl.value] * 60; log = []; show(); };
+  const bcd = (n) => ((n / 10 | 0) << 4) | (n % 10);
+  const val = (o) => { const n = +(o.hi.toString(16).padStart(2, '0') + o.lo.toString(16).padStart(2, '0')); return o.neg ? n - 10000 : n; };
+  grid.innerHTML = CAUSES.map((c, i) => {
+    const p = SVS_POINTS[i].toString(16), t = SVS_TIME[i] ? (SVS_TIME[i] - 256) + ' s' : '';
+    return '<button data-c="' + i + '">' + c + '<small>' + (SVS_POINTS[i] ? (SVS_TAKE[i] ? '−' : '+') + p : '0') + (t ? ', ' + t : '') + '</small></button>';
+  }).join('');
+  function show(final) {
+    $('svs-score-val').textContent = final ? final.text : String(Math.max(0, val(s)));
+    $('svs-score-raw').textContent = hx(s.hi, 2).slice(1) + s.lo.toString(16).padStart(2, '0').toUpperCase() + (s.neg ? ' (sign $80)' : '');
+    const t = Math.max(0, secs - ((s.pend & 0x80) ? (s.pend & 0x7F) : -(s.pend & 0x7F)));
+    $('svs-score-clock').textContent = Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+    $('svs-score-rank').textContent = final ? final.rank : '-';
+    $('svs-score-log').textContent = log.length ? log.slice(-6).join(' · ') : 'Press an event.';
+  }
+  grid.onclick = (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    const c = +b.dataset.c, before = val(s);
+    svsScoreEvent(s, c);
+    log.push(CAUSES[c] + ': ' + before + ' → ' + val(s));
+    show();
+  };
+  $('svs-score-escape').onclick = () => {
+    const t = Math.max(0, secs - ((s.pend & 0x80) ? (s.pend & 0x7F) : -(s.pend & 0x7F)));
+    const f = { lo: s.lo, hi: s.hi, neg: s.neg, pend: 0 }, before = val(s);
+    svsFinalScore(f, bcd(Math.floor(t / 60)), bcd(t % 60));
+    const n = val(f);
+    log.push('Escape with ' + t + ' s left: ' + before + ' + 7 × ' + t + ' → ' + n);
+    show({ text: String(n), rank: RANKS[f.hi >> 4] });
+  };
+  $('svs-score-reset').onclick = reset;
+  lvl.onchange = reset;
+  reset();
+})();
+
+// ---- 06 the clock
+(function clock() {
+  const btn = $('svs-clock-go');
+  let t0 = 0, raf = 0;
+  const fmt = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  const tick = () => {
+    const real = (performance.now() - t0) / 1000;
+    const frames = real * 1022727 / (263 * 65);
+    $('svs-clock-real').textContent = fmt(real);
+    $('svs-clock-game').textContent = fmt(Math.floor(frames / 100));
+    $('svs-clock-frames').textContent = Math.floor(frames);
+    raf = requestAnimationFrame(tick);
+  };
+  btn.onclick = () => {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; btn.textContent = 'Start both clocks'; return; }
+    t0 = performance.now(); btn.textContent = 'Stop'; tick();
+  };
+})();
+
+// ---- 10 the leftovers
+(function leftovers() {
+  const tb = $('svs-syms');
+  if (!HAS) { say(tb.closest('table'), SHARED); return; }
+  C64.load('listing.json').then((D) => {
+    const rows = [];
+    let a = 0xBEC4;                                        // the first entry is cut: the end of a name, then its value
+    const entry = (p) => { const n = D.ram[p] & 0x7F; if (!(D.ram[p] & 0x80) || n < 1 || n > 12) return false;
+      for (let i = 1; i <= n; i++) if (D.ram[p + i] < 0x30 || D.ram[p + i] > 0x5A) return false; return true; };
+    while (!entry(a)) a++;
+    const tail = Array.from(D.bytes(0xBEC4, a - 0xBEC4 - 2), c => String.fromCharCode(c)).join('');
+    const tv = D.ram[a - 2] | D.ram[a - 1] << 8;
+    rows.push('<tr><td class="svs-n"><code>' + hx(0xBEC4) + '</code></td><td><b>\u2026' + tail + '</b> (cut)</td><td class="svs-n"><code>' + hx(tv) +
+      '</code></td><td>' + (D.names.get(tv) || '') + '</td></tr>');
+    const row = (at, name, v) => '<tr><td class="svs-n"><code>' + hx(at) + '</code></td><td><b>' + name + '</b></td><td class="svs-n"><code>' +
+      (v == null ? '-' : hx(v)) + '</code></td><td>' + (v == null ? '' : D.names.get(v) || '') + '</td></tr>';
+    while (a < 0xBFF0) {
+      const n = D.ram[a] & 0x7F, end = Math.min(a + 1 + n, 0xBFF0);
+      const name = Array.from(D.bytes(a + 1, end - a - 1), c => String.fromCharCode(c)).join('');
+      if (a + 3 + n > 0xBFF0) { rows.push(row(a, name + '\u2026 (cut)', null)); break; }
+      rows.push(row(a, name, D.ram[a + 1 + n] | D.ram[a + 2 + n] << 8));
+      a += 3 + n;
+    }
+    tb.innerHTML = rows.join('');
+  }).catch((e) => say(tb.closest('table'), 'The listing did not load (' + e.message + ').'));
+})();
+})();
+</script>
