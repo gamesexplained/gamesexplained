@@ -65,3 +65,28 @@ chain with its VSP scroll and the top of the play loop (`work/ann/core1.txt`),
 then started four agents on the Opus model with `work/BRIEF.md`: three on
 disjoint ranges of the engine in one shared disassembler, one on the
 intro in its own.
+
+## 9 October 2026: verification
+
+- The first sample of 80 comments found 12 with a wrong detail. Four
+  agents then audited every comment of the eight parts. The land files
+  were the worst: 40 of the sentences the description script wrote were
+  wrong in every land that used them, and 877 of 2,453 land comments
+  changed when the script was fixed and run again.
+- The second sample found the engine still poor (9 of 36), so two more
+  agents audited the engine for the patterns the checker named; the
+  colour-memory and screen cell comments, first written from direct
+  operands only, were regenerated from every instruction that can reach
+  each cell. The third sample found one sentence those generators shared
+  reversed in 65 cells.
+- The agents' reports and the lead's spot checks changed several facts
+  first written from reports: the grace after the first touch, the
+  monster kinds that always hurt, the coarse column's range, the ending's
+  route back to the title, and the extra life a 100,000-point award would
+  miss, for which no route in play was found.
+- The renderer in `site/lib/c64.js` drew the VSP-scrolled frame one
+  character to the left of VICE's picture (14,505 pixels differed); the
+  maps agent found why, and the fix made it match to the pixel.
+- VICE ran at 3-4 % of real time twice more; with sound off (a `vicerc`
+  under `tools/vice-home/` with `Sound=0`) it stayed at full speed for
+  the rest of the run.

@@ -94,18 +94,18 @@ against the bytes and the code by agents that wrote none of them
 | 3, after a second audit of the engine | 20261011 | the engine, 1,675 comments | 40 | 3 | 7.5 % (2.6-19.9 %) |
 
 Every error found was a wrong detail; no comment misdescribed what its
-routine or table is for. Sample 1's errors were "no reader" claims that
-missed an indexed read, conditions left out, and template sentences in
-the land files; the full audit that followed corrected 1,101 of 5,540
-comments, 877 of them in the lands, whose description script was fixed
-and rerun. Sample 2 found the lands, the intro and the ending clean (0 of
-44) but 9 errors in 36 engine comments: loop bounds, a second case left
-out, and indexed accesses credited to one cell. A second audit of the
-engine on those patterns corrected 344 of its comments, regenerating the
-colour-memory and screen cell comments. Sample 3's three errors were one
-reversed sentence shared by 65 colour-memory cells (all 65 then
-corrected) and a disassembler name claimed at an address where none is
-shown. Each sample's corrections were made before the next was drawn.
+routine or table is for. Sample 1's were "no reader" claims that missed
+an indexed read, conditions left out, and template sentences in the land
+files; an audit of every comment followed, and 1,101 of 5,540 were
+rewritten, 877 of them in the lands. Sample 2 found the lands, the intro
+and the ending clean (0 of 44) and 9 errors in 36 engine comments: loop
+bounds, a second case left out, and indexed accesses credited to one
+cell; a second audit of the engine on those patterns rewrote 344 of its
+comments. Sample 3's three were one reversed sentence shared by 65
+colour-memory cells, all 65 since rewritten, and a disassembler name
+claimed at an address where none is shown. Each sample's findings were
+applied before the next was drawn. How the audits went is in
+`agent-history.md`.
 
 ## Live tests
 
