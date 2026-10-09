@@ -14,7 +14,7 @@
 <section id="mine">
   <p class="fig">The mine</p>
   <h2 class="t">One map, seven kilobytes</h2>
-  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier. Choose an object to zoom in on it, then press Where it is used to step through the places it works. The dangers have a list of their own, and <a href="gameplay.html#dangers">Gameplay</a> says what each does. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag the map to move around it, and zoom out to see the whole mine. Choose an object to zoom in on it, then press Where it is used to step through the places it works. The dangers have a list of their own, and <a href="gameplay.html#dangers">Gameplay</a> says what each does. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
   <div class="plate">
     <div class="row">
       <select class="b" id="pk-ob" aria-label="Object"><option value="">Choose an object</option></select>
@@ -34,15 +34,15 @@
     </div>
     <p class="kv" id="wk-say" aria-live="polite" style="margin:0 0 8px"></p>
     <div class="row">
-      <span class="note">Zoom</span><button class="b" type="button" data-z="1" aria-pressed="false">×1</button><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
+      <span class="note">Zoom</span><button class="b" type="button" data-z="0.25" aria-pressed="false">Whole mine</button><button class="b" type="button" data-z="0.5" aria-pressed="false">×½</button><button class="b" type="button" data-z="1" aria-pressed="false">×1</button><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
       <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
       <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
       <span class="note" id="mappos"></span>
     </div>
-    <canvas id="map" class="scr" style="width:auto;max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
-    <canvas id="zoom" class="scr" style="margin-top:14px;max-width:100%" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
+    <canvas id="map" class="scr" hidden style="display:none" role="img" aria-label="The whole mine, reduced"></canvas>
+    <canvas id="zoom" class="scr" style="max-width:100%;cursor:grab;touch-action:none" role="img" aria-label="The mine, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
-    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn in the magnifier as their own sprites from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. <b style="color:#6fc3ff">Blue</b>: the creatures where a new game puts them, from the same position tables; the controllers then follow their routes. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
+    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn as their own sprites when zoomed in from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. <b style="color:#6fc3ff">Blue</b>: the creatures where a new game puts them, from the same position tables; the controllers then follow their routes. Drag the map to move around it, zoom with the buttons or the mouse wheel, and click a mark to select it.</p>
     <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. The mine has seven zones, and each zone swaps in one of three sets of shapes and colours for sixteen characters (<code>zone_classify</code>, <code>$AA3D</code>; <code>zone_graphics</code>, <code>$ABCF</code>). This picture draws every zone with its own set.</p>
   </div>
   <h3 id="objects">Where the objects work</h3>
@@ -142,20 +142,23 @@
       const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
       if (zx > -40 && zx < ZW + 40 && zy > -20 && zy < ZH + 20) {
         // an object is drawn as its own sprite, standing on its point: starting frame $1D30, colour $1850
+        if (Z < 1) { zctx.fillStyle = colour; zctx.beginPath(); zctx.arc(zx, zy, 4, 0, 7); zctx.fill(); continue; }
         if (sprites) DW.sprite(zctx, DW.image(M, M[0x1D30 + k.o]), zx - 12 * Z, zy - 21 * Z, Z, [2, M[0x1850 + k.o], 8]);
         else { zctx.strokeStyle = colour; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 6 * Z, 0, 7); zctx.stroke(); }
         zctx.font = 'bold 14px IBM Plex Mono, monospace'; zctx.lineWidth = 4; zctx.strokeStyle = '#000'; const lx = zx + (sprites ? 13 * Z : 16); zctx.strokeText(k.t, lx, zy + 5); zctx.fillStyle = colour; zctx.fillText(k.t, lx, zy + 5);
       }
     }
   }
-  const centre = ([x, y]) => view = [Math.min(full.width - ZW / Z, Math.max(0, x - ZW / 2 / Z)), Math.min(full.height - ZH / Z, Math.max(0, y - ZH / 2 / Z))];
+  const fit = (c, size, span) => span >= size ? (size - span) / 2 : Math.min(size - span, Math.max(0, c - span / 2));   // a map smaller than the view sits in its middle
+  const centre = ([x, y]) => view = [fit(x, full.width, ZW / Z), fit(y, full.height, ZH / Z)];
   centre(start);
   function cross(ctx, x, y, s, c) { ctx.fillStyle = c; ctx.fillRect(x - 4 * s, y - s / 2, 8 * s, s); ctx.fillRect(x - s / 2, y - 4 * s, s, 8 * s); }
   function draw() {
     mctx.imageSmoothingEnabled = true; mctx.drawImage(full, 0, 0, mv.width, mv.height);
     mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, ZW / Z / S, ZH / Z / S);
     cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
-    zctx.imageSmoothingEnabled = false; zctx.drawImage(full, view[0], view[1], ZW / Z, ZH / Z, 0, 0, ZW, ZH);
+    zctx.imageSmoothingEnabled = false; zctx.fillStyle = '#000'; zctx.fillRect(0, 0, ZW, ZH); zctx.drawImage(full, view[0], view[1], ZW / Z, ZH / Z, 0, 0, ZW, ZH);
+    cross(zctx, (start[0] - view[0]) * Z, (start[1] - view[1]) * Z, 3, '#c25a00');
     marks(dangers, '#ff6b5b', false);
     marks(objs, '#e8c547', true, true);
     marks(uses, '#5fd068', false);
@@ -186,16 +189,28 @@
     const col = view[0] / 32 | 0, row = 55 - ((view[1] + ZH / Z - 1) / 32 | 0);
     document.getElementById('mappos').textContent = 'block column ' + col + ', map row ' + row + ' at ' + C64.hex(0xFB80 - 0x80 * row);
   }
-  function at(e) { const b = mv.getBoundingClientRect(); centre([(e.clientX - b.left) * mv.width / b.width * S, (e.clientY - b.top) * mv.height / b.height * S]); draw(); }
-  let drag = false;
-  mv.onpointerdown = e => { drag = true; at(e); }; mv.onpointermove = e => { if (drag) at(e); }; window.addEventListener('pointerup', () => drag = false);
+  // one map: drag it to move around, the wheel or the buttons to zoom, a click on a mark to select it
+  const ZS = [0.25, 0.5, 1, 2, 3, 4];
+  const toMap = e => { const b = zv.getBoundingClientRect(); return [view[0] + (e.clientX - b.left) * zv.width / b.width / Z, view[1] + (e.clientY - b.top) * zv.height / b.height / Z]; };
+  let drag = null;
+  zv.onpointerdown = e => { drag = { x: e.clientX, y: e.clientY, v: view.slice(), moved: false }; zv.setPointerCapture(e.pointerId); zv.style.cursor = 'grabbing'; };
+  zv.onpointermove = e => { if (!drag) return; const b = zv.getBoundingClientRect(), k = zv.width / b.width / Z, dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    if (drag.moved) { centre([drag.v[0] - dx * k + ZW / 2 / Z, drag.v[1] - dy * k + ZH / 2 / Z]); draw(); } };
+  zv.onpointerup = e => { zv.style.cursor = 'grab'; if (drag && !drag.moved) {
+      const [x, y] = toMap(e); let best = null, bd = 14 / Z;
+      for (const k of all) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
+      if (best) choose(best); }
+    drag = null; };
+  zv.addEventListener('wheel', e => { e.preventDefault(); const i = ZS.indexOf(Z), n = ZS[Math.max(0, Math.min(ZS.length - 1, i + (e.deltaY < 0 ? 1 : -1)))];
+    if (n === Z) return; const p = toMap(e); setZoom(n); centre(p); draw(); }, { passive: false });
   const rp = document.getElementById('rp');
   rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
     document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
   document.getElementById('home').onclick = () => { choose(null); centre(start); draw(); };
   const zbs = document.querySelectorAll('[data-z]');
   function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
-    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + ['', 'the size of', 'twice', 'three times', 'four times'][Z] + ' the C64\'s pixels'); }
+    zv.setAttribute('aria-label', 'The mine, at ' + ({ 0.25: 'a quarter of', 0.5: 'half', 1: 'the size of', 2: 'twice', 3: 'three times', 4: 'four times' })[Z] + ' the C64\'s pixels'); }
   const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
   // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
@@ -226,13 +241,6 @@
   const go = new URLSearchParams(location.search).get('go');
   if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
   zbs.forEach(b => b.onclick = () => { const c = [view[0] + ZW / 2 / Z, view[1] + ZH / 2 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
-  // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
-  mv.addEventListener('click', e => {
-    const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;
-    let best = null, bd = 6 * S;
-    for (const k of all) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
-    if (best) choose(best);
-  });
   // the walkthrough: one step at a time, the Doctor's icon gliding from the last spot to the next
   const byT = t => all.find(k => k.t === t), mad = crs.find(k => k.t === 'MADRAG').at;
   const egg = objs.filter(k => k.t === 'EGG').sort((a, b) => Math.abs(a.at[0] - mad[0]) - Math.abs(b.at[0] - mad[0]))[0].at;
