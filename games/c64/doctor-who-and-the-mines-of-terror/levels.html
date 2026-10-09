@@ -293,7 +293,7 @@
   const wkMarks = () => [];
   const wkNext = document.getElementById('wk-next'), wkBack = document.getElementById('wk-back');
   function wkGo(i) {
-    const fwd = i === wkI + 1, from = wk ? wk.slice() : STEPS[0].at.slice(), to = STEPS[i].at, t0 = performance.now(), ms = wkI < 0 ? 0 : STEPS[i].via && fwd ? 4800 : 2000;
+    const fwd = i === wkI + 1, from = wk ? wk.slice() : STEPS[0].at.slice(), to = STEPS[i].at, t0 = performance.now(), first = wkI < 0;
     wkI = i; choose(null); if (Z < 2) setZoom(2);
     document.getElementById('wk-say').innerHTML = STEPS[i].say;
     document.getElementById('wk-n').textContent = 'Step ' + (i + 1) + ' of ' + STEPS.length;
@@ -303,6 +303,8 @@
     const path = [from, ...((STEPS[i].via && fwd) ? STEPS[i].via : []), to];
     wkPath = path.length > 2 ? path : null;
     const segs = path.slice(1).map((p, j) => Math.hypot(p[0] - path[j][0], p[1] - path[j][1])), len = segs.reduce((a, b) => a + b, 0) || 1;
+    // a steady walking pace: a long leg takes longer, rather than racing past
+    const ms = first ? 0 : fwd && STEPS[i].via ? Math.max(1500, len / 0.3) : 2000;
     const tick = now => { const f = ms ? Math.min(1, (now - t0) / ms) : 1; let d = f * f * (3 - 2 * f) * len, j = 0;
       while (j < segs.length - 1 && d > segs[j]) d -= segs[j++];
       const a = path[j], b = path[j + 1], e = segs[j] ? Math.min(1, d / segs[j]) : 1;
