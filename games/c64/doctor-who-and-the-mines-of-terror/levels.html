@@ -233,10 +233,11 @@
   const byT = t => all.find(k => k.t === t), mad = crs.find(k => k.t === 'MADRAG').at;
   const egg = objs.filter(k => k.t === 'EGG').sort((a, b) => Math.abs(a.at[0] - mad[0]) - Math.abs(b.at[0] - mad[0]))[0].at;
   const digs = uses.filter(k => /PICK AXE: dig/.test(k.t) && k.at[0] > mad[0]).sort((a, b) => a.at[0] - b.at[0]).map(k => k.at);
+  const pick = byT('PICK AXE').at;
   const SPL = '<a href="gameplay.html#splinx">Gameplay</a>';
   const STEPS = [
     { at: start, say: 'The Doctor steps out of the TARDIS. Splinx follows him.' },
-    { at: byT('PICK AXE').at, say: 'Wait here for a <a href="solution.html#madrag">Rijan miner</a> to put the PICK AXE down, and take it before the next miner picks it up.' },
+    { via: [[pick[0] + 16, pick[1] - 128]], at: [pick[0] + 16, pick[1]], say: 'Wait here for a <a href="solution.html#madrag">Rijan miner</a> to put the PICK AXE down, and take it before the next miner picks it up.' },
     { at: [egg[0] - 160, egg[1]], say: 'Stand back from the egg, and throw <b>marker 1</b> onto it with F7. Never go near the egg yourself.' },
     { at: [egg[0] - 224, egg[1]], say: 'Drop <b>marker 2</b> here with F3, away from the nest.', mark: 2 },
     { at: [mad[0], mad[1] - 96], say: 'Climb into place above the madrag. Program Splinx as ' + SPL + ' explains: 1 GOTO MARKER, P PICK UP OBJECT, 2 GOTO MARKER. When Splinx carries the egg off, the madrag goes after it.' },
@@ -247,14 +248,19 @@
   const wkMarks = () => { const m = []; if (wkI >= 2) m.push({ at: egg, n: 1 }); if (wkI >= 3) m.push({ at: STEPS[3].at, n: 2 }); return m; };
   const wkNext = document.getElementById('wk-next'), wkBack = document.getElementById('wk-back');
   function wkGo(i) {
-    const from = wk ? wk.slice() : STEPS[0].at.slice(), to = STEPS[i].at, t0 = performance.now(), ms = wkI < 0 ? 0 : 1200;
+    const fwd = i === wkI + 1, from = wk ? wk.slice() : STEPS[0].at.slice(), to = STEPS[i].at, t0 = performance.now(), ms = wkI < 0 ? 0 : STEPS[i].via && fwd ? 2400 : 1200;
     wkI = i; choose(null); if (Z < 2) setZoom(2);
     document.getElementById('wk-say').innerHTML = STEPS[i].say;
     document.getElementById('wk-n').textContent = 'Step ' + (i + 1) + ' of ' + STEPS.length;
     wkBack.disabled = i === 0; wkNext.textContent = i + 1 === STEPS.length ? 'Start again' : 'Next';
     cancelAnimationFrame(wkAnim);
-    const tick = now => { const f = ms ? Math.min(1, (now - t0) / ms) : 1, e = f * f * (3 - 2 * f);
-      wk = [from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e]; centre(wk); draw();
+    // forward, the icon follows the step's waypoints (a ladder, say); back, it goes straight
+    const path = [from, ...((STEPS[i].via && fwd) ? STEPS[i].via : []), to];
+    const segs = path.slice(1).map((p, j) => Math.hypot(p[0] - path[j][0], p[1] - path[j][1])), len = segs.reduce((a, b) => a + b, 0) || 1;
+    const tick = now => { const f = ms ? Math.min(1, (now - t0) / ms) : 1; let d = f * f * (3 - 2 * f) * len, j = 0;
+      while (j < segs.length - 1 && d > segs[j]) d -= segs[j++];
+      const a = path[j], b = path[j + 1], e = segs[j] ? Math.min(1, d / segs[j]) : 1;
+      wk = [a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e]; centre(wk); draw();
       if (f < 1) wkAnim = requestAnimationFrame(tick); };
     wkAnim = requestAnimationFrame(tick);
   }
