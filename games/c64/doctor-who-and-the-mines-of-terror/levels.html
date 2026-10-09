@@ -75,7 +75,7 @@
   const Y = y => full.height - y;
   const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
   const pts = [...Array(9)].map((_, i) => [M[0x9059 + i] << 8 | M[0x9062 + i], Y(M[0x906B + i] << 8 | M[0x9074 + i])]);
-  let view, showRp = false, wk = null, wkI = -1, wkAnim = 0;   // wk: the walkthrough's Doctor, when it runs
+  let view, showRp = false, wkPath = null, wk = null, wkI = -1, wkAnim = 0;   // wk: the walkthrough's Doctor, when it runs
   const P = (xh, xl, yh, yl) => [xh << 8 | xl, Y(yh << 8 | yl)];
   const name = o => DW.itemName(M, o);
   // objects $34-$4C where a new game places them (the markers $30-$33 wait with Splinx; x high $FF is off the map)
@@ -176,6 +176,8 @@
         mctx.fillStyle = '#fff'; mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill(); mctx.stroke();
         zctx.fillStyle = '#fff'; zctx.strokeStyle = '#c25a00'; zctx.lineWidth = 4; zctx.beginPath(); zctx.arc(zx, zy, 15, 0, 7); zctx.fill(); zctx.stroke();
         zctx.fillStyle = '#000'; zctx.font = 'bold 15px IBM Plex Mono, monospace'; zctx.textAlign = 'center'; zctx.fillText(n, zx, zy + 5); zctx.textAlign = 'start'; };
+      if (wkPath) { zctx.setLineDash([6, 6]); zctx.strokeStyle = '#fff'; zctx.lineWidth = 2; zctx.beginPath();   // this step's route
+        wkPath.forEach(([x, y], j) => zctx[j ? 'lineTo' : 'moveTo']((x - view[0]) * Z, (y - view[1]) * Z)); zctx.stroke(); zctx.setLineDash([]); }
       for (const m of wkMarks()) ring(m.at[0], m.at[1], m.n);
       ring(wk[0], wk[1], 'D');
     }
@@ -240,9 +242,8 @@
     { via: [[lad[0], lad[1] - 128]], at: lad, say: 'Wait here for a <a href="solution.html#madrag">Rijan miner</a> to put the PICK AXE down, and take it before the next miner picks it up.' },
     { via: [[lad[0], lad[1] - 123], [lad[0] + 150, lad[1] - 123], [lad[0] + 352, lad[1] - 191], [lad[0] + 352, lad[1] - 56]], at: [egg[0] - 48, egg[1]], say: 'Stand back from the egg, and throw <b>marker 1</b> onto it with F7. Never go near the egg yourself.' },
     { at: [lad[0] + 352, lad[1] - 56], say: 'Drop <b>marker 2</b> here with F3, at the foot of the ladder.', mark: 2 },
-    { at: [mad[0], mad[1] - 96], say: 'Climb into place above the madrag. Program Splinx as ' + SPL + ' explains: 1 GOTO MARKER, P PICK UP OBJECT, 2 GOTO MARKER. When Splinx carries the egg off, the madrag goes after it.' },
+    { via: [[lad[0] + 352, lad[1] - 190], [mad[0] - 212, mad[1] - 174], [mad[0] - 161, mad[1] - 222], [mad[0] - 94, mad[1] - 160], [mad[0] - 28, mad[1] - 187], [mad[0] + 44, mad[1] - 125], [mad[0] + 100, mad[1] - 139]], at: [mad[0] + 153, mad[1] - 53], jumps: true, say: 'Climb the ladder, jump over the stalagmites and the gap, and land above the rock the PICK AXE breaks. Program Splinx as ' + SPL + ' explains: 1 GOTO MARKER, P PICK UP OBJECT, 2 GOTO MARKER. When Splinx carries the egg off, the madrag goes after it.' },
     { at: digs[0], say: 'Drop down while she is away. Hold the PICK AXE and hit the rock here three times.' },
-    { at: digs[1] || digs[0], say: 'Break the second rock the same way.' },
     { at: byT('AIR MASK').at, say: 'Take the <a href="gameplay.html#pockets">AIR MASK</a>. Holding it, the Doctor can breathe the bad air high in the mine.' },
   ];
   const wkMarks = () => { const m = []; if (wkI >= 2) m.push({ at: egg, n: 1 }); if (wkI >= 3) m.push({ at: STEPS[3].at, n: 2 }); return m; };
@@ -256,6 +257,7 @@
     cancelAnimationFrame(wkAnim);
     // forward, the icon follows the step's waypoints (a ladder, say); back, it goes straight
     const path = [from, ...((STEPS[i].via && fwd) ? STEPS[i].via : []), to];
+    wkPath = path.length > 2 ? path : null;
     const segs = path.slice(1).map((p, j) => Math.hypot(p[0] - path[j][0], p[1] - path[j][1])), len = segs.reduce((a, b) => a + b, 0) || 1;
     const tick = now => { const f = ms ? Math.min(1, (now - t0) / ms) : 1; let d = f * f * (3 - 2 * f) * len, j = 0;
       while (j < segs.length - 1 && d > segs[j]) d -= segs[j++];
