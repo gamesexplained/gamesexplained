@@ -65,8 +65,12 @@ Found in the code, not in the manual.
 
 - The title shows the levels scrolling behind the logo, and swaps pages of
   the level area out of the way and back to do it (`$3F6F`-`$3F77`).
-- `game` holds the text `DOWNLOAD BY JAZ ` at `$47F0`, in the protection's
-  memory. What it refers to is unknown.
+- `game` holds the text `DOWNLOAD BY JAZ ` at `$49F0`, in the leftover
+  code at `$4800`-`$4BFF` that the game never runs (a disk routine and a
+  saver for a file named "GAME"). What it refers to is unknown.
+- The title's lives cheat, the life added on every land load, the 10
+  lives that become 00, and the extra life a 100,000-point award would
+  miss at a million (`parts/engine/facts.md`, `parts/jellyland/facts.md`).
 
 ## Open questions
 

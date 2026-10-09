@@ -66,14 +66,46 @@ The score panel at the bottom uses extended colour mode (`$18C1` →
 
 ## Mechanics
 
+The rules of play (touching, stomping, items, stars, the clock, the
+tally, sad and happy) live in the engine: `parts/engine/facts.md`.
+
 ## Data tables
 
-Each land's file carries a parameter block the engine reads byte by byte
-at `$9000`-`$917x` (more than sixty engine instructions read single
-bytes there), larger tables at `$8900`-`$8FFF`, and its character set at
-`$7800`-`$7FFF`. Their meanings are being worked out.
+Each land's file holds its map, tiles, two character sets, two colour
+tables, a parameter block at `$9000`-`$9199`, its object list at `$A000`
+and its own tunes; the layout is in `parts/jellyland/facts.md`, and each
+other land's facts give only what differs.
 
 ## Sound
+
+One music driver, the engine's at `$033C`-`$0A6F`, plays all 24 tunes;
+the intro carries its own copy. `parts/engine/facts.md`, Sound.
+
+## How accurate the listing is
+
+Three random samples of the listing's line comments were checked
+against the bytes and the code by agents that wrote none of them
+(`work/verify/`, kept out of the repository).
+
+| Sample | Seed | Drawn from | Size | With an error | Rate (Wilson 95 %) |
+|---|---|---|---|---|---|
+| 1, after annotation | 20261009 | all eight parts, 5,500 comments | 80 | 12 | 15 % (8.8-24.4 %) |
+| 2, after a full audit | 20261010 | all eight parts, 5,501 comments | 80 | 10 | 12.5 % (6.9-21.5 %) |
+| 3, after a second audit of the engine | 20261011 | the engine, 1,675 comments | 40 | 3 | 7.5 % (2.6-19.9 %) |
+
+Every error found was a wrong detail; no comment misdescribed what its
+routine or table is for. Sample 1's errors were "no reader" claims that
+missed an indexed read, conditions left out, and template sentences in
+the land files; the full audit that followed corrected 1,101 of 5,540
+comments, 877 of them in the lands, whose description script was fixed
+and rerun. Sample 2 found the lands, the intro and the ending clean (0 of
+44) but 9 errors in 36 engine comments: loop bounds, a second case left
+out, and indexed accesses credited to one cell. A second audit of the
+engine on those patterns corrected 344 of its comments, regenerating the
+colour-memory and screen cell comments. Sample 3's three errors were one
+reversed sentence shared by 65 colour-memory cells (all 65 then
+corrected) and a disassembler name claimed at an address where none is
+shown. Each sample's corrections were made before the next was drawn.
 
 ## Live tests
 
