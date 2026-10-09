@@ -105,6 +105,8 @@
   for (let i = 0; i < 3; i++) uses.push({ at: P(0x0A, 0x30 + 0x20 * i, 0x04, 0xC8), t: 'CODE LOCK: button ' + (i + 1) });   // y $04C8, 32-pixel zones from x low $20
   uses.push({ at: [84 * 32 + 16, Y(38 * 32 + 16)], t: 'CODE LOCK: changes this block' });               // switch cell 13, $BF62
   // dangers: map blocks the Doctor's centre is tested against (doctor_tile_checks, $CA58)
+  // the floor sensor: block $BD under the Doctor sends controller $23 after him (doctor_tile_checks, $CA6B)
+  for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) if (M[0xFB80 - 0x80 * r + c] === 0xBD) uses.push({ at: [c * 32 + 16, Y(r * 32 + 16)], t: 'SENSOR: calls a controller' });
   for (const [a, b, t] of CR) for (let o = a; o <= b; o++) crs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t, o });
   const dangers = [];
   for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) {
@@ -130,7 +132,7 @@
     'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'once the Doctor jumps up beside it, he can move up and down above it, up to 80 pixels', 'EGG': 'going near it while it lies free hatches a deadly baby madrag',
     'CHEMICALS': 'dropped in the pool, they turn it purple and stop two controllers for good' };
   const sel1 = (id, list, text) => { const el = document.getElementById(id); list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = text ? text(k) : k.label; el.append(o); }); return el; };
-  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS)/.test(k.t))), pkCr = sel1('pk-cr', crs);
+  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS|SENSOR)/.test(k.t))), pkCr = sel1('pk-cr', crs);
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
   function marks(list, colour, round, sprites) {
