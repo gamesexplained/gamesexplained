@@ -47,7 +47,13 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   `$CF7B` itself, and when that digit is 9 it wraps at `$3541`-`$3548`
   and carries into the millions outside the loop's test. A SUPER TIME
   BONUS (100,000) that takes the score past a million therefore earns no
-  life.
+  life. No route to that bonus was found, though: the tally gives it
+  only when TIME reads 000 as the stage-complete screen opens (`$F267`),
+  the clock stops ticking once the finish line is crossed (it runs only
+  while `$1BC6` is clear, `$2016`, and the finish sets `$1BC6` earlier in
+  the same pass, `$2B4C`), and a clock that reaches 000 first costs the
+  life (`$383F`). Event 14 is the only 100,000 award, and nothing else
+  gives it (`$BEAA`).
 - Lives: `$CF81`-`$CF82`, decimal. `life_lose` (`$BDC1`) decrements the
   tens and leaves the units 0 when the units are 0, so 10 lives become 00
   (`$BDCE`). The title's cheat writes RTS over its first byte (*live*).
@@ -65,13 +71,13 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
 
 ## Play
 
-- Touching: the first touch sets `$1BB7` and gives `$64` frames of grace
+- Touching: the first touch sets `$1BB7` and starts a grace count of `$64`, counted down only on alternate calls (`$EF4A`-`$EF4E`), so about 200 frames by the code (not measured live)
   (`$B61D`); the second costs the life (`$B5E4`). `$387D` clears the flag,
   from the extra life, the power-up and item effect 8.
 - Stomping: an object's kind below `$F7` is its strength; a stomp takes
   off `$1BAB`, which depends on the fall (`$342E` by `$1B5D`), and kills
   below 0 (`$C726`). Kinds `$FB` and `$F7` cannot be stomped (`$B59D`);
-  `$F8`, `$FC` and `$FA` always hurt; `$FD` bounces him (`$C6F8`); a
+  `$FC` and `$FA` always hurt; `$F8` hurts when he walks into it (`$B5B1`) but a stomp kills it; `$FD` bounces him (`$C6F8`); a
   charge kills them (`$B5B9`).
 - Items (`$BC15`): 200 points, then the land's `$9075` maps the item to
   one of nine effects through `$F994`/`$F99D`: charge (`$BC55`, sets
@@ -123,7 +129,7 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   (`$23EE`, `$25F0`, `$27FF`). The two screens are double-buffered, and
   when the coarse column wraps the colour RAM is moved by 41 bytes
   scrolling right (`$2482`-`$2538`) and by 40 scrolling left
-  (`$28E1`-`$297F`, with row 14 carried to row 15 through `$BFCF`).
+  (`$28E1`-`$297F`: columns 0-38 of rows 0-14 and 1-38 of rows 15-24, so column 0 of the lower rows stays behind; `recolour_column`, `$2990`-`$29A2`, on the same path then rewrites column 0 of every row).
 - The big font: four character codes a letter at `$B6D5`, printed by
   `$B817`; M and W three columns wide, I, J, L and most punctuation one, `?` two (`$B812`).
 
@@ -138,6 +144,21 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   Frequency table `$09B0`-`$0A6F`, 96 notes.
 - In play the music has voice 3 and the effects voices 1 and 2 (`$1E85` →
   `$128A`, `$1E65` → `$12A2`).
+- The game stores 24 tunes: the intro's two, six in the engine (the title
+  `$1600`, the stage card's sad `$FC56` and happy `$FDB6`, the sad land
+  `$E000`, the power-up `$B111`, stage complete `$FCFA`), three in each
+  land's file chosen by the map's tune markers, and the ending's. The
+  page's port of the driver reproduces the original's SID writes for all
+  24, frame by frame from start to end (`work/music/test.js`, run in
+  `kit/c64/cpu6502.js`: 8,057,196 frames, 0 mismatches).
+- No tune uses the filter command (`$17`); `$D417` stays 0.
+- In play the driver works voice 3 alone (`$045E`, `$088F`): the land,
+  sad and power-up tunes store only that voice. The volume shadow `$0965`
+  is never cleared, so each tune starts at the previous one's volume.
+- Not settled: when a stage starts happy, `$1E76` sets `$1B97` to `$FF`
+  and `$E4C5` indexes the land's tune table with Y = `$FF`, which in the
+  simulator starts a tune at a nonsense address (`$FFFF` in Jellyland,
+  `$5555` in Cherryland). Not yet seen in the emulator.
 - 45 sound numbers map to 35 effect definitions of 20 bytes (`$12C8`,
   `$12F5`, `$1322`, `$C144`); a sound starts only if its priority is at
   least that of the one playing (`$1352`).

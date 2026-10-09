@@ -26,8 +26,10 @@ When the fifth strip set has scrolled through, `$5B55` sets `$5A17`; "the
 end" appears (`$6474`), two sprites blink (`$6439`), sprites 6 and 7
 move apart and cycle colours. Fire then goes `$5B72` → `$5A07` → the
 engine's `JMP $C019` → `$CE66`, which swaps `$7800`-`$7FFF` with
-`$D800`-`$DFFF` and starts a new game at the first land (`$CBA5`). There
-is no score screen and no return to the intro.
+`$D800`-`$DFFF` and goes to `$CBA5`, the same road game over takes: it
+loads Jellyland again, whose file holds the title, and the loader jumps
+to the title's code (`$CE58` → `$F45E` → `JMP $A547`). There is no score
+screen, and the intro is not shown again.
 
 ## Text
 

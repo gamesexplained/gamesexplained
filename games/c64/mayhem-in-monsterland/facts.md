@@ -30,7 +30,7 @@ The Apex disk release, two sides; no version string was found.
 | Frame flag | `$1B3B`, set by the raster interrupt, consumed by the play loop (`$2088`, `$1E9B`) |
 | Pause flag | `$1BC5` (`$2222`) |
 | Raster-chain register save | zero page `$0C`-`$0E` (`$206B`, `$2081`) |
-| Scroll position | coarse column `$0F` (0-39) and fine scroll `$10` (0-7) (`$2088`, `$2162`) |
+| Scroll position | coarse column `$0F` (0-40 scrolling right, wrapping at `$29`, `$20C1`; 0-39 scrolling left) and fine scroll `$10` (0-7) (`$2088`, `$2162`) |
 
 ## Timing
 
