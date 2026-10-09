@@ -39,8 +39,15 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   events (`$34E7`/`$34F7`): 1, 500, 200, 100, 50, 1000-5000, 10,000,
   20,000, 50,000, 80,000, 100,000 or 1,000,000 points, repeated `$1B78`
   times while the multiplier is on.
-- An extra life each time the millions digit `$CF7A` rises (`$3530`,
-  `$355A` → `$3636`).
+- An extra life when the millions digit `$CF7A` rises, in two of the
+  three ways it can: an event added straight to that digit (the
+  1,000,000 event, `$3530`), or a carry out of the hundred-thousands
+  digit `$CF7B` rolling over from 9 inside the carry loop (`$355A`), each
+  → `$3636`. The third way gives none: an event of 100,000 is added to
+  `$CF7B` itself, and when that digit is 9 it wraps at `$3541`-`$3548`
+  and carries into the millions outside the loop's test. A SUPER TIME
+  BONUS (100,000) that takes the score past a million therefore earns no
+  life.
 - Lives: `$CF81`-`$CF82`, decimal. `life_lose` (`$BDC1`) decrements the
   tens and leaves the units 0 when the units are 0, so 10 lives become 00
   (`$BDCE`). The title's cheat writes RTS over its first byte (*live*).
@@ -109,8 +116,9 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   `$8009` + 16 × tile, coloured per glyph from `$8900`; `$D0`-`$EF` are
   repeat markers and `$F0` and up tune markers, taking no column
   (`$23EE`, `$25F0`, `$27FF`). The two screens are double-buffered, and
-  the colour RAM is moved by 41 bytes when the coarse column wraps
-  (`$2482`-`$2538`).
+  when the coarse column wraps the colour RAM is moved by 41 bytes
+  scrolling right (`$2482`-`$2538`) and by 40 scrolling left
+  (`$28E1`-`$297F`, with row 14 carried to row 15 through `$BFCF`).
 - The big font: four character codes a letter at `$B6D5`, printed by
   `$B817`; M and W three columns wide, I, J, L and punctuation one.
 

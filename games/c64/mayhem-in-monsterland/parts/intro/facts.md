@@ -70,7 +70,7 @@ one is characters `$90`-`$AB` (`$888F`).
 
 The same driver as the engine's, loaded at `$4B00` and run at `$033C`:
 37 commands, a PAL note table at `$0A69`. Two tunes: the ident `$9EB6`,
-played once, and the roll call `$9A00`, looped.
+played once, and the roll call `$9A00`, whose voices each repeat their body 255 times and then stop the music (event `$1E` at `$9ACA`, `$9B71`, `$9DDC`).
 
 ## Oddities
 

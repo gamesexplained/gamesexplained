@@ -31,7 +31,7 @@ Sources:
 | In the happy land, collect a number of magic stars, then cross the finish line | traced | the star code is switched off in the sad land by an RTS written over its first byte (`$B7C3`); the star quota comes from the land's `$9041`-`$9043` (`$3BC6`); the finish line is tested at `$2B4C` |
 | Faster-spinning stars are worth more | traced | a star's points come from its spin delay through the table at `$EDF5`: 500, 200, 100, 50 or nothing (`$38C4`-`$39A2`) |
 | A Super-Star bonus, on the first and last stages only | traced | "SUPER STAR BONUS" when the star count reaches 000 at the tally (`$F29D`); no test of the stage number was found there |
-| Happy-land bonuses: point multipliers, extra lives, extra time and others | traced | items map through the land's `$9075` to nine effects (`$F994`/`$F99D`): charge, multiplier, ten stars off, power-up, extra life, one star off, clock stopped for 20 ticks (`$CB4B`), an extra continue (`$10C1`), and `$10D5` |
+| Happy-land bonuses: point multipliers, extra lives, extra time and others | traced | items map through the land's `$9075` to nine effects (`$F994`/`$F99D`): charge, multiplier, ten off the counter, power-up, extra life, one off the counter (the counter at `$CF83`-`$CF85` holds the dust still needed while the land is sad), clock stopped for 20 ticks (`$CB4B`), an extra continue (`$10C1`), and `$10D5` |
 | The finish-line bonus depends on speed, measured by the slide while braking | traced | the skid distance is counted in decimal digits `$1BF0`/`$1BF1` with a rising sound (`$1EFD`), worth 1000 each in the tally (`$BE84`) |
 | Portals (rainbows): one is active; a lost life restarts there; touching another makes it the active one | traced | objects with behaviour `$80`-`$8F`; `$E4E3` makes the touched one active (`$1D60`, bit 7 of its record's byte 0) |
 | The first touch of an enemy does not cost a life, the second does; a portal or a bonus gives the protection back | traced | the first touch sets `$1BB7` and gives `$64` frames of grace; the second costs the life (`$B4A8`-`$B5E9`). The wiki's invincibility POKE at `$B61D` turns `INC $1BB7` into a load |
@@ -42,7 +42,7 @@ Sources:
 | Hidden areas reached by ducking and running; platforms nearly invisible against the background | open | |
 | Down + fire drops through a platform | traced | player movement, `$2A3A`-`$2FFF`: glyphs below the land's `$9020` are platforms he can drop through and jump up through, below `$9021` walls |
 | A variable jump: letting go of up early cuts the jump short | traced | jump index `$1B5D` with speeds from `$3460` |
-| An extra life for every million points | traced | when the score's millions digit `$CF7A` rises (`$3534`/`$355E` → `$3636` → `$3866`) |
+| An extra life for every million points | traced | when the score's millions digit `$CF7A` rises (`$3534`/`$355E` → `$3636` → `$3866`), except when a 100,000-point event carries it there: then no life (`$3541`-`$3548`; `parts/engine/facts.md`) |
 | Controls: joystick in port 2 | live | port 2 moves the player; port 1 untried |
 | Left and right walk; the screen scrolls and the player stays near the middle | live | 40 frames of right move the position bytes `$1BD9`/`$1BDA` by +2, left by -2; facing `$1B5E` is `$01` or `$FF` |
 | Up jumps | live | the player's sprites (6 and 7) rise 66 lines and fall back in 40 frames |

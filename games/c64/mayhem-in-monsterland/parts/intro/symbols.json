@@ -6819,7 +6819,7 @@
   {
    "address": 1,
    "type": "line",
-   "text": "The 6510's memory configuration port: $36 (KERNAL in, BASIC out) while boot, `2` and the intro's set-up run; $35 briefly at $8099, then $36 again from the raster set-up $8390 (A = $36 at $8238 and $8BB8); $34 for the copier, $35 handed to the engine."
+   "text": "The 6510's memory configuration port: boot runs with the value it finds (it never writes $01); $36 (KERNAL in, BASIC out) from `2` ($C241) and the intro's set-up ($52EE); $35 briefly at $8099, then $36 again from the raster set-up $8390 (A = $36 at $8238 and $8BB8); $36 in the game loader ($5401), $34 for the copier, $35 handed to the engine."
   },
   {
    "address": 57,
@@ -6859,7 +6859,7 @@
   {
    "address": 164,
    "type": "line",
-   "text": "Loader temporary: first the drive-command byte counter (M-W in 32-byte pieces, $C27F-$C2B3 and $547F-$54B3), then the CIA 2 port A value with the handshake line raised (bit 3 set), written to $DD00 before each byte."
+   "text": "Loader temporary: first the drive-command byte counter (M-W in 32-byte pieces, $C27F-$C2B3 and $5447-$547B), then the CIA 2 port A value with the handshake line raised (bit 3 set), written to $DD00 before each byte."
   },
   {
    "address": 165,
@@ -6869,7 +6869,7 @@
   {
    "address": 169,
    "type": "line",
-   "text": "False symbol: $A9 is the operand of the BIT zero page that the music driver's file copy has at $4CEA (run $0526), which the intro patches into BIT absolute; nothing reads $A9."
+   "text": "False symbol: $A9 is the operand of the BIT zero page that the music driver's file copy has at $4CEA (run $0526). The intro patches it into BIT absolute ($2C at $535A), so BIT $00A9 does read $A9, but only for flags that the LDA at $4C16 overwrites after the return; the patch's point is that the bytes $A9 $00 after the $2C are LDA #$00 (run $0527), the target of the BNE at $4CE0. No other instruction reads $A9."
   },
   {
    "address": 184,
@@ -7299,7 +7299,7 @@
   {
    "address": 2457,
    "type": "line",
-   "text": "Music driver (run time), per voice: frequency low byte of the arpeggio's third note."
+   "text": "Music driver (run time), per voice: meant as the low byte of the arpeggio's third note frequency, read at $4E60, but nothing writes it except the init's clear ($4CF5): the note code at $4C9D-$4CA1 keeps only the high byte (TYA discards the low byte in A), so it is always 0."
   },
   {
    "address": 2460,
@@ -7724,7 +7724,7 @@
   {
    "address": 19201,
    "type": "line",
-   "text": "Run at $033D, called by mus_update every frame. One step of the three-voice player: counts the frame divider $0959 up to the tempo $0958 (a tick when it wraps to 0); adds the filter sweep step ($0975 fine, $0976 coarse) to the cutoff in $0A1B/$0A1C; then for each voice X = 2..0 (Y = its SID register offset, 0/7/14, from $09FC): steps the arpeggio counter, and on a tick reads the voice's command events (two bytes each: command + 1, argument) and dispatches each through the 37-entry handler table at $0A1F/$0A44 by patching the JSR at $03D5; then runs the per-frame effects (slide $076B, vibrato $06A6, waveform programme $096C, arpeggio $0677, pulse sweep $0621) and on a tick counts the note down ($0462). Writes only the SID shadow at $0A06-$0A1E."
+   "text": "Run at $033D, called by mus_update every frame. One step of the three-voice player: counts the frame divider $0959 up to the tempo $0958 (a tick when it wraps to 0); adds the filter sweep step ($0975 fine, $0976 coarse) to the cutoff in $0A1B/$0A1C; then for each voice X = 2..0 (Y = its SID register offset, 0/7/14, from $09FC): steps the arpeggio counter, and on a tick, only when the voice's note is on its last tick ($09F3 = 1 with $09A8 = 0) or $09A8 = $FF ($4B66-$4B79), reads the voice's command events (two bytes each: command + 1, argument) and dispatches each through the 37-entry handler table at $0A1F/$0A44 by patching the JSR at $03D5; then, unless the note is a rest ($0960 = 0), runs the per-frame effects (slide $076B, vibrato $06A6, waveform programme $096C, arpeggio $0677, pulse sweep $0621); and on a tick counts the note down ($0462). It reaches the SID only through the shadow at $0A06-$0A1E."
   },
   {
    "address": 19248,
@@ -7804,7 +7804,7 @@
   {
    "address": 19892,
    "type": "line",
-   "text": "Run at $05F0, command $06. A of 99 or more chooses the filter voice $0957 (A - 100), whose notes restart the filter sweep; below 99 selects the voice's waveform programme $096C (1-5 a waveform from $0A01-$0A05 for the first frames of a note, 6 and up alternate one every other tick)."
+   "text": "Run at $05F0, command $06. A of 99 or more chooses the filter voice $0957 (A - 100), whose notes restart the filter sweep; below 99 selects the voice's waveform programme $096C: 1-5 put a waveform from $0A01-$0A05 on the voice from the note's second tick until $096F ticks (the whole note when $096F = 0); 6 and up alternate waveform (programme - 5) with the note's own on every other arpeggio step (bit 0 of $09A2)."
   },
   {
    "address": 19906,
@@ -8029,7 +8029,7 @@
   {
    "address": 20763,
    "type": "line",
-   "text": "Run address $0957-$0A1E: the driver's variables, all zero in the file (the init clears $0957-$09F1). Three bytes per voice from $095A on (one for each voice), named at their run addresses: frequency, note, waveform, release point, arpeggio, slide, vibrato, loop and call state, the event pointers $09F6/$09F9, the register offsets $09FC-$09FE (0, 7, 14), the tune address $09FF/$0A00, the waveforms $0A01-$0A05 for the waveform programme ($41 pulse, $21 sawtooth, $11 triangle, $81 noise, $51 pulse + triangle), and the SID shadow $0A06-$0A1E."
+   "text": "Run address $0957-$0A1E: the driver's variables, zero in the file except the register offsets and the waveforms (the init clears $0957-$09F1). Three bytes per voice from $095A on (one for each voice), named at their run addresses: frequency, note, waveform, release point, arpeggio, slide, vibrato, loop and call state, the event pointers $09F6/$09F9, the register offsets $09FC-$09FE (0, 7, 14), the tune address $09FF/$0A00, the waveforms $0A01-$0A05 for the waveform programme ($41 pulse, $21 sawtooth, $11 triangle, $81 noise, $51 pulse + triangle), and the SID shadow $0A06-$0A1E."
   },
   {
    "address": 20963,
@@ -8094,7 +8094,7 @@
   {
    "address": 21504,
    "type": "line",
-   "text": "The loader for `game`, at its load address: $5321-$533A copies $5400-$57FF to $C000-$C3FF and $53DB jumps to $C000 once fire is pressed, so every address inside it is a $C0xx/$C1xx run address. Sets $01 = $36, masks the VIC interrupts, silences the SID, blanks the screen and turns the sprites off; opens \"GAME\" ($53DE) on device 8 with the KERNAL's serial routines, writes the drive program at $C168 (= $5568 here) into drive RAM $0700 with M-W in 32-byte pieces, starts it with M-E $07AB, builds its 2-bit decode table at $C400-$C4FF from the 32 seeds at $C134 (= $5534), then receives `game` through $C0FF into $0200 upwards until the page counter reaches $A9 ($0200-$A8FF), changing the border colour every block. Then UNTALK, closes the file (LISTEN, secondary $E0, UNLISTEN) and jumps to the copier at $0180."
+   "text": "The loader for `game`, at its load address: $5321-$533A copies $5400-$57FF to $C000-$C3FF and $53DB jumps to $C000 once fire is pressed, so every address inside it is a $C0xx/$C1xx run address. Sets $01 = $36, masks the VIC interrupts, silences the SID, blanks the screen and turns the sprites off; opens \"GAME\" ($53DE) on device 8 with the KERNAL's serial routines, writes the drive program at $C168 (= $5568 here) into drive RAM $0700 with M-W in 32-byte pieces, starts it with M-E $07AB, builds its 2-bit decode table at $C400-$C4FF from the 32 seeds at $C134 (= $5534), then receives `game` through $C0FF into $0200 upwards until the page counter reaches $A9 ($0200-$A8FF), changing the border colour every block. Then calls UNLSN ($EDFE, at $54E4; not UNTALK), closes the file (LISTEN, secondary $E0, UNLISTEN) and jumps to the copier at $0180."
   },
   {
    "address": 21705,
@@ -8234,7 +8234,7 @@
   {
    "address": 29952,
    "type": "line",
-   "text": "The big font's glyph map, 43 glyphs of four character codes (top left, top right, bottom left, bottom right): 0-25 the letters a-z, 26-35 the digits 0-9, 36-40 \"!\", \".\", \",\", \"?\", \":\", 41 and 42 the third columns of m and w. A digit is reached only through an 8-bit wrap (print_big computes code + $2A, times four): its chars, $69-$8E, now hold the Apex screen's letters, so a digit would print as fragments; no string contains one. $FF in a glyph is a solid (blank) cell."
+   "text": "The big font's glyph map, 43 glyphs of four character codes (top left, top right, bottom left, bottom right): 0-25 the letters a-z, 26-35 the digits 0-9, 36-40 \"!\", \".\", \",\", \"?\", \":\", 41 and 42 the third columns of m and w. A digit is reached only through an 8-bit wrap (print_big computes code + $2A, times four): its chars, $69-$8E (and $18, $1A for the 1), now mostly hold the Apex screen's letters, so a digit would print as fragments; no string contains one. $FF in a glyph is a solid (blank) cell."
   },
   {
    "address": 29953,
@@ -8259,7 +8259,7 @@
   {
    "address": 30056,
    "type": "line",
-   "text": "Big-font glyph map, glyphs 26-35, the digits 0-9: they point at chars $69-$8E, which now hold the Apex screen's letters, and are reached only through print_big's 8-bit index wrap; no string uses a digit."
+   "text": "Big-font glyph map, glyphs 26-35, the digits 0-9: they point at chars $69-$8E (glyph 27 also at $18 and $1A), most of which now hold the Apex screen's letters, and are reached only through print_big's 8-bit index wrap; no string uses a digit."
   },
   {
    "address": 30096,
@@ -9054,12 +9054,12 @@
   {
    "address": 33329,
    "type": "line",
-   "text": "Roll call's main loop. Restores the KERNAL exit of the raster interrupt ($84B8), starts the raster chain at $8288 (line $36, $01 = $36) and then once a frame: waits for frame_flag; on next_page draws the next dinosaur page; counts the show timer ($8A6C); on draw_credits draws the credits page; checks for Mayhem's page ($8A93); toggles the frame parities; and when fire is pressed on joystick port 2 ($DC00 bit 4 low) leaves through exit_hook ($8007)."
+   "text": "Roll call's main loop. Restores the KERNAL exit of the raster interrupt ($84B8), starts the raster chain at $8288 ($01 = $36; raster_install sets the first interrupt at line $F9) and then once a frame: waits for frame_flag; on next_page draws the next dinosaur page; counts the show timer ($8A6C); on draw_credits draws the credits page; checks for Mayhem's page ($8A93); toggles the frame parities; and when fire is pressed on joystick port 2 ($DC00 bit 4 low) leaves through exit_hook ($8007)."
   },
   {
    "address": 33416,
    "type": "line",
-   "text": "Raster handler at the bottom of the picture (line $CA, $DA or $DF, $36 the first time). Blacks the background, sets frame_flag, scrolls the mountains ($852A), steps the landscape and sprite colour fades ($8AC2, $8ADE), on Mayhem's page runs his run-in, stop, skid and dust ($8740-$87CA), once the dinosaur has arrived scrolls the name and Latin name in ($8B2E, $8B5C), plays the music ($8003); returns the next link: the credits chain at line 0 ($833E), the title bars at line $51 ($832F, bar set 0), or the sky at line $6A ($82DE)."
+   "text": "Raster handler at the bottom of the picture (line $CA, $DA or $DF; line $F9 the first time, from raster_install). Blacks the background, sets frame_flag, scrolls the mountains ($852A), steps the landscape and sprite colour fades ($8AC2, $8ADE), on Mayhem's page runs his run-in, stop, skid and dust ($8740-$87CA), once the dinosaur has arrived scrolls the name and Latin name in ($8B2E, $8B5C), plays the music ($8003); returns the next link: the credits chain at line 0 ($833E), the title bars at line $51 ($832F, bar set 0), or the sky at line $6A ($82DE)."
   },
   {
    "address": 33502,
@@ -9519,7 +9519,7 @@
   {
    "address": 35709,
    "type": "line",
-   "text": "Mayhem TV and Apex part. Fills the screen with char $E7 in black ($840B), copies the two rows of \"COMPUTER \u00b7 PRODUCTIONS\" from $76E4 and $770C to rows 12 and 13, puts four single characters at rows 11 and 14, columns 0 and 20 ($8A, $8E, $8B, $E6; their purpose is unknown), turns extended colour off, and starts its raster chain at $8BD8 (line $36). Then waits for each frame and toggles frame_parity until $8BCF has been changed to 1 ($8DBB), when it jumps to the roll call through $800A."
+   "text": "Mayhem TV and Apex part. Fills the screen with char $E7 in black ($840B), copies the two rows of \"COMPUTER \u00b7 PRODUCTIONS\" from $76E4 and $770C to rows 12 and 13, puts four single characters at rows 11 and 14, columns 0 and 20 ($8A, $8E, $8B, $E6; their purpose is unknown), turns extended colour off, and starts its raster chain at $8BD8 ($01 = $36; first interrupt at line $F9). Then waits for each frame and toggles frame_parity until $8BCF has been changed to 1 ($8DBB), when it jumps to the roll call through $800A."
   },
   {
    "address": 35791,
@@ -9529,7 +9529,7 @@
   {
    "address": 35800,
    "type": "line",
-   "text": "Mayhem TV and Apex raster handler at line $59 (line $36 the first time): blacks border and background and loads sprite set 0 (the APEX letters) once the logo has gone, else set 2 (the Mayhem TV logo); next link line $83."
+   "text": "Mayhem TV and Apex raster handler at line $59 (line $F9 the first time, from raster_install): blacks border and background and loads sprite set 0 (the APEX letters) once the logo has gone, else set 2 (the Mayhem TV logo); next link line $83."
   },
   {
    "address": 35826,
@@ -9609,7 +9609,7 @@
   {
    "address": 35899,
    "type": "line",
-   "text": "Sprite enable masks for the curtain set, applied from the end as the bar moves ($8C91): $03, $03, $07, $07 ... $FF, one more sprite every two steps, so the bar's blocks appear one by one behind its moving edge; the first byte is not read."
+   "text": "Sprite enable masks for the curtain set, applied from the end as the bar moves ($8C91, Y = $8C3A before its decrement, 14 down to 2): $03, $03, $07, $07 ... $FF, one more sprite every two steps, so the bar's blocks appear one by one behind its moving edge; 13 masks are applied, and the first two bytes ($8C3B, $8C3C) are never read."
   },
   {
    "address": 35914,
@@ -9844,7 +9844,7 @@
   {
    "address": 36594,
    "type": "line",
-   "text": "High bytes of the 20 big-font string addresses ($8EF2-$9005)."
+   "text": "High bytes of the 20 big-font string addresses ($8EF2-$8F05)."
   },
   {
    "address": 36614,
@@ -10724,7 +10724,7 @@
   {
    "address": 39424,
    "type": "line",
-   "text": "The roll-call tune, started by rollcall_intro ($53BF) and played until fire: four header bytes (voice 1 at +$00C7, voice 2 at +$016E from the voice 0 data at $9A04), then the three voices' events ($9A04, $9ACB, $9B72) and the stretches they call ($9DDD-$9EB5). Each voice loops itself 255 times through command $11 before stopping."
+   "text": "The roll-call tune, started by rollcall_intro ($53BF) and played until fire: four header bytes (voice 1 at +$00C7, voice 2 at +$016E from the voice 0 data at $9A04), then the three voices' events ($9A04, $9ACB, $9B72) and the stretches they call ($9DDD-$9EB5). Each voice ends with event byte $12, argument $FF ($9AC6, $9B6D, $9DD8): the driver's command $11 (byte - 1), the second-slot repeat at $05D0, which jumps back 254 times to the event byte $13 mark (command $12, $05D8) near the voice's start ($9A12, $9AE7, $9B96), so the body plays 255 times; then a rest and event byte $1E (command $1D, stop)."
   },
   {
    "address": 40413,
@@ -10799,7 +10799,7 @@
   {
    "address": 49408,
    "type": "line",
-   "text": "Run-time address of $5500 (the game loader's receive routine continues here). In the hand-over: `2`'s leftover sprite tables, $C100-$C13F, read by the routines at $C00D-$C0F8 (positions, colours and pointers for sprites 3-7)."
+   "text": "Run-time address of $5500 (the game loader's receive routine continues here). In the hand-over: part of `2`'s leftover block; the leftover routines at $C00D-$C0F8 read colours from $C117-$C125, positions from $C144-$C161 and pointers from $C164-$C172 (sprites 3-7)."
   },
   {
    "address": 49426,
@@ -10819,12 +10819,12 @@
   {
    "address": 49512,
    "type": "line",
-   "text": "Run-time address of the game loader's copy of the drive program (= $5568). In the hand-over: `2`'s leftover sprite tables continue to $C1FF."
+   "text": "Run-time address of the game loader's copy of the drive program (= $5568). In the hand-over: part of `2`'s leftover block; the leftover routines' pointer table runs $C164-$C172, and the bytes after it to $C1FF are not read by them."
   },
   {
    "address": 49576,
    "type": "line",
-   "text": "In the hand-over: the last 88 bytes of `2`'s leftover block ($C1A8-$C1FF), more of the leftover sprite routines' tables. At run time: inside the game loader's copy of the drive program ($55A8)."
+   "text": "In the hand-over: the last 88 bytes of `2`'s leftover block ($C1A8-$C1FF), mostly zero; the leftover sprite routines do not read them (their tables end at $C172), and no other use is established. At run time: inside the game loader's copy of the drive program ($55A8)."
   },
   {
    "address": 49664,

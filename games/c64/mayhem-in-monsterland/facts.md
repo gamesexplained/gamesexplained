@@ -97,6 +97,12 @@ bytes there), larger tables at `$8900`-`$8FFF`, and its character set at
   at 03. Typing all 25 keys through the emulator's key matrix registered
   too unreliably to finish the sequence, so the first 24 steps were taken
   from the code, not typed.
+- The missed extra life (`work/verify/million.js`, the engine's
+  `score_add` `$350B` run in `kit/c64/cpu6502.js` on
+  `parts/engine/work/play.vsf`): from 900,000 points, event 14 (100,000)
+  makes 1,000,000 and the lives stay 03; from 990,000, event 10 (10,000)
+  makes 1,000,000 and the lives go to 04; event 15 (1,000,000) from
+  900,000 gives a life too.
 
 ## Text
 

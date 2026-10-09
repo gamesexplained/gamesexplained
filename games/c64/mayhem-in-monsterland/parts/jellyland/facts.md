@@ -57,13 +57,14 @@ column `$90`; fire on port 2 starts a game.
 
 ## Object types
 
-The type-to-script tables are indexed by the record's type, plus 25
-while happy. The delay table `$969A` has 25 entries, but Jellyland uses
-types up to 30, so those read their delay from the bytes after it, the
-colour-list pointers at `$96B3`.
+The type-to-script tables (`$956E`-`$9668`) are indexed by the record's
+type, plus 25 while happy; no land's records use a type of 25 or more.
+A record whose byte 5 has bits 6 and 7 both set names an animation
+script directly instead of a type (`$E8A0` → `$E92B`), with its delay
+from `$952E`.
 
 ## Theo's speech
 
 "WELL DONE MAY-HEM. YOU HAVE CO-LLEC-TED / EN-OUGH MAG-IC DUST FOR ME TO
 SPREAD / AC-ROSS JE-LLY-LAND. I CAN NOW MAKE / IT A HA-PPY PLACE ONCE
-MORE!" (`$974C`), stored with hyphens between syllables.
+MORE!" (`$974C`). The hyphens split the syllables for the speech sound (`$D460`) and are not drawn.

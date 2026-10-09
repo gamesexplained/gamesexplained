@@ -19230,7 +19230,7 @@
   {
    "address": 1034,
    "type": "line",
-   "text": "A symbol only because the endless clearing loop at $C000 (outside this range, no caller found) names $040A and steps upward from it: the middle of the music driver's voice loop."
+   "text": "A symbol only because the clearing loop at $C000 (outside this range; the protection jumps there at $44B2 after a third wrong code) names $040A in its STA and steps that operand upward: here the middle of the music driver's voice loop."
   },
   {
    "address": 1038,
@@ -19730,7 +19730,7 @@
   {
    "address": 2287,
    "type": "line",
-   "text": "Per voice: note length, high byte (a ($19, n) pair after a note); $FF while commands are being read."
+   "text": "Per voice: note length, high byte (a ($19, n) pair after a note, $052B; 0 at init, $0542). The countdown's borrow ($046F) takes it to $FF when a length of 0 is counted past zero; while it holds $FF, $03A8 reads commands on every tempo tick."
   },
   {
    "address": 2290,
@@ -20095,7 +20095,7 @@
   {
    "address": 3123,
    "type": "line",
-   "text": "Field 17: sweep mode. Bits 0-1 layer A's direction (0 none, 1 up, 2 or 3 down); bits 2-3 what happens at a bound (0 stop, 4 restart from the other bound, 8 or 12 reverse); bits 4-5 and 6-7 the same for layer B."
+   "text": "Field 17: sweep mode. Bits 0-1 layer A's direction (0 none, 1 up, 2 or 3 down); bits 2-3 what happens at a bound (0 stop, 4 restart from the other bound, 8 or 12 reverse by EOR 3, which turns 1 and 2 into each other but 3 into 0, a stop); bits 4-5 and 6-7 the same for layer B."
   },
   {
    "address": 3124,
@@ -20395,7 +20395,7 @@
   {
    "address": 4056,
    "type": "line",
-   "text": "Byte 2 of effect definition 34 (the start frequency high byte): set to 6 at the level start ($1D4E) and raised by 4 each time $1F1C/$1F1F run, before sound $2C plays it, so the pitch climbs with each repeat."
+   "text": "Byte 2 of effect definition 34 (the start frequency high byte): set to 6 at the level start ($1D4E) and raised by 2 (the two INCs at $1F1C and $1F1F) for each character skidded past the finish, before sound $2C plays it, so the pitch climbs with each repeat."
   },
   {
    "address": 4074,
@@ -20420,7 +20420,7 @@
   {
    "address": 4112,
    "type": "line",
-   "text": "Two identical 16-byte colour runs; no reader found by absolute or indexed address."
+   "text": "Two identical 16-byte colour runs. No instruction uses their values: the only read is the raster-blanking loop's timing load at $1384 (LDA $1000,X with X up to the line count, result discarded); $3D5A's LDA $1000,X stops at X = $0F."
   },
   {
    "address": 4144,
@@ -20450,7 +20450,7 @@
   {
    "address": 4225,
    "type": "line",
-   "text": "Colours the loading screen (called at $CC4D, right after $CC4A prints a line through $B817): colour RAM rows at $DA32/$DA5A light red ($0A) and $DACB/$DAF3 yellow (7), 32 columns each; for a land (level index $CF89 below 5) it also colours the top line in light blue ($0E) up to and including the first $14 byte in screen row $44A0."
+   "text": "Colours the loading screen (called at $CC4D, right after $CC4A prints a line through $B817): colour RAM rows at $DA32/$DA5A light red ($0A) and $DACB/$DAF3 yellow (7), 32 columns each; for a land (level index $CF89 below 5) it also colours rows 4 and 5 ($D8A0, $D8C8) light blue ($0E) from column 0 to one column past the first $14 byte in screen row 4 ($44A0; the INX comes before the compare)."
   },
   {
    "address": 4275,
@@ -20495,7 +20495,7 @@
   {
    "address": 4352,
    "type": "line",
-   "text": "Opens a level on the screen (called at $1D26 at the end of the level start): keeps the colour operand $20F3 in $1930 and zeroes it, copies screen $4800-$4BFF to $4400-$47FF and zeroes the colour RAM, fills $4800-$4BF7 with the land's blank glyph ($9022), sets $219A to $1B, waits for raster line 0, sets the box's start corners from the shape X ($EFF7; X is patched at $1155 from the land's $971B), then each frame grows the box ($1195) until it is 41 columns wide and jumps to $F0EE. With $1C19 set the growing waits 9 frames first and runs the sound effects ($0A70) each frame; after 4 frames of growing the colour in $20F3 is restored."
+   "text": "Opens a level on the screen (called at $1D26 at the end of the level start): keeps the colour operand $20F3 in $1930 and zeroes it, copies screen $4800-$4BFF to $4400-$47FF and zeroes the colour RAM, fills $4800-$4BF7 with the land's blank glyph ($9022), sets $219A to $1B, waits for raster line 0, sets the box's start corners from the shape X ($EFF7; X is patched at $1155 from the land's $971B), then each frame grows the box ($1195) until it is 41 columns wide and jumps to $F0EE. With $1C19 set the growing waits 8 frames first (the countdown in $1170), then runs the sound effects ($0A70) on each frame it grows. The colour in $20F3 is restored after 4 frames ($1181): 4 frames of growing when $1C19 is 0, 4 frames of the wait when it is set."
   },
   {
    "address": 4437,
@@ -20525,7 +20525,7 @@
   {
    "address": 4481,
    "type": "side",
-   "text": "operand patched by $115B (4): frames of growing before $20F3 is restored"
+   "text": "operand patched by $115B (4): frames before $20F3 is restored (frames of growing, or of the wait when $1C19 is set)"
   },
   {
    "address": 4501,
@@ -20610,12 +20610,12 @@
   {
    "address": 4808,
    "type": "line",
-   "text": "Sound numbers 0-$2C: the effect channel (0-2, the SID voice) each sound plays on, read by $1352."
+   "text": "Sound numbers 0-$2C: the effect channel (0-2, the SID voice) each sound plays on, read by $1352. Sound $2A's entry, $12F2, is stepped 2, 1, 0, 2, ... by the ending's $D478-$D480 each time before $D485 plays that sound."
   },
   {
    "address": 4853,
    "type": "line",
-   "text": "Sound numbers 0-$2C: the priority of each sound; $1352 starts a sound only when its priority is at least that of the effect still playing on the channel ($1B82). $FF for the sounds that may never be interrupted. $12F2 (sound $2A) is rewritten by $D485."
+   "text": "Sound numbers 0-$2C: the priority of each sound; $1352 starts a sound only when its priority is at least that of the effect still playing on the channel ($1B82). $FF for the sounds that only another $FF sound can interrupt."
   },
   {
    "address": 4898,
@@ -20675,7 +20675,7 @@
   {
    "address": 5095,
    "type": "line",
-   "text": "Shifts four rows (one on the last call) of the hidden screen one character left: each row's first character is kept in $1921 onward (the STA at $1408 steps through it) and characters 1-39 move to 0-38. X = the call count, kept in the operand at $1431; on the first call (X = 6) sets the pointers to the top row."
+   "text": "Shifts four rows of the hidden screen one character left, five on the last call (6 calls x 4 + 1 = 25 rows): each row's first character is kept in $1921 onward (the STA at $1408 steps through it) and characters 1-39 move to 0-38. X = the call count, kept in the operand at $1431; on the first call (X = 6) sets the pointers to the top row."
   },
   {
    "address": 5129,
@@ -20695,12 +20695,12 @@
   {
    "address": 5169,
    "type": "side",
-   "text": "operand patched by $13E7 and decremented: rows-left counter"
+   "text": "operand patched by $13E7 and decremented: calls left in this shift (6 down); when it reaches 0 the call shifts one more row"
   },
   {
    "address": 5173,
    "type": "line",
-   "text": "Shifts four rows (one on the last call) of the hidden screen one character right (characters 0-38 to 1-39, last first). X = the call count, kept at $1470."
+   "text": "Shifts four rows of the hidden screen one character right, five on the last call (25 rows over 6 calls), characters 0-38 to 1-39, last first. X = the call count, kept at $1470."
   },
   {
    "address": 5232,
@@ -20710,7 +20710,7 @@
   {
    "address": 5232,
    "type": "side",
-   "text": "operand patched by $1435 and decremented: rows-left counter"
+   "text": "operand patched by $1435 and decremented: calls left in this shift (6 down); when it reaches 0 the call shifts one more row"
   },
   {
    "address": 5236,
@@ -20735,12 +20735,12 @@
   {
    "address": 5242,
    "type": "line",
-   "text": "Moves and animates the two effect sprites (entries X = 0, 1 at $1B69-$1B70, shown in turn through sprite 5 by $21B5): while the scroll speed $208C is not 0 and both share an X position it frees the later one ($0F); every $1476 frames advances each live sprite's frame ($1B6D: from the 12-entry list at $F988 when $1B9C is set, else by one up to $E0); a free entry is started at the player's position ($1BE3, $1BE4 less $1B4B and $1478) when $1B55, $1B56/$1B57 or $1B54 ask for it, with frame $0C (or $DD when $1BB6 is set) or $A0/$B8/$A4/$B4 by direction ($1B3F); and every frame it moves each live entry against the scroll by $1BD7, setting the X high bit ($1B6F = $20) when it carries. Called from the play loop ($1F5E) and $23A8."
+   "text": "Moves and animates the two effect sprites (entries X = 0, 1 at $1B69-$1B70, shown in turn through sprite 5 by $21B5): while the scroll speed $208C is not 0 and both share an X position it frees ($0F) the one with the higher frame number; every $1476 frames advances each live sprite's frame ($1B6D: from the 12-entry list at $F988 when $1B9C is set; else by one, and with $1BB6 set freed on reaching $E0); a free entry is started when $1B55, $1B56/$1B57 or $1B54 ask for it, at the player's X ($1BE3) or at a fixed X ($A0/$B8 with $1BB6 set, $A4/$B4 otherwise, by the scroll direction $1B3F) and the player's Y ($1BE4, in some cases plus 4, less $1B4B and $1478), with frame $0C ($DD when $1BB6 is set, from $F988 when $1B9C is set); and each frame, while $208C is not 0 and $1BC9 is 0, it moves each live entry against the scroll by $1BD7, setting the X high bit ($1B6F = $20) when it carries. Called from the play loop ($1F5E) and $23A8."
   },
   {
    "address": 5617,
    "type": "line",
-   "text": "Six glyph numbers ($E5 $C2 $BC $BF $BE $4B) that $EE74 compares with the map bytes at ($8A)+$29 and +$2A, beside the player; a match increments $1BE4."
+   "text": "Six glyph numbers ($E5 $C2 $BC $BF $BE $4B) that $EE74 compares with the screen bytes at ($8A)+$2A and +$29, beside the player; a match moves him down ($1BE4 plus 1, plus 2 on frames where $1B68 is 0). $EE74 tests them only while he is in the air ($1B5B) in the happy land."
   },
   {
    "address": 5623,
@@ -21185,7 +21185,7 @@
   {
    "address": 6918,
    "type": "line",
-   "text": "Entry 3 of the screen row high bytes, also read by $FF82."
+   "text": "Entry 3 of the screen row high bytes ($44), read through $2A9B's LDA $1B03,Y like the others. The bytes AE 06 1B at $FF82 that look like LDX $1B06 are inside the happy tune's data, not code."
   },
   {
    "address": 6940,
@@ -21340,7 +21340,7 @@
   {
    "address": 6998,
    "type": "line",
-   "text": "Dust-puff parameter set with $1B55 ($F04B, $3352, $E2F2); with $1B57 clear it selects frames $A4/$B4 at the player's feet plus 4 ($1523-$1539)."
+   "text": "Dust-puff parameter set with $1B55 ($F04B, $3352, $E2F2), read also by $33D8. While it is set and $1B57 is clear (with $1BB6 = 0), a new puff starts at a fixed X position, $A4 or $B4 by the scroll direction ($1523-$1539), not at the player's X, and its Y gets no +4 ($1578)."
   },
   {
    "address": 6999,
@@ -21350,7 +21350,7 @@
   {
    "address": 7000,
    "type": "line",
-   "text": "While nonzero $F043 starts no new puff; cleared when a puff ends ($1501), written by $33E0 and $E2FA; selects frames $A0/$B8 when set ($150C)."
+   "text": "Cleared when a puff ends ($1501), written by $33E0 and $E2FA, read by $334D, $3388 and $F043 (which starts no new puff while it is set). With $1BB6 set and $208C not 0, a new puff starts at a fixed X position, $A0 or $B8 by the scroll direction, while it is 0 ($150C-$1521), and at the player's X while it is set."
   },
   {
    "address": 7001,
@@ -21430,7 +21430,7 @@
   {
    "address": 7016,
    "type": "line",
-   "text": "Flips between 0 and 1 every frame ($BE04): halves the rate of the background flash ($20E5), the floaty jump ($2DD4), the colour cycles at $3EF4 and other paced work; the glyph rotation in $22E9 shifts by this many bits."
+   "text": "Flips between 0 and 1 every frame ($BE04): halves the rate of the background flash ($20E5), the floaty jump ($2DD4), the colour cycles at $3EF4 and other paced work; when the scroll speed $1BD7 is below 2, the glyph rotation in $22E9 shifts one bit only on the frames where it is 1."
   },
   {
    "address": 7017,
@@ -21495,7 +21495,7 @@
   {
    "address": 7029,
    "type": "line",
-   "text": "Written by $3AFB only. No reader found."
+   "text": "The spinning star's pass counter: reloaded from $EE10 by $3AFB and counted down by the DEC $1B75 at $3AEE (an instruction whose opcode $B7C9 rewrites); when it goes negative the next star frame is shown."
   },
   {
    "address": 7030,
@@ -21620,7 +21620,7 @@
   {
    "address": 7054,
    "type": "line",
-   "text": "Read by $C135. Written by none found."
+   "text": "Fourth byte after the colour set: written by $B383 (STA $1B8B,X in the loop $B372-$B387, X = 3) and read by $C135."
   },
   {
    "address": 7055,
@@ -21640,7 +21640,7 @@
   {
    "address": 7058,
    "type": "line",
-   "text": "7 at the level start ($1D97). No reader found by address."
+   "text": "7 at the level start ($1D97); also the fourth entry of $B372-$B387's loop over $1B8F,X (X = 3 down to 0): read by $B374 and written by $B37E."
   },
   {
    "address": 7059,
@@ -21680,7 +21680,7 @@
   {
    "address": 7066,
    "type": "line",
-   "text": "Counted down by $BCDD while nonzero, indexing $BB38/$BB3E; set by $BC25 and $FFC1. Meaning not traced from this range."
+   "text": "Counted down by $BCDD while nonzero, indexing $BB38/$BB3E; set by $BC25 (the STA $1B9A at $FFC1 is in leftover bytes that nothing executes). Meaning not traced from this range."
   },
   {
    "address": 7067,
@@ -21725,7 +21725,7 @@
   {
    "address": 7075,
    "type": "line",
-   "text": "From the land's $96EA at the level start ($1D78). No other reader found by address."
+   "text": "From the land's $96EA at the level start ($1D78). With $1BA4 it is the second of the X-indexed pairs that start at $1BA1 (X = 2): read by $E616 and $B7E4/$B7FF, written by $E60D, $B7E9 and $B804 when those run with X = 2 ($E635, $E6EC, $EC82, $ECE8)."
   },
   {
    "address": 7076,
@@ -22090,7 +22090,7 @@
   {
    "address": 7154,
    "type": "line",
-   "text": "No reader or writer found by address."
+   "text": "Written only by $E571 (STA $1BEF,X with X = 3, clearing $1BEF-$1BF2 with the skid distance); no reader found."
   },
   {
    "address": 7155,
@@ -22105,7 +22105,7 @@
   {
    "address": 7167,
    "type": "line",
-   "text": "Operand of LDA #$FF at $1BFE: the value $1BFE fills $1BC9-$1BD6 with, rewritten by $FFB7."
+   "text": "Operand of LDA #$FF at $1BFE: the value $1BFE fills $1BC9-$1BD6 with. Nothing in the engine's code writes it: the bytes 8D FF 1B at $FFB7 (STA $1BFF) are leftovers that nothing executes."
   },
   {
    "address": 7177,
@@ -22190,7 +22190,7 @@
   {
    "address": 7874,
    "type": "line",
-   "text": "The pass after the pause test: reads the stick; unless $1BD1 is set, moves the player ($2AAF, or $BD5A while $1B7F is set) and runs $EE9E; sets the signed scroll speed $208C from $1BD7 and the direction (0 while $1BCC is set); when a character has scrolled past ($1B3C) counts the skid distance after the finish and draws the new column ($2858 left, $23EE right, with $F1A5/$F16D, $E6EC/$E72F); then the screen shift ($1395), $E6BE, the effect sprites ($147A), $BCD3, $B34F, $38C4, $B4A8, and the end of a lost life when $1B80 runs out ($BDC1 and $3B3F)."
+   "text": "The pass after the pause test: reads the stick; unless $1BD1 is set, moves the player ($2AAF, then $EE9E; or only $BD5A while $1B7F is set), and with $1BD1 set runs $EE9E alone; sets the signed scroll speed $208C from $1BD7 and the direction (0 while $1BCC is set); when a character has scrolled past ($1B3C) counts the skid distance after the finish and draws the new column ($2858 left, $23EE right, with $F1A5/$F16D, $E6EC/$E72F); then the screen shift ($1395), $E6BE, the effect sprites ($147A), $BCD3, $B34F, $38C4, $B4A8, and the end of a lost life when $1B80 runs out ($BDC1 and $3B3F)."
   },
   {
    "address": 8114,
@@ -22395,7 +22395,7 @@
   {
    "address": 8937,
    "type": "line",
-   "text": "Raster handler at line $FA: next link $20F8 at line 0. Unless the coarse column has just wrapped ($1B48) or the game is paused it runs $3A88; with $1C19 set and $1BC9 clear, $B62A unless $1B48 is set. Then, when $1BC3 is set and the playfield scrolls ($208C nonzero) and the land asks for it ($9023), rotates two glyphs of the character set as one 16-pixel-wide strip (8 rows; $7FC8 and $7FD0 as loaded, the land picks them through $9024 and $BBC8-$BBE0) by $1B68 bits a frame, left or right against the scroll direction $1B3F, so their pattern drifts; and when $9023 is 0 but $903C and $1BEC are set it calls $EE11. With $1C19 set: while $1BC9 is set (the walk off at the level's end) it re-raises the frame flag, moves the player's X ($1BE3) by $CF18 indexed by the step counter $1B81 (which also triggers $33F4 at step $34), and runs $EE9E and $147A itself; otherwise, in the happy land ($1BEC) with $903B set, looks at the map byte in front of the player (($8A) + $51/$52 by direction): glyphs $60-$61 while $1BB6 is 0 run $E2F0, glyphs $62-$63 while it is 1 run $E2D2."
+   "text": "Raster handler at line $FA: next link $20F8 at line 0. Unless the coarse column has just wrapped ($1B48) or the game is paused it runs $3A88; with $1C19 set and $1BC9 clear, $B62A unless $1B48 is set. Then, when $1BC3 is set, the playfield scrolls ($208C nonzero), the land asks for it ($9023) and $1C19 and $1BC9 are not both set, rotates two glyphs of the character set as one 16-pixel-wide strip (8 rows; $7FC8 and $7FD0 as loaded, the land picks them through $9024 and $BBC8-$BBE0) by $1BD7/2 bits a frame, or when that is 0 by one bit on the frames where $1B68 is 1, left or right against the scroll direction $1B3F, so their pattern drifts. When the rotation is skipped because $208C or $9023 is 0 or $1BC9 is set (not when $1BC3 is 0), it calls $EE11 if $903C and $1BEC are set. With $1C19 set: while $1BC9 is set (the walk-in at the level start) it re-raises the frame flag, moves the player's X ($1BE3) by $CF18 indexed by the step counter $1B81 (which also triggers $33F4 at step $34), and runs $EE9E and $147A itself; otherwise, in the happy land ($1BEC) with $903B set, looks at the map byte in front of the player (($8A) + $51/$52 by direction): glyphs $60-$61 while $1BB6 is 0 run $E2F0, glyphs $62-$63 while it is 1 run $E2D2."
   },
   {
    "address": 9015,
@@ -22695,7 +22695,7 @@
   {
    "address": 10328,
    "type": "line",
-   "text": "Moves the map one character column the other way (called from the play loop at $1F37 when the scroll direction $1B3F is 1): the left edge's tile column $1BCB counts down, on leaving a tile $1BDA goes back past marker columns (a band-0 code of $F0 or more twelve columns on runs $2A1B), repeat markers ($2724) and the band pointers ($264C); the right edge likewise ($1BCA, $1BD9, $2767, $F13E). Then the screen addresses, and on a coarse wrap ($1B48) the screen swap and the colour RAM moved down a row and right a column (row 10's bottom saved through $BFCF), the shift state cleared, the column drawn ($27FF) and recoloured ($2550, then column 0 of the first row)."
+   "text": "Moves the map one character column the other way (called from the play loop at $1F37 when the scroll direction $1B3F is 1): the left edge's tile column $1BCB counts down, on leaving a tile $1BDA goes back past marker columns (a band-0 code of $F0 or more twelve columns on runs $2A1B), repeat markers ($2724) and the band pointers ($264C); the right edge likewise ($1BCA, $1BD9, $2767, $F13E). Then the screen addresses, and on a coarse wrap ($1B48) the screen swap and the colour RAM moved down a row in the same columns (+40: rows 0-13 into 1-14 for columns 0-38, rows 15-23 into 16-24 for columns 1-38; row 14 goes to row 15 through $BFCF), the shift state cleared, the column drawn ($27FF) and recoloured ($2550, then column 0 of the first row)."
   },
   {
    "address": 10661,
@@ -22705,12 +22705,12 @@
   {
    "address": 10663,
    "type": "line",
-   "text": "Raster band set chosen by a map object code A (called by $E704 when the code is met moving right): X = A - $79, then $29B0. $29AC, called by $E777 moving left, subtracts $78 more after the first subtraction, so the set before the marker is chosen."
+   "text": "Raster band set chosen by a map object code A ($78-$7F), called by $E704 when the code is met moving left (from $E6EC, the play loop's path for $1B3F = 1): X = A - $79, then $29B0. Moving right, $E777 enters at $29AC instead, X = A - $78, so moving left picks the set one lower, the one before the marker."
   },
   {
    "address": 10668,
    "type": "line",
-   "text": "Entry used by $E777: the leftward band set choice (A less $78 more), then $29AF."
+   "text": "Entry used by $E777 (moving right, $1B3F = 0): X = A - $78, then $29AF. (Entered from $29A7 only when A - $79 borrowed.)"
   },
   {
    "address": 10672,
@@ -22725,12 +22725,12 @@
   {
    "address": 10735,
    "type": "line",
-   "text": "Colour set chosen by a map object code A (called by $E70F moving right: X = A - $71; $29F4, called by $E782 moving left, takes $70 more): unless set X is already in $1BCF, copies three bytes from the land's $9095 + 3*X into $1B8B-$1B8D."
+   "text": "Colour set chosen by a map object code A ($70-$77; called by $E70F when it is met moving left: X = A - $71; $29F4, called by $E782 moving right, gives X = A - $70): unless set X is already in $1BCF, copies three bytes from the land's $9095 + 3*X into $1B8B-$1B8D."
   },
   {
    "address": 10740,
    "type": "line",
-   "text": "Entry used by $E782: the leftward colour set choice."
+   "text": "Entry used by $E782 (moving right): X = A - $70, the colour set choice one above the leftward one."
   },
   {
    "address": 10779,
@@ -22770,7 +22770,7 @@
   {
    "address": 11118,
    "type": "line",
-   "text": "Slopes: unless $1B74 is negative, $2EF9 updates the slope state; when the player is not on a slope ($1B74 = 0) $3012 runs."
+   "text": "Slopes: unless $1B74 is negative, $2EF9 updates the slope state, and $3012 runs when $1B74 is then 0 (not on a slope); with $1B74 negative $3012 runs at once."
   },
   {
    "address": 11135,
@@ -22780,12 +22780,12 @@
   {
    "address": 11302,
    "type": "line",
-   "text": "The player meets a wall: at full speed ($1B51 = $5D) and not on a slope or skidding, $F043 runs with A = 3 (a bump). Unless he is on a slope ($1B74) outside a bounce, falls into $2C3E."
+   "text": "The player meets a wall: at full speed ($1B51 = $5D), not on a slope ($1B74 = 0) and with no dust puff running ($1B55 = 0), $F043 runs with A = 3 (a bump); in every case it then goes on into $2C3E."
   },
   {
    "address": 11326,
    "type": "line",
-   "text": "Stops the player's run: unless he is on a slope outside a bounce (then returns A = $1B74), clears the speed $1B51 and the facing request $1B5E, lets the scroll finish its character ($1BD7 = 1 unless the fine scroll $10 is already at the edge, 0 or 7 by direction; then $1BD7 = 0, and $1B4E is evened down), plays sound 6 and runs $33C9 when $1B52 was not 0, and clears $1BCC, $1B54 and $1B47; a finished bounce ($1B9F and $1BA0 both set) is cleared. Returns A = 0."
+   "text": "Stops the player's run: unless he is on a slope outside a bounce (then returns A = $1B74), clears the speed $1B51 and the facing request $1B5E, lets the scroll finish its character ($1BD7 = 1, with $1B4E evened down, unless the fine scroll $10 is already at the edge, 0 or 7 by direction, when $1BD7 = 0), plays sound 6 and runs $33C9 when $1B52 was not 0, and clears $1BCC, $1B54 and $1B47; a finished bounce ($1B9F and $1BA0 both set) is cleared. Returns A = 0."
   },
   {
    "address": 11433,
@@ -22815,7 +22815,7 @@
   {
    "address": 11802,
    "type": "line",
-   "text": "One frame of falling: the index $1B5D counts up to $1F and Y grows by the speed $33A1 gives. With a solid glyph under either foot ($8A + $79/$7A, with the glyph ahead when moving left) and the three rows above it clear, the player lands: after a long fall ($1B5D $1B or more) $F043 runs with A = 2, falling and in-air flags clear, Y snaps to the row and sound $0D plays. Below the map ($1B4C set) a Y below $F4 is a fall into a pit: $1B7E counts it, and $1B80 = $28 frames before the play loop ends the life ($1BBA is raised too when, in a sad land with $36F3 set, glyph $4C or $4E is found at $8A + $50-$52)."
+   "text": "One frame of falling: the index $1B5D counts up to $1F and Y grows by the speed $33A1 gives. With a solid glyph under either foot ($8A + $79/$7A, with the glyph ahead when moving left) and the three rows above it clear, the player lands: after a long fall ($1B5D $1B or more) $F043 runs with A = 2, falling and in-air flags clear, Y snaps to the row and sound $0D plays. Below the map ($1B4C set) a Y of $F4 or more (less the slope offset) is a fall into a pit: $1B7E counts it, and $1B80 = $28 frames before the play loop ends the life ($1BBA is raised too when, in a sad land with $36F3 set, glyph $4C or $4E is found at $8A + $50-$52)."
   },
   {
    "address": 11957,
@@ -22830,7 +22830,7 @@
   {
    "address": 11993,
    "type": "line",
-   "text": "Slope offsets in pixels for fine scroll 0-7: 4 4 3 3 2 2 1 1 (slope glyph 0, $9081)."
+   "text": "Slope offsets in pixels for fine scroll 0-7: 4 4 3 3 2 2 1 1 (slope glyph 0, $9081; moving right, $2F35-$2F3A also use it for slope glyph 2, $9083)."
   },
   {
    "address": 12001,
@@ -22840,7 +22840,7 @@
   {
    "address": 12009,
    "type": "line",
-   "text": "Slope offsets, all 0 (slope glyph 2, $9083)."
+   "text": "Slope offsets, all 0: slope glyph 2 ($9083) when the slope is met moving left ($2FAD); moving right, $2F35 uses $2ED9 for that glyph instead."
   },
   {
    "address": 12017,
@@ -22880,52 +22880,52 @@
   {
    "address": 12274,
    "type": "line",
-   "text": "1 1 2 2 3 3 4 4 5: the start of a run of pairs that continues to $3001 (8 8); only $2FFB onward is read."
+   "text": "Slope heights in pixels for fine scroll 0-7, 1 1 2 2 3 3 4 4 ($2FF2-$2FF9): the table of the first slope character $9088, read by $3012 through the LDA $FFFF,X at $3063/$30D4, whose operand $300A/$300E point here. $2FFA (5) begins the next table."
   },
   {
    "address": 12283,
    "type": "line",
-   "text": "Effect numbers 5 5 6 6 7 (continuing to $3001: 7 8 8) read by $C79C with Y as sound 3's effect, written into $1325 before the sound plays: the pitch steps up as Y grows."
+   "text": "Bytes 1-5 of the slope height table $2FFA (5 5 6 6 7 7 8 8 for fine scroll 0-7, $2FFA-$3001; slope characters $9089 and $908B), read through $3063/$30D4. The same bytes from $2FFB (5 6 6 7 7, then 8 8 at $3000) are also read by $C79C as $2FFB+Y, Y being the operand of the LDY at $C79A, and written into $1325 before sound 3 plays: the pitch steps up as Y grows."
   },
   {
    "address": 12288,
    "type": "line",
-   "text": "The last ten bytes of the table that $C79C reads as $2FFB+Y (in agent 1's range): 8, 8, then eight zeros. $C79C plays sound 3 with the value as its parameter ($1325)."
+   "text": "The end of the slope height table $2FFA (8, 8), then $3002-$3009, eight zeros: the height table of slope character $908A when $3012 meets it in direction 0 ($30C6). $C79C's table for sound 3's effect ($2FFB+Y into $1325) runs into these bytes for Y of 5 or more; the range of Y is not established."
   },
   {
    "address": 12298,
    "type": "line",
-   "text": "Low bytes of four height-table addresses, one per slope character matched by $3012 ($9088-$908B in the land's block); with $300E they give $F22F, $FA2F, $0230 and $FA2F. $3012 and $30C6 patch them into the LDA $FFFF,X at $3063/$30D4, which X = fine scroll ($10) indexes."
+   "text": "High bytes ($2F, $2F, $30, $2F) of the four slope height tables, one per slope character $9088-$908B matched by $3012: $3058 and $30C9 store them into the high byte of the LDA $FFFF,X at $3063/$30D4 ($3065, $30D6). With the low bytes at $300E the tables are $2FF2, $2FFA, $3002 and $2FFA, indexed by the fine scroll ($10)."
   },
   {
    "address": 12302,
    "type": "line",
-   "text": "High bytes of the four height-table addresses whose low bytes are at $300A ($F2, $FA, $02, $FA)."
+   "text": "Low bytes ($F2, $FA, $02, $FA) of the four slope height tables whose high bytes are at $300A; $305E and $30CF store them into $3064 and $30D5."
   },
   {
    "address": 12306,
    "type": "line",
-   "text": "Works out the height adjustment $1B4B for the ground under the player, from the characters around the player's screen position ($8A/$8B) and the land's character codes at $9088-$908E. Returns at once when $1B5A and the scroll speed ($208C) are both 0. With $1B74 = 0 it only tests whether the player stands on one of the four slope characters $9088-$908B ($30DB: $1B74 = $FF if so, 0 if not). With $1B74 set, it follows the slope: in direction $1B3F = 1 it steps the position up a row ($311F) while the character at offset $50 is $908C, goes to $310B on $908D, and otherwise looks the character up in $9088-$908B and loads $1B4B from that slope's height table at the fine scroll ($10); in direction 0 it reads offsets $76, $79, $4F and $7A and steps down a row ($3137) instead. Called from $2B7B."
+   "text": "Works out the height adjustment $1B4B for the ground under the player, from the characters around the player's screen position ($8A/$8B) and the land's character codes at $9088-$908E. Returns at once when $1B5A and the scroll speed ($208C) are both 0. With $1B74 = 0 it only tests whether the player stands on one of the four slope characters $9088-$908B ($30DB: $1B74 = $FF if so, 0 if not). With $1B74 set, it follows the slope: in direction $1B3F = 1 it steps the position up a row ($311F) while the character at offset $50 is $908C, goes to $310B on $908D, and otherwise looks the character up in $9088-$908B (taking $908A as $9088) and loads $1B4B from that slope's height table ($2FF2, $2FFA or $3002, addressed through $300A/$300E) at the fine scroll ($10); in direction 0 it reads offsets $76, $79, $4F and $7A and steps down a row ($3137) instead. Called from $2B7B."
   },
   {
    "address": 12388,
    "type": "line",
-   "text": "Operand (low byte) of the LDA $FFFF,X at $3063, the slope's height table, set from $300A by $3055."
+   "text": "Operand (low byte) of the LDA $FFFF,X at $3063, the slope's height table, set from $300E by $305E."
   },
   {
    "address": 12389,
    "type": "line",
-   "text": "Operand (high byte) of the LDA at $3063, set from $300E by $305B."
+   "text": "Operand (high byte) of the LDA at $3063, set from $300A by $3058."
   },
   {
    "address": 12501,
    "type": "line",
-   "text": "Operand (low byte) of the LDA $FFFF,X at $30D4, the slope's height table, set from $300A by $30C6."
+   "text": "Operand (low byte) of the LDA $FFFF,X at $30D4, the slope's height table, set from $300E by $30CF."
   },
   {
    "address": 12502,
    "type": "line",
-   "text": "Operand (high byte) of the LDA at $30D4, set from $300E by $30CC."
+   "text": "Operand (high byte) of the LDA at $30D4, set from $300A by $30C9."
   },
   {
    "address": 12555,
@@ -22950,7 +22950,7 @@
   {
    "address": 12634,
    "type": "line",
-   "text": "The player's horizontal movement for one pass, from the decoded stick and the facing $1B5E. While $1B46 or $1B47 counts, or $1B7E is set, it only keeps the speed going ($32DE, $326C). Down ($1B62) with the ground characters below ($9021 or higher at offsets 0-3 of $8A) sets $1B63, and with speed ($208C) also $1B54 and $3388. When the facing differs from the scroll direction $1B3F it turns round: at the edge of a character (fine scroll 7 going right, 0 going left) it calls $E668/$E630 and $2633/$264E, moves the column wrap counter $1BDD, sets $1B41 and $1B3F to the new direction, and starts the six-pass turn counter $1B46. Otherwise it accelerates or brakes through the speed counter $1B51 (0 to $5D), the charge flags $1B52-$1B54 and the fire bit ($1BE2, when $1BEB allows it), and ends with the scroll speed in $1BD7 from the speed table ($3392). Called from $2B1B."
+   "text": "The player's horizontal movement for one pass, from the decoded stick and the facing $1B5E. While $1B46 or $1B47 counts, or $1B7E is set, it only keeps the speed going ($32DE, $326C). Down ($1B62) sets $1B63; when nothing solid is at the top row of the player's position (the glyphs at offsets 0-3 of $8A all $9021 or higher), it also sets, with speed ($208C), $1B54 and runs $3388. When the facing differs from the scroll direction $1B3F it turns round: at the edge of a character (fine scroll 7 going right, 0 going left) it calls $E668/$E630 and $2633/$264E, moves the column wrap counter $1BDD, sets $1B41 and $1B3F to the new direction, and starts the six-pass turn counter $1B46. Otherwise it accelerates or brakes through the speed counter $1B51 (0 to $5D), the charge flags $1B52-$1B54 and the fire bit ($1BE2, when $1BEB allows it), and ends with the scroll speed in $1BD7 from the speed table ($3392). Called from $2B1B."
   },
   {
    "address": 12790,
@@ -23015,7 +23015,7 @@
   {
    "address": 13300,
    "type": "line",
-   "text": "Saves A; unless the power-up $1B9C runs, starts the effect sprite (sprite 4, drawn by $B293 from $1B69-$1B6E): $1B71 from $1474+$1BB6, $1B6B/$1B6C cleared ($BB9D, result 0 into $1B72), both frames blank ($33EB), $1B73 = 1. Then, when the saved A is 0 and $1B5B is clear, falls into $341E (sound $BFCB). Called from $2397, $3360, $338F, $BB76, $E2FF and others."
+   "text": "Saves A; unless the $1B9C state runs, starts the effect sprite (sprite 4, drawn by $B293 from $1B69-$1B6E): $1B71 from $1474+$1BB6, $1B6B/$1B6C cleared ($BB9D, result 0 into $1B72), both frames blank ($33EB), $1B73 = 1. Then, when the saved A is 0 and $1B5B is clear, falls into $341E (sound $BFCB). Called from $2397, $3360, $338F, $BB76, $E2FF and others."
   },
   {
    "address": 13319,
@@ -23035,7 +23035,7 @@
   {
    "address": 13358,
    "type": "line",
-   "text": "32 bytes, 1 rising to 3 (twenty-three 1s, then 2s, then 3s); read at $B592 indexed by a counter."
+   "text": "32 bytes, 1 rising to 3 (twenty-four 1s, five 2s, three 3s); read at $B592 indexed by a counter."
   },
   {
    "address": 13390,
@@ -23085,7 +23085,7 @@
   {
    "address": 13579,
    "type": "line",
-   "text": "Adds score event Y to the nine-digit decimal score $CF78-$CF80: amount $34E7+Y at digit $34F7+Y, carrying upward. Before the first change since the last redraw ($1B7A clear) it copies the score to $CF8C-$CF94 for $3578 to compare. Repeats $1B78 times (the bonus multiplier, when set). Adding at the millions digit, or carrying into it, gives an extra life ($3636): one each million points. Sets $3507 so the play loop redraws."
+   "text": "Adds score event Y to the nine-digit decimal score $CF78-$CF80: amount $34E7+Y at digit $34F7+Y, carrying upward. Before the first change since the last redraw ($1B7A clear) it copies the score to $CF8C-$CF94 for $3578 to compare. Repeats $1B78 times (the bonus multiplier, when set). An extra life ($3636) comes from adding at the millions digit ($3530) or from the carry loop rolling the hundred-thousands digit over from 9 ($355A); a 100,000-point event (14) that itself takes that digit from 9 to 0 carries into the millions at $354B without reaching either test, so that million gives no life. Sets $3507 so the play loop redraws."
   },
   {
    "address": 13671,
@@ -23150,7 +23150,7 @@
   {
    "address": 13903,
    "type": "line",
-   "text": "Adds one to the three-digit counter $CF83-$CF85, unless $1B64 is set. Counts up $E5BE first and, when it already equals the land's $9050, plays sound $16 and adds nothing. Before the first change since the last redraw ($1B7B clear) copies the counter ($36C3). In the happy land ($1BEC) with $CF8B set, reaching the land's $904D-$904F clears $CF8B and sets $18E4 = 1. Jumped to from $B581."
+   "text": "Adds one to the three-digit counter $CF83-$CF85, unless $1B64 is set. When $E5BE already equals the land's $9050, or the counter already equals the land's $9041-$9043 ($10ED), it plays sound $16 and adds nothing; otherwise it counts $E5BE up, plays sound $15 and adds. Before the first change since the last redraw ($1B7B clear) copies the counter ($36C3). In the happy land ($1BEC) with $CF8B set, reaching the land's $904D-$904F clears $CF8B and sets $18E4 = 1. Jumped to from $B581."
   },
   {
    "address": 14019,
@@ -23180,7 +23180,7 @@
   {
    "address": 14095,
    "type": "line",
-   "text": "Takes one off the three-digit counter $CF83-$CF85 at the digit in X, borrowing, and sets $364E. In the happy land with $CF8B clear, when the counter drops below the land's $904A-$904C it sets $CF8B. Called from $36F6 and $BEFC."
+   "text": "Takes one off the three-digit counter $CF83-$CF85 at the digit given by the operand of its LDX ($3710, written by $36EF: 2 for one, 1 for ten), borrowing, and sets $364E. In the happy land with $CF8B clear, when the counter is at or below the land's $904A-$904C it sets $CF8B. Called from $36F6 and $BEFC."
   },
   {
    "address": 14096,
@@ -23270,7 +23270,7 @@
   {
    "address": 14497,
    "type": "line",
-   "text": "Draws digit Y (0-9) into the panel's sprites: copies the digit's six bytes, from the address at $E372+Y (low) and $E382+Y (high), to page A at offset X and the five sprite rows above it (every third byte going down). X and A are patched into the STA at $38BA."
+   "text": "Draws digit Y (0-9) into the panel's sprites: copies the digit's six bytes, from the address at $E372+Y (low) and $E382+Y (high), to page A at offset X and the five sprite rows below it (X+3 to X+15, every third byte). X and A are patched into the STA at $38BA."
   },
   {
    "address": 14520,
@@ -23325,7 +23325,7 @@
   {
    "address": 14889,
    "type": "line",
-   "text": "Returns in X the index of the map byte for the player's column: starts at $1BDA and steps over 4 entries (3 when moving left, $1B3F = 1, and $1BCB clear), skipping bytes $D0 and above (which are not column entries), then any further $D0+ bytes."
+   "text": "Returns in X the index of the map byte for the player's column: starts at $1BDA and steps past five column entries (four when moving left, $1B3F = 1, with $1BCB clear), skipping bytes $D0 and above (which are not column entries), then any further $D0+ bytes."
   },
   {
    "address": 14933,
@@ -23360,7 +23360,7 @@
   {
    "address": 15086,
    "type": "line",
-   "text": "Every $EE10+1 passes ($1B75 counts) shows the next of 20 frames of the spinning star ($1B76 counts down): copies 32 bytes from the frame's address (low bytes $B47E, high $B492) to characters $FB-$FE, $7FD8-$7FF7. After each full turn the speed steps on: $1B77 counts down 26 entries of $EDF5 into $EE10, which is also the score event a star collected now gives ($38C4)."
+   "text": "Every $EE10+1 passes ($1B75 counts) shows the next of 20 frames of the spinning star ($1B76 counts down): copies 32 bytes from the frame's address (low bytes $B47E, high $B492) to characters $FB-$FE, $7FD8-$7FF7. Only in the happy land: $3A88 comes here from its happy branch, $3AF3 tests $1BEC again, and $B7C9 writes this instruction's opcode from $B7D3 ($CE, DEC, when happy; $60, RTS, when sad). After each full turn the speed steps on: $1B77 counts down 26 entries of $EDF5 into $EE10, which is also the score event a star collected now gives ($38C4)."
   },
   {
    "address": 15145,
@@ -23760,12 +23760,12 @@
   {
    "address": 18012,
    "type": "line",
-   "text": "The colours of the five code digits typed so far, 0 until typed; the cursor blink flips bit 0 of the next one every 16 frames ($4540)."
+   "text": "The colours of the five code digits typed so far, the second row of swatches: each attempt sets all five to $20 ($44C7-$44D2, X = 0-2 into $465C,X and $465E,X), which the sprite colour registers show as colour 0 (black); $4574 stores the colour of each key pressed from $4661, and the cursor blink flips bit 0 of the next one every 16 frames ($4537-$4545). Read as sprite colours by $466D (LDA $4657,Y with Y = 9 down to 5) from the raster handler $4600."
   },
   {
    "address": 18014,
    "type": "line",
-   "text": "The third typed colour; $44D2 clears it with the others at each attempt. In play this is screen $4400 row 15 column 6."
+   "text": "The third to fifth typed colours ($465E-$4660); $44D2 sets them to $20 with the others at each attempt, and $466D reads them as sprite colours. In play $465E is screen $4400 row 15 column 6."
   },
   {
    "address": 18017,
@@ -23915,17 +23915,17 @@
   {
    "address": 18426,
    "type": "line",
-   "text": "Sprite 2's pointer for screen $4400, written by $18FE."
+   "text": "Sprite 2's pointer for screen $4400, written by $18FE, and every frame with sprites 0-5 by the panel set-up $349C ($34AE, X = 2); see $47F8 for the other X-indexed writers."
   },
   {
    "address": 18428,
    "type": "line",
-   "text": "Sprite 4's pointer for screen $4400, written by $B306."
+   "text": "Sprite 4's pointer for screen $4400, written by $B306, and every frame by the panel set-up $349C ($34AE, X = 4); see $47F8 for the other X-indexed writers."
   },
   {
    "address": 18429,
    "type": "line",
-   "text": "Sprite 5's pointer for screen $4400, written by $B2B5 and $E49A."
+   "text": "Sprite 5's pointer for screen $4400, written by $B2B5, $E49A and the extra raster handler's $21E5, and every frame by the panel set-up $349C ($34AE, X = 5); see $47F8 for the other X-indexed writers."
   },
   {
    "address": 18430,
@@ -23970,7 +23970,7 @@
   {
    "address": 18944,
    "type": "line",
-   "text": "The protection's answers: 47 entries of 8 bytes, $4A00-$4B77, each EOR $45: a letter and two digits (the grid reference, e.g. $01 $74 $72 = \"D17\") and the five code digits. $4400 copies three at random to $0178; the screen then overwrites the table. In play this is screen $4800 offset $200 ($111A copies it, $1141 fills it)."
+   "text": "The protection's answers: 47 entries of 8 bytes, $4A00-$4B77, each EOR $45: three characters of grid reference, either a letter and two digits (e.g. $01 $74 $72 = \"D17\") or a space, a letter and one digit ($65 first, e.g. $65 $07 $77 = \" B2\"), then the five code digits. $4400 copies three at random to $0178; the screen then overwrites the table. In play this is screen $4800 offset $200 ($111A copies it, $1141 fills it)."
   },
   {
    "address": 19152,
@@ -24025,17 +24025,17 @@
   {
    "address": 19450,
    "type": "line",
-   "text": "Sprite 2's pointer for screen $4800, written by $1901."
+   "text": "Sprite 2's pointer for screen $4800, written by $1901, and every frame by the panel set-up $349C ($34B1, X = 2); see $4BF8 for the other X-indexed writers."
   },
   {
    "address": 19452,
    "type": "line",
-   "text": "Sprite 4's pointer for screen $4800, written by $B309."
+   "text": "Sprite 4's pointer for screen $4800, written by $B309, and every frame by the panel set-up $349C ($34B1, X = 4); see $4BF8 for the other X-indexed writers."
   },
   {
    "address": 19453,
    "type": "line",
-   "text": "Sprite 5's pointer for screen $4800, written by $B2B8, $B324 and $E49D."
+   "text": "Sprite 5's pointer for screen $4800, written by $B2B8, $B324, $E49D and the extra raster handler's $21E8, and every frame by the panel set-up $349C ($34B1, X = 5); see $4BF8 for the other X-indexed writers."
   },
   {
    "address": 19454,
@@ -24100,7 +24100,7 @@
   {
    "address": 21025,
    "type": "line",
-   "text": "Inside block $48: six bytes, every third, that $BD96 rewrites from $BDB5 (two sets of six, chosen by X)."
+   "text": "Inside block $48: six consecutive bytes, $5221-$5226 (two sprite rows), that $BD96 rewrites from $BDB5 (STA $5221,Y for Y = 5 down to 0; two sets of six, chosen by X)."
   },
   {
    "address": 21504,
@@ -24180,17 +24180,17 @@
   {
    "address": 22689,
    "type": "line",
-   "text": "Inside block $62: six bytes, every third, that $BD96 rewrites from $BDA9."
+   "text": "Inside block $62: six consecutive bytes, $58A1-$58A6 (two sprite rows), that $BD96 rewrites from $BDA9 (STA $58A1,Y for Y = 5 down to 0)."
   },
   {
    "address": 45312,
    "type": "line",
-   "text": "122 bytes no instruction in the engine, the intro or Jellyland reads (no absolute, indexed or pointer access found; the snapshots agree before and after play). Among them, $B14D-$B16E, a run of 16-bit values $06BC, $06BF, $06C3, $0710 ... that looks like a list of addresses, and at $B11C, $B126 and $B173 the same five bytes 00 19 00 00 01 1E. Meaning unknown; probably left over."
+   "text": "$B111-$B179 is a tune for the player at $080C: entry 8 of every land's tune table ($90D8/$90E2 hold $11/$B1 in all five lands), which $E4D0 starts and $BB95 asks for during the power-up ($1B97 = 8). Like the tune at $E000 it begins with two little-endian offsets, $000D and $0016; the run $B14D-$B16E and the five bytes 00 19 00 00 01 1E at $B11C, $B126 and $B173 are its data (the same five bytes occur in the tune at $E000). No instruction in the engine, the intro or the lands reads $B100-$B179 by address (indexed reach checked); the ending's indexed reads of its own glyph table at $B050 ($63E5-$63F9) would reach $B100 only for a glyph above $2C, not established. The 17 bytes $B100-$B110 before the tune have no reader found and are of unknown use."
   },
   {
    "address": 45434,
    "type": "line",
-   "text": "A run of NOPs. $213D waits in it for the second interrupt; $2162 enters it at $B182 + column/2 to time the VSP write; $18D3 and $1370 enter it at other points as delays."
+   "text": "A run of NOPs ending in the RTS at $B1AC. $213D waits in it for the second interrupt (JMP at $215F); $2162 patches the JSR at $2196 to enter it at $B182 + column/2 to time the VSP write; $1F7B calls it from the top sixteen times as a delay, and $1370, $189A, $18D3, $B1B9, $F1EE, $F214 and $F228 call it at later points as shorter delays."
   },
   {
    "address": 45439,
@@ -24220,7 +24220,7 @@
   {
    "address": 45476,
    "type": "line",
-   "text": "Entry into the NOP slide 8 NOPs before the RTS (16 cycles); the JSR at $18D3 that $22E0 patches lands here or at another point from $3483."
+   "text": "Entry into the NOP slide 8 NOPs before the RTS (16 cycles). The JSR at $18D3 is assembled with this address, but $22E0 rewrites its low byte from the table at $3483 ($7B-$84), so in play it enters the slide at $B17B-$B184 instead ($B17B in the play snapshot)."
   },
   {
    "address": 45481,
@@ -24230,12 +24230,12 @@
   {
    "address": 45485,
    "type": "line",
-   "text": "A raster handler that a land installs (Jellyland: LDX #$AD / LDY #$B1 at $939D) in place of the panel handler $18C1, for a scene of its own: next link $22E9 at line $FA, a 26-cycle wait, extended colour mode on, the frame flag set, the colour cycle $B43D entry $0F or $10 (by $1B68). Once the counter $1B4D reaches $0E it places eight sprites in a row at Y $40 (X $58-$E8 and $00, $B23A), frames $D3-$DA from the land's file ($B24A), colours $B252, sprite set-up 3 ($1A56). Each frame it steps the colour index $B204 (6 down to 2, restarted by $B234) and puts $B28C+index in the border colours $20F3/$211A, $D026, $A6CB and $B25F; it counts $1B4D up while $1BC9 is negative and $1B68 clear, and ends through the scroll step $2088."
+   "text": "A raster handler that a land installs (Jellyland: LDX #$AD / LDY #$B1 at $939D) in place of the panel handler $18C1, for a scene of its own: next link $22E9 at line $FA, a 26-cycle wait, extended colour mode on, the frame flag set, the colour cycle $B43D entry $0F or $10 (by $1B68). Once the counter $1B4D reaches $0E it places eight sprites in a row at Y $40 (X $58-$E8 and $00, $B23A), frames $D3-$DA from the land's file ($B24A), colours $B252, sprite set-up 3 ($1A56). Each frame it steps the colour index $B204 (6 down to 1, then held at 1; restarted by $B234) and puts $B28C+index in the border colours $20F3/$211A, $D026, $A6CB and $B25F; it counts $1B4D up while $1BC9 is negative and $1B68 clear, and ends through the scroll step $2088."
   },
   {
    "address": 45572,
    "type": "line",
-   "text": "Operand of the LDX #$01 at $B203: the scene's colour index, set to 6 by $B234 and counted down to 2 by $B209."
+   "text": "Operand of the LDX #$01 at $B203: the scene's colour index, set to 6 by $B234 and decremented by $B209 while it is 2 or more, so the index used runs 6, 5, 4, 3, 2, 1 and then stays at 1."
   },
   {
    "address": 45620,
@@ -24265,7 +24265,7 @@
   {
    "address": 45663,
    "type": "line",
-   "text": "The scene's current colour, stored by $B221; the bytes after it, to $B26F, are eight addresses ($9C58, $9C88, $9CB8, $9CE8, $9F5B, $9F8B, $9FBB, $9FEB) in the land's area that Jellyland reads from $A6B7."
+   "text": "The scene's current colour, stored by $B221; Jellyland also reads it ($A689 LDA $B25E,X with X = 1, 0, into $D027/$D028). The 16 bytes after it, $B260-$B26F, are eight sprite X/Y pairs (X $58, $88, $B8, $E8, $5B, $8B, $BB, $EB; Y $9C four times, then $9F four times) that Jellyland's $A6B4-$A6BD copies to $D000-$D00F; the engine does not read them."
   },
   {
    "address": 45680,
@@ -24280,7 +24280,7 @@
   {
    "address": 45715,
    "type": "line",
-   "text": "Places the player's sprites 5, 6 and 7 together: X from $1BE3, Y from $1BE4 less the slope height $1B4B. $E4A6 puts the frame $1BE7 in sprite 6's pointers and returns the colour-layer frame for sprite 7; then sprite 5 takes that outline frame (black, hi-res) and sprite 6 is replaced by block 9, or 10 when sprite 7's frame is $43 (yellow), sprite 7 light red and the only multicolour sprite; no expansion or priority, X high bits clear. Then sprite 4 alternates each frame ($1B73) between two positions and frames held in $1B69-$1B6E (white). Called from the bottom raster handler $20F8 ($2126) when $1BC9 is negative."
+   "text": "Places the player's sprites 5, 6 and 7 together: X from $1BE3, Y from $1BE4 less the slope height $1B4B. $E4A6 puts the frame $1BE7 in sprite 6's pointers and returns the colour-layer frame for sprite 7; then sprite 5 takes sprite 6's frame (black, hi-res) and sprite 6 is replaced by block 9 when sprite 7's frame is $43, block 10 otherwise (yellow), sprite 7 light red and the only multicolour sprite; no expansion or priority, X high bits clear. Then sprite 4 alternates each frame ($1B73) between two positions and frames held in $1B69-$1B6E (white). Called from the bottom raster handler $20F8 ($2126) when $1BC9 is negative."
   },
   {
    "address": 45842,
@@ -24290,7 +24290,7 @@
   {
    "address": 45898,
    "type": "line",
-   "text": "Operand of the LDA #$FF at $B349 inside $B312, stored to $1B4F when $7E is 5. It was $FF as loaded and 0 in play; its writer was not found in the engine."
+   "text": "Operand of the LDA #$FF at $B349 inside $B312, stored to $1B4F when $7E is 5. Written by $1DE6 (STA $B34A) from the land's table at $9722 (LDA $9722,Y at $1DE3); $FF as loaded and 0 in the play snapshot."
   },
   {
    "address": 45903,
@@ -24365,7 +24365,7 @@
   {
    "address": 46248,
    "type": "line",
-   "text": "The player against the 15 object slots, once a pass ($1F83). A slot counts when it is active, shows a frame (or has an item frame $F8CD, or kind $FD), its state $F558 is below 4, its kind $F567 is not $FE, its layer $F6C0 matches the player's (0, or 2 when $1B4F puts the player behind the background), its X high bit is clear and its X ($F6CF) is $9C-$BB, around the player at $AC. Vertically, the player spans $1BE4 - $1B4B - $B4A6 to $1BE4 + $0F - $1B4B, against the object's Y $F6D0 (and Y + $15 for a double-height object). On a touch the overlap goes into $B58A; state 2 goes to $E4E3, state 3 (an item) to $BC15, any other to $B565."
+   "text": "The player against the 15 object slots, once a pass ($1F83). A slot counts when it shows a frame ($F4FE not $0F; or has an item frame $F8CD, or kind $FD), its state $F558 is below 4, its kind $F567 is not $FE, its layer $F6C0 matches the player's (0, or 2 when $1B4F puts the player behind the background), its X high bit is clear and its X ($F6CF) is $9C-$BB, around the player at $AC; the active flag $023C is not tested. Vertically, the player spans $1BE4 - $1B4B - $B4A6 to $1BE4 + $0F - $1B4B, against the object's Y $F6D0 (and Y + $15 for a double-height object). On a touch the overlap goes into $B58A; state 2 goes to $E4E3, state 3 (an item) to $BC15, any other to $B565."
   },
   {
    "address": 46307,
@@ -24375,7 +24375,7 @@
   {
    "address": 46437,
    "type": "line",
-   "text": "The player touched an object of kind Y ($F567, kept in $50). With the power-up flag $1B9C set, any kind but $FF is hit at once ($C6D7); $FF goes through the stomp test. Otherwise kinds $FC and $FA always hurt the player ($B5CA) and kind $F9 jumps to $364F, which adds one to the counter $CF83-$CF85. Falling ($1B5A) with an overlap under 8 is a stomp: the bounce strength $1BAB from $342E by $1B5D, a bounce ($2EB5, A = $0D), and the object is hit ($C6D7) unless it is kind $FB or $F7, which cannot be jumped on. A walk-in ($B5AA) hurts when $1B54 is set; otherwise it hits the object if the player is charging ($1B52, or $1B9F for kind $F7), except kind $F8, which always hurts."
+   "text": "The player touched an object of kind Y ($F567, kept in $50). With the power-up flag $1B9C set, any kind but $FF is hit at once ($C6D7); $FF goes through the stomp test. Otherwise kinds $FC and $FA always hurt the player ($B5CA) and kind $F9 jumps to $364F, which adds one to the counter $CF83-$CF85 on frames when $1B64 is 0, up to limits set by the land's $9050 ($E5BE) and by $10ED, and otherwise only plays a sound. Falling ($1B5A) with an overlap under 8 is a stomp: the bounce strength $1BAB from $342E by $1B5D, a bounce ($2EB5, A = $0D), and the object is hit ($C6D7), except kinds $FB and $F7, which then go through the walk-in test like any touch that is not a stomp. A walk-in ($B5AA) hurts when $1B54 is set; otherwise it hits the object if the player is charging ($1B52, or for kind $F7 also $1B9F), except kind $F8, which always hurts."
   },
   {
    "address": 46474,
@@ -24400,7 +24400,7 @@
   {
    "address": 46661,
    "type": "line",
-   "text": "Once a pass ($1FD2), for each active slot: counts down a hit flash ($F4D1, set by $C7A7) and restores the colour and flash mask saved in $F4C2/$F495 when it ends; and for every other slot (even slots one pass, odd the next, by flipping the branch at $B667) steps its colour animation: after $F8A0 frames the next byte of the list at ($F7DD/$F7EC) via the index $022D, back to the start at a byte of $10 or more, into $F4A4. A slot whose group $F846 equals $EC6F is skipped while $1BD5 is 0."
+   "text": "Once a pass ($1FD2), for each active slot: counts down a hit flash ($F4D1, set by $C7A7) and restores the colour and flash mask saved in $F4C2/$F495 when it ends; and for every other slot (even slots one pass, odd the next, by flipping the branch at $B667) whose $F837 is set (by $BAA1) steps its colour animation: after $F8A0 frames the next byte of the list at ($F7DD/$F7EC) via the index $022D, back to the start at a byte of $10 or more, into $F4A4. A slot whose group $F846 equals $EC6F is skipped while $1BD5 is 0."
   },
   {
    "address": 46695,
@@ -24425,7 +24425,7 @@
   {
    "address": 46805,
    "type": "line",
-   "text": "The big font's glyphs: four character codes each (top left, top right, bottom left, bottom right), read by $B817 at $B8B3-$B8C7 with X = (glyph - 1) * 4, modulo 256. Glyphs 1-26 are A-Z ($B6D5-$B73C), $1B-$24 the digits 0-9 ($B73D-$B764), $25-$29 ! . , ? : and $2A/$2B the right-hand thirds of M and W ($B765-$B784). The 47 bytes at $B705 that facts.md lists as a possible character-to-glyph map are glyphs M to Y of this table."
+   "text": "The big font's glyphs: four character codes each (top left, top right, bottom left, bottom right), read by $B817 at $B8B3-$B8C7 with X = (glyph - 1) * 4, modulo 256. Glyphs 1-26 are A-Z ($B6D5-$B73C), $1B-$24 the digits 0-9 ($B73D-$B764), $25-$29 ! . , ? : and $2A/$2B the right-hand thirds of M and W ($B765-$B780); four more $FF bytes follow to $B784. The 47 bytes at $B705-$B733 that facts.md lists as a possible character-to-glyph map are glyphs M to X of this table."
   },
   {
    "address": 46806,
@@ -24740,7 +24740,7 @@
   {
    "address": 47977,
    "type": "line",
-   "text": "Item effect 3 (the jump table at $F994/$F99D), also entered from $2B69: starts the power-up, $1B9C = $FD frames. If it was not running: sound ($33F4 with A = 1), $1B9B = 7, $BB9D, $1479 = 0 and, unless $1BC6 is set, $1B97 saved in $1B99. Then $1BC1 = $1E ($3648), the touch counter $1BB7 cleared ($387D), $1B97 = 8 and $E4D0. While $1B9C runs the player hits every object he touches ($B565) and cannot be hurt ($B5CA)."
+   "text": "Item effect 3 (the jump table at $F994/$F99D), also entered from $2B69: starts the power-up, $1B9C = $FD frames. If it was not running: the effect sprite ($33F4 with A = 1, which starts sprite 4's puff and plays no sound), $1B9B = 7, $BB9D, $1479 = 0, and then, when $1BC6 is set, it returns there; otherwise $1B97 is saved in $1B99. Then (also when the power-up was already running) $1BC1 = $1E ($3648), the touch counter $1BB7 cleared ($387D), $1B97 = 8 and $E4D0. While $1B9C runs the player hits every object he touches ($B565) and cannot be hurt ($B5CA)."
   },
   {
    "address": 48029,
@@ -24750,7 +24750,7 @@
   {
    "address": 48038,
    "type": "line",
-   "text": "Installs the play-time raster chain: the game's own interrupt exit ($1884), then $1809 with the handler $F1AC at line $35, the KERNAL switched out. Called from the start-up $1975 and the stage card $3CAD."
+   "text": "Installs the play-time raster chain: the game's own interrupt exit ($1884), then $1809 with the handler $F1AC, $01 = $35 (KERNAL out, I/O in) and carry set (the vector at $FFFE/$FFFF pointing at $1862); $1809 sets the first interrupt at raster line $F9. Called from the start-up $1975 and the stage card $3CAD."
   },
   {
    "address": 48051,
@@ -24810,7 +24810,7 @@
   {
    "address": 48281,
    "type": "line",
-   "text": "Starts any sound effects requested this frame ($BC9F), then plays one frame of the effects ($0A70). Called from $1CF4 and $1FDD, and the tune steps at $3F31."
+   "text": "Starts any sound effects requested this frame ($BC9F), then plays one frame of the effects ($0A70). Called from $1CF4, $1FDD, the tune steps at $3F31 and the stage-complete handler at $F361."
   },
   {
    "address": 48287,
@@ -24850,7 +24850,7 @@
   {
    "address": 48534,
    "type": "line",
-   "text": "Patches six bytes, every third, in the player's frames at $58A1 and $5221 with the face set ending at X ($BDA9, $BDB5): X = 5 the first set, $0B the second, the death face ($B611). Also called from $1D52."
+   "text": "Patches six consecutive bytes (two sprite rows) in each of the player's frames, $58A1-$58A6 and $5221-$5226, with the face set ending at X ($BDA9, $BDB5): X = 5 the first set, $0B the second, the death face ($B611). Also called from $1D52."
   },
   {
    "address": 48553,
@@ -25005,12 +25005,12 @@
   {
    "address": 49177,
    "type": "line",
-   "text": "JMP $CE66 (restart a game with the font swapped back); no instruction or address in the engine, the intro or Jellyland names $C019, and the JMP $C002 before it never falls through."
+   "text": "JMP $CE66 (restart a game with the font swapped back). The ending jumps here (JMP $C019 at its $5A13); nothing in the engine, the intro or the lands names $C019, and the JMP $C002 before it never falls through."
   },
   {
    "address": 49180,
    "type": "line",
-   "text": "Sprite multiplexer for the second band of objects (slots 5-9) on sprites 0-4: X high bits from $F484, and for each slot not skipped (a slot with $F5C1 set keeps its sprite as it is): hidden (Y 0) when $F5B7 is 0, otherwise its colour $F4A9, X/Y from the latched positions $F4EA/$F4EB and frame $F503 into both screens' pointers; then the band's multicolour, priority (with $1B4F), Y and X expansion bytes $F478/$F47B/$F47E/$F481 and multicolour 1 from $1B8C. Called from the raster handlers whose JSR $C0DB the land's band table points here ($29B0, $90B0); $E5B4 turns it off and on by writing RTS or LDA to its first byte."
+   "text": "Sprite multiplexer for the second band of objects (slots 5-9) on sprites 0-4: X high bits from $F484, and for each sprite n (0-4) not skipped: hidden (Y 0) when $F5B7 is 0, otherwise its colour $F4A9, X/Y from the latched positions $F4EA/$F4EB and frame $F503 into both screens' pointers; then the band's multicolour, priority (with $1B4F), Y and X expansion bytes $F478/$F47B/$F47E/$F481 and multicolour 1 from $1B8C. The skip flag is entry n of $F5C1-$F5C5, one per sprite column shared by all bands (written at spawn from record byte 8 bit 2 by whichever object last took that column, $E9DC); a set flag leaves the sprite as band 0 placed it. Called from the raster handlers whose JSR $C0DB the land's band table points here ($29B0, $90B0); $E5B4 turns it off and on by writing RTS or LDA to its first byte."
   },
   {
    "address": 49276,
@@ -25040,7 +25040,7 @@
   {
    "address": 49546,
    "type": "line",
-   "text": "Moves the 15 object slots one frame (called from the play loop at $1FBA). For slot X it keeps $45 = 2X (index of its X/Y pair at $F6CF/$F6D0), $82 = its bit in its band of five and $85 = the band. Inactive slots and state 5 are skipped, states 3 and 4 are not moved. A slot without a parent ($F675) whose page counter $F6B1 reaches 3 has left the land and goes ($C3DF). With $F61B set the object homes in on the player's X ($AC) a pixel a frame, its offset $F648 bounded by $F62A/$F639; otherwise it follows its horizontal script at ($D9,X/$E8,X) through the position $0200,X. A script byte is $FE (wait here), $FD (change layer, $C55A), $10 (start again; a child re-reads its parent, $C56D), $40-$7F (repeat: the low six bits are a count kept in $F51C, the next byte how many bytes to go back), or a move: bit 7 left, low four bits the pixels. Moving past a page edge flips the slot's X high bit and counts the page ($BA8A). Then the page step from scrolling ($F6A2), the off-screen test ($C362: an object far enough off either edge, by the scroll and its own direction, is removed or, as a child, hidden), and the vertical script ($C42A)."
+   "text": "Moves the 15 object slots one frame (called from the play loop at $1FBA). For slot X it keeps $45 = 2X (index of its X/Y pair at $F6CF/$F6D0), $82 = its bit in its band of five and $85 = the band. Inactive slots, state 5, and a slot whose group $F846 equals $EC6F while $1BD5 is 0 are skipped; states 3 and 4 are not moved. A slot without a parent ($F675) whose page counter $F6B1 reaches 3 has left the land and goes ($C3DF). With $F61B set the object homes in on the player's X ($AC) a pixel a frame, its offset $F648 bounded by $F62A/$F639; otherwise it follows its horizontal script at ($D9,X/$E8,X) through the position $0200,X. A script byte is $FE (wait here), $FD (change layer, $C55A), $10 (start again; a child re-reads its parent, $C56D), any other byte with bit 6 set (repeat: the low six bits are a count kept in $F51C, $3F for ever, the next byte how many bytes to go back), or a move: with bit 7 set left by the low four bits, otherwise right (by the whole byte, not only its low four bits). Moving past a page edge flips the slot's X high bit and counts the page ($BA8A). Then the page step from scrolling ($F6A2), the off-screen test ($C362: an object far enough off either edge, by the scroll and its own direction, is removed or, as a child, hidden), and the vertical script ($C42A)."
   },
   {
    "address": 49853,
@@ -25100,7 +25100,7 @@
   {
    "address": 50541,
    "type": "line",
-   "text": "Slot X is a child of slot $F657,X. When the parent is in state 3 or more, or its $F666 is 0, the child is hidden (frame $0F) and $F936 = $FF. Otherwise $F936 = 2 and the child takes the parent's page, page step, $F693 and direction, the horizontal script for that direction ($F7FB/$F80A or $F819/$F828), its X high bit and position, and restarts its scripts. When the parent has a group ($F846), other than $EC6F while $1BD5 is 0, every slot of that group restarts its animation ($C67D)."
+   "text": "Slot X is a child of slot $F657,X. When the parent is in state 3 or more the child is hidden (frame $0F) and $F936 = $FF; when the parent's $F666 is 0, only $F936 = $FF (the frame is left). Otherwise $F936 = 2 and the child takes the parent's page, page step, $F693 and direction, the horizontal script for that direction ($F7FB/$F80A or $F819/$F828), its X high bit and position, and restarts its scripts. When the parent has a group ($F846), other than $EC6F while $1BD5 is 0, every other slot of that group restarts its animation ($C67D)."
   },
   {
    "address": 50763,
@@ -25125,7 +25125,7 @@
   {
    "address": 50827,
    "type": "line",
-   "text": "X = $39, then $C68D. Called from $EC11."
+   "text": "X = the byte at $0039 (LDX $0039), then $C68D. Called from $EC11."
   },
   {
    "address": 50829,
@@ -25185,7 +25185,7 @@
   {
    "address": 51139,
    "type": "line",
-   "text": "Slot X dies: unless already in state 4, sets state 4 and clears its flash; then from the low nibble of $F8AF (4 or more: an item, its number less 4 in $F8DC), $F8EB and the sad/happy flag it chooses what the object turns into, continued at $C7FE in agent 3's range."
+   "text": "Slot X dies: unless already in state 4, sets state 4 and clears its flash masks $F486/$F495. Then it chooses what the object turns into: from the low nibble of $F8AF (4 or more: an item, its number less 4 in $F8DC), $F8EB (set: item $0A whatever the mood) and the sad/happy flag, an item frame for $F8CD from the land's $905D (0, no item, in the sad land unless $F8EB is set) and the animation number $C816 (the low nibble, 0, or the land's $9069 entry), which $C65D starts. Then the colour list from the high nibble of $F8AF ($BAA1), the object's points ($3508), its scripts cleared, and by $F8BE the multicolour bit and a double-width (X 12 left) or double-height (Y 21 up) sprite."
   },
   {
    "address": 51222,
@@ -25215,7 +25215,7 @@
   {
    "address": 51360,
    "type": "line",
-   "text": "Runs one step of every object's animation script; called once a pass from $1FC2. Takes the 15 object slots X = 0-14 but only every other one: the BEQ at $C8A7 is flipped to BNE (EOR #$20 on its opcode, $C93C) after each pass, so even and odd slots alternate. A slot is skipped when it is empty ($023C), in state 3 or 5 ($F558), waiting out its start delay ($F936: counted down, negative = frozen), or in group $F846 = $EC6F while $1BD5 is 0. In state 0, $CA8B first picks the script for its direction. The frame delay $F855 counts down and reloads from $F864; when it runs out the next script byte is read from ($F70B/$F71A) at index $021E: 0 restarts the script; 1 ends it ($C955); 2 holds on the current byte ($F684 = 2); 5 zeroes the delay; 3 and 4 (only while happy, or with $F5A3 set) swap the value in $F567 with one from the script, saving and restoring it through $F576; $40-$5F repeats a stretch ($CA68); anything else is a sprite frame number, stored in $F4FE. If any object reached code 1 this pass it requests sound effect 8 ($1352)."
+   "text": "Runs one step of every object's animation script; called once a pass from $1FC2. Takes the 15 object slots X = 0-14 but only every other one: the BEQ at $C8A7 is flipped to BNE (EOR #$20 on its opcode, $C93C) after each pass, so even and odd slots alternate. A slot is skipped when it is empty ($023C), in state 3 or 5 ($F558), waiting out its start delay ($F936: counted down, negative = frozen), or in group $F846 = $EC6F while $1BD5 is 0. In state 0, unless $F8FA is $C0, $CA8B first picks the script for its direction. The frame delay $F855 counts down and reloads from $F864; when it runs out, and $F684 is 0, the next script byte is read from ($F70B/$F71A) at index $021E: 0 restarts the script; 1 ends it ($C955); 2 holds on the current byte ($F684 = 2); 5 zeroes the delay; 3 and 4 (only while happy, or with $F5A3 set; otherwise they are frame numbers) swap the value in $F567 with one from the script, saving and restoring it through $F576; $40-$5F repeats a stretch ($CA68); anything else is a sprite frame number, stored in $F4FE. If any object turned into an item this pass ($CA07) it plays sound effect 8 ($1352)."
   },
   {
    "address": 51367,
@@ -25225,7 +25225,7 @@
   {
    "address": 51541,
    "type": "line",
-   "text": "Script code 1. If the slot has no item frame in $F8CD, or bit 4 of $F5D0 is set, its record in the land's object list is marked ($CB02) and the slot is freed ($C417). Otherwise the object becomes that item: frame $F8CD, sprite expansion bits cleared for the slot (remembered in the operands at $C9D2/$C9F8), multicolour bit set while sad, the item chosen by $F8EB through $BF7F (Y = 5) or $BF7B, the position moved to the centre of the old sprite (+12 across if it was double width, with the X high bit flipped on a carry; +21 down if double height) and state 3. In Jellyland, while $1BEB is set, an object whose $9075 entry is 0 is removed instead."
+   "text": "Script code 1. If the slot has no item frame in $F8CD its record in the land's object list is marked ($CB02) and the slot is freed ($C417); if bit 4 of $F5D0 is set the slot is freed without marking. Otherwise the object becomes that item: frame $F8CD, sprite expansion bits cleared for the slot (remembered in the operands at $C9D2/$C9F8), multicolour bit set while sad, its colour list chosen by $F8EB (list 5 through $BF7F when set, else the land's $9075 entry through $BF7B), the position moved to the centre of the old sprite (+12 across if it was double width, with the X high bit flipped on a carry; +21 down if double height) and state 3. In Jellyland, while $1BEB is set, an object whose $9075 entry is 0 is marked and removed instead."
   },
   {
    "address": 51628,
@@ -25265,7 +25265,7 @@
   {
    "address": 51851,
    "type": "line",
-   "text": "For an object in state 0: chooses its script from the six loaded at spawn. Unless $F8FA is $40, the first time ($F918 = 0) it takes the script at $F729/$F738 when $F549 is negative, else $F747/$F756. Then, when $F8FA is 0, once ($F909 = 0) by $F53A: bit 7 set with a low nibble gives $F765/$F774, bit 7 clear with a low nibble $F783/$F792, a zero nibble $F7A1/$F7B0 (bit 7 set) or $F7BF/$F7CE."
+   "text": "For an object in state 0: chooses its script from the six loaded at spawn. Unless $F8FA is $40, the first time ($F918 = 0) it takes the script at $F729/$F738 when $F549 is negative, else $F747/$F756. Then, when $F8FA is 0 or $40, once ($F909 = 0) by $F53A: bit 7 set with a low nibble gives $F765/$F774, bit 7 clear with a low nibble $F783/$F792, a zero nibble $F7A1/$F7B0 (bit 7 set) or $F7BF/$F7CE."
   },
   {
    "address": 51952,
@@ -25275,7 +25275,7 @@
   {
    "address": 51970,
    "type": "line",
-   "text": "If the slot's $F5D0 is non-zero, marks the object's record in the land's object list (pointer kept in $F5DF/$F5EE at spawn): byte 10 gets bit 7 when bits 5-6 of $F5D0 are %10, otherwise bit 4 unless $F5D0 bit 4 is set. The spawner $E75E skips records whose byte 10 has bit 7 set, and $E595 clears bits 4 and 7 of every record when a land starts. Called from $C95A and $BC18."
+   "text": "If the slot's $F5D0 is non-zero, marks the object's record in the land's object list (pointer kept in $F5DF/$F5EE at spawn): byte 10 gets bit 7 when bits 5-6 of $F5D0 are %10, otherwise bit 4 unless $F5D0 bit 4 is set. The spawner $E75E skips records whose byte 10 has bit 7 set, except when the low nibble of byte 9 is $0B or more ($E78D-$E795 jump past that test), and $E595 clears bits 4 and 7 of every record when a land starts. Called from $C95A and $BC18."
   },
   {
    "address": 52016,
@@ -25340,12 +25340,12 @@
   {
    "address": 52141,
    "type": "line",
-   "text": "Load the next land and start it ($BF78 jumps here after a stage is won). Increments the level index $CF89, silences ($0D1B), clears the stack page to $FF and $0002-$00FF to 0, blanks the screen and sprites, sets screen $4400 with characters at $5000 ($D018 = $15), swaps pages through $3F54 (3: $7800-$7FFF with $5000-$57FF, 4: $D800-$DFFF with $7800-$7FFF, 6: the drive code at $D000 with $4000), builds the file name from $CF10 and the level index (\"LA\"-\"LE\", \"CF\" for the ending), prints the loading screen through $B817 (string 9 or 8, then the two quota lines from $916F and $9185 unless the ending is next), and turns the screen on. Then, with the KERNAL in ($01 = $36), opens the file through the KERNAL's serial routines (SETLFS, SETNAM, LISTEN, SECOND, then $F3F6 in ROM to send the name, TALK, TKSA, ACPTR); if the status left in $90 is $42 it goes straight to the prompt, and if the drive does not answer, or the file is not found, it shows \"INSERT SIDE B AND PRESS FIRE\" ($CCF5). Otherwise it uploads the drive code with M-W, starts it with M-E at $07AB and receives the file into $5A00-$B0FF with $CE6C, moving the loading bar one pixel a block. Afterwards it restores the screen and the pages it swapped and starts the land: Jellyland through $F45E (the land's own code at $A547), the other lands through $E54F and $3B3F, the ending at $5A00."
+   "text": "Load the next land and start it ($BF78 jumps here after a stage is won). Increments the level index $CF89, silences ($0D1B), clears the stack page to $FF and $0002-$00FF to 0, blanks the screen and sprites, sets screen $4400 with characters at $5000 ($D018 = $15), swaps pages through $3F54 (3: $7800-$7FFF with $5000-$57FF, 4: $D800-$DFFF with $7800-$7FFF, 6: the drive code at $D000 with $4000), builds the file name from $CF10 and the level index (\"LA\"-\"LE\", \"CF\" for the ending), prints the loading screen through $B817 (string 9 or 8, then the two quota lines from $916F and $9185 unless the ending is next), turns the screen on and adds a life ($3866, at $CC55). Then, with the KERNAL in ($01 = $36), opens the file through the KERNAL's serial routines (SETLFS, SETNAM, LISTEN, SECOND, then $F3F6 in ROM to send the name, TALK, TKSA, ACPTR). A status of $42 in $90 at $CC5C would go straight to the prompt, but $90 was zeroed with the rest of zero page at $CBC6; if the drive does not answer, or the file is not found, it shows \"INSERT SIDE B AND PRESS FIRE\" ($CCF5). Otherwise it uploads the drive code with M-W, starts it with M-E at $07AB and receives the file into $5A00-$B0FF with $CE6C, moving the loading bar one pixel a block. Afterwards it restores the screen and swaps pages again (5 and 6) and starts the land: Jellyland through $F45E (the land's own code at $A547), the other lands through $E54F and $3B3F, the ending at $5A00."
   },
   {
    "address": 52469,
    "type": "line",
-   "text": "The disk prompt. Writes the 28 glyphs at $CEE1 to the bottom row of screen $4400 ($47C6), waits for the fire button to be pressed and released ($CBA4, joystick port 2 bit 4), waits about 65,000 loop passes, then retries the load from $CC65."
+   "text": "The disk prompt. Writes the 28 glyphs at $CEE1 to the bottom row of screen $4400 ($47C6), waits for the fire button to be pressed and released ($CBA4, joystick port 2 bit 4; the first time the prompt appears it does not wait, since $CBA4 starts at 0), waits about 65,000 loop passes, then retries the load from $CC65."
   },
   {
    "address": 52515,
@@ -25380,7 +25380,7 @@
   {
    "address": 52909,
    "type": "line",
-   "text": "The 32 values from which $CD91 builds the decoding table at $4B00: four groups of eight, one per read of $DD00. In each group the first four entries are the bit pair that CLK and DATA carry in that read ($A0/$50/$0A/$05, then $20/$10/$02/$01, $80/$40/$08/$04, 0), and the rest $FF or 0 for port values that do not occur."
+   "text": "The 32 values from which $CD91 builds the decoding table at $4B00 (each repeated eight times). Each group of eight belongs to one state of the CLK and DATA lines in a read of $DD00 (group 0 both low, 1 CLK high, 2 DATA high, 3 both high), and its first four entries are the bits that state gives in the first, second, third and fourth read ($A0/$50/$0A/$05, $20/$10/$02/$01, $80/$40/$08/$04, and 0), since $CE6C indexes the table at offsets 0, 8, 16 and 24. The rest are $FF or 0, for port values that do not occur."
   },
   {
    "address": 52941,
@@ -25435,7 +25435,7 @@
   {
    "address": 53016,
    "type": "line",
-   "text": "A rising table of 96 small steps (0, then ten 1s, 2s, 3s ... 8 at $CF76): $237E adds entry $1B81 to $1BE3 as $1B81 counts down, so it is a step-per-frame curve, presumably for Mayhem's vertical motion (large steps at the top entries, small near 0). $CF77 is cleared with the score by $E52D."
+   "text": "A rising table of 96 small steps (0, then 1s, 2s, 3s ... up to 8 at $CF76): $237E adds entry $1B81 to the player's X $1BE3 as $1B81 counts down, and $3392 reads the table one entry on as the scroll speed for the speed counter $1B51, so it is a curve of horizontal speeds (the big steps at the top entries, small near 0). $CF77 is cleared with the score by $E52D."
   },
   {
    "address": 53017,
@@ -25450,7 +25450,7 @@
   {
    "address": 53112,
    "type": "line",
-   "text": "The score, nine decimal digits one per byte, most significant first ($CF80 the units). $3508 adds an amount from $34E7 at a digit from $34F7 with carry, and calls $3636 (a life and its sound) whenever the millions digit $CF7A goes up; $3578 redraws each digit that differs from its copy at $CF8C. Cleared by $E52D at a new game."
+   "text": "The score, nine decimal digits one per byte, most significant first ($CF80 the units). $350B adds an amount from $34E7 at a digit from $34F7 with carry, and calls $3636 (a life and its sound) when the amount is added at the millions digit $CF7A or a carry rolls the hundred-thousands digit $CF7B over from 9; an amount added at $CF7B itself (event $0E, 100,000) that carries into the millions gives no life (from $3545 the carry starts at $CF7A, past the test at $355A). $3578 redraws each digit that differs from its copy at $CF8C. Cleared by $E52D at a new game."
   },
   {
    "address": 53113,
@@ -25460,7 +25460,7 @@
   {
    "address": 53114,
    "type": "line",
-   "text": "Score digit for the millions: adding to it, or carrying into it, gives an extra life through $3636."
+   "text": "Score digit for the millions: an amount added to it, or a carry that rolls $CF7B over from 9, gives an extra life through $3636 (a carry out of an amount added at $CF7B does not; see $CF78)."
   },
   {
    "address": 53115,
@@ -25635,12 +25635,12 @@
   {
    "address": 53159,
    "type": "line",
-   "text": "Eight runs of colour numbers, each ended by $10: $CFA7 (5), $CFAD (8), $CFB6 (12), $CFC3 (7), $CFCB (10), $CFD6 (9), $CFE0 (7), $CFE8 (10). Only the run at $CFD6 has a reader found by address: the stage-complete raster handler $F371 steps index $39 through it and wraps at the $10."
+   "text": "Eight runs of colour numbers, each ended by $10: $CFA7 (5), $CFAD (8), $CFB6 (12), $CFC3 (7), $CFCB (10), $CFD6 (9), $CFE0 (7), $CFE8 (10). They are the object colour lists 0-8 (list 7 repeats $CFC3), reached through the pointer tables $B6BA/$B6C3 by $BF7F and $EB76 and stepped by $B645; the stage-complete raster handler also steps through $CFD6 ($F375)."
   },
   {
    "address": 53206,
    "type": "line",
-   "text": "The colour run that the stage-complete handler steps through: $F375 reads entry $39 and wraps when it meets $10 (9 colours: $07 $0A $02 $03 $0E $06 $0D $05 $0B). The read value itself is only compared."
+   "text": "Colour list 5 of the objects (the items' colours: $C9C4 picks it through $B6BA), and the colour run that the stage-complete handler steps through: $F375 reads entry $39 and wraps when it meets $10 (9 colours: $07 $0A $02 $03 $0E $06 $0D $05 $0B). The handler only compares the value it reads."
   },
   {
    "address": 53235,
@@ -25655,7 +25655,7 @@
   {
    "address": 53504,
    "type": "line",
-   "text": "Start of 1.5 KB ($D100-$D6FF) kept here and run at $6000-$65FF: $3F54 entry 7 swaps these six pages with $6000-$65FF, from $3BC1 just before $3BC9 jumps into it at $638D (here $D48D), and again from $64F2 (here $D5F2) on the way back to $3BCC. This first part ($6000-$635F when swapped in) is not decoded here; the sprite pointers $80, $82 and $83 that its code writes select images at $6000-$60FF, so it holds at least those, and it holds the routine $6300 (here $D400). The scene is played between the sad and the happy half of a land: $3BC6 loads the star quota just before it and $3BD1 restarts play with A = 1 after it; by the features it is presumably Theo's cave, not checked live. Not disassembled in place, since its addresses only make sense at $6000."
+   "text": "Start of 1.5 KB ($D100-$D6FF) kept here and run at $6000-$65FF: $3F54 entry 7 swaps these six pages with $6000-$65FF, from $3BC1 just before $3BC9 jumps into it at $638D (here $D48D), and $3BCC swaps them back when the scene ends (the scene's own last JSR $3F54, at $64F2 here $D5F2, has X = 0: swap 0, $D800-$DFFF with $7800-$7FFF). This first part ($6000-$635F when swapped in) is not decoded here; the sprite pointers $80, $82 and $83 that its code writes select images at $6000-$60FF, so it holds at least those, and it holds the routine $6300 (here $D400). The scene is played between the sad and the happy half of a land: $3BC6 loads the star quota just before it and $3BD1 restarts play with A = 1 after it; by the features it is presumably Theo's cave, not checked live. Not disassembled in place, since its addresses only make sense at $6000."
   },
   {
    "address": 54368,
@@ -25665,22 +25665,22 @@
   {
    "address": 54413,
    "type": "line",
-   "text": "The scene's entry as it runs at $638D: fills the screens ($1A1C, colour 8, glyph $EE), places seven sprites from its tables at $659D-$65B8, patches the sprite bytes at $5812-$5825 ($E29F, $6573), sets the background colours from the land's $9196-$9198 and $9199, draws its picture rows into screen $4400 from $65B9, queues sound effect $21 through $3F0E, installs its raster handler $64F8 through $1809 and then loops once a frame on stages kept in $1B3D (sprite movement, sound effects $24 and $27 through $3F0E, $BE4A), until in stage 4 the fire button ends it: sprites off, the SID silenced ($0D1B), the six pages swapped back, JMP $3BCC. Its raster handlers are at $64F8 and $653F. Kept as bytes; see $D100."
+   "text": "The scene's entry as it runs at $638D: fills the screens ($1A1C, colour 8, glyph $EE), places seven sprites from its tables at $659D-$65B8, patches the sprite bytes at $5812-$5825 ($E29F, $6573), sets the background colours from the land's $9196-$9198 and $9199, draws its picture rows into screen $4400 from $65B9-$65CA, queues sound effect $21 through $3F0E, installs its raster handler $64F8 through $1809 and then loops once a frame on stages kept in $1B3D (sprite movement, sound effects $24 and $27 through $3F0E, $BE4A), until in stage 4 the fire button ends it: sprites off ($19BD), the SID silenced ($0D1B), $6573 with X = 0, swap 0 ($3F54 with X = 0: $D800-$DFFF with $7800-$7FFF) and JMP $3BCC, which swaps the six pages back. Its raster handlers are at $64F8 and $653F. Kept as bytes; see $D100."
   },
   {
    "address": 54924,
    "type": "line",
-   "text": "The scene's tables as they sit at $658C-$65C9: four pairs of sprite bytes for $6573, the frame list $6594 (ends with 0), seven sprite positions ($659D), pointers ($65AB) and colours ($65B2), and the picture row at $65B9. See $D100."
+   "text": "The scene's tables as they sit at $658C-$65CA: four pairs of sprite bytes for $6573, the frame list $6594 (ends with 0), seven sprite positions ($659D), pointers ($65AB) and colours ($65B2), and the picture row read by $63DC-$63EC as $65B9,Y (Y = 0-$11), whose last byte is past this label, at $D6CA. See $D100."
   },
   {
    "address": 54986,
    "type": "line",
-   "text": "The last 54 bytes of the swapped block ($65CA-$65FF when swapped in): note-and-length pairs in the tune data's vocabulary ($BC $0A, $23 $8D ...). No reader was found by address."
+   "text": "The last 54 bytes of the swapped block ($65CA-$65FF when swapped in). The first, $D6CA ($AD), is the last byte of the scene's picture row: the loop at $63D8 (here $D4D8) reads $65B9,Y for Y = 0-$11. The other 53, $D6CB-$D6FF, look like note-and-length pairs ($BC $0A, $23 $7A ...); Jellyland's $9E74-$9E84 exchanges them, with the 110 bytes after them, with $7200-$72A2 ($01 = $24, X = $A3 down to 1). What they hold there is not established."
   },
   {
    "address": 55040,
    "type": "line",
-   "text": "110 bytes after the swapped block, in the same note-and-length vocabulary ($BC $0A, $24 $03 ...). Outside the six pages that entry 7 swaps, so they never reach $6000; no reader found. Unknown."
+   "text": "110 bytes ($D700-$D76D) after the swapped block, in the same note-and-length vocabulary ($BC $0A, $24 $03 ...). Outside the six pages that entry 7 swaps, so they never reach $6000 that way; Jellyland's $9E74-$9E84 exchanges $D6CB-$D76D with $7200-$72A2 ($01 = $24). Their meaning is not established."
   },
   {
    "address": 55150,
@@ -25695,22 +25695,22 @@
   {
    "address": 55204,
    "type": "line",
-   "text": "51 bytes of unknown use (two-bit pixel-like values $55/$5x/$Fx, then $FF to the end); no reader found by address."
+   "text": "91 bytes ($D7A4-$D7FE) of unknown use: 52 two-bit pixel-like values ($55/$5x/$Fx ...) to $D7D7, then $FF to the end; no reader found by address."
   },
   {
    "address": 55295,
    "type": "line",
-   "text": "The byte before colour RAM (I/O meaning, $01 = $35): loops that run X from 1 up store through $D7FF,X so that X = 1 lands on $D800: filled with A by fill_screens ($1A1C); filled with 1 (white) by the protection screen's set-up at $4693. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "The byte before colour RAM (I/O meaning, $01 = $35): loops that run X from $FB down to 1 store through $D7FF,X so that X = 1 lands on $D800: filled with A by fill_screens ($1A1C); filled with 1 (white) by the protection screen's set-up at $4693. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55296,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 0, column 0: zeroed by the screen copy at $110E (which also copies screen $4800 to $4400); copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). RAM meaning: $D800-$DFFF is 2 KB that $3F54 swaps with $7800-$7FFF (entries 0 and 4) and with $5000-$57FF (entry 5); at the hand-over it holds the character set that the start-up ($3F52, entry 0) moves to $7800 for the protection screen."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 0, column 0: zeroed by the screen copy at $110E (which also copies screen $4800 to $4400); copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). RAM meaning: $D800-$DFFF is 2 KB that $3F54 swaps with $7800-$7FFF (entries 0 and 4) and with $5000-$57FF (entry 5); at the hand-over it holds the character set that the start-up ($3F52, entry 0) moves to $7800 for the protection screen."
   },
   {
    "address": 55336,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF); set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15); set by the stage card's colouring at $3D0A-$3D3C from $E3F6 (sad) or $E406 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55337,
@@ -25720,22 +25720,22 @@
   {
    "address": 55352,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 16: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 16: set by the stage card's colouring at $3D0A-$3D3C from $E3F6 (sad) or $E406 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55368,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 32: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 32: set by the stage card's colouring at $3D0A-$3D3C from $E3F6 (sad) or $E406 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55375,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 39: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 1, column 39: set by the stage card's colouring at $3D0A-$3D3C from $E3F6 (sad) or $E406 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55376,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55377,
@@ -25745,22 +25745,22 @@
   {
    "address": 55391,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 15: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 15: set by the stage card's colouring at $3D0A-$3D3C from $E3F6 (sad) or $E406 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55407,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 31: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 31: set by the stage card's colouring at $3D0A-$3D3C from $E3F6 (sad) or $E406 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55415,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 39: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 2, column 39: set by the stage card at $3D3E-$3D4B from $E3FE (sad) or $1008 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55416,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 3, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 3, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55417,
@@ -25770,7 +25770,7 @@
   {
    "address": 55456,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 4, column 0: set to $0E under the land-name line by $10A7; copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 4, column 0: set to $0E under the land-name line by $10A7; copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55457,
@@ -25785,7 +25785,7 @@
   {
    "address": 55496,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 5, column 0: set to $0E under the land-name line by $10A7; copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 5, column 0: set to $0E under the land-name line by $10A7; copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55497,
@@ -25800,17 +25800,17 @@
   {
    "address": 55505,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 5, column 9: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 5, column 9: set by the stage card's colouring at $3D4E-$3D6A from $E3F6 (sad) or $1000 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55521,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 5, column 25: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 5, column 25: set by the stage card's colouring at $3D4E-$3D6A from $E3F6 (sad) or $1000 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55536,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 6, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 6, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55537,
@@ -25820,7 +25820,7 @@
   {
    "address": 55544,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 6, column 8: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 6, column 8: set by the stage card's colouring at $3D4E-$3D6A from $E3F6 (sad) or $1000 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55545,
@@ -25835,12 +25835,12 @@
   {
    "address": 55560,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 6, column 24: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 6, column 24: set by the stage card's colouring at $3D4E-$3D6A from $E3F6 (sad) or $1000 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55576,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 7, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 7, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55577,
@@ -25850,7 +25850,7 @@
   {
    "address": 55616,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 8, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 8, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55617,
@@ -25860,7 +25860,7 @@
   {
    "address": 55656,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 9, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 9, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55657,
@@ -25875,7 +25875,7 @@
   {
    "address": 55696,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 10, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 10, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55697,
@@ -25895,7 +25895,7 @@
   {
    "address": 55736,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 11, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 11, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55737,
@@ -25910,7 +25910,7 @@
   {
    "address": 55776,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 12, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 12, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55777,
@@ -25935,7 +25935,7 @@
   {
    "address": 55816,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 13, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 13, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55817,
@@ -25945,7 +25945,7 @@
   {
    "address": 55856,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 14, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF); cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 14, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows 0-23 moved down one row, columns 0-38; row 14 kept in $BFCF and put back as row 15); cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55857,
@@ -25965,7 +25965,7 @@
   {
    "address": 55896,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 15, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF); cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 15, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved; cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55897,
@@ -25985,7 +25985,7 @@
   {
    "address": 55936,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 16, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 16, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55937,
@@ -26000,7 +26000,7 @@
   {
    "address": 55976,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 17, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF); cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 17, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved; cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 55977,
@@ -26020,7 +26020,7 @@
   {
    "address": 56016,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 18, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF); cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 18, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved; cycled each frame by the stage-complete handler $F38D from the colour tables at $F247/$F257. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56017,
@@ -26045,7 +26045,7 @@
   {
    "address": 56056,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 19, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 19, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56057,
@@ -26060,7 +26060,7 @@
   {
    "address": 56096,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 20, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 20, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56097,
@@ -26070,7 +26070,7 @@
   {
    "address": 56136,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 21, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 21, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56137,
@@ -26080,17 +26080,17 @@
   {
    "address": 56143,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 21, column 7: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 21, column 7: set by the stage card's colouring at $3CF3-$3D06 from $E3F6-$E405 (sad) or $E416-$E425 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56159,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 21, column 23: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 21, column 23: set by the stage card's colouring at $3CF3-$3D06 from $E3F6-$E405 (sad) or $E416-$E425 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56176,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 22, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 22, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56177,
@@ -26100,17 +26100,17 @@
   {
    "address": 56182,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 22, column 6: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 22, column 6: set by the stage card's colouring at $3CF3-$3D06 from $E3F6-$E405 (sad) or $E416-$E425 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56198,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 22, column 22: set from $E3F6/$E406 (or $1000 while happy) by the colouring at $3CF1. The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 22, column 22: set by the stage card's colouring at $3CF3-$3D06 from $E3F6-$E405 (sad) or $E416-$E425 (happy). The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56216,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 23, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 23, column 0: copied by the colour shift at $247C (each cell from the cell 41 on: a row down and a column right); named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56217,
@@ -26120,7 +26120,7 @@
   {
    "address": 56256,
    "type": "line",
-   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 24, column 0: copied by the colour shift the other way at $28E1 (rows moved down one, row 20 kept in $BFCF). The RAM underneath belongs to the 2 KB block described at $D800."
+   "text": "Colour RAM, I/O meaning ($01 = $35 whenever the code runs): row 24, column 0: named by the colour shift the other way at $28E1 (rows 0-23 moved down one row; row 14 kept in $BFCF and put back as row 15), whose loop for rows 15-24 stops at column 1, so this column-0 cell itself is not moved. The RAM underneath belongs to the 2 KB block described at $D800."
   },
   {
    "address": 56257,
@@ -26165,7 +26165,7 @@
   {
    "address": 57939,
    "type": "line",
-   "text": "Called from $2B3F while the scroll speed (operand $208C) is 0. Unless $1B74 is set, counts how many of the two map bytes at ($8A)+$79 and +$7A are below the threshold in $2AAE, and asks $E27B for variant 1 when exactly one is, variant 0 otherwise. Presumably the pose for standing with one foot over an edge; not checked live."
+   "text": "Called from $2B3F while the scroll speed (operand $208C) is 0. With $1B74 set it asks $E27B for variant 0 at once; otherwise it counts how many of the two map bytes at ($8A)+$79 and +$7A are below the threshold in $2AAE, and asks $E27B for variant 1 when exactly one is, variant 0 otherwise. Presumably the pose for standing with one foot over an edge; not checked live."
   },
   {
    "address": 57979,
@@ -26280,7 +26280,7 @@
   {
    "address": 58358,
    "type": "line",
-   "text": "Sixteen colours ($0B $0B $0C $0C $0F $0F $01 $01 $01 $01 $0F $0F $0C $0C $0B $0B, a grey ramp up and back) written into colour RAM rows 1-6 by $3CF1-$3D66 while the land is sad."
+   "text": "Sixteen colours ($0B $0B $0C $0C $0F $0F $01 $01 $01 $01 $0F $0F $0C $0C $0B $0B, a grey ramp up and back) written by the stage card while the land is sad into colour RAM rows 1-2 ($3D0F, $3D2D), rows 5-6 ($3D55) and rows 21-22 ($3CF5); $3D43 takes $E3FE alone for $D877."
   },
   {
    "address": 58366,
@@ -26290,12 +26290,12 @@
   {
    "address": 58374,
    "type": "line",
-   "text": "Colours read by $3D14 and $3D32 in place of $E3F6 when the land is happy (the other rows then come from $1000): the loops reach only the first 16 ($0A $0F $01 $01 $01 $01 $01 $0F $0A $08 $02 ... $02 $08); the 16 after them ($05 $03 $07 ...) have no reader found."
+   "text": "Colours read by $3D14 and $3D32 in place of $E3F6 when the land is happy, the first 16 ($0A $0F $01 $01 $01 $01 $01 $0F $0A $08 $02 ... $02 $08), into colour RAM rows 1-2. The 16 after them, $E416-$E425 ($05 $03 $07 ...), are read too: $3CF5 LDA $E3F6,Y with Y = $2F down to $20 when $1BEC is set puts them into rows 21-22 ($DB4F, $DB76, $DB5F, $DB86). Rows 5-6 and $D877 then come from $1000/$1008."
   },
   {
    "address": 58406,
    "type": "line",
-   "text": "Called from the bottom raster handler ($212C). Places Mayhem's two overlaid sprites, 6 and 7: X = $AC always, Y = $1BE4 - $1B4B (at least $34), pointers from $E4A6 into both screens' pointer bytes, sprite 6 colour from the operand at $E44B (flashed by $EF6C), sprite 7 colour $1BE8. Toggles $1B73 each call and ORs $1B6F/$1B70 into the X high bits, clears X expansion for sprites 5-7, and sets sprite 5 from $1B69/$1B6B (position) and $1B6D (pointer: $0F when $1B7F is set; otherwise $1B6D, plus $5C when $1B9C is set, or $0F when $1BB6 is set and $1B9C is not), colour 1."
+   "text": "Called from the bottom raster handler ($212C). Places Mayhem's two overlaid sprites, 6 and 7: X = $AC always, Y = $1BE4 - $1B4B (at least $34), pointers from $E4A6 into both screens' pointer bytes, sprite 6 colour from the operand at $E44B (flashed by $EF6C), sprite 7 colour $1BE8. Toggles $1B73 each call and ORs $1B6F/$1B70 into the X high bits, clears X expansion for sprites 5-7, and sets sprite 5 from $1B69/$1B6B (position, only while $1B7F is clear) and $1B6D (pointer: $0F when $1B7F is set; otherwise $1B6D, plus $5C when $1B9C is set, or $0F when $1BB6 is set and $1B9C is not), colour 1."
   },
   {
    "address": 58443,
@@ -26305,7 +26305,7 @@
   {
    "address": 58534,
    "type": "line",
-   "text": "Sprite 6's pointer is Mayhem's frame $1BE7; sprite 7's is the frame + 1, or + 3 when $1B4D is $40 or $5A. Writes both into $47FE/$4BFE and returns sprite 7's in X. Also called from $B2AF."
+   "text": "Puts Mayhem's frame $1BE7 in sprite 6's pointers ($47FE/$4BFE) and returns sprite 7's frame in X: the frame + 1, but $43 when $1B4D is $40 and $5D when it is $5A (X is then $1B4D + 3, not the frame + 3). The callers write X into sprite 7's pointers. Also called from $B2AF."
   },
   {
    "address": 58559,
@@ -26320,7 +26320,7 @@
   {
    "address": 58565,
    "type": "line",
-   "text": "Called from $1E7B and $2003: if the tune selected by $1B97 is not the one playing ($1B96), starts it. $E4D0 (also entered from $BB9A and $BD18) starts tune Y: notes $1B96/$1B95 and jumps to $080C with the address from the land's table, low $90D0 + Y, high $90DA + Y (entry 8 is the engine's $B111, entry 9 its $E000)."
+   "text": "Called from $1E7B and $2003: starts the tune $1B97 selects when the land's $90E4 entry for it differs from $1B96, the $90E4 entry of the tune last started; tunes are told apart only by that byte (in Pipeland tune 1 and the power-up tune 8 share $60). $E4D0 (also entered from $BB9A and $BD18) starts tune Y: notes $1B96/$1B95 and jumps to $080C with the address from the land's table, low $90D0 + Y, high $90DA + Y (entry 8 is the engine's $B111, entry 9 its $E000)."
   },
   {
    "address": 58595,
@@ -26440,7 +26440,7 @@
   {
    "address": 59230,
    "type": "line",
-   "text": "Creates the object described by the 15-byte record at ($8E) in slot byte 0 AND $0F. Marker records (byte 0 $70-$7F) instead call $29AC ($78-$7F) or, while happy, $29F4 ($70-$77) when $1B3F is 0. Unless the low nibble of byte 9 is $0B or more, a record is skipped when byte 10 bit 7 marks it gone, or when its slot is in use and in state 3, or (byte 12 bit 7 set) runs the $F675 that byte 12 bits 4-6 name. Otherwise the record's bytes are spread over the slot's tables: 0 bit 7 the alternative script; 1 and 2 indexes into the land's tables $941A/$943F and $9464/$9489, bits 0-1 an X offset ($940F) for a follower; 3 bits 0-5 the object type (25 added while happy), which selects six script numbers and a frame delay from the land's tables $956E-$969A and the scripts' addresses from $94AE/$94EE, bits 6-7 $F5FD; 4 the item ($EB56) and size bits ($EBB2); 5 bit 4 double height, bits 6-7 $F8FA, bit 5 a $93F0/$93FF entry; 6 the Y position; 8 multicolour (bit 0), priority (bit 1), $F5C1 (bit 2), $F666 (bit 3), the group (bits 4-6), item object (bit 7); 9 the behaviour ($93DA, into $F567) and $F585; 10 the score entry $F50D and $F5D0; 11 $F8AF; 12 bit 7 a second path ($EAC6); 14 $F60C and $F486. Byte 13 is the gap to the previous record and byte 7 is not read here. The X position is the screen's edge corrected for the scroll ($AC, $208C, $1BB5, $1B3F, fine scroll $10), or for a follower the leader's X plus the offset. Clears the rest of the slot's state, sets it in use ($023C) and visible ($F5B2), its direction $F693 from $1B3F, and its band bits; then, while $1BD5 is set, queues the following records of the same group ($EC72)."
+   "text": "Creates the object described by the 15-byte record at ($8E) in slot byte 0 AND $0F. Marker records (byte 0 $70-$7F) instead call $29AC ($78-$7F) or, while happy, $29F4 ($70-$77) when $1B3F is 0. Unless the low nibble of byte 9 is $0B or more, a record is skipped when byte 10 bit 7 marks it gone, or when its slot is in use and in state 3, or (byte 12 bit 7 set) runs the $F675 that byte 12 bits 4-6 name. While $1BD5 and $1B3F are set, a record of a group (byte 8 bits 4-6) whose byte 3 bits 6-7 are not 0 is queued instead ($E7C1-$E7E7: $1BB5 = 8, on to $ECBA). Otherwise the record's bytes are spread over the slot's tables: 0 bit 7 the alternative script; 1 and 2 indexes into the land's tables $941A/$943F and $9464/$9489, bits 0-1 an X offset ($940F) for a follower; 3 bits 0-5 the object type (25 added while happy), which selects six script numbers and a frame delay from the land's tables $956E-$969A and the scripts' addresses from $94AE/$94EE, bits 6-7 $F5FD; 4 the item ($EB56) and size bits ($EBB2); 5 bit 4 double height, bits 6-7 $F8FA, bit 5 a $93F0/$93FF entry; 6 the Y position; 8 multicolour (bit 0), priority (bit 1), $F5C1 (bit 2), $F666 (bit 3), the group (bits 4-6), item object (bit 7; in the sad land such an object is freed at once, $EA1D); 9 the behaviour ($93DA, into $F567) and $F585; 10 the score entry $F50D and $F5D0; 11 $F8AF; 12 bit 7 a second path ($EAC6); 14 $F60C and $F486. Byte 13 is the gap to the previous record and byte 7 is not read here. The X position is the screen's edge corrected for the scroll ($AC, $208C, $1BB5, $1B3F, fine scroll $10), or for a follower the leader's X plus the offset. Clears the rest of the slot's state, sets it in use ($023C) and visible ($F5B2), its direction $F693 from $1B3F, and its band bits; then, while $1BD5 is set, queues the following records of the same group ($EC72)."
   },
   {
    "address": 59551,
@@ -26495,7 +26495,7 @@
   {
    "address": 60334,
    "type": "line",
-   "text": "Operand of the LDA at $EBAD: 1, $0F or the value left by $EB54/$EB5C, stored by $EB9D; becomes the slot's $F837."
+   "text": "Operand of the LDA at $EBAD: 1 when the spawn set a colour list ($EB98), 0 when it did not (X from $EB11 on the paths through $EB37, $EB54 and $EB5C); stored by $EB9D, becomes the slot's $F837."
   },
   {
    "address": 60339,
@@ -26565,7 +26565,7 @@
   {
    "address": 60824,
    "type": "line",
-   "text": "Exchanges glyphs $C0-$E7 of the land's character set ($7600-$773F, 320 bytes) with the 320 bytes kept in the land's file at $929A-$93D9: the other mood's version of those glyphs, so the same file holds the sad and the happy land. Called from $3BDB and $3D92."
+   "text": "Exchanges sprite blocks $D8-$DC ($7600-$773F, 320 bytes), the images the stage card's sprites show (pointers from the land's $911B), with the 320 bytes kept in the land's file at $929A-$93D9: $3BDB brings the card's images in when the card starts and $3D92 puts the land's own bytes back when it ends. Called from $3BDB and $3D92."
   },
   {
    "address": 60857,
@@ -26605,7 +26605,7 @@
   {
    "address": 60899,
    "type": "line",
-   "text": "The rest of the bit-mask pair table that starts at $EDD7: each bit (1, 2, 4 ... $80) followed by its inverse ($FE, $FD ... $7F), as read in pairs by the code that uses $EDD7."
+   "text": "The rest of the pair table that starts at $EDD7: for slots 3-14, each slot's bit in its band (1, 2, 4, 8, $10) followed by its complement ($FE, $FD, $FB, $F7, $EF). $B4EE reads only the first byte of each pair."
   },
   {
    "address": 60917,
@@ -26645,7 +26645,7 @@
   {
    "address": 61086,
    "type": "line",
-   "text": "Picks Mayhem's sprite frame $1BE7 = base $1B4D + step $1B4E (called from $1ED8 and $23A5): ducking ($1B62, or while $1BBB counts) base $64 + twice the direction $1B3F; $1B54 without $1B5B step $14; $1B52 base $40 or $5A by direction, steps 0-2; $1B59 or $1B5A step $18 with the sprite patch $EF93; standing still (scroll speed $208C = 0) step $16; walking steps 0, 2 ... 14, one every 4 - $1BD7 calls. The base for the facing comes from $EF86. Then, while $1BC2 counts down (by $1B68 each call), the two sprites flicker: sprite 6's colour ($E44B) between 0 and 7 and sprite 7's ($1BE8) between $0A and $07, every call above $38, every other call above $18, every fourth below; at 0 both are restored."
+   "text": "Picks Mayhem's sprite frame $1BE7 = base $1B4D + step $1B4E (called from $1ED8 and $23A5): ducking ($1B62, or while $1BBB counts) base $64 + twice the direction $1B3F; $1B54 without $1B5B step $14; $1B52 base $40 or $5A by direction, steps 0-2; $1B59 or $1B5A step $18 with the sprite patch $EF93; standing still (scroll speed $208C = 0) step $16; walking steps 0, 2 ... 14, one every 5 - $1BD7 calls ($1B50 reloaded with 4 - $1BD7 and counted past 0). The base for the facing comes from $EF86. Then, while $1BC2 counts down (by $1B68 each call) and the power-up $1B9C is not running, the two sprites flicker: sprite 6's colour ($E44B) between 0 and 7 and sprite 7's ($1BE8) between $0A and $07, every call above $38, every other call above $18, every fourth below; at 0 both are restored."
   },
   {
    "address": 61318,
@@ -26830,12 +26830,12 @@
   {
    "address": 62023,
    "type": "line",
-   "text": "Sixteen colours ($0A $07 $01 ... $07 $0A, ramps) that the stage-complete handler $F38D steps through for colour RAM $D9DF, $DA58, $DAD0 and, one step behind, $D9B7, $DA30, $DAA8."
+   "text": "Sixteen colours ($0A $07 $01 $01 $01 $01 $01 $07 $0A $08 $02 $02 $02 $02 $02 $08, two ramps) that the stage-complete handler steps through, one entry down each frame ($F38D-$F394): entry X for colour RAM $D9DF, $DA58 and $DAD0, entry X - 1 for $D9B7, $DA30 and $DAA8, which therefore show each colour a frame before the first three."
   },
   {
    "address": 62039,
    "type": "line",
-   "text": "Sixteen colours ($08 $01 $0D $03 ...) stepped by $F38D for colour RAM $D8CD and, one behind, $D8A5."
+   "text": "Sixteen colours ($01 $0D $03 $03 $05 $0E $04 $02 $02 $04 $08 $0A $0A $0F $07 $01) stepped by $F38D: entry X for colour RAM $D8CD ($F39A) and entry X - 1 for $D8A5 ($F3B1), a frame ahead of it."
   },
   {
    "address": 62055,
@@ -26875,7 +26875,7 @@
   {
    "address": 62291,
    "type": "line",
-   "text": "The stage-complete screen's raster handler (front-end dispatcher, installed by $F34D): blue border and background, screen $4400 with characters at $7800, frame flag, $BC99; unless $1B66, increments $1B4D; unless $1B67, steps $39 through the colour run at $CFD6 (wrapping at $10); $BDD7; $1BB8 from the operand $F386; $F07E; steps two colour stripes through $F247/$F257 ($F38D); $B43D for objects 7-8, and 9-10, 11-12, 13-14 when $1B8B, $1B8C, $1B8D are set; the music player ($087B); next line $D0 and $F409."
+   "text": "The stage-complete screen's raster handler (front-end dispatcher, installed by $F34D): blue border and background, screen $4400 with characters at $7800, frame flag, $BC99; unless $1B66, increments $1B4D; unless $1B67, steps $39 through the colour run at $CFD6 (wrapping at $10); $BDD7; $1BB8 from the operand $F386; $F07E; steps two colour stripes through $F247/$F257 ($F38D); $B43D on the colour-cycle blocks 7-8 (colour RAM), and 9-10, 11-12, 13-14 when $1B8B, $1B8C, $1B8D are set; the music player ($087B); next line $D0 and $F409."
   },
   {
    "address": 62342,
@@ -27020,12 +27020,12 @@
   {
    "address": 62598,
    "type": "line",
-   "text": "Per slot (15 slots, X = 0-14, like every table to $F944): the high nibble of record byte 14 ($E85F); read and changed by $B636/$B65C and $C7AD/$C7BF, cleared when the object is hit ($C7CF). Meaning not worked out."
+   "text": "Per slot (15 slots, X = 0-14, like every table to $F944): the colour flash mask, the high nibble of record byte 14 ($E85F). $B62A EORs it into the colour $F4A4 once a pass in the happy land; the hit flash saves it in $F495 and clears it ($C7AD/$C7BF), $B65C puts it back when the flash ends, and $C7D1 clears it when the object is defeated."
   },
   {
    "address": 62613,
    "type": "line",
-   "text": "Per slot: cleared by $C7B0/$C7D4 when the object is hit, read by $B659. Meaning not worked out."
+   "text": "Per slot: the flash mask $F486 kept during a hit flash: saved by $C7B0, put back by $B659 when the flash ends, cleared by $C7D4 when the object is defeated."
   },
   {
    "address": 62628,
@@ -27045,7 +27045,7 @@
   {
    "address": 62643,
    "type": "line",
-   "text": "Per slot: a colour kept aside: at spawn the first colour goes here instead when $1BC9 is set (and $F4A4 gets 0); $B35B/$B367 restore it, $C53E writes it."
+   "text": "Per slot: the colour an object fades in to. At spawn, when $1BC9 is set, the first colour goes here and $F4A4 gets 0 ($EBA5); $B34F then steps the slot's colour through fade sequence number (this colour) at $B3B1/$B3C1, which ends on it, and $B367 clears this byte at the end of the sequence; $C53E clears it for a new stage."
   },
   {
    "address": 62658,
@@ -27115,17 +27115,17 @@
   {
    "address": 62748,
    "type": "line",
-   "text": "Per slot: $FF as loaded; counted down by $C2E9 and reset by $C2F8/$C547; cleared at spawn and when hit. Meaning not worked out."
+   "text": "Per slot: the horizontal script's repeat count ($C18A); $FF as loaded; counted down by $C2E9, set by $C2F8, cleared by $C547 for a new stage, at spawn ($EBDB) and when the object is defeated ($C839)."
   },
   {
    "address": 62763,
    "type": "line",
-   "text": "Per slot: counted down by $C4B1, set by $C4C0/$C54A/$C5E2; cleared at spawn and when hit. Meaning not worked out."
+   "text": "Per slot: the vertical script's repeat count ($C42A); counted down by $C4B1, set by $C4C0, cleared by $C54A, $C5E2, at spawn ($EBDE) and when the object is defeated ($C83C)."
   },
   {
    "address": 62778,
    "type": "line",
-   "text": "Per slot: the object's motion, bit 7 its direction and the low nibble a speed or step; cleared at spawn, set by $C2D2/$C5B6, read by the script choice $CABE, the turn rule $ED0C and by $BA8F/$BA98 and $C218-$C38F; the scene code at $638F/$6398 reads it too."
+   "text": "Per slot: the object's motion, bit 7 its direction and the low nibble a speed or step; cleared at spawn, set by $C2D2/$C5B6, read by the script choice $CABE, the turn rule $ED0C and by $BA8F/$BA98 and $C218-$C38F. (The reads at $638F/$6398 are $BA8F/$BA98 in the engine's as-loaded copy at $5A00-$A8FF, not code that runs there.)"
   },
   {
    "address": 62793,
@@ -27135,7 +27135,7 @@
   {
    "address": 62808,
    "type": "line",
-   "text": "Per slot: the object's state: 0 normal; 2 a portal ($EAA9, behaviour $80-$8F); 3 turned into its item ($CA0B) or an item object while happy ($EA25); 4 hit ($C7CC); 5 skipped by the scripts. Read throughout the object code."
+   "text": "Per slot: the object's state: 0 normal; 2 a portal ($EAA9, behaviour $80-$8F); 3 turned into its item ($CA0B) or an item object while happy ($EA25); 4 defeated ($C7CC, $C7C3); 5 freed ($C41E), skipped by the scripts. Read throughout the object code."
   },
   {
    "address": 62823,
@@ -27165,7 +27165,7 @@
   {
    "address": 62898,
    "type": "line",
-   "text": "Per slot: 1 when the band writer should place the sprite ($C0EB); set at spawn, cleared by $C426 and when a record is skipped ($E7BE)."
+   "text": "Per slot: 1 when the band writer should place the sprite ($C0EB); cleared at the start of every spawn that passes the skip tests ($E7BE) and set to 1 when it completes ($EC08), so a record that is queued instead stays hidden; cleared by $C426 when the slot is freed."
   },
   {
    "address": 62903,
@@ -27260,7 +27260,7 @@
   {
    "address": 63153,
    "type": "line",
-   "text": "Per slot: stepped up or down by $BA94/$BA9D and $C354/$C35A (and by the scene code at $6394/$639D) and read as an index by $C3AF-$C3D4. Meaning not worked out."
+   "text": "Per slot: stepped up or down by $BA94/$BA9D and $C354/$C35A and read as an index by $C3AF-$C3D4 (the page counter of $C18A). The accesses at $6394/$639D are $BA94/$BA9D in the engine's as-loaded copy at $5A00-$A8FF, not code that runs there."
   },
   {
    "address": 63168,
@@ -27290,7 +27290,7 @@
   {
    "address": 63228,
    "type": "line",
-   "text": "Per slot: high byte from the land's $9489 for record byte 2 ($E879); cleared when the object is hit ($C836)."
+   "text": "Per slot: high byte from the land's $9489 for record byte 2 ($E879); cleared when the object is defeated ($C836)."
   },
   {
    "address": 63243,
@@ -27395,7 +27395,7 @@
   {
    "address": 63543,
    "type": "line",
-   "text": "Per slot: the value left in the operand $EBAE at spawn (1, $0F or as set by $EB54/$EB5C); read by $B669, written by $BABF."
+   "text": "Per slot: 1 when the slot has a colour list to step, 0 when the spawn gave it none (the operand $EBAE, stored by $EBAF); set to 1 by $BABF ($BAA1); $B669 steps the colour only while it is set."
   },
   {
    "address": 63558,
@@ -27435,12 +27435,12 @@
   {
    "address": 63663,
    "type": "line",
-   "text": "Per slot: record byte 11 ($EA51): its low nibble is the script played when the object is hit ($C7D7), its high nibble passed to $BAA1 ($C81A)."
+   "text": "Per slot: record byte 11 ($EA51). When the object is defeated ($C7C3) its low nibble below 4 is the animation started ($C816), 4 or more an item (number less 4); its high nibble is the colour list passed to $BAA1 ($C81A)."
   },
   {
    "address": 63678,
    "type": "line",
-   "text": "Per slot: bits 5-7 of record byte 4 ($EBB6): bit 5 double width, bit 6 double height, bit 7 keep multicolour, as $C842-$C891 apply when the object is hit."
+   "text": "Per slot: bits 5-7 of record byte 4 ($EBB6): bit 5 double width, bit 6 double height, bit 7 keep multicolour, as $C842-$C891 apply when the object is defeated ($C7C3)."
   },
   {
    "address": 63693,
@@ -27560,7 +27560,7 @@
   {
    "address": 63867,
    "type": "line",
-   "text": "The successors' high byte, $22 for all four; then nine zero bytes with no reader found."
+   "text": "The successors' high byte, $22 for all four. The nine bytes after it, $F97F-$F987 (0 as loaded), are a nine-digit high score kept by Jellyland's code: its $9E89-$9EA6 compares the score $CF78-$CF80 with them digit by digit and copies the score here when it is higher, and its $9E57-$9E61 copies them back into $CF78 for display."
   },
   {
    "address": 63880,
@@ -27585,7 +27585,7 @@
   {
    "address": 63958,
    "type": "line",
-   "text": "640 bytes that look like 8x8 character patterns in groups of four (quarters of 16x16 pictures, in several near-identical frames). No reader was found by absolute address or by an immediate pointer in the engine. Unknown use."
+   "text": "The 20 frames of the spinning star, 32 bytes each (four characters, 2x2), $F9D6-$FC55: the pointer tables $B47E/$B492 hold their addresses ($F9D6, $F9F6 ... $FC36), and $3B1A/$3B20 read them to copy a frame into characters $FB-$FE. Several frames are near-identical."
   },
   {
    "address": 64598,
@@ -27610,7 +27610,7 @@
   {
    "address": 65344,
    "type": "line",
-   "text": "Bytes $FF40-$FF7F of the happy tune's data, which starts at $FDB6 (agent 3's tune table) and runs to $FFB6; read only by the music driver through the tune's own pointers."
+   "text": "Bytes $FF40-$FF7F of the happy tune's data, which starts at $FDB6 and runs to $FFB6; read only by the music driver through the tune's own pointers."
   },
   {
    "address": 65408,
@@ -27635,7 +27635,7 @@
   {
    "address": 65477,
    "type": "line",
-   "text": "A copy of the first 53 bytes of the panel pictures at $F9A6, with no reader: left over at the end of the file."
+   "text": "A copy of the 48 bytes at $F9A6-$F9D5 (both panel pictures), then five other bytes ($F4 $C4 $FF $80 $F7) to $FFF9; no reader found: left over at the end of the file."
   },
   {
    "address": 65530,

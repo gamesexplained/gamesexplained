@@ -4371,7 +4371,7 @@
   {
    "address": 23084,
    "type": "line",
-   "text": "Credit band fade counter, loaded with 8 from $67CB by $5A39 and counted down by $62AB until it goes negative; indexes the fade steps at $67B9/$67C2."
+   "text": "Credit band fade counter, loaded with 8 from $67CB by $5A39 and counted down by $62AB to 0, where it stays (the DEY/BMI at $62BE returns before the store); indexes the fade steps at $67B9/$67C2, of which 8 to 1 are applied."
   },
   {
    "address": 23085,
@@ -4546,7 +4546,7 @@
   {
    "address": 23796,
    "type": "line",
-   "text": "Fills colour RAM $D800-$DBE7 with A, X = $FB down to 1 (four stripes of 250)."
+   "text": "Fills colour RAM with A, X = $FB down to 1: four stripes of 251 bytes, $D800-$D8FA, $D8FA-$D9F4, $D9F4-$DAEE and $DAEE-$DBE8, each overlapping the next by one byte (the last, $DBE8, is past the 1000 cells)."
   },
   {
    "address": 23812,
@@ -4556,7 +4556,7 @@
   {
    "address": 23816,
    "type": "line",
-   "text": "Fills the screen $4400-$47E7 with A, X = $FB down to 1 (four stripes of 250)."
+   "text": "Fills the screen at $4400 with A, X = $FB down to 1: four stripes of 251 bytes, $4400-$44FA, $44FA-$45F4, $45F4-$46EE and $46EE-$47E8, each overlapping the next by one byte (the last, $47E8, is past the 1000 cells and below the sprite pointers)."
   },
   {
    "address": 23832,
@@ -4736,7 +4736,7 @@
   {
    "address": 24650,
    "type": "line",
-   "text": "Top strip (screen rows 0-5) scroll. Subtracts the speed $6043 from the fine scroll $6044 (0-7); on a borrow moves the six rows and their colour RAM one cell left and draws the new column 39 from the map rows $9250-$9750 at column $6048, each char's colour from $6A22. Map bytes $E0-$EF are loop markers, run through the count/back pairs at $9200 (counter $6046); bytes $90-$DF are skipped (the bottom strip's markers). When the column passes 255 ($6179), scrolls 40 more columns ($617B), then stops and asks for the next set ($5A22 = 1)."
+   "text": "Top strip (screen rows 0-5) scroll. Subtracts the speed $6043 from the fine scroll $6044 (0-7); on a borrow moves the six rows and their colour RAM one cell left and draws the new column 39 from the map rows $9250-$9750 at column $6048, each char's colour from $6A22. Map bytes $E0-$EF are loop markers, run through the count/back pairs at $9200 (counter $6046); bytes $90-$DF (the bottom strip's markers) and $F0-$FF (the maps hold $F2-$F5) are skipped. When the column passes 255 ($6179), scrolls 40 more columns ($617B), then stops and asks for the next set ($5A22 = 1)."
   },
   {
    "address": 24953,
@@ -4761,7 +4761,7 @@
   {
    "address": 24957,
    "type": "line",
-   "text": "Bottom strip (screen rows 19-24) scroll, the mirror of $604A: adds the speed $6043 to the fine scroll $6045; on a carry moves the six rows one cell right and draws column 0 from the map at column $6049, which counts down from $FF. Markers $D0-$DF loop (counter $6047); $90-$CF and $E0-$FF are skipped. After column 0 ($617A) runs 40 more ($617C), then restarts at $FF."
+   "text": "Bottom strip (screen rows 19-24) scroll, the mirror of $604A: adds the speed $6043 to the fine scroll $6045 (AND 7); when that wraps to 0 moves the six rows one cell right and draws column 0 from the map at column $6049, which counts down from $FF. Markers $D0-$DF loop (counter $6047); $90-$CF and $E0-$FF are skipped. After column 0 ($617A) runs 40 more ($617C), then restarts at $FF."
   },
   {
    "address": 25250,
@@ -4771,7 +4771,7 @@
   {
    "address": 25259,
    "type": "line",
-   "text": "On odd frames, while $5A2C counts down from 8: the credit band colours from the triple at ($67B9/$67C2)[$5A2C], through $5DCA. The steps run from white (1) at step 8 to $0F/$0C/$0B at step 0, which then stay until the next page change."
+   "text": "On odd frames, while $5A2C is above 0: applies the band colour triple at ($67B9/$67C2)[$5A2C] through $5DCA and counts $5A2C down, so steps 8 to 1 are applied, from white (1) at step 8 to $0F/$0C/$0B at step 1, which then stay until the next page change. Step 0 (the same colours) is never applied: at $5A2C = 0 the routine loads its pointer and returns at the DEY/BMI ($62BE-$62BF)."
   },
   {
    "address": 25287,
@@ -4806,7 +4806,7 @@
   {
    "address": 25439,
    "type": "line",
-   "text": "Prints text fragment Y ($653E/$6587) in the 2 x 2 credit font at the destination ($6424/$6425), top half at +0/+1 and bottom half at +40/+41. Text is in screen codes: 1-26 letters, $20 space (one column), $FF end; \"! . , ? :\" through $634E as glyphs $25-$29 with widths $6353: all but \"?\" one column; i, j, l one column; other letters two; m ($0D) and w ($17) add a third column from glyph $2A or $2B. Codes $30 and up would be digits as glyph code + $2B, past the 44-glyph table at $B050 (none are used). A glyph is four chars at $B050 + 4 x (glyph - 1)."
+   "text": "Prints text fragment Y ($653E/$6587) in the 2 x 2 credit font at the destination ($6424/$6425), top half at +0/+1 and bottom half at +40/+41. Text is in screen codes: 1-26 letters, $20 space (one column), $FF end; \"! . , ? :\" through $634E as glyphs $25-$29 with widths $6353: all but \"?\" one column; i, j, l one column; other letters two; m ($0D) and w ($17) add a third column from glyph $2A or $2B. Codes $30 and up would be digits as glyph code + $2B, but 4 x (glyph - 1) is taken in 8 bits, so \"0\"-\"9\" would draw glyphs 27-36 of the table, not digits (no fragment holds one). A glyph is four chars at $B050 + 4 x (glyph - 1)."
   },
   {
    "address": 25465,
@@ -4856,17 +4856,17 @@
   {
    "address": 25642,
    "type": "line",
-   "text": "Frames left showing each blinking sprite's second image (3 from $645A), for sprite 0 and sprite 5."
+   "text": "Frames left showing each blinking sprite's blink image ($642C) after a blink, for sprite 0 and sprite 5: 3 from $645A, counted down by $645F."
   },
   {
    "address": 25644,
    "type": "line",
-   "text": "Sprite pointers shown normally: $FC (sprite 0), $FB (sprite 5)."
+   "text": "Sprite pointers shown for the 3 frames of each blink (read at $6462 while $642A is non-zero): $FC (sprite 0), $FB (sprite 5)."
   },
   {
    "address": 25646,
    "type": "line",
-   "text": "Sprite pointers shown while blinking: $FD (sprite 0), $FA (sprite 5)."
+   "text": "Sprite pointers shown the rest of the time (read at $6467): $FD (sprite 0), $FA (sprite 5), the same as sprite set 1's ($6882)."
   },
   {
    "address": 25648,
@@ -4896,7 +4896,7 @@
   {
    "address": 25657,
    "type": "line",
-   "text": "After the end: waits $6438 frames ($14), then for sprites 0 and 5 ($6430) counts each one's period $6432 down; on expiry the period alternates ($50 / $78 for sprite 0, $80 / $B8 for sprite 5, through the XOR $6436) and the sprite shows its second image ($642E: $FD / $FA) for 3 frames ($642A), otherwise its first ($642C: $FC / $FB)."
+   "text": "After the end: waits $6438 frames ($14), then for sprites 0 and 5 ($6430) counts each one's period $6432 down; on expiry the period alternates ($50 / $78 for sprite 0, $80 / $B8 for sprite 5, through the XOR $6436) and the sprite shows $642C's image ($FC / $FB) for 3 frames ($642A); the rest of the time it shows $642E's ($FD / $FA)."
   },
   {
    "address": 25716,
@@ -5741,7 +5741,7 @@
   {
    "address": 27886,
    "type": "line",
-   "text": "The ending's tune, started by $5B19 ($080C with X = $6C, Y = $EE). Header: voice 1's data at +$0063 ($6D51), voice 2's at +$0170 ($6E5E); voice 0's starts at +4 ($6CF2). Events are two bytes in the engine driver's format. The first byte, $63, is also the 144th byte of strip set 4's colour copy."
+   "text": "The ending's tune, started by $5B19 ($080C with X = $6C, Y = $EE). Header: voice 1's data at +$0063 and voice 2's at +$0170 from voice 0's, which starts at +4 ($6CF2), so $6D55 and $6E62 (the engine driver's init at $052F adds the offsets to tune + 4). Events are two bytes in the engine driver's format; the voices and the stretches they call ($6F73-$6FA0) end at $6FA0. The first byte, $63, is also the 144th byte of strip set 4's colour copy."
   },
   {
    "address": 28577,
@@ -5946,7 +5946,7 @@
   {
    "address": 32255,
    "type": "line",
-   "text": "Sprite image $F7: sprite byte 63, row 21 of 21 ($7DFF). The engine names this address for a land file, which loads here instead; in the ending the byte is part of sprite_f7."
+   "text": "Sprite image $F7: sprite byte 63, the unused 64th byte after the image's 21 rows ($7DFF). The engine names this address for a land file, which loads here instead; in the ending the byte is part of sprite_f7."
   },
   {
    "address": 32256,
@@ -5976,12 +5976,12 @@
   {
    "address": 32384,
    "type": "line",
-   "text": "Sprite image $FA: sprite 5 in \"the end\", and its blink image."
+   "text": "Sprite image $FA: sprite 5 in \"the end\" (sprite set 1), the image it shows between blinks ($642F)."
   },
   {
    "address": 32448,
    "type": "line",
-   "text": "Sprite image $FB: sprite 5's normal image in the blink ($642D)."
+   "text": "Sprite image $FB: sprite 5's blink image, shown for 3 frames at each blink ($642D)."
   },
   {
    "address": 32496,
@@ -5996,7 +5996,7 @@
   {
    "address": 32512,
    "type": "line",
-   "text": "Sprite image $FC: sprite 0's normal image in the blink ($642C)."
+   "text": "Sprite image $FC: sprite 0's blink image, shown for 3 frames at each blink ($642C)."
   },
   {
    "address": 32520,
@@ -6061,7 +6061,7 @@
   {
    "address": 32576,
    "type": "line",
-   "text": "Sprite image $FD: sprite 0 in \"the end\", and its blink image."
+   "text": "Sprite image $FD: sprite 0 in \"the end\" (sprite set 1), the image it shows between blinks ($642E)."
   },
   {
    "address": 32584,
@@ -6676,7 +6676,7 @@
   {
    "address": 37456,
    "type": "line",
-   "text": "The strip map showing (set 0 as loaded), row 0: 256 columns; drawn on screen row 0 by $604A (left to right) and row 19 by $617D (right to left). Values $90 and up in row 0 are loop markers."
+   "text": "The strip map showing (set 0 as loaded), row 0: 256 columns; drawn on screen row 0 by $604A (left to right) and row 19 by $617D (right to left). Row 0's byte decides for the whole column: $D0-$DF are the bottom strip's loop markers, $E0-$EF the top's, and a column whose row-0 byte is $90 or more is never drawn (each strip skips the other's markers and $F0-$FF; the maps hold $F2-$F5, whose purpose is not established)."
   },
   {
    "address": 37530,
@@ -6686,7 +6686,7 @@
   {
    "address": 37712,
    "type": "line",
-   "text": "The strip map showing (set 0 as loaded), row 1: 256 columns; drawn on screen row 1 by $604A (left to right) and row 20 by $617D (right to left). Values $90 and up in row 0 are loop markers."
+   "text": "The strip map showing (set 0 as loaded), row 1: 256 columns; drawn on screen row 1 by $604A (left to right) and row 20 by $617D (right to left). Columns whose row-0 byte is $90 or more are not drawn (loop markers $D0-$DF bottom, $E0-$EF top; other values skipped)."
   },
   {
    "address": 37786,
@@ -6731,7 +6731,7 @@
   {
    "address": 37968,
    "type": "line",
-   "text": "The strip map showing (set 0 as loaded), row 2: 256 columns; drawn on screen row 2 by $604A (left to right) and row 21 by $617D (right to left). Values $90 and up in row 0 are loop markers."
+   "text": "The strip map showing (set 0 as loaded), row 2: 256 columns; drawn on screen row 2 by $604A (left to right) and row 21 by $617D (right to left). Columns whose row-0 byte is $90 or more are not drawn (loop markers $D0-$DF bottom, $E0-$EF top; other values skipped)."
   },
   {
    "address": 37988,
@@ -6761,7 +6761,7 @@
   {
    "address": 38224,
    "type": "line",
-   "text": "The strip map showing (set 0 as loaded), row 3: 256 columns; drawn on screen row 3 by $604A (left to right) and row 22 by $617D (right to left). Values $90 and up in row 0 are loop markers."
+   "text": "The strip map showing (set 0 as loaded), row 3: 256 columns; drawn on screen row 3 by $604A (left to right) and row 22 by $617D (right to left). Columns whose row-0 byte is $90 or more are not drawn (loop markers $D0-$DF bottom, $E0-$EF top; other values skipped)."
   },
   {
    "address": 38254,
@@ -6791,7 +6791,7 @@
   {
    "address": 38480,
    "type": "line",
-   "text": "The strip map showing (set 0 as loaded), row 4: 256 columns; drawn on screen row 4 by $604A (left to right) and row 23 by $617D (right to left). Values $90 and up in row 0 are loop markers."
+   "text": "The strip map showing (set 0 as loaded), row 4: 256 columns; drawn on screen row 4 by $604A (left to right) and row 23 by $617D (right to left). Columns whose row-0 byte is $90 or more are not drawn (loop markers $D0-$DF bottom, $E0-$EF top; other values skipped)."
   },
   {
    "address": 38504,
@@ -6901,7 +6901,7 @@
   {
    "address": 38736,
    "type": "line",
-   "text": "The strip map showing (set 0 as loaded), row 5: 256 columns; drawn on screen row 5 by $604A (left to right) and row 24 by $617D (right to left). Values $90 and up in row 0 are loop markers."
+   "text": "The strip map showing (set 0 as loaded), row 5: 256 columns; drawn on screen row 5 by $604A (left to right) and row 24 by $617D (right to left). Columns whose row-0 byte is $90 or more are not drawn (loop markers $D0-$DF bottom, $E0-$EF top; other values skipped)."
   },
   {
    "address": 38992,

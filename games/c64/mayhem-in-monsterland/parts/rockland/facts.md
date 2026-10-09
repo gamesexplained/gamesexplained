@@ -9,8 +9,9 @@ The file `le`, `$5A00`-`$B0FF`, laid out as Jellyland's
 - 127 object records at `$A000`.
 - Its "LOADING :" line reads "GAME  COMPLETE" (`$9151`), and its quota
   lines say 12 and 365 (`$916F`, `$9185`), for no land that follows.
-- `$9F61`-`$9FD7` repeats animation-script bytes found at `$9DDD` in
-  Jellyland and at `$9F61` in Cherryland; nothing reads them here.
+- `$9F61`-`$9FD7` repeats bytes found at `$9DDD` in Jellyland (mostly its
+  colour lists, with two animation scripts) and at `$9F61` in Cherryland;
+  nothing reads them here.
 - Theo: "WELL DONE MAY-HEM, WE ARE NEAR-LY THERE NOW. I WILL GO BACK OUT
   THERE AND SPREAD THE MAG-IC DUST, THE REST IS UP TO YOU... GOOD LUCK,
   BU-DDY!" (`$974C`).
