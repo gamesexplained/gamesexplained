@@ -120,13 +120,14 @@
     'PASS CARD': 'held, it opens the five security gates (block $20), and it lies behind the wall the code lock opens', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up',
     'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'once the Doctor jumps up beside it, he can move up and down above it, up to 80 pixels', 'EGG': 'going near it while it lies free hatches a deadly baby madrag',
     'CHEMICALS': 'dropped in the pool, they turn it purple and stop two controllers for good' };
+  const gk = k => /^CHEMICALS:/.test(k.t) ? 'POOL' : k.t.split(':')[0].replace(/ \d+$/, '');   // 'CSC 3: ...' and 'CODE LOCK: button 1' share one entry
   // one picker, in groups; a walkthrough is a choice too ('walk:' and its name)
   const menu = document.getElementById('pick');
   const places = uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS|SENSOR|CSC)/.test(k.t));
   for (const [label, list] of [['Objects', objs], ['Creatures', crs], ['Dangers', dangers], ['Places', places]]) {
     const g = document.createElement('optgroup'); g.label = label;
     const shown = new Set();   // one entry per kind of mark; Next steps through the rest
-    list.forEach(k => { if (shown.has(k.t)) return; shown.add(k.t); const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = k.t; g.append(o); }); menu.append(g);
+    list.forEach(k => { const n = gk(k); if (shown.has(n)) return; shown.add(n); const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = n; g.append(o); }); menu.append(g);
   }
   { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
     for (const [v, t] of [['air', 'To the AIR MASK'], ['span', 'The SPANNER'], ['mat', 'The SPANNER, CHEMICALS, and MAT'], ['pass', 'The PASS CARD'], ['stop', 'Stop the machine'], ['home', 'Home in the TARDIS']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
@@ -243,7 +244,7 @@
     choose(menu.value === '' ? null : all[+menu.value]); setNext(menu.value === '' ? null : all[+menu.value]);
   };
   const pkNext = document.getElementById('pk-next');
-  const same = k => all.filter(m => m.t === k.t && m.kind === k.kind);
+  const same = k => all.filter(m => gk(m) === gk(k) && m.kind === k.kind);
   function setNext(k) { const l = k ? same(k) : []; pkNext.hidden = l.length < 2; if (l.length > 1) pkNext.textContent = 'Next (' + (l.indexOf(k) + 1) + ' of ' + l.length + ')'; pkNext.cur = k; }
   pkNext.onclick = () => { const l = same(pkNext.cur), k = l[(l.indexOf(pkNext.cur) + 1) % l.length]; choose(k); setNext(k); menu.value = all.indexOf(l[0]); };
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
