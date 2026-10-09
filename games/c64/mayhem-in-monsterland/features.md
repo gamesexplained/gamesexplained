@@ -66,8 +66,7 @@ Found in the code, not in the manual.
 - The title shows the levels scrolling behind the logo, and swaps pages of
   the level area out of the way and back to do it (`$3F6F`-`$3F77`).
 - `game` holds the text `DOWNLOAD BY JAZ ` at `$49F0`, in the leftover
-  code at `$4800`-`$4BFF` that the game never runs (a disk routine and a
-  saver for a file named "GAME"). What it refers to is unknown.
+  code at `$4800`-`$4BFF` that the game never runs: a link program that let another computer write and read the C64's memory, start code and set `$01` over a cable in the user port (data on `$DD01`, handshake on `$DD00`), assembled to run at `$1600`, and a routine at `$4B7B` that saved `$0200`-`$A8FF` to drive 8 under the name "GAME", the span of the disk file `game`; BASIC's input line at `$0200` still reads `SYS 5632` (`$1600`), which started the link (work/reports/jaz.md).
 - The title's lives cheat, the life added on every land load, the 10
   lives that become 00, and the extra life a 100,000-point award would
   miss at a million (`parts/engine/facts.md`, `parts/jellyland/facts.md`).
@@ -78,7 +77,4 @@ Found in the code, not in the manual.
   lightning's timer in this build, not in the lives code; its POKE for
   extra time at `$37FD` lands on `DEC $1BAA`, the clock-stop counter. The
   wiki's POKEs may have been written for another release.
-- The hand-over's `$4800`-`$4BFF`, beside the text `DOWNLOAD BY JAZ`,
-  holds code the game never runs: a disk routine and a saver for a file
-  named "GAME". Whether this copy passed through someone's hands after
-  Apex mastered it (it still runs the protection check) is not known.
+- Who Jaz was. CSDb lists two UK sceners of that name (ids 7458 and 19416), with nothing tying either to Apex; a 1990 Commodore Format feature says John Rowlands sent his code to the C64 through a "Programmer's Development System" and used a Power Cartridge, and Andy Roberts recalls an Amiga-based cross-development system. Which system the link belongs to is not known.

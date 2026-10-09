@@ -16,7 +16,7 @@ directories are headed `"  m a y h e m   " acp93`.
 The disk asks for a code from the printed protection sheet (below), and
 its title reads `© APEX 1993`. Nothing on either side is a cracker's
 intro or trainer. `game` holds the text `DOWNLOAD BY JAZ ` at `$49F0`,
-in the leftover code at `$4800`-`$4BFF` that the game never runs (a disk routine and a saver for a file "GAME"); what it refers to is unknown.
+in leftover code at `$4800`-`$4BFF` that the game never runs: a link program that let another computer write and read the C64's memory, start code and set `$01` over a cable in the user port (data on `$DD01`, handshake on `$DD00`), assembled to run at `$1600`, and a routine at `$4B7B` that saved `$0200`-`$A8FF` to drive 8 under the name "GAME", the span of the disk file `game`; BASIC's input line at `$0200` still reads `SYS 5632` (`$1600`), which started the link (work/reports/jaz.md). These are development tools left in the file; who Jaz was is unknown.
 
 | Side | File | Bytes | Loads at | What it is |
 |---|---|---|---|---|

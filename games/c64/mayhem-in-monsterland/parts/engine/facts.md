@@ -182,5 +182,4 @@ lands through `$E54F` and `$3B3F`, the ending through `JMP $5A00`.
   protection sends a player after three wrong codes.
 - The hand-over's `$4800`-`$4BFF` holds the protection's answer table
   (`$4A00`-`$4B77`, 47 entries of 8 bytes, exclusive-ORed with `$45`) and
-  code the game never runs, a disk routine and a saver for a file named
-  "GAME", beside the text "DOWNLOAD BY JAZ".
+  code the game never runs, beside the text "DOWNLOAD BY JAZ": a link program that let another computer write and read the C64's memory, start code and set `$01` over a cable in the user port (data on `$DD01`, handshake on `$DD00`), assembled to run at `$1600`, and a routine at `$4B7B` that saved `$0200`-`$A8FF` to drive 8 under the name "GAME", the span of the disk file `game`; BASIC's input line at `$0200` still reads `SYS 5632` (`$1600`), which started the link (work/reports/jaz.md). Nothing in the game reaches it, and `$1100` copies it to the screen at `$4400` and then blanks it before play.
