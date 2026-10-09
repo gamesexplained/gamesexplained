@@ -819,7 +819,7 @@ globalThis.WLMaps = (function () {
       if (!MAPS.includes(n)) n = 0;
       S.n = n; sel.value = n; S.pin = null; S.mark = at || null; S.marks = null; S.only = -1; S.tileHi = -1;
       // the map in the address, unless the address names a section of the page
-      try { if (!location.hash || /^#map-\d+$/.test(location.hash)) history.replaceState(null, '', '#map-' + n); } catch (e) { /* file: */ }
+      try { if (!location.hash || /^#map-\d+(?:-\d+-\d+)?$/.test(location.hash)) history.replaceState(null, '', '#map-' + n + (at ? '-' + at[0] + '-' + at[1] : '')); } catch (e) { /* file: */ }
       say(card, ''); say(hover, '');
       root.classList.add('wl-busy');
       let M;
@@ -895,12 +895,20 @@ globalThis.WLMaps = (function () {
       root.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     addEventListener('resize', () => { if (S.zoom === 'fit') sizeCanvas(); });
+    // #map-N opens map N; #map-N-X-Y opens it with the square at column X, row Y marked and read out
+    const fromHash = () => {
+      const h = /^#map-(\d+)(?:-(\d+)-(\d+))?$/.exec(location.hash || '');
+      return h && { n: +h[1], at: h[2] == null ? null : [+h[2], +h[3]] };
+    };
     addEventListener('hashchange', () => {
-      const h = /^#map-(\d+)$/.exec(location.hash || '');
-      if (h && +h[1] !== S.n) { show(+h[1]); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      const h = fromHash(); if (!h) return;
+      if (h.n !== S.n) show(h.n, h.at);
+      else if (h.at && S.M) { S.mark = h.at; S.marks = null; showCard(h.at[0], h.at[1]); reveal(h.at); }
+      else return;
+      root.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    const h = /^#map-(\d+)$/.exec(location.hash || '');
-    show(h ? +h[1] : 0);
+    const h = fromHash();
+    show(h ? h.n : 0, h && h.at);
     return { show, state: S };
   }
 

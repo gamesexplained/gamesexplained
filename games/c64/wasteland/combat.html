@@ -21,6 +21,8 @@
 
 <p data-part="">Every throw of 5 or more is added to the character's experience, pass or fail (<code data-part="engine">$0C41</code>). A pass can also raise the skill a level, but only while the level is below the character's rank and below the difficulty. Then a d10 no higher than half of (difficulty − level), rounded down, plus 1 raises it (<code data-part="engine">$0CA2</code>). A new character has rank 1 (<code data-part="ranger">$7FDD</code>), so no skill improves by use before the first promotion.</p>
 
+<p data-part="">Players levelled whole parties on this rule. On the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#gambling">Wasteland Ranger HQ-Grid's Underground</a>, D. Sinner (4 May 1998) played the Desert Nomads' slot machine and then three card monty in Las Vegas, reckoned on about ten levels from a session, and guessed <q>that you get one xp for every $ you make</q>. The money plays no part. A pull of the slot machine tests the player's Gamble and LK by turns, up to ten times and hardest first, until one passes (<span data-part="map-08"><code>$3B9C</code></span>), and a hand of monty tests LK and Gamble (<span data-part="map-41"><code>$3BC9</code></span>). The experience is the dice of each of those throws that came to 5 or more, won or lost.</p>
+
 <div class="plate" id="wl-dice-checks" data-part="engine">
   <div class="wl-dice-seg" id="wl-dice-c-kind" role="group" aria-label="Kind of check">
     <button type="button" class="wl-dice-segb" data-kind="skill" aria-pressed="true">Skill check</button>
@@ -62,6 +64,8 @@
 </div>
 
 <p data-part="game">A shot uses the same throw (<code>$A584</code>). To it are added DEX, 4 for each level of the weapon's skill, and the fire mode: 4 for a burst, the rounds left in the gun for automatic fire, and 10 for an explosive (<code>$A5D6</code>). A full Uzi on automatic adds 40. The total must reach a target that grows with the distance, rounded up to 5 feet, at one of three rates (<code>$A793</code>, <code>$BD48</code>). Pistols, thrown weapons, and explosives start at 0 and add 5 for every 5 feet. SMGs, carbines, the Flamethrower, the Ion beamer, the Mangler, and the Sabot rocket start at 10 and add 2. Every other gun, from the rifles to the Meson cannon, the LAW, and the RPG-7, starts at 20 and adds 1, so beyond 25 feet a rifle is an easier shot than a pistol, and beyond 50 feet than an SMG.</p>
+
+<p data-part="game">Nothing in that total can turn against the shooter. It is kept in 16 bits and stops at 65,535 (<span data-part="engine"><code>$079D</code></span>), each level of skill adds 4 however high the level goes, and the skill never enters a hit's damage. So every level of Energy weapon makes a shot likelier to hit. J. Webb wrote on the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#energyweaponskill">HQ-Grid's Underground</a>, in an undated note, that an Energy Weapon skill level <q>above 8 seems detrimental</q>. The C64's code has no such turn.</p>
 
 <p data-part="game">The target is 7 higher when the monster the code looks at has no gun (<code>$A76E</code>). The line it looks at is the one numbered like the target's group, which is not always the line being shot at (<code>$A74B</code>, <code>$A766</code>).</p>
 
@@ -171,10 +175,34 @@
     <img src="reference/melee-kill.png" width="384" height="272" alt="Map 1's graveyard: KIT hammers the Shambler Ghoul for 6 points of damage killing it.">
     <p>The game prints the kill and not the experience, so nothing on the screen shows the second payment. Experience brings promotion, the first at 1,024 for a new Ranger (<span data-part="radio"><code>$7F1B</code></span>). Each promotion gives two points to spend on attributes and a higher rank, and a skill improves with use only while its level is below the rank. Every kill made in melee counts twice toward the next promotion.</p>
   </div>
+  <p>Players knew of the double payment. The <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#nightmare">Wasteland Ranger HQ-Grid's Underground</a> says the Night Terror in Finster's mind maze gives the most experience in the game, <q>and of course twice that if you beat it with melee weapons</q>, and K. Ballou wrote there (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#promotions">14 May 1998</a>) that killing it with a proton axe paid 64,000. On the C64 its record has a base of 32,000 and no armour dice (<span data-part="map-23"><code>$42C1</code></span>), so the kill is worth 32,000, more than seven times the next monster's, and a proton ax pays it twice. For a new Ranger, 64,000 is ten promotions at the next radio call; <a href="party.html#wl-ranks">the ranks</a> show why each later kill brings fewer.</p>
+</section>
+
+<section id="wl-learn" data-part="game">
+  <p class="fig">04 · Learning</p>
+  <h2 class="t">No fight can teach a weapon skill past level 7</h2>
+  <p class="lede">A fight teaches as it goes: after an attack, the attacker may learn a level of the weapon's skill. How far a fight can teach depends on the target's armour, and no monster in the 42 maps has the armour to teach beyond level 7.</p>
+  <p>The lesson needs no check to pass (<code>$AA35</code>). It is the roll a passed check makes, at a difficulty of half the target's armour dice, rounded down, plus 1 (<code>$9ED7</code>, <span data-part="engine"><code>$0CA2</code></span>). The level must be at least 1, below the attacker's rank, and below that difficulty, and then a d10 decides, as it does after a check. A blow in melee that misses teaches nothing (<code>$8103-$810C</code>), and neither does an empty gun.</p>
+  <div class="plate">
+    <div class="wl-un-tw"><table class="wl-un-t">
+      <thead><tr><th>Armour dice</th><th>Highest level a fight teaches</th><th>Monster records</th></tr></thead>
+      <tbody>
+        <tr><td>0 or 1</td><td>none</td><td>140</td></tr>
+        <tr><td>2 or 3</td><td>2</td><td>53</td></tr>
+        <tr><td>4 or 5</td><td>3</td><td>40</td></tr>
+        <tr><td>6 or 7</td><td>4</td><td>44</td></tr>
+        <tr><td>8 or 9</td><td>5</td><td>44</td></tr>
+        <tr><td>10 or 11</td><td>6</td><td>51</td></tr>
+        <tr class="wl-un-hit"><td>12 or 13</td><td>7</td><td>26</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Every monster record of the 42 maps, read from the maps' listings: 398 records in 39 maps, none with more than 13 armour dice. The 26 that teach to level 7 are in the Guardian Citadel (21) and Base Cochise (5). Armour of 0 or 1 makes the difficulty 1, which teaches nothing, since the level must be at least 1 and below it.</p>
+  </div>
+  <p>Players found the ceiling by grinding against it. L. Stegner told the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#brawling">HQ-Grid's Underground</a> (7 November 1999) that Brother Goliath, in the Guardian Citadel, <q>can raise your guys up to level 7 in most fighting skills</q>. His record has 13 armour dice, the most any monster has, so his lessons stop at 7 (<span data-part="map-35"><code>$428E</code></span>). Zoster (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#weaponskilltips">1 July 1999</a>) took weapon skills <q>up to 7</q> by firing on the Scorpitron in Las Vegas. On the C64 the Scorpitron has 10 armour dice, so its lessons stop at 6 (<span data-part="map-12"><code>$531E</code></span>).</p>
 </section>
 
 <section id="wl-unlucky" data-part="game">
-  <p class="fig">04 · Damage</p>
+  <p class="fig">05 · Damage</p>
   <h2 class="t">Bug: an unlucky Ranger's throwing knife can kill anything</h2>
   <p class="lede">A shot's damage is the weapon's dice plus the attacker's luck bonus, and below an LK of 9 the bonus is negative. When it takes the sum below 0, the number wraps round to 65,535, and whatever was hit dies. One weapon can get there: a Throwing knife, thrown by a Ranger with an LK of 3 or 4, when both of its dice show 1.</p>
   <div class="plate">
@@ -201,8 +229,18 @@
   <p>A new Ranger&#8217;s <a href="party.html#wl-ranger-roll">attribute roll</a> makes the low LK easier to come by. Of the 7,776 ways its five dice can fall, 261 give an LK of 3 or 4, where the best three of five would give 6.</p>
 </section>
 
+<section id="wl-ryder" data-part="game">
+  <p class="fig">06 · The Red Ryder</p>
+  <h2 class="t">Secret: the Red Ryder rifle rolls 200 dice, and the game never hands it out</h2>
+  <p class="lede">Item 20 in the item table is the Red Ryder, a rifle that takes 7.62mm clips and rolls 200 dice for every hit. The Meson cannon, the gun with the next most, rolls 19. No shop, loot bag, or character in the C64 version holds a Red Ryder, so nobody can fire one without editing the game.</p>
+  <p>The record is in every copy of the item table (<code>$31A8</code>): a price of 12,345, the Rifle skill, the 7.62mm clip, and a clip of 63 rounds, the most a slot's count can hold. With fair dice, 200 of them come to between 600 and 800 in all but one hit in 30,000. The shot widget above lists it, so it can be fired there.</p>
+  <p>The way in is closed at every door. Its stock is 0 in all four item tables on the disks, so no shop offers it (<span data-part="module-1"><code>$CC5D-$CC95</code></span>). No loot bag in the 42 maps names it, and none names its class, 4, from which a bag would draw a random rifle (<code>$919C-$921A</code>). No character a party can meet carries one, and no map's own code calls the routines that put an item in a member's slots.</p>
+  <p>On the PC, players found one. M. Zier's notes on the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#superlootbags">HQ-Grid's Underground</a> describe a bug in the IBM version's loot bags that hands out items freely, and <q>The best two others are Red Ryders, which are 7.62 rifles with 63 shots, and a range from 600-800 damage</q>, numbers the C64's record matches exactly. Black Raven answered there (16 January 1997) that the bug was the IBM version's alone: <q>it looks like us 64/Apple II users are out of luck. I really wanted those Red Ryders too!</q></p>
+  <p>The name is Highpool's too. Two of its messages tell of a child who lies dead <q>near his Red Ryder hat</q>, and of Red Ryder himself, who <q>raises his Red Ryder Range Model Air Rifle (with compass in the stock) and fires!</q> (<a href="levels.html#map-10">map 10</a>, messages 27 and 31). His is an air rifle; the item table's takes 7.62mm clips.</p>
+</section>
+
 <section id="wl-radiation" data-part="game">
-  <p class="fig">05 · Radiation</p>
+  <p class="fig">07 · Radiation</p>
   <h2 class="t">Bug: armour stops radiation only where the message number is even</h2>
   <p class="lede">A radiation square burns every member of the party who is not wearing a rad suit. The code means armour to be no help against it, and on most squares armour is a help after all: the square's message number decides.</p>
   <div class="plate">

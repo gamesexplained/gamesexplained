@@ -99,6 +99,12 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 #wl-pic-who{margin:12px 0 0;font-size:15px}
 #wl-pic-who:empty{display:none}
 .wl-pic-none #wl-pic-main{display:none}
+/* the fan lore table, styled as the other tabs' tables are */
+.wl-tw{overflow-x:auto;margin:0 0 4px}
+.wl-t{width:100%;border-collapse:collapse;font-size:14px;line-height:1.45}
+.wl-t th{text-align:left;font-family:var(--fm);font-size:11.5px;font-weight:500;letter-spacing:.04em;color:var(--ink-mute);border-bottom:1px solid var(--line);padding:6px 12px 6px 0;white-space:nowrap}
+.wl-t td{border-bottom:1px solid var(--line-soft);padding:7px 12px 7px 0;vertical-align:top}
+.wl-t q{quotes:"\201C" "\201D";color:var(--ink-soft)}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -231,6 +237,29 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
   <div class="plate"><p style="margin:0"><button type="button" class="wl-go" id="wl-bug-go">Show the square on map 11 &rarr;</button></p><p class="cap">Every step onto the square was run in the 6502 simulator with the game's own code (<code>$AD5B</code>): each is refused, and message 53 is shown.</p></div>
   <p>The square is class 2, a check, with number 2. Map 11's list of check records holds <span data-part=""><code>$0000</code></span> for number 2, so the game reads the record from address 0. The C64's first two addresses are the processor's port, not memory. Address 0 reads <code>$2F</code>, the port's direction, and the game takes it for the check's flags. Its bit 7 is clear, so the check runs as the party steps in, and its bit 6 is clear, so there is no test to pass and the step is refused (<code>$8DEC</code>, <code>$8E33</code>). Address 1 reads <code>$35</code>, the port's setting in play, and the game takes it for the message to show: message 53. This square is the only one of the 42 maps whose record is not in the map.</p>
   <p>The game does the same in the emulator. With the party at column 23, row 13, three presses of L each printed message 53 and left the party, the square, and the clock as they were, and the processor's port read <code>$2F</code> <code>$35</code> throughout.</p>
+</section>
+
+<section id="wl-argued" data-part="">
+  <p class="fig">09 · Fan lore</p>
+  <h2 class="t">The squares the fans argued over</h2>
+  <p class="lede">For years players compared notes on the <a href="https://wastelandrangerhq.github.io/hq-grid/underground.html">Wasteland Ranger HQ-Grid's Underground</a> about what a few squares wanted from a party. Each of those squares is a record in its map, and the record settles what the C64 version asks.</p>
+  <div class="plate">
+    <div class="wl-tw"><table class="wl-t">
+      <thead><tr><th>Square</th><th>The fans</th><th>The C64</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#map-4-14-29">Ugly's safe</a><br><span class="wl-mute">map 4, 14,29</span></td>
+          <td>J. Compton (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#uglyjohn">25 January 2000</a>): <q>Perception will work, but Safecrack works better.</q> J. Liao (1 March 2000) found that walking by the map raised Picklock to 6.</td>
+          <td data-part="map-04">The square in front of the map tests every member on arrival for Perception 4 or Safecrack 3, and one pass shows <q>You notice something odd about the map and move it.</q> (<code>$3CBD</code>). Safecrack is the easier test. Picklock is tested only at the safe itself, where O)pen tries Safecrack 5, Picklock 9, or DEX 15 (<code>$3CCC</code>), so Picklock can rise there to 9. Typing the combination, 11-16-27, opens it too.</td></tr>
+        <tr><td><a href="#map-41-28-26">Spade's squeaky board</a><br><span class="wl-mute">map 41, 28,26</span></td>
+          <td>Malakorr (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#promotions">8 March 1999</a>) walked a party over it from <q>Private 1st Class to Supreme Jerk</q>, though <q>your perception only goes up to Lvl 3</q>. C. Vickers (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#perception">5 October 1998</a>): it <q>will increase your silent move AND Perception</q>.</td>
+          <td data-part="map-41">The board tests every member on arrival for Perception 3 or Silent move 1 (<code>$3D2B</code>). Perception stops at 3. Silent move never rises here, since a level must be at least 1 and below the difficulty, 1. The experience comes either way, because every throw of 5 or more is added, pass or fail (<span data-part="engine"><code>$0C41</code></span>).</td></tr>
+        <tr><td><a href="#map-21-26-1">The Black Market's password</a><br><span class="wl-mute">map 21, 26,1</span></td>
+          <td>A. J. Pirchl (<a href="https://wastelandrangerhq.github.io/hq-grid/underground.html#blackmarket">undated</a>): <q>It's "CRETIAN", not "CRETIN" as the Wasteland Survival Guide (Clue Book) says.</q></td>
+          <td data-part="map-21">The question <q>Gimme the password.</q> takes one answer, CRETIN (<code>$3D45</code>), and the typed line must match it letter for letter to the end (<span data-part="engine"><code>$2408</code></span>). CRETIAN is turned away, so on the C64 the clue book is right.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Each square's name opens it on the map above, with its record. The site marks some of these notes, the safe's among them, as the IBM PC version's.</p>
+  </div>
 </section>
 
 </main>
@@ -998,7 +1027,7 @@ globalThis.WLMaps = (function () {
       if (!MAPS.includes(n)) n = 0;
       S.n = n; sel.value = n; S.pin = null; S.mark = at || null; S.marks = null; S.only = -1; S.tileHi = -1;
       // the map in the address, unless the address names a section of the page
-      try { if (!location.hash || /^#map-\d+$/.test(location.hash)) history.replaceState(null, '', '#map-' + n); } catch (e) { /* file: */ }
+      try { if (!location.hash || /^#map-\d+(?:-\d+-\d+)?$/.test(location.hash)) history.replaceState(null, '', '#map-' + n + (at ? '-' + at[0] + '-' + at[1] : '')); } catch (e) { /* file: */ }
       say(card, ''); say(hover, '');
       root.classList.add('wl-busy');
       let M;
@@ -1074,12 +1103,20 @@ globalThis.WLMaps = (function () {
       root.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     addEventListener('resize', () => { if (S.zoom === 'fit') sizeCanvas(); });
+    // #map-N opens map N; #map-N-X-Y opens it with the square at column X, row Y marked and read out
+    const fromHash = () => {
+      const h = /^#map-(\d+)(?:-(\d+)-(\d+))?$/.exec(location.hash || '');
+      return h && { n: +h[1], at: h[2] == null ? null : [+h[2], +h[3]] };
+    };
     addEventListener('hashchange', () => {
-      const h = /^#map-(\d+)$/.exec(location.hash || '');
-      if (h && +h[1] !== S.n) { show(+h[1]); root.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      const h = fromHash(); if (!h) return;
+      if (h.n !== S.n) show(h.n, h.at);
+      else if (h.at && S.M) { S.mark = h.at; S.marks = null; showCard(h.at[0], h.at[1]); reveal(h.at); }
+      else return;
+      root.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    const h = /^#map-(\d+)$/.exec(location.hash || '');
-    show(h ? +h[1] : 0);
+    const h = fromHash();
+    show(h ? h.n : 0, h && h.at);
     return { show, state: S };
   }
 
