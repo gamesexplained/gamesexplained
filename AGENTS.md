@@ -74,6 +74,10 @@ in order:
    cannot push to this
    repository, push to the contributor's fork and open it from there. If
    there is no remote at all, leave the branch and say so.
+6. **Debrief the contributor** once the pull request is open: where to
+   see the pages, that it can be merged as it is, the questions only they
+   can answer, and the changes that would most improve the page on a
+   first read (`kit/START.md`, step 8).
 
 ## Working on the kit or the site
 
@@ -316,7 +320,7 @@ claim per agent against the source before believing the report.
 
 ## Finishing
 
-The last step of every run is `kit/skills/core/80-retro`: which skill text
+The last skill of every run is `kit/skills/core/80-retro`: which skill text
 changed what the run did, where the kit fell short, and the smallest diff
 that would have saved the next contributor the trouble. A script that
 catches the failure comes first, and a skill takes what would otherwise

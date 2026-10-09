@@ -202,4 +202,5 @@ request; the run's entry in `kit/lessons/`, if it taught one;
 `kit-feedback.md` naming the skill text that changed what you did; each
 ask for a maintainer filed as a `kit-ask` issue, or written in full in
 `kit-feedback.md` for the repository to file on merge; `game.json`
-complete; `TODO.md` current.
+complete; `TODO.md` current. Then the pull request (`AGENTS.md`, step 5)
+and the contributor's debrief (`kit/START.md`, step 8).

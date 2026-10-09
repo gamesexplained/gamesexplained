@@ -172,6 +172,34 @@ step needs something only they have.
    and the description to paste. If you cannot push or open it (no fork,
    no login), leave the branch where it is and say exactly what is
    missing.
+8. **Debrief the contributor** once the pull request is open. They may
+   have waited hours for the run, so it is one short message that lets
+   them call the run done, and offers them more:
+   - **Where to see it.** `python3 kit/scripts/preview.py <number>`
+     prints the pull request's preview of each game page it changes. A
+     preview is deployed a minute or two after a push; a fork's pull
+     request has none until a maintainer lets it deploy, so say so then,
+     and how to see the pages locally (`AGENTS.md`, step 4).
+   - **What happens next.** The pull request can be merged as it is, and
+     they need do nothing more. Or they can ask for changes first.
+   - **What only they can settle.** Ask the questions a person answers in
+     a few minutes and the run could not, one line each: which tune is
+     the title tune, what a voice line says, what a picture shows.
+     Settled early, each makes the page easier to follow. They are in
+     `TODO.md` and the open rows of `features.md`.
+   - **What would improve the page on a first read.** Look at the pages
+     as someone who has never played the game, and recommend the three
+     or four changes that would help them most, a line each. They are
+     usually of these kinds: a picture of what the page only describes
+     (a map of the world, the pictures the game holds), a route through
+     the game a reader can replay, a widget made easier to use
+     (scrollback, a way out of a dead end, a download), and a claim
+     finished with its concrete case (the commands that should have won,
+     every character in one table). Start from the ideas in `TODO.md`.
+
+   A change they ask for goes on the same branch, with the checks before
+   each commit, or on a new branch from `main` once the pull request has
+   merged.
 
 **If the contributor already has an analysis of the game** (a commented
 disassembly made outside the kit), it seeds the run and does not replace
