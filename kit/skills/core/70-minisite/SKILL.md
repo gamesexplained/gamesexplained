@@ -42,15 +42,23 @@ reconstructed screen.
 
 ## Sections
 
-Not every game has every section, and the list below is in no order: each
-page chooses its own ("The order", below). The sound is the exception: a
-game with music gets its player, at every tier above Bronze.
+Every page opens with the first section below. Not every game has the
+rest, and they are in no order: each page chooses its own ("The order",
+below). The sound is the exception: a game with music gets its player,
+at every tier above Bronze.
 It is a starting set, not a form: the page is open to any structure that
 works for this game, any number of sections at any depth, and the human
 who takes it to Gold will cut what is dull, expand what is interesting and
 add what the agent did not think of. What stays fixed is the tab bar, the
 address links into the Source tab, and the house style in `kit/style.md`.
 
+- **The game.** What the game is, for a reader who has never played it:
+   who you play, what you do and what ends a level, in two or three
+   short paragraphs that bring in the words later sections use. Show it
+   with a picture or two that introduce it: the title screen and the main
+   character in play, from the emulator (the screenshots `20-features`
+   saved in `reference/` usually serve). Keep it short, and keep the code
+   out of it. It is the one section with nothing to press.
 - **One frame, rebuilt from memory.** Draw the play screen from memory
    with the page's own code, not a screenshot. It proves the data is
    understood and it is the base for overlays. A screen split by raster
@@ -115,15 +123,17 @@ thing on the page goes as high as the explanation lets it. The page's
 order is its own, chosen for this game: no two games have the same best
 thing, and no two pages need the same shape.
 
-Once the widgets work, and before the copy, choose the one or two things a
-reader would most regret missing. They are usually things that move or
-make a sound: a tune player, a map to scrub through, a replay of the game
-playing. Move each into the first two or three sections, as far as the
-sections it relies on allow, and read the moved section again for anything
-it now mentions before the page has explained it. No section has a fixed
-place, not even the rebuilt frame: it is a natural opener, the
-establishing shot, but a page whose best thing is its music or its maps
-can open with that instead.
+The page opens with the game (above), so the reader knows what they are
+looking at before the first interrupt or table. Then, once the widgets
+work and before the copy, choose the one or two things a reader would
+most regret missing. They are usually things that move or make a sound:
+a tune player, a map to scrub through, a replay of the game playing.
+Move each into the two or three sections after the opening, as far as
+the sections it relies on allow, and read the moved section again for
+anything it now mentions before the page has explained it. No other
+section has a fixed place, not even the rebuilt frame: it is a natural
+first look inside, the establishing shot, but a page whose best thing is
+its music or its maps can put that first instead.
 
 ## Building it
 
