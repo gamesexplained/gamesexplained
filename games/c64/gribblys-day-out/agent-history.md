@@ -71,3 +71,8 @@ decoder printed as codes; the page draws them from the panel font.
 
 **A cheat.** Psi that never falls (`cheats.md`) was tested live against
 a control run.
+
+**After the debrief.** Aaron identified the picture at each end of
+level 4's name as Chad, whose caption "Wot, no ...?" the name is, and
+read ABMON as the author's monitor; the title tune he took to be
+original. The first two went into the pages.

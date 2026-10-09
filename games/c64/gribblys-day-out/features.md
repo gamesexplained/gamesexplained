@@ -59,7 +59,11 @@ Found in the code, not in the manual.
 - A hidden memory editor, `$4000`-`$42BF`: `monitor_init` sets it up at
   start-up, but nothing calls `monitor_step` `$4011`. It would show
   "( ABMON : address ~ byte )" in the panel and edit memory with A, D, J,
-  M, comma and full stop.
+  M, comma and full stop. ABMON most likely stands for the author's
+  monitor, Andrew Braybrook's development tool left in the game (Aaron
+  Bell's reading of the name; nothing in the code says so).
+- Level 4, "Wot, no ground?", has a Chad drawn at each end of its name,
+  the wartime doodle whose caption that is.
 - RESTORE does nothing: the NMI vector points at a bare `RTI` (`$7412`).
 - In the pause, f7 freezes the screen and prints "Cheese" (`freeze_keys`).
 - A best-score signature overwrites "(c) ST Software 1985." on the

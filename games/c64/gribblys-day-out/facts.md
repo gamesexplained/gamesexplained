@@ -254,6 +254,11 @@ row.
   (`scatter_rocks` `$4BFD`).
 - Level names by level from `level_names` `$E060`; starting view
   columns from `start_cols` `$E050`.
+- Level 4's name (`$E198`) is "Wot, no ground?" with a Chad at each
+  end: the British wartime doodle of a face peering over a wall, whose
+  caption is always "Wot, no ...?". Chad is two characters of the panel
+  font, `$7E` and `$7F`, with `$FE` and `$FF` below them as for every
+  double-height glyph. (Identified by Aaron Bell from the drawing.)
 - `collide_table` `$1000`: row = type of the sprite affected - 2,
   column = type of the other - 2; bit 7 kill, 6 reverse, 5 stun Seon, 4
   the Topsy rule, 3 drop a Gribblet.
