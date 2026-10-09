@@ -130,7 +130,7 @@
     list.forEach(k => { const n = gk(k); if (shown.has(n)) return; shown.add(n); const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = n; g.append(o); }); menu.append(g);
   }
   { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
-    for (const [v, t] of [['air', '1. To the AIR MASK'], ['span', '2. The SPANNER'], ['mat', '3. The CHEMICALS and MAT'], ['pass', '4. The PASS CARD'], ['stop', '5. Stop the machine'], ['home', '6. Home in the TARDIS']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
+    for (const [v, t] of [['all', 'The whole solution']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
   function marks(list, colour, round, sprites) {
@@ -239,7 +239,7 @@
   menu.onchange = () => {
     const w = /^walk:(.*)/.exec(menu.value);
     document.getElementById('walk').hidden = !w;
-    if (w) { pkUse.hidden = true; curObj = null; STEPS = ROUTES[w[1]]; wk = null; wkPath = null; wkI = -1; wkGo(0); return; }
+    if (w) { pkUse.hidden = true; curObj = null; STEPS = ROUTES[w[1]]; wk = null; wkPath = null; wkI = -1; wkGo(wkStart); return; }
     wk = null; wkPath = null; wkI = -1; cancelAnimationFrame(wkAnim); document.getElementById('wk-say').textContent = '';
     choose(menu.value === '' ? null : all[+menu.value]); setNext(menu.value === '' ? null : all[+menu.value]);
   };
@@ -305,7 +305,11 @@
     { via: [[2092, 564], [2092, 180], [2220, 180], [2212, 244], [2204, 252], [2180, 252], [2172, 436], [3284, 436], [3284, 372], [3500, 372], [3500, 308], [3316, 308], [3316, 244], [3732, 244], [3732, 180]], at: byT('CAPSULE').at, say: 'Take the <a href="gameplay.html#pockets">CAPSULE</a>.' },
     { via: [[3732, 180], [3732, 188], [3748, 188], [3756, 244], [3772, 244], [3780, 252], [3884, 252], [3884, 260], [3876, 308], [3884, 308], [3884, 316], [3876, 372], [3884, 372], [3884, 380], [3876, 564], [3884, 564], [3884, 572], [3876, 628], [3724, 628], [3724, 636], [3716, 692], [3724, 692], [3724, 700], [3716, 756], [3372, 756], [3372, 764], [3364, 820], [3356, 884], [3452, 884], [3460, 892]], at: byT('TARDIS: the way home (empty hands)').at, say: 'With empty hands, press F5 on the <a href="solution.html#step-tardis">TARDIS</a> to go home.' },
   ];
-  const ROUTES = { air: AIR, span: SPAN, mat: MATW, pass: PASS, stop: STOP, home: HOME };
+  let wkStart = 0;
+  const STAGES = [['To the AIR MASK', AIR], ['The SPANNER', SPAN], ['The CHEMICALS and MAT', MATW], ['The PASS CARD', PASS], ['Stop the machine', STOP], ['Home in the TARDIS', HOME]];
+  // one solution, built up stage by stage; each stage's first step is headed with its name
+  const ALL = STAGES.flatMap(([t, l], n) => l.map((st, k) => k ? st : { ...st, say: '<b>' + (n + 1) + '. ' + t + '.</b> ' + st.say }));
+  const ROUTES = { all: ALL, air: AIR, span: SPAN, mat: MATW, pass: PASS, stop: STOP, home: HOME };
   let STEPS = AIR;
   const wkMarks = () => { const m = []; if (STEPS !== AIR) return m; if (wkI >= 2) m.push({ at: egg, n: 1 }); if (wkI >= 3) m.push({ at: AIR[3].at, n: 2 }); return m; };
   const wkNext = document.getElementById('wk-next'), wkBack = document.getElementById('wk-back');
@@ -329,9 +333,9 @@
   }
   wkNext.onclick = () => wkGo(wkI + 1 >= STEPS.length ? 0 : wkI + 1);
   wkBack.onclick = () => wkGo(Math.max(0, wkI - 1));
-  // a link from another tab: ?walk= names a walkthrough, opened at its first step
+  // a link from another tab: ?walk= names a stage of the solution, opened at its first step
   const walk = new URLSearchParams(location.search).get('walk');
-  if (ROUTES[walk]) { menu.value = 'walk:' + walk; menu.onchange(); setTimeout(() => document.getElementById('walk').scrollIntoView({ block: 'start' }), 0); }
+  if (ROUTES[walk]) { wkStart = STAGES.slice(0, Math.max(0, STAGES.findIndex(([, l]) => l === ROUTES[walk]))).reduce((n, [, l]) => n + l.length, 0); menu.value = 'walk:all'; menu.onchange(); wkStart = 0; setTimeout(() => document.getElementById('walk').scrollIntoView({ block: 'start' }), 0); }
   draw();
   function lock(M, full) {
     const glyph = G.lockGlyphs, INK = [1, 2, 6, 5, 7];               // W R B G Y as C64 colours
