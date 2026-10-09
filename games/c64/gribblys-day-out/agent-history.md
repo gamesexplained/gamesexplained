@@ -82,3 +82,15 @@ creatures animated, and the sound higher up the page, as 70-minisite's
 "The order" already asks. The page now opens with what the game is,
 the music and the effects are its second and third sections, and the
 creature strip steps each sprite through its frames at its mover's rate.
+
+**Gribbly's face.** Aaron asked how Gribbly's animation plays out,
+likening it to Wasteland's portraits, whose pieces move independently.
+`animate_face` had been annotated in the coverage pass; this time the
+port was written and held against the routine (`test_face.js`), and
+the timing was read live every frame (`work/py/live_face.py`).
+Rendering the tables showed that the eye bytes the listing calls
+`eyes_open` are lids two rows down, with no pupil: the eyes are wide
+only during a look. Reading `$D025`/`$D026` for the widget showed the
+creature strip had drawn every multicolour sprite with cyan and white
+for the shared colours; the game sets white and black once, in
+`new_game`, and the strip now uses them.
