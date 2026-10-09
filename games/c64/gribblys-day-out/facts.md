@@ -136,6 +136,16 @@ row.
   (`scroll_x` `$65D8`, `scroll_y` `$6605`, `draw_view` `$6702`).
   Gribbly's sprite never moves sideways: he is always at the view's
   column 19, and the world scrolls round him.
+- The view has no right edge of its own. `draw_view` reads each row
+  with `LDA ($1A),Y` (`$676B`), `$1A` the first column and `$1B` = `$80`
+  plus the row, and Y up to 39, so a view that starts after column 216
+  runs off the end of the map row into the next one: its right-hand
+  columns show the left wall one row down. Levels 0 and 1 open that
+  way (start columns 224 and 228). What stops Gribbly is the wall he
+  sees: when he touches the background with the view's first column at
+  `$EC` or more, `gribbly_collides` pushes him back (`$6CD2`). Checked in
+  the snapshots taken as levels 0 and 1 began: all 120 and 180 cells of
+  the play screen past column 255 equal the next row's columns 0 on.
 - Gribblets sitting on ledges are tiles, not sprites (`$38`-`$3F`, with
   `$40`/`$41` for one on its back). A Gribblet becomes a hardware sprite
   only while it hops, falls or rides a Flyer, and a creature takes one of
@@ -226,7 +236,7 @@ row.
   copied in as he takes off or lands (`draw_view`): flying, up to 9
   pixels a step sideways, 4 up and 6 down (`flight_consts` `$7DDF`);
   bouncing, 4 sideways and no vertical push (`bounce_consts` `$7F33`).
-  In flight a pull of `$FFD0` (-48/256 of a pixel a step) is added to
+  In flight a pull of $FFD0 (-48/256 of a pixel a step) is added to
   the vertical speed every step (`gribbly_physics` `$68F5`). Each
   landing from a bounce sets the next bounce's speed to four times the
   sideways speed.
@@ -262,7 +272,7 @@ row.
   `$24`, cutoff register 0). The volume key sets the tune's volume only:
   setting up effects writes `$D418` = `$8F`, full volume.
 - The note table (`note_freqs` `$FD00`) is tuned for an NTSC clock: C4
-  is `$10C3`, middle C on NTSC and 252 Hz on PAL, so on a PAL machine
+  is $10C3, middle C on NTSC and 252 Hz on PAL, so on a PAL machine
   the tune plays about 65 cents flat.
 - Effects use voices 1 and 2 only (`effects_step` `$75F2`): 24 records
   of 16 bytes at `$FB80`, each a frequency sweep with a step counter, a
@@ -315,3 +325,17 @@ interrupt handler) as the control in every count.
 - **Title keys**: f1, f3-f8 on the title pages printed "Set clock",
   stepped the hours and minutes, "50 Hertz", "Started", "Volume nn",
   "Colour" and "Blk~Whte".
+
+## The pages' ports
+
+Both run the game's own routine in `kit/c64/cpu6502.js` on the bytes of
+`listing.json` beside the port taken from `index.html`, and run in the
+kit's tests.
+
+- **The sound driver** (`test_sound.js`): the title tune through two
+  passes, every effect on both voices with and without bit 7, and 300
+  runs of random requests: 38,796 calls, the same 300,119 SID writes in
+  the same order and the same zero-page state after each.
+- **The next level** (`test_level.js`): `level_result` `$64F3` over
+  every performance, saved count and every seventh random byte, from
+  three levels, on 45 sets of levels done: 674,325 cases, all the same.
