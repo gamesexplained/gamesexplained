@@ -177,6 +177,26 @@ or on `INC`, `DEC` and `LD n` into `(IX+d)` and `(IY+d)`, and after a `RET` its
 own `BIT n,(HL)` reads the old value. The vectors set it there; nothing run here
 settles which is the machine's behaviour.
 
+**Against the kit's own machine.** `node kit/spectrum/check_machine.js` runs five
+programs through ZEsarUX and through `kit/spectrum/machine.js`, the kit's 48K
+machine around that Z80: the frame's interrupt, the keyboard and port `$FE`, and
+contended memory and I/O. It compares every register, MEMPTR, both interrupt
+flip-flops and the frame's T-state before each instruction, interrupt and halted
+cycle, from ZEsarUX's CPU transaction log. On Linux x86_64 on 9 October 2026, with
+the ZEsarUX-13.0 release, about 750,000 lines agreed over 78 frames and 34
+interrupts, among them a probe of memory and of each kind of I/O contention at
+every one of a line's first 136 T-states. Apart from the differences above, two:
+ZEsarUX leaves MEMPTR as it was when it takes an interrupt, where the machine sets
+it to the handler's address, and it does not delay the two internal cycles of
+`LD (IX+d),n` and `LD (IY+d),n` when IX+d is contended, though it delays those of
+every other indexed instruction; the machine delays them. Nothing run here settles
+either. The interrupt the machine takes is ZEsarUX's, measured: raised by the
+instruction or halted cycle during which the frame begins, taken when it ends if
+IFF1 is set, held over one `EI`, and otherwise lost. Two things the check works
+round: a `.sna` holds neither MEMPTR nor the last value written to port `$FE` (a
+read of the port returns its bit 4 as bit 6), so the machine takes MEMPTR from the
+log's first line and every program but one writes to the port before it reads it.
+
 ## Why ZEsarUX, and the MAME alternative
 
 MAME was measured as an alternative on macOS arm64 on 29 September 2026, with

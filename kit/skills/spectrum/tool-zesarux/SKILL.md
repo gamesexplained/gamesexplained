@@ -87,11 +87,14 @@ lists all 129.
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
 `get-visualmem-read-dump` and `get-visualmem-written-dump` (the memory a
 range was read from and written to), `cpu-transaction-log` and
-`cpu-history` (an instruction trace, for the run-up to a stop), the
+`cpu-history` (an instruction trace, for the run-up to a stop; the
+transaction log's lines carry the frame's T-state and every register, and
+`kit/spectrum/check_z80.js` and `check_machine.js` drive it with `logfile`,
+`truncate yes` and `enabled yes` before a `run`), the
 `snapshot-inram-*` commands (save and restore a snapshot in memory, no
 file), `get-ocr` (text off the screen), and for a windowed run
 `get-text-overlay` and `close-all-menus` (what an open menu or dialog
-says, and shutting it). None is wired into the client;
+says, and shutting it). None is wired into the Python client;
 `help <command>` gives their syntax. `close-all-menus` is not neutral:
 with the emulator's send-statistics question pending it answers "yes"
 (`kit/spectrum/INSTALL.md`). The launcher's flags keep that question from
@@ -164,8 +167,13 @@ rpc.registers()["PC"]                  # exactly 0x800F: the stop is on the inst
   `snapshot_load(..., rearm=True)` (the default) still re-arms as
   belt-and-braces.
 - **A load does not restore where in the frame the machine was.** It lands
-  at the start of a frame, so start every experiment from a load and never
-  compare a live run with a loaded one (`load-keeps-frame-phase`).
+  at the start of a frame (at T-state 6, in the CPU transaction log, on
+  13.0), so start every experiment from a load and never compare a live run
+  with a loaded one (`load-keeps-frame-phase`).
+- **A halted CPU stays halted** across `set-register PC=...` and
+  `hard-reset-cpu`: the next run spends its time in halted cycles at the
+  old address. `snapshot-load` clears it, so the kit's own Z80 checks load
+  a `.sna` for each program (`kit/spectrum/check_machine.js`, 13.0).
 - **A memory watchpoint counts only the last byte it touches.**
   `MWA=<addr>H` and `MRA=<addr>H` fire on the address line at the end of
   the instruction, so a 16-bit access is seen at its second byte, and

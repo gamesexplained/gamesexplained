@@ -619,9 +619,13 @@ function explain(d) {
   return rule < 0 ? null : rule;
 }
 
+module.exports = { zrcp, zState, KNOWN };
+
 const args = process.argv.slice(2);
 const mode = args[0];
-if (mode === 'vectors') {
+if (require.main !== module) {
+  // required for the ZRCP client (kit/spectrum/check_machine.js)
+} else if (mode === 'vectors') {
   const dir = args[1] || 'tools/z80-vectors/';
   const fetch = args.includes('--fetch');
   const limit = (() => { const i = args.indexOf('--limit'); return i >= 0 ? parseInt(args[i + 1], 10) : null; })();

@@ -33,7 +33,8 @@ the ZX Spectrum, `python3 kit/spectrum/codemap.py <game> <snapshot> --refs
 movement rules finds only what the model allows, and a model re-derived
 from the code misses what the code does off the path you read. Search
 with the game's own movement code instead: drive the player with input on
-the 6502 simulator (on the C64, `kit/c64/machine.js`) and watch for the
+the CPU simulator (on the C64, `kit/c64/machine.js`; on the 48K Spectrum,
+`kit/spectrum/machine.js`) and watch for the
 item's pickup, or try it in a port that has been checked in lockstep.
 Only then write that something cannot be reached.
 

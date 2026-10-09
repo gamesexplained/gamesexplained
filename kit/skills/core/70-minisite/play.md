@@ -26,8 +26,11 @@ With no demonstration to replay, run the game's own code beside the port
 and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
 machine for it: the simulator with a raster interrupt, the keyboard, the
 joystick and colour RAM around it, started from the listing's memory,
-counting passes where the main loop begins. `kit/c64/lockstep.js` runs a
-port beside it and says what the port gives it: the checkpoints it
+counting passes where the main loop begins. On the 48K Spectrum,
+`kit/spectrum/machine.js` is: the Z80 with the frame's interrupt, the
+keyboard read through port `$FE` and contended memory around it, started
+from a `.sna` or the listing's memory, counting passes the same way.
+`kit/c64/lockstep.js` runs a port beside the C64's and says what the port gives it: the checkpoints it
 yields, its raster waits, its polling loops and its interrupt handlers.
 Write the port to that from the start. Each file's header is its manual.
 
