@@ -17,7 +17,7 @@
   <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag the map to move around it, and zoom out to see the whole mine. Choose an object, creature, danger, or place from the menu to go to it; an object also gets a Where it is used button that steps through the places it works. <a href="gameplay.html#dangers">Gameplay</a> says what each danger does. The menu's walkthroughs step through parts of the <a href="solution.html">Solution</a> on the map.</p>
   <div class="plate">
     <div class="row">
-      <select class="b" id="pick" aria-label="Choose something to find on the map"><option value="">Choose something to find</option></select> <button class="b" type="button" id="dl-map">Download the map</button>
+      <select class="b" id="pick" aria-label="Choose something to find on the map"><option value="">Choose something to find</option></select> <button class="b" type="button" id="pk-next" hidden>Next</button> <button class="b" type="button" id="dl-map" title="Download the whole map as a PNG" aria-label="Download the whole map as a PNG" style="line-height:0;padding:6px"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M7 1h2v7l2.5-2.5 1.4 1.4L8 11.8 3.1 6.9l1.4-1.4L7 8zM2 13h12v2H2z"/></svg></button>
       <button class="b" type="button" id="pk-use" hidden>Where it is used</button>
       <span id="walk" hidden><button class="b" type="button" id="wk-back" disabled>Back</button> <button class="b" type="button" id="wk-next">Start</button> <span class="note" id="wk-n"></span></span>
     </div>
@@ -125,7 +125,8 @@
   const places = uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS|SENSOR|CSC)/.test(k.t));
   for (const [label, list] of [['Objects', objs], ['Creatures', crs], ['Dangers', dangers], ['Places', places]]) {
     const g = document.createElement('optgroup'); g.label = label;
-    list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = k.label; g.append(o); }); menu.append(g);
+    const shown = new Set();   // one entry per kind of mark; Next steps through the rest
+    list.forEach(k => { if (shown.has(k.t)) return; shown.add(k.t); const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = k.t; g.append(o); }); menu.append(g);
   }
   { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
     for (const [v, t] of [['air', 'To the AIR MASK'], ['span', 'The SPANNER'], ['mat', 'The SPANNER, CHEMICALS, and MAT'], ['pass', 'The PASS CARD'], ['stop', 'Stop the machine'], ['home', 'Home in the TARDIS']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
@@ -239,8 +240,12 @@
     document.getElementById('walk').hidden = !w;
     if (w) { pkUse.hidden = true; curObj = null; STEPS = ROUTES[w[1]]; wk = null; wkPath = null; wkI = -1; wkGo(0); return; }
     wk = null; wkPath = null; wkI = -1; cancelAnimationFrame(wkAnim); document.getElementById('wk-say').textContent = '';
-    choose(menu.value === '' ? null : all[+menu.value]);
+    choose(menu.value === '' ? null : all[+menu.value]); setNext(menu.value === '' ? null : all[+menu.value]);
   };
+  const pkNext = document.getElementById('pk-next');
+  const same = k => all.filter(m => m.t === k.t && m.kind === k.kind);
+  function setNext(k) { const l = k ? same(k) : []; pkNext.hidden = l.length < 2; if (l.length > 1) pkNext.textContent = 'Next (' + (l.indexOf(k) + 1) + ' of ' + l.length + ')'; pkNext.cur = k; }
+  pkNext.onclick = () => { const l = same(pkNext.cur), k = l[(l.indexOf(pkNext.cur) + 1) % l.length]; choose(k); setNext(k); menu.value = all.indexOf(l[0]); };
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
   if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); cancelAnimationFrame(panAnim); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
