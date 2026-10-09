@@ -7838,7 +7838,7 @@
   {
    "address": 46,
    "type": "line",
-   "text": "The frame counter, counted up by main_loop and wait_frame: odd and even frames run different work, and its low bits pace the animations."
+   "text": "The frame counter, counted up by main_loop each frame and by wait_frame each step of a cut sequence: odd and even frames run different work, and its low bits pace the animations."
   },
   {
    "address": 47,
@@ -7858,7 +7858,7 @@
   {
    "address": 50,
    "type": "line",
-   "text": "Whole pixels a frame of Gribbly's horizontal speed (signed, positive left)."
+   "text": "Whole pixels a step (every other frame) of Gribbly's horizontal speed (signed, positive left)."
   },
   {
    "address": 51,
@@ -7868,7 +7868,7 @@
   {
    "address": 52,
    "type": "line",
-   "text": "Whole pixels a frame of Gribbly's vertical speed (signed, positive up)."
+   "text": "Whole pixels a step (every other frame) of Gribbly's vertical speed (signed, positive up)."
   },
   {
    "address": 53,
@@ -7923,7 +7923,7 @@
   {
    "address": 63,
    "type": "line",
-   "text": "Movement constant: the highest leftward speed in whole pixels a frame."
+   "text": "Movement constant: the highest leftward speed in whole pixels a step."
   },
   {
    "address": 64,
@@ -7953,7 +7953,7 @@
   {
    "address": 69,
    "type": "line",
-   "text": "Movement constant: the highest upward speed in whole pixels a frame."
+   "text": "Movement constant: the highest upward speed in whole pixels a step."
   },
   {
    "address": 70,
@@ -7973,7 +7973,7 @@
   {
    "address": 73,
    "type": "line",
-   "text": "An acceleration gribbly_physics adds to the x speed every frame, low byte. Nothing writes it after start_game clears zero page, so it is always 0."
+   "text": "An acceleration gribbly_physics adds to the x speed every step (odd frames), low byte. Nothing writes it after start_game clears zero page, so it is always 0."
   },
   {
    "address": 74,
@@ -7983,7 +7983,7 @@
   {
    "address": 75,
    "type": "line",
-   "text": "The pull added to the y speed every frame in flight, low byte: level_start sets $FFD0, -$30, so Gribbly sinks unless he is held up."
+   "text": "The pull added to the y speed every step (odd frames) in flight, low byte: level_start sets $FFD0, -$30, so Gribbly sinks unless he is held up."
   },
   {
    "address": 76,
@@ -7998,12 +7998,12 @@
   {
    "address": 78,
    "type": "line",
-   "text": "The bounce speed's fraction byte: with $4F it is set at each landing to four times the sideways speed, and it is what lifts Gribbly's height each frame."
+   "text": "The bounce speed's fraction byte: with $4F it is set at each landing to four times the sideways speed, and it is what lifts Gribbly's height each step."
   },
   {
    "address": 79,
    "type": "line",
-   "text": "The bounce speed in whole pixels, added to the height $50 each frame and reduced by 2 each frame."
+   "text": "The bounce speed in whole pixels, added to the height $50 each step (odd frames) and reduced by 2 each step."
   },
   {
    "address": 80,
@@ -8178,7 +8178,7 @@
   {
    "address": 114,
    "type": "line",
-   "text": "web_power_down's state: 0 waiting, 1 starting, 2 killing controls two rows a call, $80 switching web lines off a row a call, $FF done."
+   "text": "web_power_down's state, counted up by every call that works a row: 0 waiting, 1 starting, 2 onwards killing controls on one row a call (every other row, where the controls are), $80 onwards switching web lines off a row a call, $FF done."
   },
   {
    "address": 115,
@@ -8503,7 +8503,7 @@
   {
    "address": 856,
    "type": "line",
-   "text": "Each Gribblet's hop timer, 16 frames, counted down by count_gribblets."
+   "text": "Each Gribblet's hop timer, 16 steps, counted down by count_gribblets every other frame (32 frames)."
   },
   {
    "address": 864,
@@ -8658,7 +8658,7 @@
   {
    "address": 3648,
    "type": "line",
-   "text": "Sprite shapes $39-$3C, Seon (64 bytes each, $0E40-$0F3F): a hunched, six-legged creature with feelers; seon_move shows one of these four at random every other pair of frames."
+   "text": "Sprite shapes $39-$3C, Seon (64 bytes each, $0E40-$0F3F): a hunched, six-legged creature with feelers; seon_move shows one of these four at random every fourth frame."
   },
   {
    "address": 3904,
@@ -9048,7 +9048,7 @@
   {
    "address": 17088,
    "type": "line",
-   "text": "The game's first instruction, reached from the loader through the vector at $8000 and afterwards the RESET vector. Disables interrupts, resets the stack, sets $01 = $25 (RAM at $A000-$BFFF and $E000-$FFFF, I/O at $D000), clears zero page $02-$FF, then moves the load into place: $8000-$9FFF to $E000-$FFFF (32 pages) and $A200-$AFFF to $C200-$CFFF (14 pages), freeing $8000-$BFFF for the level map. Calls monitor_init. Starts both CIAs' time-of-day clocks counting at 50 Hz, with CIA 1's set to 1:00:00 and stopped (it is the real-time clock the player sets). Clears the status-panel screen, prints the clock line and the game time line, zeroes the score and sets the best score ($0226-$0229) to 00 00 68 09 in BCD, the 6809 the Controls page shows. Fills the map's top row ($8000-$80FF) with $50 and $98, points NMI at an RTI ($7412), IRQ at irq_title and RESET back here, sets Gribbly's colour gribbly_col ($6B) = $F5 and the volume ($79) = 5, then falls into title."
+   "text": "The game's first instruction, reached from the loader through the vector at $8000 and afterwards the RESET vector. Disables interrupts, resets the stack, sets $01 = $25 (RAM at $A000-$BFFF and $E000-$FFFF, I/O at $D000), clears zero page $02-$FF, then moves the load into place: $8000-$9FFF to $E000-$FFFF (32 pages) and $A200-$AFFF to $C200-$CFFF (14 pages), freeing $8000-$BFFF for the level map. Calls monitor_init. Starts both CIAs' time-of-day clocks counting at 50 Hz, with CIA 1's set to 1:00:00 and stopped (it is the real-time clock the player sets). Clears the status-panel screen, prints the clock line and the game time line, zeroes the score and sets the best score ($0226-$0229) to 00 00 68 09 in BCD, the 6809 the Controls page shows. Fills the map's top row ($8000-$80FF) with $50 and $98, points NMI at an RTI ($7412), IRQ at irq_title and RESET back here, sets Gribbly's colour gribbly_colour ($6B) = $F5 and the volume ($79) = 5, then falls into title."
   },
   {
    "address": 17319,
@@ -9058,17 +9058,17 @@
   {
    "address": 17415,
    "type": "line",
-   "text": "Title page one, Scenario: shows the word Scenario in the message field, colours rows of colour RAM from the colour cycle at $7B9A (starting at a raster-dependent offset), prints the frame at $783A and $7861 and the eight credit lines from $788A (41 bytes apart). Each frame runs title_frame; joystick left or right or the frame counter wrapping (256 frames) goes to the Controls page; fire starts a game (new_game)."
+   "text": "Title page one, Scenario: shows the word Scenario in the message field, colours rows of colour RAM from the colour cycle at $7B9A (starting at a raster-dependent offset), prints the frame at $783A and $7861 and the eight credit lines from $788A (41 bytes apart). Each frame runs title_frame; joystick left or right or 256 steps of title_frame (about 29 seconds) go to the Controls page; fire starts a game (new_game)."
   },
   {
    "address": 17550,
    "type": "line",
-   "text": "Title page two, Controls: shows Controls in the message field, prints the eight instruction lines from $79D2 (39 bytes apart) and the best score line at $7FCC. Each frame runs title_frame and flash_best; left or right or 256 frames return to the Scenario page; fire starts a game (new_game)."
+   "text": "Title page two, Controls: shows Controls in the message field, prints the eight instruction lines from $79D2 (39 bytes apart) and the best score line at $7FCC. Each frame runs title_frame and flash_best; left or right or 256 steps (about 29 seconds) return to the Scenario page; fire starts a game (new_game)."
   },
   {
    "address": 17642,
    "type": "line",
-   "text": "One step of the title pages: reads the function keys (read_fkeys), the joystick (read_joystick), the clock-setting keys (clock_keys), drives the cassette motor (tape_motor), the colour and volume keys (colour_keys, volume_keys), counts the frame counter $2E and waits $50 delay loops."
+   "text": "One step of the title pages: reads the function keys (read_fkeys), the joystick (read_joystick), the clock-setting keys (clock_keys), drives the cassette motor (tape_motor), the colour and volume keys (colour_keys, volume_keys), counts the frame counter $2E and waits $50 delay loops: about nine steps a second, not tied to the video frame."
   },
   {
    "address": 17668,
@@ -9078,7 +9078,7 @@
   {
    "address": 17779,
    "type": "line",
-   "text": "Starts or restarts a level. Clears the play area's text. If psi ($57) is not zero (a fresh game or a level just won) it builds a new level: level_result decides which, web_layout_ptr finds its web, five bands of web triangles are laid (web_band_a, web_band_b), build_level draws the scenery and Gribblets, make_soil_row the row under the ground, scatter_rocks the left wall; the Seon wait timer $78 = (28 - level) x 2. Then reset_gribblets and count_gribblets: all eight settled builds yet another level; none settled prints \"Eight Gribblets to rescue\" or the level's own count; otherwise \"<n> Gribblets remain\" or \"One Gribblet remains\". Resets scrolling, bounce state, the creature count ($67) and Seon's aggression ($76); sets the spawn chance $68 = level x 2 + 20 + performance; prints \"Game On!\"; sets the start scroll position from the level's entry in $E050 (x = value x 8, y = $0180); loads the flight constants; picks the level's colours from $7DBF-$7DDE (or the black-and-white set when gribbly_col is $FC); prints the level's name from $E060; runs transfer_stage; clears all sprites; creates Seon (new_seon); waits; switches to the raster interrupt chain (irq_top at line $2C); draws the view and plays the materialisation sequence of sprites 0-7 before falling into main_loop."
+   "text": "Starts or restarts a level. Clears the play area's text. If psi ($57) is not zero (a fresh game or a level just won) it builds a new level: level_result decides which, web_layout_ptr finds its web, five bands of web triangles are laid (web_band_a, web_band_b), build_level draws the scenery and Gribblets, make_soil_row the row under the ground, scatter_rocks the left wall; the Seon wait timer $78 = (28 - level) x 2. Then reset_gribblets and count_gribblets: all eight settled builds yet another level; none settled prints \"Eight Gribblets to rescue\" or the level's own count; otherwise \"<n> Gribblets remain\" or \"One Gribblet remains\". Resets scrolling, bounce state, the creature count ($67) and Seon's aggression ($76); sets the spawn chance $68 = level x 2 + 20 + performance; prints \"Game On!\"; sets the start scroll position from the level's entry in $E050 (x = value x 8, y = $0180); loads the flight constants; picks the level's colours from $7DBF-$7DDE (or the black-and-white set when gribbly_colour is $FC); prints the level's name from $E060; runs transfer_stage; clears all sprites; creates Seon (new_seon); waits; switches to the raster interrupt chain (irq_top at line $2C); draws the view and plays the materialisation sequence of sprites 0-7 before falling into main_loop."
   },
   {
    "address": 18664,
@@ -9088,17 +9088,17 @@
   {
    "address": 18820,
    "type": "line",
-   "text": "The end of a level, reached when $2F is set: by count_gribblets when every Gribblet is saved or lost, or by psi_bar when psi runs out. Draws the view, plays the end sequence (end_sequence), waits two long delays, switches back to the CIA timer interrupt (irq_title) and starts the next level (level_start), which decides from psi whether this one is played again."
+   "text": "The end of a level, reached when $2F is set: by main_loop when count_gribblets reports every Gribblet saved or lost, or by psi_bar when psi runs out. Draws the view, plays the end sequence (end_sequence), waits two long delays, switches back to the CIA timer interrupt (irq_title) and starts the next level (level_start), which decides from psi whether this one is played again."
   },
   {
    "address": 18863,
    "type": "line",
-   "text": "Creature mover for type 8, Seon. While the wait timer $78 runs Seon stays still. Otherwise it moves by its velocity (apply_velocity); when a random nibble is below the aggression $76 it steers one step towards Gribbly's map position ($69/$6A), else on one frame in eight it drifts randomly (+-3 x, +-1 y). Velocities are kept to x -8..+7 and y -4..+7 pixels. Checks the web under it (seon_web). While on screen it has a hardware sprite of type 8, frames $3D, $3E and $3F once every 256 frames and otherwise a random one of $39-$3C every other pair of frames (frame $39 plays effect $15). Turns back at the map's edges: x tile below $21 or from $FB, row from $BD or below $84."
+   "text": "Creature mover for type 8, Seon. While the wait timer $78 runs Seon stays still. Otherwise it moves by its velocity (apply_velocity); when a random nibble is below the aggression $76 it steers one step towards Gribbly's map position ($69/$6A), else on one frame in eight it drifts randomly (+-3 x, +-1 y). Velocities are kept to x -8..+7 and y -4..+7 pixels. Checks the web under it (seon_web). While on screen it has a hardware sprite of type 8, frames $3D, $3E and $3F once every 256 frames and otherwise a random one of $39-$3C every fourth frame (frame $39 plays effect $15). Turns back at the map's edges: x tile below $21 or from $FB, row from $BD or below $84."
   },
   {
    "address": 19216,
    "type": "line",
-   "text": "What the web does to Seon: for the two tiles at ($12): a lit web line ($00-$03, $10-$13, $20-$23, bit 7 clear) reverses both its velocities and multiplies them by four; a control ($0C-$0F) is switched by Seon when a random number 0-31 is below the performance $5D, toggling the same web sections a player's press would (web_diag_left, web_diag_right, web_row). Other tiles do nothing."
+   "text": "What the web does to Seon: for the two tiles at ($12): a lit web line ($00-$03, $10-$13, $20-$23, bit 7 clear) reverses both its velocities and multiplies them by four; on a control ($0C-$0F) in either tile, when a random number 0-31 is below the performance $5D, Seon switches the live control ($0C or $0E) in the first tile, if there is one, toggling the same web sections a player's press would (web_diag_left, web_diag_right, web_row); a dead control, or one in the second tile only, is never switched. Other tiles do nothing."
   },
   {
    "address": 19453,
@@ -9113,22 +9113,22 @@
   {
    "address": 19595,
    "type": "line",
-   "text": "Creature mover for type 6, the Stomper. Falls while its y speed is not zero, gaining 1 a frame up to 8; walks 3 pixels a frame left or right, stepping its frame through $F5-$F9 (effect $0B on voice 2 at frame $F5). While on screen it holds a hardware sprite of type 6 in colour $FD. Off the map's left or right edge it turns back; above row $83 it is removed. Falling, it stops on a ground tile ($24-$48) and snaps to the tile's top. Walking, it starts to fall where there is no ground, which is how a Stomper drops through water: nothing under it counts as ground until its row wraps past the map's bottom to the top, where it is removed. Walking onto the left half of a Gribblet flipped by a Topsy ($40, state 4) absorbs it: the Gribblet's state becomes 6, its two tiles become empty ledge ($2E), and the Stomper turns into a Flyer (type 7, frame $FC, rising at 3 a frame) with a sprite of type 7, colour $F1, double width."
+   "text": "Creature mover for type 6, the Stomper. Like every mover it runs every other frame (move_creatures), so a step is two frames. Falls while its y speed is not zero, gaining 1 a step up to 8; walks 3 pixels a step left or right, stepping its frame through $F5-$F9 (effect $0B on voice 2 at frame $F5). While on screen it holds a hardware sprite of type 6 in colour $FD. Off the map's left or right edge it turns back; above row $83 it is removed. Falling, it stops on a ground tile ($24-$48) and snaps to the tile's top. Walking, it starts to fall where there is no ground, which is how a Stomper drops through water: nothing under it counts as ground until its row wraps past the map's bottom to the top, where it is removed. Walking onto the left half of a Gribblet flipped by a Topsy ($40, state 4) absorbs it: the Gribblet's state becomes 6, its two tiles become empty ledge ($2E), and the Stomper turns into a Flyer (type 7, frame $FC, rising at 3 a step) with a sprite of type 7, colour $F1, double width."
   },
   {
    "address": 20077,
    "type": "line",
-   "text": "Powers the psi web down once at most one Gribblet is left to save: when the count $75 of Gribblets saved, lost or carried off reaches 7. State $72: 0 waiting; 1 starts at row $82; 2 works two rows a call from there, turning every control ($0C/$0E) into its dead form ($0D/$0F); at row $BE it sounds effects $8D and $98, clears Seon's wait timer $78 and goes to state $80, which works one row a call from $80 setting bit 7 of every web tile ($00-$03, $10-$13, $20-$23), which turns the line off; at row $C0 it ends with state $FF. With the web down and $78 at zero, main_loop raises Seon's aggression every 256 frames."
+   "text": "Powers the psi web down once at most one Gribblet is left to save: when the count $75 of Gribblets saved, lost or carried off reaches 7. State $72, counted up by every call that works a row: 0 waiting; 1 starts at row $82; from 2 it works one row a call, every other row from $84 to $BC (the rows that hold controls, columns $14-$FF), turning every control ($0C/$0E) into its dead form ($0D/$0F); at row $BE it sounds effects $8D and $98, clears Seon's wait timer $78 and goes to state $80, which works one row a call from $81 to $BF (columns $20-$FF), setting bit 7 of every web tile ($00-$03, $10-$13, $20-$23), which turns the line off; at row $C0 it ends with state $FF. With the web down and $78 at zero, main_loop raises Seon's aggression every 256 frames."
   },
   {
    "address": 20228,
    "type": "line",
-   "text": "Creature mover for type 9, a Gribblet falling from a Flyer that was killed. Gravity adds 1 a frame up to 4; its sideways speed halves every frame. Frames $CC-$D3 cycle; on screen it holds a sprite of type 9 in the level's Gribblet colour ($52), squeaking now and then (effect $0F, 1 frame in 16). Where it falls: off the map's sides or top row it is lost (state 0) and 100 points are taken off ($30 += 100); onto two cells of empty ledge ($2E $2E) it lands safe, the cells get a Gribblet (left $38-$3B, right +4, a random face) and its state is 1 again (effect $0E); onto two cave-ledge cells ($37 $37) it is saved in the cave (state $80, faces $38-$3F, effect $94); onto any other ground tile ($24-$48) it is lost; over anything else it keeps falling. Gribbly can catch it on the way down (sprite_collisions)."
+   "text": "Creature mover for type 9, a Gribblet falling from a Flyer that was killed. Gravity adds 1 a step (every other frame) up to 4; its sideways speed halves every step. Frames $CC-$D3 cycle; on screen it holds a sprite of type 9 in the level's Gribblet colour ($52), squeaking now and then (effect $0F, a chance of 1 in 16 each step). Where it falls: off the map's sides or top row it is lost (state 0) and 100 points are taken off ($30 += 100); onto two cells of empty ledge ($2E $2E) it lands safe, the cells get a Gribblet (left $38-$3B, right +4, a random face) and its state is 1 again (effect $0E); onto two cave-ledge cells ($37 $37) it is saved in the cave (state $80, faces $38-$3F, effect $94); onto any other ground tile ($24-$48) it is lost; over anything else it keeps falling. Gribbly can catch it on the way down (sprite_collisions)."
   },
   {
    "address": 20580,
    "type": "line",
-   "text": "Creature mover for type 7, the Flyer, a Stomper that has absorbed a Gribblet. It moves by its velocity; with a chance of spawn_chance ($68) in 256 each frame it gets a random push (x +-0..7, y +-1). Velocities stay within -8..+7. Its frame cycles $FA-$FE every fourth frame (effect $0C on voice 1 at $FA). On screen it holds a sprite of type 7, colour $F1, double width. It turns back at the map's edges: x tile below $20 or from $FC, row from $BB or below $82. It never leaves the map: the Gribblet inside (state 6) is lost only when the level is restarted (reset_gribblets) or freed when the Flyer is bubbled (flyer_drop)."
+   "text": "Creature mover for type 7, the Flyer, a Stomper that has absorbed a Gribblet. It moves by its velocity; with a chance of spawn_chance ($68) in 256 each step (every other frame) it gets a random push (x +-0..7, y +-1). Velocities stay within -8..+7. Its frame cycles $FA-$FE every fourth frame (effect $0C on voice 1 at $FA). On screen it holds a sprite of type 7, colour $F1, double width. It turns back at the map's edges: x tile below $20 or from $FC, row from $BB or below $82. It never leaves the map: the Gribblet inside (state 6) is lost only when the level is restarted (reset_gribblets) or freed when the Flyer is bubbled (flyer_drop)."
   },
   {
    "address": 20866,
@@ -9143,12 +9143,12 @@
   {
    "address": 21011,
    "type": "line",
-   "text": "Creature mover for type 4, the Topsy. Walks 3 pixels a frame, stepping its frame up through $EC-$F0 going one way and down going the other (effect $0A on voice 2 at $EC); on screen it holds a sprite of type 4 in Gribbly's colour ($6B). At the map's edges, or where the tile ahead is not ground ($24-$48), it turns round. On an upright Gribblet ($38-$3B) sitting on its ledge (state 1) it flips it: state 4 and the tiles become $40 $41, a Gribblet on its back. Once every 256 frames, with a chance of spawn_chance ($68) in 256, it stops and becomes a chrysalis (type 5, frame $F0)."
+   "text": "Creature mover for type 4, the Topsy. Walks 3 pixels a step (every other frame), stepping its frame up through $EC-$F0 going one way and down going the other (effect $0A on voice 2 at $EC); on screen it holds a sprite of type 4 in Gribbly's colour ($6B). At the map's edges, or where the tile ahead is not ground ($24-$48), it turns round. On an upright Gribblet ($38-$3B) sitting on its ledge (state 1) it flips it: state 4 and the tiles become $40 $41, a Gribblet on its back. Once every 256 frames, with a chance of spawn_chance ($68) in 256, it stops and becomes a chrysalis (type 5, frame $F0)."
   },
   {
    "address": 21386,
    "type": "line",
-   "text": "Creature mover for type 5, the chrysalis. Its frame counts up to $F4 and stays; on screen it holds a multicolour sprite of type 5 in colour $FE. Once every 256 frames, with a chance of spawn_chance ($68) in 256, it hatches into a Stomper: type 6, frame $F7, walking 3 pixels a frame left or right at random."
+   "text": "Creature mover for type 5, the chrysalis. Its frame counts up to $F4 and stays; on screen it holds a multicolour sprite of type 5 in colour $FE. Once every 256 frames, with a chance of spawn_chance ($68) in 256, it hatches into a Stomper: type 6, frame $F7, walking 3 pixels a step left or right at random."
   },
   {
    "address": 21616,
@@ -9218,7 +9218,7 @@
   {
    "address": 22770,
    "type": "line",
-   "text": "Creature mover for type 1, a Gribblet hopping along a ledge (gribblet_hop launched it): while its Gribblet ($03C8 holds the Gribblet's number) is still in state 5 it flies on its jump, gravity adding 1 a frame, frames $CC-$D3, in the level's Gribblet colour; its sprite is shown when on screen. When the state has changed (the hop timer ran out in count_gribblets) the creature and sprite are removed."
+   "text": "Creature mover for type 1, a Gribblet hopping along a ledge (gribblet_hop launched it): while its Gribblet ($03C8 holds the Gribblet's number) is still in state 5 it flies on its jump, gravity adding 1 a step (every other frame), frames $CC-$D3, in the level's Gribblet colour; its sprite is shown when on screen. When the state has changed (the hop timer ran out in count_gribblets) the creature and sprite are removed."
   },
   {
    "address": 22940,
@@ -9243,17 +9243,17 @@
   {
    "address": 23485,
    "type": "line",
-   "text": "One frame of a cut sequence: waits for the bottom of the play area ($2B = 0), counts the frame, and on even frames runs the background work: clock, game time, score, face, character animation, psi bar, tape motor and sound. Then waits for the next top-of-screen interrupt."
+   "text": "One step of a cut sequence: waits for the bottom of the play area ($2B = 0) and counts the step in $2E. On an odd count it returns at the next top of the screen, one frame. On an even count it runs the background work (clock, game time, score, face, character animation, psi bar, tape motor and sound), then waits for the top, the bottom and the top again, returning two frames on: so the background work runs once in three frames."
   },
   {
    "address": 23534,
    "type": "line",
-   "text": "Three frames of wait_frame: the step of every cut sequence."
+   "text": "Three calls of wait_frame, four or five frames: the step of every cut sequence."
   },
   {
    "address": 23544,
    "type": "line",
-   "text": "Creature mover for type 3, the seed pod. Falls 1 pixel a frame and drifts sideways at a random speed of -8..+7 that changes by 1 each frame. On screen it holds a sprite of type 3 (colour $F9, frames $D4-$D9, jiggling 8 pixels left or right on two of them, effect $17 on voice 2 at $D7). Off the map's sides or at its top row it is removed. Landing on a ground tile ($24-$48) it becomes a Topsy: type 4, frame $EE, snapped to the tile's top, walking 3 pixels a frame left or right at random."
+   "text": "Creature mover for type 3, the seed pod. Falls 1 pixel a step (every other frame) and drifts sideways at a random speed of -8..+7 that changes by 1 each step. On screen it holds a sprite of type 3 (colour $F9, frames $D4-$D9, jiggling 8 pixels left or right on two of them, effect $17 on voice 2 at $D7). Off the map's sides or at its top row it is removed. Landing on a ground tile ($24-$48) it becomes a Topsy: type 4, frame $EE, snapped to the tile's top, walking 3 pixels a step left or right at random."
   },
   {
    "address": 23902,
@@ -9348,12 +9348,12 @@
   {
    "address": 25317,
    "type": "line",
-   "text": "Makes one Gribblet a frame (the frame counter / 2 picks it) hop along its ledge: if it is sitting (state 1) and a random number is below spawn_chance ($68), it picks a target from 14 cells to the left to 16 to the right in steps of 2; if both target cells are empty ledge ($2E) it hops. Seen on screen with a free sprite, it becomes a creature of type 1 flying there (speed (target - start) / 2 across, 8 up, frames from $CC), its old cells emptied, the target marked $2F, state 5 with a timer of 16 frames, effect $89. Off screen the tiles move at once."
+   "text": "Gives one Gribblet a chance to hop along its ledge each time it runs, every other frame (the frame counter / 2 picks it, so each one's turn comes every 16 frames): if it is sitting (state 1) and a random number is below spawn_chance ($68), it picks a target from 14 cells to the left to 16 to the right in steps of 2; if both target cells are empty ledge ($2E) it hops. Seen on screen with a free sprite, it becomes a creature of type 1 flying there (speed (target - start) / 2 across, 8 up, frames from $CC), its old cells emptied, the target marked $2F, state 5 with a timer of 16 (counted down every other frame, so 32 frames), effect $89. Off screen the tiles move at once."
   },
   {
    "address": 25641,
    "type": "line",
-   "text": "While fire is held, on two frames in eight: blows a bubble from Gribbly's mouth. Facing left (frame $C2) it starts 16 pixels left of him, facing right ($C3) 16 pixels right, 3 lower; it takes a free sprite (none free, no bubble) of type 2, frame $CB, and sounds effect 2 on voice 2."
+   "text": "While fire is held, on one frame in eight: blows a bubble from Gribbly's mouth. Facing left (frame $C2) it starts 16 pixels left of him, facing right ($C3) 16 pixels right, 3 lower; it takes a free sprite (none free, no bubble) of type 2, frame $CB, and sounds effect 2 on voice 2."
   },
   {
    "address": 25765,
@@ -9493,7 +9493,7 @@
   {
    "address": 26869,
    "type": "line",
-   "text": "Gribbly's movement each odd frame. Adds the unused acceleration $49/$4A to the x speed $31/$32; in flight adds the pull $4B/$4C (-$30) to the y speed $33/$34. Joystick left adds $3E and shows frame $C2, right subtracts and shows $C3; with neither the speed decays towards 0 ($3D, $40), and once it is 0 frame $C1 faces the player. Up and down work the same on the y speed with $44, $47 and decay $43, $46. Speeds are capped at $3F/$42 across and $45/$48 up and down; the constants come from the flight or bounce set (draw_view). Bouncing, it runs the bounce: the height $50 rises by the bounce speed $4F, which loses 2 a frame; on landing the next bounce's speed is four times the sideways speed (effect 1 on a big one), and the view moves a pixel at each landing until it lines up with the ground. Flying, any height left is moved into the view position two pixels a frame. Sprite 0, whose x never changes, is drawn at y $77 - height, in Gribbly's colour, or flashing through $7F4B with effect 8 while psi is draining."
+   "text": "Gribbly's movement each odd frame. Adds the unused acceleration $49/$4A to the x speed $31/$32; in flight adds the pull $4B/$4C (-$30) to the y speed $33/$34. Joystick left adds $3E and shows frame $C2, right subtracts and shows $C3; with neither the speed decays towards 0 ($3D, $40), and once it is 0 frame $C1 faces the player. Up and down work the same on the y speed with $44, $47 and decay $43, $46. Speeds are capped at $3F/$42 across and $45/$48 up and down; the constants come from the flight or bounce set (draw_view). Bouncing, it runs the bounce: the height $50 rises by the bounce speed $4F, which loses 2 a step (every other frame); on landing the next bounce's speed is four times the sideways speed (effect 1 on a big one), and the view moves a pixel at each landing until it lines up with the ground. Flying, any height left is moved into the view position two pixels a step. Sprite 0, whose x never changes, is drawn at y $77 - height, in Gribbly's colour, or flashing through $7F4B with effect 8 while psi is draining."
   },
   {
    "address": 27309,
@@ -9658,7 +9658,7 @@
   {
    "address": 30036,
    "type": "line",
-   "text": "The sound driver, run by the title's interrupt and twice a frame in play (main_loop and wait_frame on alternate frames). Mode $9D: 0 silence, 1 the title tune (music_step), 2 effects (effects_step); $11 and $12 are requests that set up the SID and become 1 and 2. Setting up effects also starts voice 3 on noise at the top frequency with its output cut ($D418 = $8F): the SID's oscillator 3 ($D41B) is then the game's random number source. Setting up the tune sets the filter and the volume from $79."
+   "text": "The sound driver, run by the title's interrupt every other frame in play (main_loop on odd frames) and once in three frames in cut sequences (wait_frame). Mode $9D: 0 silence, 1 the title tune (music_step), 2 effects (effects_step); $11 and $12 are requests that set up the SID and become 1 and 2. Setting up effects also starts voice 3 on noise at the top frequency with its output cut ($D418 = $8F): the SID's oscillator 3 ($D41B) is then the game's random number source. Setting up the tune sets the filter and the volume from $79."
   },
   {
    "address": 30126,
@@ -9668,7 +9668,7 @@
   {
    "address": 30194,
    "type": "line",
-   "text": "Sound effects on voices 1 and 2. A request in $9E (voice 1) or $9F (voice 2) starts that effect (start_effect) unless the voice is playing one marked with bit 7, which cannot be cut short. Then each running effect moves on: frequency += sweep ($C0-$C3), pulse width += its sweep ($C7-$CA); when its step counter ($C4, reloaded from $C5) runs out the frequency goes back to its start (mode $CB = 1) or the sweep reverses; when its repeat count ($C6) runs out the gate closes, and the effect named in $CE, if any, is requested next. Voice 2's set is the same fifteen bytes from $CF."
+   "text": "Sound effects on voices 1 and 2. A request in $9E (voice 1) or $9F (voice 2) starts that effect (start_effect) unless the voice is playing one marked with bit 7, which cannot be cut short. Then each running effect moves on: frequency += sweep ($C0-$C3), pulse width += its sweep ($C7-$CA); when its step counter ($C4, reloaded from $C5) runs out the frequency jumps to the effect's reset frequency ($CC/$CD, mode $CB = 1) or the sweep reverses; when its repeat count ($C6) runs out the gate closes, and the effect named in $CE, if any, is requested next, always on voice 1 ($9E), even when it chains from voice 2. Voice 2's set is the same fifteen bytes from $CF."
   },
   {
    "address": 30435,
@@ -9678,7 +9678,7 @@
   {
    "address": 30470,
    "type": "line",
-   "text": "Starts effect n ($A4, bit 7 the cannot-cut flag) on voice X (1 or 2): its 16-byte record at $FB80 + (n - 1) x 16 gives an instrument number, loaded with load_instrument, and fifteen bytes copied to the voice's effect set ($C0 or $CF): start frequency, sweep, step counter and reload, repeat count, pulse width and its sweep, mode, reset frequency and the effect to chain to."
+   "text": "Starts effect n ($A4, bit 7 the cannot-cut flag) on the voice in A (1 or 2, kept in X and $AA): its 16-byte record at $FB80 + (n - 1) x 16 gives an instrument number, loaded with load_instrument, and fifteen bytes copied to the voice's effect set ($C0 or $CF): start frequency, sweep, step counter and reload, repeat count, pulse width and its sweep, mode, reset frequency and the effect to chain to."
   },
   {
    "address": 30557,
@@ -9883,7 +9883,7 @@
   {
    "address": 32223,
    "type": "line",
-   "text": "Gribbly's twelve movement constants in flight, copied to $3D-$48: decay, push and limit for left, right, up and down. The limits are 9 pixels a frame sideways, 4 up and 6 down."
+   "text": "Gribbly's twelve movement constants in flight, copied to $3D-$48: decay, push and limit for left, right, up and down. The limits are 9 pixels a step (every other frame) sideways, 4 up and 6 down."
   },
   {
    "address": 32235,
@@ -9968,7 +9968,7 @@
   {
    "address": 32563,
    "type": "line",
-   "text": "Gribbly's twelve movement constants while bouncing, copied to $3D-$48: sideways limit 4 pixels a frame against flight's 9, and holding down adds nothing, with a downward limit of 0."
+   "text": "Gribbly's twelve movement constants while bouncing, copied to $3D-$48: sideways limit 4 pixels a step against flight's 9, and holding down adds nothing, with a downward limit of 0."
   },
   {
    "address": 32575,
@@ -10333,7 +10333,7 @@
   {
    "address": 64640,
    "type": "line",
-   "text": "Effects 17-24, the second half of the effect records."
+   "text": "Effects 17-24 of the 24 effect records ($FC80-$FCFF)."
   },
   {
    "address": 64768,
