@@ -37,8 +37,11 @@
 // the test bit, sync and ring modulation; envelopes on reSID's rate table, with the exponential
 // decay and the ADSR delay bug; the C64's output stage (16 kHz low pass, 16 Hz high pass).
 // The filter is off unless a page asks for it (opts.filter '6581' or '8580'; 'none', the default,
-// ignores $D415-$D417 and the routing bits of $D418). When on, it is reSID 0.16's idealised
-// two-integrator state-variable filter (filter.cc, filter.h), checked against its source: cutoff
+// sends every voice straight out and ignores the cutoff, resonance and filter modes, but voice 3
+// off, $D418 bit 7, still cuts voice 3 when $D417 does not route it to the filter, as on the
+// chip: a game that reads voice 3 as a random source keeps it silent that way). When on, it is
+// reSID 0.16's idealised two-integrator state-variable filter (filter.cc, filter.h), checked
+// against its source: cutoff
 // from $D415/$D416 through the chip's measured curve (F0_6581 or F0_8580, below), Q = 0.707 +
 // resonance / 15, low-, band- and high-pass summed unweighted as $D418 selects, and voice 3 off
 // ($D418 bit 7) where voice 3 is not filtered. Two departures: the integrators step in seconds of
@@ -285,8 +288,9 @@ globalThis.C64Sid = (function () {
             }
           }
           for (let i = 0; i < 3; i++) if ((V[i].ctrl & 2) && V[SRC[i]].msbUp) V[i].acc = 0;  // sync
-          if (F.chip === 'none') {
-            for (let i = 0; i < 3; i++) if (!mute[i]) sum += (wave(V[i], V[SRC[i]]) - 0x800) * V[i].env;
+          if (F.chip === 'none') {                         // voice 3 off still cuts an unrouted voice 3
+            const off3 = (regs[24] & 0x80) && !(regs[23] & 4);
+            for (let i = 0; i < 3; i++) if (!mute[i] && !(i === 2 && off3)) sum += (wave(V[i], V[SRC[i]]) - 0x800) * V[i].env;
             continue;
           }
           const route = regs[23], mode = regs[24];
