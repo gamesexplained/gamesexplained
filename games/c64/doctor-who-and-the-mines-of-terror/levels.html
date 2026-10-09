@@ -128,7 +128,7 @@
     list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = k.label; g.append(o); }); menu.append(g);
   }
   { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
-    for (const [v, t] of [['air', 'To the AIR MASK'], ['span', 'The SPANNER'], ['mat', 'The SPANNER, CHEMICALS, and MAT'], ['pass', 'The PASS CARD']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
+    for (const [v, t] of [['air', 'To the AIR MASK'], ['span', 'The SPANNER'], ['mat', 'The SPANNER, CHEMICALS, and MAT'], ['pass', 'The PASS CARD'], ['stop', 'Stop the machine (draft)'], ['home', 'Home in the TARDIS (draft)']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
   function marks(list, colour, round, sprites) {
@@ -285,7 +285,20 @@
     { via: [[1516, 1010], [1516, 877], [1464, 877], [1464, 819], [1716, 819], [1731, 752]], at: [2038, 752], say: 'Go back the same way to the central shaft.' },
   ];
   document.getElementById('dl-map').onclick = () => { const a = document.createElement('a'); a.href = full.toDataURL('image/png'); a.download = 'doctor-who-mines-map.png'; a.click(); };
-  const ROUTES = { air: AIR, pass: PASS, span: SPAN, mat: SPAN.slice(0, 3).concat([{ via: SPAN[3].via, at: SPAN[3].at, say: 'Go back the same way to the central shaft.' }], MATW) };
+  const circ = objs.filter(k => k.t === 'CIRCUIT'), slot = n => byT('MACHINERY: circuit slot ' + n).at;
+  const STOP = [
+    { at: byT('PASS CARD').at, say: 'Hold the <a href="gameplay.html#pockets">PASS CARD</a>. The security gates open only while it is in the Doctor\'s hand.' },
+    { at: circ[4].at, say: 'Through the gate into the dome, take the O <a href="gameplay.html#pockets">CIRCUIT</a>.' },
+    { at: circ[5].at, say: 'Through the other gate, take the P CIRCUIT.' },
+    { at: slot(3), say: 'At the <a href="solution.html#step-machine">heatonite machine</a>, take the A CIRCUIT out of slot 3 and put the O in its place.' },
+    { at: slot(4), say: 'Take the R out of slot 4 and put the P in. Slots 1 to 4 spell STOP and the machine halts. Keep one of the spare CIRCUITs.' },
+  ];
+  const HOME = [
+    { at: byT('CRYSTAL').at, say: 'Take the <a href="gameplay.html#pockets">CRYSTAL</a>, and watch for the Master, who comes to steal it.' },
+    { at: byT('CAPSULE').at, say: 'Take the <a href="gameplay.html#pockets">CAPSULE</a>.' },
+    { at: byT('TARDIS: the way home (empty hands)').at, say: 'With empty hands, press F5 on the <a href="solution.html#step-tardis">TARDIS</a> to go home.' },
+  ];
+  const ROUTES = { stop: STOP, home: HOME, air: AIR, pass: PASS, span: SPAN, mat: SPAN.slice(0, 3).concat([{ via: SPAN[3].via, at: SPAN[3].at, say: 'Go back the same way to the central shaft.' }], MATW) };
   let STEPS = AIR;
   const wkMarks = () => { const m = []; if (STEPS !== AIR) return m; if (wkI >= 2) m.push({ at: egg, n: 1 }); if (wkI >= 3) m.push({ at: AIR[3].at, n: 2 }); return m; };
   const wkNext = document.getElementById('wk-next'), wkBack = document.getElementById('wk-back');
