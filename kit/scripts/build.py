@@ -65,10 +65,6 @@ PLATFORM_MAP_LIBS = {"c64": [], "spectrum": ["spectrum.js"]}
 PLATFORM_MAP_SPAN = {"spectrum": (0x4000, 0x10000)}
 # How the footprint blurb names what it draws, so the C64 pages keep their copy.
 PLATFORM_MEM = {"c64": "the C64's 64 KB", "spectrum": "the Spectrum's 48 KB of RAM"}
-# The footprint table's names for the machine's own areas, in the same words as the map's
-# legend above it (memmap.js for the C64, spectrum.js for the Spectrum).
-PLATFORM_FOOT_WORDS = {"c64": {"runtime": "Screen, bitmap, colour, stack, I/O", "rom": "ROM the game runs under"},
-                       "spectrum": {"runtime": "Screen, attributes and working memory"}}
 TABS = [("index.html", "How it works"), ("source.html", "Source code"), ("levels.html", "Maps / levels"),
         ("play.html", "Play"), ("about.html", "About")]
 _warned = set()
@@ -261,26 +257,6 @@ def footprint(gdir, game):
         a = b
     symbols = [[e["a"], e["n"]] for e in L["index"] if e["k"] != "branch"]
     return runs, totals, symbols, (lo, hi)
-
-
-def footprint_table(totals, plat="c64", span=(0, 0x10000)):
-    names = PLATFORM_FOOT_WORDS.get(plat, PLATFORM_FOOT_WORDS["c64"])
-    program = sum(totals[k] for k in ("code", "graphics", "levels", "sound", "text", "tables", "variables"))
-    rows = [("Program", program)] + [(html.escape({"code": "Code", "graphics": "Graphics", "levels": "Level data", "sound": "Sound",
-             "text": "Text", "tables": "Tables", "variables": "Variables"}[k]), totals[k]) for k in
-             ("code", "graphics", "levels", "sound", "text", "tables", "variables") if totals[k]]
-    rows += [(html.escape(names["runtime"]), totals["runtime"])]
-    if totals["rom"]:
-        rows += [(html.escape(names.get("rom", "ROM")), totals["rom"])]
-    if totals["other"]:
-        rows += [("Varies with the part loaded", totals["other"])]
-    rows += [("Unused", totals["unused"])]
-    size = span[1] - span[0]
-    out = f"<div class='tablewrap'><table><tr><th>What</th><th>Bytes</th><th>Of {size // 1024} KB</th></tr>"
-    for i, (name, n) in enumerate(rows):
-        b = "<b>" if i == 0 else ""; e = "</b>" if i == 0 else ""
-        out += f"<tr><td>{b}{name}{e}</td><td>{b}{n:,}{e}</td><td>{b}{100*n/size:.1f} %{e}</td></tr>"
-    return out + "</table></div>"
 
 
 # --- pieces -----------------------------------------------------------------
@@ -883,13 +859,13 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats):
                 shutil.copy(os.path.join(p["dir"], f), dst)
 
 
-def game_footprint(P, out, plat):
+def game_footprint(P, out):
     """The one map of a game of several parts, for the About tab and the catalogue: the part
     the others are loaded over (the first that lies over none), with the addresses the other
     parts own as one band, "varies with the part loaded". Which part holds what is the Source
     tab's to show, part by part; here a reader wants the shape of the game, once.
     Returns the game's totals (its program summed over the parts, for the catalogue's size),
-    and the About tab's table with a line saying what the map is of."""
+    and the About tab's line saying what the map is of."""
     shown = [p for p in P if listed(p)]
     root = next((p for p in shown if not p["over"]), shown[0])
     runs, t, symbols, span = footprint(root["dir"], load_game(root["dir"]))
@@ -916,7 +892,7 @@ def game_footprint(P, out, plat):
     else:
         said = f"This game is in {len(P)} parts, and the map is of one of them: {name}. "
     said += f'The <a href="{part_page(root)}">Source tab</a> has the listing of each part that has one.'
-    return totals, footprint_table(t, plat, span) + f'<p class="mute">{said}</p>', span
+    return totals, f'<p class="mute" style="margin-top:12px">{said}</p>', span
 
 
 def link_list(game):
@@ -997,14 +973,14 @@ def build_game(gdir, out_root):
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(t)}</a></li>' for t, u in links) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
     if P:
-        totals, foot, span = game_footprint(P, out, plat)
+        totals, foot, span = game_footprint(P, out)
     else:
         runs, totals, symbols, span = footprint(gdir, game)
         memmap = {"runs": runs, "totals": totals, "symbols": symbols}
         if span != (0, 0x10000):   # memmap.js draws all 64 KB unless told otherwise
             memmap.update(base=span[0], size=span[1] - span[0])
         json.dump(memmap, open(os.path.join(out, "memmap.json"), "w"), separators=(",", ":"))
-        foot = footprint_table(totals, plat, span)
+        foot = ""
     game["_totals"] = totals
     about_template = os.path.join(gdir, "about-layout.html")
     if not os.path.isfile(about_template):
