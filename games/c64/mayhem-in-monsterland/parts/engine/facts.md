@@ -28,7 +28,7 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
 | `$CF78`-`$CF9A` | the game's numbers: score, lives, counter, time, level, continues, and the copies they are redrawn from |
 | `$D000`-`$D0FF` | the 1541 fast loader's drive code (RAM under the VIC) |
 | `$D100`-`$D6FF` | the scene between the sad and happy halves of a land, run at `$6000` |
-| `$D800`-`$DFFF` | the front-end character set (RAM under the I/O chips) |
+| `$D800`-`$DFFF` | the front-end character set (RAM under the I/O chips), shown at `$7800` by the stage card and at `$5000` by the loading screen |
 | `$E000`-`$F944` | tune 9, Mayhem's sprites, portals, land start, the object spawner, the stage card and stage complete, per-slot tables |
 | `$F9A6`-`$FFB6` | panel captions, star frames, the stage card's sad and happy tunes, the stage-complete tune |
 

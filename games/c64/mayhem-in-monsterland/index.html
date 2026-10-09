@@ -119,6 +119,26 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .mimi-sheetname{width:100%;margin:0;font-family:var(--fm);font-size:12px;color:#b2b2b2}
 .mimi-sheetname span{color:#7b7b7b}
 .mimi-sprite{image-rendering:pixelated;height:auto}
+.mims-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.mims-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.mims-row label{display:flex;gap:5px;align-items:center}
+.mims-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.mims-btn:hover{border-color:var(--ink-mute)}
+.mims-btn.mims-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.mims-out{font-size:14px;color:var(--ink);margin:10px 0 0;min-height:1.5em}
+.mims-note{font-family:var(--fm);font-size:13px;color:var(--coral);margin:8px 0 0}
+.mims-tbl{border-collapse:collapse;font-size:14px;margin:14px 0 0;width:100%}
+.mims-tbl th,.mims-tbl td{text-align:left;vertical-align:top;padding:5px 10px;border-bottom:1px solid var(--line-soft)}
+.mims-tbl th{font-weight:700;color:var(--ink-soft);white-space:nowrap}
+.mims-tbl td.mims-n{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.mims-tbl tr[data-mims-band]{cursor:pointer}
+.mims-tbl tr[data-mims-band]:hover td{background:var(--line-soft)}
+.mims-tbl tr.mims-cur td{background:var(--hl)}
+.mims-wide{overflow-x:auto}
+.mims-sheet{display:block;width:100%;max-width:435px;height:auto;image-rendering:pixelated;border-radius:4px;cursor:pointer}
+.mims-big{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.mims-word{font-family:var(--fm);font-size:15px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:100%;max-width:420px;text-transform:uppercase}
+.mims-codes{font-family:var(--fm);font-size:13px;color:var(--ink-soft);margin:10px 0 0;min-height:1.5em;overflow-wrap:anywhere}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -220,7 +240,73 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">04 · Music</p>
+  <p class="fig">04 · Screens</p>
+  <h2 class="t">Every screen is drawn in bands, top to bottom</h2>
+  <p class="lede">Each picture is characters, sprites and a chain of raster interrupts that changes the video chip's settings as the beam moves down the screen. Each screen below is one frame recorded in the emulator: memory as the frame began and every write to the video chip during it, drawn again here.</p>
+  <div class="plate">
+    <div class="pick"><button type="button" class="step" data-d="-1" aria-label="Previous screen">‹</button><select id="mims-scr" aria-label="Screen"></select><button type="button" class="step" data-d="1" aria-label="Next screen">›</button></div>
+    <canvas id="mims-cv" class="mims-cv" width="768" height="544"></canvas>
+    <div class="mims-row"><button type="button" class="mims-btn mims-on" data-mims-layer="all">Whole frame</button><button type="button" class="mims-btn" data-mims-layer="chars">Characters only</button><button type="button" class="mims-btn" data-mims-layer="sprites">Sprites only</button><label><input type="checkbox" id="mims-marks"> Mark the raster handlers</label></div>
+    <div class="mims-row" id="mims-sprs">Sprites shown:</div>
+    <p id="mims-out" class="mims-out"></p>
+    <div class="mims-wide"><table class="mims-tbl" id="mims-sum"></table></div>
+    <div class="mims-wide"><table class="mims-tbl" id="mims-bands"></table></div>
+    <p class="cap" id="mims-cap"></p>
+  </div>
+  <p>The layers are made by changing the recording before it is drawn. "Characters only" sets the sprite enable register <code>$D015</code> to 0 at the start of the frame and in every write to it. "Sprites only" sets every byte of the character set to 0, so each cell shows its background colour. The sprite boxes mask bits out of <code>$D015</code> the same way.</p>
+  <p>In play and on the title the handlers are chained through the processor's own interrupt vector: each one sets the raster line and the address of the next before it does its work (<code>$2077</code>), and the last one sets the first. The stage card's handlers return the next line and address to a dispatcher instead (<code>$1868</code>). Eight sprites are not enough for a screen of monsters, so in play the sprites are used again further down: band by band, a handler moves sprites 0-4 below the band it has just left and gives them the next five objects.</p>
+</section>
+
+<section data-part="jellyland">
+  <p class="fig">05 · The title screen</p>
+  <h2 class="t">The title screen is happy Jellyland behind 32 sprites</h2>
+  <p class="lede">The title has no picture of its own. Its code is in Jellyland's file (<code>$A547</code>), and it shows the land itself, made happy, scrolling one pixel a frame behind the logo. Every word on it is made of sprites.</p>
+  <div class="plate">
+    <canvas id="mims-title" class="mims-cv" width="768" height="544"></canvas>
+    <div class="mims-row" id="mims-groups"></div>
+    <p id="mims-gout" class="mims-out"></p>
+    <p class="cap">The recorded title frame, drawn as above, with everything but the chosen group's sprite pixels dimmed. A group's pixels are those the sprites change against the same frame drawn without sprites, within the group's lines.</p>
+  </div>
+  <p>The loader jumps to <code>$A547</code> after it has loaded Jellyland at the start of a game, and game over at the first land jumps there too (<code>$3EA7</code> in the engine). The title turns the land happy if it is not (<code>$A56C</code>), puts back the stars an earlier game took out of the map (<code>$A4B1</code>), and starts the map at column <code>$90</code> (<code>$A5B5</code>). The play-time interrupt chain does the rest: the same VSP split, the same scroller called from the title's loop (<code>$A612</code>), and the title's own handlers spliced in after the split (<code>$A59B</code>). The object bands are switched off by an RTS written over the first byte of each (<code>$A598</code>), and the panel's handler is replaced by the engine's scene handler <code data-part="engine">$B1AD</code>, which turns the bottom of the screen black and puts up the logo for the next frame.</p>
+  <p>The top-score line reuses the panel's score sprites. The title copies the top score into the score digits and draws them into the panel's sprite images as in play (<code>$9E54</code>). Images 0 and 1 hold the word SCORE above their digits. The handler at <code>$935A</code> moves sprites 1-3 and their shadows to the left on line 202, between the word and the digits, so the digits sit centred under TOP SCORE.</p>
+  <p>All of this has to fit the video chip's 16 KB bank, <code>$4000</code>-<code>$7FFF</code>, beside play's screens and sprites:</p>
+  <div class="mims-wide"><table class="mims-tbl">
+    <tr><th>Where</th><th>What, while the title shows</th></tr>
+    <tr><td class="mims-n">$4000-$40BF</td><td>sprite images 0-2, the panel's score sprites, holding the top score (<code data-part="engine">$3578</code>)</td></tr>
+    <tr><td class="mims-n">$4400, $4800</td><td>the two screens, as in play</td></tr>
+    <tr><td class="mims-n">$64C0-$64FF</td><td>image <code>$93</code>, the word TOP, in Jellyland's sprite images</td></tr>
+    <tr><td class="mims-n">$7000-$72A2</td><td>the title tune, swapped in from the engine's <code data-part="engine">$1600</code> and <code data-part="engine">$D6CB</code> over sprite images the title does not use (<code>$9E6A</code>, page swap 9), and swapped back when a game starts (<code>$A632</code>)</td></tr>
+    <tr><td class="mims-n">$7400-$77FF</td><td>images <code>$D0</code>-<code>$DF</code>: the copyright line, the logo, "in" and MONSTERLAND</td></tr>
+    <tr><td class="mims-n">$7800-$7FFF</td><td>Jellyland's happy character set, swapped with the sad one at <code>$A900</code> (page swap 1)</td></tr>
+  </table></div>
+</section>
+
+<section data-part="engine">
+  <p class="fig">06 · The front-end character set</p>
+  <h2 class="t">Every word between the stages is four characters a letter</h2>
+  <p class="lede">The stage card, the loading screen and the stage-complete screen share one character set of their own. The engine keeps it in the 2 KB of RAM under the I/O chips, <code>$D800</code>-<code>$DFFF</code>, where the video chip cannot see it, and swaps it into the bank when one of those screens shows.</p>
+  <div class="plate">
+    <canvas id="mims-sheet" class="mims-sheet" width="435" height="435"></canvas>
+    <p id="mims-sout" class="mims-out">Click a character to see what it is.</p>
+    <div class="mims-row" style="margin-top:18px"><label for="mims-word">Type a word</label></div>
+    <div class="mims-row" style="margin-top:6px"><input id="mims-word" class="mims-word" type="text" maxlength="24" value="Mayhem go!!" spellcheck="false" autocomplete="off"></div>
+    <canvas id="mims-big" class="mims-big" width="1280" height="32" style="margin-top:12px"></canvas>
+    <p id="mims-wout" class="mims-codes"></p>
+    <p class="cap">The 256 characters, 16 to a row, from the bytes at <code>$D800</code>-<code>$DFFF</code> in the recorded title frame, where the set rests during play and the title; the characters the typed text uses are yellow on grey. The typed text is set by a port of the engine's printer <code>$B817</code>, with the glyph map <code>$B6D5</code>: each character's four codes are listed under it, top row then bottom row. Checked two ways: the port prints the six strings the recorded stage card and loading screen show into the same cells the game did (480 screen cells, all equal); and it agrees with <code>$B817</code> itself, run in a 6502 simulator, on every character from <code>$20</code> to <code>$5F</code> alone, every pair of them, and 2,000 random strings, 6,160 strings in all.</p>
+  </div>
+  <p>A letter is two characters wide and two high, and the glyph map at <code>$B6D5</code> gives the four codes of each: A to Z, the digits, and <code>! . , ? :</code>. The printer reads the string as ASCII and turns each byte into a place in the map (<code>$B84C</code>-<code>$B8A8</code>). A space moves one column and draws nothing. I, J, L and the punctuation but <code>?</code> move one column, so the next letter covers their right half, which is blank; M and W draw a third column after their first two. The font has no lower case: the box above turns what is typed into capitals, and drops anything outside <code>$20</code>-<code>$5F</code>.</p>
+  <p>Page swaps move the set in and out of the bank. They exchange whole pages byte for byte with every ROM and the I/O banked out (<code>$3F54</code>; swap numbers from its tables at <code>$3F34</code>):</p>
+  <div class="mims-wide"><table class="mims-tbl">
+    <tr><th>Swap</th><th>Exchanges</th><th>When</th></tr>
+    <tr><td class="mims-n">0</td><td class="mims-n">$D800-$DFFF, $7800-$7FFF</td><td>every start of a stage (<code>$3B71</code>): the land's set goes under the I/O chips and the front-end set comes in for the stage card and the stage-complete screen; and back before play (<code>$3D9A</code>)</td></tr>
+    <tr><td class="mims-n">3</td><td class="mims-n">$7800-$7FFF, $5000-$57FF</td><td>the loader (<code>$CBF0</code>): the next land loads over <code data-part="">$7800</code>, so the set moves to <code>$5000</code> for the loading screen, and Mayhem's sprite images from there to <code data-part="">$7800</code></td></tr>
+    <tr><td class="mims-n">4</td><td class="mims-n">$D800-$DFFF, $7800-$7FFF</td><td>straight after (<code>$CBF5</code>): Mayhem's images go under the I/O chips, out of the load's way</td></tr>
+    <tr><td class="mims-n">5</td><td class="mims-n">$D800-$DFFF, $5000-$57FF</td><td>after the load (<code>$CE39</code>): Mayhem's images back to <code>$5000</code>, the set back under the I/O chips</td></tr>
+  </table></div>
+</section>
+
+<section data-part="engine">
+  <p class="fig">07 · Music</p>
   <h2 class="t">Music: every tune the game stores, played by its own driver</h2>
   <p class="lede">The game keeps 24 tunes: two in the intro, six in the engine, three in each land's file and one in the ending. The player below runs the game's music driver, ported from its code, once a frame through a model of the SID chip.</p>
   <div class="plate"><div id="mim-music"></div>
@@ -255,7 +341,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="jellyland">
-  <p class="fig">05 · The map</p>
+  <p class="fig">08 · The map</p>
   <h2 class="t">A land is six rows of tiles, some of them drawn twice</h2>
   <p class="lede">Every land is one strip of map, 24 characters high, built from tiles of four by four characters. Click a cell to see which tile and which character it comes from.</p>
   <div class="plate">
@@ -269,7 +355,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">06 · Stars</p>
+  <p class="fig">09 · Stars</p>
   <h2 class="t">A star is worth more the faster it spins</h2>
   <p class="lede">All the stars in a happy land spin together, and their speed rises and falls on a fixed cycle. A star pays what the spin is worth at the moment Mayhem touches it, from 500 points at the fastest to nothing at the slowest.</p>
   <div class="plate">
@@ -298,7 +384,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">07 · Scoring</p>
+  <p class="fig">10 · Scoring</p>
   <h2 class="t">Every score is one of 16 fixed awards</h2>
   <p class="lede">The score is nine decimal digits, one to a byte, and every award adds one fixed amount to one of them. A multiplier, collected as a bonus, repeats the award up to five times.</p>
   <div class="plate" id="mim-score1"></div>
@@ -322,7 +408,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="jellyland">
-  <p class="fig">08 · The title screen</p>
+  <p class="fig">11 · The cheat</p>
   <h2 class="t">Secret: 25 keys on the title screen give infinite lives</h2>
   <p class="lede">Typing a sequence of 25 digits from 1 to 5 on the title screen stops the game from taking lives away. Nothing on the screen asks for it.</p>
   <div class="plate" id="mim-cheat" tabindex="0" aria-label="Type the cheat with the buttons or the keys 1 to 5">
@@ -337,7 +423,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">09 · The extra life</p>
+  <p class="fig">12 · The extra life</p>
   <h2 class="t">Bug: a million reached through the time bonus earns no extra life</h2>
   <p class="lede">The game gives an extra life each time the score passes a million. One award can pass a million without it: the 100,000 points of the SUPER TIME BONUS, when the score already has a 9 in its hundred-thousands.</p>
   <div class="plate" id="mim-score2"></div>
@@ -347,7 +433,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">10 · Lives</p>
+  <p class="fig">13 · Lives</p>
   <h2 class="t">Bug: losing a life at 10 lives leaves 00</h2>
   <p class="lede">The lives counter is two decimal digits. Taking a life from 10 leaves 00, the last life, so the counter drops by ten at once. The same happens at 20, 30 and every other multiple of ten.</p>
   <div class="plate">
@@ -361,7 +447,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="cherryland">
-  <p class="fig">11 · The loading screens</p>
+  <p class="fig">14 · The loading screens</p>
   <h2 class="t">Bug: Cherryland's loading screen gives Rockland's star quota as 338, not 348</h2>
   <p class="lede">While a land loads, the screen shows its name and its two quotas. The quotas on the screen come from the land before.</p>
   <div class="plate">
@@ -382,7 +468,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">12 · More from the code</p>
+  <p class="fig">15 · More from the code</p>
   <h2 class="t">Things a player who finished it would not know</h2>
   <ul class="mim-list">
     <li><b>The first touch is free.</b> Touching a monster the first time costs no life: it sets a flag and starts a grace count of <code>$64</code> while Mayhem flickers (<code>$B61D</code>). The count goes down only on every other call (<code>$EF4A</code>-<code>$EF4E</code>), so the grace lasts about 200 calls. The second touch costs the life (<code>$B5E4</code>). An extra life, the power-up or one of the bonuses clears the flag again (<code>$387D</code>).</li>
@@ -395,7 +481,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="intro">
-  <p class="fig">13 · The intro</p>
+  <p class="fig">16 · The intro</p>
   <h2 class="t">The intro fades each dinosaur from colour to grey</h2>
   <p class="lede">Side 1 plays an intro before the game: the Mayhem TV ident, the Apex logo, and a roll call of ten characters, each followed by a page of credits. Each page below is drawn by this page from the intro's own bytes, by its own routines ported to JavaScript.</p>
   <div class="plate">
@@ -433,7 +519,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="intro">
-  <p class="fig">14 · The intro's landscape</p>
+  <p class="fig">17 · The intro's landscape</p>
   <h2 class="t">The intro's landscape scrolls at three speeds without moving a character</h2>
   <p class="lede">Behind the dinosaurs the clouds, the mountains and the ground move at different speeds. The landscape is drawn once, and nothing on the screen moves: the intro shifts the pixels inside the characters.</p>
   <div class="plate">
@@ -453,7 +539,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="engine">
-  <p class="fig">15 · The protection</p>
+  <p class="fig">18 · The protection</p>
   <h2 class="t">The answers to the code sheet are in the game</h2>
   <p class="lede">After the intro, the game asks for a code from the printed sheet that came in the box.</p>
   <div class="plate">
@@ -461,7 +547,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <p class="cap">The protection screen, a screenshot from the emulator.</p>
   </div>
   <p>The protection screen gives a square of the sheet, such as F27, and wants the five colours printed there, typed as digits from 1 for blue to 5 for yellow. The answers are in the game, exclusive-ORed with <code>$45</code>: a table of 47 squares at <code>$4A00</code>-<code>$4B77</code>, and the five keys this boot expects, copied to <code data-part="">$017B</code> on the stack page (<code>$4594</code>-<code>$45A2</code> compares them). Three wrong codes send the game to <code>$C000</code>, which clears memory from <code>$040A</code> upward without end.</p>
-  <p>The same file still carries some of the tools it was made with. Next to the answer table, the copy loaded from disk holds a small program the game never runs (<code>$4800</code>-<code>$49E1</code>): a link that let another computer write and read the Commodore's memory and start code over a cable in the user port, signed "DOWNLOAD BY JAZ" (<code>$49F0</code>). Beside it, a routine at <code>$4B7B</code> saved memory from <code>$0200</code> to <code>$A8FF</code> to the disk drive under the name GAME, which is exactly the span of the file on the disk, and the first bytes of that file are BASIC's input line, still reading <code>SYS 5632</code>: the command that started the link at <code data-part="">$1600</code>. The game clears this screen memory before play, so none of it is ever seen. Andy Roberts recalls working on Mayhem with an Amiga-based cross-development system, and a 1990 Commodore Format feature on Apex describes John Rowlands sending his code from another computer to the C64 through a "Programmer's Development System". Whether this link belonged to either, and who Jaz was, could not be found.</p>
+  <p>The same file still carries some of the tools it was made with. Next to the answer table, the copy loaded from disk holds a small program the game never runs (<code>$4800</code>-<code>$49E1</code>): a link that let another computer write and read the Commodore's memory and start code over a cable in the user port, signed "DOWNLOAD BY JAZ" (<code>$49F0</code>). Beside it, a routine at <code>$4B7B</code> saved memory from <code>$0200</code> to <code data-part="">$A8FF</code> to the disk drive under the name GAME, which is exactly the span of the file on the disk, and the first bytes of that file are BASIC's input line, still reading <code>SYS 5632</code>: the command that started the link at <code data-part="">$1600</code>. The game clears this screen memory before play, so none of it is ever seen. Andy Roberts recalls working on Mayhem with an Amiga-based cross-development system, and a 1990 Commodore Format feature on Apex describes John Rowlands sending his code from another computer to the C64 through a "Programmer's Development System". Whether this link belonged to either, and who Jaz was, could not be found.</p>
 </section>
 
 </main>
@@ -1496,6 +1582,7 @@ scoreWidget($('mim-score2'), {
 })();
 })();
 </script>
+<!-- mimi-script: after the page's other scripts -->
 <script>
 // The intro's bytes for the intro widgets, from parts/intro/work/entry.vsf (the menu file
 // as loaded): 12959 bytes in 5 regions, written by work/intro/extract.py.
@@ -2396,3 +2483,355 @@ const MIMI = (function () {
 })();
 // </mimi-widgets>
 </script>
+<!-- /mimi-script -->
+<!-- mims-script: after the page's other scripts -->
+<script>
+const MIMS_DATA = {"frames":{"play":{"vic":[33,229,57,229,81,229,142,229,231,229,53,229,172,125,172,125,32,91,0,0,0,255,208,0,47,245,241,0,128,0,255,255,240,240,240,240,243,247,251,241,241,241,241,241,241,240,250],"cia2":[198,63],"writes":[[0,58,65534,61],[0,62,65535,33],[1,25,53264,63],[1,42,53257,0],[2,2,53255,0],[2,25,53253,0],[2,48,53251,0],[3,8,53249,0],[3,56,53271,31],[4,1,53277,31],[5,30,53282,252],[5,36,53283,251],[6,63,18430,70],[7,4,19454,70],[7,29,18431,71],[7,33,19455,71],[8,10,53264,31],[8,34,53258,170],[8,42,53259,129],[8,55,18429,15],[8,59,19453,15],[47,46,65534,98],[48,42,65534,238],[50,53,53265,18],[50,58,53265,27],[83,5,65534,16],[83,9,65535,34],[84,15,53264,25],[85,40,53252,108],[85,49,18426,15],[85,54,19450,15],[85,63,53253,125],[86,30,53288,252],[86,39,53250,108],[86,48,18425,198],[86,53,19449,198],[86,62,53251,125],[87,29,53287,252],[87,38,53248,172],[87,47,18424,111],[87,52,19448,111],[87,61,53249,125],[88,20,53276,131],[88,40,53271,24],[88,48,53277,24],[114,57,65534,34],[147,9,65534,156],[148,24,53264,27],[149,45,53289,252],[149,54,53252,234],[149,63,18426,107],[150,10,19450,107],[150,19,53253,189],[150,46,53251,0],[151,10,53249,0],[151,32,53276,132],[151,52,53271,27],[151,60,53277,27],[179,2,65534,186],[210,58,65534,193],[210,62,65535,24],[220,25,53258,53],[220,32,53259,229],[220,41,18429,3],[220,46,19453,3],[221,10,53256,219],[221,17,53257,229],[221,58,53254,130],[222,2,53255,229],[222,43,53252,81],[222,50,53253,229],[222,59,18426,15],[223,1,19450,15],[223,10,53289,255],[223,28,53250,57],[223,35,53251,229],[223,44,18425,1],[223,49,19449,1],[223,58,53288,241],[224,13,53248,33],[224,20,53249,229],[224,29,18424,0],[224,34,19448,0],[224,43,53287,241],[224,61,53264,32],[225,10,53277,24],[225,20,53271,0],[225,26,53276,128],[239,14,65534,233],[239,18,65535,34],[242,12,53265,91],[242,24,53254,142],[242,30,53256,231],[244,9,53289,241],[244,15,18426,2],[244,19,19450,2],[244,25,18430,15],[244,29,19454,15],[244,33,18431,15],[244,37,19455,15],[244,43,53277,0],[244,51,53282,240],[244,55,53283,240],[250,62,65534,248],[251,3,65535,32]],"ram":[{"a":16384,"b":"AAAAAAAAAAAAfw+H/x+PwDgc/jAYfzAYAzAY/z+f/h+PAAAAAAAAAAAAAAAAfHx87u7u7u7u7u7u7u7ufHx8"},{"a":16448,"b":"AAAAAAAAAAAAx/D85/n8ZhmAZ/HwZ+Hw5nGAxjn8hhz8AAAAAAAAAAAAAAAAfHx87u7u7u7u7u7u7u7ufHx8"},{"a":16557,"b":"fHx87u7u7u7u7u7u7u7ufHx8"},{"a":16576,"b":"AAAAAAAAAAAAYYz+4Yz/YYzDYYzDYYz/YYz+YfzA8PzAAAAAAAAAAAAAAAAAAHz8zO4OeO58MO4OeO4OzHz8"},{"a":16640,"b":"AAAAAAAAAAAAiYbj287n+lhMq9BIq9JIqlJIql7vqk7nAAAAAAAAAAAAAAAAfDh87nju7jju7jju7jjufHx8"},{"a":16704,"b":"AAAAAAAAAAAAHdE4Hdt4CJ9ACJVwCJVwCJVACdV4CdU4AAAAAAAAAAAAAAAA/Hz+Du7gfO784O4O4O4O/nz8"},{"a":17344,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":18432,"b":"////////f43/////////////////VVZRUT9A////////VVZRUZudnJz8/////6S4//////v8///7/P//UlFRUVFRUbT/////UlFRUZvCnJyc/v///3+jpo3////9/v///f7/R1FRUVFRUVFRP0D/R1FRUZvCnJycnP////+ko6a4/////////////0hRUVFRUVFRUVFRQEhRUVGanJycnJxVVlGJo6Klpo3///////9VVlFRUZudl5ibnZeYUVFRUZudnJycnJycUVFRpKOipaa4//////98UVFRUVGanJyZmpycmVFRUVGanJycnJycnFFRUaSjoqWmuP///1VOUVFRUZudspycj7Kch4+XmJudspycnJycnJxRUYmjorGnpaaNRUZRUVFRUVGanJycnJycnJycnJmanJycnJycnJycm52ko6Kxp6WmuJeYUVFRUZudspyBgpeWx5ycnIePl5bHnJycgYKXlpqcpKOisaelpricmVFRUVGanJycmpycmYicnJycnJyZiJycnJqcnJmynKSjorGnpaa4gI+XmJudspyBgrKch4+XlsecnJyHj5eWgYKynIePnJyko6Kxp6WmuIicnJmanJycmpycnJycnJmInJycnJycmZqcnJycnFhZCAkMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwAAQIaISHs2txU618h+BwcHNUZGiEhISEhGxwcHNXU09LR4xgZGRkaAuzt2NfsoPHzklTrX+zNVFTa2djXGCHKy8zNVFTa29zi9rzx8+3Z2M3noLzy9ZTy55FUVJLc9fRU6bzy9fXg39719fRU6bzx8+d68ud6vLzJ5uS8vPH1lJFUVOeV8vNU5+bkvPHz6bzy9fNU5+bk8ufmfuXmfuS85n5+5Lzy9fX0VOeR6rz05+Z+fuTy5+bkvPH05+Z+fuXmfn5+fn5+5H5+fn7kvPHzVOeRVOm85+Z+fn5+5eZ+fuTy5+Z+fn5+fn5+fn5+fn5+fn5+fuTyVOeV81Tn5eZ+fn5+fn5+fn5+5eZ+fn5+fn5+fn5+fn5+fn5+fn5+5feV8fTn5n5+fn5+fn5+fh0MDAwMDAwMDAwMDAwMDAwMDH5+fn5+fn5+5PLn5n5+fn5+fn5+fn4g1xjKy8zN7xkaIfgcHBzV1NN+fn5+fn5+fn7l5n5+fn5+fn5+fn5+fuXm5PLneu7Z2NfszVRU2tvcfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn7l5n7kvLzy9fX0VOm88X5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn4="},{"a":19448,"b":"AAECBAUDDw8="},{"a":20864,"b":"AAAAAAGAAeZAAhhAAQfAAIkgBxAQCBKQBBAYAkjkBIcECIAIBIQYEmMQLJhwRQ/IQQgIQJAIIPiYGfw8B//+"},{"a":20928,"b":"AAAAAAAAAEFAAVVAAFVAAFlAAVVQBWVQAWVgAamUAapUBaqQAaqgAWqgEaqQFaqQFVpQJplgKqlgCqWgAqqg"},{"a":23232,"b":"AAAAAAAAAA/AADmwAOqsAOusA67sA6m7A6l3A7VnA7XfAO13AOv8A6W7D6VnO7fX63lb6u6s6tf4OtboOv/s"},{"a":23488,"b":"AAAAAAAAA/AADmwAOqsAOusAO7rA7mrA3WrA2V7A917A3XsAP+sA7lrA2Vrw197s5W3rOrurL9erK5esO/+s"},{"a":29056,"b":"A//ADqqwOlWsOWls6b5r5f9b5v+b5//b5//b5//b5//b5//b5//b5//b5//b5//b5//b5//b5//b5//b5//b"},{"a":30720,"b":"n19//ffdd9333Xfdd9133Xfdd9133XdV"},{"a":30784,"b":"qt3//3fdd92q3f//d9133Q=="},{"a":30816,"b":"qt3//3fdd90="},{"a":30887,"b":"VQ=="},{"a":30912,"b":"d9133XddpWp33Xfdd913XXfdd9133Xfdd9133Xfdd9133Xfdd913Vaqdl5+Xn5ed"},{"a":30976,"b":"leXp5vn6/v533Xfdd9133Q=="},{"a":31015,"b":"1g=="},{"a":31023,"b":"1g=="},{"a":31031,"b":"nw=="},{"a":31055,"b":"qg=="},{"a":31112,"b":"qt13/3fdd90="},{"a":31127,"b":"fQ=="},{"a":31143,"b":"VQ=="},{"a":31151,"b":"qg=="},{"a":31207,"b":"PA=="},{"a":31216,"b":"//////9/DwCAwMDh4+fn7wAAcPz+/v//"},{"a":31272,"b":"AAAOP39///8BAwOHx+fn9wEDAwcHDw8fHx8/Pz9/f38="},{"a":31344,"b":"AAAAfv////8="},{"a":31368,"b":"//////////8DBw8fP3///w=="},{"a":31392,"b":"qqqqqqqqqqoAAAABBx9//wAPf///////"},{"a":31424,"b":"Vf9V/1b6a69WWmmnl3///Q=="},{"a":31480,"b":"d9133Xfdd10="},{"a":31696,"b":"lZXl5fnpvv4="},{"a":31712,"b":"AwcPHz8/f38="},{"a":31728,"b":"//////////+qpZaZp667/VX/Vf9V/lX/Vf9V/ln7ZeVW65X/VX9VXw=="},{"a":31800,"b":"Vf9V/1X/Vf9V/1X/Vf9Vv/rp5qmnrrv9"},{"a":31848,"b":"sKx/77vaa5o="},{"a":31864,"b":"WvpZ72X/Vf8="},{"a":31880,"b":"v+++/vr66uqrrruuq6+7rw=="},{"a":31904,"b":"lZWlZZlpmma/773++fbZ5lX/la+l62n7qupW/1X/Vf//v6+vq2tralr6Wv5W/lb+p5ednZ2dlZf//vr66emlpVX/Vf9V/1X/qquV/1V/VX8="},{"a":32000,"b":"maWZZZVllVU="},{"a":32016,"b":"bbfdd9555ZtemmqrpZddl/bppqmnrrv93nnWW2133fdmtdZ11lrqqV9////99dVX"},{"a":32136,"b":"/fXVV19//3+lr2X7Wf9V/w=="},{"a":32160,"b":"wODw+Pz+//8="},{"a":32192,"b":"a59/7rraapo="},{"a":32224,"b":"VVVVVVVVVVU="},{"a":32272,"b":"pa+l+1n+Vf8="},{"a":32312,"b":"Vf9V/1X/Vf8="},{"a":32328,"b":"mWZaaptuu6933XfdddVaqnfdddVaqqqqdVVaqqqqqqpaqqqqqqaZZg=="},{"a":32392,"b":"dVqqqqqqqqp33VVaqqqqqnfdd91VWqqqd9133XdVpap33Xfdd913VQ=="},{"a":32440,"b":"d913XaVqmWZ3XaWqqWaZVqVqmmZZVlVVqqqqqplmmWWqqqpWWVZVVqqqmWaZZplm"},{"a":32496,"b":"qqpZZllmWVaqWlVVVVVVVapVVVVVVVVV"},{"a":32528,"b":"qmaZZplmmWZ3XZelqaqpVZWV5eX5+f7+mabp5vn6/v6+77v/7/+//6qqq66rrruv"},{"a":32584,"b":"lZWlpamtuq6llZWVlVVVVZedp6Wpqaqqdd121lraamqpqqmmmaaZZqlZVVVVVVVVV52nZatpmmY="},{"a":32648,"b":"mWaZZllmWWZZVllWVVZVVppmmmaaappqqmqqaqqqqqqZZplmmWaZZqmlpampqqqqqqqqrrvuv/933Xfdd9133Q=="},{"a":32728,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="}],"colour":"DQ0NDQ0NCAgNDQ0NDQ0NDQ0NDQ0NAAAAAAAADQ0NDQ0NAAAAAAgNDQ0HDQ0NDQgIDQ0NDQcHDQ0HBw0NAAAAAAAAAAANDQ0NAAAAAAgNDQ0NBw0NDQgLCwgNDQ0HBw0NBwcNAAAAAAAAAAAAAAANAAAAAAgNDQ0NDQ0NDQ0ICwsIDQ0NDQ0NDQ0NDQAAAAAAAAAAAAAAAAAAAAALDQ0NDQ0AAAAICwsLCwgNDQ0NDQ0AAAAAAAgNDQgIDQ0IAAAAAAgNDQ0NDQ0NAAAACAsLCwsIDQ0NDQ0AAAAAAAALDQ0NCw0NDQAAAAALDQ0NDQ0NDQAAAAgLCwsLCA0NDQAAAAAAAAgNDQ0NDQ0NDQ0NCAgNDQ0NDQ0NDQ0AAAgLCwsLCwsIAAAAAAAAAAALDQ0NDQ0NDQ0NDQ0LDQ0NDQ0NDQ0NCA0ICwsLCwsLCA0IAAAAAAgNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQsNCAsLCwsLCwgNDQAAAAALDQ0NCw0NDQ0NDQ0NDQ0NDQ0NDQsNDQ0NDQgLCwsLCwsIDQ0NCAgNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0ICwsLCwsLCA0NDQ0LDQ0NCw0NDQ0NDQ0NDQ0NDQ0NDQsNDQ0NDQ0LCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLDQ0OCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsNCwsLCggJCA4LCwsNDg4NDQsLCwsLCwsNDg4NDQ0NCA4ICQ0NCw0ICg4NDQ8NCAgODggNDQ0OCA4NDQ0NDQ0NDQ0OCA4ICQgIDQgIDg4ICAgODggNDwgODggIDQkOCAgIDggJCA4NDQkOCAgIDQgICAgICAgOCAgICA4NDQ0NDggIDQ4NCAgICAgNCAgIDggNCAgICAgICAgICAgICAgICAgIDggJDggIDggOCAgICAgICAgICAgNCAgICAgICAgICAgICAgICAgICAgNDggICQ4ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA0ICAgICAgICAgICAsLCwsLCwsLCwsLCwsLCwsLCwgICAgICAgICA0ICAgICAgICAgICAgICwsLCwsNCwsLCwsLCwsLCwsICAgICAgICAgICAgICAgICAgICAgICAgICA0ICA0NCwsLDQ4ODQ0NCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDg4NDQ0NDggOCAgICAgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},"title":{"vic":[88,64,112,64,136,64,160,64,184,64,208,64,232,64,0,64,128,91,0,0,0,255,212,255,47,245,241,0,255,0,255,255,240,243,250,249,243,247,240,250,247,245,254,244,246,242,248],"cia2":[198,63],"writes":[[0,61,65534,61],[1,2,65535,33],[47,45,65534,98],[48,43,65534,67],[48,49,65535,166],[48,60,53270,211],[50,18,53265,18],[50,58,53265,27],[52,55,65534,92],[112,58,65534,156],[113,27,53251,123],[113,41,53250,175],[113,55,53249,120],[114,6,53248,172],[114,19,18425,219],[114,24,19449,219],[114,33,53288,240],[114,45,18424,219],[114,50,19448,219],[114,59,53287,241],[115,6,53276,0],[115,10,53271,0],[144,57,65534,231],[145,26,53263,159],[145,40,53262,235],[145,54,53261,159],[146,5,53260,187],[146,19,53259,159],[146,33,53258,139],[146,47,53257,159],[146,61,53256,91],[147,12,53255,156],[148,5,53254,232],[148,19,53253,156],[148,33,53252,184],[148,47,53251,156],[148,61,53250,136],[149,12,53249,156],[149,26,53248,88],[149,41,18431,223],[149,46,19455,223],[149,53,53294,240],[150,4,18430,222],[150,9,19454,222],[150,16,53293,240],[150,30,18429,221],[150,35,19453,221],[150,42,53292,240],[150,56,18428,220],[150,61,19452,220],[151,5,53291,240],[151,19,18427,223],[151,24,19451,223],[151,31,53290,240],[151,45,18426,222],[151,50,19450,222],[151,57,53289,240],[152,8,18425,221],[152,13,19449,221],[152,34,18424,220],[152,39,19448,220],[152,46,53287,240],[152,61,53290,241],[153,8,53289,241],[153,18,53288,241],[153,28,53287,241],[153,36,53277,255],[153,42,53264,0],[158,6,65534,90],[158,10,65535,147],[159,22,53287,253],[159,26,53288,253],[159,30,53289,253],[159,34,53290,253],[160,52,53287,243],[161,12,53288,243],[161,16,53289,243],[161,20,53290,243],[162,43,53287,254],[162,47,53288,254],[162,51,53289,254],[162,55,53290,254],[165,22,53287,244],[165,26,53288,244],[165,30,53289,244],[165,34,53290,244],[166,52,53287,246],[167,12,53288,246],[167,16,53289,246],[167,20,53290,246],[168,43,53287,242],[168,47,53288,242],[168,51,53289,242],[168,55,53290,242],[170,43,53287,248],[170,47,53288,248],[170,51,53289,248],[170,55,53290,248],[173,27,53287,250],[173,31,53288,250],[173,35,53289,250],[173,39,53290,250],[175,13,53287,247],[175,17,53288,247],[175,21,53289,247],[175,25,53290,247],[176,48,53287,241],[176,52,53288,241],[177,12,53289,241],[177,16,53290,241],[182,27,18431,2],[182,32,19455,2],[182,46,18430,1],[182,51,19454,1],[183,2,18429,0],[183,7,19453,0],[183,21,18428,147],[183,26,19452,147],[183,40,18427,2],[183,45,19451,2],[183,59,18426,1],[184,1,19450,1],[184,15,18425,0],[184,20,19449,0],[184,34,18424,147],[184,39,19448,147],[184,54,53263,191],[185,5,53262,9],[185,19,53261,191],[185,33,53260,217],[185,47,53259,191],[185,61,53258,169],[186,12,53257,191],[186,26,53256,107],[186,40,53255,190],[186,54,53254,8],[187,5,53253,190],[187,62,53252,216],[188,13,53251,190],[188,27,53250,168],[188,41,53249,190],[188,55,53248,106],[189,57,53264,136],[201,23,65534,152],[202,27,53264,0],[202,33,53250,112],[202,39,53258,113],[202,45,53252,160],[202,51,53260,161],[204,12,53254,208],[204,18,53262,209],[204,26,53288,246],[204,30,53289,246],[204,34,53290,246],[213,3,65534,173],[213,7,65535,177],[213,35,18429,210],[213,40,19453,210],[213,63,18428,209],[214,5,19452,209],[214,28,18427,208],[214,33,19451,208],[214,42,53290,240],[214,56,18426,210],[214,61,19450,210],[215,7,53289,241],[215,21,18425,209],[215,26,19449,209],[215,35,53288,241],[215,49,18424,208],[215,54,19448,208],[216,15,53259,219],[216,29,53258,197],[216,43,53257,219],[216,57,53256,149],[217,8,53255,219],[217,22,53254,125],[217,36,53253,218],[217,50,53252,196],[218,1,53251,218],[218,15,53250,148],[218,29,53249,218],[218,43,53248,124],[220,33,53277,54],[221,9,53269,63],[240,62,65534,233],[241,3,65535,34],[241,63,53265,91],[246,44,53263,64],[246,58,53262,0],[247,9,53261,64],[247,23,53260,232],[247,37,53259,64],[247,51,53258,208],[248,2,53257,64],[248,16,53256,184],[248,30,53255,64],[248,44,53254,160],[248,58,53253,64],[249,9,53252,136],[249,23,53251,64],[249,37,53250,112],[249,51,53249,64],[250,2,53248,88],[250,17,18431,218],[250,22,19455,218],[250,31,53294,242],[250,45,18430,217],[250,50,19454,217],[250,59,53293,246],[251,10,18429,216],[251,15,19453,216],[251,24,53292,244],[251,38,18428,215],[251,43,19452,215],[251,52,53291,254],[252,3,18427,214],[252,8,19451,214],[252,17,53290,245],[252,31,18426,213],[252,36,19450,213],[252,45,53289,247],[252,59,18425,212],[253,1,19449,212],[253,10,53288,250],[253,24,18424,211],[253,29,19448,211],[253,38,53287,248],[254,19,53276,255],[254,27,53277,0],[254,35,53271,255],[254,43,53264,128],[254,51,53269,255],[257,30,65534,248],[257,34,65535,32]],"ram":[{"a":16384,"b":"AAAAAAAAAAAAfw+H/x+PwDgc/jAYfzAYAzAY/z+f/h+PAAAAAAAAAAAAAAAAfHx87u7u7u7u7u7u7u7ufHx8"},{"a":16448,"b":"AAAAAAAAAAAAx/D85/n8ZhmAZ/HwZ+Hw5nGAxjn8hhz8AAAAAAAAAAAAAAAAfHx87u7u7u7u7u7u7u7ufHx8"},{"a":16512,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfHx87u7u7u7u7u7u7u7ufHx8"},{"a":18432,"b":"DAwMDCdjd3Z3dnd2d3Z3duH//////////y4tDAwMDAwn//////////////////////////////////////////////////////9/o///+/z////////////////////////7/P//+/z///v8///7/P//pKP///3+/////////////////////////f7///3+///9/v///f7//6Sj//////////9VTrP//////////////////////////////////3+jov///////0VGUVFRP0BVVkuz//////////////9/jf////////+ko6L//////0VRUVFRUVFRUVFRUbT/////+/z/////pLj/////+/z/pKOi////VU5RUVFRUVFRUVFRUVFRP0D///3+////f6Omjf////3+/6SjokBFRlFRUVFRUVFRUVFRUVFRUVFRQP///////6Sjprj///////+ko6JRUVFRUVFRUVFRUZudl5hRUVFRUVFLs////3+joqWmjf//////pKOiUVFRUVFRUVFRUVGanJyZUVFRUVFRUVG0//+ko6Klprj//////6SjophRUVFRm52XmJudspyHj5eYm52XmFFRUUr/pKOipaa4////VU6ko6KZUVFRUZqcnJmanJycnJycmZqcnJlRUVFJf6Oisaelpo1FRlFRpKOiDAwMDAwMDAsKWlvHnJycnJycnIGCl5hRUaSjorEvNDQ0NDQ0NDQ0NNXU09LR4xgZAwQFWlvHnJycnJyanJyZUVGko6KxXmJiYmJiYmJiYmLa29zi9rzx8+frAwQFWlvHnIGCspyHj5eYpKOisaeDqqtRUVFRqKmO6bzx8+d68udck/HrAwQFWluanJycnJycmaSjorGnpaa4UVFRUaSjoubk8ufmfuXmfuTy55XvAwQFWlvHnJycnJyko6Kxp6WmuJeYUVGko6J+fuXmfn5+fn5+5ebk8vPvAwQFWlvHnJycpKOisaelpricmVFRpKOifn5+fn5+fn5+fn5+fuVc8vTrAwQFWlvHnKSjorGnpaa4h4+XmKSjon5+fn5+fn5+fn5+fn5+fuRck/HrAwQFWluko6Kxp6WmuJycnJmko6IMDAwMDAwMDAwMDAwefn5+fuS88fPvBw8hEREREQwMDAwMDAwMDAwMGxwcHNXV7NjXGMofdX5+fn5+5PLn8vPvAxohIfgZGiEhISEhGxwcHMzNVFTa6fLJ5uXmfn5+fn5+fn7l5uVc8vTY19Ts2djXGCHKy8zNVFT19fRU6ebl5n5+fn5+fn5+fn5+fn5+fuRcvPH0VLzy9fXg39719fRUMDcwd35+fn5+fn5+fn5+fn5+fn7T1NXW19jZ2g=="},{"a":25792,"b":"AAAAAAAAAAAA/Hz8/P7+McbGMYbGMYb+MY78MfzAMPjAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":29696,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gAHA4AMeMAYzGAYwGAYwGAYzGAMeMAHA4AB/gAAAAA"},{"a":29760,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA3HRBUoRCUoKEUvEP3IKQUIRgUHRAAAAAAAA"},{"a":29824,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABOOODRRRBRRBBRRGBPPBBBBBBRRRBOOOAAAAAAAA"},{"a":29888,"b":"AA/AADqwAOqsANasA1WrA1WqA1WqDpaqDqqqDqrpOqrpOqr5Olv/6Vf/6Vf/6V/AOl/AD/8AD/8AA/wAAAAA"},{"a":29952,"b":"AAAAD8AAOXAA5VwDpVw+qWvqqqulqquVVquXdaundaur9auq1q+q6q1q6q1a6q1a6q9qOr/6D/8/D/w/A/AP"},{"a":30016,"b":"AAAAAAAAA/wP/qs6rqs6qqvqqqrV+qrV/qr1/qq181q6w1a+81avvVauqlququq6qv/qr//+//P//8AP/AAA"},{"a":30080,"b":"AAADAAAO/AA6qwA6qwP6q86ur86rbzqrbzqrq+qrqqqtqqqtqqq+/qr/qVv/pVfwpV/Apf/A//8A//wA//AA"},{"a":30144,"b":"8AAArAAArwAAq8AAq8/wq/VvqtVqqqWqWqqqVqqqVq/qVr/6Wr/1qr81qqwN6q8N6q8DOr8AP/8AD/wAA/AA"},{"a":30208,"b":"AAAAAAAAAAD/AD+qA9qqDVaq9Va/tVr/uWq/rqqqrqqqq6uqq6vqa6r/a6qqr6Vq/5Va//VWPD//AA//AAD/"},{"a":30272,"b":"AAAAAAAA8AAArwP8qs6rqrqqqrqq6q6qqq6qqW6qpV6VlXpdl+pX/+pXv/qVrDqqrz6qvw6r/w///wP//AD/"},{"a":30336,"b":"AAAAAPwAA6vADWrwDVrw9Vr8uWq8qqq8qqq/qqq/q6lva6Vfb+Vf/+Vf/+lv/Dq/8D//8A//wAP8wAAAAAAA"},{"a":30400,"b":"AAAAcHHg+Pv4+P/8+P/+cP/+AP//OP5/fHw/fHw/fnw/fnx+fn5+Pz5+Pz5+Pz78Hz78Hz78Dhx4AAAAAAAA"},{"a":30464,"b":"CIABHcMLHcffP+/fP+/vP+/vP+3vP+jvf+jtf+jtf+jtf+nteu3p+Pfp+Pfr8Pfb8Pfb8Pfb8Pe74Pe7YGMR"},{"a":30528,"b":"j4MD38OH38eP78eP7ccf6J/e7D/s7x/s747e794/794/4+4/wew90e283+/e3+/f3+/v3+/v39/f39/fj4+P"},{"a":30592,"b":"mMYA3e8A7e8D7/eH9/ePd/ePd++Pd++e9s+e9h8c7x8c7x8czx4cDx5uzx7357/357/357/357/357/3wx/j"},{"a":30656,"b":"AAAYAAA8oGA89vA89/Ac9/h8d/j8e/n8O/neO/ueO3uOO3uOe32Oez3e+z3/+z3/+z3/+z3/+z3/+z3/dhju"},{"a":30720,"b":"wA=="},{"a":30727,"b":"M8wzzDPMP///DDPMM///zDPMMwwzDADMM8wzzDPMA8Aw/j/PM8wzzDM="},{"a":30776,"b":"zDMMMwwAzDM="},{"a":30799,"b":"M6o/zwPMM8wzqjPAAMwzzDOqM8AAzDPMMw=="},{"a":30831,"b":"Mw=="},{"a":30840,"b":"zDPMM8wDwDD//////////6ozwADMM8wzgLOAs4yzvLM="},{"a":30880,"b":"zDPMM8z/zzM="},{"a":30911,"b":"T8wzDADMM6xqzDPMMwwAzDPMM8wzzDMMAMwzzDPMM8/zzDPMM///zDM="},{"a":30960,"b":"qz7OMs7y/vLMP/zzzuqqqpTh6Ob5+v7+zDPMM8wzzDM="},{"a":31000,"b":"gLOAs4CzgLPMP/w/zD/8P/4y/vL+Mv7yqrOMsICzgLOqMs4y/jL+8g=="},{"a":31048,"b":"/jL+8so66qo="},{"a":31079,"b":"+qozAAAAM8wzqpCDj4yMgI0BFVBDT09PTFUA//////88qj8MAMwzzDNBPH19w9fXKA=="},{"a":31136,"b":"VVUA////AACqVQAAVf//VaoA//8AVVUAVX0UfX19VVU="},{"a":31200,"b":"PH7/////fjw="},{"a":31216,"b":"//////9/DwCAwMDh4+fn7wAAcPz+/v//"},{"a":31272,"b":"AAAOP39///8BAwOHx+fn9w=="},{"a":31304,"b":"+Pj8/Pz+/v6AwMDg4PDw+ADw/v//////"},{"a":31344,"b":"AAAAfv////8="},{"a":31368,"b":"//////////8="},{"a":31392,"b":"qqqqqqqqqqoAAAABBx9//wAPf///////"},{"a":31440,"b":"v6/r+v4/zzP/zP//v6/r+q6uvfm5+e7+"},{"a":31472,"b":"TE1RURTF8vw="},{"a":31504,"b":"VVX//1UAVaqcT09PT09PnA=="},{"a":31656,"b":"Sxtvr6+/v/88fn5+fn5+PFVVfX19fVVV"},{"a":31696,"b":"lZXl5fnpvv4="},{"a":31728,"b":"//////////8GGiVjbJ2ekg=="},{"a":31752,"b":"/8z/Pvv47Cz+67xAAww/Myo2MTBwQERF"},{"a":31800,"b":"/8z/M//P/z8="},{"a":31848,"b":"kOToqKm6urqpnFBREQENDPr6++/szPAz"},{"a":31896,"b":"maWVZZVVlVU="},{"a":31912,"b":"v++9/vn22eY="},{"a":31928,"b":"v+v+P//P/zP/Pw+Po2NraPv6+v7+/v7+Y5ycjJHM0ZH//PDyycjjI//M/zP/zP8zDuu8TwMMPzM="},{"a":32016,"b":"TFxQUREBDQx3V1NR0fH197enr66uvra3BTUxMHBAREXF1d3fX09HRT8PAwDA8Pz///76+urqqqmqqqqvkfH196qqqmp+V0VF/7+vr6urqmo="},{"a":32136,"b":"wPD8/z8PAwDvrO87+8z/MwAAAIDg+P7/wODw+Pz+//8="},{"a":32192,"b":"+tre3p6+uro="},{"a":32224,"b":"VVVVVVVVVVU="},{"a":32312,"b":"/8z/8//8//8="},{"a":32328,"b":"mWZaaptuu6/MM8///DPKqsw//PPKqqqq/DPKqqqqqqrKqqqqqqaZZg=="},{"a":32392,"b":"/DPMqqqqqqrP/8wzqqqqqsw//zPMqqqqzDPP/8wzqqrMM8wzzP//Mw=="},{"a":32440,"b":"DADMM6xqmWbAM6yqqWaZVqxqmmZZVlVVqqqqqplmmWWqqqpWWVZVVqqqmWaZZplm"},{"a":32496,"b":"qqpZZllmWQ=="},{"a":32504,"b":"qlpVVVVVVQ=="},{"a":32512,"b":"qlVVVVVVVQ=="},{"a":32520,"b":"Hh4eHh4eHh6qZplmmWaZZswzzDOsqqlVlZXl5fn5/v6Zpunm+fr+/r7vu//v/7//qqqrrquuu68="},{"a":32584,"b":"lZWlpamtuq4="},{"a":32600,"b":"jLOso6irqqr+8sr66iqqqg=="},{"a":32632,"b":"QLCsY6hrmmY="},{"a":32648,"b":"mWaZZllmWWZZVllWVVZVVppmmmaaappqqmqqaqqqqqqZZplmmWaZ"},{"a":32688,"b":"qaWlqamqqqo="},{"a":32704,"b":"zDPMM88/zD8="},{"a":32728,"b":"AAAxPx8eCQlg4ODgYDifnB8+fnEAAAAA0GBg4HAwAAAAAAAAAAAAAA=="}],"colour":"DQ0NDQ0PDAcMBwwHDAcMBwwNDQ0NDQ0NDQkNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0JDA0NBwcNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0HBw0NBwcNDQcHDQ0HBw0NDAwNDQcHDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NBwcNDQcHDQ0HBw0NBwcNDQwMDQ0NDQ0NDQ0BAQENDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQkMDw0NDQ0NDQEBAQEBAQEBAQEBDQ0NDQ0NDQ0NDQ0JDA0NDQ0NDQ0MDA8NDQ0NDQEBAQEBAQEBAQEBAQENDQ0NBwcNDQ0NDAwNDQ0NBwcNDAwPDQ0NAQEBAQEBAQEBAQEBAQEBAQENDQcHDQ0NCQwMDA0NDQcHDQwMDwEBAQEBAQEBAQEBAQEBAQEBAQEBAQ0NDQ0NDQwMDAwNDQ0NDQ0MDA8BAQEBAQEBAQEBAQkNDQkBAQEBAQEBAQ0NDQkMDw8MDA0NDQ0NDAwPAQEBAQEBAQEBAQEPBQUNAQEBAQEBAQEBDQ0MDA8PDAwNDQ0NDQwMDwkBAQEBCQ0NCQkNDQUNDQ0JCQ0NCQEBAQENDAwPDwwMDQ0NAQEMDA8NAQEBAQ8FBQ0PBQUFBQUFDQ8FBQ0BAQEBCQwPDw8PDAwBAQEBDAwPDQ0NDQ0NDQ0NDQ0NBQUFBQUFBQ0NDQkBAQwMDw8JDw8PDw8PDw8PDw0NDQ0NDQ0NDQ0NDQ0NBQUFBQUPBQUNAQEMDA8PDwwMDAwMDAwMDAwNDQ0NCA4ICQgNDQ0NDQ0NBQ0NDQUNDQ0JDAwPDw8PDAgBAQEBCAwPCA4ICQgIDQgIDwgNDQ0NDQ0PBQUFBQUFDQwMDw8PDwwMAQEBAQwMDwgIDQgICAgICAgNCAgNDQ0NDQ0NBQUFBQUMDA8PDw8MDA0JAQEMDA8ICAgICAgICAgICAgIDQkNDQ0NDQ0NBQUFDAwPDw8PDAwFDQEBDAwPCAgICAgICAgICAgICAgIDQ0NDQ0NDQ0NBQwMDw8PDwwMDQ0NCQwMDwgICAgICAgICAgICAgICAgIDwgNDQ0NDQ0MDA8PDw8MDAUFBQ0MDA8NDQ0NDQ0NDQ0NDQ0NCAgICAgOCAkNDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NCAgICAgICA0IDQkNDQ0NDQUNDQ0NDQ0NDQ0NDQ0NDg4NCA0ICAgICAgICAgICAgICAgIDQ0NDQ0NDQ0NDQ0NDQ0NDg4NDQ0OCAgICAgICAgICAgICAgICAgICAgIDggNDg4NDQ0NDQ0NDQ0ODQ0NDQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},"card":{"vic":[72,147,248,147,92,159,140,169,80,147,128,147,176,147,208,137,0,20,0,0,0,255,200,115,31,245,241,128,127,15,255,255,240,240,244,252,243,243,251,240,240,252,252,252,252,252,241],"cia2":[198,63],"writes":[[43,6,53265,22],[44,6,53265,23],[45,6,53265,16],[46,6,53265,17],[47,6,53265,18],[48,6,53265,19],[49,6,53265,20],[73,32,53260,174],[74,22,53258,126],[75,12,53256,78],[76,2,53254,138],[77,35,53252,90],[125,43,53270,216],[126,48,53282,245],[189,33,53281,252],[189,41,53282,244],[199,3,53281,251],[207,62,53281,240],[208,9,53270,200]],"ram":[{"a":16896,"b":"AAAAAAAAAAAAAAAAAAAAADwAAP8AAf+AAZOAA5PAA//AA//AAcOAAbmAAP8AADwAAAAAAAAAAAAAAAAAAAAA"},{"a":17344,"b":"qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"},{"a":17408,"b":"////////////////////////////////////////////////////////////R0hLTAgJHh9lGf9pGP8U/yhlGS4uYWIuCAkwNhAV/////////////0lKTU4KCyAhjxv/ahr/Bf8pjxsvL2NkLwoLMzcSF/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8wMTIICWFiIiNlGTAxMv//Hh84OQYG////////////////////////MzQ1CgtjZCQljxszNDX//yAhOjsHB//////////////////////////////////////////////////////////////////u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7t7f4OHi4+Tl5ufo6err7O3u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7/////////////////////7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u5ufo6err7O3e3+Dh4uPk5e7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7v/////////////////////u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7v8PHy7/Dx8u/w8fLv8PHy7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u8/T19vP09fbz9PX28/T19u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7vf4+fr3+Pn69/j5+vf4+fru7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u77/Pv8+/z7/Pv8+/z7/Pv87u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u/f79/v3+/f79/v3+/f79/u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u/////////////0dIS0wICUtMT1BHSP8U/0dICAkQFf////////////////////////9JSk1OCgtNTlFSSUr/Bf9JSgoLEhf//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w=="},{"a":18424,"b":"Dw/Z2dra2Ag="},{"a":30208,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAPcAA9vAA+/AD72wDfbwC+vgP5tsPm28Obb4Ouvs71pvvmm++ab75par71pv"},{"a":30272,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAqqqqVVVVVVVVqqqq////qqqq////PAA8DAAwAAAAAAAAAAAAAAAAAAAA"},{"a":30336,"b":"APcAA9vAA+/AD72wDfbwC+vgP5tsPm28Obb4Ouvs71pvvmm++ab75par71pvvmm++abr5par71pvvmm++abr"},{"a":30760,"b":"AAA4fHw4AAB8/v7+/nx8ODgQOHx8OAAAAAAPP3hw8PAAANz+fj4+PvD4f38/DwAAPHz8/PzYAAA="},{"a":30848,"b":"AAAPP3hw8PA="},{"a":30864,"b":"+Px/fz8PAAA="},{"a":30880,"b":"AAAAADh8fDgcPj7+/jw8PA=="},{"a":30904,"b":"PPz8/NyYAADA4ODg4ODg4AAA4Pj8fHjgwMDAwMCAgIAMPv78/PAAAA=="},{"a":30960,"b":"AAAHHz58fHwAAPb+GAwODn4/Pw8HDg4HHvz88OBwcOBw+Pj5+39+fAAA4Pj8/n4+fHh4ODAwAAA+Pj4+PhwAAA=="},{"a":31040,"b":"Dh8fDgAOHx8fHx9///7+fA=="},{"a":31088,"b":"PH5+fn5+fjw8PDwYGBgAAAAAeP3///78AADx+////vwAAPD4+Pz8/Px4eHgwMAAAfH5+fn48AAB+fn5+fjwAAAAAePz8/n5+Pj4+Pj4cAAAAAA8/fnz8/AAA4PgcDA4O/P5/fz8PAAAOHvz8+OAAAA=="},{"a":31288,"b":"AAAPP39/fz8AAODwgACA4B8HAwf/fwAA+Pz8/PjgAAAHDw9//38PB8Dg4Pz+/ODABwcHAwMDAADAwMCAgIAAAAAAGDhwcPD4AAAwOBwcHj74/H9/Pw8AAD5+/Pz44AAA"},{"a":31496,"b":"AABw+Pz8fn8AAAwODhwcOD8fDwNn//98+PDw4MCAAAAAAA8/eHDw8Q=="},{"a":31560,"b":"AQMHDw8DAwMDAwEBAQEBAQ=="},{"a":31864,"b":"//x/fz8PAAA="},{"a":32496,"b":"AAAAAIK3+jAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAxe/00AAAAAAIDYkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEIAAAAAAGD278ZAAAPn///348HHz+////fh8Dw+fv///fDAADg8///98P//////////wAAAAAAAAAAAAAAAAAAAw8AAAAAADz//wAAAAAAAADA8Pz8/P////8/P///+tXq1f//////f79/wPPz/////////f79+9Xq1apVqlWqVapV71erV6tVqlX/////r1erV/////vuuqu6////u+7rrqqqqpkYQAAzzKpqmRAEwDD8AAAAAAAAAAA="}],"colour":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDAwLCwsLDAwPDwEBAQEPDwwMCwsLCwwMDw8BAQEBDw8MDAsLCwsPDAwLCwsLDAwPDwEBAQEPDwwMCwsLCwwMDw8BAQEBDw8MDAsLCwsMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPDwwMCwsLCwwMDw8BAQEBDw8MDAsLCwsMDA8PAQEBAQAAAAAAAAAPDwwMCwsLCwwMDw8BAQEBDw8MDAsLCwsMDA8PAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICAgICAgICAgICAgICAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAgICAgICAgICAgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgICAgICAgICAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALCwsLCwsLCwsLCwsLCwsLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAgICAgICAgICAgICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8PDAwLCwsLDAwPDwEBAQEPDwwMCwsLCwwMDw8BAQEBAAAAAAAAAA8PDAwLCwsLDAwPDwEBAQEPDwwMCwsLCwwMDw8BAQEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="},"loading":{"vic":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,0,0,0,200,0,21,117,240,255,0,0,255,255,240,240,252,251,243,255,240,243,254,245,242,247,252,252,241],"cia2":[158,63],"writes":[[189,15,19455,0],[189,30,19454,0],[189,45,19453,0],[189,60,19452,0],[190,12,19451,0],[190,27,19450,0],[190,42,19449,0],[190,57,19448,0]],"ram":[{"a":17408,"b":"/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////y44OQgJEBUmMDYeH/8U/yhlGS4uYWIuCAkwNhAV//////////////8vOjsKCxIXJzM3ICH/Bf8pjxsvL2NkLwoLMzcSF///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////vb29vb29vb29vb7//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////zAxMggJHh8mEBH/EBVPUEdIS0z/QEFPUDg5S0wICf8U/2kYi4z///8zNDUKCyAhJxIT/xIXUVJJSk1O/0JDUVI6O01OCgv/Bf9qGo2O////////////////////////////////////////////////////////////////////////////////////////////////////////////////////R0hLTAgJREb/QEFPUDg5S0wICf8U/2kYaRhvcP///////////////0lKTU4KC0X//0JDUVI6O01OCgv/Bf9qGmoacXL//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////w=="},{"a":20520,"b":"AAA4fHw4AAA="},{"a":20544,"b":"AAAPP3hw8PAAANz+fj4+PvD4f38/DwAAPHz8/PzYAAA="},{"a":20608,"b":"AAAPP3hw8PAAAOD4PBgAAPj8f38/DwAAHH7+/PzwAAAAAAAAOHx8OBw+Pv7+PDw8"},{"a":20664,"b":"PPz8/NyYAADA4ODg4ODg4AAA4Pj8fHjgwMDAwMCAgIAMPv78/PAAAA=="},{"a":20720,"b":"AAAHHz58fHwAAPb+GAwODn4/Pw8HDg4HHvz88OBwcOA="},{"a":20784,"b":"PH5+PAA8fn5+fjw8PBgAAA4fHw4ADh8fHx8ff//+/nw="},{"a":20848,"b":"PH5+fn5+fjw8PDwYGBgAAAAAeP3///78AADx+////vwAAPD4+Pz8/Px4eHgwMAAAfH5+fn48AAB+fn5+fjwAAAAAePz8/n5+Pj4+Pj4cAAAAAA8/fnz8/AAA4PgcDA4O/P5/fz8PAAAOHvz8+OAAAA=="},{"a":20992,"b":"AAAHHz8/fHgAAI7f//8/H3g4PB8HAAAAHh4+/p4cDAwAAB4/Pz8/Px4eHh4MDAAAAAB4/Pz8eAAAAA8/f39/PwAA4PCAAIDgHwcDB/9/AAD4/Pz8+OAAAAcPD3//fw8HwODg/P784MAHBwcDAwMAAMDAwICAgAAAAAAYOHBw8PgAADA4HBwePvj8f38/DwAAPn78/PjgAAA="},{"a":21256,"b":"AABw+Pz8fn8AAAwODhwcOD8fDwNn//98+PDw4MCAAAAAAA8/eHDw8Q=="},{"a":21320,"b":"AQMHDw8DAwMDAwEBAQEBAQ=="},{"a":21368,"b":"Bx8+PhwAAQDgOBgcHHz48AAAYHg/Px8HfH5+/vz8+OA="},{"a":21592,"b":"Bx8+fHj4+PjA8BgMDAYGBvj8/n9/Px8HBg4e/Pz48MD//H9/Pw8AAA=="},{"a":21992,"b":"/8Hj938+HP//weP3fz4c/w=="},{"a":22520,"b":"AAAAAAAAAAA="},{"a":32767,"b":"FA=="}],"colour":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ4ODg4ODg4ODg4ODg4ODg4ODg4ODgEBAQEBAQEBAQEBAQEBAQEBAQEODg4ODg4ODg4ODg4ODg4ODg4ODg4BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAwMDAwMDAwMDAwMBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAQEBAQEBAQEKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHAQEBAQEBAQEHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEPCAcADwQPBA8FDwMOAAsECwIPAAcFDA=="}},"font":"AGxsEMZ8AAAAbGwQxnwAAABsbBDGfAAAAGxsEMZ8AAAAADh8fDw4cAAAOHx8OAAAfP7+/v58fDg4EDh8fDgAAAAADz94cPDwAADc/n4+Pj7w+H9/Pw8AADx8/Pz82AAAcPj5//54eHgAAOD4PBweHnh+f393MwAAPn78/PjgAAAAAA8/eHDw8AAA4Pg8GAAA+Px/fz8PAAAcfv78/PAAAAAAAAA4fHw4HD4+/v48PDz8/v784ADg8Dz8/PzcmAAAwODg4ODg4OAAAOD4/Hx44MDAwMDAgICADD7+/PzwAAABH3//fx4PHx8fHx4eDgwMAAAHHz58fHwAAPb+GAwODn4/Pw8HDg4HHvz88OBwcOBw+Pj5+39+fAAA4Pj8/n4+fHh4ODAwAAA+Pj4+PhwAADx+fjwAPH5+fn48PDwYAAAOHx8OAA4fHx8fH3///v58PH5+fn5/fz8AAAA4fPjgwD89PRgYGAAA4PD8/n4cAAA8fn5+fn5+PDw8PBgYGAAAAAB4/f///vwAAPH7///+/AAA8Pj4/Pz8/Hh4eDAwAAB8fn5+fjwAAH5+fn5+PAAAAAB4/Pz+fn4+Pj4+PhwAAAAADz9+fPz8AADg+BwMDg78/n9/Pw8AAA4e/Pz44AAAAABx+////PgAAOD4/Pw+Hnh4fH95ODAwHhw8+OAAAAAAAAcfPz98eAAAjt///z8feDg8HwcAAAAeHj7+nhwMDAAAHj8/Pz8/Hh4eHgwMAAAAAHj8/Px4AAAADz9/f38/AADg8IAAgOAfBwMH/38AAPj8/Pz44AAABw8Pf/9/DwfA4OD8/vzgwAcHBwMDAwAAwMDAgICAAAAAABg4cHDw+AAAMDgcHB4++Px/fz8PAAA+fvz8+OAAAAAAcPj4+Px8AAAMDg4cHDh+Pz8fDwMAAHjw8ODAgAAAfn8/Px8OAAA/P//fjwcAABy4+PDggAAAAAB4/Pz8/H4AADx+fn5+PwAADA4ODhwcAAB4/v9/HwcAAAwePPDg8A89ePDwYAAA+Pz8/n48AAAAAHD4/Px+fwAADA4OHBw4Px8PA2f//3z48PDgwIAAAAAADz94cPDx4AAAAAAAAADwwYAAAID////DAQEBA///AQMHDw8DAwMDAwEBAQEBAQcfPj4cAAAD4PgcDg4e/PgPHz8/f39/P+CAADz+/v78Bx8+PhwAAQDgOBgcHHz48AAAYHg/Px8HfH5+/vz8+OAAAAMPHj48fHj8/Pz8/Hx4ePz///9/AAB4ePz+/vxwMD9/f3z4/H8H+Pz8eAAA4PgBAAAA4X8/B/z8/v7+/PjgAQcOHjw8f3yAAAAAAADgePj4+Px/fz8PPD4+fvz8+OAeP39///9wABz+/v7+/Pz4AAEBAQEDAwH48PDg4MDAgAcfPz9+fz8/wPD4OByY8Pgfd+HgcX8/D/z8/v78/PjgDz9/f/z4+Hjg+Pz8fj4+PjwPAAAAAAEDfPx4ePDgwAAHHz58ePj4+MDwGAwMBgYG+Pz+f38/HwcGDh78/PjwwP/8f38/DwAA/4UROTEBif8/JwMZORFD//+HEz85EYP/+cmBMTkRhf//hzMHPxmD/8MBn4efDw+f/4kzOZnDk8c/JwMROTl5/+fn/+fn5+f/5+f/5+fnxw8/IycPJyEx/8+Hh4eHz8/P/5MBASk5Of//IwEROTk5//+DOTk5AYP//yMBOTkZIz//iQE5OTGJ+f+TAQETPz///4Mfg/GBA//PA4fPz8/P//+TOTkRAYP//zk5GZODx///OTkpAQGT//85E8fDkTn//zk5GYPjxx//g/HjjwGB////////z8+f///////Pz//Pz8/P/8/P/////3fdVVVW///dd1VVmWb/d91VVWaZqt13VVWZZqqI3VVVZpmqIojdVZlmqogiAFVmmaoiiAAAmWaqiCIAADOZqiKIAADMM6qIIgAAM8z/IogAAMwz//8iAAAzzP///wAAzDP/////ADPM///////MM////////8z//////////8Hj938+HP//gICAAAAA//8AAAAAAAD/AAAJAAD1AA+sADpwAOlgA6sADqkADqWAOuwAOquIOq1G6r912r+m1q6r5aqvNVqvOVVrDlVVA+VVAD/lAAA/AGwAAIAACAAABgAgBQAYNQAW5gAV+iDX+hub6hWqq9bqr5v6r6v6r6rrq+qv6uqrlaqVVVVb9VVqrVXq6/+uugACAQMBgX4Bbaq9Wvpprq6ruq6v6q+r6vqq6qr66q/+uvX+r1f+lVf6VVyVVVxVVXBVVbBVVsBVb7Bb/qz/+usAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgciAAAAAAYPb/9mAAA8fv//fz4ff/////9/HwDA5+///98PAACAzP7+3wwAAAAACNzpwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAwkAAAAAMHr/NgAAAAAAAGBAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////////wAAAAAAABDoAAAAAAADAg4IOy7usYHPAwAAAMCAsGBstv39/7+/bm4LuGxgsIDAAwwzDDPMM8wz29r2NvU9zTNb2db2dZ1p2gADzEO8k25qzzv6Le+zjvvP8/+5brPMM6russ8wBEAQqrvvMADAHEAUUVVRBMH8/1EUVVRFEM8zAAAAAAAAAAA=","map":"CAkKCwwNDg8QERITEBUSF2UZjxscFh1mHh8gISIjJCUm/yf/KP8p/yorLC0u/y//MDEzNDA2Mzc4OTo7PD0+P0BBQkNERkX/R0hJSktMTU5PUFFSU1RVVlpbV1hdXl9gYWJjZGVmZ2iLjI2OaRhqGmtsbW5vcHFyc3R1dnd4eXp7fH1+f4CBgoOEhYaHiImKBv8H////Bf///wT/AAECAxT/Bf8y/zX/XP9Z///////N7BvwWKIBIFQ/ogIgVD8gv+WgA7GOqqAHsY6gA5GOiqAHkY4g17egAIzzNrGOyf/Q4KzsG4xgHSCV5SCzu6zsG7nTt43uOrnVt43EOGBgzmCgGA==","punct":[33,46,44,63,58],"wide":[0,0,0,1,0]};
+// MIMS core: the screens fragment's pure functions (no DOM), shared by the page and the node tests.
+const MIMS = (function () {
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+  // Memory as the recorded frame began (64 KB, the trimmed regions filled in).
+  function memOf(F) {
+    const m = new Uint8Array(0x10000);
+    for (const r of F.ram) m.set(b64(r.b), r.a);
+    return m;
+  }
+
+  // The start of every character set the frame's text modes read: from $D018 and CIA 2's port A
+  // as the frame begins and at every write to them. The ROM's window in banks 0 and 2 is left out.
+  function charBases(F) {
+    let d018 = F.vic[0x18], pra = F.cia2[0], ddra = F.cia2[1];
+    const out = new Set();
+    const add = () => {
+      const bank = 3 - ((pra | ~ddra) & 3), cb = (d018 >> 1) & 7;
+      if ((bank & 1) === 0 && (cb === 2 || cb === 3)) return;
+      out.add(bank * 0x4000 + cb * 0x800);
+    };
+    add();
+    for (const w of F.writes) {
+      if (w[2] === 0xD018) d018 = w[3];
+      else if (w[2] === 0xDD00) pra = w[3];
+      else if (w[2] === 0xDD02) ddra = w[3];
+      else continue;
+      add();
+    }
+    return [...out].sort((a, b) => a - b);
+  }
+
+  // A copy of the frame, changed before it is drawn. o.sprites: a mask ANDed into $D015 as the frame
+  // begins and into every write to it (0 = no sprites). o.chars === false: every byte of the
+  // character sets the frame shows set to 0, so each cell shows only its background colour.
+  function variant(F, o) {
+    o = o || {};
+    const mem = memOf(F), vic = F.vic.slice();
+    let writes = F.writes;
+    const m = o.sprites === undefined ? 0xFF : o.sprites & 0xFF;
+    if (m !== 0xFF) {
+      vic[0x15] &= m;
+      writes = writes.map(w => w[2] === 0xD015 ? [w[0], w[1], w[2], w[3] & m] : w);
+    }
+    if (o.chars === false) for (const a of charBases(F)) mem.fill(0, a, a + 0x800);
+    return { vic, cia2: F.cia2, writes, mem, colour: F.colour };
+  }
+
+  // The engine's big-font printer $B817, ported: the cells it stores for a string of ASCII bytes,
+  // in the order it stores them, as [column, row, character code], the column counted from the
+  // print position; and the column it ends on. map is the glyph map from $B6D5 (259 bytes, since
+  // X wraps at 256 and the reads go to $B6D8 + X), punct the five marks at $B80D and wide their widths at $B812.
+  function printBig(bytes, map, punct, wide) {
+    const cells = [];
+    let col = 0;
+    const put = g => {                                   // $B8AB-$B8CA: four cells, (g - 1) * 4
+      const x = ((g - 1) * 4) & 0xFF;
+      cells.push([col, 0, map[x]], [col + 1, 0, map[x + 1]],
+                 [col, 1, map[x + 2]], [col + 1, 1, map[x + 3]]);
+    };
+    for (const ch of bytes) {
+      if (ch === 0xFF) break;                            // $B839: the end
+      if (ch === 0x20) { col += 1; continue; }           // $B840: a space moves one column
+      let g, w = 2, third = 0;
+      let p = -1;
+      for (let y = 4; y >= 0; y--) if (punct[y] === ch) { p = y; break; }   // $B84C
+      if (p >= 0) { g = p + 0x25; w = wide[p] ? 2 : 1; }
+      else if (ch === 0x40) g = 0x32;                    // '@'
+      else if (ch === 0x3C) g = 0x31;                    // '<'
+      else if (ch < 0x41) g = (ch + 0x2B) & 0xFF;        // digits and the rest below 'A'
+      else {
+        g = ch;                                          // 'A' is glyph $41: ($40 * 4) & $FF = 0
+        if (ch === 0x4D) third = 0x2A;                   // M and W take a third column
+        else if (ch === 0x57) third = 0x2B;
+        else if (ch === 0x4A || ch === 0x4C || ch === 0x49) w = 1;   // J, L and I are narrow
+      }
+      put(g); col += w;
+      if (third) { put(third); col += 1; }
+    }
+    return { cells, end: col };
+  }
+
+  // Text the reader types, as the bytes $B817 takes: capitals; anything outside $20-$5F dropped.
+  function toBytes(text) {
+    const out = [];
+    for (const c of String(text).toUpperCase()) {
+      const k = c.charCodeAt(0);
+      if (k >= 0x20 && k <= 0x5F) out.push(k);
+    }
+    return out;
+  }
+
+  return { b64, memOf, charBases, variant, printBig, toBytes };
+})();
+// <mims-widgets> the DOM half of the screens fragment: the screen viewer, the title's sprite
+// groups, the front-end character set and the big-font typewriter. Needs C64 (../../lib/c64.js).
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!$('mims-cv')) return;
+  const D = MIMS_DATA, hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+  // text helpers: {$1234} an engine address, {j$1234} one of Jellyland's, [x] code without a link
+  const A = (part, a) => `<code><a href="source-${part}.html#${a}">$${a}</a></code>`;
+  const fmt = s => s.replace(/\{(j?)\$([0-9A-F]{4})\}/g, (m, j, a) => A(j ? 'jellyland' : 'engine', a))
+                    .replace(/\[([^\]]+)\]/g, '<code>$1</code>');
+  const note = el => el.insertAdjacentHTML('afterend', '<p class="mims-note">This picture is drawn by the site\'s shared script, which the built site serves.</p>');
+
+  const SCREENS = {
+    play: {
+      name: 'Play (Jellyland, sad)',
+      sum: [
+        ['Characters', 'Jellyland\'s sad character set at [$7800], in the land\'s file. Screen [$4800] in this frame ([$D018] = [$2F]); the next frame draws on [$4400], the other of the pair. Multicolour, 38 columns; each cell\'s colour comes from the land\'s table [$8900].'],
+        ['Sprites', 'All eight, reused down the screen: the objects in three bands of five on sprites 0-4 ({$C0DC}, {$C01C}, {$C07C}) and Mayhem on 6 and 7 ({$E426}); below the playfield, sprites 0-5 again for the panel\'s words and numbers ({$349C}).'],
+        ['Splits', 'Ten raster handlers, each setting the next one\'s line and address in the vector [$FFFE] ({$2077}).']],
+      bands: [
+        [0, '20F8', 'Band 1 of the objects (none in this frame), the playfield\'s two shared multicolours, and Mayhem\'s two sprites. Sets {$213D} for line 47. Its writes run on to line 8, above the picture.'],
+        [47, '213D', 'Nothing visible: sets line 48 and waits in the NOP slide {$B17A}, so that the next interrupt starts on an exact cycle.'],
+        [48, '2162', 'The fine scroll in [$D016]; on line 50, [$12] and then [$1B] to [$D011], five cycles apart: the screen starts late by the coarse scroll, so every row is shifted sideways without a character moving (VSP). Then [$D018] picks the screen.'],
+        [82, '21EE', 'Band 2 of the objects ({$C01C}, chosen by the land\'s [$90B0]): three sprites here, their pointers, positions, colours and expansion.'],
+        [114, '2210', 'No sprites: Jellyland gives this band none, and its call goes to {$C0DB}, an RTS.'],
+        [146, '2222', 'Band 3 of the objects ({$C07C}): one sprite here. Also reads RUN/STOP for the pause.'],
+        [178, '229C', 'No sprites ({$C0DB}); the panel\'s colours ({$F07E}).'],
+        [210, '22BA', 'The six panel sprites move to the bottom, on lines 220-225: pointers, positions and colours ({$349C}).'],
+        [238, '18C1', 'On line 242, extended colour mode on top of multicolour: the chip shows that mode as black, which hides the characters under the panel. Then sprites 3 and 4 move, sprite 2 takes another image, Mayhem\'s two sprites the blank image [$0F], and the shared colours go black.'],
+        [250, '22E9', 'Nothing visible: animates the land\'s characters and starts the chain again at {$20F8}.']],
+      cap: 'One frame of Jellyland, recorded in the emulator with every write to the video chip, its bank and the sprite pointers, and memory as the frame began; drawn here by the site\'s renderer. It matches the emulator\'s picture of the same frame in all 104,448 pixels.'
+    },
+    title: {
+      name: 'Title screen',
+      sum: [
+        ['Characters', 'Jellyland\'s happy character set, swapped into [$7800] ({$B78A}); screen [$4800]; multicolour, 38 columns. The happy map scrolls right a pixel a frame through the play-time scroller ({$23EE}) and the same VSP split as play.'],
+        ['Sprites', 'No multiplexer: the band routines start with an RTS here. The title\'s own handlers place five groups: the MAYHEM logo, "in", MONSTERLAND, the top score and the copyright line. Each but the logo has a black copy of itself a few pixels down and right.'],
+        ['Splits', 'Twelve handlers: the play chain\'s first three and last one, with the title\'s eight between them.']],
+      bands: [
+        [0, '20F8', 'The playfield\'s multicolours and background. Its object band does nothing on the title.'],
+        [47, '213D', 'Nothing visible: lines up the next interrupt to the cycle.'],
+        [48, '2162', 'The fine scroll and the VSP writes on line 50, as in play; its next link is the title\'s ({j$A643}).'],
+        [50, 'jA643', 'Nothing visible: plays the music until the map starts scrolling.'],
+        [112, 'jA65C', 'Sprites 0 and 1, both image [$DB]: "in" in white and its shadow in black.'],
+        [144, 'jA69C', 'All eight sprites, images [$DC]-[$DF] twice, doubled in width: MONSTERLAND and its shadow.'],
+        [157, 'jA6E7', 'Ten colour changes on sprites 0-3, a few lines apart ({$B278}): the stripes across MONSTERLAND. Then the top-score line\'s eight sprites, images [$93], 0, 1 and 2, twice.'],
+        [200, 'j935A', 'On line 202, moves sprites 1-3 and 5-7 to the left and recolours 1-3: from here down the same three sprites show the digits under the words.'],
+        [212, 'j9398', 'Six sprites, images [$D0]-[$D2] twice: the copyright line ({$BF9D}). Sprites 6 and 7 off.'],
+        [240, 'B1AD', 'On line 241, extended colour mode: black below the map. Then the logo\'s eight sprites, images [$D3]-[$DA], for the top of the next frame: multicolour, doubled in height, colours rotated each frame ({$B43D}).'],
+        [250, '22E9', 'Nothing visible: animates characters, back to {$20F8}.']],
+      cap: 'One frame of the title, recorded and drawn as the play frame is. 11 of its 104,448 pixels differ from the emulator\'s picture, all on line 202, where {j$935A} moves six sprites sideways while the beam is drawing them.'
+    },
+    card: {
+      name: 'Stage card',
+      sum: [
+        ['Characters', 'The front-end set, swapped into [$7800] (page swap 0, {$3B71}); screen [$4400] ([$D018] = [$1F]). The text is the big font in plain hires; the strip under the scene is multicolour, its characters [$DE]-[$FE] scrolled sideways inside themselves ({$E157}, {$E213}).'],
+        ['Sprites', 'Eight, each used once: the scenery and the face, sad or happy. Their images are swapped in from the land\'s file ({$ED98}); positions, images and colours come from its table at [$910B]. Sprites 2-6 drift left two pixels a frame ({$3DA5}).'],
+        ['Splits', 'Five handlers, reached through the vector at [$0314] ({$1868}). Each sets its next line from the card\'s position [$136F], so the whole card moves when that changes.']],
+      bands: [
+        [0, '3DA5', 'Background black, multicolour off, screen [$4400]; moves the card ({$ED65}) and the drifting sprites, and sets the sprites\' shared colours.'],
+        [41, 'F1AC', 'On lines 43-49 rewrites [$D011]\'s vertical scroll on every line ({$136E}), so no character row can start: the card begins [$136F] lines lower, 7 in this frame. Then the eight sprites ({$E157}).'],
+        [124, 'F1DA', 'Multicolour on, and the strip\'s shared colours from the land ([$90F7]-[$90FB]). Scrolls three strips of characters ({$E213}).'],
+        [187, 'F214', 'On line 189 the background turns light grey and [$D022] purple, on line 199 dark grey: the ground\'s bands.'],
+        [207, 'F241', 'Background black and multicolour off, for the STATUS line.']],
+      cap: 'One frame of the stage card, recorded as the others. The recording keeps memory as the frame began, and two of the card\'s handlers scroll characters on screen before the beam reaches them; drawn from that memory, 860 pixels differ from the emulator\'s picture. With the two scrolls applied as {$E157} and {$E213} do them, none do, and that version is the one drawn here.'
+    },
+    loading: {
+      name: 'Loading screen',
+      sum: [
+        ['Characters', 'The front-end set again, at [$5000] this time ([$D018] = [$15], {$CBE4}), because the new land loads over [$7800]. Screen [$4400], hires, each row\'s colour from colour memory. The bar is characters [$BD] and [$BE], filled a pixel column per disk block ({$CDDB}).'],
+        ['Sprites', 'None ([$D015] = 0).'],
+        ['Splits', 'None: the loader turns the raster interrupt off ({$CBD2}) and the screen stays as it is set up.']],
+      bands: [],
+      cap: 'One frame of the loading screen, recorded as the others. It matches the emulator\'s picture in all 104,448 pixels.'
+    }
+  };
+  const ORDER = ['play', 'title', 'card', 'loading'];
+
+  // draw colour indices px (w x h) into a canvas, s pixels a pixel; keep(i) false dims a pixel
+  const RGB = C64 => C64.PAL.map(h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+  function paint(cv, r, s, keep) {
+    const rgb = RGB(C64), ctx = C64.canvas(cv, r.w * s, r.h * s), img = ctx.createImageData(r.w * s, r.h * s);
+    for (let y = 0; y < r.h * s; y++) for (let x = 0; x < r.w * s; x++) {
+      const i = (y / s | 0) * r.w + (x / s | 0), c = rgb[r.px[i]], o = (y * r.w * s + x) * 4;
+      const k = !keep || keep(i) ? 1 : 0.3;
+      img.data[o] = c[0] * k; img.data[o + 1] = c[1] * k; img.data[o + 2] = c[2] * k; img.data[o + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    return ctx;
+  }
+  const cache = {};
+  const render = (key, o) => {
+    const id = key + JSON.stringify(o || {});
+    return cache[id] || (cache[id] = C64.renderFrame(MIMS.variant(D.frames[key], o)));
+  };
+
+  // the screen viewer
+  (function () {
+    const cv = $('mims-cv'), sel = $('mims-scr');
+    if (typeof C64 === 'undefined') { note(cv); return; }
+    const S = { key: 'play', layer: 'all', mask: 0xFF, marks: false, band: -1 };
+    ORDER.forEach(k => sel.add(new Option(SCREENS[k].name, k)));
+    const boxes = $('mims-sprs');
+    boxes.insertAdjacentHTML('beforeend', [0, 1, 2, 3, 4, 5, 6, 7].map(n =>
+      `<label><input type="checkbox" data-mims-spr="${n}" checked> ${n}</label>`).join(''));
+    function draw() {
+      const sc = SCREENS[S.key];
+      const o = S.layer === 'chars' ? { sprites: 0 } : S.layer === 'sprites' ? { chars: false, sprites: S.mask } : { sprites: S.mask };
+      const r = render(S.key, o);
+      let keep = null;
+      if (S.band >= 0) {
+        const lo = sc.bands[S.band][0], hi = S.band + 1 < sc.bands.length ? sc.bands[S.band + 1][0] : 312;
+        keep = i => { const l = 16 + (i / r.w | 0); return l >= lo && l < hi; };
+      }
+      const ctx = paint(cv, r, 2, keep);
+      if (S.marks || S.band >= 0) {
+        ctx.font = '600 15px ui-monospace, Menlo, monospace'; ctx.textBaseline = 'middle';
+        let lastY = -99, right = cv.width - 4;
+        sc.bands.forEach((b, n) => {
+          if (S.band >= 0 && n !== S.band) return;
+          const y = Math.max(0, b[0] - 16) * 2;
+          ctx.fillStyle = '#ff3d8b'; ctx.fillRect(0, y, cv.width, 2);
+          const label = `${b[0]}  $${b[1].replace('j', '')}`, w = ctx.measureText(label).width + 10;
+          const ty = Math.min(Math.max(y, 10), cv.height - 10);
+          right = ty - lastY < 22 ? right - 6 : cv.width - 4;     // labels of close lines side by side
+          ctx.fillStyle = 'rgba(0,0,0,.75)'; ctx.fillRect(right - w, ty - 10, w, 20);
+          ctx.fillStyle = '#ff9cc4'; ctx.fillText(label, right - w + 5, ty);
+          right -= w; lastY = ty;
+        });
+      }
+      // how much each layer contributes, from the drawings with and without
+      const all = render(S.key, {}).px, noSpr = render(S.key, { sprites: 0 }).px, bare = render(S.key, { sprites: 0, chars: false }).px;
+      let sp = 0, ch = 0;
+      for (let i = 0; i < all.length; i++) { if (all[i] !== noSpr[i]) sp++; if (noSpr[i] !== bare[i]) ch++; }
+      const what = S.layer === 'chars' ? 'Drawn with [$D015] set to 0 throughout the frame: no sprites.'
+        : S.layer === 'sprites' ? 'Drawn with every byte of the character set set to 0, so each cell shows only its background colour.'
+        : 'The whole frame.';
+      $('mims-out').innerHTML = fmt(`${what} The sprites set ${sp.toLocaleString('en')} of the frame's 104,448 pixels, the characters ${ch.toLocaleString('en')}.`) +
+        (S.mask !== 0xFF && S.layer !== 'chars' ? fmt(' Sprites switched off here are masked out of [$D015] before drawing.') : '');
+      boxes.querySelectorAll('input').forEach(b => { b.disabled = S.layer === 'chars'; });
+    }
+    function table() {
+      const sc = SCREENS[S.key];
+      $('mims-sum').innerHTML = sc.sum.map(r => `<tr><th>${r[0]}</th><td>${fmt(r[1])}</td></tr>`).join('');
+      $('mims-bands').innerHTML = sc.bands.length
+        ? '<tr><th>Line</th><th>Handler</th><th>What it changes</th></tr>' + sc.bands.map((b, n) =>
+          `<tr data-mims-band="${n}"${n === S.band ? ' class="mims-cur"' : ''}><td class="mims-n">${b[0]} (${hex(b[0])})</td><td class="mims-n">${fmt('{' + (b[1][0] === 'j' ? 'j$' + b[1].slice(1) : '$' + b[1]) + '}')}</td><td>${fmt(b[2])}</td></tr>`).join('')
+        : '';
+      $('mims-cap').innerHTML = fmt(sc.cap) + (sc.bands.length ? ' Click a handler\'s row to see the lines it is in force for.' : '');
+      $('mims-marks').disabled = !sc.bands.length;
+    }
+    const go = k => { S.key = k; S.band = -1; sel.value = k; table(); draw(); };
+    sel.addEventListener('change', () => go(sel.value));
+    sel.parentNode.querySelectorAll('.step').forEach(b => b.addEventListener('click', () => {
+      const i = (ORDER.indexOf(S.key) + Number(b.dataset.d) + ORDER.length) % ORDER.length; go(ORDER[i]);
+    }));
+    document.querySelectorAll('[data-mims-layer]').forEach(b => b.addEventListener('click', () => {
+      S.layer = b.dataset.mimsLayer;
+      document.querySelectorAll('[data-mims-layer]').forEach(x => x.classList.toggle('mims-on', x === b));
+      draw();
+    }));
+    $('mims-marks').addEventListener('change', e => { S.marks = e.target.checked; draw(); });
+    boxes.addEventListener('change', e => {
+      const n = Number(e.target.dataset.mimsSpr);
+      S.mask = e.target.checked ? S.mask | 1 << n : S.mask & ~(1 << n); draw();
+    });
+    $('mims-bands').addEventListener('click', e => {
+      if (e.target.closest('a')) return;
+      const tr = e.target.closest('tr[data-mims-band]'); if (!tr) return;
+      const n = Number(tr.dataset.mimsBand); S.band = S.band === n ? -1 : n; table(); draw();
+    });
+    go('play');
+  })();
+
+  // the title's sprite groups
+  (function () {
+    const cv = $('mims-title'); if (!cv) return;
+    if (typeof C64 === 'undefined') { note(cv); return; }
+    const G = [
+      ['Everything', 0, 0, ''],
+      ['MAYHEM', 60, 110, 'Sprites 0-7, images [$D3]-[$DA] at the top of the bank\'s last kilobyte, placed by {$B1AD} at the bottom of the frame before: multicolour, doubled in height, colours rotated by {$B43D}.'],
+      ['in', 110, 150, 'Sprites 0 and 1, the same image [$DB], white over black three pixels down and right ({j$A65C}).'],
+      ['MONSTERLAND', 150, 186, 'Sprites 0-3, images [$DC]-[$DF] doubled in width, over sprites 4-7 with the same images in black ({j$A69C}); {j$A6E7} changes the colour of 0-3 ten times on the way down.'],
+      ['TOP SCORE', 186, 215, 'Sprite 0 is image [$93], the word TOP; sprites 1-3 are the panel\'s score sprites, images 0-2, with SCORE in their top rows and the digits below. {j$935A} moves them left on line 202, between the two, so the digits sit centred under the words. Sprites 4-7 are the shadow.'],
+      ['© APEX 1993', 215, 250, 'Sprites 0-5, images [$D0]-[$D2] twice, from {$BF9D}.']];
+    const row = $('mims-groups');
+    row.innerHTML = G.map((g, n) => `<button type="button" class="mims-btn${n ? '' : ' mims-on'}" data-mims-g="${n}">${g[0]}</button>`).join('');
+    function draw(n) {
+      const r = render('title', {}), noSpr = render('title', { sprites: 0 }).px, g = G[n];
+      paint(cv, r, 2, n ? i => { const l = 16 + (i / r.w | 0); return l >= g[1] && l < g[2] && r.px[i] !== noSpr[i]; } : null);
+      $('mims-gout').innerHTML = n ? fmt(g[3]) : 'Pick a group to see only its sprites\' pixels.';
+      row.querySelectorAll('button').forEach(b => b.classList.toggle('mims-on', Number(b.dataset.mimsG) === n));
+    }
+    row.addEventListener('click', e => { const b = e.target.closest('button'); if (b) draw(Number(b.dataset.mimsG)); });
+    draw(0);
+  })();
+
+  // the front-end character set and the big font
+  (function () {
+    const sheet = $('mims-sheet'), big = $('mims-big'), inp = $('mims-word');
+    if (!sheet) return;
+    if (typeof C64 === 'undefined') { note(sheet); return; }
+    const font = MIMS.b64(D.font), map = MIMS.b64(D.map), S = 3, P = 8 * S + 3;
+    // what each code is to the big font: letter and corner, from the glyph map
+    const role = {}, corner = ['top left', 'top right', 'bottom left', 'bottom right'];
+    const names = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!.,?:';
+    for (let g = 0; g < names.length; g++) for (let c = 0; c < 4; c++) {
+      const code = map[g * 4 + c]; if (code === 0xFF) continue;
+      (role[code] = role[code] || []).push(`${names[g]} ${corner[c]}`);
+    }
+    for (let c = 0; c < 4; c++) { for (const [g, l] of [[0x29, 'M'], [0x2A, 'W']]) { const code = map[g * 4 + c]; if (code !== 0xFF) (role[code] = role[code] || []).push(`${l} third column ${corner[c]}`); } }
+    let used = new Set(), pick = -1;
+    function drawSheet() {
+      const ctx = C64.canvas(sheet, 16 * P + 3, 16 * P + 3);
+      ctx.fillStyle = '#1b1b24'; ctx.fillRect(0, 0, sheet.width, sheet.height);
+      for (let g = 0; g < 256; g++) {
+        const x = 3 + (g & 15) * P, y = 3 + (g >> 4) * P;
+        C64.drawGlyph(ctx, font, g, x, y, S, used.has(g) ? C64.PAL[7] : C64.PAL[1], C64.PAL[used.has(g) ? 11 : 0]);
+        if (g === pick) { ctx.strokeStyle = C64.PAL[10]; ctx.lineWidth = 2; ctx.strokeRect(x - 1.5, y - 1.5, 8 * S + 3, 8 * S + 3); }
+      }
+    }
+    function drawWord() {
+      const bytes = MIMS.toBytes(inp.value), r = MIMS.printBig(bytes, map, D.punct, D.wide);
+      const cols = Math.max(40, r.end + 1), ctx = C64.canvas(big, cols * 8 * 2, 16 * 2);
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, big.width, big.height);
+      used = new Set();
+      for (const [c, row, code] of r.cells) { C64.drawGlyph(ctx, font, code, c * 16, row * 16, 2, C64.PAL[1], '#000'); used.add(code); }
+      used.delete(0xFF);
+      const per = [];
+      let col = 0;
+      for (const b of bytes) {
+        const one = MIMS.printBig([b], map, D.punct, D.wide);
+        if (!one.cells.length) continue;
+        const codes = one.cells.map(c => hex(c[2]));
+        per.push(`${String.fromCharCode(b)} ${codes.slice(0, 2).join(' ')}/${codes.slice(2, 4).join(' ')}` + (codes.length > 4 ? ` +${codes[4]}/${codes[6]}` : ''));
+      }
+      $('mims-wout').textContent = per.join('   ') || 'Type some capitals, digits or ! . , ? :';
+      drawSheet();
+    }
+    sheet.addEventListener('click', e => {
+      const b = sheet.getBoundingClientRect(), k = sheet.width / b.width;
+      const cx = Math.floor(((e.clientX - b.left) * k - 3) / P), cy = Math.floor(((e.clientY - b.top) * k - 3) / P);
+      if (cx < 0 || cx > 15 || cy < 0 || cy > 15) return;
+      pick = cy * 16 + cx;
+      $('mims-sout').innerHTML = fmt(`Character [${hex(pick)}], bytes [${hex(0xD800 + pick * 8, 4)}]-[${hex(0xD807 + pick * 8, 4)}] where the set is kept. `) +
+        (role[pick] ? 'In the big font: ' + role[pick].join(', ') + '.' : 'Not part of the big font.');
+      drawSheet();
+    });
+    inp.addEventListener('input', drawWord);
+    drawWord();
+  })();
+})();
+</script>
+<!-- /mims-script -->

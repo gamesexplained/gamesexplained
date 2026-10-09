@@ -61,8 +61,18 @@ chip's fetch, not by copying characters. `$2162` enters the NOP slide at
 on line 50). `$213D` and the NOP slide make that interrupt land on an
 exact cycle.
 
-The score panel at the bottom uses extended colour mode (`$18C1` →
-`$18D3` → `$19C2`; the frame shows `$D011` = `$5B` on line 242).
+The score panel at the bottom is all sprites. `$18C1` → `$18D3` →
+`$19C2` sets extended colour mode (the frame shows `$D011` = `$5B` on line
+242) while `$D016`'s multicolour bit is still on, a combination the video
+chip cannot display, so it shows black and every word and number on the
+panel is drawn by sprites 0-5 (`work/screens`: the recorded frame drawn
+with the sprites switched off shows nothing in the panel).
+
+The loading screen shows the front-end character set at `$5000`
+(`$D018` = `$15`, set at `$CBE4`): swap 3 (`$CBF0`) moves the set from
+`$7800` to `$5000` and Mayhem's sprite images to `$7800`, swap 4 puts
+those images under the I/O chips while the land loads, and swap 5
+(`$CE39`) brings both back.
 
 ## Mechanics
 
