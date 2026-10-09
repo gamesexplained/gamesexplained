@@ -14,29 +14,16 @@
 <section id="mine">
   <p class="fig">The mine</p>
   <h2 class="t">One map, seven kilobytes</h2>
-  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag the map to move around it, and zoom out to see the whole mine. Choose an object to zoom in on it, then press Where it is used to step through the places it works. The dangers have a list of their own, and <a href="gameplay.html#dangers">Gameplay</a> says what each does. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag the map to move around it, and zoom out to see the whole mine. Choose an object, creature, danger, or place from the menu to go to it; an object also gets a Where it is used button that steps through the places it works. <a href="gameplay.html#dangers">Gameplay</a> says what each danger does. The menu's walkthroughs step through parts of the <a href="solution.html">Solution</a> on the map.</p>
   <div class="plate">
     <div class="row">
-      <select class="b" id="pk-ob" aria-label="Object"><option value="">Choose an object</option></select>
-      <button class="b" type="button" id="pk-use" disabled>Where it is used</button>
-    </div>
-    <div class="row">
-      <select class="b" id="pk-dg" aria-label="Danger"><option value="">Choose a danger</option></select>
-      <button class="b" type="button" id="pk-dgn">Next danger</button>
-      <select class="b" id="pk-pl" aria-label="Other places"><option value="">Other places</option></select>
-      <select class="b" id="pk-cr" aria-label="Creature"><option value="">Choose a creature</option></select>
-    </div>
-    <div class="row" id="walk">
-      <select class="b" id="wk-pick" aria-label="Choose a walkthrough"><option value="air">Walkthrough: to the AIR MASK</option><option value="pass">Walkthrough: the PASS CARD</option></select>
-      <button class="b" type="button" id="wk-back" disabled>Back</button>
-      <button class="b" type="button" id="wk-next">Start</button>
-      <span class="note" id="wk-n"></span>
+      <select class="b" id="pick" aria-label="Choose something to find on the map"><option value="">Choose something to find</option></select>
+      <button class="b" type="button" id="pk-use" hidden>Where it is used</button>
+      <span id="walk" hidden><button class="b" type="button" id="wk-back" disabled>Back</button> <button class="b" type="button" id="wk-next">Start</button> <span class="note" id="wk-n"></span></span>
     </div>
     <p class="kv" id="wk-say" aria-live="polite" style="margin:0 0 8px"></p>
     <div class="row">
       <span class="note">Zoom</span><button class="b" type="button" data-z="0.25" aria-pressed="false">Whole mine</button><button class="b" type="button" data-z="0.5" aria-pressed="false">×½</button><button class="b" type="button" data-z="1" aria-pressed="false">×1</button><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
-      <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
-      <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
       <span class="note" id="mappos"></span>
     </div>
     <canvas id="map" class="scr" hidden style="display:none" role="img" aria-label="The whole mine, reduced"></canvas>
@@ -107,6 +94,8 @@
   // dangers: map blocks the Doctor's centre is tested against (doctor_tile_checks, $CA58)
   // the floor sensor: block $BD under the Doctor sends controller $23 after him (doctor_tile_checks, $CA6B)
   for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) if (M[0xFB80 - 0x80 * r + c] === 0xBD) uses.push({ at: [c * 32 + 16, Y(r * 32 + 16)], t: 'SENSOR: calls a controller' });
+  // the eight CSCs, where the game saves and the Doctor restarts: restart points 1-8 ($9059)
+  for (let i = 1; i < 9; i++) uses.push({ at: pts[i], t: 'CSC ' + i + ': save here, restart point ' + i });
   for (const [a, b, t] of CR) for (let o = a; o <= b; o++) crs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t, o });
   const dangers = [];
   for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) {
@@ -131,8 +120,15 @@
     'PASS CARD': 'held, it opens the five security gates (block $20), and it lies behind the wall the code lock opens', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up',
     'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'once the Doctor jumps up beside it, he can move up and down above it, up to 80 pixels', 'EGG': 'going near it while it lies free hatches a deadly baby madrag',
     'CHEMICALS': 'dropped in the pool, they turn it purple and stop two controllers for good' };
-  const sel1 = (id, list, text) => { const el = document.getElementById(id); list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = text ? text(k) : k.label; el.append(o); }); return el; };
-  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS|SENSOR)/.test(k.t))), pkCr = sel1('pk-cr', crs);
+  // one picker, in groups; a walkthrough is a choice too ('walk:' and its name)
+  const menu = document.getElementById('pick');
+  const places = uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS|SENSOR|CSC)/.test(k.t));
+  for (const [label, list] of [['Objects', objs], ['Creatures', crs], ['Dangers', dangers], ['Places', places]]) {
+    const g = document.createElement('optgroup'); g.label = label;
+    list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = k.label; g.append(o); }); menu.append(g);
+  }
+  { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
+    for (const [v, t] of [['air', 'To the AIR MASK'], ['pass', 'The PASS CARD']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
   function marks(list, colour, round, sprites) {
@@ -204,10 +200,6 @@
     drag = null; };
   zv.addEventListener('wheel', e => { e.preventDefault(); const i = ZS.indexOf(Z), n = ZS[Math.max(0, Math.min(ZS.length - 1, i + (e.deltaY < 0 ? 1 : -1)))];
     if (n === Z) return; const p = toMap(e); setZoom(n); centre(p); draw(); }, { passive: false });
-  const rp = document.getElementById('rp');
-  rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
-    document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
-  document.getElementById('home').onclick = () => { choose(null); centre(start); draw(); };
   const zbs = document.querySelectorAll('[data-z]');
   function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
     zv.setAttribute('aria-label', 'The mine, at ' + ({ 0.25: 'a quarter of', 0.5: 'half', 1: 'the size of', 2: 'twice', 3: 'three times', 4: 'four times' })[Z] + ' the C64\'s pixels'); }
@@ -225,9 +217,10 @@
   // choosing a mark: pan the map to it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
     sel = k;
-    for (const el of [pkOb, pkDg, pkPl, pkCr]) el.value = k && el.querySelector('option[value="' + all.indexOf(k) + '"]') ? all.indexOf(k) : '';
+    if (k || !/^walk:/.test(menu.value)) menu.value = k ? all.indexOf(k) : '';
     if (!keepObj) { curObj = k && k.kind === 'Objects' ? k : null; useIx = -1; }
-    if (curObj) pkOb.value = all.indexOf(curObj);
+    if (curObj) menu.value = all.indexOf(curObj);
+    pkUse.hidden = !curObj;
     const list = curObj ? usedAt(curObj.t) : [];
     pkUse.disabled = !list.length;
     pkUse.textContent = !curObj ? 'Where it is used' : !list.length ? 'No place of use traced' : useIx < 0 ? 'Where it is used (' + list.length + ')'
@@ -241,11 +234,13 @@
   }
   pkUse.onclick = () => { const list = usedAt(curObj.t);
     if (useIx + 1 >= list.length) { useIx = -1; choose(curObj, true); } else choose(list[++useIx], true); };
-  pkOb.onchange = () => choose(pkOb.value === '' ? null : all[+pkOb.value]);
-  pkDg.onchange = () => choose(pkDg.value === '' ? null : all[+pkDg.value]);
-  pkPl.onchange = () => choose(pkPl.value === '' ? null : all[+pkPl.value]);
-  pkCr.onchange = () => choose(pkCr.value === '' ? null : all[+pkCr.value]);
-  document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
+  menu.onchange = () => {
+    const w = /^walk:(.*)/.exec(menu.value);
+    document.getElementById('walk').hidden = !w;
+    if (w) { pkUse.hidden = true; curObj = null; STEPS = ROUTES[w[1]]; wk = null; wkPath = null; wkI = -1; wkGo(0); return; }
+    wk = null; wkPath = null; wkI = -1; cancelAnimationFrame(wkAnim); document.getElementById('wk-say').textContent = '';
+    choose(menu.value === '' ? null : all[+menu.value]);
+  };
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
   if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); cancelAnimationFrame(panAnim); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
@@ -296,11 +291,9 @@
   }
   wkNext.onclick = () => wkGo(wkI + 1 >= STEPS.length ? 0 : wkI + 1);
   wkBack.onclick = () => wkGo(Math.max(0, wkI - 1));
-  const wkPick = document.getElementById('wk-pick');
-  wkPick.onchange = () => { STEPS = ROUTES[wkPick.value]; wk = null; wkPath = null; wkI = -1; wkGo(0); };
   // a link from another tab: ?walk= names a walkthrough, opened at its first step
   const walk = new URLSearchParams(location.search).get('walk');
-  if (ROUTES[walk]) { wkPick.value = walk; wkPick.onchange(); setTimeout(() => document.getElementById('walk').scrollIntoView({ block: 'start' }), 0); }
+  if (ROUTES[walk]) { menu.value = 'walk:' + walk; menu.onchange(); setTimeout(() => document.getElementById('walk').scrollIntoView({ block: 'start' }), 0); }
   draw();
   function lock(M, full) {
     const glyph = G.lockGlyphs, INK = [1, 2, 6, 5, 7];               // W R B G Y as C64 colours
