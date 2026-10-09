@@ -34,7 +34,7 @@ the main loop's passes before any rate is written.
 
 ## Maintainer asks
 
-- **Let the SID player call a driver on a CIA timer period, not only once a PAL frame.** This game's title tune is called every 47,288 cycles from CIA 1's timer. `site/lib/sid.js` calls a page's driver once per frame (19,656 cycles), so the port runs each call in the frame its cycle falls in, two or three frames apart, and a note's length wanders by up to a frame (falcon-patrol's port does the same). A `period` option in cycles on `C64Sid.mount`, with the player calling the driver at each period's end, would let a port play at the game's own tempo; it goes in `site/lib/sid.js`'s player loop, with a case in `kit/c64/test_sid_bus.js` or a test of its own.
+- #264: Let the SID player call a driver on a CIA timer period, not only once a PAL frame
 
 ## What cost the most time
 
