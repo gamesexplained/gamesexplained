@@ -39,7 +39,7 @@ Sources:
 | Spiked enemies must be rammed from the front, not jumped on | traced | kinds `$FB` and `$F7` cannot be stomped; `$FC` and `$FA` always hurt; `$F8` hurts only when walked into (`$B5B1`) |
 | The lightning power-up gives the charge: left/right + fire runs fast and rams enemies | traced | item effect 0 sets the charge flag `$1BEB` (`$BC55`); without it, right+fire moved exactly as right did (live, below) |
 | Some enemies come back and give nothing the second time | traced | defeat sets bit 4 of record byte 10 (`$CB02`); a respawned object with it is freed without its item (`$C962`); `$E595` clears the marks when a land starts |
-| Hidden areas reached by ducking and running; platforms nearly invisible against the background | open | |
+| Hidden areas reached by ducking and running; platforms nearly invisible against the background | open | not searched for as such: the maps (Maps / levels tab) show every platform, but which ones are hard to see in play, and where ducking while running leads, were not tested |
 | Down + fire drops through a platform | traced | player movement, `$2A3A`-`$2FFF`: glyphs below the land's `$9020` are platforms he can drop through and jump up through, below `$9021` walls |
 | A variable jump: letting go of up early cuts the jump short | traced | jump index `$1B5D` with speeds from `$3460` |
 | An extra life for every million points | traced | when the score's millions digit `$CF7A` rises (`$3534`/`$355E` → `$3636` → `$3866`), except when a 100,000-point event carries it there: then no life (`$3541`-`$3548`; `parts/engine/facts.md`) |
@@ -52,11 +52,11 @@ Sources:
 | Lives on the panel ("1UP x03") | live | two decimal digits at `$CF81`-`$CF82`, decreased at `$BDC7`-`$BDD3` |
 | Continues | traced | `$CF8A`, set to 3 for a new game (`$E52D`), taken at `$3EAF`; game over and "CONTINUE : YES/NO" at `$3DEC` |
 | Score, nine digits on the panel; a top score on the title | live | `reference/play-jellyland-sad.png`, `reference/title-jellyland.png` |
-| Two players taking turns | open | the German wiki only |
+| Two players taking turns | open | the German wiki only. The engine keeps one score, one lives counter and one set of game variables (`$CF78`-`$CF9A`), and no player number or second copy of them was found by the agents who read every routine of the engine; the title starts one game on fire |
 | The intro: credits, and each dinosaur shown in two moods | differs | the dinosaur walks in in colour, then the scene flashes white and fades to grey while its name scrolls in (`$8064`, `$8AC2`, `$8ADE` in `menu`): happy to sad, not sad to happy. Ten dinosaur pages, each followed by a credits page; `reference/intro-*.png` |
 | VSP for fast scrolling | confirmed | `$2162` enters the NOP slide at `$B182` + column/2 and writes `$12` then `$1B` to `$D011` on line `$30`; live: one recorded frame shows the two writes five cycles apart on line 50 |
 | Sprites laid over the player for more detail | traced | Mayhem is sprites 6 and 7 at one position, X fixed at `$AC` (`$E426`, `$EE9E`); live: both rise together in a jump |
-| Interlaced mixed colours | open | the German wiki's trivia; the wiki's screenshots look pastel where a single frame does not |
+| Interlaced mixed colours | open | the German wiki's trivia. In two frames of Jellyland's sad play recorded one after the other, the colour registers got the same 11 writes and no colour-memory cell changed, so colours do not alternate between frames there; the land's graphics use checkered patterns of two colours, which a scaled-down screenshot blends into the pastel shades the wiki shows. Happy lands were not recorded |
 | "A longer intro can be loaded separately" | open | the German wiki. The intro's only disk accesses are `2` loading "MENU", an Initialize (`$53E2`) and the loader's "GAME" (`$53DE`); no other file name is in `menu` (its "S0:MENU" at `$9FF9` lies in the uninitialised tail nothing reads). Such an intro would be on another disk or release |
 
 ## Beyond the documentation
