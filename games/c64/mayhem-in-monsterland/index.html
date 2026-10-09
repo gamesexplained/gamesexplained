@@ -98,6 +98,27 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .mim-tbl th,.mim-tbl td{text-align:left;vertical-align:top;padding:6px 10px;border-bottom:1px solid var(--line-soft)}
 .mim-tbl th{font-weight:700;color:var(--ink-soft)}
 @media (max-width:640px){.mim-groups{grid-template-columns:1fr;gap:4px}}
+.mimi-cv{display:block;width:100%;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.mimi-land{display:block;width:100%;max-width:672px;height:auto;image-rendering:pixelated;background:#000;border-radius:4px}
+.mimi-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:12px 0 0;font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+.mimi-row label{display:flex;gap:6px;align-items:center}
+.mimi-btn{font:inherit;font-family:var(--fm);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--ink);cursor:pointer}
+.mimi-btn:hover{border-color:var(--ink-mute)}
+.mimi-btn.mimi-on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+.mimi-range{flex:1;min-width:160px}
+.mimi-out{font-family:var(--fm);font-size:13px;color:var(--ink);margin:10px 0 0;min-height:1.5em}
+.mimi-tbl{border-collapse:collapse;font-size:13px;margin:14px 0 0}
+.mimi-tbl th,.mimi-tbl td{text-align:left;vertical-align:middle;padding:4px 10px;border-bottom:1px solid var(--line-soft)}
+.mimi-tbl th{font-weight:700;color:var(--ink-soft)}
+.mimi-tbl td.mimi-n{font-family:var(--fm);white-space:nowrap}
+.mimi-tbl tr.mimi-cur td{background:var(--hl)}
+.mimi-wide{overflow-x:auto}
+.mimi-sw{display:inline-block;width:18px;height:14px;margin:0 3px 0 0;border:1px solid var(--line);border-radius:2px;vertical-align:middle}
+.mimi-sheet{background:#000;border-radius:4px;padding:10px 12px;overflow-x:auto}
+.mimi-sheetrow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin:0 0 12px}
+.mimi-sheetname{width:100%;margin:0;font-family:var(--fm);font-size:12px;color:#b2b2b2}
+.mimi-sheetname span{color:#7b7b7b}
+.mimi-sprite{image-rendering:pixelated;height:auto}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -372,16 +393,72 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 </section>
 
 <section data-part="intro">
-  <p class="fig">13 · Before the game</p>
-  <h2 class="t">The intro fades its dinosaurs from happy to sad</h2>
-  <p class="lede">Side 1 plays an intro, a roll call of ten dinosaurs with the credits between them, and then asks for a code from the printed sheet.</p>
+  <p class="fig">13 · The intro</p>
+  <h2 class="t">The intro fades each dinosaur from colour to grey</h2>
+  <p class="lede">Side 1 plays an intro before the game: the Mayhem TV ident, the Apex logo, and a roll call of ten characters, each followed by a page of credits. Each page below is drawn by this page from the intro's own bytes, by its own routines ported to JavaScript.</p>
   <div class="plate">
-    <div class="mim-imgs"><img id="mim-dino" src="reference/intro-megasaurus-happy.png" alt="The intro's Megasaurus page, in colour" width="384" height="272"><img src="reference/protection-screen.png" alt="The protection screen, asking for the code at a square of the sheet" width="384" height="272"></div>
-    <div class="mim-row"><button type="button" class="mim-btn mim-on" data-dino="happy">Megasaurus arrives</button><button type="button" class="mim-btn" data-dino="sad">After the fade</button></div>
-    <p class="cap">Screenshots from the emulator: a dinosaur page of the intro, before and after its fade, and the protection screen.</p>
+    <div class="pick"><button type="button" class="step" data-d="-1" aria-label="Previous dinosaur">‹</button><select id="mimi-dino" aria-label="Dinosaur"></select><button type="button" class="step" data-d="1" aria-label="Next dinosaur">›</button></div>
+    <canvas id="mimi-page" class="mimi-cv" width="320" height="200"></canvas>
+    <div class="mimi-row"><button type="button" class="mimi-btn" id="mimi-colour">In colour</button><button type="button" class="mimi-btn" id="mimi-grey">In grey</button><button type="button" class="mimi-btn" id="mimi-playfade">Play the fade</button><button type="button" class="mimi-btn" id="mimi-playpage">Play the whole page</button></div>
+    <div class="mimi-row"><label for="mimi-fade">Fade</label><input id="mimi-fade" class="mimi-range" type="range" min="0" max="9" value="0"></div>
+    <p id="mimi-pageout" class="mimi-out"></p>
+    <div class="mimi-wide"><table class="mimi-tbl" id="mimi-fadetbl"></table></div>
+    <p class="cap">The intro's roll call, run by this page from its first page as the intro runs it, so each page starts where the one before left the landscape. The page is built by the port of <code>$80EC</code>: the landscape rows <code>$75B0</code>-<code>$76E3</code>, the colour record <code>$94CD</code>+4×page, the sprite record <code>$9632</code>+40×page, the name in the big font (<code>$88D8</code>) and the Latin name in the small one (<code>$888F</code>). The table is the fade, step 8 first: the landscape's records <code>$9531</code>-<code>$9515</code> and the sprites' <code>$990D</code>-<code>$98EA</code> (Mayhem's <code>$994C</code>-<code>$9929</code>), applied every other frame. "In colour" shows the moment the dinosaur arrives, with the names drawn where they end up; in the game they scroll in while it fades. Checked against the intro itself, run whole in a 6502 simulator on the intro's snapshot with a model of the raster's timing: at 11,493 frames of the roll call (all but the 18 whose interrupt finds a page half set up) the screen, colour memory, character set, sprite registers and colours agree with the port. Drawn, the Megasaurus page with its names in matches the emulator's screenshot <a href="reference/intro-megasaurus-sad.png">intro-megasaurus-sad.png</a> in all but 76 of 64,000 pixels, one raster line at the foot of the name's colour bars.</p>
   </div>
-  <p>Each dinosaur walks in, in colour, over a landscape that scrolls behind it; when it arrives the scene flashes white and fades to grey while its name scrolls in from the right and its Latin name from the left (<code>$8064</code>, <code>$8AC2</code>, <code>$8ADE</code>). That is the game's story the wrong way round, from happy to sad. The landscape is drawn once into a window 28 characters wide and moves by rolling the pixels inside its characters: the clouds half a pixel a frame (<code>$84EC</code>), the mountains one (<code>$852A</code>) and the ground two to six (<code>$85C6</code>, <code>$85F5</code>). Fire is read only on the dinosaur pages (<code>$827B</code>-<code>$8282</code>).</p>
-  <p data-part="engine">The protection screen gives a square of the sheet, such as F27, and wants the five colours printed there, typed as digits from 1 for blue to 5 for yellow. The answers are in the game, exclusive-ORed with <code>$45</code>: a table of 47 squares at <code>$4A00</code>-<code>$4B77</code>, and the five keys this boot expects, copied to <code data-part="">$017B</code> on the stack page (<code>$4594</code>-<code>$45A2</code> compares them). Three wrong codes send the game to <code>$C000</code>, which clears memory from <code>$040A</code> upward without end. Beside that code, at <code>$49F0</code>, is the text "DOWNLOAD BY JAZ " and a routine that would save a file called "GAME", which nothing calls; who put them there is not known.</p>
+  <p>Each page waits 150 frames, then the dinosaur walks in from the left one pixel a frame for 148 frames (<code>$86F9</code>); Mayhem runs in at two and skids to a halt in a cloud of dust (<code>$8740</code>-<code>$87CA</code>). The dinosaur is two or three sprites, doubled in height. Sprites 0-3 are solid black blocks, doubled both ways, over both edges of the landscape: they hide the dinosaur until it has walked into the window. Sprite 7 is the sun, set behind the clouds.</p>
+  <p>When the dinosaur arrives (<code>$8064</code>) the landscape stops, the scene turns white and then fades to grey over eight steps, and the name scrolls in from the right while the Latin name scrolls in from the left (<code>$8B2E</code>, <code>$8B5C</code>). Both fonts are drawn as holes in black characters. The colour comes from the background register, which a raster interrupt changes on every line behind the text (<code>$8045</code>, colour tables from <code>$9565</code>), so the letters show stripes the characters do not have.</p>
+
+  <div class="plate" style="margin-top:24px">
+    <div class="mimi-row" style="margin:0 0 12px"><button type="button" class="mimi-btn mimi-on" data-mimi-sheet="colour">Colour</button><button type="button" class="mimi-btn" data-mimi-sheet="grey">Grey</button></div>
+    <div id="mimi-sheet" class="mimi-sheet"></div>
+    <p class="cap">Every frame of every dinosaur's walk, in the order its animation list plays it (<code>$97C2</code>, lists <code>$980E</code>-<code>$98A9</code>), each frame its two or three sprites placed and coloured as the page's sprite record sets them; in grey with the colours of the fade's last step. Mayhem's last frame is the one he stands in when he stops (<code>$A9</code>, <code>$AA</code>, <code>$877D</code>). Drawn from the sprite blocks at <code>$5800</code>-<code>$74FF</code> (blocks <code>$60</code>-<code>$D3</code> of the video chip's bank 1); the numbers are the blocks.</p>
+  </div>
+
+  <div class="plate" style="margin-top:24px">
+    <div class="pick"><button type="button" class="step" data-d="-1" aria-label="Previous credits page">‹</button><select id="mimi-credsel" aria-label="Credits page"></select><button type="button" class="step" data-d="1" aria-label="Next credits page">›</button></div>
+    <canvas id="mimi-credits" class="mimi-cv" width="320" height="200"></canvas>
+    <div class="mimi-row"><button type="button" class="mimi-btn" id="mimi-credplay">Play the page</button></div>
+    <p id="mimi-credout" class="mimi-out"></p>
+    <p class="cap">The credits page that follows each dinosaur, from the same run: the lines are strings <code>$8F06</code>-<code>$9081</code> (big font) and <code>$90CA</code>-<code>$94A3</code> (small font), chosen by <code>$94A4</code>, <code>$9082</code> and <code>$94AE</code>, drawn by <code>$81DC</code>. The page fades in and out by switching which colour table the raster interrupt draws behind each line (<code>$87E7</code>-<code>$886C</code>, tables <code>$957D</code>-<code>$95F4</code>), counting on every other frame: wait 30, fade in over 8 steps, hold 140, fade out, wait 40. The last page, "press fire to continue", never fades out. Four of the pages at full brightness match the emulator's screenshots (<a href="reference/intro-credit-steve-rowlands.png">Steve Rowlands</a>, <a href="reference/intro-credit-ollie-alderton.png">Ollie Alderton</a>, <a href="reference/intro-credit-tracy-matheussen.png">Tracy Matheussen</a>, <a href="reference/intro-credit-john-twiddy.png">John Twiddy</a>) in every one of their 64,000 pixels.</p>
+  </div>
+
+  <div class="plate" style="margin-top:24px">
+    <canvas id="mimi-tv" class="mimi-cv" width="320" height="200"></canvas>
+    <div class="mimi-row"><button type="button" class="mimi-btn" id="mimi-tvplay">Play</button><button type="button" class="mimi-btn" id="mimi-tvrestart">Back to the start</button></div>
+    <p id="mimi-tvout" class="mimi-out"></p>
+    <p class="cap">The opening, 954 frames (about 19 seconds), as the port of <code>$8B7D</code> and its three raster handlers runs it: the Mayhem TV logo, six sprites, fades in and out (<code>$8DBF</code>, colours <code>$8EC3</code>); A, P, E and X grow from dots through eight frames each (<code>$8CF1</code>, frame lists <code>$8E79</code>-<code>$8EB4</code>); a white bar of sprites wipes across under them (<code>$8C4D</code>), and "COMPUTER · PRODUCTIONS", there all along in black characters, turns white behind it. The sprites are switched between two sets halfway down the screen (<code>$8BD8</code>, <code>$8BF9</code>). Checked against the intro run in the simulator, frame by frame: screen, colour memory, both sprite sets and the registers of each half agree in all 954 frames; the drawings at frames 216 and 640 match <a href="reference/intro-mayhem-tv.png">intro-mayhem-tv.png</a> and <a href="reference/intro-apex.png">intro-apex.png</a> in every pixel. Its music and the roll call's are both in the music player above.</p>
+  </div>
+</section>
+
+<section data-part="intro">
+  <p class="fig">14 · The intro's landscape</p>
+  <h2 class="t">The intro's landscape scrolls at three speeds without moving a character</h2>
+  <p class="lede">Behind the dinosaurs the clouds, the mountains and the ground move at different speeds. The landscape is drawn once, and nothing on the screen moves: the intro shifts the pixels inside the characters.</p>
+  <div class="plate">
+    <canvas id="mimi-land" class="mimi-land" width="224" height="96"></canvas>
+    <div class="mimi-row"><button type="button" class="mimi-btn" id="mimi-landplay">Play</button><button type="button" class="mimi-btn" id="mimi-landstep">One frame</button><label><input type="checkbox" id="mimi-landmarks"> Mark the repeated characters</label></div>
+    <p id="mimi-landout" class="mimi-out"></p>
+    <p class="cap">The landscape window, 28 characters by 12, with the first page's colours, moved by the ports of the four routines that roll it. Each routine shifts every pixel row of a strip of characters one bit left, the bit that leaves the strip's first character coming back in at the right of its last, as its chain of <code>ROL</code> instructions does. Checked with the roll call above: across the whole intro the character set the ports leave equals the simulated intro's at every frame.</p>
+  </div>
+  <p>The window, rows 7-18 and columns 6-33, is built once per page from the rows at <code>$75B0</code>, and each row repeats a short run of characters across its width: 14 for the clouds, 7 for the mountains, 3 for the ground. Shifting the pixels in that one run moves every copy of it on the screen.</p>
+  <div class="mimi-wide"><table class="mimi-tbl">
+    <tr><th>Rows</th><th>Characters</th><th>Routine</th><th>Speed</th></tr>
+    <tr><td>7 and 9, clouds</td><td class="mimi-n">$AC-$B9</td><td><code>$84EC</code></td><td>1 pixel every other frame</td></tr>
+    <tr><td>11-15, mountains</td><td class="mimi-n">$BA-$DC</td><td><code>$852A</code></td><td>2 pixels every other frame</td></tr>
+    <tr><td>16-18, ground</td><td class="mimi-n">$DD-$E5</td><td><code>$85F5</code>, <code>$85C6</code></td><td>2, 4 or 6 pixels a frame, faster lower down</td></tr>
+  </table></div>
+  <p>The routines run from the raster interrupts that also set the sky and ground colours, and stop when the dinosaur arrives. The clouds and the mountains take turns, one on odd frames and one on even. A page's set-up takes two frames, and the main loop does not count frames while it runs, so both of them are even: the mountains move twice and the clouds not at all.</p>
+</section>
+
+<section data-part="engine">
+  <p class="fig">15 · The protection</p>
+  <h2 class="t">The answers to the code sheet are in the game</h2>
+  <p class="lede">After the intro, the game asks for a code from the printed sheet that came in the box.</p>
+  <div class="plate">
+    <div class="mim-imgs"><img src="reference/protection-screen.png" alt="The protection screen, asking for the code at a square of the sheet" width="384" height="272"></div>
+    <p class="cap">The protection screen, a screenshot from the emulator.</p>
+  </div>
+  <p>The protection screen gives a square of the sheet, such as F27, and wants the five colours printed there, typed as digits from 1 for blue to 5 for yellow. The answers are in the game, exclusive-ORed with <code>$45</code>: a table of 47 squares at <code>$4A00</code>-<code>$4B77</code>, and the five keys this boot expects, copied to <code data-part="">$017B</code> on the stack page (<code>$4594</code>-<code>$45A2</code> compares them). Three wrong codes send the game to <code>$C000</code>, which clears memory from <code>$040A</code> upward without end. Beside that code, at <code>$49F0</code>, is the text "DOWNLOAD BY JAZ " and a routine that would save a file called "GAME", which nothing calls; who put them there is not known.</p>
 </section>
 
 </main>
@@ -1244,12 +1321,6 @@ scoreWidget($('mim-score2'), {
   show();
 })();
 
-// ---- 12: the intro's fade
-document.querySelectorAll('[data-dino]').forEach((b) => b.addEventListener('click', () => {
-  $('mim-dino').src = 'reference/intro-megasaurus-' + b.dataset.dino + '.png';
-  document.querySelectorAll('[data-dino]').forEach((x) => x.classList.toggle('mim-on', x === b));
-}));
-
 // ---- 03: the graphics: characters, Mayhem, monsters (data from work/graphics/gfx.js; checked by
 // work/graphics/check.js against the recorded frame)
 (function () {
@@ -1421,4 +1492,904 @@ document.querySelectorAll('[data-dino]').forEach((b) => b.addEventListener('clic
   drawLand(); drawMayhem();
 })();
 })();
+</script>
+<script>
+// The intro's bytes for the intro widgets, from parts/intro/work/entry.vsf (the menu file
+// as loaded): 12959 bytes in 5 regions, written by work/intro/extract.py.
+const MIMI_RAM = [{a:0x5800,b:"////////////////////////////////////////////////////////////////////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAA/wAB/4AD/8ADycAHyeAH/+AH/+ADP8ADg8AB/4AA/wAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAADAADzAANeAANWAADaAA+pADVqADWqAA2qAP6vA1aqA5qqMP6q7+uq66qq56qvO6qrD+qrAAAAAMAAAHDAAHNwAF2wAGpUAK1tAG238K2/rK1tu6tWq6/6q6quq+qv/Lq6sK/qbK6pXPpVX5VVb1VW/////AAAAAAAAAMAAAMAAPMAA14AA1YAANoAD6kANWoANaoADaoA/qsDVqsDmr8w2urv6qrqqqrmqXo5V+oP7qoAOqoAwAAAcMAAc3AAXbAAalQArW0Abbfwrb+srW2761ar6qqrruqrq7/8q6qw6+psvulcqtVcq5Vsr1bwqv8Aqr/AAAAAAAAAAAAAAwAAAwAA8wADXgADVgAA2gAPqQA1agA1qgANqwD+rgNWrgOarjDaq+/qruqqquapWjlVVg///wAAAADAAABwwABzcABdsABqVACtbQBtt/Ctv6ytbbvrVquqqquu6quuv/y7qrDq72yq+tyq6ty6quzqqvDqqwAAAAAAAAAAAAAAAAAwAADsAwDcDsNcDcObDnDvDm/+A2/+P/2/2/5v5b5fPX9vA///AO/7A5vlDleWDb9vA8DwAAAAwAADsAwDbDsDXzbDmzXA7zmz/87//7//62/+p1/6l5v6qf/2pfr7+uX+reb6rpvqu++q6/+qq//qrwA/8AADAAANwAA5wAz1sDvm/+f//lf5W1vlptzW+vzb/vzb36/2/9v//dd/75dv2lun5WyV//Cr8AD/AAAAAAAAAAAAAAAAAAAAAAAAAAAwAADsAADbAwDXDvDmDW87A5v+AO//AP//D/5vNa6XOl/bD///ADv+ADX5AOb1ANv2ADwPAAADAAMOwA7NsA3Nfw2+bw1/vw5v//+//////2//75b/n/r+q//+9/6/rv5ur/l+uvm/qn7b67/W///5/MAPwAAMAAA3AADnADDWwOyb/5z/+Vzm/WyWv3Bb7/Bv//Bvfvzb/7z/93z/vlx/aWzflbDX/8CvwAD8AAAAAAAAAAAAAAAAAAAAAAAAAADAAAO8AAObAADlAAA5A//+Dlv/A+b/AP//AP/lA+tVDpb+DW//A/5/AA1/AD2/ADm/AA/AAAMAwA7DcA2+cw19fj5tv/+//7///7///v///eW//lV/v6r/v///v7+v7/9f7/9f+99u/p91/5u1v9v5sDwPwAAwAADcAACcAMBbA7Bv/nD/5XC59bC/vcB//8B//8Bv5/DW/vD5//D9v/D/b/D/2sD//wCvAADwAAAAAAAAAAAAAAAAAAADAAP+AD+5A/v1A73lD9+lDv6lP26lO56pPdeq/meq55nqOWaq/paq5Wqr/pb+P2erDlumOWuq5arqAAAAAPAA/Fz/l1epW36afN+qrP+qq/+qq26q+1aqq7qqvG6vwL/6sPbpbKnlXKrlW/+VV6qVV/qVV65VW65VvAAAAAMAA/4AP7kD+/UDveUP36UO/qU/bqU7nqk916r+Z6rnmeo5Zqr+lqrlaq7+lq4/ZqsOWqs5aq7lqrraqroA8AD8XP+XV6lbfpp836qs/6qr/6qrbqr7Vqqruqq8bq/Ar/qw+qlsqqVcvqVbp5VXm5VX/tVXprVbqq28qq/AAAAAAAAAAwAD/gA/uQP79QO95Q/fpQ7+pT9upTueqT3Xqv5nqueZ6jlmrv6WuuVquv6Wuj9muQ5arjlqq+WqqgAAAADwAPxc/5dXqVt+mnzfqqz/qqv/qqtuqvtWqqu6qrxur8Cv+rD6qWyqpVyqv1vq6td7mte+qtf6q1u6q7wAAAAAAAAAAAAAAAAzAAD8ADD/AP/6AP+qAD6qAz6qD+qqA/qrA/6vP+uv/6rrParuNWu6DV66A36uAMP+AAANAAAAAAPAAP6wAKusAOqrAPq/APrlwL7XwL61zLqv++qq56qrV6qrW/qq/P6qrL+uq76r/K/qwJz/AFcAAFcAAAAAAAAAAAAAADAAAPwAMP8A//oA/6oAPqoDPqoP6qoD+qoD/6o/6uv/6u8/au8PWvoDV+oDl+oA/2oADVsAA1cAAAAAAAAAA8AA/rAAq6wA6qsA+r8A+uXAvtfAvrXMuq/76qrnqqtXqqtb+qr8/qqsv66rvqv87+rA8P8AAAAAAAAAAAAAAAAAAAAAMwAA/AAw/wD/+gD/qgA+qgM+qg/qqgP6qwPqrz/r7/+u+j+6ug+6ugPurgDurwA+VwANVwAAAAADwAD+sACrrADqqwD6vwD65cC+18C+tcy6r/vqqueqq1eqq1v6qvz+qqy/rqu+q/zv6sDw/wAAAAAAAAAAAAAAAAAAAAADAAAAAAAwAAD/ADD+AP/6AP+qAD6qAz6rD+qvA/qvA+q6P+vq/666P7q6D/q2APq1AOl/ANVwAAPAAP6wAKusAOqrAPq/APrlwL7XwL61zLqv++qq56qrV6qrW/qq/P6qrL+uq76r/L/qwLD/AHAAAPAAAAAAAAAAD/wA//8D5a8D2/8Pr/8Pv/8Pv/8///8+//8///8///////////////////////////8///8/+q8P6qsA67sAAAAAwAAA8AAA/AAA/wAA/8AA/8AA//AA//wA//wA//8A/lsA+VcA+WfA+bfA/f/w///8+///+////t///5m8AAAAAAAD/wA//wD5awPm/wPf/w+v/w+//z///z7//z///z//////////////////////////////6j//qg//rgAAAADwAAD/AAD/wAD/8AD/8AD//AD//AD//wD//wD+WwD5VwD5Z8D5t8D9//D///z7///7//++3/+vmbzv/cAAAAAAAARAABVQAN3QD5VQOqZs6qqr+qu76rqsq6/wq+sArDwA8AAAcAAAwAAAwAAAwAAAwAAAAAAAwAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8APv7A6vr/6qq6u6qrur6qqv+q6r6qqqqqaqrpaq65al6t1Vev//+r/w6qwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAA8AAD8AAO8AAOsAA6owA7rsDqrr+qvqqu4+qe0D/+sAA6oAAARAABVQAN3QD5VQOqZs6qqr+qu76rqsq6/wq+sArDwA8AAAsAAAcAAAwAAA8AAA/wAA/8AA/8AA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8A/v7D6vr+qqq6u6qrur6qqv+q6r6qqqqqeqrpb661et616t63L/6sMDqrAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAA8AAD8AAO8AAOsAA6owA7rsDqvr+qrqqr4+qXoD//oAAP8AAAAAAARAABVQAN3Q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AcOAAcOAAcOAAcOAAcOAAccAAf4AAcAAAcAAAcAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8AADGAADDAADDAADDAADDAADDAADDAADGAAD8AADAAADAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfAAAZgAAZgAAZgAAZgAAZgAAfAAAYAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAADwAACQAACQAADwAADgAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4AAA8AAA8AAA4AAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOAAAPAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/4AeAAAeAAAeAAAeAAAeAAAeAAAeAAAeAAAeAAAf/gAeAAAeAAAeAAAeAAAeAAAeAAAeAAAeAAAeAAAf/4AAAAAAAAAAB/4ABwAABwAABwAABwAABwAABwAABwAAB/wABwAABwAABwAABwAABwAABwAABwAAB/4AAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAMAAAMAAAMAAAMAAAMAAAP4AAMAAAMAAAMAAAMAAAMAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AABgAABgAABgAAB8AABgAABgAABgAAB+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAMAAAMAAAOAAAMAAAMAAAPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgAADAAADgAADAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4AAAwAAA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4HgB4HgB4HgB4HgA4HAAcOAAOcAAH4AADwAABgAADwAAH4AAOcAAcOAA4HAB4HgB4HgB4HgB4HgB4HgB4HgAAAAAAAAAAHDgAHDgAHDgAHDgADnAAB+AAA8AAAYAAA8AAB+AADnAAHDgAHDgAHDgAHDgAHDgAHDgAAAAAAAAAAAAAAAAAAAAAAAAAAAwwAAwwAAwwAAZgAAPAAAGAAAPAAAZgAAwwAAwwAAwwAAwwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGYAAGYAADwAABgAABgAADwAAGYAAGYAAGYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0AAA0AAA8AAAYAAA8AAA0AAA0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJAAAPAAAGAAAPAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgAADgAABAAADgAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoAAAQAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/wAP//AP//wP//8P//+P///P///v///v///////////////////////v///v///P//+P//8P//wP//AP/wAAAf//gf//wYAA4YAAcYAAMYAAEYAAAYAAAYAAAYAAAYAAAYAAAYAAAYAAAYAAAYAAAYAAAYABwYAB4YAB8YABsAAH//AP//AcAAA4AAhwAAzgAA/AB4eAH8MAf8AA/8AD/4AP/gA/+cD/+8H8++P4+ePgefHOePAeeHA+eHh2fDAOAAAOAAAGAAAGAAAGBwAGD4AGH4AGH4AGPwAGPgAGfAAGeAAG+AAG8AAF8AAF4AAD4AAHwAAPwAAPgAAPgAAAAYABkYABgYABgYABgYABgYABgYABgYABgYABgYABgYABgf//gf//gAAAAAAADGczbu+zb+2zf+2efW+MbG2MYAzmfD/GfBeGfAMGfAAGfAAGfAAGOAAGAAAGAAAGAAAGAAAH//AH//AAAAAAAA3sYf2O4f3v4G2P4G3tYG3sYGAPAAAPAAAOAAAAAAAGAAAGAAAGAAAGAAAGAAAGAAAGAAAOAAAOAAAAAAAAAAALuAALuAABsAAB8AAA4AAA4AAAA="},
+{a:0x7500,b:"CAkKCwwNDg8QERITEBUSFxAZEhscFh2PHh8gISIjJCUm/yf/KP8p/yorLC0u/y//MDEzNDA2Mzc4OTo7PD0+P0BBQkNERkX/R0hJSktMTU5PUFFSU1RVVlpbV1hdXl9gYWJjZGVmZ2iLjI2OaRhqGmtsbW5vcHFyc3R1dnd4eXp7fH1+f4CBgoOEhYaHiImKBv8H////Bf///wT/AAECAxT/Bf8y/zX/XP9Z///////9/f39/f39/f39/f39/f39/f39/f39/f39/f39rK2ur7CxsrO0tba3uLmsra6vsLGys7S1tre4ubKztLW2t7i5rK2ur7CxsrO0tba3uLmsra6vsLG6u7y9vr/Auru8vb6/wLq7vL2+v8C6u7y9vr/AwcLDxMXGx8HCw8TFxsfBwsPExcbHwcLDxMXGx8jJysvMzc7IycrLzM3OyMnKy8zNzsjJysvMzc7P0NHS09TVz9DR0tPU1c/Q0dLT1NXP0NHS09TV1tfY2drb3NbX2Nna29zW19jZ2tvc1tfY2drb3N3e393e393e393e393e393e393e393e393e393g4eLg4eLg4eLg4eLg4eLg4eLg4eLg4eLg4eLg4+Tl4+Tl4+Tl4+Tl4+Tl4+Tl4+Tl4+Tl4+Tl44jna+dtbudx53Pnded353HnhIXnjOdx52vneudz53zndX5/a+eA54KJ52znb3Dncud053bneOd554aH543needs53vndOd953Z+f2zngeeD"},
+{a:0x7800,b:"8MCDh8f///g/H+fj48MDB/D4//z4+Pz/Bx//fz8/f////8eDg8PHj///x4ODx///gwEBAQGDg8fH78eDg8f/////8MCHjw8P//8jAYHBwcEPB4CAwPD//8ODAwMDJ///jwcGAAGHh4f//x8Hw+Ph4YeBgICIzP//wYEDAwcf//////DAh48PD///HwfD5///BwOAgMDw///jgQEDAw/////////Hg4PH48HBAQHDw8MPBwcHD/8fP8MDAwMjZ///Px8fHx8fHx///x8HA4OHHz8/Pz8/f39/88EBAwMP////8IDg/Pzw4Pz4+PDw8PD4///44MGDg4P//wkB5/Px8YHAwPD48fH44QMDDx+Pjx+PBwcGBICBg///HwcDAYHBg4eHx8/P///BwcHBweP//8OBgcP/w4GBgYHDw8Pn///DgYHD/8OBgYGBgYODAwePw4GBgYGAgMD////HgwcfP8DCwufn5///Hw8DAYHj///DgYGBgYGBw8PDw+fn5/////+HAgAAAQP//w4EAAABA///DwcHAwMDA4eHh8/P//+DgYGBgcP//4GBgYGBw/////+HAwMBgYHBwcHBweP/////8MCBgwMD//8fB+Pz8fEDAYCAwPD///HhAwMHH/////+OBAAAAwf//x8HAwPB4YeHg4CGx8/P4ePDBx////////jgwMCDh///cSAAAMDgh8fD4Pj////h4cEBYePz8///4cDAwMDA4eHh4fPz/////4cDAwOH////8MCAgIDA//8fD3//fx/g+Pz4AID//wcDAwMHH///+PDwgACA8Pg/Hx8DAQMfP/j4+Pz8/P//Pz8/f39//////+fHj48PB///z8fj4+HBBwOAgMDw///BgQMDBx//////jwcHBwOD///z8fHj48eBwMDg8Pz//4cPDx8/f///gYDAwODx///AwAAgcPj//+NHBw8ff/////+HAwMDA4H//8OBgYGBwP//8/Hx8ePj//+HAQCA4Pj///Phww8fD/DChw8Pn///BwMDAYHD/////48HAwOBgP//8/Hx4+PHwODw/JgAAIMHDw8fP3//////wIDA///8//8HAwOHDz/wwYAAAID////DAQEBA////vz48PD8/Pz8/P7+/v7+/jxm5+fn5+fn5+fn5+fnZjzg4PDw+Pj8/AcHDw8fHz8/7u7n5+Pj4eF3d+fnx8eHh/zu5+fn5+fn5+fn7/7g4ODn5+fn5+fn5+fn5+fn5+d+/zw8PDw8PDw8PDw8PDw8PP/g4ODg4OD+4ODg4ODg4P/n5+fv/u7n5/7v5+fn5+fn5+fn5+fn7/5+5+fn4ODg4ODg4ODn5+d+AwMDAwMDAwPAwMDAwMDAwOfn9//v5+fn5+fn5+fn5+d+5+fn4HA4HA4HBwfn5+d+AAAAAAAAAQMAAAAAAACAwAEAAAAAAAAAgAAAAAAAAADn5+fg4ODg4ODg4ODg5+fnAAAAAAAAAH5+AAAAAAAAAO7n5+fn5+fn5+fn5+/+4OAAAAAAAAAA/P9/fz8/Pz9//4UROTEBif8/JwMZORFD//+HEz85EYP/+cmBMTkRhf//hzMzBxmD/8MBn4efDw+f/4kzOZnDk8c/JwMROTl5/+fn/+fn5+f/5+f/5+fnxw8/IycPJyEx/8+Hh4eHz8/P/5MBASk5Of//IwEROTk5//+DOTk5AYP//yMBOTkZIz//iQE5OTGJ+f+TAQETPz///4Mfg/GBA//PA4fPz8/P//+TOTkRAYP//zk5GZODx///OTkpAQGT//85E8fDkTn//zk5GYPjxx//g/HjjwGB/8efPz8/P5/Hx/P5+fn588cAwOj92wAAAAAAAIAQAAAAAAAAAAAAAAAAAAAAAAAEAAAAAABG7+9GAAEDd///+3EA4/f////34eD4/P3///34AADg8Pb//+YAAAAAAEDkQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACV0IAAAAAgYJGSVmlZYAQICQoKRoqQEABAARAEEAAACAAKAAaAAAAAAAAAAAAAAAAAAQAFgAAAAAAAAAAAFVWlVaVWpVamqqWqpaqlaqRUCVkKWkqalqAFoAWgBWAAEAhACgAKkAGgAWAFYAVQECBokZpWWVlVWqVapVqlWqVqpVqlWqVaqqqqqqqqpqqlZAlZClpKmpqgKpCaUmlZZWBpmZpaVpqVVVVVVVVlVWVapVqlWqVqpYqGOjjI88P6qqKioKygLyqqqqqqqqqqpVmpWqpaqqqmqqWqpqqoqKVVqVmqWqqapYqKOjj48/VfD/8P/A/8AAAPAA/AD8AACqqioqCgoCVaqqqKijo4+UMjLA/MD8AACqqqqqKioKWqqqpplVlRVFqqpqmWZVVVSqqmqaZlkRRBFEEQQzzDPMEUQRQADMM8wRRAAAAAADzD////////8AM8z//P///wAzzDPMM///AOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPO3Nz4+Pj4wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////8="},
+{a:0x8C30,b:"AQAAHgUFDShklg7///9/fz8/Hx8PDwcHAwMB/wI="},
+{a:0x8E03,b:"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"}];
+// <mimi-core>
+// Ports of the intro's roll call ($80D6-$8B7B) and of its Mayhem TV and Apex part ($8099,
+// $8B7D-$8E02), and a drawing of the screen they leave. Everything is read from MIMI_RAM, the
+// intro's own bytes at their own addresses. Checked against the original routines run in a
+// 6502 simulator on the intro's snapshot (work/intro/test_ports.js).
+const MIMI = (function () {
+  'use strict';
+  const PAL = ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171',
+               '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const RGB = PAL.map((h) => [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)));
+  const b64 = (s) => (typeof s === 'string' ? Uint8Array.from(atob(s), (c) => c.charCodeAt(0)) : Uint8Array.from(s));
+
+  function image(regions) {
+    const M = new Uint8Array(65536);
+    for (const r of regions) M.set(b64(r.b), r.a);
+    return M;
+  }
+
+  // ---------------------------------------------------------------- the roll call
+  // One machine: memory M (screen $4400, characters $7800, the text buffers $7734), colour RAM
+  // CR, the video chip's registers V ($D000-$D02E), and the roll call's variables ($800D-$803D
+  // and the operands the code writes into itself).
+  function RollCall(M0) {
+    const M = M0.slice(), CR = new Uint8Array(1024), V = new Uint8Array(0x2F);
+    const w = (a) => M[a] | (M[a + 1] << 8);
+    const s = {
+      anim: 0, showTimer: 0, walkDelay: 0, latinIndex: 0x27, page: 0, textWait: 1, legsOn: 1, scrollOn: 1,
+      walkOn: 1, walkLeft: [0x95, 0x95, 0x95], nextPage: 1, mayhemPage: 0, mayhemRunning: 0, mayhemStop: 0,
+      skidOn: 0, legsFrozen: 0, mayhemArmed: 1,
+      // $8021-$803D, cleared by $8A62
+      skidStep: 0, dust: 0, fadeStep: 0, sfadeStep: 0, titleBars: 0, creditsMode: 0, drawCredits: 0,
+      inStep: 0, outStep: 0, inWait: 0, hold: 0, nextWait: 0, showTimerOn: 0,
+      slot: [0, 0, 0], slotLen: [0, 0, 0], slots: 0, skidSpeed: 0, nameIndex: 0, parity: 0, half: 0,
+      // operands written by the code
+      listPtr: [0xFFFF, 0xFFFF, 0xFFFF], sky: 0x03, ground: 0x0F, barTop: 0x06, barName: 0x0B, barLow: 0x06,
+      bars: 0,                                       // the bar set colour_bars draws ($84C3)
+      next: { line: 0xF9, h: 'bottom' },             // the raster chain's next link
+    };
+    const R = { M, CR, V, s, frames: 0, log: null };
+
+    // $840B
+    function fillScreen(ch, col) {
+      for (let i = 0; i <= 1000; i++) { M[0x4400 + i] = ch; CR[i] = col; }
+    }
+    // $8A62 (and the fall into $8A6C, which does nothing with show_timer_on just cleared)
+    function reset() {
+      Object.assign(s, { skidStep: 0, dust: 0, fadeStep: 0, sfadeStep: 0, titleBars: 0, creditsMode: 0,
+        drawCredits: 0, inStep: 0, outStep: 0, inWait: 0, hold: 0, nextWait: 0, showTimerOn: 0, slots: 0,
+        skidSpeed: 0, nameIndex: 0, parity: 0, half: 0 });
+      s.slot = [0, 0, 0]; s.slotLen = [0, 0, 0];
+    }
+    // $89A9 / $89B3: a four-byte colour record: sky, lower zone, $D022, $D023
+    function colours(a) { V[0x23] = M[a + 3]; V[0x22] = M[a + 2]; s.ground = M[a + 1]; s.sky = M[a]; }
+    // $863B
+    function animSetup(p) {
+      s.slots = M[0x9804 + p];
+      for (let k = 0; k <= s.slots && k < 3; k++) {
+        const y = s.anim;
+        s.listPtr[k] = M[0x97C2 + y] | (M[0x97D8 + y] << 8);
+        s.slot[k] = s.slotLen[k] = M[0x97EE + y];
+        s.anim = (s.anim + 1) & 0xFF;
+      }
+    }
+    // $89CD: the page's 40-byte sprite record, read from its end
+    function pageSprites(p) {
+      const a = M[0x961E + p] | (M[0x9628 + p] << 8);
+      for (let i = 0; i < 8; i++) M[0x47F8 + i] = M[a + 32 + i];
+      for (let i = 0; i < 16; i++) V[i] = M[a + 16 + i];
+      for (let i = 0; i < 8; i++) V[0x27 + i] = M[a + 8 + i];
+      V[0x26] = M[a + 7]; V[0x25] = M[a + 6]; V[0x15] = M[a + 5]; V[0x17] = M[a + 4];
+      V[0x1D] = M[a + 3]; V[0x1C] = M[a + 2]; V[0x10] = M[a + 1]; V[0x1B] = M[a];
+    }
+    // $888F: small font, screen codes; a space leaves the cell, "1" and "2" are the brackets
+    function printSmall(dest, n) {
+      const a = M[0x908E + n] | (M[0x90AC + n] << 8);
+      for (let y = 0; M[a + y] !== 0xFF; y++) {
+        const c = M[a + y];
+        if (c === 0x20) continue;
+        M[dest + y] = c === 0x31 ? 0xAA : c === 0x32 ? 0xAB : (c + 0x8F + (c >= 0x32 ? 1 : 0)) & 0xFF;
+      }
+    }
+    // $88D8: big font, 2x2 characters from the glyph map at $7500
+    function printBig(dest, n) {
+      const a = M[0x8EDE + n] | (M[0x8EF2 + n] << 8);
+      const put = (g, step) => {
+        const x = ((g - 1) * 4) & 0xFF;
+        M[dest] = M[0x7500 + x]; M[dest + 1] = M[0x7501 + x];
+        M[dest + 40] = M[0x7502 + x]; M[dest + 41] = M[0x7503 + x];
+        dest += step;
+      };
+      for (let y = 0; M[a + y] !== 0xFF; y++) {
+        const c = M[a + y];
+        if (c === 0x20) { dest += 1; continue; }
+        const p = [0x21, 0x2E, 0x2C, 0x3F, 0x3A].lastIndexOf(c);
+        if (p >= 0) { put(p + 0x25, M[0x88D3 + p] ? 2 : 1); continue; }      // never met: no string has one
+        if (c >= 0x30) { put((c + 0x2B) & 0xFF, 2); continue; }               // digits: none in the strings
+        if (c === 0x0D) { put(c, 2); put(0x2A, 1); continue; }                // m: a third column
+        if (c === 0x17) { put(c, 2); put(0x2B, 1); continue; }                // w: a third column
+        put(c, c === 0x0A || c === 0x0C || c === 0x09 ? 1 : 2);               // i, j, l: one column
+      }
+    }
+    // $80EC
+    function pageSetup() {
+      reset();
+      s.scrollOn = s.legsOn = s.walkOn = s.textWait = 1;
+      s.walkLeft = [0x95, 0x95, 0x95]; s.latinIndex = 0x27; s.walkDelay = 0x96; s.showTimer = 0xFF;
+      fillScreen(0xFF, 0);
+      const rows = [0x75CC, 0x75B0, 0x75E8, 0x75B0, 0x7604, 0x7620, 0x763C, 0x7658, 0x7674, 0x7690, 0x76AC, 0x76C8];
+      for (let r = 0; r < 12; r++) for (let x = 0; x < 28; x++) {
+        const i = (7 + r) * 40 + 6 + x;
+        M[0x4400 + i] = M[rows[r] + x];
+        if (r === 0 || r === 2) CR[i] = 1;
+        else if (r >= 4 && r <= 6) CR[i] = 8;
+        else if (r >= 7) CR[i] = M[0x94F5 + s.page];
+      }
+      colours(M[0x94B9 + s.page] | (M[0x94C3 + s.page] << 8));
+      animSetup(s.page);
+      pageSprites(s.page);
+      M.fill(0xFF, 0x7734, 0x77AC);
+      M[0x775C + M[0x908D]] = 0;
+      M[0x7734 + M[0x94B8]] = 0;
+      printBig(0x775C, s.page);
+      printSmall(0x7734, s.page);
+    }
+    // $8A2A: rows 14, 15, 17 and 18 (not 16) to colour 9
+    function groundWhiten() {
+      for (const r of [14, 15, 17, 18]) for (let x = 0; x < 28; x++) CR[r * 40 + 6 + x] = 9;
+    }
+    // $8064
+    function arrived() {
+      if (!s.textWait) return;
+      s.scrollOn = s.legsOn = s.walkOn = s.skidOn = s.dust = 0;
+      groundWhiten();
+      s.fadeStep = M[0x9511];
+      s.sfadeStep = s.titleBars = M[0x98E4];
+      s.showTimerOn = 1;
+      s.textWait = 0;
+      if (R.log) R.log.push(['arrived', R.frames]);
+    }
+    // pixel rolls: each strip is n characters; ROL through the strip right to left, the bit leaving
+    // its first character coming back in at the right of its last
+    function roll(base, n, rows, row0) {
+      for (let x = (row0 || 0) + rows - 1; x >= (row0 || 0); x--) {
+        let c = (M[base + x] >> 7) & 1;
+        for (let k = n - 1; k >= 0; k--) {
+          const a = base + k * 8 + x, v = M[a];
+          M[a] = ((v << 1) | c) & 0xFF; c = v >> 7;
+        }
+      }
+    }
+    // $84EC: clouds, odd frames, one pixel
+    function clouds() { if (s.scrollOn && s.parity) roll(0x7D60, 14, 8); }
+    // $852A: mountains, even frames, two pixels
+    function mountains() {
+      if (!s.scrollOn || s.parity) return;
+      for (let k = 0; k < 2; k++) { roll(0x7DD0, 7, 8); roll(0x7E08, 7, 8); roll(0x7E40, 7, 8); }
+      for (let k = 0; k < 2; k++) { roll(0x7E78, 7, 8); roll(0x7EB0, 7, 8); }
+    }
+    // $85C6: every frame, four pixels: the bottom two rows of $7EEE's strip, the top four of $7F00's
+    function groundNear() {
+      if (!s.scrollOn) return;
+      for (let k = 0; k < 4; k++) { roll(0x7EEE, 3, 2); roll(0x7F00, 3, 4); }
+    }
+    // $85F5: every frame: two pixels for the top six rows of row 16, six for the rest of rows 17-18
+    function groundMid() {
+      if (!s.scrollOn) return;
+      for (let k = 0; k < 2; k++) roll(0x7EE8, 3, 6);
+      for (let k = 0; k < 6; k++) { roll(0x7F04, 3, 4); roll(0x7F18, 3, 5); }
+    }
+    // $86A3
+    function animFrames() {
+      if (!s.legsOn) return;
+      if (!s.mayhemPage && s.parity) return;
+      for (let k = 0; k < 3; k++) {
+        if (k > 0 && k > s.slots) return;
+        let y = s.slot[k];
+        M[0x47FC + k] = M[(s.listPtr[k] + y) & 0xFFFF];
+        y = (y - 1) & 0xFF;
+        if (y & 0x80) y = s.slotLen[k];
+        s.slot[k] = y;
+      }
+    }
+    // $86F9
+    function walkIn() {
+      if (!s.walkOn) return;
+      if (s.walkDelay) { s.walkDelay--; return; }
+      for (let k = 0; k < 3; k++) {
+        if (k > 0 && k > s.slots) return;
+        const y = (s.walkLeft[k] - 1) & 0xFF;
+        if (y === 0) { arrived(); return; }
+        V[8 + 2 * k] = (V[8 + 2 * k] + 1) & 0xFF;
+        s.walkLeft[k] = y;
+      }
+    }
+    // $8740, $877D, $87A3, $87CA: Mayhem's run in, stop, skid and dust
+    function mayhemRun() {
+      if (!s.walkOn) return;
+      if (s.walkDelay) { s.walkDelay--; return; }
+      if (!s.mayhemRunning) return;
+      if (V[8] === 0xF8) { s.mayhemRunning = 0; s.mayhemStop = 1; s.legsFrozen = 1; return; }
+      V[8] = (V[8] + 2) & 0xFF; V[10] = (V[10] + 2) & 0xFF;
+    }
+    function mayhemHalt() {
+      if (!s.mayhemStop) return;
+      M[0x47FC] = 0xA9; M[0x47FD] = 0xAA;
+      s.mayhemStop = 0; s.skidOn = 1; s.skidStep = M[0x98AA]; s.dust = M[0x98C5];
+    }
+    function mayhemSkid() {
+      if (!s.skidOn) return;
+      const x = s.skidStep;
+      if (x & 0x80) return;
+      s.skidSpeed = M[0x98AC + x];
+      V[8] = V[10] = (V[8] - s.skidSpeed - 1) & 0xFF;
+      s.skidStep = (s.skidStep - 1) & 0xFF;
+      if (s.skidStep & 0x80) arrived();
+    }
+    function mayhemDust() {
+      if (s.parity) return;
+      const x = s.dust;
+      if (!x) return;
+      M[0x47FE] = M[0x98C6 + x];
+      V[12] = (V[8] - 0x25) & 0xFF;
+      s.dust--;
+    }
+    // $8AC2: the landscape's fade, odd frames, records 8 down to 1
+    function greyFade() {
+      if (!s.parity) return;
+      const y = s.fadeStep;
+      const a = M[0x94FF + y] | (M[0x9508 + y] << 8);
+      if (y === 0) return;
+      s.fadeStep = y - 1;
+      colours(a);
+    }
+    // $8ADE: the sprites' fade, odd frames
+    function spriteFade() {
+      if (!s.parity) return;
+      const y = s.sfadeStep;
+      const t = s.mayhemPage ? 0x9912 : 0x98D2;              // low bytes, then nine high bytes
+      const a = M[t + y] | (M[t + 9 + y] << 8);
+      if (y === 0) return;
+      s.sfadeStep = y - 1;
+      V[0x25] = M[a]; V[0x26] = M[a + 1]; V[0x2B] = M[a + 2]; V[0x2C] = M[a + 3]; V[0x2D] = M[a + 4];
+      V[0x2E] = 1;
+    }
+    // $8B2E: rows 4-5 one character left, the name's next column in at the right
+    function nameScroll() {
+      if (!M[0x775C + s.nameIndex]) return;
+      M.copyWithin(0x44A0, 0x44A1, 0x44A1 + 39); M.copyWithin(0x44C8, 0x44C9, 0x44C9 + 39);
+      M[0x44C7] = M[0x775C + s.nameIndex]; M[0x44EF] = M[0x7784 + s.nameIndex];
+      s.nameIndex = (s.nameIndex + 1) & 0xFF;
+    }
+    // $8B5C: row 20 one character right, the Latin name's next character in at the left
+    function latinScroll() {
+      if (!M[0x7734 + s.latinIndex]) return;
+      M.copyWithin(0x4721, 0x4720, 0x4720 + 39);
+      M[0x4720] = M[0x7734 + s.latinIndex];
+      s.latinIndex = (s.latinIndex - 1) & 0xFF;
+    }
+    // $8A6C
+    function showTimerStep() {
+      if (!s.showTimerOn) return;
+      if (!s.showTimer) { s.creditsMode = s.drawCredits = 1; s.inWait = M[0x961B]; return; }
+      if (s.mayhemPage && s.parity) return;
+      s.showTimer--;
+    }
+    // $81DC: the credits page
+    function creditsDraw() {
+      V[0x15] = 0; s.sky = 0; s.ground = 0;
+      for (const r of [4, 5, 20]) for (let x = 0; x < 40; x++) { M[0x4400 + r * 40 + x] = 0xFF; CR[r * 40 + x] = 0; }
+      for (let r = 7; r <= 18; r++) for (let x = 0; x < 28; x++) { M[0x4400 + r * 40 + 6 + x] = 0xFF; CR[r * 40 + 6 + x] = 0; }
+      s.barName = 6; s.barLow = s.barTop = 11;
+      printSmall(0x4568, M[0x94A4 + s.page]);
+      printBig(0x45B8, M[0x9082 + s.page]);
+      printSmall(0x4630, M[0x94AE + s.page]);
+      s.page = (s.page + 1) & 0xFF;
+      s.showTimerOn = 0;
+    }
+    // $8A93
+    function mayhemCheck() {
+      if (s.mayhemArmed && s.page === 9) { s.mayhemPage = 1; s.mayhemRunning = 1; s.mayhemArmed = 0; }
+    }
+    // the credits timeline, $87E7-$886C, on half the frames
+    function creditsTimeline() {
+      if (s.half) return;
+      if (s.inWait && !--s.inWait) s.inStep = M[0x9619];
+      if (s.inStep) {
+        s.barName = M[0x95F5 + s.inStep]; s.barLow = s.barTop = M[0x9607 + s.inStep];
+        if (!--s.inStep) s.hold = M[0x961C];
+      }
+      if (s.hold && !--s.hold && s.page !== 10) s.outStep = M[0x961A];
+      if (s.outStep) {
+        s.barName = M[0x95FE + s.outStep]; s.barLow = s.barTop = M[0x9610 + s.outStep];
+        if (!--s.outStep) s.nextWait = M[0x961D];
+      }
+      if (s.nextWait && !--s.nextWait) s.nextPage = 1;
+    }
+    // what each handler of the chain does, and the link it returns ($8288-$8389)
+    const BG = [];                                   // [line, colour] or [line, bar set] this frame
+    const bars = (line) => BG.push([line, -1 - s.bars]);
+    const H = {
+      bottom() {
+        if (R.onBottom) R.onBottom(R);
+        BG.push([this.line, 0]);
+        R.frames++;
+        mountains(); greyFade(); spriteFade();
+        if (s.mayhemPage) { mayhemRun(); mayhemHalt(); mayhemSkid(); mayhemDust(); }
+        if (!s.textWait) { nameScroll(); latinScroll(); }
+        if (s.creditsMode) return [0x00, 'cTop'];
+        if (s.titleBars) { s.bars = 0; return [0x51, 'titleBars']; }
+        return [0x6A, 'sky'];
+      },
+      sky() {
+        BG.push([this.line, s.sky]);
+        if (!s.mayhemPage) walkIn();
+        if (!s.legsFrozen) animFrames();
+        groundMid();
+        return [0xA2, 'ground'];
+      },
+      ground() {
+        BG.push([this.line, s.ground]);
+        groundNear(); clouds();
+        if (s.titleBars) { s.bars = 1; return [0xD1, 'latinBars']; }
+        return [0xCA, 'bottom'];
+      },
+      latinBars() { bars(this.line); return [0xDF, 'bottom']; },
+      titleBars() { bars(this.line); return [0x6A, 'sky']; },
+      cTop() { s.bars = s.barTop; return [0x79, 'c1']; },
+      c1() { bars(this.line); s.bars = s.barName; return [0x89, 'c2']; },
+      c2() { bars(this.line); s.bars = s.barLow; return [0xA1, 'c3']; },
+      c3() { bars(this.line); creditsTimeline(); return [0xDA, 'bottom']; },
+    };
+    // the main loop's work for one frame ($823E-$8285), after the bottom handler
+    function rest() {
+      showTimerStep();
+      if (s.drawCredits) { creditsDraw(); s.drawCredits = 0; }
+      mayhemCheck();
+      s.parity ^= 1;
+      if (s.parity) s.half ^= 1;
+    }
+    // the chain's handlers from the one after the bottom handler to the bottom one
+    function chain() {
+      BG.length = 0;
+      for (let guard = 0; guard < 8; guard++) {
+        const n = s.next, ctx = { line: n.line };
+        const [line, h] = H[n.h].call(ctx);
+        s.next = { line, h };
+        if (n.h === 'bottom') break;
+      }
+    }
+    // The main loop's work once the bottom handler has set frame_flag ($823E-$8285). A page's
+    // set-up ($80EC) takes about 24,000 cycles, and with the interrupts and the video chip's
+    // stolen cycles it lasts two frames: the credits chain and a bottom handler run while it
+    // builds the landscape, and the next frame's sky, ground and bottom handlers while it prints
+    // the name (none of them touches what the set-up is writing at that moment). The loop then
+    // finds frame_flag set and goes round twice.
+    function mainLoop() {
+      if (s.nextPage) {
+        pageSetup();
+        chain();
+        chain();
+        s.nextPage = 0;
+        rest();
+      }
+      rest();
+    }
+    // One frame, or two when a page is set up. Returns the last frame's background changes.
+    R.frame = function () {
+      chain();
+      mainLoop();
+      R.bg = BG.slice();
+      return R.bg;
+    };
+    // Start as rollcall_start ($80D6) does, at a page: multicolour on, and the animation index the
+    // earlier pages would have used.
+    R.start = function (page) {
+      s.page = page; s.anim = 0;
+      for (let p = 0; p < page; p++) s.anim += M[0x9804 + p] + 1;
+      V[0x16] |= 0x10;
+      pageSetup();
+      s.nextPage = 0;
+    };
+    R.save = () => ({ M: M.slice(), CR: CR.slice(), V: V.slice(), s: JSON.stringify(s), frames: R.frames, bg: (R.bg || []).slice() });
+    R.load = (k) => { M.set(k.M); CR.set(k.CR); V.set(k.V); Object.assign(s, JSON.parse(k.s)); R.frames = k.frames; R.bg = k.bg.slice(); };
+    R.handlers = H; R.pageSetup = pageSetup; R.printBig = printBig; R.printSmall = printSmall;
+    R.rolls = { clouds, mountains, groundNear, groundMid };
+    return R;
+  }
+
+  // ---------------------------------------------------------------- Mayhem TV and Apex
+  function TvShow(M0) {
+    const M = M0.slice(), CR = new Uint8Array(1024), V = new Uint8Array(0x2F);
+    const t = { parity: 0, done: 0, bands: [] };
+    const T = { M, CR, V, t, frames: 0 };
+    // $8B7D's screen: char $E7 in black, the two rows of COMPUTER . PRODUCTIONS, four odd characters
+    for (let i = 0; i <= 1000; i++) { M[0x4400 + i] = 0xE7; CR[i] = 0; }
+    for (let x = 0; x < 40; x++) { M[0x4400 + 12 * 40 + x] = M[0x76E4 + x]; M[0x4400 + 13 * 40 + x] = M[0x770C + x]; }
+    M[0x45B8] = 0x8A; M[0x45CC] = 0x8E; M[0x4630] = 0x8B; M[0x4644] = 0xE6;
+    // $8CAC: a 36-byte sprite set, from its end
+    function load(n) {
+      const a = M[0x8E03 + n] | (M[0x8E06 + n] << 8);
+      for (let i = 0; i < 8; i++) M[0x47F8 + i] = M[a + 28 + i];
+      for (let i = 0; i < 16; i++) V[i] = M[a + 12 + i];
+      for (let i = 0; i < 8; i++) V[0x27 + i] = M[a + 4 + i];
+      V[0x15] = M[a + 3]; V[0x1D] = M[a + 2]; V[0x10] = M[a + 1]; V[0x1B] = M[a];
+    }
+    const textColour = (c) => { for (let r = 11; r <= 14; r++) for (let x = 0; x < 40; x++) CR[r * 40 + x] = c; };
+    function letters() {                                       // $8CF1
+      if (!M[0x8C30] || !t.parity) return;
+      for (let k = 0; k < 4; k++) {
+        if (M[0x8C33 + k]) { M[0x8C33 + k]--; return; }
+        const x = M[0x8E75 + k], v = M[0x8E79 + 15 * k + x];
+        if (v !== 0xFF) { M[0x8E25 + k] = v; M[0x8E75 + k] = (x - 1) & 0xFF; } else if (k === 3) {
+          M[0x8C30] = 0; M[0x8C31] = 1; return;
+        }
+      }
+    }
+    function curtain() {                                       // $8C4D
+      if (!M[0x8C31]) return;
+      if (M[0x8C37]) { M[0x8C37]--; return; }
+      for (let x = 2; x >= 0; x -= 2) {
+        const v = M[0x8E39 + x] + 0x18;
+        M[0x8E39 + x] = v & 0xFF;
+        if (v > 0xFF) M[0x8E2E] ^= M[0x8C4A + x];
+      }
+      const y = M[0x8C3A];
+      M[0x8C3A] = (y - 1) & 0xFF;
+      if (M[0x8C3A] === 0) { M[0x8C31] = 0; textColour(1); M[0x8E2D] = 0xFF; M[0x8EB6] = M[0x8EB5]; return; }
+      M[0x8E30] = M[0x8C3B + y];
+    }
+    function curtainFade() {                                   // $8D6B
+      const x = M[0x8EB6];
+      if (!x || t.parity) return;
+      for (let i = 0; i < 8; i++) M[0x8E31 + i] = M[0x8EB7 + x];
+      M[0x8EB6] = x - 1;
+      if (!M[0x8EB6]) M[0x8ED4] = 8;
+    }
+    function apexFade() {                                      // $8D8F
+      const x = M[0x8ED4];
+      if (!x || !t.parity) return;
+      if (M[0x8C39]) { M[0x8C39]--; return; }
+      M[0x8ED4] = x - 1;
+      const c = M[0x8ED5 + x];
+      textColour(c);
+      for (let i = 0; i < 4; i++) M[0x8E0D + i] = c;
+      if (!M[0x8ED4]) t.done = 1;
+    }
+    function logoFade() {                                      // $8DBF
+      if (t.parity) return;
+      if (M[0x8C38]) { M[0x8C38]--; return; }
+      const x = M[0x8EC2];
+      if (!x) { M[0x8C32] = 1; M[0x8C30] = 1; return; }
+      const c = M[0x8EC3 + x];
+      if (c === 0xFF) { M[0x8EC2] = x - 1; M[0x8C38] = 0x64; return; }
+      for (let i = 0; i < 6; i++) M[0x8E55 + i] = c;
+      M[0x8EC2] = x - 1;
+    }
+    // one frame: top ($59), middle ($83), bottom ($B9) handlers, then the loop's parity toggle.
+    // bands: the register state each band of lines is drawn with
+    T.frame = function () {
+      t.bands = [];
+      load(M[0x8C32] ? 0 : 2);                                 // $8BD8, line $59
+      t.bands.push([0, V.slice(), M.slice(0x47F8, 0x4800)]);
+      if (M[0x8C32]) load(1);                                  // $8BF9, line $83
+      t.bands.push([0x84, V.slice(), M.slice(0x47F8, 0x4800)]);
+      if (M[0x8C32]) { letters(); curtain(); curtainFade(); apexFade(); } else logoFade();   // $8C0A
+      T.frames++;
+      t.parity ^= 1;
+      return !t.done;
+    };
+    T.load = load;
+    return T;
+  }
+
+  // ---------------------------------------------------------------- drawing
+  // The 320x200 text window: multicolour text mode as the roll call sets it (mc), characters at
+  // $7800, screen $4400, sprites in VIC bank 1. bg(line) gives the background colour of a raster
+  // line, set: the register state, or bands [[firstLine, V, pointers], ...] for a raster split.
+  function draw(img, M, CR, V, bg, mc, bands, opt) {
+    opt = opt || {};
+    const W = 320, D = img.data;
+    const fg = new Uint8Array(W), col = new Uint8Array(W), sc = new Int8Array(W), sb = new Uint8Array(W);
+    const spr = bands || [[0, V, M.subarray(0x47F8, 0x4800)]];
+    for (let y = 0; y < 200; y++) {
+      const line = y + 51, back = bg(line);
+      const row = y >> 3, py = y & 7;
+      let band = spr[0];
+      for (const b of spr) if (line >= b[0]) band = b;
+      const SV = band[1], SP = band[2];
+      // the characters
+      for (let c = 0; c < 40; c++) {
+        const i = row * 40 + c, ch = (opt.screen ? opt.screen[i] : M[0x4400 + i]);
+        const bits = M[0x7800 + ch * 8 + py], cc = CR[i] & 15;
+        for (let x = 0; x < 8; x++) {
+          let v, f;
+          if (mc && (cc & 8)) {
+            const pr = (bits >> (6 - (x & 6))) & 3;
+            v = pr === 0 ? back : pr === 1 ? V[0x22] & 15 : pr === 2 ? V[0x23] & 15 : cc & 7;
+            f = pr >= 2;
+          } else {
+            f = (bits >> (7 - x)) & 1;
+            v = f ? cc : back;
+          }
+          col[c * 8 + x] = v; fg[c * 8 + x] = f;
+        }
+      }
+      // the sprites: the lowest-numbered sprite with a pixel here wins, and its priority bit
+      // decides between it and the foreground
+      sc.fill(-1); sb.fill(0);
+      for (let n = 7; n >= 0; n--) {
+        if (!((SV[0x15] >> n) & 1)) continue;
+        const ey = (SV[0x17] >> n) & 1, ex = (SV[0x1D] >> n) & 1;
+        const sy = line - SV[1 + 2 * n] - 1, r = ey ? sy >> 1 : sy;
+        if (sy < 0 || r > 20) continue;
+        const x0 = SV[2 * n] + (((SV[0x10] >> n) & 1) << 8) - 24;
+        const a = 0x4000 + SP[n] * 64 + r * 3, m = (SV[0x1C] >> n) & 1;
+        for (let k = 0; k < 24; k++) {
+          const byte = M[a + (k >> 3)];
+          let c;
+          if (m) {
+            const pr = (byte >> (6 - (k & 6))) & 3;
+            c = pr === 0 ? -1 : pr === 1 ? SV[0x25] : pr === 2 ? SV[0x27 + n] : SV[0x26];
+          } else c = (byte >> (7 - (k & 7))) & 1 ? SV[0x27 + n] : -1;
+          if (c < 0) continue;
+          for (let e = 0; e <= ex; e++) {
+            const x = x0 + (ex ? k * 2 + e : k);
+            if (x < 0 || x >= W) continue;
+            sc[x] = c & 15; sb[x] = (SV[0x1B] >> n) & 1;
+          }
+        }
+      }
+      for (let x = 0; x < W; x++) {
+        const v = sc[x] >= 0 && !(sb[x] && fg[x]) ? sc[x] : col[x];
+        const o = (y * W + x) * 4, rgb = RGB[v];
+        D[o] = rgb[0]; D[o + 1] = rgb[1]; D[o + 2] = rgb[2]; D[o + 3] = 255;
+      }
+    }
+  }
+  // the background of a raster line from a roll-call frame's changes: a colour bar set draws one
+  // line a colour from the second line after its handler's: the handler's first write lands late
+  // in the next line (the KERNAL's entry and the NOP slide $8A56 come first), as the timed run
+  // (work/intro/sim.js) and the screenshots agree
+  function bgOf(M, changes, prev, d) {
+    d = d === undefined ? 2 : d;
+    const lines = new Uint8Array(312).fill(prev || 0);
+    let cur = prev || 0, at = 0;
+    const ev = changes.slice().sort((a, b) => a[0] - b[0]);
+    for (const [line, v] of ev) {
+      for (let l = at; l < line && l < 312; l++) lines[l] = cur;
+      if (v >= 0) { cur = v; at = line; continue; }
+      const set = -1 - v, a = M[0x9535 + set] | (M[0x9541 + set] << 8), n = M[0x954D + set];
+      for (let l = at; l < line + d; l++) lines[l] = cur;
+      for (let k = 0; k < n; k++) lines[line + d + k] = M[a + k] & 15;
+      cur = 0; at = line + d + n;
+    }
+    for (let l = at; l < 312; l++) lines[l] = cur;
+    return (line) => lines[line];
+  }
+  return { PAL, RGB, image, RollCall, TvShow, draw, bgOf, b64 };
+})();
+// </mimi-core>
+// <mimi-widgets>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const IMG = MIMI.image(MIMI_RAM);
+  const hex = (n, w) => '$' + n.toString(16).toUpperCase().padStart(w || 2, '0');
+  const NAMES = ['Stegosaurus', 'Megasaurus', 'Ballodactyl', 'Burrowsaurus', 'Spikeysaurus', 'Flapodactyl',
+                 'Dragosaurus', 'Diplodocus', 'Bobodactyl', 'Mayhem'];
+  const CREDITS = ['John Rowlands', 'Steve Rowlands', 'Andy Roberts', 'Ollie Alderton', 'Commodore Format',
+                   'Tracy Matheussen', 'Andy Smith', 'John Twiddy', 'Mr and Mrs Rowlands', 'Press fire'];
+  const COLOUR_NAMES = ['black', 'white', 'red', 'cyan', 'purple', 'green', 'blue', 'yellow', 'orange', 'brown',
+                        'light red', 'dark grey', 'grey', 'light green', 'light blue', 'light grey'];
+
+  // a canvas for the 320x200 text window
+  function screen(cv) {
+    cv.width = 320; cv.height = 200;
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(320, 200);
+    return (M, CR, V, bg, mc, bands) => { MIMI.draw(img, M, CR, V, bg, mc, bands); ctx.putImageData(img, 0, 0); };
+  }
+  function pick(sel, names, onChange) {
+    names.forEach((n, i) => sel.add(new Option(n, i)));
+    sel.addEventListener('change', () => onChange(+sel.value));
+    sel.parentNode.querySelectorAll('.step').forEach((b) => b.addEventListener('click', () => {
+      sel.value = (+sel.value + +b.dataset.d + names.length) % names.length; onChange(+sel.value);
+    }));
+  }
+  // 50 frames a second: fn() returns false to stop
+  function player(fn) {
+    let id = 0, last = 0, acc = 0;
+    function tick(t) {
+      acc += Math.min(100, t - (last || t)); last = t;
+      while (acc >= 20) { acc -= 20; if (fn() === false) { stop(); return; } }
+      id = requestAnimationFrame(tick);
+    }
+    function stop() { cancelAnimationFrame(id); id = 0; last = 0; acc = 0; }
+    return { play() { stop(); id = requestAnimationFrame(tick); }, stop, get on() { return id !== 0; } };
+  }
+
+  // ---- the roll call, run once from its first page as the intro runs it, with a checkpoint at
+  // the start of each page; any moment of a page is its checkpoint and some frames
+  let RUN = null;
+  function run() {
+    if (RUN) return RUN;
+    const R = MIMI.RollCall(IMG);
+    R.start(0);
+    const pages = [{ start: R.save(), steps: [] }];
+    let cur = 0, off = 0, fade = -1;
+    for (let guard = 0; guard < 14000; guard++) {
+      R.frame(); off++;
+      const p = pages[cur], s = R.s;
+      if (p.arrive === undefined && !s.textWait) p.arrive = off;
+      if (p.arrive !== undefined && s.fadeStep !== fade) { if (s.fadeStep < fade) p.steps.push(off); fade = s.fadeStep; }
+      if (p.named === undefined && p.arrive !== undefined && !R.M[0x7734 + s.latinIndex] && !R.M[0x775C + s.nameIndex]) p.named = off;
+      if (p.credits === undefined && s.creditsMode) p.credits = off;
+      if (p.full === undefined && s.creditsMode && s.hold) p.full = off;
+      if (cur < 9 && !s.creditsMode && s.page === cur + 1) {
+        p.end = off; cur++; off = 0; fade = -1;
+        pages.push({ start: R.save(), steps: [] });
+      }
+      if (cur === 9 && p.full !== undefined && off > p.full + 40) { p.end = off; break; }
+    }
+    RUN = { pages };
+    return RUN;
+  }
+  // a machine at frame `off` of page p
+  function at(R, p, off) {
+    const P = run().pages[p];
+    R.load(P.start);
+    for (let k = 0; k < off; k++) R.frame();
+    return R;
+  }
+  const bgOf = (R) => MIMI.bgOf(R.M, R.bg || []);
+  const mcOf = (R) => (R.V[0x16] & 0x10) !== 0;
+
+  // ---------------------------------------------------------------- roll call page
+  (function () {
+    const cv = $('mimi-page');
+    if (!cv) return;
+    const show = screen(cv), sel = $('mimi-dino'), fadeIn = $('mimi-fade'), out = $('mimi-pageout');
+    const A = MIMI.RollCall(IMG), B = MIMI.RollCall(IMG);
+    let page = 0, pos = 0, playing = null;
+    const swatch = (c) => '<span class="mimi-sw" style="background:' + MIMI.PAL[c & 15] + '" title="' + COLOUR_NAMES[c & 15] + '"></span>';
+    // the fade's two tables, step 8 (first) down to 1 (last)
+    function table() {
+      const M = IMG, mayhem = page === 9, rows = [];
+      for (let k = 8; k >= 1; k--) {
+        const g = M[0x94FF + k] | (M[0x9508 + k] << 8);
+        const t = mayhem ? 0x9912 : 0x98D2, sp = M[t + k] | (M[t + 9 + k] << 8);
+        rows.push('<tr data-k="' + k + '"><td class="mimi-n">' + k + '</td><td class="mimi-n">' + hex(g, 4) + '</td><td>' +
+          [0, 1, 2, 3].map((i) => swatch(M[g + i])).join('') + '</td><td class="mimi-n">' + hex(sp, 4) + '</td><td>' +
+          [0, 1, 2, 3, 4].map((i) => swatch(M[sp + i])).join('') + '</td></tr>');
+      }
+      $('mimi-fadetbl').innerHTML = '<tr><th>Step</th><th>Landscape</th><th>sky, ground, <code>$D022</code>, <code>$D023</code></th>' +
+        '<th>Sprites</th><th><code>$D025</code>, <code>$D026</code>, sprites 4, 5, 6</th></tr>' + rows.join('');
+    }
+    function mark(k) {
+      $('mimi-fadetbl').querySelectorAll('tr[data-k]').forEach((tr) => tr.classList.toggle('mimi-cur', +tr.dataset.k === k));
+    }
+    // the slider: 0 in colour, 1-8 after fade step 8 ... 1, 9 with both names in
+    function frameFor(v) {
+      const P = run().pages[page];
+      if (v === 0) return P.arrive - 1;
+      if (v <= 8) return P.steps[v - 1];
+      return P.named;
+    }
+    function render(R, composite) {
+      if (composite) {                               // the names where they end up, over the colour picture
+        at(B, page, frameFor(9));
+        for (const r of [4, 5, 20]) R.M.set(B.M.subarray(0x4400 + r * 40, 0x4400 + r * 40 + 40), 0x4400 + r * 40);
+        const bg = B.bg.map(([l, v]) => [l, v >= 0 && l === 0x6A ? R.s.sky : v >= 0 && l === 0xA2 ? R.s.ground : v]);
+        show(R.M, R.CR, R.V, MIMI.bgOf(R.M, bg), true);
+        return;
+      }
+      show(R.M, R.CR, R.V, bgOf(R), mcOf(R));
+    }
+    function say(R, off) {
+      const P = run().pages[page], s = R.s;
+      let what;
+      if (off < P.arrive) what = s.walkDelay ? 'waiting ' + s.walkDelay + ' frames before the walk' : 'walking in, sprite 4 at X ' + R.V[8];
+      else if (P.credits !== undefined && off >= P.credits) what = 'the credits page';
+      else what = s.fadeStep ? 'fading: step ' + (s.fadeStep + 1) + ' applied' : 'grey; the names scroll in';
+      out.textContent = NAMES[page] + ', frame ' + off + ' of the page: ' + what;
+      mark(off >= P.arrive && (P.credits === undefined || off < P.credits) ? (s.fadeStep ? s.fadeStep + 1 : 1) : -1);
+    }
+    function still(v) {
+      if (playing) { playing.stop(); playing = null; }
+      pos = v; fadeIn.value = v;
+      const off = frameFor(v);
+      at(A, page, off);
+      render(A, v === 0);
+      say(A, off);
+      if (v === 0) out.textContent = NAMES[page] + ' as it arrives, in colour; the names are drawn where they end up (in the game they scroll in while it fades)';
+    }
+    function play(from, to) {
+      if (playing) playing.stop();
+      at(A, page, from);
+      let off = from;
+      playing = player(() => {
+        A.frame(); off++;
+        render(A, false); say(A, off);
+        const P = run().pages[page];
+        let v = 0;
+        for (let i = 0; i < 8; i++) if (off >= P.steps[i]) v = i + 1;
+        if (off >= P.named) v = 9;
+        fadeIn.value = v;
+        return off < to;
+      });
+      playing.play();
+    }
+    function choose(p) { page = p; sel.value = p; table(); still(pos); }
+    pick(sel, NAMES.map((n, i) => i + ' · ' + n), choose);
+    fadeIn.addEventListener('input', () => still(+fadeIn.value));
+    $('mimi-colour').addEventListener('click', () => still(0));
+    $('mimi-grey').addEventListener('click', () => still(9));
+    $('mimi-playfade').addEventListener('click', () => { const P = run().pages[page]; play(P.arrive - 1, P.named + 10); });
+    $('mimi-playpage').addEventListener('click', () => { const P = run().pages[page]; play(0, P.end); });
+    choose(0);
+  })();
+
+  // ---------------------------------------------------------------- the landscape rolling
+  (function () {
+    const cv = $('mimi-land');
+    if (!cv) return;
+    const off = document.createElement('canvas'), show = screen(off);
+    cv.width = 224; cv.height = 96;
+    const ctx = cv.getContext('2d');
+    const R = MIMI.RollCall(IMG);
+    R.start(0);
+    R.V[0x15] = 0x80;                                // the sun only
+    R.s.sky = R.M[0x94CD]; R.s.ground = R.M[0x94CE];
+    let frames = 0, marks = false;
+    const bg = (line) => (line >= 0x6A && line < 0xA2 ? R.s.sky : line >= 0xA2 && line < 0xCA ? R.s.ground : 0);
+    function draw() {
+      show(R.M, R.CR, R.V, bg, true);
+      ctx.drawImage(off, 48, 56, 224, 96, 0, 0, 224, 96);
+      if (marks) {
+        ctx.lineWidth = 1;
+        for (const [r0, r1, w, c] of [[0, 1, 14, '#ff3b3b'], [2, 3, 14, '#ff3b3b'], [4, 9, 7, '#ff3b3b'], [9, 12, 3, '#ff3b3b']]) {
+          ctx.strokeStyle = c;
+          for (let x = 0; x < 28; x += w) ctx.strokeRect(x * 8 + 0.5, r0 * 8 + 0.5, w * 8 - 1, (r1 - r0) * 8 - 1);
+        }
+      }
+      $('mimi-landout').textContent = 'frame ' + frames + ': clouds moved ' + Math.floor(frames / 2) + ' px, mountains ' +
+        2 * Math.ceil(frames / 2) + ' px, ground ' + 2 * frames + ', ' + 4 * frames + ' and ' + 6 * frames + ' px';
+    }
+    function step() {                                // one frame, in the order of the raster chain
+      R.rolls.groundMid(); R.rolls.groundNear(); R.rolls.clouds(); R.rolls.mountains();
+      R.s.parity ^= 1; frames++;
+    }
+    R.s.parity = 0;
+    const P = player(() => { step(); draw(); });
+    const btn = $('mimi-landplay');
+    btn.addEventListener('click', () => { if (P.on) { P.stop(); btn.textContent = 'Play'; } else { P.play(); btn.textContent = 'Pause'; } });
+    $('mimi-landstep').addEventListener('click', () => { P.stop(); btn.textContent = 'Play'; step(); draw(); });
+    $('mimi-landmarks').addEventListener('change', (e) => { marks = e.target.checked; draw(); });
+    draw();
+  })();
+
+  // ---------------------------------------------------------------- the sprite sheet
+  (function () {
+    const host = $('mimi-sheet');
+    if (!host) return;
+    const M = IMG;
+    let grey = false;
+    function sprite(ctx, block, x0, y0, colour, mc, ex, ey, c1, c2) {
+      const a = 0x4000 + block * 64;
+      for (let r = 0; r < 21; r++) for (let k = 0; k < 24; k++) {
+        const byte = M[a + r * 3 + (k >> 3)];
+        let c;
+        if (mc) { const p = (byte >> (6 - (k & 6))) & 3; c = p === 0 ? -1 : p === 1 ? c1 : p === 2 ? colour : c2; } else c = (byte >> (7 - (k & 7))) & 1 ? colour : -1;
+        if (c < 0) continue;
+        ctx.fillStyle = MIMI.PAL[c & 15];
+        ctx.fillRect(x0 + k * (ex + 1), y0 + r * (ey + 1), ex + 1, ey + 1);
+      }
+    }
+    function draw() {
+      host.innerHTML = '';
+      let anim = 0;
+      for (let p = 0; p < 10; p++) {
+        const rec = M[0x961E + p] | (M[0x9628 + p] << 8), n = M[0x9804 + p] + 1;
+        const lists = [];
+        for (let k = 0; k < n; k++, anim++) lists.push({ a: M[0x97C2 + anim] | (M[0x97D8 + anim] << 8), len: M[0x97EE + anim] + 1 });
+        // the frames in the order they are shown (each list is played from its end), doubles dropped
+        const frames = [];
+        const L = Math.max(...lists.map((l) => l.len));
+        for (let i = L - 1; i >= 0; i--) {
+          const f = lists.map((l) => M[l.a + (i % l.len)]);
+          if (!frames.length || frames[frames.length - 1].join() !== f.join()) frames.push(f);
+        }
+        if (frames.length > 1 && frames[0].join() === frames[frames.length - 1].join()) frames.pop();
+        const extra = p === 9 ? [[0xA9, 0xAA]] : [];
+        const fadeRec = (p === 9 ? 0x9929 : 0x98EA);
+        const col = (k) => (grey ? M[fadeRec + 2 + k] : M[rec + 12 + k]);
+        const c1 = grey ? M[fadeRec] : M[rec + 6], c2 = grey ? M[fadeRec + 1] : M[rec + 7];
+        const mcm = M[rec + 2], exm = M[rec + 3], eym = M[rec + 4];
+        const xs = [0, 1, 2].map((k) => M[rec + 24 + 2 * k]), ys = [0, 1, 2].map((k) => M[rec + 25 + 2 * k]);
+        const used = frames[0].length;
+        const minX = Math.min(...xs.slice(0, used)), minY = Math.min(...ys.slice(0, used));
+        const W = Math.max(...xs.slice(0, used).map((x, k) => x - minX + 24 * (((exm >> (4 + k)) & 1) + 1)));
+        const H = Math.max(...ys.slice(0, used).map((y, k) => y - minY + 21 * (((eym >> (4 + k)) & 1) + 1)));
+        const row = document.createElement('div');
+        row.className = 'mimi-sheetrow';
+        const blocks = [...new Set(frames.flat().concat(extra.flat()))].sort((a, b) => a - b);
+        row.innerHTML = '<p class="mimi-sheetname">' + NAMES[p] + ' <span>' + blocks.map((b) => hex(b)).join(' ') + '</span></p>';
+        for (const f of frames.concat(extra)) {
+          const c = document.createElement('canvas');
+          c.width = W; c.height = H; c.className = 'mimi-sprite';
+          const ctx = c.getContext('2d');
+          for (let k = used - 1; k >= 0; k--) {         // sprite 4 in front
+            sprite(ctx, f[k], xs[k] - minX, ys[k] - minY, col(k), (mcm >> (4 + k)) & 1, (exm >> (4 + k)) & 1, (eym >> (4 + k)) & 1, c1, c2);
+          }
+          c.style.width = (W * 2) + 'px';
+          row.appendChild(c);
+        }
+        host.appendChild(row);
+      }
+    }
+    document.querySelectorAll('[data-mimi-sheet]').forEach((b) => b.addEventListener('click', () => {
+      grey = b.dataset.mimiSheet === 'grey';
+      document.querySelectorAll('[data-mimi-sheet]').forEach((x) => x.classList.toggle('mimi-on', x === b));
+      draw();
+    }));
+    draw();
+  })();
+
+  // ---------------------------------------------------------------- credits pages
+  (function () {
+    const cv = $('mimi-credits');
+    if (!cv) return;
+    const show = screen(cv), sel = $('mimi-credsel'), R = MIMI.RollCall(IMG);
+    let page = 0, P = null;
+    function still() {
+      if (P) P.stop();
+      at(R, page, run().pages[page].full);
+      show(R.M, R.CR, R.V, bgOf(R), mcOf(R));
+      $('mimi-credout').textContent = 'Credits page ' + page + ', at full brightness';
+    }
+    pick(sel, CREDITS.map((n, i) => i + ' · ' + n), (p) => { page = p; still(); });
+    $('mimi-credplay').addEventListener('click', () => {
+      const Q = run().pages[page];
+      at(R, page, Q.credits);
+      let off = Q.credits;
+      if (P) P.stop();
+      P = player(() => {
+        R.frame(); off++;
+        show(R.M, R.CR, R.V, bgOf(R), mcOf(R));
+        const s = R.s;
+        $('mimi-credout').textContent = 'Credits page ' + page + ': ' + (s.inWait ? 'waiting' : s.inStep ? 'fading in' : s.hold ? 'held, ' + s.hold + ' counts left' :
+          s.outStep ? 'fading out' : s.nextWait ? 'waiting for the next dinosaur' : page === 9 ? 'stays: press fire' : '');
+        return off < Q.end && !(page === 9 && off > Q.full + 30);
+      });
+      P.play();
+    });
+    still();
+  })();
+
+  // ---------------------------------------------------------------- Mayhem TV and Apex
+  (function () {
+    const cv = $('mimi-tv');
+    if (!cv) return;
+    const show = screen(cv);
+    let T = MIMI.TvShow(IMG), P = null;
+    const black = () => 0;
+    function phase() {
+      const M = T.M;
+      if (!M[0x8C32]) return 'the Mayhem TV logo, six sprites, fading (' + hex(0x8DBF, 4) + ')';
+      if (M[0x8C30]) return 'A, P, E and X zooming in from dots (' + hex(0x8CF1, 4) + ')';
+      if (M[0x8C31]) return 'the white bar wiping across (' + hex(0x8C4D, 4) + ')';
+      if (M[0x8EB6]) return 'the bar fading behind the text (' + hex(0x8D6B, 4) + ')';
+      if (M[0x8C39]) return 'held, ' + M[0x8C39] + ' counts before the fade';
+      return 'fading out (' + hex(0x8D8F, 4) + ')';
+    }
+    function draw() {
+      show(T.M, T.CR, T.V, black, false, T.t.bands.length ? T.t.bands : null);
+      $('mimi-tvout').textContent = 'frame ' + T.frames + ': ' + (T.t.done ? 'the end; the roll call follows' : phase());
+    }
+    const btn = $('mimi-tvplay');
+    function stop() { if (P) P.stop(); btn.textContent = 'Play'; }
+    btn.addEventListener('click', () => {
+      if (P && P.on) { stop(); return; }
+      if (T.t.done) T = MIMI.TvShow(IMG);
+      P = player(() => { const more = T.frame(); draw(); if (!more) { stop(); return false; } });
+      P.play(); btn.textContent = 'Pause';
+    });
+    $('mimi-tvrestart').addEventListener('click', () => { stop(); T = MIMI.TvShow(IMG); T.frame(); draw(); });
+    // open on the APEX screen as the screenshot shows it
+    for (let f = 0; f < 640; f++) T.frame();
+    draw();
+  })();
+})();
+// </mimi-widgets>
 </script>
