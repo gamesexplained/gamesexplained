@@ -187,15 +187,17 @@ step needs something only they have.
      the title tune, what a voice line says, what a picture shows.
      Settled early, each makes the page easier to follow. They are in
      `TODO.md` and the open rows of `features.md`.
-   - **What would improve the page on a first read.** Look at the pages
-     as someone who has never played the game, and recommend the three
-     or four changes that would help them most, a line each. They are
-     usually of these kinds: a picture of what the page only describes
-     (a map of the world, the pictures the game holds), a route through
-     the game a reader can replay, a widget made easier to use
-     (scrollback, a way out of a dead end, a download), and a claim
-     finished with its concrete case (the commands that should have won,
-     every character in one table). Start from the ideas in `TODO.md`.
+   - **Ideas for follow-ups.** Look at the pages as someone who has never
+     played the game, and offer three or four ideas they could take up
+     next, a line each, under a heading such as "Some ideas for
+     follow-ups": they are suggestions, and not every one will be worth
+     doing. Good ones are usually of these kinds: a picture of what the
+     page only describes (a map of the world, the pictures the game
+     holds), a route through the game a reader can replay, a widget made
+     easier to use (scrollback, a way out of a dead end, a download), and
+     a claim finished with its concrete case (the commands that should
+     have won, every character in one table). Start from the ideas in
+     `TODO.md`.
 
    A change they ask for goes on the same branch, with the checks before
    each commit, or on a new branch from `main` once the pull request has

@@ -76,8 +76,7 @@ in order:
    there is no remote at all, leave the branch and say so.
 6. **Debrief the contributor** once the pull request is open: where to
    see the pages, that it can be merged as it is, the questions only they
-   can answer, and the changes that would most improve the page on a
-   first read (`kit/START.md`, step 8).
+   can answer, and some ideas for follow-ups (`kit/START.md`, step 8).
 
 ## Working on the kit or the site
 
