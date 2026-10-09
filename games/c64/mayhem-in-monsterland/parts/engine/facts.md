@@ -57,6 +57,11 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   warnings at 060 and 030 (`$37E3`, `$37E6`); at 000 the life is lost
   (`$383F` → `$B5E9`).
 - Continues: `$CF8A`, 3 for a new game (`$E52D`), taken at `$3EAF`.
+- Every land load adds a life (`$CC55` → `life_add` `$3866`); a new game
+  then sets the lives to 3 (`$E52D`), so the first land starts with 3 and
+  each later land with one more than the last one ended with.
+- The high score is nine digits at `$F97F`-`$F987`, kept by the title in
+  Jellyland's file (`$9E89`-`$9EA6` there).
 
 ## Play
 
@@ -120,7 +125,7 @@ game's own `facts.md`. Unless marked *live*, a fact comes from the code.
   scrolling right (`$2482`-`$2538`) and by 40 scrolling left
   (`$28E1`-`$297F`, with row 14 carried to row 15 through `$BFCF`).
 - The big font: four character codes a letter at `$B6D5`, printed by
-  `$B817`; M and W three columns wide, I, J, L and punctuation one.
+  `$B817`; M and W three columns wide, I, J, L and most punctuation one, `?` two (`$B812`).
 
 ## Sound
 
