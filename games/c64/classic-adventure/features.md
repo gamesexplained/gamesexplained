@@ -30,21 +30,21 @@ Sources:
 
 | Feature | Status | Where |
 |---|---|---|
-| Commands of one or two words, typed and ended with RETURN ("Direct me with commands of 1 or 2 words") | live | line input `$1194`, parser `$11F7`-`$12B4` |
+| Commands of one or two words, typed and ended with RETURN ("Direct me with commands of 1 or 2 words") | live | line input `read_line` `$1194`, parser `parse` `$11D1`-`$12B4` |
 | Only the first four letters of a word count ("TAKE SILV" for "TAKE SILVER") | live | the vocabulary at `$47DF` holds four letters a word; `TAKE JEWELLERY` and `TAKE JEWE` both work |
 | Directions abbreviate to one letter, and the diagonals to two (`N`, `NE`) | live | vocabulary entries `N`, `E`, `NE`, `SW`, `U`, `D` |
 | `INSTRUCTIONS`, `INFO` and `HELP` print the help texts | live | rules at `$564D`, `$5653` and `$5659` (messages 1, 142 and 51) |
 | `INVENT` lists what you carry | live | action 0 at `$17F0` |
 | `SCORE` gives the score and the turns | live | action 15 at `$19E4` |
 | `QUIT` asks "Are you sure?", then gives the score and offers another game | live | action 11 at `$1980` |
-| `SAVE` writes the game to a blank tape; `RESTORE` reads it back | confirmed | actions 18 and 19 at `$1A5D` and `$1AA4` call the KERNAL's `SAVE` and `LOAD` on device 1; the tape prompts appear live and RUN/STOP returns to the game, but no tape was attached, so the data written was not checked |
+| `SAVE` writes the game to a blank tape; `RESTORE` reads it back | confirmed | actions 18 and 19 at `$1A5D` and `$1AA3` call the KERNAL's `SAVE` and `LOAD` on device 1; the tape prompts appear live and RUN/STOP returns to the game, but no tape was attached, so the data written was not checked |
 | Treasures count only when left in the building | live | `$19FB`-`$1A25` adds 10 for each treasure whose location is room 3; three treasures dropped there scored 30 |
 | "You lose points for getting killed" (`INFO`) | differs | the score is counted afresh from the treasures in the building at every `SCORE`; the death routine at `$1B35` never touches it. Died once, then scored 30 for three treasures |
 | "If you think you have found all the treasure, just keep exploring" | live | at a `SCORE` with exactly 15 objects in the building, flag 12 is set (`$1A27`); entering the hall of mists then closes the cave (status rules 11 and 12) |
 | Magic words (the debris room's note "Magic word XYZY") | live | travel entries for `XYZY` in rooms 3 and 11 |
 | The rod scares the bird (`HELP`) | live | rule at `$56C5`: "as you approach it becomes disturbed and you cannot catch it" |
 | Cave passages twist: going north and then south need not bring you back (inlay, `HELP`) | confirmed | each room has its own one-way exit list at `$4C49`/`$4D63`; the forest rooms 5 and 6 and the two mazes are built that way |
-| A lamp to light, darkness, and pits in the dark | live | `ON` lights the lamp; with it off, "It is now pitch dark" four times and the fifth move kills |
+| A lamp to light, darkness, and pits in the dark | live | `ON` lights the lamp; with it off, every description of a dark room prints "It is now pitch dark" and uses one of four for the whole life, and the fourth ends in the pit (`describe_room` `$1503`, status rule 21) |
 | Slay dragons, bribe trolls (inlay blurb) | traced | `KILL DRAGON` rules at `$59D1`-`$59DD`, `THROW <treasure>` at the troll at `$5A3D`-`$5AEB`; the run never reached the chasm |
 | "Shady and often unfriendly characters lurking in the dark" | live | the dwarf in the east/west canyon throws an axe (status rule 22) |
 | The tape loads in under three minutes with the Pavloda loader | open | this image is a disk transfer: the one file is loaded by the KERNAL and carries only a relocating wrapper (`orientation.md`). The tape and its loader were not seen |
@@ -81,8 +81,12 @@ Sources:
   side of the fissure and reappeared in the canyon).
 - **Death.** The lamp goes back to the road, everything else you carried
   is left in the room you came from, not the one you died in, and you
-  wake in the building with three turns of darkness to spare instead of
+  wake in the building with three dark descriptions to spare instead of
   four. Five lives in all (`$1B35`-`$1BA7`; one death live).
+- **The darkness is counted per life.** The count of dark descriptions
+  left is set only at a new game and at a death, so lighting the lamp
+  gives none back, and `LOOK` in the dark uses one (live: two dark
+  `LOOK`s, the lamp on and off, two more, and the fall).
 - **`ON` with no lamp** prints "You have no source of light." and then
   "Okay" (live).
 - **The second `N` from the forest** and other repeated exits are chance
@@ -98,6 +102,25 @@ Sources:
 - **`GET CHAIN`** while the bear is still chained prints "Your feet are
   now wet." (rule at `$57FD` prints message 70; message 169, "The bear is still
   chained to the wall.", is the one `GET BEAR` uses).
+- **The chained bear can be taken.** The `GET BEAR` rule that should
+  refuse while the chain holds it (`$567D`) tests object 78, a flute no
+  rule places, instead of object 76, the chain on the wall, so once fed
+  the bear follows you chain and all (live, with the fed bear poked).
+- **`FEE FIE` never brings the troll back.** It returns the golden eggs
+  to the giant room. The rule after it (`$5B51`), which would also put
+  the troll back on the bridge, is never reached: the rule before it
+  (`$5B4B`) asks only whether the eggs exist, and a treasure always does,
+  even one thrown to the troll (live).
+- **Two empty answers.** `KILL CLAM` and `OVER` at the fissure with no
+  bridge print empty messages, a blank line (rules at `$59B9` and
+  `$52E1`, messages 15 and 87, live).
+- **The score's hundreds digit is written, not counted.** A carry out of
+  the tens sets it to `1`, so 200 would read as 100 (`$1A1C`, live with
+  objects poked into the building); 150 is the most a game can reach.
+- **The 10,000th command breaks the printer.** The turn counter's carry
+  out of the thousands lands on `$1067`, inside print_record, and turns
+  its `STA $61` into `STX $61`; after that the texts come out as blank
+  lines (`get_command` `$13C8`, live with the digits poked to 9999).
 
 ## Open questions
 

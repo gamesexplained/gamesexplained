@@ -20,3 +20,4 @@ commands (`orientation.md`).
 | `save-tape-prompt.png` | `SAVE` waiting for a tape |
 | `another-game-no-resets.png` | "Another game (y or n)?" answered N: the machine resets to BASIC |
 | `regvault-welcome.png` | REG-Vault's own screenshot of the welcome screen, from https://regvault.org/game/c64/43a65b08db41c678d5635e3efa913159, saved 8 October 2026; its blue is another emulator's palette |
+| `turn-10000-blank.png` | the turn digits poked to `9999`, then one `LOOK`, the 10,000th command, which patches the printer: the `LOOK` and `SCORE` typed after it print only blank lines (`facts.md`, "The turns") |

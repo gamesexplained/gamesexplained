@@ -12586,39 +12586,39 @@
   },
   {
    "address": 65466,
-   "name": "s_FFBA",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "KERNAL_SETLFS",
+   "type": "Predefined",
+   "kind": "system"
   },
   {
    "address": 65469,
-   "name": "s_FFBD",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "KERNAL_SETNAM",
+   "type": "Predefined",
+   "kind": "system"
   },
   {
    "address": 65487,
-   "name": "s_FFCF",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "KERNAL_CHRIN",
+   "type": "Predefined",
+   "kind": "system"
   },
   {
    "address": 65490,
-   "name": "s_FFD2",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "KERNAL_CHROUT",
+   "type": "Predefined",
+   "kind": "system"
   },
   {
    "address": 65493,
-   "name": "s_FFD5",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "KERNAL_LOAD",
+   "type": "Predefined",
+   "kind": "system"
   },
   {
    "address": 65496,
-   "name": "s_FFD8",
-   "type": "Subroutine",
-   "kind": "auto"
+   "name": "KERNAL_SAVE",
+   "type": "Predefined",
+   "kind": "system"
   }
  ],
  "comments": [
@@ -12870,7 +12870,7 @@
   {
    "address": 3159,
    "type": "line",
-   "text": "Three spaces before the line buffer that nothing reads or writes."
+   "text": "Three spaces before the line buffer. No instruction reads or writes them; SAVE and RESTORE carry them with the rest of the block from $0BBB."
   },
   {
    "address": 3161,
@@ -12980,7 +12980,7 @@
   {
    "address": 3233,
    "type": "line",
-   "text": "The turn count, 16 bits, counted by get_command and never read: the score shows the ASCII copy at $0F68 instead."
+   "text": "The turn count, 16 bits, counted by get_command. No instruction reads it, though SAVE and RESTORE carry it with the rest of the block from $0BBB: the score shows the ASCII copy at $0F68 instead."
   },
   {
    "address": 3234,
@@ -12995,7 +12995,7 @@
   {
    "address": 3236,
    "type": "line",
-   "text": "Set to 0 by new_game; nothing else uses it."
+   "text": "Set to 0 by new_game. No other instruction reads or writes it; SAVE and RESTORE carry it with the rest of the block from $0BBB."
   },
   {
    "address": 3237,
@@ -13005,7 +13005,7 @@
   {
    "address": 3238,
    "type": "line",
-   "text": "$0CA7 and $0CA8 hold rooms 21 and 22, the rooms of 'You didn't make it' and 'The dome is unclimbable', which are never remembered as the previous room. $0CA6 itself is set to 0 by new_game and not read."
+   "text": "$0CA7 and $0CA8 hold rooms 21 and 22, the rooms of 'You didn't make it' and 'The dome is unclimbable', which are never remembered as the previous room. $0CA6 itself is set to 0 by new_game, and no instruction reads it; SAVE and RESTORE carry it with the rest of the block from $0BBB."
   },
   {
    "address": 3239,
@@ -13410,7 +13410,7 @@
   {
    "address": 6036,
    "type": "line",
-   "text": "Run a rule's actions, two bytes each, code and argument: jump through the action table at $0CC8 with the argument in $4C. A handler that does not end the turn comes back to next_action. When the list runs out, a status rule goes on to the next status rule and a command rule to no_rule."
+   "text": "Run a rule's actions, read two bytes at a time, code and argument: jump through the action table at $0CC8 with the argument in $4C. The actions that ignore the argument all leave the rule, so the lists store them as the code alone and the byte read with it belongs to the next list. A handler that does not end the turn comes back to next_action. When the list runs out, a status rule goes on to the next status rule and a command rule to no_rule."
   },
   {
    "address": 6099,
@@ -18845,12 +18845,12 @@
   {
    "address": 24537,
    "type": "line",
-   "text": "The actions of command rule 0 (1, code and argument each): describe room."
+   "text": "The actions of command rule 0 (1 in 1 byte, describe room, stored as its code alone since it leaves the rule): describe room."
   },
   {
    "address": 24538,
    "type": "line",
-   "text": "The actions of command rule 1 (1, code and argument each): describe room."
+   "text": "The actions of command rule 1 (1 in 1 byte, describe room, stored as its code alone since it leaves the rule): describe room."
   },
   {
    "address": 24539,
@@ -18865,12 +18865,12 @@
   {
    "address": 24543,
    "type": "line",
-   "text": "The actions of command rule 4 (2, code and argument each): message 95 'You don't fit through a two-inch slit.'; end turn."
+   "text": "The actions of command rule 4 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 95 'You don't fit through a two-inch slit.'; end turn."
   },
   {
    "address": 24546,
    "type": "line",
-   "text": "The actions of command rule 5 (2, code and argument each): message 95 'You don't fit through a two-inch slit.'; end turn."
+   "text": "The actions of command rule 5 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 95 'You don't fit through a two-inch slit.'; end turn."
   },
   {
    "address": 24549,
@@ -18890,17 +18890,17 @@
   {
    "address": 24555,
    "type": "line",
-   "text": "The actions of command rule 9 (2, code and argument each): message 93 'You can't go through a locked steel grate.'; end turn."
+   "text": "The actions of command rule 9 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 93 'You can't go through a locked steel grate.'; end turn."
   },
   {
    "address": 24558,
    "type": "line",
-   "text": "The actions of command rule 10 (2, code and argument each): message 93 'You can't go through a locked steel grate.'; end turn."
+   "text": "The actions of command rule 10 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 93 'You can't go through a locked steel grate.'; end turn."
   },
   {
    "address": 24561,
    "type": "line",
-   "text": "The actions of command rule 11 (2, code and argument each): message 93 'You can't go through a locked steel grate.'; end turn."
+   "text": "The actions of command rule 11 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 93 'You can't go through a locked steel grate.'; end turn."
   },
   {
    "address": 24564,
@@ -18915,12 +18915,12 @@
   {
    "address": 24568,
    "type": "line",
-   "text": "The actions of command rule 14 (2, code and argument each): message 93 'You can't go through a locked steel grate.'; end turn."
+   "text": "The actions of command rule 14 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 93 'You can't go through a locked steel grate.'; end turn."
   },
   {
    "address": 24571,
    "type": "line",
-   "text": "The actions of command rule 15 (2, code and argument each): message 93 'You can't go through a locked steel grate.'; end turn."
+   "text": "The actions of command rule 15 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 93 'You can't go through a locked steel grate.'; end turn."
   },
   {
    "address": 24574,
@@ -19015,7 +19015,7 @@
   {
    "address": 24610,
    "type": "line",
-   "text": "The actions of command rule 34 (2, code and argument each): message 96 'I respectfully suggest you go across the br...'; end turn."
+   "text": "The actions of command rule 34 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 96 'I respectfully suggest you go across the br...'; end turn."
   },
   {
    "address": 24613,
@@ -19025,22 +19025,22 @@
   {
    "address": 24615,
    "type": "line",
-   "text": "The actions of command rule 36 (2, code and argument each): message 87 (empty); end turn."
+   "text": "The actions of command rule 36 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 87 (empty); end turn."
   },
   {
    "address": 24618,
    "type": "line",
-   "text": "The actions of command rule 37 (2, code and argument each): message 97 'There is no way across the fissure.'; end turn."
+   "text": "The actions of command rule 37 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 97 'There is no way across the fissure.'; end turn."
   },
   {
    "address": 24621,
    "type": "line",
-   "text": "The actions of command rule 38 (2, code and argument each): message 97 'There is no way across the fissure.'; end turn."
+   "text": "The actions of command rule 38 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 97 'There is no way across the fissure.'; end turn."
   },
   {
    "address": 24624,
    "type": "line",
-   "text": "The actions of command rule 39 (2, code and argument each): message 97 'There is no way across the fissure.'; end turn."
+   "text": "The actions of command rule 39 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 97 'There is no way across the fissure.'; end turn."
   },
   {
    "address": 24627,
@@ -19170,7 +19170,7 @@
   {
    "address": 24677,
    "type": "line",
-   "text": "The actions of command rule 65 (2, code and argument each): message 148 'It is too far up for you to reach.'; end turn."
+   "text": "The actions of command rule 65 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 148 'It is too far up for you to reach.'; end turn."
   },
   {
    "address": 24680,
@@ -19185,7 +19185,7 @@
   {
    "address": 24684,
    "type": "line",
-   "text": "The actions of command rule 68 (2, code and argument each): message 96 'I respectfully suggest you go across the br...'; end turn."
+   "text": "The actions of command rule 68 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 96 'I respectfully suggest you go across the br...'; end turn."
   },
   {
    "address": 24687,
@@ -19195,22 +19195,22 @@
   {
    "address": 24689,
    "type": "line",
-   "text": "The actions of command rule 70 (2, code and argument each): message 97 'There is no way across the fissure.'; end turn."
+   "text": "The actions of command rule 70 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 97 'There is no way across the fissure.'; end turn."
   },
   {
    "address": 24692,
    "type": "line",
-   "text": "The actions of command rule 71 (2, code and argument each): message 97 'There is no way across the fissure.'; end turn."
+   "text": "The actions of command rule 71 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 97 'There is no way across the fissure.'; end turn."
   },
   {
    "address": 24695,
    "type": "line",
-   "text": "The actions of command rule 72 (2, code and argument each): message 97 'There is no way across the fissure.'; end turn."
+   "text": "The actions of command rule 72 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 97 'There is no way across the fissure.'; end turn."
   },
   {
    "address": 24698,
    "type": "line",
-   "text": "The actions of command rule 73 (2, code and argument each): message 97 'There is no way across the fissure.'; end turn."
+   "text": "The actions of command rule 73 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 97 'There is no way across the fissure.'; end turn."
   },
   {
    "address": 24701,
@@ -19245,37 +19245,37 @@
   {
    "address": 24715,
    "type": "line",
-   "text": "The actions of command rule 80 (2, code and argument each): message 95 'You don't fit through a two-inch slit.'; end turn."
+   "text": "The actions of command rule 80 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 95 'You don't fit through a two-inch slit.'; end turn."
   },
   {
    "address": 24718,
    "type": "line",
-   "text": "The actions of command rule 81 (2, code and argument each): message 95 'You don't fit through a two-inch slit.'; end turn."
+   "text": "The actions of command rule 81 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 95 'You don't fit through a two-inch slit.'; end turn."
   },
   {
    "address": 24721,
    "type": "line",
-   "text": "The actions of command rule 82 (2, code and argument each): message 95 'You don't fit through a two-inch slit.'; end turn."
+   "text": "The actions of command rule 82 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 95 'You don't fit through a two-inch slit.'; end turn."
   },
   {
    "address": 24724,
    "type": "line",
-   "text": "The actions of command rule 83 (2, code and argument each): message 95 'You don't fit through a two-inch slit.'; end turn."
+   "text": "The actions of command rule 83 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 95 'You don't fit through a two-inch slit.'; end turn."
   },
   {
    "address": 24727,
    "type": "line",
-   "text": "The actions of command rule 84 (2, code and argument each): message 95 'You don't fit through a two-inch slit.'; end turn."
+   "text": "The actions of command rule 84 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 95 'You don't fit through a two-inch slit.'; end turn."
   },
   {
    "address": 24730,
    "type": "line",
-   "text": "The actions of command rule 85 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 85 (2, code and argument each; end turn ignores its argument byte, $1D): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24734,
    "type": "line",
-   "text": "The actions of command rule 86 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 86 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24737,
@@ -19290,7 +19290,7 @@
   {
    "address": 24741,
    "type": "line",
-   "text": "The actions of command rule 89 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 89 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24744,
@@ -19305,7 +19305,7 @@
   {
    "address": 24748,
    "type": "line",
-   "text": "The actions of command rule 92 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 92 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24751,
@@ -19315,12 +19315,12 @@
   {
    "address": 24753,
    "type": "line",
-   "text": "The actions of command rule 94 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 94 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24756,
    "type": "line",
-   "text": "The actions of command rule 95 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 95 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24759,
@@ -19360,17 +19360,17 @@
   {
    "address": 24773,
    "type": "line",
-   "text": "The actions of command rule 103 (2, code and argument each): message 111 'The door is extremely rusty and refuses to...'; end turn."
+   "text": "The actions of command rule 103 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 111 'The door is extremely rusty and refuses to...'; end turn."
   },
   {
    "address": 24776,
    "type": "line",
-   "text": "The actions of command rule 104 (2, code and argument each): message 111 'The door is extremely rusty and refuses to...'; end turn."
+   "text": "The actions of command rule 104 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 111 'The door is extremely rusty and refuses to...'; end turn."
   },
   {
    "address": 24779,
    "type": "line",
-   "text": "The actions of command rule 105 (2, code and argument each): message 111 'The door is extremely rusty and refuses to...'; end turn."
+   "text": "The actions of command rule 105 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 111 'The door is extremely rusty and refuses to...'; end turn."
   },
   {
    "address": 24782,
@@ -19385,12 +19385,12 @@
   {
    "address": 24786,
    "type": "line",
-   "text": "The actions of command rule 108 (2, code and argument each): message 117 'Something you're carrying won't fit through...'; end turn."
+   "text": "The actions of command rule 108 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 117 'Something you're carrying won't fit through...'; end turn."
   },
   {
    "address": 24789,
    "type": "line",
-   "text": "The actions of command rule 109 (2, code and argument each): message 117 'Something you're carrying won't fit through...'; end turn."
+   "text": "The actions of command rule 109 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 117 'Something you're carrying won't fit through...'; end turn."
   },
   {
    "address": 24792,
@@ -19410,17 +19410,17 @@
   {
    "address": 24798,
    "type": "line",
-   "text": "The actions of command rule 113 (2, code and argument each): message 117 'Something you're carrying won't fit through...'; end turn."
+   "text": "The actions of command rule 113 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 117 'Something you're carrying won't fit through...'; end turn."
   },
   {
    "address": 24801,
    "type": "line",
-   "text": "The actions of command rule 114 (2, code and argument each): message 117 'Something you're carrying won't fit through...'; end turn."
+   "text": "The actions of command rule 114 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 117 'Something you're carrying won't fit through...'; end turn."
   },
   {
    "address": 24804,
    "type": "line",
-   "text": "The actions of command rule 115 (2, code and argument each): message 117 'Something you're carrying won't fit through...'; end turn."
+   "text": "The actions of command rule 115 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 117 'Something you're carrying won't fit through...'; end turn."
   },
   {
    "address": 24807,
@@ -19440,52 +19440,52 @@
   {
    "address": 24815,
    "type": "line",
-   "text": "The actions of command rule 119 (2, code and argument each): message 118 'You can't fit this five-foot clam through t...'; end turn."
+   "text": "The actions of command rule 119 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 118 'You can't fit this five-foot clam through t...'; end turn."
   },
   {
    "address": 24818,
    "type": "line",
-   "text": "The actions of command rule 120 (2, code and argument each): message 119 'You can't fit this five-foot oyster through...'; end turn."
+   "text": "The actions of command rule 120 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 119 'You can't fit this five-foot oyster through...'; end turn."
   },
   {
    "address": 24821,
    "type": "line",
-   "text": "The actions of command rule 121 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 121 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24824,
    "type": "line",
-   "text": "The actions of command rule 122 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 122 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24827,
    "type": "line",
-   "text": "The actions of command rule 123 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 123 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24830,
    "type": "line",
-   "text": "The actions of command rule 124 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 124 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24833,
    "type": "line",
-   "text": "The actions of command rule 125 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 125 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24836,
    "type": "line",
-   "text": "The actions of command rule 126 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 126 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24839,
    "type": "line",
-   "text": "The actions of command rule 127 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 127 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24842,
    "type": "line",
-   "text": "The actions of command rule 128 (2, code and argument each): message 56 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 128 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 56 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24845,
@@ -19530,7 +19530,7 @@
   {
    "address": 24861,
    "type": "line",
-   "text": "The actions of command rule 137 (2, code and argument each): message 126 'You have crawled around in some little hole...'; end turn."
+   "text": "The actions of command rule 137 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 126 'You have crawled around in some little hole...'; end turn."
   },
   {
    "address": 24864,
@@ -19580,47 +19580,47 @@
   {
    "address": 24882,
    "type": "line",
-   "text": "The actions of command rule 147 (2, code and argument each): message 93 'You can't go through a locked steel grate.'; end turn."
+   "text": "The actions of command rule 147 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 93 'You can't go through a locked steel grate.'; end turn."
   },
   {
    "address": 24885,
    "type": "line",
-   "text": "The actions of command rule 148 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 148 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24888,
    "type": "line",
-   "text": "The actions of command rule 149 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 149 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24891,
    "type": "line",
-   "text": "The actions of command rule 150 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 150 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24894,
    "type": "line",
-   "text": "The actions of command rule 151 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 151 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24897,
    "type": "line",
-   "text": "The actions of command rule 152 (2, code and argument each): message 161 'There is no longer a way across the chasm.'; end turn."
+   "text": "The actions of command rule 152 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 161 'There is no longer a way across the chasm.'; end turn."
   },
   {
    "address": 24900,
    "type": "line",
-   "text": "The actions of command rule 153 (2, code and argument each): message 161 'There is no longer a way across the chasm.'; end turn."
+   "text": "The actions of command rule 153 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 161 'There is no longer a way across the chasm.'; end turn."
   },
   {
    "address": 24903,
    "type": "line",
-   "text": "The actions of command rule 154 (2, code and argument each): message 161 'There is no longer a way across the chasm.'; end turn."
+   "text": "The actions of command rule 154 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 161 'There is no longer a way across the chasm.'; end turn."
   },
   {
    "address": 24906,
    "type": "line",
-   "text": "The actions of command rule 155 (2, code and argument each): message 161 'There is no longer a way across the chasm.'; end turn."
+   "text": "The actions of command rule 155 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 161 'There is no longer a way across the chasm.'; end turn."
   },
   {
    "address": 24909,
@@ -19650,47 +19650,47 @@
   {
    "address": 24919,
    "type": "line",
-   "text": "The actions of command rule 161 (2, code and argument each): message 96 'I respectfully suggest you go across the br...'; end turn."
+   "text": "The actions of command rule 161 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 96 'I respectfully suggest you go across the br...'; end turn."
   },
   {
    "address": 24922,
    "type": "line",
-   "text": "The actions of command rule 162 (2, code and argument each): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
+   "text": "The actions of command rule 162 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
   },
   {
    "address": 24925,
    "type": "line",
-   "text": "The actions of command rule 163 (2, code and argument each): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
+   "text": "The actions of command rule 163 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
   },
   {
    "address": 24928,
    "type": "line",
-   "text": "The actions of command rule 164 (2, code and argument each): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
+   "text": "The actions of command rule 164 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
   },
   {
    "address": 24931,
    "type": "line",
-   "text": "The actions of command rule 165 (2, code and argument each): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
+   "text": "The actions of command rule 165 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 153 'The dragon looks rather nasty. You'd best n...'; end turn."
   },
   {
    "address": 24934,
    "type": "line",
-   "text": "The actions of command rule 166 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 166 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24937,
    "type": "line",
-   "text": "The actions of command rule 167 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 167 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24940,
    "type": "line",
-   "text": "The actions of command rule 168 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 168 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24943,
    "type": "line",
-   "text": "The actions of command rule 169 (2, code and argument each): message 160 'The troll refuses to let you cross.'; end turn."
+   "text": "The actions of command rule 169 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 160 'The troll refuses to let you cross.'; end turn."
   },
   {
    "address": 24946,
@@ -19735,772 +19735,772 @@
   {
    "address": 25002,
    "type": "line",
-   "text": "The actions of command rule 178 (2, code and argument each): message 96 'I respectfully suggest you go across the br...'; end turn."
+   "text": "The actions of command rule 178 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 96 'I respectfully suggest you go across the br...'; end turn."
   },
   {
    "address": 25005,
    "type": "line",
-   "text": "The actions of command rule 179 (2, code and argument each): message 110 'Don't be ridiculous.'; end turn."
+   "text": "The actions of command rule 179 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 110 'Don't be ridiculous.'; end turn."
   },
   {
    "address": 25008,
    "type": "line",
-   "text": "The actions of command rule 180 (2, code and argument each): message 110 'Don't be ridiculous.'; end turn."
+   "text": "The actions of command rule 180 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 110 'Don't be ridiculous.'; end turn."
   },
   {
    "address": 25011,
    "type": "line",
-   "text": "The actions of command rule 181 (2, code and argument each): message 50 'Good try, but that is an old worn out magic...'; end turn."
+   "text": "The actions of command rule 181 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 50 'Good try, but that is an old worn out magic...'; end turn."
   },
   {
    "address": 25014,
    "type": "line",
-   "text": "The actions of command rule 182 (2, code and argument each): message 1 'Somewhere nearby is a Colossal Cave, where...'; end turn."
+   "text": "The actions of command rule 182 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 1 'Somewhere nearby is a Colossal Cave, where...'; end turn."
   },
   {
    "address": 25017,
    "type": "line",
-   "text": "The actions of command rule 183 (2, code and argument each): message 142 'If you want to end your adventure early, sa...'; end turn."
+   "text": "The actions of command rule 183 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 142 'If you want to end your adventure early, sa...'; end turn."
   },
   {
    "address": 25020,
    "type": "line",
-   "text": "The actions of command rule 184 (2, code and argument each): message 51 'I know of places, actions and things. Most...'; end turn."
+   "text": "The actions of command rule 184 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 51 'I know of places, actions and things. Most...'; end turn."
   },
   {
    "address": 25023,
    "type": "line",
-   "text": "The actions of command rule 185 (2, code and argument each): message 68 'I'm as confused as you are.'; end turn."
+   "text": "The actions of command rule 185 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 68 'I'm as confused as you are.'; end turn."
   },
   {
    "address": 25026,
    "type": "line",
-   "text": "The actions of command rule 186 (2, code and argument each): message 139 'I don't know the word 'STOP'. Use 'QUIT' to...'; end turn."
+   "text": "The actions of command rule 186 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 139 'I don't know the word 'STOP'. Use 'QUIT' to...'; end turn."
   },
   {
    "address": 25029,
    "type": "line",
-   "text": "The actions of command rule 187 (2, code and argument each): message 79 'Watch it. The WIZARD is watching you!'; end turn."
+   "text": "The actions of command rule 187 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 79 'Watch it. The WIZARD is watching you!'; end turn."
   },
   {
    "address": 25032,
    "type": "line",
-   "text": "The actions of command rule 188 (2, code and argument each): message 147 'I don't know how.'; end turn."
+   "text": "The actions of command rule 188 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 147 'I don't know how.'; end turn."
   },
   {
    "address": 25035,
    "type": "line",
-   "text": "The actions of command rule 189 (2, code and argument each): message 115 'The plant has exceptionally deep roots and...'; end turn."
+   "text": "The actions of command rule 189 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 115 'The plant has exceptionally deep roots and...'; end turn."
   },
   {
    "address": 25038,
    "type": "line",
-   "text": "The actions of command rule 190 (2, code and argument each): message 169 'The bear is still chained to the wall.'; end turn."
+   "text": "The actions of command rule 190 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 169 'The bear is still chained to the wall.'; end turn."
   },
   {
    "address": 25041,
    "type": "line",
-   "text": "The actions of command rule 191 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 191 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25050,
    "type": "line",
-   "text": "The actions of command rule 192 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 192 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25059,
    "type": "line",
-   "text": "The actions of command rule 193 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 193 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25068,
    "type": "line",
-   "text": "The actions of command rule 194 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 194 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25077,
    "type": "line",
-   "text": "The actions of command rule 195 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 195 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25086,
    "type": "line",
-   "text": "The actions of command rule 196 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 196 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25095,
    "type": "line",
-   "text": "The actions of command rule 197 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 197 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 29 (A bottle of water.) here; take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25104,
    "type": "line",
-   "text": "The actions of command rule 198 (2, code and argument each): message 105 'Your bottle is already full.'; end turn."
+   "text": "The actions of command rule 198 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 105 'Your bottle is already full.'; end turn."
   },
   {
    "address": 25107,
    "type": "line",
-   "text": "The actions of command rule 199 (5, code and argument each): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 31 (A bottle of oil.) here; take object 31 (A bottle of oil.); say Okay."
+   "text": "The actions of command rule 199 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); remove object 30 (An empty bottle.) from play; put object 31 (A bottle of oil.) here; take object 31 (A bottle of oil.); say Okay."
   },
   {
    "address": 25116,
    "type": "line",
-   "text": "The actions of command rule 200 (2, code and argument each): message 105 'Your bottle is already full.'; end turn."
+   "text": "The actions of command rule 200 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 105 'Your bottle is already full.'; end turn."
   },
   {
    "address": 25119,
    "type": "line",
-   "text": "The actions of command rule 201 (4, code and argument each): remove object 13 (A cheerful little singing bird.) from play; put object 14 (A little bird in the cage.) here; take object 14 (A little bird in the cage.); say Okay."
+   "text": "The actions of command rule 201 (4 in 7 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 13 (A cheerful little singing bird.) from play; put object 14 (A little bird in the cage.) here; take object 14 (A little bird in the cage.); say Okay."
   },
   {
    "address": 25126,
    "type": "line",
-   "text": "The actions of command rule 202 (2, code and argument each): message 26 'The bird was unafraid when you entered, but...'; end turn."
+   "text": "The actions of command rule 202 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 26 'The bird was unafraid when you entered, but...'; end turn."
   },
   {
    "address": 25129,
    "type": "line",
-   "text": "The actions of command rule 203 (2, code and argument each): take object 14 (A little bird in the cage.); say Okay."
+   "text": "The actions of command rule 203 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 14 (A little bird in the cage.); say Okay."
   },
   {
    "address": 25132,
    "type": "line",
-   "text": "The actions of command rule 204 (2, code and argument each): message 27 'You can catch the bird, but you cannot carr...'; end turn."
+   "text": "The actions of command rule 204 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 27 'You can catch the bird, but you cannot carr...'; end turn."
   },
   {
    "address": 25135,
    "type": "line",
-   "text": "The actions of command rule 205 (2, code and argument each): take object 1 (A large set of keys.); say Okay."
+   "text": "The actions of command rule 205 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 1 (A large set of keys.); say Okay."
   },
   {
    "address": 25138,
    "type": "line",
-   "text": "The actions of command rule 206 (2, code and argument each): take object 2 (A shiny brass lamp.); say Okay."
+   "text": "The actions of command rule 206 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 2 (A shiny brass lamp.); say Okay."
   },
   {
    "address": 25141,
    "type": "line",
-   "text": "The actions of command rule 207 (2, code and argument each): take object 3 (A brass lamp shining brightly.); say Okay."
+   "text": "The actions of command rule 207 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 3 (A brass lamp shining brightly.); say Okay."
   },
   {
    "address": 25144,
    "type": "line",
-   "text": "The actions of command rule 208 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 208 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25147,
    "type": "line",
-   "text": "The actions of command rule 209 (2, code and argument each): take object 8 (A small wicker cage.); say Okay."
+   "text": "The actions of command rule 209 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 8 (A small wicker cage.); say Okay."
   },
   {
    "address": 25150,
    "type": "line",
-   "text": "The actions of command rule 210 (2, code and argument each): take object 9 (A three foot black rod with a rus...); say Okay."
+   "text": "The actions of command rule 210 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 9 (A three foot black rod with a rus...); say Okay."
   },
   {
    "address": 25153,
    "type": "line",
-   "text": "The actions of command rule 211 (2, code and argument each): take object 10 (A three foot black rod with a rus...); say Okay."
+   "text": "The actions of command rule 211 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 10 (A three foot black rod with a rus...); say Okay."
   },
   {
    "address": 25156,
    "type": "line",
-   "text": "The actions of command rule 212 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 212 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25159,
    "type": "line",
-   "text": "The actions of command rule 213 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 213 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25162,
    "type": "line",
-   "text": "The actions of command rule 214 (2, code and argument each): take object 17 (A small velvet pillow.); say Okay."
+   "text": "The actions of command rule 214 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 17 (A small velvet pillow.); say Okay."
   },
   {
    "address": 25165,
    "type": "line",
-   "text": "The actions of command rule 215 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 215 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25168,
    "type": "line",
-   "text": "The actions of command rule 216 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 216 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25171,
    "type": "line",
-   "text": "The actions of command rule 217 (2, code and argument each): take object 25 (An enormous clam with its shell t...); say Okay."
+   "text": "The actions of command rule 217 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 25 (An enormous clam with its shell t...); say Okay."
   },
   {
    "address": 25174,
    "type": "line",
-   "text": "The actions of command rule 218 (2, code and argument each): take object 26 (An enormous oyster with its shell...); say Okay."
+   "text": "The actions of command rule 218 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 26 (An enormous oyster with its shell...); say Okay."
   },
   {
    "address": 25177,
    "type": "line",
-   "text": "The actions of command rule 219 (2, code and argument each): take object 27 (A few issues of 'Spelunker News'...); say Okay."
+   "text": "The actions of command rule 219 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 27 (A few issues of 'Spelunker News'...); say Okay."
   },
   {
    "address": 25180,
    "type": "line",
-   "text": "The actions of command rule 220 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 220 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25183,
    "type": "line",
-   "text": "The actions of command rule 221 (2, code and argument each): message 116 'The dwarves' knives vanish as they strike t...'; end turn."
+   "text": "The actions of command rule 221 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 116 'The dwarves' knives vanish as they strike t...'; end turn."
   },
   {
    "address": 25186,
    "type": "line",
-   "text": "The actions of command rule 222 (2, code and argument each): take object 28 (Some tasty food.); say Okay."
+   "text": "The actions of command rule 222 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 28 (Some tasty food.); say Okay."
   },
   {
    "address": 25189,
    "type": "line",
-   "text": "The actions of command rule 223 (2, code and argument each): take object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 223 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25192,
    "type": "line",
-   "text": "The actions of command rule 224 (2, code and argument each): take object 30 (An empty bottle.); say Okay."
+   "text": "The actions of command rule 224 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 30 (An empty bottle.); say Okay."
   },
   {
    "address": 25195,
    "type": "line",
-   "text": "The actions of command rule 225 (2, code and argument each): take object 31 (A bottle of oil.); say Okay."
+   "text": "The actions of command rule 225 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 31 (A bottle of oil.); say Okay."
   },
   {
    "address": 25198,
    "type": "line",
-   "text": "The actions of command rule 226 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 226 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25201,
    "type": "line",
-   "text": "The actions of command rule 227 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 227 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25204,
    "type": "line",
-   "text": "The actions of command rule 228 (2, code and argument each): take object 38 (A little Axe.); say Okay."
+   "text": "The actions of command rule 228 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 38 (A little Axe.); say Okay."
   },
   {
    "address": 25207,
    "type": "line",
-   "text": "The actions of command rule 229 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 229 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25210,
    "type": "line",
-   "text": "The actions of command rule 230 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 230 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25213,
    "type": "line",
-   "text": "The actions of command rule 231 (4, code and argument each): remove object 53 (A gentle cave bear sitting in the...) from play; put object 54 (A contented bear following you.) here; take object 54 (A contented bear following you.); say Okay."
+   "text": "The actions of command rule 231 (4 in 7 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 53 (A gentle cave bear sitting in the...) from play; put object 54 (A contented bear following you.) here; take object 54 (A contented bear following you.); say Okay."
   },
   {
    "address": 25220,
    "type": "line",
-   "text": "The actions of command rule 232 (2, code and argument each): message 169 'The bear is still chained to the wall.'; end turn."
+   "text": "The actions of command rule 232 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 169 'The bear is still chained to the wall.'; end turn."
   },
   {
    "address": 25223,
    "type": "line",
-   "text": "The actions of command rule 233 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 233 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25226,
    "type": "line",
-   "text": "The actions of command rule 234 (2, code and argument each): take object 56 (Some fresh batteries.); say Okay."
+   "text": "The actions of command rule 234 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 56 (Some fresh batteries.); say Okay."
   },
   {
    "address": 25229,
    "type": "line",
-   "text": "The actions of command rule 235 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 235 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25232,
    "type": "line",
-   "text": "The actions of command rule 236 (2, code and argument each): take object 57 (A large gold nugget.); say Okay."
+   "text": "The actions of command rule 236 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 57 (A large gold nugget.); say Okay."
   },
   {
    "address": 25235,
    "type": "line",
-   "text": "The actions of command rule 237 (2, code and argument each): take object 59 (Several diamonds.); say Okay."
+   "text": "The actions of command rule 237 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 59 (Several diamonds.); say Okay."
   },
   {
    "address": 25238,
    "type": "line",
-   "text": "The actions of command rule 238 (2, code and argument each): take object 60 (Bars of Silver.); say Okay."
+   "text": "The actions of command rule 238 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 60 (Bars of Silver.); say Okay."
   },
   {
    "address": 25241,
    "type": "line",
-   "text": "The actions of command rule 239 (2, code and argument each): take object 61 (Precious Jewellery.); say Okay."
+   "text": "The actions of command rule 239 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 61 (Precious Jewellery.); say Okay."
   },
   {
    "address": 25244,
    "type": "line",
-   "text": "The actions of command rule 240 (2, code and argument each): take object 62 (Lots of rare coins.); say Okay."
+   "text": "The actions of command rule 240 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 62 (Lots of rare coins.); say Okay."
   },
   {
    "address": 25247,
    "type": "line",
-   "text": "The actions of command rule 241 (2, code and argument each): take object 63 (The Pirates treasure chest.); say Okay."
+   "text": "The actions of command rule 241 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 63 (The Pirates treasure chest.); say Okay."
   },
   {
    "address": 25250,
    "type": "line",
-   "text": "The actions of command rule 242 (2, code and argument each): take object 64 (A nest of golden eggs.); say Okay."
+   "text": "The actions of command rule 242 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 64 (A nest of golden eggs.); say Okay."
   },
   {
    "address": 25253,
    "type": "line",
-   "text": "The actions of command rule 243 (2, code and argument each): take object 65 (A jewel-encrusted trident.); say Okay."
+   "text": "The actions of command rule 243 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 65 (A jewel-encrusted trident.); say Okay."
   },
   {
    "address": 25256,
    "type": "line",
-   "text": "The actions of command rule 244 (2, code and argument each): take object 66 (A precious Ming vase.); say Okay."
+   "text": "The actions of command rule 244 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 66 (A precious Ming vase.); say Okay."
   },
   {
    "address": 25259,
    "type": "line",
-   "text": "The actions of command rule 245 (4, code and argument each): remove object 67 (The vase is resting on the pillow.) from play; put object 66 (A precious Ming vase.) here; take object 66 (A precious Ming vase.); say Okay."
+   "text": "The actions of command rule 245 (4 in 7 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 67 (The vase is resting on the pillow.) from play; put object 66 (A precious Ming vase.) here; take object 66 (A precious Ming vase.); say Okay."
   },
   {
    "address": 25266,
    "type": "line",
-   "text": "The actions of command rule 246 (2, code and argument each): take object 68 (A worthless broken vase.); say Okay."
+   "text": "The actions of command rule 246 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 68 (A worthless broken vase.); say Okay."
   },
   {
    "address": 25269,
    "type": "line",
-   "text": "The actions of command rule 247 (2, code and argument each): take object 69 (An emerald the size of a plovers...); say Okay."
+   "text": "The actions of command rule 247 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 69 (An emerald the size of a plovers...); say Okay."
   },
   {
    "address": 25272,
    "type": "line",
-   "text": "The actions of command rule 248 (2, code and argument each): take object 70 (A huge platinum pyramid.); say Okay."
+   "text": "The actions of command rule 248 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 70 (A huge platinum pyramid.); say Okay."
   },
   {
    "address": 25275,
    "type": "line",
-   "text": "The actions of command rule 249 (2, code and argument each): take object 71 (A glistening pearl.); say Okay."
+   "text": "The actions of command rule 249 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 71 (A glistening pearl.); say Okay."
   },
   {
    "address": 25278,
    "type": "line",
-   "text": "The actions of command rule 250 (2, code and argument each): take object 72 (An expensive Persian rug.); say Okay."
+   "text": "The actions of command rule 250 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 72 (An expensive Persian rug.); say Okay."
   },
   {
    "address": 25281,
    "type": "line",
-   "text": "The actions of command rule 251 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 251 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25284,
    "type": "line",
-   "text": "The actions of command rule 252 (2, code and argument each): take object 75 (Some very rare Spices.); say Okay."
+   "text": "The actions of command rule 252 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 75 (Some very rare Spices.); say Okay."
   },
   {
    "address": 25287,
    "type": "line",
-   "text": "The actions of command rule 253 (2, code and argument each): take object 77 (A golden chain.); say Okay."
+   "text": "The actions of command rule 253 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 77 (A golden chain.); say Okay."
   },
   {
    "address": 25290,
    "type": "line",
-   "text": "The actions of command rule 254 (2, code and argument each): message 70 'Your feet are now wet.'; end turn."
+   "text": "The actions of command rule 254 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 70 'Your feet are now wet.'; end turn."
   },
   {
    "address": 25293,
    "type": "line",
-   "text": "The actions of command rule 255 (2, code and argument each): take object 58 (A small eastern flute.); say Okay."
+   "text": "The actions of command rule 255 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 58 (A small eastern flute.); say Okay."
   },
   {
    "address": 25296,
    "type": "line",
-   "text": "The actions of command rule 256 (2, code and argument each): message 25 'You can't be serious!'; end turn."
+   "text": "The actions of command rule 256 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 25 'You can't be serious!'; end turn."
   },
   {
    "address": 25299,
    "type": "line",
-   "text": "The actions of command rule 257 (2, code and argument each): drop object 1 (A large set of keys.); say Okay."
+   "text": "The actions of command rule 257 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 1 (A large set of keys.); say Okay."
   },
   {
    "address": 25302,
    "type": "line",
-   "text": "The actions of command rule 258 (2, code and argument each): drop object 2 (A shiny brass lamp.); say Okay."
+   "text": "The actions of command rule 258 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 2 (A shiny brass lamp.); say Okay."
   },
   {
    "address": 25305,
    "type": "line",
-   "text": "The actions of command rule 259 (2, code and argument each): drop object 3 (A brass lamp shining brightly.); say Okay."
+   "text": "The actions of command rule 259 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 3 (A brass lamp shining brightly.); say Okay."
   },
   {
    "address": 25308,
    "type": "line",
-   "text": "The actions of command rule 260 (3, code and argument each): drop object 14 (A little bird in the cage.); drop object 8 (A small wicker cage.); say Okay."
+   "text": "The actions of command rule 260 (3 in 5 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 14 (A little bird in the cage.); drop object 8 (A small wicker cage.); say Okay."
   },
   {
    "address": 25313,
    "type": "line",
-   "text": "The actions of command rule 261 (2, code and argument each): drop object 8 (A small wicker cage.); say Okay."
+   "text": "The actions of command rule 261 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 8 (A small wicker cage.); say Okay."
   },
   {
    "address": 25316,
    "type": "line",
-   "text": "The actions of command rule 262 (2, code and argument each): drop object 9 (A three foot black rod with a rus...); say Okay."
+   "text": "The actions of command rule 262 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 9 (A three foot black rod with a rus...); say Okay."
   },
   {
    "address": 25319,
    "type": "line",
-   "text": "The actions of command rule 263 (2, code and argument each): take object 10 (A three foot black rod with a rus...); say Okay."
+   "text": "The actions of command rule 263 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): take object 10 (A three foot black rod with a rus...); say Okay."
   },
   {
    "address": 25322,
    "type": "line",
-   "text": "The actions of command rule 264 (4, code and argument each): drop object 14 (A little bird in the cage.); remove object 14 (A little bird in the cage.) from play; put object 13 (A cheerful little singing bird.) here; say Okay."
+   "text": "The actions of command rule 264 (4 in 7 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 14 (A little bird in the cage.); remove object 14 (A little bird in the cage.) from play; put object 13 (A cheerful little singing bird.) here; say Okay."
   },
   {
    "address": 25329,
    "type": "line",
-   "text": "The actions of command rule 265 (2, code and argument each): drop object 17 (A small velvet pillow.); say Okay."
+   "text": "The actions of command rule 265 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 17 (A small velvet pillow.); say Okay."
   },
   {
    "address": 25332,
    "type": "line",
-   "text": "The actions of command rule 266 (2, code and argument each): drop object 25 (An enormous clam with its shell t...); say Okay."
+   "text": "The actions of command rule 266 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 25 (An enormous clam with its shell t...); say Okay."
   },
   {
    "address": 25335,
    "type": "line",
-   "text": "The actions of command rule 267 (2, code and argument each): drop object 26 (An enormous oyster with its shell...); say Okay."
+   "text": "The actions of command rule 267 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 26 (An enormous oyster with its shell...); say Okay."
   },
   {
    "address": 25338,
    "type": "line",
-   "text": "The actions of command rule 268 (2, code and argument each): drop object 27 (A few issues of 'Spelunker News'...); say Okay."
+   "text": "The actions of command rule 268 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 27 (A few issues of 'Spelunker News'...); say Okay."
   },
   {
    "address": 25341,
    "type": "line",
-   "text": "The actions of command rule 269 (2, code and argument each): drop object 28 (Some tasty food.); say Okay."
+   "text": "The actions of command rule 269 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 28 (Some tasty food.); say Okay."
   },
   {
    "address": 25344,
    "type": "line",
-   "text": "The actions of command rule 270 (2, code and argument each): drop object 29 (A bottle of water.); say Okay."
+   "text": "The actions of command rule 270 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 29 (A bottle of water.); say Okay."
   },
   {
    "address": 25347,
    "type": "line",
-   "text": "The actions of command rule 271 (2, code and argument each): drop object 30 (An empty bottle.); say Okay."
+   "text": "The actions of command rule 271 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 30 (An empty bottle.); say Okay."
   },
   {
    "address": 25350,
    "type": "line",
-   "text": "The actions of command rule 272 (2, code and argument each): drop object 31 (A bottle of oil.); say Okay."
+   "text": "The actions of command rule 272 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 31 (A bottle of oil.); say Okay."
   },
   {
    "address": 25353,
    "type": "line",
-   "text": "The actions of command rule 273 (6, code and argument each): drop object 29 (A bottle of water.); set flag 6; remove object 29 (A bottle of water.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
+   "text": "The actions of command rule 273 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 29 (A bottle of water.); set flag 6; remove object 29 (A bottle of water.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
   },
   {
    "address": 25364,
    "type": "line",
-   "text": "The actions of command rule 274 (6, code and argument each): drop object 31 (A bottle of oil.); set flag 7; remove object 31 (A bottle of oil.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
+   "text": "The actions of command rule 274 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 31 (A bottle of oil.); set flag 7; remove object 31 (A bottle of oil.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
   },
   {
    "address": 25375,
    "type": "line",
-   "text": "The actions of command rule 275 (2, code and argument each): drop object 38 (A little Axe.); say Okay."
+   "text": "The actions of command rule 275 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); say Okay."
   },
   {
    "address": 25378,
    "type": "line",
-   "text": "The actions of command rule 276 (4, code and argument each): drop object 54 (A contented bear following you.); remove object 54 (A contented bear following you.) from play; put object 53 (A gentle cave bear sitting in the...) here; say Okay."
+   "text": "The actions of command rule 276 (4 in 7 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 54 (A contented bear following you.); remove object 54 (A contented bear following you.) from play; put object 53 (A gentle cave bear sitting in the...) here; say Okay."
   },
   {
    "address": 25385,
    "type": "line",
-   "text": "The actions of command rule 277 (2, code and argument each): drop object 56 (Some fresh batteries.); say Okay."
+   "text": "The actions of command rule 277 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 56 (Some fresh batteries.); say Okay."
   },
   {
    "address": 25388,
    "type": "line",
-   "text": "The actions of command rule 278 (2, code and argument each): drop object 57 (A large gold nugget.); say Okay."
+   "text": "The actions of command rule 278 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 57 (A large gold nugget.); say Okay."
   },
   {
    "address": 25391,
    "type": "line",
-   "text": "The actions of command rule 279 (2, code and argument each): drop object 59 (Several diamonds.); say Okay."
+   "text": "The actions of command rule 279 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 59 (Several diamonds.); say Okay."
   },
   {
    "address": 25394,
    "type": "line",
-   "text": "The actions of command rule 280 (2, code and argument each): drop object 60 (Bars of Silver.); say Okay."
+   "text": "The actions of command rule 280 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 60 (Bars of Silver.); say Okay."
   },
   {
    "address": 25397,
    "type": "line",
-   "text": "The actions of command rule 281 (2, code and argument each): drop object 61 (Precious Jewellery.); say Okay."
+   "text": "The actions of command rule 281 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 61 (Precious Jewellery.); say Okay."
   },
   {
    "address": 25400,
    "type": "line",
-   "text": "The actions of command rule 282 (2, code and argument each): drop object 62 (Lots of rare coins.); say Okay."
+   "text": "The actions of command rule 282 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 62 (Lots of rare coins.); say Okay."
   },
   {
    "address": 25403,
    "type": "line",
-   "text": "The actions of command rule 283 (2, code and argument each): drop object 63 (The Pirates treasure chest.); say Okay."
+   "text": "The actions of command rule 283 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 63 (The Pirates treasure chest.); say Okay."
   },
   {
    "address": 25406,
    "type": "line",
-   "text": "The actions of command rule 284 (2, code and argument each): drop object 64 (A nest of golden eggs.); say Okay."
+   "text": "The actions of command rule 284 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 64 (A nest of golden eggs.); say Okay."
   },
   {
    "address": 25409,
    "type": "line",
-   "text": "The actions of command rule 285 (2, code and argument each): drop object 65 (A jewel-encrusted trident.); say Okay."
+   "text": "The actions of command rule 285 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 65 (A jewel-encrusted trident.); say Okay."
   },
   {
    "address": 25412,
    "type": "line",
-   "text": "The actions of command rule 286 (4, code and argument each): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; put object 67 (The vase is resting on the pillow.) here; say Okay."
+   "text": "The actions of command rule 286 (4 in 7 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; put object 67 (The vase is resting on the pillow.) here; say Okay."
   },
   {
    "address": 25419,
    "type": "line",
-   "text": "The actions of command rule 287 (5, code and argument each): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; put object 68 (A worthless broken vase.) here; message 198 'You have taken the vase and hurled it delic...'; end turn."
+   "text": "The actions of command rule 287 (5 in 9 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; put object 68 (A worthless broken vase.) here; message 198 'You have taken the vase and hurled it delic...'; end turn."
   },
   {
    "address": 25428,
    "type": "line",
-   "text": "The actions of command rule 288 (2, code and argument each): drop object 69 (An emerald the size of a plovers...); say Okay."
+   "text": "The actions of command rule 288 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 69 (An emerald the size of a plovers...); say Okay."
   },
   {
    "address": 25431,
    "type": "line",
-   "text": "The actions of command rule 289 (2, code and argument each): drop object 70 (A huge platinum pyramid.); say Okay."
+   "text": "The actions of command rule 289 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 70 (A huge platinum pyramid.); say Okay."
   },
   {
    "address": 25434,
    "type": "line",
-   "text": "The actions of command rule 290 (2, code and argument each): drop object 71 (A glistening pearl.); say Okay."
+   "text": "The actions of command rule 290 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 71 (A glistening pearl.); say Okay."
   },
   {
    "address": 25437,
    "type": "line",
-   "text": "The actions of command rule 291 (2, code and argument each): drop object 72 (An expensive Persian rug.); say Okay."
+   "text": "The actions of command rule 291 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 72 (An expensive Persian rug.); say Okay."
   },
   {
    "address": 25440,
    "type": "line",
-   "text": "The actions of command rule 292 (2, code and argument each): drop object 75 (Some very rare Spices.); say Okay."
+   "text": "The actions of command rule 292 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 75 (Some very rare Spices.); say Okay."
   },
   {
    "address": 25443,
    "type": "line",
-   "text": "The actions of command rule 293 (2, code and argument each): drop object 77 (A golden chain.); say Okay."
+   "text": "The actions of command rule 293 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 77 (A golden chain.); say Okay."
   },
   {
    "address": 25446,
    "type": "line",
-   "text": "The actions of command rule 294 (4, code and argument each): remove object 18 (An aroused, huge, green snake, ba...) from play; put object 19 (A drowsy, huge, green snake, barr...) here; message 54 'A soothing melodious tune fills the hall. T...'; end turn."
+   "text": "The actions of command rule 294 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 18 (An aroused, huge, green snake, ba...) from play; put object 19 (A drowsy, huge, green snake, barr...) here; message 54 'A soothing melodious tune fills the hall. T...'; end turn."
   },
   {
    "address": 25453,
    "type": "line",
-   "text": "The actions of command rule 295 (2, code and argument each): message 62 'No.I have a terrible voice.'; end turn."
+   "text": "The actions of command rule 295 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 62 'No.I have a terrible voice.'; end turn."
   },
   {
    "address": 25456,
    "type": "line",
-   "text": "The actions of command rule 296 (2, code and argument each): message 111 'The door is extremely rusty and refuses to...'; end turn."
+   "text": "The actions of command rule 296 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 111 'The door is extremely rusty and refuses to...'; end turn."
   },
   {
    "address": 25459,
    "type": "line",
-   "text": "The actions of command rule 297 (1, code and argument each): say Okay."
+   "text": "The actions of command rule 297 (1 in 1 byte, say Okay, stored as its code alone since it leaves the rule): say Okay."
   },
   {
    "address": 25460,
    "type": "line",
-   "text": "The actions of command rule 298 (2, code and argument each): message 32 'It has no lock.'; end turn."
+   "text": "The actions of command rule 298 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 32 'It has no lock.'; end turn."
   },
   {
    "address": 25463,
    "type": "line",
-   "text": "The actions of command rule 299 (2, code and argument each): message 55 'You can't unlock the keys.'; end turn."
+   "text": "The actions of command rule 299 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 55 'You can't unlock the keys.'; end turn."
   },
   {
    "address": 25466,
    "type": "line",
-   "text": "The actions of command rule 300 (6, code and argument each): remove object 4 (The grate is locked.) from play; remove object 5 (The grate is locked.) from play; put object 6 (The grate is open.) here; put object 7 (The grate is open.) in room 9; say Okay."
+   "text": "The actions of command rule 300 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 4 (The grate is locked.) from play; remove object 5 (The grate is locked.) from play; put object 6 (The grate is open.) here; put object 7 (The grate is open.) in room 9; say Okay."
   },
   {
    "address": 25477,
    "type": "line",
-   "text": "The actions of command rule 301 (6, code and argument each): remove object 4 (The grate is locked.) from play; remove object 5 (The grate is locked.) from play; put object 7 (The grate is open.) here; put object 6 (The grate is open.) in room 8; say Okay."
+   "text": "The actions of command rule 301 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 4 (The grate is locked.) from play; remove object 5 (The grate is locked.) from play; put object 7 (The grate is open.) here; put object 6 (The grate is open.) in room 8; say Okay."
   },
   {
    "address": 25488,
    "type": "line",
-   "text": "The actions of command rule 302 (8, code and argument each): drop object 25 (An enormous clam with its shell t...); remove object 25 (An enormous clam with its shell t...) from play; put object 26 (An enormous oyster with its shell...) here; put object 71 (A glistening pearl.) in room 105; take object 26 (An enormous oyster with its shell...); message 124 'A glistening pearl falls out of the clam an...'; end turn."
+   "text": "The actions of command rule 302 (8 in 15 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 25 (An enormous clam with its shell t...); remove object 25 (An enormous clam with its shell t...) from play; put object 26 (An enormous oyster with its shell...) here; put object 71 (A glistening pearl.) in room 105; take object 26 (An enormous oyster with its shell...); message 124 'A glistening pearl falls out of the clam an...'; end turn."
   },
   {
    "address": 25503,
    "type": "line",
-   "text": "The actions of command rule 303 (6, code and argument each): remove object 25 (An enormous clam with its shell t...) from play; put object 26 (An enormous oyster with its shell...) here; put object 71 (A glistening pearl.) in room 105; message 124 'A glistening pearl falls out of the clam an...'; end turn."
+   "text": "The actions of command rule 303 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 25 (An enormous clam with its shell t...) from play; put object 26 (An enormous oyster with its shell...) here; put object 71 (A glistening pearl.) in room 105; message 124 'A glistening pearl falls out of the clam an...'; end turn."
   },
   {
    "address": 25514,
    "type": "line",
-   "text": "The actions of command rule 304 (2, code and argument each): message 125 'The oyster creaks open,revealing nothing bu...'; end turn."
+   "text": "The actions of command rule 304 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 125 'The oyster creaks open,revealing nothing bu...'; end turn."
   },
   {
    "address": 25517,
    "type": "line",
-   "text": "The actions of command rule 305 (2, code and argument each): message 122 'You don't have anything strong enough to op...'; end turn."
+   "text": "The actions of command rule 305 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 122 'You don't have anything strong enough to op...'; end turn."
   },
   {
    "address": 25520,
    "type": "line",
-   "text": "The actions of command rule 306 (2, code and argument each): message 123 'You don't have anything strong enough to op...'; end turn."
+   "text": "The actions of command rule 306 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 123 'You don't have anything strong enough to op...'; end turn."
   },
   {
    "address": 25523,
    "type": "line",
-   "text": "The actions of command rule 307 (2, code and argument each): message 41 'There is no way to get past the bear to unl...'; end turn."
+   "text": "The actions of command rule 307 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 41 'There is no way to get past the bear to unl...'; end turn."
   },
   {
    "address": 25526,
    "type": "line",
-   "text": "The actions of command rule 308 (2, code and argument each): message 37 'It was already unlocked.'; end turn."
+   "text": "The actions of command rule 308 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 37 'It was already unlocked.'; end turn."
   },
   {
    "address": 25529,
    "type": "line",
-   "text": "The actions of command rule 309 (3, code and argument each): remove object 76 (The bear is locked to the wall wi...) from play; put object 77 (A golden chain.) here; say Okay."
+   "text": "The actions of command rule 309 (3 in 5 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 76 (The bear is locked to the wall wi...) from play; put object 77 (A golden chain.) here; say Okay."
   },
   {
    "address": 25534,
    "type": "line",
-   "text": "The actions of command rule 310 (2, code and argument each): message 28 'There is nothing here with a lock!'; end turn."
+   "text": "The actions of command rule 310 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 28 'There is nothing here with a lock!'; end turn."
   },
   {
    "address": 25537,
    "type": "line",
-   "text": "The actions of command rule 311 (6, code and argument each): remove object 6 (The grate is open.) from play; remove object 7 (The grate is open.) from play; put object 4 (The grate is locked.) here; put object 5 (The grate is locked.) in room 9; say Okay."
+   "text": "The actions of command rule 311 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 6 (The grate is open.) from play; remove object 7 (The grate is open.) from play; put object 4 (The grate is locked.) here; put object 5 (The grate is locked.) in room 9; say Okay."
   },
   {
    "address": 25548,
    "type": "line",
-   "text": "The actions of command rule 312 (6, code and argument each): remove object 6 (The grate is open.) from play; remove object 7 (The grate is open.) from play; put object 5 (The grate is locked.) here; put object 4 (The grate is locked.) in room 8; say Okay."
+   "text": "The actions of command rule 312 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 6 (The grate is open.) from play; remove object 7 (The grate is open.) from play; put object 5 (The grate is locked.) here; put object 4 (The grate is locked.) in room 8; say Okay."
   },
   {
    "address": 25559,
    "type": "line",
-   "text": "The actions of command rule 313 (5, code and argument each): drop object 2 (A shiny brass lamp.); remove object 2 (A shiny brass lamp.) from play; put object 3 (A brass lamp shining brightly.) here; take object 3 (A brass lamp shining brightly.); say Okay."
+   "text": "The actions of command rule 313 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 2 (A shiny brass lamp.); remove object 2 (A shiny brass lamp.) from play; put object 3 (A brass lamp shining brightly.) here; take object 3 (A brass lamp shining brightly.); say Okay."
   },
   {
    "address": 25568,
    "type": "line",
-   "text": "The actions of command rule 314 (1, code and argument each): say Okay."
+   "text": "The actions of command rule 314 (1 in 1 byte, say Okay, stored as its code alone since it leaves the rule): say Okay."
   },
   {
    "address": 25569,
    "type": "line",
-   "text": "The actions of command rule 315 (2, code and argument each): message 38 'You have no source of light.'; say Okay."
+   "text": "The actions of command rule 315 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): message 38 'You have no source of light.'; say Okay."
   },
   {
    "address": 25572,
    "type": "line",
-   "text": "The actions of command rule 316 (5, code and argument each): drop object 3 (A brass lamp shining brightly.); remove object 3 (A brass lamp shining brightly.) from play; put object 2 (A shiny brass lamp.) here; take object 2 (A shiny brass lamp.); say Okay."
+   "text": "The actions of command rule 316 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 3 (A brass lamp shining brightly.); remove object 3 (A brass lamp shining brightly.) from play; put object 2 (A shiny brass lamp.) here; take object 2 (A shiny brass lamp.); say Okay."
   },
   {
    "address": 25581,
    "type": "line",
-   "text": "The actions of command rule 317 (1, code and argument each): say Okay."
+   "text": "The actions of command rule 317 (1 in 1 byte, say Okay, stored as its code alone since it leaves the rule): say Okay."
   },
   {
    "address": 25582,
    "type": "line",
-   "text": "The actions of command rule 318 (4, code and argument each): put object 20 (A crystal bridge spans the fissur...) here; put object 21 (A crystal bridge spans the fissur...) in room 27; describe room."
+   "text": "The actions of command rule 318 (4 in 7 bytes, code and argument each, except describe room, which leaves the rule and is stored as its code alone): put object 20 (A crystal bridge spans the fissur...) here; put object 21 (A crystal bridge spans the fissur...) in room 27; describe room."
   },
   {
    "address": 25589,
    "type": "line",
-   "text": "The actions of command rule 319 (6, code and argument each): remove object 20 (A crystal bridge spans the fissur...) from play; remove object 21 (A crystal bridge spans the fissur...) from play; put object 22 (The crystal bridge has vanished.) here; put object 23 (The crystal bridge has vanished.) in room 27; describe room."
+   "text": "The actions of command rule 319 (6 in 11 bytes, code and argument each, except describe room, which leaves the rule and is stored as its code alone): remove object 20 (A crystal bridge spans the fissur...) from play; remove object 21 (A crystal bridge spans the fissur...) from play; put object 22 (The crystal bridge has vanished.) here; put object 23 (The crystal bridge has vanished.) in room 27; describe room."
   },
   {
    "address": 25600,
    "type": "line",
-   "text": "The actions of command rule 320 (4, code and argument each): remove object 73 (The dragon is sprawled on a Persi...) from play; remove object 74 (The dragon is sprawled on a Persi...) from play; message 11 'The dragon hates music, and breathing fire...'; end turn."
+   "text": "The actions of command rule 320 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 73 (The dragon is sprawled on a Persi...) from play; remove object 74 (The dragon is sprawled on a Persi...) from play; message 11 'The dragon hates music, and breathing fire...'; end turn."
   },
   {
    "address": 25607,
    "type": "line",
-   "text": "The actions of command rule 321 (2, code and argument each): message 189 'The flute emits a melodious note.'; end turn."
+   "text": "The actions of command rule 321 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 189 'The flute emits a melodious note.'; end turn."
   },
   {
    "address": 25610,
    "type": "line",
-   "text": "The actions of command rule 322 (4, code and argument each): put object 21 (A crystal bridge spans the fissur...) here; put object 20 (A crystal bridge spans the fissur...) in room 17; describe room."
+   "text": "The actions of command rule 322 (4 in 7 bytes, code and argument each, except describe room, which leaves the rule and is stored as its code alone): put object 21 (A crystal bridge spans the fissur...) here; put object 20 (A crystal bridge spans the fissur...) in room 17; describe room."
   },
   {
    "address": 25617,
    "type": "line",
-   "text": "The actions of command rule 323 (6, code and argument each): remove object 21 (A crystal bridge spans the fissur...) from play; remove object 20 (A crystal bridge spans the fissur...) from play; put object 23 (The crystal bridge has vanished.) here; put object 22 (The crystal bridge has vanished.) in room 17; describe room."
+   "text": "The actions of command rule 323 (6 in 11 bytes, code and argument each, except describe room, which leaves the rule and is stored as its code alone): remove object 21 (A crystal bridge spans the fissur...) from play; remove object 20 (A crystal bridge spans the fissur...) from play; put object 23 (The crystal bridge has vanished.) here; put object 22 (The crystal bridge has vanished.) in room 17; describe room."
   },
   {
    "address": 25628,
    "type": "line",
-   "text": "The actions of command rule 324 (2, code and argument each): message 42 'Nothing happens.'; end turn."
+   "text": "The actions of command rule 324 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 42 'Nothing happens.'; end turn."
   },
   {
    "address": 25631,
    "type": "line",
-   "text": "The actions of command rule 325 (2, code and argument each): message 14 'I'm game. Would you care to explain how.'; end turn."
+   "text": "The actions of command rule 325 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 14 'I'm game. Would you care to explain how.'; end turn."
   },
   {
    "address": 25634,
    "type": "line",
-   "text": "The actions of command rule 326 (3, code and argument each): remove object 13 (A cheerful little singing bird.) from play; message 45 'The little bird is now dead. Its body disap...'; end turn."
+   "text": "The actions of command rule 326 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 13 (A cheerful little singing bird.) from play; message 45 'The little bird is now dead. Its body disap...'; end turn."
   },
   {
    "address": 25639,
    "type": "line",
-   "text": "The actions of command rule 327 (3, code and argument each): remove object 14 (A little bird in the cage.) from play; message 45 'The little bird is now dead. Its body disap...'; end turn."
+   "text": "The actions of command rule 327 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 14 (A little bird in the cage.) from play; message 45 'The little bird is now dead. Its body disap...'; end turn."
   },
   {
    "address": 25644,
    "type": "line",
-   "text": "The actions of command rule 328 (2, code and argument each): message 15 (empty); end turn."
+   "text": "The actions of command rule 328 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 15 (empty); end turn."
   },
   {
    "address": 25647,
    "type": "line",
-   "text": "The actions of command rule 329 (2, code and argument each): message 150 'The shell is very strong and is impervious...'; end turn."
+   "text": "The actions of command rule 329 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 150 'The shell is very strong and is impervious...'; end turn."
   },
   {
    "address": 25650,
    "type": "line",
-   "text": "The actions of command rule 330 (2, code and argument each): message 46 'Attacking the snake both doesn't work and i...'; end turn."
+   "text": "The actions of command rule 330 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 46 'Attacking the snake both doesn't work and i...'; end turn."
   },
   {
    "address": 25653,
    "type": "line",
-   "text": "The actions of command rule 331 (2, code and argument each): message 46 'Attacking the snake both doesn't work and i...'; end turn."
+   "text": "The actions of command rule 331 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 46 'Attacking the snake both doesn't work and i...'; end turn."
   },
   {
    "address": 25656,
@@ -20520,437 +20520,437 @@
   {
    "address": 25708,
    "type": "line",
-   "text": "The actions of command rule 335 (2, code and argument each): message 157 'Trolls are close relatives with the rocks a...'; end turn."
+   "text": "The actions of command rule 335 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 157 'Trolls are close relatives with the rocks a...'; end turn."
   },
   {
    "address": 25711,
    "type": "line",
-   "text": "The actions of command rule 336 (2, code and argument each): message 157 'Trolls are close relatives with the rocks a...'; end turn."
+   "text": "The actions of command rule 336 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 157 'Trolls are close relatives with the rocks a...'; end turn."
   },
   {
    "address": 25714,
    "type": "line",
-   "text": "The actions of command rule 337 (2, code and argument each): message 165 'With what? Your bare hands? Against *his* b...'; end turn."
+   "text": "The actions of command rule 337 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 165 'With what? Your bare hands? Against *his* b...'; end turn."
   },
   {
    "address": 25717,
    "type": "line",
-   "text": "The actions of command rule 338 (2, code and argument each): message 166 'The bear is confused; He only wants to be y...'; end turn."
+   "text": "The actions of command rule 338 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 166 'The bear is confused; He only wants to be y...'; end turn."
   },
   {
    "address": 25720,
    "type": "line",
-   "text": "The actions of command rule 339 (2, code and argument each): message 167 'For crying out loud, the poor thing is alre...'; end turn."
+   "text": "The actions of command rule 339 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 167 'For crying out loud, the poor thing is alre...'; end turn."
   },
   {
    "address": 25723,
    "type": "line",
-   "text": "The actions of command rule 340 (2, code and argument each): message 167 'For crying out loud, the poor thing is alre...'; end turn."
+   "text": "The actions of command rule 340 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 167 'For crying out loud, the poor thing is alre...'; end turn."
   },
   {
    "address": 25726,
    "type": "line",
-   "text": "The actions of command rule 341 (2, code and argument each): message 167 'For crying out loud, the poor thing is alre...'; end turn."
+   "text": "The actions of command rule 341 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 167 'For crying out loud, the poor thing is alre...'; end turn."
   },
   {
    "address": 25729,
    "type": "line",
-   "text": "The actions of command rule 342 (6, code and argument each): drop object 29 (A bottle of water.); set flag 6; remove object 29 (A bottle of water.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
+   "text": "The actions of command rule 342 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 29 (A bottle of water.); set flag 6; remove object 29 (A bottle of water.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
   },
   {
    "address": 25740,
    "type": "line",
-   "text": "The actions of command rule 343 (6, code and argument each): drop object 31 (A bottle of oil.); set flag 7; remove object 31 (A bottle of oil.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
+   "text": "The actions of command rule 343 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 31 (A bottle of oil.); set flag 7; remove object 31 (A bottle of oil.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); say Okay."
   },
   {
    "address": 25751,
    "type": "line",
-   "text": "The actions of command rule 344 (4, code and argument each): drop object 28 (Some tasty food.); remove object 28 (Some tasty food.) from play; message 72 'Thank you. It was delicious.'; end turn."
+   "text": "The actions of command rule 344 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 28 (Some tasty food.); remove object 28 (Some tasty food.) from play; message 72 'Thank you. It was delicious.'; end turn."
   },
   {
    "address": 25758,
    "type": "line",
-   "text": "The actions of command rule 345 (3, code and argument each): remove object 28 (Some tasty food.) from play; message 72 'Thank you. It was delicious.'; end turn."
+   "text": "The actions of command rule 345 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 28 (Some tasty food.) from play; message 72 'Thank you. It was delicious.'; end turn."
   },
   {
    "address": 25763,
    "type": "line",
-   "text": "The actions of command rule 346 (6, code and argument each): drop object 29 (A bottle of water.); remove object 29 (A bottle of water.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); message 74 'The bottle of water is now empty.'; end turn."
+   "text": "The actions of command rule 346 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 29 (A bottle of water.); remove object 29 (A bottle of water.) from play; put object 30 (An empty bottle.) here; take object 30 (An empty bottle.); message 74 'The bottle of water is now empty.'; end turn."
   },
   {
    "address": 25774,
    "type": "line",
-   "text": "The actions of command rule 347 (2, code and argument each): message 75 'Rubbing the electric lamp is not particular...'; end turn."
+   "text": "The actions of command rule 347 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 75 'Rubbing the electric lamp is not particular...'; end turn."
   },
   {
    "address": 25777,
    "type": "line",
-   "text": "The actions of command rule 348 (2, code and argument each): message 75 'Rubbing the electric lamp is not particular...'; end turn."
+   "text": "The actions of command rule 348 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 75 'Rubbing the electric lamp is not particular...'; end turn."
   },
   {
    "address": 25780,
    "type": "line",
-   "text": "The actions of command rule 349 (2, code and argument each): message 76 'Peculiar. Nothing unexpected happens.'; end turn."
+   "text": "The actions of command rule 349 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 76 'Peculiar. Nothing unexpected happens.'; end turn."
   },
   {
    "address": 25783,
    "type": "line",
-   "text": "The actions of command rule 350 (6, code and argument each): drop object 57 (A large gold nugget.); remove object 57 (A large gold nugget.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 350 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 57 (A large gold nugget.); remove object 57 (A large gold nugget.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25794,
    "type": "line",
-   "text": "The actions of command rule 351 (6, code and argument each): drop object 59 (Several diamonds.); remove object 59 (Several diamonds.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 351 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 59 (Several diamonds.); remove object 59 (Several diamonds.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25805,
    "type": "line",
-   "text": "The actions of command rule 352 (6, code and argument each): drop object 60 (Bars of Silver.); remove object 60 (Bars of Silver.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 352 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 60 (Bars of Silver.); remove object 60 (Bars of Silver.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25816,
    "type": "line",
-   "text": "The actions of command rule 353 (6, code and argument each): drop object 61 (Precious Jewellery.); remove object 61 (Precious Jewellery.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 353 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 61 (Precious Jewellery.); remove object 61 (Precious Jewellery.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25827,
    "type": "line",
-   "text": "The actions of command rule 354 (6, code and argument each): drop object 62 (Lots of rare coins.); remove object 62 (Lots of rare coins.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 354 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 62 (Lots of rare coins.); remove object 62 (Lots of rare coins.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25838,
    "type": "line",
-   "text": "The actions of command rule 355 (6, code and argument each): drop object 63 (The Pirates treasure chest.); remove object 63 (The Pirates treasure chest.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 355 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 63 (The Pirates treasure chest.); remove object 63 (The Pirates treasure chest.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25849,
    "type": "line",
-   "text": "The actions of command rule 356 (6, code and argument each): drop object 64 (A nest of golden eggs.); remove object 64 (A nest of golden eggs.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 356 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 64 (A nest of golden eggs.); remove object 64 (A nest of golden eggs.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25860,
    "type": "line",
-   "text": "The actions of command rule 357 (6, code and argument each): drop object 65 (A jewel-encrusted trident.); remove object 65 (A jewel-encrusted trident.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 357 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 65 (A jewel-encrusted trident.); remove object 65 (A jewel-encrusted trident.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25871,
    "type": "line",
-   "text": "The actions of command rule 358 (6, code and argument each): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 358 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25882,
    "type": "line",
-   "text": "The actions of command rule 359 (6, code and argument each): drop object 69 (An emerald the size of a plovers...); remove object 69 (An emerald the size of a plovers...) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 359 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 69 (An emerald the size of a plovers...); remove object 69 (An emerald the size of a plovers...) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25893,
    "type": "line",
-   "text": "The actions of command rule 360 (6, code and argument each): drop object 70 (A huge platinum pyramid.); remove object 70 (A huge platinum pyramid.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 360 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 70 (A huge platinum pyramid.); remove object 70 (A huge platinum pyramid.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25904,
    "type": "line",
-   "text": "The actions of command rule 361 (6, code and argument each): drop object 71 (A glistening pearl.); remove object 71 (A glistening pearl.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 361 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 71 (A glistening pearl.); remove object 71 (A glistening pearl.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25915,
    "type": "line",
-   "text": "The actions of command rule 362 (6, code and argument each): drop object 72 (An expensive Persian rug.); remove object 72 (An expensive Persian rug.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 362 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 72 (An expensive Persian rug.); remove object 72 (An expensive Persian rug.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25926,
    "type": "line",
-   "text": "The actions of command rule 363 (6, code and argument each): drop object 75 (Some very rare Spices.); remove object 75 (Some very rare Spices.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 363 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 75 (Some very rare Spices.); remove object 75 (Some very rare Spices.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25937,
    "type": "line",
-   "text": "The actions of command rule 364 (6, code and argument each): drop object 77 (A golden chain.); remove object 77 (A golden chain.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 364 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 77 (A golden chain.); remove object 77 (A golden chain.) from play; remove object 48 (A troll stands by the bridge and...) from play; put object 50 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25948,
    "type": "line",
-   "text": "The actions of command rule 365 (6, code and argument each): drop object 57 (A large gold nugget.); remove object 57 (A large gold nugget.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 365 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 57 (A large gold nugget.); remove object 57 (A large gold nugget.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25959,
    "type": "line",
-   "text": "The actions of command rule 366 (6, code and argument each): drop object 59 (Several diamonds.); remove object 59 (Several diamonds.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 366 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 59 (Several diamonds.); remove object 59 (Several diamonds.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25970,
    "type": "line",
-   "text": "The actions of command rule 367 (6, code and argument each): drop object 60 (Bars of Silver.); remove object 60 (Bars of Silver.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 367 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 60 (Bars of Silver.); remove object 60 (Bars of Silver.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25981,
    "type": "line",
-   "text": "The actions of command rule 368 (6, code and argument each): drop object 61 (Precious Jewellery.); remove object 61 (Precious Jewellery.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 368 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 61 (Precious Jewellery.); remove object 61 (Precious Jewellery.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 25992,
    "type": "line",
-   "text": "The actions of command rule 369 (6, code and argument each): drop object 62 (Lots of rare coins.); remove object 62 (Lots of rare coins.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 369 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 62 (Lots of rare coins.); remove object 62 (Lots of rare coins.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26003,
    "type": "line",
-   "text": "The actions of command rule 370 (6, code and argument each): drop object 63 (The Pirates treasure chest.); remove object 63 (The Pirates treasure chest.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 370 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 63 (The Pirates treasure chest.); remove object 63 (The Pirates treasure chest.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26014,
    "type": "line",
-   "text": "The actions of command rule 371 (6, code and argument each): drop object 64 (A nest of golden eggs.); remove object 64 (A nest of golden eggs.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 371 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 64 (A nest of golden eggs.); remove object 64 (A nest of golden eggs.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26025,
    "type": "line",
-   "text": "The actions of command rule 372 (6, code and argument each): drop object 65 (A jewel-encrusted trident.); remove object 65 (A jewel-encrusted trident.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 372 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 65 (A jewel-encrusted trident.); remove object 65 (A jewel-encrusted trident.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26036,
    "type": "line",
-   "text": "The actions of command rule 373 (6, code and argument each): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 373 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26047,
    "type": "line",
-   "text": "The actions of command rule 374 (6, code and argument each): drop object 69 (An emerald the size of a plovers...); remove object 69 (An emerald the size of a plovers...) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 374 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 69 (An emerald the size of a plovers...); remove object 69 (An emerald the size of a plovers...) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26058,
    "type": "line",
-   "text": "The actions of command rule 375 (6, code and argument each): drop object 70 (A huge platinum pyramid.); remove object 70 (A huge platinum pyramid.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 375 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 70 (A huge platinum pyramid.); remove object 70 (A huge platinum pyramid.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26069,
    "type": "line",
-   "text": "The actions of command rule 376 (6, code and argument each): drop object 71 (A glistening pearl.); remove object 71 (A glistening pearl.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 376 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 71 (A glistening pearl.); remove object 71 (A glistening pearl.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26080,
    "type": "line",
-   "text": "The actions of command rule 377 (6, code and argument each): drop object 72 (An expensive Persian rug.); remove object 72 (An expensive Persian rug.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 377 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 72 (An expensive Persian rug.); remove object 72 (An expensive Persian rug.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26091,
    "type": "line",
-   "text": "The actions of command rule 378 (6, code and argument each): drop object 75 (Some very rare Spices.); remove object 75 (Some very rare Spices.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 378 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 75 (Some very rare Spices.); remove object 75 (Some very rare Spices.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26102,
    "type": "line",
-   "text": "The actions of command rule 379 (6, code and argument each): drop object 77 (A golden chain.); remove object 77 (A golden chain.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
+   "text": "The actions of command rule 379 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 77 (A golden chain.); remove object 77 (A golden chain.) from play; remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 159 'The troll catches your treasure and scurrie...'; end turn."
   },
   {
    "address": 26113,
    "type": "line",
-   "text": "The actions of command rule 380 (1, code and argument each): ask Are you sure? and quit."
+   "text": "The actions of command rule 380 (1 in 1 byte, quit, stored as its code alone since it leaves the rule): ask Are you sure? and quit."
   },
   {
    "address": 26114,
    "type": "line",
-   "text": "The actions of command rule 381 (1, code and argument each): list inventory."
+   "text": "The actions of command rule 381 (1 in 1 byte, list inventory, stored as its code alone since it leaves the rule): list inventory."
   },
   {
    "address": 26115,
    "type": "line",
-   "text": "The actions of command rule 382 (2, code and argument each): message 100 'It's not hungry ( it's merely pinin'for the...'; end turn."
+   "text": "The actions of command rule 382 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 100 'It's not hungry ( it's merely pinin'for the...'; end turn."
   },
   {
    "address": 26118,
    "type": "line",
-   "text": "The actions of command rule 383 (2, code and argument each): message 110 'Don't be ridiculous.'; end turn."
+   "text": "The actions of command rule 383 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 110 'Don't be ridiculous.'; end turn."
   },
   {
    "address": 26121,
    "type": "line",
-   "text": "The actions of command rule 384 (2, code and argument each): message 182 'Gluttony is not one of the Troll's vices. A...'; end turn."
+   "text": "The actions of command rule 384 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 182 'Gluttony is not one of the Troll's vices. A...'; end turn."
   },
   {
    "address": 26124,
    "type": "line",
-   "text": "The actions of command rule 385 (4, code and argument each): drop object 14 (A little bird in the cage.); remove object 14 (A little bird in the cage.) from play; message 101 'The snake has now devoured your bird.'; end turn."
+   "text": "The actions of command rule 385 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 14 (A little bird in the cage.); remove object 14 (A little bird in the cage.) from play; message 101 'The snake has now devoured your bird.'; end turn."
   },
   {
    "address": 26131,
    "type": "line",
-   "text": "The actions of command rule 386 (4, code and argument each): drop object 14 (A little bird in the cage.); remove object 14 (A little bird in the cage.) from play; message 101 'The snake has now devoured your bird.'; end turn."
+   "text": "The actions of command rule 386 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 14 (A little bird in the cage.); remove object 14 (A little bird in the cage.) from play; message 101 'The snake has now devoured your bird.'; end turn."
   },
   {
    "address": 26138,
    "type": "line",
-   "text": "The actions of command rule 387 (2, code and argument each): message 102 'There's nothing here it wants to eat ( exce...'; end turn."
+   "text": "The actions of command rule 387 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 102 'There's nothing here it wants to eat ( exce...'; end turn."
   },
   {
    "address": 26141,
    "type": "line",
-   "text": "The actions of command rule 388 (2, code and argument each): message 110 'Don't be ridiculous.'; end turn."
+   "text": "The actions of command rule 388 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 110 'Don't be ridiculous.'; end turn."
   },
   {
    "address": 26144,
    "type": "line",
-   "text": "The actions of command rule 389 (8, code and argument each): drop object 28 (Some tasty food.); remove object 28 (Some tasty food.) from play; remove object 52 (A ferocious cave bear eying you f...) from play; put object 53 (A gentle cave bear sitting in the...) here; remove object 39 (A little Axe by the bear.) from play; put object 38 (A little Axe.) here; message 168 'The bear eagerly wolfs down your food, afte...'; end turn."
+   "text": "The actions of command rule 389 (8 in 15 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 28 (Some tasty food.); remove object 28 (Some tasty food.) from play; remove object 52 (A ferocious cave bear eying you f...) from play; put object 53 (A gentle cave bear sitting in the...) here; remove object 39 (A little Axe by the bear.) from play; put object 38 (A little Axe.) here; message 168 'The bear eagerly wolfs down your food, afte...'; end turn."
   },
   {
    "address": 26159,
    "type": "line",
-   "text": "The actions of command rule 390 (6, code and argument each): drop object 28 (Some tasty food.); remove object 28 (Some tasty food.) from play; remove object 52 (A ferocious cave bear eying you f...) from play; put object 53 (A gentle cave bear sitting in the...) here; message 168 'The bear eagerly wolfs down your food, afte...'; end turn."
+   "text": "The actions of command rule 390 (6 in 11 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 28 (Some tasty food.); remove object 28 (Some tasty food.) from play; remove object 52 (A ferocious cave bear eying you f...) from play; put object 53 (A gentle cave bear sitting in the...) here; message 168 'The bear eagerly wolfs down your food, afte...'; end turn."
   },
   {
    "address": 26170,
    "type": "line",
-   "text": "The actions of command rule 391 (2, code and argument each): message 14 'I'm game. Would you care to explain how.'; end turn."
+   "text": "The actions of command rule 391 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 14 'I'm game. Would you care to explain how.'; end turn."
   },
   {
    "address": 26173,
    "type": "line",
-   "text": "The actions of command rule 392 (2, code and argument each): message 145 'Why not try using GET or TAKE instead.'; end turn."
+   "text": "The actions of command rule 392 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 145 'Why not try using GET or TAKE instead.'; end turn."
   },
   {
    "address": 26176,
    "type": "line",
-   "text": "The actions of command rule 393 (1, code and argument each): show score."
+   "text": "The actions of command rule 393 (1 in 1 byte, show the score, stored as its code alone since it leaves the rule): show score."
   },
   {
    "address": 26177,
    "type": "line",
-   "text": "The actions of command rule 394 (5, code and argument each): drop object 64 (A nest of golden eggs.); remove object 64 (A nest of golden eggs.) from play; put object 64 (A nest of golden eggs.) in room 92; say Okay."
+   "text": "The actions of command rule 394 (5 in 9 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 64 (A nest of golden eggs.); remove object 64 (A nest of golden eggs.) from play; put object 64 (A nest of golden eggs.) in room 92; say Okay."
   },
   {
    "address": 26186,
    "type": "line",
-   "text": "The actions of command rule 395 (4, code and argument each): remove object 64 (A nest of golden eggs.) from play; put object 64 (A nest of golden eggs.) in room 92; say Okay."
+   "text": "The actions of command rule 395 (4 in 7 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): remove object 64 (A nest of golden eggs.) from play; put object 64 (A nest of golden eggs.) in room 92; say Okay."
   },
   {
    "address": 26193,
    "type": "line",
-   "text": "The actions of command rule 396 (6, code and argument each): put object 64 (A nest of golden eggs.) in room 92; remove object 50 (The troll is nowhere to be seen.) from play; put object 48 (A troll stands by the bridge and...) in room 117; say Okay."
+   "text": "The actions of command rule 396 (6 in 11 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): put object 64 (A nest of golden eggs.) in room 92; remove object 50 (The troll is nowhere to be seen.) from play; put object 48 (A troll stands by the bridge and...) in room 117; say Okay."
   },
   {
    "address": 26204,
    "type": "line",
-   "text": "The actions of command rule 397 (5, code and argument each): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; put object 68 (A worthless broken vase.) here; message 198 'You have taken the vase and hurled it delic...'; end turn."
+   "text": "The actions of command rule 397 (5 in 9 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 66 (A precious Ming vase.); remove object 66 (A precious Ming vase.) from play; put object 68 (A worthless broken vase.) here; message 198 'You have taken the vase and hurled it delic...'; end turn."
   },
   {
    "address": 26213,
    "type": "line",
-   "text": "The actions of command rule 398 (2, code and argument each): message 33 'I don't know how to lock or unlock such a t...'; end turn."
+   "text": "The actions of command rule 398 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 33 'I don't know how to lock or unlock such a t...'; end turn."
   },
   {
    "address": 26216,
    "type": "line",
-   "text": "The actions of command rule 399 (2, code and argument each): message 33 'I don't know how to lock or unlock such a t...'; end turn."
+   "text": "The actions of command rule 399 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 33 'I don't know how to lock or unlock such a t...'; end turn."
   },
   {
    "address": 26219,
    "type": "line",
-   "text": "The actions of command rule 400 (2, code and argument each): message 42 'Nothing happens.'; end turn."
+   "text": "The actions of command rule 400 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 42 'Nothing happens.'; end turn."
   },
   {
    "address": 26222,
    "type": "line",
-   "text": "The actions of command rule 401 (2, code and argument each): message 110 'Don't be ridiculous.'; end turn."
+   "text": "The actions of command rule 401 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 110 'Don't be ridiculous.'; end turn."
   },
   {
    "address": 26225,
    "type": "line",
-   "text": "The actions of command rule 402 (2, code and argument each): message 110 'Don't be ridiculous.'; end turn."
+   "text": "The actions of command rule 402 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 110 'Don't be ridiculous.'; end turn."
   },
   {
    "address": 26228,
    "type": "line",
-   "text": "The actions of command rule 403 (2, code and argument each): message 59 'I can only tell you what you see as you mov...'; end turn."
+   "text": "The actions of command rule 403 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 59 'I can only tell you what you see as you mov...'; end turn."
   },
   {
    "address": 26231,
    "type": "line",
-   "text": "The actions of command rule 404 (2, code and argument each): message 146 'It is beyond your power to do that.'; end turn."
+   "text": "The actions of command rule 404 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 146 'It is beyond your power to do that.'; end turn."
   },
   {
    "address": 26234,
    "type": "line",
-   "text": "The actions of command rule 405 (3, code and argument each): message 134 'There is a loud explosion and a 20-foot hol...'; set flag 10; show score."
+   "text": "The actions of command rule 405 (3 in 5 bytes, code and argument each, except show the score, which leaves the rule and is stored as its code alone): message 134 'There is a loud explosion and a 20-foot hol...'; set flag 10; show score."
   },
   {
    "address": 26239,
    "type": "line",
-   "text": "The actions of command rule 406 (4, code and argument each): set flag 8; message 135 'There is a loud explosion, and you are sudd...'; set flag 10; show score."
+   "text": "The actions of command rule 406 (4 in 7 bytes, code and argument each, except show the score, which leaves the rule and is stored as its code alone): set flag 8; message 135 'There is a loud explosion, and you are sudd...'; set flag 10; show score."
   },
   {
    "address": 26246,
    "type": "line",
-   "text": "The actions of command rule 407 (4, code and argument each): set flag 9; message 133 'There is a loud explosion and a 20-foot hol...'; set flag 10; show score."
+   "text": "The actions of command rule 407 (4 in 7 bytes, code and argument each, except show the score, which leaves the rule and is stored as its code alone): set flag 9; message 133 'There is a loud explosion and a 20-foot hol...'; set flag 10; show score."
   },
   {
    "address": 26253,
    "type": "line",
-   "text": "The actions of command rule 408 (2, code and argument each): message 67 'Blasting requires dynamite.'; end turn."
+   "text": "The actions of command rule 408 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 67 'Blasting requires dynamite.'; end turn."
   },
   {
    "address": 26256,
    "type": "line",
-   "text": "The actions of command rule 409 (4, code and argument each): drop object 38 (A little Axe.); clear flag 11; message 149 'You killed a little dwarf.'; end turn."
+   "text": "The actions of command rule 409 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); clear flag 11; message 149 'You killed a little dwarf.'; end turn."
   },
   {
    "address": 26263,
    "type": "line",
-   "text": "The actions of command rule 410 (3, code and argument each): drop object 38 (A little Axe.); message 48 'You attack a little dwarf, but he dodges ou...'; end turn."
+   "text": "The actions of command rule 410 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); message 48 'You attack a little dwarf, but he dodges ou...'; end turn."
   },
   {
    "address": 26268,
    "type": "line",
-   "text": "The actions of command rule 411 (5, code and argument each): drop object 38 (A little Axe.); remove object 38 (A little Axe.) from play; put object 39 (A little Axe by the bear.) here; message 164 'The axe misses and lands near the bear wher...'; end turn."
+   "text": "The actions of command rule 411 (5 in 9 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); remove object 38 (A little Axe.) from play; put object 39 (A little Axe by the bear.) here; message 164 'The axe misses and lands near the bear wher...'; end turn."
   },
   {
    "address": 26277,
    "type": "line",
-   "text": "The actions of command rule 412 (3, code and argument each): drop object 38 (A little Axe.); message 152 'The axe bounces harmlessy off the dragons t...'; end turn."
+   "text": "The actions of command rule 412 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); message 152 'The axe bounces harmlessy off the dragons t...'; end turn."
   },
   {
    "address": 26282,
    "type": "line",
-   "text": "The actions of command rule 413 (3, code and argument each): drop object 38 (A little Axe.); message 152 'The axe bounces harmlessy off the dragons t...'; end turn."
+   "text": "The actions of command rule 413 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); message 152 'The axe bounces harmlessy off the dragons t...'; end turn."
   },
   {
    "address": 26287,
    "type": "line",
-   "text": "The actions of command rule 414 (3, code and argument each): drop object 38 (A little Axe.); message 158 'The troll deftly catches the axe examines i...'; end turn."
+   "text": "The actions of command rule 414 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); message 158 'The troll deftly catches the axe examines i...'; end turn."
   },
   {
    "address": 26292,
    "type": "line",
-   "text": "The actions of command rule 415 (3, code and argument each): drop object 38 (A little Axe.); message 158 'The troll deftly catches the axe examines i...'; end turn."
+   "text": "The actions of command rule 415 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); message 158 'The troll deftly catches the axe examines i...'; end turn."
   },
   {
    "address": 26297,
    "type": "line",
-   "text": "The actions of command rule 416 (3, code and argument each): drop object 38 (A little Axe.); message 47 'The axe bounces harmlessly off the wall.'; end turn."
+   "text": "The actions of command rule 416 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): drop object 38 (A little Axe.); message 47 'The axe bounces harmlessly off the wall.'; end turn."
   },
   {
    "address": 26302,
    "type": "line",
-   "text": "The actions of command rule 417 (2, code and argument each): message 80 'I don't like to do that here, try DROP, etc.'; end turn."
+   "text": "The actions of command rule 417 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 80 'I don't like to do that here, try DROP, etc.'; end turn."
   },
   {
    "address": 26305,
    "type": "line",
-   "text": "The actions of command rule 418 (1, code and argument each): describe room."
+   "text": "The actions of command rule 418 (1 in 1 byte, describe room, stored as its code alone since it leaves the rule): describe room."
   },
   {
    "address": 26306,
    "type": "line",
-   "text": "The actions of command rule 419 (2, code and argument each): drop object 58 (A small eastern flute.); say Okay."
+   "text": "The actions of command rule 419 (2 in 3 bytes, code and argument each, except say Okay, which leaves the rule and is stored as its code alone): drop object 58 (A small eastern flute.); say Okay."
   },
   {
    "address": 26309,
    "type": "line",
-   "text": "The actions of command rule 420 (1, code and argument each): SAVE to tape."
+   "text": "The actions of command rule 420 (1 in 1 byte, SAVE, stored as its code alone since it leaves the rule): SAVE to tape."
   },
   {
    "address": 26310,
    "type": "line",
-   "text": "The actions of command rule 421 (1, code and argument each): RESTORE from tape."
+   "text": "The actions of command rule 421 (1 in 1 byte, RESTORE, stored as its code alone since it leaves the rule): RESTORE from tape."
   },
   {
    "address": 26311,
@@ -21325,42 +21325,42 @@
   {
    "address": 26613,
    "type": "line",
-   "text": "The actions of status rule 13 (6, code and argument each): clear flag 6; remove object 32 (A tiny little plant murmuring 'Wa...) from play; put object 33 (A 12-foot beanstalk bellowing WAT...) here; put object 35 (The top of a 12-foot beanstalk po...) in room 67; describe room."
+   "text": "The actions of status rule 13 (6 in 11 bytes, code and argument each, except describe room, which leaves the rule and is stored as its code alone): clear flag 6; remove object 32 (A tiny little plant murmuring 'Wa...) from play; put object 33 (A 12-foot beanstalk bellowing WAT...) here; put object 35 (The top of a 12-foot beanstalk po...) in room 67; describe room."
   },
   {
    "address": 26624,
    "type": "line",
-   "text": "The actions of status rule 14 (7, code and argument each): clear flag 6; remove object 33 (A 12-foot beanstalk bellowing WAT...) from play; put object 34 (A gigantic beanstalk stretching u...) here; remove object 35 (The top of a 12-foot beanstalk po...) from play; put object 36 (There is a huge beanstalk poking...) in room 67; describe room."
+   "text": "The actions of status rule 14 (7 in 13 bytes, code and argument each, except describe room, which leaves the rule and is stored as its code alone): clear flag 6; remove object 33 (A 12-foot beanstalk bellowing WAT...) from play; put object 34 (A gigantic beanstalk stretching u...) here; remove object 35 (The top of a 12-foot beanstalk po...) from play; put object 36 (There is a huge beanstalk poking...) in room 67; describe room."
   },
   {
    "address": 26637,
    "type": "line",
-   "text": "The actions of status rule 15 (3, code and argument each): clear flag 6; message 77 'Your bottle is empty and the ground is wet.'; end turn."
+   "text": "The actions of status rule 15 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): clear flag 6; message 77 'Your bottle is empty and the ground is wet.'; end turn."
   },
   {
    "address": 26642,
    "type": "line",
-   "text": "The actions of status rule 16 (3, code and argument each): clear flag 7; message 112 'The plant indignantly shakes the oil off it...'; end turn."
+   "text": "The actions of status rule 16 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): clear flag 7; message 112 'The plant indignantly shakes the oil off it...'; end turn."
   },
   {
    "address": 26647,
    "type": "line",
-   "text": "The actions of status rule 17 (3, code and argument each): clear flag 7; message 112 'The plant indignantly shakes the oil off it...'; end turn."
+   "text": "The actions of status rule 17 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): clear flag 7; message 112 'The plant indignantly shakes the oil off it...'; end turn."
   },
   {
    "address": 26652,
    "type": "line",
-   "text": "The actions of status rule 18 (4, code and argument each): clear flag 7; remove object 15 (The way north is barred by a mass...) from play; put object 16 (The way north leads through a rus...) here; describe room."
+   "text": "The actions of status rule 18 (4 in 7 bytes, code and argument each, except describe room, which leaves the rule and is stored as its code alone): clear flag 7; remove object 15 (The way north is barred by a mass...) from play; put object 16 (The way north leads through a rus...) here; describe room."
   },
   {
    "address": 26659,
    "type": "line",
-   "text": "The actions of status rule 19 (3, code and argument each): clear flag 7; message 77 'Your bottle is empty and the ground is wet.'; end turn."
+   "text": "The actions of status rule 19 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): clear flag 7; message 77 'Your bottle is empty and the ground is wet.'; end turn."
   },
   {
    "address": 26664,
    "type": "line",
-   "text": "The actions of status rule 20 (2, code and argument each): message 8 'A hollow voice says 'PLUGH'.'; end turn."
+   "text": "The actions of status rule 20 (2 in 3 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): message 8 'A hollow voice says 'PLUGH'.'; end turn."
   },
   {
    "address": 26667,
@@ -21370,7 +21370,7 @@
   {
    "address": 26671,
    "type": "line",
-   "text": "The actions of status rule 22 (4, code and argument each): remove object 38 (A little Axe.) from play; put object 38 (A little Axe.) here; message 3 'A little dwarf just walked around a corner,...'; end turn."
+   "text": "The actions of status rule 22 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 38 (A little Axe.) from play; put object 38 (A little Axe.) here; message 3 'A little dwarf just walked around a corner,...'; end turn."
   },
   {
    "address": 26678,
@@ -21380,27 +21380,27 @@
   {
    "address": 26680,
    "type": "line",
-   "text": "The actions of status rule 24 (3, code and argument each): remove object 13 (A cheerful little singing bird.) from play; message 29 'The little bird attacks the green snake, an...'; end turn."
+   "text": "The actions of status rule 24 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 13 (A cheerful little singing bird.) from play; message 29 'The little bird attacks the green snake, an...'; end turn."
   },
   {
    "address": 26685,
    "type": "line",
-   "text": "The actions of status rule 25 (3, code and argument each): remove object 19 (A drowsy, huge, green snake, barr...) from play; message 30 'The little bird attacks the green snake, an...'; end turn."
+   "text": "The actions of status rule 25 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 19 (A drowsy, huge, green snake, barr...) from play; message 30 'The little bird attacks the green snake, an...'; end turn."
   },
   {
    "address": 26690,
    "type": "line",
-   "text": "The actions of status rule 26 (3, code and argument each): remove object 13 (A cheerful little singing bird.) from play; message 154 'The little bird attacks the dragon, and in...'; end turn."
+   "text": "The actions of status rule 26 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 13 (A cheerful little singing bird.) from play; message 154 'The little bird attacks the dragon, and in...'; end turn."
   },
   {
    "address": 26695,
    "type": "line",
-   "text": "The actions of status rule 27 (3, code and argument each): remove object 13 (A cheerful little singing bird.) from play; message 154 'The little bird attacks the dragon, and in...'; end turn."
+   "text": "The actions of status rule 27 (3 in 5 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 13 (A cheerful little singing bird.) from play; message 154 'The little bird attacks the dragon, and in...'; end turn."
   },
   {
    "address": 26700,
    "type": "line",
-   "text": "The actions of status rule 28 (4, code and argument each): remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 163 'The bear lumbers towards the troll, who let...'; end turn."
+   "text": "The actions of status rule 28 (4 in 7 bytes, code and argument each, except end turn, which leaves the rule and is stored as its code alone): remove object 49 (A troll stands by the bridge and...) from play; put object 51 (The troll is nowhere to be seen.) here; message 163 'The bear lumbers towards the troll, who let...'; end turn."
   },
   {
    "address": 26707,
