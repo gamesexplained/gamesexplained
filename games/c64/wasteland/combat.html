@@ -1,0 +1,353 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/wasteland-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Every check and every shot comes down to two dice that are thrown again on a double, and Wasteland’s dice come up doubles one throw in five.</p>
+</header>
+<main class="wrap">
+<section id="wl-dice" data-part="">
+<p class="fig">01 · Checks and shots</p>
+<h2 class="t">Two dice that keep rolling</h2>
+
+<p class="lede" data-part="engine">Every skill check, attribute check, and party member's shot comes down to one throw: two six-sided dice, added up, and thrown again whenever they match. The repeats add on, so a pair of sixes followed by a 3 and a 4 makes 19 (<code>$0845</code>). Each repeat is a one-in-six chance, so high totals are rare but possible.</p>
+
+<p data-part="engine">A check has a target of 15 + 5 × its difficulty (<code>$0867</code>). For a skill check, the throw plus the attribute that goes with the skill plus 4 for each level of the skill must reach it (<code>$0C6A</code>). The table at <code>$0DD8</code> pairs each skill with its attribute, such as Climb with AGL, Picklock with DEX, and Medic with IQ. An attribute check adds the attribute alone (<code>$0D0A</code>). A throw under 5 fails whatever the bonus, which is one throw in nine.</p>
+
+<p data-part="">Every throw of 5 or more is added to the character's experience, pass or fail (<code data-part="engine">$0C41</code>). A pass can also raise the skill a level, but only while the level is below the character's rank and below the difficulty. Then a d10 no higher than half of (difficulty − level), rounded down, plus 1 raises it (<code data-part="engine">$0CA2</code>). A new character has rank 1 (<code data-part="ranger">$7FDD</code>), so no skill improves by use before the first promotion.</p>
+
+<div class="plate" id="wl-dice-checks" data-part="engine">
+  <div class="wl-dice-seg" id="wl-dice-c-kind" role="group" aria-label="Kind of check">
+    <button type="button" class="wl-dice-segb" data-kind="skill" aria-pressed="true">Skill check</button>
+    <button type="button" class="wl-dice-segb" data-kind="attr" aria-pressed="false">Attribute check</button>
+  </div>
+  <div class="wl-dice-grid">
+    <div class="wl-dice-ctl">
+      <label class="wl-dice-k-skill" for="wl-dice-c-skill">Skill</label>
+      <select class="wl-dice-k-skill wl-dice-wide" id="wl-dice-c-skill"></select>
+      <label class="wl-dice-k-attr" for="wl-dice-c-attr" hidden>Attribute</label>
+      <select class="wl-dice-k-attr wl-dice-wide" id="wl-dice-c-attr" hidden></select>
+      <label class="wl-dice-k-skill" for="wl-dice-c-level">Level</label>
+      <input class="wl-dice-k-skill" type="range" id="wl-dice-c-level" min="0" max="10" value="2">
+      <output class="wl-dice-k-skill" id="wl-dice-c-level-o" for="wl-dice-c-level"></output>
+      <label for="wl-dice-c-val" id="wl-dice-c-val-l">AGL</label>
+      <input type="range" id="wl-dice-c-val" min="1" max="30" value="14">
+      <output id="wl-dice-c-val-o" for="wl-dice-c-val"></output>
+      <label for="wl-dice-c-diff">Difficulty</label>
+      <input type="range" id="wl-dice-c-diff" min="0" max="31" value="3">
+      <output id="wl-dice-c-diff-o" for="wl-dice-c-diff"></output>
+      <label class="wl-dice-k-skill" for="wl-dice-c-rank">Rank</label>
+      <input class="wl-dice-k-skill" type="range" id="wl-dice-c-rank" min="1" max="20" value="4">
+      <output class="wl-dice-k-skill" id="wl-dice-c-rank-o" for="wl-dice-c-rank"></output>
+    </div>
+    <div>
+      <div class="wl-dice-big"><span id="wl-dice-c-p">&ndash;</span> <span class="wl-dice-unit">chance to pass</span></div>
+      <p class="wl-dice-line wl-dice-game" id="wl-dice-c-game"></p>
+      <p class="wl-dice-line" id="wl-dice-c-sum"></p>
+      <canvas class="wl-dice-cv" id="wl-dice-c-cv" role="img" aria-label="Chance of each total of the throw: under 5 fails at once, totals at or above the line pass"></canvas>
+      <p class="wl-dice-line" id="wl-dice-c-learn"></p>
+    </div>
+  </div>
+  <div class="wl-dice-rollrow">
+    <button type="button" class="wl-dice-btn" id="wl-dice-c-roll">Roll</button>
+    <div class="wl-dice-rollout"><div id="wl-dice-c-out" aria-live="polite"></div><p class="wl-dice-tally" id="wl-dice-c-tally"></p></div>
+  </div>
+  <p class="wl-dice-note"></p>
+  <p class="cap">The chance is exact for fair dice: every way the throw can reach each total is counted, doubles and all. The chart is the throw alone; red totals fail at once. Roll runs the game's own check, ported from the engine (<code>$0C29</code>, <code>$0D0A</code>) and tested against the original code on a 6502 simulator: 27,324 skill checks over every skill, levels 0 to 10 and difficulties 0 to 31, and 3,072 attribute checks, with the same random bytes, gave the same results and used the same bytes.</p>
+</div>
+
+<p data-part="game">A shot uses the same throw (<code>$A584</code>). To it are added DEX, 4 for each level of the weapon's skill, and the fire mode: 4 for a burst, the rounds left in the gun for automatic fire, and 10 for an explosive (<code>$A5D6</code>). A full Uzi on automatic adds 40. The total must reach a target that grows with the distance, rounded up to 5 feet, at one of three rates (<code>$A793</code>, <code>$BD48</code>). Pistols, thrown weapons, and explosives start at 0 and add 5 for every 5 feet. SMGs, carbines, the Flamethrower, the Ion beamer, the Mangler, and the Sabot rocket start at 10 and add 2. Every other gun, from the rifles to the Meson cannon, the LAW, and the RPG-7, starts at 20 and adds 1, so beyond 25 feet a rifle is an easier shot than a pistol, and beyond 50 feet than an SMG.</p>
+
+<p data-part="game">The target is 7 higher when the monster the code looks at has no gun (<code>$A76E</code>). The line it looks at is the one numbered like the target's group, which is not always the line being shot at (<code>$A74B</code>, <code>$A766</code>).</p>
+
+<p data-part="game">A throw of 3 is not a miss by itself. One more die is thrown, and a 1 spoils the shot however easy it was: rockets and explosives fail to detonate, and any other gun jams and loses its rounds (<code>$A58D</code>). That is one shot in 108.</p>
+
+<p data-part="game">A burst that hits lands 1 to 3 hits (<code>$A0B3</code>), and automatic fire one d4 of hits for every 4 rounds (<code>$A98C</code>). A burst spends 3 rounds and automatic fire all of them, hit or miss (<code>$A02B</code>, <code>$A220</code>).</p>
+
+<p data-part="game">Each hit rolls the weapon's dice, adds the attacker's luck bonus, and takes off the monster's armour roll, stopping at 0 (<code>$A7DE</code>, <code>$A9AD</code>). Anti-tank weapons roll 2 × their dice − the armour when the armour is no more than their dice, and the armour roll is not taken off (<code>$A818</code>, <code>$A677</code>). An explosive rolls its damage once, without luck, and every monster in the group takes it less its own armour roll (<code>$A054</code>, <code>$AA90</code>). The luck bonus has no floor: a hit it takes below 0 kills, as the throwing knife's section below shows.</p>
+
+<div class="plate" id="wl-dice-attacks" data-part="game">
+  <div class="wl-dice-grid">
+    <div class="wl-dice-ctl">
+      <label for="wl-dice-a-weapon">Weapon</label>
+      <select class="wl-dice-wide" id="wl-dice-a-weapon"></select>
+      <span class="wl-dice-lab">Fire</span>
+      <div class="wl-dice-seg wl-dice-wide" id="wl-dice-a-mode" role="group" aria-label="Fire mode">
+        <button type="button" class="wl-dice-segb" data-mode="0" aria-pressed="true">Single</button>
+        <button type="button" class="wl-dice-segb" data-mode="1" aria-pressed="false">Burst</button>
+        <button type="button" class="wl-dice-segb" data-mode="2" aria-pressed="false">Auto</button>
+      </div>
+      <label for="wl-dice-a-rounds">Rounds</label>
+      <input type="range" id="wl-dice-a-rounds" min="1" max="7" value="7">
+      <output id="wl-dice-a-rounds-o" for="wl-dice-a-rounds"></output>
+      <label for="wl-dice-a-dex">DEX</label>
+      <input type="range" id="wl-dice-a-dex" min="1" max="30" value="14">
+      <output id="wl-dice-a-dex-o" for="wl-dice-a-dex"></output>
+      <label for="wl-dice-a-level" id="wl-dice-a-level-l">Skill</label>
+      <input type="range" id="wl-dice-a-level" min="0" max="10" value="2">
+      <output id="wl-dice-a-level-o" for="wl-dice-a-level"></output>
+      <label for="wl-dice-a-lk">LK</label>
+      <input type="range" id="wl-dice-a-lk" min="1" max="30" value="10">
+      <output id="wl-dice-a-lk-o" for="wl-dice-a-lk"></output>
+      <label for="wl-dice-a-dist">Distance</label>
+      <input type="range" id="wl-dice-a-dist" min="0" max="100" value="30">
+      <output id="wl-dice-a-dist-o" for="wl-dice-a-dist"></output>
+      <label for="wl-dice-a-armour">Armour</label>
+      <input type="range" id="wl-dice-a-armour" min="0" max="15" value="1">
+      <output id="wl-dice-a-armour-o" for="wl-dice-a-armour"></output>
+      <label for="wl-dice-a-col">Monster has</label>
+      <select class="wl-dice-wide" id="wl-dice-a-col"><option value="0">a gun</option><option value="1">no gun: target + 7</option></select>
+    </div>
+    <div>
+      <div class="wl-dice-big"><span id="wl-dice-a-p">&ndash;</span> <span class="wl-dice-unit">chance to hit</span></div>
+      <p class="wl-dice-line wl-dice-game" id="wl-dice-a-game"></p>
+      <p class="wl-dice-line" id="wl-dice-a-sum"></p>
+      <p class="wl-dice-line" id="wl-dice-a-hits"></p>
+      <canvas class="wl-dice-cv" id="wl-dice-a-cv" role="img" aria-label="Chance of each amount of damage from one hit after armour"></canvas>
+      <p class="wl-dice-line" id="wl-dice-a-dmg"></p>
+    </div>
+  </div>
+  <div class="wl-dice-rollrow">
+    <button type="button" class="wl-dice-btn" id="wl-dice-a-roll">Fire</button>
+    <div class="wl-dice-rollout" id="wl-dice-a-out" aria-live="polite"></div>
+  </div>
+  <p class="wl-dice-note"></p>
+  <p class="cap">A party member's shot at a monster group, with the guns, rockets and explosives of the item table (<code>$3108</code>). The chart is the damage of one hit after armour; 0 is in red. Fists and hand weapons fight in melee, which works differently and is not shown. Fire runs the game's routines, ported and tested on the simulator against the original code with the same random bytes: the hit roll with every item in the table (15,360 cases), the damage with every item against armour 0 to 15 and beyond (10,368), the hits of bursts and automatic fire (5,436), and the range targets for every distance (606). Which monster each hit lands on is drawn at random too; that draw is left out.</p>
+</div>
+
+<p data-part="engine">The chances above are given twice. The first is exact for fair dice. The second comes from the pairs the engine's own code threw on the simulator (<code>$24E3</code>), taking each repeat to fall the way a first pair does. They differ because the game's dice are not fair, as the next section shows.</p>
+</section>
+
+<section id="wl-doubles" data-part="engine">
+  <p class="fig">02 · Random numbers</p>
+  <h2 class="t">Bug: the dice come up doubles one throw in five</h2>
+  <p class="lede">Two fair dice match one throw in six. Wasteland's match one throw in five, and a pair of ones comes up twice as often as it should. A double means the dice are thrown again, so the bias reaches every check and every shot in the game.</p>
+  <div class="plate" id="wl-dbl">
+    <div class="wl-dbl-seg" role="group" aria-label="Which dice">
+      <button type="button" class="wl-dbl-b" data-wl-dbl="live" aria-pressed="true">In the emulator</button>
+      <button type="button" class="wl-dbl-b" data-wl-dbl="sim" aria-pressed="false">On the simulator</button>
+      <button type="button" class="wl-dbl-b" data-wl-dbl="fair" aria-pressed="false">Fair dice</button>
+    </div>
+    <div class="wl-dbl-wrap">
+      <table class="wl-dbl-t" id="wl-dbl-t" aria-label="The first pair of a throw: first die down, second die across, the share of throws in each cell"></table>
+      <div>
+        <div class="wl-dbl-big"><span id="wl-dbl-p">&ndash;</span> <span class="wl-dbl-unit">doubles</span></div>
+        <p class="wl-dbl-line" id="wl-dbl-sum"></p>
+        <p class="wl-dbl-line" id="wl-dbl-cell" role="status"></p>
+        <div class="wl-dbl-key"><span>fewer than fair</span><span class="wl-dbl-ramp"></span><span>more than fair</span></div>
+      </div>
+    </div>
+    <p class="cap">The first pair of the open throw, first die down and second across. <b>In the emulator</b>, a stub in play threw 4,096 pairs with the game's own routines and the same instructions between the two dice as the throw itself (<code>$084A-$0850</code>), each pair after the seed had been stirred 1 to 256 times, as waiting for a key stirs it. <b>On the simulator</b>, the engine's code threw 2,000,000 pairs on the kit's 6502 simulator from random moments: a random raster line, cycle, timer value, and seed for each.</p>
+  </div>
+  <p>The game has no table of random numbers. Each random byte is the sum of three numbers (<code>$24E3</code>): the raster line the video chip is drawing, the low byte of a timer that counts down once a cycle, and the last random byte plus one. A die (<code>$24D6</code>) keeps the byte's lowest three bits, 0 to 7, throws again at once on a 6 or a 7, and adds 1. The raster line and the timer move with the clock, so a byte made a few cycles after another depends on it. After a draw of 7, the die thrown again at once comes out 2 or 3 two times in five, where a fair die would give 2 or 3 one time in three.</p>
+  <p>Every skill or attribute check fails at once on a throw below 5 (<code>$0C73</code>, <code>$0D29</code>). That takes a first pair of 1 and 2 or 1 and 3, one throw in nine with fair dice. The game's dice do it 13.1% of the time on the simulator and 12.9% in the emulator. The checks and shots above give the chances both ways.</p>
+  <p>A single die is uneven too. In 5,000 dice from the Ranger Center's attribute rolls, watched in the emulator, ones came up 1,043 times, fours 727, and sixes 826, where fair dice give 833 of each.</p>
+</section>
+
+<section id="wl-melee" data-part="game">
+  <p class="fig">03 · Experience</p>
+  <h2 class="t">A kill in melee earns double experience</h2>
+  <p class="lede">A monster killed with fists or a hand weapon (a knife, a club, an ax, a chainsaw, or a proton ax) gives its killer twice the experience a shot gives for the same kill. The melee round adds the kill's worth twice, one call after the other. Guns, rockets, and explosives add it once.</p>
+  <p>The <a href="https://archive.org/details/c64man_wasteland">manual</a> never spells this out. Its section on hand-to-hand combat (page 16) says the Rangers <q>have an advantage over the citizens in hand-to-hand combat</q>, and nothing about experience. Its section on promotion (page 11) says <q>You're awarded experience points each time you accomplish a difficult task or win a difficult battle</q>, and nothing about how a kill is made.</p>
+  <div class="plate" id="wl-xp">
+    <div class="wl-xp-grid">
+      <div><p class="wl-xp-h">A kill in melee</p><ol class="wl-xp-code" data-part="game"><li><span><code>$815D</code></span><span class="wl-xp-b">AD D6 80</span><span class="wl-xp-i">LDA melee_line_index_op</span></li><li><span><code>$8160</code></span><span class="wl-xp-b">20 E8 A9</span><span class="wl-xp-i">JSR kill_experience</span></li><li><span><code>$8163</code></span><span class="wl-xp-b">20 DD 03</span><span class="wl-xp-i">JSR api_add_experience</span></li><li><span><code>$8166</code></span><span class="wl-xp-b">20 DD 03</span><span class="wl-xp-i">JSR api_add_experience</span></li></ol><p class="wl-xp-n">Experience <b id="wl-xp-n0">0</b></p></div>
+      <div><p class="wl-xp-h">A kill by a shot</p><ol class="wl-xp-code" data-part="game"><li><span><code>$A713</code></span><span class="wl-xp-b">AD 5D A6</span><span class="wl-xp-i">LDA damage_line_op</span></li><li><span><code>$A716</code></span><span class="wl-xp-b">20 E8 A9</span><span class="wl-xp-i">JSR kill_experience</span></li><li><span><code>$A719</code></span><span class="wl-xp-b">20 DD 03</span><span class="wl-xp-i">JSR api_add_experience</span></li><li><span><code>$A71C</code></span><span class="wl-xp-b">A9 00</span><span class="wl-xp-i">LDA #$00</span></li></ol><p class="wl-xp-n">Experience <b id="wl-xp-n1">0</b></p></div>
+    </div>
+    <div class="wl-xp-bar">
+      <button type="button" class="wl-xp-btn" id="wl-xp-step">Step</button>
+      <button type="button" class="wl-xp-btn wl-xp-ghost" id="wl-xp-reset">Start again</button>
+      <p class="wl-xp-say" id="wl-xp-say" role="status"></p>
+    </div>
+    <p class="cap">The two places the game pays for a kill, from the Source tab: the end of a melee attack and the end of a shot. Step runs one line of each. The kill is worth 40 here, as each Shambler Ghoul was in the emulator. There, three kills in melee each took their killer's experience from 0 to 80, 40 at each of the two calls.</p>
+  </div>
+  <p>The kill's worth comes from <code>$A9E8</code>: the base value in the monster's record, added once for each of its armour dice and once more. <span data-part="engine"><code>$03DD</code></span> adds that number to the experience of the character whose turn it is, and leaves the number in place. The melee code calls it at <code>$8163</code> and again at <code>$8166</code>, with nothing between that could change the number or the character. A shot calls it once (<code>$A719</code>), and so does an explosion for each monster it kills (<code>$A08A</code>).</p>
+  <div class="wl-xp-fig">
+    <img src="reference/melee-kill.png" width="384" height="272" alt="Map 1's graveyard: KIT hammers the Shambler Ghoul for 6 points of damage killing it.">
+    <p>The game prints the kill and not the experience, so nothing on the screen shows the second payment. Experience brings promotion, the first at 1,024 for a new Ranger (<span data-part="radio"><code>$7F1B</code></span>). Each promotion gives two points to spend on attributes and a higher rank, and a skill improves with use only while its level is below the rank. Every kill made in melee counts twice toward the next promotion.</p>
+  </div>
+</section>
+
+<section id="wl-unlucky" data-part="game">
+  <p class="fig">04 · Damage</p>
+  <h2 class="t">Bug: an unlucky Ranger's throwing knife can kill anything</h2>
+  <p class="lede">A shot's damage is the weapon's dice plus the attacker's luck bonus, and below an LK of 9 the bonus is negative. When it takes the sum below 0, the number wraps round to 65,535, and whatever was hit dies. One weapon can get there: a Throwing knife, thrown by a Ranger with an LK of 3 or 4, when both of its dice show 1.</p>
+  <div class="plate">
+    <div class="wl-un-grid">
+      <figure><img class="wl-un-shot" src="reference/unlucky-throw.png" width="384" height="272" alt="The fight in map 1's graveyard: Hell Razor attacks and hits 1 Shambler Ghoul for 65532 points of damage spinning it into a dance of death. Thrasher misses."><figcaption>In the emulator, Hell Razor with an LK of 3 and a Throwing knife, against the Shambler Ghouls in map 1's graveyard. The knife's roll, 10, was changed to 2, a 1 and a 1, as the dice handed it back (at <code>$A7E7</code>). The sum came out as 65,535, and the ghoul's armour took 3 off it.</figcaption></figure>
+      <div>
+        <ol class="wl-xp-code" data-part="game"><li><span><code>$A7DE</code></span><span class="wl-xp-b">20 F4 A7</span><span class="wl-xp-i">JSR weapon_damage_roll</span></li><li><span><code>$A7E1</code></span><span class="wl-xp-b">8D EC A7</span><span class="wl-xp-i">STA damage_roll_lo_op</span></li><li><span><code>$A7E4</code></span><span class="wl-xp-b">8E F0 A7</span><span class="wl-xp-i">STX damage_roll_hi_op</span></li><li><span><code>$A7E7</code></span><span class="wl-xp-b">20 B8 A7</span><span class="wl-xp-i">JSR luck_bonus</span></li><li><span><code>$A7EA</code></span><span class="wl-xp-b">18</span><span class="wl-xp-i">CLC</span></li><li><span><code>$A7EB</code></span><span class="wl-xp-b">69 00</span><span class="wl-xp-i">ADC #$00</span></li><li><span><code>$A7ED</code></span><span class="wl-xp-b">48</span><span class="wl-xp-i">PHA</span></li><li><span><code>$A7EE</code></span><span class="wl-xp-b">8A</span><span class="wl-xp-i">TXA</span></li><li><span><code>$A7EF</code></span><span class="wl-xp-b">69 00</span><span class="wl-xp-i">ADC #$00</span></li><li><span><code>$A7F1</code></span><span class="wl-xp-b">AA</span><span class="wl-xp-i">TAX</span></li><li><span><code>$A7F2</code></span><span class="wl-xp-b">68</span><span class="wl-xp-i">PLA</span></li><li><span><code>$A7F3</code></span><span class="wl-xp-b">60</span><span class="wl-xp-i">RTS</span></li></ol>
+        <p class="cap">The routine that works out a shot's damage. The two stores write the roll into the operands of the two <code>ADC</code> instructions, and the luck bonus comes back from <code>$A7B8</code> in X and A. Nothing after the second <code>ADC</code> looks at the carry.</p>
+      </div>
+    </div>
+    <div class="wl-un-tw"><table class="wl-un-t">
+      <thead><tr><th>LK</th><th>Luck bonus</th><th>A sum below 0 needs a roll of</th></tr></thead>
+      <tbody>
+        <tr class="wl-un-hit"><td>3 or 4</td><td>−3</td><td>2 or less: the Throwing knife's two dice both showing 1</td></tr>
+        <tr><td>5 or 6</td><td>−2</td><td>1: no thrown or fired weapon rolls fewer than two dice</td></tr>
+        <tr><td>7 or 8</td><td>−1</td><td>0: never</td></tr>
+        <tr><td>9 and up</td><td>0 or more</td><td>never</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">The bonus is (LK − 9) / 2 rounded down below 9, 0 from 9 to 12, and (LK − 12) / 2 from 13 (<code>$A7C3</code>). The lowest attribute a Ranger can be rolled is 3.</p>
+  </div>
+  <p>A shot's damage is worked out by one routine (<code>$A7DE</code>). It rolls the weapon's dice (<code>$A7F4</code>), then adds the attacker's luck bonus with two plain additions, the low byte and then the high byte. A negative bonus is held as a 16-bit number whose high byte is $FF, so a roll smaller than the penalty comes out as a number near 65,535. The monster's armour roll takes a few points off that. The rest is more than any monster has: the most is about 40,000, for the Night Terror in Finster's mind maze (map 23), and the subtraction from the monster's hit points leaves it dead (<code>$A6CC-$A6DF</code>). A blow in melee adds the same bonus through the engine's own addition (<span data-part="engine"><code>$07C6</code></span>), which stops at 0, so a punch can do no damage but never wraps.</p>
+  <p>Only one weapon has dice few enough. An LK of 3 or 4 takes 3 off, so the roll has to be 2: two dice showing 1. Every gun and rocket rolls three dice or more, and explosives leave the luck out, which leaves the Throwing knife's 2d6. With fair dice the knife shows a 1 and a 1 once in 36 throws, and a Throwing knife is used up when it is thrown (<code>$A53A</code>). No loot square in the 42 maps holds one. Christina, who can join the party in downtown Needles, carries one (<span data-part="map-32"><code>$40AE</code></span>).</p>
+  <p>A new Ranger&#8217;s <a href="party.html#wl-ranger-roll">attribute roll</a> makes the low LK easier to come by. Of the 7,776 ways its five dice can fall, 261 give an LK of 3 or 4, where the best three of five would give 6.</p>
+</section>
+
+<section id="wl-radiation" data-part="game">
+  <p class="fig">05 · Radiation</p>
+  <h2 class="t">Bug: armour stops radiation only where the message number is even</h2>
+  <p class="lede">A radiation square burns every member of the party who is not wearing a rad suit. The code means armour to be no help against it, and on most squares armour is a help after all: the square's message number decides.</p>
+  <div class="plate">
+    <div class="wl-rad-tw"><table class="wl-rad-t">
+      <thead><tr><th>Map</th><th>Squares</th><th>Damage</th><th>Message</th><th>Armour</th></tr></thead>
+      <tbody id="wl-rad-rows"><tr class="wl-rad-odd"><td><a href="levels.html#map-0">Map 0</a>, The world map</td><td class="wl-rad-n">22</td><td class="wl-rad-n">3d6</td><td><q>The ground seems to glow here.</q> <span class="wl-rad-none">(23)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-0">Map 0</a>, The world map</td><td class="wl-rad-n">14</td><td class="wl-rad-n">5d6</td><td><q>The ground seems to glow here.</q> <span class="wl-rad-none">(23)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-19">Map 19</a>, Base Cochise, robot assembly</td><td class="wl-rad-n">18</td><td class="wl-rad-n">4d6</td><td><q>A wave of heat washes over you and the ground shimmers.</q> <span class="wl-rad-none">(28)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-19">Map 19</a>, Base Cochise, robot assembly</td><td class="wl-rad-n">20</td><td class="wl-rad-n">6d6</td><td><q>Your eyes tear and a ringing fills your ears.</q> <span class="wl-rad-none">(29)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-19">Map 19</a>, Base Cochise, robot assembly</td><td class="wl-rad-n">22</td><td class="wl-rad-n">10d6</td><td><q>Your whole body feels ready to combust, and your skin itches mightily.</q> <span class="wl-rad-none">(30)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-20">Map 20</a>, Base Cochise, the reactor</td><td class="wl-rad-n">22</td><td class="wl-rad-n">2d6</td><td><q>On the floor is an open container of U235.</q> <span class="wl-rad-none">(69)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-20">Map 20</a>, Base Cochise, the reactor</td><td class="wl-rad-n">16</td><td class="wl-rad-n">3d6</td><td><q>The floor is covered with Plutonium dust.</q> <span class="wl-rad-none">(70)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr class="wl-rad-odd"><td><a href="levels.html#map-20">Map 20</a>, Base Cochise, the reactor</td><td class="wl-rad-n">6</td><td class="wl-rad-n">4d6</td><td><q>A pile of Wastelandium glows brightly here.</q> <span class="wl-rad-none">(71)</span></td><td><span class="wl-rad-no">no help</span></td></tr><tr><td><a href="levels.html#map-26">Map 26</a>, Needles</td><td class="wl-rad-n">42</td><td class="wl-rad-n">2d6</td><td><span class="wl-rad-none">none (0)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr><td><a href="levels.html#map-26">Map 26</a>, Needles</td><td class="wl-rad-n">12</td><td class="wl-rad-n">4d6</td><td><span class="wl-rad-none">none (0)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr><td><a href="levels.html#map-31">Map 31</a>, Needles, waste pit and ammo bunker</td><td class="wl-rad-n">1</td><td class="wl-rad-n">6d6</td><td><q>A broken radioactive waste container is lying here buried in the trash.</q> <span class="wl-rad-none">(12)</span></td><td><span class="wl-rad-yes">counts</span></td></tr><tr><td><a href="levels.html#map-38">Map 38</a>, Las Vegas, the Mushroom Cloud temple</td><td class="wl-rad-n">16</td><td class="wl-rad-n">4d6</td><td><span class="wl-rad-none">none (0)</span></td><td><span class="wl-rad-yes">counts</span></td></tr></tbody>
+    </table></div>
+    <p class="cap" data-part="">Every record of a radiation square in the 42 maps, read from the maps' listings: its message (byte 0), its dice (byte 1), and the squares that use it. The messages are decoded by the port in <a href="pictures.html#wl-text">Five bits a letter</a>. A message of 0 shows nothing. Each map opens on the Maps tab.</p>
+    <div class="wl-rad-try">
+      <img class="wl-rad-shot" id="wl-rad-shot" src="reference/radiation-message-23.png" width="384" height="272" alt="The world map at night, the party on a radiation square: The ground seems to glow here.">
+      <div>
+        <div class="wl-rad-bar" role="group" aria-label="The square's message">
+          <button type="button" class="wl-rad-b" data-wl-rad="23" aria-pressed="true">Message 23, as it is</button>
+          <button type="button" class="wl-rad-b" data-wl-rad="22" aria-pressed="false">Changed to 22</button>
+        </div>
+        <p class="wl-rad-out" id="wl-rad-out" role="status"></p>
+      </div>
+    </div>
+  </div>
+  <p>The handler for radiation squares (<code>$82E0</code>) shows the square's message, then rolls the square's dice of damage for each member in turn. A member wearing the rad suit, item 41, is passed over. Before the first member the handler sets the flag at <span data-part="engine"><code>$A0</code></span> that tells the damage routine to skip the armour roll (<code>$82E7</code>).</p>
+  <p>The damage is taken off through a routine shared with the squares that test the party (<code>$9082</code>). For CON, that routine sets the same flag again, from bit 0 of byte 0 of the square's record (<code>$90AF-$90B4</code>). On a square that tests the party, byte 0 holds flags, and bit 0 set means armour is no help. On a radiation square, byte 0 is the number of the message it shows. So the armour roll, one die for each point of the member's armour class (<code>$A8BB-$A8C5</code>), is skipped where the message number is odd, as the handler meant, and made where it is even.</p>
+  <p>Seven of the twelve records have an even number, among them the 10d6 squares of the robot assembly at Base Cochise. The world map's two records both show message 23, so armour is no help there.</p>
+  <p>In the emulator, the party stepped onto the world map's 5d6 square with every member's armour class set to 30. With message 23 the four members lost 22, 23, 16, and 14 CON. With the record's byte changed to 22, the armour roll was made four times and nobody lost any.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/wasteland-dice.js"></script>
+<script>
+/* page.js */
+// The Dice and combat tab's widgets.
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const press = (group, btn) => group.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  const note = (el, t) => { if (el) el.innerHTML = '<span class="wl-err">' + t + '</span>'; };
+
+  // ---- the dice: the checks, the shots and the doubles ----
+  if (window.WLDice) WLDice.mount(document, { base: '' });
+  else document.querySelectorAll('.wl-dice-note').forEach(p => { p.textContent = 'The dice are run by a script that did not load here. Open this page on the built site.'; });
+
+  // ---- Doubles: the first pair of a throw, measured, simulated and fair ----
+  (function doubles() {
+    const t = $('wl-dbl-t');
+    if (!t) return;
+    if (!window.WLDice || !WLDice.GAME_PAIRS) { note($('wl-dbl-sum'), 'This table needs the dice widget’s script, which did not load here.'); return; }
+    // The emulator: 4,096 pairs thrown by a stub in play with the game's own routines (first die down).
+    const LIVE = [[239, 185, 102, 81, 75, 59], [137, 197, 140, 86, 77, 96], [106, 107, 108, 158, 138, 94],
+      [70, 88, 88, 121, 135, 148], [119, 69, 101, 104, 123, 122], [79, 111, 155, 97, 100, 81]];
+    const FAIR = Array.from({ length: 6 }, () => Array(6).fill(1));
+    const SETS = {
+      live: { m: LIVE, what: 'in the emulator, 4,096 throws' },
+      sim: { m: WLDice.GAME_PAIRS, what: 'on the simulator, 2,000,000 throws' },
+      fair: { m: FAIR, what: 'with fair dice' }
+    };
+    const sum = m => m.reduce((a, r) => a + r.reduce((x, y) => x + y, 0), 0);
+    const pct = x => (100 * x).toFixed(1) + '%';
+    // the colour of a cell: blue below the fair 1/36, red above, white at it (ratio 0.5 to 2 on a log scale)
+    function colour(r) {
+      const v = Math.max(-1, Math.min(1, Math.log2(r)));
+      const mix = (a, b, f) => a.map((x, i) => Math.round(x + (b[i] - x) * f));
+      const W = [241, 239, 234], B = [58, 111, 196], R = [208, 74, 58];
+      const c = v < 0 ? mix(W, B, -v) : mix(W, R, v);
+      return 'rgb(' + c.join(',') + ')';
+    }
+    let cur = 'live';
+    const btns = [...document.querySelectorAll('[data-wl-dbl]')];
+    function cellSay(set, a, b) {
+      const S = SETS[set], n = sum(S.m), p = S.m[a][b] / n;
+      $('wl-dbl-cell').innerHTML = '<b>' + (a + 1) + ' then ' + (b + 1) + '</b>: ' + pct(p) + ' of the first pairs ' + S.what +
+        (set === 'fair' ? '.' : ', against ' + pct(1 / 36) + ' with fair dice' + (set === 'live' ? ' (' + S.m[a][b].toLocaleString('en-GB') + ' throws)' : '') + '.');
+    }
+    function render() {
+      const S = SETS[cur], n = sum(S.m);
+      let h = '<tr><th class="wl-dbl-corner">first<br>second</th>' + [1, 2, 3, 4, 5, 6].map(d => '<th scope="col">' + d + '</th>').join('') + '</tr>';
+      for (let a = 0; a < 6; a++) {
+        h += '<tr><th scope="row">' + (a + 1) + '</th>';
+        for (let b = 0; b < 6; b++) {
+          const p = S.m[a][b] / n;
+          h += '<td tabindex="0" data-a="' + a + '" data-b="' + b + '" class="' + (a === b ? 'wl-dbl-d' : '') + '" style="background:' + colour(p * 36) + '">' + (100 * p).toFixed(1) + '</td>';
+        }
+        h += '</tr>';
+      }
+      t.innerHTML = h;
+      const dbl = S.m.reduce((x, r, i) => x + r[i], 0) / n;
+      const under5 = (S.m[0][1] + S.m[1][0] + S.m[0][2] + S.m[2][0]) / n;
+      $('wl-dbl-p').textContent = pct(dbl);
+      $('wl-dbl-sum').innerHTML = 'Doubles ' + S.what + ', where fair dice give 16.7%. A first pair below 5, which fails any check: <b>' + pct(under5) + '</b>' + (cur === 'fair' ? '.' : ', where fair dice give 11.1%.');
+      $('wl-dbl-cell').textContent = 'Each cell is the share of first pairs, in percent. Point at one, or move to it with Tab.';
+      press(btns, btns.find(x => x.dataset.wlDbl === cur));
+    }
+    t.addEventListener('mouseover', e => { const c = e.target.closest('td'); if (c) cellSay(cur, +c.dataset.a, +c.dataset.b); });
+    t.addEventListener('focusin', e => { const c = e.target.closest('td'); if (c) cellSay(cur, +c.dataset.a, +c.dataset.b); });
+    btns.forEach(b => b.addEventListener('click', () => { cur = b.dataset.wlDbl; render(); }));
+    render();
+  })();
+
+  // ---- Experience: the two places the game pays for a kill, a line at a time ----
+  (function experience() {
+    const stepB = $('wl-xp-step'), resetB = $('wl-xp-reset'), say = $('wl-xp-say');
+    if (!stepB) return;
+    const cols = [...document.querySelectorAll('#wl-xp .wl-xp-code')].map(ol => [...ol.children]);
+    const nums = [$('wl-xp-n0'), $('wl-xp-n1')];
+    const WORTH = 40;
+    // what each step does, per column: the line it runs (an index into the column), and the experience after it
+    const STEPS = [
+      { at: [0, 0], xp: [0, 0], say: 'The monster’s hit points have run out. Both paths load the line the monster stood in.' },
+      { at: [1, 1], xp: [0, 0], say: 'kill_experience puts what the kill is worth in <code>$1C-$1E</code>: ' + WORTH + ' for a Shambler Ghoul.' },
+      { at: [2, 2], xp: [WORTH, WORTH], say: 'The first call adds the ' + WORTH + ' to the killer’s experience, on both paths.' },
+      { at: [3, 3], xp: [2 * WORTH, WORTH], say: 'The melee path adds the same ' + WORTH + ' again. The shot has gone on to its next job.' }
+    ];
+    let k = -1;
+    function render() {
+      cols.forEach((lis, c) => lis.forEach((li, i) => {
+        li.classList.toggle('wl-xp-at', k >= 0 && STEPS[k].at[c] === i);
+        li.classList.toggle('wl-xp-done', k >= 0 && i < STEPS[k].at[c]);
+      }));
+      const xp = k < 0 ? [0, 0] : STEPS[k].xp, was = k < 1 ? [0, 0] : STEPS[k - 1].xp;
+      nums.forEach((n, c) => { n.textContent = xp[c]; n.classList.toggle('wl-xp-up', xp[c] > was[c]); });
+      say.innerHTML = k < 0 ? 'Step runs the next line of each path.' : STEPS[k].say;
+      stepB.disabled = k >= STEPS.length - 1;
+    }
+    stepB.addEventListener('click', () => { if (k < STEPS.length - 1) { k++; render(); } });
+    resetB.addEventListener('click', () => { k = -1; render(); });
+    render();
+  })();
+
+  // ---- Radiation: the live test, message 23 against 22 ----
+  (function radiation() {
+    const out = $('wl-rad-out'), img = $('wl-rad-shot');
+    if (!out) return;
+    const CASES = {
+      23: { src: 'reference/radiation-message-23.png', alt: 'The world map at night, the party on a radiation square: The ground seems to glow here.',
+        say: '<q>The ground seems to glow here.</q> Message 23 is odd, so the damage routine skips the armour roll. With armour class 30 each, the four members lost <b>22, 23, 16 and 14</b> CON.' },
+      22: { src: 'reference/radiation-message-22.png', alt: 'The same square with the record’s message changed to 22: It’s VERY hot!',
+        say: '<q>It’s VERY hot!</q> The same square with its record’s byte 0 changed to 22, another of the map’s messages. 22 is even, so the armour roll is made for each member, and with armour class 30 nobody lost any CON: <b>0, 0, 0 and 0</b>.' }
+    };
+    const btns = [...document.querySelectorAll('[data-wl-rad]')];
+    function show(k) {
+      const c = CASES[k];
+      img.src = c.src; img.alt = c.alt; out.innerHTML = c.say;
+      press(btns, btns.find(b => b.dataset.wlRad === String(k)));
+    }
+    btns.forEach(b => b.addEventListener('click', () => show(b.dataset.wlRad)));
+    show(23);
+  })();
+})();
+</script>

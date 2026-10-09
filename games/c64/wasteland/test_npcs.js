@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Hold the page's port of the NPCs' refusals against the game's own code, and its table of NPCs
-// against the maps. index.html's WLNpcs block (npcs/npcs.js) and the dice block it throws with
-// (dice/dice.js) run in node beside the original routines on the kit's 6502 simulator, in the
+// against the maps. party.html's WLNpcs block (npcs/npcs.js) and the dice it throws with
+// (reference/wasteland-dice.js) run in node beside the original routines on the kit's 6502 simulator, in the
 // engine's and the game's committed listings, with the same random bytes: npc_obey_check ($0D61)
 // for every refusal byte, the three Use entries ($8D83, $8D86, $8D89), the trade's test in
 // item_trade ($0F50-$0F87) and order_hire from its roll to its margin ($A435-$A4B4). The results,
@@ -17,11 +17,14 @@ const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
-const html = fs.readFileSync(GAME + 'index.html', 'utf8');
-for (const mark of ['/* maps/maps.js */', '/* dice/dice.js */', '/* npcs/npcs.js */']) {
-  const a = html.indexOf(mark), b = html.indexOf('</script>', a);
-  if (a < 0) { console.error('index.html: no ' + mark + ' block'); process.exit(1); }
-  eval(html.slice(a, b));
+// The map window's block is on the Overview (index.html), the NPCs' on the party tab, and the
+// dice, which the party tab and the Dice and combat tab share, in a file of their own.
+const read = f => fs.readFileSync(GAME + f, 'utf8');
+const html = read('party.html');
+for (const [page, mark] of [['index.html', '/* maps/maps.js */'], ['reference/wasteland-dice.js', '/* dice/dice.js */'], ['party.html', '/* npcs/npcs.js */']]) {
+  const src = read(page), a = src.indexOf(mark), b = src.indexOf('</script>', a);
+  if (a < 0) { console.error(page + ': no ' + mark + ' block'); process.exit(1); }
+  eval(b < 0 ? src.slice(a) : src.slice(a, b));
 }
 const D = globalThis.WLDice, N = globalThis.WLNpcs, M = globalThis.WLMaps;
 

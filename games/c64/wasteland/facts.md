@@ -256,8 +256,8 @@ lines into view for a moment, and the programs load from `$7E00`.
   Sixty-eight pictures are on one side, seven on two to four; where a
   picture is on several sides, its own bytes are the same on each.
 - Each was loaded with the engine's own `load_portrait` (`$2631`) in
-  VICE, on every side that holds it, and the How it works and Levels
-  pages carry its bytes (`PORTRAIT_BYTES`), from the start of its buffer
+  VICE, on every side that holds it, and the Pictures and text and Maps
+  tabs carry its bytes (`PORTRAIT_BYTES`), from the start of its buffer
   to the last byte the picture code reads. Pictures 0-3
   and 59 are loaded to `$E000`, as their callers ask (`$041C`): the
   doctor (module-0 `$CA15`), the shop (module-1 `$CA1E`), the library
@@ -342,7 +342,7 @@ lines into view for a moment, and the programs load from `$7E00`.
 - Fourteen records can join: every entry of the 42 maps' lists 17 (the
   non-player characters, map record word `+$28`), copied whole to the
   first free record by Hire (game `$A424-$A433`). test_npcs.js holds the
-  page's table (`index.html`, `#wl-cast-t`) and the widget's NPCS
+  page's table (`party.html`, `#wl-cast-t`) and the widget's NPCS
   against the maps' bytes.
 - Nine of them carry a hidden skill, number 36 to 48, at level `$FF` in
   the last skill pair (`+$BA/+$BB`); no two share one, and no other pair
@@ -446,7 +446,7 @@ lines into view for a moment, and the programs load from `$7E00`.
   view), and 471 in the one chunk that held an idle turn. The port of
   the loop on the page makes 21.19 passes a frame on a processor that
   has every cycle; giving the video chip 1,075 cycles a frame brings it
-  to 20.02, and the Geiger counter's player on the How it works page
+  to 20.02, and the Geiger counter's player on the Sound tab
   runs it so.
 - The attribute roll: from the Ranger Center creating a character,
   SPACE rolled 32 attributes; each ended as a model of the broken

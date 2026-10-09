@@ -2,8 +2,8 @@
 // Hold the page's port of the picture code against the game's own, for every portrait.
 // A port is a claim about the game, so this runs both: start_picture ($0586), then
 // animate_picture_tick ($05C5) call by call on the kit's 6502 simulator, in the engine's
-// committed listing with the portrait's bytes that index.html carries, beside the WLPictures
-// block of index.html run by node; the bitmap is compared after every pass of the channels.
+// committed listing with the portrait's bytes that pictures.html carries, beside the WLPictures
+// block of pictures.html run by node; the bitmap is compared after every pass of the channels.
 // Everything it needs is committed: no disk image, no snapshot, no emulator. It exits 1 if
 // any portrait differs.
 //   node games/c64/wasteland/test_portraits.js [steps]     (default 400 a portrait)
@@ -12,9 +12,9 @@ const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
-const html = fs.readFileSync(GAME + 'index.html', 'utf8');
+const html = fs.readFileSync(GAME + 'pictures.html', 'utf8');
 const a = html.indexOf('/* pictures/pictures.js */'), b = html.indexOf('})();', a) + 5;
-if (a < 0) { console.error('index.html: no pictures.js block'); process.exit(1); }
+if (a < 0) { console.error('pictures.html: no pictures.js block'); process.exit(1); }
 eval(html.slice(a, b));
 const P = globalThis.WLPictures;
 const STEPS = +(process.argv[2] || 400);
