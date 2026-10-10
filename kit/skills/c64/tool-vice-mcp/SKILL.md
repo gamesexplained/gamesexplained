@@ -252,7 +252,14 @@ saw. For a game that runs code under a ROM, zap only after the game has
 banked the ROM out, or the KERNAL's interrupt handler from its start-up is
 kept as game code. The emulator listens for its monitor on the
 port above the MCP port (6511 by default). `check_listing.py` fails the game
-while `symbols.json` types any ran byte as data. Do not use `trace exec`
+while `symbols.json` types any ran byte as data. `dump` sizes each
+instruction from the RAM as the session ends, so code the game rewrote after
+running it decodes from the new bytes: where two instructions then overlap
+without ending together, it counts only their opcodes and prints the
+addresses, but a rewritten instruction that overlaps no other still claims
+the bytes after it. When `check_listing.py` names ran bytes that no code
+path reaches, look for a routine that writes over that code before
+suspecting the listing. Do not use `trace exec`
 tracepoints for this: a full-address-space trace floods the monitor faster
 than it can be consumed and wedges the emulator.
 
