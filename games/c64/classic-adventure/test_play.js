@@ -9,21 +9,17 @@
 // the Play tab's walkthrough (which must also close the cave at 150 without testing a chance
 // condition), and from seeded random sessions built from the game's own vocabulary, exits and
 // rules, some of them after the same poke of the room into both. The KERNAL's CHROUT, CHRIN, SETLFS, SETNAM, SAVE and
-// LOAD are hooks; $C5 holds a key, so the pager never waits. Everything it needs is committed: no
-// disk image, no snapshot, no emulator. It exits 1 on any difference.
+// LOAD are kit/c64/kernal_lines.js's hooks; $C5 holds a key, so the pager never waits. Everything
+// it needs is committed: no disk image, no snapshot, no emulator. It exits 1 on any difference.
 //   node games/c64/classic-adventure/test_play.js [sessions]
-const fs = require('fs'), path = require('path');
-const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
-globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
-require(path.join(ROOT, 'site/lib/c64.js'));
+const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
-const html = fs.readFileSync(GAME + 'play.html', 'utf8');
-{
-  const a = html.indexOf('/* adventure.js */'), b = html.indexOf('</script>', a);
-  if (a < 0) { console.error('play.html: no /* adventure.js */ block'); process.exit(1); }
-  eval(html.slice(a, b));
-}
-const P = globalThis.CAPort;
+const { KernalLines } = require(path.join(ROOT, 'kit/c64/kernal_lines.js'));
+const folder = game(__dirname);
+folder.lib('c64');
+const html = folder.read('play.html');
+const P = folder.run('play.html', 'adventure.js', 'CAPort').CAPort;
 
 let bad = 0;
 const fail = (...what) => { if (bad++ < 10) console.log('DIFFERS', ...what); };
@@ -31,30 +27,19 @@ let seed = 0x1984;
 const rnd = n => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >>> 17; seed ^= seed << 5; seed >>>= 0; return seed % n; };
 const pick = a => a[rnd(a.length)];
 const CHANCES = [];
-const COMPARE = [[0x0BBB, 0x0F98], [0x8AA2, 0x8B3E], [0x1067, 0x1068], [0x50, 0x51], [0x52, 0x54], [0x65, 0x66], [0xC6, 0xC7]];
+const COMPARE = [[0x0BBB, 0x0F97], [0x8AA2, 0x8B3D], [0x1067, 0x1067], [0x50, 0x50], [0x52, 0x53], [0x65, 0x65], [0xC6, 0xC6]];
 const ascii = bytes => bytes.map(b => b === 13 ? '|' : (b >= 32 && b < 127 ? String.fromCharCode(b) : '.')).join('');
 
 // One session: both machines from the listing's image, the same lines, compared at each line read.
 function session(ram, lines, label, executed) {
   const gm = Uint8Array.from(ram), pm = Uint8Array.from(ram);
   for (const m of [gm, pm]) m[0xC5] = 0x3C;
-  // the game
-  const gout = [], gtape = [];
-  let queue = null, gload = 0, greset = false;
+  // the game: the KERNAL's line routines are hooks, and reset ($195A) ends the session
   const cpu = new CPU(gm, { port: { dir: 0x2F, data: 0x36 }, io: {
     read(a) { throw new Error('the game read $' + a.toString(16)); },
     write(a, v) { if (a !== 0xD020) throw new Error('the game wrote $' + a.toString(16)); } } });
-  const hooks = {
-    0xFFD2: c => { gout.push(c.a); c.rts(); },
-    0xFFCF: c => { if (!queue) return true; c.a = queue.shift(); if (c.a === 0x0D) queue = null; c.c = 0; c.rts(); },
-    0xFFBA: c => { c.rts(); }, 0xFFBD: c => { c.rts(); },
-    0xFFD8: c => { const s = c.m[c.a] | (c.m[c.a + 1] << 8), e = c.x | (c.y << 8);
-                   gtape.push({ addr: s, bytes: c.m.slice(s, e) }); c.c = 0; c.rts(); },
-    0xFFD5: c => { const f = gtape[gload++]; if (f) c.m.set(f.bytes, f.addr); c.c = 0; c.rts(); },
-    0x195A: () => { greset = true; return true; },
-  };
   cpu.pc = 0x12B5; cpu.sp = 0xFF;
-  const game = () => cpu.run({ hooks, maxSteps: 5e7, executed });
+  const kernal = new KernalLines(cpu, { stops: { 0x195A: 'reset' } });
   // the port
   const pout = [], ptape = [];
   let pload = 0;
@@ -63,7 +48,7 @@ function session(ram, lines, label, executed) {
   let st = g.next();
   let said = [];
 
-  game();
+  let gwait = kernal.run(null, { executed });
   for (let i = 0; ; i++) {
     // the port runs to its next wait
     for (;;) {
@@ -75,7 +60,7 @@ function session(ram, lines, label, executed) {
     }
     const pwait = st.done ? 'done' : st.value.wait;
     if (pwait === 'broken' && gm[0x1067] !== 0x85) return true;   // the 10,000th command patched print_record
-    const gwait = greset ? 'reset' : 'line';
+    const gout = kernal.out;
     if (pwait !== gwait) { fail(label, 'line', i, 'the game waits for', gwait, 'the port for', pwait, st.value && st.value.why || ''); return false; }
     if (gout.length !== pout.length || gout.some((b, k) => b !== pout[k])) {
       const k = gout.findIndex((b, k) => b !== pout[k]);
@@ -83,9 +68,8 @@ function session(ram, lines, label, executed) {
            '\n  port:', ascii(pout.slice(Math.max(0, k - 40), k + 40)));
       return false;
     }
-    for (const [lo, hi] of COMPARE) for (let a = lo; a < hi; a++) {
-      if (gm[a] !== pm[a]) { fail(label, 'line', i, '$' + a.toString(16), 'game', gm[a], 'port', pm[a], 'after', JSON.stringify(ascii(said))); return false; }
-    }
+    const a = differ(gm, pm, COMPARE);
+    if (a >= 0) { fail(label, 'line', i, '$' + a.toString(16), 'game', gm[a], 'port', pm[a], 'after', JSON.stringify(ascii(said))); return false; }
     if (gwait === 'reset' || i >= lines.length) return true;
     let line = lines[i];
     if (typeof line === 'function') line = line(gm, gout);
@@ -93,10 +77,9 @@ function session(ram, lines, label, executed) {
     // the chance conditions' thresholds and the values either side of them, as often as not
     const jiffy = rnd(2) ? rnd(256) : ((pick(CHANCES) + rnd(3) - 1) & 0x7F) | (rnd(2) << 7);
     gm[0xA2] = jiffy; pm[0xA2] = jiffy;
-    gout.length = 0; pout.length = 0;
+    pout.length = 0;
     said = line;
-    queue = [...line, 0x0D];
-    game();
+    gwait = kernal.run(line, { executed });
     st = g.next(line);
   }
 }

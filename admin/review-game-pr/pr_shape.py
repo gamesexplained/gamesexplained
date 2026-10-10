@@ -6,7 +6,9 @@
            other        anything else: the kit, the site, a sweep across games
   areas    lines added and removed, by what the files are (symbols, pages, kit code, ...)
   outside  every file outside the game folder, by area: what a reviewer reads line by line
-  layout   files and folders in the game folder that the template does not have
+  layout   files and folders in the game folder that neither the template nor the kit
+           accounts for (the kit's are codemap.json, from kit/<platform>/codemap.py, and a
+           game's own test_*.py or test_*.js, which test_kit.py runs)
 
 Fetch the pull request first:
   git fetch -q origin main +pull/<n>/head:refs/remotes/pr/<n>
@@ -20,8 +22,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 GAME = re.compile(r"^games/([^/]+)/([^/]+)/")
 TEMPLATE_MD = {"TODO.md", "agent-history.md", "cheats.md", "facts.md", "features.md",
                "kit-feedback.md", "orientation.md"}
-GAME_TOP = TEMPLATE_MD | {"game.json", "symbols.json", "listing.json"}
+GAME_TOP = TEMPLATE_MD | {"game.json", "symbols.json", "listing.json", "codemap.json"}
 GAME_DIRS = {"reference", "parts", "work"}
+GAME_TEST = re.compile(r"^test_[^/]*\.(py|js)$")   # a game's own kit test (AGENTS.md)
 
 
 def git(*args):
@@ -39,6 +42,10 @@ def area(path):
             return "symbols.json"
         if name == "listing.json":
             return "listing.json"
+        if name == "codemap.json":
+            return "codemap.json"
+        if GAME_TEST.match(name) and ("/" not in rest or rest.startswith("parts/")):
+            return "tests (test_*)"
         if name in ("game.json", "part.json"):
             return "game.json / part.json"
         if rest.startswith("reference/"):
@@ -121,7 +128,7 @@ def shape(head, base):
         if "/" in rest:
             if top not in GAME_DIRS:
                 layout.append(f"{g}/{top}/")
-        elif top not in GAME_TOP and not top.endswith(".html"):
+        elif top not in GAME_TOP and not top.endswith(".html") and not GAME_TEST.match(top):
             layout.append(path)
         elif top.endswith(".md") and top not in TEMPLATE_MD:
             layout.append(path)

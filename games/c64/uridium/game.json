@@ -1,0 +1,339 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "uridium",
+  "title": "Uridium",
+  "year": 1986,
+  "publisher": "Hewson Consultants",
+  "developer": "Graftgold",
+  "title_image": "reference/title.png",
+  "build": "Hewson's disk release, a GCR image of the protected original (disk name gma240286); booted through a copy with track 39's sync marks restored (orientation.md)",
+  "tabs": [
+    [
+      "index.html",
+      "How it works"
+    ],
+    [
+      "levels.html",
+      "Maps / levels"
+    ],
+    [
+      "music.html",
+      "Music and sound"
+    ],
+    [
+      "source.html",
+      "Source code"
+    ],
+    [
+      "about.html",
+      "About"
+    ]
+  ],
+  "tier": "silver",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Andrew Braybrook",
+      "role": "Design and programming, as the title page credits it"
+    },
+    {
+      "by": "Steve Turner",
+      "role": "Music, as the manual credits it"
+    }
+  ],
+  "tools": {
+    "emulator": "release v3.13.2, v3.13.2-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 0.9.20 (cargo install from crates.io)",
+    "host": "Linux x86_64, Ubuntu 24.04, no display (cloud container)",
+    "node": "22",
+    "browser": "Chromium from Playwright 1.56.1 (headless), for the page check"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5"
+    ],
+    "20-features": [
+      "claude-opus-5-5"
+    ],
+    "30-text": [
+      "claude-opus-5-5"
+    ],
+    "40-sweep": [
+      "claude-opus-5-5"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5"
+    ],
+    "60-verify": [
+      "claude-opus-5-5"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5"
+    ],
+    "80-retro": [
+      "claude-opus-5-5"
+    ]
+  },
+  "kit_version": "0.0.122",
+  "created": "2026-10-09",
+  "video": {
+    "screen": "$4800",
+    "charset": "$7800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0400",
+        "$07FF",
+        "not the game's: the loader's loading screen (\"GMA86\", \"URIDIUM\", \"BY ANDREW BRAYBROOK\", \"PUBLISHED BY HEWSON CONSULTANTS LTD\"), left in the default screen; the game shows video bank 1 only"
+      ],
+      [
+        "$0800",
+        "$08FF",
+        "runtime: the random byte table, a copy of the sound driver's 256 bytes at $1000 made by game_start and stirred with noise by stir_random"
+      ],
+      [
+        "$4800",
+        "$4BFF",
+        "runtime: the screen and the sprite pointers, drawn by the code (draw_map, print_string); the loaded screen here is the fuel rod chamber, which game_start copies to $A600 before the code ever reads it"
+      ],
+      [
+        "$5C00",
+        "$67FF",
+        "runtime: the shadow shapes $70-$9F, built from the Manta's frames at $5000 by thicken_shapes at every restart; the loaded bytes here are the Dreadnought tile sets, which game_start has moved to $D400"
+      ],
+      [
+        "$7C00",
+        "$7FFF",
+        "runtime: the playfield characters $80-$FF, copied in for each level from a tile set at $D400, $D800 or $DC00 (copy_tile_set), or from $D200 for the chamber"
+      ],
+      [
+        "$8000",
+        "$81FF",
+        "runtime and leftover: the load's copy of $E000-$E1FF, left behind by game_start, with the reset vectors restart writes at $8000 and the giant message's piece list build_message writes from $8010"
+      ],
+      [
+        "$8200",
+        "$A3FF",
+        "runtime: the Dreadnought map, 17 rows of 512 columns, built at every level start by build_map"
+      ],
+      [
+        "$AE00",
+        "$AFFF",
+        "leftover: the load's copy of $CE00-$CFFF (level 15's map list), moved there by game_start; the code reads that copy"
+      ],
+      [
+        "$BF00",
+        "$BFFF",
+        "not loaded: the RAM fill pattern above the end of the file"
+      ],
+      [
+        "$C8AF",
+        "$CDFF",
+        "unused: zeros after the enemy paths, inside the block game_start copies to $C000"
+      ],
+      [
+        "$D000",
+        "$D1FF",
+        "unused: the RAM fill pattern under the I/O chips, below the chamber's characters"
+      ],
+      [
+        "$EFF3",
+        "$EFFF",
+        "unused: zeros after the level names"
+      ],
+      [
+        "$FFC2",
+        "$FFF9",
+        "unused: the RAM fill pattern at the top of the last level list's page, below the hardware vectors"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$D200",
+        "$DFFF",
+        "the chamber's characters and the three Dreadnought tile sets, kept under the I/O chips"
+      ]
+    ]
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0000",
+      "$00FF",
+      "variables",
+      "zero page: the sprite work copy, pointers, the Manta, the wave, the sound driver's state"
+    ],
+    [
+      "$0200",
+      "$026F",
+      "variables",
+      "generator port lists and both players' saved state"
+    ],
+    [
+      "$0900",
+      "$3109",
+      "code",
+      "start-up, title, play loop, Manta, waves and enemies, map builder, bonus chamber, sound driver"
+    ],
+    [
+      "$310A",
+      "$3936",
+      "tables",
+      "star masks, status colours, manoeuvres, sprite records, colour schemes, gun and collision tables, wave types, scores, chamber tables"
+    ],
+    [
+      "$3126",
+      "$316A",
+      "text",
+      "status line strings"
+    ],
+    [
+      "$349F",
+      "$36C4",
+      "text",
+      "the giant message, title page, icons and the hall of fame"
+    ],
+    [
+      "$37D8",
+      "$38DD",
+      "text",
+      "launch, game over, bonus and initials strings"
+    ],
+    [
+      "$3947",
+      "$3E98",
+      "sound",
+      "voice set-ups, 46 effects and instruments, note tables, the song and its patterns"
+    ],
+    [
+      "$3F00",
+      "$3FD6",
+      "code",
+      "the raster interrupt handlers"
+    ],
+    [
+      "$4000",
+      "$4FFF",
+      "graphics",
+      "sprite shapes: transporter, bullets, mines, explosions"
+    ],
+    [
+      "$5000",
+      "$5BFF",
+      "graphics",
+      "the Manta's frames"
+    ],
+    [
+      "$6800",
+      "$6FFF",
+      "graphics",
+      "the sixteen fighters and their mirror images"
+    ],
+    [
+      "$7000",
+      "$77FF",
+      "graphics",
+      "the status lines' double-height font"
+    ],
+    [
+      "$7800",
+      "$7BFF",
+      "graphics",
+      "the playfield's fixed characters"
+    ],
+    [
+      "$A400",
+      "$A55F",
+      "variables",
+      "stars, shots, enemy sprites"
+    ],
+    [
+      "$A600",
+      "$A9FF",
+      "graphics",
+      "the fuel rod chamber's screen"
+    ],
+    [
+      "$AA00",
+      "$ADFF",
+      "levels",
+      "map lists of levels 7 and 8"
+    ],
+    [
+      "$B000",
+      "$B35F",
+      "code",
+      "library: stick, keys, sprites, printing, copying, volume"
+    ],
+    [
+      "$B360",
+      "$B3CF",
+      "tables",
+      "screen row addresses and the volume string"
+    ],
+    [
+      "$B3D0",
+      "$BEFF",
+      "levels",
+      "map lists of levels 10-14"
+    ],
+    [
+      "$C000",
+      "$C8AE",
+      "levels",
+      "giant letters, wave lists, wave records and fighter paths"
+    ],
+    [
+      "$CE00",
+      "$CFFF",
+      "levels",
+      "map list of level 15"
+    ],
+    [
+      "$D200",
+      "$DFFF",
+      "graphics",
+      "the chamber's characters and the three Dreadnought tile sets"
+    ],
+    [
+      "$E000",
+      "$E0FF",
+      "levels",
+      "per-level tables and the first level names"
+    ],
+    [
+      "$E100",
+      "$EF54",
+      "levels",
+      "the 148 map pieces"
+    ],
+    [
+      "$EF55",
+      "$EFF2",
+      "text",
+      "the names of levels 8-15"
+    ],
+    [
+      "$F000",
+      "$FFC1",
+      "levels",
+      "map lists of levels 1-6 and 9"
+    ]
+  ],
+  "links": {
+    "wiki": {
+      "title": "Uridium – C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/Uridium"
+    },
+    "manual": {
+      "title": "Commodore C64 Manual: Uridium - Paradroid Double Value Pack (1987)(Hewson)[compilation]",
+      "url": "https://archive.org/details/Uridium_Paradroid_Double_Value_Pack_1987_Hewson_compilation"
+    }
+  }
+}

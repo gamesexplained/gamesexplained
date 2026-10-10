@@ -139,7 +139,7 @@
     addEventListener('resize',function(){ measure(); cur=-2; spy(); });
     collect(); watch(); measure(); spy();
   })();
-  if(document.body.dataset.nolink) return;
+  if(document.body.dataset.nolink||document.querySelector('.gametabs[data-nolink]')) return;   /* a game with no listing has no Source page */
   document.querySelectorAll('code').forEach(function(c){
     if(c.closest('a')||c.closest('pre')||c.children.length) return;
     var t=c.textContent, m=/^\$([0-9A-Fa-f]{4})$/.exec(t.trim());

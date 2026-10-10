@@ -24,7 +24,10 @@ Usage:
                                    A file in the folder of one part of a game (kit/scripts/parts.py)
                                    gets a port of that part's own, the first free from 3000, kept in
                                    the part's work/r2000-port: each part can have one running, and
-                                   every script given the part's folder reaches the right one
+                                   every script given the part's folder reaches the right one.
+                                   A .vsf in a game's or part's folder that has exported annotations
+                                   starts as the project symbols_import.py builds from them, in its
+                                   work/, so a restarted session holds the work of the last export
   tools.py stop [vice|r2000|all] [--force]
                                    the disassembler stays up while an annotation log written since
                                    it started is newer than the game's symbols.json: export first,
@@ -204,6 +207,49 @@ def forget_port(port):
             pass
 
 
+def game_folder(path):
+    """The folder of the game, or of the part of one, that a file lies in: the nearest above it
+    with a game.json or a part.json. None for a file in no game's folder."""
+    d = os.path.dirname(os.path.abspath(path))
+    while d != os.path.dirname(d):
+        if any(os.path.isfile(os.path.join(d, f)) for f in ("game.json", "part.json")):
+            return d
+        d = os.path.dirname(d)
+    return None
+
+
+def seeded(path):
+    """The file to start the disassembler on, and the game folder it belongs to (#273).
+
+    A snapshot in a game's or a part's folder that has annotations exported starts as the project
+    symbols_import.py builds from them and that snapshot, so a session restarted after a crash or a
+    stop comes back with the work of the last export, not with none. Built at every start, it can
+    never hold older work than symbols.json. Anything else starts as it is: a project, a .prg, a
+    snapshot outside the games, the first session of a game, the top of a game of several parts."""
+    gdir = game_folder(path) if path.lower().endswith(".vsf") else None
+    if not gdir:
+        return path, gdir
+    from parts import parts, seed
+    if parts(gdir):
+        return path, gdir      # each part is started from a snapshot in its own folder
+    _, sym = seed(gdir)
+    if not (sym["blocks"] or sym["symbols"] or sym["comments"]):
+        return path, gdir
+    from project import write
+    out = write(gdir, path)
+    print(f"starting on {os.path.relpath(out, ROOT)}: the annotations of the last export over "
+          f"{os.path.basename(path)}, rebuilt from symbols.json")
+    return out, gdir
+
+
+def logged_since_export(gdir):
+    """The annotation logs in a game's work/ written after its symbols.json: what a session held
+    that the last export did not."""
+    sym = os.path.join(gdir, "symbols.json")
+    since = os.path.getmtime(sym) if os.path.isfile(sym) else 0
+    return sorted(f for f in glob.glob(os.path.join(gdir, "work", "*.jsonl")) if os.path.getmtime(f) > since)
+
+
 def r2000(path):
     exe = r2000_exe()
     if not exe:
@@ -219,6 +265,7 @@ def r2000(path):
                      "clone's on another port with KIT_R2000_PORT (kit/c64/INSTALL.md, 'Another program on port 3000')")
         sys.exit(f"something already answers on :{port}; only one disassembler can run on a port. "
                  "`tools.py stop r2000` first")
+    path, gdir = seeded(path)
     os.makedirs(TOOLS, exist_ok=True)
     forget_port(port)
     if part:        # the part's own, read back by every script given the part's folder (kit/c64/r2000.py):
@@ -239,6 +286,12 @@ def r2000(path):
         cmd = [sys.executable, BRIDGE, exe, os.path.abspath(path), str(port)]
     start(cmd, os.path.join(LOGS, "r2000.log" if port == R2000_PORT else f"r2000-{port}.log"), env=env, port=port,
           name="disassembler")
+    logs = logged_since_export(gdir) if gdir else []
+    if logs:
+        print(f"\n{', '.join(os.path.relpath(f, ROOT) for f in logs)}: written after the last export, by a session "
+              "that held work this one does not. Replay into this session to bring that work back:")
+        for f in logs:
+            print(f"  python3 kit/c64/r2000.py --replay {os.path.relpath(f, ROOT)}")
 
 
 # only this clone's tools: another clone on the same machine keeps its emulator and disassembler

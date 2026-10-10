@@ -8,7 +8,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from codemap import banked_out_ram, parse_executed, runs  # noqa: E402
+from codemap import banked_out_ram, parse_executed, runs, sizes  # noqa: E402
 
 SAMPLE = """\
 (C:$1005) addr: IO  ROM RAM
@@ -47,6 +47,33 @@ class BankingTests(unittest.TestCase):
                 (0x30, 0x28, []),                                   # bits 0-2 inputs read 1: ROMs in
                 (0x35, 0x2D, [])):                                  # bit 1 an input reads 1
             self.assertEqual(banked_out_ram(self.MARKED, port, ddr), want, f"${port:02X}/${ddr:02X}")
+
+
+class SizeTests(unittest.TestCase):
+    """dump sizes each instruction from the RAM as it is at the dump, which the game may have
+    rewritten since the instruction ran."""
+
+    def ram(self, at, bs):
+        ram = bytearray(0x10000)
+        ram[at:at + len(bs)] = bytes(bs)
+        return ram
+
+    def test_plain(self):
+        ram = self.ram(0x1000, [0xA9, 0x02, 0x8D, 0x20, 0xD0, 0x60])  # LDA #$02; STA $D020; RTS
+        self.assertEqual(sizes([0x1000, 0x1002, 0x1005], ram), ({0x1000: 2, 0x1002: 3, 0x1005: 1}, []))
+
+    def test_bit_skip(self):
+        """A BIT whose operand another path runs as an instruction: both end at $1002."""
+        ram = self.ram(0x1000, [0x2C, 0xA9, 0x02, 0x60])  # BIT $02A9 / LDA #$02; RTS
+        self.assertEqual(sizes([0x1000, 0x1001, 0x1003], ram), ({0x1000: 3, 0x1001: 2, 0x1003: 1}, []))
+
+    def test_rewritten(self):
+        """IK+: a CLI and an RTS ran at $1069/$106A, then other code was copied over them, and
+        each decodes as three bytes. Only the opcodes ran for certain; $106B-$106C never did."""
+        ram = self.ram(0x1066, [0x8C, 0x0D, 0xDD, 0x8D, 0x20, 0xD0, 0xEA, 0x20, 0x00, 0x20])
+        size, changed = sizes([0x1066, 0x1069, 0x106A, 0x106D], ram)  # STY; STA $D020 / JSR $EAD0; JSR
+        self.assertEqual(changed, [0x1069, 0x106A])
+        self.assertEqual(size, {0x1066: 3, 0x1069: 1, 0x106A: 1, 0x106D: 3})
 
 
 class FormatTests(unittest.TestCase):
