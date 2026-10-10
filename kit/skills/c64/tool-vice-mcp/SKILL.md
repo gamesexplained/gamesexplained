@@ -84,6 +84,14 @@ passed, by date and system, are the table at the top of that file.
    however `vice_ping` reads, and every input sent looks ignored.
    `tools.py stop vice` and `tools.py vice` clear it; the snapshot is
    fine.
+   A script that waits for a prompt (a copier's, a menu's, a disk
+   swap's) reads the screen's text with `kit/c64/screen.py`:
+   `wait_text(rpc, pattern)`, where a screenshot serves only an agent.
+   Text mode needs nothing more. A game that draws its letters into a
+   bitmap needs its font named: the address of its glyphs, the
+   character code of the first, and how far apart it draws two letters,
+   which is 8 when it copies each glyph into a cell, however narrow the
+   letters look. The routine that draws a letter shows all three.
 4. Confirm play with a screenshot, then `vice_snapshot_save` with a name
    that describes the state, on the running machine or after `pause()` in
    `vice.py`, never straight after `vice_execution_pause`
