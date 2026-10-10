@@ -49,8 +49,10 @@ the next one. `zesarux._read_reply` does exactly this.
 
 One thread per connection, and several connections at once are allowed —
 but only one of them should drive: a `run` loop belongs to the connection
-that sent it and **dies with the connection**, and a second connection's
-commands wait for it anyway (see `workarounds.md`).
+that sent it and **dies with the connection**. ZRCP runs one command at a
+time across every connection, so a command that takes time (a `run`, a
+`send-keys-ascii`) holds every other connection's commands until it
+replies (see `workarounds.md`).
 
 ## The commands the kit uses
 
@@ -262,7 +264,7 @@ its output, and why one sweep is not enough. `kit/spectrum/codemap.py`
 
 ## Input
 
-Two paths, and they are not interchangeable:
+Three paths, and they are not interchangeable:
 
 - **`set_input("efffffffffffffff00")`** — the nine hex bytes. Row 0 is
   `$FEFE` (`V C X Z CapsShift`), row 1 `$FDFE` (`G F D S A`), and so on down
@@ -272,14 +274,24 @@ Two paths, and they are not interchangeable:
   on the matrix (right = `8` + Caps Shift), `Kempston` puts it on port
   `$1F` instead. This path lands **immediately**, while the machine is
   stopped, and it is the one to use for frame stepping.
-- **`key_event(<number>, press)`** / `type_ascii` — host keys, pumped by
-  the running machine. Numbers are ZEsarUX's own: letters and digits are
-  their lowercase ASCII codes (`v` = 118, `c` = 99, `space` = 32,
-  `0` = 48), measured; Enter, Escape and the rest are other numbers the
-  kit has not measured — do not guess one, use `set_input` instead.
+- **`key_event(<number>, press)`** — host keys, pumped by the running
+  machine. Numbers are ZEsarUX's own: letters and digits are their
+  lowercase ASCII codes (`v` = 118, `c` = 99, `space` = 32, `0` = 48),
+  measured; Enter, Escape and the rest are other numbers the kit has not
+  measured — do not guess one, use `set_input` or `type_ascii` instead.
   Sent while the machine is stopped, they are queued and never processed.
-  `type_ascii` (`send-keys-ascii`) did not reach the machine at all on the
-  13.0 release with `--vo null` — see `workarounds.md`.
+- **`type_ascii(text, ms)`** — types `text` on the running machine, each
+  key held `ms` milliseconds, and returns once the last one is released.
+  Measured on the 13.0 release: lowercase letters, capitals (Caps Shift
+  with the letter), digits, space, and `\n` as Enter. The client sends
+  each character as its code (`send-keys-ascii 100 118`): ZRCP reads a
+  bare `v` as a label it does not know, which is 0, and presses nothing.
+  Two traps. Nothing can see the key from outside while the call runs, and
+  it is released before the reply, so a variable read afterwards shows
+  nothing: count the game's own store of it with a checkpoint armed
+  before the call, as `input-type-ascii` does. And it releases **every**
+  key and the joystick when it ends, `set_input` state included: set any
+  held input again after typing.
 
 Verify input the way `check-emulator` does, in the game's own terms: read
 the port with `evaluate IN(...)` to see it before any instruction runs, and

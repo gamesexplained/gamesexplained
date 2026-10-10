@@ -401,7 +401,15 @@ class Rpc:
         self.strict("send-keys-event", key, 1 if press else 0)
 
     def type_ascii(self, text, ms=100):
-        self.strict("send-keys-ascii", ms, *list(text))
+        """Type `text`, holding each key `ms` milliseconds; returns once the last key is released.
+
+        ZRCP reads each argument as a number, and a bare letter as a label it does not
+        know, which is 0: so each character goes as its code (`v` as 118). Every key and
+        the joystick are released when it ends, `set_input` state included.
+        """
+        if not text.isascii():
+            raise ValueError(f"type_ascii types ASCII only, not {text!r}")
+        self.strict("send-keys-ascii", ms, *[ord(c) for c in text])
 
     def evaluate(self, expression):
         """ZEsarUX's expression parser: `evaluate 'IN(65278)&0x0F'` and friends."""

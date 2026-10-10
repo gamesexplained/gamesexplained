@@ -610,18 +610,19 @@ def p4(rpc):
           "ten frames in one call is ten frames, on the program's own pace",
           f"{own} passes against {one} for one frame")
 
+    # typing a string, which the kit's client offers next to the port matrix. send-keys-ascii
+    # releases the key before it replies, and ZRCP answers one command at a time across every
+    # connection, so nothing can read the key during the call and KEYS is clear again after it:
+    # a checkpoint counts the passes that store V into KEYS while the call runs
+    rpc.bp_set(2, f"MWA={KEYS:04X}H AND A=10H")
+    rpc.bp_passcount(2, 10 ** 9)                  # a limit nothing reaches: this counts, it does not stop
     rpc.bp_disable(1)
-    # typing a string, which the kit's client offers next to the port matrix
     rpc.exit_step()                      # key events are pumped by the running machine, not by a stopped one
     rpc.type_ascii("v", 150)             # V: row 0, bit 4, the key the test program watches
-    typed = False
-    for _ in range(40):                  # the key is held 150 ms; watch the program for two seconds
-        if rpc.read_memory(KEYS, 1)[0] & 0x10:
-            typed = True
-            break
-        time.sleep(0.05)
-    check("input-type-ascii", typed, "send-keys-ascii presses the key of the character it is given",
-          "seen by the program" if typed else "not seen in 2 s")
+    typed = rpc.bp_count(2)[0]
+    rpc.bp_disable(2)
+    check("input-type-ascii", typed > 0, "send-keys-ascii presses the key of the character it is given",
+          f"{typed} passes stored V while the call held it")
     rpc.enter_step()
     # a step that returns when it is done
     st = rpc.step()
