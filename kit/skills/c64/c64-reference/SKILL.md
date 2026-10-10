@@ -306,6 +306,70 @@ through `$8000` before doing them, and the loader runs under a KERNAL that
 has already booted. Annotate the cartridge entry as well as the loader's;
 the difference between them says what the machine state is on arrival.
 
+## Bank-switched cartridges
+
+A `.crt` file is the cartridge as VICE attaches it: a 64-byte header
+(`C64 CARTRIDGE`, the hardware type as a big-endian word at offset `$16`,
+the EXROM and GAME lines at `$18` and `$19`, 0 for held low, the name from
+`$20`), then a `CHIP` packet for each bank: 16 bytes (`CHIP`, the packet's
+length, the chip type, the bank number, the load address and the size,
+each big-endian) and the bank's bytes. Hardware type 0 is the plain 8 or
+16 KB cartridge above. Most others switch banks with a write to the
+expansion port's I/O pages, `$DE00`-`$DFFF`. Ocean's, type 5, takes the
+bank from a write to `$DE00`, the low four bits on a cartridge of 16
+banks, so `$8D` selects bank 13. A cartridge of 128 KB holds twice what
+RAM does, so no one image of the machine holds the whole game.
+
+With its lines held low, the cartridge still shows only where `$01` lets
+it (VICE x64sc 3.13.2, test cartridges, measured 10 October 2026). At
+`$8000`-`$9FFF` it needs bits 0 and 1 both set (`$37`, `$33`); in 16 KB
+mode (EXROM and GAME low) it shows at `$A000`-`$BFFF` whenever bit 1 is
+set (`$36` as well). With `$35` or `$34` the CPU sees RAM at both. A write
+where the cartridge shows goes to the RAM beneath it. An Ocean cartridge
+of 128 KB shows the same bank at `$A000` as at `$8000`. In VICE's memory
+reads, the bank `cart` is the cartridge bank selected at that moment,
+`ram` the RAM beneath and `cpu` whichever of them `$01` shows.
+
+- **The image is the RAM, with the cartridge hidden.** A game that copies
+  itself out of the banks and plays with the cartridge hidden runs from
+  RAM, and the play snapshot's RAM image is that program: build the
+  listing from it as for any game. The snapshot carries the cartridge
+  as well (an Ocean one's every bank, in a module named `CARTOCEAN`),
+  and its RAM is where `kit/c64/snapshot.py` expects it. Code that shows
+  the cartridge (a store checkpoint on `$01` finds it, and one on the
+  bank register says which bank) reads the bank there, not the RAM the
+  snapshot holds: say in its comment which bank and what it holds, as
+  for the ROMs in "RAM the CPU cannot see". Code that runs from the
+  cartridge in place, the cold start always, is in no RAM image:
+  describe it in `orientation.md`.
+- **A bank is not a part.** The banks are the cartridge's storage, as
+  files are a disk's, and `10-orient`'s rule applies unchanged: count
+  what the player waits for. When the game copies each stage in from the
+  banks over code that stays, each stage is a part `--over` the resident
+  one, its ranges found by a store checkpoint over RAM while the copy
+  runs (`10-orient`, "A game of several parts", step 4); a store
+  checkpoint on the bank register says which bank fed each range, for
+  the route in `orientation.md`. Before tracing anything, compare each
+  bank of the `.crt` with the snapshot's RAM: a bank that matches a range
+  nearly byte for byte was copied there and has changed a little since;
+  one that matches nowhere is packed, read in place, or belongs to a part
+  not reached yet.
+- **Bytes read in place stay out of the listing.** Text, tables or a
+  directory that the game reads from a bank without copying are in no
+  RAM image, so the listing cannot show them and the ledger does not
+  count them. Give them no symbol at their cartridge addresses, where the
+  listing and the ledger mean the RAM. They reach the reader through the
+  code that reads them: its comment names the bank and the addresses and
+  says what is there (strings decoded, `30-text`); `facts.md` gives each
+  its bank and address, read from the `.crt`; the page may carry them as
+  game data (`70-minisite`). Say in `orientation.md` which banks reach RAM
+  and which are read in place, so that the coverage figure reads as one
+  for the RAM, not for the cartridge.
+
+`kit/c64/cpu6502.js` refuses a snapshot taken with a cartridge plugged in,
+having no cartridge map; check a port of such a game against a trace
+recorded in the emulator (`70-minisite`).
+
 ## Freezer-cartridge backups
 
 Many disk images in circulation are not the release but a **freezer
