@@ -113,12 +113,17 @@ globalThis.C64 = (function () {
   //             its own checks, and a page never embeds it
   // Modelled: character, bitmap and extended colour modes, multicolour, both scrolls, 24/25 rows
   // and 38/40 columns with the border flip-flops (so an opened border stays open), bad lines,
-  // the idle pattern, and sprites with expansion, multicolour, priority and reuse within the
-  // frame. The frame is run twice and the second drawn, so that what crosses the frame boundary
-  // (the border, a sprite) is as the steady state leaves it. Not followed to the pixel: the few
-  // pixels after a mid-line change of a mode bit or the scroll, and the grey pixel VICE draws
-  // where a colour register changes. Not modelled: sprite collisions, and tricks that move the
-  // bad lines within a line.
+  // among them one that a write to $D011 starts late in its line (VSP: every row after it starts
+  // as many places further on as the line had fetch cycles left), the idle pattern, and sprites
+  // with expansion, multicolour, priority and reuse within the frame. The frame is run twice and
+  // the second drawn, so that what crosses the frame boundary (the border, a sprite) is as the
+  // steady state leaves it. Not followed to the pixel: the few pixels after a mid-line change of
+  // a mode bit or the scroll, and the grey pixel VICE draws where a colour register changes.
+  // Not modelled: sprite collisions; the characters on a late bad line and on the lines after it
+  // up to the next bad line, which the chip shows from the row's first character on, starting
+  // where its display came on, and this draws each in its own column (VSP games hide those lines
+  // in the top border, where it does not matter); and a bad line condition that comes and goes
+  // before cycle 14, which turns the display on in VICE.
   // For a live display (a Play page) three more fields save the work of a recording:
   //   F.mem     a 64 KB Uint8Array used in place of F.ram     F.colourMem  1024 bytes, for F.colour
   //   F.keep    an object kept from frame to frame: the chip's state carries over from the last
@@ -174,7 +179,7 @@ globalThis.C64 = (function () {
       };
       for (let yi = 0; yi < LINES; yi++) {
         const y = (yi + FIRST) % LINES, ws = byLine[y] || [];
-        let wi = 0, badline = false, slot = -1;
+        let wi = 0, badline = false, slot = -1, gn = 0;
         const vis = y >= LINE0 ? y - LINE0 : y + LINES - LINE0;
         const out = vis < H ? vis * W : -1;
         if (y === 0) { S.vcbase = 0; S.den30 = false; }
@@ -187,6 +192,12 @@ globalThis.C64 = (function () {
             badline = y >= 0x30 && y <= 0xF7 && (y & 7) === (R[0x11] & 7) && S.den30;
             S.vc = S.vcbase;
             if (badline) { S.rc = 0; S.display = true; }
+          }
+          // a bad line condition that arises after cycle 14 (VSP: $D011's Y scroll made to match the
+          // line late) turns on the display state there, without reloading VC or resetting RC; the
+          // g-accesses left in the line still count VC up, and cycle 58 makes that count VCBASE
+          if (c > 14 && c <= 55 && !badline && y >= 0x30 && y <= 0xF7 && (y & 7) === (m11 & 7) && S.den30) {
+            badline = true; S.display = true;
           }
           for (let n = 0; n < 8; n++) {
             const s = S.spr[n], ye = R[0x17] >> n & 1;
@@ -223,13 +234,13 @@ globalThis.C64 = (function () {
               const vci = (S.vc + i) & 0x3FF;
               gfx[i] = bmm ? vmem((R[0x18] & 0x08) << 10 | vci << 3 | S.rc)
                 : vmem((R[0x18] & 0x0E) << 10 | (ecm ? buf[i] & 0x3F : buf[i]) << 3 | S.rc);
-              gcode[i] = buf[i]; gcol[i] = cbuf[i];
+              gcode[i] = buf[i]; gcol[i] = cbuf[i]; gn++;
             } else {
               gfx[i] = vmem(ecm ? 0x39FF : 0x3FFF); gcode[i] = 0; gcol[i] = 0;
             }
           }
           if (c === 58) {
-            if (S.rc === 7) { S.vcbase = (S.vc + (S.display ? 40 : 0)) & 0x3FF; if (!badline) S.display = false; }
+            if (S.rc === 7) { S.vcbase = (S.vc + gn) & 0x3FF; if (!badline) S.display = false; }
             if (S.display) S.rc = (S.rc + 1) & 7;
           }
           if (c === CYC) {

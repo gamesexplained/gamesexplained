@@ -308,13 +308,12 @@ ul.gdo-list li{margin:0 0 .5em}
   // D holds bytes read from the game: the instruments $FB00-$FB61, the effect records
   // $FB80-$FCFF, the note frequencies $FD00-$FDFF and the tune's three note lists from $FE00,
   // $FE80 and $FF00. D.kind picks what the player plays: 'tune', the title tune, which the game
-  // drives from CIA 1's timer every 47,288 cycles (the port runs each call in the PAL frame its
-  // cycle falls in), or 'fx', the sound effects, which play calls every other frame. The zero-page
-  // bytes the driver keeps are kept here in z at the same addresses.
+  // drives from CIA 1's timer every 47,288 cycles (its player calls play() as often, one call of
+  // the driver each), or 'fx', the sound effects, which play calls every other frame. The
+  // zero-page bytes the driver keeps are kept here in z at the same addresses.
   function createDriver(D) {
-    const FRAME = 19656, TICK = 47288;
     const sid = new Uint8Array(25), z = new Uint8Array(256);
-    let writes = [], t = 0, next = 0, frame = 0, ended = false, list = [], held = 0, notes = [0, 0, 0];
+    let writes = [], frame = 0, ended = false, list = [], held = 0, notes = [0, 0, 0];
     const W = (r, v) => { sid[r] = v; writes.push(r, v); };
     function voiceOffset(x) { z[0xA3] = (0xF9 + 7 * x) & 255; }                     // $77C5
     function gateOff() { const y = z[0xA3]; W(y + 4, 0x08); W(y + 4, 0x00); }      // $7785
@@ -418,7 +417,7 @@ ul.gdo-list li{margin:0 0 .5em}
       sid, z, sound,
       get writes() { return writes; },
       init(n) {
-        sid.fill(0); z.fill(0); writes = []; t = 0; next = 0; frame = 0; ended = false; held = 0;
+        sid.fill(0); z.fill(0); writes = []; frame = 0; ended = false; held = 0;
         notes = [0, 0, 0];
         z[0x79] = 5;                                         // the volume start_game sets
         z[0x9D] = D.kind === 'tune' ? 0x11 : 0x12;
@@ -428,9 +427,8 @@ ul.gdo-list li{margin:0 0 .5em}
       play() {
         writes = [];
         if (D.kind === 'tune') {
-          if (!ended) for (; next < t + FRAME; next += TICK) { sound(); if (ended) break; }
+          if (!ended) sound();
           if (ended) for (let v = 0; v < 3; v++) if (sid[7 * v + 4] & 1) W(7 * v + 4, sid[7 * v + 4] & 0xFE);
-          t += FRAME;
         } else {
           if (frame % 2 === 0) {                             // main_loop's odd frames
             if (frame === 2) for (const [voice, n] of list) z[voice === 1 ? 0x9E : 0x9F] = n;
@@ -809,6 +807,7 @@ ul.gdo-list li{margin:0 0 .5em}
     const NN = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     C64Sid.mount(document.getElementById('gdo-tune'), {
       driver: createDriver, data: Object.assign({ kind: 'tune', requests: [[]] }, D), tunes: ['Title tune'], filter: '6581',
+      period: 47288,                                     // irq_title's CIA 1 timer
       rows: [{ k: 'Step', f: v => String(v.step) }, { k: 'Note byte', f: v => v.note ? hex(v.note) + ' ' + NN[v.note & 15] + (v.note >> 4) : '-' }]
     });
     const FX = [['Big bounce', [[1, 1]]], ['Bubble', [[2, 2]]], ['Web control', [[1, 3]]], ['Pick up', [[1, 4]]], ['Put down', [[1, 5]]],

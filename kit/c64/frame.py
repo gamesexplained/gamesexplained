@@ -18,7 +18,9 @@ Usage:
   frame.py trim <frame.json> <out.json>  keep only the memory the drawing reads, for a page
   frame.py test [--keep]                 the kit's own test: a program with a split of every
                                          kind, captured, drawn and compared, then dma. It resets
-                                         the machine: not during a game you mean to keep
+                                         the machine: not during a game you mean to keep. It sets
+                                         the video chip its standard is checked on (the 8565 for
+                                         PAL), which a switch of standard changes
   frame.py dma [--record]                the cycles the video chip takes from the processor, on
                                          bad lines and for sprites, measured case by case and
                                          compared with kit/c64/fixtures/vic-dma.json, or written
@@ -28,7 +30,7 @@ Needs the emulator (`tools.py vice`) for capture and test, and a JavaScript runt
 drawing: node, or on macOS the system's own JavaScriptCore. The frame file holds a copy of the
 game's memory, so it stays in the game's work/ folder; `trim` makes the excerpt a page embeds.
 """
-import base64, json, os, shutil, struct, subprocess, sys, tempfile, time, zlib
+import base64, json, os, re, shutil, struct, subprocess, sys, tempfile, time, zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -433,7 +435,7 @@ def trim(frame_path, out_path):
 # its raster line and makes its writes one after another, so some land mid-line, which is part
 # of the test: the capture records each write's cycle and the drawing has to honour it.
 BANDS = [
-    (8, [(0xD011, 0x1B), (0xD016, 0x08), (0xD018, 0x18), (0xDD00, 0x03), (0xD020, 6), (0xD021, 0),
+    (8, [(0xD011, 0x1F), (0xD016, 0x08), (0xD018, 0x18), (0xDD00, 0x03), (0xD020, 6), (0xD021, 0),
          (0xD015, 0xFF), (0xD010, 0x08), (0xD017, 0x02), (0xD01D, 0x02), (0xD01C, 0x02), (0xD01B, 0x04),
          (0xD025, 2), (0xD026, 7),
          (0xD000, 40), (0xD001, 60), (0xD027, 1), (0x07F8, 0xC0),       # sprite 0, used twice
@@ -444,6 +446,12 @@ BANDS = [
          (0xD00A, 180), (0xD00B, 40), (0xD02C, 8),                      # 5: across the top border's edge
          (0xD00C, 120), (0xD00D, 6), (0xD02D, 13),                      # 6 and 7: Y under 56, so each shows
          (0xD00E, 250), (0xD00F, 20), (0xD02E, 2)]),                    # twice: at the top and 256 lines down
+    # VSP. Line 8's Y scroll of 7 keeps lines 48-50 from being bad lines. On line 50, $12 lands
+    # inside the line (the first two writes take twelve cycles) and starts a bad line late, which
+    # moves every row below sideways, and $1B makes line 51 an ordinary bad line; test() checks
+    # that the write did land late. The borders are open there, so line 50 shows the blank font
+    # at $2800, as a game hides that line: the drawing does not model its characters
+    (50, [(0xD018, 0x1A), (0xD021, 0), (0xD011, 0x12), (0xD011, 0x1B), (0xD018, 0x18)]),
     (70, [(0xD021, 11)]),
     (74, [(0xD016, 0x0D)]),                                            # X scroll 5 alone
     (77, [(0xD016, 0x1D)]),                                            # multicolour on, scroll held
@@ -486,6 +494,7 @@ def test_memory():
     return [
         (0x0400, bytes((r * 40 + c) & 0xFF for r in range(25) for c in range(40))),
         (0x2000, bytes((n * 37 + r * 91 ^ (0x81 if r in (0, 7) else 0)) & 0xFF for n in range(256) for r in range(8))),
+        (0x2800, bytes(0x800)),                                         # the blank font for line 50
         (0x3000, shapes), (0x3FFF, b"\xAA"),
         (0x4400, bytes((r * 40 + c) * 7 & 0xFF for r in range(25) for c in range(40))),
         (0x47F8, bytes(range(0x40, 0x48))), (0x5000, shapes),
@@ -494,12 +503,58 @@ def test_memory():
     ]
 
 
+# The video chip, by VICE's VICIIModel number, and the one each standard is checked on. x64sc
+# starts as a PAL C64C, whose chip is the 8565; a switch of standard takes the older chip of the
+# new one, so NTSC and back to PAL leaves a 6569. On 10 October 2026 (v3.13.2) the 6569 drew one
+# pixel of the test frame differently, and the test failed. The MCP server cannot set the model,
+# so vicii() asks VICE's monitor (kit/c64/codemap.py).
+VICII = {0: "6569", 1: "8565", 2: "6569R1", 3: "6567", 4: "8562", 5: "6567R56A", 6: "6572"}
+VICII_CHECKED = {"PAL": 1, "NTSC": 3, "NTSC-OLD": 5, "PAL-N": 6}
+
+
+def vicii(m):
+    """Set the video chip to the one its standard is checked on, and say which it is.
+
+    One command to a connection: the monitor answers only a running machine, and right after
+    vice_execution_run it leaves after the first command it reads. A command left unanswered when
+    the connection closed (several sent at once, or one sent to a machine stopped over MCP) set
+    the monitor resending its prompt to the closed connection and refusing every new one, until
+    the emulator was restarted."""
+    from codemap import monitor
+
+    def model():
+        r = re.search(r"VICIIModel=(\d+)", monitor('resourceget "VICIIModel"'))
+        return int(r.group(1)) if r else None
+
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    want = VICII_CHECKED.get(std, 1)
+    m._call(m.rpc, "vice_execution_run", {})
+    was = now = None
+    if not m.paused():
+        try:
+            was = now = model()
+            if was is not None and was != want:
+                monitor(f'resourceset "VICIIModel" "{want}"')
+                now = model()
+        except OSError:
+            pass
+    if now != want:
+        print(f"the video chip: {VICII.get(now, 'unknown')}, and VICE's monitor did not set it; the "
+              f"test is checked on the {VICII[want]}, which a switch of standard can change")
+    elif was != want:
+        print(f"the video chip: the {VICII[want]}, set from the {VICII.get(was, was)} a switch of standard left")
+    else:
+        print(f"the video chip: the {VICII[want]}")
+
+
 def fresh():
-    """A machine just reset, stopped at the READY. prompt, with no checkpoints and no warp."""
+    """A machine just reset, stopped at the READY. prompt, with no checkpoints and no warp, and the
+    video chip its standard is checked on."""
     m = Machine()
     for c in m.j("vice_checkpoint_list")["checkpoints"]:
         m.j("vice_checkpoint_delete", {"checkpoint_num": c["checkpoint_num"]})
     m.j("vice_machine_config_set", {"resources": {"WarpMode": 0}})
+    vicii(m)
     m._call(m.rpc, "vice_machine_reset", {"mode": "hard", "run_after": True})
     m._call(m.rpc, "vice_execution_run", {})        # a machine paused before the reset stays paused
     for _ in range(100):
@@ -510,6 +565,21 @@ def fresh():
         raise SystemExit("no READY. prompt within 10 s of a hard reset; is the machine running?")
     m.pause()
     return m
+
+
+def late_bad_lines(F):
+    """(line, cycle) of each write to $D011 that starts a bad line after the chip's check in cycle
+    14 (VSP): on a line from $30 to $F7, a Y scroll that matches the line where the one before
+    did not. A write in cycle 13 still meets that check, and one after cycle 53 leaves the line
+    no fetch."""
+    d011, out = F["vic"][0x11], []
+    for line, cyc, a, v in F["writes"]:
+        if a != 0xD011:
+            continue
+        if 0x30 <= line <= 0xF7 and 14 <= cyc <= 53 and (line & 7) == (v & 7) != (d011 & 7):
+            out.append((line, cyc))
+        d011 = v
+    return out
 
 
 def test(keep=False):
@@ -540,6 +610,14 @@ def test(keep=False):
         print(f"FAIL: {len(f['writes'])} writes captured, at least {len(test_bands(lines))} expected: "   # the program
               "the test program did not run (was the machine left paused?)")                 # never ran
         return False
+    late = late_bad_lines(f)
+    if not late:
+        print("FAIL: no write to $D011 started a bad line late, so the frame does not test VSP: "
+              "the band on line 50 should land its $12 in cycles 14-53 of that line; "
+              + ", ".join(f"line {w[0]} cycle {w[1]}: ${w[3]:02X}" for w in f["writes"]
+                          if w[2] == 0xD011 and 48 <= w[0] <= 51))
+        return False
+    print("VSP: " + ", ".join(f"a bad line started late on line {y}, by a write in cycle {cyc}" for y, cyc in late))
     bad = compare(path)
     if bad == 0 and not keep:                    # a failure keeps its files, to be looked at
         for name in ("test.json", "test.png", "test-diff.png"):

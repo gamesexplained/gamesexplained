@@ -94,10 +94,15 @@ address links into the Source tab, and the house style in `kit/style.md`.
    and play it through the site's model of the SID, `../../lib/sid.js`:
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver
-   read. The script's header gives the driver's contract and what the
-   model leaves out. The filter is off unless the page passes
-   `filter: '6581'` (or `'8580'`) to `mount`, which also shows a switch
-   to compare it with no filter; pass it when the game sets the filter,
+   read. When the game calls its driver from a CIA timer instead, pass
+   the timer's period in cycles (the latch plus 1) to `mount` as
+   `period`, and port one call to each `play()`: the player keeps the
+   game's tempo, where mapping calls to frames in the port makes a
+   note's length wander by up to a frame. The script's header gives the
+   driver's contract and what the model leaves out. The filter is off
+   unless the page passes `filter: '6581'` (or `'8580'`) to `mount`,
+   which also shows a switch to compare it with no filter; pass it when
+   the game sets the filter,
    and say in the caption that the cutoff is one chip's. Say beside a
    sound below about 100 Hz that laptop and phone speakers barely play
    it: a reader who hears nothing reports it missing. Before believing such a report, render the writes through
@@ -204,8 +209,15 @@ its music or its maps can put that first instead.
   that have to succeed"); or, for a routine that
   only computes, against the original code run in a 6502 simulator on the
   snapshot's memory. Write node tests that do the comparison and say in
-  the caption how it was checked. On the C64 use the kit's simulator,
-  `kit/c64/cpu6502.js`, rather than writing one; its header is the
+  the caption how it was checked. A test that needs only the committed
+  listing goes beside the page as `test_<what>.js`, where CI runs it, and
+  takes the port from the page itself, so the two cannot drift apart:
+  `kit/scripts/port_check.js` cuts the block out, runs it and gives the
+  listing's memory, and `kit/scripts/port_check.py` does the same for a
+  test whose simulator is in Python. Open the block with a line
+  `/* name */`, or end a function inside the page's own script with a
+  line `// end of name`; the header is the manual. On the C64 use the
+  kit's simulator, `kit/c64/cpu6502.js`, rather than writing one; its header is the
   manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
   left it, the port's banking included, and `call(entry, regs)` runs a
   routine to its return. The chips belong to the test: `io.write` sees

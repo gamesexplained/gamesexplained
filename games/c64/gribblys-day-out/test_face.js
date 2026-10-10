@@ -6,16 +6,13 @@
 // $3040-$30FF, must agree byte for byte. Needs no snapshot and no emulator. Exits 1 on any difference.
 //   node games/c64/gribblys-day-out/test_face.js
 'use strict';
-const fs = require('fs'), path = require('path');
-const GAME = __dirname, ROOT = path.resolve(GAME, '../../..');
-globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
-require(path.join(ROOT, 'site/lib/c64.js'));
+const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const g = game(__dirname);
+g.lib('c64');
 
-const html = fs.readFileSync(path.join(GAME, 'index.html'), 'utf8');
-const a = html.indexOf('function animateFace('), b = html.indexOf('// end of animateFace');
-if (a < 0 || b < a) { console.log('index.html: no animateFace block'); process.exit(1); }
-const animateFace = new Function(html.slice(a, b) + '\nreturn animateFace;')();
+const { animateFace } = g.run('index.html', 'animateFace');
 
 (async () => {
   const base = (await C64.load('listing.json')).ram;

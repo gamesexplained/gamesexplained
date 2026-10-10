@@ -7,19 +7,17 @@
 // ($0263) and on again, as read_controls does, and the two must agree through that too. Everything
 // it needs is committed: no disk image, no snapshot, no emulator. It exits 1 on any difference.
 //   node games/c64/spy-vs-spy/test_music.js [page.html]
-const fs = require('fs'), path = require('path');
-const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
+const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const portCheck = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
-const html = fs.readFileSync(process.argv[2] || GAME + 'index.html', 'utf8');
-const a = html.indexOf('/* svs-music */'), b = html.indexOf('</script>', a);
-if (a < 0) { console.error('no /* svs-music */ block'); process.exit(1); }
-const createDriver = new Function(html.slice(a, b < 0 ? undefined : b) + '\nreturn createDriver;')();
+const g = portCheck.game(__dirname), page = process.argv[2] ? path.resolve(process.argv[2]) : 'index.html';
+const html = g.read(page);
+const { createDriver } = g.run(page, 'svs-music', 'createDriver');
 const dm = html.match(/SVS_MUSIC\s*=\s*(\{[^}]*\})/);
 if (!dm) { console.error('no SVS_MUSIC data'); process.exit(1); }
 const DATA = JSON.parse(dm[1].replace(/(\w+):/g, '"$1":'));
 
-const image = new Uint8Array(65536);
-for (const r of require(GAME + 'listing.json').records) if (r.b) image.set(r.b, r.a);
+const image = g.listing().ram;
 const hex = Array.from(image.slice(0x23DA, 0x254D), v => v.toString(16).padStart(2, '0')).join('');
 let bad = 0;
 const fail = (...w) => { if (bad++ < 10) console.log('DIFFERS', ...w); };

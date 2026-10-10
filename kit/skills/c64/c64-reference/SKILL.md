@@ -480,8 +480,9 @@ a block's layout garbled.
   values. Screen memory is the second worst, because a running game has
   moved on since the save. Pick two bytes of the game's own code.
   `readSnapshot` in `kit/c64/cpu6502.js` reads the modules by name: the
-  port (data at offset 205, direction at 206), the RAM, and x64sc's
-  registers and cycle count from its `MAINC64CPU` module.
+  port (data at offset 205, direction at 206), the RAM, x64sc's
+  registers and cycle count from its `MAINC64CPU` module, and the video
+  chip's registers and interrupt latch from `VIC-IISC`.
 - **A string found in a snapshot file is not necessarily the screen.** A
   game keeps its own copy of the status line to stamp onto the screen, and
   finding that copy while hunting for the RAM offset gives an offset that is

@@ -10,17 +10,13 @@
 // stalactite, which the map writes beside the room. A word that names a place needs no line. Every room left off must be one a status rule takes the player out
 // of; the lit rooms and the rooms where a treasure lies at the start must match the game's.
 //   node games/c64/classic-adventure/test_map.js
-const fs = require('fs'), path = require('path');
-const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
-globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
-require(path.join(ROOT, 'site/lib/c64.js'));
-const html = fs.readFileSync(GAME + 'levels.html', 'utf8');
-for (const name of ['adventure.js', 'adventure-ui.js']) {
-  const a = html.indexOf('/* ' + name + ' */'), b = html.indexOf('</script>', a);
-  if (a < 0) { console.error('levels.html: no /* ' + name + ' */ block'); process.exit(1); }
-  (0, eval)(html.slice(a, b));
-}
-const U = globalThis.CAUI, T = globalThis.CAPort.T;
+const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
+const g = game(__dirname);
+g.lib('c64');
+const html = g.read('levels.html');
+const T = g.run('levels.html', 'adventure.js', 'CAPort').CAPort.T;
+const U = g.run('levels.html', 'adventure-ui.js', 'CAUI').CAUI;
 const MOVE = new Set('N S E W NE NW SE SW UPWA D INWA OUT ENTE CLIM FORW LEFT RIGH ACRO OVER CROS JUMP'.split(' '));
 const MAGIC = new Set(['XYZY', 'PLUG', 'PLOV']);
 // command-rule moves the map writes as text beside the room instead of drawing

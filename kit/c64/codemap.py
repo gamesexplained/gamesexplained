@@ -28,6 +28,13 @@ run during a game's start-up, is marked the same way.
                                 addresses only, no byte of the game, so it is
                                 committed beside symbols.json (#236)
 
+The record holds instruction addresses only, so `dump` sizes each instruction
+by decoding the RAM as it is at the dump. Code the game rewrote after running
+it is sized from bytes that never ran. Where that leaves two instructions
+overlapping without ending together, `dump` counts only their opcodes and
+names the addresses; a rewritten instruction that overlaps no other is not
+caught (IK+, #276).
+
 The file has the Spectrum layout (kit/spectrum/codemap.py): `executed` (the
 sorted instruction addresses that ran), `ran` (their byte spans as runs),
 `starts` and `code` (the same here: there is no static trace yet, so what ran
@@ -115,6 +122,32 @@ def runs(addrs):
     return out
 
 
+def sizes(executed, ram):
+    """{instruction address: bytes counted as ran}, and the addresses whose bytes changed after they ran.
+
+    Each instruction is decoded from ram, the memory as it is at the dump, not as it ran. A start
+    inside another's span is a deliberate overlap when the instructions from it end where the outer
+    one does (a BIT whose operand another path runs, to skip it). Otherwise the bytes there changed
+    after one of them ran, and no decode says how long any of the instructions were: only the
+    opcodes are certain, so each counts one byte (IK+, #276)."""
+    executed = sorted(executed)
+    starts, n = set(executed), {}
+    for a in executed:
+        d = decode(ram, a)
+        n[a] = LEN[d[1]] if d else 1
+    changed = set()
+    for i, a in enumerate(executed):
+        inner = [b for b in executed[i + 1:i + 3] if b < a + n[a]]
+        if not inner:
+            continue
+        b = inner[0]
+        while b in starts and b < a + n[a]:
+            b += n[b]
+        if b != a + n[a]:
+            changed.update([a] + inner)
+    return {a: 1 if a in changed else n[a] for a in executed}, sorted(changed)
+
+
 def zap():
     out = monitor("memmapzap")
     if "ERROR" in out:
@@ -141,11 +174,15 @@ def dump(gdir, under_rom=False):
               "it has banked the ROM out, play, and dump with --under-rom")
     if not executed:
         sys.exit("the execute record is empty: zap, play, then dump")
-    ram = bytes(read_mem(rpc, 0, 0x10000))
+    size, changed = sizes(executed, bytes(read_mem(rpc, 0, 0x10000)))
+    if changed:
+        print(f"warning: {len(changed)} instructions overlap without rejoining, at "
+              + ", ".join(f"${s:04X}" + (f"-${e:04X}" if e > s else "") for s, e in runs(changed))
+              + ": most often the game rewrote those bytes after running them, so only their opcodes are "
+              "counted as ran. Read what ran there in the code that rewrites them, or in a snapshot from before")
     ran = set()
-    for a in executed:
-        d = decode(ram, a)
-        ran.update((a + i) & 0xFFFF for i in range(LEN[d[1]] if d else 1))
+    for a, k in size.items():
+        ran.update((a + i) & 0xFFFF for i in range(k))
     starts = sorted(executed)
     code = runs(ran)
     with open(os.path.join(gdir, "codemap.json"), "w") as f:

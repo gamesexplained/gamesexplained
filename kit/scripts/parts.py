@@ -245,9 +245,11 @@ def strays(syms, away, over, refs):
 
 
 def seed(gdir):
-    """(game, symbol map) to start a disassembler on a part's snapshot: its own symbols.json
-    and, where it lies over other parts, theirs for the addresses it does not own, so that the
-    code it calls and the variables it shares are named."""
+    """(game, symbol map) to start a disassembler on a part's snapshot: its own symbols.json,
+    cut to the addresses it owns as symbols_export.py cuts an export, and, where it lies over
+    other parts, theirs for the addresses it does not own, so that the code it calls and the
+    variables it shares are named. A map written before the part had its "over" and "ranges"
+    holds the other parts' addresses too (#257): what is left out there is said."""
     game = load_game(gdir)
     f = os.path.join(gdir, "symbols.json")     # none for a part that has only been named
     sym = json.load(open(f)) if os.path.isfile(f) else {"blocks": [], "symbols": [], "comments": []}
@@ -256,8 +258,11 @@ def seed(gdir):
         return game, sym
     P = parts(top)
     me = next(p for p in P if p["id"] == pid)
+    b, s, c, left = clip(sym["blocks"], sym["symbols"], sym["comments"], game["elsewhere"])
+    if left or b != sorted(sym["blocks"], key=lambda x: x["start"]):
+        say_left(P, me, left)
     taken = [[lo, hi, ""] for lo, hi in ranges(me)]      # every address an entry has come from already
-    sym = dict(sym, blocks=list(sym["blocks"]), symbols=list(sym["symbols"]), comments=list(sym["comments"]))
+    sym = dict(sym, blocks=b, symbols=s, comments=c)
     for q in under(P, me):
         f = os.path.join(q["dir"], "symbols.json")
         if not os.path.isfile(f):
@@ -267,6 +272,32 @@ def seed(gdir):
         sym["blocks"] += b; sym["symbols"] += s; sym["comments"] += c
         taken += [[x["start"], x["end"], ""] for x in b]
     return game, sym
+
+
+def say_left(P, me, left):
+    """Say that seed() left out what part me's own symbols.json holds at addresses another part
+    owns, and name the labels and comments among it that no other part's symbols.json has: the
+    session never holds them, so the next export of me drops them from its file."""
+    have = set()
+    for q in P:
+        f = os.path.join(q["dir"], "symbols.json")
+        if q["id"] != me["id"] and os.path.isfile(f):
+            S = json.load(open(f))
+            have |= {(x["address"], x["name"]) for x in S["symbols"]}
+            have |= {(x["address"], x["type"], x["text"]) for x in S["comments"]}
+    lost = [x for x in left if ((x["address"], x["name"]) if "name" in x else
+                                (x["address"], x["type"], x["text"])) not in have]
+    print(f"left out what parts/{me['id']}/symbols.json holds at addresses another part owns, as "
+          f"symbols_export.py does: the blocks there and {len(left)} label(s) and comment(s)")
+    if lost:
+        print(f"{len(lost)} of those label(s) and comment(s) are in no other part's symbols.json:")
+        for x in lost[:8]:
+            print(f"  ${x['address']:04X}  {x.get('name') or x['text'][:60]}")
+        if len(lost) > 8:
+            print(f"  and {len(lost) - 8} more")
+        print("The session does not hold them, so the next export of this part drops them from its "
+              "symbols.json. To keep them, add them to the symbols.json of the part that owns their "
+              "addresses first.")
 
 
 def names_under(gdir, game=None):

@@ -24,6 +24,7 @@ reproduce your mistakes. A batch is logged as a whole, so check its result.
 """
 import json, os, sys, urllib.request
 
+from kernal import entry_points
 from ports import resolve_ports
 
 
@@ -104,14 +105,16 @@ def failed(out):
 
 def read_live(gdir=None):
     """(blocks, symbols, comments) from the running server, in symbols.json's
-    vocabulary. symbols_export.py calls this for a c64 game, with the game's or the part's folder."""
+    vocabulary, with the KERNAL's entry points named the same whatever file the session
+    started on (kernal.py). symbols_export.py calls this for a c64 game, with the game's or
+    the part's folder."""
     rpc = make_client(gdir)
     blocks = json.loads(call(rpc, "r2000_get_blocks", {}))
     syms = json.loads(call(rpc, "r2000_get_symbols", {}))
     comments = json.loads(call(rpc, "r2000_get_comments", {}))
     return ([{"start": b["start_address"], "end": b["end_address"], "type": b["type"]} for b in blocks],
-            [{"address": s["address"], "name": s["name"], "type": s["type"],
-              "kind": s.get("kind", "user").lower()} for s in syms],
+            entry_points([{"address": s["address"], "name": s["name"], "type": s["type"],
+                           "kind": s.get("kind", "user").lower()} for s in syms]),
             [{"address": c["address"], "type": c["type"], "text": c["comment"]}
              for c in comments if c["comment"].strip()])
 
