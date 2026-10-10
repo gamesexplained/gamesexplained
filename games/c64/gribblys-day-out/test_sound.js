@@ -9,17 +9,13 @@
 // and no emulator. Exits 1 on any difference.
 //   node games/c64/gribblys-day-out/test_sound.js
 'use strict';
-const fs = require('fs'), path = require('path');
-const GAME = __dirname, ROOT = path.resolve(GAME, '../../..');
-globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
-require(path.join(ROOT, 'site/lib/c64.js'));
-require(path.join(ROOT, 'site/lib/sid.js'));
+const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const g = game(__dirname);
+g.lib('c64', 'sid');
 
-const html = fs.readFileSync(path.join(GAME, 'index.html'), 'utf8');
-const a = html.indexOf('function createDriver(D)'), b = html.indexOf('// end of createDriver');
-if (a < 0 || b < a) { console.log('index.html: no createDriver block'); process.exit(1); }
-const createDriver = new Function(html.slice(a, b) + '\nreturn createDriver;')();
+const { createDriver } = g.run('index.html', 'createDriver');
 
 (async () => {
   const ram = (await C64.load('listing.json')).ram;
@@ -78,7 +74,7 @@ const createDriver = new Function(html.slice(a, b) + '\nreturn createDriver;')()
   // the tune player's timing: the page's player with the page's period, run for 500 PAL frames,
   // makes 208 calls, the first the setup and every later one counting $E1 down
   {
-    const E = C64Sid.engine(), m = /getElementById\('gdo-tune'\)[^;]*?period: (\d+)/.exec(html);
+    const E = C64Sid.engine(), m = /getElementById\('gdo-tune'\)[^;]*?period: (\d+)/.exec(g.read('index.html'));
     const d = createDriver(Object.assign({ kind: 'tune' }, DATA)), RATE = 48000;
     const p = E.createPlayer(d, RATE, { period: m ? +m[1] : undefined });
     p.command({ cmd: 'start', tune: 0 });

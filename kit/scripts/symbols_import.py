@@ -12,7 +12,10 @@ A part of a game that is several loads (kit/scripts/parts.py) is rebuilt
 from its own folder and its own snapshot. Where it lies over other parts,
 their names and comments go in too, at the addresses they own, so the code
 it calls is readable: export each part from the session afterwards and
-each takes back its own share.
+each takes back its own share. The part's own symbols.json goes in only at
+the addresses the part owns, as symbols_export.py cuts an export, so a map
+written before the part had its "over" and "ranges" needs no cutting first;
+the script names any label or comment it leaves out that no other part has.
 
 Usage:
   symbols_import.py <game dir> <snapshot> [out file]

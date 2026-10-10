@@ -18,7 +18,9 @@ Usage:
   frame.py trim <frame.json> <out.json>  keep only the memory the drawing reads, for a page
   frame.py test [--keep]                 the kit's own test: a program with a split of every
                                          kind, captured, drawn and compared, then dma. It resets
-                                         the machine: not during a game you mean to keep
+                                         the machine: not during a game you mean to keep. It sets
+                                         the video chip its standard is checked on (the 8565 for
+                                         PAL), which a switch of standard changes
   frame.py dma [--record]                the cycles the video chip takes from the processor, on
                                          bad lines and for sprites, measured case by case and
                                          compared with kit/c64/fixtures/vic-dma.json, or written
@@ -28,7 +30,7 @@ Needs the emulator (`tools.py vice`) for capture and test, and a JavaScript runt
 drawing: node, or on macOS the system's own JavaScriptCore. The frame file holds a copy of the
 game's memory, so it stays in the game's work/ folder; `trim` makes the excerpt a page embeds.
 """
-import base64, json, os, shutil, struct, subprocess, sys, tempfile, time, zlib
+import base64, json, os, re, shutil, struct, subprocess, sys, tempfile, time, zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -494,12 +496,58 @@ def test_memory():
     ]
 
 
+# The video chip, by VICE's VICIIModel number, and the one each standard is checked on. x64sc
+# starts as a PAL C64C, whose chip is the 8565; a switch of standard takes the older chip of the
+# new one, so NTSC and back to PAL leaves a 6569. On 10 October 2026 (v3.13.2) the 6569 drew one
+# pixel of the test frame differently, and the test failed. The MCP server cannot set the model,
+# so vicii() asks VICE's monitor (kit/c64/codemap.py).
+VICII = {0: "6569", 1: "8565", 2: "6569R1", 3: "6567", 4: "8562", 5: "6567R56A", 6: "6572"}
+VICII_CHECKED = {"PAL": 1, "NTSC": 3, "NTSC-OLD": 5, "PAL-N": 6}
+
+
+def vicii(m):
+    """Set the video chip to the one its standard is checked on, and say which it is.
+
+    One command to a connection: the monitor answers only a running machine, and right after
+    vice_execution_run it leaves after the first command it reads. A command left unanswered when
+    the connection closed (several sent at once, or one sent to a machine stopped over MCP) set
+    the monitor resending its prompt to the closed connection and refusing every new one, until
+    the emulator was restarted."""
+    from codemap import monitor
+
+    def model():
+        r = re.search(r"VICIIModel=(\d+)", monitor('resourceget "VICIIModel"'))
+        return int(r.group(1)) if r else None
+
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    want = VICII_CHECKED.get(std, 1)
+    m._call(m.rpc, "vice_execution_run", {})
+    was = now = None
+    if not m.paused():
+        try:
+            was = now = model()
+            if was is not None and was != want:
+                monitor(f'resourceset "VICIIModel" "{want}"')
+                now = model()
+        except OSError:
+            pass
+    if now != want:
+        print(f"the video chip: {VICII.get(now, 'unknown')}, and VICE's monitor did not set it; the "
+              f"test is checked on the {VICII[want]}, which a switch of standard can change")
+    elif was != want:
+        print(f"the video chip: the {VICII[want]}, set from the {VICII.get(was, was)} a switch of standard left")
+    else:
+        print(f"the video chip: the {VICII[want]}")
+
+
 def fresh():
-    """A machine just reset, stopped at the READY. prompt, with no checkpoints and no warp."""
+    """A machine just reset, stopped at the READY. prompt, with no checkpoints and no warp, and the
+    video chip its standard is checked on."""
     m = Machine()
     for c in m.j("vice_checkpoint_list")["checkpoints"]:
         m.j("vice_checkpoint_delete", {"checkpoint_num": c["checkpoint_num"]})
     m.j("vice_machine_config_set", {"resources": {"WarpMode": 0}})
+    vicii(m)
     m._call(m.rpc, "vice_machine_reset", {"mode": "hard", "run_after": True})
     m._call(m.rpc, "vice_execution_run", {})        # a machine paused before the reset stays paused
     for _ in range(100):
