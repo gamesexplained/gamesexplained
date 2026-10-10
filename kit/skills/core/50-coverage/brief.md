@@ -83,8 +83,11 @@ tool skill has the details):
 
     python3 kit/<platform>/r2000.py --game GAME --log annotations-<n>.jsonl <tool> '<json>'
 
-The log is how the session is rebuilt after a crash, so every change goes
-through it. Addresses in the disassembler's arguments are <in which form>.
+Many annotations at once go in a text file of `$ADDR name : comment` and
+`$ADDR-$END type` lines, sent in batches with the same log by
+`r2000.py --game GAME --log annotations-<n>.jsonl --apply <file>`
+(`r2000.py -h` has the format). The log is how the session is rebuilt
+after a crash, so every change goes through it. Addresses in the disassembler's arguments are <in which form>.
 
 - `python3 kit/scripts/coverage.py GAME --live --range <lo> <hi>`: your
   range's figure, and its largest undescribed runs.
