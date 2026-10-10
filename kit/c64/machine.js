@@ -27,11 +27,22 @@
 //   was written, the unset inputs high. An underflow is taken on its cycle: the run stops there.
 //   Not modelled: counting CNT or timer A's underflows with timer B, the time of day clocks, the
 //   serial port, the one-cycle delays of the real chip. Without cia the CIA timers and CIA 2 read 0.
-// Not modelled: the VIC-II's timing beyond whole lines (no badlines, no sprite DMA, so a pass runs
-// a little faster here than on the machine), the disk and the ROMs (the simulator stops on a ROM
-// read; a hook can stand in, or rom: { char } gives the character ROM, read from the emulator's
-// own file at run time and never committed). Reads of other VIC registers return what was last
-// written.
+// - With dma: true, the cycles the video chip takes from the processor (kit/skills/c64/c64-reference,
+//   "The video chip, cycle by cycle"): on a bad line, a line from 48 to 247 whose low three bits
+//   are $D011's vertical scroll in a frame whose line 48 saw $D011's display bit set, cycles 12-54;
+//   on each of the 21 lines a sprite is fetched (42 Y-expanded), from the line its Y matches while
+//   $D015 enables it, cycles 55 + 2n to 59 + 2n for sprite n, past 63 into the next line. The
+//   processor stands still from where it is when one of those starts to the end of it: every
+//   cycle is taken as a read, so a store whose write falls on a bad line's cycle 12, which the
+//   machine lets go ahead, is held a cycle more here than there. The chip's registers are read
+//   at cycle 12 and cycle 55 of each line. An interrupt handler runs whole (cpu6502.js), so the
+//   cycles taken while it ran are added when it returns, from the registers as it left them.
+//   Checked against the emulator by kit/c64/test_machine_dma.js (kit/c64/fixtures/vic-dma.json).
+//   Without dma the processor has every cycle, and a pass runs faster here than on the machine.
+// Not modelled: the VIC-II's timing beyond that and whole lines, the disk and the ROMs (the
+// simulator stops on a ROM read; a hook can stand in, or rom: { char } gives the character ROM,
+// read from the emulator's own file at run time and never committed). Reads of other VIC
+// registers return what was last written.
 //
 // const { Machine, KEY, loadListing } = require('kit/c64/machine.js');
 // const m = new Machine({ ram: loadListing('games/c64/<slug>/listing.json'), pc: 0x1000, passAt: 0x2000 });
@@ -97,6 +108,10 @@ class Machine {
     this.joy1 = 0x1F;                   // port 1, the same bits, on $DC01
     this.cia = opts.cia ? [0, 1].map(() => ({ lat: [0xFFFF, 0xFFFF], cnt: [0xFFFF, 0xFFFF], cr: [0, 0], mask: 0, icr: 0 })) : null;
     this.pra2 = 0x3F; this.ddra2 = 0x3F; this.nmis = 0;
+    // the video chip's fetches (dma): the cycle of the next look at its registers (-1 until the
+    // first), the stretches it holds the processor that have not yet come, as [first, last]
+    // cycles, whether this frame's line 48 saw the display on, and each sprite's lines to fetch
+    this.dma = opts.dma ? { at: -1, holds: [], bad: false, rows: [0, 0, 0, 0, 0, 0, 0, 0] } : null;
     this.cmp = 0; this.latch = 0; this.enable = 0;
     this.lastLine = 0;
     this.passes = 0;
@@ -200,7 +215,10 @@ class Machine {
     if (a >= 0xD000 && a < 0xD400) {
       const r = a & 0x3F;
       if (r === 0x12) this.cmp = (this.cmp & 0x100) | v;
-      else if (r === 0x11) { this.cmp = (this.cmp & 0xFF) | ((v & 0x80) << 1); this.vic[r] = v; }
+      else if (r === 0x11) {
+        this.cmp = (this.cmp & 0xFF) | ((v & 0x80) << 1); this.vic[r] = v;
+        if (this.dma && (v & 0x10) && this.line === 48) this.dma.bad = true;   // any cycle of line 48
+      }
       else if (r === 0x19) this.latch &= ~v & 0x0F;
       else if (r === 0x1A) this.enable = v & 0x0F;
       else this.vic[r] = v;
@@ -219,12 +237,57 @@ class Machine {
       if (r === 0) this.pra2 = v; else if (r === 2) this.ddra2 = v; else this.ciaTimerWrite(1, r, v);
     }
   }
+  // The video chip's next look at its registers or next hold on the processor, as a cycle.
+  dmaNext() {
+    const d = this.dma;
+    if (d.at < 0) {                                 // the first look: the display taken as on since line 48 if on now
+      const c = this.cpu.cycles, o = c % LINE;
+      d.at = c - o + (o <= 11 ? 11 : o <= 54 ? 54 : LINE + 11);
+      d.bad = (this.vic[0x11] & 0x10) !== 0;
+    }
+    return d.holds.length ? Math.min(d.at, d.holds[0][0]) : d.at;
+  }
+  // Moves the processor's clock on past every hold that has begun by now, and looks at the
+  // registers wherever the clock has passed a line's cycle 12 or 55, in the order they came.
+  dmaCatchUp() {
+    const d = this.dma, cpu = this.cpu;
+    for (;;) {
+      const next = this.dmaNext();
+      if (next > cpu.cycles) return;
+      if (d.holds.length && d.holds[0][0] === next) {
+        const [first, last] = d.holds.shift();
+        cpu.cycles += last - first + 1;             // held from where it was, as if reading
+        continue;
+      }
+      const ls = d.at - d.at % LINE, ln = (ls / LINE) % LINES;
+      if (d.at % LINE === 11) {                     // cycle 12: a bad line
+        if (ln === 0) d.bad = false;
+        if (ln === 48 && (this.vic[0x11] & 0x10)) d.bad = true;
+        if (d.bad && ln >= 48 && ln <= 247 && (ln & 7) === (this.vic[0x11] & 7)) d.holds.push([ls + 11, ls + 53]);
+        d.at = ls + 54;
+      } else {                                      // cycle 55: the sprites, 3 cycles before each fetch
+        let hold = null;
+        for (let n = 0; n < 8; n++) {
+          if (!d.rows[n] && (this.vic[0x15] >> n & 1) && this.vic[1 + 2 * n] === (ln & 255)) d.rows[n] = this.vic[0x17] >> n & 1 ? 42 : 21;
+          if (!d.rows[n]) continue;
+          d.rows[n]--;
+          const first = ls + 54 + 2 * n, last = first + 4;
+          if (hold && first <= hold[1]) hold[1] = last;
+          else { if (hold) d.holds.push(hold); hold = [first, last]; }
+        }
+        if (hold) d.holds.push(hold);
+        d.at = ls + LINE + 11;
+      }
+    }
+  }
   // Run for n cycles, the raster interrupts included. False when onPass stopped the run.
   runCycles(n) {
     const cpu = this.cpu, end = cpu.cycles + n;
     while (cpu.cycles < end) {
+      if (this.dma && this.dmaNext() <= cpu.cycles) { this.tick(); continue; }   // an interrupt ran past a hold
       let step = LINE - (cpu.cycles % LINE);
       if (this.cia) { this.ciaCatchUp(); step = Math.max(1, Math.min(step, this.ciaNext())); }
+      if (this.dma) step = Math.max(1, Math.min(step, this.dmaNext() - cpu.cycles));
       cpu.run({ cycles: step, hooks: this.hooks });
       if (this.stopFlag) { this.stopFlag = false; return false; }
       this.tick();
@@ -232,6 +295,7 @@ class Machine {
     return true;
   }
   tick() {
+    if (this.dma) this.dmaCatchUp();
     const ln = Math.floor(this.cpu.cycles / LINE);
     while (this.lastLine < ln) {
       this.lastLine++;
@@ -271,11 +335,15 @@ class Machine {
       cpu: { a: c.a, x: c.x, y: c.y, sp: c.sp, pc: c.pc, p: c.p, cycles: c.cycles, pdir: c.pdir, pdata: c.pdata, pout: c.pout },
       cmp: this.cmp, latch: this.latch, enable: this.enable, lastLine: this.lastLine, frames: this.frames, passes: this.passes,
       pra: this.pra, ddra: this.ddra, ddrb: this.ddrb, skipOnce: this.skipOnce, joy: this.joy, keys: Array.from(this.keys), passAt: this.passAt,
-      joy1: this.joy1, cia: this.cia ? JSON.parse(JSON.stringify(this.cia)) : null, pra2: this.pra2, ddra2: this.ddra2, lastCycles: this.lastCycles, nmiDue: !!this.nmiDue };
+      joy1: this.joy1, cia: this.cia ? JSON.parse(JSON.stringify(this.cia)) : null, pra2: this.pra2, ddra2: this.ddra2, lastCycles: this.lastCycles, nmiDue: !!this.nmiDue,
+      dma: this.dma ? JSON.parse(JSON.stringify(this.dma)) : null };
   }
+  // opts.dma turns the video chip's fetches on or off for the restored machine (default: as saved).
   static restore(s, opts = {}) {
+    const dma = opts.dma !== undefined ? !!opts.dma : !!s.dma;
     const m = new Machine({ ram: new Uint8Array(Buffer.from(s.ram, 'base64')), passAt: opts.passAt !== undefined ? opts.passAt : s.passAt,
-      cia: !!s.cia, rom: opts.rom, sid: s.sid });
+      cia: !!s.cia, rom: opts.rom, sid: s.sid, dma });
+    if (dma && s.dma) m.dma = JSON.parse(JSON.stringify(s.dma));
     const c = m.cpu;
     Object.assign(c, { a: s.cpu.a, x: s.cpu.x, y: s.cpu.y, sp: s.cpu.sp, pc: s.cpu.pc, cycles: s.cpu.cycles });
     c.p = s.cpu.p; c.pdir = s.cpu.pdir; c.pdata = s.cpu.pdata; c.pout = s.cpu.pout; c.mapPort();

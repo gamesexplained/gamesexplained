@@ -167,6 +167,40 @@ Measured in VICE (x64sc, vice-mcp 3.13.1) on 24 September 2026 with
   byte at `$3FFF` of its bank (`$39FF` with extended colour) as a black
   pattern on the background colour.
 
+The cycles the chip takes from the processor were measured in VICE
+(x64sc, vice-mcp v3.13.2) on 9 October 2026 with `kit/c64/frame.py dma`,
+which `frame.py test` runs: a stream of NOPs timed instruction by
+instruction. The record is `kit/c64/fixtures/vic-dma.json`, and
+`kit/c64/machine.js` models it with `dma: true`.
+
+- A bad line holds the processor for cycles 12-54, 43 cycles. Bad lines
+  are the lines from 48 to 247 whose low three bits equal `$D011`'s
+  vertical scroll, so a frame with the display on has 25 of them whatever
+  the scroll, and loses 1,075 of its 19,656 cycles to them (measured with
+  the scroll at 0, 3 and 7).
+- The processor stops at its first read in those cycles; a write goes
+  ahead. A stream of stores (`STA` zero page: two reads, then the write)
+  is held 43 cycles, or 42 when a store's write falls on cycle 12, because
+  the processor then stops at its next read, in cycle 13.
+- The display bit (`$D011` bit 4) counts as the frame reaches line 48.
+  Set then, the frame has its bad lines to the bottom, even when the bit
+  is cleared on line 100. Clear then, the frame has none, even when the
+  bit is set on line 95. With the display off, the screen takes no cycles.
+- A sprite is fetched on 21 lines, 42 when `$D017` expands it, starting
+  on the line its Y names, whether the display is on or off. On each of
+  those lines sprite n holds the processor for cycles 55 + 2n to 59 + 2n,
+  five cycles, running past 63 into the next line: sprite 0 holds 55-59,
+  sprite 3 holds 61 to the next line's 2, and sprite 7 the next line's
+  6-10. Holds that overlap are one: sprites 0 and 2 hold 55-63, nine
+  cycles, and all eight hold 55 to the next line's 10, nineteen cycles.
+
+| A frame of NOPs, held | Display off | Display on |
+|---|---|---|
+| No sprite | 0 | 1,075 |
+| Sprite 0 | 105 | 1,180 |
+| Sprite 0, Y-expanded | 210 | 1,285 |
+| All eight sprites | 399 | 1,474 |
+
 ## SID essentials (`$D400`)
 
 Three voices, 7 registers each from `$D400`, `$D407`, `$D40E`: frequency
