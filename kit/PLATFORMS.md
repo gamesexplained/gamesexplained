@@ -53,7 +53,7 @@ copy of the C64's.
 
 | `kit/<platform>/` | Provides | Called by |
 |---|---|---|
-| `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES` | `listing.py`, through `platform_modules(platform)` |
+| `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES`, and optionally `text_items(kind, ram, start, end) -> (texts, starts) or None` for a text type whose items run over many bytes (the Spectrum's BASIC) | `listing.py`, through `platform_modules(platform)` |
 | `snapshot.py` | `read(path) -> bytes`, one flat 64 KB image; exits, naming the format it saw, on anything else | `listing.py` (the snapshot and the hand-over), `symbols_import.py` |
 | `project.py` or `skoolkit.py` | `read_file(path) -> (blocks, symbols, comments)`, `write(gdir, snapshot, out=None) -> path` | `symbols_export.py` (`read_file`, `--project`/`--ctl`), `symbols_import.py` (`write`) |
 | `r2000.py` or `skoolkit.py` | `read_live(gdir=None) -> (blocks, symbols, comments)` from the running disassembler; `gdir` is the game's folder or a part's (`kit/scripts/parts.py`), for a client that keeps a disassembler per part | `symbols_export.py` (`read_live`), `coverage.py --live` |
@@ -61,7 +61,7 @@ copy of the C64's.
 
 The C64's `cpu.py` holds the 6502 and PETSCII together; the Spectrum's
 `cpu.py` re-exports `z80.py`, which is where a third Z80 machine would
-point. A `kit/cpu/` layer that splits them is cut when a third machine
+point, and adds `basic.py`, the machine's BASIC as the ROM keeps it. A `kit/cpu/` layer that splits them is cut when a third machine
 arrives, not before. Two pieces are still the C64's: `site/lib/memmap.js`
 is one drawing for every machine but `kit/template/index.html` still names
 its colour tokens after the C64.

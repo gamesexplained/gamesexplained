@@ -87,10 +87,13 @@ Record fields (short, the file is large):
   l  label at this address                         c  line comment
   s  side comment       x  addresses that reference this one
   d  decoded text (text records) / value list (word, addr)
+  enc on a text record: its text type, lower case. A type whose items are longer than a
+     byte (the Spectrum's "basic") holds one item to a record: a program line, a variable,
+     a row of an array, cut only where a label or a comment falls inside it
   ta the targets of a split table, on its first row, as addresses
   note on a gap: bytes the game uses that the listing does not hold (LOST)
 """
-import contextlib, hashlib, importlib.util, io, json, os, sys
+import bisect, contextlib, hashlib, importlib.util, io, json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ledger import compute
@@ -603,6 +606,17 @@ def main():
         for a in range(b["start"], b["end"] + 1):
             btype[a] = t
 
+    # a text type whose items run over many bytes (the Spectrum's BASIC: a program line, a
+    # variable, a row of an array) is walked once over its whole extent, from the start of
+    # its first block, so a block that begins mid-way, or an item a label cuts in two, reads
+    # as its item does: each byte's share of the text, and where each item starts
+    walked = {}
+    for t in TEXT_TYPES if hasattr(cpu, "text_items") else ():
+        bl = [b for b in sym["blocks"] if b["type"] == t]
+        got = bl and cpu.text_items(t, ram, min(b["start"] for b in bl), max(b["end"] for b in bl))
+        if got:
+            walked[t] = got + (sorted(got[1]),)
+
     def sym_or_hex(a, width=4):
         return names.get(a) or (f"${a:04X}" if width == 4 else f"${a:02X}")
 
@@ -695,6 +709,12 @@ def main():
                 rec["d"] = [sym_or_hex(x) for x in targets]
                 rec["ta"] = targets
                 rec["note"] = f"split table: {n} {'lo/hi' if t == 'Lo/Hi Address' else 'hi/lo'} pointers"
+        elif t in walked:
+            texts, starts, order = walked[t]
+            i = bisect.bisect_right(order, a)
+            e = run_end((order[i] if i < len(order) else 0x10000) - a)
+            rec.update({"t": "text", "b": list(ram[a:e]), "d": "".join(texts.get(x, "") for x in range(a, e)),
+                        "enc": t.lower()})
         elif t in TEXT_TYPES:
             e = run_end(32); bs = list(ram[a:e])
             rec.update({"t": "text", "b": bs, "d": "".join(cpu.text_decode(t, c) for c in bs),
@@ -741,6 +761,8 @@ def main():
             span += 1
         if code[ad]:
             kind = "routine" if s["type"] in ("Subroutine", "UserDefined") or ad in line else "branch"
+        elif TYPES[btype[ad]] in walked:
+            kind = walked[TYPES[btype[ad]]][1].get(ad, "table")
         elif TYPES[btype[ad]] in TEXT_TYPES:
             kind = "string"
         elif span <= 2 and ad < 0x0400:

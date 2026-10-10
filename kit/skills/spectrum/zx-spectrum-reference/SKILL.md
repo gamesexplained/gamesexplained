@@ -260,6 +260,37 @@ A call to `$1601` followed by `RST $10` is a common way to print; PR-STRING at
 `$203C` (DE the text, BC its length) is the other. A game that keeps the ROM
 may use them, and many print with code of their own.
 
+## A game written in BASIC
+
+Many Spectrum games are partly BASIC: a program that runs the game and
+calls machine code with `USR`. The tape's BASIC file holds the program
+and, when it was saved after running, its variables, which are often the
+game's data. Both load to the addresses the system variables give:
+
+| Variable | Address | Holds |
+|---|---|---|
+| PROG | `$5C53` | the first line (`$5CCB` on a plain 48K machine) |
+| VARS | `$5C4B` | the first variable, straight after the program |
+| E_LINE | `$5C59` | the editing line, one past the `$80` that ends the variables |
+| PPC | `$5C45` | the line being run: a checkpoint `PEEKW(23621)=<line>` stops on the autostart line before its first statement |
+
+The layouts of a line, a variable and a five-byte number are in
+`kit/spectrum/basic.py`. Type the program and the variables `BASIC` in
+the control file (a `b` block with `; kit-block $ADDR BASIC` above it):
+the Source tab then lists each line as `LIST` prints it and each variable
+by its value, an array a row at a time. A label on a line's first byte
+names the routine that starts there; the first `BASIC` block must start
+on a line or a variable, since the lines are found by walking their
+lengths from there.
+
+Three things that look like code changing in play are not. A `DEF FN`
+line keeps a five-byte slot after each parameter, which every call
+overwrites; a `FOR` loop's control variable records the line it loops
+to; and `LET`, `DIM` and string assignment move the variables up and
+down, so their addresses differ between snapshots taken at different
+moments. Build the listing from the hand-over snapshot, where the
+variables are as the tape saved them.
+
 ## The mistakes that bite
 
 - **The bitmap is not linear.** See "The screen". `$5800` is the

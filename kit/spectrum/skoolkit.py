@@ -20,8 +20,9 @@ Control-file vocabulary used here, from SkoolKit's own manual
   c $ADDR [title]      a code block
   b $ADDR [title]      bytes
   w $ADDR [title]      words (a pointer is a word)
-  ; kit-block $ADDR T  the symbols.json type, when the letter cannot carry it (Address
-                       and the lo/hi split tables), so the round trip is lossless
+  ; kit-block $ADDR T  the symbols.json type, when the letter cannot carry it (Address,
+                       the lo/hi split tables, and BASIC, a program or its variables, which
+                       SkoolKit shows as bytes), so the round trip is lossless
   t $ADDR [title]      text in the machine's alphabet
   i $ADDR              ignored from here (used to close a block exactly)
   @ $ADDR label=NAME   a label
@@ -46,7 +47,7 @@ RAM_LO, RAM_HI = 0x4000, 0xFFFF          # a 48K machine's RAM; the ROM is not t
 
 # shared symbols.json block type <-> control-file directive
 TO_CTL = {"Code": "c", "Byte": "b", "Word": "w", "Address": "w", "Lo/Hi Address": "w",
-          "Hi/Lo Address": "w", "Lo/Hi Word": "w", "Hi/Lo Word": "w", "ZX": "t"}
+          "Hi/Lo Address": "w", "Lo/Hi Word": "w", "Hi/Lo Word": "w", "ZX": "t", "BASIC": "b"}
 FROM_CTL = {"c": "Code", "b": "Byte", "w": "Word", "t": "ZX"}
 TEXT_TYPE = "ZX"
 

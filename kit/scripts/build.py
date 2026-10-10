@@ -203,9 +203,10 @@ def footprint(gdir, game):
         k = "code" if r["t"] == "code" else ("text" if r["t"] == "text" else "tables")
         for i in range(len(r["b"])):
             cat[r["a"] + i] = k
-    # index spans: variables and strings
+    # index spans: variables and strings; and a routine or a table held as text (the Spectrum's
+    # BASIC program, and its arrays), which the records alone call text
     for e in L["index"]:
-        k = {"variable": "variables", "string": "text"}.get(e["k"])
+        k = {"variable": "variables", "string": "text", "routine": "code", "table": "tables"}.get(e["k"])
         hint = None
         n = e["n"].lower()
         for keys, kk in NAME_HINTS:

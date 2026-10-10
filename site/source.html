@@ -119,18 +119,19 @@
       const id=id4(r.a);
       const own=commentedOwner(r.a);
       if(r.c){ rows.push(`<div class="cmt" data-a="${r.a}" data-own="1">${esc(r.c)}</div>`); const c=cmtH(r.c); h+=c; he+=c; }
-      let instr='', cls=r.t;
+      let instr='', cls=r.t, wrap=0;
       if(r.t==='code') instr=`<span class="m">${r.m}</span> <span class="o">${link(r.oa,r.o||'')}</span>`;
       else if(r.t==='byte') instr=`<span class="m">.byte</span> <span class="o">${bytes(r.b).split(' ').map(x=>'$'+x).join(',')}</span>${r.note?` <span class="note">${esc(r.note)}${r.d?': '+r.d.map(esc).join(', '):''}</span>`:''}`;
       else if(r.t==='word') instr=`<span class="m">.word</span> <span class="o">${r.d.map(hex4).join(',')}</span>`;
       else if(r.t==='addr') instr=`<span class="m">.addr</span> <span class="o">${link(r.oa,r.o)}</span>`;
+      else if(r.t==='text'&&r.enc==='basic'){ instr=`<span class="o">${esc(r.d)}</span>`; wrap=ROW*Math.floor(r.d.length/100); }   // a BASIC line or variable, as LIST shows it
       else if(r.t==='text') instr=`<span class="m">.text</span> <span class="o">"${esc(r.d)}"</span> <span class="note">${r.enc}</span>`;
       else if(r.t==='note') instr=`<span class="note">${esc(r.note||'')}</span>`;
       if(r.s) instr+=`<span class="s">; ${esc(r.s)}</span>`;
       const xr=r.x?`<span class="xr" data-x="${r.x.join(',')}" title="referenced by">${r.x.length}</span>`:'';
       if(UNDER.length&&!r.p) cls+=' mine';
       rows.push(`<div class="row ${cls}${r.t!=='code'?' data':''}" id="${id}" data-a="${r.a}" data-own="${own?1:0}"><span class="a"><a href="#${id}">${id}</a></span><span class="b">${bytes(r.b)}</span><span class="l">${r.l?esc(r.l):''}${xr}</span><span class="i">${instr}</span></div>`);
-      h+=ROW; if(own) he+=ROW;
+      h+=ROW+wrap; if(own) he+=ROW+wrap;
     }
     main.insertAdjacentHTML('beforeend',`<div class="blk" style="--h:${h}px;--he:${he}px">${rows.join('')}</div>`);
     done=end;
