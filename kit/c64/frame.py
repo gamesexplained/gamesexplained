@@ -435,7 +435,7 @@ def trim(frame_path, out_path):
 # its raster line and makes its writes one after another, so some land mid-line, which is part
 # of the test: the capture records each write's cycle and the drawing has to honour it.
 BANDS = [
-    (8, [(0xD011, 0x1B), (0xD016, 0x08), (0xD018, 0x18), (0xDD00, 0x03), (0xD020, 6), (0xD021, 0),
+    (8, [(0xD011, 0x1F), (0xD016, 0x08), (0xD018, 0x18), (0xDD00, 0x03), (0xD020, 6), (0xD021, 0),
          (0xD015, 0xFF), (0xD010, 0x08), (0xD017, 0x02), (0xD01D, 0x02), (0xD01C, 0x02), (0xD01B, 0x04),
          (0xD025, 2), (0xD026, 7),
          (0xD000, 40), (0xD001, 60), (0xD027, 1), (0x07F8, 0xC0),       # sprite 0, used twice
@@ -446,6 +446,12 @@ BANDS = [
          (0xD00A, 180), (0xD00B, 40), (0xD02C, 8),                      # 5: across the top border's edge
          (0xD00C, 120), (0xD00D, 6), (0xD02D, 13),                      # 6 and 7: Y under 56, so each shows
          (0xD00E, 250), (0xD00F, 20), (0xD02E, 2)]),                    # twice: at the top and 256 lines down
+    # VSP. Line 8's Y scroll of 7 keeps lines 48-50 from being bad lines. On line 50, $12 lands
+    # inside the line (the first two writes take twelve cycles) and starts a bad line late, which
+    # moves every row below sideways, and $1B makes line 51 an ordinary bad line; test() checks
+    # that the write did land late. The borders are open there, so line 50 shows the blank font
+    # at $2800, as a game hides that line: the drawing does not model its characters
+    (50, [(0xD018, 0x1A), (0xD021, 0), (0xD011, 0x12), (0xD011, 0x1B), (0xD018, 0x18)]),
     (70, [(0xD021, 11)]),
     (74, [(0xD016, 0x0D)]),                                            # X scroll 5 alone
     (77, [(0xD016, 0x1D)]),                                            # multicolour on, scroll held
@@ -488,6 +494,7 @@ def test_memory():
     return [
         (0x0400, bytes((r * 40 + c) & 0xFF for r in range(25) for c in range(40))),
         (0x2000, bytes((n * 37 + r * 91 ^ (0x81 if r in (0, 7) else 0)) & 0xFF for n in range(256) for r in range(8))),
+        (0x2800, bytes(0x800)),                                         # the blank font for line 50
         (0x3000, shapes), (0x3FFF, b"\xAA"),
         (0x4400, bytes((r * 40 + c) * 7 & 0xFF for r in range(25) for c in range(40))),
         (0x47F8, bytes(range(0x40, 0x48))), (0x5000, shapes),
@@ -560,6 +567,21 @@ def fresh():
     return m
 
 
+def late_bad_lines(F):
+    """(line, cycle) of each write to $D011 that starts a bad line after the chip's check in cycle
+    14 (VSP): on a line from $30 to $F7, a Y scroll that matches the line where the one before
+    did not. A write in cycle 13 still meets that check, and one after cycle 53 leaves the line
+    no fetch."""
+    d011, out = F["vic"][0x11], []
+    for line, cyc, a, v in F["writes"]:
+        if a != 0xD011:
+            continue
+        if 0x30 <= line <= 0xF7 and 14 <= cyc <= 53 and (line & 7) == (v & 7) != (d011 & 7):
+            out.append((line, cyc))
+        d011 = v
+    return out
+
+
 def test(keep=False):
     """Run the kit's test program, capture a frame of it, draw it and compare; then measure the
     cycles the video chip takes and compare them with the fixture (dma). True if both pass."""
@@ -588,6 +610,14 @@ def test(keep=False):
         print(f"FAIL: {len(f['writes'])} writes captured, at least {len(test_bands(lines))} expected: "   # the program
               "the test program did not run (was the machine left paused?)")                 # never ran
         return False
+    late = late_bad_lines(f)
+    if not late:
+        print("FAIL: no write to $D011 started a bad line late, so the frame does not test VSP: "
+              "the band on line 50 should land its $12 in cycles 14-53 of that line; "
+              + ", ".join(f"line {w[0]} cycle {w[1]}: ${w[3]:02X}" for w in f["writes"]
+                          if w[2] == 0xD011 and 48 <= w[0] <= 51))
+        return False
+    print("VSP: " + ", ".join(f"a bad line started late on line {y}, by a write in cycle {cyc}" for y, cyc in late))
     bad = compare(path)
     if bad == 0 and not keep:                    # a failure keeps its files, to be looked at
         for name in ("test.json", "test.png", "test-diff.png"):

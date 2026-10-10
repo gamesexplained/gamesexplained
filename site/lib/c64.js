@@ -113,12 +113,17 @@ globalThis.C64 = (function () {
   //             its own checks, and a page never embeds it
   // Modelled: character, bitmap and extended colour modes, multicolour, both scrolls, 24/25 rows
   // and 38/40 columns with the border flip-flops (so an opened border stays open), bad lines,
-  // the idle pattern, and sprites with expansion, multicolour, priority and reuse within the
-  // frame. The frame is run twice and the second drawn, so that what crosses the frame boundary
-  // (the border, a sprite) is as the steady state leaves it. Not followed to the pixel: the few
-  // pixels after a mid-line change of a mode bit or the scroll, and the grey pixel VICE draws
-  // where a colour register changes. Not modelled: sprite collisions, and tricks that move the
-  // bad lines within a line.
+  // among them one that a write to $D011 starts late in its line (VSP: every row after it starts
+  // as many places further on as the line had fetch cycles left), the idle pattern, and sprites
+  // with expansion, multicolour, priority and reuse within the frame. The frame is run twice and
+  // the second drawn, so that what crosses the frame boundary (the border, a sprite) is as the
+  // steady state leaves it. Not followed to the pixel: the few pixels after a mid-line change of
+  // a mode bit or the scroll, and the grey pixel VICE draws where a colour register changes.
+  // Not modelled: sprite collisions; the characters on a late bad line and on the lines after it
+  // up to the next bad line, which the chip shows from the row's first character on, starting
+  // where its display came on, and this draws each in its own column (VSP games hide those lines
+  // in the top border, where it does not matter); and a bad line condition that comes and goes
+  // before cycle 14, which turns the display on in VICE.
   // For a live display (a Play page) three more fields save the work of a recording:
   //   F.mem     a 64 KB Uint8Array used in place of F.ram     F.colourMem  1024 bytes, for F.colour
   //   F.keep    an object kept from frame to frame: the chip's state carries over from the last

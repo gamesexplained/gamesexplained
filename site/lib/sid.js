@@ -1,5 +1,6 @@
 // The C64's sound chip for game pages: a model of the SID, a player that runs a game's own music
-// driver once a frame through the model, and a display of what the driver plays. No dependencies.
+// driver through the model as the game calls it, once a frame or once a timer period, and a
+// display of what the driver plays. No dependencies.
 // Exposes C64Sid (window.C64Sid on a page; globalThis.C64Sid in node, for tests).
 //
 // A game supplies its music driver, ported from the game's code: a function createDriver(data)
@@ -7,7 +8,8 @@
 // returns an object with
 //   init(tune)  start a tune, as the game's own call does
 //   stop()      stop the music, as the game's own call does
-//   play()      one frame of the driver, as the game's interrupt calls it
+//   play()      one call of the driver, as the game's interrupt makes it: once a frame, or once
+//               a period where the page passes one (below)
 //   sid         a Uint8Array(25): $D400-$D418 as the driver last wrote them
 //   playing()   true while a tune runs, false once it has ended or been stopped
 //   voice(x)    optional: plain data about voice x (0-2) for the display's rows
@@ -54,6 +56,11 @@
 // a gate opened and closed inside one frame is silent here, where the chip runs the attack for the
 // cycles between). The clock is PAL's (985,248 Hz, frames of 312 lines of 63 cycles) unless a page
 // passes ntsc: true to mount or host (1,022,727 Hz, frames of 263 lines of 65 cycles).
+// The player calls the driver once a frame of that clock unless a page passes period, a number of
+// cycles (1 or more), to mount or host: then once a period, for a game that calls its driver from
+// a CIA timer. A timer whose latch holds n runs out every n + 1 cycles. Each call comes a period
+// after the one before, at the first sample at or after its cycle, so the error never adds up.
+// Where this script says frame, it means one call of the driver, however it is timed.
 //
 //   C64Sid.mount(root, options)  the player: tune buttons, a seek bar, a piano roll and a panel
 //                                per voice
@@ -74,6 +81,8 @@ globalThis.C64Sid = (function () {
     const NTSC_CLOCK = 1022727, NTSC_FRAME_CYCLES = 263 * 65;
     const clockOf = (opts) => opts && opts.ntsc ? NTSC_CLOCK : CLOCK;
     const frameOf = (opts) => opts && opts.ntsc ? NTSC_FRAME_CYCLES : FRAME_CYCLES;
+    // cycles between the driver's calls: opts.period, for a driver a CIA timer calls, or a frame
+    const periodOf = (opts) => opts && +opts.period >= 1 ? +opts.period : frameOf(opts);
 
     // ------------------------------------------------------------------ the SID
     // Rate periods from reSID (VICE src/resid/envelope.cc): the envelope steps every
@@ -346,11 +355,11 @@ globalThis.C64Sid = (function () {
     // ------------------------------------------------------------------ driver + SID + frames
     // createPlayer(driver, sampleRate, opts) takes the commands {cmd: 'start', tune, run, at},
     // {cmd: 'stop'}, {cmd: 'mute', voice, on} and {cmd: 'filter', chip}; render() fills a buffer, running the driver
-    // once a PAL frame. A start with at > 0 begins that many frames into the tune: the driver
+    // once a frame (periodOf). A start with at > 0 begins that many frames into the tune: the driver
     // runs from the tune's start through the model without sound, since a driver's state is
     // everything it has played so far and nothing short of playing it recreates it.
     function createPlayer(drv, sampleRate, opts) {
-      const sid = createSID(sampleRate, opts), cps = clockOf(opts) / sampleRate, FRAME = frameOf(opts);
+      const sid = createSID(sampleRate, opts), cps = clockOf(opts) / sampleRate, FRAME = periodOf(opts);
       let toFrame = 0, frames = 0, on = false, run = 0;
       function command(c) {
         if (c.cmd === 'start') {
@@ -385,7 +394,7 @@ globalThis.C64Sid = (function () {
       // fill out[0..n) from time t0; post(snapshot) after each driver frame
       function render(out, n, t0, post) {
         for (let i = 0; i < n; i++) {
-          if (toFrame <= 0) {                                // a new frame
+          while (toFrame <= 0) {                             // a new frame (a period under a sample: several)
             toFrame += FRAME;
             if (on) {
               frame();
@@ -399,7 +408,7 @@ globalThis.C64Sid = (function () {
       return { drv, sid, command, render };
     }
 
-    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, createBus, createSID, createPlayer };
+    return { CLOCK, FRAME_CYCLES, NTSC_CLOCK, NTSC_FRAME_CYCLES, periodOf, createBus, createSID, createPlayer };
   }
 
   // ------------------------------------------------------------------ the sound, on a page
@@ -421,7 +430,7 @@ class C64SidProcessor extends AudioWorkletProcessor {
 }
 registerProcessor('c64-sid', C64SidProcessor);`;
 
-  // host({driver, data, gain, filter, ntsc, onFrame}): an AudioContext playing the driver through the model.
+  // host({driver, data, gain, filter, ntsc, period, onFrame}): an AudioContext playing the driver through the model.
   // Call it from a click or a key press, where browsers allow sound to start. It resolves to
   // {ctx, mode, send(command)}. onFrame(snapshot), if given, receives every driver frame when it
   // is computed, ahead of the sound; show it once snapshot.t has reached ctx.currentTime.
@@ -430,7 +439,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     if (!AC) throw new Error('This browser has no Web Audio.');
     const ctx = new AC();
     ctx.resume();
-    const opts = { gain: o.gain, filter: o.filter, ntsc: !!o.ntsc }, post = o.onFrame || null;
+    const opts = { gain: o.gain, filter: o.filter, ntsc: !!o.ntsc, period: o.period }, post = o.onFrame || null;
     const code = 'const E = (' + engine.toString() + ')();\nconst createDriver = (' + o.driver.toString() + ');\n' + WORKLET;
     const urls = ['data:text/javascript;charset=utf-8,' + encodeURIComponent(code),
       () => URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))];
@@ -494,15 +503,19 @@ registerProcessor('c64-sid', C64SidProcessor);`;
 
   const VOICE_COLORS = ['#1f5fa8', '#c25a00', '#2a8a4a'];
   const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const PX = 2;                                              // piano roll: pixels per frame
+  const PX = 2;                                              // piano roll: pixels for a PAL or NTSC frame's time
   const LO = 12, HI = 108;                                   // piano roll: C1 to C9
   const hex = (v, n) => '$' + v.toString(16).toUpperCase().padStart(n, '0');
   const bytes = (a) => a.map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
   const noteName = (n) => NAMES[n % 12] + Math.floor(n / 12);  // note 0 = C0, 57 = A4
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-  // mount(root, {driver, data, tunes, rows, mark, gain, filter, ntsc, colors}) builds the player inside root.
+  // mount(root, {driver, data, tunes, rows, mark, gain, filter, ntsc, period, colors}) builds the player inside root.
   //   ntsc    optional: true for a game whose driver runs once an NTSC frame, heard at the NTSC clock
+  //   period  optional: the cycles between the driver's calls, for a game that calls it from a CIA
+  //           timer (a latch of n: n + 1 cycles). The seek bar and onFrame then count calls, and
+  //           the piano roll gives each call the width of its time, so a second is as wide as in a
+  //           player that calls its driver once a frame
   //   tunes   the names of the driver's tunes, in its order: one button each
   //   rows    optional: the lines of each voice's panel above its frequency, each
   //           {k: 'Label', f} or, for an indented line with no label, {in: true, mono, f}.
@@ -529,8 +542,9 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }
     const FILTERS = [['none', 'Off'], ['6581', '6581'], ['8580', '8580']];
     let filter = o.filter && FILTERS.some(([c]) => c === o.filter) ? o.filter : 'none';
-    const E = engine(), CK = o.ntsc ? E.NTSC_CLOCK : E.CLOCK;
-    const HZ = CK / 16777216, FPS = CK / (o.ntsc ? E.NTSC_FRAME_CYCLES : E.FRAME_CYCLES);
+    const E = engine(), CK = o.ntsc ? E.NTSC_CLOCK : E.CLOCK, PERIOD = E.periodOf(o);
+    const HZ = CK / 16777216, FPS = CK / PERIOD;
+    const px = PX * PERIOD / (o.ntsc ? E.NTSC_FRAME_CYCLES : E.FRAME_CYCLES);   // piano roll: pixels a call
     const C0 = 440 * Math.pow(2, -57 / 12);
     const COLORS = o.colors || VOICE_COLORS, ROWS = o.rows || [];
     const mark = o.mark || ((v, p) => !!(v.ctrl & 1) && !(p && p.ctrl & 1));
@@ -609,7 +623,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
     }
 
     async function audio() {                                 // created on the first click only
-      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, filter, ntsc: o.ntsc, onFrame: take });
+      const h = await host({ driver: o.driver, data: o.data, gain: o.gain, filter, ntsc: o.ntsc, period: o.period, onFrame: take });
       ctx = h.ctx; send = h.send;
       root.dataset.sidAudio = h.mode;
       muted.forEach((on, voice) => send({ cmd: 'mute', voice, on }));
@@ -688,7 +702,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         if (q.run === runs) { s = q; hist.push(q); }         // frames of an earlier start are dropped
       }
       if (!s) return;
-      const keep = Math.ceil(canvas.clientWidth / PX) + 2;
+      const keep = Math.ceil(canvas.clientWidth / px) + 2;
       if (hist.length > keep) hist.splice(0, hist.length - keep);
       show(s);
       draw();
@@ -735,7 +749,7 @@ registerProcessor('c64-sid', C64SidProcessor);`;
         g.fillText('Choose a tune to start.', 40, H / 2);
         return;
       }
-      const x0 = W - hist.length * PX;
+      const x0 = W - hist.length * px;
       for (let i = 0; i < hist.length; i++) {
         const s = hist[i], p = hist[i - 1];
         for (let x = 0; x < 3; x++) {
@@ -746,7 +760,8 @@ registerProcessor('c64-sid', C64SidProcessor);`;
           const start = mark(v, p && p.v[x]);
           g.globalAlpha = muted[x] ? 0.12 : 0.3 + 0.7 * v.env / 255;
           g.fillStyle = COLORS[x];
-          g.fillRect(x0 + i * PX, y(n) - (start ? 3 : 1.5), PX, start ? 6 : 3);
+          const xa = Math.round(x0 + i * px), xb = Math.round(x0 + (i + 1) * px);
+          g.fillRect(xa, y(n) - (start ? 3 : 1.5), xb - xa, start ? 6 : 3);
         }
       }
       g.globalAlpha = 1;
