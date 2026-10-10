@@ -134,7 +134,12 @@ the game folder, or pass `--game`, so the log lands in the right place.
   label on the RAM does not mean the CPU calls that data. Only use
   `coverage.exclude` for bytes proved not to be the game's authored data;
   excluding an entry just to remove its automatic ROM label can hide a
-  byte of the game's picture.
+  byte of the game's picture. Whatever the session calls a KERNAL entry
+  point (`s_FFD2` when it traced the call after it started), the export
+  writes the KERNAL's name (`KERNAL_CHROUT`, `kit/c64/kernal.py`), so the
+  file the session started on does not show. Where the game banks the
+  KERNAL out and keeps its own code or data at one of those addresses,
+  that name is wrong: give the address a label of your own.
 - Auto-generated symbols (branch targets) are minted on every load; the
   export keeps them because the coverage denominator uses them, and the
   import drops them because the tool regenerates them.
