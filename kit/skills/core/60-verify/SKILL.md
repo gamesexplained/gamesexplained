@@ -96,11 +96,16 @@ anyway, write in `facts.md`, where the error rate would go, the seed and
 the size and that the sample is not checked yet, say so in the pull
 request, and leave `tier` where it was before this step.
 
-What the repository keeps is the result: one paragraph in `facts.md`
-naming the seed, the population and the sample's size, how many comments
-were wrong, what was wrong with them and what was changed, and the
-interval. The draw, the verdict on each comment and the checker's notes
-are the working record, and stay in `work/reports/`.
+What the repository keeps is the result: one paragraph in `facts.md`,
+under the template's heading `## The listing's error rate`, naming the
+seed, the population and the sample's size, how many comments were
+wrong, what was wrong with them and what was corrected, and the
+interval. That section is the one place in `facts.md` where a correction
+is the fact being reported, so `check_docs.py` lets it use the plain
+words ("corrected", "misread", "was wrong") that it fails anywhere else
+in the file; keep the story of how the listing got there in
+`agent-history.md`. The draw, the verdict on each comment and the
+checker's notes are the working record, and stay in `work/reports/`.
 
 ## What a test lets through
 

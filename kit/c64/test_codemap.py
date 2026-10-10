@@ -8,7 +8,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from codemap import banked_out_ram, parse_executed, runs, sizes  # noqa: E402
+from codemap import banked_out_ram, kernal_only, parse_executed, restor_defaults, runs, sizes  # noqa: E402
 
 SAMPLE = """\
 (C:$1005) addr: IO  ROM RAM
@@ -74,6 +74,60 @@ class SizeTests(unittest.TestCase):
         size, changed = sizes([0x1066, 0x1069, 0x106A, 0x106D], ram)  # STY; STA $D020 / JSR $EAD0; JSR
         self.assertEqual(changed, [0x1069, 0x106A])
         self.assertEqual(size, {0x1066: 3, 0x1069: 1, 0x106A: 1, 0x106D: 3})
+
+
+class KernalTests(unittest.TestCase):
+    """A game that banks the KERNAL in to load a file records the KERNAL's code at the same
+    addresses as its own code in the RAM under it (#309)."""
+
+    @staticmethod
+    def put(mem, at, bs):
+        mem[at:at + len(bs)] = bytes(bs)
+
+    def images(self, ram_code):
+        ram = bytearray(0x10000)
+        self.put(ram, 0xC000, [0x20, 0x00, 0xE0, 0x20, 0x81, 0xFF])   # JSR $E000; JSR $FF81 (the KERNAL's)
+        self.put(ram, 0x0314, [0x00, 0xC1])                          # the IRQ vector, hooked to $C100
+        for at, bs in ram_code.items():
+            self.put(ram, at, bs)
+        rom = bytearray(ram[:0xE000]) + bytearray(0x2000)
+        self.put(rom, 0xFF81, [0x4C, 0x00, 0xE1])                    # jump table: JMP $E100
+        self.put(rom, 0xE100, [0xA9, 0x00, 0x20, 0x00, 0xE2, 0x60])  # LDA #0; JSR $E200; RTS
+        self.put(rom, 0xE200, [0x60])
+        self.put(rom, 0xFFFA, [0x00, 0xE3] * 3)                      # NMI, RESET, IRQ: $E300
+        self.put(rom, 0xE300, [0x6C, 0x14, 0x03])                    # JMP ($0314)
+        self.put(rom, 0xFF8A, [0x4C, 0x00, 0xE4])                    # RESTOR
+        self.put(rom, 0xE400, [0xA2, 0x10, 0xA0, 0xE4, 0x18, 0x86, 0xC3, 0x84, 0xC4, 0xA0, 0x01,
+                               0xB9, 0x14, 0x03])                    # LDX #$10 LDY #$E4 CLC STX STY LDY #1 LDA $0314,Y
+        self.put(rom, 0xE410, [0x20, 0xE3])                          # the default IRQ vector: $E320
+        self.put(rom, 0xE320, [0x40])                                # RTI
+        return rom, ram
+
+    RECORDED = {0xE000, 0xE001, 0xE100, 0xE102, 0xE105, 0xE200, 0xE300, 0xE320, 0xFF81}
+    KERNAL = [0xE100, 0xE102, 0xE105, 0xE200, 0xE300, 0xE320, 0xFF81]
+
+    def test_restor(self):
+        rom, _ = self.images({})
+        self.assertEqual(restor_defaults(rom), {0x0314: 0xE320})
+        self.assertEqual(restor_defaults(bytearray(0x10000)), {})
+
+    def test_drops_the_kernal(self):
+        """The game's routine at $E000 stays; the KERNAL's code, reached from its jump table, its
+        IRQ vector and the default the hooked vector replaced, goes."""
+        rom, ram = self.images({0xE000: [0xEA, 0x60]})              # NOP; RTS
+        self.assertEqual(kernal_only(rom, ram, self.RECORDED, {0xC000, 0xC003}), (self.KERNAL, []))
+
+    def test_both(self):
+        """An address the RAM's code reaches too is kept, and named."""
+        rom, ram = self.images({0xE000: [0xEA, 0x4C, 0x02, 0xE1], 0xE102: [0x60]})   # NOP; JMP $E102 / RTS
+        dropped, both = kernal_only(rom, ram, self.RECORDED, {0xC000, 0xC003})
+        self.assertEqual(both, [0xE102])
+        self.assertEqual(dropped, [a for a in self.KERNAL if a != 0xE102])
+
+    def test_own_jump_table(self):
+        """A jump into the jump table is the RAM's own only where the RAM holds a JMP there."""
+        rom, ram = self.images({0xE000: [0xEA, 0x60], 0xFF81: [0x4C, 0x00, 0xE0]})
+        self.assertEqual(kernal_only(rom, ram, self.RECORDED, {0xC000, 0xC003})[1], [0xFF81])
 
 
 class FormatTests(unittest.TestCase):

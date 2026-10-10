@@ -99,7 +99,12 @@ address links into the Source tab, and the house style in `kit/style.md`.
    `period`, and port one call to each `play()`: the player keeps the
    game's tempo, where mapping calls to frames in the port makes a
    note's length wander by up to a frame. The script's header gives the
-   driver's contract and what the model leaves out. The filter is off
+   driver's contract and what the model leaves out. The game's own driver
+   run on a 6502 core inside `createDriver` counts as a port, its code and
+   tables embedded in the page as data like any widget's. Test the core as
+   a port is tested: every tune, frame by frame, against the same bytes
+   run on `kit/c64/cpu6502.js`, with every write compared. Say in the
+   caption that the page runs the game's own player. The filter is off
    unless the page passes `filter: '6581'` (or `'8580'`) to `mount`,
    which also shows a switch to compare it with no filter; pass it when
    the game sets the filter,

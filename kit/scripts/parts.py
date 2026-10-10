@@ -41,6 +41,17 @@ ranges even where a load over it writes some of them again: a program
 that replaces the first pages of the game for a while holds other bytes
 than the game does there, so each counts its own, in its own snapshot.
 
+A bank of ROM that the machine switches in over RAM, such as one bank of a
+cartridge, is a part too, with "bank" (its number) in its part.json: it
+lies "over" the part the code runs in, and its "ranges" are where the bank
+shows. Its bytes are not the RAM's, so the part beneath keeps those
+addresses: the RAM there is its own. The platform makes the bank parts
+from the cartridge image (on the C64, kit/c64/crt.py parts), and a RAM
+part says which of its instructions see a bank with "banks" rows in its
+part.json, [first, last, bank's id, why], as "io" rows do for the chips
+(kit/scripts/listing.py). A bank whose every byte is left out of its
+ledger, copied whole into RAM or blank, counts as analysed.
+
 Usage:
   parts.py <game dir>                  list the parts, with each one's coverage
   parts.py add <game dir> <id> [--title "..."] [--over <id>] [--adopt]
@@ -81,7 +92,7 @@ def parts(gdir):
         own, d = json.load(open(f)), os.path.dirname(f)
         pid = os.path.basename(d)
         out.append({"id": pid, "title": own.get("title") or pid, "order": own.get("order", 0),
-                    "over": own.get("over") or None, "dir": d})
+                    "over": own.get("over") or None, "bank": own.get("bank"), "dir": d})
     return sorted(out, key=lambda p: (p["order"], p["id"]))
 
 
@@ -115,12 +126,28 @@ def ranges(p):
 
 
 def started(p):
-    """True once the part has a symbol map with something in it."""
+    """True once the part has a symbol map with something in it, or is a bank with nothing left
+    to explain."""
     f = os.path.join(p["dir"], "symbols.json")
+    if left_out(p):
+        return True
     if not os.path.isfile(f):
         return False
     S = json.load(open(f))
     return bool(S.get("blocks") or S.get("symbols") or S.get("comments"))
+
+
+def left_out(p):
+    """For a bank, the reasons its ledger leaves out every byte it holds (copied whole into RAM,
+    or blank), as a list; [] for a bank with bytes of its own to explain, and for any other part."""
+    own = ranges(p) if p.get("bank") is not None else []
+    if not own:
+        return []
+    out = [(hexint(a), hexint(b), why) for a, b, why in (settings(p).get("coverage") or {}).get("exclude") or []]
+    taken = [(a, b) for a, b, _ in out]
+    if any(_gaps(lo, hi, taken) for lo, hi in own):
+        return []
+    return [why for a, b, why in out if any(a <= hi and b >= lo for lo, hi in own)]
 
 
 def _gaps(lo, hi, taken):
@@ -162,7 +189,8 @@ def elsewhere(P, p):
                     end = min([g_hi] + [x - 1 for x in nxt])
                 out.append([a, end, q["title"]])
                 a = end + 1
-    lent = sorted((lo, hi, q["title"]) for q in above(P, p) for lo, hi in ranges(q))
+    # a bank above shows other bytes than RAM at its addresses: the RAM there stays this part's
+    lent = sorted((lo, hi, q["title"]) for q in above(P, p) if q.get("bank") is None for lo, hi in ranges(q))
     if own:
         lent = [(a, b, who) for lo, hi, who in lent for a, b in _gaps(lo, hi, own)]
     merged = []
@@ -202,6 +230,10 @@ def load_game(gdir):
     out = {k: v for k, v in game.items() if k not in LEDGER_KEYS}
     out.update({k: own.get(k, EMPTY[k]) for k in LEDGER_KEYS})
     out["part"] = {"id": pid, "title": me["title"], "over": [q["id"] for q in under(P, me)]}
+    if me.get("bank") is not None:
+        out["part"]["bank"] = me["bank"]
+    if own.get("banks"):
+        out["banks"] = own["banks"]
     out["elsewhere"] = elsewhere(P, me)
     out["replaces"] = replaces(P, me)
     return out
@@ -330,6 +362,10 @@ def table(gdir):
     for p in P:
         if not started(p):
             lines.append(f"  {p['id']:<{w}}  not started"); continue
+        why = left_out(p)
+        if why:
+            n += 1
+            lines.append(f"  {p['id']:<{w}}  nothing to explain: {'; '.join(why)}"); continue
         t, e = tracked_count(p["dir"])
         T += t; E += e; n += 1
         lines.append(f"  {p['id']:<{w}}  {e:>6} of {t:>6} bytes explained  {100 * e / t if t else 0:5.1f} %")

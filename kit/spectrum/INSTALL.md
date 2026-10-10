@@ -80,7 +80,8 @@ programs are compute-bound, so the speed decides whether a suite finishes inside
 `--timeout` (default 1800 s a program) — and for `z80full` and `z80flags` it decides more
 than that: how many tests they say failed depends on it. Each count below reproduced in
 every run tried at its speed (four runs at 1x, three at about 5x), so what is recorded
-is the count and the speed together, not the count alone.
+is the count and the speed together, not the count alone. The two exercisers' rows are
+a later run, on Linux, described below the table.
 
 | Program | What it checks | Result on ZEsarUX 13.0 |
 |---|---|---|
@@ -89,8 +90,8 @@ is the count and the speed together, not the count alone.
 | `z80flags` | every flag, registers ignored | **FAIL: the same sixteen at 1x and the same twenty at about 5x, on the same instructions as `z80full`** |
 | `z80memptr` | flags after `BIT N,(HL)`, where MEMPTR shows | **FAIL: 2 of its 160 tests failed** — `INIR->NOP'` and `INDR->NOP'`, the same at 1x and at about 5x; every `BIT N,(HL)` test passes, so MEMPTR is right and only those two combinations are not |
 | `z80ccf` | flags after `CCF`, which only a genuine Zilog part passes | **FAIL: 67 of its 160 tests failed**, its own `000 SELF TEST` among them. The release's readme says this variant "assumes the genuine Zilog behavior and it will fail half of the tests on CPUs which use other variant, so don't bother": the count is which CPU variant the emulated part behaves as, not 67 separate faults |
-| `zexdoc` | the instruction exerciser, documented flags | **UNKNOWN: did not finish in 240 s** — the three instructions it reached all ended `OK`, and it was part-way through the fourth |
-| `zexall` | the instruction exerciser, all flags | **UNKNOWN: did not finish in 240 s** — the same three instructions ended `OK` and the fourth was part-way through |
+| `zexdoc` | the instruction exerciser, documented flags | **PASS: `Tests complete`, and all 67 of its instruction groups ended `OK`** (Linux x86_64, 10 October 2026, at 7.8x real speed) |
+| `zexall` | the instruction exerciser, all flags | **FAIL: 4 of its 67 instruction groups printed a CRC line** — `bit n,<b,c,d,e,h,l,(hl),a>`, `ldd<r> (1)`, `ldd<r> (2)` and `ldi<r> (2)`; the other 63 ended `OK` (Linux x86_64, 10 October 2026, at 7.8x real speed) |
 
 **The two counts, and the four tests that move.** At 1x real speed `z80full` and
 `z80flags` fail sixteen tests: `SCF`, `CCF`, `SCF (ST)`, `CCF (ST)`, `BIT N,A`,
@@ -107,21 +108,29 @@ CRC is identical, and identical from run to run, so the emulator's answer for th
 deterministic — and the speed setting was the only thing that differed between the
 sixteen and the twenty. Why it decides those four is recorded as unknown, not guessed at.
 
-What that says: every **documented** flag and register is right (`z80doc`), and what
-fails is the undocumented behaviour — the two SCF/CCF flag variants, the flags `LDI`,
-`LDD`, `LDIR`, `LDDR` and `IN R,(C)` leave behind, the block-input flags, the `BIT`
-result in an accumulator, and the `NOP'` suffix forms. `z80memptr` passing its `BIT`
-tests while failing `INIR->NOP'` is the same set seen from another angle.
+What that says: every **documented** flag and register is right (`z80doc`, and `zexdoc`
+across every operand value it tries), and what fails is the undocumented behaviour —
+the two SCF/CCF flag variants, the flags `LDI`, `LDD`, `LDIR`, `LDDR` and `IN R,(C)`
+leave behind, the block-input flags, the `BIT` result in an accumulator, and the `NOP'`
+suffix forms. `z80memptr` passing its `BIT` tests while failing `INIR->NOP'` is the same
+set seen from another angle.
 
-**ZEXDOC and ZEXALL did not finish.** They are exhaustive exercisers — every operand
-value of every instruction, checked against a CRC — and in 240 s, at 6.2 to 6.6 times
-real speed, each finished three of its instructions (every one ending `OK`) and was
-part-way through the fourth. A full run is hours at that speed, so both are UNKNOWN here
-rather than passed or failed. What they did reach is in their logs, instruction line by
-instruction line; raise `--timeout` (a program that reaches its last line at all is a
-verdict, however long it took), or run with a higher `--emulatorspeed` if the host
-allows one — but a higher speed is not neutral: it changed the count `z80full` reports,
-so a run at another speed is a different measurement, not the same one run faster.
+**ZEXDOC and ZEXALL, run to their last line.** They are exhaustive exercisers: every
+operand value of 67 instruction groups, each checked against a CRC a real Z80 computed.
+Both were run on Linux x86_64 on 10 October 2026, on the ZEsarUX-13.0 release
+(`ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz`), with the launcher's
+`--emulatorspeed 5000`, where ZEsarUX ran at 7.8 times real speed, side by side on two
+machines (`--port`). Each took 1,862 s, about four hours of the Spectrum's own time, so
+give them `--timeout 7000` as this run did: the default 1800 s stops them just short, and
+the 240 s of an earlier run left both UNKNOWN. `zexdoc` passes. `zexall` fails four
+groups, `BIT` on a register or `(HL)` and the block copies `LDD`/`LDDR` and `LDI`/`LDIR`
+(`ldi<r> (1)` passes), and those are instructions whose undocumented flags `z80full`
+fails as well (`BIT N,[R,(HL)]`, `LDI`, `LDD`, `LDIR`, `LDDR`). Its `<daa,cpl,scf,ccf>`
+group passes, though `z80full` fails `SCF` and `CCF`; why the two programs differ there
+is not worked out here. Each failure's CRC line, and every instruction line, is in the
+run's log. Like `z80full`'s counts these were measured at one speed, and a speed is not
+neutral: it changed the count `z80full` reports, so a run at another speed is a
+different measurement, not the same one run faster.
 
 | Program | Comes from | Licence | Fetched at run time |
 |---|---|---|---|

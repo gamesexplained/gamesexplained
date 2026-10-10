@@ -10,6 +10,14 @@ Usage:
   r2000.py <tool> '<json arguments>'          call one tool
   r2000.py --list                             list tools
   r2000.py --replay <annotations.jsonl>       replay a log into a fresh session
+  r2000.py --apply <file>                     apply a file of annotations, one per line:
+      $C000 init_screen : clears the screen and sets the border    a label and a line comment
+      $C000 init_screen                        a label alone
+      $C000 : clears the screen                a line comment alone
+      $C100-$C1FF byte                         a data type (lower case, as set_data_type takes)
+      # a note to yourself                     ignored, as are blank lines
+    sent as batches of r2000_batch_execute in the file's order; the calls that succeed are logged
+    one by one, and each that fails is printed with its line number
   r2000.py --game games/c64/<slug> <tool> '<json>'
   r2000.py --log annotations-3.jsonl <tool> '<json>'   write to that log instead
 
@@ -20,9 +28,10 @@ agent its own --log (or set ANNOTATION_LOG) and merge the files afterwards.
 Requires `regenerator2000 --mcp-server <file>` listening on :3000 (or KIT_R2000_PORT; `tools.py r2000` starts either).
 
 Calls that come back as an error are not logged, so a replay does not
-reproduce your mistakes. A batch is logged as a whole, so check its result.
+reproduce your mistakes. A batch called by name is logged as a whole, so
+check its result; `--apply` logs only the calls of its batches that succeed.
 """
-import json, os, sys, urllib.request
+import json, os, re, sys, urllib.request
 
 from kernal import entry_points
 from ports import resolve_ports
@@ -173,6 +182,78 @@ def replay(path):
         print(call(rpc, "r2000_batch_execute", {"calls": calls[i:i + 200]})[:300])
 
 
+DATA_TYPES = {"code", "byte", "word", "address", "petscii", "screencode", "lo_hi_address", "hi_lo_address",
+              "lo_hi_word", "hi_lo_word", "external_file", "undefined"}
+RANGE = re.compile(r"^\$([0-9A-Fa-f]{1,4})\s*-\s*\$([0-9A-Fa-f]{1,4})\s+(\S+)\s*$")
+ENTRY = re.compile(r"^\$([0-9A-Fa-f]{1,4})(?:\s+([A-Za-z_][\w.]*))?\s*(?::\s*(.*?))?\s*$")
+
+
+def parse_annotations(text):
+    """([(line number, call), ...], [(line number, problem), ...]) from a file for --apply.
+
+    Each agent of the Mayhem in Monsterland run wrote its own script for this format, and some
+    sent their calls one at a time instead (#306)."""
+    calls, problems = [], []
+    for n, line in enumerate(text.splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = RANGE.match(line)
+        if m:
+            start, end, kind = int(m.group(1), 16), int(m.group(2), 16), m.group(3)
+            if kind not in DATA_TYPES:
+                problems.append((n, f"{kind!r} is not a data type: one of {', '.join(sorted(DATA_TYPES))}"))
+            elif end < start:
+                problems.append((n, "the range ends before it starts"))
+            else:
+                calls.append((n, {"name": "r2000_set_data_type",
+                                  "arguments": {"start_address": start, "end_address": end, "data_type": kind}}))
+            continue
+        m = ENTRY.match(line)
+        if not m or not (m.group(2) or m.group(3)):
+            problems.append((n, "not `$ADDR name : comment`, `$ADDR name`, `$ADDR : comment` or `$ADDR-$END type`"))
+            continue
+        address = int(m.group(1), 16)
+        if m.group(2):
+            calls.append((n, {"name": "r2000_set_label_name", "arguments": {"address": address, "name": m.group(2)}}))
+        if m.group(3):
+            calls.append((n, {"name": "r2000_set_comment",
+                              "arguments": {"address": address, "type": "line", "comment": m.group(3)}}))
+    return calls, problems
+
+
+def apply(path, explicit=None, log=None, batch=200):
+    """Send the file's annotations in batches, log each call that succeeds, and return how many
+    failed. Nothing is sent when a line does not parse."""
+    with open(path, encoding="utf-8") as f:
+        calls, problems = parse_annotations(f.read())
+    for n, msg in problems:
+        print(f"{path}:{n}: {msg}")
+    if problems:
+        sys.exit(f"nothing sent: {len(problems)} line(s) to fix first")
+    gdir = game_dir(explicit)
+    rpc, done, bad = make_client(gdir), 0, 0
+    for i in range(0, len(calls), batch):
+        part = calls[i:i + batch]
+        out = call(rpc, "r2000_batch_execute", {"calls": [c for _, c in part]})
+        try:
+            results = json.loads(out)
+        except ValueError:
+            results = None
+        if not isinstance(results, list) or len(results) != len(part):
+            sys.exit(f"the batch from line {part[0][0]} came back without a result for each call; "
+                     f"{done} call(s) before it were applied and logged:\n{out[:300]}")
+        for (n, c), r in zip(part, results):
+            if r.get("status") == "success" and not (r.get("result") or {}).get("isError"):
+                log_call(gdir, c["name"], c["arguments"], log)
+                done += 1
+            else:
+                bad += 1
+                print(f"{path}:{n}: {c['name']} failed: {json.dumps(r.get('error') or r.get('result'))[:200]}")
+    print(f"applied {done} of {len(calls)} call(s) from {path}" + (f"; {bad} failed" if bad else ""))
+    return bad
+
+
 def main():
     argv = sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
@@ -185,6 +266,8 @@ def main():
             log, argv = argv[1], argv[2:]
     if argv[0] == "--replay":
         replay(argv[1]); return
+    if argv[0] == "--apply":
+        sys.exit(1 if apply(argv[1], explicit, log) else 0)
     rpc = make_client(game_dir(explicit))
     if argv[0] == "--list":
         for t in rpc("tools/list", {})["result"]["tools"]:

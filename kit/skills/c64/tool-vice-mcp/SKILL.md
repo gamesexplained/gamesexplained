@@ -84,6 +84,14 @@ passed, by date and system, are the table at the top of that file.
    however `vice_ping` reads, and every input sent looks ignored.
    `tools.py stop vice` and `tools.py vice` clear it; the snapshot is
    fine.
+   A script that waits for a prompt (a copier's, a menu's, a disk
+   swap's) reads the screen's text with `kit/c64/screen.py`:
+   `wait_text(rpc, pattern)`, where a screenshot serves only an agent.
+   Text mode needs nothing more. A game that draws its letters into a
+   bitmap needs its font named: the address of its glyphs, the
+   character code of the first, and how far apart it draws two letters,
+   which is 8 when it copies each glyph into a cell, however narrow the
+   letters look. The routine that draws a letter shows all three.
 4. Confirm play with a screenshot, then `vice_snapshot_save` with a name
    that describes the state, on the running machine or after `pause()` in
    `vice.py`, never straight after `vice_execution_pause`
@@ -238,13 +246,16 @@ record (#236): `zap` clears it at the start of a play session, `dump` writes
 `games/c64/<slug>/codemap.json` at the end. The record is VICE's monitor
 memmap, a per-address access map that marks every address the CPU fetched an
 instruction from. Unlike the cpuhistory ring buffer (8,192 entries, ~28 ms)
-it covers a whole session, but only while the machine is left alone: on
-vice-mcp v3.13.2 (9 October 2026) loading a snapshot, or stopping the
-machine through the MCP server, ended the record, and the map dumped later
-lacked everything that ran after it while looking complete. Record a code
-map in one session from boot: load the game, `zap` once it runs, drive it
-with joystick and key calls separated by wall-clock waits rather than
-`frames()` (which stops the machine), and `dump` at the end. The memmap's
+it covers a whole session, across stops, `frames()` and snapshot loads (a
+loop run after each was recorded beside the ones before it, v3.13.2 on
+Linux, 10 October 2026), and `zap` and `dump` work on a running or a
+stopped machine. VICE answers its monitor only while the machine runs, and
+a connection it answers after the client has gone wedges the monitor
+("Broken pipe" on every frame in `tools/logs/vice.log`, and no further
+connection answered until the emulator restarts), so reach the monitor
+only through `codemap.py`, which runs a stopped machine for the command
+and stops it again. Record a code map in one session: load the game,
+`zap` once it runs, play it, and `dump` at the end. The memmap's
 ROM and RAM columns follow the address, not the banking, so code run from
 RAM under the KERNAL or BASIC is listed as ROM execution, and `dump` leaves
 it out unless given `--under-rom`; it says how many such instructions it
@@ -266,11 +277,17 @@ than it can be consumed and wedges the emulator.
 A game that loads files during play through the KERNAL's LOAD (with the
 ROM banked in for the load, then out again) puts the KERNAL's own
 instructions into an `--under-rom` map at the same addresses as its RAM
-code there: the memmap cannot tell the two apart, and `dump` keeps both.
-Before committing such a map, trace the RAM code at `$A000`-`$BFFF` and
-`$E000`-`$FFFF` from its entries and its dispatch tables, and drop the
-recorded addresses that trace does not reach; check what is left against
-the KERNAL ROM's own instruction starts. One game's map held 307 KERNAL
+code there: the memmap cannot tell the two apart. `dump --under-rom`
+leaves out, and lists, the recorded addresses at `$E000`-`$FFFF` that the
+KERNAL's code reaches (decoded from the ROM, from its vectors, its jump
+table and the defaults RESTOR copies to `$0314`) and that no code in RAM
+reaches (decoded from the RAM, from the jumps of what ran elsewhere and the
+RAM's own vectors); it keeps, and names, the addresses both reach. Code the
+game reaches only through a dispatch table is not traced, so a run of its
+code that happens to fall where the KERNAL's runs can be left out: check
+the list against the game's entries and tables before committing the map,
+or record a second map with no load to compare. BASIC's code at
+`$A000`-`$BFFF` is not sorted out this way. One game's map held 307 KERNAL
 addresses beside its music player at `$E000` (`kit/lessons/2026-10-10-qix.md`).
 
 ## Behaviours that waste time, on any build

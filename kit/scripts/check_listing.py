@@ -21,9 +21,10 @@ walk into data.
 A game of several parts (kit/scripts/parts.py) is checked part by part,
 and so is the layout itself: every folder under parts/ is a part, each
 has a place of its own in the order, a part that lies over another says
-which addresses it owns, game.json keeps no settings a part should have,
+which addresses it owns, a bank lies over the part the code runs in and
+a "banks" row names a bank, game.json keeps no settings a part should have,
 no listing holds a row at an address another part owns, and an operand
-that points at a part beneath reads as that part names it now.
+that points at a part beneath, or into a bank, reads as that part names it now.
 
 Usage: check_listing.py [game dir ...]      default: every game, and every part of one
 """
@@ -31,7 +32,7 @@ import concurrent.futures
 import glob, hashlib, json, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from parts import ID, EMPTY, LEDGER_KEYS, parts, under, ranges, started, load_game, owned   # noqa: E402
+from parts import ID, EMPTY, LEDGER_KEYS, parts, under, ranges, started, load_game, owned, settings   # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LISTING = os.path.join(os.path.dirname(os.path.abspath(__file__)), "listing.py")
@@ -149,6 +150,14 @@ def check_parts(gdir):
         elif not p["over"] and ranges(p):
             errs.append(f'part {p["id"]} has "ranges" but lies over no part: name the part beneath it as "over", '
                         "or drop the ranges")
+        if p.get("bank") is not None and not p["over"]:
+            errs.append(f'part {p["id"]} is bank {p["bank"]} but lies over no part: name the part the code runs in '
+                        'as its "over"')
+        banks = {q["id"] for q in P if q.get("bank") is not None}
+        for r in settings(p).get("banks") or []:
+            if not (isinstance(r, list) and len(r) == 4 and r[2] in banks):
+                errs.append(f'part {p["id"]}: "banks" row {r} is not [first, last, a bank\'s part id, why]'
+                            + (f" (the banks are {', '.join(sorted(banks))})" if banks else ": the game has no bank parts"))
     if not errs:
         try:
             for p in P:
