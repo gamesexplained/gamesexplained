@@ -4,14 +4,16 @@
 // committed listing.json: every SID write of every call, in order, and the driver's zero-page state
 // after it. The title tune through two passes and more; every effect on both voices, flagged and
 // not, until both voices are idle; 300 runs of random requests on both voices, as play makes them.
-// Then the tune player's timing: one call every 47,288 cycles, each run in the PAL frame its cycle
-// falls in. Needs no snapshot and no emulator. Exits 1 on any difference.
+// Then the tune player's timing: the page's player, site/lib/sid.js with the period the page passes,
+// calls the driver 208 times in 500 PAL frames, as the game did live (facts.md). Needs no snapshot
+// and no emulator. Exits 1 on any difference.
 //   node games/c64/gribblys-day-out/test_sound.js
 'use strict';
 const fs = require('fs'), path = require('path');
 const GAME = __dirname, ROOT = path.resolve(GAME, '../../..');
 globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
 require(path.join(ROOT, 'site/lib/c64.js'));
+require(path.join(ROOT, 'site/lib/sid.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
 
 const html = fs.readFileSync(path.join(GAME, 'index.html'), 'utf8');
@@ -73,14 +75,17 @@ const createDriver = new Function(html.slice(a, b) + '\nreturn createDriver;')()
       if (!compare(`random run ${run} call ${k}`, M, d)) break;
     }
   }
-  // the tune player's timing: after 500 PAL frames, ceil(500 x 19,656 / 47,288) calls, the first
-  // the setup and every later one counting $E1 down
+  // the tune player's timing: the page's player with the page's period, run for 500 PAL frames,
+  // makes 208 calls, the first the setup and every later one counting $E1 down
   {
-    const d = createDriver(Object.assign({ kind: 'tune' }, DATA));
-    d.init(0);
-    for (let f = 0; f < 500; f++) d.play();
-    const expect = Math.ceil(500 * 19656 / 47288);
-    if (((256 - d.z[0xE1]) & 255) !== ((expect - 1) & 255)) { fail++; console.log('DIFFERS timing: $E1 =', d.z[0xE1], 'after', expect, 'calls'); }
+    const E = C64Sid.engine(), m = /getElementById\('gdo-tune'\)[^;]*?period: (\d+)/.exec(html);
+    const d = createDriver(Object.assign({ kind: 'tune' }, DATA)), RATE = 48000;
+    const p = E.createPlayer(d, RATE, { period: m ? +m[1] : undefined });
+    p.command({ cmd: 'start', tune: 0 });
+    const n = Math.floor(500 * E.FRAME_CYCLES * RATE / E.CLOCK);
+    p.render(new Float32Array(n), n, 0);
+    if (!m) { fail++; console.log('DIFFERS timing: the tune player passes no period'); }
+    else if (((256 - d.z[0xE1]) & 255) !== 207) { fail++; console.log('DIFFERS timing: $E1 =', d.z[0xE1], 'after 500 frames, not 208 calls'); }
   }
   console.log(`${calls} calls compared, ${nwrites} SID writes; ${fail ? fail + ' FAILED' : 'all match'}`);
   process.exit(fail ? 1 : 0);
