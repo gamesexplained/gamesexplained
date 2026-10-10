@@ -35,6 +35,20 @@ addresses, the last row that holds the instruction deciding:
 
 with "registers" for code under the I/O area that banks the chips in.
 
+A game whose cartridge switches banks has a part for each bank
+(kit/scripts/parts.py), built from the bank's own image (on the C64, its
+work/bank.crt), and the data in it that the ledger does not count is named
+as for a hand-over. Code in a RAM part that reads a bank where it is, with
+the bank switched in, says so in rows of its part.json, over the
+instructions' own addresses, the last row that holds one deciding:
+
+  "banks": [["$5A10", "$5A3F", "bank-00", "prints the stage names with bank 0 switched in"]]
+
+An operand of those instructions, or a pointer in a row's range, that points
+where the bank shows takes the bank's name for it and links to the bank's
+listing ("pt", the bank's part id), and is not counted as a reference to
+the RAM there.
+
 A part of a game that is several loads (kit/scripts/parts.py) is listed
 from its own folder and its own snapshot, and holds only the addresses it
 owns. Where it lies over another part, an operand that points out of it
@@ -141,6 +155,44 @@ def all_names(gdir, game, sym):
         for a, n in names_under(gdir, game).items():
             names.setdefault(a, n)
     return names
+
+
+def bank_view(gdir, game, names):
+    """(names_for(at), bank_of(at, target)): the names an operand of the instruction or pointer at
+    `at` takes, and the bank's part id when its target is in a bank that instruction sees (None
+    otherwise). From the "banks" rows of the part's part.json; the rule is in this file's help."""
+    rows = game.get("banks") or []
+    if not rows:
+        return (lambda at: names), (lambda at, target: None)
+    from parts import home, parts as all_parts, ranges
+    from symbols_export import hexint
+    P = {p["id"]: p for p in all_parts(home(gdir)[0])}
+    views = []
+    for r in rows:
+        if len(r) != 4 or r[2] not in P or P[r[2]].get("bank") is None:
+            sys.exit(f'part.json "banks": each row is [first, last, a bank\'s part id, why], not {r}')
+        q = P[r[2]]
+        own = ranges(q)
+        inside = lambda a, own=own: any(lo <= a <= hi for lo, hi in own)
+        seen = {a: n for a, n in names.items() if not inside(a)}      # the RAM's names go where the bank shows
+        f = os.path.join(q["dir"], "symbols.json")
+        if os.path.isfile(f):
+            for x in json.load(open(f))["symbols"]:
+                if inside(x["address"]):
+                    seen.setdefault(x["address"], x["name"])
+        views.append((hexint(r[0]), hexint(r[1]), q["id"], inside, seen))
+
+    def view(at):
+        return next((v for v in reversed(views) if v[0] <= at <= v[1]), None)
+
+    def names_for(at):
+        v = view(at)
+        return v[4] if v else names
+
+    def bank_of(at, target):
+        v = view(at)
+        return v[2] if v and v[3](target) else None
+    return names_for, bank_of
 
 
 def register_names(platform):
@@ -271,7 +323,7 @@ def uncounted(game, reg, L, ram, entry=None, top=12):
             before = owner.get(s - 1)
             where = f"excluded by default as {ex}" if ex else \
                 f"after {before[0]} (${before[1]:04X})" if before else "untracked"
-            found.append([s, e, n, f"loaded with the game, {where}"])
+            found.append([s, e, n, f"{'in the bank' if (game.get('part') or {}).get('bank') is not None else 'loaded with the game'}, {where}"])
         # data copied after the hand-over differs there at its own address: look for it at another
         for s, e, src in copies(ram, entry, [free[a] and not loaded[a] for a in range(0x10000)]):
             found.append([s, e, e - s + 1, f"copied here after the hand-over, which holds it at ${src:04X}-${src + e - s:04X}"])
@@ -344,33 +396,39 @@ def relabel(gdir, write=True):
     if out.get("symbols_sha256") != hashlib.sha256(open(spath, "rb").read()).hexdigest():
         sys.exit(f"{lpath} was built from a different symbols.json: rebuild it from the snapshot")
     names = all_names(gdir, game, json.load(open(spath)))
+    names_for, bank_of = bank_view(gdir, game, names)
     regs, chips = register_names(game.get("platform")), io_meaning(game)
-    code, xrefs, changed = set(), {}, 0
+    xrefs, changed = {}, 0
     for r in out["records"]:
         if r["t"] == "addr":               # a pointer, and a split table's targets: named as they were built
-            o = names.get(r["oa"]) or f"${r['oa']:04X}"
-            changed += r.get("o") != o; r["o"] = o
+            o, pt = names_for(r["a"]).get(r["oa"]) or f"${r['oa']:04X}", bank_of(r["a"], r["oa"])
+            changed += (r.get("o"), r.get("pt")) != (o, pt); r["o"] = o
+            r.pop("pt", None)
+            if pt:
+                r["pt"] = pt
+            else:
+                xrefs.setdefault(r["oa"], []).append(r["a"])
         elif "ta" in r:
-            d = [names.get(x) or f"${x:04X}" for x in r["ta"]]
+            d = [names_for(r["a"]).get(x) or f"${x:04X}" for x in r["ta"]]
             changed += r.get("d") != d; r["d"] = d
+            lo = r["a"] + (len(r["ta"]) if "hi/lo" in r.get("note", "") else 0)
+            for i, x in enumerate(r["ta"]):
+                if not bank_of(r["a"], x):
+                    xrefs.setdefault(x, []).append(lo + i)
         if r["t"] != "code":
             continue
-        code.add(r["a"])
         m, mode = cpu.decode(r["b"], 0)[:2]
-        o, ta = cpu.operand(r["a"], m, mode, r["b"], names, regs, chips)
-        changed += (r.get("o"), r.get("oa")) != (o, ta)
-        for k, v in (("o", o), ("oa", ta)):
+        o, ta = cpu.operand(r["a"], m, mode, r["b"], names_for(r["a"]), regs, chips)
+        pt = bank_of(r["a"], ta) if ta is not None else None
+        changed += (r.get("o"), r.get("oa"), r.get("pt")) != (o, ta, pt)
+        for k, v in (("o", o), ("oa", ta), ("pt", pt)):
             r.pop(k, None)
             if v is not None:
                 r[k] = v
-        if ta is not None:
+        if ta is not None and not pt:
             xrefs.setdefault(ta, []).append(r["a"])
     if not write:
         return changed
-    for r in out["records"]:          # references from data (.addr, split tables) stand as built
-        for src in r.get("x", []):
-            if src not in code:
-                xrefs.setdefault(r["a"], []).append(src)
     for r in out["records"]:
         r.pop("x", None)
         if r["a"] in xrefs:
@@ -424,6 +482,7 @@ def recomment(gdir):
                  "rebuild it from the snapshot")
 
     names, before = all_names(gdir, game, new), all_names(gdir, game, old)
+    names_for = bank_view(gdir, game, names)[0]
     own = symbol_names(new)                          # a row's label is the part's own, never one from beneath
     at = {}                                          # an old name's address, for split tables
     for a, n in before.items():
@@ -439,21 +498,21 @@ def recomment(gdir):
                 r[k] = m[r["a"]]
         if r["t"] == "code":
             m, mode = cpu.decode(r["b"], 0)[:2]
-            o, ta = cpu.operand(r["a"], m, mode, r["b"], names, regs, chips)
+            o, ta = cpu.operand(r["a"], m, mode, r["b"], names_for(r["a"]), regs, chips)
             if ta != r.get("oa"):
                 sys.exit(f"${r['a']:04X}: the operand now points elsewhere: rebuild it from the snapshot")
             r.pop("o", None)
             if o is not None:
                 r["o"] = o
         elif r["t"] == "addr":
-            r["o"] = names.get(r["oa"]) or f"${r['oa']:04X}"
+            r["o"] = names_for(r["a"]).get(r["oa"]) or f"${r['oa']:04X}"
         elif "note" in r and r["note"].startswith("split table"):
             d = []
             for v in r["d"]:
                 a = int(v[1:], 16) if v.startswith("$") else at.get(v)
                 if a is None:
                     sys.exit(f"${r['a']:04X}: no one address for {v}: rebuild it from the snapshot")
-                d.append(names.get(a) or f"${a:04X}")
+                d.append(names_for(r["a"]).get(a) or f"${a:04X}")
             r["d"] = d
         changed += r != was_r
     for i in out["index"]:
@@ -501,6 +560,7 @@ def decode_problems(gdir):
     recs = json.load(open(os.path.join(gdir, "listing.json")))["records"]
     ram = image_from_records(gdir)
     names = all_names(gdir, game, json.load(open(os.path.join(gdir, "symbols.json"))))
+    names_for, bank_of = bank_view(gdir, game, names)
     regs, chips = register_names(game.get("platform")), io_meaning(game)
     bad = []
     for r in recs:
@@ -513,9 +573,11 @@ def decode_problems(gdir):
         if n != len(r["b"]) or m != r["m"] or list(ram[r["a"]:r["a"] + n]) != r["b"]:
             bad.append((r["a"], f"decodes as {m} ({n} bytes), the listing has {r['m']} ({len(r['b'])} bytes)"))
             continue
-        o, ta = cpu.operand(r["a"], m, mode, r["b"], names, regs, chips)
+        o, ta = cpu.operand(r["a"], m, mode, r["b"], names_for(r["a"]), regs, chips)
         if (o, ta) != (r.get("o"), r.get("oa")):
             bad.append((r["a"], f"operand now reads {o!r}, the listing has {r.get('o')!r}"))
+        elif (bank_of(r["a"], ta) if ta is not None else None) != r.get("pt"):
+            bad.append((r["a"], f"operand's bank is now {bank_of(r['a'], ta)!r}, the listing has {r.get('pt')!r}"))
     return bad
 
 
@@ -570,9 +632,13 @@ def main():
     spath = os.path.join(gdir, "symbols.json")
     sym = json.load(open(spath))
     entry = None
+    bank = (game.get("part") or {}).get("bank")
     have = bytearray(b"\x01" * 0x10000)   # a snapshot gives every byte; a rebuild only the listing's
     if rebuild:
         ram, have = image_from_records(gdir), held_by_records(gdir)
+    elif bank is not None:      # a bank of a cartridge: its bytes are all loaded with the game, as at a hand-over
+        ram = snap.read(vsf, bank=bank)
+        entry = ram
     else:
         ram = snap.read(vsf)
         from symbols_export import PLATFORM_DEFAULTS
@@ -591,6 +657,7 @@ def main():
     state, code = L["state"], L["code"]
 
     names = all_names(gdir, game, sym)
+    names_for, bank_of = bank_view(gdir, game, names)
     regs, chips = register_names(game.get("platform")), io_meaning(game)
     line = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "line"}
     side = {c["address"]: c["text"] for c in sym["comments"] if c["type"] == "side"}
@@ -602,9 +669,6 @@ def main():
         t = TYPES.index(b["type"]) if b["type"] in TYPES else 0
         for a in range(b["start"], b["end"] + 1):
             btype[a] = t
-
-    def sym_or_hex(a, width=4):
-        return names.get(a) or (f"${a:04X}" if width == 4 else f"${a:02X}")
 
     xrefs = {}
     def xref(target, src):
@@ -639,9 +703,14 @@ def main():
                 m, mode, n = d
                 bs = list(ram[a:a + n])
                 rec.update({"t": "code", "b": bs, "m": m})
-                o, ta = cpu.operand(a, m, mode, bs, names, regs, chips)
+                o, ta = cpu.operand(a, m, mode, bs, names_for(a), regs, chips)
                 if ta is not None:
-                    rec["oa"] = ta; xref(ta, a)
+                    rec["oa"] = ta
+                    pt = bank_of(a, ta)
+                    if pt:
+                        rec["pt"] = pt
+                    else:
+                        xref(ta, a)
                 if o is not None:
                     rec["o"] = o
                 records.append(rec); a += n
@@ -674,8 +743,12 @@ def main():
         elif t == "Address":
             e = min(pair_end(2), a + 2); bs = list(ram[a:e])
             if len(bs) == 2:
-                ta = bs[0] | (bs[1] << 8); xref(ta, a)
-                rec.update({"t": "addr", "b": bs, "oa": ta, "o": sym_or_hex(ta)})
+                ta = bs[0] | (bs[1] << 8)
+                rec.update({"t": "addr", "b": bs, "oa": ta, "o": names_for(a).get(ta) or f"${ta:04X}"})
+                if bank_of(a, ta):
+                    rec["pt"] = bank_of(a, ta)
+                else:
+                    xref(ta, a)
             else:
                 rec.update({"t": "byte", "b": bs})
         elif t in ("Lo/Hi Address", "Hi/Lo Address"):
@@ -691,8 +764,9 @@ def main():
                              "rebuild it from the snapshot")
                 targets = [ram[lo + i] | (ram[hi + i] << 8) for i in range(n)]
                 for i, ta in enumerate(targets):
-                    xref(ta, lo + i)
-                rec["d"] = [sym_or_hex(x) for x in targets]
+                    if not bank_of(a, ta):
+                        xref(ta, lo + i)
+                rec["d"] = [names_for(a).get(x) or f"${x:04X}" for x in targets]
                 rec["ta"] = targets
                 rec["note"] = f"split table: {n} {'lo/hi' if t == 'Lo/Hi Address' else 'hi/lo'} pointers"
         elif t in TEXT_TYPES:
@@ -802,7 +876,7 @@ def main():
         print(f"note: the listing was built from {was.get('file')} ({str(was.get('sha256'))[:12]}), and this one "
               f"from {shot['file']} ({shot['sha256'][:12]}). Data the game changes as it runs may have moved: "
               "read git diff before committing it.")
-    for line in uncounted(game, reg, L, ram, entry) + beneath(gdir, game, ram):
+    for line in uncounted(game, reg, L, ram, entry) + ([] if bank is not None else beneath(gdir, game, ram)):
         print(line)
     # a short run of untyped bytes between two code records is usually a missed
     # instruction (the opcode byte of a BIT skip, an undocumented NOP), and the

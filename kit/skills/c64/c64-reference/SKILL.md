@@ -335,36 +335,45 @@ reads, the bank `cart` is the cartridge bank selected at that moment,
   RAM, and the play snapshot's RAM image is that program: build the
   listing from it as for any game. The snapshot carries the cartridge
   as well (an Ocean one's every bank, in a module named `CARTOCEAN`),
-  and its RAM is where `kit/c64/snapshot.py` expects it. Code that shows
-  the cartridge (a store checkpoint on `$01` finds it, and one on the
-  bank register says which bank) reads the bank there, not the RAM the
-  snapshot holds: say in its comment which bank and what it holds, as
-  for the ROMs in "RAM the CPU cannot see". Code that runs from the
-  cartridge in place, the cold start always, is in no RAM image:
-  describe it in `orientation.md`.
-- **A bank is not a part.** The banks are the cartridge's storage, as
-  files are a disk's, and `10-orient`'s rule applies unchanged: count
-  what the player waits for. When the game copies each stage in from the
-  banks over code that stays, each stage is a part `--over` the resident
-  one, its ranges found by a store checkpoint over RAM while the copy
-  runs (`10-orient`, "A game of several parts", step 4); a store
-  checkpoint on the bank register says which bank fed each range, for
-  the route in `orientation.md`. Before tracing anything, compare each
-  bank of the `.crt` with the snapshot's RAM: a bank that matches a range
-  nearly byte for byte was copied there and has changed a little since;
-  one that matches nowhere is packed, read in place, or belongs to a part
-  not reached yet.
-- **Bytes read in place stay out of the listing.** Text, tables or a
-  directory that the game reads from a bank without copying are in no
-  RAM image, so the listing cannot show them and the ledger does not
-  count them. Give them no symbol at their cartridge addresses, where the
-  listing and the ledger mean the RAM. They reach the reader through the
-  code that reads them: its comment names the bank and the addresses and
-  says what is there (strings decoded, `30-text`); `facts.md` gives each
-  its bank and address, read from the `.crt`; the page may carry them as
-  game data (`70-minisite`). Say in `orientation.md` which banks reach RAM
-  and which are read in place, so that the coverage figure reads as one
-  for the RAM, not for the cartridge.
+  and its RAM is where `kit/c64/snapshot.py` expects it. What the game
+  copies from the banks over code that stays is a part `--over` the
+  resident one, as for a disk: `10-orient`'s rule applies unchanged,
+  count what the player waits for, and a store checkpoint over RAM while
+  the copy runs finds the ranges (`10-orient`, "A game of several parts",
+  step 4). A store checkpoint on the bank register says which bank fed
+  each range, for the route in `orientation.md`.
+- **Each bank is a part as well.** `kit/c64/crt.py parts <game dir>
+  <file.crt> --over <id>` gives the game a part for each bank, `bank-00`,
+  `bank-01` and on (three digits on a cartridge of more than 100), titled
+  "Bank N", with `"bank"` and the chip's ranges in `part.json`, laid over
+  the part `<id>` the code runs in. It writes the bank alone to the part's
+  `work/bank.crt`: start the disassembler on that file (`tools.py r2000`
+  builds the project from it) and build the listing from it
+  (`listing.py <part> <part>/work/bank.crt`). A bank does not take the
+  RAM part's addresses: the RAM beneath `$8000` stays that part's, and
+  both are counted. A chip that holds one value throughout is excluded
+  as blank when the part is made.
+- **Count each byte once, where the game uses it.** Before tracing
+  anything, compare each bank with the snapshot's RAM: a range that
+  matches nearly byte for byte was copied there and has changed a little
+  since; one that matches nowhere is packed, read in place, or belongs to
+  a part not reached yet. A copied range is counted where it landed:
+  list it under `coverage.exclude` in the bank's `part.json`, naming the
+  part that holds it ("copied to `$0800` by the start-up; Resident's from
+  there"). A bank whose every byte is excluded needs no listing, and
+  counts as done. What is left is the bank's own: code that runs from the
+  cartridge in place (the cold start always), and text, tables or a
+  directory read where they are (strings decoded, `30-text`).
+- **Code in RAM that reads a bank takes the bank's names.** Code that
+  shows the cartridge (a store checkpoint on `$01` finds it, and one on
+  the bank register says which bank) reads the bank, not the RAM the
+  snapshot holds. List it in the RAM part's `part.json` under `"banks"`,
+  one row per range, `[first, last, bank part id, why]`: an operand
+  there that falls in the bank's addresses is named from the bank's
+  symbols and links to its Source page, and is not counted as a
+  reference to the RAM beneath. Build the listing again, or run
+  `listing.py <part> --relabel`, after changing a row; `check_listing.py`
+  fails until then.
 
 `kit/c64/cpu6502.js` refuses a snapshot taken with a cartridge plugged in,
 having no cartridge map; check a port of such a game against a trace

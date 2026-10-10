@@ -27,7 +27,8 @@ Usage:
                                    every script given the part's folder reaches the right one.
                                    A .vsf in a game's or part's folder that has exported annotations
                                    starts as the project symbols_import.py builds from them, in its
-                                   work/, so a restarted session holds the work of the last export
+                                   work/, so a restarted session holds the work of the last export.
+                                   So does a cartridge bank's work/bank.crt, always (kit/c64/crt.py)
   tools.py stop [vice|r2000|all] [--force]
                                    the disassembler stays up while an annotation log written since
                                    it started is newer than the game's symbols.json: export first,
@@ -224,16 +225,23 @@ def seeded(path):
     A snapshot in a game's or a part's folder that has annotations exported starts as the project
     symbols_import.py builds from them and that snapshot, so a session restarted after a crash or a
     stop comes back with the work of the last export, not with none. Built at every start, it can
-    never hold older work than symbols.json. Anything else starts as it is: a project, a .prg, a
+    never hold older work than symbols.json. A cartridge bank's work/bank.crt always starts that
+    way, since the disassembler cannot open a .crt. Anything else starts as it is: a project, a .prg, a
     snapshot outside the games, the first session of a game, the top of a game of several parts."""
-    gdir = game_folder(path) if path.lower().endswith(".vsf") else None
+    crt = path.lower().endswith(".crt")
+    gdir = game_folder(path) if path.lower().endswith(".vsf") or crt else None
     if not gdir:
+        if crt:
+            sys.exit(f"{path}: the disassembler starts on one bank of a cartridge, its part's work/bank.crt "
+                     "(kit/c64/crt.py parts)")
         return path, gdir
     from parts import parts, seed
     if parts(gdir):
+        if crt:
+            sys.exit(f"{path}: start the disassembler on one bank, its part's work/bank.crt (kit/c64/crt.py parts)")
         return path, gdir      # each part is started from a snapshot in its own folder
     _, sym = seed(gdir)
-    if not (sym["blocks"] or sym["symbols"] or sym["comments"]):
+    if not crt and not (sym["blocks"] or sym["symbols"] or sym["comments"]):   # the disassembler cannot open a .crt
         return path, gdir
     from project import write
     out = write(gdir, path)

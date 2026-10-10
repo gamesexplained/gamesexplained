@@ -181,6 +181,13 @@ for each room: a widget that shows it carries its bytes in the page
    its file's unpacker in the simulator over memory filled with two
    different values before trusting its snapshot: whatever the unpacker
    does not write is the program before it, not this one.
+6. **A cartridge that switches banks** holds more than memory does, and
+   the game reads some of it where it is. Each bank is then a part as
+   well, made from the cartridge image rather than a snapshot and laid
+   over the part the code runs in, without taking its addresses; a
+   range the game copies into RAM is counted in the part it lands in.
+   The platform's reference says how (on the C64, `c64-reference`,
+   "Bank-switched cartridges").
 
 From here on, every script that takes a game's folder takes a part's in
 its place.

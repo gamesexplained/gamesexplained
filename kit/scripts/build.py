@@ -52,7 +52,7 @@ No dependencies. The markdown converter handles the subset the templates use.
 import glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.error, urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from parts import parts, load_game, started, under, above   # noqa: E402  a game of several loads
+from parts import parts, load_game, started, under, above, ranges, left_out   # noqa: E402  a game of several loads
 from models import awaits_check, proven   # noqa: E402  which games still need a maintainer's check
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -793,6 +793,28 @@ def listed(p):
     return os.path.isfile(os.path.join(p["dir"], "listing.json"))
 
 
+def bank_parts(P):
+    """The parts that are a cartridge's banks (kit/scripts/parts.py), in order."""
+    return [p for p in P if p.get("bank") is not None]
+
+
+def made_of(P):
+    """How a game of several parts opens its account of itself: a cartridge's banks are
+    counted apart from the parts the machine runs in RAM."""
+    b = bank_parts(P)
+    if not b:
+        return f"This game is in {len(P)} parts"
+    n = len(P) - len(b)
+    return (f"This game is a cartridge of {len(b)} bank{'s' if len(b) != 1 else ''} and "
+            f"{'one part' if n == 1 else f'{n} parts'} in RAM")
+
+
+def span_text(P):
+    """The addresses a set of parts covers, written as a reader reads them: "$8000–$9FFF"."""
+    out = sorted({r for p in P for r in ranges(p)})
+    return " and ".join(f"${lo:04X}–${hi:04X}" for lo, hi in out)
+
+
 def part_pills(P, cur):
     """The parts above a listing, in the order they are played: each a link to its Source
     page, the one being read marked, a part with no listing named without a link."""
@@ -805,8 +827,8 @@ def part_pills(P, cur):
             items.append(f'<a class="on" aria-current="page" href="{part_page(p)}">{t}</a>')
         elif listed(p):
             items.append(f'<a href="{part_page(p)}">{t}</a>')
-        else:
-            items.append(f'<span class="none" title="Not analysed">{t}</span>')
+        else:   # a bank with nothing to explain says why
+            items.append(f'<span class="none" title="{html.escape("; ".join(left_out(p)) or "Not analysed")}">{t}</span>')
     return '<nav class="partpick" aria-label="The parts of the game">' + "".join(items) + "</nav>"
 
 
@@ -824,11 +846,22 @@ def part_step(P, cur):
             return f'<span class="step off" aria-hidden="true">{ch}</span>'
         return (f'<a class="step" rel="{rel}" href="{part_page(p)}" title="{html.escape(p["title"])}" '
                 f'aria-label="{word} part: {html.escape(p["title"])}">{ch}</a>')
-    opts = "".join(f'<option value="{part_page(p)}"{" selected" if p is cur else ""}>{html.escape(p["title"])}</option>'
-                   for p in shown)
+    opt = lambda p: f'<option value="{part_page(p)}"{" selected" if p is cur else ""}>{html.escape(p["title"])}</option>'
+    cart = bank_parts(shown)
+    opts = "".join(opt(p) for p in shown if p not in cart)
+    if cart:
+        opts += '<optgroup label="Cartridge banks">' + "".join(opt(p) for p in cart) + "</optgroup>"
     return ('<div class="pick">' + arrow(shown[i - 1] if i else None, "\u2039", "prev", "Previous")
             + f'<select data-go aria-label="Part of the game">{opts}</select>'
             + arrow(shown[i + 1] if i + 1 < len(shown) else None, "\u203a", "next", "Next") + "</div>")
+
+
+def part_card(p):
+    """A part as its Source page's script knows it (#part)."""
+    out = {"id": p["id"], "title": p["title"], "listing": f"parts/{p['id']}/listing.json"}
+    if p.get("bank") is not None:
+        out["bank"] = p["bank"]
+    return out
 
 
 def part_sources(gdir, game, P, out, nav, ban, common, cheats):
@@ -848,20 +881,21 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats):
         page, beneath = part_page(p), [q for q in reversed(under(P, p)) if listed(q)]
         facts = f"<h2>{html.escape(p['title'])}</h2>" + markdown(read(os.path.join(p["dir"], "facts.md")), addr=page, shift=1,
                                                                    parts=pages)
-        note = ""
+        note, bank = "", p.get("bank") is not None
         if beneath:
-            note = (f'<p class="mute">{html.escape(p["title"])} is loaded over {html.escape(" and ".join(q["title"] for q in beneath))}. '
-                    "The listing shows them together, as the machine holds them; the rows of this part are marked.</p>")
+            note = (f'<p class="mute">{html.escape(p["title"])} is {"switched in at " + span_text([p]) + ", over" if bank else "loaded over"} '
+                    f'{html.escape(" and ".join(q["title"] for q in beneath))}. The listing shows them together, as the machine '
+                    f'{"sees them with this bank switched in" if bank else "holds them"}; the rows of this part are marked.</p>')
         pills = part_pills(P, p)
         if len(shown) == len(P):
             each = "Each part has a listing of its own" + ("." if pills else ", chosen from the list beside it.")
         else:       # say how many, where the row of parts is too long to show which
             each = (f"{len(shown)} of them {'has' if len(shown) == 1 else 'have'} a listing"
                     + ("." if pills or len(shown) < 2 else ", chosen from the list beside it."))
-        lead = (f'<p class="mute">This game is in {len(P)} parts, and the same addresses hold something else in each. '
+        lead = (f'<p class="mute">{made_of(P)}, and the same addresses hold something else in each. '
                 + each + "</p>")
-        info = {"id": p["id"], "title": p["title"], "listing": f"parts/{p['id']}/listing.json",
-                "under": [{"id": q["id"], "title": q["title"], "listing": f"parts/{q['id']}/listing.json"} for q in beneath]}
+        # pages: where an operand that reads a bank, or the RAM beneath one, links to (source.html)
+        info = dict(part_card(p), under=[part_card(q) for q in beneath], pages=pages)
         src = tpl.replace("<!-- facts -->", facts + whole)
         src = src.replace("<!-- parts -->", lead + pills + note)
         src = src.replace("<!-- pick -->", part_step(P, p))
@@ -900,18 +934,23 @@ def game_footprint(P, out):
             other = footprint(p["dir"], load_game(p["dir"]))[1]
             for k in PROGRAM:
                 totals[k] += other[k]
-    over = above(P, root)
-    apart = [p for p in P if p is not root and p not in over]
+    cart = bank_parts(P)
+    over = [p for p in above(P, root) if p not in cart]
+    apart = [p for p in P if p is not root and p not in over and p not in cart]
     name = html.escape(root["title"])
     # What the map is of, and no more: a part that names none beneath it may replace all of memory
     # or may only not have been split from what stays, and the folders do not say which.
     if over:
-        said = (f"This game is in {len(P)} parts. The map is of {name}, which stays in memory; the band marked as "
+        said = (f"{made_of(P)}. The map is of {name}, which stays in memory; the band marked as "
                 f"varying holds whichever of the {len(over)} part{'s' if len(over) != 1 else ''} loaded over it is there. ")
         if apart:
             said += f"The other {len(apart) if len(apart) > 1 else 'part'}{' are' if len(apart) > 1 else ' is'} not on this map. "
     else:
-        said = f"This game is in {len(P)} parts, and the map is of one of them: {name}. "
+        said = (f"{made_of(P)}. The map is of {name}. " if cart else
+                f"{made_of(P)}, and the map is of one of them: {name}. ")
+    if cart:    # the map is the RAM; a bank switched in hides some of it, and is not drawn
+        said += (f"The cartridge's banks, switched in at {span_text(cart)} one at a time, are not on this map, "
+                 "though the RAM beneath them is. ")
     said += f'The <a href="{part_page(root)}">Source tab</a> has the listing of each part that has one.'
     return totals, f'<p class="mute" style="margin-top:12px">{said}</p>', span
 

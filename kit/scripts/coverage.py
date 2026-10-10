@@ -65,10 +65,10 @@ def load(gdir, live, session=None):
 def tracked_count(gdir):
     """(tracked bytes, explained bytes) from symbols.json, for parts.py and build.py.
     A game of several parts counts the sum of the parts that have been started."""
-    from parts import parts, started
+    from parts import parts, started, left_out
     P = parts(gdir)
     if P:
-        counts = [tracked_count(p["dir"]) for p in P if started(p)]
+        counts = [tracked_count(p["dir"]) for p in P if started(p) and not left_out(p)]
         return sum(t for t, _ in counts), sum(e for _, e in counts)
     blocks, syms, comments, reg = load(gdir, False)
     from ledger import compute

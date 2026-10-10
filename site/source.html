@@ -48,7 +48,13 @@
   const hex4=a=>'$'+a.toString(16).toUpperCase().padStart(4,'0');
   const id4=a=>a.toString(16).toUpperCase().padStart(4,'0');
   const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  const UNDER=PART&&PART.under.length?(await Promise.all(PART.under.map(u=>get(u.listing)))).filter(Boolean):[];
+  const UNDER=[], LAYER=[PART];                                 // LAYER[p]: the part a row of layer p is from
+  if(PART&&PART.under.length) (await Promise.all(PART.under.map(u=>get(u.listing)))).forEach((g,i)=>{ if(g){ UNDER.push(g); LAYER.splice(1,0,PART.under[i]); } });
+  // A cartridge's bank is a part laid over the RAM it is switched in at. Code in RAM that reads a
+  // bank where it is names the bank in r.pt; any other operand of a row in RAM means the RAM.
+  // sees(r,t): whether the row t, shown at r's operand, is what r refers to.
+  const from=r=>LAYER[r.p||0]||{};
+  const sees=(r,t)=>r.pt?from(t).id===r.pt:!(from(t).bank!==undefined&&from(r).bank===undefined);
   // Lay the listings one over another, the part's own last. A row's layer is r.p: 0 is this part.
   // Where two hold the same address the upper one wins, and a label the lower one kept for an
   // address it does not own gives way to the upper one's row. Gaps are measured again, and a
@@ -72,7 +78,7 @@
     for(const r of out){
       for(const a of r.ta||(r.oa!==undefined?[r.oa]:[])){
         const t=at.get(a);
-        if(t&&t.p!==r.p){ t.x=t.x||[]; if(!t.x.includes(r.a)) t.x.push(r.a); }
+        if(t&&t.p!==r.p&&sees(r,t)){ t.x=t.x||[]; if(!t.x.includes(r.a)) t.x.push(r.a); }
       }
     }
     const records=[]; let a=0;
@@ -102,7 +108,16 @@
   use(WHOLE);
   // owner of each record: the nearest index entry whose span covers it
   const commentedOwner=a=>{ let lo=0,hi=index.length-1,best=null; while(lo<=hi){const m=(lo+hi)>>1; if(index[m].a<=a){best=index[m];lo=m+1;}else hi=m-1;} return best && a<best.a+best.len ? best.c : false; };
-  const link=(oa,txt)=> oa!==undefined && byAddr.has(oa) ? `<a href="#${id4(oa)}">${esc(txt)}</a>` : esc(txt);
+  // an operand that reads another part than the one shown at its address links to that part's page
+  const away=(id,a)=>PART&&PART.pages&&PART.pages[id]?`${PART.pages[id]}#${id4(a)}`:null;
+  function href(r){
+    const a=r.oa, t=byAddr.get(a);
+    if(a===undefined) return null;
+    if(PART&&r.pt&&!(t&&from(t).id===r.pt)) return away(r.pt,a);
+    if(PART&&t&&!sees(r,t)) return away(from(r).id,a);
+    return t?'#'+id4(a):null;
+  }
+  const link=(r,txt)=>{ const h=href(r); return h?`<a href="${h}">${esc(txt)}</a>`:esc(txt); };
   const bytes=b=>b?b.map(x=>x.toString(16).toUpperCase().padStart(2,'0')).join(' '):'';
   // Rows go into the page a block at a time, a few blocks per task, so the page never stops answering.
   // A block the reader cannot see is not laid out (content-visibility:auto in site.css); until it has
@@ -120,10 +135,10 @@
       const own=commentedOwner(r.a);
       if(r.c){ rows.push(`<div class="cmt" data-a="${r.a}" data-own="1">${esc(r.c)}</div>`); const c=cmtH(r.c); h+=c; he+=c; }
       let instr='', cls=r.t;
-      if(r.t==='code') instr=`<span class="m">${r.m}</span> <span class="o">${link(r.oa,r.o||'')}</span>`;
+      if(r.t==='code') instr=`<span class="m">${r.m}</span> <span class="o">${link(r,r.o||'')}</span>`;
       else if(r.t==='byte') instr=`<span class="m">.byte</span> <span class="o">${bytes(r.b).split(' ').map(x=>'$'+x).join(',')}</span>${r.note?` <span class="note">${esc(r.note)}${r.d?': '+r.d.map(esc).join(', '):''}</span>`:''}`;
       else if(r.t==='word') instr=`<span class="m">.word</span> <span class="o">${r.d.map(hex4).join(',')}</span>`;
-      else if(r.t==='addr') instr=`<span class="m">.addr</span> <span class="o">${link(r.oa,r.o)}</span>`;
+      else if(r.t==='addr') instr=`<span class="m">.addr</span> <span class="o">${link(r,r.o)}</span>`;
       else if(r.t==='text') instr=`<span class="m">.text</span> <span class="o">"${esc(r.d)}"</span> <span class="note">${r.enc}</span>`;
       else if(r.t==='note') instr=`<span class="note">${esc(r.note||'')}</span>`;
       if(r.s) instr+=`<span class="s">; ${esc(r.s)}</span>`;
