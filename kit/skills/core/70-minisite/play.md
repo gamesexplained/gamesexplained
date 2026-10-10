@@ -32,7 +32,12 @@ keyboard read through port `$FE` and contended memory around it, started
 from a `.sna` or the listing's memory, counting passes the same way.
 `kit/c64/lockstep.js` runs a port beside the C64's and says what the port gives it: the checkpoints it
 yields, its raster waits, its polling loops and its interrupt handlers.
-Write the port to that from the start. Each file's header is its manual.
+Write the port to that from the start. A C64 game that keeps the KERNAL
+and reads whole lines through `CHRIN` needs neither:
+`kit/c64/kernal_lines.js` runs it a typed line at a time on the
+simulator, with the KERNAL's line routines as hooks, and the test
+compares the two sides at each line the game reads, with the same jiffy
+clock handed to both. Each file's header is its manual.
 
 - **Port routine by routine, on the game's own memory.** One function per
   listing label, reading and writing the game's variables where the game

@@ -17,12 +17,9 @@ it as a script; it exits 1 on the first difference it finds.
 
   python3 games/spectrum/fat-worm-blows-a-sparky/test_view_order.py
 """
-import json
 import os
 import random
-import subprocess
 import sys
-import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = HERE
@@ -32,7 +29,9 @@ while not os.path.isfile(os.path.join(ROOT, "kit", "spectrum", "simulate.py")):
         sys.exit("test_view_order.py must run from inside the repository")
     ROOT = parent
 sys.path.insert(0, os.path.join(ROOT, "kit", "spectrum"))
+sys.path.insert(0, os.path.join(ROOT, "kit", "scripts"))
 import simulate  # noqa: E402
+import port_check  # noqa: E402
 
 HEAD, SP = 0xEB7E, 0xEFF0
 BOARD = (0x6464, 0x757A)
@@ -50,21 +49,14 @@ POOL = 240          # records in the random pool: every pair of them is compared
 TYPES = [0x01, 0x06, 0x14, 0x20, 0x31, 0x40, 0x42, 0x52, 0x80, 0x90, 0xC0, 0xC3, 0xD8, 0xE0, 0xE2, 0xE3,
          0xE8, 0xF4, 0xF5, 0xF6, 0xF7]
 
-HARNESS = r"""
-const fs = require('fs');
-const html = fs.readFileSync(process.argv[2], 'utf8');
-const block = html.match(/<script>\n\/\/ The page's ports[\s\S]*?<\/script>/);
-if (!block) throw new Error('index.html no longer holds the FW block');
-eval(block[0].replace(/^<script>/, '').replace(/<\/script>$/, '') + '\nglobalThis.FW = FW;');
-const L = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
-const ram = new Uint8Array(0x10000);
-for (const r of L.records) { if (!r.b) continue; for (let i = 0; i < r.b.length; i++) ram[r.a + i] = r.b[i]; }
+# The page's side, run by kit/scripts/port_check.py after the FW block of index.html.
+PAGE = r"""
+const ram = game.listing().ram;
 const cells = FW.walkBoard(ram);
 const rec = a => ({ x1: a[0], y1: a[1], x2: a[2], y2: a[3], top: a[4], bottom: a[5], type: a[6] });
 const key = r => [r.x1, r.y1, r.x2, r.y2, r.top, r.bottom, r.type];
-const req = JSON.parse(fs.readFileSync(process.argv[4], 'utf8'));
 const out = { views: [], nine: [], pairs: [], insert: [] };
-for (const [cell, x, y, pokes] of req.views) {
+for (const [cell, x, y, pokes] of request.views) {
   const ram2 = Uint8Array.from(ram);
   for (const [a, v] of (pokes || [])) ram2[a] = v;
   const grid = pokes && pokes.length ? FW.walkBoard(ram2) : cells;
@@ -72,23 +64,18 @@ for (const [cell, x, y, pokes] of req.views) {
   out.views.push({ records: records.map(key), ordered: FW.orderRecords(records).map(r => records.indexOf(r)) });
   out.nine.push([].concat(...FW.nine(grid, cell)));
 }
-for (const [a, b] of req.pairs) out.pairs.push(FW.compareRecords(rec(a), rec(b)));
-for (const recs of req.insert) {
+for (const [a, b] of request.pairs) out.pairs.push(FW.compareRecords(rec(a), rec(b)));
+for (const recs of request.insert) {
   const rs = recs.map(rec);
   out.insert.push(FW.orderRecords(rs).map(r => rs.indexOf(r)));
 }
-console.log(JSON.stringify(out));
+return out;
 """
 
 
 def ram():
     """The page's own image: every byte listing.json records, and nothing else."""
-    L = json.load(open(os.path.join(HERE, "listing.json")))
-    mem = bytearray(0x10000)
-    for r in L["records"]:
-        for i, v in enumerate(r.get("b") or []):
-            mem[r["a"] + i] = v
-    return mem
+    return port_check.image(HERE)
 
 
 def links(mem, a):
@@ -261,19 +248,6 @@ def random_records(rng, n):
     return out
 
 
-def ask_node(req, tmp):
-    harness = os.path.join(tmp, "port.js")
-    open(harness, "w").write(HARNESS)
-    ask = os.path.join(tmp, "ask.json")
-    open(ask, "w").write(json.dumps(req))
-    p = subprocess.run(["node", harness, os.path.join(HERE, "index.html"),
-                        os.path.join(HERE, "listing.json"), ask],
-                       capture_output=True, text=True)
-    if p.returncode != 0:
-        sys.exit("the page's block did not run under node:\n" + p.stderr.strip())
-    return json.loads(p.stdout)
-
-
 def main():
     try:
         simulate.simulator()
@@ -312,9 +286,8 @@ def main():
     lists += [[list(rng.choice(real)) for _ in range(rng.randint(1, 6))] + [fire] * rng.randint(1, 3)
               for _ in range(60)]
 
-    with tempfile.TemporaryDirectory() as tmp:
-        page = ask_node({"views": asks, "pairs": [list(p) for p in pairs],
-                         "insert": lists}, tmp)
+    page = port_check.ask(HERE, "index.html", "FW", PAGE,
+                          {"views": asks, "pairs": [list(p) for p in pairs], "insert": lists})
 
     bad = 0
 

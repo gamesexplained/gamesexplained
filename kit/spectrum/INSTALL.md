@@ -10,7 +10,7 @@ phase by phase, is `kit/EMULATOR.md`.
 |---|---|---|
 | Emulator with an agent interface | run, stop on an instruction, read and write memory, count breakpoints without stopping, advance a frame, hold the keyboard and the joystick, save and load a snapshot, save the screen | ZEsarUX 13.0 over ZRCP (https://github.com/chernandezba/zesarux) |
 | Disassembler with an agent interface | read a 48K snapshot, disassemble, label, comment, type data, round-trip a control file | SkoolKit (`sna2skool.py`, `skool2ctl.py`; https://skoolkit.ca) |
-| A JavaScript runtime | run the site's screen renderer outside a browser, for `kit/spectrum/frame.py` | node. For that one check, macOS's own JavaScriptCore does when node is not on the path, so nothing is installed |
+| A JavaScript runtime | run the site's screen renderer outside a browser, for `kit/spectrum/frame.py`; run a page's port beside the game's code, for the widget tests (`kit/scripts/port_check.py`) | node. For that one check, macOS's own JavaScriptCore does when node is not on the path, so nothing is installed |
 
 SkoolKit is installed under `tools/skoolkit/` by the launcher
 (`python3 kit/scripts/tools.py --platform spectrum get-skoolkit`). It is

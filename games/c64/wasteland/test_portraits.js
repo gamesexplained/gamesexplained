@@ -7,16 +7,12 @@
 // Everything it needs is committed: no disk image, no snapshot, no emulator. It exits 1 if
 // any portrait differs.
 //   node games/c64/wasteland/test_portraits.js [steps]     (default 400 a portrait)
-const fs = require('fs'), path = require('path');
-const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
-globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
-require(path.join(ROOT, 'site/lib/c64.js'));
+const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const { game, differ } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
-const html = fs.readFileSync(GAME + 'pictures.html', 'utf8');
-const a = html.indexOf('/* pictures/pictures.js */'), b = html.indexOf('})();', a) + 5;
-if (a < 0) { console.error('pictures.html: no pictures.js block'); process.exit(1); }
-eval(html.slice(a, b));
-const P = globalThis.WLPictures;
+const g = game(__dirname);
+g.lib('c64');
+const P = g.run('pictures.html', 'pictures/pictures.js', 'WLPictures').WLPictures;
 const STEPS = +(process.argv[2] || 400);
 (async () => {
   const E = await C64.load('parts/engine/listing.json');
@@ -35,7 +31,7 @@ const STEPS = +(process.argv[2] || 400);
     const cpu = new CPU(mem);
     let r = eng.start(p.base);
     cpu.call(0x0586, {}, { maxSteps: 1e6 });
-    const same = () => { for (let i = 0x6000; i < 0x7F40; i++) if (mem[i] !== p.m[i]) return i; return -1; };
+    const same = () => differ(mem, p.m, [[0x6000, 0x7F3F]]);
     let diff = same(), n = 0;
     while (diff < 0 && n < STEPS) {
       r = eng.tick();

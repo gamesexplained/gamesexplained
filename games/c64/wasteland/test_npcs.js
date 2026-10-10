@@ -14,19 +14,16 @@
 //   node games/c64/wasteland/test_npcs.js
 const fs = require('fs'), path = require('path');
 const GAME = __dirname + '/', ROOT = path.resolve(GAME, '../../..');
-globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
-require(path.join(ROOT, 'site/lib/c64.js'));
+const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const g = game(__dirname);
+g.lib('c64');
 // The map window's block is on the Overview (index.html), the NPCs' on the party tab, and the
 // dice, which the party tab and the Dice and combat tab share, in a file of their own.
-const read = f => fs.readFileSync(GAME + f, 'utf8');
-const html = read('party.html');
-for (const [page, mark] of [['index.html', '/* maps/maps.js */'], ['reference/wasteland-dice.js', '/* dice/dice.js */'], ['party.html', '/* npcs/npcs.js */']]) {
-  const src = read(page), a = src.indexOf(mark), b = src.indexOf('</script>', a);
-  if (a < 0) { console.error(page + ': no ' + mark + ' block'); process.exit(1); }
-  eval(b < 0 ? src.slice(a) : src.slice(a, b));
-}
-const D = globalThis.WLDice, N = globalThis.WLNpcs, M = globalThis.WLMaps;
+const html = g.read('party.html');
+const M = g.run('index.html', 'maps/maps.js', 'WLMaps').WLMaps;
+const D = g.run('reference/wasteland-dice.js', 'dice/dice.js', 'WLDice').WLDice;
+const N = g.run('party.html', 'npcs/npcs.js', 'WLNpcs').WLNpcs;
 
 let bad = 0, cases = 0;
 const fail = (what, ...more) => { if (bad++ < 20) console.log('DIFFERS', what, ...more); };
