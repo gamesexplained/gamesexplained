@@ -7,6 +7,7 @@ import gzip
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import re
 import shlex
@@ -253,6 +254,84 @@ class ProcessIsolationTests(unittest.TestCase):
             self.assertIsNotNone(re.search(pattern, command))
             self.assertIsNone(re.search(pattern, command.replace(root, root + "-other")))
         self.assertIsNone(re.search(launcher.STOP_PATTERNS["r2000"], "python3 " + root + "/kit/c64/stdio_bridge.py.other"))
+
+
+class SeededStartTests(unittest.TestCase):
+    """#273: a restarted disassembler comes back with the last export's annotations."""
+
+    def game(self, root, symbols=True):
+        game = root / "games" / "c64" / "demo"
+        (game / "work").mkdir(parents=True)
+        (game / "game.json").write_text(json.dumps({"slug": "demo", "platform": "c64"}))
+        if symbols:
+            (game / "symbols.json").write_text(json.dumps({
+                "blocks": [{"start": 0x8000, "end": 0x8002, "type": "Code"}],
+                "symbols": [{"address": 0x8000, "name": "main_loop", "type": "Subroutine", "kind": "user"}],
+                "comments": [{"address": 0x8000, "type": "line", "text": "runs once a frame"}]}))
+        ram = bytes(range(256)) * 256
+        head = b"VICE Snapshot File C64SC\0"                  # kit/c64/snapshot.py reads the RAM at 209
+        (game / "work" / "entry.vsf").write_bytes(head + bytes(209 - len(head)) + ram)
+        return game, ram
+
+    def test_snapshot_with_an_export_starts_as_its_project(self):
+        with tempfile.TemporaryDirectory() as d:
+            game, ram = self.game(Path(d))
+            with patch("sys.stdout", io.StringIO()) as out:
+                path, gdir = launcher.seeded(str(game / "work" / "entry.vsf"))
+            self.assertEqual((path, gdir), (str(game / "work" / "demo.regen2000proj"), str(game)))
+            self.assertIn("demo.regen2000proj", out.getvalue())
+            data = json.loads(Path(path).read_text())
+            self.assertEqual(gzip.decompress(base64.b64decode(data["raw_data_base64"])), ram)
+            self.assertEqual(data["labels"][str(0x8000)][0]["name"], "main_loop")
+            self.assertEqual(data["user_line_comments"][str(0x8000)], "runs once a frame")
+
+    def test_everything_else_starts_as_it_is(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            game, _ = self.game(root, symbols=False)          # the first session: nothing exported yet
+            first = str(game / "work" / "entry.vsf")
+            self.assertEqual(launcher.seeded(first), (first, str(game)))
+            self.assertFalse((game / "work" / "demo.regen2000proj").exists())
+            loose = root / "elsewhere.vsf"                     # in no game's folder
+            loose.write_bytes((game / "work" / "entry.vsf").read_bytes())
+            self.assertEqual(launcher.seeded(str(loose)), (str(loose), None))
+            (game / "symbols.json").write_text(json.dumps({"blocks": [], "symbols": [], "comments": []}))
+            self.assertEqual(launcher.seeded(first), (first, str(game)))   # an export of nothing
+            self.game(root / "other")
+            other = root / "other" / "games" / "c64" / "demo" / "work"
+            for name in ("demo.regen2000proj", "game.prg"):    # a project or a program starts as it is
+                self.assertEqual(launcher.seeded(str(other / name))[0], str(other / name))
+            part = other.parent / "parts" / "level"            # the top of a game of several parts
+            part.mkdir(parents=True)
+            (part / "part.json").write_text("{}")
+            self.assertEqual(launcher.seeded(str(other / "entry.vsf"))[0], str(other / "entry.vsf"))
+            self.assertFalse((other / "demo.regen2000proj").exists())
+
+    def test_logs_written_after_the_export_are_named(self):
+        with tempfile.TemporaryDirectory() as d:
+            game, _ = self.game(Path(d))
+            old, new = game / "work" / "annotations.jsonl", game / "work" / "annotations-2.jsonl"
+            for f in (old, new):
+                f.write_text("{}\n")
+            exported = (game / "symbols.json").stat().st_mtime
+            os.utime(old, (exported - 10, exported - 10))
+            os.utime(new, (exported + 10, exported + 10))
+            self.assertEqual(launcher.logged_since_export(str(game)), [str(new)])
+
+    def test_start_serves_the_project(self):
+        with tempfile.TemporaryDirectory() as d:
+            game, _ = self.game(Path(d))
+            tools = Path(d) / "tools"
+            with patch.object(launcher, "R2000_PORT", 13000), \
+                 patch.object(launcher, "TOOLS", str(tools)), \
+                 patch.object(launcher, "R2000_PORT_FILE", str(tools / "r2000-port")), \
+                 patch.object(launcher, "r2000_exe", return_value="/usr/bin/regenerator2000"), \
+                 patch.object(launcher, "up", return_value=False), \
+                 patch.object(launcher, "forget_port"), \
+                 patch.object(launcher, "start") as start, \
+                 patch("sys.stdout", io.StringIO()):
+                launcher.r2000(str(game / "work" / "entry.vsf"))
+            self.assertEqual(start.call_args.args[0][-2:], [str(game / "work" / "demo.regen2000proj"), "13000"])
 
 
 class SnapshotTests(unittest.TestCase):

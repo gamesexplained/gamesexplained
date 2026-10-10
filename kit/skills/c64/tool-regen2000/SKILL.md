@@ -40,6 +40,15 @@ python3 kit/c64/r2000.py --list
 python3 kit/c64/r2000.py --game games/<platform>/<slug> r2000_disassemble '{"address": 57399}'
 ```
 
+Started on a snapshot in a game's or a part's folder that has exported
+annotations, the launcher builds `work/<slug>.regen2000proj` from
+`symbols.json` and that snapshot, as `symbols_import.py` does, starts on
+it and says so: a session restarted after a crash or a stop comes back
+with the work of the last export. It names any annotation log written
+after that export, with the `r2000.py --replay` that brings its work
+back. A game's first session, with nothing exported, starts on the
+snapshot itself.
+
 Its native HTTP server binds port 3000 with no option to change it;
 it needs a pseudo-terminal even headless. A second clone's disassembler
 goes on a port of its own with `KIT_R2000_PORT`, through the stdio server
@@ -79,7 +88,7 @@ the game folder, or pass `--game`, so the log lands in the right place.
 | `r2000_undo` | undo the last operation; note that the log does not record undos |
 | `r2000_unpack_binary` | **destructive**: wipes all annotations. Do not use on an annotated session |
 | `r2000_batch_execute` `{calls: [{name, arguments}, ...]}` | many calls in one round trip; each entry names its tool as `name`, not `tool` |
-| `r2000_save_project` | only works for sessions loaded from a project file; use `symbols_export.py` instead |
+| `r2000_save_project` | saves into the project the session started on, which the next start on the snapshot rebuilds from `symbols.json`; use `symbols_export.py` instead |
 
 ## Traps
 
@@ -105,19 +114,21 @@ the game folder, or pass `--game`, so the log lands in the right place.
   label the operand shows the label, not the address: search a named
   register by its name, or scan the snapshot for the opcode bytes.
 - **`get_address_details` is no use on a snapshot.** With a whole 64 KB
-  image loaded (a `.vsf`: `get_binary_info` says origin 0, size 65536),
-  0.9.20 answers every address, `$0000` to `$FFFF`, with "Address is
-  outside the loaded binary range", while `read_region` shows the same
-  bytes. Ask `get_cross_references`, `get_symbols`, `get_comments` and
-  `read_region` instead.
+  image loaded (a `.vsf`, or the project built from one: `get_binary_info`
+  says origin 0, size 65536), 0.9.20 answers every address, `$0000` to
+  `$FFFF`, with "Address is outside the loaded binary range", while
+  `read_region` shows the same bytes. Ask `get_cross_references`,
+  `get_symbols`, `get_comments` and `read_region` instead.
 - The project file (`.regen2000proj`) embeds the memory image. It stays in
   `work/` and is never committed. `symbols_import.py` rebuilds it from
   `symbols.json` plus a snapshot.
   Nothing writes annotations back into it: a project that sat in `work/`
   while a session annotated holds the comments from before that session.
   Started on it again, the next export quietly undoes everything since.
-  So start every later session from `symbols_import.py`, or compare
-  `r2000_get_comments` with `symbols.json` before the first write.
+  So start every later session on the snapshot, which rebuilds the
+  project from `symbols.json` first, never on a project you find in
+  `work/`; or compare `r2000_get_comments` with `symbols.json` before
+  the first write.
 - After any bulk recovery, verify with a clean process, a full replay and
   a block-count check, not "the replay didn't error".
 - **The flow tracer can wander into text.** `$20` is `JSR`, so a run of
