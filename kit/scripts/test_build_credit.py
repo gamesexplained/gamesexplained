@@ -48,6 +48,14 @@ class Credit(unittest.TestCase):
         os.environ.pop("GH_TOKEN", None)
         os.environ["GITHUB_TOKEN"] = "a-token"
 
+    def test_uncredited_leaves_a_contributor_off_the_pages(self):
+        cons = [(18, "Vai", "someone"), (3, "Ada", "ada"), (1, "Bea", None)]
+        self.assertEqual(build.credited(cons, {}), cons)
+        self.assertEqual(build.credited(cons, {"uncredited": ["SomeOne"]}), cons[1:])   # by login
+        self.assertEqual(build.credited(cons, {"uncredited": ["bea"]}), cons[:2])       # by name, no login
+        self.assertTrue(build.uncredited({"uncredited": ["SomeOne"]}, "Vai", "someone"))   # the home page's rows
+        self.assertFalse(build.uncredited({}, "Vai", "someone"))
+
     def test_a_noreply_address_is_read_not_asked_about(self):
         for email in ("ada@users.noreply.github.com", "1234+ada@users.noreply.github.com"):
             self.assertEqual(build.github_login(email, "squash"), "ada")

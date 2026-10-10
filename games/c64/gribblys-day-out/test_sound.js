@@ -8,16 +8,13 @@
 // falls in. Needs no snapshot and no emulator. Exits 1 on any difference.
 //   node games/c64/gribblys-day-out/test_sound.js
 'use strict';
-const fs = require('fs'), path = require('path');
-const GAME = __dirname, ROOT = path.resolve(GAME, '../../..');
-globalThis.fetch = async url => ({ ok: true, json: async () => JSON.parse(fs.readFileSync(path.join(GAME, url), 'utf8')) });
-require(path.join(ROOT, 'site/lib/c64.js'));
+const path = require('path'), ROOT = path.resolve(__dirname, '../../..');
+const { game } = require(path.join(ROOT, 'kit/scripts/port_check.js'));
 const { CPU } = require(path.join(ROOT, 'kit/c64/cpu6502.js'));
+const g = game(__dirname);
+g.lib('c64');
 
-const html = fs.readFileSync(path.join(GAME, 'index.html'), 'utf8');
-const a = html.indexOf('function createDriver(D)'), b = html.indexOf('// end of createDriver');
-if (a < 0 || b < a) { console.log('index.html: no createDriver block'); process.exit(1); }
-const createDriver = new Function(html.slice(a, b) + '\nreturn createDriver;')();
+const { createDriver } = g.run('index.html', 'createDriver');
 
 (async () => {
   const ram = (await C64.load('listing.json')).ram;

@@ -3,6 +3,7 @@
 // that counts frames and one at line 16, and a main loop that counts its passes, scans the
 // keyboard's row 0 and the joystick, sums a table, waits for a raster line, runs a delay loop and
 // polls for the next frame. The program is kit/c64/test_lockstep.js's too (program(), below).
+// Then the CIAs' timers, and Machine.fromSnapshot on made-up snapshots of a raster interrupt.
 // Exits 1 on any failure. node kit/c64/test_machine.js
 const { Machine, KEY } = require('./machine.js');
 
@@ -114,6 +115,74 @@ if (require.main === module) {
     const back = Machine.restore(c.save());
     back.runCycles(1020); c.runCycles(1020);
     check('a restored machine keeps its timers', back.nmis + r2[0x2010] >= 0 && back.ram[0x2010], c.ram[0x2010]);
+  }
+
+  // Machine.fromSnapshot: a game's raster interrupt goes on from a snapshot of play. A snapshot laid
+  // out as x64sc writes one (test_cpu6502.js has the other modules), with a VIC-IISC module 1.4:
+  // the chip's model, its 64 registers, three words, a byte, the interrupt latch, then the rest.
+  // The program, its interrupt already set up, is stopped in its main loop at $C02F, which waits
+  // for the handler at $C100 to count a frame in $02; the handler keeps $D012 and $D011 as it
+  // finds them in $04 and $05. The same program, saved by vice-mcp v3.13.2 at lines $FB and $105 and
+  // with a latched interrupt held off by SEI, gave these registers, 10 October 2026.
+  {
+    const fs = require('fs'), os = require('os'), path = require('path');
+    const mod = (name, major, minor, body) => {
+      const h = Buffer.alloc(22);
+      h.write(name, 0, 'latin1'); h[16] = major; h[17] = minor; h.writeUInt32LE(22 + body.length, 18);
+      return Buffer.concat([h, body]);
+    };
+    const vsf = ({ d011, d012, irq = 0, p = 0x20, vic = true }) => {
+      const head = Buffer.alloc(58);
+      head.write('VICE Snapshot File\x1a', 0, 'latin1'); head[19] = 2; head.write('C64SC', 21, 'latin1');
+      head.write('VICE Version\x1a', 37, 'latin1'); head[50] = 3; head[51] = 10;
+      const cpu = Buffer.alloc(103);
+      cpu[11] = 0xF3; cpu.writeUInt16LE(0xC02F, 12); cpu[14] = p;
+      const mem = Buffer.alloc(4 + 65536 + 1);
+      mem[0] = 0x35; mem[1] = 0x2F;
+      const at = (a, bytes) => bytes.forEach((b, i) => { mem[4 + a + i] = b; });
+      // $C02F main: LDA $02; CMP $02; BEQ (to the CMP); INC $03; JMP $C02F
+      at(0xC02F, [0xA5, 0x02, 0xC5, 0x02, 0xF0, 0xFC, 0xE6, 0x03, 0x4C, 0x2F, 0xC0]);
+      // $C100 irq: PHA; INC $02; $04 = $D012; $05 = $D011; LDA #$FF; STA $D019; PLA; RTI
+      at(0xC100, [0x48, 0xE6, 0x02, 0xAD, 0x12, 0xD0, 0x85, 0x04, 0xAD, 0x11, 0xD0, 0x85, 0x05,
+        0xA9, 0xFF, 0x8D, 0x19, 0xD0, 0x68, 0x40]);
+      at(0xFFFE, [0x00, 0xC1]);
+      const v = Buffer.alloc(200);
+      v[0] = 1; v[1 + 0x11] = d011; v[1 + 0x12] = d012; v[1 + 0x1A] = 0x01; v[1 + 0x20] = 0x0E;
+      v[78] = irq; v.writeUInt32LE(d012 | ((d011 & 0x80) << 1), 79);
+      return Buffer.concat([head, mod('MAINC64CPU', 1, 5, cpu), mod('C64MEM', 0, 1, mem), mod('CIA1', 2, 5, Buffer.alloc(77)),
+        vic ? mod('VIC-IISC', 1, 4, v) : Buffer.alloc(0)]);
+    };
+    const { readSnapshot } = require('./cpu6502.js');
+    const file = path.join(os.tmpdir(), 'test_machine_' + process.pid + '.vsf');
+    try {
+      fs.writeFileSync(file, vsf({ d011: 0x1B, d012: 0xFB }));
+      const s = readSnapshot(file);
+      check('readSnapshot: $D011, $D012 and $D01A from VIC-IISC', [s.vic.regs[0x11], s.vic.regs[0x12], s.vic.regs[0x1A]].join(), '27,251,1');
+      let v = Machine.fromSnapshot(file);
+      check('the compare line and enable from the snapshot', [v.cmp, v.enable, v.vic[0x20], v.cpu.pc, v.cpu.sp, v.cpu.i].join(), '251,1,14,49199,243,0');
+      v.runFrames(10);
+      check('ten frames from the snapshot, ten interrupts', v.ram[0x02], 10);
+      check('each at line $FB', v.ram[0x04], 0xFB);
+      const bare = new Machine({ ram: readSnapshot(file).ram, port: s.port, pc: 0xC02F });
+      bare.cpu.i = 0; bare.runFrames(10);
+      check('the RAM alone: no interrupt, the main loop never passes', bare.ram[0x02], 0);
+
+      fs.writeFileSync(file, vsf({ d011: 0x9B, d012: 0x05 }));
+      v = Machine.fromSnapshot(file);
+      v.runFrames(3);
+      check('$D011\'s bit 7 is the compare\'s bit 8: line $105', [v.cmp, v.ram[0x02], v.ram[0x04], v.ram[0x05] >> 7].join(), '261,3,5,1');
+
+      fs.writeFileSync(file, vsf({ d011: 0x1B, d012: 0x40, irq: 0x81, p: 0x24 }));
+      v = Machine.fromSnapshot(file);
+      check('a latched interrupt held off by SEI', [v.latch, v.cpu.i].join(), '1,1');
+      v.cpu.i = 0; v.runCycles(63);
+      check('is taken once the processor allows it', v.ram[0x02], 1);
+
+      fs.writeFileSync(file, vsf({ d011: 0x1B, d012: 0xFB, vic: false }));
+      let threw = '';
+      try { Machine.fromSnapshot(file); } catch (e) { threw = e.message; }
+      check('a snapshot with no VIC-IISC module is refused', /VIC-IISC/.test(threw), true);
+    } finally { try { fs.unlinkSync(file); } catch (e) {} }
   }
   process.exit(fails ? 1 : 0);
 }

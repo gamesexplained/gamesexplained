@@ -204,8 +204,15 @@ its music or its maps can put that first instead.
   that have to succeed"); or, for a routine that
   only computes, against the original code run in a 6502 simulator on the
   snapshot's memory. Write node tests that do the comparison and say in
-  the caption how it was checked. On the C64 use the kit's simulator,
-  `kit/c64/cpu6502.js`, rather than writing one; its header is the
+  the caption how it was checked. A test that needs only the committed
+  listing goes beside the page as `test_<what>.js`, where CI runs it, and
+  takes the port from the page itself, so the two cannot drift apart:
+  `kit/scripts/port_check.js` cuts the block out, runs it and gives the
+  listing's memory, and `kit/scripts/port_check.py` does the same for a
+  test whose simulator is in Python. Open the block with a line
+  `/* name */`, or end a function inside the page's own script with a
+  line `// end of name`; the header is the manual. On the C64 use the
+  kit's simulator, `kit/c64/cpu6502.js`, rather than writing one; its header is the
   manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
   left it, the port's banking included, and `call(entry, regs)` runs a
   routine to its return. The chips belong to the test: `io.write` sees

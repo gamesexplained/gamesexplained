@@ -1,0 +1,69 @@
+name: merged-branch
+# Comments on a pull request opened from a branch whose earlier pull request
+# was squash-merged, when it carries that earlier pull request's commits
+# again. GitHub does not count those commits as merged, so the pull request
+# shows the whole earlier change as new, with conflicts in the files both
+# sides added. This happens when an agent pushes follow-up work to the branch
+# it was already on (AGENTS.md, "A merged branch is finished") and GitHub
+# then offers to open a pull request for it. When the same author has an
+# open pull request changing the same files, the new work is probably
+# already there on a fresh branch, and the comment names it.
+# pull_request_target runs as this repository, so it can comment on pull
+# requests from forks. The job never checks out or runs the pull request's
+# code.
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment when the branch was already merged
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # The commits this pull request shows: on its branch, not on the base.
+          shown=$(gh api "repos/$GH_REPO/pulls/$NUMBER/commits" --paginate --jq '.[].sha')
+          # The newest merged pull request from the same branch whose last
+          # commit is among them. A branch restarted from main, or merged with
+          # a merge commit, shows none of them and gets no comment.
+          earlier=$(gh api -X GET "repos/$GH_REPO/pulls" -f state=closed -f head="$HEAD_OWNER:$HEAD_REF" -f per_page=100 \
+                      --jq "[.[] | select(.merged_at != null and .number != $NUMBER)] | sort_by(.merged_at) | reverse | .[] | \"\(.number) \(.head.sha)\"")
+          merged=""
+          while read -r n sha; do
+            [ -n "$n" ] || continue
+            if grep -qx "$sha" <<<"$shown"; then merged=$n; merged_sha=$sha; break; fi
+          done <<<"$earlier"
+          if [ -z "$merged" ]; then echo "#$NUMBER does not carry an earlier merged pull request's commits."; exit 0; fi
+
+          # The author's other open pull requests that change a file the new commits change.
+          gh api "repos/$GH_REPO/compare/$merged_sha...$HEAD_SHA" --jq '.files[].filename' > new_files
+          also=""
+          for n in $(gh api -X GET "repos/$GH_REPO/pulls" -f state=open -f per_page=100 --paginate \
+                       --jq ".[] | select(.user.login == \"$AUTHOR\" and .number != $NUMBER) | .number"); do
+            files=$(gh api "repos/$GH_REPO/pulls/$n/files" --paginate --jq '.[].filename')
+            if grep -qxFf new_files <<<"$files"; then
+              also="${also:+$also or }#$n"
+            fi
+          done
+
+          {
+            echo "This branch was already merged in #$merged. Please close this pull request and resubmit your new work on a fresh branch from main."
+            if [ -n "$also" ]; then
+              echo
+              echo "Your new work looks like it's already in $also, so you can just close this one."
+            fi
+          } > body.md
+          cat body.md
+          gh pr comment "$NUMBER" --body-file body.md

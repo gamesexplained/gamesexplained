@@ -47,9 +47,12 @@
 //   cpu.call(0x82FA, { x: 0x40, y: 0x0C });          // runs the routine until it returns
 //   cpu.a, cpu.x, cpu.m[0x08], cpu.cycles ...
 //
-//   const s = readSnapshot(path);   // { ram, port: { dir, data, out }, exrom, game, regs, clock }
+//   const s = readSnapshot(path);   // { ram, port: { dir, data, out }, exrom, game, regs, clock, vic }
 //                                   // regs { a, x, y, sp, pc, p } and clock (the emulator's cycle
-//                                   // count) come from x64sc's MAINC64CPU module, null without it
+//                                   // count) come from x64sc's MAINC64CPU module, null without it;
+//                                   // vic { regs, irq }, the video chip's 64 registers and its
+//                                   // interrupt latch, from its VIC-IISC module, null without it.
+//                                   // kit/c64/machine.js's Machine.fromSnapshot takes them
 //   loadSnapshot(path)              // the RAM alone, a fresh Uint8Array(65536)
 //
 // call(entry, regs, opts) sets the registers given (a, x, y, p, sp, and flags n v d i z c), sets sp
@@ -168,6 +171,11 @@ const chip = a => a < 0xD400 ? 'the VIC-II' : a < 0xD800 ? 'the SID' : a < 0xDC0
 // port's data and direction bytes, EXROM and GAME, the 64 KB of RAM, then the port's output latch.
 // x64sc's MAINC64CPU begins with the 8-byte clock, then A, X, Y, SP, PC and P. From a VICE 3.10
 // snapshot (vice-mcp 3.13.1), saved from a known state, 26 September 2026.
+// x64sc's VIC-IISC module (version 1.x) begins with the chip's model, then its 64 registers as
+// last written ($D011's bit 7 and $D012 are the raster compare line, $D01A's low four bits the
+// interrupt enable), three 4-byte words (the raster's cycle, flags and line), a byte, then the
+// interrupt latch ($D019's bits 0-3, bit 7 the IRQ line). From VICE's src/viciisc/vicii-snapshot.c
+// (format 1.4), checked on vice-mcp v3.13.2 snapshots of a raster interrupt, 10 October 2026.
 function readSnapshot(path) {
   const buf = fs.readFileSync(path);
   if (buf.toString('latin1', 0, 19) !== 'VICE Snapshot File\x1a') throw new Error(path + ': not a VICE snapshot');
@@ -176,12 +184,12 @@ function readSnapshot(path) {
   while (off + 22 <= buf.length) {
     const name = buf.toString('latin1', off, off + 16).replace(/\0+$/, ''), size = buf.readUInt32LE(off + 18);
     if (size < 22 || off + size > buf.length) break;
-    mods[name] = { at: off + 22, size: size - 22 };
+    mods[name] = { at: off + 22, size: size - 22, major: buf[off + 16] };
     off += size;
   }
   const mem = mods.C64MEM;
   if (!mem || mem.size < 4 + 65536) throw new Error(path + ': no C64MEM module (not a C64 snapshot?)');
-  const b = mem.at, cpu = mods.MAINC64CPU;
+  const b = mem.at, cpu = mods.MAINC64CPU, vic = mods['VIC-IISC'];
   return {
     ram: Uint8Array.from(buf.subarray(b + 4, b + 4 + 65536)),
     port: { data: buf[b], dir: buf[b + 1], out: mem.size > 4 + 65536 ? buf[b + 4 + 65536] : buf[b] & buf[b + 1] },
@@ -189,6 +197,8 @@ function readSnapshot(path) {
     regs: cpu && cpu.size >= 15 ? { a: buf[cpu.at + 8], x: buf[cpu.at + 9], y: buf[cpu.at + 10],
       sp: buf[cpu.at + 11], pc: buf.readUInt16LE(cpu.at + 12), p: buf[cpu.at + 14] } : null,
     clock: cpu && cpu.size >= 8 ? Number(buf.readBigUInt64LE(cpu.at)) : null,
+    vic: vic && vic.major === 1 && vic.size >= 79 ? { regs: Uint8Array.from(buf.subarray(vic.at + 1, vic.at + 65)),
+      irq: buf[vic.at + 78] } : null,
   };
 }
 
