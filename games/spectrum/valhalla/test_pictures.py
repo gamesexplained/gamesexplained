@@ -16,7 +16,6 @@ script; it exits 1 on the first picture or command list that differs.
 
   python3 games/spectrum/valhalla/test_pictures.py [location ...]
 """
-import glob
 import os
 import struct
 import sys
@@ -39,10 +38,13 @@ MAP, SPECIAL = 0xBF3F, 0xC64C          # the data of m$(81,18) and s$(36,9)
 
 
 def rom():
-    for p in glob.glob(os.path.join(ROOT, "tools", "skoolkit", "lib", "python*", "site-packages",
-                                    "skoolkit", "resources", "48.rom")):
-        return open(p, "rb").read()
-    sys.exit("SkoolKit's 48.rom was not found under tools/skoolkit")
+    """The 48K ROM from the SkoolKit the simulator came from: tools/skoolkit, or the one CI
+    installs with pip."""
+    package = os.path.dirname(sys.modules[simulate.simulator().__module__].__file__)
+    p = os.path.join(package, "resources", "48.rom")
+    if not os.path.isfile(p):
+        sys.exit(f"SkoolKit's 48.rom was not found in {package}")
+    return open(p, "rb").read()
 
 
 class Rnd:
