@@ -263,6 +263,16 @@ suspecting the listing. Do not use `trace exec`
 tracepoints for this: a full-address-space trace floods the monitor faster
 than it can be consumed and wedges the emulator.
 
+A game that loads files during play through the KERNAL's LOAD (with the
+ROM banked in for the load, then out again) puts the KERNAL's own
+instructions into an `--under-rom` map at the same addresses as its RAM
+code there: the memmap cannot tell the two apart, and `dump` keeps both.
+Before committing such a map, trace the RAM code at `$A000`-`$BFFF` and
+`$E000`-`$FFFF` from its entries and its dispatch tables, and drop the
+recorded addresses that trace does not reach; check what is left against
+the KERNAL ROM's own instruction starts. One game's map held 307 KERNAL
+addresses beside its music player at `$E000` (`kit/lessons/2026-10-10-qix.md`).
+
 ## Behaviours that waste time, on any build
 
 - **Prove the machine is running before you believe a negative result.**
