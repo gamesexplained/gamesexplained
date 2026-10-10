@@ -408,8 +408,11 @@ the emulator with a split-screen program of its own, then measures the
 cycles the video chip takes from the processor and compares them with
 `kit/c64/fixtures/vic-dma.json` (`frame.py dma` runs that part alone).
 Like `check-emulator` it resets the machine, so run it before a game is
-loaded. On 9 October 2026, on Linux x86_64 with the v3.13.2 release, the
-whole test took about 75 seconds and passed. On 24 September 2026, on macOS arm64 with vice-mcp 3.13.1 and
+loaded. It also sets the video chip its standard is checked on, the 8565
+for PAL, which a switch to NTSC and back replaces with a 6569. On 9
+October 2026, on Linux x86_64 with the v3.13.2 release, the whole test
+took about 75 seconds and passed; on 10 October, setting the chip as well,
+about 100. On 24 September 2026, on macOS arm64 with vice-mcp 3.13.1 and
 JavaScriptCore, it passed: every pixel matched but the handful at a
 mid-line change of mode or scroll that the renderer does not follow to
 the pixel. On 26 September, on Linux x86_64 with the v3.13.1 release and

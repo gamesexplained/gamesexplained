@@ -315,13 +315,16 @@ than it can be consumed and wedges the emulator.
 - **`vice_machine_config_set` has a six-entry whitelist**:
   `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
   `CIA2Model`. Joystick port assignment is not among them.
-- **Switching the video standard sticks.** One run set
-  `MachineVideoStandard` to NTSC and back to PAL, and every snapshot saved
-  earlier then failed to load: the call says only "Failed to load
+- **Switching the video standard sticks.** x64sc starts as a C64C, whose
+  video chip is the 8565. Setting `MachineVideoStandard` to NTSC and back
+  to PAL leaves the older 6569, and `vice_machine_config_get` names the
+  6569 for either (v3.13.2, 10 October 2026). Every snapshot saved before
+  the switch then failed to load: the call says only "Failed to load
   snapshot", while `tools/logs/vice.log` says the snapshot was made with
-  another video chip model. Restarting the emulator (`tools.py stop vice`,
-  then `tools.py vice`) cured it. Run an NTSC test last, or restart after
-  it.
+  another video chip model. The 6569 also drew one pixel of
+  `frame.py test` differently, which is why the test sets the chip itself.
+  Restarting the emulator (`tools.py stop vice`, then `tools.py vice`)
+  cures both. Run an NTSC test last, or restart after it.
 - **A snapshot save name cannot be reused.** Save **without** ROMs so the
   RAM image lands where the platform reference says it does.
 - **`vice_autostart`'s `program` is typed as given.** The server passes
