@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""The narration rule reads the agent's words, not the text the game prints (#145), a page's
+"""The narration rule reads the agent's words, not the text the game prints (#145), nor the
+section of facts.md that reports what a sample of the listing found and what was changed
+(#299, #307), a page's
 own class that site.css also styles is caught before the built site collapses it (#143), an id
 on two elements of a page is caught before a button's handler lands on the other one, a
 platform's install notes keep one section per system and one row per build and kind of computer,
@@ -40,6 +42,33 @@ class GameText(unittest.TestCase):
                      'A 5.25" disk; the earlier reading was wrong.',
                      'This was wrong: "OK" is printed twice.'):
             self.assertEqual(narrations(line), 1, line)
+
+
+def facts(text):
+    """How many lines of a facts.md holding this text check_docs.py fails as narration."""
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d) / 'facts.md'
+        f.write_text(text, encoding='utf-8')
+        with contextlib.redirect_stdout(io.StringIO()):
+            return check_docs.scan(str(f), check_docs.NARRATION, 'narration', blank=check_docs.GAME_TEXT,
+                                   only=check_docs.outside_error_rate(str(f)))
+
+
+SAMPLE = ("A sample of 60 of the listing's 661 comments, drawn with seed 1986, was checked\n"
+          "against the bytes: 8 were wrong (13 %), a count misread among them; all were corrected.\n")
+
+
+class ErrorRate(unittest.TestCase):
+    def test_the_section_says_what_was_corrected(self):
+        for head in ("## The listing's error rate", "## Listing error rate", "### Error rate, after the audit"):
+            self.assertEqual(facts(f"# Facts\n\n{head}\n\n{SAMPLE}"), 0, head)
+        self.assertEqual(facts(f"## The listing's error rate\n\n### Sample 2\n\n{SAMPLE}"), 0)
+
+    def test_the_rest_of_facts_md_is_still_read(self):
+        self.assertEqual(facts(f"## Sound\n\n{SAMPLE}"), 1)                       # another section
+        self.assertEqual(facts(f"## Sound\n\nThe error rate {SAMPLE}"), 1)        # the words in a sentence
+        self.assertEqual(facts(f"## The listing's error rate\n\n{SAMPLE}\n## Sound\n\n{SAMPLE}"), 1)
+        self.assertEqual(facts(f"### The listing's error rate\n\n{SAMPLE}\n## Sound\n\n{SAMPLE}"), 1)
 
 
 SITE = """.strip{display:block;height:8px;overflow:hidden}

@@ -7,7 +7,9 @@
                      (in the lines a branch adds: a game that gets a folder later does not
                      fail a sentence written before it, such as a source's own example)
   games/*/*/facts.md, features.md   current truth, no narration of past mistakes; what the
-                     game itself prints may be quoted as it appears (`...`, "...", or in capitals)
+                     game itself prints may be quoted as it appears (`...`, "...", or in capitals),
+                     and facts.md's section on the listing's error rate says what was corrected
+                     (kit/skills/core/60-verify)
   games/*/*/*.md     the template's notes and no others: a check's result goes in facts.md,
                      its working record in work/ (kit/skills/core/60-verify)
   games/*/*/kit-feedback.md   the skill text that changed what the run did, named in the
@@ -45,6 +47,10 @@ EXEMPT = re.compile(r"^\s*\|.*(kit/|skills/|games/)")
 # "ORIENTATION CORRECTED" (#145). Backticks, double quotes, and words in capitals are blanked
 # before NARRATION is matched, so the rest of the line is still read.
 GAME_TEXT = re.compile(r"`[^`\n]*`|\"[^\"\n]*\"|\u201c[^\u201d\n]*\u201d|\b[A-Z]{2,}(?:[ '-]+[A-Z]{2,})*\b")
+# The section of facts.md that reports the listing's error rate says how many comments were
+# wrong and what was changed (kit/skills/core/60-verify): there the correction is the fact, and
+# Uridium's and Mayhem in Monsterland's paragraphs had to talk round the plain words (#299, #307).
+ERROR_RATE = re.compile(r"^(#{2,})\s.*\berror rate\b", re.I)
 HOME = [r"(?<![\w.-])/(Users|home)/[^/\s\"'<>`]+", r"\b[A-Z]:[\\/]Users[\\/]"]   # macOS, Linux, Windows
 SITE_CSS = os.path.join(ROOT, "site", "lib", "site.css")
 TEMPLATE_PAGE = os.path.join(ROOT, "kit", "template", "index.html")
@@ -150,6 +156,23 @@ def scan(path, patterns, label, exempt=None, blank=None, only=None):
                 bad += 1
                 break
     return bad
+
+
+def outside_error_rate(path):
+    """The line numbers of a facts.md outside its section on the listing's error rate: the
+    heading that names the error rate, down to the next heading of its level or above."""
+    keep, inside = set(), None
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        for n, line in enumerate(fh, 1):
+            level = len(re.match(r"#*", line).group(0))
+            if level and line[level:level + 1] == " " and (inside is None or level <= inside):
+                m = ERROR_RATE.match(line)
+                inside = len(m.group(1)) if m else None
+                if m:
+                    continue
+            if inside is None:
+                keep.add(n)
+    return keep
 
 
 def added_lines(prefix, base=None, root=ROOT):
@@ -318,7 +341,9 @@ def main():
         fails += 1
     for f in glob.glob(os.path.join(ROOT, "games", "*", "*", "facts.md")) + \
              glob.glob(os.path.join(ROOT, "games", "*", "*", "features.md")):
-        fails += scan(f, NARRATION, "narrating a past mistake (belongs in agent-history.md)", blank=GAME_TEXT)
+        only = outside_error_rate(f) if os.path.basename(f) == "facts.md" else None
+        fails += scan(f, NARRATION, "narrating a past mistake (belongs in agent-history.md)", blank=GAME_TEXT,
+                      only=only)
     fails += class_collisions()
     fails += duplicate_ids()
     fails += platform_notes()
