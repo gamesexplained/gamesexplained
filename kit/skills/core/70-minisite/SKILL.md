@@ -94,7 +94,11 @@ address links into the Source tab, and the house style in `kit/style.md`.
    and play it through the site's model of the SID, `../../lib/sid.js`:
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver
-   read. The script's header gives the driver's contract and what the
+   read. When the game calls its driver from a CIA timer instead, pass
+   the timer's period in cycles (the latch plus 1) to `mount` as
+   `period`, and port one call to each `play()`: the player keeps the
+   game's tempo, where mapping calls to frames in the port makes a
+   note's length wander by up to a frame. The script's header gives the driver's contract and what the
    model leaves out. The filter is off unless the page passes
    `filter: '6581'` (or `'8580'`) to `mount`, which also shows a switch
    to compare it with no filter; pass it when the game sets the filter,
