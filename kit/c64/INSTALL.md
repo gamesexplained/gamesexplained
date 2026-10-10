@@ -20,10 +20,11 @@ minute). It names every check it makes, and
 `kit/skills/c64/tool-vice-mcp/workarounds.md` says what to do about each
 one that fails. Run it once after installing, and again after any new
 build or release. After the checks it reports, without counting them,
-which of the server's quirks the build has that `kit/c64/vice.py`
-absorbs. On 3 October 2026 the v3.13.2 Linux release had `read-64k`,
-`key-lowercase`, `snapshot-path` and `reset-paused`, and not
-`read-running`, which the v3.13.1 macOS release had on 28 September.
+which of the server's quirks the build has that `kit/c64/vice.py` and
+`kit/c64/codemap.py` absorb. On 3 October 2026 the v3.13.2 Linux release
+had `read-64k`, `key-lowercase`, `snapshot-path` and `reset-paused`, and
+not `read-running`, which the v3.13.1 macOS release had on 28 September;
+on 10 October it also had `monitor-run-leaves` and `monitor-paused`.
 
 **Which build: the newest, always.** The kit pins no version of vice-mcp.
 `tools.py get-vice` finds the newest release and says what this machine
