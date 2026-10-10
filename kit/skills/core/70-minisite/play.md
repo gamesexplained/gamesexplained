@@ -30,8 +30,10 @@ counting passes where the main loop begins. On the 48K Spectrum,
 `kit/spectrum/machine.js` is: the Z80 with the frame's interrupt, the
 keyboard read through port `$FE` and contended memory around it, started
 from a `.sna` or the listing's memory, counting passes the same way.
-`kit/c64/lockstep.js` runs a port beside the C64's and says what the port gives it: the checkpoints it
-yields, its raster waits, its polling loops and its interrupt handlers.
+`kit/c64/lockstep.js` runs a port beside the C64's, and
+`kit/spectrum/lockstep.js` beside the Spectrum's, and each says what the
+port gives it: the checkpoints it yields, its raster waits (on the
+Spectrum, its HALTs), its polling loops and its interrupt handlers.
 Write the port to that from the start. Each file's header is its manual.
 
 - **Port routine by routine, on the game's own memory.** One function per
@@ -56,7 +58,9 @@ Write the port to that from the start. Each file's header is its manual.
   in for its routines (`standIn`). A polling loop in the port yields at
   each turn and the game moves on a raster line, so the port sees the
   line and the flags the game's loop does. A wait for a line yields the
-  line, and the game runs to the loop's exit.
+  line, and the game runs to the loop's exit; a HALT yields that it
+  halts, and the game runs through its interrupt to the instruction
+  after.
 - **What lockstep cannot match is the game's own races.** The port runs an
   interrupt between two steps; the machine runs it wherever it falls. The
   lockstep closes most of that gap: each handler runs on the bytes the
