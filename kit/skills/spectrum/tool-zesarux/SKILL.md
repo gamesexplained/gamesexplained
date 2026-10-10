@@ -218,7 +218,13 @@ game did, and `kit/spectrum/codemap.py` turns the first into a check.
   hand-over 23,132; the two together, 23,672; the last 475 bytes were two
   handlers named only by words stored in data, and a routine nothing calls
   with the code it jumps into, given as `--entry` once the code that reads
-  those words had been read (3 October 2026).
+  those words had been read (3 October 2026). A routine that takes its
+  arguments in the bytes after its `CALL` and returns past them sends the
+  trace into those bytes, and from there anywhere: give each one as
+  `--inline ADDR:N` once the annotation has found it. An executed list
+  from a session that ended in a BASIC error can hold a few addresses the
+  crash ran through, in the machine stack: leave that session out of
+  `--map`.
 
 **Record sessions that replay.** A session timed by the wall clock presses
 its keys at different moments on each run. Stop the machine and count in
