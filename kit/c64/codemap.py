@@ -20,7 +20,11 @@ Spy vs Spy, at $01 = $35, showed none of its $A000-$BFFF code under mask 1.
 has banked out ($A000-$BFFF unless bits 0 and 1 are both set, $E000-$FFFF
 unless bit 1 is) and says so; `dump --under-rom` keeps them. Zap for that
 only once the game has banked the ROM out: the KERNAL's interrupt handler,
-run during a game's start-up, is marked the same way.
+run during a game's start-up, is marked the same way. A game that banks the
+KERNAL in again later, to load a file, puts the KERNAL's code into the record
+at the same addresses as its own, so `--under-rom` leaves out, and lists,
+what the KERNAL's code reaches from its vectors and jump table and no code
+in RAM reaches (kernal_only(), #309).
 
   codemap.py <game dir> zap     clear the record at the start of a play session
   codemap.py <game dir> dump [--under-rom]
@@ -53,6 +57,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+from opcodes import END, operand  # noqa: E402
 from tools import MONITOR_PORT  # noqa: E402
 from opcodes import decode, LEN  # noqa: E402
 from vice import connect, read_mem  # noqa: E402
@@ -122,6 +127,90 @@ def runs(addrs):
     return out
 
 
+JUMP_TABLE = range(0xFF81, 0xFFF4, 3)   # the KERNAL's entries (kit/skills/c64/c64-reference, "Interrupts")
+
+
+def word(mem, a):
+    return mem[a] | mem[(a + 1) & 0xFFFF] << 8
+
+
+def transfers(mem, a, d, vectors=None):
+    """Where the instruction d at a can jump or branch to: JMP (ind) through mem's pointer, read with
+    the 6502's wrap inside the page, and through the KERNAL's default for that vector too, given."""
+    m, mode, bs = d
+    if mode == "rel" or (m in ("jmp", "jsr") and mode == "abs"):
+        return [operand(a, mode, bs)]
+    if m == "jmp" and mode == "ind":
+        p = operand(a, mode, bs)
+        return [mem[p] | mem[(p & 0xFF00) | ((p + 1) & 0xFF)] << 8] + ([vectors[p]] if p in (vectors or {}) else [])
+    return []
+
+
+def reach(mem, entries, recorded, vectors=None):
+    """The addresses in recorded that code decoded from mem reaches from entries, through recorded
+    addresses only."""
+    seen, todo = set(), [e for e in entries if e in recorded]
+    while todo:
+        a = todo.pop()
+        if a in seen:
+            continue
+        seen.add(a)
+        d = decode(mem, a)
+        if d:
+            nxt = transfers(mem, a, d, vectors) + ([] if d[0] in END else [a + LEN[d[1]]])
+            todo += [b & 0xFFFF for b in nxt if (b & 0xFFFF) in recorded]
+    return seen
+
+
+def restor_defaults(rom):
+    """{vector: the KERNAL's default for it}, read from the ROM's RESTOR ($FF8A): a JMP to
+    LDX #<table, LDY #>table, then LDY #count-1 and LDA vectors,Y in its copy loop. Empty for a
+    ROM of another shape."""
+    d = decode(rom, 0xFF8A)
+    if not d or d[:2] != ("jmp", "abs"):
+        return {}
+    a, imm = operand(0xFF8A, "abs", d[2]), []
+    for _ in range(12):
+        d = decode(rom, a)
+        if not d:
+            return {}
+        m, mode, bs = d
+        if mode == "imm" and m in ("ldx", "ldy"):
+            imm.append(bs[1])
+        elif m == "lda" and mode == "aby" and len(imm) == 3:
+            table, base = imm[0] | imm[1] << 8, operand(a, mode, bs)
+            return {base + i: word(rom, table + i) for i in range(0, imm[2] + 1, 2)}
+        a += LEN[mode]
+    return {}
+
+
+def kernal_only(rom, ram, recorded, sources):
+    """(dropped, both) among the recorded ROM-execute addresses at $E000-$FFFF, which the memmap
+    cannot place in the KERNAL or the RAM under it. dropped: what the KERNAL's own code reaches,
+    decoded from the ROM, from its hardware vectors, its jump table and RESTOR's defaults, and no
+    code in RAM reaches, decoded from the RAM, from the jumps of the instructions in sources (what
+    ran elsewhere in RAM) and the RAM's own vectors. A jump into the jump table counts for the RAM
+    only where the RAM holds a JMP there too: otherwise it is a call to the KERNAL. both: what the
+    two reach alike; the rest neither reaches, and stays. rom is the memory with the KERNAL in
+    (the RAM below it, for the vectors it jumps through); ram is the RAM alone (#309)."""
+    vectors = restor_defaults(rom)
+    by_rom = reach(rom, [word(rom, v) for v in (0xFFFA, 0xFFFC, 0xFFFE)] + list(JUMP_TABLE)
+                   + list(vectors.values()), recorded, vectors)
+    entries = [word(ram, v) for v in (0xFFFA, 0xFFFC, 0xFFFE)]
+    for a in sources:
+        d = decode(ram, a)
+        if d:
+            entries += transfers(ram, a, d)
+    by_ram = reach(ram, [e for e in entries if e not in JUMP_TABLE or ram[e] in (0x4C, 0x6C)], recorded)
+    return sorted(by_rom - by_ram), sorted(by_rom & by_ram)
+
+
+def ranges(addrs, most=12):
+    rs = runs(addrs)
+    out = ", ".join(f"${s:04X}" + (f"-${e:04X}" if e > s else "") for s, e in rs[:most])
+    return out + (f" and {len(rs) - most} more runs" if len(rs) > most else "")
+
+
 def sizes(executed, ram):
     """{instruction address: bytes counted as ran}, and the addresses whose bytes changed after they ran.
 
@@ -164,6 +253,18 @@ def dump(gdir, under_rom=False):
     rpc = connect()
     ddr, port = read_mem(rpc, 0, 2)
     under = banked_out_ram(rom_marked, port, ddr)
+    if under and under_rom and under[-1] >= 0xE000:
+        ram = bytes(read_mem(rpc, 0, 0x10000, "ram"))
+        kernal = bytes(read_mem(rpc, 0xE000, 0x2000, "rom"))
+        dropped, both = kernal_only(ram[:0xE000] + kernal, ram, {a for a in under if a >= 0xE000},
+                                    set(executed) | {a for a in under if a < 0xE000})
+        if dropped:
+            under = [a for a in under if a not in set(dropped)]
+            print(f"left out {len(dropped)} instructions of the KERNAL's own, which its code reaches from its "
+                  f"vectors and jump table and no code in RAM reaches: {ranges(dropped)}")
+        if both:
+            print(f"note: {len(both)} instructions under the KERNAL are reached both by its code and by code in RAM, "
+                  f"and are kept: {ranges(both)}. Check them against what the game's code there runs")
     if under and under_rom:
         executed = sorted(set(executed) | set(under))
         print(f"kept {len(under)} instructions marked ROM execute in RAM the port (${port:02X}) has a ROM "

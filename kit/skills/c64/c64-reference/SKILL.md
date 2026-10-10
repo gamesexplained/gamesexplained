@@ -292,6 +292,12 @@ KERNAL IRQ path: `$FFFE` → `$FF48` → jumps through `$0314`. Default
 KERNAL banked out owns `$FFFE` directly. NMI similarly through `$0318`
 (default `$FE47`) or `$FFFA`. RESTORE triggers NMI.
 
+The KERNAL's jump table, the addresses programs call it through, is a JMP
+every three bytes from `$FF81` to `$FFF3`, 39 of them. RESTOR (`$FF8A`)
+copies the default RAM vectors, the 32 bytes at `$0314`-`$0333`, from a
+table in the ROM (`$FD30` in the KERNAL VICE 3.13.2 ships; both read from
+it on 10 October 2026).
+
 ## Cartridge images
 
 A 16 KB program that loads at `$8000` and begins

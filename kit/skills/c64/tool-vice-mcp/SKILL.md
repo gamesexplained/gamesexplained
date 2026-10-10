@@ -274,11 +274,17 @@ than it can be consumed and wedges the emulator.
 A game that loads files during play through the KERNAL's LOAD (with the
 ROM banked in for the load, then out again) puts the KERNAL's own
 instructions into an `--under-rom` map at the same addresses as its RAM
-code there: the memmap cannot tell the two apart, and `dump` keeps both.
-Before committing such a map, trace the RAM code at `$A000`-`$BFFF` and
-`$E000`-`$FFFF` from its entries and its dispatch tables, and drop the
-recorded addresses that trace does not reach; check what is left against
-the KERNAL ROM's own instruction starts. One game's map held 307 KERNAL
+code there: the memmap cannot tell the two apart. `dump --under-rom`
+leaves out, and lists, the recorded addresses at `$E000`-`$FFFF` that the
+KERNAL's code reaches (decoded from the ROM, from its vectors, its jump
+table and the defaults RESTOR copies to `$0314`) and that no code in RAM
+reaches (decoded from the RAM, from the jumps of what ran elsewhere and the
+RAM's own vectors); it keeps, and names, the addresses both reach. Code the
+game reaches only through a dispatch table is not traced, so a run of its
+code that happens to fall where the KERNAL's runs can be left out: check
+the list against the game's entries and tables before committing the map,
+or record a second map with no load to compare. BASIC's code at
+`$A000`-`$BFFF` is not sorted out this way. One game's map held 307 KERNAL
 addresses beside its music player at `$E000` (`kit/lessons/2026-10-10-qix.md`).
 
 ## Behaviours that waste time, on any build
