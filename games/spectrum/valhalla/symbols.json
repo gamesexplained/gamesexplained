@@ -5398,17 +5398,17 @@
   {
    "address": 23884,
    "type": "line",
-   "text": "gx (15): every graphics command goes through here. The caller has built the command in x$; LET x$=STR$ USR gi runs it (graphics), and the assignment that follows leaves x$ holding the number USR returned."
+   "text": "gx (15): every graphics command but one goes through here; line 6260, after \"load\", runs the same LET itself to send command 14. The caller has built the command in x$; LET x$=STR$ USR gi runs it (graphics), and the assignment that follows leaves x$ holding the number USR returned."
   },
   {
    "address": 23899,
    "type": "line",
-   "text": "The functions, defined once and used everywhere. FN w$(n): word n of the dictionary d$, its first byte its length; FN n$(x,y) a byte of two nibbles; FN d$(x) a number as two bytes, high first; FN u and FN n the high and low nibbles of a character's code."
+   "text": "The functions, defined once and used everywhere but FN n$. FN w$(n): word n of the dictionary d$, its first byte its length; FN n$(x,y) a byte of two nibbles, which no line uses; FN d$(x) a number as two bytes, high first; FN u and FN n the high and low nibbles of a character's code."
   },
   {
    "address": 24063,
    "type": "line",
-   "text": "FN t$(x): an object with \"the\" before it, or an amount of crowns (ca) with \"s\" after it for money (word 97)."
+   "text": "FN t$(x): an object with \"the\" before it (none for a quest object, whose name has a capital), or an amount of crowns (ca) with \"s\" after it for money (word 97)."
   },
   {
    "address": 24148,
@@ -5503,7 +5503,7 @@
   {
    "address": 25832,
    "type": "line",
-   "text": "\"You ask Thor to get the axe.\" (rp2), a pause, then a refusal (\"Thor refuses to get the axe.\") one time in three; or, when you are the one asking, seven times in eight if you asked the same character last time (la), whatever it answered; or always when FN f, how far apart the two are in goodness, less half the asker's charisma, is above 2. A refusal gives back 4 of the 5 strength the command cost."
+   "text": "\"You ask Thor to get the axe.\" (rp2), a pause, then a refusal (\"Thor refuses to get the axe.\") one time in three; or, when you are the one asking, seven times in eight if the same character was the last one asked, by you or by another character, or the last you dealt with in a trade (la, also set by line 1129), whatever it answered; or always when FN f, how far apart the two are in goodness, less half the asker's charisma, is above 2. A refusal gives back 4 of the 5 strength the command cost."
   },
   {
    "address": 25975,
@@ -5583,7 +5583,7 @@
   {
    "address": 27971,
    "type": "line",
-   "text": "Takes the object off the ground (mget) and, for get and take, into the hands (bput), putting it back if they are full; then draws the pick-up (gr: gget, or geatp and gdrinkp when eat and drink come this way for food and wine lying here)."
+   "text": "Takes the object off the ground (mget) and, for get and take, into the hands (bput), putting it back if bput refuses it (too heavy, no free slot, or a second weapon, shield or helmet); then draws the pick-up (gr: gget, or geatp and gdrinkp when eat and drink come this way for food and wine lying here)."
   },
   {
    "address": 28102,
@@ -5658,7 +5658,7 @@
   {
    "address": 29879,
    "type": "line",
-   "text": "Needs an object and a target, neither of them money; the object leaves the hands, then the target must be here. Every check after bget that fails loses the object: it is never put down again."
+   "text": "Needs an object and a target, neither of them money; the object leaves the hands, then the target must be here. A target character that is not here gives the object back to the hands (bput, line 1462), but every later check that fails loses it: after a refusal (rf), a target object not found (mfi) or a throw from too close, it is never put down again."
   },
   {
    "address": 30026,
@@ -5838,7 +5838,7 @@
   {
    "address": 34255,
    "type": "line",
-   "text": "No terrain is a plain (3). A terrain byte of 128 or more is a special place, sp = te - 128, with its own row of s$: its real terrain, the object or character needed (o1) and the one forbidden (o2) to take its other exits, those in k(1-8). The terrain to the north, tb, is read for the picture's distance: off the map or nothing is a plain, a hall counts as mountains."
+   "text": "No terrain is a plain (3). A terrain byte above 128 is a special place, sp = te - 128, with its own row of s$: its real terrain, the object or character needed (o1) and the one forbidden (o2) to take its other exits, those in k(1-8). The terrain to the north, tb, is read for the picture's distance: off the map or nothing is a plain, a hall counts as mountains."
   },
   {
    "address": 34501,
@@ -5853,7 +5853,7 @@
   {
    "address": 34834,
    "type": "line",
-   "text": "mdesc (3900, run from 3902): \"You are in Valheim, which is in an area of lakes in Asgard.\": the special place's name, \"hall\" after a name that ends in an apostrophe (\"Krank's hall\"), the terrain (none for a hall), and the world."
+   "text": "mdesc (3900, run from 3902): \"You are in Valheim, which is in an area of lakes in Asgard.\": the special place's name, \"hall\" after a name that ends in 's (\"Krank's hall\"), the terrain (none for a hall), and the world."
   },
   {
    "address": 35122,
@@ -5863,7 +5863,7 @@
   {
    "address": 35215,
    "type": "line",
-   "text": "de (3980): reports error e unless ep is clear, as it is while characters act on their own: RESTORE to line 9900 + e and READ the message, an expression the READ works out."
+   "text": "de (3980): reports error e unless ep is clear, as it is while a character takes, eats or drinks something on its own (line 4223), for the give-backs of lines 1140 and 1790, on Klepto's journey (5312) and in the comings and goings (5520): RESTORE to line 9900 + e and READ the message, an expression the READ works out."
   },
   {
    "address": 35248,
@@ -5878,7 +5878,7 @@
   {
    "address": 35519,
    "type": "line",
-   "text": "One time in four you are n1. n1 is made the one s likes more (the nearer in goodness), n2 the one it likes less. A clever character (brains, FN i, above 7; one time in ten the opposite) does not drop things; but one time in two another character here, ll, tells it what to do instead, and then it may refuse (rf), and may drop."
+   "text": "One time in four you are n1. n1 is made the one s likes more (the nearer in goodness), n2 the one it likes less. A clever character (brains, FN i, above 7; one time in ten the opposite) does not drop things; but one time in two a random character here is picked as ll and, unless that is the clever one itself, tells it what to do instead, and then it may refuse (rf), and may drop."
   },
   {
    "address": 35654,
@@ -5923,7 +5923,7 @@
   {
    "address": 36231,
    "type": "line",
-   "text": "pr (5010): prints x$ in the text window. A line of 32 or less scrolls n$ (USR 23760) and goes in at 609; a longer one is cut at its last space and printed a line at a time."
+   "text": "pr (5010): prints x$ in the text window. A line of 32 or less scrolls n$ (USR 23760) and goes in at 609; a longer one is cut at the last space among its first 33 characters (after 32 if there is none) and printed a line at a time."
   },
   {
    "address": 36393,
@@ -5983,7 +5983,7 @@
   {
    "address": 37525,
    "type": "line",
-   "text": "5300: an object put down where all six slots are taken. Klepto (24) comes, \"Klepto steals the axe\", and carries it off to a random neighbouring location with a free slot (further if there is none), where he stays and it can be found again. A quest object (its name has a capital) is never the one he takes: it goes into a slot in place of an ordinary object, and he takes that."
+   "text": "5300: an object put down where all six slots are taken. Klepto (24) comes, \"Klepto steals the axe\", and carries it off to a random neighbouring location with a free slot (further if there is none), where he stays and it can be found again. A quest object (its name has a capital) is not the one he takes while an ordinary object lies there: it goes into that slot in place of the ordinary object, and he takes that; only when every slot holds a quest object or the container does he take whatever is in the last."
   },
   {
    "address": 38069,
@@ -6123,7 +6123,7 @@
   {
    "address": 40966,
    "type": "line",
-   "text": "A special place's other exits: \"You need the key if you wish to go north\", \"You need Odin's help ...\". The text for a forbidden object or character (\"you must not have a helmet\", \"Krank must not be present\") is never shown: with o2 alone line 6563 writes over it with \"You can go \", and where there are both o1 and o2 the exits are skipped altogether (both seen in play, with o1 and o2 set by hand)."
+   "text": "A special place's other exits: \"You need Ofnir if you wish to go north\", \"You need Odin's help ...\". The text for a forbidden object or character (\"you must not have a helmet\", \"Krank must not be present\") is never shown: with o2 alone line 6563 writes over it with \"You can go \", and where there are both o1 and o2 the exits are skipped altogether (both seen in play, with o1 and o2 set by hand)."
   },
   {
    "address": 41447,
@@ -6153,7 +6153,7 @@
   {
    "address": 41940,
    "type": "line",
-   "text": "Sends one feature (command 18); a castle (features 0-3) gets windows and tall windows along its front, a hut (4) a window one time in two and a door one time in four."
+   "text": "Sends one feature (command 18); a castle (features 0-3) gets windows along its front, tall ones among them on castles 0, 1 and 3 (castle 2's are all plain), a hut (4) a window one time in two and a door one time in four."
   },
   {
    "address": 42330,
@@ -6278,7 +6278,7 @@
   {
    "address": 43489,
    "type": "line",
-   "text": "A command with no verb that starts with an object, a place or a direction is \"go\" to it (\"north\"), or \"offer\" it while a trade is under way; a subject that is not a character, or is not here, is an error. Then the verb (dov), told by you (ll = 1), and its report (rep)."
+   "text": "A command with no verb that starts with an object or a direction is \"go\" to it (\"north\"), or \"offer\" it while a trade is under way; a subject that is not a character, or is not here, is an error. Then the verb (dov), told by you (ll = 1), and its report (rep)."
   },
   {
    "address": 43652,
@@ -6373,7 +6373,7 @@
   {
    "address": 51088,
    "type": "line",
-   "text": "The working variables, in the order the program first set them: n, g, x, y, a, d and w, the command's parts as read from parse_result (s, v, b, c, so, im, ex, ca and sc), then p, q, e (the error) and t (the object)."
+   "text": "The working variables, in the order they were first made, which is not the order this program sets them (line 110 and v0 set im and so before c): n, g, x, y, a, d and w, the command's parts as read from parse_result (s, v, b, c, so, im, ex, ca and sc), then p, q, e (the error) and t (the object)."
   },
   {
    "address": 51213,
@@ -6408,7 +6408,7 @@
   {
    "address": 51601,
    "type": "line",
-   "text": "i = 13, the end of a FOR loop to 12 that ran as a direct command (its line, 65534, is the edit line), left by whoever prepared the tape. Line 5140 makes i again at Valhalla."
+   "text": "i = 13, the end of a FOR loop to 12 that ran as a direct command (its line, 65534, is the edit line), left by whoever prepared the tape. The main loop's FOR i at line 8100 makes i again as soon as the game starts; lines 5140 (Valhalla) and 6260 (load) use it too."
   },
   {
    "address": 51620,
@@ -6423,7 +6423,7 @@
   {
    "address": 51708,
    "type": "line",
-   "text": "The machine code's entry points: rad 53350 (parse_result), syntad 53363 (parse_command), ioad 54413 (input_init), priad 55019 (print_text_window), fad 53939 (enter_flag), and two no line uses, tokad 54113 (word_list) and brkad 54749 (escape_to_basic)."
+   "text": "The machine code's addresses: rad 53350 (parse_result), syntad 53363 (parse_command), ioad 54413 (input_init), priad 55019 (print_text_window), fad 53939 (enter_flag), and two no line uses, tokad 54113 (word_list) and brkad 54749 (escape_to_basic)."
   },
   {
    "address": 51774,
@@ -6448,12 +6448,12 @@
   {
    "address": 53350,
    "type": "line",
-   "text": "The parser's answer, which BASIC reads with PEEK from rad (53350, this address): +0 the subject s (a character told to act: \"Thor get axe\"), +1 the verb v, +2 the object b, +3 im (after \"with\"), +4 so (after \"from\"), +5 c (after \"to\", or a second noun), +6 ex (after \"for\"), +7 a slot for word class 4, which no word in the dictionary has, +8 and +9 ca, a number typed (an amount of crowns), low byte first, +10 sc, a game command (\"save\", \"who\", \"l\"), +11 the code of the word before the current one, +12 $FF once the last word has been read. Each slot holds a word's code, its index in the dictionary d$. parse_command clears all 13 bytes first."
+   "text": "The parser's answer, which BASIC reads with PEEK from rad (53350, this address): +0 the subject s (a character told to act: \"Thor get axe\"), +1 the verb v, +2 the object b, +3 im (after \"with\", unless the verb before it is buy or sell), +4 so (after \"from\"), +5 c (after \"to\", or a second noun), +6 ex (after \"for\", or after \"with\" following buy or sell), +7 a slot for word class 4, which no word in the dictionary has, +8 and +9 ca, a number typed (an amount of crowns), low byte first, +10 sc, a game command (\"save\", \"who\", \"l\"), +11 the code of the word before the current one, +12 $FF once the last word has been read. Each slot holds a word's code, its index in the dictionary d$. parse_command clears all 13 bytes first."
   },
   {
    "address": 53363,
    "type": "line",
-   "text": "Parser, USR syntad (53363) from line 100. Clears parse_result, then reads the word list the ENTER key built at word_list, five bytes a word, and files each word by its class (the 11th byte of its dictionary entry): a name or an object (class 1) before the verb becomes the subject, after it the object and then c; a verb (class 2) the verb; a preposition (class 3) sends the next word to im (\"with\", code 153), so (\"from\", 155), c (\"to\", 154) or ex (any other: \"for\", 160); a game command (class 7) goes to sc and ends the parse; a swear word (class 6) ends it with error 4, which line 115 answers with Mary. A number becomes the noun 97 (\"crown\") with the amount in ca, and the word \"crowns\" after it is passed over; \"crown\" with no number before it is error 3. A second verb or one noun too many is error 1, a second subject 5, a preposition at the end 2, a preposition followed by anything but a noun 6. Returns BC = 0 or the error, which BASIC takes as e."
+   "text": "Parser, USR syntad (53363) from line 100. Clears parse_result, then reads the word list the ENTER key built at word_list, five bytes a word, and files each word by its class (the 11th byte of its dictionary entry): a name or an object (class 1) before the verb becomes the subject, after it the object and then c; a verb (class 2) the verb; a preposition (class 3) sends the next word to im (\"with\", code 153, but ex when the verb already read is buy or sell, 116 or 117), so (\"from\", 155), c (\"to\", 154) or ex (any other: \"for\", 160); a game command (class 7) goes to sc and ends the parse; a swear word (class 6) ends it with error 4, which line 120 answers with Mary (line 115 answers every other error with \"what?\"). A number becomes the noun 97 (\"crown\") with the amount in ca, and the word \"crowns\" after it is passed over; \"crown\" with no number before it is error 3. A second verb or one noun too many is error 1, a second subject 5, a preposition at the end 2, a preposition followed by anything but a noun 6 (a number counts as a noun there only where the word goes to ex). Returns BC = 0 or the error, which BASIC takes as e."
   },
   {
    "address": 53648,
@@ -6478,7 +6478,7 @@
   {
    "address": 53715,
    "type": "line",
-   "text": "Unused. 478 bytes that nothing in the game reads or writes (no address in the machine code or the BASIC points here, and the three play snapshots leave them as the tape has them). From $D1FD they hold an older copy of the input editor's variables at input_vars, with the words \"quitt the axe at Nidhogg\" in its line buffer: memory the authors' machine held when the file was saved."
+   "text": "Unused. 222 bytes that nothing in the game reads or writes (no address in the machine code or the BASIC points here, and the play snapshots leave them as the tape has them). From $D200 they hold an older copy of matched_entry, enter_flag and the input editor's variables at input_vars (its flag byte $C1 at $D203), with the words \"quitt the axe at Nidhogg\" in its line buffer: memory the authors' machine held when the file was saved."
   },
   {
    "address": 53937,
@@ -6493,7 +6493,7 @@
   {
    "address": 53940,
    "type": "line",
-   "text": "The input editor's variables, reached through IX = $D2B4. +0 flags: bit 0 a line was cleared by CAPS SHIFT 1 and can be fetched back, bit 2 a word is being collected, bit 3 the matcher has used its one spelling allowance, bit 5 a number is being read, bit 6 the cursor is showing, bit 7 SYMBOL SHIFT S and BREAK may leave the game (ioad sets it, line 9800 clears it with POKE fad+1,0). +1 ($D2B5) the cursor's position in the line, +2 ($D2B6) the line's length, +3 ($D2B7) the length of the word being read; $D2B8 a copy of SP; $D2BA and $D2BB the position and length saved by CAPS SHIFT 1; $D2BC the start of the five text-window lines shown, inside n$; $D2BE the number being read; $D2C0 where the next entry of word_list goes; $D2C2 the dictionary entry being tried; $D2C4, $D2C5, $D2C7, $D2C8 and $D2CD the matcher's counts; $D2C9 the start of n$'s text, VARS+6; $D2CB (IX+$17) more flags: bit 0 clear the input lines before printing, bits 3-5 which kind of misspelling has been allowed; $D2CC (IX+$18) where the number began; $D2D2-$D2DC the ROM's print settings, saved by the interrupt."
+   "text": "The input editor's variables, reached through IX = $D2B4. +0 flags: bit 0 a line was cleared by CAPS SHIFT 1 and can be fetched back, bit 2 a word is being collected, bit 3 the matcher has used its one spelling allowance, bit 5 a number is being read, bit 6 the cursor is showing, bit 7 SYMBOL SHIFT S and BREAK may leave the game (ioad sets it, line 9800 clears it with POKE fad+1,0). +1 ($D2B5) the cursor's position in the line, +2 ($D2B6) the line's length, +3 ($D2B7) the length of the word being read; $D2B8 a copy of SP; $D2BA and $D2BB the position and length saved by CAPS SHIFT 1; $D2BC the start of the five text-window lines shown, inside n$; $D2BE the number being read; $D2C0 where the next entry of word_list goes; $D2C2 the dictionary entry being tried; $D2C4, $D2C5, $D2C7, $D2C8 and $D2CD the matcher's counts; $D2C9 the start of n$'s text, VARS+6; $D2CB (IX+$17) more flags: bit 0 clear the input lines before printing, bits 3-5 which kind of misspelling has been allowed; $D2CC (IX+$18) the position of the last digit read (each digit overwrites it); $D2D2-$D2DC the ROM's print settings, saved by the interrupt."
   },
   {
    "address": 53981,
@@ -6508,7 +6508,7 @@
   {
    "address": 54113,
    "type": "line",
-   "text": "tokad (54113): the line as the ENTER handler leaves it for the parser, five bytes a word: the word's position in the line, its length, its class, 0, and its code, the index of its entry in d$. A number is entered as its position, its length, $FF, and its value, low byte first. ENTER clears 300 bytes here before it starts. At the hand-over it holds the entries of the authors' last command."
+   "text": "tokad (54113): the line as the ENTER handler leaves it for the parser, five bytes a word: where the word ends in the line (the position just after its last letter), its length, its class, 0, and its code, the index of its entry in d$. A number is entered as the position just after its last digit, a byte that is 0 (1 when the digits follow letters directly), $FF, and its value, low byte first. ENTER clears 300 bytes here before it starts. At the hand-over it holds the entries of the authors' last command."
   },
   {
    "address": 54413,
@@ -6518,7 +6518,7 @@
   {
    "address": 54454,
    "type": "line",
-   "text": "Prints the input line in the lower screen: opens channel K (stream 0), clears the input lines first if a line was just entered (bit 0 of $D2CB), and prints. The caller pushes the text's address and length; B is the line offset."
+   "text": "Prints the input line in the lower screen: opens channel K (stream 0), clears the input lines first if the line has just been shortened or emptied (bit 0 of $D2CB, set by CAPS SHIFT 0, CAPS SHIFT 1 and the end of ENTER), and prints. The caller pushes the text's address and length; B is the line offset."
   },
   {
    "address": 54477,
@@ -6613,7 +6613,7 @@
   {
    "address": 55019,
    "type": "line",
-   "text": "priad (55019), USR from line 5020 after each new line of text, and SYMBOL SHIFT Z: prints the five lines of the 20-line text area n$ that $D2BC points to, 160 characters, in the lower screen, with the ROM's print settings saved around it. This entry first points $D2BC at the last five lines (n$ starts 6 bytes into the variables; +$1E0 is line 16 of 20)."
+   "text": "priad (55019), USR from line 5020 after each new line of text, from lines 6265 and 9800, and SYMBOL SHIFT Z: prints the five lines of the 20-line text area n$ that $D2BC points to, 160 characters, in the lower screen, with the ROM's print settings saved around it. This entry first points $D2BC at the last five lines (n$ starts 6 bytes into the variables; +$1E0 is line 16 of 20)."
   },
   {
    "address": 55078,
@@ -6628,7 +6628,7 @@
   {
    "address": 55123,
    "type": "line",
-   "text": "Ends a number: adds its entry to word_list (start, length, $FF, value) and clears the number being read."
+   "text": "Ends a number: adds its entry to word_list (the position just after its last digit, a byte that is 0 or 1 rather than its length, $FF, value) and clears the number being read."
   },
   {
    "address": 55172,
@@ -6663,12 +6663,12 @@
   {
    "address": 55324,
    "type": "line",
-   "text": "The end of a word: if letters were collected, looks the word up in the dictionary, d$ (VARS + $028E is its first entry's length byte), and adds an entry to word_list: its position, its length, its class, 0 and its code; when the match allowed a final \"s\" a second entry follows with code $FF. A word not found goes to show_bad_word."
+   "text": "The end of a word: if letters were collected, looks the word up in the dictionary, d$ (VARS + $028E is its first entry's length byte), and adds an entry to word_list: where it ends (the position just after its last letter), its length, its class, 0 and its code; when the match allowed a final \"s\" a second entry follows with code $FF. A word not found goes to show_bad_word."
   },
   {
    "address": 55414,
    "type": "line",
-   "text": "Not called: no address in the game points here, and the BASIC never uses 55414. Saves the ROM's print settings, finds entry number L (from the LD L,$00 at $D88D, which nothing changes) of word_list, sets the cursor there and shows that word in red, as show_bad_word does."
+   "text": "Not called: no address in the game points here, and the BASIC never uses 55414. Saves the ROM's print settings, brings back the line CAPS SHIFT 1 cleared (recall_line, called before IX is set), finds entry number L (from the LD L,$00 at $D88D, which nothing changes) of word_list, sets the cursor there and, only if a line was brought back, shows that word in red, as show_bad_word does."
   },
   {
    "address": 55496,
@@ -6688,7 +6688,7 @@
   {
    "address": 55825,
    "type": "line",
-   "text": "Moves to the next dictionary entry (11 bytes on) and tries again, up to entry 255; at the end, returns the best near match found if its length is within two of the word's, else 0."
+   "text": "Moves to the next dictionary entry (11 bytes on) and tries again, up to entry 255; at the end, returns the best near match found if the number of letters it matched is within two of the word's length, else 0."
   },
   {
    "address": 55868,
@@ -6728,7 +6728,7 @@
   {
    "address": 56027,
    "type": "line",
-   "text": "Draws a skyline across the whole width, 256 columns from x = 0: six bytes follow the CALL (the routine returns past them), giving how many columns share a height, the longest run of steps in one direction, the lowest and highest y, the spread of a step and the starting y. Each column is filled from its height down to the y in fill_bottom with fill_column (or one pixel drawn, after toggle_ridge_fill)."
+   "text": "Draws a skyline across the whole width, 256 columns from x = 0: six bytes follow the CALL (the routine returns past them), giving how many columns share a height, the longest run in one direction, counted in columns, the lowest and highest y, the spread of a step and the starting y. Each column is filled from its height down to the y in fill_bottom with fill_column (or one pixel drawn, after toggle_ridge_fill)."
   },
   {
    "address": 56097,
@@ -6758,12 +6758,12 @@
   {
    "address": 56208,
    "type": "line",
-   "text": "Draws a vertical line in column C from y = B down to the y held in fill_bottom, the operand of the LD D at $DB90 (the scene drawers POKE it: $80 by default, the bottom of the sky; $28 for the forest)."
+   "text": "Draws a vertical line in column C from y = B down to the y held in fill_bottom, the operand of the LD D at $DB90 (the scene drawers set it: $80 by default, the bottom of the sky; $28 for the forest and the cave floor, $50 for the lakes' shore, $68 for the mountains)."
   },
   {
    "address": 56234,
    "type": "line",
-   "text": "Plots the pixel at x = C, y = B in PLOT's coordinates (y counted up from row 21), straight into the screen without touching the attributes. The instruction at $DBDA is rewritten by set_plot_xor, set_plot_or and set_plot_test, so the pixel is flipped (XOR, the default), set (OR), or only tested (AND, Z when clear)."
+   "text": "Plots the pixel at x = C, y = B in PLOT's coordinates (y counted up from row 21), straight into the screen without touching the attributes. The instruction at $DBDA is rewritten by set_plot_xor, set_plot_or and set_plot_test, and directly by fill_shape, so the pixel is flipped (XOR, the default), set (OR), or only tested (AND, Z when clear)."
   },
   {
    "address": 56286,
@@ -6788,12 +6788,12 @@
   {
    "address": 56456,
    "type": "line",
-   "text": "One stroke for scatter_strokes: sets the ROM's COORDS to the dot, picks a lean and a length from rng_state and draws the line up from it; a stroke that would leave the box is retried at another position."
+   "text": "One stroke for scatter_strokes: sets the ROM's COORDS to the dot, picks a lean and a length from rng_state and draws the line up from it; a stroke whose top would lean outside the box's x range is retried at another position (its height is not checked against the box)."
   },
   {
    "address": 56525,
    "type": "line",
-   "text": "Scatters HL horizontal dashes, ripples and furrows, of 1 to A+1 pixels: x from B over D, y from C over E, each dash running right and stopping at the right edge of the box."
+   "text": "Scatters HL horizontal dashes, ripples and furrows, of 1 to A+1 pixels: x from B over D, y from C over E, each dash running right and stopping at the right edge of the box; a dash cut short there is not counted, so another is drawn in its place."
   },
   {
    "address": 56558,
@@ -6838,7 +6838,7 @@
   {
    "address": 56699,
    "type": "line",
-   "text": "Fills the inside of outlines, column by column, from x = H to x = L: going down from y = E to y = D, each set pixel met turns filling on or off, and pixels are set while it is on. A gives the state each column starts in."
+   "text": "Fills the inside of outlines, column by column, from x = H to x = L: going down from y = E to y = D + 1 (y = D itself is not reached), each set pixel met turns filling on or off, and pixels are set while it is on. A gives the state each column starts in."
   },
   {
    "address": 56791,
@@ -6888,7 +6888,7 @@
   {
    "address": 56932,
    "type": "line",
-   "text": "The way out of every graphics command: puts back the stack pointer graphics saved on entry and returns BC = 1 to USR. A command whose string has the wrong length comes straight here."
+   "text": "The way out of every graphics command: puts back the stack pointer graphics saved on entry and returns BC = 1 to USR. A command that checks its string's length (all but 14, 18, 19, 20, 21 and 22) comes straight here when it is wrong."
   },
   {
    "address": 56940,
@@ -6953,7 +6953,7 @@
   {
    "address": 57144,
    "type": "line",
-   "text": "The point the figure and feature routines draw from: $DF38 the x in pixels (read_position, gfx_feature), $DF39 the y, the figures' base row ($38 as loaded, read by part_position and read_position); draw_glyph_list sets and restores both."
+   "text": "The point the figure and feature routines draw from: $DF38 the x in pixels (set by read_position, gfx_feature, gfx_fight, gfx_appear, figure_walk and the feature drawers), $DF39 the y, the figures' base row ($38 as loaded, read by part_position, read_position and gfx_blush); draw_glyph_list saves both and restores them when it finishes."
   },
   {
    "address": 57146,
@@ -6978,7 +6978,7 @@
   {
    "address": 57179,
    "type": "line",
-   "text": "Picks the paper, yellow or white ($30 or $38); in the light scheme the walls take it and the other attribute the other one; in the dark scheme the walls are $02 (red on black) and the other attribute is yellow or white ink on black, and the dark bit is cleared for the next building."
+   "text": "Picks the paper, yellow or white ($30 or $38); in the light scheme the other attribute takes it and the walls the other one; in the dark scheme the walls are $02 (red on black) and the other attribute is yellow or white ink on black, and the dark bit is cleared for the next building."
   },
   {
    "address": 57232,
@@ -7013,12 +7013,12 @@
   {
    "address": 57463,
    "type": "line",
-   "text": "Draws one tower or wall of a castle: three bytes follow the CALL, its width and height in cells and a byte whose bits 0-4 are its column (counted from the castle's left, castle_x) and bits 5-7 its shading. The tower stands on row 11: its cells are painted in the wall colour and cleared, its sides drawn down with tiles 7 (mirrored on the left), a top drawn with tiles 8 and 9 when it is narrower than 9 cells, and texture added: everywhere when the castle is textured, on the top 1-3 rows by bits 6-7, and down its right side by bit 5."
+   "text": "Draws one tower or wall of a castle: three bytes follow the CALL, its width and height in cells and a byte whose bits 0-4 are its column (counted from the castle's left, castle_x) and bits 5-7 its shading. The tower stands on row 11: its cells are painted in the wall colour and cleared, its sides drawn down with tiles 7 (mirrored on the left), a top drawn with tiles 8 and 9 when it is narrower than 9 cells, and texture added: everywhere when the castle is textured, down its left 1-3 columns by bits 6-7, and down its right side by bit 5."
   },
   {
    "address": 57642,
    "type": "line",
-   "text": "The column of the castle's left edge (feature x times 2), which draw_tower and draw_battlements add to their own columns."
+   "text": "The column of the castle's left edge (feature x times 2), which draw_tower, draw_battlements, draw_flag and draw_gate add to their own columns (feature_hut reads it too)."
   },
   {
    "address": 57644,
@@ -7028,22 +7028,22 @@
   {
    "address": 57670,
    "type": "line",
-   "text": "Draws a row of battlements: two bytes follow the CALL, the first holding the number of merlons less one (bits 5-7) and the column (bits 0-4), the second the row (bits 0-6) and, in bit 7, a parapet of tiles 4, 5 and 6 on the row below. The merlons are tile 3 with tile 9 between them, a row lower."
+   "text": "Draws a row of battlements: two bytes follow the CALL, the first holding the number of merlons less two (bits 5-7) and the column (bits 0-4), the second the row (bits 0-6) and, in bit 7, a parapet of tiles 4, 5 and 6 on the row below. The merlons are tile 3 with tile 9 between them, a row lower."
   },
   {
    "address": 57768,
    "type": "line",
-   "text": "Texture on the first merlon and the cells below and right of it."
+   "text": "Texture on the first merlon, the cell below it and the cell right of that one, a row below the merlons."
   },
   {
    "address": 57783,
    "type": "line",
-   "text": "Terrain 5, a forest: the land green ($20); the treetops are a skyline filled down to y = 40 (fill_bottom $28)."
+   "text": "Terrain 5, a forest: the land green ($20); the ground along the bottom of the picture (rows 15-16, below the trees) is a skyline filled down to y = 40 (fill_bottom $28)."
   },
   {
    "address": 57796,
    "type": "line",
-   "text": "Forest treetops: draw_ridge's six bytes: the height moves every 1 column, in runs of 1 to 1 steps of -3 to +3; it starts at y = 50 and stays between 45 and 51."
+   "text": "Forest, the ground along the bottom of the picture: draw_ridge's six bytes: the height moves every 1 column, in runs of 1 to 1 steps of -3 to +3; it starts at y = 50 and stays between 45 and 51."
   },
   {
    "address": 57802,
@@ -7053,7 +7053,7 @@
   {
    "address": 57817,
    "type": "line",
-   "text": "Forest, first line of foliage: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 6 steps of -1 to +1; it starts at y = 126 and stays between 119 and 127."
+   "text": "Forest, first line of foliage: draw_ridge's six bytes: the height moves every 3 columns and at each new run, in runs of 1 to 6 columns, by steps of -1 to +1; it starts at y = 126 and stays between 119 and 127."
   },
   {
    "address": 57823,
@@ -7063,7 +7063,7 @@
   {
    "address": 57826,
    "type": "line",
-   "text": "Forest, second line of foliage: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 6 steps of -1 to +1; it starts at y = 123 and stays between 119 and 127."
+   "text": "Forest, second line of foliage: draw_ridge's six bytes: the height moves every 3 columns and at each new run, in runs of 1 to 6 columns, by steps of -1 to +1; it starts at y = 123 and stays between 119 and 127."
   },
   {
    "address": 57832,
@@ -7073,7 +7073,7 @@
   {
    "address": 57835,
    "type": "line",
-   "text": "Forest, third line of foliage: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 6 steps of -1 to +1; it starts at y = 120 and stays between 119 and 127."
+   "text": "Forest, third line of foliage: draw_ridge's six bytes: the height moves every 3 columns and at each new run, in runs of 1 to 6 columns, by steps of -1 to +1; it starts at y = 120 and stays between 119 and 127."
   },
   {
    "address": 57841,
@@ -7083,17 +7083,17 @@
   {
    "address": 57844,
    "type": "line",
-   "text": "Forest, the foot of the trees: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 6 steps of -1 to +1; it starts at y = 96 and stays between 95 and 97."
+   "text": "Forest, the foot of the trees: draw_ridge's six bytes: the height moves every 3 columns and at each new run, in runs of 1 to 6 columns, by steps of -1 to +1; it starts at y = 96 and stays between 95 and 97."
   },
   {
    "address": 57850,
    "type": "line",
-   "text": "Forest: tree trunks, each 1 to 4 pixels wide at a random 10 to 25 pixels from the last, filled with fill_shape from y = 98 down to a height that grows with the width, until x passes 255."
+   "text": "Forest: tree trunks, each 2 to 5 pixels wide at a random 10 to 25 pixels from the last, filled with fill_shape from y = 98 down to a height that grows with the width, until x passes 255."
   },
   {
    "address": 57901,
    "type": "line",
-   "text": "Forest: walks along y = 93 with plot_pixel testing; for each run of set pixels (a trunk) found, scatters 45 dots of foliage over the 24 by 8 pixel box above it, at y = 100 and at the next row down; then sets plot_pixel back to flipping."
+   "text": "Forest: walks along y = 93 with plot_pixel testing; for each run of set pixels (a trunk) found, scatters 45 dots of foliage in each of two boxes 8 pixels wide and 24 high, from y = 100 to 123: one starting 17 pixels left of the trunk's middle and one at x = 231 less the middle, across the picture (set_plot_or, called just before, overwrites H, so the trunk's width plays no part), skipping a box that would pass x = 255; then sets plot_pixel to setting (OR)."
   },
   {
    "address": 58003,
@@ -7123,7 +7123,7 @@
   {
    "address": 58051,
    "type": "line",
-   "text": "Graphics command 1, the location's picture (gter, line 7011): five bytes, the command and the location number's two halves, its terrain te and the terrain to the north tb. Seeds random from the halves, clears the picture, draws the bottom line at y = 40 and jumps to the terrain's drawer in terrain_table. Then, one time in four, paints rows 13-15 yellow, a track (not on an icy waste or in a cave); and, for terrain 1 to 5, when the terrain to the north is at least as high, draws the view north from view_table with the sky rows painted $3C and fill_bottom at $80."
+   "text": "Graphics command 1, the location's picture (gter, line 7011): five bytes, the command and the location number's two halves, its terrain te and the terrain to the north tb. Seeds random from the halves, clears the picture, draws the bottom line at y = 40 and jumps to the terrain's drawer in terrain_table. Then, one time in four, paints rows 13-15 yellow, a track (not on an icy waste or in a cave); and, for terrain 1 to 5, when the terrain to the north is at least as high, draws the view north from view_table with the sky rows painted $3C and fill_bottom at $80. A hall gets neither: its drawer ends with POP HL ($E66F), which drops the return to $E30C pushed at $E30A."
   },
   {
    "address": 58192,
@@ -7143,12 +7143,12 @@
   {
    "address": 58226,
    "type": "line",
-   "text": "Terrain 1, an icy waste: the land white, rows 6-11 blue ink ($39), rows 6-7 cyan ink ($3D); 32 dashes of up to 25 pixels over the ice, then two outline skylines."
+   "text": "Terrain 1, an icy waste: the land white, rows 6-11 blue ink ($39), rows 6-7 cyan ink ($3D); 32 dashes of up to 25 pixels over the ice (and one more for each cut short at the right edge), then two outline skylines."
   },
   {
    "address": 58267,
    "type": "line",
-   "text": "Icy waste, first line: draw_ridge's six bytes: the height moves every 7 columns, in runs of 1 to 17 steps of -1 to +1; it starts at y = 125 and stays between 120 and 127."
+   "text": "Icy waste, first line: draw_ridge's six bytes: the height moves every 7 columns and at each new run, in runs of 1 to 17 columns, by steps of -1 to +1; it starts at y = 125 and stays between 120 and 127."
   },
   {
    "address": 58273,
@@ -7158,7 +7158,7 @@
   {
    "address": 58276,
    "type": "line",
-   "text": "Icy waste, second line: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 10 steps of -1 to +1; it starts at y = 90 and stays between 87 and 91."
+   "text": "Icy waste, second line: draw_ridge's six bytes: the height moves every 3 columns and at each new run, in runs of 1 to 10 columns, by steps of -1 to +1; it starts at y = 90 and stays between 87 and 91."
   },
   {
    "address": 58282,
@@ -7188,7 +7188,7 @@
   {
    "address": 58302,
    "type": "line",
-   "text": "View north to an icy waste: draw_ridge's six bytes: the height moves every 5 columns, in runs of 1 to 10 steps of -1 to +1; it starts at y = 138 and stays between 136 and 140."
+   "text": "View north to an icy waste: draw_ridge's six bytes: the height moves every 5 columns and at each new run, in runs of 1 to 10 columns, by steps of -1 to +1; it starts at y = 138 and stays between 136 and 140."
   },
   {
    "address": 58308,
@@ -7198,7 +7198,7 @@
   {
    "address": 58309,
    "type": "line",
-   "text": "Terrain 2, a marsh: the land green, row 6 cyan ink ($25), two filled skylines that make the pools."
+   "text": "Terrain 2, a marsh: the land green, row 6 cyan ink ($25), two outline skylines (the pools themselves are drawn later by marsh_pools)."
   },
   {
    "address": 58328,
@@ -7218,7 +7218,7 @@
   {
    "address": 58343,
    "type": "line",
-   "text": "Marsh: switches to outlines and scatters three sets of dots, reeds and mud."
+   "text": "Marsh: switches draw_ridge back to filling and scatters three sets of dots, reeds and mud."
   },
   {
    "address": 58349,
@@ -7248,7 +7248,7 @@
   {
    "address": 58373,
    "type": "line",
-   "text": "Marsh: the pools, along row 10 from column 0: each a box of 1 to 8 cells painted $25 (cyan ink on green), cleared and filled with ripples, then a gap of 1 to 8 cells, until column 31."
+   "text": "Marsh: the pools, along row 10 from column 0: first a gap of 1 to 8 cells, then a box of 1 to 8 cells painted $25 (cyan ink on green), cleared and filled with ripples, and so on in turn until column 31."
   },
   {
    "address": 58459,
@@ -7263,7 +7263,7 @@
   {
    "address": 58464,
    "type": "line",
-   "text": "View north to a marsh: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 2 steps of -1 to +1; it starts at y = 129 and stays between 128 and 131."
+   "text": "View north to a marsh: draw_ridge's six bytes: the height moves at each new run, every 1 or 2 columns (a run never lasts the 3 columns of a step), by steps of -1 to +1; it starts at y = 129 and stays between 128 and 131."
   },
   {
    "address": 58470,
@@ -7313,12 +7313,12 @@
   {
    "address": 58568,
    "type": "line",
-   "text": "Lakes: 88 ripples of up to 6 pixels, then the far shore, a skyline filled down to y = 80."
+   "text": "Lakes: 256 ripples of up to 6 pixels at y 88 to 127, then the far shore, a skyline filled down to y = 80."
   },
   {
    "address": 58590,
    "type": "line",
-   "text": "Lakes, the shore: draw_ridge's six bytes: the height moves every 4 columns, in runs of 1 to 2 steps of -2 to +2; it starts at y = 87 and stays between 81 and 95."
+   "text": "Lakes, the shore: draw_ridge's six bytes: runs of 1 or 2 columns, each taking a new step of -2 to +2 as it starts (a run never reaches the 4 columns after which a step would repeat); it starts at y = 87 and stays between 81 and 95."
   },
   {
    "address": 58596,
@@ -7348,7 +7348,7 @@
   {
    "address": 58668,
    "type": "line",
-   "text": "Mountains, the foothills: draw_ridge's six bytes: the height moves every 2 columns, in runs of 1 to 8 steps of -1 to +1; it starts at y = 115 and stays between 104 and 127."
+   "text": "Mountains, the foothills: draw_ridge's six bytes: runs of 1 to 8 columns, each with a step of -1 to +1 that the height takes as the run starts and again every 2 columns; it starts at y = 115 and stays between 104 and 127."
   },
   {
    "address": 58674,
@@ -7368,7 +7368,7 @@
   {
    "address": 58692,
    "type": "line",
-   "text": "Mountains, the lines on the slopes: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 8 steps of -3 to +3; it starts at y = 45 and stays between 40 and 50."
+   "text": "Mountains, the lines on the slopes: draw_ridge's six bytes: runs of 1 to 8 columns, each with a step of -3 to +3 that the height takes as the run starts and again every 3 columns; it starts at y = 45 and stays between 40 and 50."
   },
   {
    "address": 58698,
@@ -7383,7 +7383,7 @@
   {
    "address": 58717,
    "type": "line",
-   "text": "View north to mountains, the far peaks: draw_ridge's six bytes: the height moves every 2 columns, in runs of 1 to 4 steps of -1 to +1; it starts at y = 151 and stays between 138 and 174."
+   "text": "View north to mountains, the far peaks: draw_ridge's six bytes: runs of 1 to 4 columns, each with a step of -1 to +1 that the height takes as the run starts and again every 2 columns; it starts at y = 151 and stays between 138 and 174."
   },
   {
    "address": 58723,
@@ -7393,7 +7393,7 @@
   {
    "address": 58732,
    "type": "line",
-   "text": "View north to mountains, the nearer range: draw_ridge's six bytes: the height moves every 3 columns, in runs of 1 to 10 steps of -1 to +1; it starts at y = 140 and stays between 129 and 155."
+   "text": "View north to mountains, the nearer range: draw_ridge's six bytes: runs of 1 to 10 columns, each with a step of -1 to +1 that the height takes as the run starts and again every 3 columns; it starts at y = 140 and stays between 129 and 155."
   },
   {
    "address": 58738,
@@ -7408,7 +7408,7 @@
   {
    "address": 58747,
    "type": "line",
-   "text": "View north to a forest: draw_ridge's six bytes: the height moves every 10 columns, in runs of 1 to 3 steps of -2 to +2; it starts at y = 145 and stays between 140 and 150."
+   "text": "View north to a forest: draw_ridge's six bytes: runs of 1 to 3 columns, each taking a new step of -2 to +2 as it starts (a run never reaches the 10 columns after which a step would repeat); it starts at y = 145 and stays between 140 and 150."
   },
   {
    "address": 58753,
@@ -7418,7 +7418,7 @@
   {
    "address": 58754,
    "type": "line",
-   "text": "Terrain 7, a cave: a random style, the walls and land yellow ($30), the roof rows 0-5 yellow ink on black ($06); scattered rocks, then stalagmites: columns of dots of random width from x = 255 down to 0."
+   "text": "Terrain 7, a cave: a random style, the walls and land yellow ($30), the roof rows 0-5 yellow ink on black ($06); scattered rocks, then stalagmites: columns of dots 9 pixels wide, at random spacings of 18, 26 or 34 pixels from x = 255 down to 0."
   },
   {
    "address": 58781,
@@ -7428,7 +7428,7 @@
   {
    "address": 58787,
    "type": "line",
-   "text": "Cave: the stalagmites, boxes of 80 dots 9 pixels high and 48 wide at x falling by random steps, then the roof, two outline skylines over a shaded sky, and the floor."
+   "text": "Cave: the stalagmites, boxes of 80 dots 9 pixels wide and 48 high at x falling by random steps, then the roof, two skylines filled down to y = 128, the first shaded, and the floor."
   },
   {
    "address": 58831,
@@ -7453,7 +7453,7 @@
   {
    "address": 58860,
    "type": "line",
-   "text": "Cave, the floor: draw_ridge's six bytes: the height moves every 4 columns, in runs of 1 to 16 steps of -1 to +1; it starts at y = 51 and stays between 48 and 55."
+   "text": "Cave, the floor: draw_ridge's six bytes: runs of 1 to 16 columns, each with a step of -1 to +1 that the height takes as the run starts and again every 4 columns; it starts at y = 51 and stays between 48 and 55."
   },
   {
    "address": 58866,
@@ -7463,7 +7463,7 @@
   {
    "address": 58867,
    "type": "line",
-   "text": "Terrain 8, inside a hall: picks the colours and a style 0 to 3 (hall_colours), draws the ceiling for the style (hall_flat, hall_rafters, hall_trusses or hall_vault) and returns through hall_room."
+   "text": "Terrain 8, inside a hall: picks the colours and a style 0 to 3 (hall_colours); for styles 1 to 3 draws the ceiling (hall_rafters, hall_trusses or hall_vault) and returns through hall_room, while style 0 goes straight to hall_room and hall_paint draws its flat ceiling (hall_flat)."
   },
   {
    "address": 58900,
@@ -7478,7 +7478,7 @@
   {
    "address": 58916,
    "type": "line",
-   "text": "The hall's colours: row 16 black, the floor rows 12-15 in the paper picked, rows 0-11 in the wall colour; one time in two, 20 short dashes on the floor; for style 0 the flat ceiling, and for styles 0 and 1 row 0 black."
+   "text": "The hall's colours: row 16 black, the floor rows 12-15 in the paper picked, rows 0-11 in the wall colour; one time in two, 20 short dashes on the floor, more if one is cut short at the edge; for style 0 the flat ceiling, and for styles 0 and 1 row 0 black."
   },
   {
    "address": 58993,
@@ -7513,7 +7513,7 @@
   {
    "address": 59039,
    "type": "line",
-   "text": "Style 0: mirrors the left half onto the right, then 200 dashes of up to 5 pixels over the wall."
+   "text": "Style 0: mirrors the left half onto the right, then 200 dashes of up to 5 pixels (more if one is cut short at the edge) along the beam, x 8 to 247 and y 144 to 151 (character row 3)."
   },
   {
    "address": 59056,
@@ -7548,7 +7548,7 @@
   {
    "address": 59093,
    "type": "line",
-   "text": "Style 1: a fan of lines from the left wall to the ridge, 16 pixels apart, then the left half is mirrored onto the right."
+   "text": "Style 1: four parallel lines from the left edge (x = 0, y = 152 down to 128, 8 pixels apart) to the top of the picture (y = 175, x = 47 to 95, 16 pixels apart), then the left half is mirrored onto the right."
   },
   {
    "address": 59121,
@@ -7653,7 +7653,7 @@
   {
    "address": 59191,
    "type": "line",
-   "text": "Style 2: fills the beams from x = 0 to 127, y = 175 down to 128, then two more lines."
+   "text": "Style 2: fills the beams from x = 0 to 127, y = 175 down to 129, then two more lines."
   },
   {
    "address": 59204,
@@ -7678,7 +7678,7 @@
   {
    "address": 59234,
    "type": "line",
-   "text": "Style 3: a vaulted ceiling, the curve of its edge in four lines, the space above filled and shaded."
+   "text": "Style 3: a vaulted ceiling: an edge of two lines with the space above it filled and shaded, then the curve of the vault in four lines, the ribs."
   },
   {
    "address": 59237,
@@ -7753,7 +7753,7 @@
   {
    "address": 59362,
    "type": "line",
-   "text": "Shape 0, the full-sized warrior with 8 carried parts (helmet, shield, sword, axe and so on), used by you, Odin, Thor and most of the gods: a shape's first byte is its glyph bank times two, with the way the bank's glyphs face in bit 0 (they are mirrored in place when a figure turns); the second is the number of parts that come and go with what the figure carries, each two bytes (position, and a glyph from object_glyphs); then the body's parts until a 0, each three bytes (flags, position, glyph from the bank) or, when bits 0-1 of the flags are not 1, five (flags, position, a mask, a first glyph, and a nibble of frame and one of last frame for the walk). A position byte gives y in bits 0-2 and x in bits 4-6, in pixels times 8, from the figure's corner, bit 7 counting x leftwards; bit 3 of a carried part's position shows it."
+   "text": "Shape 0, the full-sized warrior with 8 carried parts (helmet, shield, sword, axe and so on), used by you, Odin, Thor and most of the gods: a shape's first byte is its glyph bank times two, with the way the bank's glyphs face in bit 0 (they are mirrored in place when a figure turns); the second is the number of parts that come and go with what the figure carries, each two bytes (position, and a glyph from object_glyphs); then the body's parts until a 0, each three bytes (flags, position, glyph from the bank) or, when bits 0-1 of the flags are not 1, five (flags, position, a byte nothing uses, a first glyph, and a nibble of frame and one of last frame for the walk). A position byte gives y in bits 0-2 and x in bits 4-6, in pixels times 8, from the figure's corner, bit 7 counting x leftwards; bit 3 of a carried part's position shows it."
   },
   {
    "address": 59406,
@@ -7788,7 +7788,7 @@
   {
    "address": 59562,
    "type": "line",
-   "text": "One record of five bytes for each of the 39 characters, found by find_figure from the character's number in byte 0: byte 1 its shape (bits 1-7) and which way it faces (bit 0); byte 2 which carried parts show, one bit each, set and cleared by get and drop; bytes 3 and 4 which optional body parts show (the arms' positions, set by the arm and fight commands; bits 6-7 of byte 4 set by command 16). The search stops at a 0, which is the first byte of bank_0."
+   "text": "One record of five bytes for each of the 39 characters, found by find_figure from the character's number in byte 0: byte 1 its shape (bits 1-7) and which way it faces (bit 0); byte 2 which carried parts show, one bit each, set and cleared by get and drop, set for each blow by the fight command and cleared by command 14; bytes 3 and 4 which optional body parts show (the arms' positions, set by the arm commands and by get and drop, and for shape 0 which legs or lower body; bits 6-7 of byte 4 set by command 16). The search stops at a 0, which is the first byte of bank_0."
   },
   {
    "address": 59757,
@@ -7833,7 +7833,7 @@
   {
    "address": 60300,
    "type": "line",
-   "text": "The objects that have a glyph of their own, 16 bytes ending with a 0: bits 1-7 are the object's code less $3E (the dictionary codes 63 axe to 87 fireball, after object_glyph has mapped the objects that share a glyph), bit 0 the way its glyph in object_glyphs faces."
+   "text": "The objects that have a glyph of their own, 16 entries and a 0 to end them: bits 1-7 are the object's code less $3E (83 helmet, 65 shield, 67 sword, 63 axe, 80 key, 76 stone, 70 wine, 96 food, 71 jewel, 84 and 85 ring, after object_glyph has mapped the objects that share a glyph; the five entries $FF and $FE match no object and only keep the facing of glyphs that figures carry), bit 0 the way its glyph in object_glyphs faces."
   },
   {
    "address": 60317,
@@ -7853,7 +7853,7 @@
   {
    "address": 60348,
    "type": "line",
-   "text": "The 16 objects' glyphs, 8 bytes each, in the order of object_codes: an object lying on the ground, carried, or thrown is this glyph."
+   "text": "16 glyphs, 8 bytes each, in the order of object_codes: eleven are objects' own, the glyph an object lying on the ground or thrown is drawn with; the other five (1, 2, 4, 10 and 11) are a sword, a shield and an axe as a figure holds them and a sword and an axe raised, drawn only as figures' carried parts."
   },
   {
    "address": 60476,
@@ -7863,7 +7863,7 @@
   {
    "address": 60484,
    "type": "line",
-   "text": "A figure lying down, for each of the seven shapes: a byte with the number of glyphs (bits 0-3), how far left of the figure's position they start (bits 4-6) and the way they face (bit 7), then the glyphs, drawn side by side by gfx_lie."
+   "text": "A figure lying down, for each of the seven shapes: a byte with the number of glyphs (bits 0-3), how many cells behind the figure's position they start (bits 4-6: to its left for one facing, to its right for the other, the glyphs running the other way) and the way they face (bit 7), then the glyphs, drawn side by side by gfx_lie."
   },
   {
    "address": 60635,
@@ -7893,17 +7893,17 @@
   {
    "address": 60942,
    "type": "line",
-   "text": "The gate of a castle (draw_gate), as glyph lists: one for styles 0 and 1, one for style 2 and a wider one for style 3."
+   "text": "The gate of a castle (draw_gate), as glyph lists: one for styles 0 and 1, one for style 2 and a taller one, three cells high, for style 3."
   },
   {
    "address": 61071,
    "type": "line",
-   "text": "Graphics command 3 for a character: walks figure B from column x1 to x2 at the row given. Finds its record and shape, turns it to face the way it goes, works out the steps (8 a column) and the pause between them (the walking speed), copies the shape to $5B00, in the printer buffer, and then for each step: draws the copy (XOR, so it vanishes), moves one pixel, advances each animated part's frame nibble, draws it again and waits. Returns at once if x1 = x2."
+   "text": "Graphics command 3 for a character: walks figure B from column x1 to x2 on the figures' base row ($DF39; the row and facing bytes of the command are not read). Finds its record and shape, turns it to face the way it goes, works out the steps (8 a column) and the pause between them (the walking speed), copies the shape to $5B00, in the printer buffer, and then for each step: draws the copy (XOR, so it vanishes), moves one pixel, advances each animated part's frame nibble, draws it again and waits. Returns at once if x1 = x2."
   },
   {
    "address": 61247,
    "type": "line",
-   "text": "figure_walk's count of pixel steps still to go, and at $EF40 the facing of the figure being drawn."
+   "text": "The count of pixel steps still to go, for figure_walk and for gfx_move's objects and missiles; at $EF40, the facing a figure's record had before turn_figure last turned it, which nothing reads."
   },
   {
    "address": 61249,
@@ -7913,12 +7913,12 @@
   {
    "address": 61272,
    "type": "line",
-   "text": "The pause between steps: B times 256 empty loops, B set from the speed (walk_speed); then the figure is drawn at its new position."
+   "text": "The pause between steps: B times 256 empty loops, B set by figure_walk from the speed at $EEDA times one more than bits 6-7 of record byte 4; then the figure is undrawn, moved a pixel and drawn at its new position, or drawn standing after the last step."
   },
   {
    "address": 61324,
    "type": "line",
-   "text": "Graphics command 2 for a character: draws figure B at the column and row given, facing as the last byte says."
+   "text": "Graphics command 2 for a character: draws figure B at the column given, on the figures' base row (the row byte only places objects), facing as the last byte says."
   },
   {
    "address": 61354,
@@ -7933,7 +7933,7 @@
   {
    "address": 61369,
    "type": "line",
-   "text": "Finds the record of figure C in figure_records (figure_record keeps its address) and its shape in figure_shapes (figure_shape); a number with no record goes to gfx_return."
+   "text": "Finds the record of figure A in figure_records ($EFEA keeps its address) and its shape in figure_shapes (figure_shape); a number with no record goes to gfx_return."
   },
   {
    "address": 61416,
@@ -7958,12 +7958,12 @@
   {
    "address": 61644,
    "type": "line",
-   "text": "Sets bit 6 of each optional body part's flags from the bits of record bytes 3 and 4, choosing which of the arms' glyphs are drawn."
+   "text": "Sets bit 6 of each optional body part's flags from the bits of record bytes 3 and 4, choosing which of the optional glyphs are drawn: the arms' positions and, for shape 0, which legs or lower body."
   },
   {
    "address": 61708,
    "type": "line",
-   "text": "B, C = the screen position of a part from its position byte A and the figure's corner ($DF38 x, $DF39 y); carry set when it falls off the right of the screen."
+   "text": "B, C = the screen position of a part from its position byte A and the figure's corner ($DF38 x, $DF39 y); carry set when it falls off the screen, past the right edge or, for a part to the left of the corner, past the left."
   },
   {
    "address": 61756,
@@ -7973,7 +7973,7 @@
   {
    "address": 61784,
    "type": "line",
-   "text": "Draws the shape copy at HL with interrupts off: the carried parts that show, then the body parts, each optional one only when it is chosen, each animated one at its current frame."
+   "text": "Draws the shape copy at HL with interrupts off: the carried parts that show, then the body parts that are not marked standing-only (bit 5 of the flags), each optional one only when it is chosen, each animated one at its current frame."
   },
   {
    "address": 61880,
@@ -7983,7 +7983,7 @@
   {
    "address": 61906,
    "type": "line",
-   "text": "Draws the figure from its shape itself, as draw_shape_copy, used when it does not move."
+   "text": "Draws the figure from its shape itself, standing: the carried parts that show and the body parts marked for standing (bit 4 of the flags), each optional one only when it is chosen; used when it does not move."
   },
   {
    "address": 61977,
@@ -7993,7 +7993,7 @@
   {
    "address": 62013,
    "type": "line",
-   "text": "Moves an object a whole column, 8 pixels, left or right: from gfx_get_drop to the column beside the figure where it lies on the ground, from the eating and drinking animations to the figure's hand."
+   "text": "Moves an object a whole column, 8 pixels, left or right: from gfx_get_drop and from the eating and drinking animations to the column beside the figure where it lies on the ground (the eating and drinking animations rub the food or wine out there before the frames play)."
   },
   {
    "address": 62035,
@@ -8003,7 +8003,7 @@
   {
    "address": 62040,
    "type": "line",
-   "text": "Finds the glyph of object A: objects with no glyph of their own borrow another's (64 Felstrong the axe's, 69 Skalir the sword's, 72 Skornir the shield's, 78 Drapnir the ring's, 79 Ofnir the key's, 82 Grimnir the helmet's), then object_codes is searched."
+   "text": "Finds the glyph of the object whose number is at HL (and returns HL past it): objects with no glyph of their own borrow another's (64 Felstrong the axe's, 69 Skalir the sword's, 72 Skornir the shield's, 78 Drapnir the ring's, 79 Ofnir the key's, 82 Grimnir the helmet's), then object_codes is searched."
   },
   {
    "address": 62136,
@@ -8038,7 +8038,7 @@
   {
    "address": 62664,
    "type": "line",
-   "text": "gfx_lie's flags, glyph count and position, and the address of the next glyph."
+   "text": "gfx_lie's flags, glyph count and position, and the address of the next glyph; gfx_eat and gfx_drink also pass the frame list's address to turn_frames in the position's two bytes ($F4CA)."
   },
   {
    "address": 62670,
@@ -8048,7 +8048,7 @@
   {
    "address": 62747,
    "type": "line",
-   "text": "Code copied into fade_cells for the last pass: LD A,(HL), AND $38, LD (HL),A (ink black), JP $F58F."
+   "text": "Code fade_cell jumps to for the last pass (gfx_appear writes JP $F51B at $F57F): LD A,(HL), AND $38, LD (HL),A (ink black), JP $F58F."
   },
   {
    "address": 62754,
@@ -8063,7 +8063,7 @@
   {
    "address": 62875,
    "type": "line",
-   "text": "fade_cell's place to keep HL, and an unused byte."
+   "text": "fade_cell's place to keep HL, and a byte where gfx_appear writes the command's column, which nothing reads."
   },
   {
    "address": 62878,
@@ -8078,7 +8078,7 @@
   {
    "address": 63110,
    "type": "line",
-   "text": "The two missiles: a fireball (a ball) and lightning (a zigzag); then the facing byte for gfx_missile ($F696) and the walking pause kept while it flies ($F697)."
+   "text": "The two missiles: a fireball (a ball) and lightning (a zigzag); then the facing byte for gfx_missile ($F696) and gfx_move's slide pause kept while the missile flies at half of it ($F697)."
   },
   {
    "address": 63128,
@@ -8088,12 +8088,12 @@
   {
    "address": 63193,
    "type": "line",
-   "text": "gfx_move's flag: 1 when the moving thing is a carried object to draw at the end."
+   "text": "gfx_move's flag: 1 when the moving thing is an object (0 for a missile), undrawn at x1 before it slides and drawn again at x2 at the end."
   },
   {
    "address": 63194,
    "type": "line",
-   "text": "Graphics command 13 (gemb, line 7550): two bytes, the command and a column. The three cells of the column under the figures' base row change ink to magenta, blue, red and black in turn, a pause each: you blush when Mary is not amused (line 122)."
+   "text": "Graphics command 13 (gemb, line 7550): two bytes, the command and a column. The three cells of the column from the figures' base row up (rows 14, 13 and 12, where a figure stands) change ink to magenta, blue, red and black in turn, a pause each: you blush when Mary is not amused (line 122)."
   },
   {
    "address": 63260,
@@ -8123,7 +8123,7 @@
   {
    "address": 63497,
    "type": "line",
-   "text": "Graphics command 21: sets the walking speed, the step added up to four times (one for each walk frame count) to make figure_walk's pause, from the byte after the command."
+   "text": "Graphics command 21: sets the walking speed, the step added up to four times (one more time than bits 6-7 of the figure's record byte 4 say) to make figure_walk's pause, from the byte after the command."
   },
   {
    "address": 63502,
@@ -8133,7 +8133,7 @@
   {
    "address": 63511,
    "type": "line",
-   "text": "Graphics command 11 (line 1380, a blow in a fight): four bytes, the command, a character, a random 1 to 3 and a column (three bytes change only the record). Undraws the figure, sets the arms of record byte 2 for the blow: shape 0 raises the weapon arm with bits $52 or lowers it with $A8, other shapes use $15 and $2A; and draws it again."
+   "text": "Graphics command 11 (line 1380, a blow in a fight): four bytes, the command, a character, a random 1 to 3 and a column (three bytes change only the record). Undraws the figure, sets the weapon bits of record byte 2 for the blow: shape 0 shows a sword (bits $52) or an axe (bits $A8) upright, diagonal or level for blows 1, 2 and 3, other shapes use $15 for the sword and $2A for the axe; and draws it again."
   },
   {
    "address": 63608,
@@ -8143,7 +8143,7 @@
   {
    "address": 63609,
    "type": "line",
-   "text": "The arm up for shape 0: the mask for record byte 2 and three values, one for each blow, at blow_up_bits."
+   "text": "The sword for shape 0: the mask for record byte 2 and three values, one for each blow, at blow_up_bits."
   },
   {
    "address": 63616,
@@ -8153,7 +8153,7 @@
   {
    "address": 63619,
    "type": "line",
-   "text": "The arm down for shape 0."
+   "text": "The axe for shape 0."
   },
   {
    "address": 63626,
@@ -8163,7 +8163,7 @@
   {
    "address": 63629,
    "type": "line",
-   "text": "The arm up for the other shapes."
+   "text": "The sword for the other shapes."
   },
   {
    "address": 63636,
@@ -8173,7 +8173,7 @@
   {
    "address": 63639,
    "type": "line",
-   "text": "The arm down for the other shapes."
+   "text": "The axe for the other shapes."
   },
   {
    "address": 63646,
@@ -8183,12 +8183,12 @@
   {
    "address": 63649,
    "type": "line",
-   "text": "Clears the arm bits of record byte 2 with the mask in D and sets the blow's value from the three bytes at BC."
+   "text": "Clears the weapon's bits of record byte 2 with the mask in A (kept in D) and sets the blow's value from the three bytes at BC, then goes on at $F85A without returning, so the second weapon test is skipped."
   },
   {
    "address": 63667,
    "type": "line",
-   "text": "Graphics command 5 (geat, line 7150): five bytes, the command, a character, a column, a row, a facing (three change only the record). The figure lifts the food (object 96) to its mouth: the frames of eat_frames are drawn and undrawn in turn, with a pause, then the food's glyph is drawn at the hand."
+   "text": "Graphics command 5 (geat, line 7150, three bytes; geatp, line 7170, five bytes): the command, a character, a column, and with five bytes a row and the food's facing. With five bytes the food (object 96) lying in the column beside the figure is first drawn over with XOR, rubbing it out; then, for a figure of shape 0, the figure lifts food to its mouth: the frames of eat_frames are drawn and undrawn in turn, with a pause, and the arm is put back. Three bytes do the same without the food on the ground, and nothing for other shapes."
   },
   {
    "address": 63733,
@@ -8203,27 +8203,27 @@
   {
    "address": 63753,
    "type": "line",
-   "text": "The arm put back after eating or drinking: a facing byte, then one frame as in eat_frames."
+   "text": "The arm rubbed out before eating or drinking and put back after: an unused byte, then one frame as in eat_frames."
   },
   {
    "address": 63764,
    "type": "line",
-   "text": "Starts gfx_eat or gfx_drink: five bytes draw, three only change the record; finds the figure and its position. Only shape 0 is animated."
+   "text": "Starts gfx_eat or gfx_drink: five bytes draw the object, three do not; finds the figure and its position. Only shape 0 is animated, and its arm is rubbed out by meal_arm first; for other shapes five bytes draw only the object and three do nothing."
   },
   {
    "address": 63812,
    "type": "line",
-   "text": "Turns the arm frame to the figure's facing and, unless the figure holds a shield (bit 2 of record byte 3), draws it."
+   "text": "Turns the arm frame to the figure's facing and, unless the figure holds a shield (bit 2 of record byte 2), draws it."
   },
   {
    "address": 63845,
    "type": "line",
-   "text": "The address of the command's facing byte, and the meal's flags (bit 0 nothing drawn, bit 1 the object only)."
+   "text": "The address of the command's facing byte, and the meal's flags (bit 0 the object not drawn, bit 1 the object only)."
   },
   {
    "address": 63848,
    "type": "line",
-   "text": "Turns a list of frames to face the way A says, mirroring each frame's glyph in place."
+   "text": "Turns a list of frames to face the figure's way (bit 0 of the byte before HL, record byte 1; meal_arm enters at $F972 with it in A), mirroring each frame's glyph in place."
   },
   {
    "address": 63895,
@@ -8233,7 +8233,7 @@
   {
    "address": 63938,
    "type": "line",
-   "text": "Plays a list of frames: draws a frame, waits 220 x 256 loops, undraws it and goes on to the next, back to the first after the last, ending when a frame's number comes round to 0."
+   "text": "Plays a list of frames: draws a frame, waits 220 x 256 loops, undraws it and goes on to the next; after the last it plays them back one at a time, ending when a frame's number comes round to 0."
   },
   {
    "address": 63990,
@@ -8243,17 +8243,17 @@
   {
    "address": 63993,
    "type": "line",
-   "text": "Steps back through the list, ten bytes an entry, to the first entry of the current frame."
+   "text": "When play_frames goes back, steps back through the list, ten bytes an entry, from the frame at HL to the first entry of the frame before it."
   },
   {
    "address": 64025,
    "type": "line",
-   "text": "The eating frames, eight entries of ten bytes (a frame number with flags, a position, a glyph), the arm going up to the mouth and down again, and a zero."
+   "text": "The eating frames: a zero, then eight entries of ten bytes (a frame number with flags, a position, a glyph), frames 0 to 4, the arm going up to the mouth; play_frames brings it down again."
   },
   {
    "address": 64106,
    "type": "line",
-   "text": "The drinking frames, ten entries of ten bytes, and a zero."
+   "text": "The drinking frames: a zero, then ten entries of ten bytes."
   },
   {
    "address": 64207,
@@ -8333,7 +8333,7 @@
   {
    "address": 64523,
    "type": "line",
-   "text": "Feature 4, a hut: a new style, then a tower 3 or 4 cells high and 4 to 6 wide at the position (draw_tower, from $E07F with its sizes in DE), and, seven times in eight, its walls painted in a random colour."
+   "text": "Feature 4, a hut: a new style unless one is set, then a tower 3 or 4 cells high and 4 to 6 wide at the position (draw_tower, from $E07F with its sizes in DE), and, seven times in eight, its rows above the bottom two (the roof) painted black or blue at random."
   },
   {
    "address": 64582,
@@ -8353,7 +8353,7 @@
   {
    "address": 64595,
    "type": "line",
-   "text": "Castle 0, the battlements: draw_battlements's two bytes, 5 merlons from column 0 on row 1, with a parapet."
+   "text": "Castle 0, the battlements: draw_battlements's two bytes, 6 merlons from column 0 on row 1, with a parapet."
   },
   {
    "address": 64597,
@@ -8398,7 +8398,7 @@
   {
    "address": 64634,
    "type": "line",
-   "text": "Castle 1, the left battlements: draw_battlements's two bytes, 3 merlons from column 0 on row 2, with a parapet."
+   "text": "Castle 1, the left battlements: draw_battlements's two bytes, 4 merlons from column 0 on row 2, with a parapet."
   },
   {
    "address": 64636,
@@ -8408,7 +8408,7 @@
   {
    "address": 64639,
    "type": "line",
-   "text": "Castle 1, the right battlements: draw_battlements's two bytes, 4 merlons from column 10 on row 3."
+   "text": "Castle 1, the right battlements: draw_battlements's two bytes, 5 merlons from column 10 on row 3."
   },
   {
    "address": 64641,
@@ -8443,7 +8443,7 @@
   {
    "address": 64672,
    "type": "line",
-   "text": "Castle 2, the wall's battlements: draw_battlements's two bytes, 6 merlons from column 0 on row 6."
+   "text": "Castle 2, the wall's battlements: draw_battlements's two bytes, 7 merlons from column 0 on row 6."
   },
   {
    "address": 64674,
@@ -8453,7 +8453,7 @@
   {
    "address": 64677,
    "type": "line",
-   "text": "Castle 2, the keep's battlements: draw_battlements's two bytes, 3 merlons from column 3 on row 2, with a parapet."
+   "text": "Castle 2, the keep's battlements: draw_battlements's two bytes, 4 merlons from column 3 on row 2, with a parapet."
   },
   {
    "address": 64679,
@@ -8498,7 +8498,7 @@
   {
    "address": 64716,
    "type": "line",
-   "text": "Castle 3, the left battlements: draw_battlements's two bytes, 3 merlons from column 0 on row 1, with a parapet."
+   "text": "Castle 3, the left battlements: draw_battlements's two bytes, 4 merlons from column 0 on row 1, with a parapet."
   },
   {
    "address": 64718,
@@ -8508,7 +8508,7 @@
   {
    "address": 64721,
    "type": "line",
-   "text": "Castle 3, the right battlements: draw_battlements's two bytes, 3 merlons from column 13 on row 1, with a parapet."
+   "text": "Castle 3, the right battlements: draw_battlements's two bytes, 4 merlons from column 13 on row 1, with a parapet."
   },
   {
    "address": 64723,
@@ -8523,7 +8523,7 @@
   {
    "address": 64782,
    "type": "line",
-   "text": "The two door frames' lower halves for feature_door, 8 bytes each."
+   "text": "The two bars over a hut's door for feature_door, 8 bytes each, drawn in the cell above the door with only their bottom two lines set."
   },
   {
    "address": 64798,

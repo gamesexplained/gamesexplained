@@ -67,3 +67,17 @@ the five fights then ended as lines 1362–1376 say.
 Looking at it in Chromium found "you defeats Idun" in the fight
 calculator and a column of the character table out of sight to the
 right; both were fixed before the copy pass.
+
+**The audit.** Aaron asked what makes a listing good enough, and then for
+a full audit. Three fresh agents took the BASIC with its variables and
+two halves of the machine code, one brief between them (`work/BRIEF-audit.md`)
+listing the kinds of slip the first sample and Commando's audit had
+found. They marked 122 of the 644 comments wrong in a detail, 18.9 %
+against the first sample's 11.7 %: the machine code was 24 %, the BASIC
+8 %, so the first sample's 39 machine-code comments had drawn lucky. Two
+slips repeated across ranges (`draw_ridge` runs counted in steps, merlons
+one short) and each auditor named the other's instances, which made the
+merge a check of its own. Two findings were only in the notes, not the
+verdicts; both were checked against the code and corrected. The
+corrections went into `work/valhalla.ctl` by address, matched on the old
+text, and `symbols.json` and `listing.json` were rebuilt from it.

@@ -19,9 +19,9 @@ the ROM runs the next one. Addresses are the 48K Spectrum's.
   gives for the release (`build_stamp`, $5D32).
 - The machine code carries "Jas.Learmont" at $FE5C (`signature`), James
   Learmont's name, where nothing reads it.
-- Leftovers from the authors' machine: $D1D3–$D2B0 (`stale_variables`)
-  holds an older copy of the input editor's variables with "quitt the axe
-  at Nidhogg" in its line buffer; $FF21 to the end of memory holds what was
+- Leftovers from the authors' machine: $D1D3–$D2B0 (`stale_variables`,
+  222 bytes nothing reads) holds from $D200 an older copy of the input
+  editor's variables with "quitt the axe at Nidhogg" in its line buffer; $FF21 to the end of memory holds what was
   in memory when the file was saved, from $FFC9 the ROM's user-defined
   graphics as it sets them up. The variable `i` is 13 on the tape
   (`leftover_for`, $C991): the end of a `FOR` loop to 12 run as a direct
@@ -111,14 +111,17 @@ the ROM runs the next one. Addresses are the 48K Spectrum's.
   class (the last byte of each `d$` row): 1 a name or object, 2 a verb, 3 a
   preposition, 5 a word passed over ("the", "please", the place names), 6 a
   swear word, 7 a game command. Its answer at `parse_result` ($D066): the
-  subject, verb, object, the words after "with", "from", "to" and "for",
+  subject, verb, object, the words after "with", "from", "to" and "for"
+  ("with" files its word with "for" when the verb is buy or sell),
   an amount of crowns, and the game command. A command with no subject is
   yours. A swear word is error 4, which brings Mary ("Mary is not
   amused...", line 120); every other parser error is "what?" (line 115).
 - A verb picks its BASIC line as 50 × v − 4000 (`dov`, line 5450): "go"
   (101) is line 1050, run from 1055. A game command picks 50 × sc − 700
   (line 100): "l" (132) is 5900. A command with no verb that starts with
-  an object, a place or a direction is "go" (line 8403).
+  an object or a direction is "go" (line 8403). A place name cannot start
+  one: its class is 5, which the parser passes over (`parse_next_word`,
+  $D194).
 
 ## Graphics
 
@@ -263,7 +266,10 @@ the ROM runs the next one. Addresses are the 48K Spectrum's.
 - A location holds six objects. One inside a chest or cupboard takes one of
   the six, with the column 255 (`con`). An object put down where all six
   are taken brings Klepto, who carries an ordinary object off to a
-  neighbouring location with room (line 5300; *live*).
+  neighbouring location with room (line 5300; *live*). A quest object put
+  down takes an ordinary object's place, and that is the one he takes;
+  only where every place holds a quest object or a container does he take
+  whatever is in the last (line 5305).
 - Putting an ordinary object into a container where all six places are
   taken stops the game with "3 Subscript wrong, 5310:5": line 5309 works
   out Klepto's column from 255 (*live*).
@@ -380,32 +386,33 @@ the messages in `PRINT` and `LET x$=` statements, the error messages in
 `DATA` lines 9901–9918 (each an expression `READ` works out), and every
 word the parser knows in `d$`. The string sweep found the machine code's
 two: "Jas.Learmont" ($FE5C) and the stale "quitt the axe at Nidhogg"
-($D1FD area).
+(in the old line buffer after $D200).
 
-## The listing's comments
+## The listing's error rate
 
-One sample of the listing's comments, checked against the bytes by an
-agent (on `claude-opus-5-5[1m]`) that wrote none of them. All 644 were
-written by hand, in three strata: the BASIC program's lines (188), the
-variables (30) and the machine code (426).
+The listing's 644 comments were all written by hand, in three strata: the
+BASIC program's lines (188), the variables (30) and the machine code
+(426). Each check below was made against the bytes by agents (on
+`claude-opus-5-5[1m]`) that wrote none of the comments they checked.
 
-- Seed 20261010, 60 comments: 18 of the BASIC, 3 of the variables and 39
-  of the machine code. 7 were wrong, 11.7 % (Wilson 95 % interval
-  5.8–22.2 %): 2 of 18 in the BASIC, none of 3 in the variables and 5 of
-  39 in the machine code, also 11.7 % weighted by the strata's sizes.
-  What the line or routine does was right in all 60; the wrong ones were
-  details. Line 1's filler is thirteen letters x after the first routine
-  and one at $5D30. `p$(n,3)` is a character's home, which it comes back
-  to (line 4010), not its starting location, and the same line lets a
-  character follow you from the location you just left. A `word_list`
-  entry's second byte is the word's length, not a number flag. The shift
-  register in `rng_state` takes bits 3 and 6, not 2 and 6. D is
-  `texture_box`'s height and E its width, not the other way round.
-  `object_offset` moves an object a whole column. A tower is 4 to 6 cells
-  wide, not 3 to 6. All seven were rewritten, with the same mistakes in
-  `word_list`, `objects_table`, `features.md` and the facts above. The
-  rest of the listing has not been audited since, and no second sample
-  has been drawn.
+- First sample, seed 20261010, 60 comments (18 of the BASIC, 3 of the
+  variables, 39 of the machine code): 7 wrong in a detail, 11.7 % (Wilson
+  95 % interval 5.8–22.2 %), none in what the line or routine does. The
+  seven were corrected.
+- Full audit: three agents checked all 644 in disjoint ranges and marked
+  122 (18.9 %) wrong in a detail, none in what the line or routine does:
+  18 of the 218 on the BASIC and its variables (8.3 %) and 104 of the 426
+  on the machine code (24.4 %). In the machine code, 16 described
+  `draw_ridge`'s runs in steps where it counts columns and 8 gave a castle
+  one merlon too few; the rest were bit numbers, which register holds
+  which size, ranges off by one, pixels for cells and incomplete caller
+  lists. In the BASIC they were claims true in most cases but not all
+  ("never", "every", "only") and caller lists. All 122 were corrected,
+  with two more their notes pointed to (a hall skips the track and the
+  view north, `gfx_terrain`; a cut dash is not counted, `hall_paint`),
+  and the same claims in `features.md`, `facts.md` and the page.
+- Second sample, seed 20261011, 60 comments (18, 3, 39), drawn after the
+  audit: not checked yet.
 
 ## Live tests
 
