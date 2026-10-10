@@ -129,7 +129,7 @@ RESULT_LINE = re.compile(r"Result: (?:(all tests passed)\.|(\d+) of (\d+) tests 
 Z80TEST_FAILED = re.compile(r"^\d{3} \S.*?\s+FAILED\s*$")
 Z80TEST_CRC = re.compile(r"^\s*CRC:([0-9A-Fa-f]{8})\s+Expected:([0-9A-Fa-f]{8})\s*$")
 ZEX_CRC = re.compile(r"^\s*CRC:([0-9A-Fa-f]{8})\s+expected:([0-9A-Fa-f]{8})\s*$")
-ZEX_OK = re.compile(r"\.+\s+OK\s*$")
+ZEX_RUNNING = re.compile(r"^\s*([^.\s][^.]*?)\.+\s*$")   # a name and its dots, no verdict yet
 
 results = []
 notes = []
@@ -163,18 +163,30 @@ def z80test_verdict(lines):
 def zex_verdict(lines):
     """(verdict, summary, named lines) from the lines ZEXDOC/ZEXALL put on screen.
 
-    One line per instruction, ending `...OK`; a failing one ends in a
-    `CRC:xxxxxxxx expected:yyyyyyyy` line instead — the exerciser's own computed CRC
-    first — and the run carries on, so `Tests complete` arrives either way. That last
-    line is what says the run is over, and a CRC line anywhere means a failure.
+    One line per instruction: its name padded with dots while it runs, then `OK` straight
+    after the dots; a failing one gets a `CRC:xxxxxxxx expected:yyyyyyyy` line under it
+    instead — the exerciser's own computed CRC first — and the run carries on, so
+    `Tests complete` arrives either way. That last line is what says the run is over, and
+    a CRC line anywhere means a failure. The instruction it belongs to is the line before
+    it as the polls first saw them, the name with no verdict.
+
+    No count of `OK` lines is given. A poll made while the ROM scrolls reads cells that
+    are half one line and half the next, and those decode as dots, the character the
+    exerciser pads its names with: on 13.0 (10 October 2026) the polls read
+    `ld (nnnn),....................OK` and `ld ...........................OK`, which
+    nothing tells apart from a real instruction ending OK.
     """
     if not any("Tests complete" in l for l in lines):
         return "UNKNOWN", "the exerciser did not print its last line", []
-    bad = [l for l in lines if ZEX_CRC.match(l)]
-    ok = len([l for l in lines if ZEX_OK.search(l)])
-    if bad:
-        return "FAIL", f"{len(bad)} instructions differed, {ok} ended OK", bad
-    return "PASS", f"Tests complete, {ok} instruction lines ended OK", []
+    failed, named = [], []
+    for i, line in enumerate(lines):
+        if ZEX_CRC.match(line):
+            running = ZEX_RUNNING.match(lines[i - 1]) if i else None
+            failed.append(running.group(1) if running else "a name the polls did not catch")
+            named += ([lines[i - 1]] if running else []) + [line]
+    if failed:
+        return "FAIL", f"{len(failed)} instructions printed a CRC line: {', '.join(failed)}", named
+    return "PASS", "Tests complete, and no instruction printed a CRC line", []
 
 
 VERDICTS = {"z80test": z80test_verdict, "zex": zex_verdict}

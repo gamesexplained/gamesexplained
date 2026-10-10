@@ -4,10 +4,11 @@
 No emulator and no network: `kit/spectrum/z80_accuracy.py` runs a Spectrum, downloads
 two projects and reads a screen over ZRCP, and this tests everything in it that does not
 need any of the three. The verdict parsers are run on text the programs really printed
-(copied from a run on ZEsarUX 13.0, 4 October 2026 — z80full's own words), the read loop
-on a script of screens that catch the program's last line half-written, the unpacking
-of the z80test release on a zip built here in the release's own shape, and the manifest
-on the facts it exists to record: where each program comes from and under which licence.
+(copied from runs on ZEsarUX 13.0: z80full's own words on 4 October 2026, zexall's on
+10 October 2026), the read loop on a script of screens that catch the program's last
+line half-written, the unpacking of the z80test release on a zip built here in the
+release's own shape, and the manifest on the facts it exists to record: where each
+program comes from and under which licence.
 
     python3 kit/spectrum/test_z80_accuracy.py
 
@@ -36,11 +37,20 @@ Z80FULL_TAIL = [
     "Result: 020 of 160 tests failed.",
 ]
 
-ZEXDOC_TAIL = [
-    "<adc,sbc> hl,<bc,de,hl,sp>....  OK",
-    "<add,adc,sub,sbc> a,n.........  OK",
-    "CPI..........................  OK",
-    "   CRC:00000000 expected:12345678",
+# What zexall put on screen, as the polls first saw it (ZEsarUX 13.0, 10 October 2026):
+# `OK` straight after the dots, a failing instruction's name with its CRC line under it,
+# and one line torn by a poll made while the ROM scrolled, which is not an instruction.
+ZEXALL_TAIL = [
+    "Z80all instruction exerciser",
+    "<adc,sbc> hl,<bc,de,hl,sp>....OK",
+    "bit n,(<ix,iy>+1).............OK",
+    "bit n,<b,c,d,e,h,l,(hl),a>....",
+    "CRC:358af672 expected:f554d742",
+    "ld (nnnn),....................OK",
+    "ldi<r> (1)....................OK",
+    "ldi<r> (2)....................  ",
+    "CRC:5c83e48a expected:44fc622a  ",
+    "neg...........................OK",
     "Tests complete",
 ]
 
@@ -81,23 +91,41 @@ class Verdicts(unittest.TestCase):
         self.assertIn("did not print its last line", summary)
         self.assertEqual(named, [])
 
-    def test_zexall_passing_run(self):
+    def test_zexdoc_passing_run(self):
         verdict, summary, named = za.zex_verdict(
-            ["Z80all instruction exerciser", "<adc,sbc> hl,<bc,de,hl,sp>....  OK", "Tests complete"])
+            ["Z80doc instruction exerciser", "<adc,sbc> hl,<bc,de,hl,sp>....",
+             "<adc,sbc> hl,<bc,de,hl,sp>....OK", "ld (<bc,de>),a................OK",
+             "Tests complete"])
         self.assertEqual(verdict, "PASS")
         self.assertEqual(named, [])
-        self.assertIn("1 instruction lines ended OK", summary)
+        self.assertEqual(summary, "Tests complete, and no instruction printed a CRC line")
 
-    def test_zexall_failing_run_reports_the_crc_lines(self):
-        verdict, summary, named = za.zex_verdict(ZEXDOC_TAIL)
+    def test_zexall_failing_run_names_each_instruction(self):
+        # the instruction is the line before its CRC line; the torn line ending OK is not
+        # counted as anything
+        verdict, summary, named = za.zex_verdict(ZEXALL_TAIL)
         self.assertEqual(verdict, "FAIL")
-        self.assertEqual(named, ["   CRC:00000000 expected:12345678"])
-        self.assertIn("1 instructions differed, 3 ended OK", summary)
+        self.assertEqual(summary, "2 instructions printed a CRC line: "
+                                  "bit n,<b,c,d,e,h,l,(hl),a>, ldi<r> (2)")
+        self.assertEqual(named, ["bit n,<b,c,d,e,h,l,(hl),a>....",
+                                 "CRC:358af672 expected:f554d742",
+                                 "ldi<r> (2)....................  ",
+                                 "CRC:5c83e48a expected:44fc622a  "])
+
+    def test_zexall_crc_line_whose_name_the_polls_missed(self):
+        # an instruction fast enough to fail before a poll saw its name: the CRC line
+        # still fails the run, and the summary says the name is missing, not a neighbour's
+        verdict, summary, named = za.zex_verdict(
+            ["bit n,(<ix,iy>+1).............OK", "CRC:358af672 expected:f554d742",
+             "Tests complete"])
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("1 instructions printed a CRC line: a name the polls did not catch", summary)
+        self.assertEqual(named, ["CRC:358af672 expected:f554d742"])
 
     def test_zexall_without_its_last_line_is_unknown(self):
         # it ends in `jp stop`, so a run that has not printed `Tests complete` has not
         # finished, whatever the screen looks like
-        verdict, _, _ = za.zex_verdict(ZEXDOC_TAIL[:-1])
+        verdict, _, _ = za.zex_verdict(ZEXALL_TAIL[:-1])
         self.assertEqual(verdict, "UNKNOWN")
 
 
