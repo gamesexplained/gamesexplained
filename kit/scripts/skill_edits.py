@@ -13,8 +13,9 @@ skill it adds to:
 A branch is a game's when it changes the game's kit-feedback.md, as a retrospective
 does. Other branches (the kit's, or a sweep across games), and edits that only cut
 text, are not checked. The branch is compared with its merge base with
-$GITHUB_BASE_REF (set by CI on a pull request), else origin/main; with no git or no
-such ref there is nothing to compare, and nothing fails.
+$GITHUB_BASE_REF (set by CI on a pull request), else with whichever of origin/main,
+another remote's main (a fork's upstream) and the local main it was cut from last;
+with no git or no such ref there is nothing to compare, and nothing fails.
 
 Usage: skill_edits.py [<base ref>]    exit 1 on a problem
 No dependencies.
@@ -84,13 +85,34 @@ def problems(files, root=ROOT):
     return out
 
 
-def base_ref():
-    return "origin/" + os.environ["GITHUB_BASE_REF"] if os.environ.get("GITHUB_BASE_REF") else "origin/main"
+def base_ref(root=ROOT):
+    """The ref this branch is compared with: origin/$GITHUB_BASE_REF on a pull request. Else,
+    of origin/main, each other remote's main and the local main, the one whose merge base with
+    HEAD is the newest, the commit the branch was cut from. A fork's origin/main can lag the
+    main a branch was cut from, and upstream's changes since then then read as the branch's
+    own: Qix's fork was at kit 0.0.115 with the branch cut from 0.0.124, and check_docs.py
+    failed it for three core skills it had not touched (#308). The local main is left out
+    while it is the branch itself."""
+    if os.environ.get("GITHUB_BASE_REF"):
+        return "origin/" + os.environ["GITHUB_BASE_REF"]
+    remotes = git("remote", root=root).stdout.split()
+    refs = ["origin/main"] + [f"{r}/main" for r in remotes if r != "origin"]
+    if git("symbolic-ref", "--quiet", "--short", "HEAD", root=root).stdout.strip() != "main":
+        refs.append("main")
+    best, newest = "origin/main", None
+    for ref in refs:
+        mb = git("merge-base", ref, "HEAD", root=root)
+        if mb.returncode:
+            continue
+        mb = mb.stdout.strip()
+        if newest is None or (mb != newest and not git("merge-base", "--is-ancestor", newest, mb, root=root).returncode):
+            best, newest = ref, mb
+    return best
 
 
 def check(base=None, root=ROOT):
     """Print each problem; return how many."""
-    files = changed(base or base_ref(), root)
+    files = changed(base or base_ref(root), root)
     found = problems(files, root) if files else []
     for skill, msg in found:
         print(f"  x  {skill}  {msg}")

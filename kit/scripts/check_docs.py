@@ -154,10 +154,11 @@ def scan(path, patterns, label, exempt=None, blank=None, only=None):
 
 def added_lines(prefix, base=None, root=ROOT):
     """{path: line numbers} of the lines under prefix that this branch adds or changes since
-    its merge base with base (skill_edits.py's: $GITHUB_BASE_REF on a pull request, else
-    origin/main), with work not yet committed and new files. None with no git or no such ref."""
+    its merge base with base (skill_edits.py's: $GITHUB_BASE_REF on a pull request, else the
+    main it was cut from), with work not yet committed and new files. None with no git or no
+    such ref."""
     from skill_edits import git, base_ref
-    mb = git("merge-base", base or base_ref(), "HEAD", root=root)
+    mb = git("merge-base", base or base_ref(root), "HEAD", root=root)
     if mb.returncode:
         return None
     out, path = {}, None
