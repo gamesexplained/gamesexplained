@@ -660,6 +660,19 @@ def contributors(gdir):
     return credit(ln.split("\t") for ln in out.splitlines() if ln.count("\t") == 2)
 
 
+def credited(cons, game):
+    """The contributors a game's pages name: cons less anyone listed in game.json's "uncredited",
+    by GitHub login or by git author name, compared without case. A contributor who asks not to
+    be named is left out of the banner and the About tab; the commits stay theirs."""
+    return [c for c in cons if not uncredited(game, c[1], c[2])]
+
+
+def uncredited(game, name, login):
+    """Whether game.json's "uncredited" names this person, by GitHub login or git author name."""
+    out = {str(u).strip().lower() for u in game.get("uncredited") or [] if str(u).strip()}
+    return (login or "").lower() in out or name.lower() in out
+
+
 def credit(authors):
     """(commits, name, github login or None) per person among (name, address, commit) authors,
     listed newest commit first as git log gives them.
@@ -934,7 +947,7 @@ def build_game(gdir, out_root):
     if P:
         game["_parts"] = (sum(1 for p in P if started(p)), len(P))
     present = present_tabs(gdir, game)
-    cons = contributors(gdir)
+    cons = credited(contributors(gdir), game)
     nav = tabbar(game, present, lib)
     ban = banner(game, cons)
     platform_scripts = "".join(f'<script src="{lib}/{f}"></script>' for f in PLATFORM_MAP_LIBS.get(plat, []))
@@ -1226,7 +1239,7 @@ def recent_changes(games, n=4):
     alone, is left out. It is "contributed" when it adds the game's game.json, else
     "updated". The people are the git authors of the change, named as on the About tab
     (credit; for a merge, the authors of the commits it brought in, not whoever merged
-    it), agents and bots left out as there."""
+    it), agents and bots left out as there, and so is anyone the game lists as uncredited."""
     by_key = {(g["platform"], g["slug"]): g for g in games}
     git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
     try:
@@ -1262,6 +1275,8 @@ def recent_changes(games, n=4):
         for nm, em, at in authors:
             if not is_agent(em, at):
                 who = (nm, github_login(em, at))
+                if uncredited(by_key[key], *who):
+                    continue
                 counts[who] = counts.get(who, 0) + 1
         row = rows.setdefault(key + (date,), {"game": by_key[key], "date": date, "kind": "updated", "who": {}})
         if key in added:

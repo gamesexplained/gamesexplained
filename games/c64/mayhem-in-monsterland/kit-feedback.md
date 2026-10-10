@@ -19,6 +19,7 @@ time, operating system and tool versions.
 - `kit/c64/INSTALL.md`: a row for the v3.13.2 source build on Linux x86_64 (57 of 57, 9 October 2026); the Linux section says Ubuntu 26.04 lacks the release zip's `libFLAC.so.12`, so the source build is the way there, and a new paragraph, "Under WSL2 on Windows", says to clone inside the WSL file system, how `wsl.exe` mangles command lines, and that sound off (`Sound=0` in the contained `vicerc`) cured the emulator's slowdowns. Why: each cost this run between twenty minutes and an hour, and the next Windows contributor will meet all three.
 - `site/status.json`: the Linux x86_64 cell for the C64 names the Ubuntu 26.04 run under WSL2.
 - `kit/lessons/2026-10-09-mayhem-in-monsterland.md`: the run's lessons.
+- `kit/scripts/build.py`: a game's `game.json` may list people in `uncredited`, by GitHub login or git author name, and the game's banner, its About tab and the home page's New and updated cards leave them out; the commits stay theirs. `test_build_credit.py` tests it, and `80-retro` names the field. Why: the contributor asked not to be on the contributors list, and the kit had no way to leave a git author off.
 
 ## Candidates
 

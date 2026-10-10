@@ -178,6 +178,8 @@ unnoticed.
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
+   A contributor who asks not to be named goes in `uncredited`, by
+   GitHub login: the banner and the About tab leave them out.
 8. **Update `TODO.md`** with what is missing for the next tier.
 9. **If you were the first on your operating system** (its cell in
    `site/status.json` was missing or `untested`), the install notes are
