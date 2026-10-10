@@ -8,6 +8,9 @@ For every games/<platform>/<slug>/game.json:
   play.html    copied through if authored          (Play)
   about.html   from site/about.html + game.json + features.md + orientation.md + git log
   listing.json, symbols.json, reference/           copied
+A game with no listing at all, at tier none, builds with no Source tab, no
+footprint on About and no memory strip or size in the catalogue; at any other
+tier the build stops and says how to make the listing.
 A game of several parts (kit/scripts/parts.py) gets a Source page for each part
 that has a listing, source-<id>.html, with source.html the first of them; the
 parts above each listing, and a control beside it, step from one to the next.
@@ -190,13 +193,7 @@ def footprint(gdir, game):
     Returns (runs, totals, symbols, span)."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from symbols_export import regions as cov_regions, PLATFORM_DEFAULTS, platform_of
-    lp = os.path.join(gdir, "listing.json")
-    if not os.path.isfile(lp):
-        rel = os.path.relpath(gdir, ROOT)
-        sys.exit(f"{rel} has no listing.json. Build it from the symbol map and a snapshot first:\n"
-                 f"  python3 kit/scripts/symbols_export.py {rel}\n"
-                 f"  python3 kit/scripts/listing.py {rel} <snapshot.vsf>")
-    L = json.load(open(lp))
+    L = json.load(open(os.path.join(gdir, "listing.json")))   # build_game says what to do when there is none
     cat = ["unused"] * 0x10000
     why = [""] * 0x10000
     # listing records: what the bytes are
@@ -280,7 +277,9 @@ def tabbar(game, present, lib):
     inner_class = "in many-tabs" if custom_tabs else "in"
     tabs = f'<span class="tab-list">{tabs}</span>' if custom_tabs else tabs
     plat = game.get("platform")
-    return (f'<nav class="gametabs"><div class="{inner_class}"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
+    # a game with no listing has no Source page, so site.js links none of its addresses
+    nolink = "" if "source.html" in present else ' data-nolink="1"'
+    return (f'<nav class="gametabs"{nolink}><div class="{inner_class}"><span class="crumb"><a href="{lib}/../">Games Explained</a> / '
             f'<a href="{lib}/../{plat}/">{html.escape(PLATFORM_NAMES.get(plat, plat))}</a> / {html.escape(game.get("title", ""))}</span>'
             f'{tabs}<span class="tier">tier <b>{html.escape(tier_name(tier))}</b></span></div></nav>')
 
@@ -714,8 +713,17 @@ def authored(gdir, game=None):
 
 
 def present_tabs(gdir, game=None):
-    """The tabs a game has: the assembled ones every game gets, and the pages it wrote."""
-    return set(ASSEMBLED) | set(authored(gdir, game))
+    """The tabs a game has: the assembled ones every game gets, and the pages it wrote.
+    A game with no listing has no Source tab."""
+    tabs = set(ASSEMBLED) | set(authored(gdir, game))
+    return tabs - {"source.html"} if no_listing(gdir) else tabs
+
+
+def no_listing(gdir, P=None):
+    """True for a game folder with nothing for a Source tab to show: no listing.json, or, in a
+    game of several parts, no part with one. Only a game at tier none builds like that (#255)."""
+    P = parts(gdir) if P is None else P
+    return not any(listed(p) for p in P) if P else not os.path.isfile(os.path.join(gdir, "listing.json"))
 
 
 def check_tabs(gdir, game):
@@ -928,9 +936,18 @@ def build_game(gdir, out_root):
     lib = LIB
     check_tabs(gdir, game)
     P = parts(gdir)
-    if P and not any(listed(p) for p in P):
-        sys.exit(f"{os.path.relpath(gdir, ROOT)} is a game of several parts and none has a listing.json. "
-                 "Build one from a part's symbol map and its snapshot first (kit/scripts/listing.py).")
+    # nothing analysed: a game at tier none builds with no Source tab and no footprint
+    bare = no_listing(gdir, P)
+    tier = game.get("tier") or "none"
+    if bare and tier != "none":
+        rel = os.path.relpath(gdir, ROOT)
+        why = f"A {tier_name(tier)} page needs one; a game at tier none builds without one and has no Source tab."
+        if P:
+            sys.exit(f"{rel} is a game of several parts and none has a listing.json. "
+                     f"Build one from a part's symbol map and its snapshot first (kit/scripts/listing.py). {why}")
+        sys.exit(f"{rel} has no listing.json. {why} Build it from the symbol map and a snapshot first:\n"
+                 f"  python3 kit/scripts/symbols_export.py {rel}\n"
+                 f"  python3 kit/scripts/listing.py {rel} <snapshot.vsf>")
     if P:
         game["_parts"] = (sum(1 for p in P if started(p)), len(P))
     present = present_tabs(gdir, game)
@@ -945,11 +962,11 @@ def build_game(gdir, out_root):
                   platform_mem=PLATFORM_MEM.get(plat, "the machine's 64 KB"))
     for f in authored(gdir, game):
         open(os.path.join(out, f), "w").write(authored_page(gdir, game, f, nav, ban))
-    # source: one page, or one for each part of a game of several
+    # source: one page, or one for each part of a game of several; none for a game with no listing
     cheats = read(os.path.join(gdir, "cheats.md"))
-    if P:
+    if P and not bare:
         part_sources(gdir, game, P, out, nav, ban, common, cheats)
-    else:
+    elif not bare:
         facts = markdown(read(os.path.join(gdir, "facts.md")))
         if cheats.strip():
             facts += "<h2>Cheats</h2>" + markdown(cheats)
@@ -972,7 +989,9 @@ def build_game(gdir, out_root):
     links = link_list(game)
     link_html = "<ul>" + "".join(f'<li><a href="{html.escape(u)}">{html.escape(t)}</a></li>' for t, u in links) + "</ul>" if links else "<p class='mute'>None listed yet. Know a write-up, port or forum thread about this game? Add it to game.json.</p>"
     tools = game.get("tools") or {}
-    if P:
+    if bare:   # no byte described, so no map: the catalogue leaves out its strip and size too
+        totals, foot, span = None, "", (0, 0x10000)
+    elif P:
         totals, foot, span = game_footprint(P, out)
     else:
         runs, totals, symbols, span = footprint(gdir, game)
@@ -991,14 +1010,17 @@ def build_game(gdir, out_root):
     # in a game of several parts an address means nothing without its part, so the files about
     # the whole game link none (site.js leaves the addresses inside data-part="" alone)
     whole = (lambda h: f'<div data-part="">{h}</div>') if P else (lambda h: h)
-    about = fill(read(about_template), **common, footprint=foot, data_links=data_links(P), map_row=(span[1] - span[0]) // 128,
+    tpl = read(about_template)
+    if bare:   # no map: the template's Footprint section goes, from its marker to the one that closes it
+        tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
+    about = fill(tpl, **common, footprint=foot, data_links="" if bare else data_links(P), map_row=(span[1] - span[0]) // 128,
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov,
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
                  links=link_html,
-                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not P, shift=1, parts=part_pages(P))),
-                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not P, shift=1,
+                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare), shift=1, parts=part_pages(P))),
+                 orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare), shift=1,
                                             parts=part_pages(P)))).replace("<!-- tabs -->", nav)
     about = under_title(drop_platform(about, plat), ban)
     open(os.path.join(out, "about.html"), "w").write(pagenav(at_end(about, edit_footer(game, "about.html"))))
@@ -1148,7 +1170,10 @@ def hook(g):
 
 
 def strip_html(g, root=""):
-    """The one-dimensional memory map, drawn by C64Map.strip from memmap.json."""
+    """The one-dimensional memory map, drawn by C64Map.strip from memmap.json. Nothing for a
+    game with no listing: it has no memmap.json."""
+    if g["_totals"] is None:
+        return ""
     total = sum(g["_totals"][k] for k in PROGRAM)
     return f'<div class="strip" data-strip="{root}{g["platform"]}/{g["slug"]}/memmap.json" title="{total:,} bytes of program"></div>'
 
@@ -1171,10 +1196,10 @@ def card_html(g, root=""):
     """Every game, small: thumbnail, title, a line of facts, the memory strip, the tier.
     root is the way up to the site's top from the page the card is on."""
     plat, slug = g["platform"], g["slug"]
-    kb = sum(g["_totals"][k] for k in PROGRAM) / 1024
+    kb = "" if g["_totals"] is None else f' · {sum(g["_totals"][k] for k in PROGRAM) / 1024:.0f} KB'
     return (f'<a class="tile" href="{root}{plat}/{slug}/" data-platform="{html.escape(plat)}">{shot_html(g, "thumb", root)}'
             f'<span class="body"><span class="top"><b>{html.escape(g.get("title", slug))}</b>{stamp_html(g)}</span>'
-            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")} · {kb:.0f} KB</span>{strip_html(g, root)}</span></a>')
+            f'<span class="m">{g.get("year") or ""} · {html.escape(g.get("publisher") or "")}{kb}</span>{strip_html(g, root)}</span></a>')
 
 
 def platform_pages(games, out_root):
@@ -1495,8 +1520,8 @@ class AddressLinks(html.parser.HTMLParser):
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         hidden = "data-cut" in a or bool(self.open and self.open[-1][2])
-        if tag == "body":
-            self.nolink = "data-nolink" in a
+        if tag == "body" or (tag == "nav" and "gametabs" in (a.get("class") or "").split()):
+            self.nolink = self.nolink or "data-nolink" in a   # the tab bar of a game with no listing
         if self.code:
             self.code["bare"] = False   # site.js leaves a <code> with an element inside it
         m = tag == "a" and re.fullmatch(r"(source(?:-[\w.-]+)?\.html)#([0-9A-Fa-f]{4})", a.get("href") or "")
