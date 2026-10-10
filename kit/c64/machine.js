@@ -49,6 +49,16 @@
 // - ram: the 64 KB the game runs in (a Uint8Array(65536), used in place). loadListing rebuilds it
 //   from a listing.json's records.
 // - pc: where to start (the hand-over address). The interrupt flag starts set, as a loader leaves it.
+// - port: the processor port, { dir, data } (default $2F and $37).
+// - vic: the video chip's state, { regs, irq }, as readSnapshot (cpu6502.js) gives it: the 64
+//   registers as last written, from which the raster compare line ($D011's bit 7 and $D012) and
+//   the interrupt enable ($D01A) are taken, and the interrupts latched ($D019). Without it the
+//   compare line is 0 and the raster interrupt is off until the game sets them.
+// - Machine.fromSnapshot(vsf, opts): the machine as an x64sc snapshot left it, for a start in the
+//   middle of play: the RAM, the port, the processor's registers and the video chip, its raster
+//   interrupt included. The raster starts at line 0, wherever the snapshot's was, and the CIAs
+//   and colour RAM start as new Machine starts them: the snapshot's are not read.
+//   opts as for new Machine, but ram, port, pc and vic come from the file.
 // - passAt: the address of the main loop's first instruction. Each time the processor reaches it,
 //   passes counts one and onPass(machine) runs, the place to set the next pass's input; onPass
 //   returning true stops the run with the program counter there, before the pass (runUntilPass).
@@ -67,7 +77,7 @@
 //   the chip state, this.line and this.now (the SID's clock: there, the game's cycles).
 const fs = require('fs');
 const path = require('path');
-const { CPU } = require('./cpu6502.js');
+const { CPU, readSnapshot } = require('./cpu6502.js');
 require(path.join(__dirname, '..', '..', 'site', 'lib', 'sid.js'));
 const { createBus } = globalThis.C64Sid.engine();
 
@@ -113,6 +123,13 @@ class Machine {
     // cycles, whether this frame's line 48 saw the display on, and each sprite's lines to fetch
     this.dma = opts.dma ? { at: -1, holds: [], bad: false, rows: [0, 0, 0, 0, 0, 0, 0, 0] } : null;
     this.cmp = 0; this.latch = 0; this.enable = 0;
+    if (opts.vic) {
+      const r = opts.vic.regs;
+      this.vic.set(r);
+      this.cmp = r[0x12] | ((r[0x11] & 0x80) << 1);
+      this.enable = r[0x1A] & 0x0F;
+      this.latch = opts.vic.irq & 0x0F;
+    }
     this.lastLine = 0;
     this.passes = 0;
     this.onPass = null;
@@ -134,6 +151,18 @@ class Machine {
       if (self.onPass && self.onPass(self) === true) { self.skipOnce = true; self.stopFlag = true; return true; }
       return false;
     };
+  }
+  static fromSnapshot(file, opts = {}) {
+    const s = readSnapshot(file);
+    if (s.exrom || s.game) {
+      throw new Error(file + ': a cartridge holds the EXROM or GAME line, and the simulator has no cartridge map');
+    }
+    if (!s.regs || !s.vic) {
+      throw new Error(file + ': no ' + (s.regs ? 'VIC-IISC' : 'MAINC64CPU') + ' module: save the snapshot from x64sc');
+    }
+    const m = new Machine(Object.assign({}, opts, { ram: s.ram, port: s.port, pc: s.regs.pc, vic: s.vic }));
+    m.cpu.setRegs(s.regs);
+    return m;
   }
   get line() { return Math.floor(this.cpu.cycles / LINE) % LINES; }
   get now() { return this.cpu.cycles; }      // the chips' clock

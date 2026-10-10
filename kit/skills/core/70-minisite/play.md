@@ -25,8 +25,10 @@ recording within a menu or two.
 With no demonstration to replay, run the game's own code beside the port
 and compare them pass by pass. On the C64, `kit/c64/machine.js` is the
 machine for it: the simulator with a raster interrupt, the keyboard, the
-joystick and colour RAM around it, started from the listing's memory,
-counting passes where the main loop begins. On the 48K Spectrum,
+joystick and colour RAM around it, started from the listing's memory
+or, with `Machine.fromSnapshot`, from a snapshot of play with its raster
+interrupt set as the game left it, counting passes where the main loop
+begins. On the 48K Spectrum,
 `kit/spectrum/machine.js` is: the Z80 with the frame's interrupt, the
 keyboard read through port `$FE` and contended memory around it, started
 from a `.sna` or the listing's memory, counting passes the same way.
