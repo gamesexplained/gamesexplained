@@ -123,6 +123,18 @@ class TextMode(unittest.TestCase):
         r = regs(d018=0x12)                                 # matrix $0400, characters $0800
         self.assertEqual(decode(r, 0x96, m.read, Font(0x5000), m.read(0x5000, len(data)))[0], "SAVE GAME")
 
+    def test_character_set_at_5000_of_bank_1_is_ram(self):
+        data, glyphs = made_up_font(8)
+        m = Memory().blank(0x4400, 26)
+        order = "ZYXWVUTSRQPONMLKJIHGFEDCBA "
+        m.put(0x5000, b"".join(glyphs[c] for c in order))   # characters at $1000 of bank 1: RAM there
+        m.put(0x6000, data)
+        m.put(0x4400, bytes(order.index(c) for c in "BANK ONE"))
+        r = regs(d018=0x14)                                 # matrix $0400, characters $1000
+        self.assertEqual(decode(r, 0x96, m.read, Font(0x6000), m.read(0x6000, len(data)))[0], "BANK ONE")
+        self.assertEqual(decode(r, 0x97, m.read, Font(0x6000), m.read(0x6000, len(data)))[0], "",
+                         "in bank 0 the same registers show the ROM, which holds none of the font")
+
 
 class BitmapCells(unittest.TestCase):
     def setUp(self):
@@ -147,6 +159,11 @@ class BitmapCells(unittest.TestCase):
         self.assertEqual(lines[20], "  Insert side 1. (RETURN)")
         self.assertEqual(lines[22], "COPY SIDE 1.")
         self.assertTrue(all(not lines[r].strip() for r in range(16)), lines[:16])
+
+    def test_a_solid_cell_is_a_space(self):
+        self.m.put(0xC600 + 8 * (ord("#") - 0x20), bytes([0xFF] * 8))      # a solid glyph
+        draw_cells(self.m, 0x6000, self.glyphs, "A B", 23, 0, inverse=True)
+        self.assertEqual(self.lines(Font(0xC600, first=0x20))[23], "A B")
 
     def test_count_and_first_place_the_characters(self):
         font = Font(0xC600 + 8 * (ord("A") - 0x20), first=ord("A"), count=26)    # capitals alone

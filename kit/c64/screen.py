@@ -10,7 +10,8 @@ chip's registers and the memory they point at:
                 character as the plain one, and each graphic character as GRAPHIC
   bitmap mode   the game's own font, which the caller names: each glyph is looked for in the
                 bitmap as the font has it and inverted (EOR $FF). Many disk games draw all their
-                text this way, role-playing and adventure games above all
+                text this way, role-playing and adventure games above all. A solid glyph reads as
+                a space, since it cannot be told from an inverted one
 
   from screen import Font, text, wait_text
   lines = text(rpc)                                  # 25 lines, trailing spaces cut
@@ -104,7 +105,7 @@ def decode(regs, dd00, read, font=None, glyphs=None):
                              "(Font: its address, width and the code of its first glyph)")
         table = ROM_LOWER if rom_chars(v) == 0x800 else ROM_UPPER
         codes = read(v["screen"], 1000)
-        return ["".join(table[(c & 0x3F if v["ecm"] else c) & 0x7F] for c in codes[r * 40:r * 40 + 40]).rstrip()
+        return ["".join(table[((c & 0x3F) if v["ecm"] else c) & 0x7F] for c in codes[r * 40:r * 40 + 40]).rstrip()
                 for r in range(25)]
     cells = _cells(v, read)
     if font.width == 8:
@@ -132,8 +133,9 @@ def _glyphs(font, glyphs):
 
 def _index8(font, glyphs):
     """Each glyph's eight bytes, and their inverse, to its character. Where two glyphs are drawn
-    alike the first wins, and an inverted one never displaces a plain one."""
-    index, pairs = {}, _glyphs(font, glyphs)
+    alike the first wins, and an inverted one never displaces a plain one. An empty cell and a
+    solid one are spaces, the second being an inverted space as often as a solid glyph."""
+    index, pairs = {bytes(8): " ", bytes([0xFF] * 8): " "}, _glyphs(font, glyphs)
     for ch, g in pairs:
         index.setdefault(g, ch)
     for ch, g in pairs:
@@ -153,7 +155,7 @@ def _scan(cells, font, glyphs):
         k = 0
         for b in g:
             k = k << w | b >> (8 - w)
-        if k and k != full:
+        if k and k != full:                      # empty and solid are spaces, as in _index8
             index.setdefault(k, ch)
             ink.setdefault(k, 0 if ch == GRAPHIC else bin(k).count("1"))    # a letter over a line
     for k in list(index):
@@ -200,7 +202,7 @@ def vic_reader(rpc):
     def read(a, n):
         out = b""
         while n > 0:
-            rom = (a & 0x7000) == 0x1000         # $1000-$1FFF of video bank 0 or 2
+            rom = (a & 0x7000) == 0x1000         # bits 12-14 = 001: $1000-$1FFF, $9000-$9FFF only
             k = min(n, 0x1000 - (a & 0xFFF))
             out += read_mem(rpc, 0xD000 + (a & 0xFFF), k, "rom") if rom else read_mem(rpc, a, k, "ram")
             a, n = a + k, n - k
