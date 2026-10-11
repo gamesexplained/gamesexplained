@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Hold the page's port of the word matcher against the game's own code.
 
-index.html's typing widget looks each word up with VH.findWord, a port of
+The typing widget on the How it works tab looks each word up with VH.findWord, a port of
 find_word ($D937) and next_entry ($DA11): the word against the 255 rows of the
 dictionary d$, allowing one wrong, missing or extra letter. This runs both on the
 same words and compares what each returns, the dictionary row (A) and the
@@ -10,7 +10,7 @@ final-"s" flag (bit 1 of the editor's flags at $D2B4):
   the game   $D937 in SkoolKit's Z80 simulator on the committed listing.json, with
              the word in word_buffer ($D321) and the editor's variables as the
              ENTER handler sets them for a new word (end_of_word, $D81C)
-  the page   the VH block of index.html, run by node
+  the page   the VH block of reference/valhalla-page.js, the script every tab shares, run by node
 
 The words: every word of the dictionary that can be typed (not those with an
 apostrophe or CHR$ 128), each with an "s" added, and three random
@@ -112,7 +112,7 @@ def main():
         r = mem[DICT + 11 * (row - 1): DICT + 11 * row] if row else b"\0"
         if bytes(r[1:1 + r[0]]).decode("latin1").lower() != w:
             sys.exit(f"not ok - the game's matcher does not find {w!r} as itself (row {row})")
-    page = port_check.ask(HERE, "index.html", "VH", PAGE, {"words": todo})
+    page = port_check.ask(HERE, "reference/valhalla-page.js", "VH", PAGE, {"words": todo})
     for w, a, b in zip(todo, ours, page):
         if a != b:
             print(f"not ok - {w!r}: the game gives row {a[0]} (final s {a[1]}), the page {b[0]} (final s {b[1]})")

@@ -86,3 +86,58 @@ out how often that mark passes a listing at a given rate showed it fails
 one at 3 % about half the time, so the proposal there was revised to two
 in 60, which passes a 3 % listing about three times in four and a 10 %
 listing one time in twenty.
+
+## 11 October 2026, the Characters and Maps tabs
+
+Aaron asked for a character browser, for what goodness does between
+characters and its corner cases, and for how the game makes its
+characters seem to lead lives of their own; and to split the maps and the
+characters into tabs of their own. One agent did it, in a fresh cloud
+session.
+
+**A cheaper live harness.** ZEsarUX was not installed in this session.
+SkoolKit's `tap2sna.py` made a snapshot from the tape (it stops at the
+`USR` in line 9800, with the game's variables set), and the kit's own
+Spectrum, `kit/spectrum/machine.js`, ran it headless at about 800 frames a
+second with SkoolKit's 48K ROM. Typing went in through the keyboard
+matrix, and the 20-line text area `n$` was read straight from memory
+after every pass, which gave a transcript of everything the game printed
+without reading the screen. `tap2sna.py --sim-load` is read by argparse
+as an abbreviation of `--sim-load-config` and fails; plain
+`tap2sna.py valhalla.tzx loaded.z80` simulates the load by default.
+
+**Idle runs.** Two runs of 400,000 frames with nobody typing, one from
+the start and one with you put beside Saga, gave the counts on the page:
+every attack between characters 7 or more apart in goodness, every gift 3
+or less, no goodness changed, 20 and 31 characters' rows untouched to the
+byte, 26 minutes of a lone companion doing nothing, and 42 orders given,
+41 to characters with brains above 7. The pairs became the fixtures of
+`test_characters.py`.
+
+**The crash.** The goodness-0 crash in `facts.md` had been seen only
+with your goodness poked. Reading line 1452 showed that a throw you order
+makes the target's counterattack count as your command, so the target's
+own goodness steps. From the tape's start with nothing poked, ordering
+Thor, Idun, Skadi and Odin to throw at Loki reached "B Integer out of
+range, 1356:8" after ten minutes of play. The first script kept typing
+after the error and wandered; the third stopped at the report.
+
+**Wrong turns.** The first draft said line 5523 sends a character on
+without `dep`; it is never reached, as `h0` is always the location here.
+"Loki leaves." at the start was first put down to his own turn; the
+`GO SUB` stack in the snapshot (return address for line 8120) showed it
+was the stage manager. The asking rule was first written as seven in
+eight when you ask the same one twice; `la` is set by every ask,
+anyone's, and by trades, and the overall rate is 11 in 12. The inlay
+mapping in `facts.md` had missed Tyr's bravery, found when the browser
+showed the inlay's numbers beside the game's.
+
+**The pages.** The maps, the pictures, the quest route and the two bugs
+about places moved to `levels.html` (Maps); the cast, goodness and the
+characters' lives are `characters.html`. The shared script and styles
+moved from `index.html` into `reference/valhalla-page.js` and
+`reference/valhalla-page.css`, so the three tabs share one port, and the
+tests ask that file for it. Looking at the pages in Chromium at 1200 and
+390 pixels found the character panel overlapping its picture, a price
+column too narrow, and the qualities table squeezed on a phone; all were
+fixed before the copy pass.

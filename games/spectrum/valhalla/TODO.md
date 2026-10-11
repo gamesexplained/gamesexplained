@@ -6,7 +6,8 @@ the page is built and checked in a browser. The copy is `agent-draft`.
 
 ## For Gold
 
-- A human pass over every section of `index.html`, cutting what is dull,
+- A human pass over every section of the three tabs (`index.html`,
+  `levels.html` and `characters.html`), cutting what is dull,
   expanding what is interesting and adding what the agent missed; `copy`
   in `game.json` records what the pass did.
 
@@ -25,5 +26,6 @@ the page is built and checked in a browser. The copy is `agent-draft`.
 - A Play tab: the BASIC is the whole game's logic, the pictures are a
   sheet already drawn, and the parser is ported. A port of the main loop
   and the verbs would play the game.
-- A levels page with every place's picture, its objects and who starts
-  there, from the map table.
+- Seeing Boldir's cap in play: order attacks on Boldir's good neighbours
+  until a step takes him to 14, then on bad ones; the code says he never
+  gets back to 15 (`facts.md`, Bugs).

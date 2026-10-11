@@ -67,6 +67,10 @@ the ROM runs the next one. Addresses are the 48K Spectrum's.
   (`RST $38`), flips the cursor every 16 frames, and passes a newly
   pressed key to `key_pressed` ($D52B) unless a line is waiting for BASIC
   (`interrupt`, $FE69).
+- `RANDOMIZE` with no number seeds `RND` from the frame counter at the
+  start of each pass (line 8100), before each character's action (4070,
+  4105) and after every line printed (5021), so how long a command takes
+  to type changes what follows.
 - Everything else runs in BASIC. Each pass of the main loop (line 8100)
   gives up to ten characters' turns (line 4010), stopping as soon as
   ENTER has set `enter_flag`; flaps the flag one time in two (line 8110);
@@ -177,11 +181,19 @@ the ROM runs the next one. Addresses are the 48K Spectrum's.
 - 39 rows of `c$`: you (1), the 36 of the inlay, and Snake (38) and Raven
   (39). Each has twelve slots of objects (1 the weapon, 2 the shield, 3 the
   helmet, 4–12 anything), its location and column, its crowns, six
-  qualities as nibbles from 1 to 15, and its strength now. The qualities
-  (`FN g`, `FN h`, `FN y`, `FN b`, `FN i`, `FN p`, line 50): goodness,
-  charisma, strength, bravery, brains, and how readily it moves on. The
-  inlay's 1 to 5 are the nibbles divided by three and rounded up, for every
-  character but Gripe, whose charisma is 2 in the game and 4 on the inlay.
+  qualities as nibbles from 0 to 15 (1 to 15 on the tape), and its strength
+  now. The qualities (`FN g`, `FN h`, `FN y`, `FN b`, `FN i`, `FN p`, line
+  50): goodness and charisma in byte 17, strength and bravery in byte 18,
+  brains and how readily it moves on (restlessness) in byte 19. The inlay's
+  1 to 5 for charisma, strength, bravery and brains are the nibbles divided
+  by three and rounded up, for every character but two: Gripe's charisma
+  is 2 in the game and 4 on the inlay, and Tyr's bravery 13 in the game
+  and 4 on the inlay. The inlay splits goodness in two: 1 to 7 is printed
+  as badness (1 is 5, 2 is 4, 3 and 4 are 3, 5 and 6 are 2, 7 is 1), 8 to
+  15 as goodness (8 and 9 are 1, 10 and 11 are 2, 12 and 13 are 3, 14 is
+  4, 15 is 5). Restlessness is not on the inlay.
+- Homes, `p$(n,3)`: each character's is the location it starts at, but
+  Idun's (starts at 71, lives at 53), and Snake and Raven have none.
 - Full strength is strength × 16 + 15 (`FN s$`, line 63): you start at 175.
 - Bravery is never read: no line uses `FN b`.
 - Following (line 4010): each character turn first picks one of the 38
@@ -191,22 +203,52 @@ the ROM runs the next one. Addresses are the 48K Spectrum's.
   goodness, below 5 or above 11); or when its home, `p$(n,3)`, is here,
   wherever it is. Turns run only while no command is waiting (line 8100),
   so moving on at once gives a follower fewer chances.
-- A character's turn (lines 4020–4060): a random one of those here picks
-  one of six actions: leave for a
-  random location (one time in two, line 4105), take or eat or drink what
-  it sees (4205), drop something (4310, never when its brains are above
-  7, except one time in ten), attack the one it likes less (4410, when
-  they are 7 or more apart in goodness), give something to the one it
-  likes more (4510, when they are 3 or less apart), or step aside (4610).
-  Klepto leaves axes and swords lying (line 4205).
-- Asking (line 210): a character told to act refuses one time in three;
-  seven times in eight when you asked the same one last time; always when
-  the gap in goodness less half your charisma is above 2. A refusal gives
-  back 4 of the 5 strength the command cost.
-- Comings and goings (line 5500), every pass: one time in two, if you are
-  alone or with one other, a random character from elsewhere arrives
-  (`arr`, line 5750), at full strength; if five or more others are here,
-  one leaves for a neighbouring location, more likely a restless one.
+- A character's turn (lines 4020–4070): a random one of those here (`a$`,
+  which leaves you out) is `s`. Line 4040 picks two of those here at
+  random, the same one possibly twice, and tries again up to three times
+  while either is `s`; then the turn ends with nothing done. So a character
+  alone with you never acts. One time in four the first pick becomes you
+  (line 4045). Of the two, the nearer in goodness to `s` is the one it
+  likes more (line 4050). A clever `s` (brains above 7, flipped one time in
+  ten, `f`) is, one time in two, given the turn's action as an order from a
+  random other one here (line 4057), shown as "Skadi asks Saga to ..." and
+  refused by the asking rule below. Then it picks one of six actions
+  (line 4070): leave for a random location (one time in two, line 4105),
+  take or eat or drink what it sees (4205), drop something (4310, only
+  when not clever), attack the one it likes less (4410, when they are 7 or
+  more apart in goodness; one time in three a throw, 4420), give something
+  to the one it likes more (4510, when they are 3 or less apart), or step
+  a column aside (4610). Klepto leaves axes and swords lying (line 4205).
+  A turn uses slots 4–12 only, never weapon, shield or helmet.
+- Asking (line 210): a character told to act refuses one time in three,
+  and always when the gap in goodness between the asker and it, less half
+  the asker's charisma, is above 2. When you are the asker and it is the
+  one last asked (`la`, set by every ask, yours or a character's, lines 210
+  and 215, and by every trade, line 1129), seven of the other times in
+  eight as well: 11 times in 12 in all. A refusal gives back 4 of the 5
+  strength the command cost.
+- Comings and goings (lines 5500–5526), every pass: with none or one other
+  here, one time in two a character from elsewhere arrives (`arr`, line
+  5750; up to nine random picks, line 5525); with two to four, nothing;
+  with five or more, one time in two one of them goes to a neighbouring
+  location (`dep`, line 5521). The one sent is drawn up to eight times
+  against a random p from 3 to 13 until its restlessness is at least p and
+  its goodness at most p (line 5518). Line 5523 is never reached: line
+  5521 always goes to `dep`, as `h0` is the location here.
+- Goodness changes only at line 1356, before a fight, and only when the
+  command was yours (`ll` = 1): one time in two, the attacker's byte 17
+  goes up 16 when the victim's goodness is under 8, down 16 when it is 8
+  or more, and is stored only if the result is non-zero and under 255. The
+  attacker is you for `attack`, the one you told for `Thor, attack Hel`,
+  and, for a throw you ordered, the target, which fights back at once
+  (line 1452, which then prints the attack line a second time). Characters
+  fighting on their own turns never change.
+- Only the location you are at runs. A character's location changes at
+  five lines: 5105 (you), 5630 (death), 5705 (leaving, `dep`), 5760
+  (arriving, `arr`) and 5320 (Klepto). `mo` (line 3610, from lines 1214
+  and 1417) moves only columns. Every character here is put back to full
+  strength as you arrive (line 5122), and every one that arrives (line
+  5760).
 
 ### Strength, food and death
 
@@ -328,7 +370,14 @@ the ROM runs the next one. Addresses are the 48K Spectrum's.
   exits are skipped. *Live*, with `o1` and `o2` set by hand.
 - Putting an object into a container at a full location stops the game
   (above).
-- An attack that lowers a goodness of 0 stops the game (above).
+- An attack that lowers a goodness of 0 stops the game (above): `CHR$`
+  of a negative number, "B Integer out of range, 1356:8". Loki, Hel,
+  Nasher and Gastro start at 1 (charisma 15, 9, 1 and 4), so two
+  downward steps from counterattacks on throws you order reach it.
+- The guard at line 1356 tests the whole byte, so a character with
+  charisma 15 can never reach goodness 15 by a step up: 15 × 16 + 15 is
+  255. Boldir (15, 15) can lose his 15 for good; Loki (1, 15) can climb
+  to 14 at most.
 - Error 18 ("not strong enough") is never raised; errors 8, 11, 15 and 16
   have no message (lines 9909–9918).
 
@@ -420,9 +469,11 @@ BASIC program's lines (188), the variables (30) and the machine code
 
 ## Live tests
 
-All in ZEsarUX 13.0 from `work/play-1.sna` or snapshots made from it, by
-typing on the keyboard matrix and, where a state was needed, poking the
-variables (`c$`, `m$`, `p$`) first.
+### In ZEsarUX 13.0, 10 October 2026
+
+All from `work/play-1.sna` or snapshots made from it, by typing on the
+keyboard matrix and, where a state was needed, poking the variables
+(`c$`, `m$`, `p$`) first.
 
 - Editing keys: CAPS SHIFT 5, 8, 0, 1 and 2, SYMBOL SHIFT Q, A and Z each
   did what the manual says; CAPS SHIFT 2 after ENTER brought back the
@@ -462,3 +513,30 @@ variables (`c$`, `m$`, `p$`) first.
   of 4,096 pixel bytes and 0 of 512 attribute bytes differ in each.
   `test_pictures.py` draws all 81 that way and holds `reference/pictures.png`,
   the sheet the page shows, against them.
+
+### In `kit/spectrum/machine.js`, 11 October 2026
+
+From `work/loaded.z80`, which SkoolKit 10.1's `tap2sna.py` made from the
+tape, with SkoolKit's 48K ROM; what the game printed read from `n$` after
+every pass.
+
+- Two runs of 400,000 frames (133 minutes) with nobody typing, one from
+  the start at Valheim and one with you poked to location 62 beside Saga:
+  57 attacks or throws between characters, every pair 7 or more apart in
+  goodness; 35 gifts, every pair 3 or less apart; no goodness changed.
+  After the first, the 20 characters never named in its text had rows as
+  the tape loaded them, to the byte; after the second, 31. One character
+  alone with you for 26 minutes in all did nothing. 42 orders between
+  characters, 41 to brains above 7 (Saga 20, Boldir 12; Skadi, brains 3,
+  gave 10). Two to four others were with you 83 % and 94 % of the time.
+  19 of the first run's 41 arrivals were characters whose home it was.
+- "Loki leaves." at the start: the `GO SUB` stack held the return to line
+  8120, so the stage manager sent him, to location 80.
+- From the start with nothing poked, Thor, Idun, Skadi and Odin told in
+  turn to throw what they carried at Loki (`summon` when one was
+  missing): each of Loki's counterattacks printed twice; his byte 17 went
+  from 31 to 15 at Skadi's throw, and at Odin's the game stopped with "B
+  Integer out of range, 1356:8", ten minutes of play in.
+- `who`, typed 15 times from the start: each answer as the port of lines
+  6210–6235 in `reference/valhalla-page.js` prints it
+  (`test_characters.py`).

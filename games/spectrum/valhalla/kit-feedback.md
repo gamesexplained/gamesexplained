@@ -44,6 +44,17 @@ walked another. Caught while building the route stepper from the run's own
 commands. The skill would say: copy a live claim's steps from the log of
 the run that made it.
 
+A live harness without an emulator install (11 October 2026, the
+Characters tab). `kit/spectrum/machine.js` ran a snapshot SkoolKit's
+`tap2sna.py` made from the tape, headless, at about 800 frames a second,
+with typing through the keyboard matrix and the game's text read from
+`n$` in memory: hours of play in minutes, with no screen reading. The
+Spectrum skills mention `machine.js` only as the page's player. The
+skill would say, in `kit/skills/spectrum/tool-zesarux` or a note of its
+own: for long unattended runs of a game that keeps its text in memory,
+drive `machine.js` from node and read the text from RAM. No other game
+folder has used it this way yet.
+
 ## Maintainer asks
 
 - #318: 60-verify: say how bad a first sample must be before the whole listing is audited.

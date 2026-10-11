@@ -8,8 +8,8 @@ the committed listing.json, with the 48K ROM from SkoolKit's own copy (the drawe
 call its PLOT-SUB and DRAW-LINE). The screen's top sixteen character rows are then
 compared, pixel by pixel and colour by colour, with the location's tile in the sheet.
 
-The page's own list of commands for each location, VH.commands in index.html,
-is held against the same port first.
+The page's own list of commands for each location, VH.commands in
+reference/valhalla-page.js, is held against the same port first.
 
 Nothing private is needed: no game image, no snapshot, no emulator. Run it as a
 script; it exits 1 on the first picture or command list that differs.
@@ -178,7 +178,7 @@ def main(args):
     img = sheet()
     todo = [int(a) for a in args] or list(range(1, 82))
     # the page lists the same commands, from its own port of lines 7010-7039
-    page = port_check.ask(HERE, "index.html", "VH", "const ram = game.listing().ram;\n"
+    page = port_check.ask(HERE, "reference/valhalla-page.js", "VH", "const ram = game.listing().ram;\n"
                           "return request.places.map(h => VH.commands(ram, h));", {"places": todo})
     for h, cmds in zip(todo, page):
         if cmds != commands(base, h):
