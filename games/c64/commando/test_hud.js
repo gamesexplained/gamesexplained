@@ -4,7 +4,8 @@
 // $13D7, $13F1) on the kit's 6502 simulator, over the bytes of the committed listing: every BCD
 // score with every points value the game adds, every grenade count from 0 to 255 with a box and
 // with a throw, a box run from the enemy loop ($2495) in each of the eleven enemy slots at 300
-// scores, and every lives count. The score, the lives, the grenades and the digits the game
+// scores, one pass of that loop slot by slot with the box among rifle soldiers, and every lives
+// count. The score, the lives, the grenades and the digits the game
 // puts on the screen must be the port's. Everything it needs is committed. It exits 1 on any
 // difference.
 //   node games/c64/commando/test_hud.js [page.html]
@@ -77,6 +78,37 @@ for (let n = 0; n < 11; n++) for (const hi of [0x00, 0x09, 0x99]) for (const lo 
   const paid = h.boxInLoop(n);
   same(h, `box in enemy ${n} at ${hex(hi)}${hex(lo)}`);
   if (n && (m[0x0492] === 0) !== (paid === 2)) fail('enemy 0', n, hex(hi) + hex(lo), 'freed', m[0x0492] === 0, 'paid', paid);
+}
+// One pass of the enemy loop ($2495) with the box in each enemy slot and rifle soldiers in others,
+// with and without the carry: the slots the loop runs, in order (its dispatch, $24C8), the slot the
+// box frees (its JSR $3570 at $2AA1) and the counts, against pass().
+const CREW = [[0, 1, 3, 6], [0, 2, 5, 8, 9], [1, 4, 10], []];
+for (let n = 0; n < 11; n++) for (const crew of CREW) for (const lo of [0x95, 0x55, 0x90, 0x99]) {
+  const h = createHud(); h.st.hi = 0x00; h.st.lo = lo; h.st.lives = 5; h.st.grenades = 5;
+  setGame(h); m[0x5526] = 0; m[0x0403] = 0x80; m[0x0504] = 0x3F;
+  const slots = Array(11).fill(0);
+  for (let i = 0; i < 11; i++) m[0x0492 + i] = 0;
+  m[0x041D] = 0x97; m[0x040D] = 0; m[0x042D] = 0xB4;
+  for (const k of crew) if (k !== n) {
+    slots[k] = 5; m[0x0492 + k] = 5; m[0x0422 + k] = 0x30 + 16 * k; m[0x0412 + k] = 0; m[0x0432 + k] = 0x50;
+    m[0x0472 + k] = m[0x0482 + k] = 0; m[0x04B7 + k] = 1;   // a timer that does not fire ($33B2)
+  }
+  slots[n] = 0x16; m[0x0492 + n] = 0x16; m[0x0422 + n] = 0x97; m[0x0412 + n] = 0; m[0x0432 + n] = 0xB8;
+  m[0x0472 + n] = m[0x0482 + n] = 0;
+  const ran = [], freed = [];
+  cpu.call(0x2495, {}, { hooks: {
+    0x24C8: (c) => { ran.push(c.x + ':' + m[0x0492 + c.x]); },
+    0x2AA1: (c) => { freed.push(c.x); },
+  } });
+  const run = h.pass(slots);
+  same(h, `pass with the box in enemy ${n}, soldiers ${crew}, at 00${hex(lo)}`);
+  const want = run.map((r) => r.x + ':' + r.b).join(' '), got = ran.join(' ');
+  if (got !== want) fail(`pass with the box in enemy ${n}, soldiers ${crew}: game ran ${got}, port ${want}`);
+  const wantFreed = run.filter((r) => r.b === 0x16).map((r) => r.freed).join(' ');
+  if (freed.join(' ') !== wantFreed) fail(`pass with the box in enemy ${n}: game freed ${freed}, port ${wantFreed}`);
+  // An enemy the port keeps is still there. A slot left free may have been filled again: a free
+  // slot now and then starts a rifle soldier of its own ($2D63), which the port does not model.
+  slots.forEach((b, k) => { if (b && m[0x0492 + k] !== b) fail(`slot ${k} after the pass, box in ${n}: game ${m[0x0492 + k]}, port ${b}`); });
 }
 // Every lives count, printed.
 for (let n = 0; n < 256; n++) {

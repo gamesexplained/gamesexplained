@@ -23,10 +23,32 @@
 - The third lesson in `kit/lessons/2026-10-10-commando.md`, a drawn map held against play in its own area, would sharpen `70-minisite`'s "Draw from the memory the game draws from", which names only the character set and the colour table. Only this game shows it so far.
 - A page sentence about how the music sounds (which voice carries the bass and the drums) went into the draft from a reading of the driver and was wrong. Running the tune through the port and counting each voice's instruments and notes settled it. Only this game shows it so far.
 
+## The follow-up run, 11 October 2026
+
+Aaron asked for the comparison with the 1985 release, a stepper for the
+box's double payout, and the unused fourth spawn list on a map.
+
+- `c64-reference`, "`CBM80` in a game that is not a cartridge": "Test the
+  reset as well ... Read `$00` and the CPU's view of the game's tables
+  after the reset" led to the reset test, which found the BASIC ROM over
+  area 3's map. It did not say the CIAs come up unset as well, and the run
+  first took the restart for a working one.
+- `70-minisite`, "A widget that runs a mechanic is a claim too": the
+  high-score table and the enemy loop each went on the page as a port with
+  a test beside it (`test_table.js`, `test_hud.js`).
+
+What was changed in the kit: `kit/skills/c64/c64-reference` gains a
+paragraph on the CIAs after a reset caught through `CBM80` (port A all
+inputs, so a joystick test that counts on the KERNAL's set-up never
+matches, and copies meant for the RAM under I/O land in the chips), and
+`kit/lessons/2026-10-11-commando.md` records the comparison with the
+original and the restart that only looked clean.
+
 ## Maintainer asks
 
 - #318: this run is another data point: a first sample of 17 % led to a full audit, which changed 137 of 897 comments (15 %), and a second sample then found 1 of 70 wrong (1.4 %).
 - **coverage.py: say why each run in the work queue is still bare.** Most of the time this run spent getting from 52.8 % to 100 % went on working out why a stretch next to a commented symbol did not count: an auto symbol inside a table that needed its own comment, a data symbol's 64-byte reach, a span cut at a fixed memory-map edge. The work queue prints the address, the size, the kind and the nearest symbol. A column naming the reason (no comment on the symbol that owns it, beyond its reach, cut at an edge) would point at the fix. It goes in `kit/scripts/coverage.py`, beside the queue; from Commando (C64), 10 October 2026, branch `game/c64/commando`.
+- **c64-reference: say whether a run may fetch a publisher's original to compare with a crack.** `c64-reference` says the Internet Archive's search "lists game images, which are never downloaded". Commando's crack left its bug fix and eight NOPs unexplained until Elite's 1985 disk, fetched from the C64 Preservation Project at the maintainer's request, was compared with it: 29 bytes differ, and they answered both. Encounter, Ghostbusters and Master of Magic each list such a comparison as open in their `TODO.md`. If fetching an original for comparison is allowed, a line in `core/10-orient`'s "Several versions on one disk" and the collection's address in `c64-reference` would let a run do it; from Commando (C64), 11 October 2026, branch `claude/project-thread-uvrhsz`.
 
 ## What cost the most time
 

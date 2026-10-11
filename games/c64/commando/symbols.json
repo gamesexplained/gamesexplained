@@ -1746,7 +1746,7 @@
   },
   {
    "address": 2638,
-   "name": "unused_0a4e",
+   "name": "cbm80_blanked",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -7563,7 +7563,7 @@
   {
    "address": 0,
    "type": "line",
-   "text": "The processor port's direction register, which the game leaves as the KERNAL set it. It has a symbol only because draw_row's LDA and STA ($3FBE, $3FC1) name $0000,Y as loaded; the redraw ($3F75) writes both operands before the first row is copied."
+   "text": "The processor port's direction register, which the game leaves as the KERNAL set it. It has a symbol only because draw_row's LDA and STA ($3FBE, $3FC1) name $0000,Y as loaded; the redraw ($3F75) writes both operands before the first row is copied. In the 1985 release a reset restarts the game through its signature at $8000 before the KERNAL sets this register, so it stays 0 and the game's writes to $01 change nothing ($0A57)."
   },
   {
    "address": 1,
@@ -8293,12 +8293,17 @@
   {
    "address": 2128,
    "type": "line",
-   "text": "The game's entry point, reached from REMEMBER's menu and again from its high-score saver ($44E0) after every saved game. Points the NMI vector at an RTI ($0A4D) so RESTORE does nothing, turns the screen on ($D011 = $1B), seeds the random generator from the raster line ($3FFF), copies the name-entry gunsight sprite under the I/O area ($0A57) and fills the sprite sort order $4B-$5B with 0-16. Then falls into title_and_new_game. Eight NOPs at $0861-$0868 sit where the 1985 code had eight bytes the crack blanked; what they did is unknown."
+   "text": "The game's entry point, reached from REMEMBER's menu and again from its high-score saver ($44E0) after every saved game. Points the NMI vector at an RTI ($0A4D) so RESTORE does nothing, turns the screen on ($D011 = $1B, REMEMBER's), seeds the random generator from the raster line ($3FFF), copies the name-entry gunsight sprite under the I/O area ($0A57) and fills the sprite sort order $4B-$5B with 0-16. Then falls into title_and_new_game. In the 1985 release, $085C-$0868 is LDX #$00 / LDA $0A4E,X / STA $8000,X / INX / CPX #$09 / BNE $085E instead: it copies the nine bytes at $0A4E to $8000, a cartridge's signature that makes a reset restart the game at $0850. REMEMBER put the LDA #$1B / STA $D011 and eight NOPs in its place."
+  },
+  {
+   "address": 2140,
+   "type": "side",
+   "text": "REMEMBER's; the 1985 release copies its reset trap to $8000 here"
   },
   {
    "address": 2145,
    "type": "side",
-   "text": "eight bytes blanked by the crack, original instructions unknown"
+   "text": "eight NOPs over the 1985 copy loop's STA $8000,X / INX / CPX #$09 / BNE"
   },
   {
    "address": 2153,
@@ -8368,7 +8373,12 @@
   {
    "address": 2468,
    "type": "line",
-   "text": "Game over: insert the score into the eight-entry high-score table. Walks from the bottom entry (X = 7) up, moving every entry the score beats or equals down one place, name and all. The first entry it does not beat stops the walk: the score goes in below it, and the name entry ($0C88) follows. Beating them all puts it at the top. A score below the eighth goes into the spare ninth slot ($0F46) and the game returns to the title without asking for a name."
+   "text": "Game over: insert the score into the eight-entry high-score table. Walks from the bottom entry (X = 7) up, moving every entry the score beats or equals down one place, name and all. The first entry it does not beat stops the walk: the score goes in below it, and the name entry ($0C88) follows. Beating them all puts it at the top. A score below the eighth goes into the spare ninth slot ($0F46) and the game returns to the title without asking for a name. The 1985 release has 6 here and at $0A0D, the walk's only difference: a score that does not beat the seventh entry then goes into the eighth, over the score there and under the name there, and no name is asked for. REMEMBER's 7 is the bug fix CSDb credits the crack with."
+  },
+  {
+   "address": 2468,
+   "type": "side",
+   "text": "7 in this copy, 6 in the 1985 release"
   },
   {
    "address": 2491,
@@ -8379,6 +8389,11 @@
    "address": 2557,
    "type": "line",
    "text": "The score does not beat entry X: it goes in as entry X + 1. When X is 7 that is the spare ninth slot and the game goes back to the title ($0883) with no name; otherwise the name is asked for ($0A13)."
+  },
+  {
+   "address": 2572,
+   "type": "side",
+   "text": "the walk never moved: no name; #$06 in the 1985 release"
   },
   {
    "address": 2579,
@@ -8393,17 +8408,17 @@
   {
    "address": 2634,
    "type": "side",
-   "text": "REMEMBER's jump to its saver; the original target is unknown"
+   "text": "REMEMBER's jump to its saver; the 1985 release jumps to the title ($0883)"
   },
   {
    "address": 2635,
    "type": "line",
-   "text": "The low byte of the JMP at $0A4A: $E0, so the high-score table ends in REMEMBER's saver ($44E0). The trainer writes $83 ($457E), for the title ($0883) instead."
+   "text": "The low byte of the JMP at $0A4A: $E0, so the high-score table ends in REMEMBER's saver ($44E0). The trainer writes $83 ($457E), for the title ($0883) instead, which is what the 1985 release has."
   },
   {
    "address": 2636,
    "type": "line",
-   "text": "The JMP's high byte: $44, or $08 from the trainer ($4583)."
+   "text": "The JMP's high byte: $44, or $08 from the trainer ($4583) and in the 1985 release."
   },
   {
    "address": 2637,
@@ -8413,12 +8428,12 @@
   {
    "address": 2638,
    "type": "line",
-   "text": "Nine zero bytes between the NMI handler and the sprite copy. Nothing reads them."
+   "text": "Nine zero bytes between the NMI handler and the sprite copy, which nothing reads. In the 1985 release they are $50 $08 $50 $08 $C3 $C2 $CD $38 $30: $0850 twice and CBM80 with bit 7 set, the signature $085C copies to $8000 so that the KERNAL's reset jumps to $0850. REMEMBER zeroed them."
   },
   {
    "address": 2647,
    "type": "line",
-   "text": "Copies the name-entry gunsight (64 bytes from $0A7F) to $D040, sprite block $41 of video bank 3, in the RAM under the I/O area. Stops CIA 1's timer A and clears the processor port's CHAREN bit ($01 bit 2) so the writes land in RAM, then puts both back."
+   "text": "Copies the name-entry gunsight (64 bytes from $0A7F) to $D040, sprite block $41 of video bank 3, in the RAM under the I/O area. Stops CIA 1's timer A and clears the processor port's CHAREN bit ($01 bit 2) so the writes land in RAM, then puts both back. When the 1985 release restarts after a reset, $00 is 0, the CHAREN write does nothing, and the 64 bytes go to the video chip's registers instead: $D011 gets $20, which turns the display off, and nothing in the game sets the display bit again."
   },
   {
    "address": 2666,
@@ -8523,7 +8538,7 @@
   {
    "address": 3822,
    "type": "line",
-   "text": "High-score names, eight letters each, best first, plus a ninth slot ($0F2E) that a beaten eighth entry is pushed into. Loaded from REMEMBER's file before $0850 runs, so what is here is that file's table (CHRIS, RORY, THE DUDE, SARAH followed by a space and the heart glyph $76, NIGEL, KEITH, ADOLF, DILK on this disk), not the 1985 default."
+   "text": "High-score names, eight letters each, best first, plus a ninth slot ($0F2E) that a beaten eighth entry is pushed into. Loaded from REMEMBER's file before $0850 runs. The file on this disk holds the table the 1985 release starts with (CHRIS, RORY, THE DUDE, SARAH followed by a space and the heart glyph $76, NIGEL, KEITH, ADOLF, DILK), byte for byte."
   },
   {
    "address": 3830,
@@ -8568,7 +8583,7 @@
   {
    "address": 4018,
    "type": "line",
-   "text": "The wait's loop: fire alone on port 2 starts a game ($0FEB); otherwise one frame passes and the count goes down."
+   "text": "The wait's loop: fire alone on port 2 starts a game ($0FEB); otherwise one frame passes and the count goes down. $6F needs bit 7 of CIA 1's port A low, which it is because the KERNAL makes the port an output ($DC02 = $FF) and writes $7F to it. When the 1985 release restarts after a reset, the KERNAL has not done that, the port is all inputs and reads $EF with fire, and no game can be started."
   },
   {
    "address": 4021,
@@ -10093,7 +10108,7 @@
   {
    "address": 14526,
    "type": "side",
-   "text": "REMEMBER's hook: JSR $5F6A, which reads $DC01, in place of the original LDA $DC01"
+   "text": "REMEMBER's hook: JSR $5F6A, which reads $DC01, in place of the 1985 release's LDA $DC01"
   },
   {
    "address": 14601,
@@ -11688,7 +11703,7 @@
   {
    "address": 24426,
    "type": "line",
-   "text": "REMEMBER's hook in place of the game's LDA $DC01 at $38BE: reads the keyboard row and returns. With the level skip chosen, the RTS at $5F6D becomes CMP #$DF, so the bytes from $5F6D read CMP #$DF / BEQ $5F72 / RTS / JMP $0939: C= ends the area at once. Since $38BE runs only when a grenade could be thrown, the key works only then."
+   "text": "REMEMBER's hook in place of the game's LDA $DC01 at $38BE: reads the keyboard row and returns. With the level skip chosen, the RTS at $5F6D becomes CMP #$DF, so the bytes from $5F6D read CMP #$DF / BEQ $5F72 / RTS / JMP $0939: C= ends the area at once. Since $38BE runs only when a grenade could be thrown, the key works only then. In the 1985 release, $5F6A-$5FB1 holds two routines that nothing calls: $5F6A points the KERNAL's interrupt vector ($0314) at $5F81, which plays the music ($5012) from a raster interrupt at line $80 and goes on to $EA31, and $5F96 puts $EA31 back, silences the SID and turns the raster interrupt off."
   },
   {
    "address": 24429,
@@ -11793,7 +11808,7 @@
   {
    "address": 32768,
    "type": "line",
-   "text": "Area 1's map (the second area played), rows 0-24 ($00-$18), characters of the set at $C800: the top. Rows 0-6 are the same wall as area 0's, its gap at columns 15-25 closed and opened by the same gate ($15BC). Below, rock faces line the left edge down to row 21 and the right edge down to row 29, and the left bunker (stamp 0, $14B5) is put back at rows 22-30, columns 0-5, at each life's start ($3DE0 at $8370). Spawn-list entries due as these rows reach the top of the screen: row 1, the gate opening. Checkpoint row 19: a life lost with the top of the screen at rows 0-19 restarts with this row at the top."
+   "text": "Area 1's map (the second area played), rows 0-24 ($00-$18), characters of the set at $C800: the top. Rows 0-6 are the same wall as area 0's, its gap at columns 15-25 closed and opened by the same gate ($15BC). Below, rock faces line the left edge down to row 21 and the right edge down to row 29, and the left bunker (stamp 0, $14B5) is put back at rows 22-30, columns 0-5, at each life's start ($3DE0 at $8370). Spawn-list entries due as these rows reach the top of the screen: row 1, the gate opening. Checkpoint row 19: a life lost with the top of the screen at rows 0-19 restarts with this row at the top. In the 1985 release the reset trap ($085C) overwrites row 0's first nine characters with its signature, and two pixel lines of them show at the top of the screen at the gate."
   },
   {
    "address": 33768,
@@ -11888,7 +11903,7 @@
   {
    "address": 50176,
    "type": "line",
-   "text": "Area 0's character set, glyphs 128-255: more of the jungle's pieces. The map and the gate's pictures use 109 of them. The terrain table classes 79 of the 128 as walls and 39 as scenery the sprites pass behind."
+   "text": "Area 0's character set, glyphs 128-255: more of the jungle's pieces. The map and the gate's pictures use 109 of them. The terrain table classes 79 of the 128 as walls and 39 as scenery the sprites pass behind. Glyph $E3 ($C718) is one the map never uses. Its last two rows, $C71E-$C71F, are $00 $0A here and $FF $FF in the 1985 release: the only bytes of the maps, character sets and sprites that differ between the two."
   },
   {
    "address": 51200,

@@ -19,9 +19,6 @@ on a model that was not recorded, and this run redid them.
 
 ## Open questions
 
-- REMEMBER's bug fix. CSDb credits the crack with one, and which bytes it
-  changed needs a copy of the 1985 release to compare. The same comparison
-  would say what the eight bytes of no-operations at `$0861` replaced.
 - The crack's depacker, instructions and menu were not traced; the listing
   starts at the game's hand-over (`$0850`).
 - REMEMBER's no-falling poke (`$3C10-$3C5E`) is a candidate in `cheats.md`:
@@ -31,7 +28,3 @@ on a model that was not recorded, and this run redid them.
 
 - A Play tab. The ports behind the page (the music, the aim test, the score
   line) are a start.
-- A stepper for the box double payout that walks the enemy loop slot by
-  slot.
-- The unused fourth spawn list (`$1D42`), with its doors and mortar man,
-  drawn on area 1's map.

@@ -18,6 +18,11 @@ is the 1985 game, whose title screen credits Elite, Chris Butler
 (programming), Rory Green and Chris Harvey (graphics), Rob Hubbard (sound)
 and Japan Capsule Computers UK (`$1143`).
 
+The 1985 release it is compared with below is Elite's PAL disk in the C64
+Preservation Project's 10th Anniversary Collection
+(`commando_elite_1985_pal`, a G64), stopped as it hands over to the game
+at `$0850` (`work/orig1985/entry1985.vsf`).
+
 ## Memory layout
 
 | Thing | Where |
@@ -186,6 +191,23 @@ let soldiers out (handlers 23 and 24), the mortar man (26) and one grenade
 thrower (10). The doors and the mortar man are in the unused fourth list
 (`$1D42`); handler 10 is in none.
 
+The fourth list has 25 entries, the last the end of the area (handler 27):
+six doors of handler 24 and three of 23, a box (7), a motorcycle (4), a
+grenade thrower (12), two walking soldiers (8, 9), two lorries (20), three
+vehicles crossing (22) and one more (19), a trench soldier (3), the mortar
+man (26), the gate opening (11) and a green soldier (13). Its first rows,
+198 and 196, are below the start of every area (rows 175 and 166, `$3EBC`).
+Drawn over each map at the rows and x its entries give, with each handler's
+starting y (doors `$28`, `$1E55`; the box `$26`, `$2111`; the trench
+soldier and the mortar man `$21`, `$221E`): eight of the nine doors stand
+in open ground on all three maps, and the ninth (row 157, x 56) on the left
+gate of area 3's first wall. On area 3's map the trench soldier and the
+mortar man (row 9) stand in the fortress's two windows, a row above the
+two soldiers area 3's list puts there (row 10, `$1DA7`). Its two walking
+soldiers (both at row 94, with x 80 and x-high 99) have the x and x-high of
+area 1's two (rows 97 and 94), and its grenade thrower is at area 1's row
+104 (`$1CC1`).
+
 A rifle soldier fires only on frames where his timer AND the fire mask
 `$0504` is 0, and only when he already faces the player's direction
 (`$33B2`). The fire mask is set at each life from the area counter's low
@@ -329,9 +351,12 @@ and its read-back registers, and CIA 2 apart from the VIC bank.
   table loader (`$463D`), the instructions viewer and its two pages of text
   (`$4710`, `$4800`), the key hook (`$5F6A`) and their texts.
 - **Hooks into the game:** the jump after the name entry goes to the saver
-  (`$0A4A`), and the space-bar read at `$38BE` calls `$5F6A`. Eight bytes at
-  `$0861-$0868` are NOPs where the 1985 code had something else; what they
-  did is unknown.
+  (`$0A4A`), and the space-bar read at `$38BE` calls `$5F6A`.
+- **Removed:** the 1985 release's reset trap at `$085C-$0868`, replaced by
+  LDA #$1B / STA `$D011` and eight NOPs, and the nine bytes it copied
+  (`$0A4E`), zeroed.
+- **The bug fix:** the high-score walk starts at the eighth entry (`$09A5`,
+  `$0A0D` = 7) where the 1985 release starts at the seventh (6).
 - **The trainer** (`$4531`) patches the game: unlimited lives turns the
   DEC at `$0996` and the INC at `$1363` into LDAs; unlimited grenades zeroes
   the box's 3 at `$2A8F` and the throw's 1 at `$3909`; no falling fills
@@ -342,8 +367,70 @@ and its read-back registers, and CIA 2 apart from the VIC bank.
 - **The high scores** on disk are loaded over `$0EED-$0F47` before the game
   starts; the 91 bytes of `COMMANDO HI /REM` are that range.
 
-CSDb credits the crack with a bug fix. Which bytes it changed is unknown:
-no copy of the 1985 release has been compared.
+## The 1985 release
+
+Both copies stopped at the hand-over to the game (`$0850`) and compared
+byte for byte (`work/scripts/diff1985.py`): of the game's 19,450 bytes,
+`$0850-$44DF` and `$5000-$5F69`, 29 differ. Every byte that differs from
+`$0850` up, 4,298 of them, is in this table:
+
+| Where | The 1985 release | This copy |
+|---|---|---|
+| `$085C-$0868` | LDX #$00 / LDA $0A4E,X / STA $8000,X / INX / CPX #$09 / BNE: the reset trap | LDA #$1B / STA $D011 and eight NOPs |
+| `$09A5`, `$0A0D` | 6 | 7 |
+| `$0A4B-$0A4C` | `$0883`, the title | `$44E0`, the saver |
+| `$0A4E-$0A56` | `$50 $08 $50 $08 $C3 $C2 $CD $38 $30` | zeros |
+| `$38BE-$38C0` | LDA $DC01 | JSR $5F6A |
+| `$44E0-$4FFF` | a fill of `$FF` and `$00` that no code reads | REMEMBER's code and text |
+| `$5F6A-$5FFF` | two routines nothing calls (`$5F6A-$5FB1`), then the same fill | REMEMBER's hook and text |
+| `$7F41-$7FFF`, `$9F40-$9FFF`, `$BF40-$BFFF` | leftovers, after each map | zeros, and REMEMBER's text at `$7F60` |
+| `$C71E-$C71F` | `$FF $FF` | `$00 $0A` |
+| `$D041-$D07D` | leftovers | zeros |
+| `$E000-$E3FE` | leftovers | leftovers, two of REMEMBER's menu lines among them |
+| `$FFC1-$FFFF` | the fill | leftovers |
+
+The maps, character sets and sprites are the same apart from `$C71E-$C71F`,
+the last two rows of glyph `$E3` in area 0's character set, which area 0's
+map never uses. The screen, the gunsight's sprite block (`$D040`) and the
+blank sprite block are written before they are shown (`$3F75`, `$0A57`,
+`$3E93`). The
+high-score table at `$0EED-$0F47` is the same in both: REMEMBER's file on
+this disk holds the 1985 release's own starting table.
+
+**The bug fix.** `$09A4` walks the table from entry X up. With 6, a score
+that does not beat entry 6 (the seventh) stops the walk at once and is
+stored in entry 7 (the eighth), over its score and under its name, and the
+test at `$0A0C` (CPX #$06) sees that the walk never moved and goes back to
+the title without a name entry. With 7, such a score goes into the spare
+ninth entry. `test_table.js` runs the game's walk with both values over
+820,000 cases against the page's port (`index.html`, the commando-table
+block).
+
+**The reset trap.** `$085C` copies `$0A4E-$0A56` to `$8000-$8008`: `$0850`
+as the cold and warm starts, then CBM80 with bit 7 set, so the KERNAL's
+reset jumps to `$0850`. RESTORE does nothing in either copy, because `$0850`
+points the NMI at an RTI (`$0A4D`). After a reset the processor port's
+direction register `$00` is 0, the game's writes to `$01` change nothing,
+and the gunsight copy (`$0A57`) writes its 64 bytes into the video chip's
+registers: `$D011` gets `$20` (from `$0A90`) and the display goes off.
+Nothing sets the display bit again: the game's other writes to `$D011`
+(`$404E`, `$40F2`, `$411F`, `$4133`, `$4152`, `$4171`, `$418B`, `$41B7`,
+`$424E`, `$4353` and `$4451`) each keep the bit as they read it. The reset
+also leaves CIA 1's port A all inputs (`$DC02` = 0), so it reads `$EF` with
+fire, and the title's test for fire alone (`$0FB2`, CMP #$6F) never
+passes: the restarted game cycles its title and attract views and cannot
+be started. The processor port's lines, all inputs, read high, so the
+BASIC ROM stays in view over area 3's map at `$A000`, and the attract
+views of area 3 are drawn from it. The copy also overwrites the first nine
+bytes of area 1's map, row 0's columns 0-8.
+
+**The original's music routines.** `$5F6A` points `$0314` at `$5F81`,
+which acknowledges a raster interrupt, sets the next at line `$80`, writes
+`$1B` to `$D011`, plays the music (`$5012`) and goes on to `$EA31`. `$5F96`
+puts `$EA31` back, silences the SID (`$D418` = 0), restarts CIA 1's timer
+and turns the raster interrupt off. No word in memory points at either,
+and neither ran from the boot to the hand-over
+(`work/scripts/boot1985_music.py`).
 
 ## The listing's error rate
 
@@ -402,6 +489,36 @@ port 2 through the emulator's own control.
   (`work/scripts/aimbug.py`): at soldier x `$E8`, player x `$64`, level,
   the soldier faced right and his bullets moved at +2; at x `$C8`, left
   and -2.
+- The 1985 release, one life and a score of 2,500 at the game over
+  (`work/scripts/live1985.py table orig 0025`): no name entry (`$0C88` did
+  not run), and the eighth entry read DILK 002500. This copy, the same:
+  the name entry ran, the eighth entry took 002500 and DILK 002000 went to
+  the ninth. At 0, the 1985 release's eighth entry read DILK 000000 with no
+  name entry, and this copy's table did not change. At 250,000 both ran the
+  name entry and put the score first.
+- At `$0869`, the 1985 release's `$8000-$8008` read `50 08 50 08 C3 C2 CD
+  38 30`, and this copy's nine `$CC` (`live1985.py trap`).
+- A soft reset at the title (`work/scripts/reset1985.py`): the 1985 release
+  stopped at `$0850` with `$00` = 0, and 300 frames on the processor read
+  the BASIC ROM at `$A000` (`94 E3 7B E3`). A hard reset, which clears the
+  RAM, and either reset of this copy went to BASIC.
+- After that reset, the first write to `$D011` was the gunsight copy's at
+  `$0A6A`, with `$20`, and `$D011` read `$07` 300 frames on
+  (`work/scripts/reset_d011.py`, `reset_regs.py`).
+- After that reset, six presses of fire 100 frames apart never reached the
+  game's start (`$0FEB`, `$08B8`): the attract views went on changing,
+  and `$DC02` read 0. With `$DC02` = `$FF` and `$DC00` = `$7F` written
+  first, the first press started a game with five lives
+  (`work/scripts/reset_fire.py`, `reset_fire.py cia`).
+- The attract view of area 3 at row 169, with and without that reset and
+  with `$D011` = `$1B` written just after the gunsight copy (`$0A70`): the
+  map drawn as usual without it, scrambled characters with it, and the
+  processor reading `94 E3 7B E3` (BASIC) at `$A000` against `35 30 30 30`
+  (`work/scripts/attract1985.py`; the two pictures are in `reference/`).
+- Area 1 walked to its top with REMEMBER's pokes
+  (`work/scripts/walk1985.py`): the screen's row 0 began `50 08 50 08 C3 C2
+  CD 38 30` in the 1985 release and `CC` in this copy, and the two
+  screenshots differed only in two pixel lines at the top.
 - REMEMBER's unlimited-grenades patch (`$2A8F` and `$3909` = 0): four
   throws (`$3903` ran four times) and a box left the count at 5; the same
   run without the patch went 5 to 1, and the box added 3

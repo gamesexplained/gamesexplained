@@ -57,7 +57,22 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 .cm-strip{display:block;width:100%;height:28px;image-rendering:pixelated;border-radius:3px;background:#000}
 .cm-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .cm-pair p{margin:6px 0 0;font-family:var(--fm);font-size:12.5px;color:var(--ink-mute)}
-@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}.cm-map{flex-direction:column}.cm-mini{display:none}.cm-pair{grid-template-columns:1fr}}
+.cm-slots{display:grid;grid-template-columns:repeat(11,1fr);gap:6px;margin:14px 0 0}
+.cm-slot{border:1px solid var(--line);border-radius:6px;padding:6px 4px;text-align:center;font-family:var(--fm);font-size:12px;line-height:1.35;color:var(--ink-soft);background:var(--surface)}
+.cm-slot b{display:block;font-weight:500;color:var(--ink-mute);font-size:11px}
+.cm-slot span{display:block;color:var(--ink);min-height:1.35em}
+.cm-slot i{display:block;font-style:normal;color:var(--amber);min-height:1.35em}
+.cm-slot.now{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber) inset}
+.cm-slot.gone span{color:var(--coral);text-decoration:line-through}
+.cm-pair img{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:4px;background:#000}
+.cm-hi{font-family:var(--fm);font-size:13px}
+.cm-hi td{padding:4px 8px 4px 0}
+.cm-hi td:last-child{text-align:right;padding-right:0}
+.cm-hi tr.new td{background:var(--hl)}
+.cm-hi tr.bug td{background:#fbe1dc;color:var(--coral)}
+.cm-hi tr.spare td{color:var(--ink-mute)}
+.cm-hi-score{font-family:var(--fm);font-size:14px;color:var(--ink);min-width:5.5em;text-align:right}
+@media (max-width:700px){:root{--gx:18px;--pp:14px;--h1:36px}#cm-table .cm-pair{grid-template-columns:1fr 1fr;gap:10px}.cm-hi{font-size:11.5px}.cm-hi td{padding:3px 4px 3px 0}.cm-map{flex-direction:column}.cm-mini{display:none}.cm-pair{grid-template-columns:1fr}.cm-slots{grid-template-columns:repeat(6,1fr)}}
 </style>
 <!-- tabs -->
 <header class="hero">
@@ -110,13 +125,14 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
       <label><input type="checkbox" data-o="terrain"> Terrain: <span class="cm-key" style="background:#e04040"></span>wall <span class="cm-key" style="background:#40c040"></span>passed behind <span class="cm-key" style="background:#4080ff"></span>water or pit</label>
       <label><input type="checkbox" data-o="spawn" checked> Spawn list</label>
       <label><input type="checkbox" data-o="check" checked> Restart rows</label>
+      <label><input type="checkbox" data-o="unused"> <span class="cm-key" style="background:#7a3fb0"></span>Unused fourth list</label>
     </div>
     <p class="cm-read"></p>
     <p class="cap">Drawn by this page from the maps (<code>$6000</code>, <code>$8000</code>, <code>$A000</code>), the character sets (<code>$C000</code>, <code>$C800</code>, <code>$D800</code>) and the colours (<code>$40BC</code>) in the listing, with the gate and area 1's bunkers stamped in as every life's start stamps them (<code>$3DE0</code>). Drawn that way, all three maps match the game's memory in play byte for byte. <b>Walk up</b> scrolls the map a pixel a frame, the game's speed while the player pushes up near the top of his zone.</p>
   </div>
   <p>The map scrolls down a pixel at a time while Super Joe pushes up near the top of his zone (<code>$3A8C</code>). Every eighth pixel the map moves a whole row, and on that frame the main loop redraws all 21 rows of the playfield from the map and skips the game's logic (<code>$08CB</code>). There is no scrolling back: the screen only ever moves up the map.</p>
   <p>Every character of a set has a class in the area's terrain table (<code>$178B</code>, <code>$188B</code>, <code>$1A8B</code>). A wall stops Super Joe, turns soldiers aside and stops bullets. Scenery such as a palm's leaves lets the sprites pass behind it. Water, a pit or a trench drops him in. The terrain overlay colours each character by its class.</p>
-  <p>The enemies come from the area's spawn list, one entry per enemy: a row, a position and one of 28 handlers (<code>$1BE8</code>). When the row in an entry reaches the top of the screen, the spawner starts that enemy (<code>$1B8B</code>), and the marks on the map show those rows. Between entries, an empty enemy slot now and then sends a rifle soldier down from the top or a grenade thrower in from a side (<code>$2D63</code>).</p>
+  <p>The enemies come from the area's spawn list, one entry per enemy: a row, a position and one of 28 handlers (<code>$1BE8</code>). When the row in an entry reaches the top of the screen, the spawner starts that enemy (<code>$1B8B</code>), and the marks on the map show those rows. Between entries, an empty enemy slot now and then sends a rifle soldier down from the top or a grenade thrower in from a side (<code>$2D63</code>). <b>Unused fourth list</b> draws a spawn list that no area uses (<code>$1D42</code>, section 12) on whichever map is shown, with a box where an entry stands at a place of its own.</p>
   <p>A lost life does not send Super Joe back to the start. The game moves the screen to the first restart row at or below the row it had reached (<code>$3DE0</code>, <code>$3EBC</code>): rows 19, 61, 97 and 131, and the start row, 175 in the first area and 166 in the others. A new area parks the screen at row 165 and then moves it to the restart row below that, so play begins at the last restart row. The restart also brings back every enemy in the spawn list within 21 rows of the top (<code>$109B</code>), puts the gate back shut and rebuilds any bunker a grenade has wrecked.</p>
 </section>
 
@@ -215,19 +231,21 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 <section>
   <p class="fig">11 · The grenade box</p>
   <h2 class="t">Bug: a box that brings an extra life pays out twice</h2>
-  <p class="lede">A box of grenades is worth three grenades and 1,000 points. When those points carry the score past a multiple of 10,000, Super Joe gets six grenades, 2,000 points and the life.</p>
+  <p class="lede">A box of grenades is worth three grenades and 1,000 points. When those points carry the score past a multiple of 10,000, Super Joe gets six grenades, 2,000 points and the life, and an enemy somewhere else on the screen disappears. Step through one pass of the enemy loop to see why.</p>
   <div class="plate" id="cm-box">
     <canvas class="cm-cv" width="640" height="16" role="img" aria-label="The score line"></canvas>
+    <div class="cm-slots" role="list" aria-label="The eleven enemy slots"></div>
     <div class="cm-row">
-      <button type="button" data-a="set">Set the score to 9,500</button>
-      <button type="button" data-a="loop">Pick up a box</button>
+      <button type="button" data-a="step">Next slot</button>
+      <button type="button" data-a="all">Run the pass</button>
       <button type="button" data-a="reset">Start again</button>
+      <label><input type="checkbox" data-carry checked> Score 9,500, so the box brings a life</label>
     </div>
-    <p class="cm-read"></p>
-    <p class="cap">The same port as above, with the box run as the enemy loop runs it. The test runs the game's enemy loop (<code>$2495</code>) in the simulator with the box in each of the eleven enemy slots at 300 scores, and the score, the counts and the slot freed match the port's.</p>
+    <p class="cm-read" aria-live="polite"></p>
+    <p class="cap">Super Joe is standing on the box in slot 4, among four rifle soldiers. The loop is a port of the game's (<code>$2495</code>), and the score line uses the same port as the one above. The test runs the game's own loop in the simulator with the box in each of the eleven slots, among rifle soldiers, with and without the carry. The slots it runs and their order, the slot the box frees, and the score and the counts were the port's every time.</p>
   </div>
-  <p>The box is one of the enemies. It sits in an enemy slot, and the enemy loop (<code>$2495</code>) runs it on every pass of the game's logic with the slot's number, 0 to 10, in the X register. When Super Joe stands on the box, its routine adds the grenades and the points, frees its slot (<code>$3570</code>), asks for its sound effect and returns (<code>$2A5A</code>). Asking for an effect leaves 0 in X (<code>$5F56</code>). When the points bring an extra life, the extra life asks for its own effect inside the points routine, before the slot is freed, so the routine frees enemy slot 0 instead of the box.</p>
-  <p>The enemy loop then carries on from whatever X now holds, enemy 1, and comes to the box again in the same pass. Super Joe is still standing on it, so it pays a second time; this time there is no carry, and the box frees its own slot. In the emulator, a box in enemy slot 2 at 9,500 points left 11,500 points, eleven grenades from five and six lives from five, and the rifle soldier who had been in enemy slot 0, up the screen, was gone. Whatever stands in enemy slot 0 at the moment disappears, and only a box in that slot itself pays once.</p>
+  <p>The box is one of the enemies. It sits in an enemy slot, and the enemy loop (<code>$2495</code>) runs every slot on each pass of the game's logic with the slot's number, 0 to 10, in the X register. When Super Joe stands on the box, its routine adds the grenades and the points, frees the slot whose number is in X (<code>$3570</code>), asks for its sound effect and returns (<code>$2A5A</code>). The routine that takes a sound effect request hands back 0 in X (<code>$5F56</code>), so the loop always carries on from slot 1, and the slots below the box get a second turn in that pass.</p>
+  <p>When the points bring an extra life, the life asks for its own sound effect, inside the points routine, before the box frees its slot. X is 0 by then, so the box frees slot 0 instead of its own. The loop carries on from slot 1, comes to the box again in the same pass, and Super Joe is still standing on it, so it pays a second time; this time there is no carry, and the box frees its own slot. In the emulator, a box in slot 2 at 9,500 points left 11,500 points, eleven grenades from five and six lives from five, and the rifle soldier who had been in slot 0, up the screen, was gone. Whatever stands in slot 0 at that moment disappears, and only a box in slot 0 itself pays once.</p>
 </section>
 
 <section>
@@ -250,6 +268,7 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
     <tr><td>character set</td><td>the game's font</td><td class="cm-n"><code>$D000</code></td></tr>
   </tbody></table>
   <p>Played, area 2 would be area 1's layout drawn in letters, digits and pieces of scenery, with area 3's enemies arriving in it. The game does put area 2's character set on the screen: the title, the name entry and the messages between areas set the counter to 2 while they run, which is how they get the font (<code>$0F53</code>, <code>$0C9E</code>, <code>$1270</code>). An unused fourth terrain table (<code>$198B</code>) and an unused fourth spawn list (<code>$1D42</code>) sit in memory beside the three that are used.</p>
+  <p>The fourth list holds the game's only doors and its only mortar man. Its 24 enemies are nine doors that each let a soldier out, a box, a motorcycle, a grenade thrower, two walking soldiers, two lorries, four vehicles crossing, a soldier in a trench, the mortar man, the gate opening and a green soldier. Its first two rows, 198 and 196, are below the start of every area. Tick <b>Unused fourth list</b> on the maps in section 03 to draw it on any of the three. It fits none of them as they are. Eight of its nine doors stand in open ground on every map, and the ninth, at row 157, falls on the left gate of area 3's first wall. Two things in it do match. On area 3's map, its soldier in a trench and its mortar man, at row 9, stand in the fortress's two windows, a row above the two soldiers that area 3's own list puts there (<code>$1DA7</code>). And its two walking soldiers come in after 80 frames at the height of row 99, as area 1's two do, with its grenade thrower at row 104, as area 1's is (<code>$1CC1</code>).</p>
 </section>
 
 <section>
@@ -291,18 +310,64 @@ code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--ch
 
 <section>
   <p class="fig">15 · This copy</p>
-  <h2 class="t">What REMEMBER's crack added to the game</h2>
-  <p class="lede">The crack shows two pages of instructions, then a menu: T for the trainer, H for the high scores. Everything it added sits in memory the 1985 game left free.</p>
+  <h2 class="t">What REMEMBER's crack changed in the game</h2>
+  <p class="lede">Set beside the 1985 release, this copy differs in 29 of the game's 19,450 bytes. The maps, the character sets and the sprites are the same, apart from two bytes of a glyph no map uses. Everything else REMEMBER added sits in memory the 1985 game never uses: a menu, two pages of instructions, a trainer, and a saver for the high scores.</p>
+  <div class="plate cm-scroll"><table class="cm-tbl"><thead><tr><th>Where</th><th>The 1985 release</th><th>This copy</th></tr></thead><tbody>
+    <tr><td class="cm-n"><code>$085C</code>-<code>$0868</code></td><td>copies a trap for the reset button to <code>$8000</code> (section 17)</td><td>turns the screen on, then eight no-operations</td></tr>
+    <tr><td class="cm-n"><code>$09A5</code>, <code>$0A0D</code></td><td>6: the high-score walk starts at the seventh entry (section 16)</td><td>7: the walk starts at the eighth</td></tr>
+    <tr><td class="cm-n"><code>$0A4B</code>-<code>$0A4C</code></td><td>after a name, back to the title (<code>$0883</code>)</td><td>after a name, to the saver (<code>$44E0</code>)</td></tr>
+    <tr><td class="cm-n"><code>$0A4E</code>-<code>$0A56</code></td><td>the nine bytes the trap copies</td><td>zeros</td></tr>
+    <tr><td class="cm-n"><code>$38BE</code>-<code>$38C0</code></td><td>reads the keyboard</td><td>calls the area skip's hook (<code>$5F6A</code>), which reads it</td></tr>
+    <tr><td class="cm-n"><code>$44E0</code>-<code>$4FFF</code></td><td>nothing loaded</td><td>the saver, the menu, the instructions and the trainer</td></tr>
+    <tr><td class="cm-n"><code>$5F6A</code>-<code>$5FB1</code></td><td>two routines nothing calls: one plays the music from the KERNAL's interrupt, the other stops it</td><td>the area skip's hook and the menu's text</td></tr>
+    <tr><td class="cm-n"><code>$C71E</code>-<code>$C71F</code></td><td><code>$FF</code> <code>$FF</code></td><td><code>$00</code> <code>$0A</code>: two rows of glyph <code>$E3</code> in area 0's character set, which area 0's map never uses</td></tr>
+  </tbody></table>
+  <p class="cap">The 1985 release is Elite's PAL disk from the C64 Preservation Project. Both copies were stopped in the emulator as they hand over to the game at <code>$0850</code> and compared byte for byte. The game's program is <code>$0850</code>-<code>$44DF</code> and <code>$5000</code>-<code>$5F69</code>, and the first five rows hold all 29 bytes that differ in it.</p></div>
+  <p>The menu (<code>$4531</code>) asks T for the trainer or H for the high scores. T asks five questions, Y or N, and each Y patches the game before it starts:</p>
   <div class="plate cm-scroll"><table class="cm-tbl"><thead><tr><th>Trainer option</th><th>What it changes</th></tr></thead><tbody>
     <tr><td>Unlimited lives</td><td>the lost life (<code>$0996</code>) and the extra life (<code>$1363</code>) become reads, so the count never changes</td></tr>
     <tr><td>Unlimited grenades</td><td>the box's 3 (<code>$2A8F</code>) and the throw's 1 (<code>$3909</code>) become 0</td></tr>
     <tr><td>No falling</td><td>the fall into water or a pit (<code>$3C10</code>-<code>$3C5E</code>) becomes no-operations</td></tr>
     <tr><td>No collisions</td><td>the kill in the contact test (<code>$1056</code>-<code>$106D</code>) becomes no-operations</td></tr>
-    <tr><td>Area skip</td><td>the Commodore key ends the area, through a hook in the grenade's key read (<code>$5F6A</code>), so it works only where a grenade could be thrown (<code>$38BE</code>)</td></tr>
+    <tr><td>Area skip</td><td>the Commodore key ends the area, through the hook in the grenade's key read (<code>$5F6A</code>), so it works only where a grenade could be thrown (<code>$38BE</code>)</td></tr>
   </tbody></table>
-  <p class="cap">The routine that applies them is at <code>$4531</code>. The lives and collision patches were used to keep Super Joe alive through this page's tests of the areas.</p></div>
-  <p>The high-score saver is the other addition (<code>$44E0</code>). The game's own table of eight names and scores (<code>$0EED</code>-<code>$0F47</code>) is loaded from the second file on the disk before the game starts. After a name is entered, the jump that would restart the game goes to the saver instead (<code>$0A4A</code>), which writes the table back to the disk. A game with the trainer on saves nothing.</p>
-  <p>CSDb credits the crack with a bug fix as well. Which bytes it changed is not known: that needs a copy of the 1985 release to compare, and this page was made from the crack alone. The same comparison would say what the eight bytes of no-operations at <code>$0861</code> replaced.</p>
+  <p class="cap">The lives and collision patches were used to keep Super Joe alive through this page's tests of the areas.</p></div>
+  <p>The high-score saver is the other addition (<code>$44E0</code>). The game's table of eight names and scores (<code>$0EED</code>-<code>$0F47</code>) is loaded from the second file on the disk before the game starts, and the file on this disk holds the table the 1985 release starts with. After a name is entered, the jump that took the 1985 release back to the title goes to the saver instead (<code>$0A4A</code>), which writes the table back to the disk and starts the game again. A game with the trainer on saves nothing.</p>
+</section>
+
+<section>
+  <p class="fig">16 · The high-score table</p>
+  <h2 class="t">Bug: in the 1985 release, a low score overwrites eighth place</h2>
+  <p class="lede">CSDb credits REMEMBER's crack with a bug fix, and this is it. In the 1985 release, a game that does not beat the seventh score writes its score over the eighth, under the eighth player's name and without asking for a name, even when it is lower. Pick a score.</p>
+  <div class="plate" id="cm-table">
+    <div class="cm-row"><input class="cm-range" type="range" min="0" max="100" step="1" value="25" aria-label="The score at the game's end, in hundreds"><span class="cm-hi-score"></span></div>
+    <div class="cm-pair"><div><p>The 1985 release</p><table class="cm-tbl cm-hi" data-first="6"></table></div><div><p>This copy</p><table class="cm-tbl cm-hi" data-first="7"></table></div></div>
+    <p class="cm-read" aria-live="polite"></p>
+    <p class="cap">Both start from the table the game starts with (<code>$0EEE</code>, <code>$0F36</code>), which is the same in both copies, and both come from one port of the game's walk (<code>$09A4</code>), started at the seventh entry or the eighth. The test runs the game's own walk both ways over every score from 0 to 999,900 against that table, and over 400,000 random scores against 200 random tables. The table and whether a name was asked for were the port's every time.</p>
+  </div>
+  <p>After a game the score walks up the table from the bottom (<code>$09A4</code>). Each entry it beats or equals moves down one place, name and all, and the score goes in below the first entry it does not beat; the name entry follows (<code>$0C88</code>). The table holds eight entries and a spare ninth that is never shown. This copy starts the walk at the eighth entry, so a score that misses the table goes into the spare ninth, and the game goes back to the title without asking for a name (<code>$0A0C</code>).</p>
+  <p>The 1985 release starts the walk at the seventh entry. The bytes at <code>$09A5</code> and <code>$0A0D</code> hold 6 where this copy has 7, and they are the only two bytes of the routine that differ. A score that beats the seventh is handled as in this copy. A score that does not stops the walk where it starts, goes in below the seventh, over the eighth, and the test for a name finds that the walk never moved and goes back to the title. So eighth place always shows the last game that missed seventh, under the name that was there before. In the emulator, a game of 2,500 in the 1985 release left DILK 002500 in eighth place, a game of 0 left DILK 000000, and neither asked for a name. This copy asked for a name at 2,500, sent DILK's 2,000 to the spare ninth entry, and changed nothing at 0.</p>
+</section>
+
+<section>
+  <p class="fig">17 · The reset trap</p>
+  <h2 class="t">Bug: after a reset, the 1985 release shows its title in the dark and never starts</h2>
+  <p class="lede">The 1985 release catches the reset button and starts itself again instead of handing the machine to BASIC. The game that restarts runs its title and attract mode with the screen off, and fire never starts a game.</p>
+  <p>At its start the game copies nine bytes to <code>$8000</code> (<code>$085C</code>): the game's start address, <code>$0850</code>, twice, then the letters CBM80 with their top bits set. Those nine bytes are a cartridge's signature. A reset makes the KERNAL look for the letters at <code>$8004</code> and, when they are there, jump to the address at <code>$8000</code>, so a reset switch restarts Commando. RESTORE, the other key that breaks into a program, does nothing in either copy, because the start points the NMI at an RTI (<code>$0A4D</code>).</p>
+  <p>The KERNAL jumps to a cartridge before it sets up the chips, so the game restarts on chips the reset has cleared. The reset clears the processor port's direction register, and with the register at 0 the game's writes to <code>$01</code> change nothing. The I/O chips stay in view when the start copies the name entry's gunsight into the RAM beneath them (<code>$0A57</code>), so the 64 bytes go into the video chip instead, and the one that lands in <code>$D011</code>, <code>$20</code>, turns the display off. Nothing in the game turns it on again.</p>
+  <p>The joystick is cut off the same way. The title starts a game when the first CIA's port A reads <code>$6F</code> (<code>$0FB2</code>): fire pressed, and bit 7 low. Bit 7 reads low only because the KERNAL makes that line an output and drives it low, and the reset has made every line of the port an input again, so with fire pressed the port reads <code>$EF</code>. In the emulator the restarted game cycled through its title and attract views and ignored fire. With the port set back as the KERNAL leaves it, the first press started a game.</p>
+  <p>Behind the dark screen the restarted game draws area 3 wrongly as well. With the processor port's lines all inputs, they read high, which keeps the BASIC ROM in view at <code>$A000</code>, where area 3's map is, and the map is drawn from the ROM's bytes.</p>
+  <div class="plate">
+    <div class="cm-pair"><div><img src="reference/attract-area3-1985.png" width="320" height="192" alt="The attract mode's view of area 3: the COMMANDO logo over a dirt track between two walls"><p>The attract view of area 3</p></div>
+    <div><img src="reference/attract-area3-after-reset.png" width="320" height="192" alt="The same view after a reset: the logo over a field of scrambled green and grey characters"><p>The same view after a reset, with the display put back on</p></div></div>
+    <p class="cap">The 1985 release in the emulator, at area 3's row 169. For the second picture <code>$D011</code> was set to <code>$1B</code> just after the gunsight copy, which every later write to it keeps.</p>
+  </div>
+  <p>The signature also marks a game that is never reset. <code>$8000</code> is the first row of area 1's map, the top of the screen when the area's gate comes into view, and the copy writes over nine of its characters. Two pixel lines of them show at the top edge of the screen. REMEMBER's file holds the map's own nine characters there, and the crack never copies the signature.</p>
+  <div class="plate">
+    <div class="cm-pair"><div><img src="reference/area1-gate-1985.png" width="480" height="120" alt="The top edge of the screen at area 1's gate in the 1985 release: brown marks above the wall"><p>The 1985 release: the signature in area 1's top row</p></div>
+    <div><img src="reference/area1-gate-remember.png" width="480" height="120" alt="The same place in this copy: a plain grey line above the wall"><p>This copy: the map's own wall</p></div></div>
+    <p class="cap">The top-left corner of the screen when area 1's gate comes into view, from the emulator, five times the size.</p>
+  </div>
 </section>
 
 </main>
@@ -588,10 +653,10 @@ function createDriver(data) {
 /* commando-hud */
 /* The score line's arithmetic and digits, ported from the game: the score add and its extra life
    ($134F), the grenade box ($2A8E, and its second payout from the enemy loop) and the throw
-   ($3903), and the four prints ($136F, $13A3, $13D7,
-   $13F1). The score is two BCD bytes of hundreds, the grenades one BCD byte, the lives one binary
-   byte, and every print turns each half of a byte into a glyph by adding $21, the font's 0.
-   test_hud.js holds each against the game's own code. */
+   ($3903), one pass of the enemy loop with a box in it ($2495), and the four prints ($136F,
+   $13A3, $13D7, $13F1). The score is two BCD bytes of hundreds, the grenades one BCD byte, the
+   lives one binary byte, and every print turns each half of a byte into a glyph by adding $21,
+   the font's 0. test_hud.js holds each against the game's own code. */
 function createHud() {
   'use strict';
   // The 6502's ADC and SBC in decimal mode, as the NMOS chip does them for any operands
@@ -632,6 +697,25 @@ function createHud() {
     boxInLoop(n) {
       if (this.box() && n > 0) { this.box(); return 2; }
       return 1;
+    },
+    // One pass of the enemy loop ($2495) with Super Joe standing on a box: slots holds the eleven
+    // behaviour numbers ($0492: 0 a free slot, 22 the box, any other an enemy) and is changed in
+    // place. Returns the slots in the order the loop runs them, each { x, b }, and the box's with
+    // life and freed. The box's own effect request leaves X = 0 after it frees its slot, so the loop
+    // always goes on from enemy 1; with an extra life, the life's request comes first and the slot
+    // freed ($3570) is enemy 0's.
+    pass(slots) {
+      const run = [];
+      for (let x = 0; x < 11; x++) {
+        const step = { x, b: slots[x] };
+        run.push(step);
+        if (slots[x] !== 22) continue;
+        step.life = this.box();
+        step.freed = step.life ? 0 : x;
+        slots[step.freed] = 0;
+        x = 0;
+      }
+      return run;
     },
     throwOne() {                                         // $38B9, $3903: only with one to throw
       if (!st.grenades) return false;
@@ -677,6 +761,46 @@ function aim(e, p) {
 // the player is in the heading the soldier already faces (the low bit of f ignored).
 function fires(e, p, f) { const h = aim(e, p); return h >= 0 && (f & 0xFE) === h; }
 // end of commando-aim
+</script>
+<script>
+/* commando-table */
+/* The high-score table after a game ($09A4), ported from the game. The table is eight entries,
+   best first, and a spare ninth (names at $0EEE, eight letters each; scores at $0F36, two BCD
+   bytes each, here one number). The walk starts at entry `first` and moves every entry the score
+   beats or equals down one place; the first entry it does not beat stops it, and the score goes
+   in below that one. If no entry moved, the game goes back to the title without asking for a
+   name ($0A0C); otherwise the name is asked for ($0A13), or, past the top, the score is entry 0
+   ($09DE). This copy starts at entry 7 ($09A5 = $07, $0A0D = $07): a score that misses the table
+   goes into the spare ninth entry. The 1985 release starts at entry 6, so a score below the
+   seventh is written into the eighth entry under the name already there.
+   test_table.js holds it against the game's own code, with both bytes. */
+// The table both copies start with, $0EEE-$0F47 of the listing: the names, then the scores.
+// test_table.js checks these bytes against the listing.
+const START_BYTES = '5d626c636d2020206c696c73202020206e625f205e6f5e5f6d5b6c5b622076206863615f66202020655f636e622020205b5e6966602020205e636665202020202020202020202020009000800070006000500040003000200000';
+// The font's codes: $20 a space, $21-$2A the digits, $5B-$74 the letters, $76 the heart.
+function glyph(c) {
+  if (c === 0x76) return '\u2665';
+  if (c >= 0x21 && c <= 0x2A) return String(c - 0x21);
+  if (c >= 0x5B && c <= 0x74) return String.fromCharCode(c - 0x5B + 65);
+  return ' ';
+}
+function startTable() {
+  'use strict';
+  const b = START_BYTES.match(/../g).map((h) => parseInt(h, 16));
+  return Array.from({ length: 9 }, (_, i) => ({
+    name: b.slice(8 * i, 8 * i + 8).map(glyph).join('').trimEnd(),
+    score: b[72 + 2 * i] << 8 | b[73 + 2 * i] }));
+}
+function insertScore(table, score, first) {
+  'use strict';
+  const t = table.map((e) => ({ name: e.name, score: e.score }));
+  let x = first;
+  for (; x >= 0 && score >= t[x].score; x--) t[x + 1] = { name: t[x].name, score: t[x].score };
+  const at = x + 1;
+  t[at].score = score;
+  return { table: t, at, asked: x !== first };
+}
+// end of commando-table
 </script>
 <script>
 // The bytes the music player needs, $5428-$5F0B of the listing: the driver's note table, its
@@ -801,6 +925,15 @@ function terrainImage(D, ar) {
       return Object.assign(ar, { img: mapImage(D, ar), ter: terrainImage(D, ar) });
     });
     const mctx = C64.canvas(mini, 80, 400);
+    // The unused fourth list ($1D42 rows, $1D5C x, $1D75 x-high, $1D8E handlers), laid out as the
+    // three in use. The doors (23, 24: y $28, $1E67), the box (7: y $26, $2119) and the soldier in a
+    // trench and the mortar man (3, 26: y $21, $2226) stand at the entry's x; the rest come in from
+    // an edge.
+    const UNUSED = [], PLACED = { 3: 0x21, 26: 0x21, 7: 0x26, 23: 0x28, 24: 0x28 }, R = D.ram;
+    for (let i = 0; R[0x1D42 + i] !== 0xFF && i < 64; i++) {
+      const t = R[0x1D8E + i];
+      if (t !== 27) UNUSED.push([R[0x1D42 + i], t in PLACED ? R[0x1D5C + i] + (R[0x1D75 + i] === 0xFF ? 256 : 0) : null, t]);
+    }
     let A = AREAS[0], timer = 0;
     const on = (k) => $(`[data-o="${k}"]`, root).checked;
     function draw() {
@@ -828,6 +961,23 @@ function terrainImage(D, ar) {
           ctx.fillStyle = 'rgba(31,95,168,.9)'; if (n === 1) ctx.fillRect(0, y - 1, 640, 2);
           const text = HANDLERS[t] + ' · row ' + r, w = ctx.measureText(text).width + 10;
           ctx.fillRect(640 - w, y + 1, w, 17); ctx.fillStyle = '#fff'; ctx.fillText(text, 640 - w + 5, y + 14);
+        });
+      }
+      if (on('unused')) {
+        const seen = {};
+        UNUSED.forEach(([r, x, t]) => {
+          const n = seen[r] = (seen[r] || 0) + 1, y = (r * 8 - top) * 2;
+          if (r >= row && r < row + 21) due.push(HANDLERS[t] + ' (unused list)');
+          ctx.fillStyle = '#7a3fb0'; ctx.strokeStyle = '#7a3fb0'; ctx.lineWidth = 3;
+          // An entry with a place of its own starts at its x and the y its handler gives it, when
+          // its row reaches the top of the screen, where sprite y 50 is. Its sprite is 24 x 21.
+          if (x !== null) ctx.strokeRect((x - 24) * 2, y + (PLACED[t] - 50) * 2, 48, 42);
+          const ly = y + (n - 1) * 18;
+          if (ly < -2 || ly > 338) return;
+          if (x === null && n === 1) ctx.fillRect(0, ly - 1, 640, 2);
+          const text = HANDLERS[t] + ' · row ' + r, w = ctx.measureText(text).width + 10;
+          const lx = x === null ? 0 : Math.min(640 - w, Math.max(0, (x - 24) * 2 + 52));
+          ctx.fillRect(lx, ly + 1, w, 17); ctx.fillStyle = '#fff'; ctx.fillText(text, lx + 5, ly + 14);
         });
       }
       mctx.drawImage(A.img, 0, 0, 320, 1600, 0, 0, 80, 400);
@@ -1061,7 +1211,66 @@ function mountHud(root) {
   }).catch((e) => miss(root, e));
 }
 mountHud($('#cm-hud'));
-mountHud($('#cm-box'));
+
+// ---- the grenade box, one pass of the enemy loop slot by slot (section 11)
+(function box() {
+  const root = $('#cm-box'), cv = $('canvas', root), read = $('.cm-read', root), grid = $('.cm-slots', root);
+  const carry = $('[data-carry]', root), ORD = ['', 'first', 'second', 'third', 'fourth'];
+  const SCENE = [5, 5, 0, 5, 22, 0, 5, 0, 0, 0, 0], BOX = 4;
+  listing().then((D) => {
+    const ctx = C64.canvas(cv, 640, 16), TEXT = Array.from(D.ram.subarray(0x40C0, 0x40E8)), FONT = D.ram.subarray(0xD000, 0xD800);
+    const start = () => { const h = createHud(); h.st.best = [D.ram[0x0F36], D.ram[0x0F37]]; h.st.lo = carry.checked ? 0x95 : 0x55; return h; };
+    let run, at;
+    const reset = () => { run = start().pass(SCENE.slice()); at = -1; draw(); };
+    function state(upto) {                     // the score, the slots and the turns after step upto
+      const h = start(), slots = SCENE.slice(), turns = Array(11).fill(0);
+      for (let i = 0; i <= upto; i++) {
+        const r = run[i];
+        if (r.b === 22) { h.box(); slots[r.freed] = 0; } else if (r.b) turns[r.x]++;
+      }
+      return { h, slots, turns };
+    }
+    function say(i, t) {
+      if (i < 0) return 'Super Joe is standing on the box. Press Next slot.';
+      if (i >= run.length) {
+        const extra = t.turns.map((n, k) => n > 1 ? k : -1).filter((k) => k >= 0);
+        const paid = run.filter((r) => r.b === 22).length;
+        return `The pass is over. The loop ran ${run.length} slots, where a pass runs eleven: the box paid ${paid === 2 ? 'twice' : 'once'}` +
+          (SCENE[0] && !t.slots[0] ? ', the rifle soldier in slot 0 is gone' : '') +
+          (extra.length ? `, and slots ${extra.join(' and ')} moved ${Math.max(...t.turns) > 2 ? 'three times' : 'twice'} in one pass.` : '.');
+      }
+      const r = run[i];
+      if (r.b === 5) return `X = ${r.x}: a rifle soldier takes his ${ORD[t.turns[r.x]]} turn of this pass.`;
+      if (r.b === 0) return `X = ${r.x}: a free slot.`;
+      const again = run.slice(0, i).some((q) => q.b === 22);
+      if (r.life) return `X = ${r.x}: the box. Three grenades and 1,000 points, which carry the score past 10,000 and bring a life. ` +
+        'The life asks for its sound effect, and the request hands back X = 0, so the box frees slot 0' +
+        (SCENE[0] ? ' and the rifle soldier there' : '') + '. The box\u2019s own sound effect leaves X = 0 again: the loop goes on from slot 1.';
+      return `X = ${r.x}: the box${again ? ' again, with Super Joe still on it' : ''}. Three grenades and 1,000 points, no carry, so it frees its own slot. ` +
+        'Its sound effect hands back X = 0: the loop goes on from slot 1.';
+    }
+    function draw() {
+      const t = state(Math.min(at, run.length - 1));
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 16);
+      t.h.line(TEXT).forEach((c, i) => C64.drawGlyph(ctx, FONT, c, i * 16, 0, 2, C64.PAL[1]));
+      const now = at >= 0 && at < run.length ? run[at].x : -1;
+      grid.innerHTML = SCENE.map((b, k) => {
+        const what = b === 22 ? 'box' : b ? 'soldier' : 'free', gone = b && !t.slots[k];
+        return `<div class="cm-slot${k === now ? ' now' : ''}${gone ? ' gone' : ''}" role="listitem"><b>${k}</b><span>${what}</span>` +
+          `<i>${b === 5 && t.turns[k] ? '\u00d7' + t.turns[k] : ''}</i></div>`;
+      }).join('');
+      read.textContent = say(at, t);
+    }
+    root.querySelectorAll('[data-a]').forEach((b) => b.onclick = () => {
+      const a = b.dataset.a;
+      if (a === 'reset') return reset();
+      at = a === 'all' ? run.length : Math.min(at + 1, run.length);
+      draw();
+    });
+    carry.onchange = reset;
+    reset();
+  }).catch((e) => miss(root, e));
+})();
 
 // ---- the green soldier and his score sprite (section 14)
 (function green() {
@@ -1073,5 +1282,39 @@ mountHud($('#cm-box'));
     C64.drawSpriteMC(ctx, S(0xBA), 120, 21, 3, P[5], P[15], P[0]);
     C64.drawSpriteMC(ctx, S(0xBC), 240, 21, 3, P[1], P[15], P[0]);
   }).catch((e) => miss(cv.parentNode, e));
+})();
+
+// ---- the high-score table, both ways (section 16)
+(function hiscores() {
+  const root = $('#cm-table'), range = root.querySelector('input'), shown = root.querySelector('.cm-hi-score');
+  const read = root.querySelector('.cm-read'), START = startTable();
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
+  const bcd = (n) => ((n / 1000 | 0) << 12) | ((n / 100 % 10 | 0) << 8) | ((n / 10 % 10 | 0) << 4) | (n % 10);
+  const digits = (v) => v.toString(16).padStart(4, '0') + '00';
+  const points = (v) => Number(digits(v)).toLocaleString('en-GB');
+  function say(first, r, score) {
+    const who = first === 6 ? '1985: ' : 'This copy: ', s = points(score);
+    if (r.asked) return who + s + ' goes in ' + ORD[r.at] + ' place, and a name is asked for.';
+    if (first === 7) return who + s + ' misses the table and goes into the spare ninth entry; no name is asked for.';
+    const old = START[7];
+    return who + s + ' does not beat ' + START[6].name + "'s " + points(START[6].score) + ', so it replaces ' + old.name + "'s " +
+      points(old.score) + ' in eighth place' + (score < old.score ? ', though it is lower' : '') + ', and keeps the name ' + old.name + '. No name is asked for.';
+  }
+  function draw() {
+    const score = bcd(+range.value), lines = [];
+    shown.textContent = points(score);
+    root.querySelectorAll('table').forEach((tb) => {
+      const first = +tb.dataset.first, r = insertScore(START, score, first);
+      tb.innerHTML = '<tbody>' + r.table.map((e, k) => {
+        const cls = k === 8 ? 'spare' : k === r.at ? (r.asked ? 'new' : 'bug') : '';
+        const name = k === r.at && r.asked ? 'your name' : e.name || '\u00a0';
+        return `<tr class="${cls}"><td>${k === 8 ? 'spare' : k + 1}</td><td>${name}</td><td>${digits(e.score)}</td></tr>`;
+      }).join('') + '</tbody>';
+      lines.push(say(first, r, score));
+    });
+    read.innerHTML = lines.join('<br>');
+  }
+  range.oninput = draw;
+  draw();
 })();
 </script>

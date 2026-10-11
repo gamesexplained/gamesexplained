@@ -498,6 +498,14 @@ itself runs after a reset with BASIC over its data at `$A000`-`$BFFF`.
 Read `$00` and the CPU's view of the game's tables after the reset; the
 symptom is usually wrong colours or missing graphics, not a crash.
 
+The KERNAL's `IOINIT` is skipped too, so both CIAs come up with every
+port line an input. A joystick test that counts on the KERNAL's port A
+(`$DC02` = `$FF`, `$DC00` = `$7F`, so bit 7 reads low) never matches, and
+a copy meant for the RAM under the I/O area goes into the chips instead.
+One game restarted with its display off and a title that ignored fire.
+Press fire after the reset, and read `$D011` and `$DC02`, before calling
+a restart clean.
+
 ## Screen codes and PETSCII
 
 Screen codes: `@`=0, A–Z=1–26, space=32, digits `0`–`9`=48–57, symbols

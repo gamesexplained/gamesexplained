@@ -71,3 +71,42 @@ and the points table has 200 for a foxhole that `facts.md` had left out.
 A Playwright click on a canvas below the fold reported an empty readout;
 the click had landed outside the viewport. Scrolling the element into view
 first fixed it.
+
+## The third run, 10-11 October 2026
+
+After the merge, Aaron asked for three follow-ups: the comparison with the
+1985 release, a stepper for the box's double payout, and the unused fourth
+spawn list drawn on a map. Elite's 1985 PAL disk came from the C64
+Preservation Project on archive.org, and a snapshot of it at the hand-over
+(`$0850`) diffed against `entry.vsf` left 29 bytes in the program, which
+answered both open questions at once: the bug fix is the high-score walk's
+start (6 to 7 at `$09A5` and `$0A0D`), and the eight NOPs replaced the end
+of a loop copying a CBM80 signature to `$8000`.
+
+The first live test of the fix stopped at once with no game run: the score
+had been passed as `2500` in the script's high-byte-first order, which put
+`$25` in the high byte. The second loop exited at once too, because the
+kit's `frames()` leaves the machine paused; non-stopping checkpoints read
+after each batch of frames worked.
+
+The reset trap took three tries to read right. The first reset test showed
+a black screen and was put down to the emulator resetting the video chip;
+reading `$D011` at the restart showed it still `$17`, and a store
+checkpoint caught the gunsight copy writing `$20` into it. Then a run
+"into area 3" with the display put back turned out to be the attract mode
+cycling through its views: the restarted game ignores fire, because the
+title waits for `$6F` on a CIA port the reset had left all inputs. Setting
+the port as the KERNAL leaves it made fire work again, which settled the
+cause. The first page draft had said the restarted game "played on a black
+screen"; it never plays.
+
+The fourth list's overlay first used one y for every entry; reading the
+door, box and trench handlers gave each its own starting y, and with them
+the trench soldier and the mortar man landed in area 3's fortress windows.
+One door, at row 157, falls on area 3's gate, which the first draft of the
+page had missed by saying all nine stood in open ground.
+
+The box stepper's test first failed on soldiers firing bullets into free
+slots during the pass; setting the fire mask to `$3F` and each soldier's
+timer to 1 kept the slots still, and comparing only the enemies the port
+keeps left one random spawn (`$2D63`) out of the comparison.
