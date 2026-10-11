@@ -34,9 +34,12 @@ rules below mechanically, paragraph by paragraph, as described in
 - No rhetorical question followed by its answer.
 - No "it's not X, it's Y", "not just X but Y", "more than just".
 - The page title is the game's name, never a claim ("The X Is A Y").
-  A subtitle carries the hook, if a human writes one. Section headings may
-  carry a hook of their own; keep them short, and prefer the thing over
-  the claim about the thing ("The landing test" over "The gauge lies").
+  The standfirst, the subtitle under the title, carries the hook: the
+  most interesting thing inside the game, in a sentence or two. The agent
+  writes it with the rest of the copy, and the Gold pass may rewrite it
+  like any other line. Section headings may carry a hook of their own;
+  keep them short, and prefer the thing over the claim about the thing
+  ("The landing test" over "The gauge lies").
 - No tidy triplets for rhythm. Two things or four things are fine when
   there are two or four things.
 - No em-dashes as the default joint between clauses. Write two sentences.

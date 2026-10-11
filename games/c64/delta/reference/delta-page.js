@@ -103,6 +103,113 @@ function createDriver(M) {
     mem,
   };
 }
+
+// createSfxDriver for site/lib/sid.js: runs Delta's own sound-effect player ($0406 sfx_play_frame,
+// $0403 sfx_stop) in a small 6502 interpreter over $0400-$07FF and the music note table at $C226.
+function createSfxDriver(M) {
+  const mem = new Uint8Array(0x10000);
+  for (const [base, bytes] of M.blocks) mem.set(bytes, base);   // $0400-$07FF, and the music block for its note table at $C226
+  const sid = new Uint8Array(25);
+  let writes = [], on = false, steps = 0;
+  let A = 0, X = 0, Y = 0, S = 0xFF, PC = 0, N = 0, V = 0, D = 0, I = 1, Z = 0, C = 0;
+  const rd = a => mem[a & 0xFFFF];
+  const wr = (a, v) => { a &= 0xFFFF; v &= 255; if (a >= 0xD400 && a <= 0xD418) { sid[a - 0xD400] = v; writes.push(a - 0xD400, v); } else mem[a] = v; };
+  const nz = v => { v &= 255; N = v >> 7; Z = v === 0 ? 1 : 0; return v; };
+  const push = v => { mem[0x100 | S] = v & 255; S = (S - 1) & 255; };
+  const pull = () => { S = (S + 1) & 255; return mem[0x100 | S]; };
+  const getP = () => (N << 7) | (V << 6) | 0x30 | (D << 3) | (I << 2) | (Z << 1) | C;
+  const setP = p => { N = p >> 7 & 1; V = p >> 6 & 1; D = p >> 3 & 1; I = p >> 2 & 1; Z = p >> 1 & 1; C = p & 1; };
+  const w16 = a => rd(a) | rd(a + 1) << 8;
+  function adc(v) {
+    const s = A + v + C;
+    V = (~(A ^ v) & (A ^ s) & 0x80) ? 1 : 0; C = s > 255 ? 1 : 0; A = nz(s);
+  }
+  function cmp(r, v) { const d = r - v; C = d >= 0 ? 1 : 0; nz(d); }
+  // addressing: returns effective address
+  function ea(mode) {
+    let a;
+    switch (mode) {
+      case 'zp': return rd(PC++);
+      case 'zpx': return (rd(PC++) + X) & 255;
+      case 'zpy': return (rd(PC++) + Y) & 255;
+      case 'abs': a = w16(PC); PC += 2; return a;
+      case 'abx': a = (w16(PC) + X) & 0xFFFF; PC += 2; return a;
+      case 'aby': a = (w16(PC) + Y) & 0xFFFF; PC += 2; return a;
+      case 'izx': { const z = (rd(PC++) + X) & 255; return rd(z) | rd((z + 1) & 255) << 8; }
+      case 'izy': { const z = rd(PC++); return ((rd(z) | rd((z + 1) & 255) << 8) + Y) & 0xFFFF; }
+    }
+  }
+  const OPS = {};
+  const def = (codes, fn) => { for (const [op, mode] of codes) OPS[op] = [fn, mode]; };
+  const M8 = { imm: null };
+  def([[0xA9,'imm'],[0xA5,'zp'],[0xB5,'zpx'],[0xAD,'abs'],[0xBD,'abx'],[0xB9,'aby'],[0xA1,'izx'],[0xB1,'izy']], v => { A = nz(v); });
+  def([[0xA2,'imm'],[0xA6,'zp'],[0xB6,'zpy'],[0xAE,'abs'],[0xBE,'aby']], v => { X = nz(v); });
+  def([[0xA0,'imm'],[0xA4,'zp'],[0xB4,'zpx'],[0xAC,'abs'],[0xBC,'abx']], v => { Y = nz(v); });
+  def([[0x69,'imm'],[0x65,'zp'],[0x75,'zpx'],[0x6D,'abs'],[0x7D,'abx'],[0x79,'aby'],[0x61,'izx'],[0x71,'izy']], v => adc(v));
+  def([[0xE9,'imm'],[0xE5,'zp'],[0xF5,'zpx'],[0xED,'abs'],[0xFD,'abx'],[0xF9,'aby'],[0xE1,'izx'],[0xF1,'izy']], v => adc(v ^ 255));
+  def([[0x29,'imm'],[0x25,'zp'],[0x35,'zpx'],[0x2D,'abs'],[0x3D,'abx'],[0x39,'aby'],[0x21,'izx'],[0x31,'izy']], v => { A = nz(A & v); });
+  def([[0x09,'imm'],[0x05,'zp'],[0x15,'zpx'],[0x0D,'abs'],[0x1D,'abx'],[0x19,'aby'],[0x01,'izx'],[0x11,'izy']], v => { A = nz(A | v); });
+  def([[0x49,'imm'],[0x45,'zp'],[0x55,'zpx'],[0x4D,'abs'],[0x5D,'abx'],[0x59,'aby'],[0x41,'izx'],[0x51,'izy']], v => { A = nz(A ^ v); });
+  def([[0xC9,'imm'],[0xC5,'zp'],[0xD5,'zpx'],[0xCD,'abs'],[0xDD,'abx'],[0xD9,'aby'],[0xC1,'izx'],[0xD1,'izy']], v => cmp(A, v));
+  def([[0xE0,'imm'],[0xE4,'zp'],[0xEC,'abs']], v => cmp(X, v));
+  def([[0xC0,'imm'],[0xC4,'zp'],[0xCC,'abs']], v => cmp(Y, v));
+  def([[0x24,'zp'],[0x2C,'abs']], v => { N = v >> 7; V = v >> 6 & 1; Z = (A & v) ? 0 : 1; });
+  const ST = { 0x85:['zp','A'],0x95:['zpx','A'],0x8D:['abs','A'],0x9D:['abx','A'],0x99:['aby','A'],0x81:['izx','A'],0x91:['izy','A'],
+               0x86:['zp','X'],0x96:['zpy','X'],0x8E:['abs','X'],0x84:['zp','Y'],0x94:['zpx','Y'],0x8C:['abs','Y']};
+  const RMW = { 0x06:['zp','asl'],0x16:['zpx','asl'],0x0E:['abs','asl'],0x1E:['abx','asl'],0x46:['zp','lsr'],0x56:['zpx','lsr'],0x4E:['abs','lsr'],0x5E:['abx','lsr'],
+                0x26:['zp','rol'],0x36:['zpx','rol'],0x2E:['abs','rol'],0x3E:['abx','rol'],0x66:['zp','ror'],0x76:['zpx','ror'],0x6E:['abs','ror'],0x7E:['abx','ror'],
+                0xE6:['zp','inc'],0xF6:['zpx','inc'],0xEE:['abs','inc'],0xFE:['abx','inc'],0xC6:['zp','dec'],0xD6:['zpx','dec'],0xCE:['abs','dec'],0xDE:['abx','dec']};
+  function sh(kind, v) {
+    switch (kind) {
+      case 'asl': C = v >> 7; return nz(v << 1);
+      case 'lsr': C = v & 1; return nz(v >> 1);
+      case 'rol': { const c = C; C = v >> 7; return nz(v << 1 | c); }
+      case 'ror': { const c = C; C = v & 1; return nz(v >> 1 | c << 7); }
+      case 'inc': return nz(v + 1);
+      case 'dec': return nz(v - 1);
+    }
+  }
+  const BR = { 0x10: () => !N, 0x30: () => N, 0x50: () => !V, 0x70: () => V, 0x90: () => !C, 0xB0: () => C, 0xD0: () => !Z, 0xF0: () => Z };
+  function step() {
+    const op = rd(PC++);
+    if (OPS[op]) { const [fn, mode] = OPS[op]; fn(mode === 'imm' ? rd(PC++) : rd(ea(mode))); return; }
+    if (ST[op]) { const [mode, r] = ST[op]; wr(ea(mode), r === 'A' ? A : r === 'X' ? X : Y); return; }
+    if (RMW[op]) { const [mode, k] = RMW[op]; const a = ea(mode); wr(a, sh(k, rd(a))); return; }
+    if (BR[op]) { const o = rd(PC++); if (BR[op]()) PC = (PC + (o < 128 ? o : o - 256)) & 0xFFFF; return; }
+    switch (op) {
+      case 0x0A: A = sh('asl', A); return; case 0x4A: A = sh('lsr', A); return;
+      case 0x2A: A = sh('rol', A); return; case 0x6A: A = sh('ror', A); return;
+      case 0xAA: X = nz(A); return; case 0xA8: Y = nz(A); return; case 0x8A: A = nz(X); return; case 0x98: A = nz(Y); return;
+      case 0xBA: X = nz(S); return; case 0x9A: S = X; return;
+      case 0xE8: X = nz(X + 1); return; case 0xCA: X = nz(X - 1); return; case 0xC8: Y = nz(Y + 1); return; case 0x88: Y = nz(Y - 1); return;
+      case 0x18: C = 0; return; case 0x38: C = 1; return; case 0x58: I = 0; return; case 0x78: I = 1; return;
+      case 0xB8: V = 0; return; case 0xD8: D = 0; return; case 0xF8: D = 1; return; case 0xEA: return;
+      case 0x48: push(A); return; case 0x68: A = nz(pull()); return; case 0x08: push(getP()); return; case 0x28: setP(pull()); return;
+      case 0x4C: PC = w16(PC); return;
+      case 0x6C: { const a = w16(PC); PC = rd(a) | rd((a & 0xFF00) | ((a + 1) & 255)) << 8; return; }
+      case 0x20: { const t = w16(PC); const r = (PC + 1) & 0xFFFF; push(r >> 8); push(r); PC = t; return; }
+      case 0x60: { const lo = pull(), hi = pull(); PC = ((hi << 8 | lo) + 1) & 0xFFFF; return; }
+    }
+    throw new Error('opcode ' + op.toString(16) + ' at ' + (PC - 1).toString(16));
+  }
+  function call(entry, a) {
+    A = a & 255; S = 0xFF; push(0xFF); push(0xFE); PC = entry; let n = 0;
+    while (PC !== 0xFFFF) { step(); if (++n > 200000) throw new Error('runaway at ' + PC.toString(16)); }
+  }
+  // Delta's sound-effect player ($0406 sfx_play_frame, $0403 sfx_stop) over the bytes $0400-$07FF as the
+  // game loads them, with the music driver's note table ($C226) that sfx_start reads the notes from. An effect starts the way the game starts one: $40 + n in voice 0's request byte ($0400).
+  return {
+    init(n) { for (let r = 0; r < 25; r++) sid[r] = 0; writes = []; for (let v = 0; v < 3; v++) call(0x0403, v); writes = []; mem[0x0400] = 0x40 + n; on = true; },
+    stop() { call(0x0403, 0); on = false; },
+    play() { writes = []; if (!on) return; call(0x0406, 0); if (mem[0x0400] === 0xFF) on = false; },
+    sid, get writes() { return writes; }, playing: () => on,
+    voice(x) {
+      return { effect: mem[0x0400 + x] === 0xFF ? null : mem[0x0400 + x] & 0x1F, wave: mem[0x0581 + x], left: mem[0x0578 + x],
+               script: mem[0x0584 + x], step: mem[0x0572 + x] };
+    },
+    mem,
+  };
+}
 // Ports of three small routines for the page, tested in test_ports.js against the game's code.
 // stars: stars_scroll_mid $1D1B, stars_scroll_fast $1D3B, stars_scroll_slow $1D5E and the toggle in stars_update $1DB9
 function starsStep(m) {            // m: memory (Uint8Array) holding $100A-$101C and the three glyph rows
@@ -214,6 +321,25 @@ const DELTA_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about"
     });
   }
 
+  /* 02 sound effects */
+  function mountSfx(root, ram) {
+    const S = globalThis.C64Sid;
+    if (!S) { root.textContent = needSite; return; }
+    const use = { 1: 'engine drone', 3: 'double laser', 4: 'extra weapon', 5: 'engine drone', 6: 'laser', 7: 'credit lost',
+      9: 'extra life', 10: 'buying', 11: 'enemy drone', 16: 'indestructible drone', 17: 'enemy fire', 18: 'engine drone' };
+    const names = [];
+    for (let n = 0; n < 21; n++) names.push(n + ' ' + (use[n] || '(no caller found)'));
+    S.mount(root, {
+      driver: createSfxDriver, tunes: names, filter: '6581', gain: 0.5,
+      data: { blocks: [[0x0400, ram.slice(0x0400, 0x0800)], [0xBC00, ram.slice(0xBC00, 0xD000)]] },
+      rows: [
+        { k: 'Effect', f: v => v.effect == null ? '-' : String(v.effect) },
+        { k: 'Waveform', f: v => hex(v.wave) },
+        { k: 'Frames left', f: v => String(v.left) + ', script ' + hex(v.script) + ' step ' + v.step },
+      ],
+    });
+  }
+
   /* 03 stars */
   function starsWidget(ram) {
     const m = new Uint8Array(0x10000);
@@ -298,6 +424,53 @@ const DELTA_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about"
     }
   }
   const BANNER_COLS = [null, PAL[1], PAL[12], PAL[11]];
+
+  /* 03 the seven weapon icons: one card each, drawn from the sprite shapes at $4000 + 64 x frame */
+  function iconCards(ram) {
+    const box = $('iconCards');
+    const shp = f => ram.subarray(0x4000 + 64 * f, 0x4000 + 64 * f + 63);
+    const MC_SHOP = [15, 11], MC_ROW = [ram[0x105E], ram[0x105F]];    // stage 1's multicolours; the icon row's ($3765 and $376B point here in play)
+    function sprite(ctx, f, x0, y0, S, col, mc) {
+      const d = shp(f), cols = [null, PAL[mc[0]], PAL[col], PAL[mc[1]]];
+      for (let r = 0; r < 21; r++) for (let c = 0; c < 12; c++) {
+        const v = d[r * 3 + (c >> 2)] >> (6 - 2 * (c & 3)) & 3;
+        if (v) { ctx.fillStyle = cols[v]; ctx.fillRect(x0 + c * 2 * S, y0 + r * S, 2 * S, S); }
+      }
+    }
+    function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+    // each icon's row frames by level, read from the game's own tables ($0F07-$0F19), and what it does
+    const owned = (t, label) => [['not owned', ram[t]], [label || 'owned', ram[t + 1]]];
+    const ICONS = [
+      ['speed', 0x0F00, [0, 1, 2, 3].map(l => [(1 << l) + ' px', ram[0x0F07 + l]]),
+        'ship speed 1, 2, 4 or 8 pixels a frame; buying it at the top speed goes back to the slowest'],
+      ['fire rate', 0x0F01, [0, 1, 2].map(l => [(l + 1) + ' bolt' + (l ? 's' : ''), ram[0x0F0D + l]]),
+        '1, 2 or 3 laser bolts on screen at once (<code>ship_fire</code>, <code>$349A</code>)'],
+      ['extra weapon', 0x0F02, owned(0x0F11), 'each shot also fires one up, one down and one backwards (<code>$3502</code>)'],
+      ['double laser', 0x0F03, owned(0x0F13), 'two more beams, level with the ship and two rows below (<code>$3E88</code>)'],
+      ['orbiter', 0x0F04, owned(0x0F15), 'a satellite circling the ship through 16 positions; it destroys what it touches and is never used up (<code>$3E5E</code>)'],
+      ['slow-down', 0x0F05, owned(0x0F17), 'the attack wave moves and spawns only every second frame (<code>wave_step</code>, <code>$2C22</code>)'],
+      ['shield', 0x0F06, [['not owned', ram[0x0F19]], ...[3, 2, 1].map(c => [c + ' left', 0x89 + c])],
+        'absorbs three hits, with 16 frames of safety after each (<code>$3880</code>); its icon counts the hits left (<code>$89</code> + <code>$12C0</code>)'],
+    ];
+    ICONS.forEach(([name, kept, levels, does], i) => {
+      const k = i + 1, shop = [0x7F, 0x83, 0x86, 0x87, 0x88, 0x89, 0x8C][i];   // the frame each shop sprite shows, as recorded
+      const div = document.createElement('div'); div.className = 'card icard';
+      const top = canvas(2 * 52 + 12, 46);                  // the shop sprite, affordable and too dear
+      const tc = top.getContext('2d'); tc.fillStyle = '#000'; tc.fillRect(0, 0, top.width, top.height);
+      sprite(tc, shop, 4, 2, 2, 14, MC_SHOP); sprite(tc, shop, 60, 2, 2, 12, MC_SHOP);
+      div.appendChild(top);
+      div.insertAdjacentHTML('beforeend', `<b>Icon ${k} · ${name}</b><br>${k} credit${k > 1 ? 's' : ''} · shop frame ${hex(shop)}<br>${does}<br><span class="k">kept in ${hex(kept, 4)}</span><div class="lv"></div>`);
+      const lv = div.querySelector('.lv');
+      for (const [label, f] of levels) {
+        const cell = document.createElement('span');
+        const c = canvas(52, 46), cc = c.getContext('2d'); cc.fillStyle = '#000'; cc.fillRect(0, 0, 52, 46);
+        sprite(cc, f, 2, 2, 2, 14, MC_ROW);
+        cell.appendChild(c); cell.insertAdjacentHTML('beforeend', `<small>${label}<br>${hex(f)}</small>`);
+        lv.appendChild(cell);
+      }
+      box.appendChild(div);
+    });
+  }
 
   /* 05 shop */
   function shopWidget(ram) {
@@ -393,7 +566,68 @@ const DELTA_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about"
     draw();
   }
 
-  const need = ['music', 'stageOut', 'stageTable', 'shopOut', 'shotOut', 'starLab'].filter(id => $(id));
+  /* the enemies: one card each, from reference/enemies.json (built from the wave recordings) */
+  function enemiesWidget() {
+    const box = $('enemyCards');
+    fetch('reference/enemies.json').then(r => r.json()).then(J => {
+      const shape = {};
+      for (const [id, b] of Object.entries(J.shapes)) shape[parseInt(id, 16)] = Uint8Array.from(atob(b), c => c.charCodeAt(0));
+      const NOTE = { 0xC6: 'stage 1’s boss is record $0D: 8 hits, circled by six indestructible copies' };
+      const list = v => v.length < 3 ? v.join(' or ') : v.slice(0, -1).join(', ') + ' or ' + v[v.length - 1];
+      function hits(hp) {
+        const n = [...new Set(hp.filter(h => h !== 255).map(h => Math.max(1, h)))].sort((a, b) => a - b);
+        const t = n.length ? (n.length > 2 ? n[0] + ' to ' + n[n.length - 1] : list(n)) + (n.length === 1 && n[0] === 1 ? ' hit' : ' hits') : '';
+        return hp.includes(255) ? (t ? t + ', or indestructible' : 'indestructible') : t;
+      }
+      function stages(v) {                       // 1, 2, 3, 5 -> "1-3, 5"
+        const out = [];
+        for (let i = 0; i < v.length; i++) { let j = i; while (j + 1 < v.length && v[j + 1] === v[j] + 1) j++; out.push(j > i + 1 ? v[i] + '-' + v[j] : j > i ? v[i] + ', ' + v[j] : String(v[i])); i = j; }
+        return out.join(', ');
+      }
+      const cards = [];
+      J.enemies.forEach((k, i) => {
+        const parts = k.parts || [{ dx: 0, dy: 0, colour: k.colour, frames: k.frames }];
+        const w = Math.max(...parts.map(p => p.dx)) + 24, h = Math.max(...parts.map(p => p.dy)) + 21;
+        const S = Math.max(1, Math.min(4, Math.floor(Math.min(136 / w, 84 / h))));
+        const div = document.createElement('div'); div.className = 'card';
+        const cv = document.createElement('canvas'); cv.width = Math.max(w * S, 48) + 8; cv.height = h * S + 8;
+        cv.style.width = cv.width + 'px'; cv.style.maxWidth = '100%'; div.appendChild(cv);
+        const killable = k.parts ? k.parts.filter(p => p.hits !== 255).length : 0;
+        const note = k.parts ? `${k.parts.length} sprites flying as one; ` + (killable ? `${killable} of them can be destroyed` : 'none can be destroyed')
+          : NOTE[k.anim] || '';
+        const frames = k.parts ? [...new Set(k.parts.map(p => p.frame))] : k.frames;
+        div.insertAdjacentHTML('beforeend', `<b>Enemy ${i + 1}</b> · ${list(k.points.map(p => p * 10))} points<br>` +
+          `${hits(k.hits)}; ${k.fires ? 'may fire' : 'never fires'}` +
+          (note ? `<br><i>${note}</i>` : '') +
+          `<br>stage${k.stages.length > 1 ? 's' : ''} ${stages(k.stages)} · ${k.count} in the recordings` +
+          `<br>${k.colours.map(c => `<span class="sw" style="background:${PAL[c]}"></span>`).join('')}` +
+          `<br><span class="k">${k.anim == null ? 'records ' + k.records.map(r => hex(r)).join(' ') : 'list ' + hex(0x1300 + k.anim, 4)} · frames ${frames.map(f => hex(f)).join(' ')}</span>`);
+        box.appendChild(div);
+        cards.push({ ctx: cv.getContext('2d'), S, w: cv.width, h: cv.height, mc: k.mc,
+          parts: k.parts ? k.parts.map(p => ({ dx: p.dx, dy: p.dy, colour: p.colour, frames: [p.frame] })) : parts });
+      });
+      function sprite(ctx, d, x0, y0, S, cols) {
+        for (let r = 0; r < 21; r++) for (let c = 0; c < 12; c++) {
+          const v = d[r * 3 + (c >> 2)] >> (6 - 2 * (c & 3)) & 3;
+          if (v) { ctx.fillStyle = cols[v]; ctx.fillRect(x0 + c * 2 * S, y0 + r * S, 2 * S, S); }
+        }
+      }
+      function draw(t) {                         // the game steps an enemy's animation every 4 frames
+        for (const c of cards) {
+          c.ctx.fillStyle = '#000'; c.ctx.fillRect(0, 0, c.w, c.h);
+          for (const p of c.parts) {
+            const f = p.frames[Math.floor(t / 4) % p.frames.length];
+            sprite(c.ctx, shape[f], 4 + p.dx * c.S, 4 + p.dy * c.S, c.S, [null, PAL[c.mc[0]], PAL[p.colour], PAL[c.mc[1]]]);
+          }
+        }
+      }
+      let t = 0; draw(0);
+      setInterval(() => { if (!document.hidden) draw(++t); }, 20);
+    }).catch(() => { box.textContent = 'This widget reads reference/enemies.json: open the page from the built site, not from disk.'; });
+  }
+  if ($('enemyCards')) enemiesWidget();
+
+  const need = ['music', 'sfx', 'stageOut', 'stageTable', 'shopOut', 'iconCards', 'shotOut', 'starLab'].filter(id => $(id));
   if (!need.length) return;
   if (!window.C64) {
     need.forEach(id => { $(id).innerHTML = '<span class="msg">' + needSite + '</span>'; });
@@ -402,9 +636,11 @@ const DELTA_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about"
   C64.load('listing.json').then(G => {
     const ram = G.ram;
     if ($('music')) mountMusic($('music'), ram);
+    if ($('sfx')) mountSfx($('sfx'), ram);
     if ($('starCv')) starsWidget(ram);
     if ($('shotCv')) shotWidget(ram);
     if ($('shopCv')) shopWidget(ram);
+    if ($('iconCards')) iconCards(ram);
     if ($('bannerCv')) stageWidget(ram);
     if ($('stageTable')) stageTable(ram);
   });

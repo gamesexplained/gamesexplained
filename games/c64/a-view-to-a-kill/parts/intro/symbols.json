@@ -1,8 +1,9 @@
 {
  "schema": 1,
  "platform": "c64",
- "game": "a-view-to-a-kill/intro",
- "build": null,
+ "game": "a-view-to-a-kill",
+ "part": "intro",
+ "build": "",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -114,7 +115,7 @@
    [
     1024,
     2047,
-    "VIC bank 0 colour matrix and sprite pointers: bitmap_setup fills it with $02 and the sprite routines write the pointers; spaces at the hand-over"
+    "VIC bank 0 colour matrix and sprite pointers: bitmap_setup fills it with $02 and the sprite routines write the pointers; mostly spaces at the hand-over"
    ],
    [
     7168,
@@ -124,7 +125,7 @@
    [
     16384,
     32767,
-    "VIC bank 1, all written at run time: copy_banks copies $0800-$3FF0 here, then $4400 is the credits screen, $4800 the character set copy (charset_copy) and $6000 the second bitmap buffer; the hand-over bytes are a stale near-copy of $0800-$3FFF"
+    "VIC bank 1, all written at run time: copy_banks copies $0800-$3FF0 here, then $4400 is the credits screen, $4800 the character set copy (charset_copy) and $6000 the second bitmap buffer; the hand-over bytes are stale, about half of them matching $0800-$3FFF"
    ],
    [
     40704,
@@ -132,9 +133,9 @@
     "music_save's 64-byte buffer for the music state, written before it is read"
    ],
    [
-    57344,
+    59904,
     65535,
-    "RAM under the KERNAL ROM: $E000-$E9FF receives the tune from $8500 (copy_tune_start) and is read there by tune_read; what the hand-over holds in $E000-$FFFF is stale and never read, and the addresses the code calls there ($EA31, $FFBA-$FFE4) are KERNAL ROM routines"
+    "RAM under the KERNAL ROM above the tune: never written or read by the intro; the addresses the code calls there ($EA31, $EA7E, $FFBA-$FFE4) are KERNAL ROM routines"
    ],
    [
     36988,
@@ -168,8 +169,13 @@
    ],
    [
     40768,
+    40863,
+    "stale bytes after music_save's buffer, never executed or read"
+   ],
+   [
+    40875,
     40959,
-    "stale bytes after music_save's buffer, ending in the text 'MOBOTIMON*', never executed or read: filler or stale bytes left in the image"
+    "stale bytes after blank_top_colour, ending in the text 'MOZOOM1000', never executed or read"
    ],
    [
     43651,
@@ -190,11 +196,6 @@
     50099,
     50111,
     "stale bytes after logo_move, never executed or read: filler or stale bytes left in the image"
-   ],
-   [
-    50372,
-    50431,
-    "fill after sparkle_loop, never executed or read: filler or stale bytes left in the image"
    ],
    [
     50669,
@@ -259,7 +260,12 @@
    [
     53248,
     57343,
-    "RAM under the I/O area: stale bytes (pieces of the older crack's menu code as at $8085, of the tune and of the credit text); never read, since the only code that banks the I/O out, tune_read, reads $E000-$E9FF"
+    "RAM under the I/O area: zeros at the hand-over, never read, since the only code that banks the I/O out, tune_read, reads $E000-$E9FF"
+   ],
+   [
+    32768,
+    36863,
+    "zeros: the original's depacker writes nothing here and nothing reads it"
    ]
   ],
   "extra": [
@@ -267,6 +273,11 @@
     6144,
     8191,
     "character set"
+   ],
+   [
+    57344,
+    59903,
+    "the theme tune, three note lists in the RAM under the KERNAL, read by the music player through pointers"
    ]
   ]
  },
@@ -293,43 +304,8 @@
   },
   {
    "start": 16384,
-   "end": 32767,
-   "type": "Undefined"
-  },
-  {
-   "start": 32768,
-   "end": 32794,
-   "type": "Code"
-  },
-  {
-   "start": 32795,
-   "end": 32799,
-   "type": "Undefined"
-  },
-  {
-   "start": 32800,
-   "end": 32959,
-   "type": "Code"
-  },
-  {
-   "start": 32960,
-   "end": 33023,
-   "type": "Undefined"
-  },
-  {
-   "start": 33024,
-   "end": 34047,
-   "type": "Screencode Text"
-  },
-  {
-   "start": 34048,
-   "end": 36607,
-   "type": "Byte"
-  },
-  {
-   "start": 36608,
    "end": 36863,
-   "type": "PETSCII Text"
+   "type": "Undefined"
   },
   {
    "start": 36864,
@@ -418,6 +394,16 @@
   },
   {
    "start": 40235,
+   "end": 40863,
+   "type": "Undefined"
+  },
+  {
+   "start": 40864,
+   "end": 40874,
+   "type": "Code"
+  },
+  {
+   "start": 40875,
    "end": 40959,
    "type": "Undefined"
   },
@@ -583,13 +569,13 @@
   },
   {
    "start": 50224,
-   "end": 50371,
+   "end": 50424,
    "type": "Code"
   },
   {
-   "start": 50372,
+   "start": 50425,
    "end": 50431,
-   "type": "Undefined"
+   "type": "Byte"
   },
   {
    "start": 50432,
@@ -598,6 +584,16 @@
   },
   {
    "start": 50472,
+   "end": 50479,
+   "type": "Undefined"
+  },
+  {
+   "start": 50480,
+   "end": 50493,
+   "type": "Code"
+  },
+  {
+   "start": 50494,
    "end": 50495,
    "type": "Undefined"
   },
@@ -813,8 +809,23 @@
   },
   {
    "start": 52821,
-   "end": 65535,
+   "end": 57343,
    "type": "Undefined"
+  },
+  {
+   "start": 57344,
+   "end": 59903,
+   "type": "Byte"
+  },
+  {
+   "start": 59904,
+   "end": 59952,
+   "type": "Undefined"
+  },
+  {
+   "start": 59953,
+   "end": 65535,
+   "type": "Code"
   }
  ],
  "symbols": [
@@ -917,12 +928,6 @@
   {
    "address": 201,
    "name": "zpa_C9",
-   "type": "ZeroPageAbsoluteAddress",
-   "kind": "auto"
-  },
-  {
-   "address": 203,
-   "name": "zpa_CB",
    "type": "ZeroPageAbsoluteAddress",
    "kind": "auto"
   },
@@ -1071,24 +1076,6 @@
    "kind": "auto"
   },
   {
-   "address": 1280,
-   "name": "f_0500",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
-   "address": 1536,
-   "name": "f_0600",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
-   "address": 1792,
-   "name": "f_0700",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
    "address": 2040,
    "name": "a_07F8",
    "type": "AbsoluteAddress",
@@ -1227,6 +1214,12 @@
    "kind": "user"
   },
   {
+   "address": 10432,
+   "name": "j_28C0",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
    "address": 11072,
    "name": "barrel_bitmap_r9",
    "type": "UserDefined",
@@ -1353,162 +1346,6 @@
    "kind": "auto"
   },
   {
-   "address": 32768,
-   "name": "copy_tune_start",
-   "type": "Jump",
-   "kind": "user"
-  },
-  {
-   "address": 32770,
-   "name": "b_8002",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32772,
-   "name": "copy_tune_src_hi",
-   "type": "AbsoluteAddress",
-   "kind": "user"
-  },
-  {
-   "address": 32775,
-   "name": "copy_tune_dst_hi",
-   "type": "AbsoluteAddress",
-   "kind": "user"
-  },
-  {
-   "address": 32800,
-   "name": "handover",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 32808,
-   "name": "b_8028",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32814,
-   "name": "oldcrack_title_tail",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 32853,
-   "name": "b_8055",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32866,
-   "name": "b_8062",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32875,
-   "name": "b_806B",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32901,
-   "name": "b_8085",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32909,
-   "name": "b_808D",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32917,
-   "name": "b_8095",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32925,
-   "name": "b_809D",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 32933,
-   "name": "oldcrack_load",
-   "type": "Jump",
-   "kind": "user"
-  },
-  {
-   "address": 33022,
-   "name": "oldcrack_filename",
-   "type": "AbsoluteAddress",
-   "kind": "user"
-  },
-  {
-   "address": 33024,
-   "name": "oldcrack_screen",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 33280,
-   "name": "oldcrack_screen_q2",
-   "type": "Field",
-   "kind": "user"
-  },
-  {
-   "address": 33536,
-   "name": "oldcrack_screen_q3",
-   "type": "Field",
-   "kind": "user"
-  },
-  {
-   "address": 33792,
-   "name": "oldcrack_screen_q4",
-   "type": "Field",
-   "kind": "user"
-  },
-  {
-   "address": 34048,
-   "name": "tune_voice1",
-   "type": "Field",
-   "kind": "user"
-  },
-  {
-   "address": 34540,
-   "name": "tune_voice2",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 35053,
-   "name": "tune_voice2_b",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 35569,
-   "name": "tune_voice3",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 36451,
-   "name": "tune_tail",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 36608,
-   "name": "oldcrack_menu_text",
-   "type": "Field",
-   "kind": "user"
-  },
-  {
    "address": 36864,
    "name": "credits_reset",
    "type": "Subroutine",
@@ -1521,8 +1358,14 @@
    "kind": "user"
   },
   {
-   "address": 36891,
-   "name": "b_901B",
+   "address": 36877,
+   "name": "b_900D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 36900,
+   "name": "b_9024",
    "type": "Branch",
    "kind": "auto"
   },
@@ -1531,6 +1374,12 @@
    "name": "j_9025",
    "type": "Jump",
    "kind": "auto"
+  },
+  {
+   "address": 36911,
+   "name": "unused_jmp_902F",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 36914,
@@ -1543,12 +1392,6 @@
    "name": "credits_newline",
    "type": "Subroutine",
    "kind": "user"
-  },
-  {
-   "address": 36964,
-   "name": "b_9064",
-   "type": "Branch",
-   "kind": "auto"
   },
   {
    "address": 36966,
@@ -1810,25 +1653,25 @@
   },
   {
    "address": 37927,
-   "name": "str_spaces_9427",
+   "name": "str_thanks_to_malcolm",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 37948,
-   "name": "str_spaces_943C",
+   "name": "str_for_further_help",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 37966,
-   "name": "str_spaces_944E",
+   "name": "str_speech_synthesis_by",
    "type": "UserDefined",
    "kind": "user"
   },
   {
    "address": 37985,
-   "name": "str_speech_by_b_jones",
+   "name": "str_david_aubrey_jones",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -1926,6 +1769,18 @@
    "address": 40704,
    "name": "f_9F00",
    "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 40864,
+   "name": "blank_top_colour",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 40868,
+   "name": "b_9FA4",
+   "type": "Branch",
    "kind": "auto"
   },
   {
@@ -2421,26 +2276,38 @@
    "kind": "auto"
   },
   {
-   "address": 50355,
-   "name": "j_C4B3",
+   "address": 50357,
+   "name": "b_C4B5",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 50371,
+   "name": "end_irq",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 50381,
+   "name": "b_C4CD",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 50395,
+   "name": "load_menu",
    "type": "Jump",
-   "kind": "auto"
+   "kind": "user"
   },
   {
-   "address": 50360,
-   "name": "b_C4B8",
+   "address": 50422,
+   "name": "b_C4F6",
    "type": "Branch",
    "kind": "auto"
   },
   {
-   "address": 50362,
-   "name": "b_C4BA",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 50363,
-   "name": "dead_delay_tail",
+   "address": 50425,
+   "name": "str_menu",
    "type": "UserDefined",
    "kind": "user"
   },
@@ -2466,6 +2333,18 @@
    "address": 50469,
    "name": "j_C525",
    "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 50480,
+   "name": "end_wait",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 50482,
+   "name": "b_C532",
+   "type": "Branch",
    "kind": "auto"
   },
   {
@@ -3213,12 +3092,6 @@
    "kind": "auto"
   },
   {
-   "address": 55552,
-   "name": "f_D900",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
    "address": 55576,
    "name": "f_D918",
    "type": "Field",
@@ -3251,12 +3124,6 @@
   {
    "address": 55776,
    "name": "f_D9E0",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
-   "address": 55808,
-   "name": "f_DA00",
    "type": "Field",
    "kind": "auto"
   },
@@ -3303,12 +3170,6 @@
    "kind": "auto"
   },
   {
-   "address": 56064,
-   "name": "f_DB00",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
    "address": 56096,
    "name": "f_DB20",
    "type": "Field",
@@ -3328,13 +3189,43 @@
   },
   {
    "address": 57344,
-   "name": "f_E000",
-   "type": "Field",
-   "kind": "auto"
+   "name": "tune_voice1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 57836,
+   "name": "tune_voice2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 58349,
+   "name": "tune_voice2_b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 58865,
+   "name": "tune_voice3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 59747,
+   "name": "tune_tail",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 59953,
    "name": "j_EA31",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 60030,
+   "name": "j_EA7E",
    "type": "Jump",
    "kind": "auto"
   },
@@ -3351,20 +3242,8 @@
    "kind": "auto"
   },
   {
-   "address": 65490,
-   "name": "s_FFD2",
-   "type": "Subroutine",
-   "kind": "auto"
-  },
-  {
    "address": 65493,
-   "name": "j_FFD5",
-   "type": "Jump",
-   "kind": "auto"
-  },
-  {
-   "address": 65508,
-   "name": "s_FFE4",
+   "name": "s_FFD5",
    "type": "Subroutine",
    "kind": "auto"
   }
@@ -3454,11 +3333,6 @@
    "address": 201,
    "type": "line",
    "text": "bitmap_mask's AND mask, $FF, $FC, $F0, $C0, $00 in turn."
-  },
-  {
-   "address": 203,
-   "type": "line",
-   "text": "KERNAL's current key ($40 none); read only by the unreachable oldcrack_title_tail."
   },
   {
    "address": 217,
@@ -3553,7 +3427,7 @@
   {
    "address": 788,
    "type": "line",
-   "text": "KERNAL IRQ vector: set to irq_handler by intro_init, back to $EA31 at the end (sparkle_loop)."
+   "text": "KERNAL IRQ vector: irq_handler from intro_init; when the credits end, sparkle_loop points it at end_irq ($C4C3), which keeps only the music playing."
   },
   {
    "address": 789,
@@ -3711,101 +3585,6 @@
    "text": "Gun-barrel bitmap, row 24 ($3E00-$3F3F): empty; the scroll copies only rows 0-23 and colour RAM for row 24 stays black. The 192 bytes after it, $3F40-$3FFF, lie outside the 8,000-byte bitmap and are never displayed, though copy_banks and bitmap_mask pass over most of them."
   },
   {
-   "address": 32768,
-   "type": "line",
-   "text": "Start of the intro proper (the hand-over at $8020 jumps here). Copies the ten pages $8500-$8EFF, the theme tune's note lists, to $E000-$E9FF in the RAM under the KERNAL ROM, stepping the high bytes of its own LDA/STA operands ($8004, $8007) until the source page reaches $8F, then jumps to intro_init ($C5A0). It leaves those operands at $8F/$EA, so running it a second time (the dead menu's key 1 at $8082) would copy 255 pages round the whole memory."
-  },
-  {
-   "address": 32772,
-   "type": "line",
-   "text": "Self-modified operand: the high byte of copy_tune_start's LDA $8500,Y, $85 at the hand-over, stepped to $8F; the byte count of the copy."
-  },
-  {
-   "address": 32772,
-   "type": "side",
-   "text": "high byte of the LDA $8500,Y operand, stepped by the INC at $800E"
-  },
-  {
-   "address": 32775,
-   "type": "line",
-   "text": "Self-modified operand: the high byte of copy_tune_start's STA $E000,Y, $E0 at the hand-over, stepped to $EA."
-  },
-  {
-   "address": 32775,
-   "type": "side",
-   "text": "high byte of the STA $E000,Y operand, stepped by the INC at $800B"
-  },
-  {
-   "address": 32800,
-   "type": "line",
-   "text": "Hand-over point: the depacker jumps here. Black border and background, one KERNAL GETIN (JSR $FFE4, result ignored, so a key already in the buffer is thrown away), then JMP $8000. These fourteen bytes sit over the start of an older crack's title-screen routine (its tail follows at $802E), so the whole older screen and menu below are now unreachable; the BOMBJACK crack of this image appears to have patched them out."
-  },
-  {
-   "address": 32814,
-   "type": "line",
-   "text": "Unreachable: the tail of an older crack's title routine. Copies screen rows from $8200-$84FF to $0500-$07FF with white colour RAM (the first quarter, $8100 to $0400, was in the bytes now patched at $8020), loops back to $8028, then waits for a key through the KERNAL's $CB and prints the PETSCII menu at $8F00 with CHROUT. Keys: 1 restarts at $8000 (this intro), 2 to 5 put 'P', 'C', 'S' or 'F' in $80FE and go to oldcrack_load ($80A5)."
-  },
-  {
-   "address": 32933,
-   "type": "line",
-   "text": "Unreachable, the older crack's file loader: SETLFS device 8, secondary address 1 ($FFBA); SETNAM with the two bytes at $80FE; pushes $08/$26 so that LOAD's RTS returns to $0827; then LOAD ($FFD5) with A=0. The file names are 'P*', 'C*', 'S*' and 'F*', which are not the file names of this image (the BASIC menu loads files 1 to 5)."
-  },
-  {
-   "address": 33022,
-   "type": "line",
-   "text": "Two-byte file name for oldcrack_load: a letter the menu writes ($50 P, $43 C, $53 S, $46 F; at the hand-over $00) followed by '*' ($2A). Only the unreachable menu uses it."
-  },
-  {
-   "address": 33024,
-   "type": "line",
-   "text": "An older crack's title screen, 40 x 25 screen codes ($8100-$84E7, with sprite pointers $3D-$3F at $84F8), meant for $0400 and shown only by the unreachable oldcrack_title_tail: 'THE DYNAMIC-DUO PRESENTS 'A VIEW TO A KILL' BROKEN BY THE DARK-ANGLE & THE EXECUTOR WHO ARE FORMING THE DYNAMIC-DUO ! GREETINGS TO: ANTIROM, ALPHA, HEADBANGER, ANTIPROTECT, RUEDIGER, TARZAN & ALEXANDER ! PRESS ANY KEY'. Not the game's and never displayed in this image."
-  },
-  {
-   "address": 33280,
-   "type": "line",
-   "text": "oldcrack_screen, second quarter ($8200-$82FF, bound for $0500): 'BROKEN', 'BY', 'THE DARK-ANGLE'."
-  },
-  {
-   "address": 33536,
-   "type": "line",
-   "text": "oldcrack_screen, third quarter ($8300-$83FF, bound for $0600): '&', 'THE EXECUTOR', 'WHO ARE FORMING THE DYNAMIC-DUO !'."
-  },
-  {
-   "address": 33792,
-   "type": "line",
-   "text": "oldcrack_screen, last quarter ($8400-$84FF, bound for $0700): the greetings list, 'PRESS ANY KEY' and the old screen's sprite pointers."
-  },
-  {
-   "address": 34048,
-   "type": "line",
-   "text": "The theme tune, voice 1 (copied to $E000 by copy_tune_start and played from there): 164 notes of three bytes, SID frequency high, frequency low, duration in note steps (20 steps a second). Its end, $86EB ($E1EB), is where tune_check_end restarts all three voices. The same tune data sits at $E000 in city-hall."
-  },
-  {
-   "address": 34540,
-   "type": "line",
-   "text": "Theme tune, voice 2 ($E1EC when played), notes 1-171: same three-byte format; 343 notes in all, their durations adding up to exactly voice 1's 2,134 steps."
-  },
-  {
-   "address": 35053,
-   "type": "line",
-   "text": "Theme tune, voice 2, notes 172-343 ($88ED-$8AF0)."
-  },
-  {
-   "address": 35569,
-   "type": "line",
-   "text": "Theme tune, voice 3 ($E5F1 when played): 294 notes played, $8AF1-$8E62, the last of them starting just before voice 1 runs out and the tune restarts."
-  },
-  {
-   "address": 36451,
-   "type": "line",
-   "text": "The 157 bytes after voice 3's last played note: a few note-like bytes and then zeros up to $8EFF. Copied to $E963-$E9FF but never read, since tune_check_end restarts before voice 3 gets there. City-hall's copy of the tune is identical up to $8E77 (its $E977) and differs after."
-  },
-  {
-   "address": 36608,
-   "type": "line",
-   "text": "PETSCII for the older crack's menu (clear screen, white): 'PLEASE-CHOOSE / 1) SEE OPENING / 2) PARIS-CHASE / 3) CITY ESCAPE / 4) SILICON MINE / 5) FINALE / ENTER NUMBER', padded with colour codes to 256 bytes; printed only by the unreachable oldcrack_title_tail."
-  },
-  {
    "address": 36864,
    "type": "line",
    "text": "Points $FB/$FC at the first entry of credit_lines ($9100); called once by credits_setup."
@@ -3813,32 +3592,27 @@
   {
    "address": 36873,
    "type": "line",
-   "text": "Prints the next credit line on the bottom text row: reads the entry at ($FB) of credit_lines (address high byte, low byte, length), copies that many screen codes to $47C4 (row 24, column 4), pads with spaces to column 39, moves $FB/$FC on three bytes and counts the line in $8D. There is no end marker: sparkle_loop stops the scroll when $8D reaches 84, one short of the 85 entries."
+   "text": "Prints the next credit line on the bottom text row. Fills row 24 from column 4 with spaces ($47C4-$47E8, 37 bytes, the last one past the end of the screen), then reads the entry at ($FB) of credit_lines (address high byte, low byte, length) and copies that many screen codes to $47C4, last character first; an entry of length 1 copies nothing. Moves $FB/$FC on three bytes and counts the line in $8D. There is no end marker: sparkle_loop stops the scroll when $8D reaches 84, one short of the 85 entries."
+  },
+  {
+   "address": 36911,
+   "type": "line",
+   "text": "JMP $9025, three bytes no path reaches: the JMP before it always goes to $9032, and $9025 is the middle of the LDA at $9024."
   },
   {
    "address": 36944,
    "type": "line",
-   "text": "Moves the whole text screen at $4400 up one row: a four-page copy from $43E8 to $43C0 whose LDA/STA operands it resets first ($9067/$9068 and $906A/$906B) and then steps a page at a time; the top row lands at $43C0-$43E7, outside the screen, and the sprite pointers at $47F8 are not touched. Then jumps to credits_print for the new bottom row."
+   "text": "Moves the text below the logo up one row: a three-page copy from $44E8 to $44C0, screen offsets $C0-$3BF, whose LDA/STA operands it resets first ($9067/$9068 and $906A/$906B) and then steps a page at a time. The first 192 bytes of the screen, rows 0 to 3 and most of row 4, are not moved; a line that scrolls into rows 4 and 5 disappears, since blank_top_colour has made their colour black. Then jumps to credits_print for the new bottom row."
   },
   {
    "address": 36967,
    "type": "line",
-   "text": "Self-modified operands of credits_newline's copy loop: $9067/$9068 the LDA source ($43E8 at the start, high byte stepped per page), $906A/$906B the STA destination ($43C0, likewise)."
-  },
-  {
-   "address": 36967,
-   "type": "side",
-   "text": "LDA operand low byte, set to $E8 by credits_newline"
+   "text": "Self-modified operands of credits_newline's copy loop: $9067/$9068 the LDA source ($44E8 at the start, high byte stepped per page), $906A/$906B the STA destination ($44C0, likewise)."
   },
   {
    "address": 36968,
    "type": "line",
-   "text": "Source page of credits_newline's copy, reset to $43 each call and incremented for each of the four pages."
-  },
-  {
-   "address": 36968,
-   "type": "side",
-   "text": "LDA operand high byte, $43 then stepped"
+   "text": "Source page of credits_newline's copy, reset to $44 each call and incremented for each of the three pages."
   },
   {
    "address": 36970,
@@ -3853,12 +3627,7 @@
   {
    "address": 36971,
    "type": "line",
-   "text": "Destination page of credits_newline's copy, reset to $43 each call and incremented with the source page."
-  },
-  {
-   "address": 36971,
-   "type": "side",
-   "text": "STA operand high byte, $43 then stepped"
+   "text": "Destination page of credits_newline's copy, reset to $44 each call and incremented with the source page."
   },
   {
    "address": 37024,
@@ -4033,22 +3802,22 @@
   {
    "address": 37927,
    "type": "line",
-   "text": "A blank credit line of 21 spaces (entry 56), one of three spacers before 'speech by B.-Jones'."
+   "text": "Credit line 56, 21 screen codes: \"Thanks to Malcolm\" and four spaces (upper case as $41-$5A, lower case as 1-26)."
   },
   {
    "address": 37948,
    "type": "line",
-   "text": "A blank credit line of 18 spaces (entry 57), one of three spacers before 'speech by B.-Jones'."
+   "text": "Credit line 57, 18 screen codes: \"for further help\" and two spaces."
   },
   {
    "address": 37966,
    "type": "line",
-   "text": "A blank credit line of 19 spaces (entry 60), one of three spacers before 'speech by B.-Jones'."
+   "text": "Credit line 60, 19 screen codes: \"Speech synthesis by\"."
   },
   {
    "address": 37985,
    "type": "line",
-   "text": "Credit line 61, 18 screen codes: \"speech by B.-Jones\" (upper case as $41-$5A, lower case as 1-26, $00 the copyright sign)."
+   "text": "Credit line 61, 18 screen codes: \"David Aubrey-Jones\", who made the speech the intro plays (speech_play)."
   },
   {
    "address": 38003,
@@ -4116,9 +3885,14 @@
    "text": "stale_newline_copy's destination page operand, the older build's $906B."
   },
   {
+   "address": 40864,
+   "type": "line",
+   "text": "Called once, from title_print ($90CD) between the third and fourth title rows: writes 0 (black) to colour RAM $D801-$D8F0, the top six rows of the screen apart from its first byte (the loop stops at Y = 0). Credit lines that scroll up into those rows go dark."
+  },
+  {
    "address": 40960,
    "type": "line",
-   "text": "The digitised speech, the only sampled sound in this part and presumably what the credits call 'speech by B.-Jones': a one-bit sample player under the BASIC ROM, run with BASIC banked out and interrupts off. The first word at $A090 is the length counted from $A090 ($09F0, end $AA80); the pointer $FB/$FC reads at offset 2, so the samples are $A092-$AA81 plus one bit of $AA82. Each byte is shifted out from bit 7: a 1 sets the SID volume ($D418) to 15, a 0 sets it to 0, with padding NOPs so each bit takes about 100 to 130 cycles: some 9,400 bits a second, 2.2 seconds in all (measured by running it in the kit's 6502 simulator). Ends with $D418 = $18."
+   "text": "The digitised speech, the only sampled sound in this part and presumably what the credits call 'Speech synthesis by David Aubrey-Jones': a one-bit sample player under the BASIC ROM, run with BASIC banked out and interrupts off. The first word at $A090 is the length counted from $A090 ($09F0, end $AA80); the pointer $FB/$FC reads at offset 2, so the samples are $A092-$AA81 plus one bit of $AA82. Each byte is shifted out from bit 7: a 1 sets the SID volume ($D418) to 15, a 0 sets it to 0, with padding NOPs so each bit takes about 100 to 130 cycles: some 9,400 bits a second, 2.2 seconds in all (measured by running it in the kit's 6502 simulator). Ends with $D418 = $18."
   },
   {
    "address": 41067,
@@ -4303,17 +4077,32 @@
   {
    "address": 50294,
    "type": "line",
-   "text": "The intro's final loop: after a delay of $48 x 255, steps both sparkle shapes through $46, $47, $48. While no credit line has been printed ($8D = 0) it counts $02FD down from $10 and, on 0, switches the IRQ to mode 2 (the credits scroll). When 84 lines have been printed ($8D = $54) it puts the KERNAL's $EA31 back in $0314 and sets the SID volume to 0: the scroll and the music stop, and the sparkles go on for ever. There is no exit: this part never loads another."
+   "text": "The intro's final loop: after a delay of $48 x 255, steps both sparkle shapes through $46, $47, $48. While no credit line has been printed ($8D = 0) it counts $02FD down from $10 and, on 0, switches the IRQ to mode 2 (the credits scroll). When 84 lines have been printed ($8D = $54) it points the IRQ vector at end_irq ($C4C3), so the scroll stops and the music plays on, calls end_wait ($C530) 255 times, about 15 seconds (928 jiffies, measured), sets the SID volume to 0 (A is 0 from end_wait) and goes to load_menu ($C4DB)."
   },
   {
-   "address": 50363,
+   "address": 50371,
    "type": "line",
-   "text": "Unreachable fragment after sparkle_loop: DEX/BNE into the middle of the JMP at $C4B8, DEY/BNE, JMP $C4B3. Left over from an earlier version of the loop."
+   "text": "Interrupt handler for the intro's last seconds, set by sparkle_loop: on a raster interrupt it acknowledges it, plays the music (tune_tick), sets the raster compare to line 0 and leaves through the KERNAL's interrupt exit at $EA7E (LDA $DC0D, then the registers back and RTI); any other interrupt goes to the KERNAL's $EA31."
+  },
+  {
+   "address": 50395,
+   "type": "line",
+   "text": "Loads the file MENU (str_menu, $C4F9) from drive 8 through the KERNAL's SETLFS, SETNAM and LOAD, with secondary address 15 so that it lands at the address in the file, $2000. On an error it tries again; on success it jumps to $28C0, the menu program's start, which offers the four missions."
+  },
+  {
+   "address": 50425,
+   "type": "line",
+   "text": "File name for load_menu, 'MENU' in PETSCII, followed by three $FE bytes of filler up to dead_copy."
   },
   {
    "address": 50432,
    "type": "line",
    "text": "Unreachable (no caller): copies $B000-$B9FF to $6000-$69FF and then loops on itself at $C525 for ever. The LDA $01 / AND #$FE at its start is discarded (never stored), so with BASIC banked in it would copy BASIC ROM. A leftover."
+  },
+  {
+   "address": 50480,
+   "type": "line",
+   "text": "A short wait for sparkle_loop's closing music: counts Y down from 20 while the raster register reads 0, several counts on each pass of line 0, then turns every sprite off (STY $D015 with Y = 0). Returns with A = 0."
   },
   {
    "address": 50496,
@@ -4328,12 +4117,12 @@
   {
    "address": 50592,
    "type": "line",
-   "text": "Intro set-up, reached from copy_tune_start. Calls tune_init ($C640), clears the IRQ mode $0313 and the credit-line counter $8D, enables the VIC raster interrupt (only) at line $F8, points the KERNAL's IRQ vector $0314 at irq_handler ($CC00), CLI, and jumps to copy_banks ($CA00). The CIA 1 timer interrupt stays on and still reaches the KERNAL through irq_handler."
+   "text": "Intro set-up, where the depacker hands over. Calls tune_init ($C640), clears the IRQ mode $0313 and the credit-line counter $8D, enables the VIC raster interrupt (only) at line $F8, points the KERNAL's IRQ vector $0314 at irq_handler ($CC00), CLI, and jumps to copy_banks ($CA00). The CIA 1 timer interrupt stays on and still reaches the KERNAL through irq_handler."
   },
   {
    "address": 50627,
    "type": "line",
-   "text": "Unreachable (no caller in the image): black border and background, then a three-level delay loop counting $02E0/$02E1/$02E2 down from $20/$FF/$FF, about 19 million cycles. A leftover like the other dead fragments at $C4BB and $C500."
+   "text": "Unreachable (no caller in the image): black border and background, then a three-level delay loop counting $02E0/$02E1/$02E2 down from $20/$FF/$FF, about 19 million cycles. A leftover like dead_copy at $C500."
   },
   {
    "address": 50688,
@@ -4383,7 +4172,7 @@
   {
    "address": 50697,
    "type": "line",
-   "text": "Tempo phase, 0 or 1: with 0 the next step comes after three frames, with 1 after two (tune_tick). $00 at the hand-over."
+   "text": "Tempo phase, flipped between 0 and 1 at each note step by tune_tick. Both of tune_tick's paths wait for three frames, so the phase changes nothing. $00 at the hand-over."
   },
   {
    "address": 50698,
@@ -4488,12 +4277,12 @@
   {
    "address": 50817,
    "type": "line",
-   "text": "Points the three voices at the start of their note lists, $E000, $E1EC and $E5F1 (copies of $8500, $86EC and $8AF1), and sets each duration counter to 8."
+   "text": "Points the three voices at the start of their note lists, $E000, $E1EC and $E5F1, and sets each duration counter to 8."
   },
   {
    "address": 50859,
    "type": "line",
-   "text": "Once per raster interrupt: tune_vibrato, then the tempo divider. $C609 flips between 0 and 1 and $C60A counts frames, so the notes advance after three frames and two frames in turn (20 steps a second on PAL); on each step tune_step ($C6E0), then the end check tune_check_end."
+   "text": "Once per raster interrupt: tune_vibrato, then the tempo divider. $C60A counts frames and the notes advance on every third (about 16.7 steps a second on PAL), on either value of tune_phase ($C609), since both paths compare with 3. On each step tune_step ($C6E0), then the end check tune_check_end."
   },
   {
    "address": 50912,
@@ -4513,7 +4302,7 @@
   {
    "address": 51078,
    "type": "line",
-   "text": "When voice 1's pointer reaches $E1EC, the end of its list, jumps to tune_restart: the whole tune starts over, whatever voices 2 and 3 are doing. Voice 3 has then played up to $E962 ($8E62)."
+   "text": "When voice 1's pointer reaches $E1EC, the end of its list, jumps to tune_restart: the whole tune starts over, whatever voices 2 and 3 are doing. Voice 3 has then played up to $E962."
   },
   {
    "address": 51096,
@@ -4573,7 +4362,7 @@
   {
    "address": 51968,
    "type": "line",
-   "text": "Gun-barrel main loop. white_wipe ($C100) reveals the picture, clears the raster high bit, sets the scroll counter $3F = $90 (144 IRQ steps) and $40 = 3, switches the IRQ to mode 1 (INC $0313) at raster line $F0, marks bank 0 shown ($41 = 2, $42 = 0), then repeats scroll_copy ($CD00) and barrel_colour ($CE00) until $3F reaches 0. Then waits until blood_step's pointer high byte $A4 reaches $31 (about 13 character rows of blood), shakes the screen (shake, $C900) and goes on to after_barrel ($C300)."
+   "text": "Gun-barrel main loop. white_wipe ($C100) reveals the picture, clears the raster high bit, sets the scroll counter $3F = $90 (144 IRQ steps) and $40 = 3, switches the IRQ to mode 1 (INC $0313) with the raster compare at line $70 (irq_mode1 moves it to $F0 from its first run), marks bank 0 shown ($41 = 2, $42 = 0), then repeats scroll_copy ($CD00) and barrel_colour ($CE00) until $3F reaches 0. Then waits until blood_step's pointer high byte $A4 reaches $31 (about 13 character rows of blood), shakes the screen (shake, $C900) and goes on to after_barrel ($C300)."
   },
   {
    "address": 52048,
@@ -4634,6 +4423,31 @@
    "address": 52785,
    "type": "line",
    "text": "barrel_colour's second case: colour RAM columns 0-6 of rows 0-23 set to white."
+  },
+  {
+   "address": 57344,
+   "type": "line",
+   "text": "The theme tune, voice 1, put here by the depacker, in the RAM under the KERNAL ROM: 164 notes of three bytes, SID frequency high, frequency low, duration in note steps. Its end, $E1EB, is where tune_check_end restarts all three voices. City Hall's copy at $E000 is identical, $E000-$E9FF."
+  },
+  {
+   "address": 57836,
+   "type": "line",
+   "text": "Theme tune, voice 2, notes 1-171: same three-byte format; 343 notes in all, their durations adding up to exactly voice 1's 2,134 steps."
+  },
+  {
+   "address": 58349,
+   "type": "line",
+   "text": "Theme tune, voice 2, notes 172-343 ($E3ED-$E5F0)."
+  },
+  {
+   "address": 58865,
+   "type": "line",
+   "text": "Theme tune, voice 3: 294 notes played, $E5F1-$E962, the last of them starting just before voice 1 runs out and the tune restarts."
+  },
+  {
+   "address": 59747,
+   "type": "line",
+   "text": "The 157 bytes after voice 3's last played note: a few note-like bytes and then zeros up to $E9FF. Never read, since tune_check_end restarts before voice 3 gets there."
   }
  ]
 }

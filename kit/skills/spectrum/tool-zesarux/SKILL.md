@@ -49,8 +49,10 @@ the next one. `zesarux._read_reply` does exactly this.
 
 One thread per connection, and several connections at once are allowed —
 but only one of them should drive: a `run` loop belongs to the connection
-that sent it and **dies with the connection**, and a second connection's
-commands wait for it anyway (see `workarounds.md`).
+that sent it and **dies with the connection**. ZRCP runs one command at a
+time across every connection, so a command that takes time (a `run`, a
+`send-keys-ascii`) holds every other connection's commands until it
+replies (see `workarounds.md`).
 
 ## The commands the kit uses
 
@@ -87,11 +89,14 @@ lists all 129.
 ZRCP has more than the kit uses. Worth knowing for finding data tables:
 `get-visualmem-read-dump` and `get-visualmem-written-dump` (the memory a
 range was read from and written to), `cpu-transaction-log` and
-`cpu-history` (an instruction trace, for the run-up to a stop), the
+`cpu-history` (an instruction trace, for the run-up to a stop; the
+transaction log's lines carry the frame's T-state and every register, and
+`kit/spectrum/check_z80.js` and `check_machine.js` drive it with `logfile`,
+`truncate yes` and `enabled yes` before a `run`), the
 `snapshot-inram-*` commands (save and restore a snapshot in memory, no
 file), `get-ocr` (text off the screen), and for a windowed run
 `get-text-overlay` and `close-all-menus` (what an open menu or dialog
-says, and shutting it). None is wired into the client;
+says, and shutting it). None is wired into the Python client;
 `help <command>` gives their syntax. `close-all-menus` is not neutral:
 with the emulator's send-statistics question pending it answers "yes"
 (`kit/spectrum/INSTALL.md`). The launcher's flags keep that question from
@@ -164,8 +169,13 @@ rpc.registers()["PC"]                  # exactly 0x800F: the stop is on the inst
   `snapshot_load(..., rearm=True)` (the default) still re-arms as
   belt-and-braces.
 - **A load does not restore where in the frame the machine was.** It lands
-  at the start of a frame, so start every experiment from a load and never
-  compare a live run with a loaded one (`load-keeps-frame-phase`).
+  at the start of a frame (at T-state 6, in the CPU transaction log, on
+  13.0), so start every experiment from a load and never compare a live run
+  with a loaded one (`load-keeps-frame-phase`).
+- **A halted CPU stays halted** across `set-register PC=...` and
+  `hard-reset-cpu`: the next run spends its time in halted cycles at the
+  old address. `snapshot-load` clears it, so the kit's own Z80 checks load
+  a `.sna` for each program (`kit/spectrum/check_machine.js`, 13.0).
 - **A memory watchpoint counts only the last byte it touches.**
   `MWA=<addr>H` and `MRA=<addr>H` fire on the address line at the end of
   the instruction, so a 16-bit access is seen at its second byte, and
@@ -201,12 +211,22 @@ game did, and `kit/spectrum/codemap.py` turns the first into a check.
   --entry <hand-over address> --map work/executed.txt` joins a static trace
   with the executed list and reports every byte of code that `symbols.json`
   types as data, and every `Code` block neither source reached. Run it
-  before the annotation starts and after every merge. On the first game the
+  before the annotation starts and after every merge. It writes
+  `codemap.json` beside `symbols.json`, a list of addresses with no byte
+  of the game in it: commit it. `check_listing.py` then fails while any
+  byte that ran is typed as data, and lists what only the trace reached,
+  since a trace can walk into data. On the first game the
   executed list alone gave 21,551 bytes of code and the trace from the
   hand-over 23,132; the two together, 23,672; the last 475 bytes were two
   handlers named only by words stored in data, and a routine nothing calls
   with the code it jumps into, given as `--entry` once the code that reads
-  those words had been read (3 October 2026).
+  those words had been read (3 October 2026). A routine that takes its
+  arguments in the bytes after its `CALL` and returns past them sends the
+  trace into those bytes, and from there anywhere: give each one as
+  `--inline ADDR:N` once the annotation has found it. An executed list
+  from a session that ended in a BASIC error can hold a few addresses the
+  crash ran through, in the machine stack: leave that session out of
+  `--map`.
 
 **Record sessions that replay.** A session timed by the wall clock presses
 its keys at different moments on each run. Stop the machine and count in
@@ -250,7 +270,7 @@ its output, and why one sweep is not enough. `kit/spectrum/codemap.py`
 
 ## Input
 
-Two paths, and they are not interchangeable:
+Three paths, and they are not interchangeable:
 
 - **`set_input("efffffffffffffff00")`** — the nine hex bytes. Row 0 is
   `$FEFE` (`V C X Z CapsShift`), row 1 `$FDFE` (`G F D S A`), and so on down
@@ -260,14 +280,24 @@ Two paths, and they are not interchangeable:
   on the matrix (right = `8` + Caps Shift), `Kempston` puts it on port
   `$1F` instead. This path lands **immediately**, while the machine is
   stopped, and it is the one to use for frame stepping.
-- **`key_event(<number>, press)`** / `type_ascii` — host keys, pumped by
-  the running machine. Numbers are ZEsarUX's own: letters and digits are
-  their lowercase ASCII codes (`v` = 118, `c` = 99, `space` = 32,
-  `0` = 48), measured; Enter, Escape and the rest are other numbers the
-  kit has not measured — do not guess one, use `set_input` instead.
+- **`key_event(<number>, press)`** — host keys, pumped by the running
+  machine. Numbers are ZEsarUX's own: letters and digits are their
+  lowercase ASCII codes (`v` = 118, `c` = 99, `space` = 32, `0` = 48),
+  measured; Enter, Escape and the rest are other numbers the kit has not
+  measured — do not guess one, use `set_input` or `type_ascii` instead.
   Sent while the machine is stopped, they are queued and never processed.
-  `type_ascii` (`send-keys-ascii`) did not reach the machine at all on the
-  13.0 release with `--vo null` — see `workarounds.md`.
+- **`type_ascii(text, ms)`** — types `text` on the running machine, each
+  key held `ms` milliseconds, and returns once the last one is released.
+  Measured on the 13.0 release: lowercase letters, capitals (Caps Shift
+  with the letter), digits, space, and `\n` as Enter. The client sends
+  each character as its code (`send-keys-ascii 100 118`): ZRCP reads a
+  bare `v` as a label it does not know, which is 0, and presses nothing.
+  Two traps. Nothing can see the key from outside while the call runs, and
+  it is released before the reply, so a variable read afterwards shows
+  nothing: count the game's own store of it with a checkpoint armed
+  before the call, as `input-type-ascii` does. And it releases **every**
+  key and the joystick when it ends, `set_input` state included: set any
+  held input again after typing.
 
 Verify input the way `check-emulator` does, in the game's own terms: read
 the port with `evaluate IN(...)` to see it before any instruction runs, and

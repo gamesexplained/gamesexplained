@@ -1,0 +1,320 @@
+{
+  "title": "Pool Joust",
+  "order": 9,
+  "over": "resident",
+  "ranges": [
+    [
+      "$0000",
+      "$F22F"
+    ]
+  ],
+  "video": {
+    "screen": "",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0002",
+        "$00FF",
+        "zero page: the joust's pointers, timers and the two 64-byte skater records ($43-$C2), written at run time; clear_zero_page ($14AE) clears $12-$C5 on every restart"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "quarter-square multiply table, computed by build_square_tables ($14BA) on every restart; no byte of it is loaded"
+      ],
+      [
+        "$6A00",
+        "$6B3F",
+        "pass-counter digit sprites, copied at run time from $2D33-$2E72 by setup_joust; the snapshot still holds the shop's leftovers here"
+      ],
+      [
+        "$6B40",
+        "$6BFF",
+        "the shop's records-screen text, left in memory; the joust never writes or reads it"
+      ],
+      [
+        "$6C00",
+        "$6FFF",
+        "skater sprite buffers, built every time a pose changes by build_skater_sprites ($16CF) from files $18/$19"
+      ],
+      [
+        "$67E8",
+        "$67FF",
+        "the gap after the pool's screen matrix and its sprite pointers, written each frame by setup_sprites ($0BDA)"
+      ],
+      [
+        "$63E8",
+        "$63FF",
+        "after the pool's 1000 colour bytes: not written or read by the joust (High Jump's leftovers)"
+      ],
+      [
+        "$3EB2",
+        "$3FFF",
+        "past the end of file $14 ($0820-$3EB1): High Jump's bytes, never written or read by the joust"
+      ],
+      [
+        "$7580",
+        "$7FFF",
+        "past the end of file $1A ($7000-$757F): High Jump's sprite data, never read by the joust"
+      ],
+      [
+        "$AF22",
+        "$BFFF",
+        "past the end of file $19 ($8BA0-$AF21): High Jump's sprite shapes, never read by the joust"
+      ],
+      [
+        "$DF40",
+        "$DFFF",
+        "after the choice bitmap: identical to High Jump's snapshot, not written or read by the joust"
+      ],
+      [
+        "$E3E8",
+        "$E3FF",
+        "after the choice picture's colour bytes: the shop's leftovers ($E000-$EFFF holds the shop's colour maps, file $07)"
+      ],
+      [
+        "$E7E8",
+        "$E7FF",
+        "the choice screen's unused gap and sprite pointers ($E7F8 = $A0 written by choose_opponent at $2099)"
+      ],
+      [
+        "$E800",
+        "$E83F",
+        "the choice arrow sprite, copied at run time from $2E73 by show_choice_screen ($0AD9)"
+      ],
+      [
+        "$E840",
+        "$EFFF",
+        "the shop's unpacked colour maps (file $07), identical to the shop's snapshot; the joust never reads them"
+      ],
+      [
+        "$F000",
+        "$F22F",
+        "the tail of a RAM copy of the KERNAL from an earlier load; unused with the ROM banked out (as in High Jump)"
+      ],
+      [
+        "$F654",
+        "$F72F",
+        "stale bytes between the loader and the event manager, the same as in High Jump; nothing refers to them"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$D000",
+        "$DF3F",
+        "the opponent-choice bitmap's last 3904 bytes, in the RAM under the I/O area: written by load_pictures with the I/O banked out and read by the VIC"
+      ]
+    ]
+  },
+  "io": [
+    [
+      "$08CB",
+      "$0902",
+      "ram",
+      "load_pictures banks the I/O out ($01 = $24 at $08D0) while copy_block writes the choice bitmap to $C000-$DF3F, and back in at $0900"
+    ]
+  ],
+  "regions": [
+    [
+      "$0400",
+      "$07FF",
+      "tables",
+      "quarter-square multiply table, built at start-up"
+    ],
+    [
+      "$0800",
+      "$081B",
+      "code",
+      "load stub copied from the resident event manager"
+    ],
+    [
+      "$0820",
+      "$0B83",
+      "code",
+      "entry, start-up, loading, per-joust set-up, main loop, screen set-up"
+    ],
+    [
+      "$0B84",
+      "$0E60",
+      "code",
+      "raster interrupt, sprite placement, hit test"
+    ],
+    [
+      "$0E61",
+      "$12E7",
+      "code",
+      "the eleven skater state handlers"
+    ],
+    [
+      "$12E8",
+      "$1A84",
+      "code",
+      "movement along the path, depth, spins, controls, sprite building, multiply, random numbers"
+    ],
+    [
+      "$1A85",
+      "$218F",
+      "code",
+      "hit test, rounds, scoring, status row, introduction, computer opponent, opponent choice, keys, end of event, unpacker"
+    ],
+    [
+      "$2190",
+      "$222B",
+      "unused",
+      "156 bytes saved with the file, never read"
+    ],
+    [
+      "$222C",
+      "$22C7",
+      "variables",
+      "sound driver state and queue"
+    ],
+    [
+      "$22C8",
+      "$29EC",
+      "sound",
+      "sound driver"
+    ],
+    [
+      "$29ED",
+      "$2AFE",
+      "tables",
+      "note table, raster bands, pose sequences, state handlers"
+    ],
+    [
+      "$2AFF",
+      "$2D22",
+      "tables",
+      "the pool's path profile"
+    ],
+    [
+      "$2D23",
+      "$2FD9",
+      "tables",
+      "digit sprites, arrow sprite, colours, opponents' names and settings, score strings"
+    ],
+    [
+      "$2FDA",
+      "$31E9",
+      "tables",
+      "sound ring and the sprite-mirroring tables"
+    ],
+    [
+      "$31EA",
+      "$3496",
+      "sound",
+      "sound-effect scripts, music phrase table and player"
+    ],
+    [
+      "$3497",
+      "$3EB1",
+      "sound",
+      "the music: sixteen two-voice phrases"
+    ],
+    [
+      "$4000",
+      "$5F3F",
+      "graphics",
+      "the pool picture's bitmap (unpacked from file $17)"
+    ],
+    [
+      "$6000",
+      "$63E7",
+      "graphics",
+      "pool colour-RAM source"
+    ],
+    [
+      "$6400",
+      "$67E7",
+      "graphics",
+      "pool screen matrix"
+    ],
+    [
+      "$6800",
+      "$69FF",
+      "text",
+      "64-glyph font, file $15"
+    ],
+    [
+      "$6A00",
+      "$6B3F",
+      "graphics",
+      "pass-counter digit sprites, copied at start"
+    ],
+    [
+      "$6C00",
+      "$6FFF",
+      "graphics",
+      "skater sprite buffers, built at run time"
+    ],
+    [
+      "$7000",
+      "$757F",
+      "graphics",
+      "22 ready-made skateboard sprites, file $1A"
+    ],
+    [
+      "$8000",
+      "$8B9F",
+      "tables",
+      "124 skater frame descriptors, file $18"
+    ],
+    [
+      "$8BA0",
+      "$AF21",
+      "graphics",
+      "198 skater sprite shapes, file $19"
+    ],
+    [
+      "$C000",
+      "$DF3F",
+      "graphics",
+      "the opponent-choice bitmap (unpacked from file $16)"
+    ],
+    [
+      "$E000",
+      "$E3E7",
+      "graphics",
+      "choice colour-RAM source"
+    ],
+    [
+      "$E400",
+      "$E7E7",
+      "graphics",
+      "choice screen matrix"
+    ],
+    [
+      "$E800",
+      "$E83F",
+      "graphics",
+      "choice arrow sprite, copied at start"
+    ],
+    [
+      "$E840",
+      "$EFFF",
+      "unused",
+      "the shop's colour maps, left in memory"
+    ],
+    [
+      "$F230",
+      "$F653",
+      "code",
+      "resident disk loader"
+    ],
+    [
+      "$F730",
+      "$FFF9",
+      "code",
+      "resident event manager (file $0B)"
+    ],
+    [
+      "$FFFA",
+      "$FFFF",
+      "tables",
+      "interrupt vectors"
+    ]
+  ]
+}

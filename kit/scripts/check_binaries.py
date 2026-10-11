@@ -5,6 +5,8 @@ Scans the working tree (or the paths given) and fails if it finds: a file
 with a game-image extension; a file whose size is a known disk-image size;
 a file starting with a known snapshot magic; a JSON file carrying a
 "raw_data_base64" field. work/ folders are skipped except their README.
+Game data a page's widgets need, embedded in its HTML, is not a binary
+(AGENTS.md, "No binaries, ever").
 
 Usage: check_binaries.py [paths...]     exit 1 on any hit
 """

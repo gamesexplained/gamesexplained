@@ -74,6 +74,9 @@ in order:
    cannot push to this
    repository, push to the contributor's fork and open it from there. If
    there is no remote at all, leave the branch and say so.
+6. **Debrief the contributor** once the pull request is open: where to
+   see the pages, that it can be merged as it is, the questions only they
+   can answer, and some ideas for follow-ups (`kit/START.md`, step 8).
 
 ## Working on the kit or the site
 
@@ -101,15 +104,36 @@ adds a lesson file of its own and edits no other, so two pull requests
 never conflict over either. A new platform
 follows `kit/PLATFORMS.md`.
 
-A kit test is a file matching `kit/**/test_*.py` or `kit/**/test_*.js`:
-run as a script it exercises its own subject and exits non-zero on failure,
-and `test_kit.py` finds it, so a new test needs no edit to CI. A test that
+A kit test is a file matching `kit/**/test_*.py` or `kit/**/test_*.js`, or
+`games/<platform>/<slug>/test_*.py` beside the page it checks: run as a script
+it exercises its own subject and exits non-zero on failure, and `test_kit.py`
+finds it, so a new test needs no edit to CI. A test that
 needs an installed tool reads `KIT_REQUIRE_TOOLS` from the environment and
 fails rather than skips when it is set. CI sets it, and there a test that
 skips anyway fails too, so an oracle that is missing cannot pass for a green
 run. The older `--test` self-tests on the tools stay where they are and are
 listed in `test_kit.py`, which fails on a script with the flag that the list
 leaves out; a new test is a `test_*.py` file, not a new flag.
+
+## Titling a pull request
+
+This applies to every pull request to this repository, a game's, the
+kit's, the site's or anything else, and to every commit subject line: a
+pull request of one commit can be merged under that commit's subject
+rather than its title. Title it so a reader scanning the list of pull
+requests knows what changed and why, without opening it:
+
+- Start with a verb: Fix, Stop, Add, Remove, Limit, Merge.
+- Name what a reader recognises: a file, a feature, a game.
+- Say the problem fixed or the effect, not how the fix works. The how
+  goes in the description.
+- No negations or contrasts ("X, not Y"), and no abstract nouns standing
+  in for concrete things ("a run", "the notes").
+- Keep the area first (`kit:`, `site:`, or the game and its platform) and
+  the whole title under about 70 characters.
+
+Good: `kit: Fix INSTALL.md growing with every game run`.
+Hard to read: `kit: a run corrects the install notes in place, not with a row or section of its own`.
 
 ## Rules that are not negotiable
 
@@ -143,15 +167,20 @@ leaves out; a new test is a `test_*.py` file, not a new flag.
   the contributor before the first step. If they cannot tell either,
   record `unknown` and say in the pull request that the model could not
   be checked.
-- **No binaries, ever.** Disk images, program files, cartridge dumps,
-  emulator snapshots and disassembler project files that embed the memory
-  image are never committed and never uploaded anywhere. `work/` is
-  gitignored for this reason. `check_binaries.py` must pass. The
-  machine's ROMs are never committed either, with one exception: when a
-  mechanic depends on data the game reads from a ROM, a page may carry
-  that excerpt (the bytes the game reads, or the values it computes from
-  them) and names the ROM, its revision and the addresses. Never a whole
-  ROM.
+- **No binaries, ever.** A binary is a file that holds the game or the
+  machine whole: a disk image, a program file, a cartridge dump, an
+  emulator snapshot, a disassembler project file that embeds the memory
+  image. None is ever committed or uploaded anywhere. `work/` is
+  gitignored for this reason. `check_binaries.py` must pass. Game data
+  is not a binary. The listings carry the game's bytes with their
+  annotations, and a page carries the data its widgets need, embedded in
+  the page: a character set, a level, a tune, the pictures a viewer shows
+  (`kit/skills/core/70-minisite`). What a page never carries is the
+  program, or enough of the game to rebuild it. The machine's ROMs are
+  never committed either, with one exception: when a mechanic depends on
+  data the game reads from a ROM, a page may carry that excerpt (the
+  bytes the game reads, or the values it computes from them) and names
+  the ROM, its revision and the addresses. Never a whole ROM.
 - **Prefer "unknown" to a plausible guess.** An admitted gap costs nothing.
   A wrong claim is copied into every downstream document.
 - **Distrust your own negative results.** "It isn't there" is a claim about
@@ -220,7 +249,7 @@ leaves out; a new test is a `test_*.py` file, not a new flag.
 | `kit/EMULATOR.md` | what an emulator must do, by phase of use, and the test for each |
 | `kit/style.md` | house style for minisite copy |
 | `kit/CHECKING.md` | the maintainer's check that lets a run on an unproven model be Silver |
-| `kit/lessons/` | what the kit learned, from which game and whom: one entry to a file, the site's kit page |
+| `kit/lessons/` | what the kit learned, from which game and whom: one entry to a file |
 | `kit/scripts/` | shared tooling; every script prints usage with `-h` |
 | `kit/<platform>/` | one machine's tools: install notes, launcher, scripting clients |
 | `kit/PLATFORMS.md` | what a platform owns, and how to add one |
@@ -239,7 +268,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 | Tier | Requires |
 |---|---|
 | Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; coverage below 100 %; `symbols.json` and `listing.json` committed for what there is |
-| Silver | 100 % coverage; `facts.md`; every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built; all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or a maintainer's check recorded in `game.json` (`kit/CHECKING.md`) |
+| Silver | 100 % coverage; `facts.md`; every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built, with a player for every tune when the game has music; all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or a maintainer's check recorded in `game.json` (`kit/CHECKING.md`) |
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |
@@ -290,7 +319,7 @@ claim per agent against the source before believing the report.
 
 ## Finishing
 
-The last step of every run is `kit/skills/core/80-retro`: which skill text
+The last skill of every run is `kit/skills/core/80-retro`: which skill text
 changed what the run did, where the kit fell short, and the smallest diff
 that would have saved the next contributor the trouble. A script that
 catches the failure comes first, and a skill takes what would otherwise

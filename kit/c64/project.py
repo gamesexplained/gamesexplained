@@ -77,7 +77,8 @@ def write(gdir, snapshot, out=None):
     game, sym = seed(gdir)
     if out is None:
         out = os.path.join(gdir, "work", f"{game['slug']}.regen2000proj")
-    ram = read(snapshot)
+    bank = (game.get("part") or {}).get("bank")      # a cartridge bank's part: its image is the bank's
+    ram = read(snapshot) if bank is None else read(snapshot, bank=bank)
     labels = {}
     for s in sym["symbols"]:
         if s.get("kind", "user") != "user":

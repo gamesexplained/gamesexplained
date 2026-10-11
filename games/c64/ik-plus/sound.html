@@ -1,0 +1,515 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IK+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/ik-plus-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">1987 · System 3</p>
+  <h1>IK+</h1>
+  <p class="sub">Rob Hubbard's tune plays through every fight on three voices of the SID. The fighters' shouts are digitised samples, played through the volume register four bits at a time.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The music</p>
+  <h2 class="t">Music: Rob Hubbard's tune, played by its own driver</h2>
+  <p class="lede">The tune is Rob Hubbard's, and it plays through every fight unless F5 turns it off. The player runs a port of the game's own driver once a frame, so each note it plays is the note the C64 plays.</p>
+  <div class="plate"><div id="ik-sid"></div><p class="cap">The tune and the sound effects, played by a JavaScript port of the music driver (<code>$E00F</code>) and the effect player (<code>$EE45</code>). The port matched the original code, run in a 6502 simulator on the game's memory, register write for register write over 82,400 frames, with effects started at 119 random moments over the tune. The 6581 setting of the filter switch uses one chip's cutoff curve, as measured for the reSID emulator; real chips differ from one another. Effects 4 and 5 are in the game's tables, but nothing starts them.</p></div>
+  <p>The tune runs for 7 minutes 40 seconds before its three tracks start again, together. Each track is a list of pattern numbers and transpositions (<code>$EABB</code>, <code>$EB44</code>, <code>$EC0E</code>), and the 40 patterns hold the notes. A tick is three frames, and one tick in every 113 frames takes four (<code>$E696</code>). Each of the fifteen instruments is two records of eight bytes (<code>$E975</code>, <code>$E9ED</code>): waveform, envelope, vibrato, a pulse-width sweep and a byte of effect flags that turn on drums, arpeggios, the filter sweep and a noise burst.</p>
+  <p>Voice 3 carries the bass, and it is the only voice the filter touches (<code>$D417</code> is always <code>$F4</code>). Instruments 1, 7 and 8 lower the cutoff by 12 a frame from each note's start, wrapping round to the top, and add a one-frame burst of noise to voice 3 about every sixth frame, switching the filter from low-pass to band-pass for that frame (<code>note_flags</code>, <code>$E41A</code>). Over the whole tune that tick sounds 3,741 times.</p>
+</section>
+
+<section id="shouts">
+  <p class="fig">02 · The shouts</p>
+  <h2 class="t">Sound: every shout at a random pitch</h2>
+  <p class="lede">The six shouts are digitised sound, four bits a sample, played through the SID's volume register. Each starts at a sample rate picked at random, so the same cry comes out a little higher or lower each time.</p>
+  <div class="plate">
+    <div class="ik-row" id="ik-shouts" role="group" aria-label="Shouts"></div>
+    <div class="ik-row">
+      <label class="ik-mono" for="ik-rate">Timer</label>
+      <input type="range" id="ik-rate" min="0" max="31" value="16" aria-describedby="ik-rate-o">
+      <output class="ik-mono" id="ik-rate-o" for="ik-rate"></output>
+      <button type="button" class="ik-btn" id="ik-random" aria-pressed="true">Random, as the game picks</button>
+    </div>
+    <canvas class="ik-wave" id="ik-wave" width="1000" height="120" role="img" aria-label="The shout's samples"></canvas>
+    <p class="ik-mono" id="ik-sout" aria-live="polite"></p>
+    <p class="cap">The game's own samples (<code>$BF00</code>-<code>$CFFF</code>), played the way its sample player (<code>$0934</code>) plays them: one nibble a timer interrupt, from the byte after the shout's start up to its end page (<code>$0ECB</code>, <code>$0ED1</code>), at the PAL clock divided by the timer's latch plus one. The page turns each level straight into sound, without the chip's own output stage, so a real C64 sounds somewhat different.</p>
+  </div>
+  <p>The six shouts share their bytes: three sit in the high nibbles of <code>$BF00</code>-<code>$CFFF</code> and three in the low (<code>$0EDD</code>). Starting one (<code>$0EE3</code>) patches the sample player's four instructions that pick the nibble, either four <code>LSR A</code> or <code>NOP</code>, <code>NOP</code>, <code>AND #$0F</code>, and sets CIA 1's timer to its base, 224 on PAL, plus a random 0 to 31 from the frame counter and the raster line. A sample every 225 to 256 cycles is about 3.8 to 4.4 kHz. Each nibble goes straight into <code>$D418</code>, the register whose low four bits are the SID's master volume, and the jumps in volume are the sound.</p>
+  <div class="plate" style="margin-top:20px"><div class="ik-scroll"><table class="ik-tbl" id="ik-shtbl"></table></div>
+    <p class="cap">The seventeen poses that can bring a shout (<code>$0E1F</code>) and the four tables beside them (<code>$0E31</code>-<code>$0E85</code>). When a fighter's pose changes (<code>$0DED</code>), a fighter who has just scored gets the scoring shout, one knocked down gets the fall's, and one striking gets the attack's. A pose number opens it on the <a href="fighters.html#poses">Fighters</a> tab.</p></div>
+  <p>The second shout after a score comes from the frame interrupt, which counts the delay down (<code>$01C1</code>). Only one shout plays at a time, since a new one takes over the sample player's pointer, and F7 turns them all off (<code>$FD51</code>).</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/sid.js"></script>
+<script>
+/* Bytes from the game as it loads (work/start.vsf), by address: the shouts' samples and tables. */
+const IK = {"48896":"a8a8c6784908b6689567a8aaa8b78676776949173a67758593b8d9baaa88786467585938455367799baab9a584a997959888777568676859595565697b74869799a9b8a89696869686799b76666779695956565756474859465868798a8998a7b69797a7a595a6a697979677776758594847394937486767879788a7d7a885b78c758785a8aaa978a8b787b7967778695658486878888797a7b7a7b7a88758a767586848888748989777893978b746a6686869997676355768986b3596b628b77937887668a738588764766a66866859a69756779888687765a999488687b75a67b778779559b768867867a9c85747a7b7a779a89978a78797975799987879896767c676a969a95897874797b767388879989708d87816ca6577aa86187778987877d64757a787278777577767975797c73787879787677848879866673797b8571777b778676897883887b82788d78807a797a747b7a76727a7c77838b88937d728778888d76757787758d877a8676887c84748c7b778779767c8483898979768d87947a7a87768586699b7776878575a65b88648a887676866a867b78767c85658977858c75889468a948897675867789846b8b6259cb24a6678d86826978758b698365ca477a789765647ba9437a867b7671888a897773897a94688867867b847a88648977877688798666987a77a977737a9974688c886587857b8985876a6688988b749699577a76777b7589757c7684688d868a768689846c81887f778576787b82797d82868d827c98537a8b61878a898766948d6894736d79a77783569c6972738a6e948367898d8592788d79747479479b60698e689464799b8664bd39919968b55b95588b74798c8758b2257a7a9875aa39b56455ab9a816a955cc435bf66428d8991699b6b83858d53bb83776da29946984ab6656ba8845d72757d7ab1679c96659f95736d7ba2648e77517b7785899a8845669d67b3898c844369ad61975f74b46f87718a4ca344ac4577be5892775e83656db54a75769c85657c67b16b8ca059bd74569a6797999a33c949859b86a57d61795b8676598aa773978d81776f45847a86a38b7c8375aa3951a78e84956b8553688e75548a6896999c9566698477866d7973858965977e6872a68e96726b6a819a6972979a6e44648d9892698d95667877967a7a8488676589779b5862869c9962867e6882898886686a8872889d6971678d8187796478769c76727e9773867e93856c6594866b8a94889a537957779b8186aba5674a7b85867b7368749a7a727a877486767d6876847986737d8a737c727985778f728c748988738c7b817b748e74847b888b87827c73778e738b748776757d877a79808e71787a888a74888974887b8a6686638a85768e627a77878789757b7884889a6577848d777679937886867f7488737b78707b866b87737e8189866b778786688a74769d658a627d8673857d7778738d8278767e857679798884758c8878677a7785778d8978827c8575877c768899658b7176888c7a77718a7a71887a7977728d7275798a7a85768b8287776d897378878b8276788a7884767c72867a797885777b738676cf24a94876db21978a7ca786766d4387868c98859a727e8178945c6a7787767873788c7778747b8685858d8995658a777786768e7984757e7475767a7b867c718c7177878f758aa5843b73b9a60e83ab729b9454b78c2838889596c535bd574c73965d7493d88d7836878a768489957d447a8599858597866f739c5677a54277bb7b7658738c8168667a7d6678746976828b989a99a18ca483897a7b79636b6762766c7a7888827e8286888a8b857b717e7373787e787977637b74847b788b79828a8683768c8c7598838b8474797c8877768a7781768d7b7489728c8671878d797886837a6784858c79868a74898586757d7a8579848b8473697a8b778478986367866c8b868566887586788d8b7792697b72757b996b799457a85389856c7a758b72897586876a8d986884768885658b5b9a7862897786968a8d777875639a8584797b8b689573798854b67c6c888772986973778a8c79657685788775758c7b777672887883768b8b767785748a7586767c7b857983767b8577867c6b867882778c7396687c7a88878444444447998d59a63784c8784458979eaab5681277a877d7751e4a95ca82c86873aa865b3c157982a5b8c99897453d47548a9289c8634a85a99c737a94846b545a55668a89899984838897788878878b798585858789797676696b8a758974786876766866887c8b84779389887688877a748d78857a6377897778757876888d868887749a747884789c86787d7487888478757777898b7686898877878587868774697b778986787a888775748678887878798876678977787674778767777969d80a7695787aa8756357898887988a7888887758758577797778787688986758966799a7785885888a7675946a9a7679879778767887878888877988858894444444478897688767888788888787678877878776788877786887677778897787787788867787777887787976777877787887777778787688777778797777778777985667989887579a5766878798768689876867797897a768b7568667697777974978f70856979799c76777483898979888a8566786a86a748969a7478895877c77847d8d767086a75b7a736b99689a8565976578776898789b66826888766a8c82667b78548489788a7b7564a85aa47489897978866779895796678988697b757777658878974996857779788a8585769867767b9996797662886888787e778197718b5d968873797d878a7a60769b7577699a87757775b44b9c96479877a6498995897b7674689667876a8a7697768686788986786a87677a84859a6a88968687398786886766879787588777867687888757c7578756984899c82596a6586787987778976698589737c76788977888678847b858789958789887c82758b788a75868977778766878886999a848a77867897977878777777957877867b7985877877856965798888758b736879858c74777966777678776889768778776977787985777a6577798687777977757987787876788778878489777988878878877866868a9589778878897786897387787888778887898778878779898678867788887996867a84798689748a6d83847d74778b7678847977757c7684888987756977798887878667778876857777797876798777887677777a89767678758888866a7987857d84777a85767578797a7b7975807886877978778a898687757887898a757778867678727b8679798586797788687778889798787974688675768c919987897a665868878595b7998b6b6b69588472969688887a5a5778748992a98378676a6b797b99848874759475695c8a696966968885a58467684d6b997967b8a48566935546596b8cab99a886777593664558978b6cab999866867376458665689a7c7c9aa88756964275755886a87bab8c3a786794a7856366776996894cfb2a68f74435e54438c6974977cb7a5a39b88773d77545553a859e9448cc579a9958889368a24399a52bbb9579597b7757787379626963ba987ba8a899847a7479665779367b84697689a675c998aa89887768544675235997365b778b864988c864aa75b56ab2b85a7879cc7663886844878b465767dc4396984856b79a766949e8877876a74694c817c9797bb84977d83558e68a668a8598698896a83486a47a35a98a5a7a986667a5447695a94858b9369a67a846763797688857b74648c8675b658847a888887955889888777895a78785988757996cc879869a857848a8a8634595679988778a4a978794983c62aa56779847a976766446968977b88b39858a9867978867b476659a639785797bc937b78868678689b56799787377aa886669966767877b629859a867797658c869855a7276b8586a7689796869778757a8697767976896666797889757786898868967886767987787776887975888978877888997677886b76877a87887788777b77868b74777a77887a86877a86767a867778897689896576767b8974678973889c648888748976778a646a8588867867757887778886787876788778967a78957757878888768a98756878757a7897876998c5158c77b885998768485a84878977978a7686897885687a868787797668878885787b858788986875887985898875697876877a8767797678867877997975897777877896788985797777798886878978888787878888858b8684444444478769769c6578759b96887777888896766a7886668986788688977865796677787877798777878887876976787778877769877788876798866877778778868878888678768b7578769a7786876976798689748a8777898688787888767875797887879678778876899877767986888878757977887669877788769678494778a8b698768a76479975599658b888878838867778b8877689687877668868978758785787a7787887778878967b5677899766677688798589788688687699778856688976c6ca67141888a8b6c84589d978662638a8c8886747688777366998b6b9a699988778677897696767686867877985877789888897867888887444444442786c657a9c77767775828574867898898e7a878a868388957b678d848b875458677187876889694a8ab85a66999975948a74647b6686896c65767c968478757a7b9997889583777966698a95798a8b59687674879b879575787783879b94838967e5894a5a5597db3356999a748866599876656c86a74b92ab4a74768ab66a78857c79657a67846c93996868637aa886879c74867c648877574be5cb56067be39924499de588662d55c7cb5627c7c4492a89c7b46a78348bd6a47a1964d6ac5426798aa479735cb5a855958b88c37b6748a45935488bb44e77836d938a98d5cd99838c85574a667c628b7a728c5673bc786379ab93767ca783375be4694a9655465a5777a9a4cd88445a868848455d87a48d9589848b937b56889b5843557da4977b718b7b827a8693897c63788b95849b7873876b739c8874877aa5846b86969975967c6786858a77847b7a84759d86a26a5a738b96797a63758d64797a73968d637a76859d737a77896776756a748b78766a72797a97a886777b7696675c62864db6e569386946c4bd23569cd5c7667c6755599aa3969d15d69c3845a6d94877ca852985e985581c82eb885624ac58a47a0399f68b3398676cd595766d12699bd672b98c652958e179492678aae78676196695db89a2781a48757799c7d68b77265bc856596779658a9568799a85a787678b7557586968889878444444444070a090507090a09080707050a09040809060b04080b0405090a090603070709070409070807060907070a070604070b0b07040708050609090a0804090606070a080909090805070507080609090a0908070408090809070707060a0b0606050709090606090a050509080505080a0a080605080506090b060707040406080a08030909070a05060804080b07070a02050b06000a0a0b02090d0905030b05090d060408030a07060a0c0a0a070408050408060908090c07060806090b08080505090608090607080807080807080907070908070509090707080907060606060a070607090606080607080a09040608090707070506080707090707060608060709060804080a0905060a090507070808070607090908090908050806080a070609080609060508080a0708080608060708080a0905060808080709080709070706050808090608080807070707070807070908060608060807080706070708080707080908060607080708070708080708080708060709070707070707090a080607070709080806070807090906060607070808080708070808060707070808090807060707080808080807060808070707080806070806070808070708080707060807070907070708070807060709080707080907060807070709070707070706080806070908070708070707080707070708080808070607084444","3615":"19070612141545202f2b27433e441b0e10ff0101010202020102ffffff010101ffffffffffff000002000205030400010000000200000000000405040000000300030500050000000000020002000000020000000002ffffffffffffffff050304ffffffffffff","3787":"c6cccec5cbd000bf00c600cc00bf00c500cb808080000000","3912":"010010e0"};
+/* The tune, the driver's variables and the effects' tables as the game loads them ($E000-$E008,
+   $E478-$EE30, $EF9D-$EFDB, $F07E-$F147): [address, hex bytes]. */
+const IK_MUSIC = [[57344,"000000000000000000"],[58488,"45ee1601270138014b015f0173018a01a101ba01d401f0010e022d024e0271029602bd02e702130342037403a903e0031b045a049b04e2042c057b05ce0527068506e8065107c1073708b4083709c409570af50a9c0b4e0c090dd00da30e820f6e1068116e128813af14eb1539179c18131aa11b461d041fdc20d022dc2410275e29d62b722e3831263442378c3a083eb841a045b849204ebc52ac57e45c70624c68846e1875107c7083408b7093409c78a558afc8b9e0c498d008dd30ea20f82efd000000070e0000000000000000000000000083043d073a133a5f033d073a173a033f0f3d013d013d013d013d033d073a0b3a033a033d033f033f173d033d073a133a033f033d033f033d0738013a013a013a013aff000000000000053c053a073c0141013f01410141033f053c053a073c01410143014801480346ff130901053e053c073e014101430141014301410143053e053c053e0139013c0139013c013e013e013eff000000000000000000000000000000000000000000000000000000000341013f0341013f07410144014101460144014601440341013f0341013f07410141013f01410141013f013cff03430141034301410743014301410143014301410143ff81053c0141013f013c013f013c013a013f013c013a0b3cff0139013e013c0139013c013901370139013701350b32ff033e013e013c013e0141013e013c033e013e013c013e0141013e013cff00000000000000000002000200c0000000000000800b32a18030b228b303b247212ea18050ae03b04f073307350032a18030b228b303b247a1806b3321b503b34f072e07300032a18030b228b303b247212ea18050ae03b0472130a18059b003b247a180502e21b00fae0f330f38033a4fff00000047a380183223b30732032e032b032e033047233203b3233521b701b0ff00000047a3803b3523b707350333033247a380353323b50733032e073003330333a38033330bb503b5033803380338a380473807ba033c0337ff00000083063843810230438106384301384181023045ff008306384181034481023043810638430138810344810230418103440144ff000000810a33013001330130033303350337033a033703350133013001330130033303350337033503330330ff013201350132013503320335033703350332033501320135013201350332033503320330032e032bff0000004181003c013c43013c013041013c013045013c43ff0000004181003c013c4181023081003c013041013c01304381023081003c43ff00000081063881003c013c4181023081003c013081063881003c01308106384181023081003c43ff000000810232013001300130013201300130013001320130013001300132013001300130ff0000000000000081043c013c013c013c033a033a03370337033a435fff43870c35073b074003458b0d4c034a174c074a074f07510b4c034a0f4cff870c340739073e07433f283fa81fa8ff00000043870c470741073b03358b0d51034f1751074f075107530351034a174cff870c4a0745074007393f283fa81fa8ff000000a7011ca7801c9c2ba883c056a81f1cff1318070c0409050881034001440140014001440140014003440144014001440140014401400140ff83063843013845013845013845ff813011000241c0038030801580208010802080208010802085813011000440400e8030801580208010802085000000000000000000001180fc1180fd1180011180038510000285000041060600c40080004109c80040a400081109f80000080008810505000008d007510a56000414800841007820100000061108d800000880000109c80000a080000109c80000a4000000000000000000014109991088000000510d39230000800151095913430400001100c92300084000410b090040b44881810240f0f4fc248141023c30f4f42ee9410140fd000047e9410140fd00000011810340f0f4fd4881810240f0000047e9410140fd0000248141023c30f4f4248141023c30f4f40221110300fc00000321110300fc0000001181014090f4fd004100020081000064e9000c0031f4ff041141023cfd0000bb440eeaebece23de45d7cc1e00995b9fc2940586f9bc39f4c5b7091e7ff1f47bba001217086a4b7d5e80020a310ecedecededededeee5e5e5e6e6e6e6ededede5e7e7e7e7e7e8e8e7e6e7e7e8e8e8e8e8e8e9e9eded8012121212060000060000070000070000060607070800000900000a00000b0b0b0b0c000d000c000e008c000c000d000c0e0e80151a151a00008c151a151a80242424242424242424242424242424242424242424242424242424241e00001e00001f000000001e23000000002100000000a41a00001a008000128212801b1b1c1c1d1c1c1d1b1bff131313131313131313131313131313131313131313131313141414141414141916161616161616161717171718181818020202271913131414141402020202191902020202132713271327020202020200000202020225252525252525192525252525252525252525252525252525252519141414141313131320131313130000231313131322000000002424242424242424882424242424242424242424242424248019131313131313131318181818181818181818181818181819020202020202020202020202ff0f10030303030303031110030303030303038501010101010101010101010101010101802626262603030303030303032626030303032626040404040101010103030303010104040101030301010404010103032603032603038711100301018003032603030f10052611100526011e050f10050305011e05262611100526010101011110052626262626000026262623231110052626268201800303038501018326850101832680262603030303262603030101262603030101262603030101262603030101262603030101262603030101ff5fff81063881003c013c81034481023081003c013081063881003c013081063881034481023081003c810344014481063881003c013c81034481023081003c013081063881003c013081063881034481023081003c8103440144ff81011d0129011d011d0129011d01220324011d0127011d01290129011d0127ff011f012b011f011f012b011f01240326011f0129011f012b012b011f0129ff011a0126011a011a0126011a011f0321011a0121011a01260126011a0121ff810718ff810818ff011801240118011801240118011d031f0118012201180124012401180122011801240118011801240118011d031f0118012201180124012401180122ff81043a013c033c033c013c013a033c013c013a013c013f033c013a013c033c033c013a013c073747ff013a01410343034301430141014301460143014603430341013e0141013e0141033e033c073e47ff"],[61341,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7e898b9aa3a8cdd7f0f0f0f0f0f0f0f0"],[61566,"01010101010101020202ff01ff0101010101010102020202010101800202020201010101ff02020280ff010102010101020201010101020202010101010102020202010101010101020202020280ff020202020202020280ff01010101010101010101010101010180ff05003000410a091ff0024002170a1a4502003000810a072820004002150c0a2d10010008810a090800080008410ac94840414111700000004041811170f0ff004041411170000000414181617000000040414110502f0000404141400c000000"]];
+// createDriver begins
+/* IK+'s music driver ($E009 start, $E00C stop, $E00F once a frame) and its sound-effect player
+   ($EE45, run at the end of every frame of the music), ported from the 6502 code for the site's
+   shared SID player (site/lib/sid.js). M is a list of [address, hex bytes]: the tune, the driver's
+   variables and the effects' tables as the game loads them. The port keeps the game's memory
+   layout, so the driver's pointers into its own tables work unchanged; the four operands the code
+   patches into itself ($E2BB, $E2D5, $E308, $E322) and the script address of LDA $C000,Y ($EE89)
+   are locals here. Tunes: 0 is the tune; 1-4 start sound effects on the two effect channels, as
+   the game's writes to $EFC9 and $EFCA do, with the music stopped. */
+function createDriver(M) {
+  'use strict';
+  const m = new Uint8Array(65536);
+  for (const [a, h] of M || []) for (let i = 0; i < h.length; i += 2) m[a + i / 2] = parseInt(h.substr(i, 2), 16);
+  const sid = new Uint8Array(25);
+  let writes = [], fromInit = false;
+  const w = (r, v) => { v &= 255; sid[r] = v; writes.push(r, v); };
+  const p16 = (a) => m[a] | m[a + 1] << 8;
+  const at = (zp, y) => m[(p16(zp) + (y & 255)) & 0xFFFF];
+
+  // $E071-$E464: one voice of one frame
+  function voice(x) {
+    let y = m[0xE53C + x], a;
+    m[0xE53F] = y;
+    let to = 'effects';
+    if (m[0xE696] !== 0 && m[0xE694] === m[0xE695]) {          // a tick starts this frame
+      m[0x40] = m[0xEA65 + x]; m[0x41] = m[0xEA68 + x];        // the voice's track
+      m[0xE546 + x] = (m[0xE546 + x] - 1) & 255;
+      to = m[0xE546 + x] & 0x80 ? 'next' : 'release';
+    }
+    if (to === 'next') {                                       // $E09A next_note
+      for (;;) {
+        a = at(0x40, m[0xE540 + x]);
+        if (!(a & 0x80)) break;
+        if (a === 0xFF) { m[0xE546 + x] = 0; m[0xE540 + x] = 0; m[0xE543 + x] = 0; }
+        else { m[0xE8B4 + x] = a & 0x7F; m[0xE540 + x]++; }    // a transposition
+      }
+      m[0x42] = m[0xEA6B + a]; m[0x43] = m[0xEA93 + a];        // the pattern
+      m[0xE71E + x] = 0; m[0xE81C + x] = 0; m[0xE86C + x] = 0;
+      m[0xE869 + x] = 0x40;
+      y = m[0xE543 + x];
+      m[0xE5E0 + x] = 0xFF;
+      a = at(0x42, y);
+      m[0xE549 + x] = a; m[0xE5F8] = a;
+      m[0xE546 + x] = a & 0x1F;
+      if (m[0xE5F8] & 0x40) {                                  // $E135 a rest
+        m[0xE5E0 + x] = (m[0xE5E0 + x] - 1) & 255;
+        y = m[0xE53F];
+        m[0xE5E9 + y] = 0; m[0xE5E8 + y] = 0;
+        a = 0x08;
+      } else {
+        m[0xE543 + x]++;
+        if (m[0xE5F8] & 0x80) {                                // a slide or an instrument
+          y = (y + 1) & 255; a = at(0x42, y);
+          if (a & 0x80) {
+            m[0xE71E + x] = a;
+            y = (y + 1) & 255; m[0xE6FE + x] = at(0x42, y);
+            m[0xE543 + x]++;
+          } else m[0xE5B6 + x] = a;
+          m[0xE543 + x]++;
+        }
+        y = (y + 1) & 255; a = at(0x42, y);                    // the note
+        m[0xE75A] = a;
+        a = ((a & 0x7F) + m[0xE8B4 + x]) & 255;
+        m[0xE592 + x] = a;
+        y = (a << 1) & 255;
+        m[0xE69D + x] = m[0xE47A + y]; m[0xE69A + x] = m[0xE47B + y];
+        // $E148 note_instrument
+        y = m[0xE53F];
+        m[0xE5FA] = x;
+        const i = (m[0xE5B6 + x] << 3) & 255;
+        m[0xE5FB] = m[0xE977 + i];
+        if (!(m[0xE75A] & 0x80)) {                             // not slurred: the whole instrument
+          const p1 = m[0xE975 + i], p2 = m[0xE976 + i], p3 = m[0xE9F0 + i];
+          m[0xE5E5 + y] = p1; m[0xE5E6 + y] = p2;
+          m[0xE5E8 + y] = m[0xE978 + i]; m[0xE5E9 + y] = m[0xE979 + i];
+          m[0xE691 + x] = 0; m[0xE68E + x] = 0;
+          m[0xE7FC + x] = p3; m[0xE7E4 + x] = p2; m[0xE78E + x] = p1;
+        }
+        a = m[0xE5FB];
+      }
+      // $E19B
+      m[0xE58F + x] = a;
+      m[0xE543 + x]++;
+      if (at(0x42, m[0xE543 + x]) === 0xFF) { m[0xE543 + x] = 0; m[0xE540 + x]++; }
+      return out(x);
+    }
+    if (to === 'release') {                                    // $E1B5 note_release
+      if (!(m[0xE549 + x] & 0x20) && m[0xE546 + x] === 0) m[0xE5E0 + x] = 0xFE;
+    }
+    // $E1C9 note_effects
+    y = (m[0xE5B6 + x] << 3) & 255;
+    m[0xE698] = y;
+    m[0xE758] = m[0xE97C + y];
+    m[0xE68D] = m[0xE97B + y];
+    a = m[0xE97A + y];
+    if (a !== 0) {                                             // vibrato
+      m[0xE003 + x] = (a & 0x78) >> 3;
+      m[0xE68C] = a & 7;
+      let up = !(m[0xE006 + x] & 0x80);
+      if (!up) {
+        m[0xE000 + x] = (m[0xE000 + x] - 1) & 255;
+        if (m[0xE000 + x] === 0) {
+          m[0xE006 + x] = (m[0xE006 + x] + 1) & 255;
+          if (m[0xE006 + x] & 0x80) up = true;
+        }
+      }
+      if (up) {                                                // $E205
+        m[0xE000 + x] = (m[0xE000 + x] + 1) & 255;
+        a = m[0xE003 + x];
+        if (a < m[0xE000 + x]) {
+          m[0xE000 + x] = a;
+          m[0xE006 + x] = (m[0xE006 + x] - 1) & 255;
+          m[0xE000 + x] = (m[0xE000 + x] - 1) & 255;
+        }
+      }
+      if (m[0xE71E + x] === 0) {                               // $E221, no slide running
+        y = (m[0xE592 + x] << 1) & 255;
+        let d = m[0xE47A + y] - m[0xE478 + y], b = d < 0 ? 1 : 0;
+        m[0x41] = d & 255;
+        a = (m[0xE47B + y] - m[0xE479 + y] - b) & 255;         // the step down to the note below
+        for (;;) {
+          m[0xE68C] = (m[0xE68C] - 1) & 255;
+          if (m[0xE68C] & 0x80) break;
+          const c = a & 1; a >>= 1;
+          m[0x41] = (m[0x41] >> 1) | (c << 7);
+        }
+        m[0x40] = a;
+        m[0x42] = m[0xE47A + y]; m[0x43] = m[0xE47B + y];
+        for (let n = m[0xE003 + x] >> 1; ;) {                  // down by half the width
+          n = (n - 1) & 255;
+          if (n & 0x80) break;
+          d = m[0x42] - m[0x41]; b = d < 0 ? 1 : 0;
+          m[0x42] = d & 255; m[0x43] = (m[0x43] - m[0x40] - b) & 255;
+        }
+        if (m[0xE81C + x] >= 4) {                              // up by the position
+          for (let n = m[0xE000 + x]; ;) {
+            n = (n - 1) & 255;
+            if (n & 0x80) break;
+            const s = m[0x42] + m[0x41];
+            m[0x42] = s & 255; m[0x43] = (m[0x43] + m[0x40] + (s >> 8)) & 255;
+          }
+          m[0xE69D + x] = m[0x42]; m[0xE69A + x] = m[0x43];
+        }
+      }
+    }
+    if (m[0xE68D] !== 0) {                                     // $E28B pulse_sweep
+      y = m[0xE698];
+      const bottom = m[0xE9F2 + y] & 0x0F, top = m[0xE9F2 + y] >> 4;
+      let lo, hi;
+      if (m[0xE691 + x] === 0) {
+        const s = m[0xE68D] + m[0xE78E + x];
+        lo = s & 255; hi = (m[0xE7E4 + x] + (s >> 8)) & 0x0F;
+        if (hi === top) m[0xE691 + x]++;
+      } else {
+        const d = m[0xE78E + x] - m[0xE68D];
+        lo = d & 255; hi = (m[0xE7E4 + x] - (d < 0 ? 1 : 0)) & 0x0F;
+        if (hi === bottom) m[0xE691 + x] = (m[0xE691 + x] - 1) & 255;
+      }
+      y = m[0xE53F];
+      m[0xE7E4 + x] = hi; m[0xE5E6 + y] = hi;
+      m[0xE78E + x] = lo; m[0xE5E5 + y] = lo;
+    }
+    a = m[0xE71E + x];                                         // $E2EC note_slide
+    if (a !== 0) {
+      if (a >= 0xBF) {
+        const d = m[0xE69D + x] - m[0xE6FE + x];
+        m[0xE69D + x] = d & 255; m[0xE69A + x] = (m[0xE69A + x] - (a & 0x3F) - (d < 0 ? 1 : 0)) & 255;
+      } else {
+        const s = m[0xE69D + x] + m[0xE6FE + x];
+        m[0xE69D + x] = s & 255; m[0xE69A + x] = (m[0xE69A + x] + (a & 0x3F) + (s >> 8)) & 255;
+      }
+    }
+    y = m[0xE698];                                             // $E326 note_flags
+    const f = m[0xE758];
+    if (!(m[0xE549 + x] & 0x40) && (f & 0x08)) {               // a drum, from its frame table
+      m[0xE5FA] = x;
+      m[0x40] = m[0xE9ED + y]; m[0x41] = m[0xE9EE + y];
+      y = m[0xE86C + x];
+      a = at(0x40, y);
+      if (a & 0x80) {
+        if (a === 0x85) return out(x);                         // the table's end: hold
+        const r = m[0xE53F];
+        m[0xE5E7 + r] = a;
+        y = (y + 1) & 255; m[0xE5E4 + r] = at(0x40, y);
+        m[0xE86C + x] = (y + 1) & 255;
+        return next(x);
+      }
+      m[0xE58F + x] = a;
+      y = (y + 1) & 255;
+      const d = m[0xE69D + x] - at(0x40, y);
+      m[0xE69D + x] = d & 255;
+      y = (y + 1) & 255;
+      m[0xE69A + x] = (m[0xE69A + x] - at(0x40, y) - (d < 0 ? 1 : 0)) & 255;
+      m[0xE86C + x] = (y + 1) & 255;
+      return out(x);
+    }
+    if (f & 0x04) {                                            // a waveform for the first frames
+      if (m[0xE7FC + x] !== 0) { m[0xE7FC + x]--; a = m[0xE9EE + y]; } else a = m[0xE977 + y];
+      m[0xE58F + x] = a;
+    }
+    if (f & 0x10) {                                            // an arpeggio
+      const c = (m[0xE9ED + y] << 1) & 255;
+      m[0xE8E6] = m[0xE8F8 + c]; m[0xE8E7] = m[0xE8F9 + c];
+      a = (m[0xE592 + x] + m[0xE8E5 + m[0xE86F]]) & 255;
+      const n = (a << 1) & 255;
+      m[0xE69D + x] = m[0xE47A + n]; m[0xE69A + x] = m[0xE47B + n];
+      y = m[0xE698];
+    }
+    if (f & 0x20) {                                            // the filter sweep
+      a = (m[0xE869 + x] + m[0xE9F4 + y]) & 255;
+      m[0xE869 + x] = a;
+      w(0x16, a);
+      w(0x17, m[0xE9F3 + y]);
+    }
+    if (f & 0x40) {                                            // a fixed note for the first frames
+      a = -1;
+      if (m[0xE7FC + x] !== 0) { m[0xE7FC + x]--; a = m[0xE9ED + y]; }
+      else if (m[0xE97A + y] === 0) a = m[0xE592 + x];
+      if (a >= 0) {
+        const n = (a << 1) & 255;
+        m[0xE69D + x] = m[0xE47A + n]; m[0xE69A + x] = m[0xE47B + n];
+      }
+    }
+    if (f & 0x80) {                                            // voice 3's noise burst
+      a = m[0xE81E];
+      if (a === 1) {
+        m[0xE5F2] = 0x48; m[0xE5F5] = 0x81;
+        w(0x16, 0x60); w(0x18, 0x24);
+        return next(x);
+      }
+      w(0x18, 0x14);
+      if (a >= 6) m[0xE81E] = 0;
+    }
+    return out(x);
+  }
+  function out(x) {                                            // $E44C note_out
+    const y = m[0xE53F];
+    m[0xE5E7 + y] = m[0xE58F + x] & m[0xE5E0 + x];
+    m[0xE5E4 + y] = m[0xE69A + x];
+    m[0xE5E3 + y] = m[0xE69D + x];
+    return next(x);
+  }
+  function next(x) { m[0xE81C + x] = (m[0xE81C + x] + 1) & 255; }
+
+  // $EE45 effects_play
+  function effects() {
+    m[0xEF9E] = (m[0xEF9E] + 1) & 255;
+    for (let x = 1; x >= 0; x--) {
+      m[0xEF9F] = x;
+      const y = m[0xE53C + x];
+      m[0xEF9D] = y;
+      const cmd = m[0xEFC9 + x];
+      if (cmd & 0x80) continue;                                // idle
+      if (cmd & 0x40) { effectStart(x, y); continue; }
+      m[0xEFC6 + x] = (m[0xEFC6 + x] - 1) & 255;
+      if (m[0xEFC6 + x] & 0x80) {                              // a script step
+        m[0xEFC6 + x] = m[0xEFB2 + x];
+        m[0xEFBC + x] = (m[0xEFBC + x] - 1) & 255;
+        const sc = m[0xEFC4 + x], script = m[0xEFCC + sc] | m[0xEFD4 + sc] << 8;
+        let a;
+        for (;;) {
+          a = m[(script + m[0xEFB8 + x]) & 0xFFFF];
+          if (a === 0xFF) { m[0xEFB8 + x] = 0; continue; }
+          if (!(a & 0x80)) break;
+          m[0xEFA0 + x] = m[0xEFA4 + x]; m[0xEFA2 + x] = m[0xEFA6 + x];
+          m[0xEFB8 + x]++;
+        }
+        m[0xEFB8 + x]++;
+        if (a === 1) {
+          const s = m[0xEFA0 + x] + m[0xEFAC + x];
+          m[0xEFA0 + x] = s & 255; w(y, s);
+          m[0xEFA2 + x] = (m[0xEFA2 + x] + m[0xEFAE + x] + (s >> 8)) & 255; w(y + 1, m[0xEFA2 + x]);
+        } else if (a === 2) {
+          const d = m[0xEFA0 + x] - m[0xEFAC + x];
+          m[0xEFA0 + x] = d & 255; w(y, d);
+          m[0xEFA2 + x] = (m[0xEFA2 + x] - m[0xEFAE + x] - (d < 0 ? 1 : 0)) & 255; w(y + 1, m[0xEFA2 + x]);
+        }
+        const s = m[0xEFAC + x] + m[0xEFA8 + x];
+        m[0xEFAC + x] = s & 255;
+        m[0xEFAE + x] = (m[0xEFAE + x] + m[0xEFAA + x] + (s >> 8)) & 255;
+      }
+      if (m[0xEFB0 + x] & 0x80) m[0xEFC2 + x] = m[0xEF9E] & 1 ? m[0xEFB4 + x] : m[0xEFBE + x];
+      if (m[0xEFB0 + x] & 0x40) {
+        if (m[0xEFBA + x] !== 0) { m[0xEFBA + x]--; m[0xEFC2 + x] = m[0xEFB6 + x]; }
+        else { m[0xEFB0 + x] &= 0xBF; m[0xEFC2 + x] = m[0xEFBE + x]; }
+      }
+      if (m[0xEFBC + x] === 0) { w(y + 4, 0); m[0xEFC9 + x] = 0xFF; }
+      else w(y + 4, (m[0xEFC0 + x] >> 1) >= m[0xEFBC + x] ? m[0xEFC2 + x] & 0xFE : m[0xEFC2 + x]);
+    }
+    if (m[0xEFC9] & 0x80) for (let r = 0x0D; r >= 0; r--) w(r, m[0xE5E3 + r]);   // voices 1 and 2
+    for (let r = 7; r >= 0; r--) w(0x0E + r, m[0xE5F1 + r]);                   // voice 3, $D415
+  }
+  function effectStart(x, y) {                                 // $EFDC effect_start
+    m[0xEFB8 + x] = 0; m[0xEFC6 + x] = 0;
+    w(y + 4, 0); w(y + 6, 0);
+    const e = m[0xEFC9 + x] & 0x1F;
+    m[0xEFC9 + x] = e;
+    const i = (e << 3) & 255;
+    m[0xEFC8] = i;
+    m[0xEFAC + x] = m[0xF0E8 + i]; m[0xEFAE + x] = m[0xF0E9 + i];
+    m[0xEFA8 + x] = m[0xF11D + i]; m[0xEFAA + x] = m[0xF11E + i];
+    m[0xEFB0 + x] = m[0xF118 + i]; m[0xEFB2 + x] = m[0xF118 + i] & 0x0F;
+    m[0xEFB4 + x] = m[0xF119 + i];
+    m[0xEFB6 + x] = m[0xF11A + i];
+    m[0xEFC4 + x] = m[0xF11B + i] >> 4; m[0xEFBA + x] = m[0xF11B + i] & 0x0F;
+    m[0xEFBC + x] = m[0xF11C + i]; m[0xEFC0 + x] = m[0xF11C + i];
+    m[0xEFBE + x] = m[0xF0EC + i];
+    const n = (m[0xF0EF + i] << 1) & 255;
+    m[0xEFA0 + x] = m[0xEFA4 + x] = m[0xE47A + n];
+    m[0xEFA2 + x] = m[0xEFA6 + x] = m[0xE47B + n];
+    for (let k = 0; k < 7; k++) w(m[0xEF9D] + k, m[0xF0E8 + i + k]);
+    m[0xEFC8] = 0xFF;
+  }
+
+  // $E00F music_play, then $E46D and the effects
+  function play() {
+    if (!fromInit) writes = [];                                // init's writes lead the first frame's
+    fromInit = false;
+    const st = m[0xE699];
+    if (!(st & 0x80) && !(st & 0x40)) {                        // playing
+      let x = m[0xE697];
+      m[0xE696] = (m[0xE696] - 1) & 255;
+      if (m[0xE696] & 0x80) m[0xE696] = 0x70;                  // the nudge: the tempo waits a frame
+      else {
+        m[0xE694] = (m[0xE694] - 1) & 255;
+        if (m[0xE694] & 0x80) m[0xE694] = m[0xE695];
+      }
+      do { voice(x); x = (x - 1) & 255; } while (!(x & 0x80));
+    } else if (!(st & 0x80)) {                                 // $40: back to the start
+      let x = m[0xE697];
+      do {
+        const y = m[0xE53C + x];
+        m[0xE5E7 + y] = 0; m[0xE540 + x] = 0; m[0xE543 + x] = 0; m[0xE546 + x] = 0;
+        m[0xE58F + x] = 0; m[0xE5E9 + y] = 0; m[0xE5B6 + x] = 9;
+        x = (x - 1) & 255;
+      } while (!(x & 0x80));
+      m[0xE699] = 9;
+    } else if (st & 0x40) {                                    // $C0: stop
+      for (let x = m[0xE697]; !(x & 0x80); x = (x - 1) & 255) m[0xE5E7 + m[0xE53C + x]] = 0;
+      m[0xE699] = 0x80;
+    }
+    m[0xE86F] = (m[0xE86F] - 1) & 255;                         // $E46D the arpeggio's step
+    if (m[0xE86F] & 0x80) m[0xE86F] = 2;
+    effects();
+  }
+
+  // The player's tunes: the music, and the effects in the pairs the game starts them in
+  const EFFECTS = [null, [0x40, 0x41], [0x42, 0x43], [0x44, 0xFF], [0x45, 0xFF]];
+  let tune = 0;
+  return {
+    sid,
+    get writes() { return writes; },
+    init(t) {
+      tune = t;
+      writes = []; fromInit = true;
+      if (t === 0) { w(0x18, 0x14); m[0xE699] = 0x40; return; }   // $EE31 music_start
+      m[0xE699] = 0xC0;                                            // $EE3C music_stop
+      w(0x18, 0x14);              // the volume music_start set at the game's first reset
+      m[0xEFC9] = EFFECTS[t][0]; m[0xEFCA] = EFFECTS[t][1];
+    },
+    stop() { m[0xE699] = 0xC0; m[0xEFC9] = m[0xEFCA] = 0xFF; },
+    play,
+    playing() {
+      if (tune === 0) return !(m[0xE699] & 0x80);
+      return !(m[0xEFC9] & 0x80) || !(m[0xEFCA] & 0x80);
+    },
+    voice(x) {
+      const track = m[0xEA65 + x] | m[0xEA68 + x] << 8, e = m[0xE540 + x];
+      const p = m[(track + e) & 0xFFFF];
+      return {
+        instrument: m[0xE5B6 + x], note: m[0xE592 + x], transpose: m[0xE8B4 + x],
+        pattern: p < 0x80 ? p : null, entry: e, flags: m[0xE97C + ((m[0xE5B6 + x] << 3) & 255)],
+        effect: x < 2 && !(m[0xEFC9 + x] & 0x80) ? m[0xEFC9 + x] & 0x1F : null,
+      };
+    },
+    mem: m,
+  };
+}
+// createDriver ends
+</script>
+<script>
+(function () {
+  'use strict';
+  const B = (a, n) => { for (const k in IK) { const s = +k, h = IK[k]; if (a >= s && a + n <= s + h.length / 2) { const r = []; for (let i = 0; i < n; i++) r.push(parseInt(h.substr((a - s + i) * 2, 2), 16)); return r; } } throw new Error('no bytes at ' + a); };
+  const hx = (v, w = 2) => '$' + v.toString(16).toUpperCase().padStart(w, '0');
+  const $ = (id) => document.getElementById(id);
+
+  // ---------------------------------------------------------------- the shouts
+  const SAMP0 = 0xBF00, SAMP = B(SAMP0, 0xD000 - SAMP0);
+  const END = B(0x0ECB, 6), START = B(0x0ED1, 12), NIB = B(0x0EDD, 6), BASE = B(0x0F4A, 2)[1];
+  const CLOCK = 985248;                                      // PAL
+  // the levels sample_play ($0934) writes to $D418: from the byte after the start, until the
+  // pointer reaches the end page
+  function levels(n) {
+    const from = START[2 * n] | START[2 * n + 1] << 8, to = END[n] << 8, out = [];
+    for (let a = from + 1; a < to; a++) { const v = SAMP[a - SAMP0]; out.push(NIB[n] & 0x80 ? v >> 4 : v & 15); }
+    return out;
+  }
+  const SHOUT_POSES = B(0x0E1F, 17), SH_ATT = B(0x0E31, 17), SH_SCORE = B(0x0E42, 17), SH_DELAY = B(0x0E53, 17), SH_SECOND = B(0x0E64, 17), SH_DOWN = B(0x0E75, 17);
+  const row = $('ik-shouts'), rate = $('ik-rate'), rateOut = $('ik-rate-o'), rnd = $('ik-random'), sout = $('ik-sout'), wave = $('ik-wave');
+  let ctx = null, src = null, current = 0;
+  const latch = () => BASE + +rate.value;
+  function showRate() { const l = latch(); rateOut.textContent = `${hx(l)}: a sample every ${l + 1} cycles, ${Math.round(CLOCK / (l + 1)).toLocaleString('en-GB')} Hz`; }
+  function draw(n) {
+    const lv = levels(n), g = wave.getContext('2d'), w = wave.width, h = wave.height;
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent') || '#1f5fa8';
+    for (let x = 0; x < w; x++) {
+      const a = Math.floor(x * lv.length / w), b = Math.max(a + 1, Math.floor((x + 1) * lv.length / w));
+      let lo = 15, hi = 0; for (let i = a; i < b && i < lv.length; i++) { lo = Math.min(lo, lv[i]); hi = Math.max(hi, lv[i]); }
+      g.fillRect(x, h - 4 - (hi / 15) * (h - 8), 1, Math.max(1, ((hi - lo) / 15) * (h - 8)));
+    }
+  }
+  function play(n) {
+    current = n;
+    if (rnd.getAttribute('aria-pressed') === 'true') rate.value = Math.floor(Math.random() * 32);
+    showRate();
+    const lv = levels(n), hz = CLOCK / (latch() + 1);
+    const from = START[2 * n] | START[2 * n + 1] << 8;
+    sout.innerHTML = `Shout ${n}: the ${NIB[n] & 0x80 ? 'high' : 'low'} nibbles of <code>${hx(from + 1, 4)}</code>-<code>${hx((END[n] << 8) - 1, 4)}</code>, ${lv.length.toLocaleString('en-GB')} samples, ${(lv.length / hz).toFixed(2)} seconds at ${Math.round(hz).toLocaleString('en-GB')} Hz.`;
+    row.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', String(i === n)));
+    draw(n);
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (src) { try { src.stop(); } catch (e) { /* already stopped */ } }
+      const len = Math.ceil(lv.length / hz * ctx.sampleRate), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      const mean = lv.reduce((s, v) => s + v, 0) / lv.length;
+      for (let i = 0; i < len; i++) d[i] = (lv[Math.min(lv.length - 1, Math.floor(i * hz / ctx.sampleRate))] - mean) / 15 * 0.8;
+      src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination); src.start();
+    } catch (e) { sout.insertAdjacentText('beforeend', ' (This browser would not play it.)'); }
+  }
+  for (let n = 0; n < 6; n++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'ik-btn'; b.textContent = 'Shout ' + n; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => play(n);
+    row.appendChild(b);
+  }
+  rate.oninput = () => { rnd.setAttribute('aria-pressed', 'false'); showRate(); };
+  rnd.onclick = () => rnd.setAttribute('aria-pressed', String(rnd.getAttribute('aria-pressed') !== 'true'));
+  showRate(); draw(0);
+  sout.textContent = 'Press a shout to hear it.';
+  const pl = (p) => `<a href="fighters.html#pose-${p.toString(16).toUpperCase().padStart(2, '0')}" class="ik-mono">${hx(p)}</a>`;
+  const sh = (v) => v === 0xFF ? '–' : 'shout ' + v;
+  $('ik-shtbl').innerHTML = '<tr><th>Pose</th><th>Striking</th><th>Scoring</th><th>Knocked down</th></tr>' +
+    SHOUT_POSES.map((p, y) => `<tr><td>${pl(p)}</td><td>${sh(SH_ATT[y])}</td><td>${sh(SH_SCORE[y])}${SH_DELAY[y] ? ', then shout ' + SH_SECOND[y] + ' after ' + SH_DELAY[y] + ' frames' : ''}</td><td>${sh(SH_DOWN[y])}</td></tr>`).join('');
+
+  // ---------------------------------------------------------------- the music
+  const S = window.C64Sid, root = $('ik-sid');
+  if (!S) { root.textContent = 'The player needs the site’s shared sound script, ../../lib/sid.js: open this page from the built site.'; return; }
+  const FLAGS = [[8, 'drum'], [16, 'arpeggio'], [32, 'filter sweep'], [4, 'first frames'], [128, 'noise burst']];
+  S.mount(root, {
+    driver: createDriver, data: IK_MUSIC, filter: '6581',
+    tunes: ['IK+', 'Ball bounces', 'Ball deflected, game starts', 'Effect 4 (unused)', 'Effect 5 (unused)'],
+    rows: [
+      { k: 'Instrument', f: (v) => v.instrument == null ? null : v.instrument + (FLAGS.filter(([b]) => v.flags & b).map(([, n]) => ', ' + n).join('')) },
+      { k: 'Pattern', f: (v) => v.pattern == null ? '-' : hx(v.pattern) + ' (entry ' + v.entry + ')' },
+      { k: 'Effect', f: (v) => v.effect == null ? '-' : 'effect ' + v.effect },
+    ],
+  });
+})();
+</script>

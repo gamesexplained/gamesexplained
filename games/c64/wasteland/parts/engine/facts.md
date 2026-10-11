@@ -56,9 +56,10 @@ The resident engine, the code every program of the game calls. It holds two tabl
   - Any other byte is rolled: the open 2d6 + the byte against 15 + 5A. Dice below 5 fail, and the dice are added to experience before the comparison (`$0D18-$0D4B`).
 - npc_obey_check `$0D61` takes A = the asker's value and Y = an offset in the selected character, its refusal byte.
   - A refusal byte of `$FF` always refuses.
-  - Otherwise the target is 15 + 5 × the byte, and the roll is A + the open 2d6.
+  - Otherwise the byte goes to X (`$0D6D`) for target_15_plus_5x, but num2_clear (`$0D6E`, `$0795`: LDA #0, TAX) clears X first, so the target is 15 whatever the byte, and the roll is A + the open 2d6. skill_check and attribute_check load X after num2_clear (`$0C32`, `$0D1E`). *Live*: 256 calls through `$021F` with a byte of 10 and A = 20 all left `$71/$72` = 15 (the game's facts, "Live tests").
   - Dice below 5 refuse and raise the byte by one (char_byte_increment `$0DB4`, which leaves exactly 10 alone). A roll below the target refuses and leaves the byte.
   - A pass lowers the byte by one with a chance of 1 in 20 (char_byte_decrement `$0DAA`, never below 0).
+  - Nothing else reads the four refusal bytes (`+$2B-+$2E`): every LDY of those offsets in the engine and the game leads to this check or to the hire's raising and lowering (game `$A4A4` and game `$A4E0`), so only a byte of `$FF` changes a result.
 - weapon_skill_bonus `$0DC0` is 4 × the level of the skill named by the weapon's item record byte 5. With no weapon it uses item 0, Fists, whose byte 5 names skill 5, Pugilism (`$0DC3`).
 - unjam_weapon `$14FD` gives no experience: it rolls without add_experience (`$1520-$1539`).
 

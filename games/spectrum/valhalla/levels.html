@@ -1,0 +1,87 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/valhalla-page.css">
+<style>
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The 81 places, how each picture is drawn from its place's number, the way to the six quest objects, and what help leaves out.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The map</p>
+  <h2 class="t">The world, place by place</h2>
+  <p class="lede">Hell fills the five southern rows of a nine by nine grid. North of it, the five western columns are Midgard and the four eastern ones Asgard. Each place is one row of eighteen bytes.</p>
+  <div class="plate">
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous place">‹</button><select id="vh-loc" aria-label="Place"></select><button class="step" data-d="1" aria-label="Next place">›</button></div>
+    <div class="vh-row">
+      <canvas id="vh-map" class="vh-map" width="396" height="396" aria-label="The 81 places, coloured by terrain"></canvas>
+      <div class="vh-col">
+        <canvas id="vh-pic" class="vh-pic" width="512" height="256" aria-label="The picture of the chosen place"></canvas>
+        <div id="vh-desc" class="vh-desc"></div>
+        <table class="vh-kv" id="vh-info"></table>
+      </div>
+    </div>
+    <p class="cap vh-need">The map and the panel read the map table, <code>$BF37</code>, and the special places, <code>$C644</code>, from the listing as the tape loads them. Colours are the terrain; a thick border is a special place; a solid line is an exit that is always open and a dashed one an exit of a special place, which needs something carried or someone present. The number in a corner is where the place's ringway leads. <b>The pictures are the game's own drawing</b>: the commands each place sends run through the graphics code at <code>$F7AF</code> in a Z80 simulator, and 13 of them, read from the emulator's screen, were the same to the byte.</p>
+  </div>
+  <p>A row of the map holds the terrain, the exits as eight bits from north round to north-west, the place a ringway leads to, the crowns lying there, six pairs of an object and its column on the screen, and a scene feature for the picture. An object in a chest or cupboard has the column 255. A place holds six objects at most, which comes back in the bugs below.</p>
+  <p>Thirty-six places are special, with 128 plus a number in place of the terrain. The number picks a row of nine bytes in <code>s$</code>: the real terrain, the place's name, the object or character it needs and the one it forbids, the extra exits those two govern, and up to four more scene features. The description the game prints is put together from these (line 3902): a name only for a special place, "hall" after a name ending in an apostrophe, the terrain, and the world, which is Hell for places 1 to 45, Asgard for the four eastern columns above that, and Midgard for the rest.</p>
+</section>
+
+<section>
+  <p class="fig">02 · The pictures</p>
+  <h2 class="t">Every picture comes from its place's number</h2>
+  <p class="lede">No picture is stored. The game draws each one as you arrive, from the terrain here, the terrain one step north and random numbers seeded with the place's number, so a place looks the same every time.</p>
+  <div class="plate">
+    <div class="vh-row">
+      <div class="vh-col"><ol id="vh-cmds" class="vh-cmds" start="1"></ol></div>
+      <div class="vh-side"><h3 id="vh-cmdh">The commands</h3><p class="vh-note" id="vh-cmdn" style="margin:0"></p></div>
+    </div>
+    <p class="cap vh-need">The graphics commands lines 7010 to 7039 send for the place chosen above, in order, worked out by a port of those lines with the ROM's random number generator. <code>test_pictures.py</code> draws all 81 pictures from these commands with the game's code in SkoolKit's simulator and holds the sheet the map shows against them.</p>
+  </div>
+  <p>The BASIC builds each command as a string and hands it to one machine-code entry, <code>$F7AF</code>, with <code>LET x$=STR$ USR gi</code>. Command 1 draws the place: the terrain picks one of eight drawers from the table at <code>$E352</code> (icy waste, marsh, plain, lakes, forest, mountains, cave and hall), and the terrain one step north picks the view on the horizon from <code>$E362</code>. Before drawing, <code>$DE35</code> seeds the machine code's own 32-bit shift register at <code>$DAB0</code> from the place's number, so the ridges, dots and towers it scatters fall the same way on every visit. Valheim left and entered again gave a picture the same to the byte.</p>
+  <p>The windows are chosen in BASIC. Line 7010 runs <code>RANDOMIZE h*100*5</code>, which sets the ROM's generator to the place's number times 500, and the following lines draw <code>RND</code> to choose which windows each castle gets and where a hall's tall windows go. Line 7010 also sends command 19 first for every place in Hell and for places 56, 57, 65, 66 and 81, which turns their buildings red on black.</p>
+</section>
+
+<section>
+  <p class="fig">03 · Quests</p>
+  <h2 class="t">Secret: Felstrong can be the first quest</h2>
+  <p class="lede">The manual puts Felstrong fifth. On the map's own tables, nothing stands between the start and its cave but a ring.</p>
+  <div class="plate">
+    <div class="pick"><button class="step" data-d="-1" aria-label="Previous step">‹</button><select id="vh-route" aria-label="Step"></select><button class="step" data-d="1" aria-label="Next step">›</button></div>
+    <div class="vh-row">
+      <canvas id="vh-rmap" class="vh-map" width="396" height="396" aria-label="The route on the map"></canvas>
+      <div class="vh-col"><canvas id="vh-rpic" class="vh-pic" width="512" height="256" aria-label="The picture at this step"></canvas><div id="vh-rdesc" class="vh-desc"></div></div>
+    </div>
+    <p class="cap vh-need">The route walked in the emulator from the start, with a ring poked into your pack: two steps west, a ringway, one step west, a ringway, north-east, north into Rankle's hall and its ringway to the cave. The game answered "You are not strong enough to open the cupboard."</p>
+  </div>
+  <table class="vh-tbl" id="vh-quests" style="margin-top:20px;width:auto"></table>
+  <p>The table is a search of the map and the special places, which takes every condition but a quest object as met: the right ordinary object or character at hand, a ring for every ringway and someone strong enough for every lock. Each quest needs only the ones listed beside it. A chest or cupboard opens with the key and <code>(35-sp)*6</code> strength, sp being the special place's number (line 1955). That is 174 for Ofnir, which you can manage at your full 175, and 180 to 204 for the other five, so for those you must tell someone stronger, with a key of its own, to open it.</p>
+</section>
+
+<section>
+  <p class="fig">04 · Help</p>
+  <h2 class="t">Bug: help never says what is forbidden</h2>
+  <p class="lede">At a special place, <code>help</code> is meant to say what the extra exits need and what they forbid. What they forbid never reaches the screen.</p>
+  <div class="plate"><div class="vh-scroll"><table class="vh-tbl" id="vh-help"></table></div>
+  <p class="cap vh-need">Every special place from <code>s$</code>. An extra exit is open when what it needs is carried or present and what it forbids is neither (line 3860).</p></div>
+  <p>Line 6555 skips the extra exits altogether where a place both needs and forbids something. Where it only forbids, line 6563 starts the sentence again with "You can go ", over the forbidding text. Both were seen in play with the two bytes set by hand. Sixteen places forbid something, and help names none of them.</p>
+</section>
+
+<section>
+  <p class="fig">05 · Chests</p>
+  <h2 class="t">Bug: a chest at a full place stops the game</h2>
+  <p class="lede">Putting an ordinary object into a chest or cupboard where all six places are taken stops the program with "3 Subscript wrong, 5310:5".</p>
+  <p>An object put down where there is no room brings Klepto, who takes it to a neighbouring place: "Klepto steals the rock." Line 5309 works out where Klepto should stand from the column of the object, and an object in a container has the column 255, so the subscript of the screen's column array is out of range. Both were seen in play.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/spectrum.js"></script>
+<script src="reference/valhalla-page.js"></script>

@@ -20,10 +20,10 @@ it: counts are compared with the test program's own pass counter, not with
 a second of the host's clock. The host's speed is measured apart and
 reported on its own line, a NOTE when it is slow; a NOTE fails nothing.
 
-Last, it looks for the server's quirks that kit/c64/vice.py absorbs. They
-are not checks and nothing is failed for them: each line says whether this
-build has the quirk, so that a release that loses one shows it. The
-helpers work either way.
+Last, it looks for the server's quirks that kit/c64/vice.py and
+kit/c64/codemap.py absorb. They are not checks and nothing is failed for
+them: each line says whether this build has the quirk, so that a release
+that loses one shows it. The helpers work either way.
 
 The test program runs one pass per frame, synchronised on raster line $F8:
 
@@ -40,12 +40,15 @@ The test program runs one pass per frame, synchronised on raster line $F8:
 
 --keep leaves the test's snapshots in the emulator's snapshot folder.
 """
-import json, os, subprocess, sys, time, traceback
+import json, os, socket, subprocess, sys, time, traceback
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 from vice import URL, connect, call, read_mem, poke, addr, clear_checkpoints, pause  # noqa: E402
+from ports import resolve_ports  # noqa: E402
+
+MONITOR_PORT = resolve_ports()["vice"] + 1   # as in the c64 launcher, whose module name the kit/scripts one shares
 
 SNAPDIR = os.path.join(ROOT, "tools", "vice-home", "config", "vice", "mcp_snapshots")
 OUT = os.path.join(ROOT, "tools", "logs", "check-emulator")
@@ -237,6 +240,18 @@ def diff(a, b):
 def tools(*args):
     return subprocess.run([sys.executable, os.path.join(ROOT, "kit", "scripts", "tools.py"), "--platform", "c64", *args],
                           capture_output=True, text=True).stdout.strip()
+
+
+def emulator_status(output):
+    """Select the C64 launcher line; browser status may precede it."""
+    matches = [line.strip() for line in output.splitlines() if line.lstrip().startswith("emulator ")]
+    if len(matches) != 1:
+        raise ValueError("expected one C64 emulator status line")
+    return matches[0]
+
+
+def emulator_up(output):
+    return emulator_status(output).split()[2] == "up"
 
 
 def phase(title):
@@ -591,11 +606,46 @@ def p_transport(rpc):
     except Exception as e:
         err = repr(e)
     dt = time.time() - t0
-    check("unpaced-calls", err is None and "up" in tools("status").splitlines()[0] and advancing(rpc),
+    check("unpaced-calls", err is None and emulator_up(tools("status")) and advancing(rpc),
           "1600 calls with no pacing leave the server up and the machine running", f"{calls / dt:.0f} a second {err or ''}")
 
 
-@phase("server quirks that kit/c64/vice.py absorbs (not checks)")
+def monitor_reply(s, secs):
+    """What VICE's monitor sends on s within secs seconds."""
+    data, t0 = b"", time.time()
+    s.settimeout(0.1)
+    while time.time() - t0 < secs:
+        try:
+            data += s.recv(65536)
+        except socket.timeout:
+            pass
+    return data
+
+
+def monitor_quirks(rpc):
+    """VICE's remote monitor as codemap.py meets it (#304). Each connection is closed only after
+    VICE has answered it: one it answers after the client has gone wedges the monitor until the
+    emulator restarts."""
+    run(rpc)                                         # tells the monitor to leave, open or not
+    s = socket.create_connection(("127.0.0.1", MONITOR_PORT), timeout=5)
+    s.sendall(b"memmapshow 1 c000 c000\n")
+    got = monitor_reply(s, 1.0)
+    s.close(); time.sleep(0.1)
+    quirk("monitor-run-leaves", got.count(b"(C:$") == 1, "the monitor session after a vice_execution_run leaves after "
+          "its first command, with no prompt after the reply; codemap.py reads until the machine runs again")
+    stopped(rpc)
+    s = socket.create_connection(("127.0.0.1", MONITOR_PORT), timeout=5)
+    s.sendall(b"memmapshow 1 c000 c000\n")
+    got = monitor_reply(s, 1.0)
+    run(rpc)
+    monitor_reply(s, 1.0)                            # answered now, so the close cannot wedge it
+    s.close(); time.sleep(0.1)
+    quirk("monitor-paused", b"(C:$" not in got, "a stopped machine does not answer its monitor; codemap.py runs it "
+          "for the command and stops it again")
+    run(rpc)
+
+
+@phase("server quirks that kit/c64/vice.py and codemap.py absorb (not checks)")
 def p_quirks(rpc):
     r = j(call(rpc, "vice_memory_read", {"address": "$0000", "size": 0x10000, "encoding": "hex"}))
     quirk("read-64k", "data_hex" not in r, "a read of 65,536 bytes is refused; read_mem() reads in pieces")
@@ -613,11 +663,15 @@ def p_quirks(rpc):
     quirk("reset-paused", st == "paused", "a reset with run_after leaves a stopped machine stopped; reset() resumes it", st)
     run(rpc)
     setup(rpc)
+    monitor_quirks(rpc)
 
 
 def main():
+    if "-h" in sys.argv or "--help" in sys.argv:   # it resets the machine: never on a request for usage
+        print(__doc__)
+        return
     os.makedirs(OUT, exist_ok=True)
-    build = tools("status").splitlines()[0]
+    build = emulator_status(tools("status"))
     print(build)
     for name in SNAPS:                               # a snapshot name cannot be reused
         for ext in (".vsf", ".json"):

@@ -1,0 +1,286 @@
+{
+  "title": "Freestyle ramp",
+  "order": 5,
+  "over": "resident",
+  "ranges": [
+    [
+      "$0000",
+      "$F22F"
+    ]
+  ],
+  "video": {
+    "screen": "",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0002",
+        "$00FF",
+        "zero page: the event's input, movement, sound and graphics state ($12-$7F cleared at each entry by $166D) and the loader's work bytes, written at run time"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "quarter-square multiply table, computed at each entry by $1679; no bytes of it are loaded"
+      ],
+      [
+        "$3A7F",
+        "$3D7E",
+        "the end of High Jump's file $0E (its music phrases, successor table and loaded-but-unread tail), left by the High Jump load before this one: file $0D ends at $3A7E and nothing in the event reads, writes or runs these bytes (no reference; untouched in the simulated runs)"
+      ],
+      [
+        "$5F40",
+        "$5FFF",
+        "past the end of the bitmap: load_ramp_picture's copy stops at $5F3F; never written or read by this event"
+      ],
+      [
+        "$63E8",
+        "$63FF",
+        "after the 1000 colour bytes; left in memory by an earlier program, never written or read by this event"
+      ],
+      [
+        "$67E8",
+        "$67F7",
+        "unused gap before the sprite pointers; never written or read by this event"
+      ],
+      [
+        "$6BC0",
+        "$6BFF",
+        "the tail of the shop's records-screen layout left in memory; sprite block $AF is never shown and nothing here reads it"
+      ],
+      [
+        "$6D40",
+        "$6DBF",
+        "High Jump's two height-scale sprites, left by the High Jump run before this load; never written or read by this event"
+      ],
+      [
+        "$6DC0",
+        "$6DFF",
+        "left by an earlier program between the sprite buffers; never written or read by this event"
+      ],
+      [
+        "$C0B0",
+        "$CFFF",
+        "not this program's: $C0B0-$C2AF is the tail of file $12 as High Jump loaded it ($200 higher than here), then a stale copy of the event manager and the power-on pattern; file $12 ends at $C0AF here and nothing in the event reads, writes or runs these bytes"
+      ],
+      [
+        "$E8C9",
+        "$EFFF",
+        "after the music file $13 (which ends at $E8C8): the shop's unpacked colour maps (file $07), byte for byte as in the shop's snapshot; the event never reads them"
+      ],
+      [
+        "$F000",
+        "$F22F",
+        "the tail of a RAM copy of the KERNAL left by the boot and title; unused with the ROM banked out"
+      ],
+      [
+        "$F654",
+        "$F72F",
+        "stale bytes between the loader and the event manager, unchanged since the title; nothing refers to them"
+      ],
+      [
+        "$3363",
+        "$3562",
+        "two 256-byte mirror tables that build_mirror_tables computes at start-up ($3463 described): run-time output, not loaded data"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0400",
+      "$07FF",
+      "tables",
+      "quarter-square multiply table, built at each entry"
+    ],
+    [
+      "$0800",
+      "$081C",
+      "code",
+      "load stub copied from the resident event manager"
+    ],
+    [
+      "$0880",
+      "$0AF3",
+      "code",
+      "entry, loading, set-up, status line, raster interrupt set-up and library routines"
+    ],
+    [
+      "$0AF4",
+      "$1FF7",
+      "code",
+      "raster interrupt, sprites, controls, the phases of a run, physics, tricks, scoring, falls, keys, end of event, unpacker"
+    ],
+    [
+      "$1FF8",
+      "$25E5",
+      "graphics",
+      "the flags and crowd: 69 two-frame animated picture cells"
+    ],
+    [
+      "$25E6",
+      "$2681",
+      "unused",
+      "156 bytes nothing reads"
+    ],
+    [
+      "$2682",
+      "$271D",
+      "variables",
+      "sound driver state, request queue and call stacks"
+    ],
+    [
+      "$271E",
+      "$2E67",
+      "sound",
+      "sound driver, its command tables and note table"
+    ],
+    [
+      "$2E68",
+      "$2FA0",
+      "tables",
+      "raster bands, trick classes, pose sequences, phase handlers"
+    ],
+    [
+      "$2FA1",
+      "$31C4",
+      "tables",
+      "the half-pipe as a path: position to screen coordinates"
+    ],
+    [
+      "$31C5",
+      "$3362",
+      "tables",
+      "digits, score sprites, trick scores, variety bonus, colour sets, sound ring"
+    ],
+    [
+      "$3363",
+      "$3562",
+      "tables",
+      "bit-reverse tables for mirroring sprites, built at start-up"
+    ],
+    [
+      "$3563",
+      "$3954",
+      "sound",
+      "sound-effect tables and scripts"
+    ],
+    [
+      "$3955",
+      "$3A7E",
+      "unused",
+      "stale tail of file $0D: old scripts, a copy of music code, High Jump's music"
+    ],
+    [
+      "$3A7F",
+      "$3D7E",
+      "unused",
+      "High Jump's file $0E tail, left in memory"
+    ],
+    [
+      "$4000",
+      "$5F3F",
+      "graphics",
+      "the half-pipe bitmap, unpacked from file $10"
+    ],
+    [
+      "$6000",
+      "$63E7",
+      "graphics",
+      "colour-RAM source for the picture"
+    ],
+    [
+      "$6400",
+      "$67E7",
+      "graphics",
+      "screen matrix: the status line's and the picture's colours"
+    ],
+    [
+      "$67F8",
+      "$67FF",
+      "variables",
+      "sprite pointers"
+    ],
+    [
+      "$6800",
+      "$69FF",
+      "text",
+      "64-glyph font (file $0F), drawn into the bitmap"
+    ],
+    [
+      "$6A00",
+      "$6D3F",
+      "graphics",
+      "double-buffered skater sprites built each frame, score pop-up sprites"
+    ],
+    [
+      "$6E00",
+      "$8083",
+      "tables",
+      "158 skater poses, five sprites each (file $11)"
+    ],
+    [
+      "$8084",
+      "$C0AF",
+      "graphics",
+      "477 skater sprite shapes (file $12)"
+    ],
+    [
+      "$C0B0",
+      "$CFFF",
+      "unused",
+      "High Jump's file $12 tail, a stale event manager, power-on pattern"
+    ],
+    [
+      "$E000",
+      "$E8C8",
+      "sound",
+      "the Freestyle music (file $13): phrase table, drum and voice scripts, phrase code, note streams"
+    ],
+    [
+      "$E8C9",
+      "$F22F",
+      "unused",
+      "the shop's colour maps, then a KERNAL copy's tail"
+    ],
+    [
+      "$F230",
+      "$F653",
+      "code",
+      "resident disk loader"
+    ],
+    [
+      "$F654",
+      "$F72F",
+      "unused",
+      "stale bytes"
+    ],
+    [
+      "$F730",
+      "$FCD9",
+      "code",
+      "resident event manager: load stub, side check, practice menu, results"
+    ],
+    [
+      "$FCDA",
+      "$FE12",
+      "variables",
+      "skater roster, scores and the event interface block"
+    ],
+    [
+      "$FE13",
+      "$FFF9",
+      "code",
+      "end of event: practice again, next skater, results"
+    ],
+    [
+      "$FFFA",
+      "$FFFF",
+      "tables",
+      "interrupt vectors"
+    ]
+  ]
+}

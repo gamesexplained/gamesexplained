@@ -1,13 +1,13 @@
 # Paris: facts
 
-File 2 of the copy studied. Every fact names the routine or table it
+File B of Domark's disk. Every fact names the routine or table it
 comes from, in this part's listing.
 
 ## Memory
 
 | Range | What |
 |---|---|
-| `$0800`-`$0FFF` | not the game's: an earlier crack's BASIC line (`SYS 2067`, "MAGIC") and depacker, which ends by jumping to `$43B0`, and the tail of its packed data; the game reuses `$0D09`-`$0E36` as the 3D view's buffer |
+| `$0800`-`$0FFF` | not the game's: the depacker the file starts with at `$0801`, which ends by jumping to `$43B0`, and the tail of its packed data; the game reuses `$0D09`-`$0E36` as the 3D view's buffer |
 | `$1000`-`$1FA2` | `play_speech` and three speech samples, at `$1090`, `$1225` and `$190A`, each opening with its length |
 | `$2000`-`$2BFF` | sprites: the car in eight headings (`$80`-`$87`), the police car (`$88`-`$8F`), May Day's parachute (`$90`-`$97`), the steering-wheel halves (`$A0`-`$A3`), the bullet (`$AC`), a shot police car blinking (`$AD`, `$AE`) |
 | `$3000`-`$37FF` | the character set of the cockpit and the text |
@@ -22,15 +22,20 @@ comes from, in this part's listing.
 | `$8334`-`$83FF` | start values for the variables `$0334`-`$03FF` |
 | `$8B28`-`$92F7` | the cockpit picture: 1000 screen codes, then 1000 colours |
 | `$92F8`-`$CFFF` | the town map, 124 rows of 126 cells |
-| `$E000`-`$FFFF` | the tune's notes, in the RAM under the KERNAL (the same bytes as the mine's) |
+| `$E000`-`$FBE6` | the tune's notes, in the RAM under the KERNAL (the same bytes as the mine's) |
 
 ## Starting and restarting
 
-- `part_entry` (`$43B0`) points the BRK and NMI vectors at itself, so RESTORE
-  brings back the instruction page, and shows it (`title_page`, `$4F30`).
-  Up and down on the stick choose the sound: `$02E0` is 1 for the tune
-  only, 2 for effects only, 3 for both (the start). Bit 0 turns on the
-  music, bit 1 the effects and the locator's beep.
+- `part_entry` (`$43B0`) points the BRK and NMI vectors at
+  `restart_to_menu` (`$43D0`), so RESTORE brings back the instruction
+  page, and shows it (`title_page`, `$4F30`). Up and down on the stick
+  choose the sound: `$02E0` is 1 for the tune only, 2 for effects only, 3
+  for both (the start). Bit 0 turns on the music, bit 1 the effects.
+- The instruction page is silent: `title_page` sets `irq_lock` (`$02FF`) to
+  `$98`, turns the volume off and switches off CIA 1's interrupts
+  (`$DC0D` = `$7F`), so no interrupt runs while it shows. *Live*, 8
+  October 2026: no music played on the page. The success telex sets the
+  same lock (`mission_complete`, `$5800`).
 - Fire starts the game with `JMP $FCE2`, the KERNAL's own reset (`$4FBB`).
   The reset finds the cartridge signature "CBM80" at `$8004` and jumps
   through `$8000` to `game_start` (`$5A00`), as it would into a cartridge.
@@ -61,23 +66,32 @@ comes from, in this part's listing.
   bounces back, the delay grows by 3, damage by 1, and `$0346` locks the
   stick until the car next moves (`scroll_map` clears it at `$5CB2`). `$0346`
   also starts at 1 at every start (its template byte `$8346`).
-- Damage (`$03A1`) runs from 0 to 39; at 40 the chase is lost (`add_damage`,
-  `$49A0`).
+- Damage (`$03A1`) counts crashes and roadblocks together. A crash that
+  takes it to 40 loses the chase (`car_crash`, `$51A2`, `$0313` = `$27`); a
+  roadblock loses it only at 47 (`add_damage`, `$49A0`).
 
 ## May Day
 
 - She is object 0, sprite 3. She starts at (`$01FA`, `$01FA`) and circles
   outward until her radius reaches a limit, then heads for one of eight
   landing points, chosen with the SID's noise (`$4F00`, tables
-  `$4FC0`-`$4FE7`, `mayday_update` at `$5200`).
+  `$4FC0`-`$4FE7`, `mayday_update` at `$5200`). The points' X values are
+  64, 536 and 1000; their Y values are 32 for the top three, 464 for the
+  two at the sides and 657 for the bottom three (`$4FD0`, `$4FD8`).
+- The map has seven small ovals near the edges. Five lie one cell below
+  the top and side points; the two near the bottom edge lie about 35
+  cells below the bottom points, and no oval marks the bottom middle
+  point. Read from the map; why they do not match is not known.
 - The altimeter starts at 900 (drawn in the cockpit picture) and drops by
-  one every 20 of her steps (`altimeter_tick`, `$5315`). Below 060 a catch
+  one every 21 of her steps (`altimeter_tick`, `$5315`). Below 060 a catch
   is possible (`$02E1`); at 000 the chase is lost (`$0313` = `$40`).
 - A catch is the car touching her sprite while `$02E1` is set
   (`$5142`-`$514F`, `$0313` = `$80`).
-- The locator beeps at an interval of (|dx| + |dy|) / 40 to her position
-  (`mayday_distance`, `$4850`), flashing the lamp at colour RAM `$D803`
-  (`locator_beep`, `$4A50`).
+- The locator never works. `locator_beep` (`$4A50`) would flash the lamp
+  at colour RAM `$D803` and beep at an interval of (|dx| + |dy|) / 16 + 1
+  (`mayday_distance`, `$4850`), but its only call is cut off by an `RTS`
+  at `$51E9`, the end of `irq_sound`. *Live*, 8 October 2026: no call to
+  it in 30 seconds of a chase with sound option 3.
 
 ## Police and roadblocks
 
@@ -92,6 +106,10 @@ comes from, in this part's listing.
   (`place_roadblock`, `$4900`), and the counter drops to 18. The police
   start moving once the counter is 1 or more. Driving into a roadblock
   clears it and adds 1 damage (`roadblock_check`, `$4940`).
+- A police car that touches the car or another police car is named in
+  `$02FD`, which nothing clears: `police_ai` (`$4C00`) holds it still,
+  resetting its countdown to `$20` on every pass, until a later collision
+  names another set.
 
 ## The screen
 
@@ -107,8 +125,11 @@ comes from, in this part's listing.
 
 - The tune, based on Duran Duran's "A View to a Kill" (heard by the
   contributor), has three voices, noise, sawtooth and pulse, read from
-  under the KERNAL with `$01` = 0 (`$7B73`); its notes step every third and
-  then every second frame (`music_tick`, `$7AAB`).
+  under the KERNAL with `$01` = 0 (`$7B73`); its notes step every third
+  frame, about 16.7 steps a second on PAL (`music_tick`, `$7AAB`): both of
+  its paths compare with 3, so `$7A21` changes nothing.
+- The telex types each letter with a short note, sawtooth and pulse
+  (`type_click`, `$4480`, control `$61`).
 - `play_speech` (`$1000`) plays one bit at a time by switching the SID's
   volume between 0 and 15, with interrupts off.
 
@@ -124,8 +145,8 @@ comes from, in this part's listing.
 - The samples say, as heard by the contributor: `$1225` "Well done, 007",
   `$190A` "You failed, Bond", `$1090` "Damn it".
 - There is no score, no pause and no keyboard control: only `$DC00` is
-  read, and both CIAs' timer A is stopped, so the KERNAL never scans the
-  keys.
+  read, and CIA 1's timer A is stopped (`init_game`, `$4000`), so the
+  KERNAL never scans the keys.
 
 ## Open
 
@@ -133,6 +154,5 @@ comes from, in this part's listing.
   number where the object's index was meant.
 - `$4A50` compares a colour RAM read with `#$04` without masking its top
   four bits, which are undefined on a real C64.
-- `$02FF` is tested (`$502E`, `$5DA0`) and never set.
 - `patch_map` (`$4140`) rewrites two short stretches of the map at every
   start; why is not known.

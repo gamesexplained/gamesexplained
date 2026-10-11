@@ -2,7 +2,7 @@
  "schema": 1,
  "platform": "c64",
  "game": "doctor-who-and-the-mines-of-terror",
- "build": "single packed program file, 29,175 bytes, SHA-256 8d143c7ac59882fe54844aa41d9996679e35bb100932e80f851191a3afb889bb",
+ "build": "original disk DWMT DISK MASTER (.g64, 286,164 bytes, SHA-256 dde0ed338262c0e35ac082b5a4f1e14bb834d29e867435721d4ecb3c53f20115), boot program DWMT loading SCR, THEME, P2, P3 and P1",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -764,7 +764,7 @@
   {
    "start": 65466,
    "end": 65482,
-   "type": "Code"
+   "type": "Byte"
   },
   {
    "start": 65483,
@@ -774,7 +774,7 @@
   {
    "start": 65496,
    "end": 65510,
-   "type": "Code"
+   "type": "Byte"
   },
   {
    "start": 65511,
@@ -1728,12 +1728,6 @@
    "address": 912,
    "name": "obj_backup_1cb0",
    "type": "Field",
-   "kind": "user"
-  },
-  {
-   "address": 991,
-   "name": "loader_leftover_03df",
-   "type": "Jump",
    "kind": "user"
   },
   {
@@ -12742,27 +12736,9 @@
   },
   {
    "address": 65391,
-   "name": "kernal_area_leftovers",
+   "name": "kernal_area_ram",
    "type": "UserDefined",
    "kind": "user"
-  },
-  {
-   "address": 65392,
-   "name": "f_FF70",
-   "type": "Field",
-   "kind": "auto"
-  },
-  {
-   "address": 65410,
-   "name": "loader_leftover_ff82",
-   "type": "UserDefined",
-   "kind": "user"
-  },
-  {
-   "address": 65412,
-   "name": "s_FF84",
-   "type": "Subroutine",
-   "kind": "auto"
   },
   {
    "address": 65466,
@@ -12781,12 +12757,6 @@
    "name": "s_FFD8",
    "type": "Subroutine",
    "kind": "auto"
-  },
-  {
-   "address": 65512,
-   "name": "loader_leftover_ffe8",
-   "type": "UserDefined",
-   "kind": "user"
   },
   {
    "address": 65530,
@@ -13580,11 +13550,6 @@
    "address": 912,
    "type": "line",
    "text": "Runtime copy of $1CB0 (object flags), restored at $93C0."
-  },
-  {
-   "address": 991,
-   "type": "line",
-   "text": "Target of a JMP at $FFE4 in a code block ($FFD8-$FFE6) not reached from the game code read; the bytes here are loader leftovers overwritten by the object-table backup at start-up. Not game code."
   },
   {
    "address": 1005,
@@ -18024,27 +17989,12 @@
   {
    "address": 65391,
    "type": "line",
-   "text": "$FF6F-$FFF9: bytes left by the loader/unpacker (fragments of loader code: LDA #$37/STA $01, JMP ($FFFC)-style code), not called by the game: the JSR $FFBA/$FFD8 at $95AB/$95C5 run with the KERNAL ROM banked in ($01 |= 2 at $958A), so they reach ROM SETLFS/SAVE, not these RAM bytes."
-  },
-  {
-   "address": 65392,
-   "type": "line",
-   "text": "Loader leftover bytes (see $FF6F); not used by the game."
-  },
-  {
-   "address": 65410,
-   "type": "line",
-   "text": "Bytes left in RAM under the KERNAL by the loader or the packing, not the game: a copy of the KERNAL jump table shape (JMP $FDA3, JMP $FD50, ...). The game never runs them: its only KERNAL calls, in the save code at $95AB-$95C5, run with the ROM banked in. The symbol at $FF84 was minted by the tracer decoding these bytes."
-  },
-  {
-   "address": 65412,
-   "type": "line",
-   "text": "Continuation of the loader leftovers from $FF82 up to $FFB9: the tracer mints a symbol here because the leftover bytes at $FF82 decode as a jump to it. Nothing in the game reaches it."
+   "text": "$FF70-$FFF9 hold nothing the game loads: P3 ends at $FF6F, and above it the C64's power-on pattern of $00 and $FF bytes survives to the hand-over. The JSR $FFBA/$FFD8 at $95AB/$95C5 run with the KERNAL ROM banked in ($01 |= 2 at $958A), so they reach ROM SETLFS/SAVE, not these RAM bytes."
   },
   {
    "address": 65466,
    "type": "line",
-   "text": "RAM under KERNAL SETLFS entry: the JSR $FFBA at $95AB reaches ROM (banked in at $958A); these RAM bytes are loader leftovers."
+   "text": "RAM under KERNAL SETLFS entry: the JSR $FFBA at $95AB reaches ROM (banked in at $958A); RAM bytes unused."
   },
   {
    "address": 65469,
@@ -18057,14 +18007,9 @@
    "text": "RAM under KERNAL SAVE entry: JSR $FFD8 at $95C5 reaches ROM; RAM bytes unused."
   },
   {
-   "address": 65512,
-   "type": "line",
-   "text": "Bytes left under the KERNAL by the loader or the packing (they decode as CLD / JSR $033C / JMP $CB00 ...); the game never executes them. The vectors at $FFFA-$FFFF after them are the game's own."
-  },
-  {
    "address": 65530,
    "type": "line",
-   "text": "NMI ($FFFA), RESET ($FFFC), IRQ ($FFFE) vectors in RAM; game_entry writes NMI=$800F and IRQ=$8010. The snapshot holds the loader's values; RESET is not set by the game."
+   "text": "NMI ($FFFA), RESET ($FFFC), IRQ ($FFFE) vectors in RAM; game_entry writes NMI=$800F and IRQ=$8010. At the hand-over they still hold the power-on pattern; RESET is not set by the game."
   }
  ]
 }

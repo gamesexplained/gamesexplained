@@ -182,9 +182,49 @@ Every map part was reached the same way, with the game's own loader:
 `work/mapsnap.py all` does steps 2-4 for every map and writes the extents
 to `work/maps.json`.
 
-Not parts: the sixty portrait entries of T35/L10, pictures unpacked into a
-window buffer at `$CA00` or `$E000` while play goes on, and the game state
-at T35/L7-L0 (`$F400-$FBFF`), read and written as the party saves.
+### The portraits
+
+Seventy-five pictures for the picture window, which are not parts: the
+engine unpacks one into its picture buffer when a fight or a building
+needs it, and the Pictures and text and Maps tabs carry each one's bytes
+(`PORTRAIT_BYTES`). The engine's `load_portrait` (`$2631`)
+unpacks picture A AND `$7F`, entry A of the directory at T35/L10, or for
+a number from `$40` entry A AND `$3F` of T35/L9 (`$2790`), to `$CA00`
+when bit 7 of A is clear and to `$E000` when it is set. Every picture
+was reached the same way, from the masters, with `work/portraits/` holding
+the scripts:
+
+1. Load `work/portraits/play-map.vsf`, a snapshot of its own made from
+   the masters: `master-s1.g64` booted (`boot.py`), Start at the title,
+   and a stop at the top of the game's main loop (`$7E63`). Run it
+   briefly and attach `master-s<side>.g64` for the first side the
+   directory names (`holders.json`).
+2. Set `$0505` = `$FF` (no picture in memory, so the load is not
+   skipped) and `$ED` = `$D7`, the identity byte the masters carry, so
+   that the side check (`$1897`) accepts them; poke `LDA #n` /
+   `JSR $2631` / `JMP $5905` at `$5900` and run from there. *n* has bit
+   7 set for pictures 0-3 and 59, which their callers load to `$E000`
+   (`show_picture_e000`, `$041C`): the doctor, the shop, the library, the
+   Ranger Center and the Grim Reaper.
+3. At the stop on `$5905`, set `$ED` back to 0 and save
+   `work/portraits/entries/portrait-NN.vsf` (`snap.py`).
+4. The extent: the same run with the buffer filled first with `$55` and
+   then with `$AA` (`$CA00-$CFFF`, or `$E000-$EFFF`); every load wrote
+   from the buffer's start with no gap, the same bytes as the run without
+   a fill, and the same on every side that holds the picture.
+5. The packed bytes: `window.py` calls `read_dir_entry` and the engine's
+   sector routines (`$FD0B`, `$FD19`) as `unpack_entry` (`$2759`) does,
+   and saves the sectors of each picture's read window. The page's port
+   of the unpacker turns every window into the bytes the load wrote, and
+   the bytes up to where the next picture on the disk starts give the
+   picture's own length (`windows.json`).
+6. `picture.py` reads the picture the way the engine's picture code
+   does, and the bytes from the buffer's start to the last one it reads
+   are what the pages carry.
+
+Not parts either: the game state at T35/L7-L0 (`$F400-$FBFF`), read and
+written as the party saves, and module 4's three pictures, which it reads from
+side 4's sectors to `$3400` (module-4 `$CC92`).
 
 ## Steady state
 
@@ -238,7 +278,7 @@ Not annotated further than one description per routine, by policy.
 | T35/L14 entry *n* | `$3400` up | map-*nn* |
 | T35/L13 entry *n*, packed | `$DE00` up | map-*nn* |
 | T35/L12 entries 0-8, packed | `$D000-$DD7F` | tiles-0 to tiles-8 |
-| T35/L10 entries, packed | `$CA00` or `$E000` | portraits (data) |
+| T35/L10 and T35/L9 entries, packed | `$CA00` or `$E000` | none: the pages carry the portraits' bytes |
 | T35/L16, T35/L11, 1 each | `$C800-$C8FF` | engine (swapped in and out by the unpacker) |
 | T35/L8, 1 | `$5A00` | the disk's per-map flags and its identity (read only) |
 | T35/L7 to L0, 1 each | `$F400-$FBFF` | the saved game (read and written) |

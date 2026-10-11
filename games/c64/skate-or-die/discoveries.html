@@ -1,0 +1,68 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skate or Die!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/sod-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Electronic Arts</p>
+  <h1>Skate or Die!</h1>
+  <p class="sub">What the code does that the manual does not say: rules that cost a skater height or points, credits nobody sees, code nothing calls, and what each load leaves behind for the next.</p>
+</header>
+<main class="wrap" data-part="highjump">
+<section id="rules">
+  <p class="fig">01 · High Jump's rules</p>
+  <h2 class="t">The last pass is the one that counts</h2>
+  <ul class="odd">
+    <li><b>A better pass is thrown away.</b> The manual says the skater gets up to five passes and should press fire at the top of a jump to record it.<sup class="fn"><a href="about.html#src-1" title="The manual">1</a></sup> It does not say that each pass wipes the one before: the height is cleared each time a new pass begins (<code>$1798</code>), so a skater who reaches 12 feet on the second pass, does not press fire, and manages 9 on the fifth leaves with 9. In an emulator, three passes recorded 47, 75 and 95 eighths of a foot, each cleared as the next began.</li>
+    <li><b>Too high counts as nothing.</b> A height of 150 eighths, 18 feet 9 inches, or more is recorded as zero (<code>$1ABC</code>). The test is there to throw out positions below the coping, where the subtraction wraps round; a jump that high would fall foul of it too. No pass in testing came near.</li>
+    <li><b>The crowd is watching.</b> After every turn on the right wall, half that pass's height sets how often a head in the stands moves (<code>$1AD0</code>, <code>$19AE</code>): the higher the jump, the livelier the crowd.</li>
+    <li><b>Free speed at the end.</b> Once the attempt is over, the pumping routine restarts its burst of speed every frame, with no input at all (<code>$16E3</code>), which carries the skater back to the platform.</li>
+    <li><b>The keyboard is a joystick.</b> One row of keys shares its wires with joystick 1, and the game reads both, so SPACE fires and 1, the left arrow, CTRL and 2 steer (<code>$0D23</code>).</li>
+  </ul>
+</section>
+<section id="music">
+  <p class="fig">02 · The same tune, until it isn't</p>
+  <h2 class="t">The music's dice are loaded from disk</h2>
+  <p>High Jump's music picks its phrases at random, from a byte at <code>$35AB</code> that the random routine shifts each time it is used (<code>$357E</code>). Nothing in High Jump ever sets that byte: its value arrives with the event's code from the disk. So the first time the music plays after the event loads, it always takes the same phrases in the same order. Turning the sound off and on, or practising again without a reload, carries on from wherever the byte has got to, and the order changes. The <a href="music.html">Music and sound</a> tab plays that first order.</p>
+  <p>The Freestyle ramp (<span data-part="ramp"><code>$E13B</code></span>), the Downhill Race (<span data-part="downhill"><code>$7638</code></span>) and the Downhill Jam (<span data-part="jam"><code>$AB3E</code></span>) do the same, each with random bytes of its own that come from the disk and that nothing seeds. Every event's music opens the same way after a fresh load.</p>
+</section>
+<section id="reload">
+  <p class="fig">03 · Practice again</p>
+  <h2 class="t">A jump that erases itself</h2>
+  <p>The event's first instruction, at <code>$0880</code>, jumps to the code that loads its four files from disk. When that is done, the code writes three <code>NOP</code> instructions over the jump (<code>$0893</code>), so that the next time anything jumps to <code>$0880</code> it falls through to the start of a new attempt instead. PRACTICE AGAIN? jumps to <code>$0880</code> (<span data-part="resident"><code>$F93E</code></span>), and a second attempt starts at once, without the drive.</p>
+</section>
+<section id="unused">
+  <p class="fig">04 · Code High Jump never calls</p>
+  <h2 class="t">Left in from development</h2>
+  <ul class="odd">
+    <li><b>Zoom by joystick.</b> A routine moves the scale the game uses to place the ramp on screen up and down with the joystick (<code>$1743</code>). Nothing calls it.</li>
+    <li><b>A height counter in a sprite.</b> Another draws the height into the ruler's sprite (<code>$155C</code>); the event shows the height in the status line instead.</li>
+    <li><b>A pause that cannot resume.</b> The sound driver has routines to stop, pause and resume a sound (<code>$2303</code>, <code>$2319</code>, <code>$2321</code>). The pause overwrites all of a voice's flags, so the resume finds nothing to restart. High Jump uses none of them. The same driver, moved, plays the sound in the Freestyle ramp, both downhill events and the Pool Joust, and none of those uses them either.</li>
+    <li><b>Sounds High Jump never plays.</b> Of the 26 sound numbers loaded with the event, High Jump's code asks for eight and the music asks for one more, its second voice. Of the other 17, three point at a script that ends at once; the rest are full sounds nothing in this event asks for.</li>
+    <li><b>A lucky read.</b> One table lookup (<code>$1166</code>) is indexed by a value that is <code>$FF</code> just after the skater crosses the middle, which reads a byte of the ramp table instead. It works because that byte is not zero.</li>
+  </ul>
+</section>
+<section id="leftovers">
+  <p class="fig">05 · What earlier loads left</p>
+  <h2 class="t">Memory is never cleared between events</h2>
+  <p>Each event loads over the last, and what it does not overwrite stays. In High Jump, the screen for the shop's records is still in memory behind the event's font (<code>$6A00</code>), a copy of the part of the game that runs between events sits after the skater's sprite shapes (<code>$C2B0</code>), and the KERNAL's tape messages, PRESS PLAY ON TAPE among them, survive from a copy of the operating system (<span data-part=""><code>$F0D9</code></span>). The interrupt vector for the RESTORE key still points where an earlier load put it, into the middle of a High Jump routine (<code>$0A3A</code>).</p>
+</section>
+<section id="credits" data-part="jam">
+  <p class="fig">06 · Credits nobody sees</p>
+  <h2 class="t">Two programmers' names in the Jam</h2>
+  <p>The Downhill Jam carries the strings DAVID BUNCH and STEVE LANDRUM (<code>$356B</code>, <code>$3579</code>), followed by BUTTON, and nothing in the program reads them. Both are named on the title screen too, with Michael Kosaka; here the names are only text left in the file.</p>
+</section>
+<section id="others">
+  <p class="fig">07 · Around the rest of the game</p>
+  <h2 class="t">Leftovers in every load</h2>
+  <ul class="odd">
+    <li data-part="title"><b>A flashing border nobody calls.</b> The title has a spare interrupt routine that sets A to 0, steps the border colour and returns (<code>$5151</code>). Nothing points at it.</li>
+    <li data-part="ramp"><b>A debugging border.</b> Each time the Freestyle ramp clamps the skater or the board at either end of the ramp's path, it steps the border colour (<code>$17D7</code>), an aid left in from development.</li>
+    <li data-part="shop"><b>Strings the shop never prints.</b> WHO NEEDS A BOARD (<code>$20A9</code>) and SKATE AGAIN (<code>$20D6</code>) are in the shop's text with nothing to show them, beside the DOS command that names the high-score file, @0:HSCOREINTER (<code>$206F</code>), which nothing reads either.</li>
+    <li data-part="downhill"><b>Water jumps past the table.</b> The Downhill Race pays 5, 20, 40 and 40 for successive jumps over water. The count is reset only by a fall, so a fifth jump without falling reads the bytes after the table (<code>$3ED9</code>), the first of which is not a valid decimal score. Whether the course allows five is open.</li>
+    <li data-part="joust"><b>A computer winner goes unrecorded.</b> When the Pool Joust's computer skater wins, the event manager does not store the result (<span data-part="resident"><code>$FF0D</code></span>).</li>
+  </ul>
+</section>
+</main>

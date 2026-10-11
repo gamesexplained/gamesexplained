@@ -25,7 +25,11 @@ out to run code or keep tables there). Addresses are hex strings like
 A part of a game that is several loads (kit/scripts/parts.py) is exported
 from its own folder, and takes only what lies at the addresses it owns: one
 session on a snapshot that holds a level over its engine exports twice, the
-engine's folder and the level's, and each gets its share.
+engine's folder and the level's, and each gets its share. From a live session
+it also leaves out the automatic symbols that only the code of a part beneath
+refers to, at addresses that part wrote before this one's load replaced them:
+the disassembler mints one wherever that code refers to its own bytes there,
+and the part's own code may never use it.
 """
 import importlib.util, json, os, sys
 
@@ -63,6 +67,11 @@ PLATFORM_DEFAULTS = {
 
 
 def load_by_path(path, name):
+    # a platform module imports its own siblings (kit/c64/r2000.py imports ports.py); appended,
+    # so kit/<platform>/tools.py cannot shadow kit/scripts/tools.py
+    d = os.path.dirname(os.path.abspath(path))
+    if d not in sys.path:
+        sys.path.append(d)
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
@@ -70,8 +79,9 @@ def load_by_path(path, name):
     return mod
 
 
-def platform_fn(plat, fname, modules):
-    """The first function called fname in kit/<plat>/<module>.py, by presence."""
+def platform_fn(plat, fname, modules, needed=True):
+    """The first function called fname in kit/<plat>/<module>.py, by presence; None, when it
+    is not needed, from a platform that has none."""
     for m in modules:
         path = os.path.join(KIT, plat or "", m + ".py")
         if not os.path.exists(path):
@@ -79,6 +89,8 @@ def platform_fn(plat, fname, modules):
         fn = getattr(load_by_path(path, f"{plat}_{m}"), fname, None)
         if fn:
             return fn
+    if not needed:
+        return None
     sys.exit(f"kit/{plat}/ has no module with {fname}() (looked for {', '.join(modules)}.py); "
              f"see kit/PLATFORMS.md")
 
@@ -87,6 +99,25 @@ def read_live(plat, gdir=None):
     """(blocks, symbols, comments) from a live disassembler, per platform. gdir is the game
     or part being read: a client that keeps one disassembler per part finds its own by it."""
     return platform_fn(plat, "read_live", ("r2000", "skoolkit"))(gdir)
+
+
+def cross_references(plat, addresses, gdir=None):
+    """{address: [the addresses that refer to it]} from a live disassembler, or None from a
+    platform whose client cannot say."""
+    fn = platform_fn(plat, "cross_references", ("r2000", "skoolkit"), needed=False)
+    return fn(addresses, gdir) if fn else None
+
+
+def drop_strays(plat, session, syms, game):
+    """(symbols, how many it left out): a live session's symbols without the automatic ones that
+    only the code of a part beneath refers to, where this part's load replaced its bytes
+    (parts.py, strays). coverage.py --live leaves out the same, so its figure is the export's."""
+    from parts import owned, strays
+    away, over = game.get("elsewhere") or [], game.get("replaces") or []
+    ask = [s["address"] for s in syms if s.get("kind") == "auto" and owned(s["address"], away)
+           and not owned(s["address"], over)]
+    gone = strays(syms, away, over, (cross_references(plat, ask, session) if ask else None) or {})
+    return [s for s in syms if not (s.get("kind") == "auto" and s["address"] in gone)], len(gone)
 
 
 def read_file(plat, path, kind="project"):
@@ -160,11 +191,14 @@ def main():
                                            "ctl" if key == "--ctl" else "project")
         source = "regen2000proj" if key == "--project" else "control file"
     else:
-        blocks, syms, comments = read_live(plat, argv[argv.index("--from") + 1] if "--from" in argv else gdir)
+        session = argv[argv.index("--from") + 1] if "--from" in argv else gdir
+        blocks, syms, comments = read_live(plat, session)
         source = "regenerator2000 live" if plat == "c64" else "live"
-    reg, left = regions(game), []
+    reg, left, stray = regions(game), [], 0
     if reg.get("elsewhere"):
         blocks, syms, comments, left = clip(blocks, syms, comments, reg["elsewhere"])
+        if not key:     # only a live session says what refers to what
+            syms, stray = drop_strays(plat, session, syms, game)
     syms.sort(key=lambda s: s["address"])
     comments.sort(key=lambda c: (c["address"], c["type"]))
     out = {"schema": 1, "platform": game.get("platform"), "game": game.get("slug")}
@@ -190,6 +224,9 @@ def main():
         json.dump(out, f, indent=1)
     users = sum(1 for s in syms if s['kind'] == 'user')
     print(f"wrote {path}: {len(blocks)} blocks, {len(syms)} symbols ({users} user), {len(comments)} comments")
+    if stray:
+        print(f"left out {stray} automatic symbol(s) that only the code of a part beneath refers to, at addresses "
+              "this part's load replaced: the session minted them tracing that code")
     if before and (users < before[0] or len(comments) < before[1]):
         # a session restarted from an old project, or a project file never saved, exports less than it holds
         print(f"\nThe symbols.json this replaced had {before[0]} user labels and {before[1]} comments, more than this "

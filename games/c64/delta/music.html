@@ -30,10 +30,29 @@
   <p>The sound effects have their own player at <code>$0406</code>, with 21 effects of two eight-byte records each: pitch scripts, sweeps and alternating waveforms. The main loop's only job besides waiting for the raster is to feed it (<code>sfx_queue_service</code>, <code>$9D60</code>).</p>
   <p>Voices 1 and 2 take turns playing an engine drone, and which drone plays depends on the wave: effect <code>$50</code> while an enemy that cannot be destroyed is on screen, <code>$4B</code> for any other enemy, and otherwise the next of three background effects. With the effects on, the drone gives away when an indestructible enemy is on screen.</p>
   <p>F5 on the title chooses between the effects and the in-game tune; the two never play together in play.</p>
+  <div class="plate">
+    <div id="sfx"></div>
+    <p class="cap"><b>The game's own effect player, run in the page.</b> Each button starts one effect the way the game does: it stops the three voices through <code>sfx_stop</code> at <code>$0403</code>, then writes <code>$40</code> plus the effect's number into the request byte at <code>$0400</code>. Every frame calls <code>sfx_play_frame</code> at <code>$0406</code>. Both run in a small 6502 interpreter over the bytes <code>$0400</code>-<code>$07FF</code>, plus the music's note table at <code>$C226</code>, which the effects read their pitches from. Checked against the same code run in the kit's 6502 simulator: for all 21 effects, every SID register write matched on every frame, and each effect ended on the same frame. An effect lasts from 23 frames (effect 17) to 510 (effects 7 and 8). The drones sit low, under 100 Hz, where laptop and phone speakers barely play.</p>
+  </div>
+  <p>The names on the buttons come from the code that asks for each effect:</p>
+  <div class="scroll"><table>
+    <tr><th>Effect</th><th>Requested by</th></tr>
+    <tr><td>1, 5, 18</td><td>the three background engine drones (<code>$07C2</code>-<code>$07C4</code>)</td></tr>
+    <tr><td>3</td><td>a double laser shot (<code>sfx_double</code>)</td></tr>
+    <tr><td>4</td><td>collecting an extra weapon (<code>sfx_extra</code>)</td></tr>
+    <tr><td>6</td><td>a laser shot (<code>sfx_laser</code>)</td></tr>
+    <tr><td>7</td><td>losing a credit (<code>credit_lose</code>)</td></tr>
+    <tr><td>9</td><td>an extra life (<code>sfx_extra_life</code>)</td></tr>
+    <tr><td>10</td><td>buying in the shop (<code>sfx_buy</code>)</td></tr>
+    <tr><td>11</td><td>the drone while an enemy is on screen (<code>$4B</code>)</td></tr>
+    <tr><td>16</td><td>the drone while an indestructible enemy is on screen (<code>$50</code>)</td></tr>
+    <tr><td>17</td><td>an enemy firing (<code>sfx_enemy_fire</code>)</td></tr>
+  </table></div>
+  <p>When the ship is destroyed, the death pattern plays effects 5, 11 and 18 on voices 1 and 2 (<code>$07C7</code>). For effects 0, 2, 8, 12 to 15, 19 and 20, no instruction that writes their request was found. They play in full from their records, and they may be unused, or asked for through a route the search missed.</p>
 </section>
 
 </main>
-<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
 <script src="reference/delta-page.js"></script>

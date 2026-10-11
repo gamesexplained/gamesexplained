@@ -130,7 +130,10 @@ screen are one part, so count what the player waits for, not what the
 disk holds. A state that differs only in its variables is not a part: a
 title screen and play in one load are one, and step 4 chooses its
 snapshot. The loader, a protection check and a cracker's menu are not
-parts either; they stand in front of the game.
+parts either; they stand in front of the game. Nor is data the game
+fetches into a buffer during play, a portrait for each fight or a tune
+for each room: a widget that shows it carries its bytes in the page
+(`70-minisite`).
 
 1. **Give every part a folder**, in the order they are played, analysed
    or not: `python3 kit/scripts/parts.py add <game dir> <id> --title "..."`
@@ -178,6 +181,13 @@ parts either; they stand in front of the game.
    its file's unpacker in the simulator over memory filled with two
    different values before trusting its snapshot: whatever the unpacker
    does not write is the program before it, not this one.
+6. **A cartridge that switches banks** holds more than memory does, and
+   the game reads some of it where it is. Each bank is then a part as
+   well, made from the cartridge image rather than a snapshot and laid
+   over the part the code runs in, without taking its addresses; a
+   range the game copies into RAM is counted in the part it lands in.
+   The platform's reference says how (on the C64, `c64-reference`,
+   "Bank-switched cartridges").
 
 From here on, every script that takes a game's folder takes a part's in
 its place.

@@ -8,7 +8,7 @@ platform tools. Browser commands need no platform selection.
 
 Usage:
   tools.py [--platform <name>] <command> [args]     e.g. tools.py status
-  tools.py browser                                 installed Firefox, isolated profile
+  tools.py browser                                 installed browser, isolated profile (browser.py documents Chromium selection)
   tools.py stop browser                            stop only this clone's browser
   tools.py --platforms                              list platforms that have a launcher
   tools.py -h                                       this, and every platform's commands

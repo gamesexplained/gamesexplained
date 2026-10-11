@@ -59,12 +59,15 @@ unnoticed.
      a coverage figure that is not what it says, a test that passes
      without testing anything. These are what the skills are for. Edit a
      skill when all three hold:
-     - You can name another game in `games/` where it would have mattered
-       (search their `agent-history.md` and `kit-feedback.md`), or a kind
-       of game you can describe in a phrase: every game whose start-up
-       moves its data, every game with a split screen. If you can name
-       only this one, write it in `kit-feedback.md` under "Candidates":
-       the next run that meets it finds it there and makes the edit.
+     - You can name another game folder in `games/` where it would have
+       mattered: its `agent-history.md` or `kit-feedback.md` shows the
+       same mistake, or its code has the same shape. This game's own
+       folder and its own file in `kit/lessons/` do not count: they show
+       where the lesson was found, not that it happens again. Nor does a
+       kind of game you can describe: rewording this game's case in
+       general nouns makes any lesson sound general. If you can name only
+       this one, write it in `kit-feedback.md` under "Candidates": the
+       next run that meets it finds it there and makes the edit.
      - No rule covers it already. If one does, sharpen that rule or add
        the case to it rather than writing a second.
      - It goes where the moment comes: in the step where it happens,
@@ -83,8 +86,12 @@ unnoticed.
    the kit, what cost the most time, anything about your operating system
    or tool versions that the install notes should say, and your asks for
    a maintainer (step 5). List each change in one line: the file and what
-   it now says. Where the reason is a lesson (step 6), name the lesson's
-   file and stop there: a lesson is written once, in that file. A change
+   it now says. A line for text added to a core skill names the skill's
+   folder and the other game's, as `kit/skills/core/50-coverage` and
+   `games/<platform>/<slug>`: `check_docs.py` fails the branch without
+   it. Where the reason is a lesson (step 6), name the lesson's file as
+   well, never in place of the other game, and stop there: a lesson is
+   written once, in that file. A change
    that teaches nothing of the kind (a script, a path, the site) gives
    its reason here. Under "What cost the most time", one sentence naming
    the single change to the kit that would have saved the most; that
@@ -175,12 +182,14 @@ unnoticed.
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.
 8. **Update `TODO.md`** with what is missing for the next tier.
-9. **If you were the first on your operating system**, the install notes
-   are part of your retrospective: run
+9. **If you were the first on your operating system** (its cell in
+   `site/status.json` was missing or `untested`), the install notes are
+   part of your retrospective: run
    `python3 kit/scripts/tools.py --platform <platform> verify-footprint`, contain or list
-   whatever it finds, and write your platform's section in
-   `kit/INSTALL.md` to the standard of "The footprint principle" there,
-   and your system's cell in `site/status.json`.
+   whatever it finds, and write your system's section in
+   `kit/<platform>/INSTALL.md` to the standard of "The footprint
+   principle" in `kit/INSTALL.md`, and your system's cell in
+   `site/status.json`.
 
 ## Do not
 
@@ -196,4 +205,5 @@ request; the run's entry in `kit/lessons/`, if it taught one;
 `kit-feedback.md` naming the skill text that changed what you did; each
 ask for a maintainer filed as a `kit-ask` issue, or written in full in
 `kit-feedback.md` for the repository to file on merge; `game.json`
-complete; `TODO.md` current.
+complete; `TODO.md` current. Then the pull request (`AGENTS.md`, step 5)
+and the contributor's debrief (`kit/START.md`, step 8).

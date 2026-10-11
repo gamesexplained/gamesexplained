@@ -171,3 +171,105 @@ death screen turned out to share; the skill list's header put on the row
 above the one it prints on; and play_sound's last write said to start
 the note, which for sound 11 it does not, the gate bit of its control
 byte being clear. Each was corrected.
+
+## 7 October 2026, the portraits (claude-opus-5-5[1m])
+
+One session in a hosted Linux container, no subagents but the one that
+checked the comment sample. Aaron asked for a portrait browser beside
+each map on the Levels page and a way to download a picture as an
+animated GIF, with loops of about 15 seconds. The Silver run had only
+five portraits, as packed copies in the Ranger Center's file, so every
+picture the maps name had to come in from the disks.
+
+**The disks.** Aaron's images were not in this container, so the four
+sides came from the C64 Preservation Project's G64s on archive.org, the
+Electronic Arts release marked good. Two checks that they are the same
+build: the five packed copies in the Ranger Center part unpack to the
+same bytes as those pictures loaded from these disks, and the game's
+code in play differs from the game part's listing only in 7 bytes the
+game writes. Rather than make play copies with Copy, the run poked `$ED`
+to `$D7` around the side check (`$1897`) and back to 0 in play.
+
+**Finding the pictures.** `read_dir_entry` (`$2790`) reads entries from
+`$40` up from T35/L9 rather than T35/L10, so the four sides hold 75
+pictures among numbers 0 to 78. Each was loaded on every side that holds
+it by calling `load_portrait` from a stub, three times: once plain and
+twice over buffers filled with `$55` and `$AA`, which give the extent
+the load writes. Pictures 0-3 and 59 went to `$E000`, where their
+callers ask for them. Each became a part, annotated from the picture
+code's own reading of it by a generator in `work/portraits`.
+
+**Where a picture ends.** The unpacker decodes its whole read window,
+so a part's bytes run on past the picture into whatever follows on the
+disk. The first attempt to say what followed compared directory offsets
+across L9 and L10, whose base sectors differ, and named the wrong next
+picture for 14 of them; the sector each picture starts in, found in the
+window, named the right one for all. The generator's assertion that the
+picture's own stream ends one byte past what the code reads failed for
+pictures 39, 60 and 62, which carry bytes nothing reads; they are named
+as such.
+
+**The checks.** A port of the unpacker turned every window's sectors
+into the bytes the load wrote, and `test_portraits.js` runs the engine's
+picture code beside the page's port for 400 steps of each portrait.
+Neither found a difference. An agent that wrote none of the parts'
+comments checked 20 drawn with seed 7581 with a decoder of its own, and
+found all 20 right; two wordings it called loose were changed in the
+generator, and the comments written again from it into each part's
+`symbols.json`, so the disassembler projects in `work/` hold the old
+wording until `symbols_import.py` seeds them again.
+
+**The GIF.** The channels of a picture come back to their start only
+after tens of thousands of steps, so a GIF runs from the base frame to
+the first step from 100 on where the picture looks like the base frame
+again. Every picture has one within 600 steps; most loops are 14.5 to 23
+seconds, the title's 43 and the Grim Reaper's 49.
+
+**Wrong turns.** A background chain that waited on `pgrep -f` for a
+batch to finish matched its own shell and waited forever.
+
+**Out of the Source tab.** After the merge, Aaron asked whether a
+portrait is a part at all: the kit's part is a load the player meets,
+and the pictures are there to be enjoyed, not read as listings. The 75
+parts went, and the How it works and Levels pages each carry the
+pictures' bytes as base64, from the buffer's start to the last byte the
+picture code reads, about 100 KB a page. The bytes were checked against
+the load on every side that holds each picture, a port run from them
+alone animated the same as from the whole buffer, and
+`test_portraits.js` reads them from the page. The generated comments,
+and the sample that checked them, went with the parts.
+
+## 8 October 2026, the NPCs (claude-opus-5-5[1m])
+
+Aaron asked for the feature where NPCs refuse requests, then for a cast
+of the NPCs in general, with the weight on what the manual and play do
+not show.
+
+**The refusal.** The engine's comments already named npc_obey_check
+(`$0D61`) and said its target was 15 + 5 × the byte. The page's port,
+written from that comment, disagreed with the original code on the
+simulator in 15,280 of the first cases. Stepping the original showed the
+target at `$71/$72` was 15 with a byte of 1: the TAX at `$0D6D` comes
+before num2_clear, which returns X = 0. With the port following the
+code, every case agreed. The comment had been read off the routine's
+shape, from skill_check and attribute_check, which load X after the
+clear. On the original side 1 at the title, a stub calling `$021F`
+showed the same 15 after every call. The engine's comments were
+corrected and the listing re-commented.
+
+**The cast.** Each record's last skill pair holds a number from 36 up at
+level `$FF` for nine of the fourteen. The maps' own comments already
+called these markers. Counting the squares that ask for them from the
+bytes, rather than from the comments, gave the table's column; one
+square in map 41 asks for a skill 129 that nobody holds, which the test
+leaves aside. Dan Citrine's 37 is asked for by 87 squares, 83 of them
+far from Quartz with skill 37 as their only pair. Per Jorner's guide
+already describes the effect (page 81), so the page credits it and adds
+the cause and the counts. The game's square_checks ran map 1's cactus on
+the simulator with a party of a Ranger and Dan, which needed the zero
+page a map load leaves (`$55`, `$56`, `$61/$62`, `$63`); without them
+square_action_record found no record and the check returned at once.
+
+**Wrong turns.** The first count of the squares counted the words
+"difficulty" in the listing comments, which also say "at a difficulty
+above 0" for Dan's marker; counting pairs from the bytes fixed it.

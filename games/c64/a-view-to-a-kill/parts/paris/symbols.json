@@ -1,8 +1,9 @@
 {
  "schema": 1,
  "platform": "c64",
- "game": "a-view-to-a-kill/paris",
- "build": null,
+ "game": "a-view-to-a-kill",
+ "part": "paris",
+ "build": "",
  "source": "regenerator2000 live",
  "regions": {
   "exclude": [
@@ -24,7 +25,7 @@
    [
     2048,
     4095,
-    "not the game's: a BASIC line SYS 2067 with the text MAGIC and the RLE depacker it runs (the earlier crack's unpacker, which ends LDA #$37 / STA $01 / CLI / JMP $43B0), then the tail of its packed stream; build_3d_view reuses $0D09-$0E36 as its picture buffer"
+    "not the game's: the depacker the file starts with at $0801 and the tail of its packed stream; build_3d_view reuses $0D09-$0E36 as its picture buffer"
    ],
    [
     26880,
@@ -350,6 +351,16 @@
     33792,
     35623,
     "bytes in the power-on pattern of uninitialised RAM ($FF/$00 runs with stray bits), part of the saved memory image but read by no routine"
+   ],
+   [
+    19858,
+    19869,
+    "bytes after police_ai, never executed or read"
+   ],
+   [
+    17389,
+    17407,
+    "bytes after restart_to_success, never executed or read"
    ]
   ],
   "extra": [
@@ -478,21 +489,11 @@
   },
   {
    "start": 17376,
-   "end": 17383,
+   "end": 17388,
    "type": "Code"
   },
   {
-   "start": 17384,
-   "end": 17391,
-   "type": "Undefined"
-  },
-  {
-   "start": 17392,
-   "end": 17399,
-   "type": "Code"
-  },
-  {
-   "start": 17400,
+   "start": 17389,
    "end": 17407,
    "type": "Undefined"
   },
@@ -553,11 +554,11 @@
   },
   {
    "start": 17744,
-   "end": 17753,
+   "end": 17759,
    "type": "Byte"
   },
   {
-   "start": 17754,
+   "start": 17760,
    "end": 17775,
    "type": "Undefined"
   },
@@ -583,11 +584,11 @@
   },
   {
    "start": 18512,
-   "end": 18677,
+   "end": 18676,
    "type": "Code"
   },
   {
-   "start": 18678,
+   "start": 18677,
    "end": 18687,
    "type": "Undefined"
   },
@@ -658,16 +659,6 @@
   },
   {
    "start": 19012,
-   "end": 19023,
-   "type": "Undefined"
-  },
-  {
-   "start": 19024,
-   "end": 19108,
-   "type": "Code"
-  },
-  {
-   "start": 19109,
    "end": 19119,
    "type": "Undefined"
   },
@@ -703,11 +694,11 @@
   },
   {
    "start": 19456,
-   "end": 19869,
+   "end": 19857,
    "type": "Code"
   },
   {
-   "start": 19870,
+   "start": 19858,
    "end": 19967,
    "type": "Undefined"
   },
@@ -773,21 +764,11 @@
   },
   {
    "start": 20518,
-   "end": 20552,
+   "end": 20645,
    "type": "Code"
   },
   {
-   "start": 20553,
-   "end": 20555,
-   "type": "Undefined"
-  },
-  {
-   "start": 20556,
-   "end": 20641,
-   "type": "Code"
-  },
-  {
-   "start": 20642,
+   "start": 20646,
    "end": 20654,
    "type": "Undefined"
   },
@@ -1472,7 +1453,7 @@
   {
    "address": 844,
    "name": "beep_countdown",
-   "type": "AbsoluteAddress",
+   "type": "UserDefined",
    "kind": "user"
   },
   {
@@ -1484,7 +1465,7 @@
   {
    "address": 846,
    "name": "lamp_on_time",
-   "type": "AbsoluteAddress",
+   "type": "UserDefined",
    "kind": "user"
   },
   {
@@ -2388,9 +2369,9 @@
    "kind": "user"
   },
   {
-   "address": 17836,
-   "name": "r_45AC",
-   "type": "Return",
+   "address": 17833,
+   "name": "b_45A9",
+   "type": "Branch",
    "kind": "auto"
   },
   {
@@ -2700,30 +2681,6 @@
    "kind": "user"
   },
   {
-   "address": 19056,
-   "name": "b_4A70",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 19076,
-   "name": "b_4A84",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
-   "address": 19079,
-   "name": "j_4A87",
-   "type": "Jump",
-   "kind": "auto"
-  },
-  {
-   "address": 19105,
-   "name": "b_4AA1",
-   "type": "Branch",
-   "kind": "auto"
-  },
-  {
    "address": 19120,
    "name": "divide_16_8",
    "type": "Subroutine",
@@ -2937,12 +2894,6 @@
    "address": 19828,
    "name": "police_shot",
    "type": "Jump",
-   "kind": "user"
-  },
-  {
-   "address": 19858,
-   "name": "police_update",
-   "type": "Subroutine",
    "kind": "user"
   },
   {
@@ -3242,14 +3193,20 @@
   {
    "address": 20960,
    "name": "irq_sound",
-   "type": "Jump",
+   "type": "Subroutine",
    "kind": "user"
   },
   {
    "address": 20969,
-   "name": "b_51E9",
-   "type": "Branch",
+   "name": "r_51E9",
+   "type": "Return",
    "kind": "auto"
+  },
+  {
+   "address": 20970,
+   "name": "dead_beep_call",
+   "type": "UserDefined",
+   "kind": "user"
   },
   {
    "address": 20978,
@@ -5016,12 +4973,6 @@
    "kind": "auto"
   },
   {
-   "address": 55299,
-   "name": "a_D803",
-   "type": "AbsoluteAddress",
-   "kind": "auto"
-  },
-  {
    "address": 55336,
    "name": "f_D828",
    "type": "Field",
@@ -5282,7 +5233,7 @@
   {
    "address": 736,
    "type": "line",
-   "text": "Sound choice on the instruction page: 1 THEME TUNE ONLY, 2 SOUND EFFECTS ONLY, 3 BOTH (set to 3 by part_entry). Bit 0 enables the music in irq_sound, bit 1 the effects and the locator beep."
+   "text": "Sound choice on the instruction page: 1 THEME TUNE ONLY, 2 SOUND EFFECTS ONLY, 3 BOTH (set to 3 by part_entry). Bit 0 enables the music in irq_sound; bit 1 the crash, gun and roadblock effects, which test it themselves. The locator beep that bit 1 would also cover never plays (irq_sound)."
   },
   {
    "address": 737,
@@ -5302,12 +5253,12 @@
   {
    "address": 764,
    "type": "line",
-   "text": "Police sprites (bits 0-2) the bullet has hit, from hit_sprite; used and cleared by police_ai/police_update."
+   "text": "Police sprites (bits 0-2) the bullet has hit, stored by hit_sprite; police_ai sends such a car to police_shot and clears the byte ($4D7C)."
   },
   {
    "address": 765,
    "type": "line",
-   "text": "Police sprites (bits 0-2) that touched the car or each other, from hit_sprite; such cars wait $C0 passes (police_ai); cleared by police_update."
+   "text": "Police sprites (bits 0-2) that touched the car or each other, stored by hit_sprite and car_hits_police and never cleared: police_ai holds a car named here still, resetting its countdown to $20 on every pass, until a later collision replaces the set."
   },
   {
    "address": 766,
@@ -5317,7 +5268,7 @@
   {
    "address": 767,
    "type": "line",
-   "text": "When non-zero, game_irq ignores collisions and car_move_tick does nothing. init_game clears it and nothing found sets it."
+   "text": "Set to $98 by title_page and mission_complete; cleared by part_entry, by init_game and by game_start once the chase is set up. While it is set, game_irq ignores every interrupt but the raster one, and car_move_tick does nothing."
   },
   {
    "address": 768,
@@ -5327,17 +5278,17 @@
   {
    "address": 772,
    "type": "line",
-   "text": "Low byte of the BASIC tokeniser vector ($0304/$0305); part_entry writes $B0 here (only the low byte). Nothing in the part uses BASIC, so the purpose is unknown."
+   "text": "Low byte of the BASIC tokeniser vector ($0304/$0305); part_entry writes $D0 here, the low byte it also gives the BRK and NMI vectors. Nothing in the part uses BASIC, so the purpose is unknown."
   },
   {
    "address": 787,
    "type": "line",
-   "text": "How the chase ended: 0 while it runs; $80 caught May Day (hit_sprite); $40 the altimeter reached 000 (altimeter_tick); 40 or $27 the damage gauge is full (add_damage, car_crash). Read by world_update and speak_result."
+   "text": "How the chase ended: 0 while it runs; $80 caught May Day (hit_sprite); $40 the altimeter reached 000 (altimeter_tick); $27 or 47 the damage gauge is full (car_crash at 40 points, add_damage at 47). Read by world_update and speak_result."
   },
   {
    "address": 788,
    "type": "line",
-   "text": "KERNAL IRQ vector: irq_exit ($518A) on the instruction and success pages, game_irq ($5026) during the chase."
+   "text": "KERNAL IRQ vector: the KERNAL's $EA31 at the hand-over, game_irq ($5026) from install_game_irq on. Nothing sets it back: the instruction and success pages run with interrupts off instead (title_page switches CIA 1's interrupts off, and the stubs before them SEI)."
   },
   {
    "address": 789,
@@ -5347,7 +5298,7 @@
   {
    "address": 790,
    "type": "line",
-   "text": "KERNAL BRK vector, set to part_entry ($43B0) by part_entry."
+   "text": "KERNAL BRK vector, set to restart_to_menu ($43D0) by part_entry."
   },
   {
    "address": 791,
@@ -5357,7 +5308,7 @@
   {
    "address": 792,
    "type": "line",
-   "text": "KERNAL NMI vector, set to part_entry ($43B0): the RESTORE key restarts the part at the instruction page."
+   "text": "KERNAL NMI vector, set to restart_to_menu ($43D0) by part_entry: the RESTORE key goes back to the instruction page."
   },
   {
    "address": 793,
@@ -5467,7 +5418,7 @@
   {
    "address": 845,
    "type": "line",
-   "text": "Locator beep interval, distance to May Day / 40, OR 1 (mayday_distance)."
+   "text": "Locator beep interval: the distance to May Day / 16, plus 1 (mayday_distance). Read only by locator_beep, which never runs."
   },
   {
    "address": 846,
@@ -5542,7 +5493,7 @@
   {
    "address": 929,
    "type": "line",
-   "text": "Damage, 0-39: +1 per crash or roadblock; at 40 the chase is lost. Shown by draw_damage_gauge."
+   "text": "Damage: +1 per crash (car_crash) or roadblock (add_damage). A crash that brings it to 40 ends the chase; a roadblock ends it only at 47. Shown by draw_damage_gauge."
   },
   {
    "address": 930,
@@ -5582,7 +5533,7 @@
   {
    "address": 4096,
    "type": "line",
-   "text": "Digitised speech (credited on screen to B.-Jones), one bit per sample: interrupts off, SID volume 0, reads a 16-bit length at the sample address (LDA # operands at $1002 low and $1006 high, poked by the caller), then plays the bytes after it MSB first, each 1 bit setting the volume $D418 to $0F (speech_bit_on) and each 0 bit to 0 (speech_bit_off), so the click of the volume register is the sound. Stops at the address plus the length, volume 0, CLI. Samples: $1090 (length $194), $1225 ($6E4), $190A ($699)."
+   "text": "Digitised speech (credited in the intro to David Aubrey-Jones), one bit per sample: interrupts off, SID volume 0, reads a 16-bit length at the sample address (LDA # operands at $1002 low and $1006 high, poked by the caller), then plays the bytes after it MSB first, each 1 bit setting the volume $D418 to $0F (speech_bit_on) and each 0 bit to 0 (speech_bit_off), so the click of the volume register is the sound. Stops at the address plus the length with volume 0 and returns with interrupts still off (a NOP at $1069 where a CLI could be). Samples: $1090 (length $194), $1225 ($6E4), $190A."
   },
   {
    "address": 4098,
@@ -5717,7 +5668,7 @@
   {
    "address": 16384,
    "type": "line",
-   "text": "Start-of-chase setup: clears the 32 roadblock sites (clear_roadblock), stops timer A of both CIAs, sets the fine scroll start values $033E = 4 and $033F = 1, puts May Day's start ($01FA, $01FA) into object 0's template, volume 15, pick_landing_point, clears $02E1 and $0313, enables sprites 4 and 5 (the steering wheel, pointers $A0/$A1, white, at X $5E/$75, Y $75), copies the object templates $6800-$68FF to the live table $6900, sprite multicolours yellow/red, sprite 7 light blue, character set $3800, border blue, background dark grey, multicolour text, BASIC ROM out ($01 bit 0 cleared), patch_map, and the variable templates $8334-$83FF to $0334-$03FF."
+   "text": "Start-of-chase setup: clears the 32 roadblock sites (clear_roadblock), runs through 34 NOPs ($400B-$402C), stops timer A of CIA 1, sets the fine scroll start values $033E = 4 and $033F = 1, puts May Day's start ($01FA, $01FA) into object 0's template, volume 15, pick_landing_point, clears $02E1, $0313 and irq_lock $02FF, enables sprites 4 and 5 (the steering wheel, pointers $A0/$A1, white, at X $5E/$75, Y $75), copies the object templates $6800-$68FF to the live table $6900, sprite multicolours yellow/red, sprite 7 light blue, character set $3800, border blue, background dark grey, multicolour text, BASIC ROM out ($01 bit 0 cleared), patch_map, and the variable templates $8334-$83FF to $0334-$03FF."
   },
   {
    "address": 16704,
@@ -5777,17 +5728,17 @@
   {
    "address": 17328,
    "type": "line",
-   "text": "Hand-over entry (the depacker jumps here) and the BRK/RESTORE target: sets the sound option $02E0 to 3 (theme and effects), points the BRK vector $0316 and the NMI vector $0318 back here, so RESTORE restarts the part at the instruction page, writes $B0 into $0304 (the low byte only of the BASIC tokeniser vector; why is unknown), sets the SID volume to 0 and falls into restart_to_menu."
+   "text": "Hand-over entry, where the depacker jumps: sets the sound option $02E0 to 3 (theme and effects), points the BRK vector $0316 and the NMI vector $0318 at restart_to_menu ($43D0), so RESTORE goes back to the instruction page, writes $D0 into $0304 too (the low byte only of the BASIC tokeniser vector; why is unknown), clears irq_lock $02FF and jumps to title_page."
   },
   {
    "address": 17360,
    "type": "line",
-   "text": "Stack reset stub: SEI, stack pointer $FF, CLD, then the instruction page (title_page, $4F30). Reached from part_entry and from world_update when a chase ends without a catch ($0313 = $40 or a damage count)."
+   "text": "Stack reset stub: SEI, stack pointer $FF, CLD, then the instruction page (title_page, $4F30). The BRK and NMI target, and where world_update goes when a chase ends without a catch ($0313 = $40 or a damage count)."
   },
   {
    "address": 17376,
    "type": "line",
-   "text": "Stack reset stub for the good ending: SEI, stack pointer $FF, CLD, then mission_complete ($5800). world_update jumps here when $0313 = $80 (May Day caught)."
+   "text": "Stack reset stub for the good ending: SEI, stack pointer $FF, CLD, SID volume 0, then mission_complete ($5800). world_update jumps here when $0313 = $80 (May Day caught)."
   },
   {
    "address": 17392,
@@ -5812,7 +5763,7 @@
   {
    "address": 17536,
    "type": "line",
-   "text": "Called for each non-space character the success telex types: volume 15, $D417 = $0F, voice 1 frequency $3AAA, attack/decay $08, sustain/release $07 then $11, but control register 0 (no waveform, no gate), so no note is started here; whether the telex clicks audibly is open."
+   "text": "Called for each non-space character the success telex types: volume 15, $D417 = $0F, gate off, voice 1 frequency $3AAA, attack/decay $08, sustain/release $07, then control $61 (sawtooth and pulse, gate on): a short note for every letter, the telex's clatter."
   },
   {
    "address": 17664,
@@ -5822,17 +5773,17 @@
   {
    "address": 17712,
    "type": "line",
-   "text": "Damage gauge: damage $03A1 (0-39) / 8 picks one of five screen cells up a column (damage_gauge_lo/hi: $0515, $04ED, $04C5, $049D, $0475) and writes character $C4 + (damage AND 7) there, so the gauge rises an eighth of a cell per point."
+   "text": "Damage gauge: damage $03A1 / 8 picks a screen cell up a column (damage_gauge_lo/hi: $0515, $04ED, $04C5, $049D, $0475, then $0475 three more times) and writes character $C4 + (damage AND 7) there, so the gauge rises an eighth of a cell per point; from 40 on, the top cell is drawn again."
   },
   {
    "address": 17744,
    "type": "line",
-   "text": "Low bytes of the damage gauge's five screen cells, bottom to top: $0515, $04ED, $04C5, $049D, $0475."
+   "text": "Low bytes of the damage gauge's eight screen-cell entries, bottom to top: $0515, $04ED, $04C5, $049D, $0475, and $0475 three more times for damage 40 to 63."
   },
   {
    "address": 17752,
    "type": "line",
-   "text": "High bytes of the damage gauge's five screen cells (05 04 04 04 04)."
+   "text": "High bytes of the damage gauge's eight entries (05, then 04 seven times)."
   },
   {
    "address": 17776,
@@ -5852,7 +5803,7 @@
   {
    "address": 18512,
    "type": "line",
-   "text": "Distance from the car to May Day for the locator: |object 0 X - $88 - car X $0338| + |object 0 Y - $32 - car Y $033A| (16 bits, via $EA-$ED), divided by 40 (divide_16_8); the quotient OR 1 becomes the beep interval $034D."
+   "text": "Distance from the car to May Day for the locator: |object 0 X - $88 - car X $0338| + |object 0 Y - $32 - car Y $033A| (16 bits, via $EA-$ED), divided by 16 (divide_16_8); the quotient plus 1 becomes the beep interval $034D, which only the silent locator_beep reads."
   },
   {
    "address": 18688,
@@ -5877,7 +5828,7 @@
   {
    "address": 18848,
    "type": "line",
-   "text": "Adds one to damage $03A1; at 40 the chase ends ($0313 = 40); otherwise crash_sound."
+   "text": "Adds one to damage $03A1 for a roadblock; at 47 the chase ends ($0313 = 47); otherwise crash_sound."
   },
   {
    "address": 18880,
@@ -5892,7 +5843,7 @@
   {
    "address": 19024,
    "type": "line",
-   "text": "Locator lamp and beep, from irq_sound: while the lamp (colour RAM $D803, row 0 column 3) is red, $034C counts down; at zero the lamp turns purple for two calls ($034E), $034C is reloaded from the interval $034D and voice 2 beeps (triangle, frequency $3A04, attack/decay $98, sustain/release $DF); when the lamp goes red again the gate is released. Nearer May Day, shorter interval, faster beeps."
+   "text": "Locator lamp and beep: while the lamp (colour RAM $D803, row 0 column 3) is red, $034C counts down; at zero the lamp turns purple for two calls ($034E), $034C is reloaded from the interval $034D and voice 2 beeps (triangle, frequency $3A04, attack/decay $98, sustain/release $DF); when the lamp goes red again the gate is released. Its only caller is the dead tail of irq_sound ($51EF), so the lamp never blinks and the beep never sounds: no call in 30 seconds of a chase with sound option 3."
   },
   {
    "address": 19120,
@@ -5922,7 +5873,7 @@
   {
    "address": 19456,
    "type": "line",
-   "text": "Police cars, objects 14 down to 1, and the bullet's movement (object 15 only moves). A shown car hit by the bullet (its sprite bit in $02FC) goes to police_shot, a dying one (flag bit 5) to police_dying. A car stays idle until the pursuit counter $03A2 reaches its threshold ($69E0); a car that touched the player or another car ($02FD) waits $C0 passes. Otherwise its countdown $6950 runs down; when it expires it is reloaded from $6960 (4-7, the car's speed), the cell under the car is read ((Y/8) x 126 + X/8 + $9372, multiply_8_8), a junction marker $12-$19 there sets its heading to the marker AND 7, and it moves one pixel along its heading (dx $69B0, dy $69B8) with that heading's shape from $69A0. The bullet moves every pass."
+   "text": "Police cars, objects 14 down to 1, and the bullet's movement (object 15 only moves); world_update calls it every pass. A shown car hit by the bullet (its sprite bit in $02FC) goes to police_shot, a dying one (flag bit 5) to police_dying. A car stays idle until the pursuit counter $03A2 reaches its threshold ($69E0); a car named in $02FD (it touched the player or another car) has its countdown set to $20 and does not move. Otherwise its countdown $6950 runs down; when it expires it is reloaded from $6960 (4-7, the car's speed), the cell under the car is read ((Y/8) x 126 + X/8 + $9372, multiply_8_8), a junction marker $12-$19 there sets its heading to the marker AND 7, and it moves one pixel along its heading (dx $69B0, dy $69B8) with that heading's shape from $69A0. The bullet moves every pass."
   },
   {
    "address": 19735,
@@ -5938,11 +5889,6 @@
    "address": 19828,
    "type": "line",
    "text": "The bullet hit this police car: its sprite goes multicolour, $02FC is cleared, flags | $70 (dying, waiting, reset), blink count $6970 = 16, crash_sound."
-  },
-  {
-   "address": 19858,
-   "type": "line",
-   "text": "Runs police_ai, then clears the collision flags it has used: $02FD and $02FC."
   },
   {
    "address": 19968,
@@ -5977,7 +5923,7 @@
   {
    "address": 20272,
    "type": "line",
-   "text": "The instruction page and its loop. Installs the do-nothing IRQ ($0314 = irq_exit), text mode with character set $3000, sprites off, stops timer A of CIA 1 (no KERNAL keyboard scan), SID volume 0, clears the crash lock $0346 and draws the page (show_title_page). Loop: read_joystick; fire jumps to $FCE2, the KERNAL's reset entry, which finds the CBM80 signature at $8004 and enters the game through the cold-start vector at $8000 (= game_start, $5A00); stick down/up steps the sound option $02E0 between 1 and 3; a delay of $50 x $FF loops; the title colour $D9 steps; the page is redrawn (redraw_title_page). A non-zero $0313 (result of the last chase) sends it to speak_result first."
+   "text": "The instruction page and its loop. Sets irq_lock $02FF to $98, text mode with character set $3000, sprites off, SID volume 0, clears the crash lock $0346, switches off CIA 1's interrupts ($DC0D = $7F, read to clear) and draws the page (show_title_page); the IRQ vector is left as it is, and no interrupt runs on the page. Loop: read_joystick; fire jumps to $FCE2, the KERNAL's reset entry, which finds the CBM80 signature at $8004 and enters the game through the cold-start vector at $8000 (= game_start, $5A00); stick down/up steps the sound option $02E0 between 1 and 3; a delay of $50 x $FF loops; the title colour $D9 steps; the page is redrawn (redraw_title_page). A non-zero $0313 (result of the last chase) sends it to speak_result first."
   },
   {
    "address": 20416,
@@ -5997,7 +5943,7 @@
   {
    "address": 20440,
    "type": "line",
-   "text": "Landing points, Y high byte (0-3)."
+   "text": "Landing points, Y high byte (0-2)."
   },
   {
    "address": 20448,
@@ -6017,12 +5963,12 @@
   {
    "address": 20518,
    "type": "line",
-   "text": "The chase's interrupt handler (entered through the KERNAL, which has pushed A, X and Y). A raster interrupt goes to raster_bands. Otherwise, unless $02FF is non-zero (nothing found sets it), a sprite-background collision goes to hit_background and a sprite-sprite collision to hit_sprite."
+   "text": "The chase's interrupt handler (entered through the KERNAL, which has pushed A, X and Y). A raster interrupt goes to raster_bands. Any other is ignored while irq_lock $02FF is set; otherwise a sprite-background collision goes to hit_background, a sprite-sprite collision to hit_sprite, and anything else plays the theme (music_tick, $5046). No such third kind was seen: $5046 had no hit in 30 seconds of a chase."
   },
   {
    "address": 20556,
    "type": "line",
-   "text": "Acknowledges the raster interrupt and splits the screen by the current line: below $8F raster_map_band, below $9C raster_map_colours, otherwise (line $FB, bottom of the map) this part: collision interrupts off, next compare $8D, Y scroll 3 with 25 rows, X scroll 0 with 40 columns, background light grey, multicolours 8 and 9, character set $3000 for the cockpit; then the frame's work: copy_3d_view, car_move_tick, update_clock and irq_sound."
+   "text": "Acknowledges the raster interrupt and splits the screen by the current line: below $8F raster_map_band, below $9C raster_map_colours, otherwise (line $FB, bottom of the map) this part: collision interrupts off, next compare $8D, Y scroll 3 with 25 rows, X scroll 0 with 40 columns, background light grey, multicolours 8 and 9, character set $3000 for the cockpit; then the frame's work: copy_3d_view, irq_sound, and, with interrupts allowed again (CLI), car_move_tick and update_clock."
   },
   {
    "address": 20655,
@@ -6052,7 +5998,7 @@
   {
    "address": 20874,
    "type": "line",
-   "text": "Interrupt exit: pulls Y, X and A as the KERNAL pushed them, RTI. On the instruction page and the success screen the whole IRQ is this ($0314 = $518A), so nothing runs in the interrupt there."
+   "text": "Interrupt exit: pulls Y, X and A as the KERNAL pushed them, RTI."
   },
   {
    "address": 20880,
@@ -6067,7 +6013,12 @@
   {
    "address": 20960,
    "type": "line",
-   "text": "Sound, once a frame from the bottom raster interrupt: the theme (music_tick) when $02E0 bit 0 is set (options 1 and 3) and the locator beep (locator_beep) when bit 1 is set (options 2 and 3); then irq_exit."
+   "text": "Sound, once a frame, called by raster_bands: the theme (music_tick) when $02E0 bit 0 is set (options 1 and 3), then RTS."
+  },
+  {
+   "address": 20970,
+   "type": "line",
+   "text": "Never runs: the rest of a locator beep call, cut off by the RTS at $51E9, which sits where LDA $02E0's opcode would be. The bytes decode as CPX #$02 (the LDA's operand), LSR, BEQ, JSR locator_beep, JMP irq_exit. This is locator_beep's only caller."
   },
   {
    "address": 20992,
@@ -6087,7 +6038,7 @@
   {
    "address": 21269,
    "type": "line",
-   "text": "Every 20th call ($535C) counts the altimeter, screen $04F3-$04F5 (digits $64-$6D), down by one. Once it reads below 060 the catch flag $02E1 is set; at 000 $0313 = $40: May Day has landed before the car reached her."
+   "text": "Every 21st call ($535C) counts the altimeter, screen $04F3-$04F5 (digits $64-$6D), down by one. Once it reads below 060 the catch flag $02E1 is set; at 000 $0313 = $40: May Day has landed before the car reached her."
   },
   {
    "address": 21340,
@@ -6222,7 +6173,7 @@
   {
    "address": 22528,
    "type": "line",
-   "text": "The good ending: do-nothing IRQ, text mode with character set $3000, sprites off, clear_screen, speech sample $1225, then the ten lines of the telex at $8028 are typed onto rows 3, 6, 8, 10, 11, 13, 14, 15, 17 and 19 (tables $5880/$5890) by type_line, and it stops in the endless JMP at $5879. The City Hall code in the telex, CCPHJ, is fixed text: nothing computes it."
+   "text": "The good ending: sets irq_lock $02FF, text mode with character set $3000, sprites off, clear_screen, speech sample $1225 (interrupts stay off from there), then the ten lines of the telex at $8028 are typed onto rows 3, 6, 8, 10, 11, 13, 14, 15, 17 and 19 (tables $5880/$5890) by type_line, each letter with a type_click, and it stops in the endless JMP at $5879. The City Hall code in the telex, CCPHJ, is fixed text: nothing computes it."
   },
   {
    "address": 22656,
@@ -6247,7 +6198,7 @@
   {
    "address": 23040,
    "type": "line",
-   "text": "The chase begins here, entered through the KERNAL reset: fire on the instruction page jumps to $FCE2, which sees CBM80 at $8004 and jumps through $8000. Runs init_game, init_music, draw_cockpit, install_game_irq, pick_landing_point a second time (init_game has already run it once) and car_draw, then falls into main_loop."
+   "text": "The chase begins here, entered through the KERNAL reset: fire on the instruction page jumps to $FCE2, which sees CBM80 at $8004 and jumps through $8000. Runs init_game, init_music, draw_cockpit, install_game_irq, pick_landing_point a second time (init_game has already run it once) and car_draw, clears irq_lock $02FF, then falls into main_loop."
   },
   {
    "address": 23088,
@@ -6267,7 +6218,7 @@
   {
    "address": 23142,
    "type": "line",
-   "text": "One pass of the world: objects_to_sprites, draw_speed_gauge (and the damage gauge), build_3d_view, mayday_distance, mayday_update, police_update, car_cell_update, roadblock_check. Then the end test on $0313: 0 loops to main_loop, $80 goes to restart_to_success, any other value to restart_to_menu."
+   "text": "One pass of the world: objects_to_sprites, draw_speed_gauge (and the damage gauge), build_3d_view, mayday_distance, mayday_update, police_ai, car_cell_update, roadblock_check. Then the end test on $0313: 0 loops to main_loop, $80 goes to restart_to_success, any other value to restart_to_menu."
   },
   {
    "address": 23200,
@@ -6347,7 +6298,7 @@
   {
    "address": 23968,
    "type": "line",
-   "text": "Car movement clock, once a frame from the IRQ: counts $0342 down; when it passes zero it is reloaded with the move delay $0340 / 4, the heading is saved in $0347 and scroll_map moves the car two pixels, so the car moves every delay/4 + 1 frames. Skipped while $02FF is set (never, as far as found)."
+   "text": "Car movement clock, once a frame from the IRQ: counts $0342 down; when it passes zero it is reloaded with the move delay $0340 / 4, the heading is saved in $0347 and scroll_map moves the car two pixels, so the car moves every delay/4 + 1 frames. Skipped while irq_lock $02FF is set."
   },
   {
    "address": 24576,
@@ -6577,7 +6528,7 @@
   {
    "address": 31265,
    "type": "line",
-   "text": "Alternates 0/1 after each note step: 3 frames, then 2, then 3 ... (music_tick)."
+   "text": "Flips between 0 and 1 after each note step (music_tick). Both of music_tick's paths wait for three frames, so it changes nothing."
   },
   {
    "address": 31266,
@@ -6687,7 +6638,7 @@
   {
    "address": 31403,
    "type": "line",
-   "text": "Theme tune, once a frame when chosen: music_pitch_fx, then the tick counter $7A22 steps the notes (music_step_voices) on alternately every 3rd and every 2nd frame ($7A21 toggles), and music_rewind restarts the tune when voice 1's stream pointer reaches $EAD1."
+   "text": "Theme tune, once a frame when chosen: music_pitch_fx, then the frame counter $7A22 steps the notes (music_step_voices) on every third frame (about 16.7 steps a second on PAL), whichever value $7A21 holds, since both paths compare with 3; music_rewind restarts the tune when voice 1's stream pointer reaches $EAD1."
   },
   {
    "address": 31456,
@@ -6947,17 +6898,17 @@
   {
    "address": 63317,
    "type": "line",
-   "text": "Theme tune, voice 3 (pulse): notes from $F755 onward (the tune restarts with voice 1, before voice 3's data runs out at $FFFF). This stretch: $F755-$FAFF."
+   "text": "Theme tune, voice 3 (pulse): notes from $F755. Voice 1 runs out, and the tune restarts, when voice 3 has played up to $FBD4. This stretch: $F755-$FAFF."
   },
   {
    "address": 64256,
    "type": "line",
-   "text": "Theme tune, voice 3 notes continued ($FB00-$FCE1)."
+   "text": "Theme tune, voice 3 notes continued to $FBD4, the last one played, then eighteen bytes more ($FBD5-$FBE6) that are never reached, and zeros."
   },
   {
    "address": 64738,
    "type": "line",
-   "text": "Theme tune, voice 3 notes $FCE2-$FFFF (the hardware vectors' RAM included). The address is also the KERNAL ROM's reset entry, which title_page jumps to with the ROM banked in; the ROM, not this RAM, runs then."
+   "text": "Zeros in the RAM under the KERNAL, up to $FFFF. The address is the KERNAL ROM's reset entry, which title_page jumps to with the ROM banked in; the ROM, not this RAM, runs then."
   }
  ]
 }

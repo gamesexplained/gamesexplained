@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "classic-adventure",
+  "title": "Classic Adventure",
+  "year": 1984,
+  "publisher": "Melbourne House",
+  "developer": "Abersoft (John Jones-Steele)",
+  "title_image": "reference/welcome.png",
+  "build": "Single-file disk transfer of the tape release: CLASSIC ADV. on a disk named DIGITAL DUNGEON 98, with a relocating wrapper",
+  "tier": "silver",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "John Jones-Steele",
+      "role": "Conversion of Crowther and Woods' Adventure; the inlay says (c) 1983 John Jones-Steele and the title screen (c)Abersoft 1984"
+    },
+    {
+      "by": "Steiner Lund",
+      "role": "Inlay artwork, as the inlay credits it"
+    }
+  ],
+  "tools": {
+    "emulator": "release v3.13.2, v3.13.2-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 0.9.20 (cargo install from crates.io)",
+    "host": "Linux x86_64, Ubuntu 24.04.5, no display (cloud container)",
+    "simulator": "kit/c64/cpu6502.js, for the lockstep test of the interpreter's port (test_play.js)",
+    "publication": "Python 3.13; symbols_export.py and listing.py",
+    "node": "22.22.0",
+    "browser": "Chromium 141.0.7390.37 (Playwright 1.56.1's), for the page checks",
+    "subagents": "one checker agent on the Agent tool's general-purpose type for 60-verify's sample of 60 comments; all other work by one agent"
+  },
+  "model": "claude-opus-5-5[1m]",
+  "step_models": {
+    "50-coverage": [
+      "claude-opus-5-5[1m]"
+    ],
+    "60-verify": [
+      "claude-opus-5-5[1m]"
+    ]
+  },
+  "kit_version": "0.0.115",
+  "created": "2026-10-08",
+  "video": {
+    "screen": "$0400",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0073",
+        "$008A",
+        "BASIC's CHRGET, which the BASIC ROM puts in zero page at power-on and RUN runs before the game starts (codemap.json records it); the game never calls it or uses these bytes"
+      ],
+      [
+        "$0200",
+        "$03FF",
+        "the KERNAL's work area and vectors: the game keeps nothing here, and wrapper_start only puts the KERNAL's own default vectors back at $031A"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "screen RAM: init_screen clears it with CHROUT $93 and all text goes through CHROUT, so the hand-over's screen (the boot and LOAD messages) is not the game's"
+      ],
+      [
+        "$083F",
+        "$0B9D",
+        "left behind by the wrapper's move: $083F-$0B40 are the loaded file's bytes, each equal to the one $0340 above it, and $0B41-$0B9D the moved copy of the BASIC line and the wrapper's first half, which never runs there. No instruction reads either; the STA $0A40,X that opcodes.py --refs names is wrapper_move's operand as the loop left it after its last page, $0B40, and never ran with that value"
+      ],
+      [
+        "$1D20",
+        "$1D4B",
+        "the power-on pattern of RAM ($00 and $FF in turn) saved with the file between stale_code and the dictionary; nothing reads it"
+      ],
+      [
+        "$8B3E",
+        "$8B3F",
+        "the file's last two bytes, zero, after the object table; nothing reads them (the object loops stop at object 78, $8B3D) and SAVE stops before them"
+      ],
+      [
+        "$8B40",
+        "$BFFF",
+        "RAM above the program, which the file never reaches (the move ends at $8B3F): the name CLASSIC ADV. at $9FF4 is where VICE's autostart left the file name it loaded by, and the rest is the RAM's power-on pattern; nothing reads any of it"
+      ],
+      [
+        "$E000",
+        "$FFFF",
+        "the KERNAL ROM: $01 stays $36, so every address here the game calls or reads ($FD36, $FFBA-$FFD8, the reset vector at $FFFC) is the ROM's, and the RAM beneath holds nothing of the game, whose file ends at $8B3F"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0BBB",
+      "$0CC7",
+      "variables",
+      "the starting copy of the objects, the line buffer and the variables"
+    ],
+    [
+      "$0CC8",
+      "$0D05",
+      "tables",
+      "the action and condition handler tables"
+    ],
+    [
+      "$0D06",
+      "$0F98",
+      "text",
+      "the built-in messages, in plain ASCII"
+    ],
+    [
+      "$1BAA",
+      "$1D1F",
+      "code",
+      "an older build of the printing routines, never called"
+    ],
+    [
+      "$1D4C",
+      "$2346",
+      "text",
+      "the dictionary of 305 words"
+    ],
+    [
+      "$2347",
+      "$47DE",
+      "text",
+      "the room texts and their offsets"
+    ],
+    [
+      "$47DF",
+      "$4C48",
+      "tables",
+      "the vocabulary, 226 entries"
+    ],
+    [
+      "$4C49",
+      "$5208",
+      "levels",
+      "each room's exits"
+    ],
+    [
+      "$5209",
+      "$6854",
+      "tables",
+      "the command and status rules, with their conditions and actions"
+    ],
+    [
+      "$6855",
+      "$80A6",
+      "text",
+      "the messages and their offsets"
+    ],
+    [
+      "$80A7",
+      "$8AA1",
+      "text",
+      "the object texts and their offsets"
+    ],
+    [
+      "$8AA2",
+      "$8B3D",
+      "tables",
+      "each object's starting location and flags"
+    ]
+  ],
+  "links": {
+    "wiki": {
+      "title": "Classic Adventure – Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Classic_Adventure"
+    },
+    "manual": {
+      "title": "Classic Adventure (1984, Commodore 64) — REG-Vault",
+      "url": "https://regvault.org/game/c64/43a65b08db41c678d5635e3efa913159"
+    }
+  }
+}

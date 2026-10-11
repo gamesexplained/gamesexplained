@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="reference/dw-page.css">
+<style>.solo header, .solo nav, .solo footer, .solo main > section:not(#mine), .solo #mine > :not(.plate), .solo #pick, .solo #pk-next, .solo #pk-use, .solo #dl-map, .solo #rpkv, .solo .cap, .solo [class^="pagenav"] { display: none !important } .solo main.wrap { padding: 0; margin: 0 } html.solo, .solo body { background: transparent } .solo #mine { padding: 0; margin: 0 } .solo #mine .plate { margin: 0 }</style>
 <!-- tabs -->
 <header class="hero">
   <p class="eyebrow">Commodore 64 · 1986 · Micro Power</p>
@@ -14,32 +15,27 @@
 <section id="mine">
   <p class="fig">The mine</p>
   <h2 class="t">One map, seven kilobytes</h2>
-  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag across the map to move the magnifier. Choose an object to zoom in on it, then press Where it is used to step through the places it works. The dangers have a list of their own, and <a href="gameplay.html#dangers">Gameplay</a> says what each does. Switch on the restart points to see where the Doctor comes back after losing a regeneration.</p>
+  <p class="lede">The game never loads a level. The whole mine is one map, and the screen is a window onto it that scrolls wherever the Doctor goes. Drag the map to move around it, and zoom out to see the whole mine. Choose an object, creature, danger, or place from the menu to go to it; an object also gets a Where it is used button that steps through the places it works. <a href="gameplay.html#dangers">Gameplay</a> says what each danger does. The <a href="solution.html#route">Solution</a> tab steps through the whole route on this map.</p>
   <div class="plate">
     <div class="row">
-      <select class="b" id="pk-ob" aria-label="Object"><option value="">Choose an object</option></select>
-      <button class="b" type="button" id="pk-use" disabled>Where it is used</button>
+      <select class="b" id="pick" aria-label="Choose something to find on the map"><option value="">Choose something to find</option></select> <button class="b" type="button" id="pk-next" hidden>Next</button> <button class="b" type="button" id="dl-map" title="Download the whole map as a PNG" aria-label="Download the whole map as a PNG" style="line-height:0;padding:6px"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M7 1h2v7l2.5-2.5 1.4 1.4L8 11.8 3.1 6.9l1.4-1.4L7 8zM2 13h12v2H2z"/></svg></button>
+      <button class="b" type="button" id="pk-use" hidden>Where it is used</button>
+      <span id="walk" hidden><button class="b" type="button" id="wk-back" disabled>Back</button> <button class="b" type="button" id="wk-next">Start</button> <span class="note" id="wk-n"></span></span>
     </div>
+    <p class="kv" id="wk-say" aria-live="polite" style="margin:0 0 8px"></p>
     <div class="row">
-      <select class="b" id="pk-dg" aria-label="Danger"><option value="">Choose a danger</option></select>
-      <button class="b" type="button" id="pk-dgn">Next danger</button>
-      <select class="b" id="pk-pl" aria-label="Other places"><option value="">Other places</option></select>
-    </div>
-    <div class="row">
-      <span class="note">Zoom</span><button class="b" type="button" data-z="1" aria-pressed="false">×1</button><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
-      <button class="b" type="button" id="rp" aria-pressed="false">Restart points</button>
-      <button class="b" type="button" id="home" aria-pressed="false">Back to the TARDIS</button>
+      <span class="note">Zoom</span><button class="b" type="button" data-z="0.25" aria-pressed="false">Whole mine</button><button class="b" type="button" data-z="0.5" aria-pressed="false">×½</button><button class="b" type="button" data-z="1" aria-pressed="false">×1</button><button class="b" type="button" data-z="2" aria-pressed="true">×2</button><button class="b" type="button" data-z="3" aria-pressed="false">×3</button><button class="b" type="button" data-z="4" aria-pressed="false">×4</button>
       <span class="note" id="mappos"></span>
     </div>
-    <canvas id="map" class="scr" style="max-width:100%" role="img" aria-label="The whole mine, reduced"></canvas>
-    <canvas id="zoom" class="scr" style="margin-top:14px" role="img" aria-label="The part of the mine inside the magnifier, at twice the C64's pixels"></canvas>
+    <canvas id="map" class="scr" hidden style="display:none" role="img" aria-label="The whole mine, reduced"></canvas>
+    <canvas id="zoom" class="scr" style="max-width:100%;cursor:grab;touch-action:none" role="img" aria-label="The mine, at twice the C64's pixels"></canvas>
     <p class="kv" id="rpkv"></p>
-    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn in the magnifier as their own sprites from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. Drag the magnifier over a mark to read its label, or click a mark on the map to select it.</p>
+    <p class="cap"><b style="color:#e8c547">Yellow</b>: the objects where a new game puts them, drawn as their own sprites when zoomed in from their starting frames (<code>$1D30</code>) and colours (<code>$1850</code>) (positions <code>$1B70</code>/<code>$1BC0</code>, <code>$1C10</code>/<code>$1C60</code>; names from <code>$1770</code>). <b style="color:#5fd068">Green</b>: where an object does something, from the code that checks the Doctor's position. <b style="color:#ff6b5b">Red</b>: blocks that kill or start the air running out. <b style="color:#6fc3ff">Blue</b>: the creatures where a new game puts them, from the same position tables; the controllers then follow their routes. Drag the map to move around it, zoom with the buttons or the mouse wheel, and click a mark to select it.</p>
     <p class="cap">Every block drawn from the map at <code>map_e000</code>, the block shapes at <code>$3000</code>, the play-area characters at <code>$4000</code>, and each character's colour from <code>$2F00</code>. The orange cross is where the Doctor starts. The mine has seven zones, and each zone swaps in one of three sets of shapes and colours for sixteen characters (<code>zone_classify</code>, <code>$AA3D</code>; <code>zone_graphics</code>, <code>$ABCF</code>). This picture draws every zone with its own set.</p>
   </div>
   <h3 id="objects">Where the objects work</h3>
-  <p>Most objects work only at certain points. When the Doctor uses the one he holds (F5), the game compares his position with that object's table of points (<code>use_item_update</code>, <code>$BACC</code>): the dig sites at <code>$BC1C</code>, the bolts at <code>$BB94</code>, and the escape pod's launch points at <code>$BCDA</code>. Choose an object above and press Where it is used to step through its points. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). What every object is for is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
-  <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the KERNAL ROM) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. The map holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
+  <p>Choose an object above and press Where it is used to step through the points where it works. With empty hands, F5 works the code lock's clue panel and its buttons (<a href="solution.html#lock">Solution</a>). Why objects work only at these points, and what each is for, is on the <a href="gameplay.html#pockets">Gameplay</a> tab.</p>
+  <p>The map fills <code>$E000</code>-<code>$FBFF</code>, the memory the Commodore's operating system (the <a href="https://www.c64-wiki.com/wiki/Kernal">KERNAL ROM</a>) normally occupies. The game switches the ROMs out as it starts (<code>$01</code> = <code>$35</code>), which leaves the RAM underneath free. The map holds 56 rows of 128 blocks, one byte a block. A block is four by four characters, sixteen bytes at <code>$3000</code> + 16 × its number, so 256 block shapes build the whole mine. Row <i>r</i> starts at <code>$FB80</code> − 128 × <i>r</i>. Row 0 is the bottom: the game measures heights upward from the floor of the mine.</p>
   <p>Colour RAM, the Commodore's separate memory for the colour of each screen cell, is never stored for the map. As the game draws each new row or column onto the screen, it looks up the colour of every character in a 256-byte table (<code>colour_from_chars</code>, <code>$8EB8</code>). So a character is always the same colour, wherever it is.</p>
 </section>
 <section id="scroll">
@@ -52,25 +48,31 @@
 <section id="restart">
   <p class="fig">Restart points</p>
   <h2 class="t">Nine places to come back to</h2>
-  <p>The mine has nine restart points, stored as four tables of nine bytes at <code>$9059</code>-<code>$907C</code>. When the Doctor comes close to one, that point becomes the current one (<code>check_restart_points</code>, <code>$907D</code>). After he loses a regeneration, the game puts him back at the current point.</p>
+  <p>The mine has nine restart points, stored as four tables of nine bytes at <code>$9059</code>-<code>$907C</code>. The first is beside the TARDIS. The other eight are the CSCs, the cryostasis chambers, which are also the only places where the game can be saved (<a href="discoveries.html#save-place">Discoveries</a>). When the Doctor comes close to one, that point becomes the current one (<code>check_restart_points</code>, <code>$907D</code>). After he loses a regeneration, the game puts him back at the current point.</p>
 </section>
 </main>
 <script src="../../lib/c64.js"></script>
 <script src="reference/dw-page.js"></script>
 <script>
+  // ?solo: the Solution tab frames this page to show only the map and the walkthrough
+  const SOLO = new URLSearchParams(location.search).has('solo');
+  if (SOLO) { document.documentElement.classList.add('solo'); document.addEventListener('click', e => { const a = e.target.closest('a[href]'); if (a) a.target = '_top'; }); }
 (async function () {
   let G; try { G = await DW.load(); } catch (e) { DW.fail(e); return; }
-  const M = G.ram, full = DW.drawMine(M), S = 4;
+  const M = G.ram, full = DW.drawMine(M), S = 10, ZW = 1024, ZH = 512;
   const mv = document.getElementById('map'), mctx = C64.canvas(mv, full.width / S, full.height / S);
-  const zv = document.getElementById('zoom'), zctx = C64.canvas(zv, 768, 384);
+  const zv = document.getElementById('zoom'), zctx = C64.canvas(zv, ZW, ZH);
   let Z = 2, sel = null;                         // magnification, and the mark chosen from the list
   const Y = y => full.height - y;
   const start = [M[0x1B70] | M[0x1BC0] << 8, Y(M[0x1C10] | M[0x1C60] << 8)];
   const pts = [...Array(9)].map((_, i) => [M[0x9059 + i] << 8 | M[0x9062 + i], Y(M[0x906B + i] << 8 | M[0x9074 + i])]);
-  let view, showRp = false;
+  let view, showRp = false, wkPath = null, wk = null, wkI = -1, wkAnim = 0;   // wk: the walkthrough's Doctor, when it runs
   const P = (xh, xl, yh, yl) => [xh << 8 | xl, Y(yh << 8 | yl)];
   const name = o => DW.itemName(M, o);
   // objects $34-$4C where a new game places them (the markers $30-$33 wait with Splinx; x high $FF is off the map)
+  // the creatures where a new game puts them, from the same position tables: the Rijan miners (objects 3-5),
+  // the patrolling Rijans (6-9), the madrag ($0A), the Master ($0C) and the controllers ($10-$28)
+  const crs = [], CR = [[3, 5, 'RIJAN MINER'], [6, 9, 'PATROLLING RIJAN'], [0x0A, 0x0A, 'MADRAG'], [0x0C, 0x0C, 'THE MASTER'], [0x10, 0x28, 'CONTROLLER']];
   const objs = [];
   objs.push({ at: P(M[0x1BC2], M[0x1B72], M[0x1C62], M[0x1C12]), t: 'SPLINX', o: 2 });      // object 2, beside the Doctor
   for (let o = 0x34; o <= 0x4C; o++) if (M[0x1BC0 + o] !== 0xFF) objs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t: name(o), o });
@@ -94,18 +96,23 @@
   for (let i = 0; i < 3; i++) uses.push({ at: P(0x0A, 0x30 + 0x20 * i, 0x04, 0xC8), t: 'CODE LOCK: button ' + (i + 1) });   // y $04C8, 32-pixel zones from x low $20
   uses.push({ at: [84 * 32 + 16, Y(38 * 32 + 16)], t: 'CODE LOCK: changes this block' });               // switch cell 13, $BF62
   // dangers: map blocks the Doctor's centre is tested against (doctor_tile_checks, $CA58)
+  // the floor sensor: block $BD under the Doctor sends controller $23 after him (doctor_tile_checks, $CA6B)
+  for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) if (M[0xFB80 - 0x80 * r + c] === 0xBD) uses.push({ at: [c * 32 + 16, Y(r * 32 + 16)], t: 'SENSOR: calls a controller' });
+  // the eight CSCs, where the game saves and the Doctor restarts: restart points 1-8 ($9059)
+  for (let i = 1; i < 9; i++) uses.push({ at: pts[i], t: 'CSC ' + i + ': save here, restart point ' + i });
+  for (const [a, b, t] of CR) for (let o = a; o <= b; o++) crs.push({ at: P(M[0x1BC0 + o], M[0x1B70 + o], M[0x1C60 + o], M[0x1C10 + o]), t, o });
   const dangers = [];
   for (let r = 0; r < 56; r++) for (let c = 0; c < 128; c++) {
     const b = M[0xFB80 - 0x80 * r + c], at = [c * 32 + 16, Y(r * 32 + 16)];
     if (b === 0x74 || b === 0x51) dangers.push({ at, t: 'stalagmite: fatal' });
     else if (b === 0x3F && r * 32 >= 0x200) dangers.push({ at, t: 'bad air: hold the AIR MASK' });
   }
-  for (const [list, kind] of [[objs, 'Objects'], [uses, 'Where they are used'], [dangers, 'Dangers']]) {
+  for (const [list, kind] of [[objs, 'Objects'], [crs, 'Creatures'], [uses, 'Where they are used'], [dangers, 'Dangers']]) {
     const seen = {}, total = {};
     for (const k of list) total[k.t] = (total[k.t] || 0) + 1;
     for (const k of list) { k.kind = kind; seen[k.t] = (seen[k.t] || 0) + 1; k.label = total[k.t] > 1 && !/bolt/.test(k.t) ? k.t + ' (' + seen[k.t] + ' of ' + total[k.t] + ')' : k.t; }
   }
-  const all = [...objs, ...uses, ...dangers];
+  const all = [...objs, ...crs, ...uses, ...dangers];
   // where each object does something: the marks above, by the object's name
   const usedAt = n => n === 'AIR MASK' ? dangers.filter(k => /bad air/.test(k.t))
     : n === 'EXPLOSIVES' ? uses.filter(k => /EXPLOSIVES|blast/.test(k.t))
@@ -114,11 +121,20 @@
     : /^(CRYSTAL|CAPSULE|SPLINX)$/.test(n) ? uses.filter(k => /way home/.test(k.t))
     : uses.filter(k => k.t.startsWith(n + ':'));
   const WHY = { 'CRYSTAL': 'carried out of the mine, it doubles the bonus', 'CAPSULE': 'carried out of the mine, it doubles the bonus', 'SPLINX': 'carried out of the mine, it doubles the bonus',
-    'PASS CARD': 'held, it makes character $A0 passable, which reads as the security gate; no table gives the gate a place', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up',
+    'PASS CARD': 'held, it opens the five security gates (block $20), and it lies behind the wall the code lock opens', 'AIR MASK': 'held, it refills the air the bad-air blocks start using up',
     'MAT': 'left lying in a controller\'s path, it stops the controller', 'PLATFORM': 'once the Doctor jumps up beside it, he can move up and down above it, up to 80 pixels', 'EGG': 'going near it while it lies free hatches a deadly baby madrag',
     'CHEMICALS': 'dropped in the pool, they turn it purple and stop two controllers for good' };
-  const sel1 = (id, list, text) => { const el = document.getElementById(id); list.forEach(k => { const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = text ? text(k) : k.label; el.append(o); }); return el; };
-  const pkOb = sel1('pk-ob', objs), pkDg = sel1('pk-dg', dangers), pkPl = sel1('pk-pl', uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS)/.test(k.t)));
+  const gk = k => /^CHEMICALS:/.test(k.t) ? 'POOL' : k.t.split(':')[0].replace(/ \d+$/, '');   // 'CSC 3: ...' and 'CODE LOCK: button 1' share one entry
+  // one picker, in groups; a walkthrough is a choice too ('walk:' and its name)
+  const menu = document.getElementById('pick');
+  const places = uses.filter(k => /^(TARDIS|CODE LOCK|MACHINERY|CHEMICALS|SENSOR|CSC)/.test(k.t));
+  for (const [label, list] of [['Objects', objs], ['Creatures', crs], ['Dangers', dangers], ['Places', places]]) {
+    const g = document.createElement('optgroup'); g.label = label;
+    const shown = new Set();   // one entry per kind of mark; Next steps through the rest
+    list.forEach(k => { const n = gk(k); if (shown.has(n)) return; shown.add(n); const o = document.createElement('option'); o.value = all.indexOf(k); o.textContent = n; g.append(o); }); menu.append(g);
+  }
+  if (SOLO) { const g = document.createElement('optgroup'); g.label = 'Walkthroughs';
+    for (const [v, t] of [['all', 'The whole solution']]) { const o = document.createElement('option'); o.value = 'walk:' + v; o.textContent = t; g.append(o); } menu.append(g); }
   const pkUse = document.getElementById('pk-use');
   let curObj = null, useIx = -1;
   function marks(list, colour, round, sprites) {
@@ -126,30 +142,34 @@
       const [x, y] = k.at; mctx.fillStyle = colour; mctx.strokeStyle = '#000'; mctx.lineWidth = 1.5;
       mctx.beginPath(); if (round) mctx.arc(x / S, y / S, 4.5, 0, 7); else mctx.rect(x / S - 4.5, y / S - 4.5, 9, 9); mctx.fill(); mctx.stroke();
       const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
-      if (zx > -40 && zx < 808 && zy > -20 && zy < 404) {
+      if (zx > -40 && zx < ZW + 40 && zy > -20 && zy < ZH + 20) {
         // an object is drawn as its own sprite, standing on its point: starting frame $1D30, colour $1850
+        if (Z < 1) { zctx.fillStyle = colour; zctx.beginPath(); zctx.arc(zx, zy, 4, 0, 7); zctx.fill(); if (sprites) { zctx.font = 'bold 11px IBM Plex Mono, monospace'; zctx.lineWidth = 3; zctx.strokeStyle = '#000'; zctx.strokeText(k.t, zx + 6, zy + 4); zctx.fillText(k.t, zx + 6, zy + 4); } continue; }   // objects keep their names zoomed out
         if (sprites) DW.sprite(zctx, DW.image(M, M[0x1D30 + k.o]), zx - 12 * Z, zy - 21 * Z, Z, [2, M[0x1850 + k.o], 8]);
         else { zctx.strokeStyle = colour; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 6 * Z, 0, 7); zctx.stroke(); }
         zctx.font = 'bold 14px IBM Plex Mono, monospace'; zctx.lineWidth = 4; zctx.strokeStyle = '#000'; const lx = zx + (sprites ? 13 * Z : 16); zctx.strokeText(k.t, lx, zy + 5); zctx.fillStyle = colour; zctx.fillText(k.t, lx, zy + 5);
       }
     }
   }
-  const centre = ([x, y]) => view = [Math.min(full.width - 768 / Z, Math.max(0, x - 384 / Z)), Math.min(full.height - 384 / Z, Math.max(0, y - 192 / Z))];
+  const fit = (c, size, span) => span >= size ? (size - span) / 2 : Math.min(size - span, Math.max(0, c - span / 2));   // a map smaller than the view sits in its middle
+  const centre = ([x, y]) => view = [fit(x, full.width, ZW / Z), fit(y, full.height, ZH / Z)];
   centre(start);
   function cross(ctx, x, y, s, c) { ctx.fillStyle = c; ctx.fillRect(x - 4 * s, y - s / 2, 8 * s, s); ctx.fillRect(x - s / 2, y - 4 * s, s, 8 * s); }
   function draw() {
     mctx.imageSmoothingEnabled = true; mctx.drawImage(full, 0, 0, mv.width, mv.height);
-    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, 768 / Z / S, 384 / Z / S);
+    mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.strokeRect(view[0] / S, view[1] / S, ZW / Z / S, ZH / Z / S);
     cross(mctx, start[0] / S, start[1] / S, 2, '#c25a00');
-    zctx.imageSmoothingEnabled = false; zctx.drawImage(full, view[0], view[1], 768 / Z, 384 / Z, 0, 0, 768, 384);
+    zctx.imageSmoothingEnabled = false; zctx.fillStyle = '#000'; zctx.fillRect(0, 0, ZW, ZH); zctx.drawImage(full, view[0], view[1], ZW / Z, ZH / Z, 0, 0, ZW, ZH);
+    cross(zctx, (start[0] - view[0]) * Z, (start[1] - view[1]) * Z, 3, '#c25a00');
     marks(dangers, '#ff6b5b', false);
     marks(objs, '#e8c547', true, true);
     marks(uses, '#5fd068', false);
+    marks(crs, '#6fc3ff', true);
     if (showRp) pts.forEach(([x, y], i) => {
       mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill();
       mctx.fillStyle = '#000'; mctx.font = 'bold 9px IBM Plex Mono, monospace'; mctx.fillText(i, x / S - 3, y / S + 3);
       const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
-      if (zx > -20 && zx < 788 && zy > -20 && zy < 404) { zctx.strokeStyle = '#fff'; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 14, 0, 7); zctx.stroke(); zctx.fillStyle = '#fff'; zctx.font = 'bold 16px IBM Plex Mono, monospace'; zctx.fillText('restart ' + i, zx + 18, zy + 5); }
+      if (zx > -20 && zx < ZW + 20 && zy > -20 && zy < ZH + 20) { zctx.strokeStyle = '#fff'; zctx.lineWidth = 3; zctx.beginPath(); zctx.arc(zx, zy, 14, 0, 7); zctx.stroke(); zctx.fillStyle = '#fff'; zctx.font = 'bold 16px IBM Plex Mono, monospace'; zctx.fillText('restart ' + i, zx + 18, zy + 5); }
     });
     if (sel) {                                   // the chosen mark: a white ring on both maps, drawn last
       const [x, y] = sel.at, zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
@@ -158,26 +178,55 @@
       if (sel.kind === 'Objects') zctx.arc(zx, zy - 10 * Z, 16 * Z, 0, 7); else zctx.arc(zx, zy, 10 * Z, 0, 7);   // an object's ring goes round its sprite
       zctx.stroke();
     }
-    const col = view[0] / 32 | 0, row = 55 - ((view[1] + 384 / Z - 1) / 32 | 0);
+    if (wk) {                                    // the walkthrough: the route so far, and the Doctor's icon
+      const ring = (x, y, n) => { const zx = (x - view[0]) * Z, zy = (y - view[1]) * Z;
+        mctx.fillStyle = '#fff'; mctx.strokeStyle = '#c25a00'; mctx.lineWidth = 2; mctx.beginPath(); mctx.arc(x / S, y / S, 5, 0, 7); mctx.fill(); mctx.stroke();
+        zctx.fillStyle = '#fff'; zctx.strokeStyle = '#c25a00'; zctx.lineWidth = 4; zctx.beginPath(); zctx.arc(zx, zy, 15, 0, 7); zctx.fill(); zctx.stroke();
+        zctx.fillStyle = '#000'; zctx.font = 'bold 15px IBM Plex Mono, monospace'; zctx.textAlign = 'center'; zctx.fillText(n, zx, zy + 5); zctx.textAlign = 'start'; };
+      if (wkPath) { zctx.setLineDash([6, 6]); zctx.strokeStyle = '#fff'; zctx.lineWidth = 2; zctx.beginPath();   // this step's route
+        wkPath.forEach(([x, y], j) => zctx[j ? 'lineTo' : 'moveTo']((x - view[0]) * Z, (y - view[1]) * Z)); zctx.stroke(); zctx.setLineDash([]); }
+      for (const m of wkMarks()) ring(m.at[0], m.at[1], m.n);
+      ring(wk[0], wk[1], 'D');
+    }
+    const col = view[0] / 32 | 0, row = 55 - ((view[1] + ZH / Z - 1) / 32 | 0);
     document.getElementById('mappos').textContent = 'block column ' + col + ', map row ' + row + ' at ' + C64.hex(0xFB80 - 0x80 * row);
   }
-  function at(e) { const b = mv.getBoundingClientRect(); centre([(e.clientX - b.left) * mv.width / b.width * S, (e.clientY - b.top) * mv.height / b.height * S]); draw(); }
-  let drag = false;
-  mv.onpointerdown = e => { drag = true; at(e); }; mv.onpointermove = e => { if (drag) at(e); }; window.addEventListener('pointerup', () => drag = false);
-  const rp = document.getElementById('rp');
-  rp.onclick = () => { showRp = !showRp; rp.setAttribute('aria-pressed', showRp);
-    document.getElementById('rpkv').innerHTML = showRp ? 'Restart points from <code>$9059</code>-<code>$907C</code>, numbered in table order; point 0 is beside the TARDIS.' : ''; draw(); };
-  document.getElementById('home').onclick = () => { choose(null); centre(start); draw(); };
+  // one map: drag it to move around, the wheel or the buttons to zoom, a click on a mark to select it
+  const ZS = [0.25, 0.5, 1, 2, 3, 4];
+  const toMap = e => { const b = zv.getBoundingClientRect(); return [view[0] + (e.clientX - b.left) * zv.width / b.width / Z, view[1] + (e.clientY - b.top) * zv.height / b.height / Z]; };
+  let drag = null;
+  zv.onpointerdown = e => { drag = { x: e.clientX, y: e.clientY, v: view.slice(), moved: false }; zv.setPointerCapture(e.pointerId); zv.style.cursor = 'grabbing'; };
+  zv.onpointermove = e => { if (!drag) return; const b = zv.getBoundingClientRect(), k = zv.width / b.width / Z, dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    if (drag.moved) { centre([drag.v[0] - dx * k + ZW / 2 / Z, drag.v[1] - dy * k + ZH / 2 / Z]); draw(); } };
+  zv.onpointerup = e => { zv.style.cursor = 'grab'; if (drag && !drag.moved) {
+      const [x, y] = toMap(e); let best = null, bd = 14 / Z;
+      for (const k of all) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
+      if (best) choose(best); }
+    drag = null; };
+  zv.addEventListener('wheel', e => { e.preventDefault(); const i = ZS.indexOf(Z), n = ZS[Math.max(0, Math.min(ZS.length - 1, i + (e.deltaY < 0 ? 1 : -1)))];
+    if (n === Z) return; const p = toMap(e); setZoom(n); centre(p); draw(); }, { passive: false });
   const zbs = document.querySelectorAll('[data-z]');
   function setZoom(z) { Z = z; zbs.forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === Z));
-    zv.setAttribute('aria-label', 'The part of the mine inside the magnifier, at ' + ['', 'the size of', 'twice', 'three times', 'four times'][Z] + ' the C64\'s pixels'); }
+    zv.setAttribute('aria-label', 'The mine, at ' + ({ 0.25: 'a quarter of', 0.5: 'half', 1: 'the size of', 2: 'twice', 3: 'three times', 4: 'four times' })[Z] + ' the C64\'s pixels'); }
   const where = k => 'block column ' + (k.at[0] / 32 | 0) + ', map row ' + ((full.height - k.at[1]) / 32 | 0);
-  // choosing a mark: zoom in, centre the magnifier on it, and ring it; an object also arms Where it is used
+  // glide the map from where it is to a point, keeping the zoom
+  let panAnim = 0;
+  function panTo(to, done) {
+    cancelAnimationFrame(panAnim);
+    const from = [view[0] + ZW / 2 / Z, view[1] + ZH / 2 / Z], t0 = performance.now(), ms = 700;
+    const tick = now => { const f = Math.min(1, (now - t0) / ms), e = f * f * (3 - 2 * f);
+      centre([from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e]); draw();
+      if (f < 1) panAnim = requestAnimationFrame(tick); else if (done) done(); };
+    panAnim = requestAnimationFrame(tick);
+  }
+  // choosing a mark: pan the map to it, and ring it; an object also arms Where it is used
   function choose(k, keepObj) {
     sel = k;
-    for (const el of [pkOb, pkDg, pkPl]) el.value = k && el.querySelector('option[value="' + all.indexOf(k) + '"]') ? all.indexOf(k) : '';
+    if (k || !/^walk:/.test(menu.value)) menu.value = k ? all.indexOf(k) : '';
     if (!keepObj) { curObj = k && k.kind === 'Objects' ? k : null; useIx = -1; }
-    if (curObj) pkOb.value = all.indexOf(curObj);
+    if (curObj) menu.value = all.indexOf(curObj);
+    pkUse.hidden = !curObj;
     const list = curObj ? usedAt(curObj.t) : [];
     pkUse.disabled = !list.length;
     pkUse.textContent = !curObj ? 'Where it is used' : !list.length ? 'No place of use traced' : useIx < 0 ? 'Where it is used (' + list.length + ')'
@@ -187,26 +236,97 @@
     if (curObj && k === curObj) note += WHY[k.t] ? ' ' + WHY[k.t][0].toUpperCase() + WHY[k.t].slice(1) + '.' : list.length ? '' : ' What it is for is not known.';
     if (curObj && k !== curObj) note = curObj.t + ', place ' + (useIx + 1) + ' of ' + list.length + ': ' + k.label + ', ' + where(k) + '.';
     document.getElementById('rpkv').textContent = note;
-    if (Z === 2) setZoom(4);
-    centre(k.at); draw();
+    panTo(k.at);
   }
   pkUse.onclick = () => { const list = usedAt(curObj.t);
     if (useIx + 1 >= list.length) { useIx = -1; choose(curObj, true); } else choose(list[++useIx], true); };
-  pkOb.onchange = () => choose(pkOb.value === '' ? null : all[+pkOb.value]);
-  pkDg.onchange = () => choose(pkDg.value === '' ? null : all[+pkDg.value]);
-  pkPl.onchange = () => choose(pkPl.value === '' ? null : all[+pkPl.value]);
-  document.getElementById('pk-dgn').onclick = () => { const i = sel && sel.kind === 'Dangers' ? dangers.indexOf(sel) : -1; choose(dangers[(i + 1) % dangers.length]); };
+  menu.onchange = () => {
+    const w = /^walk:(.*)/.exec(menu.value);
+    document.getElementById('walk').hidden = !w;
+    if (w) { pkUse.hidden = true; curObj = null; STEPS = ROUTES[w[1]]; wk = null; wkPath = null; wkI = -1; wkGo(wkStart); return; }
+    wk = null; wkPath = null; wkI = -1; cancelAnimationFrame(wkAnim); document.getElementById('wk-say').textContent = '';
+    choose(menu.value === '' ? null : all[+menu.value]); setNext(menu.value === '' ? null : all[+menu.value]);
+  };
+  const pkNext = document.getElementById('pk-next');
+  const same = k => all.filter(m => gk(m) === gk(k) && m.kind === k.kind);
+  function setNext(k) { const l = k ? same(k) : []; pkNext.hidden = l.length < 2; if (l.length > 1) pkNext.textContent = 'Next (' + (l.indexOf(k) + 1) + ' of ' + l.length + ')'; pkNext.cur = k; }
+  pkNext.onclick = () => { const l = same(pkNext.cur), k = l[(l.indexOf(pkNext.cur) + 1) % l.length]; choose(k); setNext(k); menu.value = all.indexOf(l[0]); };
   // a link from another tab: ?go= names a mark's label, or an object's number in hex
   const go = new URLSearchParams(location.search).get('go');
-  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
-  zbs.forEach(b => b.onclick = () => { const c = [view[0] + 384 / Z, view[1] + 192 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
-  // a click on the map that lands on a visible mark selects it; anywhere else just moves the magnifier
-  mv.addEventListener('click', e => {
-    const b = mv.getBoundingClientRect(), x = (e.clientX - b.left) * mv.width / b.width * S, y = (e.clientY - b.top) * mv.height / b.height * S;
-    let best = null, bd = 6 * S;
-    for (const k of all) { const d = Math.hypot(k.at[0] - x, k.at[1] - y); if (d < bd) { bd = d; best = k; } }
-    if (best) choose(best);
-  });
+  if (go) { const k = all.find(k => k.label === go || k.t === go) || all.find(k => k.o !== undefined && k.o === parseInt(go, 16) && /^[0-9a-f]{1,2}$/i.test(go)); if (k) { choose(k); cancelAnimationFrame(panAnim); setZoom(1); centre(k.at); draw(); setTimeout(() => zv.scrollIntoView({ block: 'center' }), 0); } }
+  zbs.forEach(b => b.onclick = () => { const c = [view[0] + ZW / 2 / Z, view[1] + ZH / 2 / Z]; setZoom(+b.dataset.z); centre(sel ? sel.at : c); draw(); });
+  // the walkthrough: one step at a time, the Doctor's icon gliding from the last spot to the next
+  const byT = t => all.find(k => k.t === t);
+  const lockAt = n => byT('CODE LOCK: ' + n).at;
+  const sensor = uses.find(k => /^SENSOR/.test(k.t)).at;
+  document.getElementById('dl-map').onclick = () => { const a = document.createElement('a'); a.href = full.toDataURL('image/png'); a.download = 'doctor-who-mines-map.png'; a.click(); };
+  const circ = objs.filter(k => k.t === 'CIRCUIT'), slot = n => byT('MACHINERY: circuit slot ' + n).at;
+  // the solution for the top score, each leg plotted by the route finder over the map's walls, floors, ladders, stairs, lift, hatches, and gates
+  const SPAN = [
+    { at: byT('TARDIS: where it lands (leaves at x $0800)').at, say: 'The Doctor steps out of the TARDIS. Pick up <a href="gameplay.html#splinx">Splinx</a> with F5 and keep her in a pocket to the end: carried out, she doubles the bonus.' },
+    { via: [[868, 1500], [836, 1532], [804, 1532], [772, 1500], [692, 1500], [692, 1396], [748, 1396], [812, 1332], [1276, 1332], [1308, 1364], [1372, 1364], [1404, 1396], [1468, 1396], [1532, 1460], [2036, 1460], [2036, 1252], [2052, 1252], [2052, 756], [1708, 756], [1708, 772], [1700, 828], [1460, 828], [1460, 844], [1468, 884], [1516, 884], [1516, 900], [1508, 948], [1524, 948], [1524, 964], [1532, 1012]], at: byT('SPANNER').at, say: 'Take the <a href="gameplay.html#pockets">SPANNER</a> and keep it: it undoes the clamps on two ladders on the way.' },
+  ];
+  const MAT = [
+    { via: [[1516, 1012], [1516, 884], [1460, 884], [1460, 828], [1716, 828], [1716, 756], [2052, 756], [2052, 564], [1884, 564], [1820, 500], [1756, 500], [1692, 436], [1500, 436], [1436, 372], [1148, 372], [1092, 316], [1100, 308]], at: byT('CHEMICALS').at, say: 'Take the <a href="gameplay.html#pockets">CHEMICALS</a>.' },
+    { at: [692, 308], say: 'From the edge above the pool, drop the CHEMICALS in with F3. The pool turns purple, and two controllers stop for good.' },
+    { via: [[772, 308], [836, 244]], at: byT('MAT').at, say: 'Take the <a href="gameplay.html#pockets">MAT</a>.' },
+  ];
+  const PASS = [
+    { via: [[1324, 244], [1348, 220], [1468, 220], [1476, 308], [1100, 308], [1092, 316], [1100, 324], [1092, 324], [1140, 372], [1436, 372], [1452, 388], [1444, 388], [1492, 436], [1692, 436], [1708, 452], [1700, 452], [1748, 500], [1820, 500], [1836, 516], [1828, 516], [1876, 564], [2076, 564], [2076, 580], [2092, 580], [2100, 628], [3884, 628], [3884, 372]], at: [3572, 372], say: 'Pocket the MAT and hold the <a href="gameplay.html#pockets">SPANNER</a>. Standing on the clamp at the top of this ladder, the second one you reach, press F5 to undo bolt 7 and open the way down.' },
+    { via: [[3572, 404], [3580, 436], [3572, 436], [3572, 452], [3580, 500], [3788, 500], [3788, 516], [3780, 564], [3452, 564], [3388, 500], [2796, 500], [2796, 436], [2436, 436], [2420, 452], [2428, 452], [2380, 500], [2316, 500], [2308, 508], [2316, 516], [2308, 516], [2356, 564]], at: [sensor[0] - 48, sensor[1]], say: 'Climb down, take the MAT back into your hands, and carry it to the code lock. Drop the MAT at the bottom of the stairs with F3, before <a href="gameplay.html#sensor">the floor sensor</a>. The controller it calls stops at the MAT.' },
+    { via: [[2364, 564], [2308, 508], [2316, 500], [2372, 500], [2436, 436], [2532, 436], [2596, 372], [2628, 372], [2684, 316], [2676, 308]], at: lockAt('clue panel'), say: 'Stand at the clue panel with empty hands and press F5 to see the clue. <a href="solution.html#lock">The code lock</a> explains how the clue gives the code.' },
+    { via: [[2676, 308], [2684, 316], [2676, 324], [2684, 324], [2636, 372], [2596, 372], [2580, 388], [2588, 388], [2540, 436], [2436, 436], [2420, 452], [2428, 452], [2380, 500], [2316, 500], [2308, 508], [2316, 516], [2308, 516], [2356, 564], [2612, 564]], at: lockAt('button 3'), say: 'Enter the code with F5 at the three buttons, in the order <a href="solution.html#lock">the code lock</a> works out. The right code opens the wall in front of the PASS CARD.' },
+    { at: byT('PASS CARD').at, say: 'Take the <a href="gameplay.html#pockets">PASS CARD</a> and hold it. The five security gates open only while it is in the Doctor\'s hand.' },
+  ];
+  const STOP = [
+    { via: [[2076, 564], [2076, 180], [2228, 180], [2228, 196], [2236, 244], [2292, 244], [2292, 84]], at: circ[4].at, say: 'Through the gate into the dome, take the O <a href="gameplay.html#pockets">CIRCUIT</a>.' },
+    { via: [[2284, 84], [2284, 100], [2276, 180], [2284, 180], [2284, 196], [2276, 244], [2220, 244], [2220, 180], [1836, 180], [1836, 84], [1700, 84], [1692, 180]], at: circ[5].at, say: 'Take the P CIRCUIT.' },
+    { via: [[1716, 180], [1716, 84], [1844, 84], [1844, 100], [1852, 180], [2052, 180], [2052, 196], [2036, 196], [2028, 564], [2052, 564], [2052, 580], [2036, 580], [2028, 628], [2052, 628], [2052, 644], [2036, 644], [2028, 692], [1932, 692], [1932, 708], [1924, 756], [1708, 756], [1708, 772], [1700, 828], [620, 828], [620, 868], [604, 868], [596, 876], [588, 876], [580, 868], [572, 868], [564, 876], [556, 876], [548, 868], [540, 868], [532, 876]], at: slot(3), say: 'At the <a href="solution.html#step-machine">heatonite machine</a>, take the A CIRCUIT out of slot 3 and put the O in its place.' },
+    { via: [[532, 876], [524, 868], [540, 868], [548, 868]], at: slot(4), say: 'Take the R out of slot 4 and put the P in. Slots 1 to 4 spell STOP and the machine halts. Keep the A or the R: the Doctor must carry one of them home for the halt to double the bonus.' },
+  ];
+  const HOME = [
+    { via: [[564, 876], [556, 868], [572, 868], [588, 868], [620, 868], [628, 868], [628, 828], [1716, 828], [1716, 756], [2052, 756], [2052, 564]], at: byT('CRYSTAL').at, say: 'Drop the PASS CARD: no gate stands on the way home. Take the <a href="gameplay.html#pockets">CRYSTAL</a> and pocket it. <a href="solution.html#master">The Master</a> waits beside the TARDIS, and he comes for it once the Doctor is within 128 pixels across and 32 up or down of him.' },
+    { via: [[2348, 564], [2356, 556], [2308, 508], [2316, 500], [2372, 500], [2436, 436]], at: [3284, 436], say: 'At the foot of this ladder, hold the <a href="gameplay.html#pockets">SPANNER</a> and press F5 to undo bolt 6 from below. The clamp opens, and the Doctor can climb. The SPANNER is not needed again, so drop it.' },
+    { via: [[3284, 372], [3500, 372], [3500, 308], [3316, 308], [3316, 244], [3732, 244], [3732, 180]], at: byT('CAPSULE').at, say: 'Take the <a href="gameplay.html#pockets">CAPSULE</a>.' },
+    { via: [[3724, 180], [3724, 196], [3716, 244], [3284, 244], [3260, 220], [3236, 220], [3228, 276], [3140, 276], [3132, 308], [3084, 308], [3084, 244], [2820, 244], [2804, 260], [2812, 260], [2764, 308], [2692, 308], [2676, 324], [2684, 324], [2636, 372], [2596, 372], [2580, 388], [2588, 388], [2540, 436], [2436, 436], [2420, 452], [2428, 452], [2380, 500], [2316, 500], [2308, 508], [2316, 516], [2308, 516], [2356, 564], [2076, 564], [2076, 708], [2092, 708], [2100, 1012], [2468, 1012], [2532, 948], [2596, 948], [2652, 892], [2644, 884], [2452, 884], [2444, 876], [2500, 820], [3156, 820], [3156, 836], [3164, 884]], at: [3200, 884], say: 'Stop here, out of the Master\'s reach. Put <a href="gameplay.html#splinx">Splinx</a> down, drop the CRYSTAL beside her, and program her to PICK UP OBJECT and then FOLLOW DOCTOR, so that <a href="solution.html#master">she carries the CRYSTAL past the Master</a>.' },
+    { via: [[3444, 884], [3452, 892]], at: byT('TARDIS: the way home (empty hands)').at, say: 'At the <a href="solution.html#step-tardis">TARDIS</a>, pick Splinx up with F5 and pocket her, still holding the CRYSTAL. With Splinx, the CAPSULE, and the A or R in pockets and empty hands, press F5 to go home.' },
+  ];
+  let wkStart = 0;
+  const STAGES = [['The SPANNER', SPAN], ['The CHEMICALS and MAT', MAT], ['The PASS CARD', PASS], ['Stop the machine', STOP], ['Home in the TARDIS', HOME]];
+  // one solution, built up stage by stage; each stage's first step is headed with its name
+  const ALL = STAGES.flatMap(([t, l], n) => l.map((st, k) => k ? st : { ...st, say: '<b>' + (n + 1) + '. ' + t + '.</b> ' + st.say }));
+  const ROUTES = { all: ALL, span: SPAN, mat: MAT, pass: PASS, stop: STOP, home: HOME };
+  let STEPS = ALL;
+  const wkMarks = () => [];
+  const wkNext = document.getElementById('wk-next'), wkBack = document.getElementById('wk-back');
+  function wkGo(i) {
+    const fwd = i === wkI + 1, from = wk ? wk.slice() : STEPS[0].at.slice(), to = STEPS[i].at, t0 = performance.now(), first = wkI < 0;
+    wkI = i; choose(null); if (Z < 2) setZoom(2);
+    document.getElementById('wk-say').innerHTML = STEPS[i].say;
+    document.getElementById('wk-n').textContent = 'Step ' + (i + 1) + ' of ' + STEPS.length;
+    wkBack.disabled = i === 0; wkNext.textContent = i + 1 === STEPS.length ? 'Start again' : 'Next';
+    cancelAnimationFrame(wkAnim);
+    // forward, the icon follows the step's waypoints (a ladder, say); back, it goes straight
+    const raw = [from, ...((STEPS[i].via && fwd) ? STEPS[i].via : []), to];
+    // drop points a few pixels from the last one kept: the route snaps to the character grid, so the
+    // spot an object is drawn at and the end of the route beside it can differ, and the icon would hop back
+    const path = raw.filter((p, j) => j === 0 || j === raw.length - 1 || Math.hypot(p[0] - raw[j - 1][0], p[1] - raw[j - 1][1]) > 12 && Math.hypot(p[0] - raw[raw.length - 1][0], p[1] - raw[raw.length - 1][1]) > 12);
+    wkPath = path.length > 2 ? path : null;
+    const segs = path.slice(1).map((p, j) => Math.hypot(p[0] - path[j][0], p[1] - path[j][1])), len = segs.reduce((a, b) => a + b, 0) || 1;
+    // a steady walking pace: a long leg takes longer, rather than racing past
+    const ms = first ? 0 : fwd && STEPS[i].via ? Math.max(1500, len / 0.3) : 2000;
+    const tick = now => { const f = ms ? Math.min(1, (now - t0) / ms) : 1; let d = f * f * (3 - 2 * f) * len, j = 0;
+      while (j < segs.length - 1 && d > segs[j]) d -= segs[j++];
+      const a = path[j], b = path[j + 1], e = segs[j] ? Math.min(1, d / segs[j]) : 1;
+      wk = [a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e]; centre(wk); draw();
+      if (f < 1) wkAnim = requestAnimationFrame(tick); };
+    wkAnim = requestAnimationFrame(tick);
+  }
+  wkNext.onclick = () => wkGo(wkI + 1 >= STEPS.length ? 0 : wkI + 1);
+  wkBack.onclick = () => wkGo(Math.max(0, wkI - 1));
+  // a link from another tab: ?walk= names a stage of the solution, opened at its first step
+  const walk = new URLSearchParams(location.search).get('walk');
+  if (ROUTES[walk]) { wkStart = STAGES.slice(0, Math.max(0, STAGES.findIndex(([, l]) => l === ROUTES[walk]))).reduce((n, [, l]) => n + l.length, 0); menu.value = 'walk:all'; menu.onchange(); wkStart = 0; if (!SOLO) setTimeout(() => document.getElementById('walk').scrollIntoView({ block: 'start' }), 0); }
   draw();
   function lock(M, full) {
     const glyph = G.lockGlyphs, INK = [1, 2, 6, 5, 7];               // W R B G Y as C64 colours

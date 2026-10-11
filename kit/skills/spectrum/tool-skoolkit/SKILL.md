@@ -91,6 +91,7 @@ Full syntax: the "Control files" chapter of the manual. The subset
 | `b $ADDR title` | bytes | 
 | `w $ADDR title` | words; a pointer is a word |
 | `t $ADDR title` | text in the machine's alphabet |
+| `; kit-block $ADDR BASIC` | before a `b` block: a BASIC program or its variables, which the Source tab lists line by line (`zx-spectrum-reference`, "A game written in BASIC") |
 | `i $ADDR` | ignore from here: the kit's way to close a block exactly where its symbol ends |
 | `@ $ADDR label=NAME` | a label at ADDR |
 | `N $ADDR text` | a line comment above the instruction at ADDR |

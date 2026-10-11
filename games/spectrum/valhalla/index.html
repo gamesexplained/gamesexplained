@@ -1,0 +1,125 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/valhalla-page.css">
+<style>
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">Eighty-one places and thirty-six characters with minds of their own, in a game written mostly in BASIC. Every fight is settled before the first blow, food makes a better weapon than an axe, and the spelling checker forgives a wrong letter.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The game</p>
+  <h2 class="t">The game</h2>
+  <p class="lede">You are a mortal in the world of the Norse myths, and you play it by typing English.</p>
+  <div class="plate"><div class="vh-row">
+    <div class="vh-col"><img class="vh-shot" src="reference/loading-screen.png" width="352" height="296" alt="The loading screen: a Viking helmet, the Legend and Movisoft logos and the word VALHALLA"></div>
+    <div class="vh-col"><img class="vh-shot" src="reference/in-game-spectrumcomputing.png" width="256" height="192" alt="Valheim, a castle on a green plain, with Leer, Loki, Skadi, you and Idun named below the figures" style="width:352px"></div>
+  </div><p class="cap">The loading screen, from the tape in the emulator, and Valheim, where the game starts, from Spectrum Computing. The names under the figures are the characters standing there.</p></div>
+  <p>The top of the screen shows where you are: a picture of the place, with you and everyone else there drawn as figures in a row along the ground. Below it, you type what to do: <code>go north</code>, <code>get the axe</code>, <code>Thor, give me the food</code>, <code>attack Loki with the sword</code>. The game answers in a few lines of text.</p>
+  <p>Thirty-six characters share the world with you, most of them from the myths, and two animals, Snake and Raven. Each has its own goodness, charisma, strength and brains. Those where you are walk off, eat and drink, pick things up, give them away and fight one another without being told, and they can be asked to do things for you. Six quest objects lie locked in chests and cupboards around the 81 places of Midgard, Asgard and Hell: Ofnir, Drapnir, Skornir, Skalir, Felstrong and Grimnir. Grimnir opens the way to the hall of Valhalla, and when you reach it the characters come one by one to congratulate you.</p>
+  <p><a href="levels.html">Maps</a> has the 81 places, how each picture is drawn from its place's number, and the way to the six quest objects. <a href="characters.html">Characters</a> has everyone in the game, what goodness does between them, and how the characters seem to lead lives of their own when the game only ever runs the place you are at.</p>
+  <p>Most of the game is a BASIC program of 20,623 bytes. Machine code at the top of memory, 12,185 bytes, draws the pictures and the figures, reads the keyboard and checks the spelling of every word typed.</p>
+</section>
+
+<section>
+  <p class="fig">02 · Fights</p>
+  <h2 class="t">A fight is settled before the first blow</h2>
+  <p class="lede">Each side's score is its strength now, plus 40 for a weapon and 40 more for a weapon numbered above 66. The difference between the scores decides the fight. The two or three blows on the screen come after.</p>
+  <div class="plate">
+    <div class="vh-ctl" id="vh-presets"></div>
+    <div class="vh-row">
+      <div class="vh-side"><h3>Attacker</h3><div class="vh-ctl" style="margin:0">
+        <label>Who <select id="vh-fa"></select></label>
+        <label>Strength <input id="vh-fas" type="number" min="0" max="255" value="175"></label>
+        <label>With <select id="vh-faw"></select></label>
+        <label><input id="vh-fa1" type="checkbox"> slot 1 holds a weapon</label>
+        <label><input id="vh-fash" type="checkbox"> shield</label>
+        <label><input id="vh-fahe" type="checkbox"> helmet</label>
+      </div></div>
+      <div class="vh-side"><h3>Defender</h3><div class="vh-ctl" style="margin:0">
+        <label>Who <select id="vh-fd"></select></label>
+        <label>Strength <input id="vh-fds" type="number" min="0" max="255" value="175"></label>
+        <label>Weapon in slot 1 <select id="vh-fdw"></select></label>
+        <label><input id="vh-fdsh" type="checkbox"> shield</label>
+        <label><input id="vh-fdhe" type="checkbox"> helmet</label>
+      </div></div>
+    </div>
+    <div id="vh-fout" class="vh-out"></div>
+    <p class="cap">A port of lines 1362 to 1376. Choosing a character fills in its full strength and what it carries on the tape; change any of it. The five buttons are fights tried in the emulator, with Idun's strength poked and two lines of the program changed so that nobody walked off before the blow: each ended as the port says.</p>
+  </div>
+  <p>The attacker's weapon is the object named after "with", so <code>attack Thor</code> is bare hands even with a sword in your pack. The defender always uses whatever is in its first slot. The side behind then adds 32 for a shield and 64 for a helmet, but only if it has something in its first slot (line 1365).</p>
+  <p>Scores within 20 of each other are a draw, and both lose 32 strength. A win by less than 64 sends the loser off to a random place with 64 less, and costs the winner 32. A win by 64 or more kills the loser, and so does any loss of 20 or more by you: you are never merely defeated (line 1374). Nothing random enters the result.</p>
+  <p>An attack you order also moves the attacker's goodness, which is how characters come to like or loathe you: the <a href="characters.html">Characters</a> tab has the rule and the two ways it goes wrong.</p>
+</section>
+
+<section>
+  <p class="fig">03 · Weapons</p>
+  <h2 class="t">Secret: food is a better weapon than an axe</h2>
+  <p class="lede">The test for the better weapon is only the object's number. The axe is 63 and food is 96.</p>
+  <div class="plate"><div class="vh-row">
+    <div class="vh-col"><img class="vh-shot" src="reference/fight-food.png" width="352" height="296" alt="Valheim after the fight: You attack Idun with the food. You defeat Idun. Idun leaves."></div>
+    <div class="vh-col"><table class="vh-tbl" id="vh-weap"></table></div>
+  </div><p class="cap">You, at 175 strength, against Idun at 215 in the emulator. With the axe, 215 against 215 is a draw; with the food, 255 against 215 is a win by 40. The table is every object you can carry, by its number in the dictionary.</p></div>
+  <p>The weapon's score in line 1362 is <code>(w&gt;o)*40+(w&gt;66)*40</code>, where <code>o</code> is the variable that holds 0. Every object counts for 40, and every one numbered above 66 for 80, which puts the sword and Skalir with the rock, the ring, the wine and the food. The axe, Felstrong, the shield and lightning only reach 40. Thrown, the axe and Felstrong do 20 damage and food does 2 (line 1471), so the numbers only favour food in a fight hand to hand.</p>
+</section>
+
+<section>
+  <p class="fig">04 · Typing</p>
+  <h2 class="t">The spelling checker forgives one wrong letter</h2>
+  <p class="lede">Each word is looked up among the 255 rows of the dictionary as you press ENTER. One letter wrong, missing or extra still finds it, and so does an "s" on the end.</p>
+  <div class="plate">
+    <input id="vh-type" class="vh-in" value="Thor, giv me the swords" aria-label="A command to look up" spellcheck="false" autocomplete="off">
+    <div id="vh-words" class="vh-words"></div>
+    <p class="cap vh-need">Each word goes through <code>VH.findWord</code>, a port of <code>$D937</code> and <code>$DA11</code>, on the dictionary at <code>$AFE0</code>. <code>test_parser.py</code> runs it and the game's own code in SkoolKit's Z80 simulator on 746 words: every word in the dictionary that can be typed, each with an "s", three misspellings of each and 100 random strings. They agree on every one.</p>
+  </div>
+  <p>The editor collects letters into a word, lower-cased, and digits into a number; any other character ends the word (<code>$D7CD</code>). The matcher walks the dictionary from row 1. A row that matches with no allowance used wins at once; otherwise it keeps the row that matched the most letters, and at the end takes it if the letters matched are within two of the word's length. The first word it cannot place is turned red and the line stays for editing (<code>$D8C8</code>), so BASIC never sees a word it does not know.</p>
+  <p>The last byte of each row is its class: 1 a name or object, 2 a verb, 3 a preposition, 5 a word passed over ("the", "please" and the place names), 6 a swear word and 7 a game command. A swear word is not an error to the editor. The parser sends it to line 120, where Mary appears and slaps you: "Mary is not amused...".</p>
+</section>
+
+<section>
+  <p class="fig">05 · Money</p>
+  <h2 class="t">Bug: picking up crowns pays one crown</h2>
+  <p class="lede">The routine that adds money, line 3410, adds the number of the one receiving it instead of the amount.</p>
+  <div class="plate">
+    <div class="vh-ctl"><label>Crowns <input id="vh-mamt" type="number" min="0" max="9999" value="50"></label><label>go to <select id="vh-mwho"></select></label></div>
+    <div id="vh-mout" class="vh-out"></div>
+    <p class="cap">Line 3410 is <code>LET x=FN m(n)+n</code>, with n the character and m the amount. In the emulator, picking up a pile of 50 printed "You get 50 crowns." and then "You have 151 crowns."</p>
+  </div>
+  <p>The same routine pays the seller in a trade, so a character paid 100 crowns for its sword gets its own number. Thor is 4. The rest of the money leaves the game.</p>
+</section>
+
+<section>
+  <p class="fig">06 · Saving</p>
+  <h2 class="t">Bug: BREAK during a save resets the Spectrum</h2>
+  <p class="lede"><code>save</code> and <code>load</code> mean to catch BREAK on the tape and carry on. Pressing it resets the machine instead.</p>
+  <p>Both routines, <code>$5CF0</code> and <code>$5D0B</code>, change only the low byte of the address BASIC jumps to on an error, to $25, meaning <code>$5D25</code>. In play that address is the game's own handler, <code>$DA3C</code>, so the jump goes to <code>$DA25</code>, in the middle of the spelling checker, and the Spectrum resets. Seen in play, for both.</p>
+</section>
+
+<section>
+  <p class="fig">07 · Sound</p>
+  <h2 class="t">Sound: the beeper</h2>
+  <p class="lede">There is no music. The machine code clicks each key, and the BASIC has five sounds made with <code>BEEP</code>.</p>
+  <div class="plate"><div class="vh-ctl" id="vh-snd"></div>
+  <p class="cap">Square waves at each sound's pitch and length: BEEP's pitch p is 261.63 × 2<sup>p/12</sup> Hz, and the key sounds call the ROM's BEEPER at <code>$03B5</code> with the counts in <code>$D5B7</code> and <code>$D5AE</code>. The chest and the death are 110 and 131 Hz, which small speakers barely play.</p></div>
+</section>
+
+<section>
+  <p class="fig">08 · Leftovers</p>
+  <h2 class="t">Left behind on the tape</h2>
+  <p class="lede">The machine code was saved with some of what was in memory on the authors' Spectrum.</p>
+  <div class="plate"><pre id="vh-stale" class="vh-dump"></pre>
+  <p class="cap vh-need"><code>$D1D3</code> to <code>$D2B0</code>, 222 bytes nothing reads. From <code>$D200</code> they hold an older copy of the line editor's variables, with its line buffer marked. The editor in use is at <code>$D2B4</code>.</p></div>
+  <p>Someone typed "quitt the axe at Nidhogg". The name "Jas.Learmont" sits at <code>$FE5C</code>, where nothing reads it: James Learmont is in the manual's production team. The BASIC variable <code>i</code> is 13 on the tape, the end of a <code>FOR</code> loop to 12 run as a direct command before the program was saved, and line 10 is <code>REM LEGEND (c) 1983 021083</code>, 2 October 1983.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/spectrum.js"></script>
+<script src="reference/valhalla-page.js"></script>

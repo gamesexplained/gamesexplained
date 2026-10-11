@@ -53,15 +53,15 @@ copy of the C64's.
 
 | `kit/<platform>/` | Provides | Called by |
 |---|---|---|
-| `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES` | `listing.py`, through `platform_modules(platform)` |
-| `snapshot.py` | `read(path) -> bytes`, one flat 64 KB image; exits, naming the format it saw, on anything else | `listing.py` (the snapshot and the hand-over), `symbols_import.py` |
+| `cpu.py` | `decode(ram, a) -> (mnemonic, mode, nbytes) or None`, `operand(a, m, mode, bs, names, regs, chips) -> (text, target)`, `text_decode(kind, byte) -> str`, `TEXT_TYPES`, and optionally `text_items(kind, ram, start, end) -> (texts, starts) or None` for a text type whose items run over many bytes (the Spectrum's BASIC) | `listing.py`, through `platform_modules(platform)` |
+| `snapshot.py` | `read(path) -> bytes`, one flat 64 KB image; exits, naming the format it saw, on anything else. A machine whose cartridges switch banks also takes `read(path, bank=n)`, the bank's chips at their addresses, for a bank's part (`kit/c64/crt.py`) | `listing.py` (the snapshot and the hand-over), `symbols_import.py` |
 | `project.py` or `skoolkit.py` | `read_file(path) -> (blocks, symbols, comments)`, `write(gdir, snapshot, out=None) -> path` | `symbols_export.py` (`read_file`, `--project`/`--ctl`), `symbols_import.py` (`write`) |
 | `r2000.py` or `skoolkit.py` | `read_live(gdir=None) -> (blocks, symbols, comments)` from the running disassembler; `gdir` is the game's folder or a part's (`kit/scripts/parts.py`), for a client that keeps a disassembler per part | `symbols_export.py` (`read_live`), `coverage.py --live` |
 | `registers.py` | `NAMES`, the I/O registers by name, so an operand that sees the chips shows one | `listing.py` |
 
 The C64's `cpu.py` holds the 6502 and PETSCII together; the Spectrum's
 `cpu.py` re-exports `z80.py`, which is where a third Z80 machine would
-point. A `kit/cpu/` layer that splits them is cut when a third machine
+point, and adds `basic.py`, the machine's BASIC as the ROM keeps it. A `kit/cpu/` layer that splits them is cut when a third machine
 arrives, not before. Two pieces are still the C64's: `site/lib/memmap.js`
 is one drawing for every machine but `kit/template/index.html` still names
 its colour tokens after the C64.
@@ -88,7 +88,15 @@ its colour tokens after the C64.
 6. Run one game through the whole workflow to Silver. The retrospective on
    that game (`kit/skills/core/80-retro`) is where the seams you missed show
    up; fix them in the same pull request.
-7. Open the pull request as `AGENTS.md` says, with `[kit-bump]` in its
+7. When the platform was written by a model that is not on the proven list
+   (`kit/models.json`, `kit/scripts/models.py`), a maintainer checks the machine
+   reference's facts and this platform's `INSTALL.md` measurements as
+   `kit/CHECKING.md` sets out, and records the check beside those measurements.
+   Do it before a game on the platform goes to Silver: every later run consults
+   the reference instead of recalling the machine, so a wrong fact there is
+   copied into all of them. The games a platform produces prove its models, not
+   its reference.
+8. Open the pull request as `AGENTS.md` says, with `[kit-bump]` in its
    description. The
    entry in `kit/lessons/` is not "added the platform" but what the
    first game on the new platform taught the kit about reverse engineering that the

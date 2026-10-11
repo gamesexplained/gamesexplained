@@ -7,16 +7,25 @@ it has no cross-references, reads as a table, and coverage still reaches
 100 %. The first Spectrum game had 5.9 KB of it. This builds the code map
 from two sources and holds symbols.json against it.
 
-  codemap.py <game dir> <snapshot.sna> [--entry ADDR ...] [--map FILE ...]
+  codemap.py <game dir> <snapshot.sna> [--entry ADDR ...] [--map FILE ...] [--inline ADDR:N ...]
+      Each option takes every value after it, up to the next option.
       A recursive trace from each --entry (and from every address in each
       --map, an executed-address list: one hex address per line or
       space-separated, with or without `$`, as ZEsarUX's
       `cpu-code-coverage get` prints them). Reports code the map has that
       symbols.json types as data, and Code blocks neither source reached.
-      Writes <game dir>/work/codemap.json. Exits 1 when code is typed as
-      data.
+      Writes <game dir>/codemap.json: addresses only, no byte of the game,
+      so it is committed beside symbols.json (#184). Code that ran is the
+      evidence: check_listing.py fails the game, and this exits 1, while
+      symbols.json types any of it as data. Code only the trace reached is
+      reported to be read, since a trace can walk into data (an inline table
+      after a call). --inline ADDR:N names a routine at ADDR that takes N
+      bytes of arguments after each CALL to it and returns past them: the
+      trace goes on after the arguments instead of decoding them as code.
+      Name every such routine the annotation found, or the trace walks
+      from its arguments into whatever they decode to.
   codemap.py <game dir> <snapshot.sna> --refs ADDR
-      Every instruction in work/codemap.json's code whose operand is ADDR,
+      Every instruction in codemap.json's code whose operand is ADDR,
       and every place ADDR occurs in the image as a little-endian word.
       Indexed access (IX+d, HL after arithmetic) is not found by either.
   codemap.py --test
@@ -58,8 +67,10 @@ def instruction(mem, a):
     return n, m + (" " + text if text else ""), targets, stops
 
 
-def trace(mem, entries):
-    """(instruction starts, code bytes) reached from the entries."""
+def trace(mem, entries, inline=None):
+    """(instruction starts, code bytes) reached from the entries; inline maps a routine's
+    address to the number of argument bytes that follow each CALL to it."""
+    inline = inline or {}
     starts, code, work = set(), set(), list(entries)
     while work:
         a = work.pop()
@@ -67,13 +78,15 @@ def trace(mem, entries):
             ins = instruction(mem, a)
             if ins is None:
                 break
-            n, _, targets, stops = ins
+            n, text, targets, stops = ins
             starts.add(a)
             code.update(range(a, a + n))
             work.extend(t for t in targets if RAM_LO <= t < 0x10000 and t not in starts)
             if stops:
                 break
             a += n
+            if text.startswith("call") and targets:
+                a += inline.get(targets[0], 0)        # the arguments after the CALL are data
     return starts, code
 
 
@@ -98,12 +111,33 @@ def hexarg(s):
     return int(s.lstrip("$").rstrip("Hh"), 16)
 
 
-def build(gdir, sna, entries, maps):
+def options(rest):
+    """(entries, maps, inline) from the arguments after the snapshot. Each option takes every
+    value up to the next option, so a shell glob after --map and a list of addresses after
+    --entry are all read; a value before any option is an error."""
+    opts, opt = {"--entry": [], "--map": [], "--inline": []}, None
+    for a in rest:
+        if a in opts:
+            opt = a
+        elif opt is None:
+            sys.exit(f"{a}: give it after --entry, --map or --inline")
+        else:
+            opts[opt].append(a)
+    inline = {}
+    for a in opts["--inline"]:
+        at, _, n = a.partition(":")
+        if not n.isdigit():
+            sys.exit(f"--inline {a}: give the routine and its argument bytes, as ADDR:N")
+        inline[hexarg(at)] = int(n)
+    return [hexarg(a) for a in opts["--entry"]], opts["--map"], inline
+
+
+def build(gdir, sna, entries, maps, inline=None):
     mem = bytearray(snapshot.read(sna))
     executed = set()
     for m in maps:
         executed |= {a for a in read_map(m) if a >= RAM_LO}
-    starts, code = trace(mem, list(entries) + sorted(executed))
+    starts, code = trace(mem, list(entries) + sorted(executed), inline)
     ex_bytes = set()
     for a in executed:
         ins = instruction(mem, a)
@@ -113,26 +147,30 @@ def build(gdir, sna, entries, maps):
     for b in sym["blocks"]:
         if b["type"] == "Code":
             typed.update(range(b["start"], b["end"] + 1))
-    os.makedirs(os.path.join(gdir, "work"), exist_ok=True)
-    json.dump({"starts": sorted(starts), "code": sorted(code), "executed": sorted(executed)},
-              open(os.path.join(gdir, "work", "codemap.json"), "w"))
+    with open(os.path.join(gdir, "codemap.json"), "w") as f:
+        json.dump({"starts": sorted(starts), "code": runs(code), "executed": sorted(executed),
+                   "ran": runs(ex_bytes)}, f)
     as_data, unreached = code - typed, typed - code
+    ran_as_data = as_data & ex_bytes
     print(f"code map: {len(code)} bytes in {len(runs(code))} runs "
           f"({len(ex_bytes)} executed, {len(code - ex_bytes)} reached by the trace alone)")
     print(f"symbols.json types {len(typed)} bytes as Code")
-    print(f"code typed as data: {len(as_data)} bytes in {len(runs(as_data))} runs")
-    for s, e in sorted(runs(as_data), key=lambda r: r[0] - r[1])[:40]:
-        print(f"  ${s:04X}-${e:04X}  {e - s + 1}")
+    for what, part in (("code that ran, typed as data", ran_as_data),
+                       ("code only the trace reached, typed as data (read it: a trace can walk into data)",
+                        as_data - ran_as_data)):
+        print(f"{what}: {len(part)} bytes in {len(runs(part))} runs")
+        for s, e in sorted(runs(part), key=lambda r: r[0] - r[1])[:40]:
+            print(f"  ${s:04X}-${e:04X}  {e - s + 1}")
     print(f"typed Code, reached by neither source: {len(unreached)} bytes in {len(runs(unreached))} runs "
           "(a handler in a table, an operand written at run time, or data)")
     for s, e in runs(unreached)[:40]:
         print(f"  ${s:04X}-${e:04X}  {e - s + 1}")
-    return 1 if as_data else 0
+    return 1 if ran_as_data else 0
 
 
 def refs(gdir, sna, target):
     mem = bytearray(snapshot.read(sna))
-    path = os.path.join(gdir, "work", "codemap.json")
+    path = os.path.join(gdir, "codemap.json")
     if not os.path.exists(path):
         sys.exit(f"no {path}: build the code map first")
     cm = json.load(open(path))
@@ -145,7 +183,7 @@ def refs(gdir, sna, target):
     print(f"instructions whose operand is ${target:04X}: {len(hits)}")
     for a, text in hits:
         print(f"  ${a:04X}  {text}{'' if a in executed else '   (not executed in the maps)'}")
-    code, sset = set(cm["code"]), set(starts)
+    code, sset = {a for s, e in cm["code"] for a in range(s, e + 1)}, set(starts)
     words = [a for a in range(RAM_LO, 0xFFFF) if mem[a] == target & 255 and mem[a + 1] == target >> 8]
     print(f"the word ${target:04X} occurs at {len(words)} addresses:")
     for a in words:
@@ -173,6 +211,10 @@ def test():
         0x8020: [0xE9],                   # jp (hl): stops
         0x8030: [0x21, 0x00, 0x90, 0xC9],  # a handler only a table names: ld hl,$9000 / ret
         0x9000: [0x30, 0x80],             # the table: the word $8030
+        0x8060: [0xCD, 0x70, 0x80,        # call $8070, which takes two bytes after the call:
+                 0xC3, 0x00,              #   jp $C900 if they were read as code
+                 0xC9],                   # $8065: ret, where the routine returns to
+        0x8070: [0xC9],
     }
     for a, bs in prog.items():
         mem[a:a + len(bs)] = bytes(bs)
@@ -181,6 +223,12 @@ def test():
     assert 0x8030 not in code                     # a trace cannot find it
     starts, code = trace(mem, [0x8000, 0x8030])   # an executed map, or --entry, can
     assert set(range(0x8030, 0x8034)) <= code
+    starts, code = trace(mem, [0x8060])           # without --inline the arguments read as a jump
+    assert 0x8063 in starts and 0xC900 in starts, "the arguments were not decoded as a jump"
+    assert options(["--entry", "8000", "$8030", "--map", "a.txt", "b.txt", "--inline", "8070:2"]) == \
+        ([0x8000, 0x8030], ["a.txt", "b.txt"], {0x8070: 2})          # every value after an option
+    starts, code = trace(mem, [0x8060], {0x8070: 2})
+    assert code == {0x8060, 0x8061, 0x8062, 0x8065, 0x8070}, sorted(code)
     with tempfile.TemporaryDirectory() as d:
         game = os.path.join(d, "g")
         os.makedirs(os.path.join(game, "work"))
@@ -197,7 +245,10 @@ def test():
             rc = build(game, sna, [0x8000], [os.path.join(game, "work", "cov.txt")])
         text = out.getvalue()
         assert rc == 1, text
-        assert "$8010-$8013  4" in text and "$8030-$8033  4" in text, text          # typed as data
+        cm = json.load(open(os.path.join(game, "codemap.json")))                     # beside symbols.json
+        assert cm["code"][0] == [0x8000, 0x8008] and [0x8030, 0x8033] in cm["ran"], cm
+        ran, traced = text.split("code only the trace reached")
+        assert "$8030-$8033  4" in ran and "$8010-$8013  4" in traced, text          # typed as data
         assert "$8040-$8041  2" in text, text                                        # typed Code, unreached
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
@@ -209,7 +260,8 @@ def test():
             refs(game, sna, 0x8030)
         assert "$9000  data" in out.getvalue(), out.getvalue()                       # the table entry
     print("ok - codemap.py self-check: the trace stops where it must, a map adds what it cannot see, "
-          "code typed as data is reported, refs finds operands and stored words")
+          "code typed as data is reported, refs finds operands and stored words, "
+          "--inline skips a call's arguments")
 
 
 def main():
@@ -223,11 +275,10 @@ def main():
     gdir, sna, rest = argv[0], argv[1], argv[2:]
     if "--refs" in rest:
         refs(gdir, sna, hexarg(rest[rest.index("--refs") + 1])); return
-    entries = [hexarg(rest[i + 1]) for i, a in enumerate(rest) if a == "--entry"]
-    maps = [rest[i + 1] for i, a in enumerate(rest) if a == "--map"]
+    entries, maps, inline = options(rest)
     if not entries and not maps:
         sys.exit("give at least one --entry or --map: the trace needs somewhere to start")
-    sys.exit(build(gdir, sna, entries, maps))
+    sys.exit(build(gdir, sna, entries, maps, inline))
 
 
 if __name__ == "__main__":

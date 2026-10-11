@@ -94,3 +94,40 @@ A model named under `failed` is not proven by this game, whatever
 fails any game at Silver or above that ran on an unproven model and has
 no passing `verification`. Once the game is merged, its models count as
 proven for every run after it.
+
+## A platform written on an unproven model
+
+A new platform's machine reference (`kit/skills/<platform>/<machine>-reference/`)
+and its tool skills (`kit/skills/<platform>/tool-*/`) are what every game on
+that machine consults instead of recalling it. A wrong fact in them is copied
+into every later run. When the model that wrote them is not on the proven list,
+a maintainer checks the platform the same way, before a game on it goes to
+Silver, and records the check in `kit/<platform>/INSTALL.md` beside its
+measurements:
+
+```
+Platform checked: <GitHub login>, <model>, <date>; sampled 24 facts and
+6 measurements, 0 wrong (the RST $08 handler, the BANKM address and the
+interlace table among them).
+```
+
+Pick the sample yourself, and test it against the machine, not the prose:
+
+1. **The machine reference's facts**: the memory map; the register, port and
+   vector addresses; the timing constants; the character set. Each against the
+   machine's ROM bytes, its documentation or the emulator. Prefer the facts a
+   game's layout and the platform's tools lean on: a wrong vector or ROM address
+   sends every later run wrong.
+2. **`kit/<platform>/INSTALL.md`'s measurements**: re-run `check-emulator` and
+   `verify-footprint` on the hosts it records, and confirm its pass counts, the
+   builds it names and the versions. A date and a count that will not reproduce
+   fail.
+3. **The tool skills' behaviours**: the quirks they tell the next run to work
+   around, observed live, and the commands they say work, run once.
+
+One wrong fact fails the check, as for a game: the reference was written from a
+model's memory of the machine, and a sample that finds one error means there are
+others. Correct what failed in place (a reference states what is true now); the
+story of the check belongs where the platform's history is kept. The games a
+platform produces prove its models, not its reference: they consult it, they do
+not test it.

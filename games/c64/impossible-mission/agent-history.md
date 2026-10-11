@@ -124,3 +124,15 @@ one result agreed on (see `features.md`). It also showed that the two
 Zzap!64 placings first read as a contradiction are two different lists,
 editors' and readers', and a third figure for the review score appeared,
 so the score stays out.
+
+## 6 October 2026: Reception from the magazines
+
+This session could reach Wikipedia, C64-Wiki and the Internet Archive.
+The magazine scans corrected the page: Zzap!64's first issue did not
+review the game (it predates the magazine) but ran the Zzap Challenge on
+it, so the three review scores the search summaries gave belong to no
+issue checked; the British release was CBS Software's, later US Gold's;
+the Zzap!64 readers' chart that put it first is issue 2's. The reception
+section was rewritten from the scans, with links to them. At the
+contributor's request the Overview no longer says the timing was written
+for American televisions.

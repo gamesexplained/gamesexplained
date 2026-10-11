@@ -100,7 +100,7 @@
       [
         "$0400",
         "$07FF",
-        "VIC bank 0 colour matrix and sprite pointers: bitmap_setup fills it with $02 and the sprite routines write the pointers; spaces at the hand-over"
+        "VIC bank 0 colour matrix and sprite pointers: bitmap_setup fills it with $02 and the sprite routines write the pointers; mostly spaces at the hand-over"
       ],
       [
         "$1C00",
@@ -110,7 +110,7 @@
       [
         "$4000",
         "$7FFF",
-        "VIC bank 1, all written at run time: copy_banks copies $0800-$3FF0 here, then $4400 is the credits screen, $4800 the character set copy (charset_copy) and $6000 the second bitmap buffer; the hand-over bytes are a stale near-copy of $0800-$3FFF"
+        "VIC bank 1, all written at run time: copy_banks copies $0800-$3FF0 here, then $4400 is the credits screen, $4800 the character set copy (charset_copy) and $6000 the second bitmap buffer; the hand-over bytes are stale, about half of them matching $0800-$3FFF"
       ],
       [
         "$9F00",
@@ -118,9 +118,9 @@
         "music_save's 64-byte buffer for the music state, written before it is read"
       ],
       [
-        "$E000",
+        "$EA00",
         "$FFFF",
-        "RAM under the KERNAL ROM: $E000-$E9FF receives the tune from $8500 (copy_tune_start) and is read there by tune_read; what the hand-over holds in $E000-$FFFF is stale and never read, and the addresses the code calls there ($EA31, $FFBA-$FFE4) are KERNAL ROM routines"
+        "RAM under the KERNAL ROM above the tune: never written or read by the intro; the addresses the code calls there ($EA31, $EA7E, $FFBA-$FFE4) are KERNAL ROM routines"
       ],
       [
         "$907C",
@@ -154,8 +154,13 @@
       ],
       [
         "$9F40",
+        "$9F9F",
+        "stale bytes after music_save's buffer, never executed or read"
+      ],
+      [
+        "$9FAB",
         "$9FFF",
-        "stale bytes after music_save's buffer, ending in the text 'MOBOTIMON*', never executed or read: filler or stale bytes left in the image"
+        "stale bytes after blank_top_colour, ending in the text 'MOZOOM1000', never executed or read"
       ],
       [
         "$AA83",
@@ -176,11 +181,6 @@
         "$C3B3",
         "$C3BF",
         "stale bytes after logo_move, never executed or read: filler or stale bytes left in the image"
-      ],
-      [
-        "$C4C4",
-        "$C4FF",
-        "fill after sparkle_loop, never executed or read: filler or stale bytes left in the image"
       ],
       [
         "$C5ED",
@@ -245,10 +245,21 @@
       [
         "$D000",
         "$DFFF",
-        "RAM under the I/O area: stale bytes (pieces of the older crack's menu code as at $8085, of the tune and of the credit text); never read, since the only code that banks the I/O out, tune_read, reads $E000-$E9FF"
+        "RAM under the I/O area: zeros at the hand-over, never read, since the only code that banks the I/O out, tune_read, reads $E000-$E9FF"
+      ],
+      [
+        "$8000",
+        "$8FFF",
+        "zeros: the original's depacker writes nothing here and nothing reads it"
       ]
     ],
-    "extra": [],
+    "extra": [
+      [
+        "$E000",
+        "$E9FF",
+        "the theme tune, three note lists in the RAM under the KERNAL, read by the music player through pointers"
+      ]
+    ],
     "include": []
   },
   "io": [],
@@ -276,24 +287,6 @@
       "$B9FF",
       "graphics",
       "an unused hires picture fragment with 'A VIEW TO A KILL' lettering"
-    ],
-    [
-      "$8100",
-      "$84FF",
-      "text",
-      "an older crack's title screen (The Dynamic Duo), never shown"
-    ],
-    [
-      "$8500",
-      "$8EFF",
-      "sound",
-      "the theme tune's three note lists, copied to $E000"
-    ],
-    [
-      "$8F00",
-      "$8FFF",
-      "text",
-      "the older crack's part menu, never shown"
     ],
     [
       "$9100",
@@ -324,6 +317,12 @@
       "$C63F",
       "variables",
       "music driver state"
+    ],
+    [
+      "$E000",
+      "$E9FF",
+      "sound",
+      "the theme tune's three note lists, in the RAM under the KERNAL"
     ]
   ]
 }

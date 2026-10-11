@@ -44,10 +44,12 @@ contributor can trust it with their computer.** In practice:
    The platform notes name each project, its licence and its source, and
    the contributor hears all three before anything is fetched.
 
-**If you are the first on an operating system** (each platform's notes
-say which systems a run is recorded on, and when),
-the macOS setup is the standard to match, and matching it is part of your
-run:
+**If you are the first on an operating system**, that is, your kind of
+computer has no cell for the platform in `site/status.json`, or its cell
+is `untested`, the macOS setup is the standard to match, and
+matching it is part of your run. Another distribution or version of a
+system with a run recorded, or a desktop where a server was recorded, is
+not a first:
 
 - Install the tools inside `tools/` exactly as the platform's notes say.
 - Make the platform's launcher, `kit/<platform>/tools.py`, contain the
@@ -69,6 +71,14 @@ run:
   sentence on what was measured, and the date. Add a row to `hosts` if
   your kind of computer has none; its `match` is a pattern that finds
   it in `tools.host` in `game.json`.
+
+Every other run changes the platform's notes only where they are wrong,
+or lack what the next run on that system needs (a library its machine
+lacked, a command that failed), and corrects the sentence in place, as in
+a game's `facts.md`. A run that found the notes right leaves them alone;
+how it went belongs in the game's `agent-history.md`. `check_docs.py`
+fails a second section of a platform's notes for one system, and a second
+row of its measurements for one build on one kind of computer.
 
 ## Everything goes in `tools/`, and uninstalling is deleting the folder
 
@@ -126,6 +136,23 @@ not containment of an arbitrary Firefox package. A snap can create
 paths. Use a native Firefox executable and check its footprint before
 claiming containment; `verify-footprint` does not scan Firefox state.
 Deleting `tools/firefox/` removes its local state.
+
+An existing Chromium executable can be selected explicitly with
+`KIT_BROWSER_CHROMIUM=/absolute/path/to/chrome-headless-shell python3
+kit/scripts/tools.py browser`. Nothing is installed or downloaded. The
+launcher supplies an independent profile, XDG state, and temporary
+directory under `tools/chromium/`, disables crash reporting, and exposes
+CDP on port 9222. `KIT_BROWSER_PORT` selects another free port; retain that
+setting for `status` and `stop browser`. Full Chromium can fail when a deep
+clone path exceeds its Unix profile-singleton socket limit; an existing
+`chrome-headless-shell` avoids that socket. Deleting `tools/chromium/`
+removes the local state. Chromium runs with `--no-sandbox` in this launcher;
+use it for the local page checks, with an executable whose origin you know.
+On 4 October 2026, Ubuntu x86_64 page checks used Chromium
+153.0.8010.12 from an existing Playwright cache (headless-shell build 1243),
+controlled by an existing Playwright Core 1.59.1 client. No browser package
+was downloaded in that run. This establishes the tested configuration;
+`verify-footprint` still does not scan browser state.
 
 The launcher uses `pkill` to stop the process whose command names this
 clone's exact profile. The recorded host test is Linux; verify containment

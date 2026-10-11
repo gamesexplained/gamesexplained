@@ -51,6 +51,8 @@ Usage:
   tools.py get-skoolkit                     install SkoolKit under tools/skoolkit (PyPI)
   tools.py snapshots                        where snapshots land, and what is there
   tools.py check-emulator [--keep]          test it against kit/EMULATOR.md (kit/spectrum/check_emulator.py)
+  tools.py z80-accuracy                     measure its Z80 with public test programs (kit/spectrum/z80_accuracy.py):
+                                            the first run downloads them into tools/z80-accuracy/ (nothing is vendored)
   tools.py verify-footprint                 prove it writes nothing outside this repository
 
 Three of those, `snapshots`, `check-emulator` and `verify-footprint`, are not
@@ -68,7 +70,7 @@ import glob, json, os, re, subprocess, sys, time
 # What this launcher serves, read by the dispatcher (kit/scripts/tools.py) when several
 # platforms have a launcher. Keep in step with main() below.
 COMMANDS = ("status", "zesarux", "stop", "snapshots", "verify-footprint", "check-emulator",
-            "get-zesarux", "get-skoolkit")
+            "z80-accuracy", "get-zesarux", "get-skoolkit")
 TOOL_NAMES = ()
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -404,6 +406,8 @@ def main():
         verify_footprint()
     elif a[0] == "check-emulator":
         sys.exit(subprocess.run([sys.executable, os.path.join(HERE, "check_emulator.py"), *a[1:]]).returncode)
+    elif a[0] == "z80-accuracy":
+        sys.exit(subprocess.run([sys.executable, os.path.join(HERE, "z80_accuracy.py"), *a[1:]]).returncode)
     elif a[0] == "get-zesarux":
         sys.exit(subprocess.run([sys.executable, os.path.join(HERE, "get_zesarux.py"), *a[1:]]).returncode)
     elif a[0] == "get-skoolkit":

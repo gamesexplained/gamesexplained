@@ -8,12 +8,18 @@ in `orientation.md`.
 
 ## Build
 
-A single packed program file (`orientation.md`). The depacker leaves the
-game at `$484D` with the KERNAL banked in; the game banks it out itself
-(`$01` = `$35`) and banks it back only to save (`$958A`). A loader stub at
-`$7F00`-`$7F52` that prints "PLEASE WAIT -- STILL LOADING" and jumps to
-`$484D`, and a prologue at `$4800`-`$484C` that never runs, are left over
-from the release the file was made from.
+The original disk, DWMT DISK MASTER (`orientation.md`): the BASIC boot
+program DWMT loads SCR (`$4000`-`$482F`, the title screen), THEME
+(`$1000`-`$1DFF`), P2 (`$8000`-`$CFFF`), P3 (`$E000`-`$FF6F`) and P1
+(`$0800`-`$77FF`), then types `SYS18509`, leaving the game at `$484D` with
+the KERNAL banked in; the game banks it out itself (`$01` = `$35`) and
+banks it back only to save (`$958A`). A prologue at `$4800`-`$484C` never
+runs. At the hand-over `$FF70`-`$FFF9` and `$7F00`-`$7F52` hold the
+power-on `$00`/`$FF` pattern. A cracked single program file (29,175
+bytes, SHA-256 `8d143c7a...`) studied first holds the same bytes from
+`$0100` to `$FF6F` wherever the listing has them, plus a loader stub at
+`$7F00`-`$7F52` that prints "PLEASE WAIT -- STILL LOADING" and loader
+fragments above `$FF6F` (*live*, 3 and 8 October 2026).
 
 ## Memory layout
 
@@ -70,7 +76,7 @@ rows, each into its own zero-page byte, and sets movement flags
 | F7 | `$D1` | with a direction, throw the held item (`$A68A`) |
 | S | `$D3` | the Splinx Programmer (*live*) |
 | R | `$E8` = `$12` | forced regeneration (*live*: message, lives 5 to 4) |
-| D, CTRL+D, L | `$E8` = `$80`, `$C0`, `$FF` | the save menu, but only where the Doctor stands on tile `$23`: everywhere else `doctor_update` clears `$E8` (`$C902`-`$C909`; *live*: D beside the TARDIS does nothing) |
+| D, CTRL+D, L | `$E8` = `$80`, `$C0`, `$FF` | the save menu, but only where the map block at the Doctor's middle (`$9A09` stores it in `$78`) is block `$23`, the booth marked CSC (a cryostasis chamber, per the steward), which appears eight times, each on restart point 1-8 (`$9059`; point 0 is beside the TARDIS) (rows/columns 8/95, 17/33, 20/67, 24/42, 28/120, 34/59, 50/17, 50/121): everywhere else `doctor_update` clears `$E8` (`$C902`-`$C909`; *live*, original disk, 8 October 2026: D beside the TARDIS does nothing; D in the booths at 28/120 and 17/33 reaches `save_menu` `$94FF`) |
 
 ## Graphics
 
@@ -107,7 +113,7 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
 ## Text
 
 - **Screen codes** on the Splinx Programmer screen at `$0C00` and on the
-  loading picture left at `$0400` in the hand-over image.
+  title screen (SCR) left at `$0400` in the hand-over image.
 - **A private alphabet** for everything the game prints: a letter is its
   ASCII code plus 155 (`A` = `$DC` ... `Z` = `$F5`), a digit *n* is `$F6` +
   *n*, `$94` is a space and `$00` ends a string.
@@ -234,8 +240,23 @@ picture by a frame capture (*live*: `frame.py compare`, 104,448 of
   shape, so its first shape is the clue's. The deck's first seven entries
   match the outer band of the printed code card read from its top corner
   (by eye, from the contributor's photograph). Success also sets switch
-  cell 13 to block `$D5` (`$BF62`). The `$4E` test at `$BB05` is
+  cell 13, map row 38 column 84, from block `$C2` to `$D5` (`$BF62`):
+  `$C2`'s left column is character `$27` (terrain class 1, wall) and `$D5`
+  is open floor, so the wall right of the buttons opens onto the PASS
+  CARD (`$37`, starting at x `$0AA8`, y `$04D8`). *Live*, original disk,
+  8 October 2026: walking right from the buttons the Doctor stops at x
+  `$0A69`; after the success path (`$BF59`) he walks on to x `$0B01` and
+  F5 picks up the PASS CARD. The security gate is block `$20` (a column
+  of character `$A0`), five times in the map: rows/columns 24/67, 38/53,
+  38/67, 50/61, 50/67; `$16A0` is 0 (open) only while the Doctor holds
+  `$37` in his hands (`$1D80`, `$BB15`). The `$4E` test at `$BB05` is
   overwritten by the PASS CARD test at `$BB15`.
+- **The floor sensor** (`$CA6B`-`$CA85`): when the block under the
+  Doctor's centre (`$9A09`) is `$BD`, the game starts sound `$0F`, sets
+  `$CC44` = 1 so `doctor_draw` flashes object `$29` (the circle on the
+  wall), and puts controller `$23` into state `$0F`, the chase, unless its
+  state is already `$14`. Jumping over it did not avoid it (*live*, the
+  steward); jumping to `$CA87` disables it (*live*).
 - **The prisoner** (`$CE28`, `$C9A5`, `$CF24`): controller `$22` is the
   only one whose flag `$778A`,X is 1 (it starts at `$0C40`, `$0588`).
   Touching the Doctor while `$50` is not negative and his Y AND `$0F` = 8,
@@ -337,7 +358,7 @@ stop. `STA $D400,Y` at `$755D` reaches the SID through an index.
 | D pressed beside the TARDIS | nothing; `$E8` back to 0 |
 | Walk right until a fall | FALLING ON A STALAGMITE, a life lost |
 | Twelve frames stepped in play, SID and `$E1` read | music plays; `$E1` stays 1 |
-| Original disk, stopped at `$484D`, RAM compared with the listing | equal in all bytes the listing holds except zero page and `$FF70`-`$FFFF` (3 October 2026) |
+| Original disk, stopped at `$484D`, RAM compared with the cracked file's listing | equal in all bytes that listing held except zero page and `$FF70`-`$FFFF` (3 and 8 October 2026); the listing was rebuilt from this snapshot on 8 October 2026 |
 | Restart point moved to the crystal room, a life lost | the room on screen matches the Maps tab, railing gap included |
 | CIRCUITs `$44` and `$45` put at x `$0208` and `$0228`, y `$0390` | slots read S T O P T; `$4F` = `$FF`; `$42`/`$43` put back: `$4F` = 0 |
 | Restart beside the madrag | head and body drawn above the legs, as on Gameplay |

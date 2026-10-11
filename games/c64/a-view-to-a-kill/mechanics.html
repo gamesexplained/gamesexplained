@@ -14,10 +14,10 @@
 <section id="programs" data-part="">
   <p class="fig">01 · Five programs</p>
   <h2 class="t">Each section is a whole program that fills the memory</h2>
-  <p class="lede">Nothing in any section loads another. Each is unpacked over the whole of memory and runs until the player loads the next one.</p>
+  <p class="lede">No section loads the next. Each is unpacked over the whole of memory and runs until the player goes back to the disk's menu, which the intro loads by itself when it ends (<a href="source-intro.html#C4DB"><code>$C4DB</code></a>).</p>
   <table class="t">
     <tr><th>Program</th><th>Starts at</th><th>Screen</th><th>Sound</th></tr>
-    <tr><td><a href="source-intro.html">Intro</a></td><td><code>$8020</code></td><td>a scrolling bitmap on two banks</td><td>the Bond theme, speech</td></tr>
+    <tr><td><a href="source-intro.html">Intro</a></td><td><code>$C5A0</code></td><td>a scrolling bitmap on two banks</td><td>the Bond theme, speech</td></tr>
     <tr><td><a href="source-paris.html">Paris</a></td><td><code>$43B0</code></td><td>characters, split in three</td><td>a tune, effects, speech</td></tr>
     <tr><td><a href="source-city-hall.html">City Hall</a></td><td><code>$1000</code></td><td>characters, split in five</td><td>the Bond theme, effects</td></tr>
     <tr><td><a href="source-mine.html">The mine</a></td><td><code>$5660</code></td><td>characters, scrolling both ways</td><td>Paris's tune, effects</td></tr>
@@ -50,23 +50,30 @@
   <p class="fig">03 · Paris</p>
   <h2 class="t">Secret: Paris starts the chase by resetting the computer</h2>
   <p>Fire on Paris's instruction page does not call the game. It jumps to the operating system's own reset routine (<code>$4FBB</code>). A reset checks the memory at <code>$8004</code> for the letters CBM80, the signature a cartridge carries, and if it finds them it starts the cartridge instead of BASIC. Paris keeps a cartridge header of its own at <code>$8000</code>, pointing at the chase (<code>$5A00</code>). So the reset sets up the machine from scratch and then hands straight back to the game.</p>
-  <p>The same trick makes RESTORE useful: the part points the RESTORE key's interrupt at its own start, so pressing it brings the instruction page back (<code>$43B0</code>).</p>
+  <p>RESTORE brings the instruction page back. The part points the RESTORE key's interrupt at a short routine that resets the stack and shows the page (<code>$43D0</code>).</p>
+</section>
+
+<section id="menu" data-part="">
+  <p class="fig">04 · Back to the menu</p>
+  <h2 class="t">ABORT offers to play again or load the menu</h2>
+  <p>ABORT in City Hall and the mine, and RESTORE in the mine, open a black screen with two lines, RESTART GAME and RETURN TO MENU, and a pointing hand moved with the joystick (<a href="source-city-hall.html#0C00"><code>$0C00</code></a>, <a href="source-mine.html#0C00"><code>$0C00</code></a>). Fire on the first starts the section again. Fire on the second loads the file MENU from the disk and runs it. The mine tries again if the load fails; City Hall does not check.</p>
+  <figure style="margin:18px 0"><img src="reference/city-hall-abort.png" width="384" height="272" alt="City Hall's ABORT screen: RESTART GAME and RETURN TO MENU"><figcaption class="cap">City Hall's ABORT screen.</figcaption></figure>
 </section>
 
 <section id="shared" data-part="">
-  <p class="fig">04 · Shared code</p>
+  <p class="fig">05 · Shared code</p>
   <h2 class="t">The same routines at the same addresses in different sections</h2>
   <p class="lede">Compared byte for byte in the unpacked programs, these are identical.</p>
   <table class="t">
     <tr><th>What</th><th>Where</th></tr>
     <tr><td>The music driver</td><td>intro and City Hall, <code>$C621</code>-<code>$C7FE</code></td></tr>
     <tr><td>The Bond theme's notes</td><td>intro and City Hall, from <code>$E000</code></td></tr>
-    <tr><td>The second tune's notes</td><td>Paris and the mine, <code>$E000</code>-<code>$FFFF</code></td></tr>
+    <tr><td>The second tune's notes</td><td>Paris and the mine, <code>$E000</code>-<code>$FBE6</code></td></tr>
     <tr><td>Reading the joystick</td><td>City Hall <code>$4700</code>, the mine <code>$17A0</code></td></tr>
     <tr><td>The clock</td><td>Paris <code>$4170</code>, City Hall <code>$6E40</code></td></tr>
     <tr><td>The "OK" sound</td><td>City Hall <code>$6B50</code>, the mine <code>$3B7D</code></td></tr>
     <tr><td>The code prompt's check</td><td>City Hall, the mine and the finale, apart from the addresses it names</td></tr>
-    <tr><td>The mine's end screen with ILVCT</td><td>the mine <code>$0A00</code>, and unused in City Hall at the same address</td></tr>
+    <tr><td>The ABORT screen, apart from its text and addresses</td><td>City Hall and the mine, <code>$0B00</code>-<code>$0D1E</code></td></tr>
   </table>
 </section>
 </main>

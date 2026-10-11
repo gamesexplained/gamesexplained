@@ -7,12 +7,13 @@ import json
 import os
 from pathlib import Path
 import queue
+import sys
 import shlex
 import tempfile
 import threading
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from stdio_bridge import Stdio, project_path
 import tools  # the C64 launcher, which puts kit/scripts on sys.path
@@ -33,7 +34,8 @@ class BridgeTests(unittest.TestCase):
                 self.assertEqual(tools.r2000_port(), 3002)
                 saved.write_text("not a port")
                 del os.environ["KIT_R2000_PORT"]
-                self.assertEqual(tools.r2000_port(), 3000)
+                with self.assertRaises(ValueError):
+                    tools.r2000_port()
 
     def test_client_and_launcher_agree_on_the_port(self):
         self.assertEqual(r2000.URL, f"http://127.0.0.1:{tools.R2000_PORT}/mcp")
@@ -72,13 +74,15 @@ class BridgeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             snapshot = Path(folder) / "entry.vsf"
             ram = bytes(range(256)) * 256
-            snapshot.write_bytes(b"VICE Snapshot File".ljust(209, b"\0") + ram)
-            first = project_path(snapshot)
+            header = b"VICE Snapshot File\x1a" + b"\0\0" + b"C64".ljust(16, b"\0")
+            module = b"C64MEM".ljust(16, b"\0") + b"\0\1" + (26 + len(ram)).to_bytes(4, "little")
+            snapshot.write_bytes(header + module + b"\0" * 4 + ram)
+            first = project_path(snapshot, folder)
             data = json.loads(first.read_text())
             self.assertEqual(gzip.decompress(base64.b64decode(data["raw_data_base64"])), ram)
             self.assertEqual(data["blocks"][0]["type_"], "Undefined")
             first.write_text("saved annotations")
-            second = project_path(snapshot)
+            second = project_path(snapshot, folder)
             self.assertNotEqual(first, second)
             self.assertEqual(first.read_text(), "saved annotations")
             self.assertEqual(project_path(first), first)
@@ -89,7 +93,7 @@ class BridgeTests(unittest.TestCase):
             for data in [b"not a snapshot", b"VICE Snapshot File"]:
                 snapshot.write_bytes(data)
                 with self.assertRaises(ValueError):
-                    project_path(snapshot)
+                    project_path(snapshot, folder)
             with self.assertRaises(ValueError):
                 project_path(Path(folder) / "entry.bin")
 
@@ -125,6 +129,46 @@ class BridgeTests(unittest.TestCase):
         backend.replies.put(None)
         with self.assertRaisesRegex(RuntimeError, "exited"):
             backend.call({"id": 1, "method": "tools/list"})
+
+    def test_timeout_or_eof_refuses_later_calls_without_writing(self):
+        for reply in ["timeout", None]:
+            backend = self.backend()
+            if reply is None:
+                backend.replies.put(None)
+            with self.assertRaises((RuntimeError, TimeoutError)):
+                backend.call({"id": 1, "method": "tools/list"}, timeout=0.01)
+            before = backend.process.stdin.getvalue()
+            with self.assertRaisesRegex(RuntimeError, "unavailable"):
+                backend.call({"id": 1, "method": "tools/list"})
+            self.assertEqual(before, backend.process.stdin.getvalue())
+
+    def test_future_reply_id_fails_closed(self):
+        backend = self.backend()
+        backend.replies.put({"id": 99, "result": {}})
+        with self.assertRaisesRegex(ValueError, "ID mismatch"):
+            backend.call({"id": 1, "method": "tools/list"})
+        self.assertTrue(backend.broken)
+
+    def test_broken_pipe_refuses_subsequent_writes(self):
+        backend = self.backend()
+        backend.process.stdin = Mock()
+        backend.process.stdin.flush.side_effect = BrokenPipeError("closed")
+        with self.assertRaises(BrokenPipeError):
+            backend.call({"method": "notifications/initialized"})
+        with self.assertRaisesRegex(RuntimeError, "unavailable"):
+            backend.call({"id": 1, "method": "tools/list"})
+        self.assertEqual(backend.process.stdin.write.call_count, 1)
+
+    def test_line_reader_handles_notifications_partial_chunks_and_eof(self):
+        backend = self.backend()
+        # TextIOWrapper.readline joins stream chunks until a complete JSON line.
+        backend.process.stdout = io.TextIOWrapper(io.BytesIO(
+            b'{"method":"notifications/progress"}\n{"id":1,"result":true}\n'))
+        backend.read()
+        self.assertEqual(backend.call({"id": "original", "method": "tools/list"}),
+                         {"id": "original", "result": True})
+        with self.assertRaisesRegex(RuntimeError, "exited"):
+            backend.call({"id": "next", "method": "tools/list"})
 
     def test_terminal_wrapper_preserves_shell_characters(self):
         command = ["/a path/bin/tool", "a'b", "$(not-a-command)", "`literal`", "$literal"]

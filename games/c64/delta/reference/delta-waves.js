@@ -106,7 +106,7 @@
     $('wvTime').textContent = `frame ${frame} of ${D.frames - 1} · ${(frame / FPS).toFixed(1)} s`;
     const inGroup = D.enemies.filter(e => e.g === g);
     const indes = inGroup.filter(e => e.ev[0][1] === 255).length;
-    let h = G[3] === 255 ? `Stage ${D.stage} (${BANNERS[D.stage - 1]}): between groups` : `Stage ${D.stage} (${BANNERS[D.stage - 1]}), group ${g + 1} of ${D.groups.length}: record ${hex(G[3])}` +
+    let h = g === D.groups.length - 1 ? `Stage ${D.stage} (${BANNERS[D.stage - 1]}): the end of the stage` : G[3] === 255 ? `Stage ${D.stage} (${BANNERS[D.stage - 1]}): between groups` : `Stage ${D.stage} (${BANNERS[D.stage - 1]}), group ${g + 1} of ${D.groups.length}: record ${hex(G[3])}` +
       (G[4] ? ' · <b>the shop</b>' : '') + ` · ${inGroup.length} sprite${inGroup.length === 1 ? '' : 's'}` +
       (indes ? ` · ${indes} indestructible` : '');
     if (G[5] >= 0) h += frame >= G[5] ? ' · <b>stand-in shots</b> (since frame ' + G[5] + ')' : ` · stand-in shots from frame ${G[5]}`;
@@ -134,7 +134,8 @@
     $('wvList').innerHTML = '';
     D.groups.forEach((G, i) => {
       const b = document.createElement('button');
-      b.textContent = (i + 1) + ' · ' + (G[3] === 255 ? '—' : hex(G[3])) + (G[4] ? ' shop' : '') + (G[5] >= 0 ? ' · shot' : '');
+      const last = i === D.groups.length - 1;               // the stage's end, not a wave of its own
+      b.textContent = (i + 1) + ' · ' + (last ? 'end' : (G[3] === 255 ? '—' : hex(G[3])) + (G[4] ? ' shop' : '') + (G[5] >= 0 ? ' · shot' : ''));
       b.title = `starts at frame ${G[0]}, lasts ${G[1]} frames`;
       b.onclick = () => { frame = G[0]; draw(); };
       $('wvList').appendChild(b);

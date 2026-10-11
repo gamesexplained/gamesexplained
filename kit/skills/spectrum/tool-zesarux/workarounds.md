@@ -8,10 +8,12 @@ host is slow: that is a NOTE, not a failed check, and "A slow host" at the
 end is for it.
 
 Measured on the **ZEsarUX-13.0** release, file
-`ZEsarUX_macos-silicon-13.0.dmg`, macOS arm64, on **3 October 2026** with the
-launcher's flags: 41 passed, 4 failed, 21 seconds. The four are below, in the
-order they matter; a build that passes a check means its section no longer
-applies, so delete the section, not the check.
+`ZEsarUX_linux-13.0-ubuntu24_x86_64.tar.gz`, Linux x86_64, on **10 October
+2026** with the launcher's flags: 42 passed, 3 failed, 19 seconds, the same
+in three runs. The three are below, in the order they matter; a build that
+passes a check means its section no longer applies, so delete the section,
+not the check. `count-while-running` fails by ZRCP's design, so its section
+stays for as long as the protocol works that way.
 
 ## A load lands at the start of a frame
 
@@ -32,12 +34,17 @@ runs).
 
 `count-while-running`
 
-`run` is driven by the connection that sent it, so a second connection
-cannot read anything until the run loop finishes: in the measurement a
+ZRCP runs one command at a time across all its connections: each command
+takes one lock (`zrcp_command_semaforo` in ZEsarUX's `src/zrcp/remote.c`),
+which only ZENG Online mode skips. So while one connection's `run` is in
+flight a second connection cannot read anything: in the measurement a
 `get-breakpointspasscount` sent while the other connection ran 400000
-opcodes blocked for 1.12 s of that run's 1.28 s, then answered at once.
-There is no reading the hit count *while* a run is in flight; the count is
-available the moment the run returns.
+opcodes blocked for 1.12 s of that run's 1.28 s, then answered at once. Any
+slow command holds the others the same way, `send-keys-ascii` included.
+This is the protocol's design, the same in the 13.0 source and on the 13.1
+snapshot of 10 October 2026, so the bounded runs below are the way to
+work, not a stopgap. There is no reading the hit count *while* a run is in
+flight; the count is available the moment the run returns.
 
 **What to do instead** — run in bounded chunks and read between them. That
 is the whole of phase 3, and it is cheap: 100000 opcodes of the kit's test
@@ -58,36 +65,6 @@ never stops the machine (`count-while-running` fails, `counting-checkpoint`
 passes, on the same entry). A `let var0=var0+1` action is the second way
 to count, and `evaluate var0` reads it — useful when ten counters are
 needed at once, since ten is all the user variables there are.
-
-## `send-keys-ascii` presses no key
-
-`input-type-ascii`
-
-`send-keys-ascii <ms> <chars...>` — and `send-keys-string` with it —
-changes nothing the machine can see. Measured on the 13.0 release with
-`--vo null`: the character `A`, its code `65`, and the string form were
-each sent and the ULA port polled every 150 ms for two seconds afterwards
-(and every 200 ms for three seconds in a second run); the row never moved.
-`send-keys-event <n> 1` does land, on the same machine, in the same second
-(`input-lands`, `input-seen`, `input-released` all pass).
-
-**What to do instead** — two paths, both measured:
-
-- **Hold a key or a direction**: `set_input` (ZRCP `set-ui-io-ports`), the
-  nine hex bytes. This is the one to use for frame stepping: it is in the
-  port register as soon as the next instruction reads it, it is still
-  there after a frame, and clearing it releases it — all of phase 4's
-  input requirement, with one call.
-- **Type**: `key_event <number> 1` / `0` per character, with the numbers
-  from `tool-zesarux/SKILL.md` (letters and digits are their ASCII codes).
-  Key events are pumped by the *running* machine: sent while the machine
-  is stopped in cpu-step mode they are never processed at all, so let it
-  run and poll the game's own variable.
-
-It also releases **every** key and the joystick when it finishes — including
-anything held with `set-ui-io-ports` — so a script that holds a direction across
-a call to it loses the hold. Never use it: `set_input` and `key_event` are the
-two paths that work.
 
 ## A watchpoint counts only the last byte it touches
 

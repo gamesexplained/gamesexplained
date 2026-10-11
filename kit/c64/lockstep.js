@@ -127,6 +127,7 @@ const LIST = 64;                                   // differing bytes kept per p
 class PortChips extends Machine {
   constructor() { super({ ram: new Uint8Array(65536) }); this.raster = 0; this.game = null; }
   get line() { return this.raster; }
+  get now() { return this.game ? this.game.cpu.cycles : 0; }
   get keys() { return this.game ? this.game.keys : NONE; }
   set keys(v) {}
   get joy() { return this.game ? this.game.joy : 0x1F; }
@@ -164,6 +165,7 @@ class Lockstep {
     c.game = m;
     c.raster = m.line;
     c.vic.set(m.vic); c.colour.set(m.colour); c.sidw.set(m.sidw);
+    c.sidBus.chip(m.sidChip); c.sidBus.load(m.sidBus.save());
     for (const k of ['cmp', 'latch', 'enable', 'pra', 'ddra', 'ddrb', 'pra2', 'ddra2']) c[k] = m[k];
     if (m.cia) c.cia = JSON.parse(JSON.stringify(m.cia));   // CIA 2's port and the timers' latches; they never count here
     this.irqBytes = new Set((o.irqBytes || []).map(a => a & 0xFFFF));
@@ -543,7 +545,7 @@ class Lockstep {
     for (const chip of this.chipList) {
       if (chip === 'colour') p.colour.set(g.colour);
       else if (chip === 'vic') { p.vic.set(g.vic); p.cmp = g.cmp; p.enable = g.enable; }
-      else if (chip === 'sid') p.sidw.set(g.sidw);
+      else if (chip === 'sid') { p.sidw.set(g.sidw); p.sidBus.load(g.sidBus.save()); }
       else { p.pra = g.pra; p.ddra = g.ddra; p.ddrb = g.ddrb; }
     }
   }

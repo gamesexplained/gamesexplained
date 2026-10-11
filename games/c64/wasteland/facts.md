@@ -93,7 +93,7 @@ but the I/O area, both ROMs out.
 | `$CA00-$CFFF` | a module, the party-order program, or a picture unpacked for the picture window | module-*n*, order |
 | `$D000-$DD7F` | the tile set, in RAM under the I/O area | tiles-*n* |
 | `$DD80-$DDFF` | the map window's scroll copy, in RAM under the I/O area | engine |
-| `$DE00-$EDFF` | the tile layer of the map, one byte a square, under the I/O area and above it | map-*nn* |
+| `$DE00-$EDFF` | the tile layer of the map, one byte a square, under the I/O area and above it; from `$E000`, a picture asked for with bit 7 set (engine `$2631`) | map-*nn* |
 | `$EE00-$F3FF` | cleared by the start-up (startup `$7F3D-$7F55`); the game keeps four 376-byte records from `$EE00` (game `$BBC7`) | engine |
 | `$F400-$FBFF` | the game state: party tables, saved zero page, line buffer, character records from `$F500`, written to the disk as the save | engine |
 | `$FC00-$FFFF` | the fast loader's computer side, and the hardware vectors in RAM | engine |
@@ -246,6 +246,61 @@ lines into view for a moment, and the programs load from `$7E00`.
   time (*live*). The wall is next to squares the party can walk to from
   the map's exit at column 28, row 0 (a search of the map's classes).
 
+## The portraits
+
+- 75 pictures for the picture window, numbers 0-50, 54-62 and 64-78:
+  entry *n* of the directory at T35/L10, or for *n* from `$40` entry *n*
+  AND `$3F` of T35/L9 (engine `$2790`). On every side entries 51-53 and
+  79-126 are zero, and entries 63 and 127 are each sector's last four
+  bytes, which hold the track and sector its offsets count from.
+  Sixty-eight pictures are on one side, seven on two to four; where a
+  picture is on several sides, its own bytes are the same on each.
+- Each was loaded with the engine's own `load_portrait` (`$2631`) in
+  VICE, on every side that holds it, and the Pictures and text and Maps
+  tabs carry its bytes (`PORTRAIT_BYTES`), from the start of its buffer
+  to the last byte the picture code reads. Pictures 0-3
+  and 59 are loaded to `$E000`, as their callers ask (`$041C`): the
+  doctor (module-0 `$CA15`), the shop (module-1 `$CA1E`), the library
+  (module-2 `$CA15`), the Ranger Center (ranger `$7E13`) and the Grim
+  Reaper (death `$7E13`). Loaded to `$CA00` instead, they give the same
+  bytes up to `$CFFF`. Picture 8 is the radio's (radio `$7EB7`, `$7FA0`)
+  and the fights' when no group is in reach (game `$B91E`); picture 11
+  the radio's promotion (radio `$7EEB`, `$7FBE`). Every other number but
+  37 and 75 is byte 7 of monster records in the maps' tables, 66 numbers
+  in all. No code in the 64 parts' listings shows 37 or 75.
+- All 75 cover columns 1-11 and pixel rows 16-99, the top of the picture
+  window, which `picture_window_open` (`$12CF`) clears down to row 111.
+  Twelve use one animation channel, 15 two, 28 three and 20 all four,
+  with 2 to 37 frames each, 636 in all. The bytes the picture code reads run from
+  the buffer's start without a gap, 630 bytes for picture 64 up to 1,505
+  for picture 59.
+- A load reads a window of two to five sectors from the entry's start
+  byte, and the unpacker decodes all of it, 851 to 1,634 bytes; six
+  loads stop at the end of the `$CA00` buffer (`$CFFF`). Each window's
+  sectors were read in VICE with the engine's own routines (`$2790`,
+  `$FD0B`, `$FD19`), and the page's port of the unpacker turned all 75
+  into exactly the bytes the loads wrote.
+- Where the next picture's packed bytes start inside a window (67
+  pictures), the bytes up to there are the picture's own: they decode to
+  the bytes the picture code reads and one more, made from the stream's
+  last bits, for 64 of them. For three they decode further, to bytes
+  nothing reads: picture 39's 15 read as ASCII "SITIONOMONPR#PR",
+  picture 60's are `$08` and 17 zeros, and picture 62's are 199 bytes of
+  no structure the picture code uses. For the other 8 nothing in the
+  window marks where the picture ends. The pages carry none of these
+  bytes past the last one read.
+- The engine's picture code (`$0586`, `$05C5`) was run on the kit's 6502
+  simulator beside the page's port for every portrait, 400 steps each,
+  the bitmap compared after every step: no difference
+  (`test_portraits.js`, which needs only committed files).
+- Byte 7 of a monster's record is also the index of its pronoun in the
+  engine's table at `$5B00`, 79 bytes: 0 he, 1 she, 2 it (game `$9EBC`).
+- The GIF a page makes runs from the base frame to the first step from
+  100 on where the picture is the base frame again: 100 to 340 steps for
+  the 76 pictures (the title 298, the Grim Reaper 340), about 14.5 to 49
+  seconds at the 6.9 steps a second measured on the title, and none has
+  to stop with a jump.
+
 ## Text
 
 - Every program has its own packed text block; the engine prints from
@@ -281,6 +336,51 @@ lines into view for a moment, and the programs load from `$7E00`.
   the game's bar is "Use Enc Order Disband View Save Radio", and its
   hidden keys I, J, K and L move the party, back-arrow and space (game
   `$7F18`).
+
+## The NPCs
+
+- Fourteen records can join: every entry of the 42 maps' lists 17 (the
+  non-player characters, map record word `+$28`), copied whole to the
+  first free record by Hire (game `$A424-$A433`). test_npcs.js holds the
+  page's table (`party.html`, `#wl-cast-t`) and the widget's NPCS
+  against the maps' bytes.
+- Nine of them carry a hidden skill, number 36 to 48, at level `$FF` in
+  the last skill pair (`+$BA/+$BB`); no two share one, and no other pair
+  of any NPC record is above 35. The skills page and a Use show only
+  skills below 36 (engine `$11A7`), skill_level searches all 30 pairs
+  (engine `$1392`), and a check square's skill pair at difficulty 0
+  passes on the skill alone (game `$8EAE`). Squares that ask for them,
+  counted from the maps' bytes (flags bit 6 set): 36 Mayor Pedros 7, in
+  maps 2, 3, 4 and 6; 37 Dan Citrine 87, 4 in map 6 and 83 in 27 other
+  maps whose only pair is skill 37, 60 of those with an effect on CON;
+  38 Ace 3, maps 0, 4 and 34; 40 Covenant 1, map 40; 48 Redhawk 1, map
+  49 (with item 69, the Grazer bat fetish, as the other pair). Skills
+  39 (Felicia), 41 (Jackie), 42 (Ralf) and 43 (Christina) are asked for
+  nowhere. Map 41's check_22 asks for a skill 129, which no record holds.
+- No Ranger can hold a skill above 35: the Ranger Center's list stops at
+  35 (ranger `$8502`), and the eight libraries of the 42 maps (records
+  starting `$82`, skills from `+$10`) offer nothing above 35.
+- square_checks (game `$8E14`) on the simulator, map 1's cactus (class
+  2 number 5, CON − 1d6 for each member who fails), 1,000 runs for a
+  party of a Ranger and Dan Citrine: the Ranger got the effect every
+  time without a throw, Dan 107 times, exactly the runs where his throw
+  was under 5. His father's cell in map 6 (class 2 number 30) passes on
+  every run with Dan in the party and fails on every run without.
+- Hire (game `$A435-$A4B2`): with `+$31` = 0 (nine of the fourteen) no
+  dice; otherwise (CHR + IQ)/2 + CHR + rank of the hirer + the open 2d6
+  against the NPC's (CHR + IQ)/2 + `+$31` + rank, a throw under 5
+  failing. On a join `+$31` becomes the hirer's CHR (`$A492`), the only
+  store to `+$31` in the code.
+- Refusals: a Use tests the byte for its kind against `+$31` (game
+  `$8D83-$8D95`), a trade `+$2E` against the taker's CHR (engine
+  `$0F63-$0F85`), both through npc_obey_check, whose target is 15 for
+  every byte but `$FF` (the engine's facts). Only Redhawk (map 36) has a
+  byte of `$FF`, his trade byte. test_npcs.js runs the page's port
+  beside the original code for every byte and 38,528 checks, trades and
+  hires, with no difference.
+- In a fight an NPC chooses its own line and fire mode (game
+  `$B50B-$B589`, as above), the automatic-fire chance growing with the
+  characters who are not conscious: `$B4F8` = `$FF 9 7 5 3 0 0 0`.
 
 ## Live tests
 
@@ -346,7 +446,7 @@ lines into view for a moment, and the programs load from `$7E00`.
   view), and 471 in the one chunk that held an idle turn. The port of
   the loop on the page makes 21.19 passes a frame on a processor that
   has every cycle; giving the video chip 1,075 cycles a frame brings it
-  to 20.02, and the Geiger counter's player on the How it works page
+  to 20.02, and the Geiger counter's player on the Sound tab
   runs it so.
 - The attribute roll: from the Ranger Center creating a character,
   SPACE rolled 32 attributes; each ended as a model of the broken
@@ -414,6 +514,16 @@ lines into view for a moment, and the programs load from `$7E00`.
   flags, and the channels stepped 7 times, about 7 steps a second; in a
   later stretch of the same sequence 2,624 to 3,176 calls and 5 or 6
   steps. Between the two the flag at engine `$AC` was 0 and nothing moved.
+- npc_obey_check on the original disk: on 8 October 2026, side 1 of
+  the C64 Preservation Project's G64 booted to the title in VICE
+  (release v3.13.2, check-emulator: 57 passed, 0 failed), and a stub at
+  `$3200` called the engine's `$021F` 256 times for each of six cases,
+  with a record at `$3300` (`+$29` = 1) and the byte at `+$2C`. With a
+  byte of 10 and A = 20 the target `$71/$72` read 15 after every call,
+  and the call refused 39 times; with a byte of 0, 54. A = 0 refused 220
+  and 223 times, a byte of `$FF` all 256. The stub's calls follow one
+  another by a few hundred cycles, so its random bytes are not the
+  game's in play, and the counts say nothing about the odds.
 
 ## Comment sample
 

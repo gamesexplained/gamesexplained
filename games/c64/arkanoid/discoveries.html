@@ -1,0 +1,174 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arkanoid: discoveries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+h3{font-size:19px;margin:26px 0 8px}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{image-rendering:pixelated;max-width:100%;display:block}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+button{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--ink-mute)}
+button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+input[type=range]{width:220px}
+.lab{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500}
+.scroll{overflow-x:auto}
+.bands{font-family:var(--fm);font-size:13px;line-height:1.5;margin:12px 0 0;padding:0;list-style:none}
+.bands li{padding:4px 8px;border-left:3px solid transparent;cursor:default}
+.bands li.hl{background:var(--hl);border-left-color:var(--amber)}
+.two{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
+.out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0;min-height:3.2em}
+.stages{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:12px 0 0}
+.stages button{padding:5px 0;font-size:12px}
+.stages button.hz{border-bottom:3px solid var(--amber)}
+.msg{font-size:14px;color:var(--coral)}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Imagine</p>
+  <h1>Arkanoid: discoveries</h1>
+  <p class="sub">Two things the code shows and a player never sees: how the capsules are chosen, and a protection check the game scrambles before it can run.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · Capsules</p>
+  <h2 class="t">Secret: the capsules are dealt by the clock</h2>
+  <p class="lede">When a brick breaks, <code>choose_capsule</code> (<code>$B2E6</code>) looks at the low byte of a frame counter that counts up 50 times a second, and that one number sorts every broken brick into three groups.</p>
+  <div class="plate">
+    <div class="row"><span class="lab">Lives</span><select id="capLives"></select>
+      <span class="lab">Frame counter high byte <code>$0241</code></span><input type="range" id="capHi" min="0" max="31" value="0"><span class="lab" id="capHiLab"></span></div>
+    <div class="row"><span class="lab">Silver and gold bricks in the round</span><input type="range" id="capSpecial" min="0" max="20" value="0"><span class="lab" id="capSpecialLab"></span>
+      <button id="capRun">Break 10,000 bricks</button></div>
+    <canvas id="capCv"></canvas>
+    <div class="out" id="capOut"></div>
+    <p class="cap">Each bar is the share of 10,000 broken bricks that gave that capsule, with the frame counter, the ball's X and its height drawn at random, and each result fed back as the "last capsule". The chooser on this page is a port of <code>$B204</code>-<code>$B21B</code>, checked against the game's own code run in a 6502 simulator on 40,000 random cases, with no difference.</p>
+  </div>
+  <table>
+    <tr><th>Frame counter <code>$0201</code></th><th>What falls</th></tr>
+    <tr><td><code>$A0</code>-<code>$FF</code> and <code>$0A</code>-<code>$1F</code> (118 frames of 256)</td><td>nothing</td></tr>
+    <tr><td><code>$20</code>-<code>$9F</code> (128 frames)</td><td>S or C: bits 0-1 of the counter XOR the ball's X give S once in four, C three times in four</td></tr>
+    <tr><td><code>$00</code>-<code>$09</code> (10 frames)</td><td>the first that applies: B if bit 1 of the lives is set, L if <code>$0241</code> is <code>$12</code> or more, D if the round has four or more silver and gold bricks, E if the ball is in the upper half of the screen, else S or C as above</td></tr>
+  </table>
+  <p>Then <code>$B209</code>-<code>$B219</code> apply two rules. A capsule of the same type as the last one is bumped up by one, so a second C in a row arrives as an E, and a second S as a C. And the extra life, P, is never chosen directly: the only way to get one is a B when the last capsule was also a B. A capsule falls at all only when no other is falling and exactly one ball is in play (<code>$B1E5</code>-<code>$B204</code>).</p>
+  <p>The lives test reads the count as stored, in binary-coded decimal, so with 2, 3, 6 or 7 lives the rare window gives the Break capsule, and with 1, 4, 5, 8 or 9 it never does. The laser only becomes possible once <code>$0241</code>, the counter's high byte, reaches <code>$12</code>: 18 × 256 frames, a little over 90 seconds.</p>
+  <table>
+    <tr><th>Type</th><th>Letter</th><th>Effect</th><th>Code</th></tr>
+    <tr><td>1</td><td>S</td><td>ball speed down by one, never below 1</td><td><code>$A8BA</code></td></tr>
+    <tr><td>2</td><td>C</td><td>catch: the ball sticks to the Vaus until fire, or until the counter reaches <code>$80</code></td><td><code>$A8AC</code>, <code>$AA76</code></td></tr>
+    <tr><td>3</td><td>E</td><td>the Vaus grows from width 4 to 12</td><td><code>$AA44</code>, <code>$AD4B</code></td></tr>
+    <tr><td>4</td><td>D</td><td>three balls, and the speed up by one</td><td><code>$A8CD</code></td></tr>
+    <tr><td>5</td><td>L</td><td>laser, two shots at a time</td><td><code>$A870</code>, <code>$A5F3</code></td></tr>
+    <tr><td>6</td><td>B</td><td>an exit opens in the right wall; leaving through it ends the round</td><td><code>$A868</code>, <code>$A41F</code></td></tr>
+    <tr><td>7</td><td>P</td><td>an extra life, up to 99</td><td><code>$A882</code></td></tr>
+  </table>
+  <p>Catching any capsule first switches off catch, laser, break and the enlarged Vaus (<code>cancel_powers</code>, <code>$AA17</code>). A capsule caught is worth 1,000 points (<code>$A9DD</code>).</p>
+</section>
+
+<section>
+  <p class="fig">02 · Protection</p>
+  <h2 class="t">Secret: the protection scrambles its own second check</h2>
+  <p>The game starts at <code>$9400</code> and hides its first steps behind undocumented opcodes: a <code>NOP</code> with an operand at <code>$9404</code> and another at <code>$095A</code>, which a disassembler that knows only the documented set shows as data. The bytes after the <code>JSR $B9C3</code> at <code>$095D</code> look like the continuation and never run, because <code>$B9C3</code> leaves by <code>JMP $F000</code>.</p>
+  <p>The start-up then sends a byte out through the first CIA's serial port and waits for the chip to report it sent (<code>$5F42</code>), a test of the hardware rather than the disk. Both routines erase themselves when they finish: <code>$5F42</code> fills itself with <code>$01</code>, and <code>$B9C3</code> overwrites its first 40 bytes with <code>$20</code>.</p>
+  <p>On the way it XORs 97 bytes at <code>$BA0A</code> with a key at <code>$A71A</code>, which is live game code. The bytes at <code>$BA0A</code> are a longer serial-port check, and in the file they are plain code: the XOR turns them into noise. Nothing calls that check in this build, and the flag it would set, <code>$0944</code>, is the trigger for a routine that wipes memory (<code>$A523</code>). The only other writer of the flag is a checksum over <code>$9500</code>-<code>$A5FF</code> at <code>$F9BC</code>, which nothing calls either, so the wipe never runs.</p>
+</section>
+
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+// The capsule chooser, ported from choose_capsule $B2E6 and the bump at $B209-$B219.
+// Returns 0 for no capsule, else 1-7 (S C E D L B P).
+function chooseCapsule(s){ // s: frame (0-255), ballX, ballY, lives (BCD), frameHi, special, last
+  const f=s.frame;
+  let t;
+  if (f>=0xA0 || (f>=0x0A && f<0x20)) return 0;
+  const rnd=()=>{ const v=(f^s.ballX)&3; return v===2?1:2; };
+  if (f>=0x20) t=rnd();
+  else if (s.lives&2) t=6;
+  else if (s.frameHi>=0x12) t=5;
+  else if (s.special>=4) t=4;
+  else if (s.ballY<0x80) t=3;
+  else t=rnd();
+  for(;;){ t&=7; if(t===0) t=1; if(t!==s.last) return t; t++; }
+}
+
+(function () {
+  const $ = id => document.getElementById(id);
+  const C = globalThis.C64;
+  const PAL = C ? C.PAL : ['#000000', '#ffffff', '#813338', '#75cec8', '#8e3c97', '#56ac4d', '#2e2c9b', '#edf171', '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
+  const LETTERS = ['none', 'S', 'C', 'E', 'D', 'L', 'B', 'P'];
+  const CAPCOL = [0, 8, 5, 6, 3, 2, 10, 11];   // $B2BC
+
+  function capsules() {
+    const lives = $('capLives');
+    for (let n = 1; n <= 9; n++) lives.insertAdjacentHTML('beforeend', `<option value="${n}"${n === 3 ? ' selected' : ''}>${n}</option>`);
+    const cv = $('capCv'), W = 640, H = 220; cv.width = W; cv.height = H; cv.style.width = '100%'; cv.style.maxWidth = W + 'px';
+    const ctx = cv.getContext('2d');
+    let seed = 0x2468ace;
+    const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) & 255; };
+    function run() {
+      const hi = +$('capHi').value, sp = +$('capSpecial').value, lv = +lives.value;
+      $('capHiLab').textContent = '$' + hi.toString(16).toUpperCase().padStart(2, '0') + ', about ' + Math.round(hi * 256 / 50) + ' s';
+      $('capSpecialLab').textContent = sp;
+      const n = new Array(8).fill(0); let last = 0;
+      for (let i = 0; i < 10000; i++) {
+        const t = chooseCapsule({ frame: rnd(), ballX: rnd(), ballY: rnd(), lives: lv, frameHi: hi, special: sp, last });
+        n[t]++; if (t) last = t;
+      }
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+      const bw = W / 8;
+      n.forEach((v, t) => {
+        const h = (H - 50) * v / 10000;
+        ctx.fillStyle = t ? PAL[CAPCOL[t]] || '#888' : '#ccc';
+        ctx.fillRect(t * bw + 10, H - 30 - h, bw - 20, h);
+        ctx.fillStyle = '#2f3136'; ctx.font = '600 14px IBM Plex Mono, monospace'; ctx.textAlign = 'center';
+        ctx.fillText(LETTERS[t], t * bw + bw / 2, H - 10);
+        ctx.fillText((v / 100).toFixed(1) + '%', t * bw + bw / 2, H - 36 - h);
+      });
+      const special = n[3] + n[4] + n[5] + n[6] + n[7];
+      $('capOut').textContent = `With ${lv} ${lv === 1 ? 'life' : 'lives'}: ${(n[0] / 100).toFixed(1)} % of bricks give nothing, ` +
+        `${((n[1] + n[2]) / 100).toFixed(1)} % give S or C, ${(special / 100).toFixed(1)} % give one of the other five.`;
+    }
+    ['capLives', 'capHi', 'capSpecial'].forEach(id => $(id).addEventListener('input', run));
+    $('capRun').onclick = run;
+    run();
+  }
+
+  capsules();
+})();
+</script>

@@ -83,7 +83,7 @@ function createDriver(data) {
   function tick() {                                 // tune_tick $C6AB
     vibrato();
     frames = (frames + 1) & 0xFF;
-    if (frames >= (phase ? 2 : 3)) {
+    if (frames >= 3) {                          // both paths compare with 3
       frames = 0;
       phase = (phase + 1) & 1;
       for (let x = 0; x < 3; x++) voiceStep(x);    // tune_step $C6E0

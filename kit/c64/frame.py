@@ -17,14 +17,20 @@ Usage:
                                          writes <frame>-diff.png
   frame.py trim <frame.json> <out.json>  keep only the memory the drawing reads, for a page
   frame.py test [--keep]                 the kit's own test: a program with a split of every
-                                         kind, captured, drawn and compared. It resets the
-                                         machine: not during a game you mean to keep
+                                         kind, captured, drawn and compared, then dma. It resets
+                                         the machine: not during a game you mean to keep. It sets
+                                         the video chip its standard is checked on (the 8565 for
+                                         PAL), which a switch of standard changes
+  frame.py dma [--record]                the cycles the video chip takes from the processor, on
+                                         bad lines and for sprites, measured case by case and
+                                         compared with kit/c64/fixtures/vic-dma.json, or written
+                                         to it with --record. It resets the machine too
 
 Needs the emulator (`tools.py vice`) for capture and test, and a JavaScript runtime for the
 drawing: node, or on macOS the system's own JavaScriptCore. The frame file holds a copy of the
 game's memory, so it stays in the game's work/ folder; `trim` makes the excerpt a page embeds.
 """
-import base64, json, os, shutil, struct, subprocess, sys, tempfile, time, zlib
+import base64, json, os, re, shutil, struct, subprocess, sys, tempfile, time, zlib
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -234,7 +240,7 @@ const read = node ? p => require('fs').readFileSync(p, 'utf8') : p => readFile(p
 const say = node ? t => process.stdout.write(t + '\n') : t => print(t);
 if (node) (0, eval)(read(args[0])); else load(args[0]);
 const r = C64.renderFrame(JSON.parse(read(args[1])));
-say(JSON.stringify({ w: r.w, h: r.h, romReads: r.romReads }));
+say(JSON.stringify({ w: r.w, h: r.h, line0: r.line0, romReads: r.romReads }));
 let h = '';
 for (let i = 0; i < r.px.length; i++) h += r.px[i].toString(16);
 say(h);
@@ -339,14 +345,19 @@ def compare(frame_path, shot_path=None, quiet=False):
     # two kinds of difference the drawing does not try to reproduce: the grey pixel VICE draws
     # where a colour register changes within a line, and the first pixels after a mid-line change
     # of mode, scroll, character base or video bank, where the chip's own delays apply
+    line0, lines = meta.get("line0", 16), F.get("lines", 312)
+    # a write's cycle is known only as well as the capture knew the beam (phase_cycles_uncertain):
+    # the window after a mid-line change widens by eight pixels for each cycle of doubt
+    near_px = 16 + 8 * (cap.get("phase_cycles_uncertain") or 0)
     dots, switches = set(), {}
     for line, cyc, a, v in F["writes"]:
-        if not 16 <= line < 16 + h:
+        y = (line - line0) % lines            # the picture's line (NTSC's last lines wrap past 0)
+        if not 0 <= y < h:
             continue
         if 0xD020 <= a <= 0xD02E:
-            dots.add((line - 16, 8 * (cyc - 13)))
+            dots.add((y, 8 * (cyc - 13)))
         elif a in (0xD011, 0xD016, 0xD018, 0xDD00, 0xDD02):
-            switches.setdefault(line - 16, []).append(8 * (cyc - 13))
+            switches.setdefault(y, []).append(8 * (cyc - 13))
     bad, grey, near, unseen, per_line, out = 0, 0, 0, 0, {}, []
     for y in range(h):
         for x in range(w):
@@ -357,9 +368,9 @@ def compare(frame_path, shot_path=None, quiet=False):
                 out.append(tuple(v // 3 for v in rgb)); continue
             if (y, x) in dots:
                 grey += 1; out.append((255, 255, 0)); continue
-            if any(0 <= x - s < 16 for s in switches.get(y, [])):
+            if any(0 <= x - s < near_px for s in switches.get(y, [])):
                 near += 1; out.append((255, 160, 0)); continue
-            bad += 1; per_line[y + 16] = per_line.get(y + 16, 0) + 1
+            bad += 1; per_line[(y + line0) % lines] = per_line.get((y + line0) % lines, 0) + 1
             out.append((255, 0, 64))
     diff = os.path.splitext(frame_path)[0] + "-diff.png"
     write_png(diff, w, h, out)
@@ -374,7 +385,7 @@ def compare(frame_path, shot_path=None, quiet=False):
                   f"{'line has' if n == 1 else f'{n} lines have'} none, and {'is' if n == 1 else 'are'} not compared")
         print(f"{w * h - unseen - bad - grey - near} of {w * h - unseen} pixels match the emulator's picture; {bad} differ"
               + (f"; {grey} are VICE's grey dot where a colour register changed mid-line" if grey else "")
-              + (f"; {near} are within 16 pixels of a mid-line change of mode, scroll or memory, "
+              + (f"; {near} are within {near_px} pixels of a mid-line change of mode, scroll or memory, "
                  f"which the drawing does not follow to the pixel" if near else "")
               + f" ({diff}: differences red, grey dots yellow, mode changes orange"
               + (", lines not compared blue)" if unseen else ")"))
@@ -389,7 +400,7 @@ def compare(frame_path, shot_path=None, quiet=False):
                 d = low + dy
                 off = sum(1 for y in range(max(0, -d), min(h, h - d)) for x in range(w)
                           if colour_of.get(rows[y + d][x], -1) != px[y * w + x] and (y, x) not in dots
-                          and not any(0 <= x - s < 16 for s in switches.get(y, [])))
+                          and not any(0 <= x - s < near_px for s in switches.get(y, [])))
                 if off == 0:
                     print(f"  the emulator's picture sits {abs(d)} line{'s' if abs(d) > 1 else ''} "
                           f"{'lower' if d > 0 else 'higher'} than the drawing, and there it matches at every "
@@ -424,7 +435,7 @@ def trim(frame_path, out_path):
 # its raster line and makes its writes one after another, so some land mid-line, which is part
 # of the test: the capture records each write's cycle and the drawing has to honour it.
 BANDS = [
-    (8, [(0xD011, 0x1B), (0xD016, 0x08), (0xD018, 0x18), (0xDD00, 0x03), (0xD020, 6), (0xD021, 0),
+    (8, [(0xD011, 0x1F), (0xD016, 0x08), (0xD018, 0x18), (0xDD00, 0x03), (0xD020, 6), (0xD021, 0),
          (0xD015, 0xFF), (0xD010, 0x08), (0xD017, 0x02), (0xD01D, 0x02), (0xD01C, 0x02), (0xD01B, 0x04),
          (0xD025, 2), (0xD026, 7),
          (0xD000, 40), (0xD001, 60), (0xD027, 1), (0x07F8, 0xC0),       # sprite 0, used twice
@@ -435,6 +446,12 @@ BANDS = [
          (0xD00A, 180), (0xD00B, 40), (0xD02C, 8),                      # 5: across the top border's edge
          (0xD00C, 120), (0xD00D, 6), (0xD02D, 13),                      # 6 and 7: Y under 56, so each shows
          (0xD00E, 250), (0xD00F, 20), (0xD02E, 2)]),                    # twice: at the top and 256 lines down
+    # VSP. Line 8's Y scroll of 7 keeps lines 48-50 from being bad lines. On line 50, $12 lands
+    # inside the line (the first two writes take twelve cycles) and starts a bad line late, which
+    # moves every row below sideways, and $1B makes line 51 an ordinary bad line; test() checks
+    # that the write did land late. The borders are open there, so line 50 shows the blank font
+    # at $2800, as a game hides that line: the drawing does not model its characters
+    (50, [(0xD018, 0x1A), (0xD021, 0), (0xD011, 0x12), (0xD011, 0x1B), (0xD018, 0x18)]),
     (70, [(0xD021, 11)]),
     (74, [(0xD016, 0x0D)]),                                            # X scroll 5 alone
     (77, [(0xD016, 0x1D)]),                                            # multicolour on, scroll held
@@ -453,9 +470,15 @@ BANDS = [
 ]
 
 
-def test_program():
+def test_bands(lines=312):
+    """The bands for a chip of this many lines. NTSC's 263 lines have no line 290: the band that
+    closes the borders again moves to five lines before the frame's end, still after line 251."""
+    return [b if b[0] < lines else (lines - 5, b[1]) for b in BANDS]
+
+
+def test_program(lines=312):
     src = ["        sei", "        lda #$35", "        sta $01"]
-    for n, (line, writes) in enumerate(BANDS):
+    for n, (line, writes) in enumerate(test_bands(lines)):
         src += [f"w{n}:     bit $d011", f"        {'bpl' if line > 255 else 'bmi'} w{n}",
                 "        lda $d012", f"        cmp #{line & 0xFF}", f"        bne w{n}"]
         for a, v in writes:
@@ -471,6 +494,7 @@ def test_memory():
     return [
         (0x0400, bytes((r * 40 + c) & 0xFF for r in range(25) for c in range(40))),
         (0x2000, bytes((n * 37 + r * 91 ^ (0x81 if r in (0, 7) else 0)) & 0xFF for n in range(256) for r in range(8))),
+        (0x2800, bytes(0x800)),                                         # the blank font for line 50
         (0x3000, shapes), (0x3FFF, b"\xAA"),
         (0x4400, bytes((r * 40 + c) * 7 & 0xFF for r in range(25) for c in range(40))),
         (0x47F8, bytes(range(0x40, 0x48))), (0x5000, shapes),
@@ -479,13 +503,58 @@ def test_memory():
     ]
 
 
-def test(keep=False):
-    """Run the kit's test program, capture a frame of it, draw it and compare. True if it passes."""
-    from vice import poke
+# The video chip, by VICE's VICIIModel number, and the one each standard is checked on. x64sc
+# starts as a PAL C64C, whose chip is the 8565; a switch of standard takes the older chip of the
+# new one, so NTSC and back to PAL leaves a 6569. On 10 October 2026 (v3.13.2) the 6569 drew one
+# pixel of the test frame differently, and the test failed. The MCP server cannot set the model,
+# so vicii() asks VICE's monitor (kit/c64/codemap.py).
+VICII = {0: "6569", 1: "8565", 2: "6569R1", 3: "6567", 4: "8562", 5: "6567R56A", 6: "6572"}
+VICII_CHECKED = {"PAL": 1, "NTSC": 3, "NTSC-OLD": 5, "PAL-N": 6}
+
+
+def vicii(m):
+    """Set the video chip to the one its standard is checked on, and say which it is.
+
+    One command to a connection: the monitor answers only a running machine, and right after
+    vice_execution_run it leaves after the first command it reads. A command left unanswered when
+    the connection closed (several sent at once, or one sent to a machine stopped over MCP) set
+    the monitor resending its prompt to the closed connection and refusing every new one, until
+    the emulator was restarted."""
+    from codemap import monitor
+
+    def model():
+        r = re.search(r"VICIIModel=(\d+)", monitor('resourceget "VICIIModel"'))
+        return int(r.group(1)) if r else None
+
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    want = VICII_CHECKED.get(std, 1)
+    m._call(m.rpc, "vice_execution_run", {})
+    was = now = None
+    if not m.paused():
+        try:
+            was = now = model()
+            if was is not None and was != want:
+                monitor(f'resourceset "VICIIModel" "{want}"')
+                now = model()
+        except OSError:
+            pass
+    if now != want:
+        print(f"the video chip: {VICII.get(now, 'unknown')}, and VICE's monitor did not set it; the "
+              f"test is checked on the {VICII[want]}, which a switch of standard can change")
+    elif was != want:
+        print(f"the video chip: the {VICII[want]}, set from the {VICII.get(was, was)} a switch of standard left")
+    else:
+        print(f"the video chip: the {VICII[want]}")
+
+
+def fresh():
+    """A machine just reset, stopped at the READY. prompt, with no checkpoints and no warp, and the
+    video chip its standard is checked on."""
     m = Machine()
     for c in m.j("vice_checkpoint_list")["checkpoints"]:
         m.j("vice_checkpoint_delete", {"checkpoint_num": c["checkpoint_num"]})
     m.j("vice_machine_config_set", {"resources": {"WarpMode": 0}})
+    vicii(m)
     m._call(m.rpc, "vice_machine_reset", {"mode": "hard", "run_after": True})
     m._call(m.rpc, "vice_execution_run", {})        # a machine paused before the reset stays paused
     for _ in range(100):
@@ -495,10 +564,36 @@ def test(keep=False):
     else:
         raise SystemExit("no READY. prompt within 10 s of a hard reset; is the machine running?")
     m.pause()
+    return m
+
+
+def late_bad_lines(F):
+    """(line, cycle) of each write to $D011 that starts a bad line after the chip's check in cycle
+    14 (VSP): on a line from $30 to $F7, a Y scroll that matches the line where the one before
+    did not. A write in cycle 13 still meets that check, and one after cycle 53 leaves the line
+    no fetch."""
+    d011, out = F["vic"][0x11], []
+    for line, cyc, a, v in F["writes"]:
+        if a != 0xD011:
+            continue
+        if 0x30 <= line <= 0xF7 and 14 <= cyc <= 53 and (line & 7) == (v & 7) != (d011 & 7):
+            out.append((line, cyc))
+        d011 = v
+    return out
+
+
+def test(keep=False):
+    """Run the kit's test program, capture a frame of it, draw it and compare; then measure the
+    cycles the video chip takes and compare them with the fixture (dma). True if both pass."""
+    from vice import poke
+    m = fresh()
     for a, data in test_memory():
         for o in range(0, len(data), 4096):
             poke(m.rpc, a + o, data[o:o + 4096])
-    poke(m.rpc, 0xC000, test_program())
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    lines = STANDARDS.get(std, STANDARDS["PAL"])[0]
+    print(f"the machine is {std}: {lines} lines")
+    poke(m.rpc, 0xC000, test_program(lines))
     m.j("vice_registers_set", {"register": "PC", "value": 0xC000})
     m._call(m.rpc, "vice_execution_run", {})
     time.sleep(0.5)
@@ -511,17 +606,311 @@ def test(keep=False):
           + ("to the cycle" if not c['phase_cycles_uncertain'] else f"to within {c['phase_cycles_uncertain'] + 1} cycles")
           + f", the writes {'account for' if c['writes_account_for_end_state'] else 'DO NOT account for'} "
           f"the registers at the end")
-    if len(f["writes"]) < len(BANDS):            # every band changes a register: fewer writes means
-        print(f"FAIL: {len(f['writes'])} writes captured, at least {len(BANDS)} expected: "   # the program
+    if len(f["writes"]) < len(test_bands(lines)):   # every band changes a register: fewer writes means
+        print(f"FAIL: {len(f['writes'])} writes captured, at least {len(test_bands(lines))} expected: "   # the program
               "the test program did not run (was the machine left paused?)")                 # never ran
         return False
+    late = late_bad_lines(f)
+    if not late:
+        print("FAIL: no write to $D011 started a bad line late, so the frame does not test VSP: "
+              "the band on line 50 should land its $12 in cycles 14-53 of that line; "
+              + ", ".join(f"line {w[0]} cycle {w[1]}: ${w[3]:02X}" for w in f["writes"]
+                          if w[2] == 0xD011 and 48 <= w[0] <= 51))
+        return False
+    print("VSP: " + ", ".join(f"a bad line started late on line {y}, by a write in cycle {cyc}" for y, cyc in late))
     bad = compare(path)
     if bad == 0 and not keep:                    # a failure keeps its files, to be looked at
         for name in ("test.json", "test.png", "test-diff.png"):
             if os.path.exists(os.path.join(out, name)):
                 os.remove(os.path.join(out, name))
-    print("PASS" if bad == 0 else f"FAIL: {bad} pixels differ; kept in {out}")
-    return bad == 0
+    print("the picture: " + ("PASS" if bad == 0 else f"FAIL: {bad} pixels differ; kept in {out}"))
+    held = dma_check()
+    print("PASS" if bad == 0 and held else "FAIL")
+    return bad == 0 and held
+
+
+# --- the cycles the video chip takes from the processor -----------------------------------
+# On a bad line the video chip reads a row of the screen and its colours, and on each line that
+# shows a sprite it reads the sprite's pointer and three of its bytes. While it reads, and for
+# three cycles before, it holds the processor. dma_measure() finds where and for how long: a
+# program runs a stream of NOPs, each cycle of which is a read, with the chip set up one case
+# at a time, and the stopwatch times each NOP by single steps. A NOP that took 2 + n cycles was
+# held for n. Whether it was held from its first cycle or its second is told apart by a pass
+# entered one cycle later, so each case runs until its passes agree on one cycle. A stream of
+# stores across a bad line shows what a write does there. A whole frame of NOPs, timed at its
+# two ends, gives what a frame costs. kit/c64/fixtures/vic-dma.json is the record: `test` checks
+# the emulator against it, and kit/c64/test_machine_dma.js checks machine.js's model (its option
+# dma) against it, with the same program.
+DMA_FIXTURE = os.path.join(HERE, "fixtures", "vic-dma.json")
+DMA_ORG, DMA_TABLE, DMA_SLIDE, DMA_NOPS, DMA_PATCH = 0xC000, 0xC800, 0x1000, 9800, 4000
+FRAME_LINE = 280          # the whole-frame slide starts here: no bad line, and a frame later it
+                          # has passed every line the chip fetches on
+# A case is the chip as the program sets it, on every pass, from the table at DMA_TABLE:
+#   d011     $D011, written at the end of each pass, so in force from the top of the next frame
+#            ($0B, the default, has the display off; $1B on, with the vertical scroll at 3)
+#   sprites  $D015; expand $D017; y every sprite's Y (their X is 100)
+#   line     where the window cases' slide starts: the pass waits for it
+#   patch    $D011 written by the whole-frame slide DMA_PATCH bytes in, partway down the frame
+DMA_WINDOWS = [{"name": "a bad line", "d011": 0x1B, "line": 58}] + \
+              [{"name": f"sprite {n}", "sprites": 1 << n, "y": 96, "line": 101} for n in range(8)] + \
+              [{"name": "sprite 0 on the line its Y names", "sprites": 0x01, "y": 101, "line": 101},
+               {"name": "sprites 0 and 2", "sprites": 0x05, "y": 96, "line": 101},
+               {"name": "all eight sprites", "sprites": 0xFF, "y": 96, "line": 101}]
+DMA_STORES = {"name": "a bad line, the processor storing", "d011": 0x1B, "line": 58}
+DMA_FRAMES = [
+    {"name": "the display on", "d011": 0x1B},
+    {"name": "the display on, the vertical scroll 0", "d011": 0x18},
+    {"name": "the display on, the vertical scroll 7", "d011": 0x1F},
+    {"name": "the display off", "d011": 0x0B},
+    {"name": "the display on, turned off partway down", "d011": 0x1B, "patch": 0x0B},
+    {"name": "the display off, turned on partway down", "d011": 0x0B, "patch": 0x1B},
+    {"name": "sprite 0, the display off", "sprites": 0x01, "y": 100},
+    {"name": "sprite 0, the display on", "d011": 0x1B, "sprites": 0x01, "y": 100},
+    {"name": "sprite 0 stretched (Y-expanded), the display off", "sprites": 0x01, "expand": 0x01, "y": 100},
+    {"name": "sprite 0 stretched (Y-expanded), the display on", "d011": 0x1B, "sprites": 0x01, "expand": 0x01,
+     "y": 100},
+    {"name": "all eight sprites, the display off", "sprites": 0xFF, "y": 100},
+    {"name": "all eight sprites, the display on", "d011": 0x1B, "sprites": 0xFF, "y": 100},
+]
+NOP, STA_ZP = (b"\xEA", 2), (b"\x85\x02", 3)      # an instruction's bytes and its cycles
+# The slide's first three bytes, by the cycles they take (NOPs, BIT $EA, LDA $EAEA): a pass picks
+# one once it has reached the slide, so that its fill starts in the cycle wanted.
+ENTRIES = {6: b"\xEA\xEA\xEA", 5: b"\x24\xEA\xEA", 4: b"\xAD\xEA\xEA"}
+FRAME_CYCLES = 312 * 63
+
+
+def dma_program():
+    """(code, labels): each pass sets the chip from the table, waits for the table's line, then
+    jumps to the slide at DMA_SLIDE, DMA_NOPS bytes that end in a jump back to frame."""
+    from asm import assemble
+    return assemble(f"""
+            sei
+            lda #$35
+            sta $01
+    frame:  lda ${DMA_TABLE:04x}
+            sta $d011
+            lda ${DMA_TABLE + 1:04x}
+            sta $d015
+            lda ${DMA_TABLE + 2:04x}
+            sta $d017
+            ldx #15
+    pos:    lda ${DMA_TABLE + 5:04x},x
+            sta $d000,x
+            dex
+            bpl pos
+            lda #0
+            sta $d010
+    poll:   lda $d011
+            and #$80
+            cmp ${DMA_TABLE + 3:04x}
+            bne poll
+            lda $d012
+            cmp ${DMA_TABLE + 4:04x}
+            bne poll
+            jmp ${DMA_SLIDE:04x}
+    """, DMA_ORG)
+
+
+def dma_table(case, line):
+    """The table's bytes for a case: $D011, $D015, $D017, the line to wait for (bit 8, then
+    the low byte), then $D000-$D00F."""
+    return bytes([case.get("d011", 0x0B), case.get("sprites", 0), case.get("expand", 0),
+                  0x80 if line > 255 else 0, line & 255] + [100, case.get("y", 0)] * 8)
+
+
+def _stop_at(m, a, timeout=5.0):
+    """From a stop, run to the instruction at a and stop before it. The stopwatch there."""
+    n = m.j("vice_checkpoint_add", {"start": f"${a:04X}", "exec": True, "stop": True})["checkpoint_num"]
+    try:
+        m._call(m.rpc, "vice_execution_run", {})
+        t0 = time.time()
+        while not (any(c["checkpoint_num"] == n and c["hit_count"] for c in m.j("vice_checkpoint_list")["checkpoints"])
+                   and m.paused()):
+            if time.time() - t0 > timeout:
+                raise RuntimeError(f"the program did not reach ${a:04X} within {timeout} s")
+            time.sleep(0.005)
+    finally:
+        m.j("vice_checkpoint_delete", {"checkpoint_num": n})
+    pc = m.j("vice_registers_get")["PC"]
+    if pc != a:
+        raise RuntimeError(f"stopped at ${pc:04X}, not at ${a:04X}")
+    return m.stopwatch()
+
+
+def _passes(m, labels, case, line, fill, first, limit=80, held=True, lines=None, tries=8):
+    """Passes of a case. fill (an instruction of n cycles) is laid after the entry, which each
+    pass picks when it reaches the slide so that pass i's fill starts i cycles later, modulo n,
+    than pass 0's; the wait for the line alone would start each pass in the same cycle. Each
+    pass stops `first` instructions into the fill and single steps to two instructions past the
+    first one held, or `limit` steps with held False. Yields the stopwatch at each instruction
+    boundary stepped, and appends (stopwatch, raster line) to lines if given."""
+    from vice import poke
+    code, n = fill
+    _stop_at(m, labels["frame"])                  # out of the slide, so a fill of two-byte
+    poke(m.rpc, DMA_TABLE, dma_table(case, line))  # instructions cannot leave it on an operand
+    poke(m.rpc, DMA_SLIDE + 3, code * 100)
+    try:
+        for i in range(tries):
+            at = _stop_at(m, DMA_SLIDE)               # the frame is an even number of cycles
+            poke(m.rpc, DMA_SLIDE, ENTRIES[next(e for e in ENTRIES if (at + e - i) % n == 0)])
+            times = [_stop_at(m, DMA_SLIDE + 3 + len(code) * first)]
+            after = None
+            while len(times) <= limit and (after is None or len(times) < after + 3):
+                if lines is not None:
+                    lines.append((times[-1], m.vic()[0]))
+                m.j("vice_execution_step", {"count": 1})
+                times.append(m.stopwatch())
+                if held and after is None and times[-1] - times[-2] > n:
+                    after = len(times) - 1
+            if held and after is None:
+                raise RuntimeError(f"{case['name']}: no instruction was held in {limit} steps")
+            yield times
+    finally:
+        poke(m.rpc, DMA_SLIDE, NOP[0] * (3 + 100 * len(code)))
+
+
+def _beam(m, labels):
+    """The stopwatch's origin from the top of the frame (phase): passes with nothing fetched,
+    stepped across the end of line 100, until they pin it to the cycle."""
+    samples, spread = [], None
+    for _ in _passes(m, labels, {}, 100, NOP, 6, limit=16, held=False, lines=samples):
+        o, spread = phase(samples, 312, 63)
+        if spread == 0:
+            return o
+    raise RuntimeError(f"the beam's position stayed uncertain by {spread} cycles")
+
+
+def _at(p):
+    """[line, cycle] of the cycle p cycles from the top of the frame."""
+    return [p // 63, p % 63 + 1]
+
+
+def _window(m, labels, o, case):
+    """Where a case holds the processor: [line, cycle] of the first and the last cycle. A NOP
+    that took 2 + n cycles was held for n, from its first cycle or its second; each pass
+    leaves those two candidates for the first, and the passes run until one is left."""
+    first, held = None, set()
+    for i, times in enumerate(_passes(m, labels, case, case["line"], NOP, 0)):
+        events = [(a, b - a - 2) for a, b in zip(times, times[1:]) if b - a > 2]
+        if len(events) != 1:
+            raise RuntimeError(f"{case['name']}: {len(events)} NOPs held in one pass, one expected")
+        a, n = events[0]
+        p = (o + a) % FRAME_CYCLES
+        first = {p, p + 1} if first is None else first & {p, p + 1}
+        held.add(n)
+        if not first or len(held) > 1:
+            raise RuntimeError(f"{case['name']}: the passes disagree (held for {sorted(held)} cycles)")
+        if len(first) == 1 and i:
+            p = first.pop()
+            return {"first": _at(p), "last": _at(p + n - 1), "held": n}
+    raise RuntimeError(f"{case['name']}: {i + 1} passes left the first cycle held uncertain")
+
+
+def _stores(m, labels, o, case, window):
+    """A stream of STA zero page (read, read, write) across a window, entered in each of its
+    three phases. For each: [the first STA held, from the window's first cycle; how long]."""
+    w0 = window["first"][0] * 63 + window["first"][1] - 1
+    seen = {}
+    for times in _passes(m, labels, case, case["line"], STA_ZP, 4, tries=9):
+        a, n = next((a, b - a - 3) for a, b in zip(times, times[1:]) if b - a > 3)
+        seen[(o + a) % FRAME_CYCLES - w0] = n
+        if len(seen) == 3:
+            return sorted([k, v] for k, v in seen.items())
+    raise RuntimeError(f"{case['name']}: nine passes met the window in {len(seen)} of the three phases")
+
+
+def _frame(m, labels, case):
+    """What a whole frame of NOPs loses: (the cycles held, [line, cycle] of the patch's write)."""
+    from vice import poke
+    patch = case.get("patch")
+    if patch is not None:
+        poke(m.rpc, DMA_SLIDE + DMA_PATCH, bytes([0xA9, patch, 0x8D, 0x11, 0xD0]))
+    poke(m.rpc, DMA_TABLE, dma_table(case, FRAME_LINE))
+    try:
+        _stop_at(m, labels["frame"])
+        t0 = _stop_at(m, DMA_SLIDE)
+        wrote = None
+        if patch is not None:
+            _stop_at(m, DMA_SLIDE + DMA_PATCH + 2)
+            m.j("vice_execution_step", {"count": 1})
+            wrote = m.stopwatch() - 1                 # the store's last cycle
+        t1 = _stop_at(m, DMA_SLIDE + DMA_NOPS)
+    finally:
+        poke(m.rpc, DMA_SLIDE + DMA_PATCH, NOP[0] * 5)
+    return t1 - t0 - 2 * DMA_NOPS + (4 if patch is not None else 0), wrote
+
+
+def dma_measure():
+    """Measure every case in the emulator. The record, as the fixture holds it."""
+    from tools import vice_build
+    from vice import poke
+    m = fresh()
+    std = str(m.j("vice_machine_config_get").get("video_standard", "PAL")).upper()
+    if std != "PAL":
+        raise SystemExit(f"the machine is {std}: the cases are written for PAL's 312 lines of 63 cycles")
+    code, labels = dma_program()
+    poke(m.rpc, DMA_ORG, code)
+    slide = NOP[0] * DMA_NOPS + bytes([0x4C, labels["frame"] & 255, labels["frame"] >> 8])
+    for i in range(0, len(slide), 4096):
+        poke(m.rpc, DMA_SLIDE + i, slide[i:i + 4096])
+    m.j("vice_registers_set", {"register": "PC", "value": DMA_ORG})
+    m.j("vice_cycles_stopwatch", {"action": "reset"})
+    o = _beam(m, labels)
+    out = {"source": "kit/c64/frame.py dma --record", "recorded": time.strftime("%Y-%m-%d"),
+           "emulator": f"VICE {m.j('vice_ping').get('version', '?')}, {vice_build()}", "standard": std,
+           "program": {"org": DMA_ORG, "code": code.hex(), "frame": labels["frame"], "table": DMA_TABLE,
+                       "slide": DMA_SLIDE, "nops": DMA_NOPS, "patch": DMA_PATCH, "frame_line": FRAME_LINE},
+           "windows": [], "frames": []}
+    for case in DMA_WINDOWS:
+        w = dict(case, **_window(m, labels, o, case))
+        print(f"{w['name']}: held {w['held']} cycles, line {w['first'][0]} cycle {w['first'][1]} "
+              f"to line {w['last'][0]} cycle {w['last'][1]}", flush=True)
+        out["windows"].append(w)
+    out["stores"] = dict(DMA_STORES, passes=_stores(m, labels, o, DMA_STORES, out["windows"][0]))
+    print(f"{DMA_STORES['name']}: " + ", ".join(f"the first STA held began {k:+d} cycles from the window, "
+                                                 f"held {n}" for k, n in out["stores"]["passes"]), flush=True)
+    for case in DMA_FRAMES:
+        held, wrote = _frame(m, labels, case)
+        f = dict(case, held=held)
+        if wrote is not None:
+            f["wrote"] = _at((o + wrote) % FRAME_CYCLES)
+        print(f"a frame, {f['name']}: held {held} cycles"
+              + (f" ($D011 written on line {f['wrote'][0]})" if wrote is not None else ""), flush=True)
+        out["frames"].append(f)
+    m._call(m.rpc, "vice_execution_run", {})
+    return out
+
+
+def dma_write(out):
+    """The fixture, a case to a line."""
+    lines = ["{"] + [f" {json.dumps(k)}: {json.dumps(v)}," for k, v in out.items() if k not in ("windows", "frames")]
+    for key in ("windows", "frames"):
+        rows = out[key]
+        lines += [f' "{key}": ['] + [f"  {json.dumps(r)}" + ("," if i < len(rows) - 1 else "")
+                                     for i, r in enumerate(rows)] + [" ]" + ("," if key == "windows" else "")]
+    with open(DMA_FIXTURE, "w") as f:
+        f.write("\n".join(lines + ["}"]) + "\n")
+
+
+def dma_check():
+    """Measure again and compare with the fixture. True if every case agrees."""
+    want = json.load(open(DMA_FIXTURE))
+    got = dma_measure()
+    bad = []
+    for key in ("windows", "frames"):
+        if len(want[key]) != len(got[key]):
+            bad.append(f"{key}: the fixture has {len(want[key])} cases, frame.py {len(got[key])}")
+        for w, g in zip(want[key], got[key]):
+            w, g = ({k: v for k, v in r.items() if k != "wrote"} for r in (w, g))   # where the
+            if w != g:                                                            # wait left it
+                bad.append(f"{g['name']}: the fixture has {w}, the emulator {g}")
+    if want["stores"] != got["stores"]:
+        bad.append(f"{got['stores']['name']}: the fixture has {want['stores']}, the emulator {got['stores']}")
+    for b in bad:
+        print("  " + b)
+    print(f"the cycles the video chip takes: {'they agree with' if not bad else 'FAIL, they differ from'} "
+          f"{os.path.relpath(DMA_FIXTURE, ROOT)} ({want['recorded']}, {want['emulator']})")
+    return not bad
 
 
 if __name__ == "__main__":
@@ -530,6 +919,12 @@ if __name__ == "__main__":
         print(__doc__)
     elif argv[0] == "test":
         sys.exit(0 if test("--keep" in argv) else 1)
+    elif argv[0] == "dma":
+        if "--record" in argv:
+            dma_write(dma_measure())
+            print(f"wrote {os.path.relpath(DMA_FIXTURE, ROOT)}")
+        else:
+            sys.exit(0 if dma_check() else 1)
     elif argv[0] == "compare":
         sys.exit(1 if compare(argv[1], argv[2] if len(argv) > 2 else None) else 0)
     elif argv[0] == "trim":

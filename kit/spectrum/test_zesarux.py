@@ -275,6 +275,21 @@ def check_set_input_validates():
     rpc.close(); f.close()
 
 
+def check_type_ascii_sends_codes():
+    """ZRCP reads a bare letter as a label it does not know, 0, and presses nothing: send codes."""
+    f = Fake({"send-keys-ascii": ""})
+    rpc = connect(port=f.port)
+    rpc.type_ascii("vA \n", 150)
+    assert f.seen[-1] == "send-keys-ascii 150 118 65 32 10", f.seen[-1]
+    try:
+        rpc.type_ascii("é")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a character outside ASCII must be refused")
+    rpc.close(); f.close()
+
+
 def check_connection_closed():
     """ZEsarUX dying mid-session raises, naming the command (Review Focus 2)."""
     f = Fake({"get-registers": None})

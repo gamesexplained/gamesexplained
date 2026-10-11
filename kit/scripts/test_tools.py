@@ -46,6 +46,27 @@ def resolves(args, **kw):
         return "refused: " + str(e)
 
 
+def test_c64_status_selection():
+    sys.path.insert(0, os.path.join(KIT, "c64"))
+    import check_emulator
+    up = "emulator :6510 up build: release example"
+    down = "emulator :6510 down build: upstream example"
+    for browser in ("browser :9222 down profile: tools/browser", "browser :9222 up profile: tools/browser"):
+        output = browser + "\n" + up + "\ndisassembler :3000 down"
+        check("c64 status selects emulator after " + browser.split()[2] + " browser",
+              check_emulator.emulator_status(output) == up and check_emulator.emulator_up(output))
+        check("browser cannot make a stopped emulator pass",
+              not check_emulator.emulator_up(browser + "\n" + down))
+    check("c64 status without browser still works", check_emulator.emulator_status(up) == up)
+    for output in ("browser :9222 up", up + "\n" + down):
+        try:
+            check_emulator.emulator_status(output)
+            refused = False
+        except ValueError:
+            refused = True
+        check("missing or ambiguous emulator status is refused", refused)
+
+
 def test_declarations():
     for p in tools.platforms():
         src = open(os.path.join(KIT, p, "tools.py"), encoding="utf-8").read()
@@ -231,6 +252,7 @@ def test_spectrum_statistics_stay_off():
 
 
 if __name__ == "__main__":
+    test_c64_status_selection()
     test_declarations()
     test_rules()
     test_documented_commands()

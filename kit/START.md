@@ -65,13 +65,40 @@ step needs something only they have.
    at one agent throughout: several agents at once have used up a
    session's allowance in minutes and left the run waiting hours for the
    reset. If they say there is room, it may split large work across up to
-   four. The answer holds for the whole run.
+   four. The answer holds for the whole run. One agent throughout still
+   starts the one checker `60-verify` gives its sample of comments to:
+   one agent with a short brief is not a fan-out, so the run starts it
+   without asking, whatever the answer here.
 
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
-   under the agent's identity credit nobody. Ask for their GitHub login
-   and the name they want shown, and set both for this repository only,
-   never globally:
+   under the agent's identity credit nobody. First look at what the
+   commits would be authored as now:
+
+   ```
+   git var GIT_AUTHOR_IDENT
+   ```
+
+   That includes `GIT_AUTHOR_*` and `GIT_COMMITTER_*` from the
+   environment, which override `git config`: in a hosted session the
+   contributor's identity may already be set there. If it shows their
+   name on a noreply address (`<login>@users.noreply.github.com`), it
+   is already theirs: show it, ask for a yes, and move on. Ask for
+   their GitHub login and the name they want shown only when it shows
+   something else (the agent's identity, a personal address, nothing).
+
+   Where the environment variables are set and wrong, `git config`
+   changes nothing: set the identity in the environment of each commit
+   instead:
+
+   ```
+   GIT_AUTHOR_NAME="<their name>" GIT_AUTHOR_EMAIL="<login>@users.noreply.github.com" \
+   GIT_COMMITTER_NAME="<their name>" GIT_COMMITTER_EMAIL="<login>@users.noreply.github.com" \
+   git commit ...
+   ```
+
+   Where they are not set, set both for this repository only, never
+   globally:
 
    ```
    git config user.name "<their name>"
@@ -145,6 +172,36 @@ step needs something only they have.
    and the description to paste. If you cannot push or open it (no fork,
    no login), leave the branch where it is and say exactly what is
    missing.
+8. **Debrief the contributor** once the pull request is open. They may
+   have waited hours for the run, so it is one short message that lets
+   them call the run done, and offers them more:
+   - **Where to see it.** `python3 kit/scripts/preview.py <number>`
+     prints the pull request's preview of each game page it changes. A
+     preview is deployed a minute or two after a push; a fork's pull
+     request has none until a maintainer lets it deploy, so say so then,
+     and how to see the pages locally (`AGENTS.md`, step 4).
+   - **What happens next.** The pull request can be merged as it is, and
+     they need do nothing more. Or they can ask for changes first.
+   - **What only they can settle.** Ask the questions a person answers in
+     a few minutes and the run could not, one line each: which tune is
+     the title tune, what a voice line says, what a picture shows.
+     Settled early, each makes the page easier to follow. They are in
+     `TODO.md` and the open rows of `features.md`.
+   - **Ideas for follow-ups.** Look at the pages as someone who has never
+     played the game, and offer three or four ideas they could take up
+     next, a line each, under a heading such as "Some ideas for
+     follow-ups": they are suggestions, and not every one will be worth
+     doing. Good ones are usually of these kinds: a picture of what the
+     page only describes (a map of the world, the pictures the game
+     holds), a route through the game a reader can replay, a widget made
+     easier to use (scrollback, a way out of a dead end, a download), and
+     a claim finished with its concrete case (the commands that should
+     have won, every character in one table). Start from the ideas in
+     `TODO.md`.
+
+   A change they ask for goes on the same branch, with the checks before
+   each commit, or on a new branch from `main` once the pull request has
+   merged.
 
 **If the contributor already has an analysis of the game** (a commented
 disassembly made outside the kit), it seeds the run and does not replace

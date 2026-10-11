@@ -1,0 +1,321 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "arkanoid",
+  "title": "Arkanoid",
+  "year": 1987,
+  "publisher": "Imagine",
+  "developer": "David A. Collier",
+  "title_image": "reference/title.png",
+  "tabs": [["index.html", "Overview"], ["mechanics.html", "How it works"], ["levels.html", "Maps / levels"], ["music.html", "Music"], ["source.html", "Source code"], ["discoveries.html", "Discoveries"], ["about.html", "About"]],
+  "build": "",
+  "tier": "silver",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "David A. Collier",
+      "role": "code (second-hand: web search summaries)"
+    },
+    {
+      "by": "Mark Kevin Jones",
+      "role": "graphics (second-hand; the title picture is signed \"Jones\")"
+    },
+    {
+      "by": "Martin Galway",
+      "role": "music (second-hand: web search summaries)"
+    },
+    {
+      "by": "Taito",
+      "role": "the arcade original"
+    }
+  ],
+  "tools": {
+    "host": "Linux 6.18 x86_64, Ubuntu 24.04 cloud container with four cores and no display",
+    "emulator": "VICE, release v3.13.2, v3.13.2-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 0.9.20",
+    "python": "3.11.15",
+    "node": "22.22.0"
+  },
+  "model": "claude-opus-5-5",
+  "step_models": {
+    "50-coverage": [
+      "claude-opus-5-5"
+    ],
+    "60-verify": [
+      "claude-opus-5-5"
+    ]
+  },
+  "kit_version": "0.0.60",
+  "created": "2026-10-05",
+  "video": {
+    "screen": "$C000",
+    "charset": "$C800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$CA00",
+        "$CBFF",
+        "runtime: working copy of characters 64-127 (the background tiles), rewritten each round from $EA00, $EC00 or $EE00 by $F552 and $9C59"
+      ],
+      [
+        "$C000",
+        "$C3E7",
+        "runtime: screen memory; the image holds a stale copy of the menu, which $B6F0 clears before anything is drawn"
+      ],
+      [
+        "$0599",
+        "$05FE",
+        "unused: stale code bytes after player 2's wall buffer, left from an earlier build; nothing runs or reads them"
+      ],
+      [
+        "$0AE9",
+        "$0BFF",
+        "unused: part of an earlier assembly of $A971-$B5FF, left in the file; nothing runs or reads it"
+      ],
+      [
+        "$154C",
+        "$15FF",
+        "unused: part of the same earlier assembly; nothing runs or reads it (only $150C is written, by $FCF6)"
+      ],
+      [
+        "$C3E8",
+        "$C3FF",
+        "runtime: the unused bytes after the screen and the sprite pointers, written by $F25D and the multiplexer"
+      ]
+    ],
+    "extra": [
+      [
+        "$C400",
+        "$C7FF",
+        "an unused variant of characters 128-255, outside the character window; no instruction reads it"
+      ]
+    ],
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "sprite shapes $40-$7F under the I/O area, read by the video chip in bank 3"
+      ]
+    ]
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0000",
+      "$00FF",
+      "variables",
+      "zero page: multiplexer, pointers, music and drum driver state"
+    ],
+    [
+      "$0200",
+      "$05FF",
+      "variables",
+      "game variables, silver and gold brick tables, per-player wall buffers"
+    ],
+    [
+      "$0600",
+      "$0926",
+      "code",
+      "save wall, title intro animation, keyboard test"
+    ],
+    [
+      "$0927",
+      "$0959",
+      "variables",
+      "scores, lives, rounds, players, menu choices, high score, dissolve masks"
+    ],
+    [
+      "$096B",
+      "$1BFF",
+      "code",
+      "unused: stale earlier assemblies and the power-on RAM pattern"
+    ],
+    [
+      "$1C00",
+      "$1FFF",
+      "graphics",
+      "clean copy of play characters $80-$FF, copied in for round 33"
+    ],
+    [
+      "$2000",
+      "$245B",
+      "sound",
+      "sound-effect patches, 12 effects of three voices"
+    ],
+    [
+      "$245C",
+      "$25FF",
+      "sound",
+      "music driver instruments, voice state, filter, note lengths, frequency table"
+    ],
+    [
+      "$8000",
+      "$93FF",
+      "levels",
+      "32 round brick maps, 160 bytes each"
+    ],
+    [
+      "$9409",
+      "$9450",
+      "variables",
+      "sprite object tables: order, Y, X, and the multiplexer's copies"
+    ],
+    [
+      "$9500",
+      "$9945",
+      "code",
+      "attract mode, main loops, rounds, Doh, the gates"
+    ],
+    [
+      "$9960",
+      "$9A75",
+      "sound",
+      "the title drum track"
+    ],
+    [
+      "$9A76",
+      "$A375",
+      "code",
+      "lives, game over, enemies"
+    ],
+    [
+      "$A376",
+      "$A41E",
+      "tables",
+      "animation lists, enemy tables, the Vaus appearing"
+    ],
+    [
+      "$A41F",
+      "$AA9F",
+      "code",
+      "break exit, laser, capsule letters and effects"
+    ],
+    [
+      "$AB55",
+      "$AFFF",
+      "code",
+      "silver shine, bat, balls, drum samples"
+    ],
+    [
+      "$B010",
+      "$B711",
+      "code",
+      "brick hits, capsule choice, ball movement, title, input menu, text printers"
+    ],
+    [
+      "$B712",
+      "$B982",
+      "text",
+      "menu, story and ending text (PETSCII)"
+    ],
+    [
+      "$BA6B",
+      "$BFFF",
+      "code",
+      "unused: an earlier assembly of the $F7xx-$FFxx code"
+    ],
+    [
+      "$F000",
+      "$F711",
+      "code",
+      "main entry, new game, panel, walls, round bricks, playfield background"
+    ],
+    [
+      "$F720",
+      "$FC98",
+      "code",
+      "raster chain, sprite multiplexer, NMIs and sound tick, lives, scores"
+    ],
+    [
+      "$FC99",
+      "$FF39",
+      "code",
+      "input devices (joystick, keyboard, paddles, Neos mouse), Vaus placement, title percussion"
+    ],
+    [
+      "$C400",
+      "$C7FF",
+      "graphics",
+      "unused variant of characters 128-255"
+    ],
+    [
+      "$C800",
+      "$CFFF",
+      "graphics",
+      "character set: font, background tiles (runtime), bricks, panel and walls"
+    ],
+    [
+      "$D000",
+      "$E9FF",
+      "graphics",
+      "sprite shapes $40-$A7"
+    ],
+    [
+      "$EA00",
+      "$EFFF",
+      "graphics",
+      "three background tile sets (characters 64-127)"
+    ],
+    [
+      "$2615",
+      "$3429",
+      "code",
+      "the sound driver: tune start, reset, sound effects, three sequencers, effect ticks, filter"
+    ],
+    [
+      "$342A",
+      "$3B8A",
+      "sound",
+      "tune table (9 records of 7 bytes), sequences, instruments, envelopes, pitch and filter programs, arpeggio tables"
+    ],
+    [
+      "$3B8B",
+      "$3EFF",
+      "code",
+      "unused: an older build of the sound driver, assembled $1000 higher"
+    ],
+    [
+      "$4000",
+      "$5F3F",
+      "graphics",
+      "the title picture's multicolour bitmap"
+    ],
+    [
+      "$6000",
+      "$63E7",
+      "graphics",
+      "the title picture's colour matrix"
+    ],
+    [
+      "$6800",
+      "$757F",
+      "graphics",
+      "intro sprite frames $A0-$D5 (bank 1)"
+    ],
+    [
+      "$7800",
+      "$7944",
+      "text",
+      "the play screen's panel template, screen codes"
+    ],
+    [
+      "$7B90",
+      "$7DFF",
+      "graphics",
+      "the Doh screen, 26 x 24 screen codes"
+    ],
+    [
+      "$7E00",
+      "$7FFE",
+      "graphics",
+      "unreferenced multicolour character shapes, a near-copy of $EA00"
+    ]
+  ],
+  "links": {
+    "wiki": {"title": "Arkanoid – C64-Wiki", "url": "https://www.c64-wiki.com/wiki/Arkanoid"},
+    "manual": ""
+  }
+}

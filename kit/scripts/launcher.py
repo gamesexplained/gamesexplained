@@ -107,12 +107,12 @@ def foreign_detail(port):
     return "\n".join(lines)
 
 
-def missing_libraries(exe):
+def missing_libraries(exe, env=None):
     """Shared libraries the dynamic linker cannot find for exe. Empty where there is no ldd to ask
     (macOS, Windows)."""
     if not exe or not sys.platform.startswith("linux") or not shutil.which("ldd"):
         return []
-    out = subprocess.run(["ldd", exe], capture_output=True, text=True).stdout
+    out = subprocess.run(["ldd", exe], capture_output=True, text=True, env=env).stdout
     return sorted({line.split("=>")[0].strip() for line in out.splitlines() if "not found" in line})
 
 

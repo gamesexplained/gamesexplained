@@ -113,22 +113,37 @@ globalThis.C64 = (function () {
   //             its own checks, and a page never embeds it
   // Modelled: character, bitmap and extended colour modes, multicolour, both scrolls, 24/25 rows
   // and 38/40 columns with the border flip-flops (so an opened border stays open), bad lines,
-  // the idle pattern, and sprites with expansion, multicolour, priority and reuse within the
-  // frame. The frame is run twice and the second drawn, so that what crosses the frame boundary
-  // (the border, a sprite) is as the steady state leaves it. Not followed to the pixel: the few
-  // pixels after a mid-line change of a mode bit or the scroll, and the grey pixel VICE draws
-  // where a colour register changes. Not modelled: sprite collisions, and tricks that move the
-  // bad lines within a line.
+  // among them one that a write to $D011 starts late in its line (VSP: every row after it starts
+  // as many places further on as the line had fetch cycles left), the idle pattern, and sprites
+  // with expansion, multicolour, priority and reuse within the frame. The frame is run twice and
+  // the second drawn, so that what crosses the frame boundary (the border, a sprite) is as the
+  // steady state leaves it. Not followed to the pixel: the few pixels after a mid-line change of
+  // a mode bit or the scroll, and the grey pixel VICE draws where a colour register changes.
+  // Not modelled: sprite collisions; the characters on a late bad line and on the lines after it
+  // up to the next bad line, which the chip shows from the row's first character on, starting
+  // where its display came on, and this draws each in its own column (VSP games hide those lines
+  // in the top border, where it does not matter); and a bad line condition that comes and goes
+  // before cycle 14, which turns the display on in VICE.
   // For a live display (a Play page) three more fields save the work of a recording:
   //   F.mem     a 64 KB Uint8Array used in place of F.ram     F.colourMem  1024 bytes, for F.colour
   //   F.keep    an object kept from frame to frame: the chip's state carries over from the last
   //             call, so the frame is run once, not twice
   // Returns {w, h, px, x0, line0, reads, romReads}: px holds w * h colour indices of VICE's
-  // visible PAL area (raster lines 16-287, sprite X -8 to 375); reads marks each RAM address the
+  // visible area (PAL raster lines 16-287, NTSC 28-262 and 0-11; sprite X -8 to 375); reads marks each RAM address the
   // drawing read.
   function renderFrame(F) {
-    const LINES = F.lines || 312, CYC = F.cycles || 63, W = 384, H = 272, LINE0 = 16, X0 = -8;
-    if (LINES !== 312 || CYC !== 63) throw new Error('renderFrame models the PAL chip: 312 lines of 63 cycles');
+    const LINES = F.lines || 312, CYC = F.cycles || 63;
+    // the PAL chip (6569: 312 lines of 63 cycles) or the NTSC one (6567R8: 263 lines of 65); VICE
+    // shows 272 lines from 16 on PAL and 247 from 28 on NTSC, the last of them lines 0-11 of the
+    // next frame, drawn here from this one's
+    const NTSC = LINES === 263 && CYC === 65;
+    if (!NTSC && (LINES !== 312 || CYC !== 63))
+      throw new Error('renderFrame models the PAL chip (312 lines of 63 cycles) and the NTSC 6567R8 (263 of 65)');
+    const W = 384, H = NTSC ? 247 : 272, LINE0 = NTSC ? 28 : 16, X0 = -8, SPR0 = NTSC ? 60 : 58;
+    // VICE's NTSC frame begins where its picture ends, at line 12 (frame.py records it as
+    // capture.frame_ended_on_line): the registers in F.vic are those at that line, and the writes
+    // on lines 0-11 come at the end of the frame, so the lines are run from there round
+    const FIRST = NTSC ? ((F.capture && F.capture.frame_ended_on_line) || 12) : 0;
     let start = F.mem;
     if (!start) { start = new Uint8Array(0x10000); for (const r of F.ram) start.set(bytes64(r.b), r.a); }
     const colour = F.colourMem || bytes64(F.colour), rom = F.charrom ? bytes64(F.charrom) : null;
@@ -162,10 +177,11 @@ globalThis.C64 = (function () {
         reads[x] = 1;
         return mem[x];
       };
-      for (let y = 0; y < LINES; y++) {
-        const ws = byLine[y] || [];
-        let wi = 0, badline = false, slot = -1;
-        const out = y >= LINE0 && y < LINE0 + H ? (y - LINE0) * W : -1;
+      for (let yi = 0; yi < LINES; yi++) {
+        const y = (yi + FIRST) % LINES, ws = byLine[y] || [];
+        let wi = 0, badline = false, slot = -1, gn = 0;
+        const vis = y >= LINE0 ? y - LINE0 : y + LINES - LINE0;
+        const out = vis < H ? vis * W : -1;
         if (y === 0) { S.vcbase = 0; S.den30 = false; }
         for (let c = 1; c <= CYC; c++) {
           // the chip's half of cycle c, before the processor's write in it
@@ -176,6 +192,12 @@ globalThis.C64 = (function () {
             badline = y >= 0x30 && y <= 0xF7 && (y & 7) === (R[0x11] & 7) && S.den30;
             S.vc = S.vcbase;
             if (badline) { S.rc = 0; S.display = true; }
+          }
+          // a bad line condition that arises after cycle 14 (VSP: $D011's Y scroll made to match the
+          // line late) turns on the display state there, without reloading VC or resetting RC; the
+          // g-accesses left in the line still count VC up, and cycle 58 makes that count VCBASE
+          if (c > 14 && c <= 55 && !badline && y >= 0x30 && y <= 0xF7 && (y & 7) === (m11 & 7) && S.den30) {
+            badline = true; S.display = true;
           }
           for (let n = 0; n < 8; n++) {
             const s = S.spr[n], ye = R[0x17] >> n & 1;
@@ -191,7 +213,7 @@ globalThis.C64 = (function () {
             }
             if (c === 58) { s.mc = s.mcbase; if (s.dma && R[2 * n + 1] === (y & 0xFF)) s.on = true; }
             // pointer and data: sprites 0-2 at the end of this line, 3-7 early in the next
-            if (c === (n < 3 ? 58 + 2 * n : 2 * n - 5)) {
+            if (c === (n < 3 ? SPR0 + 2 * n : 2 * n - 5)) {
               const sp = n < 3 ? 'next' : 'row';
               if (s.dma) {
                 const ptr = vmem((R[0x18] >> 4) * 0x400 + 0x3F8 + n) * 64;
@@ -212,13 +234,13 @@ globalThis.C64 = (function () {
               const vci = (S.vc + i) & 0x3FF;
               gfx[i] = bmm ? vmem((R[0x18] & 0x08) << 10 | vci << 3 | S.rc)
                 : vmem((R[0x18] & 0x0E) << 10 | (ecm ? buf[i] & 0x3F : buf[i]) << 3 | S.rc);
-              gcode[i] = buf[i]; gcol[i] = cbuf[i];
+              gcode[i] = buf[i]; gcol[i] = cbuf[i]; gn++;
             } else {
               gfx[i] = vmem(ecm ? 0x39FF : 0x3FFF); gcode[i] = 0; gcol[i] = 0;
             }
           }
           if (c === 58) {
-            if (S.rc === 7) { S.vcbase = (S.vc + (S.display ? 40 : 0)) & 0x3FF; if (!badline) S.display = false; }
+            if (S.rc === 7) { S.vcbase = (S.vc + gn) & 0x3FF; if (!badline) S.display = false; }
             if (S.display) S.rc = (S.rc + 1) & 7;
           }
           if (c === CYC) {

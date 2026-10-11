@@ -79,19 +79,23 @@ var FIST = (function () {
 
   // The hit test $2B8E-$2C1D for fighters facing each other: move m, defender frame f, distance d
   // (signed, along the attacker's facing). 2 whole point, 1 half, 0 miss.
-  function grade(ram, m, f, d) {
-    const p = ram[w16(ram, 0x121D + 2 * m) + f];
+  function grade(ram, m, f, d, same) {
+    // d: how far the defender stands ahead of the attacker, along the attacker's facing.
+    // same: both face the same way, so the blow lands on the defender's back: the profile comes
+    // from $124F instead of $121D ($2BA8), the distance is taken the other way round ($2C55-$2C6D)
+    // and the forward and backward comparisons swap places ($2C76, $2C8F).
+    const p = ram[w16(ram, (same ? 0x124F : 0x121D) + 2 * m) + f];
     if (p === 0x80) return 0;
-    const aim = (p + 0x80) & 255, dist = (d + 0x80) & 255;
+    const aim = (p + 0x80) & 255, dist = ((same ? -d : d) + 0x80) & 255;
     const full = ram[0x11BD + m], half = ram[0x11D6 + m];
-    if (!ram[0x11A8 + m]) {                       // forward blows, $2BEB-$2C04
+    if (!ram[0x11A8 + m] === !same) {              // $2BEB-$2C04, and $2C8F-$2CA7 from behind
       if (dist === aim) return 2;
       if (dist > aim) return 0;
       if (((dist + full) & 255) >= aim) return 2;
       if (((dist + half) & 255) >= aim) return 1;
       return 0;
     }
-    if (dist === aim) return 2;                   // backward blows, $2C05-$2C1D
+    if (dist === aim) return 2;                   // $2C05-$2C1D, and $2C76-$2C8E from behind
     if (dist < aim) return 0;
     if (((dist - full) & 255) < aim) return 2;
     if (((dist - half) & 255) < aim) return 1;
@@ -117,7 +121,57 @@ var FIST = (function () {
     return out;
   }
 
-  return { unpackBitmap, unpackColour, pose, anim, grade, speech, speechCycles };
+  // The computer opponent's two choices, each tried with every one of the 255 states of the random
+  // number ($2589: $98 shifted left, XOR $1D when a bit falls out), so the counts are its odds.
+  // L is the computer's level, 0-11: ai_level_setup ($2593) loads the masks from the tables at $27A9.
+  const rnd = v => ((v << 1) & 255) ^ (v & 0x80 ? 0x1D : 0);
+  const tally = (f) => { const n = {}; for (let s = 1; s < 256; s++) { const k = f(s); n[k] = (n[k] || 0) + 1; } return n; };
+
+  // Answering a blow in reach, $237D (after the reaction delay): random AND $9C. Bit 7 counter-attacks,
+  // bits 4-6 block with $118F, a low nibble of 0 is move 9 or $0B on a second number, anything else
+  // starts the plan $2788[blow], or blocks when the blow has none. Keys: 'counter', 'block <move>',
+  // 'move <move>', 'plan <n>'.
+  function aiAnswer(ram, L, blow) {
+    const mask = ram[0x27F0 + L];
+    return tally(s => {
+      const r = rnd(s), v = r & mask;
+      if (v & 0x80) return 'counter';
+      const block = 'block ' + ram[0x118F + blow];
+      if (v & 0x70) return block;
+      if (!(v & 0x0F)) return 'move ' + (rnd(r) & 0x80 ? 9 : 0x0B);
+      const plan = ram[0x2788 + blow];
+      return plan ? 'plan ' + plan : block;
+    });
+  }
+
+  // Choosing an attack, $24B1, at distance d ($73: the opponent ahead along the computer's facing when
+  // they face each other, behind it when they face the same way), against an opponent in move opp.
+  // Keys: 'move <m>' (the request), 'plan5' (crouch, then the low punch 7), 'turn' (move $12),
+  // 'none' (no request made: the foot sweep below level 2).
+  function aiAttack(ram, L, d, same, opp) {
+    const spread = ram[0x27B5 + L], back = ram[0x27E4 + L];
+    const lower = m => [0x0A, 0x10, 4, 7].includes(opp) ? ram[0x12D0 + m] : m;      // $2698
+    const backAttack = (m, r) => { const v = rnd(r) & back;                          // $2567
+      return v & 0x80 ? 'turn' : v >= 0x40 ? 'move 3' : v >= 0x20 ? 'move 8' : 'move ' + m; };
+    return tally(s => {
+      const r = rnd(s);
+      if (same) {                                                                   // $2544
+        const m = lower(ram[0x2725 + (((d + 0x29) & 255) + (r & spread) & 255)]);
+        return m === 0x0F || m === 0x10 ? backAttack(m, r) : 'move ' + m;
+      }
+      if (opp === 0x14) { const m = ram[0x27A5 + (r & 3)]; return m === 7 ? 'plan5' : 'move ' + m; }
+      if (opp === 0x13) return 'move ' + ram[0x27A1 + (r & 3)];
+      let m = ram[0x26D5 + (((d + 0x33) & 255) + (r & spread) & 255)];
+      if (m === 0x0E) return 'move ' + (L < 7 ? 0x0E : 2);                          // $2521
+      m = lower(m);
+      if (m === 0x0A) return L < 2 ? 'none' : 'move 10';                           // $252B
+      if (m === 7) return 'plan5';
+      if (m === 0x0F || m === 0x10) return backAttack(m, r);
+      return 'move ' + m;
+    });
+  }
+
+  return { unpackBitmap, unpackColour, pose, anim, grade, speech, speechCycles, aiAnswer, aiAttack };
 })();
 
 // createDriver for site/lib/sid.js: runs the game's own music driver ($09A5, called once a frame
@@ -234,9 +288,18 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
                '#8e5029', '#553800', '#c46c71', '#4a4a4a', '#7b7b7b', '#a9ff9f', '#706deb', '#b2b2b2'];
   const needSite = 'This widget reads the game’s bytes from listing.json and the site’s shared scripts: open the page from the built site, not from disk.';
   const MOVES = { 1: 'stand', 2: 'walk forward', 3: 'walk back', 4: 'crouch', 5: 'jump', 6: 'high punch',
-    7: 'down-forward from a crouch', 8: 'somersault backwards', 9: 'somersault forwards', 0x0A: 'fire + down',
-    0x0B: 'fire + down-forward', 0x0C: 'fire + forward', 0x0D: 'fire + up-forward', 0x0E: 'flying kick',
-    0x0F: 'fire + up-back', 0x10: 'fire + down-back', 0x11: 'fire + back', 0x12: 'turn round', 0x18: 'punch' };
+    7: 'low punch', 8: 'somersault backwards', 9: 'somersault forwards', 0x0A: 'foot sweep',
+    0x0B: 'low kick', 0x0C: 'middle kick', 0x0D: 'high kick', 0x0E: 'flying kick',
+    0x0F: 'back kick', 0x10: 'back sweep', 0x11: 'spinning kick', 0x12: 'turn round', 0x13: 'low block', 0x14: 'high block', 0x18: 'middle punch' };
+  // The move cards: move, key frame (the strike frame $1204 for a blow), stick as read facing right, fire, how it is reached.
+  const MOVE_CARDS = [
+    [1, 0x00, '○', 0, 'stick centred'], [2, 0x02, '→', 0, ''], [3, 0x31, '←', 0, 'blocks instead when a blow is in reach'],
+    [4, 0x0C, '↓', 0, ''], [5, 0x09, '↑', 0, ''], [6, 0x07, '↗', 0, ''], [0x18, 0x13, '↘', 0, 'from standing'],
+    [7, 0x0D, '↘', 0, 'from a crouch'], [8, 0x17, '↙', 0, ''], [9, 0x14, '↖', 0, ''],
+    [0x0A, 0x10, '↓', 1, 'crouches first'], [0x0B, 0x08, '↘', 1, ''], [0x0C, 0x05, '→', 1, ''], [0x0D, 0x0B, '↗', 1, ''],
+    [0x0E, 0x0A, '↑', 1, ''], [0x0F, 0x12, '↖', 1, 'strikes behind'], [0x10, 0x39, '↙', 1, 'crouches first, strikes behind'],
+    [0x11, 0x24, '←', 1, 'held on from the turn'], [0x12, 0x1B, '←', 1, 'from standing'],
+    [0x13, 0x23, '←', 0, 'automatic, against a low or middle blow'], [0x14, 0x0E, '←', 0, 'automatic, against a high blow']];
 
   // A multicolour sprite at (px, py): %01 $D025 (black), %10 the fighter's colour, %11 $D026 (light red),
   // as the game sets them ($19BD, $19C2; the frame's registers show 0 and $0A).
@@ -321,6 +384,21 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
     $('gridBtn').onclick = () => { grid = !grid; $('gridBtn').classList.toggle('on', grid); show(frame); };
     $('frameIn').oninput = e => { clearInterval(timer); show(+e.target.value); };
     play(0x0E);
+    if ($('moveCards')) {
+      const box = $('moveCards');
+      for (const [m, f, arrow, fired, how] of MOVE_CARDS) {
+        const b = document.createElement('button'); b.className = 'fx-move'; b.type = 'button';
+        const cv = document.createElement('canvas'); cv.width = 144; cv.height = 126;
+        drawPose(cv, FIST.pose(ram, f, false, false), 2, 1, false);
+        const pts = ram[0x1176 + m] ? ' · ' + ram[0x12A5 + m] * 100 + ' pts' : '';
+        b.appendChild(cv);
+        b.insertAdjacentHTML('beforeend', `<span class="fx-move-id">Move ${hex(m)}${pts}</span><b>${MOVES[m][0].toUpperCase() + MOVES[m].slice(1)}</b>` +
+          `<span class="fx-move-in"><span class="fx-move-arrow">${arrow}</span>${fired ? '<span class="fx-move-fire">fire</span>' : ''}${how ? ' ' + how : ''}</span>`);
+        b.title = 'Play move ' + hex(m) + ' in the viewer below';
+        b.onclick = () => { play(m); $('poseCv').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+        box.appendChild(b);
+      }
+    }
 
     }
     if ($('bdCv')) {
@@ -472,26 +550,53 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
       blows.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = hex(m) + ' ' + (MOVES[m] || ''); sel.appendChild(o); });
       sel.value = 0x0C;
       const bar = $('gBar'), bctx2 = bar.getContext('2d');
+      let same = false;
       const upd = () => {
-        const m = +sel.value, f = +$('gFrame').value;
+        const m = +sel.value, f = +$('gFrame').value, rev = !!ram[0x11A8 + m];
         $('gFrameOut').textContent = hex(f);
-        drawPose($('gPose'), FIST.pose(ram, f, true, false), 2, 2, false);
+        // both fighters as the hit test sees them: the attacker (white, facing right) on the frame its
+        // blow is tested on, move_strike_frame $1204, and the defender (red) on frame f, facing left or,
+        // with same, right ($2B90), placed at the distance the reach profile aims at ($121D or $124F,
+        // taken the other way round when both face the same way); X units are two pixels ($386C doubles $6A)
+        const sf = ram[0x1204 + m], p0 = ram[(ram[(same ? 0x124F : 0x121D) + 2 * m] | ram[(same ? 0x1250 : 0x121E) + 2 * m] << 8) + f];
+        const dist = p0 === 0x80 ? (rev ? -30 : 30) : (same ? -1 : 1) * ((p0 << 24) >> 24), gc = $('gPose'), gx = gc.getContext('2d'), k = 2;
+        gx.fillStyle = '#edf171'; gx.fillRect(0, 0, gc.width, gc.height);
+        const left = 8 + Math.max(0, -2 * dist) * k;
+        const at = (slots, x0, colour) => slots.forEach((s, i) => { if (s) drawSpriteMC(gx, s, x0 + (i % 3) * 24 * k, Math.floor(i / 3) * 21 * k + 14, k, colour); });
+        at(FIST.pose(ram, f, !same, false), left + 2 * dist * k, 2);  // the defender first, so the
+        at(FIST.pose(ram, sf, false, false), left, 1);                // attacker's blow is drawn over it
+        gx.fillStyle = '#55585f'; gx.font = '11px IBM Plex Mono, monospace';
+        gx.fillText('attacker: move ' + hex(m) + ', frame ' + hex(sf), 6, 11);
+        const label = 'defender: frame ' + hex(f) + (p0 === 0x80 ? ' (cannot be hit; drawn at ' + dist + ')' : ', at distance ' + dist);
+        gx.fillText(label, gc.width - 6 - gx.measureText(label).width, 11);
         bctx2.fillStyle = '#fff'; bctx2.fillRect(0, 0, bar.width, bar.height);
-        const lo = -10, hi = 60, w = bar.width / (hi - lo + 1);
+        const lo = -40, hi = 40, w = bar.width / (hi - lo + 1);
         const spans = [];
         for (let d = lo; d <= hi; d++) {
-          const g = FIST.grade(ram, m, f, d);
+          const g = FIST.grade(ram, m, f, d, same);
           bctx2.fillStyle = g === 2 ? '#2a8a4a' : g === 1 ? '#c25a00' : '#d5d3cc';
           bctx2.fillRect((d - lo) * w, 10, w - 1, 44);
           if (g) spans.push([d, g]);
         }
         bctx2.fillStyle = '#80838a'; bctx2.font = '11px IBM Plex Mono, monospace';
-        for (let d = lo; d <= hi; d += 10) bctx2.fillText(String(d), (d - lo) * w, 72);
-        const p = ram[(ram[0x121D + 2 * m] | ram[0x121E + 2 * m] << 8) + f];
-        $('gOut').textContent = p === 0x80 ? 'Profile byte $80: a defender in this frame cannot be hit by this blow.'
-          : 'Profile byte ' + hex(p) + ' (aims at ' + ((p << 24) >> 24) + '); whole point at ' + spans.filter(s => s[1] === 2).map(s => s[0]).join(', ') +
-            (spans.some(s => s[1] === 1) ? '; half at ' + spans.filter(s => s[1] === 1).map(s => s[0]).join(', ') : '');
+        for (let d = lo; d <= hi; d += 10) bctx2.fillText(String(d), Math.min(bar.width - 16, (d - lo) * w), 72);
+        if (p0 !== 0x80 && dist >= lo && dist <= hi) {           // the distance the picture shows
+          bctx2.fillStyle = '#2f3136'; bctx2.fillRect((dist - lo) * w + w / 2 - 1, 2, 2, 58);
+          bctx2.fillText('shown', Math.min(bar.width - 40, (dist - lo) * w + 4), 86);
+        }
+        // where the blow lands and the defender's reaction, $2CA8: a blow on the defender's front
+        // knocks it backwards ($16), or doubles it over for $18, 7 and $0C ($1B); one on its back
+        // pitches it forwards ($1A). Only a blow at the front can be blocked ($2D00).
+        const front = same === rev;
+        const react = !front ? 'pitches forward onto its face (reaction $1A)' : (!same && [0x18, 7, 0x0C].includes(m)) ? 'doubles over (reaction $1B)' : 'falls backwards (reaction $16)';
+        const where = 'Lands on the defender\'s ' + (front ? 'front' : 'back') + '; a hit defender ' + react + '. ' +
+          (front ? ([0x0A, 0x10].includes(m) ? 'A sweep is never blocked by pulling back. ' : 'Pulling back while it is in reach blocks it. ') : 'It cannot be blocked. ');
+        $('gOut').textContent = where + (p0 === 0x80 ? 'Profile byte $80: a defender in this frame cannot be hit by this blow.'
+          : 'Profile byte ' + hex(p0) + ' (aims at ' + dist + '); whole point at ' + spans.filter(s => s[1] === 2).map(s => s[0]).join(', ') +
+            (spans.some(s => s[1] === 1) ? '; half at ' + spans.filter(s => s[1] === 1).map(s => s[0]).join(', ') : ''));
       };
+      $('gFace').onclick = () => { same = !same; $('gFace').classList.toggle('on', same);
+        $('gFace').textContent = same ? 'Defender faces the same way' : 'Defender faces the attacker'; upd(); };
       sel.onchange = upd; $('gFrame').oninput = upd; upd();
       $('ptsTab').innerHTML = '<tr><th>blow</th>' + blows.map(m => `<td>${hex(m)}</td>`).join('') + '</tr><tr><th>points</th>' +
         blows.map(m => `<td>${ram[0x12A5 + m] * 100}</td>`).join('') + '</tr>';
@@ -503,9 +608,64 @@ const FIST_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":
     {
       const T = [[0x27A9, 'hold a move'], [0x27B5, 'attack spread'], [0x27C1, 'wait when close'], [0x27CD, 'walk'], [0x27D8, 'pause'],
                  [0x27E4, 'move back'], [0x27F0, 'defence mix'], [0x27FC, 'reaction delay']];
-      let h = '<tr><th>mask</th>' + Array.from({ length: 12 }, (_, l) => `<th>${l === 0 ? 'Nov' : l <= 10 ? l + ' dan' : l}</th>`).join('') + '</tr>';
-      for (const [a, n] of T) h += `<tr><td><code>${hex(a, 4)}</code> ${n}</td>` + Array.from({ length: 12 }, (_, l) => `<td>${hex(ram[a + l])}</td>`).join('') + '</tr>';
-      $('aiTab').innerHTML = h;
+      const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
+      const rank = L => L === 0 ? 'Novice' : L <= 10 ? ord(L) + ' dan' : 'level 11 (attract mode)';
+      const name = m => hex(m) + ' ' + (MOVES[m] || '');
+      const pct = (n, t) => n ? Math.round(100 * n / t) + '%' : '–';
+      const PLANS = { 1: 'crouch, wait, then foot sweep', 2: 'foot sweep', 3: 'flying kick', 4: 'somersault forwards', 5: 'crouch, then low punch',
+        6: 'high or middle punch', 7: 'foot sweep or back sweep', 8: 'a punch, or crouch and low punch', 9: 'crouch, wait, then foot sweep' };
+      const lv = $('aiLevel');
+      for (let L = 0; L < 12; L++) lv.add(new Option(rank(L), L));
+      let same = false;
+      const BLOWS = [6, 0x18, 7, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11];
+      const KIND = m => [6, 7, 0x18].includes(m) ? '#1f5fa8' : [0x0B, 0x0C, 0x0D, 0x11].includes(m) ? '#2a8a4a' : m === 0x0E ? '#d04a3a'
+        : m === 0x0A ? '#c25a00' : [0x0F, 0x10].includes(m) ? '#4a5bd6' : [8, 9].includes(m) ? '#80838a' : '#d5d3cc';
+      const label = k => k === 'plan5' ? name(4) + ', then ' + name(7) : k === 'turn' ? name(0x12) : k === 'none' ? 'nothing: the foot sweep is skipped below 2nd dan'
+        : name(+k.split(' ')[1]);
+      function updAnswer(L) {
+        const mask = ram[0x27FC + L];
+        $('aiDelay').textContent = rank(L) + ': ' + (mask ? 'before answering, waits a random 0-' + mask + ' passes of the main loop (reaction mask ' + hex(mask) + ').' : 'answers a blow at once (reaction mask 0).');
+        let h = '<tr><th>Blow</th><th>Counter-attack</th><th>Block</th><th>Somersault forwards / low kick</th><th>Plan</th></tr>';
+        for (const b of BLOWS) {
+          const n = FIST.aiAnswer(ram, L, b), blk = ram[0x118F + b], plan = ram[0x2788 + b];
+          const pd = plan === 9 ? (L >= 7 ? 'high kick, or plan 1' : PLANS[9]) : PLANS[plan];
+          h += `<tr><td>${name(b)}</td><td>${pct(n.counter, 255)}</td><td>${pct(n['block ' + blk], 255)}${n['block ' + blk] ? ' ' + name(blk) : ''}</td>` +
+            `<td>${pct((n['move 9'] || 0) + (n['move 11'] || 0), 255)}</td><td>${plan ? pct(n['plan ' + plan], 255) + (n['plan ' + plan] ? ' plan ' + plan + ': ' + pd : '') : '– (none)'}</td></tr>`;
+        }
+        $('aiAnswer').innerHTML = h;
+      }
+      const dist = $('aiDist');
+      function setRange() { const lo = same ? -30 : -43, hi = same ? 33 : 20; dist.min = lo; dist.max = hi; dist.value = Math.max(lo, Math.min(hi, +dist.value || 8)); }
+      function updAttack(L) {
+        const a = +dist.value, opp = +$('aiOpp').value, d = same ? -a : a;
+        $('aiDistOut').textContent = a + (a >= 0 ? ' ahead' : ' behind');
+        const cv = $('aiStrip'), cx = cv.getContext('2d'), tab = same ? 0x2725 : 0x26D5, len = same ? 79 : 80, off = same ? 0x29 : 0x33;
+        const spread = ram[0x27B5 + L], w = cv.width / len, base = (d + off) & 255;
+        cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
+        for (let i = 0; i < len; i++) { cx.fillStyle = KIND(ram[tab + i]); cx.fillRect(i * w, 14, w - 1, 30); }
+        const blocking = !same && (opp === 0x13 || opp === 0x14);
+        if (!blocking) { cx.strokeStyle = '#2f3136'; cx.lineWidth = 2; cx.strokeRect(base * w, 11, (spread + 1) * w, 36); }
+        cx.fillStyle = '#80838a'; cx.font = '11px IBM Plex Mono, monospace';
+        cx.fillText('entry for distance ' + a + (blocking ? ' (not read: the opponent is blocking)' : ', + 0-' + spread + ' at random'), 2, 10);
+        for (let i = 0; i < len; i += 10) { const dd = same ? -(i - off) : i - off; cx.fillText(String(dd), Math.min(cv.width - 20, i * w), 60); }
+        cx.fillText('distance whose entry this is', cv.width - 200, 72);
+        const n = FIST.aiAttack(ram, L, d, same, opp);
+        $('aiPick').innerHTML = Object.entries(n).sort((x, y) => y[1] - x[1]).map(([k, c]) => {
+          const m = k.startsWith('move') ? +k.split(' ')[1] : k === 'plan5' ? 7 : 0;
+          return `<div><span class="fx-bar" style="width:${Math.round(160 * c / 255)}px;background:${KIND(m)}"></span>${pct(c, 255)} ${label(k)}</div>`;
+        }).join('');
+      }
+      function upd() {
+        const L = +lv.value;
+        updAnswer(L); updAttack(L);
+        let h = '<tr><th>mask</th>' + Array.from({ length: 12 }, (_, l) => `<th${l === L ? ' class="sel"' : ''}>${l === 0 ? 'Nov' : l <= 10 ? l + ' dan' : l}</th>`).join('') + '</tr>';
+        for (const [a, nm] of T) h += `<tr><td><code>${hex(a, 4)}</code> ${nm}</td>` + Array.from({ length: 12 }, (_, l) => `<td${l === L ? ' class="sel"' : ''}>${hex(ram[a + l])}</td>`).join('') + '</tr>';
+        $('aiTab').innerHTML = h;
+      }
+      $('aiFace').onclick = () => { same = !same; $('aiFace').classList.toggle('on', same);
+        $('aiFace').textContent = same ? 'Fighters face the same way' : 'Fighters face each other'; setRange(); upd(); };
+      lv.onchange = upd; $('aiOpp').onchange = upd; dist.oninput = upd;
+      dist.value = 6; setRange(); upd();
     }
 
     }

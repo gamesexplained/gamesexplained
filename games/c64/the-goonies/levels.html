@@ -1,0 +1,67 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/goonies-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The eight scenes as the code sees them: lists of rectangles that say where a Goonie can stand, climb, swim, and hang, drawn over each scene's picture.</p>
+</header>
+<main class="wrap">
+<section id="map">
+  <p class="fig">The collision maps</p>
+  <h2 class="t">Each scene is a list of rectangles of eight kinds</h2>
+  <p class="lede">The picture on screen is only scenery. What a Goonie can stand on is a list of rectangles kept beside each scene's code, between 22 and 53 of them (<code>$11F7</code>), each with a kind and four edges. When a scene starts, <code>load_scene_tables</code> (<code>$1189</code>) points the collision tests at its five lists through a table of ten words per list (<code>$1201</code>).</p>
+  <div class="plate" id="map-widget"></div>
+  <p class="cap">Every rectangle of the scene's lists, from the game's bytes, drawn over a screenshot of the scene. Edges across are in units of two pixels and lines count from the top of the play area, one character row below the status line. A dashed outline is a rectangle whose kind has bit 7 set, which the collision test skips: the lists as they stand in the saved game, where scene 1's fire has not been put out. Hover over a row of the table to find its rectangle.</p>
+  <p>Each pass, <code>move_object</code> (<code>$0CFD</code>) moves an object by its speeds and then looks for every rectangle its new box overlaps, noting one of each kind. The kind decides what happens next:</p>
+  <table class="t">
+    <tr><th>Kind</th><th>What it does to a Goonie</th><th>Where</th></tr>
+    <tr><td>0</td><td>a wall met moving left: the Goonie stops with its left edge on the rectangle's</td><td><code>$0F3A</code></td></tr>
+    <tr><td>1</td><td>a wall met moving right: stops it against the rectangle's left edge</td><td><code>$0F4B</code></td></tr>
+    <tr><td>2</td><td>a ceiling, met moving up</td><td><code>$0F7C</code></td></tr>
+    <tr><td>3</td><td>a floor, met moving down: the Goonie stands on its top</td><td><code>$0FA5</code></td></tr>
+    <tr><td>4</td><td>a floor that is also a ladder's top: stand on it, or climb down through it</td><td><code>$0E64</code></td></tr>
+    <tr><td>5</td><td>a ladder: up climbs it, and the Goonie is centred on it</td><td><code>$0F63</code></td></tr>
+    <tr><td>6</td><td>water, which slows a fall</td><td><code>$0F05</code></td></tr>
+    <tr><td>7</td><td>a bar: up holds on, gravity stops, and left or right jumps off</td><td><code>$0E31</code></td></tr>
+  </table>
+  <p>A wall works from one side only. A kind 0 rectangle stops a Goonie moving left and a kind 1 stops one moving right, so each solid block on the map is drawn as a pair of thin walls, and a Goonie inside one walks out freely.</p>
+</section>
+
+<section id="switches">
+  <p class="fig">Moving parts</p>
+  <h2 class="t">Doors and bridges are rectangles switched on and off</h2>
+  <p class="lede">Nothing in a scene's picture moves the collision map. The scene's own routine changes the lists while it plays, most often by setting or clearing bit 7 of a rectangle's kind.</p>
+  <table class="t">
+    <tr><th>Scene</th><th>What changes</th><th>Where</th></tr>
+    <tr><td>1</td><td>the fire's rectangle is out of use while it burns and becomes a ladder's top when the tank puts it out</td><td><code>$7CF3</code></td></tr>
+    <tr><td>2</td><td>the three weights' rectangles move with them, and the float is a rectangle the Goonies ride</td><td><code>$75D4</code>, <code>$76A4</code></td></tr>
+    <tr><td>3</td><td>the floor at the burst pipe goes out of use</td><td><code>$8ACD</code></td></tr>
+    <tr><td>4</td><td>floor gaps open under a Goonie, and the planks' wall goes when the last plank does</td><td><code>$1859</code>, <code>$1948</code></td></tr>
+    <tr><td>5</td><td>the egg pile's top rises with each egg, and the bones switch the lava bridges</td><td><code>$E08A</code>, <code>$E0B7</code></td></tr>
+    <tr><td>6</td><td>thirteen platforms are solid or not by the pattern of pads held down, eight patterns in all</td><td><code>$F413</code></td></tr>
+    <tr><td>7</td><td>the flipper turns a rectangle into water, and the fallen crate becomes a floor</td><td><code>$96EE</code>, <code>$97D6</code></td></tr>
+    <tr><td>8</td><td>each porthole's two rectangles change with its lever, and the lift's floor follows it</td><td><code>$A17E</code>, <code>$A049</code></td></tr>
+  </table>
+  <p>Scenes 4, 5, and 7 keep a second list for the things that roll, the rocks, the eggs, and the crate, and swap it in while one of them moves (<code>$1B34</code>, <code>$E427</code>, <code>$98DA</code>). A rock rolls on its own floors, which the Goonies never touch.</p>
+</section>
+
+<section id="order">
+  <p class="fig">The order</p>
+  <h2 class="t">Scenes 2 and 3 are stored the other way round</h2>
+  <p class="lede">The game numbers its scenes by an index (<code>$12B9</code>), which picks the scene's lists, its routines, its tune, and its picture on the disk. The play order is not the index order: each exit stores the index of the next scene, and scene 1's exit jumps to index 2.</p>
+  <div class="tw"><table class="t">
+    <tr><th>Scene</th><th class="n">1</th><th class="n">2</th><th class="n">3</th><th class="n">4</th><th class="n">5</th><th class="n">6</th><th class="n">7</th><th class="n">8</th><th>ending</th><th>title</th></tr>
+    <tr><td>Index</td><td class="n">0</td><td class="n">2</td><td class="n">1</td><td class="n">3</td><td class="n">4</td><td class="n">5</td><td class="n">6</td><td class="n">7</td><td>8</td><td>9</td></tr>
+  </table></div>
+  <p>The attract mode shows the scenes in index order (<code>$93F3</code>), so its demonstration of the pipes comes before the lake.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script src="reference/goonies-page.js"></script>
+<script>GOON.mountMap(document.getElementById('map-widget'));</script>

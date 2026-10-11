@@ -151,3 +151,25 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   for the machine's stack pointer. Stage 29 still differs from the
   machine's state: VICE drifts within list 90 and an enemy then enters a
   frame apart in another slot, so that one is a real timing difference.
+
+## The enemies section (8 October 2026)
+
+- Asked for one card per enemy on How it works, after Wizball's aliens.
+  `work/page/enemies.py` builds `reference/enemies.json` from the wave
+  recordings: a single-sprite enemy is keyed by its animation position
+  (record byte 1 plus its first path segment's byte 2, into `$1300`),
+  which agreed with the recorded frames for every enemy outside the three
+  seven-sprite ones (records `$58`, `$68`, `$9A`-`$9D`), keyed by record.
+  22 enemies; stage 29's wave list, read from `$B900`, adds none. The
+  frames change every 4 frames in 80,364 of 81,534 changes recorded; the
+  rest are path segments switching lists.
+- Shapes come from the recordings, not the memory image: frames `$00`-`$02`
+  and `$07` (at `$4000`) differ, the game rewriting them in play.
+- The draft said enemy 1 flies the player's own ship, from the listing's
+  notes on `$1300` and `$6700`. Stage 1's screenshot and the shapes
+  themselves showed otherwise: `$A3`-`$A8` are a spinning ring, the
+  enemies of list `$0B`, and the winged ship is `$A9`-`$AF`, list `$12`,
+  which `ship_reset_position` gives sprite 0 (its note had called `$12` a
+  colour). The four notes were corrected in `symbols.json` and the listing
+  rebuilt from `work/entry.vsf`, which reproduces the earlier listing
+  record for record.

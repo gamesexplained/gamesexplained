@@ -1,0 +1,65 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skate or Die!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/sod-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Electronic Arts</p>
+  <h1>Skate or Die!</h1>
+  <p class="sub">The Pool Joust from the code: an empty pool, a padded pole that changes hands every five passes, three computer skaters with their own habits, and a match won like deuce in tennis.</p>
+</header>
+<main class="wrap" data-part="joust">
+<section id="event">
+  <p class="fig">01 · The event</p>
+  <h2 class="t">Knock the other skater off</h2>
+  <p>Two skaters ride an empty swimming pool, and the one holding the pole tries to knock the other off. Fire swings the pole for 32 frames, then rests it for another 32 before it can swing again (<code>$205A</code>, <code>$2073</code>). The opponent can be a second player or one of three computer skaters, chosen on a screen of portraits before the match (<code>$2086</code>).</p>
+  <div class="plate">
+    <canvas id="choice" class="scr" style="max-width:640px"></canvas>
+    <p class="cap">The opponent-choice picture, drawn from the joust's memory: the bitmap the game copies under the I/O area at <code>$C000</code>, its screen colours at <code>$E400</code> and its colour-RAM nibbles at <code>$E000</code>.</p>
+  </div>
+  <p>The joust is the only event that does not start at <span data-part=""><code>$0880</code></span>: its file loads to <code>$0820</code>. Both of its pictures arrive packed with the same run-length scheme as the half-pipe (<code>$2169</code>), and the choice picture is kept in the RAM beneath the I/O chips, where the VIC can still show it from bank 3.</p>
+</section>
+<section id="hit">
+  <p class="fig">02 · The hit</p>
+  <h2 class="t">Close enough, and swinging</h2>
+  <p>A hit needs the pole to be mid-swing and the two skaters to be close (<code>$1A85</code>): neither already knocked off or climbing out, not both on the deck, less than 8 apart across the pool, and less than 15 pixels apart on the screen, counting across and down together. The holder scores a point and the other skater is thrown: the body flies off along the ramp while the board rolls on (<code>$0FF3</code>).</p>
+  <p>Tricks are chosen as on the Freestyle ramp, with a push left or right below the coping, but any landing is accepted: in the joust no pose counts as a fall (<code>$10E2</code>). The only way down is the pole.</p>
+</section>
+<section id="passes">
+  <p class="fig">03 · Passes and rounds</p>
+  <h2 class="t">Five passes with the pole, then it changes hands</h2>
+  <p>Each time the skater without the pole reaches the top of a wall, a pass is used (<code>$0FD1</code>). A small counter beside the holder shows 5 down to 1, and after the fifth pass the pole goes to the other skater. When both skaters are back on the deck the round ends, and the next starts with the pole in the hands of the skater who did not start the last one (<code>$1792</code>).</p>
+</section>
+<section id="score">
+  <p class="fig">04 · Winning</p>
+  <h2 class="t">First to three, by two clear</h2>
+  <p>The scores show as -0-, -1- and -2- until someone reaches 3. From then on each side shows the lead instead (<code>$1B3C</code>): --- for the skater behind, TIE when level, ADV one ahead, and WIN two ahead. The match is first to three points with a two-point lead, like deuce in tennis.</p>
+  <p>The joust hands the event manager no score, only a 1 for the winner, in the first skater's slot or the second's (<span data-part="resident"><code>$FE03</code></span>, <span data-part="resident"><code>$FE0C</code></span>). A computer opponent's win is not recorded at all.</p>
+</section>
+<section id="cpu">
+  <p class="fig">05 · The computer skaters</p>
+  <h2 class="t">Three personalities, one joystick routine</h2>
+  <p>The computer plays by building a joystick byte as a player's stick would give it (<code>$1D4F</code>). The three opponents, Poseur Pete, Aggro' Eddie and Lester (<code>$2F61</code>), differ in a few numbers and a routine each (<code>$1E01</code>):</p>
+  <div class="tablewrap"><table class="t">
+    <tr><th></th><th>Poseur Pete</th><th>Aggro' Eddie</th><th>Lester</th></tr>
+    <tr><td>Frames between decisions (<code>$2F69</code>)</td><td>15</td><td>7</td><td>1</td></tr>
+    <tr><td>Stops closing in, holding the pole, within (<code>$2F7D</code>)</td><td>12</td><td>5</td><td>3</td></tr>
+    <tr><td>Keeps away, without the pole (<code>$2F85</code>, <code>$2F81</code>)</td><td>8 to 20</td><td>10 to 30</td><td>15 to 45</td></tr>
+    <tr><td>Habits</td><td>drops in at once, turns at random</td><td>drops in when the player is high on the right, turns towards or away</td><td>waits a random time, times its tricks by the player's speed and height (<code>$1F54</code>)</td></tr>
+  </table></div>
+  <p class="cap">The distances are in the game's units across the pool. Holding the pole, every computer skater swings as soon as the player is in reach (<code>$0DB8</code>).</p>
+  <p>Lester was meant to do one thing more. Lester's routine starts with a call to an RTS (<code>$1F73</code>), and the code just after it, which would set how far Lester keeps away along the ramp, never runs.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/sod-page.js"></script>
+<script>
+(async function () {
+  try {
+    const J = await SOD.load('joust');
+    SOD.mcBitmap(document.getElementById('choice'), J.ram, { bitmap: 0xC000, screen: 0xE400, colour: 0xE000, bg: 0, s: 2 });
+  } catch (e) { SOD.fail(e); }
+})();
+</script>

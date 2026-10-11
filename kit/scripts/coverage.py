@@ -24,11 +24,20 @@ REGIONS come from game.json: "video" (screen and character-set bases, which
 give the platform's standard exclude/extra blocks) and "coverage" (extra
 exclusions and authored data), so every game is scored by the same rule.
 
+THE WORK QUEUE lists the largest bare runs, one row for each fix, and says
+why each is bare: the symbol that owns it, or the label it starts at, has no
+comment, or its comment repeats another's; or no symbol owns it, because the
+span before it ran out of reach, stopped at its block's end or at a fixed
+edge of the memory map, or there is none. The first two want a comment on
+that symbol, the rest a symbol of your own at the run's address, with its
+own comment.
+
 A GAME OF SEVERAL PARTS (kit/scripts/parts.py) has a ledger per part, read
 from the part's folder, and each part counts only the addresses it owns, so
 the game's figure, the sum, counts every byte once. Given the game's own
 folder, this prints each part's figure and the total; the work queue is a
-part's (give the part's folder).
+part's (give the part's folder). With --live it leaves out the automatic
+symbols that symbols_export.py leaves out of a part, so the two agree.
 
 Usage:
   coverage.py <game dir>                 from symbols.json
@@ -45,7 +54,7 @@ import json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def load(gdir, live, session=None):
-    from symbols_export import read_live, regions, platform_of
+    from symbols_export import drop_strays, read_live, regions, platform_of
     from parts import load_game
     if not live and not os.path.isfile(os.path.join(gdir, "symbols.json")):     # a part that is only named
         sys.exit(f"{gdir} has no symbols.json: nothing is analysed there (symbols_export.py writes one)")
@@ -53,19 +62,51 @@ def load(gdir, live, session=None):
     reg = regions(game)
     if live:
         blocks, syms, comments = read_live(platform_of(game), session or gdir)
+        if reg.get("elsewhere"):
+            syms, _ = drop_strays(platform_of(game), session or gdir, syms, game)
     else:
         s = json.load(open(os.path.join(gdir, "symbols.json")))
         blocks, syms, comments = s["blocks"], s["symbols"], s["comments"]
     return blocks, syms, comments, reg
 
 
+def reasons(L, syms):
+    """Why each bare byte is bare, in words that point at the fix: {address: reason}."""
+    state, owner = L["state"], L["owner"]
+    repeats = dict(L["dups"])
+    labels = {}
+    for s in syms:
+        labels.setdefault(s["address"], s["name"])
+    cut = {end: (name, why, reach) for name, end, why, reach in L["stops"].values() if why != "next"}
+
+    def uncommented(name, a):
+        return f"{name}'s comment repeats ${repeats[a]:04X}'s" if a in repeats else f"no comment on {name}"
+
+    out, lead = {}, None
+    for a in range(0x10000):
+        if state[a] != 1:
+            lead = None
+        elif a in owner:
+            lead = None
+            out[a] = uncommented(*owner[a])
+        else:
+            if lead is None:        # the first unowned byte: a label here, or what stopped the span before
+                name, why, reach = cut.get(a, (None, None, None))
+                lead = (uncommented(labels[a], a) if a in labels else
+                        {"reach": f"past {name}'s {reach}-byte reach",
+                         "block": f"{name} stops where its block ends",
+                         "edge": f"{name} stops at the memory-map edge ${a:04X}"}.get(why, "no symbol owns it"))
+            out[a] = lead
+    return out
+
+
 def tracked_count(gdir):
     """(tracked bytes, explained bytes) from symbols.json, for parts.py and build.py.
     A game of several parts counts the sum of the parts that have been started."""
-    from parts import parts, started
+    from parts import parts, started, left_out
     P = parts(gdir)
     if P:
-        counts = [tracked_count(p["dir"]) for p in P if started(p)]
+        counts = [tracked_count(p["dir"]) for p in P if started(p) and not left_out(p)]
         return sum(t for t, _ in counts), sum(e for _, e in counts)
     blocks, syms, comments, reg = load(gdir, False)
     from ledger import compute
@@ -97,7 +138,7 @@ def main():
 
     from ledger import compute
     L = compute(blocks, syms, comments, reg)
-    state, code, owner, dups = L["state"], L["code"], L["owner"], L["dups"]
+    state, code, dups = L["state"], L["code"], L["dups"]
     lo, hi = 0, 0xFFFF
     if "--range" in argv:
         i = argv.index("--range")
@@ -126,21 +167,22 @@ def main():
     for k in sorted(agg):
         t, e = agg[k]
         print(f"  ${k:X}000-${k:X}FFF  {t:>7} {e:>7} {100*e/t:>5.0f}%")
+    why = reasons(L, syms)
     runs, cur = [], None
     for a in range(lo, hi + 1):
         if state[a] == 1:
-            if cur and cur[1] + cur[2] == a:
+            if cur and cur[1] + cur[2] == a and cur[0] == why[a]:
                 cur[2] += 1
             else:
-                cur = [owner.get(a, ("(unlabelled)", a))[0], a, 1]; runs.append(cur)
+                cur = [why[a], a, 1]; runs.append(cur)
         else:
             cur = None
     if only:
         runs = [r for r in runs if bool(code[r[1]]) == (only == "code")]
     print(f"\n  WORK QUEUE - largest undescribed runs{(' ('+only+' only)') if only else ''}:")
-    print(f"  {'ADDR':<8} {'BYTES':<7} {'KIND':<6} NEAREST SYMBOL")
-    for name, addr, size in sorted(runs, key=lambda r: -r[2])[:top]:
-        print(f"  ${addr:04X}    {size:<7} {'code' if code[addr] else 'data':<6} {name}")
+    print(f"  {'ADDR':<8} {'BYTES':<7} {'KIND':<6} WHY IT IS BARE")
+    for reason, addr, size in sorted(runs, key=lambda r: -r[2])[:top]:
+        print(f"  ${addr:04X}    {size:<7} {'code' if code[addr] else 'data':<6} {reason}")
 
 
 if __name__ == "__main__":

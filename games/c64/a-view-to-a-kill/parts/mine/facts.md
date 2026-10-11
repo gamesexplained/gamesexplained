@@ -1,6 +1,6 @@
 # The mine: facts
 
-File 4 of the copy studied. Every fact names the routine or table it
+File D of Domark's disk. Every fact names the routine or table it
 comes from, in this part's listing.
 
 ## Memory
@@ -11,7 +11,8 @@ is `raster_irq` (`$1022`) through `$0314`.
 
 | Range | What |
 |---|---|
-| `$0A00`-`$0B04` | `mission_complete` and `win_text`, the code ILVCT at `$0AFE`-`$0B02` |
+| `$0A00`-`$0AFF` | `mission_complete` and `win_text`, the code ILVCT at `$0AFA`-`$0AFE` |
+| `$0B00`-`$0D1E` | `menu_screen` and its pointer, the screen ABORT and RESTORE open |
 | `$1000`-`$3FFF` | the code, the panel screen (`$1D50`-`$1F17`), the variables (`$1B00`-`$1BA0`) |
 | `$4400`-`$47FF` | May Day's sprites (`$10`-`$1F`) |
 | `$5660`-`$575F` | `code_prompt`, `read_code` and "DB4CT" (`$5757`) |
@@ -20,7 +21,7 @@ is `raster_irq` (`$1022`) through `$0314`.
 | `$7CD0` | `welcome_page` |
 | `$8000`-`$BA97` | the mine: 100 rows of 150 tiles |
 | `$BB01`-`$BCB7`, `$BD00`-`$BFFF` | the panel's colours; the objects as placed |
-| `$E000`-`$FFFF` | the tune, under the KERNAL: the same bytes as Paris's |
+| `$E000`-`$FBE6` | the tune, under the KERNAL: the same bytes as Paris's |
 
 ## Start
 
@@ -29,12 +30,26 @@ characters with "DB4CT" (`$5757`): a match stores 1 in `$1BA0` (`$572D`),
 RETURN stores 0 (`$5747`), and both go on to `welcome_page` (`$7CD0`) and,
 on fire, `start_game` (`$2540`). A second "DB4CT" at `$575C` is never read.
 
+ABORT (`opt_abort`, `$3A90`) and RESTORE (`restart_vector`, `$1764`) open
+`menu_screen` (`$0C00`): RESTART GAME, or RETURN TO MAIN MENU, which loads
+the file MENU (`$0C54`) and comes back to the screen if the LOAD fails. A
+pointing hand, sprite shape `$FB` (`$7EC0`), chooses.
+
 ## The screen
 
 - Three raster bands: the panel at line `$FB` (`irq_panel`, `$103E`, which
   also runs the clock, the music, the stick and the scroll), the mine at
-  `$8A` (`irq_playfield`, `$107E`) and its colours, hazards and belts at
-  `$91` (`irq_mid`, `$10B9`).
+  `$8A` (`irq_playfield`, `$107E`) and its colours and the panel's flashing
+  at `$91` (`irq_mid`, `$10B9`).
+- The hazards and the belts are stepped by the main loop, once a pass
+  (`hazards_and_belts`, `$2CD6`, called at `$2558`): a JMP at `$10CD`
+  passes over the calls left in `irq_mid`. The main loop waits 10 × 256
+  loops each pass (`$254D`), so it runs about once a frame. *Live*, 8
+  October 2026: 494 passes in 503 frames. The hazards step every 8, 9
+  and 7 passes, the belts every 2 (`$1B46`, `$1B49`, `$1B4C`, `$1B61`).
+- The word strip scrolls a step every 16 × 255 loops (`menu_scroll_step`,
+  `$2DFD`), and a wait after fire is let go lasts 128 × 255 loops, about a
+  quarter of a second (`short_delay`, `$2E5D`).
 - Bond stays in the middle and the mine scrolls both ways
   (`scroll_engine`, `$2156`). `map_to_buffer` (`$1100`) expands the 2 × 2
   tiles into a buffer at `$1400`; `buffer_to_screen` (`$1700`) copies 14 rows
@@ -95,25 +110,25 @@ DOWN, PAUSE, ABORT. EXAMINE finds an object at Bond's feet or just ahead
   four flashes of the explosion and a new start.
 - So the mine cannot be won without City Hall's code: after RETURN at the
   prompt, even the right digits set the bomb off.
-- Live, 30 September 2026, stopping in `main_loop`, storing five digits and
-  starting `end_check` directly: 6 7 1 3 4 after DB4CT reached `$0A00` and
-  the ILVCT screen; the same digits after RETURN, and 6 7 1 3 5 after
-  DB4CT, both reached `game_over`.
+- *Live*, 8 October 2026, storing five digits and starting `end_check`
+  directly: 6 7 1 3 4 with `$1BA0` = 1 reached `$0A00`; the same digits
+  with `$1BA0` = 0, and 6 7 1 3 5 with 1, both reached `game_over`.
 - MI6-HQ gives the detonator combination as 32768; the code this part
   checks is 67134.
 
 ## Music and sound
 
 Three voices of note triples (frequency high, frequency low, length) from
-`$E000`, `$EAD1` and `$F755`, stepping every 2 and 3 frames in turn, and
+`$E000`, `$EAD1` and `$F755`, stepping every third frame, and
 looping when voice 1 reaches `$EAD1` (`music_play`, `$7BAB`). `sound_ok`
 (`$3B7D`) and `sound_fail` (`$3B9C`) borrow voice 2 from the tune. No
 speech.
 
 ## Shared with the other parts
 
-`read_joystick` (`$17A0`) is City Hall's `$4700`; `$0A00`-`$0B03` is in City
-Hall at the same address; the tune is Paris's. Only port 2 is read
+`read_joystick` (`$17A0`) is City Hall's `$4700`; most of `win_text` is
+in City Hall's loader leftovers; the tune is Paris's; `menu_screen` is
+City Hall's, apart from its text and addresses. Only port 2 is read
 (`$DC00`); CIA 1's timer A is stopped, so the KERNAL never scans the keys.
 
 ## Open
@@ -133,6 +148,7 @@ Hall at the same address; the tune is Paris's. Only port 2 is read
   per-type counters `$1B11`-`$1B23`.
 - The planks' handler compares with `$54`, which no object is, so the
   branch at `$8651` never runs.
-- Whether the prompt and end screen are the original's or the crackers':
-  the prompt sits in character-set glyphs the tiles do not use
-  (`$CC`-`$EB`), and City Hall holds the same `$0A00` routine.
+- The map holds four tiles at row 54, columns 88 to 91 (`$9FFC`-`$9FFF`),
+  whose bytes spell "ZOOM" in PETSCII. The same word ends a page of
+  memory in the intro (`$9FF6`, "MOZOOM1000") and in City Hall (`$48FC`,
+  inside an item icon). What wrote it is not known.

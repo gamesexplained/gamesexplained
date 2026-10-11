@@ -11,10 +11,30 @@
   <p class="sub">The fighters built from nine sprites, the stick and the keyboard, a hit test that measures distance, an opponent tuned by eight tables, and seven raster interrupts a frame.</p>
 </header>
 <main class="wrap">
+<section id="screen">
+  <p class="fig">01 · The screen</p>
+  <h2 class="t">Seven raster interrupts draw one frame</h2>
+  <p class="lede">Two fighters need eighteen sprites and the machine has eight. The game draws the top row of both fighters with sprites 0-5, then moves those sprites down the screen as the beam passes.</p>
+  <div class="plate">
+    <canvas id="frameCv" width="768" height="544"></canvas>
+    <div class="fx-ctl" style="margin-top:12px"><button class="fx-btn" id="bandBtn">Show the raster writes</button><span class="fx-out" id="bandOut"></span></div>
+    <p class="cap">One frame of a two-player bout, drawn from memory and the recorded writes to the video chip with the site's renderer: all 104,448 pixels match the emulator's own picture of the same frame. The chain: <code>$31F2</code> at line 0 sets up the frame, <code>$2FB0</code> switches to the bitmap at line 90, the sprite handlers move sprites 0-5 down a row of 21 lines at a time, a handler on line 217 draws the shadow, and <code>$30E5</code> at line 255 returns to text for the panel and plays the music.</p>
+  </div>
+  <p>The gap between the two fighters' heights decides which of seven interrupt chains runs that frame (<code>$32CD</code>). When one fighter is exactly 20 lines higher than the other, one fighter's second row and the other's third start a line apart, and a combined handler moves all six sprites at once (<code>$2F02</code>, <code>$2F59</code>). The routines that set this up (<code>$3291</code>-<code>$3750</code>) work by rewriting the handlers' own instructions: the raster line, the sprite heights and the pointers are all operands patched every frame.</p>
+  <p>A jumping fighter casts a shadow on the floor. It is a fourth row of sprites from a fixed set under the I/O chips (<code>$D480</code>), shown at a fixed height while the fighter is off the ground.</p>
+</section>
+
 <section id="fighters">
-  <p class="fig">01 · The fighters</p>
+  <p class="fig">02 · The fighters</p>
   <h2 class="t">Every pose is built from nine pieces</h2>
   <p class="lede">A fighter is a three-by-three grid of multicolour sprites. The game never stores a whole pose. Each shape frame is nine cell numbers, and each cell is a 64-byte piece of a karateka.</p>
+  <h3 class="fx-h3">The moves</h3>
+  <p>Each fighter has 21 moves, numbered as the game numbers them. Nineteen come from the stick, with or without fire: down-forward gives one punch from standing and another from a crouch, and back with fire gives the turn round and then, held, the spinning kick. The two blocks happen on their own when a fighter pulls back as a blow comes in reach. The rest of this tab refers to the moves by these numbers.</p>
+  <div class="plate">
+    <div class="fx-moves" id="moveCards"></div>
+    <p class="cap">Each card is the move's key frame, built from the game's tables like the viewer below: the frame a blow is tested on (<code>$1204</code>), or a typical pose for the other moves. The stick is shown for a fighter facing right, so → is towards the opponent; facing left swaps left and right (<code>$2857</code>). Points are for a whole point, in the game's own table (<code>$12A5</code>). The game stores no names, so the names describe what each move's frames show. The block each blow meets confirms its height (<code>$118F</code>): the high block answers the high punch and the high, flying, back and spinning kicks, and the low block answers the low and middle punches and the low and middle kicks. A pull-back never blocks a sweep (<code>$2AF2</code>); the computer opponent jumps it instead. Click a card to play the move in the viewer.</p>
+  </div>
+  <h3 class="fx-h3">The animations</h3>
   <div class="plate">
     <div class="fx-row">
       <div>
@@ -29,12 +49,12 @@
     </div>
     <p class="cap">Press a direction, with or without fire, to play that move's animation as the game stores it: a list of steps, each a number of ticks, a shape frame and a step in X and Y (<code>$7720</code>). The pose is assembled the way the sprite builder (<code>$3914</code>) does it, from the frame tables at <code>$7AE0</code> and the cells at <code>$8000</code>; facing left takes the columns in reverse and mirrors every byte through the table at <code>$7E00</code> (<code>$3BC5</code>). Checked against both fighters' sprites in a snapshot of play.</p>
   </div>
-  <p>Sixteen stick positions give sixteen moves, in the table at <code>$286C</code>. Down-forward from standing is a punch (move <code>$18</code>), and from a crouch a different blow (move 7); fire with back from standing becomes a turn round (<code>$12</code>). There are 79 shape frames. The karateka use <code>$00</code>-<code>$3A</code>, and <code>$3B</code>-<code>$4C</code> are the bull of the bonus round, which uses the same tables but takes each byte as a sprite pointer instead of a cell (<code>$5D</code> = <code>$40</code>).</p>
+  <p>Sixteen stick positions give sixteen moves, in the table at <code>$286C</code>. Down-forward from standing is the middle punch (move <code>$18</code>), and from a crouch the low punch (move 7). Fire with back from standing becomes the turn round (<code>$12</code>), and only a fighter still holding it there gets the spinning kick (<code>$11</code>, <code>$29B4</code>). There are 79 shape frames. The karateka use <code>$00</code>-<code>$3A</code>, and <code>$3B</code>-<code>$4C</code> are the bull of the bonus round, which uses the same tables but takes each byte as a sprite pointer instead of a cell (<code>$5D</code> = <code>$40</code>).</p>
   <p>Each fighter has two 576-byte buffers at <code>$C040</code>-<code>$C93F</code> and is rebuilt into the spare one whenever its frame changes, so a half-built pose is never on screen. A cell of 0 leaves its sprite blank: the standing pose fills six of the nine.</p>
 </section>
 
 <section id="controls">
-  <p class="fig">02 · Controls</p>
+  <p class="fig">03 · Controls</p>
   <h2 class="t">Two joysticks, or two halves of the keyboard</h2>
   <p class="lede">The white fighter reads joystick port 2 and the red fighter port 1 (<code>$2851</code>). F7 in the attract mode swaps both to the keyboard, with a block of nine keys for each player.</p>
   <table class="fx-tab">
@@ -47,43 +67,63 @@
 </section>
 
 <section id="scoring">
-  <p class="fig">03 · Scoring</p>
+  <p class="fig">04 · Scoring</p>
   <h2 class="t">A blow scores by distance, not timing</h2>
   <p class="lede">The manual talks of well-executed and loosely timed blows. In the code a blow is tested once, on its striking frame, and the only question is how far apart the fighters stand.</p>
   <div class="plate">
-    <div class="fx-ctl"><label for="gMove">Blow</label><select id="gMove"></select><label for="gFrame">Defender's frame</label><input type="range" id="gFrame" min="0" max="58" value="0"><span class="fx-out" id="gFrameOut"></span></div>
-    <div class="fx-row"><canvas id="gPose" width="144" height="126"></canvas><div style="flex:1;min-width:280px"><canvas id="gBar" width="600" height="90"></canvas><p class="fx-out" id="gOut"></p></div></div>
-    <p class="cap">A port of the hit test (<code>$2B8E</code>) for fighters facing each other, checked against the game's own routine for every blow, every defender frame and every distance from -40 to 60: 65,549 cases, no difference. Green is a whole point, amber a half, grey a miss; the distance is the attacker's along its facing.</p>
+    <div class="fx-ctl"><label for="gMove">Blow</label><select id="gMove"></select><label for="gFrame">Defender's frame</label><input type="range" id="gFrame" min="0" max="58" value="0"><span class="fx-out" id="gFrameOut"></span><button class="fx-btn" id="gFace">Defender faces the attacker</button></div>
+    <canvas id="gPose" width="600" height="146" style="width:100%;max-width:600px;height:auto"></canvas>
+    <canvas id="gBar" width="600" height="90" style="width:100%;max-width:600px;height:auto;margin-top:10px"></canvas><p class="fx-out" id="gOut"></p>
+    <p class="cap">A port of the hit test (<code>$2B8E</code>), checked against the game's own routine for every blow, every defender frame and every distance from -40 to 60, with the defender facing the attacker and facing the same way, and the attacker facing either way: 262,196 cases, no difference. The button turns the defender round. The picture shows the two frames the test compares: the attacker on the frame its blow is tested on (<code>$1204</code>), and the defender on the chosen frame, set at the distance where the blow lands squarely. Both stand on the floor, even for a jump, because the test compares only how far apart they are, never their height, and the attacker is drawn in front so the blow shows where it meets the defender. In the game either fighter can be in front: <code>fighter_update</code> gives sprites 0-2, which the video chip draws over sprites 3-5, to one of them each frame (<code>$24</code>). Below, green is a whole point, amber a half, grey a miss, for every distance along the attacker's facing; a negative distance puts the defender behind the attacker. Distances are between the left edges of the two sprite grids, in units of two pixels, so they say where the grids stand, not how long a reach is.</p>
   </div>
-  <p>Each blow has a reach profile, one byte per frame the defender might be in (<code>$7200</code>-<code>$7711</code>, 22 profiles). The byte is the distance at which the blow lands squarely. At that distance, or closer by up to a margin the blow sets (<code>$11BD</code>), it is a whole point; closer still, by up to a second margin (<code>$11D6</code>), a half point. A profile byte of <code>$80</code> means a defender in that frame cannot be hit, which is how jumps and somersaults evade.</p>
+  <p>Each blow has two reach profiles, one byte per frame the defender might be in: one for a defender facing the attacker (<code>$121D</code>) and one for a defender facing the same way (<code>$124F</code>), 22 profiles in all at <code>$7200</code>-<code>$7711</code>. The byte is the distance at which the blow lands squarely. At that distance, or closer by up to a margin the blow sets (<code>$11BD</code>), it is a whole point; closer still, by up to a second margin (<code>$11D6</code>), a half point. A profile byte of <code>$80</code> means a defender in that frame cannot be hit, which is how jumps and somersaults evade.</p>
+  <p>The test picks the profile by comparing the two fighters' facings (<code>$2B90</code>). When they face the same way it takes the distance the other way round and swaps the forward and backward comparisons (<code>$2C44</code>-<code>$2CA7</code>), so the same margins apply from the other side. For a forward blow that means a defender with its back turned: every blow has a profile for hitting a back, and a defender can be caught in about as many frames from behind as from the front. For the back kick and the back sweep it is the other way about: they reach behind the attacker, so a defender facing the same way is one standing at the attacker's back, looking at it, and the blow lands on its front.</p>
+  <p>Which side the blow lands on decides what follows (<code>$2CA8</code>). A blow on the front knocks the defender backwards (animation <code>$16</code>), or for the middle and low punches and the middle kick doubles it over (<code>$1B</code>); a blow on the back pitches it forward onto its face (<code>$1A</code>). The automatic block only answers a blow coming at the front (<code>$2D00</code>): one on the back cannot be blocked at all, and neither can a sweep, which the block code leaves out (<code>$2AF2</code>).</p>
   <p>Four half points win a bout. Points for the score come from a table in hundreds (<code>$12A5</code>), halved for a half point.</p>
-  <table class="fx-tab" id="ptsTab"></table>
+  <div class="fx-scroll"><table class="fx-tab" id="ptsTab"></table></div>
 </section>
 
 <section id="opponent">
-  <p class="fig">04 · The opponent</p>
+  <p class="fig">05 · The opponent</p>
   <h2 class="t">Ten dans of the same opponent, with faster reflexes</h2>
-  <p class="lede">The computer fights every bout with the same rules. What changes with rank is a set of eight masks that limit how long it waits, walks, holds a move and reacts.</p>
-  <div class="plate"><table class="fx-tab" id="aiTab"></table>
-    <p class="cap">The per-level tables at <code>$27A9</code>-<code>$27FC</code>, as <code>ai_level_setup</code> (<code>$2593</code>) loads them. Each is a mask the computer applies to a random number: for the timers (hold, wait, walk, pause, reaction) a smaller mask means shorter waits; the others narrow its choices. Level 0 is Novice; the level rises by one with each bout won.</p></div>
-  <p>When attacked, the computer either blocks with the right block for the blow (<code>$118F</code>), starts one of nine scripted plans (<code>$2774</code>), or counter-attacks. When close it picks an attack from a table indexed by distance (<code>$26D5</code>), and against a blocking player it chooses among the blows that block does not stop (<code>$27A1</code>). The reaction-delay mask is zero from level 4 up, so from 4th dan the computer reacts at once. The walking table has 11 entries for 12 levels, so level 11 reads the first byte of the next table.</p>
-  <p>In a one-player game, two bout wins clear a rank, from Novice to 10th dan (<code>$1BA7</code>); a lost bout ends the game. Past 10th dan the rank stays on screen as 10TH DAN while the opponent's level is drawn at random from 7 to 10 (<code>$1C65</code>).</p>
-</section>
+  <p class="lede">The computer plays by a player's rules. On each pass of the main loop <code>ai_think</code> (<code>$22CF</code>) writes a move into the slot the joystick fills for a player (<code>$63</code>), so the computer has the same moves, the same timing and the same hit test. Its rank changes only a set of eight masks that bound its random choices.</p>
+  <div class="fx-ctl"><label for="aiLevel">Computer's rank</label><select id="aiLevel"></select></div>
 
-<section id="screen">
-  <p class="fig">05 · The screen</p>
-  <h2 class="t">Seven raster interrupts draw one frame</h2>
-  <p class="lede">Two fighters need eighteen sprites and the machine has eight. The game draws the top row of both fighters with sprites 0-5, then moves those sprites down the screen as the beam passes.</p>
+  <h3 class="fx-h3">What it checks, in order</h3>
+  <ol class="fx-steps">
+    <li><b>Is the opponent reeling from a blow?</b> Then it starts nothing new: it waits for a count set by its rank and stands, at once if it was in a flying kick (<code>$22CF</code>).</li>
+    <li><b>Is a plan under way?</b> A plan is a short script started in answer to a blow, below. While one runs, the plan decides every move (<code>$2689</code>).</li>
+    <li><b>Is the opponent throwing a blow?</b> A blow being drawn back does not count. Already blocking, the computer holds the block while it is the right one for the blow and drops a wrong one. Standing or walking, it answers the blow if the blow can reach it (<code>$2D00</code>), after a reaction delay. In the middle of a move of its own it carries on, but drops a move it is holding or drawing back, and drops any move that is not low when the blow is a sweep.</li>
+    <li><b>Otherwise it measures the distance</b> (<code>$241A</code>). Far ahead, it walks forward in bursts with pauses. Far behind, it turns round. Close, it stands for a random count (<code>$249B</code>) and then picks an attack from a table indexed by distance.</li>
+  </ol>
+  <p>A held move is let go after a random time (<code>$23E8</code>). Every random choice comes from one 8-bit generator (<code>$2589</code>) that steps through all 255 non-zero values, so the odds below are exact: each is a count out of 255.</p>
+
+  <h3 class="fx-h3">Answering a blow</h3>
   <div class="plate">
-    <canvas id="frameCv" width="768" height="544"></canvas>
-    <div class="fx-ctl" style="margin-top:12px"><button class="fx-btn" id="bandBtn">Show the raster writes</button><span class="fx-out" id="bandOut"></span></div>
-    <p class="cap">One frame of a two-player bout, drawn from memory and the recorded writes to the video chip with the site's renderer: all 104,448 pixels match the emulator's own picture of the same frame. The chain: <code>$31F2</code> at line 0 sets up the frame, <code>$2FB0</code> switches to the bitmap at line 90, the sprite handlers move sprites 0-5 down a row of 21 lines at a time, a handler on line 217 draws the shadow, and <code>$30E5</code> at line 255 returns to text for the panel and plays the music.</p>
+    <p class="fx-out" id="aiDelay"></p>
+    <div class="fx-scroll"><table class="fx-tab" id="aiAnswer"></table></div>
+    <p class="cap">The answer to each blow at the chosen rank: a port of <code>$237D</code>, checked against the game's own code for every rank, every blow and every one of the 255 states of the random number, together with the attack choice below: 9,348 cases, no difference. One random number is masked with the rank's defence mask (<code>$9C</code>). Its top bit counter-attacks, with an attack chosen as below. Any of the next three bits blocks with the right block for the blow (<code>$118F</code>), which against a sweep is a jump. A zero in all of them gives the forward somersault or the low kick, on a second number. Anything else starts the plan for that blow (<code>$2788</code>), or blocks when the blow has none.</p>
   </div>
-  <p>The gap between the two fighters' heights decides which of seven interrupt chains runs that frame (<code>$32CD</code>). When one fighter is exactly 20 lines higher than the other, one fighter's second row and the other's third start a line apart, and a combined handler moves all six sprites at once (<code>$2F02</code>, <code>$2F59</code>). The routines that set this up (<code>$3291</code>-<code>$3750</code>) work by rewriting the handlers' own instructions: the raster line, the sprite heights and the pointers are all operands patched every frame.</p>
-  <p>A jumping fighter casts a shadow on the floor. It is a fourth row of sprites from a fixed set under the I/O chips (<code>$D480</code>), shown at a fixed height while the fighter is off the ground.</p>
+  <p>The plans are nine short scripts (<code>$2774</code>). Most answer with one move: the foot sweep against the low punch, middle kick and spinning kick; the flying kick against the low kick; the forward somersault against the foot sweep and the back kick. Some wait. Plan 1 crouches until the opponent stands up, or from 7th dan until the opponent crouches to spring (frame <code>$19</code>, the start of a jump, a somersault and the flying kick), and then sweeps. Two plans have slips in their code, described on the <a href="discoveries.html">Discoveries</a> tab: plan 7 tests the wrong byte to choose between the two sweeps, and plan 8 writes the next plan into the first fighter's slot.</p>
+
+  <h3 class="fx-h3">Choosing an attack</h3>
+  <div class="plate">
+    <div class="fx-ctl"><button class="fx-btn" id="aiFace">Fighters face each other</button>
+      <label for="aiOpp">Opponent</label><select id="aiOpp"><option value="1">standing</option><option value="4">crouching</option><option value="19">blocking low ($13)</option><option value="20">blocking high ($14)</option></select>
+      <label for="aiDist">Distance</label><input type="range" id="aiDist"><span class="fx-out" id="aiDistOut"></span></div>
+    <canvas id="aiStrip" width="600" height="74" style="width:100%;max-width:600px;height:auto"></canvas>
+    <div id="aiPick" class="fx-bars"></div>
+    <p class="cap">A port of <code>$24B1</code>, checked with the answers above. The strip is the attack table for the facing: 80 moves at <code>$26D5</code> for fighters facing each other, 79 at <code>$2725</code> for fighters facing the same way, read from the entry for the distance plus a random 0-7 (0-3 from 5th dan, <code>$94</code>). The window the computer can read is outlined. The distance is between the two sprite grids in units of two pixels, positive with the opponent ahead of the computer; outside the range shown the computer walks or turns instead. The bars give what the computer then does. With the fighters facing each other three adjustments apply: the flying kick becomes a walk from 7th dan (<code>$2521</code>), the foot sweep is skipped below 2nd dan (<code>$252B</code>), and the low punch starts with a crouch (<code>$2539</code>). In either facing the back kick and back sweep may turn into a turn, a step back or a backward somersault (<code>$2567</code>, mask <code>$A3</code>). Against a crouching opponent each blow is swapped for a low one (<code>$12D0</code>). Against a block it picks among the four blows that block does not stop (<code>$27A1</code>, <code>$27A5</code>), but only when the fighters face each other.</p>
+  </div>
+
+  <h3 class="fx-h3">The ranks</h3>
+  <div class="plate"><div class="fx-scroll"><table class="fx-tab" id="aiTab"></table></div>
+    <p class="cap">The per-rank tables at <code>$27A9</code>-<code>$27FC</code>, as <code>ai_level_setup</code> (<code>$2593</code>) loads them, with the chosen rank outlined. Each is a mask the computer applies to a random number: for the timers (hold, wait, walk, pause and reaction) a smaller mask means shorter waits; the others narrow its choices. A pause mask of 0 means the computer never stops walking forward. The walking table has 11 entries for 12 levels, so level 11 reads the first byte of the next table. Level 11 is reached only in the attract mode, whose fighters take levels 3-11 at random.</p></div>
+  <p>The reaction-delay mask is zero from 4th dan, so from there the computer answers a blow at once. The defence mask shapes its temperament. Novice counter-attacks half the time. 4th dan and 6th dan upwards never counter-attack, and 4th dan blocks seven blows in eight. 7th dan neither counters nor blocks: it starts a plan almost every time, and blocks only the high kick, which has no plan.</p>
+  <p>In a one-player game the computer's level is its rank: it starts at 0, Novice, and rises by one each time the player clears a rank with two bout wins (<code>$1C2D</code>); a lost bout ends the game. Past 10th dan the rank stays on screen as 10TH DAN while the opponent's level is drawn at random from 7 to 10 (<code>$1C65</code>).</p>
 </section>
 </main>
-<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="/kit.html" style="color:#1f5fa8;text-decoration:none">Kit changelog</a> · <a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
 <script src="../../lib/c64.js"></script>
 <script src="../../lib/sid.js"></script>
 <script src="reference/fist-page.js"></script>

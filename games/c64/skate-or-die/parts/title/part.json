@@ -1,0 +1,109 @@
+{
+  "title": "Title",
+  "order": 2,
+  "video": {
+    "screen": "$8000",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$3710",
+        "$3FFF",
+        "not the title's: the power-on pattern and earlier stages' bytes; no title file reaches here (the unpacked picture ends at $370F) and no title code reads it"
+      ],
+      [
+        "$30F0",
+        "$370F",
+        "the tail of the unpacked picture left after file $02 (the samples) overwrote $1000-$30EF: colour nibbles from $30F0 and the screen data $3328-$370F, already copied to $8400 and $8000 by load_title_picture; nothing reads them here"
+      ],
+      [
+        "$5157",
+        "$51FE",
+        "the last 168 bytes of file $00: the $FF/$00 pattern of uninitialised RAM saved with the file; no code or table reaches them"
+      ],
+      [
+        "$C000",
+        "$CFFF",
+        "not the title's: the boot's EA logo screen ($C000) and character set ($C800), left in memory (the boot part's video bases); the title never reads them"
+      ],
+      [
+        "$E000",
+        "$F22F",
+        "not the title's: the RAM copy of the KERNAL ROM the boot made (boot part), unchanged between the hand-over and play; the title never reads, writes or runs it"
+      ],
+      [
+        "$F654",
+        "$F72F",
+        "stale bytes between the resident loader and $F730, unchanged since the boot; nothing in the title refers to them"
+      ],
+      [
+        "$F730",
+        "$FDFE",
+        "not the title's: a RAM copy of the KERNAL left by the boot (the event manager, file $0B, is loaded here only later, by the shop); the title never reads or runs it"
+      ],
+      [
+        "$FE00",
+        "$FFF9",
+        "the rest of the same KERNAL copy in RAM; not used by the title"
+      ]
+    ]
+  },
+  "io": [],
+  "regions": [
+    [
+      "$1000",
+      "$30EF",
+      "sound",
+      "file $02: seven 4-bit guitar samples, two values a byte, played through $D418 by the NMI at $5106"
+    ],
+    [
+      "$4000",
+      "$435E",
+      "code",
+      "title program: start-up, picture loading and unpacking, raster interrupt, colour animation, hand-over to the shop"
+    ],
+    [
+      "$435F",
+      "$4575",
+      "graphics",
+      "colour-cycle tables and the recoloured logo words (screen and colour nibbles, rectangles); music vibrato state at $456D"
+    ],
+    [
+      "$4576",
+      "$49F0",
+      "code",
+      "Rob Hubbard-style music driver: three SID voices and the sample channel"
+    ],
+    [
+      "$49F1",
+      "$50D9",
+      "sound",
+      "music data: sample tables, frequency table, voice state, pulse and drum programs, instruments, tracks and patterns"
+    ],
+    [
+      "$50DA",
+      "$5156",
+      "code",
+      "music init/stop bodies, NMI installer and the 4-bit sample NMI"
+    ],
+    [
+      "$8400",
+      "$8BE7",
+      "graphics",
+      "the title picture: colour-RAM nibbles ($8400) and the pristine screen matrix ($8800)"
+    ],
+    [
+      "$A000",
+      "$BF3F",
+      "graphics",
+      "the title picture: multicolour bitmap"
+    ],
+    [
+      "$F230",
+      "$F653",
+      "code",
+      "resident loader (with its file table at $F2F9)"
+    ]
+  ]
+}

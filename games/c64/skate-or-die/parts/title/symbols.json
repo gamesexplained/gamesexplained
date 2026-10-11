@@ -1,0 +1,4380 @@
+{
+ "schema": 1,
+ "platform": "c64",
+ "game": "skate-or-die",
+ "part": "title",
+ "build": "PAL, two-sided G64 pair supplied by the contributor (side 1 SHA-256 45e07b32..., side 2 7a402586...); EA loader, no crack or trainer",
+ "source": "regenerator2000 live",
+ "regions": {
+  "exclude": [
+   [
+    256,
+    511,
+    "stack"
+   ],
+   [
+    53248,
+    57343,
+    "I/O and colour RAM"
+   ],
+   [
+    32768,
+    33791,
+    "screen RAM"
+   ],
+   [
+    14096,
+    16383,
+    "not the title's: the power-on pattern and earlier stages' bytes; no title file reaches here (the unpacked picture ends at $370F) and no title code reads it"
+   ],
+   [
+    12528,
+    14095,
+    "the tail of the unpacked picture left after file $02 (the samples) overwrote $1000-$30EF: colour nibbles from $30F0 and the screen data $3328-$370F, already copied to $8400 and $8000 by load_title_picture; nothing reads them here"
+   ],
+   [
+    20823,
+    20990,
+    "the last 168 bytes of file $00: the $FF/$00 pattern of uninitialised RAM saved with the file; no code or table reaches them"
+   ],
+   [
+    49152,
+    53247,
+    "not the title's: the boot's EA logo screen ($C000) and character set ($C800), left in memory (the boot part's video bases); the title never reads them"
+   ],
+   [
+    57344,
+    61999,
+    "not the title's: the RAM copy of the KERNAL ROM the boot made (boot part), unchanged between the hand-over and play; the title never reads, writes or runs it"
+   ],
+   [
+    63060,
+    63279,
+    "stale bytes between the resident loader and $F730, unchanged since the boot; nothing in the title refers to them"
+   ],
+   [
+    63280,
+    65022,
+    "not the title's: a RAM copy of the KERNAL left by the boot (the event manager, file $0B, is loaded here only later, by the shop); the title never reads or runs it"
+   ],
+   [
+    65024,
+    65529,
+    "the rest of the same KERNAL copy in RAM; not used by the title"
+   ]
+  ],
+  "extra": []
+ },
+ "blocks": [
+  {
+   "start": 0,
+   "end": 4095,
+   "type": "Undefined"
+  },
+  {
+   "start": 4096,
+   "end": 12527,
+   "type": "Byte"
+  },
+  {
+   "start": 12528,
+   "end": 16383,
+   "type": "Undefined"
+  },
+  {
+   "start": 16384,
+   "end": 17246,
+   "type": "Code"
+  },
+  {
+   "start": 17247,
+   "end": 17781,
+   "type": "Byte"
+  },
+  {
+   "start": 17782,
+   "end": 18928,
+   "type": "Code"
+  },
+  {
+   "start": 18929,
+   "end": 18987,
+   "type": "Byte"
+  },
+  {
+   "start": 18988,
+   "end": 19181,
+   "type": "Word"
+  },
+  {
+   "start": 19182,
+   "end": 20697,
+   "type": "Byte"
+  },
+  {
+   "start": 20698,
+   "end": 20822,
+   "type": "Code"
+  },
+  {
+   "start": 20823,
+   "end": 32767,
+   "type": "Undefined"
+  },
+  {
+   "start": 32768,
+   "end": 33767,
+   "type": "Byte"
+  },
+  {
+   "start": 33768,
+   "end": 33791,
+   "type": "Undefined"
+  },
+  {
+   "start": 33792,
+   "end": 34791,
+   "type": "Byte"
+  },
+  {
+   "start": 34792,
+   "end": 34815,
+   "type": "Undefined"
+  },
+  {
+   "start": 34816,
+   "end": 35815,
+   "type": "Byte"
+  },
+  {
+   "start": 35816,
+   "end": 40959,
+   "type": "Undefined"
+  },
+  {
+   "start": 40960,
+   "end": 48959,
+   "type": "Byte"
+  },
+  {
+   "start": 48960,
+   "end": 61999,
+   "type": "Undefined"
+  },
+  {
+   "start": 62000,
+   "end": 62200,
+   "type": "Code"
+  },
+  {
+   "start": 62201,
+   "end": 62474,
+   "type": "Byte"
+  },
+  {
+   "start": 62475,
+   "end": 62800,
+   "type": "Code"
+  },
+  {
+   "start": 62801,
+   "end": 62802,
+   "type": "Byte"
+  },
+  {
+   "start": 62803,
+   "end": 63059,
+   "type": "Code"
+  },
+  {
+   "start": 63060,
+   "end": 65529,
+   "type": "Undefined"
+  },
+  {
+   "start": 65530,
+   "end": 65535,
+   "type": "Byte"
+  }
+ ],
+ "symbols": [
+  {
+   "address": 1,
+   "name": "cpu_port",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 2,
+   "name": "mus_ptr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 3,
+   "name": "mus_ptr_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 4,
+   "name": "mus_pat_ptr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 5,
+   "name": "mus_pat_ptr_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 6,
+   "name": "nibble_phase",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 7,
+   "name": "src_ptr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 8,
+   "name": "src_ptr_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 9,
+   "name": "dst_ptr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 10,
+   "name": "dst_ptr_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 11,
+   "name": "end_ptr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 12,
+   "name": "end_ptr_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 13,
+   "name": "colour_ptr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 14,
+   "name": "colour_ptr_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 15,
+   "name": "count_lo",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 16,
+   "name": "count_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 17,
+   "name": "frame_count",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18,
+   "name": "frame_count_hi",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 144,
+   "name": "ldr_addr",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 145,
+   "name": "zpa_91",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 146,
+   "name": "ldr_end",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 147,
+   "name": "zpa_93",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "auto"
+  },
+  {
+   "address": 148,
+   "name": "ldr_track",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 149,
+   "name": "ldr_sector",
+   "type": "ZeroPageAbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 224,
+   "name": "ldr_work_E0",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 225,
+   "name": "ldr_work_E1",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 226,
+   "name": "ldr_work_E2",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 227,
+   "name": "ldr_work_E3",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 228,
+   "name": "ldr_work_E4",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 229,
+   "name": "ldr_work_E5",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 230,
+   "name": "ldr_work_E6",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 231,
+   "name": "ldr_work_E7",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 232,
+   "name": "ldr_work_E8",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 233,
+   "name": "ldr_work_E9",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 234,
+   "name": "ldr_work_EA",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 239,
+   "name": "ldr_work_EF",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 240,
+   "name": "ldr_work_F0",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 241,
+   "name": "ldr_work_F1",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 242,
+   "name": "ldr_work_F2",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 247,
+   "name": "ldr_work_F7",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 248,
+   "name": "ldr_work_F8",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 249,
+   "name": "ldr_work_F9",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 250,
+   "name": "ldr_work_FA",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 251,
+   "name": "ldr_wsec_index",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 4096,
+   "name": "sample_0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 4352,
+   "name": "sample_0_loop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5112,
+   "name": "sample_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 5368,
+   "name": "sample_1_loop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6116,
+   "name": "sample_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 6372,
+   "name": "sample_2_loop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 7160,
+   "name": "sample_3",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 7416,
+   "name": "sample_3_loop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 8180,
+   "name": "sample_4",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 8436,
+   "name": "sample_4_loop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 9184,
+   "name": "sample_5",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 9440,
+   "name": "sample_5_loop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 10216,
+   "name": "sample_6",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 11240,
+   "name": "sample_6_mid",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12264,
+   "name": "sample_6_loop",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 12525,
+   "name": "samples_tail",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16384,
+   "name": "title_main",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16418,
+   "name": "b_4022",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16528,
+   "name": "wait_for_nmi",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 16531,
+   "name": "title_frame",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16540,
+   "name": "b_409C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16552,
+   "name": "b_40A8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16577,
+   "name": "b_40C1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16606,
+   "name": "b_40DE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16652,
+   "name": "b_410C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16659,
+   "name": "r_4113",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 16660,
+   "name": "install_title_irq",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16705,
+   "name": "wait_raster_wrap",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16708,
+   "name": "b_4144",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16716,
+   "name": "title_irq",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 16736,
+   "name": "load_title_picture",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16845,
+   "name": "show_title_picture",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16902,
+   "name": "load_samples",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16912,
+   "name": "copy_block",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16919,
+   "name": "b_4217",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16921,
+   "name": "b_4219",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 16936,
+   "name": "read_src",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16946,
+   "name": "r_4232",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 16947,
+   "name": "write_dst",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 16957,
+   "name": "r_423D",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 16958,
+   "name": "logo_word_on",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17022,
+   "name": "b_427E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17024,
+   "name": "b_4280",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17046,
+   "name": "b_4296",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17057,
+   "name": "b_42A1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17068,
+   "name": "b_42AC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17079,
+   "name": "b_42B7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17084,
+   "name": "logo_word_off",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17146,
+   "name": "b_42FA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17148,
+   "name": "b_42FC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17170,
+   "name": "b_4312",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17181,
+   "name": "b_431D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17192,
+   "name": "b_4328",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17203,
+   "name": "b_4333",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17208,
+   "name": "rle_unpack",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17224,
+   "name": "b_4348",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17235,
+   "name": "b_4353",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17238,
+   "name": "b_4356",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17246,
+   "name": "r_435E",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 17247,
+   "name": "strip_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17249,
+   "name": "strip_screen",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17251,
+   "name": "names_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17252,
+   "name": "names_colours_row20",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17253,
+   "name": "names_colours_row21",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17257,
+   "name": "unused_4369",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 17258,
+   "name": "ea_sweep_colours",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17273,
+   "name": "unused_4379",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 17274,
+   "name": "logo_word_screen",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 17516,
+   "name": "logo_word_colour",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 17758,
+   "name": "logo_word_blocks",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17759,
+   "name": "logo_block_addr_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17760,
+   "name": "logo_block_width",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17761,
+   "name": "logo_block_height",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17762,
+   "name": "logo_block_offset",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17773,
+   "name": "vib_counter",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17776,
+   "name": "vib_limit",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17779,
+   "name": "vib_dir",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 17782,
+   "name": "music_init",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17785,
+   "name": "music_stop",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17788,
+   "name": "music_play",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 17803,
+   "name": "b_458B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17849,
+   "name": "b_45B9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17859,
+   "name": "b_45C3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17873,
+   "name": "b_45D1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17876,
+   "name": "b_45D4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17892,
+   "name": "b_45E4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17903,
+   "name": "j_45EF",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 17940,
+   "name": "b_4614",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17948,
+   "name": "b_461C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17951,
+   "name": "b_461F",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17973,
+   "name": "b_4635",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 17987,
+   "name": "b_4643",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18065,
+   "name": "b_4691",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18068,
+   "name": "j_4694",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18071,
+   "name": "b_4697",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18103,
+   "name": "b_46B7",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18120,
+   "name": "j_46C8",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18212,
+   "name": "b_4724",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18218,
+   "name": "j_472A",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18241,
+   "name": "b_4741",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18244,
+   "name": "j_4744",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18264,
+   "name": "j_4758",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18300,
+   "name": "b_477C",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18330,
+   "name": "b_479A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18350,
+   "name": "b_47AE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18358,
+   "name": "b_47B6",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18382,
+   "name": "j_47CE",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18393,
+   "name": "b_47D9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18410,
+   "name": "j_47EA",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18429,
+   "name": "b_47FD",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18433,
+   "name": "vib_delay_operand",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18439,
+   "name": "j_4807",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18458,
+   "name": "b_481A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18468,
+   "name": "j_4824",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18493,
+   "name": "b_483D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18507,
+   "name": "b_484B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18515,
+   "name": "b_4853",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18531,
+   "name": "b_4863",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18545,
+   "name": "b_4871",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18554,
+   "name": "b_487A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18568,
+   "name": "pulse_sign_operand",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18582,
+   "name": "b_4896",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18627,
+   "name": "b_48C3",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18650,
+   "name": "b_48DA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18680,
+   "name": "b_48F8",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18701,
+   "name": "b_490D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18704,
+   "name": "j_4910",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18707,
+   "name": "b_4913",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18726,
+   "name": "b_4926",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18734,
+   "name": "j_492E",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18748,
+   "name": "j_493C",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18772,
+   "name": "j_4954",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18781,
+   "name": "j_495D",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 18789,
+   "name": "b_4965",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18795,
+   "name": "b_496B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18826,
+   "name": "b_498A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18852,
+   "name": "b_49A4",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18910,
+   "name": "b_49DE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 18928,
+   "name": "r_49F0",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 18929,
+   "name": "sample_start_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18936,
+   "name": "sample_start_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18943,
+   "name": "sample_loop_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18950,
+   "name": "sample_loop_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18957,
+   "name": "sample_loop_flag",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18964,
+   "name": "smp_duration",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18965,
+   "name": "smp_loop",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18966,
+   "name": "smp_pat_index",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18967,
+   "name": "smp_track_pos",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18968,
+   "name": "smp_track_ptr",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18969,
+   "name": "smp_track_ptr_hi",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18970,
+   "name": "smp_number",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 18971,
+   "name": "unused_4a1b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 18986,
+   "name": "freq_note_minus1_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18987,
+   "name": "freq_note_minus1_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18988,
+   "name": "freq_table",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 18989,
+   "name": "freq_table_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19182,
+   "name": "unused_4aee",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19184,
+   "name": "voice_sid_offset",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19187,
+   "name": "cur_sid_offset",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19188,
+   "name": "voice_track_pos",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19191,
+   "name": "voice_pat_index",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19194,
+   "name": "voice_duration",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19197,
+   "name": "voice_command",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19200,
+   "name": "voice_control",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19203,
+   "name": "voice_note",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19206,
+   "name": "voice_instrument",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19209,
+   "name": "voice_gate_mask",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19212,
+   "name": "cmd_temp",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19213,
+   "name": "unused_4b0d",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19214,
+   "name": "saved_voice",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19215,
+   "name": "ctrl_temp",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19216,
+   "name": "vib_shift",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19217,
+   "name": "pulse_prog",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19218,
+   "name": "tick_count",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19219,
+   "name": "tick_reload",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19220,
+   "name": "frame5_count",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19221,
+   "name": "voice_count",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19222,
+   "name": "instr_offset",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19223,
+   "name": "music_state",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19224,
+   "name": "voice_freq_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19227,
+   "name": "voice_freq_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19230,
+   "name": "voice_porta_b",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19233,
+   "name": "voice_porta_a",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19236,
+   "name": "fx_flags",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19237,
+   "name": "unused_4b25",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19238,
+   "name": "note_temp",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 19239,
+   "name": "unused_4b27",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19240,
+   "name": "voice_pulse_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19243,
+   "name": "voice_pulse_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19246,
+   "name": "voice_pulse0_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19249,
+   "name": "voice_pulse0_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19252,
+   "name": "voice_pulse_index",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19255,
+   "name": "voice_pulse_count",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19258,
+   "name": "voice_pulse_step",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19261,
+   "name": "voice_fx_timer",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19264,
+   "name": "voice_age",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19267,
+   "name": "unused_4b43",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19270,
+   "name": "voice_flag_4b46",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19273,
+   "name": "voice_drum_index",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19276,
+   "name": "unused_4b4c",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19277,
+   "name": "voice_transpose",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19280,
+   "name": "unused_4b50",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19283,
+   "name": "pulse_prog_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19285,
+   "name": "pulse_prog_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19287,
+   "name": "pulse_prog_1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19294,
+   "name": "pulse_prog_2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19297,
+   "name": "unused_4b61",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19309,
+   "name": "voice_freq_hi_copy",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19312,
+   "name": "drum_prog_a",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19337,
+   "name": "drum_prog_b",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19355,
+   "name": "instr_a",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19356,
+   "name": "instr_a_pulse_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19357,
+   "name": "instr_a_control",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19358,
+   "name": "instr_a_ad",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19359,
+   "name": "instr_a_sr",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19360,
+   "name": "instr_a_vibrato",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19361,
+   "name": "instr_a_pulse_prog",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19362,
+   "name": "instr_a_fx",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19419,
+   "name": "instr_b",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19420,
+   "name": "instr_b_wave",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19422,
+   "name": "instr_b_timer",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19424,
+   "name": "instr_b_vib_delay",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19483,
+   "name": "voice_track_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19486,
+   "name": "voice_track_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19489,
+   "name": "pattern_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19521,
+   "name": "pattern_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 19553,
+   "name": "track_v0",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19646,
+   "name": "track_v1",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19806,
+   "name": "track_v2",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19808,
+   "name": "sample_track",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19848,
+   "name": "unused_tracks",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19921,
+   "name": "pattern_00",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19924,
+   "name": "pattern_1A",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19965,
+   "name": "pattern_1C",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 19993,
+   "name": "pattern_1D",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20008,
+   "name": "pattern_1B",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20062,
+   "name": "pattern_1E",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20079,
+   "name": "pattern_18",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20100,
+   "name": "pattern_19",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20112,
+   "name": "pattern_01",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20173,
+   "name": "pattern_09",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20203,
+   "name": "pattern_0A",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20210,
+   "name": "pattern_0B",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20214,
+   "name": "pattern_13",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20227,
+   "name": "pattern_11",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20231,
+   "name": "pattern_10",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20244,
+   "name": "pattern_12",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20270,
+   "name": "pattern_02",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20304,
+   "name": "pattern_05",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20338,
+   "name": "pattern_07",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20371,
+   "name": "pattern_0D",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20405,
+   "name": "pattern_14",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20439,
+   "name": "pattern_15",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20455,
+   "name": "pattern_16",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20471,
+   "name": "pattern_17",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20481,
+   "name": "pattern_1F",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20492,
+   "name": "pattern_03",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20531,
+   "name": "pattern_04",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20573,
+   "name": "pattern_0C",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20591,
+   "name": "pattern_0E",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20608,
+   "name": "pattern_0F",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20624,
+   "name": "pattern_08",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20661,
+   "name": "pattern_06",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20698,
+   "name": "music_init_body",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 20715,
+   "name": "music_stop_body",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 20721,
+   "name": "install_sample_nmi",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 20742,
+   "name": "sample_nmi",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 20753,
+   "name": "smp_ptr_lo",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 20754,
+   "name": "smp_ptr_hi",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 20766,
+   "name": "smp_loop_lo_operand",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 20771,
+   "name": "smp_loop_hi_operand",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 20778,
+   "name": "b_512A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 20786,
+   "name": "b_5132",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 20798,
+   "name": "b_513E",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 20808,
+   "name": "j_5148",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 20811,
+   "name": "j_514B",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 20815,
+   "name": "nmi_saved_a",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 20817,
+   "name": "unused_nmi_stub",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 32768,
+   "name": "title_screen",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 32780,
+   "name": "title_screen_strip",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 33792,
+   "name": "picture_colour",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 34816,
+   "name": "picture_screen",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 40960,
+   "name": "title_bitmap",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 41984,
+   "name": "title_bitmap_A400",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 43008,
+   "name": "title_bitmap_A800",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 44032,
+   "name": "title_bitmap_AC00",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 45056,
+   "name": "title_bitmap_B000",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 46080,
+   "name": "title_bitmap_B400",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 47104,
+   "name": "title_bitmap_B800",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 48128,
+   "name": "title_bitmap_BC00",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 55308,
+   "name": "f_D80C",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 56059,
+   "name": "f_DAFB",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 56088,
+   "name": "f_DB18",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 56099,
+   "name": "f_DB23",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 56128,
+   "name": "f_DB40",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 56139,
+   "name": "f_DB4B",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 56168,
+   "name": "f_DB68",
+   "type": "Field",
+   "kind": "auto"
+  },
+  {
+   "address": 62000,
+   "name": "load_file",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62003,
+   "name": "save_file",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62006,
+   "name": "load_file_body",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 62009,
+   "name": "b_F239",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62053,
+   "name": "b_F265",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62058,
+   "name": "save_file_body",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 62061,
+   "name": "b_F26D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62100,
+   "name": "r_F294",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 62101,
+   "name": "load_setup",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62140,
+   "name": "b_F2BC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62150,
+   "name": "next_sector",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62166,
+   "name": "b_F2D6",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62172,
+   "name": "b_F2DC",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62179,
+   "name": "r_F2E3",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 62180,
+   "name": "logical_to_physical",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62189,
+   "name": "j_F2ED",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 62200,
+   "name": "r_F2F8",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 62201,
+   "name": "file_table",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 62202,
+   "name": "file_table_sector",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 62203,
+   "name": "file_table_len_lo",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 62204,
+   "name": "file_table_len_hi",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 62265,
+   "name": "file_table_10",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62329,
+   "name": "file_table_20",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62393,
+   "name": "file_table_30",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62397,
+   "name": "sectors_per_track",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 62433,
+   "name": "track_interleave",
+   "type": "Field",
+   "kind": "user"
+  },
+  {
+   "address": 62469,
+   "name": "xfer_state",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62470,
+   "name": "bg_slice_bytes",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62471,
+   "name": "drive_status_byte",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62472,
+   "name": "unused_f408",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62475,
+   "name": "set_dest_ptr",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62482,
+   "name": "set_end_ptr",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62489,
+   "name": "drive_reset_cmd",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62497,
+   "name": "read_sector_cmd",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62522,
+   "name": "write_sector",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62548,
+   "name": "b_F454",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62577,
+   "name": "b_F471",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62583,
+   "name": "wsec_sector",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62588,
+   "name": "wsec_track",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62600,
+   "name": "r_F488",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 62601,
+   "name": "set_disk_id_cmd",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62615,
+   "name": "drive_query_status",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62633,
+   "name": "expect_reply",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62641,
+   "name": "b_F4B1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62642,
+   "name": "j_F4B2",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 62643,
+   "name": "cmd_saved_x",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62645,
+   "name": "cmd_saved_y",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62647,
+   "name": "send_drive_command",
+   "type": "Jump",
+   "kind": "user"
+  },
+  {
+   "address": 62678,
+   "name": "b_F4D6",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62686,
+   "name": "b_F4DE",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62722,
+   "name": "b_F502",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62740,
+   "name": "b_F514",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62742,
+   "name": "b_F516",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62794,
+   "name": "b_F54A",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62797,
+   "name": "b_F54D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62801,
+   "name": "wait_saved_y",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62802,
+   "name": "wait_saved_x",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 62803,
+   "name": "wait_transfer",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62811,
+   "name": "b_F55B",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62820,
+   "name": "j_F564",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 62833,
+   "name": "b_F571",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62845,
+   "name": "r_F57D",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 62846,
+   "name": "bg_receive",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 62867,
+   "name": "b_F593",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62871,
+   "name": "r_F597",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 62872,
+   "name": "receive_bytes",
+   "type": "Subroutine",
+   "kind": "user"
+  },
+  {
+   "address": 62881,
+   "name": "b_F5A1",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62889,
+   "name": "b_F5A9",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62938,
+   "name": "b_F5DA",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62941,
+   "name": "receive_next_byte",
+   "type": "Branch",
+   "kind": "user"
+  },
+  {
+   "address": 62944,
+   "name": "b_F5E0",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62962,
+   "name": "b_F5F2",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62971,
+   "name": "b_F5FB",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62980,
+   "name": "b_F604",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62989,
+   "name": "b_F60D",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 62997,
+   "name": "b_F615",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 63016,
+   "name": "b_F628",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 63048,
+   "name": "j_F648",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 63053,
+   "name": "j_F64D",
+   "type": "Jump",
+   "kind": "auto"
+  },
+  {
+   "address": 63056,
+   "name": "b_F650",
+   "type": "Branch",
+   "kind": "auto"
+  },
+  {
+   "address": 63059,
+   "name": "r_F653",
+   "type": "Return",
+   "kind": "auto"
+  },
+  {
+   "address": 65023,
+   "name": "event_mgr_flag",
+   "type": "AbsoluteAddress",
+   "kind": "user"
+  },
+  {
+   "address": 65530,
+   "name": "nmi_vector",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 65532,
+   "name": "reset_vector",
+   "type": "UserDefined",
+   "kind": "user"
+  },
+  {
+   "address": 65534,
+   "name": "irq_vector",
+   "type": "UserDefined",
+   "kind": "user"
+  }
+ ],
+ "comments": [
+  {
+   "address": 1,
+   "type": "line",
+   "text": "6510 processor port: the title writes $25 at $400B, $4019, $4064 and $4117: RAM at $A000-$BFFF and $E000-$FFFF, I/O at $D000-$DFFF (the bitmap at $A000 and the loader at $F230 are RAM)"
+  },
+  {
+   "address": 2,
+   "type": "line",
+   "text": "Music driver: pointer $02/$03 to the voice's track ($4603) or the drum program ($48AD), and the sample track ($4971); also the low byte of the vibrato step ($47C2)"
+  },
+  {
+   "address": 3,
+   "type": "line",
+   "text": "High byte of mus_ptr; also the high byte of the vibrato step ($47D9)"
+  },
+  {
+   "address": 4,
+   "type": "line",
+   "text": "Music driver: pointer $04/$05 to the current pattern ($4647, $498E); also the vibrato's working frequency ($47DE-$4821)"
+  },
+  {
+   "address": 5,
+   "type": "line",
+   "text": "High byte of mus_pat_ptr"
+  },
+  {
+   "address": 6,
+   "type": "line",
+   "text": "Sample NMI: incremented on every NMI; bit 0 = 1 plays the byte's high nibble, 0 the low nibble and steps the pointer. Never reset, so a sample can start on either nibble"
+  },
+  {
+   "address": 7,
+   "type": "line",
+   "text": "Source pointer $07/$08 of read_src (rle_unpack's input, copy_block's source); in logo_word_on/off the pointer to the new screen nibbles"
+  },
+  {
+   "address": 8,
+   "type": "line",
+   "text": "High byte of src_ptr"
+  },
+  {
+   "address": 9,
+   "type": "line",
+   "text": "Destination pointer $09/$0A of write_dst; in logo_word_on/off the pointer to the new colour nibbles"
+  },
+  {
+   "address": 10,
+   "type": "line",
+   "text": "High byte of dst_ptr"
+  },
+  {
+   "address": 11,
+   "type": "line",
+   "text": "rle_unpack's end $0B/$0C (the end of file $01 from load_file); in logo_word_on/off the screen cell pointer"
+  },
+  {
+   "address": 12,
+   "type": "line",
+   "text": "High byte of end_ptr"
+  },
+  {
+   "address": 13,
+   "type": "line",
+   "text": "logo_word_on/off: pointer $0D/$0E to the colour-RAM cell (screen cell + $5800)"
+  },
+  {
+   "address": 14,
+   "type": "line",
+   "text": "High byte of colour_ptr"
+  },
+  {
+   "address": 15,
+   "type": "line",
+   "text": "copy_block's byte count, logo_word_on/off's row width - 1; also a scratch byte for A * 5 at $423E/$42BC"
+  },
+  {
+   "address": 16,
+   "type": "line",
+   "text": "copy_block's pass count, logo_word_on/off's rows left"
+  },
+  {
+   "address": 17,
+   "type": "line",
+   "text": "Frame counter $11/$12, incremented by title_frame; its bits time the colour animations"
+  },
+  {
+   "address": 18,
+   "type": "line",
+   "text": "High byte of frame_count; nothing reads it"
+  },
+  {
+   "address": 144,
+   "type": "line",
+   "text": "Resident loader: current load address ($90 low, $91 page), from X/Y at $F295 and advanced a page per block ($F258)."
+  },
+  {
+   "address": 145,
+   "type": "line",
+   "text": "Resident loader: high byte (page) of ldr_addr"
+  },
+  {
+   "address": 146,
+   "type": "line",
+   "text": "Resident loader: end address ($92 low, $93 high) = load address + file length from the table at $F2F9; returned in X/Y."
+  },
+  {
+   "address": 147,
+   "type": "line",
+   "text": "Resident loader: high byte of ldr_end"
+  },
+  {
+   "address": 148,
+   "type": "line",
+   "text": "Resident loader: first byte of the file's table entry ($F2F9+4*A), passed with $95 to the drive routines; probably track and sector (not checked)."
+  },
+  {
+   "address": 149,
+   "type": "line",
+   "text": "Resident loader: second byte of the file's table entry ($F2FA+4*A), adjusted at $F2E4; read with $94."
+  },
+  {
+   "address": 224,
+   "type": "line",
+   "text": "Resident loader work byte at $E0, used only by the loader's code in $F4xx-$F6xx (writes: $F42E; reads: $F604; read-modify-write: $F625). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 225,
+   "type": "line",
+   "text": "Resident loader work byte at $E1, used only by the loader's code in $F4xx-$F6xx (writes: $F4BF; reads: $F5E8; read-modify-write: $F628). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 226,
+   "type": "line",
+   "text": "Resident loader work byte at $E2, used only by the loader's code in $F4xx-$F6xx (writes: $F4F1; reads: none; read-modify-write: $F50B). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 227,
+   "type": "line",
+   "text": "Resident loader work byte at $E3, used only by the loader's code in $F4xx-$F6xx (writes: $F4FD; reads: none; read-modify-write: $F505). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 228,
+   "type": "line",
+   "text": "Resident loader work byte at $E4, used only by the loader's code in $F4xx-$F6xx (writes: $F4F7; reads: none; read-modify-write: $F508). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 229,
+   "type": "line",
+   "text": "Resident loader work byte at $E5, used only by the loader's code in $F4xx-$F6xx (writes: $F423, $F491, $F641; reads: $F4EE, $F536, $F5D0; read-modify-write: none). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 230,
+   "type": "line",
+   "text": "Resident loader work byte at $E6, used only by the loader's code in $F4xx-$F6xx (writes: $F434, $F489, $F5ED; reads: $F4F4, $F63A; read-modify-write: none). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 231,
+   "type": "line",
+   "text": "Resident loader work byte at $E7, used only by the loader's code in $F4xx-$F6xx (writes: $F431, $F48C, $F5F6; reads: $F4FA; read-modify-write: none). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 232,
+   "type": "line",
+   "text": "Resident loader work byte at $E8, used only by the loader's code in $F4xx-$F6xx (writes: $F426; reads: $F5E3, $F635; read-modify-write: none). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 233,
+   "type": "line",
+   "text": "Resident loader work byte at $E9, used only by the loader's code in $F4xx-$F6xx (writes: $F5B0; reads: none; read-modify-write: $F5C4, $F5C7). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 234,
+   "type": "line",
+   "text": "Resident loader work byte at $EA, used only by the loader's code in $F4xx-$F6xx (writes: none; reads: $F5E0; read-modify-write: $F5CA). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 239,
+   "type": "line",
+   "text": "Resident loader work byte at $EF, used only by the loader's code in $F4xx-$F6xx (writes: $F40B, $F60B; reads: $F615; read-modify-write: $F60D). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 240,
+   "type": "line",
+   "text": "Resident loader work byte at $F0, used only by the loader's code in $F4xx-$F6xx (writes: $F40E, $F60B; reads: $F53F, $F61D; read-modify-write: $F612). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 241,
+   "type": "line",
+   "text": "Resident loader work byte at $F1, used only by the loader's code in $F4xx-$F6xx (writes: $F412; reads: $F618; read-modify-write: none). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 242,
+   "type": "line",
+   "text": "Resident loader work byte at $F2, used only by the loader's code in $F4xx-$F6xx (writes: $F415; reads: $F620; read-modify-write: none). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 247,
+   "type": "line",
+   "text": "Resident loader work byte at $F7, used only by the loader's code in $F4xx-$F6xx (writes: $F42B; reads: $F5FF; read-modify-write: $F62D). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 248,
+   "type": "line",
+   "text": "Resident loader work byte at $F8, used only by the loader's code in $F4xx-$F6xx (writes: $F573; reads: none; read-modify-write: $F561). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 249,
+   "type": "line",
+   "text": "Resident loader work byte at $F9, used only by the loader's code in $F4xx-$F6xx (writes: none; reads: none; read-modify-write: $F598). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 250,
+   "type": "line",
+   "text": "Resident loader work byte at $FA, used only by the loader's code in $F4xx-$F6xx (writes: $F632; reads: none; read-modify-write: none). The title's own code does not touch it; its meaning belongs to the loader's annotation."
+  },
+  {
+   "address": 251,
+   "type": "line",
+   "text": "Resident loader: byte index into the sector being written (write_sector $F451-$F46F, two bytes per drive command); the title never writes to disk"
+  },
+  {
+   "address": 4096,
+   "type": "line",
+   "text": "Sample 0 (file $02): 4-bit values two to a byte, high nibble first, from $1000 to the $1F end mark at $13F0 (1008 bytes, 2016 values); after the first pass it repeats from $1100 while its event lasts. The pitch is set by the event's timer value, so one sample plays several notes"
+  },
+  {
+   "address": 4352,
+   "type": "line",
+   "text": "Sample 0's loop point: the NMI returns here at each $1F end mark ($13F0)"
+  },
+  {
+   "address": 5112,
+   "type": "line",
+   "text": "Sample 1 (file $02): 4-bit values two to a byte, high nibble first, from $13F8 to the $1F end mark at $17E1 (1001 bytes, 2002 values); after the first pass it repeats from $14F8 while its event lasts. The pitch is set by the event's timer value, so one sample plays several notes"
+  },
+  {
+   "address": 5368,
+   "type": "line",
+   "text": "Sample 1's loop point: the NMI returns here at each $1F end mark ($17E1)"
+  },
+  {
+   "address": 6116,
+   "type": "line",
+   "text": "Sample 2 (file $02): 4-bit values two to a byte, high nibble first, from $17E4 to the $1F end mark at $1BF6 (1042 bytes, 2084 values); after the first pass it repeats from $18E4 while its event lasts. The pitch is set by the event's timer value, so one sample plays several notes"
+  },
+  {
+   "address": 6372,
+   "type": "line",
+   "text": "Sample 2's loop point: the NMI returns here at each $1F end mark ($1BF6)"
+  },
+  {
+   "address": 7160,
+   "type": "line",
+   "text": "Sample 3 (file $02): 4-bit values two to a byte, high nibble first, from $1BF8 to the $1F end mark at $1FEF (1015 bytes, 2030 values); after the first pass it repeats from $1CF8 while its event lasts. The pitch is set by the event's timer value, so one sample plays several notes"
+  },
+  {
+   "address": 7416,
+   "type": "line",
+   "text": "Sample 3's loop point: the NMI returns here at each $1F end mark ($1FEF)"
+  },
+  {
+   "address": 8180,
+   "type": "line",
+   "text": "Sample 4 (file $02): 4-bit values two to a byte, high nibble first, from $1FF4 to the $1F end mark at $23D9 (997 bytes, 1994 values); after the first pass it repeats from $20F4 while its event lasts. The pitch is set by the event's timer value, so one sample plays several notes"
+  },
+  {
+   "address": 8436,
+   "type": "line",
+   "text": "Sample 4's loop point: the NMI returns here at each $1F end mark ($23D9)"
+  },
+  {
+   "address": 9184,
+   "type": "line",
+   "text": "Sample 5 (file $02): 4-bit values two to a byte, high nibble first, from $23E0 to the $1F end mark at $27E5 (1029 bytes, 2058 values); after the first pass it repeats from $24E0 while its event lasts. The pitch is set by the event's timer value, so one sample plays several notes"
+  },
+  {
+   "address": 9440,
+   "type": "line",
+   "text": "Sample 5's loop point: the NMI returns here at each $1F end mark ($27E5)"
+  },
+  {
+   "address": 10214,
+   "type": "side",
+   "text": "Second $1F after sample 5's end mark; past the end, not read"
+  },
+  {
+   "address": 10216,
+   "type": "line",
+   "text": "Sample 6 (file $02): 4-bit values two to a byte, high nibble first, from $27E8 to the $1F end mark at $30EC (2308 bytes, 4616 values); after the first pass it repeats from $2FE8 while its event lasts. The pitch is set by the event's timer value, so one sample plays several notes"
+  },
+  {
+   "address": 11240,
+   "type": "line",
+   "text": "Sample 6 continued (its 2308 bytes run from $27E8 to $30EC)"
+  },
+  {
+   "address": 12264,
+   "type": "line",
+   "text": "Sample 6's loop point: the NMI returns here at each $1F end mark ($30EC)"
+  },
+  {
+   "address": 12525,
+   "type": "line",
+   "text": "The last three bytes of file $02 after sample 6's end mark ($75 $45 $7A); not reached"
+  },
+  {
+   "address": 16384,
+   "type": "line",
+   "text": "TITLE ENTRY ($4000, file $00, jumped to by the boot). Blanks the screen (VIC $D011 bit 4 off), banks $01 = $25 (RAM at $A000-$BFFF and $E000-$FFFF, I/O in), then: load_title_picture (file $01, unpacked into the bitmap at $A000), show_title_picture (bitmap mode on, bank 2), load_samples (file $02 to $1000, the picture on screen meanwhile), install_title_irq (raster interrupt at line $FB, which plays the music and animates the colours), music_init. It then waits at $4022 for fire on either joystick port ($DC00 bit 4 for port 2, $DC01 bit 4 for port 1; SPACE also pulls $DC01 bit 4 while CIA 1 port A selects keyboard row 7, as the snapshot's $7F there does: simulated). On fire: music_stop and one more music_play call to silence the voices, the colour RAM and the screen are put back from the pristine copies at $8400 and $8800, wait_raster_wrap, the raster interrupt is turned off, file $03 (the shop) is loaded to $0880, $FDFF is cleared (the shop compares it with $55 at $0F6E/$0F83 of file $03 and, when it differs, loads file $0B, the event manager, to $C000), and the NMI vector is pointed at $0880 and CIA 2 timer A restarted ($DD0E = 1): the next timer underflow raises an NMI that enters the shop, while the CPU spins at $4090. The title never returns"
+  },
+  {
+   "address": 16418,
+   "type": "side",
+   "text": "Wait for fire: either port's bit 4 low (port 1 through $DC01, port 2 through $DC00)"
+  },
+  {
+   "address": 16429,
+   "type": "side",
+   "text": "Fire pressed: music_stop ($4B17 = $C0), then music_play once to act on it"
+  },
+  {
+   "address": 16435,
+   "type": "side",
+   "text": "Copy the pristine colour data $8400 back to colour RAM $D800 (1000 bytes)"
+  },
+  {
+   "address": 16458,
+   "type": "side",
+   "text": "Copy the pristine screen $8800 back to $8000 (undo the colour animation)"
+  },
+  {
+   "address": 16499,
+   "type": "side",
+   "text": "Load file $03 (the shop program) at $0880"
+  },
+  {
+   "address": 16508,
+   "type": "side",
+   "text": "$FDFF = 0: the shop ($0F83 in file $03) loads the event manager, file $0B, while it is not $55"
+  },
+  {
+   "address": 16513,
+   "type": "side",
+   "text": "NMI vector = $0880, the shop's entry"
+  },
+  {
+   "address": 16523,
+   "type": "side",
+   "text": "Restart CIA 2 timer A (latch left by the last sample); its NMIs are still enabled from $50FC"
+  },
+  {
+   "address": 16528,
+   "type": "line",
+   "text": "Spin here until CIA 2 timer A underflows: the NMI (vector $0880 from $4081) leaves the title for the shop's entry, which resets the stack ($0880 LDX #$FF / TXS in file $03), so the NMI never returns here"
+  },
+  {
+   "address": 16531,
+   "type": "line",
+   "text": "Per-frame work of the raster interrupt (from title_irq): music_play, then the frame counter $11/$12 goes up and drives four colour animations. (1) 'ELECTRONIC ARTS' on row 0, columns 12-26: screen nibbles $60 from strip_screen and colour RAM from strip_colours, white or yellow, swapping every 32 frames (bit 5 of $11). (2) The three credit lines (rows 19-21, columns 3-16): one colour per row from names_colours, the phase ($11 >> 3) & 3 shifting every 8 frames, so white, light grey and grey roll down the names. (3) The EA logo (rows 19-21, columns 32-39): each column gets ea_sweep_colours[phase + column], the phase ($11 >> 1) & 7 stepping every 2 frames, a highlight sweeping across. (4) The 'SKATE OR DIE!' logo: phase ($11 >> 4) & 7 (16 frames a step, 128 frames a cycle) calls logo_word_on with 0, 1, 2 in phases 0-2, nothing in 3, logo_word_off with 0, 1, 2 in phases 4-6, nothing in 7; the call is skipped on the one frame in 16 where $11 & 15 = 0"
+  },
+  {
+   "address": 16552,
+   "type": "side",
+   "text": "Top strip: 15 cells $800C-$801A and their colour RAM"
+  },
+  {
+   "address": 16577,
+   "type": "side",
+   "text": "Credit lines: colour RAM rows 19, 20, 21 from column 3 ($DAFB, $DB23, $DB4B), 14 cells"
+  },
+  {
+   "address": 16606,
+   "type": "side",
+   "text": "EA logo: colour RAM rows 19-21 from column 32 ($DB18, $DB40, $DB68), 8 columns"
+  },
+  {
+   "address": 16622,
+   "type": "side",
+   "text": "Logo word phase: skipped when $11 & 15 = 0"
+  },
+  {
+   "address": 16660,
+   "type": "line",
+   "text": "Turn CIA 1's interrupts off ($DC0D = $7F, acknowledged by reading it), wait_raster_wrap, then set the raster compare to line $FB ($D012 = $FB, $D011 bit 7 clear), the IRQ vector $FFFE/$FFFF to title_irq ($414C) and enable the raster interrupt ($D01A = 1). The KERNAL is banked out, so the hardware vector is used directly"
+  },
+  {
+   "address": 16705,
+   "type": "line",
+   "text": "Wait until the raster line's low byte ($D012) goes down from one read to the next: each change is compared with the value before it and the loop ends only when the new value is lower, which happens at line 256 (the low byte returns to 0) or at the start of a frame"
+  },
+  {
+   "address": 16716,
+   "type": "line",
+   "text": "Raster interrupt handler (line $FB, vector set by install_title_irq): save A, X, Y, acknowledge the VIC ($D019 read and written back), run title_frame (music and colour animation), restore and RTI. CIA 2's sample NMIs can interrupt it"
+  },
+  {
+   "address": 16736,
+   "type": "line",
+   "text": "Load file $01 (the run-length packed title picture, $117F bytes) at $A000; its end (X/Y returned by load_file) goes to $0B/$0C as the unpacker's limit. rle_unpack expands it to $1000-$370F: 8000 bytes of multicolour bitmap, 1000 bytes of colour-RAM nibbles, 1000 bytes of screen colours. copy_block then moves the bitmap $1000-$2F3F to $A000 (over the packed file, already consumed), the colour data $2F40-$3327 to $8400 and the screen data $3328-$370F to $8000, and copies $8000 to $8800 as a pristine screen that logo_word_off and the exit restore from. Checked in the simulator: the bytes it leaves at $8400, $8800 and $A000-$BF3F equal the title snapshot's"
+  },
+  {
+   "address": 16845,
+   "type": "line",
+   "text": "Black border and background ($D020/$D021 = 0); copy the colour nibbles $8400 to colour RAM $D800 (1000 bytes); VIC bank 2 ($DD00 bits 0-1 = %01: $8000-$BFFF), $D018 = $08 (screen matrix $8000, bitmap $A000), $D016 = $18 (multicolour, 40 columns), $D011 = $3B (bitmap mode, display on, 25 rows)"
+  },
+  {
+   "address": 16902,
+   "type": "line",
+   "text": "Load file $02 ($20F0 bytes) at $1000-$30EF: the seven 4-bit guitar samples the music plays through the NMI ($5106). It overwrites the start of the unpacked picture, which has been copied out by then"
+  },
+  {
+   "address": 16912,
+   "type": "line",
+   "text": "Copy 256 * Y + X bytes from the pointer $07/$08 to the pointer $09/$0A, one at a time through read_src and write_dst. $0F counts the bytes and $10 the passes; a non-zero X adds a pass, so the first pass copies X bytes and each later one 256. Both pointers are left one past the end, which load_title_picture uses to chain its copies"
+  },
+  {
+   "address": 16936,
+   "type": "line",
+   "text": "A = the byte at ($07/$08), then advance $07/$08 (Y = 0 on return)"
+  },
+  {
+   "address": 16947,
+   "type": "line",
+   "text": "Store A at ($09/$0A), then advance $09/$0A (Y = 0 on return)"
+  },
+  {
+   "address": 16958,
+   "type": "line",
+   "text": "Recolour one word of the 'SKATE OR DIE!' logo, A = 0 (SKATE), 1 (OR) or 2 (DIE!): the word's entry in logo_word_blocks (five bytes at $455E + 5A: screen address lo/hi, width - 1, height - 1, offset) gives a rectangle of cells; the screen nibbles come from logo_word_screen + offset and the colour-RAM nibbles from logo_word_colour + offset, row by row, into the screen at $8000 and colour RAM at screen + $5800 ($D800 + the same cell). The new nibbles swap the logo's white face and brown shadow"
+  },
+  {
+   "address": 17084,
+   "type": "line",
+   "text": "Undo logo_word_on for word A: the same rectangle from logo_word_blocks, refilled from the pristine screen (cell + $0800, the copy at $8800) and the pristine colour data (cell + $0400, the copy at $8400 bound for $D800)"
+  },
+  {
+   "address": 17208,
+   "type": "line",
+   "text": "Run-length unpacker: read from ($07/$08) while it is below the end $0B/$0C, write to ($09/$0A). A count byte n below $80 is followed by n + 1 literal bytes; a count byte n of $80 or more is followed by one byte written n - $7F times (1 to 128). Used once, on file $01 (checked: the simulator's unpack of file $01 equals the title snapshot's picture)"
+  },
+  {
+   "address": 17218,
+   "type": "side",
+   "text": "Count byte: bit 7 clear = literal run, bit 7 set = repeat run"
+  },
+  {
+   "address": 17224,
+   "type": "side",
+   "text": "Literal run: copy n + 1 bytes (X = n down to 0)"
+  },
+  {
+   "address": 17235,
+   "type": "side",
+   "text": "Repeat run: write the byte, DEX, again while X is still $80 or more: n - $7F copies"
+  },
+  {
+   "address": 17247,
+   "type": "line",
+   "text": "Colour-RAM values for the 'ELECTRONIC ARTS' strip on row 0 (title_frame $40AE): $01 white, $07 yellow, indexed by bit 5 of the frame counter"
+  },
+  {
+   "address": 17249,
+   "type": "line",
+   "text": "Screen nibbles for the same strip ($40A8): $60 both times (multicolour %01 pixels blue, %10 black); only the colour RAM changes"
+  },
+  {
+   "address": 17251,
+   "type": "line",
+   "text": "Colours rolling down the three credit lines (title_frame $40C1): rows 19, 20, 21 take entries phase, phase + 1, phase + 2, phase 0-3, so six bytes are read: $01 white, $0F light grey, $0C grey, $0F, $01, $0F"
+  },
+  {
+   "address": 17252,
+   "type": "line",
+   "text": "names_colours as read for row 20 (LDA $4364,X at $40C7): the same table one entry on"
+  },
+  {
+   "address": 17253,
+   "type": "line",
+   "text": "names_colours as read for row 21 (LDA $4365,X at $40CD): two entries on"
+  },
+  {
+   "address": 17257,
+   "type": "line",
+   "text": "One byte ($0C) between names_colours and ea_sweep_colours that no index reaches (names_colours reads up to $4368, ea_sweep_colours starts at $436A)"
+  },
+  {
+   "address": 17258,
+   "type": "line",
+   "text": "Colours for the EA logo's eight columns (title_frame $40DE): column c of phase p (0-7) takes entry p + c, so 15 bytes are read: grey $0C runs with light grey $0F and white $01 peaks, which move one column every two frames"
+  },
+  {
+   "address": 17273,
+   "type": "line",
+   "text": "One byte ($01) after ea_sweep_colours, past the highest index (14); not read"
+  },
+  {
+   "address": 17274,
+   "type": "line",
+   "text": "Screen nibbles (bitmap cell colours %01/%10) for the recoloured logo words, 242 bytes, row-major per word: SKATE at offset $00 (17 x 7 cells), OR at $77 (6 x 3), DIE! at $89 (15 x 7). logo_word_on copies them over the screen at $8000; the pristine values are in the copy at $8800"
+  },
+  {
+   "address": 17516,
+   "type": "line",
+   "text": "Colour-RAM nibbles (%11 pixel colour) for the same 242 cells, same offsets; logo_word_on writes them to $D800 + cell. With logo_word_screen they swap the logo's white face and brown shadow"
+  },
+  {
+   "address": 17758,
+   "type": "line",
+   "text": "Three rectangles of five bytes for logo_word_on/off: screen address lo/hi, width - 1, height - 1, offset into logo_word_screen/colour. 0 SKATE: $8050 (row 2, column 0), 17 x 7, offset $00; 1 OR: $80B2 (row 4, column 18), 6 x 3, offset $77; 2 DIE!: $8068 (row 2, column 24), 15 x 7, offset $89"
+  },
+  {
+   "address": 17759,
+   "type": "line",
+   "text": "logo_word_blocks column +1 as the code reads it ($4252/$42D0): screen address high byte"
+  },
+  {
+   "address": 17760,
+   "type": "line",
+   "text": "logo_word_blocks column +2: width - 1 ($4258/$42D6)"
+  },
+  {
+   "address": 17761,
+   "type": "line",
+   "text": "logo_word_blocks column +3: height - 1 ($425D/$42DB)"
+  },
+  {
+   "address": 17762,
+   "type": "line",
+   "text": "logo_word_blocks column +4: offset into logo_word_screen/colour ($4262, $4270); logo_word_off does not read it"
+  },
+  {
+   "address": 17773,
+   "type": "line",
+   "text": "Music: per-voice vibrato position (three bytes, voices 0-2), a triangle between 0 and vib_limit stepped once a frame by the effects code ($4790-$47AB)"
+  },
+  {
+   "address": 17776,
+   "type": "line",
+   "text": "Music: per-voice vibrato width, bits 3-6 of the instrument's vibrato byte ($4782)"
+  },
+  {
+   "address": 17779,
+   "type": "line",
+   "text": "Music: per-voice vibrato direction, bit 7 set while vib_counter is falling"
+  },
+  {
+   "address": 17782,
+   "type": "line",
+   "text": "MUSIC INIT (JMP $50DA): stops CIA 2 timer A, clears the filter routing ($D417 = 0), installs the sample NMI (vector $5106, CIA 2 timer A NMIs enabled) and asks music_play to reset every voice on its next call ($4B17 = $40). There is one tune: no tune number is taken, the voice tracks are fixed at $4C1B/$4C1E and the sample track at $4A18. Called by title_main at $401F"
+  },
+  {
+   "address": 17785,
+   "type": "line",
+   "text": "MUSIC STOP (JMP $50EB): $4B17 = $C0, so the next music_play stops the sample timer, clears the three voices' control registers and leaves the driver idle ($80). Called by title_main at $402D when fire is pressed"
+  },
+  {
+   "address": 17788,
+   "type": "line",
+   "text": "MUSIC PLAY, once a frame from the raster interrupt (title_frame $4093). Writes the volume $D418 = $0A (the sample NMI overwrites it between frames), then acts on the state $4B17: $40 (from music_init) resets each voice's track position, pattern index, duration counter and control byte, and the sample channel's track position, pattern index and duration, writes 0 to each voice's $D404 and $D406 and sets instrument 7 (the transpose is not reset), leaving $4B17 = 7 (the loop's last value, bits 6-7 clear: play); $C0 (music_stop) stops CIA 2 timer A, writes 0 to the three control registers and sets $80; $80 does nothing but the sample-channel check at $495D; anything else plays a frame: tempo ($45D4), the voice loop from voice 2 down to voice 0 ($45EF), then the sample channel ($495D)"
+  },
+  {
+   "address": 17800,
+   "type": "side",
+   "text": "State $40: reset the three voices (X = $4B15 = 2 down to 0)"
+  },
+  {
+   "address": 17849,
+   "type": "side",
+   "text": "State $C0: stop, or $80: idle"
+  },
+  {
+   "address": 17876,
+   "type": "line",
+   "text": "Tempo: a 5-frame counter $4B14 and a tick counter $4B12/$4B13 (reload 1). A tick (reading notes) happens when $4B14 is not 0 and $4B12 equals its reload; $4B12 is not stepped on the frame $4B14 wraps. The result, simulated: ticks 2 and 3 frames apart in turn, 2.5 frames a tick, 20 ticks a second on PAL. Between ticks only the effects run"
+  },
+  {
+   "address": 17903,
+   "type": "line",
+   "text": "Voice loop, X = voice 2 down to 0: $4AF3 = the voice's SID register offset (0, 7, 14). On a tick, voice 0 also counts down the sample channel's duration $4A14 ($4611); a voice whose duration counter $4AFA goes below zero reads its next note ($461F), the others go to the release check ($4744); between ticks every voice goes to the effects ($4758)"
+  },
+  {
+   "address": 17951,
+   "type": "line",
+   "text": "Read the voice's track (pointer from voice_track_lo/hi into $02/$03) at position $4AF4: a byte below $80 is a pattern number; $FF restarts the track at position 0 (and clears the pattern index and duration); $80-$FE sets the transpose $4B4D = byte & $7F and reads on"
+  },
+  {
+   "address": 17987,
+   "type": "line",
+   "text": "Read a note from the pattern (pointer from pattern_lo/hi into $04/$05) at index $4AF7. Command byte: bits 0-4 duration in ticks minus one ($4AFA); bit 6 a rest (no further bytes: gate off, AD/SR and control 0, $46B7); bit 7 an instrument byte follows ($4B06), or, if that byte has bit 7 set, two bytes stored at $4B21/$4B1E, which nothing but the vibrato's skip test reads ($47AE): a portamento that this driver never performs; bit 5 keeps the gate on to the end (no release on the last tick, $474A). Then the note byte: bits 0-6 plus the transpose index freq_table into $4B1B/$4B18; bit 7 ties the note (no new envelope or pulse, $46DB)"
+  },
+  {
+   "address": 18103,
+   "type": "line",
+   "text": "Rest: gate mask $FE, AD and SR = 0 on the voice, control 0"
+  },
+  {
+   "address": 18120,
+   "type": "line",
+   "text": "Note start: control byte from the instrument (instr_a + 2) into $4B0F; unless tied, the instrument's pulse width (instr_a + 0/1) goes to $D402/$D403 and to the pulse program's start ($4B28/$4B2B and $4B2E/$4B31), AD and SR (instr_a + 3/4) to $D405/$D406, the effect timer $4B3D from instr_b + 3, and the pulse program, its counter and the note's age $4B40 restart at 0. Then the control byte is stored, the pattern index steps on, and a following $FF ends the pattern (index 0, next track position); straight to the register write at $493C"
+  },
+  {
+   "address": 18244,
+   "type": "line",
+   "text": "Tick without a new note: on the last tick of the note (duration 0) the gate mask becomes $FE, so the release starts, unless the command byte had bit 5 set"
+  },
+  {
+   "address": 18264,
+   "type": "line",
+   "text": "Effects, every frame for a voice that did not start a note: Y = instrument * 8 ($4B16); fx flags (instr_a + 7) into $4B24, pulse program number (instr_a + 6) into $4B11, vibrato delay (instr_b + 5) patched into the CMP at $4800, vibrato byte (instr_a + 5): zero skips the vibrato"
+  },
+  {
+   "address": 18300,
+   "type": "line",
+   "text": "Vibrato: width = bits 3-6, shift = bits 0-2 of the vibrato byte; vib_counter moves one step a frame between 0 and the width, turning at each end. Skipped while a portamento byte is set ($4B21)"
+  },
+  {
+   "address": 18358,
+   "type": "line",
+   "text": "Vibrato pitch: step = freq_table[note] - freq_table[note - 1] with the note's age $4B40 added to its high byte, shifted right shift + 1 times (the high byte one more time than the low); frequency = freq_table[note] - step * (width / 2) + step * vib_counter, written to $4B1B/$4B18 only once the age has reached the instrument's delay ($4800). As written, the depth grows with the note's age (wrapping at 256 frames)"
+  },
+  {
+   "address": 18433,
+   "type": "line",
+   "text": "Operand of the CMP # at $4800: the vibrato delay in frames, patched every frame from instr_b + 5 at $4771 ($F0 in the snapshot, left by the last instrument read)"
+  },
+  {
+   "address": 18468,
+   "type": "line",
+   "text": "Pulse program (instr_a + 6 = 1 or 2; 0 = none): pointer from pulse_prog_lo/hi. When the voice's counter $4B37 runs out, read the next entry at $4B34: a byte below $80 = frames - 1, then a signed step ($4B3A); $FE = stop (no more pulse writes); $FF = back to the start; $80-$FD = (frames - 1) | $80 with the pulse width reset to the note's starting value, then a step. Each frame the step is added to the 16-bit width $4B28/$4B2B, written to $D402/$D403"
+  },
+  {
+   "address": 18568,
+   "type": "line",
+   "text": "Operand of the ADC # at $4887: $00 or $FF, patched at $487A from the sign of the pulse step so that the high byte of the width takes the step's sign extension"
+  },
+  {
+   "address": 18582,
+   "type": "line",
+   "text": "Drum program, when the instrument's fx bit 0 is set and the note is not a rest: pointer instr_b + 0/1 (instrument 2: drum_prog_a, instrument 6: drum_prog_b), index $4B49 (0 at each note). An entry below $80 is a control value for $4B00 and a 16-bit amount subtracted from the voice's frequency; $85 holds (registers written, index kept); any other byte of $80 or more goes straight to $D404 with the next byte straight to $D401 (frequency high), and the voice's stored registers are not written that frame"
+  },
+  {
+   "address": 18680,
+   "type": "line",
+   "text": "fx bit 2: while the effect timer $4B3D lasts (decremented here) the control byte is instr_b + 1 (the attack waveform), then instr_a + 2"
+  },
+  {
+   "address": 18707,
+   "type": "line",
+   "text": "fx bit 6: while the effect timer lasts (decremented again here) the frequency is that of the note instr_b + 0 (a fixed attack pitch), then the note's own frequency is put back unless the instrument has a vibrato"
+  },
+  {
+   "address": 18748,
+   "type": "line",
+   "text": "Write the voice: $D404 = control AND gate mask, $D401/$D400 = frequency high/low"
+  },
+  {
+   "address": 18772,
+   "type": "line",
+   "text": "Age the note ($4B40 + 1), next voice"
+  },
+  {
+   "address": 18781,
+   "type": "line",
+   "text": "Sample channel, after the voices: $4A14 (duration in ticks, counted down by voice 0's tick at $4611) positive = keep playing; zero = stop CIA 2 timer A ($DD0E = 0), silence; negative = read the next sample event ($496B)"
+  },
+  {
+   "address": 18795,
+   "type": "line",
+   "text": "Read the sample track (pointer $4A18/$4A19 = sample_track) at $4A17: any byte of $80 or more restarts it at 0; otherwise a pattern number, read at index $4A16. Event: optional $80 + sample number (0-6, low nibble), a duration in ticks ($4A14, the whole byte), then a timer value lo/hi for CIA 2 timer A ($DD04/$DD05: the NMI period - 1 in cycles, which sets the pitch) or a single 0 (a rest: the timer stays stopped). For a new timer value the NMI's sample start and loop addresses are patched in from sample_start_lo/hi and sample_loop_lo/hi, the loop flag copied to $4A15, and timer A started continuous ($DD0E = $81). A following $FF ends the pattern"
+  },
+  {
+   "address": 18929,
+   "type": "line",
+   "text": "Sample table, seven entries (samples 0-6), read by the sample event at $49B8 to patch the NMI: start address low bytes. Starts: $1000, $13F8, $17E4, $1BF8, $1FF4, $23E0, $27E8"
+  },
+  {
+   "address": 18936,
+   "type": "line",
+   "text": "Sample start address high bytes (to $5112)"
+  },
+  {
+   "address": 18943,
+   "type": "line",
+   "text": "Sample loop address low bytes (to $511E): where the NMI goes on at the $1F end mark. Loops: $1100, $14F8, $18E4, $1CF8, $20F4, $24E0, $2FE8"
+  },
+  {
+   "address": 18950,
+   "type": "line",
+   "text": "Sample loop address high bytes (to $5123)"
+  },
+  {
+   "address": 18957,
+   "type": "line",
+   "text": "Loop flag per sample (to $4A15): 1 for all seven, so every sample repeats from its loop address until its duration ends and $495D stops the timer; with 0 the NMI would stop the timer itself at the end mark ($512A, never reached)"
+  },
+  {
+   "address": 18964,
+   "type": "line",
+   "text": "Sample channel: ticks left of the current event (from the event's duration byte, decremented on voice 0's tick at $4611; 0 stops the timer, below 0 reads the next event)"
+  },
+  {
+   "address": 18965,
+   "type": "line",
+   "text": "Sample channel: the playing sample's loop flag, read by the NMI at $5118"
+  },
+  {
+   "address": 18966,
+   "type": "line",
+   "text": "Sample channel: index into the current sample pattern"
+  },
+  {
+   "address": 18967,
+   "type": "line",
+   "text": "Sample channel: position in sample_track"
+  },
+  {
+   "address": 18968,
+   "type": "line",
+   "text": "Sample channel: pointer to its track, $4D60 (sample_track); a constant that nothing writes, read at $496E/$4973"
+  },
+  {
+   "address": 18969,
+   "type": "line",
+   "text": "High byte of smp_track_ptr ($4D)"
+  },
+  {
+   "address": 18970,
+   "type": "line",
+   "text": "Sample channel: number (0-6) of the sample set by the last event with bit 7, used for each new timer value"
+  },
+  {
+   "address": 18971,
+   "type": "line",
+   "text": "Seventeen bytes $4A1B-$4A2B that no code reads as such: they look like the tail of a 4-bit sample (nibbles near 8, two $1F end marks at $4A23 and $4A2B), left in the file. $4A2A/$4A2B are within reach of the vibrato's freq_table[note - 1] read ($47BF) only for note 0, which never has a vibrato"
+  },
+  {
+   "address": 18986,
+   "type": "line",
+   "text": "freq_table read one entry early: the vibrato's SBC $4A2A,Y / $4A2B,Y ($47BF, $47C7) takes freq_table[note - 1]; for note 0 these two bytes, part of the leftover above"
+  },
+  {
+   "address": 18987,
+   "type": "line",
+   "text": "High byte of freq_table[note - 1] (SBC $4A2B,Y at $47C7)"
+  },
+  {
+   "address": 18988,
+   "type": "line",
+   "text": "SID frequency table, 97 little-endian words indexed by note * 2 (notes 0-96): note 0 = $0000, note 1 = $0116 (C-0 on PAL, 16.35 Hz), each next word a semitone up to note 95 = $F820, then note 96 = $FD2E (the top of the range, not a semitone). The tune uses notes 26-81 after transposes; the attack note $5B (instrument 1) is the highest read"
+  },
+  {
+   "address": 18989,
+   "type": "line",
+   "text": "freq_table's high bytes as the code addresses them (LDA $4A2D,Y at $46AE, $47C4, $47E0, $4936)"
+  },
+  {
+   "address": 19182,
+   "type": "line",
+   "text": "Two zero bytes after freq_table; no note index reaches them"
+  },
+  {
+   "address": 19184,
+   "type": "line",
+   "text": "Music: Per-voice SID register offset: 0, 7, 14 (constant), copied to $4AF3 for each voice"
+  },
+  {
+   "address": 19187,
+   "type": "line",
+   "text": "Music: The SID register offset of the voice being processed"
+  },
+  {
+   "address": 19188,
+   "type": "line",
+   "text": "Music: Per-voice position in its track"
+  },
+  {
+   "address": 19191,
+   "type": "line",
+   "text": "Music: Per-voice index into its current pattern"
+  },
+  {
+   "address": 19194,
+   "type": "line",
+   "text": "Music: Per-voice ticks left of the current note (command byte bits 0-4); below 0 reads the next note"
+  },
+  {
+   "address": 19197,
+   "type": "line",
+   "text": "Music: Per-voice command byte of the current note (bit 5 no release, bit 6 rest), tested at $4747 and $4899"
+  },
+  {
+   "address": 19200,
+   "type": "line",
+   "text": "Music: Per-voice control-register value (waveform and gate) written to $D404 at $493C, ANDed with the gate mask"
+  },
+  {
+   "address": 19203,
+   "type": "line",
+   "text": "Music: Per-voice note number including the transpose, the index into freq_table"
+  },
+  {
+   "address": 19206,
+   "type": "line",
+   "text": "Music: Per-voice instrument number (0-7; 7 after a reset)"
+  },
+  {
+   "address": 19209,
+   "type": "line",
+   "text": "Music: Per-voice gate mask: $FF while the note sounds, $FE for its release (and for a rest)"
+  },
+  {
+   "address": 19212,
+   "type": "line",
+   "text": "Music: The command byte being read ($4668), tested with BIT for bits 6 and 7"
+  },
+  {
+   "address": 19213,
+   "type": "line",
+   "text": "Music: byte $4B0D between cmd_temp and saved_voice, not referenced by the driver"
+  },
+  {
+   "address": 19214,
+   "type": "line",
+   "text": "Music: The voice number X saved while X indexes the instrument tables ($46CE, $48A7)"
+  },
+  {
+   "address": 19215,
+   "type": "line",
+   "text": "Music: The new note's control byte from the instrument ($46D8), stored to voice_control at $472A"
+  },
+  {
+   "address": 19216,
+   "type": "line",
+   "text": "Music: Vibrato shift count (bits 0-2 of the vibrato byte), counted down at $47CE"
+  },
+  {
+   "address": 19217,
+   "type": "line",
+   "text": "Music: The voice's pulse program number from its instrument (0 = none, 1 or 2)"
+  },
+  {
+   "address": 19218,
+   "type": "line",
+   "text": "Music: Tempo: tick counter, reloaded from tick_reload when it runs out"
+  },
+  {
+   "address": 19219,
+   "type": "line",
+   "text": "Music: Tempo: tick counter reload, 1; nothing writes it"
+  },
+  {
+   "address": 19220,
+   "type": "line",
+   "text": "Music: Tempo: counts 4 down to 0 and wraps to 4 again; no notes are read on the frame it is 0, and tick_count is not stepped on the frame it wraps"
+  },
+  {
+   "address": 19221,
+   "type": "line",
+   "text": "Music: Number of voices minus one, 2 (constant): the loops run X = 2 down to 0"
+  },
+  {
+   "address": 19222,
+   "type": "line",
+   "text": "Music: Instrument number * 8, the Y index into instr_a/instr_b during the effects"
+  },
+  {
+   "address": 19223,
+   "type": "line",
+   "text": "Music: Driver state: $40 reset requested (music_init), $C0 stop requested (music_stop), $80 stopped, other values (7 after a reset) playing"
+  },
+  {
+   "address": 19224,
+   "type": "line",
+   "text": "Music: Per-voice frequency high byte (to $D401)"
+  },
+  {
+   "address": 19227,
+   "type": "line",
+   "text": "Music: Per-voice frequency low byte (to $D400)"
+  },
+  {
+   "address": 19230,
+   "type": "line",
+   "text": "Music: Per-voice second portamento byte (stored at $4688); nothing reads it"
+  },
+  {
+   "address": 19233,
+   "type": "line",
+   "text": "Music: Per-voice portamento byte (0 at each note, set at $4682); only its being non-zero is used, to skip the vibrato ($47AE)"
+  },
+  {
+   "address": 19236,
+   "type": "line",
+   "text": "Music: The instrument's effect flags (instr_a + 7): bit 0 drum program, bit 2 attack waveform, bit 6 attack pitch"
+  },
+  {
+   "address": 19237,
+   "type": "line",
+   "text": "Music: byte $4B25 between fx_flags and note_temp, not referenced"
+  },
+  {
+   "address": 19238,
+   "type": "line",
+   "text": "Music: The note byte being read; bit 7 = tie (keep envelope and pulse)"
+  },
+  {
+   "address": 19239,
+   "type": "line",
+   "text": "Music: byte $4B27 after note_temp, not referenced"
+  },
+  {
+   "address": 19240,
+   "type": "line",
+   "text": "Music: Per-voice pulse width low byte, stepped by the pulse program"
+  },
+  {
+   "address": 19243,
+   "type": "line",
+   "text": "Music: Per-voice pulse width high byte"
+  },
+  {
+   "address": 19246,
+   "type": "line",
+   "text": "Music: Per-voice pulse width at note start (low), restored by a pulse-program entry of $80 or more"
+  },
+  {
+   "address": 19249,
+   "type": "line",
+   "text": "Music: Per-voice pulse width at note start (high)"
+  },
+  {
+   "address": 19252,
+   "type": "line",
+   "text": "Music: Per-voice index into its pulse program"
+  },
+  {
+   "address": 19255,
+   "type": "line",
+   "text": "Music: Per-voice frames left of the current pulse-program entry"
+  },
+  {
+   "address": 19258,
+   "type": "line",
+   "text": "Music: Per-voice signed pulse-width step per frame"
+  },
+  {
+   "address": 19261,
+   "type": "line",
+   "text": "Music: Per-voice effect timer, loaded from instr_b + 3 at note start; the attack-waveform and attack-pitch effects each count it down"
+  },
+  {
+   "address": 19264,
+   "type": "line",
+   "text": "Music: Per-voice frames since the note started (incremented every frame at $4954, wraps at 256); compared with the vibrato delay and added into the vibrato step"
+  },
+  {
+   "address": 19267,
+   "type": "line",
+   "text": "Music: three bytes $4B43-$4B45, a per-voice slot between voice_age and voice_flag_4b46 that no instruction addresses"
+  },
+  {
+   "address": 19270,
+   "type": "line",
+   "text": "Music: Per-voice byte set to $80 at each note ($4658) and never read"
+  },
+  {
+   "address": 19273,
+   "type": "line",
+   "text": "Music: Per-voice index into its drum program, 0 at each note"
+  },
+  {
+   "address": 19276,
+   "type": "line",
+   "text": "Music: byte $4B4C after voice_drum_index, not referenced"
+  },
+  {
+   "address": 19277,
+   "type": "line",
+   "text": "Music: Per-voice transpose in semitones, set by track bytes $80-$FE (the tune uses 0 and 2)"
+  },
+  {
+   "address": 19280,
+   "type": "line",
+   "text": "Music: three bytes $4B50-$4B52 after voice_transpose, a per-voice slot no instruction addresses"
+  },
+  {
+   "address": 19283,
+   "type": "line",
+   "text": "Pulse program pointers, low bytes for programs 1 and 2 (read as $4B53 + number - 1 at $482B)"
+  },
+  {
+   "address": 19285,
+   "type": "line",
+   "text": "Pulse program pointers, high bytes: program 1 $4B57, program 2 $4B5E"
+  },
+  {
+   "address": 19287,
+   "type": "line",
+   "text": "Pulse program 1 (instruments 0, 3, 4, 5): entries of (frames - 1, step): 5 frames +$08, 21 frames +$10, 13 frames -$10, then $FF: repeat"
+  },
+  {
+   "address": 19294,
+   "type": "line",
+   "text": "Pulse program 2 (instrument 1): 16 frames +$28, then $FF: repeat"
+  },
+  {
+   "address": 19297,
+   "type": "line",
+   "text": "Fifteen bytes $4B61-$4B6F no pointer reaches ($05 $08 $03 $08 $05 $09 $04 $09 $05 $00 $00 $FA $00 $1F $0D); they read like a leftover pulse or drum program"
+  },
+  {
+   "address": 19309,
+   "type": "line",
+   "text": "Music: per-voice copy of the frequency high byte made at note start ($4721); nothing reads it"
+  },
+  {
+   "address": 19312,
+   "type": "line",
+   "text": "Drum program of instrument 2 (pointer instr_b + 0/1 = $4B70): $81 $30 (noise, frequency high $30, direct), $41 -$0200, $41 -$03C0 (pulse, falling pitch), then $80 with frequency high $F0, $F5, $40, $10, $20, $20, $10, $20 (noise, gate off: the tail), $85 hold"
+  },
+  {
+   "address": 19337,
+   "type": "line",
+   "text": "Drum program of instrument 6 (pointer instr_b + 0/1 = $4B89): $81 $20 (noise, frequency high $20, direct), $41 -$0280, $41 -$0440 (pulse, falling pitch), $80 with frequency high $30, $15, $20 (noise, gate off), $00 -$8010 (control 0, silent), $85 hold"
+  },
+  {
+   "address": 19355,
+   "type": "line",
+   "text": "Instrument table A, eight instruments of eight bytes (Y = instrument * 8): +0/+1 pulse width lo/hi, +2 control byte, +3 AD, +4 SR, +5 vibrato, +6 pulse program, +7 effect flags. 0: 00 0C 41 0A D8 00 01 44; 1: 00 02 41 08 D9 00 02 44; 2: 00 08 11 09 F9 00 00 01; 3: 00 04 41 0A D9 24 01 00; 4: 80 0C 41 0A D9 24 01 00; 5: 80 08 41 0A CA 25 01 00; 6: 00 08 11 08 E7 00 00 01; 7: 80 00 00 00 00 00 00 00. Instrument 7 is all zero except its first byte: the silent instrument a reset selects"
+  },
+  {
+   "address": 19356,
+   "type": "line",
+   "text": "instr_a column +1 as the code addresses it: pulse width high (to $D403)"
+  },
+  {
+   "address": 19357,
+   "type": "line",
+   "text": "instr_a column +2 as the code addresses it: control byte: waveform and gate"
+  },
+  {
+   "address": 19358,
+   "type": "line",
+   "text": "instr_a column +3 as the code addresses it: attack/decay (to $D405)"
+  },
+  {
+   "address": 19359,
+   "type": "line",
+   "text": "instr_a column +4 as the code addresses it: sustain/release (to $D406)"
+  },
+  {
+   "address": 19360,
+   "type": "line",
+   "text": "instr_a column +5 as the code addresses it: vibrato: bits 3-6 width, bits 0-2 shift, 0 = none"
+  },
+  {
+   "address": 19361,
+   "type": "line",
+   "text": "instr_a column +6 as the code addresses it: pulse program number (0 = none)"
+  },
+  {
+   "address": 19362,
+   "type": "line",
+   "text": "instr_a column +7 as the code addresses it: effect flags: bit 0 drum program, bit 2 attack waveform, bit 6 attack pitch"
+  },
+  {
+   "address": 19419,
+   "type": "line",
+   "text": "Instrument table B, eight more bytes per instrument: +0/+1 the drum program pointer (fx bit 0: instruments 2 and 6) or, with fx bit 6, +0 the attack note; +1 the attack waveform (fx bit 2); +3 the effect timer in frames; +5 the vibrato delay in frames; +2, +4, +6, +7 are not read. 0: 3C 81 81 02 40 F0 F4 F8; 1: 5B 11 41 02 3C FD F4 FC; 2: 70 4B 41 01 40 FD 00 00; 3: 00 81 81 01 03 01 F0 F4; 4: 00 81 81 02 08 08 F1 F3; 5: 01 81 81 02 40 10 F1 F3; 6: 89 4B 41 01 40 FD 00 00; 7: 02 81 81 02 40 F0 F1 F3"
+  },
+  {
+   "address": 19420,
+   "type": "line",
+   "text": "instr_b column +1: the attack waveform (fx bit 2), or the drum pointer's high byte"
+  },
+  {
+   "address": 19422,
+   "type": "line",
+   "text": "instr_b column +3: effect timer, frames (pushed at $46EE, stored in voice_fx_timer)"
+  },
+  {
+   "address": 19424,
+   "type": "line",
+   "text": "instr_b column +5: vibrato delay, frames (patched into $4801 at $4771): instruments 3, 4, 5 have $01, $08, $10"
+  },
+  {
+   "address": 19483,
+   "type": "line",
+   "text": "Track pointers of voices 0, 1, 2, low bytes: $4C61, $4CBE, $4D5E (the one tune)"
+  },
+  {
+   "address": 19486,
+   "type": "line",
+   "text": "Track pointers, high bytes"
+  },
+  {
+   "address": 19489,
+   "type": "line",
+   "text": "Pattern pointers, low bytes, patterns $00-$1F (32 entries), shared by the voices and the sample channel"
+  },
+  {
+   "address": 19521,
+   "type": "line",
+   "text": "Pattern pointers, high bytes"
+  },
+  {
+   "address": 19553,
+   "type": "line",
+   "text": "Track of voice 0, 93 bytes to the $FF at $4CBD: T+0 00 00 00 00 00 00 00 00 04 06 08 04 04 06 08 04 0C 0C 0C 0C 0C 0C 0C 0E 0C 0C 0C 0C 0C 0C 0C 0F 04 06 08 04 04 06 08 04 00 00 00 00 18 18 18 19 0F T+0 1B 1E 1B 1E T+2 1B 1E 1B 0F T+0 1B 1E 1B 1E T+2 1B 1E 1B 0F T+0 18 18 18 19 0F 0C 0C 0C 0C 0C 0C 0C 0E 0C 0C 0C 0C 0C 0C 0C 0F. 4864 ticks = 12160 frames (243.2 s on PAL) before it repeats."
+  },
+  {
+   "address": 19646,
+   "type": "line",
+   "text": "Track of voice 1, 160 bytes to the $FF at $4D5D: T+0 02 02 02 02 05 05 05 05 07 07 07 07 02 02 02 02 02 02 05 05 07 07 02 02 02 02 05 05 07 07 02 02 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 02 02 05 05 07 07 02 02 02 02 05 05 07 07 02 02 02 02 02 02 02 02 02 02 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 T+0 14 14 14 14 14 14 14 14 T+2 14 14 14 14 14 14 14 T+0 14 T+0 14 14 14 14 14 14 14 14 T+2 14 14 14 14 14 14 14 T+0 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 14 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D 0D. 4864 ticks = 12160 frames (243.2 s on PAL) before it repeats."
+  },
+  {
+   "address": 19806,
+   "type": "line",
+   "text": "Track of voice 2, 2 bytes to the $FF at $4D5F: 03. 64 ticks = 160 frames (3.2 s on PAL) before it repeats. Voice 2 is the drum part: pattern $03 (instruments 2 and 6, the drum programs) over and over."
+  },
+  {
+   "address": 19808,
+   "type": "line",
+   "text": "Track of the sample channel, 40 bytes to the $FF at $4D87: 10 12 10 01 01 09 0A 09 0B 01 01 10 10 15 16 15 17 13 1A 1A 1C 1D 1C 13 1A 1A 1C 1D 1C 1F 15 16 15 17 13 09 0A 09 0B. 4864 ticks = 12160 frames (243.2 s on PAL) before it repeats. Read with the sample-event format ($496B)."
+  },
+  {
+   "address": 19848,
+   "type": "line",
+   "text": "Seventy-three bytes $4D88-$4DD0 that no pointer reaches: three track-like runs ending in $FF ($80 1B 1E 1B 1E 82 1B 1E 1B 0F 80 ... FF; $80 14 14 ... 80 14 FF; 1A 1A 1C 1D 1C 13 1A 1A 1C 1D 1C 1F FF), copies of stretches of track_v0, track_v1 and sample_track: leftovers of an earlier arrangement"
+  },
+  {
+   "address": 19921,
+   "type": "line",
+   "text": "Pattern $00 (voice 0), $4DD1-$4DD3, 64 ticks, instruments as set before: two 32-tick rests, the silence voice 0 opens with (eight times, 512 ticks)"
+  },
+  {
+   "address": 19924,
+   "type": "line",
+   "text": "Sample pattern $1A (sample channel), $4DD4-$4DFC, 128 ticks: samples 0, 4, 5 at timer values $AD, $E6, $0102 (NMI rates 5662, 4265, 3804 Hz)"
+  },
+  {
+   "address": 19965,
+   "type": "line",
+   "text": "Sample pattern $1C (sample channel), $4DFD-$4E18, 96 ticks: samples 0, 2, 3, 5 at timer values $9A, $AD (NMI rates 6356, 5662 Hz)"
+  },
+  {
+   "address": 19993,
+   "type": "line",
+   "text": "Sample pattern $1D (sample channel), $4E19-$4E27, 32 ticks: samples 3, 5 at timer values $9A, $AD (NMI rates 6356, 5662 Hz)"
+  },
+  {
+   "address": 20008,
+   "type": "line",
+   "text": "Pattern $1B (voice 0), $4E28-$4E5D, 96 ticks, instrument 0"
+  },
+  {
+   "address": 20062,
+   "type": "line",
+   "text": "Pattern $1E (voice 0), $4E5E-$4E6E, 32 ticks, instruments as set before"
+  },
+  {
+   "address": 20079,
+   "type": "line",
+   "text": "Pattern $18 (voice 0), $4E6F-$4E83, 128 ticks, instrument 3"
+  },
+  {
+   "address": 20100,
+   "type": "line",
+   "text": "Pattern $19 (voice 0), $4E84-$4E8F, 96 ticks, instruments as set before"
+  },
+  {
+   "address": 20112,
+   "type": "line",
+   "text": "Sample pattern $01 (sample channel), $4E90-$4ECC, 256 ticks: samples 0, 1, 2, 3, 5 at timer values $9A, $AD (NMI rates 6356, 5662 Hz)"
+  },
+  {
+   "address": 20173,
+   "type": "line",
+   "text": "Sample pattern $09 (sample channel), $4ECD-$4EEA, 192 ticks: samples 3, 5 at timer values $9A, $AD (NMI rates 6356, 5662 Hz)"
+  },
+  {
+   "address": 20203,
+   "type": "line",
+   "text": "Sample pattern $0A (sample channel), $4EEB-$4EF1, 64 ticks: sample 3 at timer value $AD (NMI rate 5662 Hz)"
+  },
+  {
+   "address": 20210,
+   "type": "line",
+   "text": "Sample pattern $0B (sample channel), $4EF2-$4F02, 64 ticks: samples 0, 3, 5 at timer values $91, $AD (NMI rates 6748, 5662 Hz)"
+  },
+  {
+   "address": 20214,
+   "type": "line",
+   "text": "Sample pattern $13 (sample channel), $4EF6-$4F02, 32 ticks: samples 0, 3, 5 at timer values $91, $AD (NMI rates 6748, 5662 Hz); it is the last 13 bytes of pattern $0B (which starts four bytes earlier at $4EF2)"
+  },
+  {
+   "address": 20227,
+   "type": "line",
+   "text": "Pattern $11 ($80 $3F $00 $FF in the sample-event format: sample 0, 64 ticks of rest), named by pattern_lo/hi but in no track: unused"
+  },
+  {
+   "address": 20231,
+   "type": "line",
+   "text": "Sample pattern $10 (sample channel), $4F07-$4F13, 128 ticks: sample 6 at timer values $0196, $01C8 (NMI rates 2421, 2156 Hz)"
+  },
+  {
+   "address": 20244,
+   "type": "line",
+   "text": "Sample pattern $12 (sample channel), $4F14-$4F2D, 256 ticks: samples as set before at timer values $E4, $0130, $0156, $016A, $0196 (NMI rates 4302, 3230, 2872, 2714, 2421 Hz)"
+  },
+  {
+   "address": 20270,
+   "type": "line",
+   "text": "Pattern $02 (voice 1), $4F2E-$4F4F, 32 ticks, instrument 1"
+  },
+  {
+   "address": 20304,
+   "type": "line",
+   "text": "Pattern $05 (voice 1), $4F50-$4F71, 32 ticks, instrument 1"
+  },
+  {
+   "address": 20338,
+   "type": "line",
+   "text": "Pattern $07 (voice 1), $4F72-$4F92, 32 ticks, instruments as set before"
+  },
+  {
+   "address": 20371,
+   "type": "line",
+   "text": "Pattern $0D (voice 1), $4F93-$4FB4, 32 ticks, instrument 1"
+  },
+  {
+   "address": 20405,
+   "type": "line",
+   "text": "Pattern $14 (voice 1), $4FB5-$4FD6, 32 ticks, instrument 1"
+  },
+  {
+   "address": 20439,
+   "type": "line",
+   "text": "Sample pattern $15 (sample channel), $4FD7-$4FE6, 128 ticks: sample 6 at timer values $FF, $010F (NMI rates 3849, 3622 Hz)"
+  },
+  {
+   "address": 20455,
+   "type": "line",
+   "text": "Sample pattern $16 (sample channel), $4FE7-$4FF6, 128 ticks: sample 6 at timer values $CB, $E4 (NMI rates 4830, 4302 Hz)"
+  },
+  {
+   "address": 20471,
+   "type": "line",
+   "text": "Sample pattern $17 (sample channel), $4FF7-$5000, 96 ticks: samples as set before at timer value $0130 (NMI rate 3230 Hz)"
+  },
+  {
+   "address": 20481,
+   "type": "line",
+   "text": "Sample pattern $1F (sample channel), $5001-$500B, 32 ticks: sample 6 at timer values $AB, $E4, $FF (NMI rates 5728, 4302, 3849 Hz)"
+  },
+  {
+   "address": 20492,
+   "type": "line",
+   "text": "Pattern $03 (voice 2), $500C-$5032, 64 ticks, instruments 2, 6"
+  },
+  {
+   "address": 20531,
+   "type": "line",
+   "text": "Pattern $04 (voice 0), $5033-$505C, 64 ticks, instrument 0"
+  },
+  {
+   "address": 20573,
+   "type": "line",
+   "text": "Pattern $0C (voice 0), $505D-$506E, 32 ticks, instrument 0"
+  },
+  {
+   "address": 20591,
+   "type": "line",
+   "text": "Pattern $0E (voice 0), $506F-$507F, 32 ticks, instruments as set before"
+  },
+  {
+   "address": 20608,
+   "type": "line",
+   "text": "Pattern $0F (voice 0), $5080-$508F, 32 ticks, instrument 0"
+  },
+  {
+   "address": 20624,
+   "type": "line",
+   "text": "Pattern $08 (voice 0), $5090-$50B4, 64 ticks, instruments as set before"
+  },
+  {
+   "address": 20661,
+   "type": "line",
+   "text": "Pattern $06 (voice 0), $50B5-$50D9, 64 ticks, instruments as set before"
+  },
+  {
+   "address": 20698,
+   "type": "line",
+   "text": "music_init's body: $DD0E = 0 (CIA 2 timer A stopped), $D417 = 0 (no voice through the filter, resonance 0), install_sample_nmi, then music_state = $40 so that the next music_play resets the voices"
+  },
+  {
+   "address": 20715,
+   "type": "line",
+   "text": "music_stop's body: music_state = $C0"
+  },
+  {
+   "address": 20721,
+   "type": "line",
+   "text": "SEI, NMI vector $FFFA/$FFFB = sample_nmi ($5106), CIA 2 interrupt mask $DD0D = $81 (timer A underflows raise NMIs), $DD0D read to clear anything pending, CLI. The timer itself is started by each sample event ($49D6)"
+  },
+  {
+   "address": 20742,
+   "type": "line",
+   "text": "SAMPLE PLAYER, the NMI of CIA 2 timer A (one per timer period, $91-$1C8 + 1 cycles: 2.2-6.8 kHz). A is saved into the operand at $514F. Each sample byte holds two 4-bit values, played high nibble first: the parity of $06 (incremented each NMI) picks the nibble, and the low-nibble NMI steps the pointer (the operand of LDA at $5110, patched by the sample event). The value goes to $D418, the SID's volume register: the 4-bit sample replaces the volume each time, which the chip turns into an audible level (the classic volume-register sample; filter-mode bits are left 0). A byte $1F is the end mark, tested before either nibble: with the loop flag set the pointer is reloaded from the loop address (operands at $511E/$5123), otherwise the timer is stopped. $DD0D is read to acknowledge, A restored, RTI. X and Y are not touched. Simulated: 176098 $D418 writes in 3000 frames of the title"
+  },
+  {
+   "address": 20752,
+   "type": "side",
+   "text": "LDA sample byte; its address is the sample pointer"
+  },
+  {
+   "address": 20753,
+   "type": "line",
+   "text": "Operand of the LDA at $5110, low byte: the sample pointer, patched with the start address at $49BB, stepped at $5140 and set to the loop address at $511F"
+  },
+  {
+   "address": 20754,
+   "type": "line",
+   "text": "Operand of the LDA at $5110, high byte (patched at $49C7, stepped at $5145, set at $5124)"
+  },
+  {
+   "address": 20766,
+   "type": "line",
+   "text": "Operand of the LDA # at $511D: the loop address low byte, patched at $49C1 from sample_loop_lo"
+  },
+  {
+   "address": 20771,
+   "type": "line",
+   "text": "Operand of the LDA # at $5122: the loop address high byte, patched at $49CD from sample_loop_hi"
+  },
+  {
+   "address": 20815,
+   "type": "line",
+   "text": "Operand of the LDA # at $514E: A as the NMI found it, stored at $5106 and reloaded just before the RTI"
+  },
+  {
+   "address": 20817,
+   "type": "line",
+   "text": "LDA #$00 / INC $D020 / RTI: an interrupt handler that flashes the border, which nothing points a vector at and nothing calls (no reference to $5151 in the program); a debugging leftover"
+  },
+  {
+   "address": 32768,
+   "type": "line",
+   "text": "The title's screen matrix (VIC bank 2, $D018 = $08), 40 x 25 cells: in multicolour bitmap mode each byte's high nibble is the colour of %01 pixels and its low nibble of %10 pixels in that 4 x 8 cell. Copied from the unpacked picture ($3328) by load_title_picture; title_frame changes the strip on row 0 and the logo words, so the pristine copy is at $8800"
+  },
+  {
+   "address": 32780,
+   "type": "line",
+   "text": "Cells 12-26 of row 0, the 'ELECTRONIC ARTS' strip that title_frame rewrites ($40AB, always $60)"
+  },
+  {
+   "address": 33792,
+   "type": "line",
+   "text": "Colour-RAM nibbles of the picture (the colour of %11 pixels, one per cell, low nibble), 1000 bytes from the unpacked picture ($2F40): copied to $D800 by show_title_picture and again at the exit, and the source logo_word_off restores from"
+  },
+  {
+   "address": 34816,
+   "type": "line",
+   "text": "Pristine copy of the screen matrix, 1000 bytes copied from $8000 by load_title_picture before any animation: logo_word_off and the exit restore from it. With picture_colour, title_bitmap and the black background ($D021 = 0) it draws the picture as the unpacker left it"
+  },
+  {
+   "address": 40960,
+   "type": "line",
+   "text": "Multicolour bitmap of the title picture (8000 bytes, $A000-$BF3F, VIC bank 2 with $D018 bit 3 set): 8 bytes per 4 x 8 cell, cells in screen order, two bits per pixel (%00 background, %01 screen high nibble, %10 screen low nibble, %11 colour RAM). Unpacked from file $01 by rle_unpack and copied here by load_title_picture (simulated: equal to the snapshot). This part: cells 0-127"
+  },
+  {
+   "address": 41984,
+   "type": "line",
+   "text": "Title bitmap continued: cells 128-255 (character rows 3-6)"
+  },
+  {
+   "address": 43008,
+   "type": "line",
+   "text": "Title bitmap continued: cells 256-383 (character rows 6-9). The disassembler's symbol here came from the sample NMI's LDA operand in an earlier snapshot ($A800 before the samples were loaded); the NMI never reads the bitmap"
+  },
+  {
+   "address": 44032,
+   "type": "line",
+   "text": "Title bitmap continued: cells 384-511 (character rows 9-12)"
+  },
+  {
+   "address": 45056,
+   "type": "line",
+   "text": "Title bitmap continued: cells 512-639 (character rows 12-15)"
+  },
+  {
+   "address": 46080,
+   "type": "line",
+   "text": "Title bitmap continued: cells 640-767 (character rows 16-19)"
+  },
+  {
+   "address": 47104,
+   "type": "line",
+   "text": "Title bitmap continued: cells 768-895 (character rows 19-22)"
+  },
+  {
+   "address": 48128,
+   "type": "line",
+   "text": "Title bitmap continued: cells 896-999 (character rows 22-24)"
+  },
+  {
+   "address": 62000,
+   "type": "line",
+   "text": "RESIDENT LOADER, load entry (JMP $F236). Call with A = file number ($00-$30, file_table $F2F9) and X/Y = load address (lo/hi). Returns carry clear and X/Y = the end address (one past the last byte), or carry set on a drive error. The title calls it three times: $4166 (file $01, the packed picture, to $A000; the end it returns bounds the unpacker), $420C (file $02, the 4-bit samples, to $1000) and $4079 (file $03, the shop, to $0880). Uses zero page $90-$95 and $E0-$FB"
+  },
+  {
+   "address": 62003,
+   "type": "line",
+   "text": "Second loader entry (JMP $F26A): write a file's sectors to disk, same A and X/Y as load_file. Nothing in this snapshot calls it"
+  },
+  {
+   "address": 62006,
+   "type": "line",
+   "text": "load_file proper: load_setup (also sends the disk ID), then per sector: end pointer to $F1/$F2 (set_end_ptr), destination page to $EF/$F0 (set_dest_ptr), read_sector_cmd with track $94 and sector $95, wait_transfer for the 256 bytes, next_sector; the page $91 goes up by one each time until $90/$91 reaches the end $92/$93. Only the bytes before the end are stored (the drive still sends whole sectors)"
+  },
+  {
+   "address": 62058,
+   "type": "line",
+   "text": "save_file proper: the same sector walk as load_file_body, but each sector goes out through write_sector ($F43A) from the pages at X/Y. No caller in this snapshot"
+  },
+  {
+   "address": 62101,
+   "type": "line",
+   "text": "Set up a file transfer: $90/$91 = X/Y (start), $92/$93 = start + length from file_table, $94 = start track, $95 = start sector (made physical by logical_to_physical when the track's interleave is 11). Then sends drive command $0B with $45 $41 (set_disk_id_cmd), which tells the drive to expect disk ID \"EA\"; a disk with another ID fails its reads"
+  },
+  {
+   "address": 62150,
+   "type": "line",
+   "text": "Advance $94/$95 to the next sector of a file: sector = (sector + track_interleave[track]) mod sectors_per_track[track]; when that comes back to 0 every sector of the track has been used and the walk moves to the next track at sector 0, stepping over track 18 (the directory track)"
+  },
+  {
+   "address": 62180,
+   "type": "line",
+   "text": "A = file_table start index; returns A = index*11 mod the sector count of track Y, the physical sector that is the index-th in the interleave-11 sequence (0, 11, 1, 12, ... on a 21-sector track)"
+  },
+  {
+   "address": 62201,
+   "type": "line",
+   "text": "Resident loader file table, 4 bytes per file, files $00-$30 (49 entries): +0 start track, +1 start sector as an index into that track's interleave sequence (converted to a physical sector at $F2E4), +2/+3 length in bytes (lo/hi). Files $00-$1A are on side 1, $1B-$30 on side 2 (both start again at track 3). Read by load_setup ($F295). Checked: files $0B, $0C, $0E, $0F, $11 and $12 read from side1.g64 with this table equal the snapshot, apart from the bytes of $0B the game writes at run time"
+  },
+  {
+   "address": 62202,
+   "type": "line",
+   "text": "file_table +1 column: start sector index of each file (the auto symbol of the indexed read at $F2B4)"
+  },
+  {
+   "address": 62203,
+   "type": "line",
+   "text": "file_table +2 column: file length low byte, added to the load address X to make the end pointer $92 ($F29C)"
+  },
+  {
+   "address": 62204,
+   "type": "line",
+   "text": "file_table rows from +3 of file $00 to file $0F: length high byte added to Y for $93 ($F2A3). Rows the title uses: file $00 (track 3, $11FF bytes) is the title itself, loaded by the boot to $4000; $01 (track 4, $117F bytes) the packed title picture; $02 (track 5, $20F0 bytes) the samples; $03 (track 6, $1E80 bytes) the shop. File $0B (track 12) is the resident event manager loaded at $F730 by a later stage; file $0C (track 18 sector 18, 3 bytes) is the disk-side ID"
+  },
+  {
+   "address": 62265,
+   "type": "line",
+   "text": "file_table rows for files $10-$1F: $10 (track 17, $17D9 bytes), $11 (track 19, $1284 bytes), $12 (track 20, $402C bytes); $13-$1A are other side-1 files; $1B (side 2, track 3, $3780 bytes) is the file event 3 (DOWNHILL) loads. The title loads none of them"
+  },
+  {
+   "address": 62329,
+   "type": "line",
+   "text": "file_table rows for files $20-$2F, all on side 2 ($28, track 14, $378D bytes, is the file event 4 (JAM) loads)"
+  },
+  {
+   "address": 62393,
+   "type": "line",
+   "text": "file_table row for file $30 (side 2, track 25 index 14, $09A2 bytes), the last entry; the sectors-per-track table follows"
+  },
+  {
+   "address": 62397,
+   "type": "line",
+   "text": "Sectors per track, indexed by track 0-35 (entry 0 unused): 21 for tracks 1-17, 19 for 18-24, 18 for 25-30, 17 for 31-35. Read by next_sector ($F2CE) and logical_to_physical ($F2ED)"
+  },
+  {
+   "address": 62433,
+   "type": "line",
+   "text": "Sector step per track, indexed by track 0-35: 1 on tracks 1-3, 18 and 35, 11 on all others. next_sector adds it modulo the track's sector count; load_setup multiplies the start index by 11 when it is 11 or more ($F2B2)"
+  },
+  {
+   "address": 62469,
+   "type": "line",
+   "text": "Loader transfer state: 0 = idle or finished, $80 = failed (set with carry at $F648), any other value = a sector transfer is pending (set at $F54A to the destination page high nibble, or $10; only zero, negative and positive are ever tested). Written $F4C2/$F54A/$F4AB/$F650, read by wait_transfer ($F553) and bg_receive ($F57E)"
+  },
+  {
+   "address": 62470,
+   "type": "line",
+   "text": "Bytes per call for bg_receive ($F57E) plus one: $14, copied to the countdown $F9 there. Read only at $F58A"
+  },
+  {
+   "address": 62471,
+   "type": "line",
+   "text": "Status byte returned by drive command $0C, stored by drive_query_status ($F4A5); nothing in this snapshot reads it"
+  },
+  {
+   "address": 62472,
+   "type": "line",
+   "text": "Three bytes ($C0 $F3 $CF) that nothing in this snapshot reads by name; reachable only by an out-of-range track index into track_interleave"
+  },
+  {
+   "address": 62475,
+   "type": "line",
+   "text": "Store X/Y as the receive pointer $EF/$F0 (absolute addressing of zero page) for the next transfer"
+  },
+  {
+   "address": 62482,
+   "type": "line",
+   "text": "Store X/Y as the end pointer $F1/$F2: receive_bytes stops storing when $EF/$F0 reaches it"
+  },
+  {
+   "address": 62489,
+   "type": "line",
+   "text": "Send command $80 (bit 7 set): the drive code takes any such command as JMP ($FFFC), a reset of the drive back to its own DOS. No caller in this snapshot"
+  },
+  {
+   "address": 62497,
+   "type": "line",
+   "text": "Ask the drive for one sector: command 1 with track Y and sector X, raw mode ($E8=1: every byte stored, no link bytes followed), clears the byte count $F7 and the end flag $E0. Through send_drive_command"
+  },
+  {
+   "address": 62522,
+   "type": "line",
+   "text": "Write one sector: command 5 (on the drive, resets its buffer index), 128 commands 3 each carrying two bytes read from ($EF/$F0), then command 4 with track Y and sector X (patched into $F47C/$F477), which writes the drive's buffer to disk, then wait for the drive's one-byte reply. No caller in this snapshot"
+  },
+  {
+   "address": 62583,
+   "type": "line",
+   "text": "Operand of an LDA # in write_sector: the sector for the final command 4, patched from X at $F43A"
+  },
+  {
+   "address": 62588,
+   "type": "line",
+   "text": "Operand of the second LDA #: the track for command 4, patched from Y at $F43D"
+  },
+  {
+   "address": 62601,
+   "type": "line",
+   "text": "Send command $0B with track byte Y and sector byte X; the drive code stores them as the expected disk ID (drive zero page $12/$13). load_setup sends $45 $41, \"EA\""
+  },
+  {
+   "address": 62615,
+   "type": "line",
+   "text": "Send command $0C and receive the one byte it answers (the drive's last job status) into drive_status_byte $F407. No caller in this snapshot"
+  },
+  {
+   "address": 62633,
+   "type": "line",
+   "text": "Mark a reply pending (xfer_state = $10) and fall into wait_transfer"
+  },
+  {
+   "address": 62643,
+   "type": "line",
+   "text": "Operand of the LDX # at $F4B2: send_drive_command's caller X, patched at $F4B7 and handed back on both exits ($10 in the title's snapshot: the sector of the last read)"
+  },
+  {
+   "address": 62645,
+   "type": "line",
+   "text": "Operand of the LDY # at $F4B4: the caller's Y, patched at $F4BA ($06 in the title's snapshot: track 6, the last read's track)"
+  },
+  {
+   "address": 62647,
+   "type": "line",
+   "text": "Send the 3-byte command in $E5 (command), $E6 (track byte), $E7 (sector byte) to the drive code on the serial bus, keeping X/Y (saved into $F4B3/$F4B5, returned by the exit at $F4B2, entered at $F4B1 with carry set on failure). It raises CIA 2 port A bit 3 ($DD00), fails with carry set if bit 7 is already high or bit 6 does not go low then high within 255 polls, drops bit 3, then clocks out 24 bits most significant first: each bit on $DD00 bit 4, strobed by pulsing bit 5. For commands below 3 it marks a reply pending in xfer_state ($F54A). Returns carry clear when the command was taken"
+  },
+  {
+   "address": 62801,
+   "type": "line",
+   "text": "wait_transfer's saved Y (written $F55B, restored $F579)"
+  },
+  {
+   "address": 62802,
+   "type": "line",
+   "text": "wait_transfer's saved X (written $F55E, restored $F576)"
+  },
+  {
+   "address": 62803,
+   "type": "line",
+   "text": "Wait until a pending reply has been received: if xfer_state is non-zero and positive, call receive_bytes until it is 0 (done) or $80 (failed, carry set). Sets the busy flag $F8 so that bg_receive does not run meanwhile; keeps X/Y ($F551/$F552)"
+  },
+  {
+   "address": 62846,
+   "type": "line",
+   "text": "Background receive: if no wait_transfer is running ($F8 = 0) and a reply is pending, take up to 19 bytes (count from bg_slice_bytes) and return, so a load can be spread over interrupts. No caller in this snapshot"
+  },
+  {
+   "address": 62872,
+   "type": "line",
+   "text": "Receive reply bytes from the drive while the countdown $F9 lasts: for each byte wait (up to $2F polls: Y = $30, DEY before each, else return) for $DD00 bit 7 to go high, then take 8 bits, each read as bit 6 of $DD00 inverted and acknowledged by a pulse on bit 5; bit 7 falling mid-byte means failure (xfer_state = $80). For command 3 and up the single byte is the whole reply. For a sector, raw mode stores each byte at ($EF/$F0) until the end pointer (end flag $E0); the other mode (not used by load_file) takes bytes 0/1 as the next track/sector link and asks for that sector itself ($F63F). After 256 bytes the transfer is done"
+  },
+  {
+   "address": 62941,
+   "type": "line",
+   "text": "Loop back to receive_bytes for the next byte of the sector (reached from $F62B while the in-sector count $E1 has not wrapped)"
+  },
+  {
+   "address": 65023,
+   "type": "line",
+   "text": "Byte in the RAM under the KERNAL that the title clears at $407E before entering the shop; the shop (file $03, $0F6E and $0F83) compares it with $55 and, when it differs, loads file $0B (the event manager) to $C000 ($0F8A-$0F90)"
+  },
+  {
+   "address": 65530,
+   "type": "line",
+   "text": "Hardware NMI vector (RAM, the KERNAL banked out): sample_nmi $5106 from install_sample_nmi, then $0880 (the shop's entry) at $4081"
+  },
+  {
+   "address": 65532,
+   "type": "line",
+   "text": "RESET vector position in RAM ($0954 here, left from before the title); the title does not write it"
+  },
+  {
+   "address": 65534,
+   "type": "line",
+   "text": "Hardware IRQ vector: title_irq $414C, set by install_title_irq"
+  }
+ ]
+}

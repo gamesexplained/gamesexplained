@@ -1,0 +1,40 @@
+name: review-routine
+# Starts the maintainer's "Review incoming PRs" routine on claude.ai for a
+# pull request, through the routine's API trigger. The routine's own GitHub
+# trigger did not fire for the pull requests contributors opened from forks
+# between 8 and 9 October 2026, and forks are how contributors send theirs.
+# pull_request_target runs as this repository, so the secrets reach fork
+# pull requests too. The job never checks out or runs the pull request's
+# code, and the text it sends carries only the number and the action.
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+permissions: {}
+
+jobs:
+  fire:
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'air' &&
+      !startsWith(github.event.pull_request.head.ref, 'claude/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start the review routine
+        env:
+          URL: ${{ secrets.REVIEW_ROUTINE_URL }}
+          TOKEN: ${{ secrets.REVIEW_ROUTINE_TOKEN }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          ACTION: ${{ github.event.action }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
+            echo "REVIEW_ROUTINE_URL or REVIEW_ROUTINE_TOKEN is not set, so #$NUMBER is not sent."
+            exit 0
+          fi
+          body=$(jq -n --arg t "pull_request $ACTION #$NUMBER" '{text: $t}')
+          curl -sS --fail-with-body -X POST "$URL" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "anthropic-beta: experimental-cc-routine-2026-04-01" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" \
+            -d "$body"

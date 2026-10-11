@@ -52,3 +52,22 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   (`$B544`), and the sprite drawn meanwhile, frame `$55`, is a figure
   lying down. The crystal's drop point after a theft (`$B587`) was in the
   comments but not on the pages.
+
+## 8 October 2026: the original disk, the code lock, and the save booths
+
+Gold review on kit 0.0.115. The steward's original disk (the same image
+as on 3 October) was booted again in VICE v3.13.2 and stopped at `$484D`;
+the listing was rebuilt from that snapshot, so the original is the copy
+studied and the cracked program file is the second copy. Only zero page
+and `$FF70`-`$FFF9` changed; the symbols there that described the crack's
+loader fragments were removed.
+
+The page said entering the code "changes nothing". The success path also
+redraws switch cell 13 (block `$C2` to `$D5`), which opens a wall: live,
+the Doctor walking right from the buttons stopped at x `$0A69` before the
+code and walked on to `$0B01` after it, and picked up the PASS CARD there.
+The save keys test the map block at the Doctor's middle, not a character:
+block `$23` is a booth that appears eight times, and D opened the save
+menu in two of them. The security gate is block `$20`, five times in the
+map. Positions written as address chips (x `$0C40` and the like) were
+unlinked.

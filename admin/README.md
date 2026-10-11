@@ -2,6 +2,9 @@
 
 CI runs the three checks, reproduces coverage figures and builds the site.
 
+Claude reviews each pull request that adds or updates a game against the
+checklist in `review-game-pr/SKILL.md`. Edit it to change what gets checked.
+
 ## Preview the site
 
 ```

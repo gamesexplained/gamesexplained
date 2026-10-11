@@ -167,6 +167,40 @@ Measured in VICE (x64sc, vice-mcp 3.13.1) on 24 September 2026 with
   byte at `$3FFF` of its bank (`$39FF` with extended colour) as a black
   pattern on the background colour.
 
+The cycles the chip takes from the processor were measured in VICE
+(x64sc, vice-mcp v3.13.2) on 9 October 2026 with `kit/c64/frame.py dma`,
+which `frame.py test` runs: a stream of NOPs timed instruction by
+instruction. The record is `kit/c64/fixtures/vic-dma.json`, and
+`kit/c64/machine.js` models it with `dma: true`.
+
+- A bad line holds the processor for cycles 12-54, 43 cycles. Bad lines
+  are the lines from 48 to 247 whose low three bits equal `$D011`'s
+  vertical scroll, so a frame with the display on has 25 of them whatever
+  the scroll, and loses 1,075 of its 19,656 cycles to them (measured with
+  the scroll at 0, 3 and 7).
+- The processor stops at its first read in those cycles; a write goes
+  ahead. A stream of stores (`STA` zero page: two reads, then the write)
+  is held 43 cycles, or 42 when a store's write falls on cycle 12, because
+  the processor then stops at its next read, in cycle 13.
+- The display bit (`$D011` bit 4) counts as the frame reaches line 48.
+  Set then, the frame has its bad lines to the bottom, even when the bit
+  is cleared on line 100. Clear then, the frame has none, even when the
+  bit is set on line 95. With the display off, the screen takes no cycles.
+- A sprite is fetched on 21 lines, 42 when `$D017` expands it, starting
+  on the line its Y names, whether the display is on or off. On each of
+  those lines sprite n holds the processor for cycles 55 + 2n to 59 + 2n,
+  five cycles, running past 63 into the next line: sprite 0 holds 55-59,
+  sprite 3 holds 61 to the next line's 2, and sprite 7 the next line's
+  6-10. Holds that overlap are one: sprites 0 and 2 hold 55-63, nine
+  cycles, and all eight hold 55 to the next line's 10, nineteen cycles.
+
+| A frame of NOPs, held | Display off | Display on |
+|---|---|---|
+| No sprite | 0 | 1,075 |
+| Sprite 0 | 105 | 1,180 |
+| Sprite 0, Y-expanded | 210 | 1,285 |
+| All eight sprites | 399 | 1,474 |
+
 ## SID essentials (`$D400`)
 
 Three voices, 7 registers each from `$D400`, `$D407`, `$D40E`: frequency
@@ -258,6 +292,12 @@ KERNAL IRQ path: `$FFFE` → `$FF48` → jumps through `$0314`. Default
 KERNAL banked out owns `$FFFE` directly. NMI similarly through `$0318`
 (default `$FE47`) or `$FFFA`. RESTORE triggers NMI.
 
+The KERNAL's jump table, the addresses programs call it through, is a JMP
+every three bytes from `$FF81` to `$FFF3`, 39 of them. RESTOR (`$FF8A`)
+copies the default RAM vectors, the 32 bytes at `$0314`-`$0333`, from a
+table in the ROM (`$FD30` in the KERNAL VICE 3.13.2 ships; both read from
+it on 10 October 2026).
+
 ## Cartridge images
 
 A 16 KB program that loads at `$8000` and begins
@@ -271,6 +311,79 @@ cartridge's own cold start: the cold start has to do `IOINIT` (`$FF84`),
 through `$8000` before doing them, and the loader runs under a KERNAL that
 has already booted. Annotate the cartridge entry as well as the loader's;
 the difference between them says what the machine state is on arrival.
+
+## Bank-switched cartridges
+
+A `.crt` file is the cartridge as VICE attaches it: a 64-byte header
+(`C64 CARTRIDGE`, the hardware type as a big-endian word at offset `$16`,
+the EXROM and GAME lines at `$18` and `$19`, 0 for held low, the name from
+`$20`), then a `CHIP` packet for each bank: 16 bytes (`CHIP`, the packet's
+length, the chip type, the bank number, the load address and the size,
+each big-endian) and the bank's bytes. Hardware type 0 is the plain 8 or
+16 KB cartridge above. Most others switch banks with a write to the
+expansion port's I/O pages, `$DE00`-`$DFFF`. Ocean's, type 5, takes the
+bank from a write to `$DE00`, the low four bits on a cartridge of 16
+banks, so `$8D` selects bank 13. A cartridge of 128 KB holds twice what
+RAM does, so no one image of the machine holds the whole game.
+
+With its lines held low, the cartridge still shows only where `$01` lets
+it (VICE x64sc 3.13.2, test cartridges, measured 10 October 2026). At
+`$8000`-`$9FFF` it needs bits 0 and 1 both set (`$37`, `$33`); in 16 KB
+mode (EXROM and GAME low) it shows at `$A000`-`$BFFF` whenever bit 1 is
+set (`$36` as well). With `$35` or `$34` the CPU sees RAM at both. A write
+where the cartridge shows goes to the RAM beneath it. An Ocean cartridge
+of 128 KB shows the same bank at `$A000` as at `$8000`. In VICE's memory
+reads, the bank `cart` is the cartridge bank selected at that moment,
+`ram` the RAM beneath and `cpu` whichever of them `$01` shows.
+
+- **The image is the RAM, with the cartridge hidden.** A game that copies
+  itself out of the banks and plays with the cartridge hidden runs from
+  RAM, and the play snapshot's RAM image is that program: build the
+  listing from it as for any game. The snapshot carries the cartridge
+  as well (an Ocean one's every bank, in a module named `CARTOCEAN`),
+  and its RAM is where `kit/c64/snapshot.py` expects it. What the game
+  copies from the banks over code that stays is a part `--over` the
+  resident one, as for a disk: `10-orient`'s rule applies unchanged,
+  count what the player waits for, and a store checkpoint over RAM while
+  the copy runs finds the ranges (`10-orient`, "A game of several parts",
+  step 4). A store checkpoint on the bank register says which bank fed
+  each range, for the route in `orientation.md`.
+- **Each bank is a part as well.** `kit/c64/crt.py parts <game dir>
+  <file.crt> --over <id>` gives the game a part for each bank, `bank-00`,
+  `bank-01` and on (three digits on a cartridge of more than 100), titled
+  "Bank N", with `"bank"` and the chip's ranges in `part.json`, laid over
+  the part `<id>` the code runs in. It writes the bank alone to the part's
+  `work/bank.crt`: start the disassembler on that file (`tools.py r2000`
+  builds the project from it) and build the listing from it
+  (`listing.py <part> <part>/work/bank.crt`). A bank does not take the
+  RAM part's addresses: the RAM beneath `$8000` stays that part's, and
+  both are counted. A chip that holds one value throughout is excluded
+  as blank when the part is made.
+- **Count each byte once, where the game uses it.** Before tracing
+  anything, compare each bank with the snapshot's RAM: a range that
+  matches nearly byte for byte was copied there and has changed a little
+  since; one that matches nowhere is packed, read in place, or belongs to
+  a part not reached yet. A copied range is counted where it landed:
+  list it under `coverage.exclude` in the bank's `part.json`, naming the
+  part that holds it ("copied to `$0800` by the start-up; Resident's from
+  there"). A bank whose every byte is excluded needs no listing, and
+  counts as done. What is left is the bank's own: code that runs from the
+  cartridge in place (the cold start always), and text, tables or a
+  directory read where they are (strings decoded, `30-text`).
+- **Code in RAM that reads a bank takes the bank's names.** Code that
+  shows the cartridge (a store checkpoint on `$01` finds it, and one on
+  the bank register says which bank) reads the bank, not the RAM the
+  snapshot holds. List it in the RAM part's `part.json` under `"banks"`,
+  one row per range, `[first, last, bank part id, why]`: an operand
+  there that falls in the bank's addresses is named from the bank's
+  symbols and links to its Source page, and is not counted as a
+  reference to the RAM beneath. Build the listing again, or run
+  `listing.py <part> --relabel`, after changing a row; `check_listing.py`
+  fails until then.
+
+`kit/c64/cpu6502.js` refuses a snapshot taken with a cartridge plugged in,
+having no cartridge map; check a port of such a game against a trace
+recorded in the emulator (`70-minisite`).
 
 ## Freezer-cartridge backups
 
@@ -385,6 +498,14 @@ itself runs after a reset with BASIC over its data at `$A000`-`$BFFF`.
 Read `$00` and the CPU's view of the game's tables after the reset; the
 symptom is usually wrong colours or missing graphics, not a crash.
 
+The KERNAL's `IOINIT` is skipped too, so both CIAs come up with every
+port line an input. A joystick test that counts on the KERNAL's port A
+(`$DC02` = `$FF`, `$DC00` = `$7F`, so bit 7 reads low) never matches, and
+a copy meant for the RAM under the I/O area goes into the chips instead.
+One game restarted with its display off and a title that ignored fire.
+Press fire after the reset, and read `$D011` and `$DC02`, before calling
+a restart clean.
+
 ## Screen codes and PETSCII
 
 Screen codes: `@`=0, A–Z=1–26, space=32, digits `0`–`9`=48–57, symbols
@@ -446,8 +567,9 @@ a block's layout garbled.
   values. Screen memory is the second worst, because a running game has
   moved on since the save. Pick two bytes of the game's own code.
   `readSnapshot` in `kit/c64/cpu6502.js` reads the modules by name: the
-  port (data at offset 205, direction at 206), the RAM, and x64sc's
-  registers and cycle count from its `MAINC64CPU` module.
+  port (data at offset 205, direction at 206), the RAM, x64sc's
+  registers and cycle count from its `MAINC64CPU` module, and the video
+  chip's registers and interrupt latch from `VIC-IISC`.
 - **A string found in a snapshot file is not necessarily the screen.** A
   game keeps its own copy of the status line to stamp onto the screen, and
   finding that copy while hunting for the RAM offset gives an offset that is

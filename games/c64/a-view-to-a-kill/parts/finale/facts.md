@@ -1,6 +1,6 @@
 # The finale: facts
 
-File 5 of the copy studied. Every fact names the routine or table it
+File F of Domark's disk. Every fact names the routine or table it
 comes from, in this part's listing.
 
 ## Memory
@@ -14,14 +14,12 @@ comes from, in this part's listing.
 | `$6000`-`$7F3F` | the second picture, the same lenses cracked |
 | `$8000`-`$80A0` | `finale_start`, `str_enter_code`, `read_code`, the typed characters and `secret_code` |
 
-The part's packer writes `$0800`-`$80FF` and nothing else (it was run in
-`kit/c64/cpu6502.js` over memory filled with `$00` and then `$AA`). What
-lies between the pieces above is memory nothing in the part reads. Some of
-it came with the file: `$11A0`-`$1FFF` and `$5011`-`$5FFF` match Paris's
+What lies between the pieces above is memory nothing in the part reads.
+Some of it is in the file: `$11A0`-`$1FFF` and `$5011`-`$5FFF` match Paris's
 code at the same addresses in 55 to 66 % of their bytes, with many bytes
 differing in single bits (`$D059` where Paris has `$D019`). Whether that
-is another build of Paris or damaged memory the crackers saved with the
-file is not known.
+is another build of Paris or damaged memory saved with the file is not
+known.
 
 The part has no interrupt handler of its own (the KERNAL's runs), no
 sound, no joystick read and no character set.
@@ -36,7 +34,7 @@ sound, no joystick read and no character set.
   `show_ending`. RETURN before five characters stores 0 and goes back to
   the prompt. A wrong code prints RETURN, cursor-up and a space and reads
   again.
-- Live, 30 September 2026: `ABCDE` and RETURN left the prompt waiting;
+- *Live*, 8 October 2026: `ABCDE` and RETURN left the prompt waiting;
   `ILVCTX` and RETURN started the ending, since only five characters are
   compared.
 - `$1BA0` is written (`$8072`, `$808C`) and never read in this part
@@ -45,10 +43,10 @@ sound, no joystick read and no character set.
   apart from the addresses it names. Only the early-RETURN target differs:
   here it is the prompt again, there it is the section's start.
 - RESTORE runs the prompt again: the KERNAL's NMI entry `$FE43` is `SEI` and
-  `JMP ($0318)` (KERNAL 901227-03). Live, after the ending: RESTORE left the
-  cracked picture on screen, because `finale_start` restores none of the
-  video registers, and typing `ILVCT` and RETURN blind played the ending
-  again.
+  `JMP ($0318)` (KERNAL 901227-03). After the ending the prompt comes back
+  over the cracked picture, because `finale_start` restores none of the
+  video registers, so the code has to be typed blind (read in the code,
+  not tried on this disk).
 
 ## The ending
 

@@ -81,6 +81,16 @@ class Discovery(unittest.TestCase):
         finally:
             os.remove(stray)
 
+    def test_a_game_s_own_test_is_found(self):
+        """A page's port is checked by a test beside it, and that test has to run too."""
+        stray = os.path.join(ROOT, "games", "c64", "jupiter-lander", "test_the-convention-works.py")
+        open(stray, "w").write("import sys\nprint('ok - a game test runs')\n")
+        try:
+            self.assertIn("games/c64/jupiter-lander/test_the-convention-works.py", listed(),
+                          "a game's own test is in the tree but not discovered")
+        finally:
+            os.remove(stray)
+
     def test_a_new_test_file_is_found_without_an_edit(self):
         """The point of the convention: drop a file in and CI runs it."""
         stray = os.path.join(ROOT, "kit", "scripts", "test_the-convention-works.py")

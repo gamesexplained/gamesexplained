@@ -1,0 +1,149 @@
+{
+  "title": "Boot",
+  "order": 1,
+  "video": {
+    "screen": "",
+    "charset": "$C800"
+  },
+  "coverage": {
+    "include": [
+      [
+        "$01CC",
+        "$01E8",
+        "the EA file's last instructions and its return-address fill, still in the stack page"
+      ]
+    ],
+    "exclude": [
+      [
+        "$0406",
+        "$1005",
+        "zeroed by the boot's wiper at $EF00 before stage 3 runs; stages 1 and 2 lived here and are described in facts.md from the simulated run"
+      ],
+      [
+        "$1006",
+        "$1433",
+        "the rest of what EA read from track 1: the tail of sector 19, sector 20 (all $01) and three more copies of it from the reads of sectors 21-23, which do not exist; stage 1 never reads these bytes"
+      ],
+      [
+        "$4000",
+        "$51FE",
+        "the title program, file $00, loaded by stage 3 at $2028 and entered at $4000; it belongs to the title part"
+      ],
+      [
+        "$E000",
+        "$EEFF",
+        "RAM copy of the KERNAL ROM (901227-03 in the emulator) made by stage 2 at $0389; Commodore's code, not the game's, and never committed"
+      ],
+      [
+        "$F000",
+        "$F22F",
+        "RAM copy of the KERNAL ROM, as above"
+      ],
+      [
+        "$F730",
+        "$FFF9",
+        "RAM copy of the KERNAL ROM, as above; the event manager is loaded over it later, not by the boot"
+      ],
+      [
+        "$FFFE",
+        "$FFFF",
+        "IRQ vector of the KERNAL ROM copy ($FF48), not written by the boot"
+      ],
+      [
+        "$C988",
+        "$CFFF",
+        "the rest of the 2 KB character-set area at $C800: the logo uses characters $00-$30 only and the boot never writes past $C987 (power-on pattern)"
+      ],
+      [
+        "$0004",
+        "$008F",
+        "zero page the boot does not keep anything in at the title's start ($04/$05 held stage 1's decryption pointer, left at $0CD1); the rest is the KERNAL's and BASIC's"
+      ],
+      [
+        "$0096",
+        "$00DF",
+        "zero page of the KERNAL and BASIC, not the boot's (the boot clears $90-$9D at $0835 only)"
+      ],
+      [
+        "$00FC",
+        "$00FF",
+        "zero page not used by the boot or the resident loader"
+      ],
+      [
+        "$8004",
+        "$8042",
+        "power-on RAM pattern next to the cartridge test byte $8003; not written by the boot"
+      ]
+    ],
+    "extra": [
+      [
+        "$C000",
+        "$C3FF",
+        "the EA logo screen as stage 2 built it: its source tables at $0A04-$0B0B were wiped, so this is the only copy of the logo's layout"
+      ]
+    ]
+  },
+  "io": [],
+  "regions": [
+    [
+      "$0334",
+      "$03FF",
+      "code",
+      "the start of stage 1 and stage 2's layered decryptor and set-up; the rest of page 3 still scrambled"
+    ],
+    [
+      "$2000",
+      "$2033",
+      "code",
+      "stage 3: installs the resident loader and loads the title"
+    ],
+    [
+      "$2034",
+      "$20FF",
+      "tables",
+      "unused bytes of the stage 3 file"
+    ],
+    [
+      "$2100",
+      "$25FF",
+      "code",
+      "the resident loader image that stage 3 copies to $F230"
+    ],
+    [
+      "$C000",
+      "$C3FF",
+      "graphics",
+      "the EA logo screen"
+    ],
+    [
+      "$C800",
+      "$C987",
+      "graphics",
+      "the EA logo character set"
+    ],
+    [
+      "$EF00",
+      "$EF10",
+      "code",
+      "the wipe-and-return"
+    ],
+    [
+      "$EF11",
+      "$EFFF",
+      "tables",
+      "the raw copy of track 3 sector 0 carried along with the wiper"
+    ],
+    [
+      "$F230",
+      "$F653",
+      "code",
+      "the resident disk loader"
+    ],
+    [
+      "$F654",
+      "$F72F",
+      "tables",
+      "the junk after the end of the stage 3 file, copied with the loader"
+    ]
+  ]
+}

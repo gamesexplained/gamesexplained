@@ -32,3 +32,31 @@ agent's benefit. This is the only file that narrates; `facts.md` and
   now says only what was seen, and it is listed as open.
 - The mine's agent put ILVCT one byte late (`$0AFF`); the image has it at
   `$0AFE`-`$0B02`, and the symbol was moved.
+
+## 7-8 October 2026: the original disk
+
+Euan supplied Domark's uncracked PAL disk. Each part was loaded from its
+menu, dumped in play and compared with the crack's listings code byte by
+code byte, counting a byte as different only when it differed from every
+snapshot of the crack. The findings went into `facts.md` ("The original
+disk") and the About tab on a new branch, since the first pull request had
+merged. They settled one open question: the code prompts are the game's.
+
+## 8 October 2026: the original disk becomes the copy described
+
+Euan asked for every fact to come from the original, with the crack named
+only as a second copy. Each part's annotation log was replayed onto the
+original's entry snapshot and the differences re-annotated by hand, from
+lists of code and data bytes that differ (`relog` of the crack's log with
+drops and additions, then a fresh disassembler per part). Two first-pass
+claims about the original were wrong and were corrected in place: its
+Paris instruction page has interrupts off and no music, and RESTORE is
+not set up in City Hall. Disassembling the mine's new menu screen traced
+its `JMP $EA31` into the tune under the KERNAL; marking `$E000`-`$FFFF`
+as bytes again fixed it. A first live test that jumped straight into
+City Hall's furniture drawing for room 38 ended at READY; running the
+real left exit from room 39 instead drew the room and play went on. A
+test that skips the caller's set-up can fail where the game does not. The intro's credit
+stall did not happen in four boots of the original, which reach the
+store with the beam near line 25 each time. Screenshots that differ were
+retaken, and the Paris and mine maps redrawn from the original's data.

@@ -1,0 +1,1110 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}: the cave</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+h3{font-size:19px;margin:24px 0 8px}
+kbd{font-family:var(--fm);font-size:.8em;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:700;color:var(--ink-soft)}
+section table{margin:6px 0 18px}
+code a{color:inherit;text-decoration:none}
+/* the game's screen and what the last command did */
+.ca-term{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
+.ca-left{min-width:0}
+.ca-screen{margin:0;background:#2e2c9b;color:#fff;font-family:var(--fm);font-size:13px;line-height:1.22;white-space:pre;padding:16px 18px;border-radius:6px;cursor:text;width:max-content;max-width:100%;box-sizing:content-box;height:calc(var(--rows,25) * 1.22em);overflow-x:hidden;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:#8583e0 #2e2c9b}
+.ca-input{display:block;width:100%;margin-top:10px;font:15px var(--fm);padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.ca-input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.ca-status{min-height:1.4em;font-size:14px;color:var(--amber);margin:6px 0 0;line-height:1.45;contain:inline-size}
+.ca-insp{font-size:14.5px;line-height:1.5;max-height:560px;overflow:auto;padding-right:4px}
+.ca-insp h4{font:500 12px var(--fm);text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mute);margin:16px 0 4px}
+.ca-insp h4:first-child{margin-top:0}
+.ca-insp p{margin:0 0 6px}
+.ca-insp ul,.ca-insp ol{margin:0 0 6px;padding-left:20px}
+.ca-rules li{margin:0 0 8px}
+.ca-rules li.ca-ran{color:var(--ink)}
+.ca-rules li:not(.ca-ran){color:var(--ink-soft)}
+.ca-yes{color:var(--green)}
+.ca-no{color:var(--coral)}
+.ca-quiet{color:var(--ink-mute)}
+.ca-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0 0}
+.ca-bar button,.ca-btn{font:12.5px var(--fm);padding:5px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink);cursor:pointer}
+.ca-bar button:hover,.ca-btn:hover{border-color:var(--ink-mute)}
+.ca-bar .ca-chip{border-radius:14px}
+.ca-bar span{font:12px var(--fm);color:var(--ink-mute);margin-right:2px}
+@media (max-width:860px){.ca-term{grid-template-columns:1fr}.ca-screen{font-size:min(13px,2.85vw);padding:12px}.ca-insp{max-height:none}}
+@media (max-width:700px){:root{--gx:16px;--pp:14px;--h1:36px;--sy:36px}}
+/* this page */
+.ca-room{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
+.ca-mini{margin:0;background:#2e2c9b;color:#fff;font-family:var(--fm);font-size:12px;line-height:1.25;white-space:pre;padding:12px 14px;border-radius:6px;width:max-content;max-width:100%;overflow:hidden}
+.ca-side h4{font:500 12px var(--fm);text-transform:uppercase;letter-spacing:.07em;color:var(--ink-mute);margin:14px 0 4px}
+.ca-side h4:first-child{margin-top:0}
+.ca-side ul{margin:0;padding-left:18px;font-size:14.5px}
+.ca-side p{margin:0;font-size:14.5px}
+.ca-side a{color:var(--link)}
+.ca-badge{display:inline-block;font:12px var(--fm);padding:2px 8px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);margin:0 0 10px}
+.ca-scroll{max-height:520px;overflow:auto;border:1px solid var(--line-soft);border-radius:6px;background:var(--surface)}
+.ca-scroll table{margin:0;font-size:14px}
+.ca-scroll th{position:sticky;top:0;background:var(--surface)}
+.ca-scroll tr[data-room]{cursor:pointer}
+.ca-scroll tr[data-room]:hover td{background:var(--hl)}
+/* the map */
+.ca-mapbox{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.ca-map{display:block;width:100%;min-width:820px;height:auto;font-family:var(--fb)}
+.ca-map .ad path{stroke:var(--line);stroke-width:.7;fill:none}
+.ca-map .ed path{fill:none;stroke:#8a8d93;stroke-width:1.2}
+.ca-map .ed path.r{stroke:var(--coral);stroke-dasharray:4 3}
+.ca-map .rg text{font:500 10px var(--fm);letter-spacing:.06em;text-transform:uppercase;fill:var(--ink-mute)}
+.ca-map .n{cursor:pointer;outline:none}
+.ca-map .n circle{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}
+.ca-map .n.lit circle{fill:var(--hl)}
+.ca-map .n text{font:500 9px var(--fm);fill:var(--ink);text-anchor:middle}
+.ca-map .n .tr{fill:#c9a227;stroke:#8a6d0a;stroke-width:.8}
+.ca-map .n:hover circle,.ca-map .n:focus-visible circle{stroke:var(--accent);stroke-width:2.2}
+.ca-map .n.on circle{fill:var(--accent);stroke:var(--accent)}
+.ca-map .n.on text{fill:#fff}
+.ca-map .lb text{font-size:10.5px;fill:var(--ink-soft)}
+.ca-map .lb text.g{font:500 9.5px var(--fm);fill:var(--violet)}
+.ca-mapsel{margin:12px 0 0;font-size:14.5px;min-height:1.5em}
+.ca-mapsel a{color:var(--link)}
+.ca-key{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;padding:0;list-style:none;font-size:13.5px;color:var(--ink-soft)}
+.ca-key li{display:flex;align-items:center;gap:6px}
+.ca-key svg{width:26px;height:14px;flex:none}
+.ca-key .ca-kw{font:500 11.5px var(--fm);color:var(--violet)}
+@media (max-width:860px){.ca-room{grid-template-columns:1fr}.ca-mini{font-size:min(12px,2.6vw)}}
+</style>
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">The 140 rooms of the cave as the game stores them: a map of how they join, then each room's text, its exits, the objects that start there, and the rules that act on it.</p>
+</header>
+<main class="wrap">
+<section id="map">
+  <p class="fig">01 · The map</p>
+  <h2 class="t">How the rooms join</h2>
+  <p class="lede">The game keeps no map. Each room has a list of exits, and rules move the player where the exits do not reach. Drawn out, they make this cave. Click a room to read it here and open it in the room browser below.</p>
+  <div class="plate">
+    <div class="ca-mapbox" id="ca-mapbox"><svg class="ca-map" viewBox="0 0 950 770" role="group" aria-labelledby="ca-map-t"><title id="ca-map-t">Map of the cave: 128 rooms, the exits between them and the moves the rules make</title><g class="ad"><path class="d" data-a="107" data-b="131" d="M91,505.6L122.2,514.7"/><path class="d" data-a="107" data-b="132" d="M91,505.6L143.4,539.3"/><path class="d" data-a="107" data-b="133" d="M91,505.6L148,571.4"/><path class="d" data-a="107" data-b="134" d="M91,505.6L134.5,600.9"/><path class="d" data-a="107" data-b="135" d="M91,505.6L107.2,618.5"/><path class="d" data-a="107" data-b="136" d="M91,505.6L47.5,600.9"/><path class="d" data-a="107" data-b="137" d="M91,505.6L34,571.4"/><path class="d" data-a="107" data-b="138" d="M91,505.6L38.6,539.3"/><path class="d" data-a="107" data-b="139" d="M91,505.6L59.9,514.7"/><path class="d" data-a="112" data-b="131" d="M74.8,618.5L122.2,514.7"/><path class="d" data-a="112" data-b="132" d="M74.8,618.5L143.4,539.3"/><path class="d" data-a="112" data-b="133" d="M74.8,618.5L148,571.4"/><path class="d" data-a="112" data-b="134" d="M74.8,618.5L134.5,600.9"/><path class="d" data-a="112" data-b="135" d="M74.8,618.5L107.2,618.5"/><path class="d" data-a="112" data-b="136" d="M74.8,618.5L47.5,600.9"/><path class="d" data-a="112" data-b="137" d="M74.8,618.5L34,571.4"/><path class="d" data-a="112" data-b="138" d="M74.8,618.5L38.6,539.3"/><path class="d" data-a="112" data-b="139" d="M74.8,618.5L59.9,514.7"/><path class="d" data-a="131" data-b="132" d="M122.2,514.7L143.4,539.3"/><path class="d" data-a="131" data-b="133" d="M122.2,514.7L148,571.4"/><path class="d" data-a="131" data-b="134" d="M122.2,514.7L134.5,600.9"/><path class="d" data-a="131" data-b="135" d="M122.2,514.7L107.2,618.5"/><path class="d" data-a="131" data-b="136" d="M122.2,514.7L47.5,600.9"/><path class="d" data-a="131" data-b="137" d="M122.2,514.7L34,571.4"/><path class="d" data-a="131" data-b="138" d="M122.2,514.7L38.6,539.3"/><path class="d" data-a="131" data-b="139" d="M122.2,514.7L59.9,514.7"/><path class="d" data-a="132" data-b="133" d="M143.4,539.3L148,571.4"/><path class="d" data-a="132" data-b="134" d="M143.4,539.3L134.5,600.9"/><path class="d" data-a="132" data-b="135" d="M143.4,539.3L107.2,618.5"/><path class="d" data-a="132" data-b="136" d="M143.4,539.3L47.5,600.9"/><path class="d" data-a="132" data-b="137" d="M143.4,539.3L34,571.4"/><path class="d" data-a="132" data-b="138" d="M143.4,539.3L38.6,539.3"/><path class="d" data-a="132" data-b="139" d="M143.4,539.3L59.9,514.7"/><path class="d" data-a="133" data-b="134" d="M148,571.4L134.5,600.9"/><path class="d" data-a="133" data-b="135" d="M148,571.4L107.2,618.5"/><path class="d" data-a="133" data-b="136" d="M148,571.4L47.5,600.9"/><path class="d" data-a="133" data-b="137" d="M148,571.4L34,571.4"/><path class="d" data-a="133" data-b="138" d="M148,571.4L38.6,539.3"/><path class="d" data-a="133" data-b="139" d="M148,571.4L59.9,514.7"/><path class="d" data-a="134" data-b="135" d="M134.5,600.9L107.2,618.5"/><path class="d" data-a="134" data-b="136" d="M134.5,600.9L47.5,600.9"/><path class="d" data-a="134" data-b="137" d="M134.5,600.9L34,571.4"/><path class="d" data-a="134" data-b="138" d="M134.5,600.9L38.6,539.3"/><path class="d" data-a="134" data-b="139" d="M134.5,600.9L59.9,514.7"/><path class="d" data-a="135" data-b="136" d="M107.2,618.5L47.5,600.9"/><path class="d" data-a="135" data-b="137" d="M107.2,618.5L34,571.4"/><path class="d" data-a="135" data-b="138" d="M107.2,618.5L38.6,539.3"/><path class="d" data-a="135" data-b="139" d="M107.2,618.5L59.9,514.7"/><path class="d" data-a="136" data-b="137" d="M47.5,600.9L34,571.4"/><path class="d" data-a="136" data-b="138" d="M47.5,600.9L38.6,539.3"/><path class="d" data-a="136" data-b="139" d="M47.5,600.9L59.9,514.7"/><path class="d" data-a="137" data-b="138" d="M34,571.4L38.6,539.3"/><path class="d" data-a="137" data-b="139" d="M34,571.4L59.9,514.7"/><path class="d" data-a="138" data-b="139" d="M38.6,539.3L59.9,514.7"/></g><g class="ed"><path class="x" data-a="1" data-b="2" d="M595,59.2Q569.8,59.2 544.6,59.2"/><path class="x" data-a="1" data-b="3" d="M595,59.2Q623.8,59.2 652.6,59.2"/><path class="x" data-a="1" data-b="4" d="M595,59.2Q595,80.8 595,102.4"/><path class="x" data-a="1" data-b="5" d="M595,59.2Q573.4,88 551.8,116.8"/><path class="x" data-a="2" data-b="5" d="M544.6,59.2Q548.2,88 551.8,116.8"/><path class="x" data-a="4" data-b="5" d="M595,102.4Q573.4,109.6 551.8,116.8"/><path class="x" data-a="4" data-b="7" d="M595,102.4Q595,124 595,145.6"/><path class="x" data-a="1" data-b="6" d="M595,59.2Q551.8,79 508.6,98.8"/><path class="x" data-a="4" data-b="6" d="M595,102.4Q551.8,100.6 508.6,98.8"/><path class="x" data-a="5" data-b="6" d="M551.8,116.8Q530.2,107.8 508.6,98.8"/><path class="x" data-a="5" data-b="7" d="M551.8,116.8Q573.4,131.2 595,145.6"/><path class="x" data-a="7" data-b="8" d="M595,145.6Q640,145.6 685,145.6"/><path class="x" data-a="5" data-b="8" d="M551.8,116.8Q618.4,131.2 685,145.6"/><path class="x" data-a="9" data-b="10" d="M685,192.4Q659.8,192.4 634.6,192.4"/><path class="x" data-a="10" data-b="11" d="M634.6,192.4Q604,192.4 573.4,192.4"/><path class="x" data-a="11" data-b="12" d="M573.4,192.4Q548.2,192.4 523,192.4"/><path class="x" data-a="12" data-b="13" d="M523,192.4Q497.8,192.4 472.6,192.4"/><path class="x" data-a="13" data-b="14" d="M472.6,192.4Q472.6,211.3 472.6,230.2"/><path class="x" data-a="15" data-b="18" d="M472.6,264.4Q508.6,264.4 544.6,264.4"/><path class="x" data-a="15" data-b="17" d="M472.6,264.4Q447.4,264.4 422.2,264.4"/><path class="x" data-a="15" data-b="19" d="M472.6,264.4Q433,293.2 393.4,322"/><path class="x" data-a="15" data-b="34" d="M472.6,264.4Q508.6,282.4 544.6,300.4"/><path class="x" data-a="19" data-b="74" d="M393.4,322Q371.8,347.2 350.2,372.4"/><path class="x" data-a="23" data-b="67" d="M263.8,689.2Q310.6,667.6 357.4,646"/><path class="x" data-a="23" data-b="68" d="M263.8,689.2Q245.8,599.2 227.8,509.2"/><path class="x" data-a="23" data-b="25" d="M263.8,689.2Q326.7,714.1 393.4,725.2"/><path class="x" data-a="24" data-b="67" d="M335.8,696.4Q346.6,671.2 357.4,646"/><path class="x" data-a="27" data-b="41" d="M361,264.4Q334,264.4 307,264.4"/><path class="x" data-a="19" data-b="28" d="M393.4,322Q429.4,336.4 465.4,350.8"/><path class="x" data-a="28" data-b="33" d="M465.4,350.8Q490.6,343.6 515.8,336.4"/><path class="x" data-a="28" data-b="36" d="M465.4,350.8Q472.6,372.4 479.8,394"/><path class="x" data-a="19" data-b="29" d="M393.4,322Q407.8,340 422.2,358"/><path class="x" data-a="19" data-b="30" d="M393.4,322Q353.8,318.4 314.2,314.8"/><path class="x" data-a="30" data-b="62" d="M314.2,314.8Q249.4,314.8 184.6,314.8"/><path class="x" data-a="33" data-b="34" d="M515.8,336.4Q530.2,318.4 544.6,300.4"/><path class="x" data-a="33" data-b="35" d="M515.8,336.4Q537.4,350.8 559,365.2"/><path class="x" data-a="36" data-b="37" d="M479.8,394Q501.4,401.2 523,408.4"/><path class="x" data-a="36" data-b="39" d="M479.8,394Q458.2,401.2 436.6,408.4"/><path class="x" data-a="37" data-b="38" d="M523,408.4Q541,419.2 559,430"/><path class="x" data-a="39" data-b="64" d="M436.6,408.4Q440.2,430 443.8,451.6"/><path class="r" data-a="39" data-b="65" d="M436.6,408.4Q415,451.6 393.4,494.8"/><path class="x" data-a="41" data-b="42" d="M307,264.4Q292.6,228.4 278.2,192.4"/><path class="x" data-a="41" data-b="60" d="M307,264.4Q271,264.4 235,264.4"/><path class="x" data-a="42" data-b="43" d="M278.2,192.4Q231.4,178 184.6,163.6"/><path class="x" data-a="42" data-b="45" d="M278.2,192.4Q249.4,196 220.6,199.6"/><path class="x" data-a="42" data-b="80" d="M278.2,192.4Q303.4,179.8 328.6,167.2"/><path class="x" data-a="43" data-b="44" d="M184.6,163.6Q159.4,152.8 134.2,142"/><path class="x" data-a="43" data-b="45" d="M184.6,163.6Q202.6,181.6 220.6,199.6"/><path class="x" data-a="44" data-b="48" d="M134.2,142Q116.2,152.8 98.2,163.6"/><path class="x" data-a="44" data-b="50" d="M134.2,142Q146.8,120.4 159.4,98.8"/><path class="x" data-a="44" data-b="82" d="M134.2,142Q116.2,134.8 98.2,127.6"/><path class="x" data-a="45" data-b="46" d="M220.6,199.6Q202.6,206.8 184.6,214"/><path class="x" data-a="45" data-b="47" d="M220.6,199.6Q217,214 213.4,228.4"/><path class="x" data-a="45" data-b="87" d="M220.6,199.6Q236.8,210.4 253,221.2"/><path class="x" data-a="49" data-b="50" d="M134.2,62.8Q146.8,80.8 159.4,98.8"/><path class="x" data-a="49" data-b="51" d="M134.2,62.8Q159.4,62.8 184.6,62.8"/><path class="x" data-a="50" data-b="51" d="M159.4,98.8Q172,80.8 184.6,62.8"/><path class="x" data-a="50" data-b="52" d="M159.4,98.8Q184.6,98.8 209.8,98.8"/><path class="x" data-a="51" data-b="52" d="M184.6,62.8Q197.2,80.8 209.8,98.8"/><path class="x" data-a="51" data-b="53" d="M184.6,62.8Q209.8,62.8 235,62.8"/><path class="x" data-a="52" data-b="53" d="M209.8,98.8Q222.4,80.8 235,62.8"/><path class="x" data-a="52" data-b="55" d="M209.8,98.8Q233.2,106 256.6,113.2"/><path class="x" data-a="52" data-b="86" d="M209.8,98.8Q209.8,115 209.8,131.2"/><path class="x" data-a="53" data-b="54" d="M235,62.8Q249.4,52 263.8,41.2"/><path class="x" data-a="55" data-b="56" d="M256.6,113.2Q260.2,131.2 263.8,149.2"/><path class="x" data-a="55" data-b="57" d="M256.6,113.2Q292.6,113.2 328.6,113.2"/><path class="x" data-a="13" data-b="57" d="M472.6,192.4Q393.7,165.4 328.6,113.2"/><path class="x" data-a="57" data-b="58" d="M328.6,113.2Q328.6,91.6 328.6,70"/><path class="x" data-a="57" data-b="83" d="M328.6,113.2Q350.2,98.8 371.8,84.4"/><path class="x" data-a="57" data-b="84" d="M328.6,113.2Q353.8,120.4 379,127.6"/><path class="x" data-a="60" data-b="61" d="M235,264.4Q195.4,264.4 155.8,264.4"/><path class="x" data-a="60" data-b="62" d="M235,264.4Q209.8,289.6 184.6,314.8"/><path class="x" data-a="61" data-b="62" d="M155.8,264.4Q170.2,289.6 184.6,314.8"/><path class="x" data-a="61" data-b="107" d="M155.8,264.4Q123.4,385 91,505.6"/><path class="x" data-a="62" data-b="63" d="M184.6,314.8Q206.2,329.2 227.8,343.6"/><path class="x" data-a="64" data-b="65" d="M443.8,451.6Q418.6,473.2 393.4,494.8"/><path class="x" data-a="64" data-b="103" d="M443.8,451.6Q447.4,494.8 451,538"/><path class="x" data-a="64" data-b="106" d="M443.8,451.6Q465.4,458.8 487,466"/><path class="x" data-a="65" data-b="66" d="M393.4,494.8Q400.6,545.2 407.8,595.6"/><path class="x" data-a="65" data-b="68" d="M393.4,494.8Q310.6,502 227.8,509.2"/><path class="x" data-a="66" data-b="67" d="M407.8,595.6Q382.6,620.8 357.4,646"/><path class="x" data-a="66" data-b="77" d="M407.8,595.6Q375.4,527.2 343,458.8"/><path class="x" data-a="66" data-b="96" d="M407.8,595.6Q422.2,613.6 436.6,631.6"/><path class="x" data-a="66" data-b="97" d="M407.8,595.6Q461.8,610 515.8,624.4"/><path class="x" data-a="68" data-b="69" d="M227.8,509.2Q231.4,458.8 235,408.4"/><path class="x" data-a="69" data-b="109" d="M235,408.4Q213.4,394 191.8,379.6"/><path class="x" data-a="70" data-b="71" d="M299.8,602.8Q299.8,581.2 299.8,559.6"/><path class="x" data-a="65" data-b="70" d="M393.4,494.8Q346.6,548.8 299.8,602.8"/><path class="x" data-a="70" data-b="111" d="M299.8,602.8Q285.4,617.2 271,631.6"/><path class="x" data-a="65" data-b="71" d="M393.4,494.8Q346.6,527.2 299.8,559.6"/><path class="x" data-a="71" data-b="110" d="M299.8,559.6Q285.4,543.4 271,527.2"/><path class="r" data-a="65" data-b="72" d="M393.4,494.8Q487,502 580.6,494.8"/><path class="x" data-a="72" data-b="118" d="M580.6,494.8Q605.8,502 631,509.2"/><path class="x" data-a="72" data-b="73" d="M580.6,494.8Q598.6,476.8 616.6,458.8"/><path class="x" data-a="72" data-b="97" d="M580.6,494.8Q548.2,559.6 515.8,624.4"/><path class="x" data-a="74" data-b="75" d="M350.2,372.4Q357.4,394 364.6,415.6"/><path class="x" data-a="75" data-b="76" d="M364.6,415.6Q382.6,422.8 400.6,430"/><path class="x" data-a="75" data-b="77" d="M364.6,415.6Q353.8,437.2 343,458.8"/><path class="x" data-a="77" data-b="78" d="M343,458.8Q325,469.6 307,480.4"/><path class="x" data-a="80" data-b="81" d="M328.6,167.2Q350.2,167.2 371.8,167.2"/><path class="x" data-a="83" data-b="84" d="M371.8,84.4Q375.4,106 379,127.6"/><path class="x" data-a="83" data-b="85" d="M371.8,84.4Q371.8,66.4 371.8,48.4"/><path class="x" data-a="84" data-b="114" d="M379,127.6Q400.6,127.6 422.2,127.6"/><path class="x" data-a="25" data-b="88" d="M393.4,725.2Q447.4,728.8 501.4,732.4"/><path class="x" data-a="88" data-b="92" d="M501.4,732.4Q555.4,721.6 609.4,710.8"/><path class="x" data-a="91" data-b="95" d="M681.4,538Q692.2,570.4 703,602.8"/><path class="x" data-a="72" data-b="91" d="M580.6,494.8Q621.1,539.6 681.4,538"/><path class="x" data-a="92" data-b="93" d="M609.4,710.8Q631,725.2 652.6,739.6"/><path class="x" data-a="92" data-b="94" d="M609.4,710.8Q645.4,689.2 681.4,667.6"/><path class="x" data-a="94" data-b="95" d="M681.4,667.6Q692.2,635.2 703,602.8"/><path class="x" data-a="97" data-b="98" d="M515.8,624.4Q539.2,611.8 562.6,599.2"/><path class="x" data-a="98" data-b="99" d="M562.6,599.2Q582.4,615.4 602.2,631.6"/><path class="x" data-a="100" data-b="101" d="M562.6,671.2Q539.2,678.4 515.8,685.6"/><path class="x" data-a="102" data-b="103" d="M429.4,559.6Q440.2,548.8 451,538"/><path class="x" data-a="103" data-b="104" d="M451,538Q469,545.2 487,552.4"/><path class="x" data-a="104" data-b="105" d="M487,552.4Q501.4,561.4 515.8,570.4"/><path class="x" data-a="65" data-b="106" d="M393.4,494.8Q440.2,480.4 487,466"/><path class="x" data-a="106" data-b="108" d="M487,466Q505,473.2 523,480.4"/><path class="x" data-a="109" data-b="113" d="M191.8,379.6Q170.2,368.8 148.6,358"/><path class="x" data-a="112" data-b="140" d="M74.8,618.5Q82.9,646.6 91,674.8"/><path class="x" data-a="115" data-b="116" d="M811,120.4Q785.8,134.8 760.6,149.2"/><path class="x" data-a="117" data-b="118" d="M674.2,480.4Q652.6,494.8 631,509.2"/><path class="x" data-a="69" data-b="119" d="M235,408.4Q217,426.4 199,444.4"/><path class="x" data-a="69" data-b="120" d="M235,408.4Q260.2,397.6 285.4,386.8"/><path class="x" data-a="74" data-b="120" d="M350.2,372.4Q317.8,379.6 285.4,386.8"/><path class="x" data-a="74" data-b="121" d="M350.2,372.4Q325,401.2 299.8,430"/><path class="x" data-a="122" data-b="123" d="M717.4,430Q735.4,415.6 753.4,401.2"/><path class="x" data-a="123" data-b="124" d="M753.4,401.2Q771.4,386.8 789.4,372.4"/><path class="x" data-a="124" data-b="125" d="M789.4,372.4Q803.8,354.4 818.2,336.4"/><path class="x" data-a="124" data-b="128" d="M789.4,372.4Q807.4,390.4 825.4,408.4"/><path class="x" data-a="125" data-b="126" d="M818.2,336.4Q818.2,314.8 818.2,293.2"/><path class="x" data-a="125" data-b="127" d="M818.2,336.4Q836.2,340 854.2,343.6"/><path class="x" data-a="128" data-b="129" d="M825.4,408.4Q832.6,430 839.8,451.6"/><path class="x" data-a="129" data-b="130" d="M839.8,451.6Q857.8,462.4 875.8,473.2"/><path class="r" data-a="8" data-b="9" d="M685,145.6Q685,169 685,192.4"/><path class="r" data-a="14" data-b="15" d="M472.6,230.2Q472.6,247.3 472.6,264.4"/><path class="r" data-a="17" data-b="27" d="M422.2,264.4Q391.6,264.4 361,264.4"/><path class="r" data-a="99" data-b="100" d="M602.2,631.6Q582.4,651.4 562.6,671.2"/><path class="r" data-a="117" data-b="122" d="M674.2,480.4Q695.8,455.2 717.4,430"/></g><g class="rg"><text x="40.6" y="19.6" text-anchor="start">Maze of twisty little passages, all alike</text><text x="26.2" y="487.6" text-anchor="start">Maze of passages, all different</text><text x="803.8" y="257.2" text-anchor="middle">The far side of the chasm</text><text x="595" y="19.6" text-anchor="middle">The surface</text><text x="782.2" y="91.6" text-anchor="middle">Reached when the cave closes</text></g><g class="rm"><g class="n lit" data-room="1" data-name="End of road" tabindex="0"><title>Room 1 (End of road): You are standing at the end of a road before a small brick building. Around you is a forest. A small stream flows out of the building and down a gully.</title><circle cx="595" cy="59.2" r="9"/><text x="595" y="62.5">1</text></g><g class="n lit" data-room="2" data-name="Hill" tabindex="0"><title>Room 2 (Hill): You have walked up a hill, still in the forest. The road slopes back down the other side of the hill. There is a building in the distance.</title><circle cx="544.6" cy="59.2" r="9"/><text x="544.6" y="62.5">2</text></g><g class="n lit" data-room="3" data-name="Well house" tabindex="0"><title>Room 3 (Well house): You are inside a building, a well house for a large spring.</title><circle cx="652.6" cy="59.2" r="9"/><text x="652.6" y="62.5">3</text></g><g class="n lit" data-room="4" data-name="Valley" tabindex="0"><title>Room 4 (Valley): You are in a valley in the forest beside a stream tumbling along a rocky bed.</title><circle cx="595" cy="102.4" r="9"/><text x="595" y="105.7">4</text></g><g class="n lit" data-room="5" data-name="Forest" tabindex="0"><title>Room 5 (Forest): You are in open forest, with a deep valley to one side.</title><circle cx="551.8" cy="116.8" r="9"/><text x="551.8" y="120.1">5</text></g><g class="n lit" data-room="6" data-name="Forest" tabindex="0"><title>Room 6 (Forest): You are in open forest near both a valley and a road.</title><circle cx="508.6" cy="98.8" r="9"/><text x="508.6" y="102.1">6</text></g><g class="n lit" data-room="7" data-name="Slit" tabindex="0"><title>Room 7 (Slit): At your feet all the water of the stream splashes into a 2-inch slit in the rock. Downstream the streambed is bare rock.</title><circle cx="595" cy="145.6" r="9"/><text x="595" y="148.9">7</text></g><g class="n lit" data-room="8" data-name="Depression" tabindex="0"><title>Room 8 (Depression): You are in a 20-foot depression floored with bare dirt. Set into the dirt is a strong steel grate mounted in concrete. A dry streambed leads into the depression.</title><circle cx="685" cy="145.6" r="9"/><text x="685" y="148.9">8</text></g><g class="n lit" data-room="9" data-name="Below the grate" tabindex="0"><title>Room 9 (Below the grate): You are in a small chamber beneath a 3x3 steel grate to the surface. A low crawl over cobbles leads inward to the west.</title><circle cx="685" cy="192.4" r="9"/><text x="685" y="195.7">9</text></g><g class="n" data-room="10" data-name="Cobble crawl" tabindex="0"><title>Room 10 (Cobble crawl): You are crawling over cobbles in a low passage. There is a dim light at the east end of the passage.</title><circle cx="634.6" cy="192.4" r="9"/><text x="634.6" y="195.7">10</text></g><g class="n" data-room="11" data-name="Debris room" tabindex="0"><title>Room 11 (Debris room): You are in a debris room filled with stuff washed in from the surface. A low wide passage with cobbles becomes plugged with mud and debris here, but an awkward canyon leads upward and west. A note on the wall says &#39;Magic word XYZY&#39;.</title><circle cx="573.4" cy="192.4" r="9"/><text x="573.4" y="195.7">11</text></g><g class="n" data-room="12" data-name="Sloping canyon" tabindex="0"><title>Room 12 (Sloping canyon): You are in an awkward sloping east/west canyon.</title><circle cx="523" cy="192.4" r="9"/><text x="523" y="195.7">12</text></g><g class="n" data-room="13" data-name="Splendid chamber" tabindex="0"><title>Room 13 (Splendid chamber): You are in a splendid chamber thirty feet high. The walls are frozen rivers of orange stone. An awkward canyon and a good passage exit from east and west sides of the chamber.</title><circle cx="472.6" cy="192.4" r="9"/><text x="472.6" y="195.7">13</text></g><g class="n" data-room="14" data-name="Small pit" tabindex="0"><title>Room 14 (Small pit): At your feet is a small pit breathing traces of white mist. An east passage ends here except for a small crack leading on.</title><circle cx="472.6" cy="230.2" r="9"/><text x="472.6" y="233.5">14</text></g><g class="n" data-room="15" data-name="Hall of mists" tabindex="0"><title>Room 15 (Hall of mists): You are at one end of a vast hall stretching forward out of sight to the west. There are openings to either side. Nearby, a wide stone staircase leads downward. The hall is filled with wisps of white mist swaying to and fro almost as if alive. A cold wind blows up the staircase. There is a passage at the top of a dome behind you.</title><circle cx="472.6" cy="264.4" r="9"/><text x="472.6" y="267.7">15</text></g><g class="n" data-room="17" data-name="Fissure, E" tabindex="0"><title>Room 17 (Fissure, E): You are on the east bank of a fissure slicing clear across the hall. The mist is quite thick here, and the fissure is too wide to jump.</title><circle cx="422.2" cy="264.4" r="9"/><text x="422.2" y="267.7">17</text></g><g class="n" data-room="18" data-name="Low room" tabindex="0"><title>Room 18 (Low room): This is a low room with a crude note on the wall. The note says,&#39;You won&#39;t get it up the steps&#39;. Treasure here at the start: A large gold nugget.</title><circle cx="544.6" cy="264.4" r="9"/><path class="tr" d="M551.6,252.4l4,4l-4,4l-4,-4z"/><text x="544.6" y="267.7">18</text></g><g class="n" data-room="19" data-name="Mountain king" tabindex="0"><title>Room 19 (Mountain king): You are in the hall of the mountain king, with passages off in all directions.</title><circle cx="393.4" cy="322" r="9"/><text x="393.4" y="325.3">19</text></g><g class="n" data-room="23" data-name="Twopit, west" tabindex="0"><title>Room 23 (Twopit, west): You are at the west end of the twopit room. There is a large hole in the wall above the pit at this end of the room.</title><circle cx="263.8" cy="689.2" r="9"/><text x="263.8" y="692.5">23</text></g><g class="n" data-room="24" data-name="East pit" tabindex="0"><title>Room 24 (East pit): You are at the bottom of the eastern pit in the twopit room. There is a small pool of oil in one corner of the pit.</title><circle cx="335.8" cy="696.4" r="9"/><text x="335.8" y="699.7">24</text></g><g class="n" data-room="25" data-name="West pit" tabindex="0"><title>Room 25 (West pit): You are at the bottom of the western pit in the twopit room. There is a large hole in the wall about 25 feet above you.</title><circle cx="393.4" cy="725.2" r="9"/><text x="393.4" y="728.5">25</text></g><g class="n" data-room="27" data-name="Fissure, W" tabindex="0"><title>Room 27 (Fissure, W): You are on the west side of the fissure in the hall of mists. Treasure here at the start: Several diamonds.</title><circle cx="361" cy="264.4" r="9"/><path class="tr" d="M368,252.4l4,4l-4,4l-4,-4z"/><text x="361" y="267.7">27</text></g><g class="n" data-room="28" data-name="Low passage" tabindex="0"><title>Room 28 (Low passage): You are in a low N/S passage at a hole in the floor. The hole goes down to an E/W passage. Treasure here at the start: Bars of Silver.</title><circle cx="465.4" cy="350.8" r="9"/><path class="tr" d="M472.4,338.8l4,4l-4,4l-4,-4z"/><text x="465.4" y="354.1">28</text></g><g class="n" data-room="29" data-name="South chamber" tabindex="0"><title>Room 29 (South chamber): You are in the south side chamber. Treasure here at the start: Precious Jewellery.</title><circle cx="422.2" cy="358" r="9"/><path class="tr" d="M429.2,346l4,4l-4,4l-4,-4z"/><text x="422.2" y="361.3">29</text></g><g class="n" data-room="30" data-name="West chamber" tabindex="0"><title>Room 30 (West chamber): You are in the west side chamber of the hall of the mountain king. A passage continues west and up here. Treasure here at the start: Lots of rare coins.</title><circle cx="314.2" cy="314.8" r="9"/><path class="tr" d="M321.2,302.8l4,4l-4,4l-4,-4z"/><text x="314.2" y="318.1">30</text></g><g class="n" data-room="33" data-name="Y2" tabindex="0"><title>Room 33 (Y2): You are in a large room, with a passage to the south, a passage to the west, and a wall of broken rock to the east. There is a large &#39;Y2&#39;on a rock in the room&#39;s centre.</title><circle cx="515.8" cy="336.4" r="9"/><text x="515.8" y="339.7">33</text></g><g class="n" data-room="34" data-name="Jumble of rock" tabindex="0"><title>Room 34 (Jumble of rock): You are in a jumble of rock, with cracks everywhere.</title><circle cx="544.6" cy="300.4" r="9"/><text x="544.6" y="303.7">34</text></g><g class="n" data-room="35" data-name="Window on pit" tabindex="0"><title>Room 35 (Window on pit): You are at a low window overlooking a huge pit, which extends up out of sight. A floor is indistinctly visible over 50 feet below. Traces of white mist cover the floor of the pit, becoming thicker to the right. Marks in the dust around the window would seem to indicate that someone has been here recently. Directly across the pit from you and 25 feet away there is a similar window looking into a lighted room. A shadowy figure can be seen there peering back at you.</title><circle cx="559" cy="365.2" r="9"/><text x="559" y="368.5">35</text></g><g class="n" data-room="36" data-name="Dirty passage" tabindex="0"><title>Room 36 (Dirty passage): You are in a dirty broken passage. To the east is a crawl. To the west is a large passage. Above you is a hole to another passage.</title><circle cx="479.8" cy="394" r="9"/><text x="479.8" y="397.3">36</text></g><g class="n" data-room="37" data-name="Clean pit" tabindex="0"><title>Room 37 (Clean pit): You are on the brink of a small clean climbable pit. A crawl leads west.</title><circle cx="523" cy="408.4" r="9"/><text x="523" y="411.7">37</text></g><g class="n" data-room="38" data-name="Pit bottom" tabindex="0"><title>Room 38 (Pit bottom): You are in the bottom of a small pit with a little stream, which enters and exits through tiny slits.</title><circle cx="559" cy="430" r="9"/><text x="559" y="433.3">38</text></g><g class="n" data-room="39" data-name="Dusty rocks" tabindex="0"><title>Room 39 (Dusty rocks): You are in a large room full of dusty rocks. There is a big hole in the floor. There are cracks everywhere, and a passage leading east.</title><circle cx="436.6" cy="408.4" r="9"/><text x="436.6" y="411.7">39</text></g><g class="n" data-room="41" data-name="West end of hall" tabindex="0"><title>Room 41 (West end of hall): You are at the west end of the hall of mists. A low wide crawl continues west and another goes north. To the south is a little passage 6 feet off thefloor.</title><circle cx="307" cy="264.4" r="9"/><text x="307" y="267.7">41</text></g><g class="n" data-room="42" tabindex="0"><title>Room 42: You are in a maze of twisty little passages, all alike.</title><circle cx="278.2" cy="192.4" r="9"/><text x="278.2" y="195.7">42</text></g><g class="n" data-room="43" tabindex="0"><title>Room 43: You are in a maze of twisty little passages, all alike.</title><circle cx="184.6" cy="163.6" r="9"/><text x="184.6" y="166.9">43</text></g><g class="n" data-room="44" tabindex="0"><title>Room 44: You are in a maze of twisty little passages, all alike.</title><circle cx="134.2" cy="142" r="9"/><text x="134.2" y="145.3">44</text></g><g class="n" data-room="45" tabindex="0"><title>Room 45: You are in a maze of twisty little passages, all alike.</title><circle cx="220.6" cy="199.6" r="9"/><text x="220.6" y="202.9">45</text></g><g class="n" data-room="46" tabindex="0"><title>Room 46: Dead end.</title><circle cx="184.6" cy="214" r="9"/><text x="184.6" y="217.3">46</text></g><g class="n" data-room="47" tabindex="0"><title>Room 47: Dead end.</title><circle cx="213.4" cy="228.4" r="9"/><text x="213.4" y="231.7">47</text></g><g class="n" data-room="48" tabindex="0"><title>Room 48: Dead end.</title><circle cx="98.2" cy="163.6" r="9"/><text x="98.2" y="166.9">48</text></g><g class="n" data-room="49" tabindex="0"><title>Room 49: You are in a maze of twisty little passages, all alike.</title><circle cx="134.2" cy="62.8" r="9"/><text x="134.2" y="66.1">49</text></g><g class="n" data-room="50" tabindex="0"><title>Room 50: You are in a maze of twisty little passages, all alike.</title><circle cx="159.4" cy="98.8" r="9"/><text x="159.4" y="102.1">50</text></g><g class="n" data-room="51" tabindex="0"><title>Room 51: You are in a maze of twisty little passages all alike.</title><circle cx="184.6" cy="62.8" r="9"/><text x="184.6" y="66.1">51</text></g><g class="n" data-room="52" tabindex="0"><title>Room 52: You are in a maze of twisty little passages, all alike.</title><circle cx="209.8" cy="98.8" r="9"/><text x="209.8" y="102.1">52</text></g><g class="n" data-room="53" tabindex="0"><title>Room 53: You are in a maze of twisty little passages, all alike.</title><circle cx="235" cy="62.8" r="9"/><text x="235" y="66.1">53</text></g><g class="n" data-room="54" tabindex="0"><title>Room 54: Dead end.</title><circle cx="263.8" cy="41.2" r="9"/><text x="263.8" y="44.5">54</text></g><g class="n" data-room="55" tabindex="0"><title>Room 55: You are in a maze of twisty little passages, all alike.</title><circle cx="256.6" cy="113.2" r="9"/><text x="256.6" y="116.5">55</text></g><g class="n" data-room="56" tabindex="0"><title>Room 56: Dead end.</title><circle cx="263.8" cy="149.2" r="9"/><text x="263.8" y="152.5">56</text></g><g class="n" data-room="57" data-name="Brink of pit" tabindex="0"><title>Room 57 (Brink of pit): You are on the brink of a thirty foot pit with a massive orange column down one wall. You could climb down here but you could not get back up. The maze continues at this level.</title><circle cx="328.6" cy="113.2" r="9"/><text x="328.6" y="116.5">57</text></g><g class="n" data-room="58" tabindex="0"><title>Room 58: Dead end.</title><circle cx="328.6" cy="70" r="9"/><text x="328.6" y="73.3">58</text></g><g class="n" data-room="60" data-name="Long hall, E" tabindex="0"><title>Room 60 (Long hall, E): You are at the east end of a very long hall apparently without side chambers. To the east a low wide crawl slants up To the north a round two foot hole slants down.</title><circle cx="235" cy="264.4" r="9"/><text x="235" y="267.7">60</text></g><g class="n" data-room="61" data-name="Long hall, W" tabindex="0"><title>Room 61 (Long hall, W): You are at the west end of a very long featureles hall. The hall joins up with a narrow north/south passage.</title><circle cx="155.8" cy="264.4" r="9"/><text x="155.8" y="267.7">61</text></g><g class="n" data-room="62" data-name="Crossover" tabindex="0"><title>Room 62 (Crossover): You are at a crossover of a high N/S passage and a low E/W one.</title><circle cx="184.6" cy="314.8" r="9"/><text x="184.6" y="318.1">62</text></g><g class="n" data-room="63" tabindex="0"><title>Room 63: Dead end.</title><circle cx="227.8" cy="343.6" r="9"/><text x="227.8" y="346.9">63</text></g><g class="n" data-room="64" data-name="Complex junction" tabindex="0"><title>Room 64 (Complex junction): You are at a complex junction. A low hands and knees passage from the north joins a higher crawl from the east to make a walking passage going west. There is also a large room above. The air is damp here.</title><circle cx="443.8" cy="451.6" r="9"/><text x="443.8" y="454.9">64</text></g><g class="n" data-room="65" data-name="Bedquilt" tabindex="0"><title>Room 65 (Bedquilt): You are in bedquilt. A long east/west passage with holes everywhere. To explore at random select north, south, up or down.</title><circle cx="393.4" cy="494.8" r="9"/><text x="393.4" y="498.1">65</text></g><g class="n" data-room="66" data-name="Swiss cheese" tabindex="0"><title>Room 66 (Swiss cheese): You are in a room whose walls resemble swiss cheese. Obvious passages go west, east, NE and NW. Part of the room is occupied by a large bedrock block.</title><circle cx="407.8" cy="595.6" r="9"/><text x="407.8" y="598.9">66</text></g><g class="n" data-room="67" data-name="Twopit, east" tabindex="0"><title>Room 67 (Twopit, east): You are at the east end of the twopit room. The floor here is littered with thin rock slabs, which make it easy to descend the pits. There is a path here bypassing the pits to connect passages from east and west. There are holes all over, but the only big one is on the wall directly over the west pit where you can&#39;t get to it.</title><circle cx="357.4" cy="646" r="9"/><text x="357.4" y="649.3">67</text></g><g class="n" data-room="68" data-name="Slab room" tabindex="0"><title>Room 68 (Slab room): You are in a large low circular chamber whose floor is an immense slab fallen from the ceiling ( slab room). East and west there once were large passages, but they are now filled with boulders. Low small passages go north and south and the south one quickly bends west around the boulders.</title><circle cx="227.8" cy="509.2" r="9"/><text x="227.8" y="512.5">68</text></g><g class="n" data-room="69" data-name="Above large room" tabindex="0"><title>Room 69 (Above large room): You are in a secret N/S canyon above a large room.</title><circle cx="235" cy="408.4" r="9"/><text x="235" y="411.7">69</text></g><g class="n" data-room="70" data-name="Above passage" tabindex="0"><title>Room 70 (Above passage): You are in a secret N/S canyon above a sizable passage.</title><circle cx="299.8" cy="602.8" r="9"/><text x="299.8" y="606.1">70</text></g><g class="n" data-room="71" data-name="Three canyons" tabindex="0"><title>Room 71 (Three canyons): You are in a secret canyon at a junction of three canyons, bearing north, south and SE. The north one is as tall as the other two combined.</title><circle cx="299.8" cy="559.6" r="9"/><text x="299.8" y="562.9">71</text></g><g class="n" data-room="72" data-name="Large low room" tabindex="0"><title>Room 72 (Large low room): You are in a large low room. Crawls lead north, SE and SW.</title><circle cx="580.6" cy="494.8" r="9"/><text x="580.6" y="498.1">72</text></g><g class="n" data-room="73" tabindex="0"><title>Room 73: Dead end crawl.</title><circle cx="616.6" cy="458.8" r="9"/><text x="616.6" y="462.1">73</text></g><g class="n" data-room="74" data-name="E/W canyon" tabindex="0"><title>Room 74 (E/W canyon): You are in a secret canyon which here runs E/W. It crosses over a very tight canyon 15 feet below. If you go down you may not be able to get back up.</title><circle cx="350.2" cy="372.4" r="9"/><text x="350.2" y="375.7">74</text></g><g class="n" data-room="75" data-name="Tight canyon" tabindex="0"><title>Room 75 (Tight canyon): You are at a wide place in a very tight N/S canyon.</title><circle cx="364.6" cy="415.6" r="9"/><text x="364.6" y="418.9">75</text></g><g class="n" data-room="76" tabindex="0"><title>Room 76: The canyon here becomes too tight to go further south.</title><circle cx="400.6" cy="430" r="9"/><text x="400.6" y="433.3">76</text></g><g class="n" data-room="77" data-name="Tall canyon" tabindex="0"><title>Room 77 (Tall canyon): You are in a tall E/W canyon. A low tight crawl goes 3 feet north and seems to open up.</title><circle cx="343" cy="458.8" r="9"/><text x="343" y="462.1">77</text></g><g class="n" data-room="78" data-name="Boulders" tabindex="0"><title>Room 78 (Boulders): The canyon runs into a mass of boulders --Dead end.</title><circle cx="307" cy="480.4" r="9"/><text x="307" y="483.7">78</text></g><g class="n" data-room="80" tabindex="0"><title>Room 80: You are in a maze of twisty little passages, all alike.</title><circle cx="328.6" cy="167.2" r="9"/><text x="328.6" y="170.5">80</text></g><g class="n" data-room="81" tabindex="0"><title>Room 81: Dead end.</title><circle cx="371.8" cy="167.2" r="9"/><text x="371.8" y="170.5">81</text></g><g class="n" data-room="82" tabindex="0"><title>Room 82: Dead end.</title><circle cx="98.2" cy="127.6" r="9"/><text x="98.2" y="130.9">82</text></g><g class="n" data-room="83" tabindex="0"><title>Room 83: You are in a maze of twisty little passages, all alike.</title><circle cx="371.8" cy="84.4" r="9"/><text x="371.8" y="87.7">83</text></g><g class="n" data-room="84" tabindex="0"><title>Room 84: You are in a maze of twisty little passages, all alike.</title><circle cx="379" cy="127.6" r="9"/><text x="379" y="130.9">84</text></g><g class="n" data-room="85" tabindex="0"><title>Room 85: Dead end.</title><circle cx="371.8" cy="48.4" r="9"/><text x="371.8" y="51.7">85</text></g><g class="n" data-room="86" tabindex="0"><title>Room 86: Dead end.</title><circle cx="209.8" cy="131.2" r="9"/><text x="209.8" y="134.5">86</text></g><g class="n" data-room="87" tabindex="0"><title>Room 87: You are in a maze of twisty little passages, all alike.</title><circle cx="253" cy="221.2" r="9"/><text x="253" y="224.5">87</text></g><g class="n" data-room="88" data-name="Narrow corridor" tabindex="0"><title>Room 88 (Narrow corridor): You are in a long, narrow corridor stretching out of sight to the west. At the eastern end is a hole through which you can see a profusion of leaves.</title><circle cx="501.4" cy="732.4" r="9"/><text x="501.4" y="735.7">88</text></g><g class="n" data-room="91" data-name="Steep incline" tabindex="0"><title>Room 91 (Steep incline): You are at the top of a steep incline above a large room. You could climb down here, but you would not be able to climb up. There is a passage leading back to the north.</title><circle cx="681.4" cy="538" r="9"/><text x="681.4" y="541.3">91</text></g><g class="n" data-room="92" data-name="Giant room" tabindex="0"><title>Room 92 (Giant room): You are in the giant room. The ceiling here is too high up for your lamp to show it. Cavernous passages lead east, north and south. On the west wall is scrawled the inscription, &#39;Fee fie foe foo&#39; !SIC. Treasure here at the start: A nest of golden eggs.</title><circle cx="609.4" cy="710.8" r="9"/><path class="tr" d="M616.4,698.8l4,4l-4,4l-4,-4z"/><text x="609.4" y="714.1">92</text></g><g class="n" data-room="93" data-name="Cave-in" tabindex="0"><title>Room 93 (Cave-in): The passage here is blocked by a recent cave-in.</title><circle cx="652.6" cy="739.6" r="9"/><text x="652.6" y="742.9">93</text></g><g class="n" data-room="94" data-name="Immense passage" tabindex="0"><title>Room 94 (Immense passage): You are at one end of an immense north/south passage.</title><circle cx="681.4" cy="667.6" r="9"/><text x="681.4" y="670.9">94</text></g><g class="n" data-room="95" data-name="Waterfall" tabindex="0"><title>Room 95 (Waterfall): You are in a magnificent cavern with a rushing stream, which cascades over a sparkling waterfall into a roaring whirlpool which disappears through a hole in the floor. Passages exit to the south and west. Treasure here at the start: A jewel-encrusted trident.</title><circle cx="703" cy="602.8" r="9"/><path class="tr" d="M710,590.8l4,4l-4,4l-4,-4z"/><text x="703" y="606.1">95</text></g><g class="n" data-room="96" data-name="Soft room" tabindex="0"><title>Room 96 (Soft room): You are in the soft room. The walls are covered with heavy curtains. The floor with a thick pile carpet. Moss covers the ceiling.</title><circle cx="436.6" cy="631.6" r="9"/><text x="436.6" y="634.9">96</text></g><g class="n" data-room="97" data-name="Oriental room" tabindex="0"><title>Room 97 (Oriental room): This is the oriental room. Ancient oriental cave drawings cover the walls. A gently sloping passage leads upwards to the north, another leads SE, and a hands and knees crawl leads west. Treasure here at the start: A precious Ming vase.</title><circle cx="515.8" cy="624.4" r="9"/><path class="tr" d="M522.8,612.4l4,4l-4,4l-4,-4z"/><text x="515.8" y="627.7">97</text></g><g class="n" data-room="98" data-name="Misty cavern" tabindex="0"><title>Room 98 (Misty cavern): You are following a wide path around the outer edge of a large cavern. Far below, through a heavy white mist, strange splashing noises can be heard. The mist rises up through a fissure in the ceiling. The path exits to the south and west.</title><circle cx="562.6" cy="599.2" r="9"/><text x="562.6" y="602.5">98</text></g><g class="n" data-room="99" data-name="Alcove" tabindex="0"><title>Room 99 (Alcove): You are in an alcove. A small NW path seems to widen after a short distance. An extremely tight tunnel leads east. It looks like a very tight squeeze. An eerie light can be seen at the other end.</title><circle cx="602.2" cy="631.6" r="9"/><text x="602.2" y="634.9">99</text></g><g class="n lit" data-room="100" data-name="Plover room" tabindex="0"><title>Room 100 (Plover room): You are in a small chamber lit by an eerie green light. An extremely narrow tunnel exits to the west. A dark corridor leads NE. Treasure here at the start: An emerald the size of a plovers egg.</title><circle cx="562.6" cy="671.2" r="9"/><path class="tr" d="M569.6,659.2l4,4l-4,4l-4,-4z"/><text x="562.6" y="674.5">100</text></g><g class="n" data-room="101" data-name="Dark room" tabindex="0"><title>Room 101 (Dark room): You are in the dark-room. A corridor leading south is the only exit. Treasure here at the start: A huge platinum pyramid.</title><circle cx="515.8" cy="685.6" r="9"/><path class="tr" d="M522.8,673.6l4,4l-4,4l-4,-4z"/><text x="515.8" y="688.9">101</text></g><g class="n" data-room="102" data-name="Arched hall" tabindex="0"><title>Room 102 (Arched hall): You are in an arched hall. A coral passage once continued up and east from here, but is now blocked by debris. The air smells of sea water.</title><circle cx="429.4" cy="559.6" r="9"/><text x="429.4" y="562.9">102</text></g><g class="n" data-room="103" data-name="Shell room" tabindex="0"><title>Room 103 (Shell room): You are in a large room carved out of sedimentary rock . The floor and walls are littered with bits of shells imbedded in the stone. A shallow passage proceeds downward, and a somewhat steeper one leads up. A low hands and knees passage enters from the south.</title><circle cx="451" cy="538" r="9"/><text x="451" y="541.3">103</text></g><g class="n" data-room="104" data-name="Ragged corridor" tabindex="0"><title>Room 104 (Ragged corridor): You are in a long sloping corridor with ragged sharp walls.</title><circle cx="487" cy="552.4" r="9"/><text x="487" y="555.7">104</text></g><g class="n" data-room="105" data-name="Cul-de-sac" tabindex="0"><title>Room 105 (Cul-de-sac): You are in a cul-de-sac about eight feet across.</title><circle cx="515.8" cy="570.4" r="9"/><text x="515.8" y="573.7">105</text></g><g class="n" data-room="106" data-name="Anteroom" tabindex="0"><title>Room 106 (Anteroom): You are in an ante-room leading to a large passage to the east. Small passages go west and up. The remnants of recent digging are evident. A sign in midair here says &#39;Cave under construction beyond this point. Proceed at own risk. ( Witt Construction Company)&#39;.</title><circle cx="487" cy="466" r="9"/><text x="487" y="469.3">106</text></g><g class="n" data-room="107" tabindex="0"><title>Room 107: You are in a maze of twisty little passages, all different.</title><circle cx="91" cy="505.6" r="9"/><text x="91" y="508.9">107</text></g><g class="n" data-room="108" data-name="Witt&#39;s end" tabindex="0"><title>Room 108 (Witt&#39;s end): You are at Witt&#39;s end. Passages lead off in * all* directions.</title><circle cx="523" cy="480.4" r="9"/><text x="523" y="483.7">108</text></g><g class="n" data-room="109" data-name="Wide canyon" tabindex="0"><title>Room 109 (Wide canyon): You are in a N/S canyon about 25 feet across. The floor is covered by white mist seeping in from the north. The walls extend upward for well over 100 feet. Suspended from some unseen point far above you, an enormous two-sided mirror is hanging parallel to and midway between the canyon walls. ( The mirror is obviously provided for the use of the dwarves, who as you know, are extremely vain.) A small window can be seen in either wall, some fifty feet up.</title><circle cx="191.8" cy="379.6" r="9"/><text x="191.8" y="382.9">109</text></g><g class="n" data-room="110" data-name="Window on pit" tabindex="0"><title>Room 110 (Window on pit): You are at a low window overlooking a huge pit, which extends up out of sight. A floor is indistinctly visible over 50 feet below. Traces of white mist cover the floor of the pit, becoming thicker to the left. Marks in the dust around the window would seem to indicate that someone has been here recently. Directly across the pit from you and 25 feet away there is a similar window looking into a lighted room. A shadowy figure can be seen there peering back at you.</title><circle cx="271" cy="527.2" r="9"/><text x="271" y="530.5">110</text></g><g class="n" data-room="111" data-name="Stalactite" tabindex="0"><title>Room 111 (Stalactite): A large stalactite extends from the roof and almost reaches the floor below. You could climb down it, and jump from it to the floor, but having done so you would be unable to reach it to climb back up.</title><circle cx="271" cy="631.6" r="9"/><text x="271" y="634.9">111</text></g><g class="n" data-room="112" tabindex="0"><title>Room 112: You are in a little maze of twisting passages, all different.</title><circle cx="74.8" cy="618.5" r="9"/><text x="74.8" y="621.8">112</text></g><g class="n" data-room="113" data-name="Reservoir" tabindex="0"><title>Room 113 (Reservoir): You are at the edge of a large underground reservoir. An opaque cloud of white mist fills the room and rises rapidly upward. The lake is fed by a stream, which tumbles out of a hole in the wall about 10 feet overhead and splashes noisily into the water somewhere within the mist . The only passage goes back toward the south.</title><circle cx="148.6" cy="358" r="9"/><text x="148.6" y="361.3">113</text></g><g class="n" data-room="114" tabindex="0"><title>Room 114: Dead end. Treasure here at the start: The Pirates treasure chest.</title><circle cx="422.2" cy="127.6" r="9"/><path class="tr" d="M429.2,115.6l4,4l-4,4l-4,-4z"/><text x="422.2" y="130.9">114</text></g><g class="n lit" data-room="115" data-name="Repository, NE" tabindex="0"><title>Room 115 (Repository, NE): You are at the northeast end of an immense room, even larger than the giant room. It appears to be a repository for the &#39;Adventure&#39; program. Massive torches far overhead bathe the room with smoky yellow light. Scattered about you can be seen a pile of bottles ( all of them empty), a nursery of young beanstalks murmuring quietly, a bed of oysters, a bundle of black rods with rusty stars on their ends, and a collection of brass lanterns. An immense mirror is hanging against one wall, and stretches to the other end of the room where various other sundry objects can be glimpsed dimly in the distance.</title><circle cx="811" cy="120.4" r="9"/><text x="811" y="123.7">115</text></g><g class="n lit" data-room="116" data-name="Repository, SW" tabindex="0"><title>Room 116 (Repository, SW): You are at the southwest end of the repository. To one side is a pit full of fierce green snakes. On the other side is a row of small wicker cages, each of which contains a little sulking bird. In one corner is a bundle of black rods with rusty marks on their ends. A large number of velvet pillows are scattered about on the floor. A vast mirror stretches off to the northeast. At your feet is a large steel grate, next to which is a sign which reads, &#39;Treasure vault. Keys in main office.&#39;.</title><circle cx="760.6" cy="149.2" r="9"/><text x="760.6" y="152.5">116</text></g><g class="n" data-room="117" data-name="Chasm" tabindex="0"><title>Room 117 (Chasm): You are on one side of a large deep chasm. A heavy white mist rising up canyon below obscures all view of the far side. A SW path leads away from the chasm into a winding corridor.</title><circle cx="674.2" cy="480.4" r="9"/><text x="674.2" y="483.7">117</text></g><g class="n" data-room="118" data-name="Winding corridor" tabindex="0"><title>Room 118 (Winding corridor): You are in a long winding corridor sloping out of sight in both directions.</title><circle cx="631" cy="509.2" r="9"/><text x="631" y="512.5">118</text></g><g class="n" data-room="119" data-name="Dragon" tabindex="0"><title>Room 119 (Dragon): You are in a secret canyon which exits to the north and east.</title><circle cx="199" cy="444.4" r="9"/><text x="199" y="447.7">119</text></g><g class="n" data-room="120" data-name="Dragon slain" tabindex="0"><title>Room 120 (Dragon slain): You are in a secret canyon which exits to the north and east.</title><circle cx="285.4" cy="386.8" r="9"/><text x="285.4" y="390.1">120</text></g><g class="n" data-room="121" data-name="Dragon" tabindex="0"><title>Room 121 (Dragon): You are in a secret canyon which exits to the north and east.</title><circle cx="299.8" cy="430" r="9"/><text x="299.8" y="433.3">121</text></g><g class="n" data-room="122" data-name="Far side" tabindex="0"><title>Room 122 (Far side): You are on the far side of the chasm. A NE path leads away from the chasm on this side.</title><circle cx="717.4" cy="430" r="9"/><text x="717.4" y="433.3">122</text></g><g class="n" data-room="123" data-name="Corridor" tabindex="0"><title>Room 123 (Corridor): You are in a long east/west corridor. A faint rumbling noise can be heard in the distance.</title><circle cx="753.4" cy="401.2" r="9"/><text x="753.4" y="404.5">123</text></g><g class="n" data-room="124" data-name="Fork" tabindex="0"><title>Room 124 (Fork): The path forks here. The left fork leads northeast. A dull rumbling seems to get louder in that direction. The right fork leads southeast down a gentle slope. The main corridor enters from the west.</title><circle cx="789.4" cy="372.4" r="9"/><text x="789.4" y="375.7">124</text></g><g class="n" data-room="125" data-name="Warm walls" tabindex="0"><title>Room 125 (Warm walls): The walls are quite warm here. From the north can be heard a steady roar, so loud that the entire cave seems to be trembling. Another passage leads south, and a low crawl goes east.</title><circle cx="818.2" cy="336.4" r="9"/><text x="818.2" y="339.7">125</text></g><g class="n lit" data-room="126" data-name="The view" tabindex="0"><title>Room 126 (The view): You are on the edge of a breath-taking view. Far below you is an active volcano, from which great gouts of molten lava come surging out, cascading back down into the depths. A river of fire crashes out from the depths of the volcano and plummets into a bottomless pit far off to your left. To the right, an immense geyser of blistering steam erupts continuously from a barren island in the center of a sulfurous lake, which bubbles ominously. The far right wall is aflame with an incandescence of its own, which lends an additional infernal splendor to the already hellish scene. A dark, foreboding passage exits to the south.</title><circle cx="818.2" cy="293.2" r="9"/><text x="818.2" y="296.5">126</text></g><g class="n" data-room="127" data-name="Boulder chamber" tabindex="0"><title>Room 127 (Boulder chamber): You are in a small chamber filled with large boulders. The walls are very warm, causing the air in the room to be almost stifling from the heat. The only exit is a crawl heading west, through which is coming a low rumbling. Treasure here at the start: Some very rare Spices.</title><circle cx="854.2" cy="343.6" r="9"/><path class="tr" d="M861.2,331.6l4,4l-4,4l-4,-4z"/><text x="854.2" y="346.9">127</text></g><g class="n" data-room="128" data-name="Sloping passage" tabindex="0"><title>Room 128 (Sloping passage): You are walking along a gently sloping north/south passage lined with oddly shaped limestone formations.</title><circle cx="825.4" cy="408.4" r="9"/><text x="825.4" y="411.7">128</text></g><g class="n" data-room="129" data-name="Barren entrance" tabindex="0"><title>Room 129 (Barren entrance): You are standing at the entrance to a large barren room. A sign posted above the entrance reads: &#39;Caution! BEAR IN ROOM!&#39;.</title><circle cx="839.8" cy="451.6" r="9"/><text x="839.8" y="454.9">129</text></g><g class="n" data-room="130" data-name="Barren room" tabindex="0"><title>Room 130 (Barren room): You are inside a barren room. The centre of the room is completely empty except for some dust. Marks in the dust lead away toward the far end of the room. The only exit is the way you came in. Treasure here at the start: The bear is locked to the wall with a golden chain.</title><circle cx="875.8" cy="473.2" r="9"/><path class="tr" d="M882.8,461.2l4,4l-4,4l-4,-4z"/><text x="875.8" y="476.5">130</text></g><g class="n" data-room="131" tabindex="0"><title>Room 131: You are in a maze of twisting little passages, all different.</title><circle cx="122.2" cy="514.7" r="9"/><text x="122.2" y="518">131</text></g><g class="n" data-room="132" tabindex="0"><title>Room 132: You are in a little maze of twisty passages, all different.</title><circle cx="143.4" cy="539.3" r="9"/><text x="143.4" y="542.6">132</text></g><g class="n" data-room="133" tabindex="0"><title>Room 133: You are in a twisting maze of little passages, all different.</title><circle cx="148" cy="571.4" r="9"/><text x="148" y="574.7">133</text></g><g class="n" data-room="134" tabindex="0"><title>Room 134: You are in a twisting little maze of passages, all different.</title><circle cx="134.5" cy="600.9" r="9"/><text x="134.5" y="604.2">134</text></g><g class="n" data-room="135" tabindex="0"><title>Room 135: You are in a twisty little maze of passages, all different.</title><circle cx="107.2" cy="618.5" r="9"/><text x="107.2" y="621.8">135</text></g><g class="n" data-room="136" tabindex="0"><title>Room 136: You are in a twisty maze of little passages, all different.</title><circle cx="47.5" cy="600.9" r="9"/><text x="47.5" y="604.2">136</text></g><g class="n" data-room="137" tabindex="0"><title>Room 137: You are in a little twisty maze of passages, all different.</title><circle cx="34" cy="571.4" r="9"/><text x="34" y="574.7">137</text></g><g class="n" data-room="138" tabindex="0"><title>Room 138: You are in a maze of little twisting passages, all different.</title><circle cx="38.6" cy="539.3" r="9"/><text x="38.6" y="542.6">138</text></g><g class="n" data-room="139" tabindex="0"><title>Room 139: You are in a maze of little twisty passages, all different.</title><circle cx="59.9" cy="514.7" r="9"/><text x="59.9" y="518">139</text></g><g class="n" data-room="140" data-name="Vending machine" tabindex="0"><title>Room 140 (Vending machine): Dead End.</title><circle cx="91" cy="674.8" r="9"/><text x="91" y="678.1">140</text></g></g><g class="lb"><text class="l" x="563.8" y="46.2">End of road</text><text class="l" x="532.6" y="46.2">Hill</text><text class="l" x="664.6" y="62.2">Well house</text><text class="l" x="607" y="105.4">Valley</text><text class="l" x="534.3" y="135.8">Forest</text><text class="l" x="491.1" y="117.8">Forest</text><text class="l" x="583" y="164.6">Slit</text><text class="l" x="656.5" y="132.6">Depression</text><text class="l" x="697" y="195.4">Below the grate</text><text class="l" x="600.6" y="211.4">Cobble crawl</text><text class="l" x="542.1" y="179.4">Debris room</text><text class="l" x="483.5" y="211.4">Sloping canyon</text><text class="l" x="370.6" y="195.4">Splendid chamber</text><text class="l" x="484.6" y="233.2">Small pit</text><text class="l" x="479.6" y="255.4">Hall of mists</text><text class="l" x="393.7" y="251.4">Fissure, E</text><text class="l" x="556.6" y="267.4">Low room</text><text class="l" x="405.4" y="325">Mountain king</text><text class="l" x="183.8" y="692.2">Twopit, west</text><text class="l" x="347.8" y="699.4">East pit</text><text class="l" x="370.4" y="744.2">West pit</text><text class="l" x="332.5" y="283.4">Fissure, W</text><text class="l" x="434.1" y="337.8">Low passage</text><text class="l" x="385.4" y="377">South chamber</text><text class="l" x="280.2" y="333.8">West chamber</text><text class="l" x="527.8" y="339.4">Y2</text><text class="l" x="556.6" y="303.4">Jumble of rock</text><text class="l" x="571" y="368.2">Window on pit</text><text class="l" x="486.8" y="385">Dirty passage</text><text class="l" x="535" y="411.4">Clean pit</text><text class="l" x="571" y="433">Pit bottom</text><text class="l" x="405.4" y="395.4">Dusty rocks</text><text class="l" x="262" y="251.4">West end of hall</text><text class="l" x="294.6" y="132.2">Brink of pit</text><text class="l" x="201" y="283.4">Long hall, E</text><text class="l" x="121.8" y="251.4">Long hall, W</text><text class="l" x="121.1" y="317.8">Crossover</text><text class="l" x="450.8" y="442.6">Complex junction</text><text class="l" x="400.4" y="509.8">Bedquilt</text><text class="l" x="327.8" y="598.6">Swiss cheese</text><text class="l" x="369.4" y="649">Twopit, east</text><text class="l" x="164.3" y="512.2">Slab room</text><text class="l" x="133" y="411.4">Above large room</text><text class="l" x="214.3" y="605.8">Above passage</text><text class="l" x="214.3" y="562.6">Three canyons</text><text class="l" x="494.6" y="509.8">Large low room</text><text class="l" x="286.2" y="363.4">E/W canyon</text><text class="l" x="330.6" y="402.6">Tight canyon</text><text class="l" x="268.5" y="461.8">Tall canyon</text><text class="l" x="249" y="483.4">Boulders</text><text class="l" x="459.1" y="751.4">Narrow corridor</text><text class="l" x="693.4" y="541">Steep incline</text><text class="l" x="621.4" y="713.8">Giant room</text><text class="l" x="664.6" y="742.6">Cave-in</text><text class="l" x="693.4" y="670.6">Immense passage</text><text class="l" x="715" y="605.8">Waterfall</text><text class="l" x="448.6" y="634.6">Soft room</text><text class="l" x="479" y="611.4">Oriental room</text><text class="l" x="574.6" y="602.2">Misty cavern</text><text class="l" x="614.2" y="634.6">Alcove</text><text class="l" x="574.6" y="674.2">Plover room</text><text class="l" x="490" y="704.6">Dark room</text><text class="l" x="398.1" y="578.6">Arched hall</text><text class="l" x="422.5" y="525">Shell room</text><text class="l" x="499" y="555.4">Ragged corridor</text><text class="l" x="487.3" y="589.4">Cul-de-sac</text><text class="l" x="464" y="485">Anteroom</text><text class="l" x="530" y="471.4">Witt&#39;s end</text><text class="l" x="203.8" y="382.6">Wide canyon</text><text class="l" x="185.5" y="530.2">Window on pit</text><text class="l" x="283" y="634.6">Stalactite</text><text class="l" x="160.6" y="361">Reservoir</text><text class="l" x="823" y="123.4">Repository, NE</text><text class="l" x="772.6" y="152.2">Repository, SW</text><text class="l" x="686.2" y="483.4">Chasm</text><text class="l" x="643" y="512.2">Winding corridor</text><text class="l" x="181.5" y="463.4">Dragon</text><text class="l" x="251.4" y="405.8">Dragon slain</text><text class="l" x="311.8" y="433">Dragon</text><text class="l" x="729.4" y="433">Far side</text><text class="l" x="765.4" y="404.2">Corridor</text><text class="l" x="801.4" y="375.4">Fork</text><text class="l" x="749.2" y="339.4">Warm walls</text><text class="l" x="830.2" y="296.2">The view</text><text class="l" x="812" y="362.6">Boulder chamber</text><text class="l" x="837.4" y="411.4">Sloping passage</text><text class="l" x="851.8" y="454.6">Barren entrance</text><text class="l" x="844.5" y="492.2">Barren room</text><text class="l" x="103" y="677.8">Vending machine</text><text class="g" x="604.8" y="78.2">XYZY 11 · PLUGH 33</text><text class="g" x="556.8" y="211.4">XYZY 3</text><text class="g" x="522.8" y="327.4">PLUGH 3 · PLOVER 100</text><text class="g" x="538.2" y="690.2">PLOVER 33</text><text class="g" x="223.2" y="650.6">DOWN: 45, 50 or 53</text></g></svg></div>
+    <p class="ca-mapsel" id="ca-mapsel"></p>
+    <ul class="ca-key">
+      <li><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M2 7H24" style="stroke:#8a8d93;stroke-width:1.4"/></svg>An exit in the room's list</li>
+      <li><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M2 7H24" style="stroke:var(--coral);stroke-width:1.4;stroke-dasharray:4 3"/></svg>A move a rule makes</li>
+      <li><span class="ca-kw">XYZY 11</span>A magic word and the room it leads to</li>
+      <li><svg viewBox="0 0 26 14" aria-hidden="true"><circle cx="13" cy="7" r="5.5" style="fill:var(--hl);stroke:var(--ink)"/></svg>Lit without the lamp</li>
+      <li><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M13 2l5 5-5 5-5-5z" style="fill:#c9a227;stroke:#8a6d0a"/></svg>A treasure lies here at the start</li>
+    </ul>
+    <p class="cap">Drawn from the exit pairs at <code>$4D63</code> and from the command rules that go to a room. A solid line is an exit for a direction, UP, DOWN, IN, OUT, CLIMB or the like. A dashed line is a rule's move, and many hold only sometimes: the grate has to be open, the troll gone or the door oiled, or a chance roll has to come up. A word that names a place, such as PIT, DEBRIS, BEDQUILT, VIEW or BARREN, also moves the player, often across a region; where such a word is the only link between two rooms, no line is drawn. Twelve rooms are not on the map, because each is a message, or nothing, that a status rule takes the player out of before the next command. In the maze of passages all different, every room leads to every other but 107 and 112. The game keeps no positions for its rooms, so these are set out by hand.</p>
+  </div>
+</section>
+<section id="rooms">
+  <p class="fig">02 · Room by room</p>
+  <h2 class="t">The cave, room by room</h2>
+  <p class="lede">Each room is a text, a list of exits and nothing else. Anything that happens in a room is a rule that tests for it.</p>
+  <div class="plate">
+    <div class="pick">
+      <button type="button" class="step" data-step="-1" aria-label="Previous room">&#8249;</button>
+      <select id="ca-room" aria-label="Room"></select>
+      <button type="button" class="step" data-step="1" aria-label="Next room">&#8250;</button>
+    </div>
+    <div class="ca-room">
+      <div><span class="ca-badge" id="ca-lit"></span><pre class="ca-mini" id="ca-text">Loading the game's bytes…</pre></div>
+      <div class="ca-side" id="ca-side"></div>
+    </div>
+    <p class="cap">Drawn from the game's tables: the text by <code>print_record</code> run by the port, the exits from the pairs at <code>$4D63</code>, the objects from their starting places at <code>$8AA2</code>, and the rules from the tables at <code>$5209</code> and <code>$66C7</code>. Click a room to go there.</p>
+  </div>
+</section>
+<section id="all">
+  <p class="fig">03 · Every room</p>
+  <h2 class="t">All 140 rooms</h2>
+  <p class="lede">Click a row to open the room above. An exit that depends on something, the grate or the plant, is a command rule rather than an exit, so the exits column counts only the fixed ones.</p>
+  <div class="ca-scroll"><table id="ca-all"><tr><th>Room</th><th>Text</th><th>Exits</th><th>Light</th></tr></table></div>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+/* adventure.js */
+// Classic Adventure's interpreter, ported routine by routine from the listing. Each function is
+// named after the listing label it ports and reads and writes the game's own variables in M, a
+// 64 KB image made from listing.json (C64.load), so the rooms, words, rules and messages are the
+// game's bytes. test_play.js runs this beside the game's code on the kit's 6502 simulator and
+// compares the text sent to CHROUT and the game's variables at every typed line.
+//
+// const m = CAPort.machine(M, io);  io = { chrout(byte), irqByte(addr), border(colour) }
+// m.run() is a generator. It yields { wait: 'line' } where the game reads a typed line (send the
+// line's PETSCII bytes, without the RETURN, with next()), { wait: 'key' } in the pager, while
+// irqByte($C5) is $40, { wait: 'save', files } and { wait: 'load' } for the tape (send back the
+// files SAVE gave, or null), { wait: 'reset' } when the game jumps through the reset vector, and
+// { wait: 'broken' } when the 10,000th command has patched print_record (facts.md, "The turns").
+globalThis.CAPort = (function () {
+  const LINE = 0x0C5A, OUT_COL = 0x0C85, SPACE = 0x0C86, NO_JUSTIFY = 0x0C87, IN_STATUS = 0x0C88,
+    HELD = 0x0C89, INV_EMPTY = 0x0C8A, INV_N = 0x0C8B, WORD1 = 0x0C8C, WORD2 = 0x0C8D, WORD3 = 0x0C8E,
+    FOUND = 0x0C8F, CUR = 0x0C90, FLAGS = 0x0C94, TURNS = 0x0CA1, ROOM = 0x0CA3, ROOM_SPARE = 0x0CA4,
+    PREV = 0x0CA5, SKIP = 0x0CA6, HERE_SAID = 0x0CA9, MOVED = 0x0CAA, DISPATCH = 0x0CAB, LIVES = 0x0CAD,
+    LIT = 0x0CAE, RULE_COPY = 0x0CBB, SCAN = 0x0CC7, ACT_TABLE = 0x0CC8, COND_TABLE = 0x0CF0,
+    OBJ_START = 0x0BBB, LIVES_DIGIT = 0x0EF0, SCORE_DIGITS = 0x0F48, TURN_DIGITS = 0x0F68,
+    INLINE = 0x1AD9, DICT = 0x1D4C, ROOMS = [0x2347, 0x2461], VOCAB = 0x47DF, EXITS = [0x4C49, 0x4D63],
+    CMD = 0x5209, CMD_END = 0x5BED, CMD_CONDS = 0x5BF3, CMD_ACTS = 0x5FD9,
+    STATUS = 0x66C7, STATUS_END = 0x673F, STATUS_CONDS = 0x6743, STATUS_ACTS = 0x679D,
+    MESSAGES = [0x6855, 0x69E7], OBJECTS = [0x80A7, 0x8145], OBJ = 0x8AA2,
+    COND_CODE = 0x4B, ARG = 0x4C, LINES = 0x52, IN_BUILDING = 0x53, REMEMBERED = 0x65;
+  const FLAG_CARRIED = FLAGS + 2, FLAG_3 = FLAGS + 3, FLAG_4 = FLAGS + 4, FLAG_DARK = FLAGS + 5,
+    FLAG_OVER = FLAGS + 10, FLAG_CLOSED = FLAGS + 12;
+  // The built-in messages: address and length, as each caller of print_inline loads them.
+  const MSG = { okay: [0x0D06, 5], cant: [0x0D0B, 7], cantGo: [0x0D12, 0x13], carrying: [0x0D25, 0x11],
+    nothing: [0x0D36, 0x0F], cantCarry: [0x0D45, 0x19], haveIt: [0x0D5E, 0x14], dontHave: [0x0D72, 0x11],
+    hitKey: [0x0D83, 0x19], dontUnderstand: [0x0D9C, 0x13], welcome: [0x0DAF, 0x7F], dark: [0x0E2E, 0x46],
+    here: [0x0E74, 0x13], reincarnate: [0x0E87, 0xB1], score: [0x0F38, 0x3C], another: [0x0F74, 0x17],
+    sure: [0x0F8B, 0x0E] };
+
+  class Broken extends Error {}
+
+  function machine(M, io) {
+    const w = a => M[a] | (M[(a + 1) & 0xFFFF] << 8);
+    const sw = (a, v) => { M[a] = v & 0xFF; M[(a + 1) & 0xFFFF] = (v >> 8) & 0xFF; };
+    const inc = a => { M[a] = (M[a] + 1) & 0xFF; };
+    const dec = a => { M[a] = (M[a] - 1) & 0xFF; };
+    let rulePtr = 0, condPtr = 0, condLeft = 0, actPtr = 0, actLeft = 0;
+    const tr = io.trace || (() => {});              // what the inspector shows; changes nothing
+
+    // ---- the printer --------------------------------------------------------------------
+    function chrout_swap(a) {                         // $1131
+      if (a >= 0x41 && a < 0x80) a ^= 0x20;
+      io.chrout(a);
+    }
+    function justify() {                              // $114B
+      if (M[NO_JUSTIFY]) return;
+      let y = 0x26, guard = 0;
+      for (;;) {                                      // j_1153
+        if (++guard > 5000) throw new Broken('justify does not end');
+        const x = 0x27;
+        if (M[LINE + x] !== 0x20) return;
+        let a;
+        do { a = M[LINE + y]; y = (y - 1) & 0xFF; } while (a === 0x20);
+        do { a = M[LINE + y]; y = (y - 1) & 0xFF; } while (a !== 0x20);
+        if (y >= 0x28) { y = 0x26; continue; }        // ran off the left: round to the right end
+        M[SCAN] = y;
+        let count = (x - y - 1) & 0xFF, sx = 0x26, sy = 0x27;
+        for (;;) {
+          count = (count - 1) & 0xFF;
+          if (count & 0x80) break;
+          M[LINE + sy] = M[LINE + sx]; sx = (sx - 1) & 0xFF; sy = (sy - 1) & 0xFF;
+        }
+        y = M[SCAN];
+      }
+    }
+    function clear_line() {                           // $1030, the tail of flush_line
+      for (let x = 0x2C; x > 0; x--) M[0x0C59 + x] = 0x20;
+      M[OUT_COL] = 0; M[SPACE] = 0;
+    }
+    function flush_line() {                           // $100F
+      justify();
+      for (let x = 0; x < 0x28; x++) chrout_swap(M[LINE + x]);
+      clear_line();
+    }
+    function* put_char(a) {                           // $0FD6
+      if (a !== 0x0D) {
+        const x = M[OUT_COL];
+        M[LINE + x] = a;
+        M[OUT_COL] = (x + 1) & 0xFF;
+        return;
+      }
+      flush_line();
+      inc(LINES);
+      if (M[LINES] < 0x14) return;
+      M[NO_JUSTIFY] = 1;                              // the pager
+      M[LINES] = 0;
+      for (let y = 0; y < 0x19; y++) yield* put_char(M[MSG.hitKey[0] + y]);
+      while (io.irqByte(0xC5) === 0x40) yield { wait: 'key' };
+      M[0xC6] = 0;
+    }
+    function* print_word(n) {                         // $0F99
+      let p = DICT;
+      for (;;) {
+        n = (n - 1) & 0xFFFF;
+        if (n === 0) break;
+        let b;
+        do { b = M[p]; p = (p + 1) & 0xFFFF; } while (!(b & 0x80));
+      }
+      for (;;) {
+        const b = M[p];
+        yield* put_char(b & 0x7F);
+        if (b & 0x80) return;
+        p = (p + 1) & 0xFFFF;
+      }
+    }
+    function* print_record(a, table, text) {         // $1033
+      if (M[0x1067] !== 0x85) throw new Broken('print_record is patched');
+      const rec = ((((a - 1) & 0xFF) << 1) + table) & 0xFFFF;
+      const start = w(rec);
+      let left = (w(rec + 2) - start) & 0xFFFF;
+      if (left !== 0) {
+        let t = (text + start) & 0xFFFF;
+        M[NO_JUSTIFY] = 0;
+        do {                                          // j_1088
+          let b = M[t];
+          if ((((b - 4) & 0x80) !== 0) || b >= 0x41) {
+            if (M[SPACE] === 1) yield* put_char(0x20);
+          }
+          if (b < 4) {                                // a dictionary word, two bytes
+            left = (left - 1) & 0xFFFF;
+            t = (t + 1) & 0xFFFF;
+            const n = (b << 8) | M[t];
+            if (M[SPACE] === 2) yield* put_char(0x20);
+            yield* print_word(n);
+            M[SPACE] = 1;
+          } else {
+            if (b === 0x0D && left === 1) M[NO_JUSTIFY] = 1;    // mark_last_line
+            if (b === 0x25) M[NO_JUSTIFY] = 1;      // '%': leave this line ragged
+            else {
+              M[SPACE] = (b === 0x27 || b === 0x2F || b === 0x2D) ? 0 : 2;
+              yield* put_char(b);
+            }
+          }
+          t = (t + 1) & 0xFFFF;
+          left = (left - 1) & 0xFFFF;
+        } while (left !== 0);
+      }
+      chrout_swap(0x0D);                              // j_111A
+      inc(LINES);
+    }
+    function* print_inline([addr, len]) {             // $1ADD
+      M[INLINE + 2] = len;
+      clear_line();
+      yield* print_record(1, INLINE, addr);
+    }
+    function* new_line() {                            // $1653
+      clear_line();
+      yield* put_char(0x0D);
+    }
+
+    // ---- input and the parser ---------------------------------------------------------
+    function* read_line() {                           // $1194
+      const line = (yield { wait: 'line' }) || [];
+      let p = LINE;
+      for (const c of line) {
+        if (c === 0x0D) break;
+        if (p === LINE + 0x27) break;                 // the rest of a longer line is dropped
+        M[p++] = c;
+      }
+      io.chrout(0x0D);
+      M[LINES] = 0;
+    }
+    function next_word() {                            // $122F
+      for (let x = 0; x < 4; x++) M[CUR + x] = 0;
+      let y = M[SCAN], x = 0;
+      for (;;) {                                      // j_1240
+        if (y === 0x28) break;
+        let a = M[LINE + y];
+        if (a === 0) { y++; continue; }
+        M[CUR + x] = a;
+        y++;
+        if (y === 0x28) break;
+        if (M[LINE + y] === 0) break;
+        x++;
+        if (x === 4) {                                // skip the rest of a long word
+          do { y++; } while (y !== 0x28 && M[LINE + y] !== 0);
+          break;
+        }
+      }
+      M[SCAN] = y;
+    }
+    function lookup_word() {                          // $126D
+      M[FOUND] = 0;
+      let p = VOCAB;
+      for (let n = 0; n < 0xE2; n++, p += 5) {
+        let x = 0;
+        while (x < 4 && M[CUR + x] === M[p + x]) x++;
+        if (x === 4) { M[FOUND] = M[p + 4]; return; }
+      }
+    }
+    function parse() {                                // $11D1
+      for (let y = 0; y < 0x28; y++) {
+        let a = M[LINE + y];
+        if (a === 0x20) a = 0;
+        M[LINE + y] = a & 0x7F;
+      }
+      M[WORD1] = 0; M[SCAN] = 0; M[WORD2] = 0xFF; M[WORD3] = 0xFF;
+      for (const slot of [WORD1, WORD2, WORD3]) {
+        for (;;) {
+          next_word();
+          if (M[CUR] === 0) return;
+          lookup_word();
+          tr('word', [M[CUR], M[CUR + 1], M[CUR + 2], M[CUR + 3]], M[FOUND]);
+          if (M[FOUND]) { M[slot] = M[FOUND]; break; }
+        }
+      }
+    }
+
+    // ---- rooms ------------------------------------------------------------------------
+    function* show_room() {                           // $153F
+      clear_line();
+      yield* print_record(M[ROOM], ROOMS[0], ROOMS[1]);
+      M[HERE_SAID] = 0;
+      for (let n = 1, p = OBJ; n !== 0x4F; n++, p += 2) {
+        M[0x50] = n;
+        if (M[ROOM] !== M[p]) continue;
+        if (!M[HERE_SAID]) { yield* print_inline(MSG.here); M[HERE_SAID] = 1; }
+        yield* print_record(n, OBJECTS[0], OBJECTS[1]);
+      }
+      M[0x50] = 0x4F;
+    }
+    function* describe_room() {                       // $1503
+      for (let y = 0; y < 0x0D; y++) if (M[LIT + y] === M[ROOM]) return yield* show_room();
+      if (M[FLAG_4]) dec(FLAG_4);
+      if (M[OBJ + 4] === M[ROOM] || (M[OBJ + 5] & 0x02)) return yield* show_room();   // the lit lamp, object 3
+      yield* print_inline(MSG.dark);
+      if (M[FLAG_DARK]) dec(FLAG_DARK);
+    }
+    function travel() {                               // $15C5
+      M[MOVED] = 0;
+      const p = EXITS[0] + (((M[ROOM] - 1) & 0xFF) << 1);
+      const start = w(p);
+      let count = (w(p + 2) - start) & 0xFFFF;
+      let q = (EXITS[1] + start) & 0xFFFF;
+      for (;;) {
+        if ((count & 0xFF) === (count >> 8)) return;  // both bytes compared with each other
+        if (M[WORD1] === M[q]) break;
+        q = (q + 2) & 0xFFFF;
+        count = (count - 2) & 0xFFFF;
+      }
+      if (M[ROOM] !== M[SKIP + 1] && M[ROOM] !== M[SKIP + 2]) M[PREV] = M[ROOM];
+      M[ROOM] = M[q + 1];
+      M[MOVED] = 1;
+    }
+
+    // ---- conditions ---------------------------------------------------------------------
+    const objLoc = n => (OBJ - 2 + ((n << 1) & 0x1FF)) & 0xFFFF;
+    const COND = {
+      0x1686: n => M[ROOM] === n,                                           // in room
+      0x1690: n => (M[objLoc(n) + 1] & 2) !== 0 || M[objLoc(n)] === M[ROOM],   // carried or here
+      0x16BE: n => (io.irqByte(0xA2) & 0x7F) < n,                          // chance
+      0x16C9: n => !(M[objLoc(n) + 1] & 2) && M[objLoc(n)] !== M[ROOM],      // neither
+      0x16F5: n => M[(FLAGS + n) & 0xFFFF] !== 0,                           // flag set
+      0x16FF: n => M[(FLAGS + n) & 0xFFFF] === 0,                           // flag clear
+      0x1709: n => (M[objLoc(n) + 1] & 2) !== 0,                            // carried
+      0x1723: n => M[objLoc(n)] === M[ROOM],                                // here
+      0x173E: n => M[objLoc(n)] !== M[ROOM],                                // not here
+      0x1759: n => !(M[objLoc(n) + 1] & 2),                                 // not carried
+      0x1774: n => M[objLoc(n)] !== 0 || M[objLoc(n) + 1] !== 0,            // has a location or flags
+    };
+    function test_condition() {                       // $165C
+      M[HELD] = 0;
+      M[COND_CODE] = (M[COND_CODE] << 1) & 0xFF;
+      const h = w(COND_TABLE + M[COND_CODE]);
+      sw(DISPATCH, h);
+      if (!COND[h]) throw new Broken('a condition jumps to $' + h.toString(16));
+      if (COND[h](M[ARG])) M[HELD] = 1;
+    }
+    // One rule's lists: the offsets of this rule's and the next rule's conditions and actions.
+    function setLists(copy, conds, acts, stride) {
+      const c0 = w(copy), a0 = w(copy + 2), c1 = w(copy + stride), a1 = w(copy + stride + 2);
+      condPtr = (conds + c0) & 0xFFFF; condLeft = (c1 - c0) & 0xFFFF;
+      actPtr = (acts + a0) & 0xFFFF; actLeft = (a1 - a0) & 0xFFFF;
+    }
+    // The condition list of the rule being tried: true when every condition holds.
+    function conditions() {
+      while (condLeft !== 0) {
+        M[COND_CODE] = M[condPtr]; M[ARG] = M[condPtr + 1];
+        condPtr = (condPtr + 2) & 0xFFFF;
+        test_condition();
+        tr('cond', M[COND_CODE] >> 1, M[ARG], M[HELD]);
+        if (!M[HELD]) return false;
+        condLeft = (condLeft - 2) & 0xFFFF;
+      }
+      return true;
+    }
+
+    // ---- actions: each returns where the game jumps next --------------------------------
+    const ACT = {
+      0x17F0: function* act_inventory() {
+        yield* print_inline(MSG.carrying);
+        M[INV_EMPTY] = 1; M[INV_N] = 1;
+        for (let p = OBJ + 1; M[INV_N] !== 0x4F; p += 2, inc(INV_N)) {
+          if (!(M[p] & 2)) continue;
+          yield* print_record(M[INV_N], OBJECTS[0], OBJECTS[1]);
+          M[INV_EMPTY] = 0;
+        }
+        if (M[INV_EMPTY]) yield* print_inline(MSG.nothing);
+        return 'status_rules';
+      },
+      0x185F: function* act_get(n) {
+        if (M[FLAG_CARRIED] === 7) { yield* print_inline(MSG.cantCarry); return 'status_rules'; }
+        const p = objLoc(n);
+        if (M[ROOM] === M[p]) { M[p] = 0; M[p + 1] |= 2; inc(FLAG_CARRIED); return 'next_action'; }
+        yield* print_inline(MSG.haveIt);
+        return 'status_rules';
+      },
+      0x18B2: function* act_drop(n) {
+        const p = objLoc(n);
+        if (M[p + 1] & 2) { M[p + 1] &= 0xFD; M[p] = M[ROOM]; dec(FLAG_CARRIED); return 'next_action'; }
+        yield* print_inline(MSG.dontHave);
+        return 'status_rules';
+      },
+      0x18F4: function* act_message(n) { yield* print_record(n, MESSAGES[0], MESSAGES[1]); return 'next_action'; },
+      0x190C: function* act_describe() { return 'main_loop'; },
+      0x190F: function* act_end_turn() { return 'end_turn'; },
+      0x1912: function* act_goto(n) {
+        if (M[ROOM] !== M[SKIP + 2] && M[ROOM] !== M[SKIP + 1]) M[PREV] = M[ROOM];
+        M[ROOM] = n;
+        return 'main_loop';
+      },
+      0x192D: function* act_set_flag(n) { M[(FLAGS + n) & 0xFFFF] = 0xFF; return 'next_action'; },
+      0x1937: function* act_clear_flag(n) { M[(FLAGS + n) & 0xFFFF] = 0; return 'next_action'; },
+      0x1941: function* act_another_game() { return 'act_another_game'; },
+      0x1970: function* act_okay() { yield* print_inline(MSG.okay); return 'status_rules'; },
+      0x1980: function* act_quit() {
+        yield* print_inline(MSG.sure);
+        yield* read_line();
+        const a = M[LINE];
+        yield* new_line();
+        if ((a & 0xDF) !== 0x59) return 'status_rules';
+        M[FLAG_OVER] = 1;
+        return 'act_score';
+      },
+      0x19A9: function* act_place_here(n) { M[objLoc(n)] = M[ROOM]; return 'next_action'; },
+      0x19C2: function* act_destroy(n) { M[objLoc(n)] = 0; return 'next_action'; },
+      0x19DA: function* act_set_flag_4(n) { M[(FLAGS + n) & 0xFFFF] = 4; return 'next_action'; },
+      0x19E4: function* act_score() { return 'act_score'; },
+      0x1A4A: function* act_remember_room(n) { M[REMEMBERED] = n; return 'next_action'; },
+      0x1A51: function* act_move_to_room(n) { M[OBJ - 2 + ((n << 1) & 0xFF)] = M[REMEMBERED]; return 'next_action'; },
+      0x1A5D: function* act_save() {
+        yield { wait: 'save', files: [{ addr: OBJ, bytes: M.slice(OBJ, 0x8B3D) },
+                                      { addr: OBJ_START, bytes: M.slice(OBJ_START, 0x0F98) }] };
+        io.chrout(0x0D);
+        return 'status_rules';
+      },
+      0x1AA3: function* act_restore() {
+        const files = yield { wait: 'load' };
+        for (const f of files || []) M.set(f.bytes, f.addr);
+        io.chrout(0x0D);
+        return 'main_loop';
+      },
+    };
+
+    // ---- the places the game jumps to ---------------------------------------------------
+    const L = {
+      *start() {                                      // $12B5
+        clear_line();
+        M[LINES] = 0;                                 // init_screen, $1AF9
+        chrout_swap(0x0E); chrout_swap(0x08);
+        M[0xC6] = 0;
+        chrout_swap(0x05);
+        io.border(6);
+        chrout_swap(0x93);
+        for (let x = 0; x < 0x9C; x++) M[OBJ_START + x] = M[OBJ + x];
+        yield* print_inline(MSG.welcome);
+        return 'new_game';
+      },
+      *new_game() {                                   // $12BB
+        M[TURNS] = 0; M[TURNS + 1] = 0;
+        for (let y = 0; y < 3; y++) M[TURN_DIGITS + y] = 0x20;
+        M[TURN_DIGITS + 3] = 0x30;
+        M[PREV] = 0; M[SKIP] = 0; M[ROOM_SPARE] = 0; M[ROOM] = 1;
+        for (let y = 0; y < 0x0D; y++) M[FLAGS + y] = 0;
+        M[FLAG_DARK] = 4; M[LIVES] = 4;
+        return 'main_loop';
+      },
+      *main_loop() {                                  // $12F4
+        if (M[ROOM] === 0) return 'death';
+        yield* describe_room();
+        return 'status_rules';
+      },
+      *status_rules() {                               // $12FF
+        M[IN_STATUS] = 1;
+        rulePtr = STATUS;
+        return 'status_scan';
+      },
+      *status_scan() {                                // j_130C
+        if (rulePtr === STATUS_END) return 'get_command';
+        for (let x = 0; x < 8; x++) M[RULE_COPY + x] = M[rulePtr + x];
+        setLists(RULE_COPY, STATUS_CONDS, STATUS_ACTS, 4);
+        tr('try', 'status', (rulePtr - STATUS) >> 2);
+        const ok = conditions();
+        tr(ok ? 'run' : 'fail');
+        return ok ? 'run_actions' : 'status_next';
+      },
+      *status_next() {                                // b_13A5
+        rulePtr = (rulePtr + 4) & 0xFFFF;
+        return 'status_scan';
+      },
+      *end_turn() {                                   // $13B5
+        if (M[FLAG_3]) dec(FLAG_3);
+        return 'get_command';
+      },
+      *get_command() {                                // $13BD
+        yield* read_line();
+        sw(TURNS, w(TURNS) + 1);
+        let x = 3;
+        for (;;) {                                    // the turn digits in the score message
+          inc((TURN_DIGITS + x) & 0xFFFF);
+          if (M[TURN_DIGITS + x] !== 0x3A) break;
+          M[TURN_DIGITS + x] = 0x30;
+          x = (x - 1) & 0xFF;
+          if (M[TURN_DIGITS + x] === 0x20) M[TURN_DIGITS + x] = 0x30;
+        }
+        parse();
+        yield* new_line();
+        if (M[WORD1] === 0) { yield* print_inline(MSG.dontUnderstand); return 'get_command'; }
+        const from = M[ROOM];
+        travel();
+        tr('exit', from, M[MOVED] ? M[ROOM] : 0);
+        return M[MOVED] ? 'main_loop' : 'command_rules';
+      },
+      *command_rules() {                              // $1405
+        M[IN_STATUS] = 0;
+        rulePtr = CMD;
+        return 'command_scan';
+      },
+      *command_scan() {                               // j_1412
+        if (rulePtr === CMD_END) return 'no_rule';
+        if (M[WORD1] !== M[rulePtr]) return 'command_next';
+        const noun = M[rulePtr + 1];
+        if (noun !== 0xFF && noun !== M[WORD2]) return 'command_next';
+        for (let x = 0; x < 12; x++) M[RULE_COPY + x] = M[rulePtr + x];
+        setLists(RULE_COPY + 2, CMD_CONDS, CMD_ACTS, 6);
+        tr('try', 'command', (rulePtr - CMD) / 6);
+        const ok = conditions();
+        tr(ok ? 'run' : 'fail');
+        return ok ? 'run_actions' : 'command_next';
+      },
+      *command_next() {                               // j_14C6
+        rulePtr = (rulePtr + 6) & 0xFFFF;
+        return 'command_scan';
+      },
+      *run_actions() {                                // $1794
+        if (actLeft === 0) return M[IN_STATUS] ? 'status_next' : 'no_rule';
+        const code = M[actPtr];
+        const h = w((ACT_TABLE + (code << 1)) & 0xFFFF);
+        sw(DISPATCH, h);
+        M[ARG] = M[actPtr + 1];
+        tr('act', code, M[ARG]);
+        if (!ACT[h]) throw new Broken('an action jumps to $' + h.toString(16));
+        return yield* ACT[h](M[ARG]);
+      },
+      *next_action() {                                // $17D3
+        actPtr = (actPtr + 2) & 0xFFFF;
+        actLeft = (actLeft - 2) & 0xFFFF;
+        return 'run_actions';
+      },
+      *no_rule() {                                    // $14D6
+        tr('norule', M[HELD]);
+        if (M[HELD]) return 'status_rules';
+        const w1 = M[WORD1];
+        yield* print_inline(w1 >= 0x2B && w1 < 0x37 ? MSG.cantGo : MSG.cant);
+        return 'status_rules';
+      },
+      *act_score() {                                  // $19E4
+        M[SCORE_DIGITS] = 0x20; M[SCORE_DIGITS + 1] = 0x30; M[SCORE_DIGITS + 2] = 0x30;
+        M[IN_BUILDING] = 0;
+        let x = 1;
+        for (let y = 0; y !== 0x9C; y++) {
+          const a = M[OBJ + y];
+          y++;
+          if (a !== 3) continue;
+          inc(IN_BUILDING);
+          if (!(M[OBJ + y] & 0x10)) continue;
+          inc(SCORE_DIGITS + x);
+          if (M[SCORE_DIGITS + x] === 0x3A) {
+            M[SCORE_DIGITS + x] = 0x30;
+            M[SCORE_DIGITS + x - 1] = 0x31;           // the hundreds are written, not counted
+          }
+        }
+        if (M[IN_BUILDING] === 0x0F) M[FLAG_CLOSED] = 0xFF;
+        yield* print_inline(MSG.score);
+        return M[FLAG_OVER] ? 'act_another_game' : 'status_rules';
+      },
+      *act_another_game() {                           // $1941
+        yield* print_inline(MSG.another);
+        yield* read_line();
+        if ((M[LINE] & 0xDF) === 0x4E) return 'reset';
+        yield* new_line();
+        for (let y = 0; y < 0x9C; y++) M[OBJ + y] = M[OBJ_START + y];
+        return 'new_game';
+      },
+      *death() {                                      // $1B35
+        if (M[LIVES] === 0) { M[FLAG_OVER] = 1; return 'act_score'; }
+        const before = M[LIVES];
+        dec(LIVES);
+        M[LIVES_DIGIT] = (before + 0x30) & 0xFF;
+        yield* print_inline(MSG.reincarnate);
+        for (const x of [3, 5]) {                     // a carried lamp goes back to the road
+          if (M[OBJ + x] & 2) { M[OBJ + x] &= 0xFD; M[OBJ + x - 1] = 1; break; }
+        }
+        for (let x = 1; x < 0x9C; x += 2) {           // everything else to the room before
+          if (M[OBJ + x] & 2) { M[OBJ + x] &= 0xFD; M[OBJ + x - 1] = M[PREV]; }
+        }
+        M[FLAG_CARRIED] = 0;
+        M[ROOM] = 3;
+        M[FLAG_DARK] = 3;
+        return 'main_loop';
+      },
+    };
+
+    function* run(from) {
+      let at = from || 'start';
+      for (;;) {
+        if (at === 'reset') { yield { wait: 'reset' }; return; }
+        try {
+          at = yield* L[at]();
+        } catch (e) {
+          if (!(e instanceof Broken)) throw e;
+          yield { wait: 'broken', why: e.message };
+          return;
+        }
+      }
+    }
+    return { run, L, print_record, parse, travel, M };
+  }
+
+  // Where each table starts, for pages that read them.
+  const T = { DICT, ROOMS, VOCAB, EXITS, CMD, CMD_END, CMD_CONDS, CMD_ACTS, STATUS, STATUS_END,
+              STATUS_CONDS, STATUS_ACTS, MESSAGES, OBJECTS, OBJ, LINE, ROOM, FLAGS, WORD1, LIT, MSG };
+  return { machine, T };
+})();
+</script>
+<script>
+/* adventure-ui.js */
+// The pages' screen, input and rule inspector around CAPort, and readers for the game's tables.
+// Every table is read from M, the image C64.load makes from listing.json.
+globalThis.CAUI = (function () {
+  const T = CAPort.T;
+  const w = (M, a) => M[a] | (M[a + 1] << 8);
+
+  // ---- the tables ---------------------------------------------------------------------
+  function dictWord(M, n) {
+    let p = T.DICT;
+    for (let k = 1; k < n; k++) { while (!(M[p] & 0x80)) p++; p++; }
+    let s = '';
+    for (;;) { s += String.fromCharCode(M[p] & 0x7F); if (M[p] & 0x80) return s; p++; }
+  }
+  // A record's text as it reads, without the justification: the printer's spacing rules, line
+  // breaks kept as \n, '%' dropped.
+  function plain(M, [table, base], n) {
+    const s0 = w(M, table + 2 * (n - 1)), e0 = w(M, table + 2 * n);
+    let out = '', state = 0;
+    for (let p = base + s0; p < base + e0; p++) {
+      const b = M[p];
+      if ((((b - 4) & 0x80) || b >= 0x41) && state === 1) out += ' ';
+      if (b < 4) { const word = dictWord(M, (b << 8) | M[++p]); if (state === 2) out += ' '; out += word; state = 1; continue; }
+      if (b === 0x25) continue;
+      if (b === 0x0D) { out += '\n'; state = 0; continue; }
+      state = (b === 0x27 || b === 0x2F || b === 0x2D) ? 0 : 2;
+      out += String.fromCharCode(b);
+    }
+    return out.replace(/ +\n/g, '\n').trimEnd();
+  }
+  // The raw bytes of a record, with each two-byte word reference as one token.
+  function tokens(M, [table, base], n) {
+    const s0 = w(M, table + 2 * (n - 1)), e0 = w(M, table + 2 * n), out = [];
+    for (let p = base + s0; p < base + e0; p++) {
+      if (M[p] < 4) { out.push({ at: p, bytes: [M[p], M[p + 1]], word: dictWord(M, (M[p] << 8) | M[p + 1]), n: (M[p] << 8) | M[p + 1] }); p++; }
+      else out.push({ at: p, bytes: [M[p]], ch: M[p] });
+    }
+    return out;
+  }
+  function vocabulary(M) {
+    const out = [];
+    for (let k = 0; k < 226; k++) {
+      const p = T.VOCAB + 5 * k;
+      out.push({ at: p, word: String.fromCharCode(...[...M.subarray(p, p + 4)].filter(c => c)), n: M[p + 4] });
+    }
+    return out;
+  }
+  function wordName(M, n) {
+    if (n === 0xFF) return '*';
+    const v = vocabulary(M).filter(e => e.n === n).map(e => e.word);
+    return v.length ? v.join('/') : 'word ' + n;
+  }
+  const objName = (M, n) => plain(M, T.OBJECTS, n).replace(/\n/g, ' ');
+  const msgText = (M, n) => plain(M, T.MESSAGES, n);
+  const roomText = (M, n) => plain(M, T.ROOMS, n);
+  function rule(M, kind, i) {
+    const cmd = kind === 'command', stride = cmd ? 6 : 4, at = (cmd ? T.CMD : T.STATUS) + stride * i;
+    const o = cmd ? 2 : 0, cb = cmd ? T.CMD_CONDS : T.STATUS_CONDS, ab = cmd ? T.CMD_ACTS : T.STATUS_ACTS;
+    const c0 = w(M, at + o), a0 = w(M, at + o + 2), c1 = w(M, at + stride + o), a1 = w(M, at + stride + o + 2);
+    const conds = [], acts = [];
+    for (let p = c0; p < c1; p += 2) conds.push([M[cb + p], M[cb + p + 1]]);
+    for (let p = a0; p < a1; p += 2) acts.push([M[ab + p], M[ab + p + 1]]);
+    return { kind, i, at, verb: cmd ? M[at] : null, noun: cmd ? M[at + 1] : null, conds, acts };
+  }
+  const ruleCount = kind => kind === 'command' ? (T.CMD_END - T.CMD) / 6 : (T.STATUS_END - T.STATUS) / 4;
+  function exits(M, room) {
+    const p = T.EXITS[0] + 2 * (room - 1), out = [];
+    for (let q = w(M, p); q < w(M, p + 2); q += 2) out.push({ word: M[T.EXITS[1] + q], to: M[T.EXITS[1] + q + 1] });
+    return out;
+  }
+  const short = (s, n = 54) => s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s;
+  function condText(M, c, a) {
+    const o = () => '“' + short(objName(M, a)) + '”';
+    return [() => 'in room ' + a, () => o() + ' carried or here', () => 'chance ' + a + ' in 128',
+            () => o() + ' neither carried nor here', () => 'flag ' + a + ' set', () => 'flag ' + a + ' clear',
+            () => o() + ' carried', () => o() + ' here', () => o() + ' not here', () => o() + ' not carried',
+            () => o() + ' has a location or flags'][c]?.() || 'condition ' + c;
+  }
+  function actText(M, c, a) {
+    const o = () => '“' + short(objName(M, a)) + '”';
+    return [() => 'list what is carried', () => 'take ' + o(), () => 'drop ' + o(),
+            () => 'message ' + a + (msgText(M, a) ? ' “' + short(msgText(M, a).replace(/\n/g, ' '), 44) + '”' : ' (empty)'),
+            () => 'describe the room', () => 'end the turn', () => 'go to room ' + a, () => 'set flag ' + a,
+            () => 'clear flag ' + a, () => 'offer another game', () => 'say Okay', () => 'ask “Are you sure?” and quit',
+            () => 'put ' + o() + ' here', () => 'remove ' + o() + ' from play', () => 'set flag ' + a + ' to 4',
+            () => 'show the score', () => 'remember room ' + a, () => 'put ' + o() + ' in the remembered room',
+            () => 'SAVE to tape', () => 'RESTORE from tape'][c]?.() || 'action ' + c;
+  }
+  // A rule's actions as a reader would say them: "remember room n" and "put the object in the
+  // remembered room" together are "put the object in room n".
+  function actsText(M, acts) {
+    const out = [];
+    for (let i = 0; i < acts.length; i++) {
+      const [c, a] = acts[i];
+      if (c === 16 && acts[i + 1] && acts[i + 1][0] === 17) { out.push('put “' + short(objName(M, acts[i + 1][1])) + '” in room ' + a); i++; }
+      else out.push(actText(M, c, a));
+    }
+    return out;
+  }
+  // What parse makes of a line: each word it looked up, and the verb, noun and third word.
+  function parseLine(M0, text) {
+    const M = Uint8Array.from(M0), words = [];
+    const m = CAPort.machine(M, { chrout() {}, irqByte: a => M[a], border() {}, trace: (k, l, n) => { if (k === 'word') words.push({ letters: String.fromCharCode(...l.filter(c => c)), n }); } });
+    M.fill(0x20, T.LINE, T.LINE + 0x28);
+    typed(text).slice(0, 0x27).forEach((c, i) => { M[T.LINE + i] = c; });
+    m.parse();
+    return { words, w1: M[T.WORD1], w2: M[T.WORD1 + 1], w3: M[T.WORD1 + 2] };
+  }
+  function ruleHead(M, r) {
+    return r.kind === 'command' ? `Command rule ${r.i}: ${wordName(M, r.verb)} ${r.noun === 0xFF ? '(any noun)' : wordName(M, r.noun)}`
+                                : `Status rule ${r.i}`;
+  }
+
+  // ---- the screen: the KERNAL's CHROUT on a 40 × 25 text screen, lower case set -------------
+  function petscii(b) {
+    if (b >= 0x41 && b <= 0x5A) return String.fromCharCode(b + 32);
+    if ((b >= 0x61 && b <= 0x7A) || (b >= 0xC1 && b <= 0xDA)) return String.fromCharCode((b & 0x1F) + 64);
+    if (b >= 0x20 && b <= 0x40) return String.fromCharCode(b);
+    return ({ 0x5B: '[', 0x5C: '£', 0x5D: ']', 0x5E: '↑', 0x5F: '←' })[b] || ' ';
+  }
+  // The C64's 40 by 25 screen, and above it the lines that scrolled off the top, kept so that the
+  // reader can scroll back: the C64 had no scrollback, and the screen element shows `rows` lines.
+  function Screen(el, rows = 25) {
+    const grid = [], blank = () => Array(40).fill(' '), back = [], KEEP = 2000;
+    let r = 0, c = 0;
+    const keep = line => { back.push(line.join('')); if (back.length > KEEP) back.splice(0, back.length - KEEP); };
+    const wipe = () => { grid.length = 0; for (let k = 0; k < rows; k++) grid.push(blank()); r = 0; c = 0; };
+    // the game's clear screen: what was on it goes to the scrollback, down to the cursor's line
+    const cls = () => { if (grid.some(l => l.some(ch => ch !== ' '))) for (let k = 0; k <= r; k++) keep(grid[k]); wipe(); };
+    const down = () => { r++; if (r === rows) { keep(grid.shift()); grid.push(blank()); r = rows - 1; } };
+    const put = ch => { grid[r][c] = ch; c++; if (c === 40) { c = 0; down(); } };
+    wipe();
+    el.style.setProperty('--rows', rows);
+    return {
+      chrout(b) {
+        if (b === 0x0D) { c = 0; down(); return; }
+        if (b === 0x93) { cls(); return; }
+        if (b < 0x20 || (b >= 0x80 && b < 0xA0)) return;   // colour, case and other controls
+        put(petscii(b));
+      },
+      echo(s) { for (const ch of s) put(ch); },
+      // The screen with the line being typed at the cursor, wrapped and scrolled as the editor would,
+      // under the scrollback, and scrolled to the bottom.
+      render(cursor, typing = '') {
+        const g = grid.map(l => l.slice()), above = back.slice();
+        let y = r, x = c;
+        for (const ch of typing + (cursor ? '█' : '')) {
+          if (y === rows) { above.push(g.shift().join('')); g.push(blank()); y = rows - 1; }
+          g[y][x] = ch; x++;
+          if (x === 40) { x = 0; y++; }
+        }
+        el.textContent = above.concat(g.map(l => l.join(''))).join('\n');
+        el.scrollTop = el.scrollHeight;
+      },
+      // A new game: the screen and its scrollback both empty.
+      clear() { back.length = 0; wipe(); },
+    };
+  }
+  // A typed line: lower case is the C64's unshifted letters, capitals its shifted ones.
+  const typed = s => [...s].map(ch => /[a-z]/.test(ch) ? ch.charCodeAt(0) - 32 : /[A-Z]/.test(ch) ? ch.charCodeAt(0) + 0x80
+                                   : ch.charCodeAt(0) < 0x80 ? ch.charCodeAt(0) : 0x20);
+
+  // Lines of output, as the screen would show them without scrolling: for a text printed alone.
+  function Transcript() {
+    const lines = [''];
+    return {
+      lines,
+      chrout(b) {
+        if (b === 0x0D) { lines.push(''); return; }
+        if (b < 0x20 || (b >= 0x80 && b < 0xA0)) return;
+        if (lines[lines.length - 1].length === 40) lines.push('');
+        lines[lines.length - 1] += petscii(b);
+      },
+    };
+  }
+  // Run one of the port's printing routines on a copy of the game's memory and return its lines.
+  function printed(M0, body) {
+    const M = Uint8Array.from(M0), out = Transcript();
+    const m = CAPort.machine(M, { chrout: b => out.chrout(b), irqByte: a => a === 0xC5 ? 0x3C : M[a], border() {} });
+    M[0x52] = 0;                                     // no pager
+    const g = body(m, M);
+    for (let st = g.next(); !st.done; st = g.next()) { /* a wait for the pager: carry on */ }
+    while (out.lines.length && out.lines[out.lines.length - 1] === '') out.lines.pop();
+    return { lines: out.lines, M };
+  }
+  // A room, message or object exactly as print_record lays it out: justified, with its blank line.
+  const recordLines = (M0, [table, base], n) => printed(M0, (m) => m.print_record(n, table, base)).lines;
+  // The score routine, act_score, run on the objects as they are in M0.
+  const scoreRun = M0 => printed(M0, (m) => m.L.act_score());
+
+  // ---- one game: the port, the screen, the input, and what the inspector is told ------------
+  function Game(root, M0, opts = {}) {
+    const M = Uint8Array.from(M0);
+    const screenEl = root.querySelector('.ca-screen'), input = root.querySelector('.ca-input'),
+          status = root.querySelector('.ca-status'), insp = root.querySelector('.ca-insp');
+    const screen = Screen(screenEl, opts.rows || 25);
+    let events = [], key = false, waiting = null, tape = null, lastLine;
+    try { tape = JSON.parse(localStorage.getItem('ca-tape') || 'null'); } catch (e) { tape = null; }
+    const io = {
+      chrout: b => screen.chrout(b),
+      irqByte: a => a === 0xA2 ? Math.floor(performance.now() * 60 / 1000) & 0xFF
+                  : a === 0xC5 ? (key ? (key = false, 0x3C) : 0x40) : M[a],
+      border: () => {},
+      trace: (...e) => events.push(e),
+    };
+    const port = CAPort.machine(M, io);
+    let gen = port.run();
+    const say = s => { if (status) status.textContent = s; };
+    function step(value, cont = false) {
+      if (!cont) { events = []; lastLine = value; }
+      let st = gen.next(value);
+      for (;;) {
+        if (st.done) { waiting = 'done'; break; }
+        const v = st.value;
+        if (v.wait === 'save') {
+          tape = v.files.map(f => ({ addr: f.addr, bytes: [...f.bytes] }));
+          try { localStorage.setItem('ca-tape', JSON.stringify(tape)); } catch (e) { /* the tape lasts for this visit */ }
+          say('SAVE: the game wrote its two files to this page’s tape, kept in the browser.');
+          st = gen.next(); continue;
+        }
+        if (v.wait === 'load') {
+          say(tape ? 'RESTORE: the two files were read back from this page’s tape.' : 'RESTORE: there is no saved game on this page’s tape, so nothing was loaded.');
+          st = gen.next(tape ? tape.map(f => ({ addr: f.addr, bytes: Uint8Array.from(f.bytes) })) : null); continue;
+        }
+        waiting = v.wait;
+        if (v.wait === 'key') say('The game’s pager is waiting: press any key.');
+        if (v.wait === 'reset') say('The game jumped through the reset vector, as N to “Another game” does: a C64 would now be at BASIC’s READY prompt. Restart to load it again.');
+        if (v.wait === 'broken') say('The 10,000th command has changed print_record’s STA $61 into STX $61, and the texts would come out blank from here on. This page stops the game there.');
+        break;
+      }
+      draw();
+      if (input) input.disabled = !(waiting === 'line' || waiting === 'key');
+      if (insp && opts.inspect) opts.inspect(insp, events, M, lastLine);
+      if (opts.after) opts.after(M, events);
+    }
+    const draw = () => screen.render(waiting === 'line', waiting === 'line' && input ? input.value : '');
+    function send(text) {
+      if (waiting === 'key') { key = true; say(''); step(undefined, true); return; }
+      if (waiting !== 'line') return;
+      say('');
+      screen.echo(text);
+      step(typed(text));
+    }
+    if (input) {
+      input.addEventListener('keydown', e => {
+        // Page Up and Page Down scroll the screen back and forth without pressing the pager's key
+        if (e.key === 'PageUp' || e.key === 'PageDown') { e.preventDefault(); screenEl.scrollBy(0, (e.key === 'PageUp' ? -1 : 1) * screenEl.clientHeight * 0.9); return; }
+        if (waiting === 'key') { e.preventDefault(); send(''); return; }
+        if (e.key === 'Enter') { e.preventDefault(); const t = input.value; input.value = ''; send(t); }
+      });
+      input.addEventListener('input', draw);
+      screenEl.addEventListener('click', () => { if (waiting === 'key') send(''); else input.focus(); });
+    }
+    step();
+    return {
+      M, send, step, port,
+      restart() { M.set(M0); gen = port.run(); screen.clear(); say(''); if (input) input.value = ''; step(); },
+      // Type a line as the reader would, into the input first so that it shows on the screen.
+      type(text) { if (waiting === 'key') send(''); if (waiting === 'line') send(text); },
+      show(text) { if (input) input.value = text; draw(); },
+      clearScreen() { screen.clear(); draw(); },
+      say,
+      get waiting() { return waiting; },
+    };
+  }
+
+  // A game set up as play would leave it, then typed into, a key at a time, by a button: the
+  // page's demonstrations. setup(M) pokes the state; the reader can type on afterwards.
+  function Scenario(root, M0, { setup, note, lines, rows = 18, inspect: ins }) {
+    const g = Game(root, M0, { rows, inspect: ins });
+    let timer = null, run = 0;
+    const later = (f, ms) => { const r = run; timer = setTimeout(() => { if (r === run) f(); }, ms); };
+    function prepare() {
+      g.restart();
+      if (setup) { setup(g.M); g.clearScreen(); }
+      if (note) g.say(note);
+    }
+    prepare();
+    function play() {
+      run++; clearTimeout(timer);
+      prepare();
+      let i = 0;
+      const next = () => {
+        if (g.waiting === 'key') { g.say('Hit any key: the game’s pager, pressed for you.'); later(() => { g.send(''); next(); }, 700); return; }
+        if (g.waiting !== 'line' || i >= lines.length) return;
+        const text = lines[i++];
+        let k = 0;
+        const key = () => {
+          g.show(text.slice(0, k));
+          if (k++ < text.length) later(key, 55);
+          else later(() => { g.show(''); g.send(text); later(next, 650); }, 250);
+        };
+        later(key, 300);
+      };
+      next();
+    }
+    return { game: g, play };
+  }
+
+  // ---- the inspector: what the last command did, from the port's trace -------------------------
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+  const hex = (a, n = 4) => '$' + a.toString(16).toUpperCase().padStart(n, '0');
+  // An address in the listing, linked to the Source tab as the site links a <code> it finds there.
+  const addr = a => `<code><a href="source.html#${a.toString(16).toUpperCase().padStart(4, '0')}">${hex(a)}</a></code>`;
+  function inspect(el, events, M, line) {
+    if (!line) { el.innerHTML = '<p class="ca-quiet">Type a command, and what the game did with it appears here.</p>'; return; }
+    const out = [];
+    const words = events.filter(e => e[0] === 'word');
+    if (words.length) {
+      out.push('<h4>The words</h4><ul>' + words.map(([, l, n]) => {
+        const s = String.fromCharCode(...l.filter(c => c));
+        return n ? `<li><b>${esc(s)}</b> is word ${n} (${esc(wordName(M, n))})</li>` : `<li><b>${esc(s)}</b> is not in the vocabulary, so it is skipped</li>`;
+      }).join('') + '</ul>');
+    }
+    const w1 = (words.find(e => e[2]) || [])[2] || 0;
+    if (words.length && !w1) out.push('<p>No word is in the vocabulary, so the game says “I dont understand!” and reads another line. The turn still counts.</p>');
+    const exit = events.find(e => e[0] === 'exit');
+    if (exit) out.push(exit[2] ? `<h4>An exit</h4><p>Room ${exit[1]} has an exit for this word: it leads to room ${exit[2]}, and no command rule is looked at.</p>`
+                               : `<h4>No exit</h4><p>Room ${exit[1]}'s exits have no entry for the first word, so the command rules are scanned.</p>`);
+    // rules, in the order they were tried; a status rule only when it ran
+    let cur = null, shown = [], statusTried = 0;
+    for (const e of events) {
+      if (e[0] === 'try') { cur = { kind: e[1], i: e[2], conds: [], ran: false, acts: [] }; if (e[1] === 'status') statusTried++; }
+      else if (e[0] === 'cond' && cur) cur.conds.push(e.slice(1));
+      else if (e[0] === 'run' && cur) { cur.ran = true; shown.push(cur); }
+      else if (e[0] === 'fail' && cur) { if (cur.kind === 'command') shown.push(cur); cur = null; }
+      else if (e[0] === 'act' && cur) cur.acts.push(e.slice(1));
+      else if (e[0] === 'norule') shown.push({ norule: true, held: e[1] });
+    }
+    if (shown.length) {
+      out.push('<h4>The rules</h4><ol class="ca-rules">' + shown.map(r => {
+        if (r.norule) return r.held ? '' : `<li class="ca-no">No command rule ran, so the game says “${w1 >= 0x2B && w1 < 0x37 ? 'I cant go that way' : 'I cant'}”.</li>`;
+        const R = rule(M, r.kind, r.i);
+        const conds = r.conds.map(([c, a, h]) => `<span class="${h ? 'ca-yes' : 'ca-no'}">${h ? '✓' : '✗'} ${esc(condText(M, c, a))}</span>`).join(' ');
+        const acts = actsText(M, r.acts).map(esc).join('; ');
+        return `<li class="${r.ran ? 'ca-ran' : ''}">${addr(R.at)} ${esc(ruleHead(M, R))}`
+          + (conds ? `<br>${conds}` : r.ran ? '<br><span class="ca-yes">no conditions</span>' : '')
+          + (r.ran ? `<br>→ ${acts}` : '') + '</li>';
+      }).join('') + '</ol>');
+    }
+    if (statusTried) out.push(`<p class="ca-quiet">${statusTried} status rule tests in all; only the ones that ran are listed.</p>`);
+    el.innerHTML = out.join('') || '<p class="ca-quiet">Nothing was looked up.</p>';
+  }
+
+  return { Transcript, printed, recordLines, scoreRun, dictWord, plain, tokens, vocabulary, wordName, objName, msgText, roomText, rule, ruleCount, exits,
+           condText, actText, actsText, parseLine, ruleHead, Screen, Game, Scenario, inspect, typed, petscii, hex, addr, esc };
+})();
+</script>
+<script>
+(function () {
+  const $ = s => document.querySelector(s);
+  if (!window.C64) { $('#ca-text').textContent = 'This page reads the game from listing.json with the site\'s shared script, which the built site serves: open it from the site, not from disk.'; return; }
+  C64.load('listing.json').then(G => {
+    const M = G.ram, T = CAPort.T, U = CAUI, esc = U.esc, OBJ = n => T.OBJ - 2 + 2 * n;
+    const short = (s, n = 60) => s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s;
+    const N = 140, lit = new Set(Array.from({ length: 13 }, (_, y) => M[T.LIT + y]));
+    const first = n => U.plain(M, T.ROOMS, n).replace(/\n/g, ' ');
+    const link = n => n === 0 ? 'room 0 (death)' : `<a href="#room-${n}" data-go="${n}">room ${n}</a>`;
+    // what leads where: exits, and rules that go to a room
+    const into = Array.from({ length: N + 1 }, () => []);
+    for (let r = 1; r <= N; r++) for (const e of U.exits(M, r)) if (e.to <= N) into[e.to].push({ from: r, word: e.word });
+    const rules = [];
+    for (const kind of ['command', 'status']) for (let i = 0; i < U.ruleCount(kind); i++) rules.push(U.rule(M, kind, i));
+    const sel = $('#ca-room');
+    sel.innerHTML = Array.from({ length: N }, (_, k) => `<option value="${k + 1}">Room ${k + 1}: ${esc(short(first(k + 1), 56)) || '(no text)'}</option>`).join('');
+    const ruleLine = R => `<li>${U.addr(R.at)} ${esc(U.ruleHead(M, R))}: ${R.conds.map(([c, a]) => esc(U.condText(M, c, a))).join(', ') || 'no conditions'} → ${U.actsText(M, R.acts).map(esc).join('; ')}</li>`;
+    const mapbox = $('#ca-mapbox');
+    function mark(n) {
+      mapbox.querySelectorAll('.n.on').forEach(g => g.classList.remove('on'));
+      const g = mapbox.querySelector(`[data-room="${n}"]`);
+      if (g) g.classList.add('on');
+      $('#ca-mapsel').innerHTML = g ? `<b>Room ${n}${g.dataset.name ? ', ' + esc(g.dataset.name) : ''}.</b> ${esc(first(n))} <a href="#room-${n}" data-go="${n}">Its exits, objects and rules</a>`
+        : `<b>Room ${n}</b> is not on the map: a status rule takes the player out of it before the next command.`;
+    }
+    const pickRoom = e => { const g = e.target.closest('[data-room]'); if (g) { e.preventDefault(); show(+g.dataset.room); } };
+    mapbox.addEventListener('click', pickRoom);
+    mapbox.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') pickRoom(e); });
+    function show(n) {
+      sel.value = n;
+      mark(n);
+      const lines = U.recordLines(M, T.ROOMS, n);
+      $('#ca-text').textContent = lines.length ? lines.map(l => l.padEnd(40)).join('\n') : ' '.repeat(40) + '\n(this room has no text)';
+      $('#ca-lit').textContent = lit.has(n) ? 'lit' : 'dark without the lamp';
+      const out = [];
+      const ex = U.exits(M, n);
+      out.push('<h4>Exits</h4>' + (ex.length ? '<ul>' + ex.map(e => `<li>${esc(U.wordName(M, e.word))} to ${link(e.to)}${e.to <= N && e.to ? ': ' + esc(short(first(e.to), 48)) : ''}</li>`).join('') + '</ul>' : '<p class="ca-quiet">None in the exit table.</p>'));
+      const objs = []; for (let k = 1; k <= 78; k++) if (M[OBJ(k)] === n) objs.push(k);
+      if (objs.length) out.push('<h4>Objects here at the start</h4><ul>' + objs.map(k => `<li>${k}: ${esc(short(U.objName(M, k), 70))}${M[OBJ(k) + 1] & 0x10 ? ' (treasure)' : ''}</li>`).join('') + '</ul>');
+      const here = rules.filter(R => R.conds.some(([c, a]) => c === 0 && a === n));
+      if (here.length) out.push('<h4>Rules that need the player here</h4><ul>' + here.map(ruleLine).join('') + '</ul>');
+      const to = rules.filter(R => R.acts.some(([c, a]) => c === 6 && a === n));
+      const from = into[n];
+      if (from.length || to.length) out.push('<h4>The ways in</h4><ul>' + from.map(f => `<li>${esc(U.wordName(M, f.word))} from ${link(f.from)}</li>`).join('') + to.map(R => `<li>${U.addr(R.at)} ${esc(U.ruleHead(M, R))}</li>`).join('') + '</ul>');
+      else out.push('<h4>The ways in</h4><p class="ca-quiet">No exit and no rule leads here.</p>');
+      $('#ca-side').innerHTML = out.join('');
+      if (location.hash !== '#room-' + n) history.replaceState(null, '', '#room-' + n);
+    }
+    sel.onchange = () => show(+sel.value);
+    document.querySelectorAll('#rooms [data-step]').forEach(b => { b.onclick = () => show((+sel.value - 1 + +b.dataset.step + N) % N + 1); });
+    document.addEventListener('click', e => {
+      const a = e.target.closest('[data-go]'); if (!a) return;
+      e.preventDefault(); show(+a.dataset.go); $('#rooms').scrollIntoView({ behavior: 'smooth' });
+    });
+    $('#ca-all').insertAdjacentHTML('beforeend', Array.from({ length: N }, (_, k) => {
+      const n = k + 1;
+      return `<tr data-room data-go="${n}"><td>${n}</td><td>${esc(short(first(n), 90)) || '<span class="ca-quiet">no text</span>'}</td><td>${U.exits(M, n).length}</td><td>${lit.has(n) ? 'lit' : ''}</td></tr>`;
+    }).join(''));
+    const m = /^#room-(\d+)$/.exec(location.hash);
+    show(m && +m[1] >= 1 && +m[1] <= N ? +m[1] : 1);
+  }, err => { $('#ca-text').textContent = 'This page reads the game from listing.json, which the built site serves: open it from the site, not from disk. (' + err.message + ')'; });
+})();
+</script>

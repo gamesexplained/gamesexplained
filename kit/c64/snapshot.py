@@ -7,7 +7,12 @@ then the RAM image at a fixed offset. `read` returns 0x10000 bytes of RAM
 depends on `$01` at the time, which `kit/c64/cpu.py` and listing.py's
 "io" rows model).
 
-  read(path) -> bytes, length 0x10000
+A part that is one bank of a cartridge (kit/c64/crt.py) is read from the
+cartridge image instead: the bank's chips at their load addresses, and
+$00 everywhere else. A file of one bank, the part's work/bank.crt, needs
+no number.
+
+  read(path, bank=None) -> bytes, length 0x10000
 
 Usage:
   snapshot.py <file.vsf>        print the size and the first bytes
@@ -20,11 +25,21 @@ VSF_RAM_OFFSET = 209
 MAGIC = b"VICE Snapshot File"
 
 
-def read(path):
-    """The 64 KB RAM image in a .vsf. Exits, saying what it saw, on anything else."""
+def read(path, bank=None):
+    """The 64 KB RAM image in a .vsf, or a bank's in a .crt. Exits, saying what it saw, on anything else."""
     if not os.path.isfile(path):
         sys.exit(f"{path}: no such snapshot")
     blob = open(path, "rb").read()
+    if blob.startswith(b"C64 CARTRIDGE"):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import crt
+        if bank is None and len(crt.info(path)["banks"]) > 1:
+            sys.exit(f"{path} is a cartridge image, not a snapshot: a part of the game is one of its banks, "
+                     "built from the bank's part (kit/c64/crt.py parts), or a snapshot of RAM")
+        return crt.image(path, bank)
+    if bank is not None:
+        sys.exit(f"{path}: bank {bank}'s part is read from the cartridge image, its work/bank.crt, "
+                 "not from a snapshot")
     if not blob.startswith(MAGIC):
         sys.exit(f"{path}: not a VICE snapshot (expected {MAGIC!r} at the start). "
                  "A .vsf is the C64's format; another machine reads its own.")

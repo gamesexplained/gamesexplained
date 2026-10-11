@@ -102,8 +102,15 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
   Sixteen inputs give sixteen moves; with standing that is the eighteen
   movements of the box once the crouching variant 7 and the turn round
   `$12` (fire + back from standing, `$11` turned into `$12`) are counted.
-  Which kick or punch each fire move is was judged from screenshots only
-  for the moves named in the table.
+  The game stores no names. The names used on the page (high, middle
+  and low punch 6, `$18`, 7; foot sweep `$0A`; low, middle and high kick
+  `$0B`, `$0C`, `$0D`; back kick `$0F`; back sweep `$10`; spinning kick
+  `$11`; low and high block `$13`, `$14`) describe each move's frames as
+  the pose builder draws them. The heights agree with `move_block_answer`
+  (`$118F`): `$14` answers 6, `$0D`, `$0E`, `$0F`, `$11`; `$13` answers
+  7, `$0B`, `$0C`, `$18`; the jump 5 answers the sweeps `$0A` and `$10`.
+  `$0F` and `$10` strike behind the fighter (`$11A8`). The spinning kick
+  `$11` is taken only from a held turn round `$12` (`$29B4`).
 - **Keyboard** (F7 in the attract mode, `$C6`): player 1 Q W E / A D /
   Z X C with fire S or left SHIFT (`$28B2`-`$2930`); player 2 P @ * / L ; /
   , . / with fire : or right SHIFT (`$2931`-`$29B3`). The first held
@@ -178,11 +185,29 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
   frame its pose reaches `move_strike_frame[move]` (`$1204`) and only on
   the tick a step starts (`$88,X`). The distance between the fighters is
   compared with the reach profile for the move and the defender's frame
-  (`$121D` facing each other, `$124F` from behind): at the profile's
+  (`$121D` facing each other, `$124F` facing the same way): at the profile's
   distance or nearer by up to `$11BD[move]` a whole point, nearer by up to
   `$11D6[move]` a half point, otherwise a miss; `$80` means a defender in
   that frame cannot be hit (`$2B70`-`$2C40`). The backward test is one unit
   narrower (`$2BF4` against `$2C0D`).
+- **Fighters facing the same way** (`$2B90` compares `$53,X` with
+  `$53,Y`): the profile comes from `$124F`, the distance is taken the
+  other way round (`$2C55`-`$2C6D`) and the forward and backward tests swap
+  (`$2C76` is the backward test, `$2C8F` the forward one). A forward blow
+  then lands on a defender's back; the back kick `$0F` and back sweep `$10`
+  land on the front of a defender standing behind the attacker. Every
+  blow has both profiles, with about as many hittable frames in each
+  (e.g. `$0C` 29 facing, 31 same way). The port in `reference/fist-page.js`
+  matches `$2B8E` in 262,196 cases (every blow, defender frame `$00`-`$3A`,
+  distance -40 to 60, both relative facings, attacker facing either way).
+- **Hit reaction by side** (`$2CA8`): a blow on the defender's front gives
+  `$16` (falls backwards, frames `$29`-`$2C`), or `$1B` (doubles over,
+  `$2D`-`$2F`) for a forward blow `$18`, 7 or `$0C` between fighters facing
+  each other; a blow on the back gives `$1A` (pitches forward, `$25`-`$28`).
+  The automatic block needs the blow to come at the front: `$2D00` accepts
+  a forward blow between fighters facing each other or a backward blow
+  between fighters facing the same way, and `$2AF2` leaves out the sweeps
+  `$0A` and `$10`.
 - **Points** (`$12A5`, hundreds, halved for a half point): moves 6, 7,
   `$0D`, `$0F`, `$10` 800; `$0A` 400; `$0B`, `$0C` 200; `$0E`, `$11` 1000;
   `$18` 600. *Live*: a whole point with `$0C` scored 200. The score lives
@@ -218,10 +243,32 @@ KERNAL is out and the game owns the vectors: NMI `$2FF2`, RESET `$1990`
   from `$26D5` (facing each other) and `$2725` (same way); against a block
   it picks the blows that block does not stop (`$27A1`/`$27A5`). Eight
   per-level masks (`$27A9`-`$27FC`) set its timing; the level is 0 at
-  NOVICE and rises with each bout won (`$1C2D`). Random numbers:
+  NOVICE and rises by one with each rank cleared, two bout wins (`$1C2D`). Random numbers:
   `random_next` (`$2589`), shift left and XOR `$1D` on carry, all 255
   non-zero values (checked by computing the cycle); `$99` is stepped every
   frame (`$1AFF`).
+- **How the computer answers a blow** (`$237D`, ported in
+  `reference/fist-page.js` and matched against the game's code for every
+  level, blow and all 255 random states): `random AND $9C`; bit 7
+  counter-attacks (`$24B1`), bits 4-6 block with `$118F`, a low nibble of 0
+  takes move 9 or `$0B` on a second number, anything else starts the plan
+  `$2788[blow]` (6->8, 7->2, `$0A`->4, `$0B`->3, `$0C`->2, `$0E`->9,
+  `$0F`->4, `$10`->7, `$11`->2, `$18`->6), or blocks when it is 0 (`$0D`).
+  Before answering it waits `random AND $AC` passes (`$2363`), zero from
+  level 4. Novice counter-attacks 128 times in 255; level 4 blocks 224 in
+  255; level 7 starts a plan 240 in 255 and never blocks except the high
+  kick.
+- **How the computer picks an attack** (`$24B1`, ported and matched the same
+  way for every level, both relative facings, opponent standing, crouching,
+  low punch, foot sweep and both blocks, and every close distance): facing
+  each other, against `$13`/`$14` from `$27A1`/`$27A5`, otherwise
+  `$26D5[$73 + $33 + random AND $94]`; `$0E` becomes 2 from level 7, `$0A`
+  makes no request below level 2, 7 becomes crouch and plan 5, `$0F`/`$10`
+  go through `$2567` (`random AND $A3`: bit 7 turn, `$40`+ walk back, `$20`+
+  move 8). Facing the same way, `$2725[$73 + $29 + random AND $94]` with
+  only the `$0F`/`$10` step. A low opponent (4, 7, `$0A`, `$10`) swaps the
+  move through `$12D0` first. Close range is `$73` from -43 to 20 facing
+  each other and -33 to 30 facing the same way (`$241A`, `$2477`).
 - **High scores:** one per mode in the panel (`$1299` one player, `$129F`
   two); a five-place table with names and ranks for one player
   (`$146A`-`$17BA`), with name entry by the game's own keyboard scan

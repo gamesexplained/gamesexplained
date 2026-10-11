@@ -17,7 +17,7 @@ same way, so tiers mean the same thing everywhere.
 
 1. `python3 kit/scripts/coverage.py games/<platform>/<slug> --live`
    prints the figure and the work queue: the largest contiguous
-   undescribed runs, largest first.
+   undescribed runs, largest first, each with why it is still bare.
 2. Take the top of the queue. Read the routine or table. Work out what it
    does in terms of the game (what the player sees, which feature in
    `features.md` it serves). Name it. Write a **line comment on its entry
@@ -26,7 +26,13 @@ same way, so tiers mean the same thing everywhere.
    on screen: a comment written later, from the notes of one reading of
    the whole program, gets the routine right and its details wrong (the
    unit of a counter, which states a compare lets through, up for
-   down). While it is in front of you, note
+   down). Callers and readers, and any
+   "only", "never" or "every", come from the platform's references
+   search (`60-verify`, "Negative results", names it), with how many
+   there are; without the search, leave the claim out. They are the
+   details a checker most often finds wrong: the routine in front of you
+   shows one caller, and it gets written up as the rule.
+   While it is in front of you, note
    anything it would accept that the player was never meant to do: an
    exact match where a range was meant, a comparison that assumes a sign,
    an eight-bit sum that can wrap, a test whose order leaves a gap. Put
@@ -203,7 +209,10 @@ format, how to check the result against it, and how to read it back
   your own, or a named symbol every 64 bytes or less, each with its own
   description,
   or most of it stays out of the count however well you have explained
-  the whole.
+  the whole. The work queue says which rule left each run bare. "No
+  comment on" names the symbol to describe; a run "past" a symbol's
+  reach, or after one that "stops" at its block's end or an edge of the
+  map, wants a symbol of your own at the run's address.
 
 ## A game of several parts
 
@@ -237,11 +246,15 @@ part beneath, and `check_listing.py` says when one of those has changed
 
 The session traces the code of the part beneath as well, and where that
 code refers to an address in this part's ranges the disassembler mints an
-automatic symbol there, which the export keeps as this part's. It names an
-address this part's own code may never use, and it can hold the figure
-down. Look for automatic symbols in the part's ranges whose every
-cross-reference comes from outside them, and delete each (a temporary
-name, then an empty one); a rebuilt session mints them again. <!-- until #213 -->
+automatic symbol there. Where the part beneath wrote that address in its
+own load (its own routine or table, which this part's load replaced), the
+name is one this part's own code may never use. The export from a live
+session, and `coverage.py --live`, leave out each of those that only code
+another part owns refers to, and the export says how many; a label of
+yours stays. An address the part beneath never wrote is kept, since code
+beneath that refers there means what this part holds (a level's entry, its
+tables). An export from a project file cannot ask what refers to what, so
+it keeps them all: export from the live session.
 
 ## Data the ledger cannot see
 

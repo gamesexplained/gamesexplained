@@ -48,16 +48,15 @@ check-emulator reports which of these quirks the build has, after its checks.
 """
 import contextlib, http.client, json, os, re, shutil, sys, time, urllib.error, urllib.request
 
+from ports import resolve_ports
+
+
 def _port():
-    """KIT_VICE_PORT, else the port the launcher last started the emulator on, else 6510 (kit/c64/tools.py)."""
-    try:
-        return int(os.environ.get("KIT_VICE_PORT") or
-                   open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "vice-port")).read())
-    except (OSError, ValueError):
-        return 6510
+    return resolve_ports()["vice"]
 
 
 URL = f"http://127.0.0.1:{_port()}/mcp"
+
 _SNAPSHOTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                           "tools", "vice-home", "config", "vice", "mcp_snapshots")
 
@@ -273,7 +272,10 @@ def step_pass(rpc, timeout=5.0):
 
 def frames(rpc, n=1):
     """Run exactly n frames from a stopped machine and stop again (needs the frame-advance- checks)."""
-    return json.loads(call(rpc, "vice_frame_advance", {"frames": n}))
+    result = ask(rpc, "vice_frame_advance", {"frames": n})
+    if not isinstance(result, dict) or result.get("status") != "ok" or result.get("frames") != n:
+        raise ViceError(f"frame advance did not complete {n} frames: {result}")
+    return result
 
 
 def arm(rpc, a, end=None, ignore=0, condition=None, stop=True, exec=None, load=False, store=False):

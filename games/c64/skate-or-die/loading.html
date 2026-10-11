@@ -1,0 +1,70 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skate or Die!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/sod-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Electronic Arts</p>
+  <h1>Skate or Die!</h1>
+  <p class="sub">From LOAD"EA",8,1 to the title screen: a loader that decrypts itself in layers, checks the disk with the drive's own code, and leaves a disk server running in the drive for the rest of the game.</p>
+</header>
+<main class="wrap" data-part="boot">
+<section id="ea">
+  <p class="fig">01 · The file</p>
+  <h2 class="t">One sector that runs itself</h2>
+  <p>The disk's directory lists a single program, <code>EA</code>, said to be two blocks long. The file is one sector: 254 bytes that load into the processor's stack page, from <span data-part=""><code>$0102</code></span>. Nothing calls them. When the KERNAL's LOAD returns, it pulls its return address off the stack, and the file has filled that part of the stack with the bytes <code>$01 $00</code>, so the return lands on <span data-part=""><code>$0101</code></span>, the byte before the file.</p>
+  <p>That byte is left over from the start-up screen. BASIC prints 38911 BASIC BYTES FREE by building the number in the stack page, and the "8" it leaves at <span data-part=""><code>$0101</code></span> is <code>$38</code>, the 6502's SEC instruction. The processor sets the carry and runs on into the file. The code then reads seventeen sectors of track 1 into memory at <code>$0334</code>, fills the stack page with <code>$01</code> to erase itself, and jumps into what it loaded.</p>
+</section>
+<section id="layers">
+  <p class="fig">02 · Decryption</p>
+  <h2 class="t">Each layer scrambles the one before</h2>
+  <p>The seventeen sectors are encrypted. A first pass undoes a running XOR over nearly 2,500 bytes. The code it reveals copies the KERNAL ROM into the RAM beneath it (<code>$0389</code>), resets the machine if a cartridge answers at <span data-part=""><code>$8000</code></span>, and points the NMI and RESET vectors at an RTI, so the RESTORE key does nothing.</p>
+  <p>Then come four layers. A routine at <code>$0340</code> XORs the rest of the loader with the low byte of the address it was called from, and it is called four times, from four places (<code>$03BF</code> is the first). Each call reveals the code after it and scrambles the code that has just run, so at no moment is the whole loader in memory in the clear. Between layers, three checksums test that the erasing fill happened and that nobody has patched the code; a failure jumps into garbage.</p>
+  <figure class="sod-shot"><canvas id="logo" class="scr" style="max-width:640px"></canvas><figcaption>The screen the loader shows while it works: 49 characters of the EA logo at <code>$C800</code>, placed on the screen at <code>$C000</code>, drawn from the bytes still in memory when the title starts. The background steps from blue towards grey with each page that arrives from the disk.</figcaption></figure>
+</section>
+<section id="protection">
+  <p class="fig">03 · The disk check</p>
+  <h2 class="t">A track that a copier cannot write</h2>
+  <p>Track 2 of the disk holds no sectors at all. It holds one sync mark, a run of filler bytes, then 512 pairs of the bytes <code>$CC $AD</code> followed by twelve particular bytes. The loader unpacks a 182-byte program, sends it to the drive one byte at a time, and runs it there. The drive program moves the head to track 2, changes the speed at which it reads bits, and looks for that exact pattern, three tries at most. The loader then asks the drive for the result and for a byte of the program itself, to be sure the program was not replaced. If either answer is wrong, it fills its own memory with <code>$FF</code> and resets the machine.</p>
+  <p>The check is the last thing the encrypted loader does before it changes the drive for good. It resets the drive, has it read four sectors of track 1, and jumps into them. That is EA's disk server: it stays in the drive's memory for the whole game and answers three-byte commands, a command, a track and a sector, sent over the serial lines. The C64 never holds a copy of it.</p>
+</section>
+<section id="stage3" data-part="boot">
+  <p class="fig">04 · The hand-over</p>
+  <h2 class="t">Wiping the loader behind it</h2>
+  <p>The loader's own receive routine XORs every byte with <code>$A5</code> and turns the background up a shade with each page, which is the stepping colour behind the logo. It reads six sectors of track 3 to <code>$2000</code>, copies a wiper to <code>$EF00</code>, and the wiper clears the encrypted loader from memory before it returns into the new code.</p>
+  <p>That code, stage 3 (<code>$2000</code>), is 52 bytes. It copies the resident disk loader up to <code>$F230</code>, where it stays for the rest of the game, loads file 0, the title, and jumps to it. Every later load in the game goes through that resident loader and the server in the drive (<a href="town.html">The town</a>).</p>
+</section>
+<section id="title" data-part="title">
+  <p class="fig">05 · The title</p>
+  <h2 class="t">A picture that moves only its colours</h2>
+  <p>The title program unpacks its picture first (<code>$4160</code>), so it is on screen while the samples for the music load behind it. The picture is a multicolour bitmap, packed on the disk with a simple run-length scheme (<code>$4338</code>): a byte below 128 is followed by that many plus one literal bytes, a byte of 128 or more by one byte to repeat.</p>
+  <div class="plate">
+    <canvas id="pic" class="scr" style="max-width:640px"></canvas>
+    <p class="cap">The title picture drawn from the title's memory: the bitmap at <code>$A000</code>, the screen colours at <code>$8800</code> and the colour-RAM copy at <code>$8400</code>, as <code>$41CD</code> shows them.</p>
+  </div>
+  <p>Nothing on the screen moves; only colours change. Each frame the raster interrupt (<code>$4093</code>) plays the music, then uses a frame counter to step four colour effects: ELECTRONIC ARTS flips between white and yellow every 32 frames, white and greys roll down the three credit lines, a highlight sweeps across the EA logo, and the words SKATE, OR and DIE! swap their colour with their shadow one after another (<code>$423E</code>, <code>$42BC</code>), 16 frames apart.</p>
+</section>
+<section id="exit" data-part="title">
+  <p class="fig">06 · Leaving the title</p>
+  <h2 class="t">The shop starts on an interrupt</h2>
+  <p>The title waits for fire on either joystick (<code>$4022</code>); the space bar works too, because the keyboard row it sits on is the one left selected. On fire, the music stops, the shop is loaded to <span data-part="shop"><code>$0880</code></span>, and the NMI vector is pointed at <span data-part="shop"><code>$0880</code></span>. The title then restarts the timer that drove the samples and spins in a loop. The next tick of that timer raises an NMI, and the NMI is how the shop starts.</p>
+  <p>The title leaves a 0 at <code>$FDFF</code>. The shop reads it, and anything but <code>$55</code> makes it load the event manager that runs the town and the events. Rob Hubbard's music, with its sampled guitars played through the volume register, is on <a href="music.html">Music and sound</a>.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/sod-page.js"></script>
+<script>
+(async function () {
+  try {
+    const T = await SOD.load('title');
+    SOD.mcBitmap(document.getElementById('pic'), T.ram, { bitmap: 0xA000, screen: 0x8800, colour: 0x8400, bg: 0, s: 2 });
+    // the EA logo screen as the boot leaves it in the title's memory: screen $C000, hires characters $C800,
+    // every cell light grey ($0F), background $0C, the colour it ends on
+    const B = await SOD.load('boot'), cv = document.getElementById('logo'), ctx = C64.canvas(cv, 640, 400);
+    C64.drawScreen(ctx, { screen: B.ram.slice(0xC000, 0xC3E8), colour: new Uint8Array(1000).fill(15),
+                          charset: B.ram.slice(0xC800, 0xD000), s: 2, bg: 12, invertHi: false });
+  } catch (e) { SOD.fail(e); }
+})();
+</script>

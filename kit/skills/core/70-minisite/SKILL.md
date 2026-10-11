@@ -23,6 +23,11 @@ and warns about any other `.html` in the folder.
 
 Every `$XXXX` inside a `<code>` element on any tab becomes a link into the
 Source tab, so write addresses in code spans and the evidence links itself.
+One the listing holds no record of (a chip register, a stretch the coverage
+leaves out, another part's address) opens the Source tab on a note saying
+so. `build.py --addresses` lists them page by page: a chip register can
+stay, but an address of the wrong part, or one the listing should hold, is
+a mistake to fix.
 
 # The How it works page
 
@@ -37,14 +42,23 @@ reconstructed screen.
 
 ## Sections
 
-Not every game has every section, and the list below is in no order: each
-page chooses its own ("The order", below).
+Every page opens with the first section below. Not every game has the
+rest, and they are in no order: each page chooses its own ("The order",
+below). The sound is the exception: a game with music gets its player,
+at every tier above Bronze.
 It is a starting set, not a form: the page is open to any structure that
 works for this game, any number of sections at any depth, and the human
 who takes it to Gold will cut what is dull, expand what is interesting and
 add what the agent did not think of. What stays fixed is the tab bar, the
 address links into the Source tab, and the house style in `kit/style.md`.
 
+- **The game.** What the game is, for a reader who has never played it:
+   who you play, what you do and what ends a level, in two or three
+   short paragraphs that bring in the words later sections use. Show it
+   with a picture or two that introduce it: the title screen and the main
+   character in play, from the emulator (the screenshots `20-features`
+   saved in `reference/` usually serve). Keep it short, and keep the code
+   out of it. It is the one section with nothing to press.
 - **One frame, rebuilt from memory.** Draw the play screen from memory
    with the page's own code, not a screenshot. It proves the data is
    understood and it is the base for overlays. A screen split by raster
@@ -73,14 +87,27 @@ address links into the Source tab, and the house style in `kit/style.md`.
 - **Progression and difficulty.** The tables, as tables, and what they
    do to play.
 - **The sound.** The player for the stored tunes and effects, tied to
-   the bytes that produce each note. Port the game's own music driver
+   the bytes that produce each note. When the game has music, the player
+   is required, with a button for every tune the game stores, unused
+   ones too: a run that names the music driver and leaves the player to
+   `TODO.md` has not built the page. Port the game's own music driver
    and play it through the site's model of the SID, `../../lib/sid.js`:
    it runs the driver once a frame, plays it, and shows each voice on a
    piano roll with the lines the port supplies about what the driver
-   read. The script's header gives the driver's contract and what the
-   model leaves out. The filter is off unless the page passes
-   `filter: '6581'` (or `'8580'`) to `mount`, which also shows a switch
-   to compare it with no filter; pass it when the game sets the filter,
+   read. When the game calls its driver from a CIA timer instead, pass
+   the timer's period in cycles (the latch plus 1) to `mount` as
+   `period`, and port one call to each `play()`: the player keeps the
+   game's tempo, where mapping calls to frames in the port makes a
+   note's length wander by up to a frame. The script's header gives the
+   driver's contract and what the model leaves out. The game's own driver
+   run on a 6502 core inside `createDriver` counts as a port, its code and
+   tables embedded in the page as data like any widget's. Test the core as
+   a port is tested: every tune, frame by frame, against the same bytes
+   run on `kit/c64/cpu6502.js`, with every write compared. Say in the
+   caption that the page runs the game's own player. The filter is off
+   unless the page passes `filter: '6581'` (or `'8580'`) to `mount`,
+   which also shows a switch to compare it with no filter; pass it when
+   the game sets the filter,
    and say in the caption that the cutoff is one chip's. Say beside a
    sound below about 100 Hz that laptop and phone speakers barely play
    it: a reader who hears nothing reports it missing. Before believing such a report, render the writes through
@@ -106,15 +133,17 @@ thing on the page goes as high as the explanation lets it. The page's
 order is its own, chosen for this game: no two games have the same best
 thing, and no two pages need the same shape.
 
-Once the widgets work, and before the copy, choose the one or two things a
-reader would most regret missing. They are usually things that move or
-make a sound: a tune player, a map to scrub through, a replay of the game
-playing. Move each into the first two or three sections, as far as the
-sections it relies on allow, and read the moved section again for anything
-it now mentions before the page has explained it. No section has a fixed
-place, not even the rebuilt frame: it is a natural opener, the
-establishing shot, but a page whose best thing is its music or its maps
-can open with that instead.
+The page opens with the game (above), so the reader knows what they are
+looking at before the first interrupt or table. Then, once the widgets
+work and before the copy, choose the one or two things a reader would
+most regret missing. They are usually things that move or make a sound:
+a tune player, a map to scrub through, a replay of the game playing.
+Move each into the two or three sections after the opening, as far as
+the sections it relies on allow, and read the moved section again for
+anything it now mentions before the page has explained it. No other
+section has a fixed place, not even the rebuilt frame: it is a natural
+first look inside, the establishing shot, but a page whose best thing is
+its music or its maps can put that first instead.
 
 ## Building it
 
@@ -158,8 +187,14 @@ can open with that instead.
   in that list, and nothing else is: the prefix is the only way to get a
   tag. Head the section about the tunes `Music:` and the one about sound
   effects `Sound:`.
-- Embed only the data you need: extracted character set, level data,
-  tables, tune bytes. Small excerpts for commentary; never the program.
+- Embed the data a widget needs in the page: extracted character set,
+  level data, tables, tune bytes, the pictures a viewer shows. That is
+  not what "No binaries" (`AGENTS.md`) forbids, which is files holding
+  the game or the machine whole. Small excerpts for commentary; never the
+  program. Data the game fetches into a buffer during play, a portrait
+  for each fight or a tune for each room, goes in the page that shows
+  it, from the game's own loads in the emulator, and not into a part made
+  to hold it (`10-orient`).
 - A game can read the machine's ROM as data: a table, or code used as
   noise. When a mechanic on the page depends on it, embed only the bytes
   the game reads, or the values it computes from them, and never the
@@ -179,8 +214,15 @@ can open with that instead.
   that have to succeed"); or, for a routine that
   only computes, against the original code run in a 6502 simulator on the
   snapshot's memory. Write node tests that do the comparison and say in
-  the caption how it was checked. On the C64 use the kit's simulator,
-  `kit/c64/cpu6502.js`, rather than writing one; its header is the
+  the caption how it was checked. A test that needs only the committed
+  listing goes beside the page as `test_<what>.js`, where CI runs it, and
+  takes the port from the page itself, so the two cannot drift apart:
+  `kit/scripts/port_check.js` cuts the block out, runs it and gives the
+  listing's memory, and `kit/scripts/port_check.py` does the same for a
+  test whose simulator is in Python. Open the block with a line
+  `/* name */`, or end a function inside the page's own script with a
+  line `// end of name`; the header is the manual. On the C64 use the
+  kit's simulator, `kit/c64/cpu6502.js`, rather than writing one; its header is the
   manual. `CPU.fromSnapshot(vsf, { io })` gives the machine as the snapshot
   left it, the port's banking included, and `call(entry, regs)` runs a
   routine to its return. The chips belong to the test: `io.write` sees
@@ -306,11 +348,14 @@ a human going through it section by section, whether or not that changes
 anything: `agent` records a pass that found nothing to cut or add.
 
 The page is titled with the game's name and nothing else, in both the
-`<title>` and the `<h1>`, with the platform, year and publisher in the
+`<title>` and the `<h1>`, with the year and publisher in the
 eyebrow above it. Readers arrive looking for a game, and a headline in
 place of the name hides it in a tab, a search result and a link. Say the
 interesting thing in the standfirst under the title, where the template
-puts it, and in the section headings.
+puts it, and in the section headings. The standfirst is yours to write,
+a sentence or two, with the rest of the copy: leave it neither empty nor
+for the contributor. The home page shows it on the game's card unless
+`game.json` has a `blurb`, and the Gold pass may rewrite it.
 
 ## Maps / levels, when there is one
 

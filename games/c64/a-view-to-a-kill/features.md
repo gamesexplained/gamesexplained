@@ -14,7 +14,7 @@ Sources:
 
 - The game's own screens: the instruction page before each section, the
   memos, the code prompts and the intro's credits, read in the emulator
-  on 30 September 2026.
+  from Domark's disk on 8 October 2026.
 - Wikipedia, "A View to a Kill (video game)",
   https://en.wikipedia.org/wiki/A_View_to_a_Kill_(video_game), read 30
   September 2026: the sections, the password system, the music, the
@@ -45,7 +45,7 @@ Sources:
 | Feature | Part | Status | Where |
 |---|---|---|---|
 | Gun-barrel opening picture, the Domark logo and a scrolling roll of credits | intro | live | `reference/intro-gun-barrel.png`, `intro-credits.png`; `white_wipe` `$C100`, `logo_assemble` `$C430`, `credits_scroll` `$C54E` (intro) |
-| Spoken words, "speech by B.-Jones" | intro | traced | a 1-bit sample player, `speech_play` `$A000` (intro), heard as a burst of about 2.2 s; it says "My name's Bond. James Bond" (heard by the contributor); Paris adds "Well done, 007" (`$1225`), "You failed, Bond" (`$190A`) and "Damn it" (`$1090`) |
+| Spoken words, "speech synthesis by David Aubrey-Jones" | intro | traced | a 1-bit sample player, `speech_play` `$A000` (intro), heard as a burst of about 2.2 s; it says "My name's Bond. James Bond" (heard by the contributor); Paris adds "Well done, 007" (`$1225`), "You failed, Bond" (`$190A`) and "Damn it" (`$1090`) |
 | Music by Tony Crowther: the James Bond theme and Duran Duran's "A View to a Kill" (Wikipedia, MI6-HQ) | all | traced | two tunes: one in the intro and City Hall (`$C640`, notes from `$E000`), one in Paris and the mine (notes `$E000`-`$FFFF`); the first is the James Bond theme, the second the tune based on the Duran Duran song (heard by the contributor) |
 | A choice of theme tune only, sound effects only, or both | paris | confirmed | `$02E0`, chosen with the stick on the instruction page (`title_page`, `$4F30`, paris) |
 | Chase May Day by car while she parachutes from the Eiffel Tower; be at her drop point when she lands | paris | confirmed | `mayday_update` `$5200`: she circles, then lands at one of eight points; a catch is possible below 060 (paris) |
@@ -83,11 +83,20 @@ Found in the code, not in the manual.
   with CCPHJ typed, a new game without (`$7090`, city-hall).
 - Paris starts through the KERNAL's reset and a cartridge header in RAM
   (`$4FBB`, `$8000`, paris).
-- The intro's credits can stall for good, depending on where the raster
-  beam is at one store (`$C540`, intro).
+- The intro asks for an interrupt on a raster line the screen never
+  reaches and relies on a later write to undo it, which works only while
+  the beam is on lines 0 to 255 (`$C540`, intro). On four boots of this
+  disk it always was.
+- ABORT in City Hall and the mine, and RESTORE in the mine, open a screen
+  that restarts the section or loads the menu from the disk (`$0C00`,
+  city-hall and mine).
+- The intro loads the menu by itself 15 seconds after its last credit
+  line (`$C4DB`, intro).
+- Paris's locator lamp and beep never work: the only call to them is cut
+  off by an `RTS` (`$51E9`, paris).
 - The police in Paris follow the route the player drove (`$4E80`, paris).
 
 ## Open questions
 
-- Whether the code prompts and end screens are the original game's or
-  the crackers' (`facts.md`, "Layers of the copy studied").
+- Why the map's small ovals in Paris do not sit on May Day's landing
+  points (`parts/paris/facts.md`).

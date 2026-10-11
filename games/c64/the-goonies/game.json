@@ -1,0 +1,312 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "the-goonies",
+  "title": "The Goonies",
+  "year": 1985,
+  "publisher": "Datasoft",
+  "developer": "Datasoft",
+  "title_image": "reference/title-screen.png",
+  "build": "Datasoft disk, version line \"V 1 BY SES\" ($84E8); one load, scene pictures read from disk",
+  "tier": "silver",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "tabs": [
+    [
+      "index.html",
+      "Overview"
+    ],
+    [
+      "gameplay.html",
+      "Gameplay"
+    ],
+    [
+      "controls.html",
+      "Controls"
+    ],
+    [
+      "levels.html",
+      "Maps"
+    ],
+    [
+      "graphics.html",
+      "Graphics"
+    ],
+    [
+      "music.html",
+      "Music"
+    ],
+    [
+      "discoveries.html",
+      "Discoveries"
+    ],
+    [
+      "source.html",
+      "Source code"
+    ],
+    [
+      "about.html",
+      "About"
+    ]
+  ],
+  "credits": [
+    {
+      "by": "Scott Spanburg",
+      "role": "programming (C64-Wiki, Wikipedia); the version line's SES is probably his initials, an inference"
+    },
+    {
+      "by": "Kelly Day",
+      "role": "graphics (C64-Wiki)"
+    },
+    {
+      "by": "John A. Fitzpatrick",
+      "role": "music; his name and the Pearl Music Player are in the driver's text at $BA34"
+    }
+  ],
+  "tools": {
+    "host": "Linux 6.18 x86_64, cloud container with four cores and no display",
+    "emulator": "VICE, release v3.13.1, v3.13.1-linux-x86_64-gui.zip (vice-mcp)",
+    "disassembler": "regenerator2000 0.9.20",
+    "python": "3.11.15",
+    "widget tests": "node 22.22.2: the music port checked register for register against the game's driver in kit/c64/cpu6502.js (tests/music.js); the jump, the infinite-lives cheat and the tune commands run on snapshots in kit/c64/machine.js",
+    "subagents": "one checking agent for the 60-verify sample, claude-opus-5-5[1m]"
+  },
+  "model": "claude-opus-5-5[1m]",
+  "step_models": {
+    "50-coverage": [
+      "claude-opus-5-5[1m]"
+    ],
+    "60-verify": [
+      "claude-opus-5-5[1m]"
+    ]
+  },
+  "kit_version": "0.0.107",
+  "created": "2026-10-07",
+  "video": {
+    "screen": "",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0400",
+        "$07FF",
+        "screen matrix of buffer 0 (VIC bank 0), colours of the bitmap"
+      ],
+      [
+        "$21AC",
+        "$27FF",
+        "the rest of buffer 0's top bitmap rows; in the loaded image it holds leftovers of the load (a copy of part of the music code and tunes) that nothing reads"
+      ],
+      [
+        "$2800",
+        "$3FFF",
+        "bitmap of buffer 0; the loader at $2000-$27FF sits in its top rows only while a picture loads"
+      ],
+      [
+        "$4000",
+        "$5FFF",
+        "bitmap of buffer 1, and the picture being loaded"
+      ],
+      [
+        "$6000",
+        "$63FF",
+        "screen matrix of buffer 1 (VIC bank 1)"
+      ],
+      [
+        "$6500",
+        "$65FF",
+        "random table, filled from the SID's noise (or from $F69B in the attract mode) at run time"
+      ],
+      [
+        "$F900",
+        "$FEFF",
+        "save areas for the background under each buffer's sprites"
+      ],
+      [
+        "$D000",
+        "$D0FF",
+        "RAM under the I/O area: in play $D000-$D00F holds the sixteen bytes of object_handlers ($0AD9) that the protection check at $0800 copies there; the rest is the power-on pattern"
+      ],
+      [
+        "$D800",
+        "$DFFF",
+        "RAM under the I/O area: the scene loader's copy, kept here between loads (s_6800 copies it from $2000-$27FF, and it is copied back before each picture loads)"
+      ]
+    ],
+    "extra": [],
+    "include": []
+  },
+  "io": [],
+  "regions": [
+    [
+      "$001D",
+      "$00A0",
+      "variables",
+      "object table: eleven slots of thirteen fields"
+    ],
+    [
+      "$083C",
+      "$1097",
+      "code",
+      "attract mode, main loop, interrupt, object behaviours, movement and collision"
+    ],
+    [
+      "$1098",
+      "$12DD",
+      "tables",
+      "scene set-up, scene tables, game variables"
+    ],
+    [
+      "$131E",
+      "$151D",
+      "variables",
+      "sprite-restore lists"
+    ],
+    [
+      "$151E",
+      "$175C",
+      "code",
+      "keyboard, game over, joystick"
+    ],
+    [
+      "$175D",
+      "$1FFF",
+      "code",
+      "scene 4 (the rolling rocks), with shared shapes"
+    ],
+    [
+      "$2000",
+      "$21AB",
+      "code",
+      "scene loader"
+    ],
+    [
+      "$6400",
+      "$64FF",
+      "tables",
+      "mask table"
+    ],
+    [
+      "$6600",
+      "$67FF",
+      "tables",
+      "demonstration scripts"
+    ],
+    [
+      "$6800",
+      "$70BD",
+      "code",
+      "drawing: row tables, shapes, sprite save and restore, picture unpacking"
+    ],
+    [
+      "$70BE",
+      "$728D",
+      "graphics",
+      "shape table"
+    ],
+    [
+      "$728E",
+      "$7A36",
+      "code",
+      "scene 2 (the lake)"
+    ],
+    [
+      "$7A37",
+      "$8282",
+      "code",
+      "scene 1 (the hideout)"
+    ],
+    [
+      "$8283",
+      "$85BA",
+      "text",
+      "font, messages, score"
+    ],
+    [
+      "$85BB",
+      "$8A3E",
+      "code",
+      "fliers and the bird"
+    ],
+    [
+      "$8A3F",
+      "$92C6",
+      "code",
+      "scene 3 (the pipes)"
+    ],
+    [
+      "$92C7",
+      "$9411",
+      "code",
+      "sound requests, title scene"
+    ],
+    [
+      "$9412",
+      "$9D32",
+      "code",
+      "scene 7 (the octopus)"
+    ],
+    [
+      "$9D33",
+      "$B796",
+      "code",
+      "scene 8 (the ship) and the ending"
+    ],
+    [
+      "$B797",
+      "$B996",
+      "graphics",
+      "the seven Goonies' shape blocks"
+    ],
+    [
+      "$BA00",
+      "$C8ED",
+      "sound",
+      "Pearl Music Player and tunes"
+    ],
+    [
+      "$C8F0",
+      "$CF78",
+      "sound",
+      "sound effects"
+    ],
+    [
+      "$E000",
+      "$F061",
+      "code",
+      "scene 5 (eggs and lava)"
+    ],
+    [
+      "$F063",
+      "$F69A",
+      "code",
+      "scene 6 (the cage)"
+    ],
+    [
+      "$F69B",
+      "$F8FF",
+      "code",
+      "demo playback and leftover source text"
+    ]
+  ],
+  "links": {
+    "wiki": {
+      "title": "The Goonies – C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/The_Goonies"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    },
+    "wikipedia": {
+      "title": "The Goonies (1985 video game) – Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/The_Goonies_(1985_video_game)"
+    },
+    "review": {
+      "title": "The Goonies, ZZap!64 9 – GameBase64",
+      "url": "https://gb64.com/oldsite/gameofweek/9/gotw_goonies.htm"
+    }
+  }
+}

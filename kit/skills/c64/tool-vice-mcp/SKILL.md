@@ -5,7 +5,8 @@ description: How to drive VICE through the vice-mcp server, the recommended emul
 
 # VICE through vice-mcp
 
-Registered in `.mcp.json` as the `vice` server (HTTP, `127.0.0.1:6510`).
+Registered in `.mcp.json` as the `vice` server (HTTP, `127.0.0.1:6510`,
+or the port `KIT_VICE_PORT` names in the environment the session starts in).
 Claude Code connects to MCP servers when a session starts, so the
 `vice_*` tools are there only if the emulator was already running then; a
 server started later does not appear by itself. Other harnesses are
@@ -83,6 +84,14 @@ passed, by date and system, are the table at the top of that file.
    however `vice_ping` reads, and every input sent looks ignored.
    `tools.py stop vice` and `tools.py vice` clear it; the snapshot is
    fine.
+   A script that waits for a prompt (a copier's, a menu's, a disk
+   swap's) reads the screen's text with `kit/c64/screen.py`:
+   `wait_text(rpc, pattern)`, where a screenshot serves only an agent.
+   Text mode needs nothing more. A game that draws its letters into a
+   bitmap needs its font named: the address of its glyphs, the
+   character code of the first, and how far apart it draws two letters,
+   which is 8 when it copies each glyph into a cell, however narrow the
+   letters look. The routine that draws a letter shows all three.
 4. Confirm play with a screenshot, then `vice_snapshot_save` with a name
    that describes the state, on the running machine or after `pause()` in
    `vice.py`, never straight after `vice_execution_pause`
@@ -230,6 +239,57 @@ music takes four minutes to record; run it in the background. A batch of
 frames per call would be faster and would lose every note shorter than
 the batch.
 
+### Recording what ran
+
+`kit/c64/codemap.py` builds the game's code map from VICE's executed-address
+record (#236): `zap` clears it at the start of a play session, `dump` writes
+`games/c64/<slug>/codemap.json` at the end. The record is VICE's monitor
+memmap, a per-address access map that marks every address the CPU fetched an
+instruction from. Unlike the cpuhistory ring buffer (8,192 entries, ~28 ms)
+it covers a whole session, across stops, `frames()` and snapshot loads (a
+loop run after each was recorded beside the ones before it, v3.13.2 on
+Linux, 10 October 2026), and `zap` and `dump` work on a running or a
+stopped machine. VICE answers its monitor only while the machine runs, and
+a connection it answers after the client has gone wedges the monitor
+("Broken pipe" on every frame in `tools/logs/vice.log`, and no further
+connection answered until the emulator restarts), so reach the monitor
+only through `codemap.py`, which runs a stopped machine for the command
+and stops it again. Record a code map in one session: load the game,
+`zap` once it runs, play it, and `dump` at the end. The memmap's
+ROM and RAM columns follow the address, not the banking, so code run from
+RAM under the KERNAL or BASIC is listed as ROM execution, and `dump` leaves
+it out unless given `--under-rom`; it says how many such instructions it
+saw. For a game that runs code under a ROM, zap only after the game has
+banked the ROM out, or the KERNAL's interrupt handler from its start-up is
+kept as game code. The emulator listens for its monitor on the
+port above the MCP port (6511 by default). `check_listing.py` fails the game
+while `symbols.json` types any ran byte as data. `dump` sizes each
+instruction from the RAM as the session ends, so code the game rewrote after
+running it decodes from the new bytes: where two instructions then overlap
+without ending together, it counts only their opcodes and prints the
+addresses, but a rewritten instruction that overlaps no other still claims
+the bytes after it. When `check_listing.py` names ran bytes that no code
+path reaches, look for a routine that writes over that code before
+suspecting the listing. Do not use `trace exec`
+tracepoints for this: a full-address-space trace floods the monitor faster
+than it can be consumed and wedges the emulator.
+
+A game that loads files during play through the KERNAL's LOAD (with the
+ROM banked in for the load, then out again) puts the KERNAL's own
+instructions into an `--under-rom` map at the same addresses as its RAM
+code there: the memmap cannot tell the two apart. `dump --under-rom`
+leaves out, and lists, the recorded addresses at `$E000`-`$FFFF` that the
+KERNAL's code reaches (decoded from the ROM, from its vectors, its jump
+table and the defaults RESTOR copies to `$0314`) and that no code in RAM
+reaches (decoded from the RAM, from the jumps of what ran elsewhere and the
+RAM's own vectors); it keeps, and names, the addresses both reach. Code the
+game reaches only through a dispatch table is not traced, so a run of its
+code that happens to fall where the KERNAL's runs can be left out: check
+the list against the game's entries and tables before committing the map,
+or record a second map with no load to compare. BASIC's code at
+`$A000`-`$BFFF` is not sorted out this way. One game's map held 307 KERNAL
+addresses beside its music player at `$E000` (`kit/lessons/2026-10-10-qix.md`).
+
 ## Behaviours that waste time, on any build
 
 - **Prove the machine is running before you believe a negative result.**
@@ -264,6 +324,12 @@ the batch.
   then runs faster than real time until it has caught up: half a second of
   wall clock read 700,000 cycles once. Count passes, frames or cycles on a
   stopped machine at both ends, and never compare against `sleep`.
+- **Check that frame advance completed.** The tool's schema gives the
+  maximum frames per call (1,000 in v3.13.2). Split longer runs into
+  supported batches and require the reply to report the requested count.
+  An out-of-range request can return an error without advancing the game.
+  The Python `frames()` helper raises on a rejected or incomplete request;
+  direct tool callers must check the reply themselves.
 - **Give a checkpoint its ignore count or condition with `arm()`** in
   `vice.py`. Set in a second call on a running machine, the checkpoint
   can fire in between, and on a slow host it usually does. A condition
@@ -283,13 +349,16 @@ the batch.
 - **`vice_machine_config_set` has a six-entry whitelist**:
   `MachineVideoStandard`, `WarpMode`, `Speed`, `SidModel`, `CIA1Model`,
   `CIA2Model`. Joystick port assignment is not among them.
-- **Switching the video standard sticks.** One run set
-  `MachineVideoStandard` to NTSC and back to PAL, and every snapshot saved
-  earlier then failed to load: the call says only "Failed to load
+- **Switching the video standard sticks.** x64sc starts as a C64C, whose
+  video chip is the 8565. Setting `MachineVideoStandard` to NTSC and back
+  to PAL leaves the older 6569, and `vice_machine_config_get` names the
+  6569 for either (v3.13.2, 10 October 2026). Every snapshot saved before
+  the switch then failed to load: the call says only "Failed to load
   snapshot", while `tools/logs/vice.log` says the snapshot was made with
-  another video chip model. Restarting the emulator (`tools.py stop vice`,
-  then `tools.py vice`) cured it. Run an NTSC test last, or restart after
-  it.
+  another video chip model. The 6569 also drew one pixel of
+  `frame.py test` differently, which is why the test sets the chip itself.
+  Restarting the emulator (`tools.py stop vice`, then `tools.py vice`)
+  cures both. Run an NTSC test last, or restart after it.
 - **A snapshot save name cannot be reused.** Save **without** ROMs so the
   RAM image lands where the platform reference says it does.
 - **`vice_autostart`'s `program` is typed as given.** The server passes

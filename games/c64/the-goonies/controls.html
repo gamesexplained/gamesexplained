@@ -1,0 +1,54 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/goonies-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">How the game reads its players: a joystick in port 1 where up means jump, a second joystick in port 2 for two players at once, and two keys the guides leave out.</p>
+</header>
+<main class="wrap">
+<section id="joystick">
+  <p class="fig">The joystick</p>
+  <h2 class="t">Up is the jump, and fire swaps the Goonies</h2>
+  <p class="lede">The game reads the joystick in port 1 once a pass, at the top of the main loop (<code>$08EB</code>). The controlled Goonie's routine copies up onto the fire bit before <code>move_object</code> sees it (<code>$0B14</code>), so up does what most games give to fire: it jumps from a floor, climbs a ladder, and grips a bar.</p>
+  <table class="t">
+    <tr><th>Stick</th><th>What the Goonie does</th></tr>
+    <tr><td>Left, right</td><td>walks two units, four pixels, a pass</td></tr>
+    <tr><td>Up</td><td>jumps straight up from a floor; climbs a ladder; holds on to a bar</td></tr>
+    <tr><td>Up-left, up-right</td><td>jumps diagonally, two units across a pass</td></tr>
+    <tr><td>Down</td><td>climbs down a ladder, or through a floor that is a ladder's top; lets go of a bar</td></tr>
+    <tr><td>Fire</td><td>gives the stick to the other Goonie (one player)</td></tr>
+  </table>
+  <p>Fire is read as a press, not as held. The main loop sets a flag on the pass fire goes down and not again until it has been let go (<code>$0976</code>), and the waiting Goonie's routine swaps the two Goonies' types on that pass and plays sound 6 (<code>$0B62</code>).</p>
+</section>
+
+<section id="two">
+  <p class="fig">Two players</p>
+  <h2 class="t">Two players play at the same time, with a joystick each</h2>
+  <p class="lede">F3 on the title switches two players on and off and shows a 2 in the corner of the status line (<code>$169C</code>). A game started that way gives each player a Goonie: the first object slot reads port 1 and the second port 2 (<code>read_stick</code>, <code>$172B</code>), and fire no longer swaps anything.</p>
+  <p>The C64-Wiki describes the standard game as two players taking turns, and gives this simultaneous mode to the U.S. Gold release alone.<sup class="fn"><a href="about.html#src-1" title="C64-Wiki, The Goonies">1</a></sup> The Datasoft disk analysed here has the simultaneous mode and no turns.</p>
+</section>
+
+<section id="keys">
+  <p class="fig">The keys</p>
+  <h2 class="t">L turns a player's joystick a quarter turn</h2>
+  <p class="lede">The game scans eight keys (<code>$161C</code>) and acts on a key the pass it goes down (<code>handle_keys</code>, <code>$1634</code>).</p>
+  <table class="t">
+    <tr><th>Key</th><th>Where</th><th>What it does</th></tr>
+    <tr><td>F1</td><td><code>$1684</code></td><td>quits to the attract mode</td></tr>
+    <tr><td>F3</td><td><code>$169C</code></td><td>one or two players, on the title only</td></tr>
+    <tr><td>F7, or fire on the title</td><td><code>$168B</code></td><td>a new game, from the scene in <code>$12BC</code>: always scene 1</td></tr>
+    <tr><td>Space</td><td><code>$165F</code></td><td>pause, with PAUSED on the status line, music and effects silent</td></tr>
+    <tr><td>S</td><td><code>$16B6</code></td><td>music off and on</td></tr>
+    <tr><td>V</td><td><code>$1692</code></td><td>prints the version line, V 1 BY SES</td></tr>
+    <tr><td>L, shift L</td><td><code>$16C2</code></td><td>turns player 1's joystick, or with shift player 2's, a quarter turn, marked 1L or 2L on the status line</td></tr>
+    <tr><td>F5</td><td>none</td><td>scanned with the others, and nothing acts on it</td></tr>
+  </table>
+  <p>The L key changes how <code>read_stick</code> reads the port (<code>$1742</code>). With it on, pushing left reads as up, right as down, up as right, and down as left, so a joystick held on its side works the right way round. Fire is left alone. Why the game offers this is not known, and the C64-Wiki does not list the key.</p>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

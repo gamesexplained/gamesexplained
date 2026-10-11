@@ -1,0 +1,91 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skate or Die!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/sod-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Electronic Arts</p>
+  <h1>Skate or Die!</h1>
+  <p class="sub">How the half-pipe that High Jump and the Freestyle ramp share is drawn: its picture, its crowd and its skater, from the bytes the events load. The other events' pictures are on their own pages.</p>
+</header>
+<main class="wrap" data-part="highjump">
+<section id="picture">
+  <p class="fig">The picture</p>
+  <h2 class="t">One bitmap, with a hires strip on top</h2>
+  <p class="lede">The half-pipe, the stands and the sky are a single multicolour bitmap. It arrives packed in its own file and is unpacked once, when the event starts (<code>$1B6A</code>).</p>
+  <div class="plate">
+    <div class="row" id="picbtns">
+      <button class="b" data-f="-1" aria-pressed="true">As loaded</button>
+      <button class="b" data-f="0" aria-pressed="false">Every cell in frame 1</button>
+      <button class="b" data-f="1" aria-pressed="false">Every cell in frame 2</button>
+      <button class="b" id="cellsbtn" aria-pressed="false">Show the moving cells</button>
+    </div>
+    <canvas id="pic" class="scr"></canvas>
+    <p class="cap">Drawn in the page from the bytes of the listing: the bitmap at <code>$4000</code>, two colours per cell from the screen matrix at <code>$6400</code>, the third from the copy of colour RAM at <code>$6000</code>, on a black background (<code>$089E</code>). The top text row is drawn hires, as the game shows it. The skater, the ruler's black marks and the shadow are sprites and are not part of the picture. The status line's words are written into the bitmap when the event starts; the listing holds them as they were in the snapshot.</p>
+  </div>
+  <p>The picture is stored in file <code>$10</code> with a simple run-length code: a byte from <code>$00</code> to <code>$7F</code> is followed by that many plus one bytes to copy, and a byte from <code>$80</code> up repeats the next byte that many minus 127 times (<code>$1B6A</code>). The unpacker writes into the space where the poses will go, and a copy loop then moves 8,000 bytes of pixels to the bitmap, 1,000 colour pairs to the screen matrix and 1,000 colours to a spare kilobyte at <code>$6000</code> (<code>$08F2</code>). That spare copy is what goes into the C64's colour RAM each time the event starts (<code>$0A50</code>), because colour RAM sits under the input and output chips and cannot be loaded from disk directly.</p>
+  <p>Two raster interrupts split the screen each frame. The first, at line 249, switches multicolour off, so the top text row is drawn hires (<code>$0B21</code>): that row holds the status line, PRACTICE, PASS and HEIGHT in a font of 64 characters, drawn inverted into the bitmap (<code>$126D</code>). The second, at line 55, waits three lines and switches multicolour back on for the picture below (<code>$0CA3</code>).</p>
+</section>
+<section id="crowd">
+  <p class="fig">The scenery</p>
+  <h2 class="t">A crowd that cheers harder for higher jumps</h2>
+  <p>Sixty-nine squares of the picture, each eight pixels by eight, have a second frame. The first eight are the four flags on the poles, and the other 61 are heads and arms in the stands. To swap one, <code>animate_cell</code> (<code>$192E</code>) copies the other frame's eight bytes of pixels into the bitmap and its colours into the screen matrix and colour RAM, and flips a bit that remembers which frame is showing (<code>$1CA5</code>).</p>
+  <p>The flags move on their own: about one frame in eight, one flag changes (<code>$199B</code>). The crowd depends on the skater. Each time the skater turns at the top of the right wall, half the height of that pass becomes the crowd's level (<code>$1AD0</code>), and on each frame one random head moves if a random number falls under that level (<code>$19AE</code>). The chance is the level out of 256: after a five-foot pass a head moves on about one frame in thirteen, after a twelve-foot pass on about one frame in five.</p>
+</section>
+<section id="skater">
+  <p class="fig">The skater</p>
+  <h2 class="t">Five sprites, 158 poses</h2>
+  <p class="lede">Every pose the skater can strike is a record of 30 bytes: five parts, one for each of the hardware sprites 0 to 4 (<code>$095D</code>). Press a pose to see it larger.</p>
+  <div class="plate">
+    <div class="row"><span class="note">Colour set</span>
+      <button class="b" data-set="0" aria-pressed="true">First</button>
+      <button class="b" data-set="1" aria-pressed="false">Second</button>
+      <span class="note" id="posename"></span>
+    </div>
+    <canvas id="big" width="10" height="10" style="background:#000;border-radius:4px;image-rendering:pixelated"></canvas>
+    <div class="gal" id="gal" style="margin-top:14px"></div>
+    <p class="cap">All 158 records at <code>$7000</code>, drawn facing right, as on the right half of the ramp. Each part names a shape in the 16 KB of shapes from <code>$8284</code>, its size and where it sits. Sprites 1 and 2 are multicolour and take white and dark blue as their shared colours; sprites 0, 3 and 4 are single-colour. The colour sets are the two at <code>$2D7F</code> and <code>$2D87</code>; the game picks one at random for each attempt (<code>$19D3</code>).</p>
+  </div>
+  <p>A sprite is 24 pixels by 21, 63 bytes, but most parts of a skater are smaller. The 477 shapes are stored with only the rows they use, three bytes to a row, and a copy routine fills the rest of the sprite with zeros as it builds it (<code>$13FD</code>). Packed that way, the shapes fill 16,428 bytes (<code>$8284</code>-<code>$C2AF</code>), where 477 full 64-byte sprite blocks would take 30,528.</p>
+  <p>The poses are stored facing one way. When the skater is on the left half of the ramp, the copy routines mirror each shape as they build the sprite: a single-colour row through a table that reverses the eight bits of a byte, and a multicolour row through a table that reverses the four pairs, so that the colours stay with their pixels (<code>$138D</code>, <code>$13C5</code>, tables at <code>$2E7B</code> and <code>$2F7B</code>, built when the event starts by <code>$1340</code>). The x offsets of the five parts change sign at the same time (<code>$0C6F</code>). The game builds the next frame's five sprites in one buffer while the VIC shows the other, and swaps them each frame (<code>$14DE</code>).</p>
+  <p>Sprite 4 is the board, and its colour comes from the skater, not the colour set: the event copies a byte the event manager keeps for each skater into both sets (<code>$09EE</code>). Sprite 7 is the board's shape again, in black, kept at the height of the coping while the skater is in the air (<code>$0C29</code>): it reads as the board's shadow. Sprites 5 and 6 are the black marks of the ruler at the top right, stretched to double height and copied into place when the event starts (<code>$0A01</code>). The yellow pole behind them is drawn into the bitmap, ten cells high, by <code>$1AFA</code>.</p>
+</section>
+</main>
+<script src="../../lib/c64.js"></script>
+<script src="reference/sod-page.js"></script>
+<script>
+(async function () {
+  let G; try { G = await SOD.load(); } catch (e) { SOD.fail(e); return; }
+  const M = G.ram, pic = document.getElementById('pic');
+  let frame = -1, showCells = false, set = 0, sel = 0;
+  function drawPic() {
+    const ctx = SOD.picture(pic, M, 2, frame < 0 ? null : frame);
+    if (showCells) { ctx.strokeStyle = '#ffd400'; ctx.lineWidth = 2;
+      for (const [x, y] of SOD.cellRects(M)) ctx.strokeRect(x * 16 + 1, y * 16 + 1, 14, 14); }
+  }
+  document.querySelectorAll('#picbtns button[data-f]').forEach(b => b.onclick = () => {
+    frame = +b.dataset.f; document.querySelectorAll('#picbtns button[data-f]').forEach(x => x.setAttribute('aria-pressed', x === b)); drawPic(); });
+  document.getElementById('cellsbtn').onclick = e => { showCells = !showCells; e.target.setAttribute('aria-pressed', showCells); drawPic(); };
+  drawPic();
+  const gal = document.getElementById('gal'), big = document.getElementById('big');
+  function thumb(n) {
+    const [x0, y0, x1, y1] = SOD.bounds(M, n), s = 1, c = document.createElement('canvas');
+    const ctx = C64.canvas(c, 48 * s, 48 * s); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height);
+    SOD.pose(ctx, M, n, Math.round(24 - (x0 + x1) / 2), Math.round(24 - (y0 + y1) / 2), s, set);
+    c.title = 'Pose ' + n; c.onclick = () => { sel = n; drawBig(); mark(); }; return c;
+  }
+  function drawBig() {
+    const [x0, y0, x1, y1] = SOD.bounds(M, sel), s = 4, w = Math.max(48, x1 - x0 + 8), h = Math.max(48, y1 - y0 + 8);
+    const ctx = C64.canvas(big, w * s, h * s); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, big.width, big.height);
+    SOD.pose(ctx, M, sel, Math.round(w / 2 - (x0 + x1) / 2), Math.round(h / 2 - (y0 + y1) / 2), s, set);
+    document.getElementById('posename').textContent = 'Pose ' + sel + ', record at $' + (0x7000 + 30 * sel).toString(16).toUpperCase();
+  }
+  function mark() { [...gal.children].forEach((c, i) => c.classList.toggle('sel', i === sel)); }
+  function fill() { gal.innerHTML = ''; for (let n = 0; n < 158; n++) gal.appendChild(thumb(n)); mark(); drawBig(); }
+  document.querySelectorAll('button[data-set]').forEach(b => b.onclick = () => {
+    set = +b.dataset.set; document.querySelectorAll('button[data-set]').forEach(x => x.setAttribute('aria-pressed', x === b)); fill(); });
+  fill();
+})();
+</script>

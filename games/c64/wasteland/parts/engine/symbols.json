@@ -11124,7 +11124,7 @@
   {
    "address": 543,
    "type": "line",
-   "text": "JMP $0D61 npc_obey_check: Y = offset of the NPC's refusal byte, A = the value tested (for a trade the asker's CHR): carry clear = willing, carry set = refuses ($FF always refuses)."
+   "text": "JMP $0D61 npc_obey_check: Y = offset of the NPC's refusal byte, A = the value tested (for a trade the taker's CHR): carry clear = willing, carry set = refuses. A byte of $FF always refuses; any other byte gives the same target, 15 (npc_obey_check)."
   },
   {
    "address": 546,
@@ -12604,7 +12604,7 @@
   {
    "address": 2151,
    "type": "line",
-   "text": "Entry $03FB. Returns 15 + 5*X as a 16-bit number: A = low byte, X and Y = high byte (X = 0 gives 15, X = 255 gives 1290). The target a check must reach at difficulty X: skill_check ($0C34), attribute_check ($0D20), npc_obey_check ($0D71), $151A, the game ($8D51)."
+   "text": "Entry $03FB. Returns 15 + 5*X as a 16-bit number: A = low byte, X and Y = high byte (X = 0 gives 15, X = 255 gives 1290). The target a check must reach at difficulty X: skill_check ($0C34), attribute_check ($0D20), npc_obey_check ($0D71, where X is always 0: num2_clear at $0D6E has cleared it), $151A, the game ($8D51)."
   },
   {
    "address": 2173,
@@ -13089,7 +13089,7 @@
   {
    "address": 3425,
    "type": "line",
-   "text": "Entry $021F. Willingness check for the current character, an NPC: Y = offset of one of its refusal bytes (the trade code uses +$2E; the game's $8D83-$8D95 uses +$2B-+$2D with A = +$31), A = the value it is tested against (for a trade, the taker's CHR). A byte of $FF always refuses. Otherwise target 15 + 5*byte against A + 2d6: a roll under 5 refuses and raises the byte (char_byte_increment); a pass lowers it with a 1 in 20 chance (char_byte_decrement). Carry clear = willing."
+   "text": "Entry $021F. Willingness check for the current character, an NPC: Y = offset of one of its refusal bytes (the trade code uses +$2E; the game's $8D83-$8D95 uses +$2B-+$2D with A = +$31), A = the value it is tested against (for a trade, the taker's CHR). A byte of $FF always refuses. Otherwise the byte goes to X (TAX, $0D6D) for target_15_plus_5x, but num2_clear, called in between ($0D6E), returns X = 0, so the target is 15 whatever the byte: A + 2d6 against 15. A roll under 5 refuses and raises the byte (char_byte_increment); a pass lowers it with a 1 in 20 chance (char_byte_decrement); neither changes a later check, since only $FF is read. Carry clear = willing. In the emulator on 8 October 2026, booted from the original side 1, 256 calls through $021F with a byte of 10 and A = 20 all left $71/$72 = 15."
   },
   {
    "address": 3451,
@@ -15619,7 +15619,7 @@
   {
    "address": 62720,
    "type": "line",
-   "text": "Character records 1-7, 256 bytes each at $F400 + 256 * record (record 1 here; pages 1-7 of the saved game). The engine's fields are listed at $66. The other programs add, each checked in their code: +$1B/+$1C the maximum CON (health_tick $B7E9-$B7FB); +$1F the equipped slot, as (its item offset - $BB) / 2 (game $A569, $A57A-$A581); +$26/+$27 the CON before the blow that downed the member, half of which it wakes with (game $A934, $B7C2-$B7D2); +$28 afflictions: with any of bits 4-7 set the member loses a point of CON every 64 time units, two while down, and any non-zero value stops healing and waking (game $B7A2-$B7A8, $B816-$B853, $B854); +$2B-+$2E an NPC's refusal bytes, tested by the engine's willingness check ($0D61; +$2E for a trade) and lowered after a good hire (game $A4A4-$A4AE); +$30 an NPC's message on joining (game $A484); +$31 an NPC's hire difficulty, 0 joining at once (game $A43E), set to the hirer's CHR (+$14) when it joins ($A490-$A494, the operand written at $A406); +$32 on the rank's name, zero-ended (radio $81BC-$81CC, ranger $8005-$8012); +$4B bit 0 Base Cochise destroyed, set in every record by module 4 ($CA03-$CA1C) and read by the radio ($7EC9); +$4C bit 0 the radio has given the reward for it ($7ED1-$7EDD). Bits 0-3 of +$28 are diseases as well: the doctor lists bit n as message n + 1 of its text (module 0, $CC04-$CC28), 0 Radiation poisoning (set by a radiation square, game $8313-$831C), 1 Wasteland Herpes, 2 Bug byte, 3 Sewer rot, and 4-7 Desert dust, Rabies, D6 and D7."
+   "text": "Character records 1-7, 256 bytes each at $F400 + 256 * record (record 1 here; pages 1-7 of the saved game). The engine's fields are listed at $66. The other programs add, each checked in their code: +$1B/+$1C the maximum CON (health_tick $B7E9-$B7FB); +$1F the equipped slot, as (its item offset - $BB) / 2 (game $A569, $A57A-$A581); +$26/+$27 the CON before the blow that downed the member, half of which it wakes with (game $A934, $B7C2-$B7D2); +$28 afflictions: with any of bits 4-7 set the member loses a point of CON every 64 time units, two while down, and any non-zero value stops healing and waking (game $B7A2-$B7A8, $B816-$B853, $B854); +$2B-+$2E an NPC's refusal bytes, read by the engine's willingness check ($0D61; +$2E for a trade), which refuses on $FF and otherwise ignores them, raised by a throw under 5 there and in a failed hire (game $A4E0-$A4EA), and lowered after a good hire (game $A4A4-$A4AE); +$30 an NPC's message on joining (game $A484); +$31 an NPC's hire difficulty, 0 joining at once (game $A43E), set to the hirer's CHR (+$14) when it joins ($A490-$A494, the operand written at $A406); +$32 on the rank's name, zero-ended (radio $81BC-$81CC, ranger $8005-$8012); +$4B bit 0 Base Cochise destroyed, set in every record by module 4 ($CA03-$CA1C) and read by the radio ($7EC9); +$4C bit 0 the radio has given the reward for it ($7ED1-$7EDD). Bits 0-3 of +$28 are diseases as well: the doctor lists bit n as message n + 1 of its text (module 0, $CC04-$CC28), 0 Radiation poisoning (set by a radiation square, game $8313-$831C), 1 Wasteland Herpes, 2 Bug byte, 3 Sewer rot, and 4-7 Desert dust, Rabies, D6 and D7."
   },
   {
    "address": 64256,

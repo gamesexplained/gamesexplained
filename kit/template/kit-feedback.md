@@ -16,7 +16,9 @@ or the one line "None." (80-retro, step 1). check_docs.py fails while this place
 <one line per change: the file and what it now says. For a change that
 carries a lesson, name its file in `kit/lessons/` and stop there: the
 lesson is told once, in that file. Any other change (a script, a path,
-the site) says why here.>
+the site) says why here. Text added to a core skill also names the other
+game folder where it would have mattered, as games/<platform>/<slug>
+(80-retro, step 3).>
 
 ## Candidates
 

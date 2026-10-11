@@ -1,41 +1,92 @@
 #!/usr/bin/env python3
-"""Refuse a listing.json that does not match its symbols.json.
+"""Refuse a listing.json that does not match its symbols.json or its own bytes.
 
-listing.json is derived from symbols.json plus a private snapshot, so CI
-cannot rebuild it; it checks instead that every user label and every
-comment in symbols.json appears in the listing unchanged, and that the
-listing records the hash of the symbols.json it was built from. The empty
-symbols.json that new_game.py writes needs no listing yet.
+Two parts. Every user label and every comment in symbols.json appears in the listing
+unchanged, and the listing records the hash of the symbols.json it was built from.
+And every code record re-decodes, from the memory image the listing's own bytes
+describe, to the same length, mnemonic, bytes and operand (listing.decode_problems):
+the permanent guard against a decoder that drifts under a listing, and against an
+off-by-one record (#142). Then the whole listing builds again from those bytes, with
+the current kit, to the same file (listing.py --rebuild): a decoder, ledger or record
+format that moved under a listing fails here until the listing is rebuilt (#210), and
+bytes the ledger counts that the listing has no snapshot for are named. It needs no
+snapshot. The empty symbols.json that new_game.py writes needs no listing yet.
+
+Where a game commits a code map (codemap.json, from kit/<platform>/codemap.py),
+every byte of it that ran, outside the ledger's exclusions, is typed Code in symbols.json: code typed as data
+has no cross-references and still reads as explained (#184). Code only the
+map's trace reached, typed as data, is listed to be read, since a trace can
+walk into data.
 
 A game of several parts (kit/scripts/parts.py) is checked part by part,
 and so is the layout itself: every folder under parts/ is a part, each
 has a place of its own in the order, a part that lies over another says
-which addresses it owns, game.json keeps no settings a part should have,
+which addresses it owns, a bank lies over the part the code runs in and
+a "banks" row names a bank, game.json keeps no settings a part should have,
 no listing holds a row at an address another part owns, and an operand
-that points at a part beneath reads as that part names it now.
+that points at a part beneath, or into a bank, reads as that part names it now.
 
 Usage: check_listing.py [game dir ...]      default: every game, and every part of one
 """
-import glob, hashlib, json, os, sys
+import concurrent.futures
+import glob, hashlib, json, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from parts import ID, EMPTY, LEDGER_KEYS, parts, under, ranges, started, load_game, owned   # noqa: E402
+from parts import ID, EMPTY, LEDGER_KEYS, parts, under, ranges, started, load_game, owned, settings   # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+LISTING = os.path.join(os.path.dirname(os.path.abspath(__file__)), "listing.py")
+
+
+def untyped_code(gdir, S):
+    """(ran, traced): the addresses gdir's codemap.json has as code that symbols.json S types as
+    nothing or as data, those that ran and those only its trace reached; ([], []) with no map."""
+    f = os.path.join(gdir, "codemap.json")
+    if not os.path.isfile(f):
+        return [], []
+    cm = json.load(open(f))
+    span = lambda key: {a for s, e in cm.get(key, []) for a in range(s, e + 1)}
+    # what the ledger excludes is declared not the game's, with a reason: the boot's own code
+    # in RAM (BASIC's CHRGET at $0073 runs during RUN) is the machine's, not untyped game code
+    out = {a for lo, hi, *_ in (S.get("regions") or {}).get("exclude", []) for a in range(lo, hi + 1)}
+    loose = span("code") - out - {a for b in S["blocks"] if b["type"] == "Code" for a in range(b["start"], b["end"] + 1)}
+    ran = loose & span("ran")
+    return sorted(ran), sorted(loose - ran)
 
 
 def check(gdir):
+    """(errors, notes) for one listing: errors fail the check, notes are printed as warnings."""
     lp, sp = os.path.join(gdir, "listing.json"), os.path.join(gdir, "symbols.json")
     S = json.load(open(sp))
     if not os.path.exists(lp):
         if not (S["blocks"] or S["symbols"] or S["comments"]):
-            return []   # a new game's empty map: nothing to list yet
-        return [f"{gdir}: no listing.json (run kit/scripts/listing.py)"]
+            return [], []   # a new game's empty map: nothing to list yet
+        return [f"{gdir}: no listing.json (run kit/scripts/listing.py)"], []
     L = json.load(open(lp))
-    errs = []
+    errs, notes = [], []
     sha = hashlib.sha256(open(sp, "rb").read()).hexdigest()
     if L.get("symbols_sha256") != sha:
         errs.append("listing.json was built from a different symbols.json; rebuild it")
+    else:
+        # every code record must re-decode, from the listing's own bytes, unchanged (#142)
+        from listing import decode_problems
+        bad = decode_problems(gdir)
+        if bad:
+            a, why = bad[0]
+            errs.append(f"listing.json no longer agrees with the decoder at ${a:04X}: {why}"
+                        + (f" (and {len(bad) - 1} more)" if len(bad) > 1 else ""))
+        else:
+            # the whole listing, built again from its own bytes with the current kit (#210)
+            r = subprocess.run([sys.executable, LISTING, gdir, "--rebuild"], capture_output=True, text=True)
+            if r.returncode:
+                said = (r.stdout.strip() or r.stderr.strip() or "no output").splitlines()[0].replace("FAILED - ", "")
+                errs.append(f"listing.json no longer rebuilds from its own bytes ({said}); "
+                            f"rebuild it: listing.py {gdir} --rebuild --write")
+            from listing import LOST
+            lost = [x for x in L["records"] if x.get("note") == LOST]
+            if lost:
+                notes.append(f"{gdir}: {sum(x['n'] for x in lost)} byte(s) the ledger counts are not in the listing "
+                             f"(the first at ${lost[0]['a']:04X}); a build from the snapshot fills them")
     labels = {r["a"]: r.get("l") for r in L["records"] if "l" in r}
     comments = {r["a"]: r.get("c") for r in L["records"] if "c" in r}
     for s in S["symbols"]:
@@ -44,6 +95,13 @@ def check(gdir):
     for c in S["comments"]:
         if c["type"] == "line" and c["text"].strip() and comments.get(c["address"]) != c["text"]:
             errs.append(f"line comment at ${c['address']:04X} missing or different in listing")
+    ran, traced = untyped_code(gdir, S)
+    if ran:
+        errs.append(f"{len(ran)} byte(s) that codemap.json records running as code are not typed Code in "
+                    f"symbols.json (the first at ${ran[0]:04X}); type them as code")
+    if traced:
+        notes.append(f"{gdir}: codemap.json's trace reaches {len(traced)} byte(s) not typed Code (the first at "
+                     f"${traced[0]:04X}): code the play never ran, or data the trace walked into; read them")
     if os.path.isfile(os.path.join(gdir, "part.json")):
         game = load_game(gdir)
         away = game.get("elsewhere") or []
@@ -57,7 +115,7 @@ def check(gdir):
             if n:
                 errs.append(f"{n} operand(s) point at a part beneath this one whose names have changed since the "
                             "listing was built; name them again: listing.py <part> --relabel")
-    return [f"{gdir}: {e}" for e in errs[:20]]
+    return [f"{gdir}: {e}" for e in errs[:20]], notes
 
 
 def check_parts(gdir):
@@ -92,6 +150,14 @@ def check_parts(gdir):
         elif not p["over"] and ranges(p):
             errs.append(f'part {p["id"]} has "ranges" but lies over no part: name the part beneath it as "over", '
                         "or drop the ranges")
+        if p.get("bank") is not None and not p["over"]:
+            errs.append(f'part {p["id"]} is bank {p["bank"]} but lies over no part: name the part the code runs in '
+                        'as its "over"')
+        banks = {q["id"] for q in P if q.get("bank") is not None}
+        for r in settings(p).get("banks") or []:
+            if not (isinstance(r, list) and len(r) == 4 and r[2] in banks):
+                errs.append(f'part {p["id"]}: "banks" row {r} is not [first, last, a bank\'s part id, why]'
+                            + (f" (the banks are {', '.join(sorted(banks))})" if banks else ": the game has no bank parts"))
     if not errs:
         try:
             for p in P:
@@ -126,8 +192,21 @@ def main():
             dirs.append(g)
         if not layout:
             dirs += [p["dir"] for p in parts(g) if os.path.isfile(os.path.join(p["dir"], "symbols.json"))]
+    # one listing never touches another: the rebuild of each runs on its own,
+    # so they are checked side by side and the report still comes out in folder order.
+    # processes, not threads: check() re-decodes every record in Python, and the
+    # GIL would serialize that; each worker is handed one listing folder
+    workers = min(8, os.cpu_count() or 2)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as ex:
+        fut = {ex.submit(check, d): d for d in dirs}
+        got = {}
+        for f in concurrent.futures.as_completed(fut):
+            got[fut[f]] = f.result()
     for d in dirs:
-        errs += check(d)
+        dir_errs, notes = got[d]
+        for n in notes:
+            print(f"  !  {n}")
+        errs += dir_errs
     for e in errs:
         print("  x ", e)
     if errs:

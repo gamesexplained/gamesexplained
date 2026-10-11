@@ -21,6 +21,15 @@ Sources:
     https://www.lemon64.com/review/delta/37
   - Zzap!64 review, https://www.zzap64.co.uk/c64/gow8.html
   - CSDb, "Delta Mix-E-Load", https://csdb.dk/sid/?id=14300
+- For the Overview's Reception section, the same way on 6 October 2026
+  (every page fetch refused by the network policy), from search summaries
+  of:
+  - Amiga Magazine Rack, the Commodore User review (March 1987),
+    https://amr.abime.net/review_22253
+  - Zzap!64, "Review of Delta" (April 1987),
+    https://www.zzap64.co.uk/cgi-bin/displayreview.pl?reviewid=24
+  Scores from Computer and Video Games, Happy Computer and ASM appeared in
+  one summary only, without an issue, and are not used.
 - The game's own screens, captured in the emulator on 1 October 2026
   (`reference/`). No manual was read.
 

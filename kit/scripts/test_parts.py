@@ -183,6 +183,7 @@ class Parts(unittest.TestCase):
             proj = g / 'park.regen2000proj'
             out = run(KIT / 'scripts' / 'symbols_import.py', g / 'parts' / 'park', g / 'park.vsf', proj).stdout
             self.assertIn('5 labelled addresses', out)             # the park's two and the engine's three
+            self.assertNotIn('left out', out)                      # the park's map holds only its own addresses
             for pid in ('park', 'engine'):                         # one session, exported once for each part
                 out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / pid, '--project', proj).stdout
                 self.assertNotIn('no other part', out)
@@ -198,6 +199,28 @@ class Parts(unittest.TestCase):
             out = run(KIT / 'scripts' / 'symbols_export.py', g / 'parts' / 'park', '--project', proj).stdout
             self.assertIn('engine_other', out)
             self.assertIn('no other part', out)
+
+    def test_a_map_that_holds_the_part_beneath_is_cut_on_import(self):
+        # a level's symbols.json written before it lay over the engine holds the engine's addresses too (#257)
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            symbols(g, 'park', [(0x1000, 0x1010, 'Byte'), (0x4000, 0x4005, 'Code'), (0x4010, 0x4011, 'Address')],
+                    [sym(0x1003, 'engine_get'), sym(0x1010, 'park_flag', 'AbsoluteAddress'), sym(0x4000, 'park_entry'),
+                     sym(0x4010, 'park_vector', 'AbsoluteAddress')],
+                    [line(0x1000, 'Calls the level, then reads the variable.'), line(0x4000, 'The park.')])
+            proj = g / 'park.regen2000proj'
+            out = run(KIT / 'scripts' / 'symbols_import.py', g / 'parts' / 'park', g / 'park.vsf', proj).stdout
+            self.assertIn('5 labelled addresses', out)             # the park's two and the engine's three
+            self.assertIn('left out what parts/park/symbols.json holds', out)
+            self.assertIn('1 of those', out)
+            self.assertIn('$1010  park_flag', out)                 # the engine names it otherwise
+            self.assertNotIn('engine_get', out)                    # the engine has these two as they are
+            self.assertNotIn('Calls the level', out)
+            p = json.loads(proj.read_text())
+            self.assertEqual([(b['start'], b['end'], b['type_']) for b in p['blocks'] if b['type_'] != 'Undefined'],
+                             [(0x1000, 0x1006, 'Code'), (0x1010, 0x1010, 'DataByte'),     # the engine's, not the park's
+                              (0x4000, 0x4005, 'Code'), (0x4010, 0x4011, 'Address')])
+            self.assertEqual(p['labels'][str(0x1010)][0]['name'], 'engine_var')
 
     def test_an_export_that_holds_less_than_the_file_says_so(self):
         with tempfile.TemporaryDirectory() as d:
@@ -222,6 +245,36 @@ class Parts(unittest.TestCase):
         self.assertEqual([s['name'] for s in syms], ['low', 'auto'])
         self.assertEqual(comments, [])
         self.assertEqual([x.get('name') or x['text'] for x in left], ['in', 'x'])
+
+    def test_a_symbol_only_the_part_beneath_refers_to_is_left_out(self):
+        with tempfile.TemporaryDirectory() as d:
+            g = fixture(d)
+            run(KIT / 'scripts' / 'parts.py', 'add', g, 'room', '--over', 'park')
+            f = g / 'parts' / 'room' / 'part.json'
+            f.write_text(json.dumps(dict(json.loads(f.read_text()), ranges=[['$4000', '$4011'], ['$5000', '$50FF']])))
+            room, park = P.load_game(str(g / 'parts' / 'room')), P.load_game(str(g / 'parts' / 'park'))
+        # the room is loaded over the park's own bytes at $4000-$4011, and over nothing of the park's at $5000
+        self.assertEqual(room['replaces'], [[0x4000, 0x4011, 'Park']])
+        self.assertEqual(park['replaces'], [])        # the engine beneath owns no ranges the park's load wrote over
+        import symbols_export as X
+
+        def auto(a):
+            return {'address': a, 'name': f's_{a:04X}', 'kind': 'auto', 'type': 'AbsoluteAddress'}
+        syms = [sym(0x4000, 'room_entry'), auto(0x4003), auto(0x4005), auto(0x4008), auto(0x5000)]
+        refs = {0x4000: [0x4020], 0x4003: [0x4005, 0x4020], 0x4005: [0x4020, 0x1004], 0x5000: [0x1000]}
+        asked, keep = [], X.cross_references
+        X.cross_references = lambda plat, addresses, gdir=None: asked.extend(addresses) or refs
+        try:
+            kept, n = X.drop_strays('c64', 'room', syms, room)
+            self.assertEqual(X.drop_strays('c64', 'park', syms, park), (syms, 0))
+        finally:
+            X.cross_references = keep
+        self.assertEqual(asked, [0x4003, 0x4005, 0x4008])     # automatic, the room's, and written by the park first
+        self.assertEqual(n, 1)                                 # $4005: only the park's code and the engine's refer to it
+        # kept: a user's label, one the room's own code refers to, one nothing is known to refer to, and
+        # $5000, which the engine's code refers to as what the room holds there
+        self.assertEqual([s['name'] for s in kept], ['room_entry', 's_4003', 's_4008', 's_5000'])
+        self.assertEqual(X.drop_strays('spectrum', 'room', syms, room), (syms, 0))   # a client that cannot say
 
     def test_a_chain_of_three(self):
         with tempfile.TemporaryDirectory() as d:

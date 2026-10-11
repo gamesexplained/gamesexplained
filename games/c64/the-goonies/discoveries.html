@@ -1,0 +1,78 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="reference/goonies-page.css">
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">{{platform}} · {{year}} · {{publisher}}</p>
+  <h1>{{title}}</h1>
+  <p class="sub">What reading the whole program turned up: a protection check hidden in the Goonie's own movement, a page of the developers' source code, and the places where the game and its guides disagree.</p>
+</header>
+<main class="wrap">
+<section id="protection">
+  <p class="fig">Copy protection</p>
+  <h2 class="t">The game checks its loader on every move the Goonie makes</h2>
+  <p class="lede">The disk's loader leaves a value in a place nothing else looks: <code>$EF</code> in the CPU's own data direction register, at address <code>$00</code>. The KERNAL leaves <code>$2F</code> there, so a copy loaded any other way carries the wrong value.</p>
+  <p>Every pass, after moving the Goonie the player controls, <code>goonie_active</code> reads that register (<code>$0B2D</code>). The read is disguised. The code loads an index from <code>$A14F</code>, which holds <code>$E3</code>, and reads <code>$1D</code> plus that index, an address that wraps round the zero page to <code>$00</code>. It then adds <code>$11</code> from <code>$A150</code>, which gives zero only for <code>$EF</code>. Both values sit among scene 8's tables, so neither the address nor the value it wants appears in the code that does the check.</p>
+  <p>When the sum is not zero, the routine moves the Goonie a second time and calls into the middle of the interrupt handler (<code>$0A49</code>), whose pulls and return wreck the stack. Tested in the emulator with <code>$2F</code> poked into <code>$00</code>, the second move ran four times in 200 frames and then the screen was corrupted. With the loader's <code>$EF</code> it never ran. No instruction in the game writes <code>$00</code>, so the loader's value survives the whole game.</p>
+  <p>A second check runs once, at the hand-over from the loader (<code>game_start</code>, <code>$0800</code>). It compares eleven bytes at <code>$CF79</code> with eleven at <code>$CF99</code>, sixteen times over, and jumps to <code>$0000</code>, crashing the machine, if they ever agree. In an untouched load they differ. Then the routine wipes its own first 45 bytes, so in play the check is gone. What it is meant to catch is not known.</p>
+</section>
+
+<section id="source">
+  <p class="fig">Leftover source</p>
+  <h2 class="t">A page of the developers' source code is still in memory</h2>
+  <p class="lede">At <code>$F84D</code>, after the attract mode's recorded demonstrations, is a stretch of assembler source in plain text, with bit 7 stripped from each character. Nothing reads it. It was left in memory when the game was built and saved with the rest.</p>
+  <pre class="gsrc">DOORX    HEX 568C
+DOORY    HEX A33A
+DOORXOFF HEX 36C8
+DOORYOFF HEX 9769
+DOORMASK HEX 0808
+MKDRX    HEX 408F
+MKDRY    HEX 5F8C
+DOFLRS   LDX #$02
+DFL31    LDA PLAY,X
+         BEQ DFL32</pre>
+  <p>The fragment is the source of scene 6, the cage, and it matches the finished game byte for byte. Its seven tables are the bytes at <code>$F405</code> to <code>$F412</code>, in the same order. DOORX and DOORY are the two mouths of the scene's hidden passage, DOORXOFF and DOORYOFF how far each mouth carries a Goonie, and DOORMASK the stick bit each one needs. MKDRX and MKDRY are the two levers that hold the door open. The three instructions are the start of <code>s6_platforms</code> (<code>$F413</code>), which works out which platforms are solid from the pads held down. In the game, the table the developers called PLAY is at <code>$F481</code>.</p>
+</section>
+
+<section id="guides">
+  <p class="fig">The game against the guides</p>
+  <h2 class="t">Where the code and the C64-Wiki disagree</h2>
+  <p class="lede">The C64-Wiki describes the Datasoft game and the U.S. Gold release side by side.<sup class="fn"><a href="about.html#src-1" title="C64-Wiki, The Goonies">1</a></sup> The disk analysed here is the Datasoft one, and in several places its code does what the wiki gives to U.S. Gold, or something else again.</p>
+  <table class="t">
+    <tr><th>The wiki</th><th>The code</th><th>Where</th></tr>
+    <tr><td>The standard game starts with 8 lives</td><td>Five, shown as LIVES 5 in every scene</td><td><code>$0868</code></td></tr>
+    <tr><td>Two players take turns; playing at once is U.S. Gold's</td><td>Two players play at once, with a joystick each, and there are no turns</td><td><code>$172B</code></td></tr>
+    <tr><td>5,000 points for each Goonie left at the end</td><td>5,000 for each life left and one more</td><td><code>$A4E6</code></td></tr>
+    <tr><td>U.S. Gold: F7 skips ahead a scene a press</td><td>F7 always starts at scene 1</td><td><code>$0846</code></td></tr>
+    <tr><td>U.S. Gold: the lives are not capped</td><td>Scene 4's three extra lives stop at nine</td><td><code>$181B</code></td></tr>
+    <tr><td>Scene 8's tasks are fixed to one Goonie each</td><td>No routine asks which Goonie does a task</td><td><code>$9D33</code></td></tr>
+  </table>
+  <p>The wiki also leaves out two keys the game reads. V prints the version line, V 1 BY SES, and L turns a player's joystick a quarter turn (<a href="controls.html#keys">Controls</a>). A third key, F5, is scanned with the others and nothing acts on it (<code>$161C</code>).</p>
+</section>
+
+<section id="small">
+  <p class="fig">Odds and ends</p>
+  <h2 class="t">RESTORE does nothing, and each score has a spare digit</h2>
+  <p class="lede">Smaller things the code shows, none of them visible in play.</p>
+  <ul>
+    <li><b>RESTORE is switched off.</b> The non-maskable interrupt's vector points at a lone return (<code>$0A76</code>), so the RESTORE key cannot break into the game.</li>
+    <li><b>The score messages hold one digit too many.</b> After each score's six digits the message keeps a seventh, a <code>0</code> marked as the end of the text, which is never printed because the sixth digit already carries that mark (<code>$84CD</code>, <code>$84D4</code>).</li>
+    <li><b>Code that nothing calls.</b> An object routine (<code>$0BF5</code>), a test for whether something is near a Goonie (<code>$0C04</code>), a routine that clears a screen buffer (<code>$68D9</code>), and one that silences an effect on a single voice (<code>$C912</code>). After the last effect's script, <code>$CF08</code>-<code>$CF78</code> hold an older copy of some of the game's code.</li>
+    <li><b>A fixed random table for the demonstrations.</b> In the attract mode the game swaps its random numbers, which it takes from the SID's noise, for a fixed table (<code>$F69B</code>), so each recorded demonstration plays out the same way every time (<code>$880D</code>).</li>
+  </ul>
+</section>
+
+<section id="open">
+  <p class="fig">Open questions</p>
+  <h2 class="t">What the code does not answer</h2>
+  <ul>
+    <li>What the start-up check at <code>$0800</code> was meant to catch.</li>
+    <li>Whether scene 8's second Goonie, drawn from taller shapes than the other scenes' (<code>$9D63</code>), is what fixes the wiki's roles.</li>
+    <li>Which of the four tunes, if any, is the film's song (<a href="music.html">Music</a>).</li>
+  </ul>
+</section>
+</main>
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>

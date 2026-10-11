@@ -1,0 +1,256 @@
+{
+  "title": "Downhill Jam",
+  "order": 8,
+  "over": "resident",
+  "ranges": [
+    [
+      "$0000",
+      "$F22F"
+    ]
+  ],
+  "video": {
+    "screen": "$5000",
+    "charset": "$4800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0002",
+        "$00FF",
+        "zero page: the Jam's pointers, positions, latches and the sound driver's script pointers, all written at run time (jam_init clears $13-$FF)"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "the event manager's text screen (SKATING TO JAM, written before the load by show_skating_to $FAF0); the Jam neither reads nor writes it (same bytes in entry.vsf and play.vsf, simulator maps)"
+      ],
+      [
+        "$081C",
+        "$087F",
+        "left by earlier loads after the load stub; the Jam does not write or read them"
+      ],
+      [
+        "$33F1",
+        "$3458",
+        "not the Jam's data: 104 bytes inside file $28 that no instruction reads or writes (simulator maps, opcode scan); 99 of them equal the Downhill Race's attribute map (file $1F, from offset 235), so they look like a stale buffer saved with the file"
+      ],
+      [
+        "$34F5",
+        "$353A",
+        "70 more stale bytes in file $28 after the sound call stacks, unread and unwritten; 69 equal file $1F from offset 493 (the Downhill Race's attribute map)"
+      ],
+      [
+        "$3D96",
+        "$3FFF",
+        "the tail of file $28 after the last variable ($3D95): 618 bytes no instruction addresses by name, mostly equal to file $1F (the Downhill Race's attribute map), a stale buffer saved with the file. One stray write lands here: bump_check's timer store at $0E08 with X = $FF writes $3E53"
+      ],
+      [
+        "$4400",
+        "$47FF",
+        "screen buffer A (copy_map_chars and copy_map_colours fill it; sprite pointers at $47F8), written at run time over the second half of the font file $2D"
+      ],
+      [
+        "$5400",
+        "$56FF",
+        "the six sprite buffer pairs that unpack_shape fills at run time from the pose shapes (blocks $50-$5B)"
+      ],
+      [
+        "$5941",
+        "$59FF",
+        "between the end of file $2F ($5940) and file $2A ($5A00): High Jump's bytes, not loaded or used by the Jam"
+      ],
+      [
+        "$81D8",
+        "$81FF",
+        "forty bytes between files $2A and $29, not loaded by the Jam (High Jump's bytes); copy_map_colours reads them as row 255 of the attribute map when the camera is at the bottom (simulator read map)"
+      ],
+      [
+        "$A9D8",
+        "$A9FF",
+        "forty bytes after file $29, not loaded by the Jam (High Jump's bytes); copy_map_chars reads them as row 255 of the character map when the camera is at the bottom"
+      ],
+      [
+        "$B3A2",
+        "$BA19",
+        "residue of the move: $B3A2-$B9FE still hold file $2C's bytes from its load at $AA00 (copies of $C3BC-$CA18) past the end of file $30, and $B9FF-$BA19 received the 27 bytes below the file ($A9E5-$A9FF) from move_shape_file; nothing reads them"
+      ],
+      [
+        "$EC6A",
+        "$EFFF",
+        "past the end of file $2E: identical to the shop's snapshot (its unpacked colour maps, file $07, at $E000-$EFFF); the Jam never reads them"
+      ],
+      [
+        "$F000",
+        "$F22F",
+        "the tail of a RAM copy of the KERNAL from an earlier load; unused with the ROM banked out"
+      ],
+      [
+        "$F654",
+        "$F72F",
+        "stale bytes between the loader and the event manager, unchanged since the title; nothing refers to them"
+      ]
+    ],
+    "extra": [],
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "file $2C is moved under the I/O area by move_shape_file ($2189): pose shapes $D000-$D93F and the pose records $D940-$DFFF, read with $01 = $24 by unpack_shape"
+      ]
+    ]
+  },
+  "io": [
+    [
+      "$1363",
+      "$139A",
+      "ram",
+      "unpack_shape: the CPU port is $24 (all RAM) from $1361 to $139C, so its reads under $D000 see the pose data"
+    ],
+    [
+      "$2191",
+      "$21B3",
+      "ram",
+      "move_shape_file: $01 = $24 from $218F to $21B4 while file $2C is copied up to $BA1A-$DFFE"
+    ]
+  ],
+  "regions": [
+    [
+      "$0800",
+      "$081B",
+      "code",
+      "load stub copied from the resident event manager"
+    ],
+    [
+      "$0880",
+      "$33F0",
+      "code",
+      "the Downhill Jam: entry, main loop, players, terrain, attacks, scoring, interrupts, LESTER"
+    ],
+    [
+      "$33F1",
+      "$3458",
+      "unused",
+      "stale bytes saved with file $28"
+    ],
+    [
+      "$3459",
+      "$34F4",
+      "variables",
+      "sound driver state, queue and call stacks"
+    ],
+    [
+      "$34F5",
+      "$353A",
+      "unused",
+      "stale bytes saved with file $28"
+    ],
+    [
+      "$353B",
+      "$35D1",
+      "tables",
+      "load table, raster bands, status texts"
+    ],
+    [
+      "$35D2",
+      "$3C3B",
+      "tables",
+      "jump poses, status layout, joystick handler rows, behaviours, sprite layout, animations, attacks, LESTER's route, lanes, sparkle"
+    ],
+    [
+      "$3C3C",
+      "$3D95",
+      "variables",
+      "the two players' state, cleared by jam_init"
+    ],
+    [
+      "$3D96",
+      "$3FFF",
+      "unused",
+      "stale bytes saved with file $28"
+    ],
+    [
+      "$4000",
+      "$43FF",
+      "graphics",
+      "status-line font (file $2D, first half)"
+    ],
+    [
+      "$4400",
+      "$47FF",
+      "runtime",
+      "screen buffer A"
+    ],
+    [
+      "$4800",
+      "$4FFF",
+      "graphics",
+      "playfield characters (file $2B)"
+    ],
+    [
+      "$5000",
+      "$53FF",
+      "runtime",
+      "screen buffer B and the status lines"
+    ],
+    [
+      "$5400",
+      "$56FF",
+      "graphics",
+      "sprite buffers built at run time"
+    ],
+    [
+      "$5700",
+      "$5940",
+      "graphics",
+      "shadow and sparkle sprites (file $2F)"
+    ],
+    [
+      "$5A00",
+      "$81D7",
+      "levels",
+      "course attribute map, 40 x 255 (file $2A)"
+    ],
+    [
+      "$8200",
+      "$A9D7",
+      "levels",
+      "course character map, 40 x 255 (file $29)"
+    ],
+    [
+      "$AA00",
+      "$B3A1",
+      "sound",
+      "the music: phrase table, voice scripts, phrase picker, note streams, successor table (file $30)"
+    ],
+    [
+      "$BA1A",
+      "$D93F",
+      "graphics",
+      "skater pose shapes (file $2C, moved)"
+    ],
+    [
+      "$D940",
+      "$DFFF",
+      "graphics",
+      "pose records, riding and standing banks"
+    ],
+    [
+      "$E000",
+      "$E749",
+      "code",
+      "sound driver (same as High Jump's, relocated)"
+    ],
+    [
+      "$E74A",
+      "$EC69",
+      "sound",
+      "sound effect tables and scripts (file $2E)"
+    ],
+    [
+      "$F230",
+      "$FFFF",
+      "code",
+      "resident loader and event manager"
+    ]
+  ]
+}

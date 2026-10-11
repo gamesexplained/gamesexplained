@@ -62,6 +62,13 @@ evidence.
 - **Distrust your own negative results.** "Nothing references this" is a
   claim about your search. Indexed, indirect and self-modified accesses
   exist, and so do instructions the disassembler shows as data.
+- **Callers and readers come from a search.** A comment that names who
+  calls a routine or reads a variable, or says "only", "never" or
+  "every", takes it from the platform's references search (on the C64
+  `python3 kit/c64/opcodes.py GAME --refs <address>`, on the ZX Spectrum
+  `python3 kit/spectrum/codemap.py GAME <snapshot> --refs <address>`) and
+  says how many there are. Without the search, leave the claim out: it is
+  the detail a checker most often finds wrong.
 - **A value in the snapshot is the last one written.** Where code stores
   into an instruction's operand or into a variable, the snapshot holds
   whatever the last store left. Find the writers before you call a value
@@ -83,8 +90,11 @@ tool skill has the details):
 
     python3 kit/<platform>/r2000.py --game GAME --log annotations-<n>.jsonl <tool> '<json>'
 
-The log is how the session is rebuilt after a crash, so every change goes
-through it. Addresses in the disassembler's arguments are <in which form>.
+Many annotations at once go in a text file of `$ADDR name : comment` and
+`$ADDR-$END type` lines, sent in batches with the same log by
+`r2000.py --game GAME --log annotations-<n>.jsonl --apply <file>`
+(`r2000.py -h` has the format). The log is how the session is rebuilt
+after a crash, so every change goes through it. Addresses in the disassembler's arguments are <in which form>.
 
 - `python3 kit/scripts/coverage.py GAME --live --range <lo> <hi>`: your
   range's figure, and its largest undescribed runs.

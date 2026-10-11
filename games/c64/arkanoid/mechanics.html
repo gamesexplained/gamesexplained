@@ -1,0 +1,223 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arkanoid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+h3{font-size:19px;margin:26px 0 8px}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow);margin:0 0 22px}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+canvas{image-rendering:pixelated;max-width:100%;display:block}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+button{font-family:var(--fm);font-size:13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--ink-mute)}
+button.on{background:var(--chip);color:var(--chip-ink);border-color:var(--chip)}
+input[type=range]{width:220px}
+.lab{font-family:var(--fm);font-size:13px;color:var(--ink-soft)}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 0}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:12px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-mute);font-weight:500}
+.scroll{overflow-x:auto}
+.bands{font-family:var(--fm);font-size:13px;line-height:1.5;margin:12px 0 0;padding:0;list-style:none}
+.bands li{padding:4px 8px;border-left:3px solid transparent;cursor:default}
+.bands li.hl{background:var(--hl);border-left-color:var(--amber)}
+.two{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
+.out{font-family:var(--fm);font-size:14px;background:var(--surface-2);border-radius:6px;padding:10px 12px;margin:12px 0 0;min-height:3.2em}
+.stages{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:12px 0 0}
+.stages button{padding:5px 0;font-size:12px}
+.stages button.hz{border-bottom:3px solid var(--amber)}
+.msg{font-size:14px;color:var(--coral)}
+@media (max-width:760px){:root{--gx:16px;--h1:36px;--pp:14px}.two{grid-template-columns:1fr}.stages{grid-template-columns:repeat(8,1fr)}}
+</style>
+
+<!-- tabs -->
+<header class="hero">
+  <p class="eyebrow">Commodore 64 · 1987 · Imagine</p>
+  <h1>Arkanoid</h1>
+  <p class="sub">How the play screen is built, how the 32 walls are stored and drawn, how the bat sends the ball off, and what round 33 does differently. How the capsules are chosen is on the <a href="discoveries.html">Discoveries</a> tab, and Martin Galway's music plays on the <a href="music.html">Music</a> tab.</p>
+</header>
+<main class="wrap">
+
+<section>
+  <p class="fig">01 · The screen</p>
+  <h2 class="t">One frame of round 1, rebuilt from memory</h2>
+  <div class="plate"><div class="scroll"><canvas id="frameCv"></canvas></div>
+    <p class="cap">One frame of play recorded in the emulator: the video chip's registers, every change made to them during the frame, and the memory they read, drawn line by line. It matches the emulator's own picture of the same frame with 0 pixels different.</p></div>
+  <p>Play uses video bank 3: the screen at <code>$C000</code> and one character set at <code>$C800</code>, in multicolour mode. Characters <code>$00</code>-<code>$3F</code> are the font and the logo, <code>$40</code>-<code>$7F</code> the background tiles, copied in each round, and <code>$80</code>-<code>$FF</code> the bricks, walls and panel. The bricks are character pairs, not sprites: <code>$80 $81</code> for a coloured brick, <code>$85 $89</code> for silver and <code>$8D $91</code> for gold (<code>draw_wall</code>, <code>$F40E</code>).</p>
+  <p>The Vaus, the balls, the capsule, the laser shots and the enemies are twelve sprite objects on eight hardware sprites. A chain of three raster interrupts (<code>$F720</code>, <code>$F75E</code>, <code>$FBEE</code>) sorts the objects by height once a frame and places them down the screen. The right-hand panel is drawn once from a template of 25 rows of 13 screen codes at <code>$7800</code> (<code>$F2B5</code>).</p>
+</section>
+
+<section>
+  <p class="fig">02 · The rounds</p>
+  <h2 class="t">Thirty-two walls in 5 KB</h2>
+  <div class="plate">
+    <div class="row"><button id="rPrev">◀</button><span class="lab" id="rLab"></span><button id="rNext">▶</button></div>
+    <canvas id="roundCv"></canvas>
+    <p class="cap">Drawn from the round's 160 bytes at <code>$8000</code> + 160 × (round − 1), with the game's own wall routine ported: tile pattern, colours, brick characters and the shading each brick casts. For round 1 the port's screen codes match the game's screen in the play snapshot in every cell but the three bricks already broken there. The <a href="levels.html">Maps / levels</a> tab shows all 32.</p>
+  </div>
+  <p>Each round is 16 rows of 10 bytes: a 16-bit mask saying which of the 14 columns hold a brick, then 16 four-bit brick types (<code>$F40E</code>). A type below 8 is a coloured brick in colour type + 8. From 8 up, type AND 3 = 1 makes a silver brick and anything else a gold one, which is never counted and never breaks. Round 33 has no map: it is Doh.</p>
+  <table>
+    <tr><th>Rounds</th><th>Hits to break silver</th></tr>
+    <tr><td>1-8</td><td>2</td></tr><tr><td>9-16</td><td>3</td></tr><tr><td>17-24</td><td>4</td></tr><tr><td>25-32</td><td>5</td></tr>
+  </table>
+  <p class="cap">From the table at <code>$F52A</code>, plus one (<code>$F4DF</code>).</p>
+  <p>A coloured brick's value depends on its colour, from 70 to 130 points (<code>brick_points</code>, <code>$B2C4</code>): white 100, red 80, cyan 120, purple 90, green 110, blue 70, yellow 130. The background alternates between two sets of 64 tile characters (<code>$EC00</code> for rounds 1, 2, 5, 6…, <code>$EE00</code> for 3, 4, 7, 8…) in blue or red (<code>$F552</code>).</p>
+</section>
+
+<section>
+  <p class="fig">03 · The bat</p>
+  <h2 class="t">The two sides of the Vaus are not mirror images</h2>
+  <div class="plate"><canvas id="batCv"></canvas>
+    <p class="cap">Where the ball meets the Vaus, measured from a point 6 pixels right of its centre, and the angle it leaves at (<code>bat_collision</code>, <code>$ABB3</code>). Steep, diagonal and shallow are the step ratios the code sets: <code>$FF</code>/<code>$40</code>, <code>$FF</code>/<code>$F0</code> and <code>$80</code>/<code>$FF</code>, vertical against horizontal.</p></div>
+  <p>The left half sends the ball left and the right half sends it right, each in three zones: two of 4 pixels, then the rest. Near the middle the left side gives a diagonal and the next zone out a steep bounce; on the right side the order is the other way round (<code>$AC12</code>-<code>$AC3A</code> against <code>$AD0F</code>-<code>$AD38</code>). Both outer zones give the shallow angle. On the enlarged Vaus the distance is halved first, so the zones are twice as wide.</p>
+  <p>The ball's speed is a number of steps per frame, from 1 to 11 (<code>move_balls</code>, <code>$ADB3</code>). Every brick hit adds 4 to a fraction that carries into it (<code>$AF5F</code>), and the time since the life began sets a floor that rises by one every 1,024 frames (<code>$ADE7</code>). A new life starts at 2. With the joystick the Vaus moves faster as the ball does: each frame it steps 2 × (speed + 1) pixels (<code>$FDBF</code>).</p>
+</section>
+
+<section>
+  <p class="fig">04 · Round 33</p>
+  <h2 class="t">Doh takes 23 hits</h2>
+  <div class="plate"><img src="reference/round33-doh.png" alt="Round 33: Doh" width="384">
+    <p class="cap">Round 33 in the emulator, reached by setting the round number and the bricks-left count so that the next brick broken in round 1 ended the round.</p></div>
+  <p>Doh is not a sprite. The round copies a 26 × 24 screen of characters from <code>$7B90</code> into the playfield and swaps in its own character set (<code>doh_setup</code>, <code>$9C59</code>). The bricks-left counter becomes a hit counter, set to 22 (<code>$95F4</code>); every ball hit on one of Doh's characters takes one off (<code>$B11E</code>), and the ending starts when it goes below zero (<code>$9637</code>): the 23rd hit. Doh fires one shot per cycle of its mouth, aimed at the Vaus (<code>$9819</code>-<code>$987B</code>).</p>
+  <p>After the last hit Doh dissolves, the ending tune and the title picture play, and the story's last page is printed (<code>$B8B0</code>): "DIMENSION CONTROLLING FORT DOH HAS NOW BEEN DEMOLISHED AND TIME STARTED FLOWING BACKWARDS". Then the game sets the player's lives to none and goes to game over (<code>$96B7</code>).</p>
+</section>
+
+<section>
+  <p class="fig">05 · Quirks</p>
+  <h2 class="t">Bug: a ball moving left cannot hit an enemy from the side</h2>
+  <p>The ball-against-enemy test has a horizontal check for each direction. The one for a ball moving left subtracts 24 where it should add (<code>$9E9B</code>-<code>$9EAB</code>), so it never matches; only the vertical test catches such a ball. This was read in the code and not tried in play.</p>
+  <h2 class="t">The Break exit pays nothing</h2>
+  <p>In the arcade game, leaving through the Break exit is worth 10,000 points. Here the exit ends the round (<code>$A41F</code> to <code>round_cleared</code>, <code>$95CF</code>) and nothing on that path adds to the score.</p>
+  <h2 class="t">An extra life every 20,000 points, all at once</h2>
+  <p>The threshold starts at 20,000 and rises by 20,000 with each life awarded (<code>check_extra_life</code>, <code>$FAA5</code>). In the emulator a score set to 199,900 paid out ten lives in a row, taking the lives from 3 to 13 and the threshold to 220,000. The published cheat <code>POKE 39801,189</code> turns the store at <code>$9B79</code> that takes a life away into a load, so a lost ball costs nothing: in the emulator three lost balls left the lives at 3.</p>
+  <h2 class="t">Two programs in one file</h2>
+  <p>The 63 KB file carries an older build of much of the game beside the one that runs: an earlier assembly of <code>$A971</code>-<code>$B5FF</code> from <code>$096B</code>, of the interrupt and input code at <code>$BA6B</code>-<code>$BFFF</code> (with a 30-sprite multiplexer and a joystick reader for port 2 only), and of the sound driver at <code>$3B8B</code>, assembled <code>$1000</code> higher. Nothing reads or runs any of it. The enemies' second gate is unused in the same way: its path needs <code>$0246</code>, which nothing writes, so every enemy comes in through the gate at X <code>$47</code>.</p>
+</section>
+
+</main>
+
+<footer style="margin:16px 0 0;padding:22px var(--gx) 0;border-top:1px solid #e0ded8;font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#80838a"><a href="https://github.com/gamesexplained/gamesexplained" style="color:#1f5fa8;text-decoration:none">GitHub</a> · <a href="https://discord.gg/3V9GWyRDWV" style="color:#1f5fa8;text-decoration:none">Discord</a><br>© Games Explained contributors. Write-ups, facts and symbol maps are available under <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color:#1f5fa8;text-decoration:none">CC BY-SA 4.0</a>; code under <a href="https://opensource.org/licenses/MIT" style="color:#1f5fa8;text-decoration:none">MIT</a></footer>
+<script src="../../lib/c64.js"></script>
+<script>
+// One frame of round 1, recorded with kit/c64/frame.py and trimmed to the memory it reads.
+const ARK_FRAME = {"schema":1,"standard":"PAL","lines":312,"cycles":63,"about":"","vic":[128,236,136,236,0,0,0,0,0,0,140,0,128,0,136,0,0,27,0,209,0,255,216,0,3,112,241,0,252,0,255,255,240,240,252,254,240,241,254,240,240,251,251,241,251,242,242],"cia2":[144,63],"cpu":[47,53],"writes":[[21,16,65534,238],[21,22,65535,251],[22,21,53263,224],[23,29,53261,224],[24,37,53259,232],[25,45,53257,255],[26,12,65534,32],[26,18,65535,247],[52,46,65530,85],[52,52,65531,248],[245,18,53263,0],[245,30,53261,0],[245,42,53259,0],[245,54,53257,0],[246,48,65530,3],[246,54,65531,249],[247,55,65534,94]],"colour":"Dg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgICAgICAgICAgICDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4BAQEBAQEBAQEBAQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgEBAQEBAQEBAQEBAQ4JCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQ4ODgEBAQEBAQEBAQ4OCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsODg4ODg4ODg4ODg4JDgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKDg4ODg4ODg4ODg4ODg4PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw8PDw4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4BAQEBAQEBAQEODgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDg4OAQEBAQEBAQEBDg4NDQ0NDQ0NDQ0NDQ0ODg0NDg4NDQ0NDQ0ODg4ODgEBAQEBAQEBAQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4BAQEBAQEBAQEODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4BAQEBAQEBAQEODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4OAQEBAQEBAQEBDg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODgEBAQEBAQEBAQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4BAQEBAQEBAQEODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4LCwYGBgYGBgYGBgYGBgYGDAAAAAAAAA==","ram":[{"a":49152,"b":"+/z8/Pz86+zr/Pz8/Pz8/Pz8/P3+/fz8/Pz8/xyoqaqrHR4fILfIHPVUVVZXVFVWV1RVVldUVVZXVFVWV1RVVldUVfocKCcmJSMiIbS6yRzxWElKS0hJSktISUpLSElKS0hJSktISUpLSEn2HBwcHBwcHBwcHBwc8lxNTk9MTU5PTE1OT0xNTk9MTU5PTE1OT0xN9xwICQcIHBwTAw8SBfOFiYWJhYmFiYWJhYmFiYWJhYmFiYWJhYmFifgcHBwwMDAxMzMwHBz0gIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIH5HL2+v8DBw8TFxhw+9YCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCB+hwcHBwcHBwcHBwcHPGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgfYcsrOzs7Ozs7OzszzygIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCBgIH3HDscHBMDDxIFHBw784CBgIGAgYCBgIGAgYCBgIGAgYCBgIGAgYCB+Bw7HDAwMDEzMzAcO/SAgYCBgIGAgYCBgIFYWYCBWFmAgYCBgIFYWfkcOxwMCRYFExwcMzv1XF1eX1xdXl9cXV5fXE1OX1xNTl9cXV5fXE36HDscEg8VDgQcMDE78VBBQkNAQUJDQEFCQ0BBQkNAQUJDQEFCQ0BB9hy4ubm5ubm5ubm5PfJURUZHREVGR0RFRkdERUZHREVGR0RFRkdERfccHBwcHBwcHBwcHBzzWElKS0hJSktISUpLSElKS0hJSktISUpLSEn4HL2+v8DBw8TFxhw/9FxNTk9MTU5PTE1OT0xNTk9MTU5PTE1OT0xN+RwcHBwcHBwcHBwcHPVQQUJDQEFCQ0BBQkNAQUJDQEFCQ0BBQkNAQfocsrOzs7Ozs7OzszzxVEVGR0RFRkdERUZHREVGR0RFRkdERUZHREX2HDscHBMDDxIFHBw78lhJSktISUpLSElKS0hJSktISUpLSElKS0hJ9xw7HDAwMDAwMDAcO/NcTU5PTE1OT0xNTk9MTU5PTE1OT0xNTk9MTfgcOxwMCRYFExwcHDv0UEFCQ0BBQkNAQUJDQEFCQ0BBQkNAQUJDQEH5HDscEg8VDgQcMDE79VRFRkdERUZHREVGR0RFRkdERUZHREVGR0RF+hy4ubm5ubm5ubm5PfFYSUpLSElKS0hJSktISUpLSElKS0hJSktISegcHBwcHBwcHBwcHBzyXE1OT0xNTk9MTU5PTE1OT0xNTk9MTU5PTE3pHBwcHBwcHBwcHBwc81BBQkNAQUJDQEFCQ0BBQkNAQUJDQEFCQ0BB6hwcHBwcHBwcHBwcHA=="},{"a":50168,"b":"lpdCQkBCQEE="},{"a":51224,"b":"foDAwMCAfgD8jsbGxo78AH6AwDjAgH4A"},{"a":51256,"b":"foDAzsaGfADGxsa6xsbGAAgYGBgYGAgA"},{"a":51296,"b":"wMDAwMCAfgA="},{"a":51312,"b":"xub2ms7GxgB8gsbGxoJ8AA=="},{"a":51344,"b":"/MbGvMbGxgD+gOD+BgL+AA=="},{"a":51368,"b":"xsbGxsaC/gDGxsbGgmw4AA=="},{"a":51424,"b":"AAAAAAAAAAAobO7u7+/v7wAABwcHh4fHAAMPHz07eXsA4Ph8Xu5X9wV3NTkeDwMAAOf3fz4cCAAA7u7u7u4AAA=="},{"a":51496,"b":"AA+evNzudyIADw8PD47MiAC+vr+/uzEgAD9783M7HAg="},{"a":51584,"b":"fILO1uaCfABoGBgYGBgIAA=="},{"a":51608,"b":"/gYGHAYG/gA="},{"a":51672,"b":"Vmtra2traz9Wq6urq6vra6trq6urq6v/FHx8LCwsX38Uv7MLDCy+v/83ytoqaqqqVf////y/s7//f3/f3Pf3/MzzPP////8A/39/39z39/zM8zz//P//AM0xxgbaGmpqVf///Lyzo6MxxjbaGmpqqlX////8v7O//39/39z39/zM8zz//P//AP9/f9/c9/f8zPM8//z//wDNMcYG2hpqalX////8v7O/AwwMPz////8="},{"a":51872,"b":"/8DAMDMDDAz/MMzMAwMAAP8DDA8/P////wAAAwPMzPADDAw/P/////8AAAMDzMzw"},{"a":51936,"b":"/8DAMDMPDAD/MMzMAwMAAv8DDA8/P////wAAAwPMzPA="},{"a":52224,"b":"/////////wD8/Pz8/Pz8AA=="},{"a":52264,"b":"VVVVVVVV/wA="},{"a":52296,"b":"VFxcXFxc/AA="},{"a":52544,"b":"AAEDAwcPHx+AuLu/u7m7vwAODo7O7s+PAAAYPHnz588="},{"a":52624,"b":"VWpqampqa2tVqqqqqqr/AFD3Vs48+OAA"},{"a":52664,"b":"AAB3d3d3d3dra2pqampqfwBVqqqqqqr/AHd3d3d3ZkQ="},{"a":52712,"b":"Vb+ytr+wsPDFy8vLywsLDwAAAAAAAFT8Vb+ytr+ysvPFy8vPwMDAwA=="},{"a":52760,"b":"FCwsvLCwsLBVv7C1v7C1/yUvLC0vLCw8cPCwcMCwsPA="},{"a":52800,"b":"YPB4PB48ePAA4MCAAAAAAA=="},{"a":53056,"b":"/O/v7+/v7+/7M/sz+zP7M//v7+/v7+zs/KhU///8qPyIiMz//8yIzA=="},{"a":53128,"b":"P/v7+/v7+/vvzO/M78zvzP/7+/v7+zs7Pzs7Ozs7Ozs7Ozs7Ozs7O/zv7+/v7+/v+zP7M/sz+zP/7+/v7+/s7Pzs7Ozs7Ozs7Ozs7Ozs7OwADz47Ozs7PwD/qlX///8A/KhU///8qPyIiMz//8yIzADwvOz8/Pz8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK///K///6///1VVVa///6///6///K///K///"},{"a":53312,"b":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//+g//+g//+sVVVc//+k//+s//+s//+g//+g"},{"a":53376,"b":"EAAAdAAAdAAAEIAAAqAAAqAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":58752,"b":"A///AgAAAgAAAgAAAgAAAgAAAgAAAgAAA///FVVVGqqqBVVVBBqqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":58816,"b":"//8AAAEAAAEAAAEAAAEAAAEAAAEAAAEE//8EVVVVqqqqVVVUqqoUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},{"a":65535,"b":"9w=="}],"capture":{"phase_cycles_uncertain":0,"frame_cycles":19656,"frame_ended_on_line":0,"picture_lines_low":0,"writes_account_for_end_state":true,"ram_bytes_changed_during_frame":17,"colour_cells_changed_during_frame":0}};
+// A round's playfield as screen codes and colours, following draw_playfield_background $F552 and
+// draw_wall $F40E. ram: the game image (listing). idx: round index 0-31. Returns {scr, col} for the
+// 40x25 screen, playfield cells only (rows 1-24, columns 1-26 background; bricks from $C029).
+function buildRound(ram, idx){
+  const scr=new Uint8Array(1000).fill(0x1C), col=new Uint8Array(1000);
+  const base=ram[0xF54E+(idx&3)], colour=ram[0xF54A+(idx&3)];
+  for(let r=1;r<=24;r++) for(let c=1;c<=26;c++){ scr[r*40+c]=(base+(r&3)*4+((c-1)&3))|(r===1||c===1?0x10:0); col[r*40+c]=colour; }
+  let p=0x8000+idx*160, o=41;               // $C029
+  let bricks=0;
+  for(let row=0;row<16;row++,o+=40){
+    let mask=ram[p]<<8|ram[p+1]; const nib=[];
+    for(let i=0;i<8;i++){ nib.push(ram[p+2+i]>>4, ram[p+2+i]&15); }
+    p+=10;
+    for(let x=0,y=0;x<14;x++,y+=2){
+      const on=mask&0x8000; mask=(mask<<1)&0xFFFF;
+      if(!on) continue;
+      const t=nib[x];
+      let a,b;
+      if(t<8){ a=0x80; b=0x81; bricks++; } else if((t&3)===1){ a=0x85; b=0x89; bricks++; } else { a=0x8D; b=0x91; }
+      const cc=t<8?t|8:9;
+      scr[o+y]=a; scr[o+y+1]=b; col[o+y]=cc; col[o+y+1]=cc;
+      scr[o+y+41]|=0x10;
+      if(!(scr[o+y+42]&0x80)) scr[o+y+42]|=0x10;
+    }
+  }
+  return {scr,col,bricks};
+}
+
+(function () {
+  const $ = id => document.getElementById(id);
+  const needSite = 'This widget needs the site\'s shared scripts: open the page from the built site.';
+  const C = globalThis.C64;
+  const PAL = C ? C.PAL : [];
+
+  /* 03 frame */
+  function frame() {
+    if (!C) { $('frameCv').replaceWith(document.createTextNode(needSite)); return; }
+    C.drawFrame($('frameCv'), ARK_FRAME, 2);
+  }
+
+  /* 04 rounds */
+  function drawRound(cv, ram, idx, s) {
+    const ctx = C.canvas(cv, 28 * 8 * s, 25 * 8 * s);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    if (idx === 32) return;
+    const { scr, col } = buildRound(ram, idx);
+    const cs = new Uint8Array(0x800);
+    cs.set(ram.subarray((idx & 2) ? 0xEE00 : 0xEC00, ((idx & 2) ? 0xEE00 : 0xEC00) + 0x200), 0x200);  // $F552: tiles into $CA00
+    cs.set(ram.subarray(0xCC00, 0xD000), 0x400);                                                       // bricks, walls
+    for (let r = 1; r <= 24; r++) for (let c = 1; c <= 26; c++) {
+      const i = r * 40 + c, cc = col[i];
+      C.drawGlyphMC(ctx, cs, scr[i], (c - 1) * 8 * s + 8 * s, (r - 1) * 8 * s + 8 * s, s, [PAL[0], PAL[12], PAL[14], PAL[cc & 7]]);
+    }
+  }
+  function rounds(ram) {
+    let idx = 0;
+    const show = () => { drawRound($('roundCv'), ram, idx, 2); $('rLab').textContent = 'Round ' + (idx + 1) + ' · $' + (0x8000 + idx * 160).toString(16).toUpperCase(); };
+    $('rPrev').onclick = () => { idx = (idx + 31) % 32; show(); };
+    $('rNext').onclick = () => { idx = (idx + 1) % 32; show(); };
+    show();
+  }
+
+  /* 05 bat */
+  function bat() {
+    const cv = $('batCv'), W = 640, H = 170; cv.width = W; cv.height = H; cv.style.width = '100%'; cv.style.maxWidth = W + 'px';
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+    const x0 = W / 2, px = 12;            // 12 canvas pixels per C64 pixel
+    // d = centre + 6 - ball X: left side d >= 0, right side d < 0
+    const zones = [[0, 4, 'diagonal', 1], [4, 8, 'steep', 1], [8, 13, 'shallow', 1], [-4, 0, 'steep', -1], [-8, -4, 'diagonal', -1], [-13, -8, 'shallow', -1]];
+    const ang = { steep: [0x40, 0xFF], diagonal: [0xF0, 0xFF], shallow: [0xFF, 0x80] };
+    zones.forEach(([a, b, k, side]) => {
+      const xa = x0 - b * px, xb = x0 - a * px;
+      ctx.fillStyle = k === 'diagonal' ? '#cfe0f5' : k === 'steep' ? '#f5dccf' : '#e4e4e4';
+      ctx.fillRect(xa, 120, xb - xa, 26); ctx.strokeStyle = '#999'; ctx.strokeRect(xa, 120, xb - xa, 26);
+      ctx.fillStyle = '#2f3136'; ctx.font = '12px IBM Plex Mono, monospace'; ctx.textAlign = 'center';
+      ctx.fillText(k, (xa + xb) / 2, 162);
+      const [hx, vy] = ang[k], cx = (xa + xb) / 2, len = 90;
+      const dx = -side * hx / 255, dy = -vy / 255, m = len / Math.hypot(dx, dy);
+      ctx.strokeStyle = '#1f5fa8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, 118); ctx.lineTo(cx + dx * m * 0.9, 118 + dy * m * 0.9); ctx.stroke(); ctx.lineWidth = 1;
+    });
+    ctx.fillStyle = '#c25a00'; ctx.fillRect(x0 - 1, 112, 2, 40);
+    ctx.fillStyle = '#2f3136'; ctx.textAlign = 'left'; ctx.fillText('ball goes left', 10, 20); ctx.textAlign = 'right'; ctx.fillText('ball goes right', W - 10, 20);
+    ctx.textAlign = 'center'; ctx.fillText('centre + 6', x0, 104);
+  }
+
+
+  bat();
+  if (!C) { ['roundCv'].forEach(id => $(id).replaceWith(document.createTextNode(needSite))); frame(); return; }
+  frame();
+  C.load('listing.json').then(L => { rounds(L.ram); });
+})();
+</script>

@@ -1,0 +1,93 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lode Runner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+
+:root{
+  --bg:#23262d; --paper:#e9e7e1; --surface:#ffffff; --surface-2:#f1efea; --line:#d5d3cc; --line-soft:#e0ded8;
+  --ink:#2f3136; --ink-soft:#55585f; --ink-mute:#80838a;
+  --link:#1f5fa8; --link-hover:#154480; --accent:#1f5fa8;
+  --amber:#c25a00; --cyan:#1f5fa8; --coral:#d04a3a; --green:#2a8a4a; --violet:#4a5bd6; --hl:#fff0c2;
+  --chip:#2f3136; --chip-ink:#ffffff;
+  --c64blue:#40318d; --c64grey:#686868;
+  --fd:'Lato',system-ui,sans-serif; --fb:'Lato',system-ui,sans-serif; --fm:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --col:1080px; --gx:68px; --fs:17px; --lh:1.6; --hw:900; --h1:46px; --h2:26px; --sy:48px; --pp:26px; --r:10px;
+  --plate-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+*{box-sizing:border-box}
+html{background:var(--bg);min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:var(--fs);line-height:var(--lh);max-width:var(--col);margin:0 auto;min-height:100vh;padding:0 0 4rem}
+h1,h2,h3{font-weight:var(--hw);letter-spacing:-.01em;text-wrap:balance;color:var(--ink);margin:0}
+.wrap{padding:0 var(--gx)}
+.hero{padding:48px var(--gx) 8px;text-align:left}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.hero h1{font-size:var(--h1);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+.hero .sub{margin:0 0 .6em;color:var(--ink-soft)}
+section{padding:var(--sy) 0 24px}
+section:last-of-type{border-bottom:none}
+.fig{font-family:var(--fm);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+h3{margin:28px 0 12px;font-size:20px}h2.t{font-size:var(--h2);margin-bottom:12px}
+.lede{color:var(--ink-soft);margin:0 0 30px}
+.plate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:var(--pp);box-shadow:var(--plate-shadow)}
+.cap{font-size:14px;color:var(--ink-mute);margin-top:14px;line-height:1.55}
+.cap b{color:var(--ink);font-weight:700}
+code{font-family:var(--fm);font-size:.82em;background:var(--chip);color:var(--chip-ink);border-radius:4px;padding:2px 6px;white-space:nowrap}
+
+
+a{color:var(--link)}
+.lr-music-table{width:100%;border-collapse:collapse;font-size:15px}
+.lr-music-table th,.lr-music-table td{text-align:left;border-bottom:1px solid var(--line-soft);padding:8px 10px}
+@media(max-width:700px){:root{--gx:20px;--h1:36px;--sy:32px;--pp:16px}.lr-music-table{font-size:13px}.lr-music-table th,.lr-music-table td{padding:6px}}
+</style>
+<!-- tabs -->
+<header class="hero"><p class="eyebrow">Commodore 64 · 1983 · Brøderbund</p><h1>Lode Runner</h1><p class="sub">Short melodies play when the last gold disappears. Their pitch changes as the game progresses.</p></header>
+<main class="wrap" data-part="engine">
+<section id="motifs"><p class="fig">01 · Music</p><h2 class="t">Music: the gold motifs</h2>
+<div class="plate"><div id="lr-music"></div><p id="lr-music-state" class="cap">Loading the shared SID player.</p></div>
+<p>Collecting the last gold queues one of ten short motifs. A countdown chooses the motif. <code>$6410</code>, <code>$641D</code>, <code>$643A</code>.</p>
+<p>A separate pitch offset changes after ten completed rooms. The offset cycles through 2–11, then returns to 2. The motif buttons use offset 2; “High transpose” plays motif 2 at offset 11.</p>
+</section>
+<section id="sid"><p class="fig">02 · Notes and voices</p><h2 class="t">Two SID voices</h2>
+<p>The queued music uses SID voices two and three with the original frequency tables. A negative harmony byte detunes the third voice by subtracting 128 from the second voice’s frequency word. <code>$9521</code>, <code>$9546</code>.</p>
+<p>The stored envelope bytes do not change the queue’s sustain/release setting. The player reads each event’s fourth byte and then replaces that byte with a fixed value. <code>$6319</code>.</p>
+<p>High pitch offsets can reach beyond the 37 stored frequency words. The “High transpose” button plays the adjacent bytes that the driver then reads. Some produce very low frequencies that laptop and phone speakers barely reproduce.</p>
+<p>Playback uses the site’s PAL SID model. The game’s roughly 60 Hz CIA queue updates are grouped into video frames. Gameplay effects on voice one and timing within a video frame are omitted.</p>
+</section>
+<section id="editions"><p class="fig">03 · Editions</p><h2 class="t">Disk and cartridge motifs</h2>
+<div class="plate"><table class="lr-music-table"><thead><tr><th scope="col">Selection rule</th><th scope="col">Disk</th><th scope="col">Cartridge</th></tr></thead><tbody><tr><th scope="row">Motifs in the cycle</th><td>10</td><td>7</td></tr><tr><th scope="row">Room completions before the pitch changes</th><td>10</td><td>7</td></tr><tr><th scope="row">Pitch offset cycle</th><td>2–11</td><td>2–11</td></tr></tbody></table></div>
+<p>The player above uses the disk’s ten motifs. The cartridge has its own sound directory and advances the pitch after seven room completions. Its selection cycle was checked across 70 completions. The <a href="editions.html">Editions tab</a> compares the engines and links their evidence.</p>
+</section>
+</main>
+<footer class="wrap cap"><a href="https://github.com/gamesexplained/gamesexplained">Games Explained</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> · <a href="https://opensource.org/licenses/MIT">Code: MIT</a></footer>
+<script src="../../lib/sid.js"></script>
+<script id="lr-data" type="application/json">{"audio":{"low":[0,225,104,247,143,48,218,143,78,24,239,210,195,195,209,239,31,96,181,30,156,49,223,165,135,134,162,223,62,193,107,60,57,99,190,75,15,0,8,9,9,10,11],"high":[0,8,9,9,10,11,11,12,13,14,14,15,16,17,18,19,21,22,23,25,26,28,29,31,33,35,37,39,42,44,47,50,53,56,59,63,67,4,0,0,0,8,7],"tunes":[[[4,0,0,0],[2,19,16,208],[6,19,16,160],[8,17,14,160],[6,16,12,160],[2,16,12,64],[8,16,12,160],[8,17,14,160],[6,16,12,160],[2,16,12,64],[8,14,7,160],[8,16,12,160],[6,14,7,160],[2,14,7,64],[4,14,7,208],[4,14,7,176],[4,14,7,160],[4,14,7,144],[4,14,7,128],[4,14,7,112],[8,14,7,160],[8,16,12,160],[6,14,7,160],[2,14,7,64],[4,14,7,208],[4,14,7,176],[4,14,7,160],[4,14,7,144],[4,14,7,128],[4,14,7,112],[4,14,7,96],[4,14,7,80],[4,14,7,64],[4,14,7,48],[8,14,7,32],[16,0,0,0]],[[4,0,0,0],[4,16,255,160],[4,19,255,160],[4,24,255,160],[4,19,255,160],[4,16,255,160],[4,19,255,160],[4,24,255,160],[4,19,255,160],[4,21,255,208],[4,0,0,0],[2,17,255,160],[2,17,255,128],[4,0,0,0],[2,17,255,160],[2,17,255,128],[12,0,0,0],[4,18,255,160],[4,21,255,160],[4,31,15,160],[4,21,255,160],[4,18,255,160],[4,21,255,160],[4,31,15,160],[4,21,255,160],[4,23,255,208],[4,0,0,0],[2,19,255,160],[2,19,255,128],[4,0,0,0],[2,19,255,160],[2,19,255,128],[16,0,0,0]],[[4,0,0,0],[5,2,28,160],[5,4,23,160],[5,5,21,160],[5,7,19,160],[5,9,17,160],[5,11,16,160],[5,12,12,160],[5,16,11,160],[5,17,9,160],[5,19,7,160],[5,21,5,160],[5,23,4,160],[5,28,2,160],[16,0,0,0]],[[4,0,0,0],[4,7,255,160],[4,12,255,160],[4,16,255,160],[4,19,255,208],[8,0,0,0],[2,19,255,160],[2,0,0,0],[4,19,255,160],[4,0,0,0],[4,16,255,208],[8,0,0,0],[2,16,255,160],[2,0,0,0],[4,16,255,160],[4,0,0,0],[4,12,255,160],[4,0,0,0],[4,16,255,160],[4,0,0,0],[4,12,255,160],[4,0,0,0],[6,7,255,208],[6,7,255,160],[6,7,255,112],[6,7,255,80],[16,0,0,0]],[[4,0,0,0],[4,16,255,160],[4,19,255,160],[4,24,255,160],[4,21,255,160],[4,17,255,160],[4,14,255,160],[4,19,255,160],[4,17,255,160],[4,14,255,160],[4,12,255,160],[12,0,0,0],[2,24,255,160],[2,19,255,160],[2,16,255,160],[4,12,255,160],[16,0,0,0]],[[4,0,0,0],[4,19,255,192],[4,18,255,160],[4,17,255,160],[4,16,255,160],[4,15,255,160],[4,20,255,160],[4,19,255,160],[4,18,255,160],[4,19,255,208],[4,18,255,160],[4,17,255,160],[4,16,255,160],[4,15,255,160],[4,16,255,160],[4,17,255,160],[4,18,255,160],[3,19,255,208],[3,19,255,160],[3,19,255,112],[4,19,255,64],[16,0,0,0]],[[4,0,0,0],[4,12,255,192],[8,0,0,0],[4,7,255,160],[4,6,255,160],[4,7,255,160],[4,8,255,160],[8,0,0,0],[4,7,255,160],[8,0,0,0],[12,0,0,0],[4,23,17,160],[8,0,0,0],[4,24,16,160],[16,0,0,0]],[[4,0,0,0],[4,24,255,160],[4,23,255,160],[4,22,255,160],[4,21,255,160],[4,20,255,160],[4,19,255,160],[4,18,255,160],[4,17,255,160],[4,16,255,160],[4,15,255,160],[4,14,255,160],[4,13,255,160],[4,12,255,160],[12,0,0,0],[2,12,255,160],[2,16,255,160],[2,19,255,160],[4,24,255,160],[16,0,0,0]],[[4,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[5,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[5,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[1,0,0,0],[3,12,255,176],[5,0,0,0],[3,14,255,176],[5,0,0,0],[3,16,255,176],[5,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[5,0,0,160],[3,7,255,160],[1,0,0,0],[3,7,255,160],[1,0,0,0],[3,7,255,160],[5,0,0,0],[3,12,255,160],[1,0,0,0],[3,16,255,160],[1,0,0,0],[3,14,255,176],[5,0,0,0],[3,11,255,176],[5,0,0,0],[3,7,255,176],[16,0,0,0]],[[4,0,0,0],[8,7,255,160],[8,12,255,160],[8,16,255,160],[4,19,255,208],[12,0,0,0],[8,16,255,160],[6,19,255,208],[6,19,255,160],[6,19,255,112],[16,19,255,64],[16,0,0,0]]],"selections":[[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[2,11]]}}</script>
+<script id="lr-mechanics">function createQueueDriver(data){
+ const sid=new Uint8Array(25);let events=[],head=0,phase=0,alive=false;let writes=[];
+ function write(r,v){v&=255;sid[r]=v;writes.push(r,v);}
+ function init(tune){
+  const selected=data.selections[tune];events=data.tunes[selected[0]].map(v=>[v[0],v[1]?(v[1]+selected[1])&255:0,v[2]>0&&v[2]<128?(v[2]+selected[1])&255:v[2],v[3]]);
+  head=0;phase=0;alive=true;sid.fill(0);sid[24]=15;writes=[];
+ }
+ function tick(){
+  writes=[];
+  if(head===events.length){write(11,0);write(18,0);alive=false;return;}
+  const e=events[head];write(13,240);write(20,240);
+  const f2=data.low[e[1]]|(data.high[e[1]]<<8);write(7,f2);write(8,f2>>8);
+  const f3=e[2]>=128?(f2-128)&65535:data.low[e[2]]|(data.high[e[2]]<<8);
+  write(14,f3);write(15,f3>>8);write(11,e[1]?17:0);write(18,e[2]===0?0:17);
+  e[0]=(e[0]-1)&255;if(e[0]===0)head++;
+ }
+ function play(){
+  phase+=19656;const all=[];
+  while(phase>=16422){phase-=16422;tick();all.push(...writes);}writes=all;
+ }
+ function stop(){alive=false;sid.fill(0);writes=[];}
+ return {sid,init,tick,play,stop,playing:()=>alive,get writes(){return writes;},voice:i=>({line:i===0?'Voice 1 effects omitted':`Queue event ${Math.min(head+1,events.length)} / ${events.length}`})};
+}
+</script>
+<script>
+const D=JSON.parse(document.getElementById('lr-data').textContent);
+if(globalThis.C64Sid){
+ C64Sid.mount(document.getElementById('lr-music'),{driver:createQueueDriver,data:D.audio,tunes:['Motif 0','Motif 1','Motif 2','Motif 3','Motif 4','Motif 5','Motif 6','Motif 7','Motif 8','Motif 9','High transpose'],rows:[{k:'Queue',f:v=>v.line}]});
+ document.getElementById('lr-music-state').textContent='Every ordered SID write matches the original queue driver across 11,610 ticks for all ten motifs at every pitch offset. CIA ticks are grouped into PAL video frames; voice-one effects are omitted. Select a motif to play it.';
+}else document.getElementById('lr-music-state').textContent='The SID player is available in the built, served site.';
+</script>

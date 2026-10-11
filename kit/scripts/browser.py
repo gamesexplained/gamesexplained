@@ -1,6 +1,11 @@
-"""Installed Firefox for page checks on any emulated platform.
+"""Installed Firefox or explicitly selected Chromium for page checks.
 
 Reached through kit/scripts/tools.py; no download or personal profile access.
+KIT_BROWSER_CHROMIUM may name an existing chrome-headless-shell or Chromium
+executable. KIT_BROWSER_PORT selects an unused debugging port (default 9222).
+Keep that port setting for status/stop. Profile and XDG state stay in tools/.
+Deep paths can exceed full Chromium's Unix socket limit; headless-shell avoids
+that profile-singleton socket.
 """
 import os
 from pathlib import Path
@@ -14,7 +19,8 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 STATE = ROOT / "tools/firefox"
 LOG = ROOT / "tools/logs/firefox.log"
-PORT = 9222
+PORT = int(os.environ.get("KIT_BROWSER_PORT", "9222"))
+CHROMIUM_STATE = ROOT / "tools/chromium"
 
 
 def up():
@@ -26,42 +32,55 @@ def up():
 
 
 def start():
-    exe = shutil.which("firefox")
+    chromium = os.environ.get("KIT_BROWSER_CHROMIUM")
+    exe = chromium or shutil.which("firefox")
+    if chromium and not Path(chromium).is_file():
+        sys.exit("KIT_BROWSER_CHROMIUM must name an existing Chromium executable; nothing is downloaded")
     if not exe:
         sys.exit("no installed Firefox on PATH; use the session's browser tool or ask before installing one")
     if up():
-        sys.exit("port 9222 is occupied; leave that browser alone or stop this clone's with tools.py stop browser")
-    profile = STATE / "profile"
+        sys.exit(f"port {PORT} is occupied; leave that browser alone or stop this clone's with tools.py stop browser")
+    state = CHROMIUM_STATE if chromium else STATE
+    profile = state / "profile"
     profile.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ)
     for var, sub in (("XDG_CONFIG_HOME", "config"), ("XDG_STATE_HOME", "state"),
                      ("XDG_CACHE_HOME", "cache"), ("XDG_DATA_HOME", "data"), ("TMPDIR", "tmp")):
-        path = STATE / sub
+        path = state / sub
         path.mkdir(exist_ok=True)
         env[var] = str(path)
     env["MOZ_CRASHREPORTER_DISABLE"] = "1"
     LOG.parent.mkdir(parents=True, exist_ok=True)
+    command = ([exe, "--headless", "--user-data-dir=" + str(profile),
+                "--remote-debugging-port=" + str(PORT), "--no-first-run",
+                "--no-default-browser-check", "--disable-breakpad", "--disable-crash-reporter",
+                "--no-sandbox", "about:blank"] if chromium else
+               [exe, "--headless", "--no-remote", "--profile", str(profile),
+                "--remote-debugging-port", str(PORT), "about:blank"])
     with LOG.open("ab") as log:
         process = subprocess.Popen(
-            [exe, "--headless", "--no-remote", "--profile", str(profile),
-             "--remote-debugging-port", str(PORT), "about:blank"],
-            env=env, cwd=STATE, stdin=subprocess.DEVNULL,
+            command,
+            env=env, cwd=state, stdin=subprocess.DEVNULL,
             stdout=log, stderr=log, start_new_session=True)
     for _ in range(40):
         if up():
-            print("browser up on :9222 (log: tools/logs/firefox.log)"); return
+            print(f"browser up on :{PORT} ({'Chromium CDP' if chromium else 'Firefox BiDi'}; profile: {profile}; log: tools/logs/firefox.log)"); return
         if process.poll() is not None:
             break
         time.sleep(0.5)
-    sys.exit("browser did not come up on :9222; read tools/logs/firefox.log")
+    sys.exit(f"browser did not come up on :{PORT}; read tools/logs/firefox.log")
 
 
 def stop_pattern():
     # Anchor the executable as well as the exact profile argument: a personal
     # browser, another clone, and shell commands mentioning this path stay up.
-    return (r"^([^ ]*/)?firefox(-bin|-esr)? --headless --no-remote --profile "
+    firefox = (r"^([^ ]*/)?firefox(-bin|-esr)? --headless --no-remote --profile "
             + re.escape(str(STATE / "profile"))
-            + r" --remote-debugging-port 9222( |$)")
+            + rf" --remote-debugging-port {PORT}( |$)")
+    chromium = (r"^([^ ]*/)?(chrome|chromium|chromium-browser|chrome-headless-shell) --headless --user-data-dir="
+                + re.escape(str(CHROMIUM_STATE / "profile"))
+                + rf" --remote-debugging-port={PORT}( |$)")
+    return "(" + firefox + "|" + chromium + ")"
 
 
 def stop():
@@ -80,5 +99,7 @@ def stop():
 
 
 def status():
+    if CHROMIUM_STATE.is_dir():
+        print(f"browser       :{PORT}  {'up' if up() else 'down'}   profile: tools/chromium/profile")
     if STATE.is_dir():
-        print(f"browser       :9222  {'up' if up() else 'down'}   profile: tools/firefox/profile")
+        print(f"browser       :{PORT}  {'up' if up() else 'down'}   profile: tools/firefox/profile")

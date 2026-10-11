@@ -1,0 +1,165 @@
+{
+  "title": "Downhill Race",
+  "order": 7,
+  "over": "resident",
+  "ranges": [
+    [
+      "$0000",
+      "$F22F"
+    ]
+  ],
+  "video": {
+    "screen": "$5000",
+    "charset": "$4800"
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0002",
+        "$00FF",
+        "zero page: the Downhill Race's position, scroll, sprite and sound state, written at run time"
+      ],
+      [
+        "$0400",
+        "$05B9",
+        "not the Downhill Race's: neither its files nor its code write or read these bytes (simulator write and read maps from the hand-over and from play); left by earlier programs"
+      ],
+      [
+        "$05BA",
+        "$05FF",
+        "run-time buffers: the two characters under each of the 35 flags, saved when a flag is knocked down ($161F, $162E) and put back by restore_flags ($1651)"
+      ],
+      [
+        "$0600",
+        "$07FF",
+        "mirror tables computed at start-up by build_mirror_tables ($1E48): $0700 reverses the 8 bits of a byte, $0600 reverses its four bit pairs; no byte of them is loaded"
+      ],
+      [
+        "$081C",
+        "$087F",
+        "left by earlier loads after the load stub; the Downhill Race does not write or read them"
+      ],
+      [
+        "$36EB",
+        "$3786",
+        "inside file $1B between the note frequency table and load_file_numbers: an alternating $FF/$00 fill with a few stray bits, like uninitialised RAM saved with the file; no instruction reaches it (the table reads are indexed by a nibble or a slot offset) and the simulator never read it"
+      ],
+      [
+        "$3F83",
+        "$3FFF",
+        "the end of file $1B past the last variable ($3F82): an alternating $00/$FF fill with a few stray bits, like uninitialised RAM, that no code reads (simulator read map, opcode scan)"
+      ],
+      [
+        "$47EC",
+        "$47FF",
+        "the tail of font file $23 (characters $FD-$FF) past the end of file $27; the status rows only use characters below $40 and nothing else reads it"
+      ],
+      [
+        "$7400",
+        "$74FF",
+        "four 64-byte sprite buffers (blocks $D0-$D3) that build_pose_sprites ($2760, $2A52) fills at run time from the pose shapes; no byte is loaded"
+      ],
+      [
+        "$7DFD",
+        "$7DFF",
+        "three bytes between the end of file $26 ($7DFC) and file $1F ($7E00); not loaded, not read"
+      ],
+      [
+        "$A5D8",
+        "$A5FF",
+        "forty bytes between the end of file $1F ($A5D7) and file $1E ($A600): not loaded and not read, identical to High Jump's memory"
+      ],
+      [
+        "$CDD8",
+        "$CDFF",
+        "forty bytes between the end of file $1E ($CDD7) and the copy of file $1C ($CE00): not loaded and not read, identical to High Jump's memory"
+      ],
+      [
+        "$F191",
+        "$F22F",
+        "past the copy of file $1D: eight bytes the copy loop at $1E1B takes from beyond the file, then the tail of a RAM copy of the KERNAL from an earlier load; nothing reads them"
+      ],
+      [
+        "$F654",
+        "$F72F",
+        "stale bytes between the loader and the event manager, unchanged since the title; nothing refers to them"
+      ]
+    ],
+    "extra": [
+      [
+        "$4000",
+        "$41FF",
+        "font file $23, characters $00-$3F, shown in the status rows ($D018 = $40)"
+      ],
+      [
+        "$4200",
+        "$44BF",
+        "file $24: the eleven overlay sprites, blocks $08-$12"
+      ],
+      [
+        "$44C0",
+        "$47EB",
+        "files $25 (the messages) and $27 (the sound-effect tables and scripts)"
+      ],
+      [
+        "$5400",
+        "$73FF",
+        "files $21 and $22: the riding sprites, blocks $50-$CF"
+      ],
+      [
+        "$7500",
+        "$7DFC",
+        "file $26: the music (phrase table, scripts, phrase chooser code, note streams, phrase graph)"
+      ],
+      [
+        "$7E00",
+        "$A5D7",
+        "file $1F: the colour and terrain map, 255 rows of 40"
+      ],
+      [
+        "$A600",
+        "$CDD7",
+        "file $1E: the character map, 255 rows of 40"
+      ],
+      [
+        "$CE00",
+        "$F190",
+        "files $1C and $1D copied under the I/O area: the pose directories and the pose shapes"
+      ]
+    ],
+    "include": [
+      [
+        "$D000",
+        "$DFFF",
+        "files $1C and $1D are copied under the I/O area: the pose directory and shapes, read with $01 = $24"
+      ]
+    ]
+  },
+  "io": [
+    [
+      "$1DD3",
+      "$1DE9",
+      "ram",
+      "copy_poses_under_io: $01 = $24 from $1DD5 to $1DEC; the stores fill the RAM under the I/O area"
+    ],
+    [
+      "$1E05",
+      "$1E28",
+      "ram",
+      "copy_shapes_under_io: $01 = $24 from $1E07 to $1E2B"
+    ],
+    [
+      "$27DC",
+      "$281A",
+      "ram",
+      "read_pose_entry: $01 = $24 from $27DE to $281B; reads the pose directory under the I/O area"
+    ],
+    [
+      "$2821",
+      "$2892",
+      "ram",
+      "copy_pose_shape: $01 = $24 from $2823 to $2893; reads the shapes under the I/O area"
+    ]
+  ],
+  "regions": []
+}

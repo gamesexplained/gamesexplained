@@ -1,0 +1,311 @@
+{
+  "schema": 1,
+  "platform": "c64",
+  "slug": "ik-plus",
+  "title": "IK+",
+  "year": 1987,
+  "publisher": "System 3",
+  "developer": "System 3",
+  "title_image": "reference/loading-picture.png",
+  "build": "System 3's original disk, as a G64 bit image (C64 Preservation Project, verified dump)",
+  "tier": "silver",
+  "coverage_percent": 100,
+  "copy": "agent-draft",
+  "steward": "",
+  "credits": [
+    {
+      "by": "Archer Maclean",
+      "role": "design and programming"
+    },
+    {
+      "by": "Rob Hubbard",
+      "role": "music"
+    }
+  ],
+  "tools": {
+    "emulator": "release v3.13.2, v3.13.2-linux-x86_64-gui.zip",
+    "disassembler": "regenerator2000 0.9.20 (cargo install from crates.io)",
+    "host": "Linux x86_64, Ubuntu 24.04, no display (cloud container)",
+    "node": "22.22.0"
+  },
+  "model": "claude-opus-5-5[1m]",
+  "step_models": {
+    "10-orient": [
+      "claude-opus-5-5[1m]"
+    ],
+    "20-features": [
+      "claude-opus-5-5[1m]"
+    ],
+    "30-text": [
+      "claude-opus-5-5[1m]"
+    ],
+    "40-sweep": [
+      "claude-opus-5-5[1m]"
+    ],
+    "50-coverage": [
+      "claude-opus-5-5[1m]"
+    ],
+    "60-verify": [
+      "claude-opus-5-5[1m]"
+    ],
+    "70-minisite": [
+      "claude-opus-5-5[1m]"
+    ],
+    "80-retro": [
+      "claude-opus-5-5[1m]"
+    ]
+  },
+  "kit_version": "0.0.119",
+  "created": "2026-10-09",
+  "video": {
+    "screen": "$6C00",
+    "charset": ""
+  },
+  "coverage": {
+    "exclude": [
+      [
+        "$0300",
+        "$03FF",
+        "work areas the game writes as it runs: the clearing code clear_old_shapes builds at $0300, the pose bytes hide_parts puts aside at $0350, the judge's column map at $03C0"
+      ],
+      [
+        "$0400",
+        "$07FF",
+        "the mirror, mask and two colour-swap tables build_tables makes at start-up"
+      ],
+      [
+        "$0800",
+        "$083F",
+        "the start of the loading picture's file p1 (its character set), left below the game, which loads from $0840; nothing in the game reads it"
+      ],
+      [
+        "$52B0",
+        "$52DF",
+        "the bubble's ends, floor characters $56-$5B, which clear_bubble_chars draws again before each bubble"
+      ],
+      [
+        "$5320",
+        "$57FF",
+        "floor characters built as the game runs: the character fighter's tiles in two buffers ($5320-$55CF), the 5-row font's characters and the bubble's letters ($55D0-$577F), the table frame's moving dots, the reflection ($5780-$57C7)"
+      ],
+      [
+        "$5800",
+        "$67FF",
+        "sprite memory: the fighters', balls', creature's, glints' and reflection's shapes, all built at run time and zero at the loader's hand-over"
+      ],
+      [
+        "$6A00",
+        "$6BFF",
+        "the screen at $6800, shown only below line 161 for the floor on alternate steps: clear_floor_rows ($285A) blanks its rows 14-24 at every reset and the game draws into them; its sprite pointers are set by the interrupts; the rest is never shown"
+      ],
+      [
+        "$6C00",
+        "$6FFF",
+        "the screen at $6C00: game_reset rewrites rows 0-1 ($1724), arena_colours rows 2-13 ($31CC) and clear_floor_rows rows 14-24 ($285A) before the first frame; the sprite pointers are set by the interrupts"
+      ],
+      [
+        "$D000",
+        "$D3FF",
+        "RAM under the I/O area, which the game never banks in ($01 stays $35): the same bytes as the loading picture's file p1 holds $C000 lower, left behind by the loading screen; nothing in the game reads them"
+      ],
+      [
+        "$FD20",
+        "$FD4F",
+        "the same bytes as the loading picture's file p1 holds $C000 lower, left behind by the loading screen; nothing in the game reads them"
+      ],
+      [
+        "$FECB",
+        "$FEFB",
+        "the same bytes as the loading picture's file p1 holds $C000 lower, left behind by the loading screen; nothing in the game reads them"
+      ],
+      [
+        "$FF40",
+        "$FFF9",
+        "the same bytes as the loading picture's file p1 holds $C000 lower, left behind by the loading screen; nothing in the game reads them"
+      ]
+    ],
+    "extra": [
+      [
+        "$4280",
+        "$517F",
+        "the arena picture's bitmap, character rows 2-13"
+      ],
+      [
+        "$5180",
+        "$52AF",
+        "floor characters $30-$55: the blank floor and the judge"
+      ],
+      [
+        "$6800",
+        "$69EF",
+        "the top rows' character set"
+      ],
+      [
+        "$7000",
+        "$70F4",
+        "the 5-row font"
+      ],
+      [
+        "$7100",
+        "$71BF",
+        "the shield's three sprite shapes"
+      ],
+      [
+        "$7D00",
+        "$7D97",
+        "the poses' graphics addresses"
+      ],
+      [
+        "$7DA0",
+        "$7DEB",
+        "the poses' tile counts"
+      ],
+      [
+        "$7E00",
+        "$818F",
+        "the poses' layouts"
+      ],
+      [
+        "$81C0",
+        "$8257",
+        "the poses' sprite-block masks"
+      ],
+      [
+        "$8280",
+        "$BE7F",
+        "the 70 poses' graphics"
+      ],
+      [
+        "$BF00",
+        "$CFFF",
+        "the six digitised shouts"
+      ]
+    ],
+    "include": []
+  },
+  "io": [],
+  "regions": [
+    [
+      "$4280",
+      "$517F",
+      "graphics",
+      "the arena picture's bitmap"
+    ],
+    [
+      "$5180",
+      "$52AF",
+      "graphics",
+      "the floor's blank and the judge's characters"
+    ],
+    [
+      "$6800",
+      "$69EF",
+      "graphics",
+      "the top rows' character set"
+    ],
+    [
+      "$7000",
+      "$70F4",
+      "graphics",
+      "the 5-row font"
+    ],
+    [
+      "$7100",
+      "$71BF",
+      "graphics",
+      "the shield's sprite shapes"
+    ],
+    [
+      "$7B06",
+      "$7CE5",
+      "graphics",
+      "the fish's sixteen frames"
+    ],
+    [
+      "$7D00",
+      "$827F",
+      "tables",
+      "the poses' addresses, tile counts, layouts and masks"
+    ],
+    [
+      "$8280",
+      "$BE7F",
+      "graphics",
+      "the 70 poses' tiles"
+    ],
+    [
+      "$BE80",
+      "$BEFF",
+      "text",
+      "the high-score table's initials"
+    ],
+    [
+      "$BF00",
+      "$CFFF",
+      "sound",
+      "the six digitised shouts"
+    ],
+    [
+      "$E47A",
+      "$E539",
+      "tables",
+      "the notes' frequencies"
+    ],
+    [
+      "$E92E",
+      "$EE30",
+      "sound",
+      "the tune's drums, instruments, tracks and patterns"
+    ],
+    [
+      "$F07E",
+      "$F14F",
+      "sound",
+      "the sound effects' scripts and records"
+    ],
+    [
+      "$F920",
+      "$FCFF",
+      "graphics",
+      "the arena picture's colours"
+    ],
+    [
+      "$FD50",
+      "$FE8B",
+      "variables",
+      "settings, timers and the high-score table"
+    ]
+  ],
+  "links": {
+    "wiki": {
+      "title": "IK+ – C64-Wiki",
+      "url": "https://www.c64-wiki.com/wiki/IK%2B"
+    },
+    "manual": {
+      "title": "",
+      "url": ""
+    }
+  },
+  "tabs": [
+    [
+      "index.html",
+      "Overview"
+    ],
+    [
+      "fighters.html",
+      "Fighters"
+    ],
+    [
+      "sound.html",
+      "Sound"
+    ],
+    [
+      "source.html",
+      "Source code"
+    ],
+    [
+      "about.html",
+      "About"
+    ]
+  ]
+}
