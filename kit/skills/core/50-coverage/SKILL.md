@@ -22,11 +22,7 @@ same way, so tiers mean the same thing everywhere.
    does in terms of the game (what the player sees, which feature in
    `features.md` it serves). Name it. Write a **line comment on its entry
    address** that describes the whole thing: purpose, inputs, outputs,
-   side effects, which tables it reads. Write it now, with the listing
-   on screen: a comment written later, from the notes of one reading of
-   the whole program, gets the routine right and its details wrong (the
-   unit of a counter, which states a compare lets through, up for
-   down). Callers and readers, and any
+   side effects, which tables it reads. Callers and readers, and any
    "only", "never" or "every", come from the platform's references
    search (`60-verify`, "Negative results", names it), with how many
    there are; without the search, leave the claim out. They are the
@@ -104,14 +100,6 @@ format, how to check the result against it, and how to read it back
   count.
 - **Decide "routine" by the bytes, not the symbol type.** A renamed jump
   target that starts a routine is a routine.
-- **Name what is drawn from its picture, not from its handler.** Several
-  kinds of one thing (the shots, the pick-ups, the special bubbles) have
-  handlers that differ by a step size or a turn, and the movement reads
-  as any of them. Before naming a kind, follow its draw routine to the
-  picture it shows and its colour, and render the picture
-  (`20-features`, "Picture reference"). One run named its water as
-  lightning and its fire as water from the handlers alone, and corrected
-  thirty comments when the pictures were drawn.
 - **False symbols exist.** The skip idiom (a two-byte or three-byte opcode
   used to skip the next instruction) makes the disassembler mint a symbol
   for an "address" that is really an operand. Explain it as such rather

@@ -9,8 +9,9 @@ so. The colours the spawner gives the bubbles and the pictures behind
 the draw routines said water, fire and thunder, in that order. The same
 happened to the enemies' shots, where a bottle and a bolt were given to
 each other's owners until the object pictures were rendered from their
-pointer table. `50-coverage` now says to follow a kind's draw routine to
-its picture and colour before naming it.
+pointer table. A rule for `50-coverage`, to follow a kind's draw routine
+to its picture and colour before naming it, waits in the game's
+`kit-feedback.md` for a second game that shows the same slip.
 
 **A score table is in the units of the byte it is added to.** The item
 scores are one byte each, and the routine that adds one chooses the
@@ -36,8 +37,8 @@ described by the values it was meant for and not the ones it accepts,
 up for down, once for every time. None named the wrong routine.
 Correcting the kinds of slip a first sample found did not move the
 rate in a second; only a full audit by a fresh agent did, and it
-rewrote 99 of 367. `50-coverage` now says to write each description
-with its listing on screen.
+rewrote 99 of 367. A sentence for `50-coverage`, to write each
+description with its listing on screen, waits with the rule above.
 
 **A game that runs its actors in the interrupt leaves the lockstep a
 floor it cannot go below.** Bubble Bobble moves the players and the enemies inside the
