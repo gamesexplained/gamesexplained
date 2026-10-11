@@ -13,4 +13,5 @@
   passed, and two of the full audit's own corrections were still wrong.
   Every checker now works from one brief, `60-verify/checker.md`, on the
   strongest model the contributor has, and each sample records which
-  model checked it.
+  model checked it. On the same test the brief took the strongest model
+  from 16 or 17 to 18 in each of two runs, with no false alarm.
