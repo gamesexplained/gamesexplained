@@ -62,6 +62,13 @@ evidence.
 - **Distrust your own negative results.** "Nothing references this" is a
   claim about your search. Indexed, indirect and self-modified accesses
   exist, and so do instructions the disassembler shows as data.
+- **Callers and readers come from a search.** A comment that names who
+  calls a routine or reads a variable, or says "only", "never" or
+  "every", takes it from the platform's references search (on the C64
+  `python3 kit/c64/opcodes.py GAME --refs <address>`, on the ZX Spectrum
+  `python3 kit/spectrum/codemap.py GAME <snapshot> --refs <address>`) and
+  says how many there are. Without the search, leave the claim out: it is
+  the detail a checker most often finds wrong.
 - **A value in the snapshot is the last one written.** Where code stores
   into an instruction's operand or into a variable, the snapshot holds
   whatever the last store left. Find the writers before you call a value

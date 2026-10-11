@@ -22,7 +22,13 @@ same way, so tiers mean the same thing everywhere.
    does in terms of the game (what the player sees, which feature in
    `features.md` it serves). Name it. Write a **line comment on its entry
    address** that describes the whole thing: purpose, inputs, outputs,
-   side effects, which tables it reads. While it is in front of you, note
+   side effects, which tables it reads. Callers and readers, and any
+   "only", "never" or "every", come from the platform's references
+   search (`60-verify`, "Negative results", names it), with how many
+   there are; without the search, leave the claim out. They are the
+   details a checker most often finds wrong: the routine in front of you
+   shows one caller, and it gets written up as the rule.
+   While it is in front of you, note
    anything it would accept that the player was never meant to do: an
    exact match where a range was meant, a comparison that assumes a sign,
    an eight-bit sum that can wrap, a test whose order leaves a gap. Put

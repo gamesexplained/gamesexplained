@@ -63,8 +63,10 @@ callers.
 The comments in the listing are claims too, and an annotation agent's
 are rarely all right. Draw a random sample of about 60 (a fixed seed,
 spread over every agent's range) and have an agent that wrote none of
-them check each against the bytes; the error rate with its interval goes
-in `facts.md`. Start that one checker without asking, on a run that keeps
+them check each against the bytes, reporting every detail it finds wrong
+in a comment, not only the first: a comment corrected for one wrong
+detail often has another. The error rate with its interval goes in
+`facts.md`. Start that one checker without asking, on a run that keeps
 to one agent as on any other: the contributor's answer about agents
 (`kit/START.md`) is about fanning work out, and by this step the run is
 meant to be unattended. One run measured 25 % of its comments
@@ -73,6 +75,17 @@ routine does); a full pass by fresh agents, each correcting its own range
 and listing callers from the decoded listing rather than from a byte
 search, brought a second, independent sample to 3 %. If the first sample
 is bad, audit the whole listing before the page is published.
+
+The rate is what the checker found, and a checker misses some: in one
+run, a full audit that re-read the first sample's 60 comments found six
+more wrong among the 53 the checker had passed. Report it as a lower
+bound on the true rate.
+
+A wrong comment is usually one belief written down more than once: one
+run's "runs every frame" was in 16 comments, and another's wrong unit
+for a drawing routine's runs was in 16 too. For each wrong comment,
+whether the sample is bad or not, say what it believed, search the
+listing for every comment that says the same, and correct them together.
 
 Comments a program wrote, a decoder describing every record of a format
 from templates, are a few claims each made hundreds of times. Give them
