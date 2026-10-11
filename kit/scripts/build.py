@@ -54,6 +54,7 @@ import glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.er
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import parts, load_game, started, under, above, ranges, left_out   # noqa: E402  a game of several loads
 from models import awaits_check, proven   # noqa: E402  which games still need a maintainer's check
+from listing_samples import status as listing_status, SILVER_UP   # noqa: E402  how far the comments are checked
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
@@ -307,9 +308,38 @@ def banner(game, cons):
     contributor. The prompt behind the button is the one line to paste into an agent.
     A run on a model not yet proven is published whole, and its banner says that it awaits
     a maintainer's check (kit/CHECKING.md) before saying what else is missing (#142).
+    At Silver and above, a listing whose comments are not checked (listing_samples.py: no
+    full audit yet, or a last sample over the mark) gets a line of its own saying so.
     """
     tier = game.get("tier", "none")
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "")
+    body = banner_body(game, cons, tier, repo)
+    st = listing_status(game)
+    if tier in SILVER_UP and st and st["flag"]:
+        body += f'<span class="flag">{html.escape(st["flag"])} {how_checked(repo)}</span>'
+    return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
+
+
+def how_checked(repo):
+    """The link a listing's confidence line ends with: what a sample and an audit are."""
+    return (f'<a href="{repo}/blob/main/kit/skills/core/60-verify/SKILL.md#measure-the-listing-before-calling-it-done">'
+            'How listings are checked</a>')
+
+
+def listing_row(game):
+    """The About tab's Status row on the listing's comments; none for a game made before game.json
+    recorded its samples. The verdict that leads the sentence is bold (listing_samples.status)."""
+    st = listing_status(game)
+    if not st:
+        return ""
+    repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "")
+    lead, rest = re.match(r"(.*?[.:]) (.*)", st["row"]).groups()
+    return (f'<tr><th>Comments checked</th><td><b>{html.escape(lead)}</b> {html.escape(rest)} '
+            f'{how_checked(repo)}</td></tr>')
+
+
+def banner_body(game, cons, tier, repo):
+    """The banner's text before any line about the listing (banner)."""
     where = f'games/{game["platform"]}/{game["slug"]}'
     if tier in ("gold", "platinum"):
         who = ", ".join(person_html(n, l) for _, n, l in cons)
@@ -347,7 +377,7 @@ def banner(game, cons):
                     f'against the game (<a href="{repo}/blob/main/kit/CHECKING.md">how the check works</a>).')
             if cov < 100 or n < m:
                 body += f' It is not complete either: {how}. ' + ask
-    return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
+    return body
 
 
 # the tabs build.py assembles, which every game has, and the file each one's edit link opens:
@@ -1067,7 +1097,7 @@ def build_game(gdir, out_root):
     if bare:   # no map: the template's Footprint section goes, from its marker to the one that closes it
         tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
     about = fill(tpl, **common, footprint=foot, data_links="" if bare else data_links(P), map_row=(span[1] - span[0]) // 128,
-                 tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov,
+                 tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov, listing_row=listing_row(game),
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,

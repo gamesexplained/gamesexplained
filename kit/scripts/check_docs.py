@@ -20,7 +20,7 @@
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
   games/*/*/game.json   Silver or above only on proven models, or checked (models.py)
-  games/*/*/game.json   Silver or above only when the listing's last comment sample passes
+  games/*/*/game.json   Silver or above only with a sample of the listing's comments recorded
                      (listing_samples.py, kit/skills/core/60-verify)
   games/*/*/game.json   each link carries the linked page's title: the About tab shows it
   games/*/*/kit-feedback.md   each maintainer ask filed (#123) or fileable (maintainer_asks.py)

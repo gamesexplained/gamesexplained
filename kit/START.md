@@ -66,10 +66,13 @@ step needs something only they have.
    session's allowance in minutes and left the run waiting hours for the
    reset. If they say there is room, it may split large work across up to
    four. The answer holds for the whole run. One agent throughout still
-   starts the checkers and the auditor `60-verify` gives the listing's
-   comments to, one at a time: one agent with a short brief is not a
-   fan-out, so the run starts them without asking, whatever the answer
-   here.
+   starts the checker `60-verify` gives a sample of the listing's
+   comments to: one agent with a short brief is not a fan-out, so the run
+   starts it without asking, whatever the answer here. With room, the
+   run goes on to audit every comment and sample them again, starting
+   those agents the same way. With a tight limit it stops after the first
+   sample, and the page goes up saying its listing has not been audited
+   until a later run does it (`kit/skills/core/60-verify`).
 
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made

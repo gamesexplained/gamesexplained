@@ -75,16 +75,31 @@ listing under the mark, because the sample's rate holds across the rest.
    none of them, with `checker.md` beside this file as its brief. Read
    every comment it marks wrong or doubtful against the code yourself:
    count the ones that are wrong, and drop the false alarms.
-2. **Pass mark.** The sample passes when at most 2 of its 60 are wrong
-   (at most one in 30 in a larger sample). At that mark a listing with
-   3 % of its comments wrong passes three times in four, and one with
-   10 % one time in twenty.
-3. **Audit.** When the sample fails, fresh agents that wrote none of the
-   comments check every one, each in its own range, with the same brief
-   and the kinds of error the sample found, and correct what they find.
+2. **The mark.** A sample is within the mark when at most 2 of its 60
+   are wrong (at most one in 30 in a larger sample). At that mark a
+   listing with 3 % of its comments wrong comes within it three times in
+   four, and one with 10 % one time in twenty.
+3. **Audit.** Fresh agents that wrote none of the comments check every
+   one, each in its own range, with the same brief and the kinds of
+   error the sample found, and correct what they find. A first sample
+   within the mark does not skip the audit: the page calls a listing
+   checked only after one.
 4. **Sample again.** Draw a new sample with a new seed and give it to an
    agent that neither wrote nor audited any of it. Repeat the audit and
-   the sample until a sample passes. Silver needs the last one to pass.
+   the sample until a sample is within the mark.
+
+Silver needs the measure, not the mark: at least one sample, checked and
+recorded. The game's page says what the last sample found, and calls the
+listing checked only when that sample came after a full audit and is
+within the mark. Until then the banner under the game's title says, on
+every tab, that the listing has not been audited or that its last sample
+was over the mark, and the About tab gives the sample's count and the
+range it puts on the whole listing. So a run can publish without the
+audit, and the page is honest about it. Go on to the mark by default.
+When the contributor said their usage limit is tight (`kit/START.md`),
+stop after the first sample, put the audit at the top of `TODO.md`, and
+say in the pull request that the page will carry the flag until a later
+run audits the listing and samples it again.
 
 Start the checker and the audit without asking, on a run that keeps to
 one agent as on any other: the contributor's answer about agents
@@ -144,9 +159,11 @@ and the sample's size, the checker's model, how many comments were
 wrong, what was wrong with them and what was corrected, and the
 interval; for an audit, how many comments it checked and how many it
 corrected. In `game.json`, `listing_samples` lists the samples in the
-same order, each as `{"seed": ..., "size": 60, "wrong": 2, "checker":
-"<model id>"}`, and `check_docs.py` fails a Silver game whose list is
-empty or whose last sample is over the mark. That section is the one place in `facts.md` where a correction
+same order, each as `{"seed": ..., "size": 60, "wrong": 2, "audits": 1,
+"checker": "<model id>"}`, where `audits` is how many full audits the
+listing had had when the sample was drawn; `check_docs.py` fails a
+Silver game whose list is empty, and the page's line on the listing is
+made from the last entry (`kit/scripts/listing_samples.py`). That section is the one place in `facts.md` where a correction
 is the fact being reported, so `check_docs.py` lets it use the plain
 words ("corrected", "misread", "was wrong") that it fails anywhere else
 in the file; keep the story of how the listing got there in
