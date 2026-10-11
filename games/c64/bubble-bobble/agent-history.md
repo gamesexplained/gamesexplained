@@ -216,3 +216,14 @@ tabs. Every tab was loaded in headless Chrome and its widgets counted;
 the one error (a shared animation counter left in one block) was fixed
 before the commit.
 
+## 11 October 2026: the Music tab was silent
+
+The player's readout said "Volume 0". The game writes the SID's master
+volume once, in `silence` (`$F4BD`, `$1F` to `$D418`) from the start-up
+code; no tune routine touches it. The tab's driver started each tune on
+a cleared SID with `start_tune` alone, so the voices played into a muted
+chip. `init` now calls `silence` first, as the start-up does; every tune
+checked in node writes `$1F`, and the page test clicks a tune and reads
+the volume after 1.5 s (15). The Play tab runs the start-up and was not
+affected.
+
