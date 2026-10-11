@@ -61,20 +61,48 @@ callers.
 ## Measure the listing before calling it done
 
 The comments in the listing are claims too, and an annotation agent's
-are rarely all right. Draw a random sample of about 60 (a fixed seed,
-spread over every agent's range) and have an agent that wrote none of
-them check each against the bytes, reporting every detail it finds wrong
-in a comment, not only the first: a comment corrected for one wrong
-detail often has another. The error rate with its interval goes in
-`facts.md`. Start that one checker without asking, on a run that keeps
-to one agent as on any other: the contributor's answer about agents
+are rarely all right. Measuring them takes three passes, and a run plans
+for all three from the start: a sample, an audit of every comment, and a
+second sample. Of 17 games whose first sample is on record, 16 had more
+than two wrong in 60, typically about one comment in eight; after a
+full audit, the next sample passed in four of the seven that drew one,
+and a fifth missed by one comment.
+Correcting only the comments a sample found wrong never brought a
+listing under the mark, because the sample's rate holds across the rest.
+
+1. **Sample.** Draw about 60 comments at random, with a fixed seed,
+   spread over every agent's range, and give them to an agent that wrote
+   none of them, with `checker.md` beside this file as its brief. Read
+   every comment it marks wrong or doubtful against the code yourself:
+   count the ones that are wrong, and drop the false alarms.
+2. **Pass mark.** The sample passes when at most 2 of its 60 are wrong
+   (at most one in 30 in a larger sample). At that mark a listing with
+   3 % of its comments wrong passes three times in four, and one with
+   10 % one time in twenty.
+3. **Audit.** When the sample fails, fresh agents that wrote none of the
+   comments check every one, each in its own range, with the same brief
+   and the kinds of error the sample found, and correct what they find.
+4. **Sample again.** Draw a new sample with a new seed and give it to an
+   agent that neither wrote nor audited any of it. Repeat the audit and
+   the sample until a sample passes. Silver needs the last one to pass.
+
+Start the checker and the audit without asking, on a run that keeps to
+one agent as on any other: the contributor's answer about agents
 (`kit/START.md`) is about fanning work out, and by this step the run is
-meant to be unattended. One run measured 25 % of its comments
-with a wrong detail (callers, rooms and counts, almost never what a
-routine does); a full pass by fresh agents, each correcting its own range
-and listing callers from the decoded listing rather than from a byte
-search, brought a second, independent sample to 3 %. If the first sample
-is bad, audit the whole listing before the page is published.
+meant to be unattended. An audit runs on as many agents as that answer
+allows, and on one when it allows one.
+
+Any proven model may check (`models.py`), but a checker finds only what
+its model can see, so use the strongest model the contributor has. On a
+test of 60 comments with 20 known errors (11 October 2026), the strongest
+model tried found 16 or 17 in every run and raised no false alarm; the
+weakest found 4 to 7 and raised false alarms. At the mark above, a
+listing with 10 % of its comments wrong would pass about one time in
+eight with the first and three times in four with the second. When the
+contributor has a model from a second provider, a second checker on it
+is worth its cost: on the same test it reported three errors that every
+run on the other provider's models had passed. A comment is wrong when
+either checker's finding holds.
 
 The rate is what the checker found, and a checker misses some: in one
 run, a full audit that re-read the first sample's 60 comments found six
@@ -109,11 +137,16 @@ anyway, write in `facts.md`, where the error rate would go, the seed and
 the size and that the sample is not checked yet, say so in the pull
 request, and leave `tier` where it was before this step.
 
-What the repository keeps is the result: one paragraph in `facts.md`,
-under the template's heading `## The listing's error rate`, naming the
-seed, the population and the sample's size, how many comments were
+What the repository keeps is the result. In `facts.md`, under the
+template's heading `## The listing's error rate`, one paragraph for each
+sample and each audit, in order: for a sample, the seed, the population
+and the sample's size, the checker's model, how many comments were
 wrong, what was wrong with them and what was corrected, and the
-interval. That section is the one place in `facts.md` where a correction
+interval; for an audit, how many comments it checked and how many it
+corrected. In `game.json`, `listing_samples` lists the samples in the
+same order, each as `{"seed": ..., "size": 60, "wrong": 2, "checker":
+"<model id>"}`, and `check_docs.py` fails a Silver game whose list is
+empty or whose last sample is over the mark. That section is the one place in `facts.md` where a correction
 is the fact being reported, so `check_docs.py` lets it use the plain
 words ("corrected", "misread", "was wrong") that it fails anywhere else
 in the file; keep the story of how the listing got there in

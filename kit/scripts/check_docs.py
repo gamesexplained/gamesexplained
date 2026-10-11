@@ -20,6 +20,8 @@
   games/, kit/, site/, AGENTS.md, README.md   no path on the contributor's computer:
                      a home folder usually names a person, and helps nobody else
   games/*/*/game.json   Silver or above only on proven models, or checked (models.py)
+  games/*/*/game.json   Silver or above only when the listing's last comment sample passes
+                     (listing_samples.py, kit/skills/core/60-verify)
   games/*/*/game.json   each link carries the linked page's title: the About tab shows it
   games/*/*/kit-feedback.md   each maintainer ask filed (#123) or fileable (maintainer_asks.py)
   games/*/*/*.html   no class of the page's own that site/lib/site.css also styles: the build
@@ -372,6 +374,8 @@ def main():
     fails += skill_edits_check()
     from models import check as models_check
     fails += models_check()
+    from listing_samples import check as samples_check
+    fails += samples_check()
     from maintainer_asks import check as asks_check
     fails += asks_check(sorted(glob.glob(os.path.join(ROOT, "games", "*", "*", "kit-feedback.md"))))
     if fails:

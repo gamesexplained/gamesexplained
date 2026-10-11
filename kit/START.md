@@ -66,9 +66,10 @@ step needs something only they have.
    session's allowance in minutes and left the run waiting hours for the
    reset. If they say there is room, it may split large work across up to
    four. The answer holds for the whole run. One agent throughout still
-   starts the one checker `60-verify` gives its sample of comments to:
-   one agent with a short brief is not a fan-out, so the run starts it
-   without asking, whatever the answer here.
+   starts the checkers and the auditor `60-verify` gives the listing's
+   comments to, one at a time: one agent with a short brief is not a
+   fan-out, so the run starts them without asking, whatever the answer
+   here.
 
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
