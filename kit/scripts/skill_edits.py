@@ -10,6 +10,9 @@ skill it adds to:
   - `kit/skills/core/50-coverage`: resolve pointer tables before excluding a region;
     the same miss is in `games/c64/wizard`'s agent-history.md
 
+The game's own folder does not count, and neither does its own file in kit/lessons/,
+which is not a game folder: a line naming only that file fails (#325).
+
 A branch is a game's when it changes the game's kit-feedback.md, as a retrospective
 does. Other branches (the kit's, or a sweep across games), and edits that only cut
 text, are not checked. The branch is compared with its merge base with
@@ -80,8 +83,9 @@ def problems(files, root=ROOT):
                               if m.group(0) != g and os.path.isdir(os.path.join(root, m.group(0)))]
         if not named:
             out.append((skill, f"adds to {skill} with no other game named: a line under "
-                        f"\"What was changed in the kit\" in kit-feedback.md names {skill} and the games/<platform>/<slug> folder where it would also "
-                        f"have mattered, or the lesson goes under \"Candidates\" (kit/skills/core/80-retro, step 3)"))
+                        f"\"What was changed in the kit\" in kit-feedback.md names {skill} and another game's games/<platform>/<slug> folder where it "
+                        f"would also have mattered (this game's own folder and kit/lessons file do not count), or the lesson goes under "
+                        f"\"Candidates\" (kit/skills/core/80-retro, step 3)"))
     return out
 
 

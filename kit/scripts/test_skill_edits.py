@@ -57,6 +57,11 @@ class SkillEdits(unittest.TestCase):
         found = self.run_check("- `kit/skills/core/60-verify`: as in `games/c64/jumpman`")
         self.assertEqual(len(found), 1)
 
+    def test_naming_only_its_own_lesson_file_fails(self):
+        # #325: the run's lesson is where the lesson was found, not a second game
+        found = self.run_check("- `kit/skills/core/60-verify`: a new rule: `kit/lessons/2026-10-06-jumpman.md`")
+        self.assertEqual(len(found), 1)
+
     def test_a_folder_that_does_not_exist_fails(self):
         found = self.run_check("- `kit/skills/core/60-verify`: as in `games/c64/nosuchgame`")
         self.assertEqual(len(found), 1)

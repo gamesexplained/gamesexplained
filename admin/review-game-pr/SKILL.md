@@ -42,11 +42,16 @@ else (not this skill's), and breaks its lines down by area.
    does to other games. #227 changed how coverage counts, which moved its
    own figure from 32.8 to 52.8 % and no other game's.
 5. **Skill changes are reusable.** Each addition to `kit/skills/` must
-   help at least one other game, named in `kit-feedback.md`
-   (`kit/skills/core/80-retro`, step 3). `check_docs.py` checks that a
-   game is named, not that the lesson fits it: read it. One game's
-   debugging with its nouns swapped (#196) belongs in that game's
-   `kit/lessons/` file.
+   help at least one game other than the pull request's own, named by
+   its `games/<platform>/<slug>` folder in `kit-feedback.md`
+   (`kit/skills/core/80-retro`, step 3). The pull request's own game
+   folder and its own `kit/lessons/` file do not count: #325 named only
+   its lesson file, which is not a second game. `check_docs.py` checks
+   that another game is named, not that the lesson fits it: read it. CI
+   waits for a maintainer's approval on a first-time contributor's fork
+   (#325's did), so check `kit-feedback.md` yourself rather than trusting
+   a check that may not have run. One game's debugging with its nouns
+   swapped (#196) belongs in that game's `kit/lessons/` file.
 6. **Urgent kit asks.** Read the run's asks (`kit-feedback.md`,
    "Maintainer asks", and any `kit-ask` issue it filed) and flag any that
    is urgent – measured by things that are broken, or where subsequent runs
