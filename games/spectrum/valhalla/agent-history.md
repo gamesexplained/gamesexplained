@@ -80,4 +80,9 @@ one short) and each auditor named the other's instances, which made the
 merge a check of its own. Two findings were only in the notes, not the
 verdicts; both were checked against the code and corrected. The
 corrections went into `work/valhalla.ctl` by address, matched on the old
-text, and `symbols.json` and `listing.json` were rebuilt from it.
+text, and `symbols.json` and `listing.json` were rebuilt from it. The second sample, by a fifth agent, found 2 of 60 wrong (3.3 %).
+That fails the pass mark first proposed on #318, one wrong in 60; working
+out how often that mark passes a listing at a given rate showed it fails
+one at 3 % about half the time, so the proposal there was revised to two
+in 60, which passes a 3 % listing about three times in four and a 10 %
+listing one time in twenty.

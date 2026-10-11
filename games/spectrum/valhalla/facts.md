@@ -412,7 +412,11 @@ BASIC program's lines (188), the variables (30) and the machine code
   view north, `gfx_terrain`; a cut dash is not counted, `hall_paint`),
   and the same claims in `features.md`, `facts.md` and the page.
 - Second sample, seed 20261011, 60 comments (18, 3, 39), drawn after the
-  audit: not checked yet.
+  audit: 2 wrong in a detail, 3.3 % (Wilson 95 % interval 0.9–11.4 %),
+  none in what the line or routine does. `save_game`'s list of what it
+  saves left out the simple variables l, o and z, and the comment on the
+  settlement style byte ($DF3F) missed three of its bits and three of the
+  routines that set it. Both were corrected.
 
 ## Live tests
 

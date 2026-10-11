@@ -12,9 +12,6 @@ the page is built and checked in a browser. The copy is `agent-draft`.
 
 ## Open
 
-- The listing's comments: after a full audit corrected 124 of the 644,
-  the second sample (seed 20261011) is drawn but not checked yet
-  (`facts.md`, "The listing's error rate").
 - The quest order rests on a search that takes every condition but a
   quest object as met (`features.md`, "Open questions"). A search that
   tracks who carries what, and where the key and the ring are, would say
