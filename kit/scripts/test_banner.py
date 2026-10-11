@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """A Bronze page made on a model not yet proven is published whole, and its banner says it awaits
-a maintainer's check rather than that it is incomplete at 100 % (#142)."""
+a maintainer's check rather than that it is incomplete at 100 % (#142). At Silver and above, a
+listing not yet audited and sampled within the mark gets a line of its own (listing_samples.py)."""
 from pathlib import Path
 import sys
 import unittest
@@ -12,9 +13,9 @@ PROVEN = {"old-hand": ["declared in kit/models.json"]}
 CHECK = {"by": "someone", "model": "old-hand", "date": "2026-10-04", "checked": 40, "wrong": 0}
 
 
-def banner(cov, model, **more):
+def banner(cov, model, tier="bronze", **more):
     steps = {s: [model] for s in ("50-coverage", "60-verify")}
-    game = dict(platform="c64", slug="made-up", tier="bronze", kit_version="0.0.80",
+    game = dict(platform="c64", slug="made-up", tier=tier, kit_version="0.0.80",
                 coverage_percent=cov, step_models=steps, **more)
     keep = build.proven_models
     build.proven_models = lambda: PROVEN
@@ -46,6 +47,18 @@ class Banner(unittest.TestCase):
         for b in (banner(60, "old-hand"), banner(60, "newcomer", verification=CHECK)):
             self.assertIn("This minisite is not complete: 60 %", b)
             self.assertNotIn("awaits", b)
+
+    def test_silver_flags_a_listing_until_it_is_checked(self):
+        first = {"seed": 1, "size": 60, "wrong": 7, "audits": 0, "checker": "old-hand"}
+        after = {"seed": 2, "size": 60, "wrong": 2, "audits": 1, "checker": "old-hand"}
+        b = banner(100, "old-hand", tier="silver", listing_samples=[first])
+        self.assertIn('<span class="flag">Its listing has not been audited: a sample of 60 of its comments found 7 wrong', b)
+        self.assertIn("still found 3 wrong",
+                      banner(100, "old-hand", tier="gold", listing_samples=[first, dict(after, wrong=3)]))
+        for b in (banner(100, "old-hand", tier="silver", listing_samples=[first, after]),
+                  banner(100, "old-hand", tier="silver"),                          # made before the record
+                  banner(60, "old-hand", listing_samples=[first])):                # Bronze says it is unfinished
+            self.assertNotIn('class="flag"', b)
 
 
 if __name__ == "__main__":
