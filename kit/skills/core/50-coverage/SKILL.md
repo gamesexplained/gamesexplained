@@ -17,7 +17,7 @@ same way, so tiers mean the same thing everywhere.
 
 1. `python3 kit/scripts/coverage.py games/<platform>/<slug> --live`
    prints the figure and the work queue: the largest contiguous
-   undescribed runs, largest first.
+   undescribed runs, largest first, each with why it is still bare.
 2. Take the top of the queue. Read the routine or table. Work out what it
    does in terms of the game (what the player sees, which feature in
    `features.md` it serves). Name it. Write a **line comment on its entry
@@ -191,7 +191,10 @@ format, how to check the result against it, and how to read it back
   your own, or a named symbol every 64 bytes or less, each with its own
   description,
   or most of it stays out of the count however well you have explained
-  the whole.
+  the whole. The work queue says which rule left each run bare. "No
+  comment on" names the symbol to describe; a run "past" a symbol's
+  reach, or after one that "stops" at its block's end or an edge of the
+  map, wants a symbol of your own at the run's address.
 
 ## A game of several parts
 

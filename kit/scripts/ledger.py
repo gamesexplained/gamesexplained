@@ -14,7 +14,9 @@ BOUNDARY_TYPES = {"Subroutine", "UserDefined", "Field", "ZeroPageField",
 def compute(blocks, syms, comments, regions):
     """Returns dict with: state (bytearray: 0 untracked, 1 bare, 2 explained),
     code (bytearray), owner {addr: (name, sym_addr)}, commented (set),
-    dups [(addr, first_addr)], excluded(fn)."""
+    dups [(addr, first_addr)], excluded(fn), and stops {sym_addr: (name, end, why, reach)}:
+    where each span ends and what ended it ("next" symbol, its "reach", its "block" or a
+    fixed "edge" of the memory map)."""
     exclude = regions.get("exclude", [])
     extra = regions.get("extra", [])
 
@@ -58,7 +60,7 @@ def compute(blocks, syms, comments, regions):
     bounds = [s for s in syms if s["type"] in BOUNDARY_TYPES or s["address"] in commented]
     baddrs = [s["address"] for s in bounds]
     state = bytearray(0x10000)
-    owner = {}
+    owner, stops = {}, {}
     for i, s in enumerate(bounds):
         a = s["address"]
         if excluded(a) or a >= 0x10000:
@@ -69,7 +71,11 @@ def compute(blocks, syms, comments, regions):
         # renamed variable in undefined memory would otherwise take in the bytes after it.
         long_reach = (s["type"] in ("Subroutine", "UserDefined") or code[a]
                       or (s.get("kind") == "user" and typed[a]))
-        end = min(nxt, a + (0x400 if long_reach else MAX_SPAN), wall_after(a))
+        reach = 0x400 if long_reach else MAX_SPAN
+        wall = wall_after(a)
+        end = min(nxt, a + reach, wall)
+        stops[a] = (s["name"], end, "next" if end == nxt else "reach" if end == a + reach
+                    else "block" if wall in block_edges else "edge", reach)
         val = 2 if a in commented else 1
         for x in range(a, max(end, a + 1)):
             if not excluded(x) and state[x] < val:
@@ -81,4 +87,4 @@ def compute(blocks, syms, comments, regions):
         elif state[a] == 0 and (code[a] or any(lo <= a <= hi for lo, hi, _ in extra)):
             state[a] = 1
     return {"state": state, "code": code, "owner": owner, "commented": commented,
-            "dups": dups, "excluded": excluded}
+            "dups": dups, "excluded": excluded, "stops": stops}
