@@ -16,6 +16,10 @@ game.json's `accuracy` lists the steps in the order they happened, one row each:
   {"step": "play", "fixed": 16, "models": [...]}
       a port of the whole game for the Play tab, checked against the game's own code; "fixed"
       is how many comments the port showed wrong and the run corrected, left out when not recorded
+  {"step": "check", "by": "air", "checked": 39, "wrong": 0, "models": [...]}
+      a maintainer's check of a run made on an unproven model (kit/CHECKING.md): claims from
+      facts.md, names from symbols.json and the orientation, tested against the game; "by" is
+      the maintainer's GitHub login, and a check that failed is a row too
 
 Together the rows are a ledger of everything that measured the listing's comments or made
 them more accurate. `models` names the model ids that did the step, "unknown" where nobody recorded them, and
@@ -49,7 +53,8 @@ KEYS = {"research": {"step", "web", "models", "note"},
         "annotate": {"step", "models", "note"},
         "sample": {"step", "size", "wrong", "models", "seed", "note"},
         "audit": {"step", "checked", "of", "fixed", "models", "note"},
-        "play": {"step", "fixed", "models", "note"}}
+        "play": {"step", "fixed", "models", "note"},
+        "check": {"step", "by", "checked", "wrong", "models", "note"}}
 
 
 def within_mark(sample):
@@ -91,6 +96,10 @@ def _bad(row):
         return '(research) needs "web": true, false or "unknown"'
     if step == "sample" and not (_count(row.get("size"), 1) and _count(row.get("wrong")) and row["wrong"] <= row["size"]):
         return '(sample) needs "size", the comments drawn, and "wrong", how many of them were wrong'
+    if step == "check" and not (_count(row.get("checked"), 1) and _count(row.get("wrong")) and row["wrong"] <= row["checked"]):
+        return '(check) needs "checked", the claims tested, and "wrong", how many of them were wrong'
+    if step == "check" and "by" in row and not (isinstance(row["by"], str) and row["by"].strip()):
+        return '(check) has an empty "by"'
     if step == "play" and "fixed" in row and not _count(row["fixed"]):
         return '(play) has a "fixed" that is not a count of comments'
     if step == "audit":
@@ -117,6 +126,8 @@ def problems(game):
     if out or game.get("tier") not in SILVER_UP:
         return out
     have = {r["step"] for r in rows}
+    if "verification" in game and "check" not in have:
+        out.append("records a maintainer's check under verification and no check row in accuracy (kit/CHECKING.md)")
     need = [s for s in ("research", "annotate", "sample") if s not in have
             and (s != "sample" or str(game.get("created") or SAMPLE_SINCE) >= SAMPLE_SINCE)]
     if need:
@@ -193,6 +204,7 @@ def table(game, gdir):
     if st is None:
         return []
     rows, out, seen = game["accuracy"], [], {}
+    checks = sum(1 for r in rows if r["step"] == "check")
     last_annotate = max((n for n, r in enumerate(rows) if r["step"] == "annotate"), default=None)
     for n, r in enumerate(rows):
         step = r["step"]
@@ -212,6 +224,14 @@ def table(game, gdir):
             label = f"Sample {seen[step]}"
             what = (f"{r['wrong']} of {r['size']} comments wrong, so between {100 * lo:.0f} and {100 * hi:.0f} % "
                     f"of the listing is likely wrong.")
+        elif step == "check":
+            label = "Maintainer’s check" + (f" {seen[step]}" if checks > 1 else "")
+            if "by" in r:
+                by = r["by"] if set(r["models"]) == {"unknown"} else f"{r['by']}, with {by}"
+            what = (f"Tested {r['checked']} of the run’s claims against the game, picked by the maintainer from "
+                    f"its facts, its routine names and its memory map: {r['wrong'] or 'none'} "
+                    f"{'was' if r['wrong'] in (0, 1) else 'were'} wrong, so the check "
+                    f"{'failed' if r['wrong'] else 'passed'}.")
         elif step == "play":
             label = "Play tab"
             what = ("Ported the whole game to JavaScript for the Play tab and corrected "
@@ -263,6 +283,7 @@ def main(argv):
             continue
         steps = ", ".join(r["step"] + (f" {r['wrong']}/{r['size']}" if r["step"] == "sample" else
                                        f" {r.get('checked', '?')}/{r.get('of', '?')}" if r["step"] == "audit" else
+                                       f" {r['wrong']}/{r['checked']}" if r["step"] == "check" else
                                        f" {r['fixed']}" if "fixed" in r else "")
                           for r in g["accuracy"])
         print(f"{os.path.relpath(gdir, ROOT):44s} {g.get('tier', ''):15s} {steps or '-'}: "

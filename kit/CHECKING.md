@@ -79,7 +79,16 @@ When the check passes, add to the game's `game.json`:
 }
 ```
 
-and set `tier` to `silver`. When an earlier sample failed and a proven
+and set `tier` to `silver`. Add the check to the game's `accuracy` too,
+after the steps it tested, so the About tab's table shows it (`60-verify`,
+"What the repository keeps"):
+
+```
+{"step": "check", "by": "<your GitHub login>", "checked": 33, "wrong": 0, "models": ["<the model id>"]}
+```
+
+A check that fails is a row as well, with its `wrong`, before the steps
+that redid the work. When an earlier sample failed and a proven
 model then redid the run's coverage and verify steps, keep the failed
 sample in the same record, so the game's history is in one place and the
 model it tested is not credited with the result:

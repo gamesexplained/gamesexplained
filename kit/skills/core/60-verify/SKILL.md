@@ -170,9 +170,11 @@ nobody recorded them): whether the run looked the game up online,
 `{"step": "annotate", "models": [...]}`; each sample, `{"step":
 "sample", "size": 60, "wrong": 2, "seed": ..., "models": [...]}`; each
 audit, `{"step": "audit", "checked": 640, "of": 640, "fixed": 90,
-"models": [...]}`; and a Play tab's port, `{"step": "play", "fixed": 16,
-"models": [...]}` (`70-minisite`, `play.md`). Any row may carry a short
-`note`.
+"models": [...]}`; a Play tab's port, `{"step": "play", "fixed": 16, "models": [...]}`
+(`70-minisite`, `play.md`); and a maintainer's check of a run on an
+unproven model, `{"step": "check", "by": "<login>", "checked": 39,
+"wrong": 0, "models": [...]}` (`kit/CHECKING.md`). Any row may carry a
+short `note`.
 `check_docs.py` fails a Silver game without a research row, an annotate
 row and a sample, and the About tab's table is made from the list
 (`kit/scripts/accuracy.py`). That section is the one place in `facts.md` where a correction

@@ -3,8 +3,8 @@
 needs a research row, an annotate row and a sample, and check_docs.py fails one without; its
 page calls the listing checked only when the last sample came after a full audit and is within
 the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A Play
-tab's port is a row of its own and changes nothing the page says. A game made before game.json
-carried `accuracy` is not checked."""
+tab's port and a maintainer's check are rows of their own and change nothing the page says. A
+game made before game.json carried `accuracy` is not checked."""
 from pathlib import Path
 import json
 import sys
@@ -22,6 +22,7 @@ AUDIT = {"step": "audit", "checked": 640, "of": 640, "fixed": 90, "models": M}
 PART = {"step": "audit", "checked": 300, "of": 640, "fixed": 40, "models": M, "note": "routines only"}
 AFTER = {"step": "sample", "size": 60, "wrong": 2, "models": M, "seed": 2}
 PLAY = {"step": "play", "fixed": 16, "models": M}
+CHECK = {"step": "check", "by": "someone", "checked": 39, "wrong": 0, "models": M}
 
 
 def game(*rows, tier="silver"):
@@ -57,10 +58,14 @@ class Accuracy(unittest.TestCase):
         for bad in (dict(FIRST, models=[]), dict(FIRST, wrong=61), dict(AUDIT, checked=700),
                     dict(RESEARCH, web="yes"), dict(FIRST, checker="x"), {"step": "guess", "models": M},
                     dict(AUDIT, fixed=-1), dict(ANNOTATE, note=""), dict(PLAY, fixed="some"),
-                    dict(PLAY, checked=10)):
+                    dict(PLAY, checked=10), dict(CHECK, wrong=40), dict(CHECK, by=""),
+                    {"step": "check", "models": M}):
             self.assertEqual(len(p(game(RESEARCH, ANNOTATE, FIRST, bad))), 1, bad)
         self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, {k: v for k, v in AUDIT.items() if k != "fixed"})), [])
         self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, {"step": "play", "models": M})), [])
+        checked = dict(game(RESEARCH, ANNOTATE, FIRST), verification={"by": "someone"})
+        self.assertEqual(len(p(checked)), 1)                          # a check kept only in verification
+        self.assertEqual(p(dict(checked, accuracy=checked["accuracy"] + [CHECK])), [])
 
     def test_the_page_flags_a_listing_until_a_full_audit_and_a_sample_within_the_mark(self):
         st = accuracy.status
@@ -78,7 +83,7 @@ class Accuracy(unittest.TestCase):
         self.assertIn("no sample has measured it since", since["flag"])
         done = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER))
         self.assertTrue(done["checked"])
-        self.assertEqual(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER, PLAY)), done)   # a port measures nothing
+        self.assertEqual(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER, PLAY, CHECK)), done)   # neither samples comments
         self.assertIsNone(done["flag"])
         self.assertTrue(done["row"].startswith("Checked. Every comment was audited once"))
 
@@ -102,6 +107,11 @@ class Accuracy(unittest.TestCase):
             self.assertIn("Checked part of the 640 comments and corrected 6",
                           accuracy.table(game(RESEARCH, ANNOTATE, FIRST, loose), tmp)[3][2])
             self.assertIn("was not recorded", accuracy.table(game(RESEARCH, ANNOTATE, {"step": "play", "models": M}), tmp)[2][2])
+            two = accuracy.table(game(RESEARCH, ANNOTATE, dict(CHECK, wrong=18), FIRST, CHECK), tmp)
+        self.assertEqual([r[0] for r in two][2:], ["Maintainer’s check 1", "Sample 1", "Maintainer’s check 2"])
+        self.assertEqual(two[2][1], "someone, with some-model")
+        self.assertIn("18 were wrong, so the check failed", two[2][2])
+        self.assertIn("none was wrong, so the check passed", two[4][2])
 
     def test_the_check_reads_every_game(self):
         made = {"old": {"tier": "silver"},
