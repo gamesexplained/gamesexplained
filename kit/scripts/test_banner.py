@@ -10,7 +10,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build  # noqa: E402
 
 PROVEN = {"old-hand": ["declared in kit/models.json"]}
-CHECK = {"by": "someone", "model": "old-hand", "date": "2026-10-04", "checked": 40, "wrong": 0}
+CHECKED = [{"step": "research", "web": True, "models": ["newcomer"]}, {"step": "annotate", "models": ["newcomer"]},
+           {"step": "sample", "size": 60, "wrong": 1, "by": "someone", "models": ["old-hand"]}]
 
 
 def banner(cov, model, tier="bronze", **more):
@@ -44,7 +45,7 @@ class Banner(unittest.TestCase):
         self.assertIn("(one whose name was not recorded)", b)
 
     def test_proven_or_checked_is_only_unfinished(self):
-        for b in (banner(60, "old-hand"), banner(60, "newcomer", verification=CHECK)):
+        for b in (banner(60, "old-hand"), banner(60, "newcomer", accuracy=CHECKED)):
             self.assertIn("This minisite is not complete: 60 %", b)
             self.assertNotIn("awaits", b)
 

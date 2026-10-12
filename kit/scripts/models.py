@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """Which models are proven, and which games still need a maintainer's check.
 
-A model is proven when it has run both 50-coverage and 60-verify on a
-trusted game at Silver or above, going by `step_models` in that game's
-game.json. A game is trusted when it was made under kit 0.0.32 or earlier (merged after a
-maintainer's review, the only check there was), when every model that ran
-its coverage and verify steps was already proven, or when a maintainer has
-checked it (kit/CHECKING.md) and recorded the check as `verification` in
-its game.json. A game built on an imported analysis (`imported` in
-game.json) also counts the models that wrote it, `unknown` when unsaid,
-and proves no model itself. Nor does a game prove a model whose own work
-on it failed a check: when a sample was refuted and a proven model then
-redid the coverage and verify steps, the passing `verification` keeps the
-failed sample under `failed`, and the models named there are left out. The
-models kit/models.json declares are proven from the start. Any model may
-run the kit (AGENTS.md, "Model"); a game that is not trusted cannot be
-Silver.
+A model is proven when kit/models.json declares it, or when it ran both
+50-coverage and 60-verify on a game at Silver or above made under kit 0.0.32
+or earlier (merged after a maintainer's review, the only check there was),
+going by `step_models` in that game's game.json. A game is trusted when it
+was made under that kit, when every model that ran its coverage and verify
+steps was already proven, or when a maintainer has measured its listing
+on a proven model (kit/CHECKING.md): its `accuracy` ends with a sample
+whose `by` names the maintainer, and when that sample is over the mark, a
+maintainer's full audit came before it. A game built on an imported
+analysis (`imported` in game.json) also counts the models that wrote it,
+`unknown` when unsaid. A game trusted through a maintainer's check proves
+no model: the check measures the listing whatever its result, and the
+maintainers declare a model in kit/models.json when its samples earn it.
+Any model may run the kit (AGENTS.md, "Model"); a game that is not trusted
+cannot be Silver.
 
 Ids are recorded exactly as the session names them, and compared without
 a context-window suffix: claude-opus-5-5[1m] is the same model as
@@ -28,6 +28,9 @@ Usage:
   models.py --test           self-check on made-up games (writes only to a temp dir)
 """
 import glob, json, os, re, sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import accuracy  # noqa: E402  the ledger a maintainer's check is recorded in
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SILVER_UP = ("silver", "silver-claimed", "gold", "platinum")
@@ -103,28 +106,29 @@ def import_problem(g):
     return f"`imported` has no {', '.join('`' + k + '`' for k in missing)}" if missing else ""
 
 
-def failed_models(g):
-    """The models whose own work on this game a maintainer's check refuted: `verification.failed`,
-    a list of the samples that did not pass, each with the `model` whose claims it tested."""
-    v = g.get("verification")
-    failed = v.get("failed") if isinstance(v, dict) else None
-    return {base(f.get("model")) for f in failed if isinstance(f, dict)} if isinstance(failed, list) else set()
-
-
-def verification_problem(v, P):
-    """Why a game.json `verification` record does not pass, or '' when it does."""
-    if not isinstance(v, dict):
-        return "no `verification` in game.json"
-    for k in ("by", "model", "date", "checked", "wrong"):
-        if v.get(k) in (None, ""):
-            return f"`verification` has no `{k}`"
-    if base(v["model"]) not in P:
-        return f"the check ran on {v['model']!r}, which is not a proven model"
-    if not isinstance(v["checked"], int) or v["checked"] < 1:
-        return "`verification.checked` must count the claims checked"
-    if v["wrong"] != 0:
-        return f"the check found {v['wrong']} wrong claim(s); fix them and check again"
-    return ""
+def check_problem(g, P):
+    """Why a game's `accuracy` does not show a maintainer's check (kit/CHECKING.md), or '' when it does:
+    its last sample was drawn by a maintainer (`by`) on proven models, after the last annotation, and
+    when that sample is over the mark, a maintainer's full audit on proven models came before it."""
+    rows = g.get("accuracy")
+    if not isinstance(rows, list) or not rows:
+        return "no `accuracy` in game.json to record the maintainer's sample in"
+    if accuracy.problems(dict(g, tier="none")):
+        return "its `accuracy` is malformed (accuracy.py check says how)"
+    theirs = lambda r: "by" in r and {base(m) for m in r["models"]} <= set(P)
+    last = max((n for n, r in enumerate(rows) if r["step"] == "sample"), default=None)
+    if last is None or not theirs(rows[last]):
+        return "its last sample was not drawn by a maintainer (`by`) on a proven model"
+    if any(r["step"] == "annotate" for r in rows[last + 1:]):
+        return "its comments were written again after the maintainer's last sample"
+    s = rows[last]
+    if accuracy.within_mark(s):
+        return ""
+    start = max((n for n, r in enumerate(rows[:last]) if r["step"] == "annotate"), default=-1)
+    if any(r["step"] == "audit" and accuracy.full(r) and theirs(r) for r in rows[start + 1:last]):
+        return ""
+    return (f"the maintainer's sample found {s['wrong']} of {s['size']} wrong, over the mark, "
+            "and no maintainer's full audit came before it")
 
 
 def settle():
@@ -140,14 +144,13 @@ def settle():
     while changed:
         changed, left = False, []
         for gdir, g, t, used in pending:
-            ok = before_rule(g) or (used and used <= set(P)) or not verification_problem(g.get("verification"), P)
-            if not ok:
+            ok = before_rule(g) or (used and used <= set(P))
+            if not ok and check_problem(g, P):
                 left.append((gdir, g, t, used)); continue
             changed = True
-            if g.get("imported"):
-                continue    # finishing another's analysis proves nothing about the model that finished it
-            # a model whose claims on this game were refuted, and then replaced by another's, proved nothing here
-            for m in (step_models(t, PROVING_STEPS[0]) & step_models(t, PROVING_STEPS[1])) - {"unknown"} - failed_models(g):
+            if g.get("imported") or not ok:
+                continue    # finishing another's analysis, or a maintainer's check of it, proves no model
+            for m in (step_models(t, PROVING_STEPS[0]) & step_models(t, PROVING_STEPS[1])) - {"unknown"}:
                 P.setdefault(m, []).append(os.path.relpath(gdir, ROOT))
         pending = left
     untrusted = []
@@ -155,7 +158,7 @@ def settle():
         if not used:
             why = "game.json has no `step_models` for 50-coverage or 60-verify to say which model did them"
         else:
-            why = verification_problem(g.get("verification"), P)
+            why = check_problem(g, P)
         untrusted.append((gdir, sorted(used - set(P)), why))
     return P, untrusted
 
@@ -171,7 +174,7 @@ def awaits_check(g, P):
     rule, or checked."""
     sm = g.get("step_models") if isinstance(g.get("step_models"), dict) else {}
     need = (set().union(*(step_models(sm, s) for s in PROVING_STEPS)) | import_models(g)) - set(P)
-    if not need or before_rule(g) or not verification_problem(g.get("verification"), P):
+    if not need or before_rule(g) or not check_problem(g, P):
         return []
     return sorted(need)
 
@@ -188,25 +191,34 @@ def check():
     for gdir, need, why in untrusted:
         rel = os.path.relpath(gdir, ROOT)
         print(f"  x  {rel} is Silver or above but ran on a model that is not proven ({', '.join(need) or 'none recorded'}): {why}")
-        print(f"        a maintainer's check makes it Silver (kit/CHECKING.md); until then its tier is bronze")
+        print(f"        a maintainer's sample, and audit if it is over the mark, makes it Silver "
+              "(kit/CHECKING.md); until then its tier is bronze")
     return len(untrusted) + len(bad)
 
 
 def test():
-    """Three made-up games: one a proven model made, one checked, one checked after a failed sample."""
+    """Made-up games: one from before the rule, one whose maintainer's sample was good enough, one a
+    maintainer sampled, audited and sampled again, one sampled only by its own model, and one whose
+    maintainer's sample was over the mark with no audit after it."""
     import tempfile
     global ROOT
     keep = ROOT
     steps = lambda *models: {s: list(models) for s in PROVING_STEPS}
-    check_ok = {"by": "someone", "model": "old-hand", "date": "2026-01-01", "checked": 33, "wrong": 0}
+    mine = lambda m: [{"step": "research", "web": True, "models": [m]}, {"step": "annotate", "models": [m]}]
+    theirs = {"by": "someone", "models": ["old-hand"]}
+    good = dict(theirs, step="sample", size=60, wrong=1)
+    over = dict(theirs, step="sample", size=60, wrong=9)
+    audit = dict(theirs, step="audit", checked=500, of=500, fixed=60)
     made = {
         "first":  ({"tier": "silver", "kit_version": "0.0.20"}, steps("old-hand")),                # before the rule
-        "second": ({"tier": "silver", "kit_version": "0.0.60", "verification": check_ok}, steps("newcomer")),
-        "third":  ({"tier": "silver", "kit_version": "0.0.60",
-                    "verification": dict(check_ok, failed=[{"model": "guesser[1m]", "date": "2026-01-01",
-                                                            "checked": 39, "wrong": 18}])},
-                   steps("guesser", "old-hand")),
-        "fourth": ({"tier": "silver", "kit_version": "0.0.60"}, steps("guesser")),                  # never checked
+        "second": ({"tier": "silver", "kit_version": "0.0.60", "accuracy": mine("newcomer") + [good]},
+                   steps("newcomer")),
+        "third":  ({"tier": "silver", "kit_version": "0.0.60", "accuracy": mine("guesser") + [over, audit, over]},
+                   steps("guesser")),
+        "fourth": ({"tier": "silver", "kit_version": "0.0.60",                                       # its own sample
+                    "accuracy": mine("guesser") + [dict(good, models=["guesser"], by="guesser")]}, steps("guesser")),
+        "fifth":  ({"tier": "silver", "kit_version": "0.0.60", "accuracy": mine("guesser") + [over]},
+                   steps("guesser")),
     }
     try:
         with tempfile.TemporaryDirectory() as tmp:
@@ -217,15 +229,14 @@ def test():
                 os.makedirs(d)
                 json.dump(dict(g, step_models=t), open(os.path.join(d, "game.json"), "w"))
             P, untrusted = settle()
-            assert set(P) == {"old-hand", "newcomer"}, P                  # a passed check proves the run's model
-            assert "guesser" not in P                                      # a refuted one's does not
-            assert os.path.join("games", "x", "third") in P["old-hand"], P  # the model that redid it is counted
-            assert [os.path.relpath(u[0], tmp) for u in untrusted] == [os.path.join("games", "x", "fourth")], untrusted
+            assert set(P) == {"old-hand"}, P                                # a maintainer's check proves no model
+            assert sorted(os.path.basename(u[0]) for u in untrusted) == ["fifth", "fourth"], untrusted
             waits = {slug: awaits_check(dict(g, step_models=t), P) for slug, (g, t) in made.items()}
-            assert waits == {"first": [], "second": [], "third": [], "fourth": ["guesser"]}, waits
+            assert waits == {"first": [], "second": [], "third": [], "fourth": ["guesser"], "fifth": ["guesser"]}, waits
     finally:
         ROOT = keep
-    print("ok - models.py self-check: a passed check proves the run's model, a refuted sample's model stays unproven")
+    print("ok - models.py self-check: a maintainer's sample, and audit when it is over the mark, "
+          "lets a game be Silver and proves no model")
 
 
 def main():
@@ -246,7 +257,8 @@ def main():
         print(f"{a[1]} is not a proven model (proven: {', '.join(sorted(proven())) or 'none'}).\n"
               "The run may go on. Tell the contributor now, in plain words: an untested model often produces\n"
               "results that read as right and are wrong, and this game cannot be Silver until a maintainer has\n"
-              "checked it (kit/CHECKING.md). Until then its tier is bronze (AGENTS.md, \"Model\").")
+              "measured its listing on a proven model (kit/CHECKING.md). Until then its tier is bronze\n"
+              "(AGENTS.md, \"Model\").")
         sys.exit(1)
     elif a[0] == "check":
         n = check()

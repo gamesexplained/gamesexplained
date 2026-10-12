@@ -3,8 +3,9 @@
 needs a research row, an annotate row and a sample, and check_docs.py fails one without; its
 page calls the listing checked only when the last sample came after a full audit and is within
 the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A Play
-tab's port and a maintainer's check are rows of their own and change nothing the page says. A
-game made before game.json carried `accuracy` is not checked."""
+tab's port and an older maintainer's check are rows of their own and change nothing the page says;
+a maintainer's sample or audit carries their login as `by`. A game made before game.json carried
+`accuracy` is not checked."""
 from pathlib import Path
 import json
 import sys
@@ -58,14 +59,14 @@ class Accuracy(unittest.TestCase):
         for bad in (dict(FIRST, models=[]), dict(FIRST, wrong=61), dict(AUDIT, checked=700),
                     dict(RESEARCH, web="yes"), dict(FIRST, checker="x"), {"step": "guess", "models": M},
                     dict(AUDIT, fixed=-1), dict(ANNOTATE, note=""), dict(PLAY, fixed="some"),
-                    dict(PLAY, checked=10), dict(CHECK, wrong=40), dict(CHECK, by=""),
+                    dict(PLAY, checked=10), dict(CHECK, wrong=40), dict(CHECK, by=""), dict(FIRST, by=""),
                     {"step": "check", "models": M}):
             self.assertEqual(len(p(game(RESEARCH, ANNOTATE, FIRST, bad))), 1, bad)
         self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, {k: v for k, v in AUDIT.items() if k != "fixed"})), [])
         self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, {"step": "play", "models": M})), [])
-        checked = dict(game(RESEARCH, ANNOTATE, FIRST), verification={"by": "someone"})
-        self.assertEqual(len(p(checked)), 1)                          # a check kept only in verification
-        self.assertEqual(p(dict(checked, accuracy=checked["accuracy"] + [CHECK])), [])
+        self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, dict(AUDIT, by="someone"), dict(AFTER, by="someone"))), [])
+        old = dict(game(RESEARCH, ANNOTATE, FIRST, CHECK), verification={"by": "someone"})
+        self.assertEqual(len(p(old)), 1)                              # the old record, which nothing reads
 
     def test_the_page_flags_a_listing_until_a_full_audit_and_a_sample_within_the_mark(self):
         st = accuracy.status
@@ -90,10 +91,12 @@ class Accuracy(unittest.TestCase):
     def test_the_table_keeps_every_step_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "listing.json").write_text(json.dumps({"records": [{"c": "x"}, {"c": ""}, {"c": "y"}]}))
-            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, dict(FIRST, wrong=5), PART, AUDIT, AFTER, PLAY), tmp)
+            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, dict(FIRST, wrong=5), PART, AUDIT,
+                                       dict(AFTER, by="someone"), PLAY), tmp)
         self.assertEqual([r[0] for r in rows],
                          ["Research", "Annotation", "Sample 1", "Sample 2", "Audit 1", "Audit 2", "Sample 3", "Play tab"])
         self.assertIn("corrected 16 comments it showed wrong", rows[7][2])
+        self.assertEqual(rows[6][1], "someone, with some-model")      # a maintainer's sample
         self.assertIn("in 2 comments", rows[1][2])
         self.assertEqual(rows[0][1], "not recorded")
         self.assertIn("Checked 300 of 640 comments and corrected 40", rows[4][2])

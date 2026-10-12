@@ -19,3 +19,13 @@
   strongest model the contributor has, and each step records which
   models did it. On the same test the brief took the strongest model
   from 16 or 17 to 18 in each of two runs, with no false alarm.
+- **A maintainer's check is a sample and an audit.** The check of a run
+  on an unproven model used to test 39 claims and fail on one wrong. A
+  listing at 5 % wrong, about where one sits after a full audit, comes
+  through 39 clean only about one time in seven, so the check failed good
+  runs too, while the run's own sample, on its own weaker model, missed
+  more of its errors. The maintainer now samples the listing on a proven
+  model, audits every comment and `facts.md` when the sample is over the
+  mark, and samples again; the rows go in `accuracy` with their `by`. A
+  game checked this way proves no model, and the maintainers declare one
+  in `kit/models.json` when its samples earn it.

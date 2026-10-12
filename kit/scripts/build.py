@@ -309,7 +309,8 @@ def banner(game, cons):
     Bronze, or no tier, is unfinished and asks for a
     contributor. The prompt behind the button is the one line to paste into an agent.
     A run on a model not yet proven is published whole, and its banner says that it awaits
-    a maintainer's check (kit/CHECKING.md) before saying what else is missing (#142).
+    a maintainer's check (kit/CHECKING.md), a sample of its listing on a proven model, before
+    saying what else is missing (#142).
     At Silver and above, a listing whose comments are not checked (accuracy.py: no
     full audit yet, or a last sample over the mark) gets a line of its own saying so.
     """
@@ -392,8 +393,8 @@ def banner_body(game, cons, tier, repo):
         else:
             who = " and ".join("one whose name was not recorded" if x == "unknown" else html.escape(x) for x in need)
             body = (f'This minisite awaits a maintainer\u2019s check. {"A model" if len(need) == 1 else "Models"} '
-                    f'this site has not proven yet worked on it ({who}), so its claims have not been tested '
-                    f'against the game (<a href="{repo}/blob/main/kit/CHECKING.md">how the check works</a>).')
+                    f'this site has not proven yet worked on it ({who}), so a maintainer will measure its '
+                    f'listing on one it has (<a href="{repo}/blob/main/kit/CHECKING.md">how the check works</a>).')
             if cov < 100 or n < m:
                 body += f' It is not complete either: {how}. ' + ask
     return body

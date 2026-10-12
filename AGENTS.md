@@ -138,20 +138,23 @@ Hard to read: `kit: a run corrects the install notes in place, not with a row or
 ## Rules that are not negotiable
 
 - **Model.** Any model may run the kit, but only a proven one can take a
-  game to Silver on its own. A proven model has already done so, or the
-  maintainers have declared it good enough in `kit/models.json`:
-  `python3 kit/scripts/models.py` lists them, with the games. On any other
-  model, tell the contributor before the first step, in plain words, that
-  an untested model often produces results that read as right and are
-  wrong, and that the game cannot be Silver until a maintainer has
-  checked it (`kit/CHECKING.md`). Then work to the tier they chose, and
-  record `tier` as `bronze` until the check passes. The failures are
-  silent: address arithmetic goes wrong in ways that read as confident,
-  which is why the check tests claims against the game rather than
-  reading the page. `python3 kit/scripts/models.py is-proven <id>` says
-  whether yours is. Such a run still builds its whole minisite, not the
-  cut-down Bronze page: the site publishes it with a banner saying it
-  awaits a maintainer's check, until the check passes.
+  game to Silver on its own. A proven model is one the maintainers have
+  declared good enough in `kit/models.json`, or one that took a game to
+  Silver before the check below was needed: `python3 kit/scripts/models.py`
+  lists them, with the games. On any other model, tell the contributor
+  before the first step, in plain words, that an untested model often
+  produces results that read as right and are wrong, and that the game
+  cannot be Silver until a maintainer has sampled its listing on a proven
+  model, and audited it if the sample finds too many wrong
+  (`kit/CHECKING.md`). Then work to the tier they chose, and record `tier`
+  as `bronze` until the check is done. The failures are silent: address
+  arithmetic goes wrong in ways that read as confident, and the same model
+  checking its own work finds fewer of them, which is why the check is
+  made on another model rather than by reading the page.
+  `python3 kit/scripts/models.py is-proven <id>` says whether yours is.
+  Such a run still builds its whole minisite, not the cut-down Bronze
+  page: the site publishes it with a banner saying it awaits a
+  maintainer's check, until the check is done.
 - **An imported analysis is a starting point, not a run.** Work the
   contributor did outside the kit seeds the disassembler; the listing
   still comes from a snapshot through `listing.py`, coverage and verify
@@ -268,7 +271,7 @@ Nothing about a particular game belongs in `AGENTS.md` or `kit/skills/`.
 | Tier | Requires |
 |---|---|
 | Bronze | a partial run, off the starting line: boots; `orientation.md`; `features.md`; coverage below 100 %; `symbols.json` and `listing.json` committed for what there is |
-| Silver | 100 % coverage; `facts.md`; a sample of the listing's comments checked, and every step behind the listing recorded in `accuracy`; the page flags the listing until it has been audited and sampled within the mark (`kit/skills/core/60-verify`); every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built, with a player for every tune when the game has music; all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or a maintainer's check recorded in `game.json` (`kit/CHECKING.md`) |
+| Silver | 100 % coverage; `facts.md`; a sample of the listing's comments checked, and every step behind the listing recorded in `accuracy`; the page flags the listing until it has been audited and sampled within the mark (`kit/skills/core/60-verify`); every feature confirmed, traced or explicitly open; `symbols.json` and `listing.json`; the minisite built, with a player for every tune when the game has music; all of it agent-authored, copy `agent-draft`; coverage and verify done on proven models, or the listing sampled, and audited when the sample is over the mark, by a maintainer on a proven model (`kit/CHECKING.md`) |
 | Silver (claimed) | a Silver that a human has started to curate: `tier` is `silver-claimed` and `steward` names them (their GitHub login). Set it when the first edit pass begins, so the page says the work is under way and nobody starts it twice; it turns Gold when every section has had its pass |
 | Gold | a human has curated the Silver, section by section: rewriting the clichéd copy, cutting what is dull, expanding what is interesting and adding what the agent missed, often by prompting the agent for new pieces. A pass that finds nothing to change counts, and `copy` records which it was: `agent` when the human read it and left it, `human-edited` or `human` when they changed it |
 | Platinum | the listing reassembles byte-for-byte to the analysed image and the build boots |

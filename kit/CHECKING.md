@@ -1,108 +1,84 @@
 # Checking a run made on an unproven model
 
-Any model may run the kit. A proven model is one that has already taken
-a game to Silver, or one the maintainers declare good enough in
-`kit/models.json`: `python3 kit/scripts/models.py` lists them, with the
-games that proved each. When a run's coverage or verify step ran on a
+Any model may run the kit. A proven model is one the maintainers declare
+good enough in `kit/models.json`, or one that took a game to Silver
+before this check was needed: `python3 kit/scripts/models.py` lists
+them, with the games. When a run's coverage or verify step ran on a
 model that is not on that list, the game cannot be Silver until a
 maintainer has checked it. This file is that check. It is done at review
 time, on the pull request's branch, before the merge. A game merged
 before its check is published whole, with a banner saying it awaits
-this check; the banner goes when its `verification` passes (`build.py`).
+this check; the banner goes when the check is in its `accuracy`
+(`build.py`).
 
-The check exists because a weaker model's mistakes are silent. Its
-wrong claims are as confident as its right ones: an address off by a
-page, a routine named for what it looks like rather than what it does, a
-screenshot saved under the wrong name. Reading the page does not find
-them. Testing a sample of claims against the game does.
+The check exists because a weaker model's mistakes are silent, and so
+is its checking. Its wrong claims read as confidently as its right ones,
+and when it checks its own listing it finds fewer of them: on a test of
+60 comments with 20 known errors, the weakest model tried found 4 to 7
+and the strongest 16 to 18. A run's own sample can make its listing look
+better than it is. So the check is the measurement every run makes
+(`kit/skills/core/60-verify`, "Measure the listing"), made again by
+someone whose checker can be trusted, with an audit when the listing
+needs one.
 
 A game built on an analysis the contributor made outside the kit
 (`imported` in its `game.json`, `kit/skills/core/40-sweep`) needs the
 same check unless every model named under `imported` is proven. Where
-its claims came from changes nothing about how they are sampled or
-tested: the analysis's own record of what it checked is not evidence
-here.
+its claims came from changes nothing about how the listing is sampled:
+the analysis's own record of what it checked is not evidence here.
 
 ## Who checks
 
-A maintainer, or their agent running on a proven model. The model that
-made the run cannot check its own work, and `models.py check` refuses a
-`verification` recorded with it.
+A maintainer, or their agent running on a proven model. Never the model
+that made the run.
 
-## What to check
+## What to do
 
-Pick the sample yourself: never let the run choose which of its claims
-are tested.
+1. **Sample the listing.** Draw 60 comments with a seed you choose, not
+   one the run chose, and give them to a checker on a proven model with
+   the brief in `60-verify/checker.md`. Read every comment it marks wrong
+   or doubtful against the code yourself, and count what is still wrong.
+   A game of several parts is sampled across its parts.
+2. **If more than 2 of the 60 are wrong, audit.** Agents on a proven
+   model check every comment, in every part, and every claim in
+   `facts.md`, which the article stands on and the listing does not
+   hold. Correct what they find, every other comment that says the same
+   thing, and the page wherever it repeats a corrected fact.
+3. **After an audit, sample again** with a new seed. The page shows what
+   this sample finds, whether or not it is within the mark.
 
-1. **Twenty claims from `facts.md`**, or every claim if there are fewer,
-   spread across its sections. Prefer the claims the page leans on: the
-   ones a widget on `index.html` is built from, and anything with a
-   number in it.
-2. **Ten named routines or tables from `symbols.json`**, chosen from
-   across the address range, not from its start.
-3. **The orientation facts**: where the program loads, where the main
-   loop is, and which memory configuration is in force during play.
-   These are what every later step stood on.
-
-A game of several parts (`kit/skills/core/10-orient`) is sampled across
-its parts: claims from each part's own `facts.md` as well as the game's,
-routines from more than one part's `symbols.json`, and the orientation
-facts of every part the sample touches. Reach at least one part other
-than the first by the route `orientation.md` gives, from your own copy:
-a route that cannot be followed fails the check as a wrong claim does.
-
-Check each one the way `kit/skills/core/60-verify` does: trace it in the
-listing, and where the claim is about behaviour, observe it live in the
-emulator. A claim you cannot confirm and cannot refute counts as wrong
-unless the run itself marked it open.
-
-## What passes
-
-No wrong claim in the sample. One wrong claim fails the check: a sample
-that finds one error means there are others it did not find. Return the
-pull request with the claims that failed. The run's own agent, or a
-proven model, fixes them and runs `60-verify` again. Then check a new
-sample; do not re-check the old one.
+The check does not pass or fail. It replaces the run's own measure with
+one that can be trusted, and the About tab shows it beside the rest.
 
 ## Recording it
 
-When the check passes, add to the game's `game.json`:
+Add each step to the game's `accuracy`, after the run's own rows, with
+your GitHub login as `by` (`60-verify`, "What the repository keeps"):
 
 ```
-"verification": {
-  "by": "<your GitHub login>",
-  "model": "<the model id that did the check>",
-  "date": "YYYY-MM-DD",
-  "checked": 33,
-  "wrong": 0,
-  "note": "what was sampled, in a line"
-}
+{"step": "sample", "size": 60, "wrong": 9, "seed": 4127, "by": "<your GitHub login>", "models": ["<the model id>"]}
+{"step": "audit", "checked": 912, "of": 912, "fixed": 131, "by": "<your GitHub login>", "models": ["<the model id>"],
+ "note": "and every claim in facts.md"}
+{"step": "sample", "size": 60, "wrong": 2, "seed": 9902, "by": "<your GitHub login>", "models": ["<the model id>"]}
 ```
 
-and set `tier` to `silver`. Add the check to the game's `accuracy` too,
-after the steps it tested, so the About tab's table shows it (`60-verify`,
-"What the repository keeps"):
+and set `tier` to `silver`. `check_docs.py` (through `models.py check`)
+fails a game at Silver or above that ran on an unproven model unless its
+last sample carries `by` and names proven models, no annotation comes
+after it, and it is within the mark or follows a full audit that also
+carries `by`.
 
-```
-{"step": "check", "by": "<your GitHub login>", "checked": 33, "wrong": 0, "models": ["<the model id>"]}
-```
+A game passed this way proves no model, however its samples came out:
+the maintainers made the measure, and an audit may have made the
+listing. When a model's own work keeps measuring as well as the proven
+models' first drafts (on 11 October 2026, typically one comment in eight
+wrong in a first sample), declare it in `kit/models.json`, naming the
+games.
 
-A check that fails is a row as well, with its `wrong`, before the steps
-that redid the work. When an earlier sample failed and a proven
-model then redid the run's coverage and verify steps, keep the failed
-sample in the same record, so the game's history is in one place and the
-model it tested is not credited with the result:
-
-```
-  "failed": [{"model": "<the model whose claims were tested>", "date": "YYYY-MM-DD",
-              "checked": 39, "wrong": 18, "note": "what was sampled, in a line"}]
-```
-
-A model named under `failed` is not proven by this game, whatever
-`step_models` in its `game.json` says it ran. `check_docs.py` (through `models.py check`)
-fails any game at Silver or above that ran on an unproven model and has
-no passing `verification`. Once the game is merged, its models count as
-proven for every run after it.
+Checks made before 12 October 2026 tested twenty claims from `facts.md`,
+ten names from `symbols.json` and the orientation facts, and one wrong
+claim failed them. They are kept as `check` rows in `accuracy`; game.json
+no longer has a `verification` record, and `check_docs.py` fails one.
 
 ## A platform written on an unproven model
 
@@ -110,7 +86,7 @@ A new platform's machine reference (`kit/skills/<platform>/<machine>-reference/`
 and its tool skills (`kit/skills/<platform>/tool-*/`) are what every game on
 that machine consults instead of recalling it. A wrong fact in them is copied
 into every later run. When the model that wrote them is not on the proven list,
-a maintainer checks the platform the same way, before a game on it goes to
+a maintainer checks the platform by testing a sample of it, before a game on it goes to
 Silver, and records the check in `kit/<platform>/INSTALL.md` beside its
 measurements:
 
@@ -134,7 +110,7 @@ Pick the sample yourself, and test it against the machine, not the prose:
 3. **The tool skills' behaviours**: the quirks they tell the next run to work
    around, observed live, and the commands they say work, run once.
 
-One wrong fact fails the check, as for a game: the reference was written from a
+One wrong fact fails the check: the reference was written from a
 model's memory of the machine, and a sample that finds one error means there are
 others. Correct what failed in place (a reference states what is true now); the
 story of the check belongs where the platform's history is kept. The games a

@@ -17,14 +17,15 @@ game.json's `accuracy` lists the steps in the order they happened, one row each:
       a port of the whole game for the Play tab, checked against the game's own code; "fixed"
       is how many comments the port showed wrong and the run corrected, left out when not recorded
   {"step": "check", "by": "air", "checked": 39, "wrong": 0, "models": [...]}
-      a maintainer's check of a run made on an unproven model (kit/CHECKING.md): claims from
-      facts.md, names from symbols.json and the orientation, tested against the game; "by" is
-      the maintainer's GitHub login, and a check that failed is a row too
+      a maintainer's check as it was made before 12 October 2026, kept for the games that had
+      one: claims from facts.md, names from symbols.json and the orientation, tested against
+      the game; a check that failed is a row too
 
 Together the rows are a ledger of everything that measured the listing's comments or made
 them more accurate. `models` names the model ids that did the step, "unknown" where nobody recorded them, and
 any row may carry a short `note`; a sample may carry its `seed`, and an audit leaves out
-`fixed` when the number was not recorded. 60-verify says when to sample and audit, and a run
+`fixed` when the number was not recorded. A sample or an audit a maintainer made for a run on an
+unproven model (kit/CHECKING.md) carries their GitHub login as `by`. 60-verify says when to sample and audit, and a run
 writes a row for each step it takes, whatever order they come in.
 
 A game at Silver or above needs a research row and an annotate row, and one created from
@@ -51,8 +52,8 @@ MIN_SIZE = 60
 SAMPLE_SINCE = "2026-10-12"   # games created from this day need a sample for Silver; older ones show "Not measured"
 KEYS = {"research": {"step", "web", "models", "note"},
         "annotate": {"step", "models", "note"},
-        "sample": {"step", "size", "wrong", "models", "seed", "note"},
-        "audit": {"step", "checked", "of", "fixed", "models", "note"},
+        "sample": {"step", "size", "wrong", "models", "seed", "by", "note"},
+        "audit": {"step", "checked", "of", "fixed", "models", "by", "note"},
         "play": {"step", "fixed", "models", "note"},
         "check": {"step", "by", "checked", "wrong", "models", "note"}}
 
@@ -98,8 +99,8 @@ def _bad(row):
         return '(sample) needs "size", the comments drawn, and "wrong", how many of them were wrong'
     if step == "check" and not (_count(row.get("checked"), 1) and _count(row.get("wrong")) and row["wrong"] <= row["checked"]):
         return '(check) needs "checked", the claims tested, and "wrong", how many of them were wrong'
-    if step == "check" and "by" in row and not (isinstance(row["by"], str) and row["by"].strip()):
-        return '(check) has an empty "by"'
+    if "by" in row and not (isinstance(row["by"], str) and row["by"].strip()):
+        return f'({step}) has an empty "by"'
     if step == "play" and "fixed" in row and not _count(row["fixed"]):
         return '(play) has a "fixed" that is not a count of comments'
     if step == "audit":
@@ -126,8 +127,9 @@ def problems(game):
     if out or game.get("tier") not in SILVER_UP:
         return out
     have = {r["step"] for r in rows}
-    if "verification" in game and "check" not in have:
-        out.append("records a maintainer's check under verification and no check row in accuracy (kit/CHECKING.md)")
+    if "verification" in game:
+        out.append("records a maintainer's check under verification, which nothing reads: record the "
+                   'maintainer\'s samples and audit in accuracy, each with "by" (kit/CHECKING.md)')
     need = [s for s in ("research", "annotate", "sample") if s not in have
             and (s != "sample" or str(game.get("created") or SAMPLE_SINCE) >= SAMPLE_SINCE)]
     if need:
@@ -210,6 +212,8 @@ def table(game, gdir):
         step = r["step"]
         seen[step] = seen.get(step, 0) + 1
         by = ", ".join("not recorded" if m == "unknown" else m for m in r["models"])
+        if "by" in r:
+            by = r["by"] if set(r["models"]) == {"unknown"} else f"{r['by']}, with {by}"
         if step == "research":
             label, what = "Research", {True: "Looked the game up online (its manual, reviews or wiki pages) before reading its code.",
                                        False: "Did not look the game up online.",
@@ -226,8 +230,6 @@ def table(game, gdir):
                     f"of the listing is likely wrong.")
         elif step == "check":
             label = "Maintainer’s check" + (f" {seen[step]}" if checks > 1 else "")
-            if "by" in r:
-                by = r["by"] if set(r["models"]) == {"unknown"} else f"{r['by']}, with {by}"
             what = (f"Tested {r['checked']} of the run’s claims against the game, picked by the maintainer from "
                     f"its facts, its routine names and its memory map: {r['wrong'] or 'none'} "
                     f"{'was' if r['wrong'] in (0, 1) else 'were'} wrong, so the check "

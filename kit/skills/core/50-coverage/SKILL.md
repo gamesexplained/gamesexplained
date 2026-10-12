@@ -5,7 +5,7 @@ description: The annotation loop. Measure comprehension with the shared coverage
 
 # Measure comprehension, not disassembly
 
-Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game proves the model or needs a maintainer's check (`kit/CHECKING.md`). The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes with nine agents on disjoint ranges. One agent is several times slower per kilobyte.
+Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game needs a maintainer's check (`kit/CHECKING.md`). The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes with nine agents on disjoint ranges. One agent is several times slower per kilobyte.
 
 Disassembly coverage flatters you. Bytes can be decoded, labelled, even
 commented nearby, and still understood by nobody. The shared metric
