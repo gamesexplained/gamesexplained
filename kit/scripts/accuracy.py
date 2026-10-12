@@ -10,15 +10,19 @@ game.json's `accuracy` lists the steps in the order they happened, one row each:
   {"step": "sample", "size": 60, "wrong": 2, "models": [...], "seed": ...}
       comments drawn at random and checked one by one by an agent that wrote none of them
   {"step": "audit", "checked": 897, "of": 897, "fixed": 137, "models": [...]}
-      agents that wrote none of the comments check every one (checked == of), or a stated part
+      agents that wrote none of the comments check every one (checked == of), or a stated part;
+      when nobody counted what a partial audit checked, it leaves out "checked" (and "of") and
+      its note says what it covered
 
 `models` names the model ids that did the step, "unknown" where nobody recorded them, and
 any row may carry a short `note`; a sample may carry its `seed`, and an audit leaves out
 `fixed` when the number was not recorded. 60-verify says when to sample and audit, and a run
 writes a row for each step it takes, whatever order they come in.
 
-A game at Silver or above needs a research row, an annotate row and at least one sample:
-Silver asks that the listing be measured, not that it be within the mark. A sample is within
+A game at Silver or above needs a research row and an annotate row, and one created from
+SAMPLE_SINCE needs at least one sample too: Silver asks that the listing be measured, not
+that it be within the mark. An older Silver game with no sample shows "Not measured", and
+the banner says so. A sample is within
 the mark when it holds at least 60 comments and at most one in 30 of them is wrong (2 in 60).
 The About tab shows the rows as a table, and its Status table sums them up; the page calls
 the listing checked only when the last sample came after a full audit and is within the
@@ -36,6 +40,7 @@ import glob, json, math, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SILVER_UP = ("silver", "silver-claimed", "gold", "platinum")
 MIN_SIZE = 60
+SAMPLE_SINCE = "2026-10-12"   # games created from this day need a sample for Silver; older ones show "Not measured"
 KEYS = {"research": {"step", "web", "models", "note"},
         "annotate": {"step", "models", "note"},
         "sample": {"step", "size", "wrong", "models", "seed", "note"},
@@ -48,8 +53,8 @@ def within_mark(sample):
 
 
 def full(audit):
-    """An audit that checked every comment."""
-    return audit["checked"] >= audit["of"]
+    """An audit that checked every comment; one whose count nobody recorded is not."""
+    return "checked" in audit and "of" in audit and audit["checked"] >= audit["of"]
 
 
 def wilson(wrong, size, z=1.96):
@@ -82,10 +87,15 @@ def _bad(row):
     if step == "sample" and not (_count(row.get("size"), 1) and _count(row.get("wrong")) and row["wrong"] <= row["size"]):
         return '(sample) needs "size", the comments drawn, and "wrong", how many of them were wrong'
     if step == "audit":
-        if not (_count(row.get("checked"), 1) and _count(row.get("of"), 1) and row["checked"] <= row["of"]):
-            return '(audit) needs "checked", the comments it checked, and "of", how many there were'
-        if "fixed" in row and not (_count(row["fixed"]) and row["fixed"] <= row["checked"]):
-            return '(audit) has a "fixed" that is not a count of the comments it checked'
+        for k in ("checked", "of", "fixed"):
+            if k in row and not _count(row[k], 0 if k == "fixed" else 1):
+                return f'(audit) has a "{k}" that is not a count of comments'
+        if "checked" in row and "of" in row and row["checked"] > row["of"]:
+            return '(audit) checked more comments than there were ("checked" over "of")'
+        if not ("checked" in row and "of" in row) and "note" not in row:
+            return '(audit) needs "checked" and "of", or a note saying what it covered when nobody counted'
+        if "fixed" in row and "checked" in row and row["fixed"] > row["checked"]:
+            return '(audit) corrected more comments than it checked'
     return None
 
 
@@ -100,7 +110,8 @@ def problems(game):
     if out or game.get("tier") not in SILVER_UP:
         return out
     have = {r["step"] for r in rows}
-    need = [s for s in ("research", "annotate", "sample") if s not in have]
+    need = [s for s in ("research", "annotate", "sample") if s not in have
+            and (s != "sample" or str(game.get("created") or SAMPLE_SINCE) >= SAMPLE_SINCE)]
     if need:
         out.append(f"Silver or above with no {' or '.join(need)} row in accuracy: "
                    + ("draw a sample of the listing's comments and have it checked; " if "sample" in need else "")
@@ -113,7 +124,8 @@ def status(game):
     before game.json recorded the steps (or whose record is malformed: check_docs.py says why).
 
     A dict: `checked`, True when the last sample came after a full audit and is within the
-    mark; `row`, the Status table's sentence; `flag`, the banner's sentence when not checked."""
+    mark, with no audit after it; `row`, the Status table's sentence; `flag`, the banner's
+    sentence when not checked."""
     if "accuracy" not in game or problems(dict(game, tier="none")):
         return None
     rows = game["accuracy"]
@@ -124,12 +136,18 @@ def status(game):
     s = rows[last]
     k, n = s["wrong"], s["size"]
     a = sum(1 for r in rows[:last] if r["step"] == "audit" and full(r))
+    since = sum(1 for r in rows[last + 1:] if r["step"] == "audit" and full(r))
     lo, hi = wilson(k, n)
     rng = f"{100 * lo:.0f}" if round(100 * lo) == round(100 * hi) else f"{100 * lo:.0f} and {100 * hi:.0f}"
     had = f"the last sample of {n} comments had {k} wrong"
     rate = f"so between {rng} % of the listing’s comments are likely wrong"
     times = {1: "once", 2: "twice"}.get(a, f"{a} times")
     one_in = f", about one in {round(n / k)}" if k else ""
+    if since:
+        return {"checked": False,
+                "row": f"Not measured since its audit. {had[0].upper() + had[1:]}, {rate}; every comment was then "
+                       f"audited{'' if since == 1 else f' {since} times'}, and no sample has measured the listing since.",
+                "flag": "Its listing was audited after its last sample, and no sample has measured it since."}
     if a == 0:
         return {"checked": False,
                 "row": f"Not audited. No audit has checked every comment, and {had}, {rate}.",
@@ -189,7 +207,12 @@ def table(game, gdir):
                     f"of the listing is likely wrong.")
         else:
             label = f"Audit {seen[step]}"
-            whole = f"all {r['of']:,} comments" if full(r) else f"{r['checked']:,} of {r['of']:,} comments"
+            if full(r):
+                whole = f"all {r['of']:,} comments"
+            elif "checked" in r:
+                whole = f"{r['checked']:,} of {r['of']:,} comments" if "of" in r else f"{r['checked']:,} comments"
+            else:
+                whole = f"part of the {r['of']:,} comments" if "of" in r else "part of the listing"
             fixed = f"corrected {r['fixed']:,}" if "fixed" in r else "corrected a number not recorded"
             what = f"Checked {whole} and {fixed}."
         out.append((label, by, what, r.get("note", "")))
@@ -226,7 +249,7 @@ def main(argv):
         if st is None:
             continue
         steps = ", ".join(r["step"] + (f" {r['wrong']}/{r['size']}" if r["step"] == "sample" else
-                                       f" {r['checked']}/{r['of']}" if r["step"] == "audit" else "")
+                                       f" {r.get('checked', '?')}/{r.get('of', '?')}" if r["step"] == "audit" else "")
                           for r in g["accuracy"])
         print(f"{os.path.relpath(gdir, ROOT):44s} {g.get('tier', ''):15s} {steps or '-'}: "
               f"{'checked' if st['checked'] else 'not checked'}")

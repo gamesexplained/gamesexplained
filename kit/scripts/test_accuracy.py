@@ -47,6 +47,8 @@ class Accuracy(unittest.TestCase):
         self.assertEqual(len(p(game(ANNOTATE, FIRST))), 1)
         self.assertEqual(p(game(RESEARCH, tier="bronze")), [])   # a run under way
         self.assertEqual(p({"tier": "silver"}), [])               # made before the rule
+        self.assertEqual(p(dict(game(RESEARCH, ANNOTATE), created="2026-09-30")), [])   # flagged on its page instead
+        self.assertEqual(len(p(dict(game(RESEARCH, ANNOTATE), created=accuracy.SAMPLE_SINCE))), 1)
 
     def test_each_row_is_well_formed(self):
         p = accuracy.problems
@@ -66,7 +68,10 @@ class Accuracy(unittest.TestCase):
         self.assertFalse(st(game(RESEARCH, ANNOTATE, FIRST, PART, AFTER))["checked"])   # a part is not every comment
         self.assertFalse(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, wrong=3)))["checked"])
         self.assertFalse(st(game(RESEARCH, ANNOTATE, dict(FIRST, wrong=1)))["checked"])   # no audit, however good
-        self.assertFalse(st(game(RESEARCH, ANNOTATE, AFTER, AUDIT))["checked"])           # audited, not measured since
+        since = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT))                              # audited, not measured since
+        self.assertFalse(since["checked"])
+        self.assertTrue(since["row"].startswith("Not measured since its audit. The last sample of 60 comments had 7"))
+        self.assertIn("no sample has measured it since", since["flag"])
         done = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER))
         self.assertTrue(done["checked"])
         self.assertIsNone(done["flag"])
@@ -83,6 +88,13 @@ class Accuracy(unittest.TestCase):
         self.assertIn("Checked 300 of 640 comments and corrected 40", rows[4][2])
         self.assertEqual(rows[4][3], "routines only")
         self.assertIn("Checked all 640 comments", rows[5][2])
+        loose = {"step": "audit", "of": 640, "fixed": 6, "models": M, "note": "the movement routines"}
+        self.assertEqual(accuracy.problems(game(RESEARCH, ANNOTATE, FIRST, loose)), [])
+        self.assertEqual(len(accuracy.problems(game(RESEARCH, ANNOTATE, FIRST, dict(loose, note=None)))), 1)
+        self.assertFalse(accuracy.full(loose))
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIn("Checked part of the 640 comments and corrected 6",
+                          accuracy.table(game(RESEARCH, ANNOTATE, FIRST, loose), tmp)[3][2])
 
     def test_the_check_reads_every_game(self):
         made = {"old": {"tier": "silver"},
