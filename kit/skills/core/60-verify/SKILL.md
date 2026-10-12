@@ -162,14 +162,17 @@ sample and each audit, in order: for a sample, the seed, the population
 and the sample's size, the checker's model, how many comments were
 wrong, what was wrong with them and what was corrected, and the
 interval; for an audit, how many comments it checked and how many it
-corrected. In `game.json`, `accuracy` lists every step behind the
-listing in the order it happened, each with the model ids that did it
-(`"unknown"` where nobody recorded them): whether the run looked the game
-up online, `{"step": "research", "web": true, "models": [...]}`; the
-annotation, `{"step": "annotate", "models": [...]}`; each sample,
-`{"step": "sample", "size": 60, "wrong": 2, "seed": ..., "models":
-[...]}`; and each audit, `{"step": "audit", "checked": 640, "of": 640,
-"fixed": 90, "models": [...]}`. Any row may carry a short `note`.
+corrected. In `game.json`, `accuracy` is the ledger of every step that
+measured the listing's comments or made them more accurate, in the order
+it happened, each with the model ids that did it (`"unknown"` where
+nobody recorded them): whether the run looked the game up online,
+`{"step": "research", "web": true, "models": [...]}`; the annotation,
+`{"step": "annotate", "models": [...]}`; each sample, `{"step":
+"sample", "size": 60, "wrong": 2, "seed": ..., "models": [...]}`; each
+audit, `{"step": "audit", "checked": 640, "of": 640, "fixed": 90,
+"models": [...]}`; and a Play tab's port, `{"step": "play", "fixed": 16,
+"models": [...]}` (`70-minisite`, `play.md`). Any row may carry a short
+`note`.
 `check_docs.py` fails a Silver game without a research row, an annotate
 row and a sample, and the About tab's table is made from the list
 (`kit/scripts/accuracy.py`). That section is the one place in `facts.md` where a correction

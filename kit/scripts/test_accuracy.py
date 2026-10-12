@@ -2,8 +2,9 @@
 """A game's `accuracy` lists the steps behind its listing in order. A game at Silver or above
 needs a research row, an annotate row and a sample, and check_docs.py fails one without; its
 page calls the listing checked only when the last sample came after a full audit and is within
-the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A game
-made before game.json carried `accuracy` is not checked."""
+the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A Play
+tab's port is a row of its own and changes nothing the page says. A game made before game.json
+carried `accuracy` is not checked."""
 from pathlib import Path
 import json
 import sys
@@ -20,6 +21,7 @@ FIRST = {"step": "sample", "size": 60, "wrong": 7, "models": M, "seed": 1}
 AUDIT = {"step": "audit", "checked": 640, "of": 640, "fixed": 90, "models": M}
 PART = {"step": "audit", "checked": 300, "of": 640, "fixed": 40, "models": M, "note": "routines only"}
 AFTER = {"step": "sample", "size": 60, "wrong": 2, "models": M, "seed": 2}
+PLAY = {"step": "play", "fixed": 16, "models": M}
 
 
 def game(*rows, tier="silver"):
@@ -54,9 +56,11 @@ class Accuracy(unittest.TestCase):
         p = accuracy.problems
         for bad in (dict(FIRST, models=[]), dict(FIRST, wrong=61), dict(AUDIT, checked=700),
                     dict(RESEARCH, web="yes"), dict(FIRST, checker="x"), {"step": "guess", "models": M},
-                    dict(AUDIT, fixed=-1), dict(ANNOTATE, note="")):
+                    dict(AUDIT, fixed=-1), dict(ANNOTATE, note=""), dict(PLAY, fixed="some"),
+                    dict(PLAY, checked=10)):
             self.assertEqual(len(p(game(RESEARCH, ANNOTATE, FIRST, bad))), 1, bad)
         self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, {k: v for k, v in AUDIT.items() if k != "fixed"})), [])
+        self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, {"step": "play", "models": M})), [])
 
     def test_the_page_flags_a_listing_until_a_full_audit_and_a_sample_within_the_mark(self):
         st = accuracy.status
@@ -74,15 +78,17 @@ class Accuracy(unittest.TestCase):
         self.assertIn("no sample has measured it since", since["flag"])
         done = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER))
         self.assertTrue(done["checked"])
+        self.assertEqual(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER, PLAY)), done)   # a port measures nothing
         self.assertIsNone(done["flag"])
         self.assertTrue(done["row"].startswith("Checked. Every comment was audited once"))
 
     def test_the_table_keeps_every_step_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "listing.json").write_text(json.dumps({"records": [{"c": "x"}, {"c": ""}, {"c": "y"}]}))
-            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, dict(FIRST, wrong=5), PART, AUDIT, AFTER), tmp)
+            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, dict(FIRST, wrong=5), PART, AUDIT, AFTER, PLAY), tmp)
         self.assertEqual([r[0] for r in rows],
-                         ["Research", "Annotation", "Sample 1", "Sample 2", "Audit 1", "Audit 2", "Sample 3"])
+                         ["Research", "Annotation", "Sample 1", "Sample 2", "Audit 1", "Audit 2", "Sample 3", "Play tab"])
+        self.assertIn("corrected 16 comments it showed wrong", rows[7][2])
         self.assertIn("in 2 comments", rows[1][2])
         self.assertEqual(rows[0][1], "not recorded")
         self.assertIn("Checked 300 of 640 comments and corrected 40", rows[4][2])
@@ -95,6 +101,7 @@ class Accuracy(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertIn("Checked part of the 640 comments and corrected 6",
                           accuracy.table(game(RESEARCH, ANNOTATE, FIRST, loose), tmp)[3][2])
+            self.assertIn("was not recorded", accuracy.table(game(RESEARCH, ANNOTATE, {"step": "play", "models": M}), tmp)[2][2])
 
     def test_the_check_reads_every_game(self):
         made = {"old": {"tier": "silver"},

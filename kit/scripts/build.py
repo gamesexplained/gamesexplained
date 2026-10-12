@@ -348,8 +348,8 @@ def accuracy_section(game, gdir):
                   + (f'<br><span class="mute">{html.escape(note)}</span>' if note else "") + "</td></tr>"
                   for step, by, what, note in rows)
     return ('<h2>How the listing was checked</h2>\n'
-            '<p class="mute">Every step that went into the accuracy of the Source tab\u2019s comments, in the '
-            'order it happened, with the models that did it.</p>\n'
+            '<p class="mute">Every step that measured the Source tab\u2019s comments or made them more accurate, '
+            'in the order it happened, with the models that did it.</p>\n'
             f'<div class="tablewrap"><table class="accuracy"><tr><th>Step</th><th>By</th><th>What it found</th></tr>'
             f'{trs}</table></div>')
 

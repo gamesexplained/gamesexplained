@@ -137,3 +137,15 @@ clock handed to both. Each file's header is its manual.
   Run the page's runtime in node from the cold start before opening a
   browser: a game that stalls there (waiting for an interrupt the page
   never raises) stalls in the browser with nothing to say why.
+
+## What the port finds in the listing
+
+Porting a routine means reading every instruction of it, and the
+lockstep shows where that reading was wrong. Correct each comment the
+port shows wrong in `symbols.json`, rebuild the listing, and keep count.
+When the port is done, add a `play` row to `accuracy` in `game.json`,
+after whatever came before it, with that count as `fixed` and the models
+that wrote the port (`60-verify`, "What the repository keeps"). The row
+says the port happened and what it corrected; it is not an audit, since
+the port reads the code it needs and not every comment, so it changes
+nothing the page says about whether the listing is checked.

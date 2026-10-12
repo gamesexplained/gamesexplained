@@ -13,8 +13,12 @@ game.json's `accuracy` lists the steps in the order they happened, one row each:
       agents that wrote none of the comments check every one (checked == of), or a stated part;
       when nobody counted what a partial audit checked, it leaves out "checked" (and "of") and
       its note says what it covered
+  {"step": "play", "fixed": 16, "models": [...]}
+      a port of the whole game for the Play tab, checked against the game's own code; "fixed"
+      is how many comments the port showed wrong and the run corrected, left out when not recorded
 
-`models` names the model ids that did the step, "unknown" where nobody recorded them, and
+Together the rows are a ledger of everything that measured the listing's comments or made
+them more accurate. `models` names the model ids that did the step, "unknown" where nobody recorded them, and
 any row may carry a short `note`; a sample may carry its `seed`, and an audit leaves out
 `fixed` when the number was not recorded. 60-verify says when to sample and audit, and a run
 writes a row for each step it takes, whatever order they come in.
@@ -44,7 +48,8 @@ SAMPLE_SINCE = "2026-10-12"   # games created from this day need a sample for Si
 KEYS = {"research": {"step", "web", "models", "note"},
         "annotate": {"step", "models", "note"},
         "sample": {"step", "size", "wrong", "models", "seed", "note"},
-        "audit": {"step", "checked", "of", "fixed", "models", "note"}}
+        "audit": {"step", "checked", "of", "fixed", "models", "note"},
+        "play": {"step", "fixed", "models", "note"}}
 
 
 def within_mark(sample):
@@ -86,6 +91,8 @@ def _bad(row):
         return '(research) needs "web": true, false or "unknown"'
     if step == "sample" and not (_count(row.get("size"), 1) and _count(row.get("wrong")) and row["wrong"] <= row["size"]):
         return '(sample) needs "size", the comments drawn, and "wrong", how many of them were wrong'
+    if step == "play" and "fixed" in row and not _count(row["fixed"]):
+        return '(play) has a "fixed" that is not a count of comments'
     if step == "audit":
         for k in ("checked", "of", "fixed"):
             if k in row and not _count(row[k], 0 if k == "fixed" else 1):
@@ -205,6 +212,12 @@ def table(game, gdir):
             label = f"Sample {seen[step]}"
             what = (f"{r['wrong']} of {r['size']} comments wrong, so between {100 * lo:.0f} and {100 * hi:.0f} % "
                     f"of the listing is likely wrong.")
+        elif step == "play":
+            label = "Play tab"
+            what = ("Ported the whole game to JavaScript for the Play tab and corrected "
+                    f"{r['fixed']:,} comment{'' if r['fixed'] == 1 else 's'} it showed wrong." if "fixed" in r else
+                    "Ported the whole game to JavaScript for the Play tab; how many comments it corrected "
+                    "was not recorded.")
         else:
             label = f"Audit {seen[step]}"
             if full(r):
@@ -249,7 +262,8 @@ def main(argv):
         if st is None:
             continue
         steps = ", ".join(r["step"] + (f" {r['wrong']}/{r['size']}" if r["step"] == "sample" else
-                                       f" {r.get('checked', '?')}/{r.get('of', '?')}" if r["step"] == "audit" else "")
+                                       f" {r.get('checked', '?')}/{r.get('of', '?')}" if r["step"] == "audit" else
+                                       f" {r['fixed']}" if "fixed" in r else "")
                           for r in g["accuracy"])
         print(f"{os.path.relpath(gdir, ROOT):44s} {g.get('tier', ''):15s} {steps or '-'}: "
               f"{'checked' if st['checked'] else 'not checked'}")
