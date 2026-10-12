@@ -27,8 +27,10 @@ Plus a home page with the catalogue and the games most recently added or changed
 (from site/platform.html: its catalogue alone, the page the platform in a game's
 breadcrumb links to), site/lib/, status.html (from site/status.html +
 site/status.json: which kits work on which computers, and the work needed)
-and about.html (from site/about-site.html: who runs the site and the
-principles it follows; static). And what lets a phone
+about.html (from site/about-site.html: who runs the site and the
+principles it follows; static) and accuracy.html (from site/accuracy.html: how a
+listing's comments are checked, which every About tab's table of those steps
+links to; static). And what lets a phone
 install the site as an app: manifest.webmanifest, icons/ (kit/scripts/icons.py
 draws them) and sw.js at the root, with lines in every page's head that point
 at them.
@@ -349,7 +351,8 @@ def accuracy_section(game, gdir):
                   for step, by, what, note in rows)
     return ('<h2>How the listing was checked</h2>\n'
             '<p class="mute">Every step that measured the Source tab\u2019s comments or made them more accurate, '
-            'in the order it happened, with the models that did it.</p>\n'
+            'in the order it happened, with the models that did it. <a href="../../accuracy.html">Trusting a '
+            'listing</a> explains each step and what the row above makes of them.</p>\n'
             f'<div class="tablewrap"><table class="accuracy"><tr><th>Step</th><th>By</th><th>What it found</th></tr>'
             f'{trs}</table></div>')
 
@@ -1744,6 +1747,9 @@ def main():
     repo = html.escape(json.load(open(os.path.join(SITE, "config.json")))["repo"].rstrip("/"))
     open(os.path.join(out_root, "about.html"), "w").write(
         fill(read(os.path.join(SITE, "about-site.html")), site_title="About · Games Explained", lib="lib", repo=repo))
+    open(os.path.join(out_root, "accuracy.html"), "w").write(
+        fill(read(os.path.join(SITE, "accuracy.html")), site_title="Trusting a listing · Games Explained", lib="lib",
+             repo=repo))
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")
     version_lib(out_root)
