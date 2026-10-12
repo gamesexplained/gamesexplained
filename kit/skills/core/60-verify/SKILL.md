@@ -121,7 +121,26 @@ eight with the first and three times in four with the second. When the
 contributor has a model from a second provider, a second checker on it
 is worth its cost: on the same test it reported three errors that every
 run on the other provider's models had passed. A comment is wrong when
-either checker's finding holds.
+either checker's finding holds. A second pass on a weaker model from the
+same provider is not worth its cost: on the same test it found about
+half an error more than the strongest model's pass alone, and none that
+the strongest model's runs had all missed. A second pass on the
+strongest model, in fresh agents, found about 1.3 more, and one on a
+second provider's model about 2.5 more, besides four errors the test's
+key had missed.
+
+When the contributor named a model for checking as the run started
+(`kit/START.md`), every checker and auditor runs on it, and its id goes
+in that step's `models`. Start it the way the session can: as a
+subagent on that model, or through the command-line tool the contributor
+named for it, with `checker.md` and the four things it asks for. When
+the session can reach the model neither way, write each checker's brief
+to `work/handoff/<step>/BRIEF.md`, tell the contributor to run it with
+that model in this clone and have the verdicts written beside it, and
+go on with whatever does not need them. That is the one wait in the run,
+and the contributor chose it by naming the model. Settle its verdicts
+against the code as for any checker. With no model named, use the
+strongest model the session has.
 
 The rate is what the checker found, and a checker misses some: in one
 run, a full audit that re-read the first sample's 60 comments found six

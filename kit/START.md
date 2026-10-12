@@ -74,6 +74,14 @@ step needs something only they have.
    sample, and the page goes up saying its listing has not been audited
    until a later run does it (`kit/skills/core/60-verify`).
 
+   **A model for checking, only if they name one.** Do not ask for it. A
+   contributor may say, in the message that starts the run, which model
+   should check the listing: "check and audit with <model id>", or
+   "audits in Codex". If they do, `60-verify` runs every sample and audit on
+   that model, and says how to reach it; if they do not, it uses the
+   strongest model the session has. Either way the answer holds for the
+   whole run.
+
    **Last, make sure the commits will be theirs.** The site credits a
    game to the GitHub accounts that authored its commits, so commits made
    under the agent's identity credit nobody. First look at what the
