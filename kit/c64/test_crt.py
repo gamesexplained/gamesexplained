@@ -214,6 +214,7 @@ class Pages(unittest.TestCase):
             shutil.copytree(Path(build.SITE) / 'lib', out_root / 'lib')
             (out_root / 'c64').mkdir()
             (out_root / 'index.html').write_text('')
+            (out_root / 'accuracy.html').write_text('')   # the Status row links it
             (out_root / 'c64' / 'index.html').write_text('')
             build.build_game(str(g), str(out_root))
             out = out_root / 'c64' / 'fixture'

@@ -31,7 +31,7 @@ class Banner(unittest.TestCase):
         b = banner(100, "newcomer[1m]")
         self.assertIn("awaits a maintainer’s check", b)
         self.assertIn("A model this site has not proven yet worked on it (newcomer)", b)
-        self.assertIn("kit/CHECKING.md", b)
+        self.assertIn('href="../../accuracy.html#check"', b)
         self.assertNotIn("not complete", b)
 
     def test_an_unfinished_one_says_both(self):
@@ -57,6 +57,7 @@ class Banner(unittest.TestCase):
         after = {"step": "sample", "size": 60, "wrong": 2, "models": m}
         b = banner(100, "old-hand", tier="silver", accuracy=start + [first])
         self.assertIn('<span class="flag">Its listing has not had a full audit: a sample of 60 of its comments found 7 wrong', b)
+        self.assertIn('<a href="../../accuracy.html#row">How listings are checked</a></span>', b)
         self.assertIn("still found 3 wrong",
                       banner(100, "old-hand", tier="gold", accuracy=start + [first, audit, dict(after, wrong=3)]))
         for b in (banner(100, "old-hand", tier="silver", accuracy=start + [first, audit, after]),

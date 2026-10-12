@@ -31,12 +31,13 @@ def new_game(root, tier="none"):
 
 
 def site(root):
-    """An output folder with what build.py's main writes around the games: lib/ and the pages the
-    breadcrumb links."""
+    """An output folder with what build.py's main writes around the games: lib/, the pages the
+    breadcrumb links, and the page on how listings are checked that the Status row links."""
     out = Path(root) / "_site"
     shutil.copytree(Path(build.SITE) / "lib", out / "lib")
     (out / "c64").mkdir()
     (out / "index.html").write_text("")
+    (out / "accuracy.html").write_text("")
     (out / "c64" / "index.html").write_text("")
     return out
 

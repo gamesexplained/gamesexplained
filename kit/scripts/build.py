@@ -319,14 +319,14 @@ def banner(game, cons):
     body = banner_body(game, cons, tier, repo)
     st = listing_status(game)
     if tier in SILVER_UP and st and st["flag"]:
-        body += f'<span class="flag">{html.escape(st["flag"])} {how_checked(repo)}</span>'
+        body += f'<span class="flag">{html.escape(st["flag"])} {how_checked()}</span>'
     return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
 
 
-def how_checked(repo):
-    """The link a listing's confidence line ends with: what a sample and an audit are."""
-    return (f'<a href="{repo}/blob/main/kit/skills/core/60-verify/SKILL.md#measure-the-listing-before-calling-it-done">'
-            'How listings are checked</a>')
+def how_checked():
+    """The link a listing's confidence line ends with: the site's page on what a sample and an
+    audit are, at its section on the row and the banner's line (site/accuracy.html)."""
+    return '<a href="../../accuracy.html#row">How listings are checked</a>'
 
 
 def listing_row(game):
@@ -335,10 +335,9 @@ def listing_row(game):
     st = listing_status(game)
     if not st:
         return ""
-    repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "")
     lead, rest = re.match(r"(.*?[.:]) (.*)", st["row"]).groups()
     return (f'<tr><th>Comments checked</th><td><b>{html.escape(lead)}</b> {html.escape(rest)} '
-            f'{how_checked(repo)}</td></tr>')
+            f'{how_checked()}</td></tr>')
 
 
 def accuracy_section(game, gdir):
@@ -394,7 +393,7 @@ def banner_body(game, cons, tier, repo):
             who = " and ".join("one whose name was not recorded" if x == "unknown" else html.escape(x) for x in need)
             body = (f'This minisite awaits a maintainer\u2019s check. {"A model" if len(need) == 1 else "Models"} '
                     f'this site has not proven yet worked on it ({who}), so a maintainer will measure its '
-                    f'listing on one it has (<a href="{repo}/blob/main/kit/CHECKING.md">how the check works</a>).')
+                    f'listing on one it has (<a href="../../accuracy.html#check">how the check works</a>).')
             if cov < 100 or n < m:
                 body += f' It is not complete either: {how}. ' + ask
     return body
