@@ -54,7 +54,7 @@ import glob, html, html.parser, json, os, re, shutil, subprocess, sys, urllib.er
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from parts import parts, load_game, started, under, above, ranges, left_out   # noqa: E402  a game of several loads
 from models import awaits_check, proven   # noqa: E402  which games still need a maintainer's check
-from listing_samples import status as listing_status, SILVER_UP   # noqa: E402  how far the comments are checked
+from accuracy import status as listing_status, table as accuracy_table, SILVER_UP   # noqa: E402  the work behind the listing
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SITE = os.path.join(ROOT, "site")
@@ -308,7 +308,7 @@ def banner(game, cons):
     contributor. The prompt behind the button is the one line to paste into an agent.
     A run on a model not yet proven is published whole, and its banner says that it awaits
     a maintainer's check (kit/CHECKING.md) before saying what else is missing (#142).
-    At Silver and above, a listing whose comments are not checked (listing_samples.py: no
+    At Silver and above, a listing whose comments are not checked (accuracy.py: no
     full audit yet, or a last sample over the mark) gets a line of its own saying so.
     """
     tier = game.get("tier", "none")
@@ -328,7 +328,7 @@ def how_checked(repo):
 
 def listing_row(game):
     """The About tab's Status row on the listing's comments; none for a game made before game.json
-    recorded its samples. The verdict that leads the sentence is bold (listing_samples.status)."""
+    recorded the steps. The verdict that leads the sentence is bold (accuracy.status)."""
     st = listing_status(game)
     if not st:
         return ""
@@ -336,6 +336,22 @@ def listing_row(game):
     lead, rest = re.match(r"(.*?[.:]) (.*)", st["row"]).groups()
     return (f'<tr><th>Comments checked</th><td><b>{html.escape(lead)}</b> {html.escape(rest)} '
             f'{how_checked(repo)}</td></tr>')
+
+
+def accuracy_section(game, gdir):
+    """The About tab's table of the steps behind the listing, in order (accuracy.table): what
+    each found and which models did it. None for a game made before game.json recorded them."""
+    rows = accuracy_table(game, gdir)
+    if not rows:
+        return ""
+    trs = "".join(f'<tr><th>{html.escape(step)}</th><td>{html.escape(by)}</td><td>{html.escape(what)}'
+                  + (f'<br><span class="mute">{html.escape(note)}</span>' if note else "") + "</td></tr>"
+                  for step, by, what, note in rows)
+    return ('<h2>How the listing was checked</h2>\n'
+            '<p class="mute">Every step that went into the accuracy of the Source tab\u2019s comments, in the '
+            'order it happened, with the models that did it.</p>\n'
+            f'<div class="tablewrap"><table class="accuracy"><tr><th>Step</th><th>By</th><th>What it found</th></tr>'
+            f'{trs}</table></div>')
 
 
 def banner_body(game, cons, tier, repo):
@@ -1098,6 +1114,7 @@ def build_game(gdir, out_root):
         tpl = re.sub(r"<!-- footprint\b.*?<!-- /footprint -->\s*", "", tpl, flags=re.S)
     about = fill(tpl, **common, footprint=foot, data_links="" if bare else data_links(P), map_row=(span[1] - span[0]) // 128,
                  tier=html.escape(tier_name(game.get("tier", "none"))), coverage=cov, listing_row=listing_row(game),
+                 accuracy=accuracy_section(game, gdir),
                  copy=html.escape(str(game.get("copy", ""))), tools=html.escape(", ".join(f"{k}: {v}" for k, v in tools.items())),
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,

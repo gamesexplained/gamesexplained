@@ -178,8 +178,9 @@ unnoticed.
    status page counts the games made on each kind of computer from it), model (every model the run used,
    and the subagents' model if different), `step_models` (the models that
    ran `50-coverage` and `60-verify`, which `models.py` reads),
-   `listing_samples` (every sample of the listing's comments, in order,
-   with the audits before it and its checker's model: `60-verify`), copy
+   `accuracy` (every step behind the listing's comments, in order: the
+   research, the annotation, each sample and each audit, with the models
+   that did them: `60-verify`), copy
    provenance, kit version, coverage figure. `credits` is for the game's
    original makers, each as `by` and `role`; never put yourself or your
    model there. The site's contributor list comes from git, humans only.

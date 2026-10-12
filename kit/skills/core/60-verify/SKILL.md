@@ -89,13 +89,17 @@ listing under the mark, because the sample's rate holds across the rest.
    the sample until a sample is within the mark.
 
 Silver needs the measure, not the mark: at least one sample, checked and
-recorded. The game's page says what the last sample found, and calls the
-listing checked only when that sample came after a full audit and is
-within the mark. Until then the banner under the game's title says, on
-every tab, that the listing has not been audited or that its last sample
-was over the mark, and the About tab gives the sample's count and the
-range it puts on the whole listing. So a run can publish without the
-audit, and the page is honest about it. Go on to the mark by default.
+recorded. The game's About tab shows every step in a table, with the
+models that did it, and the reader judges from the work how far to trust
+the listing. The page calls the listing checked only when the last sample
+came after a full audit and is within the mark. Until then the banner
+under the game's title says, on every tab, that the listing has not had a
+full audit or that its last sample was over the mark. So a run can
+publish without the audit, and the page is honest about it. Any order of
+steps is recorded as it happened: two samples with only their own
+comments corrected between them are two rows, an audit of some of the
+comments says how many of how many, and a second model is a row of its
+own. Go on to the mark by default.
 When the contributor said their usage limit is tight (`kit/START.md`),
 stop after the first sample, put the audit at the top of `TODO.md`, and
 say in the pull request that the page will carry the flag until a later
@@ -158,12 +162,17 @@ sample and each audit, in order: for a sample, the seed, the population
 and the sample's size, the checker's model, how many comments were
 wrong, what was wrong with them and what was corrected, and the
 interval; for an audit, how many comments it checked and how many it
-corrected. In `game.json`, `listing_samples` lists the samples in the
-same order, each as `{"seed": ..., "size": 60, "wrong": 2, "audits": 1,
-"checker": "<model id>"}`, where `audits` is how many full audits the
-listing had had when the sample was drawn; `check_docs.py` fails a
-Silver game whose list is empty, and the page's line on the listing is
-made from the last entry (`kit/scripts/listing_samples.py`). That section is the one place in `facts.md` where a correction
+corrected. In `game.json`, `accuracy` lists every step behind the
+listing in the order it happened, each with the model ids that did it
+(`"unknown"` where nobody recorded them): whether the run looked the game
+up online, `{"step": "research", "web": true, "models": [...]}`; the
+annotation, `{"step": "annotate", "models": [...]}`; each sample,
+`{"step": "sample", "size": 60, "wrong": 2, "seed": ..., "models":
+[...]}`; and each audit, `{"step": "audit", "checked": 640, "of": 640,
+"fixed": 90, "models": [...]}`. Any row may carry a short `note`.
+`check_docs.py` fails a Silver game without a research row, an annotate
+row and a sample, and the About tab's table is made from the list
+(`kit/scripts/accuracy.py`). That section is the one place in `facts.md` where a correction
 is the fact being reported, so `check_docs.py` lets it use the plain
 words ("corrected", "misread", "was wrong") that it fails anywhere else
 in the file; keep the story of how the listing got there in

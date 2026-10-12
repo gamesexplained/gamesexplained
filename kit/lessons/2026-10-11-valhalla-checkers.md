@@ -5,8 +5,9 @@
   in eight, and correcting only the sampled comments never brought a
   listing under that. A run now samples, audits every comment, and
   samples again with a new seed, until a sample has at most two wrong in
-  60. Silver needs only the first sample: the page says what the last
-  one found, and flags a listing that has not been audited or whose last
+  60. Silver needs only the first sample: the About tab shows every step
+  behind the listing in a table, with the models that did it, and the
+  banner flags a listing that has not had a full audit or whose last
   sample is over the mark, so a run on a tight usage limit can publish
   sooner and say so.
 - **A sample sees what its checker sees.** On a test of 60 of Valhalla's
@@ -15,6 +16,6 @@
   found three errors that every run on the first provider's models had
   passed, and two of the full audit's own corrections were still wrong.
   Every checker now works from one brief, `60-verify/checker.md`, on the
-  strongest model the contributor has, and each sample records which
-  model checked it. On the same test the brief took the strongest model
+  strongest model the contributor has, and each step records which
+  models did it. On the same test the brief took the strongest model
   from 16 or 17 to 18 in each of two runs, with no false alarm.

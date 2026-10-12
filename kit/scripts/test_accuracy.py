@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+"""A game's `accuracy` lists the steps behind its listing in order. A game at Silver or above
+needs a research row, an annotate row and a sample, and check_docs.py fails one without; its
+page calls the listing checked only when the last sample came after a full audit and is within
+the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A game
+made before game.json carried `accuracy` is not checked."""
+from pathlib import Path
+import json
+import sys
+import tempfile
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import accuracy  # noqa: E402
+
+M = ["some-model"]
+RESEARCH = {"step": "research", "web": "unknown", "models": ["unknown"]}
+ANNOTATE = {"step": "annotate", "models": M}
+FIRST = {"step": "sample", "size": 60, "wrong": 7, "models": M, "seed": 1}
+AUDIT = {"step": "audit", "checked": 640, "of": 640, "fixed": 90, "models": M}
+PART = {"step": "audit", "checked": 300, "of": 640, "fixed": 40, "models": M, "note": "routines only"}
+AFTER = {"step": "sample", "size": 60, "wrong": 2, "models": M, "seed": 2}
+
+
+def game(*rows, tier="silver"):
+    return {"tier": tier, "coverage_percent": 100, "accuracy": list(rows)}
+
+
+class Accuracy(unittest.TestCase):
+    def test_the_mark_is_one_in_thirty(self):
+        m = accuracy.within_mark
+        self.assertTrue(m(AFTER))
+        self.assertFalse(m(dict(AFTER, wrong=3)))
+        self.assertTrue(m(dict(AFTER, size=90, wrong=3)))
+        self.assertFalse(m(dict(AFTER, size=80, wrong=3)))
+        self.assertFalse(m(dict(AFTER, size=40, wrong=0)))   # too few to say
+
+    def test_the_range_is_wilsons(self):
+        lo, hi = accuracy.wilson(2, 60)
+        self.assertEqual((round(100 * lo), round(100 * hi)), (1, 11))
+        self.assertEqual(round(100 * accuracy.wilson(0, 60)[1]), 6)
+
+    def test_silver_needs_research_annotation_and_a_sample(self):
+        p = accuracy.problems
+        self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST)), [])
+        self.assertEqual(len(p(game(RESEARCH, ANNOTATE))), 1)
+        self.assertEqual(len(p(game(ANNOTATE, FIRST))), 1)
+        self.assertEqual(p(game(RESEARCH, tier="bronze")), [])   # a run under way
+        self.assertEqual(p({"tier": "silver"}), [])               # made before the rule
+
+    def test_each_row_is_well_formed(self):
+        p = accuracy.problems
+        for bad in (dict(FIRST, models=[]), dict(FIRST, wrong=61), dict(AUDIT, checked=700),
+                    dict(RESEARCH, web="yes"), dict(FIRST, checker="x"), {"step": "guess", "models": M},
+                    dict(AUDIT, fixed=-1), dict(ANNOTATE, note="")):
+            self.assertEqual(len(p(game(RESEARCH, ANNOTATE, FIRST, bad))), 1, bad)
+        self.assertEqual(p(game(RESEARCH, ANNOTATE, FIRST, {k: v for k, v in AUDIT.items() if k != "fixed"})), [])
+
+    def test_the_page_flags_a_listing_until_a_full_audit_and_a_sample_within_the_mark(self):
+        st = accuracy.status
+        self.assertIsNone(st({"tier": "silver"}))
+        first = st(game(RESEARCH, ANNOTATE, FIRST))
+        self.assertFalse(first["checked"])
+        self.assertIn("not had a full audit", first["flag"])
+        self.assertIn("between 6 and 22 %", first["row"])
+        self.assertFalse(st(game(RESEARCH, ANNOTATE, FIRST, PART, AFTER))["checked"])   # a part is not every comment
+        self.assertFalse(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, wrong=3)))["checked"])
+        self.assertFalse(st(game(RESEARCH, ANNOTATE, dict(FIRST, wrong=1)))["checked"])   # no audit, however good
+        self.assertFalse(st(game(RESEARCH, ANNOTATE, AFTER, AUDIT))["checked"])           # audited, not measured since
+        done = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER))
+        self.assertTrue(done["checked"])
+        self.assertIsNone(done["flag"])
+        self.assertTrue(done["row"].startswith("Checked. Every comment was audited once"))
+
+    def test_the_table_keeps_every_step_in_order(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, "listing.json").write_text(json.dumps({"records": [{"c": "x"}, {"c": ""}, {"c": "y"}]}))
+            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, dict(FIRST, wrong=5), PART, AUDIT, AFTER), tmp)
+        self.assertEqual([r[0] for r in rows],
+                         ["Research", "Annotation", "Sample 1", "Sample 2", "Audit 1", "Audit 2", "Sample 3"])
+        self.assertIn("in 2 comments", rows[1][2])
+        self.assertEqual(rows[0][1], "not recorded")
+        self.assertIn("Checked 300 of 640 comments and corrected 40", rows[4][2])
+        self.assertEqual(rows[4][3], "routines only")
+        self.assertIn("Checked all 640 comments", rows[5][2])
+
+    def test_the_check_reads_every_game(self):
+        made = {"old": {"tier": "silver"},
+                "good": game(RESEARCH, ANNOTATE, FIRST),
+                "bad": game(RESEARCH, ANNOTATE)}
+        with tempfile.TemporaryDirectory() as tmp:
+            for slug, g in made.items():
+                d = Path(tmp, "games", "x", slug)
+                d.mkdir(parents=True)
+                (d / "game.json").write_text(json.dumps(g))
+            self.assertEqual(accuracy.check(tmp), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()
