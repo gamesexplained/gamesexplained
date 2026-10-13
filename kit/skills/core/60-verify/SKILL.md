@@ -70,23 +70,30 @@ and a fifth missed by one comment.
 Correcting only the comments a sample found wrong never brought a
 listing under the mark, because the sample's rate holds across the rest.
 
+Both the sample and the audit are done by checkers: agents that wrote
+none of the comments, with `checker.md` beside this file as their brief.
+A checker does one of two jobs. A sample check marks a random draw of
+comments and changes nothing, so its count is a measurement. An audit
+checks every comment in a range and corrects the wrong ones.
+
 1. **Sample.** Draw about 60 comments at random, with a fixed seed,
-   spread over every agent's range, and give them to an agent that wrote
-   none of them, with `checker.md` beside this file as its brief. Read
-   every comment it marks wrong or doubtful against the code yourself:
-   count the ones that are wrong, and drop the false alarms.
+   spread over every agent's range, and give them to a checker for a
+   sample check. Read every comment it marks wrong or doubtful against
+   the code yourself: count the ones that are wrong, and drop the false
+   alarms.
 2. **The mark.** A sample is within the mark when at most 2 of its 60
    are wrong (at most one in 30 in a larger sample). At that mark a
    listing with 3 % of its comments wrong comes within it three times in
    four, and one with 10 % one time in twenty.
-3. **Audit.** Fresh agents that wrote none of the comments check every
-   one, each in its own range, with the same brief and the kinds of
-   error the sample found, and correct what they find. A first sample
-   within the mark does not skip the audit: the page calls a listing
-   checked only after one.
-4. **Sample again.** Draw a new sample with a new seed and give it to an
-   agent that neither wrote nor audited any of it. Repeat the audit and
-   the sample until a sample is within the mark.
+3. **Audit.** Fresh checkers audit every comment, each in its own
+   range, given the kinds of error the sample found, and correct what
+   they find. A first sample within the mark does not skip the audit:
+   the page calls a listing checked only after one.
+4. **Sample again.** Draw a new sample with a new seed and give it to a
+   checker that took no part in writing or auditing any of it: a sample
+   measures fairly only when its checker had no hand in what it
+   measures. Repeat the audit and the sample until a sample is within
+   the mark.
 
 Silver needs the measure, not the mark: at least one sample, checked and
 recorded. The game's About tab shows every step in a table, with the
@@ -106,10 +113,10 @@ stop after the first sample, put the audit at the top of `TODO.md`, and
 say in the pull request that the Source tab will say so until a later
 run audits the listing and samples it again.
 
-Start the checker and the audit without asking, on a run that keeps to
-one agent as on any other: the contributor's answer about agents
-(`kit/START.md`) is about fanning work out, and by this step the run is
-meant to be unattended. An audit runs on as many agents as that answer
+Start the sample checks and the audit without asking, on a run that
+keeps to one agent as on any other: the contributor's answer about
+agents (`kit/START.md`) is about fanning work out, and by this step the
+run is meant to be unattended. An audit runs on as many agents as that answer
 allows, and on one when it allows one.
 
 Any proven model may check (`models.py`), but a checker finds only what
@@ -131,17 +138,17 @@ second provider's model about 2.5 more, besides four errors the test's
 key had missed.
 
 When the contributor named a model for checking as the run started
-(`kit/START.md`), every checker and auditor runs on it, and its id goes
-in that step's `models`. Start it the way the session can: as a
-subagent on that model, or through the command-line tool the contributor
-named for it, with `checker.md` and the four things it asks for. When
-the session can reach the model neither way, write each checker's brief
-to `work/handoff/<step>/BRIEF.md`, tell the contributor to run it with
-that model in this clone and have the verdicts written beside it, and
-go on with whatever does not need them. That is the one wait in the run,
-and the contributor chose it by naming the model. Settle its verdicts
-against the code as for any checker. With no model named, use the
-strongest model the session has.
+(`kit/START.md`), every checker runs on it, for samples and audits
+alike, and its id goes in that step's `models`. Start it the way the
+session can: as a subagent on that model, or through the command-line
+tool the contributor named for it, with `checker.md` and the five
+things it asks for. When the session can reach the model neither way,
+write each checker's brief to `work/handoff/<step>/BRIEF.md`, tell the
+contributor to run it with that model in this clone and have the
+verdicts written beside it, and go on with whatever does not need them.
+That is the one wait in the run, and the contributor chose it by naming
+the model. Settle its verdicts against the code as for any checker.
+With no model named, use the strongest model the session has.
 
 The rate is what the checker found, and a checker misses some: in one
 run, a full audit that re-read the first sample's 60 comments found six

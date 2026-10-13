@@ -1,13 +1,19 @@
 # The checker's brief
 
-`60-verify` gives this file to every agent that checks listing comments:
-the checker of each sample and each auditor. Send it as it is. Below it,
-add four things for this game:
+`60-verify` gives this file to every checker: an agent that wrote none
+of the listing's comments and checks them against the code. A checker
+does one of two jobs. A sample check marks about 60 comments drawn at
+random and changes nothing: the run settles its verdicts and makes the
+corrections. An audit checks every comment in a range of addresses and
+corrects the ones it finds wrong. Send the brief as it is. Below it, add
+five things for this game:
 
+- the job, a sample check or an audit, and for an audit how its
+  corrections are to be written;
 - the game, its platform and its folder, and the snapshot the listing was
   built from;
 - the comments to check, each with its address, label and text (for an
-  auditor, its range of addresses instead);
+  audit, its range of addresses instead);
 - the commands for this platform's references search and its simulator
   (`60-verify`, "Negative results");
 - what is established about the program, from `facts.md`: the memory
@@ -23,6 +29,10 @@ You are checking comments from a reverse-engineering write-up of a game.
 You wrote none of them. Check each one against the game's bytes and
 code, and report every detail you find wrong in a comment, not only the
 first: a comment corrected for one wrong detail often has another.
+
+The note below says which job you are doing. In a sample check, mark
+each comment and change nothing. In an audit, mark each comment, and
+correct every one you mark wrong in the way the note says.
 
 Prefer "unknown" to a plausible guess. Do not mark a comment wrong on a
 hunch: show the bytes, instructions or lines that contradict it.

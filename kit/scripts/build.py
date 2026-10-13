@@ -328,13 +328,15 @@ def how_checked():
 
 def source_note(game):
     """The Source tab's line on its comments, under the intro: the verdict (accuracy.status),
-    green when the listing is checked, and a sentence on why. Silver and above only, the tiers
-    whose listing is meant to be whole; none for a game made before game.json recorded the steps."""
+    green when the listing is checked, a sentence on why, and links to the About tab's ledger
+    (accuracy_section) and the site's page on checking. Silver and above only, the tiers whose
+    listing is meant to be whole; none for a game made before game.json recorded the steps."""
     st = listing_status(game)
     if game.get("tier", "none") not in SILVER_UP or not st:
         return ""
     return (f'<p class="srcnote {"ok" if st["checked"] else "bad"}"><b>{html.escape(st["lead"])}</b> '
-            f'{html.escape(st["note"])} {how_checked()}</p>')
+            f'{html.escape(st["note"])} See <a href="about.html#ledger">every step on the About tab</a>, '
+            f'or <a href="../../accuracy.html#row">how listings are checked</a>.</p>')
 
 
 def listing_row(game):
@@ -357,7 +359,7 @@ def accuracy_section(game, gdir):
     trs = "".join(f'<tr class="{kind}"><th>{html.escape(step)}</th><td>{html.escape(by)}</td><td>{html.escape(what)}'
                   + (f'<br><span class="mute">{html.escape(note)}</span>' if note else "") + "</td></tr>"
                   for step, by, what, note, kind in rows)
-    return ('<h2>How the listing was checked</h2>\n'
+    return ('<h2 id="ledger">How the listing was checked</h2>\n'
             '<p class="mute">Every step that measured the Source tab\u2019s comments or made them more accurate, '
             'in the order it happened, with the models that did it. <a href="../../accuracy.html">Accuracy of the '
             'Source</a> explains each step and what the row above makes of them.</p>\n'

@@ -39,8 +39,8 @@ that made the run.
    the brief in `60-verify/checker.md`. Read every comment it marks wrong
    or doubtful against the code yourself, and count what is still wrong.
    A game of several parts is sampled across its parts.
-2. **If more than 2 of the 60 are wrong, audit.** Agents on a proven
-   model check every comment, in every part, and every claim in
+2. **If more than 2 of the 60 are wrong, audit.** Checkers on a proven
+   model audit every comment, in every part, and every claim in
    `facts.md`, which the article stands on and the listing does not
    hold. Correct what they find, every other comment that says the same
    thing, and the page wherever it repeats a corrected fact.

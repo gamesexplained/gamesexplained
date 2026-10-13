@@ -69,10 +69,10 @@ step needs something only they have.
    starts the checker `60-verify` gives a sample of the listing's
    comments to: one agent with a short brief is not a fan-out, so the run
    starts it without asking, whatever the answer here. With room, the
-   run goes on to audit every comment and sample them again, starting
-   those agents the same way. With a tight limit it stops after the first
-   sample, and the page goes up saying its listing has not been audited
-   until a later run does it (`kit/skills/core/60-verify`).
+   run goes on to have checkers audit every comment and sample them
+   again, starting them the same way. With a tight limit it stops after
+   the first sample, and the page goes up saying its listing has not
+   been audited until a later run does it (`kit/skills/core/60-verify`).
 
    **A model for checking, only if they name one.** Do not ask for it. A
    contributor may say, in the message that starts the run, which model

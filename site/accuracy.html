@@ -64,8 +64,8 @@
   <p>A listing has hundreds or thousands of comments, and checking every one takes a long time. A sample checks a few of them and uses the result to estimate the rest:</p>
   <ol>
     <li>Pick about 60 comments at random. A number called the seed decides which ones, so anyone can pick the same 60 again.</li>
-    <li>Give them to a <b>checker</b>. A checker is an AI agent that wrote none of the comments. It works from the kit’s checker brief, which lists the kinds of mistake above and how to test for each one: find every place a routine is called from, redo every sum, and run the routine when a comment says what it does.</li>
-    <li>The checker marks each comment right, wrong, or unsure, and shows its evidence. The run then looks up every comment marked wrong or unsure in the code itself, and throws out the false alarms.</li>
+    <li>Give them to a <b>checker</b>. A checker is an AI agent that wrote none of the comments. Checkers do audits too, further down. A checker works from the kit’s checker brief, which lists the kinds of mistake above and how to test for each one: find every place a routine is called from, redo every sum, and run the routine when a comment says what it does.</li>
+    <li>The checker marks each comment right, wrong, or unsure, shows its evidence, and changes nothing. The run then looks up every comment marked wrong or unsure in the code itself, and throws out the false alarms.</li>
     <li>The number of comments still wrong, out of the number picked, is the result.</li>
   </ol>
   <p>Sixty comments can’t give an exact answer. If 2 of 60 are wrong, the whole listing might have 1 % of its comments wrong, or it might have 11 %. The calculator shows that range: how much of the whole listing is likely wrong, given what the sample found. The About tab works it out the same way.</p>
@@ -117,10 +117,10 @@
 
   <h2>Audits: checking every comment</h2>
   <p>Fixing the comments a sample found wrong leaves the rest of the listing as it was. The sample looked at only 60 comments, and the others have mistakes at about the same rate. Bubble Bobble’s first sample had 11 of 60 wrong. Those were fixed, along with others like them, and the next sample still had 10 of 60 wrong.</p>
-  <p>An audit checks every comment. New agents, which wrote none of the comments, each take one part of the listing. They use the same checker brief, plus the kinds of mistake the sample found, and they fix what they find. Then a new sample measures the result, with a new seed and a checker that took no part in the writing or the audit. Commando went through each step:</p>
+  <p>An audit checks every comment. New checkers, which wrote none of the comments, each take one part of the listing. They use the same brief, plus the kinds of mistake the sample found, and this time they fix what they find. Then a new sample measures the result, with a new seed and a checker that took no part in the writing or the audit. Commando went through each step:</p>
   <ul class="steps">
     <li><span class="when">First sample</span><span>70 comments picked, 12 wrong, so between 10 and 28 % of the listing was likely wrong. The mistakes included a random chance described as a number of frames, a list of callers that named too many, one sprite block mistaken for another, two counts off by one frame, and four map descriptions with a row or a type of ground wrong.</span></li>
-    <li><span class="when">Audit</span><span>Four agents checked all 897 comments, one part each, and fixed 137 of them (15 %). The mistakes were of the same kinds.</span></li>
+    <li><span class="when">Audit</span><span>Four checkers went through all 897 comments, one part each, and fixed 137 of them (15 %). The mistakes were of the same kinds.</span></li>
     <li><span class="when">Second sample</span><span>70 more picked, 1 wrong, so between 0 and 8 %. That one was the “every frame” mistake above, and the 15 other comments that said the same thing were fixed with it.</span></li>
   </ul>
   <p>After an audit, the next sample was good enough in 4 of the 7 games that took one, and a fifth missed by one comment.</p>
@@ -145,12 +145,12 @@
   <div class="finds" id="kBars"></div>
   <p class="small mute" style="margin:12px 0 0">Each bar is how many wrong comments the checker finds in a sample of 60, on average, if it finds the middle of its range in the table above. The dashed line is good enough: 2 or fewer. The verdict is green when it is the right answer and red when it is the wrong one.</p>
 </div>
-  <p>That is why the About tab names the model behind every step. Check with the strongest model you have. Even then, the real number of mistakes is probably higher than its count: in one full audit, the auditors found 6 wrong comments among 53 that a strong checker had passed in the sample just before.</p>
+  <p>That is why the About tab names the model behind every step. Check with the strongest model you have. Even then, the real number of mistakes is probably higher than its count: in one full audit, the checkers found 6 wrong comments among 53 that a strong checker had passed in the sample just before.</p>
 
   <h2 id="ledger">The ledger: every step, in order</h2>
   <p>Games go through different steps. One run samples twice before its audit. Another audits only the routines. A third builds a Play tab, which fixes comments along the way. So the About tab lists every step that measured the comments or made them more accurate, in the order they happened, with the models that did each one. You can see how much work went into the listing and judge it for yourself. Commando’s ledger:</p>
 <div class="plate tw">
-  <p class="label" style="margin-bottom:8px">How the listing was checked · <a href="c64/commando/about.html">Commando</a></p>
+  <p class="label" style="margin-bottom:8px">How the listing was checked · <a href="c64/commando/about.html#ledger">Commando</a></p>
   <table class="ledger">
     <tr><th>Step</th><th>By</th><th>What it found</th></tr>
     <tr class="research-yes"><th>Research</th><td class="by">not recorded, claude-opus-5-5[1m]</td><td>Looked the game up online (its manual, reviews or wiki pages) before reading its code.</td></tr>
@@ -167,7 +167,7 @@
   <dl class="gloss">
     <dt>Research</dt><dd>Whether the run looked the game up online (its manual, reviews, or wiki pages) before reading its code. A run that knows what the game does gives its routines better names.</dd>
     <dt>Annotation</dt><dd>A run that wrote the comments. When a second model or a second pass rewrote them, that is another row. The last one shows the coverage and how many comments the listing has.</dd>
-    <dt>Sample</dt><dd>About 60 comments picked at random and checked one at a time by an agent that wrote none of them. Two samples in a row are two rows.</dd>
+    <dt>Sample</dt><dd>About 60 comments picked at random and checked one at a time by a checker. Two samples in a row are two rows.</dd>
     <dt>Audit</dt><dd>Every comment checked, or a stated part of them. A partial audit says how many it checked, or what it covered when nobody counted.</dd>
     <dt>Play tab</dt><dd>The whole game rewritten in JavaScript and tested against the real game until the two match. Rewriting a routine means reading every instruction in it, so the port turns up wrong comments, and the row says how many it fixed. Bubble Bobble’s port fixed 16.</dd>
     <dt>A name in the By column</dt><dd>A maintainer made this sample or audit, for a run made on a model the site doesn’t trust yet (see the next section).</dd>
@@ -188,7 +188,7 @@
   <p>Until 12 October 2026, the check worked differently: a maintainer tested about 40 of the run’s claims, and one mistake failed the whole run. Every listing has some mistakes, though, even a good one. At 5 % wrong, a test of 40 claims comes back with zero mistakes about one time in seven, so the old check failed most good runs as well as the bad ones.</p>
 
   <h2 id="row">Reading the row</h2>
-  <p>The “Comments checked” row sums up the ledger, using the last sample and any full audits around it. At Silver and above, the Source tab shows the same verdict in a line under its title, with a shorter sentence on why. These examples use Commando’s numbers and some made-up ones.</p>
+  <p>The “Comments checked” row sums up the ledger, using the last sample and any full audits around it. At Silver and above, the Source tab shows the same verdict in a line under its title, with a shorter sentence on why and a link to the ledger. These examples use Commando’s numbers and some made-up ones.</p>
   <div class="xstates">
     <div class="xstate"><span class="k ok">Audited &amp; low error rate.</span> Every comment was audited once, then the last sample of 70 comments had 1 wrong, so between 0 and 8 % of the listing’s comments are likely wrong.
       <span class="onsrc">Source tab: This listing has been audited, and a later sample of 70 of its comments found 1 wrong, about one in 70.</span></div>
@@ -228,13 +228,13 @@
     <dt>Listing</dt><dd>The whole program, byte by byte, in memory order, with what each part is. It is the Source tab.</dd>
     <dt>Comment</dt><dd>The words beside an address in the listing. On the first address of a routine, the comment describes the whole routine.</dd>
     <dt>Coverage</dt><dd>The share of the program’s bytes that belong to something with a description.</dd>
-    <dt>Sample</dt><dd>About 60 comments picked at random from the listing and checked one at a time.</dd>
+    <dt>Sample</dt><dd>About 60 comments picked at random from the listing and checked one at a time by a checker, which changes nothing.</dd>
     <dt>Seed</dt><dd>The number that decides which comments a sample picks, so the same pick can be made again.</dd>
-    <dt>Checker</dt><dd>An agent that wrote none of the comments and checks a sample of them against the code.</dd>
-    <dt>Checker brief</dt><dd>The kit’s instructions for every checker and auditor: the kinds of mistake, how to test for each, and how to mark the result.</dd>
+    <dt>Checker</dt><dd>An agent that wrote none of the comments and checks them against the code. It does two jobs: a sample, where it marks about 60 comments and changes nothing, and an audit, where it checks every comment in its part of the listing and fixes the wrong ones. A checker on a sample took no part in the writing or in an audit before it.</dd>
+    <dt>Checker brief</dt><dd>The kit’s instructions for every checker, on a sample or an audit: the kinds of mistake, how to test for each, and how to mark the result.</dd>
     <dt>Wrong in a detail</dt><dd>A comment that is right about what it describes, with one fact wrong: a caller, a count, a unit, or a bit.</dd>
     <dt>Good enough</dt><dd>At most 2 wrong in a sample of 60, or one in 30 in a bigger sample.</dd>
-    <dt>Audit</dt><dd>Agents that wrote none of the comments check every one, each in its own part of the listing, and fix what they find.</dd>
+    <dt>Audit</dt><dd>Checkers go through every comment, each in its own part of the listing, and fix what they find.</dd>
     <dt>Range</dt><dd>How much of the whole listing is likely wrong, given the sample, at 95 % confidence. A small sample gives a wide range.</dd>
     <dt>Audited &amp; low error rate</dt><dd>The listing had a full audit, and a sample after it was good enough.</dd>
     <dt>Ledger</dt><dd>The About tab’s table of every step that measured the comments or made them more accurate, in order, with the models that did each one.</dd>

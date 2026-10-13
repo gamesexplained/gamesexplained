@@ -63,7 +63,8 @@ class Banner(unittest.TestCase):
         n = note("silver", start + [first])
         self.assertIn('<p class="srcnote bad"><b>Not audited.</b> This listing has not had a full audit: '
                       'a sample of 60 of its comments found 7 wrong', n)
-        self.assertIn('<a href="../../accuracy.html#row">How listings are checked</a></p>', n)
+        self.assertIn('See <a href="about.html#ledger">every step on the About tab</a>, '
+                      'or <a href="../../accuracy.html#row">how listings are checked</a>.</p>', n)
         self.assertIn("<b>Audited &amp; high error rate.</b>", note("gold", start + [first, audit, dict(after, wrong=3)]))
         self.assertIn('<p class="srcnote ok"><b>Audited &amp; low error rate.</b>', note("silver", start + [first, audit, after]))
         self.assertEqual(note("silver"), "")                                  # made before the record
