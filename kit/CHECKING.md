@@ -38,6 +38,7 @@ that made the run.
    one the run chose, and give them to a checker on a proven model with
    the brief in `60-verify/checker.md`. Read every comment it marks wrong
    or doubtful against the code yourself, and count what is still wrong.
+   Correct those, with every other comment that says the same thing.
    A game of several parts is sampled across its parts.
 2. **If more than 2 of the 60 are wrong, audit.** Checkers on a proven
    model audit every comment, in every part, and every claim in
@@ -56,10 +57,10 @@ Add each step to the game's `accuracy`, after the run's own rows, with
 your GitHub login as `by` (`60-verify`, "What the repository keeps"):
 
 ```
-{"step": "sample", "size": 60, "wrong": 9, "seed": 4127, "by": "<your GitHub login>", "models": ["<the model id>"]}
+{"step": "sample", "size": 60, "wrong": 9, "fixed": 9, "seed": 4127, "by": "<your GitHub login>", "models": ["<the model id>"]}
 {"step": "audit", "checked": 912, "of": 912, "fixed": 131, "by": "<your GitHub login>", "models": ["<the model id>"],
  "note": "and every claim in facts.md"}
-{"step": "sample", "size": 60, "wrong": 2, "seed": 9902, "by": "<your GitHub login>", "models": ["<the model id>"]}
+{"step": "sample", "size": 60, "wrong": 2, "fixed": 2, "seed": 9902, "by": "<your GitHub login>", "models": ["<the model id>"]}
 ```
 
 and set `tier` to `silver`. `check_docs.py` (through `models.py check`)

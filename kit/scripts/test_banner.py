@@ -11,7 +11,7 @@ import build  # noqa: E402
 
 PROVEN = {"old-hand": ["declared in kit/models.json"]}
 CHECKED = [{"step": "research", "web": True, "models": ["newcomer"]}, {"step": "annotate", "models": ["newcomer"]},
-           {"step": "sample", "size": 60, "wrong": 1, "by": "someone", "models": ["old-hand"]}]
+           {"step": "sample", "size": 60, "wrong": 1, "fixed": 1, "by": "someone", "models": ["old-hand"]}]
 
 
 def banner(cov, model, tier="bronze", **more):
@@ -52,9 +52,9 @@ class Banner(unittest.TestCase):
     def test_the_source_tab_says_how_accurate_the_listing_is_and_the_banner_does_not(self):
         m = ["old-hand"]
         start = [{"step": "research", "web": True, "models": m}, {"step": "annotate", "models": m}]
-        first = {"step": "sample", "size": 60, "wrong": 7, "models": m}
+        first = {"step": "sample", "size": 60, "wrong": 7, "fixed": 7, "models": m}
         audit = {"step": "audit", "checked": 600, "of": 600, "fixed": 70, "models": m}
-        after = {"step": "sample", "size": 60, "wrong": 2, "models": m}
+        after = {"step": "sample", "size": 60, "wrong": 2, "fixed": 2, "models": m}
 
         def note(tier, rows=None):
             return build.source_note(dict(platform="c64", slug="made-up", tier=tier,
@@ -65,7 +65,7 @@ class Banner(unittest.TestCase):
                       'a sample of 60 of its comments found 7 wrong', n)
         self.assertIn('See <a href="about.html#ledger">every step on the About tab</a>, '
                       'or <a href="../../accuracy.html#row">how listings are checked</a>.</p>', n)
-        self.assertIn("<b>Audited &amp; high error rate.</b>", note("gold", start + [first, audit, dict(after, wrong=3)]))
+        self.assertIn("<b>Audited &amp; high error rate.</b>", note("gold", start + [first, audit, dict(after, wrong=3, fixed=3)]))
         self.assertIn('<p class="srcnote ok"><b>Audited &amp; low error rate.</b>', note("silver", start + [first, audit, after]))
         self.assertEqual(note("silver"), "")                                  # made before the record
         self.assertEqual(note("bronze", start + [first]), "")                 # Bronze says it is unfinished

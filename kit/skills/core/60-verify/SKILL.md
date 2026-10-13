@@ -89,8 +89,9 @@ checks every comment in a range and corrects the wrong ones.
    listing with 3 % of its comments wrong comes within it three times in
    four, and one with 10 % one time in twenty.
 3. **Correct what it found.** Correct every comment the sample found
-   wrong, and every other comment that says the same thing (below).
-   Then go on to the end of the run.
+   wrong, and every other comment that says the same thing (below), and
+   record on the sample's row how many of its own wrong comments you
+   corrected (`fixed`). Then go on to the end of the run.
 4. **Recommend the audit.** In `TODO.md`, the pull request and the
    debrief (`kit/START.md`), say what the sample found and recommend an
    audit, even when the sample is within the mark: the page calls a
@@ -203,15 +204,19 @@ it happened, each with the model ids that did it (`"unknown"` where
 nobody recorded them): whether the run looked the game up online,
 `{"step": "research", "web": true, "models": [...]}`; the annotation,
 `{"step": "annotate", "models": [...]}`; each sample, `{"step":
-"sample", "size": 60, "wrong": 2, "seed": ..., "models": [...]}`; each
-audit, `{"step": "audit", "checked": 640, "of": 640, "fixed": 90,
+"sample", "size": 60, "wrong": 2, "fixed": 2, "seed": ..., "models":
+[...]}`, where `fixed` is how many of the wrong ones were then
+corrected; each audit, `{"step": "audit", "checked": 640, "of": 640, "fixed": 90,
 "models": [...]}`; and a Play tab's port, `{"step": "play", "fixed": 16, "models": [...]}`
 (`70-minisite`, `play.md`). A sample or audit a maintainer makes for a
 run on an unproven model adds their GitHub login as `"by"`
 (`kit/CHECKING.md`), and games checked before 12 October 2026 keep that
-older check as a `check` row. Any row may carry a short `note`.
-`check_docs.py` fails a Silver game without a research row, an annotate
-row and a sample, and the About tab's table is made from the list
+older check as a `check` row. Any row may carry a short `note` about
+its own step: each row says what its step did without the others, and
+the table's order says what came before it. `check_docs.py` fails a
+Silver game without a research row, an annotate row and a sample, and a
+sample that found comments wrong without its `fixed`, and the About
+tab's table is made from the list
 (`kit/scripts/accuracy.py`). That section is the one place in `facts.md` where a correction
 is the fact being reported, so `check_docs.py` lets it use the plain
 words ("corrected", "misread", "was wrong") that it fails anywhere else

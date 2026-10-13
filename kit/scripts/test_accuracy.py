@@ -2,7 +2,8 @@
 """A game's `accuracy` lists the steps behind its listing in order. A game at Silver or above
 needs a research row, an annotate row and a sample, and check_docs.py fails one without; its
 page calls the listing checked only when the last sample came after a full audit and is within
-the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A Play
+the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A sample
+row says how many of the comments it found wrong were then corrected, so no other row has to. A Play
 tab's port and an older maintainer's check are rows of their own and change nothing the page says;
 a maintainer's sample or audit carries their login as `by`. A game made before game.json carried
 `accuracy` is not checked."""
@@ -18,10 +19,10 @@ import accuracy  # noqa: E402
 M = ["some-model"]
 RESEARCH = {"step": "research", "web": "unknown", "models": ["unknown"]}
 ANNOTATE = {"step": "annotate", "models": M}
-FIRST = {"step": "sample", "size": 60, "wrong": 7, "models": M, "seed": 1}
+FIRST = {"step": "sample", "size": 60, "wrong": 7, "fixed": 7, "models": M, "seed": 1}
 AUDIT = {"step": "audit", "checked": 640, "of": 640, "fixed": 90, "models": M}
 PART = {"step": "audit", "checked": 300, "of": 640, "fixed": 40, "models": M, "note": "routines only"}
-AFTER = {"step": "sample", "size": 60, "wrong": 2, "models": M, "seed": 2}
+AFTER = {"step": "sample", "size": 60, "wrong": 2, "fixed": 2, "models": M, "seed": 2}
 PLAY = {"step": "play", "fixed": 16, "models": M}
 CHECK = {"step": "check", "by": "someone", "checked": 39, "wrong": 0, "models": M}
 
@@ -83,12 +84,12 @@ class Accuracy(unittest.TestCase):
         self.assertIn("still found 3 wrong", high["note"])
         self.assertEqual(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, size=40, wrong=3)))["lead"],
                          "Audited & high error rate.")                        # small, and over one in 30 anyway
-        small = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, size=40, wrong=1)))
+        small = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, size=40, wrong=1, fixed=1)))
         self.assertEqual(small["lead"], "Audited & sample too small.")
         self.assertIn("40 comments, is too small to say", small["note"])
         none = st(game(RESEARCH, ANNOTATE))
         self.assertEqual(none["row"], "Not measured. No sample of the listing’s comments has been checked.")
-        self.assertFalse(st(game(RESEARCH, ANNOTATE, dict(FIRST, wrong=1)))["checked"])   # no audit, however good
+        self.assertFalse(st(game(RESEARCH, ANNOTATE, dict(FIRST, wrong=1, fixed=1)))["checked"])   # no audit, however good
         since = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT))                              # audited, not measured since
         self.assertFalse(since["checked"])
         self.assertTrue(since["row"].startswith("Not measured since its audit. The last sample of 60 comments had 7"))
@@ -103,13 +104,15 @@ class Accuracy(unittest.TestCase):
     def test_the_table_keeps_every_step_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "listing.json").write_text(json.dumps({"records": [{"c": "x"}, {"c": ""}, {"c": "y"}]}))
-            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, dict(FIRST, wrong=5), PART, AUDIT,
+            rows = accuracy.table(game(RESEARCH, ANNOTATE, FIRST, dict(FIRST, wrong=5, fixed=3), PART, AUDIT,
                                        dict(AFTER, by="someone"), PLAY), tmp)
         self.assertEqual([r[0] for r in rows],
                          ["Research", "Annotation", "Sample 1", "Sample 2", "Audit 1", "Audit 2", "Sample 3", "Play tab"])
         self.assertEqual([r[4] for r in rows], ["research-unknown", "annotate-run", "sample-bad", "sample-bad", "audit-part",
                                                 "audit-full", "sample-good", "play-port"])
         self.assertIn("corrected 16 comments it showed wrong", rows[7][2])
+        self.assertTrue(rows[2][2].endswith("likely wrong. All 7 were then corrected."))
+        self.assertTrue(rows[3][2].endswith(" 3 of them were then corrected."))
         self.assertEqual(rows[6][1], "someone, with some-model")      # a maintainer's sample
         self.assertIn("in 2 comments", rows[1][2])
         self.assertEqual(rows[0][1], "not recorded")
@@ -129,6 +132,26 @@ class Accuracy(unittest.TestCase):
         self.assertEqual(two[2][1], "someone, with some-model")
         self.assertIn("18 were wrong, so the check failed", two[2][2])
         self.assertIn("none was wrong, so the check passed", two[4][2])
+
+    def test_a_sample_says_whether_its_wrong_comments_were_corrected(self):
+        said = accuracy.corrected
+        self.assertEqual(said(dict(FIRST, wrong=0, fixed=0)), "")
+        self.assertEqual(said(dict(FIRST, wrong=1, fixed=1)), " It was then corrected.")
+        self.assertEqual(said(AFTER), " Both were then corrected.")
+        self.assertEqual(said(FIRST), " All 7 were then corrected.")
+        self.assertEqual(said(dict(FIRST, fixed=1)), " 1 of them was then corrected.")
+        self.assertEqual(said(dict(FIRST, fixed=0)), " None of them was corrected.")
+        self.assertEqual(said(dict(AFTER, wrong=1, fixed=None)), " Whether it was then corrected was not recorded.")
+        self.assertEqual(said({k: v for k, v in FIRST.items() if k != "fixed"}),
+                         " Whether they were then corrected was not recorded.")
+        p = accuracy.problems
+        unsaid = {k: v for k, v in FIRST.items() if k != "fixed"}
+        self.assertEqual(len(p(game(RESEARCH, ANNOTATE, unsaid))), 1)                   # a run on the kit as it is
+        self.assertEqual(len(p(dict(game(RESEARCH, ANNOTATE, unsaid), created=accuracy.FIXED_SINCE))), 1)
+        self.assertEqual(p(dict(game(RESEARCH, ANNOTATE, unsaid), created="2026-10-10")), [])   # says "not recorded"
+        self.assertEqual(p(game(RESEARCH, ANNOTATE, dict(unsaid, wrong=0))), [])          # nothing to correct
+        self.assertEqual(len(p(game(RESEARCH, ANNOTATE, dict(FIRST, fixed=8)))), 1)        # more than it found
+        self.assertEqual(len(p(game(RESEARCH, ANNOTATE, dict(FIRST, fixed="all")))), 1)
 
     def test_the_check_reads_every_game(self):
         made = {"old": {"tier": "silver"},

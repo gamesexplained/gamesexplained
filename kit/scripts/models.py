@@ -206,8 +206,8 @@ def test():
     steps = lambda *models: {s: list(models) for s in PROVING_STEPS}
     mine = lambda m: [{"step": "research", "web": True, "models": [m]}, {"step": "annotate", "models": [m]}]
     theirs = {"by": "someone", "models": ["old-hand"]}
-    good = dict(theirs, step="sample", size=60, wrong=1)
-    over = dict(theirs, step="sample", size=60, wrong=9)
+    good = dict(theirs, step="sample", size=60, wrong=1, fixed=1)
+    over = dict(theirs, step="sample", size=60, wrong=9, fixed=9)
     audit = dict(theirs, step="audit", checked=500, of=500, fixed=60)
     made = {
         "first":  ({"tier": "silver", "kit_version": "0.0.20"}, steps("old-hand")),                # before the rule
