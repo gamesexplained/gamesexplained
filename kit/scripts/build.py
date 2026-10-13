@@ -88,10 +88,47 @@ def warn(msg):
 
 
 # --- markdown (the subset our files use) ------------------------------------
-def inline(s, addr=True, parts=None):
+# A web address written out in a game's notes: in a code span, in angle brackets or bare.
+# A bare one ends before trailing punctuation and before a ")" it did not open.
+URL_RE = re.compile(r"`(https?://[^`\s]+)`|&lt;(https?://\S+?)&gt;|(?<![/\w])(?<!\]\()(https?://[^\s<>`]+)")
+# The words a source line opens with, when the address follows them after a comma or colon:
+# "Wikipedia, https://...", "C64-Wiki: https://...". They become the link, as the titles in
+# "Other places to love this game" do.
+URL_LABEL_RE = re.compile(r"([^`\[\]\x00]{1,120}?)[,:]\s+")
+
+
+def source_links(s, spans):
+    """Each web address in s (escaped HTML) as a link, set aside in spans as inline() sets
+    aside code spans. An address that follows the words s opens with links those words and
+    drops out; any other shows its site's name, so a long address is never set out in full."""
+    def bare(u):
+        u = re.split(r"&[lg]t;", u)[0].rstrip(".,;:!?")
+        while u.endswith(")") and u.count(")") > u.count("("):
+            u = u[:-1].rstrip(".,;:!?")
+        return u
+
+    out, pos = [], 0
+    for m in URL_RE.finditer(s):
+        url = m.group(1) or m.group(2) or bare(m.group(3))
+        end = m.start() + (len(url) if m.group(3) else len(m.group(0)))
+        lead = s[pos:m.start()]
+        label = URL_LABEL_RE.fullmatch(lead) if not out else None
+        if label and "*" not in lead and lead.count("(") == lead.count(")"):
+            spans.append(f'<a href="{url}">')
+            out.append(f"\x00{len(spans) - 1}\x00{label.group(1)}</a>")
+        else:
+            host = re.sub(r"^www\.", "", url.split("//", 1)[1].split("/", 1)[0])
+            spans.append(f'<a href="{url}">{host}</a>')
+            out.append(lead + f"\x00{len(spans) - 1}\x00")
+        pos = end
+    return "".join(out) + s[pos:]
+
+
+def inline(s, addr=True, parts=None, urls=False):
     """parts, in a game of several: {part id: its Source page}. An address written with its
     part's name before it, as the facts of such a game write them ("engine `$25BD`"), links
-    into that part's page, whatever page the rest link into."""
+    into that part's page, whatever page the rest link into. urls=True links the web
+    addresses written out in full, as source_links() does, for the About tab's sources."""
     s = html.escape(s, quote=False)
     page = addr if isinstance(addr, str) else "source.html"
 
@@ -103,6 +140,8 @@ def inline(s, addr=True, parts=None):
     # Code spans are set aside while the rest is marked up, so a file name such as
     # `game[1988](pal).g64` stays text instead of becoming a link.
     spans = []
+    if urls:
+        s = source_links(s, spans)
 
     def keep(m):
         spans.append(code(m))
@@ -118,14 +157,14 @@ def addr_link(s, page="source.html"):
     return re.sub(r"\$([0-9A-Fa-f]{4})\b", lambda m: f'<a href="{page}#{m.group(1).upper()}">${m.group(1).upper()}</a>', s)
 
 
-def markdown(text, drop_h1=True, addr=True, shift=0, parts=None):
+def markdown(text, drop_h1=True, addr=True, shift=0, parts=None, urls=False):
     """addr=False where the page has no Source tab to link addresses into, or the name of
     the Source page to link them into (a part's, in a game of several); shift=1 sets the
-    headings one level down, for a file placed under a heading of the page's own; parts as
-    for inline()."""
+    headings one level down, for a file placed under a heading of the page's own; parts and
+    urls as for inline()."""
     out, lines, i = [], text.splitlines(), 0
     para = []
-    inline_ = lambda x: inline(x, addr, parts)
+    inline_ = lambda x: inline(x, addr, parts, urls)
 
     def flush():
         if para:
@@ -1098,7 +1137,8 @@ def build_game(gdir, out_root):
                  model=html.escape(str(game.get("model", ""))), kit_version=html.escape(str(game.get("kit_version", ""))),
                  contributors=con_html, site_contributors=site_contributors, game_credits=game_credits,
                  links=link_html,
-                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare), shift=1, parts=part_pages(P))),
+                 features=whole(markdown(read(os.path.join(gdir, "features.md")), addr=not (P or bare), shift=1, parts=part_pages(P),
+                                         urls=True)),
                  orientation=whole(markdown(read(os.path.join(gdir, "orientation.md")), addr=not (P or bare), shift=1,
                                             parts=part_pages(P)))).replace("<!-- tabs -->", nav)
     about = under_title(drop_platform(about, plat), ban)
