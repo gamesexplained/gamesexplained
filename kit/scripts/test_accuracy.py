@@ -4,7 +4,7 @@ needs a research row, an annotate row and a sample, and check_docs.py fails one 
 page calls the listing checked only when the last sample came after a full audit and is within
 the mark (at most one in 30 wrong, in a sample of at least 60), and flags it otherwise. A sample
 row says how many of the comments it found wrong were then corrected, so no other row has to, and
-each row ends with a bar of the whole listing showing what its step reached and found. A Play
+each row ends with a bar of the whole listing as it stood after its step. A Play
 tab's port and an older maintainer's check are rows of their own and change nothing the page says;
 a maintainer's sample or audit carries their login as `by`. A game made before game.json carried
 `accuracy` is not checked."""
@@ -134,29 +134,41 @@ class Accuracy(unittest.TestCase):
         self.assertIn("18 were wrong, so the check failed", two[2][2])
         self.assertIn("none was wrong, so the check passed", two[4][2])
 
-    def test_each_row_ends_with_a_bar_of_the_listing(self):
+    def test_each_row_ends_with_a_bar_of_the_listing_as_it_stood_after_the_step(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "listing.json").write_text(json.dumps({"records": [{"c": "x"}] * 640}))
-            bars = [r[5] for r in accuracy.table(game(RESEARCH, ANNOTATE, FIRST, AUDIT, PART, PLAY, CHECK), tmp)]
+            bars = [r[5] for r in accuracy.table(game(RESEARCH, ANNOTATE, FIRST, PART, AUDIT, AFTER, PLAY, CHECK), tmp)]
         shares = lambda bar: [(k, round(v, 4)) for k, v in bar[0]]
-        self.assertEqual(bars[0], ([], ""))                                      # research reaches no share
-        self.assertEqual(shares(bars[1]), [("done", 1.0)])                       # the coverage, on the last annotate row
-        self.assertEqual([k for k, _ in bars[2][0]], ["wrong", "maybe", "right"])
-        lo, hi = accuracy.wilson(7, 60)
-        self.assertEqual(shares(bars[2]), [("wrong", round(lo, 4)), ("maybe", round(hi - lo, 4)), ("right", round(1 - hi, 4))])
+        est = lambda w, n, f=1: [(k, round(v * f, 4)) for k, v in
+                                 zip(("wrong", "maybe", "right"), (lambda lo, hi: (lo, hi - lo, 1 - hi))(*accuracy.wilson(w, n)))]
+        for b in bars:                                                          # each is the whole listing
+            self.assertAlmostEqual(sum(v for _, v in b[0]), 1 if b[0] else 0)
+        self.assertEqual(bars[0], ([], ""))                                     # research changes no comment
+        self.assertEqual(bars[1], ([("done", 1.0)], "Written, not yet measured"))
+        self.assertEqual(shares(bars[2]), est(7, 60))
         self.assertEqual(bars[2][1], "6 to 22 % of the listing likely wrong, at least 78 % likely right")
-        self.assertEqual(shares(bars[3]), [("fixed", round(90 / 640, 4)), ("right", round(550 / 640, 4))])
-        self.assertEqual(bars[3][1], "Checked 640 of 640 comments (100 %): 90 corrected, 550 right")
-        self.assertEqual(shares(bars[4]), [("fixed", round(40 / 640, 4)), ("right", round(260 / 640, 4))])
-        self.assertEqual(shares(bars[5]), [("fixed", round(16 / 640, 4))])        # a port, over the listing's comments
-        self.assertEqual(bars[6], ([], ""))                                      # claims, not comments
-        bar = accuracy.ribbon
-        self.assertEqual(bar({"step": "audit", "of": 640, "fixed": 6, "models": M, "note": "x"}, None, 0)[0], [("fixed", 6 / 640)])
-        self.assertEqual(bar({"step": "audit", "checked": 640, "of": 640, "models": M}, None, 0)[0], [("right", 1.0)])
+        part = dict(shares(bars[3]))                                            # what it did not reach, as the sample left it
+        w, m, r = est(7, 60, 340 / 640)
+        self.assertEqual(list(part), ["wrong", "maybe", "fixed", "right"])
+        self.assertEqual((part["wrong"], part["maybe"], part["fixed"]), (w[1], m[1], round(40 / 640, 4)))
+        self.assertAlmostEqual(part["right"], round(260 / 640 + r[1], 4), places=3)
+        self.assertEqual(bars[3][1], "Checked 300 of 640 comments: 40 corrected, 260 right; "
+                                     "the other 340 as the last sample measured them")
+        self.assertEqual(shares(bars[4]), [("fixed", round(90 / 640, 4)), ("right", round(550 / 640, 4))])
+        self.assertEqual(bars[4][1], "Checked 640 of 640 comments: 90 corrected, 550 right")
+        self.assertEqual(shares(bars[5]), est(2, 60))
+        port = dict(shares(bars[6]))
+        self.assertEqual((port["fixed"], port["wrong"]), (round(16 / 640, 4), est(2, 60, 624 / 640)[0][1]))
+        self.assertEqual(bars[6][1], "Corrected 16 of the listing’s 640 comments; the other 624 as the last sample measured them")
+        self.assertEqual(bars[7], ([], ""))                                     # claims, not comments
+        bar, measured = accuracy.ribbon, bars[5][0]
+        self.assertEqual(bar({"step": "audit", "of": 640, "fixed": 6, "models": M, "note": "x"}, None, 0),
+                         ([("fixed", 6 / 640), ("done", 634 / 640)],
+                          "Corrected 6 of 640 comments, how many it checked not recorded; the rest not yet measured"))
         self.assertEqual(bar({"step": "audit", "fixed": 6, "models": M, "note": "x"}, None, 0), ([], ""))   # nothing to measure it by
-        self.assertEqual(bar({"step": "audit", "fixed": 6, "models": M, "note": "x"}, None, 600)[0], [("fixed", 0.01)])
-        self.assertEqual(bar({"step": "play", "models": M}, None, 600), ([], ""))
-        self.assertEqual(bar(ANNOTATE, None, 600), ([], ""))                     # an earlier pass: no coverage of its own
+        self.assertEqual(bar({"step": "play", "models": M}, measured, 600),
+                         (measured, "How many it corrected is not recorded; the comments as the last sample measured them"))
+        self.assertEqual(bar(ANNOTATE, measured, 600)[0], [("done", 1.0)])      # new comments, measured by nothing
 
     def test_a_sample_says_whether_its_wrong_comments_were_corrected(self):
         said = accuracy.corrected

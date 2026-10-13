@@ -417,18 +417,17 @@ def accuracy_section(game, gdir):
             f'<th>Of the listing</th></tr>{trs}</table></div>\n{RIBBON_KEY}')
 
 
-# The bar on each ledger row (accuracy.ribbon): the whole listing, left to right, and what the step
-# found in the part of it that it reached. The key under the table names the colours.
+# The bar on each ledger row (accuracy.ribbon): the whole listing as it stood after the step, so the
+# bars read down the table as one story. The key under the table names the colours.
 RIBBON_KEY = ('<p class="ribkey mute"><span><i class="r-wrong"></i>likely wrong</span> '
               '<span><i class="r-maybe"></i>the sample\u2019s range</span> '
-              '<span><i class="r-right"></i>right, or likely right</span> '
               '<span><i class="r-fixed"></i>corrected</span> '
-              '<span><i class="r-done"></i>described</span> '
-              '<span><i></i>not reached by the step</span></p>')
+              '<span><i class="r-right"></i>right, or likely right</span> '
+              '<span><i class="r-done"></i>not yet measured</span></p>')
 
 
 def ribbon_html(segments, said):
-    """One ledger row's bar, from accuracy.ribbon; nothing for a step that reaches no share of the listing."""
+    """One ledger row's bar, from accuracy.ribbon; nothing for a step that changes no comment."""
     if not segments:
         return ""
     bits = "".join(f'<i class="r-{k}" style="width:{100 * share:.2f}%"></i>' for k, share in segments if share > 0)

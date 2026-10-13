@@ -82,8 +82,8 @@ class Banner(unittest.TestCase):
         self.assertIn("<th>Of the listing</th>", s)
         self.assertIn('<tr class="research-yes"><th>Research</th>', s)
         self.assertEqual(s.count('<td class="rib">'), 4)
-        self.assertIn('<td class="rib"></td></tr>', s)                       # research reaches no share of it
-        self.assertIn('<span class="ribbon" role="img" title="Checked 600 of 600 comments (100 %): 70 corrected, 530 right"', s)
+        self.assertIn('<td class="rib"></td></tr>', s)                       # research changes no comment
+        self.assertIn('<span class="ribbon" role="img" title="Checked 600 of 600 comments: 70 corrected, 530 right"', s)
         self.assertIn('<i class="r-fixed" style="width:11.67%"></i><i class="r-right" style="width:88.33%"></i>', s)
         self.assertIn('<p class="ribkey mute">', s)
 
