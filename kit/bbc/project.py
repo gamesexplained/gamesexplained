@@ -6,8 +6,10 @@ builds it (kit/c64/project.py); this adds what is the BBC's:
 
   * the image comes from the BBC's snapshot (kit/bbc/snapshot.py);
   * the project names its machine, "settings": {"system": "BBC Micro"}, so the disassembler
-    names the MOS's calls, vectors and workspace (OSWRCH at $FFEE, IRQ1V at $0204). Without
-    it the session names the same addresses after the C64's KERNAL, with nothing to say so;
+    comments a call into the MOS with its name (`JSR $FFF4` gets "; OSBYTE - Perform actions
+    in registers") and a SHEILA register with its chip ("; System VIA"). It gives the MOS's
+    entry points and vectors no label; kit/bbc/mos.py names them in the export. Without the
+    setting the session names the same addresses after the C64's KERNAL, with nothing to say so;
   * regenerator2000 has no ASCII text type, so the BBC's text, "ASCII" in symbols.json, is
     its PETSCII text in the project, and comes back as ASCII.
 
