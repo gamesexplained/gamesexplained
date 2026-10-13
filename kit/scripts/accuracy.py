@@ -246,7 +246,7 @@ def ribbon(row, before, total):
 
     An annotation leaves every comment written and not yet measured. A sample measures the whole
     listing: red for the share likely wrong, pale red for its range, green for the rest. An audit
-    or a Play tab port reaches part of it: what it corrected is amber, what it checked and found
+    or a Play tab port reaches part of it: what it corrected is blue, what it checked and found
     right green, and the comments it did not reach stay as the bar before showed them, which is
     as the last sample measured them, since nothing has changed them."""
     pc = lambda x: f"{100 * x:.0f} %"
