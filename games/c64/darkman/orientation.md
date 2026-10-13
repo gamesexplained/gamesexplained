@@ -36,7 +36,7 @@ vice-mcp. `check-emulator` on 13 October 2026: 57 passed, none failed. No
 |---|---|---|---|
 | `resident` | `darkman`, `f`, `code` | everything the level files leave alone: $0000-$0A1F and $9400-$BEFF in level 1 | the boot, above |
 | `level1` | `1a`, `1b` | $0A20-$93FF, $BF00-$FFEF | the boot, above; the title screen is part of this load |
-| `level2` | `2a`, `2b` | $0A20-$99FF, $BF00-$FFEF | not reached |
+| `level2` | `2a`, `2b` | $0A20-$99FF, $BF00-$FFEF | skip from level 1, below |
 | `level3` | `3a`, `3b` | $0A20-$5FFF, $E000-$FFEF | not reached |
 | `level4` | `4a`, `4b` (side 2) | $0A20-$9DFF, $BF00-$FFEF | not reached |
 | `level5` | `5a`, `5b` (side 2) | $0A20-$51FF, $BF00-$FFEF | not reached |
@@ -48,14 +48,29 @@ stored unpacked: `1a` matches the play snapshot at its load address in
 35,170 of its 35,296 bytes, and `1b` in 14,802 of 16,624 (the rest are
 variables and the screens built at run time). No other level file
 matches more than about 750 of its bytes, so none is in memory before its
-load. Whether $9400-$BEFF really stays in memory across levels needs a
-level 2 snapshot to settle; the sound driver at $B0C8 sitting there
-suggests that it does.
+load. $9A00-$BEFF stays in memory across the level 2 load. Comparing
+level 1 in play with level 2's hand-over, it differs in one byte; with
+level 2 in play, in 30, all variables. Level 1 copies the sound driver
+there from its own file (the bytes at $7543 reappear at $B0C8), and
+level 2, whose files hold no driver, calls it at $5491 and $6526. The
+range is therefore resident in fact, though written by level 1's code
+rather than by a load. $9400-$99FF is overwritten by `2a`.
+
+Level 2 was reached by skipping level 1: in `work/play-level1.vsf`,
+stop, set the PC to $0407 (the level number $0435 already holds 1), run
+with warp on, hold fire at the next-level prompt, and stop on $0424 for
+`work/entry-level2.vsf`. Then turn warp off, wait through the briefing
+("LEVEL TWO. DARKMAN IS DISCOVERED..."), hold fire, and save
+`work/play-level2.vsf`. Both are in `parts/level2/work/`, the hand-over
+as `entry.vsf`; level 2 is not analysed.
 
 Snapshots are in `parts/resident/work/` and `parts/level1/work/` (copies
-of `work/play-level1.vsf`; `level1` also has `title.vsf`). No hand-over
-snapshot (`entry.vsf`) was saved: the loader's jump into the level is
-`JMP $0A20` at $0424, the place to stop for one.
+of `work/play-level1.vsf`; `level1` also has `title.vsf`). The hand-over is `work/entry.vsf` (also
+`parts/level1/work/entry.vsf`): a hard reset, autostart, warp on, and
+after 25 seconds a stopping checkpoint on `JMP $0A20` at $0424 and fire
+held for 1.5 seconds. It stops with `$01=$37`, and `1a` and `1b` lie
+there whole, every byte matching. At the hand-over, $9400-$BEFF still
+holds the emulator's power-on pattern: level 1 builds it at run time.
 
 ## Steady state
 

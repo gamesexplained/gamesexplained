@@ -1,13 +1,14 @@
 # Darkman — TODO
 
-Tier: Bronze. Coverage 9.8 % (2,000 of 20,342 traced bytes, in 2 of 7
-parts). Missing for Silver: 100 % coverage of every part, `facts.md`
+Tier: Bronze. Coverage 25.1 % (5,400 of 21,511 traced bytes, in 2 of 7
+parts; level 1 27.6 %). Missing for Silver: 100 % coverage of every part, `facts.md`
 verified, the listing sampled (`60-verify`), and the minisite.
 
-- Snapshot each later level (`level2` to `level6`) by playing, or by
-  setting $0435 and calling the loader at $0407, and confirm which
-  addresses each load writes.
-- Save the hand-over (`entry.vsf`) with a checkpoint on `JMP $0A20` at $0424.
+- Analyse level 2 from `parts/level2/work/` (its snapshots are saved).
+- Snapshot levels 3 to 6 the same way (PC to $0407 with the level number
+  in $0435); levels 4 to 6 need side 2 attached at the disk prompt.
+- Name Darkman's move states ($2768, $2F67) and which strike is a punch
+  and which a kick; find the key that gives the pause code $50.
 - Trace the photo-session code around the text at $57C6.
 - Trace the sound driver from $B0C8 and find its play routine.
 - Read the four play interrupts in full, and the title screen's chain.

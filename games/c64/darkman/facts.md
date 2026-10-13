@@ -19,7 +19,7 @@ level 1 load in play (`work/play-level1.vsf`).
 | Level number for the next load | $0435 |
 | Level entry, each level file's first byte | $0A20 |
 | Level 1 program and data (`1a`) | $0A20-$93FF |
-| Sound driver (resident) | around $B000-$B850; silence routine at $B0C8 |
+| Sound driver, copied there by level 1 and kept by later loads | around $B000-$B850; silence at $B0C8, play at $B176 |
 | Level 1 graphics (`1b`), under the I/O and ROMs | $BF00-$FFEF |
 | Title screen matrix and character set | $CC00, $E000 (video bank 3) |
 
@@ -30,8 +30,22 @@ $1EF4, $1D43, $1DBF (*live*, recorded frame). NMI at $2030 sets $2038.
 
 ## Controls
 
-Joystick in port 2 ($DC00): fire starts the load and the game (*live*).
-The keyboard columns are read at $0E38 and $0E58; what for is open.
+Joystick in port 2. The interrupt at $1D43 copies $DC00 to $203B each
+frame (unless the countdown $29F3 runs). *Live*, from the play snapshot,
+32 frames of each input: left and right walk 4 pixels per 4 frames; up
+jumps, rising 26 lines; down crouches; fire with down strikes forward.
+The keyboard is read by $0E30 once a frame into $0E2F, and the code $50
+pauses ($1777, flag $1EF2).
+
+## The play loop
+
+The foreground loop at $179E redraws the panel and waits for the NMI
+flag. The game itself runs in the raster interrupts: $1E21 moves
+Darkman ($265E) and the enemies ($354A, $3725) and places their sprites
+(Darkman on 0-2, the two enemies on 3-4 and 5-6 through $3639); $1EF4
+plays the sound ($B176) and reads the keys; $1D43 reads the stick; and
+$1DBF runs $41EF, $4636 and $2066. Each handler restores A, X and Y
+through LDA, LDX and LDY whose operands it wrote on entry.
 
 ## Text
 
