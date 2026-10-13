@@ -6,10 +6,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="{{lib}}/site.css">
 <body class="site checking" data-nolink="1">
-<nav class="gametabs"><div class="in"><span class="crumb"><a href="./">Games Explained</a> / How listings are checked</span></div></nav>
+<nav class="gametabs"><div class="in"><span class="crumb"><a href="./">Games Explained</a> / Accuracy of the Source</span></div></nav>
 <header class="hero">
   <p class="eyebrow">How listings are checked</p>
-  <h1>Trusting a listing</h1>
+  <h1>Accuracy of the Source</h1>
   <p class="sub">Every game on this site has a Source tab: the game’s program, with comments saying what each part does. This page explains how the site measures two things about those comments: how much of the program they cover, and how many of them are right. The examples come from C64 games on the site.</p>
 </header>
 <div class="wrap">
@@ -17,7 +17,7 @@
     <p class="label" style="margin-bottom:8px">The About tab, with <a href="c64/commando/about.html">Commando</a>’s numbers</p>
     <table class="xstatus">
       <tr><th>Coverage</th><td>100 % of the bytes the game uses have a description</td></tr>
-      <tr><th>Comments checked</th><td><b class="ok">Checked.</b> Every comment was audited once, then the last sample of 70 comments had 1 wrong, so between 0 and 8 % of the listing’s comments are likely wrong.</td></tr>
+      <tr><th>Comments checked</th><td><b class="ok">Audited &amp; low error rate.</b> Every comment was audited once, then the last sample of 70 comments had 1 wrong, so between 0 and 8 % of the listing’s comments are likely wrong.</td></tr>
     </table>
     <p class="small mute" style="margin:8px 0 0">Under these rows, the About tab lists every step that led to them. Commando’s list is <a href="#ledger">further down</a>.</p>
   </div>
@@ -99,7 +99,7 @@
   <p class="small mute" style="margin:2px 0 0">How much of the listing is wrong. The dot is what the sample found, and the bar is the likely range (95 % sure). The dashed line is good enough: one wrong in 30.</p>
   <div class="out" aria-live="polite">
     <div><span class="label">The About tab</span><div id="cRow" style="margin-top:4px"></div></div>
-    <div><span class="label">The banner under the title, at Silver</span><div class="banner" id="cBanner"></div></div>
+    <div><span class="label">The Source tab, at Silver</span><div id="cNote" style="margin-top:4px"></div></div>
   </div>
 </div>
   <h2>Good enough: at most 2 wrong in 60</h2>
@@ -137,13 +137,13 @@
     <tr><td>Haiku</td><td>4 to 7</td></tr>
   </table></div>
   <p>Opus raised no false alarms, and Haiku raised a few. A GPT model found three mistakes that every Claude run had missed. A comment counts as wrong when either checker’s finding holds up, so a second checker from another company is worth running when the contributor has one.</p>
-  <p>A weak checker makes a listing look better than it is. Move the slider to see how often a listing gets a good enough sample with each checker.</p>
+  <p>A weak checker makes a listing look better than it is, because the mistakes it misses count as right. Set how many of a listing’s comments are actually wrong, and see how many of them each checker finds in a sample of 60, and whether it then calls the listing good enough.</p>
 <div class="plate" id="chk">
-  <h3>Chance a sample is good enough, by checker</h3>
-  <label for="kRate" class="small" style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center">Comments actually wrong: <b id="kRateV">10 %</b>
-    <input type="range" id="kRate" min="1" max="20" value="10" style="width:min(260px,100%);accent-color:var(--amber)"></label>
-  <div class="bars" id="kBars"></div>
-  <p class="small mute" style="margin:12px 0 0">A sample of 60, good enough at 2 wrong or fewer. Each checker finds the middle of its range in the table above, and its false alarms are thrown out.</p>
+  <h3>What each checker finds in a sample of 60</h3>
+  <label for="kRate" class="small" style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center">Comments actually wrong in the listing: <b id="kRateV">10 %</b>
+    <input type="range" id="kRate" min="1" max="20" value="10"></label>
+  <div class="finds" id="kBars"></div>
+  <p class="small mute" style="margin:12px 0 0">Each bar is how many wrong comments the checker finds in a sample of 60, on average, if it finds the middle of its range in the table above. The dashed line is good enough: 2 or fewer. The verdict is green when it is the right answer and red when it is the wrong one.</p>
 </div>
   <p>That is why the About tab names the model behind every step. Check with the strongest model you have. Even then, the real number of mistakes is probably higher than its count: in one full audit, the auditors found 6 wrong comments among 53 that a strong checker had passed in the sample just before.</p>
 
@@ -153,14 +153,15 @@
   <p class="label" style="margin-bottom:8px">How the listing was checked · <a href="c64/commando/about.html">Commando</a></p>
   <table class="ledger">
     <tr><th>Step</th><th>By</th><th>What it found</th></tr>
-    <tr><th>Research</th><td class="by">not recorded, claude-opus-5-5[1m]</td><td>Looked the game up online (its manual, reviews or wiki pages) before reading its code.</td></tr>
-    <tr><th>Annotation</th><td class="by">not recorded</td><td>Wrote the listing’s comments.<span class="note">first run, 52.8 % of the image; every comment later rewritten</span></td></tr>
-    <tr><th>Annotation</th><td class="by">claude-opus-5-5[1m]</td><td>Wrote the listing’s comments. 100 % of the program is described, in 861 comments.<span class="note">second run rewrote every comment from the bytes, to 100 %</span></td></tr>
-    <tr><th>Sample 1</th><td class="by">claude-opus-5-5[1m]</td><td>12 of 70 comments wrong, so between 10 and 28 % of the listing is likely wrong.<span class="note">60 hand-written and 10 map comments</span></td></tr>
-    <tr><th>Audit 1</th><td class="by">claude-opus-5-5[1m]</td><td>Checked all 897 comments and corrected 137.<span class="note">four agents in disjoint ranges</span></td></tr>
-    <tr><th>Sample 2</th><td class="by">claude-opus-5-5[1m]</td><td>1 of 70 comments wrong, so between 0 and 8 % of the listing is likely wrong.<span class="note">fifteen more with the same claim then corrected</span></td></tr>
+    <tr class="research-yes"><th>Research</th><td class="by">not recorded, claude-opus-5-5[1m]</td><td>Looked the game up online (its manual, reviews or wiki pages) before reading its code.</td></tr>
+    <tr class="annotate-run"><th>Annotation</th><td class="by">not recorded</td><td>Wrote the listing’s comments.<span class="note">first run, 52.8 % of the image; every comment later rewritten</span></td></tr>
+    <tr class="annotate-run"><th>Annotation</th><td class="by">claude-opus-5-5[1m]</td><td>Wrote the listing’s comments. 100 % of the program is described, in 861 comments.<span class="note">second run rewrote every comment from the bytes, to 100 %</span></td></tr>
+    <tr class="sample-bad"><th>Sample 1</th><td class="by">claude-opus-5-5[1m]</td><td>12 of 70 comments wrong, so between 10 and 28 % of the listing is likely wrong.<span class="note">60 hand-written and 10 map comments</span></td></tr>
+    <tr class="audit-full"><th>Audit 1</th><td class="by">claude-opus-5-5[1m]</td><td>Checked all 897 comments and corrected 137.<span class="note">four agents in disjoint ranges</span></td></tr>
+    <tr class="sample-good"><th>Sample 2</th><td class="by">claude-opus-5-5[1m]</td><td>1 of 70 comments wrong, so between 0 and 8 % of the listing is likely wrong.<span class="note">fifteen more with the same claim then corrected</span></td></tr>
   </table>
   <p class="small mute" style="margin:8px 0 0">“Not recorded” means nobody wrote the model down at the time. The ledger says so instead of guessing.</p>
+  <p class="key small"><span class="research-yes">Green</span>: looked up online, or a sample good enough. <span class="sample-bad">Red</span>: not looked up, or a sample with too many wrong. <span class="sample-small">Orange</span>: a sample too small to say. <span class="audit-full">Blue</span>: an audit, dashed when it checked only part. <span class="play-port">Purple</span>: a Play tab port. <span class="annotate-run">Grey</span>: annotation, or not recorded.</p>
 </div>
   <p>Each kind of row:</p>
   <dl class="gloss">
@@ -187,21 +188,23 @@
   <p>Until 12 October 2026, the check worked differently: a maintainer tested about 40 of the run’s claims, and one mistake failed the whole run. Every listing has some mistakes, though, even a good one. At 5 % wrong, a test of 40 claims comes back with zero mistakes about one time in seven, so the old check failed most good runs as well as the bad ones.</p>
 
   <h2 id="row">Reading the row</h2>
-  <p>The “Comments checked” row sums up the ledger, using the last sample and any full audits around it. At Silver and above, the banner under the game’s title also shows a line on every tab, until the listing has had a full audit and a good enough sample after it. These examples use Commando’s numbers and some made-up ones.</p>
+  <p>The “Comments checked” row sums up the ledger, using the last sample and any full audits around it. At Silver and above, the Source tab shows the same verdict in a line under its title, with a shorter sentence on why. These examples use Commando’s numbers and some made-up ones.</p>
   <div class="xstates">
-    <div class="xstate"><span class="k ok">Checked.</span> Every comment was audited once, then the last sample of 70 comments had 1 wrong, so between 0 and 8 % of the listing’s comments are likely wrong.
-      <span class="mute small" style="display:block;margin-top:4px">No line in the banner.</span></div>
+    <div class="xstate"><span class="k ok">Audited &amp; low error rate.</span> Every comment was audited once, then the last sample of 70 comments had 1 wrong, so between 0 and 8 % of the listing’s comments are likely wrong.
+      <span class="onsrc">Source tab: This listing has been audited, and a later sample of 70 of its comments found 1 wrong, about one in 70.</span></div>
     <div class="xstate"><span class="k bad">Not audited.</span> No audit has checked every comment, and the last sample of 70 comments had 12 wrong, so between 10 and 28 % of the listing’s comments are likely wrong.
-      <span class="flag">Banner: Its listing has not had a full audit: a sample of 70 of its comments found 12 wrong, about one in 6.</span></div>
-    <div class="xstate"><span class="k bad">Not checked.</span> Every comment was audited once, but the last sample of 60 comments had 3 wrong, more than one in 30, so between 2 and 14 % of the listing’s comments are likely wrong.
-      <span class="flag">Banner: Its listing has been audited, but a later sample of 60 of its comments still found 3 wrong, about one in 20.</span></div>
+      <span class="onsrc">Source tab: This listing has not had a full audit: a sample of 70 of its comments found 12 wrong, about one in 6.</span></div>
+    <div class="xstate"><span class="k bad">Audited &amp; high error rate.</span> Every comment was audited once, but the last sample of 60 comments had 3 wrong, more than one in 30, so between 2 and 14 % of the listing’s comments are likely wrong.
+      <span class="onsrc">Source tab: This listing has been audited, but a later sample of 60 of its comments still found 3 wrong, about one in 20.</span></div>
+    <div class="xstate"><span class="k bad">Audited &amp; sample too small.</span> Every comment was audited once, but the sample since then is too small to say: the last sample of 40 comments had 1 wrong, so between 0 and 13 % of the listing’s comments are likely wrong.
+      <span class="onsrc">Source tab: This listing has been audited, but the sample since then, 40 comments, is too small to say how many are wrong.</span></div>
     <div class="xstate"><span class="k bad">Not measured since its audit.</span> The last sample of 60 comments had 9 wrong, so between 8 and 26 % of the listing’s comments are likely wrong; every comment was then audited, and no sample has measured the listing since.
-      <span class="flag">Banner: Its listing was audited after its last sample, and no sample has measured it since.</span></div>
-    <div class="xstate"><span class="k bad">Not measured:</span> no sample of the listing’s comments has been checked.
-      <span class="flag">Banner: Nobody has measured how many of its listing’s comments are wrong.</span></div>
+      <span class="onsrc">Source tab: This listing was audited after its last sample, and no sample has measured it since.</span></div>
+    <div class="xstate"><span class="k bad">Not measured.</span> No sample of the listing’s comments has been checked.
+      <span class="onsrc">Source tab: Nobody has measured how many of this listing’s comments are wrong.</span></div>
   </div>
-  <p>A listing whose first sample is good enough still says “Not audited”. The site calls a listing checked once two things have happened: an agent that didn’t write the comments has read every one of them, and a later sample has measured the result.</p>
-  <p>Silver needs at least one sample, and the sample may show any result. The ledger shows how much checking went into the listing, and the reader judges it. Games made before 12 October 2026 can be Silver with no sample at all, and their pages show the “Not measured” line. When the ledger was first filled in, on 12 October 2026, 34 of the 38 Silver and Gold games got a line in their banner.</p>
+  <p>A listing whose first sample is good enough still says “Not audited”. The site says “Audited &amp; low error rate” only once two things have happened: an agent that didn’t write the comments has read every one of them, and a later sample has measured the result.</p>
+  <p>Silver needs at least one sample, and the sample may show any result. The ledger shows how much checking went into the listing, and the reader judges it. Games made before 12 October 2026 can be Silver with no sample at all, and their pages show the “Not measured” line. When the ledger was first filled in, on 12 October 2026, 4 of the 38 Silver and Gold games had “Audited &amp; low error rate”.</p>
 
   <h2>When is a game understood, and right?</h2>
   <p>No single number says so. Each check answers one question and leaves others open.</p>
@@ -210,7 +213,7 @@
     <tr><th>The question</th><th>What answers it</th><th>What it leaves open</th></tr>
     <tr><td>Is every part of the program explained?</td><td>Coverage at 100 %</td><td>Whether the explanations are right</td></tr>
     <tr><td>Can the measuring be trusted?</td><td>A proven model did it, or a maintainer did it again on one</td><td>The result, which the row shows</td></tr>
-    <tr><td>Are the listing’s comments right?</td><td>“Checked”, from a strong checker</td><td>Which ones are wrong: even a strong checker misses some</td></tr>
+    <tr><td>Are the listing’s comments right?</td><td>“Audited &amp; low error rate”, from a strong checker</td><td>Which ones are wrong: even a strong checker misses some</td></tr>
     <tr><td>How much work went into them?</td><td>The ledger on the About tab</td><td>Any step nobody recorded</td></tr>
     <tr><td>Are the article’s claims right?</td><td>The Source tab’s notes: every claim traced to the code or seen running in the emulator</td><td>The listing’s comments, which are measured on their own</td></tr>
     <tr><td>Does it describe the game a player knows?</td><td>Every feature confirmed, traced, or marked open</td><td>Details smaller than a feature</td></tr>
@@ -218,7 +221,7 @@
     <tr><td>Are the bytes exact?</td><td>Platinum: the listing turns back into the original program, and it runs</td><td>Whether the comments are right</td></tr>
   </table>
 </div>
-  <p>A game is as well understood as the site can show when its coverage is 100 %, its row says “Checked” from a strong checker, its ledger shows the work behind that, and its notes trace every claim. Even then, up to about one comment in 30 may have a wrong detail. Every page has an Edit link at the bottom, so anyone who finds one can fix it.</p>
+  <p>A game is as well understood as the site can show when its coverage is 100 %, its row says “Audited &amp; low error rate” from a strong checker, its ledger shows the work behind that, and its notes trace every claim. Even then, up to about one comment in 30 may have a wrong detail. Every page has an Edit link at the bottom, so anyone who finds one can fix it.</p>
 
   <h2>Words used on this page</h2>
   <dl class="gloss">
@@ -233,7 +236,7 @@
     <dt>Good enough</dt><dd>At most 2 wrong in a sample of 60, or one in 30 in a bigger sample.</dd>
     <dt>Audit</dt><dd>Agents that wrote none of the comments check every one, each in its own part of the listing, and fix what they find.</dd>
     <dt>Range</dt><dd>How much of the whole listing is likely wrong, given the sample, at 95 % confidence. A small sample gives a wide range.</dd>
-    <dt>Checked</dt><dd>The listing had a full audit, and a sample after it was good enough.</dd>
+    <dt>Audited &amp; low error rate</dt><dd>The listing had a full audit, and a sample after it was good enough.</dd>
     <dt>Ledger</dt><dd>The About tab’s table of every step that measured the comments or made them more accurate, in order, with the models that did each one.</dd>
     <dt>Play tab port</dt><dd>The whole game rewritten in JavaScript and tested against the real game until the two match. The wrong comments it turns up are fixed and counted.</dd>
     <dt>Proven model</dt><dd>A model the maintainers have listed as good enough, or one that took a game to Silver before the maintainer’s check existed.</dd>
@@ -247,7 +250,7 @@
   function wilson(k,n){var z=1.96,p=k/n,d=1+z*z/n,mid=(p+z*z/(2*n))/d,h=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d;return [Math.max(0,mid-h),Math.min(1,mid+h)];}
   function within(k,n){return n>=60&&k*30<=n;}
   function pct(x){return Math.round(100*x);}
-  // the same sentences kit/scripts/accuracy.py writes for the About tab and the banner
+  // the same sentences kit/scripts/accuracy.py writes for the About tab's row and the Source tab's line
   function status(k,n,a){
     var r=wilson(k,n),lo=pct(r[0]),hi=pct(r[1]);
     var rng=lo===hi?String(lo):lo+' and '+hi;
@@ -255,12 +258,13 @@
     var rate='so between '+rng+' % of the listing’s comments are likely wrong';
     var oneIn=k?', about one in '+Math.round(n/k):'';
     if(!a)return {ok:false,lead:'Not audited.',row:'No audit has checked every comment, and '+had+', '+rate+'.',
-      flag:'Its listing has not had a full audit: a sample of '+n+' of its comments found '+(k||'none')+' wrong'+oneIn+'.'};
-    if(within(k,n))return {ok:true,lead:'Checked.',row:'Every comment was audited once, then '+had+', '+rate+'.',flag:null};
-    if(n<60)return {ok:false,lead:'Not checked.',row:'Every comment was audited once, but the sample since then is too small to say: '+had+', '+rate+'.',
-      flag:'Its listing has been audited, but the sample since then, '+n+' comments, is too small to say how many are wrong.'};
-    return {ok:false,lead:'Not checked.',row:'Every comment was audited once, but '+had+', more than one in 30, '+rate+'.',
-      flag:'Its listing has been audited, but a later sample of '+n+' of its comments still found '+k+' wrong'+oneIn+'.'};
+      note:'This listing has not had a full audit: a sample of '+n+' of its comments found '+(k||'none')+' wrong'+oneIn+'.'};
+    if(within(k,n))return {ok:true,lead:'Audited & low error rate.',row:'Every comment was audited once, then '+had+', '+rate+'.',
+      note:'This listing has been audited, and a later sample of '+n+' of its comments found '+(k||'none')+' wrong'+oneIn+'.'};
+    if(k*30>n)return {ok:false,lead:'Audited & high error rate.',row:'Every comment was audited once, but '+had+', more than one in 30, '+rate+'.',
+      note:'This listing has been audited, but a later sample of '+n+' of its comments still found '+k+' wrong'+oneIn+'.'};
+    return {ok:false,lead:'Audited & sample too small.',row:'Every comment was audited once, but the sample since then is too small to say: '+had+', '+rate+'.',
+      note:'This listing has been audited, but the sample since then, '+n+' comments, is too small to say how many are wrong.'};
   }
   var MAX=0.4, $=function(id){return document.getElementById(id);};
   var wrong=$('cWrong'),size=$('cSize'),a0=$('cA0'),a1=$('cA1'),audits=1;
@@ -272,9 +276,8 @@
     $('cRange').style.left=x(r[0]);$('cRange').style.width='calc('+x(r[1])+' - '+x(r[0])+')';
     $('cDot').style.left=x(k/n);$('cMark').style.left=x(1/30);
     var s=status(k,n,audits);
-    $('cRow').innerHTML='<b class="'+(s.ok?'ok':'bad')+'">'+s.lead+'</b> '+esc(s.row);
-    $('cBanner').innerHTML='This minisite was contributed by its maker. It’s agent-generated and needs a human editor.'+
-      (s.flag?'<span class="flag">'+esc(s.flag)+'</span>':'<span class="mute" style="display:block;margin-top:5px;padding-top:5px;border-top:1px solid var(--line)">No line about the listing.</span>');
+    $('cRow').innerHTML='<b class="'+(s.ok?'ok':'bad')+'">'+esc(s.lead)+'</b> '+esc(s.row);
+    $('cNote').innerHTML='<p class="srcnote'+(s.ok?' ok':'')+'"><b>'+esc(s.lead)+'</b> '+esc(s.note)+'</p>';
     a0.setAttribute('aria-pressed',String(!audits));a1.setAttribute('aria-pressed',String(!!audits));
   }
   wrong.addEventListener('input',draw);size.addEventListener('change',draw);
@@ -284,15 +287,20 @@
       if(p[1]>+wrong.max)wrong.max=p[1];wrong.value=p[0];size.value=String(p[1]);audits=p[2];draw();});});
   draw();
 
-  // chance a sample of 60 has at most 2 found wrong, when a share r is wrong and the checker finds a share f of them
-  function lnC(n,k){var s=0;for(var i=1;i<=k;i++)s+=Math.log((n-k+i)/i);return s;}
-  function pass(r,f){var q=r*f,t=0;for(var i=0;i<=2;i++)t+=Math.exp(lnC(60,i)+i*Math.log(q)+(60-i)*Math.log(1-q));return t;}
-  var CHECKERS=[['Finds every mistake',1],['Opus',0.85],['Fable',0.6],['Sonnet',0.55],['Haiku',0.28]];
+  // how many wrong comments each checker finds in a sample of 60, on average, when a share r of the listing is
+  // wrong and the checker finds a share f of the mistakes; at 2 or fewer it calls the listing good enough
+  var CHECKERS=[['Opus',0.85],['Fable',0.6],['Sonnet',0.55],['Haiku',0.28]],TOP=12,LINE=2;
   var rate=$('kRate');
   function bars(){
-    var r=+rate.value/100;$('kRateV').textContent=rate.value+' %';
-    $('kBars').innerHTML=CHECKERS.map(function(c){var p=pass(r,c[1]);
-      return '<span>'+c[0]+'</span><span class="bar"><i style="width:'+(p*100).toFixed(1)+'%"></i></span><span class="pct">'+Math.round(p*100)+' %</span>';}).join('');
+    var r=+rate.value/100,real=60*r,good=real<=LINE;$('kRateV').textContent=rate.value+' %';
+    function row(name,n,verdict,cls){
+      return '<span class="who">'+name+'</span><span class="track"><i style="width:'+(Math.min(n,TOP)/TOP*100).toFixed(1)+'%"></i>'+
+        '<b style="left:'+(LINE/TOP*100).toFixed(1)+'%"></b></span><span class="n">'+n.toFixed(1)+'</span><span class="says '+cls+'">'+verdict+'</span>';
+    }
+    $('kBars').innerHTML='<span></span><span class="label">Wrong comments in the sample</span><span></span><span class="label">Verdict</span>'+
+      row('Actually wrong',real,good?'Good enough':'Not good enough','real')+
+      CHECKERS.map(function(c){var n=real*c[1],says=n<=LINE;
+        return row(c[0],n,(says?'Calls it good enough':'Calls it not good enough'),says===good?'ok':'bad');}).join('');
   }
   rate.addEventListener('input',bars);bars();
 })();

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A Bronze page made on a model not yet proven is published whole, and its banner says it awaits
-a maintainer's check rather than that it is incomplete at 100 % (#142). At Silver and above, a
-listing not yet audited and sampled within the mark gets a line of its own (accuracy.py)."""
+a maintainer's check rather than that it is incomplete at 100 % (#142). At Silver and above, the
+Source tab says how accurate the listing's comments are (accuracy.py), and the banner leaves it out."""
 from pathlib import Path
 import sys
 import unittest
@@ -49,21 +49,26 @@ class Banner(unittest.TestCase):
             self.assertIn("This minisite is not complete: 60 %", b)
             self.assertNotIn("awaits", b)
 
-    def test_silver_flags_a_listing_until_it_is_checked(self):
+    def test_the_source_tab_says_how_accurate_the_listing_is_and_the_banner_does_not(self):
         m = ["old-hand"]
         start = [{"step": "research", "web": True, "models": m}, {"step": "annotate", "models": m}]
         first = {"step": "sample", "size": 60, "wrong": 7, "models": m}
         audit = {"step": "audit", "checked": 600, "of": 600, "fixed": 70, "models": m}
         after = {"step": "sample", "size": 60, "wrong": 2, "models": m}
-        b = banner(100, "old-hand", tier="silver", accuracy=start + [first])
-        self.assertIn('<span class="flag">Its listing has not had a full audit: a sample of 60 of its comments found 7 wrong', b)
-        self.assertIn('<a href="../../accuracy.html#row">How listings are checked</a></span>', b)
-        self.assertIn("still found 3 wrong",
-                      banner(100, "old-hand", tier="gold", accuracy=start + [first, audit, dict(after, wrong=3)]))
-        for b in (banner(100, "old-hand", tier="silver", accuracy=start + [first, audit, after]),
-                  banner(100, "old-hand", tier="silver"),                          # made before the record
-                  banner(60, "old-hand", accuracy=start + [first])):              # Bronze says it is unfinished
-            self.assertNotIn('class="flag"', b)
+
+        def note(tier, rows=None):
+            return build.source_note(dict(platform="c64", slug="made-up", tier=tier,
+                                          **({"accuracy": rows} if rows is not None else {})))
+        self.assertNotIn("audit", banner(100, "old-hand", tier="silver", accuracy=start + [first]))
+        n = note("silver", start + [first])
+        self.assertIn('<p class="srcnote bad"><b>Not audited.</b> This listing has not had a full audit: '
+                      'a sample of 60 of its comments found 7 wrong', n)
+        self.assertIn('<a href="../../accuracy.html#row">How listings are checked</a></p>', n)
+        self.assertIn("<b>Audited &amp; high error rate.</b>", note("gold", start + [first, audit, dict(after, wrong=3)]))
+        self.assertIn('<p class="srcnote ok"><b>Audited &amp; low error rate.</b>', note("silver", start + [first, audit, after]))
+        self.assertEqual(note("silver"), "")                                  # made before the record
+        self.assertEqual(note("bronze", start + [first]), "")                 # Bronze says it is unfinished
+
 
 if __name__ == "__main__":
     unittest.main()

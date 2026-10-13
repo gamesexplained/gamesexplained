@@ -30,12 +30,12 @@ writes a row for each step it takes, whatever order they come in.
 
 A game at Silver or above needs a research row and an annotate row, and one created from
 SAMPLE_SINCE needs at least one sample too: Silver asks that the listing be measured, not
-that it be within the mark. An older Silver game with no sample shows "Not measured", and
-the banner says so. A sample is within
-the mark when it holds at least 60 comments and at most one in 30 of them is wrong (2 in 60).
-The About tab shows the rows as a table, and its Status table sums them up; the page calls
-the listing checked only when the last sample came after a full audit and is within the
-mark, and until then the banner under the game's title says so on every tab (build.py).
+that it be within the mark. An older Silver game with no sample shows "Not measured". A
+sample is within the mark when it holds at least 60 comments and at most one in 30 of them is
+wrong (2 in 60). The About tab shows the rows as a table, and its Status table sums them up;
+the page calls the listing checked ("Audited & low error rate") only when the last sample came
+after a full audit and is within the mark. At Silver and above the Source tab says the same in
+a line under its title (build.py); the banner under the game's title leaves it out.
 
 Games whose game.json has no `accuracy` key were made before the rule and are not checked;
 the template carries the key, so every game started since then is.
@@ -144,15 +144,19 @@ def status(game):
     before game.json recorded the steps (or whose record is malformed: check_docs.py says why).
 
     A dict: `checked`, True when the last sample came after a full audit and is within the
-    mark, with no audit after it; `row`, the Status table's sentence; `flag`, the banner's
-    sentence when not checked."""
+    mark, with no audit after it; `lead`, the verdict that opens both sentences ("Audited & low
+    error rate."); `row`, the About tab's Status sentence, which starts with the lead; `note`,
+    the shorter sentence the Source tab shows after the lead."""
     if "accuracy" not in game or problems(dict(game, tier="none")):
         return None
     rows = game["accuracy"]
     last = max((n for n, r in enumerate(rows) if r["step"] == "sample"), default=None)
+
+    def said(lead, rest, note, checked=False):
+        return {"checked": checked, "lead": lead, "row": f"{lead} {rest}", "note": note}
     if last is None:
-        return {"checked": False, "row": "Not measured: no sample of the listing’s comments has been checked.",
-                "flag": "Nobody has measured how many of its listing’s comments are wrong."}
+        return said("Not measured.", "No sample of the listing’s comments has been checked.",
+                    "Nobody has measured how many of this listing’s comments are wrong.")
     s = rows[last]
     k, n = s["wrong"], s["size"]
     a = sum(1 for r in rows[:last] if r["step"] == "audit" and full(r))
@@ -164,27 +168,27 @@ def status(game):
     times = {1: "once", 2: "twice"}.get(a, f"{a} times")
     one_in = f", about one in {round(n / k)}" if k else ""
     if since:
-        return {"checked": False,
-                "row": f"Not measured since its audit. {had[0].upper() + had[1:]}, {rate}; every comment was then "
-                       f"audited{'' if since == 1 else f' {since} times'}, and no sample has measured the listing since.",
-                "flag": "Its listing was audited after its last sample, and no sample has measured it since."}
+        return said("Not measured since its audit.",
+                    f"{had[0].upper() + had[1:]}, {rate}; every comment was then audited"
+                    f"{'' if since == 1 else f' {since} times'}, and no sample has measured the listing since.",
+                    "This listing was audited after its last sample, and no sample has measured it since.")
     if a == 0:
-        return {"checked": False,
-                "row": f"Not audited. No audit has checked every comment, and {had}, {rate}.",
-                "flag": f"Its listing has not had a full audit: a sample of {n} of its comments found "
-                        f"{k or 'none'} wrong{one_in}."}
+        return said("Not audited.", f"No audit has checked every comment, and {had}, {rate}.",
+                    f"This listing has not had a full audit: a sample of {n} of its comments found "
+                    f"{k or 'none'} wrong{one_in}.")
     if within_mark(s):
-        return {"checked": True, "flag": None,
-                "row": f"Checked. Every comment was audited {times}, then {had}, {rate}."}
-    if n < MIN_SIZE:
-        return {"checked": False,
-                "row": f"Not checked. Every comment was audited {times}, but the sample since then is too small "
-                       f"to say: {had}, {rate}.",
-                "flag": f"Its listing has been audited, but the sample since then, {n} comments, is too small to say "
-                        f"how many are wrong."}
-    return {"checked": False,
-            "row": f"Not checked. Every comment was audited {times}, but {had}, more than one in 30, {rate}.",
-            "flag": f"Its listing has been audited, but a later sample of {n} of its comments still found {k} wrong{one_in}."}
+        return said("Audited & low error rate.", f"Every comment was audited {times}, then {had}, {rate}.",
+                    f"This listing has been audited, and a later sample of {n} of its comments found "
+                    f"{k or 'none'} wrong{one_in}.", checked=True)
+    if k * 30 > n:
+        return said("Audited & high error rate.",
+                    f"Every comment was audited {times}, but {had}, more than one in 30, {rate}.",
+                    f"This listing has been audited, but a later sample of {n} of its comments still found "
+                    f"{k} wrong{one_in}.")
+    return said("Audited & sample too small.",
+                f"Every comment was audited {times}, but the sample since then is too small to say: {had}, {rate}.",
+                f"This listing has been audited, but the sample since then, {n} comments, is too small to say "
+                f"how many are wrong.")
 
 
 def comments(gdir):
@@ -200,8 +204,9 @@ def comments(gdir):
 
 
 def table(game, gdir):
-    """The About tab's rows, as (step, by, what it found, note) strings; empty for a game with no
-    record. The last annotate row carries the coverage and how many comments the listing holds."""
+    """The About tab's rows, as (step, by, what it found, note, kind) strings; empty for a game with
+    no record. The last annotate row carries the coverage and how many comments the listing holds.
+    kind is the step and how it came out ("sample-good", "audit-part"), a class the page colours."""
     st = status(game)
     if st is None:
         return []
@@ -214,7 +219,9 @@ def table(game, gdir):
         by = ", ".join("not recorded" if m == "unknown" else m for m in r["models"])
         if "by" in r:
             by = r["by"] if set(r["models"]) == {"unknown"} else f"{r['by']}, with {by}"
+        kind = {"annotate": "annotate-run", "play": "play-port", "audit": "audit-full"}.get(step, step)
         if step == "research":
+            kind += {True: "-yes", False: "-no", "unknown": "-unknown"}[r["web"]]
             label, what = "Research", {True: "Looked the game up online (its manual, reviews or wiki pages) before reading its code.",
                                        False: "Did not look the game up online.",
                                        "unknown": "Not recorded whether the game was looked up online."}[r["web"]]
@@ -226,10 +233,12 @@ def table(game, gdir):
         elif step == "sample":
             lo, hi = wilson(r["wrong"], r["size"])
             label = f"Sample {seen[step]}"
+            kind += "-good" if within_mark(r) else "-bad" if r["wrong"] * 30 > r["size"] else "-small"
             what = (f"{r['wrong']} of {r['size']} comments wrong, so between {100 * lo:.0f} and {100 * hi:.0f} % "
                     f"of the listing is likely wrong.")
         elif step == "check":
             label = "Maintainer’s check" + (f" {seen[step]}" if checks > 1 else "")
+            kind += "-bad" if r["wrong"] else "-good"
             what = (f"Tested {r['checked']} of the run’s claims against the game, picked by the maintainer from "
                     f"its facts, its routine names and its memory map: {r['wrong'] or 'none'} "
                     f"{'was' if r['wrong'] in (0, 1) else 'were'} wrong, so the check "
@@ -242,6 +251,7 @@ def table(game, gdir):
                     "was not recorded.")
         else:
             label = f"Audit {seen[step]}"
+            kind = "audit-full" if full(r) else "audit-part"
             if full(r):
                 whole = f"all {r['of']:,} comments"
             elif "checked" in r:
@@ -250,7 +260,7 @@ def table(game, gdir):
                 whole = f"part of the {r['of']:,} comments" if "of" in r else "part of the listing"
             fixed = f"corrected {r['fixed']:,}" if "fixed" in r else "corrected a number not recorded"
             what = f"Checked {whole} and {fixed}."
-        out.append((label, by, what, r.get("note", "")))
+        out.append((label, by, what, r.get("note", ""), kind))
     return out
 
 

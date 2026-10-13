@@ -68,25 +68,37 @@ class Accuracy(unittest.TestCase):
         old = dict(game(RESEARCH, ANNOTATE, FIRST, CHECK), verification={"by": "someone"})
         self.assertEqual(len(p(old)), 1)                              # the old record, which nothing reads
 
-    def test_the_page_flags_a_listing_until_a_full_audit_and_a_sample_within_the_mark(self):
+    def test_the_page_calls_a_listing_checked_after_a_full_audit_and_a_sample_within_the_mark(self):
         st = accuracy.status
         self.assertIsNone(st({"tier": "silver"}))
         first = st(game(RESEARCH, ANNOTATE, FIRST))
         self.assertFalse(first["checked"])
-        self.assertIn("not had a full audit", first["flag"])
+        self.assertEqual(first["lead"], "Not audited.")
+        self.assertIn("not had a full audit", first["note"])
         self.assertIn("between 6 and 22 %", first["row"])
         self.assertFalse(st(game(RESEARCH, ANNOTATE, FIRST, PART, AFTER))["checked"])   # a part is not every comment
-        self.assertFalse(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, wrong=3)))["checked"])
+        high = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, wrong=3)))
+        self.assertFalse(high["checked"])
+        self.assertTrue(high["row"].startswith("Audited & high error rate. Every comment was audited once, but"))
+        self.assertIn("still found 3 wrong", high["note"])
+        self.assertEqual(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, size=40, wrong=3)))["lead"],
+                         "Audited & high error rate.")                        # small, and over one in 30 anyway
+        small = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, dict(AFTER, size=40, wrong=1)))
+        self.assertEqual(small["lead"], "Audited & sample too small.")
+        self.assertIn("40 comments, is too small to say", small["note"])
+        none = st(game(RESEARCH, ANNOTATE))
+        self.assertEqual(none["row"], "Not measured. No sample of the listing’s comments has been checked.")
         self.assertFalse(st(game(RESEARCH, ANNOTATE, dict(FIRST, wrong=1)))["checked"])   # no audit, however good
         since = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT))                              # audited, not measured since
         self.assertFalse(since["checked"])
         self.assertTrue(since["row"].startswith("Not measured since its audit. The last sample of 60 comments had 7"))
-        self.assertIn("no sample has measured it since", since["flag"])
+        self.assertIn("no sample has measured it since", since["note"])
         done = st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER))
         self.assertTrue(done["checked"])
         self.assertEqual(st(game(RESEARCH, ANNOTATE, FIRST, AUDIT, AFTER, PLAY, CHECK)), done)   # neither samples comments
-        self.assertIsNone(done["flag"])
-        self.assertTrue(done["row"].startswith("Checked. Every comment was audited once"))
+        self.assertTrue(done["row"].startswith("Audited & low error rate. Every comment was audited once"))
+        self.assertEqual(done["note"], "This listing has been audited, and a later sample of 60 of its comments "
+                                       "found 2 wrong, about one in 30.")
 
     def test_the_table_keeps_every_step_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -95,6 +107,8 @@ class Accuracy(unittest.TestCase):
                                        dict(AFTER, by="someone"), PLAY), tmp)
         self.assertEqual([r[0] for r in rows],
                          ["Research", "Annotation", "Sample 1", "Sample 2", "Audit 1", "Audit 2", "Sample 3", "Play tab"])
+        self.assertEqual([r[4] for r in rows], ["research-unknown", "annotate-run", "sample-bad", "sample-bad", "audit-part",
+                                                "audit-full", "sample-good", "play-port"])
         self.assertIn("corrected 16 comments it showed wrong", rows[7][2])
         self.assertEqual(rows[6][1], "someone, with some-model")      # a maintainer's sample
         self.assertIn("in 2 comments", rows[1][2])

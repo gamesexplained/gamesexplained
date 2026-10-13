@@ -134,8 +134,6 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 .gamebanner button:hover{border-color:var(--link)}
 .gamebanner button.did{color:var(--green);border-color:var(--green)}
 /* a listing whose comments are not checked: its own line, in the colour of an unfinished page */
-.gamebanner .flag{display:block;margin-top:5px;padding-top:5px;border-top:1px solid var(--line);color:var(--coral)}
-.gamebanner .flag a{color:inherit;text-decoration:underline}
 
 /* a line to paste, with a copy button */
 .site .paste{display:flex;align-items:center;gap:14px;margin:0 0 1.2em;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 var(--r) var(--r) 0}
@@ -224,6 +222,10 @@ html:has(.pagenav) h2[id]{scroll-margin-top:calc(var(--tabs-h,48px) + 16px)}
 
 /* source viewer */
 .facts{padding:12px var(--gx) 24px}
+/* the Source tab's line on how accurate its comments are (build.py source_note): green when checked */
+.srcnote{font-size:14.5px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--coral);border-radius:0 var(--r) var(--r) 0;padding:7px 14px;margin:0 0 14px}
+.srcnote b{font-weight:900;color:var(--coral)}
+.srcnote.ok{border-left-color:var(--green)}.srcnote.ok b{color:var(--green)}
 details.factsbox{scroll-margin-top:calc(var(--tabs-h,48px) + 12px);border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:6px 18px;margin:20px 0}
 details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;color:var(--ink-soft);padding:8px 0}
 .src{display:grid;grid-template-columns:280px 1fr;min-height:70vh;border-top:1px solid var(--line)}
@@ -370,6 +372,16 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
 /* a part laid over the listing beneath it: its own rows carry a bar, and its names an accent */
 .src .row.mine{box-shadow:inset 2px 0 0 var(--accent)}
 .src .idx a.mine .a{color:var(--accent)}
+/* the ledger of steps behind a listing (the About tab's table, and accuracy.html's example): a stripe and
+   a label coloured by the step and how it came out (accuracy.table's kind) */
+.research-yes,.sample-good,.check-good{--step:var(--green)}
+.research-no,.sample-bad,.check-bad{--step:var(--coral)}
+.research-unknown,.annotate-run{--step:var(--ink-mute)}
+.sample-small{--step:var(--amber)}
+.audit-full,.audit-part{--step:var(--link)}
+.play-port{--step:var(--violet)}
+.site table.accuracy tr>th:first-child,.checking .ledger tr>th:first-child{border-left:3px solid var(--step,transparent);color:var(--step,var(--ink-mute));font-weight:700}
+.site table.accuracy tr.audit-part>th:first-child,.checking .ledger tr.audit-part>th:first-child{border-left-style:dashed}
 /* accuracy.html, how listings are checked: the About tab's rows, Source rows, error cards, the sample calculator, the checker bars and the ledger */
 .checking .hero{padding-bottom:0}
 .checking [id]{scroll-margin-top:72px}
@@ -396,7 +408,7 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
 .checking .err .where{font-family:var(--fm);font-size:13px;color:var(--ink-mute);margin:2px 0 8px}
 .checking .err p{font-size:15px;margin:0 0 6px}
 .checking .err .said{color:var(--coral)}
-.checking .err .said::before{content:"Said: ";font-weight:700}
+.checking .err .said::before{content:"The comment: ";font-weight:700}
 .checking .err .is::before{content:"The code: ";font-weight:700}
 .checking .calc .controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:end;margin-bottom:14px}
 .checking .calc label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--ink-soft)}
@@ -418,12 +430,18 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
 .checking .ticks span:first-child{transform:none}
 .checking .ticks span:last-child{transform:translateX(-100%)}
 .checking .out{margin-top:14px;display:grid;gap:10px}
-.checking .out .banner{border:1px solid var(--line);border-left:3px solid var(--link);background:var(--surface-2);border-radius:0 var(--r) var(--r) 0;padding:6px 12px;font-size:14px;color:var(--ink-soft)}
-.checking .out .banner .flag{display:block;margin-top:5px;padding-top:5px;border-top:1px solid var(--line);color:var(--coral)}
-.checking .bars{display:grid;grid-template-columns:auto 1fr 3.5em;gap:8px 12px;align-items:center;font-size:14.5px;margin-top:12px}
-.checking .bars .bar{height:14px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.checking .bars .bar i{display:block;height:100%;background:var(--amber)}
-.checking .bars .pct{font-family:var(--fm);font-size:13px;text-align:right}
+.checking .out .srcnote{margin:0}.checking .srcnote.ok{color:var(--ink-soft)}
+.checking .finds{display:grid;grid-template-columns:auto 1fr 2.6em auto;gap:8px 12px;align-items:center;font-size:14.5px;margin-top:14px}
+.checking .finds .label{font-size:10.5px}
+.checking .finds .track{position:relative;height:14px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px}
+.checking .finds .track i{display:block;height:100%;background:var(--amber);border-radius:3px}
+.checking .finds .track b{position:absolute;top:-5px;bottom:-5px;border-left:2px dashed var(--green)}
+.checking .finds .n{font-family:var(--fm);font-size:13px;text-align:right}
+.checking .finds .says{font-weight:700}
+.checking .finds .says.real{color:var(--ink)}
+.checking .finds .who:nth-child(5){font-weight:700}
+.checking .finds .track:nth-child(6) i{background:var(--ink-soft)}
+.checking .key span{color:var(--step);font-weight:700}
 .checking .steps{list-style:none;padding:0;margin:18px 0;display:grid}
 .checking .steps li{display:grid;grid-template-columns:8.5em 1fr;gap:14px;padding:10px 0;border-top:1px solid var(--line)}
 .checking .steps li:last-child{border-bottom:1px solid var(--line)}
@@ -431,7 +449,7 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
 .checking .xstates{display:grid;gap:12px;margin:18px 0}
 .checking .xstate{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;font-size:15px}
 .checking .xstate .k{font-weight:900}
-.checking .xstate .flag{display:block;margin-top:6px;padding-top:6px;border-top:1px solid var(--line);color:var(--coral);font-size:14px}
+.checking .xstate .onsrc{display:block;margin-top:6px;padding-top:6px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:14px}
 .checking dl.gloss{display:grid;grid-template-columns:minmax(7em,max-content) 1fr;gap:8px 18px;font-size:15.5px}
 .checking dl.gloss dt{font-weight:700}
 .checking dl.gloss dd{margin:0;color:var(--ink-soft)}
@@ -444,5 +462,12 @@ details.factsbox summary{cursor:pointer;font-family:var(--fb);font-size:14px;col
   .checking .ledger tr{display:grid;grid-template-columns:auto 1fr;gap:0 12px;border-bottom:1px solid var(--line);padding:9px 0}
   .checking .ledger th,.checking .ledger td,.checking .ledger td.by{border:0;padding:0;width:auto}
   .checking .ledger td:last-child{grid-column:1/-1;margin-top:4px}
+  .checking .ledger tr>th:first-child{border-left:0}
+  .checking .ledger tr{border-left:3px solid var(--step,transparent);padding-left:10px}
+  .checking .ledger tr.audit-part{border-left-style:dashed}
+  .checking .finds{grid-template-columns:auto 1fr 2.6em}
+  .checking .finds .says{grid-column:2/-1;margin:-4px 0 4px}
+  .checking .finds>span:nth-child(2){grid-column:2/-1}
+  .checking .finds>span:nth-child(3),.checking .finds>span:nth-child(4){display:none}
 }
-@media (prefers-reduced-motion:no-preference){.checking .axis .range,.checking .axis .dot,.checking .bars .bar i{transition:all .2s ease}}
+@media (prefers-reduced-motion:no-preference){.checking .axis .range,.checking .axis .dot,.checking .finds .track i{transition:all .2s ease}}

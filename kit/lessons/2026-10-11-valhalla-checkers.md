@@ -7,7 +7,7 @@
   samples again with a new seed, until a sample has at most two wrong in
   60. Silver needs only the first sample: the About tab shows every step
   behind the listing in a table, with the models that did it, and the
-  banner flags a listing that has not had a full audit or whose last
+  Source tab says when a listing has not had a full audit or its last
   sample is over the mark, so a run on a tight usage limit can publish
   sooner and say so.
 - **A sample sees what its checker sees.** On a test of 60 of Valhalla's

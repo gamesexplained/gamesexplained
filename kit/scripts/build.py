@@ -311,22 +311,30 @@ def banner(game, cons):
     A run on a model not yet proven is published whole, and its banner says that it awaits
     a maintainer's check (kit/CHECKING.md), a sample of its listing on a proven model, before
     saying what else is missing (#142).
-    At Silver and above, a listing whose comments are not checked (accuracy.py: no
-    full audit yet, or a last sample over the mark) gets a line of its own saying so.
+    How accurate the listing's comments are is the Source tab's to say (source_note), not
+    the banner's.
     """
     tier = game.get("tier", "none")
     repo = json.load(open(os.path.join(SITE, "config.json"))).get("repo", "")
     body = banner_body(game, cons, tier, repo)
-    st = listing_status(game)
-    if tier in SILVER_UP and st and st["flag"]:
-        body += f'<span class="flag">{html.escape(st["flag"])} {how_checked()}</span>'
     return f'<div class="gamebanner {html.escape(tier)}">{body}</div>'
 
 
 def how_checked():
-    """The link a listing's confidence line ends with: the site's page on what a sample and an
-    audit are, at its section on the row and the banner's line (site/accuracy.html)."""
+    """The link a listing's accuracy line ends with: the site's page on what a sample and an
+    audit are, at its section on reading the row and the Source tab's line (site/accuracy.html)."""
     return '<a href="../../accuracy.html#row">How listings are checked</a>'
+
+
+def source_note(game):
+    """The Source tab's line on its comments, under the intro: the verdict (accuracy.status),
+    green when the listing is checked, and a sentence on why. Silver and above only, the tiers
+    whose listing is meant to be whole; none for a game made before game.json recorded the steps."""
+    st = listing_status(game)
+    if game.get("tier", "none") not in SILVER_UP or not st:
+        return ""
+    return (f'<p class="srcnote {"ok" if st["checked"] else "bad"}"><b>{html.escape(st["lead"])}</b> '
+            f'{html.escape(st["note"])} {how_checked()}</p>')
 
 
 def listing_row(game):
@@ -335,8 +343,8 @@ def listing_row(game):
     st = listing_status(game)
     if not st:
         return ""
-    lead, rest = re.match(r"(.*?[.:]) (.*)", st["row"]).groups()
-    return (f'<tr><th>Comments checked</th><td><b>{html.escape(lead)}</b> {html.escape(rest)} '
+    rest = st["row"][len(st["lead"]):].lstrip()
+    return (f'<tr><th>Comments checked</th><td><b>{html.escape(st["lead"])}</b> {html.escape(rest)} '
             f'{how_checked()}</td></tr>')
 
 
@@ -346,13 +354,13 @@ def accuracy_section(game, gdir):
     rows = accuracy_table(game, gdir)
     if not rows:
         return ""
-    trs = "".join(f'<tr><th>{html.escape(step)}</th><td>{html.escape(by)}</td><td>{html.escape(what)}'
+    trs = "".join(f'<tr class="{kind}"><th>{html.escape(step)}</th><td>{html.escape(by)}</td><td>{html.escape(what)}'
                   + (f'<br><span class="mute">{html.escape(note)}</span>' if note else "") + "</td></tr>"
-                  for step, by, what, note in rows)
+                  for step, by, what, note, kind in rows)
     return ('<h2>How the listing was checked</h2>\n'
             '<p class="mute">Every step that measured the Source tab\u2019s comments or made them more accurate, '
-            'in the order it happened, with the models that did it. <a href="../../accuracy.html">Trusting a '
-            'listing</a> explains each step and what the row above makes of them.</p>\n'
+            'in the order it happened, with the models that did it. <a href="../../accuracy.html">Accuracy of the '
+            'Source</a> explains each step and what the row above makes of them.</p>\n'
             f'<div class="tablewrap"><table class="accuracy"><tr><th>Step</th><th>By</th><th>What it found</th></tr>'
             f'{trs}</table></div>')
 
@@ -927,6 +935,7 @@ def part_sources(gdir, game, P, out, nav, ban, common, cheats):
     if cheats.strip():
         whole += '<h2>Cheats</h2><div data-part="">' + markdown(cheats, addr=False, parts=pages) + "</div>"
     tpl = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav)
+    tpl = tpl.replace("<!-- accuracy -->", source_note(game))
     for p in shown:
         page, beneath = part_page(p), [q for q in reversed(under(P, p)) if listed(q)]
         facts = f"<h2>{html.escape(p['title'])}</h2>" + markdown(read(os.path.join(p["dir"], "facts.md")), addr=page, shift=1,
@@ -1073,6 +1082,7 @@ def build_game(gdir, out_root):
         if cheats.strip():
             facts += "<h2>Cheats</h2>" + markdown(cheats)
         src = fill(read(os.path.join(SITE, "source.html")), **common).replace("<!-- tabs -->", nav).replace("<!-- facts -->", facts)
+        src = src.replace("<!-- accuracy -->", source_note(game))
         src = under_title(src, ban)
         if not links_asset(src, "site.js"):
             src += f'\n<script src="{lib}/site.js"></script>\n'
@@ -1748,7 +1758,7 @@ def main():
     open(os.path.join(out_root, "about.html"), "w").write(
         fill(read(os.path.join(SITE, "about-site.html")), site_title="About · Games Explained", lib="lib", repo=repo))
     open(os.path.join(out_root, "accuracy.html"), "w").write(
-        fill(read(os.path.join(SITE, "accuracy.html")), site_title="Trusting a listing · Games Explained", lib="lib",
+        fill(read(os.path.join(SITE, "accuracy.html")), site_title="Accuracy of the Source · Games Explained", lib="lib",
              repo=repo))
     open(os.path.join(out_root, ".nojekyll"), "w").write("")
     open(os.path.join(out_root, "CNAME"), "w").write(json.load(open(os.path.join(SITE, "config.json")))["domain"] + "\n")

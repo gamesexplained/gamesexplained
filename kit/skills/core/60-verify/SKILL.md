@@ -91,18 +91,19 @@ listing under the mark, because the sample's rate holds across the rest.
 Silver needs the measure, not the mark: at least one sample, checked and
 recorded. The game's About tab shows every step in a table, with the
 models that did it, and the reader judges from the work how far to trust
-the listing. The page calls the listing checked only when the last sample
-came after a full audit and is within the mark. Until then the banner
-under the game's title says, on every tab, that the listing has not had a
-full audit or that its last sample was over the mark. So a run can
-publish without the audit, and the page is honest about it. Any order of
+the listing. The page calls the listing checked ("Audited & low error
+rate") only when the last sample came after a full audit and is within
+the mark. Until then the Source tab says, under its title, that the
+listing has not had a full audit or that its last sample was over the
+mark. So a run can publish without the audit, and the page is honest
+about it. Any order of
 steps is recorded as it happened: two samples with only their own
 comments corrected between them are two rows, an audit of some of the
 comments says how many of how many, and a second model is a row of its
 own. Go on to the mark by default.
 When the contributor said their usage limit is tight (`kit/START.md`),
 stop after the first sample, put the audit at the top of `TODO.md`, and
-say in the pull request that the page will carry the flag until a later
+say in the pull request that the Source tab will say so until a later
 run audits the listing and samples it again.
 
 Start the checker and the audit without asking, on a run that keeps to
