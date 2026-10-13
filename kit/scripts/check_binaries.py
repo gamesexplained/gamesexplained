@@ -4,25 +4,33 @@
 Scans the working tree (or the paths given) and fails if it finds: a file
 with a game-image extension; a file whose size is a known disk-image size;
 a file starting with a known snapshot magic; a JSON file carrying a
-"raw_data_base64" field. work/ folders are skipped except their README.
+"raw_data_base64" field; a jsbeeb snapshot (the BBC Micro's), gzipped or
+not. work/ folders are skipped except their README.
 Game data a page's widgets need, embedded in its HTML, is not a binary
 (AGENTS.md, "No binaries, ever").
 
 Usage: check_binaries.py [paths...]     exit 1 on any hit
 """
-import os, sys
+import os, re, sys, zlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 EXT = {".d64", ".d71", ".d81", ".g64", ".prg", ".p00", ".t64", ".tap", ".crt", ".vsf",
        ".regen2000proj", ".nes", ".sfc", ".smc", ".gb", ".gbc", ".gba", ".z80", ".sna",
        ".tzx", ".adf", ".dsk", ".rom", ".bin",
-       ".szx", ".zsf", ".pzx", ".scr", ".rzx", ".csw", ".trd", ".scl"}
+       ".szx", ".zsf", ".pzx", ".scr", ".rzx", ".csw", ".trd", ".scl",
+       # the BBC Micro's discs (DFS, ADFS, flux and bitstream images), tapes and other emulators' states
+       ".ssd", ".dsd", ".ads", ".adm", ".adl", ".hfe", ".fsd", ".scp", ".uef", ".snp", ".uefstate"}
 SIZES = {174848: "d64", 175531: "d64 with error bytes", 196608: "d64 40-track", 349696: "d71", 819200: "d81",
-         49179: "48K .sna snapshot", 131103: "128K .sna snapshot", 147487: "128K .sna snapshot with an extra bank"}
+         49179: "48K .sna snapshot", 131103: "128K .sna snapshot", 147487: "128K .sna snapshot with an extra bank",
+         102400: "40-track .ssd", 204800: "80-track .ssd or 40-track .dsd", 409600: "80-track .dsd",
+         163840: "ADFS S disc", 327680: "ADFS M disc", 655360: "ADFS L disc"}
 MAGIC = [(b"VICE Snapshot File", "VICE snapshot"), (b"C64 CARTRIDGE", "cartridge image"),
          (b"C64File", "P00 file"), (b"C64S tape image file", "T64 image"), (b"NES\x1a", "NES ROM"),
          (b"ZXST", "SZX snapshot"), (b"ZSF", "ZEsarUX snapshot"), (b"PZXT", "PZX tape image"),
-         (b"ZXTape!", "TZX tape image")]
+         (b"ZXTape!", "TZX tape image"), (b"BEMSNAP", "B-em or beebjit snapshot"),
+         (b"UEF File!", "UEF tape or BeebEm snapshot"), (b"HXCPICFE", "HFE disc image"),
+         (b"HXCHFEV3", "HFE disc image")]
+JSBEEB = re.compile(rb'"format"\s*:\s*"jsbeeb-snapshot"')   # the BBC Micro's snapshot, kit/bbc/snapshot.py
 SKIP_DIRS = {".git", "__pycache__", "node_modules", "tools", "_site"}
 
 
@@ -46,6 +54,14 @@ def check(path):
         with open(path, "rb") as f:
             if b"raw_data_base64" in f.read():
                 return "JSON with an embedded memory image"
+    if head.startswith(b"\x1f\x8b"):     # gzip: what jsbeeb's snapshot is, whatever the name
+        with open(path, "rb") as f:
+            try:
+                head = zlib.decompressobj(16 + zlib.MAX_WBITS).decompress(f.read(65536), 256)
+            except zlib.error:
+                return None
+    if JSBEEB.search(head):
+        return "jsbeeb snapshot"
     return None
 
 

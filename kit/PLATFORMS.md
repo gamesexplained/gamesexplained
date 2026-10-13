@@ -33,7 +33,11 @@ These already read `platform` from `game.json` and need one entry each:
   machine's own work area, never reported as the game's. `hidden` is also
   where an operand has two meanings, the chips' and the RAM's, and
   `listing.py` picks one per instruction (`kit/skills/core/50-coverage`,
-  "A game can live under its I/O").
+  "A game can live under its I/O"). `io_only` is where only the chips
+  answer, with no RAM beneath (the BBC Micro's $FC00-$FEFF), so an operand
+  there always gets the register's name. A machine whose screen always
+  ends at the top of RAM gives `screen_top`, that address, in place of
+  `screen_size`.
 - `kit/scripts/check_binaries.py`, the extensions and magic bytes of the
   platform's images and snapshots, so that none can ever be committed.
   Several platforms are listed already; check yours is.
@@ -59,10 +63,13 @@ copy of the C64's.
 | `r2000.py` or `skoolkit.py` | `read_live(gdir=None) -> (blocks, symbols, comments)` from the running disassembler; `gdir` is the game's folder or a part's (`kit/scripts/parts.py`), for a client that keeps a disassembler per part | `symbols_export.py` (`read_live`), `coverage.py --live` |
 | `registers.py` | `NAMES`, the I/O registers by name, so an operand that sees the chips shows one | `listing.py` |
 
-The C64's `cpu.py` holds the 6502 and PETSCII together; the Spectrum's
-`cpu.py` re-exports `z80.py`, which is where a third Z80 machine would
-point, and adds `basic.py`, the machine's BASIC as the ROM keeps it. A `kit/cpu/` layer that splits them is cut when a third machine
-arrives, not before. Two pieces are still the C64's: `site/lib/memmap.js`
+A processor that two machines share lives in `kit/cpu/`: `m6502.py`, the
+6502's opcode table, decoding and operand text, and `asm6502.py`, the
+assembler the C64's test programs and the BBC's are written in. Each
+machine's `cpu.py` re-exports it and adds its own text: the C64's PETSCII
+and screen codes, the BBC Micro's ASCII. The Spectrum's `cpu.py`
+re-exports `z80.py`, which moves to `kit/cpu/` when a second Z80 machine
+arrives, and adds `basic.py`, the machine's BASIC as the ROM keeps it. Two pieces are still the C64's: `site/lib/memmap.js`
 is one drawing for every machine but `kit/template/index.html` still names
 its colour tokens after the C64.
 

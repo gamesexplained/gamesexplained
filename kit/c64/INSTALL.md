@@ -137,7 +137,7 @@ alone, puts nothing in the home folder (500 to 700 MB in `tools/`):
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o tools/rustup-init.sh
 RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home sh tools/rustup-init.sh -y --no-modify-path --profile minimal
-RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --root tools/cargo regenerator2000
+RUSTUP_HOME=$PWD/tools/rustup CARGO_HOME=$PWD/tools/cargo-home PATH=$PWD/tools/cargo-home/bin:$PATH cargo install --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
 Done that way on 30 September 2026 on Ubuntu 24.04; the compile took
@@ -298,11 +298,19 @@ the way to one where none exists, and no run of it is recorded on either.
 ## Get the disassembler
 
 ```
-cargo install --root tools/cargo regenerator2000
+cargo install --root tools/cargo regenerator2000 --version 0.9.20
 ```
 
 That compiles it (about a minute on a recent machine, four in a cloud container on 30 September 2026) and puts the binary at
 `tools/cargo/bin/regenerator2000`, not in `~/.cargo/bin`.
+
+Install that release, from crates.io, and not a build of the project's
+main branch. On 13 October 2026 main also called itself 0.9.20, and its
+MCP server answered `r2000_get_blocks` and `r2000_set_data_type` with
+`-32603 Failed to parse tool result`, so `symbols_export.py` could not
+read the project back; the crates.io release, published on 11 July
+2026, answers both. When a later release is out, try it on a test
+snapshot with `symbols_export.py` before moving the version here.
 
 What it is, and say so when you ask: regenerator2000 is an open-source
 6502 disassembler by Ricardo Quesada, source at

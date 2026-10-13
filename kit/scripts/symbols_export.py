@@ -63,6 +63,23 @@ PLATFORM_DEFAULTS = {
         "hidden": [],              # I/O is port-mapped, so no address has two meanings
         "system": [["$0000", "$3FFF", "ROM and the machine's own routines"]],
     },
+    "bbc": {
+        # The Model B's paged ROM ($8000-$BFFF, BASIC or the language a loader picks) and
+        # the MOS ($C000-$FFFF), with the I/O pages FRED, JIM and SHEILA ($FC00-$FEFF)
+        # inside it. A game that loads into sideways RAM takes $8000-$BFFF back with
+        # "include", or makes the bank a part (kit/skills/bbc/bbc-reference, "Memory map").
+        "exclude": [["$0100", "$01FF", "stack"], ["$8000", "$BFFF", "paged ROM"],
+                    ["$C000", "$FFFF", "MOS ROM and I/O"]],
+        "extra": [],
+        "screen_top": 0x7FFF,      # every mode's screen runs from its start to the top of RAM
+        "charset_size": 0x300,     # 96 characters of 8 bytes, the size of the MOS's own font
+        "snapshot_ext": "json.gz", # the kit's jsbeeb server saves gzipped JSON (kit/bbc/snapshot.py)
+        "hidden": [],              # no RAM lies under the I/O pages or the MOS
+        "system": [["$0000", "$03FF", "zero page, the stack, and the MOS's vectors and workspace"]],
+        # addresses where only the chips answer, with no RAM beneath: an operand there always
+        # means the register (listing.py, io_meaning)
+        "io_only": [["$FC00", "$FEFF", "FRED, JIM and SHEILA"]],
+    },
 }
 
 
@@ -149,7 +166,10 @@ def regions(game):
     extra = [[hexint(a), hexint(b), n] for a, b, n in d["extra"]]
     video = game.get("video") or {}
     if video.get("screen"):
-        a = hexint(video["screen"]); exclude.append([a, a + d.get("screen_size", 0x400) - 1, "screen RAM"])
+        # a machine whose screen always ends at the top of RAM (the BBC's) gives that address
+        # instead of a size: the start alone then says how much the screen takes
+        a = hexint(video["screen"])
+        exclude.append([a, d["screen_top"] if "screen_top" in d else a + d.get("screen_size", 0x400) - 1, "screen RAM"])
     if video.get("charset"):
         a = hexint(video["charset"]); extra.append([a, a + d.get("charset_size", 0x800) - 1, "character set"])
     cov = game.get("coverage", {})

@@ -36,6 +36,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 C64JS = os.path.join(ROOT, "site", "lib", "c64.js")
 sys.path.insert(0, HERE)
+sys.path.append(os.path.join(os.path.dirname(HERE), "cpu"))   # the 6502's assembler, shared
 
 STANDARDS = {"PAL": (312, 63), "NTSC": (263, 65), "NTSC-OLD": (262, 64), "PAL-N": (312, 65)}
 
@@ -505,7 +506,7 @@ def test_program(lines=312):
         for a, v in writes:
             src += [f"        lda #{v & 0xFF}", f"        sta ${a:04x}"]
     src += ["        jmp w0"]
-    from asm import assemble
+    from asm6502 import assemble
     return assemble("\n".join(src), 0xC000)[0]
 
 
@@ -703,7 +704,7 @@ FRAME_CYCLES = 312 * 63
 def dma_program():
     """(code, labels): each pass sets the chip from the table, waits for the table's line, then
     jumps to the slide at DMA_SLIDE, DMA_NOPS bytes that end in a jump back to frame."""
-    from asm import assemble
+    from asm6502 import assemble
     return assemble(f"""
             sei
             lda #$35

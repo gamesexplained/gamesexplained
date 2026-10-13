@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A small two-pass 6502 assembler, so that the kit's test programs are source, not bytes.
 
-    from asm import assemble
+    from asm6502 import assemble
     code, labels = assemble('''
     start:  sei
             lda #$7f
@@ -20,8 +20,8 @@ takes the zero-page form where the instruction has one. The documented instructi
 """
 import os, re, sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # kit/c64, where cpu.py holds the table
-from cpu import OPS, LEN  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # kit/cpu, where m6502.py holds the table
+from m6502 import OPS, LEN  # noqa: E402
 
 CODE = {(m, mode): op for op, (m, mode) in OPS.items()}
 
