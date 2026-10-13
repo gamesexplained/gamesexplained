@@ -1,0 +1,107 @@
+From 46fed0e84e768439d3c9f8b939931a916b51d3ae Mon Sep 17 00:00:00 2001
+From: Aaron Bell <18724+air@users.noreply.github.com>
+Date: Tue, 13 Oct 2026 13:37:33 +0000
+Subject: [PATCH] Add savecounts, to save the stats count of every executed
+ address.
+
+stats counts every executed address, but ds prints only the 256
+hottest. savecounts writes all of them to a text file, one line per
+address in address order, as "ADDR: count" like ds, so that a script
+can build a code map from a run.
+
+Adds a functional test that saves the counts from a boot to the
+BASIC prompt and checks that there are more than 256.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XRGcjre6t11Lj84xau655i
+---
+ debug.c                 | 33 +++++++++++++++++++++++++++++++++
+ run_functional_tests.sh | 14 ++++++++++++++
+ 2 files changed, 47 insertions(+)
+
+diff --git a/debug.c b/debug.c
+index 49ec372..2db426a 100644
+--- a/debug.c
++++ b/debug.c
+@@ -1077,6 +1077,35 @@ debug_check_unusual(struct debug_struct* p_debug,
+   p_debug->warn_at_addr_count[p_debug->reg_pc] = warn_count;
+ }
+ 
++static void
++debug_save_counts(struct debug_struct* p_debug, const char* p_file_name) {
++  struct util_file* p_file;
++  size_t i;
++
++  p_file = util_file_try_open(p_file_name, 1, 1);
++  if (p_file == NULL) {
++    log_do_log(k_log_misc, k_log_warning, "cannot open file %s", p_file_name);
++    return;
++  }
++
++  /* Every address executed while stats were on, in address order. */
++  for (i = 0; i < k_6502_addr_space_size; ++i) {
++    char buf[32];
++    uint64_t count = p_debug->count_addr[i];
++    if (!count) {
++      continue;
++    }
++    (void) snprintf(buf,
++                    sizeof(buf),
++                    "%.4"PRIX16": %"PRIu64"\n",
++                    (uint16_t) i,
++                    count);
++    util_file_write(p_file, buf, strlen(buf));
++  }
++
++  util_file_close(p_file);
++}
++
+ static void
+ debug_load_raw(struct debug_struct* p_debug,
+                const char* p_file_name,
+@@ -2354,6 +2383,9 @@ debug_callback_common(struct debug_struct* p_debug,
+                (parse_hex_int2 >= 0) &&
+                (parse_hex_int2 < 65536)) {
+       debug_load_raw(p_debug, p_param_1_str, parse_hex_int2);
++    } else if (!strcmp(p_command, "savecounts") &&
++               (p_param_1_str != NULL)) {
++      debug_save_counts(p_debug, p_param_1_str);
+     } else if (!strcmp(p_command, "savemem") &&
+                (parse_hex_int2 >= 0) &&
+                (parse_hex_int2 < 65536) &&
+@@ -2528,6 +2560,7 @@ debug_callback_common(struct debug_struct* p_debug,
+   "writem <a> <v>     : write <v> to memory address <a>\n"
+   "find <a> <l> ...   : find a byte sequence, starting at <a>, length <l>\n"
+   "loadmem <f> <a>    : load memory to <a> from raw file <f>\n"
++  "savecounts <f>     : save stats address counts to <f> as \"ADDR: n\" lines\n"
+   "savemem <f> <a> <l>: save memory from <a>, length <l> to raw file <f>\n"
+   "sys                : show system VIA registers\n"
+   "user               : show user VIA registers\n"
+diff --git a/run_functional_tests.sh b/run_functional_tests.sh
+index d1913c8..13b619b 100755
+--- a/run_functional_tests.sh
++++ b/run_functional_tests.sh
+@@ -35,6 +35,20 @@ echo 'Checking 65C12 instruction timings (with cycle stretch).'
+     -autoboot \
+     -commands "b expr 'addr==0xfcd0 && is_write && a!=0' commands 'bail';b expr 'addr==0xfcd0 && is_write && a==0' commands 'q';c"
+ 
++# This checks that savecounts writes every address run during boot, which is
++# far more than the 256 that ds shows. $D9CF is run once, early in RESET.
++echo 'Checking savecounts.'
++TMP_COUNTS=$(mktemp)
++./beebjit -headless -fast -debug \
++    -commands "stats;breakat 2000000;c;savecounts $TMP_COUNTS;q" > /dev/null
++COUNTS_LINES=$(wc -l < "$TMP_COUNTS")
++if [ "$COUNTS_LINES" -le 256 ] || ! grep -q '^D9CF: 1$' "$TMP_COUNTS"; then
++  rm -f "$TMP_COUNTS"
++  echo "savecounts wrote $COUNTS_LINES lines, expected every address run"
++  exit 1
++fi
++rm -f "$TMP_COUNTS"
++
+ echo 'Checking RVI rendering.'
+ # This checks the framebuffer looks as expected, once the Bitshifters RVI
+ # technique is loaded and running.
+-- 
+2.43.0
+

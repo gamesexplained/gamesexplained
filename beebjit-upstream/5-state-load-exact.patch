@@ -1,0 +1,1186 @@
+From 6e23d97a0b42493bec9658849b0d3aff151f1877 Mon Sep 17 00:00:00 2001
+From: Aaron Bell <18724+air@users.noreply.github.com>
+Date: Tue, 13 Oct 2026 14:48:21 +0000
+Subject: [PATCH] Make a state load carry on exactly where the save left off.
+
+A load restored the 6502, memory and the chip registers, but not
+where the machine was in time. The tick count restarted from zero,
+the VIA, video and ADC timers and the 6845 counters were rescheduled
+from scratch, and the ACIA and serial ULA stayed at power-on. So a
+loaded machine soon ran differently from the one that saved it.
+
+Most of this has no field in the B-em format, so it goes in a block
+in the second half of the 64k RAM field. beebjit used to leave that
+memory zero, and it loads only the first 32k of the field; B-em and
+jsbeeb load it into RAM that a model B never maps. So the file stays
+a B-em 2.x snapshot. The block carries a signature, its size and a
+CRC over the B-em fields it refines. If any of them don't match, the
+load uses the B-em fields alone, as before.
+
+The block holds the tick and cycle counts, the VIA timers, ports and
+control lines, the 6845 counters and flags, any ADC conversion in
+progress, the SN76489 bus state, the ACIA and serial ULA state, and
+whether the CPU had already committed to an interrupt at the
+instruction boundary of the save.
+
+For other readers, the save also fills the B-em fields it can: IC32
+(which held the system VIA's port B inputs), the VIA input registers
+and CA1 / CA2, and the 6845 counters. The load sets IC32 from its
+field. Setting the 6845 registers on load also updates the values
+derived from them, as a register write does.
+
+Disc and tape drive state isn't carried.
+
+Adds a functional test: the RVI rendering check across a save and a
+load, in interp and JIT modes.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XRGcjre6t11Lj84xau655i
+---
+ adc.c                   |  53 ++++++++++++
+ adc.h                   |  16 ++++
+ debug.c                 |   2 +-
+ interp.c                |   2 +
+ mc6850.c                |  38 +++++++++
+ mc6850.h                |  24 ++++++
+ run_functional_tests.sh |  22 +++++
+ serial_ula.c            |  27 ++++++
+ serial_ula.h            |  18 ++++
+ sound.c                 |  28 ++++++
+ sound.h                 |  16 ++++
+ state.c                 | 144 ++++++++++++++++++++++++++++++-
+ state.h                 |   5 +-
+ state_6502.c            |  16 ++++
+ state_6502.h            |   8 ++
+ timing.c                |   7 ++
+ timing.h                |   3 +
+ via.c                   | 106 +++++++++++++++++++++++
+ via.h                   |  42 +++++++++
+ video.c                 | 183 +++++++++++++++++++++++++++++++---------
+ video.h                 |  45 ++++++++++
+ 21 files changed, 761 insertions(+), 44 deletions(-)
+
+diff --git a/adc.c b/adc.c
+index ff78df2..0cb4bf2 100644
+--- a/adc.c
++++ b/adc.c
+@@ -260,3 +260,56 @@ adc_set_channel_value(struct adc_struct* p_adc,
+ 
+   adc_recalculate_read(p_adc);
+ }
++
++void
++adc_get_state(struct adc_struct* p_adc, struct adc_state* p_state) {
++  uint32_t i;
++  int64_t ticks_left = 0;
++
++  if (p_adc->state.is_busy) {
++    if (!p_adc->is_externally_clocked) {
++      ticks_left = timing_get_timer_value(p_adc->p_timing, p_adc->timer_id);
++    } else {
++      ticks_left = (p_adc->state.wall_time_wakeup - p_adc->state.wall_time);
++      ticks_left *= 2;
++    }
++  }
++  p_state->conversion_ticks_left = ticks_left;
++  for (i = 0; i < k_adc_num_channels; ++i) {
++    p_state->channel_value[i] = p_adc->state.channel_value[i];
++  }
++  p_state->current_channel = p_adc->state.current_channel;
++  p_state->is_input_flag = p_adc->state.is_input_flag;
++  p_state->is_12bit_mode = p_adc->state.is_12bit_mode;
++  p_state->is_busy = p_adc->state.is_busy;
++  p_state->is_result_ready = p_adc->state.is_result_ready;
++}
++
++void
++adc_set_state(struct adc_struct* p_adc, const struct adc_state* p_state) {
++  uint32_t i;
++
++  adc_stop_if_busy(p_adc);
++
++  for (i = 0; i < k_adc_num_channels; ++i) {
++    p_adc->state.channel_value[i] = p_state->channel_value[i];
++  }
++  p_adc->state.current_channel = (p_state->current_channel & 3);
++  p_adc->state.is_input_flag = p_state->is_input_flag;
++  p_adc->state.is_12bit_mode = p_state->is_12bit_mode;
++  p_adc->state.is_result_ready = p_state->is_result_ready;
++  /* A conversion in progress finishes when it would have. */
++  if (p_state->is_busy) {
++    if (!p_adc->is_externally_clocked) {
++      (void) timing_start_timer_with_value(p_adc->p_timing,
++                                           p_adc->timer_id,
++                                           p_state->conversion_ticks_left);
++    } else {
++      p_adc->state.wall_time_wakeup = p_adc->state.wall_time;
++      p_adc->state.wall_time_wakeup += (p_state->conversion_ticks_left / 2);
++    }
++    p_adc->state.is_busy = 1;
++  }
++
++  adc_recalculate_read(p_adc);
++}
+diff --git a/adc.h b/adc.h
+index 283d061..c1a9f53 100644
+--- a/adc.h
++++ b/adc.h
+@@ -27,4 +27,20 @@ void adc_set_channel_value(struct adc_struct* p_adc,
+                            uint32_t channel,
+                            uint16_t value);
+ 
++/* To carry on exactly after a state save and load. It is stored in state
++ * files as is, so a change to it needs a new state version.
++ */
++struct adc_state {
++  int64_t conversion_ticks_left;
++  uint16_t channel_value[4];
++  uint8_t current_channel;
++  uint8_t is_input_flag;
++  uint8_t is_12bit_mode;
++  uint8_t is_busy;
++  uint8_t is_result_ready;
++};
++
++void adc_get_state(struct adc_struct* p_adc, struct adc_state* p_state);
++void adc_set_state(struct adc_struct* p_adc, const struct adc_state* p_state);
++
+ #endif /* BEEBJIT_ADC_H */
+diff --git a/debug.c b/debug.c
+index 49ec372..6daf6ef 100644
+--- a/debug.c
++++ b/debug.c
+@@ -2361,7 +2361,7 @@ debug_callback_common(struct debug_struct* p_debug,
+                (parse_hex_int3 < 65536)) {
+       debug_save_raw(p_debug, p_param_1_str, parse_hex_int2, parse_hex_int3);
+     } else if (!strcmp(p_command, "ss")) {
+-      state_save(p_bbc, p_param_1_str);
++      state_save(p_bbc, p_param_1_str, do_irq);
+     } else if (!strcmp(p_command, "d")) {
+       if (parse_hex_int == -1) {
+         parse_hex_int = p_debug->reg_pc;
+diff --git a/interp.c b/interp.c
+index 39d446a..66094be 100644
+--- a/interp.c
++++ b/interp.c
+@@ -1173,6 +1173,8 @@ interp_enter_with_countdown(struct interp_struct* p_interp, int64_t countdown) {
+ 
+   state_6502_get_registers(p_state_6502, &a, &x, &y, &s, &flags, &pc);
+   interp_set_flags(flags, &zf, &nf, &cf, &of, &df, &intf);
++  /* A state load can start where an interrupt was already committed to. */
++  do_irq = state_6502_take_irq_at_entry(p_state_6502);
+ 
+   if (p_interp->debug_subsystem_active) {
+     special_checks |= k_interp_special_debug;
+diff --git a/mc6850.c b/mc6850.c
+index 0c2dd80..de8072e 100644
+--- a/mc6850.c
++++ b/mc6850.c
+@@ -458,3 +458,41 @@ mc6850_write(struct mc6850_struct* p_serial, uint8_t reg, uint8_t val) {
+ 
+   mc6850_update_irq_and_status_read(p_serial);
+ }
++
++void
++mc6850_get_state(struct mc6850_struct* p_serial,
++                 struct mc6850_state* p_state) {
++  p_state->receive_sr_count = p_serial->acia_receive_sr_count;
++  p_state->clock_divide_counter = p_serial->clock_divide_counter;
++  p_state->status = p_serial->acia_status;
++  p_state->control = p_serial->acia_control;
++  p_state->receive = p_serial->acia_receive;
++  p_state->transmit = p_serial->acia_transmit;
++  p_state->receive_state = p_serial->state;
++  p_state->receive_sr = p_serial->acia_receive_sr;
++  p_state->parity_accumulator = p_serial->parity_accumulator;
++  p_state->is_sr_parity_error = p_serial->is_sr_parity_error;
++  p_state->is_sr_framing_error = p_serial->is_sr_framing_error;
++  p_state->is_sr_overflow = p_serial->is_sr_overflow;
++  p_state->is_DCD = p_serial->is_DCD;
++}
++
++void
++mc6850_set_state(struct mc6850_struct* p_serial,
++                 const struct mc6850_state* p_state) {
++  p_serial->acia_receive_sr_count = p_state->receive_sr_count;
++  p_serial->clock_divide_counter = p_state->clock_divide_counter;
++  p_serial->acia_status = p_state->status;
++  p_serial->acia_control = p_state->control;
++  p_serial->acia_receive = p_state->receive;
++  p_serial->acia_transmit = p_state->transmit;
++  p_serial->state = p_state->receive_state;
++  p_serial->acia_receive_sr = p_state->receive_sr;
++  p_serial->parity_accumulator = p_state->parity_accumulator;
++  p_serial->is_sr_parity_error = p_state->is_sr_parity_error;
++  p_serial->is_sr_framing_error = p_state->is_sr_framing_error;
++  p_serial->is_sr_overflow = p_state->is_sr_overflow;
++  p_serial->is_DCD = p_state->is_DCD;
++
++  mc6850_update_irq_and_status_read(p_serial);
++}
+diff --git a/mc6850.h b/mc6850.h
+index 5d348ea..2d9e6ae 100644
+--- a/mc6850.h
++++ b/mc6850.h
+@@ -33,4 +33,28 @@ void mc6850_receive_bit(struct mc6850_struct* p_serial, int bit);
+ int mc6850_receive(struct mc6850_struct* p_serial, uint8_t byte);
+ uint8_t mc6850_transmit(struct mc6850_struct* p_serial);
+ 
++/* To carry on exactly after a state save and load. It is stored in state
++ * files as is, so a change to it needs a new state version.
++ */
++struct mc6850_state {
++  uint32_t receive_sr_count;
++  uint32_t clock_divide_counter;
++  uint8_t status;
++  uint8_t control;
++  uint8_t receive;
++  uint8_t transmit;
++  uint8_t receive_state;
++  uint8_t receive_sr;
++  uint8_t parity_accumulator;
++  uint8_t is_sr_parity_error;
++  uint8_t is_sr_framing_error;
++  uint8_t is_sr_overflow;
++  uint8_t is_DCD;
++};
++
++void mc6850_get_state(struct mc6850_struct* p_serial,
++                      struct mc6850_state* p_state);
++void mc6850_set_state(struct mc6850_struct* p_serial,
++                      const struct mc6850_state* p_state);
++
+ #endif /* BEEBJIT_MC6850_H */
+diff --git a/run_functional_tests.sh b/run_functional_tests.sh
+index d1913c8..b2ea9c8 100755
+--- a/run_functional_tests.sh
++++ b/run_functional_tests.sh
+@@ -61,6 +61,28 @@ echo 'Checking RVI rendering.'
+     -opt video:always-render \
+     -commands "breakat 6500000;c;b expr 'render_y == 620';c;eval '(frame_buffer_crc32==0x16d251fe)||bail';q"
+ 
++echo 'Checking state save and load.'
++# This repeats the raster-c.ssd RVI check above across a save and a load. RVI
++# only renders correctly if timing is exact, so this checks that a load carries
++# on exactly as the saved machine would have. The save is taken once the demo
++# has loaded from disc.
++TMP_STATE=$(mktemp)
++./beebjit -0 test/display/raster-c.ssd \
++    -mode interp \
++    -autoboot \
++    -headless -fast -accurate -debug \
++    -commands "breakat 10000000;c;ss $TMP_STATE;q" \
++    > /dev/null
++for MODE in interp jit; do
++  ./beebjit -load "$TMP_STATE" \
++      -mode $MODE \
++      -fast -accurate -debug \
++      -opt video:always-render \
++      -commands "breakat 11000000;c;eval '(frame_buffer_crc32==0x2c23c1b6)||bail';q" \
++      || { rm -f "$TMP_STATE"; exit 1; }
++done
++rm -f "$TMP_STATE"
++
+ # This checks the display accuracy of a gnarly MODE1 + MODE7 test case that
+ # hits corner cases with 2MHz teletext operation, non-rounded teletext
+ # rendering, teletext line tracking, and more.
+diff --git a/serial_ula.c b/serial_ula.c
+index 82602b9..d206b7e 100644
+--- a/serial_ula.c
++++ b/serial_ula.c
+@@ -296,3 +296,30 @@ serial_ula_tick(struct serial_ula_struct* p_serial_ula) {
+     (void) os_terminal_handle_write_byte(handle_output, val);
+   }
+ }
++
++void
++serial_ula_get_state(struct serial_ula_struct* p_serial_ula,
++                     struct serial_ula_state* p_state) {
++  p_state->tape_carrier_count = p_serial_ula->tape_carrier_count;
++  p_state->is_rs423_selected = p_serial_ula->is_rs423_selected;
++  p_state->is_motor_on = p_serial_ula->is_motor_on;
++  p_state->is_tape_DCD = p_serial_ula->is_tape_DCD;
++}
++
++void
++serial_ula_set_state(struct serial_ula_struct* p_serial_ula,
++                     const struct serial_ula_state* p_state) {
++  uint8_t val = 0;
++
++  p_serial_ula->tape_carrier_count = p_state->tape_carrier_count;
++  p_serial_ula->is_tape_DCD = p_state->is_tape_DCD;
++
++  if (p_state->is_rs423_selected) {
++    val |= k_serial_ula_rs423;
++  }
++  if (p_state->is_motor_on) {
++    val |= k_serial_ula_motor;
++  }
++  /* This also sets the ACIA's CTS and DCD lines. */
++  serial_ula_write(p_serial_ula, val);
++}
+diff --git a/serial_ula.h b/serial_ula.h
+index a2b11e1..18bd916 100644
+--- a/serial_ula.h
++++ b/serial_ula.h
+@@ -34,4 +34,22 @@ void serial_ula_receive_tape_bit(struct serial_ula_struct* p_serial_ula,
+ 
+ void serial_ula_tick(struct serial_ula_struct* p_serial_ula);
+ 
++/* To carry on exactly after a state save and load. It is stored in state
++ * files as is, so a change to it needs a new state version.
++ */
++struct serial_ula_state {
++  uint64_t tape_carrier_count;
++  uint8_t is_rs423_selected;
++  uint8_t is_motor_on;
++  uint8_t is_tape_DCD;
++};
++
++void serial_ula_get_state(struct serial_ula_struct* p_serial_ula,
++                          struct serial_ula_state* p_state);
++/* Switches the tape motor as a write would. The tape position isn't part of
++ * the state.
++ */
++void serial_ula_set_state(struct serial_ula_struct* p_serial_ula,
++                          const struct serial_ula_state* p_state);
++
+ #endif /* BEEBJIT_SERIAL_ULA__H */
+diff --git a/sound.c b/sound.c
+index 9eb3edc..6cb526f 100644
+--- a/sound.c
++++ b/sound.c
+@@ -947,4 +947,32 @@ sound_set_state(struct sound_struct* p_sound,
+   p_sound->noise_rng = noise_rng;
+ }
+ 
++void
++sound_get_bus_state(struct sound_struct* p_sound,
++                    struct sound_bus_state* p_state) {
++  /* Catch up first, so that this and the sn76489 state are as of now. */
++  if (sound_is_synchronous(p_sound)) {
++    sound_advance_sn_timing(p_sound);
++  }
++
++  p_state->write_cycle_position = p_sound->write_cycle_position;
++  p_state->latched_address = p_sound->latched_address;
++  p_state->bus_value = p_sound->curr_bus_value;
++  p_state->is_write_enabled = p_sound->is_write_enabled;
++  p_state->is_write_enable_pending = p_sound->pending_write_enable;
++}
++
++void
++sound_set_bus_state(struct sound_struct* p_sound,
++                    const struct sound_bus_state* p_state) {
++  p_sound->write_cycle_position = p_state->write_cycle_position;
++  p_sound->latched_address = p_state->latched_address;
++  p_sound->curr_bus_value = p_state->bus_value;
++  p_sound->is_write_enabled = p_state->is_write_enabled;
++  p_sound->pending_write_enable = p_state->is_write_enable_pending;
++  /* The save caught up to the tick it was taken at, which is now. */
++  p_sound->prev_system_ticks =
++      timing_get_scaled_total_timer_ticks(p_sound->p_timing);
++}
++
+ #include "test-sound.c"
+diff --git a/sound.h b/sound.h
+index ccdd810..fa5b015 100644
+--- a/sound.h
++++ b/sound.h
+@@ -43,6 +43,22 @@ void sound_set_state(struct sound_struct* p_sound,
+                      uint8_t noise_frequency,
+                      uint16_t noise_rng);
+ 
++/* The sn76489 bus side, to carry on exactly after a state save and load. It
++ * is stored in state files as is, so a change to it needs a new state
++ * version.
++ */
++struct sound_bus_state {
++  int64_t write_cycle_position;
++  uint8_t latched_address;
++  uint8_t bus_value;
++  uint8_t is_write_enabled;
++  uint8_t is_write_enable_pending;
++};
++void sound_get_bus_state(struct sound_struct* p_sound,
++                         struct sound_bus_state* p_state);
++void sound_set_bus_state(struct sound_struct* p_sound,
++                         const struct sound_bus_state* p_state);
++
+ void sound_sn_IC32_updated(struct sound_struct* p_sound, uint8_t value);
+ void sound_sn_set_bus_value(struct sound_struct* p_sound, uint8_t value);
+ 
+diff --git a/state.c b/state.c
+index 7a99432..0a1c86a 100644
+--- a/state.c
++++ b/state.c
+@@ -1,19 +1,25 @@
+ #include "state.h"
+ 
++#include "adc.h"
+ #include "bbc.h"
+ #include "log.h"
++#include "mc6850.h"
++#include "serial_ula.h"
+ #include "sound.h"
+ #include "state_6502.h"
++#include "timing.h"
+ #include "util.h"
+ #include "via.h"
+ #include "video.h"
+ 
+ #include <assert.h>
+ #include <inttypes.h>
++#include <stddef.h>
+ #include <string.h>
+ 
+ enum {
+   k_snapshot_size = 327885,
++  k_state_beebjit_ram_offset = 0x8000,
+ };
+ 
+ struct bem_v2x {
+@@ -106,6 +112,69 @@ struct bem_v2x {
+   uint16_t sn_shift;
+ } __attribute__((packed));
+ 
++/* What the B-em fields can't hold, so that a load carries on exactly where the
++ * save was taken. It goes in the second half of the 64k RAM field: B-em and
++ * jsbeeb load that into RAM a model B never maps, and older beebjit reads only
++ * the first 32k, so the file stays a B-em 2.x snapshot.
++ * The signature carries the version: change it if anything in here changes.
++ */
++struct state_beebjit {
++  uint8_t signature[8];
++  uint32_t size;
++  uint32_t crc32;
++  uint64_t ticks;
++  uint64_t cycles;
++  struct via_state sysvia;
++  struct via_state uservia;
++  struct video_state video;
++  struct adc_state adc;
++  struct sound_bus_state sound;
++  struct mc6850_state serial;
++  struct serial_ula_state serial_ula;
++  uint8_t is_irq_next;
++};
++
++static const char* k_p_state_beebjit_signature = "BEEBJIT1";
++
++static uint32_t
++state_beebjit_crc32(struct bem_v2x* p_bem, struct state_beebjit* p_beebjit) {
++  uint8_t* p_bem_bytes = (uint8_t*) p_bem;
++  size_t ram_offset = offsetof(struct bem_v2x, ram);
++  size_t chips_offset = offsetof(struct bem_v2x, sysvia_ora);
++  size_t data_offset = offsetof(struct state_beebjit, ticks);
++  uint32_t crc = util_crc32_init();
++
++  /* Include the B-em fields this refines, so that it is ignored if something
++   * else changed them.
++   */
++  crc = util_crc32_add(crc, (p_bem_bytes + 8), (ram_offset - 8));
++  crc = util_crc32_add(crc,
++                       (p_bem_bytes + chips_offset),
++                       (k_snapshot_size - chips_offset));
++  crc = util_crc32_add(crc,
++                       ((uint8_t*) p_beebjit + data_offset),
++                       (sizeof(struct state_beebjit) - data_offset));
++  return util_crc32_finish(crc);
++}
++
++static int
++state_beebjit_read(struct state_beebjit* p_beebjit, struct bem_v2x* p_bem) {
++  (void) memcpy(p_beebjit,
++                &p_bem->ram[k_state_beebjit_ram_offset],
++                sizeof(struct state_beebjit));
++  if (memcmp(p_beebjit->signature, k_p_state_beebjit_signature, 8) != 0) {
++    return 0;
++  }
++  if ((p_beebjit->size != sizeof(struct state_beebjit)) ||
++      (p_beebjit->crc32 != state_beebjit_crc32(p_bem, p_beebjit))) {
++    log_do_log(k_log_misc,
++               k_log_warning,
++               "beebjit state doesn't match, loading B-em fields only");
++    return 0;
++  }
++  return 1;
++}
++
+ static void
+ state_read(unsigned char* p_buf, const char* p_file_name) {
+   struct bem_v2x* p_bem;
+@@ -142,6 +211,8 @@ state_load(struct bbc_struct* p_bbc, const char* p_file_name) {
+   uint8_t last_channel;
+   uint8_t t1_pb7;
+   size_t i;
++  struct state_beebjit beebjit;
++  int has_beebjit;
+ 
+   struct sound_struct* p_sound = bbc_get_sound(p_bbc);
+   struct video_struct* p_video = bbc_get_video(p_bbc);
+@@ -152,6 +223,7 @@ state_load(struct bbc_struct* p_bbc, const char* p_file_name) {
+   state_read(snapshot, p_file_name);
+ 
+   p_bem = (struct bem_v2x*) snapshot;
++  has_beebjit = state_beebjit_read(&beebjit, p_bem);
+ 
+   bbc_set_memory_block(p_bbc, 0, k_bbc_ram_size, p_bem->ram);
+ 
+@@ -211,7 +283,7 @@ state_load(struct bbc_struct* p_bbc, const char* p_file_name) {
+                     p_bem->sysvia_ifr,
+                     p_bem->sysvia_ier,
+                     0,
+-                    p_bem->sysvia_IC32,
++                    0xFF,
+                     p_bem->sysvia_t1c,
+                     p_bem->sysvia_t1l,
+                     p_bem->sysvia_t2c,
+@@ -232,7 +304,7 @@ state_load(struct bbc_struct* p_bbc, const char* p_file_name) {
+                     p_bem->uservia_ifr,
+                     p_bem->uservia_ier,
+                     0,
+-                    0,
++                    0xFF,
+                     p_bem->uservia_t1c,
+                     p_bem->uservia_t1l,
+                     p_bem->uservia_t2c,
+@@ -241,6 +313,9 @@ state_load(struct bbc_struct* p_bbc, const char* p_file_name) {
+                     p_bem->uservia_t2hit,
+                     t1_pb7);
+ 
++  /* Selects the screen wrap, the keyboard and the sn76489 write enable. */
++  bbc_set_IC32(p_bbc, p_bem->sysvia_IC32);
++
+   /* b-em stores channels in the inverse order: channel 0 is noise. We use
+    * channel 3 is noise, matching the raw registers.
+    */
+@@ -276,12 +351,34 @@ state_load(struct bbc_struct* p_bbc, const char* p_file_name) {
+                   ((p_bem->sn_noise & 0x04) >> 2),
+                   (p_bem->sn_noise & 0x03),
+                   p_bem->sn_shift);
++
++  if (!has_beebjit) {
++    return;
++  }
++
++  /* Carry on from the tick the state was saved at, with every timer and the
++   * next video event where they were.
++   */
++  timing_set_total_timer_ticks(bbc_get_timing(p_bbc), beebjit.ticks);
++  state_6502_set_cycles(p_state_6502, beebjit.cycles);
++  video_set_state(p_video, &beebjit.video);
++  via_set_state(p_system_via, &beebjit.sysvia);
++  via_set_state(p_user_via, &beebjit.uservia);
++  adc_set_state(bbc_get_adc(p_bbc), &beebjit.adc);
++  sound_set_bus_state(p_sound, &beebjit.sound);
++  /* The serial ULA sets the ACIA's lines, then the ACIA takes its own state. */
++  serial_ula_set_state(bbc_get_serial_ula(p_bbc), &beebjit.serial_ula);
++  mc6850_set_state(bbc_get_serial(p_bbc), &beebjit.serial);
++  state_6502_set_irq_at_entry(p_state_6502, beebjit.is_irq_next);
+ }
+ 
+ void
+-state_save(struct bbc_struct* p_bbc, const char* p_file_name) {
++state_save(struct bbc_struct* p_bbc,
++           const char* p_file_name,
++           int is_irq_next) {
+   struct bem_v2x* p_bem;
+   uint8_t snapshot[k_snapshot_size];
++  struct state_beebjit beebjit;
+   uint8_t unused_u8;
+   uint8_t volumes[4];
+   uint16_t periods[4];
+@@ -352,7 +449,7 @@ state_save(struct bbc_struct* p_bbc, const char* p_file_name) {
+                     &p_bem->sysvia_ifr,
+                     &p_bem->sysvia_ier,
+                     &unused_u8,
+-                    &p_bem->sysvia_IC32,
++                    &unused_u8,
+                     &p_bem->sysvia_t1c,
+                     &p_bem->sysvia_t1l,
+                     &p_bem->sysvia_t2c,
+@@ -397,6 +494,40 @@ state_save(struct bbc_struct* p_bbc, const char* p_file_name) {
+   p_bem->uservia_t1l <<= 1;
+   p_bem->uservia_t2l <<= 1;
+ 
++  p_bem->sysvia_IC32 = bbc_get_IC32(p_bbc);
++
++  (void) memset(&beebjit, '\0', sizeof(beebjit));
++  (void) memcpy(beebjit.signature, k_p_state_beebjit_signature, 8);
++  beebjit.size = sizeof(struct state_beebjit);
++  beebjit.ticks = timing_get_total_timer_ticks(bbc_get_timing(p_bbc));
++  beebjit.cycles = state_6502_get_cycles(p_state_6502);
++  video_get_state(p_video, &beebjit.video);
++  via_get_state(p_system_via, &beebjit.sysvia);
++  via_get_state(p_user_via, &beebjit.uservia);
++  adc_get_state(bbc_get_adc(p_bbc), &beebjit.adc);
++  /* This also brings the sn76489 up to date for its b-em fields below. */
++  sound_get_bus_state(p_sound, &beebjit.sound);
++  mc6850_get_state(bbc_get_serial(p_bbc), &beebjit.serial);
++  serial_ula_get_state(bbc_get_serial_ula(p_bbc), &beebjit.serial_ula);
++  beebjit.is_irq_next = is_irq_next;
++
++  /* Fill in the B-em fields that the above makes available. */
++  p_bem->sysvia_ira = beebjit.sysvia.IRA;
++  p_bem->sysvia_irb = beebjit.sysvia.IRB;
++  p_bem->sysvia_ca1 = beebjit.sysvia.CA1;
++  p_bem->sysvia_ca2 = beebjit.sysvia.CA2;
++  p_bem->uservia_ira = beebjit.uservia.IRA;
++  p_bem->uservia_irb = beebjit.uservia.IRB;
++  p_bem->uservia_ca1 = beebjit.uservia.CA1;
++  p_bem->uservia_ca2 = beebjit.uservia.CA2;
++  p_bem->crtc_vc = beebjit.video.vert_counter;
++  p_bem->crtc_sc = beebjit.video.scanline_counter;
++  p_bem->crtc_hc = beebjit.video.horiz_counter;
++  p_bem->crtc_ma_low = (beebjit.video.address_counter & 0xFF);
++  p_bem->crtc_ma_high = (beebjit.video.address_counter >> 8);
++  p_bem->crtc_maback_low = (beebjit.video.address_counter_saved & 0xFF);
++  p_bem->crtc_maback_high = (beebjit.video.address_counter_saved >> 8);
++
+   sound_get_state(p_sound,
+                   &volumes[0],
+                   &periods[0],
+@@ -428,5 +559,10 @@ state_save(struct bbc_struct* p_bbc, const char* p_file_name) {
+   p_bem->sn_noise |= noise_frequency;
+   p_bem->sn_shift = noise_rng;
+ 
++  beebjit.crc32 = state_beebjit_crc32(p_bem, &beebjit);
++  (void) memcpy(&p_bem->ram[k_state_beebjit_ram_offset],
++                &beebjit,
++                sizeof(beebjit));
++
+   util_file_write_fully(p_file_name, snapshot, k_snapshot_size);
+ }
+diff --git a/state.h b/state.h
+index a84c7d8..86f600e 100644
+--- a/state.h
++++ b/state.h
+@@ -6,6 +6,9 @@
+ struct bbc_struct;
+ 
+ void state_load(struct bbc_struct* p_bbc, const char* p_file_name);
+-void state_save(struct bbc_struct* p_bbc, const char* p_file_name);
++/* is_irq_next: the CPU has committed to an interrupt at this boundary. */
++void state_save(struct bbc_struct* p_bbc,
++                const char* p_file_name,
++                int is_irq_next);
+ 
+ #endif /* BEEBJIT_STATE_H */
+diff --git a/state_6502.c b/state_6502.c
+index 2341793..d99dd21 100644
+--- a/state_6502.c
++++ b/state_6502.c
+@@ -228,3 +228,19 @@ state_6502_fire_irq_timer(struct state_6502* p_state_6502) {
+                                        p_state_6502->timer_id,
+                                        0);
+ }
++
++void
++state_6502_set_irq_at_entry(struct state_6502* p_state_6502, int is_irq) {
++  p_state_6502->state.is_irq_at_entry = is_irq;
++  if (is_irq) {
++    /* Bring the CPU driver into the interpreter, which takes it. */
++    state_6502_fire_irq_timer(p_state_6502);
++  }
++}
++
++int
++state_6502_take_irq_at_entry(struct state_6502* p_state_6502) {
++  int is_irq = p_state_6502->state.is_irq_at_entry;
++  p_state_6502->state.is_irq_at_entry = 0;
++  return is_irq;
++}
+diff --git a/state_6502.h b/state_6502.h
+index 55b0b86..a8c9d1c 100644
+--- a/state_6502.h
++++ b/state_6502.h
+@@ -45,6 +45,7 @@ struct state_6502 {
+   struct {
+     uint32_t irq_high;
+     uint64_t ticks_baseline;
++    int is_irq_at_entry;
+   } state;
+ };
+ 
+@@ -95,4 +96,11 @@ int state_6502_has_nmi_high(struct state_6502* p_state_6502);
+ 
+ void state_6502_fire_irq_timer(struct state_6502* p_state_6502);
+ 
++/* A state save can be taken at an instruction boundary where the CPU has
++ * already committed to taking an interrupt. A load sets this, and the CPU
++ * starts with the interrupt.
++ */
++void state_6502_set_irq_at_entry(struct state_6502* p_state_6502, int is_irq);
++int state_6502_take_irq_at_entry(struct state_6502* p_state_6502);
++
+ #endif /* BEEBJIT_STATE_6502_H */
+diff --git a/timing.c b/timing.c
+index f9893fd..a8d8baf 100644
+--- a/timing.c
++++ b/timing.c
+@@ -80,6 +80,13 @@ timing_reset_total_timer_ticks(struct timing_struct* p_timing) {
+   p_timing->total_timer_ticks = 0;
+ }
+ 
++void
++timing_set_total_timer_ticks(struct timing_struct* p_timing, uint64_t ticks) {
++  p_timing->total_timer_ticks = ticks;
++  /* Keep the odd / even tracking in step with the new tick count. */
++  timing_set_countdown(p_timing, p_timing->countdown);
++}
++
+ static inline uint64_t
+ timing_get_countdown_adjustment(struct timing_struct* p_timing) {
+   assert(p_timing->next_timer_expiry >= p_timing->countdown);
+diff --git a/timing.h b/timing.h
+index 415d32b..90aa00d 100644
+--- a/timing.h
++++ b/timing.h
+@@ -11,6 +11,9 @@ void timing_destroy(struct timing_struct* p_timing);
+ void timing_set_log_expiries(struct timing_struct* p_timing, int log_expiries);
+ 
+ void timing_reset_total_timer_ticks(struct timing_struct* p_timing);
++/* For state load: carry on from the tick count the state was saved at. */
++void timing_set_total_timer_ticks(struct timing_struct* p_timing,
++                                  uint64_t ticks);
+ 
+ uint64_t timing_get_total_timer_ticks(struct timing_struct* p_timing);
+ uint64_t timing_get_scaled_total_timer_ticks(struct timing_struct* p_timing);
+diff --git a/via.c b/via.c
+index 41f7ee4..0f038d6 100644
+--- a/via.c
++++ b/via.c
+@@ -1573,3 +1573,109 @@ void via_set_registers(struct via_struct* p_via,
+   (void) timing_set_firing(p_timing, p_via->t2_timer_id, !t2_oneshot_fired);
+   p_via->t1_pb7 = t1_pb7;
+ }
++
++void
++via_get_state(struct via_struct* p_via, struct via_state* p_state) {
++  struct timing_struct* p_timing = p_via->p_timing;
++  uint32_t shift_timer_id = p_via->shift_timer_id;
++
++  p_state->t1_last_fire_ticks = p_via->t1_last_fire_cycles;
++  p_state->t2_last_fire_ticks = p_via->t2_last_fire_cycles;
++  p_state->t2_shift_last_fire_ticks = p_via->t2_shift_last_fire_cycles;
++  p_state->T1C_raw = via_get_t1c_raw(p_via);
++  p_state->T2C_raw = via_get_t2c_raw(p_via);
++  p_state->shift_timer_raw = timing_get_timer_value(p_timing, shift_timer_id);
++  p_state->shift_counter = p_via->shift_counter;
++  p_state->T1L = p_via->T1L;
++  p_state->T2L = p_via->T2L;
++  p_state->IRA = p_via->IRA;
++  p_state->IRB = p_via->IRB;
++  p_state->ORB = p_via->ORB;
++  p_state->ORA = p_via->ORA;
++  p_state->DDRB = p_via->DDRB;
++  p_state->DDRA = p_via->DDRA;
++  p_state->SR = p_via->SR;
++  p_state->ACR = p_via->ACR;
++  p_state->PCR = p_via->PCR;
++  p_state->IFR = p_via->IFR;
++  p_state->IER = p_via->IER;
++  p_state->peripheral_b = p_via->peripheral_b;
++  p_state->peripheral_a = p_via->peripheral_a;
++  p_state->t1_pb7 = p_via->t1_pb7;
++  p_state->bus_value_a = p_via->bus_value_a;
++  p_state->IRA_cached = p_via->IRA_cached;
++  p_state->CA1 = p_via->CA1;
++  p_state->CA2 = p_via->CA2;
++  p_state->CB1 = p_via->CB1;
++  p_state->CB2 = p_via->CB2;
++  p_state->is_t1_firing = timing_get_firing(p_timing, p_via->t1_timer_id);
++  p_state->is_t2_firing = timing_get_firing(p_timing, p_via->t2_timer_id);
++  p_state->is_t2_running = timing_timer_is_running(p_timing,
++                                                   p_via->t2_timer_id);
++  p_state->is_shift_running = timing_timer_is_running(p_timing,
++                                                      shift_timer_id);
++}
++
++void
++via_set_state(struct via_struct* p_via, const struct via_state* p_state) {
++  struct timing_struct* p_timing = p_via->p_timing;
++  uint32_t t1_timer_id = p_via->t1_timer_id;
++  uint32_t t2_timer_id = p_via->t2_timer_id;
++  uint32_t shift_timer_id = p_via->shift_timer_id;
++
++  p_via->t1_last_fire_cycles = p_state->t1_last_fire_ticks;
++  p_via->t2_last_fire_cycles = p_state->t2_last_fire_ticks;
++  p_via->t2_shift_last_fire_cycles = p_state->t2_shift_last_fire_ticks;
++  p_via->shift_counter = p_state->shift_counter;
++  p_via->T1L = p_state->T1L;
++  p_via->T2L = p_state->T2L;
++  p_via->IRA = p_state->IRA;
++  p_via->IRB = p_state->IRB;
++  p_via->ORB = p_state->ORB;
++  p_via->ORA = p_state->ORA;
++  p_via->DDRB = p_state->DDRB;
++  p_via->DDRA = p_state->DDRA;
++  p_via->SR = p_state->SR;
++  p_via->ACR = p_state->ACR;
++  p_via->PCR = p_state->PCR;
++  p_via->IFR = p_state->IFR;
++  p_via->IER = p_state->IER;
++  p_via->peripheral_b = p_state->peripheral_b;
++  p_via->peripheral_a = p_state->peripheral_a;
++  p_via->t1_pb7 = p_state->t1_pb7;
++  p_via->bus_value_a = p_state->bus_value_a;
++  p_via->IRA_cached = p_state->IRA_cached;
++  p_via->CA1 = p_state->CA1;
++  p_via->CA2 = p_state->CA2;
++  p_via->CB1 = p_state->CB1;
++  p_via->CB2 = p_state->CB2;
++
++  /* T2 stops for pulse counting, and the shift register takes over its
++   * timing when shifting at the T2 rate.
++   */
++  if (!p_via->externally_clocked) {
++    if (p_state->is_t2_running &&
++        !timing_timer_is_running(p_timing, t2_timer_id)) {
++      (void) timing_start_timer(p_timing, t2_timer_id);
++    } else if (!p_state->is_t2_running &&
++               timing_timer_is_running(p_timing, t2_timer_id)) {
++      (void) timing_stop_timer(p_timing, t2_timer_id);
++    }
++    if (p_state->is_shift_running &&
++        !timing_timer_is_running(p_timing, shift_timer_id)) {
++      (void) timing_start_timer(p_timing, shift_timer_id);
++    } else if (!p_state->is_shift_running &&
++               timing_timer_is_running(p_timing, shift_timer_id)) {
++      (void) timing_stop_timer(p_timing, shift_timer_id);
++    }
++  }
++  via_set_t1c_raw(p_via, p_state->T1C_raw);
++  via_set_t2c_raw(p_via, p_state->T2C_raw);
++  (void) timing_set_timer_value(p_timing,
++                                shift_timer_id,
++                                p_state->shift_timer_raw);
++  (void) timing_set_firing(p_timing, t1_timer_id, p_state->is_t1_firing);
++  (void) timing_set_firing(p_timing, t2_timer_id, p_state->is_t2_firing);
++
++  via_check_interrupt(p_via);
++}
+diff --git a/via.h b/via.h
+index 96a2adf..d091329 100644
+--- a/via.h
++++ b/via.h
+@@ -165,4 +165,46 @@ void via_set_registers(struct via_struct* p_via,
+                        uint8_t t2_oneshot_fired,
+                        uint8_t t1_pb7);
+ 
++/* Everything needed to carry on exactly, for state save and load. It is
++ * stored in state files as is, so a change to it needs a new state version.
++ */
++struct via_state {
++  uint64_t t1_last_fire_ticks;
++  uint64_t t2_last_fire_ticks;
++  uint64_t t2_shift_last_fire_ticks;
++  int32_t T1C_raw;
++  int32_t T2C_raw;
++  int32_t shift_timer_raw;
++  int32_t shift_counter;
++  uint16_t T1L;
++  uint16_t T2L;
++  uint8_t IRA;
++  uint8_t IRB;
++  uint8_t ORB;
++  uint8_t ORA;
++  uint8_t DDRB;
++  uint8_t DDRA;
++  uint8_t SR;
++  uint8_t ACR;
++  uint8_t PCR;
++  uint8_t IFR;
++  uint8_t IER;
++  uint8_t peripheral_b;
++  uint8_t peripheral_a;
++  uint8_t t1_pb7;
++  uint8_t bus_value_a;
++  uint8_t IRA_cached;
++  uint8_t CA1;
++  uint8_t CA2;
++  uint8_t CB1;
++  uint8_t CB2;
++  uint8_t is_t1_firing;
++  uint8_t is_t2_firing;
++  uint8_t is_t2_running;
++  uint8_t is_shift_running;
++};
++
++void via_get_state(struct via_struct* p_via, struct via_state* p_state);
++void via_set_state(struct via_struct* p_via, const struct via_state* p_state);
++
+ #endif /* BEEBJIT_VIA_H */
+diff --git a/video.c b/video.c
+index d784d4a..4bd8156 100644
+--- a/video.c
++++ b/video.c
+@@ -2125,6 +2125,53 @@ video_update_cursor_disabled(struct video_struct* p_video) {
+   p_video->cursor_disabled = cursor_disabled;
+ }
+ 
++static void
++video_crtc_update_derived(struct video_struct* p_video, uint8_t reg) {
++  uint8_t val = p_video->crtc_registers[reg];
++
++  switch (reg) {
++  case k_crtc_reg_horiz_total:
++    p_video->half_r0 = ((val + 1) / 2);
++    break;
++  case k_crtc_reg_sync_width:
++    p_video->hsync_pulse_width = (val & 0xF);
++    p_video->vsync_pulse_width = (val >> 4);
++    if (p_video->vsync_pulse_width == 0) {
++      p_video->vsync_pulse_width = 16;
++    }
++    break;
++  case k_crtc_reg_interlace:
++    p_video->is_interlace = (val & 0x1);
++    p_video->is_interlace_sync_and_video = ((val & 0x3) == 0x3);
++    /* "master display off", selected by skew bitfield of 0x30, is handled by
++     * indexing into dispen_shifts[] to a DISPEN value that is always 0.
++     */
++    p_video->skew_dispen_index = ((val & 0x30) >> 4);
++    p_video->cursor_skew = ((val & 0xC0) >> 6);
++    if (p_video->is_interlace_sync_and_video) {
++      p_video->scanline_stride = 2;
++      p_video->scanline_mask = 0x1E;
++    } else {
++      p_video->scanline_stride = 1;
++      p_video->scanline_mask = 0x1F;
++    }
++    video_update_cursor_disabled(p_video);
++    break;
++  case k_crtc_reg_cursor_start:
++    p_video->cursor_flashing = !!(val & 0x40);
++    if (val & 0x20) {
++      p_video->cursor_flash_mask = 0x10;
++    } else {
++      p_video->cursor_flash_mask = 0x08;
++    }
++    p_video->cursor_start_line = (val & 0x1F);
++    video_update_cursor_disabled(p_video);
++    break;
++  default:
++    break;
++  }
++}
++
+ void
+ video_crtc_write_address(struct video_struct* p_video,
+                          uint8_t addr,
+@@ -2247,46 +2294,10 @@ video_crtc_write_value(struct video_struct* p_video, uint8_t val) {
+ 
+   p_video->crtc_registers[reg] = (val & mask);
+ 
+-  switch (reg) {
+-  case k_crtc_reg_horiz_total:
+-    p_video->half_r0 = ((p_video->crtc_registers[k_crtc_reg_horiz_total] + 1) /
+-                        2);
+-    break;
+-  case k_crtc_reg_sync_width:
+-    p_video->hsync_pulse_width = hsync_pulse_width;
+-    p_video->vsync_pulse_width = vsync_pulse_width;
+-    break;
+-  case k_crtc_reg_interlace:
+-    p_video->is_interlace = (val & 0x1);
+-    p_video->is_interlace_sync_and_video = ((val & 0x3) == 0x3);
+-    /* "master display off", selected by skew bitfield of 0x30, is handled by
+-     * indexing into dispen_shifts[] to a DISPEN value that is always 0.
+-     */
+-    p_video->skew_dispen_index = ((val & 0x30) >> 4);
+-    p_video->cursor_skew = ((val & 0xC0) >> 6);
+-    if (p_video->is_interlace_sync_and_video) {
+-      p_video->scanline_stride = 2;
+-      p_video->scanline_mask = 0x1E;
+-    } else {
+-      p_video->scanline_stride = 1;
+-      p_video->scanline_mask = 0x1F;
+-    }
+-    video_update_cursor_disabled(p_video);
++  video_crtc_update_derived(p_video, reg);
++  if (reg == k_crtc_reg_interlace) {
+     ticks = timing_get_scaled_total_timer_ticks(p_video->p_timing);
+     video_update_VSYNC(p_video, ticks);
+-    break;
+-  case k_crtc_reg_cursor_start:
+-    p_video->cursor_flashing = !!(val & 0x40);
+-    if (val & 0x20) {
+-      p_video->cursor_flash_mask = 0x10;
+-    } else {
+-      p_video->cursor_flash_mask = 0x08;
+-    }
+-    p_video->cursor_start_line = (val & 0x1F);
+-    video_update_cursor_disabled(p_video);
+-    break;
+-  default:
+-    break;
+   }
+ 
+   if (p_video->is_interlace_sync_and_video) {
+@@ -2390,6 +2401,10 @@ video_set_crtc_registers(struct video_struct* p_video,
+   for (i = 0; i < k_video_crtc_num_registers; ++i) {
+     p_video->crtc_registers[i] = p_values[i];
+   }
++  for (i = 0; i < k_video_crtc_num_registers; ++i) {
++    video_crtc_update_derived(p_video, i);
++  }
++  video_recalculate_framing_sanity(p_video);
+ }
+ 
+ void
+@@ -2412,4 +2427,96 @@ video_get_crtc_state(struct video_struct* p_video,
+   *p_is_in_dummy_raster = p_video->in_dummy_raster;
+ }
+ 
++void
++video_get_state(struct video_struct* p_video, struct video_state* p_state) {
++  uint32_t i;
++
++  video_advance_crtc_timing(p_video);
++
++  p_state->crtc_frames = p_video->crtc_frames;
++  p_state->last_vsync_raise_ticks = p_video->last_vsync_raise_ticks;
++  p_state->last_vsync_lower_ticks = p_video->last_vsync_lower_ticks;
++  p_state->address_counter = p_video->address_counter;
++  p_state->address_counter_saved = p_video->address_counter_saved;
++  p_state->display_enable_bits = p_video->display_enable_bits;
++  p_state->start_of_line_state_checks = p_video->start_of_line_state_checks;
++  p_state->cursor_skew_counter = p_video->cursor_skew_counter;
++  p_state->via_ca1_irq_level = p_video->via_ca1_irq_level;
++  p_state->crtc_address_register = p_video->crtc_address_register;
++  p_state->horiz_counter = p_video->horiz_counter;
++  p_state->scanline_counter = p_video->scanline_counter;
++  p_state->vert_counter = p_video->vert_counter;
++  p_state->vert_adjust_counter = p_video->vert_adjust_counter;
++  p_state->vsync_scanline_counter = p_video->vsync_scanline_counter;
++  p_state->hsync_tick_counter = p_video->hsync_tick_counter;
++  p_state->is_odd_frame = p_video->is_odd_frame;
++  p_state->is_vert_adjust_pending = p_video->is_vert_adjust_pending;
++  p_state->is_in_vert_adjust = p_video->is_in_vert_adjust;
++  p_state->in_vsync = p_video->in_vsync;
++  p_state->is_even_vsync = p_video->is_even_vsync;
++  p_state->is_odd_vsync = p_video->is_odd_vsync;
++  p_state->in_hsync = p_video->in_hsync;
++  p_state->in_dummy_raster = p_video->in_dummy_raster;
++  p_state->had_odd_vsync_this_row = p_video->had_odd_vsync_this_row;
++  p_state->had_even_vsync_this_row = p_video->had_even_vsync_this_row;
++  p_state->has_hit_cursor_line_start = p_video->has_hit_cursor_line_start;
++  p_state->has_hit_cursor_line_end = p_video->has_hit_cursor_line_end;
++  p_state->is_end_of_main_latched = p_video->is_end_of_main_latched;
++  p_state->is_end_of_vert_adjust_latched =
++      p_video->is_end_of_vert_adjust_latched;
++  p_state->is_end_of_frame_latched = p_video->is_end_of_frame_latched;
++  p_state->is_first_frame_scanline = p_video->is_first_frame_scanline;
++  for (i = 0; i < 3; ++i) {
++    p_state->dispen_shifts[i] = p_video->dispen_shifts[i];
++  }
++}
++
++void
++video_set_state(struct video_struct* p_video,
++                const struct video_state* p_state) {
++  uint32_t i;
++
++  p_video->crtc_frames = p_state->crtc_frames;
++  p_video->last_vsync_raise_ticks = p_state->last_vsync_raise_ticks;
++  p_video->last_vsync_lower_ticks = p_state->last_vsync_lower_ticks;
++  p_video->address_counter = p_state->address_counter;
++  p_video->address_counter_saved = p_state->address_counter_saved;
++  p_video->display_enable_bits = p_state->display_enable_bits;
++  p_video->start_of_line_state_checks = p_state->start_of_line_state_checks;
++  p_video->cursor_skew_counter = p_state->cursor_skew_counter;
++  p_video->via_ca1_irq_level = p_state->via_ca1_irq_level;
++  p_video->crtc_address_register = p_state->crtc_address_register;
++  p_video->horiz_counter = p_state->horiz_counter;
++  p_video->scanline_counter = p_state->scanline_counter;
++  p_video->vert_counter = p_state->vert_counter;
++  p_video->vert_adjust_counter = p_state->vert_adjust_counter;
++  p_video->vsync_scanline_counter = p_state->vsync_scanline_counter;
++  p_video->hsync_tick_counter = p_state->hsync_tick_counter;
++  p_video->is_odd_frame = p_state->is_odd_frame;
++  p_video->is_vert_adjust_pending = p_state->is_vert_adjust_pending;
++  p_video->is_in_vert_adjust = p_state->is_in_vert_adjust;
++  p_video->in_vsync = p_state->in_vsync;
++  p_video->is_even_vsync = p_state->is_even_vsync;
++  p_video->is_odd_vsync = p_state->is_odd_vsync;
++  p_video->in_hsync = p_state->in_hsync;
++  p_video->in_dummy_raster = p_state->in_dummy_raster;
++  p_video->had_odd_vsync_this_row = p_state->had_odd_vsync_this_row;
++  p_video->had_even_vsync_this_row = p_state->had_even_vsync_this_row;
++  p_video->has_hit_cursor_line_start = p_state->has_hit_cursor_line_start;
++  p_video->has_hit_cursor_line_end = p_state->has_hit_cursor_line_end;
++  p_video->is_end_of_main_latched = p_state->is_end_of_main_latched;
++  p_video->is_end_of_vert_adjust_latched =
++      p_state->is_end_of_vert_adjust_latched;
++  p_video->is_end_of_frame_latched = p_state->is_end_of_frame_latched;
++  p_video->is_first_frame_scanline = p_state->is_first_frame_scanline;
++  for (i = 0; i < 3; ++i) {
++    p_video->dispen_shifts[i] = p_state->dispen_shifts[i];
++  }
++
++  /* The state is as of now, so advance from here and time the next event. */
++  p_video->prev_system_ticks =
++      timing_get_scaled_total_timer_ticks(p_video->p_timing);
++  video_update_timer(p_video);
++}
++
+ #include "test-video.c"
+diff --git a/video.h b/video.h
+index c77253e..f9dd041 100644
+--- a/video.h
++++ b/video.h
+@@ -95,4 +95,49 @@ void video_get_crtc_state(struct video_struct* p_video,
+                           int* p_is_in_vert_adjust,
+                           int* p_is_in_dummy_raster);
+ 
++/* The 6845 state besides its registers, to carry on exactly after a state
++ * save and load. It is stored in state files as is, so a change to it needs
++ * a new state version.
++ */
++struct video_state {
++  uint64_t crtc_frames;
++  int64_t last_vsync_raise_ticks;
++  int64_t last_vsync_lower_ticks;
++  uint32_t address_counter;
++  uint32_t address_counter_saved;
++  uint32_t display_enable_bits;
++  uint32_t start_of_line_state_checks;
++  int32_t cursor_skew_counter;
++  int32_t via_ca1_irq_level;
++  uint8_t crtc_address_register;
++  uint8_t horiz_counter;
++  uint8_t scanline_counter;
++  uint8_t vert_counter;
++  uint8_t vert_adjust_counter;
++  uint8_t vsync_scanline_counter;
++  uint8_t hsync_tick_counter;
++  uint8_t is_odd_frame;
++  uint8_t is_vert_adjust_pending;
++  uint8_t is_in_vert_adjust;
++  uint8_t in_vsync;
++  uint8_t is_even_vsync;
++  uint8_t is_odd_vsync;
++  uint8_t in_hsync;
++  uint8_t in_dummy_raster;
++  uint8_t had_odd_vsync_this_row;
++  uint8_t had_even_vsync_this_row;
++  uint8_t has_hit_cursor_line_start;
++  uint8_t has_hit_cursor_line_end;
++  uint8_t is_end_of_main_latched;
++  uint8_t is_end_of_vert_adjust_latched;
++  uint8_t is_end_of_frame_latched;
++  uint8_t is_first_frame_scanline;
++  uint8_t dispen_shifts[3];
++};
++
++void video_get_state(struct video_struct* p_video, struct video_state* p_state);
++/* Also reschedules the next video event, from the restored state. */
++void video_set_state(struct video_struct* p_video,
++                     const struct video_state* p_state);
++
+ #endif /* BEEBJIT_VIDEO_H */
+-- 
+2.43.0
+

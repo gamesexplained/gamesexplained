@@ -1,0 +1,112 @@
+From f0062aa06ff228c32e4d09b742c61211e5db3fff Mon Sep 17 00:00:00 2001
+From: Aaron Bell <18724+air@users.noreply.github.com>
+Date: Tue, 13 Oct 2026 13:14:49 +0000
+Subject: [PATCH] Allow savemem and loadmem to cover all 64k of memory.
+
+savemem refused a length of 0x10000, so saving the whole address
+space took two calls. loadmem passed the length of a 64k file to
+bbc_set_memory_block() as 16 bits, which truncated it to 0, so it
+loaded nothing.
+
+loadmem now stops at 0xFFFF, as savemem already does, instead of
+wrapping round to zero page.
+
+Adds a functional test that saves all 64k and loads it back.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XRGcjre6t11Lj84xau655i
+---
+ bbc.c                   |  2 +-
+ bbc.h                   |  2 +-
+ debug.c                 |  8 ++++++--
+ run_functional_tests.sh | 17 +++++++++++++++++
+ 4 files changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/bbc.c b/bbc.c
+index d11b384..5aa02dc 100644
+--- a/bbc.c
++++ b/bbc.c
+@@ -2683,7 +2683,7 @@ bbc_get_mem_write(struct bbc_struct* p_bbc) {
+ void
+ bbc_set_memory_block(struct bbc_struct* p_bbc,
+                      uint16_t addr,
+-                     uint16_t len,
++                     uint32_t len,
+                      uint8_t* p_src_mem) {
+   size_t count = 0;
+   while (count < len) {
+diff --git a/bbc.h b/bbc.h
+index 60b5f9a..0de4045 100644
+--- a/bbc.h
++++ b/bbc.h
+@@ -118,7 +118,7 @@ uint8_t* bbc_get_mem_read(struct bbc_struct* p_bbc);
+ uint8_t* bbc_get_mem_write(struct bbc_struct* p_bbc);
+ void bbc_set_memory_block(struct bbc_struct* p_bbc,
+                           uint16_t addr,
+-                          uint16_t len,
++                          uint32_t len,
+                           uint8_t* p_src_mem);
+ void bbc_memory_write(struct bbc_struct* p_bbc,
+                       uint16_t addr_6502,
+diff --git a/debug.c b/debug.c
+index 49ec372..a800f80 100644
+--- a/debug.c
++++ b/debug.c
+@@ -1096,6 +1096,10 @@ debug_load_raw(struct debug_struct* p_debug,
+   len = util_file_read(p_file, buf, sizeof(buf));
+   util_file_close(p_file);
+ 
++  if ((addr_6502 + len) > k_6502_addr_space_size) {
++    len = (k_6502_addr_space_size - addr_6502);
++  }
++
+   bbc_set_memory_block(p_bbc, addr_6502, len, buf);
+ }
+ 
+@@ -1103,7 +1107,7 @@ static void
+ debug_save_raw(struct debug_struct* p_debug,
+                const char* p_file_name,
+                uint16_t addr_6502,
+-               uint16_t length) {
++               uint32_t length) {
+   struct util_file* p_file;
+   uint8_t* p_mem_read = p_debug->p_mem_read;
+ 
+@@ -2358,7 +2362,7 @@ debug_callback_common(struct debug_struct* p_debug,
+                (parse_hex_int2 >= 0) &&
+                (parse_hex_int2 < 65536) &&
+                (parse_hex_int3 >= 0) &&
+-               (parse_hex_int3 < 65536)) {
++               (parse_hex_int3 <= 65536)) {
+       debug_save_raw(p_debug, p_param_1_str, parse_hex_int2, parse_hex_int3);
+     } else if (!strcmp(p_command, "ss")) {
+       state_save(p_bbc, p_param_1_str);
+diff --git a/run_functional_tests.sh b/run_functional_tests.sh
+index d1913c8..5d06ff1 100755
+--- a/run_functional_tests.sh
++++ b/run_functional_tests.sh
+@@ -139,4 +139,21 @@ echo 'Checking ANDY / HAZEL non-render.'
+     -opt video:always-render \
+     -commands "breakat 5000000;c;b expr 'render_y == 620';c;eval '(frame_buffer_crc32==0x9cd725cd)||bail';q"
+ 
++# This checks that all 64k of memory saves in one go and loads back.
++echo 'Checking savemem / loadmem of 64k.'
++TMP_MEM=$(mktemp)
++./beebjit -headless -debug \
++    -commands "writem 2000 5a;writem 7fff a5;savemem $TMP_MEM 0 10000;q" \
++    > /dev/null
++SAVEMEM_SIZE=$(wc -c < "$TMP_MEM")
++if [ "$SAVEMEM_SIZE" -ne 65536 ]; then
++  rm -f "$TMP_MEM"
++  echo "savemem file size $SAVEMEM_SIZE, expected 65536"
++  exit 1
++fi
++./beebjit -headless -debug \
++    -commands "loadmem $TMP_MEM 0;eval '(mem[0x2000]==0x5a)||bail';eval '(mem[0x7fff]==0xa5)||bail';q" \
++    > /dev/null
++rm -f "$TMP_MEM"
++
+ echo 'Functional tests OK.'
+-- 
+2.43.0
+

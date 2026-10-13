@@ -1,0 +1,68 @@
+From 23454022ef1988b61e022e16f6da9f4dbb714642 Mon Sep 17 00:00:00 2001
+From: Aaron Bell <18724+air@users.noreply.github.com>
+Date: Tue, 13 Oct 2026 13:33:37 +0000
+Subject: [PATCH] Apply debugger keydown and keyup before the next instruction.
+
+keydown and keyup only queued the key. The queue is read by the
+cycles timer, every cycles_per_run cycles (40,000 in fast debug
+mode), so code run on from the prompt could scan the keyboard
+before the key arrived. The debugger runs on the BBC thread, so it
+can read the queue straight away.
+
+The NuLA test presses Z from the debugger at cycle 22000000. The
+key now lands there rather than at the next timer tick, so Frogger
+starts a little earlier and its sprites have moved on a couple of
+pixels when the test takes the CRC. The screen is otherwise the
+same, NuLA palette included, so the expected CRC is updated.
+
+Adds a functional test that a keydown shows in the system VIA
+before the next instruction.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01XRGcjre6t11Lj84xau655i
+---
+ debug.c                 |  3 +++
+ run_functional_tests.sh | 10 +++++++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/debug.c b/debug.c
+index 49ec372..bbab63e 100644
+--- a/debug.c
++++ b/debug.c
+@@ -2506,9 +2506,12 @@ debug_callback_common(struct debug_struct* p_debug,
+     } else if (!strcmp(p_command, "keydown")) {
+       struct keyboard_struct* p_keyboard = bbc_get_keyboard(p_bbc);
+       keyboard_system_key_pressed(p_keyboard, (uint8_t) parse_int);
++      /* Apply the key now, so that the next instruction sees it. */
++      keyboard_read_queue(p_keyboard);
+     } else if (!strcmp(p_command, "keyup")) {
+       struct keyboard_struct* p_keyboard = bbc_get_keyboard(p_bbc);
+       keyboard_system_key_released(p_keyboard, (uint8_t) parse_int);
++      keyboard_read_queue(p_keyboard);
+     } else if (!strcmp(p_command, "?") ||
+                !strcmp(p_command, "help") ||
+                !strcmp(p_command, "h")) {
+diff --git a/run_functional_tests.sh b/run_functional_tests.sh
+index d1913c8..3a04223 100755
+--- a/run_functional_tests.sh
++++ b/run_functional_tests.sh
+@@ -96,7 +96,15 @@ echo 'Checking NuLA palette.'
+     -autoboot \
+     -debug -fast -accurate \
+     -opt video:always-render \
+-    -commands "breakat 22000000;c;keydown 90;breakat 24000000;c;b expr 'render_y == 600';c;eval '(frame_buffer_crc32==0x46e9a111)||bail';q"
++    -commands "breakat 22000000;c;keydown 90;breakat 24000000;c;b expr 'render_y == 600';c;eval '(frame_buffer_crc32==0xbccf4422)||bail';q"
++
++# This checks that a key pressed in the debugger reaches the keyboard before
++# the next instruction. At the BASIC prompt the keyboard is in auto-scan, so
++# the key shows at once as a CA2 interrupt flag in the system VIA.
++echo 'Checking debugger keydown.'
++./beebjit -headless -fast -debug \
++    -commands "breakat 2000000;c;keydown 90;eval '(sysvia_r[13]&1)||bail';q" \
++    > /dev/null
+ 
+ # This checks a replay of a 100% Nightworld run.
+ # It breaks at the time the game is writing the "G" of "GAME END".
+-- 
+2.43.0
+
