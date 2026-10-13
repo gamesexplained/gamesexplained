@@ -61,14 +61,17 @@ callers.
 ## Measure the listing before calling it done
 
 The comments in the listing are claims too, and an annotation agent's
-are rarely all right. Measuring them takes three passes, and a run plans
-for all three from the start: a sample, an audit of every comment, and a
-second sample. Of 17 games whose first sample is on record, 16 had more
-than two wrong in 60, typically about one comment in eight; after a
-full audit, the next sample passed in four of the seven that drew one,
-and a fifth missed by one comment.
-Correcting only the comments a sample found wrong never brought a
-listing under the mark, because the sample's rate holds across the rest.
+are rarely all right. A run measures them once, with a sample, and goes
+on to the end: 100 % coverage is most of what a page is worth, and the
+sample tells the reader, and the next run, how far to trust the
+comments. An audit of every comment, and a second sample after it, are
+later work that the run recommends and does not do. A run audits only
+when the contributor asked for an audit. Of 17 games whose first sample
+is on record, 16 had more than two wrong in 60, typically about one
+comment in eight; after a full audit, the next sample passed in four of
+the seven that drew one, and a fifth missed by one comment. Correcting
+only the comments a sample found wrong never brought a listing under the
+mark, because the sample's rate holds across the rest.
 
 Both the sample and the audit are done by checkers: agents that wrote
 none of the comments, with `checker.md` beside this file as their brief.
@@ -85,15 +88,24 @@ checks every comment in a range and corrects the wrong ones.
    are wrong (at most one in 30 in a larger sample). At that mark a
    listing with 3 % of its comments wrong comes within it three times in
    four, and one with 10 % one time in twenty.
-3. **Audit.** Fresh checkers audit every comment, each in its own
-   range, given the kinds of error the sample found, and correct what
-   they find. A first sample within the mark does not skip the audit:
-   the page calls a listing checked only after one.
-4. **Sample again.** Draw a new sample with a new seed and give it to a
+3. **Correct what it found.** Correct every comment the sample found
+   wrong, and every other comment that says the same thing (below).
+   Then go on to the end of the run.
+4. **Recommend the audit.** In `TODO.md`, the pull request and the
+   debrief (`kit/START.md`), say what the sample found and recommend an
+   audit, even when the sample is within the mark: the page calls a
+   listing checked only after one.
+
+A run asked for an audit does two more steps, and repeats them until a
+sample is within the mark:
+
+5. **Audit.** Fresh checkers audit every comment, each in its own
+   range, given the kinds of error the samples found, and correct what
+   they find.
+6. **Sample again.** Draw a new sample with a new seed and give it to a
    checker that took no part in writing or auditing any of it: a sample
    measures fairly only when its checker had no hand in what it
-   measures. Repeat the audit and the sample until a sample is within
-   the mark.
+   measures.
 
 Silver needs the measure, not the mark: at least one sample, checked and
 recorded. The game's About tab shows every step in a table, with the
@@ -102,22 +114,17 @@ the listing. The page calls the listing checked ("Audited & low error
 rate") only when the last sample came after a full audit and is within
 the mark. Until then the Source tab says, under its title, that the
 listing has not had a full audit or that its last sample was over the
-mark. So a run can publish without the audit, and the page is honest
-about it. Any order of
-steps is recorded as it happened: two samples with only their own
-comments corrected between them are two rows, an audit of some of the
-comments says how many of how many, and a second model is a row of its
-own. Go on to the mark by default.
-When the contributor said their usage limit is tight (`kit/START.md`),
-stop after the first sample, put the audit at the top of `TODO.md`, and
-say in the pull request that the Source tab will say so until a later
-run audits the listing and samples it again.
+mark. So a run publishes without the audit, and the page is honest
+about it. Any order of steps is recorded as it happened: two samples
+with only their own comments corrected between them are two rows, an
+audit of some of the comments says how many of how many, and a second
+model is a row of its own.
 
-Start the sample checks and the audit without asking, on a run that
-keeps to one agent as on any other: the contributor's answer about
-agents (`kit/START.md`) is about fanning work out, and by this step the
-run is meant to be unattended. An audit runs on as many agents as that answer
-allows, and on one when it allows one.
+Start the sample check without asking, on a run that keeps to one agent
+as on any other: the contributor's answer about agents (`kit/START.md`)
+is about fanning work out, and by this step the run is meant to be
+unattended. An audit, in a run asked for one, runs on as many agents as
+that answer allows, and on one when it allows one.
 
 Any proven model may check (`models.py`), but a checker finds only what
 its model can see, so use the strongest model the contributor has. On a
@@ -165,8 +172,9 @@ Comments a program wrote, a decoder describing every record of a format
 from templates, are a few claims each made hundreds of times. Give them
 a stratum of their own, draw about 20 from it, and beside the plain rate
 give the rate weighted by each stratum's size: three drawn from a
-stratum of thousands would stand for all of it. When they are bad, audit
-them by template, not one by one: test every sentence a template writes
+stratum of thousands would stand for all of it. When they are bad,
+correct them by template in this run, as one claim made many times, and
+not one by one: test every sentence a template writes
 against the code on every path (a reader cited for a field it reads only
 for some values of a flag, a condition such as "when empty" or "nothing
 reads this"), then the records whose values change what the sentence

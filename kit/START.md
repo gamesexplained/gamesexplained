@@ -68,11 +68,9 @@ step needs something only they have.
    four. The answer holds for the whole run. One agent throughout still
    starts the checker `60-verify` gives a sample of the listing's
    comments to: one agent with a short brief is not a fan-out, so the run
-   starts it without asking, whatever the answer here. With room, the
-   run goes on to have checkers audit every comment and sample them
-   again, starting them the same way. With a tight limit it stops after
-   the first sample, and the page goes up saying its listing has not
-   been audited until a later run does it (`kit/skills/core/60-verify`).
+   starts it without asking, whatever the answer here. The run takes
+   that one sample and no audit: it recommends an audit at the end, for
+   a later run to do when someone asks (`kit/skills/core/60-verify`).
 
    **A model for the checker, only if they name one.** Do not ask for it.
    A contributor may say, in the message that starts the run, which model
@@ -194,6 +192,11 @@ step needs something only they have.
      and how to see the pages locally (`AGENTS.md`, step 4).
    - **What happens next.** The pull request can be merged as it is, and
      they need do nothing more. Or they can ask for changes first.
+   - **How far to trust the comments.** What the sample found, in a
+     line, and the audit it recommends: a later run, when they or a
+     maintainer ask for one, checks every comment and samples again, and
+     the Source tab then says how the listing measured
+     (`kit/skills/core/60-verify`).
    - **What only they can settle.** Ask the questions a person answers in
      a few minutes and the run could not, one line each: which tune is
      the title tune, what a voice line says, what a picture shows.
