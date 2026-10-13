@@ -5,7 +5,7 @@ description: The annotation loop. Measure comprehension with the shared coverage
 
 # Measure comprehension, not disassembly
 
-Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game needs a maintainer's check (`kit/CHECKING.md`). The largest run to 19 September 2026: 24 KB to 100 % in about forty minutes with nine agents on disjoint ranges. One agent is several times slower per kilobyte.
+Record your model id in `game.json` under `step_models`, as `"50-coverage": ["<your model id>"]`, exactly as your session names it, and add any model that takes the step over from you: `models.py` reads it to decide whether this game needs a maintainer's check (`kit/CHECKING.md`).
 
 Disassembly coverage flatters you. Bytes can be decoded, labelled, even
 commented nearby, and still understood by nobody. The shared metric
@@ -372,8 +372,9 @@ account's session limit within minutes and sat idle for hours. Fanning
 out bought no quality either: what caught wrong readings was checking by
 an agent that did not write them, not parallel writing.
 
-Split only when one of these holds, and the contributor's answer about
-their usage limit (`kit/START.md`) allows it:
+Split only when the contributor said, in the message that started the
+run, that it may use several agents (`kit/START.md`), and one of these
+holds:
 
 - **The game is several parts**: one agent to a part (below).
 - **What is left after your own first pass is too much for one
@@ -383,8 +384,8 @@ Annotate first yourself, then split. Take the main loop, the interrupt
 handlers, the core variables and the naming conventions to described
 before anyone else starts: the brief's "Established" list is then short
 and checked, and the agents inherit names instead of inventing rival
-ones. Start at most four agents, and fewer on a tight limit. When you
-do split, what matters:
+ones. Start at most four agents, and no more than the contributor
+allowed. When you do split, what matters:
 
 - **One shared disassembler.** Concurrent reads are safe; concurrent
   writes are safe only if agents own **disjoint address ranges**. Assign

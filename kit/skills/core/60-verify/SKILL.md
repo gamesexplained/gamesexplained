@@ -121,11 +121,10 @@ with only their own comments corrected between them are two rows, an
 audit of some of the comments says how many of how many, and a second
 model is a row of its own.
 
-Start the sample check without asking, on a run that keeps to one agent
-as on any other: the contributor's answer about agents (`kit/START.md`)
-is about fanning work out, and by this step the run is meant to be
-unattended. An audit, in a run asked for one, runs on as many agents as
-that answer allows, and on one when it allows one.
+Start the sample check without asking: one checker is not a fan-out
+(`kit/START.md`), and by this step the run is meant to be unattended. An
+audit, in a run asked for one, gives its ranges to fresh checkers one at
+a time, unless whoever asked for it allowed several at once.
 
 Any proven model may check (`models.py`), but a checker finds only what
 its model can see, so use the strongest model the contributor has. On a
